@@ -2077,6 +2077,10 @@ CMapEngine::DestroyPersonStructure(Person& p)
     m_Engine->DestroyScript(p.script_activate_talk);
   }
 
+  if (p.script_command_generator) {
+    m_Engine->DestroyScript(p.script_command_generator);
+  }
+
   return true;
 }
 
