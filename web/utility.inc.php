@@ -5,6 +5,7 @@ $__DATABASE = "sphere";
 $__SITEROOT = "http://sphere.sf.net"; //NO TAILING SLASH
 
 function start(){
+  global $__SITEROOT;
   include_once("/home/groups/s/sp/sphere/htdocs/doctype.inc.php"); 
   echo "
   <html>

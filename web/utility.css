@@ -6,8 +6,7 @@ body {
   font-size: 8.4pt;
   font-family: verdana, helvetica, sans-serif;
   color: rgb(53, 79, 97);
-  background-position: 50% 20pt;
-  background: url("images/background.jpg") white no-repeat scroll;
+  background: url("images/background.jpg") white no-repeat scroll 50% 20pt;
 }
 
 a {
@@ -113,7 +112,7 @@ td.menuitems {
   background-color: rgb(255, 255, 255);
   color: rgb(53, 79, 97);
   vertical-align: top;
-  padding: none;
+  padding: 0px;
 }
 
 td.menulogo {
@@ -232,4 +231,9 @@ td.bodybody {
 
 .success:before {
   content: "SUCCESS:  "
+}
+
+td {
+  vertical-align: top;
+  font-size: 8.4pt;
 }
