@@ -764,6 +764,9 @@ log_object.endBlock()
   LoadSpriteset(filename)
     - returns a spriteset object from 'filename'. If Sphere is unable to open
       the file, the engine will give an error message and exit.
+
+  spriteset.filename
+    - the filename that the spriteset was loaded with
 
   spriteset.save(filename)
     - saves the spriteset object to 'filename'

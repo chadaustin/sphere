@@ -35,7 +35,7 @@ CSpritesetServer::Load(const char* filename, IFileSystem& fs)
   spriteset.spriteset = new SSPRITESET;
   m_Spritesets.push_back(spriteset);
 
-  if (!spriteset.spriteset->Load(filename, fs))
+  if (!spriteset.spriteset->Load(filename, fs, std::string(filename)))
   {
     spriteset.spriteset->Release();
     m_Spritesets.pop_back();

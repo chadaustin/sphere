@@ -19,8 +19,9 @@ public:
   void AddRef();
   void Release();
 
-  bool Load(const char* filename, IFileSystem& fs);
+  bool Load(const char* filename, IFileSystem& fs, std::string pfilename);
 
+  std::string GetFilename() const;
   const sSpriteset& GetSpriteset() const;
   
   int GetNumImages() const;
@@ -37,6 +38,8 @@ private:
   IMAGE* m_FlipImages;
 
   int m_RefCount;
+
+  std::string m_Filename;
 };
 
 

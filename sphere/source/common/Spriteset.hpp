@@ -13,7 +13,6 @@
 #include "Image32.hpp"
 #include "DefaultFileSystem.hpp"
 
-
 class sSpriteset
 {
 public:
@@ -100,6 +99,7 @@ private:
   int m_BaseY1;
   int m_BaseX2;
   int m_BaseY2;
+
 };
 
 

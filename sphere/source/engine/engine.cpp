@@ -452,7 +452,7 @@ CGameEngine::LoadSpriteset(const char* filename)
 
   // load spriteset
   SSPRITESET* ss = new SSPRITESET;
-  if (!ss->Load(path.c_str(), m_FileSystem)) {
+  if (!ss->Load(path.c_str(), m_FileSystem, std::string(filename))) {
     ss->Release();
     return NULL;
   }

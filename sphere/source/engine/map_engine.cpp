@@ -1386,7 +1386,7 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
 
   p.spriteset = m_Engine->LoadSpriteset(spriteset_filename);
   if (p.spriteset == NULL) {
-    m_ErrorMessage = "Could not load spriteset\nPerson: " + p.description;
+    m_ErrorMessage = "Could not load spriteset: '" + std::string(spriteset_filename) + "'\nPerson: " + p.description;
     return false;
   }
 

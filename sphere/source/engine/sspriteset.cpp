@@ -48,11 +48,13 @@ SSPRITESET::Release()
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-SSPRITESET::Load(const char* filename, IFileSystem& fs)
+SSPRITESET::Load(const char* filename, IFileSystem& fs, std::string pfilename)
 {
   if (m_Spriteset.Load(filename, fs) == false) {
     return false;
   }
+
+  m_Filename = pfilename;
 
   m_Images = new IMAGE[m_Spriteset.GetNumImages()];
   m_FlipImages = new IMAGE[m_Spriteset.GetNumImages()];
@@ -70,6 +72,14 @@ const sSpriteset&
 SSPRITESET::GetSpriteset() const
 {
   return m_Spriteset;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+std::string
+SSPRITESET::GetFilename() const
+{
+  return m_Filename;
 }
  
 ////////////////////////////////////////////////////////////////////////////////

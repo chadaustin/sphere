@@ -3953,6 +3953,15 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
     JS_PropertyStub,
     JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
 
+  JS_DefineProperty(
+    cx,
+    object,
+    "filename",
+    STRING_TO_JSVAL(JS_NewStringCopyZ(cx, spriteset->GetFilename().c_str())),
+    JS_PropertyStub,
+    JS_PropertyStub,
+    JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
   // attach the spriteset to this object
   
   SS_SPRITESET* spriteset_object = new SS_SPRITESET;
