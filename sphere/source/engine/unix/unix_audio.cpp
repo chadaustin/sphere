@@ -6,13 +6,27 @@ static audiere::AudioDevicePtr s_AudioDevice;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool InitAudio()
+bool InitAudio(SPHERECONFIG* config)
 {
-  s_AudioDevice = audiere::OpenDevice();
-  if (!s_AudioDevice) {
-    fprintf(stderr, "Using null device instead...\n");
-    s_AudioDevice = audiere::OpenDevice("null");
+  switch (config->sound) {
+
+    case SOUND_AUTODETECT: // this doesn't really autodetect at all
+      s_AudioDevice = audiere::OpenDevice();
+    break;
+  
+    case SOUND_ON:
+      s_AudioDevice = audiere::OpenDevice();
+    break;
+  
+    case SOUND_OFF:
+      s_AudioDevice = audiere::OpenDevice("null");    
+    break;
   }
+
+  if (!s_AudioDevice) {
+    s_AudioDevice = audiere::OpenDevice("null");    
+  }
+
   return bool(s_AudioDevice);
 }
 

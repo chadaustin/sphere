@@ -5,6 +5,7 @@
 #include <cstring>
 #include "unix_filesystem.h"
 #include "unix_audio.h"
+#include "unix_sphere_config.h"
 
 #ifndef DATADIR
 #define DATADIR "."
@@ -16,8 +17,19 @@
 static char unix_data_dir[MAX_UNIX_PATH] = DATADIR;
 static char* original_directory;
 
+static void LoadSphereConfiguration(SPHERECONFIG* config)
+{
+  // Loads configuration settings
+  LoadSphereConfig(config, (GetSphereDirectory() + "/engine.ini").c_str());
+}
+
 int main(int argc, const char* argv[]) {
     SetSphereDirectory();
+
+    // load the configuration settings, then save it for future reference
+    SPHERECONFIG config;
+    LoadSphereConfiguration(&config);
+    SaveSphereConfig(&config, (GetSphereDirectory() + "/engine.ini").c_str());
 
     original_directory = getcwd(NULL, 0);
     char* env_data_dir = getenv("SPHERE_DATA_DIR");
@@ -28,9 +40,11 @@ int main(int argc, const char* argv[]) {
     }
     chdir(unix_data_dir);
     srand((unsigned)GetTime);
-    if (!InitAudio()) {
+
+    if (!InitAudio(&config)) {
         printf("Sound could not be initialized...\n");
     }
+
     RunSphere(argc, argv);
     CloseAudio();
 }

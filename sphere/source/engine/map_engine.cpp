@@ -9,7 +9,6 @@
 #include "render.hpp"
 #include "rendersort.hpp"
 #include "time.hpp"
-#include "../common/minmax.hpp"
 
 static const int c_MaxSkipFrames = 10;
 

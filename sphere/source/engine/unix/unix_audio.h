@@ -3,8 +3,9 @@
 
 
 #include <audiere.h>
+#include "unix_sphere_config.h"
 
-bool InitAudio();
+bool InitAudio(SPHERECONFIG* config);
 void CloseAudio();
 
 audiere::OutputStream* SA_OpenSound(audiere::File* file, bool streaming);
