@@ -354,9 +354,16 @@ CDocumentWindow::OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactiv
     {
 			// the project palette should stay visible/invisible
 			CPaletteWindow * pProjectWindow = (CPaletteWindow*)((CMainWindow*)pFrame)->GetProjectWindow();
-			bool bProjectVisible = pProjectWindow->IsVisible();
-      LoadPaletteStates();
-			pProjectWindow->ShowPalette(bProjectVisible);
+			if (pProjectWindow != NULL)
+			{
+				bool bProjectVisible = pProjectWindow->IsVisible();
+				LoadPaletteStates();
+				pProjectWindow->ShowPalette(bProjectVisible);		
+			}
+			else
+			{
+				LoadPaletteStates();
+			}
     }
 #else
     // display the palettes     

@@ -19,6 +19,7 @@ class CProjectWindow;   // ProjectWindow.hpp
 // send this to the main window to insert a file
 #define WM_INSERT_PROJECT_FILE (WM_APP + 923) // wparam = 0, path = (char*)lparam
 #define WM_REFRESH_PROJECT     (WM_APP + 924) // wparam = 0, lparam = 0
+#define CD_OPEN_GAME_FILE			 1							// WM_COPYDATA dwData constant
 
 class CMainWindow : public CMDIFrameWnd
 {
@@ -31,6 +32,7 @@ public:
   void OpenProject(const char* filename);
   void CloseProject();
 
+	BOOL IsProjectFile(const char * filename);
   void OpenGameSettings();
   void OpenGameFile(const char* filename);
   void OpenDocumentWindow(int grouptype, const char* filename);
@@ -132,6 +134,7 @@ private:
 
   afx_msg LRESULT OnInsertProjectFile(WPARAM wparam, LPARAM lparam);
   afx_msg LRESULT OnRefreshProject(WPARAM wparam, LPARAM lparam);
+	afx_msg LRESULT OnCopyData(WPARAM wparam, LPARAM lparam);
 
   afx_msg LRESULT OnDocumentWindowClosing(WPARAM wparam, LPARAM lparam);
   afx_msg LRESULT OnSetChildMenu(WPARAM wparam, LPARAM lparam);

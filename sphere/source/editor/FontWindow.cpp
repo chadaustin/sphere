@@ -114,6 +114,10 @@ CFontWindow::Create()
   m_AlphaView.SetAlpha(m_CurrentColor.alpha);
 
   UpdateWindowTitle();
+	
+	#ifdef USE_SIZECBAR
+		LoadPaletteStates();
+	#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

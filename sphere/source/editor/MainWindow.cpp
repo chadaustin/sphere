@@ -157,12 +157,13 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
 
   // project window message
   ON_MESSAGE(WM_INSERT_PROJECT_FILE, OnInsertProjectFile)
-  ON_MESSAGE(WM_REFRESH_PROJECT,     OnRefreshProject)
-  
+  ON_MESSAGE(WM_REFRESH_PROJECT,     OnRefreshProject)	
+
   // document window messages
   ON_MESSAGE(WM_DW_CLOSING,          OnDocumentWindowClosing)
   ON_MESSAGE(WM_SET_CHILD_MENU,      OnSetChildMenu)
   ON_MESSAGE(WM_CLEAR_CHILD_MENU,    OnClearChildMenu)  
+	ON_MESSAGE(WM_COPYDATA,					   OnCopyData)
   ON_COMMAND_RANGE(PALETTE_COMMAND, PALETTE_COMMAND + NUM_PALETTES, OnViewPalette)
 
 END_MESSAGE_MAP()
@@ -325,16 +326,27 @@ CMainWindow::OpenGameSettings()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void
-CMainWindow::OpenGameFile(const char* filename)
+BOOL
+CMainWindow::IsProjectFile(const char* filename)
 {
   // test if it's a project file
   static const char* game_sgm = "game.sgm";
   int filename_length = strlen(filename);
   int game_sgm_length = strlen(game_sgm);
-  if (filename_length > game_sgm_length && strcmp(filename + filename_length - game_sgm_length, game_sgm) == 0) {
-    OpenProject(filename);
-  }
+  return filename_length > game_sgm_length && 
+		strcmp(filename + filename_length - game_sgm_length, game_sgm) == 0;    
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+void
+CMainWindow::OpenGameFile(const char* filename)
+{
+	if (IsProjectFile(filename))
+	{
+		OpenProject(filename);
+	}
 
   for (int i = 0; i < NUM_GROUP_TYPES; i++) {
     std::vector<std::string> extensions;
@@ -2039,6 +2051,21 @@ CMainWindow::OnRefreshProject(WPARAM /*wparam*/, LPARAM /*lparam*/)
 
   return 0;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg LRESULT
+CMainWindow::OnCopyData(WPARAM wparam, LPARAM lparam)
+{ 
+	PCOPYDATASTRUCT pcds = (PCOPYDATASTRUCT) lparam;
+	if (pcds->dwData == CD_OPEN_GAME_FILE)
+	{
+		const char* path = (const char*)pcds->lpData;
+		OpenGameFile(path);
+	}
+  return 0;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
