@@ -12,8 +12,9 @@
 #include "../common/strcmp_ci.hpp"
 #include "../common/sphere_version.h"
 
-#define LABEL_WIDTH 80
+// #include "../common/Filters.hpp"  added for CountColorsUsed
 
+#define LABEL_WIDTH 80
 
 static int s_SpritesetViewID = 100;
 
@@ -1076,7 +1077,7 @@ const char* mng_get_error_message(mng_retcode code) {
 
 typedef struct userdata {
   FILE* file;
-  char filename[1024];
+  char filename[MAX_PATH];
 } userdata;
 
 typedef userdata* userdatap;
@@ -1105,6 +1106,22 @@ mng_bool MNG_DECL mng_close_stream (mng_handle mng)
   if (userdata->file)
     fclose(userdata->file);
 	return MNG_TRUE;
+}
+
+mng_bool MNG_DECL mng_trace(mng_handle  mng,
+                            mng_int32   iFuncnr,
+                            mng_int32   iFuncseq,
+                            mng_pchar   zFuncname) {
+  /*
+  FILE* file = NULL;
+  static bool once = true;
+  file = fopen("c:\\windows\\desktop\\mnglog.txt", once ? "wb+" : "a+");
+  once = false;
+  if (file) {
+    fclose(file);
+  }
+  */
+  return MNG_TRUE;
 }
 
 ///////////////////////////////////////////////////////////
@@ -1154,6 +1171,50 @@ void rgb_image_add_filter_byte(const RGBA* pixels,
 	}
 }
 
+void gray_image_add_filter_byte(const RGBA* pixels,
+                               const int sx, const int sy,
+                               const int sw, const int sh,
+                               const int width, const int height,
+                               unsigned char* filtered)
+{
+  int x;
+	int y;
+  unsigned char* ptr = filtered;
+
+  for (y = sy; y < sy + sh; y++) {
+    for (x = sx; x < sx + sw; x++)
+    {
+      if (x == sx) {
+  			*ptr++ = 0;
+      }
+  	  *ptr++ = pixels[(y * width) + x].red;
+		}
+	}
+}
+
+void grayalpha_image_add_filter_byte(const RGBA* pixels,
+                               const int sx, const int sy,
+                               const int sw, const int sh,
+                               const int width, const int height,
+                               unsigned char* filtered)
+{
+  int x;
+	int y;
+  unsigned char* ptr = filtered;
+
+  for (y = sy; y < sy + sh; y++) {
+    for (x = sx; x < sx + sw; x++)
+    {
+      if (x == sx) {
+  			*ptr++ = 0;
+      }
+  	  *ptr++ = pixels[(y * width) + x].red;
+  	  *ptr++ = pixels[(y * width) + x].alpha;
+		}
+	}
+}
+
+
 int findcolorfrompalette(const mng_palette8 palette,
                          int palette_size, int red, int green, int blue) {
   for (int i = 0; i < palette_size; i++) {
@@ -1165,7 +1226,6 @@ int findcolorfrompalette(const mng_palette8 palette,
 
   return -1;
 }
-
 
 void rgb_palette_image_add_filter_byte(const mng_palette8 palette, int palette_size,
                                        const RGBA* pixels,
@@ -1194,22 +1254,23 @@ void rgb_palette_image_add_filter_byte(const mng_palette8 palette, int palette_s
 
 bool image_to_palette(mng_palette8 palette, int* palette_size,
                       const int width, const int height, const RGBA* pixels) {
-    for (int y = 0; y < height; y++) {
-      for (int x = 0; x < width; x++) {
-        const RGBA* p = &pixels[y * width + x];
-        int index = findcolorfrompalette(palette, *palette_size, p->red, p->green, p->blue);
-        if (index == -1) {
-          if (*palette_size < 255) {
-            palette[*palette_size].iRed   = p->red;
-            palette[*palette_size].iGreen = p->green;
-            palette[*palette_size].iBlue  = p->blue;
-            *palette_size += 1;
-          }
-          else
-            return false;
+  for (int y = 0; y < height; y++) {
+    for (int x = 0; x < width; x++)
+    {
+      const RGBA* p = &pixels[y * width + x];
+      int index = findcolorfrompalette(palette, *palette_size, p->red, p->green, p->blue);
+      if (index == -1) {
+        if (*palette_size <= 255) {
+          palette[*palette_size].iRed   = p->red;
+          palette[*palette_size].iGreen = p->green;
+          palette[*palette_size].iBlue  = p->blue;
+          *palette_size += 1;
         }
+        else
+          return false;
       }
     }
+  }
 
   return true;
 }
@@ -1301,51 +1362,417 @@ void calc_different_area(const RGBA* one, const RGBA* two, const int width, cons
 
 }
 
-static mng_retcode
-SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& images)
+
+/*
+mng_retcode mng_putjpgimage(mng_handle hMNG, const RGBA* pixels, const int width, const int height,
+                            const int x, const int y, const int w, const int h) {
+
+  mng_retcode iRC = mng_putchunk_jhdr(hMNG,
+                                      w, // mng_uint32       iWidth,
+                                      h, // mng_uint32       iHeight,
+                                      MNG_COLORTYPE_JPEGCOLOR,   // mng_uint8        iColortype,
+                                      MNG_BITDEPTH_JPEG8,        // mng_uint8        iImagesampledepth,
+                                      MNG_COMPRESSION_BASELINEJPEG,   // mng_uint8        iImagecompression,
+                                      0, // MNG_INTERLACE_SEQUENTIAL,  // mng_uint8        iImageinterlace,
+                                      0, // MNG_BITDEPTH_JPEG8,        // mng_uint8        iAlphasampledepth,
+                                      0, // MNG_COMPRESSION_DEFLATE,   // mng_uint8        iAlphacompression,
+                                      0, // MNG_FILTER_ADAPTIVE,       // mng_uint8        iAlphafilter,
+                                      0); // MNG_INTERLACE_SEQUENTIAL); // mng_uint8        iAlphainterlace);
+  if (iRC != 0)
+    return iRC;
+
+  int pixel_size = sizeof(RGB);
+
+  if (1) {
+    mng_memalloc __mng_alloc__ = mng_getcb_memalloc(hMNG);
+    mng_memfree  __mng_free__  = mng_getcb_memfree(hMNG);
+    
+    unsigned char* buffer;
+    unsigned char* compressed;
+
+    mng_uint32 filter_len     = (pixel_size * w * h) + h;
+    mng_uint32 compressed_len = (pixel_size * w * h) + h;
+               compressed_len += compressed_len / 100 + 12 + 8;	// extra 8 for safety
+
+    buffer = (unsigned char*) __mng_alloc__(filter_len);
+    if (buffer == NULL)
+      return MNG_OUTOFMEMORY;
+
+    compressed = (unsigned char*) __mng_alloc__(compressed_len);
+    if (compressed == NULL) {
+      __mng_free__(buffer, filter_len);
+      return MNG_OUTOFMEMORY;
+    }
+
+    rgb_image_add_filter_byte(pixels, x, y, w, h, width, height, buffer);
+
+    uLong dstLen = compressed_len;
+    uLong srcLen = filter_len;
+    if (compress2(compressed, &dstLen, buffer, srcLen, 9) != Z_OK) {
+      __mng_free__(buffer, filter_len);
+      __mng_free__(compressed, compressed_len);
+      return MNG_ZLIBERROR;
+    } 
+
+    iRC = mng_putchunk_idat(hMNG, dstLen, compressed);
+
+    __mng_free__(buffer, filter_len);
+    __mng_free__(compressed, compressed_len);
+
+    if (iRC != 0) return iRC;
+  }
+
+  if (iRC != 0)
+    return iRC;
+
+  iRC = mng_putchunk_iend(hMNG);
+
+  return iRC;
+}
+*/
+
+static bool image_has_alpha(const RGBA* pixels, const int width, const int height,
+                         const int x, const int y, const int w, const int h) {
+  bool has_alpha = false;
+  for (int j = y; j < y + h; j++) {
+    for (int i = x; i < x + w; i++) {
+      if (pixels[j * width + i].alpha != 255) {
+        has_alpha = true;
+        break;
+      }
+    }
+  }
+  return has_alpha;
+}
+
+static bool image_is_grayscale(const RGBA* pixels, const int width, const int height,
+                         const int x, const int y, const int w, const int h) {
+  bool grayscale = true;
+  for (int j = y; j < y + h; j++) {
+    for (int i = x; i < x + w; i++) {
+      if (pixels[j * width + i].red != pixels[j * width + i].green
+       && pixels[j * width + i].green != pixels[j * width + i].blue) {
+        grayscale = false;
+        break;
+      }
+    }
+  }
+  return grayscale;
+}
+
+/**
+ * palette_size of -1 for no palette
+ */
+mng_retcode mng_putpngimage(mng_handle hMNG, const RGBA* pixels, const int width, const int height,
+                         const int x, const int y, const int w, const int h,
+                         mng_palette8 palette, const int palette_size, bool global_palette)
 {
+  mng_retcode iRC;
+  int pixel_size = palette_size == -1 ? sizeof(RGBA) : sizeof(RGB);
+  bool grayscale = image_is_grayscale(pixels, width, height, x, y, w, h);
+  bool has_alpha = image_has_alpha(pixels, width, height, x, y, w, h);
+
+  /*
+  // If the number of colors could be MNG_BITDEPTH_1, MNG_BITDEPTH_2 or MNG_BITDEPTH_4
+  // we could probably fit more colors per pixel, but I only support MNG_BITDEPTH_8 for now
+  unsigned long num_colors = CountColorsUsed(pixels, width, height, x, y, w, h);
+  mng_int8 bit_depth = MNG_BITDEPTH_8; 
+
+  if (num_colors != 0) {
+    if (num_colors <= 16) {
+      bit_depth = MNG_BITDEPTH_4;
+    }
+    if (num_colors <= 4) {
+//      bit_depth = MNG_BITDEPTH_2;
+    }
+    if (num_colors <= 2) {
+//      bit_depth = MNG_BITDEPTH_1;
+    }
+  }
+  */
+
+  if (grayscale) {
+    pixel_size = has_alpha ? 2 : 1;
+  }
+ 
+  if (pixel_size == sizeof(RGBA) && !has_alpha) {
+    pixel_size = sizeof(RGB);
+  }
+
+  if (pixel_size == sizeof(RGBA)) {
+    iRC = mng_putchunk_ihdr (hMNG, w, h,
+	      		MNG_BITDEPTH_8, MNG_COLORTYPE_RGBA, MNG_COMPRESSION_DEFLATE,
+		      	MNG_FILTER_NONE, MNG_INTERLACE_NONE);
+    if (iRC != 0) return iRC;
+  }
+  else
+  if (pixel_size == sizeof(RGB) && palette_size != -1) {
+    iRC = mng_putchunk_ihdr (hMNG, w, h,
+					  MNG_BITDEPTH_8, MNG_COLORTYPE_INDEXED, MNG_COMPRESSION_DEFLATE,
+					  MNG_FILTER_ADAPTIVE, MNG_INTERLACE_NONE);
+    if (iRC != 0) return iRC;
+
+    iRC = mng_putchunk_plte (hMNG, global_palette ? 0 : palette_size, palette);
+    if (iRC != 0) return iRC;
+
+    //RGBA palettewithalpha[256];
+    //int palettewithalpha_size = 0;
+    //if (image_to_palettewithalpha(palettewithalpha, &palettewithalpha_size, width, height, pixels)) {
+
+      if (has_alpha) {
+        mng_uint8arr alpha_palette;
+        int alpha_palette_size = 1;
+        for (int i = 0; i < alpha_palette_size; i++) {
+          alpha_palette[i] = 255;
+        }
+
+        mng_uint8arr raw_data;
+
+        // write transparency stuff
+        mng_putchunk_trns(hMNG,
+                        MNG_FALSE,
+                        MNG_FALSE,
+                        0,
+                        alpha_palette_size, // mng_uint32       iCount,
+                        alpha_palette, //  mng_uint8arr     aAlphas,
+                        0, // mng_uint16       iGray,
+                        0, // mng_uint16       iRed,
+                        0, // mng_uint16       iGreen,
+                        0, // mng_uint16       iBlue,
+                        0, // mng_uint32       iRawlen,
+                        raw_data); // mng_uint8arr     aRawdata);
+        if (iRC != 0) return iRC;
+//      }
+    }
+  
+  }
+  else
+  if (pixel_size == sizeof(RGB)) {
+    iRC = mng_putchunk_ihdr (hMNG, w, h,
+	        	MNG_BITDEPTH_8, MNG_COLORTYPE_RGB, MNG_COMPRESSION_DEFLATE,
+	      	  MNG_FILTER_NONE, MNG_INTERLACE_NONE);
+    if (iRC != 0) return iRC;
+  }
+  else
+  if (grayscale) {
+    if (has_alpha) {
+      iRC = mng_putchunk_ihdr(hMNG, w, h, 
+              MNG_BITDEPTH_8, MNG_COLORTYPE_GRAYA, MNG_COMPRESSION_DEFLATE,
+              MNG_FILTER_NONE, MNG_INTERLACE_NONE);
+      if (iRC != 0) return iRC;
+    }
+    else {
+      iRC = mng_putchunk_ihdr(hMNG, w, h, 
+              MNG_BITDEPTH_8, MNG_COLORTYPE_GRAY, MNG_COMPRESSION_DEFLATE,
+              MNG_FILTER_NONE, MNG_INTERLACE_NONE);
+      if (iRC != 0) return iRC;
+    }
+  }
+  
+  if (1) {
+    mng_memalloc __mng_alloc__ = mng_getcb_memalloc(hMNG);
+    mng_memfree  __mng_free__  = mng_getcb_memfree(hMNG);
+    
+    unsigned char* buffer;
+    unsigned char* compressed;
+
+    mng_uint32 filter_len     = (pixel_size * w * h) + h;
+    mng_uint32 compressed_len = (pixel_size * w * h) + h;
+               compressed_len += compressed_len / 100 + 12 + 8;	// extra 8 for safety
+
+    buffer = (unsigned char*) __mng_alloc__(filter_len);
+    if (buffer == NULL)
+      return MNG_OUTOFMEMORY;
+
+    compressed = (unsigned char*) __mng_alloc__(compressed_len);
+    if (compressed == NULL) {
+      __mng_free__(buffer, filter_len);
+      return MNG_OUTOFMEMORY;
+    }
+
+    if (pixel_size == sizeof(RGBA))
+      rgba_image_add_filter_byte(pixels, x, y, w, h, width, height, buffer);
+    else
+    if (pixel_size == sizeof(RGB) && palette_size != -1) {
+//      RGBA palette[256];
+//      int palettewithalpha_size = 0;
+//      if (image_to_palettewithalpha(palette, &palettewithalpha_size, width, height, pixels)) {
+      rgb_palette_image_add_filter_byte(palette, palette_size, pixels, x, y, w, h, width, height, buffer);
+//        rgb_palette_with_alpha_image_add_filter_byte(palette, palettewithalpha_size, pixels, x, y, w, h, width, height, buffer);
+//      }
+    }
+    else
+    if (pixel_size == sizeof(RGB))
+      rgb_image_add_filter_byte(pixels, x, y, w, h, width, height, buffer);
+    else
+    if (grayscale) {
+      if (has_alpha) {
+        grayalpha_image_add_filter_byte(pixels, x, y, w, h, width, height, buffer);
+      }
+      else {
+        gray_image_add_filter_byte(pixels, x, y, w, h, width, height, buffer);
+      }
+    }
+
+    uLong dstLen = compressed_len;
+    uLong srcLen = filter_len;
+    if (compress2(compressed, &dstLen, buffer, srcLen, 9) != Z_OK) {
+      __mng_free__(buffer, filter_len);
+      __mng_free__(compressed, compressed_len);
+      return MNG_ZLIBERROR;
+    } 
+
+    iRC = mng_putchunk_idat(hMNG, dstLen, compressed);
+
+    __mng_free__(buffer, filter_len);
+    __mng_free__(compressed, compressed_len);
+
+    if (iRC != 0) return iRC;
+  }
+
+  iRC = mng_putchunk_iend (hMNG);
+  if (iRC != 0)
+    return iRC;
+
+  return iRC;
+}
+
+
+typedef bool (*GetImage)(int index, CImage32&, void*);
+typedef int  (*GetDelay)(int index, void*);
+typedef bool (*ContinueProcessingImages)(int, int);
+
+#include "Editor.hpp"
+
+bool ContinueProcessing(int index, int total) {
+  bool ret = true;
+
+  if (1) {
+    char string[255] = {0};
+    if (index == -1) {
+      sprintf (string, "%d...", total);
+    }
+    else {
+      int percent = (int)( ((double)index / (double)total) * 100);
+      sprintf (string, "%3d%% Complete", percent);
+    }
+    GetStatusBar()->SetWindowText(string);
+  }
+
+  /*
+  MSG msg;
+  int count = 0;
+  while (count++ < 4 && PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+  {
+    if (msg.message != WM_QUIT) {
+      DispatchMessage(&msg);
+    }
+    else {
+      ret = false;
+      break;
+    }
+  }
+  */
+
+  return ret;
+}
+
+struct userwritedata {
+  sSpriteset spriteset;
+  int direction;
+};
+
+bool GetImageFromSpriteset(int index, CImage32& image, void* data) {
+  userwritedata* s = (userwritedata*) data;
+  if (index < 0 || index >= s->spriteset.GetNumFrames(s->direction))
+    return false;
+  image = s->spriteset.GetImage(s->spriteset.GetFrameIndex(s->direction, index));
+  return true;
+}
+
+bool GetNextImageFromFileList(int index, CImage32& image, void* data) {
+  // std::vector<CImage32>& images = (std::vector<CImage32>&) data;
+  std::vector<std::string>* filelist = (std::vector<std::string>*) data;
+  if (index < 0 || index >= filelist->size())
+    return false;
+
+  return image.Load((*filelist)[index].c_str());
+}
+
+int GetDelayFromImageFileList(int index, void* data) {
+  return 10 * 1000;
+}
+
+int GetDelayFromSpriteset(int index, void* data) {
+  userwritedata* s = (userwritedata*) data;
+  return 10 * s->spriteset.GetFrameDelay(s->direction, index);
+  // spritesets use a frame rate and this is converting it into a sort of hashed time based system
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+static mng_retcode
+____SaveMNGAnimationFromImages____(mng_handle hMNG,
+                           GetImage get_image,
+                           GetDelay get_delay,
+                           ContinueProcessingImages should_continue,
+                           void* data) {
   int max_frame_width = 0;
   int max_frame_height = 0;
 
-  if (!(images.size() >= 1))
-    return -1;
+  //if (!(images.size() >= 1))
+  //  return -1;
 
+  /*
   for (int i = 0; i < images.size(); i++) {
     if (max_frame_width < images[i].GetWidth())
       max_frame_width = images[i].GetWidth();
     if (max_frame_height < images[i].GetHeight())
       max_frame_height = images[i].GetHeight();
   }
+  */
+
+  mng_palette8 GlobalPalette;
+  int GlobalPaletteSize = 0;
+  bool can_use_global_palette = true;
+
+  int max_images = -1;
+  int num_images = 0;
+
+  CImage32 __temp__;
+  while (get_image(num_images, __temp__, data) == true && (max_images == -1 || num_images < max_images)) {
+
+    if (max_frame_width < __temp__.GetWidth())
+      max_frame_width = __temp__.GetWidth();
+    if (max_frame_height < __temp__.GetHeight())
+      max_frame_height = __temp__.GetHeight();
+
+    if (can_use_global_palette
+     && !image_to_palette(GlobalPalette, &GlobalPaletteSize, __temp__.GetWidth(), __temp__.GetHeight(), __temp__.GetPixels())) {
+      can_use_global_palette = false;
+    }
+    num_images++;
+
+    if (!should_continue(-1, num_images))
+      return -1;
+  }
 
   if (max_frame_width <= 0 || max_frame_height <= 0) {
     return -1;
   }
 
-	mng_handle hMNG = mng_initialize (MNG_NULL, mng_alloc, mng_free, MNG_NULL);
-  if (!hMNG)
-    return -1;
-
-  userdatap pMydata = (userdatap)calloc (1, sizeof (userdata));
-  if (!pMydata)
-    return -1;
-
-  strcpy(pMydata->filename, filename);
-  mng_set_userdata(hMNG, pMydata);
-
-  mng_retcode iRC = 0;
-
-  iRC = mng_setcb_writedata(hMNG, mng_write_stream);
+  mng_retcode iRC = mng_setcb_writedata(hMNG, mng_write_stream);
   if (iRC != 0) return iRC;
-	iRC = mng_setcb_openstream(hMNG, mng_open_stream);
+  iRC = mng_setcb_openstream(hMNG, mng_open_stream);
 	if (iRC != 0) return iRC;
   iRC = mng_setcb_closestream(hMNG, mng_close_stream);
   if (iRC != 0) return iRC;
-
+  
   iRC = mng_create (hMNG);
   if (iRC != 0) return iRC;
  
   iRC = mng_putchunk_mhdr (hMNG, max_frame_width, max_frame_height,
-          2, 0, images.size(), 0, MNG_SIMPLICITY_TRANSPARENCY);
+          1000, 0, num_images, 0, MNG_SIMPLICITY_TRANSPARENCY);
 
   if (iRC != 0) return iRC;
 
@@ -1398,274 +1825,86 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
   //if (iRC != 0) return iRC;
 
   iRC = mng_putchunk_fram  (hMNG,  MNG_FALSE,  MNG_FRAMINGMODE_3,
-                            0,  NULL,  0, 0,  0, 0, 0, 0,  0,  0,  0, 0, 0, 0, 0);
+                            0,  NULL,  MNG_CHANGEDELAY_DEFAULT, 0,  0, 0, 1000, 0,  0,  0,  0, 0, 0, 0, 0);
   if (iRC != 0) return iRC;
-
-  mng_palette8 GlobalPalette;
-  int GlobalPaletteSize = 0;
-  bool can_use_global_palette = true;
-
-  for (int i = 0; (can_use_global_palette && i < images.size()); i++) {
-    const CImage32& image = images[i];
-    if (!image_to_palette(GlobalPalette, &GlobalPaletteSize, image.GetWidth(), image.GetHeight(), image.GetPixels())) {
-      can_use_global_palette = false;
-    }
-  }
 
   if (can_use_global_palette) {
     iRC = mng_putchunk_plte(hMNG, GlobalPaletteSize, GlobalPalette);
     if (iRC != 0) return iRC;
   }
 
-  for (int i = 0; i < images.size(); i++) {
-    const CImage32& image = images[i];
+  CImage32 image;
+  CImage32 last;
 
+  int i = 0;
+  
+  while (get_image(i, image, data) && (max_images == -1 || i < max_images))
+  {
     int x = 0, y = 0, w = image.GetWidth(), h = image.GetHeight();
 
-    bool has_alpha = false;
-    for (int j = 0; (j < image.GetWidth() * image.GetHeight()); j++) {
-      if (image.GetPixels()[j].alpha != 255) {
-        has_alpha = true;
-        break;
-      }
-    }
-
     if (i > 0) {
-      if (images[i - 1].GetWidth() == image.GetWidth()
-       && images[i - 1].GetHeight() == image.GetHeight()) {
-        calc_different_area(images[i - 1].GetPixels(), image.GetPixels(), image.GetWidth(), image.GetHeight(), &x, &y, &w, &h);
+      if (last.GetWidth() == image.GetWidth()
+       && last.GetHeight() == image.GetHeight())
+      {
+        calc_different_area(last.GetPixels(), image.GetPixels(), image.GetWidth(), image.GetHeight(), &x, &y, &w, &h);
 
-        char string[255];
-        sprintf (string, "%d %d %d %d\n", x, y, w, h);
-        iRC = mng_putchunk_text(hMNG,
-                          strlen("Debug"), "Debug",
-                          strlen(string), string);
-        if (iRC != 0) return iRC;
-
-          iRC = mng_putchunk_fram(hMNG,  MNG_FALSE,  MNG_FRAMINGMODE_3,
-                            0,  NULL,  MNG_CHANGEDELAY_NO, MNG_CHANGETIMOUT_NO,
+        iRC = mng_putchunk_fram(hMNG,  MNG_FALSE,  MNG_FRAMINGMODE_3,
+                            0,  NULL,  MNG_CHANGEDELAY_NEXTSUBFRAME, MNG_CHANGETIMOUT_NO,
                             MNG_CHANGECLIPPING_NO, MNG_CHANGESYNCID_NO,
-                            0, 0,  0,  
+                            get_delay(i, data), 0,  0,  
                             0,  0, 0, 0,
                             0, 0);
-          mng_putchunk_move(hMNG, 0, 0, 0, 0, 0);
+        mng_putchunk_move(hMNG, 0, 0, 0, 0, 0);
 
         if (x != 0 || y != 0 || w != image.GetWidth() || h != image.GetHeight()) {
           iRC = mng_putchunk_fram(hMNG,  MNG_FALSE,  MNG_FRAMINGMODE_4,
-                            0,  NULL,  MNG_CHANGEDELAY_NO, MNG_CHANGETIMOUT_NO,
-                            MNG_CHANGECLIPPING_NEXTSUBFRAME, MNG_CHANGESYNCID_NO,
-                            0, 0,  0,
-                            x,  x+w, y, y+h,
-                            0, 0);
+                          0,  NULL,  MNG_CHANGEDELAY_NO, MNG_CHANGETIMOUT_NO,
+                          MNG_CHANGECLIPPING_NEXTSUBFRAME, MNG_CHANGESYNCID_NO,
+                          0, 0,  0,
+                          x,  x+w, y, y+h,
+                          0, 0);
           if (iRC != 0) return iRC;
           iRC = mng_putchunk_move(hMNG, 0, 0, 0, x, y);
           if (iRC != 0) return iRC;
         }
-
-
-      }
-    }
-
-    if (has_alpha) {
-      if (false && can_use_global_palette) {
-        iRC = mng_putchunk_ihdr (hMNG, w, h,
-					MNG_BITDEPTH_8, MNG_COLORTYPE_INDEXED, MNG_COMPRESSION_DEFLATE,
-					MNG_FILTER_ADAPTIVE, MNG_INTERLACE_NONE);
-        if (iRC != 0) return iRC;
-
-        mng_uint32 filter_len     = (sizeof(char) * w * h) + h;
-        mng_uint32 compressed_len = (sizeof(char) * w * h) + h;
-    	             compressed_len += compressed_len / 100 + 12 + 8;	// extra 8 for safety
-  
-        unsigned char* buffer = new unsigned char[filter_len];
-        if (buffer == NULL)
-          return MNG_OUTOFMEMORY;
-
-         unsigned char* compressed = new unsigned char[compressed_len];
-         if (compressed == NULL) {
-           delete[] buffer;
-           return MNG_OUTOFMEMORY;
-         }
-
-        rgb_palette_image_add_filter_byte(GlobalPalette, GlobalPaletteSize, image.GetPixels(), x, y, w, h, image.GetWidth(), image.GetHeight(), buffer);
-
-        // write empty PLTE to use the global PLTE
-        iRC = mng_putchunk_plte (hMNG, 0, GlobalPalette);
-        if (iRC != 0)
-          return iRC;
-
-        mng_uint8arr alpha_palette;
-        for (int i = 0; i < 2; i++) {
-          alpha_palette[0] = 0;
-          alpha_palette[1] = 255;
-        }
-
-        mng_uint8arr raw_data;
-
-        // write transparency stuff
-        mng_putchunk_trns(hMNG,
-                          MNG_FALSE,
-                          MNG_FALSE,
-                          0,
-                          2, //               mng_uint32       iCount,
-                          alpha_palette, //                           mng_uint8arr     aAlphas,
-                          0, //                            mng_uint16       iGray,
-                          0, //                           mng_uint16       iRed,
-                          0, //                           mng_uint16       iGreen,
-                          0, //                           mng_uint16       iBlue,
-                          0, //                           mng_uint32       iRawlen,
-                          raw_data); //                           mng_uint8arr     aRawdata);
-        if (iRC != 0)
-          return iRC;
-
-        uLong dstLen = compressed_len;
-        uLong srcLen = filter_len;
-        if (compress2(compressed, &dstLen, buffer, srcLen, 9) != Z_OK) {
-          delete[] buffer;
-          delete[] compressed;
-          return MNG_ZLIBERROR;
-        }
-
-        iRC = mng_putchunk_idat(hMNG, dstLen, compressed);
-
-        delete[] buffer;
-        delete[] compressed;
-
-        if (iRC != 0) return iRC;
-
-        iRC = mng_putchunk_iend (hMNG);
-        if (iRC != 0) return iRC;
       }
       else {
-        iRC = mng_putchunk_ihdr (hMNG, w, h,
-	    		MNG_BITDEPTH_8, MNG_COLORTYPE_RGBA, MNG_COMPRESSION_DEFLATE,
-		    	MNG_FILTER_NONE, MNG_INTERLACE_NONE);
-        if (iRC != 0) return iRC;
-
-        mng_uint32 filter_len     = (sizeof(RGBA) * w * h) + h;
-        mng_uint32 compressed_len = (sizeof(RGBA) * w * h) + h;
-  	               compressed_len += compressed_len / 100 + 12 + 8;	// extra 8 for safety
-
-        unsigned char* buffer = new unsigned char[filter_len];
-        if (buffer == NULL)
-          return MNG_OUTOFMEMORY;
-
-         unsigned char* compressed = new unsigned char[compressed_len];
-         if (compressed == NULL) {
-           delete[] buffer;
-           return MNG_OUTOFMEMORY;
-         }
-
-        rgba_image_add_filter_byte(image.GetPixels(), x, y, w, h, image.GetWidth(), image.GetHeight(), buffer);
-
-        uLong dstLen = compressed_len;
-        uLong srcLen = filter_len;
-        if (compress2(compressed, &dstLen, buffer, srcLen, 9) != Z_OK) {
-          delete[] buffer;
-          delete[] compressed;
-          return MNG_ZLIBERROR;
-        }
-
-        iRC = mng_putchunk_idat(hMNG, dstLen, compressed);
-
-        delete[] buffer;
-        delete[] compressed;
-
-        if (iRC != 0) return iRC;
-
-        iRC = mng_putchunk_iend (hMNG);
-        if (iRC != 0) return iRC;  
+        iRC = mng_putchunk_fram(hMNG,  MNG_FALSE,  MNG_FRAMINGMODE_3,
+                          0,  NULL,  MNG_CHANGEDELAY_NO, MNG_CHANGETIMOUT_NO,
+                          MNG_CHANGECLIPPING_NO, MNG_CHANGESYNCID_NO,
+                          0, 0,  0,  
+                          0,  0, 0, 0,
+                          0, 0);
+        mng_putchunk_move(hMNG, 0, 0, 0, 0, 0);
       }
+    }
+
+    if (can_use_global_palette) {
+      iRC = mng_putpngimage(hMNG, image.GetPixels(), image.GetWidth(), image.GetHeight(), x, y, w, h,
+                 GlobalPalette, GlobalPaletteSize, true);
     }
     else {
-      if (can_use_global_palette) {
-        iRC = mng_putchunk_ihdr (hMNG, w, h,
-					MNG_BITDEPTH_8, MNG_COLORTYPE_INDEXED, MNG_COMPRESSION_DEFLATE,
-					MNG_FILTER_ADAPTIVE, MNG_INTERLACE_NONE);
-        if (iRC != 0) return iRC;
-
-        mng_uint32 filter_len     = (sizeof(char) * w * h) + h;
-        mng_uint32 compressed_len = (sizeof(char) * w * h) + h;
-    	             compressed_len += compressed_len / 100 + 12 + 8;	// extra 8 for safety
-  
-        unsigned char* buffer = new unsigned char[filter_len];
-        if (buffer == NULL)
-          return MNG_OUTOFMEMORY;
-
-         unsigned char* compressed = new unsigned char[compressed_len];
-         if (compressed == NULL) {
-           delete[] buffer;
-           return MNG_OUTOFMEMORY;
-         }
-
-        rgb_palette_image_add_filter_byte(GlobalPalette, GlobalPaletteSize, image.GetPixels(), x, y, w, h, image.GetWidth(), image.GetHeight(), buffer);
-
-        // write empty PLTE to use the global PLTE
-				iRC = mng_putchunk_plte (hMNG, 0, GlobalPalette);
-        if (iRC != 0)
-          return iRC;
-
-        uLong dstLen = compressed_len;
-        uLong srcLen = filter_len;
-        if (compress2(compressed, &dstLen, buffer, srcLen, 9) != Z_OK) {
-          delete[] buffer;
-          delete[] compressed;
-          return MNG_ZLIBERROR;
-        }
-
-        iRC = mng_putchunk_idat(hMNG, dstLen, compressed);
-
-        delete[] buffer;
-        delete[] compressed;
-
-        if (iRC != 0) return iRC;
-
-        iRC = mng_putchunk_iend (hMNG);
-        if (iRC != 0) return iRC;
+      mng_palette8 palette;
+      int palette_size = 0;
+      if (image_to_palette(palette, &palette_size, image.GetWidth(), image.GetHeight(), image.GetPixels())) { 
+        iRC = mng_putpngimage(hMNG, image.GetPixels(), image.GetWidth(), image.GetHeight(), x, y, w, h,
+                 palette, palette_size, false); 
       }
-      else 
-      {
-        iRC = mng_putchunk_ihdr (hMNG, w, h,
-	    		MNG_BITDEPTH_8, MNG_COLORTYPE_RGB, MNG_COMPRESSION_DEFLATE,
-		    	MNG_FILTER_NONE, MNG_INTERLACE_NONE);
-        if (iRC != 0) return iRC;
-
-        mng_uint32 filter_len     = (sizeof(RGB) * w * h) + h;
-        mng_uint32 compressed_len = (sizeof(RGB) * w * h) + h;
-    	             compressed_len += compressed_len / 100 + 12 + 8;	// extra 8 for safety
-  
-        unsigned char* buffer = new unsigned char[filter_len];
-        if (buffer == NULL)
-          return MNG_OUTOFMEMORY;
-
-         unsigned char* compressed = new unsigned char[compressed_len];
-         if (compressed == NULL) {
-           delete[] buffer;
-           return MNG_OUTOFMEMORY;
-         }
-
-        rgb_image_add_filter_byte(image.GetPixels(), x, y, w, h, image.GetWidth(), image.GetHeight(), buffer);
-
-        uLong dstLen = compressed_len;
-        uLong srcLen = filter_len;
-        if (compress2(compressed, &dstLen, buffer, srcLen, 9) != Z_OK) {
-          delete[] buffer;
-          delete[] compressed;
-          return MNG_ZLIBERROR;
-        }
-
-        iRC = mng_putchunk_idat(hMNG, dstLen, compressed);
-
-        delete[] buffer;
-        delete[] compressed;
-
-        if (iRC != 0) return iRC;
-
-        iRC = mng_putchunk_iend (hMNG);
-        if (iRC != 0) return iRC;
-
+      else {
+        iRC = mng_putpngimage(hMNG, image.GetPixels(), image.GetWidth(), image.GetHeight(), x, y, w, h,
+                 GlobalPalette, -1, false);
       }
     }
+
+    if (iRC != 0)
+      return iRC;
+
+    i++;
+
+    if (!should_continue(i, num_images))
+      return -1;
+
+    last = image;
   }
 
   iRC = mng_putchunk_mend (hMNG);
@@ -1674,7 +1913,60 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
   iRC = mng_write(hMNG);
   if (iRC != 0) return iRC;
 
-  iRC = mng_cleanup(&hMNG);
+  return iRC;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+static mng_retcode
+__SaveMNGAnimationFromImages__(mng_handle hMNG, const char* filename,
+                           GetImage get_image,
+                           GetDelay get_delay,
+                           ContinueProcessingImages should_continue,
+                           void* data)
+{
+  userdatap pMydata = (userdatap)calloc (1, sizeof (userdata));
+  if (!pMydata)
+    return -1;
+
+  strcpy(pMydata->filename, filename);
+  mng_set_userdata(hMNG, pMydata);
+
+  mng_retcode iRC = ____SaveMNGAnimationFromImages____(hMNG,
+                           get_image,
+                           get_delay,
+                           should_continue,
+                           data);
+
+  free(pMydata);
+  pMydata = NULL;
+
+  mng_set_userdata(hMNG, NULL);
+
+  return iRC;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+static mng_retcode 
+SaveMNGAnimationFromImages(const char* filename,
+                           GetImage get_image,
+                           GetDelay get_delay,
+                           ContinueProcessingImages should_continue,
+                           void* data) {
+
+  mng_retcode iRC;
+
+  mng_handle hMNG = mng_initialize (MNG_NULL, mng_alloc, mng_free, mng_trace);
+  if (!hMNG)
+    return -1;
+
+  iRC = __SaveMNGAnimationFromImages__(hMNG, filename, get_image, get_delay, should_continue, data);
+
+  if (iRC == 0)
+    iRC = mng_cleanup(&hMNG);
+  else
+    mng_cleanup(&hMNG);
 
   return iRC;
 }
@@ -1683,18 +1975,24 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
 
 #include "../common/system.hpp"
 
-void LoadImages(const char* filter) {
-  std::vector<CImage32> images;
-  std::vector<std::string> filelist = GetFileList(filter);
+mng_retcode TestAnimationCode() {
+  std::vector<std::string> filelist = GetFileList("*");
+  std::vector<std::string> imagefilelist;
+
   for (int i = 0; i < filelist.size(); i++) {
-    CImage32 image;
+    //CImage32 image;
     const char* filename = filelist[i].c_str();
-    if (image.Load(filename)) {
-      images.push_back(image);
+    if (filelist[i].rfind(".jpg") == strlen(filename) - 4) {
+      imagefilelist.push_back(filename);
+    }
+    else {
+    //if (image.Load(filename)) {
+//      imagefilelist.push_back(filename);
+    //}
     }
   }
 
-  SaveMNGAnimationFromImages("comics.mng", images);
+  return SaveMNGAnimationFromImages("comics.mng", GetNextImageFromFileList, GetDelayFromImageFileList, ContinueProcessing, (void*) &imagefilelist);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1702,16 +2000,20 @@ void LoadImages(const char* filter) {
 afx_msg void
 CSpritesetView::OnExportDirectionAsAnimation()
 {
-  // SetCurrentDirectory("c:\\windows\\desktop\\8bit");
-  // LoadImages("*");
+  //SetCurrentDirectory("c:\\windows\\desktop\\8bit");
+  //mng_retcode ret = TestAnimationCode();
+  //MessageBox(mng_get_error_message(ret), "Export Comics As Animation", MB_OK);
+  //return;
 
   CAnimationFileDialog dialog(FDM_SAVE, "Export Direction As Animation");
   if (dialog.DoModal() == IDOK) {
 
+    /*
     std::vector<CImage32> images;
     for (int i = 0; i < m_Spriteset->GetNumFrames(m_CurrentDirection); i++) {
       images.push_back(m_Spriteset->GetImage(m_Spriteset->GetFrameIndex(m_CurrentDirection, i)));
     }
+    */
 
     bool is_mng = strcmp_ci(dialog.GetFileExt(), "mng") == 0;
     bool is_fli = strcmp_ci(dialog.GetFileExt(), "flic") == 0
@@ -1719,7 +2021,11 @@ CSpritesetView::OnExportDirectionAsAnimation()
                || strcmp_ci(dialog.GetFileExt(), "fli")  == 0;
 
     if (is_mng) {
-      mng_retcode iRC = SaveMNGAnimationFromImages(dialog.GetPathName(), images);
+      struct userwritedata data;
+      data.spriteset = *m_Spriteset;
+      data.direction = m_CurrentDirection;
+
+      mng_retcode iRC = SaveMNGAnimationFromImages(dialog.GetPathName(), GetImageFromSpriteset, GetDelayFromSpriteset, ContinueProcessing, (void*) &data);
       if (iRC == 0) {
         MessageBox("Exported Animation!", "Export Direction As Animation", MB_OK);
       }

@@ -83,7 +83,7 @@ CFontWindow::CFontWindow(const char* font)
     } else {
       AfxGetApp()->m_pMainWnd->MessageBox("Could not load font, creating new");
       m_Font.SetNumCharacters(256);
-      for (int i = 0; i < 256; i++) {
+      for (int i = 0; i < m_Font.GetNumCharacters(); i++) {
         m_Font.GetCharacter(i).Resize(DEFAULT_CHARACTER_WIDTH, DEFAULT_CHARACTER_HEIGHT);
       }
 
@@ -93,7 +93,7 @@ CFontWindow::CFontWindow(const char* font)
   } else {
 
     m_Font.SetNumCharacters(256);
-    for (int i = 0; i < 256; i++) {
+    for (int i = 0; i < m_Font.GetNumCharacters(); i++) {
       m_Font.GetCharacter(i).Resize(DEFAULT_CHARACTER_WIDTH, DEFAULT_CHARACTER_HEIGHT);
     }
 

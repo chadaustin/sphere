@@ -189,6 +189,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "R&esize Spriteset...",        ID_SPRITESET_RESIZE
         MENUITEM "Rescale Spriteset...",        ID_SPRITESET_RESCALE
+        MENUITEM "Resample Spriteset...",       ID_SPRITESET_RESAMPLE
         MENUITEM "&Fill Delay...",              ID_SPRITESET_FILLDELAY
         MENUITEM "Frame P&roperties...",        ID_SPRITESET_FRAMEPROPERTIES
         MENUITEM "E&xport as Image...",         ID_SPRITESET_EXPORTASIMAGE
@@ -280,6 +281,7 @@ BEGIN
         MENUITEM "R&escale...",                 ID_IMAGE_RESCALE
         MENUITEM "Re&sample...",                ID_IMAGE_RESAMPLE
         MENUITEM "Rotate...",                   ID_IMAGE_ROTATE
+        MENUITEM "Count Colors Used",           ID_IMAGE_COUNTCOLORS
         MENUITEM SEPARATOR
         MENUITEM "&View at Original Size",      ID_IMAGE_VIEWATORIGINALSIZE
     END
@@ -846,6 +848,8 @@ BEGIN
             MENUITEM "&Adjust Brightness",          ID_IMAGEVIEW_FILTER_ADJUST_BRIGHTNESS
 
             MENUITEM "Adjust &Gamma",               ID_IMAGEVIEW_FILTER_ADJUST_GAMMA
+
+            MENUITEM "&Grayscale",                  ID_IMAGEVIEW_FILTER_GRAYSCALE
 
             MENUITEM "&Custom Filter...",           ID_IMAGEVIEW_FILTER_CUSTOM
 

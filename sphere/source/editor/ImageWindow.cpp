@@ -6,6 +6,7 @@
 #include "RotateDialog.hpp"
 #include "resource.h"
 
+#include "../common/Filters.hpp"
 
 #define ID_ALPHASLIDER 900
 
@@ -21,6 +22,7 @@ BEGIN_MESSAGE_MAP(CImageWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_IMAGE_RESCALE,            OnImageRescale)
   ON_COMMAND(ID_IMAGE_RESAMPLE,           OnImageResample)
   ON_COMMAND(ID_IMAGE_ROTATE,             OnImageRotate)
+  ON_COMMAND(ID_IMAGE_COUNTCOLORS,        OnCountColorsUsed)
   ON_COMMAND(ID_IMAGE_VIEWATORIGINALSIZE, OnImageViewOriginalSize)
 
 END_MESSAGE_MAP()
@@ -180,6 +182,18 @@ CImageWindow::OnImageRotate()
     UpdateImageView();
     m_ImageView.AfterImageChanged();
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageWindow::OnCountColorsUsed()
+{
+  char string[255] = {0};
+  unsigned long num_colors = CountColorsUsed(m_Image.GetPixels(), m_Image.GetWidth(), m_Image.GetHeight(),
+                                             0, 0, m_Image.GetWidth(), m_Image.GetHeight());
+  sprintf (string, "%u", num_colors);
+  MessageBox(string, "Num Colors Used");
 }
 
 ////////////////////////////////////////////////////////////////////////////////

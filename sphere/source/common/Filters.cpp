@@ -362,3 +362,35 @@ void AdjustGamma(int width, int height, RGBA* pixels, double dred, double dgreen
 
 ////////////////////////////////////////////////////////////////////////////////
 
+unsigned long CountColorsUsed(const RGBA* pixels, const int width, const int height,
+                              const int x, const int y, const int w, const int h)
+{
+  unsigned long num_colors = 0;
+  unsigned long max_colors = 1 + ((255 * 255) * 255) + (256 * 255) + 255;
+
+  bool* color_map = new bool[max_colors];
+  if (color_map) {
+
+    for (unsigned long i = 0; i < max_colors; i++) {
+      color_map[i] = false;
+    }
+
+    for (int sy = y; sy < y + h; sy++) {
+      for (int sx = x; sx < x + w; sx++) {
+        const RGBA* p = &pixels[(sy * width) + sx];
+        bool* found = &color_map[((255 * 255) * p->red) + (256 * p->green) + (p->blue)];
+        if (*found == false) {
+          num_colors += 1;
+          *found = true;
+        }
+      }
+    }
+
+    delete[] color_map;
+  }
+
+  return num_colors;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+

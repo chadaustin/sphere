@@ -100,10 +100,12 @@ CImage32::CImage32(int width, int height, const RGBA* pixels)
 , m_Pixels(new RGBA[width * height])
 , m_BlendMode(BLEND)
 {
-  if (pixels == NULL) {
-    memset(m_Pixels, 0, width * height * sizeof(RGBA));
-  } else {
-    memcpy(m_Pixels, pixels, width * height * sizeof(RGBA));
+  if (m_Pixels) {
+    if (pixels == NULL) {
+      memset(m_Pixels, 0, width * height * sizeof(RGBA));
+    } else {
+      memcpy(m_Pixels, pixels, width * height * sizeof(RGBA));
+    }
   }
 }
 
@@ -115,8 +117,10 @@ CImage32::CImage32(int width, int height, RGBA pixel)
 , m_Pixels(new RGBA[width * height])
 , m_BlendMode(BLEND)
 {
-  for (int i = 0; i < m_Width * m_Height; ++i) {
-    m_Pixels[i] = pixel;
+  if (m_Pixels) {
+    for (int i = 0; i < m_Width * m_Height; ++i) {
+      m_Pixels[i] = pixel;
+    }
   }
 }
 
@@ -124,10 +128,14 @@ CImage32::CImage32(int width, int height, RGBA pixel)
 
 CImage32::CImage32(const CImage32& image)
 {
-  m_Width  = image.m_Width;
-  m_Height = image.m_Height;
-  m_Pixels = new RGBA[m_Width * m_Height];
-  memcpy(m_Pixels, image.m_Pixels, m_Width * m_Height * sizeof(RGBA));
+  m_Width = 0;
+  m_Height = 0;
+  m_Pixels = new RGBA[image.m_Width * image.m_Height];
+  if (m_Pixels) {
+    m_Width  = image.m_Width;
+    m_Height = image.m_Height;
+    memcpy(m_Pixels, image.m_Pixels, m_Width * m_Height * sizeof(RGBA));
+  }
   m_BlendMode = image.m_BlendMode;
 }
 
@@ -143,11 +151,16 @@ CImage32::operator=(const CImage32& image)
       m_Pixels = new RGBA[image.m_Width * image.m_Height];
     }
 
+    m_Width = 0;
+    m_Height = 0;
+
     // copy members over
-    m_Width  = image.m_Width;
-    m_Height = image.m_Height;
-    memcpy(m_Pixels, image.m_Pixels, m_Width * m_Height * sizeof(RGBA));
-    m_BlendMode = image.m_BlendMode;
+    if (m_Pixels) {
+      m_Width  = image.m_Width;
+      m_Height = image.m_Height;
+      memcpy(m_Pixels, image.m_Pixels, m_Width * m_Height * sizeof(RGBA));
+      m_BlendMode = image.m_BlendMode;
+    }
   }
 
   return *this;
@@ -217,11 +230,17 @@ CImage32::Load(const char* filename, IFileSystem& fs)
     return false;
   }
 
-  delete[] m_Pixels;
-  m_Width  = img->getWidth();
-  m_Height = img->getHeight();
-  m_Pixels = new RGBA[m_Width * m_Height];
+  if (m_Width * m_Height != img->getWidth() * img->getHeight()) {
+    delete[] m_Pixels;
+    m_Pixels = new RGBA[img->getWidth() * img->getHeight()];
+  }
+
+  m_Width = 0;
+  m_Height = 0;
+
   if (m_Pixels) {
+    m_Width  = img->getWidth();
+    m_Height = img->getHeight();
     memcpy(m_Pixels, img->getPixels(), m_Width * m_Height * 4);
   }
 

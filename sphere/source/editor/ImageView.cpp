@@ -62,6 +62,7 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_BLUR,           OnFilterBlur)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_NOISE,          OnFilterNoise)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_CUSTOM,         OnFilterCustom)
+  ON_COMMAND(ID_IMAGEVIEW_FILTER_GRAYSCALE,      OnFilterGrayscale)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_ADJUST_BRIGHTNESS, OnFilterAdjustBrightness)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_ADJUST_GAMMA, OnFilterAdjustGamma)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE_RGB, OnFilterNegativeImageRGB)
@@ -2207,6 +2208,32 @@ CImageView::OnReplaceAlpha()
       if (pImage[dy * width + dx].alpha == c.alpha) {
         pImage[dy * width + dx].alpha = GetColor().alpha;
       }
+    }
+  }
+
+  Invalidate();
+  m_Handler->IV_ImageChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnFilterGrayscale()
+{
+  AddUndoState();
+
+  int sx = GetSelectionLeftX();
+  int sy = GetSelectionTopY();
+  int sw = GetSelectionWidth();
+  int sh = GetSelectionHeight();
+
+  int width = m_Image.GetWidth();
+  RGBA* pImage = m_Image.GetPixels();
+
+  for (int dx = sx; dx < (sx + sw); ++dx) {
+    for (int dy = sy; dy < (sy + sh); ++dy) {
+      int c = pImage[dy * width + dx].red + pImage[dy * width + dx].green + pImage[dy * width + dx].blue;
+      pImage[dy * width + dx].red = pImage[dy * width + dx].green = pImage[dy * width + dx].blue = c / 3;
     }
   }
 
