@@ -1339,6 +1339,12 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(IsMapEngineRunning, 0)
+  return_bool(This->m_Engine->GetMapEngine()->IsRunning());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 begin_func(UpdateMapEngine, 0)
 
   if (!This->m_Engine->GetMapEngine()->Update()) {

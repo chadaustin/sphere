@@ -275,6 +275,9 @@ log_object.endBlock()
   ExitMapEngine()
     - Exits the map engine
 
+  IsMapEngineRunning()
+    - Returns true if the map engine is running, false if not
+
   UpdateMapEngine()
     - updates map engine (state of entities, color masks, etc.)
   

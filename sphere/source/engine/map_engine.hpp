@@ -58,6 +58,7 @@ public:
 
   bool ChangeMap(const char* filename);
   bool Exit();
+  bool IsRunning();
   bool Update();
 
   bool GetNumLayers(int& layers);
