@@ -27,7 +27,7 @@ SMAP::~SMAP()
 bool
 SMAP::UpdateTile(int i) {
 
-  if (i < 0 || i >= m_Tiles.size())
+  if (i < 0 || i >= int(m_Tiles.size()))
     return false;
 
   sTile& tile = m_Map.GetTileset().GetTile(i);
@@ -44,7 +44,7 @@ SMAP::UpdateTile(int i) {
 bool
 SMAP::UpdateSolidTile(int i) {
 
-  if (i < 0 || i >= m_Tiles.size())
+  if (i < 0 || i >= int(m_Tiles.size()))
     return false;
 
   sTile tile = m_Map.GetTileset().GetTile(i);

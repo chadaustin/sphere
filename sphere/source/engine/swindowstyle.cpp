@@ -226,10 +226,6 @@ SWINDOWSTYLE::DrawRightEdge(int x, int y, int w, int h)
 bool
 SWINDOWSTYLE::DrawWindow(int x, int y, int w, int h)
 {
-  IMAGE image = m_Images[8];
-  int width = GetImageWidth(image);
-  int height = GetImageHeight(image);
-
   //---- Draw middle ----//
   DrawBackground(x, y, w, h, m_WindowStyle.GetBackgroundMode());
   
