@@ -47,55 +47,55 @@ sMap::~sMap()
 ////////////////////////////////////////////////////////////////////////////////
 
 #define STRUCT_NAME MAP_HEADER
-#include "begin_packed_struct.h"
-  byte signature[4];
-  word version;
-  byte obsolete; // type;
-  byte num_layers;
-  byte reserved0;
-  word num_entities;
-  word startx;
-  word starty;
-  byte startlayer;
-  byte startdirection;
-  word num_strings;
-  word num_zones;
+#define STRUCT_BODY                             \
+  byte signature[4];                            \
+  word version;                                 \
+  byte obsolete; /* type */                     \
+  byte num_layers;                              \
+  byte reserved0;                               \
+  word num_entities;                            \
+  word startx;                                  \
+  word starty;                                  \
+  byte startlayer;                              \
+  byte startdirection;                          \
+  word num_strings;                             \
+  word num_zones;                               \
   byte reserved[235];
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 #define STRUCT_NAME LAYER_HEADER
-#include "begin_packed_struct.h"
-  word    width;
-  word    height;
-  word    flags;
-  float32 parallax_x;
-  float32 parallax_y;
-  float32 scrolling_x;
-  float32 scrolling_y;
-  dword   num_segments;
-  byte    reflective;
+#define STRUCT_BODY                             \
+  word    width;                                \
+  word    height;                               \
+  word    flags;                                \
+  float32 parallax_x;                           \
+  float32 parallax_y;                           \
+  float32 scrolling_x;                          \
+  float32 scrolling_y;                          \
+  dword   num_segments;                         \
+  byte    reflective;                           \
   byte    reserved[3];
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 #define STRUCT_NAME ENTITY_HEADER
-#include "begin_packed_struct.h"
-  word mapx;
-  word mapy;
-  word layer;
-  word type;
+#define STRUCT_BODY                             \
+  word mapx;                                    \
+  word mapy;                                    \
+  word layer;                                   \
+  word type;                                    \
   byte reserved[8];
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 #define STRUCT_NAME ZONE_HEADER
-#include "begin_packed_struct.h"
-  word x1;
-  word y1;
-  word x2;
-  word y2;
-  word layer;
-  word reactivate_in_num_steps;
+#define STRUCT_BODY                             \
+  word x1;                                      \
+  word y1;                                      \
+  word x2;                                      \
+  word y2;                                      \
+  word layer;                                   \
+  word reactivate_in_num_steps;                 \
   byte reserved[4];
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -659,45 +659,45 @@ done:
 ////////////////////////////////////////////////////////////////////////////////
 
 #define STRUCT_NAME V1MAP_HEADER
-#include "begin_packed_struct.h"
-  byte version;
-  byte vsp_fname[13];
-  byte music_fname[13];
-  byte parallax_mode;
-  byte parallax_multiplier;
-  byte parallax_divisor;
-  byte level_name[30];
-  byte level_showname;
-  byte level_saveable;
-  word x_start;
-  word y_start;
-  byte level_hideable;
-  byte level_warpable;
-  word layer_size_x;
-  word layer_size_y;
+#define STRUCT_BODY                             \
+  byte version;                                 \
+  byte vsp_fname[13];                           \
+  byte music_fname[13];                         \
+  byte parallax_mode;                           \
+  byte parallax_multiplier;                     \
+  byte parallax_divisor;                        \
+  byte level_name[30];                          \
+  byte level_showname;                          \
+  byte level_saveable;                          \
+  word x_start;                                 \
+  word y_start;                                 \
+  byte level_hideable;                          \
+  byte level_warpable;                          \
+  word layer_size_x;                            \
+  word layer_size_y;                            \
   byte reservedC[28];
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 #define STRUCT_NAME V2MAP_HEADER
-#include "begin_packed_struct.h"
-  byte signature[6];
-  dword empty;
-  byte  vsp_name[60];
-  byte  music_name[60];
-  byte  renderstring[20];
-  word  x_start;
-  word  y_start;
-  byte  reserved[51];
+#define STRUCT_BODY                             \
+  byte signature[6];                            \
+  dword empty;                                  \
+  byte  vsp_name[60];                           \
+  byte  music_name[60];                         \
+  byte  renderstring[20];                       \
+  word  x_start;                                \
+  word  y_start;                                \
+  byte  reserved[51];                           \
   byte  num_layers;
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 #define STRUCT_NAME V2MAP_LAYERINFO
-#include "begin_packed_struct.h"
-  byte  multx, pdivx;
-  byte  multy, pdivy;
-  word  size_x, size_y;
+#define STRUCT_BODY                             \
+  byte  multx, pdivx;                           \
+  byte  multy, pdivy;                           \
+  word  size_x, size_y;                         \
   byte  transparent, hline;
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 

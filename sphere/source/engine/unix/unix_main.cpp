@@ -9,9 +9,11 @@
 #define DATADIR "."
 #endif
 
+// should this just be FILENAME_MAX?
 #define MAX_UNIX_PATH 256
 
-static char unix_data_dir[MAX_UNIX_PATH] = DATADIR;
+#define stringize(s) (#s)
+static char unix_data_dir[MAX_UNIX_PATH] = stringize(DATADIR);
 static char* original_directory;
 
 int main(int argc, const char* argv[]) {

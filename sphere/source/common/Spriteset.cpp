@@ -66,33 +66,33 @@ sSpriteset::Create(
 ////////////////////////////////////////////////////////////////////////////////
 
 #define STRUCT_NAME SPRITESET_HEADER
-#include "begin_packed_struct.h"
-  byte signature[4];
-  word version;
-  word num_images;
-  word frame_width;
-  word frame_height;
-  word num_directions;
-  word base_x1;
-  word base_y1;
-  word base_x2;
-  word base_y2;
+#define STRUCT_BODY                             \
+  byte signature[4];                            \
+  word version;                                 \
+  word num_images;                              \
+  word frame_width;                             \
+  word frame_height;                            \
+  word num_directions;                          \
+  word base_x1;                                 \
+  word base_y1;                                 \
+  word base_x2;                                 \
+  word base_y2;                                 \
   byte reserved[106];
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 #define STRUCT_NAME DIRECTION_HEADER_2
-#include "begin_packed_struct.h"
-  word num_frames;
+#define STRUCT_BODY                             \
+  word num_frames;                              \
   byte reserved[62];
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 #define STRUCT_NAME FRAME_HEADER_2
-#include "begin_packed_struct.h"
-  word width;
-  word height;
-  word delay;
+#define STRUCT_BODY                             \
+  word width;                                   \
+  word height;                                  \
+  word delay;                                   \
   byte reserved[26];
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 ASSERT_STRUCT_SIZE(SPRITESET_HEADER,   128)
 ASSERT_STRUCT_SIZE(DIRECTION_HEADER_2, 64)
@@ -1081,16 +1081,16 @@ sSpriteset::Import_CHR1(FILE* file, RGB palette[256])
 ////////////////////////////////////////////////////////////////////////////////
 
 #define STRUCT_NAME CHR2V2_HEADER
-#include "begin_packed_struct.h"
-  byte version;
-  word width;
-  word height;
-  word hotspot_left;
-  word hotspot_top;
-  word hotspot_width;
-  word hotspot_height;
+#define STRUCT_BODY                             \
+  byte version;                                 \
+  word width;                                   \
+  word height;                                  \
+  word hotspot_left;                            \
+  word hotspot_top;                             \
+  word hotspot_width;                           \
+  word hotspot_height;                          \
   word num_frames;
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1479,20 +1479,20 @@ sSpriteset::Import_CHR2V2(FILE* file, RGB palette[256])
 ////////////////////////////////////////////////////////////////////////////////
 
 #define STRUCT_NAME CHR2V4_HEADER
-#include "begin_packed_struct.h"
-  byte version;
-  word width;
-  word height;
-  word hotspot_left;
-  word hotspot_top;
-  word hotspot_width;
-  word hotspot_height;
-  word idle_frame_left;
-  word idle_frame_right;
-  word idle_frame_up;
-  word idle_frame_down;
+#define STRUCT_BODY                             \
+  byte version;                                 \
+  word width;                                   \
+  word height;                                  \
+  word hotspot_left;                            \
+  word hotspot_top;                             \
+  word hotspot_width;                           \
+  word hotspot_height;                          \
+  word idle_frame_left;                         \
+  word idle_frame_right;                        \
+  word idle_frame_up;                           \
+  word idle_frame_down;                         \
   word num_frames;
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 

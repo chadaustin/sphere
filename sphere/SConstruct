@@ -2,6 +2,8 @@ import os, sys
 true = 1
 false = 0
 
+Default('.')
+
 ################################################################################
 
 major_version = 0
@@ -31,9 +33,9 @@ env = Environment(LIBS=libraries, CPPFLAGS=compile_flags, LINKFLAGS=linker_flags
 SConscript('source/common/SConscript', 'env')
 SConscript('source/jpegwrap/SConscript', 'env')
 SConscript('source/engine/SConscript', 'env')
-env.Program(target="sphere", source=' source/engine/libengine.a \
+engine = env.Program(target="bin/sphere", source='source/engine/libengine.a \
 source/common/libcommon.a source/jpegwrap/libjpegwrap.a')
-env.Install(os.path.join(install_prefix, 'bin'), 'sphere')
+env.Install(os.path.join(install_prefix, 'bin'), engine)
 
 docs = ['Sphere Tutorial.txt', 'build.txt', 'doc_functions.txt',
 'gpl.txt', 'irc.txt', 'keys.txt', 'lack_of_documentation.txt',

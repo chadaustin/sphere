@@ -70,29 +70,29 @@ sTileset::Create(int num_tiles)
 ////////////////////////////////////////////////////////////////////////////////
 
 #define STRUCT_NAME TILESET_HEADER
-#include "begin_packed_struct.h"
-  byte signature[4];
-  word version;
-  word num_tiles;
-  word tile_width;
-  word tile_height;
-  word tile_bpp;
-  byte compression;
-  byte has_obstructions;
+#define STRUCT_BODY                             \
+  byte signature[4];                            \
+  word version;                                 \
+  word num_tiles;                               \
+  word tile_width;                              \
+  word tile_height;                             \
+  word tile_bpp;                                \
+  byte compression;                             \
+  byte has_obstructions;                        \
   byte reserved[240];
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 #define STRUCT_NAME TILE_INFORMATION_BLOCK
-#include "begin_packed_struct.h"
-  byte obsolete1_;
-  byte animated;
-  word nexttile;
-  word delay;
-  byte obsolete2_;
-  byte blocked;
-  word num_segments;
+#define STRUCT_BODY                             \
+  byte obsolete1_;                              \
+  byte animated;                                \
+  word nexttile;                                \
+  word delay;                                   \
+  byte obsolete2_;                              \
+  byte blocked;                                 \
+  word num_segments;                            \
   byte reserved[22];
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 

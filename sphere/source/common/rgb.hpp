@@ -6,34 +6,34 @@
 
 
 #define STRUCT_NAME RGB
-#include "begin_packed_struct.h"
-  byte red;
-  byte green;
+#define STRUCT_BODY \
+  byte red;         \
+  byte green;       \
   byte blue;
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 #define STRUCT_NAME BGR
-#include "begin_packed_struct.h"
-  byte blue;
-  byte green;
+#define STRUCT_BODY \
+  byte blue;        \
+  byte green;       \
   byte red;
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 #define STRUCT_NAME RGBA
-#include "begin_packed_struct.h"
-  byte red;
-  byte green;
-  byte blue;
+#define STRUCT_BODY \
+  byte red;         \
+  byte green;       \
+  byte blue;        \
   byte alpha;
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 #define STRUCT_NAME BGRA
-#include "begin_packed_struct.h"
-  byte blue;
-  byte green;
-  byte red;
+#define STRUCT_BODY \
+  byte blue;        \
+  byte green;       \
+  byte red;         \
   byte alpha;
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 
 // premultiply alpha

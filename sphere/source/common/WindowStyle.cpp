@@ -31,14 +31,14 @@ sWindowStyle::Create(int width, int height)
 ////////////////////////////////////////////////////////////////////////////////
 
 #define STRUCT_NAME WINDOWSTYLE_HEADER
-#include "begin_packed_struct.h"
-  byte signature[4];
-  word version;
-  byte edge_width;  // only valid if version == 1
-  byte background_mode;
-  RGBA corner_colors[4];
+#define STRUCT_BODY                                     \
+  byte signature[4];                                    \
+  word version;                                         \
+  byte edge_width;  /* only valid if version == 1 */    \
+  byte background_mode;                                 \
+  RGBA corner_colors[4];                                \
   byte reserved[40];
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 ASSERT_STRUCT_SIZE(WINDOWSTYLE_HEADER, 64)
 

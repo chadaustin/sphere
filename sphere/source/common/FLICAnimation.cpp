@@ -4,36 +4,36 @@
 
 
 #define STRUCT_NAME SFlicHeader
-#include "begin_packed_struct.h"
-  dword size;
-  word  magic;
-  word  frames;
-  word  width;
-  word  height;
-  word  depth;
-  word  flags;
-  dword speed;
-  word  reserved0;
-  dword created;
-  dword creator;
-  dword updated;
-  dword updater;
-  word  aspectx;
-  word  aspecty;
-  byte  reserved1[38];
-  dword oframe1;
-  dword oframe2;
+#define STRUCT_BODY                             \
+  dword size;                                   \
+  word  magic;                                  \
+  word  frames;                                 \
+  word  width;                                  \
+  word  height;                                 \
+  word  depth;                                  \
+  word  flags;                                  \
+  dword speed;                                  \
+  word  reserved0;                              \
+  dword created;                                \
+  dword creator;                                \
+  dword updated;                                \
+  dword updater;                                \
+  word  aspectx;                                \
+  word  aspecty;                                \
+  byte  reserved1[38];                          \
+  dword oframe1;                                \
+  dword oframe2;                                \
   byte  reserved2[40];
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 
 #define STRUCT_NAME SFrameHeader
-#include "begin_packed_struct.h"
-  dword size;
-  word  type;
-  word  chunks;
+#define STRUCT_BODY                             \
+  dword size;                                   \
+  word  type;                                   \
+  word  chunks;                                 \
   byte  reserved[8];
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////

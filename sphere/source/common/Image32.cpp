@@ -910,20 +910,19 @@ CImage32::Import_JPEG(const char* filename, IFileSystem& fs)
 ////////////////////////////////////////////////////////////////////////////////
 
 #define STRUCT_NAME BMP_HEADER
-#include "begin_packed_struct.h"
-  word  bfType;
-  dword bfSize;
-  word  bfReserved1;
-  word  bfReserved2;
-  dword bfOffBits;
-
-  dword biSize;
-  long  biWidth;
-  long  biHeight;
-  word  biNumPlanes;
-  word  biBitsPerPixel;
+#define STRUCT_BODY     \
+  word  bfType;         \
+  dword bfSize;         \
+  word  bfReserved1;    \
+  word  bfReserved2;    \
+  dword bfOffBits;      \
+  dword biSize;         \
+  long  biWidth;        \
+  long  biHeight;       \
+  word  biNumPlanes;    \
+  word  biBitsPerPixel; \
   dword biCompression;
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 ASSERT_STRUCT_SIZE(BMP_HEADER, 34);
 
@@ -1124,7 +1123,7 @@ CImage32::BMP_ReadRGB(IFile* file, int imagesize, int bpp, BGRA* Pal)
 
         case 24:         
         { 
-          /* byte Red, Green, Blue;           */
+          /* byte Red, Green, Blue;           */
 			 int Red, Green, Blue;
           
           Blue = ReadByte(file); Green = ReadByte(file); Red = ReadByte(file);          
@@ -1140,7 +1139,7 @@ CImage32::BMP_ReadRGB(IFile* file, int imagesize, int bpp, BGRA* Pal)
 
         case 32:
         {          
-          /* byte Red, Green, Blue;           */
+          /* byte Red, Green, Blue;           */
 			 int Red, Green, Blue;
           
           Blue = ReadByte(file); Green = ReadByte(file); Red = ReadByte(file);
@@ -1260,26 +1259,26 @@ CImage32::BMP_ReadRLE4(IFile* file, int bpp, int NumPal, RGBA* Pal)
 ////////////////////////////////////////////////////////////////////////////////
 
 #define STRUCT_NAME PCX_HEADER
-#include "begin_packed_struct.h"
-  byte manufacturer;
-  byte version;
-  byte encoding;
-  byte bits_per_pixel;
-  word xmin;
-  word ymin;
-  word xmax;
-  word ymax;
-  word hdpi;
-  word vdpi;
-  byte colormap[48];
-  byte reserved;
-  byte num_planes;
-  word bytes_per_line;
-  word palette_info;
-  word h_screen_size;
-  word v_screen_size;
+#define STRUCT_BODY    \
+  byte manufacturer;   \
+  byte version;        \
+  byte encoding;       \
+  byte bits_per_pixel; \
+  word xmin;           \
+  word ymin;           \
+  word xmax;           \
+  word ymax;           \
+  word hdpi;           \
+  word vdpi;           \
+  byte colormap[48];   \
+  byte reserved;       \
+  byte num_planes;     \
+  word bytes_per_line; \
+  word palette_info;   \
+  word h_screen_size;  \
+  word v_screen_size;  \
   byte filler[54];
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 ASSERT_STRUCT_SIZE(PCX_HEADER, 128)
 
@@ -1358,7 +1357,7 @@ CImage32::PCX_ReadScanline(IFile* file, int scansize, byte* scanline)
   int bytesread = 0;
   while (bytesread < scansize)
   {
-    /* byte data = ReadByte(file); */
+    /* byte data = ReadByte(file); */
 	 int data = ReadByte(file);
     if (data == EOF)
       return;

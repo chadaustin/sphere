@@ -16,19 +16,19 @@ sFont::sFont(int num_characters, int width, int height)
 ////////////////////////////////////////////////////////////////////////////////
 
 #define STRUCT_NAME FONT_HEADER
-#include "begin_packed_struct.h"
-  byte signature[4];
-  word version;
-  word num_characters;
+#define STRUCT_BODY                             \
+  byte signature[4];                            \
+  word version;                                 \
+  word num_characters;                          \
   byte reserved[248];
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 #define STRUCT_NAME CHARACTER_HEADER
-#include "begin_packed_struct.h"
-  word width;
-  word height;
+#define STRUCT_BODY                             \
+  word width;                                   \
+  word height;                                  \
   byte reserved[28];
-#include "end_packed_struct.h"
+#include "packed_struct.h"
 
 ASSERT_STRUCT_SIZE(FONT_HEADER, 256)
 ASSERT_STRUCT_SIZE(CHARACTER_HEADER, 32);
