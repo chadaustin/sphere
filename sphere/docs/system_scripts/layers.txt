@@ -1,0 +1,28 @@
+Ever wanted a house where the roof just disappears as you walk in?
+Here's how it can be done.
+
+First add the line:-
+
+EvaluateSystemScript("layers.js");
+
+This is so you can use the following functions:
+
+ConvertLayer(layer_index, tile_index, dont_remember_details)
+IsLayerConverted(layer_index)
+ToggleLayer(layer_index, tile_index)
+RevertLayer(layer_index)
+ClearLayerTileDetails(layer_index)
+
+Here's what you do on the map now:
+
+You add a layer to the map and call it "roof layer"
+You draw roof tiles on this layer.
+
+Now also add a blank see through tile somewhere in your tileset.
+I normally have this tile as the second tile in the tileset.
+
+Where you have your door, add the trigger:
+
+ToggleLayer(2, 1);
+
+(Providing that the roof is on the third layer and the blank tile is the second tile in the tileset, the roof will disappear.)
