@@ -4912,6 +4912,12 @@ end_method()
 
 /**
     - reads from the socket, returns a ByteArray object
+      or returns null if it fails
+      e.g.
+      var data = socket.read(size);
+      if (data != null) {
+        // do stuff with data
+      }
 */
 begin_method(SS_SOCKET, ssSocketRead, 1)
   if (!object->is_open) {
@@ -4928,15 +4934,18 @@ begin_method(SS_SOCKET, ssSocketRead, 1)
       void* buffer = malloc(size);
       int read = SocketRead(object->socket, buffer, size);
       if (read < 0) { // error!
-        JS_ReportError(cx, "socket.read() failed miserably!");
         free(buffer);
-        return JS_FALSE;
+        //JS_ReportError(cx, "socket.read() failed miserably!");
+        //return JS_FALSE;
+        return_object(JSVAL_NULL);
       }
+      else {
 
-      JSObject* array_object = CreateByteArrayObject(cx, read, buffer);
-      free(buffer);
+        JSObject* array_object = CreateByteArrayObject(cx, read, buffer);
+        free(buffer);
 
-      return_object(array_object);
+        return_object(array_object);
+      }
     }
   }
 end_method()
