@@ -7,7 +7,9 @@ BEGIN_MESSAGE_MAP(CWindowStylePreviewPalette, CPaletteWindow)
 
   ON_WM_PAINT()   
   ON_WM_RBUTTONUP()
-  ON_WM_ERASEBKGND()
+
+  ON_COMMAND(ID_FILE_ZOOM_IN, OnZoomIn)
+  ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
 
 END_MESSAGE_MAP()
 
@@ -23,14 +25,6 @@ CWindowStylePreviewPalette::CWindowStylePreviewPalette(CDocumentWindow* owner, s
 , m_BlitImage(NULL)
 {
   OnZoom(m_ZoomFactor);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-BOOL
-CWindowStylePreviewPalette::OnEraseBkgnd(CDC* pDC)
-{
-  return TRUE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -245,6 +239,30 @@ CWindowStylePreviewPalette::OnZoom(double zoom) {
   }
 
   Invalidate();
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CWindowStylePreviewPalette::OnZoomIn()
+{
+  switch ((int)m_ZoomFactor) {
+    case 1: OnZoom(2); break;
+    case 2: OnZoom(4); break;
+    case 4: OnZoom(8); break;
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CWindowStylePreviewPalette::OnZoomOut()
+{
+  switch ((int)m_ZoomFactor) {
+    case 2: OnZoom(1); break;
+    case 4: OnZoom(2); break;
+    case 8: OnZoom(4); break;
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////

@@ -64,6 +64,11 @@ private:
   afx_msg void OnZoom4x();
   afx_msg void OnZoom8x();
 
+  afx_msg void OnZoomIn();
+  afx_msg void OnZoomOut();
+
+  afx_msg void OnPaste();
+
   afx_msg void OnProperties();
 
   afx_msg void OnUpdateEditUpperLeft (CCmdUI* cmdui);

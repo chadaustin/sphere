@@ -40,6 +40,10 @@ BEGIN_MESSAGE_MAP(CWindowStyleWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_WINDOWSTYLE_ZOOM_4X, OnZoom4x)
   ON_COMMAND(ID_WINDOWSTYLE_ZOOM_8X, OnZoom8x)
 
+  ON_COMMAND(ID_FILE_ZOOM_IN, OnZoomIn)
+  ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
+  ON_COMMAND(ID_FILE_PASTE, OnPaste)
+
   ON_COMMAND(ID_WINDOWSTYLE_PROPERTIES, OnProperties)
 
   ON_UPDATE_COMMAND_UI(ID_WINDOWSTYLE_EDIT_UPPERLEFT,  OnUpdateEditUpperLeft)
@@ -649,6 +653,61 @@ afx_msg void
 CWindowStyleWindow::OnZoom8x()
 {
   SetZoomFactor(8);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CWindowStyleWindow::OnZoomIn()
+{
+  bool focus_found = false;
+
+  if (GetFocus() != this) {
+    if ((m_WindowStylePreviewPalette != NULL) && (GetFocus() == m_WindowStylePreviewPalette)) {
+      m_WindowStylePreviewPalette->SendMessage(WM_COMMAND, MAKEWPARAM(ID_FILE_ZOOM_IN, 0), 0);
+      focus_found = true;
+    }
+  }
+  
+  if (!focus_found) {
+    switch ((int)m_ZoomFactor) {
+      case 1: SetZoomFactor(2); break;
+      case 2: SetZoomFactor(4); break;
+      case 4: SetZoomFactor(8); break;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CWindowStyleWindow::OnZoomOut()
+{
+  bool focus_found = false;
+
+  if (GetFocus() != this) {
+    if ((m_WindowStylePreviewPalette != NULL) && (GetFocus() == m_WindowStylePreviewPalette)) {
+      m_WindowStylePreviewPalette->SendMessage(WM_COMMAND, MAKEWPARAM(ID_FILE_ZOOM_OUT, 0), 0);
+      focus_found = true;
+    }
+  }
+  
+  if (!focus_found) {
+    switch ((int)m_ZoomFactor) {
+      case 2: SetZoomFactor(1); break;
+      case 4: SetZoomFactor(2); break;
+      case 8: SetZoomFactor(4); break;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CWindowStyleWindow::OnPaste()
+{
+  m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_PASTE, 0), 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

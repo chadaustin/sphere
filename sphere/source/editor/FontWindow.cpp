@@ -42,6 +42,10 @@ BEGIN_MESSAGE_MAP(CFontWindow, CSaveableDocumentWindow)
 
   ON_COMMAND(ID_FONT_EXPORTTOIMAGE,      OnFontExportToImage)
 
+  ON_COMMAND(ID_FILE_PASTE, OnPaste)
+  ON_COMMAND(ID_FILE_ZOOM_IN, OnZoomIn)
+  ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
+
 //  ON_COMMAND(ID_FONT_ER_ROTATE_CW,             OnEditRangeRotateCW)
 //  ON_COMMAND(ID_FONT_ER_ROTATE_CCW,            OnEditRangeRotateCCW)
   ON_COMMAND(ID_FONT_ER_SLIDE_UP,              OnEditRange)
@@ -591,6 +595,38 @@ CFontWindow::OnEditRange()
     SetImage();
     if (m_FontPreviewPalette) m_FontPreviewPalette->OnCharacterChanged(-1);
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CFontWindow::OnZoomIn()
+{
+  if (GetFocus() != this) {
+    if ((m_FontPreviewPalette != NULL) && (GetFocus() == m_FontPreviewPalette)) {
+      m_FontPreviewPalette->SendMessage(WM_COMMAND, MAKEWPARAM(ID_FILE_ZOOM_IN, 0), 0);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CFontWindow::OnZoomOut()
+{
+  if (GetFocus() != this) {
+    if ((m_FontPreviewPalette != NULL) && (GetFocus() == m_FontPreviewPalette)) {
+      m_FontPreviewPalette->SendMessage(WM_COMMAND, MAKEWPARAM(ID_FILE_ZOOM_OUT, 0), 0);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CFontWindow::OnPaste()
+{
+  m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_PASTE, 0), 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -866,11 +866,9 @@ CMapWindow::OnZoomOut()
 afx_msg void
 CMapWindow::OnPaste()
 {
-  if (GetFocus() == this) {
-    if (m_TabControl.GetCurSel() == 1) {
-      //MessageBox("MapWindow::Paste");
-      m_TilesetEditView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_PASTE, 0), 0);
-    }
+  if (m_TabControl.GetCurSel() == 1) {
+    //MessageBox("MapWindow::Paste");
+    m_TilesetEditView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_PASTE, 0), 0);
   }
 }
 

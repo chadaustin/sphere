@@ -33,6 +33,9 @@ private:
 	afx_msg void OnTimer(UINT event);
   BOOL OnEraseBkgnd(CDC* pDC);
 
+  afx_msg void OnZoomIn();
+  afx_msg void OnZoomOut();
+
 private:
   sWindowStyle* m_WindowStyle;
 	double m_ZoomFactor;

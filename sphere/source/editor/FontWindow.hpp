@@ -45,6 +45,10 @@ private:
   afx_msg void OnFontGenerateGradient();
   afx_msg void OnFontExportToImage();
 
+  afx_msg void OnPaste();
+  afx_msg void OnZoomIn();
+  afx_msg void OnZoomOut();
+
   virtual bool GetSavePath(char* path);
   virtual bool SaveDocument(const char* path);
 

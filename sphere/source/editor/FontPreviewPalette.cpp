@@ -8,7 +8,9 @@ BEGIN_MESSAGE_MAP(CFontPreviewPalette, CPaletteWindow)
 
   ON_WM_PAINT()   
   ON_WM_RBUTTONUP()
-  ON_WM_ERASEBKGND()
+
+  ON_COMMAND(ID_FILE_ZOOM_IN,  OnZoomIn)
+  ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
 
   ON_COMMAND(ID_FONT_PREVIEW_SET_TEXT, OnSetText)
 
@@ -28,14 +30,6 @@ CFontPreviewPalette::CFontPreviewPalette(CDocumentWindow* owner, sFont* font)
 {
   m_Text = "The quick brown fox jumped over the lazy dog";
   OnZoom(2);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-BOOL
-CFontPreviewPalette::OnEraseBkgnd(CDC* pDC)
-{
-  return TRUE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -219,6 +213,30 @@ CFontPreviewPalette::OnZoom(double zoom) {
   m_RedrawCharacter = -1;
 
   Invalidate();
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CFontPreviewPalette::OnZoomIn()
+{
+  switch ((int)m_ZoomFactor) {
+    case 1: OnZoom(2); break;
+    case 2: OnZoom(4); break;
+    case 4: OnZoom(8); break;
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CFontPreviewPalette::OnZoomOut()
+{
+  switch ((int)m_ZoomFactor) {
+    case 2: OnZoom(1); break;
+    case 4: OnZoom(2); break;
+    case 8: OnZoom(4); break;
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////
