@@ -176,11 +176,13 @@ class SphereUser {
   }
 
   function addPermission ($permission) {
+    global $PERMISSIONS;
     if (in_array($permission, array_keys($PERMISSIONS)))
       $this->permissions |= $PERMISSIONS[$permission];
   }
 
   function access ($permission) {
+    global $PERMISSIONS;
     if (in_array($permission, array_keys($PERMISSIONS))) {
       if ($this->permissions & 1) /* superusers have access to everything */
         return TRUE;
@@ -189,9 +191,10 @@ class SphereUser {
   }
 
   function listPermissions () {
+    global $PERMISSIONS;
     $permissions = array();
     foreach ($PERMISSIONS as $perm => $bit) {
-      if ($this->permissions & $bit)
+      if ($this->permissions & $bit or $this->permissions & 1)
         $permissions[] = $perm;
     }
     return $permissions;
