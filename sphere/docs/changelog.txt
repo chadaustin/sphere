@@ -1,3 +1,8 @@
+2004.03.09
+  - You can now change the pitch/pan of a sound in the editor
+  - You can now change the position of a sound in the editor (if the sound is seekable, try it with an ogg file)
+  - added sound.getPosition(), sound.setPosition(pos), sound.getLength() and sound.isSeekable() to the engine
+
 2004.03.06
   - Abort can now be done like Abort("Some error") or Abort("Some message\n");
     The \n on the end means no file/line info is drawn to the screen

@@ -32,6 +32,8 @@ BEGIN_MESSAGE_MAP(CSoundWindow, CDocumentWindow)
   ON_UPDATE_COMMAND_UI(ID_SOUND_STOP,  OnUpdateStopCommand)
   ON_UPDATE_COMMAND_UI(ID_SOUND_REPEAT, OnUpdateRepeatCommand)
 
+  ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnNeedText)
+
 END_MESSAGE_MAP()
 
 
@@ -72,7 +74,7 @@ CSoundWindow::CSoundWindow(const char* sound)
   m_StopButton.SetFont(pFont);
 
   // create the volume bar and its associated friends.
-  m_VolumeBar.Create(WS_CHILD | WS_VISIBLE | TBS_VERT, CRect(), this, ID_MUSIC_VOLUMEBAR);
+  m_VolumeBar.Create(WS_CHILD | WS_VISIBLE | TBS_VERT | TBS_TOOLTIPS, CRect(), this, ID_MUSIC_VOLUMEBAR);
   m_VolumeBar.SetLineSize(20);
   m_VolumeBar.SetRange(0, 255, true);
   m_VolumeBar.SetPos(0);
@@ -83,12 +85,12 @@ CSoundWindow::CSoundWindow(const char* sound)
 
 
   if (1) {
-    m_PanBar.Create(WS_CHILD | WS_VISIBLE | TBS_VERT, CRect(), this, ID_MUSIC_PANBAR);
+    m_PanBar.Create(WS_CHILD | WS_VISIBLE | TBS_VERT | TBS_TOOLTIPS, CRect(), this, ID_MUSIC_PANBAR);
     m_PanBar.SetRange(-255, 255, true);
     m_PanBar.SetPos(0);
     m_PanBar.SetLineSize(20);
-    m_PitchBar.Create(WS_CHILD | WS_VISIBLE | TBS_VERT, CRect(), this, ID_MUSIC_PITCHBAR);
-    m_PitchBar.SetRange(5, 500, true);
+    m_PitchBar.Create(WS_CHILD | WS_VISIBLE | TBS_VERT | TBS_TOOLTIPS, CRect(), this, ID_MUSIC_PITCHBAR);
+    m_PitchBar.SetRange((int)(0.5f * 255.0f), (255 * 2), true);
     m_PitchBar.SetPos(255);
     m_PitchBar.SetLineSize(20);
   }
@@ -171,8 +173,8 @@ CSoundWindow::OnTimer(UINT timerID)
     if (m_Playing && m_Repeat) {
       m_Sound.Play();
       if (m_PanBar.m_hWnd != NULL && m_PitchBar.m_hWnd != NULL) {
-        m_Sound.SetPan(m_PanBar.GetPos() / 255.0f);
-        m_Sound.SetPitchShift(m_PitchBar.GetPos() / 255.0f);
+        m_Sound.SetPan((float)m_PanBar.GetPos() / 255.0f);
+        m_Sound.SetPitchShift((float)m_PitchBar.GetPos() / 255.0f);
       }
     }
     else {
@@ -299,6 +301,50 @@ afx_msg void
 CSoundWindow::OnUpdateRepeatCommand(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_Repeat);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg BOOL
+CSoundWindow::OnNeedText(UINT /*id*/, NMHDR* nmhdr, LRESULT* result)
+{
+  if (!nmhdr || !nmhdr) return TRUE;
+
+  TOOLTIPTEXT* ttt = (TOOLTIPTEXT*)nmhdr;
+  UINT id = nmhdr->idFrom;
+  if (ttt->uFlags & TTF_IDISHWND) {
+    id = ::GetDlgCtrlID((HWND)id);
+  }
+
+  static char string[1024] = {0};
+
+  switch (id) {
+    case ID_MUSIC_PANBAR:
+      if (m_PanBar.m_hWnd != NULL) {
+        sprintf (string, "pan %1.3f",    ((float)m_PanBar.GetPos() / 255.0f));
+        ttt->lpszText = string;
+      }
+    break;
+    case ID_MUSIC_PITCHBAR:
+      if (m_PanBar.m_hWnd != NULL) {
+        sprintf (string, "pitch %1.3f",  ((float)m_PitchBar.GetPos() / 255.0f));
+        ttt->lpszText = string;
+      }
+    break;
+
+    case ID_MUSIC_VOLUMEBAR:
+      if (m_VolumeBar.m_hWnd != NULL) {
+        sprintf (string, "volume %3d", (255 - m_VolumeBar.GetPos()));
+        ttt->lpszText = string;
+      }
+    break;
+
+    default:
+      ttt->lpszText = "";
+  }
+
+  *result = 0;
+  return TRUE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

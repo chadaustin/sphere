@@ -29,6 +29,8 @@ private:
   afx_msg void OnUpdateStopCommand(CCmdUI* cmdui);
   afx_msg void OnUpdateRepeatCommand(CCmdUI* cmdui);
 
+  afx_msg BOOL OnNeedText(UINT id, NMHDR* nmhdr, LRESULT* result);
+
 private:
   CSound  m_Sound;
   CButton m_PlayButton;
