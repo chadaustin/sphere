@@ -209,6 +209,10 @@ private:
 
   void OnLanguageChanged();
 
+#if 1
+  afx_msg void OnNMRclick(NMHDR *pNMHDR, LRESULT *pResult);
+#endif
+
 private:
   HWND m_NextClipboardViewer;
   afx_msg void OnChangeCbChain(HWND remove, HWND after);

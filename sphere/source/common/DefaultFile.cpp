@@ -21,7 +21,9 @@ DefaultFile::Read(void* bytes, int size)
 int
 DefaultFile::Write(const void* bytes, int size)
 {
-  return fwrite(bytes, 1, size, m_file);
+  int num_bytes = fwrite(bytes, 1, size, m_file);
+  fflush(m_file);
+  return num_bytes;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

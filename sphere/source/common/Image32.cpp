@@ -682,6 +682,13 @@ inline void copyAlpha(RGBA& dest, RGBA src)
   dest.alpha = src.alpha;
 }
 
+inline void additiveRGBA(RGBA& dest, RGBA src)
+{
+  dest.red   = std::max(0, std::min(255, (dest.red   + ((src.red   * src.alpha) / 255))));
+  dest.green = std::max(0, std::min(255, (dest.green + ((src.green * src.alpha) / 255))));
+  dest.blue  = std::max(0, std::min(255, (dest.blue  + ((src.blue  * src.alpha) / 255))));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 class constant_color
@@ -701,6 +708,7 @@ CImage32::SetPixel(int x, int y, RGBA color, clipper clip)
     case BLEND:      primitives::Point(m_Pixels, m_Width, x, y, color, clip, blendRGBA); break;
     case RGB_ONLY:   primitives::Point(m_Pixels, m_Width, x, y, color, clip, copyRGB);   break;
     case ALPHA_ONLY: primitives::Point(m_Pixels, m_Width, x, y, color, clip, copyAlpha); break;
+    case ADDITIVE:   primitives::Point(m_Pixels, m_Width, x, y, color, clip, additiveRGBA); break;
   }
 }
 
@@ -798,6 +806,7 @@ CImage32::Line(int x1, int y1, int x2, int y2, RGBA color, clipper clip)
     case BLEND:      primitives::Line(m_Pixels, m_Width, x1, y1, x2, y2, constant_color(color), clip, blendRGBA); break;
     case RGB_ONLY:   primitives::Line(m_Pixels, m_Width, x1, y1, x2, y2, constant_color(color), clip, copyRGB);   break;
     case ALPHA_ONLY: primitives::Line(m_Pixels, m_Width, x1, y1, x2, y2, constant_color(color), clip, copyAlpha); break;
+    case ADDITIVE:   primitives::Line(m_Pixels, m_Width, x1, y1, x2, y2, constant_color(color), clip, additiveRGBA); break;
   }
 }
 
@@ -919,6 +928,7 @@ CImage32::Rectangle(int x1, int y1, int x2, int y2, RGBA color, clipper clip)
     case BLEND:      primitives::Rectangle(m_Pixels, m_Width, x1, y1, w, h, color, clip, blendRGBA); break;
     case RGB_ONLY:   primitives::Rectangle(m_Pixels, m_Width, x1, y1, w, h, color, clip, copyRGB);   break;
     case ALPHA_ONLY: primitives::Rectangle(m_Pixels, m_Width, x1, y1, w, h, color, clip, copyAlpha); break;
+    case ADDITIVE:   primitives::Rectangle(m_Pixels, m_Width, x1, y1, w, h, color, clip, additiveRGBA); break;
   }
 }
 
@@ -936,6 +946,7 @@ CImage32::Triangle(int x1, int y1, int x2, int y2, int x3, int y3, RGBA color)
     case BLEND:      primitives::Triangle(m_Pixels, m_Width, x, y, color, clip, blendRGBA); break;
     case RGB_ONLY:   primitives::Triangle(m_Pixels, m_Width, x, y, color, clip, copyRGB); break;
     case ALPHA_ONLY: primitives::Triangle(m_Pixels, m_Width, x, y, color, clip, copyAlpha); break;
+    case ADDITIVE:   primitives::Triangle(m_Pixels, m_Width, x, y, color, clip, additiveRGBA); break;
   }
 }
 
@@ -991,6 +1002,7 @@ CImage32::GradientLine(int x1, int y1, int x2, int y2, RGBA c[2])
     case BLEND:      primitives::Line((RGBA*)m_Pixels, m_Width, x1, y1, x2, y2, gradient_color(c[0], c[1]), clip, blendRGBA); break;
     case RGB_ONLY:   primitives::Line((RGBA*)m_Pixels, m_Width, x1, y1, x2, y2, gradient_color(c[0], c[1]), clip, copyRGB);   break;
     case ALPHA_ONLY: primitives::Line((RGBA*)m_Pixels, m_Width, x1, y1, x2, y2, gradient_color(c[0], c[1]), clip, copyAlpha); break;
+    case ADDITIVE:   primitives::Line((RGBA*)m_Pixels, m_Width, x1, y1, x2, y2, gradient_color(c[0], c[1]), clip, additiveRGBA); break;
   }
 }
 
@@ -1003,6 +1015,7 @@ CImage32::GradientRectangle(int x, int y, int w, int h, RGBA c[4])
     case BLEND:      primitives::GradientRectangle((RGBA*)m_Pixels, m_Width, x, y, w, h, c, clip, blendRGBA, interpolateRGBA); break;
     case RGB_ONLY:   primitives::GradientRectangle((RGBA*)m_Pixels, m_Width, x, y, w, h, c, clip, copyRGB, interpolateRGBA);   break;
     case ALPHA_ONLY: primitives::GradientRectangle((RGBA*)m_Pixels, m_Width, x, y, w, h, c, clip, copyAlpha, interpolateRGBA); break;
+    case ADDITIVE:   primitives::GradientRectangle((RGBA*)m_Pixels, m_Width, x, y, w, h, c, clip, additiveRGBA, interpolateRGBA); break;
   }
 }
 
@@ -1019,6 +1032,7 @@ CImage32::GradientTriangle(int x1, int y1, int x2, int y2, int x3, int y3, RGBA 
     case BLEND:      primitives::GradientTriangle((RGBA*)m_Pixels, m_Width, x, y, c, clip, blendRGBA, interpolateRGBA); break;
     case RGB_ONLY:   primitives::GradientTriangle((RGBA*)m_Pixels, m_Width, x, y, c, clip, copyRGB, interpolateRGBA);   break;
     case ALPHA_ONLY: primitives::GradientTriangle((RGBA*)m_Pixels, m_Width, x, y, c, clip, copyAlpha, interpolateRGBA); break;
+    case ADDITIVE:   primitives::GradientTriangle((RGBA*)m_Pixels, m_Width, x, y, c, clip, additiveRGBA, interpolateRGBA); break;
   }
 }
 
@@ -1042,6 +1056,12 @@ inline void alphaRenderer(RGBA& dest, RGBA src, RGBA alpha) {
   dest.alpha = src.alpha;
 }
 
+inline void additiveRenderer(RGBA& dest, RGBA src, RGBA alpha) {
+  dest.red   = std::max(0, std::min(255, (dest.red   + ((src.red   * alpha.alpha) / 255))));
+  dest.green = std::max(0, std::min(255, (dest.green + ((src.green * alpha.alpha) / 255))));
+  dest.blue  = std::max(0, std::min(255, (dest.blue  + ((src.blue  * alpha.alpha) / 255))));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 void
@@ -1063,6 +1083,7 @@ CImage32::BlitImage(CImage32& image, int x, int y)
         clip,
         replaceRenderer);
       break;
+
     case BLEND:
       primitives::Blit(
         m_Pixels, m_Width,
@@ -1074,6 +1095,7 @@ CImage32::BlitImage(CImage32& image, int x, int y)
         clip,
         blendRenderer);
       break;
+
     case RGB_ONLY:
       primitives::Blit(
         m_Pixels, m_Width,
@@ -1085,6 +1107,7 @@ CImage32::BlitImage(CImage32& image, int x, int y)
         clip,
         rgbRenderer);
       break;
+
     case ALPHA_ONLY:
       primitives::Blit(
         m_Pixels, m_Width,
@@ -1096,6 +1119,18 @@ CImage32::BlitImage(CImage32& image, int x, int y)
         clip,
         alphaRenderer);
       break;
+    
+    case ADDITIVE:
+      primitives::Blit(
+        m_Pixels, m_Width,
+        x, y,
+        image.GetPixels(),
+        image.GetPixels(),
+        image.GetWidth(),
+        image.GetHeight(),
+        clip,
+        additiveRenderer);
+    break;
   }
 }
 
@@ -1165,6 +1200,21 @@ CImage32::TransformBlitImage(CImage32& image, int x[4], int y[4])
         image.GetHeight(),
         clip,
         alphaRenderer);
+    break;
+
+
+    case ADDITIVE:
+      primitives::TexturedQuad(
+        m_Pixels,
+        m_Width,
+        x,
+        y,
+        image.GetPixels(),
+        image.GetPixels(),
+        image.GetWidth(),
+        image.GetHeight(),
+        clip,
+        additiveRenderer);
     break;
 
   }

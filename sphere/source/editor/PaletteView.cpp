@@ -1,7 +1,7 @@
 #include "PaletteView.hpp"
 #include "DIBSection.hpp"
 #include "../common/rgb.hpp"
-
+#include "Editor.hpp"
 
 static int s_iPaletteViewID = 1000;
 
@@ -182,6 +182,10 @@ CPaletteView::OnLButtonDown(UINT flags, CPoint point)
 
   // tell parent window that the color has changed
   m_pHandler->PV_ColorChanged(m_Color);
+
+  char string[255];
+  sprintf(string, "color=[%d %d %d]", m_Color.red, m_Color.green, m_Color.blue);
+  GetStatusBar()->SetPaneText(1, string);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -222,6 +226,10 @@ CPaletteView::OnMouseMove(UINT flags, CPoint point)
 
   // tell parent window that the color has changed
   m_pHandler->PV_ColorChanged(m_Color);
+
+  char string[255];
+  sprintf(string, "color=[%d %d %d]", m_Color.red, m_Color.green, m_Color.blue);
+  GetStatusBar()->SetPaneText(1, string);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

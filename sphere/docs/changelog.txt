@@ -1,3 +1,8 @@
+2004.04.14
+  - Moved statusbar text like map tile x, y and line/position into
+    a seperate pane on the statusbar
+  - Added Image/Font Change Borders for adding/removing pixels to the sides of images
+
 2004.04.07
   - Added a clipboard history pane for scripts
   - Added a line sort tool for scripts
@@ -16,7 +21,8 @@
 2004.03.06
   - Abort can now be done like Abort("Some error") or Abort("Some message\n");
     The \n on the end means no file/line info is drawn to the screen
-  - Added File->Options->General File Types page where there's a Open Unknown File Types As Text option
+  - Added File->Options->General File Types page
+    where there's a Open Unknown File Types As Text option
   - Added AttachPlayerInput/DetachPlayerInput
 
 2004.03.03
@@ -25,7 +31,8 @@
   - Added Get/SetPersonIgnoreList for telling a certain person to ignore certain other persons
 
 2004.02.29
-  - Added Get/SetPersonData (useful for finding out the number of frames in the person's current direction)
+  - Added Get/SetPersonData
+    (useful for finding out the number of frames in the person's current direction)
     and storing various data about a person.
 
 2004.02.27
@@ -42,7 +49,8 @@
   
 2004.02.11
   - Zoom in/out shortcuts CTRL and + for zoom in and CTRL and - for zoom out
-  - You can now paste into the main window and it'll create a document based on the clipboard type  
+  - You can now paste into the main window and
+    it'll create a document based on the clipboard type  
   - The script editor now highlight's good and bad braces (green for good, red for bad)
     If a brace is red, your script has a problem.
   - Shift + left click selects the current color in the image editor
@@ -78,7 +86,8 @@
 2003.12.25
   - Made Project View support multiple folders e.g. maps/towns/freddys.rmp and such
     (Currently this breaks Package Game (subfolders wont be included within the package)
-    You also have to make the folders within explorer, I don't think this is that big of a problem though.
+    You also have to make the folders within explorer,
+    I don't think this is that big of a problem though.
 
 2003.12.24
   - Replaced Image/Map Tools palette with Image/Map toolbars

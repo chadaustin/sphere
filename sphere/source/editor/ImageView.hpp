@@ -148,6 +148,7 @@ private:
   afx_msg void OnBlendModeReplace();
   afx_msg void OnBlendModeRGBOnly();
   afx_msg void OnBlendModeAlphaOnly();
+  afx_msg void OnBlendModeAdditive();
   afx_msg void OnRotateCW();
   afx_msg void OnRotateCCW();
   afx_msg void OnSlideUp();

@@ -30,6 +30,12 @@
 #include "FontWindow.hpp"
 #include "BrowseWindow.hpp"
 
+
+#ifdef USE_IRC
+#include "../../../http/irc.hpp"
+#include "../../../http/IRCWindow.hpp"
+#endif
+
 // dialogs
 #include "NewProjectDialog.hpp"
 #include "GameSettingsDialog.hpp"
@@ -243,9 +249,12 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_MESSAGE(WM_COPYDATA,            OnCopyData)
   ON_COMMAND_RANGE(PALETTE_COMMAND, PALETTE_COMMAND + NUM_PALETTES, OnViewPalette)
 
-
   ON_WM_CHANGECBCHAIN()
   ON_WM_DRAWCLIPBOARD()
+
+#if 1
+  ON_NOTIFY(NM_RCLICK, AFX_IDW_TOOLBAR, OnNMRclick)
+#endif
 
 END_MESSAGE_MAP()
 
@@ -505,6 +514,32 @@ CMainWindow::OnDrawClipboard()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#if 1
+afx_msg void
+CMainWindow::OnNMRclick(NMHDR *pNMHDR, LRESULT *pResult)
+{
+  POINT point;
+  
+  GetCursorPos(&point);
+  ::ScreenToClient(m_ImageToolBar.GetToolBarCtrl().m_hWnd, &point);
+
+  UINT tools[] = {IDI_IMAGETOOL_PENCIL, IDI_IMAGETOOL_LINE, IDI_IMAGETOOL_RECTANGLE,
+                  IDI_IMAGETOOL_CIRCLE, IDI_IMAGETOOL_ELLIPSE, IDI_IMAGETOOL_FILL,
+                  IDI_IMAGETOOL_SELECTION, IDI_IMAGETOOL_FREESELECTION};
+  int num_tools = sizeof(tools) / sizeof(*tools);
+
+
+  int hit = m_ImageToolBar.GetToolBarCtrl().HitTest(&point);
+  if (hit >= 0 && hit < num_tools) {
+    char string[1000];
+    sprintf (string, "%d", hit);
+    //MessageBox(string);
+  }
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 CMainWindow::CreateProject(const char* projectname, const char* gametitle)
 {
@@ -615,6 +650,9 @@ CMainWindow::GetProjectDirectory() const
 void
 CMainWindow::OpenGameFile(const char* filename)
 {
+  if (!filename || strlen(filename) == 0)
+    return;
+
 	if (IsProjectFile(filename))
 	{
 		OpenProject(filename);
@@ -634,11 +672,34 @@ CMainWindow::OpenGameFile(const char* filename)
     }
   }
 
-  if (filename && strlen(filename) > 0) {
+  char proto[100] = "";
+
+  for (int i = 0; i < strlen(filename); i++) {
+    if (strncmp(filename + i, "://", 3) == 0) {
+      strncpy(proto, filename, i);
+      break;
+    }
+  }
+
+  if (strcmp(proto, "") == 0) {
     if (Configuration::Get(OPEN_UNKNOWN_FILETYPES_AS_TEXT)) {
       OpenDocumentWindow(GT_SCRIPTS, filename);
     }
   }
+
+#ifdef USE_IRC
+  if (strcmp(proto, "irc") == 0) {
+    const char* address = filename + strlen("irc://");
+    //int port = 6667;
+
+    CDocumentWindow* window = new CIRCWindow(address);
+    if (window) {
+      m_DocumentWindows.push_back(window);
+    }
+
+    UpdateToolBars();
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -2464,11 +2464,16 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
   int y = point.y / tile_height + m_CurrentY;
   if (x >= 0 && y >= 0 && x <= GetTotalTilesX() && y <= GetTotalTilesY())
   {
-    CString Position;
     int pixel_x = (point.x + tile_width  * m_CurrentX) / m_ZoomFactor;
     int pixel_y = (point.y + tile_height * m_CurrentY) / m_ZoomFactor;
-    Position.Format("Map tile:(%i,%i) pixel:(%i,%i)", x, y, pixel_x, pixel_y);
-    GetStatusBar()->SetPaneText(1, Position);
+
+    //const int tile_index = m_Map->GetLayer(m_SelectedLayer).GetTile(x,y);
+    //const char* tile_name = m_Map->GetTileset().GetTile(tile_index).GetName().c_str();
+    //const char* layer_name = m_Map->GetLayer(m_SelectedLayer).GetName();
+
+    char string[1024];
+    sprintf (string, "Map tile:(%d,%d) pixel:(%d,%d)", x, y, pixel_x, pixel_y);
+    GetStatusBar()->SetPaneText(1, string);
   }
   else
     GetStatusBar()->SetPaneText(1, "");

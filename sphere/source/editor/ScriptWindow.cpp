@@ -468,7 +468,7 @@ CScriptWindow::CScriptWindow(const char* filename, bool create_from_clipboard)
 bool
 CScriptWindow::Create()
 {
-  static HINSTANCE scintilla;
+  static HINSTANCE scintilla = NULL;
   if (!scintilla) {
     scintilla = LoadLibrary("SciLexer.dll");
     if (!scintilla) {

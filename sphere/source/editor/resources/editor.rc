@@ -913,6 +913,8 @@ BEGIN
 
             MENUITEM "&Alpha Only",                 ID_IMAGEVIEW_BLENDMODE_ALPHAONLY
 
+            MENUITEM "Additive",                    ID_IMAGEVIEW_BLENDMODE_ADDITIVE
+
         END
         POPUP "Rotate"
         BEGIN

@@ -22,6 +22,8 @@ public:
     BLEND,
     RGB_ONLY,
     ALPHA_ONLY,
+    ADDITIVE,
+    SUBTRACTIVE,
   };
 
 public:

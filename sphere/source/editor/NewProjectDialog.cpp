@@ -35,28 +35,43 @@ CNewProjectDialog::GetGameTitle()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-afx_msg void
-CNewProjectDialog::OnOK()
+bool
+CNewProjectDialog::ValidateValues(std::string& error)
 {
   GetDlgItemText(IDC_PROJECTNAME, m_szProjectName, 32);
   GetDlgItemText(IDC_GAMETITLE,   m_szGameTitle, 32);
 
   if (strlen(m_szProjectName) == 0)
   {
-    MessageBox("Please enter a project name", "New Project");
-    return;
+    error = "Please enter a project name";
+    return false;
   }
 
   for (unsigned int i = 0; i < strlen(m_szProjectName); i++) {
-    if (m_szProjectName[i] != '_' && !isalpha(m_szProjectName[i])) {
-      MessageBox("Project name must contain only A-Z or _", "New Project");
-      return;
+    if (m_szProjectName[i] != '_' && !isalpha(m_szProjectName[i]) && !isdigit(m_szProjectName[i]))
+    {
+      error = "Project name must contain only A-Z, 0-9 or _";
+      return false;
     }
   }
 
   if (strlen(m_szGameTitle) == 0)
   {
-    MessageBox("Please enter a game title", "New Project");
+    error = "Please enter a game title";
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CNewProjectDialog::OnOK()
+{
+  std::string error;
+  if (!ValidateValues(error)) {
+    MessageBox(error.c_str(), "New Project");
     return;
   }
 

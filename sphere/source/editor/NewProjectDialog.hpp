@@ -3,7 +3,7 @@
 
 
 #include <afxwin.h>
-
+#include <string>
 
 class CNewProjectDialog : public CDialog
 {
@@ -13,6 +13,9 @@ public:
 
   const char* GetProjectName();
   const char* GetGameTitle();
+
+private:
+  bool ValidateValues(std::string& error);
 
 private:
   afx_msg void OnOK();

@@ -46,11 +46,12 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
   ON_COMMAND(ID_IMAGEVIEW_PASTE_ALPHA,           OnPasteAlpha)
   ON_COMMAND(ID_IMAGEVIEW_PASTE_INTOSELECTION,   OnPasteIntoSelection)
   ON_COMMAND(ID_IMAGEVIEW_VIEWGRID,              OnViewGrid)
-  ON_COMMAND(ID_IMAGEVIEW_TOGGLEALPHAMASK,         OnToggleViewAlphaMask)
+  ON_COMMAND(ID_IMAGEVIEW_TOGGLEALPHAMASK,       OnToggleViewAlphaMask)
   ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_BLEND,       OnBlendModeBlend)
   ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_REPLACE,     OnBlendModeReplace)
   ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_RGBONLY,     OnBlendModeRGBOnly)
   ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_ALPHAONLY,   OnBlendModeAlphaOnly)
+  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_ADDITIVE,    OnBlendModeAdditive)
   ON_COMMAND(ID_IMAGEVIEW_ROTATE_CW,             OnRotateCW)
   ON_COMMAND(ID_IMAGEVIEW_ROTATE_CCW,            OnRotateCCW)
   ON_COMMAND(ID_IMAGEVIEW_SLIDE_UP,              OnSlideUp)
@@ -2047,8 +2048,8 @@ CImageView::OnTimer(UINT event)
       case Tool_Rectangle:
       case Tool_Circle:
       case Tool_Ellipse:
-      case Tool_Selection:
-      case Tool_FreeSelection:
+      //case Tool_Selection:
+      //case Tool_FreeSelection:
         Invalidate();
       break;
     }
@@ -2172,6 +2173,14 @@ afx_msg void
 CImageView::OnBlendModeAlphaOnly()
 {
   m_Image.SetBlendMode(CImage32::ALPHA_ONLY);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnBlendModeAdditive()
+{
+  m_Image.SetBlendMode(CImage32::ADDITIVE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
