@@ -83,6 +83,12 @@ private:
   bool m_MenuShown;
   void OnSwap(int new_index);
 
+  bool m_ShowTileObstructions;
+  std::vector<sTile> m_TileObstructions;
+
+  void UpdateObstructionTiles();
+  void UpdateObstructionTile(int tile);
+
   DECLARE_MESSAGE_MAP()
 };
 

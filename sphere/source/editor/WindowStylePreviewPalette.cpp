@@ -15,8 +15,8 @@ END_MESSAGE_MAP()
 
 CWindowStylePreviewPalette::CWindowStylePreviewPalette(CDocumentWindow* owner, sWindowStyle* windowstyle)
 : CPaletteWindow(owner, "WindowStyle Preview",
-  Configuration::Get(KEY_TILE_PREVIEW_RECT),
-  Configuration::Get(KEY_TILE_PREVIEW_VISIBLE))
+  Configuration::Get(KEY_WINDOWSTYLE_PREVIEW_RECT),
+  Configuration::Get(KEY_WINDOWSTYLE_PREVIEW_VISIBLE))
 ,  m_WindowStyle(windowstyle)
 , m_ZoomFactor(1)
 , m_BlitImage(NULL)

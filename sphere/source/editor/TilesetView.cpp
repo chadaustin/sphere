@@ -9,6 +9,8 @@
 #include "resource.h"
 #include "FontGradientDialog.hpp"
 
+#include "../common/primitives.hpp"
+
 
 // static const int UPDATE_TILEVIEW_TIMER = 200;
 
@@ -116,8 +118,62 @@ CTilesetView::Create(ITilesetViewHandler* handler, CWnd* parent, sTileset* tiles
     s_iTilesetViewID++);
 
   UpdateScrollBar();
+  UpdateObstructionTiles();
 
   return retval;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CTilesetView::UpdateObstructionTile(int tile) {
+
+  struct Local {
+    struct Color {
+      RGBA operator()(int, int) {
+        return CreateRGBA(255, 0, 255, 255);
+      }
+    };
+
+    static inline void CopyRGBA(RGBA& dest, RGBA src) {
+      dest = src;
+    }
+  };
+
+  sTile& src_tile = m_Tileset->GetTile(tile);
+  sTile& dest_tile = m_TileObstructions[tile] = src_tile;
+  RGBA* dest_pixels = dest_tile.GetPixels();
+
+  // draw the obstruction segments
+  Local::Color c;
+
+  RECT clipper = { 0, 0, (dest_tile.GetWidth()  - 1), (dest_tile.GetHeight()  - 1)  };
+
+  const sObstructionMap& obs_map = src_tile.GetObstructionMap();
+  for (int i = 0; i < obs_map.GetNumSegments(); ++i) {
+    const sObstructionMap::Segment& s = obs_map.GetSegment(i);
+
+    primitives::Line(
+      (RGBA*) dest_pixels,
+      dest_tile.GetWidth(),
+      s.x1, s.y1, s.x2, s.y2,
+      c,
+      clipper,
+      Local::CopyRGBA
+    );
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CTilesetView::UpdateObstructionTiles() {
+  if (m_ShowTileObstructions) {
+    m_TileObstructions.resize(m_Tileset->GetNumTiles());
+    for (int i = 0; i < m_TileObstructions.size(); ++i) {
+      UpdateObstructionTile(i);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -136,6 +192,8 @@ CTilesetView::TileChanged(int tile)
   
   int x = col * m_BlitTile->GetWidth();
   int y = (row - m_TopRow) * m_BlitTile->GetHeight();
+
+  UpdateObstructionTile(tile);
 
   RECT rect;
   SetRect(&rect, x, y, x + m_BlitTile->GetWidth(), y + m_BlitTile->GetHeight());
@@ -163,6 +221,8 @@ CTilesetView::TilesetChanged()
     m_Tileset->GetTileHeight() * m_ZoomFactor,
     32
   );
+
+  UpdateObstructionTiles();
 
   Invalidate();
   UpdateScrollBar();
@@ -301,7 +361,11 @@ CTilesetView::OnPaint()
           }        
 
         // draw the tile into it
-        RGBA* tilepixels = m_Tileset->GetTile(it).GetPixels();
+        const RGBA* tilepixels = m_Tileset->GetTile(it).GetPixels();
+        if (m_ShowTileObstructions && it >= 0 && it < m_TileObstructions.size()) {
+          tilepixels = m_TileObstructions[it].GetPixels();
+        }
+
         for (int iy = 0; iy < blit_height; iy++)
           for (int ix = 0; ix < blit_width; ix++)
           {

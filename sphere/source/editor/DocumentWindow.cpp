@@ -335,10 +335,12 @@ CDocumentWindow::OnUpdateSaveableCommand(CCmdUI* cmdui)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void CDocumentWindow::DistributeAccelerator(CWnd*pWnd, MSG* pMsg) 
+void CDocumentWindow::DistributeAccelerator(CWnd* pWnd, MSG* pMsg) 
 {
-	ASSERT(pWnd != NULL);
-	pWnd = pWnd->GetWindow(GW_CHILD);
+	if (pWnd == NULL)
+    return;
+
+  pWnd = pWnd->GetWindow(GW_CHILD);
 
 	HACCEL hAccel = ((CFrameWnd*)AfxGetMainWnd())->GetDefaultAccelerator();
 	
