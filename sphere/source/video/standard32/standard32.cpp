@@ -1,7 +1,9 @@
 #define DIRECTDRAW_VERSION 0x0300
 #include <windows.h>
 #include <ddraw.h>
-#define USE_ALPHA_TABLE
+
+//#define USE_ALPHA_TABLE
+
 #include "../../common/rgb.hpp"
 #include "../../common/primitives.hpp"
 #include "../common/video.hpp"
@@ -484,20 +486,25 @@ void CloseWindowed()
 
 void FillImagePixels(IMAGE image, RGBA* pixels)
 {
+#ifdef USE_ALPHA_TABLE
   unsigned char al;
+#endif
   // fill the image pixels
   if (BitsPerPixel == 32)
   {
     image->bgra = new BGRA[image->width * image->height];
     for (int i = 0; i < image->width * image->height; ++i)
     {
-      //image->bgra[i].red   = (pixels[i].red   * pixels[i].alpha) / 256;
-      //image->bgra[i].green = (pixels[i].green * pixels[i].alpha) / 256;
-      //image->bgra[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 256;
+#ifdef USE_ALPHA_TABLE
       al = pixels[i].alpha;
       image->bgra[i].red   = alpha_new[al][pixels[i].red  ];
       image->bgra[i].green = alpha_new[al][pixels[i].green];
       image->bgra[i].blue  = alpha_new[al][pixels[i].blue ];
+#else
+      image->bgra[i].red   = (pixels[i].red   * pixels[i].alpha) / 256;
+      image->bgra[i].green = (pixels[i].green * pixels[i].alpha) / 256;
+      image->bgra[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 256;
+#endif
     }
   }
   else
@@ -505,13 +512,16 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
     image->bgr  = new BGR[image->width * image->height];
     for (int i = 0; i < image->width * image->height; ++i)
     {
-      //image->bgr[i].red   = (pixels[i].red   * pixels[i].alpha) / 256;
-      //image->bgr[i].green = (pixels[i].green * pixels[i].alpha) / 256;
-      //image->bgr[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 256;
+#ifdef USE_ALPHA_TABLE
       al = pixels[i].alpha;
       image->bgr[i].red   = alpha_new[al][pixels[i].red  ];
       image->bgr[i].green = alpha_new[al][pixels[i].green];
       image->bgr[i].blue  = alpha_new[al][pixels[i].blue ];
+#else
+      image->bgr[i].red   = (pixels[i].red   * pixels[i].alpha) / 256;
+      image->bgr[i].green = (pixels[i].green * pixels[i].alpha) / 256;
+      image->bgr[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 256;
+#endif
     }
   }
 
@@ -748,23 +758,28 @@ public:
   void operator()(pixelT& dst, pixelT src, byte alpha)
   {
     // do the masking on the source pixel
-    //alpha     = (int)alpha     * m_mask.alpha / 256;
-    //src.red   = (int)src.red   * m_mask.red   / 256;
-    //src.green = (int)src.green * m_mask.green / 256;
-    //src.blue  = (int)src.blue  * m_mask.blue  / 256;
+#ifdef USE_ALPHA_TABLE
     alpha     = alpha_new[m_mask.alpha][alpha];
     src.red   = alpha_new[m_mask.red][src.red];
     src.green = alpha_new[m_mask.green][src.green];
     src.blue  = alpha_new[m_mask.blue][src.blue];
+#else
+    alpha     = (int)alpha     * m_mask.alpha / 256;
+    src.red   = (int)src.red   * m_mask.red   / 256;
+    src.green = (int)src.green * m_mask.green / 256;
+    src.blue  = (int)src.blue  * m_mask.blue  / 256;
+#endif
 
     // blit to the dest pixel
-    //dst.red   = (dst.red   * (256 - alpha) + src.red   * m_mask.alpha) / 256;
-    //dst.green = (dst.green * (256 - alpha) + src.green * m_mask.alpha) / 256;
-    //dst.blue  = (dst.blue  * (256 - alpha) + src.blue  * m_mask.alpha) / 256;
+#ifdef USE_ALPHA_TABLE
     dst.red   = alpha_old[alpha][dst.red]   + alpha_new[m_mask.alpha][src.red];
     dst.green = alpha_old[alpha][dst.green] + alpha_new[m_mask.alpha][src.green];
     dst.blue  = alpha_old[alpha][dst.blue]  + alpha_new[m_mask.alpha][src.blue];
-
+#else
+    dst.red   = (dst.red   * (256 - alpha) + src.red   * m_mask.alpha) / 256;
+    dst.green = (dst.green * (256 - alpha) + src.green * m_mask.alpha) / 256;
+    dst.blue  = (dst.blue  * (256 - alpha) + src.blue  * m_mask.alpha) / 256;
+#endif
   }
 
 private:
@@ -812,23 +827,29 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
 void aBlendBGR(struct BGR& d, struct BGR s, int a)
 {
   // blit to the dest pixel
-//  d.red   = (d.red   * (256 - a)) / 256 + s.red;
-//  d.green = (d.green * (256 - a)) / 256 + s.green;
-//  d.blue  = (d.blue  * (256 - a)) / 256 + s.blue;
+#ifdef USE_ALPHA_TABLE
   d.red   = alpha_old[a][d.red]   + s.red;
   d.green = alpha_old[a][d.green] + s.green;
   d.blue  = alpha_old[a][d.blue]  + s.blue;
+#else
+  d.red   = (d.red   * (256 - a)) / 256 + s.red;
+  d.green = (d.green * (256 - a)) / 256 + s.green;
+  d.blue  = (d.blue  * (256 - a)) / 256 + s.blue;
+#endif
 }
 
 void aBlendBGRA(struct BGRA& d, struct BGRA s, int a)
 {
   // blit to the dest pixel
-//  d.red   = (d.red   * (256 - a)) / 256 + s.red;
-//  d.green = (d.green * (256 - a)) / 256 + s.green;
-//  d.blue  = (d.blue  * (256 - a)) / 256 + s.blue;
+#ifdef USE_ALPHA_TABLE
   d.red   = alpha_old[a][d.red]   + s.red;
   d.green = alpha_old[a][d.green] + s.green;
   d.blue  = alpha_old[a][d.blue]  + s.blue;
+#else
+  d.red   = (d.red   * (256 - a)) / 256 + s.red;
+  d.green = (d.green * (256 - a)) / 256 + s.green;
+  d.blue  = (d.blue  * (256 - a)) / 256 + s.blue;
+#endif
 }
 
 EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
@@ -1065,32 +1086,46 @@ void NormalBlit(IMAGE image, int x, int y)
       while (ix-- > 0) {
 
         a = *alpha;
-        //word b = 256 - a;
+#ifndef USE_ALPHA_TABLE
+        word b = 256 - a;
+#endif
 
         d = *dest;
         s = *src;
 
         dword result;
-        //result = ((d & 0xFF) * b >> 8) + (s & 0xFF);
+#ifdef USE_ALPHA_TABLE
         result = alpha_old[a][d & 0xFF] + (s & 0xFF);
+#else
+        result = ((d & 0xFF) * b >> 8) + (s & 0xFF);
+#endif
 
         d >>= 8;
         s >>= 8;
 
-        //result |= ((d & 0xFF) * b + ((s & 0xFF) << 8)) & 0xFF00;
+#ifdef USE_ALPHA_TABLE
         result |= (alpha_old[a][d & 0xFF] + (s & 0xFF)) << 8;
+#else
+        result |= ((d & 0xFF) * b + ((s & 0xFF) << 8)) & 0xFF00;
+#endif
 
         d >>= 8;
         s >>= 8;
 
-        //result |= (((d & 0xFF) * b + ((s & 0xFF) << 8)) & 0xFF00) << 8;
+#ifdef USE_ALPHA_TABLE
         result |= (alpha_old[a][d & 0xFF] + (s & 0xFF)) << 16;
+#else
+        result |= (((d & 0xFF) * b + ((s & 0xFF) << 8)) & 0xFF00) << 8;
+#endif
 
         d >>= 8;
         s >>= 8;
 
-        //result |= (((d & 0xFF) * b + ((s & 0xFF) << 8)) & 0xFF00) << 8;
+#ifdef USE_ALPHA_TABLE
         result |= (alpha_old[a][d & 0xFF] + (s & 0xFF)) << 24;
+#else
+        result |= (((d & 0xFF) * b + ((s & 0xFF) << 8)) & 0xFF00) << 8;
+#endif
 
         *dest = result;
 
@@ -1111,7 +1146,9 @@ void NormalBlit(IMAGE image, int x, int y)
     BGR*  dest  = (BGR*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
     BGR*  src   = (BGR*)image->bgr   +       image_offset_y * image->width + image_offset_x;
     byte* alpha = image->alpha       +       image_offset_y * image->width + image_offset_x;
+#ifdef USE_ALPHA_TABLE
     byte al;
+#endif
 
     int dest_inc = ScreenWidth  - image_blit_width;
     int src_inc  = image->width - image_blit_width;
@@ -1122,13 +1159,16 @@ void NormalBlit(IMAGE image, int x, int y)
       ix = image_blit_width;
       while (ix-- > 0) {
 
-//        dest->red   = (dest->red   * (256 - *alpha)) / 256 + src->red;
-//        dest->green = (dest->green * (256 - *alpha)) / 256 + src->green;
-//        dest->blue  = (dest->blue  * (256 - *alpha)) / 256 + src->blue;
+#ifdef USE_ALPHA_TABLE
         al=*alpha;
         dest->red   = alpha_old[al][dest->red]   + src->red;
         dest->green = alpha_old[al][dest->green] + src->green;
         dest->blue  = alpha_old[al][dest->blue]  + src->blue;
+#else
+        dest->red   = (dest->red   * (256 - *alpha)) / 256 + src->red;
+        dest->green = (dest->green * (256 - *alpha)) / 256 + src->green;
+        dest->blue  = (dest->blue  * (256 - *alpha)) / 256 + src->blue;
+#endif
 
         ++dest;
         ++src;
@@ -1168,12 +1208,15 @@ EXPORT(RGBA*) LockImage(IMAGE image)
     for (int i = 0; i < image->width * image->height; i++)
     {
       if (image->alpha[i]) {
-        //image->locked_pixels[i].red   = (image->bgra[i].red   * 256) / image->alpha[i];
-        //image->locked_pixels[i].green = (image->bgra[i].green * 256) / image->alpha[i];
-        //image->locked_pixels[i].blue  = (image->bgra[i].blue  * 256) / image->alpha[i];
+#ifdef USE_ALPHA_TABLE
         image->locked_pixels[i].red   = alpha_new[image->alpha[i]][image->bgra[i].red  ];
         image->locked_pixels[i].green = alpha_new[image->alpha[i]][image->bgra[i].green];
         image->locked_pixels[i].blue  = alpha_new[image->alpha[i]][image->bgra[i].blue ];
+#else
+        image->locked_pixels[i].red   = (image->bgra[i].red   * 256) / image->alpha[i];
+        image->locked_pixels[i].green = (image->bgra[i].green * 256) / image->alpha[i];
+        image->locked_pixels[i].blue  = (image->bgra[i].blue  * 256) / image->alpha[i];
+#endif
       }
     }
   }
@@ -1182,12 +1225,15 @@ EXPORT(RGBA*) LockImage(IMAGE image)
     for (int i = 0; i < image->width * image->height; i++)
     {
       if (image->alpha[i]) {
-        //image->locked_pixels[i].red   = (image->bgr[i].red   * 256) / image->alpha[i];
-        //image->locked_pixels[i].green = (image->bgr[i].green * 256) / image->alpha[i];
-        //image->locked_pixels[i].blue  = (image->bgr[i].blue  * 256) / image->alpha[i];
+#ifdef USE_ALPHA_TABLE
         image->locked_pixels[i].red   = alpha_new[image->alpha[i]][image->bgr[i].red  ];
         image->locked_pixels[i].green = alpha_new[image->alpha[i]][image->bgr[i].green];
         image->locked_pixels[i].blue  = alpha_new[image->alpha[i]][image->bgr[i].blue ];
+#else
+        image->locked_pixels[i].red   = (image->bgr[i].red   * 256) / image->alpha[i];
+        image->locked_pixels[i].green = (image->bgr[i].green * 256) / image->alpha[i];
+        image->locked_pixels[i].blue  = (image->bgr[i].blue  * 256) / image->alpha[i];
+#endif
       }
     }
   }
@@ -1236,12 +1282,15 @@ EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels)
         }
         else if (src.alpha > 0)
         {
-          //dest->red   = (dest->red   * (256 - src.alpha) + src.red   * src.alpha) / 256;
-          //dest->green = (dest->green * (256 - src.alpha) + src.green * src.alpha) / 256;
-          //dest->blue  = (dest->blue  * (256 - src.alpha) + src.blue  * src.alpha) / 256;
+#ifdef USE_ALPHA_TABLE
           dest->red   = alpha_old[src.alpha][dest->red]   + alpha_new[src.alpha][src.red];
           dest->green = alpha_old[src.alpha][dest->green] + alpha_new[src.alpha][src.green];
           dest->blue  = alpha_old[src.alpha][dest->blue]  + alpha_new[src.alpha][src.blue];
+#else
+          dest->red   = (dest->red   * (256 - src.alpha) + src.red   * src.alpha) / 256;
+          dest->green = (dest->green * (256 - src.alpha) + src.green * src.alpha) / 256;
+          dest->blue  = (dest->blue  * (256 - src.alpha) + src.blue  * src.alpha) / 256;
+#endif
         }
       }
   }
@@ -1261,12 +1310,15 @@ EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels)
         }
         else if (src.alpha > 0)
         {
-          //dest->red   = (dest->red   * (256 - src.alpha) + src.red   * src.alpha) / 256;
-          //dest->green = (dest->green * (256 - src.alpha) + src.green * src.alpha) / 256;
-          //dest->blue  = (dest->blue  * (256 - src.alpha) + src.blue  * src.alpha) / 256;
+#ifdef USE_ALPHA_TABLE
           dest->red   = alpha_old[src.alpha][dest->red]   + alpha_new[src.alpha][src.red];
           dest->green = alpha_old[src.alpha][dest->green] + alpha_new[src.alpha][src.green];
           dest->blue  = alpha_old[src.alpha][dest->blue]  + alpha_new[src.alpha][src.blue];
+#else
+          dest->red   = (dest->red   * (256 - src.alpha) + src.red   * src.alpha) / 256;
+          dest->green = (dest->green * (256 - src.alpha) + src.green * src.alpha) / 256;
+          dest->blue  = (dest->blue  * (256 - src.alpha) + src.blue  * src.alpha) / 256;
+#endif
         } // end for
       } // end for
   } // end if (BitsPerPixel)

@@ -1,8 +1,6 @@
 #ifndef RGB_HPP
 #define RGB_HPP
 
-#define USE_ALPHA_TABLE
-
 #include "types.h"
 
 #ifdef USE_ALPHA_TABLE
