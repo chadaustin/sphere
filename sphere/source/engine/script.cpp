@@ -4650,6 +4650,24 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(GetTalkActivationButton, 0)
+  return_int(This->m_Engine->GetMapEngine()->GetTalkActivationButton());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(SetTalkActivationButton, 1)
+  arg_int(button);
+
+  if (!This->m_Engine->GetMapEngine()->SetTalkActivationButton(button)) {
+    This->ReportMapEngineError("SetTalkActivationButton() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 /**
         - set distance to check for talk script activation
 */

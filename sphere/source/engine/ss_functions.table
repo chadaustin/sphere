@@ -274,6 +274,8 @@ SS_FUNCTION(OpenLog, 1)
       SS_FUNCTION(SetTalkDistance,      1)
       SS_FUNCTION(GetTalkActivationKey, 0)
       SS_FUNCTION(GetTalkDistance,      0)
+      SS_FUNCTION(GetTalkActivationButton, 0)
+      SS_FUNCTION(SetTalkActivationButton, 1)
 
 
   // spritesets
