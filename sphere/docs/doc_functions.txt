@@ -487,6 +487,9 @@ log_object.endBlock()
           'immediate', if true, will execute the command go right away
           if false, it will wait until the next frame)
       
+      QueuePersonScript(name, script, immediate)
+        - adds a script command to the person's queue
+      
       ClearPersonCommands(name)
         - clears the command queue of sprite with the 'name'
 

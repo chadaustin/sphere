@@ -1486,6 +1486,34 @@ CMapEngine::QueuePersonCommand(const char* name, int command, bool immediate)
   return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::QueuePersonScript(const char* name, const char* script, bool immediate)
+{
+  // Make sure script is not null
+  if ((script == "") || (script == NULL)) {
+    m_ErrorMessage = "Null script."
+    return false;
+  }
+  
+  // find person
+  int person = FindPerson(name);
+  if (person == -1) {
+    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+    return false;
+  }
+
+  // if person has a leader, ignore the command
+  if (m_Persons[person].leader != -1) {
+    return true;
+  }
+  
+  // add person to queue
+  m_Persons[person].commands.push_back(Person::Command("COMMAND_DO_SCRIPT", immediate, script));
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
@@ -2457,6 +2485,8 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     int old_x = p.x;
     int old_y = p.y;
 
+    
+    std::string error;
     switch (c.command) {
       
       case COMMAND_WAIT: break;
@@ -2472,7 +2502,12 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
       case COMMAND_MOVE_EAST:      p.x++; break;
       case COMMAND_MOVE_SOUTH:     p.y++; break;
       case COMMAND_MOVE_WEST:      p.x--; break;
-
+      case COMMAND_DO_SCRIPT:        
+        if (!ExecuteScript(c.script, error)) {
+	  m_ErrorMessage = "Could not execute queued script\nPerson:" + p.description +
+	    "\nError:" + error;
+	}
+	break;
     }
 
     // make sure 'stepping' is valid

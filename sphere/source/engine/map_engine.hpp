@@ -35,6 +35,8 @@ public:
     COMMAND_MOVE_EAST,
     COMMAND_MOVE_SOUTH,
     COMMAND_MOVE_WEST,
+	  
+    COMMAND_DO_SCRIPT,
 
     NUM_COMMANDS
   };
@@ -133,6 +135,7 @@ public:
   bool CallPersonScript(const char* name, int which);
   bool GetCurrentPerson(std::string& person);
   bool QueuePersonCommand(const char* name, int command, bool immediate);
+  bool QueuePersonScript(const char* name, const char* script, bool immediate);
   bool ClearPersonCommands(const char* name);
 
   bool IsPersonObstructed(const char* name, int x, int y, bool& result);
@@ -176,9 +179,10 @@ private:
     IEngine::script script_command_generator;
 
     struct Command {
-      Command(int c, bool i) : command(c), immediate(i) { }
+      Command(int c, bool i, std::string s = "") : command(c), immediate(i), script(s) { }
       int command;
       bool immediate;
+      std::string script;
     };
     std::deque<Command> commands;
 

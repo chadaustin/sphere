@@ -173,6 +173,7 @@ SS_FUNCTION(OpenLog, 1)
       SS_FUNCTION(GetCurrentPerson, 0)
 
       SS_FUNCTION(QueuePersonCommand,  3)
+      SS_FUNCTION(QueuePersonScript, 3)
       SS_FUNCTION(ClearPersonCommands, 1)
       
       SS_FUNCTION(IsPersonObstructed, 3)

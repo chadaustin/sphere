@@ -2101,7 +2101,21 @@ begin_func(QueuePersonCommand, 3)
   }
 
 end_func()
+  
+////////////////////////////////////////////////////////////////////////////////
+  
+begin_func(QueuePersonScript, 3)
+  arg_str(name);
+  arg_str(script);
+  arg_bool(immediate);
+  
+  if (!This->m_Engine->GetMapEngine()->QueuePersonScript(name, script, immediate)) {
+    This->ReportMapEngineError("QueuePersonScript() failed");
+    return JS_FALSE;
+  }
 
+end_func()
+  
 ////////////////////////////////////////////////////////////////////////////////
 
 begin_func(ClearPersonCommands, 1)
