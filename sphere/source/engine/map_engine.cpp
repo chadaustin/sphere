@@ -4027,7 +4027,7 @@ CMapEngine::ExecuteZoneScript(int zone_index)
   Zone& z = m_Zones[zone_index];
   m_CurrentZone = zone_index;
 
-  // execute the trigger code
+  // execute the zone code
   IEngine::script script = z.script;
   std::string error;
   bool execute_script = ExecuteScript(script, error);
@@ -4036,7 +4036,7 @@ CMapEngine::ExecuteZoneScript(int zone_index)
 
   if (!execute_script) {
     std::ostringstream os;
-    os << "Could not compile zone ("
+    os << "Could not execute zone ("
        << z.x1
        << ", "
        << z.y1

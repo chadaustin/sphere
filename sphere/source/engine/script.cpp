@@ -697,11 +697,19 @@ inline int argInt(JSContext* cx, jsval arg)
     return false;
   }
 
+  if (!JSVAL_IS_INT(arg) && !JSVAL_IS_DOUBLE(arg)) {
+    JS_ReportError(cx, "Invalid integer.");
+    return 0;
+  }
+
   if (JS_ValueToInt32(cx, arg, &i) == JS_FALSE) {
     return 0; // invalid integer
   }
+
   return i;
 }
+
+///////////////////////////////////////////////////////////
 
 inline const char* argStr(JSContext* cx, jsval arg)
 {
@@ -713,6 +721,8 @@ inline const char* argStr(JSContext* cx, jsval arg)
     return "";
   }
 }
+
+///////////////////////////////////////////////////////////
 
 inline bool argBool(JSContext* cx, jsval arg)
 {
@@ -726,20 +736,35 @@ inline bool argBool(JSContext* cx, jsval arg)
   if (JS_ValueToBoolean(cx, arg, &b) == JS_FALSE) {
     return false;
   }
+
   return (b == JS_TRUE);
 }
+
+///////////////////////////////////////////////////////////
 
 inline double argDouble(JSContext* cx, jsval arg)
 {
   jsdouble d;
+
   if (JSVAL_IS_OBJECT(arg)) {
     JS_ReportError(cx, "Invalid double.");
     return 0;
   }
 
-  JS_ValueToNumber(cx, arg, &d);
+  if (!JSVAL_IS_INT(arg) && !JSVAL_IS_DOUBLE(arg)) {
+    JS_ReportError(cx, "Invalid double.");
+    return 0;
+  }
+
+  if (JS_ValueToNumber(cx, arg, &d) == JS_FALSE) {
+    JS_ReportError(cx, "Invalid double.");
+    return 0;
+  }
+
   return d;
 }
+
+///////////////////////////////////////////////////////////
 
 inline JSObject* argObject(JSContext* cx, jsval arg)
 {
@@ -749,9 +774,15 @@ inline JSObject* argObject(JSContext* cx, jsval arg)
   }
 
   JSObject* object;
-  JS_ValueToObject(cx, arg, &object);
+  if (JS_ValueToObject(cx, arg, &object) == JS_FALSE) {
+    JS_ReportError(cx, "Invalid object.");
+    return NULL; 
+  }
+
   return object;
 }
+
+///////////////////////////////////////////////////////////
 
 inline JSObject* argArray(JSContext* cx, jsval arg)
 {
@@ -763,8 +794,11 @@ inline JSObject* argArray(JSContext* cx, jsval arg)
     JS_ReportError(cx, "Invalid array.");
     return NULL;
   }
+
   return array;
 }
+
+///////////////////////////////////////////////////////////
 
 inline RGBA argColor(JSContext* cx, jsval arg)
 {
@@ -792,6 +826,8 @@ inline RGBA argColor(JSContext* cx, jsval arg)
   return color->color;
 }
 
+///////////////////////////////////////////////////////////
+
 inline CImage32* argSurface(JSContext* cx, jsval arg)
 {
   if (!JSVAL_IS_OBJECT(arg)) {
@@ -818,6 +854,8 @@ inline CImage32* argSurface(JSContext* cx, jsval arg)
   return surface->surface;
 }
 
+///////////////////////////////////////////////////////////
+
 inline CColorMatrix* argColorMatrix(JSContext* cx, jsval arg)
 {
   if (!JSVAL_IS_OBJECT(arg)) {
@@ -838,6 +876,8 @@ inline CColorMatrix* argColorMatrix(JSContext* cx, jsval arg)
 
   return colormatrix->colormatrix;
 }
+
+///////////////////////////////////////////////////////////
 
 inline SS_BYTEARRAY* argByteArray(JSContext* cx, jsval arg)
 {
@@ -860,6 +900,8 @@ inline SS_BYTEARRAY* argByteArray(JSContext* cx, jsval arg)
   return array;
 }
 
+///////////////////////////////////////////////////////////
+
 inline SS_IMAGE* argImage(JSContext* cx, jsval arg)
 {
   if (!JSVAL_IS_OBJECT(arg)) {
@@ -880,6 +922,8 @@ inline SS_IMAGE* argImage(JSContext* cx, jsval arg)
 
   return image;
 }
+
+///////////////////////////////////////////////////////////
 
 inline SS_FONT* argFont(JSContext* cx, jsval arg)
 {

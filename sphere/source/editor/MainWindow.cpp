@@ -1476,13 +1476,6 @@ CMainWindow::OnFileImportRM2KChipsetToRTS()
       return;
     }
 
-    sTileset tileset;
-    if (!tileset.BuildFromImage(image, 16, 16, allow_duplicates))
-    {
-      MessageBox("Can't convert image!");
-      return;
-    }
-
     if (ask_for_color_once || always_ask_for_color) {
       CFontGradientDialog transparent_color_dialog("Transparent color", "In", "Out", image.GetPixel(image.GetWidth() - 1, 0), CreateRGBA(image.GetPixel(image.GetWidth() - 1, 0).red, image.GetPixel(image.GetWidth() - 1, 0).green, image.GetPixel(image.GetWidth() - 1, 0).blue, 0));
       if (transparent_color_dialog.DoModal() != IDOK)
@@ -1491,6 +1484,39 @@ CMainWindow::OnFileImportRM2KChipsetToRTS()
       color1 = transparent_color_dialog.GetTopColor();
       color2 = transparent_color_dialog.GetBottomColor();
       ask_for_color_once = false;
+    }
+
+    if (1) {
+      int width  = image.GetWidth()  / 5;
+      int height = image.GetHeight() * 5;
+
+      CImage32 temp = image;
+      if (temp.GetWidth() == image.GetWidth() && temp.GetHeight() == image.GetHeight()) {
+        image.Resize(width, height);
+        if (image.GetWidth() != width || image.GetHeight() != height)
+        {
+          MessageBox("Cannot resize image!");
+          return;
+        }
+        else {
+          image.SetBlendMode(CImage32::REPLACE);
+
+          for (int i = 0; i < 5; i++) {
+            for (int y = 0; y < temp.GetHeight(); y++) {
+              for (int x = 0; x < width; x++) {
+                image.SetPixel(x, y + (i * temp.GetHeight()), temp.GetPixel(x + (i * width), y));
+              }
+            }
+          }
+        }
+      }
+    }
+
+    sTileset tileset;
+    if (!tileset.BuildFromImage(image, 16, 16, allow_duplicates))
+    {
+      MessageBox("Can't convert image!");
+      return;
     }
 
     for (int i = 0; i < tileset.GetNumTiles(); i++) {
