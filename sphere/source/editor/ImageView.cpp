@@ -629,11 +629,13 @@ CImageView::UpdateSelectionPixels(const RGBA* pixels, int sx, int sy, int sw, in
     }
     else
     if (m_SelectionType == ST_Free) {
-      bool* selection_points = new bool[m_SelectionWidth * m_SelectionHeight];
+      int selection_width = m_SelectionWidth + 1;
+      int selection_height = m_SelectionHeight + 1;
+      bool* selection_points = new bool[selection_width * selection_height];
       if (selection_points == NULL)
         return;
 
-      memset(selection_points, false, (m_SelectionWidth * m_SelectionHeight) * sizeof(bool));
+      memset(selection_points, false, (selection_width * selection_height) * sizeof(bool));
 
       struct Local {
         struct Color {
@@ -650,20 +652,20 @@ CImageView::UpdateSelectionPixels(const RGBA* pixels, int sx, int sy, int sw, in
       // draw true/false lines onto selection_points buffer
       for (int i = 1; i < m_SelectionPoints.size(); i++) {
         Local::Color c;
-        clipper clip = {0, 0, (m_SelectionWidth - 1), (m_SelectionHeight - 1)};
+        clipper clip = {0, 0, (selection_width - 1), (selection_height - 1)};
         CPoint p = m_SelectionPoints[i-1];
         CPoint q = m_SelectionPoints[i];
-        primitives::Line(selection_points, m_SelectionWidth,
+        primitives::Line(selection_points, selection_width,
                          p.x - m_SelectionX, p.y - m_SelectionY,
                          q.x - m_SelectionX, q.y - m_SelectionY,
                          c, clip, Local::CopyBool);
       }
 
       // fill in gaps between lines
-      for (int dy = 0; dy < m_SelectionHeight; dy++) {
+      for (int dy = 0; dy < selection_height; dy++) {
         bool on = false;
-        for (int dx = 0; dx < m_SelectionWidth; dx++) {
-          int index = dy * m_SelectionWidth + dx;
+        for (int dx = 0; dx < selection_width; dx++) {
+          int index = dy * selection_width + dx;
           if (selection_points[index]) {
             on = !on;
           }
@@ -675,9 +677,10 @@ CImageView::UpdateSelectionPixels(const RGBA* pixels, int sx, int sy, int sw, in
       // update image
       for (int dy = sy; dy < (sy + sh); dy++) {
         for (int dx = sx; dx < (sx + sw); dx++) {
-          int index = (dy - sy) * sw + (dx - sx);
-          if (selection_points[index])
-            image[dy * iWidth + dx] = pixels[index];
+          int selection_index = (dy - sy) * selection_width + (dx - sx);
+          int pixel_index = (dy - sy) * sw + (dx - sx);
+          if (selection_points[selection_index])
+            image[dy * iWidth + dx] = pixels[pixel_index];
         }
       }
 
