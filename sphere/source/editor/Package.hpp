@@ -6,10 +6,10 @@
 #include <string>
 
 
+typedef void (__cdecl *PackageFileWrittenCallBack)(const char* filename, int index, int total);
+
+
 // creates .spk (.tar.gz) Sphere package
-typedef void (*PackageFileWrittenCallBack)(const char* filename, int index, int total);
-
-
 class CPackage
 {
 public:

@@ -2423,7 +2423,7 @@ CMainWindow::OnProjectConfigureSphere()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void OnPackageFileWritten(const char* filename, int index, int total)
+void __cdecl OnPackageFileWritten(const char* filename, int index, int total)
 {
   char string[MAX_PATH + 1024] = {0};
   if (index == -1) {
@@ -2431,7 +2431,12 @@ void OnPackageFileWritten(const char* filename, int index, int total)
   }
   else {
     int percent = (int)( ((double)index / (double)total) * 100);
-    sprintf (string, "Packaging '%s'... %3d%% Complete", filename, percent);
+    if (strcmp(filename, "") == 0) {
+      sprintf (string, "%3d%% Complete", percent);
+    }
+    else {
+      sprintf (string, "Packaging '%s'... %3d%% Complete", filename, percent);
+    }
   }
 
   GetStatusBar()->SetWindowText(string);
@@ -2450,11 +2455,17 @@ CMainWindow::OnProjectPackageGame()
   std::list<std::string> files;
   EnumerateFiles("*", "", files);
 
+  std::string msg = "";
+
   CPackage package;
   std::list<std::string>::iterator i;
   for (i = files.begin(); i != files.end(); i++) {
     package.AddFile(i->c_str());
+    msg += i->c_str();
+    msg += " ";
   }
+  
+  MessageBox(msg.c_str());
 
   // TODO:  show a wait dialog (no cancel)
   // it now shows "xyz% Complete" in the status bar...

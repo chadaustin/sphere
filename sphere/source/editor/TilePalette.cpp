@@ -29,7 +29,7 @@ CTilePalette::CTilePalette(CDocumentWindow* owner, ITilesetViewHandler* handler,
   m_TilesetView.Create(handler, this, tileset);
   m_Created = true;
   
-#if 1
+#if defined(TILESET_PALETTE_DOCKED)
   ModifyStyle(WS_CAPTION, 0);
 #endif
 

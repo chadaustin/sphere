@@ -147,7 +147,7 @@ CPackage::Write(const char* filename, PackageFileWrittenCallBack file_written)
   fclose(file);
 
   if (file_written != NULL) // 100% done now
-    file_written(i->c_str(), file_index++, m_files.size());
+    file_written("", file_index++, m_files.size());
   
   return true;
 }

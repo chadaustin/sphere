@@ -1034,8 +1034,16 @@ sMap::Import_VergeMAP(const char* filename, const char* tilesetFilename, IFileSy
     }
 
     // get info about map and uncompress it
-    for (i=0; i<header.num_layers; i++)
+    for (i=0; i<header.num_layers; i++) {
       mapLayer[i] = new word[LayerInfo[i].size_x * LayerInfo[i].size_y];
+
+      if (!mapLayer[i]) {
+        for (i = i - 1; i >= 0; i--)
+          delete mapLayer[i];
+        return false;
+      }
+
+    }
 
     for (i=0; i<header.num_layers; i++)
     {
