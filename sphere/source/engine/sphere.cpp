@@ -117,13 +117,13 @@ void RunSphere(int argc, const char** argv)
 
   // start the game specified on the command line
   if (show_menu) {
-    //std::vector<std::string> folder_list = GetFolderList("games/*");
-    //if (folder_list.size() == 1) {
-
-    //}
-    //else {
+    if (s_GameList.size() == 1) {
+      std::string directory = "games/" + s_GameList[0].directory;
+      RunGame(directory.c_str(), "");
+    }
+    else {
       RunGame("startup", "");
-    //}
+    }
   }
 
   DestroySystemObjects();
@@ -164,7 +164,7 @@ std::string DoRunGame(const char* game, const char* parameters) {
 
     LeaveDirectory();
   } else {
-    QuitMessage("Could not enter game directory");
+    QuitMessage(game);
   }
 
   return result;

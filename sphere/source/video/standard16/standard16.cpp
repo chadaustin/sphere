@@ -516,11 +516,14 @@ EXPORT(void) FlipScreen()
 EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 {
   IMAGE image = new _IMAGE;
-  image->width  = width;
-  image->height = height;
+  if (image) {
+    image->width  = width;
+    image->height = height;
 
-  FillImagePixels(image, pixels);
-  OptimizeBlitRoutine(image);
+    FillImagePixels(image, pixels);
+    OptimizeBlitRoutine(image);
+  }
+
   return image;
 }
 
@@ -532,6 +535,9 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
   RGBA pixel;
 
   image->rgb = new word[image->width * image->height];
+  if (!image->rgb)
+    return;
+
   if (PixelFormat == RGB565)
   {
     for (int i = 0; i < image->width * image->height; i++) {
@@ -561,6 +567,9 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
 
   // alpha
   image->alpha = new byte[image->width * image->height];
+  if (!image->alpha)
+    return;
+
   for (int i = 0; i < image->width * image->height; i++)
     image->alpha[i] = pixels[i].alpha;
 }
