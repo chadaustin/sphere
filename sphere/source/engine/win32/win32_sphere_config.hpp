@@ -11,11 +11,19 @@ enum {
   SOUND_OFF,
 };
 
+enum {
+  VIDEO_CAPTURE_SCREENSHOT_ONLY,
+  VIDEO_CAPTURE_UNTIL_OUTOFTIME,
+  VIDEO_CAPTURE_UNTIL_F12_KEYED,
+};
 
 struct SPHERECONFIG
 {
   // video
   std::string videodriver;
+  int video_capture_mode;
+  int video_capture_timer;
+  int video_capture_framerate;
 
   // audio
   int sound;

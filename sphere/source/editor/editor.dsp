@@ -116,7 +116,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 winmm.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 # SUBTRACT BASE LINK32 /profile
-# ADD LINK32 htmlhelp.lib corona.lib audiere.lib winmm.lib js32.lib zlib.lib libmng.lib wsock32.lib /nologo /subsystem:windows /profile /debug /machine:I386 /libpath:"../../third-party-msvc/lib"
+# ADD LINK32 htmlhelp.lib corona.lib audiere.lib winmm.lib js32.lib zlib.lib libmng.lib aspell.lib wsock32.lib /nologo /subsystem:windows /profile /debug /machine:I386 /libpath:"../../third-party-msvc/lib"
 
 !ENDIF 
 

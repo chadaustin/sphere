@@ -22,6 +22,66 @@
 static const int ID_EDIT = 900;
 static const UINT s_FindReplaceMessage = ::RegisterWindowMessage(FINDMSGSTRING);
 
+#include <aspell.h>
+
+/*
+    AspellSpellerSaveAllWordLists =  (aspell_speller_save_all_word_lists_type)m_AspellLibrary.GetSymbol(_("aspell_speller_save_all_word_lists"));
+    DeleteAspellDocumentChecker =  (delete_aspell_document_checker_type)m_AspellLibrary.GetSymbol(_("delete_aspell_document_checker"));
+    DeleteAspellConfig =  (delete_aspell_config_type)m_AspellLibrary.GetSymbol(_("delete_aspell_config"));
+    DeleteAspellSpeller =  (delete_aspell_speller_type)m_AspellLibrary.GetSymbol(_("delete_aspell_speller"));
+    DeleteAspellCanHaveError =  (delete_aspell_can_have_error_type)m_AspellLibrary.GetSymbol(_("delete_aspell_can_have_error"));
+    ToAspellSpeller =  (to_aspell_speller_type)m_AspellLibrary.GetSymbol(_("to_aspell_speller"));
+    NewAspellConfig =  (new_aspell_config_type)m_AspellLibrary.GetSymbol(_("new_aspell_config"));
+    AspellConfigReplace =  (aspell_config_replace_type)m_AspellLibrary.GetSymbol(_("aspell_config_replace"));
+    AspellSpellerCheck =  (aspell_speller_check_type)m_AspellLibrary.GetSymbol(_("aspell_speller_check"));
+    NewAspellDocumentChecker =  (new_aspell_document_checker_type)m_AspellLibrary.GetSymbol(_("new_aspell_document_checker"));
+    AspellError =  (aspell_error_type)m_AspellLibrary.GetSymbol(_("aspell_error"));
+    ToAspellDocumentChecker =  (to_aspell_document_checker_type)m_AspellLibrary.GetSymbol(_("to_aspell_document_checker"));
+    AspellDocumentCheckerProcess =  (aspell_document_checker_process_type)m_AspellLibrary.GetSymbol(_("aspell_document_checker_process"));
+    AspellDocumentCheckerNextMisspelling =  (aspell_document_checker_next_misspelling_type)m_AspellLibrary.GetSymbol(_("aspell_document_checker_next_misspelling"));
+    AspellSpellerSuggest =  (aspell_speller_suggest_type)m_AspellLibrary.GetSymbol(_("aspell_speller_suggest"));
+    AspellWordListElements =  (aspell_word_list_elements_type)m_AspellLibrary.GetSymbol(_("aspell_word_list_elements"));
+    AspellStringEnumerationNext =  (aspell_string_enumeration_next_type)m_AspellLibrary.GetSymbol(_("aspell_string_enumeration_next"));
+    DeleteAspellStringEnumeration =  (delete_aspell_string_enumeration_type)m_AspellLibrary.GetSymbol(_("delete_aspell_string_enumeration"));
+    AspellSpellerAddToPersonal =  (aspell_speller_add_to_personal_type)m_AspellLibrary.GetSymbol(_("aspell_speller_add_to_personal"));
+    AspellSpellerPersonalWordList =  (aspell_speller_personal_word_list_type)m_AspellLibrary.GetSymbol(_("aspell_speller_personal_word_list"));
+    AspellConfigPossibleElements =  (aspell_config_possible_elements_type)m_AspellLibrary.GetSymbol(_("aspell_config_possible_elements"));
+    AspellKeyInfoEnumerationNext =  (aspell_key_info_enumeration_next_type)m_AspellLibrary.GetSymbol(_("aspell_key_info_enumeration_next"));
+    DeleteAspellKeyInfoEnumeration =  (delete_aspell_key_info_enumeration_type)m_AspellLibrary.GetSymbol(_("delete_aspell_key_info_enumeration"));
+    NewAspellSpeller = (new_aspell_speller_type)m_AspellLibrary.GetSymbol(_("new_aspell_speller"));
+    AspellErrorMessage = (aspell_error_message_type)m_AspellLibrary.GetSymbol(_("aspell_error_message"));
+    AspellSpellerStoreReplacement = (aspell_speller_store_replacement_type)m_AspellLibrary.GetSymbol(_("aspell_speller_store_replacement"));
+    AspellConfigRetrieve = (aspell_config_retrieve_type)m_AspellLibrary.GetSymbol(_("aspell_config_retrieve"));
+    GetAspellDictInfoList = (get_aspell_dict_info_list_type)m_AspellLibrary.GetSymbol(_("get_aspell_dict_info_list"));
+    AspellDictInfoListElements = (aspell_dict_info_list_elements_type)m_AspellLibrary.GetSymbol(_("aspell_dict_info_list_elements"));
+    AspellDictInfoEnumerationNext = (aspell_dict_info_enumeration_next_type)m_AspellLibrary.GetSymbol(_("aspell_dict_info_enumeration_next"));
+    DeleteAspellDictInfoEnumeration = (delete_aspell_dict_info_enumeration_type)m_AspellLibrary.GetSymbol(_("delete_aspell_dict_info_enumeration"));
+    AspellConfigRemove = (aspell_config_remove_type)m_AspellLibrary.GetSymbol(_("aspell_config_remove"));
+*/
+
+// helps eliminate warnings
+template<typename T, typename U>
+void assign(T& dest, U src)
+{
+  dest = (T&)src;
+}
+
+
+class ASpellLoader {
+  static HINSTANCE ASpellLibrary;
+
+  ASpellLoader() {
+
+  }
+
+  ~ASpellLoader() {
+    if (ASpellLibrary) {
+      FreeLibrary(ASpellLibrary);
+      ASpellLibrary = NULL;
+    }
+  }
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 
  static const char* sFunctionDefinitions =
@@ -1728,138 +1788,97 @@ CScriptWindow::SpellCheck(const int line_number)
 
     const int lexer = SendEditor(SCI_GETLEXER);
 
-    char string[100000] = {0};
+    //char string[100000] = {0};
 
-    for (int cur_pos = 0, last_pos = 0; cur_pos < line_length; cur_pos++)
-    {
-      bool spell_check = true;
+    AspellCanHaveError* ret = NULL;
+    AspellConfig* config = NULL;
+    if (config == NULL) {
+      config = new_aspell_config();
+      if (config == NULL)
+        return;
 
-      if (lexer == SCLEX_CPP) {
-        const int char_style = SendEditor(SCI_GETSTYLEAT, start_pos + cur_pos);
-        if ( ! (char_style == 6 || char_style == -122 || char_style == 38) )
-          spell_check = false;
+      aspell_config_replace(config, "dict-dir", "C:\\WINDOWS\\Desktop\\sphere\\source\\editor\\output\\Profile\\dict");
+      aspell_config_replace(config, "data-dir", "C:\\WINDOWS\\Desktop\\sphere\\source\\editor\\output\\Profile\\data");
 
-        //sprintf (string + strlen(string), "[%d:%d:%d]", SCE_C_STRING, char_style, spell_check ? 1 : 0);
-      }
-
-      if (!spell_check) {
-        SendEditor(SCI_SETSTYLING, 1, GOOD_SPELLING_INDICTOR_MASK);
-        last_pos = cur_pos + 1;
-      }
-      else
-      if ((text[cur_pos] == ' ' || text[cur_pos] == '"' || cur_pos == line_length - 1)) {
-        int length = cur_pos - last_pos;
-        if (text[cur_pos] == ' ' || text[cur_pos] == '"')
-          ;
-        else
-        if (cur_pos == line_length - 1)
-          length += 1;
-
-        const char* dictionary_1[] = {"I", "A", "a"};
-        const char* dictionary_2[] = {"on", "an", "it", "in", "ok", "as"};
-        const char* dictionary_3[] = {"the", "cat", "sat", "did", "mat", "I'm"};
-        const char* dictionary_4[] = {"they", "that", "than"};
-        const char* dictionary_5[] = {"their"};
-        const char* dictionary_6[] = {"theirs"};
-        const char* dictionary_7[] = {"They're"};
-        
-        const int dictionary_1_size = sizeof(dictionary_1) / sizeof(*dictionary_1);
-        const int dictionary_2_size = sizeof(dictionary_2) / sizeof(*dictionary_2);
-        const int dictionary_3_size = sizeof(dictionary_3) / sizeof(*dictionary_3);
-        const int dictionary_4_size = sizeof(dictionary_1) / sizeof(*dictionary_4);
-        const int dictionary_5_size = sizeof(dictionary_2) / sizeof(*dictionary_5);
-        const int dictionary_6_size = sizeof(dictionary_3) / sizeof(*dictionary_6);
-        const int dictionary_7_size = sizeof(dictionary_3) / sizeof(*dictionary_7);
-
-        if (length > 0)
-        {
-          bool found = false;
-
-          switch (length)
-          {
-            case 1:
-              for (int i = 0; i < dictionary_1_size; i++) {
-                if (memcmp(text + last_pos, dictionary_1[i], length) == 0) {
-                  found = true;
-                  break;
-                }
-              }
-            break;
-
-            case 2:
-              for (int i = 0; i < dictionary_2_size; i++) {
-                if (memcmp(text + last_pos, dictionary_2[i], length) == 0) {
-                  found = true;
-                  break;
-                }
-              }
-            break;
-
-            case 3:
-              for (int i = 0; i < dictionary_3_size; i++) {
-                if (memcmp(text + last_pos, dictionary_3[i], length) == 0) {
-                  found = true;
-                  break;
-                }
-              }
-            break;
-
-            case 4:
-              for (int i = 0; i < dictionary_4_size; i++) {
-                if (memcmp(text + last_pos, dictionary_4[i], length) == 0) {
-                  found = true;
-                  break;
-                }
-              }
-            break;
-
-            case 5:
-              for (int i = 0; i < dictionary_5_size; i++) {
-                if (memcmp(text + last_pos, dictionary_5[i], length) == 0) {
-                  found = true;
-                  break;
-                }
-              }
-            break;
-
-            case 6:
-              for (int i = 0; i < dictionary_6_size; i++) {
-                if (memcmp(text + last_pos, dictionary_6[i], length) == 0) {
-                  found = true;
-                  break;
-                }
-              }
-            break;
-
-            case 7:
-              for (int i = 0; i < dictionary_7_size; i++) {
-                if (memcmp(text + last_pos, dictionary_7[i], length) == 0) {
-                  found = true;
-                  break;
-                }
-              }
-            break;
-
-          
-          }
-
-          if (!found) {
-            SendEditor(SCI_SETSTYLING, length, BAD_SPELLING_INDICTOR_MASK);
-          } else {
-            SendEditor(SCI_SETSTYLING, length, GOOD_SPELLING_INDICTOR_MASK);
-          }
-        }
-
-        if ((text[cur_pos] == ' ' || text[cur_pos] == '"'))
-          SendEditor(SCI_SETSTYLING, 1, GOOD_SPELLING_INDICTOR_MASK);
-
-        last_pos = cur_pos + 1;
-      }
+      aspell_config_replace(config, "lang", "en_US");
     }
 
-    //GetStatusBar()->SetWindowText(string);
-    SendEditor(SCI_STARTSTYLING, start_pos + line_length, 0x1f);
-    SendEditor(SCI_COLOURISE, start_pos, start_pos + line_length);
+#if 0
+  if (0) {
+    char error[100000];
+    strcpy(error, aspell_config_retrieve(config, "lang"));
+    strcpy(error, aspell_config_retrieve(config, "jargon"));
+    strcpy(error, aspell_config_retrieve(config, "size"));
+    strcpy(error, aspell_config_retrieve(config, "module"));
+  }
+#endif
+
+#if 0
+  /* the returned pointer should _not_ need to be deleted */
+  AspellDictInfoList* dlist = get_aspell_dict_info_list(config);
+  AspellDictInfoEnumeration* dels = aspell_dict_info_list_elements(dlist);
+  const AspellDictInfo* entry;
+
+  printf("%-30s%-8s%-20s%-6s%-10s\n", "NAME", "CODE", "JARGON", "SIZE", "MODULE");
+  while ( (entry = aspell_dict_info_enumeration_next(dels)) != 0) 
+  {
+    printf("%-30s%-8s%-20s%-6s%-10s\n",
+	   entry->name,
+	   entry->code, entry->jargon, 
+	   entry->size_str, entry->module->name);
+  }
+
+  delete_aspell_dict_info_enumeration(dels);
+#endif
+
+    ret = new_aspell_speller(config);
+    delete_aspell_config(config);
+    config = NULL;
+
+    if (aspell_error(ret) != 0) {
+      char error[100000];
+      strcpy(error, aspell_error_message(ret));
+      GetStatusBar()->SetWindowText(error);
+      return;
+    }
+
+    AspellSpeller* speller = to_aspell_speller(ret);
+
+    AspellDocumentChecker* checker;
+    AspellToken token;
+
+    /* Set up the document checker */
+    ret = new_aspell_document_checker(speller);
+    if (aspell_error(ret) != 0) {
+      char error[100000];
+      strcpy(error, aspell_error_message(ret));
+    //  printf("Error: %s\n",aspell_error_message(ret));
+      return;
+    }
+
+    checker = to_aspell_document_checker(ret);
+
+    aspell_document_checker_process(checker, text, -1);
+
+    //char string[10000] = {0};
+    
+    int last_offset = 0;
+    SendEditor(SCI_SETSTYLING, 0, GOOD_SPELLING_INDICTOR_MASK);
+    while (token = aspell_document_checker_next_misspelling(checker), token.len != 0)
+    {
+      SendEditor(SCI_SETSTYLING, token.offset - last_offset, GOOD_SPELLING_INDICTOR_MASK);
+      SendEditor(SCI_SETSTYLING, token.len, BAD_SPELLING_INDICTOR_MASK);
+      last_offset = token.offset + token.len;
+
+     // sprintf (string + strlen(string), "[token.offset=%d token.len=%d last_offset=%d token.offset-last_offset=%d] ", token.offset, token.len, last_offset, token.offset - last_offset);
+    }
+    SendEditor(SCI_SETSTYLING, 0, GOOD_SPELLING_INDICTOR_MASK);  
+    
+    delete_aspell_document_checker(checker);
+    checker = NULL;
+
+    delete_aspell_speller(speller);
+    speller = NULL;
   }
 
 }

@@ -50,6 +50,11 @@ static int ScreenHeight;
 static SFONT* FPSFont;
 static bool   FPSDisplayed;
 
+static int VideoCaptureMode = VIDEO_CAPTURE_SCREENSHOT_ONLY;
+static int VideoCaptureTimer = 1000;
+static int VideoCaptureFrameRate = 20;
+static int VideoCaptureFrameStart = 0;
+static int VideoCaptureTimerStart = 0;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -63,6 +68,10 @@ void assign(T& dest, U src)
 bool InitVideo(HWND window, SPHERECONFIG* config)
 {
   SphereWindow = window;
+
+  VideoCaptureMode  = config->video_capture_mode;
+  VideoCaptureTimer = config->video_capture_timer;
+  VideoCaptureFrameRate = config->video_capture_framerate;
 
   // Loads driver
   std::string graphics_driver =  "system/video/" + config->videodriver;
@@ -289,8 +298,31 @@ void FlipScreen()
     UpdateSystem();
 
   if (ShouldTakeScreenshot) {
-    ShouldTakeScreenshot = false;
-    TakeScreenshot();
+    if (VideoCaptureTimerStart == 0) {
+      VideoCaptureTimerStart = GetTime();
+    }
+
+    if (VideoCaptureMode == VIDEO_CAPTURE_SCREENSHOT_ONLY
+     || VideoCaptureFrameStart++ % VideoCaptureFrameRate == 0) {
+      TakeScreenshot();
+    }
+
+    if ( !(VideoCaptureMode == VIDEO_CAPTURE_UNTIL_F12_KEYED
+        || VideoCaptureMode == VIDEO_CAPTURE_UNTIL_OUTOFTIME )) {
+      ShouldTakeScreenshot = false;
+    }
+
+    if (VideoCaptureMode == VIDEO_CAPTURE_UNTIL_OUTOFTIME) {
+      if (VideoCaptureTimerStart + VideoCaptureTimer < GetTime()) {
+        ShouldTakeScreenshot = false;
+      }
+    }
+
+    if (!ShouldTakeScreenshot) {
+      VideoCaptureTimerStart = 0;
+      VideoCaptureFrameStart = 0;
+    }
+
   }
 
   _FlipScreen();
