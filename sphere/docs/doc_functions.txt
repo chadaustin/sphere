@@ -638,7 +638,7 @@ log_object.endBlock()
       (x3, y3) is the lower right corner, and (x4, y4) is the lower left 
       corner.
 
-  image_object.transformBlitMask(x1, y1, x2, y2, x3, y3, x4, y4)
+  image_object.transformBlitMask(x1, y1, x2, y2, x3, y3, x4, y4, mask)
     - transformBlit + blitMask
   
   image_object.width
