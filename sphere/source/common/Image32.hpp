@@ -33,6 +33,8 @@ public:
   void      SetBlendMode(BlendMode mode);
   BlendMode GetBlendMode() const;
 
+  void ApplyColorFX(int x1, int y1, int w, int h, int rn, int rr, int rg, int rb, int gn, int gr, int gg, int gb, int bn, int br, int bg, int bb);
+
   void Clear();
   void Resize(int width, int height);
   void Rescale(int width, int height);

@@ -3600,6 +3600,7 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
 
   // assign the methods to the object
   static JSFunctionSpec fs[] = {
+    { "applyColorFX",     ssSurfaceApplyColorFX,     16, 0, 0 },
     { "blit",             ssSurfaceBlit,             2, 0, 0 },
     { "blitSurface",      ssSurfaceBlitSurface,      5, 0, 0 },
     { "createImage",      ssSurfaceCreateImage,      0, 0, 0 },
@@ -3637,6 +3638,29 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
 begin_finalizer(SS_SURFACE, ssFinalizeSurface)
   delete object->surface;
 end_finalizer()
+
+////////////////////////////////////////
+
+begin_method(SS_SURFACE, ssSurfaceApplyColorFX, 16)
+  arg_int(x);
+  arg_int(y);
+  arg_int(w);
+  arg_int(h);
+  arg_int(rn);
+  arg_int(rr);
+  arg_int(rg);
+  arg_int(rb);
+  arg_int(gn);
+  arg_int(gr);
+  arg_int(gg);
+  arg_int(gb);
+  arg_int(bn);
+  arg_int(br);
+  arg_int(bg);
+  arg_int(bb);
+
+  object->surface->ApplyColorFX(x, y, w, h, rn, rr, rg, rb, gn, gr, gg, gb, bn, br, bg, bb);
+end_method()
 
 ////////////////////////////////////////
 

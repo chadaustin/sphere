@@ -724,6 +724,12 @@ log_object.endBlock()
   surface_object.height
     - dimensions
   
+  surface_object.applyColorFX(x, y, w, h,   rn, rr, rg, rb,  gn, gr, gg, gb,  bn, br, bg, bb)
+    - mix all colors within the specified rectangle so that:
+        newcolor.red   = rn + (rr * oldcolor.red + rg * oldcolor.green + rb * oldcolor.blue) / 255;
+        newcolor.green = gn + (gr * oldcolor.red + gg * oldcolor.green + gb * oldcolor.blue) / 255;
+        newcolor.blue  = bn + (br * oldcolor.red + bg * oldcolor.green + bb * oldcolor.blue) / 255;
+
   surface_object.blit(x, y)
     - draws the surface to the video buffer at (x,y)
   

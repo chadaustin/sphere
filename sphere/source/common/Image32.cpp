@@ -245,6 +245,45 @@ CImage32::GetBlendMode() const
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+CImage32::ApplyColorFX(int x1, int y1, int w, int h, int rn, int rr, int rg, int rb, int gn, int gr, int gg, int gb, int bn, int br, int bg, int bb)
+{
+  int x, y;
+  int x2, y2;
+  RGBA pixel;
+  RGBA pixeld;
+  if(x1 < 0) {
+    w += x1;
+    x1 = 0;
+  }
+  if(y1 < 0) {
+    h += y1;
+    y = 0;
+  }
+  if(x1 + w >= m_Width) {
+    w = m_Width - x1;
+  }
+  if(y1 + h >= m_Height) {
+    h = m_Height - y1;
+  }
+  if(w <= 0 || h <= 0) {
+    return;
+  }
+  x2 = x1 + w;
+  y2 = y1 + h;
+  for(y = y1; y < y2; y++) {
+    for(x = x1; x < x2; x++) {
+      pixel = m_Pixels[y * m_Width + x];
+      pixeld.red   = std_max(0, std_min(255, rn + (pixel.red * rr + pixel.green * rg + pixel.blue * rb) / 255));
+      pixeld.green = std_max(0, std_min(255, gn + (pixel.red * gr + pixel.green * gg + pixel.blue * gb) / 255));
+      pixeld.blue  = std_max(0, std_min(255, bn + (pixel.red * br + pixel.green * bg + pixel.blue * bb) / 255));
+      pixeld.alpha = pixel.alpha;
+      m_Pixels[y * m_Width + x] = pixeld;
+    }
+  }
+}
+////////////////////////////////////////////////////////////////////////////////
+
+void
 CImage32::Resize(int width, int height)
 {
   RGBA* new_pixels = new RGBA[width * height];

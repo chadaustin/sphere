@@ -163,6 +163,7 @@ private:
   // surfaces
   declare_constructor1(CreateSurfaceObject, CImage32* surface);
   declare_finalizer(ssFinalizeSurface);
+  declare_method(ssSurfaceApplyColorFX);
   declare_method(ssSurfaceBlit);
   declare_method(ssSurfaceBlitSurface);
   declare_method(ssSurfaceCreateImage);
