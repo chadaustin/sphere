@@ -948,7 +948,9 @@ CMapEngine::CreatePerson(const char* name, const char* spriteset, bool destroy_w
     m_ErrorMessage = "Could not load spriteset\nPerson: " + p.description;
     return false;
   }
-  p.spriteset->AddRef();
+
+  // LoadSpriteset already calls AddRef()
+//  p.spriteset->AddRef();
   p.mask = CreateRGBA(255, 255, 255, 255);
 
   // put them in the starting position by default
