@@ -327,3 +327,33 @@ CDocumentWindow::OnUpdateSaveableCommand(CCmdUI* cmdui)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+
+BOOL CDocumentWindow::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message >= WM_KEYFIRST && pMsg->message <= WM_KEYLAST)
+	{
+		// use document specific accelerator table over m_hAccelTable
+		HACCEL hAccel = ((CFrameWnd*)AfxGetMainWnd())->GetDefaultAccelerator();
+		
+		if (hAccel != NULL)
+		{
+			//distribute the accelerator among the windows childs		
+			CWnd * pWnd = GetWindow(GW_CHILD);
+			
+			while (pWnd != NULL)
+			{
+				if (pWnd->IsWindowVisible())
+				{	
+					HACCEL hCustomAccel = NULL;
+					pWnd->SendMessage(WM_GETACCELERATOR, (WPARAM)&hCustomAccel);
+
+					::TranslateAccelerator(pWnd->m_hWnd, (hCustomAccel != NULL) ? hCustomAccel : hAccel, pMsg);	
+				}
+
+				pWnd = pWnd->GetNextWindow();
+			}
+		}
+	}
+
+	return CMDIChildWnd::PreTranslateMessage(pMsg);
+}

@@ -71,6 +71,8 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
   ON_COMMAND(ID_IMAGEVIEW_SETCOLORALPHA,         OnSetColorAlpha)
   ON_COMMAND(ID_IMAGEVIEW_SCALEALPHA,            OnScaleAlpha)
 
+	ON_MESSAGE(WM_GETACCELERATOR, OnGetAccelerator)
+
 END_MESSAGE_MAP()
 
 
@@ -2503,3 +2505,15 @@ CImageView::OnScaleAlpha()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+afx_msg LRESULT 
+CImageView::OnGetAccelerator(WPARAM wParam, LPARAM lParam)
+{
+	// If you want to provide a custom accelerator, copy from CImageView::OnGetAccelerator!
+	// Also a message map entry is needed like: 	
+	//		ON_MESSAGE(WM_GETACCELERATOR, OnGetAccelerator)
+
+	HACCEL * ret = ((HACCEL*)wParam);
+	*ret = LoadAccelerators(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_IMAGEVIEW));  
+	return 1;
+}

@@ -65,6 +65,7 @@ private:
 
   afx_msg void OnInsertDirectionFromImage();
   afx_msg void OnExportDirectionAsImage();
+	afx_msg LRESULT OnGetAccelerator(WPARAM wParam, LPARAM lParam);
 
   // edit range
   int GetEditRangeStartIndex();
@@ -92,6 +93,8 @@ private:
   bool m_MenuDisplayed;
 
   DECLARE_MESSAGE_MAP()
+public:
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };
 
 

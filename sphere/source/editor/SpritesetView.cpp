@@ -65,7 +65,8 @@ BEGIN_MESSAGE_MAP(CSpritesetView, CWnd)
 //  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_FLT_SOLARIZE,             OnEditRangeFilterSolarize)
 //  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_SETCOLORALPHA,         OnEditRangeSetColorAlpha)
 //  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_SCALEALPHA,            OnEditRangeScaleAlpha)
-
+	
+	ON_MESSAGE(WM_GETACCELERATOR, OnGetAccelerator)
 
 END_MESSAGE_MAP()
 
@@ -1067,6 +1068,35 @@ CSpritesetView::OnEditRange()
     m_Handler->SV_SpritesetModified();
     Invalidate();
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+BOOL CSpritesetView::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message >= WM_KEYFIRST && pMsg->message <= WM_KEYLAST)
+	{
+		// use document specific accelerator table over m_hAccelTable
+		HACCEL hAccel = ((CFrameWnd*)AfxGetMainWnd())->GetDefaultAccelerator();
+		return hAccel != NULL &&
+		   ::TranslateAccelerator(m_hWnd, hAccel, pMsg);
+	}
+
+	return CWnd::PreTranslateMessage(pMsg);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg LRESULT 
+CSpritesetView::OnGetAccelerator(WPARAM wParam, LPARAM lParam)
+{
+	// If you want to provide a custom accelerator, copy from CImageView::OnGetAccelerator!
+	// Also a message map entry is needed like: 	
+	//		ON_MESSAGE(WM_GETACCELERATOR, OnGetAccelerator)
+
+	HACCEL * ret = ((HACCEL*)wParam);
+	*ret = LoadAccelerators(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_SPRITESETVIEW));  
+	return 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

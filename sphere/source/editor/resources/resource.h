@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by editor.rc
 //
 #define IDR_MAIN                        101
@@ -45,6 +45,7 @@
 #define IDD_ENTITY_PERSON               159
 #define IDD_ENTITY_TRIGGER              161
 #define IDR_IMAGEVIEW                   162
+#define IDR_IMAGEVIEW2                  162
 #define IDI_ENTITY_TRIGGER              164
 #define IDI_ENTITY_PERSON               166
 #define IDI_WINDOWSTYLE                 167
@@ -512,6 +513,7 @@
 #define ID_MAPVIEW_VIEWANIMATIONS       40657
 #define ID_FILE_BROWSE                  40658
 #define ID_BROWSE_REFRESH               40660
+#define ID_ACCELERATOR40672             40672
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -519,8 +521,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        236
-#define _APS_NEXT_COMMAND_VALUE         40661
+#define _APS_NEXT_RESOURCE_VALUE        237
+#define _APS_NEXT_COMMAND_VALUE         40674
 #define _APS_NEXT_CONTROL_VALUE         1182
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

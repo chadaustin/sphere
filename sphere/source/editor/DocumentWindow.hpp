@@ -8,7 +8,6 @@
 
 const int WM_DW_CLOSING = (WM_APP + 1000);
 
-
 const int WA_DOCUMENT_WINDOW = 0x0001;
 const int WA_SAVEABLE = 0x0002;
 
@@ -69,6 +68,8 @@ private:
   std::vector<CPaletteWindow*> m_AttachedPalettes;
 
   DECLARE_MESSAGE_MAP()
+public:
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };
 
 
