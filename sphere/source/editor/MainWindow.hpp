@@ -48,6 +48,8 @@ private:
   afx_msg void OnDropFiles(HDROP hDropInfo);
   afx_msg void OnClose();
 
+  afx_msg void OnFileBrowse();
+
   afx_msg void OnFileOpen();
 
   afx_msg void OnFileNewProject();

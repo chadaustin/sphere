@@ -24,7 +24,9 @@ class CSpritesetWindow
   , private ISpriteBaseViewHandler
   , private ISpritesetImagesPaletteHandler
 {
+#ifdef USE_SIZECBAR
 	DECLARE_DYNAMIC(CSpritesetWindow)
+#endif
 public:
   CSpritesetWindow(const char* filename = NULL);
 

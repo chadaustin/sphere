@@ -12,7 +12,10 @@
 const int ID_ALPHASLIDER = 7001;
 const int ID_ALPHASTATIC = 7002;
 
+#ifdef USE_SIZECBAR
 IMPLEMENT_DYNAMIC(CWindowStyleWindow, CSaveableDocumentWindow)
+#endif
+
 BEGIN_MESSAGE_MAP(CWindowStyleWindow, CSaveableDocumentWindow)
 
   ON_WM_LBUTTONDOWN()

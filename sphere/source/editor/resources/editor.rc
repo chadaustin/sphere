@@ -110,6 +110,7 @@ BEGIN
             MENUITEM "RM2K Chipset to Tileset...",  ID_FILE_IMPORT_RM2KCHIPSETTORTS
 
         END
+        MENUITEM "&Browse",                     ID_FILE_BROWSE
         MENUITEM "Open &Last Project",          ID_FILE_OPENLASTPROJECT
         MENUITEM "&Close Project",              ID_FILE_CLOSEPROJECT
         MENUITEM SEPARATOR
@@ -842,6 +843,14 @@ BEGIN
     END
 END
 
+IDR_BROWSE MENU DISCARDABLE 
+BEGIN
+    POPUP "&Browse"
+    BEGIN
+        MENUITEM "&Refresh",                    ID_BROWSE_REFRESH
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1495,6 +1504,7 @@ IDI_IMAGETOOL_ELLIPSE   ICON    DISCARDABLE     "imagetool_ellipse.ico"
 IDI_MAPTOOL_ZONEMOVE    ICON    DISCARDABLE     "maptool.ico"
 IDI_MAPTOOL_MOVEENTITY  ICON    DISCARDABLE     "maptool_moveentity.ico"
 IDI_IMAGETOOL_FREESELECTION ICON    DISCARDABLE     "imagetool_freeselection.ico"
+IDI_BROWSE              ICON    DISCARDABLE     "browse.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

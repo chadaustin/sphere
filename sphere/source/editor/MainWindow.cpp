@@ -27,6 +27,7 @@
 #include "AnimationWindow.hpp"
 #include "WindowStyleWindow.hpp"
 #include "FontWindow.hpp"
+#include "BrowseWindow.hpp"
 
 // dialogs
 #include "NewProjectDialog.hpp"
@@ -107,6 +108,8 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_FILE_SAVEALL, OnFileSaveAll)
 
   ON_COMMAND(ID_FILE_EXIT,    OnClose)
+
+  ON_COMMAND(ID_FILE_BROWSE,  OnFileBrowse)
 
   // insert
   ON_COMMAND(ID_PROJECT_INSERT_MAP,         OnProjectInsertMap)
@@ -631,9 +634,7 @@ CMainWindow::OnClose()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-afx_msg void
-CMainWindow::OnFileOpen()
-{
+std::string GenerateSupportedExtensionsFilter() {
   // generate list of all supported extensions
   std::set<std::string> extensions;
   for (int i = 0; i < NUM_GROUP_TYPES; i++) {
@@ -675,6 +676,13 @@ CMainWindow::OnFileOpen()
   }
 
   filter += "All Files (*.*)|*.*||";
+  return filter;
+}
+
+afx_msg void
+CMainWindow::OnFileOpen()
+{
+  std::string filter = GenerateSupportedExtensionsFilter();
 
   char games_directory[MAX_PATH];
   GetGamesDirectory(games_directory);
@@ -762,6 +770,38 @@ CMainWindow::OnFileOpenLastProject()
 {
   if (Configuration::Get(KEY_LAST_PROJECT).length() != 0) {
     OpenProject(Configuration::Get(KEY_LAST_PROJECT).c_str());
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnFileBrowse()
+{
+  std::string filter = GenerateSupportedExtensionsFilter();
+
+  char games_directory[MAX_PATH];
+  GetGamesDirectory(games_directory);
+  SetCurrentDirectory(games_directory);
+
+  CFileDialog FileDialog(
+    TRUE,
+    "",
+    NULL,
+    OFN_FILEMUSTEXIST,
+    filter.c_str());
+
+  // set current directory on Win98/2000
+  FileDialog.m_ofn.lpstrInitialDir = games_directory;
+
+  if (FileDialog.DoModal() == IDOK) {
+    char szDirectory[MAX_PATH];
+    std::string t = FileDialog.GetPathName();
+    strcpy(szDirectory, t.c_str());
+    if (*strrchr(szDirectory, '\\'))
+      *strrchr(szDirectory, '\\') = 0;
+
+    m_DocumentWindows.push_back(new CBrowseWindow(szDirectory, "*"));
   }
 }
 

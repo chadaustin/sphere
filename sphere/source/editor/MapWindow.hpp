@@ -24,7 +24,9 @@ class CMapWindow
   , private ITilesetViewHandler
   , private ISwatchPaletteHandler
 {
+#ifdef USE_SIZECBAR
 	DECLARE_DYNAMIC(CMapWindow)
+#endif
 public:
   CMapWindow(const char* map = NULL, const char* tileset = NULL);
   ~CMapWindow();

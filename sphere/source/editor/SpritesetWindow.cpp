@@ -14,7 +14,10 @@
 #define IDC_TAB 800
 #define TAB_HEIGHT 24
 
+#ifdef USE_SIZECBAR
 IMPLEMENT_DYNAMIC(CSpritesetWindow, CSaveableDocumentWindow)
+#endif
+
 BEGIN_MESSAGE_MAP(CSpritesetWindow, CSaveableDocumentWindow)
 
   ON_WM_DESTROY()

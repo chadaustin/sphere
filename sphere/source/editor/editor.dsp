@@ -254,6 +254,10 @@ SOURCE=.\resources\animation.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\resources\browse.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\resources\editor.rc
 # End Source File
 # Begin Source File
@@ -511,6 +515,14 @@ SOURCE=.\AnimationWindow.cpp
 # Begin Source File
 
 SOURCE=.\AnimationWindow.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\BrowseWindow.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\BrowseWindow.hpp
 # End Source File
 # Begin Source File
 

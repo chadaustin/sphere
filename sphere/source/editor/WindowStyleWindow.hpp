@@ -21,7 +21,9 @@ class CWindowStyleWindow
   , private IColorViewHandler
   , private IAlphaViewHandler
 {
+#ifdef USE_SIZECBAR
 	DECLARE_DYNAMIC(CWindowStyleWindow)
+#endif
 public:
   CWindowStyleWindow(const char* window_style = NULL);
   ~CWindowStyleWindow();

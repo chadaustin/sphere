@@ -19,7 +19,9 @@
 #define IDC_TAB 1101
 #define TAB_HEIGHT 24
 
+#ifdef USE_SIZECBAR
 IMPLEMENT_DYNAMIC(CMapWindow, CSaveableDocumentWindow)
+#endif
 
 BEGIN_MESSAGE_MAP(CMapWindow, CSaveableDocumentWindow)
 

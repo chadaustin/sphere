@@ -663,16 +663,22 @@ CImageView::UpdateSelectionPixels(const RGBA* pixels, int sx, int sy, int sw, in
 
       // fill in gaps between lines
       for (int dy = 0; dy < selection_height; dy++) {
-        bool on = false;
+        int last_on = -1;
         for (int dx = 0; dx < selection_width; dx++) {
           int index = dy * selection_width + dx;
           if (selection_points[index]) {
-            on = !on;
+            if (last_on == -1)
+              last_on = dx;
           }
-          if (on)
-            selection_points[index] = true;
+          else {
+            for (int x = last_on; x < dx; x++) {
+              selection_points[dy * selection_width + x] = true;
+              last_on = -1;
+            }
+          }
         }
       }
+
 
       // update image
       for (int dy = sy; dy < (sy + sh); dy++) {
