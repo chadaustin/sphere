@@ -56,6 +56,12 @@ static void NormalBlit(IMAGE image, int x, int y);
 
 // INLINE FUNCTIONS //
 
+// like 255 - a only faster
+inline byte InvertAlpha(byte a)
+{
+  return a ^ 0xFF;
+}
+
 inline word PackPixel565(RGBA pixel)
 {
   return (word)(((pixel.red   >> 3) << 11) +
@@ -678,7 +684,7 @@ public:
     s.red   = (s.red   * m_mask.red)   / 255;
 
     // blit to the dest pixel
-    byte b = alpha ^ 0xFF;
+    byte b = InvertAlpha(alpha);
     d.blue = ((s.blue * m_mask.alpha) + (d.blue * b)) / 255;
     d.green = ((s.green * m_mask.alpha) + (d.green * b)) / 255;
     d.red = ((s.red * m_mask.alpha) + (d.red * b)) / 255;
@@ -706,7 +712,7 @@ public:
     s.red   = (s.red   * m_mask.red)   / 255;
 
     // blit to the dest pixel
-    byte b = alpha ^ 0xFF;
+    byte b = InvertAlpha(alpha);
     d.blue = ((s.blue * m_mask.alpha) + (d.blue * b)) / 255;
     d.green = ((s.green * m_mask.alpha) + (d.green * b)) / 255;
     d.red = ((s.red * m_mask.alpha) + (d.red * b)) / 255;
@@ -760,9 +766,9 @@ inline void renderpixel565(word& d, const word& s, int a)
 {
   RGBA out = UnpackPixel565(d);
   RGBA in  = UnpackPixel565(s);
-  out.red   = (in.red)   + ((out.red * (a ^ 0xFF)) / 255);
-  out.green = (in.green) + ((out.green * (a ^ 0xFF)) / 255);
-  out.blue  = (in.blue)  + ((out.blue  * (a ^ 0xFF)) / 255);
+  out.red   = (in.red)   + ((out.red * (InvertAlpha(a))) / 255);
+  out.green = (in.green) + ((out.green * (InvertAlpha(a))) / 255);
+  out.blue  = (in.blue)  + ((out.blue  * (InvertAlpha(a))) / 255);
   d = PackPixel565(out);
 }
 
@@ -770,9 +776,9 @@ inline void renderpixel555(word& d, const word& s, int a)
 {
   RGBA out = UnpackPixel555(d);
   RGBA in  = UnpackPixel555(s);
-  out.red   = (in.red)   + ((out.red * (a ^ 0xFF)) / 255);
-  out.green = (in.green) + ((out.green * (a ^ 0xFF)) / 255);
-  out.blue  = (in.blue)  + ((out.blue  * (a ^ 0xFF)) / 255);
+  out.red   = (in.red)   + ((out.red * (InvertAlpha(a))) / 255);
+  out.green = (in.green) + ((out.green * (InvertAlpha(a))) / 255);
+  out.blue  = (in.blue)  + ((out.blue  * (InvertAlpha(a))) / 255);
   d = PackPixel555(out);
 }
 
@@ -899,7 +905,7 @@ void NormalBlit(IMAGE image, int x, int y)
         } else if (a > ALPHA_TRANSPARENCY_LOW) {
           RGBA out = UnpackPixel565(*dest);
           RGBA in  = UnpackPixel565(*src);
-          a ^= 0xFF;
+          a = InvertAlpha(a);
           out.red   = (in.red)   + (out.red   * a / 255);
           out.green = (in.green) + (out.green * a / 255);
           out.blue  = (in.blue)  + (out.blue  * a / 255);
@@ -943,7 +949,7 @@ void NormalBlit(IMAGE image, int x, int y)
 
           RGBA out = UnpackPixel555(*dest);
           RGBA in  = UnpackPixel555(*src);
-          a ^= 0xFF;
+          a = InvertAlpha(a);
           out.red   = (in.red)   + (out.red   * a / 255);
           out.green = (in.green) + (out.green * a / 255);
           out.blue  = (in.blue)  + (out.blue  * a / 255);
@@ -980,6 +986,11 @@ EXPORT(int) GetImageHeight(IMAGE image)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * ClipByte clamps an integer value to the range 0-255 without
+ * any branch operations.
+ */ 
+
 inline int ClipByte(int value) {
 int iClipped;
 	value = (value & (-(int)!(value < 0)));
@@ -1004,6 +1015,7 @@ EXPORT(RGBA*) LockImage(IMAGE image)
       if (a >= ALPHA_TRANSPARENCY_LOW) {
         image->locked_pixels[i] = UnpackPixel565(image->rgb[i]);
         // unpremultiply
+        // clip with ClipByte to prevent overflow
         image->locked_pixels[i].blue  = ClipByte((image->locked_pixels[i].blue  * (65535 / a)) / 255);
         image->locked_pixels[i].green = ClipByte((image->locked_pixels[i].green * (65535 / a)) / 255);
         image->locked_pixels[i].red   = ClipByte((image->locked_pixels[i].red   * (65535 / a)) / 255);
@@ -1019,6 +1031,7 @@ EXPORT(RGBA*) LockImage(IMAGE image)
       if (a >= ALPHA_TRANSPARENCY_LOW) {
         image->locked_pixels[i] = UnpackPixel555(image->rgb[i]);
         // unpremultiply
+        // clip with ClipByte to prevent overflow
         image->locked_pixels[i].blue  = ClipByte((image->locked_pixels[i].blue  * (65535 / a)) / 255);
         image->locked_pixels[i].green = ClipByte((image->locked_pixels[i].green * (65535 / a)) / 255);
         image->locked_pixels[i].red   = ClipByte((image->locked_pixels[i].red   * (65535 / a)) / 255);
@@ -1062,9 +1075,9 @@ EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels)
   
         RGBA out = UnpackPixel565(*dest);
         RGBA in  = pixels[iy * w + ix];
-        out.red   = (in.red   * alpha + out.red   * (alpha ^ 0xFF)) / 256;
-        out.green = (in.green * alpha + out.green * (alpha ^ 0xFF)) / 256;
-        out.blue  = (in.blue  * alpha + out.blue  * (alpha ^ 0xFF)) / 256;
+        out.red   = (in.red   * alpha + out.red   * (InvertAlpha(alpha))) / 256;
+        out.green = (in.green * alpha + out.green * (InvertAlpha(alpha))) / 256;
+        out.blue  = (in.blue  * alpha + out.blue  * (InvertAlpha(alpha))) / 256;
 
         *dest = PackPixel565(out);
       }
@@ -1080,9 +1093,9 @@ EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels)
   
         RGBA out = UnpackPixel555(*dest);
         RGBA in  = pixels[iy * w + ix];
-        out.red   = (in.red   * alpha + out.red   * (alpha ^ 0xFF)) / 256;
-        out.green = (in.green * alpha + out.green * (alpha ^ 0xFF)) / 256;
-        out.blue  = (in.blue  * alpha + out.blue  * (alpha ^ 0xFF)) / 256;
+        out.red   = (in.red   * alpha + out.red   * (InvertAlpha(alpha))) / 256;
+        out.green = (in.green * alpha + out.green * (InvertAlpha(alpha))) / 256;
+        out.blue  = (in.blue  * alpha + out.blue  * (InvertAlpha(alpha))) / 256;
 
         *dest = PackPixel555(out);
       }
@@ -1095,9 +1108,9 @@ inline void blendRGBAto565(word& d, RGBA s, RGBA alpha)
 {
   RGBA out = UnpackPixel565(d);
   byte a = alpha.alpha;
-  out.red   = (s.red   * a + out.red   * (a ^ 0xFF)) / 256;
-  out.green = (s.green * a + out.green * (a ^ 0xFF)) / 256;
-  out.blue  = (s.blue  * a + out.blue  * (a ^ 0xFF)) / 256;
+  out.red   = (s.red   * a + out.red   * (InvertAlpha(a))) / 256;
+  out.green = (s.green * a + out.green * (InvertAlpha(a))) / 256;
+  out.blue  = (s.blue  * a + out.blue  * (InvertAlpha(a))) / 256;
   d = PackPixel565(out);
 }
 
@@ -1105,9 +1118,9 @@ inline void blendRGBAto555(word& d, RGBA s, RGBA alpha)
 {
   RGBA out = UnpackPixel555(d);
   byte a = alpha.alpha;
-  out.red   = (s.red   * a + out.red   * (a ^ 0xFF)) / 256;
-  out.green = (s.green * a + out.green * (a ^ 0xFF)) / 256;
-  out.blue  = (s.blue  * a + out.blue  * (a ^ 0xFF)) / 256;
+  out.red   = (s.red   * a + out.red   * (InvertAlpha(a))) / 256;
+  out.green = (s.green * a + out.green * (InvertAlpha(a))) / 256;
+  out.blue  = (s.blue  * a + out.blue  * (InvertAlpha(a))) / 256;
   d = PackPixel555(out);
 }
 
