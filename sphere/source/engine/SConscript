@@ -22,10 +22,10 @@ else:
     md = 'unix'
 
 if (COMPILER.is_win32()):
-	env.Prepend(
-            RESPATH = [Dir('win32')],
-            LIBPATH = ['win32'],
-            LIBS = ['win32'])
+    env.Prepend(
+        CPPPATH = [Dir('win32')],
+        LIBPATH = ['win32'],
+        LIBS = ['win32'])
 
 engine_sources = Split("""
     SpritesetServer.cpp
@@ -55,8 +55,9 @@ if COMPILER.is_win32():
     engine_sources.append('engine.res')
     env.RES('engine.res', 'win32/engine.rc')
 
+print "Using subsystem: " + md
+
 engine = env.Program('engine', engine_sources)
 env.Install(BUILD_DIR, engine)
 
-print "Using subsystem: ", md
 SConscript(dirs = [md])

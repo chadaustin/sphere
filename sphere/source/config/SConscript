@@ -5,7 +5,7 @@ COMPILER.SetupSphereCommon(env)
 COMPILER.SetupWin32(env)
 COMPILER.Win32Subsystem(env)
 
-env.Append(RESPATH = [Dir('.')])
+env.Append(CPPPATH = [Dir('.')])
 
 # we need win32_sphere_config.cpp in our current directory, because SCons won't let us try to build it twice  :(
 config = env.Object('win32_sphere_config',

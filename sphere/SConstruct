@@ -19,13 +19,12 @@ def BuildMinGWEnv():
         '-shared', '-Wl,--enable-stdcall-fixup', '$LINKFLAGS']
     env['BUILDERS']['RES'] = Builder(
         action = 'windres -O coff --define CYGWIN $_RESINCFLAGS $SOURCE -o $TARGET')
+    env['_RESINCFLAGS'] = '${_concat("--include-dir ", CPPPATH, "", __env__, RDirs)}'
 
     env.Append(
-        _RESINCFLAGS = '${_concat("--include-dir ", RESPATH, "", locals(), globals())}',
         CCFLAGS = ['-DWIN32', '-D_WIN32', '-DCYGWIN',
                    '-mno-cygwin', '-Wall', '-Wno-non-virtual-dtor'],
         CPPPATH = [Dir('third-party-mingw/include')],
-        RESPATH = [Dir('third-party-mingw/include')],
         LIBPATH = [Dir('third-party-mingw/lib'),
                    Dir('third-party-mingw/dlls')])
 
