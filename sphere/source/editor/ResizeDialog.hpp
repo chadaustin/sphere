@@ -29,6 +29,8 @@ private:
   int m_MaxWidth;
   int m_MinHeight;
   int m_MaxHeight;
+
+  bool ValidateValues(std::string& error);
 };
 
 

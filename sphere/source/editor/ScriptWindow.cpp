@@ -18,6 +18,8 @@
 
 #include <afxdlgs.h>
 
+#include <ctype.h>
+
 const int ID_EDIT = 900;
 const UINT s_FindReplaceMessage = ::RegisterWindowMessage(FINDMSGSTRING);
 
@@ -1557,6 +1559,9 @@ private:
   const std::vector<ScintillaLine*>	&m_lines;
 
 public:
+  bool m_ignore_case;
+
+public:
   ScintillaLineComparer(const std::vector<ScintillaLine*>& lines) : m_lines(lines) { }
 
   bool operator()(unsigned int a, unsigned int b) const
@@ -1566,11 +1571,27 @@ public:
       sprintf (string, "failed sort 5... (%d %d) (%d %d)", (int)a, (int)b, a, b);
       GetStatusBar()->SetWindowText(string);
       return false;
-    }
+    } 
 
-    for (int i = 0; i < m_lines[a]->size && i < m_lines[b]->size; i++) {
-      if (m_lines[a]->data[i] < m_lines[b]->data[i]) {
-        return true;
+    if (m_ignore_case) {
+      for (int i = 0; i < m_lines[a]->size && i < m_lines[b]->size; i++) {
+        if (isalpha(m_lines[a]->data[i]) && isalpha(m_lines[b]->data[i])) {
+          if (tolower(m_lines[a]->data[i]) <= tolower(m_lines[b]->data[i])) {
+            return true;
+          }
+        }
+        else {
+          if (m_lines[a]->data[i] < m_lines[b]->data[i]) {
+            return true;
+          }
+        }
+      }
+    }
+    else {
+      for (int i = 0; i < m_lines[a]->size && i < m_lines[b]->size; i++) {
+        if (m_lines[a]->data[i] < m_lines[b]->data[i]) {
+          return true;
+        }
       }
     }
 
@@ -1597,6 +1618,7 @@ CScriptWindow::OnScriptToolsSort()
   bool delete_duplicates = dialog.ShouldRemoveDuplicateLines();
   bool sort_lines = dialog.ShouldSortLines();
   bool reverse_lines = dialog.ShouldReverseLines();
+  bool ignore_case = dialog.ShouldIgnoreCase();
 
   if (!delete_duplicates && !sort_lines && !reverse_lines) {
     GetStatusBar()->SetWindowText("No reason to sort...");
@@ -1670,6 +1692,7 @@ CScriptWindow::OnScriptToolsSort()
   GetStatusBar()->SetWindowText("Sorting lines...");
 
   ScintillaLineComparer line_comparer(lines);
+  line_comparer.m_ignore_case = ignore_case;
   std::sort(line_indexes.begin(), line_indexes.end(), line_comparer);
 
   GetStatusBar()->SetWindowText("Lines sorted...");

@@ -13,11 +13,13 @@ public:
   bool ShouldSortLines();
   bool ShouldReverseLines();
   bool ShouldRemoveDuplicateLines();
+  bool ShouldIgnoreCase();
 
 private:
   bool m_SortLines;
   bool m_ReverseLines;
   bool m_RemoveDuplicateLines;
+  bool m_IgnoreCase;
 
 private:
   void UpdateButtons();

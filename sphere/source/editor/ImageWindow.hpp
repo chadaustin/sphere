@@ -42,6 +42,7 @@ private:
   afx_msg void OnImageResample();
   afx_msg void OnImageRotate();
   afx_msg void OnCountColorsUsed();
+  afx_msg void OnImageAdjustBorders();
   afx_msg void OnImageViewOriginalSize();
   afx_msg void OnUpdateImageViewOriginalSizeCommand(CCmdUI* cmdui);
 

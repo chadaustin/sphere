@@ -4,6 +4,7 @@
 #include "ResizeDialog.hpp"
 #include "FileDialogs.hpp"
 #include "RotateDialog.hpp"
+#include "AdjustBordersDialog.hpp"
 #include "resource.h"
 
 #include "../common/Filters.hpp"
@@ -29,6 +30,7 @@ BEGIN_MESSAGE_MAP(CImageWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_IMAGE_ROTATE,             OnImageRotate)
   ON_COMMAND(ID_IMAGE_COUNTCOLORS,        OnCountColorsUsed)
   ON_COMMAND(ID_IMAGE_VIEWATORIGINALSIZE, OnImageViewOriginalSize)
+  ON_COMMAND(ID_IMAGE_ADJUSTBORDERS,      OnImageAdjustBorders)
   ON_UPDATE_COMMAND_UI(ID_IMAGE_VIEWATORIGINALSIZE, OnUpdateImageViewOriginalSizeCommand)
 
   ON_COMMAND(ID_FILE_COPY,  OnCopy)
@@ -274,6 +276,23 @@ CImageWindow::OnImageRotate()
   if (dialog.DoModal() == IDOK) {
     m_ImageView.BeforeImageChanged();
     m_Image.Rotate(dialog.GetValue(), true);
+    SetModified(true);
+    UpdateImageView();
+    m_ImageView.AfterImageChanged();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageWindow::OnImageAdjustBorders()
+{
+  CAdjustBordersDialog dialog(0, 0, m_Image.GetWidth(), m_Image.GetHeight(),
+                              0, 0, 0, 0);
+  if (dialog.DoModal() == IDOK)
+  {
+    m_ImageView.BeforeImageChanged();
+    // m_Image.Resample(dialog.GetWidth(), dialog.GetHeight());
     SetModified(true);
     UpdateImageView();
     m_ImageView.AfterImageChanged();

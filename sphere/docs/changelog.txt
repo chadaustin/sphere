@@ -1,3 +1,7 @@
+2004.04.07
+  - Added a clipboard history pane for scripts
+  - Added a line sort tool for scripts
+
 2004.03.24
   - Added autocomplete list to the script editor
   - Added drag and drop support to sounds in the editor to make playlists

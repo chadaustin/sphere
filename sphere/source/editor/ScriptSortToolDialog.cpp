@@ -9,9 +9,7 @@ BEGIN_MESSAGE_MAP(CScriptSortToolDialog, CDialog)
   ON_BN_CLICKED(IDC_SORT_TOOL_SORTLINES, OnSortOptionChanged)
   ON_BN_CLICKED(IDC_SORT_TOOL_REVERSELINES, OnSortOptionChanged)
   ON_BN_CLICKED(IDC_SORT_TOOL_DELETEDUPLICATES, OnSortOptionChanged)
-
-  ON_WM_SIZE()
-  ON_WM_SIZING()
+  ON_BN_CLICKED(IDC_SORT_TOOL_IGNORECASE, OnSortOptionChanged)
 
 END_MESSAGE_MAP()
 
@@ -30,6 +28,7 @@ CScriptSortToolDialog::OnInitDialog()
   m_SortLines = true;
   m_ReverseLines = false;
   m_RemoveDuplicateLines = false;
+  m_IgnoreCase = false;
 
   UpdateButtons();
   return FALSE;
@@ -53,6 +52,8 @@ CScriptSortToolDialog::UpdateButtons()
   CheckDlgButton(IDC_SORT_TOOL_SORTLINES, m_SortLines ? BST_CHECKED : BST_UNCHECKED);
   CheckDlgButton(IDC_SORT_TOOL_REVERSELINES, m_ReverseLines ? BST_CHECKED : BST_UNCHECKED);
   CheckDlgButton(IDC_SORT_TOOL_DELETEDUPLICATES, m_RemoveDuplicateLines ? BST_CHECKED : BST_UNCHECKED);
+  CheckDlgButton(IDC_SORT_TOOL_IGNORECASE, m_IgnoreCase ? BST_CHECKED : BST_UNCHECKED);
+
 
   if (IsDlgButtonChecked(IDC_SORT_TOOL_SORTLINES) != BST_CHECKED
    && IsDlgButtonChecked(IDC_SORT_TOOL_REVERSELINES) != BST_CHECKED
@@ -73,6 +74,7 @@ CScriptSortToolDialog::OnSortOptionChanged()
   m_SortLines = (IsDlgButtonChecked(IDC_SORT_TOOL_SORTLINES) == BST_CHECKED);
   m_ReverseLines = (IsDlgButtonChecked(IDC_SORT_TOOL_REVERSELINES) == BST_CHECKED);
   m_RemoveDuplicateLines = (IsDlgButtonChecked(IDC_SORT_TOOL_DELETEDUPLICATES) == BST_CHECKED);
+  m_IgnoreCase = (IsDlgButtonChecked(IDC_SORT_TOOL_IGNORECASE) == BST_CHECKED);
   UpdateButtons();
 }
 
@@ -91,6 +93,11 @@ CScriptSortToolDialog::ShouldReverseLines() {
 bool
 CScriptSortToolDialog::ShouldRemoveDuplicateLines() {
   return m_RemoveDuplicateLines;
+}
+
+bool
+CScriptSortToolDialog::ShouldIgnoreCase() {
+  return m_IgnoreCase;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

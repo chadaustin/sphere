@@ -61,8 +61,8 @@ CResizeDialog::OnInitDialog()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void
-CResizeDialog::OnOK()
+bool
+CResizeDialog::ValidateValues(std::string& error)
 {
   CString width_text, height_text;
   GetDlgItem(IDC_WIDTH)->GetWindowText(width_text);
@@ -75,8 +75,8 @@ CResizeDialog::OnOK()
 
   if (IsInvalidNumber(width_text, floating, width_percentage) || floating
    || IsInvalidNumber(height_text, floating, height_percentage) || floating) {
-    MessageBox("Invalid number format", m_Caption.c_str());
-    return;
+    error = "Invalid number format";
+    return false;
   }
 
   // convert to percentages
@@ -92,12 +92,28 @@ CResizeDialog::OnOK()
       "Height must be between %d and %d.",
       m_MinWidth, m_MaxWidth,
       m_MinHeight, m_MaxHeight);
-    MessageBox(message, "Resize");
-    return;
+    error = message;
+    return false;
   }
 
   m_Width  = w;
   m_Height = h;
+
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CResizeDialog::OnOK()
+{
+  std::string error;
+  if (!ValidateValues(error)) {
+    MessageBox(error.c_str(), m_Caption.c_str());
+    return;
+  }
+
   CDialog::OnOK();
 }
 

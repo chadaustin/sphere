@@ -115,6 +115,7 @@
 #define IDD_LIST                        268
 #define IDD_FILETYPES_REGISTER_PAGE     269
 #define IDD_SCRIPT_SORT                 270
+#define IDD_ADJUST_BORDER               271
 #define IDC_PROJECTNAME                 1000
 #define IDC_GAMETITLE                   1001
 #define IDC_BROWSE                      1003
@@ -255,6 +256,11 @@
 #define IDC_SORT_TOOL_REVERSELINES      1225
 #define IDC_SORT_TOOL_SORTLINES         1226
 #define IDC_SORT_TOOL_DELETEDUPLICATES  1227
+#define IDC_SORT_TOOL_IGNORECASE        1228
+#define IDC_TOP                         1228
+#define IDC_RIGHT                       1229
+#define IDC_BOTTOM                      1230
+#define IDC_LEFT                        1231
 #define ID_FILE_IMPORT_BITMAPTORSS      12241
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40003
@@ -670,6 +676,7 @@
 #define ID_SOUND_NEXT                   40792
 #define ID_SOUND_PREV                   40793
 #define ID_SOUND_AUTO_ADVANCE           40794
+#define ID_IMAGE_ADJUSTBORDERS          40795
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -677,9 +684,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        271
-#define _APS_NEXT_COMMAND_VALUE         40795
-#define _APS_NEXT_CONTROL_VALUE         1228
+#define _APS_NEXT_RESOURCE_VALUE        272
+#define _APS_NEXT_COMMAND_VALUE         40796
+#define _APS_NEXT_CONTROL_VALUE         1233
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
