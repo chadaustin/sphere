@@ -3641,8 +3641,8 @@ CMapEngine::IsPointWithinZone(int location_x, int location_y, int location_layer
 
   return (location_x >= z.x1 && 
           location_y >= z.y1 &&
-          location_x <= z.x2 && 
-          location_y <= z.y2 &&
+          location_x < z.x2 && 
+          location_y < z.y2 &&
           location_layer == z.layer);
 }
 
