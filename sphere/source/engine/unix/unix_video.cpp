@@ -85,7 +85,7 @@ bool SetWindowTitle(const char* text) {
   This is where all the fun begins.
   If this is the first time that SwitchResolution is called, SDL is initialized.
  */
-bool SwitchResolution (int x, int y, bool fullscreen) {
+bool SwitchResolution (int x, int y, bool fullscreen, bool update_cliprect) {
   static bool initialized = false;
 
   if (!initialized) {
@@ -116,10 +116,14 @@ bool SwitchResolution (int x, int y, bool fullscreen) {
   /* screen = SDL_CreateRGBSurface(0, real_screen->w, real_screen->h, 32, 0, 0, 0, 0);
   SDL_ConvertSurface(screen, real_screen->format, 0); */
   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
-  FPSDisplayed = false;
+  
   ScreenWidth = screen->w;
   ScreenHeight = screen->h;
-  SetClippingRectangle(0, 0, screen->w, screen->h);
+
+  if (update_cliprect) {
+    SetClippingRectangle(0, 0, screen->w, screen->h);
+  }
+
   return true;
 }
 
@@ -127,7 +131,7 @@ bool SwitchResolution (int x, int y, bool fullscreen) {
   This changes the resolution but keeps fullscreen mode in tact
  */
 bool SwitchResolution (int x, int y) {
-  return SwitchResolution(x, y, fullscreen);
+  return SwitchResolution(x, y, fullscreen, true);
 }
 
 int GetScreenWidth() {
@@ -140,7 +144,7 @@ int GetScreenHeight() {
 
 void ToggleFullscreen () {
   // printf("Toggling fullscreen...");
-  if ( SwitchResolution(GetScreenWidth(), GetScreenHeight(), !fullscreen) ) {
+  if ( SwitchResolution(GetScreenWidth(), GetScreenHeight(), !fullscreen, false) ) {
     fullscreen = !fullscreen;
   }
 }

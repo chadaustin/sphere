@@ -182,7 +182,7 @@ void OnKeyDown(int key) {
   };
 }
 
-void onKeyUp(int key) {
+void OnKeyUp(int key) {
   //std::cerr << "up:   " << (int)key << std::endl;
   key_buffer[key] = false;
 }

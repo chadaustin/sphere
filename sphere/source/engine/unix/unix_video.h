@@ -18,7 +18,7 @@ void SetFPSFont(SFONT* font);
 void ToggleFPS();
 
 bool SwitchResolution(int x, int y);
-bool SwitchResolution(int x, int y, bool fullscreen);
+bool SwitchResolution(int x, int y, bool fullscreen, bool update_cliprect);
 void ToggleFullscreen();
 int  GetScreenWidth();
 int  GetScreenHeight();

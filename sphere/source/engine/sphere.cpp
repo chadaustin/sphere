@@ -272,14 +272,14 @@ void LoadSystemObjects()
     QuitMessage("Error: Could not load system window style");
   }
 
-  // system arrow
-  if (!s_SystemObjects.arrow.Load(arrow.c_str())) {
-    QuitMessage("Error: Could not load system arrow");
-  }
-
   // system up arrow
   if (!s_SystemObjects.up_arrow.Load(up_arrow.c_str())) {
     QuitMessage("Error: Could not load system up arrow");
+  }
+
+  // system arrow
+  if (!s_SystemObjects.arrow.Load(arrow.c_str())) {
+    QuitMessage("Error: Could not load system arrow");
   }
 
   // system down arrow

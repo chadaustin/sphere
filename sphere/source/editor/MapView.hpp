@@ -64,6 +64,9 @@ private:
   void DrawPreviewLine(CDC& dc, int x1, int y1, int x2, int y2);
   void DrawPreviewBox(CDC& dc, int x1, int y1, int x2, int y2);
 
+  void UpdateObstructionTile(int tile);
+  void UpdateObstructionTiles();
+
   afx_msg void OnDestroy();
   afx_msg void OnPaint();
   afx_msg void OnSize(UINT type, int cx, int cy);
@@ -139,6 +142,7 @@ private:
 
   bool m_ShowGrid;
   bool m_ShowTileObstructions;
+  std::vector<sTile> m_TileObstructions; // when View->Tile Obstructions is on, we render these
 
   DECLARE_MESSAGE_MAP()
 };

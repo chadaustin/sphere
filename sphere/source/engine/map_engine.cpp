@@ -291,7 +291,7 @@ CMapEngine::CallDefaultMapScript(int which) {
     m_ErrorMessage = "CallDefaultMapScript() - script does not exist";
     return false;
   }
-    
+
   if (m_DefaultMapScripts[which] == NULL
    || m_DefaultMapScripts[which] == "")
     return true;

@@ -74,6 +74,7 @@ CMapView::~CMapView()
   // destroy the blit DIB
   delete m_BlitTile;
   DestroyWindow();
+  m_TileObstructions.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -134,6 +135,59 @@ CMapView::SetZoomFactor(int factor)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+CMapView::UpdateObstructionTile(int tile) {
+
+  struct Local {
+    struct Color {
+      RGBA operator()(int, int) {
+        return CreateRGBA(255, 0, 255, 255);
+      }
+    };
+
+    static inline void CopyRGBA(RGBA& dest, RGBA src) {
+      dest = src;
+    }
+  };
+
+  sTile& src_tile = m_Map->GetTileset().GetTile(tile);
+  sTile& dest_tile = m_TileObstructions[tile] = src_tile;
+  RGBA* dest_pixels = dest_tile.GetPixels();
+
+  // draw the obstruction segments
+  Local::Color c;
+
+  RECT clipper = { 0, 0, (dest_tile.GetWidth()  - 1), (dest_tile.GetHeight()  - 1)  };
+
+  const sObstructionMap& obs_map = src_tile.GetObstructionMap();
+  for (int i = 0; i < obs_map.GetNumSegments(); ++i) {
+    const sObstructionMap::Segment& s = obs_map.GetSegment(i);
+
+    primitives::Line(
+      (RGBA*) dest_pixels,
+      dest_tile.GetWidth(),
+      s.x1, s.y1, s.x2, s.y2,
+      c,
+      clipper,
+      Local::CopyRGBA
+    );
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CMapView::UpdateObstructionTiles() {
+  if (m_ShowTileObstructions) {
+    m_TileObstructions.resize(m_Map->GetTileset().GetNumTiles());
+    for (int i = 0; i < m_TileObstructions.size(); ++i) {
+      UpdateObstructionTile(i);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
 CMapView::TilesetChanged()
 {
   delete m_BlitTile;
@@ -141,6 +195,8 @@ CMapView::TilesetChanged()
     m_Map->GetTileset().GetTileWidth()  * m_ZoomFactor,
     m_Map->GetTileset().GetTileHeight() * m_ZoomFactor,
     32);
+
+  UpdateObstructionTiles();
 
   m_RedrawWindow = 1;
   Invalidate();
@@ -850,8 +906,12 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
         ty < layer.GetHeight())
     {
       int tile = layer.GetTile(tx, ty);
-      const RGBA* src = m_Map->GetTileset().GetTile(tile).GetPixels();      
+      const RGBA* src = m_Map->GetTileset().GetTile(tile).GetPixels();
       BGRA* dest = (BGRA*)m_BlitTile->GetPixels();
+
+      if (m_ShowTileObstructions && tile >= 0 && tile < m_TileObstructions.size()) {
+        src = m_TileObstructions[tile].GetPixels();
+      }
 
       int counter = 0;
       for (int j=0; j<tile_height; j++)
@@ -879,50 +939,6 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
               if (m_Clicked)
                 Blend3(dest[counter], m_HighlightColor, 80);
 */
-
-
-            // todo: this is horribly slow now, make it quicker
-            // todo: when you zoom in, vertical lines don't look right
-            if (m_ShowTileObstructions) {
-
-              struct Local {
-                struct Color {
-                  RGBA operator()(int, int) {
-                    return CreateRGBA(255, 0, 255, 255);
-                  }
-                };
-
-                static inline void CopyRGBA(RGBA& dest, RGBA src) {
-                  dest = src;
-                }
-             };
-
-             sTile& m_tile = m_Map->GetTileset().GetTile(tile);
-             RGBA* m_pixels = m_tile.GetPixels();
-
-              // draw the obstruction segments
-             Local::Color c;
-
-             RECT clipper = { 0, 0, (m_tile.GetWidth() * m_ZoomFactor)  - 1, (m_tile.GetHeight() * m_ZoomFactor)  - 1  };
-
-             const sObstructionMap& obs_map = m_tile.GetObstructionMap();
-             for (int i = 0; i < obs_map.GetNumSegments(); i++) {
-    
-               const sObstructionMap::Segment& s = obs_map.GetSegment(i);
-
-                 primitives::Line(
-                   (RGBA*) dest,
-                   m_tile.GetWidth() * m_ZoomFactor,
-                   (int) ( s.x1 * m_ZoomFactor),
-                   (int) ( s.y1 * m_ZoomFactor),
-                   (int) ( s.x2 * m_ZoomFactor),
-                   (int) ( s.y2 * m_ZoomFactor),
-                   c,
-                   clipper,
-                   Local::CopyRGBA
-                 );
-               }
-            }
 
             counter++;
           }
@@ -1932,6 +1948,9 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
 
     case ID_MAPVIEW_VIEWTILEOBSTRUCTIONS:
       m_ShowTileObstructions = !m_ShowTileObstructions;
+
+      UpdateObstructionTiles();
+
       m_RedrawWindow = 1;
       Invalidate();
       //m_Handler->MV_MapChanged();
