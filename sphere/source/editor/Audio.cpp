@@ -50,7 +50,7 @@ bool
 CSound::Load(const char* filename)
 {
   m_Filename = filename;
-  m_Sound = audiere::OpenSound(s_Device.get(), filename, false);
+  m_Sound = audiere::OpenSound(s_Device.get(), filename, true);
 
   if (!m_Sound) {
     Stop();

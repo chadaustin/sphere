@@ -25,6 +25,26 @@ public:
 
   bool IsPlaying() const;
 
+  bool IsSeekable() {
+    if (!m_Sound) return false;
+    return m_Sound->isSeekable();
+  }
+
+  void SetPosition(int pos) {
+    if (!m_Sound) return;
+    m_Sound->setPosition(pos);
+  }
+
+  int GetPosition() {
+    if (!m_Sound) return 0;
+    return m_Sound->getPosition();
+  }
+
+  int GetLength() {
+    if (!m_Sound) return 0;
+    return m_Sound->getLength();
+  }
+
 private:
   audiere::OutputStreamPtr m_Sound;
   bool m_ClosedAudio;

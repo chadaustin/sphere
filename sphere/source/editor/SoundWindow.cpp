@@ -73,12 +73,12 @@ CSoundWindow::CSoundWindow(const char* sound)
   m_VolumeBarGraphic.SetBitmap((HBITMAP)m_VolumeBarBitmap);
   m_Blank.Create(NULL, WS_CHILD | WS_VISIBLE, CRect(), this);
 
-/*
-  m_PositionBar.Create(WS_CHILD | WS_VISIBLE | TBS_HORZ, CRect(), this, ID_MUSIC_POSITIONBAR);
-  m_PositionBar.SetLineSize(20);
-  m_PositionBar.SetRange(0, 100, true);
-  m_PositionBar.SetPos(0);
-*/
+  if (m_Sound.IsSeekable()) {
+    m_PositionBar.Create(WS_CHILD | WS_VISIBLE | TBS_HORZ, CRect(), this, ID_MUSIC_POSITIONBAR);
+    m_PositionBar.SetLineSize(20);
+    m_PositionBar.SetRange(0, m_Sound.GetLength(), true);
+    m_PositionBar.SetPos(0);
+  }
 
   // make sure the buttons are in the right position
   RECT Rect;
@@ -101,11 +101,15 @@ CSoundWindow::~CSoundWindow()
 afx_msg void
 CSoundWindow::OnSize(UINT type, int cx, int cy)
 {
+  int button_height = cy;
+  if (m_Sound.IsSeekable())
+    button_height -= 25;
+
   if (m_PlayButton.m_hWnd != NULL)
-    m_PlayButton.MoveWindow(CRect(0, 0, (cx-50) / 2, cy/*-25*/));
+    m_PlayButton.MoveWindow(CRect(0, 0, (cx-50) / 2, button_height));
 
   if (m_StopButton.m_hWnd != NULL)
-    m_StopButton.MoveWindow(CRect((cx-50) / 2, 0, cx-50, cy/*-25*/));
+    m_StopButton.MoveWindow(CRect((cx-50) / 2, 0, cx-50, button_height));
   
   if (m_VolumeBar.m_hWnd != NULL)
     m_VolumeBar.MoveWindow(CRect(cx-50, 0, cx-30, 90));
@@ -114,11 +118,11 @@ CSoundWindow::OnSize(UINT type, int cx, int cy)
   if (m_Blank.m_hWnd != NULL)
     m_Blank.MoveWindow(CRect(cx-50, 90, cx, cy));
 
-/*
-  if (m_PositionBar.m_hWnd != NULL)
-    m_PositionBar.MoveWindow(CRect(0, cy-25, cx, cy));
+  if (m_Sound.IsSeekable()) {
+    if (m_PositionBar.m_hWnd != NULL) {
+      m_PositionBar.MoveWindow(CRect(0, button_height, cx, cy));
+    }
   }
-*/
 
   CDocumentWindow::OnSize(type, cx, cy);
 }
@@ -130,6 +134,14 @@ CSoundWindow::OnTimer(UINT timerID)
 {
   if (m_Sound.IsPlaying())
   {
+    if (m_Sound.IsSeekable()) {
+      if (m_PositionBar.m_hWnd != NULL) {
+        if (1) {
+          m_PositionBar.SetPos(m_Sound.GetPosition());
+        }
+      }
+    }
+
     m_PlayButton.EnableWindow(FALSE);
     m_StopButton.EnableWindow(TRUE);
   }
@@ -143,6 +155,12 @@ CSoundWindow::OnTimer(UINT timerID)
       m_StopButton.EnableWindow(FALSE);
       m_Playing = false;
       m_Sound.Stop();
+
+      if (m_Sound.IsSeekable()) {
+        if (m_PositionBar.m_hWnd != NULL) {
+          m_PositionBar.SetPos(m_Sound.GetLength());
+        }
+      }
     }
   }
 }
@@ -152,8 +170,14 @@ CSoundWindow::OnTimer(UINT timerID)
 afx_msg void
 CSoundWindow::OnVScroll(UINT code, UINT pos, CScrollBar *scroll_bar)
 {
-  //if (!m_VolumeBar.MouseDown)
-    m_Sound.SetVolume(255 - m_VolumeBar.GetPos());
+  if (scroll_bar->m_hWnd == m_VolumeBar.m_hWnd) {
+    //if (!m_VolumeBar.MouseDown)
+      m_Sound.SetVolume(255 - m_VolumeBar.GetPos());
+  }
+  else if (scroll_bar->m_hWnd == m_PositionBar.m_hWnd) {
+    if (m_Sound.IsSeekable() && 0)
+      m_Sound.SetPosition(m_PositionBar.GetPos());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
