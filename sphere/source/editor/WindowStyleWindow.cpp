@@ -245,7 +245,7 @@ CWindowStyleWindow::DrawCorner(CDC& dc, int bitmap, int x, int y, int w, int h)
 {
   CDIBSection* dib = m_DIBs[bitmap];
 
-  if (!dib || dib->GetPixels()) {
+  if (!dib || dib->GetPixels() == NULL) {
     return;
   }
 
@@ -319,7 +319,7 @@ CWindowStyleWindow::DrawEdgeH(CDC& dc, int bitmap, int x, int y, int x2, int h)
 {
   CDIBSection* dib = m_DIBs[bitmap];
 
-  if (!dib || dib->GetPixels()) {
+  if (!dib || dib->GetPixels() == NULL) {
     return;
   }
 
@@ -385,7 +385,7 @@ CWindowStyleWindow::DrawEdgeV(CDC& dc, int bitmap, int x, int y, int y2, int w)
 {
   CDIBSection* dib = m_DIBs[bitmap];
 
-  if (!dib || dib->GetPixels()) {
+  if (!dib || dib->GetPixels() == NULL) {
     return;
   }
 

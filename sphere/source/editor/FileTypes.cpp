@@ -8,15 +8,16 @@ using std::string;
 using std::vector;
 
 #include <corona.h>
+#include <audiere.h>
 
 static const char* Extensions[] = {
   /* maps */         "Map Files:rmp(Sphere Map Files(rmp))",
   /* spriteset */    "Spriteset Files:rss(Sphere Spriteset Files(rss))",
   /* scripts */      "Script Files:js(JavaScript Files(js))",
-  /* sounds */       "Sound Files:ogg(MP3 Files(mp3,mp2),Ogg Vorbis Files(ogg),MOD Files(mod,s3m,xm,it),WAV Files(wav),FLAC Files(flac))",
+  /* sounds */       "", // "Sound Files:ogg(MP3 Files(mp3,mp2),Ogg Vorbis Files(ogg),MOD Files(mod,s3m,xm,it),WAV Files(wav),FLAC Files(flac))",
   /* fonts */        "Font Files:rfn(Sphere Font Files(rfn))",
   /* windowstyles */ "Window Style Files:rws(Sphere Window Styles(rws))",
-  /* images */       "", //Image Files:png(JPEG Images(jpeg,jpg,jpe),PNG Images(png),PCX Images(pcx),Windows Bitmap Images(bmp),Truevision Targa(tga),Gif(gif))",
+  /* images */       "", // "Image Files:png(JPEG Images(jpeg,jpg,jpe),PNG Images(png),PCX Images(pcx),Windows Bitmap Images(bmp),Truevision Targa(tga),Gif(gif))",
   /* animations */   "Animation Files:mng,flic(MNG Animations(mng),FLIC Animations(flic,flc,fli))",
   /* tilesets */     "Tileset Files:rts(Sphere Tileset Files(rts))",
   /* packages */     "Package Files:spk(Sphere Package Files(spk))",
@@ -98,6 +99,10 @@ CFileTypeLibrary::GetFileTypeLabel(int file_type, bool save)
     return "Image Files";
   }
 
+  if (file_type == GT_SOUNDS) {
+    return "Sound Files";
+  }
+
   return m_FileTypes[file_type].name.c_str();
 }
 
@@ -113,6 +118,16 @@ CFileTypeLibrary::GetFileTypeExtensions(int file_type, bool save, vector<string>
     for (size_t i = 0; formats[i] != NULL; ++i) {
       for (size_t j = 0; j < formats[i]->getExtensionCount(); ++j) {
         extensions.push_back(formats[i]->getExtension(j));
+      }
+    }
+  }
+  else if (file_type == GT_SOUNDS) {
+    std::vector<audiere::FileFormatDesc> ffd;
+    audiere::GetSupportedFileFormats(ffd);
+
+    for (size_t i = 0; i < ffd.size(); ++i) {
+      for (size_t j = 0; j < ffd[i].extensions.size(); ++j) {
+        extensions.push_back(ffd[i].extensions[j]);
       }
     }
   }
@@ -143,6 +158,10 @@ CFileTypeLibrary::GetDefaultExtension(int file_type, bool save)
     return formats[0]->getExtension(0);
   }
 
+  if (file_type == GT_SOUNDS) {
+    return "Ogg";
+  }
+
   return m_FileTypes[file_type].default_extension.c_str();
 }
 
@@ -161,6 +180,12 @@ CFileTypeLibrary::GetNumSubTypes(int file_type, bool save)
     }
 
     return num_sub_types;
+  }
+
+  if (file_type == GT_SOUNDS) {
+    std::vector<audiere::FileFormatDesc> ffd;
+    audiere::GetSupportedFileFormats(ffd);
+    return ffd.size();
   }
 
   if (file_type == GT_ANIMATIONS && save)
@@ -190,7 +215,27 @@ const char* GetImageSubTypeLabel(const char* ext) {
     return "Portable Graymap Images";
   if (strcmp(ext, "ppm") == 0)
     return "Portable Pixelmap Images";
-  return "*.*";
+
+  return "Unknown Image";
+}
+
+const char* GetSoundSubTypeLabel(const char* ext) {
+  if (strcmp(ext, "mp3") == 0 || strcmp(ext, "mp2") == 0)
+    return "MP3 Files";
+  if (strcmp(ext, "ogg") == 0)
+    return "Ogg Vorbis Files";
+  if (strcmp(ext, "flac") == 0)
+    return "FLAC Files";
+  if (strcmp(ext, "mod") == 0 || strcmp(ext, "s3m") == 0 || strcmp(ext, "xm") == 0 || strcmp(ext, "it") == 0)
+    return "MOD Files";
+  if (strcmp(ext, "wav") == 0)
+    return "WAV Files";
+  if (strcmp(ext, "spx") == 0)
+    return "Speex Files";
+  if (strcmp(ext, "aiff") == 0 || strcmp(ext, "aifc") == 0)
+    return "AIFF Files";
+
+  return "Unknown Sound";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -203,8 +248,21 @@ CFileTypeLibrary::GetSubTypeLabel(int file_type, int sub_type, bool save)
       save ? corona::GetSupportedWriteFormats() : corona::GetSupportedReadFormats();
 
     for (size_t i = 0; formats[i] != NULL; ++i) {
-      if (sub_type == i) {
+      if (sub_type == i && formats[i]->getExtensionCount() > 0) {
         return GetImageSubTypeLabel(formats[i]->getExtension(0));
+      }
+    }
+
+    return "";
+  }
+
+  if (file_type == GT_SOUNDS) {
+    std::vector<audiere::FileFormatDesc> ffd;
+    audiere::GetSupportedFileFormats(ffd);
+
+    for (size_t i = 0; i < ffd.size(); ++i) {
+      if (sub_type == i && ffd[i].extensions.size() > 0) {
+        return GetSoundSubTypeLabel(ffd[i].extensions[0].c_str());
       }
     }
 
@@ -227,6 +285,18 @@ CFileTypeLibrary::GetSubTypeExtensions(int file_type, int sub_type, bool save, v
       if (sub_type == i) {
         for (size_t j = 0; j < formats[i]->getExtensionCount(); ++j) {
           extensions.push_back(formats[i]->getExtension(j));
+        }
+      }
+    }
+  }
+  else if (file_type == GT_SOUNDS) {
+    std::vector<audiere::FileFormatDesc> ffd;
+    audiere::GetSupportedFileFormats(ffd);
+
+    for (size_t i = 0; i < ffd.size(); ++i) {
+      if (sub_type == i) {
+        for (size_t j = 0; j < ffd[i].extensions.size(); ++j) {
+          extensions.push_back(ffd[i].extensions[j]);
         }
       }
     }
