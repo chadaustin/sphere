@@ -8,6 +8,7 @@ Requirements:
 - libmng (Multiple-image Network Graphics, http://www.libmng.org/)
 - lcms (Little CMS color engine, http://www.littlecms.com/)
 - zlib (compression library, http://www.gzip.org/zlib/)
+- SpiderMonkey (JavaScript-C Engine, http://www.mozilla.org/js/spidermonkey/)
 - a little-endian machine*
 
 Currently the Sphere engine is the only component being ported.  More details, 

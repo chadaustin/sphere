@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 #include <stdio.h>
+#include <string>
 #include "Image32.hpp"
 #include "DefaultFileSystem.hpp"
 
