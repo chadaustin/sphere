@@ -265,9 +265,10 @@ bool EXPORT InitVideoDriver(HWND window, int screen_width, int screen_height)
         const int screenheight = GetSystemMetrics(SM_CYSCREEN);
 
         RECT rect = { 0, 0, ScreenWidth * SCALE(), ScreenHeight * SCALE() };
-        SetWindowLong(SphereWindow, GWL_STYLE, WS_POPUP | WS_CAPTION | WS_CLIPSIBLINGS);
+	DWORD style = WS_POPUP | WS_CAPTION | WS_CLIPSIBLINGS;
+        SetWindowLong(SphereWindow, GWL_STYLE, style);
         SetWindowLong(SphereWindow, GWL_EXSTYLE, 0);
-        AdjustWindowRect(&rect, WS_BORDER | WS_DLGFRAME | WS_CLIPSIBLINGS, (GetMenu(SphereWindow) ? TRUE : FALSE));
+        AdjustWindowRect(&rect, style, (GetMenu(SphereWindow) ? TRUE : FALSE));
         int winwidth = rect.right - rect.left;
         int winheight = rect.bottom - rect.top;
         SetWindowPos(SphereWindow, HWND_TOP,
