@@ -459,7 +459,9 @@ private:
 
   // general scripts
   IEngine::script m_UpdateScript;
+  bool m_UpdateScriptRunning;
   IEngine::script m_RenderScript;
+  bool m_RenderScriptRunning;
   std::vector<IEngine::script> m_LayerRenderers;
 
   // default map scripts

@@ -62,7 +62,9 @@ CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
 , m_SouthScript(NULL)
 , m_WestScript(NULL)
 , m_UpdateScript(NULL)
+, m_UpdateScriptRunning(false)
 , m_RenderScript(NULL)
+, m_RenderScriptRunning(false)
 
 , m_TalkActivationKey(KEY_SPACE)
 , m_TalkActivationDistance(8)
@@ -3749,12 +3751,15 @@ CMapEngine::Render()
     ApplyColorMask(m_CurrentColorMask);
 
   // render script
-  if (m_RenderScript) {
+  if (m_RenderScript && !m_RenderScriptRunning) {
     std::string error;
+    m_RenderScriptRunning = true;
     if (!ExecuteScript(m_RenderScript, error)) {
       m_ErrorMessage = "Could not execute render script\n" + error;
+      m_RenderScriptRunning = false;
       return false;
     }
+    m_RenderScriptRunning = false;
   }
 
   return true;
@@ -3841,12 +3846,15 @@ CMapEngine::UpdateWorld(bool input_valid)
   }
 
   // call update script
-  if (m_UpdateScript) {
+  if (m_UpdateScript && !m_UpdateScriptRunning) {
     std::string error;
+    m_UpdateScriptRunning = true;
     if (!ExecuteScript(m_UpdateScript, error)) {
       m_ErrorMessage = "Could not execute update script\n" + error;
+      m_UpdateScriptRunning = false;
       return false;
     }
+    m_UpdateScriptRunning = false;
 
     // if we took more than a second to run the update script, reset the timer
     if (qword(GetTime()) * m_FrameRate > m_NextFrame) {
