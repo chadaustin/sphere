@@ -27,6 +27,21 @@ const char* __getfiletype__(const char* ext)
 }
 
 static
+__get_sphere_command__(const char* ext, char* command)
+{
+  char sphere_editor[MAX_PATH];
+  GetModuleFileName(AfxGetApp()->m_hInstance, sphere_editor, MAX_PATH);
+  std::string sphere_engine = GetSphereDirectory() + "\\engine.exe";
+
+  if (strcmp(ext, "spk") == 0) {
+    sprintf (command, "\"%s\" \"%%1\"", sphere_engine);
+  }
+  else {
+    sprintf (command, "\"%s\" \"%%1\"", sphere_editor);
+  }
+}
+
+static
 bool IsRegistered(const char* ext)
 {
   const char* filetype = __getfiletype__(ext);
@@ -34,39 +49,39 @@ bool IsRegistered(const char* ext)
   char extension[1024] = {0};
   sprintf (extension, ".%s", ext);
 
-  if (1) {
+  char command[MAX_PATH + 1024];
+  __get_sphere_command__(ext, command);
+
+	bool registered = false;
+
+  if (1)
+  {
     HKEY key;
 
     int retval = RegOpenKey(HKEY_CLASSES_ROOT, extension, &key);
     RegCloseKey(key);
     
-    if (retval == 0) {
+    if (retval == 0)
+    {
       retval = RegOpenKey(HKEY_CLASSES_ROOT, filetype, &key);
 
-	  if (retval == 0) {
-		//char buffer[1024 + MAX_PATH] = {0};
-		//long size = sizeof(buffer);
-		//RegQueryValue(key, "shell\\open\\command", buffer, &size);
-	  }
-
-      RegCloseKey(key);
-
-      if (retval == 0) {
-        return true;
+	    char buffer[MAX_PATH + 1024];
+	    long size = sizeof(buffer);
+	    if (RegQueryValue(key, "shell\\open\\command", buffer, &size) == 0) {
+		    if (strcmp(buffer, command) == 0) {
+		      registered = true;
+        }
       }
+      RegCloseKey(key);
     }
   }
 
-  return false;
+  return registered;
 }
 
 static
 void RegisterFile(const char* ext)
 {
-  char sphere_editor[MAX_PATH];
-  GetModuleFileName(AfxGetApp()->m_hInstance, sphere_editor, MAX_PATH);
-  std::string sphere_engine = GetSphereDirectory() + "\\engine.exe";
-
   char extension[1024] = {0};
   sprintf (extension, ".%s", ext);
 
@@ -76,23 +91,19 @@ void RegisterFile(const char* ext)
   {
     HKEY key;
     char command[MAX_PATH + 1024];
-
-    if (strcmp(ext, "spk") == 0) {
-      sprintf (command, "\"%s\" \"%%1\"", sphere_engine);
-    }
-    else {
-      sprintf (command, "\"%s\" \"%%1\"", sphere_editor);
-    }
+    __get_sphere_command__(ext, command);
 
     // register the extension
-    RegCreateKey(HKEY_CLASSES_ROOT, extension, &key);
-    RegSetValue(key, NULL, REG_SZ, filetype, strlen(filetype));
-    RegCloseKey(key);
+    if (RegCreateKey(HKEY_CLASSES_ROOT, extension, &key) == 0) {
+      RegSetValue(key, NULL, REG_SZ, filetype, strlen(filetype));
+      RegCloseKey(key);
+    }
 
     // register the type
-    RegCreateKey(HKEY_CLASSES_ROOT, filetype, &key);
-    RegSetValue(key, "shell\\open\\command", REG_SZ, command, strlen(command));
-    RegCloseKey(key);
+    if (RegCreateKey(HKEY_CLASSES_ROOT, filetype, &key) == 0) {
+      RegSetValue(key, "shell\\open\\command", REG_SZ, command, strlen(command));
+      RegCloseKey(key);
+    }
   }
 }
 
@@ -108,8 +119,12 @@ void UnregisterFile(const char* ext)
 
   if (1)
   {
-    RegDeleteKey(HKEY_CLASSES_ROOT, extension);
-    RegDeleteKey(HKEY_CLASSES_ROOT, filetype);
+  	HKEY key;
+	  int retval = RegOpenKey(HKEY_CLASSES_ROOT, filetype, &key);
+	  if (retval == 0) {
+      RegDeleteKey(key, "shell\\open\\command");
+    }
+	  RegCloseKey(key);
   }
 }
 
