@@ -2957,6 +2957,38 @@ begin_func(GetZoneHeight, 1)
   return_int(h);
 end_func()
 
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+      - gets the layer value of zone 'zone'
+*/
+begin_func(GetZoneLayer, 1)
+  arg_int(zone);
+  int layer = 0;
+
+  if ( !This->m_Engine->GetMapEngine()->GetZoneLayer(zone, layer) ) {
+    This->ReportMapEngineError("GetZoneLayer() failed");
+    return JS_FALSE;
+  }
+
+  return_int(layer);
+end_func()
+
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+      - sets the layer value of zone 'zone'
+*/
+begin_func(SetZoneLayer, 2)
+  arg_int(zone);
+  arg_int(layer);
+
+  if ( !This->m_Engine->GetMapEngine()->SetZoneLayer(zone, layer) ) {
+    This->ReportMapEngineError("SetZoneLayer() failed");
+    return JS_FALSE;
+  }
+end_func()
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /**

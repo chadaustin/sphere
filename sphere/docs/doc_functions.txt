@@ -516,6 +516,12 @@ log_object.endBlock()
     GetZoneHeight(zone)
       - gets the height value of zone 'zone'
 
+    GetZoneLayer(zone)
+      - gets the layer value of zone 'zone'
+
+    SetZoneLayer(zone, layer)
+      - sets the layer value of zone 'zone'
+
     ExecuteZoneScript(zone)
       - executes the script for the zone 'zone'
 

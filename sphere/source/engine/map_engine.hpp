@@ -119,6 +119,8 @@ public:
   bool GetZoneY(int zone, int& y);
   bool GetZoneWidth(int zone, int& width);
   bool GetZoneHeight(int zone, int& height);
+  bool GetZoneLayer(int zone, int& layer);
+  bool SetZoneLayer(int zone, int layer);
 
   bool RenderMap();
 

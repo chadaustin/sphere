@@ -935,6 +935,47 @@ CMapEngine::GetZoneHeight(int zone, int& height) {
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::GetZoneLayer(int zone, int& layer)
+{
+  if (!m_IsRunning) {
+    m_ErrorMessage = "GetZoneLayer() called while map engine was not running";
+    return false;
+  }
+
+  if (zone < 0 || zone > m_Map.GetMap().GetNumZones()) {
+    m_ErrorMessage = "Invalid zone index: " + itos(zone);
+    return false;
+  }
+
+  layer = m_Map.GetMap().GetZone(zone).layer;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::SetZoneLayer(int zone, int layer)
+{
+  if (!m_IsRunning) {
+    m_ErrorMessage = "SetZoneLayer() called while map engine was not running";
+    return false;
+  }
+
+  if (zone < 0 || zone > m_Map.GetMap().GetNumZones()) {
+    m_ErrorMessage = "Invalid zone index: " + itos(zone);
+    return false;
+  }
+
+  if ( IsInvalidLayerError(layer, "SetZoneLayer()") )
+    return false;
+
+  m_Map.GetMap().GetZone(zone).layer = layer;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::RenderMap()
 {
   if (m_IsRunning) {
@@ -2195,6 +2236,8 @@ CMapEngine::SetPersonSpriteset(const char* name, sSpriteset& spriteset)
 
   // make sure stepping is valid
   m_Persons[person_index].stepping = m_Persons[person_index].frame;
+
+  spriteset.GetBase(m_Persons[person_index].base_x1, m_Persons[person_index].base_y1, m_Persons[person_index].base_x2, m_Persons[person_index].base_y2);
 
   return true;
 }
