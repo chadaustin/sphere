@@ -1098,7 +1098,10 @@ CTilesetView::OnTileProperties()
 afx_msg void
 CTilesetView::OnInsertTiles()
 {
-  CNumberDialog dialog("Insert Tiles", "Number of Tiles", 1, 1, 255);
+  char string[1024];
+  sprintf (string, "Number of Tiles (1 - %d)", 255);
+
+  CNumberDialog dialog("Insert Tiles", string, 1, 1, 255);
   if (dialog.DoModal() == IDOK)
   {
     // adjust map tile indices around
@@ -1117,7 +1120,10 @@ CTilesetView::OnInsertTiles()
 afx_msg void
 CTilesetView::OnAppendTiles()
 {
-  CNumberDialog dialog("Append Tiles", "Number of Tiles", 1, 1, 255);
+  char string[1024];
+  sprintf (string, "Number of Tiles (1 - %d)", 255);
+
+  CNumberDialog dialog("Append Tiles", string, 1, 1, 255);
   if (dialog.DoModal() == IDOK)
   {
     m_Tileset->AppendTiles(dialog.GetValue());
@@ -1133,7 +1139,10 @@ CTilesetView::OnAppendTiles()
 afx_msg void
 CTilesetView::OnDeleteTiles()
 {
-  CNumberDialog dialog("Delete Tiles", "Number of Tiles", 1, 1, m_Tileset->GetNumTiles() - m_SelectedTile - 1);
+  char string[1024];
+  sprintf (string, "Number of Tiles (1 - %d)", m_Tileset->GetNumTiles() - m_SelectedTile - (m_SelectedTile > 0 ? 0 : 1));
+
+  CNumberDialog dialog("Delete Tiles", string, 1, 1, m_Tileset->GetNumTiles() - m_SelectedTile - (m_SelectedTile > 0 ? 0 : 1));
   if (dialog.DoModal() == IDOK)
   {
     // adjust map tile indices around

@@ -687,7 +687,7 @@ CScriptWindow::SetScriptStyles()
     SendEditor(SCI_SETKEYWORDS, 1, (LPARAM)reserved_words);
   }
   else {
-    SendEditor(SCI_SETLEXER, SCLEX_CONTAINER);
+    SendEditor(SCI_SETLEXER, SCLEX_NULL);
   }
 
   if (!(m_FontSize >= 0 && m_FontSize <= 72))
@@ -751,7 +751,7 @@ CScriptWindow::SetScriptStyles()
         SendEditor(SCI_STYLESETBOLD, SCE_C_WORD, 1);
       }
 
-      SetStyle(SCE_C_STRING,      green);
+      SetStyle(SCE_C_STRING,      blue);
       SetStyle(SCE_C_CHARACTER,   green);
       SetStyle(SCE_C_OPERATOR,    purple);
       SetStyle(SCE_C_IDENTIFIER,  black);
@@ -812,13 +812,15 @@ CScriptWindow::LoadScript(const char* filename)
 {
   // get the file size
   int file_size = FileSize(GetDocumentPath());
-  if (file_size == -1)
+  if (file_size == -1) {
     return false;
+  }
 
   // open the file
   FILE* file = fopen(filename, "rb");
-  if (file == NULL)
+  if (file == NULL) {
     return false;
+  }
 
   /*
   // allocate a temporary storage buffer and read it
@@ -1379,9 +1381,18 @@ CScriptWindow::UpdateBraceHighlight()
 afx_msg void
 CScriptWindow::OnPosChanged(NMHDR* nmhdr, LRESULT* result) {
   SCNotification* notify = (SCNotification*)nmhdr;
-  int pos = SendEditor(SCI_GETCURRENTPOS);
+  int pos  = SendEditor(SCI_GETCURRENTPOS);
   int line = SendEditor(SCI_LINEFROMPOSITION, pos);
   SetLineNumber(line);
+
+
+  if (m_CheckSpelling) {
+    int pos  = SendEditor(SCI_GETCURRENTPOS);
+    int line = SendEditor(SCI_LINEFROMPOSITION, pos);
+
+    //SpellCheck(line);
+  }
+
   if (m_SyntaxHighlighted)
     if (GetScriptType() == SCRIPT_TYPE_UNKNOWN || GetScriptType() == SCRIPT_TYPE_JS)
       UpdateBraceHighlight();
@@ -1523,10 +1534,13 @@ CScriptWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
 
 #if 1
 
-  if (m_AllowAutoComplete && notify->ch != '\r' && notify->ch != '\n' && notify->ch != ' ') {
+  //if (m_AllowAutoComplete && notify->ch != '\r' && notify->ch != '\n' && notify->ch != ' ')
+  if (m_AllowAutoComplete && isalpha(notify->ch))
+  {
     if (GetScriptType() == SCRIPT_TYPE_UNKNOWN || GetScriptType() == SCRIPT_TYPE_JS)
     {
-      SendEditor(SCI_SETWORDCHARS, 0, (LPARAM)"_.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+      //SendEditor(SCI_SETWORDCHARS, 0, (LPARAM)"_.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+      
       int cur_pos  = SendEditor(SCI_GETCURRENTPOS);
       int word_pos = SendEditor(SCI_WORDSTARTPOSITION, cur_pos);
       int len = cur_pos - word_pos;
@@ -1534,7 +1548,7 @@ CScriptWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
         SendEditor(SCI_AUTOCSHOW, cur_pos - word_pos, (LPARAM)sFunctionDefinitions);
       }
 
-      SendEditor(SCI_SETCHARSDEFAULT);
+      //SendEditor(SCI_SETCHARSDEFAULT);
     }
   }
 
@@ -1585,13 +1599,6 @@ CScriptWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
       }
     }
   }
-
-  if (m_CheckSpelling) {
-    int pos  = SendEditor(SCI_GETCURRENTPOS);
-    int line = SendEditor(SCI_LINEFROMPOSITION, pos);
-
-    SpellCheck(line);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1617,7 +1624,6 @@ CScriptWindow::SpellCheck(const int line_number)
 
   //const int line_number = SendEditor(SCI_LINEFROMPOSITION, SendEditor(SCI_GETENDSTYLED));
   const int start_pos   = SendEditor(SCI_POSITIONFROMLINE, (WPARAM)line_number);
-
   int line_length = SendEditor(SCI_LINELENGTH, SendEditor(SCI_LINEFROMPOSITION, start_pos));
 
   char text[1024 * 16];
@@ -1625,78 +1631,150 @@ CScriptWindow::SpellCheck(const int line_number)
     SendEditor(SCI_GETLINE, line_number, (LRESULT)text);
 
     SendEditor(SCI_INDICSETSTYLE, BAD_SPELLING_INDICTOR_INDEX, INDIC_SQUIGGLE);
-    SendEditor(SCI_INDICSETSTYLE, GOOD_SPELLING_INDICTOR_INDEX, INDIC_PLAIN);
+    SendEditor(SCI_INDICSETSTYLE, GOOD_SPELLING_INDICTOR_INDEX, INDIC_HIDDEN);
 
     static const COLORREF darkred = RGB(0x80, 0, 0);;
-    static const COLORREF white   = 0xFFFFFF;
+    //static const COLORREF white   = 0xFFFFFF;
     SendEditor(SCI_INDICSETFORE, BAD_SPELLING_INDICTOR_INDEX,  darkred);
-    SendEditor(SCI_INDICSETFORE, GOOD_SPELLING_INDICTOR_INDEX, white);
+    //SendEditor(SCI_INDICSETFORE, GOOD_SPELLING_INDICTOR_INDEX, white);
+
+    //SendEditor(SCI_STARTSTYLING, start_pos, 0x1f);
+    SendEditor(SCI_COLOURISE, start_pos, start_pos + line_length);
 
     SendEditor(SCI_STARTSTYLING, start_pos, INDICS_MASK);
 
+    const int lexer = SendEditor(SCI_GETLEXER);
+
+    char string[100000] = {0};
+
     for (int cur_pos = 0, last_pos = 0; cur_pos < line_length; cur_pos++)
     {
-      if ((text[cur_pos] == ' ' || cur_pos == line_length - 1)) {
+      bool spell_check = true;
+
+      if (lexer == SCLEX_CPP) {
+        const int char_style = SendEditor(SCI_GETSTYLEAT, start_pos + cur_pos);
+        if ( ! (char_style == 6 || char_style == -122 || char_style == 38) )
+          spell_check = false;
+
+        //sprintf (string + strlen(string), "[%d:%d:%d]", SCE_C_STRING, char_style, spell_check ? 1 : 0);
+      }
+
+      if (!spell_check) {
+        SendEditor(SCI_SETSTYLING, 1, GOOD_SPELLING_INDICTOR_MASK);
+        last_pos = cur_pos + 1;
+      }
+      else
+      if ((text[cur_pos] == ' ' || text[cur_pos] == '"' || cur_pos == line_length - 1)) {
         int length = cur_pos - last_pos;
-        if (text[cur_pos] == ' ')
+        if (text[cur_pos] == ' ' || text[cur_pos] == '"')
           ;
         else
         if (cur_pos == line_length - 1)
           length += 1;
-        
-        if ( !(length > 0) )
-          length = 1;
 
+        const char* dictionary_1[] = {"I", "A", "a"};
         const char* dictionary_2[] = {"on", "an", "it", "in", "ok", "as"};
-        const char* dictionary_3[] = {"The", "the", "cat", "sat", "did", "mat"};
+        const char* dictionary_3[] = {"the", "cat", "sat", "did", "mat", "I'm"};
+        const char* dictionary_4[] = {"they", "that", "than"};
+        const char* dictionary_5[] = {"their"};
+        const char* dictionary_6[] = {"theirs"};
+        const char* dictionary_7[] = {"They're"};
         
+        const int dictionary_1_size = sizeof(dictionary_1) / sizeof(*dictionary_1);
         const int dictionary_2_size = sizeof(dictionary_2) / sizeof(*dictionary_2);
         const int dictionary_3_size = sizeof(dictionary_3) / sizeof(*dictionary_3);
+        const int dictionary_4_size = sizeof(dictionary_1) / sizeof(*dictionary_4);
+        const int dictionary_5_size = sizeof(dictionary_2) / sizeof(*dictionary_5);
+        const int dictionary_6_size = sizeof(dictionary_3) / sizeof(*dictionary_6);
+        const int dictionary_7_size = sizeof(dictionary_3) / sizeof(*dictionary_7);
 
-        bool found = false;
-
-        switch (length)
+        if (length > 0)
         {
-          case 2:
-            for (int i = 0; i < dictionary_2_size; i++) {
-              if (memcmp(text + last_pos, dictionary_2[i], length) == 0) {
-                found = true;
-                break;
+          bool found = false;
+
+          switch (length)
+          {
+            case 1:
+              for (int i = 0; i < dictionary_1_size; i++) {
+                if (memcmp(text + last_pos, dictionary_1[i], length) == 0) {
+                  found = true;
+                  break;
+                }
               }
-            }
-          break;
+            break;
 
-          case 3:
-            for (int i = 0; i < dictionary_3_size; i++) {
-              if (memcmp(text + last_pos, dictionary_3[i], length) == 0) {
-                found = true;
-                break;
+            case 2:
+              for (int i = 0; i < dictionary_2_size; i++) {
+                if (memcmp(text + last_pos, dictionary_2[i], length) == 0) {
+                  found = true;
+                  break;
+                }
               }
-            }
-          break;
+            break;
+
+            case 3:
+              for (int i = 0; i < dictionary_3_size; i++) {
+                if (memcmp(text + last_pos, dictionary_3[i], length) == 0) {
+                  found = true;
+                  break;
+                }
+              }
+            break;
+
+            case 4:
+              for (int i = 0; i < dictionary_4_size; i++) {
+                if (memcmp(text + last_pos, dictionary_4[i], length) == 0) {
+                  found = true;
+                  break;
+                }
+              }
+            break;
+
+            case 5:
+              for (int i = 0; i < dictionary_5_size; i++) {
+                if (memcmp(text + last_pos, dictionary_5[i], length) == 0) {
+                  found = true;
+                  break;
+                }
+              }
+            break;
+
+            case 6:
+              for (int i = 0; i < dictionary_6_size; i++) {
+                if (memcmp(text + last_pos, dictionary_6[i], length) == 0) {
+                  found = true;
+                  break;
+                }
+              }
+            break;
+
+            case 7:
+              for (int i = 0; i < dictionary_7_size; i++) {
+                if (memcmp(text + last_pos, dictionary_7[i], length) == 0) {
+                  found = true;
+                  break;
+                }
+              }
+            break;
+
+          
+          }
+
+          if (!found) {
+            SendEditor(SCI_SETSTYLING, length, BAD_SPELLING_INDICTOR_MASK);
+          } else {
+            SendEditor(SCI_SETSTYLING, length, GOOD_SPELLING_INDICTOR_MASK);
+          }
         }
 
-        if (!found) {
-          SendEditor(SCI_SETSTYLING, length, BAD_SPELLING_INDICTOR_MASK);
-        } else {
-          SendEditor(SCI_SETSTYLING, length, GOOD_SPELLING_INDICTOR_MASK);
-        }
-
-        /*
-        if (length == strlen("teh") && memcmp(text + last_pos, "teh", length) == 0) {
-          SendEditor(SCI_SETSTYLING, length, BAD_SPELLING_INDICTOR_MASK);
-        }
-        else {
-          SendEditor(SCI_SETSTYLING, length, GOOD_SPELLING_INDICTOR_MASK);
-        }
-        */
-
-        if (text[cur_pos] == ' ' && text[last_pos] != ' ')
+        if ((text[cur_pos] == ' ' || text[cur_pos] == '"'))
           SendEditor(SCI_SETSTYLING, 1, GOOD_SPELLING_INDICTOR_MASK);
 
         last_pos = cur_pos + 1;
       }
     }
+
+    //GetStatusBar()->SetWindowText(string);
 
   }
 }
