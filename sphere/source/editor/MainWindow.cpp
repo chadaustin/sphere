@@ -610,8 +610,8 @@ CMainWindow::AddToDirectory(const char* pathname, const char* sub_directory)
   if (!CheckDirectory(pathname, sub_directory))
   {
     // ask the user if we can copy it
-    char message[1024];
-    sprintf(message, "The file must be copied into the game '%s' directory.  Is this okay?", sub_directory);
+    char message[1024 + MAX_PATH + MAX_PATH];
+    sprintf(message, "The file '%s' must be copied into the game '%s' directory.  Is this okay?", pathname, sub_directory);
     if (MessageBox(message, NULL, MB_YESNO) == IDNO)
       return false;
 
@@ -630,12 +630,15 @@ CMainWindow::AddToDirectory(const char* pathname, const char* sub_directory)
     // copy it
     if (CopyFile(pathname, szDestination, TRUE) == FALSE)
     {
-      if (MessageBox("File appears to already exist, overwrite?", NULL, MB_YESNO) == IDNO)
+      sprintf (message, "File '%s' appears to already exist, overwrite?", pathname);
+
+      if (MessageBox(message, NULL, MB_YESNO) == IDNO)
         return false;
 
       if (CopyFile(pathname, szDestination, FALSE) == FALSE)
       {
-        MessageBox("Error: Could not copy file");
+        sprintf (message, "Error: Could not copy file '%s'", pathname);
+        MessageBox(message);
         return false;
       }
     }
@@ -2036,9 +2039,21 @@ CMainWindow::OnFileSaveAll()
 afx_msg void                                                            \
 CMainWindow::OnProjectInsert##type()                                    \
 {                                                                       \
-  InsertProjectFile(                                                    \
-    &C##type##FileDialog(FDM_OPEN | FDM_MAYNOTEXIST), group_type);      \
-                                                                        \
+  C##type##FileDialog Dialog(FDM_OPEN | FDM_MULTISELECT);               \
+  Dialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();               \
+  if (Dialog.DoModal() == IDOK) {                                       \
+    POSITION pos = Dialog.GetStartPosition();                           \
+    if (pos != NULL) {                                                  \
+      CString thePath = Dialog.GetNextPathName(pos);                    \
+      m_DefaultFolder = GetFolderFromPathName(thePath);                 \
+    }                                                                   \
+    pos = Dialog.GetStartPosition();                                    \
+    while (pos != NULL) {                                               \
+      CString path_ = Dialog.GetNextPathName(pos);                      \
+      const char* path = path_;                                         \
+      OnInsertProjectFile(group_type, (WPARAM)path);                    \
+    }                                                                   \
+  }                                                                     \
   /* save the project and update the view                     */        \
   /* (in case user changed filename extensions in the dialog) */        \
   m_Project.RefreshItems();                                             \
