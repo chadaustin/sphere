@@ -3575,6 +3575,7 @@ end_method()
 begin_method(SS_SOCKET, ssSocketClose, 0)
   if (object->socket && object->is_open) {
     CloseSocket(object->socket);
+    object->is_open = false;
   }
 end_method()
 
