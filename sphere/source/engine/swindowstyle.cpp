@@ -61,30 +61,32 @@ SWINDOWSTYLE::Destroy()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+int
+SWINDOWSTYLE::GetBackgroundMode() {
+  return m_WindowStyle.GetBackgroundMode();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 bool
-SWINDOWSTYLE::DrawWindow(int x, int y, int w, int h)
+SWINDOWSTYLE::DrawMiddle(int x, int y, int w, int h, int background_mode)
 {
-  IMAGE image;
-  int width, height;
+  IMAGE image = m_Images[8];
+  int width = GetImageWidth(image);
+  int height = GetImageHeight(image);
 
   int ox, oy, ow, oh;
   GetClippingRectangle(&ox, &oy, &ow, &oh);
-
-  //---- Draw middle ----//
-
-  image = m_Images[8];
-  width = GetImageWidth(image);
-  height = GetImageHeight(image);
-
   SetClippingRectangle(x, y, w, h);
 
-  if (m_WindowStyle.GetBackgroundMode() == sWindowStyle::TILED) {
+
+  if (background_mode == sWindowStyle::TILED) {
     for (int ix = 0; ix < w / width + 1; ix++) {
       for (int iy = 0; iy < h / height + 1; iy++) {
         BlitImage(image, x + ix * width, y + iy * height);
       }
     }
-  } else if (m_WindowStyle.GetBackgroundMode() == sWindowStyle::STRETCHED) {
+  } else if (background_mode == sWindowStyle::STRETCHED) {
     int tx[4] = { x, x + w, x + w, x };
     int ty[4] = { y, y, y + h, y + h };
     TransformBlitImage(image, tx, ty);
@@ -96,89 +98,153 @@ SWINDOWSTYLE::DrawWindow(int x, int y, int w, int h)
     colors[3] = m_WindowStyle.GetBackgroundColor(sWindowStyle::BACKGROUND_LOWER_LEFT);
     DrawGradientRectangle(x, y, w, h, colors);
   }
-  
-  //---- Draw edges ----//
-
-  // top
-
-  image = m_Images[1];
-  width = GetImageWidth(image);
-  height = GetImageHeight(image);
-
-  SetClippingRectangle(x, y - height, w, height);
-
-  for (int i = 0; i < w / width + 1; i++)
-    BlitImage(image, x + i * width, y - height);
-
-  // bottom
-
-  image = m_Images[5];
-  width = GetImageWidth(image);
-  height = GetImageHeight(image);
-
-  SetClippingRectangle(x, y + h, w, height);
-
-  for (int i = 0; i < w / width + 1; i++)
-    BlitImage(image, x + i * width, y + h);
-
-  // left
-
-  image = m_Images[7];
-  width = GetImageWidth(image);
-  height = GetImageHeight(image);
-
-  SetClippingRectangle(x - width, y, width, h);
-
-  for (int i = 0; i < h / height + 1; i++)
-    BlitImage(image, x - width, y + i * height);
-
-  // right
-
-  image = m_Images[3];
-  width = GetImageWidth(image);
-  height = GetImageHeight(image);
-
-  SetClippingRectangle(x + w, y, x + w + width, h);
-
-  for (int i = 0; i < h / height + 1; i++)
-    BlitImage(image, x + w, y + i*height);
-
-
-  //---- Draw corners ----//
 
   SetClippingRectangle(ox, oy, ow, oh);
 
-  // upper-left
-  image = m_Images[0];
-  width = GetImageWidth(image);
-  height = GetImageHeight(image);
-  BlitImage(image,
-    x - width,
-    y - height);
+  return true;
+}
 
-  // upper-right
-  image = m_Images[2];
-  width = GetImageWidth(image);
-  height = GetImageHeight(image);
-  BlitImage(image,
-    x + w,
-    y - height);
+////////////////////////////////////////////////////////////////////////////////
 
-  // lower-right
-  image = m_Images[4];
-  width = GetImageWidth(image);
-  height = GetImageHeight(image);
-  BlitImage(image,
-    x + w,
-    y + h);
+bool
+SWINDOWSTYLE::DrawUpperLeftCorner(int x, int y)
+{
+  IMAGE image = m_Images[0];
+  BlitImage(image, x, y);
+  return true;
+}
 
-  // lower-left
-  image = m_Images[6];
-  width = GetImageWidth(image);
-  height = GetImageHeight(image);
-  BlitImage(image,
-    x - width,
-    y + h);
+bool
+SWINDOWSTYLE::DrawUpperRightCorner(int x, int y)
+{
+  IMAGE image = m_Images[2];
+  BlitImage(image, x, y);
+  return true;
+}
+
+bool
+SWINDOWSTYLE::DrawLowerRightCorner(int x, int y)
+{
+  IMAGE image = m_Images[4];
+  BlitImage(image, x, y);
+  return true;
+}
+
+bool
+SWINDOWSTYLE::DrawLowerLeftCorner(int x, int y)
+{
+  IMAGE image = m_Images[6];
+  BlitImage(image, x, y);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+SWINDOWSTYLE::DrawTopEdge(int x, int y, int w, int h)
+{
+  IMAGE image = m_Images[1]; 
+  int width = GetImageWidth(image);
+  int height = GetImageHeight(image);
+
+  int ox, oy, ow, oh;
+  GetClippingRectangle(&ox, &oy, &ow, &oh);
+
+  SetClippingRectangle(x, y, w, height);
+
+  for (int i = 0; i < w / width + 1; i++)
+    BlitImage(image, x + i * width, y);
+
+  SetClippingRectangle(ox, oy, ow, oh);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+SWINDOWSTYLE::DrawBottomEdge(int x, int y, int w, int h)
+{
+  IMAGE image = m_Images[5]; 
+  int width = GetImageWidth(image);
+  int height = GetImageHeight(image);
+
+  int ox, oy, ow, oh;
+  GetClippingRectangle(&ox, &oy, &ow, &oh);
+
+  SetClippingRectangle(x, y, w, height);
+
+  for (int i = 0; i < w / width + 1; i++)
+    BlitImage(image, x + i * width, y);
+
+  SetClippingRectangle(ox, oy, ow, oh);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+SWINDOWSTYLE::DrawLeftEdge(int x, int y, int w, int h)
+{
+  IMAGE image = m_Images[7];
+  int width = GetImageWidth(image);
+  int height = GetImageHeight(image);
+
+  int ox, oy, ow, oh;
+  GetClippingRectangle(&ox, &oy, &ow, &oh);
+
+  SetClippingRectangle(x, y, width, h);
+
+  for (int i = 0; i < h / height + 1; i++)
+    BlitImage(image, x, y + i * height);
+
+  SetClippingRectangle(ox, oy, ow, oh);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+SWINDOWSTYLE::DrawRightEdge(int x, int y, int w, int h)
+{
+  IMAGE image = m_Images[3];
+  int width = GetImageWidth(image);
+  int height = GetImageHeight(image);
+
+  int ox, oy, ow, oh;
+  GetClippingRectangle(&ox, &oy, &ow, &oh);
+
+  SetClippingRectangle(x, y, x + width, h);
+
+  for (int i = 0; i < h / height + 1; i++)
+    BlitImage(image, x, y + i*height);
+
+  SetClippingRectangle(ox, oy, ow, oh);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+SWINDOWSTYLE::DrawWindow(int x, int y, int w, int h)
+{
+  IMAGE image = m_Images[8];
+  int width = GetImageWidth(image);
+  int height = GetImageHeight(image);
+
+  //---- Draw middle ----//
+  DrawMiddle(x, y, w, h, m_WindowStyle.GetBackgroundMode());
+  
+  //---- Draw edges ----//
+  DrawTopEdge(x, (y - GetImageHeight(m_Images[1])), w, h);
+  DrawBottomEdge(x, (y + h), w, h);
+  DrawLeftEdge((x - GetImageWidth(m_Images[7])), y, w, h);
+  DrawRightEdge((x + w), y, w, h);
+
+  //---- Draw corners ----//
+  DrawUpperLeftCorner (x - width, y - height);
+  DrawUpperRightCorner(x + w,     y - height);
+  DrawLowerRightCorner(x + w,     y + h);
+  DrawLowerLeftCorner (x - width, y + h);
 
   return true;
 }

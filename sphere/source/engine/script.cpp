@@ -3948,6 +3948,15 @@ CScript::CreateWindowStyleObject(JSContext* cx, SWINDOWSTYLE* ws, bool destroy)
   // assign methods to the object
   static JSFunctionSpec fs[] = {
     { "drawWindow", ssWindowStyleDrawWindow, 4, 0, 0 },
+    { "drawMiddle", ssWindowStyleDrawMiddle, 4, 0, 0 },
+    { "drawUpperLeftCorner",  ssWindowStyleDrawUpperLeftCorner, 2, 0, 0 },
+    { "drawUpperRightCorner", ssWindowStyleDrawUpperRightCorner, 2, 0, 0 },
+    { "drawLowerLeftCorner",  ssWindowStyleDrawLowerLeftCorner, 2, 0, 0 },
+    { "drawLowerRightCorner", ssWindowStyleDrawLowerRightCorner, 2, 0, 0 },
+    { "drawTopEdge",    ssWindowStyleDrawTopEdge,    4, 0, 0 },
+    { "drawBottomEdge", ssWindowStyleDrawBottomEdge, 4, 0, 0 },
+    { "drawLeftEdge",   ssWindowStyleDrawLeftEdge,   4, 0, 0 },
+    { "drawRightEdge",  ssWindowStyleDrawRightEdge,  4, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -3979,6 +3988,108 @@ begin_method(SS_WINDOWSTYLE, ssWindowStyleDrawWindow, 4)
     arg_int(h);
 
     object->windowstyle->DrawWindow(x, y, w, h);
+  }
+end_method()
+
+///////////////////////////////////////
+
+begin_method(SS_WINDOWSTYLE, ssWindowStyleDrawMiddle, 4)
+  if (This->ShouldRender()) {
+    arg_int(x);
+    arg_int(y);
+    arg_int(w);
+    arg_int(h);
+
+    object->windowstyle->DrawMiddle(x, y, w, h, object->windowstyle->GetBackgroundMode());
+  }
+end_method()
+
+///////////////////////////////////////
+
+begin_method(SS_WINDOWSTYLE, ssWindowStyleDrawUpperLeftCorner, 2)
+  if (This->ShouldRender()) {
+    arg_int(x);
+    arg_int(y);
+    object->windowstyle->DrawUpperLeftCorner(x, y);
+  }
+end_method()
+
+///////////////////////////////////////
+
+begin_method(SS_WINDOWSTYLE, ssWindowStyleDrawUpperRightCorner, 2)
+  if (This->ShouldRender()) {
+    arg_int(x);
+    arg_int(y);
+    object->windowstyle->DrawUpperRightCorner(x, y);
+  }
+end_method()
+
+///////////////////////////////////////
+
+begin_method(SS_WINDOWSTYLE, ssWindowStyleDrawLowerLeftCorner, 2)
+  if (This->ShouldRender()) {
+    arg_int(x);
+    arg_int(y);
+    object->windowstyle->DrawLowerLeftCorner(x, y);
+  }
+end_method()
+
+///////////////////////////////////////
+
+begin_method(SS_WINDOWSTYLE, ssWindowStyleDrawLowerRightCorner, 2)
+  if (This->ShouldRender()) {
+    arg_int(x);
+    arg_int(y);
+    object->windowstyle->DrawLowerRightCorner(x, y);
+  }
+end_method()
+
+///////////////////////////////////////
+
+begin_method(SS_WINDOWSTYLE, ssWindowStyleDrawTopEdge, 4)
+  if (This->ShouldRender()) {
+    arg_int(x);
+    arg_int(y);
+    arg_int(w);
+    arg_int(h);
+    object->windowstyle->DrawTopEdge(x, y, w, h);
+  }
+end_method()
+
+///////////////////////////////////////
+
+begin_method(SS_WINDOWSTYLE, ssWindowStyleDrawBottomEdge, 4)
+  if (This->ShouldRender()) {
+    arg_int(x);
+    arg_int(y);
+    arg_int(w);
+    arg_int(h);
+    object->windowstyle->DrawBottomEdge(x, y, w, h);
+  }
+end_method()
+
+///////////////////////////////////////
+
+begin_method(SS_WINDOWSTYLE, ssWindowStyleDrawLeftEdge, 4)
+  if (This->ShouldRender()) {
+    arg_int(x);
+    arg_int(y);
+    arg_int(w);
+    arg_int(h);
+    object->windowstyle->DrawLeftEdge(x, y, w, h);
+  }
+end_method()
+
+
+///////////////////////////////////////
+
+begin_method(SS_WINDOWSTYLE, ssWindowStyleDrawRightEdge, 4)
+  if (This->ShouldRender()) {
+    arg_int(x);
+    arg_int(y);
+    arg_int(w);
+    arg_int(h);
+    object->windowstyle->DrawRightEdge(x, y, w, h);
   }
 end_method()
 

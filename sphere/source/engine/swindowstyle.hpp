@@ -17,6 +17,19 @@ public:
   bool CreateFromWindowStyle(const sWindowStyle& ws);
   void Destroy();
 
+  int GetBackgroundMode();
+  bool DrawMiddle(int x, int y, int w, int h, int background_mode);
+
+  bool DrawTopEdge   (int x, int y, int w, int h);
+  bool DrawBottomEdge(int x, int y, int w, int h);
+  bool DrawLeftEdge  (int x, int y, int w, int h);
+  bool DrawRightEdge (int x, int y, int w, int h);
+
+  bool DrawUpperLeftCorner (int x, int y);
+  bool DrawUpperRightCorner(int x, int y);
+  bool DrawLowerLeftCorner (int x, int y);
+  bool DrawLowerRightCorner(int x, int y);
+
   bool DrawWindow(int x, int y, int w, int h);
 
 private:
