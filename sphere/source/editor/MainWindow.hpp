@@ -25,7 +25,7 @@ class CMainWindow : public CMDIFrameWnd
 {
 public:
   CMainWindow();
-  
+
   BOOL Create();
 
   void CreateProject(const char* projectname, const char* gametitle);

@@ -633,11 +633,12 @@ CMainWindow::OnDropFiles(HDROP hDropInfo)
     length = DragQueryFile(hDropInfo, i, NULL, NULL);
     length++;
     lpFilename = new char[length];
+    if (lpFilename == NULL)
+      return;
 
     DragQueryFile(hDropInfo, i, lpFilename, length);
     OpenGameFile(lpFilename);
 
-    //free(lpFilename);
     delete[] lpFilename;
   }
   
@@ -891,6 +892,9 @@ CMainWindow::OnFileImportImageToMap()
   }
 
   char* fn = new char[strlen(filename) + 10];
+  if (fn == NULL)
+    return;
+
   strcpy(fn, filename);
 
   strcpy(strrchr(fn, '.'), ".rmp");
@@ -1295,7 +1299,10 @@ CMainWindow::OnFileImportWindowsFont()
 
     // grab the character
     CDIBSection* dib = new CDIBSection(size.cx, size.cy, 32);
+    if (dib == NULL)
+      return;
     memset(dib->GetPixels(), 255, size.cx * size.cy * 4); // opaque white
+
     RECT rect = { 0, 0, size.cx, size.cy };
 
     SetTextColor(dib->GetDC(), 0);  // black
@@ -1419,6 +1426,7 @@ CMainWindow::OnProjectRunSphere()
     sphere_directory,      // lpCurrentDirectory
     &si,                   // lpStartupInfo
     &pi);                  // lpProcessInformation
+
   if (retval == FALSE)
     MessageBox("Error: Could not execute Sphere engine");
 }
@@ -1451,6 +1459,7 @@ CMainWindow::OnProjectConfigureSphere()
     sphere_directory,      // lpCurrentDirectory
     &si,                   // lpStartupInfo
     &pi);                  // lpProcessInformation
+
   if (retval == FALSE)
     MessageBox("Error: Could not configure Sphere");
 }
@@ -1600,9 +1609,9 @@ CMainWindow::OnNeedText(UINT /*id*/, NMHDR* nmhdr, LRESULT* result)
   }
 
   switch (id) {
-  case ID_FILE_NEW_PROJECT:  ttt->lpszText = "New Sphere Project"; break;
-  case ID_PROJECT_RUNSPHERE: ttt->lpszText = "Run Sphere";         break;
-  default:                   ttt->lpszText = "";                   break;
+    case ID_FILE_NEW_PROJECT:  ttt->lpszText = "New Sphere Project"; break;
+    case ID_PROJECT_RUNSPHERE: ttt->lpszText = "Run Sphere";         break;
+    default:                   ttt->lpszText = "";                   break;
   }
 
   *result = 0;

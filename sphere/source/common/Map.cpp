@@ -629,8 +629,10 @@ sMap::BuildFromImage(CImage32& i, int tile_width, int tile_height, bool allow_du
       int src_x = tx * tile_width;
       int src_y = ty * tile_height;
 
-      // grab a tile
       RGBA* tile = new RGBA[tile_width * tile_height];
+      if (tile == NULL) return false;
+
+      // grab a tile from the image
       for (int iy = 0; iy < tile_height; iy++)
       {
         memcpy(tile + iy * tile_width,

@@ -105,6 +105,8 @@ CImageView::~CImageView()
   // destroy the blit DIB
   delete m_BlitTile;
 
+  ResetUndoStates();
+
   if (m_SwatchPalette) {
     m_SwatchPalette->Destroy();
   }
