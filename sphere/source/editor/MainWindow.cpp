@@ -144,6 +144,8 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
 
   ON_UPDATE_COMMAND_UI(ID_PROJECT_RUNSPHERE, OnUpdateProjectCommand)
   ON_UPDATE_COMMAND_UI(ID_WINDOW_CLOSEALL,   OnUpdateWindowCloseAll)
+  ON_UPDATE_COMMAND_UI(ID_VIEW_PALETTES,     OnUpdatePaletteMenu)
+  ON_UPDATE_COMMAND_UI(PALETTE_COMMAND,	     OnUpdatePaletteMenu)
 
   // project window message
   ON_MESSAGE(WM_INSERT_PROJECT_FILE, OnInsertProjectFile)
@@ -152,8 +154,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   // document window messages
   ON_MESSAGE(WM_DW_CLOSING,          OnDocumentWindowClosing)
   ON_MESSAGE(WM_SET_CHILD_MENU,      OnSetChildMenu)
-  ON_MESSAGE(WM_CLEAR_CHILD_MENU,    OnClearChildMenu)
-  ON_MESSAGE(WM_UPDATE_PALETTE_MENU, OnUpdatePaletteMenu)
+  ON_MESSAGE(WM_CLEAR_CHILD_MENU,    OnClearChildMenu)  
   ON_COMMAND_RANGE(PALETTE_COMMAND, PALETTE_COMMAND + NUM_PALETTES, OnViewPalette)
 
 END_MESSAGE_MAP()
@@ -209,10 +210,10 @@ CMainWindow::Create()
   SetStatusBar(&m_StatusBar);
 
   // enable docking
-  EnableDocking(CBRS_ALIGN_ANY);
+  EnableDocking(CBRS_ALIGN_ANY);		
 
   DockControlBar(&m_ToolBar, AFX_IDW_DOCKBAR_TOP);
-  
+ 
   // load the command bar state
   LoadBarState(szBarState);
 
@@ -230,8 +231,6 @@ CMainWindow::Create()
 
   UpdateWindow();
   UpdateMenu();
-  UpdatePaletteMenu();
-
   return TRUE;
 }
 
@@ -570,58 +569,6 @@ CMainWindow::UpdateMenu()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void
-CMainWindow::UpdatePaletteMenu()
-{
-  return;
-  HMENU menu = GetMenu()->m_hMenu;
-  HMENU view_menu = GetSubMenu(menu, m_ProjectOpen ? 2 : 1);
-
-  // delete the old palette menu
-  DeleteMenu(view_menu, 2, MF_BYPOSITION);
-
-  // add a new one
-  HMENU palette_menu = CreateMenu();
-  bool empty = true;
-
-  // get the active MDI document window
-  CWnd* child = MDIGetActive();
-  if (child) {
-    if (GetWindowLong(child->m_hWnd, GWL_USERDATA) & WA_DOCUMENT_WINDOW) {
-      CDocumentWindow* window = (CDocumentWindow*)child;
-
-      // go through each palette and add it to the menu
-      for (int i = 0; i < window->GetNumPalettes(); i++) {
-        CPaletteWindow* palette = window->GetPalette(i);
-
-        CString title;
-        palette->GetWindowText(title);
-
-        // check the palette if it's visible
-        UINT visible = 0;
-        if (palette->IsWindowVisible()) {
-          visible = MF_CHECKED;
-        }
-
-        InsertMenu(palette_menu, i, MF_BYPOSITION | visible, PALETTE_COMMAND + i, title);
-      }
-
-      empty = (window->GetNumPalettes() == 0);
-    }
-
-  }
-
-  // if nothing was added, make an empty palette menu
-  if (empty) {
-    InsertMenu(palette_menu, 0, MF_BYPOSITION, 0, "...");
-    EnableMenuItem(palette_menu, 0, MF_BYPOSITION | MF_GRAYED);
-  }
-
-  InsertMenu(view_menu, 2, MF_BYPOSITION | MF_POPUP, (UINT)palette_menu, "Palettes");
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CMainWindow::OnDropFiles(HDROP hDropInfo)
 {
@@ -666,7 +613,9 @@ CMainWindow::OnClose()
   m_DocumentWindows.clear();
 
   // save the command bar state
+#ifndef USE_SIZECBAR
   SaveBarState(szBarState);
+#endif
 
   // close the project
   CloseProject();
@@ -1674,13 +1623,20 @@ CMainWindow::OnHelpAbout()
     "zlib: %s\n"
     "libmng: DLL %s - header %s\n"
     "Corona: %s\n"
-    "Audiere: %s\n",
-
+    "Audiere: %s\n"
+#ifdef USE_SIZECBAR
+		"CSizingControlBar: %s\n"
+#endif
+		,
     JS_GetImplementationVersion(),
     zlibVersion(),
     mng_version_text(), MNG_VERSION_TEXT,
     corona::GetVersion(),
-    audiere::GetVersion());
+    audiere::GetVersion()
+#ifdef USE_SIZECBAR
+		, SIZECBAR_VERSION
+#endif
+		);
 
   MessageBox(message, "About");
 }
@@ -1865,11 +1821,58 @@ CMainWindow::OnClearChildMenu(WPARAM wparam, LPARAM lparam)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-afx_msg LRESULT
-CMainWindow::OnUpdatePaletteMenu(WPARAM wparam, LPARAM lparam)
+void
+CMainWindow::OnUpdatePaletteMenu(CCmdUI * ui)
 {
-  UpdatePaletteMenu();
-  return 0;
+	if (ui->m_pSubMenu == NULL) return;
+
+	// remove the old palette menu	
+	while(ui->m_pSubMenu->GetMenuItemCount() > 0)
+	{
+		ui->m_pSubMenu->RemoveMenu(0, MF_BYPOSITION);
+	}
+
+  // add a new one
+  bool empty = true;
+
+  // get the active MDI document window
+  CWnd* child = MDIGetActive();
+  if (child) {
+    if (GetWindowLong(child->m_hWnd, GWL_USERDATA) & WA_DOCUMENT_WINDOW) {
+      CDocumentWindow* window = (CDocumentWindow*)child;
+
+      // go through each palette and add it to the menu
+      for (int i = 0; i < window->GetNumPalettes(); i++) {
+        CPaletteWindow* palette = window->GetPalette(i);
+
+        CString title;
+        palette->GetWindowText(title);
+
+        // check the palette if it's visible
+        UINT visible = 0;
+#ifdef USE_SIZECBAR
+				if (palette->IsVisible()) {
+#else
+        if (palette->IsWindowVisible()) {
+#endif
+          visible = MF_CHECKED;
+        }
+
+        ui->m_pSubMenu->AppendMenu(visible, PALETTE_COMMAND + i, title);
+      }
+
+      empty = (window->GetNumPalettes() == 0);
+    }
+
+  }
+
+  // if nothing was added, make an empty palette menu
+  if (empty) {
+    ui->m_pSubMenu->AppendMenu(0, ID_VIEW_PALETTES, "...");
+    ui->m_pSubMenu->EnableMenuItem(0, MF_BYPOSITION | MF_GRAYED);
+  }
+
+  return;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1877,8 +1880,14 @@ CMainWindow::OnUpdatePaletteMenu(WPARAM wparam, LPARAM lparam)
 afx_msg void
 CMainWindow::OnViewPalette(UINT id)
 {
-  int palette_num = id - PALETTE_COMMAND;
+  ViewPalette(id - PALETTE_COMMAND);
+}
 
+////////////////////////////////////////////////////////////////////////////////
+
+void 
+CMainWindow::ViewPalette(int paletteNum)
+{
   // toggle the visibility of the palette
 
   CWnd* child = MDIGetActive();
@@ -1887,12 +1896,8 @@ CMainWindow::OnViewPalette(UINT id)
       CDocumentWindow* window = (CDocumentWindow*)child;
 
       // find the palette to toggle
-      CPaletteWindow* palette = window->GetPalette(palette_num);
-      palette->ShowWindow(palette->IsWindowVisible() ? SW_HIDE : SW_SHOW);
+      CPaletteWindow* palette = window->GetPalette(paletteNum);
+      palette->ShowPalette(!palette->IsWindowVisible());
     }
   }
-
-  UpdatePaletteMenu();
 }
-
-////////////////////////////////////////////////////////////////////////////////
