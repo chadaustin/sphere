@@ -4244,9 +4244,9 @@ CMapEngine::FindObstructingPerson(int person, int x, int y)
     }
 
     // if the person is ignoring person obstructions, don't check it
-    if (m_Persons[i].ignorePersonObstructions) {
-      continue;
-    }
+    //if (m_Persons[i].ignorePersonObstructions) {
+    //  continue;
+    //}
 
     // if this entity is a follower of the current entity, don't check it
     int j = m_Persons[i].leader;
