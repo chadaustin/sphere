@@ -14,7 +14,7 @@ audiere  -  http://audiere.sf.net/
 spidermonkey  -  http://www.mozilla.org/js/spidermonkey/
   or the spidermonkey.tar.gz found at the files page at http://sf.net/projects/sphere/
 SDL  -  http://www.libsdl.org/
-libmng  -  http://www.libmng.org/
+libmng  -  http://www.libmng.com/
 libpng  -  http://www.libpng.org/
 scons  -  http://www.scons.org/
 
@@ -25,11 +25,13 @@ Optionally, you can also get:
 libvorbis  -  http://www.vorbis.com
 libjpeg  -  http://www.ijg.org/ or ftp://ftp.uu.net/graphics/jpeg/ 
 
-[The editor does not yet build in linux.]
 To also install wxeditor, you will need:
 
-wxwindows  - http://www.wxwindows.org/
+wxwidgets (formally wxwindows)  -  http://www.wxwidgets.org/
 
+(Once you've got the engine compiling and working compiling
+ wxeditor shouldn't be too difficult, just install wxwidgets
+ and type "scons")
 
 -----------------------------------------------------------
 
