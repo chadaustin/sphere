@@ -70,21 +70,12 @@ DefaultFileSystem::Open(const char* filename, int mode)
   char md[4] = { 0, 0, 0, 0 };
   char* p = md;
 
-  if (mode & IFileSystem::read && mode & IFileSystem::write) {
+  if (mode & IFileSystem::write) {
+    *p++ = 'w';
+  } else if (mode & IFileSystem::read) {
     *p++ = 'r';
-    *p++ = 'b';
-    *p++ = '+';
   }
-  else {
-    if (mode & IFileSystem::write) {
-      *p++ = 'w';
-    }
-    else
-    if (mode & IFileSystem::read) {
-      *p++ = 'r';
-    }
-    *p++ = 'b';  // binary
-  }
+  *p++ = 'b';  // binary
 
   // open the file
   FILE* file = fopen(filename, md);

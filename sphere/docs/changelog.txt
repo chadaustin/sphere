@@ -1,6 +1,8 @@
 2003.01.29
   - make ExecuteGame work no matter where the game calling it is
     located on the filesystem
+  - fix bug where OpenRawFile('blah', true) wouldn't actually create
+    the file
 
 2003.01.28
   - added Flik's joysticks.js system script
