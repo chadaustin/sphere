@@ -155,6 +155,7 @@ std::string DoRunGame(const char* game, const char* parameters) {
       result = engine.Run();
       restarted = engine.Restarted();
       ClearKeyQueue();
+      ResetInput();
     }  while (restarted);
 
     LeaveDirectory();

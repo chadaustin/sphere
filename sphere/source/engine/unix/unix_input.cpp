@@ -89,27 +89,46 @@ static Uint8 KeyMapping[total_keys] = {
   SDLK_LEFT
 };
 
-static bool key_buffer[MAX_KEY];
+static bool KeyBuffer[MAX_KEY];
+static bool CurrentKeyBuffer[MAX_KEY];
 
 ///////////////////////////////////////////////////////////
 
 void InitializeInput() {
-  memset(key_buffer, false, sizeof(bool) * MAX_KEY);
+  memset(KeyBuffer, false, sizeof(bool) * MAX_KEY);
+  memset(CurrentKeyBuffer, false, sizeof(bool) * MAX_KEY);
 }
 
 ///////////////////////////////////////////////////////////
 
-bool RefreshInput () {
+bool RefreshInput ()
+{
+  // update currently pressed keys
+  memcpy(KeyBuffer, CurrentKeyBuffer, sizeof(bool) * MAX_KEY);
+}
+
+///////////////////////////////////////////////////////////
+
+bool ResetInput ()
+{
+  memset(KeyBuffer, false, sizeof(bool) * MAX_KEY);
+  memset(CurrentKeyBuffer, false, sizeof(bool) * MAX_KEY);
+  return true;
+}
+
+///////////////////////////////////////////////////////////
+
+void UpdateSystem()
+{
   SDL_Event event;
-  int result;
-  int key = 0;
   
-  while (result = SDL_PollEvent(&event)) {
+  while (SDL_PollEvent(&event)) {
     if (event.type == SDL_QUIT)
       exit(0);
     else if ((event.type == SDL_KEYDOWN) || (event.type == SDL_KEYUP))
     {
       Uint8 pressed = event.key.keysym.sym;
+      int key = 0;
 
       switch (pressed) {
         case SDLK_SPACE:  key = KEY_SPACE;  break;
@@ -134,7 +153,7 @@ bool RefreshInput () {
         case SDLK_F12:    key = KEY_F12;    break;
                                                                                 
         default:
-          for (int lcv = 0; lcv < total_keys; lcv++) {
+          for (int lcv = 1; lcv < total_keys; lcv++) {
             if (pressed == KeyMapping[lcv]) {
               key = lcv;
               //std::cerr << "key: "<< (int)key << std::endl;
@@ -153,7 +172,6 @@ bool RefreshInput () {
     }
   }
 
-  return true; /* not sure what to do, but I guess we succeeded! */
 }
 
 ///////////////////////////////////////////////////////////
@@ -161,7 +179,7 @@ bool RefreshInput () {
 void OnKeyDown(int key) {
   //std::cerr << "down: " << key << std::endl;
   key_queue.push_back(key);
-  key_buffer[key] = true;
+  CurrentKeyBuffer[key] = true;
           
   switch(key) {
 
@@ -183,7 +201,7 @@ void OnKeyDown(int key) {
 
 void OnKeyUp(int key) {
   //std::cerr << "up:   " << key << std::endl;
-  key_buffer[key] = false;
+  CurrentKeyBuffer[key] = false;
 }
 
 ///////////////////////////////////////////////////////////
@@ -197,8 +215,8 @@ bool IsKeyPressed (int key) {
   */
 
   if (key >= 0 && key < MAX_KEY) {
-    RefreshInput();
-    return key_buffer[key];
+    UpdateSystem();
+    return KeyBuffer[key];
   }
   
   return false;
@@ -208,15 +226,16 @@ bool IsKeyPressed (int key) {
 
 void GetKeyStates (bool keys[MAX_KEY]) {
 
+  UpdateSystem();
   for (int i = 0; i < MAX_KEY; ++i) {
-    keys[i] = key_buffer[i];
+    keys[i] = KeyBuffer[i];
   }
 }
 
 ///////////////////////////////////////////////////////////
 
 bool AreKeysLeft () {
-  RefreshInput();
+  UpdateSystem();
   return !key_queue.empty();
 }
 
@@ -225,9 +244,9 @@ bool AreKeysLeft () {
 int GetKey () {
   int key;
 
-  RefreshInput();
+  UpdateSystem();
   while (key_queue.empty()) {
-    RefreshInput();
+    UpdateSystem();
   }
 
   key = key_queue.front();

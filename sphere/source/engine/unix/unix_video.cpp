@@ -166,8 +166,8 @@ int GetScreenHeight() {
   return ScreenHeight;
 }
 
-void ToggleFullscreen () {
-  // printf("Toggling fullscreen...");
+void ToggleFullscreen ()
+{
   if ( SwitchResolution(GetScreenWidth(), GetScreenHeight(), !fullscreen, false) ) {
     fullscreen = !fullscreen;
   }
@@ -295,7 +295,7 @@ void FlipScreen () {
   CurrentFrames++;
   static int NumFlips;
   if (NumFlips++ % 8 == 0) {
-    RefreshInput();
+    UpdateSystem();
   }
     
   if (ShouldTakeScreenshot) {

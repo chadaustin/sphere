@@ -89,9 +89,11 @@
 #define MOUSE_RIGHT    2
 
 void InitializeInput();
+bool ResetInput();
 void OnKeyDown(int key);
 void OnKeyUp(int key);
 bool RefreshInput();
+void UpdateSystem();
 bool IsKeyPressed(int key);
 void GetKeyStates(bool keys[MAX_KEY]);
 bool AreKeysLeft();

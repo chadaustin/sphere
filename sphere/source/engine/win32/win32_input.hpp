@@ -94,6 +94,7 @@
 
 // general  
 extern bool RefreshInput();
+extern bool ResetInput();
 
 // keyboard
 extern bool IsKeyPressed(int key);

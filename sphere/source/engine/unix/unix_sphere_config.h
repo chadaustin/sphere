@@ -1,5 +1,5 @@
-#ifndef WIN32_SPHERE_CONFIG_H
-#define WIN32_SPHERE_CONFIG_H
+#ifndef UNIX_SPHERE_CONFIG_H
+#define UNIX_SPHERE_CONFIG_H
 
 
 #include <string>

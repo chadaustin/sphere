@@ -4,6 +4,7 @@
 
 #include "Image32.hpp"
 #include "ObstructionMap.hpp"
+#include <string>
 
 
 class sTile : public CImage32
