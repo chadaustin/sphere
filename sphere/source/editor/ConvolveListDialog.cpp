@@ -319,8 +319,12 @@ CConvolveListDialog::LoadFilterList() {
 
     FilterInfo* b = new FilterInfo(3, 3);
     if (b->mask) {
-      b->name = "Invert_Filter";
-      b->mask[4] = -1;
+      b->name = "Sharpen_Filter";
+      for (int i = 0; i < 9; i++)
+        b->mask[i] = -1;
+      b->mask[4] = 9;
+      b->clamp = 1;
+      b->wrap = 1;
       m_FilterList.push_back(b);
     }
 
@@ -512,6 +516,14 @@ int
 CConvolveListDialog::ShouldUseAlphaChannel()
 {
   return m_UseAlpha;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+const char*
+CConvolveListDialog::GetConvolveType()
+{
+  return "double";
 }
 
 ////////////////////////////////////////////////////////////////////////////////

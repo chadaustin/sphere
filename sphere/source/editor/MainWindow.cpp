@@ -573,6 +573,7 @@ CMainWindow::UpdateMenu()
 void
 CMainWindow::UpdatePaletteMenu()
 {
+  return;
   HMENU menu = GetMenu()->m_hMenu;
   HMENU view_menu = GetSubMenu(menu, m_ProjectOpen ? 2 : 1);
 

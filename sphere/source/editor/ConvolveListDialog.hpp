@@ -76,6 +76,7 @@ public:
   int ShouldUseAlphaChannel();
   int GetClampLow();
   int GetClampHigh();
+  const char* GetConvolveType();
 
 private:
   void SortFilters();

@@ -445,11 +445,16 @@ static RGBA BlendColorsWeighted(RGBA a, RGBA b, double w1, double w2) {
   }
 }
 
-
+/**
+  This should really be a Bilinear Interpolation Rescale
+*/
 void
 CImage32::Resample(int width, int height, bool weighted)
 {
-  if (width * height <= 0)
+  if (width <= 0 || height <= 0)
+    return;
+
+  if (width == m_Width && height == m_Height)
     return;
 
   RGBA* NewPixels = new RGBA[width * height];
@@ -463,17 +468,27 @@ CImage32::Resample(int width, int height, bool weighted)
     for (int x = 0; x < width; x++) {
 
       double x1 = (x + 0.25) / HorzAspectRatio;
-      double y1 = (y + 0.0) / VertAspectRatio;
+      double y1 = (y + 0.25) / VertAspectRatio;
 
       double x2 = (x + 0.75) / HorzAspectRatio;
-      double y2 = (y + 0.0) / VertAspectRatio;
+      double y2 = (y + 0.75) / VertAspectRatio;
 
       double w1 = weighted ? x2 - x1 : 0.5;
       double w2 = weighted ? x2 - x1 : 0.5;
+      double w3 = weighted ? y2 - y1 : 0.5;
+      double w4 = weighted ? y2 - y1 : 0.5;
 
       if ((x1 >= 0) && (x1 < m_Width) && ((y1 >= 0) && (y1 < m_Height))) {
         if ((x2 >= 0) && (x2 < m_Width) && ((y2 >= 0) && (y2 < m_Height))) {
-          NewPixels[(y * width) + x] = BlendColorsWeighted(m_Pixels[((int) y1 * m_Width) + (int) x1], m_Pixels[((int) y2 * m_Width) + (int) x2], w1, w2);
+          RGBA& color_a = m_Pixels[((int) y1 * m_Width) + (int) x1]; // top left
+          RGBA& color_b = m_Pixels[((int) y2 * m_Width) + (int) x2]; // bottom right
+          RGBA& color_c = m_Pixels[((int) y1 * m_Width) + (int) x2]; // top right
+          RGBA& color_d = m_Pixels[((int) y2 * m_Width) + (int) x1]; // bottom left
+          
+          RGBA& top    = BlendColorsWeighted(color_a, color_c, w1, w2);
+          RGBA& bottom = BlendColorsWeighted(color_d, color_b, w1, w2);
+
+          NewPixels[(y * width) + x] = BlendColorsWeighted(top, bottom, w3, w4);
         }
         else {
           NewPixels[(y * width) + x] = m_Pixels[((int) y1 * m_Width) + (int) x1];

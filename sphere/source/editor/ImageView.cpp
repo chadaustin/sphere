@@ -2208,8 +2208,8 @@ CImageView::OnFilterCustom()
   CConvolveListDialog dialog;
 
   if (dialog.DoModal() == IDOK) {
-    const double* mask = dialog.GetMask();
-    if (mask == NULL)
+    const double* double_mask = dialog.GetMask();
+    if (double_mask == NULL)
       return;
 
     int mask_width = dialog.GetMaskWidth();
@@ -2230,7 +2230,7 @@ CImageView::OnFilterCustom()
     int use_blue = dialog.ShouldUseBlueChannel();
     int use_alpha = dialog.ShouldUseAlphaChannel();
 
-    const char* mask_type = "double";
+    const char* mask_type = dialog.GetConvolveType();
 
     AddUndoState();
     int sx = GetSelectionLeftX();
@@ -2242,11 +2242,29 @@ CImageView::OnFilterCustom()
 
     if (mask_type == "double") {
       double_convolve_rgba(0, 0, sw, sh, sw, sh, pixels, mask_width, mask_height,
-                           mask_width/2, mask_height/2, mask,
+                           mask_width/2, mask_height/2, double_mask,
                            divisor, offset, wrap,
                            clamp, clamp_low, clamp_high, infinite,
                            use_red, use_green, use_blue, use_alpha);
     }
+
+    if (mask_type == "int") {
+      int* int_mask = new int[mask_width * mask_height];
+      if (int_mask) {
+
+        for (int y = 0; y < mask_height; y++)
+          for (int x = 0; x < mask_width; x++)
+            int_mask[y * mask_width + x] = (int) double_mask[y * mask_width + x];
+
+        int_convolve_rgba(0, 0, sw, sh, sw, sh, pixels, mask_width, mask_height,
+                           mask_width/2, mask_height/2, int_mask,
+                           divisor, offset, wrap,
+                           clamp, clamp_low, clamp_high, infinite,
+                           use_red, use_green, use_blue, use_alpha);
+        delete[] int_mask;
+      }
+    }
+
 
     UpdateSelectionPixels(pixels, sx, sy, sw, sh);
     FreeSelectionPixels(pixels);
