@@ -6422,10 +6422,10 @@ end_method()
       to accomodate the rotated image.
 */
 begin_method(SS_SURFACE, ssSurfaceRotate, 2)
-  arg_int(degrees);
+  arg_double(radians);
   arg_bool(autosize);
 
-  object->surface->Rotate(degrees, autosize);
+  object->surface->Rotate(radians, autosize);
 
   if (autosize) {
     // redefine width and height properties
