@@ -135,6 +135,7 @@ void RunPackage(IFileSystem& fs)
 {
   CGameEngine(fs, s_SystemObjects, s_GameList, s_ScriptDirectory.c_str(), "").Run();
   ClearKeyQueue();
+  ResetInput();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

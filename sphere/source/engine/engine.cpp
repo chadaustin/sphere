@@ -53,6 +53,10 @@ CGameEngine::Run()
 
   int game_width  = game_information.ReadInt("", "screen_width",  320);
   int game_height = game_information.ReadInt("", "screen_height", 240);
+
+  if (game_width <= 0) game_width = 320;
+  if (game_height <= 0) game_height = 240;
+
   SwitchResolution(game_width, game_height);
   ClearScreen();
 

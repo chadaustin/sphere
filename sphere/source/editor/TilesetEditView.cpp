@@ -42,11 +42,9 @@ CTilesetEditView::CTilesetEditView()
 , m_Tileset(NULL)
 , m_CurrentTile(0)
 , m_Created(false)
-#if 1
 , m_MultiTileWidth(0)
 , m_MultiTileHeight(0)
 , m_MultiTileData(NULL) // m_MultiTileData is not ours to free
-#endif
 {
 }
 
@@ -114,7 +112,6 @@ CTilesetEditView::SelectTile(int tile)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#if 1
 void
 CTilesetEditView::SetTileSelection(int width, int height, unsigned int* tiles)
 {
@@ -133,7 +130,6 @@ CTilesetEditView::SetTileSelection(int width, int height, unsigned int* tiles)
   UpdateScrollBar();
   Invalidate();
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
