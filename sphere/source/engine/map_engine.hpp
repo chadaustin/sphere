@@ -300,8 +300,7 @@ private:
     int stepping_frame_revert;
     int stepping_frame_revert_count;
 
-    IEngine::script person_scripts[5];
-    //bool person_scripts_running[5];
+    IEngine::script person_scripts[NUM_PERSON_SCRIPTS];
 
     struct Command {
       Command(int c, bool i, std::string s = "") : command(c), immediate(i), script(s) { }
