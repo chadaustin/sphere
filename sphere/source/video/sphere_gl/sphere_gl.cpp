@@ -364,7 +364,7 @@ bool EXPORT InitVideoDriver(HWND window, int screen_width, int screen_height)
     gluOrtho2D(0.0f, ScreenWidth, ScreenHeight, 0.0f);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    glTranslatef(0.375, 0.375, 0.0);
+    //glTranslatef(0.375, 0.375, 0.0);
 
     // render initialization
     glEnable(GL_SCISSOR_TEST);
@@ -849,7 +849,7 @@ void EXPORT DrawPoint(int x, int y, RGBA color)
 {
   glBegin(GL_POINTS);
   glColor4ubv((GLubyte*)&color);
-  glVertex2i(x, y);
+  glVertex2f(x - 0.5f, y - 0.5f);
   glEnd();
 }
 
@@ -859,8 +859,8 @@ void EXPORT DrawLine(int x[2], int y[2], RGBA color)
 {
   glBegin(GL_LINES);
   glColor4ubv((GLubyte*)&color);
-  glVertex2i(x[0], y[0]);
-  glVertex2i(x[1], y[1]);
+  glVertex2f(x[0] - 0.5f, y[0] - 0.5f);
+  glVertex2f(x[1] - 0.5f, y[1] - 0.5f);
   glEnd();
 }
 
@@ -870,9 +870,9 @@ void EXPORT DrawGradientLine(int x[2], int y[2], RGBA colors[2])
 {
   glBegin(GL_LINES);
   glColor4ubv((GLubyte*)(colors + 0));
-  glVertex2i(x[0], y[0]);
+  glVertex2f(x[0] - 0.5f, y[0] - 0.5f);
   glColor4ubv((GLubyte*)(colors + 1));
-  glVertex2i(x[1], y[1]);
+  glVertex2f(x[1] - 0.5f, y[1] - 0.5f);
   glEnd();
 }
 
@@ -882,9 +882,9 @@ void EXPORT DrawTriangle(int x[3], int y[3], RGBA color)
 {
   glBegin(GL_TRIANGLES);
   glColor4ubv((GLubyte*)&color);
-  glVertex2i(x[0], y[0]);
-  glVertex2i(x[1], y[1]);
-  glVertex2i(x[2], y[2]);
+  glVertex2f(x[0] - 0.5f, y[0] - 0.5f);
+  glVertex2f(x[1] - 0.5f, y[1] - 0.5f);
+  glVertex2f(x[2] - 0.5f, y[2] - 0.5f);
   glEnd();
 }
 
@@ -894,11 +894,11 @@ void EXPORT DrawGradientTriangle(int x[3], int y[3], RGBA colors[3])
 {
   glBegin(GL_TRIANGLES);
   glColor4ubv((GLubyte*)(colors + 0));
-  glVertex2i(x[0], y[0]);
+  glVertex2f(x[0] - 0.5f, y[0] - 0.5f);
   glColor4ubv((GLubyte*)(colors + 1));
-  glVertex2i(x[1], y[1]);
+  glVertex2f(x[1] - 0.5f, y[1] - 0.5f);
   glColor4ubv((GLubyte*)(colors + 2));
-  glVertex2i(x[2], y[2]);
+  glVertex2f(x[2] - 0.5f, y[2] - 0.5f);
   glEnd();
 }
 
@@ -910,6 +910,7 @@ void EXPORT DrawRectangle(int x, int y, int w, int h, RGBA color)
     return;
   }
 
+  glTranslatef(-0.5f, -0.5f, 0.0f);
   glBegin(GL_QUADS);
   glColor4ubv((GLubyte*)&color);
   glVertex2i(x, y);
@@ -917,12 +918,14 @@ void EXPORT DrawRectangle(int x, int y, int w, int h, RGBA color)
   glVertex2i(x + w, y + h);
   glVertex2i(x, y + h);
   glEnd();
+  glTranslatef(0.5f, 0.5f, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void EXPORT DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
 {
+  glTranslatef(-0.5f, -0.5f, 0.0f);
   glBegin(GL_QUADS);
   glColor4ubv((GLubyte*)(colors + 0));
   glVertex2i(x, y);
@@ -933,6 +936,7 @@ void EXPORT DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
   glColor4ubv((GLubyte*)(colors + 3));
   glVertex2i(x, y + h);
   glEnd();
+  glTranslatef(0.5f, 0.5f, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
