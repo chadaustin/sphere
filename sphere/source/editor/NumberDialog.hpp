@@ -5,7 +5,6 @@
 #include <afxwin.h>
 #include <string>
 
-
 class CNumberDialog : public CDialog
 {
 public:

@@ -1,6 +1,6 @@
 #include "NumberDialog.hpp"
 #include "resource.h"
-
+#include "../common/str_util.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -52,6 +52,8 @@ CNumberDialog::OnInitDialog()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+
+
 afx_msg void
 CNumberDialog::OnOK()
 {
@@ -59,23 +61,8 @@ CNumberDialog::OnOK()
   m_NumberEdit->GetWindowText(text);
   int value = atoi(text);
 
-  int prefix = 0;
-  int digits = 0;
-
-  // count up how many digits there are in the string and if there's + or - prefix
-  for (int i = 0; i < strlen(text); i++) {
-    if (isdigit(text[i])) {
-      digits++;
-    }
-    else
-    if (i == 0) {
-      if (text[i] == '+' || text[i] == '-') {
-        prefix = 1;
-      }
-    }
-  }
-
-  if (digits == 0 || strlen(text) - digits - prefix != 0) {
+  bool percentage, floating;
+  if (IsInvalidNumber(text, floating, percentage) || floating || percentage) {
     MessageBox("Invalid number format", m_Title.c_str());
   }
   else

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Filters.hpp"
+#include <math.h>
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -101,6 +102,205 @@ void RotateCCW(int src_width, int src_height, RGBA* pixels)
   }
 
   delete[] old_pixels;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int int_compare(const void* x, const void* y) {
+  return (int*) y - (int*) x;
+}
+
+void Convolve(int width, int height, RGBA* pixels)
+{
+  int mask_width = 3;
+  int mask_height = 3;
+  int mask_xoffset = mask_width  / 2;
+  int mask_yoffset = mask_height / 2;
+
+  int divisor = 1;
+  int offset = 0;
+  int wrap = 0;
+
+  int use_red = 1;
+  int use_green = 1;
+  int use_blue = 1;
+  int use_alpha = 0;
+
+  int mask[] = {-1, -1, -1, -1,  9, -1, -1, -1, -1};
+  //{1, 1, 1, 1, 1, 1, 1, 1, 1};
+  //{1, 1, 0, 1, 1, 0, 0, 0, 0};
+  //{0, -1, 0, -1, 5, -1, 0, -1, 0};
+  //{1, -2, 1, -2, 5, -2, 1, -2, 1};
+  //{-1, -1, -1, -1, 9, -1, -1, -1, -1};
+  //{-1, 0, 0, 0, 0, 0, 0, 0, -1};
+  //{-2,  0, 0,  0, 4,  0,  0,  0, -2};
+  //{-1, -1, -1, -1,  9, -1, -1, -1, -1};
+  //{ 0, -1, 0, -1, 4, -1,  0, -1,  0};
+  //{-1,  0, 1, -1, 1,  1, -1,  0,  1};
+  //{-1,  0, 0,  0, 2,  0,  0,  0, -1};
+
+  int mask_size = mask_width * mask_height;
+  int clamp = 1;
+
+  int red;
+  int green;
+  int blue;
+  int alpha;
+
+  int* red_list = NULL;
+  int* green_list = NULL;
+  int* blue_list = NULL;
+  int* alpha_list = NULL;
+  int* list_buffer = NULL;
+
+  RGBA* old_pixels = NULL;
+
+  int sx, sy, mx, my;
+
+#if 0
+  int median = 0;
+
+  red_list = (int*) malloc(mask_size * sizeof(int));
+  if (red_list == NULL) { return; }
+
+  green_list = (int*) malloc(mask_size * sizeof(int));
+  if (red_list == NULL) { return; }
+
+  blue_list = (int*) malloc(mask_size * sizeof(int));
+  if (blue_list == NULL) { return; }
+
+  alpha_list = (int*) malloc(mask_size * sizeof(int));
+  if (alpha_list == NULL) { return; }
+
+  list_buffer = (int*) malloc(mask_size * sizeof(int));
+  if (list_buffer == NULL) { return; }
+#endif
+
+  old_pixels = (RGBA*) malloc(width * height * sizeof(RGBA));
+  if (old_pixels == NULL)
+    return;
+
+  memcpy(old_pixels, pixels, width * height * sizeof(RGBA));
+
+  for (sy = 0; sy < height; sy++) {
+    for (sx = 0; sx < width; sx++) {
+
+      int red_total = 0;
+      int green_total = 0;
+      int blue_total = 0;
+      int alpha_total = 0;
+      int pixels_in_list = 0;
+
+      for (my = 0; my < mask_height; my += 1) {
+        for (mx = 0; mx < mask_width; mx += 1) {
+
+          int px = (sx - mask_xoffset + mx);
+          int py = (sy - mask_yoffset + my);
+
+          if (wrap) {
+            if (px < 0) px = width + px;
+            else if (px >= width) px = px - width;
+            if (py < 0) py = height + py;
+            else if (py >= height) py = py - height;
+          }
+
+          if (px >= 0 && px < width && py >= 0 && py < height) {
+#if 0
+            red_list[my * mask_width + mx] =  old_pixels[py * width + px].red;
+            green_list[my * mask_width + mx] = old_pixels[py * width + px].green;
+            blue_list[my * mask_width + mx] = old_pixels[py * width + px].blue;
+            alpha_list[my * mask_width + mx] = old_pixels[py * width + px].alpha;
+#endif
+            red_total   += mask[my * mask_width + mx] * old_pixels[py * width + px].red;
+            green_total += mask[my * mask_width + mx] * old_pixels[py * width + px].green;
+            blue_total  += mask[my * mask_width + mx] * old_pixels[py * width + px].blue;
+            alpha_total += mask[my * mask_width + mx] * old_pixels[py * width + px].alpha;
+            pixels_in_list += 1;
+          }
+          else {
+#if 0
+            red_list[my * mask_width + mx] = 0;
+            green_list[my * mask_width + mx] = 0;
+            blue_list[my * mask_width + mx] = 0;
+            alpha_list[my * mask_width + mx] = 0;
+#endif
+          }
+        }
+      }
+
+      red   = red_total;
+      green = green_total;
+      blue  = blue_total;
+      alpha = alpha_total;
+
+#if 0
+      if (median) {
+        int* lists[] = {red_list, green_list, blue_list, alpha_list};
+        for (int i = 0; i < 4; i++) {
+          int list_index = 0;
+          for (int my = 0; my < mask_height; my++) {
+            for (int mx = 0; mx < mask_width; mx++) {
+              if (lists[i][my * mask_width + mx] > -1) {
+                list_buffer[list_index] = lists[i][my * mask_width + mx];
+                list_index += 1;
+              }
+            }
+          }
+ 
+          qsort(list_buffer, list_index, sizeof(int), int_compare);
+          int value = (list_index % 2 == 0) ? list_buffer[list_index / 2] : (list_buffer[list_index / 2] + list_buffer[(list_index / 2) - 1]) / 2;
+
+          switch (i) {
+            case (0): red   = value; break;
+            case (1): green = value; break;
+            case (2): blue  = value; break;
+            case (3): alpha = value; break;
+          }
+
+        }
+
+      }
+#endif
+
+      if (divisor) {
+         red /= divisor;
+         green /= divisor;
+         blue /= divisor;
+         alpha /= divisor;
+      }
+
+      if (offset) {
+        red += offset;
+        green += offset;
+        blue += offset;
+        alpha += offset;
+      }
+
+      if (clamp) {
+        // clamp to [0,255]
+        red   = (red   < 0 ? 0 : (red   > 255 ? 255 : red));
+        green = (green < 0 ? 0 : (green > 255 ? 255 : green));
+        blue  = (blue  < 0 ? 0 : (blue  > 255 ? 255 : blue));
+        alpha = (alpha < 0 ? 0 : (alpha > 255 ? 255 : alpha));
+      }
+
+
+      if (use_red) pixels[sy * width + sx].red = red;
+      if (use_green) pixels[sy * width + sx].green =  green;
+      if (use_blue) pixels[sy * width + sx].blue =  blue;
+      if (use_alpha) pixels[sy * width + sx].alpha = alpha;      
+    }
+  }
+
+
+#if 0
+  free(red_list);
+  free(green_list);
+  free(blue_list);
+  free(alpha_list);
+#endif
+
+  free(old_pixels);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -245,13 +445,11 @@ void NegativeImage(int width, int height, bool red, bool green, bool blue, bool 
 void Solarize(int width, int height, int value, RGBA* pixels) {
   int lut[256];
 
-  int i = 255;
   for (int j = 0; j < 256; ++j) {
-    lut[j] = (j > value) ? (i) : j;
-    i--;
+    lut[j] = (j > value) ? (255 - j) : j;
   }
 
-  for (i = 0; i < width * height; i++) {
+  for (int i = 0; i < width * height; i++) {
     pixels[i].red =   lut[pixels[i].red];
     pixels[i].green = lut[pixels[i].green];
     pixels[i].blue =  lut[pixels[i].blue];
@@ -269,7 +467,6 @@ void BlendImage(int dest_width, int dest_height, int src_width, int src_height, 
 
       if (dy > src_height - 1)
         break;
-
       
       // Blend4(dest_pixels[dy * dest_width + dx], src_pixels[dy * src_width + dx], src_pixels[dy * src_width + dx].alpha);
       Blend4(dest_pixels[dy * dest_width + dx], src_pixels[dy * src_width + dx], src_pixels[dy * src_width + dx].alpha);
@@ -304,6 +501,46 @@ void AdjustBrightness(int width, int height, RGBA* pixels, int dred, int dgreen,
   }
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+void GenerateGammaLookup(unsigned char lookup[256], double gamma) {
+  int i;
+
+  for (i = 0; i < 256; ++i) {
+    if (gamma) {
+      int v = (int) (255.0 * (double) (pow((double) i / (double) 255.0, (double) (1.0/gamma))));
+      // clamp to [0, 255]
+      v = (v < 0 ? 0 : (v > 255 ? 255 : v));
+      lookup[i] = v;
+    }
+    else {
+      lookup[i] = 0;
+    }
+  }
+}
+
+void AdjustGamma(int width, int height, RGBA* pixels, double dred, double dgreen, double dblue, double dalpha)
+{
+  unsigned char rlookup[256];
+  unsigned char glookup[256];
+  unsigned char blookup[256];
+  unsigned char alookup[256];
+
+  GenerateGammaLookup(rlookup, dred);
+  GenerateGammaLookup(glookup, dgreen);
+  GenerateGammaLookup(blookup, dblue);
+  GenerateGammaLookup(alookup, dalpha);
+
+  for (int dx = 0; dx < width; dx++) {
+    for (int dy = 0; dy < height; dy++) {
+      pixels[dy * width + dx].red   = rlookup[pixels[dy * width + dx].red];
+      pixels[dy * width + dx].green = glookup[pixels[dy * width + dx].green];
+      pixels[dy * width + dx].blue  = blookup[pixels[dy * width + dx].blue];
+      pixels[dy * width + dx].alpha = alookup[pixels[dy * width + dx].alpha];
+    }
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 

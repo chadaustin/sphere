@@ -1071,6 +1071,14 @@ SOURCE=..\common\Spriteset.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\common\str_util.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\str_util.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\common\strcmp_ci.hpp
 # End Source File
 # Begin Source File

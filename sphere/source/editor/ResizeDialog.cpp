@@ -1,6 +1,8 @@
 #include "ResizeDialog.hpp"
 #include "resource.h"
 
+#include "../common/str_util.hpp"
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -62,8 +64,24 @@ CResizeDialog::OnInitDialog()
 void
 CResizeDialog::OnOK()
 {
-  int w = GetDlgItemInt(IDC_WIDTH);
-  int h = GetDlgItemInt(IDC_HEIGHT);
+  CString width_text, height_text;
+  GetDlgItem(IDC_WIDTH)->GetWindowText(width_text);
+  GetDlgItem(IDC_HEIGHT)->GetWindowText(height_text);
+  int w = atoi(width_text);
+  int h = atoi(height_text);
+  bool width_percentage = false;
+  bool height_percentage = false;
+  bool floating = false;
+
+  if (IsInvalidNumber(width_text, floating, width_percentage) || floating
+   || IsInvalidNumber(height_text, floating, height_percentage) || floating) {
+    MessageBox("Invalid number format", m_Caption.c_str());
+    return;
+  }
+
+  // convert to percentages
+  if (width_percentage) w = (w * m_Width) / 100 ;
+  if (height_percentage) h = (h * m_Height) / 100;
 
   if (w < m_MinWidth || w > m_MaxWidth ||
       h < m_MinHeight || h > m_MaxHeight)
@@ -78,8 +96,8 @@ CResizeDialog::OnOK()
     return;
   }
 
-  m_Width  = GetDlgItemInt(IDC_WIDTH);
-  m_Height = GetDlgItemInt(IDC_HEIGHT);
+  m_Width  = w;
+  m_Height = h;
   CDialog::OnOK();
 }
 
