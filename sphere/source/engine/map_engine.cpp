@@ -3467,7 +3467,7 @@ CMapEngine::IsObstructed(int person, int x, int y, int& obs_person)
       }
       
       // get the tile object
-      int t = layer.GetTile(tx, ty);
+      int t = m_Map.GetAnimationMap()[layer.GetTile(tx, ty)].current;
       sTile& tile = m_Map.GetMap().GetTileset().GetTile(t);
 
       int tbx = tx * tile_width;

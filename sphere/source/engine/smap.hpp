@@ -13,6 +13,12 @@
 class SMAP
 {
 public:
+  struct TileDelay {
+    int current; ///< the current tile that is displayed
+    int delay;   ///< delay until next switch
+    int next;    ///< next tile to be displayed
+  };
+
   SMAP();
   ~SMAP();
 
@@ -30,12 +36,9 @@ public:
   void SetLayerAlpha(int layer, int alpha);
   int  GetLayerAlpha(int layer);
 
-private:
-  struct TileDelay {
-    int current;
-    int delay;
-    int next;
-  };
+  const std::vector<TileDelay>& GetAnimationMap() const {
+    return m_AnimationMap;
+  }
 
 private:
   void InitializeAnimation();

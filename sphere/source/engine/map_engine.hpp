@@ -175,16 +175,16 @@ private:
     int base_x2;
     int base_y2;
 
-	double speed_x;
-	double speed_y;
+    double speed_x;
+    double speed_y;
 
     std::string direction;
     int frame;
 
     int stepping;
     int next_frame_switch;
-	int stepping_frame_revert;
-	int stepping_frame_revert_count;
+    int stepping_frame_revert;
+    int stepping_frame_revert_count;
 
     IEngine::script script_create;
     IEngine::script script_destroy;
