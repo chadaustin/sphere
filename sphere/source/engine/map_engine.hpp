@@ -228,7 +228,9 @@ public:
 
   bool FollowPerson(const char* name, const char* leader, int pixels);
   bool SetPersonScript(const char* name, int which, const char* script);
+  bool SetDefaultPersonScript(int which, const char* script);
   bool CallPersonScript(const char* name, int which);
+  bool CallDefaultPersonScript(const char* name, int which);
   bool GetCurrentPerson(std::string& person);
   bool QueuePersonCommand(const char* name, int command, bool immediate);
   bool QueuePersonScript(const char* name, const char* script, bool immediate);
@@ -466,7 +468,9 @@ private:
 
   // default map scripts
   IEngine::script m_DefaultMapScripts[NUM_MAP_SCRIPTS];
-  //bool m_DefaultMapScriptRunnings[6];
+  
+  // default person scripts
+  IEngine::script m_default_person_scripts[NUM_PERSON_SCRIPTS];
 
   // color masks
   int m_NumFrames;

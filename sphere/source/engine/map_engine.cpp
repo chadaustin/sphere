@@ -82,7 +82,10 @@ CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
 
   for (int i = 0; i < NUM_MAP_SCRIPTS; i++) {
     m_DefaultMapScripts[i] = NULL;
-  //  m_DefaultMapScriptRunnings[i] = false;
+  }
+
+  for (int i = 0; i < NUM_PERSON_SCRIPTS; i++) {
+    m_default_person_scripts[i] = NULL;
   }
 }
 
@@ -104,11 +107,20 @@ CMapEngine::~CMapEngine()
     m_RenderScript = NULL;
   }
 
-  for (int i = 0; i < NUM_MAP_SCRIPTS; i++) {
+  int i;
+
+  for (i = 0; i < NUM_MAP_SCRIPTS; i++) {
     if (m_DefaultMapScripts[i]) {
       m_Engine->DestroyScript(m_DefaultMapScripts[i]);
       m_DefaultMapScripts[i] = NULL;
       //m_DefaultMapScriptRunnings[i] = false;
+    }
+  }
+
+  for (i = 0; i < NUM_PERSON_SCRIPTS; i++) {
+    if (m_default_person_scripts[i]) {
+      m_Engine->DestroyScript(m_default_person_scripts[i]);
+      m_default_person_scripts[i] = NULL;
     }
   }
 }
@@ -1835,7 +1847,6 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
 
   for (int script_index = 0; script_index < NUM_PERSON_SCRIPTS; script_index++) {
     p.person_scripts[script_index] = NULL;
-    //p.person_scripts_running[script_index] = false;
   }
 
   p.player_index = -1;
@@ -2847,6 +2858,37 @@ CMapEngine::SetPersonScript(const char* name, int which, const char* script)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::SetDefaultPersonScript(int which, const char* script)
+{
+  // verify the script constant
+  if (which < 0 || which >= NUM_PERSON_SCRIPTS) {
+    m_ErrorMessage = "SetDefaultPersonScript() - script does not exist";
+    return false;
+  }
+
+  // try to compile the script
+  std::string error;
+  IEngine::script s = m_Engine->CompileScript(script, error);
+  if (s == NULL) {
+    m_ErrorMessage = "Could not compile script\n" + error;
+    return false;
+  }
+
+  // find out which script we're changing
+  IEngine::script* ps = &m_default_person_scripts[which];
+
+  // now replace the script
+  if (*ps) {
+    m_Engine->DestroyScript(*ps);
+  }
+  *ps = s;
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::CallPersonScript(const char* name, int which)
 {
   // make sure 'which' is valid
@@ -2867,7 +2909,7 @@ CMapEngine::CallPersonScript(const char* name, int which)
 
   if (*ps) {
 
-    bool running = m_Engine->IsScriptBeingUsed(m_Persons[person].person_scripts[which]);
+    bool running = m_Engine->IsScriptBeingUsed(*ps);
 
     if (which == SCRIPT_ON_ACTIVATE_TOUCH || which == SCRIPT_ON_ACTIVATE_TALK)
       reset_time = true;
@@ -2887,6 +2929,67 @@ CMapEngine::CallPersonScript(const char* name, int which)
      
       if ( !ExecuteScript(*ps, error) ) {
         m_ErrorMessage = "Could not execute person " + list[which] + " script\n" + error;
+        //m_Persons[person].person_scripts_running[which] = false;
+        m_CurrentPerson = old_person;
+        return false;
+      }
+
+      m_CurrentPerson = old_person;
+
+      if (reset_time) {
+        ResetNextFrame();
+      }
+
+      //m_Persons[person].person_scripts_running[which] = false;
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::CallDefaultPersonScript(const char* name, int which)
+{
+  // make sure 'which' is valid
+  if (which < 0 || which >= NUM_PERSON_SCRIPTS) {
+    m_ErrorMessage = "SetPersonScript() - script does not exist";
+    return false;
+  }
+
+  // find the person
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
+    return false;
+  }
+
+  // find out which script we're dealing with
+  bool reset_time = false;
+  IEngine::script* ps = &m_default_person_scripts[which];
+
+  if (*ps) {
+
+    bool running = m_Engine->IsScriptBeingUsed(*ps);
+
+    if (which == SCRIPT_ON_ACTIVATE_TOUCH || which == SCRIPT_ON_ACTIVATE_TALK)
+      reset_time = true;
+
+    std::string list[5] = {"OnCreate", "OnDestroy", "OnActivate (touch)", "OnActivate (talk)", "OnCommandGenerator"};
+
+    if (running) {
+      m_ErrorMessage = "Default " + list[which] + " person script already running!";
+      return false;
+    } else {
+      std::string error;
+      //m_Persons[person].person_scripts_running[which] = true;
+
+      // set the current person
+      std::string old_person = m_CurrentPerson;
+      m_CurrentPerson = m_Persons[person].name;
+     
+      if ( !ExecuteScript(*ps, error) ) {
+        m_ErrorMessage = "Could not execute default person " + list[which] + " script\n" + error;
         //m_Persons[person].person_scripts_running[which] = false;
         m_CurrentPerson = old_person;
         return false;
@@ -3090,6 +3193,8 @@ CMapEngine::OpenMap(const char* filename)
     return false;
   }
 
+  m_CurrentMap = filename;
+
   // if a person entity is here, it's not map-specific
   // so put it in the starting position!
   for (unsigned int i = 0; i < m_Persons.size(); i++) {
@@ -3114,10 +3219,10 @@ CMapEngine::OpenMap(const char* filename)
     m_Map.SetLayerAngle(i, 0.0);
   }
 
-  if (!CompileEdgeScripts()) { return false; }
-  if (!LoadTriggers())       { return false; }
-  if (!LoadZones())          { return false; }
-  if (!LoadMapPersons())     { return false; }
+  if (!CompileEdgeScripts()) { m_CurrentMap = ""; return false; }
+  if (!LoadTriggers())       { m_CurrentMap = ""; return false; }
+  if (!LoadZones())          { m_CurrentMap = ""; return false; }
+  if (!LoadMapPersons())     { m_CurrentMap = ""; return false; }
 
   // load the background music (if there is any)
   std::string music = m_Map.GetMap().GetMusicFile();
@@ -3158,8 +3263,6 @@ CMapEngine::OpenMap(const char* filename)
   for (unsigned int i = 0; i < m_LayerRenderers.size(); i++) {
     m_LayerRenderers[i] = NULL;
   }
-
-  m_CurrentMap = filename;
 
   // execute entry script
   if (!CallDefaultMapScript(SCRIPT_ON_ENTER_MAP)
@@ -3369,7 +3472,7 @@ CMapEngine::CompileEdgeScripts()
   return true;
 }
 
-///
+////////////////////////////////////////////////////////////////////////////////
 
 void
 CMapEngine::DestroyEdgeScripts()
@@ -3464,6 +3567,16 @@ CMapEngine::LoadMapPersons()
       // old_person defined earlier (before goto)
       /*std::string*/ old_person = m_CurrentPerson;
       m_CurrentPerson = p.name;
+
+
+      // execute default script_create
+      if (m_default_person_scripts[SCRIPT_ON_CREATE] != NULL && !ExecuteScript(m_default_person_scripts[SCRIPT_ON_CREATE], error)) {
+
+        m_ErrorMessage = "Could not execute default OnCreate script\nPerson:" + person_string + "\n" + error;
+        m_Persons.erase(m_Persons.end() - 1);
+        
+        goto spriteset_error;
+      }
 
       // execute script_create
       if (p.person_scripts[SCRIPT_ON_CREATE] != NULL && !ExecuteScript(p.person_scripts[SCRIPT_ON_CREATE], error)) {

@@ -4609,6 +4609,23 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
+        - sets 'script' as the thing that everyone does in a certain event
+          the five events are see above
+*/
+begin_func(SetDefaultPersonScript, 2)
+  arg_int(which);
+  arg_str(script);
+
+  if (!This->m_Engine->GetMapEngine()->SetDefaultPersonScript(which, script)) {
+    This->ReportMapEngineError("SetDefaultPersonScript() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
         - calls a person's script from code
          'which' constants are the same as for SetPersonScript()
 */

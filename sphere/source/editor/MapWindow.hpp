@@ -58,7 +58,8 @@ private:
   afx_msg BOOL OnCommand(WPARAM wparam, LPARAM lparam);
   afx_msg void OnMapProperties();
   
-  afx_msg void OnChangeTileSize();
+  void OnTileSizeChanged();
+  afx_msg void OnResizeTileset();
   afx_msg void OnRescaleTileset();
   afx_msg void OnResampleTileset();
 

@@ -356,6 +356,7 @@
 #define ID_SPRITESET_ZOOM_4X            40180
 #define ID_SPRITESET_ZOOM_8X            40181
 #define ID_MAP_CHANGETILESIZE           40183
+#define ID_MAP_RESIZETILESET            40183
 #define ID_TILESETVIEW_INSERTTILE       40184
 #define ID_TILESETVIEW_DELETETILE       40185
 #define ID_TILESETVIEW_PROPERTIES       40186
@@ -718,6 +719,7 @@
 #define ID_TOOLS_IRC_CLIENT             40823
 #define ID_SOUND_RANDOM_ORDER           40824
 #define ID_FILE_NEW_FILE                40826
+#define ID_IMAGE_CROP                   40829
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -725,8 +727,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        280
-#define _APS_NEXT_COMMAND_VALUE         40827
+#define _APS_NEXT_RESOURCE_VALUE        281
+#define _APS_NEXT_COMMAND_VALUE         40830
 #define _APS_NEXT_CONTROL_VALUE         1242
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

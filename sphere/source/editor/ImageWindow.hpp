@@ -40,6 +40,7 @@ private:
   afx_msg void OnImageResize();
   afx_msg void OnImageRescale();
   afx_msg void OnImageResample();
+  afx_msg void OnImageCrop();
   afx_msg void OnImageRotate();
   afx_msg void OnCountColorsUsed();
   afx_msg void OnImageAdjustBorders();
@@ -52,7 +53,7 @@ private:
   // view handlers
   virtual void IV_ImageChanged();
   virtual void IV_ColorChanged(RGBA color);
-  virtual void PV_ColorChanged(RGB color);
+  virtual void PV_ColorChanged(int index, RGB color);
   virtual void CV_ColorChanged(int index, RGB color);
   virtual void AV_AlphaChanged(byte alpha);
 

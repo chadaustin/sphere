@@ -184,7 +184,7 @@ BEGIN
         MENUITEM "&Properties...",              ID_MAP_PROPERTIES
         POPUP "Change Size"
         BEGIN
-            MENUITEM "&Change Tile Size...",        ID_MAP_CHANGETILESIZE
+            MENUITEM "&Change Tile Size...",        ID_MAP_RESIZETILESET
             MENUITEM "&Rescale Tileset...",         ID_MAP_RESCALETILESET
             MENUITEM "Resample Tileset...",         ID_MAP_RESAMPLETILESET
         END
@@ -363,6 +363,7 @@ BEGIN
             MENUITEM "&Resize...",                  ID_IMAGE_RESIZE
             MENUITEM "R&escale...",                 ID_IMAGE_RESCALE
             MENUITEM "Re&sample...",                ID_IMAGE_RESAMPLE
+            MENUITEM "&Crop...",                    ID_IMAGE_CROP
         END
         MENUITEM "Rotate...",                   ID_IMAGE_ROTATE
         MENUITEM "Count Colors Used",           ID_IMAGE_COUNTCOLORS
@@ -2359,6 +2360,7 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     ID_FILE_NEW_FILE        "Create a new file"
+    ID_IMAGE_CROP           "Crop the image to the current selection"
 END
 
 #endif    // English (U.S.) resources
@@ -2381,7 +2383,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,1,0,97
+ FILEVERSION 1,1,0,98
  PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -2400,7 +2402,7 @@ BEGIN
             VALUE "Comments", "-\0"
             VALUE "CompanyName", "-\0"
             VALUE "FileDescription", "Sphere Development Environment\0"
-            VALUE "FileVersion", "1.1097\0"
+            VALUE "FileVersion", "1.1098\0"
             VALUE "InternalName", "editor\0"
             VALUE "LegalCopyright", "-\0"
             VALUE "LegalTrademarks", "\0"

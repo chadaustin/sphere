@@ -35,7 +35,7 @@ BEGIN_MESSAGE_MAP(CMapWindow, CSaveableDocumentWindow)
   ON_WM_TIMER()
 
   ON_COMMAND(ID_MAP_PROPERTIES,      OnMapProperties)
-  ON_COMMAND(ID_MAP_CHANGETILESIZE,  OnChangeTileSize)
+  ON_COMMAND(ID_MAP_RESIZETILESET,  OnResizeTileset)
   ON_COMMAND(ID_MAP_RESCALETILESET,  OnRescaleTileset)
   ON_COMMAND(ID_MAP_RESAMPLETILESET, OnResampleTileset)
 
@@ -478,8 +478,24 @@ CMapWindow::OnEditEntities()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+CMapWindow::OnTileSizeChanged()
+{
+  SetModified(true);
+  m_MapView.TilesetChanged();
+  m_TilesetEditView.TilesetChanged();
+  if (m_TilePalette) m_TilePalette->TilesetChanged();
+  if (m_TilePreviewPalette) {
+    if (m_TilePalette) {
+      m_TilePreviewPalette->OnImageChanged(m_Map.GetTileset().GetTile(m_TilePalette->GetSelectedTile()));
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
-CMapWindow::OnChangeTileSize()
+CMapWindow::OnResizeTileset()
 {
   struct Local {
     static void ResizeCallback(int tile, int num_tiles) {
@@ -498,11 +514,7 @@ CMapWindow::OnChangeTileSize()
   {
     if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
       m_Map.SetTileSize(dialog.GetWidth(), dialog.GetHeight(), 0, Local::ResizeCallback);
-
-      SetModified(true);
-      m_MapView.TilesetChanged();
-      m_TilesetEditView.TilesetChanged();
-      if (m_TilePalette) m_TilePalette->TilesetChanged();
+      OnTileSizeChanged();
     }
   }
 }
@@ -520,7 +532,6 @@ CMapWindow::OnRescaleTileset()
     }
   };
 
-  
   int tile_width  = m_Map.GetTileset().GetTileWidth();
   int tile_height = m_Map.GetTileset().GetTileHeight();
 
@@ -530,11 +541,7 @@ CMapWindow::OnRescaleTileset()
   if (dialog.DoModal() == IDOK) {
     if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
       m_Map.SetTileSize(dialog.GetWidth(), dialog.GetHeight(), 1, Local::RescaleCallback);
-
-      SetModified(true);
-      m_MapView.TilesetChanged();
-      m_TilesetEditView.TilesetChanged();
-      if (m_TilePalette) m_TilePalette->TilesetChanged();
+      OnTileSizeChanged();
     }
   }
 }
@@ -561,11 +568,7 @@ CMapWindow::OnResampleTileset()
   if (dialog.DoModal() == IDOK) {
     if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
       m_Map.SetTileSize(dialog.GetWidth(), dialog.GetHeight(), 2, Local::ResampleCallback);
-
-      SetModified(true);
-      m_MapView.TilesetChanged();
-      m_TilesetEditView.TilesetChanged();
-      if (m_TilePalette) m_TilePalette->TilesetChanged();
+      OnTileSizeChanged();
     }
   }
 }

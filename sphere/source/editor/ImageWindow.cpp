@@ -27,6 +27,7 @@ BEGIN_MESSAGE_MAP(CImageWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_IMAGE_RESIZE,             OnImageResize)
   ON_COMMAND(ID_IMAGE_RESCALE,            OnImageRescale)
   ON_COMMAND(ID_IMAGE_RESAMPLE,           OnImageResample)
+  ON_COMMAND(ID_IMAGE_CROP,               OnImageCrop)
   ON_COMMAND(ID_IMAGE_ROTATE,             OnImageRotate)
   ON_COMMAND(ID_IMAGE_COUNTCOLORS,        OnCountColorsUsed)
   ON_COMMAND(ID_IMAGE_VIEWATORIGINALSIZE, OnImageViewOriginalSize)
@@ -307,6 +308,26 @@ CImageWindow::OnImageAdjustBorders()
   {
     m_ImageView.BeforeImageChanged();
     m_Image.AdjustBorders(dialog.GetTopPixels(), dialog.GetRightPixels(), dialog.GetBottomPixels(), dialog.GetLeftPixels());
+    SetModified(true);
+    UpdateImageView();
+    m_ImageView.AfterImageChanged();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageWindow::OnImageCrop()
+{
+  if ( !(m_ImageView.GetSelectionLeftX() == 0 && m_ImageView.GetSelectionWidth()  == m_ImageView.GetWidth()
+      && m_ImageView.GetSelectionTopY()  == 0 && m_ImageView.GetSelectionHeight() == m_ImageView.GetHeight()) ) {
+    m_ImageView.BeforeImageChanged();
+
+    m_Image.AdjustBorders(0 - m_ImageView.GetSelectionTopY(),
+                          0 - (m_ImageView.GetWidth()  - (m_ImageView.GetSelectionLeftX() + m_ImageView.GetSelectionWidth() )),
+                          0 - (m_ImageView.GetHeight() - (m_ImageView.GetSelectionTopY()  + m_ImageView.GetSelectionHeight())),
+                          0 - m_ImageView.GetSelectionLeftX());
+
     SetModified(true);
     UpdateImageView();
     m_ImageView.AfterImageChanged();

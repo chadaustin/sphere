@@ -28,8 +28,18 @@ CTilePreviewPalette::CTilePreviewPalette(CDocumentWindow* owner, CImage32 image)
 void
 CTilePreviewPalette::OnImageChanged(CImage32 image)
 {
-	m_Image = image;
-	Invalidate();
+  bool changed_size =
+    (image.GetWidth()  != m_Image.GetWidth()
+  || image.GetHeight() != m_Image.GetHeight());
+	
+  m_Image = image;
+
+  if (changed_size) {
+    OnZoom(m_ZoomFactor.GetZoomFactor());
+  }
+  else {
+    Invalidate();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -73,12 +83,12 @@ CTilePreviewPalette::OnPaint()
   // draw black rectangle around tile
   if (1) {
     RECT rect = ClientRect;
-    rect.left += blit_width * 3;
-    dc.FillRect(&rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
-    rect.left -= blit_width * 3;
-    rect.top += blit_height * 3;
-    dc.FillRect(&rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
-    rect.top -= blit_height * 3;
+    rect.left += (blit_width * 3);
+    dc.FillRect(&rect, CBrush::FromHandle((HBRUSH)GetStockObject(WHITE_BRUSH)));
+    rect.left -= (blit_width * 3);
+    rect.top += (blit_height * 3);
+    dc.FillRect(&rect, CBrush::FromHandle((HBRUSH)GetStockObject(WHITE_BRUSH)));
+    rect.top -= (blit_height * 3);
   }
 
 	for (int ty = 0; ty < 3; ty++)
@@ -90,7 +100,7 @@ CTilePreviewPalette::OnPaint()
       BGRA* pixels = (BGRA*)m_BlitImage->GetPixels();
       
       // make a checkerboard
-      for (int iy = 0; iy < blit_height; iy++)
+      for (int iy = 0; iy < blit_height; iy++) {
         for (int ix = 0; ix < blit_width; ix++)
         {
           pixels[iy * blit_width + ix] = 
@@ -98,37 +108,35 @@ CTilePreviewPalette::OnPaint()
               CreateBGRA(255, 255, 255, 255) :
               CreateBGRA(255, 192, 192, 255));
         }
+      }
 
       // draw the frame into it
+      int frame_width  = m_Image.GetWidth()  < blit_width  ? m_Image.GetWidth()  : blit_width;
+      int frame_height = m_Image.GetHeight() < blit_height ? m_Image.GetHeight() : blit_height;
+
 		  const RGBA* source = m_Image.GetPixels();
-      for (int iy = 0; iy < blit_height; iy++) {
-        for (int ix = 0; ix < blit_width; ix++)
+      for (int iy = 0; iy < frame_height; iy++) {
+        for (int ix = 0; ix < frame_width; ix++)
         {
           int ty = iy / m_ZoomFactor.GetZoomFactor();
           int tx = ix / m_ZoomFactor.GetZoomFactor();
-
-          // this here would crash if the tileset has been resized
-          // and the spriteset animation palette hasn't been informed of the resize
-          if (tx >= 0 && tx < m_Image.GetWidth()
-            && ty >= 0 && ty < m_Image.GetHeight()) {
    
-            int t = (ty * m_Image.GetWidth()) + tx;    
-            int d = (iy * blit_width) + ix;
-            int alpha = source[t].alpha;
+          int t = (ty * m_Image.GetWidth()) + tx;    
+          int d = (iy * blit_width) + ix;
+          int alpha = source[t].alpha;
 
-            pixels[d].red   = (source[t].red   * alpha + pixels[d].red   * (255 - alpha)) / 256;
-            pixels[d].green = (source[t].green * alpha + pixels[d].green * (255 - alpha)) / 256;
-            pixels[d].blue  = (source[t].blue  * alpha + pixels[d].blue  * (255 - alpha)) / 256;
-          }
+          pixels[d].red   = (source[t].red   * alpha + pixels[d].red   * (255 - alpha)) / 256;
+          pixels[d].green = (source[t].green * alpha + pixels[d].green * (255 - alpha)) / 256;
+          pixels[d].blue  = (source[t].blue  * alpha + pixels[d].blue  * (255 - alpha)) / 256;
         }
       }
       
       // blit the frame
       CDC* tile = CDC::FromHandle(m_BlitImage->GetDC());
-      dc.BitBlt(ClientRect.left + (tx * m_Image.GetWidth()) * m_ZoomFactor.GetZoomFactor(),
-			          ClientRect.top + (ty * m_Image.GetHeight()) * m_ZoomFactor.GetZoomFactor(),
-                ClientRect.right - ClientRect.left,
-						  	ClientRect.bottom - ClientRect.top,
+      dc.BitBlt(ClientRect.left + (tx * m_Image.GetWidth())  * m_ZoomFactor.GetZoomFactor(),
+			          ClientRect.top  + (ty * m_Image.GetHeight()) * m_ZoomFactor.GetZoomFactor(),
+                blit_width,
+						  	blit_height,
                 tile, 0, 0, SRCCOPY);
     }
   }
@@ -172,6 +180,7 @@ CTilePreviewPalette::OnZoom(double zoom) {
 	rect.bottom = height;
 	/*AdjustWindowRect(&rect, GetStyle(), FALSE);
 	SetWindowPos(NULL, 0, 0, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER);*/
+
   Invalidate();
 }
 
