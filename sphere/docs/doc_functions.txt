@@ -803,10 +803,10 @@ log_object.endBlock()
       open the file, the engine will give an error message and exit. Sphere 
       supports animation formats of .flic, .fli, .flc and .mng
   
-  animation_object.getWidth()
+  animation_object.width
     - returns the width of the animation
   
-  animation_object.getHeight()
+  animation_object.height
     - returns that height of the animation
   
   animation_object.getNumFrames()
