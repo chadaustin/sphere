@@ -261,6 +261,7 @@ BEGIN
         END
         MENUITEM "R&efresh (F5)",               ID_PROJECT_REFRESH
         MENUITEM "&Run Game (CTRL + F5)",       ID_PROJECT_RUNSPHERE
+        MENUITEM "Game Settings...",            ID_PROJECT_GAMESETTINGS
         MENUITEM "&Configure Sphere...",        ID_PROJECT_CONFIGURESPHERE
         MENUITEM "Package Game!",               ID_PROJECT_PACKAGE_GAME
     END

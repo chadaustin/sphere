@@ -150,6 +150,7 @@ private:
   afx_msg void OnProjectRefresh();
   afx_msg void OnProjectRunSphere();
   afx_msg void OnProjectConfigureSphere();
+  afx_msg void OnProjectGameSettings();
   afx_msg void OnProjectPackageGame();
 #endif
 

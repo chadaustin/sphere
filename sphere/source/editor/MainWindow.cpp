@@ -180,6 +180,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_PROJECT_REFRESH,         OnProjectRefresh)
   ON_COMMAND(ID_PROJECT_RUNSPHERE,       OnProjectRunSphere)
   ON_COMMAND(ID_PROJECT_CONFIGURESPHERE, OnProjectConfigureSphere)
+  ON_COMMAND(ID_PROJECT_GAMESETTINGS,    OnProjectGameSettings)
   ON_COMMAND(ID_PROJECT_PACKAGE_GAME,    OnProjectPackageGame)
 
 	ON_COMMAND(ID_VIEW_PROJECT,            OnViewProject)
@@ -2654,6 +2655,16 @@ CMainWindow::OnProjectConfigureSphere()
 
   if (retval == FALSE)
     MessageBox("Error: Could not configure Sphere");
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+
+#ifdef I_SUCK
+afx_msg void
+CMainWindow::OnProjectGameSettings()
+{
+  OpenGameSettings();
 }
 #endif
 

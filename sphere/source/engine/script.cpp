@@ -762,6 +762,11 @@ inline CColorMatrix* argColorMatrix(JSContext* cx, jsval arg)
     return NULL;
   }
 
+  if (JS_IsArrayObject(cx, JSVAL_TO_OBJECT(arg))) {
+    JS_ReportError(cx, "Invalid image object");
+    return NULL;
+  }
+
   SS_COLORMATRIX* colormatrix = (SS_COLORMATRIX*)JS_GetPrivate(cx, JSVAL_TO_OBJECT(arg));
   if (colormatrix == NULL) {
     JS_ReportError(cx, "Invalid colormatrix object");
@@ -782,6 +787,11 @@ inline SS_BYTEARRAY* argByteArray(JSContext* cx, jsval arg)
 {
   if (!JSVAL_IS_OBJECT(arg)) {
     JS_ReportError(cx, "Invalid byte array object");
+    return NULL;
+  }
+
+  if (JS_IsArrayObject(cx, JSVAL_TO_OBJECT(arg))) {
+    JS_ReportError(cx, "Invalid bytearray object");
     return NULL;
   }
 

@@ -3410,7 +3410,7 @@ CMapEngine::LoadMapPersons()
       continue;
 
 spriteset_error:
-      m_Engine->DestroySpriteset(p.spriteset);
+      if (p.spriteset)                { m_Engine->DestroySpriteset(p.spriteset); }
       if (p.script_create)            { m_Engine->DestroyScript(p.script_create);         p.script_create  = NULL;              }
       if (p.script_destroy)           { m_Engine->DestroyScript(p.script_destroy);        p.script_destroy = NULL;              }
       if (p.script_activate_touch)    { m_Engine->DestroyScript(p.script_activate_touch); p.script_activate_touch = NULL;       }
