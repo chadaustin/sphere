@@ -33,6 +33,7 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
 
   ON_COMMAND(ID_IMAGEVIEW_COLORPICKER,           OnColorPicker)
   ON_COMMAND(ID_IMAGEVIEW_UNDO,                  OnUndo)
+  ON_COMMAND(ID_IMAGEVIEW_REDO,                  OnRedo)
   ON_COMMAND(ID_IMAGEVIEW_COPY,                  OnCopy)
   ON_COMMAND(ID_IMAGEVIEW_PASTE,                 OnPaste)
   ON_COMMAND(ID_IMAGEVIEW_PASTE_RGB,             OnPasteRGB)
@@ -97,6 +98,8 @@ CImageView::CImageView()
 , m_CurrentTool(Tool_Pencil)
 , m_NumUndoImages(0)
 , m_UndoImages(NULL)
+, m_NumRedoImages(0)
+, m_RedoImages(NULL)
 , m_SelectionType(ST_Rectangle)
 , m_SelectionX(0)
 , m_SelectionY(0)
@@ -452,9 +455,43 @@ CImageView::CanUndo() const
 
 ////////////////////////////////////////////////////////////////////////////////
 
+bool
+CImageView::CanRedo() const
+{
+  return m_NumRedoImages > 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 CImageView::Undo()
 {
+  if (m_UndoImages == 0)
+    return;
+
+  if (1) {
+    Image* new_images = new Image[m_NumRedoImages + 1];
+    if (new_images) {
+  
+      for (int i = 0; i < m_NumRedoImages; i++)
+        new_images[i] = m_RedoImages[i];
+
+      const int width = m_Image.GetWidth();
+      const int height = m_Image.GetHeight();
+
+      new_images[m_NumRedoImages].width = width;
+      new_images[m_NumRedoImages].height = height;
+      new_images[m_NumRedoImages].pixels = new RGBA[width * height];
+
+      if (new_images[m_NumRedoImages].pixels) {
+        memcpy(new_images[m_NumRedoImages].pixels, m_Image.GetPixels(), width * height * sizeof(RGBA));
+        m_NumRedoImages++;
+        delete[] m_RedoImages;
+        m_RedoImages = new_images;
+      }
+    }
+  }
+
   Image* img = m_UndoImages + m_NumUndoImages - 1;
   m_Image.Resize(img->width, img->height);
 
@@ -466,12 +503,69 @@ CImageView::Undo()
   delete[] img->pixels;
 
   Image* new_images = new Image[m_NumUndoImages - 1];
-  for (int i = 0; i < m_NumUndoImages - 1; i++)
-    new_images[i] = m_UndoImages[i];
+  if (new_images) {
+    for (int i = 0; i < m_NumUndoImages - 1; i++) {
+      new_images[i] = m_UndoImages[i];
+    }
 
-  m_NumUndoImages--;
-  delete[] m_UndoImages;
-  m_UndoImages = new_images;
+    m_NumUndoImages--;
+    delete[] m_UndoImages;
+    m_UndoImages = new_images;
+  }
+
+  Invalidate();
+  m_Handler->IV_ImageChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CImageView::Redo()
+{
+  if (m_RedoImages == 0)
+    return;
+
+  if (1) {
+    Image* new_images = new Image[m_NumUndoImages + 1];
+    if (new_images) {
+      for (int i = 0; i < m_NumUndoImages; i++)
+        new_images[i] = m_UndoImages[i];
+
+      const int width = m_Image.GetWidth();
+      const int height = m_Image.GetHeight();
+      new_images[m_NumUndoImages].width = width;
+      new_images[m_NumUndoImages].height = height;
+      new_images[m_NumUndoImages].pixels = new RGBA[width * height];
+
+      if (new_images[m_NumUndoImages].pixels) {
+        memcpy(new_images[m_NumUndoImages].pixels, m_Image.GetPixels(), width * height * sizeof(RGBA));
+        m_NumUndoImages++;
+        delete[] m_UndoImages;
+        m_UndoImages = new_images;
+      }
+    }
+  }
+
+  Image* img = m_RedoImages + m_NumRedoImages - 1;
+  m_Image.Resize(img->width, img->height);
+
+  // only copy the undo image if the resize has succeeded
+  if (m_Image.GetWidth() == img->width && m_Image.GetHeight() == img->height) {
+    memcpy(m_Image.GetPixels(), img->pixels, img->width * img->height * sizeof(RGBA));
+  }
+
+  delete[] img->pixels;
+
+  Image* new_images = new Image[m_NumRedoImages - 1];
+  if (new_images) {
+    for (int i = 0; i < m_NumRedoImages - 1; i++) {
+      new_images[i] = m_RedoImages[i];
+    }
+
+    m_NumRedoImages--;
+    delete[] m_RedoImages;
+    m_RedoImages = new_images;
+  }
 
   Invalidate();
   m_Handler->IV_ImageChanged();
@@ -1029,20 +1123,26 @@ CImageView::GetColor(RGBA* color, int x, int y)
 void
 CImageView::AddUndoState()
 {
+  ResetRedoStates();
+
   Image* new_images = new Image[m_NumUndoImages + 1];
-  for (int i = 0; i < m_NumUndoImages; i++)
-    new_images[i] = m_UndoImages[i];
+  if (new_images) {
+    for (int i = 0; i < m_NumUndoImages; i++)
+      new_images[i] = m_UndoImages[i];
 
-  int width = m_Image.GetWidth();
-  int height = m_Image.GetHeight();
-  new_images[m_NumUndoImages].width = width;
-  new_images[m_NumUndoImages].height = height;
-  new_images[m_NumUndoImages].pixels = new RGBA[width * height];
-  memcpy(new_images[m_NumUndoImages].pixels, m_Image.GetPixels(), width * height * sizeof(RGBA));
+    const int width = m_Image.GetWidth();
+    const int height = m_Image.GetHeight();
+    new_images[m_NumUndoImages].width = width;
+    new_images[m_NumUndoImages].height = height;
+    new_images[m_NumUndoImages].pixels = new RGBA[width * height];
 
-  m_NumUndoImages++;
-  delete[] m_UndoImages;
-  m_UndoImages = new_images;
+    if (new_images[m_NumUndoImages].pixels) {
+      memcpy(new_images[m_NumUndoImages].pixels, m_Image.GetPixels(), width * height * sizeof(RGBA));
+      m_NumUndoImages++;
+      delete[] m_UndoImages;
+      m_UndoImages = new_images;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1050,12 +1150,29 @@ CImageView::AddUndoState()
 void
 CImageView::ResetUndoStates()
 {
-  for (int i = 0; i < m_NumUndoImages; i++)
+  for (int i = 0; i < m_NumUndoImages; i++) {
     delete[] m_UndoImages[i].pixels;
+    m_UndoImages[i].pixels = NULL;
+  }
 
   delete[] m_UndoImages;
   m_UndoImages = NULL;
   m_NumUndoImages = 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CImageView::ResetRedoStates()
+{
+  for (int i = 0; i < m_NumRedoImages; i++) {
+    delete[] m_RedoImages[i].pixels;
+    m_RedoImages[i].pixels = NULL;
+  }
+
+  delete[] m_RedoImages;
+  m_RedoImages = NULL;
+  m_NumRedoImages = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1651,6 +1768,21 @@ CImageView::OnRButtonUp(UINT flags, CPoint point)
     EnableMenuItem(submenu, ID_IMAGEVIEW_UNDO, MF_BYCOMMAND | MF_GRAYED);
   }
 
+  if (m_NumRedoImages == 0) {
+    EnableMenuItem(submenu, ID_IMAGEVIEW_REDO, MF_BYCOMMAND | MF_GRAYED);
+  }
+
+  if (1) {
+    const int max_len = 1024;
+    char string[1024];
+    GetMenuString(menu, ID_IMAGEVIEW_REDO, string, max_len - 1, MF_BYCOMMAND);
+
+    sprintf (string + strlen(string), " %d %d", m_NumUndoImages, m_NumRedoImages);
+    
+    GetStatusBar()->SetWindowText(string);
+  }
+
+
   if (GetSelectionWidth() != GetSelectionHeight()) {
     EnableMenuItem(menu, ID_IMAGEVIEW_ROTATE_CW,  MF_BYCOMMAND | MF_GRAYED);
     EnableMenuItem(menu, ID_IMAGEVIEW_ROTATE_CCW, MF_BYCOMMAND | MF_GRAYED);
@@ -1745,6 +1877,16 @@ CImageView::OnUndo()
 {
   if (CanUndo()) {
     Undo();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnRedo()
+{
+  if (CanRedo()) {
+    Redo();
   }
 }
 
@@ -2613,12 +2755,11 @@ CImageView::OnScaleAlpha()
 afx_msg LRESULT 
 CImageView::OnGetAccelerator(WPARAM wParam, LPARAM lParam)
 {
-	// If you want to provide a custom accelerator, copy from CImageView::OnGetAccelerator!
+	// If you want to provide a custom accelerator, copy from CImageView::OnGetAccelerator
 	// Also a message map entry is needed like: 	
 	//		ON_MESSAGE(WM_GETACCELERATOR, OnGetAccelerator)
-
-	HACCEL * ret = ((HACCEL*)wParam);
-	*ret = LoadAccelerators(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_IMAGEVIEW));  
+	HACCEL* ret = ((HACCEL*)wParam);
+	*ret = LoadAccelerators(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_IMAGEVIEW));
 	return 1;
 }
 

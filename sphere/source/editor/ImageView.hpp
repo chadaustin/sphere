@@ -71,6 +71,9 @@ public:
   bool CanUndo() const;
   void Undo();
 
+  void Redo();
+  bool CanRedo() const;
+
 private:
   enum Tool { Tool_Pencil, Tool_Line, Tool_Rectangle, Tool_Circle, Tool_Ellipse, Tool_Fill, Tool_Selection, Tool_FreeSelection };
 
@@ -109,6 +112,7 @@ private:
 
   void AddUndoState();
   void ResetUndoStates();
+  void ResetRedoStates();
 
   afx_msg void OnPaint();
   void PaintLine(CImage32& pImage);
@@ -124,6 +128,7 @@ private:
 
   afx_msg void OnColorPicker();
   afx_msg void OnUndo();
+  afx_msg void OnRedo();
   afx_msg void OnCopy();
   afx_msg void OnPaste();
   afx_msg void OnPasteRGB();
@@ -167,10 +172,6 @@ private:
 
 	afx_msg LRESULT OnGetAccelerator(WPARAM wParam, LPARAM lParam);
 
-
-  RGBA* GetFlatImageFromClipboard(int& width, int& height);
-  RGBA* GetBitmapImageFromClipboard(int& width, int& height);
-
 public:
   afx_msg void OnToolChanged(UINT id);
   BOOL IsToolAvailable(UINT id);
@@ -205,6 +206,8 @@ private:
   // undo
   int    m_NumUndoImages;
   Image* m_UndoImages;
+  int    m_NumRedoImages;
+  Image* m_RedoImages;
 
   bool m_ShowGrid;
   bool m_ShowAlphaMask;

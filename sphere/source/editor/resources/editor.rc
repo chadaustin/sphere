@@ -786,6 +786,7 @@ BEGIN
         MENUITEM "Co&lor Picker",               ID_IMAGEVIEW_COLORPICKER
         MENUITEM SEPARATOR
         MENUITEM "&Undo (CTRL + Z)",            ID_IMAGEVIEW_UNDO
+        MENUITEM "Redo",                        ID_IMAGEVIEW_REDO
         MENUITEM SEPARATOR
         MENUITEM "&Copy (CTRL + C)",            ID_IMAGEVIEW_COPY
         POPUP "&Paste"

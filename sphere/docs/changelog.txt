@@ -1,3 +1,7 @@
+2004.04.06
+  - Added Redo to image editor
+  - Added an options dialog
+
 2004.02.02
   - Font preview palette added
   - Added preview to imageview's custom filter dialog
