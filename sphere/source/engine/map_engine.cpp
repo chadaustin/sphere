@@ -1459,11 +1459,12 @@ CMapEngine::CallPersonScript(const char* name, int which)
 
   // find out which script we're dealing with
   IEngine::script* ps = NULL;
+  bool reset_time = false;
   switch (which) {
     case 0: ps = &m_Persons[person].script_create;            break;
     case 1: ps = &m_Persons[person].script_destroy;           break;
-    case 2: ps = &m_Persons[person].script_activate_touch;    break;
-    case 3: ps = &m_Persons[person].script_activate_talk;     break;
+    case 2: ps = &m_Persons[person].script_activate_touch;    reset_time = true; break;
+    case 3: ps = &m_Persons[person].script_activate_talk;     reset_time = true; break;
     case 4: ps = &m_Persons[person].script_command_generator; break;
   }
 
@@ -1473,6 +1474,9 @@ CMapEngine::CallPersonScript(const char* name, int which)
     if (ExecuteScript(*ps, error)) {
       m_ErrorMessage = "Could not execute person script\n" + error;
       return false;
+    }
+    if (reset_time) {
+      ResetNextFrame();
     }
 
   }
@@ -1723,6 +1727,7 @@ CMapEngine::OpenMap(const char* filename)
 
     return false;
   }
+  ResetNextFrame();
 
   return true;
 }
@@ -1771,6 +1776,7 @@ CMapEngine::CloseMap()
     m_ErrorMessage = "Exit Script Error:\n" + error;
     return false;
   }
+  ResetNextFrame();
 
   return true;
 }
@@ -2438,6 +2444,11 @@ CMapEngine::UpdateWorld(bool input_valid)
     if (!ExecuteScript(m_UpdateScript, error)) {
       m_ErrorMessage = "Could not execute update script\n" + error;
       return false;
+    }
+
+    // if we took more than a second to run the update script, reset the timer
+    if (qword(GetTime()) * m_FrameRate > m_NextFrame) {
+      ResetNextFrame();
     }
   }
 
