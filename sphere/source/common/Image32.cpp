@@ -23,10 +23,6 @@ struct CoronaFileAdapter : public corona::DLLImplementation<corona::File> {
     m_File = file;
   }
 
-  ~CoronaFileAdapter() {
-    delete m_File;
-  }
-
   int COR_CALL read(void* buffer, int size) {
     return m_File->Read(buffer, size);
   }

@@ -105,7 +105,7 @@ int __cdecl main(int argc, const char** argv)
   // create the sphere window
   SphereWindow = CreateWindow(
     "SphereWindowClass", "Sphere",
-    WS_CAPTION | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE,
+    WS_CAPTION | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_SYSMENU,
     CW_USEDEFAULT, 0, CW_USEDEFAULT, 0,
     NULL, NULL, GetModuleHandle(NULL), NULL);
   if (SphereWindow == NULL) {
@@ -162,18 +162,26 @@ int __cdecl main(int argc, const char** argv)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void Shutdown(HWND window) {
+  CloseNetworkSystem();
+  CloseInput();
+  CloseAudio();
+  CloseVideo();
+  DestroyWindow(window);
+  exit(0);
+}
+
 LRESULT CALLBACK SphereWindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   switch (msg)
   {
+    case WM_CLOSE: {
+      Shutdown(window);
+    }
+
     case WM_SYSKEYDOWN: {
       if (wparam == 115) { // if user hit ALT+F4
-        CloseNetworkSystem();
-        CloseInput();
-        CloseAudio();
-        CloseVideo();
-        DestroyWindow(window);
-        exit(0);
+        Shutdown(window);
       }
     }
 
