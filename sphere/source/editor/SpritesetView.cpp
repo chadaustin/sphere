@@ -1096,7 +1096,7 @@ mng_bool MNG_DECL mng_close_stream (mng_handle mng)
 
 ///////////////////////////////////////////////////////////
 
-void image_add_filter_byte(const RGBA* pixels, const int width, const int height, unsigned char* filtered)
+void rgba_image_add_filter_byte(const RGBA* pixels, const int width, const int height, unsigned char* filtered)
 {
   int x;
 	int y;
@@ -1117,7 +1117,167 @@ void image_add_filter_byte(const RGBA* pixels, const int width, const int height
 	}
 }
 
+void rgb_image_add_filter_byte(const RGBA* pixels, const int width, const int height, unsigned char* filtered)
+{
+  int x;
+	int y;
+  unsigned char* ptr = filtered;
+
+  for (y = 0; y < height; y++) {
+    for (x = 0; x < width; x++)
+    {
+      if (x == 0) {
+  			*ptr++ = 0;
+      }
+
+      *ptr++ = pixels[(y * width) + x].red;
+      *ptr++ = pixels[(y * width) + x].green;
+  	  *ptr++ = pixels[(y * width) + x].blue;
+		}
+	}
+}
+
+int findcolorfrompalette(const mng_palette8 palette, int palette_size, int red, int green, int blue) {
+  for (int i = 0; i < palette_size; i++) {
+    if (palette[i].iRed   == red
+     && palette[i].iGreen == green
+     && palette[i].iBlue  == blue)
+       return i;
+  }
+
+  return -1;
+}
+
+
+void rgb_palette_image_add_filter_byte(const mng_palette8 palette, int palette_size, const RGBA* pixels, const int width, const int height, unsigned char* filtered)
+{
+  int x;
+	int y;
+  unsigned char* ptr = filtered;
+
+  for (y = 0; y < height; y++) {
+    for (x = 0; x < width; x++)
+    {
+      if (x == 0) {
+  			*ptr++ = 0;
+      }
+
+      const RGBA* p = &pixels[y * width + x];
+      *ptr++ = findcolorfrompalette(palette, palette_size, p->red, p->green, p->blue);
+		}
+	}
+}
+
 ///////////////////////////////////////////////////////////
+
+bool image_to_palette(mng_palette8 palette, int* palette_size,
+                      const int width, const int height, const RGBA* pixels) {
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        const RGBA* p = &pixels[y * width + x];
+        int index = findcolorfrompalette(palette, *palette_size, p->red, p->green, p->blue);
+        if (index == -1) {
+          if (*palette_size < 255) {
+            palette[*palette_size].iRed   = p->red;
+            palette[*palette_size].iGreen = p->green;
+            palette[*palette_size].iBlue  = p->blue;
+            *palette_size += 1;
+          }
+          else
+            return false;
+        }
+      }
+    }
+
+  return true;
+}
+
+///////////////////////////////////////////////////////////
+
+void calc_different_area(const RGBA* one, const RGBA* two, const int width, const int height, int* x, int* y, int* w, int* h)
+{
+  int done;
+  *x = 0;
+  *y = 0;
+  *w = width;
+  *h = height;
+
+  done = 0;
+  for (int py = 0; !done && py < height; py++) {
+    for (int px = 0; px < width; px++) {
+      const RGBA* p1 = &one[py * width + px];
+      const RGBA* p2 = &two[py * width + px];
+
+      if (p1->red   != p2->red
+       || p1->green != p2->green
+       || p1->blue  != p2->blue
+       || p1->alpha != p2->alpha) {
+         done = 1;
+         break;
+      }
+    }
+    if (!done)
+      *y += 1;
+  }
+
+  done = 0;
+  for (int px = 0; !done && px < width; px++) {
+    for (int py = 0; py < height; py++) {
+      const RGBA* p1 = &one[py * width + px];
+      const RGBA* p2 = &two[py * width + px];
+
+      if (p1->red   != p2->red
+       || p1->green != p2->green
+       || p1->blue  != p2->blue
+       || p1->alpha != p2->alpha) {
+        done = 1;
+        break;
+      }
+    }
+    if (!done)
+      *x += 1;
+  }
+
+  *w = width - *x;
+  *h = height - *y;
+
+  done = 0;
+  for (int px = width - 1; !done && px > *x; px--) {
+    for (int py = height - 1; py > *y; py--) {
+      const RGBA* p1 = &one[py * width + px];
+      const RGBA* p2 = &two[py * width + px];
+
+      if (p1->red   != p2->red
+       || p1->green != p2->green
+       || p1->blue  != p2->blue
+       || p1->alpha != p2->alpha) {
+        done = 1;
+        break;
+      }
+    }
+    if (!done)
+      *w -= 1;
+  }
+
+  done = 0;
+  for (int py = height - 1; !done && py > *y; py--) {
+    for (int px = width - 1; px > *x; px--) {
+      const RGBA* p1 = &one[py * width + px];
+      const RGBA* p2 = &two[py * width + px];
+
+      if (p1->red   != p2->red
+       || p1->green != p2->green
+       || p1->blue  != p2->blue
+       || p1->alpha != p2->alpha) {
+        done = 1;
+        break;
+      }
+    }
+    if (!done)
+      *h -= 1;
+  }
+
+}
 
 static mng_retcode
 SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& images)
@@ -1162,7 +1322,7 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
   iRC = mng_create (hMNG);
   if (iRC != 0) return iRC;
  
-  iRC = mng_putchunk_mhdr (hMNG, max_frame_width, max_frame_width,
+  iRC = mng_putchunk_mhdr (hMNG, max_frame_width, max_frame_height,
           2, 0, images.size(), 0, MNG_SIMPLICITY_TRANSPARENCY);
 
   if (iRC != 0) return iRC;
@@ -1231,8 +1391,46 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
                             0);
   if (iRC != 0) return iRC;
 
+  mng_palette8 GlobalPalette;
+  int GlobalPaletteSize = 0;
+  bool can_use_global_palette = true;
+
+  for (int i = 0; (can_use_global_palette && i < images.size()); i++) {
+    const CImage32& image = images[i];
+    if (!image_to_palette(GlobalPalette, &GlobalPaletteSize, image.GetWidth(), image.GetHeight(), image.GetPixels())) {
+      can_use_global_palette = false;
+    }
+  }
+
+  if (can_use_global_palette) {
+    iRC = mng_putchunk_plte(hMNG, GlobalPaletteSize, GlobalPalette);
+    if (iRC != 0) return iRC;
+  }
+
   for (int i = 0; i < images.size(); i++) {
     const CImage32& image = images[i];
+
+    bool has_alpha = false;
+    for (int j = 0; (j < image.GetWidth() * image.GetHeight()); j++) {
+      if (image.GetPixels()[j].alpha != 255) {
+        has_alpha = true;
+        break;
+      }
+    }
+
+    if (i > 0) {
+      if (images[i - 1].GetWidth() == image.GetWidth()
+        && images[i - 1].GetHeight() == image.GetHeight()) {
+        int x, y, w, h;
+        calc_different_area(images[i - 1].GetPixels(), image.GetPixels(), image.GetWidth(), image.GetHeight(), &x, &y, &w, &h);
+        char string[255];
+        sprintf (string, "%d %d %d %d\n", x, y, w, h);
+        iRC = mng_putchunk_text(hMNG,
+                          strlen("Debug"), "Debug",
+                          strlen(string), string);
+        if (iRC != 0) return iRC;
+      }
+    }
 
     /*
     iRC = mng_putchunk_defi(hMNG,
@@ -1250,44 +1448,134 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
     if (iRC != 0) return iRC;
     */
 
-    iRC = mng_putchunk_ihdr (hMNG, image.GetWidth(), image.GetHeight(),
-			MNG_BITDEPTH_8, MNG_COLORTYPE_RGBA, MNG_COMPRESSION_DEFLATE,
-			MNG_FILTER_NONE, MNG_INTERLACE_NONE);
-    if (iRC != 0) return iRC;
+    if (has_alpha) {
+      iRC = mng_putchunk_ihdr (hMNG, image.GetWidth(), image.GetHeight(),
+	  		MNG_BITDEPTH_8, MNG_COLORTYPE_RGBA, MNG_COMPRESSION_DEFLATE,
+		  	MNG_FILTER_NONE, MNG_INTERLACE_NONE);
+      if (iRC != 0) return iRC;
 
-    mng_uint32 filter_len     = (sizeof(RGBA) * image.GetWidth() * image.GetHeight()) + image.GetHeight();
-    mng_uint32 compressed_len = (sizeof(RGBA) * image.GetWidth() * image.GetHeight()) + image.GetHeight();
-  	           compressed_len += compressed_len / 100 + 12 + 8;	// extra 8 for safety
+      mng_uint32 filter_len     = (sizeof(RGBA) * image.GetWidth() * image.GetHeight()) + image.GetHeight();
+      mng_uint32 compressed_len = (sizeof(RGBA) * image.GetWidth() * image.GetHeight()) + image.GetHeight();
+  	             compressed_len += compressed_len / 100 + 12 + 8;	// extra 8 for safety
 
-    unsigned char* buffer = new unsigned char[filter_len];
-    if (buffer == NULL)
-      return MNG_OUTOFMEMORY;
+      unsigned char* buffer = new unsigned char[filter_len];
+      if (buffer == NULL)
+        return MNG_OUTOFMEMORY;
 
-     unsigned char* compressed = new unsigned char[compressed_len];
-     if (compressed == NULL) {
-       delete[] buffer;
-       return MNG_OUTOFMEMORY;
-     }
+       unsigned char* compressed = new unsigned char[compressed_len];
+       if (compressed == NULL) {
+         delete[] buffer;
+         return MNG_OUTOFMEMORY;
+       }
 
-    image_add_filter_byte(image.GetPixels(), image.GetWidth(), image.GetHeight(), buffer);
+      rgba_image_add_filter_byte(image.GetPixels(), image.GetWidth(), image.GetHeight(), buffer);
 
-    uLong dstLen = compressed_len;
-    uLong srcLen = filter_len;
-    if (compress2(compressed, &dstLen, buffer, srcLen, 9) != Z_OK) {
+      uLong dstLen = compressed_len;
+      uLong srcLen = filter_len;
+      if (compress2(compressed, &dstLen, buffer, srcLen, 9) != Z_OK) {
+        delete[] buffer;
+        delete[] compressed;
+        return MNG_ZLIBERROR;
+      }
+
+      iRC = mng_putchunk_idat(hMNG, dstLen, compressed);
+
       delete[] buffer;
       delete[] compressed;
-      return MNG_ZLIBERROR;
+
+      if (iRC != 0) return iRC;
+
+      iRC = mng_putchunk_iend (hMNG);
+      if (iRC != 0) return iRC;  
     }
+    else {
+      if (can_use_global_palette) {
+        iRC = mng_putchunk_ihdr (hMNG, image.GetWidth(), image.GetHeight(),
+					MNG_BITDEPTH_8, MNG_COLORTYPE_INDEXED, MNG_COMPRESSION_DEFLATE,
+					MNG_FILTER_ADAPTIVE, MNG_INTERLACE_NONE);
+        if (iRC != 0) return iRC;
 
-    iRC = mng_putchunk_idat(hMNG, dstLen, compressed);
+        mng_uint32 filter_len     = (sizeof(char) * image.GetWidth() * image.GetHeight()) + image.GetHeight();
+        mng_uint32 compressed_len = (sizeof(char) * image.GetWidth() * image.GetHeight()) + image.GetHeight();
+    	             compressed_len += compressed_len / 100 + 12 + 8;	// extra 8 for safety
+  
+        unsigned char* buffer = new unsigned char[filter_len];
+        if (buffer == NULL)
+          return MNG_OUTOFMEMORY;
 
-    delete[] buffer;
-    delete[] compressed;
+         unsigned char* compressed = new unsigned char[compressed_len];
+         if (compressed == NULL) {
+           delete[] buffer;
+           return MNG_OUTOFMEMORY;
+         }
 
-    if (iRC != 0) return iRC;
+        rgb_palette_image_add_filter_byte(GlobalPalette, GlobalPaletteSize, image.GetPixels(), image.GetWidth(), image.GetHeight(), buffer);
 
-    iRC = mng_putchunk_iend (hMNG);
-    if (iRC != 0) return iRC;  
+        // write empty PLTE to use the global PLTE
+				iRC = mng_putchunk_plte (hMNG, 0, GlobalPalette);
+        if (iRC != 0)
+          return iRC;
+
+        uLong dstLen = compressed_len;
+        uLong srcLen = filter_len;
+        if (compress2(compressed, &dstLen, buffer, srcLen, 9) != Z_OK) {
+          delete[] buffer;
+          delete[] compressed;
+          return MNG_ZLIBERROR;
+        }
+
+        iRC = mng_putchunk_idat(hMNG, dstLen, compressed);
+
+        delete[] buffer;
+        delete[] compressed;
+
+        if (iRC != 0) return iRC;
+
+        iRC = mng_putchunk_iend (hMNG);
+        if (iRC != 0) return iRC;
+      }
+      else 
+      {
+        iRC = mng_putchunk_ihdr (hMNG, image.GetWidth(), image.GetHeight(),
+	    		MNG_BITDEPTH_8, MNG_COLORTYPE_RGB, MNG_COMPRESSION_DEFLATE,
+		    	MNG_FILTER_NONE, MNG_INTERLACE_NONE);
+        if (iRC != 0) return iRC;
+
+        mng_uint32 filter_len     = (sizeof(RGB) * image.GetWidth() * image.GetHeight()) + image.GetHeight();
+        mng_uint32 compressed_len = (sizeof(RGB) * image.GetWidth() * image.GetHeight()) + image.GetHeight();
+    	             compressed_len += compressed_len / 100 + 12 + 8;	// extra 8 for safety
+  
+        unsigned char* buffer = new unsigned char[filter_len];
+        if (buffer == NULL)
+          return MNG_OUTOFMEMORY;
+
+         unsigned char* compressed = new unsigned char[compressed_len];
+         if (compressed == NULL) {
+           delete[] buffer;
+           return MNG_OUTOFMEMORY;
+         }
+
+        rgb_image_add_filter_byte(image.GetPixels(), image.GetWidth(), image.GetHeight(), buffer);
+
+        uLong dstLen = compressed_len;
+        uLong srcLen = filter_len;
+        if (compress2(compressed, &dstLen, buffer, srcLen, 9) != Z_OK) {
+          delete[] buffer;
+          delete[] compressed;
+          return MNG_ZLIBERROR;
+        }
+
+        iRC = mng_putchunk_idat(hMNG, dstLen, compressed);
+
+        delete[] buffer;
+        delete[] compressed;
+
+        if (iRC != 0) return iRC;
+
+        iRC = mng_putchunk_iend (hMNG);
+        if (iRC != 0) return iRC;
+      }
+    }
   }
 
   iRC = mng_putchunk_mend (hMNG);
