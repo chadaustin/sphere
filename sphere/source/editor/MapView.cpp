@@ -125,8 +125,8 @@ CMapView::TilesetChanged()
 {
   delete m_BlitTile;
   m_BlitTile = new CDIBSection(
-    m_Map->GetTileset().GetTileWidth(),
-    m_Map->GetTileset().GetTileHeight(),
+    m_Map->GetTileset().GetTileWidth()  * m_ZoomFactor,
+    m_Map->GetTileset().GetTileHeight() * m_ZoomFactor,
     32);
 
   Invalidate();
