@@ -758,12 +758,12 @@ public:
     src.blue  = alpha_new[m_mask.blue][src.blue];
 
     // blit to the dest pixel
-    //dst.red   = (dst.red   * (256 - alpha) + src.red   * alpha) / 256;
-    //dst.green = (dst.green * (256 - alpha) + src.green * alpha) / 256;
-    //dst.blue  = (dst.blue  * (256 - alpha) + src.blue  * alpha) / 256;
-    dst.red   = alpha_old[alpha][dst.red]   + alpha_new[alpha][src.red];
-    dst.green = alpha_old[alpha][dst.green] + alpha_new[alpha][src.green];
-    dst.blue  = alpha_old[alpha][dst.blue]  + alpha_new[alpha][src.blue];
+    //dst.red   = (dst.red   * (256 - alpha) + src.red   * m_mask.alpha) / 256;
+    //dst.green = (dst.green * (256 - alpha) + src.green * m_mask.alpha) / 256;
+    //dst.blue  = (dst.blue  * (256 - alpha) + src.blue  * m_mask.alpha) / 256;
+    dst.red   = alpha_old[alpha][dst.red]   + alpha_new[m_mask.alpha][src.red];
+    dst.green = alpha_old[alpha][dst.green] + alpha_new[m_mask.alpha][src.green];
+    dst.blue  = alpha_old[alpha][dst.blue]  + alpha_new[m_mask.alpha][src.blue];
 
   }
 
@@ -1059,7 +1059,7 @@ void NormalBlit(IMAGE image, int x, int y)
     int iy = image_blit_height;
     dword d;
     dword s;
-    word a;
+    byte a;
     while (iy-- > 0) {
       int ix = image_blit_width;
       while (ix-- > 0) {
@@ -1072,25 +1072,25 @@ void NormalBlit(IMAGE image, int x, int y)
 
         dword result;
         //result = ((d & 0xFF) * b >> 8) + (s & 0xFF);
-        result = alpha_old[a][d & 0xFF] + alpha_new[a][s & 0xFF];
+        result = alpha_old[a][d & 0xFF] + (s & 0xFF);
 
         d >>= 8;
         s >>= 8;
 
         //result |= ((d & 0xFF) * b + ((s & 0xFF) << 8)) & 0xFF00;
-        result |= (alpha_old[a][d & 0xFF] + alpha_new[a][s & 0xFF]) << 8;
+        result |= (alpha_old[a][d & 0xFF] + (s & 0xFF)) << 8;
 
         d >>= 8;
         s >>= 8;
 
         //result |= (((d & 0xFF) * b + ((s & 0xFF) << 8)) & 0xFF00) << 8;
-        result |= (alpha_old[a][d & 0xFF] + alpha_new[a][s & 0xFF]) << 16;
+        result |= (alpha_old[a][d & 0xFF] + (s & 0xFF)) << 16;
 
         d >>= 8;
         s >>= 8;
 
         //result |= (((d & 0xFF) * b + ((s & 0xFF) << 8)) & 0xFF00) << 8;
-        result |= (alpha_old[a][d & 0xFF] + alpha_new[a][s & 0xFF]) << 24;
+        result |= (alpha_old[a][d & 0xFF] + (s & 0xFF)) << 24;
 
         *dest = result;
 
