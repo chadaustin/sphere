@@ -978,14 +978,17 @@ CImageView::OnPaint()
     DeleteObject(linepen);
   }
 
+  // draw the selection box if it exists
   if (m_SelectionWidth > 0 && m_SelectionHeight > 0) {
-    HPEN linepen = CreatePen(PS_SOLID, 1, RGB(255, 0, 255));
+    HPEN linepen = CreatePen(PS_SOLID, 1, RGB(0, 255, 255));
     HPEN oldpen = (HPEN)SelectObject(dc, linepen);
     MoveToEx(dc, offsetx + m_SelectionX * size, offsety + m_SelectionY * size, NULL);
     LineTo  (dc, offsetx + m_SelectionX * size, offsety + (m_SelectionY + m_SelectionHeight) * size);
     LineTo  (dc, offsetx + (m_SelectionX + m_SelectionWidth) * size, offsety + (m_SelectionY + m_SelectionHeight) * size);
     LineTo  (dc, offsetx + (m_SelectionX + m_SelectionWidth) * size, offsety + m_SelectionY * size);
     LineTo  (dc, offsetx + m_SelectionX * size, offsety + m_SelectionY * size);
+    SelectObject(dc, oldpen);
+    DeleteObject(linepen);
   }
 
   // draw a white rectangle around the image
