@@ -166,7 +166,7 @@ private:
 
   bool m_Clicked;
 
-  bool m_ShowGrid;
+  int m_ViewGridType;
   bool m_ShowTileObstructions;
   std::vector<sTile> m_TileObstructions; // when View->Tile Obstructions is on, we render these
 	//bool m_ShowAnimations;

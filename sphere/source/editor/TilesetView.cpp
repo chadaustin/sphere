@@ -865,7 +865,7 @@ CTilesetView::OnLButtonUp(UINT flags, CPoint point)
   m_MouseDown = false;
   ReleaseCapture();
 
-  if (m_UsingMultiTileSelection || !(GetTileSelectionWidth() * GetTileSelectionHeight() > 1)) {
+  if (m_UsingMultiTileSelection && !(GetTileSelectionWidth() * GetTileSelectionHeight() > 1)) {
     m_UsingMultiTileSelection = false;
   }
 
@@ -930,7 +930,7 @@ CTilesetView::OnRButtonUp(UINT flags, CPoint point)
   if (m_MenuShown)
     return;
 
-  if (m_UsingMultiTileSelection || !(GetTileSelectionWidth() * GetTileSelectionHeight() > 1)) {
+  if (m_UsingMultiTileSelection && !(GetTileSelectionWidth() * GetTileSelectionHeight() > 1)) {
     m_UsingMultiTileSelection = false;
   }
 

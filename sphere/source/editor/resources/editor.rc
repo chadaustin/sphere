@@ -379,7 +379,15 @@ BEGIN
         MENUITEM "&Set Entry Point",            ID_MAPVIEW_SETENTRYPOINT
         POPUP "&View"
         BEGIN
-            MENUITEM "&Grid",                       ID_MAPVIEW_VIEWGRID
+            POPUP "&Grid"
+            BEGIN
+                MENUITEM "&Grid None",                  ID_MAPVIEW_VIEWGRIDNONE
+
+                MENUITEM "&Grid Tile",                  ID_MAPVIEW_VIEWGRIDTILE
+
+                MENUITEM "&Grid Screen",                ID_MAPVIEW_VIEWGRIDSCREEN
+
+            END
             MENUITEM "Tile &Animations",            ID_MAPVIEW_VIEWANIMATIONS
             , GRAYED
             MENUITEM "&Tile Obstructions",          ID_MAPVIEW_VIEWTILEOBSTRUCTIONS

@@ -58,7 +58,7 @@ CMapView::CMapView()
 , m_SelectedLayer(0)
 , m_MoveIndex(-1)
 , m_Clicked(false)
-, m_ShowGrid(false)
+, m_ViewGridType(0)
 , m_ShowTileObstructions(false)
 //, m_ShowAnimations(false)
 , m_PreviewLineOn(0)
@@ -2144,9 +2144,9 @@ CMapView::OnPaint()
     m_RedrawPreviewLine = 0;
   }
 
-  if (m_ShowGrid && m_Map->GetNumLayers() > 0) {
-    int tile_width = m_Map->GetTileset().GetTileWidth();
-    int tile_height = m_Map->GetTileset().GetTileHeight();
+  if (m_ViewGridType != 0 && m_Map->GetNumLayers() > 0) {
+    const int tile_width = m_Map->GetTileset().GetTileWidth();
+    const int tile_height = m_Map->GetTileset().GetTileHeight();
 
     int width = m_Map->GetLayer(0).GetWidth();
     int height = m_Map->GetLayer(0).GetHeight();
@@ -2154,17 +2154,28 @@ CMapView::OnPaint()
     int offsetx = 0;
     int offsety = 0;
 
+    int grid_width  = tile_width;
+    int grid_height = tile_height;
+
+    if (m_ViewGridType == 2) {
+      offsetx = -(m_CurrentX * tile_width) % 320;
+//      offsety = (m_CurrentY * tile_height) % 240;
+
+      grid_width  *= (320 / tile_width);
+//      grid_height *= (240 / tile_height);
+    }
+
     // draw the grid if it is enabled
-    if (m_ShowGrid) {
+    if (m_ViewGridType != 0) {
       HPEN linepen = CreatePen(PS_SOLID, 1, RGB(255, 0, 255));
       HPEN oldpen = (HPEN)SelectObject(dc, linepen);
       for (int ix = 0; ix <= width; ++ix) {
-        MoveToEx(dc, offsetx + ix * size * tile_width, offsety, NULL);
-        LineTo  (dc, offsetx + ix * size * tile_width, offsety + height * size * tile_height);
+        MoveToEx(dc, offsetx + ((ix * grid_width) * size), offsety, NULL);
+        LineTo  (dc, offsetx + ((ix * grid_width) * size), offsety + ((height * grid_height) * size));
       }
       for (int iy = 0; iy <= height; ++iy) {
-        MoveToEx(dc, offsetx,                offsety + iy * size * tile_height, NULL);
-        LineTo  (dc, offsetx + width * size * tile_width, offsety + iy * size * tile_height);
+        MoveToEx(dc, offsetx,                offsety + ((iy * grid_height) * size), NULL);
+        LineTo  (dc, offsetx + ((width * grid_width) * size), offsety + ((iy  * grid_height) * size));
       }
       SelectObject(dc, oldpen);
       DeleteObject(linepen);
@@ -2895,8 +2906,14 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
     EnableMenuItem(menu, ID_MAPVIEW_ZONEEDIT,  MF_BYCOMMAND | MF_GRAYED);
   }
 
-  if (m_ShowGrid) {
-    CheckMenuItem(menu, ID_MAPVIEW_VIEWGRID, MF_BYCOMMAND | MF_CHECKED);
+  if (m_ViewGridType == 0) {
+    CheckMenuItem(menu, ID_MAPVIEW_VIEWGRIDNONE, MF_BYCOMMAND | MF_CHECKED);
+  }
+  else if (m_ViewGridType == 1) {
+    CheckMenuItem(menu, ID_MAPVIEW_VIEWGRIDTILE, MF_BYCOMMAND | MF_CHECKED);
+  }
+  else if (m_ViewGridType == 2) {
+    CheckMenuItem(menu, ID_MAPVIEW_VIEWGRIDSCREEN, MF_BYCOMMAND | MF_CHECKED);
   }
 
   if (m_ShowTileObstructions) {
@@ -3111,12 +3128,19 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
       //Invalidate();
       break;
 
-    case ID_MAPVIEW_VIEWGRID:
-      m_ShowGrid = !m_ShowGrid;
+    case ID_MAPVIEW_VIEWGRIDTILE:
+      m_ViewGridType = 1;
       m_RedrawWindow = 1;
       Invalidate();
       //m_Handler->MV_MapChanged();
       break;	  
+
+    case ID_MAPVIEW_VIEWGRIDSCREEN:
+      m_ViewGridType = 2;
+      m_RedrawWindow = 1;
+      Invalidate();
+      //m_Handler->MV_MapChanged();
+      break;
 
     case ID_MAPVIEW_VIEWTILEOBSTRUCTIONS:
       m_ShowTileObstructions = !m_ShowTileObstructions;
@@ -3164,18 +3188,19 @@ CMapView::OnHScrollChanged(int x)
 {
   // do the scrolling thing
   int old_x = m_CurrentX;
-  m_CurrentX = x;
   int new_x = x;
   CDC* dc_ = GetDC();
   HDC dc = dc_->m_hDC;
-
   HRGN region = CreateRectRgn(0, 0, 0, 0);
   int factor = m_ZoomFactor * m_Map->GetTileset().GetTileWidth();
+
+  m_CurrentX = x;
+
   ScrollDC(dc, (old_x - new_x) * factor, 0, NULL, NULL, region, NULL);
   ::InvalidateRgn(m_hWnd, region, FALSE);
   m_RedrawWindow = 1;
-  DeleteObject(region);
 
+  DeleteObject(region);
   ReleaseDC(dc_);
 }
 
@@ -3186,18 +3211,19 @@ CMapView::OnVScrollChanged(int y)
 {
   // do the scrolling thing
   int old_y = m_CurrentY;
-  m_CurrentY = y;
   int new_y = y;
   CDC* dc_ = GetDC();
   HDC dc = dc_->m_hDC;
-
   HRGN region = CreateRectRgn(0, 0, 0, 0);
   int factor = m_ZoomFactor * m_Map->GetTileset().GetTileHeight();
+
+  m_CurrentY = y;
+
   ScrollDC(dc, 0, (old_y - new_y) * factor, NULL, NULL, region, NULL);
   ::InvalidateRgn(m_hWnd, region, FALSE);
   m_RedrawWindow = 1;
-  DeleteObject(region);
 
+  DeleteObject(region);
   ReleaseDC(dc_);
 }
 
