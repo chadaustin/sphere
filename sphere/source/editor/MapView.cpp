@@ -1,3 +1,5 @@
+#pragma warning(disable : 4786)
+
 #include "MapView.hpp"
 #include "Editor.hpp"
 #include "EntityPersonDialog.hpp"

@@ -2,6 +2,10 @@
 #define TOOL_PALETTE_HPP
 
 
+#pragma warning(disable : 4786)
+
+
+#include <afxcmn.h>
 #include <vector>
 #include "PaletteWindow.hpp"
 
@@ -23,21 +27,21 @@ public:
 
   virtual void Destroy();
 
-  void AddTool(int icon_id);
+  void AddTool(int icon_id, const char* label);
 
 private:
   afx_msg void OnSize(UINT type, int cx, int cy);
   afx_msg void OnPaint();
 
+  afx_msg BOOL OnNeedText(UINT id, NMHDR* nmhdr, LRESULT* result);
   afx_msg void OnToolSelected(UINT id);
 
 private:
   IToolPaletteHandler* m_Handler;
-
   std::vector<CButton*> m_Buttons;
-
+  std::vector<std::string> m_Labels;
   int m_CurrentTool;
-
+  
   friend CMainWindow;
 
   DECLARE_MESSAGE_MAP()

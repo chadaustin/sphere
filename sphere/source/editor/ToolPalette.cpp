@@ -14,6 +14,8 @@ BEGIN_MESSAGE_MAP(CToolPalette, CPaletteWindow)
   ON_WM_SIZE()
   ON_WM_PAINT()
 
+  ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnNeedText)
+
   ON_COMMAND_RANGE(BUTTON_BASE, BUTTON_BASE + MAX_BUTTONS - 1, OnToolSelected)
 
 END_MESSAGE_MAP()
@@ -26,6 +28,7 @@ CToolPalette::CToolPalette(CDocumentWindow* owner, IToolPaletteHandler* handler,
 , m_Handler(handler)
 , m_CurrentTool(0)
 {
+  EnableToolTips();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -44,7 +47,7 @@ CToolPalette::Destroy()
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CToolPalette::AddTool(int icon_id)
+CToolPalette::AddTool(int icon_id, const char* label)
 {
   CButton* button = new CButton;
   button->Create("",
@@ -56,7 +59,10 @@ CToolPalette::AddTool(int icon_id)
     button->SetCheck(BST_CHECKED);
   }
 
+  CRect rect(0, 0, 0, 0);
+
   m_Buttons.push_back(button);
+  m_Labels.push_back(label);
 
   // make sure the tools are in the correct place now
   RECT cr;
@@ -75,7 +81,9 @@ CToolPalette::OnSize(UINT type, int cx, int cy)
   int iy = 0; // current y
 
   for (int i = 0; i < m_Buttons.size(); i++) {
-    m_Buttons[i]->MoveWindow(ix * TOOL_WIDTH, iy * TOOL_HEIGHT, TOOL_WIDTH, TOOL_HEIGHT, FALSE);
+    int x = ix * TOOL_WIDTH;
+    int y = iy * TOOL_HEIGHT;
+    m_Buttons[i]->MoveWindow(x, y, TOOL_WIDTH, TOOL_HEIGHT, FALSE);
     m_Buttons[i]->Invalidate();
 
     if (++ix >= nx) {
@@ -95,6 +103,27 @@ CToolPalette::OnPaint()
 
   CPaintDC dc(this);
   dc.FillRect(&cr, CBrush::FromHandle((HBRUSH)(COLOR_MENU + 1)));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg BOOL
+CToolPalette::OnNeedText(UINT /*id*/, NMHDR* hdr, LRESULT* result)
+{
+  TOOLTIPTEXT* ttt = (TOOLTIPTEXT*)hdr;
+  UINT id = hdr->idFrom;
+  if (ttt->uFlags & TTF_IDISHWND) {
+    id = ::GetDlgCtrlID((HWND)id);
+  }
+
+  if (id >= BUTTON_BASE && id < BUTTON_BASE + m_Labels.size()) {
+    ttt->lpszText = const_cast<char*>(m_Labels[id - BUTTON_BASE].c_str());
+  } else {
+    ttt->lpszText = "";
+  }
+
+  *result = 0;
+  return TRUE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

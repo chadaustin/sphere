@@ -11,17 +11,17 @@ CMapToolPalette::CMapToolPalette(CDocumentWindow* owner, IToolPaletteHandler* ha
   Configuration::Get(KEY_MAP_TOOLS_RECT),
   Configuration::Get(KEY_MAP_TOOLS_VISIBLE))
 {
-  AddTool(IDI_MAPTOOL_1X1);
-  AddTool(IDI_MAPTOOL_3X3);
-  AddTool(IDI_MAPTOOL_5X5);
-  AddTool(IDI_MAPTOOL_SELECTTILE);
-  AddTool(IDI_MAPTOOL_FILLAREA);
-  AddTool(IDI_MAPTOOL_COPYAREA);
-  AddTool(IDI_MAPTOOL_PASTE);
-  AddTool(IDI_MAPTOOL_COPYENTITY);
-  AddTool(IDI_MAPTOOL_PASTEENTITY);
-  AddTool(IDI_MAPTOOL_OBS_SEGMENT);
-  AddTool(IDI_MAPTOOL_OBS_DELETE);
+  AddTool(IDI_MAPTOOL_1X1,         "1x1");
+  AddTool(IDI_MAPTOOL_3X3,         "3x3");
+  AddTool(IDI_MAPTOOL_5X5,         "5x5");
+  AddTool(IDI_MAPTOOL_SELECTTILE,  "Select Tile");
+  AddTool(IDI_MAPTOOL_FILLAREA,    "Fill Area");
+  AddTool(IDI_MAPTOOL_COPYAREA,    "Copy Area");
+  AddTool(IDI_MAPTOOL_PASTE,       "Paste");
+  AddTool(IDI_MAPTOOL_COPYENTITY,  "Copy Entity");
+  AddTool(IDI_MAPTOOL_PASTEENTITY, "Paste Entity");
+  AddTool(IDI_MAPTOOL_OBS_SEGMENT, "Obstruction Segment");
+  AddTool(IDI_MAPTOOL_OBS_DELETE,  "Delete Obstruction Segment");
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,3 +1,5 @@
+#pragma warning(disable : 4786)
+
 #include "ImageView.hpp"
 #include "Editor.hpp"
 #include "../common/Filters.hpp"
