@@ -119,6 +119,10 @@ public:
   bool SetColorMask(RGBA color, int num_frames);
   bool SetDelayScript(int num_frames, const char* script);
 
+private:
+  inline bool IsKeyBound(int key);
+
+public:
   bool BindKey(int key, const char* on_key_down, const char* on_key_up);
   bool UnbindKey(int key);
   bool BindJoystickButton(int joystick, int button, const char* on_key_down, const char* on_key_up);

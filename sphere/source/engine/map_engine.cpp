@@ -997,6 +997,14 @@ CMapEngine::SetDelayScript(int num_frames, const char* script)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+inline bool
+CMapEngine::IsKeyBound(int key)
+{
+  return (m_BoundKeys.count(key) > 0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::BindKey(int key, const char* on_key_down, const char* on_key_up)
 {
@@ -4084,49 +4092,53 @@ CMapEngine::ProcessInput()
 
     int dx = 0;
     int dy = 0;
+    bool moved = false;
 
-    if (m_BoundKeys.count(KEY_UP)    == 0 && new_keys[KEY_UP])    dy--; 
-    if (m_BoundKeys.count(KEY_RIGHT) == 0 && new_keys[KEY_RIGHT]) dx++;
-    if (m_BoundKeys.count(KEY_DOWN)  == 0 && new_keys[KEY_DOWN])  dy++;
-    if (m_BoundKeys.count(KEY_LEFT)  == 0 && new_keys[KEY_LEFT])  dx--;
+    if (!IsKeyBound(KEY_UP)    && new_keys[KEY_UP])    dy--; 
+    if (!IsKeyBound(KEY_RIGHT) && new_keys[KEY_RIGHT]) dx++;
+    if (!IsKeyBound(KEY_DOWN)  && new_keys[KEY_DOWN])  dy++;
+    if (!IsKeyBound(KEY_LEFT)  && new_keys[KEY_LEFT])  dx--;
 
     if (GetNumJoysticks() > 0) {
       dx += __round__(GetJoystickX(0));
       dy += __round__(GetJoystickY(0));
     }
 
-    if (dy < 0) m_Persons[m_InputPerson].commands.push_back(Person::Command(COMMAND_MOVE_NORTH, true));
-    if (dx > 0) m_Persons[m_InputPerson].commands.push_back(Person::Command(COMMAND_MOVE_EAST,  true));
-    if (dy > 0) m_Persons[m_InputPerson].commands.push_back(Person::Command(COMMAND_MOVE_SOUTH, true));
-    if (dx < 0) m_Persons[m_InputPerson].commands.push_back(Person::Command(COMMAND_MOVE_WEST,  true));
+    if (dy < 0) { moved = true; m_Persons[m_InputPerson].commands.push_back(Person::Command(COMMAND_MOVE_NORTH, true)); }
+    if (dx > 0) { moved = true; m_Persons[m_InputPerson].commands.push_back(Person::Command(COMMAND_MOVE_EAST,  true)); }
+    if (dy > 0) { moved = true; m_Persons[m_InputPerson].commands.push_back(Person::Command(COMMAND_MOVE_SOUTH, true)); }
+    if (dx < 0) { moved = true; m_Persons[m_InputPerson].commands.push_back(Person::Command(COMMAND_MOVE_WEST,  true)); }
 
     // set the direction
-    int command = -1;
-    if (dx < 0) {
-      if (dy < 0) {
-        command = COMMAND_FACE_NORTHWEST;
-      } else if (dy > 0) {
-        command = COMMAND_FACE_SOUTHWEST;
+    if (moved) {
+      int command = -1;
+      if (dx < 0) {
+        if (dy < 0) {
+          command = COMMAND_FACE_NORTHWEST;
+        } else if (dy > 0) {
+          command = COMMAND_FACE_SOUTHWEST;
+        } else {
+          command = COMMAND_FACE_WEST;
+        }
+      } else if (dx > 0) {
+        if (dy < 0) {
+          command = COMMAND_FACE_NORTHEAST;
+        } else if (dy > 0) {
+          command = COMMAND_FACE_SOUTHEAST;
+        } else {
+          command = COMMAND_FACE_EAST;
+        }
       } else {
-        command = COMMAND_FACE_WEST;
+        if (dy < 0) {
+          command = COMMAND_FACE_NORTH;
+        } else if (dy > 0) {
+          command = COMMAND_FACE_SOUTH;
+        }
       }
-    } else if (dx > 0) {
-      if (dy < 0) {
-        command = COMMAND_FACE_NORTHEAST;
-      } else if (dy > 0) {
-        command = COMMAND_FACE_SOUTHEAST;
-      } else {
-        command = COMMAND_FACE_EAST;
-      }
-    } else {
-      if (dy < 0) {
-        command = COMMAND_FACE_NORTH;
-      } else if (dy > 0) {
-        command = COMMAND_FACE_SOUTH;
-      }
+
+      m_Persons[m_InputPerson].commands.push_back(Person::Command(command, false));
     }
 
-    m_Persons[m_InputPerson].commands.push_back(Person::Command(command, false));
 
   }  
 
@@ -4216,7 +4228,6 @@ CMapEngine::ProcessUnboundKeyDown(int key)
     case KEY_ESCAPE: {
       m_ShouldExit = true;
     } break;
-
 
     case KEY_F1: {
       m_ThrottleFPS = !m_ThrottleFPS;
