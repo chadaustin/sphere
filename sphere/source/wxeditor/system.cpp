@@ -2,17 +2,18 @@
 #include <windows.h>
 #endif
 
-#include <string>
-#include <vector>
-
 #ifndef WIN32
 #include <glob.h>
 #include <unistd.h>
+#endif
+
+#include "system.hpp"
 
 #ifndef MAX_PATH
 #define MAX_PATH 255
 #endif
 
+#ifndef WIN32
 bool SetCurrentDirectory(const char* directory)
 {
   return (chdir(directory) >= 0);
@@ -32,7 +33,6 @@ bool GetCurrentDirectory(int max_path, char* directory) {
 bool CreateDirectory(const char* directory, const char* options) {
   return false;
 }
-
 #endif
 
 std::vector<std::string> GetFileList(const char* filter)
@@ -64,3 +64,4 @@ std::vector<std::string> GetFileList(const char* filter)
 #endif
   return file_list;
 }
+

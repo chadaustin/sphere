@@ -219,41 +219,11 @@ static void DrawLayerButton(wxDC &dc, wxRect rect, const sLayer& layer, bool pus
   dc.SetTextForeground(*wxBLACK);
   dc.SetBackgroundMode(wxTRANSPARENT);
   dc.DrawText(layer.GetName(), rect.x + rect.height / 2 + 12, rect.y + rect.height / 2 - 8);
-/*
-  int y = (rect.bottom - rect.top) / 2;
-  int icon = (layer.IsVisible() ? IDI_LAYER_VISIBLE : IDI_LAYER_INVISIBLE);
-  DrawIconEx(
-    dc,
-    rect.left + y - 8,
-    rect.top + y - 8,
-    LoadIcon(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(icon)),
-    16,
-    16,
-    0,
-    NULL,
-    DI_NORMAL);
-
-  rect.left += 18;
-  SelectObject(dc, GetStockObject(DEFAULT_GUI_FONT));
-  SetTextColor(dc, 0x000000);
-  SetBkColor(dc, 0xFFFFFF);
-  SetBkMode(dc, TRANSPARENT);
- 
-  DrawText(dc, layer.GetName(), strlen(layer.GetName().c_str()), &rect, DT_CENTER | DT_VCENTER);
-
-*/
-  
-  // clean up
-/*
-  RestoreDC(dc, -1);
-  DeleteObject(very_light);
-  DeleteObject(light);
-  DeleteObject(dark);
-  DeleteObject(very_dark);
-*/
   dc.SetBrush(wxNullBrush);
   dc.SetPen(wxNullPen);
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 void
 wLayerView::OnPaint(wxPaintEvent &event)
@@ -312,7 +282,7 @@ wLayerView::OnLButtonUp(wxMouseEvent &event)
 {
   if(m_IsDragging) {
     m_IsDragging = false;
-    ReleaseMouse();
+    if (HasCapture())  ReleaseMouse();
   }
 }
 

@@ -174,7 +174,7 @@ wTileObstructionView::OnLButtonUp(wxMouseEvent &event)
   );
 
   m_mouse_down = false;
-  ReleaseMouse();
+  if (HasCapture()) ReleaseMouse();
 
   Refresh();
 }

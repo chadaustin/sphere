@@ -40,14 +40,14 @@
 #include "../common/Map.hpp"
 #include "../common/strcmp_ci.hpp"
 
+// system
+#include "system.hpp"
+
 // libraries
 // libraries are down here because of symbol conflicts with other headers
 #include <jsapi.h>
 #include <zlib.h>
 #include <libmng.h>
-
-// system
-#include "system.hpp"
 
 #include "icons/sph-game.xpm"
 

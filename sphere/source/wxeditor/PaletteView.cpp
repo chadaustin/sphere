@@ -202,7 +202,7 @@ void
 wPaletteView::OnLButtonUp(wxMouseEvent &event)
 {
   m_bMouseDown = false;
-  ReleaseMouse();
+  if (HasCapture()) ReleaseMouse();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

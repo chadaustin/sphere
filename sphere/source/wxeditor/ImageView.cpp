@@ -1077,7 +1077,7 @@ wImageView::OnLButtonUp(wxMouseEvent &event)
   }
 
   m_MouseDown = false;
-  ReleaseMouse();
+  if (HasCapture()) ReleaseMouse();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

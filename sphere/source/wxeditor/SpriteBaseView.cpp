@@ -315,7 +315,7 @@ wSpriteBaseView::OnLButtonUp(wxMouseEvent &event)
 {
   Drag(event.GetX(), event.GetY());
   m_MouseDown = false;
-  ReleaseMouse();
+  if (HasCapture()) ReleaseMouse();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

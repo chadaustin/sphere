@@ -130,7 +130,7 @@ CPaletteWindow::CPaletteWindow() {
   m_Owner = NULL;
 #ifdef USE_SIZECBAR
   m_pBarParent = NULL;
-  m_Name = name;
+  m_Name = "";
   m_PaletteNumber = 0;
 #endif
 }

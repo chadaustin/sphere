@@ -1728,10 +1728,8 @@ wMapView::OnLButtonUp(wxMouseEvent &event)
 */
   }
 
-  if (m_Clicked) {
-    m_Clicked = false;
-    ReleaseMouse();
-  }
+  m_Clicked = false;
+  if (HasCapture()) ReleaseMouse();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
