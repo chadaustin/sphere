@@ -218,25 +218,18 @@ void NegativeImage(int width, int height, RGBA* pixels) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void Solarize(int width, int height, int value, RGBA* pixels) {
-  int max = 255;
   int lut[256];
-  int i = max;
-  int size = width * height;
 
-  for (int j = 0; j <= max; ++j) {
+  int i = 255;
+  for (int j = 0; j < 256; ++j) {
     lut[j] = (j > value) ? (i) : j;
     i--;
   }
 
-  for (i = 0; i < size; i++) {
-    if (pixels[i].red >= 0 && pixels[i].red <= max)
-      pixels[i].red =   lut[pixels[i].red];
-
-    if (pixels[i].green >= 0 && pixels[i].green <= max)
-      pixels[i].green = lut[pixels[i].green];
-
-    if (pixels[i].blue >= 0 && pixels[i].blue <= max)
-      pixels[i].blue =  lut[pixels[i].blue];
+  for (i = 0; i < width * height; i++) {
+    pixels[i].red =   lut[pixels[i].red];
+    pixels[i].green = lut[pixels[i].green];
+    pixels[i].blue =  lut[pixels[i].blue];
   }
 }
 
