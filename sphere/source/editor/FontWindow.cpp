@@ -143,7 +143,6 @@ CFontWindow::Create()
   m_AlphaView.SetAlpha(m_CurrentColor.alpha);
 
   UpdateWindowTitle();
-  UpdateToolBars();
 	
 #ifdef USE_SIZECBAR
 		LoadPaletteStates();
@@ -513,19 +512,18 @@ CFontWindow::OnEditRange()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void
-CFontWindow::ImageToolBarChanged(UINT id)
+BOOL
+CFontWindow::IsToolCommandAvailable(UINT id)
 {
-  m_ImageView.OnToolChanged(id);
+  return m_ImageView.IsToolAvailable(id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CFontWindow::UpdateToolBars()
+CFontWindow::OnToolCommand(UINT id)
 {
-  AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_IMAGETOOLBAR, (WPARAM)this, (LPARAM)TRUE);
-  AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_MAPTOOLBAR,   (WPARAM)this, (LPARAM)FALSE);
+  m_ImageView.OnToolChanged(id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

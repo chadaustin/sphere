@@ -151,7 +151,7 @@ void Line(
 
   // other lines (diagonal)
   else {
-    
+
     float slope = float(y2 - y1) / (x2 - x1);
 
     clip_segment(x1, y1, x2, y2, slope,     clipper.left, clipper.right);  // x
@@ -186,7 +186,7 @@ void Line(
           cy -= slope;
         }
       }
-    
+
     } else {   // more vertical than horizontal...
 
       if (y1 < y2) {
@@ -202,7 +202,7 @@ void Line(
           cx -= 1 / slope;
         }
       }
-    
+
     }
   }
 
@@ -323,13 +323,13 @@ void Triangle(
     int min_y = maximum<int>(clipper.top, mid_y);
     int max_y = minimum<int>(clipper.bottom, bottom_y);
     for (int iy = min_y; iy < max_y; iy++) {
-      
+
       // calculate edges of scanline
       // calculate edges of scanline
       int right_round = max_y - min_y - 1;
       int left_x  = bottom_x + (mid_x1 - bottom_x) * (max_y - iy) / (max_y - min_y);
       int right_x = bottom_x + ((mid_x2 - bottom_x) * (max_y - iy) + right_round) / (max_y - min_y);
-      
+
       // clip edges of scanline
       left_x = maximum<int>(left_x, clipper.left);
       right_x = minimum<int>(right_x, clipper.right);
@@ -417,7 +417,7 @@ void GradientTriangle(
     int min_y = maximum<int>(clipper.top, top_y);
     int max_y = minimum<int>(clipper.bottom, mid_y);
     for (int iy = min_y; iy < max_y; iy++) {
-      
+
       // calculate edges of scanline
       int right_round = max_y - min_y - 1;
       int left_x  = top_x + (mid_x1 - top_x) * (iy - min_y) / (max_y - min_y);
@@ -608,7 +608,7 @@ void GradientRectangle(
     // calculate edges of scanline
     sourceT left  = interpolator(colors[0], colors[3], iy - o_y, o_h);
     sourceT right = interpolator(colors[1], colors[2], iy - o_y, o_h);
-    
+
     // draw scanline
     for (int ix = x; ix < x + w; ix++) {
       renderer(surface[iy * pitch + ix], interpolator(left, right, ix - o_x, o_w));
@@ -642,7 +642,7 @@ void TexturedQuad(
       bottom = i;
     }
   }
-  
+
   // perform clipping in the y axis
   int minY = bracket<int>(y[top],    clipper.top, clipper.bottom);
   int maxY = bracket<int>(y[bottom], clipper.top, clipper.bottom);
@@ -697,7 +697,7 @@ void TexturedQuad(
     int minX = clipper.right + 1;
     int maxX = clipper.left - 1;
 
-    // default values in case no 
+    // default values in case no
     int minU = 0;
     int minV = 0;
     int maxU = 0;
@@ -741,7 +741,7 @@ void TexturedQuad(
     int oldMaxX = maxX;
     minX = bracket<int>(minX, clipper.left, clipper.right);
     maxX = bracket<int>(maxX, clipper.left, clipper.right);
-   
+
     // render the scanline pixels
     if (minX == maxX) {
 
@@ -790,7 +790,7 @@ void Blit(
     image_offset_y = (clipper.top - y);
     image_blit_height -= image_offset_y;
   }
-  
+
   if (x + (int)tex_width - 1 > clipper.right) {
     image_blit_width -= (x + tex_width - clipper.right - 1);
   }

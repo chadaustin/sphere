@@ -428,10 +428,13 @@ CGameEngine::OpenLog(const char* filename)
 
   // open the log
   CLog* log = new CLog;
-  if (log->Open(path.c_str()) == false) {
-    delete log;
-    return NULL;
+  if (log) {
+    if (log->Open(path.c_str()) == false) {
+      delete log;
+      return NULL;
+    }
   }
+
   return log;
 }
 

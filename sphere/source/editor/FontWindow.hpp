@@ -25,8 +25,8 @@ public:
   ~CFontWindow();
 
 private:
-  void ImageToolBarChanged(UINT id);
-  void UpdateToolBars();
+  void OnToolCommand(UINT id);
+  BOOL IsToolCommandAvailable(UINT id);
 
 private:
   void Create();
