@@ -70,23 +70,28 @@ bool SwitchResolution (int x, int y, bool fullscreen) {
   if (!initialized) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
+	 SDL_WM_SetCaption("sphere 0.93a", NULL);
   } else {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
     if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
+	 /* FIXME: the title of the game or something should be set here instead */
+	 SDL_WM_SetCaption("sphere 0.93a", NULL);
   }
   if (fullscreen)
-	 screen = SDL_SetVideoMode(x, y, 32, SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_FULLSCREEN);
+	 screen = SDL_SetVideoMode(x, y, 32, SDL_DOUBLEBUF | SDL_FULLSCREEN);
   else
-    screen = SDL_SetVideoMode(x, y, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
+    screen = SDL_SetVideoMode(x, y, 32, SDL_DOUBLEBUF);
   if (screen == NULL)
     return false;
+  /* screen = SDL_CreateRGBSurface(0, real_screen->w, real_screen->h, 32, 0, 0, 0, 0);
+  SDL_ConvertSurface(screen, real_screen->format, 0); */
   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
   FPSDisplayed = false;
   initialized = true;
-  SetClippingRectangle(0, 0, screen->w, screen->h);
   ScreenWidth = screen->w;
   ScreenHeight = screen->h;
+  SetClippingRectangle(0, 0, screen->w, screen->h);
   return true;
 }
 
@@ -225,6 +230,9 @@ void FlipScreen () {
   if (NumFlips++ % 8 == 0);
     RefreshInput();
   SDL_Flip(screen);
+  /* SDL_Rect dest = {0, 0, 0, 0};
+  SDL_BlitSurface(screen, NULL, real_screen, &dest);
+  SDL_UpdateRect(real_screen, 0, 0, ScreenWidth, ScreenHeight); */
 }
 
 IMAGE CreateImage(int width, int height, const RGBA* pixels) {
