@@ -26,7 +26,6 @@ extern RECT      ClippingRectangle;
 
 extern void GetDriverConfigFile(char* config_file);
 
-
 #define calculate_clipping_metrics(width, height)                    \
   int image_offset_x = 0;                                            \
   int image_offset_y = 0;                                            \

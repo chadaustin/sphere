@@ -52,6 +52,8 @@ CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
 , m_InputPerson(-1)
 , m_TouchActivationAllowed(true)
 , m_TalkActivationAllowed(true)
+, m_IsTouching(false)
+, m_IsTalking(false)
 , m_IsCameraAttached(false)
 , m_CameraPerson(-1)
 
@@ -4071,7 +4073,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
       // and if a person caused the obstruction
       // and if the activation function has not already
       if (obs_person != -1) {
-        if (m_TouchActivationAllowed) {
+        if (m_TouchActivationAllowed && !m_IsTouching) {
 
           IEngine::script script = m_Persons[obs_person].script_activate_touch;
 
@@ -4084,13 +4086,16 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
             const std::string person_name = m_Persons[person_index].name;
 
             std::string error;
+            m_IsTouching = true;
             if (!ExecuteScript(script, error) || !error.empty()) {
               m_ErrorMessage = "Error executing person activation (touch) script\n"
                 "Person:"
                 + p->description +
                 "\nError:" + error;
+              m_IsTouching = false;
               return false;
             }
+            m_IsTouching = false;
 
             m_CurrentPerson = old_person;
             ResetNextFrame();
@@ -4206,7 +4211,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
         if (obs_person != -1) {
 
           activated = true;
-          if (m_TalkActivationAllowed) {
+          if (m_TalkActivationAllowed && !m_IsTalking) {
 
             IEngine::script s = m_Persons[obs_person].script_activate_talk;
             if (s) {
@@ -4217,12 +4222,15 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
               const std::string person_name = m_Persons[person_index].name;
 
               std::string error;
+              m_IsTalking = true;
               if (!ExecuteScript(s, error)) {
                 m_ErrorMessage = "Error executing person activation (talk) script\n"
                   "Person:" + p->description +
                   "\nError:" + error;
+                m_IsTalking = false;
                 return false;
               }
+              m_IsTalking = false;
 
               m_CurrentPerson = old_person;
               ResetNextFrame();

@@ -301,6 +301,7 @@ bool InitFullscreen()
   }
 
   ShowCursor(FALSE);
+  SetWindowPos(SphereWindow, HWND_TOPMOST, 0, 0, ScreenWidth, ScreenHeight, SWP_SHOWWINDOW);
 
   return true;
 }
@@ -454,25 +455,7 @@ bool InitWindowed()
   }
 
   SelectObject(RenderDC, RenderBitmap);
-
-  // center the window
-  RECT WindowRect = { 0, 0, ScreenWidth, ScreenHeight };
-  AdjustWindowRectEx(
-    &WindowRect,
-    GetWindowLong(SphereWindow, GWL_STYLE),
-    (GetMenu(SphereWindow) ? TRUE : FALSE),
-    GetWindowLong(SphereWindow, GWL_EXSTYLE));
-
-  int window_width  = WindowRect.right - WindowRect.left;
-  int window_height = WindowRect.bottom - WindowRect.top;
-
-  MoveWindow(
-    SphereWindow,
-    (GetSystemMetrics(SM_CXSCREEN) - window_width) / 2,
-    (GetSystemMetrics(SM_CYSCREEN) - window_height) / 2,
-    window_width,
-    window_height,
-    TRUE);
+  CenterWindow(SphereWindow, ScreenWidth, ScreenHeight);
 
   return true;
 }

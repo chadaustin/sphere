@@ -300,19 +300,7 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
   }
     
   if (!fullscreen) {
-    const int screenwidth = GetSystemMetrics(SM_CXSCREEN);
-    const int screenheight = GetSystemMetrics(SM_CYSCREEN);
-
-    RECT rect = { 0, 0, ScreenWidth * SCALE(), ScreenHeight * SCALE() };
-    DWORD style = GetWindowLong(SphereWindow, GWL_STYLE);
-    DWORD exstyle = GetWindowLong(SphereWindow, GWL_EXSTYLE);
-    AdjustWindowRectEx(&rect, style, (GetMenu(SphereWindow) ? TRUE : FALSE), exstyle);
-    int winwidth = rect.right - rect.left;
-    int winheight = rect.bottom - rect.top;
-    SetWindowPos(SphereWindow, HWND_TOP,
-      (screenwidth - winwidth) / 2,
-      (screenheight - winheight) / 2,
-       winwidth, winheight, SWP_SHOWWINDOW);
+    CenterWindow(SphereWindow, ScreenWidth * SCALE(), ScreenHeight * SCALE());
   } else {
     // set fullscreen mode
     DEVMODE dm;

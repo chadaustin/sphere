@@ -442,6 +442,8 @@ private:
   int  m_InputPerson;
   bool m_TouchActivationAllowed;
   bool m_TalkActivationAllowed;
+  bool m_IsTouching;
+  bool m_IsTalking;
 
   std::vector<int> m_InputPersons;
 
