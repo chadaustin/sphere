@@ -416,9 +416,39 @@ CScriptWindow::OnPosChanged(NMHDR* nmhdr, LRESULT* result) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/*
+static const char* sFunctionDefinitions[] = {
+  "IsKeyPressed(key)",
+  "GetTile(x, y, layer)",
+  "MapEngine(map, fps)",
+  "CreatePerson(name, spriteset, destroy_with_map)"
+};
+*/
+
 afx_msg void
 CScriptWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
+
   SCNotification* notify = (SCNotification*)nmhdr;
+/*
+  static char string[100] = {0};
+  if (strlen(string) < 100)
+    string[strlen(string)] = notify->ch;
+
+  int match = -1;
+
+  for (int i = 0; i < 4; i++) {
+    if (strstr(sFunctionDefinitions[i], string) != NULL)
+      match = i;
+  }
+
+  if (match != -1)
+    SendEditor(SCI_CALLTIPSHOW, 0, (LPARAM)sFunctionDefinitions[match]);
+  else {
+    SendEditor(SCI_CALLTIPCANCEL);
+    memset(string, 0, 100);
+  }
+*/
+
   if (notify->ch == '\n') {
     int pos = SendEditor(SCI_GETCURRENTPOS);
     int line = SendEditor(SCI_LINEFROMPOSITION, pos);

@@ -3393,6 +3393,11 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
           return false;
         }
 
+        // the script may have destroyed the person, so check to see that the person still exists
+        if (FindPerson(m_CurrentPerson.c_str()) != person_index) {
+          return true;
+        }
+
         m_CurrentPerson = old_person;
       }
 
@@ -3412,7 +3417,9 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
       }
 
     } // end (if command queue is empty)
-    
+
+    char debug_string[200] = {0};
+    sprintf (debug_string, "%d %s", p.commands.size(), p.name.c_str());    
     
     // read the top command
     Person::Command c = p.commands.front();
@@ -3510,7 +3517,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
             m_CurrentPerson = m_Persons[obs_person].name;
 
             std::string error;
-            if (!ExecuteScript(script, error)) {
+            if (!ExecuteScript(script, error) || !error.empty()) {
               m_ErrorMessage = "Error executing person activation (touch) script\n"
                 "Person:"
                 + p.description +

@@ -1552,7 +1552,7 @@ CMainWindow::OnProjectRunSphere()
   strcat(szCommandLine, m_Project.GetDirectory());
   strcat(szCommandLine, "\"");
 
-  if (false) {
+  if (true) {
     char filename[MAX_PATH];
     memset(filename, 0, MAX_PATH);
 

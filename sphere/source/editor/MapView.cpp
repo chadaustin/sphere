@@ -2234,8 +2234,13 @@ CMapView::OnLButtonUp(UINT flags, CPoint point)
         int tx = m_CurrentX + (point.x / m_Map->GetTileset().GetTileWidth() / m_ZoomFactor);
         int ty = m_CurrentY + (point.y / m_Map->GetTileset().GetTileHeight() / m_ZoomFactor);
 
-        m_Map->GetEntity(m_MoveIndex).x = tx * tile_width;
-        m_Map->GetEntity(m_MoveIndex).y = ty * tile_height;
+        // convert tile coordinates to pixel coordinates
+        int px = tx * tile_width + (tile_width - 1) / 2;
+        int py = ty * tile_height + (tile_height - 1) / 2;
+
+        m_Map->GetEntity(m_MoveIndex).x = px;
+        m_Map->GetEntity(m_MoveIndex).y = py;
+
         m_MoveIndex = -1;
         Invalidate();
         m_Handler->MV_MapChanged();
