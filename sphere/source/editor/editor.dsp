@@ -1074,5 +1074,9 @@ SOURCE=..\common\WindowStyle.cpp
 SOURCE=..\common\WindowStyle.hpp
 # End Source File
 # End Group
+# Begin Source File
+
+SOURCE=.\resources\maptool_obs_move_pt.ico
+# End Source File
 # End Target
 # End Project
