@@ -117,7 +117,7 @@ ProjectFrame::~ProjectFrame(){
                                   "All files|*.*");
     wxFileDialog *OpenFileDialog = new wxFileDialog(this, "Open Project", "", "", proj_file_types, wxOPEN, wxDefaultPosition);
     if (OpenFileDialog->ShowModal() == wxID_OK){
-      m_GameFile = dialog_openfile->GetFilename();
+      m_GameFile = OpenFileDialog->GetFilename();
       CConfigFile config(m_GameFile);
       // ... do something with that filename
       
