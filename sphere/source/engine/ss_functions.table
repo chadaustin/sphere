@@ -185,6 +185,10 @@ SS_FUNCTION(OpenLog, 1)
   SS_FUNCTION(LoadSpriteset, 1)
   //spriteset.images
   //spriteset.directions
+  //spriteset.base.x1
+  //spriteset.base.y1
+  //spriteset.base.x2
+  //spriteset.base.y2
   
   // sounds
   SS_FUNCTION(LoadSound, 1)

@@ -71,10 +71,7 @@ bool EnterDirectory(const char* directory)
   DirectoryStackSize++;
 
   // set the new directory
-  if (SetCurrentDirectory(directory))
-    return true;
-  else
-    return false;
+  return (SetCurrentDirectory(directory) != 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

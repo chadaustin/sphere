@@ -44,10 +44,8 @@ static std::string       s_ScriptDirectory;
 void RunSphere(int argc, const char** argv)
 {
   // populate the game list
-  /* EnterDirectory("games");
- <-- bug */  GetGameList(s_GameList);
-  /* LeaveDirectory();
- <-- bug */
+  GetGameList(s_GameList);
+
   // load system objects (and store script directory)
   LoadSystemObjects();
 

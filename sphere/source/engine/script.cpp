@@ -2767,6 +2767,12 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
   };
 
+  static JSClass base_clasp = {
+    "base", 0,
+    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+    JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
+  };
+
 
   JSObject* local_roots = JS_NewArrayObject(cx, 0, 0);
   JS_AddRoot(cx, &local_roots);
@@ -2853,6 +2859,20 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
     JS_SetElement(cx, direction_array, i, &val);
   }
 
+
+  // DEFINE BASE OBJECT
+
+  JSObject* base_object = JS_NewObject(cx, &base_clasp, NULL, NULL);
+  jsval base_val = OBJECT_TO_JSVAL(base_object);
+  JS_SetElement(cx, local_roots, 3, &base_val);
+
+  int x1, y1, x2, y2;
+  spriteset->GetSpriteset().GetBase(x1, y1, x2, y2);
+  JS_DefineProperty(cx, base_object, "x1", INT_TO_JSVAL(x1), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+  JS_DefineProperty(cx, base_object, "y1", INT_TO_JSVAL(y1), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+  JS_DefineProperty(cx, base_object, "x2", INT_TO_JSVAL(x2), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+  JS_DefineProperty(cx, base_object, "y2", INT_TO_JSVAL(y2), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
   
   // define the properties for this object
   JS_DefineProperty(
@@ -2862,8 +2882,7 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
     OBJECT_TO_JSVAL(image_array),
     JS_PropertyStub,
     JS_PropertyStub,
-    JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT
-  );
+    JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
 
   JS_DefineProperty(
     cx,
@@ -2872,8 +2891,16 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
     OBJECT_TO_JSVAL(direction_array),
     JS_PropertyStub,
     JS_PropertyStub,
-    JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT
-  );
+    JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+  JS_DefineProperty(
+    cx,
+    object,
+    "base",
+    OBJECT_TO_JSVAL(base_object),
+    JS_PropertyStub,
+    JS_PropertyStub,
+    JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
 
   // attach the spriteset to this object
   
