@@ -278,9 +278,9 @@ CImage32::ApplyColorFX(int x1, int y1, int w, int h, const CColorMatrix &c)
   for(y = y1; y < y2; y++) {
     for(x = x1, i = y * m_Width + x1; x < x2; x++, i++) {
       pixel = m_Pixels[i];
-      pixeld.red   = std::max(0, std::min(255, c.rn + ((pixel.red * c.rr + pixel.green * c.rg + pixel.blue * c.rb) >> 8)));
-      pixeld.green = std::max(0, std::min(255, c.gn + ((pixel.red * c.gr + pixel.green * c.gg + pixel.blue * c.gb) >> 8)));
-      pixeld.blue  = std::max(0, std::min(255, c.bn + ((pixel.red * c.br + pixel.green * c.bg + pixel.blue * c.bb) >> 8)));
+      pixeld.red   = std::max(0, std::min(255, c.rn + ((pixel.red * c.rr + pixel.green * c.rg + pixel.blue * c.rb) / 255)));
+      pixeld.green = std::max(0, std::min(255, c.gn + ((pixel.red * c.gr + pixel.green * c.gg + pixel.blue * c.gb) / 255)));
+      pixeld.blue  = std::max(0, std::min(255, c.bn + ((pixel.red * c.br + pixel.green * c.bg + pixel.blue * c.bb) / 255)));
       pixeld.alpha = pixel.alpha;
       m_Pixels[i] = pixeld;
     }

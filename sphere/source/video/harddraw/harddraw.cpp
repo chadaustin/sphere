@@ -292,13 +292,16 @@ EXPORT(bool) ToggleFullScreen()
 
 bool SetDisplayMode()
 {
+  CLOG("+SetDisplayMode");
   HRESULT ddrval;
+  HRESULT result;
 
   BitsPerPixel = 0;
 
   switch (Configuration.bit_depth)
   {
     case BD_32_24:
+      CLOG("+BD_32_24");
       ddrval = dd->SetDisplayMode(ScreenWidth, ScreenHeight, 32);
       if (ddrval == DD_OK) {
         BitsPerPixel = 32;
@@ -308,16 +311,20 @@ bool SetDisplayMode()
           BitsPerPixel = 32;
         }
       }
-      return ddrval == DD_OK;
+
+      result = (ddrval == DD_OK);
+      CLOG("-BD_32_24");
+    break;
 
     case BD_16_15:
+      CLOG("+BD_16_15");
       ddrval = dd->SetDisplayMode(ScreenWidth, ScreenHeight, 16);
       if (ddrval == DD_OK) {
         // determine bits per pixel from pixel mask
         DDPIXELFORMAT ddpf;
         ddpf.dwSize = sizeof(ddpf);
         ddpf.dwFlags = DDPF_RGB;
-        HRESULT result = ddPrimary->GetPixelFormat(&ddpf);
+        result = ddPrimary->GetPixelFormat(&ddpf);
         if (result == DD_OK) {
           // 5:6:5 -- F800 07E0 001F
           // 5:5:5 -- 7C00 03E0 001F
@@ -326,19 +333,27 @@ bool SetDisplayMode()
             BitsPerPixel = 16;
           else if (ddpf.dwRBitMask == 0x7C00)
             BitsPerPixel = 15;
+
         }
       }
-      return ddrval == DD_OK;
+
+      result = (ddrval == DD_OK);
+      CLOG("-BD_16_15");
+    break;
 
     default:
-      return false;
+      result = false;
   }
+
+  CLOG("-SetDisplayMode");
+  return result ? true : false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 bool CreateSurfaces()
 {
+  CLOG("+CreateSurfaces");
   // define the surface
   DDSURFACEDESC ddsd;
   ddsd.dwSize            = sizeof(ddsd);
@@ -359,6 +374,7 @@ bool CreateSurfaces()
     return false;
   }
 
+  CLOG("-CreateSurfaces");
   return true;
 }
 
@@ -366,12 +382,14 @@ bool CreateSurfaces()
 
 EXPORT(bool) CloseVideoDriver()
 {
+  CLOG("+CloseVideoDriver");
   SetWindowLong(SphereWindow, GWL_STYLE,   OldWindowStyle);
   SetWindowLong(SphereWindow, GWL_EXSTYLE, OldWindowStyleEx);
 
   ShowCursor(TRUE);
 
   dd->Release();
+  CLOG("-CloseVideoDriver");
   return true;
 }
 
@@ -1286,12 +1304,25 @@ inline void copyBGRA(BGRA& dest, RGBA src) {
   dest.alpha = src.alpha;
 }
 
+inline void copyBGRA565(word& dest, RGBA src) {
+  RGBA d = Unpack565(dest);
+  d.red = src.red;
+  d.green = src.green;
+  d.blue = src.blue;
+  d.alpha = src.alpha;
+  dest = Pack565(d);
+}
+
+inline void blendBGRA565(word& dest, RGBA src) {
+  RGBA d = Unpack565(dest);
+  Blend3(d, src, src.alpha);
+  dest = Pack565(d);
+}
+
 inline void BlendRGBAtoBGRA(BGRA& d, RGBA src, RGBA alpha)
 {
   Blend3(d, src, alpha.alpha);
 }
-
-// todo: make these do something...
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1367,6 +1398,8 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask) {
   if ( GetLockedSurface(&ddsd) == false)
     return;
 
+  CLOG("+BlitImageMask");
+
   if (BitsPerPixel == 32) {
     BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
     primitives::Blit(
@@ -1385,6 +1418,7 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask) {
   }
 
   ddSecondary->Unlock(NULL);  
+  CLOG("-BlitImageMask");
 }
 
 EXPORT(void) DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels) {
@@ -1573,6 +1607,8 @@ EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color) {
     return;
   } else {
 
+  void* screen_buffer = NULL;
+
   // lock backbuffer
   DDSURFACEDESC ddsd;
   if ( GetLockedSurface(&ddsd) == false)
@@ -1580,9 +1616,15 @@ EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color) {
 
     switch (BitsPerPixel) {
       case 32:
-        BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+        screen_buffer = (BGRA*)ddsd.lpSurface;
         primitives::Rectangle((BGRA*)screen_buffer, ScreenWidth, x, y, w, h, color, ClippingRectangle, (color.alpha == 255 ? copyBGRA : blendBGRA));
       break;
+
+      case 16:
+        screen_buffer = (word*)ddsd.lpSurface;
+        primitives::Rectangle((word*)screen_buffer, ScreenWidth, x, y, w, h, color, ClippingRectangle, (color.alpha == 255 ? copyBGRA565 : blendBGRA565));
+      break;
+
     }
 
   }
