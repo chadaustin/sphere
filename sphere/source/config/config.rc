@@ -81,6 +81,16 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
 END
 
+IDD_NETWORK_PAGE DIALOG DISCARDABLE  0, 0, 212, 181
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Network"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Allowed to connect to the internet?",
+                    IDC_ALLOW_NETWORKING,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,18,28,179,21
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -107,6 +117,14 @@ BEGIN
     END
 
     IDD_INPUT_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 174
+    END
+
+    IDD_NETWORK_PAGE, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 205

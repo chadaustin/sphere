@@ -1227,10 +1227,268 @@ CImage32::TransformBlitImage(CImage32& image, int x[4], int y[4])
 
 ////////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////
+
+template<typename pixelT>
+class blendRenderer_render_pixel_mask
+{
+public:
+  blendRenderer_render_pixel_mask(RGBA mask) : m_mask(mask) { }
+  void operator()(pixelT& dst, pixelT src, pixelT __alpha__)
+  {
+    byte alpha = __alpha__.alpha;
+
+    // do the masking on the source pixel
+#ifdef USE_ALPHA_TABLE
+    alpha     = alpha_new[m_mask.alpha][alpha];
+    src.red   = alpha_new[m_mask.red][src.red];
+    src.green = alpha_new[m_mask.green][src.green];
+    src.blue  = alpha_new[m_mask.blue][src.blue];
+#else
+    alpha     = (int)alpha     * m_mask.alpha / 255;
+    src.red   = (int)src.red   * m_mask.red   / 255;
+    src.green = (int)src.green * m_mask.green / 255;
+    src.blue  = (int)src.blue  * m_mask.blue  / 255;
+#endif
+
+    // blit to the dest pixel
+    __alpha__.alpha = alpha;
+    blendRenderer(dst, src, __alpha__);
+  }
+
+private:
+  RGBA m_mask;
+};
+
+///////////////////////////////////////////////////////////
+
+template<typename pixelT>
+class replaceRenderer_render_pixel_mask
+{
+public:
+  replaceRenderer_render_pixel_mask(RGBA mask) : m_mask(mask) { }
+  void operator()(pixelT& dst, pixelT src, pixelT __alpha__)
+  {
+    byte alpha = __alpha__.alpha;
+
+    // do the masking on the source pixel
+#ifdef USE_ALPHA_TABLE
+    alpha     = alpha_new[m_mask.alpha][alpha];
+    src.red   = alpha_new[m_mask.red][src.red];
+    src.green = alpha_new[m_mask.green][src.green];
+    src.blue  = alpha_new[m_mask.blue][src.blue];
+#else
+    alpha     = (int)alpha     * m_mask.alpha / 255;
+    src.red   = (int)src.red   * m_mask.red   / 255;
+    src.green = (int)src.green * m_mask.green / 255;
+    src.blue  = (int)src.blue  * m_mask.blue  / 255;
+#endif
+
+    // blit to the dest pixel
+    __alpha__.alpha = alpha;
+    replaceRenderer(dst, src, __alpha__);
+  }
+
+private:
+  RGBA m_mask;
+};
+
+///////////////////////////////////////////////////////////
+
+template<typename pixelT>
+class rgbRenderer_render_pixel_mask
+{
+public:
+  rgbRenderer_render_pixel_mask(RGBA mask) : m_mask(mask) { }
+  void operator()(pixelT& dst, pixelT src, pixelT __alpha__)
+  {
+    byte alpha = __alpha__.alpha;
+
+    // do the masking on the source pixel
+#ifdef USE_ALPHA_TABLE
+    alpha     = alpha_new[m_mask.alpha][alpha];
+    src.red   = alpha_new[m_mask.red][src.red];
+    src.green = alpha_new[m_mask.green][src.green];
+    src.blue  = alpha_new[m_mask.blue][src.blue];
+#else
+    alpha     = (int)alpha     * m_mask.alpha / 256;
+    src.red   = (int)src.red   * m_mask.red   / 256;
+    src.green = (int)src.green * m_mask.green / 256;
+    src.blue  = (int)src.blue  * m_mask.blue  / 256;
+#endif
+
+    // blit to the dest pixel
+    __alpha__.alpha = alpha;
+    rgbRenderer(dst, src, __alpha__);
+  }
+
+private:
+  RGBA m_mask;
+};
+
+///////////////////////////////////////////////////////////
+
+template<typename pixelT>
+class alphaRenderer_render_pixel_mask
+{
+public:
+  alphaRenderer_render_pixel_mask(RGBA mask) : m_mask(mask) { }
+  void operator()(pixelT& dst, pixelT src, pixelT __alpha__)
+  {
+    byte alpha = __alpha__.alpha;
+
+    // do the masking on the source pixel
+#ifdef USE_ALPHA_TABLE
+    alpha     = alpha_new[m_mask.alpha][alpha];
+    src.red   = alpha_new[m_mask.red][src.red];
+    src.green = alpha_new[m_mask.green][src.green];
+    src.blue  = alpha_new[m_mask.blue][src.blue];
+#else
+    alpha     = (int)alpha     * m_mask.alpha / 255;
+    src.red   = (int)src.red   * m_mask.red   / 255;
+    src.green = (int)src.green * m_mask.green / 255;
+    src.blue  = (int)src.blue  * m_mask.blue  / 255;
+#endif
+
+    // blit to the dest pixel
+    __alpha__.alpha = alpha;
+    alphaRenderer(dst, src, __alpha__);
+  }
+
+private:
+  RGBA m_mask;
+};
+
+///////////////////////////////////////////////////////////
+
+template<typename pixelT>
+class additiveRenderer_render_pixel_mask
+{
+public:
+  additiveRenderer_render_pixel_mask(RGBA mask) : m_mask(mask) { }
+  void operator()(pixelT& dst, pixelT src, pixelT __alpha__)
+  {
+    byte alpha = __alpha__.alpha;
+
+    // do the masking on the source pixel
+#ifdef USE_ALPHA_TABLE
+    alpha     = alpha_new[m_mask.alpha][alpha];
+    src.red   = alpha_new[m_mask.red][src.red];
+    src.green = alpha_new[m_mask.green][src.green];
+    src.blue  = alpha_new[m_mask.blue][src.blue];
+#else
+    alpha     = (int)alpha     * m_mask.alpha / 255;
+    src.red   = (int)src.red   * m_mask.red   / 255;
+    src.green = (int)src.green * m_mask.green / 255;
+    src.blue  = (int)src.blue  * m_mask.blue  / 255;
+#endif
+
+    // blit to the dest pixel
+    __alpha__.alpha = alpha;
+    additiveRenderer(dst, src, __alpha__);
+  }
+
+private:
+  RGBA m_mask;
+};
+
+///////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
+
+
 void
 CImage32::BlitImageMask(CImage32& image, int x, int y, RGBA mask)
 {
-  BlitImage(image, x, y);
+  if (mask.red == 255 && mask.green == 255 && mask.blue == 255 && mask.alpha == 255) {
+    BlitImage(image, x, y);
+    return;
+  }
+
+  clipper clip = {
+    0, 0, m_Width - 1, m_Height - 1
+  };
+
+  switch (m_BlendMode) {
+    case REPLACE:
+      primitives::Blit(
+        m_Pixels,
+        m_Width,
+        x,
+        y,
+        image.GetPixels(),
+        image.GetPixels(),
+        image.GetWidth(),
+        image.GetHeight(),
+        clip,
+        replaceRenderer_render_pixel_mask<RGBA>(mask)
+     );
+    break;
+
+    case BLEND:
+      primitives::Blit(
+        m_Pixels,
+        m_Width,
+        x,
+        y,
+        image.GetPixels(),
+        image.GetPixels(),
+        image.GetWidth(),
+        image.GetHeight(),
+        clip,
+        blendRenderer_render_pixel_mask<RGBA>(mask)
+     );
+    break;
+
+    case RGB_ONLY:
+      primitives::Blit(
+        m_Pixels,
+        m_Width,
+        x,
+        y,
+        image.GetPixels(),
+        image.GetPixels(),
+        image.GetWidth(),
+        image.GetHeight(),
+        clip,
+        rgbRenderer_render_pixel_mask<RGBA>(mask)
+     );
+    break;
+
+    case ALPHA_ONLY:
+      primitives::Blit(
+        m_Pixels,
+        m_Width,
+        x,
+        y,
+        image.GetPixels(),
+        image.GetPixels(),
+        image.GetWidth(),
+        image.GetHeight(),
+        clip,
+        alphaRenderer_render_pixel_mask<RGBA>(mask)
+     );
+    break;
+
+    case ADDITIVE:
+      primitives::Blit(
+        m_Pixels,
+        m_Width,
+        x,
+        y,
+        image.GetPixels(),
+        image.GetPixels(),
+        image.GetWidth(),
+        image.GetHeight(),
+        clip,
+        additiveRenderer_render_pixel_mask<RGBA>(mask)
+     );
+    break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1238,7 +1496,87 @@ CImage32::BlitImageMask(CImage32& image, int x, int y, RGBA mask)
 void
 CImage32::TransformBlitImageMask(CImage32& image, int x[4], int y[4], RGBA mask)
 {
-  TransformBlitImage(image, x, y);
+  clipper clip = {
+    0, 0, m_Width - 1, m_Height - 1
+  };
+
+  switch (m_BlendMode) {
+    case REPLACE:
+      primitives::TexturedQuad(
+        m_Pixels,
+        m_Width,
+        x,
+        y,
+        image.GetPixels(),
+        image.GetPixels(),
+        image.GetWidth(),
+        image.GetHeight(),
+        clip,
+        replaceRenderer_render_pixel_mask<RGBA>(mask)
+      );
+    break;
+
+    case BLEND:
+      primitives::TexturedQuad(
+        m_Pixels,
+        m_Width,
+        x,
+        y,
+        image.GetPixels(),
+        image.GetPixels(),
+        image.GetWidth(),
+        image.GetHeight(),
+        clip,
+        blendRenderer_render_pixel_mask<RGBA>(mask)
+      );
+    break;
+
+    case RGB_ONLY:
+      primitives::TexturedQuad(
+        m_Pixels,
+        m_Width,
+        x,
+        y,
+        image.GetPixels(),
+        image.GetPixels(),
+        image.GetWidth(),
+        image.GetHeight(),
+        clip,
+        rgbRenderer_render_pixel_mask<RGBA>(mask)
+      );
+      break;
+
+    case ALPHA_ONLY:
+      primitives::TexturedQuad(
+        m_Pixels,
+        m_Width,
+        x,
+        y,
+        image.GetPixels(),
+        image.GetPixels(),
+        image.GetWidth(),
+        image.GetHeight(),
+        clip,
+        alphaRenderer_render_pixel_mask<RGBA>(mask)
+      );
+    break;
+
+
+    case ADDITIVE:
+      primitives::TexturedQuad(
+        m_Pixels,
+        m_Width,
+        x,
+        y,
+        image.GetPixels(),
+        image.GetPixels(),
+        image.GetWidth(),
+        image.GetHeight(),
+        clip,
+        additiveRenderer_render_pixel_mask<RGBA>(mask)
+      );
+    break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

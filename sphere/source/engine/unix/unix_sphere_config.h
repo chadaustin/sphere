@@ -23,6 +23,9 @@ struct SPHERECONFIG
   // audio
   int sound;
 
+  // network
+  bool allow_networking;
+
   // filter
   int r, g, b, a;
   int filter;

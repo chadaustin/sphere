@@ -75,6 +75,7 @@ bool IsValidDriver(const char* filename);
 BOOL CALLBACK VideoDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
 BOOL CALLBACK AudioDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
 BOOL CALLBACK InputDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
+BOOL CALLBACK NetworkDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
 
 bool ConfigureDriver(HWND window, const char* driver);
 bool GetDriverInfo(const char* drivername, INTERNALDRIVERINFO* driverinfo);
@@ -233,7 +234,7 @@ void SaveConfiguration()
 
 void ExecuteDialog()
 {
-  PROPSHEETPAGE Pages[3];
+  PROPSHEETPAGE Pages[4];
 
   // default values
   for (unsigned i = 0; i < sizeof(Pages) / sizeof(*Pages); i++)
@@ -252,10 +253,14 @@ void ExecuteDialog()
   Pages[1].pszTemplate = MAKEINTRESOURCE(IDD_AUDIO_PAGE);
   Pages[1].pfnDlgProc  = AudioDialogProc;
 
-  // audio page
+  // input page
   Pages[2].pszTemplate = MAKEINTRESOURCE(IDD_INPUT_PAGE);
   Pages[2].pfnDlgProc  = InputDialogProc;
 
+  // network page
+  Pages[3].pszTemplate = MAKEINTRESOURCE(IDD_NETWORK_PAGE);
+  Pages[3].pfnDlgProc  = NetworkDialogProc;
+  
   // create the dialog box
   PROPSHEETHEADER psh;
   memset(&psh, 0, sizeof(psh));
@@ -401,6 +406,46 @@ BOOL CALLBACK AudioDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
           Config.sound = SOUND_OFF;
         } else {
           Config.sound = SOUND_AUTODETECT;
+        }
+        return TRUE;
+      }
+
+      return FALSE;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    default:
+      return FALSE;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+BOOL CALLBACK NetworkDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
+{
+  switch (message)
+  {
+    case WM_INITDIALOG:
+    {
+      if (Config.allow_networking) {
+        CheckDlgButton(window, IDC_ALLOW_NETWORKING, BST_CHECKED);
+      }
+
+      return FALSE;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    case WM_NOTIFY:
+    {
+      PSHNOTIFY* psn = (PSHNOTIFY*)lparam;
+      if (psn->hdr.code == UINT(PSN_APPLY))
+      {
+        if (IsDlgButtonChecked(window, IDC_ALLOW_NETWORKING) == BST_CHECKED) {
+          Config.allow_networking = true;
+        } else {
+          Config.allow_networking = false;
         }
         return TRUE;
       }

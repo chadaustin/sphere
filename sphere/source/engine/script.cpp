@@ -4950,6 +4950,11 @@ begin_func(GrabImage, 4)
   arg_int(w);
   arg_int(h);
 
+  if (w <= 0 || h <= 0) {
+    JS_ReportError(cx, "Invalid width or height: (%d, %d)\n", w, h);
+    return JS_FALSE;
+  }
+
   // make sure we don't go off the screen
 
   if (x < 0) {
@@ -5032,6 +5037,11 @@ begin_func(GrabSurface, 4)
   arg_int(w);
   arg_int(h);
 
+  if (w <= 0 || h <= 0) {
+    JS_ReportError(cx, "Invalid width or height: (%d, %d)\n", w, h);
+    return JS_FALSE;
+  }
+
   // make sure we don't go off the screen
 
   if (x < 0) {
@@ -5054,7 +5064,7 @@ begin_func(GrabSurface, 4)
 
   // create surface and grab pixels from the backbuffer
   CImage32* surface = new CImage32(w, h);
-  if (!surface || surface->GetWidth() != w || surface->GetHeight() != h) {
+  if (!surface || surface->GetWidth() != w || surface->GetHeight() != h || surface->GetPixels() == NULL) {
     JS_ReportError(cx, "GrabSurface() failed!!");
     return JS_FALSE;
   }

@@ -40,6 +40,8 @@ bool LoadSphereConfig(SPHERECONFIG* config, const char* filename)
     config->video_capture_timer = 1000;
   }
 
+  config->allow_networking = file.ReadBool("Network", "Allowed", true);
+
   SaveSphereConfig(config, filename);
 
   return true;
@@ -58,6 +60,8 @@ bool SaveSphereConfig(SPHERECONFIG* config, const char* filename)
   file.WriteInt  ("VideoCapture", "Mode", config->video_capture_mode);
   file.WriteInt  ("VideoCapture", "Timer", config->video_capture_timer);
   file.WriteInt  ("VideoCapture", "FrameRate", config->video_capture_framerate);
+
+  file.WriteBool ("Network", "Allowed", config->allow_networking);
   
   file.Save(filename);
   return true;

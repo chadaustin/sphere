@@ -204,6 +204,8 @@ static std::string GetTreeItemPathName(CTreeCtrl& m_TreeControl, HTREEITEM item)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "../common/strcmp_ci.hpp"
+
 static void UpdateTreeStructure(CTreeCtrl& m_TreeControl, HTREEITEM root);
 
 static void UpdateTreeStructure(CTreeCtrl& m_TreeControl, HTREEITEM root) {
@@ -238,6 +240,9 @@ static void UpdateTreeStructure(CTreeCtrl& m_TreeControl, HTREEITEM root) {
 
     for (unsigned int j = 0; j < filelist.size(); j++)
     {
+      if (strcmp_ci(filelist[j].c_str(), "thumbs.db") == 0)
+        continue;
+
       int image_index = IDI_FILETYPE_BASE - 1; // Unknown icon type
       std::string filename = filelist[j];
       for (int file_type = 0; file_type < FTL.GetNumFileTypes(); file_type++) {

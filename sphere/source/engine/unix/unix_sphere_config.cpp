@@ -26,7 +26,7 @@ bool LoadSphereConfig(SPHERECONFIG* config, const char* filename)
   config->a	      = file.ReadInt   ("Filter", "a"	      , 0);
   config->filter      = file.ReadInt   ("Video" , "Filter"    , 0);
   config->showcursor  = file.ReadInt   ("Video" , "ShowCursor", 0);
-
+  config->allow_networking = file.ReadBool ("Network", "Allowed", true);
   return true;
 }
 
@@ -45,6 +45,7 @@ bool SaveSphereConfig(SPHERECONFIG* config, const char* filename)
   file.WriteInt   ("Filter", "a"	 , config->a);
   file.WriteInt   ("Video", "Filter"	 , config->filter);
   file.WriteInt   ("Video", "ShowCursor" , config->showcursor);
+  file.WriteBool  ("Network", "Allowed", config->allow_networking);
   file.Save(filename);
   return true;
 }

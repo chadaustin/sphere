@@ -27,6 +27,9 @@ struct SPHERECONFIG
 
   // audio
   int sound;
+
+  // network
+  bool allow_networking;
 };
 
 
