@@ -61,6 +61,7 @@ private:
 
 private:
   afx_msg void OnBrowseListRefresh();
+	afx_msg void OnBrowseSetBrowseSize();
 
 private:
   bool m_Created;  // whether or not the window has been created
@@ -73,8 +74,9 @@ private:
   int m_SelectedImage;
   double m_ZoomFactor;
 
-  //int m_ImageWidth;
-  //int m_ImageHeight;
+
+  int m_ImageWidth;
+  int m_ImageHeight;
 
   std::vector<CBrowseInfo*> m_BrowseList;
   std::vector<std::string> m_FileList;

@@ -8,6 +8,7 @@
 #include "resource.h"
 
 #include "MainWindow.hpp"
+#include "ResizeDialog.hpp"
 
 #include "../common/Spriteset.hpp"
 #include "../common/WindowStyle.hpp"
@@ -31,6 +32,7 @@ BEGIN_MESSAGE_MAP(CBrowseWindow, CDocumentWindow)
   ON_WM_LBUTTONDOWN()
 
   ON_COMMAND(ID_BROWSE_REFRESH, OnBrowseListRefresh)
+	ON_COMMAND(ID_BROWSE_SETSIZE, OnBrowseSetBrowseSize)
 
 END_MESSAGE_MAP()
 
@@ -48,9 +50,12 @@ CBrowseWindow::CBrowseWindow(const char* folder, const char* filter)
   m_Folder = folder;
   m_Filter = filter;
 
+  m_ImageWidth = 100;
+  m_ImageHeight = 100;
+
   m_BlitTile = new CDIBSection(
-    100 * m_ZoomFactor,
-    100 * m_ZoomFactor,
+    m_ImageWidth * m_ZoomFactor,
+    m_ImageHeight * m_ZoomFactor,
     32
   );
 
@@ -160,8 +165,8 @@ bool
 CBrowseWindow::LoadFile(const char* filename)
 {
   bool valid = false;
-  const int width = 100;
-  const int height = 100;
+  const int width = m_ImageWidth;
+  const int height = m_ImageHeight;
 
   CImage32 image;
   sSpriteset spriteset;
@@ -325,18 +330,33 @@ CBrowseWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
     image = std::max(image - 1, 0);
   }
 
+  RECT client_rect;
+  GetClientRect(&client_rect);
+
+	int num_per_row = 0;
+  int num_tiles_x = client_rect.right / m_BlitTile->GetWidth();
+
+  if (num_tiles_x >= 0)
+    num_per_row = num_tiles_x;
+
+	if (vk == VK_DOWN) {
+		if (image + num_per_row < m_BrowseList.size())
+		image += num_per_row;
+	} else if (vk == VK_UP) {
+		if (image - num_per_row >= 0)
+  		image -= num_per_row;
+	}
+
   if (image != m_SelectedImage) {
     m_SelectedImage = image;
     Invalidate();
   }
 
-  //*
   if (vk == VK_RETURN) {
     if (m_SelectedImage >= 0 && m_SelectedImage < m_BrowseList.size()) {
       OpenFile(m_SelectedImage);
     }
   }
-  //*/
 
   UpdateScrollBar();
 }
@@ -491,7 +511,6 @@ CBrowseWindow::OnMouseMove(UINT flags, CPoint point)
   }
   else
     GetStatusBar()->SetWindowText("");
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -580,6 +599,41 @@ CBrowseWindow::OnBrowseListRefresh() {
   ClearBrowseList();
   m_FileList = GetFileList(m_Filter.c_str());
   Invalidate();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CBrowseWindow::OnBrowseSetBrowseSize() {
+
+	CResizeDialog dialog("Resize Browse Image Size", m_ImageWidth, m_ImageHeight);
+	dialog.SetRange(1, 4096, 1, 4096);
+
+	if (dialog.DoModal() == IDOK) {
+
+		if (dialog.GetWidth()  != m_ImageWidth
+   	 && dialog.GetHeight() != m_ImageHeight
+  	 && dialog.GetWidth()  >= 0
+		 && dialog.GetWidth()   < 4096
+		 && dialog.GetHeight() >= 0
+		 && dialog.GetHeight()  < 4096) {
+
+		  m_ImageWidth = dialog.GetWidth();
+		  m_ImageHeight = dialog.GetHeight();
+
+	    m_BlitTile = new CDIBSection(
+        m_ImageWidth * m_ZoomFactor,
+        m_ImageHeight * m_ZoomFactor,
+        32
+      );
+    
+		  m_FileList.clear();
+      ClearBrowseList();
+      m_FileList = GetFileList(m_Filter.c_str());
+      Invalidate();
+		}
+
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
