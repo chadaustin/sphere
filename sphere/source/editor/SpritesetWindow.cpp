@@ -694,11 +694,7 @@ CSpritesetWindow::SIP_SpritesetModified()
 
 void
 CSpritesetWindow::OnToolCommand(UINT id) {
-  if (m_Created) {
-    if (m_TabControl.GetCurSel() ==  1) {
-      m_ImageView.OnToolChanged(id);
-    }
-  }
+  m_ImageView.OnToolChanged(id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
