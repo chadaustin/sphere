@@ -10,10 +10,9 @@
 #include "../common/Spriteset.hpp"
 #include "../common/WindowStyle.hpp"
 #include "../common/Map.hpp"
+#include "../common/Font.hpp"
 
-#ifdef USE_SIZECBAR
-IMPLEMENT_DYNAMIC(CBrowseWindow, CDocumentWindow)
-#endif
+#include "../wxeditor/system.cpp"
 
 BEGIN_MESSAGE_MAP(CBrowseWindow, CDocumentWindow)
 
@@ -62,7 +61,8 @@ CBrowseWindow::~CBrowseWindow()
 {
   // destroy all the child windows
   Destroy();
-  delete m_BlitTile;
+  if (m_BlitTile)
+    delete m_BlitTile;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -93,8 +93,6 @@ CBrowseWindow::Destroy()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "../wxeditor/system.cpp"
-
 bool
 CBrowseWindow::LoadImages(const char* szFolder, const char* szFilter)
 {
@@ -111,6 +109,7 @@ CBrowseWindow::LoadImages(const char* szFolder, const char* szFilter)
     sSpriteset spriteset;
     sWindowStyle windowstyle;
     sMap map;
+    sFont font;
 
     if (image.Load(file_list[i].c_str())) {
       valid = true;
@@ -185,6 +184,21 @@ CBrowseWindow::LoadImages(const char* szFolder, const char* szFilter)
 
       valid = true;
     }
+    else if (font.Load(file_list[i].c_str())) {
+      image.Create(100, 100);
+
+      int x = 0;
+      int y = 0;
+      
+      const char* string = "test";
+
+      for (int i = 0; i < 4; i++) {
+        image.BlitImage(font.GetCharacter(string[i]), x, y);
+        x += font.GetCharacter(i).GetWidth();
+      }
+
+      valid = true;
+    }
 
     if (valid) {
       image.Rescale(100, 100);
@@ -220,13 +234,16 @@ CBrowseWindow::OnSize(UINT uType, int cx, int cy)
 afx_msg void
 CBrowseWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
 {
-  std::vector<std::string> m_ImageList;
-
-  int image = 0;
+  int image = m_SelectedImage;
   if (vk == VK_RIGHT) {
-    image = std::min(image + 1, (int)m_ImageList.size() - 1);
+    image = std::min(image + 1, (int)m_BrowseList.size() - 1);
   } else if (vk == VK_LEFT) {
     image = std::max(image - 1, 0);
+  }
+
+  if (image != m_SelectedImage) {
+    m_SelectedImage = image;
+    Invalidate();
   }
 }
 
@@ -363,7 +380,7 @@ CBrowseWindow::OnMouseMove(UINT flags, CPoint point)
 
   int tile = (m_TopRow + y) * num_tiles_x + x;
 
-  if (tile >= 0 && tile <= m_BrowseList.size() - 1)
+  if (tile >= 0 && tile < m_BrowseList.size())
   {
     CString browse_info;
     browse_info.Format("%s", m_BrowseList[tile]->filename.c_str());

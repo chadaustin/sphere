@@ -29,9 +29,6 @@ public:
 class CBrowseWindow
   : public CDocumentWindow
 {
-#ifdef USE_SIZECBAR
-	DECLARE_DYNAMIC(CBrowseWindow)
-#endif
 public:
   CBrowseWindow(const char* folder = NULL, const char* filter = NULL);
   ~CBrowseWindow();
@@ -53,8 +50,6 @@ private:
   afx_msg void OnBrowseListRefresh();
 
 private:
-  //sMap m_Map;
-  
   bool m_Created;  // whether or not the window has been created
 
   CDIBSection* m_BlitTile;
