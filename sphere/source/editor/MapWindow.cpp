@@ -19,6 +19,7 @@
 #define IDC_TAB 1101
 #define TAB_HEIGHT 24
 
+IMPLEMENT_DYNAMIC(CMapWindow, CSaveableDocumentWindow)
 
 BEGIN_MESSAGE_MAP(CMapWindow, CSaveableDocumentWindow)
 
@@ -99,6 +100,10 @@ CMapWindow::Create()
   OnSize(0, ClientRect.right - ClientRect.left, ClientRect.bottom - ClientRect.top);
 
   m_TilePalette = new CTilePalette(this, this, &m_Map.GetTileset());
+
+#ifdef USE_SIZECBAR
+	LoadPaletteStates();
+#endif
 
   TabChanged(0);
 }

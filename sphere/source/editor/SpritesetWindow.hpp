@@ -24,6 +24,7 @@ class CSpritesetWindow
   , private ISpriteBaseViewHandler
   , private ISpritesetImagesPaletteHandler
 {
+	DECLARE_DYNAMIC(CSpritesetWindow)
 public:
   CSpritesetWindow(const char* filename = NULL);
 

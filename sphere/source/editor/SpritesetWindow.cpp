@@ -14,7 +14,7 @@
 #define IDC_TAB 800
 #define TAB_HEIGHT 24
 
-
+IMPLEMENT_DYNAMIC(CSpritesetWindow, CSaveableDocumentWindow)
 BEGIN_MESSAGE_MAP(CSpritesetWindow, CSaveableDocumentWindow)
 
   ON_WM_DESTROY()
@@ -134,7 +134,7 @@ CSpritesetWindow::Create()
   m_ImagesPalette = new CSpritesetImagesPalette(this, this, &m_Spriteset);
   m_AnimationPalette = new CSpritesetAnimationPalette(this, &m_Spriteset);
 
-  // the window and its children are ready!
+	// the window and its children are ready!
   m_Created = true;
 
   // make sure everything is moved to the correct place
@@ -146,6 +146,10 @@ CSpritesetWindow::Create()
   TabChanged(0);
 
   OnZoom2x();
+
+	#ifdef USE_SIZECBAR
+	LoadPaletteStates();
+	#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

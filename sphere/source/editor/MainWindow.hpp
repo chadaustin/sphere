@@ -20,7 +20,6 @@ class CProjectWindow;   // ProjectWindow.hpp
 #define WM_INSERT_PROJECT_FILE (WM_APP + 923) // wparam = 0, path = (char*)lparam
 #define WM_REFRESH_PROJECT     (WM_APP + 924) // wparam = 0, lparam = 0
 
-
 class CMainWindow : public CMDIFrameWnd
 {
 public:
@@ -35,6 +34,8 @@ public:
   void OpenGameSettings();
   void OpenGameFile(const char* filename);
   void OpenDocumentWindow(int grouptype, const char* filename);
+	
+	void ViewPalette(int paletteNum);	
 
 private:
   bool AddToDirectory(const char* pathname, const char* sub_directory);
@@ -118,6 +119,7 @@ private:
   afx_msg void OnUpdateSaveCommand(CCmdUI* cmdui);
   afx_msg void OnUpdateSaveAllCommand(CCmdUI* cmdui);
   afx_msg void OnUpdateWindowCloseAll(CCmdUI* cmdui);
+	afx_msg void OnUpdatePaletteMenu(CCmdUI* cmdui);
 
   afx_msg LRESULT OnInsertProjectFile(WPARAM wparam, LPARAM lparam);
   afx_msg LRESULT OnRefreshProject(WPARAM wparam, LPARAM lparam);
@@ -125,7 +127,7 @@ private:
   afx_msg LRESULT OnDocumentWindowClosing(WPARAM wparam, LPARAM lparam);
   afx_msg LRESULT OnSetChildMenu(WPARAM wparam, LPARAM lparam);
   afx_msg LRESULT OnClearChildMenu(WPARAM wparam, LPARAM lparam);
-  afx_msg LRESULT OnUpdatePaletteMenu(WPARAM wparam, LPARAM lparam);
+//afx_msg LRESULT OnUpdatePaletteMenu(WPARAM wparam, LPARAM lparam);
   afx_msg void OnViewPalette(UINT id);
 
 private:

@@ -24,6 +24,7 @@ class CMapWindow
   , private ITilesetViewHandler
   , private ISwatchPaletteHandler
 {
+	DECLARE_DYNAMIC(CMapWindow)
 public:
   CMapWindow(const char* map = NULL, const char* tileset = NULL);
   ~CMapWindow();

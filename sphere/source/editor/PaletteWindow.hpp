@@ -1,18 +1,33 @@
 #ifndef PALETTE_WINDOW_HPP
 #define PALETTE_WINDOW_HPP
 
-
 #include <afxwin.h>
-
 
 class CDocumentWindow;  // #include "DocumentWindow.hpp"
 
-
 const int WM_UPDATE_PALETTE_MENU = (WM_APP + 800);
 
+#ifdef USE_SIZECBAR
+	// since no version is available in the original header
+	#define SIZECBAR_VERSION "2.44" 
+	#include "sizecbar.h"
+	#include "scbarg.h"
 
-class CPaletteWindow : public CMiniFrameWnd
+	#define baseCPaletteWindow CWnd
+	#define CPaletteBar CSizingControlBarG
+#else //USE_SIZECBAR
+	#define baseCPaletteWindow CMiniFrameWnd
+#endif
+
+class CPaletteWindow : public baseCPaletteWindow
 {
+public:
+	void ShowPalette(bool bShow);
+
+#ifdef USE_SIZECBAR
+	void CreateBar(bool bCreate);
+#endif
+
 protected:
   // protected so only derived classes can construct
   CPaletteWindow(CDocumentWindow* owner, const char* name, RECT rect, bool visible);
@@ -25,6 +40,15 @@ private:
 
 private:
   CDocumentWindow* m_Owner;
+
+#ifdef USE_SIZECBAR
+	CString				m_Name;
+	CPaletteBar * m_pBarParent;
+	int						m_PaletteNumber;
+
+public:
+	inline bool IsVisible() { return (m_pBarParent) ? m_pBarParent->IsVisible() : false; }
+#endif
 
   DECLARE_MESSAGE_MAP()
 };

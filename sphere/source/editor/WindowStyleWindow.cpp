@@ -12,7 +12,7 @@
 const int ID_ALPHASLIDER = 7001;
 const int ID_ALPHASTATIC = 7002;
 
-
+IMPLEMENT_DYNAMIC(CWindowStyleWindow, CSaveableDocumentWindow)
 BEGIN_MESSAGE_MAP(CWindowStyleWindow, CSaveableDocumentWindow)
 
   ON_WM_LBUTTONDOWN()

@@ -26,11 +26,7 @@ CSpritesetAnimationPalette::CSpritesetAnimationPalette(CDocumentWindow* owner, s
 , m_BlitImage(NULL)
 {
   OnZoom(1);
-	
-	//make fixed size
-	//TODO: Find out why a non resizing border causes funny results in painting
-	//ModifyStyle(WS_THICKFRAME, 0, 0);	
-	
+
 	//init the animation timer
   m_Timer = SetTimer(ANIMATION_TIMER, Configuration::Get(KEY_ANIMATION_DELAY), NULL);
 	ResetAnimation();
@@ -169,8 +165,8 @@ CSpritesetAnimationPalette::OnZoom(double zoom) {
 	rect.top  = 0;
 	rect.right = width;
 	rect.bottom = height;
-	AdjustWindowRect(&rect, GetStyle(), FALSE);
-	SetWindowPos(NULL, 0, 0, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER);
+	/*AdjustWindowRect(&rect, GetStyle(), FALSE);
+	SetWindowPos(NULL, 0, 0, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER);*/
   Invalidate();
 }
 

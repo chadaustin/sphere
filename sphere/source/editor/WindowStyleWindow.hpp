@@ -21,6 +21,7 @@ class CWindowStyleWindow
   , private IColorViewHandler
   , private IAlphaViewHandler
 {
+	DECLARE_DYNAMIC(CWindowStyleWindow)
 public:
   CWindowStyleWindow(const char* window_style = NULL);
   ~CWindowStyleWindow();
