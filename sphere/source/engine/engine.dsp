@@ -458,6 +458,18 @@ SOURCE=..\common\Map.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\common\md5.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\md5.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\md5global.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\common\MNGAnimation.cpp
 # End Source File
 # Begin Source File

@@ -30,6 +30,7 @@ BEGIN_MESSAGE_MAP(CLayerView, CVScrollWindow)
   ON_COMMAND(ID_LAYERVIEW_PROPERTIES,           OnLayerProperties)
   ON_COMMAND(ID_LAYERVIEW_EXPORTASIMAGE,        OnExportLayer)
   ON_COMMAND(ID_LAYERVIEW_EXPORT_ALL_VISIBLE_LAYERS_AS_IMAGE, OnExportAllVisibleLayers)
+  ON_COMMAND(ID_LAYERVIEW_FLATTEN_VISIBLE_LAYERS, OnFlattenVisibleLayers)
 
   ON_COMMAND(ID_LAYERVIEW_SLIDE_UP,             OnLayerSlideUp)
   ON_COMMAND(ID_LAYERVIEW_SLIDE_RIGHT,          OnLayerSlideRight)
@@ -638,6 +639,137 @@ CLayerView::OnExportAllVisibleLayers()
       }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+static bool CompareTiles(sTile& tile_a, sTile& tile_b) {
+  if (tile_a.GetWidth() != tile_b.GetWidth()) return false;
+  if (tile_a.GetHeight() != tile_b.GetHeight()) return false;
+  return memcmp(tile_a.GetPixels(), tile_b.GetPixels(), tile_a.GetWidth() * tile_a.GetHeight() * sizeof(RGBA)) == 0;
+}
+
+/**
+  This takes all the visible layers, and merges them into one,
+  leaving the old layers in tact (but invisible)
+*/
+afx_msg void
+CLayerView::OnFlattenVisibleLayers()
+{
+  sTileset& tileset = m_Map->GetTileset();
+  std::vector<sLayer> layers;
+
+  // get a list of the visible layers
+  for (int i = 0; i < m_Map->GetNumLayers(); i++) {
+    if (m_Map->GetLayer(i).IsVisible()) {
+      layers.push_back(m_Map->GetLayer(i));
+    }
+  }
+
+  if (layers.size() <= 0) {
+    MessageBox("No layers are visible!", "No layers are visible", MB_OK);
+  }
+  else 
+  if (layers.size() == 1) {
+    return;
+  }
+  else {
+
+    int width = 0;
+    int height = 0;
+
+    // find the size of the image we're going to create
+    for (int i = 0; i < layers.size(); i++) {
+      if (layers[i].GetWidth() > width) {
+        width = layers[i].GetWidth();
+      }
+      if (layers[i].GetHeight() > height) {
+        height = layers[i].GetHeight();
+      }
+    }
+
+    if (width <= 0 || height <= 0)
+      return;
+
+    sLayer new_layer;
+    new_layer.SetName("flattened_layer");
+    new_layer.Resize(width, height);
+
+    sTileset& tileset = m_Map->GetTileset();
+    sTile new_tile(tileset.GetTileWidth(), tileset.GetTileHeight());
+
+    std::vector<int> blended_tile_indexes;
+
+    for (int y = 0; y < height; ++y) {
+      for (int x = 0; x < width; ++x) {
+
+        new_tile.Clear();
+        blended_tile_indexes.clear();
+
+        for (int i = 0; i < layers.size(); ++i) {
+
+          if (y < layers[i].GetHeight() && x < layers[i].GetWidth()) {
+            sTile& tile = tileset.GetTile(layers[i].GetTile(x, y));
+
+            bool is_empty = true;
+            for (int iy = 0; iy < tile.GetHeight(); ++iy) {
+              for (int ix = 0; ix < tile.GetWidth(); ++ix) {
+                if (tile.GetPixel(ix, iy).alpha != 0) {
+                  is_empty = false;
+                  break;
+                }
+              }
+            }
+
+            if (is_empty == false) {
+              blended_tile_indexes.push_back(layers[i].GetTile(x, y));
+              BlendImage(new_tile.GetWidth(), new_tile.GetHeight(), tile.GetWidth(), tile.GetHeight(), new_tile.GetPixels(), tile.GetPixels());
+            }
+
+          }
+        }
+
+        if (blended_tile_indexes.size() == 1) {
+          new_layer.SetTile(x, y, blended_tile_indexes[0]);
+        }
+        else {
+          int tile_index = -1;
+
+          // make the tile fully opaque
+          new_tile.SetAlpha(255);
+
+          // see if the new_tile already exists within the tileset
+          for (int i = 0; i < tileset.GetNumTiles(); ++i) {
+            if (tileset.GetTile(i) == new_tile) {
+              tile_index = i;
+              break;
+            }
+          }
+
+          if (tile_index == -1) {
+            tile_index = tileset.GetNumTiles();
+            tileset.AppendTiles(1);
+            tileset.GetTile(tile_index) = new_tile;
+          }
+
+          new_layer.SetTile(x, y, tile_index);                 
+        }
+        
+
+      }
+    }
+
+    // turn the layers that were visible off
+    for (int i = 0; i < layers.size(); i++) {
+      m_Map->GetLayer(i).SetVisible(false);
+    }
+
+    m_Map->AppendLayer(new_layer);
+    
+    Invalidate();
+    m_Handler->LV_MapChanged();
+  }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////

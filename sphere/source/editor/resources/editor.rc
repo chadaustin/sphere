@@ -286,6 +286,8 @@ BEGIN
         MENUITEM "&Export all visible layers as Image...", 
                                                 ID_LAYERVIEW_EXPORT_ALL_VISIBLE_LAYERS_AS_IMAGE
 
+        MENUITEM "&Flatten all visible layers", ID_LAYERVIEW_FLATTEN_VISIBLE_LAYERS
+
         MENUITEM SEPARATOR
         POPUP "&Slide"
         BEGIN
