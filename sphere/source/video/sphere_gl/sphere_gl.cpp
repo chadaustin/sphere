@@ -358,11 +358,12 @@ bool EXPORT InitVideoDriver(HWND window, int screen_width, int screen_height)
 
 
     // view initialization
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0.0f, ScreenWidth, ScreenHeight, 0.0f, -1.0f, 1.0f);
+    gluOrtho2D(0.0f, ScreenWidth, ScreenHeight, 0.0f);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glTranslatef(0.375, 0.375, 0.0);
 
     // render initialization
     glEnable(GL_SCISSOR_TEST);
