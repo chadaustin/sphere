@@ -9,20 +9,19 @@
 #include "resource.h"
 
 /**
- * @todo maybe this should go to rgb.cpp or some such...  but then
- * every video driver depends on libcommon?
+   @todo maybe this should go to rgb.cpp or some such...  but then
+   every video driver depends on libcommon?
  */
 
-/*
 #ifdef USE_ALPHA_TABLE
-unsigned char alpha_new[256][256]={
-#include "../../common/alpha_new.table"
-};
-unsigned char alpha_old[256][256]={
-#include "../../common/alpha_old.table"
-};
+ unsigned char alpha_new[256][256]={
+  #include "../../common/alpha_new.table"
+ };
+
+ unsigned char alpha_old[256][256]={
+  #include "../../common/alpha_old.table"
+ };
 #endif
-*/
 
 /////////////////////////////////////////////////
 
@@ -547,6 +546,13 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+  This works out the best way to draw the image.
+  nullblit = alpha is all zero, therefore nothing to draw
+  tileblit = alpha is all 255, therefore totally opaque
+  spriteblit = alpha is all zero or 255, therefore each pixel is opaque or blank
+  normal = alpha values range from zero to 255, so it has to do alpha blending
+*/
 void OptimizeBlitRoutine(IMAGE image)
 {
   // null blit
@@ -803,6 +809,12 @@ private:
 
 EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
 {
+  // if the mask doesn't affect the imageblit, fallback onto BlitImage
+  if (mask.red == 255 && mask.green == 255 && mask.blue == 255 && mask.alpha == 255) {
+    BlitImage(image, x, y);
+    return;
+  }
+
   if (BitsPerPixel == 32) {
 
     primitives::Blit(
@@ -868,6 +880,7 @@ void aBlendBGRA(struct BGRA& d, struct BGRA s, int a)
 
 EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
 {
+  // fallback onto BlitImage if possible
   if (x[0] == x[3] && x[1] == x[2] && y[0] == y[1] && y[2] == y[3]) {
     int dw = x[2] - x[0] + 1;
     int dh = y[2] - y[0] + 1;
@@ -910,6 +923,12 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
 
 EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
 {
+  // if the mask doesn't affect the imageblit, fallback onto the non-mask blit
+  if (mask.red == 255 && mask.green == 255 && mask.blue == 255 && mask.alpha == 255) {
+    TransformBlitImage(image, x, y);
+    return;
+  }
+
   if (BitsPerPixel == 32) {
     primitives::TexturedQuad(
       (BGRA*)ScreenBuffer,
