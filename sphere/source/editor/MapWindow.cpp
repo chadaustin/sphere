@@ -408,9 +408,12 @@ CMapWindow::OnResizeAllLayers()
 
   // show the dialog
   CResizeDialog dialog("Resize All Layers", max_layer_width, max_layer_height);
+	dialog.SetRange(1, 4906, 1, 4906);
+
   if (dialog.DoModal() == IDOK) {
 
-    if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
+    if (dialog.GetWidth() > 0 && dialog.GetWidth() <= 4096
+		 && dialog.GetHeight() > 0 && dialog.GetHeight() <= 4096) {
 
       for (int i = 0; i < m_Map.GetNumLayers(); i++) {
         m_Map.GetLayer(i).Resize(dialog.GetWidth(), dialog.GetHeight());

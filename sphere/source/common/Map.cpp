@@ -232,6 +232,11 @@ sMap::Load(const char* filename, IFileSystem& fs)
     if (file->Read(&lh, sizeof(lh)) != sizeof(lh))
 			return false;
 
+		if (lh.width  <= 0 || lh.width  > 4096
+		 || lh.height <= 0 || lh.height > 4096) {
+		   return false;
+		}
+
     // read the layer name
     std::string name = ReadMapString(file);
 

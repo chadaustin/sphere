@@ -938,10 +938,6 @@ SOURCE=..\common\AnimationFactory.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\common\begin_c_prototypes.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\common\common_palettes.cpp
 # End Source File
 # Begin Source File
@@ -975,10 +971,6 @@ SOURCE=..\common\DefaultFileSystem.cpp
 # Begin Source File
 
 SOURCE=..\common\DefaultFileSystem.hpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\common\end_packed_struct.h
 # End Source File
 # Begin Source File
 

@@ -497,7 +497,7 @@ CMapView::LayerAreaCopy()
   int height = end_y - start_y + 1;
 
   // nothing to copy
-  if (width < 0 || height < 0) {
+  if (width < 0 || width > 4096 || height < 0 || height > 4096) {
     CloseClipboard();
     return;
   }
@@ -803,6 +803,12 @@ CMapView::PasteMapUnderPoint(CPoint point)
 
       int width = *ptr++;
       int height = *ptr++;
+
+			if (width  <= 0 || width  > 4096
+			 || height <= 0 || height > 4096) {
+				CloseClipboard();
+				return;
+			}
 
       tLayer.Resize(width, height);
       for (int y=0; y<height; y++)
@@ -2598,6 +2604,7 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
       }
       break;
     }
+
     case ID_MAPVIEW_ZONEEDIT:
       {
         CZoneEditDialog dialog(m_Map->GetZone(z));
