@@ -19,6 +19,7 @@ public:
   const sObstructionMap& GetObstructionMap() const;
 
   bool IsAnimated() const;
+  bool IsTerraformable() const;
   int  GetNextTile() const;
   int  GetDelay() const;
   std::string GetName() const;
@@ -27,9 +28,11 @@ public:
   void SetNextTile(int next_tile);
   void SetDelay(int delay);
   void SetName(std::string tile_name);
+  void SetTerraformable(bool terraform);
 
 private:
   bool m_Animated;
+  bool m_Terraform;
   int  m_NextTile;
   int  m_Delay;
   std::string m_Name;
@@ -44,6 +47,11 @@ sTile::IsAnimated() const
   return m_Animated;
 }
 
+inline bool
+sTile::IsTerraformable() const
+{
+  return m_Terraform;
+}
 
 inline int
 sTile::GetNextTile() const

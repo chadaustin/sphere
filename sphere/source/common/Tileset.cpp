@@ -93,7 +93,8 @@ sTileset::Create(int num_tiles)
   byte block_type;                              \
   word num_segments;                            \
   word name_length;                             \
-  byte reserved[20];
+  byte terraformed;								\
+  byte reserved[19];
 #include "packed_struct.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -425,6 +426,7 @@ sTileset::LoadFromFile(IFile* file)
 
     m_Tiles[i].SetAnimated(tib.animated ? true : false);
     m_Tiles[i].SetNextTile(tib.nexttile);
+	m_Tiles[i].SetTerraformable(tib.terraformed ? true : false);
     m_Tiles[i].SetDelay(tib.delay);
     m_Tiles[i].SetName(ReadTileString(file, tib.name_length));
 
@@ -494,6 +496,7 @@ sTileset::SaveToFile(IFile* file) const
     tib.animated     = m_Tiles[i].IsAnimated();
     tib.nexttile     = m_Tiles[i].GetNextTile();
     tib.delay        = m_Tiles[i].GetDelay();
+	tib.terraformed  = m_Tiles[i].IsTerraformable();
     tib.block_type   = 2;
     tib.num_segments = obs_map.GetNumSegments();
     tib.name_length  = strlen(m_Tiles[i].GetName().c_str());

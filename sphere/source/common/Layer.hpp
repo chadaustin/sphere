@@ -32,6 +32,7 @@ public:
 
   void SetTile(int x, int y, int tile);
   int GetTile(int x, int y) const;
+  int GetTileTerraFlags(int x, int y) const;
 
   void SetVisible(bool visible);
   bool IsVisible() const;
@@ -116,6 +117,13 @@ inline int
 sLayer::GetTile(int x, int y) const
 {
   return m_Tiles[y * m_Width + x];
+}
+
+
+inline int
+sLayer::GetTileTerraFlags(int x, int y) const
+{
+  return (m_Tiles[y * m_Width + x] << 28) & 15;
 }
 
 
