@@ -771,9 +771,9 @@ ____SaveMNGAnimationFromImages____(mng_handle hMNG,
   //iRC = mng_putchunk_back (hMNG, 255, 255, 255, 0, 0, MNG_BACKGROUNDIMAGE_NOTILE);
   //if (iRC != 0) return iRC;
 
-  //iRC = mng_putchunk_fram  (hMNG,  MNG_FALSE,  MNG_FRAMINGMODE_3,
-  //                          0,  NULL,  MNG_CHANGEDELAY_NO, 0,  0, 0, 0, 0,  0,  0,  0, 0, 0, 0, 0);
-  //if (iRC != 0) return iRC;
+  iRC = mng_putchunk_fram  (hMNG,  MNG_FALSE,  MNG_FRAMINGMODE_3,
+                            0,  NULL,  MNG_CHANGEDELAY_NO, 0,  0, 0, 0, 0,  0,  0,  0, 0, 0, 0, 0);
+  if (iRC != 0) return iRC;
 
   if (can_use_global_palette) {
     iRC = mng_putchunk_plte(hMNG, GlobalPaletteSize, GlobalPalette);

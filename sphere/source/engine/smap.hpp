@@ -45,6 +45,8 @@ public:
 
   void SetLayerScaleFactorX(int layer, double factor_x);
   void SetLayerScaleFactorY(int layer, double factor_y);
+  double GetLayerScaleFactorX(int layer);
+  double GetLayerScaleFactorY(int layer);
 
 private:
   void InitializeAnimation();
@@ -87,12 +89,24 @@ SMAP::SetLayerScaleFactorX(int layer, double factor_x)
   m_LayerInfo[layer].zoomFactorX = factor_x;
 }
 
+inline double
+SMAP::GetLayerScaleFactorX(int layer)
+{
+  return m_LayerInfo[layer].zoomFactorX;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 inline void
 SMAP::SetLayerScaleFactorY(int layer, double factor_y)
 {
   m_LayerInfo[layer].zoomFactorY = factor_y;
+}
+
+inline double
+SMAP::GetLayerScaleFactorY(int layer)
+{
+  return m_LayerInfo[layer].zoomFactorY;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

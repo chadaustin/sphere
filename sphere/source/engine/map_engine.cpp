@@ -1696,6 +1696,10 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
   p.stepping_frame_revert_count = 0;
 
   p.spriteset->GetSpriteset().GetBase(p.base_x1, p.base_y1, p.base_x2, p.base_y2);
+
+  if (p.base_x1 > p.base_x2) std::swap(p.base_x1, p.base_x2);
+  if (p.base_y1 > p.base_y2) std::swap(p.base_y1, p.base_y2);
+
   p.width = p.spriteset->GetSpriteset().GetFrameWidth();
   p.height = p.spriteset->GetSpriteset().GetFrameHeight();
 

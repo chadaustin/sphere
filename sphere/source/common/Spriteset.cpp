@@ -374,6 +374,9 @@ sSpriteset::Save(const char* filename, IFileSystem& fs) const
   header.base_x2        = m_BaseX2;
   header.base_y2        = m_BaseY2;
 
+  if (header.base_x1 > header.base_x2) { int temp = header.base_x1; header.base_x1 = header.base_x2; header.base_x2 = temp; }
+  if (header.base_y1 > header.base_y2) { int temp = header.base_y1; header.base_y1 = header.base_y2; header.base_y2 = temp; }
+
   // write header
   file->Write(&header, sizeof(header));
 

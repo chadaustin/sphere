@@ -34,6 +34,8 @@ private:
 
   afx_msg void OnSize(UINT type, int cx, int cy);
   afx_msg void OnKeyDown(UINT vk, UINT repeat, UINT flags);
+  afx_msg void OnKeyUp(UINT vk, UINT repeat, UINT flags);
+  afx_msg void OnTimer(UINT event);
 
   afx_msg void OnImageResize();
   afx_msg void OnImageRescale();
@@ -64,6 +66,8 @@ private:
   CPaletteView m_PaletteView;
   CColorView   m_ColorView;
   CAlphaView   m_AlphaView;
+
+  UINT m_Timer;
 
   DECLARE_MESSAGE_MAP()
 };

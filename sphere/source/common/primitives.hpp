@@ -87,6 +87,7 @@ bool is_clipped(int x1, int y1, int x2, int y2, clipT clipper)
   );
 }
 
+#include <assert.h>
 
 template<typename destT, typename clipT, typename renderT, typename getcolorT>
 void Line(
@@ -120,11 +121,11 @@ void Line(
     // draw the line
     if (y1 < y2) {
       for (int iy = y1; iy <= y2; iy++) {
-        renderer(surface[iy * pitch + x1], getcolor(iy - o_y1, o_y2 - o_y1));
+        renderer(surface[(iy * pitch) + x1], getcolor(iy - o_y1, o_y2 - o_y1));
       }
     } else {
       for (int iy = y1; iy >= y2; iy--) {
-        renderer(surface[iy * pitch + x1], getcolor(iy - o_y2, o_y1 - o_y2));
+        renderer(surface[(iy * pitch) + x1], getcolor(iy - o_y2, o_y1 - o_y2));
       }
     }
 
@@ -139,11 +140,11 @@ void Line(
     // draw the line
     if (x1 < x2) {
       for (int ix = x1; ix <= x2; ix++) {
-        renderer(surface[y1 * pitch + ix], getcolor(ix - o_x1, o_x2 - o_x1));
+        renderer(surface[(y1 * pitch) + ix], getcolor(ix - o_x1, o_x2 - o_x1));
       }
     } else {
       for (int ix = x1; ix >= x2; ix--) {
-        renderer(surface[y1 * pitch + ix], getcolor(ix - o_x2, o_x1 - o_x2));
+        renderer(surface[(y1 * pitch) + ix], getcolor(ix - o_x2, o_x1 - o_x2));
       }
     }
 
@@ -151,6 +152,8 @@ void Line(
 
   // other lines (diagonal)
   else {
+
+    assert(x2 - x1 != 0);
 
     float slope = float(y2 - y1) / (x2 - x1);
 
@@ -167,6 +170,8 @@ void Line(
       return;
     }
 
+    assert(x2 - x1 != 0);
+
     // recalculate slope (could be inaccurate)
     slope = float(y2 - y1) / (x2 - x1);
 
@@ -176,30 +181,32 @@ void Line(
       if (x1 < x2) {
         float cy = (float) y1;
         for (int ix = x1; ix <= x2; ix++) {
-          renderer(surface[(int)cy * pitch + ix], getcolor(o_x2 - ix, o_x2 - o_x1));
+          renderer(surface[((int)cy * pitch) + ix], getcolor(o_x2 - ix, o_x2 - o_x1));
           cy += slope;
         }
       } else {
         float cy = (float) y1;
         for (int ix = x1; ix >= x2; ix--) {
-          renderer(surface[(int)cy * pitch + ix], getcolor(ix - o_x2, o_x1 - o_x2));
+          renderer(surface[((int)cy * pitch) + ix], getcolor(ix - o_x2, o_x1 - o_x2));
           cy -= slope;
         }
       }
 
     } else {   // more vertical than horizontal...
 
+      float slope_delta = 1.0 / slope;
+
       if (y1 < y2) {
         float cx = (float) x1;
         for (int iy = y1; iy <= y2; iy++) {
-          renderer(surface[iy * pitch + (int)cx], getcolor(o_y1 - iy, o_y2 - o_y1));
-          cx += 1 / slope;
+          renderer(surface[(iy * pitch) + (int)cx], getcolor(o_y1 - iy, o_y2 - o_y1));
+          cx += slope_delta;
         }
       } else {
         float cx = (float) x1;
         for (int iy = y1; iy >= y2; iy--) {
-          renderer(surface[iy * pitch + (int)cx], getcolor(iy - o_y2, o_y1 - o_y2));
-          cx -= 1 / slope;
+          renderer(surface[(iy * pitch) + (int)cx], getcolor(iy - o_y2, o_y1 - o_y2));
+          cx -= slope_delta;
         }
       }
 

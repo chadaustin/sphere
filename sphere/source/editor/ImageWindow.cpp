@@ -10,6 +10,8 @@
 
 #define ID_ALPHASLIDER 900
 
+static const int IMAGE_TIMER = 9001;
+
 #ifdef USE_SIZECBAR
 IMPLEMENT_DYNAMIC(CImageWindow, CMDIChildWnd)
 #endif
@@ -18,6 +20,8 @@ BEGIN_MESSAGE_MAP(CImageWindow, CSaveableDocumentWindow)
 
   ON_WM_SIZE()  
   ON_WM_KEYDOWN()
+  ON_WM_KEYUP()
+  ON_WM_TIMER()
 
   ON_COMMAND(ID_IMAGE_RESIZE,             OnImageResize)
   ON_COMMAND(ID_IMAGE_RESCALE,            OnImageRescale)
@@ -125,6 +129,8 @@ CImageWindow::CImageWindow(const char* image, bool create_from_clipboard)
   OnSize(0, ClientRect.right, ClientRect.bottom);
 
   UpdateImageView();
+
+  m_Timer = SetTimer(IMAGE_TIMER, 100, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -179,6 +185,22 @@ afx_msg void
 CImageWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
 {
   m_ImageView.OnKeyDown(vk, repeat, flags);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageWindow::OnKeyUp(UINT vk, UINT repeat, UINT flags)
+{
+  m_ImageView.OnKeyUp(vk, repeat, flags);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageWindow::OnTimer(UINT event)
+{
+  m_ImageView.OnTimer(event);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

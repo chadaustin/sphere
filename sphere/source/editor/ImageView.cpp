@@ -27,6 +27,7 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
   ON_WM_SIZE()
   ON_WM_CHAR()
   ON_WM_KEYDOWN()
+  ON_WM_KEYUP()
 
   ON_WM_LBUTTONDOWN()
   ON_WM_LBUTTONUP()
@@ -106,6 +107,11 @@ CImageView::CImageView()
 , m_Clipboard(NULL)
 , m_BlitTile(NULL)
 {
+  m_CurPoint.x = 0;
+  m_CurPoint.y = 0;
+  m_LastPoint.x = -1;
+  m_LastPoint.y = -1;
+
   m_Image.SetBlendMode(CImage32::REPLACE);
   m_ShowGrid = false;
   //s_ClipboardFormat = RegisterClipboardFormat("FlatImage32");
@@ -114,6 +120,8 @@ CImageView::CImageView()
 
   m_ColorMask1 = CreateRGBA(Configuration::Get(KEY_COLOR_MASK_1_RED), Configuration::Get(KEY_COLOR_MASK_1_GREEN), Configuration::Get(KEY_COLOR_MASK_1_BLUE), 255);
   m_ColorMask2 = CreateRGBA(Configuration::Get(KEY_COLOR_MASK_2_RED), Configuration::Get(KEY_COLOR_MASK_2_GREEN), Configuration::Get(KEY_COLOR_MASK_2_BLUE), 255);
+
+  key_up = key_down = key_left = key_right = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -832,7 +840,7 @@ CImageView::InvalidateSelection(int sx, int sy, int sw, int sh)
 void
 CImageView::Click(bool force_draw)
 {
-  if (m_Image.GetWidth() == 0 || m_Image.GetHeight() == 0)
+  if (m_Image.GetPixels() == NULL || m_Image.GetWidth() == 0 || m_Image.GetHeight() == 0)
     return;
 
   // convert pixel coordinates to image coordinates
@@ -1363,6 +1371,7 @@ CImageView::OnPaint()
     }
   }
 
+
 /* // this is the old image drawing code
   // draw the image
   for (int ix = 0; ix < width; ix++)
@@ -1506,6 +1515,18 @@ CImageView::OnPaint()
     SelectObject(dc, old_pen);
     SelectObject(dc, old_brush);
     DeleteObject(white_pen);
+  }
+
+  if (true)
+  {
+    POINT p = ConvertToPixel(m_CurPoint);
+    if (InImage(p)) {
+      HBRUSH brush = CreateSolidBrush(RGB(255, 128, 128));
+      RECT Rect = { p.x * size, p.y * size, p.x * size + size, p.y * size + size };
+      OffsetRect(&Rect, offsetx, offsety);
+      FrameRect(dc, &Rect, brush);
+      DeleteObject(brush);
+    }
   }
 
   m_RedrawX = m_RedrawY = m_RedrawWidth = m_RedrawHeight = 0;
@@ -1689,38 +1710,65 @@ CImageView::OnSize(UINT type, int cx, int cy)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-afx_msg void
-CImageView::OnLButtonDown(UINT flags, CPoint point)
+void
+CImageView::OnLeftClick(UINT flags, CPoint point)
 {
   m_LastPoint = m_CurPoint;
   m_CurPoint = point;
 
-  if (flags & MK_SHIFT) {
-    OnColorPicker();
-  }
-  else {
-    if (m_CurrentTool != Tool_Selection
-     && m_CurrentTool != Tool_FreeSelection) {
-      // perform a normal click operation
-      AddUndoState();
-    }
-
-    if (m_CurrentTool == Tool_FreeSelection) {
-      if (!(flags & MK_SHIFT))
-        m_SelectionPoints.clear();
-    }
-
+  if (m_MouseDown) {
     switch (m_CurrentTool) {
-      case Tool_Pencil:    Click(true); break;
-      case Tool_Fill:      Fill();      break;
-      case Tool_Line:      Line();      break;
+      case Tool_Pencil:    break;
+      case Tool_Fill:      break;
+      case Tool_Line:      Line();  break;
       case Tool_Rectangle: Rectangle(); break;
-      case Tool_Circle:    Circle();    break;
-      case Tool_Ellipse:   Ellipse();   break;
+      case Tool_Circle:    Circle(); break;
+      case Tool_Ellipse:   Ellipse(); break;
       case Tool_Selection: Selection(); break;
       case Tool_FreeSelection: Selection(); break;
     }
+  }
+  else
+  {
+    if (flags & MK_SHIFT) {
+      OnColorPicker();
+    }
+    else {
+      if (m_CurrentTool != Tool_Selection
+       && m_CurrentTool != Tool_FreeSelection) {
+        // perform a normal click operation
+        AddUndoState();
+      }
 
+      if (m_CurrentTool == Tool_FreeSelection) {
+        if (!(flags & MK_SHIFT))
+          m_SelectionPoints.clear();
+      }
+
+      switch (m_CurrentTool) {
+        case Tool_Pencil:    Click(true); break;
+        case Tool_Fill:      Fill();      break;
+        case Tool_Line:      Line();      break;
+        case Tool_Rectangle: Rectangle(); break;
+        case Tool_Circle:    Circle();    break;
+        case Tool_Ellipse:   Ellipse();   break;
+        case Tool_Selection: Selection(); break;
+        case Tool_FreeSelection: Selection(); break;
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnLButtonDown(UINT flags, CPoint point)
+{
+  if (flags & MK_SHIFT) {
+    OnLeftClick(flags, point);
+  }
+  else {
+    OnLeftClick(flags, point);
     m_MouseDown = true;
     SetCapture();
   }
@@ -1731,20 +1779,10 @@ CImageView::OnLButtonDown(UINT flags, CPoint point)
 afx_msg void
 CImageView::OnLButtonUp(UINT flags, CPoint point)
 {
-  m_LastPoint = m_CurPoint;
-  m_CurPoint = point;
+  if (!m_MouseDown)
+    return;
 
-  switch (m_CurrentTool) {
-    case Tool_Pencil:    break;
-    case Tool_Fill:      break;
-    case Tool_Line:      Line();  break;
-    case Tool_Rectangle: Rectangle(); break;
-    case Tool_Circle:    Circle(); break;
-    case Tool_Ellipse:   Ellipse(); break;
-    case Tool_Selection: Selection(); break;
-    case Tool_FreeSelection: Selection(); break;
-  }
-
+  OnLeftClick(flags, point);
   m_MouseDown = false;
   ReleaseCapture();
 }
@@ -1847,11 +1885,13 @@ CImageView::OnMouseMove(UINT flags, CPoint point)
   POINT current = ConvertToPixel(point);
   if (InImage(current)) {
     char str[80];
-    sprintf(str, "(%d, %d)", current.x, current.y);
+    sprintf(str, "(%d, %d) (%d %d) %d", current.x, current.y, m_CurPoint.x, m_CurPoint.y, m_MouseDown);
     GetStatusBar()->SetWindowText(str);
   } else {
     GetStatusBar()->SetWindowText("");
   }
+
+  InvalidateSelection(current.x - 1, current.y - 1, 3, 3);
 
   if (!m_MouseDown)
     return;
@@ -1891,6 +1931,162 @@ CImageView::OnKeyDown(UINT vk, UINT nRepCnt, UINT nFlags)
     POINT point;
     GetCursorPos(&point);
     OnRButtonUp(nFlags, point);
+  }
+
+  RECT ClientRect;
+  GetClientRect(&ClientRect);
+
+  // calculate size of pixel squares
+  int width = m_Image.GetWidth();
+  int height = m_Image.GetHeight();
+  int hsize = ClientRect.right / width;
+  int vsize = ClientRect.bottom / height;
+  int size = std::min(hsize, vsize);
+  if (size < 1)
+    size = 1;
+
+  bool invalidate = false;
+
+  if (vk == VK_LEFT) {
+    key_left = true;
+    invalidate = true;
+  }
+
+  if (vk == VK_RIGHT) {
+    key_right = true;
+    invalidate = true;
+  }
+
+  if (vk == VK_UP) {
+    key_up = true;
+    invalidate = true;
+  }
+
+  if (vk == VK_DOWN) {
+    key_down = true;
+    invalidate = true;
+  }
+
+  if (vk == VK_SPACE) {
+    if (!m_MouseDown) {
+      OnLeftClick(nFlags, m_CurPoint);
+      m_MouseDown = true;
+      invalidate = false;
+    }
+  }
+
+  if (invalidate) {
+    Invalidate();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnKeyUp(UINT vk, UINT nRepCnt, UINT nFlags)
+{
+  if (vk == VK_SPACE) {
+    if (nFlags & MK_SHIFT) {
+      OnLeftClick(nFlags, m_CurPoint);
+    }
+    else {
+      if (m_MouseDown) {
+        OnLeftClick(nFlags, m_CurPoint);
+        m_MouseDown = false;
+      }
+    }
+  }
+
+  if (vk == VK_LEFT) {
+    key_left = false;
+  }
+
+  if (vk == VK_RIGHT) {
+    key_right = false;
+  }
+
+  if (vk == VK_UP) {
+    key_up = false;
+  }
+
+  if (vk == VK_DOWN) {
+    key_down = false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnTimer(UINT event)
+{
+  RECT ClientRect;
+  GetClientRect(&ClientRect);
+
+  // calculate size of pixel squares
+  int width = m_Image.GetWidth();
+  int height = m_Image.GetHeight();
+  int hsize = ClientRect.right / width;
+  int vsize = ClientRect.bottom / height;
+  int size = std::min(hsize, vsize);
+  if (size < 1)
+    size = 1;
+
+  int totalx = size * width;
+  int totaly = size * height;
+  int offsetx = (ClientRect.right - totalx) / 2;
+  int offsety = (ClientRect.bottom - totaly) / 2;
+
+  bool cursor_moved = false;
+
+  if (key_left) {
+    if (m_CurPoint.x > offsetx)  { m_LastPoint = m_CurPoint; m_CurPoint.x -= size; }
+    if (m_CurPoint.x < offsetx) m_CurPoint.x = offsetx;
+    cursor_moved = true;
+  }
+
+  if (key_right) {
+    if (m_CurPoint.x < width * hsize - offsetx) { m_LastPoint = m_CurPoint; m_CurPoint.x += size; }
+    if (m_CurPoint.x > width * hsize - offsetx) m_CurPoint.x = width * hsize - offsetx;
+    cursor_moved = true;
+  }
+
+  if (key_up) {
+    if (m_CurPoint.y > offsety) { m_LastPoint = m_CurPoint; m_CurPoint.y -= size; }
+    if (m_CurPoint.y < offsety) m_CurPoint.y = offsety;
+    cursor_moved = true;
+  }
+
+  if (key_down) {
+    if (m_CurPoint.y < height * vsize - offsety)  { m_LastPoint = m_CurPoint; m_CurPoint.y += size; }
+    if (m_CurPoint.y > height * vsize - offsety) m_CurPoint.y = height * vsize - offsety;
+    cursor_moved = true;
+  }
+
+  if (!m_MouseDown) {
+    if (cursor_moved) {
+      POINT p = ConvertToPixel(m_CurPoint);
+      InvalidateSelection(p.x - 1, p.y - 1, 3, 3);
+    }
+  }
+  else
+  {
+    switch (m_CurrentTool)
+    {
+      case Tool_Pencil:
+        Click(false);
+      break;
+
+      case Tool_Fill: break;
+
+      case Tool_Line:
+      case Tool_Rectangle:
+      case Tool_Circle:
+      case Tool_Ellipse:
+      case Tool_Selection:
+      case Tool_FreeSelection:
+        Invalidate();
+      break;
+    }
   }
 }
 

@@ -181,6 +181,8 @@ SMAP::UpdateMap()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#include <math.h>
+
 void
 SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, int& offset_y)
 {
@@ -196,6 +198,10 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
 
   const int cx = GetScreenWidth()  / 2;
   const int cy = GetScreenHeight() / 2;
+
+  if (1) {
+   // m_LayerInfo[i].angle += 0.1;
+  }
 
   // calculate camera offsets
   offset_x = 0;
@@ -291,7 +297,7 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
         ty %= layer.GetHeight();
         IMAGE image = tiles[m_AnimationMap[layer.GetTile(tx, ty)].current];
 
-        if (m_LayerInfo[i].zoomFactorX != 1 || m_LayerInfo[i].zoomFactorY != 1) {
+        if (m_LayerInfo[i].zoomFactorX != 1 || m_LayerInfo[i].zoomFactorY != 1 || m_LayerInfo[i].angle != 0.0) {
           int tx[4];
           int ty[4];
 
@@ -304,19 +310,18 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
           tx[3] = ox;
           ty[3] = oy + blit_height;
 
+          //CalculateRotateBlitPoints(tx, ty, ox + (offset_x * sin(m_LayerInfo[i].angle)), oy + (offset_y * cos(m_LayerInfo[i].angle)), blit_width, blit_height, m_LayerInfo[i].angle);
           TransformBlitImage(image, tx, ty);
-
+          
         } else {
           BlitImage(image, ox, oy);
         }
 
         tx++;
-        //ox += tile_width;
         ox += blit_width;
       }
 
       ty++;
-      //oy += tile_height;
       oy += blit_height;
     }
 

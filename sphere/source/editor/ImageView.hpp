@@ -120,6 +120,7 @@ private:
   void PaintEllipse(CImage32& pImage);
   afx_msg void OnSize(UINT type, int cx, int cy);
 
+  void OnLeftClick(UINT flags, CPoint point);
   afx_msg void OnLButtonDown(UINT flags, CPoint point);
   afx_msg void OnLButtonUp(UINT flags, CPoint point);
   afx_msg void OnRButtonUp(UINT flags, CPoint point);
@@ -129,6 +130,8 @@ private:
 
 public:
   afx_msg void OnKeyDown(UINT vk, UINT repeat, UINT flags);
+  afx_msg void OnKeyUp(UINT vk, UINT nRepCnt, UINT nFlags);
+	afx_msg void OnTimer(UINT event);
 
 private:
   afx_msg void OnColorPicker();
@@ -221,6 +224,8 @@ private:
   int m_RedrawY;
   int m_RedrawWidth;
   int m_RedrawHeight;
+
+  bool key_up, key_down, key_left, key_right;
 
 public:
   CClipboard* m_Clipboard;
