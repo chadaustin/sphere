@@ -2,7 +2,7 @@
 //#include "resource.h"
 
 BEGIN_EVENT_TABLE(wResizeDialog, wxDialog)
-  EVT_BUTTON(wxID_OK, OnOK)
+  EVT_BUTTON(wxID_OK, wResizeDialog::OnOK)
 END_EVENT_TABLE()
 
 ////////////////////////////////////////////////////////////////////////////////

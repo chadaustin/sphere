@@ -1,5 +1,7 @@
+#ifdef _MSC_VER
 // identifier too long
 #pragma warning(disable : 4786)
+#endif
 
 
 #include "SpritesetWindow.hpp"
@@ -126,7 +128,8 @@ wSpritesetWindow::Create()
   UpdateImageView();
   TabChanged(0);
 
-  OnZoom2x(wxCommandEvent());
+  wxCommandEvent evt;
+  OnZoom2x(evt);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

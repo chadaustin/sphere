@@ -27,8 +27,8 @@ END_EVENT_TABLE()
 
 wAnimationWindow::wAnimationWindow(const char* animation)
 : wDocumentWindow(animation, -1 /*IDR_ANIMATION*/)
-, m_BlitFrame(NULL)
 , m_Animation(NULL)
+, m_BlitFrame(NULL)
 {
   m_Animation = LoadAnimation(animation);
   if (!m_Animation) {

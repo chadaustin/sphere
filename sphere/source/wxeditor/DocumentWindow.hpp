@@ -2,7 +2,6 @@
 #define DOCUMENT_WINDOW_HPP
 
 
-//#include <afxwin.h>
 #include <vector>
 #include <wx/wx.h>
 #include <wx/docmdi.h>

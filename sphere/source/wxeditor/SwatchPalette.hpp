@@ -57,7 +57,7 @@ private:
 
   wxMenu *m_Menu;
 
-  friend wMainWindow;
+  friend class wMainWindow;
 
 private:
 //  DECLARE_CLASS(wSwatchPalette);

@@ -21,8 +21,8 @@ END_EVENT_TABLE()
 
 wTilePalette::wTilePalette(wDocumentWindow* owner, ITilesetViewHandler* handler, sTileset* tileset)
 : wPaletteWindow(owner, "Tiles",
-  Configuration::Get(KEY_TILES_RECT),
-  Configuration::Get(KEY_TILES_VISIBLE))
+  Configuration::Get(KEY_TILES_RECT()),
+  Configuration::Get(KEY_TILES_VISIBLE()))
 , m_Created(false)
 {
 // What is this?
@@ -34,7 +34,8 @@ wTilePalette::wTilePalette(wDocumentWindow* owner, ITilesetViewHandler* handler,
   m_TilesetView = new wTilesetView(this, handler, tileset);
   m_Created = true;
 
-  OnSize(wxSizeEvent(GetSize()));
+  wxSizeEvent evt(GetSize());
+  OnSize(evt);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -45,9 +46,9 @@ wTilePalette::Destroy()
 //  delete m_TilesetView;
   // save state
   wxRect rect = GetRect();
-  Configuration::Set(KEY_TILES_RECT, rect);
+  Configuration::Set(KEY_TILES_RECT(), rect);
 
-  Configuration::Set(KEY_TILES_VISIBLE, true); /*todo:IsWindowVisible() != FALSE);*/
+  Configuration::Set(KEY_TILES_VISIBLE(), true); /*todo:IsWindowVisible() != FALSE);*/
 
   // destroy window
   //DestroyWindow();

@@ -1,4 +1,6 @@
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)
+#endif
 
 
 #include "SaveableDocumentWindow.hpp"
@@ -20,19 +22,19 @@ BEGIN_MESSAGE_MAP(CSaveableDocumentWindow, CDocumentWindow)
 END_MESSAGE_MAP()
 */
 BEGIN_EVENT_TABLE(wSaveableDocumentWindow, wDocumentWindow)
-  EVT_MENU(wxID_SAVE, OnFileSave)
-  EVT_MENU(wxID_SAVEAS, OnFileSaveAs)
+  EVT_MENU(wxID_SAVE, wSaveableDocumentWindow::OnFileSave)
+  EVT_MENU(wxID_SAVEAS, wSaveableDocumentWindow::OnFileSaveAs)
 
-  EVT_MENU(wID_FILE_SAVE, OnFileSave)
-  EVT_MENU(wID_FILE_SAVEAS, OnFileSaveAs)
-  EVT_MENU(wID_FILE_SAVECOPYAS, OnFileSaveCopyAs)
+  EVT_MENU(wID_FILE_SAVE, wSaveableDocumentWindow::OnFileSave)
+  EVT_MENU(wID_FILE_SAVEAS, wSaveableDocumentWindow::OnFileSaveAs)
+  EVT_MENU(wID_FILE_SAVECOPYAS, wSaveableDocumentWindow::OnFileSaveCopyAs)
 
-  EVT_COMMAND(wxID_SAVE, -1, OnFileSave)
-  EVT_COMMAND(wxID_SAVEAS, -1, OnFileSaveAs)
+  EVT_COMMAND(wxID_SAVE, -1, wSaveableDocumentWindow::OnFileSave)
+  EVT_COMMAND(wxID_SAVEAS, -1, wSaveableDocumentWindow::OnFileSaveAs)
 
-  EVT_COMMAND(wID_FILE_SAVE, -1, OnFileSave)
-  EVT_COMMAND(wID_FILE_SAVEAS, -1, OnFileSaveAs)
-  EVT_COMMAND(wID_FILE_SAVECOPYAS, -1, OnFileSaveCopyAs)
+  EVT_COMMAND(wID_FILE_SAVE, -1, wSaveableDocumentWindow::OnFileSave)
+  EVT_COMMAND(wID_FILE_SAVEAS, -1, wSaveableDocumentWindow::OnFileSaveAs)
+  EVT_COMMAND(wID_FILE_SAVECOPYAS, -1, wSaveableDocumentWindow::OnFileSaveCopyAs)
 END_EVENT_TABLE()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -55,7 +57,8 @@ wSaveableDocumentWindow::~wSaveableDocumentWindow()
 bool
 wSaveableDocumentWindow::Save()
 {
-  OnFileSave(wxCommandEvent());
+  wxCommandEvent evt;
+  OnFileSave(evt);
   return true;
 }
 
@@ -70,8 +73,10 @@ wSaveableDocumentWindow::Close()
     if (retval == wxID_CANCEL)
       return false;
 
-    if (retval == wxYES)
-      OnFileSave(wxCommandEvent());
+    if (retval == wxYES) {
+      wxCommandEvent evt;
+      OnFileSave(evt);
+    }
   }
 
   return true;
@@ -179,8 +184,10 @@ wSaveableDocumentWindow::OnFileSave(wxCommandEvent &event)
     m_Modified = false;
     UpdateWindowCaption();
   }
-  else
-    OnFileSaveAs(wxCommandEvent());
+  else {
+    wxCommandEvent evt;
+    OnFileSaveAs(evt);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

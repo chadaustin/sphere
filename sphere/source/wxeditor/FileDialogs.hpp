@@ -3,7 +3,9 @@
 
 
 // identifier too long
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)
+#endif
 
 
 #include <string>
@@ -121,7 +123,7 @@ private:
 
     // make a semicolon-separated string
     std::string filters;
-    for (int i = 0; i < extensions.size(); i++) {
+    for (unsigned i = 0; i < extensions.size(); i++) {
       filters += "*." + extensions[i];
       if (i < extensions.size() - 1) {
         filters += ";";
@@ -143,7 +145,7 @@ private:
 
     // make a semicolon-separated string
     std::string filters;
-    for (int i = 0; i < extensions.size(); i++) {
+    for (unsigned i = 0; i < extensions.size(); i++) {
       filters += "*." + extensions[i];
       if (i < extensions.size() - 1) {
         filters += ";";

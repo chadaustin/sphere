@@ -1,6 +1,7 @@
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)
+#endif
 
-//#include <windows.h>
 
 #include "LayerView.hpp"
 #include "LayerPropertiesDialog.hpp"

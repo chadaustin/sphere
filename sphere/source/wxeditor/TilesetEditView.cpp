@@ -1,5 +1,7 @@
+#ifdef _MSC_VER
 // identifier too long
 #pragma warning(disable : 4786)
+#endif
 
 
 #include "TilesetEditView.hpp"

@@ -1,6 +1,6 @@
 #ifndef IDS_HPP
 #define IDS_HPP
-#include <wx/event.h>
+#include <wx/wx.h>
 #define wxID_base  (wxID_HIGHEST + 1000) //wxID_HIGHEST //wxEVT_USER_FIRST
 enum wID_ {
 

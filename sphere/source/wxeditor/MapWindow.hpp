@@ -40,7 +40,7 @@ private:
   void GetLayerViewRect(wxRect* rect);
   void TabChanged(int tab);
 
-  void OnSize(wxSizeEvent &event);
+  void OnSize(wxSizeEvent& event);
 //  void OnCommand(wxCommandEvent &event);
   void OnMapProperties(wxCommandEvent &event);
   void OnChangeTileSize(wxCommandEvent &event);

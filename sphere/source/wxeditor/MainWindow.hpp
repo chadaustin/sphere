@@ -2,7 +2,9 @@
 #define MAIN_WINDOW_HPP
 
 
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)  // identifier too long
+#endif
 
 
 #include <vector>

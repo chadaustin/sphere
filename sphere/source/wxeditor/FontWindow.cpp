@@ -1,7 +1,8 @@
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)
+#endif
 
-//#define WXWIN_COMPATIBILITY_EVENT_TYPES 1
-#include <wx/event.h>
+#include <wx/wx.h>
 #include "FontWindow.hpp"
 #include "FileDialogs.hpp"
 #include "ResizeDialog.hpp"

@@ -30,15 +30,16 @@ wScrollWindow::wScrollWindow(wxWindow *parent, wxWindowID id)
 , m_YPageSize(0)
 , m_YPosition(0)
 
-, m_VScrollbar(NULL)
 , m_HScrollbar(NULL)
+, m_VScrollbar(NULL)
 {
   Create(parent, id, wxDefaultPosition, wxDefaultSize, 0/*wxHSCROLL | wxVSCROLL*/, wxString("wScrollWindow"));
   
   m_VScrollbar = new wxScrollBar(this, wID_SCROLL_VERTICAL, wxDefaultPosition, wxDefaultSize, wxSB_VERTICAL);
   m_HScrollbar = new wxScrollBar(this, wID_SCROLL_HORIZONTAL, wxDefaultPosition, wxDefaultSize, wxSB_HORIZONTAL);
 
-  OnSize(wxSizeEvent(GetSize()));
+  wxSizeEvent evt(GetSize());
+  OnSize(evt);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -261,16 +262,20 @@ wScrollWindow::ScrollArea(int x, int y, wxRect rect)
   
   if(x != 0) {
     if(dstx == 0) {
-      Refresh(TRUE, &wxRect(scrollsize.x + rect.x, 0 + rect.y, size.x - scrollsize.x, size.y));
+      wxRect rect(scrollsize.x + rect.x, 0 + rect.y, size.x - scrollsize.x, size.y);
+      Refresh(TRUE, &rect);
     } else {
-      Refresh(TRUE, &wxRect(0 + rect.x, 0 + rect.y, size.x - scrollsize.x, size.y));
+      wxRect rect(0 + rect.x, 0 + rect.y, size.x - scrollsize.x, size.y);
+      Refresh(TRUE, &rect);
     }
   }
   if(y != 0) {
     if(dsty == 0) {
-      Refresh(TRUE, &wxRect(0 + rect.x, scrollsize.y + rect.y, size.x, size.y - scrollsize.y));
+      wxRect rect(0 + rect.x, scrollsize.y + rect.y, size.x, size.y - scrollsize.y);
+      Refresh(TRUE, &rect);
     } else {
-      Refresh(TRUE, &wxRect(0 + rect.x, 0 + rect.y, size.x, size.y - scrollsize.y));
+      wxRect rect(0 + rect.x, 0 + rect.y, size.x, size.y - scrollsize.y);
+      Refresh(TRUE, &rect);
     }
   }
 

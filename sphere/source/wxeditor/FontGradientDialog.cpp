@@ -2,7 +2,7 @@
 //#include "resource.h"
 
 BEGIN_EVENT_TABLE(wFontGradientDialog, wxDialog)
-  EVT_BUTTON(wxID_OK, OnOK)
+  EVT_BUTTON(wxID_OK, wFontGradientDialog::OnOK)
 END_EVENT_TABLE()
 
 

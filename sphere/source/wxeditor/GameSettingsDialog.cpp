@@ -3,7 +3,7 @@
 #include "resource.h"
 
 BEGIN_EVENT_TABLE(wGameSettingsDialog, wxDialog)
-  EVT_BUTTON(wxID_OK, OnOK)
+  EVT_BUTTON(wxID_OK, wGameSettingsDialog::OnOK)
 END_EVENT_TABLE()
 
 ////////////////////////////////////////////////////////////////////////////////

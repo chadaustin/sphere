@@ -14,7 +14,7 @@ END_MESSAGE_MAP()
 */
 
 BEGIN_EVENT_TABLE(wNewMapDialog, wxDialog)
-  EVT_BUTTON(wxID_OK, OnOK)
+  EVT_BUTTON(wxID_OK, wNewMapDialog::OnOK)
   EVT_BUTTON(wID_TILESETDIALOG_BROWSE, wNewMapDialog::OnTilesetBrowse)
 END_EVENT_TABLE()
 

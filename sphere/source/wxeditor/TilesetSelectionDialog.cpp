@@ -14,7 +14,7 @@ END_MESSAGE_MAP()
 */
 
 BEGIN_EVENT_TABLE(wTilesetSelectionDialog, wxDialog)
-  EVT_BUTTON(wxID_OK, OnOK)
+  EVT_BUTTON(wxID_OK, wTilesetSelectionDialog::OnOK)
 END_EVENT_TABLE()
 
 ////////////////////////////////////////////////////////////////////////////////

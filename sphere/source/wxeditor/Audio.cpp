@@ -77,7 +77,7 @@ int
 CSound::GetVolume()
 {
   if (m_Sound) {
-    return m_Sound->getVolume() * 255;
+    return int(m_Sound->getVolume() * 255);
   } else {
     return 0;
   }

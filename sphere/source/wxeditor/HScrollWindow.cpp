@@ -97,7 +97,7 @@ wHScrollWindow::OnHScroll(wxScrollEvent &event)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-wHScrollWindow::OnSize(wxSizeEvent &event)
+wHScrollWindow::OnSize(const wxSizeEvent& event)
 {
   wxSize size = GetClientSize();
   if(m_Scrollbar != NULL) {

@@ -1,0 +1,84 @@
+Import('base_env SetupAudiere SetupCorona SetupJS SetupMNG SetupWXWindows SetupZLib')
+
+env = base_env.Copy()
+env.Append(
+    LIBPATH = [Dir('../common')],
+    LIBS = ['common', 'gdi32'])
+SetupAudiere(env)
+SetupCorona(env)
+SetupJS(env)
+SetupMNG(env)
+SetupWXWindows(env)
+SetupZLib(env)
+
+editor = env.Program('wxeditor', Split("""
+    AlphaView.cpp
+    AnimationWindow.cpp
+    Audio.cpp
+    ColorView.cpp
+    Configuration.cpp
+    DIBSection.cpp
+    Debug.cpp
+    DocumentWindow.cpp
+    Editor.cpp
+    EntityPersonDialog.cpp
+    EntityTriggerDialog.cpp
+    FileSystem.cpp
+    FileTypes.cpp
+    FontGradientDialog.cpp
+    FontWindow.cpp
+    GameSettingsDialog.cpp
+    HScrollWindow.cpp
+    ImageToolPalette.cpp
+    ImageView.cpp
+    ImageWindow.cpp
+    Keys.cpp
+    LayerPropertiesDialog.cpp
+    LayerView.cpp
+    MainWindow.cpp
+    MapPropertiesDialog.cpp
+    MapToolPalette.cpp
+    MapView.cpp
+    MapWindow.cpp
+    NewMapDialog.cpp
+    NewProjectDialog.cpp
+    Package.cpp
+    PaletteView.cpp
+    PaletteWindow.cpp
+    Project.cpp
+    ProjectWindow.cpp
+    RGBAView.cpp
+    ResizeDialog.cpp
+    SaveableDocumentWindow.cpp
+    ScriptWindow.cpp
+    Scripting.cpp
+    ScrollWindow.cpp
+    SoundWindow.cpp
+    SpriteBaseView.cpp
+    SpritePropertiesDialog.cpp
+    SpritesetImagesPalette.cpp
+    SpritesetView.cpp
+    SpritesetWindow.cpp
+    SwatchPalette.cpp
+    SwatchServer.cpp
+    TileObstructionDialog.cpp
+    TileObstructionView.cpp
+    TilePalette.cpp
+    TilePropertiesDialog.cpp
+    TilesetEditView.cpp
+    TilesetSelectionDialog.cpp
+    TilesetView.cpp
+    ToolPalette.cpp
+    VScrollWindow.cpp
+    Widget.cpp
+    WindowStylePropertiesDialog.cpp
+    WindowStyleWindow.cpp
+    ZoneEditDialog.cpp
+"""))
+
+#unused
+# NumberDialog
+# OptionsDialog
+# StringDialog
+
+env.Install('#/build', editor)

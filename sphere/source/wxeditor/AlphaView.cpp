@@ -137,19 +137,22 @@ wAlphaView::OnSize(wxSizeEvent& event)
 void
 wAlphaView::OnVScroll(wxScrollWinEvent &event)
 {
-  if(event.GetEventType() == wxEVT_SCROLL_TOP)          m_Alpha = 0;
-  if(event.GetEventType() == wxEVT_SCROLL_BOTTOM)       m_Alpha = 255;
-  if(event.GetEventType() == wxEVT_SCROLL_LINEUP)       m_Alpha--;
-  if(event.GetEventType() == wxEVT_SCROLL_LINEDOWN)     m_Alpha++;
-  if(event.GetEventType() == wxEVT_SCROLL_PAGEUP)       m_Alpha -= 16;
-  if(event.GetEventType() == wxEVT_SCROLL_PAGEDOWN)     m_Alpha += 16;
-  if(event.GetEventType() == wxEVT_SCROLL_THUMBTRACK)   m_Alpha = m_AlphaSlider->GetValue();
-  if(event.GetEventType() == wxEVT_SCROLL_THUMBRELEASE) m_Alpha = m_AlphaSlider->GetValue();
-  if (m_Alpha < 0) {
-    m_Alpha = 0;
-  } else if (m_Alpha > 255) {
-    m_Alpha = 255;
+  int alpha = m_Alpha;
+  if(event.GetEventType() == wxEVT_SCROLL_TOP)          alpha = 0;
+  if(event.GetEventType() == wxEVT_SCROLL_BOTTOM)       alpha = 255;
+  if(event.GetEventType() == wxEVT_SCROLL_LINEUP)       alpha--;
+  if(event.GetEventType() == wxEVT_SCROLL_LINEDOWN)     alpha++;
+  if(event.GetEventType() == wxEVT_SCROLL_PAGEUP)       alpha -= 16;
+  if(event.GetEventType() == wxEVT_SCROLL_PAGEDOWN)     alpha += 16;
+  if(event.GetEventType() == wxEVT_SCROLL_THUMBTRACK)   alpha = m_AlphaSlider->GetValue();
+  if(event.GetEventType() == wxEVT_SCROLL_THUMBRELEASE) alpha = m_AlphaSlider->GetValue();
+
+  if (alpha < 0) {
+    alpha = 0;
+  } else if (alpha > 255) {
+    alpha = 255;
   }
+  m_Alpha = alpha;
 
   UpdateSlider();
   m_Handler->AV_AlphaChanged(255 - m_Alpha);

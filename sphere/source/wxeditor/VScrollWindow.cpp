@@ -29,7 +29,8 @@ wVScrollWindow::wVScrollWindow(wxWindow *parent, wxWindowID id)
   Create(parent, id, wxDefaultPosition, wxDefaultSize, 0/*wxVSCROLL*/, wxString("wVScrollWindow"));
   m_Scrollbar = new wxScrollBar(this, wID_SCROLL_VERTICAL, wxDefaultPosition, wxDefaultSize, wxSB_VERTICAL);
 
-  OnSize(wxSizeEvent(GetSize()));
+  wxSizeEvent evt(GetSize());
+  OnSize(evt);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -162,16 +163,20 @@ wVScrollWindow::ScrollArea(int x, int y)
   
   if(x != 0) {
     if(dstx == 0) {
-      Refresh(TRUE, &wxRect(scrollsize.x, 0, size.x - scrollsize.x, size.y));
+      wxRect rect(scrollsize.x, 0, size.x - scrollsize.x, size.y);
+      Refresh(TRUE, &rect);
     } else {
-      Refresh(TRUE, &wxRect(0, 0, size.x - scrollsize.x, size.y));
+      wxRect rect(0, 0, size.x - scrollsize.x, size.y);
+      Refresh(TRUE, &rect);
     }
   }
   if(y != 0) {
     if(dsty == 0) {
-      Refresh(TRUE, &wxRect(0, scrollsize.y, size.x, size.y - scrollsize.y));
+      wxRect rect(0, scrollsize.y, size.x, size.y - scrollsize.y);
+      Refresh(TRUE, &rect);
     } else {
-      Refresh(TRUE, &wxRect(0, 0, size.x, size.y - scrollsize.y));
+      wxRect rect(0, 0, size.x, size.y - scrollsize.y);
+      Refresh(TRUE, &rect);
     }
   }
 

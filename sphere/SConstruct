@@ -76,14 +76,21 @@ def SetupMNG(env):
     if sys.platform == 'cygwin':
         env.Append(
             CCFLAGS = ['-DMNG_NO_CMS', '-DMNG_SUPPORT_LC', '-DMNG_DLL'])
-    
+
+def SetupWXWindows(env):
+    env.Append(
+        CCFLAGS = ['-D__GNUWIN32__', '-D__WXMSW__', '-D__WIN32__',
+                   '-D__WIN95__', '-DSTRICT', '-DWIN32_LEAN_AND_MEAN'],
+        LIBS = ['stc', 'wxmsw', 'gdi32', 'comctl32', 'comdlg32',
+                'ole32', 'uuid', 'ws2_32'])
 
 def SetupZLib(env):
     if sys.platform == 'cygwin':
         env.Append(CCFLAGS = ['-DWINDOWS', '-DZLIB_DLL'])
     env.Append(LIBS = ['z'])
 
-Export('SetupAudiere SetupCorona SetupGL SetupJS SetupMNG SetupZLib')
+Export("""SetupAudiere SetupCorona SetupGL SetupJS SetupMNG SetupWXWindows
+          SetupZLib""")
 
 base_env = Environment(ENV = os.environ)
 
@@ -92,23 +99,27 @@ if sys.platform == 'cygwin':
     base_env['SHLIBSUFFIX'] = '.dll'
     base_env['SHCCFLAGS']   = ['$CCFLAGS']
     base_env['SHCXXFLAGS']  = ['$CXXFLAGS']
-    base_env['LINKFLAGS']   = ['-mno-cygwin', '-s']
+    base_env['LINKFLAGS']   = ['-mno-cygwin']
     base_env['SHLINKFLAGS'] = [
         '-shared', '-Wl,--enable-stdcall-fixup', '$LINKFLAGS']
     base_env.Append(
         _RESINCFLAGS = '$( ${_concat("--include-dir ", RESPATH, "", locals(), globals())} $)',
         CCFLAGS = ['-DWIN32', '-D_WIN32', '-DCYGWIN', '-DXP_PC',
-                   '-mno-cygwin', '-O2', '-Wall', '-Wno-non-virtual-dtor'],
+                   '-mno-cygwin', '-Wall', '-Wno-non-virtual-dtor'],
         CPPPATH = [Dir('third-party/include')],
         RESPATH = [Dir('third-party/include')],
         LIBPATH = [Dir('third-party/lib')])
     base_env['BUILDERS']['Resource'] = Builder(
         action = 'windres -O coff --define CYGWIN $_RESINCFLAGS $SOURCE -o $TARGET')
 
-if ARGUMENTS.get('debug', 0):
+if ARGUMENTS.get('debug'):
     base_env.Append(
         CCFLAGS = ['-DDEBUG', '-g'],
         LINKFLAGS = ['-g'])
+elif ARGUMENTS.get('opt'):
+    base_env.Append(
+        CCFLAGS = ['-O2'],
+        LINKFLAGS = ['-s'])
 
 Export('base_env')
 

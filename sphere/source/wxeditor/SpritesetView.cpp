@@ -8,6 +8,11 @@
 #include "IDs.hpp"
 
 
+#ifdef DrawText
+#undef DrawText
+#endif
+
+
 #define LABEL_WIDTH 80
 
 

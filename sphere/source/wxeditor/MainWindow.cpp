@@ -1,12 +1,10 @@
+#ifdef _MSC_VER
 // disable 'identifier too long' warning
 #pragma warning(disable : 4786)
+#endif
 
 // standard
 #include <set>
-
-// system
-//#include <afxdlgs.h>
-//#include <htmlhelp.h>
 
 // core
 #include "Editor.hpp"
@@ -48,8 +46,9 @@
 #include <zlib.h>
 #include <libmng.h>
 
-
+// system
 #include <windows.h>
+
 
 
 #include "icons/sph-game.xpm"
@@ -158,69 +157,69 @@ END_MESSAGE_MAP()
 */
 
 BEGIN_EVENT_TABLE(wMainWindow, wxMDIParentFrame)
-  EVT_CLOSE(OnClose)
+  EVT_CLOSE(wMainWindow::OnClose)
   // generic file open
-  EVT_MENU(wID_FILE_OPEN, OnFileOpen)
+  EVT_MENU(wID_FILE_OPEN, wMainWindow::OnFileOpen)
 
   // project
-  EVT_MENU(wID_FILE_NEW_PROJECT,     OnFileNewProject)
-  EVT_MENU(wID_FILE_OPEN_PROJECT,    OnFileOpenProject)
-  EVT_MENU(wID_FILE_CLOSEPROJECT,    OnFileCloseProject)
-  EVT_MENU(wID_FILE_OPENLASTPROJECT, OnFileOpenLastProject)
+  EVT_MENU(wID_FILE_NEW_PROJECT,     wMainWindow::OnFileNewProject)
+  EVT_MENU(wID_FILE_OPEN_PROJECT,    wMainWindow::OnFileOpenProject)
+  EVT_MENU(wID_FILE_CLOSEPROJECT,    wMainWindow::OnFileCloseProject)
+  EVT_MENU(wID_FILE_OPENLASTPROJECT, wMainWindow::OnFileOpenLastProject)
 
   // file | new
-  EVT_MENU(wID_FILE_NEW_MAP,         OnFileNewMap)
-  EVT_MENU(wID_FILE_NEW_SPRITESET,   OnFileNewSpriteset)
-  EVT_MENU(wID_FILE_NEW_SCRIPT,      OnFileNewScript)
-  EVT_MENU(wID_FILE_NEW_FONT,        OnFileNewFont)
-  EVT_MENU(wID_FILE_NEW_WINDOWSTYLE, OnFileNewWindowStyle)
-  EVT_MENU(wID_FILE_NEW_IMAGE,       OnFileNewImage)
+  EVT_MENU(wID_FILE_NEW_MAP,         wMainWindow::OnFileNewMap)
+  EVT_MENU(wID_FILE_NEW_SPRITESET,   wMainWindow::OnFileNewSpriteset)
+  EVT_MENU(wID_FILE_NEW_SCRIPT,      wMainWindow::OnFileNewScript)
+  EVT_MENU(wID_FILE_NEW_FONT,        wMainWindow::OnFileNewFont)
+  EVT_MENU(wID_FILE_NEW_WINDOWSTYLE, wMainWindow::OnFileNewWindowStyle)
+  EVT_MENU(wID_FILE_NEW_IMAGE,       wMainWindow::OnFileNewImage)
 
   // file | open
-  EVT_MENU(wID_FILE_OPEN_MAP,         OnFileOpenMap)
-  EVT_MENU(wID_FILE_OPEN_SPRITESET,   OnFileOpenSpriteset)
-  EVT_MENU(wID_FILE_OPEN_SCRIPT,      OnFileOpenScript)
-  EVT_MENU(wID_FILE_OPEN_SOUND,       OnFileOpenSound)
-  EVT_MENU(wID_FILE_OPEN_FONT,        OnFileOpenFont)
-  EVT_MENU(wID_FILE_OPEN_WINDOWSTYLE, OnFileOpenWindowStyle)
-  EVT_MENU(wID_FILE_OPEN_IMAGE,       OnFileOpenImage)
-  EVT_MENU(wID_FILE_OPEN_ANIMATION,   OnFileOpenAnimation)
+  EVT_MENU(wID_FILE_OPEN_MAP,         wMainWindow::OnFileOpenMap)
+  EVT_MENU(wID_FILE_OPEN_SPRITESET,   wMainWindow::OnFileOpenSpriteset)
+  EVT_MENU(wID_FILE_OPEN_SCRIPT,      wMainWindow::OnFileOpenScript)
+  EVT_MENU(wID_FILE_OPEN_SOUND,       wMainWindow::OnFileOpenSound)
+  EVT_MENU(wID_FILE_OPEN_FONT,        wMainWindow::OnFileOpenFont)
+  EVT_MENU(wID_FILE_OPEN_WINDOWSTYLE, wMainWindow::OnFileOpenWindowStyle)
+  EVT_MENU(wID_FILE_OPEN_IMAGE,       wMainWindow::OnFileOpenImage)
+  EVT_MENU(wID_FILE_OPEN_ANIMATION,   wMainWindow::OnFileOpenAnimation)
 
   // file | import
-  EVT_MENU(wID_FILE_IMPORT_IMAGETOMAPTILESET, OnFileImportImageToMap)
-  EVT_MENU(wID_FILE_IMPORT_BITMAPTORWS,       OnFileImportBitmapToRWS)
-  EVT_MENU(wID_FILE_IMPORT_BITMAPTORSS,       OnFileImportBitmapToRSS)
-  EVT_MENU(wID_FILE_IMPORT_BITMAPTORTS,       OnFileImportBitmapToRTS)
-  EVT_MENU(wID_FILE_IMPORT_VERGEFONTTEMPLATE, OnFileImportVergeFontTemplate)
-  EVT_MENU(wID_FILE_IMPORT_VERGEMAP,          OnFileImportVergeMap)
-  EVT_MENU(wID_FILE_IMPORT_VERGESPRITESET,    OnFileImportVergeSpriteset)
-  EVT_MENU(wID_FILE_IMPORT_MERGE_RGBA,        OnFileImportMergeRGBA)
-  EVT_MENU(wID_FILE_IMPORT_WINDOWSFONT,       OnFileImportWindowsFont)
+  EVT_MENU(wID_FILE_IMPORT_IMAGETOMAPTILESET, wMainWindow::OnFileImportImageToMap)
+  EVT_MENU(wID_FILE_IMPORT_BITMAPTORWS,       wMainWindow::OnFileImportBitmapToRWS)
+  EVT_MENU(wID_FILE_IMPORT_BITMAPTORSS,       wMainWindow::OnFileImportBitmapToRSS)
+  EVT_MENU(wID_FILE_IMPORT_BITMAPTORTS,       wMainWindow::OnFileImportBitmapToRTS)
+  EVT_MENU(wID_FILE_IMPORT_VERGEFONTTEMPLATE, wMainWindow::OnFileImportVergeFontTemplate)
+  EVT_MENU(wID_FILE_IMPORT_VERGEMAP,          wMainWindow::OnFileImportVergeMap)
+  EVT_MENU(wID_FILE_IMPORT_VERGESPRITESET,    wMainWindow::OnFileImportVergeSpriteset)
+  EVT_MENU(wID_FILE_IMPORT_MERGE_RGBA,        wMainWindow::OnFileImportMergeRGBA)
+  EVT_MENU(wID_FILE_IMPORT_WINDOWSFONT,       wMainWindow::OnFileImportWindowsFont)
 
-  EVT_MENU(wID_FILE_SAVEALL, OnFileSaveAll)
+  EVT_MENU(wID_FILE_SAVEALL, wMainWindow::OnFileSaveAll)
 
-  EVT_MENU(wID_FILE_OPTIONS, OnFileOptions)
-  EVT_MENU(wID_FILE_EXIT,    OnClose)
+  EVT_MENU(wID_FILE_OPTIONS, wMainWindow::OnFileOptions)
+  EVT_MENU(wID_FILE_EXIT,    wMainWindow::OnClose)
 
   // insert
-  EVT_MENU(wID_PROJECT_INSERT_MAP,         OnProjectInsertMap)
-  EVT_MENU(wID_PROJECT_INSERT_SPRITESET,   OnProjectInsertSpriteset)
-  EVT_MENU(wID_PROJECT_INSERT_SCRIPT,      OnProjectInsertScript)
-  EVT_MENU(wID_PROJECT_INSERT_SOUND,       OnProjectInsertSound)
-  EVT_MENU(wID_PROJECT_INSERT_FONT,        OnProjectInsertFont)
-  EVT_MENU(wID_PROJECT_INSERT_WINDOWSTYLE, OnProjectInsertWindowStyle)
-  EVT_MENU(wID_PROJECT_INSERT_IMAGE,       OnProjectInsertImage)
-  EVT_MENU(wID_PROJECT_INSERT_ANIMATION,   OnProjectInsertAnimation)
+  EVT_MENU(wID_PROJECT_INSERT_MAP,         wMainWindow::OnProjectInsertMap)
+  EVT_MENU(wID_PROJECT_INSERT_SPRITESET,   wMainWindow::OnProjectInsertSpriteset)
+  EVT_MENU(wID_PROJECT_INSERT_SCRIPT,      wMainWindow::OnProjectInsertScript)
+  EVT_MENU(wID_PROJECT_INSERT_SOUND,       wMainWindow::OnProjectInsertSound)
+  EVT_MENU(wID_PROJECT_INSERT_FONT,        wMainWindow::OnProjectInsertFont)
+  EVT_MENU(wID_PROJECT_INSERT_WINDOWSTYLE, wMainWindow::OnProjectInsertWindowStyle)
+  EVT_MENU(wID_PROJECT_INSERT_IMAGE,       wMainWindow::OnProjectInsertImage)
+  EVT_MENU(wID_PROJECT_INSERT_ANIMATION,   wMainWindow::OnProjectInsertAnimation)
 
-  EVT_MENU(wID_PROJECT_REFRESH,         OnProjectRefresh)
-  EVT_MENU(wID_PROJECT_RUNSPHERE,       OnProjectRunSphere)
-  EVT_MENU(wID_PROJECT_CONFIGURESPHERE, OnProjectConfigureSphere)
-  EVT_MENU(wID_PROJECT_PACKAGE_GAME,    OnProjectPackageGame)
+  EVT_MENU(wID_PROJECT_REFRESH,         wMainWindow::OnProjectRefresh)
+  EVT_MENU(wID_PROJECT_RUNSPHERE,       wMainWindow::OnProjectRunSphere)
+  EVT_MENU(wID_PROJECT_CONFIGURESPHERE, wMainWindow::OnProjectConfigureSphere)
+  EVT_MENU(wID_PROJECT_PACKAGE_GAME,    wMainWindow::OnProjectPackageGame)
 
-  EVT_MENU(wID_WINDOW_CLOSEALL, OnWindowCloseAll)
+  EVT_MENU(wID_WINDOW_CLOSEALL, wMainWindow::OnWindowCloseAll)
 
-  EVT_MENU(wID_HELP_CONTENTS, OnHelpContents)
-  EVT_MENU(wID_HELP_ABOUT,    OnHelpAbout)
+  EVT_MENU(wID_HELP_CONTENTS, wMainWindow::OnHelpContents)
+  EVT_MENU(wID_HELP_ABOUT,    wMainWindow::OnHelpAbout)
 
 END_EVENT_TABLE()
 
@@ -323,7 +322,10 @@ wMainWindow::wMainWindow(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/*todo:
+#if 0
+
+todo:
+
 bool
 wMainWindow::Create()
 {
@@ -336,12 +338,12 @@ wMainWindow::Create()
     rectDefault,
     NULL,
     MAKEINTRESOURCE(IDR_MAIN));
-* /
+*/
 
 
 /*
   LoadAccelTable(MAKEINTRESOURCE(IDR_ACCELERATOR));
-* /
+*/
 
 /*
   // create the toolbar
@@ -352,7 +354,7 @@ wMainWindow::Create()
   m_ToolBar.SetWindowText("Main");
   m_ToolBar.LoadToolBar(IDR_TOOLBAR);
   m_ToolBar.EnableDocking(CBRS_ALIGN_ANY);
-* /
+*/
 
 /*
   // status bar indicators
@@ -369,7 +371,7 @@ wMainWindow::Create()
   m_StatusBar.SetBarStyle(m_StatusBar.GetBarStyle() | CBRS_FLYBY | CBRS_TOOLTIPS);
 
   SetStatusBar(&m_StatusBar);
-* /
+*/
   CreateStatusBar(3);
 
 
@@ -398,7 +400,7 @@ wMainWindow::Create()
 
   return TRUE;
 }
-*/
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -440,7 +442,7 @@ wMainWindow::OpenProject(const char* filename)
     return;
   }
 
-  Configuration::Set(KEY_LAST_PROJECT, filename);
+  Configuration::Set(KEY_LAST_PROJECT(), filename);
   
   m_ProjectOpen = true;
   m_ProjectWindow = new wProjectWindow(this, &m_Project);
@@ -474,7 +476,7 @@ void
 wMainWindow::CloseNotice(wDocumentWindow *doc)
 {
   // remove window from list
-  for (int i = 0; i < m_DocumentWindows.size(); i++) {
+  for (unsigned i = 0; i < m_DocumentWindows.size(); i++) {
     if (m_DocumentWindows[i] == doc)
     {
       m_DocumentWindows.erase(m_DocumentWindows.begin() + i);
@@ -508,7 +510,7 @@ wMainWindow::OpenGameFile(const char* filename)
     std::vector<std::string> extensions;
     FTL.GetFileTypeExtensions(i, extensions);
     
-    for (int k = 0; k < extensions.size(); k++) {
+    for (unsigned k = 0; k < extensions.size(); k++) {
       std::string ext = "." + extensions[k];
       if (strcmp_ci(filename + strlen(filename) - ext.length(), ext.c_str()) == 0) {
         OpenDocumentWindow(i, filename);
@@ -524,7 +526,7 @@ void
 wMainWindow::OpenDocumentWindow(int grouptype, const char* filename)
 {
   // if a document window has the same filename, just give it focus
-  for (int i = 0; i < m_DocumentWindows.size(); i++) {
+  for (unsigned i = 0; i < m_DocumentWindows.size(); i++) {
     if (strcmp(m_DocumentWindows[i]->GetFilename(), filename) == 0) {
       m_DocumentWindows[i]->SetFocus();
       return;
@@ -814,8 +816,9 @@ wMainWindow::UpdateMenu()
   }
   m_PreviousChildMenuResource = m_ChildMenuResource;
 
-/*todo: window specific menus
-/*
+#if 0
+todo: window specific menus
+
   int iWindowMenu = 2;
 
   // destroy the old menu
@@ -867,7 +870,7 @@ wMainWindow::UpdateMenu()
   CMenu* pNewMenu = CMenu::FromHandle(hNewMenu);
   MDISetMenu(pNewMenu, pNewMenu->GetSubMenu(iWindowMenu));
   DrawMenuBar();
-*/
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -875,7 +878,8 @@ wMainWindow::UpdateMenu()
 void
 wMainWindow::UpdatePaletteMenu()
 {
-/*todo:
+#if 0
+
   HMENU menu = GetMenu()->m_hMenu;
   HMENU view_menu = GetSubMenu(menu, m_ProjectOpen ? 2 : 1);
 
@@ -920,10 +924,10 @@ wMainWindow::UpdatePaletteMenu()
   }
 
   InsertMenu(view_menu, 2, MF_BYPOSITION | MF_POPUP, (UINT)palette_menu, "Palettes");
-*/
+#endif
 }
 
-/*todo:
+#if 0
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
@@ -952,7 +956,7 @@ CMainWindow::OnDropFiles(HDROP hDropInfo)
   
   DragFinish(hDropInfo);
 }
-*/
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -960,7 +964,7 @@ void
 wMainWindow::OnClose(wxCloseEvent &event)
 {
   // ask if the child windows should be destroyed
-  for (int i = 0; i < m_DocumentWindows.size(); i++)
+  for (unsigned i = 0; i < m_DocumentWindows.size(); i++)
   {
     if (m_DocumentWindows[i]->Close()) {
       //m_DocumentWindows[i]->DestroyWindow();
@@ -996,12 +1000,11 @@ wMainWindow::OnFileOpen(wxCommandEvent &event)
 {
   // generate list of all supported extensions
   std::set<std::string> extensions;
-  for (int i = 0; i < NUM_GROUP_TYPES; i++) {
+  for (unsigned i = 0; i < NUM_GROUP_TYPES; i++) {
     std::vector<std::string> e;
     FTL.GetFileTypeExtensions(i, e);
-    for (int j = 0; j < e.size(); j++) {
-      std::string poop = e[j];
-      extensions.insert(poop);
+    for (unsigned j = 0; j < e.size(); j++) {
+      extensions.insert(e[j]);
     }
   }
 
@@ -1023,7 +1026,7 @@ wMainWindow::OnFileOpen(wxCommandEvent &event)
     FTL.GetFileTypeExtensions(i, e);
 
     std::string type_filter;
-    for (int j = 0; j < e.size(); j++) {
+    for (unsigned j = 0; j < e.size(); j++) {
       if (j != 0) {
         type_filter += ";";
       }
@@ -1057,7 +1060,7 @@ wMainWindow::OnFileOpen(wxCommandEvent &event)
   {
     wxArrayString filelist;
     FileDialog.GetPaths(filelist);
-    for(int i = 0; i < filelist.GetCount(); i++)
+    for(unsigned i = 0; i < filelist.GetCount(); i++)
     {
       wxString thePath = filelist[i];
 
@@ -1129,8 +1132,8 @@ wMainWindow::OnFileCloseProject(wxCommandEvent &event)
 void
 wMainWindow::OnFileOpenLastProject(wxCommandEvent &event)
 {
-  if (Configuration::Get(KEY_LAST_PROJECT).length() != 0) {
-    OpenProject(Configuration::Get(KEY_LAST_PROJECT).c_str());
+  if (Configuration::Get(KEY_LAST_PROJECT()).length() != 0) {
+    OpenProject(Configuration::Get(KEY_LAST_PROJECT()).c_str());
   }
 }
 
@@ -1155,21 +1158,21 @@ FILE_NEW_HANDLER(Image,       new wImageWindow())
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#define FILE_OPEN_HANDLER(name, construct)                    \
-  void                                                \
-  wMainWindow::OnFileOpen##name(wxCommandEvent &event)                             \
-  {                                                           \
+#define FILE_OPEN_HANDLER(name, construct)                          \
+  void                                                              \
+  wMainWindow::OnFileOpen##name(wxCommandEvent &event)              \
+  {                                                                 \
     w##name##FileDialog Dialog(this, FDM_OPEN | FDM_MULTISELECT);   \
-    if (Dialog.ShowModal() == wxID_OK) {                           \
-      wxArrayString filelist;                                 \
-      Dialog.GetPaths(filelist);                      \
-      for(int i = 0; i < filelist.GetCount(); i++)            \
-      {                                                       \
-        wxString path_ = filelist[i];                       \
-        const char* path = path_;                             \
-        m_DocumentWindows.push_back(construct);               \
-      }                                                       \
-    }                                                         \
+    if (Dialog.ShowModal() == wxID_OK) {                            \
+      wxArrayString filelist;                                       \
+      Dialog.GetPaths(filelist);                                    \
+      for(unsigned i = 0; i < filelist.GetCount(); i++)             \
+      {                                                             \
+        wxString path_ = filelist[i];                               \
+        const char* path = path_;                                   \
+        m_DocumentWindows.push_back(construct);                     \
+      }                                                             \
+    }                                                               \
   }
 
 
@@ -1587,7 +1590,7 @@ wMainWindow::OnFileImportWindowsFont(wxCommandEvent &event)
 void
 wMainWindow::OnFileSaveAll(wxCommandEvent &event)
 {
-  for (int i = 0; i < m_DocumentWindows.size(); i++) {
+  for (unsigned i = 0; i < m_DocumentWindows.size(); i++) {
     wDocumentWindow* dw = m_DocumentWindows[i];
     if (dw->IsSaveable()) {
       wSaveableDocumentWindow* sdw = (wSaveableDocumentWindow*)dw;
@@ -1611,10 +1614,10 @@ wMainWindow::OnFileOptions(wxCommandEvent &event)
 
 #define PROJECT_INSERT_HANDLER(type, group_type)                        \
 void                                                                    \
-wMainWindow::OnProjectInsert##type(wxCommandEvent &event)                                    \
+wMainWindow::OnProjectInsert##type(wxCommandEvent &event)               \
 {                                                                       \
-  InsertProjectFile(                                                    \
-    &w##type##FileDialog(this, FDM_OPEN | FDM_MAYNOTEXIST), group_type);      \
+  w##type##FileDialog dialog(this, FDM_OPEN | FDM_MAYNOTEXIST);         \
+  InsertProjectFile(&dialog, group_type);                               \
                                                                         \
   /* save the project and update the view                     */        \
   /* (in case user changed filename extensions in the dialog) */        \
@@ -1759,7 +1762,7 @@ wMainWindow::OnProjectPackageGame(wxCommandEvent &event)
 void
 wMainWindow::OnWindowCloseAll(wxCommandEvent &event)
 {
-  for (int i = 0; i < m_DocumentWindows.size(); i++) {
+  for (unsigned i = 0; i < m_DocumentWindows.size(); i++) {
     wDocumentWindow* dw = m_DocumentWindows[i];
     if (dw->Close() == false) {
       break;
@@ -1848,11 +1851,14 @@ wMainWindow::ProcessEvent(wxEvent &event)
   }
   return false;
 }
-/*todo:
+
+#if 0
+todo:
+
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg BOOL
-CMainWindow::OnNeedText(UINT /*id* /, NMHDR* nmhdr, LRESULT* result)
+CMainWindow::OnNeedText(UINT /*id*/, NMHDR* nmhdr, LRESULT* result)
 {
   TOOLTIPTEXT* ttt = (TOOLTIPTEXT*)nmhdr;
   UINT id = nmhdr->idFrom;
@@ -1978,7 +1984,7 @@ CMainWindow::OnInsertProjectFile(WPARAM wparam, LPARAM lparam)
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
-CMainWindow::OnRefreshProject(WPARAM /*wparam* /, LPARAM /*lparam* /)
+CMainWindow::OnRefreshProject(WPARAM /*wparam*/, LPARAM /*lparam*/)
 {
   m_Project.RefreshItems();
   if (m_ProjectWindow) {
@@ -2055,5 +2061,5 @@ CMainWindow::OnViewPalette(UINT id)
 
   UpdatePaletteMenu();
 }
-*/
+#endif
 ////////////////////////////////////////////////////////////////////////////////

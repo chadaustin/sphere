@@ -1,4 +1,6 @@
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)  // identifier too long
+#endif
 
 
 #include "ProjectWindow.hpp"
@@ -49,7 +51,7 @@ END_MESSAGE_MAP()
 */
 
 BEGIN_EVENT_TABLE(wProjectWindow, wxMDIChildFrame)
-  EVT_CLOSE(OnClose)
+  EVT_CLOSE(wProjectWindow::OnClose)
   EVT_TREE_ITEM_ACTIVATED(wID_PROJECTWINDOWS_TREE, wProjectWindow::OnActivate)
   EVT_TREE_ITEM_COLLAPSING(wID_PROJECTWINDOWS_TREE, wProjectWindow::OnCollapsing)
 END_EVENT_TABLE()
@@ -306,7 +308,8 @@ wProjectWindow::Update()
   m_htiAnimations   = INSERT_ROOT("Animations",    1, 2, tiAnimations);
 */
 
-/*
+#if 0
+
 #define INSERT_ITEMS(parent, grouptype, image)                      \
   for (int i = 0; i < m_Project->GetItemCount(grouptype); i++) { \
     m_TreeControl->AppendItem(                                    \
@@ -317,15 +320,15 @@ wProjectWindow::Update()
   }
 
   // put the children in the tree
-  INSERT_ITEMS(m_htiMaps,         GT_MAPS,         -1 /*IDI_FILETYPE_BASE + 0* /);
-  INSERT_ITEMS(m_htiSpritesets,   GT_SPRITESETS,   -1 /*IDI_FILETYPE_BASE + 1* /);
-  INSERT_ITEMS(m_htiScripts,      GT_SCRIPTS,      -1 /*IDI_FILETYPE_BASE + 2* /);
-  INSERT_ITEMS(m_htiSounds,       GT_SOUNDS,       -1 /*IDI_FILETYPE_BASE + 3* /);
-  INSERT_ITEMS(m_htiFonts,        GT_FONTS,        -1 /*IDI_FILETYPE_BASE + 4* /);
-  INSERT_ITEMS(m_htiWindowStyles, GT_WINDOWSTYLES, -1 /*IDI_FILETYPE_BASE + 5* /);
-  INSERT_ITEMS(m_htiImages,       GT_IMAGES,       -1 /*IDI_FILETYPE_BASE + 6* /);
-  INSERT_ITEMS(m_htiAnimations,   GT_ANIMATIONS,   -1 /*IDI_FILETYPE_BASE + 7* /);
-*/
+  INSERT_ITEMS(m_htiMaps,         GT_MAPS,         -1 /*IDI_FILETYPE_BASE + 0*/);
+  INSERT_ITEMS(m_htiSpritesets,   GT_SPRITESETS,   -1 /*IDI_FILETYPE_BASE + 1*/);
+  INSERT_ITEMS(m_htiScripts,      GT_SCRIPTS,      -1 /*IDI_FILETYPE_BASE + 2*/);
+  INSERT_ITEMS(m_htiSounds,       GT_SOUNDS,       -1 /*IDI_FILETYPE_BASE + 3*/);
+  INSERT_ITEMS(m_htiFonts,        GT_FONTS,        -1 /*IDI_FILETYPE_BASE + 4*/);
+  INSERT_ITEMS(m_htiWindowStyles, GT_WINDOWSTYLES, -1 /*IDI_FILETYPE_BASE + 5*/);
+  INSERT_ITEMS(m_htiImages,       GT_IMAGES,       -1 /*IDI_FILETYPE_BASE + 6*/);
+  INSERT_ITEMS(m_htiAnimations,   GT_ANIMATIONS,   -1 /*IDI_FILETYPE_BASE + 7*/);
+#endif
   for(int i = 0; i < PROJECT_TREESIZE; i++) {
     int grouptype = GT_MAPS;
     switch(i) {

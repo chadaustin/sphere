@@ -30,7 +30,7 @@ private:
   bool         m_Created;
   wTilesetView *m_TilesetView;
 
-  friend wMainWindow;
+  friend class wMainWindow;
 
 private:
 //  DECLARE_CLASS(wTilePalette);

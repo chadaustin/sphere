@@ -1,5 +1,7 @@
+#ifdef _MSC_VER
 // identifier too long
 #pragma warning(disable : 4786)
+#endif
 
 
 #include "MapWindow.hpp"
@@ -103,7 +105,8 @@ wMapWindow::Create()
   TabChanged(0);
 */
   TabChanged(0);
-  OnSize(wxSizeEvent(GetSize()));
+  wxSizeEvent event(GetSize());
+  OnSize(event);
 }
 
 /*
@@ -146,7 +149,8 @@ wMapWindow::LoadMap(const char* szMap)
       return false;
 
     // allocate the map
-    m_Map = sMap(NewMapDialog.GetMapWidth(), NewMapDialog.GetMapHeight());
+    sMap newMap(NewMapDialog.GetMapWidth(), NewMapDialog.GetMapHeight());
+    m_Map = newMap;
 
     // attempt to load the tileset
     if (strlen(NewMapDialog.GetTileset()) != 0 &&
@@ -219,7 +223,7 @@ void
 wMapWindow::GetMapViewRect(wxRect *Rect)
 {
   const int SCROLLBAR_WIDTH  = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X);
-  const int SCROLLBAR_HEIGHT = wxSystemSettings::GetMetric(wxSYS_HSCROLL_Y);
+//  const int SCROLLBAR_HEIGHT = wxSystemSettings::GetMetric(wxSYS_HSCROLL_Y);
 
   wxSize ClientSize = GetClientSize();
 
@@ -232,7 +236,7 @@ void
 wMapWindow::GetLayerViewRect(wxRect* Rect)
 {
   const int SCROLLBAR_WIDTH  = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X);
-  const int SCROLLBAR_HEIGHT = wxSystemSettings::GetMetric(wxSYS_HSCROLL_Y);
+//  const int SCROLLBAR_HEIGHT = wxSystemSettings::GetMetric(wxSYS_HSCROLL_Y);
 
   wxSize ClientSize = GetClientSize();
 
@@ -261,7 +265,7 @@ wMapWindow::TabChanged(int tab)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-wMapWindow::OnSize(wxSizeEvent &event)
+wMapWindow::OnSize(wxSizeEvent& event)
 {
   int cx = GetClientSize().GetWidth();
   int cy = GetClientSize().GetHeight();

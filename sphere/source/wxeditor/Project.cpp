@@ -1,15 +1,15 @@
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)  // identifier too long
+#endif
 
-/*todo:*/
+#include <wx/wx.h>
 #include <windows.h>
-//#include <wx/wx.h>
 #include <set>
 #include <stdio.h>
 #include <string.h>
 #include "Project.hpp"
 #include "../common/configfile.hpp"
 #include "../common/types.h"
-
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -25,11 +25,11 @@ bool
 wProject::Create(const char* games_directory, const char* project_name)
 {
   // create the project
-  if (SetCurrentDirectory(games_directory) == FALSE)
+  if (wxSetWorkingDirectory(games_directory) == FALSE)
     return false;
   
   // if creating the directory failed, it may already exist
-  CreateDirectory(project_name, NULL);
+  wxMkdir(project_name, 0755);
 
   // now create all of the subdirectories
   for (int i = 0; i < NUM_GROUP_TYPES; i++)
@@ -37,11 +37,11 @@ wProject::Create(const char* games_directory, const char* project_name)
     std::string directory = project_name;
     directory += "/";
     directory += GetGroupDirectory(i);
-    CreateDirectory(directory.c_str(), NULL);
+    wxMkdir(directory.c_str(), 0755);
   }
   
-  // wait to see if SetCurrentDirectory() fails
-  if (SetCurrentDirectory(project_name) == FALSE)
+  // wait to see if wxSetWorkingDirectory() fails
+  if (!wxSetWorkingDirectory(project_name))
     return false;
 
   // set the project directory
@@ -99,7 +99,7 @@ wProject::Open(const char* filename)
 bool
 wProject::Save() const
 {
-  SetCurrentDirectory(m_Directory.c_str());
+  wxSetWorkingDirectory(m_Directory.c_str());
   
   CConfigFile config;
 
@@ -231,16 +231,16 @@ wProject::RefreshItems()
 
   for (int i = 0; i < NUM_GROUP_TYPES; i++)
   {
-    SetCurrentDirectory(m_Directory.c_str());
+    wxSetWorkingDirectory(m_Directory.c_str());
     
-    if (!SetCurrentDirectory(GetGroupDirectory(i)))
+    if (!wxSetWorkingDirectory(GetGroupDirectory(i)))
       continue;
 
     // add all extensions to this set
     std::vector<std::string> extensions;
     FTL.GetFileTypeExtensions(i, extensions);
 
-    for (int j = 0; j < extensions.size(); j++) {
+    for (unsigned j = 0; j < extensions.size(); j++) {
       std::string filter = "*." + extensions[j];
 
       WIN32_FIND_DATA ffd;
@@ -261,7 +261,7 @@ wProject::RefreshItems()
   }
 
   // restore the old directory
-  SetCurrentDirectory(old_directory);
+  wxSetWorkingDirectory(old_directory);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -299,7 +299,7 @@ wProject::AddItem(int grouptype, const char* filename)
   Group& group = m_Groups[grouptype];
 
   // make sure it's not in the group already
-  for (int i = 0; i < group.size(); i++)
+  for (unsigned i = 0; i < group.size(); i++)
     if (filename == group[i])
       return;
 

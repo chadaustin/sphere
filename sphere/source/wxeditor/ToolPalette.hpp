@@ -2,10 +2,11 @@
 #define TOOL_PALETTE_HPP
 
 
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)
+#endif
 
 
-//#include <afxcmn.h>
 #include <vector>
 #include "PaletteWindow.hpp"
 
@@ -47,7 +48,7 @@ private:
   std::vector<wxString> m_Labels;
   int m_CurrentTool;
   
-  friend wMainWindow;
+  friend class wMainWindow;
 
 private:
 //  DECLARE_CLASS(wToolPalette);

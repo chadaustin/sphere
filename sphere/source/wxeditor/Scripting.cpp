@@ -45,7 +45,7 @@ static sCompileError s_Error;
 
 bool IsKeyword(const char* token)
 {
-  for (int i = 0; i < sizeof(Keywords) / sizeof(*Keywords); i++)
+  for (unsigned i = 0; i < sizeof(Keywords) / sizeof(*Keywords); i++)
     if (strcmp(token, Keywords[i]) == 0)
       return true;
   return false;

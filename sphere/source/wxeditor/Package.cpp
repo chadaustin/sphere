@@ -1,4 +1,6 @@
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)
+#endif
 
 #include <zlib.h>
 #include <string.h>
@@ -105,7 +107,7 @@ CPackage::Write(const char* filename)
     }
 
     // write the *final* bit of compressed data
-    if (stream.avail_out != BLOCK_SIZE) {
+    if (stream.avail_out != unsigned(BLOCK_SIZE)) {
       fwrite(out_block, 1, BLOCK_SIZE - stream.avail_out, file);
     }
 
@@ -150,7 +152,7 @@ CPackage::Write(const char* filename)
 
 
 
-/*
+#if 0
 
 bool
 CPackage::Write(const char* filename)
@@ -202,7 +204,6 @@ CPackage::Write(const char* filename)
   return true;
 }
 
-/*
 template<int W>
 inline void octal(char s[W], int val)
 {
@@ -280,6 +281,6 @@ CPackage::Write(const char* filename)
   gzclose(file);
   return true;
 }
-*/
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////

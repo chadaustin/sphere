@@ -1,4 +1,6 @@
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)
+#endif
 
 #include <algorithm>
 #include "ImageView.hpp"
@@ -99,9 +101,9 @@ END_EVENT_TABLE()
 
 wImageView::wImageView(wxWindow* parent_window, wDocumentWindow* owner, IImageViewHandler* handler)
 : wxWindow(parent_window, -1)
-, m_Color(CreateRGBA(0, 0, 0, 255))
 , m_SwatchPalette(NULL)
 , m_ToolPalette(NULL)
+, m_Color(CreateRGBA(0, 0, 0, 255))
 , m_MouseDown(false)
 , m_CurrentTool(Tool_Pencil)
 , m_NumUndoImages(0)
@@ -533,7 +535,7 @@ wImageView::ConvertToPixel(wxPoint point)
   int height = m_Image.GetHeight();
   int hsize = ClientSize.GetWidth() / width;
   int vsize = ClientSize.GetHeight() / height;
-  int size = std::_cpp_min(hsize, vsize);
+  int size = std::min(hsize, vsize);
   if (size < 1)
     size = 1;
 
@@ -608,7 +610,8 @@ wImageView::Fill()
   if (!InImage(startPoint))
     return;
 
-  if (!memcmp(&m_Image.GetPixel(startPoint.x, startPoint.y), &m_Color, sizeof(RGBA)))
+  RGBA pixel = m_Image.GetPixel(startPoint.x, startPoint.y);
+  if (!memcmp(&pixel, &m_Color, sizeof(RGBA)))
     return;
 
   FillMe(startPoint.x, startPoint.y, m_Image.GetPixel(startPoint.x, startPoint.y));
@@ -799,7 +802,7 @@ wImageView::RefreshPixels(int x1, int y1, int x2, int y2)
   int height = m_Image.GetHeight();
   int hsize = ClientSize.GetWidth() / width;
   int vsize = ClientSize.GetHeight() / height;
-  int size = std::_cpp_min(hsize, vsize);
+  int size = std::min(hsize, vsize);
   if (size < 1)
     size = 1;
   int totalx = size * width;
@@ -860,7 +863,7 @@ wImageView::OnPaint(wxPaintEvent &event)
   // calculate size of pixel squares
   int hsize = ClientSize.GetWidth() / width;
   int vsize = ClientSize.GetHeight() / height;
-  int size = std::_cpp_min(hsize, vsize);
+  int size = std::min(hsize, vsize);
   if (size < 1)
     size = 1;
 

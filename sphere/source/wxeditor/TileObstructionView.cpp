@@ -200,22 +200,19 @@ wTileObstructionView::OnRButtonDown(wxMouseEvent &event)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+struct Color {
+    RGBA operator()(int, int) {
+        return CreateRGBA(255, 0, 255, 255);
+    }
+};
+
+static inline void CopyRGBA(RGBA& dest, RGBA src) {
+    dest = src;
+}
+
 void
 wTileObstructionView::RenderTile()
 {
-  struct Local {
-    struct Color {
-      RGBA operator()(int, int) {
-        return CreateRGBA(255, 0, 255, 255);
-      }
-    };
-
-    static inline void CopyRGBA(RGBA& dest, RGBA src) {
-      dest = src;
-    }
-  };
-
-
   // draw the tile's pixels
   memcpy(
     m_pixels,
@@ -224,7 +221,7 @@ wTileObstructionView::RenderTile()
   );
 
   // draw the obstruction segments
-  Local::Color c;
+  Color c;
   Sclipper clipper = { 0, 0, m_tile->GetWidth() - 1, m_tile->GetHeight() - 1 };
   sObstructionMap& obs_map = m_tile->GetObstructionMap();
   for (int i = 0; i < obs_map.GetNumSegments(); i++) {
@@ -240,7 +237,7 @@ wTileObstructionView::RenderTile()
       s.y2,
       c,
       clipper,
-      Local::CopyRGBA
+      CopyRGBA
     );
   }
 
@@ -255,7 +252,7 @@ wTileObstructionView::RenderTile()
       m_current_point.y,
       c,
       clipper,
-      Local::CopyRGBA
+      CopyRGBA
     );
   }
 }

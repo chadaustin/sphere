@@ -40,8 +40,8 @@ END_EVENT_TABLE()
 
 wSpritesetImagesPalette::wSpritesetImagesPalette(wDocumentWindow* owner, ISpritesetImagesPaletteHandler* handler, sSpriteset* spriteset)
 : wPaletteWindow(owner, "Spriteset Images",
-  Configuration::Get(KEY_SPRITESET_IMAGES_RECT),
-  Configuration::Get(KEY_SPRITESET_IMAGES_VISIBLE))
+  Configuration::Get(KEY_SPRITESET_IMAGES_RECT()),
+  Configuration::Get(KEY_SPRITESET_IMAGES_VISIBLE()))
 , m_Handler(handler)
 , m_Spriteset(spriteset)
 , m_TopRow(0)
@@ -69,9 +69,9 @@ wSpritesetImagesPalette::Destroy()
   delete m_Menu;
   // save state
   wxRect rect = GetRect();
-  Configuration::Set(KEY_SPRITESET_IMAGES_RECT, rect);
+  Configuration::Set(KEY_SPRITESET_IMAGES_RECT(), rect);
 
-  Configuration::Set(KEY_SPRITESET_IMAGES_VISIBLE, true); /*todo:IsWindowVisible() != FALSE);*/
+  Configuration::Set(KEY_SPRITESET_IMAGES_VISIBLE(), true); /*todo:IsWindowVisible() != FALSE);*/
 
   // destroy window
   return wPaletteWindow::Destroy();
@@ -120,25 +120,25 @@ wSpritesetImagesPalette::OnPaint(wxPaintEvent &event)
         RGB* pixels = (RGB*)m_BlitImage->GetPixels();
         
         // make a checkerboard
-        for (int iy = 0; iy < blit_height; iy++)
-          for (int ix = 0; ix < blit_width; ix++)
+        for (int jy = 0; jy < blit_height; jy++)
+          for (int jx = 0; jx < blit_width; jx++)
           {
-            pixels[iy * blit_width + ix] = 
-              ((ix / 8 + iy / 8) % 2 ?
+            pixels[jy * blit_width + jx] = 
+              ((jx / 8 + jy / 8) % 2 ?
                 CreateRGB(255, 255, 255) :
                 CreateRGB(192, 192, 255));
           }        
 
         // draw the tile into it
         RGBA* tilepixels = m_Spriteset->GetImage(it).GetPixels();
-        for (int iy = 0; iy < blit_height; iy++)
-          for (int ix = 0; ix < blit_width; ix++)
+        for (int jy = 0; jy < blit_height; jy++)
+          for (int jx = 0; jx < blit_width; jx++)
           {
-            int ty = iy / m_ZoomFactor;
-            int tx = ix / m_ZoomFactor;
+            int ty = jy / m_ZoomFactor;
+            int tx = jx / m_ZoomFactor;
             int t = ty * m_Spriteset->GetFrameWidth() + tx;
             
-            int d = iy * blit_width + ix;
+            int d = jy * blit_width + jx;
 
             int alpha = tilepixels[t].alpha;
             pixels[d].red   = (tilepixels[t].red   * alpha + pixels[d].red   * (255 - alpha)) / 256;

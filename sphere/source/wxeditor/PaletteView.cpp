@@ -162,7 +162,7 @@ wPaletteView::OnPaint(wxPaintEvent &event)
 
   if (m_pPaletteDIB)
   {
-    wxSize ClientSize(GetClientSize());
+//    wxSize ClientSize(GetClientSize());
     wxBitmap bitmap = m_pPaletteDIB->GetImage()->ConvertToBitmap();
     dc.DrawBitmap(bitmap, 0, 0, FALSE);
   }

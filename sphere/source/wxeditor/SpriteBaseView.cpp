@@ -1,7 +1,8 @@
-#include "SpriteBaseView.hpp"
 #include <algorithm>
+#include "Editor.hpp"
+#include "SpriteBaseView.hpp"
 
-static int s_ViewID = 450;
+//static int s_ViewID = 450;
 
 
 /*
@@ -113,7 +114,7 @@ wSpriteBaseView::WindowToImage(int* x, int* y)
   // calculate size of pixel squares
   int hsize = ClientSize.GetWidth() / m_Sprite->GetWidth();
   int vsize = ClientSize.GetHeight() / m_Sprite->GetHeight();
-  int size = std::_cpp_min(hsize, vsize);
+  int size = std::min(hsize, vsize);
   if (size < 1)
     size = 1;
 
@@ -173,7 +174,7 @@ wSpriteBaseView::OnPaint(wxPaintEvent &event)
   // calculate size of pixel squares
   int hsize = ClientSize.GetWidth() / width;
   int vsize = ClientSize.GetHeight() / height;
-  int size = std::_cpp_min(hsize, vsize);
+  int size = std::min(hsize, vsize);
   if (size < 1)
     size = 1;
 

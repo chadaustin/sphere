@@ -1,4 +1,6 @@
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)
+#endif
 
 //#define WXWIN_COMPATIBILITY_EVENT_TYPES 1
 
@@ -15,7 +17,7 @@
 const int UPDATE_TILEVIEW_TIMER = 200;
 
 
-static int s_iTilesetViewID = 1000;
+//static int s_iTilesetViewID = 1000;
 
 /*
 BEGIN_MESSAGE_MAP(CTilesetView, CWnd)
@@ -169,7 +171,8 @@ wTilesetView::TileChanged(int tile)
   //RECT rect;
   //SetRect(&rect, x, y, x + m_BlitTile->GetWidth(), y + m_BlitTile->GetHeight());
   //InvalidateRect(&rect);
-  Refresh(TRUE, &wxRect(x, y, m_BlitTile->GetWidth(), m_BlitTile->GetHeight()));
+  wxRect rect(x, y, m_BlitTile->GetWidth(), m_BlitTile->GetHeight());
+  Refresh(TRUE, &rect);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -333,11 +336,11 @@ wTilesetView::OnPaint(wxPaintEvent &event)
         RGB *pixels = (RGB *)m_BlitTile->GetPixels();
         
         // make a checkerboard
-        for (int iy = 0; iy < blit_height; iy++)
-          for (int ix = 0; ix < blit_width; ix++)
+        for (int jy = 0; jy < blit_height; jy++)
+          for (int jx = 0; jx < blit_width; jx++)
           {
-            pixels[iy * blit_width + ix] = 
-              ((ix / 8 + iy / 8) % 2 ?
+            pixels[jy * blit_width + jx] = 
+              ((jx / 8 + jy / 8) % 2 ?
                 CreateRGB(255, 255, 255) :
                 CreateRGB(192, 192, 255)
                 //CreateBGRA(255, 255, 255, 255) :
@@ -416,7 +419,7 @@ void
 wTilesetView::OnSize(wxSizeEvent &event)
 {
   int cx = GetClientSize().GetWidth();
-  int cy = GetClientSize().GetHeight();
+//  int cy = GetClientSize().GetHeight();
   if (cx > 0)
   {
     // if the current top row is greater than the total number of rows minus the page size

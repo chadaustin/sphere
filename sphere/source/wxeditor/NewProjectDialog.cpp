@@ -2,7 +2,7 @@
 #include "resource.h"
 
 BEGIN_EVENT_TABLE(wNewProjectDialog, wxDialog)
-  EVT_BUTTON(wxID_OK, OnOK)
+  EVT_BUTTON(wxID_OK, wNewProjectDialog::OnOK)
 END_EVENT_TABLE()
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,4 +1,6 @@
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)
+#endif
 
 //#define WXWIN_COMPATIBILITY_EVENT_TYPES 1
 
@@ -40,7 +42,7 @@ END_MESSAGE_MAP()
 BEGIN_EVENT_TABLE(wSwatchPalette, wPaletteWindow)
   EVT_SIZE(wSwatchPalette::OnSize)
 
-  EVT_PAINT(OnPaint)
+  EVT_PAINT(wSwatchPalette::OnPaint)
 
   //EVT_MENU(wID_TILEOBSTRUCTION_PRESET_UNBLOCKED,       wTileObstructionDialog::OnPresetUnblocked)
 
@@ -66,8 +68,8 @@ END_EVENT_TABLE()
 
 wSwatchPalette::wSwatchPalette(wDocumentWindow* owner, ISwatchPaletteHandler* handler)
 : wPaletteWindow(owner, "Swatch",
-  Configuration::Get(KEY_SWATCH_RECT),
-  Configuration::Get(KEY_SWATCH_VISIBLE))
+  Configuration::Get(KEY_SWATCH_RECT()),
+  Configuration::Get(KEY_SWATCH_VISIBLE()))
 , m_Handler(handler)
 
 , m_Color(CreateRGBA(0, 0, 0, 255))
@@ -109,9 +111,9 @@ wSwatchPalette::Destroy()
 
   // store state
   wxRect rect = GetRect();
-  Configuration::Set(KEY_SWATCH_RECT, rect);
+  Configuration::Set(KEY_SWATCH_RECT(), rect);
 
-  Configuration::Set(KEY_SWATCH_VISIBLE, true); /*todo:IsWindowVisible() != FALSE);*/
+  Configuration::Set(KEY_SWATCH_VISIBLE(), true); /*todo:IsWindowVisible() != FALSE);*/
 
   //DestroyWindow();
 
@@ -282,7 +284,7 @@ wSwatchPalette::OnPaint(wxPaintEvent &event)
 void
 wSwatchPalette::OnVScroll(wxScrollEvent &event)
 {
-  int old_y = m_TopRow;
+//  int old_y = m_TopRow;
 
   if(event.GetEventType() == wxEVT_SCROLL_LINEDOWN)   m_TopRow++;
   if(event.GetEventType() == wxEVT_SCROLL_LINEUP)     m_TopRow--;
@@ -338,7 +340,8 @@ wSwatchPalette::OnLButtonDown(wxMouseEvent &event)
       int offset = m_SelectedColor - (m_TopRow * num_colors_x);
       int y = (offset / num_colors_x) * SWATCH_TILE_SIZE;
       int x = (offset % num_colors_x) * SWATCH_TILE_SIZE;
-      Refresh(TRUE, &wxRect(x, y, SWATCH_TILE_SIZE, SWATCH_TILE_SIZE));
+      wxRect rect(x, y, SWATCH_TILE_SIZE, SWATCH_TILE_SIZE);
+      Refresh(TRUE, &rect);
     }
     m_SelectedColor = ic;
 
@@ -346,7 +349,8 @@ wSwatchPalette::OnLButtonDown(wxMouseEvent &event)
     int offset = ic - (m_TopRow * num_colors_x);
     iy = (offset / num_colors_x) * SWATCH_TILE_SIZE;
     ix = (offset % num_colors_x) * SWATCH_TILE_SIZE;
-    Refresh(TRUE, &wxRect(ix, iy, SWATCH_TILE_SIZE, SWATCH_TILE_SIZE));
+    wxRect rect(ix, iy, SWATCH_TILE_SIZE, SWATCH_TILE_SIZE);
+    Refresh(TRUE, &rect);
   }
 }
 

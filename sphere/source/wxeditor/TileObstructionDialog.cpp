@@ -20,7 +20,7 @@ END_MESSAGE_MAP()
 */
 
 BEGIN_EVENT_TABLE(wTileObstructionDialog, wxDialog)
-  EVT_BUTTON(wxID_OK, OnOK)
+  EVT_BUTTON(wxID_OK, wTileObstructionDialog::OnOK)
   EVT_SIZE(wTileObstructionDialog::OnSize)
 
   EVT_BUTTON(wID_TILEOBSTRUCTION_PRESETS, wTileObstructionDialog::OnPresets)

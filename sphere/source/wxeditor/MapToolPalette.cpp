@@ -25,8 +25,8 @@
 
 wMapToolPalette::wMapToolPalette(wDocumentWindow* owner, IToolPaletteHandler* handler)
 : wToolPalette(owner, handler, "Map Tools",
-  Configuration::Get(KEY_MAP_TOOLS_RECT),
-  Configuration::Get(KEY_MAP_TOOLS_VISIBLE))
+  Configuration::Get(KEY_MAP_TOOLS_RECT()),
+  Configuration::Get(KEY_MAP_TOOLS_VISIBLE()))
 {
   AddTool((const char **)p1x1_xpm,         "1x1");
   AddTool((const char **)p3x3_xpm,         "3x3");
@@ -52,9 +52,9 @@ wMapToolPalette::Destroy()
 {
   // store state
   wxRect rect = GetRect();
-  Configuration::Set(KEY_MAP_TOOLS_RECT, rect);
+  Configuration::Set(KEY_MAP_TOOLS_RECT(), rect);
 
-  Configuration::Set(KEY_MAP_TOOLS_VISIBLE, true); /*todo:IsWindowVisible() != FALSE);*/
+  Configuration::Set(KEY_MAP_TOOLS_VISIBLE(), true); /*todo:IsWindowVisible() != FALSE);*/
 
   return wToolPalette::Destroy();
 }

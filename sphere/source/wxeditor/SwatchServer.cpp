@@ -1,4 +1,3 @@
-//#include <windows.h>
 #include "SwatchServer.hpp"
 #include <wx/config.h>
 #include "Configuration.hpp"
@@ -150,7 +149,7 @@ CSwatchServer::Clear()
 void
 CSwatchServer::SetColor(int i, RGBA color)
 {
-  if (i >= 0 && i < m_Colors.size()) {
+  if (i >= 0 && i < int(m_Colors.size())) {
     m_Colors[i] = color;
   } else {
     m_Colors.push_back(color);
@@ -162,7 +161,7 @@ CSwatchServer::SetColor(int i, RGBA color)
 void
 CSwatchServer::InsertColor(int i, RGBA color)
 {
-  if (i > m_Colors.size()) {
+  if (i > int(m_Colors.size())) {
     i = m_Colors.size();
   }
   m_Colors.insert(m_Colors.begin() + i, color);
@@ -173,7 +172,7 @@ CSwatchServer::InsertColor(int i, RGBA color)
 void
 CSwatchServer::DeleteColor(int i)
 {
-  if (i >= 0 && i < m_Colors.size()) {
+  if (i >= 0 && i < int(m_Colors.size())) {
     m_Colors.erase(m_Colors.begin() + i);
   }
 }

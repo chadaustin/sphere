@@ -3,7 +3,7 @@
 //#include "IDs.hpp"
 
 BEGIN_EVENT_TABLE(wWindowStylePropertiesDialog, wxDialog)
-  EVT_BUTTON(wxID_OK, OnOK)
+  EVT_BUTTON(wxID_OK, wWindowStylePropertiesDialog::OnOK)
 END_EVENT_TABLE()
 
 ////////////////////////////////////////////////////////////////////////////////

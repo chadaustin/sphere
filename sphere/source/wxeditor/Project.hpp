@@ -2,8 +2,10 @@
 #define PROJECT_HPP
 
 
+#ifdef _MSC_VER
 // disable 'identifier too long'
 #pragma warning(disable : 4786)
+#endif
 
 
 #include <vector>

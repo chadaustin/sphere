@@ -43,7 +43,8 @@ wToolPalette::wToolPalette(wDocumentWindow* owner, IToolPaletteHandler* handler,
 , m_CurrentTool(0)
 {
   //wxToolTip::Enable(true);
-  OnSize(wxSizeEvent(GetSize()));
+  wxSizeEvent evt(GetSize());
+  OnSize(evt);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -55,7 +56,7 @@ wToolPalette::Destroy()
 //  for (int i = 0; i < m_Buttons.size(); i++) {
 //    delete m_Buttons[i];
 //  }
-  for (int i = 0; i < m_Bitmaps.size(); i++) {
+  for (unsigned i = 0; i < m_Bitmaps.size(); i++) {
     delete m_Bitmaps[i];
   }
 
@@ -78,7 +79,8 @@ wToolPalette::AddTool(const char **xpm_image, const char* label)
   //button->SetBitmap(bitmap);
   //button->SetToolTip(label);
   //m_Buttons.push_back(button);
-  OnSize(wxSizeEvent(GetSize()));
+  wxSizeEvent evt(GetSize());
+  OnSize(evt);
   Refresh();
 /*
   button->Create("",
@@ -167,7 +169,7 @@ wToolPalette::OnPaint(wxPaintEvent &event)
   int ix = 0; // current x
   int iy = 0; // current y
 
-  for (int i = 0; i < m_Bitmaps.size(); i++) {
+  for (unsigned i = 0; i < m_Bitmaps.size(); i++) {
     int x = ix * TOOL_WIDTH;
     int y = iy * TOOL_HEIGHT;
     wxRect rect(x, y, TOOL_WIDTH, TOOL_HEIGHT);
@@ -177,7 +179,7 @@ wToolPalette::OnPaint(wxPaintEvent &event)
     wxPen dark       = CreateShadedPen(menu_color, black, 192);
     wxPen very_dark  = CreateShadedPen(menu_color, black, 64);
 
-    if(i == m_CurrentTool) {
+    if((int)i == m_CurrentTool) {
       std::swap(very_light, very_dark);
       std::swap(light, dark);
     }
@@ -249,7 +251,7 @@ wToolPalette::OnLClick(wxMouseEvent &event)
   int ix = point.x / TOOL_WIDTH;
   int iy = point.y / TOOL_HEIGHT;
   int ic = iy * in + ix;
-  if(ix >= in || ic >= m_Bitmaps.size()) {
+  if(ix >= in || ic >= int(m_Bitmaps.size())) {
     return;
   }
 
@@ -280,7 +282,7 @@ wToolPalette::OnMouseMove(wxMouseEvent &event)
   int ix = point.x / TOOL_WIDTH;
   int iy = point.y / TOOL_HEIGHT;
   int ic = iy * in + ix;
-  if(ix >= in || ic >= m_Bitmaps.size()) {
+  if(ix >= in || ic >= int(m_Bitmaps.size())) {
     return;
   }
 
@@ -289,9 +291,9 @@ wToolPalette::OnMouseMove(wxMouseEvent &event)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/*
+#if 0
 afx_msg BOOL
-CToolPalette::OnNeedText(UINT /*id* /, NMHDR* hdr, LRESULT* result)
+CToolPalette::OnNeedText(UINT /*id*/, NMHDR* hdr, LRESULT* result)
 {
   TOOLTIPTEXT* ttt = (TOOLTIPTEXT*)hdr;
   UINT id = hdr->idFrom;
@@ -318,4 +320,4 @@ CToolPalette::OnToolSelected(UINT id)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-*/
+#endif

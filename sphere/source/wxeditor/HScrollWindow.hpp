@@ -10,7 +10,7 @@ class wHScrollWindow : public wxWindow
 public:
   wHScrollWindow(wxWindow *parent, wxWindowID id = -1);
 
-  void OnSize(wxSizeEvent &event);
+  void OnSize(const wxSizeEvent& event);
 
   wxSize GetClientSize();
 

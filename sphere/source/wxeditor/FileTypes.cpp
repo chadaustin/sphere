@@ -1,4 +1,6 @@
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)
+#endif
 
 #include <vector>
 #include <string>
@@ -31,7 +33,7 @@ CFileTypeLibrary::CFileTypeLibrary()
 {
   m_FileTypes.resize(sizeof(Extensions) / sizeof(*Extensions));
 
-  for (int i = 0; i < sizeof(Extensions) / sizeof(*Extensions); i++) {
+  for (unsigned i = 0; i < sizeof(Extensions) / sizeof(*Extensions); i++) {
     const char* s = Extensions[i];
     FileType& ft = m_FileTypes[i];
 
@@ -93,8 +95,8 @@ CFileTypeLibrary::GetFileTypeLabel(int file_type)
 void
 CFileTypeLibrary::GetFileTypeExtensions(int file_type, vector<string>& extensions)
 {
-  for (int i = 0; i < m_FileTypes[file_type].sub_types.size(); i++) {
-    for (int j = 0; j < m_FileTypes[file_type].sub_types[i].extensions.size(); j++) {
+  for (unsigned i = 0; i < m_FileTypes[file_type].sub_types.size(); i++) {
+    for (unsigned j = 0; j < m_FileTypes[file_type].sub_types[i].extensions.size(); j++) {
       extensions.push_back(m_FileTypes[file_type].sub_types[i].extensions[j]);
     }
   }

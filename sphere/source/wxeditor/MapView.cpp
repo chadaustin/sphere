@@ -1,4 +1,6 @@
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)
+#endif
 
 #include "MapView.hpp"
 #include "Editor.hpp"
@@ -8,6 +10,11 @@
 #include "../common/primitives.hpp"
 //#include "resource.h"
 #include "IDs.hpp"
+
+// because Windows sucks
+#ifdef DrawText
+#undef DrawText
+#endif
 
 //static int s_MapViewID = 2000;
 /*todo:
@@ -75,15 +82,16 @@ wMapView::wMapView(wxWindow* parent, wDocumentWindow* owner, IMapViewHandler* ha
 , m_CurrentCursorTileY(-1)
 , m_StartCursorTileX(-1)
 , m_StartCursorTileY(-1)
+, m_PreviewLineOn(0)
+, m_PreviewBoxOn(0)
+
+, m_RedrawWindow(0)
+, m_RedrawPreviewLine(0)
+
 , m_SelectedTile(0)
 , m_SelectedLayer(0)
 
 , m_Clicked(false)
-
-, m_PreviewLineOn(0)
-, m_PreviewBoxOn(0)
-, m_RedrawWindow(0)
-, m_RedrawPreviewLine(0)
 
 {
 /*todo:
@@ -1061,6 +1069,10 @@ wMapView::DrawTile(wxDC& dc, const wxRect& rect, int tx, int ty)
           dc.SetTextForeground(*wxWHITE);
           dc.DrawText("T", rect.x + 3, rect.y + 3);
           break;
+
+        // prevent unhandled enum warning
+        default:
+          break;
       }
     }
   }
@@ -1468,7 +1480,8 @@ wMapView::OnMouseMove(wxMouseEvent &event)
           m_CurrentCursorTileX = x;
           m_CurrentCursorTileY = y;
           //InvalidateRect(&rect);
-          Refresh(TRUE, &wxRect(old_x, old_y, new_x - old_x + tile_width, new_y - old_y + tile_height));
+          wxRect refreshRect(old_x, old_y, new_x - old_x + tile_width, new_y - old_y + tile_height);
+          Refresh(TRUE, &refreshRect);
 
           // draw the new area
           old_x = (m_StartCursorTileX - m_CurrentX) * tile_width;
@@ -1480,7 +1493,8 @@ wMapView::OnMouseMove(wxMouseEvent &event)
           //CRgn new_rgn;
           //new_rgn.CreateRectRgn(old_x, old_y, new_x + tile_width, new_y + tile_height);
           //InvalidateRect(&new_rect);
-          Refresh(TRUE, &wxRect(old_x, old_y, new_x - old_x + tile_width, new_y - old_y + tile_height));
+          wxRect refreshRect2(old_x, old_y, new_x - old_x + tile_width, new_y - old_y + tile_height);
+          Refresh(TRUE, &refreshRect2);
 
           //CRgn total_rgn;
           //new_rgn.CombineRgn(&old_rgn, &new_rgn, RGN_OR);
@@ -1921,6 +1935,9 @@ wMapView::OnMenu(wxCommandEvent &event)
               }
               break;
             }
+            
+            default: // gcc 'unhandled enum' warning
+              break;
 
           } // end switch
         }

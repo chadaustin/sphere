@@ -1,4 +1,6 @@
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)
+#endif
 
 #include "ImageWindow.hpp"
 #include "ResizeDialog.hpp"
@@ -9,24 +11,12 @@
 
 //#define ID_ALPHASLIDER 900
 
-/*
-BEGIN_MESSAGE_MAP(CImageWindow, CSaveableDocumentWindow)
-
-  ON_WM_SIZE()
-
-  ON_COMMAND(ID_IMAGE_RESIZE,             OnImageResize)
-  ON_COMMAND(ID_IMAGE_RESCALE,            OnImageRescale)
-  ON_COMMAND(ID_IMAGE_VIEWATORIGINALSIZE, OnImageViewOriginalSize)
-
-END_MESSAGE_MAP()
-*/
-
 BEGIN_EVENT_TABLE(wImageWindow, wSaveableDocumentWindow)
-  EVT_SIZE(OnSize)
+  EVT_SIZE(wImageWindow::OnSize)
 
-  EVT_MENU(wID_IMAGE_RESIZE,            OnImageResize)
-  EVT_MENU(wID_IMAGE_RESCALE,           OnImageRescale)
-  EVT_MENU(wID_IMAGE_VIEWORIGINALSIZE,  OnImageViewOriginalSize)
+  EVT_MENU(wID_IMAGE_RESIZE,            wImageWindow::OnImageResize)
+  EVT_MENU(wID_IMAGE_RESCALE,           wImageWindow::OnImageRescale)
+  EVT_MENU(wID_IMAGE_VIEWORIGINALSIZE,  wImageWindow::OnImageViewOriginalSize)
 END_EVENT_TABLE()
 
 

@@ -2,7 +2,6 @@
 #define __DIBSECTION_HPP
 
 
-//#include <windows.h>
 #include <wx/dcmemory.h>
 #include <wx/image.h>
 

@@ -17,7 +17,7 @@ END_MESSAGE_MAP()
 */
 
 BEGIN_EVENT_TABLE(wEntityPersonDialog, wxDialog)
-  EVT_BUTTON(wxID_OK, OnOK)
+  EVT_BUTTON(wxID_OK, wEntityPersonDialog::OnOK)
   EVT_BUTTON(wID_ENTITYPERSONDIALOG_BROWSE_SPRITESET, wEntityPersonDialog::OnBrowseSpriteset)
   EVT_BUTTON(wID_ENTITYPERSONDIALOG_CHECK_SYNTAX, wEntityPersonDialog::OnCheckSyntax)
   EVT_RADIOBOX(wID_ENTITYPERSONDIALOG_RADIOBOX,   wEntityPersonDialog::OnScriptChanged)

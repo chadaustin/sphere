@@ -1,4 +1,6 @@
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)
+#endif
 
 
 #include "WindowStyleWindow.hpp"
@@ -7,6 +9,7 @@
 #include "WindowStylePropertiesDialog.hpp"
 //#include "resource.h"
 #include "IDs.hpp"
+#include "Editor.hpp"
 
 
 //const int ID_ALPHASLIDER = 7001;
@@ -88,9 +91,9 @@ END_EVENT_TABLE()
 
 wWindowStyleWindow::wWindowStyleWindow(const char* window_style)
 : wSaveableDocumentWindow(window_style, wID_WINDOWSTYLE_base /*todo:IDR_WINDOWSTYLE*/, wxSize(200, 150))
-, m_Created(false)
 , m_SelectedBitmap(sWindowStyle::UPPER_LEFT)
 , m_ZoomFactor(4)
+, m_Created(false)
 , m_HighlightPen(wxColour(0xff, 0x00, 0xff), 1, wxSOLID)
 {
   if (window_style) {
@@ -221,7 +224,8 @@ wWindowStyleWindow::SetZoomFactor(int factor)
   Refresh();
 
   // move everything to its correct place
-  OnSize(wxSizeEvent(GetClientSize()));
+  wxSizeEvent evt(GetClientSize());
+  OnSize(evt);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -389,7 +393,7 @@ wWindowStyleWindow::DrawBit(wxDC& dc, int bitmap, int x, int y, int w, int h)
   }
 }
 
-/*
+#if 0
 ////////////////////////////////////////////////////////////////////////////////
 
 void
@@ -438,7 +442,7 @@ wWindowStyleWindow::DrawCorner(wxDC& dc, int bitmap, int x, int y, int w, int h)
     x + offsetx, y + offsety, dib->GetWidth(), dib->GetHeight(),
     CDC::FromHandle(dib->GetDC()),
     0, 0, SRCCOPY);
-* /
+*/
 
   // select the region opposite of the previous one
   wxRegion region2(x, y, w, h);
@@ -581,7 +585,7 @@ CWindowStyleWindow::DrawEdgeV(CDC& dc, int bitmap, int x, int y, int y2, int w)
     dc.RestoreDC(-1);
   }
 }
-*/
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -792,7 +796,8 @@ wWindowStyleWindow::OnResizeSection(wxCommandEvent &event)
     Refresh();
 
     // resize the window
-    OnSize(wxSizeEvent(GetClientSize()));
+    wxSizeEvent evt(GetClientSize());
+    OnSize(evt);
   }
 }
 
@@ -1030,7 +1035,7 @@ wWindowStyleWindow::GetBorderWidth_Left() const
   int w1 = m_WindowStyle.GetBitmap(sWindowStyle::LEFT).GetWidth();
   int w2 = m_WindowStyle.GetBitmap(sWindowStyle::UPPER_LEFT).GetWidth();
   int w3 = m_WindowStyle.GetBitmap(sWindowStyle::LOWER_LEFT).GetWidth();
-  return std::_cpp_max(w1, std::_cpp_max(w2, w3)) * m_ZoomFactor;
+  return std::max(w1, std::max(w2, w3)) * m_ZoomFactor;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1041,7 +1046,7 @@ wWindowStyleWindow::GetBorderWidth_Top() const
   int h1 = m_WindowStyle.GetBitmap(sWindowStyle::TOP).GetHeight();
   int h2 = m_WindowStyle.GetBitmap(sWindowStyle::UPPER_LEFT).GetHeight();
   int h3 = m_WindowStyle.GetBitmap(sWindowStyle::UPPER_RIGHT).GetHeight();
-  return std::_cpp_max(h1, std::_cpp_max(h2, h3)) * m_ZoomFactor;
+  return std::max(h1, std::max(h2, h3)) * m_ZoomFactor;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1052,7 +1057,7 @@ wWindowStyleWindow::GetBorderWidth_Right() const
   int w1 = m_WindowStyle.GetBitmap(sWindowStyle::RIGHT).GetWidth();
   int w2 = m_WindowStyle.GetBitmap(sWindowStyle::UPPER_RIGHT).GetWidth();
   int w3 = m_WindowStyle.GetBitmap(sWindowStyle::LOWER_RIGHT).GetWidth();
-  return std::_cpp_max(w1, std::_cpp_max(w2, w3)) * m_ZoomFactor;
+  return std::max(w1, std::max(w2, w3)) * m_ZoomFactor;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1063,7 +1068,7 @@ wWindowStyleWindow::GetBorderWidth_Bottom() const
   int h1 = m_WindowStyle.GetBitmap(sWindowStyle::BOTTOM).GetHeight();
   int h2 = m_WindowStyle.GetBitmap(sWindowStyle::LOWER_LEFT).GetHeight();
   int h3 = m_WindowStyle.GetBitmap(sWindowStyle::LOWER_RIGHT).GetHeight();
-  return std::_cpp_max(h1, std::_cpp_max(h2, h3)) * m_ZoomFactor;
+  return std::max(h1, std::max(h2, h3)) * m_ZoomFactor;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

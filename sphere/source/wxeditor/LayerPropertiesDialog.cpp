@@ -19,13 +19,13 @@ END_MESSAGE_MAP()
 */
 
 BEGIN_EVENT_TABLE(wLayerPropertiesDialog, wxDialog)
-  EVT_BUTTON(wxID_OK, OnOK)
+  EVT_BUTTON(wxID_OK, wLayerPropertiesDialog::OnOK)
   EVT_CHECKBOX(wID_LAYERPROPERTIESDIALOG_HAS_PARALAX, wLayerPropertiesDialog::OnEnableParallax)
   EVT_SCROLL(wLayerPropertiesDialog::OnScroll)
 END_EVENT_TABLE()
 
 static inline int FloatToScrollValue(float32 f) {
-  return (f + 0.05) * 10; // sadly, there is roundoff error
+  return int((f + 0.05) * 10); // sadly, there is roundoff error
 }
 
 static inline float32 ScrollValueToFloat(int value) {

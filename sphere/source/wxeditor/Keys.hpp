@@ -19,16 +19,16 @@ private:
 };
 
 
-// if this were gcc, we could use the static const initializer in the struct, but no, I have to hack something in :\
-// Down with VC++!  Long live gcc!
+// if this were gcc, we could use the static const initializer in the
+// struct, but no, I have to hack something in :\ Down with VC++!
+// Long live gcc!
 
-#define DEFINE_KEY(name, T, def)        \
-static struct _##name {                 \
-    static const char* const keyname;   \
-    static const T default_value;       \
-    typedef T type;                     \
-} name;
-
+#define DEFINE_KEY(name, T, def)          \
+  struct name {                           \
+      static const char* const keyname;   \
+      static const T default_value;       \
+      typedef T type;                     \
+    };
 
 // Define the keys
 #include "Keys.table"

@@ -19,7 +19,7 @@ END_MESSAGE_MAP()
 */
 
 BEGIN_EVENT_TABLE(wMapPropertiesDialog, wxDialog)
-  EVT_BUTTON(wxID_OK, OnOK)
+  EVT_BUTTON(wxID_OK, wMapPropertiesDialog::OnOK)
   EVT_BUTTON(wID_MAPPROPERTIESDIALOG_CHECK_SYNTAX, wMapPropertiesDialog::OnCheckSyntax)
   EVT_RADIOBOX(wID_MAPPROPERTIESDIALOG_RADIOBOX,   wMapPropertiesDialog::OnScriptRadioBox)
 END_EVENT_TABLE()

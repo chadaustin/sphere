@@ -21,18 +21,18 @@ END_MESSAGE_MAP()
 */
 
 BEGIN_EVENT_TABLE(wDocumentWindow, wxMDIChildFrame)
-  EVT_COMMAND(wxID_SAVE, -1, OnFileSave)
-  EVT_COMMAND(wxID_SAVEAS, -1, OnFileSaveAs)
+  EVT_COMMAND(wxID_SAVE, -1, wDocumentWindow::OnFileSave)
+  EVT_COMMAND(wxID_SAVEAS, -1, wDocumentWindow::OnFileSaveAs)
 
-  EVT_COMMAND(wID_FILE_SAVE, -1, OnFileSave)
-  EVT_COMMAND(wID_FILE_SAVEAS, -1, OnFileSaveAs)
-  EVT_COMMAND(wID_FILE_SAVECOPYAS, -1, OnFileSaveCopyAs)
+  EVT_COMMAND(wID_FILE_SAVE, -1, wDocumentWindow::OnFileSave)
+  EVT_COMMAND(wID_FILE_SAVEAS, -1, wDocumentWindow::OnFileSaveAs)
+  EVT_COMMAND(wID_FILE_SAVECOPYAS, -1, wDocumentWindow::OnFileSaveCopyAs)
 
 //  EVT_COMMAND(wxID_SAVE, -1,      OnUpdateSaveableCommand)
 //  EVT_COMMAND(wxID_SAVEAS, -1,    OnUpdateSaveableCommand)
 //  ON_UPDATE_COMMAND_UI(ID_FILE_SAVECOPYAS, OnUpdateSaveableCommand)
-  EVT_CLOSE(OnClose)
-  EVT_SET_FOCUS(OnGetFocus)
+  EVT_CLOSE(wDocumentWindow::OnClose)
+  EVT_SET_FOCUS(wDocumentWindow::OnGetFocus)
 END_EVENT_TABLE()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -59,7 +59,7 @@ wDocumentWindow::~wDocumentWindow()
   //AfxGetApp()->m_pMainWnd->PostMessage(WM_DW_CLOSING, 0, (LPARAM)this);
   GetMainWindow()->CloseNotice(this);
   GetMainWindow()->ClearChildMenu();
-  for (int i = 0; i < m_AttachedPalettes.size(); i++) {
+  for (unsigned i = 0; i < m_AttachedPalettes.size(); i++) {
     m_AttachedPalettes[i]->Destroy();
   }
 }
@@ -93,7 +93,7 @@ wDocumentWindow::AttachPalette(wPaletteWindow* palette)
 void
 wDocumentWindow::DetachPalette(wPaletteWindow* palette)
 {
-  for (int i = 0; i < m_AttachedPalettes.size(); i++) {
+  for (unsigned i = 0; i < m_AttachedPalettes.size(); i++) {
     if (m_AttachedPalettes[i] == palette) {
       m_AttachedPalettes.erase(m_AttachedPalettes.begin() + i);
       return;
@@ -210,7 +210,7 @@ wDocumentWindow::OnGetFocus(wxFocusEvent &event)
 void
 wDocumentWindow::OnClose(wxCloseEvent &event) 
 {
-  if(Close() || event.CanVeto == FALSE) {
+  if(Close() || !event.CanVeto()) {
     GetMainWindow()->ClearChildMenu();
     Destroy();
   }

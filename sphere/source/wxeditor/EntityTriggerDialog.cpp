@@ -12,9 +12,9 @@ END_MESSAGE_MAP()
 */
 
 BEGIN_EVENT_TABLE(wEntityTriggerDialog, wxDialog)
-  EVT_BUTTON(wxID_OK, OnOK)
+  EVT_BUTTON(wxID_OK, wEntityTriggerDialog::OnOK)
 
-  EVT_BUTTON(wID_TRIGGERDIALOG_CHECK_SYNTAX, OnCheckSyntax)
+  EVT_BUTTON(wID_TRIGGERDIALOG_CHECK_SYNTAX, wEntityTriggerDialog::OnCheckSyntax)
 
 END_EVENT_TABLE()
 

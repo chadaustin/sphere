@@ -4,7 +4,7 @@
 #include "Configuration.hpp"
 #include "Keys.hpp"
 #include "Debug.hpp"
-#include "../engine/win32/win32_sphere_config.hpp"
+//#include "../engine/win32/win32_sphere_config.hpp"
 
 
 static EditorApplication g_Application;
@@ -15,7 +15,9 @@ std::string g_SphereDirectory;
 static wxStatusBar* s_StatusBar;
 static wMainWindow *s_MainWindow;
 
-/*todo:
+#if 0
+todo:
+
 // command-line parser
 
 class CEditorCommandLineInfo : public CCommandLineInfo
@@ -27,7 +29,7 @@ public:
   }
 
 private:
-  void ParseParam(LPCTSTR parameter, BOOL /*flag* /, BOOL /*last* /)
+  void ParseParam(LPCTSTR parameter, BOOL /*flag*/, BOOL /*last*/)
   {
     m_MainWindow->OpenGameFile(parameter);
   }
@@ -36,7 +38,7 @@ private:
   CMainWindow* m_MainWindow;
 };
   
-*/
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -85,8 +87,8 @@ EditorApplication::OnInit()
   SetMainWindow(main_window);
 
 
-  SPHERECONFIG sphere_config;
-  LoadSphereConfig(&sphere_config, "engine.ini");
+  //SPHERECONFIG sphere_config;
+  //LoadSphereConfig(&sphere_config, "engine.ini");
 
 /*todo:
   // parse the command line
@@ -121,7 +123,7 @@ wxStatusBar* GetStatusBar()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void SetStatus(wxString &text, int i) {
+void SetStatus(const wxString& text, int i) {
   s_StatusBar->SetStatusText(text, i);
 }
 
