@@ -1432,9 +1432,6 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
   p.stepping_frame_revert = 0;
   p.stepping_frame_revert_count = 0;
 
-  p.ignorePersonObstructions = false;
-  p.ignoreTileObstructions = false;
-
   p.spriteset->GetSpriteset().GetBase(p.base_x1, p.base_y1, p.base_x2, p.base_y2);
   p.width = p.spriteset->GetSpriteset().GetFrameWidth();
   p.height = p.spriteset->GetSpriteset().GetFrameHeight();
@@ -4162,6 +4159,11 @@ CMapEngine::FindObstructingPerson(int person, int x, int y)
 
     // if people aren't on the same layer, skip
     if (m_Persons[i].layer != m_Persons[person].layer) {
+      continue;
+    }
+
+    // if the person is ignoring person obstructions, don't check it
+    if (m_Persons[i].ignorePersonObstructions) {
       continue;
     }
 
