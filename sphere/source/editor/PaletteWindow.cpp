@@ -40,19 +40,24 @@ END_MESSAGE_MAP()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-CPaletteWindow::CPaletteWindow(CDocumentWindow* owner, const char* name, RECT rect, bool visible, int type)
-: m_Owner(owner)
-#ifdef USE_SIZECBAR
-, m_pBarParent(NULL)
-, m_Name(name)
-, m_PaletteNumber(owner->GetNumPalettes())
-#endif
+static const int PWT_NORMAL  = 0;
+static const int PWT_VSCROLL = 1;
+
+void
+CPaletteWindow::CreatePalette(CDocumentWindow* owner, const char* name, RECT rect, bool visible, int type)
 {
+  m_Owner = owner;
+#ifdef USE_SIZECBAR
+  m_pBarParent = NULL;
+  m_Name = name;
+  m_PaletteNumber = owner->GetNumPalettes();
+#endif
+
   DWORD styles;
 
 #ifndef USE_SIZECBAR
   switch (type) {
-    case 1:
+    case PWT_VSCROLL:
       styles = WS_VISIBLE | WS_THICKFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_VSCROLL;
     break;
 
@@ -61,8 +66,11 @@ CPaletteWindow::CPaletteWindow(CDocumentWindow* owner, const char* name, RECT re
   }
 #else
   switch (type) {
+    case PWT_VSCROLL:
+      styles = WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN | WS_VSCROLL;
+    break;
     default:
-      styles = WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN,
+      styles = WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN;
   }
 #endif
 
@@ -114,6 +122,31 @@ CPaletteWindow::CPaletteWindow(CDocumentWindow* owner, const char* name, RECT re
 
 	ShowWindow(SW_SHOW);
 #endif
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+CPaletteWindow::CPaletteWindow() {
+  m_Owner = NULL;
+#ifdef USE_SIZECBAR
+  m_pBarParent = NULL;
+  m_Name = name;
+  m_PaletteNumber = 0;
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+CPaletteWindow::CPaletteWindow(CDocumentWindow* owner, const char* name, RECT rect, bool visible)
+{
+  CreatePalette(owner, name, rect, visible, PWT_NORMAL);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+CVScrollPaletteWindow::CVScrollPaletteWindow(CDocumentWindow* owner, const char* name, RECT rect, bool visible)
+{
+  CreatePalette(owner, name, rect, visible, PWT_VSCROLL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

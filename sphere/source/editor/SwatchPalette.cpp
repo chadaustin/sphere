@@ -54,6 +54,7 @@ CSwatchPalette::CSwatchPalette(CDocumentWindow* owner, ISwatchPaletteHandler* ha
   RECT rect;
   GetClientRect(&rect);
   OnSize(0, rect.right, rect.bottom);
+  UpdateScrollBar();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -93,6 +94,7 @@ CSwatchPalette::OnSize(UINT type, int cx, int cy)
       m_TopRow = GetNumRows() - GetPageSize();
       if (m_TopRow < 0)
         m_TopRow = 0;
+      UpdateScrollBar();
       Invalidate();
     }
   }
@@ -185,7 +187,7 @@ CSwatchPalette::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
     case SB_LINEUP:     m_TopRow--;                break;
     case SB_PAGEDOWN:   m_TopRow += GetPageSize(); break;
     case SB_PAGEUP:     m_TopRow -= GetPageSize(); break;
-    case SB_THUMBTRACK: m_TopRow = (int)nPos;       break;
+    case SB_THUMBTRACK: m_TopRow = (int)nPos;      break;
   }
 
   // validate the values
@@ -562,15 +564,24 @@ CSwatchPalette::OnDeleteColor()
 void
 CSwatchPalette::UpdateScrollBar()
 {
+  int num_rows  = GetNumRows();
+  int page_size = GetPageSize();
+
+  // validate the values
+  if (m_TopRow > num_rows - page_size)
+    m_TopRow = num_rows - page_size;
+  if (m_TopRow < 0)
+    m_TopRow = 0;
+
   SCROLLINFO si;
   si.cbSize = sizeof(si);
   si.fMask  = SIF_ALL;
   si.nMin   = 0;
 
-  if (GetPageSize() < GetNumRows())
+  if (page_size - num_rows)
   {
-    si.nMax   = GetNumRows() - 1;
-    si.nPage  = GetPageSize();
+    si.nMax   = num_rows - 1;
+    si.nPage  = page_size;
     si.nPos   = m_TopRow;
   }
   else

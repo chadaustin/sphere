@@ -19,6 +19,8 @@ const int WM_UPDATE_PALETTE_MENU = (WM_APP + 800);
 	#define baseCPaletteWindow CMiniFrameWnd
 #endif
 
+///////////////////////////////////////////////////////////////////////////////
+
 class CPaletteWindow : public baseCPaletteWindow
 {
 public:
@@ -30,13 +32,17 @@ public:
 
 protected:
   // protected so only derived classes can construct
-  CPaletteWindow(CDocumentWindow* owner, const char* name, RECT rect, bool visible, int type = 0);
+  CPaletteWindow();
+  CPaletteWindow(CDocumentWindow* owner, const char* name, RECT rect, bool visible);
   ~CPaletteWindow();
 
 private:
   afx_msg void OnDestroy();
   afx_msg void OnClose();
   afx_msg void OnShowWindow(BOOL show, UINT status);
+
+protected:
+  void CreatePalette(CDocumentWindow* owner, const char* name, RECT rect, bool visible, int type);
 
 private:
   CDocumentWindow* m_Owner;
@@ -53,6 +59,14 @@ public:
   DECLARE_MESSAGE_MAP()
 };
 
+///////////////////////////////////////////////////////////////////////////////
 
+class CVScrollPaletteWindow : public CPaletteWindow
+{
+protected:
+  CVScrollPaletteWindow(CDocumentWindow* owner, const char* name, RECT rect, bool visible);
+};
+
+///////////////////////////////////////////////////////////////////////////////
 
 #endif

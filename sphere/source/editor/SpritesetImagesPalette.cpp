@@ -4,7 +4,7 @@
 #include "resource.h"
 
 
-BEGIN_MESSAGE_MAP(CSpritesetImagesPalette, CPaletteWindow)
+BEGIN_MESSAGE_MAP(CSpritesetImagesPalette, CVScrollPaletteWindow)
 
   ON_WM_PAINT()
   ON_WM_SIZE()
@@ -23,9 +23,9 @@ END_MESSAGE_MAP()
 ////////////////////////////////////////////////////////////////////////////////
 
 CSpritesetImagesPalette::CSpritesetImagesPalette(CDocumentWindow* owner, ISpritesetImagesPaletteHandler* handler, sSpriteset* spriteset)
-: CPaletteWindow(owner, "Spriteset Images",
+: CVScrollPaletteWindow(owner, "Spriteset Images",
   Configuration::Get(KEY_SPRITESET_IMAGES_RECT),
-  Configuration::Get(KEY_SPRITESET_IMAGES_VISIBLE), 1) // 1 means vscroll
+  Configuration::Get(KEY_SPRITESET_IMAGES_VISIBLE))
 , m_Handler(handler)
 , m_Spriteset(spriteset)
 , m_TopRow(0)
