@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <string>
+#include <fstream>
 #include "FileTypes.hpp"
 
 

@@ -27,9 +27,11 @@ bool
 wProject::Create(const char* games_directory, const char* project_name)
 {
   // create the project
-  if (wxSetWorkingDirectory(games_directory) == FALSE)
+  if (wxSetWorkingDirectory(games_directory) == FALSE) {
+    ::wxMessageBox("Could not chdir to game directory");
     return false;
-  
+  }
+
   // if creating the directory failed, it may already exist
   if (!wxPathExists(project_name)) wxMkdir(project_name, 0755);
 
@@ -55,6 +57,11 @@ wProject::Create(const char* games_directory, const char* project_name)
   // set the project filename
   m_Filename = path;
   m_Filename += "/game.sgm";
+
+  // for reloading -if- they don't change game.sgm before quiting.
+  std::ofstream output(m_Filename.c_str());
+  output << "-";
+  output.close();
 
   // set default values in project
   m_GameTitle = "";

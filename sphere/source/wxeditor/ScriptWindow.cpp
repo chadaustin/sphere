@@ -67,7 +67,7 @@ END_EVENT_TABLE()
 ////////////////////////////////////////////////////////////////////////////////
 
 wScriptWindow::wScriptWindow(const char* filename)
-: wSaveableDocumentWindow(filename, wID_SCRIPT_base /*todo: IDR_SCRIPT*/)
+: wSaveableDocumentWindow(filename, wID_SCRIPT_base)
 , m_Created(false)
 #ifdef WIN32
 , m_SearchDialog(0)
@@ -125,6 +125,8 @@ wScriptWindow::Create()
 
 #ifdef WIN32
   m_Editor = new wxStyledTextCtrl(this, wID_SCRIPT_ID);
+#else
+  m_Editor = new wxTextCtrl(this, wID_SCRIPT_ID, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
 #endif
 
   Initialize();
@@ -230,6 +232,7 @@ wScriptWindow::SetStyle(
 bool
 wScriptWindow::LoadScript(const char* filename)
 {
+#ifdef WIN32
   // get the file size
   int file_size = FileSize(GetDocumentPath());
   if (file_size == -1)
@@ -243,25 +246,26 @@ wScriptWindow::LoadScript(const char* filename)
   // allocate a temporary storage buffer and read it
   char* buffer = new char[file_size + 1];
   fread(buffer, sizeof(char), file_size, file);
-  
+
   // null-terminate the string
   buffer[file_size] = 0;
 
-#ifdef WIN32
   // put the buffer into the edit control
   m_Editor->SetText(buffer);
   m_Editor->SetSelection(0, 0);
-#endif
 
   // delete the buffer and close the file
   delete[] buffer;
   fclose(file);
 
   SetModified(false);
-#ifdef WIN32
+
   m_Editor->SetSavePoint();
+#else
+  m_Editor->LoadFile(filename);
 #endif
 
+  SetModified(false);
   return true;
 }
 
@@ -272,6 +276,8 @@ wScriptWindow::GetEditorText(wxString& text)
 {
 #ifdef WIN32
   text = m_Editor->GetText();
+#else
+  text = "";
 #endif
 }
 
@@ -283,6 +289,7 @@ wScriptWindow::GetSelection()
 #ifdef WIN32
   return m_Editor->GetSelectedText();
 #else
+  // return m_Editor->GetSelection();
   return "";
 #endif
 }
@@ -539,6 +546,7 @@ wScriptWindow::GetSavePath(char* path)
 bool
 wScriptWindow::SaveDocument(const char* path)
 {
+#ifdef WIN32
   FILE* file = fopen(path, "wb");
   if (file == NULL)
     return false;
@@ -548,10 +556,13 @@ wScriptWindow::SaveDocument(const char* path)
   fwrite((const char*)text, 1, text.length(), file);
   fclose(file);
 
-#ifdef WIN32
   m_Editor->SetSavePoint();
+#else
+  m_Editor->SaveFile(path);
 #endif
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+

@@ -50,8 +50,10 @@
 #include <libmng.h>
 
 #include "icons/sph-game.xpm"
-#include "icons/disk.xpm"
-
+#include "icons/save.xpm"
+#include "icons/folder.xpm"
+#include "icons/new.xpm"
+#include "icons/close.xpm"
 
 // base for palette menu items
 const int PALETTE_COMMAND = 17133;
@@ -220,18 +222,29 @@ wMainWindow::wMainWindow(
     int current_x = 5;
     int width = 16;
 
-    wxBitmap* icon = new wxBitmap( sph_game_xpm );
+    wxBitmap* icon = new wxBitmap( folder_xpm );
     if (icon) {
       m_ToolBar.AddTool(wID_FILE_OPEN, *icon, wxNullBitmap, FALSE, current_x, -1, (wxObject *) NULL, "Open file");
       delete icon; icon = NULL; current_x += width + 5;
     }
 
-    icon = new wxBitmap( disk_xpm );
+    icon = new wxBitmap( save_xpm );
     if (icon) {
       m_ToolBar.AddTool(wID_FILE_SAVE, *icon, wxNullBitmap, FALSE, current_x, -1, (wxObject *) NULL, "Save file");
       delete icon; icon = NULL; current_x += width + 5;
     }
 
+    icon = new wxBitmap( close_xpm );
+    if(icon) {
+      m_ToolBar.AddTool(wID_FILE_CLOSE, *icon, wxNullBitmap, FALSE, current_x, -1, (wxObject *) NULL, "Close file");
+      delete icon; icon = NULL; current_x += width + 10;
+    }
+
+    icon = new wxBitmap( new_xpm );
+    if(icon) {
+      m_ToolBar.AddTool(wID_FILE_NEW_SCRIPT, *icon, wxNullBitmap, FALSE, current_x, -1, (wxObject *) NULL, "New script");
+      delete icon; icon = NULL; current_x += width + 5;
+    }
 
     m_ToolBar.Realize();
   }
@@ -264,12 +277,15 @@ wMainWindow::CreateProject(const char* projectname, const char* gametitle)
 
   if (!m_Project.Create(games_directory, projectname))
   {
-    ::wxMessageBox("Error: Could not create project");
+    ::wxMessageBox("Error: Could not create project. Problem with games path.");
     return;
   }
 
   m_Project.SetGameTitle(gametitle);
+  // create the windows
   m_ProjectOpen = true;
+  // so there is a sgm...
+  m_Project.Save();
   m_ProjectWindow = new wProjectWindow(this, &m_Project);
   //m_ProjectWindow->Create();
 

@@ -7,6 +7,8 @@
 #ifdef WIN32
 #include <wx/fdrepdlg.h>
 #include <wx/stc/stc.h>
+#else
+#include <wx/textctrl.h>
 #endif
 
 #include "SaveableDocumentWindow.hpp"
@@ -63,6 +65,8 @@ private:
 
   wxFindReplaceDialog* m_SearchDialog;
   wxFindReplaceData *m_SearchData;
+#else
+  wxTextCtrl *m_Editor;
 #endif // WIN32
 
 private:
