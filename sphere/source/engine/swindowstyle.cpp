@@ -241,10 +241,10 @@ SWINDOWSTYLE::DrawWindow(int x, int y, int w, int h)
   DrawRightEdge((x + w), y, w, h);
 
   //---- Draw corners ----//
-  DrawUpperLeftCorner (x - width, y - height);
-  DrawUpperRightCorner(x + w,     y - height);
-  DrawLowerRightCorner(x + w,     y + h);
-  DrawLowerLeftCorner (x - width, y + h);
+  DrawUpperLeftCorner (x - GetImageWidth(m_Images[0]), y - GetImageHeight(m_Images[0]));
+  DrawUpperRightCorner(x + w, y - GetImageHeight(m_Images[2]));
+  DrawLowerRightCorner(x + w, y + h);
+  DrawLowerLeftCorner (x - GetImageWidth(m_Images[6]), y + h);
 
   return true;
 }
