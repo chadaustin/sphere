@@ -10,11 +10,11 @@ static std::list<IFileSystem*> s_FileSystems;
 static ADR_CONTEXT s_AudiereContext;
 
 
-static void* ADR_CALL FileOpen(void* opaque, const char* filename);
-static void  ADR_CALL FileClose(void* file);
-static int   ADR_CALL FileRead(void* file, void* buffer, int size);
-static int   ADR_CALL FileSeek(void* file, int destination);
-static int   ADR_CALL FileTell(void* file);
+static ADR_FILE ADR_CALL FileOpen(void* opaque, const char* filename);
+static void     ADR_CALL FileClose(ADR_FILE file);
+static int      ADR_CALL FileRead(ADR_FILE file, void* buffer, int size);
+static int      ADR_CALL FileSeek(ADR_FILE file, int destination);
+static int      ADR_CALL FileTell(ADR_FILE file);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -45,7 +45,7 @@ void CloseAudio()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static void* ADR_CALL FileOpen(void* opaque, const char* filename)
+static ADR_FILE ADR_CALL FileOpen(void* opaque, const char* filename)
 {
   // for each file system...
   std::list<IFileSystem*>::iterator i = s_FileSystems.begin();
@@ -54,7 +54,7 @@ static void* ADR_CALL FileOpen(void* opaque, const char* filename)
     IFileSystem* fs = *i;
     IFile* file = fs->Open(filename, IFileSystem::read);
     if (file) {
-      return file;
+      return (ADR_FILE)file;
     }
 
     ++i;
@@ -65,7 +65,7 @@ static void* ADR_CALL FileOpen(void* opaque, const char* filename)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static void ADR_CALL FileClose(void* file)
+static void ADR_CALL FileClose(ADR_FILE file)
 {
   IFile* f = (IFile*)file;
   f->Close();
@@ -73,7 +73,7 @@ static void ADR_CALL FileClose(void* file)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static int ADR_CALL FileRead(void* file, void* buffer, int size)
+static int ADR_CALL FileRead(ADR_FILE file, void* buffer, int size)
 {
   IFile* f = (IFile*)file;
   return f->Read(buffer, size);
@@ -81,7 +81,7 @@ static int ADR_CALL FileRead(void* file, void* buffer, int size)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static int ADR_CALL FileSeek(void* file, int destination)
+static int ADR_CALL FileSeek(ADR_FILE file, int destination)
 {
   IFile* f = (IFile*)file;
   f->Seek(destination);
@@ -90,7 +90,7 @@ static int ADR_CALL FileSeek(void* file, int destination)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static int ADR_CALL FileTell(void* file)
+static int ADR_CALL FileTell(ADR_FILE file)
 {
   IFile* f = (IFile*)file;
   return f->Tell();
