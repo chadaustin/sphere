@@ -22,11 +22,14 @@ public:
 
 private:
   void UpdateDialog();
+  bool StoreFrame();
 
 private:
   sSpriteset* m_Spriteset;
   int         m_Direction;
   int         m_Frame;
+
+  int* m_DelayList;
 
   DECLARE_MESSAGE_MAP()
 };

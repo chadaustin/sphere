@@ -59,6 +59,9 @@ bool VerifyScript(const char* script, sCompileError& error)
 
   int size = strlen(script);
   s_Script = new char[size + 1];
+  if (!s_Script)
+    return false;
+
   strcpy(s_Script, script);
   
   JSRuntime* rt = JS_NewRuntime(4 * 1024 * 1024);
@@ -71,6 +74,7 @@ bool VerifyScript(const char* script, sCompileError& error)
   if (cx == NULL) {
     JS_DestroyRuntime(rt);
     delete[] s_Script;
+    s_Script = NULL;
     return false;
   }
 
@@ -85,6 +89,7 @@ bool VerifyScript(const char* script, sCompileError& error)
     JS_DestroyContext(cx);
     JS_DestroyRuntime(rt);
     delete[] s_Script;
+    s_Script = NULL;
     return false;
   }
 
