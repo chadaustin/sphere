@@ -113,8 +113,10 @@ bool RefreshInput () {
         case SDLK_RCTRL:
           key = KEY_CTRL; break;
 		  case SDLK_F11:
+		    printf("F11 Pressed...");
 		    ToggleFPS(); break;
 		  case SDLK_F12:
+	            printf("F12 Pressed...");
 		    ToggleFullscreen(); break;
         default:
           for (int lcv = 0; lcv < total_keys; lcv++) {

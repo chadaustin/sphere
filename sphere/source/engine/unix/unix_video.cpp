@@ -64,7 +64,7 @@ void ToggleFPS () {
 
   This is where all the fun begins.  If this is the first time that SwitchResolution
   is called, SDL is initialized. */
-bool SwitchResolution (int x, int y, bool fullscreen) {
+bool SwitchResolution (int x, int y, bool fullscreen = false) {
   static bool initialized = false;
 
   if (!initialized) {
@@ -106,7 +106,7 @@ int GetScreenHeight() {
 
 void ToggleFullscreen () {
   static bool fullscreen = false;
-
+  printf("Toggling fullscreen...");
   SwitchResolution(GetScreenWidth(), GetScreenHeight(), fullscreen ? false : true);
   fullscreen = !fullscreen;
 }
