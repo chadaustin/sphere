@@ -69,6 +69,7 @@ CSpriteBaseView::BeginDrag(int x, int y)
 
   m_Spriteset->SetBase(x, y, x, y);
   m_Handler->SBV_SpritesetModified();
+
   Invalidate();
 }
 
@@ -84,6 +85,7 @@ CSpriteBaseView::Drag(int x, int y)
 
   m_Spriteset->SetBase(x1, y1, x, y);
   m_Handler->SBV_SpritesetModified();
+
   Invalidate();
 }
 

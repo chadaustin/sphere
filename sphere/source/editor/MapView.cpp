@@ -888,35 +888,48 @@ CMapView::IsWithinSelectFillArea(int x, int y)
 ////////////////////////////////////////////////////////////////////////////////
 
 int
-CMapView::FindSpritesetImageIconsIndex(std::string filename)
+CMapView::FindSpritesetImageIconsIndex(int person_index, std::string filename)
 {
-  int sprite_index = -1;
-  for (unsigned int i = 0; i < m_SpritesetImageIcons.size(); ++i) {
-    if (filename == m_SpritesetImageIcons[i].filename) {
-      sprite_index = i;
-      break;
-    }
-  }
+  int sprite_index = person_index;
+  if (m_Map->GetNumEntities() != m_SpritesetImageIcons.size())
+    m_SpritesetImageIcons.resize(m_Map->GetNumEntities());
 
-  if (sprite_index == -1) {
+  if (sprite_index < 0 || sprite_index > m_SpritesetImageIcons.size())
+    sprite_index = -1;
+
+  if (sprite_index != -1 && m_SpritesetImageIcons[sprite_index].filename != filename) {
     sSpriteset s;
     std::string path1 = std::string("../spritesets/" + filename);
     std::string path2 = std::string("spritesets/" + filename);
+    m_SpritesetImageIcons[sprite_index].filename = filename;
+
+    bool loaded = false;
 
     if (s.Load(path1.c_str()) || s.Load(path2.c_str())) {
       if (s.GetNumImages() > 0) {
-        sprite_index = m_SpritesetImageIcons.size();
         CImage32 image(s.GetImage(0));
         int x1, y1, x2, y2;
         s.GetBase(x1, y1, x2, y2);
         image.Rescale(m_Map->GetTileset().GetTileWidth(), m_Map->GetTileset().GetTileHeight());
-        SpritesetImageIcon ico(filename, s.GetImage(0), image, x1, y1, x2, y2);
-        m_SpritesetImageIcons.push_back(ico);
+        m_SpritesetImageIcons[sprite_index].x1 = x1;
+        m_SpritesetImageIcons[sprite_index].y1 = y1;
+        m_SpritesetImageIcons[sprite_index].x2 = x2;
+        m_SpritesetImageIcons[sprite_index].y2 = y2;
+        m_SpritesetImageIcons[sprite_index].icon = image;
+        m_SpritesetImageIcons[sprite_index].image = s.GetImage(0);
+        m_SpritesetImageIcons[sprite_index].created = true;
+        loaded = true;
       }
     }
+
+    if (!loaded)
+      sprite_index = -1;
   }
 
-  if (sprite_index < 0 || sprite_index >= m_SpritesetImageIcons.size())
+  if (sprite_index != -1 && m_SpritesetImageIcons[sprite_index].created == false)
+    sprite_index = -1;
+
+  if (sprite_index < 0 || sprite_index > m_SpritesetImageIcons.size())
     sprite_index = -1;
 
   return sprite_index;
@@ -1024,7 +1037,7 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
     dc.RestoreDC(-1);
   }
 
-  bool should_render_tile = false;
+  bool should_render_tile = false; 
 
   if (m_SpritesetDrawType == SDT_ICON) {
     // draw entities
@@ -1074,7 +1087,7 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
 
           case sEntity::PERSON: {
             sPersonEntity* person = (sPersonEntity*) &entity;
-            int sprite_index = FindSpritesetImageIconsIndex(person->spriteset);
+            int sprite_index = FindSpritesetImageIconsIndex(i, person->spriteset);
 
             if (sprite_index == -1) {
               DrawIconEx(dc.m_hDC, rect.left, rect.top, icon, tw, th, 0, NULL, DI_NORMAL);
@@ -1137,18 +1150,32 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
       switch (entity.GetEntityType()) {
         case sEntity::PERSON: {
           sPersonEntity* person = (sPersonEntity*) &entity;
-          int sprite_index = FindSpritesetImageIconsIndex(person->spriteset);
+          int sprite_index = FindSpritesetImageIconsIndex(i, person->spriteset);
           if (sprite_index != - 1) {
-            int x1 = m_SpritesetImageIcons[sprite_index].x1;
-            int y1 = m_SpritesetImageIcons[sprite_index].y1;
-            int x2 = m_SpritesetImageIcons[sprite_index].x2;
-            int y2 = m_SpritesetImageIcons[sprite_index].y2;
-            int base_width  = std::max(x1, x2) - std::min(x1, x2);
-            int base_height = std::max(y1, y2) - std::min(y1, y2);
+            int base_x1 = m_SpritesetImageIcons[sprite_index].x1;
+            int base_y1 = m_SpritesetImageIcons[sprite_index].y1;
+            int base_x2 = m_SpritesetImageIcons[sprite_index].x2;
+            int base_y2 = m_SpritesetImageIcons[sprite_index].y2;
+            int base_width = (base_x2 - base_x1);
+            int base_height = (base_y2 - base_y1);
+
             entity_width = m_SpritesetImageIcons[sprite_index].image.GetWidth();
             entity_height = m_SpritesetImageIcons[sprite_index].image.GetHeight();
-            entity_x = entity.x - (entity_width / 2) + (base_width / 2);
-            entity_y = entity.y - (entity_height / 2) + (base_height / 2);
+
+            entity_x = entity.x + base_x1 + (base_width/2);
+            entity_y = entity.y + base_y1 - (base_height/2);
+
+/*
+            if (person->spriteset == "tree_04.rss") {
+              int x;
+              int y;
+              x = y;
+              y = x;
+              x = x;
+              y = y;
+            }
+*/              
+
           }
         }
         break;
@@ -1172,9 +1199,9 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
 
           case sEntity::PERSON: {
             sPersonEntity* person = (sPersonEntity*) &entity;
-            int sprite_index = FindSpritesetImageIconsIndex(person->spriteset);
+            int sprite_index = FindSpritesetImageIconsIndex(i, person->spriteset);
 
-            if (sprite_index < 0 || sprite_index >= m_SpritesetImageIcons.size()) {
+            if (sprite_index == -1) {
               DrawIconEx(dc.m_hDC, rect.left, rect.top, icon, tw, th, 0, NULL, DI_NORMAL);
               continue;
             }
@@ -1186,8 +1213,8 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
             const int sprite_width = image.GetWidth();
             const int sprite_height = image.GetHeight();
 
-            int offset_x = (tx - (entity_x / tile_width)) * tile_width;
-            int offset_y = (ty - (entity_y / tile_height)) * tile_height;
+            const int offset_x = (tx - (entity_x / tile_width)) * tile_width;
+            const int offset_y = (ty - (entity_y / tile_height)) * tile_height;
 
             tile_width = std::min(tile_width, sprite_width);
             tile_height = std::min(tile_height, sprite_height);
