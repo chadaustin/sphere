@@ -9,7 +9,11 @@
 #endif
 
 
+#if defined(_WIN32)
 #define JPEG_CALL __stdcall
+#elif defined(unix)
+#define JPEG_CALL
+#endif
 
 
 typedef void*         JPEG_CONTEXT;

@@ -62,7 +62,7 @@ static void    JPEG_emit_message(j_common_ptr cinfo, int msg_level);
 
 
 // little-endian
-inline MAKE_RGBA(byte red, byte green, byte blue, byte alpha) {
+inline byte MAKE_RGBA(byte red, byte green, byte blue, byte alpha) {
   return (alpha << 24) + (blue << 16) + (green << 8) + red;
 }
 

@@ -17,7 +17,7 @@ class CPackageFileSystem;
 
 class CPackageFile : public IFile
 {
-  friend CPackageFileSystem;
+  friend class CPackageFileSystem;
 
 public:
   virtual void Close();

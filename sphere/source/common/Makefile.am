@@ -13,7 +13,6 @@ Log.cpp \
 LogDispatcher.cpp \
 LogFile.cpp \
 LogNull.cpp \
-LogWindow.cpp \
 MNGAnimation.cpp \
 Map.cpp \
 ObstructionMap.cpp \

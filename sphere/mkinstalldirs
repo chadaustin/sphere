@@ -4,7 +4,7 @@
 # Created: 1993-05-16
 # Public domain
 
-# $Id: mkinstalldirs,v 1.1 2001-08-07 06:56:20 jcore Exp $
+# $Id: mkinstalldirs,v 1.1 2001-08-07 09:33:42 jcore Exp $
 
 errstatus=0
 

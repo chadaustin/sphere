@@ -101,11 +101,11 @@ ASSERT_STRUCT_SIZE(FRAME_HEADER_2,     32)
 ////////////////////////////////////////////////////////////////////////////////
 
 template<typename d, typename s>
-void bracket(d& d, s min, s max) {
-  if (d < min) {
-    d = min;
-  } else if (d > max) {
-    d = max;
+void bracket(d& dest, s min, s max) {
+  if (dest < min) {
+    dest = min;
+  } else if (dest > max) {
+    dest = max;
   }
 }
 

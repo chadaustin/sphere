@@ -11,7 +11,7 @@ class DefaultFileSystem;
 
 class DefaultFile : public IFile
 {
-  friend DefaultFileSystem;
+  friend class DefaultFileSystem;
 
 public:
   virtual void Close();

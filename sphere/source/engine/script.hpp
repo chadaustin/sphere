@@ -50,7 +50,7 @@ private:
   JSObject*  m_ScriptObject;
   int        m_NumReferences;
 
-  friend CScript;
+  friend class CScript;
 };
 
 
@@ -233,7 +233,7 @@ private:
 
 
   // it needs to access m_Error
-  friend CScriptCode;
+  friend class CScriptCode;
 };
 
 

@@ -6,7 +6,11 @@
 #include <ctype.h>
 #include <math.h>
 #include <png.h>
+#if defined(_WIN32)
 #include <jpegwrap.h>
+#elif defined(unix)
+#include "../jpegwrap/jpegwrap.h"
+#endif
 #include "Image32.hpp"
 #include "Filters.hpp"
 #include "packed.hpp"
@@ -1120,7 +1124,8 @@ CImage32::BMP_ReadRGB(IFile* file, int imagesize, int bpp, BGRA* Pal)
 
         case 24:         
         { 
-          byte Red, Green, Blue;          
+          /* byte Red, Green, Blue;           */
+			 int Red, Green, Blue;
           
           Blue = ReadByte(file); Green = ReadByte(file); Red = ReadByte(file);          
           if (Red == EOF || Green == EOF || Blue == EOF)
@@ -1135,7 +1140,8 @@ CImage32::BMP_ReadRGB(IFile* file, int imagesize, int bpp, BGRA* Pal)
 
         case 32:
         {          
-          byte Red, Green, Blue;          
+          /* byte Red, Green, Blue;           */
+			 int Red, Green, Blue;
           
           Blue = ReadByte(file); Green = ReadByte(file); Red = ReadByte(file);
           ReadByte(file);
@@ -1352,7 +1358,8 @@ CImage32::PCX_ReadScanline(IFile* file, int scansize, byte* scanline)
   int bytesread = 0;
   while (bytesread < scansize)
   {
-    byte data = ReadByte(file);
+    /* byte data = ReadByte(file); */
+	 int data = ReadByte(file);
     if (data == EOF)
       return;
 
