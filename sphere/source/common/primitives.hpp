@@ -749,7 +749,7 @@ void TexturedQuad(
 
     } else {
 
-      for (int ix = minX + 1; ix <= maxX; ix++) {
+      for (int ix = minX; ix <= maxX; ix++) {
 
         int iu = minU + (ix - oldMinX) * (maxU - minU) / (oldMaxX - oldMinX);
         int iv = minV + (ix - oldMinX) * (maxV - minV) / (oldMaxX - oldMinX);

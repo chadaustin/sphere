@@ -1,3 +1,7 @@
+2003.06.11
+  - fixed bug where maps smaller than the screen would repeat themselves
+  - added option for repeating maps
+
 2003.06.10
   - added flatten all visible layers to the editor
 
