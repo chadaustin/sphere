@@ -19,37 +19,37 @@ void InitializePlayerConfig(PLAYERCONFIG* config, int player_index)
 
   switch (player_index) {
     case 0:
-      strcpy(config->key_up_str,    "KEY_UP");
-      strcpy(config->key_down_str,  "KEY_DOWN");
-      strcpy(config->key_left_str,  "KEY_LEFT");
-      strcpy(config->key_right_str, "KEY_RIGHT");
+      config->key_up_str = "KEY_UP";
+      config->key_down_str = "KEY_DOWN";
+      config->key_left_str = "KEY_LEFT";
+      config->key_right_str = "KEY_RIGHT";
       config->keyboard_input_allowed = true;
       config->joypad_input_allowed = true;
     break;
 
     case 1:
-      strcpy(config->key_up_str,"KEY_W");
-      strcpy(config->key_down_str,  "KEY_S");
-      strcpy(config->key_left_str,  "KEY_A");
-      strcpy(config->key_right_str, "KEY_F");
+      config->key_up_str = "KEY_W";
+      config->key_down_str = "KEY_S";
+      config->key_left_str = "KEY_A";
+      config->key_right_str = "KEY_F";
       config->keyboard_input_allowed = true;
       config->joypad_input_allowed = true;
     break;
 
     case 2:
-      strcpy(config->key_up_str,"KEY_I");
-      strcpy(config->key_down_str,  "KEY_K");
-      strcpy(config->key_left_str,  "KEY_J");
-      strcpy(config->key_right_str, "KEY_L");
+      config->key_up_str = "KEY_I";
+      config->key_down_str = "KEY_K";
+      config->key_left_str = "KEY_J";
+      config->key_right_str = "KEY_L";
       config->keyboard_input_allowed = true;
       config->joypad_input_allowed = true;
     break;
 
     case 3:
-      strcpy(config->key_up_str,"KEY_8");
-      strcpy(config->key_down_str,  "KEY_5");
-      strcpy(config->key_left_str,  "KEY_4");
-      strcpy(config->key_right_str, "KEY_6");
+      config->key_up_str = "KEY_8";
+      config->key_down_str = "KEY_5";
+      config->key_left_str = "KEY_4";
+      config->key_right_str = "KEY_6";
       config->keyboard_input_allowed = true;
       config->joypad_input_allowed = true;
     break;
@@ -73,6 +73,29 @@ bool LoadSphereConfig(SPHERECONFIG* config, const char* filename)
   config->filter      = file.ReadInt   ("Video" , "Filter"    , 0);
   config->showcursor  = file.ReadInt   ("Video" , "ShowCursor", 0);
   config->allow_networking = file.ReadBool ("Network", "Allowed", true);
+
+  const char identify[] = "1234";
+
+  for(int x = 0; x < 4; x++) {
+    std::string current("Player");
+    current += identify[x];
+    config->player_configurations[x].key_up_str = file.ReadString(current.c_str(), "KeyUp", "");
+    config->player_configurations[x].key_down_str = file.ReadString(current.c_str(), "KeyDown", "");
+    config->player_configurations[x].key_left_str = file.ReadString(current.c_str(), "KeyLeft", "");
+    config->player_configurations[x].key_right_str = file.ReadString(current.c_str(), "KeyRight", "");
+    config->player_configurations[x].keyboard_input_allowed = file.ReadInt(current.c_str(), "KeyboardAllowed", 1);
+    config->player_configurations[x].joypad_input_allowed = file.ReadInt(current.c_str(), "JoypadAllowed", 1);
+  }
+
+  /*
+  reference...
+  char key_up_str[25];
+  char key_down_str[25];
+  char key_left_str[25];
+  char key_right_str[25];
+  bool keyboard_input_allowed;
+  bool joypad_input_allowed;
+  */
   return true;
 }
 
@@ -92,6 +115,20 @@ bool SaveSphereConfig(SPHERECONFIG* config, const char* filename)
   file.WriteInt   ("Video", "Filter"	 , config->filter);
   file.WriteInt   ("Video", "ShowCursor" , config->showcursor);
   file.WriteBool  ("Network", "Allowed", config->allow_networking);
+
+  const char identify[] = "1234";
+
+  for(int x = 0; x < 4; x++) {
+    std::string current("Player");
+    current += identify[x];
+    file.WriteString(current.c_str(), "KeyUp", config->player_configurations[x].key_up_str.c_str());
+    file.WriteString(current.c_str(), "KeyLeft", config->player_configurations[x].key_left_str.c_str());
+    file.WriteString(current.c_str(), "KeyRight", config->player_configurations[x].key_right_str.c_str());
+    file.WriteString(current.c_str(), "KeyDown", config->player_configurations[x].key_down_str.c_str());
+    file.WriteInt(current.c_str(), "KeyboardAllowed", config->player_configurations[x].keyboard_input_allowed);
+    file.WriteInt(current.c_str(), "JoypadAllowed", config->player_configurations[x].joypad_input_allowed);
+  }
+
   file.Save(filename);
   return true;
 }

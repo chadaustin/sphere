@@ -21,7 +21,7 @@ static char* original_directory;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-int KeyStringToKeyCode(char* key_string)
+int KeyStringToKeyCode(const char* key_string)
 {
   if (strlen(key_string) >= strlen("KEY_X")) {
     if (strlen(key_string) == strlen("KEY_X")) {
@@ -106,17 +106,18 @@ int main(int argc, const char* argv[]) {
     // load the configuration settings, then save it for future reference
     SPHERECONFIG config;
     LoadSphereConfiguration(&config);
-    SaveSphereConfig(&config, (GetSphereDirectory() + "/engine.ini").c_str());
 
     for (int i = 0; i < 4; i++) {
       SetPlayerConfig(i,
-        KeyStringToKeyCode(config.player_configurations[i].key_up_str),
-        KeyStringToKeyCode(config.player_configurations[i].key_down_str),
-        KeyStringToKeyCode(config.player_configurations[i].key_left_str),
-        KeyStringToKeyCode(config.player_configurations[i].key_right_str),
+        KeyStringToKeyCode(config.player_configurations[i].key_up_str.c_str()),
+        KeyStringToKeyCode(config.player_configurations[i].key_down_str.c_str()),
+        KeyStringToKeyCode(config.player_configurations[i].key_left_str.c_str()),
+        KeyStringToKeyCode(config.player_configurations[i].key_right_str.c_str()),
         config.player_configurations[i].keyboard_input_allowed,
         config.player_configurations[i].joypad_input_allowed);
     }
+
+    SaveSphereConfig(&config, (GetSphereDirectory() + "/engine.ini").c_str());
 
     original_directory = getcwd(NULL, 0);
     char* env_data_dir = getenv("SPHERE_DATA_DIR");
