@@ -165,6 +165,8 @@ SS_FUNCTION(OpenLog, 1)
     // input 
     SS_FUNCTION(BindKey, 3)
     SS_FUNCTION(UnbindKey, 1)
+    SS_FUNCTION(BindJoystickButton, 4)
+    SS_FUNCTION(UnbindJoystickButton, 2)
     SS_FUNCTION(AttachInput, 1)
     SS_FUNCTION(DetachInput, 0)
     SS_FUNCTION(IsInputAttached, 0)

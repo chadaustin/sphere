@@ -1032,6 +1032,98 @@ CMapEngine::UnbindKey(int key)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::BindJoystickButton(int joystick, int button, const char* on_key_down, const char* on_key_up)
+{
+  int bound_joystick_index = -1;
+  for (unsigned int i = 0; i < m_BoundJoysticks.size(); ++i) {
+    if (m_BoundJoysticks[i].m_Joystick == joystick) {
+      bound_joystick_index = i;
+      break;
+    }
+  }
+
+  if (bound_joystick_index == -1) {
+    BoundJoystick joy;
+    joy.m_Joystick = joystick;
+    joy.m_Buttons.resize(GetNumJoystickButtons(joystick));
+    for (int i = 0; i < GetNumJoystickButtons(joystick); i++) {
+      joy.m_Buttons[i] = IsJoystickButtonPressed(joystick, i);
+    }
+
+    bound_joystick_index = m_BoundJoysticks.size();
+    m_BoundJoysticks.push_back(joy);
+
+    if (bound_joystick_index < 0 || bound_joystick_index >= m_BoundJoysticks.size()) {
+      return false;
+    }
+  }
+
+  // unbind previous binding (if it exists)
+  if (m_BoundJoysticks[bound_joystick_index].m_BoundButtons.count(button) > 0) {
+    UnbindJoystickButton(joystick, button);
+  }
+
+  // compile the two scripts
+  std::string error;
+  KeyScripts ks;
+
+  ks.down = m_Engine->CompileScript(on_key_down, error);
+  if (ks.down == NULL) {
+    m_ErrorMessage = "OnKeyDown script compile failed in BindJoystickButton()\n" + error;
+    return false;
+  }
+
+  ks.up = m_Engine->CompileScript(on_key_up, error);
+  if (ks.up == NULL) {
+    m_Engine->DestroyScript(ks.down);
+    m_ErrorMessage = "OnKeyUp script compile failed in BindJoystickButton()\n" + error;
+    return false;
+  }
+
+  m_BoundJoysticks[bound_joystick_index].m_BoundButtons[button] = ks;
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::UnbindJoystickButton(int joystick, int button)
+{
+  int bound_joystick_index = -1;
+  for (unsigned int i = 0; i < m_BoundJoysticks.size(); ++i) {
+    if (m_BoundJoysticks[i].m_Joystick == joystick) {
+      bound_joystick_index = i;
+      break;
+    }
+  }
+
+  if (bound_joystick_index == -1) {
+    m_ErrorMessage = "UnbindJoystickButton() called on an unbound joystick";
+    return false;
+  }
+
+  if (m_BoundJoysticks[bound_joystick_index].m_BoundButtons.count(button) > 0) {
+    
+    m_Engine->DestroyScript(m_BoundJoysticks[bound_joystick_index].m_BoundButtons[button].down);
+    m_Engine->DestroyScript(m_BoundJoysticks[bound_joystick_index].m_BoundButtons[button].up);
+    m_BoundJoysticks[bound_joystick_index].m_BoundButtons.erase(button);
+    return true;
+
+  } else {
+
+    m_ErrorMessage = "UnbindJoystickButton() called on an unbound button";
+    return false;
+
+  }
+
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::IsInvalidPersonError(const char* person_name, int& person_index)
 {
   person_index = FindPerson(person_name);
@@ -4021,6 +4113,35 @@ CMapEngine::ProcessInput()
 
   }  
 
+  // process bound joystick buttons
+  for (unsigned int j = 0; j < m_BoundJoysticks.size(); ++j)
+  {
+    int joystick = m_BoundJoysticks[j].m_Joystick;
+    if (joystick >= 0 && joystick < GetNumJoysticks())
+    {
+      for (int button = 0; button < GetNumJoystickButtons(joystick); ++button)
+      {
+        bool button_pressed = IsJoystickButtonPressed(joystick, button);
+        if (button_pressed == true && m_BoundJoysticks[j].m_Buttons[button] == false) {
+          m_BoundJoysticks[j].m_Buttons[button] = true;
+          if (m_BoundJoysticks[j].m_BoundButtons.count(button)) {
+            if (!ProcessBoundJoystickButtonDown(joystick, button)) {
+              return false;
+            }
+          }
+        }
+        else if (button_pressed == false && m_BoundJoysticks[j].m_Buttons[button] == true)
+        {
+          m_BoundJoysticks[j].m_Buttons[button] = false;
+          if (m_BoundJoysticks[j].m_BoundButtons.count(button)) {
+            if (!ProcessBoundJoystickButtonUp(joystick, button)) {
+              return false;
+            }
+          }
+        }
+      }
+    }
+  }
 
   if (GetNumJoysticks() > 0) {
     if (IsJoystickButtonPressed(0, m_JoystickCancelButton)) {
@@ -4089,6 +4210,66 @@ CMapEngine::ProcessUnboundKeyDown(int key)
 void
 CMapEngine::ProcessUnboundKeyUp(int key)
 {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::ProcessBoundJoystickButtonDown(int joystick, int button)
+{
+  int bound_joystick_index = -1;
+  for (unsigned int i = 0; i < m_BoundJoysticks.size(); ++i) {
+    if (m_BoundJoysticks[i].m_Joystick == joystick) {
+      bound_joystick_index = i;
+      break;
+    }
+  }
+
+  //if (bound_joystick_index == -1) {
+  //  m_ErrorMessage = "Could not process bound joystick button down event\n" + error;
+  //  return false; // this should error should never occur
+  //}
+
+  KeyScripts& a = m_BoundJoysticks[bound_joystick_index].m_BoundButtons[button];
+
+  std::string error;
+  if (!ExecuteScript(a.down, error)) {
+    m_ErrorMessage = "Could not execute button down script\n" + error;
+    return false;
+  }
+
+  ResetNextFrame();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::ProcessBoundJoystickButtonUp(int joystick, int button)
+{
+  int bound_joystick_index = -1;
+  for (unsigned int i = 0; i < m_BoundJoysticks.size(); ++i) {
+    if (m_BoundJoysticks[i].m_Joystick == joystick) {
+      bound_joystick_index = i;
+      break;
+    }
+  }
+
+  //if (bound_joystick_index == -1) {
+  //  m_ErrorMessage = "Could not process bound joystick button up event\n" + error;
+  //  return false; // this should error should never occur
+  //}
+
+  KeyScripts& a = m_BoundJoysticks[bound_joystick_index].m_BoundButtons[button];
+
+  std::string error;
+  if (!ExecuteScript(a.up, error)) {
+    m_ErrorMessage = "Could not execute button up script\n" + error;
+    return false;
+  }
+
+  ResetNextFrame();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

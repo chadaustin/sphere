@@ -120,6 +120,8 @@ public:
 
   bool BindKey(int key, const char* on_key_down, const char* on_key_up);
   bool UnbindKey(int key);
+  bool BindJoystickButton(int joystick, int button, const char* on_key_down, const char* on_key_up);
+  bool UnbindJoystickButton(int joystick, int button);
 
   bool AttachInput(const char* person);
   bool DetachInput();
@@ -336,6 +338,8 @@ private:
   bool ProcessBoundKeyUp(int key);
   void ProcessUnboundKeyDown(int key);
   void ProcessUnboundKeyUp(int key);
+  bool ProcessBoundJoystickButtonDown(int joystick, int button);
+  bool ProcessBoundJoystickButtonUp(int joystick, int button);
   void DestroyBoundKeys();
 
   // error checking
@@ -412,6 +416,13 @@ private:
   struct KeyScripts { IEngine::script down, up; };
   std::map<int, KeyScripts> m_BoundKeys;
 
+  // bound joysticks
+  struct BoundJoystick {
+    int m_Joystick;
+    std::map<int, KeyScripts> m_BoundButtons;
+    std::vector<bool> m_Buttons;
+  };
+  std::vector<BoundJoystick> m_BoundJoysticks;
 
   // ENTITIES
 

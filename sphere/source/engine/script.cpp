@@ -2520,6 +2520,34 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(BindJoystickButton, 4)
+  arg_int(joystick);
+  arg_int(button);
+  arg_str(on_down);
+  arg_str(on_up);
+
+  if (!This->m_Engine->GetMapEngine()->BindJoystickButton(joystick, button, on_down, on_up)) {
+    This->ReportMapEngineError("BindJoystickButton() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(UnbindJoystickButton, 2)
+  arg_int(joystick);
+  arg_int(button);
+
+  if (!This->m_Engine->GetMapEngine()->UnbindJoystickButton(joystick, button)) {
+    This->ReportMapEngineError("UnbindJoystickButton() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 begin_func(AttachInput, 1)
   arg_str(person);
 
