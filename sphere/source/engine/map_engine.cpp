@@ -3987,7 +3987,7 @@ CMapEngine::UpdateDelayScripts()
       i--;
 
       std::string error;
-      if (!ExecuteScript(script, error)) {
+      if (!ExecuteScript(script, error) || !error.empty()) {
         m_ErrorMessage = "Could not execute delay script\n" + error;
         return false;
       }

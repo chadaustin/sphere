@@ -125,6 +125,8 @@ CBrowseWindow::InvalidateTile(int tile)
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CBrowseWindow::OnTimer(UINT event) {
   //if (m_MenuShown)

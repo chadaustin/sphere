@@ -19,7 +19,7 @@ static int s_MapAreaClipboardFormat;
 static int s_MapEntityClipboardFormat;
 static int s_ClipboardFormat;
 
-static const int ANIMATION_TIMER = 9001;
+//static const int ANIMATION_TIMER = 9001;
 
 
 BEGIN_MESSAGE_MAP(CMapView, CScrollWindow)

@@ -45,6 +45,10 @@ sMap::sMap(int width, int height, int layers)
 
 sMap::~sMap()
 {
+  for (int i = 0; i < GetNumEntities(); i++) {
+    delete m_Entities[i];
+		m_Entities[i] = NULL;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -264,6 +268,10 @@ sMap::Load(const char* filename, IFileSystem& fs)
   } // end for layer
 
   // delete the old entities
+	for (int i = 0; i < GetNumEntities(); i++) {
+    delete m_Entities[i];
+		m_Entities[i] = NULL;
+	}
   m_Entities.clear();
 
   // read entities
@@ -1325,6 +1333,7 @@ void
 sMap::DeleteEntity(int index)
 {
   delete m_Entities[index];
+	m_Entities[index] = NULL;
   m_Entities.erase(m_Entities.begin() + index);
 }
 

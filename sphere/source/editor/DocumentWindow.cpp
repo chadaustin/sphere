@@ -1,5 +1,5 @@
 #include "DocumentWindow.hpp"
-#include "MainWindow.hpp"
+//#include "MainWindow.hpp"
 #include "WindowCommands.hpp"
 #include "PaletteWindow.hpp"
 #include "resource.h"
@@ -332,7 +332,6 @@ CDocumentWindow::OnUpdateSaveableCommand(CCmdUI* cmdui)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-
 BOOL CDocumentWindow::PreTranslateMessage(MSG* pMsg)
 {
 	if (pMsg->message >= WM_KEYFIRST && pMsg->message <= WM_KEYLAST)
@@ -362,3 +361,6 @@ BOOL CDocumentWindow::PreTranslateMessage(MSG* pMsg)
 
 	return CMDIChildWnd::PreTranslateMessage(pMsg);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
