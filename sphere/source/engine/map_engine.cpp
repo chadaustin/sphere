@@ -1385,6 +1385,9 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
   p.stepping_frame_revert = 0;
   p.stepping_frame_revert_count = 0;
 
+  p.is_angled = false;
+  p.angle = 0;
+
   p.ignorePersonObstructions = false;
   p.ignoreTileObstructions = false;
   
@@ -1939,6 +1942,35 @@ CMapEngine::SetPersonScaleFactor(const char* name, double scale_w, double scale_
   if (p.base_y2 < 0 && p.height > 1 && base_y2 != 0) p.base_y2 = 1;
 */
 
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool 
+CMapEngine::GetPersonAngle(const char* name, double& angle)
+{
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
+    return false;
+  }
+
+  angle = m_Persons[person].angle;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+  
+bool
+CMapEngine::SetPersonAngle(const char* name, double angle)
+{
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
+    return false;
+  }
+
+  m_Persons[person].angle = angle;
+  m_Persons[person].is_angled = (angle != 0.0); // zero is not angled
   return true;
 }
 
@@ -3013,7 +3045,6 @@ CMapEngine::RenderEntities(int layer, bool flipped, int offset_x, int offset_y)
         : p.spriteset->GetImage(ss.GetFrameIndex(p.direction, p.stepping))
       );
 
-
       // calculate distance from upper-left corner of image to center of base
       int base_x = (p.base_x1 + p.base_x2) / 2;
       int base_y = (p.base_y1 + p.base_y2) / 2;
@@ -3026,7 +3057,7 @@ CMapEngine::RenderEntities(int layer, bool flipped, int offset_x, int offset_y)
         draw_y += base_y;
       }
 
-      rs.AddObject(draw_x, draw_y, sort_y, p.width, p.height, image, p.mask);
+      rs.AddObject(draw_x, draw_y, sort_y, p.width, p.height, p.is_angled, p.angle, image, p.mask);
 
     }
   }

@@ -627,6 +627,14 @@ log_object.endBlock()
       GetPersonBase(name)
         - returns the person's base obstruction object.
 
+      GetPersonAngle(name)
+        - returns the person's angle that is used
+
+      SetPersonAngle(name, angle)
+        - sets the angle which the person should be drawn at
+          zero is no rotation.
+          angles are in radians.
+
       SetPersonMask(name, color)
         - sets a color multiplier to use when drawing sprites.  if the color is
           RGBA:(255, 0, 0, 255), only the red elements of the sprite are drawn.
@@ -637,9 +645,10 @@ log_object.endBlock()
         - returns the person's current mask
 
       FollowPerson(name, leader, pixels)
-        - makes the sprite 'name' follow 'pixels' pixels behind sprite
-        'leader'.  If this function is called like FollowPerson(name,
-        "", 0), the person will detach from anyone it is following.
+        - makes the sprite 'name' follow 'pixels' pixels behind sprite 'leader'.
+        If this function is called like:
+        FollowPerson(name, "", 0),
+        the person will detach from anyone it is following.
       
       SetPersonScript(name, which, script)
         - sets 'script' as the thing 'name' does in a certain event

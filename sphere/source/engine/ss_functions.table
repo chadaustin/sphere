@@ -219,6 +219,8 @@ SS_FUNCTION(OpenLog, 1)
       SS_FUNCTION(SetPersonScaleAbsolute, 3)
       SS_FUNCTION(GetPersonSpriteset, 1)
       SS_FUNCTION(GetPersonBase, 1)
+      SS_FUNCTION(SetPersonAngle, 2)
+      SS_FUNCTION(GetPersonAngle, 1)
       SS_FUNCTION(SetPersonMask, 2)
       SS_FUNCTION(GetPersonMask, 1)
 

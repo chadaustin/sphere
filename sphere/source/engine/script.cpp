@@ -2782,6 +2782,34 @@ begin_func(GetPersonBase, 1)
   return_object(CreateSpritesetBaseObject(cx, spriteset));
 end_func()
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(GetPersonAngle, 1)
+  arg_str(name);
+  double angle;
+
+  if ( !This->m_Engine->GetMapEngine()->GetPersonAngle(name, angle) ) {
+    JS_ReportError(cx, "Could not find person '%s'", name);
+    return JS_FALSE;
+  }
+
+  return_double(angle);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(SetPersonAngle, 2)
+  arg_str(name);
+  arg_double(angle);
+
+  if ( !This->m_Engine->GetMapEngine()->SetPersonAngle(name, angle) ) {
+    JS_ReportError(cx, "Could not find person '%s'", name);
+    return JS_FALSE;
+  }
+
+end_func()
+
 ////////////////////////////////////////////////////////////////////////////////
 
 begin_func(SetPersonMask, 2)
@@ -4167,43 +4195,50 @@ end_method()
 
 ///////////////////////////////////////
 
+void CalculateRotateBlitPoints(int tx[4], int ty[4], int x, int y, int w, int h, double radians)
+{
+  double r = sqrt(w * w + h * h) / 2;
+
+  // various useful angles
+  const double PI = 3.1415927;
+  const double angle = atan((double)w / h);  // h shouldn't be zero...
+  double upper_left_angle  = -angle;
+  double upper_right_angle = angle;
+  double lower_right_angle = PI - angle;
+  double lower_left_angle  = PI + angle;
+
+  // center of the image
+  int cx = x + w / 2;
+  int cy = y + h / 2;
+
+  tx[0] = int(cx + r * sin(upper_left_angle  + radians));
+  tx[1] = int(cx + r * sin(upper_right_angle + radians));
+  tx[2] = int(cx + r * sin(lower_right_angle + radians));
+  tx[3] = int(cx + r * sin(lower_left_angle  + radians));
+
+  // I'm not sure why we're doing subtraction here...
+  // one of those "just smile and nod" things
+  ty[0] = int(cy - r * cos(upper_left_angle  + radians));
+  ty[1] = int(cy - r * cos(upper_right_angle + radians));
+  ty[2] = int(cy - r * cos(lower_right_angle + radians));
+  ty[3] = int(cy - r * cos(lower_left_angle  + radians));
+}
+
+///////////////////////////////////////
+
 begin_method(SS_IMAGE, ssImageRotateBlit, 3)
   if (This->ShouldRender()) {
     arg_int(x);
     arg_int(y);
     arg_double(radians);
 
+    int tx[4];
+    int ty[4];
+
     int w = GetImageWidth(object->image);
     int h = GetImageHeight(object->image);
-    double r = sqrt(w * w + h * h) / 2;
 
-    // various useful angles
-    const double PI = 3.1415927;
-    const double angle = atan((double)w / h);  // h shouldn't be zero...
-    double upper_left_angle  = -angle;
-    double upper_right_angle = angle;
-    double lower_right_angle = PI - angle;
-    double lower_left_angle  = PI + angle;
-
-    // center of the image
-    int cx = x + w / 2;
-    int cy = y + h / 2;
-
-    int tx[4] = {
-      int(cx + r * sin(upper_left_angle  + radians)),
-      int(cx + r * sin(upper_right_angle + radians)),
-      int(cx + r * sin(lower_right_angle + radians)),
-      int(cx + r * sin(lower_left_angle  + radians)),
-    };
-
-    // I'm not sure why we're doing subtraction here...
-    // one of those "just smile and nod" things
-    int ty[4] = {
-      int(cy - r * cos(upper_left_angle  + radians)),
-      int(cy - r * cos(upper_right_angle + radians)),
-      int(cy - r * cos(lower_right_angle + radians)),
-      int(cy - r * cos(lower_left_angle  + radians)),
-    };
+    CalculateRotateBlitPoints(tx, ty, x, y, w, h, radians);
 
     TransformBlitImage(object->image, tx, ty);
   }

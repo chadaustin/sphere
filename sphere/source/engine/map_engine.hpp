@@ -172,6 +172,8 @@ public:
   bool GetPersonSpeedY(const char* name, double& y);
   bool SetPersonScaleAbsolute(const char* name, int width, int height);
   bool SetPersonScaleFactor(const char* name, double scale_x, double scale_y);
+  bool GetPersonAngle(const char* name, double& angle);
+  bool SetPersonAngle(const char* name, double angle);
   bool SetPersonMask(const char* name, RGBA mask);
   bool GetPersonMask(const char* name, RGBA& mask);
   SSPRITESET* GetPersonSpriteset(const char* name);
@@ -216,6 +218,9 @@ private:
     std::string description;
     SSPRITESET* spriteset;
     RGBA mask;
+
+    bool is_angled;
+    double angle;
 
     double x;
     double y;

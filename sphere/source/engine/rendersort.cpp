@@ -1,11 +1,14 @@
 #include <algorithm>
+#include <math.h>
 #include "rendersort.hpp"
+
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CRenderSort::AddObject(int draw_x, int draw_y, int sort_y, int draw_w, int draw_h, IMAGE image, RGBA mask)
+CRenderSort::AddObject(int draw_x, int draw_y, int sort_y, int draw_w, int draw_h, bool is_angled, double angle, IMAGE image, RGBA mask)
 {
   Object object;
   object.draw_x = draw_x;
@@ -13,12 +16,16 @@ CRenderSort::AddObject(int draw_x, int draw_y, int sort_y, int draw_w, int draw_
   object.sort_y = sort_y;
   object.draw_w = draw_w;
   object.draw_h = draw_h;
+  object.is_angled = is_angled;
+  object.angle = angle;
   object.image  = image;
   object.mask   = mask;
   m_objects.push_back(object);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+void CalculateRotateBlitPoints(int tx[4], int ty[4], int x, int y, int w, int h, double radians);
 
 void
 CRenderSort::DrawObjects()
@@ -40,20 +47,25 @@ CRenderSort::DrawObjects()
   for (unsigned i = 0; i < m_objects.size(); i++) {
     Object& o = m_objects[i];
 
-    int x[4];
-    int y[4];
-    x[0] = o.draw_x;
-    y[0] = o.draw_y;
-    x[1] = o.draw_x + o.draw_w - 1;
-    y[1] = o.draw_y;
-    x[2] = o.draw_x + o.draw_w - 1;
-    y[2] = o.draw_y + o.draw_h - 1;
-    x[3] = o.draw_x;
-    y[3] = o.draw_y + o.draw_h - 1;
+    int tx[4];
+    int ty[4];
+    tx[0] = o.draw_x;
+    ty[0] = o.draw_y;
+    tx[1] = o.draw_x + o.draw_w - 1;
+    ty[1] = o.draw_y;
+    tx[2] = o.draw_x + o.draw_w - 1;
+    ty[2] = o.draw_y + o.draw_h - 1;
+    tx[3] = o.draw_x;
+    ty[3] = o.draw_y + o.draw_h - 1;
+
+    if (o.is_angled) {
+      CalculateRotateBlitPoints(tx, ty, o.draw_x, o.draw_y, o.draw_w, o.draw_h, o.angle);
+    }
+
     if (o.mask == CreateRGBA(255, 255, 255, 255)) {
-      TransformBlitImage(o.image, x, y);
+      TransformBlitImage(o.image, tx, ty);
     } else {
-      TransformBlitImageMask(o.image, x, y, o.mask);
+      TransformBlitImageMask(o.image, tx, ty, o.mask);
     }
   }
 
