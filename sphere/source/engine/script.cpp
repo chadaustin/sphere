@@ -4340,7 +4340,10 @@ begin_func(GetPersonData, 1)
   }
 
   for (int i = 0; i < int(data.size()); i++) {
-    if (JS_DefineProperty(cx, object, data[i].name.c_str(), STRING_TO_JSVAL(JS_NewStringCopyZ(cx, data[i].value.c_str())), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE) == JS_TRUE) {
+    if (data[i].type == 1) {
+      if (JS_DefineProperty(cx, object, data[i].name.c_str(), DOUBLE_TO_JSVAL(JS_NewDouble(cx, data[i].double_value)),              JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE) == JS_TRUE) { }
+    } else {
+      if (JS_DefineProperty(cx, object, data[i].name.c_str(), STRING_TO_JSVAL(JS_NewStringCopyZ(cx, data[i].string_value.c_str())), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE) == JS_TRUE) { }
     }
   }
 
@@ -4373,8 +4376,23 @@ begin_func(SetPersonData, 2)
       struct PersonData data;
       data.name = argStr(cx, val);
 
-      if ( JS_GetProperty(cx, object, data.name.c_str(), &val) == JS_TRUE ) {
-        data.value = argStr(cx, val);
+      if ( JS_GetProperty(cx, object, data.name.c_str(), &val) == JS_TRUE )
+      {     
+        jsdouble d;
+
+        if (!JSVAL_IS_OBJECT(val)
+         && (JSVAL_IS_INT(val) || JSVAL_IS_DOUBLE(val))
+         && JS_ValueToNumber(cx, val, &d) != JS_FALSE) {
+          data.string_value = "";
+          data.double_value = d;
+          data.type = 1;
+        }
+        else {
+          data.string_value = argStr(cx, val);
+          data.double_value = 0;
+          data.type = 0;
+        }
+
       }
 
       person_data.push_back(data);
@@ -4388,7 +4406,12 @@ begin_func(SetPersonData, 2)
     for (int i = 0; i < int(person_data.size()); i++) {
       str += person_data[i].name;
       str += "='";
-      str += person_data[i].value;
+      if (person_data[i].type == 1) {
+        str += "<number>"; // itos(person_data[i].double_value);
+      }
+      else {
+        str += person_data[i].string_value;
+      }
       str += "'\n";
     }
 
@@ -4408,14 +4431,20 @@ end_func()
 begin_func(GetPersonValue, 2)
   arg_str(name);
   arg_str(key);
-  std::string value;
 
-  if (!This->m_Engine->GetMapEngine()->GetPersonValue(name, key, value)) {
+  std::string string_value;
+  jsdouble double_value;
+  int type = -1;
+
+  if (!This->m_Engine->GetMapEngine()->GetPersonValue(name, key, string_value, double_value, type)) {
     This->ReportMapEngineError("GetPersonValue() failed");
     return JS_FALSE;
   }
 
-  return_str(value.c_str());
+  if (type == 1)
+    return_double(double_value);
+  else
+    return_str(string_value.c_str());
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4423,9 +4452,22 @@ end_func()
 begin_func(SetPersonValue, 3)
   arg_str(name);
   arg_str(key);
-  arg_str(value);
 
-  if (!This->m_Engine->GetMapEngine()->SetPersonValue(name, key, value)) {
+  std::string string_value;
+  jsdouble double_value;
+  int type = 0;
+
+  if ( !JSVAL_IS_OBJECT(argv[2])
+   && (JSVAL_IS_INT(argv[2]) || JSVAL_IS_DOUBLE(argv[2]))
+   && JS_ValueToNumber(cx, argv[2], &double_value) != JS_FALSE) {
+    type = 1;
+  }
+  else { // anything else is a string
+    string_value = argStr(cx, argv[2]);
+    type = 0;
+  }
+
+  if (!This->m_Engine->GetMapEngine()->SetPersonValue(name, key, string_value, double_value, type)) {
     This->ReportMapEngineError("SetPersonValue() failed");
     return JS_FALSE;
   }

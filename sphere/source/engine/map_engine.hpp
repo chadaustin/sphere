@@ -12,7 +12,9 @@
 
 struct PersonData {
   std::string name;
-  std::string value;
+  std::string string_value;
+  double double_value;
+  int type;
 };
 
 
@@ -213,8 +215,8 @@ public:
   bool GetPersonData(const char* name, std::vector<struct PersonData>& data);
   bool SetPersonData(const char* name, const std::vector<struct PersonData> data);
 
-  bool GetPersonValue(const char* name, const char* key, std::string& value);
-  bool SetPersonValue(const char* name, const char* key, const std::string value);
+  bool GetPersonValue(const char* name, const char* key, std::string& string_value, double& double_value, int& type);
+  bool SetPersonValue(const char* name, const char* key, const std::string string_value, double double_value, int type);
   
   SSPRITESET* GetPersonSpriteset(const char* name);
   bool SetPersonSpriteset(const char* name, sSpriteset& spriteset);

@@ -2478,24 +2478,40 @@ public:
     return index;
   }
 
-  static void SetDataStr(std::vector<struct PersonData>& person_data, const char* name, const char* value)
+  static void SetDataString(std::vector<struct PersonData>& person_data, const char* name, const char* value)
   {
     int index = PersonDataUtil::FindDataIndex(person_data, name);
     if (index != -1) {
-      person_data[index].value = value;
+      person_data[index].string_value = value;
+      person_data[index].double_value = 0;
+      person_data[index].type = 0;
     }
     else {
       PersonData data;
       data.name = name;
-      data.value = value;
+      data.string_value = value;
+      data.double_value = 0;
+      data.type = 0;
       person_data.push_back(data);
     }
   }
 
-  static void SetDataInt(std::vector<struct PersonData>& person_data, const char* name, const int value)
+  static void SetDataDouble(std::vector<struct PersonData>& person_data, const char* name, const double value)
   {
-    std::string str = itos(value);
-    PersonDataUtil::SetDataStr(person_data, name, str.c_str());
+    int index = PersonDataUtil::FindDataIndex(person_data, name);
+    if (index != -1) {
+      person_data[index].string_value = "";
+      person_data[index].double_value = value;
+      person_data[index].type = 1;
+    }
+    else {
+      PersonData data;
+      data.name = name;
+      data.string_value = "";
+      data.double_value = value;
+      data.type = 1;
+      person_data.push_back(data);
+    }
   }
 };
 
@@ -2510,10 +2526,10 @@ CMapEngine::GetPersonData(const char* name, std::vector<struct PersonData>& pers
   Person& p = m_Persons[person];
   person_data = m_Persons[person].person_data;
 
-  PersonDataUtil::SetDataInt(person_data, "num_frames", p.spriteset->GetSpriteset().GetNumFrames(p.direction));
-  PersonDataUtil::SetDataInt(person_data, "num_directions", p.spriteset->GetSpriteset().GetNumDirections());
-  PersonDataUtil::SetDataInt(person_data, "width", p.width);
-  PersonDataUtil::SetDataInt(person_data, "height", p.height);
+  PersonDataUtil::SetDataDouble(person_data, "num_frames", p.spriteset->GetSpriteset().GetNumFrames(p.direction));
+  PersonDataUtil::SetDataDouble(person_data, "num_directions", p.spriteset->GetSpriteset().GetNumDirections());
+  PersonDataUtil::SetDataDouble(person_data, "width", p.width);
+  PersonDataUtil::SetDataDouble(person_data, "height", p.height);
 
   return true;
 }
@@ -2535,7 +2551,7 @@ CMapEngine::SetPersonData(const char* name, const std::vector<struct PersonData>
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::GetPersonValue(const char* name, const char* key, std::string& value)
+CMapEngine::GetPersonValue(const char* name, const char* key, std::string& string_value, double& double_value, int& type)
 {
   std::vector<PersonData> person_data;
   if ( GetPersonData(name, person_data) == false)
@@ -2543,10 +2559,14 @@ CMapEngine::GetPersonValue(const char* name, const char* key, std::string& value
 
   int index = PersonDataUtil::FindDataIndex(person_data, key);
   if (index != -1) {
-    value = person_data[index].value;
+    string_value = person_data[index].string_value;
+    double_value = person_data[index].double_value;
+    type  = person_data[index].type;
   }
   else {
-    value = "";
+    string_value = "";
+    double_value = 0;
+    type = -1;
   }
 
   return true;
@@ -2555,13 +2575,20 @@ CMapEngine::GetPersonValue(const char* name, const char* key, std::string& value
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::SetPersonValue(const char* name, const char* key, const std::string value)
+CMapEngine::SetPersonValue(const char* name, const char* key, const std::string value, const double double_value, int type)
 {
   std::vector<PersonData> person_data;
   if ( GetPersonData(name, person_data) == false)
     return false;
 
-  PersonDataUtil::SetDataStr(person_data, key, value.c_str());
+  switch (type) {
+    case 0:
+      PersonDataUtil::SetDataString(person_data, key, value.c_str());
+    break;
+    case 1:
+      PersonDataUtil::SetDataDouble(person_data, key, double_value);
+    break;
+  }
 
   if ( SetPersonData(name, person_data) == false)
     return false;
