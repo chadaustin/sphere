@@ -1,7 +1,8 @@
 Import("base_env BUILD_DIR COMPILER")
 
 env = base_env.Copy()
-env.Append(CPPPATH = [Dir('resources')])
+env.Append(CPPPATH = [Dir('resources')],
+           CXXFLAGS = ['-DUSE_SIZECBAR'])
 COMPILER.SetupSphereCommon(env)
 COMPILER.SetupAudiere(env)
 COMPILER.SetupCorona(env)
@@ -79,6 +80,7 @@ sources = Split("""
     TilesetView.cpp
     ToolPalette.cpp
     VScrollWindow.cpp
+    WindowStylePreviewPalette.cpp
     WindowStylePropertiesDialog.cpp
     WindowStyleWindow.cpp
     ZoneEditDialog.cpp

@@ -50,7 +50,9 @@ def BuildMinGWEnv():
 ###########################################################
 
 def BuildVC6Env():
-    env = Environment(ENV = os.environ, tools = ['msvc', 'mslib', 'mslink'])
+    env = Environment(ENV = os.environ,
+                      MSVS_VERSION = '6.0',
+                      tools = ['msvc', 'mslib', 'mslink'])
     env['BUILD_DIR'] = '#/build/vc6'
     env['LIBPREFIX'] = ''
     env['LIBSUFFIX'] = '.lib'

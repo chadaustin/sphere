@@ -56,6 +56,9 @@
 //
 
 //CHANGED: Not used #include "stdafx.h"
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include "sizecbar.h"
 
 #ifdef _DEBUG
@@ -63,6 +66,17 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+#ifdef min
+#undef min
+#endif
+
+#ifdef max
+#undef max
+#endif
+
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#define max(a, b) ((a) > (b) ? (a) : (b))
 
 /////////////////////////////////////////////////////////////////////////
 // CSizingControlBar
