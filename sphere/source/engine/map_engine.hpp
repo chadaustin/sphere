@@ -45,6 +45,15 @@ public:
     SCRIPT_COMMAND_GENERATOR,
   };
 
+  enum {
+    SCRIPT_ON_ENTER_MAP,
+    SCRIPT_ON_LEAVE_MAP,
+    SCRIPT_ON_LEAVE_MAP_NORTH,
+    SCRIPT_ON_LEAVE_MAP_EAST,
+    SCRIPT_ON_LEAVE_MAP_SOUTH,
+    SCRIPT_ON_LEAVE_MAP_WEST,
+  };
+
 public:
   CMapEngine(IEngine* engine, IFileSystem& fs);
   ~CMapEngine();
@@ -60,6 +69,7 @@ public:
   bool Exit();
   bool IsRunning();
   bool Update();
+  bool CallMapScript(int which);
 
   std::string GetCurrentMap();
 

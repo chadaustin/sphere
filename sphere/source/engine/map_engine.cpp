@@ -195,6 +195,64 @@ CMapEngine::GetCurrentMap()
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::CallMapScript(int which)
+{
+  // make sure 'which' is valid
+  if (which < 0 || which >= 6) {
+    m_ErrorMessage = "CallMapScript() - script does not exist";
+    return false;
+  }
+
+  std::string error;
+
+  switch (which) {
+    case SCRIPT_ON_ENTER_MAP:
+      if (!ExecuteScript(m_Map.GetMap().GetEntryScript(), error)) {
+        m_ErrorMessage = "Could not execute entry script\n" + error;
+      }
+    break;
+
+    case SCRIPT_ON_LEAVE_MAP:
+      if (!ExecuteScript(m_Map.GetMap().GetExitScript(), error)) {
+        m_ErrorMessage = "Could not execute exit script\n" + error;
+      }      
+    break;
+
+    case SCRIPT_ON_LEAVE_MAP_NORTH: 
+      if (!ExecuteScript(m_NorthScript, error)) {
+        m_ErrorMessage = "Could not execute north script\n" + error;
+        return false;
+      }
+    break;
+
+    case SCRIPT_ON_LEAVE_MAP_EAST:
+      if (!ExecuteScript(m_EastScript, error)) {
+        m_ErrorMessage = "Could not execute east script\n" + error;
+        return false;
+      }
+    break;
+    
+    case SCRIPT_ON_LEAVE_MAP_SOUTH:
+      if (!ExecuteScript(m_SouthScript, error)) {
+        m_ErrorMessage = "Could not execute south script\n" + error;
+        return false;
+      }
+    break;
+
+    case SCRIPT_ON_LEAVE_MAP_WEST:
+      if (!ExecuteScript(m_WestScript, error)) {
+        m_ErrorMessage = "Could not execute west script\n" + error;
+        return false;
+      }
+    break;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::Exit()
 {
   if (m_IsRunning) {
@@ -3712,17 +3770,13 @@ CMapEngine::UpdateEdgeScripts()
 
   if (m_Camera.x < 0) {                                 // west
     
-    std::string error;
-    if (!ExecuteScript(m_WestScript, error)) {
-      m_ErrorMessage = "Could not execute west script\n" + error;
+    if (!CallMapScript(SCRIPT_ON_LEAVE_MAP_WEST)) {
       return false;
     }    
 
   } else if (m_Camera.x > tile_width * layer_width) {   // east
 
-    std::string error;
-    if (!ExecuteScript(m_EastScript, error)) {
-      m_ErrorMessage = "Could not execute east script\n" + error;
+    if (!CallMapScript(SCRIPT_ON_LEAVE_MAP_EAST)) {
       return false;
     }    
 
@@ -3730,19 +3784,15 @@ CMapEngine::UpdateEdgeScripts()
 
   if (m_Camera.y < 0) {                                 // north
     
-    std::string error;
-    if (!ExecuteScript(m_NorthScript, error)) {
-      m_ErrorMessage = "Could not execute north script\n" + error;
+    if (!CallMapScript(SCRIPT_ON_LEAVE_MAP_SOUTH)) {
       return false;
     }    
 
   } else if (m_Camera.y > tile_height * layer_height) { // south
-    
-    std::string error;
-    if (!ExecuteScript(m_SouthScript, error)) {
-      m_ErrorMessage = "Could not execute south script\n" + error;
+
+    if (!CallMapScript(SCRIPT_ON_LEAVE_MAP_NORTH)) {
       return false;
-    }    
+    }
 
   }
 

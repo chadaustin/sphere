@@ -522,6 +522,14 @@ CScript::InitializeSphereConstants()
     MAP_ENGINE_CONSTANT(SCRIPT_ON_ACTIVATE_TALK)
     MAP_ENGINE_CONSTANT(SCRIPT_COMMAND_GENERATOR)
 
+    MAP_ENGINE_CONSTANT(SCRIPT_ON_ENTER_MAP)
+    MAP_ENGINE_CONSTANT(SCRIPT_ON_LEAVE_MAP)
+    MAP_ENGINE_CONSTANT(SCRIPT_ON_LEAVE_MAP_NORTH)
+    MAP_ENGINE_CONSTANT(SCRIPT_ON_LEAVE_MAP_EAST)
+    MAP_ENGINE_CONSTANT(SCRIPT_ON_LEAVE_MAP_SOUTH)
+    MAP_ENGINE_CONSTANT(SCRIPT_ON_LEAVE_MAP_WEST)
+
+
 #undef MAP_ENGINE_CONSTANT
   };
 
@@ -1547,6 +1555,18 @@ begin_func(UpdateMapEngine, 0)
 
   if (!This->m_Engine->GetMapEngine()->Update()) {
     This->ReportMapEngineError("UpdateMapEngine() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(CallMapScript, 1)
+  arg_int(which);
+
+  if (!This->m_Engine->GetMapEngine()->CallMapScript(which)) {
+    This->ReportMapEngineError("CallMapScript() failed");
     return JS_FALSE;
   }
 

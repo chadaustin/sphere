@@ -340,6 +340,16 @@ log_object.endBlock()
   GetMapEngineFrameRate()
     - Returns the current map engine frames per second rate set by either MapEngine(map, fps) or SetMapEngineFrameRate(fps)
   
+  CallMapScript(which)
+    - calls a map's script from code
+    the six events are:
+      SCRIPT_ON_ENTER_MAP
+      SCRIPT_ON_LEAVE_MAP
+      SCRIPT_ON_LEAVE_MAP_NORTH
+      SCRIPT_ON_LEAVE_MAP_EAST
+      SCRIPT_ON_LEAVE_MAP_SOUTH
+      SCRIPT_ON_LEAVE_MAP_WEST
+  
     *** maps ***
 
     GetNumLayers()
@@ -635,19 +645,19 @@ log_object.endBlock()
       QueuePersonCommand(name, command, immediate)
         - adds a command to the person's command queue
           the commands are:
-          + COMMAND_WAIT
-          + COMMAND_FACE_NORTH
-          + COMMAND_FACE_NORTHEAST
-          + COMMAND_FACE_EAST
-          + COMMAND_FACE_SOUTHEAST
-          + COMMAND_FACE_SOUTH
-          + COMMAND_FACE_SOUTHWEST
-          + COMMAND_FACE_WEST
-          + COMMAND_FACE_NORTHWEST
-          + COMMAND_MOVE_NORTH
-          + COMMAND_MOVE_EAST
-          + COMMAND_MOVE_SOUTH
-          + COMMAND_MOVE_WEST
+            COMMAND_WAIT
+            COMMAND_FACE_NORTH
+            COMMAND_FACE_NORTHEAST
+            COMMAND_FACE_EAST
+            COMMAND_FACE_SOUTHEAST
+            COMMAND_FACE_SOUTH
+            COMMAND_FACE_SOUTHWEST
+            COMMAND_FACE_WEST
+            COMMAND_FACE_NORTHWEST
+            COMMAND_MOVE_NORTH
+            COMMAND_MOVE_EAST
+            COMMAND_MOVE_SOUTH
+            COMMAND_MOVE_WEST
           (note: these *might* change in a future release
           'immediate', if true, will execute the command go right away
           if false, it will wait until the next frame)
