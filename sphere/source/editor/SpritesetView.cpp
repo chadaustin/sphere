@@ -9,6 +9,7 @@
 #include "FontGradientDialog.hpp"
 
 #include "EditRange.hpp"
+#include "../common/strcmp_ci.hpp"
 
 #define LABEL_WIDTH 80
 
@@ -1125,34 +1126,34 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
    
   if (iRC != 0) return iRC;
 
-   iRC = mng_putchunk_mhdr (hMNG, frame_width, frame_height,
-          250,
-          0,
-          0,
-          0,
-          0);
+  iRC = mng_putchunk_mhdr (hMNG, frame_width, frame_height,
+          1000, 0, images.size(), 1, MNG_SIMPLICITY_TRANSPARENCY);
 
+   if (iRC != 0) return iRC;
+
+   bool repeating = false;
+   mng_uint32 repeat_count = (repeating) ? 0x7fffffff : 0;
+   mng_putchunk_term(hMNG, MNG_TERMACTION_REPEAT, MNG_ITERACTION_FIRSTFRAME, 0, repeat_count);
    if (iRC != 0) return iRC;
 
    iRC = mng_putchunk_text(hMNG,
                            strlen(MNG_TEXT_SOFTWARE), MNG_TEXT_SOFTWARE,
-                           strlen("Sphere"), "Sphere");
+                           strlen("Sphere - http://sphere.sf.net/"), "Sphere - http://sphere.sf.net/");
+  if (iRC != 0) return iRC;
 
-  //iRC = mng_set_srgb(hMNG, true);
-  //if (iRC != 0) return iRC;
-
+  iRC = mng_set_srgb(hMNG, true);
   if (iRC != 0) return iRC;
 
   for (int i = 0; i < images.size(); i++) {
     const CImage32& image = images[i];
 
-    iRC = mng_putchunk_ihdr (hMNG, frame_width, frame_height,
+    iRC = mng_putchunk_ihdr (hMNG, image.GetWidth(), image.GetHeight(),
 			MNG_BITDEPTH_8, MNG_COLORTYPE_RGBA, MNG_COMPRESSION_DEFLATE,
 			MNG_FILTER_NONE, MNG_INTERLACE_NONE);
 
     if (iRC != 0) return iRC;
 
-    mng_uint32 filter_len = (sizeof(RGBA) * image.GetWidth() * image.GetHeight()) + image.GetHeight();
+    mng_uint32 filter_len     = (sizeof(RGBA) * image.GetWidth() * image.GetHeight()) + image.GetHeight();
     mng_uint32 compressed_len = (sizeof(RGBA) * image.GetWidth() * image.GetHeight()) + image.GetHeight();
   	           compressed_len += compressed_len / 100 + 12 + 8;	// extra 8 for safety
 
@@ -1211,13 +1212,26 @@ CSpritesetView::OnExportDirectionAsAnimation()
       images.push_back(m_Spriteset->GetImage(m_Spriteset->GetFrameIndex(m_CurrentDirection, i)));
     }
 
-    mng_retcode iRC = SaveMNGAnimationFromImages("c:\\windows\\desktop\\test_output.mng", images);
-    if (iRC == 0) {
-      MessageBox("Exported Animation!", "Export Direction As Animation", MB_OK);
+    bool is_mng = strcmp_ci(dialog.GetFileExt(), "mng") == 0;
+    bool is_fli = strcmp_ci(dialog.GetFileExt(), "flic") == 0
+               || strcmp_ci(dialog.GetFileExt(), "flc")  == 0
+               || strcmp_ci(dialog.GetFileExt(), "fli")  == 0;
+
+    if (is_mng) {
+      mng_retcode iRC = SaveMNGAnimationFromImages("c:\\windows\\desktop\\test_output.mng", images);
+      if (iRC == 0) {
+        MessageBox("Exported Animation!", "Export Direction As Animation", MB_OK);
+      }
+      else {
+        MessageBox(mng_get_error_message(iRC), "Error Exporting Direction As Animation", MB_OK);
+      } 
     }
-    else {
-      MessageBox(mng_get_error_message(iRC), "Error Exporting Direction As Animation", MB_OK);
+    else
+    if (is_fli) {
+      MessageBox("Unsupported save mode", "Error Exporting Direction As Animation", MB_OK);
     }
+
+
   }
 }
 
