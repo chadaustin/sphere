@@ -207,42 +207,6 @@ Package=<4>
 
 ###############################################################################
 
-Project: "stub_config"=.\source\stubs\config\stub_config.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "stub_editor"=.\source\stubs\editor\stub_editor.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "stub_engine"=.\source\stubs\engine\stub_engine.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
 Project: "tst2rts"=.\source\util\tst2rts\tst2rts.dsp - Package Owner=<4>
 
 Package=<5>
