@@ -10,6 +10,11 @@ Edited and updated by Darklich and AegisKnight :)
 
 
 
+*** general functions ***
+GetVersion()
+  - Returns the current version of Sphere as a floating point number
+    (e.g. 1.0 or 1.1)
+
 *** script functions ***
 EvaluateScript(script)
   - Reads the script in and uses it as if it were a part of the current script.

@@ -1,3 +1,6 @@
+// general
+SS_FUNCTION(GetVersion, 0)
+
 // script
 SS_FUNCTION(EvaluateScript, 1)
 SS_FUNCTION(EvaluateSystemScript, 1)
