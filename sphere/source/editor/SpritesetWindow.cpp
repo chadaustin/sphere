@@ -260,14 +260,22 @@ afx_msg void
 CSpritesetWindow::OnFillDelay()
 {
   CNumberDialog dialog("Spriteset Delay", "Delay", 8, 1, 4096);
+
   if (dialog.DoModal() == IDOK) {
+
+    bool modified = false;
     
     for (int i = 0; i < m_Spriteset.GetNumDirections(); i++) {
       for (int j = 0; j < m_Spriteset.GetNumFrames(i); j++) {
+
+        if (m_Spriteset.GetFrameDelay(i, j) != dialog.GetValue())
+          modified = true;
+
         m_Spriteset.SetFrameDelay(i, j, dialog.GetValue());
       }
     }
 
+    SetModified(modified);
   }
 }
 

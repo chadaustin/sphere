@@ -29,6 +29,8 @@ BEGIN_MESSAGE_MAP(CSpritesetView, CWnd)
   ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_IMPORT_FROM_IMAGE, OnInsertDirectionFromImage)
   ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_EXPORT_AS_IMAGE, OnExportDirectionAsImage)
 
+  ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_FILLDELAY,  OnFillDelay)
+
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_INSERT,     OnInsertFrame)
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_DELETE,     OnDeleteFrame)
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_APPEND,     OnAppendFrame)
@@ -748,6 +750,35 @@ afx_msg void
 CSpritesetView::OnPasteFrame()
 {
   m_Handler->SV_PasteCurrentFrame();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetView::OnFillDelay()
+{
+  CNumberDialog dialog("Spriteset Delay", "Delay", 8, 1, 4096);
+
+  if (dialog.DoModal() == IDOK) {
+
+    bool modified = false;
+    
+    if (m_CurrentDirection >= 0 && m_CurrentDirection < m_Spriteset->GetNumDirections()) {
+
+      for (int j = 0; j < m_Spriteset->GetNumFrames(m_CurrentDirection); j++) {
+
+        if (m_Spriteset->GetFrameDelay(m_CurrentDirection, j) != dialog.GetValue()) {
+          modified = true;
+        }
+
+        m_Spriteset->SetFrameDelay(m_CurrentDirection, j, dialog.GetValue());
+      }
+    }
+
+    if (modified) {
+      m_Handler->SV_SpritesetModified();
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -66,7 +66,12 @@ CNumberDialog::OnInitDialog()
   m_NumberEdit->SetFocus();
 
   char number[80];
-  sprintf(number, "%d", m_Value);
+  if (m_FloatingPointAllowed) {
+    sprintf(number, "%.2f", m_Value);
+  }
+  else {
+    sprintf(number, "%d", (int) m_Value);
+  }
   m_NumberEdit->SetWindowText(number);
 
   m_NumberEdit->SetSel(0, -1);
