@@ -1705,7 +1705,9 @@ CImageView::OnColorPicker()
 afx_msg void
 CImageView::OnUndo()
 {
-  Undo();
+  if (CanUndo()) {
+    Undo();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1721,7 +1723,6 @@ CImageView::OnCopy()
 afx_msg void
 CImageView::OnPaste()
 {
-
   Paste();
 }
 

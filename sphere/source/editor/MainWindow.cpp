@@ -375,8 +375,9 @@ CMainWindow::OpenDocumentWindow(int grouptype, const char* filename)
     case GT_TILESETS:     window = new CMapWindow(NULL, filename);   break;
   }
 
-  if (window)
+  if (window) {
     m_DocumentWindows.push_back(window);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -136,7 +136,8 @@ CScriptWindow::SetScriptStyles() {
   static const char key_words[] = 
     "break case catch continue default delete do else "
     "finally for function if in instanceof new return "
-    "switch this throw try typeof var void while with ";
+    "switch this throw try typeof var void while with "
+    "true false undefined ";
 
   static const char reserved_words[] =
     "abstract enum int short "
