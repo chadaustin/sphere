@@ -568,7 +568,7 @@ static bool ExportAllVisibleLayersAsImage(const char* filename, sTileset& tilese
 
   // create destination/output image
   CImage32 dest_image(dest_image_width, dest_image_height);
-  if (layers.size() <= 0) { // start from the bottom and work our way to the top ;)
+  if (layers.size() > 0) { // start from the bottom and work our way to the top ;)
     if (!LayerToImage(&dest_image, layers[0], tileset)) {
       return false;
     }
