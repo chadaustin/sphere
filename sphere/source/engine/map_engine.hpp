@@ -16,6 +16,7 @@ public:
   // person entity commands
   enum {
     COMMAND_WAIT,
+    COMMAND_ANIMATE,
 
     COMMAND_FACE_NORTH,
     COMMAND_FACE_NORTHEAST,
@@ -32,6 +33,7 @@ public:
     COMMAND_MOVE_WEST,
 	  
     COMMAND_DO_SCRIPT,
+
 
     NUM_COMMANDS
   };

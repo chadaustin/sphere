@@ -1,3 +1,7 @@
+2004.01.17
+  - Added a COMMAND_ANIMATE person command
+  - Made rawfile_object.write produce a nicer error message if the rawfile wasn't writeable
+
 2004.01.07
   - Added a multi-tile tool, just select the tiles you want to place by holding down the
     left mouse button in the Tiles window and drag until you have what you want to place on the map

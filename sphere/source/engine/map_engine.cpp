@@ -3375,6 +3375,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
   // we haven't called an activation function yet
   bool activation_called = false;
+  bool should_animate = false;
 
   bool processing = true;
   bool force_stop = false;
@@ -3435,6 +3436,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     switch (c.command) {
 
       case COMMAND_WAIT: break;
+      case COMMAND_ANIMATE: should_animate = true; break;
       case COMMAND_FACE_NORTH:     p.direction = "north";     break;
       case COMMAND_FACE_NORTHEAST: p.direction = "northeast"; break;
       case COMMAND_FACE_EAST:      p.direction = "east";      break;
@@ -3555,7 +3557,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
 
   // if position has changed, update frame index and state of followers
-  if (x != p.x || y != p.y) {
+  if (x != p.x || y != p.y || should_animate) {
     p.stepping_frame_revert_count = 0;
 
     // frame index
