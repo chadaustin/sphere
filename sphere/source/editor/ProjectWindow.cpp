@@ -230,11 +230,17 @@ CProjectWindow::Update()
 afx_msg void
 CProjectWindow::OnSysCommand(UINT id, LPARAM param)
 {
-  // do not close it damnit!
-  // and oh, Ctrl-F4 calls close MDI window, if ya don't know.
 
-  if (id != SC_CLOSE)
+  if (id == SC_CLOSE)
+	{
+		// do not close it damnit!
+		// and oh, Ctrl-F4 calls close MDI window, if ya don't know.
+		ShowWindow(SW_HIDE);
+	}
+	else
+	{
     CWnd::OnSysCommand(id, param);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////

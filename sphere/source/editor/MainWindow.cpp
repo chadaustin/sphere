@@ -1981,7 +1981,11 @@ CMainWindow::ViewPalette(int paletteNum)
 
       // find the palette to toggle
       CPaletteWindow* palette = window->GetPalette(paletteNum);
+#ifdef USE_SIZECBAR
+			palette->ShowPalette(!palette->IsVisible());
+#else
       palette->ShowPalette(!palette->IsWindowVisible());
+#endif
     }
   }
 }
@@ -1991,10 +1995,13 @@ void
 CMainWindow::OnUpdateViewProject(CCmdUI * ui)
 {
 	ui->Enable(m_ProjectOpen);
-
-	if (m_ProjectOpen && m_ProjectWindow->IsVisible())
+	if (m_ProjectOpen)
 	{
-		ui->SetCheck();
+#ifdef USE_SIZECBAR
+	ui->SetCheck(m_ProjectWindow->IsVisible() ? 1 : 0);
+#else
+	ui->SetCheck(m_ProjectWindow->IsWindowVisible() ? 1 : 0);
+#endif
 	}
 }
 
@@ -2003,6 +2010,10 @@ CMainWindow::OnUpdateViewProject(CCmdUI * ui)
 afx_msg void
 CMainWindow::OnViewProject()
 {
+#ifdef USE_SIZECBAR
 	m_ProjectWindow->ShowPalette(!m_ProjectWindow->IsVisible());
+#else
+	m_ProjectWindow->ShowPalette(!m_ProjectWindow->IsWindowVisible());
+#endif
 }
 
