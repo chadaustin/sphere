@@ -40,8 +40,8 @@
 // (because you don't have my http/irc/dcc code)
 // then remove the USE_IRC from the define list:
 // Project->Settings... C/C++, Preprocessor Definitions.
-#include "../../../http/irc.hpp"
-#include "../../../http/IRCWindow.hpp"
+#include "../../../http/src/irc.hpp"
+#include "../../../http/src/IRCWindow.hpp"
 #endif
 
 // dialogs

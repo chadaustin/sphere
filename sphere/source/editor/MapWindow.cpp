@@ -885,8 +885,22 @@ CMapWindow::TV_InsertedTiles(int at, int numtiles)
 
   // now update the tileset animation indices
   sTileset& ts = m_Map.GetTileset();
-  for (int i = at; i < ts.GetNumTiles(); i++) {
-    ts.GetTile(i).SetNextTile(ts.GetTile(i).GetNextTile() + numtiles);
+  int i;
+
+  for (i = 0; i < at; i++) {
+    if (ts.GetTile(i).GetNextTile() >= at) {
+      ts.GetTile(i).SetNextTile(ts.GetTile(i).GetNextTile() + numtiles);
+    }
+  }
+
+  for (i = 0; i < numtiles; i++) {
+    ts.GetTile(at + i).SetNextTile(ts.GetTile(at + i).GetNextTile() + at);
+  }
+
+  for (i = at; i < ts.GetNumTiles(); i++) {
+    if (ts.GetTile(i + numtiles).GetNextTile() >= at) {
+      ts.GetTile(i + numtiles).SetNextTile(ts.GetTile(i + numtiles).GetNextTile() + numtiles);
+    }
   }
 }
 

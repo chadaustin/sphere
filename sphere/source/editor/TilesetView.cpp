@@ -1189,6 +1189,12 @@ CTilesetView::OnInsertTileset()
     // stick it in
     m_Tileset->InsertTiles(m_SelectedTile, tileset.GetNumTiles());
     for (int i = 0; i < tileset.GetNumTiles(); i++) {
+
+      // next tile is relative to m_SelectedTile
+      if (tileset.GetTile(i).IsAnimated()) {
+       // tileset.GetTile(i).SetNextTile(tileset.GetTile(i).GetNextTile() + m_SelectedTile);
+      }
+      
       m_Tileset->GetTile(m_SelectedTile + i) = tileset.GetTile(i);
     }
 
@@ -1229,6 +1235,12 @@ CTilesetView::OnAppendTileset()
     int old_size = m_Tileset->GetNumTiles();
     m_Tileset->AppendTiles(tileset.GetNumTiles());
     for (int i = 0; i < tileset.GetNumTiles(); i++) {
+
+      // next tile is relative to the end of the tileset
+      if (tileset.GetTile(i).IsAnimated()) {
+        tileset.GetTile(i).SetNextTile(tileset.GetTile(i).GetNextTile() + old_size);
+      }
+
       m_Tileset->GetTile(old_size + i) = tileset.GetTile(i);
     }
 

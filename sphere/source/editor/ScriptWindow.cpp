@@ -430,6 +430,9 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
 
   ON_COMMAND(ID_SCRIPT_TOOLS_SORT, OnScriptLineSorter)
 
+  ON_COMMAND(ID_SCRIPT_TOOLS_TO_LOWER_CASE, OnScriptToLowerCase)
+  ON_COMMAND(ID_SCRIPT_TOOLS_TO_UPPER_CASE, OnScriptToUpperCase)
+
   ON_NOTIFY(SCN_SAVEPOINTREACHED, ID_EDIT, OnSavePointReached)
   ON_NOTIFY(SCN_SAVEPOINTLEFT,    ID_EDIT, OnSavePointLeft)
   ON_NOTIFY(SCN_UPDATEUI,         ID_EDIT, OnPosChanged)
@@ -2211,6 +2214,119 @@ CScriptWindow::SaveDocument(const char* path)
   }
 
   return saved;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CScriptWindow::TransformText(int method)
+{
+  int start = SendEditor(SCI_GETSELECTIONSTART);
+  int end   = SendEditor(SCI_GETSELECTIONEND);
+  if (end < start) {
+    end = start;
+  }
+
+  int length = end - start;
+  if (length <= 0)
+    return;
+
+  SendEditor(SCI_BEGINUNDOACTION);
+
+  char buffer[1024] = {0};
+  int buffer_length = 0;
+  int buffer_size = sizeof(buffer);
+
+  // method == 0 -> to lowercase
+  // method == 1 -> to uppercase
+
+  for (int i = 0; i < length; i++) {
+
+    int ch = SendEditor(SCI_GETCHARAT, start + i);
+    int is_upper = isupper(ch);
+    int is_lower = islower(ch);
+    int pos = start + i;
+
+    if ((is_upper && method == 0)
+     || (is_lower && method == 1)) {
+
+      if (buffer_length >= buffer_size) {
+        SendEditor(SCI_SETTARGETSTART, pos - buffer_length);
+        SendEditor(SCI_SETTARGETEND, pos);
+        SendEditor(SCI_REPLACETARGET, buffer_length, (LPARAM)buffer);
+
+        if (0) {
+          char msg[1024] = {0};
+          sprintf (msg, "1: %d %d\n", pos - buffer_length, pos);
+          SendEditor(SCI_APPENDTEXT, strlen(msg), (WPARAM)msg);
+        }
+
+        buffer_length = 0;
+      } 
+
+      if (method == 0)
+        buffer[buffer_length] = tolower(ch);
+      else
+      if (method == 1)
+        buffer[buffer_length] = toupper(ch);
+
+      buffer_length += 1;
+    }
+
+    if ((!is_upper && method == 0)
+     || (!is_lower && method == 1)) {
+      if (buffer_length > 0) {
+
+        SendEditor(SCI_SETTARGETSTART, pos - buffer_length);
+        SendEditor(SCI_SETTARGETEND, pos);
+        SendEditor(SCI_REPLACETARGET, buffer_length, (LPARAM)buffer);
+
+        if (0) {
+          char msg[1024] = {0};
+          sprintf (msg, "2: %d %d\n", pos - buffer_length, pos);
+          SendEditor(SCI_APPENDTEXT, strlen(msg), (WPARAM)msg);
+        }
+
+        buffer_length = 0;
+      }
+    }
+  }
+
+  if (buffer_length > 0) {
+    buffer[buffer_length] = 0;
+    SendEditor(SCI_SETTARGETSTART, end - buffer_length);
+    SendEditor(SCI_SETTARGETEND, end);
+    SendEditor(SCI_REPLACETARGET, buffer_length, (LPARAM)buffer);
+
+    if (0) {
+      char msg[1024] = {0};
+      sprintf (msg, "3: %d %d\n", end - buffer_length, end);
+      SendEditor(SCI_APPENDTEXT, strlen(msg), (WPARAM)msg);
+    }
+
+    buffer_length = 0;
+  }
+
+  SendEditor(SCI_SETSELECTIONSTART, start);
+  SendEditor(SCI_SETSELECTIONEND, end);
+
+  SendEditor(SCI_ENDUNDOACTION);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnScriptToLowerCase()
+{
+  TransformText(0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnScriptToUpperCase()
+{
+  TransformText(1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1421,64 +1421,64 @@ SOURCE=.\MapScripting.hpp
 SOURCE=.\ss_functions.table
 # End Source File
 # End Group
-# Begin Group "irc (#define USE_IRC)"
+# Begin Group "irc"
 
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\..\..\http\dcc.cpp
+SOURCE=..\..\..\http\src\dcc.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\dcc.hpp
+SOURCE=..\..\..\http\src\dcc.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\DCCWindow.cpp
+SOURCE=..\..\..\http\src\DCCWindow.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\DCCWindow.hpp
+SOURCE=..\..\..\http\src\DCCWindow.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\irc.cpp
+SOURCE=..\..\..\http\src\irc.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\irc.hpp
+SOURCE=..\..\..\http\src\irc.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\IRCWindow.cpp
+SOURCE=..\..\..\http\src\IRCWindow.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\IRCWindow.hpp
+SOURCE=..\..\..\http\src\IRCWindow.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\socket.cpp
+SOURCE=..\..\..\http\src\socket.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\socket.hpp
+SOURCE=..\..\..\http\src\socket.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\thread.cpp
+SOURCE=..\..\..\http\src\thread.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\thread.hpp
+SOURCE=..\..\..\http\src\thread.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\time.cpp
+SOURCE=..\..\..\http\src\time.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\time.hpp
+SOURCE=..\..\..\http\src\time.hpp
 # End Source File
 # End Group
 # End Target

@@ -117,10 +117,13 @@ CLineSorter::SetStatusText(const char* string)
 void
 CLineSorter::Sort()
 {
-  int selection_start = SendEditor(SCI_LINEFROMPOSITION, SendEditor(SCI_GETSELECTIONSTART));
-  int selection_end   = SendEditor(SCI_LINEFROMPOSITION, SendEditor(SCI_GETSELECTIONEND));
+  const int selection_start = SendEditor(SCI_GETSELECTIONSTART);
+  const int selection_end = SendEditor(SCI_GETSELECTIONEND);
 
-  if (selection_start - selection_end == 0) {
+  int start_line = SendEditor(SCI_LINEFROMPOSITION, selection_start);
+  int end_line   = SendEditor(SCI_LINEFROMPOSITION, selection_end);
+
+  if (start_line - end_line == 0) {
     SetStatusText("Nothing to sort...");
     return;
   }
@@ -132,7 +135,7 @@ CLineSorter::Sort()
 
   SetStatusText("Retrieving lines for sorting...");
 
-  for (unsigned int line_number = selection_start; line_number <= selection_end; line_number++) 
+  for (unsigned int line_number = start_line; line_number <= end_line; line_number++) 
   {
     unsigned int line_index = m_Lines.size();
     ScintillaLine* line_ptr = new ScintillaLine;
@@ -175,8 +178,8 @@ CLineSorter::Sort()
   SendEditor(SCI_BEGINUNDOACTION);
 
   // remove the old selection
-  SendEditor(SCI_SETTARGETSTART, SendEditor(SCI_POSITIONFROMLINE, selection_start));
-  SendEditor(SCI_SETTARGETEND,   SendEditor(SCI_POSITIONFROMLINE, selection_end + 1));
+  SendEditor(SCI_SETTARGETSTART, SendEditor(SCI_POSITIONFROMLINE, start_line));
+  SendEditor(SCI_SETTARGETEND,   SendEditor(SCI_POSITIONFROMLINE, end_line + 1));
   SendEditor(SCI_REPLACETARGET, 0, (LRESULT) "");
 
   std::vector<unsigned int> line_indexes;
@@ -224,6 +227,9 @@ CLineSorter::Sort()
       }
     }
   }
+
+  SendEditor(SCI_SETSELECTIONSTART, selection_start);
+  SendEditor(SCI_SETSELECTIONEND, selection_end);
 
   SendEditor(SCI_ENDUNDOACTION);
 

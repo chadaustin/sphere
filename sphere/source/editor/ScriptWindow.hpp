@@ -78,6 +78,10 @@ private:
 
   afx_msg void OnScriptLineSorter();
 
+  void TransformText(int method);
+  afx_msg void OnScriptToLowerCase();
+  afx_msg void OnScriptToUpperCase();
+
   /////////////////////////////////////
 
   afx_msg void OnSavePointReached(NMHDR* nmhdr, LRESULT* result);
