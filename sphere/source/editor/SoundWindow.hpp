@@ -34,6 +34,8 @@ private:
 
   CSliderCtrl m_VolumeBar;
   CSliderCtrl m_PositionBar;
+  bool m_PositionDown;
+
   CStatic m_VolumeBarGraphic;
   CBitmap m_VolumeBarBitmap;
   CStatic m_Blank;

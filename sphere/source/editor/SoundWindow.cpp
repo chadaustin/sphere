@@ -38,6 +38,8 @@ CSoundWindow::CSoundWindow(const char* sound)
   m_Playing = false;
   m_Repeat = false;
   
+  m_PositionDown = false;
+
   // load the sample
   if (!m_Sound.Load(sound))
   {
@@ -103,7 +105,7 @@ afx_msg void
 CSoundWindow::OnSize(UINT type, int cx, int cy)
 {
   int button_height = cy;
-  if (m_Sound.IsSeekable())
+  if (m_PositionBar.m_hWnd != NULL)
     button_height -= 25;
 
   if (m_PlayButton.m_hWnd != NULL)
@@ -119,10 +121,8 @@ CSoundWindow::OnSize(UINT type, int cx, int cy)
   if (m_Blank.m_hWnd != NULL)
     m_Blank.MoveWindow(CRect(cx-50, 90, cx, cy));
 
-  if (m_Sound.IsSeekable()) {
-    if (m_PositionBar.m_hWnd != NULL) {
-      m_PositionBar.MoveWindow(CRect(0, button_height, cx, cy));
-    }
+  if (m_PositionBar.m_hWnd != NULL) {
+    m_PositionBar.MoveWindow(CRect(0, button_height, cx, cy));
   }
 
   CDocumentWindow::OnSize(type, cx, cy);
@@ -135,11 +135,9 @@ CSoundWindow::OnTimer(UINT timerID)
 {
   if (m_Sound.IsPlaying())
   {
-    if (m_Sound.IsSeekable()) {
-      if (m_PositionBar.m_hWnd != NULL) {
-        if (1) {
-          m_PositionBar.SetPos(m_Sound.GetPosition());
-        }
+    if (m_PositionBar.m_hWnd != NULL) {
+      if (!m_PositionDown) {
+        m_PositionBar.SetPos(m_Sound.GetPosition());
       }
     }
 
@@ -153,14 +151,12 @@ CSoundWindow::OnTimer(UINT timerID)
     }
     else {
       m_PlayButton.EnableWindow(TRUE);
-      m_StopButton.EnableWindow(FALSE);
+      m_StopButton.EnableWindow(FALSE);     
       m_Playing = false;
       m_Sound.Stop();
 
-      if (m_Sound.IsSeekable()) {
-        if (m_PositionBar.m_hWnd != NULL) {
-          m_PositionBar.SetPos(m_Sound.GetLength());
-        }
+      if (m_PositionBar.m_hWnd != NULL) {
+        m_PositionBar.SetPos(0);
       }
     }
   }
@@ -185,9 +181,16 @@ afx_msg void
 CSoundWindow::OnHScroll(UINT code, UINT pos, CScrollBar *scroll_bar)
 {
   if (!scroll_bar) return;
- 
+
+  switch (code) {
+    case SB_THUMBTRACK:    m_PositionDown = true; break;
+    case SB_THUMBPOSITION: m_PositionDown = false; break;
+  }
+
   if (scroll_bar->m_hWnd == m_PositionBar.m_hWnd) {
-    m_Sound.SetPosition(m_PositionBar.GetPos());
+    if (code != SB_THUMBTRACK) {
+      m_Sound.SetPosition(m_PositionBar.GetPos());
+    }
   }
 }
 
