@@ -937,7 +937,7 @@ CMainWindow::OnFileBrowse()
 {                                            \
   CDocumentWindow* dw = construct;           \
   if (dw) {                                  \
-    m_DocumentWindows.push_back(construct);  \
+    m_DocumentWindows.push_back(dw);         \
     UpdateToolBars();                        \
   }                                          \
 }

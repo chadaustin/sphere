@@ -566,7 +566,7 @@ CTilesetView::GetTileSelection()
   int width  = GetTileSelectionWidth();
   int height = GetTileSelectionHeight();
 
-  if (width <= 0 || height <= 0)
+  if (!(width > 1 && height > 1))
     return NULL;
 
   m_TileSelection = new unsigned int[width * height];
@@ -845,13 +845,12 @@ CTilesetView::OnMouseMove(UINT flags, CPoint point)
       Invalidate();
     }
 
-    int tileselection_left_x  = GetTileSelectionLeftX();
-    int tileselection_right_x = GetTileSelectionRightX();
-    int tileselection_top_y   = GetTileSelectionTopY();
-    int tileselection_lower_y = GetTileSelectionLowerY();
-
-    if (tileselection_left_x - tileselection_right_x
-      || tileselection_top_y - tileselection_lower_y) {
+    if (GetTileSelectionWidth() > 1 || GetTileSelectionHeight() > 1) {
+      int tileselection_left_x  = GetTileSelectionLeftX();
+      int tileselection_right_x = GetTileSelectionRightX();
+      int tileselection_top_y   = GetTileSelectionTopY();
+      int tileselection_lower_y = GetTileSelectionLowerY();
+      
       CString tileinfo;
       tileinfo.Format("Tiles (%d,%d)->(%d,%d)", tileselection_left_x, tileselection_top_y,
                                       tileselection_right_x, tileselection_lower_y);
@@ -921,7 +920,7 @@ CTilesetView::OnRButtonUp(UINT flags, CPoint point)
 
 #if 1
   // these menu items don't really make sense when you have a region of tiles selected
-  if (m_UsingMultiTileSelection)
+  if (GetTileSelectionWidth() > 1 || GetTileSelectionHeight() > 1)
   {
     EnableMenuItem(menu, ID_TILESETVIEW_INSERTTILE, MF_BYCOMMAND | MF_GRAYED);
     EnableMenuItem(menu, ID_TILESETVIEW_APPENDTILE, MF_BYCOMMAND | MF_GRAYED);
