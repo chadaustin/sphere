@@ -256,7 +256,10 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
     m_Images.resize(header.num_images);
     for (int i = 0; i < header.num_images; i++) {
       m_Images[i].Resize(m_FrameWidth, m_FrameHeight);
-      file->Read(m_Images[i].GetPixels(), m_FrameWidth * m_FrameHeight * sizeof(RGBA));
+      int size = m_FrameWidth * m_FrameHeight * sizeof(RGBA);
+      if (file->Read(m_Images[i].GetPixels(), size) != size) {
+        return false;
+      }
     }
 
     // read the directions
@@ -265,16 +268,22 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
       
       // read number of frames
       word num_frames;
-      file->Read(&num_frames, 2);
+      if (file->Read(&num_frames, 2) != 2) {
+        return false;
+      }
       file->Seek(file->Tell() + 6);
 
       // read name length
       word name_length;
-      file->Read(&name_length, 2);
+      if (file->Read(&name_length, 2) != 2) {
+        return false;
+      }
       
       // read the name
       char* name = new char[name_length];
-      file->Read(name, name_length);
+      if (file->Read(name, name_length) != name_length) {
+        return false;
+      }
       m_Directions[i].name = name;
       delete[] name;
 
@@ -286,9 +295,13 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
         word index;
         word delay;
         byte reserved[4];
-        file->Read(&index,   2);
-        file->Read(&delay,   2);
-        file->Read(reserved, 4);
+        int read = 0;
+        read += file->Read(&index,   2);
+        read += file->Read(&delay,   2);
+        read += file->Read(reserved, 4);
+        if (read != 8) {
+          return false;
+        }
 
         m_Directions[i].frames[j].index = index;
         m_Directions[i].frames[j].delay = delay;
