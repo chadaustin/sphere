@@ -89,6 +89,7 @@
 #define IDD_ROTATE                      225
 #define IDI_MAPTOOL_ZONEMOVE            228
 #define IDI_MAPTOOL_MOVEENTITY          229
+#define IDD_CONVOLVE_LIST               230
 #define IDC_PROJECTNAME                 1000
 #define IDC_GAMETITLE                   1001
 #define IDC_BROWSE                      1003
@@ -159,6 +160,8 @@
 #define IDC_ROTATETEXT                  1128
 #define IDC_TOP_COLOR_TEXT              1131
 #define IDC_BOTTOM_COLOR_TEXT           1132
+#define IDC_FILTER_LIST                 1142
+#define IDC_BUTTON1                     1143
 #define ID_FILE_IMPORT_BITMAPTORSS      12241
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40003
@@ -465,6 +468,7 @@
 #define ID_IMAGE_ROTATE                 40653
 #define ID_FILE_IMPORT_RM2KCHIPSETTORTS 40654
 #define ID_FILE_OPEN_TILESET            40655
+#define ID_IMAGEVIEW_FILTER_CUSTOM      40656
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -472,9 +476,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        230
-#define _APS_NEXT_COMMAND_VALUE         40656
-#define _APS_NEXT_CONTROL_VALUE         1133
+#define _APS_NEXT_RESOURCE_VALUE        231
+#define _APS_NEXT_COMMAND_VALUE         40657
+#define _APS_NEXT_CONTROL_VALUE         1144
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

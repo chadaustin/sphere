@@ -346,6 +346,10 @@ SOURCE=.\resources\maptool_fillarea.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\resources\maptool_moveentity.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\resources\maptool_obs_delete.ico
 # End Source File
 # Begin Source File
@@ -734,6 +738,14 @@ SOURCE=.\ToolPalette.hpp
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\ConvolveListDialog.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ConvolveListDialog.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\EntityPersonDialog.cpp
 # End Source File
 # Begin Source File
@@ -911,6 +923,10 @@ SOURCE=..\common\configfile.cpp
 # Begin Source File
 
 SOURCE=..\common\configfile.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\convolve.h
 # End Source File
 # Begin Source File
 
@@ -1113,10 +1129,6 @@ SOURCE=..\common\WindowStyle.cpp
 SOURCE=..\common\WindowStyle.hpp
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=.\resources\ico00001.ico
-# End Source File
 # Begin Source File
 
 SOURCE=.\resources\maptool_.ico

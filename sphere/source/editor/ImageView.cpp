@@ -12,6 +12,7 @@
 
 
 #include "NumberDialog.hpp"
+#include "ConvolveListDialog.hpp"
 
 static int s_ImageViewID = 9000;
 
@@ -58,6 +59,7 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
   ON_COMMAND(ID_IMAGEVIEW_REPLACE_ALPHA,         OnReplaceAlpha)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_BLUR,           OnFilterBlur)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_NOISE,          OnFilterNoise)
+  ON_COMMAND(ID_IMAGEVIEW_FILTER_CUSTOM,         OnFilterCustom)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_ADJUST_BRIGHTNESS, OnFilterAdjustBrightness)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_ADJUST_GAMMA, OnFilterAdjustGamma)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE_RGB, OnFilterNegativeImageRGB)
@@ -2170,6 +2172,61 @@ CImageView::OnReplaceAlpha()
 
   Invalidate();
   m_Handler->IV_ImageChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+#include "../common/convolve.h"
+
+afx_msg void
+CImageView::OnFilterCustom()
+{
+  CConvolveListDialog dialog;
+
+  if (dialog.DoModal() == IDOK) {
+    const double* mask = dialog.GetMask();
+    if (mask == NULL)
+      return;
+
+    int mask_width = dialog.GetMaskWidth();
+    int mask_height = dialog.GetMaskHeight();
+
+    if (mask_width <= 0 || mask_height <= 0)
+      return;
+
+    int offset = dialog.GetOffset();
+    int divisor = dialog.GetDivisor();
+    int clamp = dialog.ShouldClamp();
+    int wrap = dialog.ShouldWrap();
+    int infinite = 0;
+    int use_red = dialog.ShouldUseRedChannel();
+    int use_green = dialog.ShouldUseBlueChannel();
+    int use_blue = dialog.ShouldUseBlueChannel();
+    int use_alpha = dialog.ShouldUseAlphaChannel();
+
+    const char* mask_type = "double";
+
+    AddUndoState();
+    int sx = GetSelectionLeftX();
+    int sy = GetSelectionTopY();
+    int sw = GetSelectionWidth();
+    int sh = GetSelectionHeight();
+
+    RGBA* pixels = GetSelectionPixels();
+
+    if (mask_type == "double") {
+      double_convolve_rgba(0, 0, sw, sh, sw, sh, pixels, mask_width, mask_height,
+                           mask_width/2, mask_height/2, mask,
+                           divisor, offset, wrap, clamp, infinite,
+                           use_red, use_green, use_blue, use_alpha);
+    } 
+
+    UpdateSelectionPixels(pixels, sx, sy, sw, sh);
+    FreeSelectionPixels(pixels);
+
+    InvalidateSelection(sx, sy, sw, sh);
+    m_Handler->IV_ImageChanged();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

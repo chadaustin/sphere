@@ -143,6 +143,7 @@ private:
   afx_msg void OnReplaceRGBA();
   afx_msg void OnReplaceRGB();
   afx_msg void OnReplaceAlpha();
+  afx_msg void OnFilterCustom();
   afx_msg void OnFilterBlur();
   afx_msg void OnFilterNoise();
   afx_msg void OnFilterAdjustBrightness();

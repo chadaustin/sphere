@@ -3217,8 +3217,8 @@ CMapEngine::Render()
 
   } // end for all layers
 
-
-  ApplyColorMask(m_CurrentColorMask);
+  if (!(m_CurrentColorMask.red == 255 && m_CurrentColorMask.green == 255 && m_CurrentColorMask.blue && m_CurrentColorMask.alpha == 255)) 
+    ApplyColorMask(m_CurrentColorMask);
 
   // render script
   if (m_RenderScript) {

@@ -17,6 +17,7 @@ sources = Split("""
     AnimationWindow.cpp
     Audio.cpp
     ColorView.cpp
+    ConvolveListDialog.cpp
     Configuration.cpp
     DIBSection.cpp
     Debug.cpp
