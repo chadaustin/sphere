@@ -1,46 +1,48 @@
 <?
-$__DATABASE = "sphere";
 
+include_once("/home/groups/s/sp/sphere/htdocs/passwords.inc.php");
+$__DATABASE = "sphere";
+$__SITEROOT = "http://sphere.sf.net/malis-test"; //NO TAILING SLASH
 
 function start(){
-  include("/home/groups/s/sp/sphere/htdocs/doctype.inc.php"); 
-  echo '
+  include_once("/home/groups/s/sp/sphere/htdocs/doctype.inc.php"); 
+  echo "
   <html>
     <head>
       <title>sphere.sourceforge.net</title>
-      <link rel="stylesheet" type="text/css" href="http://sphere.sourceforge.net/malis-test/utility.css" />
+      <link rel=\"stylesheet\" type=\"text/css\" href=\"$__SITEROOT/utility.css\" />
     </head>
     <body>
-      <table cellpadding="0" cellspacing="0" class="main">
+      <table cellpadding=\"0\" cellspacing=\"0\" class=\"main\">
         <tr>
-          <td class="topbar">
+          <td class=\"topbar\">
 
-            <table cellpadding="0" cellspacing="0" class="topmenu">
+            <table cellpadding=\"0\" cellspacing=\"0\" class=\"topmenu\">
               <tr>
-                <td class="menuitems">
-                  <a class="headleft"  href="http://sphere.sourceforge.net/malis-test/index.php">news</a>
-                  <a class="headleft"  href="http://sphere.sourceforge.net/malis-test/index.php?U_ACT=articles" style="text-decoration: line-through">articles</a>
-                  <a class="headleft"  href="http://sphere.sourceforge.net/malis-test/dev.php?U_ACT=current">download</a>
-                  <a class="headleft"  href="http://sphere.sourceforge.net/malis-test/dev.php?U_ACT=log" style="text-decoration: line-through">dev log</a>
-                  <a class="headleft"  style="border-bottom: none" href="http://aegisknight.org/forum">forums *</a>
+                <td class=\"menuitems\">
+                  <a class=\"headleft\"  href=\"$__SITEROOT/index.php\">news</a>
+                  <a class=\"headleft\"  href=\"$__SITEROOT/index.php?U_ACT=articles\" style=\"text-decoration: line-through\">articles</a>
+                  <a class=\"headleft\"  href=\"$__SITEROOT/dev.php?U_ACT=current\">download</a>
+                  <a class=\"headleft\"  href=\"$__SITEROOT/dev.php?U_ACT=log\" style=\"text-decoration: line-through\">dev log</a>
+                  <a class=\"headleft\"  style=\"border-bottom: none\" href=\"http://aegisknight.org/forum\">forums *</a>
                 </td>
 
-                <td class="menulogo">
-                  <img src="http://sphere.sourceforge.net/images/title.png" alt="sphere.sourceforge.net logo" />
-                  <form id="login" method="post" action="http://sphere.sourceforge.net/malis-test/account.php?U_ACT=login">
+                <td class=\"menulogo\">
+                  <img src=\"$__SITEROOT/images/title.png\" alt=\"sphere.sourceforge.net logo\" />
+                  <form id=\"login\" method=\"post\" action=\"$__SITEROOT/account.php?U_ACT=login\">
                     <div>
-                      <input type="text" name="login_name" size="8" />
-                      <a href="javascript:document.getElementById(\'login\').submit()"> login</a> or <a href="http://sphere.sourceforge.net/malis-test/account.php?U_ACT=register">register</a> (<a href="http://sphere.sourceforge.net/malis-test/account.php?U_ACT=forgot">forgot password?</a>)
+                      <input type=\"text\" name=\"login_name\" size=\"8\" />
+                      <a href=\"javascript:document.getElementById('login').submit()\"> login</a> or <a href=\"$__SITEROOT/account.php?U_ACT=register\">register</a> (<a href=\"http://sphere.sourceforge.net/malis-test/account.php?U_ACT=forgot\">forgot password?</a>)
                     </div>
                   </form>
                 </td>
                 
-                <td class="menuitems">
-                  <a class="headright" href="http://sphere.sourceforge.net/malis-test/projects.php?U_ACT=list" style="text-decoration: line-through">projects</a>
-                  <a class="headright" href="http://sphere.sourceforge.net/malis-test/dev.php?U_ACT=about">about sphere</a>
-                  <a class="headright" href="http://sphere.sourceforge.net/malis-test/links.php">links</a>
-                  <a class="headright" href="http://sphere.sourceforge.net/malis-test/index.php?U_ACT=map">site map</a>
-                  <a class="headright" style="border-bottom: none" href="http://sphere.sourceforge.net/malis-test/contact.php">contact</a>
+                <td class=\"menuitems\">
+                  <a class=\"headright\" href=\"$__SITEROOT/projects.php?U_ACT=list\" style=\"text-decoration: line-through\">projects</a>
+                  <a class=\"headright\" href=\"$__SITEROOT/dev.php?U_ACT=about\">about sphere</a>
+                  <a class=\"headright\" href=\"$__SITEROOT/links.php\">links</a>
+                  <a class=\"headright\" href=\"$__SITEROOT/index.php?U_ACT=map\">site map</a>
+                  <a class=\"headright\" style=\"border-bottom: none\" href=\"$__SITEROOT/contact.php\">contact</a>
                 </td>
               </tr>
             </table>
@@ -48,11 +50,11 @@ function start(){
           </td>
         </tr>
       <tr>
-        <td class="body">
-          currently under development. line-through means the page is not available yet. (* the forums are the old forums on <a href="http://aegisknight.org">aegisknight.org</a> until the forum code for sphere.sf.net is completed.)
-          <table class="bodybody">
+        <td class=\"body\">
+          currently under development. line-through means the page is not available yet. (* the forums are the old forums on <a href=\"http://aegisknight.org\">aegisknight.org</a> until the forum code for sphere.sf.net is completed.)
+          <table class=\"bodybody\">
             <tr>
-              <td class="bodybody">';
+              <td class=\"bodybody\">";
 }
 
 
@@ -98,7 +100,7 @@ function conclude(){
     19.10.01 - Articles - Some dumb article<br />
     <br />
     <div style="text-align: right; width: 100%">complete ...</div>' );
-  side_bar_item( 'my account', 'if you\'re logged in, here you\'ll be able to edit all sorts of things like which panels on the side you want, possibly what theme you want the site in, if you want to set up a project and what projects you are part of etc. more on this to come hopefully.' );
+  side_bar_item( 'my account', "if you're logged in, here you'll be able to edit all sorts of things like which panels on the side you want, possibly what theme you want the site in, if you want to set up a project and what projects you are part of etc. more on this to come hopefully." );
   echo '
               </td>
             </tr>
@@ -135,7 +137,7 @@ function news_item( $_ID, $_TOPIC, $_DATE, $_AID, $_ICON, $_BODY ){
           <table class=\"item\">
             <tr>
               <td class=\"itemhead\">
-                <img src=\"images/icons/$_ICON.png\" style=\"vertical-align: middle\" alt=\"[ $_ICON ]\" /> $_TOPIC (<a href=\"http://sphere.sourceforge.net/index.php?U_ACT=reply&amp;rid=$_ID\">entire thread</a>)
+                <img src=\"images/icons/$_ICON.png\" style=\"vertical-align: middle\" alt=\"[ $_ICON ]\" /> $_TOPIC (<a href=\"$__SITEROOT/index.php?U_ACT=reply&amp;rid=$_ID\">entire thread</a>)
               </td>
             </tr>
             <tr>
@@ -163,7 +165,8 @@ function important_links(){
 }
 
 function mconnect(){ //What can I say? I'm lazy.
-  mysql_connect("mysql.sourceforge.net", "sphere", "crothosu") or die("could not connect to the mysql database. contact malis@wolf-phantom.net");
+  global $__PASS_MYSQL;
+  mysql_connect("mysql.sourceforge.net", "sphere", $__PASS_MYSQL) or die("could not connect to the mysql database. contact malis@wolf-phantom.net");
 }
 
 function GetCellFromUID( $_ID, $_CELL ){

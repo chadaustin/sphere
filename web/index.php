@@ -3,7 +3,7 @@
   start();
 ?>
 
-        coming soon i guess. (<a href="games/">game list</a>, temporary until i get the database system working)<br /><a href="http://sourceforge.net/projects/sphere">sphere project site</a><br />
+        coming soon i guess. (<a href="games/">game list</a>, temporary until i get the -real- download system implemented ;)<br /><a href="http://sourceforge.net/projects/sphere">sphere project site</a><br />
 
 <?
   mconnect();
