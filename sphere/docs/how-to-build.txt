@@ -1,0 +1,37 @@
+How to Build Sphere in Windows
+Chad Austin (aegis@aegisknight.org)
+2002.06.20 (Version 0.97)
+
+
+
+Requirements
+--
+
+Microsoft Visual C++ 6.0
+
+
+
+Getting the Source Code
+--
+
+Using your favorite CVS client, download the sphere module from CVS.
+Instructions are at <https://sourceforge.net/cvs/?group_id=1551>.
+
+
+Getting Third-party Headers, Libraries, and DLLs
+--
+
+Sphere depends on a lot of external code.  You can download them all
+individually, or get prebuilt libraries and headers for VC6 on the
+SourceForge downloads page
+(https://sourceforge.net/project/showfiles.php?group_id=1551).
+
+After you have all of the headers and libraries, put them in
+SPHERE_ROOT/source/third-party.
+
+
+Compiling
+--
+
+Open sphere.dsw, and compile away.  If you have troubles, send me an
+e-mail (address at the top of the document).
