@@ -1,9 +1,28 @@
-Import('env')
+Import('base_env')
 
-env.Library('common', Split("""
-    AnimationFactory.cpp Image32.cpp ObstructionMap.cpp common_palettes.cpp
-    Layer.cpp PackageFile.cpp configfile.cpp Log.cpp PackageFileSystem.cpp
-    DefaultFile.cpp LogDispatcher.cpp Spriteset.cpp DefaultFileSystem.cpp
-    LogFile.cpp Tile.cpp Entities.cpp LogNull.cpp Tileset.cpp Filters.cpp
-    WindowStyle.cpp FLICAnimation.cpp Map.cpp Font.cpp MNGAnimation.cpp"""))
-
+base_env.Library('common', Split("""
+    AnimationFactory.cpp
+    DefaultFile.cpp
+    DefaultFileSystem.cpp
+    Entities.cpp
+    FLICAnimation.cpp
+    Filters.cpp
+    Font.cpp
+    Image32.cpp
+    Layer.cpp
+    Log.cpp
+    LogDispatcher.cpp
+    LogFile.cpp
+    LogNull.cpp
+    MNGAnimation.cpp
+    Map.cpp
+    ObstructionMap.cpp
+    PackageFile.cpp
+    PackageFileSystem.cpp
+    Spriteset.cpp
+    Tile.cpp
+    Tileset.cpp
+    WindowStyle.cpp
+    common_palettes.cpp
+    configfile.cpp
+"""))

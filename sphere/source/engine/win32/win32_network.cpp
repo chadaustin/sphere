@@ -11,6 +11,11 @@ struct NSOCKETimp
 };
 
 
+#ifdef CYGWIN
+#define _snprintf snprintf
+#endif
+
+
 static bool s_NetworkInitialized = false;
 
 

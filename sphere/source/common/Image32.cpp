@@ -196,8 +196,9 @@ CImage32::Load(const char* filename, IFileSystem& fs)
     return false;
   }
 
+  CoronaFileAdapter cfa(file.get());
   std::auto_ptr<Image> img(
-    OpenImage(&CoronaFileAdapter(file.get()), FF_AUTODETECT, PF_R8G8B8A8));
+    OpenImage(&cfa, FF_AUTODETECT, PF_R8G8B8A8));
   if (!img.get()) {
     return false;
   }
@@ -224,7 +225,8 @@ CImage32::Save(const char* filename, IFileSystem& fs) const
 
   std::auto_ptr<Image> img(CreateImage(m_Width, m_Height, PF_R8G8B8A8));
   memcpy(img->getPixels(), m_Pixels, m_Width * m_Height * 4);
-  return SaveImage(&CoronaFileAdapter(file.get()), FF_PNG, img.get());
+  CoronaFileAdapter cfa(file.get());
+  return SaveImage(&cfa, FF_PNG, img.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -655,10 +657,10 @@ CImage32::Circle(int x, int y, int r, RGBA color)
   const double pi_2 = acos(-1) * 2;
   for (int i = 0; i < C; i++) {
     int j = (i + 1) % C;
-    int x1 = x + r * sin(pi_2 * i / C);
-    int y1 = y + r * cos(pi_2 * i / C);
-    int x2 = x + r * sin(pi_2 * j / C);
-    int y2 = y + r * cos(pi_2 * j / C);
+    int x1 = int(x + r * sin(pi_2 * i / C));
+    int y1 = int(y + r * cos(pi_2 * i / C));
+    int x2 = int(x + r * sin(pi_2 * j / C));
+    int y2 = int(y + r * cos(pi_2 * j / C));
     Line(x1, y1, x2, y2, color);
   }
 }

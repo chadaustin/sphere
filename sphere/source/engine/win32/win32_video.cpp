@@ -17,7 +17,7 @@ static void (__stdcall * _FlipScreen)();
 void (__stdcall * SetClippingRectangle)(int x, int y, int w, int h);
 void (__stdcall * GetClippingRectangle)(int* x, int* y, int* w, int* h);
 
-IMAGE (__stdcall * CreateImage)(int width, int height, RGBA* data);
+IMAGE (__stdcall * CreateImage)(int width, int height, const RGBA* data);
 IMAGE (__stdcall * GrabImage)(int x, int y, int width, int height);
 void  (__stdcall * DestroyImage)(IMAGE image);
 void  (__stdcall * BlitImage)(IMAGE image, int x, int y);
@@ -54,8 +54,8 @@ static bool   FPSDisplayed;
 ////////////////////////////////////////////////////////////////////////////////
 
 // helps eliminate warnings
-template<typename T>
-void assign(T& dest, void* src)
+template<typename T, typename U>
+void assign(T& dest, U src)
 {
   dest = (T&)src;
 }

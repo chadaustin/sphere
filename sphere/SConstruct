@@ -1,117 +1,102 @@
-import os, string, sys
+import sys
+import os
+import string
+import SCons
 
 Default('.')
 
-################################################################################
+def RequireList(env, var):
+    if not env.Dictionary().has_key(var):
+        env[var] = []
+    elif not SCons.Util.is_List(env[var]):
+        env[var] = [env[var]]
 
-major_version = 0
-minor_version = 97
-version = '%d.%d' % (major_version, minor_version)
+# Courtesy of Ben Scott
+def ParseConfig(env, command, options):
+    "Parses xxx-config style output for compilation directives"
 
-install_prefix = ARGUMENTS.get('install_prefix', '/usr/local')
-use_audiere = ARGUMENTS.get('audio', '1')
+    # Run the command
+    where = WhereIs(command)
+    if not where:
+        print '%s not found in PATH' % command
+        sys.exit(-1)
+    print "Found " + str(command) + ": " + where
+    cmd = where + ' ' + string.join(options)
+    params = string.split(os.popen(cmd).read())
 
-## print "Using install prefix " + install_prefix
-## print "Sphere will install to " + os.path.join(install_prefix, 'bin')
-## print "Sphere data will install to " + os.path.join(install_prefix, 'share/sphere')
+    # Parse its output
+    for arg in params:
+        switch = arg[0:1]
+        option = arg[1:2]
+        if switch == '-':
+            if option == 'I':
+                RequireList(env, 'CPPPATH')
+                env['CPPPATH'].append(arg[2:])
+            elif option == 'L':
+                RequireList(env, 'LIBPATH')
+                env['LIBPATH'].append(arg[2:])
+            elif option == 'l':
+                RequireList(env, 'LIBS')
+                env['LIBS'].append(arg[2:])
+            elif arg[0:11] == '-Wl,-rpath,':
+                RequireList(env, 'LINKFLAGS')
+                env['LINKFLAGS'].append(arg)
+            else:
+                RequireList(env, 'CXXFLAGS')
+                env['CXXFLAGS'].append(arg)
+        else:
+            # Must be a static library, add it to the libs
+            RequireList(env, 'LIBS')
+            env['LIBS'].append(arg)
 
-libraries = ['z','corona','js','SDL','mng']
-compile_flags = ['-DXP_UNIX', '-DVERSION=' + version ]
-compile_flags.append('-DDATADIR=' + install_prefix + '/share/sphere')
-compile_flags.extend(string.split(os.popen('sdl-config --cflags').read()))
-if use_audiere == '1':
-	libraries.append('audiere')
-	compile_flags.append('-DAUDIO')
-linker_flags = string.split(os.popen('sdl-config --libs').read())
-	
-print 'Starting build for Sphere ' + version + '.'
+        RequireList(env, 'LIBS')
+        env['LIBS'].extend(['SDL', 'SDLmain'])
+        
+def SetupAudiere(env):
+    RequireList(env, 'LIBS')
+    env['LIBS'].extend(['audiere', 'vorbisfile', 'vorbis', 'ogg'])
 
-env = Environment(LIBS=libraries, CPPFLAGS=compile_flags, LINKFLAGS=linker_flags)
+def SetupCorona(env):
+    RequireList(env, 'LIBS')
+    env['LIBS'].extend(['corona', 'png', 'z', 'jpeg'])
 
-SConscript('source/common/SConscript', 'env')
-SConscript('source/engine/SConscript', 'env')
-engine = env.Program(
-        target = "bin/sphere",
-        source = Split("source/engine/libengine.a source/common/libcommon.a"))
-env.Install(os.path.join(install_prefix, 'bin'), engine)
+def SetupGL(env):
+    RequireList(env, 'LIBS')
+    if sys.platform == 'cygwin':
+        env['LIBS'].extend(['glu32', 'opengl32'])
+    else:
+        env['LIBS'].extend(['GLU', 'GL'])
 
-docs = ['Sphere Tutorial.txt', 'build.txt', 'doc_functions.txt',
-'gpl.txt', 'irc.txt', 'keys.txt', 'lack_of_documentation.txt',
-'legal.txt', 'links.txt', 'network.txt', 'readme.txt',
-'sphere_cvs.txt', 'unix.txt']
+def SetupJS(env):
+    env.Append(LIBPATH = [Dir('#/third-party/lib')],
+               LIBS = ['js32'])
 
-docs = map(lambda n: os.path.join('docs', n), docs)
-env.Install(os.path.join(install_prefix,   'share/sphere/docs'), docs)
+def SetupMNG(env):
+    env.Append(LIBS = ['mng', 'jpeg'])
 
-#for doc in docs:
-#	env.Install(os.path.join(install_prefix, \
-#        'share/sphere/docs'), os.path.join('docs', doc))
+def SetupZLib(env):
+    env.Append(LIBS = ['z'])
 
-docs = ['sphere_todo.txt', 'spritesets.txt']
+#def SetupSDL(env):
+#    if sys.platform == 'cygwin':
+#        env.Append(CPPPATH = '/usr/local/include/SDL')
+#    else:
+#        ParseConfig(env, 'sdl-config', Split('--cflags --libs'))
 
-for doc in docs:
-	env.Install(os.path.join(install_prefix, 'share/sphere/docs/old'), \
-		    os.path.join('docs/old', doc))
-		
-docs = ['Clock Info.txt', 'animation.txt', 'audio.txt', 'convert.txt', 'menu.txt', 
-'timer.txt']
+Export('SetupAudiere SetupCorona SetupGL SetupJS SetupMNG SetupZLib')
 
-docs = map(lambda n: os.path.join('docs/system_scripts', n), docs)
-env.Install(os.path.join(install_prefix,   'share/sphere/docs/system_scripts'), docs)
+base_env = Environment(ENV = os.environ)
 
-#for doc in docs:
-#	env.Install(os.path.join(install_prefix,   'share/sphere/docs/system_scripts'), docs)
-	
-docs = ['audiodriver.txt', 'coding-style.txt', 'gameinf.txt', 'rfn.txt', 'rmp.txt', 
-'rss.txt', 'rts.txt', 'rws.txt', 'spk.txt', 'videodriver.txt']
+if sys.platform == 'cygwin':
+    base_env.Append(CCFLAGS = ['-DCOR_CALL=',
+                               '-DADR_CALL=',
+                               '-DWIN32',
+                               '-D_WIN32',
+                               '-DCYGWIN',
+                               '-DXP_PC'],
+                    CPPPATH = [Dir('third-party/include')],
+                    LIBPATH = [Dir('third-party/lib')])
 
-for doc in docs:
-	env.Install(os.path.join(install_prefix, 'share/sphere/docs/technical'), \
-		    os.path.join('docs/technical', doc))
+Export('base_env')
 
-files = ['arial.rfn', 'dauphin.rfn', 'down_arrow.png', 'mike.rfn', 'pointer.png',
-'system.ini', 'system.rfn', 'system.rws', 'up_arrow.png']
-
-for file in files:
-	env.Install(os.path.join(install_prefix, 'share/sphere/system'), \
-		    os.path.join('system', file))
-
-files = ['animation.js', 'audio.js', 'clock.js', 'colors.js',
-	 'convert.js', 'graphics.js', 'input.js', 'intro.js',
-	 'menu.js', 'oldsphere.js', 'screen.js', 'timed_animation.js',
-	 'time.js', 'timer.js']
-
-
-for file in files: env.Install(os.path.join(install_prefix,
-	'share/sphere/system/scripts'),
-	os.path.join('system/scripts', file))
-
-env.Install(os.path.join(install_prefix, 'share/sphere/startup'),
-os.path.join('startup', 'game.sgm'))
-
-env.Install(os.path.join(install_prefix,
-'share/sphere/startup/fonts'), os.path.join('startup/fonts',
-'base.rfn'))
-
-files = ['bot.png', 'down.png', 'fil.png', 'intro.jpeg', 'mid.png',
-'top.png', 'up.png']
-
-for file in files:
-	env.Install(os.path.join(install_prefix, 'share/sphere/startup/images'),
-	    os.path.join('startup/images', file))
-
-files = ['main.js', 'menu.js']
-
-for file in files:
-	env.Install(os.path.join(install_prefix, 'share/sphere/startup/scripts'),
-	    os.path.join('startup/scripts', file))
-
-env.Install(os.path.join(install_prefix,
-'share/sphere/startup/sounds'), os.path.join('startup/sounds',
-'intro.wav'))
-
-env.Install(os.path.join(install_prefix, 'share/sphere/startup/windowstyles'),
-os.path.join('startup/windowstyles', 'base.rws'))
-		
-env.Alias('install', os.path.join(install_prefix, 'bin'))
-env.Alias('install', os.path.join(install_prefix, 'share/sphere'))
+SConscript(dirs = ['source'])

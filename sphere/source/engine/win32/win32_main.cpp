@@ -103,7 +103,7 @@ int __cdecl main(int argc, const char** argv)
   }
 
   // create the sphere window
-  SphereWindow = CreateWindow(,
+  SphereWindow = CreateWindow(
     "SphereWindowClass", "Sphere",
     WS_CAPTION | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE,
     CW_USEDEFAULT, 0, CW_USEDEFAULT, 0,

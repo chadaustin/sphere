@@ -1,0 +1,14 @@
+Import('base_env')
+
+base_env.Library('unix', Split("""
+    unix_audio.cpp
+    unix_filesystem.cpp
+    unix_input.cpp
+    unix_main.cpp
+    unix_network.cpp
+    unix_screenshot.cpp
+    unix_sphere_config.cpp
+    unix_system.cpp
+    unix_time.cpp
+    unix_video.cpp
+    """))

@@ -478,7 +478,7 @@ CScript::InitializeSphereConstants()
     KEY_CONSTANT(MOUSE_RIGHT)
 #undef KEY_CONSTANT
 
-#define MAP_ENGINE_CONSTANT(c) { #c, CMapEngine::##c },
+#define MAP_ENGINE_CONSTANT(c) { #c, CMapEngine:: c },
 
     MAP_ENGINE_CONSTANT(COMMAND_WAIT)
     MAP_ENGINE_CONSTANT(COMMAND_FACE_NORTH)
@@ -1293,10 +1293,10 @@ begin_func(BlendColorsWeighted, 4)
     return_object(CreateColorObject(cx, CreateRGBA(0, 0, 0, 255)));
   } else {
     return_object(CreateColorObject(cx, CreateRGBA(
-      (a.red   * w1 + b.red   * w2) / (w1 + w2),
-      (a.green * w1 + b.green * w2) / (w1 + w2),
-      (a.blue  * w1 + b.blue  * w2) / (w1 + w2),
-      (a.alpha * w1 + b.alpha * w2) / (w1 + w2)
+      int((a.red   * w1 + b.red   * w2) / (w1 + w2)),
+      int((a.green * w1 + b.green * w2) / (w1 + w2)),
+      int((a.blue  * w1 + b.blue  * w2) / (w1 + w2)),
+      int((a.alpha * w1 + b.alpha * w2) / (w1 + w2))
     )));
   }
 end_func()
@@ -3532,19 +3532,19 @@ begin_method(SS_IMAGE, ssImageRotateBlit, 3)
     int cy = y + h / 2;
 
     int tx[4] = {
-      cx + r * sin(upper_left_angle  + radians),
-      cx + r * sin(upper_right_angle + radians),
-      cx + r * sin(lower_right_angle + radians),
-      cx + r * sin(lower_left_angle  + radians),
+      int(cx + r * sin(upper_left_angle  + radians)),
+      int(cx + r * sin(upper_right_angle + radians)),
+      int(cx + r * sin(lower_right_angle + radians)),
+      int(cx + r * sin(lower_left_angle  + radians)),
     };
 
     // I'm not sure why we're doing subtraction here...
     // one of those "just smile and nod" things
     int ty[4] = {
-      cy - r * cos(upper_left_angle  + radians),
-      cy - r * cos(upper_right_angle + radians),
-      cy - r * cos(lower_right_angle + radians),
-      cy - r * cos(lower_left_angle  + radians),
+      int(cy - r * cos(upper_left_angle  + radians)),
+      int(cy - r * cos(upper_right_angle + radians)),
+      int(cy - r * cos(lower_right_angle + radians)),
+      int(cy - r * cos(lower_left_angle  + radians)),
     };
 
     TransformBlitImage(object->image, tx, ty);

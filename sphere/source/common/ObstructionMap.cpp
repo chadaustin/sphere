@@ -214,8 +214,8 @@ sObstructionMap::DistanceToSegment(int x, int y, int i)
   } else if (u > 1) {
     return DistanceToPoint(x, y, s.x2, s.y2);
   } else {
-    int x3 = s.x1 + u * (s.x2 - s.x1);
-    int y3 = s.y1 + u * (s.y2 - s.y1);
+    int x3 = int(s.x1 + u * (s.x2 - s.x1));
+    int y3 = int(s.y1 + u * (s.y2 - s.y1));
     return DistanceToPoint(x, y, x3, y3);
   }
 }

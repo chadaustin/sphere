@@ -1174,7 +1174,7 @@ CMapEngine::GetPersonX(const char* name, int& x)
     return false;
   }
 
-  x = m_Persons[person].x;
+  x = int(m_Persons[person].x);
   return true;
 }
 
@@ -1189,7 +1189,7 @@ CMapEngine::GetPersonY(const char* name, int& y)
     return false;
   }
 
-  y = m_Persons[person].y;
+  y = int(m_Persons[person].y);
   return true;
 }
 
@@ -2529,9 +2529,9 @@ CMapEngine::RenderEntities(int layer, bool flipped, int offset_x, int offset_y)
       int base_x = (p.base_x1 + p.base_x2) / 2;
       int base_y = (p.base_y1 + p.base_y2) / 2;
 
-      int draw_x = p.x - base_x - m_Camera.x - offset_x + GetScreenWidth()  / 2;
-      int draw_y = p.y - base_y - m_Camera.y - offset_y + GetScreenHeight() / 2;
-      int sort_y = p.y;
+      int draw_x = int(p.x - base_x - m_Camera.x - offset_x + GetScreenWidth()  / 2);
+      int draw_y = int(p.y - base_y - m_Camera.y - offset_y + GetScreenHeight() / 2);
+      int sort_y = int(p.y);
 
       if (flipped) {
         draw_y += base_y;
@@ -2579,8 +2579,8 @@ CMapEngine::UpdateWorld(bool input_valid)
 
   // update the camera
   if (m_IsCameraAttached) {
-    m_Camera.x     = m_Persons[m_CameraPerson].x;
-    m_Camera.y     = m_Persons[m_CameraPerson].y;
+    m_Camera.x     = int(m_Persons[m_CameraPerson].x);
+    m_Camera.y     = int(m_Persons[m_CameraPerson].y);
     m_Camera.layer = m_Persons[m_CameraPerson].layer;
   }
 
@@ -2736,7 +2736,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
     // check for obstructions
     int obs_person;
-    if (IsObstructed(person_index, p.x, p.y, obs_person)) {
+    if (IsObstructed(person_index, int(p.x), int(p.y), obs_person)) {
       p.x = old_x;
       p.y = old_y;
     }
@@ -2828,8 +2828,8 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     // if the activation key is pressed
     if (m_Keys[m_TalkActivationKey]) {
       
-      int talk_x = m_Persons[m_InputPerson].x;
-      int talk_y = m_Persons[m_InputPerson].y;
+      int talk_x = int(m_Persons[m_InputPerson].x);
+      int talk_y = int(m_Persons[m_InputPerson].y);
       int tad = m_TalkActivationDistance;
 
       // god this is slow...
@@ -2905,8 +2905,8 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
   }
 
   if (m_InputPerson == person_index) {
-    int px = abs(x - p.x);
-    int py = abs(y - p.y);
+    int px = int(fabs(x - p.x));
+    int py = int(fabs(y - p.y));
     int s;
 
     if (px > py) s = px;
@@ -2978,8 +2978,8 @@ CMapEngine::UpdateTriggers()
   }
 
   // convenience
-  int location_x = m_Persons[m_InputPerson].x;
-  int location_y = m_Persons[m_InputPerson].y;
+  int location_x = int(m_Persons[m_InputPerson].x);
+  int location_y = int(m_Persons[m_InputPerson].y);
   int location_l = m_Persons[m_InputPerson].layer;
 
   sMap& map = m_Map.GetMap();
@@ -3041,8 +3041,8 @@ CMapEngine::UpdateZones()
   }
 
   // convenience
-  int location_x = m_Persons[m_InputPerson].x;
-  int location_y = m_Persons[m_InputPerson].y;
+  int location_x = int(m_Persons[m_InputPerson].x);
+  int location_y = int(m_Persons[m_InputPerson].y);
   int location_l = m_Persons[m_InputPerson].layer;
 
   for (int i = 0; i < m_Zones.size(); i++) {
@@ -3488,10 +3488,10 @@ dont_skip:
     int j_bx = (q.base_x1 + q.base_x2) / 2;
     int j_by = (q.base_y1 + q.base_y2) / 2;
 
-    int j_x1 = m_Persons[i].x - j_bx + q.base_x1;
-    int j_y1 = m_Persons[i].y - j_by + q.base_y1;
-    int j_x2 = m_Persons[i].x - j_bx + q.base_x2;
-    int j_y2 = m_Persons[i].y - j_by + q.base_y2;
+    int j_x1 = int(m_Persons[i].x - j_bx + q.base_x1);
+    int j_y1 = int(m_Persons[i].y - j_by + q.base_y1);
+    int j_x2 = int(m_Persons[i].x - j_bx + q.base_x2);
+    int j_y2 = int(m_Persons[i].y - j_by + q.base_y2);
 
     int min_jx = (j_x1 < j_x2 ? j_x1 : j_x2);
     int max_jx = (j_x1 > j_x2 ? j_x1 : j_x2);

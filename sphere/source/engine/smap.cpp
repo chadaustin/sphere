@@ -62,11 +62,12 @@ SMAP::Load(const char* filename, IFileSystem& fs)
 
     sTile tile = m_Map.GetTileset().GetTile(i);
     // make the tile completely opaque
-    for (int i = 0; i < tile.GetWidth() * tile.GetHeight(); i++) {
-      tile.GetPixels()[i].alpha = 0;
+    for (int j = 0; j < tile.GetWidth() * tile.GetHeight(); j++) {
+      tile.GetPixels()[j].alpha = 0;
     }
 
-    m_SolidTiles[i] = CreateImage(tile.GetWidth(), tile.GetHeight(), tile.GetPixels());
+    m_SolidTiles[i] = CreateImage(
+        tile.GetWidth(), tile.GetHeight(), tile.GetPixels());
   }
 
   // calculate maximum non-parallax layer dimensions
@@ -163,12 +164,12 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
   int parallax_y = 0;
   if (layer.HasParallax()) {
     // autoscrolling
-    parallax_x = m_LayerTimes[i] * layer.GetXScrolling();
-    parallax_y = m_LayerTimes[i] * layer.GetYScrolling();
+    parallax_x = int(m_LayerTimes[i] * layer.GetXScrolling());
+    parallax_y = int(m_LayerTimes[i] * layer.GetYScrolling());
 
     // parallax
-    parallax_x -= (camera_x + offset_x - cx) * (layer.GetXParallax() - 1);
-    parallax_y -= (camera_y + offset_y - cy) * (layer.GetYParallax() - 1);
+    parallax_x -= int((camera_x + offset_x - cx) * (layer.GetXParallax() - 1));
+    parallax_y -= int((camera_y + offset_y - cy) * (layer.GetYParallax() - 1));
   }
 
   // calculate the tile to start with on the upper-left side

@@ -1,9 +1,42 @@
-Import('env')
+import sys
 
-env.Library('engine', Split("""
-    benchmark.cpp render.cpp simage.cpp sspriteset.cpp engine.cpp
-    rendersort.cpp smap.cpp swindowstyle.cpp log.cpp script.cpp sphere.cpp
-    map_engine.cpp sfont.cpp SpritesetServer.cpp unix/unix_audio.cpp
-    unix/unix_network.cpp unix/unix_time.cpp unix/unix_filesystem.cpp
-    unix/unix_screenshot.cpp unix/unix_video.cpp unix/unix_input.cpp
-    unix/unix_sphere_config.cpp unix/unix_main.cpp unix/unix_system.cpp"""))
+Import('base_env SetupAudiere SetupCorona SetupJS SetupMNG SetupZLib')
+
+env = base_env.Copy()
+
+SetupAudiere(env)
+SetupCorona(env)
+SetupJS(env)
+SetupMNG(env)
+SetupZLib(env)
+
+env.Prepend(
+    LIBPATH = ['../common', 'win32'],
+    LIBS = ['common', 'win32'])
+
+if sys.platform == 'cygwin':
+    env.Append(LIBS = ['winmm', 'wsock32'])
+    md = 'win32'
+else:
+    md = 'unix'
+
+engine = env.Program('engine', Split("""
+    SpritesetServer.cpp
+    benchmark.cpp
+    engine.cpp
+    log.cpp
+    map_engine.cpp
+    render.cpp
+    rendersort.cpp
+    script.cpp
+    sfont.cpp
+    simage.cpp
+    smap.cpp
+    sphere.cpp
+    sspriteset.cpp
+    swindowstyle.cpp
+    """))
+
+env.Install('#/build', engine)
+
+SConscript(dirs = [md])

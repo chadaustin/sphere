@@ -12,7 +12,7 @@ class SSPRITESET
 public:
   SSPRITESET();
 
-private:  // use Release()
+protected:  // use Release()
   ~SSPRITESET();
 
 public:

@@ -13,7 +13,8 @@ extern int __cdecl main(int argc, char**);
 
 int WINAPI WinMain(HINSTANCE inst, HINSTANCE previnst, LPSTR cmdline, int cmdshow)
 {
-/*
+#ifdef CYGWIN
+
   int argc = 1;
   char** argv;
 
@@ -74,8 +75,13 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE previnst, LPSTR cmdline, int cmdsho
     }
   }
 
-*/
+  return main(argc, argv);
+
+#else
+
   return main(__argc, __argv);
+
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

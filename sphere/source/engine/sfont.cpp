@@ -89,7 +89,7 @@ SFONT::DrawZoomedString(int x, int y, double scale, const char* text, RGBA mask)
     char c = *text;
     if (c < 0 || c >= range) c = 0;
     
-    Local::ScaleBlit(m_Images[c], cx, y, scale, mask);
+    Local::ScaleBlit(m_Images[c], int(cx), y, scale, mask);
 
     cx += scale * m_Font.GetCharacter(c).GetWidth();
     text++;

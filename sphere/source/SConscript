@@ -1,0 +1,1 @@
+SConscript(dirs = ['common', 'config', 'engine', 'video', 'wxeditor'])
