@@ -7,9 +7,6 @@
 #include "DIBSection.hpp"
 #include "../common/Tileset.hpp"
 
-#include "FontGradientDialog.hpp"
-
-
 class ITilesetViewHandler
 {
 public:

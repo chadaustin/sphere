@@ -7,6 +7,7 @@
 #include "Editor.hpp"
 #include "FileDialogs.hpp"
 #include "resource.h"
+#include "FontGradientDialog.hpp"
 
 
 const int UPDATE_TILEVIEW_TIMER = 200;

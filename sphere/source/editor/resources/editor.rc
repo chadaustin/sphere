@@ -1,4 +1,4 @@
-// Microsoft Visual C++ generated resource script.
+//Microsoft Developer Studio generated resource script.
 //
 #include "resource.h"
 
@@ -27,18 +27,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE 
+1 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE 
+2 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE 
+3 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
     "\r\n"
     "\0"
@@ -52,7 +52,7 @@ END
 // Menu
 //
 
-IDR_MAIN MENU 
+IDR_MAIN MENU DISCARDABLE 
 BEGIN
     POPUP "&File"
     BEGIN
@@ -150,7 +150,7 @@ BEGIN
     END
 END
 
-IDR_MAP MENU 
+IDR_MAP MENU DISCARDABLE 
 BEGIN
     POPUP "&Map"
     BEGIN
@@ -173,7 +173,7 @@ BEGIN
     END
 END
 
-IDR_SPRITESET MENU 
+IDR_SPRITESET MENU DISCARDABLE 
 BEGIN
     POPUP "&Spriteset"
     BEGIN
@@ -193,7 +193,7 @@ BEGIN
     END
 END
 
-IDR_PROJECT MENU 
+IDR_PROJECT MENU DISCARDABLE 
 BEGIN
     POPUP "&Project"
     BEGIN
@@ -218,7 +218,7 @@ BEGIN
     END
 END
 
-IDR_PROJECTITEM MENU 
+IDR_PROJECTITEM MENU DISCARDABLE 
 BEGIN
     POPUP "Project &Item"
     BEGIN
@@ -227,7 +227,7 @@ BEGIN
     END
 END
 
-IDR_SOUND MENU 
+IDR_SOUND MENU DISCARDABLE 
 BEGIN
     POPUP "&Sound"
     BEGIN
@@ -236,7 +236,7 @@ BEGIN
     END
 END
 
-IDR_PROJECTGROUP MENU 
+IDR_PROJECTGROUP MENU DISCARDABLE 
 BEGIN
     POPUP "Project &Group"
     BEGIN
@@ -244,7 +244,7 @@ BEGIN
     END
 END
 
-IDR_SCRIPT MENU 
+IDR_SCRIPT MENU DISCARDABLE 
 BEGIN
     POPUP "&Script"
     BEGIN
@@ -266,7 +266,7 @@ BEGIN
     END
 END
 
-IDR_IMAGE MENU 
+IDR_IMAGE MENU DISCARDABLE 
 BEGIN
     POPUP "&Image"
     BEGIN
@@ -279,7 +279,7 @@ BEGIN
     END
 END
 
-IDR_LAYERVIEW MENU 
+IDR_LAYERVIEW MENU DISCARDABLE 
 BEGIN
     POPUP "&LayerView"
     BEGIN
@@ -310,7 +310,7 @@ BEGIN
     END
 END
 
-IDR_ANIMATION MENU 
+IDR_ANIMATION MENU DISCARDABLE 
 BEGIN
     POPUP "&Animation"
     BEGIN
@@ -319,7 +319,7 @@ BEGIN
     END
 END
 
-IDR_MAPVIEW MENU 
+IDR_MAPVIEW MENU DISCARDABLE 
 BEGIN
     POPUP "&MapView"
     BEGIN
@@ -329,8 +329,11 @@ BEGIN
         POPUP "&View"
         BEGIN
             MENUITEM "&Grid",                       ID_MAPVIEW_VIEWGRID
+            MENUITEM "Tile &Animations",            ID_MAPVIEW_VIEWANIMATIONS
+
             MENUITEM "&Tile Obstructions",          ID_MAPVIEW_VIEWTILEOBSTRUCTIONS
 
+            MENUITEM SEPARATOR
             POPUP "&Persons As"
             BEGIN
                 MENUITEM "&Icons",                      ID_MAPVIEW_VIEWPERSONS_ICON
@@ -340,8 +343,6 @@ BEGIN
                 MENUITEM "Image",                       ID_MAPVIEW_VIEWPERSONS_IMAGE
 
             END
-            MENUITEM "&Animations",                 ID_MAPVIEW_VIEWANIMATIONS
-
         END
         MENUITEM SEPARATOR
         MENUITEM "&Fill",                       ID_MAPVIEW_FILL
@@ -367,7 +368,7 @@ BEGIN
     END
 END
 
-IDR_FONT MENU 
+IDR_FONT MENU DISCARDABLE 
 BEGIN
     POPUP "&Font"
     BEGIN
@@ -382,7 +383,7 @@ BEGIN
     END
 END
 
-IDR_WINDOWSTYLE MENU 
+IDR_WINDOWSTYLE MENU DISCARDABLE 
 BEGIN
     POPUP "Window &Style"
     BEGIN
@@ -418,7 +419,7 @@ BEGIN
     END
 END
 
-IDR_SPRITESETVIEW MENU 
+IDR_SPRITESETVIEW MENU DISCARDABLE 
 BEGIN
     POPUP "SpritesetView_Directions"
     BEGIN
@@ -530,7 +531,7 @@ BEGIN
     END
 END
 
-IDR_TILESETVIEW MENU 
+IDR_TILESETVIEW MENU DISCARDABLE 
 BEGIN
     POPUP "TilesetView"
     BEGIN
@@ -637,7 +638,7 @@ BEGIN
     END
 END
 
-IDR_OBSTRUCTION_PRESETS MENU 
+IDR_OBSTRUCTION_PRESETS MENU DISCARDABLE 
 BEGIN
     POPUP "Obstruction Presets"
     BEGIN
@@ -683,7 +684,7 @@ BEGIN
     END
 END
 
-IDR_IMAGEVIEW MENU 
+IDR_IMAGEVIEW MENU DISCARDABLE 
 BEGIN
     POPUP "Image View"
     BEGIN
@@ -778,7 +779,7 @@ BEGIN
     END
 END
 
-IDR_SWATCHPALETTE MENU 
+IDR_SWATCHPALETTE MENU DISCARDABLE 
 BEGIN
     POPUP "Swatch Palette"
     BEGIN
@@ -811,7 +812,7 @@ BEGIN
     END
 END
 
-IDR_SCRIPTVIEW MENU 
+IDR_SCRIPTVIEW MENU DISCARDABLE 
 BEGIN
     POPUP "&ScriptView"
     BEGIN
@@ -826,7 +827,7 @@ BEGIN
     END
 END
 
-IDR_SPRITESET_IMAGES_PALETTE MENU 
+IDR_SPRITESET_IMAGES_PALETTE MENU DISCARDABLE 
 BEGIN
     POPUP "Spriteset Images Palette"
     BEGIN
@@ -847,8 +848,8 @@ END
 // Dialog
 //
 
-IDD_NEW_PROJECT DIALOG  0, 0, 200, 60
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_NEW_PROJECT DIALOG DISCARDABLE  0, 0, 200, 60
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "New Project"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -860,8 +861,8 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,116,42,50,14
 END
 
-IDD_GAME_SETTINGS DIALOG  0, 0, 200, 233
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_GAME_SETTINGS DIALOG DISCARDABLE  0, 0, 200, 233
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Game Settings"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -885,8 +886,8 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,112,212,50,14
 END
 
-IDD_NUMBER DIALOG  0, 0, 186, 41
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_NUMBER DIALOG DISCARDABLE  0, 0, 186, 41
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Number"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -896,8 +897,8 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,130,22,50,14
 END
 
-IDD_NEW_MAP DIALOG  0, 0, 204, 74
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_NEW_MAP DIALOG DISCARDABLE  0, 0, 204, 74
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "New Map"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -912,8 +913,8 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,150,20,50,14
 END
 
-IDD_LAYER_PROPERTIES DIALOG  0, 0, 186, 233
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_LAYER_PROPERTIES DIALOG DISCARDABLE  0, 0, 186, 233
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Layer Properties"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -951,8 +952,8 @@ BEGIN
                     WS_TABSTOP,7,59,48,10
 END
 
-IDD_TILE_PROPERTIES DIALOG  0, 0, 186, 86
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_TILE_PROPERTIES DIALOG DISCARDABLE  0, 0, 186, 86
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Tile Properties"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -972,8 +973,8 @@ BEGIN
     LTEXT           "Name",IDC_STATIC,4,44,20,8
 END
 
-IDD_TILESET_SELECTION DIALOG  0, 0, 228, 45
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_TILESET_SELECTION DIALOG DISCARDABLE  0, 0, 228, 45
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Select Tileset"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -985,8 +986,8 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,172,24,50,14
 END
 
-IDD_MAP_PROPERTIES DIALOG  0, 0, 236, 204
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_MAP_PROPERTIES DIALOG DISCARDABLE  0, 0, 236, 204
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Map Properties"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -1011,8 +1012,8 @@ BEGIN
                     WS_TABSTOP,21,174,49,10
 END
 
-IDD_RESIZE DIALOG  0, 0, 186, 53
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_RESIZE DIALOG DISCARDABLE  0, 0, 186, 53
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Tile size"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -1024,8 +1025,8 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
 END
 
-IDD_SPRITE_PROPERTIES DIALOG  0, 0, 186, 57
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_SPRITE_PROPERTIES DIALOG DISCARDABLE  0, 0, 186, 57
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Sprite Properties"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -1035,8 +1036,8 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
 END
 
-IDD_ENTITY_PERSON DIALOG  0, 0, 183, 190
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ENTITY_PERSON DIALOG DISCARDABLE  0, 0, 183, 190
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Person"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -1058,8 +1059,8 @@ BEGIN
                     WS_TABSTOP
 END
 
-IDD_ENTITY_TRIGGER DIALOG  0, 0, 186, 93
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ENTITY_TRIGGER DIALOG DISCARDABLE  0, 0, 186, 93
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Trigger"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -1071,9 +1072,8 @@ BEGIN
     PUSHBUTTON      "Check Syntax",IDC_CHECK_SYNTAX,108,4,72,12
 END
 
-IDD_WINDOW_STYLE_PROPERTIES DIALOG  0, 0, 199, 236
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+IDD_WINDOW_STYLE_PROPERTIES DIALOG DISCARDABLE  0, 0, 199, 236
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -1114,8 +1114,8 @@ BEGIN
                     BS_AUTORADIOBUTTON,7,52,116,10
 END
 
-IDD_FONT_GRADIENT DIALOG  0, 0, 128, 113
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_FONT_GRADIENT DIALOG DISCARDABLE  0, 0, 128, 113
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Font Gradient"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -1129,8 +1129,8 @@ BEGIN
                     60,8,56,32
 END
 
-IDD_TILE_OBSTRUCTION_DIALOG DIALOG  0, 0, 228, 150
-STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_THICKFRAME
+IDD_TILE_OBSTRUCTION_DIALOG DIALOG DISCARDABLE  0, 0, 228, 150
+STYLE WS_POPUP | WS_CAPTION | WS_THICKFRAME
 CAPTION "Tile Obstructions"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -1139,8 +1139,8 @@ BEGIN
     PUSHBUTTON      "&Presets",IDC_PRESETS,172,44,50,14
 END
 
-IDD_STRING DIALOG  0, 0, 186, 45
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_STRING DIALOG DISCARDABLE  0, 0, 186, 45
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "String Dialog"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -1149,8 +1149,8 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
 END
 
-IDD_ZONE_EDIT DIALOG  0, 0, 186, 106
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ZONE_EDIT DIALOG DISCARDABLE  0, 0, 186, 106
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Zone"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -1164,8 +1164,8 @@ BEGIN
     LTEXT           "Steps between executes",IDC_STATIC,5,6,90,11
 END
 
-IDD_ROTATE DIALOG  0, 0, 186, 95
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ROTATE DIALOG DISCARDABLE  0, 0, 186, 95
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Rotate"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -1179,8 +1179,8 @@ BEGIN
     LTEXT           "Rotate Text",IDC_ROTATETEXT,17,72,120,16
 END
 
-IDD_CONVOLVE_LIST DIALOG  0, 0, 164, 188
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_CONVOLVE_LIST DIALOG DISCARDABLE  0, 0, 164, 188
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Custom Filter"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -1197,7 +1197,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO MOVEABLE PURE 
 BEGIN
     IDD_NEW_PROJECT, DIALOG
     BEGIN
@@ -1359,7 +1359,7 @@ END
 // Toolbar
 //
 
-IDR_TOOLBAR TOOLBAR  16, 16
+IDR_TOOLBAR TOOLBAR MOVEABLE PURE  16, 16
 BEGIN
     BUTTON      ID_FILE_NEW_PROJECT
     BUTTON      ID_FILE_OPEN
@@ -1375,8 +1375,8 @@ END
 // Bitmap
 //
 
-IDR_TOOLBAR             BITMAP                  "toolbar.bmp"
-IDB_VOLUMEBAR           BITMAP                  "volumebar.bmp"
+IDR_TOOLBAR             BITMAP  MOVEABLE PURE   "toolbar.bmp"
+IDB_VOLUMEBAR           BITMAP  MOVEABLE PURE   "volumebar.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1385,57 +1385,57 @@ IDB_VOLUMEBAR           BITMAP                  "volumebar.bmp"
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_SDE                 ICON                    "sde.ico"
-IDI_PROJECT             ICON                    "project.ico"
-IDI_SOUND               ICON                    "sound.ico"
-IDI_MAP                 ICON                    "map.ico"
-IDI_TILESET             ICON                    "tileset.ico"
-IDI_SPRITESET           ICON                    "spriteset.ico"
-IDI_SCRIPT              ICON                    "script.ico"
-IDI_IMAGE               ICON                    "image.ico"
-IDI_GAME                ICON                    "game.ico"
-IDI_ANIMATION           ICON                    "animation.ico"
-IDI_ENTITY_TRIGGER      ICON                    "entity_trigger.ico"
-IDI_ENTITY_PERSON       ICON                    "entity_person.ico"
-IDI_WINDOWSTYLE         ICON                    "windowstyle.ico"
-IDI_FONT                ICON                    "font.ico"
-IDI_PV_GAME_SETTINGS    ICON                    "pv_game_settings.ico"
-IDI_PV_CLOSED_FOLDER    ICON                    "pv_closed_folder.ico"
-IDI_PV_OPEN_FOLDER      ICON                    "pv_open_folder.ico"
-IDI_IMAGETOOL_PENCIL    ICON                    "imagetool_pencil.ico"
-IDI_IMAGETOOL_LINE      ICON                    "imagetool_line.ico"
-IDI_IMAGETOOL_RECTANGLE ICON                    "imagetool_rectangle.ico"
-IDI_IMAGETOOL_CIRCLE    ICON                    "imagetool_circle.ico"
-IDI_IMAGETOOL_FILL      ICON                    "imagetool_fill.ico"
-IDI_MAPTOOL_1X1         ICON                    "maptool_1x1.ico"
-IDI_MAPTOOL_3X3         ICON                    "maptool_3x3.ico"
-IDI_MAPTOOL_5X5         ICON                    "maptool_5x5.ico"
-IDI_MAPTOOL_COPYAREA    ICON                    "maptool_copyarea.ico"
-IDI_MAPTOOL_PASTE       ICON                    "maptool_paste.ico"
-IDI_MAPTOOL_SELECTTILE  ICON                    "maptool_selecttile.ico"
-IDI_MAPTOOL_FILLAREA    ICON                    "maptool_fillarea.ico"
-IDI_MAPTOOL_COPYENTITY  ICON                    "maptool_copyentity.ico"
-IDI_MAPTOOL_PASTEENTITY ICON                    "maptool_pasteentity.ico"
-IDI_MAPTOOL_OBS_SEGMENT ICON                    "maptool_obs_segment.ico"
-IDI_MAPTOOL_OBS_DELETE  ICON                    "maptool_obs_delete.ico"
-IDI_LAYER_INVISIBLE     ICON                    "layer_invisible.ico"
-IDI_LAYER_VISIBLE       ICON                    "layer_visible.ico"
-IDI_MAPTOOL_OBS_MOVE_PT ICON                    "maptool_obs_move_pt.ico"
-IDI_MAPTOOL_ZONEADD     ICON                    "maptool_zoneadd.ico"
-IDI_MAPTOOL_ZONEEDIT    ICON                    "maptool_zoneedit.ico"
-IDI_MAPTOOL_ZONEDELETE  ICON                    "maptool_zonedelete.ico"
-IDI_IMAGETOOL_SELECTION ICON                    "imagetool_selection.ico"
-IDI_IMAGETOOL_ELLIPSE   ICON                    "imagetool_ellipse.ico"
-IDI_MAPTOOL_ZONEMOVE    ICON                    "maptool.ico"
-IDI_MAPTOOL_MOVEENTITY  ICON                    "maptool_moveentity.ico"
-IDI_IMAGETOOL_FREESELECTION ICON                    "imagetool_freeselection.ico"
+IDI_SDE                 ICON    DISCARDABLE     "sde.ico"
+IDI_PROJECT             ICON    DISCARDABLE     "project.ico"
+IDI_SOUND               ICON    DISCARDABLE     "sound.ico"
+IDI_MAP                 ICON    DISCARDABLE     "map.ico"
+IDI_TILESET             ICON    DISCARDABLE     "tileset.ico"
+IDI_SPRITESET           ICON    DISCARDABLE     "spriteset.ico"
+IDI_SCRIPT              ICON    DISCARDABLE     "script.ico"
+IDI_IMAGE               ICON    DISCARDABLE     "image.ico"
+IDI_GAME                ICON    DISCARDABLE     "game.ico"
+IDI_ANIMATION           ICON    DISCARDABLE     "animation.ico"
+IDI_ENTITY_TRIGGER      ICON    DISCARDABLE     "entity_trigger.ico"
+IDI_ENTITY_PERSON       ICON    DISCARDABLE     "entity_person.ico"
+IDI_WINDOWSTYLE         ICON    DISCARDABLE     "windowstyle.ico"
+IDI_FONT                ICON    DISCARDABLE     "font.ico"
+IDI_PV_GAME_SETTINGS    ICON    DISCARDABLE     "pv_game_settings.ico"
+IDI_PV_CLOSED_FOLDER    ICON    DISCARDABLE     "pv_closed_folder.ico"
+IDI_PV_OPEN_FOLDER      ICON    DISCARDABLE     "pv_open_folder.ico"
+IDI_IMAGETOOL_PENCIL    ICON    DISCARDABLE     "imagetool_pencil.ico"
+IDI_IMAGETOOL_LINE      ICON    DISCARDABLE     "imagetool_line.ico"
+IDI_IMAGETOOL_RECTANGLE ICON    DISCARDABLE     "imagetool_rectangle.ico"
+IDI_IMAGETOOL_CIRCLE    ICON    DISCARDABLE     "imagetool_circle.ico"
+IDI_IMAGETOOL_FILL      ICON    DISCARDABLE     "imagetool_fill.ico"
+IDI_MAPTOOL_1X1         ICON    DISCARDABLE     "maptool_1x1.ico"
+IDI_MAPTOOL_3X3         ICON    DISCARDABLE     "maptool_3x3.ico"
+IDI_MAPTOOL_5X5         ICON    DISCARDABLE     "maptool_5x5.ico"
+IDI_MAPTOOL_COPYAREA    ICON    DISCARDABLE     "maptool_copyarea.ico"
+IDI_MAPTOOL_PASTE       ICON    DISCARDABLE     "maptool_paste.ico"
+IDI_MAPTOOL_SELECTTILE  ICON    DISCARDABLE     "maptool_selecttile.ico"
+IDI_MAPTOOL_FILLAREA    ICON    DISCARDABLE     "maptool_fillarea.ico"
+IDI_MAPTOOL_COPYENTITY  ICON    DISCARDABLE     "maptool_copyentity.ico"
+IDI_MAPTOOL_PASTEENTITY ICON    DISCARDABLE     "maptool_pasteentity.ico"
+IDI_MAPTOOL_OBS_SEGMENT ICON    DISCARDABLE     "maptool_obs_segment.ico"
+IDI_MAPTOOL_OBS_DELETE  ICON    DISCARDABLE     "maptool_obs_delete.ico"
+IDI_LAYER_INVISIBLE     ICON    DISCARDABLE     "layer_invisible.ico"
+IDI_LAYER_VISIBLE       ICON    DISCARDABLE     "layer_visible.ico"
+IDI_MAPTOOL_OBS_MOVE_PT ICON    DISCARDABLE     "maptool_obs_move_pt.ico"
+IDI_MAPTOOL_ZONEADD     ICON    DISCARDABLE     "maptool_zoneadd.ico"
+IDI_MAPTOOL_ZONEEDIT    ICON    DISCARDABLE     "maptool_zoneedit.ico"
+IDI_MAPTOOL_ZONEDELETE  ICON    DISCARDABLE     "maptool_zonedelete.ico"
+IDI_IMAGETOOL_SELECTION ICON    DISCARDABLE     "imagetool_selection.ico"
+IDI_IMAGETOOL_ELLIPSE   ICON    DISCARDABLE     "imagetool_ellipse.ico"
+IDI_MAPTOOL_ZONEMOVE    ICON    DISCARDABLE     "maptool.ico"
+IDI_MAPTOOL_MOVEENTITY  ICON    DISCARDABLE     "maptool_moveentity.ico"
+IDI_IMAGETOOL_FREESELECTION ICON    DISCARDABLE     "imagetool_freeselection.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Accelerator
 //
 
-IDR_ACCELERATOR ACCELERATORS 
+IDR_ACCELERATOR ACCELERATORS MOVEABLE PURE 
 BEGIN
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
     VK_F5,          ID_PROJECT_REFRESH,     VIRTKEY, NOINVERT
