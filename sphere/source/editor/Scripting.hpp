@@ -1,8 +1,10 @@
 #ifndef SCRIPTING_HPP
 #define SCRIPTING_HPP
 
+#pragma warning(disable: 4786)
 
 #include <string>
+#include <vector>
 
 
 struct sCompileError
@@ -28,6 +30,5 @@ struct sCompileError
 
 bool IsKeyword(const char* token);
 bool VerifyScript(const char* script, sCompileError& error);
-
 
 #endif

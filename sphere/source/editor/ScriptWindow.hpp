@@ -30,6 +30,7 @@ private:
 
   afx_msg void OnSize(UINT type, int cx, int cy);
   afx_msg void OnSetFocus(CWnd* old);
+  afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 
   afx_msg void OnScriptCheckSyntax();
   afx_msg void OnScriptFind();
@@ -87,8 +88,28 @@ private:
   ScriptType GetScriptType();
 
 private:
+  afx_msg void OnScriptViewInsert();
+  afx_msg void OnScriptViewDelete();
+  afx_msg void OnUpdateScriptViewInsert(CCmdUI* cmdui);
+  afx_msg void OnUpdateScriptViewDelete(CCmdUI* cmdui);
+
+  afx_msg void OnScriptViewSphereFunctions();
+  afx_msg void OnScriptViewControlStructures();
+  afx_msg void OnScriptViewCurrentScriptFunctions();
+  afx_msg void OnScriptViewClipboardHistory();
+  afx_msg void OnUpdateScriptViewSphereFunctions(CCmdUI* cmdui);
+  afx_msg void OnUpdateScriptViewControlStructures(CCmdUI* cmdui);
+  afx_msg void OnUpdateScriptViewCurrentScriptFunctions(CCmdUI* cmdui);
+  afx_msg void OnUpdateScriptViewClipboardHistory(CCmdUI* cmdui);
+
+  void CreateList(int type);
+
+private:
   bool m_Created;
   HWND m_Editor;
+  HWND m_List;
+
+  int m_ListType;
 
   std::string m_Fontface;
   bool m_SyntaxHighlighted;

@@ -1099,6 +1099,26 @@ BEGIN
     END
 END
 
+IDR_SCRIPTVIEW MENU DISCARDABLE 
+BEGIN
+    POPUP "Script View"
+    BEGIN
+        MENUITEM "&Insert",                     ID_SCRIPTVIEW_INSERT
+        MENUITEM "Delete",                      ID_SCRIPTVIEW_DELETE
+        POPUP "View"
+        BEGIN
+            MENUITEM "Sphere Functions",            ID_SCRIPTVIEW_SPHEREFUNCTIONS
+
+            MENUITEM "Control Structures",          ID_SCRIPTVIEW_CONTROLSTRUCTURES
+
+            MENUITEM "Current Script Functions",    ID_SCRIPTVIEW_CURRENTSCRIPTFUNCTIONS
+
+            MENUITEM "Clipboard History",           ID_SCRIPTVIEW_CLIPBOARDHISTORY
+
+        END
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -18,11 +18,343 @@
 const int ID_EDIT = 900;
 const UINT s_FindReplaceMessage = ::RegisterWindowMessage(FINDMSGSTRING);
 
+////////////////////////////////////////////////////////////////////////////////
+
+ static const char* sFunctionDefinitions =
+  "Abort(message) "
+  "ApplyColorMask(color) "
+  "Array.concat(value) "
+  "Array.join(seperator) "
+  "Array.pop() "
+  "Array.push(value) "
+  "Array.reverse() "
+  "Array.shift() "
+  "Array.slice(start_pos,end_pos) "
+  "Array.sort(order_func) "
+  "Array.splice(start_pos,delete_count,value) "
+  //"Array.toString() "
+  "Array.unshift(value) "
+  "AreKeysLeft() "
+  "AreZonesAt(map_x,map_y,layer) "
+  "AttachCamera(person_name) "
+  "AttachInput(person_entity) "
+  "AttachPlayerInput(person_entity,player_index) "
+  "BLEND "
+  "BindKey(key,onkeydown,onkeyup) "
+  "BlendColors(c1,c2) "
+  "BlendColorsWeighted(c1,c2,c1_weight,c2_weight) "
+  "COMMAND_ANIMATE "
+  "COMMAND_FACE_EAST "
+  "COMMAND_FACE_NORTH "
+  "COMMAND_FACE_NORTHEAST "
+  "COMMAND_FACE_NORTHWEST "
+  "COMMAND_FACE_SOUTH "
+  "COMMAND_FACE_SOUTHEAST "
+  "COMMAND_FACE_SOUTHWEST "
+  "COMMAND_FACE_WEST "
+  "COMMAND_MOVE_EAST "
+  "COMMAND_MOVE_NORTH "
+  "COMMAND_MOVE_SOUTH "
+  "COMMAND_MOVE_WEST "
+  "COMMAND_WAIT "
+  "CallDefaultMapScript(which) "
+  "CallMapScript(which) "
+  "CallPersonScript(name,which) "
+  "ChangeMap(map) " 
+  "ClearPersonCommands(name) "
+  "CreateByteArray(size) "
+  "CreateByteArrayFromString(string) "
+  "CreateColor(r,g,b,a) "
+  "CreateColorMatrix(rn,rr,rg,rb,gn,gr,gg,gb,bn,br,bg,bb) "
+  "CreatePerson(name,spriteset,destroy_with_map) "
+  "CreateStringFromByteArray(array) "
+  "CreateStringFromCode(code) "
+  "CreateSurface(width,height,color) "
+  "Date.getDate() "
+  "Date.getDay() "
+  "Date.getFullYear() "
+  "Date.getHours() "
+  "Date.getMilliseconds() "
+  "Date.getMinutes() "
+  "Date.getMonth() "
+  "Date.getSeconds() "
+  "Date.getTime() "
+  "Date.getTimezoneOffset() "
+  "Date.getUTCDate() "
+  "Date.getUTCDate() "
+  "Date.getUTCFullYear() "
+  "Date.getUTCHours() "
+  "Date.getUTCMilliseconds() "
+  "Date.getUTCMinutes() "
+  "Date.getUTCMonth() "
+  "Date.getUTCSeconds() "
+  "Date.getYear() "
+  "Date.parse(date_str) "
+  "Date.setDate(day_of_month) "
+  "Date.setFullYear(year) "
+  "Date.setHours(hours) "
+  "Date.setMilliseconds(millis) "
+  "Date.setMinutes(minutes) "
+  "Date.setMonth(month) "
+  "Date.setSeconds(seconds) "
+  "Date.setTime(milliseconds) "
+  "Date.setUTCDate(day_of_month) "
+  "Date.setUTCFullYear(year) "
+  "Date.setUTCHours(hours) "
+  "Date.setUTCMilliseconds(millis) "
+  "Date.setUTCMinutes(minutes) "
+  "Date.setUTCMonth(month) "
+  "Date.setUTCSeconds(seconds) "
+  "Date.setYear(year) "
+  "Date.toGMTString() "
+  "Date.toLocaleString() "
+  //"Date.toString() "
+  "Date.toUTCString() "
+  "Date.UTC(year,month,day,hours,minutes,seconds,ms) "
+  //"Date.valueOf() "
+  "DestroyPerson(name) "
+  "DetachCamera() "
+  "DetachInput() "
+  "DetachPlayerInput(person_entity) "
+  "EvaluateScript(script) "
+  "EvaluateSystemScript(script) "
+  "ExecuteGame(directory) "
+  "ExecuteTrigger(map_x,map_y,layer) "
+  "ExecuteZoneScript(zone) "
+  "ExecuteZones(map_x,map_y,layer) "
+  "Exit() "
+  "ExitMapEngine() "
+  "FlipScreen() "
+  "FollowPerson(name,leader,pixels) "
+  "GarbageCollect() "
+  "GetCameraPerson() "
+  "GetCameraX() "
+  "GetCameraY() "
+  "GetCurrentMap() "
+  "GetCurrentPerson() "
+  "GetCurrentZone() "
+  "GetFileList(directory) "
+  "GetFrameRate() "  
+  "GetGameList() "
+  "GetInputPerson() "
+  "GetJoystickX(joy) "
+  "GetJoystickY(joy) "
+  "GetKey() "
+  "GetKeyString(key,shift) "
+  "GetLayerHeight(layer) "
+  "GetLayerMask(layer) "
+  "GetLayerName(layer) "
+  "GetLayerWidth(layer) "
+  "GetLocalAddress() "
+  "GetLocalName() "
+  "GetMapEngineFrameRate() "
+  "GetMouseX() "
+  "GetMouseY() "
+  "GetNextAnimatedTile(tile) "
+  "GetNumJoystickButtons(joy) "
+  "GetNumJoysticks() "
+  "GetNumLayers() "
+  "GetNumTiles() "
+  "GetNumZones() "
+  "GetObstructingPerson(name,x,y) "
+  "GetObstructingTile(name,x,y) "
+  "GetPersonAngle(name) "
+  "GetPersonBase(name) "
+  "GetPersonData(name) "
+  "GetPersonDirection(name) "
+  "GetPersonFrame(name) "
+  "GetPersonFrameRevert(name) "
+  "GetPersonIgnoreList(person) "
+  "GetPersonLayer(name) "
+  "GetPersonList() "
+  "GetPersonMask(name) "
+  "GetPersonSpeedX(name) "
+  "GetPersonSpeedY(name) "
+  "GetPersonSpriteset(name) "
+  "GetPersonValue(name,key) "
+  "GetPersonX(name) "
+  "GetPersonXFloat(name) "
+  "GetPersonY(name) "
+  "GetPersonYFloat(name) "
+  "GetScreenHeight() "
+  "GetScreenWidth() "
+  "GetSystemArrow() "
+  "GetSystemDownArrow() "
+  "GetSystemFont() "
+  "GetSystemUpArrow() "
+  "GetSystemWindowStyle() "
+  "GetTalkActivationKey() "
+  "GetTalkDistance() "
+  "GetTile(x,y,layer) "
+  "GetTileDelay(tile) "
+  "GetTileHeight() "
+  "GetTileImage(tile_index) "
+  "GetTileSurface(tile_index) "
+  "GetTileWidth() "
+  "GetTime() "
+  "GetVersion() "
+  "GetVersionString() "
+  "GetZoneHeight(zone) "
+  "GetZoneLayer(zone) "
+  "GetZoneWidth(zone) "
+  "GetZoneX(zone) "
+  "GetZoneY(zone) "
+  "GrabImage(x,y,w,h) "
+  "GrabSurface(x,y,w,h) "
+  "GradientLine(x1,y1,x2,y2,color1,color2) "
+  "GradientRectangle(x,y,w,h,c_ul,c_ur,c_lr,c_ll) "
+  "GradientTriangle(x1,y1,x2,y2,x3,y3,c1,c2,c3) "
+  "HashByteArray(byte_array) "
+  "HashFromFile(filename) "
+  "IgnorePersonObstructions(person,ignore) "
+  "IgnoreTileObstructions(person,ignore) "
+  "IsAnyKeyPressed() "
+  "IsCameraAttached() "
+  "IsCommandQueueEmpty(name) "
+  "IsIgnoringPersonObstructions(person) "
+  "IsIgnoringTileObstructions(person) "
+  "IsInputAttached() "
+  "IsJoystickButtonPressed(joy,button) "
+  "IsKeyPressed(key) "
+  "IsLayerVisible(layer) "
+  "IsMapEngineRunning() "
+  "IsMouseButtonPressed(button) "
+  "IsPersonObstructed(name,x,y) "
+  "IsTriggerAt(map_x,map_y,layer) "
+  "IsZoneAt(map_x,map_y,layer) "
+  "Line(x1,y1,x2,y2,color) "
+  "ListenOnPort(port) "
+  "LoadAnimation(filename) "
+  "LoadFont(filename) "
+  "LoadImage(filename) "
+  "LoadSound(filename,streaming) "
+  "LoadSpriteset(filename) "
+  "LoadSurface(filename) "
+  "LoadWindowStyle(filename) "
+  "MapEngine(map,fps) "
+  "MapToScreenX(layer,x) "
+  "MapToScreenY(layer,y) "
+  "Math.E "
+  "Math.LN10 "
+  "Math.LN2 "
+  "Math.LOG10E "
+  "Math.LOG2E "
+  "Math.PI "
+  "Math.SQRT1_2 "
+  "Math.SQRT2 "
+  "Math.abs(value) "
+  "Math.acos(v) "
+  "Math.asin(v) "
+  "Math.atan(v) "
+  "Math.atan2(v) "
+  "Math.ceil(value) "
+  "Math.cos(radian) "
+  "Math.exp(v) "
+  "Math.floor(value) "
+  "Math.log(v) "
+  "Math.max(va,vb) "
+  "Math.min(va,vb) "
+  "Math.pow(x,y) "
+  "Math.random() "
+  "Math.round(value) "
+  "Math.sin(radian) "
+  "Math.sqrt(value) "
+  "Math.tan(radian) "
+  "OpenAddress(address,port) "
+  "OpenFile(filename) "
+  "OpenLog(filename) "
+  "OpenRawFile(filename,writeable) "
+  "Point(x,y,color) "
+  "QueuePersonCommand(name,command,immediate) "
+  "QueuePersonScript(name,script,immediate) "
+  "REPLACE "
+  "Rectangle(x,y,w,h,c) "
+  "RenderMap() "
+  "ReplaceTilesOnLayer(layer,oldtile,newtile) "
+  "RequireScript(script) "
+  "RequireSystemScript(script) "
+  "RestartGame() "
+  "SCRIPT_COMMAND_GENERATOR "
+  "SCRIPT_ON_ACTIVATE_TALK "
+  "SCRIPT_ON_ACTIVATE_TOUCH "
+  "SCRIPT_ON_CREATE "
+  "SCRIPT_ON_DESTROY "
+  "SCRIPT_ON_ENTER_MAP "
+  "SCRIPT_ON_LEAVE_MAP "
+  "SCRIPT_ON_LEAVE_MAP_EAST "
+  "SCRIPT_ON_LEAVE_MAP_NORTH "
+  "SCRIPT_ON_LEAVE_MAP_SOUTH "
+  "SCRIPT_ON_LEAVE_MAP_WEST "
+  "ScreenToMapX(layer,x) "
+  "ScreenToMapY(layer,y) "
+  "SetCameraX(x) "
+  "SetCameraY(y) "
+  "SetClippingRectangle(x,y,w,h) "
+  "SetColorMask(color,num_frames) "
+  "SetDelayScript(num_frames,script) "
+  "SetFrameRate(fps) "
+  "SetLayerMask(layer,mask) "
+  "SetLayerRenderer(layer,script) "
+  "SetLayerScaleFactorX(layer_index,factor_x) "
+  "SetLayerScaleFactorY(layer_index,factor_y) "
+  "SetLayerVisible(layer,visible) "
+  "SetMapEngineFrameRate(fps) "
+  "SetMousePosition(x,y) "
+  "SetNextAnimatedTile(tile,next_tile) "
+  "SetPersonAngle(name,angle) "
+  "SetPersonData(name,data) "
+  "SetPersonDirection(name,direction) "
+  "SetPersonFrame(name,frame) "
+  "SetPersonFrameRevert(name,delay) "
+  "SetPersonIgnoreList(person,ignore_list) "
+  "SetPersonLayer(name,layer) "
+  "SetPersonMask(name,color) "
+  "SetPersonScaleAbsolute(name,width,height) "
+  "SetPersonScaleFactor(name,scale_w,scale_h) "
+  "SetPersonScript(name,which,script) "
+  "SetPersonSpeed(name,speed) "
+  "SetPersonSpeedXY(name,speed_x,speed_y) "
+  "SetPersonSpriteset(name,spriteset) "
+  "SetPersonValue(name,key,value) "
+  "SetPersonX(name,x) "
+  "SetPersonXYFloat(name,x,y) "
+  "SetPersonY(name,y) "
+  "SetRenderScript(script) "
+  "SetTalkActivationKey(key) "
+  "SetTalkDistance(pixels) "
+  "SetTile(x,y,layer,tile) "
+  "SetTileDelay(tile,delay) "
+  "SetTileImage(tile_index,image_object) "
+  "SetTileSurface(tile_index,surface_object) "
+  "SetUpdateScript(script) "
+  "SetZoneLayer(zone,layer) "
+  "String.charAt(pos) "
+  "String.charCodeAt(pos) "
+  "String.concat(str) "
+  "String.fromCharCode(code) "
+  "String.indexOf(str,start_pos) "
+  "String.lastIndexOf(str,start_pos) "
+  "String.length "
+  "String.match(regexp) "
+  "String.replace(regexp,replacement) "
+  "String.search(regexp) "
+  "String.slice(start_pos,end_pos) "
+  "String.split(delimiter) "
+  "String.substr(start_pos,length) "
+  "String.substring(start_pos,end_pos) "
+  "String.toLowerCase() "
+  "String.toUpperCase() "
+  "Triangle(x1,y1,x2,y2,x3,y3,c) "
+  "UnbindKey(key) "
+  "UpdateMapEngine()";
+
+////////////////////////////////////////////////////////////////////////////////
 
 BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
 
   ON_WM_SIZE()
   ON_WM_SETFOCUS()
+  ON_WM_CONTEXTMENU()
 
   ON_COMMAND(ID_SCRIPT_CHECKSYNTAX,      OnScriptCheckSyntax)
   ON_COMMAND(ID_SCRIPT_FIND,             OnScriptFind)
@@ -64,6 +396,21 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
 
   ON_REGISTERED_MESSAGE(s_FindReplaceMessage, OnFindReplace)
 
+  ON_COMMAND(ID_SCRIPTVIEW_INSERT, OnScriptViewInsert)
+  ON_COMMAND(ID_SCRIPTVIEW_DELETE, OnScriptViewDelete)
+
+  ON_UPDATE_COMMAND_UI(ID_SCRIPTVIEW_INSERT, OnUpdateScriptViewInsert)
+  ON_UPDATE_COMMAND_UI(ID_SCRIPTVIEW_DELETE, OnUpdateScriptViewDelete)
+
+  ON_COMMAND(ID_SCRIPTVIEW_SPHEREFUNCTIONS,  OnScriptViewSphereFunctions)
+  ON_COMMAND(ID_SCRIPTVIEW_CONTROLSTRUCTURES,  OnScriptViewControlStructures)
+  ON_COMMAND(ID_SCRIPTVIEW_CURRENTSCRIPTFUNCTIONS, OnScriptViewCurrentScriptFunctions)
+  ON_COMMAND(ID_SCRIPTVIEW_CLIPBOARDHISTORY, OnScriptViewClipboardHistory)
+  ON_UPDATE_COMMAND_UI(ID_SCRIPTVIEW_SPHEREFUNCTIONS,  OnUpdateScriptViewSphereFunctions)
+  ON_UPDATE_COMMAND_UI(ID_SCRIPTVIEW_CONTROLSTRUCTURES,  OnUpdateScriptViewControlStructures)
+  ON_UPDATE_COMMAND_UI(ID_SCRIPTVIEW_CURRENTSCRIPTFUNCTIONS, OnUpdateScriptViewCurrentScriptFunctions)
+  ON_UPDATE_COMMAND_UI(ID_SCRIPTVIEW_CLIPBOARDHISTORY, OnUpdateScriptViewClipboardHistory)
+
 END_MESSAGE_MAP()
 
 
@@ -78,6 +425,7 @@ CScriptWindow::CScriptWindow(const char* filename, bool create_from_clipboard)
 , m_WordWrap(false)
 , m_AllowAutoComplete(false)
 , m_SelectionType(SC_SEL_STREAM)
+, m_ListType(0)
 {
   SetSaved(filename != NULL);
   SetModified(false);
@@ -143,9 +491,30 @@ CScriptWindow::Create()
     AfxGetApp()->m_hInstance,
     0);
 
+  // creates the list view
+  m_List = ::CreateWindow(      
+    "LISTBOX",
+    "LISTBOX",
+    WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_CLIPCHILDREN | WS_BORDER |
+    LBS_EXTENDEDSEL | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT,
+    0,
+    0,
+    100,
+    250,
+    m_hWnd,
+    (HMENU)ID_EDIT,
+    AfxGetApp()->m_hInstance,
+    0);
+
+  m_ListType = 2;
+  CreateList(m_ListType);
+
   Initialize();
   ::ShowWindow(m_Editor, SW_SHOW);
   ::UpdateWindow(m_Editor);
+
+  ::ShowWindow(m_List, SW_SHOW);
+  ::UpdateWindow(m_List);
 
   m_Created = true;
 
@@ -158,6 +527,51 @@ CScriptWindow::Create()
   ::SetFocus(m_Editor);
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CScriptWindow::CreateList(int type)
+{
+  m_ListType = type;
+
+  ::SendMessage(m_List, LB_RESETCONTENT, 0, 0);
+
+  if (m_ListType == 1) {
+    unsigned int last_match = 0;
+    unsigned int functions_length = strlen(sFunctionDefinitions);
+    for (unsigned int i = 0; i < functions_length; i++) {
+      if (sFunctionDefinitions[i] == ' ') {
+        char buffer[4096] = {0};
+        memcpy(buffer, sFunctionDefinitions + last_match, i - last_match);
+        ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)buffer);
+        last_match = i + 1;
+      }
+    }
+
+    if (1) {
+      char buffer[4096] = {0};
+      memcpy(buffer, sFunctionDefinitions + last_match, strlen(sFunctionDefinitions) - last_match);
+      ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)buffer);
+    }
+  }
+
+  if (m_ListType == 2) {
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"if (1)\n{\n  // ...\n}\n");
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"for (var i = 0; i < 10; i++)\n{\n  // ...\n}\n");
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"while (1)\n{\n  // ...\n}\n");
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"switch (1)\n{\n  case (1):\n    // ...\n  break;\n}\n");
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"function func_name()\n{\n  // ...\n}\n");
+  }
+
+  if (m_ListType == 3) {
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"todo todo...");
+  }
+
+  if (m_ListType == 4) {
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"todo todo...");
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -442,7 +856,17 @@ afx_msg void
 CScriptWindow::OnSize(UINT type, int cx, int cy)
 {
   if (m_Created) {
-    ::MoveWindow(m_Editor, 0, 0, cx, cy, TRUE);
+    int sidebar_width = 0;
+
+    if ( ::IsWindowVisible(m_List) ) {
+      RECT rect;
+      if ( ::GetWindowRect(m_List, &rect) ) {
+        sidebar_width = rect.right - rect.left;
+      }
+    }
+ 
+    ::MoveWindow(m_Editor, sidebar_width, 0, cx, cy, TRUE);
+    ::MoveWindow(m_List, 0, 0, sidebar_width, cy, TRUE);
   }
 
   CSaveableDocumentWindow::OnSize(type, cx, cy);
@@ -457,6 +881,232 @@ CScriptWindow::OnSetFocus(CWnd* old)
   if (m_Created) {
     ::SetFocus(m_Editor);
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+class ListBoxUtil
+{
+public:
+  static int GetNumSelected(HWND list)
+  {
+    int i;
+    int total = 0;  
+    const int list_count = ::SendMessage(list, LB_GETCOUNT, 0, 0);
+      
+    for (i = 0; i < list_count; i++) {
+      int selected = ::SendMessage(list, LB_GETSEL, (WPARAM) i, 0);
+      if (selected > 0) {
+        total += 1;
+      }
+    }
+
+    return total;
+  }
+
+  static bool AreAnySelected(HWND list)
+  {
+    int i;
+    const int list_count = ::SendMessage(list, LB_GETCOUNT, 0, 0);
+      
+    for (i = 0; i < list_count; i++) {
+      int selected = ::SendMessage(list, LB_GETSEL, (WPARAM) i, 0);
+      if (selected > 0) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  static void RemoveSelected(HWND list)
+  {
+    int i;
+    const int list_count = ::SendMessage(list, LB_GETCOUNT, 0, 0);
+    
+    for (i = list_count - 1; i >= 0; i--) {
+      int selected = ::SendMessage(list, LB_GETSEL, (WPARAM) i, 0);
+      if (selected > 0) {
+        ::SendMessage(list, LB_DELETESTRING, i, 0);
+      }
+    }
+  }
+
+  static void ProcessSelected(HWND list,
+              void (*process_selected)(HWND list, int index, void* data),
+              void* data)
+  {
+    int i;
+    const int list_count = ::SendMessage(list, LB_GETCOUNT, 0, 0);
+      
+    for (i = 0; i < list_count; i++)
+    {
+      int selected = ::SendMessage(list, LB_GETSEL, (WPARAM) i, 0);
+      if (selected > 0) {
+        process_selected(list, i, data);
+      }
+    }
+  }
+
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnScriptViewInsert()
+{
+  struct Local {
+
+    static void process_selected(HWND list, int index, void* data)
+    {
+      HWND editor = (HWND) data;
+
+      int pos  = ::SendMessage(editor, SCI_GETCURRENTPOS, 0, 0);
+      int line = ::SendMessage(editor, SCI_LINEFROMPOSITION, pos, 0);
+
+      std::string indent = "";
+
+      if (line >= 0) {
+        char text[1024 * 16];
+        int line_length = ::SendMessage(editor, SCI_LINELENGTH, line, 0);
+        if (line_length > 0 && line_length < sizeof(text)) {
+          ::SendMessage(editor, SCI_GETLINE, line, (LRESULT)text);
+          int i = 0;
+          while (text[i] == ' ' || text[i] == '\t') {
+            indent += text[i++];
+          }
+        }
+      }
+
+      int len = ::SendMessage(list, LB_GETTEXTLEN, index, 0);
+      if (len > 0) {
+        char* buffer = new char[len + 1];
+        if (buffer) {
+          ::SendMessage(list, LB_GETTEXT, index, (WPARAM)buffer);
+          buffer[len] = 0;
+
+          std::string str = "";
+
+          for (int i = 0; i < strlen(buffer); i++) {
+            if (buffer[i] == '\n') {
+              str += "\n";
+              str += indent;
+            }
+            else {
+              str += buffer[i];
+            }
+          }
+
+          ::SendMessage(editor, SCI_ADDTEXT, str.size(), (WPARAM)str.c_str());
+          delete[] buffer;
+        }
+      }
+    }
+
+  };
+
+  ListBoxUtil::ProcessSelected(m_List, Local::process_selected, m_Editor);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnScriptViewDelete()
+{
+  ListBoxUtil::RemoveSelected(m_List);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnUpdateScriptViewInsert(CCmdUI* cmdui)
+{
+  cmdui->Enable((ListBoxUtil::GetNumSelected(m_List) > 0 && ListBoxUtil::GetNumSelected(m_List) < 10) ? TRUE : FALSE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnUpdateScriptViewDelete(CCmdUI* cmdui)
+{
+  cmdui->Enable(ListBoxUtil::AreAnySelected(m_List) ? TRUE : FALSE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnScriptViewSphereFunctions()
+{
+  CreateList(1);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnScriptViewControlStructures()
+{
+  CreateList(2);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnScriptViewCurrentScriptFunctions()
+{
+  CreateList(3);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnScriptViewClipboardHistory()
+{
+  CreateList(4);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnUpdateScriptViewSphereFunctions(CCmdUI* cmdui)
+{
+  cmdui->SetCheck(m_ListType == 1 ? TRUE : FALSE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnUpdateScriptViewControlStructures(CCmdUI* cmdui)
+{
+  cmdui->SetCheck(m_ListType == 2 ? TRUE : FALSE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnUpdateScriptViewCurrentScriptFunctions(CCmdUI* cmdui)
+{
+  cmdui->SetCheck(m_ListType == 3 ? TRUE : FALSE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnUpdateScriptViewClipboardHistory(CCmdUI* cmdui)
+{
+  cmdui->SetCheck(m_ListType == 4 ? TRUE : FALSE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnContextMenu(CWnd* pWnd, CPoint point)
+{
+  HMENU _menu = LoadMenu(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_SCRIPTVIEW));
+  HMENU menu = GetSubMenu(_menu, 0);
+
+  TrackPopupMenu(menu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, point.x, point.y, 0, m_hWnd, NULL);
+
+  DestroyMenu(_menu);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -640,337 +1290,6 @@ CScriptWindow::OnPosChanged(NMHDR* nmhdr, LRESULT* result) {
     if (GetScriptType() == SCRIPT_TYPE_UNKNOWN || GetScriptType() == SCRIPT_TYPE_JS)
       UpdateBraceHighlight();
 }
-
-////////////////////////////////////////////////////////////////////////////////
-
- static const char* sFunctionDefinitions =
-  "Abort(message) "
-  "ApplyColorMask(color) "
-  "Array.concat(value) "
-  "Array.join(seperator) "
-  "Array.pop() "
-  "Array.push(value) "
-  "Array.reverse() "
-  "Array.shift() "
-  "Array.slice(start_pos,end_pos) "
-  "Array.sort(order_func) "
-  "Array.splice(start_pos,delete_count,value) "
-  //"Array.toString() "
-  "Array.unshift(value) "
-  "AreKeysLeft() "
-  "AreZonesAt(map_x,map_y,layer) "
-  "AttachCamera(person_name) "
-  "AttachInput(person_entity) "
-  "AttachPlayerInput(person_entity,player_index) "
-  "BLEND "
-  "BindKey(key,onkeydown,onkeyup) "
-  "BlendColors(c1, c2) "
-  "BlendColorsWeighted(c1,c2,c1_weight,c2_weight) "
-  "COMMAND_ANIMATE "
-  "COMMAND_FACE_EAST "
-  "COMMAND_FACE_NORTH "
-  "COMMAND_FACE_NORTHEAST "
-  "COMMAND_FACE_NORTHWEST "
-  "COMMAND_FACE_SOUTH "
-  "COMMAND_FACE_SOUTHEAST "
-  "COMMAND_FACE_SOUTHWEST "
-  "COMMAND_FACE_WEST "
-  "COMMAND_MOVE_EAST "
-  "COMMAND_MOVE_NORTH "
-  "COMMAND_MOVE_SOUTH "
-  "COMMAND_MOVE_WEST "
-  "COMMAND_WAIT "
-  "CallDefaultMapScript(which) "
-  "CallMapScript(which) "
-  "CallPersonScript(name,which) "
-  "ChangeMap(map) " 
-  "ClearPersonCommands(name) "
-  "CreateByteArray(size) "
-  "CreateByteArrayFromString(string) "
-  "CreateColor(r,g,b,a) "
-  "CreateColorMatrix(rn,rr,rg,rb,gn,gr,gg,gb,bn,br,bg,bb) "
-  "CreatePerson(name,spriteset,destroy_with_map) "
-  "CreateStringFromByteArray(array) "
-  "CreateStringFromCode(code) "
-  "CreateSurface(width,height,color) "
-  "Date.getDate() "
-  "Date.getDay() "
-  "Date.getFullYear() "
-  "Date.getHours() "
-  "Date.getMilliseconds() "
-  "Date.getMinutes() "
-  "Date.getMonth() "
-  "Date.getSeconds() "
-  "Date.getTime() "
-  "Date.getTimezoneOffset() "
-  "Date.getUTCDate() "
-  "Date.getUTCDate() "
-  "Date.getUTCFullYear() "
-  "Date.getUTCHours() "
-  "Date.getUTCMilliseconds() "
-  "Date.getUTCMinutes() "
-  "Date.getUTCMonth() "
-  "Date.getUTCSeconds() "
-  "Date.getYear() "
-  "Date.parse(date_str) "
-  "Date.setDate(day_of_month) "
-  "Date.setFullYear(year) "
-  "Date.setHours(hours) "
-  "Date.setMilliseconds(millis) "
-  "Date.setMinutes(minutes) "
-  "Date.setMonth(month) "
-  "Date.setSeconds(seconds) "
-  "Date.setTime(milliseconds) "
-  "Date.setUTCDate(day_of_month) "
-  "Date.setUTCFullYear(year) "
-  "Date.setUTCHours(hours) "
-  "Date.setUTCMilliseconds(millis) "
-  "Date.setUTCMinutes(minutes) "
-  "Date.setUTCMonth(month) "
-  "Date.setUTCSeconds(seconds) "
-  "Date.setYear(year) "
-  "Date.toGMTString() "
-  "Date.toLocaleString() "
-  //"Date.toString() "
-  "Date.toUTCString() "
-  "Date.UTC(year,month,day,hours,minutes,seconds,ms) "
-  //"Date.valueOf() "
-  "DestroyPerson(name) "
-  "DetachCamera() "
-  "DetachInput() "
-  "DetachPlayerInput(person_entity) "
-  "EvaluateScript(script) "
-  "EvaluateSystemScript(script) "
-  "ExecuteGame(directory) "
-  "ExecuteTrigger(map_x,map_y,layer) "
-  "ExecuteZoneScript(zone) "
-  "ExecuteZones(map_x,map_y,layer) "
-  "Exit() "
-  "ExitMapEngine() "
-  "FlipScreen() "
-  "FollowPerson(name,leader,pixels) "
-  "GarbageCollect() "
-  "GetCameraPerson() "
-  "GetCameraX() "
-  "GetCameraY() "
-  "GetCurrentMap() "
-  "GetCurrentPerson() "
-  "GetCurrentZone() "
-  "GetFileList(directory) "
-  "GetFrameRate() "  
-  "GetGameList() "
-  "GetInputPerson() "
-  "GetJoystickX(joy) "
-  "GetJoystickY(joy) "
-  "GetKey() "
-  "GetKeyString(key,shift) "
-  "GetLayerHeight(layer) "
-  "GetLayerMask(layer) "
-  "GetLayerName(layer) "
-  "GetLayerWidth(layer) "
-  "GetLocalAddress() "
-  "GetLocalName() "
-  "GetMapEngineFrameRate() "
-  "GetMouseX() "
-  "GetMouseY() "
-  "GetNextAnimatedTile(tile) "
-  "GetNumJoystickButtons(joy) "
-  "GetNumJoysticks() "
-  "GetNumLayers() "
-  "GetNumTiles() "
-  "GetNumZones() "
-  "GetObstructingPerson(name,x,y) "
-  "GetObstructingTile(name,x,y) "
-  "GetPersonAngle(name) "
-  "GetPersonBase(name) "
-  "GetPersonData(name) "
-  "GetPersonDirection(name) "
-  "GetPersonFrame(name) "
-  "GetPersonFrameRevert(name) "
-  "GetPersonIgnoreList(person) "
-  "GetPersonLayer(name) "
-  "GetPersonList() "
-  "GetPersonMask(name) "
-  "GetPersonSpeedX(name) "
-  "GetPersonSpeedY(name) "
-  "GetPersonSpriteset(name) "
-  "GetPersonValue(name,key) "
-  "GetPersonX(name) "
-  "GetPersonXFloat(name) "
-  "GetPersonY(name) "
-  "GetPersonYFloat(name) "
-  "GetScreenHeight() "
-  "GetScreenWidth() "
-  "GetSystemArrow() "
-  "GetSystemDownArrow() "
-  "GetSystemFont() "
-  "GetSystemUpArrow() "
-  "GetSystemWindowStyle() "
-  "GetTalkActivationKey() "
-  "GetTalkDistance() "
-  "GetTile(x, y, layer) "
-  "GetTile(x,y,layer) "
-  "GetTileDelay(tile) "
-  "GetTileHeight() "
-  "GetTileImage(tile_index) "
-  "GetTileSurface(tile_index) "
-  "GetTileWidth() "
-  "GetTime() "
-  "GetVersion() "
-  "GetVersionString() "
-  "GetZoneHeight(zone) "
-  "GetZoneLayer(zone) "
-  "GetZoneWidth(zone) "
-  "GetZoneX(zone) "
-  "GetZoneY(zone) "
-  "GrabImage(x,y,w,h) "
-  "GrabSurface(x,y,w,h) "
-  "GradientLine(x1,y1,x2,y2,color1,color2) "
-  "GradientRectangle(x,y,w,h,c_ul,c_ur,c_lr,c_ll) "
-  "GradientTriangle(x1,y1,x2,y2,x3,y3,c1,c2,c3) "
-  "HashByteArray(byte_array) "
-  "HashFromFile(filename) "
-  "IgnorePersonObstructions(person,ignore) "
-  "IgnoreTileObstructions(person,ignore) "
-  "IsAnyKeyPressed() "
-  "IsCameraAttached() "
-  "IsCommandQueueEmpty(name) "
-  "IsIgnoringPersonObstructions(person) "
-  "IsIgnoringTileObstructions(person) "
-  "IsInputAttached() "
-  "IsJoystickButtonPressed(joy,button) "
-  "IsKeyPressed(key) "
-  "IsLayerVisible(layer) "
-  "IsMapEngineRunning() "
-  "IsMouseButtonPressed(button) "
-  "IsPersonObstructed(name,x,y) "
-  "IsTriggerAt(map_x,map_y,layer) "
-  "IsZoneAt(map_x,map_y,layer) "
-  "Line(x1,y1,x2,y2,color) "
-  "ListenOnPort(port) "
-  "LoadAnimation(filename) "
-  "LoadFont(filename) "
-  "LoadImage(filename) "
-  "LoadSound(filename,streaming) "
-  "LoadSpriteset(filename) "
-  "LoadSurface(filename) "
-  "LoadWindowStyle(filename) "
-  "MapEngine(map,fps) "
-  "MapToScreenX(layer,x) "
-  "MapToScreenY(layer,y) "
-  "Math.E "
-  "Math.LN10 "
-  "Math.LN2 "
-  "Math.LOG10E "
-  "Math.LOG2E "
-  "Math.PI "
-  "Math.SQRT1_2 "
-  "Math.SQRT2 "
-  "Math.abs(value) "
-  "Math.acos(v) "
-  "Math.asin(v) "
-  "Math.atan(v) "
-  "Math.atan2(v) "
-  "Math.ceil(value) "
-  "Math.cos(radian) "
-  "Math.exp(v) "
-  "Math.floor(value) "
-  "Math.log(v) "
-  "Math.max(va,vb) "
-  "Math.min(va,vb) "
-  "Math.pow(x,y) "
-  "Math.random() "
-  "Math.round(value) "
-  "Math.sin(radian) "
-  "Math.sqrt(value) "
-  "Math.tan(radian) "
-  "OpenAddress(address,port) "
-  "OpenFile(filename) "
-  "OpenLog(filename) "
-  "OpenRawFile(filename,writeable) "
-  "Point(x,y,color) "
-  "QueuePersonCommand(name,command,immediate) "
-  "QueuePersonScript(name,script,immediate) "
-  "REPLACE "
-  "Rectangle(x,y,w,h,c) "
-  "RenderMap() "
-  "ReplaceTilesOnLayer(layer,oldtile,newtile) "
-  "RequireScript(script) "
-  "RequireSystemScript(script) "
-  "RestartGame() "
-  "SCRIPT_COMMAND_GENERATOR "
-  "SCRIPT_ON_ACTIVATE_TALK "
-  "SCRIPT_ON_ACTIVATE_TOUCH "
-  "SCRIPT_ON_CREATE "
-  "SCRIPT_ON_DESTROY "
-  "SCRIPT_ON_ENTER_MAP "
-  "SCRIPT_ON_LEAVE_MAP "
-  "SCRIPT_ON_LEAVE_MAP_EAST "
-  "SCRIPT_ON_LEAVE_MAP_NORTH "
-  "SCRIPT_ON_LEAVE_MAP_SOUTH "
-  "SCRIPT_ON_LEAVE_MAP_WEST "
-  "ScreenToMapX(layer,x) "
-  "ScreenToMapY(layer,y) "
-  "SetCameraX(x) "
-  "SetCameraY(y) "
-  "SetClippingRectangle(x,y,w,h) "
-  "SetColorMask(color,num_frames) "
-  "SetDelayScript(num_frames,script) "
-  "SetFrameRate(fps) "
-  "SetLayerMask(layer,mask) "
-  "SetLayerRenderer(layer,script) "
-  "SetLayerScaleFactorX(layer_index,factor_x) "
-  "SetLayerScaleFactorY(layer_index,factor_y) "
-  "SetLayerVisible(layer,visible) "
-  "SetMapEngineFrameRate(fps) "
-  "SetMousePosition(x,y) "
-  "SetNextAnimatedTile(tile,next_tile) "
-  "SetPersonAngle(name,angle) "
-  "SetPersonData(name,data) "
-  "SetPersonDirection(name,direction) "
-  "SetPersonFrame(name,frame) "
-  "SetPersonFrameRevert(name,delay) "
-  "SetPersonIgnoreList(person,ignore_list) "
-  "SetPersonLayer(name,layer) "
-  "SetPersonMask(name,color) "
-  "SetPersonScaleAbsolute(name,width,height) "
-  "SetPersonScaleFactor(name,scale_w,scale_h) "
-  "SetPersonScript(name,which,script) "
-  "SetPersonSpeed(name,speed) "
-  "SetPersonSpeedXY(name,speed_x,speed_y) "
-  "SetPersonSpriteset(name,spriteset) "
-  "SetPersonValue(name,key,value) "
-  "SetPersonX(name,x) "
-  "SetPersonXYFloat(name,x,y) "
-  "SetPersonY(name,y) "
-  "SetRenderScript(script) "
-  "SetTalkActivationKey(key) "
-  "SetTalkDistance(pixels) "
-  "SetTile(x,y,layer,tile) "
-  "SetTileDelay(tile,delay) "
-  "SetTileImage(tile_index,image_object) "
-  "SetTileSurface(tile_index,surface_object) "
-  "SetUpdateScript(script) "
-  "SetZoneLayer(zone,layer) "
-  "String.charAt(pos) "
-  "String.charCodeAt(pos) "
-  "String.concat(str) "
-  "String.fromCharCode(code) "
-  "String.indexOf(str,start_pos) "
-  "String.lastIndexOf(str,start_pos) "
-  "String.length "
-  "String.match(regexp) "
-  "String.replace(regexp,replacement) "
-  "String.search(regexp) "
-  "String.slice(start_pos,end_pos) "
-  "String.split(delimiter) "
-  "String.substr(start_pos,length) "
-  "String.substring(start_pos,end_pos) "
-  "String.toLowerCase() "
-  "String.toUpperCase() "
-  "Triangle(x1,y1,x2,y2,x3,y3,c) "
-  "UnbindKey(key) "
-  "UpdateMapEngine()";
 
 ////////////////////////////////////////////////////////////////////////////////
 
