@@ -689,6 +689,12 @@ inline void USED(T /*t*/) { }
 inline int argInt(JSContext* cx, jsval arg)
 {
   int32 i;
+
+  if (JSVAL_IS_OBJECT(arg)) {
+    JS_ReportError(cx, "Invalid integer.");
+    return false;
+  }
+
   if (JS_ValueToInt32(cx, arg, &i) == JS_FALSE) {
     return 0; // invalid integer
   }
@@ -709,6 +715,12 @@ inline const char* argStr(JSContext* cx, jsval arg)
 inline bool argBool(JSContext* cx, jsval arg)
 {
   JSBool b;
+
+  if (JSVAL_IS_OBJECT(arg)) {
+    JS_ReportError(cx, "Invalid boolean.");
+    return false;
+  }
+
   if (JS_ValueToBoolean(cx, arg, &b) == JS_FALSE) {
     return false;
   }
@@ -718,6 +730,11 @@ inline bool argBool(JSContext* cx, jsval arg)
 inline double argDouble(JSContext* cx, jsval arg)
 {
   jsdouble d;
+  if (JSVAL_IS_OBJECT(arg)) {
+    JS_ReportError(cx, "Invalid double.");
+    return 0;
+  }
+
   JS_ValueToNumber(cx, arg, &d);
   return d;
 }
