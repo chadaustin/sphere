@@ -62,6 +62,8 @@ CMapWindow::CMapWindow(const char* map, const char* tileset)
     return;
   }
 
+  m_DocumentType = WA_MAP;
+
   Create();
 }
 
@@ -331,7 +333,7 @@ CMapWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
   m_MapView.SelectTile(tile);
   m_LayerView.SetSelectedTile(tile);
   m_TilesetEditView.SelectTile(tile);
-  m_TilePalette->SelectTile(tile);
+  if (m_TilePalette) m_TilePalette->SelectTile(tile);
 
 }
 
@@ -369,7 +371,7 @@ CMapWindow::OnChangeTileSize()
       SetModified(true);
       m_MapView.TilesetChanged();
       m_TilesetEditView.TilesetChanged();
-      m_TilePalette->TilesetChanged();
+      if (m_TilePalette) m_TilePalette->TilesetChanged();
     }
   }
 }
@@ -390,7 +392,7 @@ CMapWindow::OnRescaleTileset()
       SetModified(true);
       m_MapView.TilesetChanged();
       m_TilesetEditView.TilesetChanged();
-      m_TilePalette->TilesetChanged();
+      if (m_TilePalette) m_TilePalette->TilesetChanged();
     }
   }
 }
@@ -463,7 +465,7 @@ CMapWindow::OnImportTileset()
 
       m_MapView.TilesetChanged();
       m_TilesetEditView.TilesetChanged();
-      m_TilePalette->TilesetChanged();
+      if (m_TilePalette) m_TilePalette->TilesetChanged();
       SetModified(true);
     }
     else
@@ -484,7 +486,7 @@ CMapWindow::OnPruneTileset()
     m_MapView.Invalidate();
     m_MapView.UpdateScrollBars();
 
-    m_TilePalette->TilesetChanged();
+    if (m_TilePalette) m_TilePalette->TilesetChanged();
   }
 }
 
@@ -525,7 +527,7 @@ CMapWindow::MV_SelectedTileChanged(int tile)
 {
   m_LayerView.SetSelectedTile(tile);
   m_TilesetEditView.SelectTile(tile);
-  m_TilePalette->SelectTile(tile);
+  if (m_TilePalette) m_TilePalette->SelectTile(tile);
 	m_TilePreviewPalette->OnImageChanged(m_Map.GetTileset().GetTile(tile));
 }
 
@@ -550,7 +552,7 @@ CMapWindow::LV_MapChanged()
   // this might be called from a layerview delete layer operation, and the
   // currently selected tile might be out of range, so make sure TilesetChanged
   // verifies that.
-  m_TilePalette->TilesetChanged();
+  if (m_TilePalette) m_TilePalette->TilesetChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -567,7 +569,7 @@ void
 CMapWindow::TEV_SelectedTileChanged(int tile)
 {
   m_LayerView.SetSelectedTile(tile);
-  m_TilePalette->SelectTile(tile);
+  if (m_TilePalette) m_TilePalette->SelectTile(tile);
   m_MapView.SelectTile(tile);
 	m_TilePreviewPalette->OnImageChanged(m_Map.GetTileset().GetTile(tile));
 }
@@ -579,7 +581,7 @@ CMapWindow::TEV_TileModified(int tile)
 {
   SetModified(true);
   m_MapView.Invalidate();
-  m_TilePalette->TileChanged(tile);
+  if (m_TilePalette) m_TilePalette->TileChanged(tile);
 	m_TilePreviewPalette->OnImageChanged(m_Map.GetTileset().GetTile(tile));
 }
 
@@ -590,7 +592,7 @@ CMapWindow::TEV_TilesetModified()
 {
   SetModified(true);
   m_MapView.Invalidate();
-  m_TilePalette->Invalidate();
+  if (m_TilePalette) m_TilePalette->Invalidate();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

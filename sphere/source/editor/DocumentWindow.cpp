@@ -5,6 +5,7 @@
 #include "MainWindow.hpp"
 #include "WindowCommands.hpp"
 #include "PaletteWindow.hpp"
+#include "Editor.hpp"
 #include "resource.h"
 
 
@@ -27,6 +28,7 @@ END_MESSAGE_MAP()
 CDocumentWindow::CDocumentWindow(const char* document_path, int menu_resource, const CSize& min_size)
 : m_MenuResource(menu_resource)
 , m_MinSize(min_size)
+, m_DocumentType(0x0000)
 {
   if (document_path) {
     strcpy(m_DocumentPath, document_path);
@@ -271,8 +273,11 @@ CDocumentWindow::MapToolBarChanged(UINT id)
 void
 CDocumentWindow::UpdateToolBars()
 {
-  AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_IMAGETOOLBAR, (WPARAM)this, (LPARAM)FALSE);
-  AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_MAPTOOLBAR,   (WPARAM)this, (LPARAM)FALSE);
+  ImageToolBarChanged(GetMainWindow()->GetImageTool());
+  MapToolBarChanged(GetMainWindow()->GetMapTool());
+
+  AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_IMAGETOOLBAR, (WPARAM)NULL, (LPARAM)FALSE);
+  AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_MAPTOOLBAR,   (WPARAM)NULL, (LPARAM)FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -280,7 +285,7 @@ CDocumentWindow::UpdateToolBars()
 afx_msg int
 CDocumentWindow::OnCreate(LPCREATESTRUCT cs)
 {
-  SetWindowLong(m_hWnd, GWL_USERDATA, WA_DOCUMENT_WINDOW | (IsSaveable() ? WA_SAVEABLE : 0));
+  SetWindowLong(m_hWnd, GWL_USERDATA, WA_DOCUMENT_WINDOW | m_DocumentType | (IsSaveable() ? WA_SAVEABLE : 0));
   return 0;
 }
 

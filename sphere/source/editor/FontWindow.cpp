@@ -101,6 +101,8 @@ CFontWindow::CFontWindow(const char* font)
     SetModified(false);
   }
 
+  m_DocumentType = WA_FONT;
+
   Create();
 }
 

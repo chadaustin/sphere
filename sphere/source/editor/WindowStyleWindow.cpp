@@ -100,6 +100,8 @@ CWindowStyleWindow::CWindowStyleWindow(const char* window_style)
 
   }
 
+  m_DocumentType = WA_WINDOWSTYLE;
+
   // create the window and child widgets
   Create(AfxRegisterWndClass(0, ::LoadCursor(NULL, IDC_ARROW), NULL, AfxGetApp()->LoadIcon(IDI_WINDOWSTYLE)));
 

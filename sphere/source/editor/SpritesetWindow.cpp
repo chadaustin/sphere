@@ -119,6 +119,8 @@ CSpritesetWindow::CSpritesetWindow(const char* filename)
     SetSaved(false);
   }
 
+  m_DocumentType = WA_SPRITESET;
+
   Create();
 }
 

@@ -270,19 +270,11 @@ SOURCE=.\resources\editor.rc
 # End Source File
 # Begin Source File
 
-SOURCE=.\resources\entity_doodad.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\resources\entity_person.ico
 # End Source File
 # Begin Source File
 
 SOURCE=.\resources\entity_trigger.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\resources\entity_warp.ico
 # End Source File
 # Begin Source File
 

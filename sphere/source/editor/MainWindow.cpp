@@ -2075,8 +2075,13 @@ CMainWindow::OnUpdateImageCommand(CCmdUI* cmdui)
   else
   {
     // TODO: Replace WA_SAVEABLE with WA_TYPE == IMAGE or dw->CanUseImageToolbar()
-    if (GetWindowLong(pWindow->m_hWnd, GWL_USERDATA) & WA_SAVEABLE)
+    long userdata = GetWindowLong(pWindow->m_hWnd, GWL_USERDATA);
+    if (userdata & WA_IMAGE
+     || userdata & WA_FONT
+     || userdata & WA_SPRITESET
+     || userdata & WA_MAP) {
       cmdui->Enable(TRUE);
+    }
     else
       cmdui->Enable(FALSE);
   }
@@ -2113,10 +2118,12 @@ CMainWindow::OnRefreshImageToolBar(WPARAM wparam, LPARAM lparam)
    // todo: work out how to make it gray out the toolbar rather than just disallowing its use
   m_ImageToolBar.EnableWindow((BOOL) lparam);
   
+  /*
   if (wparam != NULL) {
     CDocumentWindow* dw = (CDocumentWindow*) wparam;
     dw->ImageToolBarChanged(id);
   }
+  */
 
   for (int i = 0; i < m_DocumentWindows.size(); i++) {
     CDocumentWindow* dw = m_DocumentWindows[i];
@@ -2160,7 +2167,7 @@ CMainWindow::OnUpdateMapCommand(CCmdUI* cmdui)
   else
   {
     // TODO: Replace WA_SAVEABLE with WA_TYPE == MAP or dw->CanUseMapToolbar()
-    if (GetWindowLong(pWindow->m_hWnd, GWL_USERDATA) & WA_SAVEABLE)
+    if (GetWindowLong(pWindow->m_hWnd, GWL_USERDATA) & WA_MAP)
       cmdui->Enable(TRUE);
     else
       cmdui->Enable(FALSE);

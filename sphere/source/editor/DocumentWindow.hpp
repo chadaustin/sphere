@@ -9,7 +9,17 @@
 const int WM_DW_CLOSING = (WM_APP + 1000);
 
 const int WA_DOCUMENT_WINDOW = 0x0001;
-const int WA_SAVEABLE = 0x0002;
+const int WA_SAVEABLE        = 0x0002;
+
+
+const int WA_MAP         = 0x0010;
+const int WA_IMAGE       = 0x0020;
+const int WA_SCRIPT      = 0x0030;
+const int WA_SPRITESET   = 0x0040;
+const int WA_SOUND       = 0x0050;
+const int WA_WINDOWSTYLE = 0x0060;
+const int WA_ANIMATION   = 0x0070;
+const int WA_FONT        = 0x0080;
 
 
 class CPaletteWindow;  // #include "PaletteWindow.hpp"
@@ -60,6 +70,9 @@ protected:
   afx_msg void OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactive_window);
 
   afx_msg void OnUpdateSaveableCommand(CCmdUI* cmdui);
+
+protected:
+  int m_DocumentType;
 
 private:
   char  m_DocumentPath[MAX_PATH];

@@ -47,6 +47,9 @@ CImageWindow::CImageWindow(const char* image)
     m_Image.Create(16, 16);
   }
 
+
+  m_DocumentType = WA_IMAGE;
+
   // create the window
   Create(AfxRegisterWndClass(0, NULL, (HBRUSH)(COLOR_WINDOW + 1), AfxGetApp()->LoadIcon(IDI_IMAGE)));
 
