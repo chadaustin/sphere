@@ -25,11 +25,15 @@ else:
   else:
       md = 'unix'
 
+appendage = ""
+
 if (COMPILER.is_win32()):
     env.Prepend(
         CPPPATH = [Dir('win32')],
         LIBPATH = ['win32'],
         LIBS = ['win32'])
+else:
+    appendage = "PlayerConfig.cpp"
 
 engine_sources = Split("""
     SpritesetServer.cpp
@@ -46,7 +50,7 @@ engine_sources = Split("""
     sphere.cpp
     sspriteset.cpp
     swindowstyle.cpp
-    """)
+    """ + appendage)
 
 if (md == 'sdl'):
    #env.Append(CCFLAGS = ['/DSPHERE_SDL'])

@@ -7,7 +7,7 @@
 #include "unix_audio.h"
 #include "unix_input.h"
 #include "unix_sphere_config.h"
-#include "../PersonConfig.hpp"
+#include "../PlayerConfig.hpp"
 
 #ifndef DATADIR
 #define DATADIR "."
@@ -110,12 +110,12 @@ int main(int argc, const char* argv[]) {
 
     for (int i = 0; i < 4; i++) {
       SetPlayerConfig(i,
-        KeyStringToKeyCode(Config.player_configurations[i].key_up_str),
-        KeyStringToKeyCode(Config.player_configurations[i].key_down_str),
-        KeyStringToKeyCode(Config.player_configurations[i].key_left_str),
-        KeyStringToKeyCode(Config.player_configurations[i].key_right_str),
-        Config.player_configurations[i].keyboard_input_allowed,
-        Config.player_configurations[i].joypad_input_allowed);
+        KeyStringToKeyCode(config.player_configurations[i].key_up_str),
+        KeyStringToKeyCode(config.player_configurations[i].key_down_str),
+        KeyStringToKeyCode(config.player_configurations[i].key_left_str),
+        KeyStringToKeyCode(config.player_configurations[i].key_right_str),
+        config.player_configurations[i].keyboard_input_allowed,
+        config.player_configurations[i].joypad_input_allowed);
     }
 
     original_directory = getcwd(NULL, 0);
