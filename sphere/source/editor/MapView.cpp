@@ -3136,6 +3136,13 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
       //Invalidate();
       break;
 
+    case ID_MAPVIEW_VIEWGRIDNONE:
+      m_ViewGridType = 0;
+      m_RedrawWindow = 1;
+      Invalidate();
+      //m_Handler->MV_MapChanged();
+      break;	  
+
     case ID_MAPVIEW_VIEWGRIDTILE:
       m_ViewGridType = 1;
       m_RedrawWindow = 1;

@@ -1086,6 +1086,7 @@ BEGIN
             MENUITEM "Unused Server",               ID_SERVER_1
             MENUITEM "Unused Server",               ID_SERVER_2
         END
+        MENUITEM "&Find...",                    ID_SCRIPT_FIND
     END
 END
 

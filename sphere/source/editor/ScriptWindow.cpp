@@ -19,8 +19,8 @@
 
 #include <afxdlgs.h>
 
-const int ID_EDIT = 900;
-const UINT s_FindReplaceMessage = ::RegisterWindowMessage(FINDMSGSTRING);
+static const int ID_EDIT = 900;
+static const UINT s_FindReplaceMessage = ::RegisterWindowMessage(FINDMSGSTRING);
 
 ////////////////////////////////////////////////////////////////////////////////
 
