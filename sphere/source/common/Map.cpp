@@ -1322,6 +1322,7 @@ sMap::AddEntity(sEntity* entity)
 void
 sMap::DeleteEntity(int index)
 {
+  delete m_Entities[index];
   m_Entities.erase(m_Entities.begin() + index);
 }
 

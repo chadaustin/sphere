@@ -891,10 +891,6 @@ SOURCE=..\common\begin_c_prototypes.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\common\begin_packed_struct.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\common\common_palettes.cpp
 # End Source File
 # Begin Source File
@@ -1044,6 +1040,10 @@ SOURCE=..\common\ObstructionMap.hpp
 # Begin Source File
 
 SOURCE=..\common\packed.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\packed_struct.h
 # End Source File
 # Begin Source File
 
