@@ -357,6 +357,9 @@ CImage32::ApplyColorFX4(int x1, int y1, int w, int h, const CColorMatrix &c1, co
 void
 CImage32::Resize(int width, int height)
 {
+  if (width * height <= 0)
+    return;
+
   RGBA* new_pixels = new RGBA[width * height];
   if (new_pixels == NULL)
     return;
@@ -381,6 +384,9 @@ CImage32::Resize(int width, int height)
 void
 CImage32::Rescale(int width, int height)
 {
+  if (width * height <= 0)
+    return;
+
   RGBA* NewPixels = new RGBA[width * height];
   if (NewPixels == NULL)
     return;
