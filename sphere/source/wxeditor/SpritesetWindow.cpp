@@ -112,10 +112,10 @@ wSpritesetWindow::Create()
   m_TabControl->InsertItem(1, "Edit");
   m_TabControl->InsertItem(2, "Base");
 #else
-  wxNotebookPage* framespage = new wxNotebookPage(this, -1);
-  wxNotebookPage* editpage = new wxNotebookPage(this, -1);
-  wxNotebookPage* basepage = new wxNotebookPage(this, -1);
   m_NotebookControl = new wxNotebook(this, wID_SPRITESET_TAB);
+  wxNotebookPage* framespage = new wxNotebookPage(m_NotebookControl, -1);
+  wxNotebookPage* editpage = new wxNotebookPage(m_NotebookControl, -1);
+  wxNotebookPage* basepage = new wxNotebookPage(m_NotebookControl, -1);
   m_NotebookControl->InsertPage(0, framespage, "Frames");
   m_NotebookControl->InsertPage(1,   editpage, "Edit");
   m_NotebookControl->InsertPage(2,   basepage, "Base");

@@ -1,5 +1,5 @@
 /* XPM */
-static char * 35disk_xpm[] = {
+static char * disk_xpm[] = {
 /* width height ncolors chars_per_pixel */
 "32 32 5 1",
 /* colors */

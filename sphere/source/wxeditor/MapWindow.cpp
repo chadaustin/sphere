@@ -105,9 +105,10 @@ wMapWindow::Create()
     m_TabControl->InsertItem(1, "Tileset");
   }
 #else
-  wxNotebookPage* mapviewpage = new wxNotebookPage(this, -1);
-  wxNotebookPage* tileviewpage = new wxNotebookPage(this, -1);
   m_NotebookControl = new wxNotebook(this, wID_MAP_TAB);
+  wxNotebookPage* mapviewpage = new wxNotebookPage(m_NotebookControl, -1);
+  wxNotebookPage* tileviewpage = new wxNotebookPage(m_NotebookControl, -1);
+  m_NotebookSizer = new wxNotebookSizer(m_NotebookControl);
   if (m_NotebookControl) {
     m_NotebookControl->InsertPage(0, mapviewpage, "Map");
     m_NotebookControl->InsertPage(1, tileviewpage, "Tileset");

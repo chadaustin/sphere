@@ -50,6 +50,8 @@
 #include <libmng.h>
 
 #include "icons/sph-game.xpm"
+#include "icons/disk.xpm"
+
 
 // base for palette menu items
 const int PALETTE_COMMAND = 17133;
@@ -214,7 +216,6 @@ wMainWindow::wMainWindow(
 
   // create the main toolbar
   m_ToolBar.Create(this, wxNO_BORDER|wxHORIZONTAL|wxTB_FLAT);
-
   if (1) {
     int current_x = 5;
     int width = 16;
@@ -225,7 +226,7 @@ wMainWindow::wMainWindow(
       delete icon; icon = NULL; current_x += width + 5;
     }
 
-    icon = new wxBitmap( sph_game_xpm );
+    icon = new wxBitmap( disk_xpm );
     if (icon) {
       m_ToolBar.AddTool(wID_FILE_SAVE, *icon, wxNullBitmap, FALSE, current_x, -1, (wxObject *) NULL, "Save file");
       delete icon; icon = NULL; current_x += width + 5;

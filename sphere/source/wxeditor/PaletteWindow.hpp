@@ -10,8 +10,11 @@ class wDocumentWindow;  // #include "DocumentWindow.hpp"
 
 //const int WM_UPDATE_PALETTE_MENU = (WM_APP + 800);
 
-
-class wPaletteWindow : public wxFrame //wxMiniFrame
+#ifdef OPT_MOTIF
+class wPaletteWindow : public wxMiniFrame
+#else
+class wPaletteWindow : public wxFrame
+#endif
 {
 protected:
   // protected so only derived classes can construct

@@ -92,6 +92,7 @@ private:
   wxTabCtrl *m_TabControl;
 #else
   wxNotebook *m_NotebookControl;
+  wxNotebookSizer *m_NotebookSizer;
 #endif
 
   // views
