@@ -441,7 +441,7 @@ public:
 
   ~AudiereFile() {
     m_file->Close();
-    delete m_file;
+    //delete m_file;
   }
 
   int ADR_CALL read(void* buffer, int size) {
