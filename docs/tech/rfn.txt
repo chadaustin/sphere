@@ -1,0 +1,23 @@
+RPG Font Format
+Chad Austin
+6.6.98
+
+
+--- 256 byte header ----
+
+byte signature[4];   // Must be ".rfn"
+word version;        // Must be 1
+word num_chars;
+byte reserved[248];
+
+
+---- Start character data ----
+
+Each character has its own 32-byte header that goes like this:
+
+word width;
+word height;
+byte reserved[28];
+
+The actual character data is stored as many 8-bit greyscale image of (width *
+height) bytes.  Color 255 is opaque.  Color 0 is transparent.  

@@ -1,0 +1,200 @@
+SphereScript Assembly Specification
+Chad Austin
+9.16.99
+
+
+All user identifiers contain a mix of underscores, digits, and letters.
+Local or temporary labels begin with a period.
+
+Every opcode is represented in the file by 2+4*n bytes where n is the number of parameters:
+[opcode_byte]
+[param_byte]
+[param dwords] * n
+
+
+Legend
+------
+[lvalue] = [reg] | [label] | [arg] | [local]
+[rvalue] = [reg] | [label] | [arg] | [syslabel] | [lit]
+
+
+Opcode XX  Parameters
+---------------------
+mov    00  [lvalue] [rvalue]
+add    01  [lvalue] [rvalue]
+sub    02  [lvalue] [rvalue]
+mul    03  [lvalue] [rvalue]
+div    04  [lvalue] [rvalue]
+neg    05  [lvalue]
+clr    06  [lvalue]
+
+and    10  [lvalue] [rvalue]
+or     11  [lvalue] [rvalue]
+xor    12  [lvalue] [rvalue]
+not    13  [lvalue]
+
+cmpe   20  [lvalue] [rvalue]
+cmpg   21  [lvalue] [rvalue]
+cmpl   22  [lvalue] [rvalue]
+
+sload  30  [lvalue] [label]
+sfree  31  [lvalue]
+smov   32  [lvalue] [rvalue]
+sadd   33  [lvalue] [rvalue]
+sclr   34  [lvalue]
+
+scmpe  40  [lvalue] [rvalue]
+scmpg  41  [lvalue] [rvalue]
+scmpl  42  [lvalue] [rvalue]
+
+push   50  [rvalue]
+pop    51  [lvalue]
+call   52  [label]
+ret    53
+
+jmp    60  [label]
+jmpt   61  [rvalue] [label]
+
+malloc 70  [lvalue] [lit]
+mfree  71  [lvalue]
+
+and    81  [lvalue] [rvalue]
+or     80  [lvalue] [rvalue]
+
+
+Parameter_type byte
+-------------------
+
+bits:
+[] [] [] [] [] [] [] []
+[ param1  ] [  param2 ]
+
+param_values:
+
+[none]     0
+[reg]      1
+[lit]      2
+[label]    3
+[syslabel] 4
+[local]    5
+[arg]      6
+
+
+Register  Value
+---------------
+r0        00
+r1        01
+r2        02
+r3        03
+r4        04
+r5        05
+r6        06
+r7        07
+sp        08
+bp        09
+
+
+Virtual Opcodes
+---------------
+di <identifier> = Defines four bytes 
+
+
+===================
+Opcode Descriptions
+===================
+
+mov    [lvalue] [rvalue]
+    - Copies the contents of <param2> to <param1>
+
+add    [lvalue] [rvalue]
+    - Adds the contents of <param2> to <param1>
+
+sub    [lvalue] [rvalue]
+    - Subtracts the contents of <param2> from <param1>
+
+mul    [lvalue] [rvalue]
+    - Multiplies the contents of <param1> by <param1>
+
+div    [lvalue] [rvalue]
+    - Divides the contents of <param1> by <param2>
+
+neg    [lvalue]
+    - Switches the sign of <param1>
+
+clr    [lvalue]
+    - Sets <param1> to zero
+
+
+
+and    [lvalue] [rvalue]
+    - Logical AND <param1> <param2>, stores result in <param1>
+
+or     [lvalue] [rvalue]
+    - Logical OR <param1> <param2>, stores result in <param1>
+
+xor    [lvalue] [rvalue]
+    - Logical XOR <param1> <param2>, stores result in <param1>
+
+not    [lvalue]
+    - Logical NOT <param1>, stores result in <param1>
+
+
+
+cmpe   [lvalue] [rvalue]
+    - Compares <param1> and <param2>, if equal stores 1 in <param1>, otherwise stores 0 in <param1>
+
+cmpg   [lvalue] [rvalue]
+    - Compares <param1> and <param2>, if <param1> is greater than <param2>, stores 1 in <param1>, otherwise stores 0 in <param1>
+
+cmpl   [lvalue] [rvalue]
+    - Compares <param1> and <param2>, if <param1> is less than <param2>, stores 1 in <param1>, otherwise stores 0 in <param1>
+
+
+
+sload  [lvalue] [label]
+    - Loads a string from <param2> and points <param1> to it
+
+sfree  [lvalue]
+    - Frees the string pointed to by <param1>
+
+smov   [lvalue] [rvalue]
+    - Copies the string pointed to by <param2> to <param1>
+
+sadd   [lvalue] [rvalue]
+    - Concatenates the string pointed to by <param1> and the string pointed to by <param2>, storing result in <param1>
+
+sclr   [lvalue]
+    - Empties the string pointed to by <param1>, although it is still allocated
+
+
+
+scmpe  [lvalue] [rvalue]
+    - If the string pointed to by <param1> is equal to the string pointed to by <param2>, stores 1 in <param1>, otherwise stores 0 (string pointed to by <param1> is always freed)
+
+scmpg  [lvalue] [rvalue]
+    - If the string pointed to by <param1> is greater than the string pointed to by <param2>, stores 1 in <param1>, otherwise stores 0 (string pointed to by <param1> is always freed)
+
+scmpl  [lvalue] [rvalue]
+    - If the string pointed to by <param1> is less than the string pointed to by <param2>, stores 1 in <param1>, otherwise stores 0 (string pointed to by <param1> is always freed)
+
+
+
+push   [rvalue]
+    - Pushes <param1> onto stack
+
+pop    [lvalue]
+    - Pops value from stack and puts it into <param1>
+
+call   [label]
+    - Pushes sp and bp and current location onto internal stack and jumps to <param1>
+
+ret    
+    - Pops current location and bp and sp from internal stack, jumps to current location
+
+
+
+jmp    [label]
+    - Jumps to <param1>
+
+jmpt   [rvalue] [label]
+    - Jumps to <param2> if <param1> is nonzero

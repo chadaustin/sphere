@@ -1,0 +1,99 @@
+Sphere Changes
+Chad Austin
+11.19.1999
+
+
+v0.50
+- Too many changes to count
+- Converted many source files to C++
+- Added several new video drivers (OpenGL, Eagle, 2xSaI)
+- Integrated with SDE
+- User-defined animation delays between tiles
+- Reflective tiles
+- Fixed set clipping rectangle bug in all video drivers
+
+
+v0.08
+- Major engine redesign
+- Added support for multiple party members in map engine
+- Added better game error handling
+- Smoother graphics (removed fps counter)
+- Spriteset and image caching for duplicate loads
+- 24-bit PCX support
+- New entity speed system
+- Moved games to the 'games' subdirectory
+- Added support for V2 VSP files (Thanks, Darklich!)
+- Video driver redesign (added true clipping)
+- Mouse support
+- Bug fixes
+- Manual selection of games from the command line
+- Released as public domain
+
+
+v0.07
+- Fixed crashes that occured when main.exe called setup.exe which configured a driver
+- Optimized and fixed video drivers
+- Added scanlines and smoothing to 640x480 drivers
+- Added 16-bit color video driver
+- Customizable keys
+- Added joystick support
+- Added text color
+- Fixed *major* RGB/BGR problems
+- Refined main menu
+- Split release into two files: end user and developer
+
+
+v0.06
+- Video drivers compile with LCC now
+- Added support for SphereScript
+- Added triggers (new entity type)
+- New icons
+- Improved audio support
+- Added new configuration options
+- New video drivers
+
+
+v0.05
+- Locked at 60 fps
+- Added toolbar and statusbar to RMap
+- Added a new function to the video driver specifications
+- Reorganized engine code
+- Added warp entities
+- Added subarea support (entities)
+- Added MIDI support
+- Added directory system
+- Integrated tileset and map editors
+- Now uses Windows directly for input instead of DirectInput
+- Added RPG file icons and types
+- Added layer scrolling and parallax
+- Redesigned coordinate system
+- Added video driver configuration option
+- New file/directory system
+- Dialogue support
+- Logo screen support
+
+
+v0.04
+- Entities! (not completely done)
+- Animated tile support
+- Map starting points
+- New video drivers
+- Better menu<->engine handling
+- Audio options in setup
+- Collision detection and tile obstructions
+- Various editor enhancements
+
+
+v0.03
+- Added some cool new things in the editors
+- Added support for multiple games
+- Added complete sprite system
+
+
+v0.02
+- Added multilayer map support
+- Added sprite system subset
+
+
+v0.01
+- Initial release

@@ -1,0 +1,30 @@
+RPG Window Style Format
+Chad Austin
+2.13.99
+
+
+---- 64 byte header ----
+
+byte signature[4];  // Must be ".sws"
+word version;       // Must be 1
+byte edge_width;
+byte reserved[57];
+
+
+---- Start window style data ----
+
+The window style data is just 9 bitmaps.  There is one bitmap for each of the
+corners of the window and one for each edge.  The edge bitmaps are just
+repeated until a new corner should be drawn.  The last bitmap is the bitmap
+that should be tiled in the center of the window.
+
+The bitmaps are in this order in the file:
+  Upper-left
+  Top
+  Upper-right
+  Right
+  Lower-right
+  Bottom
+  Lower-left
+  Left
+  Middle

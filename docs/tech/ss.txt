@@ -1,0 +1,106 @@
+SphereScript Specification
+Chad Austin
+9.16.99
+
+
+Backus-Naur Form
+----------------
+
+<program>       ::= ( <global> )*
+<global>        ::= <variable decl> | <function> | <user type>
+<variable decl> ::= <data type> <identifier> [ ',' <identifier> ]* ';'
+<data type>     ::= 'int' | 'string' | 'image' | 'color'
+<digit>         ::= '0..9'
+<number>        ::= ( <digit> )+
+<identifier>    ::= <letter> [ <letter> | <digit> ]*
+<letter>        ::= 'a..z' | 'A..Z' | '_'
+<string>        ::= '"' [ <character> ]* '"'
+<user type>     ::= 'struct' <identifier> '{' ( <variable decl> )* '}'
+
+<function>      ::= <return type> <identifer> '(' <argument list> ')' <block>
+<return type>   ::= <data type> | 'void'
+<argument list> ::= [ <argument> [ ',' <argument> ]* ]
+<argument>      ::= <data type> <identifier>
+<block>         ::= <statement> | ( '{' ( <statement> )* '}' )
+<statement>     ::= <variable decl> | ( <expression> ';' ) | <return> | <if> | <while> | <switch>
+<return>        ::= 'return' <expression> ';'
+<if>            ::= 'if' '(' <expression> ')' <block>
+<while>         ::= 'while' '(' <expression> ')' <block>
+<switch>        ::= 'switch' '(' <expression> ')' '{' ( <case> )* '}'
+<case>          ::= 'case' <expression> ':' <block>
+
+<assignop>      ::= '='
+<logicop>       ::= '|' | '&'
+<compop>        ::= '==' | '<' | '>' | '<=' | '>='
+<addop>         ::= '+' | '-'
+<mulop>         ::= '*' | '/'
+
+<expression>    ::= ( <lvalue> [ <assignop> <expression> ]* ) | <logic expr>
+<logic expr>    ::= <comp expr> [ <logicop> <comp expr> ]*
+<comp expr>     ::= <add expr> [ <compop> <add expr> ]*
+<add expr>      ::= <mul expr> [ <addop> <mul expr> ]*
+<mul expr>      ::= <term> [ <mulop> <term> ]*
+<term>          ::= <number> | <string> | <variable> | <function call> | ( '(' <expression> ')' )
+
+
+
+System Data Types
+-----------------
+struct image
+{
+  int width, height;
+}
+
+struct color
+{
+  int red, green, blue, alpha;  
+}
+
+struct point
+{
+  int x, y;
+}
+
+
+
+System Functions
+----------------
+void  Exit()
+void  ExitMessage(string message)
+void  Delay(int milliseconds)
+void  SetGameFont(string font)
+void  SetGameWindowStyle(string windowstyle)
+int   GetTime()
+
+void  ChangeMap(string map)
+void  MapEngine()
+void  SetColorMask(color mask, int milliseconds)
+
+void  AddPartyCharacter(string spriteset)
+
+void  FlipScreen()
+image LoadImage(string file)
+image GrabImage(int x, int y, int w, int h)
+void  DestroyImage(image i)
+void  BlitImage(image i, int x, int y)
+void  ApplyColorMask(int level, color mask)
+void  FadeIn(int milliseconds)
+void  FadeOut(int milliseconds)
+
+void  DrawText(int x, int y, string text)
+void  DrawTextBox(int x, int y, int w, int h, int offset, string text)
+void  DrawWindow(int x, int y, int w, int h)
+
+int   PlaySoundEffect(string file)
+int   ChangeSong(string file)
+
+void RefreshInput()
+int  AnyKeyPressed()
+int  KeyPressed(int key)
+
+string MidString(string s, int offset, int numchars)
+string LeftString(string s, int numchars)
+string RightString(string s, int numchars)
+int    StringLength(string s)
+
+void PlayAnimation(string file)
