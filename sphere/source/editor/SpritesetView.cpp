@@ -5,6 +5,8 @@
 #include "FileDialogs.hpp"
 #include "resource.h"
 
+#include "NumberDialog.hpp"
+#include "FontGradientDialog.hpp"
 
 #define LABEL_WIDTH 80
 
@@ -40,17 +42,17 @@ BEGIN_MESSAGE_MAP(CSpritesetView, CWnd)
 
 //  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_ROTATE_CW,             OnEditRangeRotateCW)
 //  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_ROTATE_CCW,            OnEditRangeRotateCCW)
-//  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_SLIDE_UP,              OnEditRangeSlideUp)
-//  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_SLIDE_RIGHT,           OnEditRangeSlideRight)
-//  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_SLIDE_DOWN,            OnEditRangeSlideDown)
-//  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_SLIDE_LEFT,            OnEditRangeSlideLeft)
-  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_SLIDE_OTHER,           OnEditRangeSlideOther)
-  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_FLIP_HORIZONTALLY,     OnEditRangeFlipHorizontally)
-  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_FLIP_VERTICALLY,       OnEditRangeFlipVertically)
+  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_SLIDE_UP,              OnEditRange)
+  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_SLIDE_RIGHT,           OnEditRange)
+  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_SLIDE_DOWN,            OnEditRange)
+  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_SLIDE_LEFT,            OnEditRange)
+  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_SLIDE_OTHER,           OnEditRange)
+  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_FLIP_HORIZONTALLY,     OnEditRange)
+  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_FLIP_VERTICALLY,       OnEditRange)
 //  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_FILL_RGB,              OnEditRangeFillRGB)
 //  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_FILL_ALPHA,            OnEditRangeFillAlpha)
 //  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_FILL_BOTH,             OnEditRangeFillBoth)
-  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_REPLACE_RGBA,            OnEditRangeReplaceRGBA)
+  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_REPLACE_RGBA,            OnEditRange)
 //  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_REPLACE_RGB,           OnEditRangeReplaceRGB)
 //  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_REPLACE_ALPHA,         OnEditRangeReplaceAlpha)
 //  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_FLT_BLUR,              OnEditRangeFilterBlur)
@@ -794,145 +796,6 @@ CSpritesetView::OnFrameProperties()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-int
-CSpritesetView::GetEditRangeStartIndex() {
-  CNumberDialog dialog("Start frame index", "Value", 0, 0, m_Spriteset->GetNumFrames(m_CurrentDirection) - 1);
-  if (dialog.DoModal() == IDOK) {
-    return dialog.GetValue();
-  }
-  return -1;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-int
-CSpritesetView::GetEditRangeEndIndex(int start_frame) {
-  CNumberDialog dialog("End frame index", "Value", start_frame, start_frame, m_Spriteset->GetNumFrames(m_CurrentDirection) - 1);
-  if (dialog.DoModal() == IDOK) {
-    return dialog.GetValue();
-  }
-  return -1;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-std::vector<int>
-CSpritesetView::GetEditRangeIndexes(bool allow_duplicates)
-{
-  std::vector<int> frames;
-  int start_frame = GetEditRangeStartIndex();
-
-  if (start_frame > -1) {
-    int end_frame = GetEditRangeEndIndex(start_frame);
-    if (end_frame > -1)
-    {
-      for (int i = start_frame; i <= end_frame; i++)
-      {
-        int frame_index = m_Spriteset->GetFrameIndex(m_CurrentDirection, i);
-
-        bool already_added = false;
-
-        if (!allow_duplicates) { 
-
-          for (int j = 0; j < frames.size(); j++) {
-            if (frames[j] == frame_index) {
-              already_added = true;
-              break;
-            }
-          }
-
-        }
-
-        if (!already_added) {
-          frames.push_back(frame_index);
-        }
-      }
-    }
-  }
-  
-  return frames;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-afx_msg void
-CSpritesetView::OnEditRangeFlipHorizontally()
-{
-  std::vector<int> frames = GetEditRangeIndexes(false);
-  for (int i = 0; i < frames.size(); i++) {
-    CImage32& image = m_Spriteset->GetImage(frames[i]);
-    image.FlipHorizontal();
-  }
-  m_Handler->SV_SpritesetModified();
-  Invalidate();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-afx_msg void
-CSpritesetView::OnEditRangeFlipVertically()
-{
-  std::vector<int> frames = GetEditRangeIndexes(false);
-  for (int i = 0; i < frames.size(); i++) {
-    CImage32& image = m_Spriteset->GetImage(frames[i]);
-    image.FlipVertical();
-  }
-  m_Handler->SV_SpritesetModified();
-  Invalidate();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-afx_msg void
-CSpritesetView::OnEditRangeSlideOther() {
-  std::vector<int> frames = GetEditRangeIndexes(false);
-  if (frames.size() > 0) {
-    CNumberDialog dx("Slide Horizontally", "Value", 0, -m_Spriteset->GetFrameWidth(), m_Spriteset->GetFrameWidth()); 
-    if (dx.DoModal() == IDOK) {
-      CNumberDialog dy("Slide Vertically", "Value", 0, -m_Spriteset->GetFrameHeight(), m_Spriteset->GetFrameHeight());
-      if (dy.DoModal() == IDOK) {
-
-        if (dx.GetValue() != 0 || dy.GetValue() != 0) {
-          for (int i = 0; i < frames.size(); i++) {
-            CImage32& image = m_Spriteset->GetImage(frames[i]);
-            image.Translate(dx.GetValue(), dy.GetValue());
-          }
-        }
-
-      }
-    }
-  }
-  m_Handler->SV_SpritesetModified();
-  Invalidate();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-afx_msg void
-CSpritesetView::OnEditRangeReplaceRGBA()
-{
-  std::vector<int> frames = GetEditRangeIndexes(false);
-
-  if (frames.size() > 0) {
-    CFontGradientDialog colorChoiceDialog("Replace Color", "In", "Out");
-
-    if (colorChoiceDialog.DoModal() == IDOK) {
-
-      RGBA old_color = colorChoiceDialog.GetTopColor();
-      RGBA replacement_color = colorChoiceDialog.GetBottomColor();
-
-      for (int i = 0; i < frames.size(); i++) {
-        CImage32& image = m_Spriteset->GetImage(frames[i]);
-        image.ReplaceColor(old_color, replacement_color);
-      }
-    }
-  }
-  m_Handler->SV_SpritesetModified();
-  Invalidate();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSpritesetView::OnInsertDirectionFromImage()
 {
@@ -1049,3 +912,161 @@ CSpritesetView::OnExportDirectionAsImage()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+int
+CSpritesetView::GetEditRangeStartIndex() {
+  CNumberDialog dialog("Start frame index", "Value", 0, 0, m_Spriteset->GetNumFrames(m_CurrentDirection) - 1);
+  if (dialog.DoModal() == IDOK) {
+    return dialog.GetValue();
+  }
+  return -1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CSpritesetView::GetEditRangeEndIndex(int start_frame) {
+  CNumberDialog dialog("End frame index", "Value", start_frame, start_frame, m_Spriteset->GetNumFrames(m_CurrentDirection) - 1);
+  if (dialog.DoModal() == IDOK) {
+    return dialog.GetValue();
+  }
+  return -1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+std::vector<int>
+CSpritesetView::GetEditRangeIndexes(bool allow_duplicates)
+{
+  std::vector<int> frames;
+  int start_frame = GetEditRangeStartIndex();
+
+  if (start_frame > -1) {
+    int end_frame = GetEditRangeEndIndex(start_frame);
+    if (end_frame > -1)
+    {
+      for (int i = start_frame; i <= end_frame; i++)
+      {
+        int frame_index = m_Spriteset->GetFrameIndex(m_CurrentDirection, i);
+
+        bool already_added = false;
+
+        if (!allow_duplicates) { 
+
+          for (int j = 0; j < frames.size(); j++) {
+            if (frames[j] == frame_index) {
+              already_added = true;
+              break;
+            }
+          }
+
+        }
+
+        if (!already_added) {
+          frames.push_back(frame_index);
+        }
+      }
+    }
+  }
+  
+  return frames;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetView::OnEditRange()
+{
+  const unsigned int id = GetCurrentMessage()->wParam;
+  std::vector<int> frames = GetEditRangeIndexes(false);
+  bool changed = false;
+
+  if (frames.size() == 0)
+    return;
+
+  ////////////////////////////////////////////////////////////////////////////////
+
+  if (id == ID_SPRITESETVIEWFRAMES_ER_SLIDE_OTHER
+   || id == ID_SPRITESETVIEWFRAMES_ER_SLIDE_UP
+   || id == ID_SPRITESETVIEWFRAMES_ER_SLIDE_RIGHT
+   || id == ID_SPRITESETVIEWFRAMES_ER_SLIDE_DOWN
+   || id == ID_SPRITESETVIEWFRAMES_ER_SLIDE_LEFT) {
+    int dx = 0;
+    int dy = 0;
+
+    if (id == ID_SPRITESETVIEWFRAMES_ER_SLIDE_OTHER) {
+      CNumberDialog dxd("Slide Horizontally", "Value", 0, -m_Spriteset->GetFrameWidth(), m_Spriteset->GetFrameWidth()); 
+      if (dxd.DoModal() == IDOK) {
+        CNumberDialog dyd("Slide Vertically", "Value", 0, -m_Spriteset->GetFrameHeight(), m_Spriteset->GetFrameHeight());
+        if (dyd.DoModal() == IDOK) {
+          dx = dxd.GetValue();
+          dy = dyd.GetValue();
+        }
+      }
+    }
+
+    switch (id) {
+      case ID_SPRITESETVIEWFRAMES_ER_SLIDE_UP:    dy = -1; break;
+      case ID_SPRITESETVIEWFRAMES_ER_SLIDE_RIGHT: dx = 1;  break;
+      case ID_SPRITESETVIEWFRAMES_ER_SLIDE_DOWN:  dy = 1;  break;
+      case ID_SPRITESETVIEWFRAMES_ER_SLIDE_LEFT:  dx = -1; break;
+    }
+
+    if (dx != 0 || dy != 0) {
+      for (int i = 0; i < frames.size(); i++) {
+        CImage32& image = m_Spriteset->GetImage(frames[i]);
+        image.Translate(dx, dy);
+      }
+      changed = true;
+    }
+
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
+
+  if (id == ID_SPRITESETVIEWFRAMES_ER_FLIP_HORIZONTALLY) {
+    for (int i = 0; i < frames.size(); i++) {
+      CImage32& image = m_Spriteset->GetImage(frames[i]);
+      image.FlipHorizontal();
+    }
+    changed = true;
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
+
+  if (id == ID_SPRITESETVIEWFRAMES_ER_FLIP_VERTICALLY) {
+    for (int i = 0; i < frames.size(); i++) {
+      CImage32& image = m_Spriteset->GetImage(frames[i]);
+      image.FlipVertical();
+    }
+    changed = true;
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
+
+  if (id == ID_SPRITESETVIEWFRAMES_ER_REPLACE_RGBA) {
+    CFontGradientDialog colorChoiceDialog("Replace Color", "In", "Out");
+
+    if (colorChoiceDialog.DoModal() == IDOK) {
+
+      RGBA old_color = colorChoiceDialog.GetTopColor();
+      RGBA replacement_color = colorChoiceDialog.GetBottomColor();
+
+      for (int i = 0; i < frames.size(); i++) {
+        CImage32& image = m_Spriteset->GetImage(frames[i]);
+        image.ReplaceColor(old_color, replacement_color);
+      }
+      
+      changed = true;
+    }
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
+
+  if (changed) {
+    m_Handler->SV_SpritesetModified();
+    Invalidate();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////

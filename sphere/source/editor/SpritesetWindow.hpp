@@ -94,7 +94,7 @@ private:
 
   // palette
   CSpritesetImagesPalette* m_ImagesPalette;
-	CSpritesetAnimationPalette * m_AnimationPalette;
+	CSpritesetAnimationPalette* m_AnimationPalette;
 
   DECLARE_MESSAGE_MAP()
 };

@@ -464,13 +464,13 @@ BEGIN
             POPUP "&Slide"
             BEGIN
                 MENUITEM "&Up",                         ID_SPRITESETVIEWFRAMES_ER_SLIDE_UP
-                , GRAYED
+
                 MENUITEM "&Right",                      ID_SPRITESETVIEWFRAMES_ER_SLIDE_RIGHT
-                , GRAYED
+
                 MENUITEM "&Down",                       ID_SPRITESETVIEWFRAMES_ER_SLIDE_DOWN
-                , GRAYED
+
                 MENUITEM "&Left",                       ID_SPRITESETVIEWFRAMES_ER_SLIDE_LEFT
-                , GRAYED
+
                 MENUITEM "&Other...",                   ID_SPRITESETVIEWFRAMES_ER_SLIDE_OTHER
 
             END
