@@ -371,59 +371,71 @@ sSpriteset::Save(const char* filename, IFileSystem& fs) const
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-sSpriteset::Import_BMP(const char* filename, int frame_width, int frame_height, RGBA transparent)
+sSpriteset::Import_BMP(
+  const char* filename,
+  int frame_width,
+  int frame_height,
+  RGBA transparent)
 {
-  return false;
-/*
   CImage32 image;
-  if (!image.Load(filename))
+  if (!image.Load(filename)) {
     return false;
+  }
 
-  if (image.GetWidth() % frame_width || image.GetHeight() % frame_height)
+  if (image.GetWidth() % frame_width || image.GetHeight() % frame_height) {
     return false;
+  }
 
-  Destroy();
+  // replace the transparent color
+  RGBA* pixels = image.GetPixels();
+  int num_pixels = image.GetWidth() * image.GetHeight();
+  while (num_pixels--) {
+    
+    if (pixels->red   == transparent.red   &&
+        pixels->green == transparent.green &&
+        pixels->blue  == transparent.blue) {
+      pixels->alpha = 0;
+    }
 
-  // replace for the transparent color
-  for (int y = 0; y < image.GetHeight(); y++)
-    for (int x = 0; x < image.GetWidth(); x++)
-      if (image.GetPixels()[y * image.GetWidth() + x].red   == transparent.red &&
-          image.GetPixels()[y * image.GetWidth() + x].green == transparent.green &&
-          image.GetPixels()[y * image.GetWidth() + x].blue  == transparent.blue)
-      {
-        image.GetPixels()[y * image.GetWidth() + x].alpha = 0;
-      }
+    pixels++;
+  }
 
   m_FrameWidth = frame_width;
   m_FrameHeight = frame_height;
   int numRows = image.GetHeight() / frame_height;
   int numFrames = image.GetWidth() / frame_width;
 
+  // create image array
+  m_Images.resize(numRows * numFrames);
+  for (int i = 0; i < numRows * numFrames; i++) {
+    m_Images[i].Resize(frame_width, frame_height);
+  }
+
+  // for each row
   m_Directions.resize(numRows);
-  for (int i = 0; i < numRows; i++)
-  {
+  for (int i = 0; i < numRows; i++) {
     m_Directions[i].frames.resize(numFrames);
-
-    for (int j = 0; j < numFrames; j++)
-    {
-      sSprite* sprite = new sSprite(m_FrameWidth, m_FrameHeight);
-      sprite->SetDelay(8);
-      memset(sprite->GetPixels(), 0, m_FrameWidth * m_FrameHeight * sizeof(RGBA));
-
-      m_Directions[i].frames[j] = sprite;
+    for (int j = 0; j < numFrames; j++) {
+      m_Directions[i].frames[j].delay = 8;
+      m_Directions[i].frames[j].index = i * numFrames + j;
     }
   }
 
   // grabs the data in a gigantic loops 'o doom...
-  for (int j=0; j<numRows; j++)
-    for (int i=0; i<numFrames; i++)
-      for (int k=0; k<m_FrameHeight; k++)
-        memcpy(m_Directions[j].frames[i]->GetPixels() + (k*m_FrameWidth),
-               image.GetPixels() + (j*m_FrameHeight*image.GetWidth()) + (i*m_FrameWidth) + (k*image.GetWidth()),
-               m_FrameWidth*sizeof(RGBA));
+  for (int j = 0; j < numRows; j++) {
+    for (int i = 0; i < numFrames; i++) {
+      for (int k = 0; k < m_FrameHeight; k++) {
+        RGBA* dest = m_Images[m_Directions[j].frames[i].index].GetPixels() +
+                      (k * m_FrameWidth);
+        RGBA* src  = image.GetPixels() +
+                      (j * m_FrameHeight * image.GetWidth()) +
+                      (i * m_FrameWidth) + (k * image.GetWidth());
+        memcpy(dest, src, m_FrameWidth*sizeof(RGBA));
+      }
+    }
+  }
 
   return true;
-*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////

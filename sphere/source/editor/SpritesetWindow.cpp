@@ -458,6 +458,7 @@ CSpritesetWindow::SIP_IndexChanged(int index)
   int old_index = m_Spriteset.GetFrameIndex(m_CurrentDirection, m_CurrentFrame);
   if (old_index != index) {
     m_Spriteset.SetFrameIndex(m_CurrentDirection, m_CurrentFrame, index);
+    UpdateImageView();
     SetModified(true);
     Invalidate();
   }
