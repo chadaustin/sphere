@@ -31,7 +31,7 @@ BEGIN_MESSAGE_MAP(CMapView, CScrollWindow)
   ON_WM_MOUSEMOVE()
   ON_WM_LBUTTONUP()
   ON_WM_RBUTTONUP()
-  ON_WM_TIMER()
+//  ON_WM_TIMER()
 
 END_MESSAGE_MAP()
 
@@ -65,12 +65,11 @@ CMapView::CMapView()
 , m_Clicked(false)
 , m_ShowGrid(false)
 , m_ShowTileObstructions(false)
-, m_ShowAnimations(false)
+//, m_ShowAnimations(false)
 
 , m_PreviewLineOn(0)
 , m_RedrawWindow(0)
 , m_RedrawPreviewLine(0)
-
 {
   m_SpritesetDrawType    = Configuration::Get(KEY_MAP_SPRITESET_DRAWTYPE);  
   s_MapAreaClipboardFormat = RegisterClipboardFormat("MapAreaSelection32");
@@ -120,15 +119,16 @@ CMapView::Create(CDocumentWindow* owner, IMapViewHandler* handler, CWnd* parent,
   UpdateObstructionTiles();
 
 	//init the animation timer
-	m_FrameTick = 0;
-  m_Timer = SetTimer(ANIMATION_TIMER, Configuration::Get(KEY_ANIMATION_DELAY), NULL);
-	InitAnimations();
+	//m_FrameTick = 0;
+  //m_Timer = SetTimer(ANIMATION_TIMER, Configuration::Get(KEY_ANIMATION_DELAY), NULL);
+	//InitAnimations();
 
   return retval;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/*
 void 
 CMapView::InitAnimations()
 {
@@ -140,6 +140,7 @@ CMapView::InitAnimations()
 	//	m_Map->GetTileset().GetTile(i).InitAnimation(i, m_FrameTick);
 	}
 }
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -232,7 +233,7 @@ CMapView::TilesetChanged()
     32);
 
   UpdateObstructionTiles();
-	InitAnimations();
+	// InitAnimations();
 
   m_RedrawWindow = 1;
   Invalidate();
@@ -2438,10 +2439,11 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
     CheckMenuItem(menu, ID_MAPVIEW_VIEWTILEOBSTRUCTIONS, MF_BYCOMMAND | MF_CHECKED);
   }
 
+  /*
 	if (m_ShowAnimations) {
-
 		CheckMenuItem(menu, ID_MAPVIEW_VIEWANIMATIONS, MF_BYCOMMAND | MF_CHECKED);
 	}
+  */
 
   switch (m_SpritesetDrawType) {
     case SDT_ICON:    CheckMenuItem(menu, ID_MAPVIEW_VIEWPERSONS_ICON, MF_BYCOMMAND | MF_CHECKED); break;
@@ -2638,8 +2640,9 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
       break;
 
 		case ID_MAPVIEW_VIEWANIMATIONS:
-	    m_ShowAnimations = !m_ShowAnimations;  
-			InitAnimations();
+	    //m_ShowAnimations = !m_ShowAnimations;  
+			//InitAnimations();
+      //Invalidate();
       break;
 
      case ID_MAPVIEW_VIEWPERSONS_ICON:
@@ -2717,11 +2720,14 @@ CMapView::TP_ToolSelected(int tool)
   Invalidate(); // we should just invalidate the tiles needed according to the old/new tools
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+/*
 afx_msg void
 CMapView::OnTimer(UINT event)
 {
-  /*
-	if (!m_ShowAnimations) return;
+	if (!m_ShowAnimations || m_MenuShown)
+    return;
 
   //invalidate all visible animated tiles, changing their shown tile
   int NumTilesX = GetPageSizeX()+1;
@@ -2782,7 +2788,7 @@ CMapView::OnTimer(UINT event)
 	}
 
   m_RedrawWindow = 1;
-  */
 }
+*/
 
 ////////////////////////////////////////////////////////////////////////////////

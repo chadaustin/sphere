@@ -133,15 +133,16 @@ CSpritesetAnimationPalette::OnPaint()
 afx_msg void
 CSpritesetAnimationPalette::OnRButtonUp(UINT flags, CPoint point)
 {
-	//no menu needed for now
-/*  // show pop-up menu
+  /* //no menu needed for now
+  // show pop-up menu
   ClientToScreen(&point);
 
   HMENU menu = ::LoadMenu(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_SPRITESET_ANIMATION_PALETTE));
   HMENU submenu = GetSubMenu(menu, 0);
 
   TrackPopupMenu(submenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, point.x, point.y, 0, m_hWnd, NULL);
-  DestroyMenu(menu);*/
+  DestroyMenu(menu);
+  */
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -189,7 +190,8 @@ CSpritesetAnimationPalette::OnTimer(UINT event)
 	}
 	else
 	{
-		m_TicksLeft--;
+    //if (!m_MenuShown)
+  		m_TicksLeft--;
 	}
 }
 

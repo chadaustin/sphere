@@ -330,7 +330,7 @@ BEGIN
         BEGIN
             MENUITEM "&Grid",                       ID_MAPVIEW_VIEWGRID
             MENUITEM "Tile &Animations",            ID_MAPVIEW_VIEWANIMATIONS
-
+            , GRAYED
             MENUITEM "&Tile Obstructions",          ID_MAPVIEW_VIEWTILEOBSTRUCTIONS
 
             MENUITEM SEPARATOR
