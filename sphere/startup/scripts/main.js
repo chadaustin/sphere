@@ -38,6 +38,7 @@ function intro()
 
 function main_menu()
 {
+  var unactive = CreateColor(200,200,200); // <- Colour of not selected
   while (AreKeysLeft()){
 	GetKey();
   }
@@ -71,14 +72,14 @@ function main_menu()
   // add all of the games to the object
   for (var i = 0; i < game_list.length; i++) {
     var o = game_list[i];
-    menu.addItem(o.name, new Function("ExecuteGame('" + o.directory + "')"));
+    menu.addItem(o.name, new Function("ExecuteGame('" + o.directory + "')"),unactive); // <-
   }
 
   while (true) {
     image.blit(0, 0);
     font.drawText(9, GetScreenHeight()-14, "Sphere " + GetVersionString());
     font.setColorMask(White);
-    font.drawText(GetScreenWidth()-9-font.getStringWidth("Chad Austin (c) 1997-2001"), GetScreenHeight()-14, "Chad Austin (c) 1997-2001");
+    font.drawText(GetScreenWidth()-9-font.getStringWidth("Chad Austin (c) 1997-2003"), GetScreenHeight()-14, "Chad Austin (c) 1997-2001");
     menu.execute(16, 16, GetScreenWidth() - 32, GetScreenHeight() - 32);
   }
   

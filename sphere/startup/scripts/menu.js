@@ -58,6 +58,11 @@ Menu.prototype.execute = function(x, y, w, h) {
     var text_height = font.getHeight();
     var shown_items = Math.floor(h / text_height);
 
+		// Relative Y possition (smooth)
+		var yrel = 0;
+		// Highlight colour
+		var highlight = CreateColor(0,0,129,129);
+		var highlighttext = CreateColor(255,255,255);
     var selection = 0;
     var top_selection = 0;
 
@@ -68,20 +73,24 @@ Menu.prototype.execute = function(x, y, w, h) {
       // draw the window
       window_style.drawWindow(x, y, w, h);
 
+			if(yrel > .5)yrel*=0.9;
+      if(yrel < -.5)yrel*=0.9;
+      ya = y + (selection - top_selection) * text_height - yrel;   // <- smoother
+      right = x + font.getStringWidth(items[selection].name);
+      Rectangle(x+2,ya+2,right-16,font.getHeight(),highlight);   // <- Highlight text
+
       // draw the menu items
       for (var i = 0; i < shown_items; i++) {
         if (i < items.length) {
           font.setColorMask(Black);
           font.drawText(x + 2,  y + i * text_height + 2, items[i + top_selection].name);
-          font.setColorMask(items[i + top_selection].color);
+          ((i + top_selection) == selection)?font.setColorMask(highlighttext):font.setColorMask(items[i + top_selection].color);
           font.drawText(x + 1,     y + i * text_height + 1,     items[i + top_selection].name);
         }
       }
 
       // draw the selection arrow
       //arrow.blit(x, y + (selection - top_selection) * text_height);
-        ya = y + (selection - top_selection) * text_height;
-        right = x + font.getStringWidth(items[selection].name);
         Line(x + 1,     ya + 1,                     right + 2, ya + 1,                    sel_color);
         Line(right + 2, ya + 1,                     right + 2, ya + font.getHeight() + 1, sel_color);
         Line(right + 2, ya + font.getHeight() + 1,  x + 1,     ya + font.getHeight() + 1, sel_color);
@@ -136,6 +145,7 @@ Menu.prototype.execute = function(x, y, w, h) {
           case KEY_DOWN: {
             if (selection < items.length - 1) {
               selection++;
+              yrel += font.getHeight(); // <-
               if (selection >= top_selection + shown_items) {
                 top_selection++;
               }
@@ -145,6 +155,7 @@ Menu.prototype.execute = function(x, y, w, h) {
 
           case KEY_UP: {
             if (selection > 0) {
+              yrel -=font.getHeight(); // <-
               selection--;
               if (selection < top_selection) {
                 top_selection--;
