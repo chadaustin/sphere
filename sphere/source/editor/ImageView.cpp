@@ -184,6 +184,7 @@ CImageView::GetColor() const
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// I don't think this method is ever called, ever?
 void
 CImageView::FillRGB()
 {
@@ -206,6 +207,7 @@ CImageView::FillRGB()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// I don't think this method is ever called, ever?
 void
 CImageView::FillAlpha()
 {
@@ -554,18 +556,64 @@ CImageView::InSelection(POINT p)
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-CImageView::GetSelectionArea(int& x, int& y, int& w, int& h) {
+CImageView::GetSelectionArea(int& sx, int& sy, int& sw, int& sh) {
   if (m_SelectionWidth <= 0 && m_SelectionHeight <= 0) {
-     x = 0;
-     y = 0;
-     w = m_Image.GetWidth();
-     h = m_Image.GetHeight();
+     sx = 0;
+     sy = 0;
+     sw = m_Image.GetWidth();
+     sh = m_Image.GetHeight();
   }
   else {
-    x = m_SelectionX;
-    y = m_SelectionY;
-    w = m_SelectionWidth;
-    h = m_SelectionHeight;
+    sx = m_SelectionX;
+    sy = m_SelectionY;
+    sw = m_SelectionWidth;
+    sh = m_SelectionHeight;
+  }
+}
+
+RGBA*
+CImageView::GetSelectionPixels() {
+  if (m_SelectionWidth <= 0 && m_SelectionHeight <= 0) {
+    return m_Image.GetPixels();
+  }
+  else {
+    int sx = m_SelectionX;
+    int sy = m_SelectionY;
+    int sw = m_SelectionWidth;
+    int sh = m_SelectionHeight;
+    int xoffset = sx;
+    int yoffset = sy;
+
+    RGBA* pixels = new RGBA[sw * sh];
+    if (pixels == NULL)
+      return m_Image.GetPixels();
+
+    RGBA* image = m_Image.GetPixels();
+    int iWidth = m_Image.GetWidth();
+
+    for (int dx = sx; dx < (sx + sw); dx++) {
+      for (int dy = sy; dy < (sy + sh); dy++) {
+        pixels[(dy - yoffset) * sw + (dx - xoffset)] = image[dy * iWidth + dx];
+      }
+    }
+
+    return pixels;
+  }
+}
+
+void
+CImageView::UpdateSelectionPixels(RGBA* pixels, int sx, int sy, int sw, int sh)
+{
+  RGBA* image = m_Image.GetPixels();
+  int iWidth = m_Image.GetWidth();
+
+  // if pixels point to image updating it wont do anything so don't bother
+  if (pixels != image) {
+    for (int dx = sx; dx < (sx + sw); dx++) {
+      for (int dy = sy; dy < (sy + sh); dy++) {
+        image[dy * iWidth + dx] = pixels[(dy - sy) * sw + (dx - sx)];
+      }
+    }
   }
 }
 
@@ -1400,8 +1448,15 @@ CImageView::OnBlendModeAlphaOnly()
 afx_msg void
 CImageView::OnRotateCW()
 {
+  int sx, sy, sw, sh;
+  GetSelectionArea(sx, sy, sw, sh);
+  if (sw != sh) // can only be used on sqaure selections/images
+    return;
+
   AddUndoState();
-  RotateCW(m_Image.GetWidth(), m_Image.GetPixels());
+  RGBA* pixels = GetSelectionPixels();
+  RotateCW(sw, pixels);
+  UpdateSelectionPixels(pixels, sx, sy, sw, sh);
 
   // things have changed
   Invalidate();
@@ -1413,8 +1468,15 @@ CImageView::OnRotateCW()
 afx_msg void
 CImageView::OnRotateCCW()
 {
+  int sx, sy, sw, sh;
+  GetSelectionArea(sx, sy, sw, sh);
+  if (sw != sh) // can only be used on sqaure selections/images
+    return;
+
   AddUndoState();
-  RotateCCW(m_Image.GetWidth(), m_Image.GetPixels());
+  RGBA* pixels = GetSelectionPixels();
+  RotateCCW(sw, pixels);
+  UpdateSelectionPixels(pixels, sx, sy, sw, sh);
 
   // things have changed
   Invalidate();
@@ -1499,8 +1561,16 @@ CImageView::OnSlideOther()
 afx_msg void
 CImageView::OnFlipHorizontally()
 {
+
   AddUndoState();
-  FlipHorizontally(m_Image.GetWidth(), m_Image.GetHeight(), m_Image.GetPixels());
+
+  int sx, sy, sw, sh;
+  GetSelectionArea(sx, sy, sw, sh);
+
+  RGBA* pixels = GetSelectionPixels();
+  FlipHorizontally(sw, sh, pixels);
+  UpdateSelectionPixels(pixels, sx, sy, sw, sh);
+  if (pixels != m_Image.GetPixels()) delete[] pixels;
 
   // things have changed
   Invalidate();
@@ -1513,7 +1583,14 @@ afx_msg void
 CImageView::OnFlipVertically()
 {
   AddUndoState();
-  FlipVertically(m_Image.GetWidth(), m_Image.GetHeight(), m_Image.GetPixels());
+
+  int sx, sy, sw, sh;
+  GetSelectionArea(sx, sy, sw, sh);
+
+  RGBA* pixels = GetSelectionPixels();
+  FlipVertically(sw, sh, pixels);
+  UpdateSelectionPixels(pixels, sx, sy, sw, sh);
+  if (pixels != m_Image.GetPixels()) delete[] pixels;
 
   // things have changed
   Invalidate();
@@ -1684,8 +1761,14 @@ afx_msg void
 CImageView::OnFilterBlur()
 {
   AddUndoState();
+  int sx, sy, sw, sh;
+  GetSelectionArea(sx, sy, sw, sh);
+  RGBA* pixels = GetSelectionPixels();
 
-  Blur(m_Image.GetWidth(), m_Image.GetHeight(), m_Image.GetPixels());
+  // technically this is wrong, since the wrap around stuff in blur doesn't know about the pixels outside the selection
+  Blur(sw, sh, pixels);
+  UpdateSelectionPixels(pixels, sx, sy, sw, sh);
+  if (pixels != m_Image.GetPixels()) delete[] pixels;
 
   Invalidate();
   m_Handler->IV_ImageChanged();
@@ -1698,7 +1781,13 @@ CImageView::OnFilterNoise()
 {
   AddUndoState();
 
-  Noise(m_Image.GetWidth(), m_Image.GetHeight(), m_Image.GetPixels());
+  int sx, sy, sw, sh;
+  GetSelectionArea(sx, sy, sw, sh);
+  RGBA* pixels = GetSelectionPixels();
+
+  Noise(sw, sh, pixels);
+  UpdateSelectionPixels(pixels, sx, sy, sw, sh);
+  if (pixels != m_Image.GetPixels()) delete[] pixels;
 
   Invalidate();
   m_Handler->IV_ImageChanged();
@@ -1712,7 +1801,13 @@ CImageView::OnFilterNegativeImage(bool red, bool green, bool blue, bool alpha)
 {
   AddUndoState();
 
-  NegativeImage(m_Image.GetWidth(), m_Image.GetHeight(), red, green, blue, alpha, m_Image.GetPixels());
+  int sx, sy, sw, sh;
+  GetSelectionArea(sx, sy, sw, sh);
+  RGBA* pixels = GetSelectionPixels();
+
+  NegativeImage(sw, sh, red, green, blue, alpha, pixels);
+  UpdateSelectionPixels(pixels, sx, sy, sw, sh);
+  if (pixels != m_Image.GetPixels()) delete[] pixels;
 
   Invalidate();
   m_Handler->IV_ImageChanged();
@@ -1753,7 +1848,13 @@ CImageView::OnFilterSolarize()
     int value = dialog.GetValue();
     AddUndoState();
 
-    Solarize(m_Image.GetWidth(), m_Image.GetHeight(), value, m_Image.GetPixels());
+    int sx, sy, sw, sh;
+    GetSelectionArea(sx, sy, sw, sh);
+    RGBA* pixels = GetSelectionPixels();
+
+    Solarize(sw, sh, value, pixels);
+    UpdateSelectionPixels(pixels, sx, sy, sw, sh);
+    if (pixels != m_Image.GetPixels()) delete[] pixels;
 
     Invalidate();
     m_Handler->IV_ImageChanged();
@@ -1772,7 +1873,14 @@ CImageView::OnFilterAdjustBrightness()
     if (value != 0) {
       AddUndoState();
 
-      AdjustBrightness(m_Image.GetWidth(), m_Image.GetHeight(), m_Image.GetPixels(), value, value, value);
+
+      int sx, sy, sw, sh;
+      GetSelectionArea(sx, sy, sw, sh);
+      RGBA* pixels = GetSelectionPixels();
+
+      AdjustBrightness(sw, sh, pixels, value, value, value);
+      UpdateSelectionPixels(pixels, sx, sy, sw, sh);
+      if (pixels != m_Image.GetPixels()) delete[] pixels;
 
       Invalidate();
       m_Handler->IV_ImageChanged();
@@ -1810,7 +1918,7 @@ CImageView::OnScaleAlpha()
   for (int dx = sx; dx < (sx + sw); dx++) {
     for (int dy = sy; dy < (sy + sh); dy++) {
       pixels[dy * width + dx].alpha = (int) pixels[dy * width + dx].alpha * m_Color.alpha / 255;
-    }  
+    }
   }
 
   Invalidate();

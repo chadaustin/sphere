@@ -56,7 +56,9 @@ public:
   bool CanUndo() const;
   void Undo();
 
-  void GetSelection(int& x, int& y, int& w, int& h);
+  void GetSelection(int& sx, int& sy, int& sw, int& sh);
+  RGBA* GetSelectionPixels();
+  void UpdateSelectionPixels(RGBA* pixels, int sx, int sy, int sw, int sh);
 
 private:
   enum Tool { Tool_Pencil, Tool_Line, Tool_Rectangle, Tool_Circle, Tool_Ellipse, Tool_Fill, Tool_Selection };
