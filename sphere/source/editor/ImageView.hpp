@@ -63,7 +63,7 @@ private:
   POINT ConvertToPixel(POINT point);
   bool InImage(POINT p);
   bool InSelection(POINT p);
-  void GetSelectionRectangle(int& x, int& y, int& w, int& h);
+  void GetSelectionArea(int& x, int& y, int& w, int& h);
 
   void Click(bool force_draw);
   void Fill();

@@ -494,20 +494,19 @@ CImageView::InSelection(POINT p)
 {
   if (m_SelectionWidth <= 0 && m_SelectionHeight <= 0)
     return InImage(p);
-  else {
-    if (p.x >= m_SelectionX && p.x < m_SelectionX + m_SelectionWidth &&
-        p.y >= m_SelectionY && p.y < m_SelectionY + m_SelectionHeight) {
-      return InImage(p);
-    }
-    else
-      return false;
+  else
+  if (p.x >= m_SelectionX && p.x < m_SelectionX + m_SelectionWidth &&
+      p.y >= m_SelectionY && p.y < m_SelectionY + m_SelectionHeight) {
+    return InImage(p);
   }
+
+  return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-CImageView::GetSelectionRectangle(int& x, int& y, int& w, int& h) {
+CImageView::GetSelectionArea(int& x, int& y, int& w, int& h) {
   if (m_SelectionWidth <= 0 && m_SelectionHeight <= 0) {
      x = 0;
      y = 0;
@@ -516,7 +515,7 @@ CImageView::GetSelectionRectangle(int& x, int& y, int& w, int& h) {
   }
   else {
     x = m_SelectionX;
-    y = m_SelectionX;
+    y = m_SelectionY;
     w = m_SelectionWidth;
     h = m_SelectionHeight;
   }
@@ -1414,11 +1413,18 @@ CImageView::OnFillRGB()
 {
   AddUndoState();
 
+  int sx, sy, sw, sh;
+  int width = m_Image.GetWidth();
   RGBA* pImage = m_Image.GetPixels();
-  for (int i = 0; i < m_Image.GetWidth() * m_Image.GetHeight(); i++) {
-    pImage[i].red   = m_Color.red;
-    pImage[i].green = m_Color.green;
-    pImage[i].blue  = m_Color.blue;
+
+  GetSelectionArea(sx, sy, sw, sh);
+
+  for (int dx = sx; dx < (sx + sw); dx++) {
+    for (int dy = sy; dy < sy + sh; dy++) {
+      pImage[dy * width + dx].red   = m_Color.red;
+      pImage[dy * width + dx].green = m_Color.green;
+      pImage[dy * width + dx].blue  = m_Color.blue;
+    } 
   }
 
   Invalidate();
@@ -1431,10 +1437,16 @@ afx_msg void
 CImageView::OnFillAlpha()
 {
   AddUndoState();
-
+  int sx, sy, sw, sh;
+  int width = m_Image.GetWidth();
   RGBA* pImage = m_Image.GetPixels();
-  for (int i = 0; i < m_Image.GetWidth() * m_Image.GetHeight(); i++) {
-    pImage[i].alpha = m_Color.alpha;
+
+  GetSelectionArea(sx, sy, sw, sh);
+
+  for (int dx = sx; dx < (sx + sw); dx++) {
+    for (int dy = sy; dy < sy + sh; dy++) {
+      pImage[dy * width + dx].alpha = m_Color.alpha;
+    } 
   }
 
   Invalidate();
@@ -1448,9 +1460,16 @@ CImageView::OnFillBoth()
 {
   AddUndoState();
 
+  int sx, sy, sw, sh;
+  int width = m_Image.GetWidth();
   RGBA* pImage = m_Image.GetPixels();
-  for (int i = 0; i < m_Image.GetWidth() * m_Image.GetHeight(); i++) {
-    pImage[i] = m_Color;
+
+  GetSelectionArea(sx, sy, sw, sh);
+
+  for (int dx = sx; dx < (sx + sw); dx++) {
+    for (int dy = sy; dy < sy + sh; dy++) {
+      pImage[dy * width + dx] = m_Color;
+    } 
   }
 
   Invalidate();
