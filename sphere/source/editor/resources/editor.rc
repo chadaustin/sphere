@@ -424,9 +424,77 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "&Edit Range"
         BEGIN
-            MENUITEM "&Replace Color With Color...", 
-                                                    ID_SPRITESETVIEWFRAMES_REPLACE_COLOR_WITH_COLOR
+            POPUP "Rotate", GRAYED
+            BEGIN
+                MENUITEM "&Clockwise",                  ID_SPRITESETVIEWFRAMES_ER_ROTATE_CW
 
+                MENUITEM "C&ounterclockwise",           ID_SPRITESETVIEWFRAMES_ER_ROTATE_CCW
+
+            END
+            POPUP "&Slide"
+            BEGIN
+                MENUITEM "&Up",                         ID_SPRITESETVIEWFRAMES_ER_SLIDE_UP
+                , GRAYED
+                MENUITEM "&Right",                      ID_SPRITESETVIEWFRAMES_ER_SLIDE_RIGHT
+                , GRAYED
+                MENUITEM "&Down",                       ID_SPRITESETVIEWFRAMES_ER_SLIDE_DOWN
+                , GRAYED
+                MENUITEM "&Left",                       ID_SPRITESETVIEWFRAMES_ER_SLIDE_LEFT
+                , GRAYED
+                MENUITEM "&Other...",                   ID_SPRITESETVIEWFRAMES_ER_SLIDE_OTHER
+
+            END
+            POPUP "&Flip"
+            BEGIN
+                MENUITEM "&Horizontally",               ID_SPRITESETVIEWFRAMES_ER_FLIP_HORIZONTALLY
+
+                MENUITEM "&Vertically",                 ID_SPRITESETVIEWFRAMES_ER_FLIP_VERTICALLY
+
+            END
+            POPUP "F&ill", GRAYED
+            BEGIN
+                MENUITEM "&RGB",                        ID_SPRITESETVIEWFRAMES_ER_FILL_RGB
+
+                MENUITEM "&Alpha",                      ID_SPRITESETVIEWFRAMES_ER_FILL_ALPHA
+
+                MENUITEM "&Both",                       ID_SPRITESETVIEWFRAMES_ER_FILL_BOTH
+
+            END
+            POPUP "Fil&ter", GRAYED
+            BEGIN
+                POPUP "Negative Image"
+                BEGIN
+                    MENUITEM "&RGB",                        ID_SPRITESETVIEWFRAMES_ER_FLT_NEGATIVE_IMAGE_RGB
+
+                    MENUITEM "&Alpha",                      ID_SPRITESETVIEWFRAMES_ER_FLT_NEGATIVE_IMAGE_ALPHA
+
+                    MENUITEM "&Both",                       ID_SPRITESETVIEWFRAMES_ER_FLT_NEGATIVE_IMAGE_RGBA
+
+                END
+                MENUITEM "&Blur",                       ID_SPRITESETVIEWFRAMES_ER_FLT_BLUR
+
+                MENUITEM "&Noise",                      ID_SPRITESETVIEWFRAMES_ER_FLT_NOISE
+
+                MENUITEM "&Solarize",                   ID_SPRITESETVIEWFRAMES_ER_FLT_SOLARIZE
+
+                MENUITEM "&Adjust Brightness",          ID_SPRITESETVIEWFRAMES_ER_FLT_ADJUST_BRIGHTNESS
+
+                MENUITEM "Adjust &Gamma",               ID_IMAGEVIEW_FILTER_ADJUST_GAMMA
+
+            END
+            POPUP "&Replace"
+            BEGIN
+                MENUITEM "&RGBA",                       ID_SPRITESETVIEWFRAMES_ER_REPLACE_RGBA
+
+                MENUITEM "R&GB",                        ID_SPRITESETVIEWFRAMES_ER_REPLACE_RGB
+                , GRAYED
+                MENUITEM "&Alpha",                      ID_SPRITESETVIEWFRAMES_ER_REPLACE_ALPHA
+                , GRAYED
+            END
+            MENUITEM "Set Color &Alpha",            ID_SPRITESETVIEWFRAMES_ER_SETCOLORALPHA
+            , GRAYED
+            MENUITEM "Scal&e Alpha",                ID_SPRITESETVIEWFRAMES_ER_SCALEALPHA
+            , GRAYED
         END
         MENUITEM "Pr&operties...",              ID_SPRITESETVIEWFRAMES_PROPERTIES
 

@@ -64,9 +64,18 @@ private:
   afx_msg void OnPasteFrame();
   afx_msg void OnFrameProperties();
 
-  afx_msg void OnReplaceColorWithColor();
   afx_msg void OnInsertDirectionFromImage();
   afx_msg void OnExportDirectionAsImage();
+
+  // edit range
+  int GetEditRangeStartIndex();
+  int GetEditRangeEndIndex(int start_frame);
+  std::vector<int> GetEditRangeIndexes(bool allow_duplicates);
+
+  afx_msg void OnEditRangeSlideOther();
+  afx_msg void OnEditRangeFlipHorizontally();
+  afx_msg void OnEditRangeFlipVertically();
+  afx_msg void OnEditRangeReplaceRGBA();
 
 private:
   ISpritesetViewHandler* m_Handler;
