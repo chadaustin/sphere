@@ -1279,8 +1279,9 @@ afx_msg void
 CMainWindow::OnFileOpenTileset()
 {
   CTilesetFileDialog Dialog(FDM_OPEN);
-  // set current directory on Win98/2000
+
   Dialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
+  SetCurrentDirectory(m_DefaultFolder.c_str());
 
   if (Dialog.DoModal() == IDOK)
   {
@@ -1313,10 +1314,15 @@ CMainWindow::OnFileImportImageToMap()
 {
   // get name of image
   CImageFileDialog FileDialog(FDM_OPEN);
+  
+  FileDialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
+  SetCurrentDirectory(m_DefaultFolder.c_str());
+
   if (FileDialog.DoModal() != IDOK)
     return;
 
   CString filename = FileDialog.GetPathName();
+  m_DefaultFolder = GetFolderFromPathName(filename);
 
   CResizeDialog resize_dialog("Tile Dimensions", 16, 16);
   if (resize_dialog.DoModal() != IDOK)
@@ -1368,12 +1374,24 @@ afx_msg void
 CMainWindow::OnFileImportBitmapToRWS()
 {
   CImageFileDialog InFileDialog(FDM_OPEN);
+  
+  InFileDialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
+  SetCurrentDirectory(m_DefaultFolder.c_str());
+
   if (InFileDialog.DoModal() == IDCANCEL)
     return;
 
+  m_DefaultFolder = GetFolderFromPathName(InFileDialog.GetPathName());
+
   CWindowStyleFileDialog OutFileDialog(FDM_SAVE);
+
+  OutFileDialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
+  SetCurrentDirectory(m_DefaultFolder.c_str());
+
   if (OutFileDialog.DoModal() == IDCANCEL)
     return;
+
+  // m_DefaultFolder = GetFolderFromPathName(OutFileDialog.GetPathName());
 
   sWindowStyle ws;
   if (ws.Import(InFileDialog.GetPathName(), CreateRGBA(255, 0, 255, 255)) == false)
@@ -1397,8 +1415,14 @@ afx_msg void
 CMainWindow::OnFileImportBitmapToRSS()
 {
   CImageFileDialog InFileDialog(FDM_OPEN);
+
+  InFileDialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
+  SetCurrentDirectory(m_DefaultFolder.c_str());
+
   if (InFileDialog.DoModal() != IDOK)
     return;
+
+  m_DefaultFolder = GetFolderFromPathName(InFileDialog.GetPathName());
 
   CSpritesetFileDialog OutFileDialog(FDM_SAVE);
   if (OutFileDialog.DoModal() != IDOK)
@@ -1446,6 +1470,10 @@ afx_msg void
 CMainWindow::OnFileImportRM2KCharsetToRSS()
 {
   CImageFileDialog InFileDialog(FDM_OPEN | FDM_MULTISELECT);
+
+  InFileDialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
+  SetCurrentDirectory(m_DefaultFolder.c_str());
+
   if (InFileDialog.DoModal() != IDOK)
     return;
 
@@ -1459,6 +1487,8 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
   while (pos != NULL)
   {
     CString path_name = InFileDialog.GetNextPathName(pos);
+    m_DefaultFolder = GetFolderFromPathName(path_name);
+
     std::string title_name = path_name;
     GetFilePathWithoutExtension(title_name);
 
@@ -1576,6 +1606,10 @@ afx_msg void
 CMainWindow::OnFileImportRM2KChipsetToRTS()
 {
   CImageFileDialog InFileDialog(FDM_OPEN | FDM_MULTISELECT);
+
+  InFileDialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
+  SetCurrentDirectory(m_DefaultFolder.c_str());
+
   if (InFileDialog.DoModal() != IDOK)
     return;
 
@@ -1590,6 +1624,8 @@ CMainWindow::OnFileImportRM2KChipsetToRTS()
   while (pos != NULL)
   {
     CString path_name = InFileDialog.GetNextPathName(pos);
+    m_DefaultFolder = GetFolderFromPathName(path_name);
+
     std::string title_name = path_name;
     GetFilePathWithoutExtension(title_name);
 
@@ -1707,8 +1743,14 @@ afx_msg void
 CMainWindow::OnFileImportBitmapToRTS()
 {
   CImageFileDialog InFileDialog(FDM_OPEN);
+
+  InFileDialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
+  SetCurrentDirectory(m_DefaultFolder.c_str());
+
   if (InFileDialog.DoModal() != IDOK)
     return;
+
+  m_DefaultFolder = GetFolderFromPathName(InFileDialog.GetPathName());
 
   CTilesetFileDialog OutFileDialog(FDM_SAVE);
   if (OutFileDialog.DoModal() != IDOK)
@@ -1752,8 +1794,14 @@ afx_msg void
 CMainWindow::OnFileImportImageToFont()
 {
   CImageFileDialog InFileDialog(FDM_OPEN);
+  
+  InFileDialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
+  SetCurrentDirectory(m_DefaultFolder.c_str());
+
   if (InFileDialog.DoModal() != IDOK)
     return;
+
+  m_DefaultFolder = GetFolderFromPathName(InFileDialog.GetPathName());
 
   CFontFileDialog OutFileDialog(FDM_SAVE);
   if (OutFileDialog.DoModal() != IDOK)
@@ -1865,9 +1913,15 @@ afx_msg void
 CMainWindow::OnFileImportVergeFontTemplate()
 {
   CImageFileDialog image_dialog(FDM_OPEN);
+
+  image_dialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
+  SetCurrentDirectory(m_DefaultFolder.c_str());
+
   if (image_dialog.DoModal() != IDOK) {
     return;
   }
+
+  m_DefaultFolder = GetFolderFromPathName(image_dialog.GetPathName());
 
   CFontFileDialog font_dialog(FDM_SAVE);
   if (font_dialog.DoModal() != IDOK) {
@@ -1909,6 +1963,11 @@ CMainWindow::OnFileImportVergeMap()
   CMapFileDialog map_dialog(FDM_SAVE);
 
   #undef all_files
+
+  verge_map_dialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
+  verge_tileset_dialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
+  map_dialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
+  SetCurrentDirectory(m_DefaultFolder.c_str());
 
   // load VERGE map
   if (verge_map_dialog.DoModal() != IDOK) {
@@ -1952,6 +2011,11 @@ CMainWindow::OnFileImportVergeSpriteset()
     "VERGE Palette Files (*.pal)|*.pal|All Files (*.*)|*.*||", this);
   CSpritesetFileDialog spriteset_dialog(FDM_SAVE);
 
+  verge_spriteset_dialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
+  verge_palette_dialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
+  spriteset_dialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
+  SetCurrentDirectory(m_DefaultFolder.c_str());
+
   // load VERGE spriteset
   if (verge_spriteset_dialog.DoModal() != IDOK) {
     return;
@@ -1990,6 +2054,11 @@ CMainWindow::OnFileImportMergeRGBA()
   CImageFileDialog rgb_dialog  (FDM_OPEN, "Select RGB Image");
   CImageFileDialog alpha_dialog(FDM_OPEN, "Select Alpha Image");
   CImageFileDialog out_dialog  (FDM_SAVE, "Select Output Image");
+
+  SetCurrentDirectory(m_DefaultFolder.c_str());
+  rgb_dialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
+  alpha_dialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
+  out_dialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
 
   if (rgb_dialog.DoModal()   != IDOK ||
       alpha_dialog.DoModal() != IDOK ||
@@ -2125,9 +2194,15 @@ CMainWindow::OnFileImportWindowsFont()
 
   // save the Sphere font
   CFontFileDialog file_dialog(FDM_SAVE, "Select Output Font");
+
+  file_dialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
+  SetCurrentDirectory(m_DefaultFolder.c_str());
+
   if (file_dialog.DoModal() != IDOK) {
     return;
   }
+
+  m_DefaultFolder = GetFolderFromPathName(file_dialog.GetPathName());
 
   if (!sphere_font.Save(file_dialog.GetPathName())) {
     MessageBox("Could not save font");
