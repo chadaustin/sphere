@@ -103,7 +103,8 @@ CProjectWindow::Create()
   ImageList_AddIcon(image_list, AfxGetApp()->LoadIcon(IDI_WINDOWSTYLE));
   ImageList_AddIcon(image_list, AfxGetApp()->LoadIcon(IDI_IMAGE));
   ImageList_AddIcon(image_list, AfxGetApp()->LoadIcon(IDI_ANIMATION));
-
+  ImageList_AddIcon(image_list, AfxGetApp()->LoadIcon(IDI_TILESET));
+  
   m_TreeControl.SetImageList(CImageList::FromHandle(image_list), TVSIL_NORMAL);
 
   // make sure they are in the right place

@@ -728,6 +728,7 @@
 #define ID_HELP_SPHERICALSITE           40837
 #define ID_SCRIPT_TOOLS_TO_LOWER_CASE   40839
 #define ID_SCRIPT_TOOLS_TO_UPPER_CASE   40840
+#define ID_SCRIPT_TOOLS_FIXINDENTATION  40841
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -736,7 +737,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        282
-#define _APS_NEXT_COMMAND_VALUE         40841
+#define _APS_NEXT_COMMAND_VALUE         40842
 #define _APS_NEXT_CONTROL_VALUE         1244
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

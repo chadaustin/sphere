@@ -358,6 +358,8 @@ BEGIN
 
             END
             MENUITEM "&Sort...",                    ID_SCRIPT_TOOLS_SORT
+            MENUITEM "Fix &Indentation...",         ID_SCRIPT_TOOLS_FIXINDENTATION
+
         END
     END
 END

@@ -429,6 +429,8 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_HIGHLIGHT_CURRENT_LINE, OnUpdateOptionsHighlightCurrentLine)
 
   ON_COMMAND(ID_SCRIPT_TOOLS_SORT, OnScriptLineSorter)
+  ON_COMMAND(ID_SCRIPT_TOOLS_FIXINDENTATION, OnScriptFixIndentation)
+  ON_UPDATE_COMMAND_UI(ID_SCRIPT_TOOLS_FIXINDENTATION, OnUpdateScriptFixIndentation)
 
   ON_COMMAND(ID_SCRIPT_TOOLS_TO_LOWER_CASE, OnScriptToLowerCase)
   ON_COMMAND(ID_SCRIPT_TOOLS_TO_UPPER_CASE, OnScriptToUpperCase)
@@ -798,6 +800,19 @@ CScriptWindow::IsSyntaxHighlightable()
        || type == SCRIPT_TYPE_CPP
        || type == SCRIPT_TYPE_JAVA
        || type == SCRIPT_TYPE_PY
+       || type == SCRIPT_TYPE_PERL);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CScriptWindow::IsIndentationFixable()
+{
+  CScriptWindow::ScriptType type = GetScriptType();
+  return (type == SCRIPT_TYPE_JS
+       || type == SCRIPT_TYPE_UNDETERMINABLE
+       || type == SCRIPT_TYPE_CPP
+       || type == SCRIPT_TYPE_JAVA
        || type == SCRIPT_TYPE_PERL);
 }
 
@@ -2352,6 +2367,338 @@ CScriptWindow::OnScriptLineSorter()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+CScriptWindow::__WriteCharacter__(char* buffer, const int buffer_size, int& output_buffer_length, char ch)
+{
+  if (buffer == NULL) {
+    //printf ("%c", ch);
+    output_buffer_length += 1;
+  } else {
+    if (output_buffer_length < buffer_size) {
+      buffer[output_buffer_length] = ch;
+      output_buffer_length += 1;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CScriptWindow::__WriteNewline__(char* buffer, const int buffer_size, int& output_buffer_length)
+{
+  if (buffer == NULL) {
+    //printf ("\n");
+    output_buffer_length += 1;
+  } else {
+    if (output_buffer_length < buffer_size) {
+      buffer[output_buffer_length] = '\n';
+      output_buffer_length += 1;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CScriptWindow::__IsEndOfLine__(int c, int n)
+{
+  int end_of_line = 0;
+
+  // \r\n\r\r\n\n\n
+  //    ^ ^   ^ ^ ^ <-- shows where IsEndOfLine returns true
+
+  if (c == '\r' || c == '\n') {
+    if (c == '\r' && n == '\n') {
+ 
+    } else {
+      end_of_line = 1;
+    }
+  }
+
+  return end_of_line;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CScriptWindow::__SkipWhitespace__(int& l, int& c, int& n,  int& end_of_line, int cur_pos, int end_pos)
+{
+  int skipped = 0;
+
+  while ((n == '\t' || n == ' ' || n == '\r' || n == '\n') && (cur_pos + 1 < end_pos)) {
+    l = c;
+    c = n;
+    n = SendEditor(SCI_GETCHARAT, cur_pos + skipped + 1);
+    if (__IsEndOfLine__(c, n)) {
+      end_of_line = 1;   
+    }
+    skipped += 1;
+  }
+
+  return skipped;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnScriptFixIndentation()
+{
+  const int selection_start = SendEditor(SCI_GETSELECTIONSTART);
+  const int selection_end = SendEditor(SCI_GETSELECTIONEND);
+
+  const int start_line = SendEditor(SCI_LINEFROMPOSITION, selection_start);
+  const int end_line   = SendEditor(SCI_LINEFROMPOSITION, selection_end);
+
+  if (start_line - end_line == 0) {
+    GetStatusBar()->SetWindowText("No lines selected...");
+    return;
+  }
+
+  const int start_pos = SendEditor(SCI_POSITIONFROMLINE, start_line);
+  const int end_pos   = SendEditor(SCI_POSITIONFROMLINE, end_line + 1);
+
+  int buffer_size = 0;
+  int output_buffer_length = 0;
+  int state = 0;
+
+  char* buffer = NULL;
+
+  if (0) {
+    printf ("selection_start = %d, selection_end = %d\n", selection_start, selection_end);
+    printf ("start_line = %d, end_line = %d\n", start_line, end_line);
+    printf ("start_pos = %d, end_pos = %d\n", start_pos, end_pos);
+  }
+
+  int num_open_brackets = 0;
+  int num_close_brackets = 0;
+  int indent = 0;
+
+  for (state = 0; state < 2; state++)
+  {
+    int c = '\0';
+    int l = '\0';
+    int n = SendEditor(SCI_GETCHARAT, start_pos);
+
+    int in_comment_line = 0;
+    int in_comment_block = 0;
+
+    int line_length = 0;
+
+    num_open_brackets = 0;
+    num_close_brackets = 0;
+    indent = 0;
+
+    if (state == 1) {
+      if ( !(output_buffer_length > 0)) {
+        return;
+      }
+
+      buffer = new char[output_buffer_length + 1];
+      if (!buffer) {
+        return;
+      }
+
+      memset(buffer, ' ', output_buffer_length);
+      buffer_size = output_buffer_length;
+      output_buffer_length = 0;
+    }
+
+
+    for (int i = start_pos; i < end_pos; i++) {
+      l = c;
+      c = n;
+
+      if (i + 1 < end_pos) {
+        n = SendEditor(SCI_GETCHARAT, i + 1);
+      } else {
+        n = '\0';
+      }
+
+      int end_of_line = 0;
+
+      /////////////////////////////////////////////////////
+
+      if (__IsEndOfLine__(c, n)) {
+        end_of_line = 1;
+        in_comment_line = 0;
+      } else {
+        line_length += 1;
+      }
+
+      if (!in_comment_block) {
+        if (l == '/' && c == '*') {
+          in_comment_block = 1;
+        }
+        else
+        if (!in_comment_line) {
+          if (l == '/' && c == '/') {
+            in_comment_line = 1;
+          }
+        }
+      } else {
+        if (l == '*' && c == '/') {
+          in_comment_block = 0;
+        }
+      }
+
+      /////////////////////////////////////////////////////
+
+      if (in_comment_block || in_comment_line) {
+        __WriteCharacter__(buffer, buffer_size, output_buffer_length, c);
+      } else {
+
+        /////////////////////////////////////////////////////
+
+        if (c == '{')
+        {
+          num_open_brackets += 1;
+
+          if (buffer == NULL) {
+            int line = SendEditor(SCI_LINEFROMPOSITION, i);
+            int pos  = i - SendEditor(SCI_POSITIONFROMLINE, line);
+            //printf ("Line %3d, pos %3d, %3d, [%c]... { found. open = %3d close = %3d indent = %3d\n", (line + 1), pos, i, l, num_open_brackets, num_close_brackets, indent);
+          }
+
+          int skipped = __SkipWhitespace__(l, c, n, end_of_line, i, end_pos);
+          if (skipped > 1) {
+            i += skipped - 1;
+            //printf ("Skipped %d characters...\n", skipped - 1);
+          }
+
+          if (line_length > 1) {
+            __WriteNewline__(buffer, buffer_size, output_buffer_length); line_length = 0;
+
+            for (int j = 0; j < (indent * 2); j++) {
+              __WriteCharacter__(buffer, buffer_size, output_buffer_length, ' ');
+            }
+          }
+
+          __WriteCharacter__(buffer, buffer_size, output_buffer_length, '{');
+          __WriteNewline__(buffer, buffer_size, output_buffer_length); line_length = 0;
+        
+          int indent_level = indent;
+          if (n != '}') { indent_level += 1; }
+
+          for (int j = 0; j < (indent_level * 2); j++) {
+            __WriteCharacter__(buffer, buffer_size, output_buffer_length, ' ');
+          }
+
+          indent += 1;
+        }
+        else
+        if (c == '}')
+        {
+          num_close_brackets += 1;
+
+          if (buffer == NULL) {
+            int line = SendEditor(SCI_LINEFROMPOSITION, i);
+            int pos  = i - SendEditor(SCI_POSITIONFROMLINE, line);
+
+            if (indent == 0) {           
+              char message[1024] = {0};
+              sprintf (message, "Line %d, pos %d unexpected } found.", line, pos);
+              //printf ("Line %3d, pos %3d, %3d... } found. open = %3d close = %3d indent = %3d\n", (line + 1), pos, i, num_open_brackets, num_close_brackets, indent);
+              GetStatusBar()->SetWindowText(message);
+              return;
+            }
+          }
+
+          int skipped = __SkipWhitespace__(l, c, n, end_of_line, i, end_pos);
+          if (skipped > 1) {
+            i += skipped - 1;
+            //printf ("Skipped %d characters...\n", skipped - 1);
+          }
+
+          if (end_of_line) {
+            in_comment_line = 0;
+          } 
+
+          if (indent > 0) {
+            indent -= 1;
+
+            if (line_length > 1) {
+              __WriteNewline__(buffer, buffer_size, output_buffer_length); line_length = 0;
+
+              for (int j = 0; j < (indent * 2); j++) {
+                __WriteCharacter__(buffer, buffer_size, output_buffer_length, ' ');
+              }
+            }
+
+            __WriteCharacter__(buffer, buffer_size, output_buffer_length, '}');
+            __WriteNewline__(buffer, buffer_size, output_buffer_length); line_length = 0;
+
+            if (indent == 0) {
+              __WriteNewline__(buffer, buffer_size, output_buffer_length); line_length = 0;
+            }
+          }
+          else {
+            __WriteCharacter__(buffer, buffer_size, output_buffer_length, '}');
+          }
+
+          if (indent > 0) {
+            int indent_level = indent;
+            if (n == '}') { indent_level -= 1; }
+
+            for (int j = 0; j < (indent_level * 2); j++) {
+              __WriteCharacter__(buffer, buffer_size, output_buffer_length, ' ');
+            }
+          }
+        }
+        else
+        {
+          __WriteCharacter__(buffer, buffer_size, output_buffer_length, c);
+
+          if (end_of_line) {
+            int skipped = __SkipWhitespace__(l, c, n, end_of_line, i, end_pos);
+            if (skipped > 1) {
+              i += skipped - 1;
+            }
+ 
+            if (indent > 0) {
+              int indent_level = indent;
+              if (n == '}') {
+                indent_level -= 1;
+              }
+
+              for (int j = 0; j < (indent_level * 2); j++) {
+                __WriteCharacter__(buffer, buffer_size, output_buffer_length, ' ');
+              }
+            }
+ 
+            line_length = 0;
+          }
+        }
+
+        /////////////////////////////////////////////////////
+      }
+    }
+  }
+
+  if (1) {
+    SendEditor(SCI_SETTARGETSTART, start_pos);
+    SendEditor(SCI_SETTARGETEND, end_pos);
+    SendEditor(SCI_REPLACETARGET, output_buffer_length, (LPARAM)buffer);
+
+    SendEditor(SCI_SETSELECTIONSTART, start_pos);
+    SendEditor(SCI_SETSELECTIONEND, start_pos + output_buffer_length);
+
+    if (0) {
+      printf ("start_pos = %d, end_pos = %d, output_length = %d\n", start_pos, start_pos + output_buffer_length, output_buffer_length);
+      printf ("num_open_brackets = %d, num_close_brackets = %d, indent = %d\n\n", num_open_brackets, num_close_brackets, indent);
+      printf ("/////////////////////////////////////////////////////\n\n");
+    }
+  }
+
+  if (buffer != NULL) {
+    delete[] buffer;
+    buffer = NULL;
+  }
+
+  //printf ("indent: %d\n", indent);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CScriptWindow::OnOptionsToggleColors()
 {
@@ -2633,6 +2980,16 @@ CScriptWindow::OnUpdateOptionsToggleColors(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_SyntaxHighlighted ? TRUE : FALSE);
   if ( !IsSyntaxHighlightable() ) {
+    cmdui->Enable(FALSE);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnUpdateScriptFixIndentation(CCmdUI* cmdui)
+{
+  if ( !IsIndentationFixable() ) {
     cmdui->Enable(FALSE);
   }
 }

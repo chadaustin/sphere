@@ -32,6 +32,7 @@ const char* __getfiletype__(const char* ext)
 }
 
 static
+void
 __get_sphere_command__(const char* ext, char* command)
 {
   char sphere_editor[MAX_PATH];
@@ -43,6 +44,43 @@ __get_sphere_command__(const char* ext, char* command)
   }
   else {
     sprintf (command, "\"%s\" \"%%1\"", sphere_editor);
+  }
+}
+
+static
+void
+__get_sphere_icon__(const char* ext, char* icon)
+{
+  char sphere_editor[MAX_PATH];
+  GetModuleFileName(AfxGetApp()->m_hInstance, sphere_editor, MAX_PATH);
+  std::string sphere_engine = GetSphereDirectory() + "\\engine.exe";
+
+  if (strcmp(ext, "sgm") == 0) {
+    sprintf (icon, "%s,1", sphere_editor);
+  }
+  if (strcmp(ext, "png") == 0) {
+    sprintf (icon, "%s,7", sphere_editor);
+  }
+  if (strcmp(ext, "rts") == 0) {
+    sprintf (icon, "%s,4", sphere_editor);
+  }
+  if (strcmp(ext, "spk") == 0) {
+    sprintf (icon, "%s,8", sphere_editor);
+  }
+  if (strcmp(ext, "rmp") == 0) {
+    sprintf (icon, "%s,3", sphere_editor);
+  }
+  if (strcmp(ext, "rss") == 0) {
+    sprintf (icon, "%s,5", sphere_editor);
+  }
+  if (strcmp(ext, "js") == 0) {
+    sprintf (icon, "%s,6", sphere_editor);
+  }
+  if (strcmp(ext, "rws") == 0) {
+    sprintf (icon, "%s,12", sphere_editor);
+  }
+  if (strcmp(ext, "rfn") == 0) {
+    sprintf (icon, "%s,13", sphere_editor);
   }
 }
 
@@ -92,6 +130,9 @@ void RegisterFile(const char* ext)
 
   const char* filetype = __getfiletype__(ext);
 
+  char icon[MAX_PATH + 1024] = {0};
+  __get_sphere_icon__(ext, icon);
+
   if (1)
   {
     HKEY key;
@@ -106,7 +147,12 @@ void RegisterFile(const char* ext)
 
     // register the type
     if (RegCreateKey(HKEY_CLASSES_ROOT, filetype, &key) == 0) {
+      // register the default command
       RegSetValue(key, "shell\\open\\command", REG_SZ, command, strlen(command));
+
+      // register the default icon
+      RegSetValue(key, "DefaultIcon", REG_SZ, icon, strlen(icon));
+
       RegCloseKey(key);
     }
   }

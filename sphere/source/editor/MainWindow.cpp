@@ -1677,26 +1677,26 @@ CMainWindow::OnFileImportImageToMap()
   sMap map;
   if (map.BuildFromImage(image, resize_dialog.GetWidth(), resize_dialog.GetHeight(), allow_duplicates) == false)
   {
-    MessageBox("Error: Could not build map from image");
+    MessageBox("Error: Could not build map from image '" + FileDialog.GetFileName() + "'");
     return;
   }
 
-  char* fn = new char[strlen(filename) + 10];
-  if (fn == NULL)
-    return;
+  char fn[MAX_PATH + 1024] = {0};
 
   strcpy(fn, filename);
-
   strcpy(strrchr(fn, '.'), ".rmp");
+
   bool saved = map.Save(fn);
 
-  delete[] fn;
-
   if (saved) {
-    MessageBox("Conversion successful");
+    char message[MAX_PATH + 2048] = {0};
+    sprintf (message, "Conversion successful\nMap saved as '%s'", fn);
+    MessageBox(message);
   }
   else {
-    MessageBox("Error saving map");
+    char message[MAX_PATH + 2048] = {0};
+    sprintf (message, "Error saving map: '%s'", fn);
+    MessageBox(message);
   }
 }
 #endif
@@ -1730,17 +1730,17 @@ CMainWindow::OnFileImportBitmapToRWS()
   sWindowStyle ws;
   if (ws.Import(InFileDialog.GetPathName(), CreateRGBA(255, 0, 255, 255)) == false)
   {
-    MessageBox("Can't Import file, either file is invalid \nor not a 3x3 bitmap", "Error");
+    MessageBox("Can't Import file '" + InFileDialog.GetPathName() + "'\neither file is invalid or not a 3x3 bitmap", "Error");
     return;
   }
 
   if (ws.Save(OutFileDialog.GetPathName()) == false)
   {
-    MessageBox("Can't Save file!");
+    MessageBox("Can't Save file! '" + OutFileDialog.GetPathName() + "'");
     return;
   }
 
-  MessageBox("Import Successful!");
+  MessageBox("Import Successful!\n WindowStyle saved as '" + OutFileDialog.GetPathName() + "'");
 }
 #endif
 

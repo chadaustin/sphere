@@ -78,6 +78,15 @@ private:
 
   afx_msg void OnScriptLineSorter();
 
+  /////////////////////////////////////
+
+  void __WriteCharacter__(char* buffer, const int buffer_size, int& output_buffer_length, char ch);
+  void __WriteNewline__(char* buffer, const int buffer_size, int& output_buffer_length);
+  int __IsEndOfLine__(int c, int n);
+  int __SkipWhitespace__(int& l, int& c, int& n, int& end_of_line, int cur_pos, int end_pos);
+  afx_msg void OnScriptFixIndentation();
+  afx_msg void OnUpdateScriptFixIndentation(CCmdUI* cmdui);
+
   void TransformText(int method);
   afx_msg void OnScriptToLowerCase();
   afx_msg void OnScriptToUpperCase();
@@ -125,6 +134,7 @@ private:
 
   ScriptType GetScriptType();
   bool IsSyntaxHighlightable();
+  bool IsIndentationFixable();
 
 private:
   afx_msg void OnScriptViewInsert();

@@ -182,12 +182,11 @@ CLineSorter::Sort()
   int end_line   = SendEditor(SCI_LINEFROMPOSITION, selection_end);
 
   if (start_line - end_line == 0) {
-    SetStatusText("Nothing to sort...");
+    SetStatusText("No lines selected...");
     return;
   }
 
   if (!delete_duplicates && !sort_lines && !reverse_lines) {
-    SetStatusText("No reason to sort...");
     return;
   }
 
