@@ -5353,9 +5353,19 @@ begin_method(SS_BYTEARRAY, ssByteArraySlice, 1)
     end_pos = object->size - 1 - end_slice - 1;
   }
 
+  if (start_slice < 0 || start_slice >= object->size) {
+    JS_ReportError(cx, "Invalid start position in bytearray.slice call\n%d", start_slice);
+    return JS_FALSE;
+  }
+
+  if (end_pos < 0 || end_pos >= object->size) {
+    JS_ReportError(cx, "Invalid end position in bytearray.slice call\n%d", end_slice);
+    return JS_FALSE;
+  }
+
   int size = end_pos - start_slice;
   if (size < 0 || size >= object->size) {
-    JS_ReportError(cx, "Invalid start and end positions in bytearray.slice call\nstart: %d end: %d %d %d", start_slice, end_slice, size, end_pos);
+    JS_ReportError(cx, "Invalid size generated in bytearray.slice call\n%d", size);
     return JS_FALSE;
   }
 
