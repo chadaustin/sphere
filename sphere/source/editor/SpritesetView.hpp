@@ -64,13 +64,10 @@ private:
   afx_msg void OnFillDelay();
 
   afx_msg void OnInsertDirectionFromImage();
+  afx_msg void OnInsertDirectionFromAnimation();
   afx_msg void OnExportDirectionAsImage();
 	afx_msg LRESULT OnGetAccelerator(WPARAM wParam, LPARAM lParam);
 
-  // edit range
-  int GetEditRangeStartIndex();
-  int GetEditRangeEndIndex(int start_frame);
-  std::vector<int> GetEditRangeIndexes(bool allow_duplicates);
   afx_msg void OnEditRange();
 
 private:

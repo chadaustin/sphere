@@ -65,10 +65,6 @@ private:
 
   afx_msg void OnViewTileObstructions();
 
-  // edit range
-  int GetEditRangeStartIndex();
-  int GetEditRangeEndIndex(int start_frame);
-  std::vector<int> GetEditRangeIndexes();
   afx_msg void OnEditRange();
 
 private:

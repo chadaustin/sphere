@@ -50,6 +50,9 @@ private:
   virtual void CV_ColorChanged(RGB color);
   virtual void AV_AlphaChanged(byte alpha);
 
+  // edit range
+  afx_msg void OnEditRange();
+
 private:
   sFont m_Font;
   int   m_CurrentCharacter;

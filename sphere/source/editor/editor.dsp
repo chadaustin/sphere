@@ -178,6 +178,14 @@ SOURCE=.\Editor.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\EditRange.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\EditRange.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\FileSystem.cpp
 # End Source File
 # Begin Source File

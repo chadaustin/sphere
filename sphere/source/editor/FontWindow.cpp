@@ -7,6 +7,7 @@
 #include "resource.h"
 #include "../common/minmax.hpp"
 
+#include "EditRange.hpp"
 
 #define IDC_FONTSCROLL 900
 
@@ -37,6 +38,32 @@ BEGIN_MESSAGE_MAP(CFontWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_FONT_SIMPLIFY,             OnFontSimplify)
   ON_COMMAND(ID_FONT_MAKECOLORTRANSPARENT, OnFontMakeColorTransparent)
   ON_COMMAND(ID_FONT_GENERATEGRADIENT,     OnFontGenerateGradient)
+
+//  ON_COMMAND(ID_FONT_ER_ROTATE_CW,             OnEditRangeRotateCW)
+//  ON_COMMAND(ID_FONT_ER_ROTATE_CCW,            OnEditRangeRotateCCW)
+  ON_COMMAND(ID_FONT_ER_SLIDE_UP,              OnEditRange)
+  ON_COMMAND(ID_FONT_ER_SLIDE_RIGHT,           OnEditRange)
+  ON_COMMAND(ID_FONT_ER_SLIDE_DOWN,            OnEditRange)
+  ON_COMMAND(ID_FONT_ER_SLIDE_LEFT,            OnEditRange)
+  ON_COMMAND(ID_FONT_ER_SLIDE_OTHER,           OnEditRange)
+  ON_COMMAND(ID_FONT_ER_FLIP_HORIZONTALLY,     OnEditRange)
+  ON_COMMAND(ID_FONT_ER_FLIP_VERTICALLY,       OnEditRange)
+//  ON_COMMAND(ID_FONT_ER_FILL_RGB,              OnEditRangeFillRGB)
+//  ON_COMMAND(ID_FONT_ER_FILL_ALPHA,            OnEditRangeFillAlpha)
+//  ON_COMMAND(ID_FONT_ER_FILL_BOTH,             OnEditRangeFillBoth)
+  ON_COMMAND(ID_FONT_ER_REPLACE_RGBA,            OnEditRange)
+//  ON_COMMAND(ID_FONT_ER_REPLACE_RGB,           OnEditRangeReplaceRGB)
+//  ON_COMMAND(ID_FONT_ER_REPLACE_ALPHA,         OnEditRangeReplaceAlpha)
+//  ON_COMMAND(ID_FONT_ER_FLT_BLUR,              OnEditRangeFilterBlur)
+//  ON_COMMAND(ID_FONT_ER_FLT_NOISE,              OnEditRangeFilterNoise)
+//  ON_COMMAND(ID_FONT_ER_FLT_ADJUST_BRIGHTNESS,  OnEditRangeFilterAdjustBrightness)
+//  ON_COMMAND(ID_FONT_ER_FLT_ADJUST_GAMMA,       OnEditRangeFilterAdjustGamma)
+//  ON_COMMAND(ID_FONT_ER_FLT_NEGATIVE_IMAGE_RGB, OnEditRangeFilterNegativeImageRGB)
+//  ON_COMMAND(ID_FONT_ER_FLT_NEGATIVE_IMAGE_ALPHA, OnEditRangeFilterNegativeImageAlpha)
+//  ON_COMMAND(ID_FONT_ER_FLT_NEGATIVE_IMAGE_RGBA,  OnEditRangeFilterNegativeImageRGBA)
+//  ON_COMMAND(ID_FONT_ER_FLT_SOLARIZE,             OnEditRangeFilterSolarize)
+//  ON_COMMAND(ID_FONT_ER_SETCOLORALPHA,         OnEditRangeSetColorAlpha)
+//  ON_COMMAND(ID_FONT_ER_SCALEALPHA,            OnEditRangeScaleAlpha)
 
 END_MESSAGE_MAP()
 
@@ -447,3 +474,16 @@ CFontWindow::AV_AlphaChanged(byte alpha)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CFontWindow::OnEditRange()
+{
+  const unsigned int id = GetCurrentMessage()->wParam;
+  if (EditRange::OnEditRange("font", id, false, (void*) &m_Font, m_CurrentCharacter)) {
+    SetModified(true);
+    SetImage();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+

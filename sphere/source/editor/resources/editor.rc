@@ -377,12 +377,80 @@ IDR_FONT MENU DISCARDABLE
 BEGIN
     POPUP "&Font"
     BEGIN
-        MENUITEM "&Export to Image...",         ID_FONT_EXPORTTOIMAGE
+        MENUITEM "Export to Image...",          ID_FONT_EXPORTTOIMAGE
         MENUITEM SEPARATOR
         MENUITEM "&Resize Character...",        ID_FONT_RESIZE
         MENUITEM "Resize &All Characters...",   ID_FONT_RESIZEALL
         MENUITEM "&Simplify...",                ID_FONT_SIMPLIFY
         MENUITEM "Make Color &Transparent",     ID_FONT_MAKECOLORTRANSPARENT
+        POPUP "&Edit Range"
+        BEGIN
+            POPUP "Rotate", GRAYED
+            BEGIN
+                MENUITEM "&Clockwise",                  ID_FONT_ER_ROTATE_CW
+                MENUITEM "C&ounterclockwise",           ID_FONT_ER_ROTATE_CCW
+
+            END
+            POPUP "&Slide"
+            BEGIN
+                MENUITEM "&Up",                         ID_FONT_ER_SLIDE_UP
+                MENUITEM "&Right",                      ID_FONT_ER_SLIDE_RIGHT
+
+                MENUITEM "&Down",                       ID_FONT_ER_SLIDE_DOWN
+
+                MENUITEM "&Left",                       ID_FONT_ER_SLIDE_LEFT
+
+                MENUITEM "&Other...",                   ID_FONT_ER_SLIDE_OTHER
+
+            END
+            POPUP "&Flip"
+            BEGIN
+                MENUITEM "&Horizontally",               ID_FONT_ER_FLIP_HORIZONTALLY
+
+                MENUITEM "&Vertically",                 ID_FONT_ER_FLIP_VERTICALLY
+
+            END
+            POPUP "F&ill", GRAYED
+            BEGIN
+                MENUITEM "&RGB",                        ID_FONT_ER_FILL_RGB
+                MENUITEM "&Alpha",                      ID_FONT_ER_FILL_ALPHA
+
+                MENUITEM "&Both",                       ID_FONT_ER_FILL_BOTH
+            END
+            POPUP "Fil&ter", GRAYED
+            BEGIN
+                POPUP "Negative Image"
+                BEGIN
+                    MENUITEM "&RGB",                        ID_FONT_ER_FLT_NEGATIVE_IMAGE_RGB
+
+                    MENUITEM "&Alpha",                      ID_FONT_ER_FLT_NEGATIVE_IMAGE_ALPHA
+
+                    MENUITEM "&Both",                       ID_FONT_ER_FLT_NEGATIVE_IMAGE_RGBA
+
+                END
+                MENUITEM "&Blur",                       ID_FONT_ER_FLT_BLUR
+                MENUITEM "&Noise",                      ID_FONT_ER_FLT_NOISE
+                MENUITEM "&Solarize",                   ID_FONT_ER_FLT_SOLARIZE
+
+                MENUITEM "&Adjust Brightness",          ID_FONT_ER_FLT_ADJUST_BRIGHTNESS
+
+                MENUITEM "Adjust &Gamma",               ID_FONT_ER_FLT_ADJUST_GAMMA
+
+            END
+            POPUP "&Replace"
+            BEGIN
+                MENUITEM "&RGBA",                       ID_FONT_ER_REPLACE_RGBA
+
+                MENUITEM "R&GB",                        ID_FONT_ER_REPLACE_RGB
+                , GRAYED
+                MENUITEM "&Alpha",                      ID_FONT_ER_REPLACE_ALPHA
+                , GRAYED
+            END
+            MENUITEM "Set Color &Alpha",            ID_FONT_ER_SETCOLORALPHA
+            , GRAYED
+            MENUITEM "Scal&e Alpha",                ID_FONT_ER_SCALEALPHA
+            , GRAYED
+        END
         MENUITEM SEPARATOR
         MENUITEM "&Generate Gradient...",       ID_FONT_GENERATEGRADIENT
     END
@@ -428,7 +496,7 @@ IDR_SPRITESETVIEW MENU DISCARDABLE
 BEGIN
     POPUP "SpritesetView_Directions"
     BEGIN
-        MENUITEM "&Insert",                     ID_SPRITESETVIEWDIRECTIONS_INSERT
+        MENUITEM "Insert",                      ID_SPRITESETVIEWDIRECTIONS_INSERT
 
         MENUITEM "&Delete",                     ID_SPRITESETVIEWDIRECTIONS_DELETE
 
@@ -440,9 +508,11 @@ BEGIN
         MENUITEM "&Properties...",              ID_SPRITESETVIEWDIRECTIONS_PROPERTIES
 
         MENUITEM SEPARATOR
-        MENUITEM "&Import From Image...",       ID_SPRITESETVIEWDIRECTIONS_IMPORT_FROM_IMAGE
+        MENUITEM "Import From Image...",        ID_SPRITESETVIEWDIRECTIONS_IMPORT_FROM_IMAGE
 
         MENUITEM "&Export As Image",            ID_SPRITESETVIEWDIRECTIONS_EXPORT_AS_IMAGE
+
+        MENUITEM "&Import From Animation...",   ID_SPRITESETVIEWDIRECTIONS_IMPORT_FROM_ANIMATION
 
     END
     POPUP "SpritesetView_Frames"

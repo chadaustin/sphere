@@ -14,6 +14,8 @@
 #include "Configuration.hpp"
 #include "Keys.hpp"
 
+#include "EditRange.hpp"
+
 // static const int UPDATE_TILEVIEW_TIMER = 200;
 
 
@@ -880,144 +882,17 @@ CTilesetView::OnZoom8x()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-int
-CTilesetView::GetEditRangeStartIndex() {
-  CNumberDialog dialog("Start frame index", "Value", m_SelectedTile, 0, m_Tileset->GetNumTiles() - 1);
-  if (dialog.DoModal() == IDOK) {
-    return dialog.GetValue();
-  }
-  return -1;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-int
-CTilesetView::GetEditRangeEndIndex(int start_frame) {
-  CNumberDialog dialog("End frame index", "Value", start_frame, start_frame, m_Tileset->GetNumTiles() - 1);
-  if (dialog.DoModal() == IDOK) {
-    return dialog.GetValue();
-  }
-  return -1;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-std::vector<int>
-CTilesetView::GetEditRangeIndexes()
-{
-  std::vector<int> frames;
-  int start_frame = GetEditRangeStartIndex();
-
-  if (start_frame > -1) {
-    int end_frame = GetEditRangeEndIndex(start_frame);
-    if (end_frame > -1)
-    {
-      for (int i = start_frame; i <= end_frame; i++)
-      {
-        frames.push_back(i);
-      }
-    }
-  }
-  
-  return frames;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTilesetView::OnEditRange()
 {
   const unsigned int id = GetCurrentMessage()->wParam;
-  std::vector<int> frames = GetEditRangeIndexes();
-  bool changed = false;
 
-  if (frames.size() == 0)
-    return;
-
-  ////////////////////////////////////////////////////////////////////////////////
-
-  if (id == ID_TILESETVIEW_ER_SLIDE_OTHER
-   || id == ID_TILESETVIEW_ER_SLIDE_UP
-   || id == ID_TILESETVIEW_ER_SLIDE_RIGHT
-   || id == ID_TILESETVIEW_ER_SLIDE_DOWN
-   || id == ID_TILESETVIEW_ER_SLIDE_LEFT) {
-    int dx = 0;
-    int dy = 0;
-
-    if (id == ID_TILESETVIEW_ER_SLIDE_OTHER) {
-      CNumberDialog dxd("Slide Horizontally", "Value", 0, -m_Tileset->GetTileWidth(), m_Tileset->GetTileWidth()); 
-      if (dxd.DoModal() == IDOK) {
-        CNumberDialog dyd("Slide Vertically", "Value", 0, -m_Tileset->GetTileHeight(), m_Tileset->GetTileHeight());
-        if (dyd.DoModal() == IDOK) {
-          dx = dxd.GetValue();
-          dy = dyd.GetValue();
-        }
-      }
-    }
-
-    switch (id) {
-      case ID_TILESETVIEW_ER_SLIDE_UP:    dy = -1; break;
-      case ID_TILESETVIEW_ER_SLIDE_RIGHT: dx = 1;  break;
-      case ID_TILESETVIEW_ER_SLIDE_DOWN:  dy = 1;  break;
-      case ID_TILESETVIEW_ER_SLIDE_LEFT:  dx = -1; break;
-    }
-
-    if (dx != 0 || dy != 0) {
-      for (int i = 0; i < frames.size(); i++) {
-        CImage32& image = m_Tileset->GetTile(frames[i]);
-        image.Translate(dx, dy);
-      }
-      changed = true;
-    }
-
-  }
-
-  ////////////////////////////////////////////////////////////////////////////////
-
-  if (id == ID_TILESETVIEW_ER_FLIP_HORIZONTALLY) {
-    for (int i = 0; i < frames.size(); i++) {
-      CImage32& image = m_Tileset->GetTile(frames[i]);
-      image.FlipHorizontal();
-    }
-    changed = true;
-  }
-
-  ////////////////////////////////////////////////////////////////////////////////
-
-  if (id == ID_TILESETVIEW_ER_FLIP_VERTICALLY) {
-    for (int i = 0; i < frames.size(); i++) {
-      CImage32& image = m_Tileset->GetTile(frames[i]);
-      image.FlipVertical();
-    }
-    changed = true;
-  }
-
-  ////////////////////////////////////////////////////////////////////////////////
-
-  if (id == ID_TILESETVIEW_ER_REPLACE_RGBA) {
-    CFontGradientDialog colorChoiceDialog("Replace Color", "In", "Out");
-
-    if (colorChoiceDialog.DoModal() == IDOK) {
-
-      RGBA old_color = colorChoiceDialog.GetTopColor();
-      RGBA replacement_color = colorChoiceDialog.GetBottomColor();
-
-      for (int i = 0; i < frames.size(); i++) {
-        CImage32& image = m_Tileset->GetTile(i);
-        image.ReplaceColor(old_color, replacement_color);
-      }
-      
-      changed = true;
-    }
-  }
-
-  ////////////////////////////////////////////////////////////////////////////////
-
-  if (changed) {
+  if ( EditRange::OnEditRange("tileset", id, false, (void*) m_Tileset, m_SelectedTile) ) {
     m_Handler->TV_TilesetChanged();
     UpdateObstructionTiles();
     Invalidate();
   }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
