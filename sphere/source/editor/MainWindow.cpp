@@ -392,6 +392,7 @@ CMainWindow::Create()
     ID_SEPARATOR,
     ID_INDICATOR_CAPS,
     ID_INDICATOR_NUM,
+    ID_INDICATOR_SCRL,
   };
 
   // create the statusbar

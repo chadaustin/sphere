@@ -1779,9 +1779,6 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
   p.speed_x = 1;
   p.speed_y = 1;
 
-  p.stepping_frame_revert = 0;
-  p.stepping_frame_revert_count = 0;
-
   p.spriteset->GetSpriteset().GetBase(p.base_x1, p.base_y1, p.base_x2, p.base_y2);
 
   if (p.base_x1 > p.base_x2) std::swap(p.base_x1, p.base_x2);
@@ -1791,7 +1788,6 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
   p.height = p.spriteset->GetSpriteset().GetFrameHeight();
 
   p.direction = p.spriteset->GetSpriteset().GetDirectionName(0);
-  //p.stepping = 0;
   p.frame = 0;
 
   /*
@@ -2012,8 +2008,8 @@ CMapEngine::SetPersonDirection(const char* name, const char* direction)
 
   p.direction = direction;
 
-  // make sure 'stepping' is valid
-  //p.stepping %= p.spriteset->GetSpriteset().GetNumFrames(p.direction);
+  // make sure 'frame' is valid
+  m_Persons[person].frame %= p.spriteset->GetSpriteset().GetNumFrames(p.direction);
 
   return true;
 }

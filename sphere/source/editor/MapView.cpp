@@ -166,6 +166,9 @@ CMapView::GetZoomFactor()
 void
 CMapView::SetZoomFactor(double factor)
 {
+  if (m_ZoomFactor == factor)
+    return;
+
   m_ZoomFactor = factor;
 
   delete m_BlitTile;
@@ -312,7 +315,7 @@ CMapView::GetPageSizeX()
 {
   RECT ClientRect;
   GetClientRect(&ClientRect);
-  return ClientRect.right / (m_Map->GetTileset().GetTileWidth() / m_ZoomFactor);
+  return ClientRect.right / (m_Map->GetTileset().GetTileWidth() * m_ZoomFactor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -322,7 +325,7 @@ CMapView::GetPageSizeY()
 {
   RECT ClientRect;
   GetClientRect(&ClientRect);
-  return ClientRect.bottom / (m_Map->GetTileset().GetTileHeight() / m_ZoomFactor);
+  return ClientRect.bottom / (m_Map->GetTileset().GetTileHeight() * m_ZoomFactor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

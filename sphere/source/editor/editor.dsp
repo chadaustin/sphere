@@ -1378,6 +1378,14 @@ SOURCE=..\..\..\http\dcc.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\http\DCCWindow.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\http\DCCWindow.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\http\irc.cpp
 # End Source File
 # Begin Source File

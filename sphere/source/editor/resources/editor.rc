@@ -1076,6 +1076,16 @@ BEGIN
             MENUITEM "#sphere",                     ID_JOIN_CHANNEL
             MENUITEM "#ninex",                      ID_JOIN_CHANNEL
         END
+        POPUP "&Debug"
+        BEGIN
+            MENUITEM "Data Packets",                ID_DEBUG_DATA_PACKETS
+            MENUITEM "Unknown Text",                ID_DEBUG_UNKNOWN_TEXT
+        END
+        POPUP "&Server"
+        BEGIN
+            MENUITEM "Unused Server",               ID_SERVER_1
+            MENUITEM "Unused Server",               ID_SERVER_2
+        END
     END
 END
 

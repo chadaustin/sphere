@@ -682,6 +682,10 @@
 #define ID_IMAGE_ADJUSTBORDERS          40795
 #define ID_FONT_ADJUSTBORDERS           40796
 #define ID_IMAGEVIEW_BLENDMODE_ADDITIVE 40797
+#define ID_DEBUG_UNKNOWN_TEXT           40799
+#define ID_DEBUG_DATA_PACKETS           40800
+#define ID_SERVER_2                     40801
+#define ID_SERVER_1                     40802
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -690,7 +694,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        277
-#define _APS_NEXT_COMMAND_VALUE         40799
+#define _APS_NEXT_COMMAND_VALUE         40803
 #define _APS_NEXT_CONTROL_VALUE         1236
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
