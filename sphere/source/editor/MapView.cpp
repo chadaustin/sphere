@@ -3146,7 +3146,7 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
         std::vector<int> zones = m_Map->FindZones(x, y, m_SelectedLayer);
 
         for (unsigned int i = 0; i < zones.size(); i++) {
-          CZoneEditDialog dialog(m_Map->GetZone(zones[i]), m_Map);
+          CZoneEditDialog dialog(m_Map->GetZone(zones[i]), zones[i], m_Map);
           if(dialog.DoModal() == IDOK) {
             changed = true;
           }

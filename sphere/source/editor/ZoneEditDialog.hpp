@@ -9,7 +9,7 @@
 class CZoneEditDialog : public CDialog
 {
 public:
-  CZoneEditDialog(sMap::sZone& zone, sMap* map);
+  CZoneEditDialog(sMap::sZone& zone, int zone_id, sMap* map);
 
 private:
   BOOL OnInitDialog();
@@ -20,6 +20,7 @@ private:
 private:
   sMap::sZone& m_Zone;
   sMap* m_Map;
+  int m_ZoneIndex;
 
   DECLARE_MESSAGE_MAP()
 };

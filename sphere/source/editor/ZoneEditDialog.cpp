@@ -20,9 +20,10 @@ static inline std::string itos(int i)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-CZoneEditDialog::CZoneEditDialog(sMap::sZone& zone, sMap* map)
+CZoneEditDialog::CZoneEditDialog(sMap::sZone& zone, int zone_id, sMap* map)
 : CDialog(IDD_ZONE_EDIT)
 , m_Zone(zone)
+, m_ZoneIndex(zone_id)
 , m_Map(map)
 {
 }
@@ -44,6 +45,8 @@ CZoneEditDialog::OnInitDialog()
   }
 
   char string[1024];
+
+  SetDlgItemInt(IDC_ZONE_ID, m_ZoneIndex, FALSE);
 
   sprintf (string, "%d", m_Zone.x1);
   SetDlgItemText(IDC_ZONE_X, string);
