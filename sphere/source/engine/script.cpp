@@ -217,13 +217,13 @@ CScript::CScript(IEngine* engine)
 , m_IdealTime(0)
 {
   // create runtime
-  m_Runtime = JS_NewRuntime(1024 * 1024);
+  m_Runtime = JS_NewRuntime(256 * 1024);
   if (m_Runtime == NULL) {
     return;
   }
 
   // create context
-  m_Context = JS_NewContext(m_Runtime, 16 * 1024);
+  m_Context = JS_NewContext(m_Runtime, 4096);
   if (m_Context == NULL) {
     JS_DestroyRuntime(m_Runtime);
     m_Runtime = NULL;
@@ -2177,6 +2177,9 @@ end_func()
 begin_func(LoadSpriteset, 1)
   arg_str(filename);
 
+  // spritesets can take a lot of memory, so do a little GC
+  JS_MaybeGC(cx);
+
   // load spriteset
   SSPRITESET* spriteset = This->m_Engine->LoadSpriteset(filename);
   if (spriteset == NULL) {
@@ -2455,7 +2458,10 @@ end_func()
   void CScript::name(JSContext* cx, JSObject* obj)      \
   {                                                     \
     CScript* This = (CScript*)JS_GetContextPrivate(cx); \
-    Object* object = (Object*)JS_GetPrivate(cx, obj);
+    Object* object = (Object*)JS_GetPrivate(cx, obj);   \
+    if (!object) {                                      \
+      return;                                           \
+    }
   
 #define end_finalizer()           \
     delete object;                \
@@ -2507,7 +2513,7 @@ CScript::CreateSocketObject(JSContext* cx, NSOCKET socket)
   // create the object
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
   if (object == NULL) {
-    return NULL;
+    return 0;
   }
 
   // assign methods to the object
@@ -2866,7 +2872,10 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
   );
 
   // attach the spriteset to this object
-  spriteset->AddRef();
+  
+  //assume spriteset already addref'd
+  //spriteset->AddRef();
+
   SS_SPRITESET* spriteset_object = new SS_SPRITESET;
   spriteset_object->spriteset = spriteset;
   spriteset_object->object    = object;
