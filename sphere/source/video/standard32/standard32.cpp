@@ -854,6 +854,15 @@ void aBlendBGRA(struct BGRA& d, struct BGRA s, int a)
 
 EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
 {
+  if (x[0] == x[3] && x[1] == x[2] && y[0] == y[1] && y[2] == y[3]) {
+    int dw = x[2] - x[0] + 1;
+    int dh = y[2] - y[0] + 1;
+    if (dw == image->width && dh == image->height) {
+      BlitImage(image, x[0], y[0]);
+      return;
+    }
+  }
+
   if (BitsPerPixel == 32) {
     primitives::TexturedQuad(
       (BGRA*)ScreenBuffer,
