@@ -309,6 +309,12 @@ log_object.endBlock()
     GetTile(x, y, layer)
       - returns tile on map
 
+    GetTileWidth()
+      - returns width in pixels of tiles on current map
+
+    GetTileHeight()
+      - returns height in pixels of tiles on current map
+
 
     RenderMap()
       - Renders the map into the video buffer
