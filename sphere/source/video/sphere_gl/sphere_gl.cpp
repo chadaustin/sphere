@@ -42,7 +42,6 @@ struct DRIVERCONFIG
     bool     fullscreen;
     bool     bilinear;
     bool     vsync;
-    bool     pixpoint;
 };
 
 
@@ -126,7 +125,6 @@ void LoadDriverConfig()
     DriverConfig.bilinear   = (0 != GetPrivateProfileInt("sphere_gl", "bilinear",   1, configfile));
     DriverConfig.fullscreen = (0 != GetPrivateProfileInt("sphere_gl", "fullscreen", 0, configfile));
     DriverConfig.vsync      = (0 != GetPrivateProfileInt("sphere_gl", "vsync",      1, configfile));
-    DriverConfig.pixpoint   = (0 != GetPrivateProfileInt("sphere_gl", "pixpoint",   1, configfile));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -141,7 +139,6 @@ void SaveDriverConfig()
     WritePrivateProfileInt("sphere_gl", "fullscreen", DriverConfig.fullscreen, configfile);
     WritePrivateProfileInt("sphere_gl", "bilinear",   DriverConfig.bilinear,   configfile);
     WritePrivateProfileInt("sphere_gl", "vsync",      DriverConfig.vsync,      configfile);
-    WritePrivateProfileInt("sphere_gl", "pixpoint",   DriverConfig.pixpoint,      configfile);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -203,10 +200,6 @@ BOOL CALLBACK ConfigureDriverDialogProc(HWND window, UINT message, WPARAM wparam
             if (DriverConfig.vsync) {
                 CheckDlgButton(window, IDC_VSYNC, BST_CHECKED);
             }
-            if (DriverConfig.pixpoint) {
-                CheckDlgButton(window, IDC_PIXPOINT, BST_CHECKED);
-            }
-
 
             UpdateButtonStates(window);
             
@@ -232,8 +225,6 @@ BOOL CALLBACK ConfigureDriverDialogProc(HWND window, UINT message, WPARAM wparam
                     DriverConfig.bilinear = (IsDlgButtonChecked(window, IDC_BILINEAR) == BST_CHECKED);
                     DriverConfig.fullscreen = (IsDlgButtonChecked(window, IDC_FULLSCREEN) == BST_CHECKED);
                     DriverConfig.vsync = (IsDlgButtonChecked(window, IDC_VSYNC) == BST_CHECKED);
-                    DriverConfig.pixpoint = (IsDlgButtonChecked(window, IDC_PIXPOINT) == BST_CHECKED);
-
 
                     SaveDriverConfig();
                     EndDialog(window, 0);
@@ -781,32 +772,6 @@ EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels)
     IMAGE i = CreateImage(w, h, pixels);
     BlitImage(i, x, y);
     DestroyImage(i);
-/*
-    // well, this is royally on crack, but GL_POINTS is way faster than glDrawPixels
-    // so this seems like it would be slow, but it's not.  :)
-
-//    glEnable(GL_BLEND);
-    if (DriverConfig.pixpoint) {
-        glPixelZoom(SCALEF(), SCALEF());
-        for (int iy = 0; iy < h; iy++) {
-            glRasterPos2i(x, y + iy); 
-            glDrawPixels(w, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels + iy * w);
-        }
-    } else {
-        glBegin(GL_POINTS);
-        for (int iy = 0; iy < h; iy++) {
-            for (int ix = 0; ix < w; ix++) {
-                if (pixels[iy * w + ix].alpha) {
-                    glColor4ubv((GLubyte*)(pixels + iy * w + ix));
-                    glVertex2i(x + ix, y + iy);
-                }
-            }
-        }
-        glEnd();
-    }
-
-//        glDisable(GL_BLEND);
-*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////
