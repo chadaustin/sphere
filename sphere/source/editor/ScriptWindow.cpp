@@ -35,6 +35,8 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_SCRIPT_OPTIONS_SHOW_WHITESPACE, OnOptionsShowWhitespace)
   ON_COMMAND(ID_SCRIPT_OPTIONS_WORD_WRAP, OnOptionsWordWrap)
 
+  ON_UPDATE_COMMAND_UI(ID_SCRIPT_CHECKSYNTAX,      OnUpdateScriptCheckSyntax)
+
   ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_TOGGLE_LINE_NUMBERS, OnUpdateOptionsToggleLineNumbers)
   ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_TOGGLE_COLORS, OnUpdateOptionsToggleColors)
   ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_SHOW_WHITESPACE, OnUpdateOptionsShowWhitespace)
@@ -144,8 +146,36 @@ CScriptWindow::Create()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+CScriptWindow::ScriptType
+CScriptWindow::GetScriptType()
+{
+  struct Local {
+    static inline bool extension_compare(const char* path, const char* extension) {
+      int path_length = strlen(path);
+      int ext_length  = strlen(extension);
+      return (
+        path_length >= ext_length &&
+        strcmp(path + path_length - ext_length, extension) == 0
+      );
+    }
+  };
+
+  if (Local::extension_compare(GetDocumentPath(), ".js")) {
+    return SCRIPT_TYPE_JS;
+  }
+
+  if (Local::extension_compare(GetDocumentPath(), ".txt")) {
+    return SCRIPT_TYPE_TXT;
+  }
+
+  return SCRIPT_TYPE_UNKNOWN;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
-CScriptWindow::SetScriptStyles() {
+CScriptWindow::SetScriptStyles()
+{
   static const char key_words[] = 
     "break case catch continue default delete do else "
     "finally for function if in instanceof new return "
@@ -172,12 +202,16 @@ CScriptWindow::SetScriptStyles() {
   static const COLORREF brown   = RGB(0xB5, 0x6F, 0x32);
   static const COLORREF darkred = RGB(0x80, 0, 0);
 
-  SendEditor(SCI_SETLEXER, SCLEX_CPP);  // JavaScript uses the C++ lexer
-  SendEditor(SCI_SETSTYLEBITS, 5);
-  SendEditor(SCI_SETKEYWORDS, 0, (LPARAM)key_words);
-  SendEditor(SCI_SETKEYWORDS, 1, (LPARAM)reserved_words);
+  if (GetScriptType() == SCRIPT_TYPE_UNKNOWN
+   || GetScriptType() == SCRIPT_TYPE_JS)
+  {
+    SendEditor(SCI_SETLEXER, SCLEX_CPP);  // JavaScript uses the C++ lexer
+    SendEditor(SCI_SETSTYLEBITS, 5);
+    SendEditor(SCI_SETKEYWORDS, 0, (LPARAM)key_words);
+    SendEditor(SCI_SETKEYWORDS, 1, (LPARAM)reserved_words);
 
-  SendEditor(SCI_SETPROPERTY, (WPARAM)"fold", (LPARAM)"1");
+    SendEditor(SCI_SETPROPERTY, (WPARAM)"fold", (LPARAM)"1");
+  }
 
   if (!(m_FontSize >= 0 && m_FontSize <= 72))
     m_FontSize = 10;
@@ -213,25 +247,28 @@ CScriptWindow::SetScriptStyles() {
     SendEditor(SCI_SETTABWIDTH, m_TabWidth);
   }
 
-  if (m_SyntaxHighlighted) {
-    SetStyle(SCE_C_COMMENT,     green);
-    SetStyle(SCE_C_COMMENTLINE, green);
-    SetStyle(SCE_C_COMMENTDOC,  green);
-    SetStyle(SCE_C_NUMBER,      darkred);
-    SetStyle(SCE_C_WORD,        blue);
+  if (GetScriptType() == SCRIPT_TYPE_UNKNOWN
+   || GetScriptType() == SCRIPT_TYPE_JS) {
+    if (m_SyntaxHighlighted) {
+      SetStyle(SCE_C_COMMENT,     green);
+      SetStyle(SCE_C_COMMENTLINE, green);
+      SetStyle(SCE_C_COMMENTDOC,  green);
+      SetStyle(SCE_C_NUMBER,      darkred);
+      SetStyle(SCE_C_WORD,        blue);
 
-    if (m_KeyWordStyleIsBold) {
-      SendEditor(SCI_STYLESETBOLD, SCE_C_WORD, 1);
+      if (m_KeyWordStyleIsBold) {
+        SendEditor(SCI_STYLESETBOLD, SCE_C_WORD, 1);
+      }
+
+      SetStyle(SCE_C_STRING,      green);
+      SetStyle(SCE_C_CHARACTER,   green);
+      SetStyle(SCE_C_OPERATOR,    purple);
+      SetStyle(SCE_C_IDENTIFIER,  black);
+      SetStyle(SCE_C_WORD2,       red);
+
+      SetStyle(STYLE_BRACELIGHT,  green);
+      SetStyle(STYLE_BRACEBAD,    red);
     }
-
-    SetStyle(SCE_C_STRING,      green);
-    SetStyle(SCE_C_CHARACTER,   green);
-    SetStyle(SCE_C_OPERATOR,    purple);
-    SetStyle(SCE_C_IDENTIFIER,  black);
-    SetStyle(SCE_C_WORD2,       red);
-
-    SetStyle(STYLE_BRACELIGHT,  green);
-    SetStyle(STYLE_BRACEBAD,    red);
   }
 
   SendEditor(SCI_SETVIEWWS, ((m_ShowWhitespace) ? (SCWS_VISIBLEALWAYS) : (SCWS_INVISIBLE)));
@@ -252,7 +289,6 @@ CScriptWindow::Initialize()
   m_WordWrap           = Configuration::Get(KEY_SCRIPT_WORD_WRAP);
   SetScriptStyles();
 
-  SendEditor(SCI_TOGGLEFOLD, (LPARAM)"1");
   SetLineNumber(0);
 }
 
@@ -790,6 +826,17 @@ CScriptWindow::OnOptionsWordWrap()
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
+CScriptWindow::OnUpdateScriptCheckSyntax(CCmdUI* cmdui)
+{
+  if (!(GetScriptType() == SCRIPT_TYPE_UNKNOWN
+    || GetScriptType() == SCRIPT_TYPE_JS)) {
+    cmdui->Enable(FALSE);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
 CScriptWindow::OnUpdateOptionsToggleLineNumbers(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_ShowLineNumbers ? TRUE : FALSE);
@@ -801,6 +848,10 @@ afx_msg void
 CScriptWindow::OnUpdateOptionsToggleColors(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_SyntaxHighlighted ? TRUE : FALSE);
+  if (!(GetScriptType() == SCRIPT_TYPE_UNKNOWN
+    || GetScriptType() == SCRIPT_TYPE_JS)) {
+    cmdui->Enable(FALSE);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

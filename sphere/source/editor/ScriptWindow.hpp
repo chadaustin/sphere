@@ -42,6 +42,8 @@ private:
   afx_msg void OnOptionsShowWhitespace();
   afx_msg void OnOptionsWordWrap();
 
+  afx_msg void OnUpdateScriptCheckSyntax(CCmdUI* cmdui);
+
   afx_msg void OnUpdateOptionsToggleLineNumbers(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsToggleColors(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsShowWhitespace(CCmdUI* cmdui);
@@ -59,6 +61,15 @@ private:
 
   virtual bool GetSavePath(char* path);
   virtual bool SaveDocument(const char* path);
+
+
+  enum ScriptType {
+    SCRIPT_TYPE_UNKNOWN,
+    SCRIPT_TYPE_JS,
+    SCRIPT_TYPE_TXT,
+  };
+
+  ScriptType GetScriptType();
 
 private:
   bool m_Created;

@@ -142,14 +142,6 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
-        POPUP "Internal"
-        BEGIN
-            MENUITEM "Local &Documentation",        ID_HELP_LOCALDOCUMENTATION
-
-            MENUITEM SEPARATOR
-            MENUITEM "doc_functions.txt",           ID_HELP_LOCAL_DOC_FUNCTIONS
-
-        END
         POPUP "&External"
         BEGIN
             MENUITEM "&Sphere Web Site",            ID_HELP_SPHERESITE
@@ -157,6 +149,9 @@ BEGIN
             MENUITEM "&AegisKnight's Site",         ID_HELP_AEGISKNIGHTSSITE
             MENUITEM "&Flik's Web Site",            ID_HELP_FLIKSSITE
         END
+        MENUITEM SEPARATOR
+        MENUITEM "Local &Documentation",        ID_HELP_LOCALDOCUMENTATION
+        MENUITEM "doc_functions.txt",           ID_HELP_LOCAL_DOC_FUNCTIONS
         MENUITEM SEPARATOR
         MENUITEM "&About...",                   ID_HELP_ABOUT
     END
