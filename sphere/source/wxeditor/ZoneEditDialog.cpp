@@ -30,13 +30,15 @@ wZoneEditDialog::wZoneEditDialog(wxWindow *parent, sMap::sZone& zone)
   wxFlexGridSizer *gridsizer;
 
     gridsizer = new wxFlexGridSizer(2);
-      gridsizer->Add(new wxStaticText(this, -1, "Steps", wxPoint(12, 12), wxSize(32, 8)), 0, wxALL, 10);
-      gridsizer->Add(m_StepsCtrl = new wxSpinCtrl(this, -1, "", wxPoint (62, 10), wxSize(32, 12), wxSP_ARROW_KEYS, 1, 1024, m_Zone.reactivate_in_num_steps), 0, wxALL, 10);
-      gridsizer->Add(new wxStaticText(this, -1, "Execute:", wxPoint(12, 36), wxSize(120, 8)), 0, wxALL, 10);
-      gridsizer->Add(new wxButton(this, wID_ZONEEDITDIALOG_CHECK_SYNTAX, "Check Syntax", wxPoint(160, 32), wxSize(32, 16)), 0, wxALL, 10);
+      gridsizer->Add(new wxStaticText(this, -1, "Steps", wxPoint(12, 12), wxSize(32, 16)), 0, wxALL, 10);
+      m_StepsCtrl = new wxSpinCtrl(this, -1, "", wxPoint (62, 10), wxSize(32, 16), wxSP_ARROW_KEYS, 1, 1024, m_Zone.reactivate_in_num_steps);
+      gridsizer->Add(m_StepsCtrl, 0, wxALL, 10);
+      gridsizer->Add(new wxStaticText(this, -1, "Execute:", wxPoint(12, 36), wxSize(120, 16)), 0, wxALL, 10);
+      gridsizer->Add(new wxButton(this, wID_ZONEEDITDIALOG_CHECK_SYNTAX, "Check Syntax", wxPoint(160, 32), wxSize(72, 20)), 0, wxALL, 10);
     mainsizer->Add(gridsizer);
 
-    mainsizer->Add(m_ScriptBox = new wxTextCtrl(this, wID_ZONEEDITDIALOG_SCRIPT, m_Zone.script.c_str(), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_PROCESS_ENTER | wxTE_PROCESS_TAB), 0, wxALL, 10);
+    m_ScriptBox = new wxTextCtrl(this, wID_ZONEEDITDIALOG_SCRIPT, m_Zone.script.c_str(), wxDefaultPosition, wxSize(180, 120), wxTE_MULTILINE /*| wxTE_PROCESS_ENTER*/ | wxTE_PROCESS_TAB);
+    mainsizer->Add(m_ScriptBox, 0, wxALL, 10);
 
     subsizer = new wxBoxSizer(wxHORIZONTAL);
       subsizer->Add(new wxButton(this, wxID_OK, "OK"), 0, wxALL, 10);
