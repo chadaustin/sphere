@@ -250,10 +250,10 @@ CMapEngine::CallMapScript(int which)
       if (!ExecuteScript(m_Map.GetMap().GetExitScript(), error)) {
         m_ErrorMessage = "Could not execute exit script\n" + error;
         return false;
-      }      
+      }
     break;
 
-    case SCRIPT_ON_LEAVE_MAP_NORTH: 
+    case SCRIPT_ON_LEAVE_MAP_NORTH:
       if (!ExecuteScript(m_NorthScript, error)) {
         m_ErrorMessage = "Could not execute north script\n" + error;
         return false;
@@ -266,7 +266,7 @@ CMapEngine::CallMapScript(int which)
         return false;
       }
     break;
-    
+
     case SCRIPT_ON_LEAVE_MAP_SOUTH:
       if (!ExecuteScript(m_SouthScript, error)) {
         m_ErrorMessage = "Could not execute south script\n" + error;
@@ -347,7 +347,7 @@ CMapEngine::Exit()
   if (m_IsRunning) {
 
     m_ShouldExit = true;
-    
+
     return true;
 
   } else {
@@ -406,7 +406,7 @@ CMapEngine::Update()
 
   return true;
 }
- 
+
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
@@ -643,7 +643,7 @@ CMapEngine::SetTileImage(int tile, IMAGE image) {
     m_ErrorMessage = "Tile index does not exist";
     return false;
   }
-  
+
   if ( GetImageWidth(image) != m_Map.GetMap().GetTileset().GetTileWidth() ) {
     m_ErrorMessage = "Image used in SetTileImage call doesn't match the tile width";
     return false;
@@ -657,7 +657,7 @@ CMapEngine::SetTileImage(int tile, IMAGE image) {
   RGBA* pixels = LockImage(image);
   CImage32& tile_image = m_Map.GetMap().GetTileset().GetTile(tile);
   tile_image.SetBlendMode(CImage32::REPLACE);
-  
+
   for (int x = 0; x < m_Map.GetMap().GetTileset().GetTileWidth(); x++) {
     for (int y = 0; y < m_Map.GetMap().GetTileset().GetTileHeight(); y++) {
        tile_image.SetPixel(x, y, pixels[y * GetImageWidth(image) + x]);
@@ -793,7 +793,7 @@ CMapEngine::AreZonesAt(int location_x, int location_y, int layer, bool& found) {
     return false;
 
   for (int i = 0; i < m_Map.GetMap().GetNumZones(); i++) {
-  
+
      if ( IsPointWithinZone(location_x, location_y, layer, i) ) {
        found = true;
        return true;
@@ -830,7 +830,7 @@ CMapEngine::ExecuteZones(int location_x, int location_y, int layer) {
     return false;
   }
 
-  return true; 
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1040,7 +1040,7 @@ bool
 CMapEngine::UnbindKey(int key)
 {
   if (m_BoundKeys.count(key) > 0) {
-    
+
     m_Engine->DestroyScript(m_BoundKeys[key].down);
     m_Engine->DestroyScript(m_BoundKeys[key].up);
     m_BoundKeys.erase(key);
@@ -1060,7 +1060,7 @@ bool
 CMapEngine::BindJoystickButton(int joystick, int button, const char* on_key_down, const char* on_key_up)
 {
   int bound_joystick_index = -1;
-  for (unsigned int i = 0; i < m_BoundJoysticks.size(); ++i) {
+  for (int i = 0; i < int(m_BoundJoysticks.size()); ++i) {
     if (m_BoundJoysticks[i].m_Joystick == joystick) {
       bound_joystick_index = i;
       break;
@@ -1078,7 +1078,7 @@ CMapEngine::BindJoystickButton(int joystick, int button, const char* on_key_down
     bound_joystick_index = m_BoundJoysticks.size();
     m_BoundJoysticks.push_back(joy);
 
-    if (bound_joystick_index < 0 || bound_joystick_index >= m_BoundJoysticks.size()) {
+    if (bound_joystick_index < 0 || bound_joystick_index >= int(m_BoundJoysticks.size())) {
       return false;
     }
   }
@@ -1116,7 +1116,7 @@ bool
 CMapEngine::UnbindJoystickButton(int joystick, int button)
 {
   int bound_joystick_index = -1;
-  for (unsigned int i = 0; i < m_BoundJoysticks.size(); ++i) {
+  for (int i = 0; i < int(m_BoundJoysticks.size()); ++i) {
     if (m_BoundJoysticks[i].m_Joystick == joystick) {
       bound_joystick_index = i;
       break;
@@ -1129,7 +1129,7 @@ CMapEngine::UnbindJoystickButton(int joystick, int button)
   }
 
   if (m_BoundJoysticks[bound_joystick_index].m_BoundButtons.count(button) > 0) {
-    
+
     m_Engine->DestroyScript(m_BoundJoysticks[bound_joystick_index].m_BoundButtons[button].down);
     m_Engine->DestroyScript(m_BoundJoysticks[bound_joystick_index].m_BoundButtons[button].up);
     m_BoundJoysticks[bound_joystick_index].m_BoundButtons.erase(button);
@@ -1531,7 +1531,7 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
 
   p.ignorePersonObstructions = false;
   p.ignoreTileObstructions = false;
-  
+
   p.mask = CreateRGBA(255, 255, 255, 255);
 
   p.speed_x = 1;
@@ -1583,7 +1583,7 @@ CMapEngine::DestroyPerson(const char* name)
       } else if (m_InputPerson > i) {
         m_InputPerson--;
       }
-      
+
       // detach camera if necessary
       if (i == m_CameraPerson) {
         m_IsCameraAttached = false;
@@ -1737,7 +1737,7 @@ CMapEngine::SetPersonDirection(const char* name, const char* direction)
   }
 
   p.direction = direction;
-  
+
   // make sure 'stepping' is valid
   p.stepping %= p.spriteset->GetSpriteset().GetNumFrames(p.direction);
 
@@ -2021,7 +2021,7 @@ CMapEngine::SetPersonScaleAbsolute(const char* name, int width, int height)
     return false;
   }
 
-  // convert to float. I can't figure out how to calculate the base in 
+  // convert to float. I can't figure out how to calculate the base in
   // absolute mode...
   const Person& s = m_Persons[person];
   double old_w = s.spriteset->GetSpriteset().GetFrameWidth();
@@ -2049,8 +2049,8 @@ CMapEngine::SetPersonScaleFactor(const char* name, double scale_w, double scale_
 
   // convert to integer ;)
   int base_x1;
-  int base_y1; 
-  int base_x2; 
+  int base_y1;
+  int base_x2;
   int base_y2;
   double width = p.spriteset->GetSpriteset().GetFrameWidth();
   double height = p.spriteset->GetSpriteset().GetFrameHeight();
@@ -2062,7 +2062,7 @@ CMapEngine::SetPersonScaleFactor(const char* name, double scale_w, double scale_
   p.base_y1 = (int)(scale_h * (double)base_y1);
   p.base_x2 = (int)(scale_w * (double)base_x2);
   p.base_y2 = (int)(scale_h * (double)base_y2);
-  
+
 
   // oopsies on scaling problems? ;)
   if (p.width < 1) p.width = 1;
@@ -2079,7 +2079,7 @@ CMapEngine::SetPersonScaleFactor(const char* name, double scale_w, double scale_
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool 
+bool
 CMapEngine::GetPersonAngle(const char* name, double& angle)
 {
   int person = -1;
@@ -2092,7 +2092,7 @@ CMapEngine::GetPersonAngle(const char* name, double& angle)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-  
+
 bool
 CMapEngine::SetPersonAngle(const char* name, double angle)
 {
@@ -2160,7 +2160,7 @@ CMapEngine::SetPersonSpriteset(const char* name, sSpriteset& spriteset)
   // release the old spriteset
   //m_Engine->DestroySpriteset(m_Persons[person_index].spriteset);
   m_Persons[person_index].spriteset->Release();
-  
+
   // create and insert the new spriteset (the constructor calls AddRef)
   m_Persons[person_index].spriteset = new SSPRITESET(spriteset);
   if (m_Persons[person_index].spriteset == NULL) {
@@ -2259,7 +2259,7 @@ CMapEngine::FollowPerson(const char* follower, const char* leader, int pixels)
   m_Persons[follower_index].layer     = m_Persons[leader_index].layer;
   m_Persons[follower_index].direction = m_Persons[leader_index].direction;
   m_Persons[follower_index].frame     = 0;
-  
+
   return true;
 }
 
@@ -2303,7 +2303,7 @@ CMapEngine::SetPersonScript(const char* name, int which, const char* script)
     m_Engine->DestroyScript(*ps);
   }
   *ps = s;
-  
+
   return true;
 }
 
@@ -2408,7 +2408,7 @@ CMapEngine::QueuePersonScript(const char* name, const char* script, bool immedia
     m_ErrorMessage = "Null script.";
     return false;
   }
-  
+
   // find person
   int person = -1;
   if ( IsInvalidPersonError(name, person) ) {
@@ -2419,7 +2419,7 @@ CMapEngine::QueuePersonScript(const char* name, const char* script, bool immedia
   if (m_Persons[person].leader != -1) {
     return true;
   }
-  
+
   // add person to queue
   m_Persons[person].commands.push_back(Person::Command(COMMAND_DO_SCRIPT, immediate, std::string(script)));
   return true;
@@ -2546,7 +2546,7 @@ CMapEngine::OpenMap(const char* filename)
   // if a person entity is here, it's not map-specific
   // so put it in the starting position!
   for (unsigned i = 0; i < m_Persons.size(); i++) {
-    m_Persons[i].x     = m_Map.GetMap().GetStartX(); 
+    m_Persons[i].x     = m_Map.GetMap().GetStartX();
     m_Persons[i].y     = m_Map.GetMap().GetStartY();
     m_Persons[i].layer = m_Map.GetMap().GetStartLayer();
 
@@ -2581,7 +2581,7 @@ CMapEngine::OpenMap(const char* filename)
     m_Music->setRepeat(true);
     m_Music->play();
   }
-  
+
   // initialize camera
   m_Camera.x     = m_Map.GetMap().GetStartX();
   m_Camera.y     = m_Map.GetMap().GetStartY();
@@ -2677,7 +2677,7 @@ CMapEngine::Run()
 
 
     // RENDER STEP
-    
+
     if (m_ThrottleFPS) {  // throttle
 
       // if we're ahead of schedule, do the render
@@ -2685,7 +2685,7 @@ CMapEngine::Run()
       if (actual_time < m_NextFrame || frames_skipped >= c_MaxSkipFrames) {
 
         frames_skipped = 0;
-        
+
         if (!Render()) {
           return false;
         }
@@ -2837,7 +2837,7 @@ CMapEngine::LoadMapPersons()
       std::string person_string = "name=[" + person.name + "], x=[" +
                                              itos(person.x / tile_width) + "], y=[" +
                                              itos(person.y / tile_height) + "]";
-      
+
       std::string error;  // have to define locals before gotos
 
       Person p;
@@ -2850,7 +2850,7 @@ CMapEngine::LoadMapPersons()
       p.x     = person.x;
       p.y     = person.y;
       p.layer = person.layer;
-      
+
       // compile script_create
       p.script_create = m_Engine->CompileScript(person.script_create.c_str(), error);
       if (p.script_create == NULL) {
@@ -2867,7 +2867,7 @@ CMapEngine::LoadMapPersons()
         m_ErrorMessage = "Could not compile OnDestroy script\nPerson:" + person_string + "\n" + error;
         goto spriteset_error;
       }
-      
+
       // compile script_activate_touch
       p.script_activate_touch = m_Engine->CompileScript(person.script_activate_touch.c_str(), error);
       if (p.script_activate_touch == NULL) {
@@ -2950,7 +2950,7 @@ CMapEngine::DestroyMapPersons()
       } else if (m_InputPerson > i) {
         m_InputPerson--;
       }
-      
+
       // detach camera if necessary
       if (i == m_CameraPerson) {
         m_IsCameraAttached = false;
@@ -3022,7 +3022,7 @@ CMapEngine::DestroyPersonStructure(Person& p)
   if (p.script_destroy) {
     m_Engine->DestroyScript(p.script_destroy);
   }
-  
+
   if (p.script_activate_touch) {
     m_Engine->DestroyScript(p.script_activate_touch);
   }
@@ -3208,7 +3208,7 @@ CMapEngine::Render()
 
   } // end for all layers
 
-  if (!(m_CurrentColorMask.red == 255 && m_CurrentColorMask.green == 255 && m_CurrentColorMask.blue && m_CurrentColorMask.alpha == 255)) 
+  if (!(m_CurrentColorMask.red == 255 && m_CurrentColorMask.green == 255 && m_CurrentColorMask.blue && m_CurrentColorMask.alpha == 255))
     ApplyColorMask(m_CurrentColorMask);
 
   // render script
@@ -3364,7 +3364,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     return true;
   }
 
-  
+
   // store current position
   double x = p.x;
   double y = p.y;
@@ -3384,7 +3384,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
         // set current person
         std::string old_person = m_CurrentPerson;
         m_CurrentPerson = p.name;
-  
+
         std::string error;
         if (!ExecuteScript(p.script_command_generator, error)) {
           m_ErrorMessage = "Error executing person command generator\nPerson:"
@@ -3417,7 +3417,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
       }
 
     } // end (if command queue is empty)
-   
+
     // read the top command
     Person::Command c = p.commands.front();
     p.commands.pop_front();
@@ -3426,10 +3426,10 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     double old_x = p.x;
     double old_y = p.y;
 
-    
+
     std::string error;
     switch (c.command) {
-      
+
       case COMMAND_WAIT: break;
       case COMMAND_FACE_NORTH:     p.direction = "north";     break;
       case COMMAND_FACE_NORTHEAST: p.direction = "northeast"; break;
@@ -3443,7 +3443,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
       case COMMAND_MOVE_EAST:      p.x+=p.speed_x; break;
       case COMMAND_MOVE_SOUTH:     p.y+=p.speed_y; break;
       case COMMAND_MOVE_WEST:      p.x-=p.speed_x; break;
-      case COMMAND_DO_SCRIPT:        
+      case COMMAND_DO_SCRIPT:
 
         std::string person_name = p.name;
 
@@ -3502,12 +3502,12 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     // if we're processing the input target
     if (person_index == m_InputPerson) {
       // and if a person caused the obstruction
-      // and if the activation function has not already 
+      // and if the activation function has not already
       if (obs_person != -1) {
         if (m_TouchActivationAllowed) {
 
           IEngine::script script = m_Persons[obs_person].script_activate_touch;
-        
+
           // execute the script!
           if (script) {
 
@@ -3537,7 +3537,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
         activation_called = true;
 
-      }                
+      }
     }
 
     processing = c.immediate;
@@ -3556,7 +3556,6 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
     // frame index
     if (--p.next_frame_switch <= 0) {
-      const sSpriteset& t = p.spriteset->GetSpriteset();
       if (p.spriteset->GetSpriteset().GetNumFrames(p.direction))
         p.stepping = (p.stepping + 1) % p.spriteset->GetSpriteset().GetNumFrames(p.direction);
       p.frame = p.spriteset->GetSpriteset().GetFrameIndex(p.direction, p.stepping);
@@ -3592,7 +3591,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     // if the activation key is pressed
     if (m_Keys[m_TalkActivationKey]
     || (GetNumJoysticks() > 0 && IsJoystickButtonPressed(0, m_JoystickTalkButton))) {
-      
+
       int talk_x = int(m_Persons[m_InputPerson].x);
       int talk_y = int(m_Persons[m_InputPerson].y);
       int tad = m_TalkActivationDistance;
@@ -3772,7 +3771,7 @@ CMapEngine::GetNumTriggers(int& triggers)
     m_ErrorMessage = "GetNumTriggers called while map engine isn't running.";
     return false;
   }
-  
+
   triggers = int(m_Triggers.size());
   return true;
 }
@@ -3934,9 +3933,9 @@ CMapEngine::IsPointWithinZone(int location_x, int location_y, int location_layer
 
   Zone& z = m_Zones[zone_index];
 
-  return (location_x >= z.x1 && 
+  return (location_x >= z.x1 &&
           location_y >= z.y1 &&
-          location_x < z.x2 && 
+          location_x < z.x2 &&
           location_y < z.y2 &&
           location_layer == z.layer);
 }
@@ -4064,7 +4063,7 @@ CMapEngine::UpdateDelayScripts()
     if (--m_DelayScripts[i].frames_left < 0) {
 
       IEngine::script script = m_DelayScripts[i].script;
-      
+
       // the script may cause a CloseMap call, so remove the script from the array now
       m_DelayScripts.erase(m_DelayScripts.begin() + i);
       i--;
@@ -4094,27 +4093,27 @@ CMapEngine::UpdateEdgeScripts()
   const int layer_height = map.GetLayer(m_Camera.layer).GetHeight();
 
   if (m_Camera.x < 0) {                                 // west
-    
+
     if (!CallDefaultMapScript(SCRIPT_ON_LEAVE_MAP_WEST)
      || !CallMapScript(SCRIPT_ON_LEAVE_MAP_WEST)) {
       return false;
-    }    
+    }
 
   } else if (m_Camera.x > tile_width * layer_width) {   // east
 
     if (!CallDefaultMapScript(SCRIPT_ON_LEAVE_MAP_EAST)
      || !CallMapScript(SCRIPT_ON_LEAVE_MAP_EAST)) {
       return false;
-    }    
+    }
 
   }
 
   if (m_Camera.y < 0) {                                 // north
-    
+
     if (!CallDefaultMapScript(SCRIPT_ON_LEAVE_MAP_NORTH)
      || !CallMapScript(SCRIPT_ON_LEAVE_MAP_NORTH)) {
       return false;
-    }    
+    }
 
   } else if (m_Camera.y > tile_height * layer_height) { // south
 
@@ -4141,7 +4140,7 @@ CMapEngine::ProcessInput()
   RefreshInput();
   bool new_keys[MAX_KEY];
   GetKeyStates(new_keys);
-  
+
   // clear the key queue
   while (AreKeysLeft()) {
     GetKey();
@@ -4195,7 +4194,7 @@ CMapEngine::ProcessInput()
     int dy = 0;
     bool moved = false;
 
-    if (!IsKeyBound(KEY_UP)    && new_keys[KEY_UP])    dy--; 
+    if (!IsKeyBound(KEY_UP)    && new_keys[KEY_UP])    dy--;
     if (!IsKeyBound(KEY_RIGHT) && new_keys[KEY_RIGHT]) dx++;
     if (!IsKeyBound(KEY_DOWN)  && new_keys[KEY_DOWN])  dy++;
     if (!IsKeyBound(KEY_LEFT)  && new_keys[KEY_LEFT])  dx--;
@@ -4241,7 +4240,7 @@ CMapEngine::ProcessInput()
     }
 
 
-  }  
+  }
 
   // process bound joystick buttons
   for (unsigned int j = 0; j < m_BoundJoysticks.size(); ++j)
@@ -4479,7 +4478,7 @@ CMapEngine::FindObstructingTile(int person, int x, int y)
 
   int bx = (p.base_x1 + p.base_x2) / 2;
   int by = (p.base_y1 + p.base_y2) / 2;
-  
+
   int x1 = x - bx + p.base_x1;
   int y1 = y - by + p.base_y1;
   int x2 = x - bx + p.base_x2;
@@ -4495,7 +4494,7 @@ CMapEngine::FindObstructingTile(int person, int x, int y)
   int max_tx = max_x / tile_width;
   int min_ty = min_y / tile_height;
   int max_ty = max_y / tile_height;
-  
+
   for (int ty = min_ty; ty <= max_ty; ty++) {
     for (int tx = min_tx; tx <= max_tx; tx++) {
 
@@ -4503,7 +4502,7 @@ CMapEngine::FindObstructingTile(int person, int x, int y)
       if (tx < 0 || ty < 0 || tx >= layer.GetWidth() || ty >= layer.GetHeight()) {
         continue;
       }
-      
+
         // get the tile object
       int t = m_Map.GetAnimationMap()[layer.GetTile(tx, ty)].current;
       sTile& tile = m_Map.GetMap().GetTileset().GetTile(t);
@@ -4553,7 +4552,7 @@ CMapEngine::FindObstructingPerson(int person, int x, int y)
 
   int bx = (p.base_x1 + p.base_x2) / 2;
   int by = (p.base_y1 + p.base_y2) / 2;
-  
+
   int x1 = x - bx + p.base_x1;
   int y1 = y - by + p.base_y1;
   int x2 = x - bx + p.base_x2;
@@ -4630,7 +4629,7 @@ dont_skip:
       return i;
 
     }
-  
+
   }
 
   return -1;

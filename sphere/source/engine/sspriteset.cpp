@@ -24,7 +24,9 @@ SSPRITESET::SSPRITESET(sSpriteset& s)
   m_Spriteset = s;
 
   m_Images = new IMAGE[m_Spriteset.GetNumImages()];
+  if (!m_Images) { return; }
   m_FlipImages = new IMAGE[m_Spriteset.GetNumImages()];
+  if (!m_FlipImages) { delete[] m_Images; m_Images = NULL; return; }
   for (int i = 0; i < m_Spriteset.GetNumImages(); i++) {
     m_Images[i]     = CreateFrameImage(i);
     m_FlipImages[i] = CreateFlipFrameImage(i);
@@ -94,7 +96,7 @@ SSPRITESET::GetSpriteset() const
 {
   return m_Spriteset;
 }
- 
+
 ////////////////////////////////////////////////////////////////////////////////
 
 std::string

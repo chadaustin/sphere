@@ -242,7 +242,7 @@ sMap::Load(const char* filename, IFileSystem& fs)
     m_EdgeScripts[2] = ReadMapString(file);
     m_EdgeScripts[3] = ReadMapString(file);
   }
-  
+
   // delete the old layer array and allocate a new one
   m_Layers.clear();
   m_Layers.resize(header.num_layers);
@@ -283,7 +283,8 @@ sMap::Load(const char* filename, IFileSystem& fs)
 			return false;
 
 		// read the layer data
-		if (file->Read(layer_info, sizeof(word) * lh.width * lh.height) != sizeof(word) * lh.width * lh.height) {
+		int layer_data_size = sizeof(word) * (lh.width * lh.height);
+		if (file->Read(layer_info, layer_data_size) != layer_data_size) {
 			delete[] layer_info;
 			layer_info = NULL;
 			return false;
@@ -393,14 +394,14 @@ sMap::Load(const char* filename, IFileSystem& fs)
   m_Zones.clear();
 
   // load the zones
-  for (int i = 0; i < header.num_zones; i++) 
+  for (int i = 0; i < header.num_zones; i++)
   {
     ZONE_HEADER zh;
     sZone zone;
 
     if (file->Read(&zh, sizeof(zh)) != sizeof(zh))
 			return false;
-    
+
     if (zh.x1 > zh.x2) {
       std::swap(zh.x1, zh.x2);
     }
@@ -510,7 +511,7 @@ sMap::Save(const char* filename, IFileSystem& fs)
   WriteMapString(file, m_EdgeScripts[1].c_str());
   WriteMapString(file, m_EdgeScripts[2].c_str());
   WriteMapString(file, m_EdgeScripts[3].c_str());
- 
+
   // write layers
   for (unsigned i = 0; i < m_Layers.size(); i++)
   {
@@ -587,7 +588,7 @@ sMap::Save(const char* filename, IFileSystem& fs)
         WriteMapString(file, person->spriteset.c_str());
 
         WriteMapWord(file, 5);  // four scripts
-        
+
         // scripts
         WriteMapString(file, person->script_create.c_str());
         WriteMapString(file, person->script_destroy.c_str());
@@ -733,7 +734,7 @@ sMap::PruneTileset(std::set<int>* allowed_tiles)
   // some dynamic programming.
 
   for (int it = 0; it < m_Tileset.GetNumTiles(); it++) {
-    
+
     bool in_use = false;
 
     // check to see if the tile is in an animation
@@ -764,12 +765,12 @@ done:
       // update tile animations
       for (int k = it; k < m_Tileset.GetNumTiles(); k++)
         m_Tileset.GetTile(k).SetNextTile(m_Tileset.GetTile(k).GetNextTile() - 1);
- 
+
       // now update all of the layers
       for (unsigned il = 0; il < m_Layers.size(); il++) {
         for (int iy = 0; iy < m_Layers[il].GetHeight(); iy++) {
           for (int ix = 0; ix < m_Layers[il].GetWidth(); ix++) {
-        
+
             int tile = m_Layers[il].GetTile(ix, iy);
             if (tile > it) {
               m_Layers[il].SetTile(ix, iy, tile - 1);
@@ -889,7 +890,7 @@ sMap::Import_VergeMAP(const char* filename, const char* tilesetFilename, IFileSy
   m_Entities.clear();
 
   std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::read));
-  if (!file.get()) 
+  if (!file.get())
     return false;
 
   // check for v1 maps (ver 4) and v2 maps (ver 5)
@@ -1031,14 +1032,14 @@ sMap::Import_VergeMAP(const char* filename, const char* tilesetFilename, IFileSy
       {
         word value;
         byte run;
-        
+
         file->Read(&value, sizeof(word));
 
         if ((value & 0xFF00) == 0xFF00)
         {
           run = (byte)value & 0x00FF;
           file->Read(&value, sizeof(word));
-          
+
           mapLayer[i][j] = value;
           for (k=1; k<run; k++)
           {
@@ -1118,7 +1119,7 @@ sMap::Import_VergeMAP(const char* filename, const char* tilesetFilename, IFileSy
         m_Tileset = tileset;
 
         delete[] layer;
-      } 
+      }
     }
 
     for (i=0; i<header.num_layers; i++)
@@ -1126,7 +1127,7 @@ sMap::Import_VergeMAP(const char* filename, const char* tilesetFilename, IFileSy
   }
 
   return success;
-} 
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1507,7 +1508,7 @@ sMap::SetEdgeScript(int edge, const char* script)
 ////////////////////////////////////////////////////////////////////////////////
 
 // when layer_to_translate = -1, translate all layers
-void 
+void
 sMap::Translate(int dx, int dy, int layer_to_translate)
 {
   bool persons = true;

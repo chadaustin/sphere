@@ -131,7 +131,7 @@ END_EVENT_TABLE()
 
 wMainWindow::wMainWindow(
                        const wxString& title, const wxPoint& pos,
-                       const wxSize& size, long type) 
+                       const wxSize& size, long type)
 : wxMDIParentFrame(NULL, -1, title, pos, size, type, "SDE_MainWindow")
 , m_ProjectOpen(false)
 , m_ProjectWindow(NULL)
@@ -279,7 +279,7 @@ wMainWindow::Create()
   EnableDocking(CBRS_ALIGN_ANY);
 
   DockControlBar(&m_ToolBar, AFX_IDW_DOCKBAR_TOP);
-  
+
   // load the command bar state
   LoadBarState(szBarState);
 
@@ -314,7 +314,7 @@ wMainWindow::CreateProject(const char* projectname, const char* gametitle)
 
   // this may fail, but we don't care
   CreateDirectory(games_directory, NULL);
-  
+
   if (!m_Project.Create(games_directory, projectname))
   {
     ::wxMessageBox("Error: Could not create project");
@@ -335,7 +335,7 @@ void
 wMainWindow::OpenProject(const char* filename)
 {
   CloseProject();
-  
+
   if (m_Project.Open(filename) == false)
   {
     ::wxMessageBox("Could not open project");
@@ -343,7 +343,7 @@ wMainWindow::OpenProject(const char* filename)
   }
 
   Configuration::Set(KEY_LAST_PROJECT(), filename);
-  
+
   m_ProjectOpen = true;
   m_ProjectWindow = new wProjectWindow(this, &m_Project);
   //m_ProjectWindow->Create();
@@ -372,7 +372,7 @@ wMainWindow::CloseProject()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void 
+void
 wMainWindow::CloseNotice(wDocumentWindow *doc)
 {
   // remove window from list
@@ -409,7 +409,7 @@ wMainWindow::OpenGameFile(const char* filename)
   for (int i = 0; i < NUM_GROUP_TYPES; i++) {
     std::vector<std::string> extensions;
     FTL.GetFileTypeExtensions(i, extensions);
-    
+
     for (unsigned k = 0; k < extensions.size(); k++) {
       std::string ext = "." + extensions[k];
       if (strcmp_ci(filename + strlen(filename) - ext.length(), ext.c_str()) == 0) {
@@ -696,7 +696,7 @@ wMainWindow::UpdateMenu()
       childmenu->Append(wID_SPRITESET_FILLDELAY,        "&Fill Delay");
       childmenu->Append(wID_SPRITESET_FRAMEPROPERTIES,  "Frame &Properties");
     break;
-  
+
     case wID_WINDOWSTYLE_base:
       m_ChildMenuTitle = "&Windowstyle";
       submenu = new wxMenu();
@@ -814,7 +814,7 @@ CMainWindow::OnDropFiles(HDROP hDropInfo)
     //free(lpFilename);
     delete[] lpFilename;
   }
-  
+
   DragFinish(hDropInfo);
 }
 #endif
@@ -935,7 +935,7 @@ void
 wMainWindow::OnFileNewProject(wxCommandEvent &event)
 {
   wNewProjectDialog newprojectdialog(this);
-    
+
   if (newprojectdialog.ShowModal() == wxID_OK)
   {
     char projectname[32];
@@ -1056,7 +1056,7 @@ wMainWindow::OnFileClose(wxCommandEvent &event)
     wxMDIChildFrame* child = GetActiveChild();
 
     // find the child and close it
-    for (int i = 0; i < m_DocumentWindows.size(); i++) {
+    for (int i = 0; i < int(m_DocumentWindows.size()); i++) {
       if (m_DocumentWindows[i] == child) {
         wxCloseEvent event;
         m_DocumentWindows[i]->OnClose(event);
@@ -1354,7 +1354,7 @@ wMainWindow::OnFileImportMergeRGBA(wxCommandEvent &event)
 
   CImage32 rgb;
   CImage32 alpha;
-  
+
   if (!rgb.Load(rgb_dialog.GetPath())) {
     ::wxMessageBox("Can't load image '" + rgb_dialog.GetFilename() + "'");
     return;
@@ -1413,7 +1413,7 @@ wMainWindow::OnFileImportWindowsFont(wxCommandEvent &event)
   HFONT old_font = (HFONT)SelectObject(dc, font);
 
   sFont sphere_font(256);
-  
+
   for (int i = 0; i < 256; i++) {
     char c = (char)i;
     SIZE size;
@@ -1548,7 +1548,7 @@ wMainWindow::OnProjectRunSphere(wxCommandEvent &event)
   si.cb = sizeof(si);
 
   PROCESS_INFORMATION pi;
-*/  
+*/
   char sphere_directory[MAX_PATH];
   strcpy(sphere_directory, g_SphereDirectory.c_str());
 
