@@ -188,9 +188,10 @@ bool SwitchResolution (int x, int y) {
   static bool initialized = false;
 
   if (!initialized) {
-    if (SDL_Init(SDL_INIT_VIDEO) == -1)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
-    screen = SDL_SetVideoMode(x, y, 32, SDL_FULLSCREEN | SDL_HWSURFACE | SDL_DOUBLEBUF);
+    /* screen = SDL_SetVideoMode(x, y, 32, SDL_FULLSCREEN | SDL_HWSURFACE | SDL_DOUBLEBUF); */
+	 screen = SDL_SetVideoMode(x, y, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
     if (screen == NULL)
       return false;
     FPSDisplayed = false;
@@ -200,7 +201,8 @@ bool SwitchResolution (int x, int y) {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) == -1)
       return false;
-    screen = SDL_SetVideoMode(x, y, 32, SDL_FULLSCREEN | SDL_HWSURFACE | SDL_DOUBLEBUF);
+    /* screen = SDL_SetVideoMode(x, y, 32, SDL_FULLSCREEN | SDL_HWSURFACE | SDL_DOUBLEBUF); */
+	 screen = SDL_SetVideoMode(x, y, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
     if (screen == NULL)
       return false;
     FPSDisplayed = false;

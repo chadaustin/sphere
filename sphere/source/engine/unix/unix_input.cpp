@@ -96,7 +96,9 @@ bool RefreshInput () {
     result = SDL_PollEvent(&event);
     if (!result)
       break;
-    if (event.type = SDL_KEYDOWN) {
+    if (event.type == SDL_QUIT)
+      exit(0);
+    else if (event.type == SDL_KEYDOWN) {
       pressed = event.key.keysym.sym;
       switch (pressed) {
         case SDLK_RSHIFT:
@@ -113,9 +115,9 @@ bool RefreshInput () {
             }
           }
       };
+      if (key != 0)
+        keys.push_back(key);
     }
-    if (key != 0)
-      keys.push_back(key);
   }
 }
 

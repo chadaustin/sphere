@@ -6,7 +6,8 @@ std::stack<string> directory_stack;
 bool GetDirectory (string& directory) {
   char* dir;
 
-  if (getcwd(dir, 0) == NULL)
+  dir = getcwd(NULL, 0);
+  if (dir == NULL)
     return false;
   directory = dir;
   free(dir);
