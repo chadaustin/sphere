@@ -1049,9 +1049,17 @@ FILE_OPEN_HANDLER(Animation,   new wAnimationWindow(path))
 void
 wMainWindow::OnFileClose(wxCommandEvent &event)
 {
-  if (m_DocumentWindows.size() > 0) {
-    wxCloseEvent event;
-    m_DocumentWindows[0]->OnClose(event);
+  if (m_DocumentWindows.size() > 0 ) {
+    wxMDIChildFrame* child = GetActiveChild();
+
+    // find the child and close it
+    for (int i = 0; i < m_DocumentWindows.size(); i++) {
+      if (m_DocumentWindows[i] == child) {
+        wxCloseEvent event;
+        m_DocumentWindows[i]->OnClose(event);
+        return;
+      }
+    }
   }
 }
 

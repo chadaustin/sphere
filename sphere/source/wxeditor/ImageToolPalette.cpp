@@ -1,13 +1,12 @@
 #include "ImageToolPalette.hpp"
 #include "Configuration.hpp"
 #include "Keys.hpp"
-//#include "resource.h"
 
-#include "icons/bucket.xpm"
-#include "icons/circle.xpm"
+#include "icons/pencil.xpm"
 #include "icons/line.xpm"
 #include "icons/rectangle.xpm"
-#include "icons/pencil.xpm"
+#include "icons/circle.xpm"
+#include "icons/bucket.xpm"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -20,7 +19,7 @@ wImageToolPalette::wImageToolPalette(wDocumentWindow* owner, IToolPaletteHandler
   AddTool((const char **)line_xpm,      "Line");
   AddTool((const char **)rectangle_xpm, "Rectangle");
   AddTool((const char **)circle_xpm,    "Circle");
-  AddTool((const char **)bucket_xpm,    "Line");
+  AddTool((const char **)bucket_xpm,    "Fill");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
