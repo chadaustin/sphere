@@ -42,6 +42,11 @@ END_MESSAGE_MAP()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static void CreateDefaultSpriteset(sSpriteset& spriteset) {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 CSpritesetWindow::CSpritesetWindow(const char* filename)
 : CSaveableDocumentWindow(filename, IDR_SPRITESET, CSize(160, 120))
 , m_CurrentDirection(0)
@@ -52,13 +57,47 @@ CSpritesetWindow::CSpritesetWindow(const char* filename)
   SetSaved(filename != NULL);
   SetModified(false);
 
-  // load the spriteset
-  if (filename == NULL || m_Spriteset.Load(filename) == false) {
+  // load spriteset
+  bool create_new_spriteset = (filename == NULL || m_Spriteset.Load(filename) == false);
+
+  // valid spriteset image indexes
+  if (m_Spriteset.GetNumImages() > 0) {
+    bool asked_to_prune = false;
+
+    for (int direction = 0; direction < m_Spriteset.GetNumDirections(); direction++)
+    {
+      for (int frame = 0; frame < m_Spriteset.GetNumFrames(direction); frame++)
+      {
+        int index = m_Spriteset.GetFrameIndex(direction, frame);
+
+        if (index < 0 || index > m_Spriteset.GetNumImages())
+        {
+          if (asked_to_prune == false) {
+            if (MessageBox("Error: Spriteset has some invalid image references, remove them?", "Load Spriteset", MB_YESNO) == IDNO) {
+              create_new_spriteset = true;
+            }
+            asked_to_prune = true;
+          }
+
+          if (index < 0) {
+            m_Spriteset.SetFrameIndex(direction, frame, 0);
+          }
+          else
+          if (index > m_Spriteset.GetNumImages()) {
+            m_Spriteset.SetFrameIndex(direction, frame, m_Spriteset.GetNumImages() - 1);
+          }
+        }
+      }
+    }
+  }
+
+  // create default spriteset
+  if (create_new_spriteset) {
     if (filename) {
       MessageBox("Could not load spriteset.\nCreating empty spriteset.");
     }
-    m_Spriteset.Create(16, 32, 1, 8, 1);
 
+    m_Spriteset.Create(16, 32, 1, 8, 1);
     m_Spriteset.SetDirectionName(0, "north");
     m_Spriteset.SetDirectionName(1, "northeast");
     m_Spriteset.SetDirectionName(2, "east");
