@@ -51,8 +51,10 @@ public:
   bool CanUndo() const;
   void Undo();
 
+  void GetSelection(int& x, int& y, int& w, int& h);
+
 private:
-  enum Tool { Tool_Pencil, Tool_Line, Tool_Rectangle, Tool_Circle, Tool_Fill };
+  enum Tool { Tool_Pencil, Tool_Line, Tool_Rectangle, Tool_Circle, Tool_Fill, Tool_Selection };
 
 private:
   virtual void SP_ColorSelected(RGBA color);
@@ -60,6 +62,8 @@ private:
 
   POINT ConvertToPixel(POINT point);
   bool InImage(POINT p);
+  bool InSelection(POINT p);
+  void GetSelectionRectangle(int& x, int& y, int& w, int& h);
 
   void Click(bool force_draw);
   void Fill();
@@ -67,6 +71,8 @@ private:
   void Line();
   void Rectangle();
   void Circle();
+  void UpdateSelection();
+  void Selection();
   void GetColor(RGBA* color, int x, int y);
 
   void AddUndoState();
@@ -142,6 +148,11 @@ private:
   POINT m_LastPoint;
   bool  m_MouseDown;
   int   m_CurrentTool;
+
+  int m_SelectionX;
+  int m_SelectionY;
+  int m_SelectionWidth;
+  int m_SelectionHeight;
 
   // undo
   int    m_NumUndoImages;

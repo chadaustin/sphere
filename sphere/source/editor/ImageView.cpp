@@ -73,6 +73,10 @@ CImageView::CImageView()
 , m_CurrentTool(Tool_Pencil)
 , m_NumUndoImages(0)
 , m_UndoImages(NULL)
+, m_SelectionX(0)
+, m_SelectionY(0)
+, m_SelectionWidth(0)
+, m_SelectionHeight(0)
 , m_ShowGrid(false)
 {
   m_Image.SetBlendMode(CImage32::REPLACE);
@@ -485,6 +489,41 @@ CImageView::InImage(POINT p)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+bool
+CImageView::InSelection(POINT p)
+{
+  if (m_SelectionWidth <= 0 && m_SelectionHeight <= 0)
+    return InImage(p);
+  else {
+    if (p.x >= m_SelectionX && p.x < m_SelectionX + m_SelectionWidth &&
+        p.y >= m_SelectionY && p.y < m_SelectionY + m_SelectionHeight) {
+      return InImage(p);
+    }
+    else
+      return false;
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void
+CImageView::GetSelectionRectangle(int& x, int& y, int& w, int& h) {
+  if (m_SelectionWidth <= 0 && m_SelectionHeight <= 0) {
+     x = 0;
+     y = 0;
+     w = m_Image.GetWidth();
+     h = m_Image.GetHeight();
+  }
+  else {
+    x = m_SelectionX;
+    y = m_SelectionX;
+    w = m_SelectionWidth;
+    h = m_SelectionHeight;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 CImageView::Click(bool force_draw)
 {
@@ -643,6 +682,26 @@ CImageView::Rectangle()
   }
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CImageView::Selection()
+{
+  if (!m_MouseDown)
+  {
+    m_StartPoint = m_CurPoint;
+    Invalidate();
+    m_Handler->IV_ImageChanged();
+  }
+  else
+  {
+    UpdateSelection();
+    Invalidate();
+    m_Handler->IV_ImageChanged();
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 void
@@ -744,6 +803,7 @@ CImageView::OnPaint()
     case Tool_Line:      PaintLine(drawImage); break;
     case Tool_Rectangle: PaintRectangle(drawImage); break;
     case Tool_Circle:    PaintCircle(drawImage); break;
+    case Tool_Selection: UpdateSelection(); break;
   }
 
   int width = drawImage.GetWidth();
@@ -891,6 +951,16 @@ CImageView::OnPaint()
     DeleteObject(linepen);
   }
 
+  if (m_SelectionWidth > 0 && m_SelectionHeight > 0) {
+    HPEN linepen = CreatePen(PS_SOLID, 1, RGB(255, 0, 255));
+    HPEN oldpen = (HPEN)SelectObject(dc, linepen);
+    MoveToEx(dc, offsetx + m_SelectionX * size, offsety + m_SelectionY * size, NULL);
+    LineTo  (dc, offsetx + m_SelectionX * size, offsety + (m_SelectionY + m_SelectionHeight) * size);
+    LineTo  (dc, offsetx + (m_SelectionX + m_SelectionWidth) * size, offsety + (m_SelectionY + m_SelectionHeight) * size);
+    LineTo  (dc, offsetx + (m_SelectionX + m_SelectionWidth) * size, offsety + m_SelectionY * size);
+    LineTo  (dc, offsetx + m_SelectionX * size, offsety + m_SelectionY * size);
+  }
+
   // draw a white rectangle around the image
   SetRect(&Rect, offsetx - 1, offsety - 1, offsetx + totalx + 1, offsety + totaly + 1);
 
@@ -967,6 +1037,29 @@ CImageView::PaintCircle(CImage32& pImage)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+CImageView::UpdateSelection()
+{
+  if (!m_MouseDown)
+    return;
+
+  // convert pixel coordinates to image coordinates
+  POINT start = ConvertToPixel(m_StartPoint);
+  POINT end = ConvertToPixel(m_CurPoint);
+
+  // bounds check
+  if (!InImage(start) || !InImage(end))
+    return;
+
+  m_SelectionX = std::min(start.x, end.x);
+  m_SelectionY = std::min(start.y, end.y);
+  m_SelectionWidth  = std::max(start.x, end.x) - m_SelectionX;
+  m_SelectionHeight = std::max(start.y, end.y) - m_SelectionY;  
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CImageView::OnSize(UINT type, int cx, int cy)
 {
@@ -991,6 +1084,7 @@ CImageView::OnLButtonDown(UINT flags, CPoint point)
     case Tool_Line:      Line();      break;
     case Tool_Rectangle: Rectangle(); break;
     case Tool_Circle:    Circle();    break;
+    case Tool_Selection: Selection(); break;
   }
 
   m_MouseDown = true;
@@ -1011,6 +1105,7 @@ CImageView::OnLButtonUp(UINT flags, CPoint point)
     case Tool_Line:      Line();  break;
     case Tool_Rectangle: Rectangle(); break;
     case Tool_Circle:    Circle(); break;
+    case Tool_Selection: Selection(); break;
   }
 
   m_MouseDown = false;
@@ -1091,6 +1186,7 @@ CImageView::OnMouseMove(UINT flags, CPoint point)
     case Tool_Line:
     case Tool_Rectangle:
     case Tool_Circle:
+    case Tool_Selection:
       Invalidate();
       break;
   }
