@@ -372,9 +372,16 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha, int merge
     cheight = *ptr++;
     RGBA* pixels = (RGBA*)ptr;
 
-    cpixels = new RGBA[cwidth * cheight];
-    if (cpixels == NULL)
+    if (cwidth <= 0 || cheight <= 0) {
+      CloseClipboard();
       return false;
+    }
+
+    cpixels = new RGBA[cwidth * cheight];
+    if (cpixels == NULL) {
+      CloseClipboard();
+      return false;
+    }
 
     for (int y = 0; y < cheight; y++) {
       for (int x = 0; x < cwidth; x++) {
@@ -389,6 +396,8 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha, int merge
   HBITMAP bitmap = NULL;
   if (cpixels == NULL) {
     bitmap = (HBITMAP)GetClipboardData(CF_BITMAP);
+    if (bitmap == NULL)
+      CloseClipboard();
   }
 
   // grab a bitmap out of the clipboard
@@ -403,8 +412,10 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha, int merge
     cheight = iHeight;
 
     cpixels = new RGBA[cwidth * cheight];
-    if (cpixels == NULL)
+    if (cpixels == NULL) {
+      CloseClipboard();
       return false;
+    }
 
     for (int iy = 0; iy < cheight; iy++)
       for (int ix = 0; ix < cwidth; ix++)

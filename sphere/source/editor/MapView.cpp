@@ -456,10 +456,13 @@ CMapView::LayerAreaCopy()
   if (end_x < start_x) std::swap(start_x, end_x); 
   if (end_y < start_y) std::swap(start_y, end_y);
 
+  sLayer& l = m_Map->GetLayer(m_SelectedLayer);
+  if (end_x >= l.GetWidth())  end_x = l.GetWidth() - 1; 
+  if (end_y >= l.GetHeight()) end_y = l.GetHeight() - 1; 
+
   // grab the layer
   int width = end_x - start_x + 1;
   int height = end_y - start_y + 1;
-  sLayer& l = m_Map->GetLayer(m_SelectedLayer);
   sLayer pLayer;
   sLayer newLayer;
   pLayer.Resize(width, height);
