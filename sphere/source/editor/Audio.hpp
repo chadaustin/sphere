@@ -37,6 +37,7 @@ private:
   audiere::MIDIStreamPtr   m_Midi;
   bool m_ClosedAudio;
   bool m_ClosedMidi;
+  bool m_ClosedCD;
   std::string m_Filename;
 
   void __GetDevice__();

@@ -7,7 +7,7 @@ static audiere::AudioDevicePtr s_AudioDevice = NULL;
 static int s_MidiInitCount  = 0;
 static audiere::MIDIDevicePtr  s_MidiDevice  = NULL;
 
-//#define CD_AUDIO
+#define CD_AUDIO
 
 #ifdef CD_AUDIO
 static int s_CDInitCount  = 0;
@@ -71,10 +71,10 @@ static void InitializeMidi()
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifdef CD_AUDIO
-static void InitializeCD()
+static void InitializeCD(const char* device)
 {
   if (s_CDInitCount++ == 0) {
-    s_CDDevice = audiere::OpenCDDevice("E:");
+    s_CDDevice = audiere::OpenCDDevice(device);
     if (s_CDDevice == NULL) {
       s_CDDevice = audiere::OpenCDDevice("null");
     }
@@ -106,7 +106,7 @@ static void CloseMidi()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#if CD_AUDIO
+#ifdef CD_AUDIO
 static void CloseCD()
 {
   if (--s_CDInitCount == 0) {
@@ -120,24 +120,34 @@ static void CloseCD()
 CSound::CSound()
 : m_Sound(NULL)
 , m_Midi(NULL)
-, m_ClosedAudio(false)
-, m_ClosedMidi(false)
-{
-  InitializeAudio();
-  InitializeMidi();
-#ifdef CD_AUDIO
-  InitializeCD();
+, m_ClosedAudio(true)
+, m_ClosedMidi(true)
+#ifdef CD_AUIO
+, m_ClosedCD(true)
 #endif
+{
+  InitializeAudio(); m_ClosedAudio = false;
+  InitializeMidi();  m_ClosedMidi  = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 CSound::~CSound()
 {
-  if (!m_ClosedAudio)
+  if (!m_ClosedAudio) {
     CloseAudio();
-  if (!m_ClosedMidi)
+    m_ClosedAudio = true;
+  }
+  if (!m_ClosedMidi) {
     CloseMidi();
+    m_ClosedMidi = true;
+  }
+#ifdef CD_AUDIO
+  if (!m_ClosedCD) {
+    CloseCD();
+    m_ClosedCD = true;
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -202,6 +212,44 @@ CSound::__GetSound__(const char* filename)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static bool get_cda_details(const std::string filename, std::string& device, int& track_number)
+{
+  const char* cda = "cda://";
+  int device_start = filename.find(cda);
+  int device_end = filename.find(",");
+
+  if (device_start == 0 && device_end >= strlen(cda) + 1) {
+    device_start += strlen(cda);
+
+    device = filename.substr(device_start, device_end - device_start);
+
+    int track_start = device_end + 1;
+    int track_end = filename.size();
+
+    std::string track = filename.substr(track_start, track_end - track_start);
+    for (int i = 0; i < track.length(); i++) {
+      if (track[i] < '0' || track[i] > '9') {
+        return false;
+      }
+    }
+
+    track_number = atoi(track.c_str());
+    return true;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+static bool is_cda(const std::string filename)
+{
+  std::string device = "";
+  int track_number = 0;
+  return get_cda_details(filename, device, track_number);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 bool
 CSound::Load(const char* filename)
@@ -210,10 +258,12 @@ CSound::Load(const char* filename)
     Stop();
   }
 
+  m_Filename = filename;
+  if (is_cda(filename))
+    return true;
+
   __GetDevice__();
   __GetSound__(filename);
-
-  m_Filename = filename;
 
   if (!m_Sound && !m_Midi) {
     Stop();
@@ -228,18 +278,39 @@ bool
 CSound::Play()
 {
   if (!IsPlaying()) {
-    __GetDevice__();
-    __GetSound__(m_Filename.c_str());
 
-    if (m_Sound)
+    if (!is_cda(m_Filename)) {
+      __GetDevice__();
+      __GetSound__(m_Filename.c_str());
+    }
+
+    if (m_Sound) {
       m_Sound->play();
+    }
 
-    if (m_Midi)
+    if (m_Midi) {
       m_Midi->play();
+    }
 
 #ifdef CD_AUDIO
-    if (s_CDDevice && s_CDDevice.get())
-      s_CDDevice->play(0);
+    if (is_cda(m_Filename)) {
+      
+      std::string device = "";
+      int track_number = 0;
+
+      if (get_cda_details(m_Filename, device, track_number)) {
+        device += ":";
+        InitializeCD(device.c_str());
+        m_ClosedCD = false;
+
+        if (s_CDDevice && s_CDDevice.get())
+          s_CDDevice->play(track_number);
+
+        return true;
+      }
+
+      return false;
+    }
 #endif
   }
 
@@ -263,19 +334,25 @@ CSound::Stop()
   }
 
 #ifdef CD_AUDIO
-  if (s_CDDevice && s_CDDevice.get())
+  if (s_CDDevice && s_CDDevice.get()) {
     s_CDDevice->stop();
+  }
+
+  if (!m_ClosedCD) {
+    CloseCD();
+    m_ClosedCD = true;
+  }
 #endif
 
 
   if (!m_ClosedAudio) {
-    m_ClosedAudio = true;
     CloseAudio();
+    m_ClosedAudio = true;
   }
 
   if (!m_ClosedMidi) {
-    m_ClosedMidi = true;
     CloseMidi();
+    m_ClosedMidi = true;
   }
 }
 
@@ -305,6 +382,11 @@ CSound::IsPlaying() const
 {
   if (m_Sound) return m_Sound->isPlaying();
   if (m_Midi)  return m_Midi->isPlaying();
+
+#ifdef CD_AUDIO
+  if (s_CDDevice && s_CDDevice.get()) return true; // s_CDDevice->isPlaying();
+#endif
+
   return false;
 }
 

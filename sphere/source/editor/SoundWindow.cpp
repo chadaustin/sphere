@@ -62,7 +62,7 @@ CSoundWindow::CSoundWindow(const char* sound)
   m_CurrentSound = 0;
 
   m_Playing = false;
-  m_Stopped = false;
+  m_Stopped = true;
 
   m_Repeat = Configuration::Get(KEY_SOUND_REPEAT);
   m_AutoAdvance  = Configuration::Get(KEY_SOUND_AUTOADVANCE);
@@ -98,6 +98,14 @@ CSoundWindow::CSoundWindow(const char* sound)
     m_PitchBar.SetPos(255);
     m_PitchBar.SetLineSize(20);
   }
+
+  /*
+  m_Playlist.AppendFile("cda://F,1");
+  m_Playlist.AppendFile("cda://F,2");
+  m_Playlist.AppendFile("cda://F,3");
+  m_Playlist.AppendFile("cda://F,4");
+  m_Playlist.AppendFile("cda://F,5");
+  */
 
   if (sound != NULL) {
     m_Playlist.AppendFile(sound);
@@ -169,7 +177,7 @@ afx_msg void
 CSoundWindow::OnSize(UINT type, int cx, int cy)
 {
   int button_height = cy;
-  if (m_PositionBar.m_hWnd != NULL)
+  if (m_PositionBar.m_hWnd != NULL && m_PositionBar.IsWindowVisible())
     button_height -= 25;
 
   if (m_PlayButton.m_hWnd != NULL)
@@ -202,6 +210,9 @@ CSoundWindow::OnSize(UINT type, int cx, int cy)
 afx_msg void
 CSoundWindow::OnTimer(UINT timerID)
 {
+  if ( !m_Playing && m_Stopped )
+    return;
+
   if (m_Sound.IsPlaying())
   {
     if (m_PositionBar.m_hWnd != NULL) {
@@ -614,11 +625,23 @@ CSoundWindow::OnNeedText(UINT /*id*/, NMHDR* nmhdr, LRESULT* result)
 void
 CSoundWindow::UpdateCaption()
 {
-  char szWindowTitle[MAX_PATH + 1024];
-  const char* filename = strrchr(m_Playlist.GetFile(m_CurrentSound), '\\') + 1;
+  if (m_CurrentSound >= 0 && m_CurrentSound < m_Playlist.GetNumFiles()) {
+    char szWindowTitle[MAX_PATH + 1024];
+    const char* filename = m_Playlist.GetFile(m_CurrentSound);
+    if (filename != NULL) {
+      const char* ptr = strrchr(filename, '\\');
+      if (ptr == NULL)
+        ptr = filename;
+      else
+        ptr += 1;
 
-  sprintf (szWindowTitle, "%s [%d / %d]", filename, m_CurrentSound, m_Playlist.GetNumFiles());
-  SetCaption(szWindowTitle);
+      sprintf (szWindowTitle, "%s [%d / %d]", ptr, m_CurrentSound, m_Playlist.GetNumFiles());
+      SetCaption(szWindowTitle);
+    }
+  }
+  else {
+    SetCaption("...");
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
