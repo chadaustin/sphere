@@ -294,7 +294,7 @@ CProject::RefreshItems()
   {
     std::vector<std::string> folderlist = GetFolderList("*");
     for (unsigned int i = 0; i < folderlist.size(); i++) {
-      if (folderlist[i] != "." || folderlist[i] != "..")
+      if (folderlist[i] == "." || folderlist[i] == "..")
         continue;
         
       if (!SetCurrentDirectory(m_Directory.c_str()))
