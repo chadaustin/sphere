@@ -191,6 +191,7 @@ CFontWindow::SetImage()
   sFontCharacter& c = m_Font.GetCharacter(m_CurrentCharacter);
   m_ImageView.SetImage(c.GetWidth(), c.GetHeight(), c.GetPixels(), true);
   m_ScrollBar.SetScrollPos(m_CurrentCharacter);
+  if (m_FontPreviewPalette)  m_FontPreviewPalette->OnCharacterChanged(m_CurrentCharacter);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
