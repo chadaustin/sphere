@@ -32,4 +32,5 @@ env.Library('common', Split("""
     WindowStyle.cpp
     common_palettes.cpp
     configfile.cpp
+    md5.c
 """))
