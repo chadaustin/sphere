@@ -148,6 +148,51 @@ void BuildDriverList()
   }
 
   SetCurrentDirectory(old_directory);
+
+#if 1
+  if (SetCurrentDirectory("C:\\WINDOWS\\Desktop\\sphere\\source\\video") == 0)
+    return;
+
+  handle = FindFirstFile("*", &ffd);
+  if (handle != INVALID_HANDLE_VALUE)
+  {
+    do {
+
+      if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+        std::string filename;
+
+        filename = ffd.cFileName;
+        filename += "/";
+        filename += "release";
+        filename += "/";
+        filename += ffd.cFileName;
+        filename += ".dll";
+
+        if (IsValidDriver(filename.c_str())) {
+          filename = "../../../windows/desktop/sphere/source/video/" + filename;
+          VideoDriverList.push_back(filename);
+        }
+
+        filename = "";
+        filename += ffd.cFileName;
+        filename += "/";
+        filename += "debug";
+        filename += "/";
+        filename += ffd.cFileName;
+        filename += ".dll";
+
+        if (IsValidDriver(filename.c_str())) {
+          filename = "../../../windows/desktop/sphere/source/video/" + filename;
+          VideoDriverList.push_back(filename);
+        }      
+      }
+    } while (FindNextFile(handle, &ffd));
+
+    FindClose(handle);
+  }
+
+  SetCurrentDirectory(old_directory);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

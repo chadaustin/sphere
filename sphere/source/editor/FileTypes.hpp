@@ -16,12 +16,13 @@ enum
   GT_WINDOWSTYLES,
   GT_IMAGES,
   GT_ANIMATIONS,
+  GT_TILESETS,
 
   // special codes
   NUM_GROUP_TYPES,
-  GT_UNKNOWN,
+  //GT_UNKNOWN,
 
-  GT_TILESETS = NUM_GROUP_TYPES,  // this one shouldn't be listed in projects
+  // GT_TILESETS = NUM_GROUP_TYPES,  // this one shouldn't be listed in projects
   GT_PACKAGES,
 };
 
