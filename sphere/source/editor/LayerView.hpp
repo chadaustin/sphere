@@ -50,6 +50,7 @@ private:
   afx_msg void OnLayerProperties();
   afx_msg void OnExportLayer();
   afx_msg void OnExportAllVisibleLayers();
+  afx_msg void OnToggleLockLayersInPlace();
 
   afx_msg void OnLayerSlideUp();
   afx_msg void OnLayerSlideRight();

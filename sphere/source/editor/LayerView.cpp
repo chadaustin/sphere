@@ -34,6 +34,7 @@ BEGIN_MESSAGE_MAP(CLayerView, CVScrollWindow)
   ON_COMMAND(ID_LAYERVIEW_SLIDE_RIGHT,          OnLayerSlideRight)
   ON_COMMAND(ID_LAYERVIEW_SLIDE_DOWN,           OnLayerSlideDown)
   ON_COMMAND(ID_LAYERVIEW_SLIDE_LEFT,           OnLayerSlideLeft)
+  ON_COMMAND(ID_LAYERVIEW_TOGGLE_LOCK_LAYERS_IN_PLACE, OnToggleLockLayersInPlace)
 
 END_MESSAGE_MAP()
 
@@ -272,6 +273,10 @@ CLayerView::OnRButtonUp(UINT flags, CPoint point)
   // simulate a left click to set the selected layer
   Click(point.x, point.y, false);
 
+  if (AreLayersLockedInPlace()) {
+    CheckMenuItem(menu, ID_LAYERVIEW_TOGGLE_LOCK_LAYERS_IN_PLACE, MF_BYCOMMAND | MF_CHECKED);
+  }
+
   // make sure the right things are greyed and stuff
   if (point.x >= 0 &&
       point.x < client_rect.right &&
@@ -285,7 +290,6 @@ CLayerView::OnRButtonUp(UINT flags, CPoint point)
       EnableMenuItem(menu, ID_LAYERVIEW_DELETELAYER, MF_BYCOMMAND | MF_GRAYED);
 
     EnableMenuItem(menu, ID_LAYERVIEW_PROPERTIES, MF_BYCOMMAND | MF_ENABLED);
-
 
     ClientToScreen(&point);
     TrackPopupMenu(menu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, point.x, point.y, 0, m_hWnd, NULL);
@@ -438,6 +442,14 @@ CLayerView::OnDuplicateLayer()
   UpdateScrollBar();
   Invalidate();
   m_Handler->LV_MapChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void 
+CLayerView::OnToggleLockLayersInPlace()
+{
+  ToggleLockLayersInPlace();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

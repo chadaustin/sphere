@@ -37,7 +37,6 @@ BEGIN_MESSAGE_MAP(CMapWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_MAP_SLIDE_DOWN,      OnMapSlideDown)
   ON_COMMAND(ID_MAP_SLIDE_LEFT,      OnMapSlideLeft)
 
-  ON_COMMAND(ID_MAP_TOGGLE_LOCK_LAYERS_IN_PLACE, OnToggleLockLayersInPlace)
   ON_NOTIFY(TCN_SELCHANGE, IDC_TAB,  OnTabChanged)
 
 END_MESSAGE_MAP()
@@ -645,14 +644,6 @@ void
 CMapWindow::SP_ColorSelected(RGBA color)
 {
   m_TilesetEditView.SP_ColorSelected(color);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-afx_msg void 
-CMapWindow::OnToggleLockLayersInPlace()
-{
-  m_LayerView.ToggleLockLayersInPlace();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

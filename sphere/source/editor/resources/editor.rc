@@ -163,8 +163,6 @@ BEGIN
             MENUITEM "&Down",                       ID_MAP_SLIDE_DOWN
             MENUITEM "&Left",                       ID_MAP_SLIDE_LEFT
         END
-        MENUITEM "Toggle Lock Layers",          ID_MAP_TOGGLE_LOCK_LAYERS_IN_PLACE
-
     END
 END
 
@@ -293,6 +291,8 @@ BEGIN
             MENUITEM "&Down",                       ID_LAYERVIEW_SLIDE_DOWN
             MENUITEM "&Left",                       ID_LAYERVIEW_SLIDE_LEFT
         END
+        MENUITEM "Toggle Lock Layers",          ID_LAYERVIEW_TOGGLE_LOCK_LAYERS_IN_PLACE
+
         MENUITEM "&Properties...",              ID_LAYERVIEW_PROPERTIES
     END
 END
