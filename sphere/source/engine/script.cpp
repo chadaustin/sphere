@@ -722,6 +722,9 @@ inline JSObject* argObject(JSContext* cx, jsval arg)
 inline JSObject* argArray(JSContext* cx, jsval arg)
 {
   JSObject* array = argObject(cx, arg);
+  if (array == NULL)
+    return NULL;
+
   if (!JS_IsArrayObject(cx, array)) {
     JS_ReportError(cx, "Invalid array.");
     return NULL;
