@@ -73,6 +73,7 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "&Map...",                     ID_FILE_OPEN_MAP
             MENUITEM "&Spriteset...",               ID_FILE_OPEN_SPRITESET
+            MENUITEM "Tileset...",                  ID_FILE_OPEN_TILESET
             MENUITEM "S&cript...",                  ID_FILE_OPEN_SCRIPT
             MENUITEM "&Sound...",                   ID_FILE_OPEN_SOUND
             MENUITEM "&Font...",                    ID_FILE_OPEN_FONT

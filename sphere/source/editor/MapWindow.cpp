@@ -46,14 +46,14 @@ END_MESSAGE_MAP()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-CMapWindow::CMapWindow(const char* map)
+CMapWindow::CMapWindow(const char* map, const char* tileset)
 : CSaveableDocumentWindow(map, IDR_MAP, CSize(400, 100))
 , m_Created(false)
 , m_TilePalette(NULL)
 {
   // LoadMap() displays message boxes if something goes wrong
   // SetSaved() and SetModified() are called in here
-  if (!LoadMap(map)) {
+  if (!LoadMap(map, tileset)) {
     delete this;
     return;
   }
@@ -120,7 +120,7 @@ CMapWindow::Destroy()
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapWindow::LoadMap(const char* szMap)
+CMapWindow::LoadMap(const char* szMap, const char* szTileset)
 {
   SetSaved(szMap != NULL);
   SetModified(false);
@@ -136,7 +136,7 @@ CMapWindow::LoadMap(const char* szMap)
     }
 
     // show the new map dialog box
-    CNewMapDialog NewMapDialog;
+    CNewMapDialog NewMapDialog(64, 64, szTileset);
     if (NewMapDialog.DoModal() != IDOK)
       return false;
 

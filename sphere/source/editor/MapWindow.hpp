@@ -25,14 +25,14 @@ class CMapWindow
   , private ISwatchPaletteHandler
 {
 public:
-  CMapWindow(const char* map = NULL);
+  CMapWindow(const char* map = NULL, const char* tileset = NULL);
   ~CMapWindow();
 
 private:
   void Create();
   void Destroy();
 
-  bool LoadMap(const char* map);
+  bool LoadMap(const char* map, const char* tileset = NULL);
 
   void GetMapViewRect(RECT* rect);
   void GetLayerViewRect(RECT* rect);

@@ -462,6 +462,7 @@
 #define ID_TILESETVIEW_MOVE_FORWARD     40652
 #define ID_IMAGE_ROTATE                 40653
 #define ID_FILE_IMPORT_RM2KCHIPSETTORTS 40654
+#define ID_FILE_OPEN_TILESET            40655
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -470,7 +471,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        228
-#define _APS_NEXT_COMMAND_VALUE         40655
+#define _APS_NEXT_COMMAND_VALUE         40656
 #define _APS_NEXT_CONTROL_VALUE         1133
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

@@ -15,8 +15,18 @@ END_MESSAGE_MAP()
 
 CNewMapDialog::CNewMapDialog()
 : CDialog(IDD_NEW_MAP)
-, m_MapWidth(0)
-, m_MapHeight(0)
+, m_MapWidth(64)
+, m_MapHeight(64)
+{
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+CNewMapDialog::CNewMapDialog(int w, int h, const char* tileset)
+: CDialog(IDD_NEW_MAP)
+, m_MapWidth(w)
+, m_MapHeight(h)
+, m_Tileset(tileset)
 {
 }
 
@@ -52,8 +62,10 @@ CNewMapDialog::OnInitDialog()
   CDialog::OnInitDialog();
 
   // put default values into the edit boxes
-  SetDlgItemInt(IDC_WIDTH, 64);
-  SetDlgItemInt(IDC_HEIGHT, 64);
+  SetDlgItemInt(IDC_WIDTH, m_MapWidth);
+  SetDlgItemInt(IDC_HEIGHT, m_MapHeight);
+
+  GetDlgItem(IDC_TILESET)->SetWindowText(m_Tileset.c_str());
 
   // set the focus and selection and tell the dialog not to set the focus
   GetDlgItem(IDC_WIDTH)->SetFocus();

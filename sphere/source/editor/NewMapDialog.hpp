@@ -10,6 +10,7 @@ class CNewMapDialog : public CDialog
 {
 public:
   CNewMapDialog();
+  CNewMapDialog(int w, int h, const char* tileset);
 
   int GetMapWidth() const;
   int GetMapHeight() const;
