@@ -5,7 +5,7 @@
   
   EvaluateSystemScript("playlist.js");
 
-  var playlist = new Playlist("..\\sounds\\list.m3u");
+  var playlist = new Playlist("../sounds/list.m3u");
 
   SetUpdateScript("UpdateScript()");
   function UpdateScript() {
