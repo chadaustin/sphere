@@ -348,6 +348,12 @@ log_object.endBlock()
     SetLayerVisible(layer, visible)
       - shows 'layer' if visible == true, and hides it if visible == false
 
+    SetLayerAlpha(layer, alpha)
+      - set the alpha of 'layer' to 'alpha'
+
+    GetLayerAlpha(layer)
+      - get the alpha currently being used by 'layer'
+
     GetNumTiles()
       - return number of tiles in map
 
