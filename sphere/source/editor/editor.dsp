@@ -379,10 +379,6 @@ SOURCE=.\resources\music.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\resources\obstructed.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\resources\project.ico
 # End Source File
 # Begin Source File

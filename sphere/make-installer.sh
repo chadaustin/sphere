@@ -10,7 +10,7 @@ INSTALL=installer
 DIRS="docs games startup system util"
 
 echo "Building Sphere..."
-scons compiler=vc6 opt=1
+scons compiler=vc6 opt=1 || die
 
 echo "Cleaning old files..."
 rm -rf $INSTALL/*.exe || die
