@@ -7,6 +7,7 @@ BEGIN_MESSAGE_MAP(CTilePreviewPalette, CPaletteWindow)
 
   ON_WM_PAINT()   
   ON_WM_RBUTTONUP()
+  ON_WM_ERASEBKGND()
 
 END_MESSAGE_MAP()
 
@@ -22,6 +23,14 @@ CTilePreviewPalette::CTilePreviewPalette(CDocumentWindow* owner, CImage32 image)
 , m_BlitImage(NULL)
 {
   OnZoom(1);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+BOOL
+CTilePreviewPalette::OnEraseBkgnd(CDC* pDC)
+{
+  return TRUE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -62,7 +71,7 @@ CTilePreviewPalette::OnPaint()
 	GetClientRect(&ClientRect);
 
   if (!m_BlitImage || m_BlitImage->GetPixels() == NULL
-    || m_Image.GetPixels() == NULL) {
+    || m_Image.GetWidth() == 0 || m_Image.GetHeight() == 0 || m_Image.GetPixels() == NULL) {
     // draw black rectangle
     dc.FillRect(&ClientRect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
     return;
@@ -71,8 +80,16 @@ CTilePreviewPalette::OnPaint()
   int blit_width  = m_BlitImage->GetWidth();
   int blit_height = m_BlitImage->GetHeight();
 
-  // draw black rectangle
-  dc.FillRect(&ClientRect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+  // draw black rectangle around tile
+  if (1) {
+    RECT rect = ClientRect;
+    rect.left += blit_width * 3;
+    dc.FillRect(&rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+    rect.left -= blit_width * 3;
+    rect.top += blit_height * 3;
+    dc.FillRect(&rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+    rect.top -= blit_height * 3;
+  }
 
 	for (int ty = 0; ty < 3; ty++)
   {

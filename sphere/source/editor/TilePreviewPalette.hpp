@@ -25,6 +25,7 @@ private:
   afx_msg void OnPaint();
   afx_msg void OnRButtonUp(UINT flags, CPoint point);
 	afx_msg void OnTimer(UINT event);
+  BOOL OnEraseBkgnd(CDC* pDC);
 
 private:
   CImage32 m_Image;

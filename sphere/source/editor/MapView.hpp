@@ -40,6 +40,9 @@ public:
   void SetTileSelection(int width, int height, unsigned int* tiles);
 
 private:
+  BOOL OnEraseBkgnd(CDC* pDC);
+
+private:
   int m_MultiTileWidth;
   int m_MultiTileHeight;
   unsigned int* m_MultiTileData;

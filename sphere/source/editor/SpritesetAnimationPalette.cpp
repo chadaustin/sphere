@@ -10,6 +10,7 @@ BEGIN_MESSAGE_MAP(CSpritesetAnimationPalette, CPaletteWindow)
   ON_WM_PAINT()   
   ON_WM_RBUTTONUP()
   ON_WM_TIMER()
+  ON_WM_ERASEBKGND()
 
 END_MESSAGE_MAP()
 
@@ -34,6 +35,14 @@ CSpritesetAnimationPalette::CSpritesetAnimationPalette(CDocumentWindow* owner, s
 
 ////////////////////////////////////////////////////////////////////////////////
 
+BOOL
+CSpritesetAnimationPalette::OnEraseBkgnd(CDC* pDC)
+{
+  return TRUE;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 CSpritesetAnimationPalette::SetCurrentDirection(int direction)
 {
@@ -52,6 +61,7 @@ void
 CSpritesetAnimationPalette::Destroy()
 {
   delete m_BlitImage;
+  m_BlitImage = NULL;
 
   // save state
   RECT rect;
@@ -85,8 +95,16 @@ CSpritesetAnimationPalette::OnPaint()
   int blit_width  = m_BlitImage->GetWidth();
   int blit_height = m_BlitImage->GetHeight();
 
-  // draw black rectangle
-  dc.FillRect(&ClientRect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+  // draw black rectangle around image
+  if (1) {
+    RECT rect = ClientRect;
+    rect.left += blit_width;
+    dc.FillRect(&rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+    rect.left -= blit_width;
+    rect.top += blit_height;
+    dc.FillRect(&rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+    rect.top -= blit_height;
+  }
 
 	if (m_SelectedDirection >= 0 && m_SelectedDirection < m_Spriteset->GetNumDirections())
 	{

@@ -21,7 +21,6 @@ static int s_ClipboardFormat;
 
 //static const int ANIMATION_TIMER = 9001;
 
-
 BEGIN_MESSAGE_MAP(CMapView, CScrollWindow)
 
   ON_WM_DESTROY()
@@ -32,9 +31,15 @@ BEGIN_MESSAGE_MAP(CMapView, CScrollWindow)
   ON_WM_LBUTTONUP()
   ON_WM_RBUTTONUP()
 //  ON_WM_TIMER()
+  ON_WM_ERASEBKGND()
 
 END_MESSAGE_MAP()
 
+BOOL
+CMapView::OnEraseBkgnd(CDC* pDC)
+{
+  return TRUE;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 

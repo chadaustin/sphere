@@ -1010,7 +1010,11 @@ SOURCE=..\common\configfile.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\common\convolve.h
+SOURCE=..\common\convolve.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\convolve.hpp
 # End Source File
 # Begin Source File
 

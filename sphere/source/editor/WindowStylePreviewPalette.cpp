@@ -7,6 +7,7 @@ BEGIN_MESSAGE_MAP(CWindowStylePreviewPalette, CPaletteWindow)
 
   ON_WM_PAINT()   
   ON_WM_RBUTTONUP()
+  ON_WM_ERASEBKGND()
 
 END_MESSAGE_MAP()
 
@@ -22,6 +23,14 @@ CWindowStylePreviewPalette::CWindowStylePreviewPalette(CDocumentWindow* owner, s
 , m_BlitImage(NULL)
 {
   OnZoom(m_ZoomFactor);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+BOOL
+CWindowStylePreviewPalette::OnEraseBkgnd(CDC* pDC)
+{
+  return TRUE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -58,8 +67,10 @@ CWindowStylePreviewPalette::DrawBitmap(CPaintDC& dc, int bitmap, int x, int y, i
 	RECT ClientRect;
 	GetClientRect(&ClientRect);
 
-  if (!m_BlitImage || m_BlitImage->GetPixels() == NULL)
+  if (!m_BlitImage || m_BlitImage->GetPixels() == NULL) {
+    dc.FillRect(&ClientRect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
     return;
+  }
 
   int blit_width  = m_BlitImage->GetWidth();
   int blit_height = m_BlitImage->GetHeight();
@@ -159,14 +170,24 @@ CWindowStylePreviewPalette::OnPaint()
   int blit_width  = m_BlitImage->GetWidth();
   int blit_height = m_BlitImage->GetHeight();
 
-  // draw black rectangle
-  dc.FillRect(&ClientRect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
-
   int left = m_WindowStyle->GetBitmap(sWindowStyle::UPPER_LEFT).GetWidth();
   int center = m_WindowStyle->GetBitmap(sWindowStyle::TOP).GetWidth(); // / m_ZoomFactor;
+  int right = m_WindowStyle->GetBitmap(sWindowStyle::UPPER_RIGHT).GetWidth();
 
   int top = m_WindowStyle->GetBitmap(sWindowStyle::TOP).GetHeight();
   int middle = m_WindowStyle->GetBitmap(sWindowStyle::LEFT).GetHeight(); // / m_ZoomFactor;
+  int bottom = m_WindowStyle->GetBitmap(sWindowStyle::BOTTOM).GetHeight(); // / m_ZoomFactor;
+
+  // draw black rectangle around windowstyle
+  if (1) {
+    RECT rect = ClientRect;
+    rect.left += (left + center + right);
+    dc.FillRect(&rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+    rect.left -= (left + center + right);
+    rect.top += (top + middle + bottom);
+    dc.FillRect(&rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+    rect.top -= (top + middle + bottom);
+  }
 
   DrawCorner(dc, sWindowStyle::UPPER_LEFT, 0, 0);
   DrawEdge(dc, sWindowStyle::TOP, left, 0);
@@ -217,18 +238,11 @@ CWindowStylePreviewPalette::OnZoom(double zoom) {
       height = m_WindowStyle->GetBitmap(i).GetHeight();
 	}
 
-  width *= m_ZoomFactor;
-  height *= m_ZoomFactor;
-
-  m_BlitImage = new CDIBSection(width, height, 32);
-
-  /*
-	RECT rect;
-	rect.left = 0;
-	rect.top  = 0;
-	rect.right = width;
-	rect.bottom = height;
-  */
+  if (width > 0 && height > 0) {
+    width *= m_ZoomFactor;
+    height *= m_ZoomFactor;
+    m_BlitImage = new CDIBSection(width, height, 32);
+  }
 
   Invalidate();
 }
