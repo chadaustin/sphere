@@ -895,13 +895,11 @@ CMapView::PasteMapUnderPoint(CPoint point)
       CImage32 image(width, height, pixels);
       delete[] pixels;
 
-      tTileset.BuildFromImage(image, m_Map->GetTileset().GetTileWidth(), m_Map->GetTileset().GetTileHeight(), true);
-
-      if (1)
+      if (tTileset.BuildFromImage(image, m_Map->GetTileset().GetTileWidth(), m_Map->GetTileset().GetTileHeight(), true))
       {
         sLayer tLayer;
         int layer_width = width / m_Map->GetTileset().GetTileWidth();
-        int layer_height = width / m_Map->GetTileset().GetTileHeight();
+        int layer_height = height / m_Map->GetTileset().GetTileHeight();
 
         tLayer.Resize(layer_width, layer_height);
         int i = 0;
