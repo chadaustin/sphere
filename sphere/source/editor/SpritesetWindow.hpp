@@ -44,6 +44,7 @@ private:
   afx_msg void OnResize();
   afx_msg void OnFillDelay();
   afx_msg void OnFrameProperties();
+  afx_msg void OnExportAsImage();
 
   afx_msg void OnUpdateZoom1x(CCmdUI* cmdui);
   afx_msg void OnUpdateZoom2x(CCmdUI* cmdui);

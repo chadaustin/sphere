@@ -171,6 +171,7 @@ BEGIN
         MENUITEM "R&esize Spriteset...",        ID_SPRITESET_RESIZE
         MENUITEM "&Fill Delay...",              ID_SPRITESET_FILLDELAY
         MENUITEM "Frame P&roperties...",        ID_SPRITESET_FRAMEPROPERTIES
+        MENUITEM "E&xport as Image...",         ID_SPRITESET_EXPORTASIMAGE
     END
 END
 

@@ -16,6 +16,7 @@
 #include "packed.hpp"
 #include "primitives.hpp"
 #include "strcmp_ci.hpp"
+#include "minmax.hpp"
 
 
 struct CoronaFileAdapter : public corona::DLLImplementation<corona::File> {
@@ -78,19 +79,6 @@ inline int sgn(int i)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-// VC++ fux0rs with std::min and std::max
-template<typename T>
-inline T std_min(T a, T b) {
-  return (a < b ? a : b);
-}
-
-template<typename T>
-inline T std_max(T a, T b) {
-  return (a < b ? b : a);
-}
-
-
-
 // CImage32 Method Definitions
 
 
@@ -106,6 +94,19 @@ CImage32::CImage32(int width, int height, const RGBA* pixels)
     memset(m_Pixels, 0, width * height * sizeof(RGBA));
   } else {
     memcpy(m_Pixels, pixels, width * height * sizeof(RGBA));
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+CImage32::CImage32(int width, int height, RGBA pixel)
+: m_Width(width)
+, m_Height(height)
+, m_Pixels(new RGBA[width * height])
+, m_BlendMode(BLEND)
+{
+  for (int i = 0; i < m_Width * m_Height; ++i) {
+    m_Pixels[i] = pixel;
   }
 }
 
@@ -270,9 +271,9 @@ CImage32::ApplyColorFX(int x1, int y1, int w, int h, const CColorMatrix &c)
   for(y = y1; y < y2; y++) {
     for(x = x1, i = y * m_Width + x1; x < x2; x++, i++) {
       pixel = m_Pixels[i];
-      pixeld.red   = std_max(0, std_min(255, c.rn + ((pixel.red * c.rr + pixel.green * c.rg + pixel.blue * c.rb) >> 8)));
-      pixeld.green = std_max(0, std_min(255, c.gn + ((pixel.red * c.gr + pixel.green * c.gg + pixel.blue * c.gb) >> 8)));
-      pixeld.blue  = std_max(0, std_min(255, c.bn + ((pixel.red * c.br + pixel.green * c.bg + pixel.blue * c.bb) >> 8)));
+      pixeld.red   = std::max(0, std::min(255, c.rn + ((pixel.red * c.rr + pixel.green * c.rg + pixel.blue * c.rb) >> 8)));
+      pixeld.green = std::max(0, std::min(255, c.gn + ((pixel.red * c.gr + pixel.green * c.gg + pixel.blue * c.gb) >> 8)));
+      pixeld.blue  = std::max(0, std::min(255, c.bn + ((pixel.red * c.br + pixel.green * c.bg + pixel.blue * c.bb) >> 8)));
       pixeld.alpha = pixel.alpha;
       m_Pixels[i] = pixeld;
     }
@@ -341,9 +342,9 @@ CImage32::ApplyColorFX4(int x1, int y1, int w, int h, const CColorMatrix &c1, co
       i1 = 256 - i2;
 
       pixel = m_Pixels[i];
-      pixeld.red   = std_max(0, std_min(255, (INTER(ca, cb, rn) >> 8) + ((pixel.red * INTER(ca, cb, rr) + pixel.green * INTER(ca, cb, rg) + pixel.blue * INTER(ca, cb, rb)) >> 16)));
-      pixeld.green = std_max(0, std_min(255, (INTER(ca, cb, gn) >> 8) + ((pixel.red * INTER(ca, cb, gr) + pixel.green * INTER(ca, cb, gg) + pixel.blue * INTER(ca, cb, gb)) >> 16)));
-      pixeld.blue  = std_max(0, std_min(255, (INTER(ca, cb, bn) >> 8) + ((pixel.red * INTER(ca, cb, br) + pixel.green * INTER(ca, cb, bg) + pixel.blue * INTER(ca, cb, bb)) >> 16)));
+      pixeld.red   = std::max(0, std::min(255, (INTER(ca, cb, rn) >> 8) + ((pixel.red * INTER(ca, cb, rr) + pixel.green * INTER(ca, cb, rg) + pixel.blue * INTER(ca, cb, rb)) >> 16)));
+      pixeld.green = std::max(0, std::min(255, (INTER(ca, cb, gn) >> 8) + ((pixel.red * INTER(ca, cb, gr) + pixel.green * INTER(ca, cb, gg) + pixel.blue * INTER(ca, cb, gb)) >> 16)));
+      pixeld.blue  = std::max(0, std::min(255, (INTER(ca, cb, bn) >> 8) + ((pixel.red * INTER(ca, cb, br) + pixel.green * INTER(ca, cb, bg) + pixel.blue * INTER(ca, cb, bb)) >> 16)));
       pixeld.alpha = pixel.alpha;
       m_Pixels[i] = pixeld;
     }
@@ -465,14 +466,14 @@ CImage32::Rotate(double radians, bool autoSize)
     yC = RotateY(m_Width, 0, radians);
     xD = RotateX(0, m_Height, radians);
     yD = RotateY(0, m_Height, radians);
-    xOff = std_max(xOff, xA); xNOff = std_min(xNOff, xA);
-    xOff = std_max(xOff, xB); xNOff = std_min(xNOff, xB);
-    xOff = std_max(xOff, xC); xNOff = std_min(xNOff, xC);
-    xOff = std_max(xOff, xD); xNOff = std_min(xNOff, xD);
-    yOff = std_max(yOff, yA); yNOff = std_min(yNOff, yA);
-    yOff = std_max(yOff, yB); yNOff = std_min(yNOff, yB);
-    yOff = std_max(yOff, yC); yNOff = std_min(yNOff, yC);
-    yOff = std_max(yOff, yD); yNOff = std_min(yNOff, yD);
+    xOff = std::max(xOff, xA); xNOff = std::min(xNOff, xA);
+    xOff = std::max(xOff, xB); xNOff = std::min(xNOff, xB);
+    xOff = std::max(xOff, xC); xNOff = std::min(xNOff, xC);
+    xOff = std::max(xOff, xD); xNOff = std::min(xNOff, xD);
+    yOff = std::max(yOff, yA); yNOff = std::min(yNOff, yA);
+    yOff = std::max(yOff, yB); yNOff = std::min(yNOff, yB);
+    yOff = std::max(yOff, yC); yNOff = std::min(yNOff, yC);
+    yOff = std::max(yOff, yD); yNOff = std::min(yNOff, yD);
     
     xOff = (xOff - xNOff) - m_Width;
     yOff = (yOff - yNOff) - m_Height;
@@ -696,9 +697,22 @@ CImage32::Rectangle(int x1, int y1, int x2, int y2, RGBA color)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-inline void renderer(RGBA& dest, RGBA src, RGBA alpha)
-{
-  Blend3(dest, src, alpha.alpha);
+inline void replaceRenderer(RGBA& dest, RGBA src, RGBA alpha) {
+  dest = src;
+}
+
+inline void blendRenderer(RGBA& dest, RGBA src, RGBA alpha) {
+  Blend4(dest, src, alpha.alpha);
+}
+
+inline void rgbRenderer(RGBA& dest, RGBA src, RGBA alpha) {
+  dest.red   = src.red;
+  dest.green = src.green;
+  dest.blue  = src.blue;
+}
+
+inline void alphaRenderer(RGBA& dest, RGBA src, RGBA alpha) {
+  dest.alpha = src.alpha;
 }
 
 void
@@ -708,18 +722,52 @@ CImage32::BlitImage(CImage32& image, int x, int y)
     0, 0, m_Width - 1, m_Height - 1
   };
 
-  primitives::Blit(
-    m_Pixels,
-    m_Width,
-    x,
-    y,
-    image.GetPixels(),
-    image.GetPixels(),
-    image.GetWidth(),
-    image.GetHeight(),
-    clip,
-    renderer
-  );
+  switch (m_BlendMode) {
+    case REPLACE:
+      primitives::Blit(
+        m_Pixels, m_Width,
+        x, y,
+        image.GetPixels(),
+        image.GetPixels(),
+        image.GetWidth(),
+        image.GetHeight(),
+        clip,
+        replaceRenderer);
+      break;
+    case BLEND:
+      primitives::Blit(
+        m_Pixels, m_Width,
+        x, y,
+        image.GetPixels(),
+        image.GetPixels(),
+        image.GetWidth(),
+        image.GetHeight(),
+        clip,
+        blendRenderer);
+      break;
+    case RGB_ONLY:
+      primitives::Blit(
+        m_Pixels, m_Width,
+        x, y,
+        image.GetPixels(),
+        image.GetPixels(),
+        image.GetWidth(),
+        image.GetHeight(),
+        clip,
+        rgbRenderer);
+      break;
+    case ALPHA_ONLY:
+      primitives::Blit(
+        m_Pixels, m_Width,
+        x, y,
+        image.GetPixels(),
+        image.GetPixels(),
+        image.GetWidth(),
+        image.GetHeight(),
+        clip,
+        alphaRenderer);
+      break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

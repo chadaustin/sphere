@@ -502,6 +502,10 @@ SOURCE=..\common\rgb.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\common\sphere_version.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\common\spk.hpp
 # End Source File
 # Begin Source File
@@ -535,10 +539,6 @@ SOURCE=..\common\Tileset.hpp
 # Begin Source File
 
 SOURCE=..\common\types.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\common\version.h
 # End Source File
 # Begin Source File
 

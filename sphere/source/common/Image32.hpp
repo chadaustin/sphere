@@ -20,6 +20,7 @@ public:
 public:
   CImage32();
   CImage32(int width, int height, const RGBA* pixels = NULL);
+  CImage32(int width, int height, RGBA pixel);
   CImage32(const CImage32& image);
   ~CImage32();
 

@@ -29,6 +29,7 @@ BEGIN_MESSAGE_MAP(CSpritesetWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_SPRITESET_RESIZE,          OnResize)
   ON_COMMAND(ID_SPRITESET_FILLDELAY,       OnFillDelay)
   ON_COMMAND(ID_SPRITESET_FRAMEPROPERTIES, OnFrameProperties)
+  ON_COMMAND(ID_SPRITESET_EXPORTASIMAGE,   OnExportAsImage)
 
   ON_UPDATE_COMMAND_UI(ID_SPRITESET_ZOOM_1X, OnUpdateZoom1x)
   ON_UPDATE_COMMAND_UI(ID_SPRITESET_ZOOM_2X, OnUpdateZoom2x)
@@ -278,6 +279,19 @@ CSpritesetWindow::OnFrameProperties()
   CSpritePropertiesDialog Dialog(&m_Spriteset, m_CurrentDirection, m_CurrentFrame);
   if (Dialog.DoModal() == IDOK)
     SetModified(true);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetWindow::OnExportAsImage()
+{
+  CImageFileDialog dialog(FDM_SAVE, "Export Spriteset as Image");
+  if (dialog.DoModal() == IDOK) {
+    if (!m_Spriteset.Export_PNG(dialog.GetPathName())) {
+      MessageBox("Error writing image", "Export Spriteset as Image");
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

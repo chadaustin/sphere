@@ -2,6 +2,7 @@
 #include "Spriteset.hpp"
 #include "packed.hpp"
 #include "strcmp_ci.hpp"
+#include "minmax.hpp"
 
 
 const int DEFAULT_DELAY = 8;
@@ -559,27 +560,19 @@ sSpriteset::Export_PNG(const char* filename)
   unsigned maxRowFrames = m_Directions.size();
   for (unsigned i=0; i<m_Directions.size(); i++)
     maxColFrames = (m_Directions[i].frames.size() > maxColFrames ? m_Directions[i].frames.size() : maxColFrames);
-  int ImgWidth = (m_FrameWidth * maxColFrames) + (maxColFrames + 1);
-  int ImgHeight = (m_FrameHeight * maxRowFrames) + (maxRowFrames + 1);
+  int ImgWidth  = m_FrameWidth * maxColFrames;
+  int ImgHeight = m_FrameHeight * maxRowFrames;
 
-  // resize to every frame have a pixel padding between them
   CImage32 image(ImgWidth, ImgHeight);
 
-  image.Rectangle(0, 0, image.GetWidth(), image.GetHeight(),
-                  CreateRGBA(255, 255, 255, 255));
-
   // drop all the frames into the image
-  for (unsigned row=0; row<maxRowFrames; row++)
-    for (unsigned col=0; col<maxColFrames; col++)
-      for (int line=0; line<m_FrameHeight; line++)
-        // copy offset to: 
-        // x: (current col * frame width) + (current col * padding) + 1
-        // y: ((current row * frame height + 1) * image width) + (current row * image width) + (current line * image width)
-        memcpy(image.GetPixels() +
-               ((row * m_FrameHeight + 1) * ImgWidth) + (row * ImgWidth) + (line * ImgWidth) +
-               (col * m_FrameWidth) + (col * 1) + 1,
-               m_Images[ m_Directions[row].frames[col].index ].GetPixels() + (line * m_FrameWidth),
-               m_FrameWidth * sizeof(RGBA));
+  for (unsigned row = 0; row < maxRowFrames; ++row) {
+    unsigned frameCount = m_Directions[row].frames.size();
+    for (unsigned col = 0; col < std::min(maxColFrames, frameCount); ++col) {
+      CImage32& frame = m_Images[m_Directions[row].frames[col].index];
+      image.BlitImage(frame, col * m_FrameWidth, row * m_FrameHeight);
+    }
+  }
 
   return image.Save(filename);
 }
