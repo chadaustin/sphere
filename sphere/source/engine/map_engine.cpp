@@ -2555,7 +2555,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
         talk_y -= tad;
 
-      } else if (m_Persons[m_InputPerson].direction == "north_east") {
+      } else if (m_Persons[m_InputPerson].direction == "northeast") {
 
         talk_x += tad;
         talk_y -= tad;
@@ -2564,7 +2564,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
         talk_x += tad;
 
-      } else if (m_Persons[m_InputPerson].direction == "south_east") {
+      } else if (m_Persons[m_InputPerson].direction == "southeast") {
 
         talk_x += tad;
         talk_y += tad;
@@ -2573,7 +2573,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
         talk_y += tad;
 
-      } else if (m_Persons[m_InputPerson].direction == "south_west") {
+      } else if (m_Persons[m_InputPerson].direction == "southwest") {
 
         talk_x -= tad;
         talk_y += tad;
@@ -2582,7 +2582,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
         talk_x -= tad;
 
-      } else if (m_Persons[m_InputPerson].direction == "north_west") {
+      } else if (m_Persons[m_InputPerson].direction == "northwest") {
 
         talk_x -= tad;
         talk_y -= tad;
