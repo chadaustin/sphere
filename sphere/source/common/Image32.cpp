@@ -558,8 +558,8 @@ CImage32::Rotate(double radians, bool autoSize)
 
     width  = m_Width + (int)xOff;
     height = m_Height + (int)yOff;
-    xOff /= 2;
-    yOff /= 2;
+    xOff /= 2.0;
+    yOff /= 2.0;
   }
 
   RGBA* NewPixels = new RGBA[width * height];

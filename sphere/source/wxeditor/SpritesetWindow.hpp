@@ -2,7 +2,13 @@
 #define SPRITESET_WINDOW_HPP
 
 #include <wx/wx.h>
+
+#ifdef USE_WXTABCTRL
 #include <wx/tabctrl.h>
+#else
+#include <wx/notebook.h>
+#endif
+
 #include "SaveableDocumentWindow.hpp"
 #include "SpritesetView.hpp"
 #include "ImageView.hpp"
@@ -53,7 +59,11 @@ private:
   void OnUpdateZoom8x(CCmdUI* cmdui);
 */
 
+#ifdef USE_WXTABCTRL
   void OnTabChanged(wxTabEvent &event);
+#else
+  void OnNotebookChanged(wxNotebookEvent &event);
+#endif
 
   virtual bool GetSavePath(char* path);
   virtual bool SaveDocument(const char* path);
@@ -81,7 +91,11 @@ private:
 
   bool m_Created;
 
-  wxTabCtrl    *m_TabControl;
+#ifdef USE_WXTABCTRL
+ wxTabCtrl    *m_TabControl;
+#else
+ wxNotebook *m_NotebookControl;
+#endif
 
   // views
   wSpritesetView  *m_SpritesetView;

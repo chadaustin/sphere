@@ -551,6 +551,44 @@ CMapView::LayerAreaCopy()
   // put the stuff on the clipboard
   GlobalUnlock(memory);
   SetClipboardData(s_MapAreaClipboardFormat, memory);
+
+  // ADD DDB
+  // create a pixel array to initialize the bitmap
+  const int lw = l.GetWidth();
+  const int lh = l.GetHeight();
+  const int tw = m_Map->GetTileset().GetTileWidth();
+  const int th = m_Map->GetTileset().GetTileHeight();
+
+  BGRA* pixels = new BGRA[width * tw * height * th];
+  if (pixels == NULL) {
+    CloseClipboard();
+    return;
+  }
+
+  for (int ty = start_y; ty <= end_y; ty++) {
+    for (int tx = start_x; tx <= end_x; tx++) {
+
+      const RGBA* source = m_Map->GetTileset().GetTile(l.GetTile(tx, ty)).GetPixels();
+
+      for (int iy = 0; iy < th; iy++) {
+        for (int ix = 0; ix < tw; ix++) {
+          int counter = (((ty - start_y) * th) + iy) * (tw * width) + (((tx - start_x) * tw) + ix);
+          pixels[counter].red   = source[iy * tw + ix].red;
+          pixels[counter].green = source[iy * tw + ix].green;
+          pixels[counter].blue  = source[iy * tw + ix].blue;
+          pixels[counter].alpha = source[iy * tw + ix].alpha;
+        }
+      }
+    }
+  }
+
+  // create the bitmap
+  HBITMAP bitmap = CreateBitmap(width * tw, height * th, 1, 32, pixels);
+
+  // put the bitmap in the clipboard
+  SetClipboardData(CF_BITMAP, bitmap);
+  delete[] pixels;
+
   CloseClipboard();
 }
 

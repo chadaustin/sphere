@@ -45,7 +45,11 @@ END_MESSAGE_MAP()
 BEGIN_EVENT_TABLE(wSpritesetWindow, wSaveableDocumentWindow)
   EVT_SIZE(wSpritesetWindow::OnSize)
 
+#ifdef USE_WXTABCTRL
   EVT_TAB_SEL_CHANGED(wID_SPRITESET_TAB, wSpritesetWindow::OnTabChanged)
+#else
+  EVT_NOTEBOOK_PAGE_CHANGED(wID_SPRITESET_TAB,  wSpritesetWindow::OnNotebookChanged)
+#endif
 
   EVT_MENU(wID_SPRITESET_ZOOM_1X,         wSpritesetWindow::OnZoom1x)
   EVT_MENU(wID_SPRITESET_ZOOM_2X,         wSpritesetWindow::OnZoom2x)
@@ -97,10 +101,20 @@ wSpritesetWindow::Create()
 {
   //wSaveableDocumentWindow::Create(AfxRegisterWndClass(CS_HREDRAW | CS_VREDRAW, LoadCursor(NULL, IDC_ARROW), NULL, AfxGetApp()->LoadIcon(IDI_SPRITESET)));
 
+#ifdef USE_WXTABCTRL
   m_TabControl = new wxTabCtrl(this, wID_SPRITESET_TAB);
   m_TabControl->InsertItem(0, "Frames");
   m_TabControl->InsertItem(1, "Edit");
   m_TabControl->InsertItem(2, "Base");
+#else
+  wxNotebookPage* framespage = new wxNotebookPage(this, -1);
+  wxNotebookPage* editpage = new wxNotebookPage(this, -1);
+  wxNotebookPage* basepage = new wxNotebookPage(this, -1);
+  m_NotebookControl = new wxNotebook(this, wID_SPRITESET_TAB);
+  m_NotebookControl->InsertPage(0, framespage, "Frames");
+  m_NotebookControl->InsertPage(1,   editpage, "Edit");
+  m_NotebookControl->InsertPage(2,   basepage, "Base");
+#endif
 
   // create the views
   m_SpritesetView = new wSpritesetView(this, this, &m_Spriteset);
@@ -211,7 +225,11 @@ wSpritesetWindow::OnSize(wxSizeEvent &event)
 
   if (m_Created)
   {
+#ifdef USE_WXTABCTRL
     m_TabControl->SetSize(0, 0, cx, TAB_HEIGHT);
+#else
+    m_NotebookControl->SetSize(0, 0, cx, TAB_HEIGHT);
+#endif
 
     // frames tab
     m_SpritesetView->SetSize(0, TAB_HEIGHT, cx, cy - TAB_HEIGHT);
@@ -341,11 +359,20 @@ CSpritesetWindow::OnUpdateZoom8x(CCmdUI* cmdui)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef USE_WXTABCTRL
 void
 wSpritesetWindow::OnTabChanged(wxTabEvent &event)
 {
   TabChanged(m_TabControl->GetCurFocus());
 }
+#else
+void
+wSpritesetWindow::OnNotebookChanged(wxNotebookEvent &event)
+{
+  if (m_Created)
+    TabChanged(m_NotebookControl->GetSelection());
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -384,7 +411,11 @@ void
 wSpritesetWindow::SV_EditFrame()
 {
   // switch to the edit tab
+#ifdef USE_WXTABCTRL
   m_TabControl->SetSelection(1);
+#else
+  m_NotebookControl->SetSelection(1);
+#endif
   TabChanged(1);
 }
 

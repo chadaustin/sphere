@@ -5,7 +5,7 @@
 //#include <afxcmn.h>
 #include <wx/wx.h>
 
-#if 1
+#ifdef USE_WXTABCTRL
 #include <wx/tabctrl.h>
 #else
 #include <wx/notebook.h>
@@ -56,10 +56,10 @@ private:
   void OnImportTileset(wxCommandEvent &event);
   void OnPruneTileset(wxCommandEvent &event);
 
-#if 1
+#ifdef USE_WXTABCTRL
   void OnTabChanged(wxTabEvent &event);
 #else
-  void OnTabChanged(wxNotebookEvent &event);
+  void OnNotebookChanged(wxNotebookEvent &event);
 #endif
 
   virtual bool GetSavePath(char* path);
@@ -84,10 +84,10 @@ private:
   
   bool m_Created;  // whether or not the window has been created
 
-#if 1
+#ifdef USE_WXTABCTRL
   wxTabCtrl *m_TabControl;
 #else
-  wxNotebook *m_TabControl;
+  wxNotebook *m_NotebookControl;
 #endif
 
   // views

@@ -290,12 +290,14 @@ CImageView::Copy()
   HGLOBAL memory = GlobalAlloc(GHND, 8 + width * height * 4);
   dword* ptr = (dword*)GlobalLock(memory);
 
-  *ptr++ = sw; // *ptr++ = width;
-  *ptr++ = sh; // *ptr++ = height;
+  *ptr++ = sw;
+  *ptr++ = sh;
 
   RGBA* flat_pixels = new RGBA[sw * sh];
-  if (flat_pixels == NULL)
+  if (flat_pixels == NULL) {
+    CloseClipboard();
     return false;
+  }
 
   for (int iy = sy; iy < (sy + sh); iy++) {
     for (int ix = sx; ix < (sx + sw); ix++)
@@ -307,7 +309,6 @@ CImageView::Copy()
     }
   }
 
-  // memcpy(ptr, m_Image.GetPixels(), width * height * sizeof(RGBA));
   memcpy(ptr, flat_pixels, sw * sh * sizeof(RGBA));
   delete[] flat_pixels;
 
@@ -318,8 +319,10 @@ CImageView::Copy()
   // ADD DDB
   // create a pixel array to initialize the bitmap
   BGRA* pixels = new BGRA[sw * sh];
-  if (pixels == NULL)
+  if (pixels == NULL) {
+    CloseClipboard();
     return false;
+  }
 
   for (int iy = sy; iy < (sy + sh); iy++) {
     for (int ix = sx; ix < (sx + sw); ix++)
@@ -339,7 +342,6 @@ CImageView::Copy()
   delete[] pixels;
 
   CloseClipboard();
-
   return true;
 }
 

@@ -46,10 +46,10 @@ BEGIN_EVENT_TABLE(wMapWindow, wSaveableDocumentWindow)
   EVT_MENU(wID_MAP_IMPORTTILESET,   wMapWindow::OnImportTileset)
   EVT_MENU(wID_MAP_PRUNETILESET,    wMapWindow::OnPruneTileset)
 
-#if 1
+#ifdef USE_WXTABCTRL
   EVT_TAB_SEL_CHANGED(wID_MAP_TAB,  wMapWindow::OnTabChanged)
 #else
-  EVT_NOTEBOOK_PAGE_CHANGED(wID_MAP_TAB,  wMapWindow::OnTabChanged)
+  EVT_NOTEBOOK_PAGE_CHANGED(wID_MAP_TAB,  wMapWindow::OnNotebookChanged)
 #endif
 
 END_EVENT_TABLE()
@@ -87,24 +87,24 @@ wMapWindow::Create()
   // create the window
   //wSaveableDocumentWindow::Create(AfxRegisterWndClass(0, NULL, NULL, AfxGetApp()->LoadIcon(IDI_MAP)));
 
-#if 1
-  m_TabControl = new wxTabCtrl(this, wID_MAP_TAB); // wxDefaultPosition, wxDefaultSize
-  m_TabControl->InsertItem(0, "Map");
-  m_TabControl->InsertItem(1, "Tileset");
-#else
-  wxNotebookPage* mapviewpage = new wxNotebookPage();
-  wxNotebookPage* tileviewpage = new wxNotebookPage();
-  m_TabControl = new wxNotebook(this, wID_MAP_TAB);
-  m_TabControl->InsertPage(0, mapviewpage, "Map");
-  m_TabControl->InsertPage(1, tileviewpage, "Tileset");
-#endif
-
   // create the views
   m_MapView = new wMapView(this, this, this, &m_Map);
   m_LayerView = new wLayerView(this, this, &m_Map);
   m_TilesetEditView = new wTilesetEditView(this, this, this, &m_Map.GetTileset());
 
   m_TilePalette = new wTilePalette(this, this, &m_Map.GetTileset());
+
+#ifdef USE_WXTABCTRL
+  m_TabControl = new wxTabCtrl(this, wID_MAP_TAB); // wxDefaultPosition, wxDefaultSize);
+  m_TabControl->InsertItem(0, "Map");
+  m_TabControl->InsertItem(1, "Tileset");
+#else
+  wxNotebookPage* mapviewpage = new wxNotebookPage(this, -1);
+  wxNotebookPage* tileviewpage = new wxNotebookPage(this, -1);
+  m_NotebookControl = new wxNotebook(this, wID_MAP_TAB);
+  m_NotebookControl->InsertPage(0, mapviewpage, "Map");
+  m_NotebookControl->InsertPage(1, tileviewpage, "Tileset");
+#endif
 
   m_Created = true;  // the window and children are ready!
 
@@ -116,6 +116,7 @@ wMapWindow::Create()
 */
 
   TabChanged(0);
+
   wxSizeEvent event(GetSize());
   OnSize(event);
 }
@@ -282,7 +283,11 @@ wMapWindow::OnSize(wxSizeEvent& event)
   int cy = GetClientSize().GetHeight();
   if (m_Created)
   {
+#ifdef USE_WXTABCTRL
     m_TabControl->SetSize(0, 0, cx, TAB_HEIGHT);
+#else
+    m_NotebookControl->SetSize(0, 0, cx, TAB_HEIGHT);
+#endif
 
     // move the layer view
     wxRect LayerViewRect;
@@ -454,18 +459,18 @@ wMapWindow::OnPruneTileset(wxCommandEvent &event)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#if 1
+#ifdef USE_WXTABCTRL
 void
 wMapWindow::OnTabChanged(wxTabEvent &event)
 {
-  TabChanged(m_TabControl->GetCurFocus());
+  TabChanged(0);// m_TabControl->GetCurFocus());
 }
 #else
 void
-wMapWindow::OnTabChanged(wxNotebookEvent &event)
+wMapWindow::OnNotebookChanged(wxNotebookEvent &event)
 {
   if (m_Created)
-    TabChanged(m_TabControl->GetSelection());
+    TabChanged(m_NotebookControl->GetSelection());
 }
 #endif
 
