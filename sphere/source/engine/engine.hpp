@@ -59,7 +59,7 @@ private:
   virtual SWINDOWSTYLE* LoadWindowStyle(const char* filename);
   virtual void DestroyWindowStyle(SWINDOWSTYLE* ws);
 
-  virtual audiere::OutputStream* LoadSound(const char* filename);
+  virtual audiere::OutputStream* LoadSound(const char* filename, bool streaming);
 
   virtual IMAGE GetSystemArrow();
   virtual IMAGE GetSystemUpArrow();

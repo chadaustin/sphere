@@ -570,14 +570,19 @@ log_object.endBlock()
  
  
   *** sounds ***
-  LoadSound(filename)
+  LoadSound(filename [, streaming])
     - returns a sound object from 'filename'. If Sphere is unable to open
-      the file, the engine will give an error message and exit.
+      the file, the engine will give an error message and exit.  If the optional
+      argument 'streaming' is true or unspecified, the sound is streamed from the
+      hard drive.  Otherwise, it's loaded into memory.
   
   sound_object.play(repeat)
     - plays the sound. repeat is a boolean (true/false), that indicates if 
       the sound should be looped
   
+  sound_object.pause()
+    - pauses playback. call play() again to resume playback.
+
   sound_object.stop()
     - stops playback
   

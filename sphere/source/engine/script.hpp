@@ -125,6 +125,7 @@ private:
   declare_constructor1(CreateSoundObject, audiere::OutputStream* sound);
   declare_finalizer(ssFinalizeSound);
   declare_method(ssSoundPlay);
+  declare_method(ssSoundPause);
   declare_method(ssSoundStop);
   declare_method(ssSoundSetVolume);
   declare_method(ssSoundGetVolume);

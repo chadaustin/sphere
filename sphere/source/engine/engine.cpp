@@ -473,7 +473,7 @@ private:
 };
 
 audiere::OutputStream*
-CGameEngine::LoadSound(const char* filename)
+CGameEngine::LoadSound(const char* filename, bool streaming)
 {
   std::string path = "sounds/";
   path += filename;
@@ -484,7 +484,7 @@ CGameEngine::LoadSound(const char* filename)
   }
 
   audiere::RefPtr<AudiereFile> adrfile(new AudiereFile(file));
-  return audiere::OpenSound(SA_GetAudioDevice(), adrfile.get());
+  return audiere::OpenSound(SA_GetAudioDevice(), adrfile.get(), streaming);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

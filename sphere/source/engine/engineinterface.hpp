@@ -48,7 +48,7 @@ struct IEngine
   virtual SWINDOWSTYLE* LoadWindowStyle(const char* filename) = 0;
   virtual void DestroyWindowStyle(SWINDOWSTYLE* font) = 0;
 
-  virtual audiere::OutputStream* LoadSound(const char* filename) = 0;
+  virtual audiere::OutputStream* LoadSound(const char* filename, bool streaming) = 0;
 
   virtual IMAGE GetSystemArrow() = 0;
   virtual IMAGE GetSystemUpArrow() = 0;

@@ -1816,29 +1816,15 @@ CMapEngine::OpenMap(const char* filename)
     }
   }
 
-  // compile edge scripts
-  if (!CompileEdgeScripts()) {
-    return false;
-  }
-
-  // load triggers
-  if (!LoadTriggers()) {
-    return false;
-  }
-
-  if (!LoadZones()) {
-    return false;
-  }
-
-  // load map-specific person entities
-  if (!LoadMapPersons()) {
-    return false;
-  }
+  if (!CompileEdgeScripts()) { return false; }
+  if (!LoadTriggers())       { return false; }
+  if (!LoadZones())          { return false; }
+  if (!LoadMapPersons())     { return false; }
 
   // load the background music (if there is any)
   std::string music = m_Map.GetMap().GetMusicFile();
   if (music.length()) {
-    m_Music = m_Engine->LoadSound(music.c_str());
+    m_Music = m_Engine->LoadSound(music.c_str(), true);
     if (!m_Music) {
       m_ErrorMessage = "Could not load background music '" + music + "'";
       return false;

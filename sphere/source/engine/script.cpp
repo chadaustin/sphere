@@ -2384,9 +2384,13 @@ end_func()
 
 begin_func(LoadSound, 1)
   arg_str(filename);
+  bool streaming = true;
+  if (argc > 1) {
+    streaming = argBool(cx, argv[arg++]);
+  }
 
   // load sound
-  audiere::OutputStream* sound = This->m_Engine->LoadSound(filename);
+  audiere::OutputStream* sound = This->m_Engine->LoadSound(filename, streaming);
   if (!sound) {
     JS_ReportError(cx, "Could not load sound '%s'", filename);
     return JS_FALSE;
@@ -2609,7 +2613,7 @@ end_func()
 begin_func(GetFileList, 0)
 
   const char* directory = "save";
-  if (argc > 1) {
+  if (argc > 0) {
     directory = argStr(cx, argv[0]);
   }
 
@@ -3163,15 +3167,16 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
 
   // assign methods to the object
   static JSFunctionSpec fs[] = {
-    { "play",        ssSoundPlay,        1, 0, 0 },
-    { "stop",        ssSoundStop,        0, 0, 0 },
-    { "setVolume",   ssSoundSetVolume,   1, 0, 0 },
-    { "getVolume",   ssSoundGetVolume,   0, 0, 0 },
-    { "setPan",      ssSoundSetPan,      1, 0, 0 },
-    { "getPan",      ssSoundGetPan,      0, 0, 0 },
-    { "setPitch",    ssSoundSetPitch,    1, 0, 0 },
-    { "getPitch",    ssSoundGetPitch,    0, 0, 0 },
-    { "isPlaying",   ssSoundIsPlaying,   0, 0, 0 },
+    { "play",        ssSoundPlay,        1, },
+    { "pause",       ssSoundPause,       0, },
+    { "stop",        ssSoundStop,        0, },
+    { "setVolume",   ssSoundSetVolume,   1, },
+    { "getVolume",   ssSoundGetVolume,   0, },
+    { "setPan",      ssSoundSetPan,      1, },
+    { "getPan",      ssSoundGetPan,      0, },
+    { "setPitch",    ssSoundSetPitch,    1, },
+    { "getPitch",    ssSoundGetPitch,    0, },
+    { "isPlaying",   ssSoundIsPlaying,   0, },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -3196,6 +3201,12 @@ begin_method(SS_SOUND, ssSoundPlay, 1)
   arg_bool(repeat);
   object->sound->setRepeat(repeat);
   object->sound->play();
+end_method()
+
+////////////////////////////////////////
+
+begin_method(SS_SOUND, ssSoundPause, 0)
+  object->sound->stop();
 end_method()
 
 ////////////////////////////////////////

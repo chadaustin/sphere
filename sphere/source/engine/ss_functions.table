@@ -206,6 +206,7 @@ SS_FUNCTION(OpenLog, 1)
   // sounds
   SS_FUNCTION(LoadSound, 1)
   //sound.play(repeat)
+  //sound.pause()
   //sound.stop()
   //sound.setVolume(volume)
   //sound.getVolume()
