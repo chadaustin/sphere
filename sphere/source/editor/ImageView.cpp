@@ -215,8 +215,8 @@ CImageView::AfterImageChanged()
 { // if the image dimensions change, the selection area needs to change too
   m_SelectionX = std::min(m_SelectionX, m_Image.GetWidth());
   m_SelectionY = std::min(m_SelectionY, m_Image.GetHeight());
-  m_SelectionWidth = std::min(m_SelectionWidth, m_Image.GetWidth() - m_SelectionX - 1);
-  m_SelectionHeight = std::min(m_SelectionHeight, m_Image.GetHeight() - m_SelectionY - 1);
+  m_SelectionWidth = std::min(m_SelectionWidth, m_Image.GetWidth() - m_SelectionX);
+  m_SelectionHeight = std::min(m_SelectionHeight, m_Image.GetHeight() - m_SelectionY);
   Invalidate();
 }
 

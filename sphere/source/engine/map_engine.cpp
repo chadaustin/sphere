@@ -2926,6 +2926,7 @@ CMapEngine::LoadMapPersons()
         m_Engine->DestroyScript(p.script_activate_talk);
         m_Engine->DestroyScript(p.script_command_generator);
         m_ErrorMessage = "Could not execute OnCreate script\nPerson:" + person_string + "\n" + error;
+        m_Persons.erase(m_Persons.end() - 1);
         goto spriteset_error;
       }
 
