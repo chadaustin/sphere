@@ -32,7 +32,7 @@ public:
   void OpenProject(const char* filename);
   void CloseProject();
 
-	BOOL IsProjectFile(const char * filename);
+	static BOOL IsProjectFile(const char * filename);
   void OpenGameSettings();
   void OpenGameFile(const char* filename);
   void OpenDocumentWindow(int grouptype, const char* filename);

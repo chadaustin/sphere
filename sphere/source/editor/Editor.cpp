@@ -6,6 +6,7 @@
 #include "Debug.hpp"
 #include "../engine/win32/win32_sphere_config.hpp"
 
+#include <afxmt.h>
 
 static CEditorApplication g_Application;
 static CMainWindow* g_MainWindow = NULL;
@@ -14,8 +15,141 @@ std::string g_SphereDirectory;
 
 static CStatusBar* s_StatusBar;
 
+// the repository of all registred instances
+// beware of the mutex!
 
-// command-line parser
+const int MAX_ENTRIES = 100;
+const char * SPHERE_FILE_GUID = "{BD5C7EF2-BE67-4a47-8202-D8A168EFC65C}";
+const char * SPHERE_MUTEX_GUID = "{1C7F921C-C758-49d8-9E9E-B5EE7286D5EE}";
+
+class CInstanceRepository
+{
+public:
+	CInstanceRepository() :
+		m_Mutex(FALSE, SPHERE_MUTEX_GUID)
+	{		
+		m_hFileMapping = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0,
+			MAX_ENTRIES * sizeof(HWND) + sizeof(int), SPHERE_FILE_GUID);
+
+		ASSERT(m_hFileMapping);
+
+		m_Size = (int*)MapViewOfFile(m_hFileMapping, FILE_MAP_WRITE, 0, 0, sizeof(int)+
+			sizeof(HWND)* MAX_ENTRIES); 
+		m_Instances = (HWND*)(((char*)m_Size)+sizeof(int));
+
+		ASSERT(m_Size != NULL && m_Instances != NULL);
+	}
+
+	void lock()
+	{
+		m_Mutex.Lock();
+	}
+
+	void unlock()
+	{
+		m_Mutex.Unlock();
+	}
+
+	~CInstanceRepository()
+	{
+		UnmapViewOfFile(m_Size);
+		UnmapViewOfFile(m_Instances);
+		CloseHandle(m_hFileMapping);
+	}
+	
+	BOOL isEmpty()
+	{
+		return *m_Size == 0;
+	}
+
+	HWND getFirstInstanceWnd()
+	{
+		return m_Instances[0];
+	}
+
+	BOOL registerInstance(HWND hwnd)
+	{		
+		if (*m_Size == MAX_ENTRIES) return FALSE;
+		
+		m_HWND = hwnd;
+		m_Instances[*m_Size] = hwnd;
+		(*m_Size)++;
+		return TRUE;
+	}
+
+	BOOL unregisterInstance()
+	{
+		for (int i = 0; i < *m_Size; i++)
+		{
+			if (m_Instances[i] == m_HWND)
+			{
+				for (int a = i; a < *m_Size-1; a++)
+				{
+					m_Instances[a] = m_Instances[a+1];		
+				}
+
+				(*m_Size)--;
+				return TRUE;
+			}
+		}
+
+		return FALSE;
+	}
+
+private:
+	// instances represented by their main window HWND
+	HWND	*  m_Instances;
+	int		*	 m_Size;
+	HANDLE   m_hFileMapping;
+	CMutex	 m_Mutex;
+	HWND     m_HWND;
+};
+
+// command-line parsers
+
+class CEditorPrestartCommandLineInfo : public CCommandLineInfo
+{
+public:
+  CEditorPrestartCommandLineInfo(HWND foreignMainWindow)
+  : m_ForeignMainWindow(foreignMainWindow),
+	m_InstanceMayExit(FALSE)
+  {
+  }
+
+	BOOL mayInstanceExit()
+	{
+		return m_InstanceMayExit;
+	}
+
+
+private:
+  void ParseParam(LPCTSTR parameter, BOOL /*flag*/, BOOL /*last*/)
+  {		
+		//ATTENTION: This solution only works if project and document game files are not merged
+		// at one command line.
+		// Furthermore for project files a new instance is opened in general, even if 
+		// there are existing instances with no project opened.
+
+	  if (!CMainWindow::IsProjectFile(parameter))		
+		{
+			ASSERT(m_ForeignMainWindow != INVALID_HANDLE_VALUE);			
+			// delegate it to another instance
+			COPYDATASTRUCT cds;
+
+			cds.dwData = CD_OPEN_GAME_FILE;
+			cds.cbData = lstrlen(parameter)+1;
+			cds.lpData = (LPVOID)parameter;				
+			::SendMessage(m_ForeignMainWindow, WM_COPYDATA, 0, (LPARAM)(LPVOID)&cds);				
+			SetForegroundWindow(m_ForeignMainWindow);
+			m_InstanceMayExit = TRUE;				
+		}
+  }
+
+
+private:  
+	HWND					m_ForeignMainWindow;
+	BOOL					m_InstanceMayExit;
+};
 
 class CEditorCommandLineInfo : public CCommandLineInfo
 {
@@ -33,13 +167,12 @@ private:
 
 private:
   CMainWindow* m_MainWindow;
-};
-  
+};  
 
 ////////////////////////////////////////////////////////////////////////////////
 
 CEditorApplication::CEditorApplication()
-: CWinApp("Sphere Editor")
+: CWinApp("Sphere Editor")	
 {
   InitializeLog();
 }
@@ -48,7 +181,24 @@ CEditorApplication::CEditorApplication()
 
 BOOL
 CEditorApplication::InitInstance()
-{
+{	
+	// look for another instance
+	m_Instances = new CInstanceRepository();
+	m_Instances->lock();
+	if (!m_Instances->isEmpty())
+	{		
+			CEditorPrestartCommandLineInfo cli(m_Instances->getFirstInstanceWnd());
+      ParseCommandLine(cli);
+
+			if (cli.mayInstanceExit())
+			{						
+					m_Instances->unlock();
+					delete m_Instances;
+					m_Instances = NULL;
+					return FALSE;
+			}		
+	}
+
   // set the configuration directory
   char config_directory[MAX_PATH];
   GetModuleFileName(m_hInstance, config_directory, MAX_PATH);
@@ -65,6 +215,10 @@ CEditorApplication::InitInstance()
   m_pMainWnd = main_window;
   g_MainWindow = main_window;
 
+	// register this instance 
+	m_Instances->registerInstance(main_window->m_hWnd);
+	m_Instances->unlock();
+
   SPHERECONFIG sphere_config;
   LoadSphereConfig(&sphere_config, "engine.ini");
 
@@ -80,6 +234,14 @@ CEditorApplication::InitInstance()
 int
 CEditorApplication::ExitInstance()
 {
+	if (m_Instances)
+	{
+		m_Instances->lock();
+		m_Instances->unregisterInstance();
+		m_Instances->unlock();
+		delete m_Instances;
+	}
+
   return 0;
 }
 

@@ -2061,7 +2061,7 @@ CMainWindow::OnCopyData(WPARAM wparam, LPARAM lparam)
 	if (pcds->dwData == CD_OPEN_GAME_FILE)
 	{
 		const char* path = (const char*)pcds->lpData;
-		OpenGameFile(path);
+		OpenGameFile(path);			
 	}
   return 0;
 }

@@ -6,7 +6,7 @@
 #include <afxwin.h>
 #include <afxext.h>
 
-
+class CInstanceRepository;
 class CEditorApplication : public CWinApp
 {
 public:
@@ -14,7 +14,8 @@ public:
 
 private:
   BOOL InitInstance();
-  int  ExitInstance();
+  int  ExitInstance();	
+	CInstanceRepository * m_Instances;
 };
 
 
