@@ -705,12 +705,8 @@ inline int argInt(JSContext* cx, jsval arg)
     return false;
   }
 
-  if (!JSVAL_IS_INT(arg) && !JSVAL_IS_DOUBLE(arg)) {
-    JS_ReportError(cx, "Invalid integer.");
-    return 0;
-  }
-
   if (JS_ValueToInt32(cx, arg, &i) == JS_FALSE) {
+    JS_ReportError(cx, "Invalid integer.");
     return 0; // invalid integer
   }
 

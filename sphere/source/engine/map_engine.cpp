@@ -1850,7 +1850,7 @@ CMapEngine::DestroyPerson(const char* name)
       }
 
       for (int j = 0; j < int(m_InputPersons.size()); j++) {
-        if (m_InputPersons[j] == j) {
+        if (m_InputPersons[j] == i) {
           m_InputPersons.erase(m_InputPersons.begin() + j);
           j--;
         } else if (m_InputPersons[j] > i) {
@@ -2535,9 +2535,6 @@ CMapEngine::SetPersonSpriteset(const char* name, sSpriteset& spriteset)
     return false;
   }
 
-  // need to put m_Persons[person_index].spriteset back into the spriteset server
-  // but it'll have no filename id
-
   // make sure direction is valid
   bool is_valid_direction = false;
 
@@ -2559,7 +2556,14 @@ CMapEngine::SetPersonSpriteset(const char* name, sSpriteset& spriteset)
     m_Persons[person_index].frame %= spriteset.GetNumFrames(m_Persons[person_index].direction);
   }
 
+  m_Persons[person_index].width  = m_Persons[person_index].spriteset->GetSpriteset().GetFrameWidth();
+  m_Persons[person_index].height = m_Persons[person_index].spriteset->GetSpriteset().GetFrameHeight();
+
   spriteset.GetBase(m_Persons[person_index].base_x1, m_Persons[person_index].base_y1, m_Persons[person_index].base_x2, m_Persons[person_index].base_y2);
+
+  if (m_Persons[person_index].base_x1 > m_Persons[person_index].base_x2) std::swap(m_Persons[person_index].base_x1, m_Persons[person_index].base_x2);
+  if (m_Persons[person_index].base_y1 > m_Persons[person_index].base_y2) std::swap(m_Persons[person_index].base_y1, m_Persons[person_index].base_y2);
+
   return true;
 }
 
@@ -3321,7 +3325,7 @@ CMapEngine::DestroyMapPersons()
       }
 
       for (int j = 0; j < int(m_InputPersons.size()); j++) {
-        if (m_InputPersons[j] == j) {
+        if (m_InputPersons[j] == i) {
           m_InputPersons.erase(m_InputPersons.begin() + j);
           j--;
         } else if (m_InputPersons[j] > i) {
