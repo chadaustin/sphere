@@ -10,6 +10,9 @@
 #include "resource.h"
 #include "../common/spriteset.hpp"
 
+#include "Configuration.hpp"
+#include "Keys.hpp"
+
 static int s_MapViewID = 2000;
 static int s_MapAreaClipboardFormat;
 static int s_MapEntityClipboardFormat;
@@ -63,8 +66,7 @@ CMapView::CMapView()
 , m_RedrawPreviewLine(0)
 
 {
-  m_SpritesetDrawType = SDT_ICON;
-
+  m_SpritesetDrawType = Configuration::Get(KEY_SPRITESET_DRAWTYPE);
   s_MapAreaClipboardFormat = RegisterClipboardFormat("MapAreaSelection32");
   s_MapEntityClipboardFormat = RegisterClipboardFormat("MapEntitySelection32");
 }
@@ -77,6 +79,7 @@ CMapView::~CMapView()
   delete m_BlitTile;
   DestroyWindow();
   m_TileObstructions.clear();
+  Configuration::Set(KEY_SPRITESET_DRAWTYPE, m_SpritesetDrawType);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
