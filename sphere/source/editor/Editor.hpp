@@ -13,6 +13,10 @@ class CEditorApplication : public CWinApp
 public:
   CEditorApplication();
 
+#ifdef MIRC_LIKE_THING
+  void OnInitialUpdate();
+#endif
+
 private:
   BOOL InitInstance();
   int  ExitInstance();	

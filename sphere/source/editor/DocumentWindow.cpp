@@ -81,6 +81,9 @@ void
 CDocumentWindow::AttachPalette(CPaletteWindow* palette)
 {
   m_AttachedPalettes.push_back(palette);
+#if 1
+  m_AttachedPalettesStates.push_back(palette->IsVisible());
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -91,6 +94,9 @@ CDocumentWindow::DetachPalette(CPaletteWindow* palette)
   for (int i = 0; i < m_AttachedPalettes.size(); i++) {
     if (m_AttachedPalettes[i] == palette) {
       m_AttachedPalettes.erase(m_AttachedPalettes.begin() + i);
+#if 1
+      m_AttachedPalettesStates.erase(m_AttachedPalettesStates.begin() + i);
+#endif
       return;
     }
   }
@@ -192,9 +198,9 @@ CDocumentWindow::Create(LPCTSTR class_name, DWORD style)
   BOOL result = CMDIChildWnd::Create(class_name, "", style);
   if (result) {
     UpdateWindowCaption();
-    RECT client_rect;
-    GetClientRect(&client_rect);
-    OnSize(0, client_rect.right, client_rect.bottom);
+    //RECT client_rect;
+    //GetClientRect(&client_rect);
+    //OnSize(0, client_rect.right, client_rect.bottom);
   }
 
   return result;
@@ -259,6 +265,10 @@ void
 CDocumentWindow::UpdateWindowCaption()
 {
   SetWindowText(m_Caption);
+#ifdef TABBED_WINDOW_LIST
+  CFrameWnd* pFrame = (CFrameWnd*)AfxGetApp()->m_pMainWnd;
+  ((CMainWindow*)pFrame)->OnUpdateFrameTitle(TRUE);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -401,7 +411,10 @@ CDocumentWindow::OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactiv
 #else
     // display the palettes     
     for (int i = 0; i < m_AttachedPalettes.size(); i++) {
-       m_AttachedPalettes[i]->ShowPalette(true);        
+#if 1 
+      if (m_AttachedPalettesStates[i])
+#endif
+        m_AttachedPalettes[i]->ShowPalette(true);        
     }
 #endif // USE_SIZECBAR
   }
@@ -424,6 +437,9 @@ CDocumentWindow::OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactiv
 #else
     // hide the palettes
     for (int i = 0; i < m_AttachedPalettes.size(); i++) {
+#if 1
+      m_AttachedPalettesStates[i] = m_AttachedPalettes[i]->IsVisible();
+#endif
       m_AttachedPalettes[i]->ShowPalette(false);
     }
 #endif

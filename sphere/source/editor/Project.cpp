@@ -89,8 +89,23 @@ CProject::Open(const char* filename)
   // set the game filename
   m_Filename = filename;
 
+  if (1) {
+    char directory[MAX_PATH];
+    GetCurrentDirectory(MAX_PATH, directory);
+    if (SetCurrentDirectory(m_Directory.c_str()) == 0)
+      return false;
+
+    FILE* file = fopen(m_Filename.c_str(), "a");
+    if (!file) return false;
+    fclose(file);
+
+    SetCurrentDirectory(directory);
+  }
+
   // load the game.sgm
-  CConfigFile config(m_Filename.c_str());
+  CConfigFile config;
+  if (!config.Load(m_Filename.c_str()))
+    return false;
 
   m_GameTitle   = config.ReadString("", "name",        "Untitled");
   m_Author      = config.ReadString("", "author",      "Unknown");
@@ -275,7 +290,8 @@ CProject::RefreshItems()
   char old_directory[MAX_PATH];
   GetCurrentDirectory(MAX_PATH, old_directory);
 
-  if (SetCurrentDirectory(m_Directory.c_str())) {
+  if (SetCurrentDirectory(m_Directory.c_str()) != 0)
+  {
     std::vector<std::string> folderlist = GetFolderList("*");
     for (unsigned int i = 0; i < folderlist.size(); i++) {
       if (folderlist[i] != "." && folderlist[i] != "..") {

@@ -51,11 +51,11 @@ CSwatchPalette::CSwatchPalette(CDocumentWindow* owner, ISwatchPaletteHandler* ha
 , m_SelectedColor(0)
 , m_RightClickColor(0)
 {
-  /*
+  ///*
   RECT rect;
   GetClientRect(&rect);
   OnSize(0, rect.right, rect.bottom);
-  */
+  //*/
   UpdateScrollBar();
 }
 

@@ -271,7 +271,7 @@ void
 CProjectWindow::Update()
 {
   m_Project->RefreshItems();
-	m_TreeControl.SetRedraw(FALSE);
+  m_TreeControl.SetRedraw(FALSE);
   // todo remember scroll position and restore it at the end of function
   // int pos = m_TreeControl.GetScrollPos(SBS_VERT);
 
@@ -294,10 +294,9 @@ CProjectWindow::Update()
 
   char last_directory[MAX_PATH] = {0};
   GetCurrentDirectory(MAX_PATH, last_directory);
-  SetCurrentDirectory(m_Project->GetDirectory());
-
-  UpdateTreeStructure(m_TreeControl, NULL);
-
+  if (SetCurrentDirectory(m_Project->GetDirectory()) != 0) {
+    UpdateTreeStructure(m_TreeControl, NULL);
+  }
   SetCurrentDirectory(last_directory);
 
   m_TreeControl.InsertItem(

@@ -83,7 +83,6 @@ CPaletteWindow::CPaletteWindow(CDocumentWindow* owner, const char* name, RECT re
   // change this in the future
   
 #ifdef USE_SIZECBAR
-	
 	CreateBar(true);	
 	Create(
     AfxRegisterWndClass(
@@ -134,6 +133,10 @@ CPaletteWindow::~CPaletteWindow()
 	{
 		m_Owner->DetachPalette(this);
 	}
+#ifdef USE_SIZECBAR
+  delete m_pBarParent;
+  m_pBarParent = NULL;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

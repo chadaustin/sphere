@@ -236,6 +236,14 @@ CMainWindow::CMainWindow()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef TABBED_WINDOW_LIST
+void CMainWindow::OnUpdateFrameTitle(BOOL bAddToTitle)
+{
+  CMDIFrameWnd::OnUpdateFrameTitle(bAddToTitle);
+  m_wndMDITabs.Update(); // sync the mditabctrl with all views
+}
+#endif
+
 BOOL
 CMainWindow::Create()
 {
@@ -290,6 +298,7 @@ CMainWindow::Create()
 
   // create the statusbar
   m_StatusBar.Create(this);
+
   m_StatusBar.SetIndicators(indicators, sizeof(indicators)/sizeof(UINT));
   m_StatusBar.SetBarStyle(m_StatusBar.GetBarStyle() | CBRS_FLYBY | CBRS_TOOLTIPS);
 
@@ -301,6 +310,10 @@ CMainWindow::Create()
   DockControlBar(&m_ToolBar,      AFX_IDW_DOCKBAR_TOP);
   DockControlBar(&m_ImageToolBar, AFX_IDW_DOCKBAR_TOP);
   DockControlBar(&m_MapToolBar, AFX_IDW_DOCKBAR_TOP);
+
+#ifdef TABBED_WINDOW_LIST
+  m_wndMDITabs.Create(this, MT_IMAGES);
+#endif
 
 #ifndef USE_SIZECBAR
   // load the command bar state
@@ -363,7 +376,9 @@ CMainWindow::OpenProject(const char* filename)
   
   if (m_Project.Open(filename) == false)
   {
-    MessageBox("Could not open project");
+    char message[MAX_PATH + 100];
+    sprintf (message, "Could not open project\n'%s'", filename);
+    MessageBox(message);
     return;
   }
 

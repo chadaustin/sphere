@@ -12,6 +12,10 @@
 #include "SwatchServer.hpp"
 #include "resource.h"
 
+#ifdef TABBED_WINDOW_LIST
+#include "MDITabs.h"
+#endif
+
 class CDocumentWindow;  // DocumentWindow.hpp
 class CProjectWindow;   // ProjectWindow.hpp
 
@@ -188,6 +192,13 @@ private:
   CToolBar   m_MapToolBar;
 
   CStatusBar m_StatusBar;
+
+#ifdef TABBED_WINDOW_LIST
+public:
+  virtual void OnUpdateFrameTitle(BOOL bAddToTitle); 
+private:
+  CMDITabs m_wndMDITabs;
+#endif
 
   bool     m_ProjectOpen;
   CProject m_Project;

@@ -121,7 +121,7 @@ CScriptWindow::Create()
   // update the size of the view
   RECT Rect;
   GetClientRect(&Rect);
-  OnSize(0, Rect.right - Rect.left, Rect.bottom - Rect.top);
+  OnSize(0, Rect.right /*- Rect.left*/, Rect.bottom /*- Rect.top*/);
 
   // give the view focus
   ::SetFocus(m_Editor);

@@ -279,7 +279,6 @@ CEditorApplication::InitInstance()
   }
 #endif
 
-
   return TRUE;
 }
 

@@ -129,6 +129,11 @@ CSaveableDocumentWindow::UpdateWindowCaption()
 
   SetWindowText(text ? text : "(null)");
   delete[] text;
+
+#ifdef TABBED_WINDOW_LIST
+  CFrameWnd* pFrame = (CFrameWnd*)AfxGetApp()->m_pMainWnd;
+  ((CMainWindow*)pFrame)->OnUpdateFrameTitle(TRUE);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

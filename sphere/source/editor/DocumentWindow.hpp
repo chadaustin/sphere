@@ -83,6 +83,9 @@ private:
   CSize m_MinSize;
 
   std::vector<CPaletteWindow*> m_AttachedPalettes;
+#if 1
+  std::vector<bool> m_AttachedPalettesStates;
+#endif
 
   DECLARE_MESSAGE_MAP()
 
