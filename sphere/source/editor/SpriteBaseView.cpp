@@ -60,8 +60,11 @@ CSpriteBaseView::UpdateStatusBar()
   int x1, y1, x2, y2;
   m_Spriteset->GetBase(x1, y1, x2, y2);
 
+  int w = x1 > x2 ? x1 - x2 : x2 - x1;
+  int h = y1 > y2 ? y1 - y2 : y2 - y1;
+
   char text[1024];
-  sprintf (text, "Base: %d %d %d %d", x1, y1, x2, y2);
+  sprintf (text, "Base: (x1: %d y1: %d x2: %d y2: %d) w: %d h: %d", x1, y1, x2, y2, w, h);
   GetStatusBar()->SetWindowText(text);
 }
 

@@ -855,9 +855,19 @@ CImageView::Click(bool force_draw)
     return;
   }
 
+  RGBA old_pixel = m_Image.GetPixel(end.x, end.y);
   m_Image.SetPixel(end.x, end.y, m_Color);
+  RGBA new_pixel = m_Image.GetPixel(end.x, end.y);
+
+  // has the image actually changed?
+  if (old_pixel.red   != new_pixel.red
+   || old_pixel.green != new_pixel.green
+   || old_pixel.blue  != new_pixel.blue
+   || old_pixel.alpha != new_pixel.alpha) {
+    m_Handler->IV_ImageChanged();
+  }
+
   InvalidateSelection(end.x, end.y, 1, 1);
-  m_Handler->IV_ImageChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1885,13 +1895,11 @@ CImageView::OnMouseMove(UINT flags, CPoint point)
   POINT current = ConvertToPixel(point);
   if (InImage(current)) {
     char str[80];
-    sprintf(str, "(%d, %d) (%d %d) %d", current.x, current.y, m_CurPoint.x, m_CurPoint.y, m_MouseDown);
+    sprintf(str, "(%d, %d)", current.x, current.y);
     GetStatusBar()->SetWindowText(str);
   } else {
     GetStatusBar()->SetWindowText("");
   }
-
-  InvalidateSelection(current.x - 1, current.y - 1, 3, 3);
 
   if (!m_MouseDown)
     return;
@@ -1928,8 +1936,8 @@ afx_msg void
 CImageView::OnKeyDown(UINT vk, UINT nRepCnt, UINT nFlags)
 {
   if (vk == VK_APPS) {
-    POINT point;
-    GetCursorPos(&point);
+    POINT point = m_CurPoint;
+    ClientToScreen(&point);
     OnRButtonUp(nFlags, point);
   }
 
@@ -1945,38 +1953,27 @@ CImageView::OnKeyDown(UINT vk, UINT nRepCnt, UINT nFlags)
   if (size < 1)
     size = 1;
 
-  bool invalidate = false;
-
   if (vk == VK_LEFT) {
     key_left = true;
-    invalidate = true;
   }
 
   if (vk == VK_RIGHT) {
     key_right = true;
-    invalidate = true;
   }
 
   if (vk == VK_UP) {
     key_up = true;
-    invalidate = true;
   }
 
   if (vk == VK_DOWN) {
     key_down = true;
-    invalidate = true;
   }
 
   if (vk == VK_SPACE) {
     if (!m_MouseDown) {
       OnLeftClick(nFlags, m_CurPoint);
       m_MouseDown = true;
-      invalidate = false;
     }
-  }
-
-  if (invalidate) {
-    Invalidate();
   }
 }
 
@@ -2039,33 +2036,66 @@ CImageView::OnTimer(UINT event)
   bool cursor_moved = false;
 
   if (key_left) {
-    if (m_CurPoint.x > offsetx)  { m_LastPoint = m_CurPoint; m_CurPoint.x -= size; }
-    if (m_CurPoint.x < offsetx) m_CurPoint.x = offsetx;
-    cursor_moved = true;
+    POINT temp = m_CurPoint;
+    temp.x -= temp.x % size;
+    temp.y -= temp.y % size;
+    temp.x -= size;
+
+    if (InImage(ConvertToPixel(temp))) {
+      m_LastPoint = m_CurPoint; m_CurPoint.x = temp.x;
+      cursor_moved = true;
+    }
   }
 
   if (key_right) {
-    if (m_CurPoint.x < width * hsize - offsetx) { m_LastPoint = m_CurPoint; m_CurPoint.x += size; }
-    if (m_CurPoint.x > width * hsize - offsetx) m_CurPoint.x = width * hsize - offsetx;
-    cursor_moved = true;
+    POINT temp = m_CurPoint;
+    temp.x -= temp.x % size;
+    temp.y -= temp.y % size;
+    temp.x += size;
+
+    if (InImage(ConvertToPixel(temp))) {
+      m_LastPoint = m_CurPoint; m_CurPoint.x = temp.x;
+      cursor_moved = true;
+    }
   }
 
   if (key_up) {
-    if (m_CurPoint.y > offsety) { m_LastPoint = m_CurPoint; m_CurPoint.y -= size; }
-    if (m_CurPoint.y < offsety) m_CurPoint.y = offsety;
-    cursor_moved = true;
+    POINT temp = m_CurPoint;
+    temp.x -= temp.x % size;
+    temp.y -= temp.y % size;
+    temp.y -= size;
+
+    if (InImage(ConvertToPixel(temp))) {
+      m_LastPoint = m_CurPoint; m_CurPoint.y  = temp.y;
+      cursor_moved = true;
+    }
   }
 
   if (key_down) {
-    if (m_CurPoint.y < height * vsize - offsety)  { m_LastPoint = m_CurPoint; m_CurPoint.y += size; }
-    if (m_CurPoint.y > height * vsize - offsety) m_CurPoint.y = height * vsize - offsety;
-    cursor_moved = true;
+    POINT temp = m_CurPoint;
+    temp.x -= temp.x % size;
+    temp.y -= temp.y % size;
+    temp.y += size;
+
+    if (InImage(ConvertToPixel(temp))) {
+      m_LastPoint = m_CurPoint; m_CurPoint.y = temp.y;
+      cursor_moved = true;
+    }
   }
 
   if (!m_MouseDown) {
     if (cursor_moved) {
-      POINT p = ConvertToPixel(m_CurPoint);
-      InvalidateSelection(p.x - 1, p.y - 1, 3, 3);
+
+      POINT current = ConvertToPixel(m_CurPoint);
+      if (InImage(current)) {
+        char str[80];
+        sprintf(str, "(%d, %d)", current.x, current.y);
+        GetStatusBar()->SetWindowText(str);
+      }
+
+      if (m_RedrawWidth == 0 && m_RedrawHeight == 0) {
+        InvalidateSelection(current.x - 1, current.y - 1, 3, 3);
+      }
     }
   }
   else
