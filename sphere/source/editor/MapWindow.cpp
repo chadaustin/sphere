@@ -53,6 +53,7 @@ CMapWindow::CMapWindow(const char* map, const char* tileset)
 : CSaveableDocumentWindow(map, IDR_MAP, CSize(400, 100))
 , m_Created(false)
 , m_TilePalette(NULL)
+, m_TilePreviewPalette(NULL)
 {
   // LoadMap() displays message boxes if something goes wrong
   // SetSaved() and SetModified() are called in here

@@ -398,7 +398,7 @@ CProjectWindow::OnDoubleClick(NMHDR* /*notify*/, LRESULT* /*result*/)
       if (parent == NULL)
         return;
 
-      int GroupType;
+      int GroupType = -1;
       switch (m_TreeControl.GetItemData(parent))
       {
         case tiMaps:         GroupType = GT_MAPS;         break;
@@ -411,15 +411,18 @@ CProjectWindow::OnDoubleClick(NMHDR* /*notify*/, LRESULT* /*result*/)
         case tiAnimations:   GroupType = GT_ANIMATIONS;   break;
       }
 
-      // build file path
-      char szFilename[MAX_PATH];
-      strcpy(szFilename, m_Project->GetDirectory());
-      strcat(szFilename, "\\");
-      strcat(szFilename, m_Project->GetGroupDirectory(GroupType));
-      strcat(szFilename, "\\");
-      strcat(szFilename, m_TreeControl.GetItemText(item));
+      if (GroupType != -1) {
 
-      m_MainWindow->OpenDocumentWindow(GroupType, szFilename);
+        // build file path
+        char szFilename[MAX_PATH];
+        strcpy(szFilename, m_Project->GetDirectory());
+        strcat(szFilename, "\\");
+        strcat(szFilename, m_Project->GetGroupDirectory(GroupType));
+        strcat(szFilename, "\\");
+        strcat(szFilename, m_TreeControl.GetItemText(item));
+
+        m_MainWindow->OpenDocumentWindow(GroupType, szFilename);
+      }
       break;
     }
   }
