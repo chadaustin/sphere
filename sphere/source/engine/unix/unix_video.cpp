@@ -278,25 +278,19 @@ bool SwitchResolution (int x, int y) {
   if (!initialized) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
-	 screen = SDL_SetVideoMode(x, y, 32, SDL_HWSURFACE | SDL_DOUBLEBUF); /* | SDL_FULLSCREEN); */
-    if (screen == NULL)
-      return false;
-    FPSDisplayed = false;
-    initialized = true;
-    SetClippingRectangle(0, 0, screen->w, screen->h);
-    return true;
   } else {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
-    if (SDL_InitSubSystem(SDL_INIT_VIDEO) == -1)
+    if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
-	 screen = SDL_SetVideoMode(x, y, 32, SDL_HWSURFACE | SDL_DOUBLEBUF); /* | SDL_FULLSCREEN); */
-    if (screen == NULL)
-      return false;
-    FPSDisplayed = false;
-    initialized = true;
-	 SetClippingRectangle(0, 0, screen->w, screen->h);
-    return true;
   }
+  screen = SDL_SetVideoMode(x, y, 32, SDL_HWSURFACE | SDL_DOUBLEBUF); /* | SDL_FULLSCREEN); */
+  if (screen == NULL)
+    return false;
+  SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+  FPSDisplayed = false;
+  initialized = true;
+  SetClippingRectangle(0, 0, screen->w, screen->h);
+  return true;
 }
 
 int GetScreenWidth () {
@@ -369,6 +363,7 @@ IMAGE CreateImage (int width, int height, const RGBA* pixels) {
 IMAGE GrabImage (int x, int y, int width, int height) {
   SDL_Surface* surface;
   SDL_Rect source;
+  SDL_Rect dest;
 
   if ((width > GetScreenWidth()) || (height > GetScreenHeight()))
     return NULL;
@@ -380,10 +375,12 @@ IMAGE GrabImage (int x, int y, int width, int height) {
   source.y = y;
   source.w = width;
   source.h = height;
-  /* if (SDL_BlitSurface(screen, &source, surface, NULL) == -1) {
+  dest.x = 0;
+  dest.y = 0;
+  if (SDL_BlitSurface(screen, &source, surface, &dest) == -1) {
     SDL_FreeSurface(surface);
     return NULL;
-  } */
+  }
   return surface;
 }
 
