@@ -806,6 +806,32 @@ log_object.endBlock()
       Note that window corners and edges are drawn outside of the width 
       and height of the window.
 
+  windowstyle_object.drawBackground(x, y, w, h)
+    - draws the background part of the windowstyle at (x, y) with the width and height of w and h
+
+  windowstyle_object.drawUpperLeftCorner(x, y)
+    - draws the upper left corner of the windowstyle at (x, y)
+
+  windowstyle_object.drawUpperRightCorner(x, y)
+    - draws the upper right corner of the windowstyle at (x, y)
+
+  windowstyle_object.drawLowerLeftCorner(x, y)
+    - draws the lower left corner of the windowstyle at (x, y)
+
+  windowstyle_object.drawLowerRightCorner(x, y)
+    - draws the lower right corner of the windowstyle at (x, y)
+
+  windowstyle_object.drawTopEdge(x, y, w, h)
+    - draws the top edge of the windowstyle at (x, y) with the width and height of w and h
+
+  windowstyle_object.drawBottomEdge(x, y, w, h)
+    - draws the bottom edge of the windowstyle at (x, y) with the width and height of w and h
+
+  windowstyle_object.drawLeftEdge(x, y, w, h)
+    - draws the left edge of the windowstyle at (x, y) with the width and height of w and h
+
+  windowstyle_object.drawRightEdge(x, y, w, h)
+    - draws the right edge of the windowstyle at (x, y) with the width and height of w and h
   
   *** images ***
   GetSystemArrow()

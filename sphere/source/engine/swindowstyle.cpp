@@ -69,7 +69,7 @@ SWINDOWSTYLE::GetBackgroundMode() {
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-SWINDOWSTYLE::DrawMiddle(int x, int y, int w, int h, int background_mode)
+SWINDOWSTYLE::DrawBackground(int x, int y, int w, int h, int background_mode)
 {
   IMAGE image = m_Images[8];
   int width = GetImageWidth(image);
@@ -107,85 +107,50 @@ SWINDOWSTYLE::DrawMiddle(int x, int y, int w, int h, int background_mode)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+SWINDOWSTYLE::DrawCorner(int index, int x, int y)
+{
+  if (index < 0 || index >= 9)
+    return false;
+  BlitImage(m_Images[index], x, y);
+  return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool
 SWINDOWSTYLE::DrawUpperLeftCorner(int x, int y)
 {
-  IMAGE image = m_Images[0];
-  BlitImage(image, x, y);
-  return true;
+  return DrawCorner(0, x, y);
 }
 
 bool
 SWINDOWSTYLE::DrawUpperRightCorner(int x, int y)
 {
-  IMAGE image = m_Images[2];
-  BlitImage(image, x, y);
-  return true;
+  return DrawCorner(2, x, y);
 }
 
 bool
 SWINDOWSTYLE::DrawLowerRightCorner(int x, int y)
 {
-  IMAGE image = m_Images[4];
-  BlitImage(image, x, y);
-  return true;
+  return DrawCorner(4, x, y);
 }
 
 bool
 SWINDOWSTYLE::DrawLowerLeftCorner(int x, int y)
 {
-  IMAGE image = m_Images[6];
-  BlitImage(image, x, y);
-  return true;
+  return DrawCorner(6, x, y);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-SWINDOWSTYLE::DrawTopEdge(int x, int y, int w, int h)
+SWINDOWSTYLE::DrawHorizontalEdge(int index, int x, int y, int w, int h)
 {
-  IMAGE image = m_Images[1]; 
-  int width = GetImageWidth(image);
-  int height = GetImageHeight(image);
+  if (index < 0 || index >= 9)
+    return false;
 
-  int ox, oy, ow, oh;
-  GetClippingRectangle(&ox, &oy, &ow, &oh);
-
-  SetClippingRectangle(x, y, w, height);
-
-  for (int i = 0; i < w / width + 1; i++)
-    BlitImage(image, x + i * width, y);
-
-  SetClippingRectangle(ox, oy, ow, oh);
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-bool
-SWINDOWSTYLE::DrawBottomEdge(int x, int y, int w, int h)
-{
-  IMAGE image = m_Images[5]; 
-  int width = GetImageWidth(image);
-  int height = GetImageHeight(image);
-
-  int ox, oy, ow, oh;
-  GetClippingRectangle(&ox, &oy, &ow, &oh);
-
-  SetClippingRectangle(x, y, w, height);
-
-  for (int i = 0; i < w / width + 1; i++)
-    BlitImage(image, x + i * width, y);
-
-  SetClippingRectangle(ox, oy, ow, oh);
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-bool
-SWINDOWSTYLE::DrawLeftEdge(int x, int y, int w, int h)
-{
-  IMAGE image = m_Images[7];
+  IMAGE image = m_Images[index];
   int width = GetImageWidth(image);
   int height = GetImageHeight(image);
 
@@ -201,25 +166,60 @@ SWINDOWSTYLE::DrawLeftEdge(int x, int y, int w, int h)
   return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 bool
-SWINDOWSTYLE::DrawRightEdge(int x, int y, int w, int h)
+SWINDOWSTYLE::DrawVerticalEdge(int index, int x, int y, int w, int h)
 {
-  IMAGE image = m_Images[3];
+  if (index < 0 || index >= 9)
+    return false;
+
+  IMAGE image = m_Images[index]; 
   int width = GetImageWidth(image);
   int height = GetImageHeight(image);
 
   int ox, oy, ow, oh;
   GetClippingRectangle(&ox, &oy, &ow, &oh);
 
-  SetClippingRectangle(x, y, x + width, h);
+  SetClippingRectangle(x, y, w, height);
 
-  for (int i = 0; i < h / height + 1; i++)
-    BlitImage(image, x, y + i*height);
+  for (int i = 0; i < w / width + 1; i++)
+    BlitImage(image, x + i * width, y);
 
   SetClippingRectangle(ox, oy, ow, oh);
   return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool
+SWINDOWSTYLE::DrawTopEdge(int x, int y, int w, int h)
+{
+  return DrawVerticalEdge(1, x, y, w, h);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool
+SWINDOWSTYLE::DrawBottomEdge(int x, int y, int w, int h)
+{
+  return DrawVerticalEdge(5, x, y, w, h);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+SWINDOWSTYLE::DrawLeftEdge(int x, int y, int w, int h)
+{
+  return DrawHorizontalEdge(7, x, y, w, h);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+SWINDOWSTYLE::DrawRightEdge(int x, int y, int w, int h)
+{
+  return DrawHorizontalEdge(3, x, y, w, h);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -232,7 +232,7 @@ SWINDOWSTYLE::DrawWindow(int x, int y, int w, int h)
   int height = GetImageHeight(image);
 
   //---- Draw middle ----//
-  DrawMiddle(x, y, w, h, m_WindowStyle.GetBackgroundMode());
+  DrawBackground(x, y, w, h, m_WindowStyle.GetBackgroundMode());
   
   //---- Draw edges ----//
   DrawTopEdge(x, (y - GetImageHeight(m_Images[1])), w, h);

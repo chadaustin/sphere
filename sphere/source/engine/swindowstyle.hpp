@@ -18,7 +18,7 @@ public:
   void Destroy();
 
   int GetBackgroundMode();
-  bool DrawMiddle(int x, int y, int w, int h, int background_mode);
+  bool DrawBackground(int x, int y, int w, int h, int background_mode);
 
   bool DrawTopEdge   (int x, int y, int w, int h);
   bool DrawBottomEdge(int x, int y, int w, int h);
@@ -38,6 +38,10 @@ private:
 private:
   sWindowStyle m_WindowStyle;
   IMAGE m_Images[9];
+
+  bool DrawCorner(int index, int x, int y);
+  bool DrawHorizontalEdge(int index, int x, int y, int w, int h);
+  bool DrawVerticalEdge(int index, int x, int y, int w, int h);
 };
 
 

@@ -3948,7 +3948,7 @@ CScript::CreateWindowStyleObject(JSContext* cx, SWINDOWSTYLE* ws, bool destroy)
   // assign methods to the object
   static JSFunctionSpec fs[] = {
     { "drawWindow", ssWindowStyleDrawWindow, 4, 0, 0 },
-    { "drawMiddle", ssWindowStyleDrawMiddle, 4, 0, 0 },
+    { "drawBackground", ssWindowStyleDrawBackground, 4, 0, 0 },
     { "drawUpperLeftCorner",  ssWindowStyleDrawUpperLeftCorner, 2, 0, 0 },
     { "drawUpperRightCorner", ssWindowStyleDrawUpperRightCorner, 2, 0, 0 },
     { "drawLowerLeftCorner",  ssWindowStyleDrawLowerLeftCorner, 2, 0, 0 },
@@ -3993,14 +3993,14 @@ end_method()
 
 ///////////////////////////////////////
 
-begin_method(SS_WINDOWSTYLE, ssWindowStyleDrawMiddle, 4)
+begin_method(SS_WINDOWSTYLE, ssWindowStyleDrawBackground, 4)
   if (This->ShouldRender()) {
     arg_int(x);
     arg_int(y);
     arg_int(w);
     arg_int(h);
 
-    object->windowstyle->DrawMiddle(x, y, w, h, object->windowstyle->GetBackgroundMode());
+    object->windowstyle->DrawBackground(x, y, w, h, object->windowstyle->GetBackgroundMode());
   }
 end_method()
 
