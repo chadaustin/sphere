@@ -216,6 +216,8 @@ SS_FUNCTION(OpenLog, 1)
       SS_FUNCTION(ClearPersonCommands, 1)
       SS_FUNCTION(IsCommandQueueEmpty, 1)
       
+      SS_FUNCTION(GetObstructingTile, 3)
+      SS_FUNCTION(GetObstructingPerson, 3)
       SS_FUNCTION(IsPersonObstructed, 3)
 
       SS_FUNCTION(SetTalkActivationKey, 1)

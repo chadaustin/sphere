@@ -2573,6 +2573,38 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(GetObstructingTile, 3)
+  arg_str(name);
+  arg_int(x);
+  arg_int(y);
+
+  int result;
+  if (!This->m_Engine->GetMapEngine()->GetObstructingTile(name, x, y, result)) {
+    This->ReportMapEngineError("GetObstructingTile() failed");
+    return JS_FALSE;
+  }
+
+  return_int(result);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(GetObstructingPerson, 3)
+  arg_str(name);
+  arg_int(x);
+  arg_int(y);
+
+  std::string result;
+  if (!This->m_Engine->GetMapEngine()->GetObstructingPerson(name, x, y, result)) {
+    This->ReportMapEngineError("GetObstructingPerson() failed");
+    return JS_FALSE;
+  }
+
+  return_str(result.c_str());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 begin_func(IsPersonObstructed, 3)
   arg_str(name);
   arg_int(x);

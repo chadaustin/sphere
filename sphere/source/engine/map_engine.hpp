@@ -158,6 +158,8 @@ public:
   bool IsIgnoringTileObstructions(const char* name, bool& ignoring);
 
   bool IsPersonObstructed(const char* name, int x, int y, bool& result);
+  bool GetObstructingTile(const char* name, int x, int y, int& result);
+  bool GetObstructingPerson(const char* name, int x, int y, std::string& result);
 
   bool SetTalkActivationKey(int key);
   bool SetTalkDistance(int pixels);
@@ -275,7 +277,11 @@ private:
   int FindTrigger(int location_x, int location_y, int layer);
   bool ExecuteTriggerScript(int trigger_index);
   bool UpdateTriggers();
+
+  bool IsPersonInsideZone(int person_index, int zone_index);
+  bool ExecuteZoneScript(int zone_index);
   bool UpdateZones();
+
   bool UpdateColorMasks();
   bool UpdateDelayScripts();
   bool UpdateEdgeScripts();
@@ -290,6 +296,8 @@ private:
   void ResetNextFrame();
   int FindPerson(const char* name);
   bool IsObstructed(int person, int x, int y, int& obs_person);
+  int FindObstructingTile(int person, int x, int y);
+  int FindObstructingPerson(int person, int x, int y);
 
 private:
   // core map engine stuff

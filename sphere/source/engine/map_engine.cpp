@@ -3188,9 +3188,7 @@ bool
 CMapEngine::IsTriggerAt(int location_x, int location_y, int layer)
 {
   int trigger_index = FindTrigger(location_x, location_y, layer);
-  if (trigger_index != -1)
-    return true;
-  return false;
+  return (trigger_index != -1);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3270,6 +3268,66 @@ CMapEngine::UpdateTriggers()
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::IsPersonInsideZone(int person_index, int zone_index)
+{
+  if (person_index < 0 || person_index >= m_Persons.size())
+    return false;
+
+  if (zone_index < 0 || zone_index >= m_Zones.size())
+    return false;
+
+  // convenience
+  int location_x = int(m_Persons[person_index].x);
+  int location_y = int(m_Persons[person_index].y);
+  int location_l = m_Persons[person_index].layer;
+
+  Zone& z = m_Zones[zone_index];
+
+  return (location_x >= z.x1 && 
+          location_y >= z.y1 &&
+          location_x <= z.x2 && 
+          location_y <= z.y2 &&
+          location_l == z.layer);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::ExecuteZoneScript(int zone_index)
+{
+  if (zone_index < 0 || zone_index >= int(m_Zones.size())) {
+    std::ostringstream os;
+    os << "Invalid zone index\n";
+    m_ErrorMessage = os.str();
+    return false;
+  }
+
+  Zone& z = m_Zones[zone_index];
+
+  // execute the trigger code
+  IEngine::script script = z.script;
+  std::string error;
+  if (!ExecuteScript(script, error)) {
+    std::ostringstream os;
+    os << "Could not compile zone ("
+       << z.x1
+       << ", "
+       << z.y1
+       << ") -> ("
+       << z.x2
+       << ", "
+       << z.y2
+       << ")\n";
+    m_ErrorMessage = os.str() + error;
+    return false;
+  }
+
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::UpdateZones()
 {
   // can't process triggers if we don't have an input target
@@ -3277,43 +3335,18 @@ CMapEngine::UpdateZones()
     return true;
   }
 
-  // convenience
-  int location_x = int(m_Persons[m_InputPerson].x);
-  int location_y = int(m_Persons[m_InputPerson].y);
-  int location_l = m_Persons[m_InputPerson].layer;
-
   for (unsigned i = 0; i < m_Zones.size(); i++) {
-    Zone& z = m_Zones[i];
-
 
     // check if the person is inside the zone
-    if (location_x >= z.x1 && 
-        location_y >= z.y1 &&
-        location_x <= z.x2 && 
-        location_y <= z.y2 &&
-        location_l == z.layer) {
+    if (IsPersonInsideZone(m_InputPerson, i)) {
 
+      Zone& z = m_Zones[i];
       z.current_step--;
       if (z.current_step < 0) {
         z.current_step = z.reactivate_in_num_steps - 1;
 
-        // execute the trigger code
-        IEngine::script script = z.script;
-        std::string error;
-        if (!ExecuteScript(script, error)) {
-          std::ostringstream os;
-          os << "Could not compile zone ("
-             << z.x1
-             << ", "
-             << z.y1
-             << ") -> ("
-             << z.x2
-             << ", "
-             << z.y2
-             << ")\n";
-          m_ErrorMessage = os.str() + error;
+        if (!ExecuteZoneScript(i))
           return false;
-        }
 
         ResetNextFrame();
       }
@@ -3630,30 +3663,37 @@ CMapEngine::FindPerson(const char* name)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::IsObstructed(int person, int x, int y, int& obs_person)
+CMapEngine::GetObstructingTile(const char* name, int x, int y, int& result)
 {
-  // get useful elements
+  // find person
+  int person = FindPerson(name);
+  if (person == -1) {
+    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+    result = -1;
+    return false;
+  }
+
+  result = FindObstructingTile(person, x, y);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CMapEngine::FindObstructingTile(int person, int x, int y)
+{
   const Person& p = m_Persons[person];
-//  const sSpriteset& s = p.spriteset->GetSpriteset();
-  const sObstructionMap& obs_map = m_Map.GetMap().GetLayer(p.layer).GetObstructionMap();
+  const sLayer& layer = m_Map.GetMap().GetLayer(p.layer);
   const int tile_width  = m_Map.GetMap().GetTileset().GetTileWidth();
   const int tile_height = m_Map.GetMap().GetTileset().GetTileHeight();
-  const sLayer& layer = m_Map.GetMap().GetLayer(p.layer);
 
-
-  // test obstruction map
   int bx = (p.base_x1 + p.base_x2) / 2;
   int by = (p.base_y1 + p.base_y2) / 2;
-
+  
   int x1 = x - bx + p.base_x1;
   int y1 = y - by + p.base_y1;
   int x2 = x - bx + p.base_x2;
   int y2 = y - by + p.base_y2;
-
-  if (obs_map.TestRectangle(x1, y1, x2, y2)) {
-    obs_person = -1;
-    return true;
-  }
 
   // test per-tile obstructions
   int min_x = (x1 < x2 ? x1 : x2);
@@ -3665,38 +3705,74 @@ CMapEngine::IsObstructed(int person, int x, int y, int& obs_person)
   int max_tx = max_x / tile_width;
   int min_ty = min_y / tile_height;
   int max_ty = max_y / tile_height;
-
-  if (!m_Persons[person].ignoreTileObstructions)
-  {
-    for (int ty = min_ty; ty <= max_ty; ty++) {
-      for (int tx = min_tx; tx <= max_tx; tx++) {
+  
+  for (int ty = min_ty; ty <= max_ty; ty++) {
+    for (int tx = min_tx; tx <= max_tx; tx++) {
 
         // if the tile is on the map
-        if (tx < 0 || ty < 0 || tx >= layer.GetWidth() || ty >= layer.GetHeight()) {
-          continue;
-        }
+      if (tx < 0 || ty < 0 || tx >= layer.GetWidth() || ty >= layer.GetHeight()) {
+        continue;
+      }
       
         // get the tile object
-        int t = m_Map.GetAnimationMap()[layer.GetTile(tx, ty)].current;
-        sTile& tile = m_Map.GetMap().GetTileset().GetTile(t);
+      int t = m_Map.GetAnimationMap()[layer.GetTile(tx, ty)].current;
+      sTile& tile = m_Map.GetMap().GetTileset().GetTile(t);
 
-        int tbx = tx * tile_width;
-        int tby = ty * tile_height;
+      int tbx = tx * tile_width;
+      int tby = ty * tile_height;
 
-        if (tile.GetObstructionMap().TestRectangle(x1 - tbx, y1 - tby, x2 - tbx, y2 - tby)) {
-          obs_person = -1;
-          return true;
-        }
-
+      if (tile.GetObstructionMap().TestRectangle(x1 - tbx, y1 - tby, x2 - tbx, y2 - tby)) {
+        return t;
       }
     }
   }
 
-  // don't check other entity obstructions if this spriteset ignores them
-  if(m_Persons[person].ignorePersonObstructions) {
-    obs_person = -1;
+  return -1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetObstructingPerson(const char* name, int x, int y, std::string& result)
+{
+  // find person
+  int person = FindPerson(name);
+  int found = -1;
+  if (person == -1) {
+    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+    result = "";
     return false;
   }
+
+  found = FindObstructingPerson(person, x, y);
+  if (found != -1)
+    result = m_Persons[found].name;
+
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+int
+CMapEngine::FindObstructingPerson(int person, int x, int y)
+{
+  const Person& p = m_Persons[person];
+  const sLayer& layer = m_Map.GetMap().GetLayer(p.layer);
+  const int tile_width  = m_Map.GetMap().GetTileset().GetTileWidth();
+  const int tile_height = m_Map.GetMap().GetTileset().GetTileHeight();
+
+  int bx = (p.base_x1 + p.base_x2) / 2;
+  int by = (p.base_y1 + p.base_y2) / 2;
+  
+  int x1 = x - bx + p.base_x1;
+  int y1 = y - by + p.base_y1;
+  int x2 = x - bx + p.base_x2;
+  int y2 = y - by + p.base_y2;
+
+  int min_x = (x1 < x2 ? x1 : x2);
+  int max_x = (x1 > x2 ? x1 : x2);
+  int min_y = (y1 < y2 ? y1 : y2);
+  int max_y = (y1 > y2 ? y1 : y2);
 
   // check obstructions against other entities
   for (int i = 0; i < int(m_Persons.size()); i++) {
@@ -3724,7 +3800,6 @@ CMapEngine::IsObstructed(int person, int x, int y, int& obs_person)
 skip_this_guy:
     continue;
 dont_skip:
-
 
     // now do a simple bounding rectangle test
     const Person& q = m_Persons[i];
@@ -3757,13 +3832,63 @@ dont_skip:
 
     ) {
 
-      obs_person = i;
-      return true;      
+      return i;
+
     }
   
   }
 
+  return -1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::IsObstructed(int person, int x, int y, int& obs_person)
+{
+  // get useful elements
+  const Person& p = m_Persons[person];
+  //  const sSpriteset& s = p.spriteset->GetSpriteset();
+  const sObstructionMap& obs_map = m_Map.GetMap().GetLayer(p.layer).GetObstructionMap();
+  const int tile_width  = m_Map.GetMap().GetTileset().GetTileWidth();
+  const int tile_height = m_Map.GetMap().GetTileset().GetTileHeight();
+  const sLayer& layer = m_Map.GetMap().GetLayer(p.layer);
+
+  // test obstruction map
+  int bx = (p.base_x1 + p.base_x2) / 2;
+  int by = (p.base_y1 + p.base_y2) / 2;
+
+  int x1 = x - bx + p.base_x1;
+  int y1 = y - by + p.base_y1;
+  int x2 = x - bx + p.base_x2;
+  int y2 = y - by + p.base_y2;
+
   obs_person = -1;
+
+  if (obs_map.TestRectangle(x1, y1, x2, y2)) {
+    obs_person = -1;
+    return true;
+  }
+
+  if (!m_Persons[person].ignoreTileObstructions)
+  {
+    if (FindObstructingTile(person, x, y) != -1) {
+      obs_person = -1;
+      return true;
+    }
+  }
+
+  // don't check other entity obstructions if this spriteset ignores them
+  if(m_Persons[person].ignorePersonObstructions) {
+    obs_person = -1;
+    return false;
+  }
+
+  obs_person = FindObstructingPerson(person, x, y);
+
+  if (obs_person != -1)
+    return true;
+
   return false;
 }
 

@@ -599,6 +599,14 @@ log_object.endBlock()
       IsPersonObstructed(name, x, y)
       // returns true if person 'name' would be obstructed at (x, y)
 
+      GetObstructingTile(name, x, y)
+      // returns -1 if name isn't obstructed by a tile at x, y,
+       - returns the tile index of the tile if name is obstructed at x, y
+
+      GetObstructingPerson(name, x, y)
+      // returns "" if name isn't obstructed by person at x, y,
+       - returns the name of the person if name is obstructed at x, y
+
       SetTalkActivationKey(key)
         - set key used to activate talk scripts
 
