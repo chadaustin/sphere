@@ -158,6 +158,8 @@ bool
 CBrowseWindow::LoadFile(const char* filename)
 {
   bool valid = false;
+  const int width = 100;
+  const int height = 100;
 
   CImage32 image;
   sSpriteset spriteset;
@@ -185,27 +187,27 @@ CBrowseWindow::LoadFile(const char* filename)
     CImage32 bm = windowstyle.GetBitmap(sWindowStyle::BOTTOM);
     CImage32 br = windowstyle.GetBitmap(sWindowStyle::LOWER_RIGHT);
 
-    tl.Rescale(100/3, 100/3);
-    tm.Rescale(100/3, 100/3);
-    tr.Rescale(100/3, 100/3);
-    ml.Rescale(100/3, 100/3);
-    mm.Rescale(100/3, 100/3);
-    mr.Rescale(100/3, 100/3);
-    bl.Rescale(100/3, 100/3);
-    bm.Rescale(100/3, 100/3);
-    br.Rescale(100/3, 100/3);
+    tl.Rescale(width/3, height/3);
+    tm.Rescale(width/3, height/3);
+    tr.Rescale(width/3, height/3);
+    ml.Rescale(width/3, height/3);
+    mm.Rescale(width/3, height/3);
+    mr.Rescale(width/3, height/3);
+    bl.Rescale(width/3, height/3);
+    bm.Rescale(width/3, height/3);
+    br.Rescale(width/3, height/3);
 
-    image.Create(100, 100);
+    image.Create(width, height);
 
-    image.BlitImage(tl, 100/3*0, 100/3*0);
-    image.BlitImage(tm, 100/3*1, 100/3*0);
-    image.BlitImage(tr, 100/3*2, 100/3*0);
-    image.BlitImage(ml, 100/3*0, 100/3*1);
-    image.BlitImage(mm, 100/3*1, 100/3*1);
-    image.BlitImage(mr, 100/3*2, 100/3*1);
-    image.BlitImage(bl, 100/3*0, 100/3*2);
-    image.BlitImage(bm, 100/3*1, 100/3*2);
-    image.BlitImage(br, 100/3*2, 100/3*2);
+    image.BlitImage(tl, width/3*0, height/3*0);
+    image.BlitImage(tm, width/3*1, height/3*0);
+    image.BlitImage(tr, width/3*2, height/3*0);
+    image.BlitImage(ml, width/3*0, height/3*1);
+    image.BlitImage(mm, width/3*1, height/3*1);
+    image.BlitImage(mr, width/3*2, height/3*1);
+    image.BlitImage(bl, width/3*0, height/3*2);
+    image.BlitImage(bm, width/3*1, height/3*2);
+    image.BlitImage(br, width/3*2, height/3*2);
 
     valid = true;
   }
@@ -218,11 +220,11 @@ CBrowseWindow::LoadFile(const char* filename)
       map_height = std::max(map_height, map.GetLayer(i).GetHeight());
     }
 
-    map_width  = std::min(100, map_width);
-    map_height = std::min(100, map_height);
+    map_width  = std::min(width, map_width);
+    map_height = std::min(height, map_height);
 
-    int xstep = 100 / map_width;
-    int ystep = 100 / map_height;
+    int xstep = width / map_width;
+    int ystep = height / map_height;
 
     map.GetTileset().SetTileSize(xstep, ystep, true);
     image.Create(map_width, map_height);
@@ -241,7 +243,7 @@ CBrowseWindow::LoadFile(const char* filename)
     valid = true;
   }
   else if (font.Load(filename)) {
-    image.Create(100, 100);
+    image.Create(width, height);
 
     int x = 0;
     int y = 0;
@@ -261,7 +263,7 @@ CBrowseWindow::LoadFile(const char* filename)
     valid = true;
   }
   else if (tileset.Load(filename)) {
-    image.Create(100, 100);
+    image.Create(width, height);
     for (int y = 0; y < 10; y++) {
       for (int x = 0; x < 10; x++) {
         image.BlitImage(tileset.GetTile((y * 3 + x) % tileset.GetNumTiles()), x * tileset.GetTileWidth(), y * tileset.GetTileHeight());
@@ -271,8 +273,8 @@ CBrowseWindow::LoadFile(const char* filename)
   }
 
   if (valid) {
-    image.Rescale(100, 100);
-    if (image.GetWidth() != 100 && image.GetHeight() != 100) {
+    image.Rescale(width, height);
+    if (image.GetWidth() != width && image.GetHeight() != height) {
       valid = false;
     }
   }

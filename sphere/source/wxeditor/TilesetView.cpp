@@ -223,6 +223,8 @@ wTilesetView::GetSelectedTile() const
 void
 wTilesetView::UpdateScrollBar()
 {
+// without this ifdef it crashes certain tilesets in linux, e.g. a tileset with only one tile crashes
+#ifdef WIN32
   int num_rows  = GetNumRows();
   int page_size = GetPageSize();
 
@@ -254,8 +256,10 @@ wTilesetView::UpdateScrollBar()
   SetScrollInfo(SB_VERT, &si);
   */
   //SetScrollbar(wxVERTICAL, m_TopRow, page_size, num_rows);
+
   SetVScrollPosition(m_TopRow);
   SetVScrollRange(num_rows, page_size);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -328,7 +332,8 @@ wTilesetView::OnPaint(wxPaintEvent &event)
       }
 
       int it = (iy + m_TopRow) * (client_size.GetWidth() / blit_width) + ix;
-      if (ix < num_tiles_x && it < m_Tileset->GetNumTiles())
+      if (ix < num_tiles_x
+       && it >= 0 && it < m_Tileset->GetNumTiles())
       {
         // draw the tile
         // fill the DIB section
@@ -521,7 +526,7 @@ wTilesetView::OnMouseMove(wxMouseEvent &event)
   int tile = (m_TopRow + y) * num_tiles_x + x;
 
 #ifdef WIN32
-  if (tile <= m_Tileset->GetNumTiles() -1)
+  if (tile >= 0 && tile <= m_Tileset->GetNumTiles() -1)
   {
     //CString tilenum;
     //tilenum.Format("Tile (%i/%i)", tile, m_Tileset->GetNumTiles());
@@ -712,7 +717,7 @@ wTilesetView::OnAppendTiles(wxEvent &event)
 void
 wTilesetView::OnDeleteTiles(wxEvent &event)
 {
-  int tiles = wxGetNumberFromUser(wxString("Append Tiles"), wxString("Number of tiles to append"), wxString(""), 1, 1, 255);
+  int tiles = wxGetNumberFromUser(wxString("Delete Tiles"), wxString("Number of tiles to delete"), wxString(""), 1, 1, 255);
   if (tiles != -1)
   {
     // adjust map tile indices around

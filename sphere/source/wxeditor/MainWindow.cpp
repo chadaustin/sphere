@@ -87,6 +87,8 @@ BEGIN_EVENT_TABLE(wMainWindow, wxMDIParentFrame)
   EVT_MENU(wID_FILE_OPEN_IMAGE,       wMainWindow::OnFileOpenImage)
   EVT_MENU(wID_FILE_OPEN_ANIMATION,   wMainWindow::OnFileOpenAnimation)
 
+  EVT_MENU(wID_FILE_CLOSE,            wMainWindow::OnFileClose)
+
   // file | import
   EVT_MENU(wID_FILE_IMPORT_IMAGETOMAPTILESET, wMainWindow::OnFileImportImageToMap)
   EVT_MENU(wID_FILE_IMPORT_BITMAPTORWS,       wMainWindow::OnFileImportBitmapToRWS)
@@ -173,6 +175,8 @@ wMainWindow::wMainWindow(
       submenu->AppendSeparator();
       submenu->Append(wID_FILE_OPEN, "&Open");
     menu->Append(wID_FILE_OPEN_, "&Open", submenu);
+
+    menu->Append(wID_FILE_CLOSE, "&Close");
 
     submenu = new wxMenu();//"Import");
       submenu->Append(wID_FILE_IMPORT_IMAGETOMAPTILESET, "Image To &Map");
@@ -998,7 +1002,7 @@ wMainWindow::OnFileOpenLastProject(wxCommandEvent &event)
   {                                           \
     wDocumentWindow *doc = construct;         \
     if(doc != NULL) {                         \
-      m_DocumentWindows.push_back(construct); \
+      m_DocumentWindows.push_back(doc);       \
     }                                         \
   }
 
@@ -1039,6 +1043,17 @@ FILE_OPEN_HANDLER(Font,        new wFontWindow(path))
 FILE_OPEN_HANDLER(WindowStyle, new wWindowStyleWindow(path))
 FILE_OPEN_HANDLER(Image,       new wImageWindow(path))
 FILE_OPEN_HANDLER(Animation,   new wAnimationWindow(path))
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+wMainWindow::OnFileClose(wxCommandEvent &event)
+{
+  if (m_DocumentWindows.size() > 0) {
+    wxCloseEvent event;
+    m_DocumentWindows[0]->OnClose(event);
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1507,7 +1522,11 @@ wMainWindow::OnProjectRunSphere(wxCommandEvent &event)
   /*todo:add save all check*/
   char szCommandLine[MAX_PATH + 80];
   strcpy(szCommandLine, g_SphereDirectory.c_str());
+#ifdef WIN32
   strcat(szCommandLine, "\\engine.exe -game ");
+#else
+  strcat(szCommandLine, "/engine -game ");
+#endif
   strcat(szCommandLine, "\"");
   strcat(szCommandLine, m_Project.GetGameSubDirectory());
   strcat(szCommandLine, "\"");
@@ -1671,6 +1690,7 @@ wMainWindow::OnHelpAbout(wxCommandEvent &event)
 void
 wMainWindow::SetChildMenu(int childmenu, wxEvtHandler *receiver)
 {
+  ClearChildMenu();
   m_MenuReceiver = receiver;
   m_ChildMenuResource = childmenu;
   UpdateMenu();
@@ -1685,6 +1705,8 @@ wMainWindow::ClearChildMenu()
   m_MenuReceiver = NULL;
   UpdateMenu();
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 //
 

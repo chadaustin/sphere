@@ -158,10 +158,17 @@ wDocumentWindow::GetDocumentPath() const
 const char*
 wDocumentWindow::GetDocumentTitle() const
 {/*todo:*/
+#ifdef WIN32
   if (strrchr(m_DocumentPath, '\\') == NULL)
     return m_DocumentPath;
   else
     return strrchr(m_DocumentPath, '\\') + 1;
+#else
+  if (strrchr(m_DocumentPath, '/') == NULL)
+    return m_DocumentPath;
+  else
+    return strrchr(m_DocumentPath, '/') + 1;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

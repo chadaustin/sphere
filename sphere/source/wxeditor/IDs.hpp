@@ -170,6 +170,8 @@ enum wID_ {
 
   wID_FILE_base = wxID_base + 1300,
 
+  wID_FILE_CLOSE,
+
   wID_FILE_SAVE,
   wID_FILE_SAVEAS,
   wID_FILE_SAVECOPYAS,
