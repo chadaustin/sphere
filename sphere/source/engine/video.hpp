@@ -6,6 +6,10 @@
 
   #include "win32/win32_video.hpp"
 
+#elif defined(unix)
+
+  #include "unix/unix_video.h"
+
 #elif defined(__linux__) || defined(__UNIX__)
 
   #include "linux/video.hpp"
