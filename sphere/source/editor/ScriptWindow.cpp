@@ -868,7 +868,7 @@ CScriptWindow::OnSize(UINT type, int cx, int cy)
       }
     }
  
-    ::MoveWindow(m_Editor, sidebar_width, 0, cx, cy, TRUE);
+    ::MoveWindow(m_Editor, sidebar_width, 0, cx - sidebar_width, cy, TRUE);
     ::MoveWindow(m_List, 0, 0, sidebar_width, cy, TRUE);
   }
 
