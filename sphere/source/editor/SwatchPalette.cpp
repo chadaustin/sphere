@@ -64,14 +64,16 @@ CSwatchPalette::CSwatchPalette(CDocumentWindow* owner, ISwatchPaletteHandler* ha
 void
 CSwatchPalette::Destroy()
 {
-  // store state
-  RECT rect;
-  GetWindowRect(&rect);
-  Configuration::Set(KEY_SWATCH_RECT, rect);
-  // FIXME: IsWindowVisible() always returns FALSE here
-  // Configuration::Set(KEY_SWATCH_VISIBLE, IsWindowVisible() != FALSE);
+  if (IsWindow(m_hWnd)) {
+    // store state
+    RECT rect;
+    GetWindowRect(&rect);
+    Configuration::Set(KEY_SWATCH_RECT, rect);
+    // FIXME: IsWindowVisible() always returns FALSE here
+    // Configuration::Set(KEY_SWATCH_VISIBLE, IsWindowVisible() != FALSE);
 
-  DestroyWindow();
+    DestroyWindow();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

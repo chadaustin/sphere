@@ -35,6 +35,7 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_SCRIPT_OPTIONS_TOGGLE_LINE_NUMBERS,  OnOptionsToggleLineNumbers)
   ON_COMMAND(ID_SCRIPT_OPTIONS_SHOW_WHITESPACE, OnOptionsShowWhitespace)
   ON_COMMAND(ID_SCRIPT_OPTIONS_WORD_WRAP, OnOptionsWordWrap)
+  ON_COMMAND(ID_SCRIPT_OPTIONS_TOGGLE_AUTOCOMPLETE, OnOptionsToggleAutoComplete)
   
   ON_COMMAND(ID_SCRIPT_OPTIONS_SELECTION_STREAM, OnOptionsSelectionStream)
   ON_COMMAND(ID_SCRIPT_OPTIONS_SELECTION_RECTANGLE, OnOptionsSelectionRectangle)
@@ -49,6 +50,7 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_TOGGLE_COLORS, OnUpdateOptionsToggleColors)
   ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_SHOW_WHITESPACE, OnUpdateOptionsShowWhitespace)
   ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_WORD_WRAP, OnUpdateOptionsWordWrap)
+  ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_TOGGLE_AUTOCOMPLETE, OnUpdateOptionsToggleAutoComplete)
 
   ON_NOTIFY(SCN_SAVEPOINTREACHED, ID_EDIT, OnSavePointReached)
   ON_NOTIFY(SCN_SAVEPOINTLEFT,    ID_EDIT, OnSavePointLeft)
@@ -74,6 +76,7 @@ CScriptWindow::CScriptWindow(const char* filename, bool create_from_clipboard)
 , m_SyntaxHighlighted(true)
 , m_ShowWhitespace(false)
 , m_WordWrap(false)
+, m_AllowAutoComplete(false)
 , m_SelectionType(SC_SEL_STREAM)
 {
   SetSaved(filename != NULL);
@@ -304,6 +307,7 @@ CScriptWindow::Initialize()
   m_ShowLineNumbers    = Configuration::Get(KEY_SCRIPT_SHOW_LINE_NUMBERS);
   m_ShowWhitespace     = Configuration::Get(KEY_SCRIPT_SHOW_WHITESPACE);
   m_WordWrap           = Configuration::Get(KEY_SCRIPT_WORD_WRAP);
+  m_AllowAutoComplete = Configuration::Get(KEY_SCRIPT_ALLOW_AUTOCOMPLETE);
   SetScriptStyles();
 
   SetLineNumber(0);
@@ -611,43 +615,285 @@ CScriptWindow::OnPosChanged(NMHDR* nmhdr, LRESULT* result) {
   int pos = SendEditor(SCI_GETCURRENTPOS);
   int line = SendEditor(SCI_LINEFROMPOSITION, pos);
   SetLineNumber(line);
-  UpdateBraceHighlight();
+  if (m_SyntaxHighlighted)
+    UpdateBraceHighlight();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/*
-static const char* sFunctionDefinitions[] = {
-  "IsKeyPressed(key)",
-  "GetTile(x, y, layer)",
-  "MapEngine(map, fps)",
-  "CreatePerson(name, spriteset, destroy_with_map)"
-};
-*/
+
+
+ static const char* sFunctionDefinitions =
+  "Abort(message) "
+  "ApplyColorMask(color) "
+  "AreKeysLeft() "
+  "AttachCamera(person_name) "
+  "AttachInput(person_entity) "
+  "BindKey(key,onkeydown,onkeyup) "
+  "BlendColors(c1, c2) "
+  "BlendColorsWeighted(c1,c2,c1_weight,c2_weight) "
+  "COMMAND_FACE_EAST "
+  "COMMAND_FACE_NORTH "
+  "COMMAND_FACE_NORTHEAST "
+  "COMMAND_FACE_NORTHWEST "
+  "COMMAND_FACE_SOUTH "
+  "COMMAND_FACE_SOUTHEAST "
+  "COMMAND_FACE_SOUTHWEST "
+  "COMMAND_FACE_WEST "
+  "COMMAND_MOVE_EAST "
+  "COMMAND_MOVE_NORTH "
+  "COMMAND_MOVE_SOUTH "
+  "COMMAND_MOVE_WEST "
+  "COMMAND_WAIT "
+  "CallPersonScript(name,which) "
+  "ChangeMap(map) " 
+  "ClearPersonCommands(name) "
+  "CreateByteArray(size) "
+  "CreateByteArrayFromString(string) "
+  "CreateColor(r,g,b,a) "
+  "CreateColorMatrix(rn,rr,rg,rb,gn,gr,gg,gb,bn,br,bg,bb) "
+  "CreatePerson(name,spriteset,destroy_with_map) "
+  "CreatePerson(name,spriteset,destroy_with_map) "
+  "CreateStringFromByteArray(array) "
+  "CreateStringFromCode(code) "
+  "CreateSurface(width,height,color) "
+  "DestroyPerson(name) "
+  "DetachCamera() "
+  "DetachInput() "
+  "EvaluateScript(script) "
+  "EvaluateSystemScript(script) "
+  "ExecuteGame(directory) "
+  "ExecuteTrigger(map_x,map_y,layer) "
+  "ExecuteZoneScript(zone) "
+  "ExecuteZones(map_x,map_y,layer) "
+  "Exit() "
+  "ExitMapEngine() "
+  "FlipScreen() "
+  "FollowPerson(name,leader,pixels) "
+  "GarbageCollect() "
+  "GetCameraPerson() "
+  "GetCameraX() "
+  "GetCameraY() "
+  "GetCurrentMap() "
+  "GetCurrentPerson() "
+  "GetFileList(directory) "
+  "GetFrameRate() "  
+  "GetGameList() "
+  "GetInputPerson() "
+  "GetJoystickX(joy) "
+  "GetJoystickY(joy) "
+  "GetKey() "
+  "GetKey() "
+  "GetKeyString(key,shift) "
+  "GetLayerAlpha(layer) "
+  "GetLayerHeight(layer) "
+  "GetLayerName(layer) "
+  "GetLayerWidth(layer) "
+  "GetLocalAddress() "
+  "GetLocalName() "
+  "GetMapEngineFrameRate() "
+  "GetMouseX() "
+  "GetMouseY() "
+  "GetNextAnimatedTile(tile) "
+  "GetNumJoystickButtons(joy) "
+  "GetNumJoysticks() "
+  "GetNumLayers() "
+  "GetNumTiles() "
+  "GetNumZones() "
+  "GetObstructingPerson(name,x,y) "
+  "GetObstructingTile(name,x,y) "
+  "GetPersonDirection(name) "
+  "GetPersonFrame(name) "
+  "GetPersonFrameRevert(name) "
+  "GetPersonLayer(name) "
+  "GetPersonList() "
+  "GetPersonMask(name) "
+  "GetPersonSpeedX(name) "
+  "GetPersonSpeedY(name) "
+  "GetPersonSpriteset(name) "
+  "GetPersonX(name) "
+  "GetPersonX(name) "
+  "GetPersonXFloat(name) "
+  "GetPersonY(name) "
+  "GetPersonY(name) "
+  "GetPersonYFloat(name) "
+  "GetScreenHeight() "
+  "GetScreenWidth() "
+  "GetSystemArrow() "
+  "GetSystemDownArrow() "
+  "GetSystemFont() "
+  "GetSystemUpArrow() "
+  "GetSystemWindowStyle() "
+  "GetTalkActivationKey() "
+  "GetTalkDistance() "
+  "GetTile(x, y, layer) "
+  "GetTile(x,y,layer) "
+  "GetTileDelay(tile) "
+  "GetTileHeight() "
+  "GetTileImage(tile_index) "
+  "GetTileWidth() "
+  "GetTime() "
+  "GetVersion() "
+  "GetVersionString() "
+  "GetZoneHeight(zone) "
+  "GetZoneWidth(zone) "
+  "GetZoneX(zone) "
+  "GetZoneY(zone) "
+  "GrabImage(x,y,w,h) "
+  "GrabSurface(x,y,w,h) "
+  "GradientLine(x1,y1,x2,y2,color1,color2) "
+  "GradientRectangle(x,y,w,h,c_ul,c_ur,c_lr,c_ll) "
+  "GradientTriangle(x1,y1,x2,y2,x3,y3,c1,c2,c3) "
+  "IgnorePersonObstructions(person,ignore) "
+  "IgnoreTileObstructions(person,ignore) "
+  "IsAnyKeyPressed() "
+  "IsCameraAttached() "
+  "IsCommandQueueEmpty(name) "
+  "IsIgnoringPersonObstructions(person) "
+  "IsIgnoringTileObstructions(person) "
+  "IsInputAttached() "
+  "IsJoystickButtonPressed(joy,button) "
+  "IsKeyPressed(key) "
+  "IsKeyPressed(key) "
+  "IsLayerVisible(layer) "
+  "IsMapEngineRunning() "
+  "IsMouseButtonPressed(button) "
+  "IsPersonObstructed(name,x,y) "
+  "IsTriggerAt(map_x,map_y,layer) "
+  "IsZoneAt(map_x,map_y,layer) "
+  "Line(x1,y1,x2,y2,color) "
+  "ListenOnPort(port) "
+  "LoadAnimation(filename) "
+  "LoadFont(filename) "
+  "LoadImage(filename) "
+  "LoadSound(filename,streaming) "
+  "LoadSpriteset(filename) "
+  "LoadSurface(filename) "
+  "LoadWindowStyle(filename) "
+  "MapEngine(map,fps) "
+  "MapEngine(map,fps) "
+  "MapToScreenX(layer,x) "
+  "MapToScreenY(layer,y) "
+  "Math.E "
+  "Math.LN10 "
+  "Math.LN2 "
+  "Math.LOG10E "
+  "Math.LOG2E "
+  "Math.PI "
+  "Math.SQRT1_2 "
+  "Math.SQRT2 "
+  "Math.abs(value) "
+  "Math.acos(v) "
+  "Math.asin(v) "
+  "Math.atan(v) "
+  "Math.atan2(v) "
+  "Math.ceil(value) "
+  "Math.cos(radian) "
+  "Math.exp(v) "
+  "Math.floor(value) "
+  "Math.log(v) "
+  "Math.max(va,vb) "
+  "Math.min(va,vb) "
+  "Math.pow(x,y) "
+  "Math.random() "
+  "Math.round(value) "
+  "Math.sin(radian) "
+  "Math.sqrt(value) "
+  "Math.tan(radian) "
+  "OpenAddress(address,port) "
+  "OpenFile(filename) "
+  "OpenLog(filename) "
+  "OpenRawFile(filename,writeable) "
+  "Point(x,y,color) "
+  "QueuePersonCommand(name,command,immediate) "
+  "QueuePersonScript(name,script,immediate) "
+  "Rectangle(x,y,w,h,c) "
+  "RenderMap() "
+  "ReplaceTilesOnLayer(layer,oldtile,newtile) "
+  "RequireScript(script) "
+  "RequireSystemScript(script) "
+  "SCRIPT_COMMAND_GENERATOR "
+  "SCRIPT_COMMAND_GENERATOR "
+  "SCRIPT_ON_ACTIVATE_TALK "
+  "SCRIPT_ON_ACTIVATE_TOUCH "
+  "SCRIPT_ON_CREATE "
+  "SCRIPT_ON_DESTROY "
+  "ScreenToMapX(layer,x) "
+  "ScreenToMapY(layer,y) "
+  "SetCameraX(x) "
+  "SetCameraY(y) "
+  "SetClippingRectangle(x,y,w,h) "
+  "SetColorMask(color,num_frames) "
+  "SetDelayScript(num_frames,script) "
+  "SetFrameRate(fps) "
+  "SetLayerAlpha(layer,alpha) "
+  "SetLayerRenderer(layer,script) "
+  "SetLayerVisible(layer,visible) "
+  "SetMapEngineFrameRate(fps) "
+  "SetMousePosition(x,y) "
+  "SetNextAnimatedTile(tile,next_tile) "
+  "SetPersonDirection(name,direction) "
+  "SetPersonFrame(name,frame) "
+  "SetPersonFrameRevert(name,delay) "
+  "SetPersonLayer(name,layer) "
+  "SetPersonMask(name,color) "
+  "SetPersonScaleAbsolute(name,width,height) "
+  "SetPersonScaleFactor(name,scale_w,scale_h) "
+  "SetPersonScript(name,which,script) "
+  "SetPersonSpeed(name,speed) "
+  "SetPersonSpeedXY(name,speed_x,speed_y) "
+  "SetPersonX(name,x) "
+  "SetPersonXYFloat(name,x,y) "
+  "SetPersonY(name,y) "
+  "SetRenderScript(script) "
+  "SetTalkActivationKey(key) "
+  "SetTalkDistance(pixels) "
+  "SetTile(x,y,layer,tile) "
+  "SetTileDelay(tile,delay) "
+  "SetTileImage(tile_index,image_object) "
+  "SetUpdateScript(script) "
+  "String.charAt(pos) "
+  "String.charCodeAt(pos) "
+  "String.concat(str) "
+  "String.fromCharCode(code) "
+  "String.indexOf(str,start_pos) "
+  "String.lastIndexOf(str,start_pos) "
+  "String.length "
+  "String.match(regexp) "
+  "String.replace(regexp,replacement) "
+  "String.search(regexp) "
+  "String.slice(start_pos,end_pos) "
+  "String.split(delimiter) "
+  "String.substr(start_pos,length) "
+  "String.substring(start_pos,end_pos) "
+  "String.toLowerCase() "
+  "String.toUpperCase() "
+  "Triangle(x1,y1,x2,y2,x3,y3,c) "
+  "UnbindKey(key) "
+  "UpdateMapEngine()";
+
 
 afx_msg void
 CScriptWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
 
   SCNotification* notify = (SCNotification*)nmhdr;
-/*
-  static char string[100] = {0};
-  if (strlen(string) < 100)
-    string[strlen(string)] = notify->ch;
 
-  int match = -1;
+#if 1
 
-  for (int i = 0; i < 4; i++) {
-    if (strstr(sFunctionDefinitions[i], string) != NULL)
-      match = i;
+  if (m_AllowAutoComplete && notify->ch != '\r' && notify->ch != '\n' && notify->ch != ' ') {
+    SendEditor(SCI_SETWORDCHARS, 0, (LPARAM)"_.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+    int cur_pos  = SendEditor(SCI_GETCURRENTPOS);
+    int word_pos = SendEditor(SCI_WORDSTARTPOSITION, cur_pos);
+    int len = cur_pos - word_pos;
+
+    if (len > 0) {
+      SendEditor(SCI_AUTOCSHOW, cur_pos - word_pos, (LPARAM)sFunctionDefinitions);
+    }
+
+    SendEditor(SCI_SETCHARSDEFAULT);
   }
 
-  if (match != -1)
-    SendEditor(SCI_CALLTIPSHOW, 0, (LPARAM)sFunctionDefinitions[match]);
-  else {
-    SendEditor(SCI_CALLTIPCANCEL);
-    memset(string, 0, 100);
-  }
-*/
+#endif
 
   if (notify->ch == '\n') {
     int pos  = SendEditor(SCI_GETCURRENTPOS);
@@ -1006,8 +1252,7 @@ afx_msg void
 CScriptWindow::OnUpdateOptionsToggleColors(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_SyntaxHighlighted ? TRUE : FALSE);
-  if (!(GetScriptType() == SCRIPT_TYPE_UNKNOWN
-    || GetScriptType() == SCRIPT_TYPE_JS)) {
+  if (!(GetScriptType() == SCRIPT_TYPE_UNKNOWN || GetScriptType() == SCRIPT_TYPE_JS)) {
     cmdui->Enable(FALSE);
   }
 }
@@ -1030,6 +1275,22 @@ CScriptWindow::OnUpdateOptionsWordWrap(CCmdUI* cmdui)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+afx_msg void
+CScriptWindow::OnOptionsToggleAutoComplete()
+{
+  m_AllowAutoComplete = !m_AllowAutoComplete;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnUpdateOptionsToggleAutoComplete(CCmdUI* cmdui)
+{
+  cmdui->SetCheck(m_AllowAutoComplete ? TRUE : FALSE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 CScriptWindow::RememberConfiguration()
 {
@@ -1040,6 +1301,7 @@ CScriptWindow::RememberConfiguration()
   Configuration::Set(KEY_SCRIPT_SHOW_LINE_NUMBERS, m_ShowLineNumbers);
   Configuration::Set(KEY_SCRIPT_SHOW_WHITESPACE, m_ShowWhitespace);
   Configuration::Set(KEY_SCRIPT_WORD_WRAP, m_WordWrap);
+  Configuration::Set(KEY_SCRIPT_ALLOW_AUTOCOMPLETE, m_AllowAutoComplete);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

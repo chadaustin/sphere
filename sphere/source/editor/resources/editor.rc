@@ -60,7 +60,7 @@ BEGIN
         BEGIN
             MENUITEM "&Project...",                 ID_FILE_NEW_PROJECT
             MENUITEM SEPARATOR
-            MENUITEM "&Map",                        ID_FILE_NEW_MAP
+            MENUITEM "&Map...",                     ID_FILE_NEW_MAP
             MENUITEM "&Spriteset",                  ID_FILE_NEW_SPRITESET
             MENUITEM "S&cript",                     ID_FILE_NEW_SCRIPT
             MENUITEM "&Font",                       ID_FILE_NEW_FONT
@@ -110,6 +110,7 @@ BEGIN
             MENUITEM "RM2K Chipset to Tileset...",  ID_FILE_IMPORT_RM2KCHIPSETTORTS
 
         END
+        MENUITEM "&Close (CTRL + F4)",          ID_FILE_CLOSE
         MENUITEM "&Browse",                     ID_FILE_BROWSE
         MENUITEM "Open &Last Project",          ID_FILE_OPENLASTPROJECT
         MENUITEM "&Close Project",              ID_FILE_CLOSEPROJECT
@@ -121,8 +122,8 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "&Language"
         BEGIN
-            MENUITEM "English",                     ID_FILE_LANGUAGE_ENGLISH
             MENUITEM "Dutch",                       ID_FILE_LANGUAGE_DUTCH
+            MENUITEM "English",                     ID_FILE_LANGUAGE_ENGLISH
             MENUITEM "German",                      ID_FILE_LANGUAGE_GERMAN
         END
         MENUITEM "&Options...",                 ID_FILE_OPTIONS
@@ -316,6 +317,8 @@ BEGIN
             MENUITEM "Toggle Line Numbers",         ID_SCRIPT_OPTIONS_TOGGLE_LINE_NUMBERS
 
             MENUITEM "Toggle Whitespace",           ID_SCRIPT_OPTIONS_SHOW_WHITESPACE
+
+            MENUITEM "Allow Auto Complete",         ID_SCRIPT_OPTIONS_TOGGLE_AUTOCOMPLETE
 
             MENUITEM "Toggle Word Wrap",            ID_SCRIPT_OPTIONS_WORD_WRAP
 
@@ -2018,7 +2021,7 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_FILE_BROWSE          "Browse for files"
+    ID_FILE_BROWSE          "Close current file"
     ID_VIEW_PROJECT         "Show or hide the project window"
 END
 
@@ -2138,7 +2141,7 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_SCRIPT_OPTIONS_WORD_WRAP "Change word-wrap mode"
+    ID_SCRIPT_OPTIONS_WORD_WRAP "Change whether autocomplete is allowed"
 END
 
 STRINGTABLE DISCARDABLE 

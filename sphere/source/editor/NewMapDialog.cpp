@@ -2,6 +2,7 @@
 #include "Project.hpp"
 #include "FileDialogs.hpp"
 #include "resource.h"
+#include "Editor.hpp"
 
 
 BEGIN_MESSAGE_MAP(CNewMapDialog, CDialog)
@@ -61,6 +62,8 @@ BOOL
 CNewMapDialog::OnInitDialog()
 {
   CDialog::OnInitDialog();
+
+  TranslateDialog(m_hWnd);
 
   // put default values into the edit boxes
   SetDlgItemInt(IDC_WIDTH, m_MapWidth);

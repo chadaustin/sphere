@@ -128,6 +128,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_FILE_EXIT,    OnClose)
 
   ON_COMMAND(ID_FILE_BROWSE,  OnFileBrowse)
+  ON_COMMAND(ID_FILE_CLOSE,   OnFileClose)
 
   // insert
   ON_COMMAND(ID_PROJECT_INSERT_MAP,         OnProjectInsertMap)
@@ -160,6 +161,8 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
 
   ON_UPDATE_COMMAND_UI(ID_FILE_OPENLASTPROJECT, OnUpdateOpenLastProject)
   ON_UPDATE_COMMAND_UI(ID_FILE_CLOSEPROJECT, OnUpdateProjectCommand)
+
+  ON_UPDATE_COMMAND_UI(ID_FILE_CLOSE,       OnUpdateFileCloseCommand)
 
   ON_UPDATE_COMMAND_UI(ID_FILE_SAVE,       OnUpdateSaveCommand)
   ON_UPDATE_COMMAND_UI(ID_FILE_SAVEAS,     OnUpdateSaveCommand)
@@ -225,7 +228,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_UPDATE_COMMAND_UI(ID_WINDOW_CLOSEALL,   OnUpdateWindowCloseAll)
   ON_UPDATE_COMMAND_UI(ID_VIEW_PALETTES,     OnUpdatePaletteMenu)
   ON_UPDATE_COMMAND_UI(PALETTE_COMMAND,	     OnUpdatePaletteMenu)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_PROJECT,	     OnUpdateViewProject)
+  ON_UPDATE_COMMAND_UI(ID_VIEW_PROJECT,	     OnUpdateViewProject)
 
   // project window message
   ON_MESSAGE(WM_INSERT_PROJECT_FILE, OnInsertProjectFile)
@@ -235,8 +238,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_MESSAGE(WM_DW_CLOSING,          OnDocumentWindowClosing)
   ON_MESSAGE(WM_SET_CHILD_MENU,      OnSetChildMenu)
   ON_MESSAGE(WM_CLEAR_CHILD_MENU,    OnClearChildMenu)  
-	ON_MESSAGE(WM_COPYDATA,					   OnCopyData)
-  //ON_MESSAGE(WM_UPDATE_TOOLBARS,     UpdateToolBars)
+  ON_MESSAGE(WM_COPYDATA,            OnCopyData)
   ON_COMMAND_RANGE(PALETTE_COMMAND, PALETTE_COMMAND + NUM_PALETTES, OnViewPalette)
 
 END_MESSAGE_MAP()
@@ -902,8 +904,9 @@ CMainWindow::OnClose()
   // ask if the child windows should be destroyed
   for (unsigned int i = 0; i < m_DocumentWindows.size(); i++)
   {
-    if (m_DocumentWindows[i]->Close())
+    if (m_DocumentWindows[i]->Close()) {
       m_DocumentWindows[i]->DestroyWindow();
+    }
     else
       return;
   }
@@ -1167,6 +1170,14 @@ CMainWindow::OnFileOpenLastProject()
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
+CMainWindow::OnFileClose()
+{
+  
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
 CMainWindow::OnFileBrowse()
 {
   std::string filter = GenerateSupportedExtensionsFilter();
@@ -1339,11 +1350,16 @@ CMainWindow::OnFileImportImageToMap()
   strcpy(fn, filename);
 
   strcpy(strrchr(fn, '.'), ".rmp");
-  map.Save(fn);
+  bool saved = map.Save(fn);
 
   delete[] fn;
 
-  MessageBox("Conversion successful");
+  if (saved) {
+    MessageBox("Conversion successful");
+  }
+  else {
+    MessageBox("Error saving map");
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2511,6 +2527,14 @@ CMainWindow::OnUpdateProjectCommand(CCmdUI* cmdui)
     cmdui->Enable(TRUE);
   else
     cmdui->Enable(FALSE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnUpdateFileCloseCommand(CCmdUI* cmdui)
+{
+  cmdui->Enable(FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

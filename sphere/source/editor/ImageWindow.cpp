@@ -107,16 +107,23 @@ CImageWindow::CImageWindow(const char* image, bool create_from_clipboard)
 
   }
 
-  m_DocumentType = WA_IMAGE;
-
   // create the window
-  Create(AfxRegisterWndClass(0, NULL, (HBRUSH)(COLOR_WINDOW + 1), AfxGetApp()->LoadIcon(IDI_IMAGE)));
+  if (Create(AfxRegisterWndClass(0, NULL, (HBRUSH)(COLOR_WINDOW + 1), AfxGetApp()->LoadIcon(IDI_IMAGE))) == FALSE)
+  {
+    AfxGetApp()->m_pMainWnd->MessageBox("Error: Could not create window");
+    return;
+  }
 
-  m_ImageView.Create(this, this, this);
+  if (m_ImageView.Create(this, this, this) == FALSE) {
+    AfxGetApp()->m_pMainWnd->MessageBox("Error: Could not create imageview");
+    return;
+  }
+
   m_PaletteView.Create(this, this);
   m_ColorView.Create(this, this);
   m_AlphaView.Create(this, this);
 
+  m_DocumentType = WA_IMAGE;
   m_Created = true;
 
 #ifdef USE_SIZECBAR

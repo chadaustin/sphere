@@ -406,3 +406,18 @@ void TranslateMenu(HMENU menu)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+void TranslateDialog(HWND hWnd)
+{
+  for (int i = 0; i < 10; i++)
+  {
+    char buffer[1024] = {0};
+    GetDlgItemText(hWnd, i, buffer, 1000);
+    if (strlen(buffer) > 0) {
+      SetDlgItemText(hWnd, i, TranslateString(buffer));
+      ::MessageBox(hWnd, buffer, "HELLO", MB_OK);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////

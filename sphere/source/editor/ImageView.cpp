@@ -117,7 +117,7 @@ CImageView::CImageView()
 
   m_Image.SetBlendMode(CImage32::REPLACE);
   m_ShowGrid = false;
-  //s_ClipboardFormat = RegisterClipboardFormat("FlatImage32");
+
   m_Clipboard = new CClipboard();
   m_BlitTile = new CDIBSection(16, 16, 32);
 
@@ -144,7 +144,6 @@ CImageView::~CImageView()
 
   if (m_SwatchPalette) {
     m_SwatchPalette->Destroy();
-    m_SwatchPalette = NULL;
   }
 
   //if (m_ToolPalette) {
@@ -1739,6 +1738,8 @@ CImageView::OnRButtonUp(UINT flags, CPoint point)
   // show the image view menu
   HMENU menu = LoadMenu(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_IMAGEVIEW));
   HMENU submenu = GetSubMenu(menu, 0);
+
+  TranslateMenu(menu);
 
   m_CurPoint = point;
   ClientToScreen(&point);

@@ -58,7 +58,8 @@ private:
   afx_msg void OnClose();
 
   afx_msg void OnFileBrowse();
-
+  
+  afx_msg void OnFileClose();
   afx_msg void OnFileOpen();
 
   afx_msg void OnFileNewProject();
@@ -146,6 +147,7 @@ private:
   afx_msg void OnUpdateWindowCloseAll(CCmdUI* cmdui);
 	afx_msg void OnUpdatePaletteMenu(CCmdUI* cmdui);
 	afx_msg void OnUpdateViewProject(CCmdUI* cmdui);
+  afx_msg void OnUpdateFileCloseCommand(CCmdUI* cmdui);
 
   afx_msg void OnUpdateImageCommand(CCmdUI* cmdui);
   afx_msg void OnImageToolChanged();
@@ -197,13 +199,9 @@ private:
   afx_msg LRESULT OnRefreshProject(WPARAM wparam, LPARAM lparam);
 	afx_msg LRESULT OnCopyData(WPARAM wparam, LPARAM lparam);
 
-  //afx_msg LRESULT OnRefreshImageToolBar(WPARAM wparam, LPARAM lparam);
-  //afx_msg LRESULT OnRefreshMapToolBar(WPARAM wparam, LPARAM lparam);
-
   afx_msg LRESULT OnDocumentWindowClosing(WPARAM wparam, LPARAM lparam);
   afx_msg LRESULT OnSetChildMenu(WPARAM wparam, LPARAM lparam);
   afx_msg LRESULT OnClearChildMenu(WPARAM wparam, LPARAM lparam);
-//afx_msg LRESULT OnUpdatePaletteMenu(WPARAM wparam, LPARAM lparam);
   afx_msg void OnViewPalette(UINT id);
 
   void OnLanguageChanged();
