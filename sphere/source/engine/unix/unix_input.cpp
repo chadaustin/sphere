@@ -131,12 +131,16 @@ bool IsKeyPressed (int key) {
 }
 
 bool AreKeysLeft () {
+  RefreshInput();
   return !keys.empty();
 }
 
 int GetKey () {
   int key;
 
+  while (keys.empty()) {
+    RefreshInput();
+  }
   key = keys.front();
   keys.pop_front();
   return key;

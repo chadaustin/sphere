@@ -2,6 +2,7 @@
 #include "unix_input.h"
 #include "../../common/primitives.hpp"
 #include <cstring>
+#include <assert.h>
 
 SFONT* FPSFont;
 static bool FPSDisplayed;
@@ -170,6 +171,91 @@ class gradient_colorRGBA {
   RGBA m_color1, m_color2;
 };
 
+#if 0 /* old */
+template <typename routineT>
+void StraightBlit (IMAGE image, int x, int y, routineT routine) {
+  int lcv_v, lcv_h;
+  int scanlines;
+  int width;
+  SDL_Rect clip;
+  Uint32* dpixel;
+  Uint32* spixel;
+
+  if (SDL_LockSurface(screen) == 0) {
+    SDL_GetClipRect(screen, &clip);
+    scanlines = MIN(image->h + y, clip.h) - MAX(y, clip.y);
+    width = MIN(image->w + x, clip.w) - MAX(x, clip.x);
+    dpixel = static_cast<Uint32*>(screen->pixels) + (MAX(y, clip.y) * screen->w + MAX(x, clip.x));
+    spixel = static_cast<Uint32*>(image->pixels);
+    for (lcv_v = 0; lcv_v < scanlines; lcv_v++) {
+      for (lcv_h = 0; lcv_h < width; lcv_h++) {
+        routine(*(dpixel + lcv_h), *(spixel + lcv_h));
+      }
+      spixel += image->w;
+      dpixel += screen->w;
+    }
+	 SDL_UnlockSurface(screen);
+  }
+}
+#endif /* old */
+
+template<typename pixelT, typename clipT, typename renderT>
+void unixBlit(
+  pixelT* surface,
+  int pitch,
+  const int x,
+  const int y,
+  pixelT* texture,
+  int tex_width,
+  int tex_height,
+  clipT clipper,
+  renderT renderer)
+{
+  int image_offset_x = 0;
+  int image_offset_y = 0;
+  int image_blit_width = tex_width;
+  int image_blit_height = tex_height;
+
+  if (x < clipper.left) {
+    image_offset_x = (clipper.left - x);
+    image_blit_width -= image_offset_x;
+  }
+
+  if (y < clipper.top) {
+    image_offset_y = (clipper.top - y);
+    image_blit_height -= image_offset_y;
+  }
+  
+  if (x + (int)tex_width - 1 > clipper.right) {
+    image_blit_width -= (x + tex_width - clipper.right - 1);
+  }
+
+  if (y + (int)tex_height - 1 > clipper.bottom) {
+    image_blit_height -= (y + tex_height - clipper.bottom - 1);
+  }
+
+  // heh, funny abbreviations
+  pixelT* dst = surface + (y + image_offset_y) * pitch + image_offset_x + x;
+  pixelT* src = texture +       image_offset_y * tex_width + image_offset_x;
+
+  int dst_inc = pitch - image_blit_width;
+  int src_inc = tex_width - image_blit_width;
+
+  int iy = image_blit_height;
+  while (iy-- > 0) {
+    int ix = image_blit_width;
+    while (ix-- > 0) {
+		renderer(*dst, *src);
+
+      dst++;
+      src++;
+    }
+
+    dst += dst_inc;
+    src += src_inc;
+  }
+}
+
 /* \brief set the fps font
 
   This font will be used to the display the frames per second counter on the screen */
@@ -294,10 +380,10 @@ IMAGE GrabImage (int x, int y, int width, int height) {
   source.y = y;
   source.w = width;
   source.h = height;
-  if (SDL_BlitSurface(screen, &source, surface, NULL) == -1) {
+  /* if (SDL_BlitSurface(screen, &source, surface, NULL) == -1) {
     SDL_FreeSurface(surface);
     return NULL;
-  }
+  } */
   return surface;
 }
 
@@ -306,94 +392,16 @@ void DestroyImage (IMAGE image) {
 }
 
 void BlitImage (IMAGE image, int x, int y) {
-  SDL_Rect dest;
+  /* SDL_Rect dest;
 
   dest.x = x;
   dest.y = y;
-  SDL_BlitSurface(image, NULL, screen, &dest);
-}
-
-template <typename routineT>
-void StraightBlit (IMAGE image, int x, int y, routineT routine) {
-  int lcv_v, lcv_h;
-  int scanlines;
-  int width;
-  SDL_Rect clip;
-  Uint32* dpixel;
-  Uint32* spixel;
-
-  if (SDL_LockSurface(screen) == 0) {
-    SDL_GetClipRect(screen, &clip);
-    scanlines = MIN(image->h + y, clip.h) - MAX(y, clip.y);
-    width = MIN(image->w + x, clip.w) - MAX(x, clip.x);
-    dpixel = static_cast<Uint32*>(screen->pixels) + (MAX(y, clip.y) * screen->w + MAX(x, clip.x));
-    spixel = static_cast<Uint32*>(image->pixels);
-    for (lcv_v = 0; lcv_v < scanlines; lcv_v++) {
-      for (lcv_h = 0; lcv_h < width; lcv_h++) {
-        routine(*(dpixel + lcv_h), *(spixel + lcv_h));
-      }
-      spixel += image->w;
-      dpixel += screen->w;
-    }
-	 SDL_UnlockSurface(screen);
-  }
-}
-
-template<typename pixelT, typename clipT, typename renderT>
-void unixBlit(
-  pixelT* surface,
-  int pitch,
-  const int x,
-  const int y,
-  pixelT* texture,
-  int tex_width,
-  int tex_height,
-  clipT clipper,
-  renderT renderer)
-{
-  int image_offset_x = 0;
-  int image_offset_y = 0;
-  int image_blit_width = tex_width;
-  int image_blit_height = tex_height;
-
-  if (x < clipper.left) {
-    image_offset_x = (clipper.left - x);
-    image_blit_width -= image_offset_x;
-  }
-
-  if (y < clipper.top) {
-    image_offset_y = (clipper.top - y);
-    image_blit_height -= image_offset_y;
-  }
-  
-  if (x + (int)tex_width - 1 > clipper.right) {
-    image_blit_width -= (x + tex_width - clipper.right - 1);
-  }
-
-  if (y + (int)tex_height - 1 > clipper.bottom) {
-    image_blit_height -= (y + tex_height - clipper.bottom - 1);
-  }
-
-  // heh, funny abbreviations
-  pixelT* dst = surface + (y + image_offset_y) * pitch + image_offset_x + x;
-  pixelT* src = texture +       image_offset_y * tex_width + image_offset_x;
-
-  int dst_inc = pitch - image_blit_width;
-  int src_inc = tex_width - image_blit_width;
-
-  int iy = image_blit_height;
-  while (iy-- > 0) {
-    int ix = image_blit_width;
-    while (ix-- > 0) {
-		renderer(*dst, *src);
-
-      dst++;
-      src++;
-    }
-
-    dst += dst_inc;
-    src += src_inc;
-  }
+  assert(SDL_BlitSurface(image, NULL, screen, &dest) == 0);
+  assert(dest.w == 320);
+  assert(dest.h == 240); */
+  unixBlit((Uint32*)(screen->pixels), screen->w, x, y,
+           (Uint32*)(image->pixels), image->w, image->h,
+			  clipping_rectangle, straight_copy);
 }
 
 void BlitImageMask (IMAGE image, int x, int y, RGBA mask) {
