@@ -1,0 +1,229 @@
+/* Everything is put in here rather haphazard.
+   I wanted to avoid the "style" argument
+   since all stylesheets will be custom.       */
+
+body {
+  font-size: 8.4pt;
+  font-family: verdana, helvetica, sans-serif;
+  color: rgb(53, 79, 97);
+  background-color: rgb(255, 255, 255);
+}
+
+a {
+  text-decoration: none;
+  font-family: verdana, helvetica, sans-serif;
+  color: rgb(77, 111, 135);
+  background-color: transparent;
+}
+
+a:hover {
+  text-decoration: none;
+  font-family: verdana, helvetica, sans-serif;
+  color: rgb(255, 255, 255);
+  background-color: rgb(77, 111, 135);
+}
+
+a.headleft {
+  width: 100%;
+  display: block;
+  text-decoration: none;
+  font-size: 8.4pt;
+  font-family: verdana, helvetica, sans-serif;
+  color: rgb(77, 111, 135);
+  background-color: transparent;
+  padding: 2px;
+  border-bottom: 1px solid rgb(53, 79, 97);
+  text-align: right;
+}
+
+a.headleft:hover {
+  width: 100%;
+  display: block;
+  text-decoration: none;
+  font-size: 8.4pt;
+  font-family: verdana, helvetica, sans-serif;
+  color: rgb(255, 255, 255);
+  background-color: rgb(53, 79, 97);
+  padding: 2px;
+  border-bottom: 1px solid rgb(77, 111, 135);
+  text-align: right;
+}
+
+a.headright {
+  width: 100%;
+  display: block;
+  text-decoration: none;
+  font-size: 8.4pt;
+  font-family: verdana, helvetica, sans-serif;
+  color: rgb(77, 111, 135);
+  background-color: transparent;
+  padding: 2px;
+  border-bottom: 1px solid rgb(53, 79, 97);
+  text-align: left;
+}
+
+a.headright:hover {
+  width: 100%;
+  display: block;
+  text-decoration: none;
+  font-size: 8.4pt;
+  font-family: verdana, helvetica, sans-serif;
+  color: rgb(255, 255, 255);
+  background-color: rgb(53, 79, 97);
+  padding: 2px;
+  border-bottom: 1px solid rgb(77, 111, 135);
+  text-align: left;
+}
+
+img {
+  border: 0;
+}
+
+#login {
+  font-size: 7.56pt;
+  background-color: rgb(255, 255, 255);
+  color: rgb(53, 79, 97);
+  text-align: center;
+  width: 100%;
+  display: block;
+}
+
+td.topbar {
+  background: url("http://sphere.sourceforge.net/images/topbar.png");
+  vertical-align: top;
+  text-align: center;
+  width: 100%;
+}
+
+table.topmenu {
+  border-style: solid;
+  border-width: 1px;
+  color: rgb(53, 79, 97);
+  border-color: rgb(53, 79, 97);
+  background-color: rgb(255, 255, 255);
+  text-align: center;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+
+td.menuitems {
+  border-bottom: 1px solid rgb(53, 79, 97);
+  background-color: rgb(255, 255, 255);
+  color: rgb(53, 79, 97);
+  vertical-align: top;
+}
+
+td.menulogo {
+  vertical-align: top;
+  border-left: 1px solid rgb(53, 79, 97);
+  border-right: 1px solid rgb(53, 79, 97);
+  border-top: none;
+  border-bottom: none;
+}
+
+td.body {
+  font-size: 10.08pt;
+  padding: 10px;
+  vertical-align: top;
+}
+
+table.item {
+  width: 100%;
+  padding: 2px;
+  font-family: verdana, helvetica, sans-serif;
+}
+
+table.main {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+}
+
+td.itemhead {
+  font-size: 9.24pt;
+  border: 1px solid rgb(53, 79, 97);
+  background: url("images/sidebar.png");
+  padding: 2px;
+  vertical-align: top;
+}
+
+td.itembody {
+  font-size: 8.4pt;
+  border-top: none;
+  border-bottom: 1px solid rgb(53, 79, 97);
+  border-right: 1px solid rgb(53, 79, 97);
+  border-left: 1px solid rgb(53, 79, 97);
+  padding: 2px;
+  vertical-align: top;
+}
+
+div.itembodyauthor {   /* used for news and articles and such */
+  text-align: right;
+  width: 100%;
+}
+
+table.bodybody {
+  width: 100%;
+  padding: 0px;
+}
+
+div.linkbar {
+  width: 100%;
+  text-align: center;
+}
+
+td.sidebar {
+  font-size: 9.24pt;
+  width: 120pt;
+  vertical-align: top;
+}
+
+table.sidebaritem {
+  width: 100%;
+  padding: 2px;
+}
+
+td.sidebaritemhead {
+  font-size: 9.24pt;
+  border: 1px solid rgb(53, 79, 97);
+  background: url("http://sphere.sourceforge.net/images/sidebar.png");
+  padding: 2px;
+  text-align: center;
+  vertical-align: top;
+}
+
+td.sidebaritembody {
+  font-size: 8.4pt;
+  border-top: none;
+  border-bottom: 1px solid rgb(53, 79, 97);
+  border-right: 1px solid rgb(53, 79, 97);
+  border-left: 1px solid rgb(53, 79, 97);
+  padding: 2px;
+  vertical-align: top;
+}
+
+td.bodybody {
+  font-size: 8.4pt;
+  padding: 2px;
+  vertical-align: top;
+}
+
+.center {
+  width: 100%;
+  text-align: center;
+}
+
+.smalltext {
+  font-size: 6pt;
+  font-family: verdana, helvetica, sans-serif;
+}
+
+.error:before {
+  content: "ERROR: "
+}
+
+.success:before {
+  content: "SUCCESS:  "
+}
