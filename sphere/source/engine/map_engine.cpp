@@ -4501,11 +4501,15 @@ CMapEngine::FindObstructingTile(int person, int x, int y)
   int min_ty = min_y / tile_height;
   int max_ty = max_y / tile_height;
 
-  for (int ty = min_ty; ty <= max_ty; ty++) {
-    for (int tx = min_tx; tx <= max_tx; tx++) {
+  for (int ty = min_ty; ty <= max_ty; ty++)
+  {
+    if (ty < 0 || ty >= layer.GetHeight()) {
+      continue;
+    }
 
-        // if the tile is on the map
-      if (tx < 0 || ty < 0 || tx >= layer.GetWidth() || ty >= layer.GetHeight()) {
+    for (int tx = min_tx; tx <= max_tx; tx++)
+    {
+      if (tx < 0 || tx >= layer.GetWidth()) {
         continue;
       }
 
@@ -4648,8 +4652,8 @@ CMapEngine::IsObstructed(int person, int x, int y, int& obs_person)
 {
   // get useful elements
   const Person& p = m_Persons[person];
-  const sObstructionMap& obs_map = m_Map.GetMap().GetLayer(
-    p.layer).GetObstructionMap();
+  const sObstructionMap& obs_map =
+    m_Map.GetMap().GetLayer(p.layer).GetObstructionMap();
 
   // test obstruction map
   int bx = (p.base_x1 + p.base_x2) / 2;

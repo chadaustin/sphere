@@ -69,6 +69,8 @@ sObstructionMap::TestSegment(int x1, int y1, int x2, int y2) const
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#include <assert.h>
+
 bool
 sObstructionMap::TestSegments(const Segment& s1, const Segment& s2)
 {
@@ -95,6 +97,7 @@ sObstructionMap::TestSegments(const Segment& s1, const Segment& s2)
   }
 
   // algorithm from http://www.gamedev.net/columns/features/diariesandsites/javaextreme/2d.htm
+  // probably moved to http://www.gamedev.net/hosted/javaextreme/2d.htm
 
   struct Point {
     int x;
@@ -106,9 +109,9 @@ sObstructionMap::TestSegments(const Segment& s1, const Segment& s2)
   const Point C = { s2.x1, s2.y1 };
   const Point D = { s2.x2, s2.y2 };
 
-  const double num_r = (A.y - C.y) * (D.x - C.x) - (A.x - C.x) * (D.y - C.y);
-  const double num_s = (A.y - C.y) * (B.x - A.x) - (A.x - C.x) * (B.y - A.y);
-  const double den   = (B.x - A.x) * (D.y - C.y) - (B.y - A.y) * (D.x - C.x);
+  const double num_r = ((A.y - C.y) * (D.x - C.x)) - ((A.x - C.x) * (D.y - C.y));
+  const double num_s = ((A.y - C.y) * (B.x - A.x)) - ((A.x - C.x) * (B.y - A.y));
+  const double den   = ((B.x - A.x) * (D.y - C.y)) - ((B.y - A.y) * (D.x - C.x));
   
   // lines are coincident
   if (den == 0 && num_r == 0) {
@@ -137,6 +140,10 @@ sObstructionMap::TestSegments(const Segment& s1, const Segment& s2)
     }
 
   }
+
+
+  // I'm assuming that if den ==  0 and A.x != B.x then there is no obstruction
+  if (den == 0) return false;
 
   double r = num_r / den;
   double s = num_s / den;
