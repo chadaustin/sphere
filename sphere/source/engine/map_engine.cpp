@@ -3859,8 +3859,8 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
 
     std::string error;
-    switch (c.command) {
-
+    switch (c.command)
+    {
       case COMMAND_WAIT: break;
       case COMMAND_ANIMATE: should_animate = true; break;
       case COMMAND_FACE_NORTH:     p.direction = "north";     break;
@@ -3893,27 +3893,27 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
       break;
     }
 
-  // todo: this sucks, fix me
-  // confine the input person within the map if the map is repeating
-  if (person_index == m_InputPerson) {
-    if (m_Map.GetMap().IsRepeating()) {
+    // todo: this sucks, fix me
+    // confine the input person within the map if the map is repeating
+    if (person_index == m_InputPerson) {
+      if (m_Map.GetMap().IsRepeating()) {
 
-      int layer_width =  m_Map.GetMap().GetLayer(p.layer).GetWidth()  * m_Map.GetMap().GetTileset().GetTileWidth();
-      int layer_height = m_Map.GetMap().GetLayer(p.layer).GetHeight() * m_Map.GetMap().GetTileset().GetTileHeight();
+        int layer_width =  m_Map.GetMap().GetLayer(p.layer).GetWidth()  * m_Map.GetMap().GetTileset().GetTileWidth();
+        int layer_height = m_Map.GetMap().GetLayer(p.layer).GetHeight() * m_Map.GetMap().GetTileset().GetTileHeight();
 
-      while (p.x < 0)
-        p.x += layer_width;
+        while (p.x < 0)
+          p.x += layer_width;
 
-      while (p.x >= layer_width)
-        p.x -= layer_width;
+        while (p.x >= layer_width)
+          p.x -= layer_width;
 
-      while (p.y < 0)
-        p.y += layer_height;
+        while (p.y < 0)
+          p.y += layer_height;
 
-      while (p.y >= layer_height)
-        p.y -= layer_height;
+        while (p.y >= layer_height)
+          p.y -= layer_height;
+      }
     }
-  }
 
     // make sure frame is valid
     if (p.spriteset->GetSpriteset().GetNumFrames(p.direction))
@@ -3943,9 +3943,10 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
           // execute the script!
           if (script) {
 
-            std::string old_person = m_CurrentPerson;
+            const std::string old_person = m_CurrentPerson;
             m_CurrentPerson = m_Persons[obs_person].name;
-            std::string person_name = m_CurrentPerson;
+
+            const std::string person_name = m_Persons[person_index].name;
 
             std::string error;
             if (!ExecuteScript(script, error) || !error.empty()) {
@@ -4076,9 +4077,10 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
             IEngine::script s = m_Persons[obs_person].script_activate_talk;
             if (s) {
 
-              std::string old_person = m_CurrentPerson;
+              const std::string old_person = m_CurrentPerson;
               m_CurrentPerson = m_Persons[obs_person].name;
-              std::string person_name = m_CurrentPerson;
+
+              const std::string person_name = m_Persons[person_index].name;
 
               std::string error;
               if (!ExecuteScript(s, error)) {
@@ -4090,13 +4092,13 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
               m_CurrentPerson = old_person;
 
+              ResetNextFrame();
+
               // the script may have destroyed the person, so check to see that the person still exists
               if (FindPerson(person_name.c_str()) != person_index) {
                 return true;
               }
             }
-
-            ResetNextFrame();
           }
         }
       }
