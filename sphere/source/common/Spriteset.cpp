@@ -132,7 +132,8 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
 
   // read the header
   SPRITESET_HEADER header;
-  file->Read(&header, sizeof(header));
+  if (file->Read(&header, sizeof(header)) != sizeof(header))
+		return false;
 
   // validate header
   if (memcmp(header.signature, ".rss", 4) != 0 ||
@@ -193,8 +194,10 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
         // read the image
         CImage32& image = m_Images[i * 8 + j];
         image.Resize(m_FrameWidth, m_FrameHeight);
-        file->Read(image.GetPixels(), m_FrameWidth * m_FrameHeight * sizeof(RGBA));
-
+				
+				int size = m_FrameWidth * m_FrameHeight * sizeof(RGBA);
+        if (file->Read(image.GetPixels(), size) != size)
+					return false;
       }
     }
 
@@ -212,7 +215,9 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
 
       // read the direction header
       DIRECTION_HEADER_2 direction_header;
-      file->Read(&direction_header, sizeof(direction_header));
+      if (file->Read(&direction_header, sizeof(direction_header)) != sizeof(direction_header)) {
+			  return false;	
+			}
 
       // set name
       if (i < 8) {
@@ -229,7 +234,8 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
 
         // read the frame header
         FRAME_HEADER_2 frame_header;
-        file->Read(&frame_header, sizeof(frame_header));
+        if (file->Read(&frame_header, sizeof(frame_header)) != sizeof(frame_header))
+					return false;
 
         // some backwards compatibility hacking
         if (m_FrameWidth == 0 || m_FrameHeight == 0) {
@@ -239,7 +245,10 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
 
         // read the image and add it to the list
         CImage32 image(m_FrameWidth, m_FrameHeight);
-        file->Read(image.GetPixels(), sizeof(RGBA) * m_FrameWidth * m_FrameHeight);
+				int size = sizeof(RGBA) * m_FrameWidth * m_FrameHeight;
+        if (file->Read(image.GetPixels(), size) != size) {
+					return false;
+				}
 
         // set the frame properties
         m_Directions[i].frames[j].index = Find(m_Images, image);
@@ -291,9 +300,15 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
       
       // read the name
       char* name = new char[name_length];
+			if (!name)
+				return false;
+
       if (file->Read(name, name_length) != name_length) {
+				delete[] name;
+				name = NULL;
         return false;
       }
+
       m_Directions[i].name = name;
       delete[] name;
 

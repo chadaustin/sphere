@@ -194,11 +194,20 @@ CMapWindow::LoadMap(const char* szMap, const char* szTileset)
       if (MessageBox("Error: Map has some invalid tile references, remove them?", "Load Map", MB_YESNO) == IDNO)
         return false;
 
+			int tile_index = 0;
+
+			if (false) { // whether to show invalid references by using a red tile
+  			m_Map.GetTileset().AppendTiles(1);
+				tile_index = m_Map.GetTileset().GetNumTiles() - 1;
+	  		sTile& tile = m_Map.GetTileset().GetTile(tile_index);
+		  	tile.Rectangle(0, 0, 20, 20, CreateRGBA(255, 0, 0, 255));
+			}
+
       for (int il = 0; il < m_Map.GetNumLayers(); il++)
         for (int iy = 0; iy < m_Map.GetLayer(il).GetHeight(); iy++)
           for (int ix = 0; ix < m_Map.GetLayer(il).GetWidth(); ix++)
             if (m_Map.GetLayer(il).GetTile(ix, iy) >= m_Map.GetTileset().GetNumTiles())
-              m_Map.GetLayer(il).SetTile(ix, iy, 0);
+              m_Map.GetLayer(il).SetTile(ix, iy, tile_index);
     }
 
   } while (out_of_range);

@@ -184,7 +184,8 @@ sMap::Load(const char* filename, IFileSystem& fs)
 
   // read the header
   MAP_HEADER header;
-  file->Read(&header, sizeof(header));
+  if (file->Read(&header, sizeof(header)) != sizeof(header))
+		return false;
 
   // make sure it's valid
   if (memcmp(header.signature, ".rmp", 4) != 0 ||
@@ -228,7 +229,8 @@ sMap::Load(const char* filename, IFileSystem& fs)
   {
     // read the layer header
     LAYER_HEADER lh;
-    file->Read(&lh, sizeof(lh));
+    if (file->Read(&lh, sizeof(lh)) != sizeof(lh))
+			return false;
 
     // read the layer name
     std::string name = ReadMapString(file);
@@ -236,6 +238,9 @@ sMap::Load(const char* filename, IFileSystem& fs)
     // set all layer attributes
     m_Layers[i].SetName(name.c_str());
     m_Layers[i].Resize(lh.width, lh.height);
+    if (m_Layers[i].GetWidth() != lh.width || m_Layers[i].GetHeight() != lh.height)
+			return false;
+
     m_Layers[i].SetXParallax(lh.parallax_x);
     m_Layers[i].SetYParallax(lh.parallax_y);
     m_Layers[i].SetXScrolling(lh.scrolling_x);
@@ -244,6 +249,29 @@ sMap::Load(const char* filename, IFileSystem& fs)
     m_Layers[i].EnableParallax((lh.flags & 2) != 0);
     m_Layers[i].SetReflective(lh.reflective != 0);
 
+		// allocate space for the layer data
+		word* layer_info = new word[lh.width * lh.height];
+		if (!layer_info)
+			return false;
+
+		// read the layer data
+		if (file->Read(layer_info, sizeof(word) * lh.width * lh.height) != sizeof(word) * lh.width * lh.height) {
+			delete[] layer_info;
+			layer_info = NULL;
+			return false;
+		}
+
+		// set the layer data
+		word* tile = layer_info;
+    for (int iy = 0; iy < lh.height; iy++) {
+      for (int ix = 0; ix < lh.width; ix++) {
+        m_Layers[i].SetTile(ix, iy, *tile++);
+      }
+    }
+
+		delete[] layer_info;
+
+		/*
     // read the layer data
     for (int iy = 0; iy < lh.height; iy++) {
       for (int ix = 0; ix < lh.width; ix++) {
@@ -252,6 +280,7 @@ sMap::Load(const char* filename, IFileSystem& fs)
         m_Layers[i].SetTile(ix, iy, tile);
       }
     }
+		*/
 
     // load the obstruction map
 
@@ -278,7 +307,8 @@ sMap::Load(const char* filename, IFileSystem& fs)
   for (int i = 0; i < header.num_entities; i++)
   {
     ENTITY_HEADER eh;
-    file->Read(&eh, sizeof(eh));
+    if (file->Read(&eh, sizeof(eh)) != sizeof(eh))
+			return false;
 
     sEntity* entity;
     switch (eh.type)
@@ -342,7 +372,8 @@ sMap::Load(const char* filename, IFileSystem& fs)
     ZONE_HEADER zh;
     sZone zone;
 
-    file->Read(&zh, sizeof(zh));
+    if (file->Read(&zh, sizeof(zh)) != sizeof(zh))
+			return false;
     
     if (zh.x1 > zh.x2) {
       std::swap(zh.x1, zh.x2);
