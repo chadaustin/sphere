@@ -1,5 +1,5 @@
 <?php
-$DATE = '$Date: 2002-01-03 02:36:16 $';
+$DATE = '$Date: 2002-01-03 03:03:00 $';
 $AUTHOR = '$Author: jcore $';
 $PAGE = 'admin/addnews.php';
 $ACCESS = 'reporter';
@@ -16,8 +16,8 @@ if ($articleicon) {
     fatalError("you must include an article brief");
   if (strlen($articletitle) > 64)
     fatalError("article title length must be less than 65 characters");
-  if (strlen($articlebrief) > 255)
-    die("article brief length must be less than 256 characters");
+  if (strlen($articlebrief) > 1024)
+    die("article brief length must be less than 1025 characters");
   $text = NULL;
   if ($HTTP_POST_FILES['articlefile']['tmp_name'] and $HTTP_POST_FILES['articlefile']['tmp_name'] != 'none') {
     $filename = $HTTP_POST_FILES['articlefile']['tmp_name'];
@@ -55,7 +55,7 @@ TEXT;
     </select><br />
     <label>title</label><br />
     <input type="text" name="articletitle" size="65" maxlength="64" /><br />
-    <label>brief (keep it &lt; 256 characters!)</label><br />
+    <label>brief (keep it to 1024 characters or less!)</label><br />
     <textarea class="full" name="articlebrief" rows="3"></textarea><br />
     <input type="hidden" name="MAX_FILE_SIZE" value="6144" />
     <label>text</label><br />

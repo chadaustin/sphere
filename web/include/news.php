@@ -7,7 +7,7 @@ class SphereNews {
     global $USER;
     if (strlen($title) > 64)
       return "title must be shorter than 64 characters";
-    $DB->query("CREATE TABLE IF NOT EXISTS news (date DATETIME, author VARCHAR(32), icon VARCHAR(64), title VARCHAR(64), brief VARCHAR(255), text TEXT)");
+    $DB->query("CREATE TABLE IF NOT EXISTS news (date DATETIME, author VARCHAR(32), icon VARCHAR(64), title VARCHAR(64), brief TEXT, text TEXT)");
     $result = $DB->query("INSERT INTO news VALUES (NOW(), '{$USER->username}', '$icon', '$title', '$brief', '$text')");
     if ($result[0] == -1)
       return $result[1];
