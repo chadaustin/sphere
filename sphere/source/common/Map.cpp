@@ -731,6 +731,33 @@ sMap::ValidateTileIndices() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+sMap::SetTileSize(int width, int height, bool rescale)
+{
+  int old_width  = m_Tileset.GetTileWidth();
+  int old_height = m_Tileset.GetTileHeight();
+  m_Tileset.SetTileSize(width, height, rescale);
+
+  if (old_width)  { m_StartX = m_StartX * width  / old_width;  }
+  if (old_height) { m_StartY = m_StartY * height / old_height; }
+
+  for (int i = 0; i < GetNumEntities(); ++i) {
+    sEntity& e = GetEntity(i);
+    if (old_width)  { e.x = e.x * width  / old_width;  }
+    if (old_height) { e.y = e.y * height / old_height; }
+  }
+
+  for (int i = 0; i < GetNumZones(); ++i) {
+    sZone& z = GetZone(i);
+    if (old_width)  { z.x1 = z.x1 * width  / old_width;  }
+    if (old_height) { z.y1 = z.y1 * height / old_height; }
+    if (old_width)  { z.x2 = z.x2 * width  / old_width;  }
+    if (old_height) { z.y2 = z.y2 * height / old_height; }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 #define STRUCT_NAME V1MAP_HEADER
 #define STRUCT_BODY                             \
   byte version;                                 \

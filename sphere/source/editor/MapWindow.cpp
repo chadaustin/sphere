@@ -337,7 +337,7 @@ CMapWindow::OnChangeTileSize()
   CResizeDialog dialog("Resize Tiles", tile_width, tile_height);
   if (dialog.DoModal() == IDOK)
   {
-    m_Map.GetTileset().SetTileSize(dialog.GetWidth(), dialog.GetHeight());
+    m_Map.SetTileSize(dialog.GetWidth(), dialog.GetHeight());
 
     SetModified(true);
     m_MapView.TilesetChanged();
@@ -351,18 +351,18 @@ CMapWindow::OnChangeTileSize()
 afx_msg void
 CMapWindow::OnRescaleTileset()
 {
-    int tile_width  = m_Map.GetTileset().GetTileWidth();
-    int tile_height = m_Map.GetTileset().GetTileHeight();
+  int tile_width  = m_Map.GetTileset().GetTileWidth();
+  int tile_height = m_Map.GetTileset().GetTileHeight();
 
-    CResizeDialog dialog("Rescale Tiles", tile_width, tile_height);
-    if (dialog.DoModal() == IDOK) {
-        m_Map.GetTileset().SetTileSize(dialog.GetWidth(), dialog.GetHeight(), true);
+  CResizeDialog dialog("Rescale Tiles", tile_width, tile_height);
+  if (dialog.DoModal() == IDOK) {
+    m_Map.SetTileSize(dialog.GetWidth(), dialog.GetHeight(), true);
 
-        SetModified(true);
-        m_MapView.TilesetChanged();
-        m_TilesetEditView.TilesetChanged();
-        m_TilePalette->TilesetChanged();
-    }
+    SetModified(true);
+    m_MapView.TilesetChanged();
+    m_TilesetEditView.TilesetChanged();
+    m_TilePalette->TilesetChanged();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

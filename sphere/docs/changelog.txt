@@ -5,6 +5,8 @@
     once on a map
   - make rawfile.read return a ByteArray object
   - redraw the map after ResizeAllLayers
+  - when resizing or rescaling the tileset, move entities, the
+    start point, and zones appropriately as well
 
 2003.02.05
   - fixed GrabImage crash bug in standard16 and interpolate16
@@ -28,6 +30,7 @@
   - don't crash when loading a corrupt spriteset
   - added file_object.flush()
   - added links to web sites and documentation from the editor's help menu
+  - beta 3 released
 
 2003.01.29
   - make ExecuteGame work no matter where the game calling it is
