@@ -353,6 +353,9 @@
 #define ID_HELP_AEGISKNIGHTSSITE        40553
 #define ID_HELP_SPHEREFAQ               40554
 #define ID_IMAGE_RESAMPLE               40555
+#define ID_IMAGEVIEW_SLIDE_OTHER        40556
+#define ID_MAP_SLIDE_OTHER              40557
+#define ID_LAYERVIEW_SLIDE_OTHER        40558
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -361,7 +364,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        218
-#define _APS_NEXT_COMMAND_VALUE         40556
+#define _APS_NEXT_COMMAND_VALUE         40559
 #define _APS_NEXT_CONTROL_VALUE         1120
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

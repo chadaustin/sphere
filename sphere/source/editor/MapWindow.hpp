@@ -52,6 +52,7 @@ private:
   afx_msg void OnMapSlideRight();
   afx_msg void OnMapSlideDown();
   afx_msg void OnMapSlideLeft();
+  afx_msg void OnMapSlideOther();
   afx_msg void OnTabChanged(NMHDR* ns, LRESULT* result);
 
   virtual bool GetSavePath(char* path);

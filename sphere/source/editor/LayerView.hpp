@@ -55,7 +55,8 @@ private:
   afx_msg void OnLayerSlideUp();
   afx_msg void OnLayerSlideRight();
   afx_msg void OnLayerSlideDown();
-  afx_msg void OnLayerSlideLeft();  
+  afx_msg void OnLayerSlideLeft();
+  afx_msg void OnLayerSlideOther();
 
   void Click(int x, int y, bool left);
   void UpdateScrollBar();

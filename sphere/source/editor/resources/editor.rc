@@ -162,6 +162,7 @@ BEGIN
             MENUITEM "&Right",                      ID_MAP_SLIDE_RIGHT
             MENUITEM "&Down",                       ID_MAP_SLIDE_DOWN
             MENUITEM "&Left",                       ID_MAP_SLIDE_LEFT
+            MENUITEM "&Other...",                   ID_MAP_SLIDE_OTHER
         END
     END
 END
@@ -291,6 +292,7 @@ BEGIN
             MENUITEM "&Right",                      ID_LAYERVIEW_SLIDE_RIGHT
             MENUITEM "&Down",                       ID_LAYERVIEW_SLIDE_DOWN
             MENUITEM "&Left",                       ID_LAYERVIEW_SLIDE_LEFT
+            MENUITEM "&Other...",                   ID_LAYERVIEW_SLIDE_OTHER
         END
         MENUITEM "Toggle Lock Layers",          ID_LAYERVIEW_TOGGLE_LOCK_LAYERS_IN_PLACE
 
@@ -513,6 +515,7 @@ BEGIN
             MENUITEM "&Right",                      ID_IMAGEVIEW_SLIDE_RIGHT
             MENUITEM "&Down",                       ID_IMAGEVIEW_SLIDE_DOWN
             MENUITEM "&Left",                       ID_IMAGEVIEW_SLIDE_LEFT
+            MENUITEM "&Other...",                   ID_IMAGEVIEW_SLIDE_OTHER
         END
         POPUP "&Flip"
         BEGIN

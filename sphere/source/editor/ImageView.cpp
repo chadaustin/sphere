@@ -41,6 +41,7 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
   ON_COMMAND(ID_IMAGEVIEW_SLIDE_RIGHT,           OnSlideRight)
   ON_COMMAND(ID_IMAGEVIEW_SLIDE_DOWN,            OnSlideDown)
   ON_COMMAND(ID_IMAGEVIEW_SLIDE_LEFT,            OnSlideLeft)
+  ON_COMMAND(ID_IMAGEVIEW_SLIDE_OTHER,           OnSlideOther)
   ON_COMMAND(ID_IMAGEVIEW_FLIP_HORIZONTALLY,     OnFlipHorizontally)
   ON_COMMAND(ID_IMAGEVIEW_FLIP_VERTICALLY,       OnFlipVertically)
   ON_COMMAND(ID_IMAGEVIEW_FILL_RGB,              OnFillRGB)
@@ -1260,6 +1261,27 @@ CImageView::OnSlideLeft()
   // things have changed
   Invalidate();
   m_Handler->IV_ImageChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnSlideOther()
+{
+  CNumberDialog dx("Slide Horizontally", "Value", 0, 0, m_Image.GetWidth()); 
+  if (dx.DoModal() == IDOK) {
+    CNumberDialog dy("Slide Vertically", "Value", 0, 0, m_Image.GetHeight()); 
+    if (dy.DoModal() == IDOK) {
+      if (dx.GetValue() != 0 || dy.GetValue() != 0) {
+        AddUndoState();
+        Translate(m_Image.GetWidth(), m_Image.GetHeight(), m_Image.GetPixels(), dx.GetValue(), dy.GetValue());
+
+        // things have changed
+        Invalidate();
+        m_Handler->IV_ImageChanged();
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

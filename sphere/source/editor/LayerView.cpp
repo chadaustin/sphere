@@ -4,6 +4,7 @@
 #include "LayerPropertiesDialog.hpp"
 #include "Editor.hpp"
 #include "FileDialogs.hpp"
+#include "NumberDialog.hpp"
 #include "../common/Map.hpp"
 #include "resource.h"
 
@@ -34,6 +35,7 @@ BEGIN_MESSAGE_MAP(CLayerView, CVScrollWindow)
   ON_COMMAND(ID_LAYERVIEW_SLIDE_RIGHT,          OnLayerSlideRight)
   ON_COMMAND(ID_LAYERVIEW_SLIDE_DOWN,           OnLayerSlideDown)
   ON_COMMAND(ID_LAYERVIEW_SLIDE_LEFT,           OnLayerSlideLeft)
+  ON_COMMAND(ID_LAYERVIEW_SLIDE_OTHER,          OnLayerSlideOther)
   ON_COMMAND(ID_LAYERVIEW_TOGGLE_LOCK_LAYERS_IN_PLACE, OnToggleLockLayersInPlace)
 
 END_MESSAGE_MAP()
@@ -740,6 +742,23 @@ CLayerView::OnLayerSlideLeft() {
   m_Map->GetLayer(m_SelectedLayer).Translate(-1, 0);
   Invalidate();
   m_Handler->LV_MapChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CLayerView::OnLayerSlideOther() {
+  CNumberDialog dx("Slide Horizontally", "Value", 0, 0, m_Map->GetLayer(m_SelectedLayer).GetWidth()); 
+  if (dx.DoModal() == IDOK) {
+    CNumberDialog dy("Slide Vertically", "Value", 0, 0, m_Map->GetLayer(m_SelectedLayer).GetHeight()); 
+    if (dy.DoModal() == IDOK) {
+      if (dx.GetValue() != 0 || dy.GetValue() != 0) {
+        m_Map->GetLayer(m_SelectedLayer).Translate(dx.GetValue(), dy.GetValue());
+        Invalidate();
+        m_Handler->LV_MapChanged();
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

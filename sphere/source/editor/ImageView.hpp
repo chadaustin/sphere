@@ -100,6 +100,7 @@ private:
   afx_msg void OnSlideRight();
   afx_msg void OnSlideDown();
   afx_msg void OnSlideLeft();
+  afx_msg void OnSlideOther();
   afx_msg void OnFlipHorizontally();
   afx_msg void OnFlipVertically();
   afx_msg void OnFillRGB();

@@ -9,6 +9,7 @@
 #include "NewMapDialog.hpp"
 #include "TilesetSelectionDialog.hpp"
 #include "MapPropertiesDialog.hpp"
+#include "NumberDialog.hpp"
 #include "TilePalette.hpp"
 #include "../common/rgb.hpp"
 #include "../common/minmax.hpp"
@@ -36,6 +37,7 @@ BEGIN_MESSAGE_MAP(CMapWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_MAP_SLIDE_RIGHT,     OnMapSlideRight)
   ON_COMMAND(ID_MAP_SLIDE_DOWN,      OnMapSlideDown)
   ON_COMMAND(ID_MAP_SLIDE_LEFT,      OnMapSlideLeft)
+  ON_COMMAND(ID_MAP_SLIDE_OTHER,     OnMapSlideOther)
 
   ON_NOTIFY(TCN_SELCHANGE, IDC_TAB,  OnTabChanged)
 
@@ -681,3 +683,33 @@ CMapWindow::OnMapSlideLeft()
   m_Map.Translate(-1, 0);
   LV_MapChanged();
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMapWindow::OnMapSlideOther()
+{
+  // find out the biggest width and height of layers
+  int width = 0;
+  int height = 0;
+  
+  for (int i = 0; i < m_Map.GetNumLayers(); i++) {
+    if (m_Map.GetLayer(i).GetWidth() > width)
+      width = m_Map.GetLayer(i).GetWidth();
+    if (m_Map.GetLayer(i).GetHeight() > height)
+      height = m_Map.GetLayer(i).GetHeight();
+  }
+
+  CNumberDialog dx("Slide Horizontally", "Value", 0, 0, width); 
+  if (dx.DoModal() == IDOK) {
+    CNumberDialog dy("Slide Vertically", "Value", 0, 0, height); 
+    if (dy.DoModal() == IDOK) {
+      if (dx.GetValue() != 0 || dy.GetValue() != 0) {
+        m_Map.Translate(dx.GetValue(), dy.GetValue());
+        LV_MapChanged();
+      }
+    }
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
