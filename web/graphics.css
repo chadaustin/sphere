@@ -1,5 +1,5 @@
 /* graphics.css
-   $Id: graphics.css,v 1.2 2001-12-30 23:23:27 jcore Exp $
+   $Id: graphics.css,v 1.3 2001-12-30 23:32:43 jcore Exp $
    full graphics stylesheet */
 
 a {
@@ -122,10 +122,6 @@ table.news td.body {
   text-align: right;
 }
 
-table.box textarea {
-  width: 100%;
-}
-
-table.box input {
+table.box .full {
   width: 100%;
 }

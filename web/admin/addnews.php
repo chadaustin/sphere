@@ -1,5 +1,5 @@
 <?php
-$DATE = '$Date: 2001-12-29 03:16:56 $';
+$DATE = '$Date: 2001-12-30 23:32:43 $';
 $AUTHOR = '$Author: jcore $';
 
 require('../utility.php');
@@ -30,12 +30,12 @@ if ($user) {
       $input = <<<INPUT
         <form action="addnews.php" method="post">
         <div>
-          <label for="articleicon">icon</label><br />
+          <label>icon</label><br />
           <select name="articleicon">
 $icon_options          </select><br />
-          <label for="articletitle">title</label><br />
+          <label>title</label><br />
           <input class="full" type="text" name="articletitle" maxlength="255" /><br />
-          <label for="articletext">text</label><br />
+          <label>text</label><br />
           <textarea class="full" name="articletext" rows="15"></textarea><br />
           <hr>
           <input type="submit" />

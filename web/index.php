@@ -1,5 +1,5 @@
 <?php
-$DATE = '$Date: 2001-12-30 23:23:27 $';
+$DATE = '$Date: 2001-12-30 23:32:43 $';
 $AUTHOR = '$Author: jcore $';
 
 require('utility.php');
@@ -42,21 +42,21 @@ TEXT;
     $youraccount .= '<br />You may <a href="admin/addnews.php">add a new news article</a>.';
 }
 else {
-  $login = <<<LOGIN
-<script language="JavaScript">
+/* <script language="JavaScript">
   function keyHandler (event, form) {
     if (event && event.keyCode == 13)
       form.submit();
     else
       return true;
   }
-</script>
-<form action="$SITEROOT/tools/userlogin.php" method="post" name="login">
+</script> */
+$login = <<<LOGIN
+<form action="$SITEROOT/tools/userlogin.php" method="post">
 <div>
   <label>username: </label>
-  <input type="text" name="username" maxlength="32"><br />
+  <input class="full" type="text" name="username" maxlength="32" /><br />
   <label>password: </label>
-  <input type="password" name="password" maxlength="12" onKeyPress="return keyHandler(event, this.form)"><br />
+  <input class="full" type="password" name="password" maxlength="12" /><br />
   <div class="sig"><a href="Javascript:document.login.submit()">login</a></div>
 </div>
 </form>
