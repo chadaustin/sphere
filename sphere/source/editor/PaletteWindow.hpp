@@ -30,7 +30,7 @@ public:
 
 protected:
   // protected so only derived classes can construct
-  CPaletteWindow(CDocumentWindow* owner, const char* name, RECT rect, bool visible);
+  CPaletteWindow(CDocumentWindow* owner, const char* name, RECT rect, bool visible, int type = 0);
   ~CPaletteWindow();
 
 private:

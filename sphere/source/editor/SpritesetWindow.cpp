@@ -450,6 +450,7 @@ void
 CSpritesetWindow::SV_SpritesetModified()
 {
   UpdateImageView();
+  m_ImagesPalette->SpritesetResized();
   m_ImagesPalette->Invalidate();
   SetModified(true);
 }

@@ -25,12 +25,19 @@ public:
   virtual void Destroy();
 
   void SetCurrentImage(int image);
+  void SpritesetResized();
+
+private:
+  int GetPageSize();
+  int GetNumRows();
+  void UpdateScrollBar();
 
 private:
   afx_msg void OnSize(UINT type, int cx, int cy);
   afx_msg void OnPaint();
   afx_msg void OnLButtonDown(UINT flags, CPoint point);
   afx_msg void OnRButtonUp(UINT flags, CPoint point);
+  afx_msg void OnVScroll(UINT code, UINT pos, CScrollBar* scroll_bar);
 
   afx_msg void OnMoveBack();
   afx_msg void OnMoveForward();
@@ -38,7 +45,6 @@ private:
   afx_msg void OnRemoveImage();
 
   void OnSwap(int new_index);
-
   void OnZoom(double zoom);
 
 private:

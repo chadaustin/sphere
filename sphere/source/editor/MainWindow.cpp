@@ -1031,9 +1031,13 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
     sSpriteset sprite;
     sprite.Create(frame_width, frame_height, num_images, num_directions, num_frames);
     sprite.SetDirectionName(0, "north");
-    sprite.SetDirectionName(1, "east");
-    sprite.SetDirectionName(2, "south");
-    sprite.SetDirectionName(3, "west");
+    sprite.SetDirectionName(1, "northeast");
+    sprite.SetDirectionName(2, "east");
+    sprite.SetDirectionName(3, "southeast");
+    sprite.SetDirectionName(4, "south");
+    sprite.SetDirectionName(5, "southwest");
+    sprite.SetDirectionName(6, "west");
+    sprite.SetDirectionName(7, "northwest");
 
     // there are eight spritesets per chipset, 4 rows, 2 columns
     for (int sy = 0; sy < 2; sy++) {

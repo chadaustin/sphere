@@ -40,7 +40,7 @@ END_MESSAGE_MAP()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-CPaletteWindow::CPaletteWindow(CDocumentWindow* owner, const char* name, RECT rect, bool visible)
+CPaletteWindow::CPaletteWindow(CDocumentWindow* owner, const char* name, RECT rect, bool visible, int type)
 : m_Owner(owner)
 #ifdef USE_SIZECBAR
 , m_pBarParent(NULL)
@@ -48,6 +48,24 @@ CPaletteWindow::CPaletteWindow(CDocumentWindow* owner, const char* name, RECT re
 , m_PaletteNumber(owner->GetNumPalettes())
 #endif
 {
+  DWORD styles;
+
+#ifndef USE_SIZECBAR
+  switch (type) {
+    case 1:
+      styles = WS_VISIBLE | WS_THICKFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_VSCROLL;
+    break;
+
+    default:
+      styles = WS_VISIBLE | WS_THICKFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN;
+  }
+#else
+  switch (type) {
+    default:
+      styles = WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN,
+  }
+#endif
+
   owner->AttachPalette(this);
 
   // make sure the palette is visible!
@@ -76,7 +94,7 @@ CPaletteWindow::CPaletteWindow(CDocumentWindow* owner, const char* name, RECT re
       ::LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW))
     ),
     name,
-    WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN,
+    styles,
     rect,
 		m_pBarParent,
    0
@@ -88,7 +106,7 @@ CPaletteWindow::CPaletteWindow(CDocumentWindow* owner, const char* name, RECT re
       ::LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW))
     ),
     name,
-    WS_VISIBLE | WS_THICKFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN,
+    styles,
     rect,
     AfxGetApp()->m_pMainWnd,
     0
@@ -96,8 +114,6 @@ CPaletteWindow::CPaletteWindow(CDocumentWindow* owner, const char* name, RECT re
 
 	ShowWindow(SW_SHOW);
 #endif
- 
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////

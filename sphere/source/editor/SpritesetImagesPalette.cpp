@@ -25,7 +25,7 @@ END_MESSAGE_MAP()
 CSpritesetImagesPalette::CSpritesetImagesPalette(CDocumentWindow* owner, ISpritesetImagesPaletteHandler* handler, sSpriteset* spriteset)
 : CPaletteWindow(owner, "Spriteset Images",
   Configuration::Get(KEY_SPRITESET_IMAGES_RECT),
-  Configuration::Get(KEY_SPRITESET_IMAGES_VISIBLE))
+  Configuration::Get(KEY_SPRITESET_IMAGES_VISIBLE), 1) // 1 means vscroll
 , m_Handler(handler)
 , m_Spriteset(spriteset)
 , m_TopRow(0)
@@ -66,8 +66,17 @@ CSpritesetImagesPalette::SetCurrentImage(int image)
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
+CSpritesetImagesPalette::SpritesetResized()
+{
+  OnZoom(m_ZoomFactor);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
 CSpritesetImagesPalette::OnSize(UINT type, int cx, int cy)
 {
+  UpdateScrollBar();
   Invalidate();
 }
 
@@ -231,6 +240,84 @@ CSpritesetImagesPalette::OnRButtonUp(UINT flags, CPoint point)
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
+CSpritesetImagesPalette::OnVScroll(UINT code, UINT pos, CScrollBar* scroll_bar)
+{
+  switch (code)
+  {
+    case SB_LINEDOWN:   m_TopRow++;                break;
+    case SB_LINEUP:     m_TopRow--;                break;
+    case SB_PAGEDOWN:   m_TopRow += GetPageSize(); break;
+    case SB_PAGEUP:     m_TopRow -= GetPageSize(); break;
+    case SB_THUMBTRACK: m_TopRow = (int)pos;       break;
+  }
+
+  UpdateScrollBar();
+  Invalidate();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CSpritesetImagesPalette::UpdateScrollBar()
+{
+  int num_rows  = GetNumRows();
+  int page_size = GetPageSize();
+
+  // validate the values
+  if (m_TopRow > num_rows - page_size)
+    m_TopRow = num_rows - page_size;
+  if (m_TopRow < 0)
+    m_TopRow = 0;
+
+  SCROLLINFO si;
+  si.cbSize = sizeof(si);
+  si.fMask  = SIF_ALL;
+  si.nMin   = 0;
+
+  if (page_size - num_rows)
+  {
+    si.nMax   = num_rows - 1;
+    si.nPage  = page_size;
+    si.nPos   = m_TopRow;
+  }
+  else
+  {
+    si.nMax   = 0xFFFF;
+    si.nPage  = 0xFFFE;
+    si.nPos   = 0;
+  }
+
+  SetScrollInfo(SB_VERT, &si);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CSpritesetImagesPalette::GetPageSize()
+{
+  RECT ClientRect;
+  GetClientRect(&ClientRect);
+  return ClientRect.bottom / m_Spriteset->GetFrameHeight();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CSpritesetImagesPalette::GetNumRows()
+{
+  RECT client_rect;
+  GetClientRect(&client_rect);
+  int num_tiles_x = client_rect.right / m_Spriteset->GetFrameWidth();
+
+  if (num_tiles_x == 0)
+    return -1;
+  else
+    return (m_Spriteset->GetNumImages() + num_tiles_x - 1) / num_tiles_x;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
 CSpritesetImagesPalette::OnMoveBack()
 {
   if (m_SelectedImage > 0) {
@@ -354,6 +441,7 @@ CSpritesetImagesPalette::OnZoom(double zoom) {
     32
   );
 
+  UpdateScrollBar();
   Invalidate();
 }
 
