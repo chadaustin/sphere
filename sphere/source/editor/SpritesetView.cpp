@@ -913,7 +913,7 @@ CSpritesetView::OnEditRangeReplaceRGBA()
   std::vector<int> frames = GetEditRangeIndexes(false);
 
   if (frames.size() > 0) {
-    CFontGradientDialog colorChoiceDialog;
+    CFontGradientDialog colorChoiceDialog("Replace Color", "In", "Out");
 
     if (colorChoiceDialog.DoModal() == IDOK) {
 

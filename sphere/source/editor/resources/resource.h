@@ -87,6 +87,7 @@
 #define IDD_DIALOG1                     222
 #define IDD_DIALOG2                     223
 #define IDD_ROTATE                      225
+#define IDR_EDIT_RANGE                  227
 #define IDC_PROJECTNAME                 1000
 #define IDC_GAMETITLE                   1001
 #define IDC_BROWSE                      1003
@@ -153,9 +154,10 @@
 #define IDC_EDGEOFFSET_3                1124
 #define IDC_ROTATE_LEFT                 1124
 #define IDC_ROTATE_RIGHT                1125
-#define IDC_RADIO3                      1126
 #define IDC_ROTATEVALUE                 1127
 #define IDC_ROTATETEXT                  1128
+#define IDC_TOP_COLOR_TEXT              1131
+#define IDC_BOTTOM_COLOR_TEXT           1132
 #define ID_FILE_IMPORT_BITMAPTORSS      12241
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40003
@@ -467,9 +469,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        226
+#define _APS_NEXT_RESOURCE_VALUE        228
 #define _APS_NEXT_COMMAND_VALUE         40654
-#define _APS_NEXT_CONTROL_VALUE         1129
+#define _APS_NEXT_CONTROL_VALUE         1133
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

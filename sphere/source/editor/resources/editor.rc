@@ -540,6 +540,20 @@ BEGIN
         MENUITEM "Insert Tile&set...",          ID_TILESETVIEW_INSERTTILESET
         MENUITEM "Append Ti&leset...",          ID_TILESETVIEW_APPENDTILESET
         MENUITEM SEPARATOR
+        POPUP "&Zoom"
+        BEGIN
+            MENUITEM "&1x",                         ID_TILESETVIEW_ZOOM_1X
+            MENUITEM "&2x",                         ID_TILESETVIEW_ZOOM_2X
+            MENUITEM "&4x",                         ID_TILESETVIEW_ZOOM_4X
+            MENUITEM "&8x",                         ID_TILESETVIEW_ZOOM_8X
+        END
+        POPUP "&Move"
+        BEGIN
+            MENUITEM "&Back",                       ID_TILESETVIEW_MOVE_BACK
+            MENUITEM "&Forward",                    ID_TILESETVIEW_MOVE_FORWARD
+
+        END
+        MENUITEM SEPARATOR
         POPUP "&Edit Range"
         BEGIN
             POPUP "Rotate", GRAYED
@@ -614,20 +628,6 @@ BEGIN
             MENUITEM "Scal&e Alpha",                ID_TILESETVIEW_ER_SCALEALPHA
             , GRAYED
         END
-        POPUP "&Zoom"
-        BEGIN
-            MENUITEM "&1x",                         ID_TILESETVIEW_ZOOM_1X
-            MENUITEM "&2x",                         ID_TILESETVIEW_ZOOM_2X
-            MENUITEM "&4x",                         ID_TILESETVIEW_ZOOM_4X
-            MENUITEM "&8x",                         ID_TILESETVIEW_ZOOM_8X
-        END
-        POPUP "&Move"
-        BEGIN
-            MENUITEM "&Back",                       ID_TILESETVIEW_MOVE_BACK
-            MENUITEM "&Forward",                    ID_TILESETVIEW_MOVE_FORWARD
-
-        END
-        MENUITEM SEPARATOR
         MENUITEM "&Properties...",              ID_TILESETVIEW_PROPERTIES
     END
 END
@@ -831,6 +831,87 @@ BEGIN
 
         MENUITEM "&Remove Image",               ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGE
 
+    END
+END
+
+IDR_EDIT_RANGE MENU DISCARDABLE 
+BEGIN
+    POPUP "EditRange"
+    BEGIN
+        POPUP "&Edit Range"
+        BEGIN
+            POPUP "Rotate", GRAYED
+            BEGIN
+                MENUITEM "&Clockwise",                  ID_TILESETVIEW_ER_ROTATE_CW
+
+                MENUITEM "C&ounterclockwise",           ID_TILESETVIEW_ER_ROTATE_CCW
+
+            END
+            POPUP "&Slide"
+            BEGIN
+                MENUITEM "&Up",                         ID_TILESETVIEW_ER_SLIDE_UP
+                , GRAYED
+                MENUITEM "&Right",                      ID_TILESETVIEW_ER_SLIDE_RIGHT
+                , GRAYED
+                MENUITEM "&Down",                       ID_TILESETVIEW_ER_SLIDE_DOWN
+                , GRAYED
+                MENUITEM "&Left",                       ID_TILESETVIEW_ER_SLIDE_LEFT
+                , GRAYED
+                MENUITEM "&Other...",                   ID_TILESETVIEW_ER_SLIDE_OTHER
+
+            END
+            POPUP "&Flip"
+            BEGIN
+                MENUITEM "&Horizontally",               ID_TILESETVIEW_ER_FLIP_HORIZONTALLY
+
+                MENUITEM "&Vertically",                 ID_TILESETVIEW_ER_FLIP_VERTICALLY
+
+            END
+            POPUP "F&ill", GRAYED
+            BEGIN
+                MENUITEM "&RGB",                        ID_TILESETVIEW_ER_FILL_RGB
+
+                MENUITEM "&Alpha",                      ID_TILESETVIEW_ER_FILL_ALPHA
+
+                MENUITEM "&Both",                       ID_TILESETVIEW_ER_FILL_BOTH
+
+            END
+            POPUP "Fil&ter", GRAYED
+            BEGIN
+                POPUP "Negative Image"
+                BEGIN
+                    MENUITEM "&RGB",                        ID_TILESETVIEW_ER_FLT_NEGATIVE_IMAGE_RGB
+
+                    MENUITEM "&Alpha",                      ID_TILESETVIEW_ER_FLT_NEGATIVE_IMAGE_ALPHA
+
+                    MENUITEM "&Both",                       ID_TILESETVIEW_ER_FLT_NEGATIVE_IMAGE_RGBA
+
+                END
+                MENUITEM "&Blur",                       ID_TILESETVIEW_ER_FLT_BLUR
+
+                MENUITEM "&Noise",                      ID_TILESETVIEW_ER_FLT_NOISE
+
+                MENUITEM "&Solarize",                   ID_TILESETVIEW_ER_FLT_SOLARIZE
+
+                MENUITEM "&Adjust Brightness",          ID_TILESETVIEW_ER_FLT_ADJUST_BRIGHTNESS
+
+                MENUITEM "Adjust &Gamma",               ID_TILESETVIEW_ER_FLT_ADJUST_GAMMA
+
+            END
+            POPUP "&Replace"
+            BEGIN
+                MENUITEM "&RGBA",                       ID_TILESETVIEW_ER_REPLACE_RGBA
+
+                MENUITEM "R&GB",                        ID_TILESETVIEW_ER_REPLACE_RGB
+                , GRAYED
+                MENUITEM "&Alpha",                      ID_TILESETVIEW_ER_REPLACE_ALPHA
+                , GRAYED
+            END
+            MENUITEM "Set Color &Alpha",            ID_TILESETVIEW_ER_SETCOLORALPHA
+            , GRAYED
+            MENUITEM "Scal&e Alpha",                ID_TILESETVIEW_ER_SCALEALPHA
+            , GRAYED
+        END
     END
 END
 
@@ -1115,8 +1196,8 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,68,92,50,14
     CONTROL         "",IDC_BOTTOM_COLOR,"Static",SS_BLACKFRAME | NOT 
                     WS_VISIBLE,60,48,56,32
-    LTEXT           "Top Color",IDC_STATIC,12,20,32,8
-    LTEXT           "Bottom Color",IDC_STATIC,12,60,41,8
+    LTEXT           "Top Color",IDC_TOP_COLOR_TEXT,12,20,32,8
+    LTEXT           "Bottom Color",IDC_BOTTOM_COLOR_TEXT,12,60,41,8
     CONTROL         "",IDC_TOP_COLOR,"Static",SS_BLACKFRAME | NOT WS_VISIBLE,
                     60,8,56,32
 END
@@ -1168,7 +1249,7 @@ BEGIN
     CONTROL         "Right",IDC_ROTATE_RIGHT,"Button",BS_AUTORADIOBUTTON,16,
                     30,44,13
     EDITTEXT        IDC_ROTATEVALUE,64,47,56,14,ES_AUTOHSCROLL
-    LTEXT           "Number Text",IDC_ROTATETEXT,17,72,120,16
+    LTEXT           "Rotate Text",IDC_ROTATETEXT,17,72,120,16
 END
 
 

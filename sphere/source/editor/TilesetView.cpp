@@ -463,6 +463,13 @@ CTilesetView::OnRButtonUp(UINT flags, CPoint point)
     CheckMenuItem(menu, ID_TILESETVIEW_ZOOM_8X, MF_BYCOMMAND | MF_CHECKED);
   }
 
+  if (m_SelectedTile == 0) {
+    EnableMenuItem(menu, ID_TILESETVIEW_MOVE_BACK, MF_BYCOMMAND | MF_GRAYED);
+  }
+  if (m_SelectedTile == m_Tileset->GetNumTiles() - 1) {
+    EnableMenuItem(menu, ID_TILESETVIEW_MOVE_FORWARD, MF_BYCOMMAND | MF_GRAYED);
+  }
+
   m_MenuShown = true;
   TrackPopupMenu(menu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, point.x, point.y, 0, m_hWnd, NULL);
   m_MenuShown = false;
@@ -866,7 +873,7 @@ CTilesetView::OnEditRangeReplaceRGBA()
   std::vector<int> frames = GetEditRangeIndexes();
 
   if (frames.size() > 0) {
-    CFontGradientDialog colorChoiceDialog;
+    CFontGradientDialog colorChoiceDialog("Replace Color", "In", "Out");
 
     if (colorChoiceDialog.DoModal() == IDOK) {
 

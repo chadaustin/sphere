@@ -251,8 +251,10 @@ BOOL CALLBACK VideoDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
       {
         char driver[MAX_PATH];
         int sel = SendDlgItemMessage(window, IDC_DRIVERLIST, LB_GETCURSEL, 0, 0);
-        SendDlgItemMessage(window, IDC_DRIVERLIST, LB_GETTEXT, sel, (LPARAM)driver);
-        ConfigureDriver(window, driver);
+        if (sel != -1) { 
+          SendDlgItemMessage(window, IDC_DRIVERLIST, LB_GETTEXT, sel, (LPARAM)driver);
+          ConfigureDriver(window, driver);
+        }
         return TRUE;
       }
 

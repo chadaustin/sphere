@@ -667,6 +667,16 @@ EXPORT(void) DestroyImage(IMAGE image)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static inline float sphere_x_to_opengl_x(int x) {
+  return (float) x + 0.5f;
+}
+
+static inline float sphere_y_to_opengl_y(int y) {
+  return (float) y + 0.5f;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 EXPORT(void) BlitImage(IMAGE image, int x, int y)
 {
     extern void __stdcall BlitImageMask(IMAGE image, int x, int y, RGBA mask);
@@ -874,16 +884,6 @@ EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
     }
 
     delete[] row;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-static inline float sphere_x_to_opengl_x(int x) {
-  return (float) x + 0.5f;
-}
-
-static inline float sphere_y_to_opengl_y(int y) {
-  return (float) y + 0.5f;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
