@@ -31,6 +31,7 @@ BEGIN_MESSAGE_MAP(CMapWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_MAP_EXPORTTILESET,   OnExportTileset)
   ON_COMMAND(ID_MAP_IMPORTTILESET,   OnImportTileset)
   ON_COMMAND(ID_MAP_PRUNETILESET,    OnPruneTileset)
+  ON_COMMAND(ID_MAP_TOGGLE_LOCK_LAYERS_IN_PLACE, OnToggleLockLayersInPlace)
   ON_NOTIFY(TCN_SELCHANGE, IDC_TAB,  OnTabChanged)
 
 END_MESSAGE_MAP()
@@ -634,3 +635,10 @@ CMapWindow::SP_ColorSelected(RGBA color)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+afx_msg void 
+CMapWindow::OnToggleLockLayersInPlace()
+{
+  m_LayerView.ToggleLockLayersInPlace();
+}
+
+////////////////////////////////////////////////////////////////////////////////

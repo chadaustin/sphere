@@ -2,7 +2,7 @@
 // Or like this: PlayAnimation("filename.flc", 50, 50, 0, true (if you want to play it forever));
 // Every time you call the PlayAnimation function, you insert an animation into the array
 // If you want to clear the array, simply call the ClearMapAnimationArray function and begin again
-// Don't forget to use SetRenderScript("UpdateMapAnimation")); right after all calls
+// Don't forget to use SetRenderScript("UpdateMapAnimation()")); right after all calls
 // to PlayAnimation to render the animations. If you want to setup a new array of anims
 // just call the ClearMapAnimationArray() function. Give the engine a FlipScreen or preferably an Engine
 // Update so the engine doesn't crash with all the animations it has to play in set period

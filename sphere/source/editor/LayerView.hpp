@@ -29,6 +29,9 @@ public:
   int GetSelectedLayer() const;
   void SetSelectedTile(int tile);
 
+  bool AreLayersLockedInPlace();
+  void ToggleLockLayersInPlace();
+
 private:
   afx_msg int OnCreate(CREATESTRUCT* createstruct);
   afx_msg void OnSize(UINT type, int cx, int cy);
@@ -59,6 +62,7 @@ private:
   int m_SelectedTile;
 
   bool m_IsDragging;
+  bool m_LayersAreLockedInPlace;
 
   DECLARE_MESSAGE_MAP();
 };

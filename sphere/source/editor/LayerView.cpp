@@ -289,7 +289,7 @@ CLayerView::OnRButtonUp(UINT flags, CPoint point)
 afx_msg void
 CLayerView::OnMouseMove(UINT flags, CPoint point)
 {
-  if (m_IsDragging) {
+  if (m_IsDragging && !AreLayersLockedInPlace()) {
 
     // see if we're dragging up or down
     point.y -= m_TopLayer * LAYER_BUTTON_HEIGHT;
@@ -539,13 +539,14 @@ CLayerView::Click(int x, int y, bool left)
 
     } else {
 
-      // layers are displayed upside down
-      m_SelectedLayer = layer;
-      Invalidate();
+      if (!AreLayersLockedInPlace()) {
+        // layers are displayed upside down
+        m_SelectedLayer = layer;
+        Invalidate();
 
-      // tell parent that the layer changed
-      m_Handler->LV_SelectedLayerChanged(m_SelectedLayer);
-
+        // tell parent that the layer changed
+        m_Handler->LV_SelectedLayerChanged(m_SelectedLayer);
+      }
     }
   }
 }
@@ -561,6 +562,22 @@ CLayerView::UpdateScrollBar()
 
   // set the scroll range
   SetVScrollRange(m_Map->GetNumLayers(), page_size);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CLayerView::AreLayersLockedInPlace()
+{
+  return m_LayersAreLockedInPlace;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CLayerView::ToggleLockLayersInPlace()
+{
+  m_LayersAreLockedInPlace = !m_LayersAreLockedInPlace;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

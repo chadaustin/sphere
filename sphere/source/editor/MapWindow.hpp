@@ -48,6 +48,7 @@ private:
   afx_msg void OnExportTileset();
   afx_msg void OnImportTileset();
   afx_msg void OnPruneTileset();
+  afx_msg void OnToggleLockLayersInPlace();
   afx_msg void OnTabChanged(NMHDR* ns, LRESULT* result);
 
   virtual bool GetSavePath(char* path);
