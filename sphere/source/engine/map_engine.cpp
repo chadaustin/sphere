@@ -3520,25 +3520,30 @@ CMapEngine::UpdateTriggers()
   // check to see which trigger we're on
   int trigger_index = FindTrigger(location_x, location_y, location_layer);
 
-  if (m_OnTrigger && trigger_index == m_LastTrigger) {
-
-    if (trigger_index == -1) {
-      m_OnTrigger = false;
-    }
-
-  } else {
+  // if we're moving from one trigger to a new one (or off of one)
+  if (m_OnTrigger && trigger_index != m_LastTrigger) {
 
     if (trigger_index != -1) {
-
       if (!ExecuteTriggerScript(trigger_index)) {
         return false;
       }
-
       ResetNextFrame();
-      m_OnTrigger = true;
-      m_LastTrigger = trigger_index;
-
+    } else {
+      m_OnTrigger = false;
     }
+    m_LastTrigger = trigger_index;
+
+  // if we're moving on to another trigger
+  } else if (!m_OnTrigger && trigger_index != -1) {
+
+    if (!ExecuteTriggerScript(trigger_index)) {
+      return false;
+    }
+    ResetNextFrame();
+
+    m_OnTrigger = true;
+    m_LastTrigger = trigger_index;
+
   }
 
   return true;
