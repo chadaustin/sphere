@@ -41,6 +41,7 @@ public:
   int  GetFrameHeight() const;
   void ResizeFrames(int width, int height);
   void RescaleFrames(int width, int height);
+  void ResampleFrames(int width, int height);
 
   void InsertDirection(int direction);
   void DeleteDirection(int direction);

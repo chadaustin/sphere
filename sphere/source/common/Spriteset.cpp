@@ -707,6 +707,19 @@ sSpriteset::RescaleFrames(int width, int height)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+sSpriteset::ResampleFrames(int width, int height)
+{
+  for (unsigned i = 0; i < m_Images.size(); i++) {
+    m_Images[i].Resample(width, height);
+  }
+
+  m_FrameWidth  = width;
+  m_FrameHeight = height;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
 sSpriteset::InsertDirection(int direction)
 {
   Direction new_direction;

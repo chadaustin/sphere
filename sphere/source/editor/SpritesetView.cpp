@@ -950,7 +950,7 @@ CSpritesetView::OnInsertDirectionFromAnimation()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static mng_retcode
+static int
 SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& images)
 {
   if (!(images.size() >= 1))
