@@ -38,7 +38,6 @@ static void SaveConfiguration();
 static BOOL CALLBACK ConfigureDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
 
 static bool InitFullscreen();
-static bool SetDisplayMode();
 static bool CreateSurfaces();
 static bool InitWindowed();
 
@@ -853,7 +852,7 @@ EXPORT(void, DirectBlit)(int x, int y, int w, int h, RGBA* pixels)
 
       if (alpha == 255)
         *dest = src;
-      else if (alpha >= 0)
+      else if (alpha > 0)
       {
         *dest = (*dest * (256 - alpha) + src * alpha) / 256;
       }

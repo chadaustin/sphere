@@ -14,10 +14,10 @@ SMAP::SMAP()
 
 SMAP::~SMAP()
 {
-  for (int i = 0; i < m_Tiles.size(); i++) {
+  for (unsigned i = 0; i < m_Tiles.size(); i++) {
     DestroyImage(m_Tiles[i]);
   }
-  for (int i = 0; i < m_SolidTiles.size(); i++) {
+  for (unsigned i = 0; i < m_SolidTiles.size(); i++) {
     DestroyImage(m_SolidTiles[i]);
   }
 }
@@ -42,10 +42,10 @@ SMAP::Load(const char* filename, IFileSystem& fs)
 
   InitializeAnimation();
 
-  for (int i = 0; i < m_Tiles.size(); i++) {
+  for (unsigned i = 0; i < m_Tiles.size(); i++) {
     DestroyImage(m_Tiles[i]);
   }
-  for (int i = 0; i < m_SolidTiles.size(); i++) {
+  for (unsigned i = 0; i < m_SolidTiles.size(); i++) {
     DestroyImage(m_SolidTiles[i]);
   }
 
@@ -92,7 +92,7 @@ void
 SMAP::UpdateMap()
 {
   // update layer times for autoscrolling
-  for (int i = 0; i < m_LayerTimes.size(); i++) {
+  for (unsigned i = 0; i < m_LayerTimes.size(); i++) {
     m_LayerTimes[i]++;
   }
 

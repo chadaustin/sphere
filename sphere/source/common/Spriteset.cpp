@@ -111,7 +111,7 @@ void bracket(d& dest, s min, s max) {
 
 template<typename T>
 int Find(std::vector<T>& vs, const T& t) {
-  for (int i = 0; i < vs.size(); i++) {
+  for (unsigned i = 0; i < vs.size(); i++) {
     if (vs[i] == t) {
       return i;
     }
@@ -333,12 +333,12 @@ sSpriteset::Save(const char* filename, IFileSystem& fs) const
   file->Write(&header, sizeof(header));
 
   // write the images
-  for (int i = 0; i < m_Images.size(); i++) {
+  for (unsigned i = 0; i < m_Images.size(); i++) {
     file->Write(m_Images[i].GetPixels(), m_FrameWidth * m_FrameHeight * 4);
   }
 
   // write all of the directions
-  for (int i = 0; i < m_Directions.size(); i++) {
+  for (unsigned i = 0; i < m_Directions.size(); i++) {
 
     // write direction header
     word num_frames = m_Directions[i].frames.size();
@@ -352,7 +352,7 @@ sSpriteset::Save(const char* filename, IFileSystem& fs) const
     file->Write(m_Directions[i].name.c_str(), name_length);
 
     // write frames
-    for (int j = 0; j < m_Directions[i].frames.size(); j++) {
+    for (unsigned j = 0; j < m_Directions[i].frames.size(); j++) {
       word index = m_Directions[i].frames[j].index;
       word delay = m_Directions[i].frames[j].delay;
       file->Write(&index, 2);
@@ -552,30 +552,25 @@ sSpriteset::Export_PNG_Compact_Horizontal(const char* filename)
 bool
 sSpriteset::Export_PNG(const char* filename)
 {
-  CImage32 image;
-
   // find the largest number of frames in a direction and use that
-  int maxRowFrames = 0;
-  int maxColFrames = 0;
-  int ImgWidth;
-  int ImgHeight;
+  unsigned maxColFrames = 0;
 
   // calculate the maximum columns and rows
-  maxRowFrames = m_Directions.size();
-  for (int i=0; i<m_Directions.size(); i++)
+  unsigned maxRowFrames = m_Directions.size();
+  for (unsigned i=0; i<m_Directions.size(); i++)
     maxColFrames = (m_Directions[i].frames.size() > maxColFrames ? m_Directions[i].frames.size() : maxColFrames);
-  ImgWidth = (m_FrameWidth * maxColFrames) + (maxColFrames + 1);
-  ImgHeight = (m_FrameHeight * maxRowFrames) + (maxRowFrames + 1);
+  int ImgWidth = (m_FrameWidth * maxColFrames) + (maxColFrames + 1);
+  int ImgHeight = (m_FrameHeight * maxRowFrames) + (maxRowFrames + 1);
 
   // resize to every frame have a pixel padding between them
-  image.Resize(ImgWidth, ImgHeight);
+  CImage32 image(ImgWidth, ImgHeight);
 
   image.Rectangle(0, 0, image.GetWidth(), image.GetHeight(),
                   CreateRGBA(255, 255, 255, 255));
 
   // drop all the frames into the image
-  for (int row=0; row<maxRowFrames; row++)
-    for (int col=0; col<maxColFrames; col++)
+  for (unsigned row=0; row<maxRowFrames; row++)
+    for (unsigned col=0; col<maxColFrames; col++)
       for (int line=0; line<m_FrameHeight; line++)
         // copy offset to: 
         // x: (current col * frame width) + (current col * padding) + 1
@@ -587,33 +582,6 @@ sSpriteset::Export_PNG(const char* filename)
                m_FrameWidth * sizeof(RGBA));
 
   return image.Save(filename);
-/*
-  int i,j,k;
-  int maxRowFrames = 0;
-
-  // find the maximum rows frames to establish the width of the image
-  for (j=0; j<m_Directions.size(); j++)
-    if (GetNumFrames(j) > maxRowFrames)
-      maxRowFrames = GetNumFrames(j);
-
-  CImage32 image(maxRowFrames * m_FrameWidth + (1 * maxRowFrames) + 1,
-                 m_Directions.size() * m_FrameHeight + (1 * m_Directions.size()) + 1);
-
-  image.Rectangle(0, 0, 
-                  maxRowFrames * m_FrameWidth + (1 * maxRowFrames),
-                  m_Directions.size() * m_FrameHeight + (1 * m_Directions.size()),
-                  CreateRGBA(255, 255, 255, 255));
-
-  // grabs the data in a gigantic loops 'o doom...
-  for (j=0; j<m_Directions.size(); j++)
-    for (i=0; i<GetNumFrames(j); i++)
-      for (k=0; k<m_FrameHeight; k++)
-        memcpy(image.GetPixels() + (((j*m_FrameHeight) + 1) * image.GetWidth()) + (i*m_FrameWidth) + (i*1) + (j*image.GetWidth()) + (k*image.GetWidth()) + 1,
-               m_Directions[j].frames[i]->GetPixels() + (k*m_FrameWidth),
-               m_FrameWidth*sizeof(RGBA));
-
-  return image.Save(filename);
-*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -678,7 +646,7 @@ sSpriteset::GetFrameHeight() const
 void
 sSpriteset::ResizeFrames(int width, int height)
 {
-  for (int i = 0; i < m_Images.size(); i++) {
+  for (unsigned i = 0; i < m_Images.size(); i++) {
     m_Images[i].Resize(width, height);
   }
 
@@ -806,7 +774,7 @@ sSpriteset::GetNumFrames(std::string direction) const
   // prevent the engine from going dinky if it don't find the name ;)
   int d = 0;
 
-  for (int i = 0; i < m_Directions.size(); i++)
+  for (unsigned i = 0; i < m_Directions.size(); i++)
     if (strcmp_ci(direction.c_str(), m_Directions[i].name.c_str()) == 0)
     {
       d = i;
@@ -826,7 +794,7 @@ sSpriteset::GetFrameIndex(std::string direction, int frame) const
   // prevent the engine from going dinky if it don't find the name ;)
   int d = 0;
 
-  for (int i = 0; i < m_Directions.size(); i++)
+  for (unsigned i = 0; i < m_Directions.size(); i++)
     if (strcmp_ci(direction.c_str(), m_Directions[i].name.c_str()) == 0)
     {
       d = i;
@@ -846,7 +814,7 @@ sSpriteset::GetFrameDelay(std::string direction, int frame) const
   // prevent the engine from going dinky if it don't find the name ;)
   int d = 0;
 
-  for (int i = 0; i < m_Directions.size(); i++)
+  for (unsigned i = 0; i < m_Directions.size(); i++)
     if (strcmp_ci(direction.c_str(), m_Directions[i].name.c_str()) == 0)
     {
       d = i;
@@ -895,7 +863,7 @@ sSpriteset::GetDirectionNum(std::string direction) const
   // tell engine to shove itself with a broomstick if it can't find it.
   int d = -1;
 
-  for (int i = 0; i < m_Directions.size(); i++)
+  for (unsigned i = 0; i < m_Directions.size(); i++)
     if (strcmp_ci(direction.c_str(), m_Directions[i].name.c_str()) == 0)
     {
       d = i;
@@ -1104,8 +1072,8 @@ sSpriteset::Import_CHR2V2(FILE* file, RGB palette[256])
   CImage32 frame(m_FrameWidth, m_FrameHeight);
   RGBA* frames;
   frames = new RGBA[m_FrameWidth * m_FrameHeight * header.num_frames];
-  int i=0;
-  int count=0;
+  dword i=0;
+  dword count=0;
   dword file_size;
 
   // grab all the image data that's in one big lump :<...
@@ -1171,7 +1139,7 @@ sSpriteset::Import_CHR2V2(FILE* file, RGB palette[256])
     walkcode = new char[codelength];
     fread(walkcode, 1, codelength, file);
 
-    for (i=0; i<(int)codelength;)
+    for (i=0; i<codelength;)
       if (walkcode[i] == 'F' || walkcode[i] == 'W')
       {
         char command;
@@ -1179,8 +1147,8 @@ sSpriteset::Import_CHR2V2(FILE* file, RGB palette[256])
         command = walkcode[i++];
         int token_i=0;
 
-        while (i < (int)codelength && walkcode[i] == ' ') i++;
-        while (i < (int)codelength && walkcode[i] >= 48 && walkcode[i] <= 57) {
+        while (i < codelength && walkcode[i] == ' ') i++;
+        while (i < codelength && walkcode[i] >= 48 && walkcode[i] <= 57) {
           token[token_i++] = walkcode[i++];
         }
         token[token_i] = 0;
@@ -1197,7 +1165,7 @@ sSpriteset::Import_CHR2V2(FILE* file, RGB palette[256])
   // push the frames in
   for (count=0; count<8; count++)
   {
-    int di;
+    int di = 0;
     Direction direction;
 
     switch(count)
@@ -1504,8 +1472,8 @@ sSpriteset::Import_CHR2V4(FILE* file, RGB palette[256])
   // stores our translated commands and values, left right up down
   std::vector<int> walk_type[4];
   std::vector<int> walk_index[4];
-  int i;
-  int count;
+  dword i = 0;
+  dword count;
 
   // whack in the idle frames as the first image
   walk_index[0].push_back(header.idle_frame_left);
@@ -1530,7 +1498,7 @@ sSpriteset::Import_CHR2V4(FILE* file, RGB palette[256])
     walkcode = new char[codelength];
     fread(walkcode, 1, codelength, file);
 
-    for (i=0; i<(int)codelength;)
+    for (i=0; i<codelength;)
       if (walkcode[i] == 'F' || walkcode[i] == 'W')
       {
         char command;
@@ -1538,8 +1506,8 @@ sSpriteset::Import_CHR2V4(FILE* file, RGB palette[256])
         command = walkcode[i++];
         int token_i=0;
 
-        while (i < (int)codelength && walkcode[i] == ' ') i++;
-        while (i < (int)codelength && walkcode[i] >= 48 && walkcode[i] <= 57) {
+        while (i < codelength && walkcode[i] == ' ') i++;
+        while (i < codelength && walkcode[i] >= 48 && walkcode[i] <= 57) {
           token[token_i++] = walkcode[i++];
         }
         token[token_i] = 0;
@@ -1556,7 +1524,7 @@ sSpriteset::Import_CHR2V4(FILE* file, RGB palette[256])
     // push the frames in
   for (count=0; count<8; count++)
   {
-    int di;
+    int di = 0;
     Direction direction;
 
     switch(count)

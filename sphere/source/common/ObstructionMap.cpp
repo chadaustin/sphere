@@ -50,7 +50,7 @@ sObstructionMap::TestSegment(int x1, int y1, int x2, int y2) const
 {
   Segment s = { x1, y1, x2, y2 };
 
-  for (int i = 0; i < m_Segments.size(); i++) {
+  for (unsigned i = 0; i < m_Segments.size(); i++) {
     if (TestSegments(s, m_Segments[i])) {
       return true;
     }    
@@ -177,7 +177,7 @@ sObstructionMap::FindSegmentByPoint(int x, int y)
   // find minimum distance
   double distance = DistanceToSegment(x, y, 0);
   int point = 0;
-  for (int i = 1; i < m_Segments.size(); i++) {
+  for (unsigned i = 1; i < m_Segments.size(); i++) {
     double new_distance = DistanceToSegment(x, y, i);
     if (new_distance < distance) {
       distance = new_distance;

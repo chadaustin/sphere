@@ -18,6 +18,8 @@ class CMapEngine;
 
 struct IEngine
 {
+  virtual ~IEngine() { }
+
   // types
   typedef void* script;
 

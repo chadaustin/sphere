@@ -163,14 +163,14 @@ void _2xSaIBitmap(int bit_depth, word* src, int src_width, int src_height, word*
 	{
 	  //bP = (uint16*)srcPtr + src_width;
 	  dP = (uint32*)dstPtr;
-    int finish = src_width;
+//    int finish = src_width;
     while (src_width--)
     {
       register uint32 colorA, colorB;
-      uint32 colorC, colorD,
-             colorE, colorF, colorG, colorH,
-             colorI, colorJ, colorK, colorL,
-             colorM, colorN, colorO, colorP;
+      uint32 colorC = 0, colorD = 0,
+             colorE = 0, colorF = 0, colorG = 0, colorH = 0,
+             colorI = 0, colorJ = 0, colorK = 0, colorL = 0,
+             colorM = 0, colorN = 0, colorO = 0, colorP = 0;
       uint32 product, product1, product2;
 
 

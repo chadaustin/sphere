@@ -101,14 +101,6 @@ CFLICAnimation::Load(const char* filename, IFileSystem& fs)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void
-CFLICAnimation::Destroy()
-{
-  delete this;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 int
 CFLICAnimation::GetWidth()
 {
@@ -212,7 +204,7 @@ CFLICAnimation::ReadFrame()
   for (int i = 0; i < FrameHeader.chunks; i++)
   {
     // read chunk header
-    dword size = next_dword();
+    /*dword size =*/ next_dword();
     word type  = next_word();
 
     switch (type)

@@ -96,7 +96,7 @@ void DrawResults(SFONT& font, int current)
 
   // do some precalculations
   int font_height = font.GetMaxHeight();
-  int ellipses_width = font.GetStringWidth("... ");
+//  int ellipses_width = font.GetStringWidth("... ");
 
   // find out how many rows to draw
   int num_results = Local::min(s_NumTests, current + 1);
@@ -254,7 +254,7 @@ int test_TransformBlit()
   int count = 0;
   dword start = GetTime();
   while (start + TIME_PER_TEST > GetTime()) {
-    int offset = count & 31;  // bottom four bits
+//    int offset = count & 31;  // bottom four bits
     int x[4] = { count, count + 16, 24,  8 };
     int y[4] = { 0, 0, 16, 16 };
     TransformBlitImage(image, x, y);
@@ -303,7 +303,7 @@ int test_DirectTransformBlit()
   int count = 0;
   dword start = GetTime();
   while (start + TIME_PER_TEST > GetTime()) {
-    int offset = count & 31;  // bottom four bits
+//    int offset = count & 31;  // bottom four bits
     int x[4] = { count, count + 16, 24,  8 };
     int y[4] = { 0, 0, 16, 16 };
     DirectTransformBlit(x, y, 16, 16, pixels);

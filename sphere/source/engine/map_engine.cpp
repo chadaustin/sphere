@@ -36,9 +36,11 @@ CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
 , m_Music(NULL)
 
 , m_IsInputAttached(false)
-, m_IsCameraAttached(false)
+, m_InputPerson(-1)
 , m_TouchActivationAllowed(true)
 , m_TalkActivationAllowed(true)
+, m_IsCameraAttached(false)
+, m_CameraPerson(-1)
 
 , m_NorthScript(NULL)
 , m_EastScript(NULL)
@@ -146,7 +148,7 @@ CMapEngine::ChangeMap(const char* filename)
     }
 
     // clear all entity queues
-    for (int i = 0; i < m_Persons.size(); ++i) {
+    for (unsigned int i = 0; i < m_Persons.size(); ++i) {
       m_Persons[i].commands.clear();
     }
 
@@ -660,7 +662,7 @@ CMapEngine::SetLayerRenderer(int layer, const char* script)
   }
 
   // make sure layer is valid
-  if (layer < 0 || layer >= m_LayerRenderers.size()) {
+  if (layer < 0 || layer >= int(m_LayerRenderers.size())) {
     m_ErrorMessage = "Invalid layer value";
     return false;
   }
@@ -923,7 +925,7 @@ bool
 CMapEngine::GetPersonList(std::vector<std::string>& list)
 {
   list.resize(m_Persons.size());
-  for (int i = 0; i < m_Persons.size(); i++) {
+  for (unsigned i = 0; i < m_Persons.size(); i++) {
     list[i] = m_Persons[i].name;
   }
   return true;
@@ -994,7 +996,7 @@ bool
 CMapEngine::DestroyPerson(const char* name)
 {
   // make sure the person entity exists
-  for (int i = 0; i < m_Persons.size(); i++) {
+  for (int i = 0; i < int(m_Persons.size()); i++) {
     if (m_Persons[i].name == name) {
 
       // detach input if necessary
@@ -1012,7 +1014,7 @@ CMapEngine::DestroyPerson(const char* name)
       }
 
       // update all leader indices
-      for (int j = 0; j < m_Persons.size(); j++) {
+      for (int j = 0; j < int(m_Persons.size()); j++) {
         if (i != j) {
           if (m_Persons[j].leader > i) {
 
@@ -1830,14 +1832,14 @@ CMapEngine::OpenMap(const char* filename)
 
   // if a person entity is here, it's not map-specific
   // so put it in the starting position!
-  for (int i = 0; i < m_Persons.size(); i++) {
+  for (unsigned i = 0; i < m_Persons.size(); i++) {
     m_Persons[i].x     = m_Map.GetMap().GetStartX(); 
     m_Persons[i].y     = m_Map.GetMap().GetStartY();
     m_Persons[i].layer = m_Map.GetMap().GetStartLayer();
 
     // update follow queues
     if (m_Persons[i].leader != -1) {
-      for (int j = 0; j < m_Persons[i].follow_state_queue.size(); j++) {
+      for (unsigned j = 0; j < m_Persons[i].follow_state_queue.size(); j++) {
         m_Persons[i].follow_state_queue[j].x         = m_Persons[i].x;
         m_Persons[i].follow_state_queue[j].y         = m_Persons[i].y;
         m_Persons[i].follow_state_queue[j].layer     = m_Persons[i].layer;
@@ -1874,7 +1876,7 @@ CMapEngine::OpenMap(const char* filename)
 
   // initialize the layer script array
   m_LayerRenderers.resize(m_Map.GetMap().GetNumLayers());
-  for (int i = 0; i < m_LayerRenderers.size(); i++) {
+  for (unsigned i = 0; i < m_LayerRenderers.size(); i++) {
     m_LayerRenderers[i] = NULL;
   }
 
@@ -1915,13 +1917,13 @@ CMapEngine::CloseMap()
   DestroyZones();
 
   // destroy any remaining delay scripts
-  for (int i = 0; i < m_DelayScripts.size(); i++) {
+  for (unsigned i = 0; i < m_DelayScripts.size(); i++) {
     m_Engine->DestroyScript(m_DelayScripts[i].script);
   }
   m_DelayScripts.clear();
 
   // destroy layer scripts
-  for (int i = 0; i < m_LayerRenderers.size(); i++) {
+  for (unsigned i = 0; i < m_LayerRenderers.size(); i++) {
     if (m_LayerRenderers[i]) {
       m_Engine->DestroyScript(m_LayerRenderers[i]);
     }
@@ -2246,7 +2248,7 @@ bool
 CMapEngine::DestroyMapPersons()
 {
   // destroy map person entities
-  for (int i = 0; i < m_Persons.size(); i++) {
+  for (int i = 0; i < int(m_Persons.size()); i++) {
 
     if (m_Persons[i].destroy_with_map) {
 
@@ -2265,7 +2267,7 @@ CMapEngine::DestroyMapPersons()
       }
 
       // update all leader indices
-      for (int j = 0; j < m_Persons.size(); j++) {
+      for (int j = 0; j < int(m_Persons.size()); j++) {
         if (i != j) {
           if (m_Persons[j].leader > i) {
 
@@ -2366,7 +2368,7 @@ CMapEngine::LoadTriggers()
 
       if (t.script == NULL) {
         // destroy scripts that have been created so far
-        for (int j = 0; j < m_Triggers.size(); j++) {
+        for (unsigned j = 0; j < m_Triggers.size(); j++) {
           m_Engine->DestroyScript(m_Triggers[i].script);
         }
 
@@ -2394,7 +2396,7 @@ void
 CMapEngine::DestroyTriggers()
 {
   // destroy trigger scripts
-  for (int i = 0; i < m_Triggers.size(); i++) {
+  for (unsigned i = 0; i < m_Triggers.size(); i++) {
     m_Engine->DestroyScript(m_Triggers[i].script);
   }
   m_Triggers.clear();
@@ -2421,7 +2423,7 @@ CMapEngine::LoadZones()
     z.script = m_Engine->CompileScript(zone.script.c_str(), error);
     if (z.script == NULL) {
       // destroy scripts that have been created so far
-      for (int j = 0; j < m_Zones.size(); j++) {
+      for (unsigned j = 0; j < m_Zones.size(); j++) {
         m_Engine->DestroyScript(m_Zones[i].script);
       }
 
@@ -2451,7 +2453,7 @@ CMapEngine::LoadZones()
 void
 CMapEngine::DestroyZones()
 {
-  for (int i = 0; i < m_Zones.size(); i++) {
+  for (unsigned i = 0; i < m_Zones.size(); i++) {
     m_Engine->DestroyScript(m_Zones[i].script);
   }
   m_Zones.clear();
@@ -2462,8 +2464,8 @@ CMapEngine::DestroyZones()
 bool
 CMapEngine::Render()
 {
-  const int cx = GetScreenWidth()  / 2;
-  const int cy = GetScreenHeight() / 2;
+//  const int cx = GetScreenWidth()  / 2;
+//  const int cy = GetScreenHeight() / 2;
 
   // for doing camera correction (with sprites and doodads and whatnot)
   int offset_x;
@@ -2537,7 +2539,7 @@ CMapEngine::RenderEntities(int layer, bool flipped, int offset_x, int offset_y)
   CRenderSort rs;
 
   // add non-map-specific person entities
-  for (int i = 0; i < m_Persons.size(); i++) {
+  for (unsigned i = 0; i < m_Persons.size(); i++) {
     if (m_Persons[i].layer == layer) {
 
       Person& p = m_Persons[i];
@@ -2635,7 +2637,7 @@ CMapEngine::UpdatePersons()
   bool anything_activated = false;
 
   // for each person...
-  for (int i = 0; i < m_Persons.size(); i++) {
+  for (unsigned i = 0; i < m_Persons.size(); i++) {
     bool activated;
     if (!UpdatePerson(i, activated)) {
       return false;
@@ -2824,7 +2826,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     }
 
     // followers
-    for (int j = 0; j < m_Persons.size(); j++) {
+    for (int j = 0; j < int(m_Persons.size()); j++) {
       if (person_index != j) {
         if (m_Persons[j].leader == person_index) {  // if the current entity is a leader...
           UpdateFollower(j);
@@ -2980,7 +2982,7 @@ CMapEngine::UpdateFollower(int person_index)
   }
 
   // now update any followers of this one
-  for (int i = 0; i < m_Persons.size(); i++) {
+  for (int i = 0; i < int(m_Persons.size()); i++) {
     if (i != person_index) {
       if (m_Persons[i].leader == person_index) {
         UpdateFollower(i);
@@ -3006,13 +3008,13 @@ CMapEngine::UpdateTriggers()
   int location_y = int(m_Persons[m_InputPerson].y);
   int location_l = m_Persons[m_InputPerson].layer;
 
-  sMap& map = m_Map.GetMap();
-  const int tile_width  = m_Map.GetMap().GetTileset().GetTileWidth();
-  const int tile_height = m_Map.GetMap().GetTileset().GetTileHeight();
+  sTileset& tileset = m_Map.GetMap().GetTileset();
+  const int tile_width  = tileset.GetTileWidth();
+  const int tile_height = tileset.GetTileHeight();
 
   // check to see which trigger we're on
   int trigger = -1;
-  for (int i = 0; i < m_Triggers.size(); i++) {
+  for (unsigned i = 0; i < m_Triggers.size(); i++) {
     if (abs(m_Triggers[i].x - location_x) < tile_width  / 2 &&
         abs(m_Triggers[i].y - location_y) < tile_height / 2 &&
         m_Triggers[i].layer == location_l) {
@@ -3069,7 +3071,7 @@ CMapEngine::UpdateZones()
   int location_y = int(m_Persons[m_InputPerson].y);
   int location_l = m_Persons[m_InputPerson].layer;
 
-  for (int i = 0; i < m_Zones.size(); i++) {
+  for (unsigned i = 0; i < m_Zones.size(); i++) {
     Zone& z = m_Zones[i];
 
 
@@ -3140,7 +3142,7 @@ bool
 CMapEngine::UpdateDelayScripts()
 {
   // update delay scripts
-  for (int i = 0; i < m_DelayScripts.size(); i++) {
+  for (unsigned i = 0; i < m_DelayScripts.size(); i++) {
     if (--m_DelayScripts[i].frames_left < 0) {
 
       IEngine::script script = m_DelayScripts[i].script;
@@ -3405,7 +3407,7 @@ CMapEngine::ResetNextFrame()
 int
 CMapEngine::FindPerson(const char* name)
 {
-  for (int i = 0; i < m_Persons.size(); i++) {
+  for (unsigned i = 0; i < m_Persons.size(); i++) {
     if (m_Persons[i].name == name) {
       return i;
     }
@@ -3421,7 +3423,7 @@ CMapEngine::IsObstructed(int person, int x, int y, int& obs_person)
 {
   // get useful elements
   const Person& p = m_Persons[person];
-  const sSpriteset& s = p.spriteset->GetSpriteset();
+//  const sSpriteset& s = p.spriteset->GetSpriteset();
   const sObstructionMap& obs_map = m_Map.GetMap().GetLayer(p.layer).GetObstructionMap();
   const int tile_width  = m_Map.GetMap().GetTileset().GetTileWidth();
   const int tile_height = m_Map.GetMap().GetTileset().GetTileHeight();
@@ -3479,7 +3481,7 @@ CMapEngine::IsObstructed(int person, int x, int y, int& obs_person)
 
 
   // check obstructions against other entities
-  for (int i = 0; i < m_Persons.size(); i++) {
+  for (int i = 0; i < int(m_Persons.size()); i++) {
 
     // don't check current person
     if (i == person) {

@@ -37,7 +37,7 @@ CRenderSort::DrawObjects()
   );
 
   // draw images to screen
-  for (int i = 0; i < m_objects.size(); i++) {
+  for (unsigned i = 0; i < m_objects.size(); i++) {
     Object& o = m_objects[i];
 
     int x[4];

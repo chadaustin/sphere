@@ -54,11 +54,11 @@ def ParseConfig(env, command, options):
         
 def SetupAudiere(env):
     RequireList(env, 'LIBS')
-    env['LIBS'].extend(['audiere', 'vorbisfile', 'vorbis', 'ogg'])
+    env['LIBS'].extend(['audiere'])
 
 def SetupCorona(env):
     RequireList(env, 'LIBS')
-    env['LIBS'].extend(['corona', 'png', 'z', 'jpeg'])
+    env['LIBS'].extend(['corona'])
 
 def SetupGL(env):
     RequireList(env, 'LIBS')
@@ -90,14 +90,18 @@ base_env = Environment(ENV = os.environ)
 if sys.platform == 'cygwin':
     base_env['SHLIBPREFIX'] = ''
     base_env['SHLIBSUFFIX'] = '.dll'
+    base_env['SHCCFLAGS']   = ['$CCFLAGS']
+    base_env['SHCXXFLAGS']  = ['$CXXFLAGS']
+    base_env['LINKFLAGS']   = ['-mno-cygwin', '-s']
+    base_env['SHLINKFLAGS'] = [
+        '-shared', '-Wl,--enable-stdcall-fixup', '$LINKFLAGS']
     base_env.Append(
         _RESINCFLAGS = '$( ${_concat("--include-dir ", RESPATH, "", locals(), globals())} $)',
         CCFLAGS = ['-DWIN32', '-D_WIN32', '-DCYGWIN', '-DXP_PC',
-                   '-mno-cygwin'],
+                   '-mno-cygwin', '-O2', '-Wall', '-Wno-non-virtual-dtor'],
         CPPPATH = [Dir('third-party/include')],
         RESPATH = [Dir('third-party/include')],
-        LIBPATH = [Dir('third-party/lib')],
-        LINKFLAGS = ['-mno-cygwin', '-s'])
+        LIBPATH = [Dir('third-party/lib')])
     base_env['BUILDERS']['Resource'] = Builder(
         action = 'windres -O coff --define CYGWIN $_RESINCFLAGS $SOURCE -o $TARGET')
 

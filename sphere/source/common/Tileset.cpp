@@ -297,7 +297,7 @@ sTileset::Import_TST(const char* filename, IFileSystem& fs)
   m_Tiles.resize(numtiles);
 
   // read them from file
-  for (int i = 0; i < m_Tiles.size(); i++)
+  for (unsigned i = 0; i < m_Tiles.size(); i++)
   {
     sTile& tile = m_Tiles[i];
     switch (detail)
@@ -386,7 +386,7 @@ sTileset::LoadFromFile(IFile* file)
   m_Tiles.resize(header.num_tiles);
 
   // load the tiles
-  for (int i = 0; i < m_Tiles.size(); i++)
+  for (unsigned i = 0; i < m_Tiles.size(); i++)
   {
     RGBA* pixels = new RGBA[m_TileWidth * m_TileHeight];
     file->Read(pixels, sizeof(RGBA) * m_TileWidth * m_TileHeight);
@@ -396,7 +396,7 @@ sTileset::LoadFromFile(IFile* file)
   }
 
   // load the tile info blocks
-  for (int i = 0; i < m_Tiles.size(); i++)
+  for (unsigned i = 0; i < m_Tiles.size(); i++)
   {
     TILE_INFORMATION_BLOCK tib;
     file->Read(&tib, sizeof(tib));
@@ -455,13 +455,13 @@ sTileset::SaveToFile(IFile* file) const
   file->Write(&header, sizeof(header));
 
   // write the tiles
-  for (int i = 0; i < m_Tiles.size(); i++)
+  for (unsigned i = 0; i < m_Tiles.size(); i++)
     file->Write(m_Tiles[i].GetPixels(), sizeof(RGBA) * m_TileWidth * m_TileHeight);
 
   // write the tile information blocks
   TILE_INFORMATION_BLOCK tib;
   memset(&tib, 0, sizeof(tib));
-  for (int i = 0; i < m_Tiles.size(); i++)
+  for (unsigned i = 0; i < m_Tiles.size(); i++)
   {
     const sObstructionMap& obs_map = m_Tiles[i].GetObstructionMap();
 
@@ -531,7 +531,7 @@ sTileset::BuildFromImage(CImage32& i, int tile_width, int tile_height)
 
       // if the tile is not in the tileset already, add it
       bool in_tileset = false;
-      for (int i = 0; i < m_Tiles.size(); i++)
+      for (unsigned i = 0; i < m_Tiles.size(); i++)
         if (memcmp(tile, m_Tiles[i].GetPixels(), tile_width * tile_height * sizeof(RGBA)) == 0)
         {
           in_tileset = true;
@@ -575,11 +575,11 @@ sTileset::SetTileSize(int w, int h, bool rescale)
   m_TileHeight = h;
 
   if (rescale) {
-    for (int i = 0; i < m_Tiles.size(); i++) {
+    for (unsigned i = 0; i < m_Tiles.size(); i++) {
       m_Tiles[i].Rescale(w, h);
     }
   } else {
-    for (int i = 0; i < m_Tiles.size(); i++) {
+    for (unsigned i = 0; i < m_Tiles.size(); i++) {
       m_Tiles[i].Resize(w, h);
     }
   }

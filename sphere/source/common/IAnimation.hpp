@@ -9,7 +9,7 @@
 struct IAnimation
 {
   // destructor
-  virtual void Destroy() = 0;
+  virtual ~IAnimation() { }
 
   virtual int GetWidth() = 0;
   virtual int GetHeight() = 0;

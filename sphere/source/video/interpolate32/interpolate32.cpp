@@ -79,7 +79,7 @@ static CONFIGURATION Configuration;
 static int           BitsPerPixel;
 
 static HWND  SphereWindow;
-static void* ScreenBuffer;
+static byte* ScreenBuffer;
 
 static LONG OldWindowStyle;
 static LONG OldWindowStyleEx;
@@ -1061,7 +1061,7 @@ void NormalBlit(IMAGE image, int x, int y)
 
         if (alpha == 255)
           *dest = src;
-        else if (alpha >= 0)
+        else if (alpha > 0)
         {
           dest->red   = (dest->red   * (256 - alpha) + src.red   * alpha) / 256;
           dest->green = (dest->green * (256 - alpha) + src.green * alpha) / 256;
@@ -1080,7 +1080,7 @@ void NormalBlit(IMAGE image, int x, int y)
 
         if (alpha == 255)
           *dest = src;
-        else if (alpha >= 0)
+        else if (alpha > 0)
         {
           dest->red   = (dest->red   * (256 - alpha) + src.red   * alpha) / 256;
           dest->green = (dest->green * (256 - alpha) + src.green * alpha) / 256;
@@ -1172,7 +1172,7 @@ EXPORT(void, DirectBlit)(int x, int y, int w, int h, RGBA* pixels)
           dest->green = src.green;
           dest->blue  = src.blue;
         }
-        else if (src.alpha >= 0)
+        else if (src.alpha > 0)
         {
           dest->red   = (dest->red   * (256 - src.alpha) + src.red   * src.alpha) / 256;
           dest->green = (dest->green * (256 - src.alpha) + src.green * src.alpha) / 256;
@@ -1194,7 +1194,7 @@ EXPORT(void, DirectBlit)(int x, int y, int w, int h, RGBA* pixels)
           dest->green = src.green;
           dest->blue  = src.blue;
         }
-        else if (src.alpha >= 0)
+        else if (src.alpha > 0)
         {
           dest->red   = (dest->red   * (256 - src.alpha) + src.red   * src.alpha) / 256;
           dest->green = (dest->green * (256 - src.alpha) + src.green * src.alpha) / 256;

@@ -46,7 +46,7 @@ CAnimationWindow::CAnimationWindow(const char* animation)
 CAnimationWindow::~CAnimationWindow()
 {
   delete m_BlitFrame;
-  m_Animation->Destroy();
+  delete m_Animation;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

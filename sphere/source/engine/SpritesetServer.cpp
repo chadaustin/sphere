@@ -11,7 +11,7 @@ CSpritesetServer::CSpritesetServer()
 
 CSpritesetServer::~CSpritesetServer()
 {
-  for (int i = 0; i < m_Spritesets.size(); i++)
+  for (unsigned i = 0; i < m_Spritesets.size(); i++)
     m_Spritesets[i].spriteset->Release();
 }
 
@@ -20,8 +20,8 @@ CSpritesetServer::~CSpritesetServer()
 SSPRITESET*
 CSpritesetServer::Load(const char* filename, IFileSystem& fs)
 {
-  // if a script is already loaded...
-  for (int i = 0; i < m_Spritesets.size(); i++)
+  // if a spriteset is already loaded...
+  for (unsigned i = 0; i < m_Spritesets.size(); i++)
     if (filename == m_Spritesets[i].name)
     {
       m_Spritesets[i].refcount++;
@@ -50,8 +50,8 @@ CSpritesetServer::Load(const char* filename, IFileSystem& fs)
 void
 CSpritesetServer::Free(SSPRITESET* spriteset)
 {
-  // find the script
-  for (int i = 0; i < m_Spritesets.size(); i++)
+  // find the spriteset
+  for (unsigned i = 0; i < m_Spritesets.size(); i++)
     if (spriteset == m_Spritesets[i].spriteset)
       if (--m_Spritesets[i].refcount == 0)
       {

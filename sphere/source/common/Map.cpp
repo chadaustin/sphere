@@ -245,7 +245,7 @@ sMap::Load(const char* filename, IFileSystem& fs)
 
     // load the obstruction map
 
-    for (int j = 0; j < lh.num_segments; j++) {
+    for (unsigned j = 0; j < lh.num_segments; j++) {
 
       dword x1; file->Read(&x1, sizeof(dword));
       dword y1; file->Read(&y1, sizeof(dword));
@@ -440,7 +440,7 @@ sMap::Save(const char* filename, IFileSystem& fs)
   WriteMapString(file, m_EdgeScripts[3].c_str());
  
   // write layers
-  for (int i = 0; i < m_Layers.size(); i++)
+  for (unsigned i = 0; i < m_Layers.size(); i++)
   {
     const sLayer& layer = m_Layers[i];
     const sObstructionMap& obstructions = layer.GetObstructionMap();
@@ -488,7 +488,7 @@ sMap::Save(const char* filename, IFileSystem& fs)
   } // end for layer
 
   // write entities
-  for (int i = 0; i < m_Entities.size(); i++)
+  for (unsigned i = 0; i < m_Entities.size(); i++)
   {
     // write the header
     ENTITY_HEADER eh;
@@ -500,6 +500,7 @@ sMap::Save(const char* filename, IFileSystem& fs)
     {
       case sEntity::PERSON:  eh.type = 1; break;
       case sEntity::TRIGGER: eh.type = 2; break;
+      default: break; // prevent a gcc warning (unhandled enum)
     }
     file->Write(&eh, sizeof(eh));
 
@@ -537,11 +538,14 @@ sMap::Save(const char* filename, IFileSystem& fs)
         break;
       }
 
+      default:  // fix gcc3 "unhandled enum" warning
+        break;
+
     } // end switch entity type
   } // end for entity
 
   // write the zones
-  for (int i = 0; i < m_Zones.size(); i++)
+  for (unsigned i = 0; i < m_Zones.size(); i++)
   {
     ZONE_HEADER zh;
 
@@ -652,7 +656,7 @@ sMap::PruneTileset(std::set<int>* allowed_tiles)
   for (int it = 0; it < m_Tileset.GetNumTiles(); it++) {
     
     bool in_use = false;
-    for (int il = 0; il < m_Layers.size(); il++) {
+    for (unsigned il = 0; il < m_Layers.size(); il++) {
       for (int iy = 0; iy < m_Layers[il].GetHeight(); iy++) {
         for (int ix = 0; ix < m_Layers[il].GetWidth(); ix++) {
           if (m_Layers[il].GetTile(ix, iy) == it) {
@@ -669,7 +673,7 @@ done:
       m_Tileset.DeleteTiles(it, 1);
 
       // now update all of the layers
-      for (int il = 0; il < m_Layers.size(); il++) {
+      for (unsigned il = 0; il < m_Layers.size(); il++) {
         for (int iy = 0; iy < m_Layers[il].GetHeight(); iy++) {
           for (int ix = 0; ix < m_Layers[il].GetWidth(); ix++) {
         
@@ -693,7 +697,7 @@ done:
 
 void
 sMap::ValidateTileIndices() {
-  for (int l = 0; l < m_Layers.size(); ++l) {
+  for (unsigned l = 0; l < m_Layers.size(); ++l) {
     sLayer& layer = m_Layers[l];
     for (int y = 0; y < layer.GetHeight(); ++y) {
       for (int x = 0; x < layer.GetWidth(); ++x) {
@@ -1263,7 +1267,7 @@ sMap::DeleteEntity(int index)
 int
 sMap::FindEntity(int x, int y, int layer)
 {
-  for (int i = 0; i < m_Entities.size(); i++)
+  for (unsigned i = 0; i < m_Entities.size(); i++)
     if (m_Entities[i]->x == x &&
         m_Entities[i]->y == y &&
         m_Entities[i]->layer == layer)
@@ -1298,7 +1302,7 @@ sMap::DeleteZone(int index)
 int
 sMap::FindZone(int x, int y, int layer)
 {
-  for (int i = 0; i < m_Zones.size(); i++)
+  for (unsigned i = 0; i < m_Zones.size(); i++)
     if (x >= m_Zones[i].x1 &&
         y >= m_Zones[i].y1 &&
         x <= m_Zones[i].x2 &&

@@ -42,7 +42,6 @@ static BOOL CALLBACK ConfigureDialogProc(HWND window, UINT message, WPARAM wpara
 static bool LoadPalette();
 static void FillLUTs();
 static bool InitFullscreen();
-static bool SetDisplayMode();
 static bool CreateSurfaces();
 static bool InitWindowed();
 
@@ -177,7 +176,7 @@ BOOL CALLBACK ConfigureDialogProc(HWND window, UINT message, WPARAM wparam, LPAR
       SendDlgItemMessage(window, IDC_PALETTE, CB_DIR, 0, (LPARAM)path);
 
       // now select the current palette
-      SendDlgItemMessage(window, IDC_PALETTE, CB_SELECTSTRING, -1, (LPARAM)Configuration.palette_file);
+      SendDlgItemMessage(window, IDC_PALETTE, CB_SELECTSTRING, (WPARAM)-1, (LPARAM)Configuration.palette_file);
 
       CheckDlgButton(window, IDC_FULLSCREEN,  Configuration.fullscreen ? BST_CHECKED : BST_UNCHECKED);
       CheckDlgButton(window, IDC_VSYNC,       Configuration.vsync      ? BST_CHECKED : BST_UNCHECKED);
@@ -316,7 +315,7 @@ void FillLUTs()
 {
   // square root look-up table
   short sqr_root[3 * 256 * 256];
-  for (int i = 0; i < sizeof(sqr_root) / sizeof(*sqr_root); i++) {
+  for (unsigned i = 0; i < sizeof(sqr_root) / sizeof(*sqr_root); i++) {
     sqr_root[i] = (short)sqrt(i);
   }
 
@@ -329,7 +328,7 @@ void FillLUTs()
 
         // find out which entry in the palette most closely resembles this color
         int distance = INT_MAX;
-        int index;
+        int index = 0;
         for (int i = 0; i < 256; i++) {
           int new_distance = sqr_root[
             sqr(r * step - Palette[i].red) +
@@ -953,7 +952,7 @@ void NormalBlit(IMAGE image, int x, int y)
 
       if (alpha == 255)
         *dest = src;
-      else if (alpha >= 0)
+      else if (alpha > 0)
         *dest = blend(*dest, src, alpha);
     }
 }

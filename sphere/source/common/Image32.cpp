@@ -291,7 +291,7 @@ CImage32::ApplyColorFX4(int x1, int y1, int w, int h, const CColorMatrix &c1, co
   int x2, y2;
   RGBA pixel;
   RGBA pixeld;
-  CColorMatrix c, ca, cb;
+  CColorMatrix ca, cb;
   int i1, i2, i3;
 
   if(x1 < 0) {

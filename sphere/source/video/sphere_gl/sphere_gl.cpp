@@ -344,7 +344,7 @@ EXPORT(bool, InitVideoDriver)(HWND window, int screen_width, int screen_height)
         wglSwapIntervalEXT    = (BOOL (__stdcall*)(int))wglGetProcAddress("wglSwapIntervalEXT");
         wglGetSwapIntervalEXT = (int (__stdcall*)())wglGetProcAddress("wglGetSwapIntervalEXT");
         if (DriverConfig.fullscreen && DriverConfig.vsync) {
-            BOOL b = wglSwapIntervalEXT(1);
+            wglSwapIntervalEXT(1);
         } else {
             wglSwapIntervalEXT(0);
         }

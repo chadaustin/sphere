@@ -644,8 +644,6 @@ void TexturedQuad(
   }
   
   // perform clipping in the y axis
-  int oldMinY = y[top];
-  int oldMaxY = y[bottom];
   int minY = bracket<int>(y[top],    clipper.top, clipper.bottom);
   int maxY = bracket<int>(y[bottom], clipper.top, clipper.bottom);
 

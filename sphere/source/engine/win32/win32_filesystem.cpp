@@ -108,7 +108,7 @@ void EndDirectoryList(DIRECTORYLIST dl)
 
 bool DirectoryListDone(DIRECTORYLIST dl)
 {
-  return (dl->currentdirectory >= dl->directories.size());
+  return (dl->currentdirectory >= int(dl->directories.size()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -160,7 +160,7 @@ void EndFileList(FILELIST fl)
 
 bool FileListDone(FILELIST fl)
 {
-  return !(fl->current_file < fl->files.size());
+  return !(fl->current_file < int(fl->files.size()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -248,7 +248,7 @@ void FlipScreen()
   if (FPSFont && FPSDisplayed) {
 
     // update FPS
-    if (GetTime() > LastUpdate + 1000) {
+    if (GetTime() > dword(LastUpdate + 1000)) {
       FPS = CurrentFrames;
       CurrentFrames = 0;
       LastUpdate = GetTime();

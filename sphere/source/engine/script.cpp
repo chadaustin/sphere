@@ -505,7 +505,7 @@ CScript::InitializeSphereConstants()
 
 
   // define the constants
-  for (int i = 0; i < sizeof(constants) / sizeof(*constants); i++) {
+  for (unsigned i = 0; i < sizeof(constants) / sizeof(*constants); i++) {
     JS_DefineProperty(
       m_Context,
       m_Global,
@@ -580,6 +580,10 @@ CScript::BranchCallback(JSContext* cx, JSScript* script)
 ////////////////////////////////////////////////////////////////////////////////
 
 
+template<typename T>
+inline void USED(T /*t*/) { }
+
+
 // system function definition macros and inline functions
 
 #define begin_func(name, minargs)                                                                      \
@@ -590,7 +594,8 @@ CScript::BranchCallback(JSContext* cx, JSScript* script)
       *rval = JSVAL_NULL;                                                                              \
       return JS_FALSE;                                                                                 \
     }                                                                                                  \
-    int arg = 0;
+    int arg = 0;                                                                                       \
+    USED(arg);
 
 #define end_func()  \
     return (This->m_ShouldExit ? JS_FALSE : JS_TRUE); \
@@ -1858,7 +1863,7 @@ begin_func(GetPersonList, 0)
 
   // create an array of JS strings with which to initialize the array
   jsval* valarray = new jsval[names.size()];
-  for (int i = 0; i < names.size(); i++) {
+  for (unsigned i = 0; i < names.size(); i++) {
     valarray[i] = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, names[i].c_str()));
   }
 
@@ -2643,7 +2648,7 @@ begin_func(GetFileList, 0)
 
   // convert it to an array of jsvals
   jsval* js_vs = new jsval[vs.size()];
-  for (int i = 0; i < vs.size(); i++) {
+  for (unsigned i = 0; i < vs.size(); i++) {
     js_vs[i] = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, vs[i].c_str()));
   }
 
@@ -2693,6 +2698,7 @@ end_func()
   void CScript::name(JSContext* cx, JSObject* obj)      \
   {                                                     \
     CScript* This = (CScript*)JS_GetContextPrivate(cx); \
+    USED(This);                                         \
     Object* object = (Object*)JS_GetPrivate(cx, obj);   \
     if (!object) {                                      \
       return;                                           \
@@ -2707,6 +2713,7 @@ end_func()
   JSBool CScript::name(JSContext* cx, JSObject* obj, jsval id, jsval* vp) \
   {                                                                       \
     CScript* This = (CScript*)JS_GetContextPrivate(cx);                   \
+    USED(This);                                                           \
     Object* object = (Object*)JS_GetPrivate(cx, obj);
 
 #define end_property()                                \
@@ -2716,6 +2723,7 @@ end_func()
 #define begin_method(Object, name, minargs)                                                            \
   JSBool CScript::name(JSContext* cx, JSObject* obj, uintN argc, jsval* argv, jsval* rval) {           \
     CScript* This = (CScript*)JS_GetContextPrivate(cx);                                                \
+    USED(This);                                                                                        \
     Object* object = (Object*)JS_GetPrivate(cx, obj);                                                  \
     if (object == NULL || object->magic != Object##_MAGIC) {                /* invalid object */       \
       JS_ReportError(cx, "%s called on invalid object", #name, #minargs);                              \
@@ -2725,7 +2733,8 @@ end_func()
       JS_ReportError(cx, "%s called with less than %s parameters", #name, #minargs);                   \
       return JS_FALSE;                                                                                 \
     }                                                                                                  \
-    int arg = 0;
+    int arg = 0;                                                                                       \
+    USED(arg);
 
 #define end_method()                                  \
     return (This->m_ShouldExit ? JS_FALSE : JS_TRUE); \
@@ -2963,7 +2972,6 @@ end_property()
 
 begin_property(SS_COLOR, ssColorSetProperty)
   int prop_id = argInt(cx, id);
-  const char* name = "";
   switch (prop_id) {
     case 0: object->color.red   = argInt(cx, *vp); break;
     case 1: object->color.green = argInt(cx, *vp); break;
@@ -4042,7 +4050,7 @@ CScript::CreateAnimationObject(JSContext* cx, IAnimation* animation)
 ////////////////////////////////////////
 
 begin_finalizer(SS_ANIMATION, ssFinalizeAnimation)
-  object->animation->Destroy();
+  delete object->animation;
   delete[] object->frame;
 end_finalizer()
 

@@ -1,4 +1,6 @@
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)  // identifier too long
+#endif
 
 #include <windows.h>
 #include <commctrl.h>
@@ -178,7 +180,7 @@ void ExecuteDialog()
   PROPSHEETPAGE Pages[3];
 
   // default values
-  for (int i = 0; i < sizeof(Pages) / sizeof(*Pages); i++)
+  for (unsigned i = 0; i < sizeof(Pages) / sizeof(*Pages); i++)
   {
     Pages[i].dwSize    = sizeof(Pages[i]);
     Pages[i].dwFlags   = PSP_DEFAULT;
@@ -223,7 +225,7 @@ BOOL CALLBACK VideoDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
     case WM_INITDIALOG:
     {
       // add the drivers
-      for (int i = 0; i < VideoDriverList.size(); i++)
+      for (unsigned i = 0; i < VideoDriverList.size(); i++)
         SendDlgItemMessage(window, IDC_DRIVERLIST, LB_ADDSTRING, 0, (LPARAM)VideoDriverList[i].c_str());
 
       // select the driver in the list box
@@ -279,7 +281,7 @@ BOOL CALLBACK VideoDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
     case WM_NOTIFY:
     {
       PSHNOTIFY* psn = (PSHNOTIFY*)lparam;
-      if (psn->hdr.code == PSN_APPLY)
+      if (psn->hdr.code == UINT(PSN_APPLY))
       {
         // get the driver
         char buffer[512];
@@ -325,7 +327,7 @@ BOOL CALLBACK AudioDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
     case WM_NOTIFY:
     {
       PSHNOTIFY* psn = (PSHNOTIFY*)lparam;
-      if (psn->hdr.code == PSN_APPLY)
+      if (psn->hdr.code == UINT(PSN_APPLY))
       {
         if (IsDlgButtonChecked(window, IDC_SOUND_ON) == BST_CHECKED) {
           Config.sound = SOUND_ON;
@@ -349,13 +351,12 @@ BOOL CALLBACK AudioDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
 
 ////////////////////////////////////////////////////////////////////////////////
 
-BOOL CALLBACK InputDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
+BOOL CALLBACK InputDialogProc(
+    HWND /*window*/,
+    UINT message,
+    WPARAM /*wparam*/,
+    LPARAM /*lparam*/)
 {
-  window;
-  message;
-  wparam;
-  lparam;
-
   switch (message)
   {
     case WM_COMMAND:

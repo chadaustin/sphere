@@ -14,15 +14,13 @@ public:
 
   bool Load(const char* filename, IFileSystem& fs = g_DefaultFileSystem);
 
-  virtual void Destroy();
+  int GetWidth();
+  int GetHeight();
+  int GetNumFrames();
+  int GetDelay();
 
-  virtual int GetWidth();
-  virtual int GetHeight();
-  virtual int GetNumFrames();
-  virtual int GetDelay();
-
-  virtual bool ReadNextFrame(RGBA* FrameBuffer);
-  virtual bool ReadNextFrame(BGRA* FrameBuffer);
+  bool ReadNextFrame(RGBA* FrameBuffer);
+  bool ReadNextFrame(BGRA* FrameBuffer);
 
 private:
   bool ReadFrame();
