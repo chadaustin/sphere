@@ -653,6 +653,11 @@ sMap::BuildFromImage(CImage32& i, int tile_width, int tile_height, bool allow_du
 void
 sMap::PruneTileset(std::set<int>* allowed_tiles)
 {
+  // FIXME
+  // this code has an absolutely hideous running time.  it's something
+  // like O(t^2 * l * w * h).  It could easily be O(t * l * w * h) using
+  // some dynamic programming.
+
   for (int it = 0; it < m_Tileset.GetNumTiles(); it++) {
     
     bool in_use = false;
