@@ -1,0 +1,120 @@
+Sphere Linux HOWTO
+
+To compile the sphere engine under linux you need several other libraries.
+(okay, a lot of other libraries)
+
+Where I show filenames below, they are the ones I installed.
+If newer versions are available, you should probably install those instead.
+
+You need:
+
+a C++ compiler, such as g++
+corona  -  http://corona.sf.net/
+audiere  -  http://audiere.sf.net/
+spidermonkey  -  http://www.mozilla.org/js/spidermonkey/
+  or the spidermonkey.tar.gz found at the files page at http://sf.net/projects/sphere/
+SDL  -  http://www.libsdl.org/
+libmng  -  http://www.libmng.org/
+scons  -  http://www.scons.org/
+
+zlib (compression library, http://www.gzip.org/zlib/)
+
+Optionally, you can also get:
+
+libvorbis  -  http://www.vorbis.com
+libjpeg  -  http://www.ijg.org/ or ftp://ftp.uu.net/graphics/jpeg/ 
+
+To also install wxeditor, you will need:
+
+wxwindows  - http://www.wxwindows.org/
+
+
+To install SDL:
+You need the SDL development library RPM, and so you do something like:
+
+rpm -i libSDL1.2-devel-1.2.5-5mdk
+
+
+To install corona:
+You download the corona.tar.gz file, and so you do something like:
+
+gunzip corona-1.0.0.tar.gz
+tar -xf corona-1.0.0.tar
+cd corona-1.0.0
+./configure
+make
+make install
+
+The next step may just be me... but you need to make sure the lib is properly installed, so:
+
+cd src
+cd .libs
+cp libcorona-1.0.0.so /lib
+
+
+To install audiere:
+You download the audiere.tar.gz file, and you do something like:
+
+gunzip audiere-1.9.2.gz
+tar -xf audiere-1.9.2.tar
+cd audiere-1.9.2
+./configure
+make
+make install
+
+
+The next step may just be me... but you need to make sure the lib is properly installed, so:
+
+cd src
+cd .libs
+cp libaudiere-1.9.2.so /lib
+
+
+To install SpiderMonkey:
+You download the SpiderMonkey.tar.gz file, and you do something like:
+
+gunzip SpiderMonkey-1.5.0.tar.gz
+tar -xf SpiderMonkey-1.5.0.tar
+cd SpiderMonkey-1.5.0
+./configure
+make
+make install
+
+
+To install libmng:
+You download the libmng.rpm file, and so you do something like:
+
+rpm -i libmng1-devel-1.0.3-2mdk
+
+
+To install Scons:
+You need the scons RPM, and then you do something like:
+
+rpm -i scons-0.13-1.noarch.rpm
+
+
+If all goes well, you now should be able to move onto installing sphere.
+
+cd sphere
+scons
+
+You should get the first few lines looking like:
+
+[brian@localhost sphere]$ scons
+scons: Reading SConscript files ...
+Using compiler: linux
+Found sdl-config: /usr/bin/sdl-config
+Using subsystem:  unix
+
+
+Hopefully, if all goes well, you'll be able to open the engine.
+
+cd sphere
+cd build
+cd linux
+./engine
+
+
+If you feel I missed something out, please let me know.
+
+-- Flik.
