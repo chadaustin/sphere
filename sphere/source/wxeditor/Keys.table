@@ -1,0 +1,36 @@
+#include <wx/gdicmn.h>
+
+DEFINE_KEY(KEY_LAST_PROJECT, std::string, "")
+
+DEFINE_KEY(KEY_SCRIPT_FONT_SIZE, int,         100)
+DEFINE_KEY(KEY_SCRIPT_FONT_NAME, std::string, "Courier")
+DEFINE_KEY(KEY_SCRIPT_TAB_SIZE,  int,         2)
+
+/*todo: WINDOWPLACEMENT*/
+DEFINE_KEY(KEY_STARTUP, wxRect, zeroed<wxRect>())
+
+DEFINE_KEY(KEY_SPRITE_PREVIEW_RECT,    wxRect, zeroed<wxRect>())
+DEFINE_KEY(KEY_SPRITE_PREVIEW_VISIBLE, bool, true)
+
+DEFINE_KEY(KEY_SWATCH_RECT,    wxRect, zeroed<wxRect>())
+DEFINE_KEY(KEY_SWATCH_VISIBLE, bool, true)
+
+DEFINE_KEY(KEY_TILES_RECT,    wxRect, zeroed<wxRect>())
+DEFINE_KEY(KEY_TILES_VISIBLE, bool, true)
+
+DEFINE_KEY(KEY_TILE_PREVIEW_RECT,    wxRect, zeroed<wxRect>())
+DEFINE_KEY(KEY_TILE_PREVIEW_VISIBLE, bool, true)
+
+DEFINE_KEY(KEY_IMAGE_TOOLS_RECT,    wxRect, zeroed<wxRect>())
+DEFINE_KEY(KEY_IMAGE_TOOLS_VISIBLE, bool, true)
+
+DEFINE_KEY(KEY_MAP_TOOLS_RECT,    wxRect, zeroed<wxRect>())
+DEFINE_KEY(KEY_MAP_TOOLS_VISIBLE, bool, true)
+
+DEFINE_KEY(KEY_SPRITESET_IMAGES_RECT,    wxRect, zeroed<wxRect>())
+DEFINE_KEY(KEY_SPRITESET_IMAGES_VISIBLE, bool, true)
+
+DEFINE_KEY(KEY_SCRIPT_SHOWCOLOR, bool, true)
+DEFINE_KEY(KEY_SCRIPT_TABSIZE,   int,  2)
+DEFINE_KEY(KEY_SCRIPT_AUTOINDENT, bool, true)
+
