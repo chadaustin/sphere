@@ -38,16 +38,19 @@ CMNGAnimation::Load(const char* filename, IFileSystem& fs)
 
   // initialize MNG playback
   m_stream = mng_initialize(this, CB_Allocate, CB_Free, NULL);
+  if (!m_stream)
+    return false;
 
   // set all of the callbacks
-  mng_setcb_openstream(m_stream, CB_OpenStream);
-  mng_setcb_closestream(m_stream, CB_CloseStream);
-  mng_setcb_readdata(m_stream, CB_ReadData);
-  mng_setcb_processheader(m_stream, CB_ProcessHeader);
-  mng_setcb_gettickcount(m_stream, CB_GetTickCount);
-  mng_setcb_getcanvasline(m_stream, CB_GetCanvasLine);
-  mng_setcb_refresh(m_stream, CB_Refresh);
-  mng_setcb_settimer(m_stream, CB_SetTimer);
+  if ((MNG_NOERROR == mng_setcb_openstream(m_stream, CB_OpenStream)
+    && MNG_NOERROR == mng_setcb_closestream(m_stream, CB_CloseStream)
+    && MNG_NOERROR == mng_setcb_readdata(m_stream, CB_ReadData)
+    && MNG_NOERROR == mng_setcb_processheader(m_stream, CB_ProcessHeader)
+    && MNG_NOERROR == mng_setcb_gettickcount(m_stream, CB_GetTickCount)
+    && MNG_NOERROR == mng_setcb_getcanvasline(m_stream, CB_GetCanvasLine)
+    && MNG_NOERROR == mng_setcb_refresh(m_stream, CB_Refresh)
+    && MNG_NOERROR == mng_setcb_settimer(m_stream, CB_SetTimer)) == false)
+     return false;
 
   // do some reading
   if (mng_read(m_stream) != MNG_NOERROR) {
@@ -115,6 +118,7 @@ CMNGAnimation::ReadNextFrame(RGBA* frame_buffer)
     m_first_display = false;
     m_end_of_animation = false;
   } else {
+
     if (mng_display_resume(m_stream) != MNG_NEEDTIMERWAIT) {
       mng_display_reset(m_stream);  // repeat
       m_end_of_animation = true;
@@ -158,6 +162,9 @@ CMNGAnimation::Destroy()
     mng_cleanup(&m_stream);
     m_stream = NULL;
   }
+
+  m_width = 0;
+  m_height = 0;
 
   delete m_file;
   m_file = 0;

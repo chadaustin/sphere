@@ -10,6 +10,7 @@
 
 #include "EditRange.hpp"
 #include "../common/strcmp_ci.hpp"
+#include "../common/sphere_version.h"
 
 #define LABEL_WIDTH 80
 
@@ -1039,6 +1040,7 @@ const char* mng_get_error_message(mng_retcode code) {
   return "Unknown error code";
 }
 
+///////////////////////////////////////////////////////////
 
 typedef struct userdata {
   FILE* file;
@@ -1073,6 +1075,8 @@ mng_bool MNG_DECL mng_close_stream (mng_handle mng)
 	return MNG_TRUE;
 }
 
+///////////////////////////////////////////////////////////
+
 void image_add_filter_byte(const RGBA* pixels, const int width, const int height, unsigned char* filtered)
 {
   int x;
@@ -1094,54 +1098,98 @@ void image_add_filter_byte(const RGBA* pixels, const int width, const int height
 	}
 }
 
+///////////////////////////////////////////////////////////
+
 static mng_retcode
 SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& images)
 {
+  int max_frame_width = 0;
+  int max_frame_height = 0;
+
   if (!(images.size() >= 1))
     return -1;
 
-  int frame_width = images[0].GetWidth();
-  int frame_height = images[0].GetHeight();
-
   for (int i = 0; i < images.size(); i++) {
-    if (frame_width != images[i].GetWidth())
-      return -1;
-    if (frame_height != images[i].GetHeight())
-      return -1;
+    if (max_frame_width < images[i].GetWidth())
+      max_frame_width = images[i].GetWidth();
+    if (max_frame_height < images[i].GetHeight())
+      max_frame_height = images[i].GetHeight();
   }
 
+  if (max_frame_width <= 0 || max_frame_height <= 0) {
+    return -1;
+  }
 
 	mng_handle hMNG = mng_initialize (MNG_NULL, mng_alloc, mng_free, MNG_NULL);
+  if (!hMNG)
+    return -1;
+
   userdatap pMydata = (userdatap)calloc (1, sizeof (userdata));
+  if (!pMydata)
+    return -1;
+
   strcpy(pMydata->filename, filename);
   mng_set_userdata(hMNG, pMydata);
 
-  mng_setcb_writedata(hMNG, mng_write_stream);
-	mng_setcb_openstream(hMNG, mng_open_stream);
-	mng_setcb_closestream(hMNG, mng_close_stream);
-
   mng_retcode iRC = 0;
 
+  iRC = mng_setcb_writedata(hMNG, mng_write_stream);
+  if (iRC != 0) return iRC;
+	iRC = mng_setcb_openstream(hMNG, mng_open_stream);
+	if (iRC != 0) return iRC;
+  iRC = mng_setcb_closestream(hMNG, mng_close_stream);
+  if (iRC != 0) return iRC;
+
   iRC = mng_create (hMNG);
-   
+  if (iRC != 0) return iRC;
+ 
+  iRC = mng_putchunk_mhdr (hMNG, max_frame_width, max_frame_width,
+          2, 0, images.size(), 0, MNG_SIMPLICITY_TRANSPARENCY);
+
   if (iRC != 0) return iRC;
 
-  iRC = mng_putchunk_mhdr (hMNG, frame_width, frame_height,
-          1000, 0, images.size(), 1, MNG_SIMPLICITY_TRANSPARENCY);
+  bool repeating = true;
+  mng_uint32 repeat_count = (repeating) ? 0x7fffffff : 0;
+  mng_putchunk_term(hMNG, MNG_TERMACTION_REPEAT, MNG_ITERACTION_FIRSTFRAME, 0, repeat_count);
+  if (iRC != 0) return iRC;
 
-   if (iRC != 0) return iRC;
-
-   bool repeating = false;
-   mng_uint32 repeat_count = (repeating) ? 0x7fffffff : 0;
-   mng_putchunk_term(hMNG, MNG_TERMACTION_REPEAT, MNG_ITERACTION_FIRSTFRAME, 0, repeat_count);
-   if (iRC != 0) return iRC;
-
-   iRC = mng_putchunk_text(hMNG,
+  const char* software = "Sphere - http://sphere.sf.net/";
+  iRC = mng_putchunk_text(hMNG,
                            strlen(MNG_TEXT_SOFTWARE), MNG_TEXT_SOFTWARE,
-                           strlen("Sphere - http://sphere.sf.net/"), "Sphere - http://sphere.sf.net/");
+                           strlen(software), (char*) software);
   if (iRC != 0) return iRC;
+
+  iRC = mng_putchunk_text(hMNG,
+                          strlen("Version"), "Version",
+                          strlen(SPHERE_VERSION), SPHERE_VERSION);
+  if (iRC != 0) return iRC;
+
+#if 1
+  char text[100] = {0};
+  sprintf (text, "%s", repeating ? "Infinite" : "Once");
+  iRC = mng_putchunk_text(hMNG,
+                          strlen("REPEAT_TYPE"), "REPEAT_TYPE",
+                          strlen(text), text);
+  if (iRC != 0) return iRC;
+  sprintf (text, "%d", repeating ? 1 : repeat_count);
+  iRC = mng_putchunk_text(hMNG,
+                          strlen("REPEAT_COUNT"), "REPEAT_COUNT",
+                          strlen(text), text);
+  if (iRC != 0) return iRC;
+  iRC = mng_putchunk_text(hMNG,
+                          strlen("DATE"), "DATE",
+                          strlen(__DATE__), __DATE__);
+  if (iRC != 0) return iRC;
+  iRC = mng_putchunk_text(hMNG,
+                          strlen("TIME"), "TIME",
+                          strlen(__TIME__), __TIME__);
+  if (iRC != 0) return iRC;
+#endif
 
   iRC = mng_set_srgb(hMNG, true);
+  if (iRC != 0) return iRC;
+
+  iRC = mng_putchunk_back (hMNG, 255, 255, 255, 0, 0, MNG_BACKGROUNDIMAGE_NOTILE);
   if (iRC != 0) return iRC;
 
   for (int i = 0; i < images.size(); i++) {
@@ -1150,7 +1198,6 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
     iRC = mng_putchunk_ihdr (hMNG, image.GetWidth(), image.GetHeight(),
 			MNG_BITDEPTH_8, MNG_COLORTYPE_RGBA, MNG_COMPRESSION_DEFLATE,
 			MNG_FILTER_NONE, MNG_INTERLACE_NONE);
-
     if (iRC != 0) return iRC;
 
     mng_uint32 filter_len     = (sizeof(RGBA) * image.GetWidth() * image.GetHeight()) + image.GetHeight();
@@ -1174,7 +1221,7 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
     if (compress2(compressed, &dstLen, buffer, srcLen, 9) != Z_OK) {
       delete[] buffer;
       delete[] compressed;
-      return -1;
+      return MNG_ZLIBERROR;
     }
 
     iRC = mng_putchunk_idat(hMNG, dstLen, compressed);
@@ -1218,7 +1265,7 @@ CSpritesetView::OnExportDirectionAsAnimation()
                || strcmp_ci(dialog.GetFileExt(), "fli")  == 0;
 
     if (is_mng) {
-      mng_retcode iRC = SaveMNGAnimationFromImages("c:\\windows\\desktop\\test_output.mng", images);
+      mng_retcode iRC = SaveMNGAnimationFromImages(dialog.GetPathName(), images);
       if (iRC == 0) {
         MessageBox("Exported Animation!", "Export Direction As Animation", MB_OK);
       }
@@ -1230,8 +1277,6 @@ CSpritesetView::OnExportDirectionAsAnimation()
     if (is_fli) {
       MessageBox("Unsupported save mode", "Error Exporting Direction As Animation", MB_OK);
     }
-
-
   }
 }
 
