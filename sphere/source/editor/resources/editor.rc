@@ -442,6 +442,8 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Copy",                       ID_IMAGEVIEW_COPY
         MENUITEM "&Paste",                      ID_IMAGEVIEW_PASTE
+        MENUITEM "Paste Alpha",                 ID_IMAGEVIEW_PASTE_ALPHA
+        MENUITEM "Paste RGB",                   ID_IMAGEVIEW_PASTE_RGB
         MENUITEM SEPARATOR
         POPUP "&Blend Mode"
         BEGIN

@@ -27,6 +27,8 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
   ON_COMMAND(ID_IMAGEVIEW_UNDO,                OnUndo)
   ON_COMMAND(ID_IMAGEVIEW_COPY,                OnCopy)
   ON_COMMAND(ID_IMAGEVIEW_PASTE,               OnPaste)
+  ON_COMMAND(ID_IMAGEVIEW_PASTE_RGB,           OnPasteRGB)
+  ON_COMMAND(ID_IMAGEVIEW_PASTE_ALPHA,         OnPasteAlpha)
   ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_BLEND,     OnBlendModeBlend)
   ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_REPLACE,   OnBlendModeReplace)
   ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_RGBONLY,   OnBlendModeRGBOnly)
@@ -265,8 +267,7 @@ CImageView::Copy()
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CImageView::Paste()
-{
+CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha) {
   if (OpenClipboard() == FALSE)
     return false;
 
@@ -292,14 +293,28 @@ CImageView::Paste()
     RGBA* pImage = m_Image.GetPixels();
 
     // put them into the current view
-    for (int iy = 0; iy < iHeight; iy++)
+    for (int iy = 0; iy < iHeight; iy++) {
       for (int ix = 0; ix < iWidth; ix++)
       {
-        if (ix < width && iy < height)
-          pImage[iy * iWidth + ix] = pixels[iy * width + ix];
-        else
-          pImage[iy * iWidth + ix] = CreateRGBA(0, 0, 0, 255);
+        if (ix < width && iy < height) {
+					int pImageIndex = iy * iWidth + ix;
+					int pixelsIndex = iy * width + ix;
+
+					if (red)
+            pImage[pImageIndex].red = pixels[pixelsIndex].red;
+
+          if (green)
+            pImage[pImageIndex].green = pixels[pixelsIndex].green;
+
+          if (blue)
+            pImage[pImageIndex].blue = pixels[pixelsIndex].blue;
+
+					if (alpha)
+            pImage[pImageIndex].alpha = pixels[pixelsIndex].alpha;
+
+        }
       }
+		}
 
     GlobalUnlock(memory);
     CloseClipboard();
@@ -330,10 +345,17 @@ CImageView::Paste()
         COLORREF pixel = GetPixel(dc, ix, iy);
         if (pixel == CLR_INVALID)
           pixel = RGB(0, 0, 0);
-        pImage[iy * iWidth + ix].red   = GetRValue(pixel);
-        pImage[iy * iWidth + ix].green = GetGValue(pixel);
-        pImage[iy * iWidth + ix].blue  = GetBValue(pixel);
-        pImage[iy * iWidth + ix].alpha = 255;
+
+				if (red)
+          pImage[iy * iWidth + ix].red   = GetRValue(pixel);
+				if (green)
+          pImage[iy * iWidth + ix].green = GetGValue(pixel);
+
+				if (blue)
+  				pImage[iy * iWidth + ix].blue  = GetBValue(pixel);
+
+				if (alpha) // there is no alpha so we use a default
+  				pImage[iy * iWidth + ix].alpha = 255;
       }
 
     SelectObject(dc, oldbitmap);
@@ -348,8 +370,15 @@ CImageView::Paste()
     return true;
   }
 
-  CloseClipboard();
-  return false;
+	return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool
+CImageView::Paste()
+{
+  return PasteChannels(true, true, true, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1046,6 +1075,22 @@ afx_msg void
 CImageView::OnPaste()
 {
   Paste();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnPasteRGB()
+{
+  PasteChannels(true, true, true, false);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnPasteAlpha()
+{
+  PasteChannels(false, false, false, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

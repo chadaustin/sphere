@@ -333,6 +333,8 @@
 #define ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE 40525
 #define ID_IMAGEVIEW_FILTER_SOLARIZE    40526
 #define ID_SPRITESET_EXPORTASIMAGE      40527
+#define ID_IMAGEVIEW_PASTE_ALPHA        40528
+#define ID_IMAGEVIEW_PASTE_RGB          40529
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -341,7 +343,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        218
-#define _APS_NEXT_COMMAND_VALUE         40528
+#define _APS_NEXT_COMMAND_VALUE         40530
 #define _APS_NEXT_CONTROL_VALUE         1117
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
