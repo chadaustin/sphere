@@ -11,6 +11,7 @@ in the style of Final Fantasy and Phantasy Star.
 
 System Requirements:
 - Pentium 200
+- 64 MB of RAM
 - Video card with 2MB VRAM
 - Sound card for audio
 - Windows 95, 98, NT4, 2000, or later
