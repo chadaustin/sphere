@@ -516,7 +516,12 @@ CImageView::Undo()
 {
   Image* img = m_UndoImages + m_NumUndoImages - 1;
   m_Image.Resize(img->width, img->height);
-  memcpy(m_Image.GetPixels(), img->pixels, img->width * img->height * sizeof(RGBA));
+
+  // only copy the undo image if the resize has succeeded
+  if (m_Image.GetWidth() == img->width || m_Image.GetHeight() == img->height) {
+    memcpy(m_Image.GetPixels(), img->pixels, img->width * img->height * sizeof(RGBA));
+  }
+
   delete[] img->pixels;
 
   Image* new_images = new Image[m_NumUndoImages - 1];

@@ -1,5 +1,42 @@
+2003.07.03
+  - Don't allow Image->View At Original Size when image is maximized...
+  - wxeditor now uses wxNotebook
+  - copy map tool now also copies the map as an image too
+
+2003.07.31
+  - MapView "Fill Area" became "Fill Rectanglar Area"
+  - And added a "Fill Area" which behaves like ImageView's "Fill Area" but for tiles.
+  - Made clicking on the spriteset images palette only
+    change the spriteset indexes if you were viewing the Frames.
+  - Added the ability to reorder the tileset by moving tiles back or forward :)
+  - Added Image->Rotate (so you can freely rotate images in the editor)
+  - Made Image->Rotate, Image->Resize, Image->Rescale, Image->Rescale undo-able
+  - Errors inside a person's OnCreate script were crashing the engine, fixed.
+  - Made Copy Map Area tool more reliable
+  - Fix ImageView Fill bug when using ALPHA/RGB ONLY blend modes
+  
+2003.07.23
+  - Fix linux input bug (now BindKey works :))
+
+2003.07.20
+  - Added ability to change layer in person dialog via dropdown list
+  - Adding View->Persons As->Icons, Mini-images, Images to mapview
+
+2003.07.19
+  - Added GetTileName(tile_index)
+  - Updated editor for janusfury's windowstyle changes
+  - Spritesets are now validated when loaded in the editor
+
+2003.07.17
+  - Windowstyle changes (edge offsets, more background modes) - janusfury
+
+2003.07.12
+  - Added GetLayerIndex(name) to layers.js
+
 2003.07.07
   - Added BindJoystickButton/UnbindJoystickButton
+  - No longer allow things like LoadSound('music.ogg', [false]) or SetPersonX('Bob', new Object())...
+
 
 2003.07.06
   - Made QueuePersonScript actually abort upon errors
