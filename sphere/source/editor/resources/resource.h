@@ -87,7 +87,6 @@
 #define IDD_DIALOG1                     222
 #define IDD_DIALOG2                     223
 #define IDD_ROTATE                      225
-#define IDR_EDIT_RANGE                  227
 #define IDC_PROJECTNAME                 1000
 #define IDC_GAMETITLE                   1001
 #define IDC_BROWSE                      1003
@@ -462,6 +461,7 @@
 #define ID_TILESETVIEW_MOVE_BACK        40651
 #define ID_TILESETVIEW_MOVE_FORWARD     40652
 #define ID_IMAGE_ROTATE                 40653
+#define ID_FILE_IMPORT_RM2KCHIPSETTORTS 40654
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -470,7 +470,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        228
-#define _APS_NEXT_COMMAND_VALUE         40654
+#define _APS_NEXT_COMMAND_VALUE         40655
 #define _APS_NEXT_CONTROL_VALUE         1133
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

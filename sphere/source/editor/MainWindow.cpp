@@ -101,6 +101,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_FILE_IMPORT_MERGE_RGBA,        OnFileImportMergeRGBA)
   ON_COMMAND(ID_FILE_IMPORT_WINDOWSFONT,       OnFileImportWindowsFont)
   ON_COMMAND(ID_FILE_IMPORT_RM2KCHARSETTORSS,  OnFileImportRM2KCharsetToRSS)
+  ON_COMMAND(ID_FILE_IMPORT_RM2KCHIPSETTORTS,  OnFileImportRM2KChipsetToRTS)
 
   ON_COMMAND(ID_FILE_SAVEALL, OnFileSaveAll)
 
@@ -1009,7 +1010,8 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
     if (transparent_color_dialog.DoModal() != IDOK)
       return;
 
-    const RGB transparent = CreateRGB(transparent_color_dialog.GetBottomColor().red, transparent_color_dialog.GetBottomColor().green, transparent_color_dialog.GetBottomColor().blue);
+    const RGBA color1 = transparent_color_dialog.GetTopColor();
+    const RGBA color2 = transparent_color_dialog.GetBottomColor();
 
     const char* base_filename = OutFilename.GetValue();
     char filename[255];
@@ -1036,7 +1038,7 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
                 frame.SetPixel(x, y, image.GetPixel(x + offset_x, y + offset_y));
               }
             }
-            frame.SetColorAlpha(transparent, 0);
+            frame.ReplaceColor(color1, color2);
           }
         }
 
@@ -1056,6 +1058,61 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
   }
 
   MessageBox("Charset Converted!");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnFileImportRM2KChipsetToRTS()
+{
+  CImageFileDialog InFileDialog(FDM_OPEN);
+  if (InFileDialog.DoModal() != IDOK)
+    return;
+
+  CTilesetFileDialog OutFileDialog(FDM_SAVE);
+  if (OutFileDialog.DoModal() != IDOK)
+    return;
+
+  bool allow_duplicates = true;
+
+  CImage32 image;
+  if (!image.Load(InFileDialog.GetPathName()) )
+  {
+    MessageBox("Can't Load image!");
+    return;
+  }
+
+  if (image.GetWidth() != 480 || image.GetHeight() != 256) {
+    MessageBox("Invalid image size\nRM2K chipsets are 480 by 256 images");
+    return;
+  }
+
+  sTileset tileset;
+  if (!tileset.BuildFromImage(image, 16, 16, allow_duplicates))
+  {
+    MessageBox("Can't convert image!");
+    return;
+  }
+
+  CFontGradientDialog transparent_color_dialog("Transparent color", "In", "Out", image.GetPixel(image.GetWidth() - 1, 0), CreateRGBA(image.GetPixel(image.GetWidth() - 1, 0).red, image.GetPixel(image.GetWidth() - 1, 0).green, image.GetPixel(image.GetWidth() - 1, 0).blue, 0));
+  if (transparent_color_dialog.DoModal() != IDOK)
+    return;
+
+  const RGBA color1 = transparent_color_dialog.GetTopColor();
+  const RGBA color2 = transparent_color_dialog.GetBottomColor();
+
+  for (int i = 0; i < tileset.GetNumTiles(); i++) {
+    tileset.GetTile(i).ReplaceColor(color1, color2);
+  }
+
+  if (!tileset.Save(OutFileDialog.GetPathName()))
+  {
+    MessageBox("Can't save tileset!");
+    return;
+  }
+
+  MessageBox("Image Converted!");
+ 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1096,7 +1153,7 @@ CMainWindow::OnFileImportBitmapToRTS()
 
   if (!tileset.Save(OutFileDialog.GetPathName()))
   {
-    MessageBox("Can't save image!");
+    MessageBox("Can't save tileset!");
     return;
   }
 

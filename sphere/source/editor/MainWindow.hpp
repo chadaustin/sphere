@@ -70,7 +70,7 @@ private:
   afx_msg void OnFileOpenWindowStyle();
   afx_msg void OnFileOpenImage();
   afx_msg void OnFileOpenAnimation();
-  afx_msg void OnFileOpenDoodad();
+  // afx_msg void OnFileOpenDoodad();
 
   afx_msg void OnFileImportImageToMap();
   afx_msg void OnFileImportBitmapToRWS();
@@ -82,6 +82,7 @@ private:
   afx_msg void OnFileImportMergeRGBA();
   afx_msg void OnFileImportWindowsFont();
   afx_msg void OnFileImportRM2KCharsetToRSS();
+  afx_msg void OnFileImportRM2KChipsetToRTS();
 
   afx_msg void OnFileSaveAll();
 
@@ -134,8 +135,6 @@ private:
   CProject m_Project;
 
   CProjectWindow* m_ProjectWindow;
-
-  CMenu* m_MenuBar;
 
   // manage pointers to document windows so we can enumerate and send messages to them
   std::vector<CDocumentWindow*> m_DocumentWindows;
