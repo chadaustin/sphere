@@ -1,3 +1,5 @@
+DEFINE_KEY(KEY_LANGUAGE, std::string, "English")
+
 DEFINE_KEY(KEY_LAST_PROJECT, std::string, "")
 DEFINE_KEY(KEY_PROJECT_RECT,    RECT, zeroed<RECT>())
 

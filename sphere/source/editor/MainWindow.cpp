@@ -78,8 +78,10 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_FILE_OPTIONS, OnFileOptions)
 
   ON_COMMAND(ID_FILE_LANGUAGE_ENGLISH, OnFileLanguageEnglish)
+  ON_COMMAND(ID_FILE_LANGUAGE_DUTCH,  OnFileLanguageDutch)
   ON_COMMAND(ID_FILE_LANGUAGE_GERMAN,  OnFileLanguageGerman)
   ON_UPDATE_COMMAND_UI(ID_FILE_LANGUAGE_ENGLISH, OnUpdateFileLanguageEnglish)
+  ON_UPDATE_COMMAND_UI(ID_FILE_LANGUAGE_DUTCH, OnUpdateFileLanguageDutch)
   ON_UPDATE_COMMAND_UI(ID_FILE_LANGUAGE_GERMAN,  OnUpdateFileLanguageGerman)
 
   // project
@@ -774,6 +776,43 @@ CMainWindow::UpdateMenu()
   HINSTANCE hInstance = AfxGetApp()->m_hInstance;
   HMENU hNewMenu = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_MAIN));
 
+  if (1) {
+    int menu_count = GetMenuItemCount(hNewMenu);
+    char buffer[100000];
+    char temp[80];
+
+    sprintf (buffer, "%d", menu_count);
+    
+    for (int i = 0; i < menu_count; i++)
+    {
+      char szPopupTitle[80];
+      GetMenuString(hNewMenu, i, szPopupTitle, 80, MF_BYPOSITION);
+
+      sprintf (buffer + strlen(buffer), " <%s>", szPopupTitle);
+
+      HMENU hSubMenu = GetSubMenu(hNewMenu, i);
+
+      GetMenuString(hSubMenu, 0, temp, 80, MF_BYPOSITION);
+      sprintf (buffer + strlen(buffer), " [%s]", temp);
+
+      TranslateMenu(hSubMenu);
+
+      GetMenuString(hSubMenu, 0, temp, 80, MF_BYPOSITION);
+      sprintf (buffer + strlen(buffer), " [%s]", temp);
+
+      sprintf (buffer + strlen(buffer), " (%d) ", GetMenuItemCount(hSubMenu));
+
+      RemoveMenu(hNewMenu, i, MF_BYPOSITION);
+      InsertMenu(hNewMenu,
+                 i,
+                 MF_POPUP | MF_BYPOSITION | MF_STRING,
+                (UINT_PTR) hSubMenu,
+                TranslateString(szPopupTitle));    
+    }
+
+    //MessageBox(buffer);
+  }
+
   // if a project is open, add the project menu
   if (m_ProjectOpen)
   {
@@ -788,7 +827,7 @@ CMainWindow::UpdateMenu()
     InsertMenu(hNewMenu,
                3,
                MF_POPUP | MF_BYPOSITION | MF_STRING,
-               (UINT_PTR)hProjectMenuSubMenu,
+               (UINT_PTR) hProjectMenuSubMenu,
                TranslateString(szPopupTitle));
 
     iWindowMenu++;
@@ -801,12 +840,15 @@ CMainWindow::UpdateMenu()
 
     char szPopupTitle[80];
     GetMenuString(hChildMenu, 0, szPopupTitle, 80, MF_BYPOSITION);
-    
+
+    HMENU hSubMenu = GetSubMenu(hChildMenu, 0);
+    TranslateMenu(hSubMenu);
+
     InsertMenu(hNewMenu,
                iWindowMenu,
                MF_POPUP | MF_BYPOSITION | MF_STRING,
-               (UINT_PTR)GetSubMenu(hChildMenu, 0),
-               szPopupTitle);
+               (UINT_PTR) hSubMenu,
+               TranslateString(szPopupTitle));
 
     iWindowMenu++;
   }
@@ -1011,22 +1053,43 @@ CMainWindow::OnFileOptions()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+CMainWindow::OnLanguageChanged()
+{ 
+  UpdateMenu();
+}
+
 afx_msg void
 CMainWindow::OnFileLanguageEnglish()
 {
   SetLanguage("English");
+  OnLanguageChanged();
+}
+
+afx_msg void
+CMainWindow::OnFileLanguageDutch()
+{
+  SetLanguage("Dutch");
+  OnLanguageChanged();
 }
 
 afx_msg void
 CMainWindow::OnFileLanguageGerman()
 {
   SetLanguage("German");
+  OnLanguageChanged();
 }
 
 afx_msg void
 CMainWindow::OnUpdateFileLanguageEnglish(CCmdUI* cmdui)
 {
   cmdui->SetCheck( (strcmp(GetLanguage(), "English") == 0 ) ? TRUE : FALSE );
+}
+
+afx_msg void
+CMainWindow::OnUpdateFileLanguageDutch(CCmdUI* cmdui)
+{
+  cmdui->SetCheck( (strcmp(GetLanguage(), "Dutch") == 0 ) ? TRUE : FALSE );
 }
 
 afx_msg void

@@ -103,8 +103,10 @@ private:
   afx_msg void OnFileOptions();
 
   afx_msg void OnFileLanguageEnglish();
+  afx_msg void OnFileLanguageDutch();
   afx_msg void OnFileLanguageGerman();
   afx_msg void OnUpdateFileLanguageEnglish(CCmdUI* cmdui);
+  afx_msg void OnUpdateFileLanguageDutch(CCmdUI* cmdui);
   afx_msg void OnUpdateFileLanguageGerman(CCmdUI* cmdui);
 
 	afx_msg void OnViewProject();
@@ -203,6 +205,8 @@ private:
   afx_msg LRESULT OnClearChildMenu(WPARAM wparam, LPARAM lparam);
 //afx_msg LRESULT OnUpdatePaletteMenu(WPARAM wparam, LPARAM lparam);
   afx_msg void OnViewPalette(UINT id);
+
+  void OnLanguageChanged();
 
 private:
   CToolBar   m_MainToolBar;

@@ -122,6 +122,7 @@ BEGIN
         POPUP "&Language"
         BEGIN
             MENUITEM "English",                     ID_FILE_LANGUAGE_ENGLISH
+            MENUITEM "Dutch",                       ID_FILE_LANGUAGE_DUTCH
             MENUITEM "German",                      ID_FILE_LANGUAGE_GERMAN
         END
         MENUITEM "&Options...",                 ID_FILE_OPTIONS

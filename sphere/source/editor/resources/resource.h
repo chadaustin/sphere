@@ -654,6 +654,7 @@
 #define ID_SOUND_PAUSE                  40779
 #define ID_FILE_LANGUAGE_ENGLISH        40780
 #define ID_FILE_LANGUAGE_GERMAN         40781
+#define ID_FILE_LANGUAGE_DUTCH          40782
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -662,7 +663,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        270
-#define _APS_NEXT_COMMAND_VALUE         40782
+#define _APS_NEXT_COMMAND_VALUE         40783
 #define _APS_NEXT_CONTROL_VALUE         1222
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
