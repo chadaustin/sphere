@@ -9,6 +9,7 @@
 class CFontGradientDialog : public CDialog
 {
 public:
+  CFontGradientDialog(const char* caption, const char* text1, const char* text2, RGBA color1, RGBA color2);
   CFontGradientDialog(const char* caption, const char* text1, const char* text2);
   CFontGradientDialog();
 

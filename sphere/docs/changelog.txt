@@ -2,6 +2,7 @@
   - Don't allow Image->View At Original Size when image is maximized...
   - wxeditor now uses wxNotebook
   - copy map tool now also copies the map as an image too
+  - Added File->Import->RM2K charset to spritesets...
 
 2003.07.31
   - MapView "Fill Area" became "Fill Rectanglar Area"

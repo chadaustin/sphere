@@ -23,6 +23,16 @@ CFontGradientDialog::CFontGradientDialog(const char* caption, const char* text1,
 {
 }
 
+CFontGradientDialog::CFontGradientDialog(const char* caption, const char* text1, const char* text2, RGBA color1, RGBA color2)
+: CDialog(IDD_FONT_GRADIENT)
+, m_Caption(caption)
+, m_Text1(text1)
+, m_Text2(text2)
+, m_top_color(color1)
+, m_bottom_color(color2)
+{
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 RGBA

@@ -51,6 +51,7 @@ sources = Split("""
     ProjectWindow.cpp
     RGBAView.cpp
     ResizeDialog.cpp
+    RotateDialog.cpp
     SaveableDocumentWindow.cpp
     ScriptWindow.cpp
     Scripting.cpp

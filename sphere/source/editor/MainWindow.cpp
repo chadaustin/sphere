@@ -34,6 +34,7 @@
 #include "FileDialogs.hpp"
 #include "ResizeDialog.hpp"
 #include "StringDialog.hpp"
+#include "FontGradientDialog.hpp"
 
 // common
 #include "../common/sphere_version.h"
@@ -982,10 +983,6 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
   if (InFileDialog.DoModal() != IDOK)
     return;
 
-  CStringDialog OutFilename("Save As", "rm2k.spriteset");
-  if (OutFilename.DoModal() != IDOK)
-    return;
-
   CImage32 image;
   if (!image.Load(InFileDialog.GetPathName())) {
     MessageBox("Could not load image");
@@ -993,11 +990,14 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
   }
 
   if (image.GetWidth() != 288 || image.GetHeight() != 256) {
-    MessageBox("Invalid image size");
+    MessageBox("Invalid image size\nRM2K charsets are 288 by 256 images");
+    return;
+  }
+
+  CStringDialog OutFilename("Save As", std::string(InFileDialog.GetFileTitle() + ".spriteset").c_str());
+  if (OutFilename.DoModal() != IDOK) {
     return;
   } else {
-
-    const char* base_filename = OutFilename.GetValue();
 
     const int frame_width = 288/12;
     const int frame_height = 256/8;
@@ -1005,8 +1005,14 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
     const int num_directions = 4;
     const int num_images = num_frames * num_directions;
 
-    // I'm assuming that the very first pixel in the image is the one that's supposed to be transparent
-    const RGB transparent = CreateRGB(image.GetPixel(0, 0).red, image.GetPixel(0, 0).green, image.GetPixel(0, 0).blue);
+    CFontGradientDialog transparent_color_dialog("Transparent color", "In", "Out", image.GetPixel(0, 0), CreateRGBA(image.GetPixel(0, 0).red, image.GetPixel(0, 0).green, image.GetPixel(0, 0).blue, 0));
+    if (transparent_color_dialog.DoModal() != IDOK)
+      return;
+
+    const RGB transparent = CreateRGB(transparent_color_dialog.GetBottomColor().red, transparent_color_dialog.GetBottomColor().green, transparent_color_dialog.GetBottomColor().blue);
+
+    const char* base_filename = OutFilename.GetValue();
+    char filename[255];
 
     // create the spriteset
     sSpriteset sprite;
@@ -1043,7 +1049,6 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
         // I'm assuming that the base is the bottom part of the frame
         sprite.SetBase(0, frame_height/2, frame_width, frame_height);
     
-        char filename[255];
         sprintf(filename, "%s.%d.rss", base_filename, sy * 4 + sx);
         sprite.Save(filename);
       }
