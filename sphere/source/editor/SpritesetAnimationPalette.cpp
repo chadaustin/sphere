@@ -28,7 +28,7 @@ CSpritesetAnimationPalette::CSpritesetAnimationPalette(CDocumentWindow* owner, s
   OnZoom(1);
 
 	//init the animation timer
-  m_Timer = SetTimer(ANIMATION_TIMER, Configuration::Get(KEY_ANIMATION_DELAY), NULL);
+  m_Timer = SetTimer(ANIMATION_TIMER, Configuration::Get(KEY_SPRITESET_ANIMATION_DELAY), NULL);
 	ResetAnimation();
 }
 

@@ -132,7 +132,7 @@ CMapView::Create(CDocumentWindow* owner, IMapViewHandler* handler, CWnd* parent,
 
 	//init the animation timer
 	//m_FrameTick = 0;
-  //m_Timer = SetTimer(ANIMATION_TIMER, Configuration::Get(KEY_ANIMATION_DELAY), NULL);
+  //m_Timer = SetTimer(ANIMATION_TIMER, Configuration::Get(KEY_MAP_ANIMATION_DELAY), NULL);
 	//InitAnimations();
 
   return retval;

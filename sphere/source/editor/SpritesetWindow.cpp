@@ -10,6 +10,8 @@
 #include "NumberDialog.hpp"
 #include "resource.h"
 
+#include "Configuration.hpp"
+#include "keys.hpp"
 
 #define IDC_TAB 800
 #define TAB_HEIGHT 24
@@ -158,7 +160,10 @@ CSpritesetWindow::Create()
   UpdateImageView();
   TabChanged(0);
 
-  OnZoom2x();
+  double zoom_factor = Configuration::Get(KEY_SPRITESET_ZOOM_FACTOR);
+  if (zoom_factor != 0) {
+    m_SpritesetView.SetZoomFactor(zoom_factor);
+  }
 
 	#ifdef USE_SIZECBAR
 	LoadPaletteStates();
@@ -219,6 +224,8 @@ CSpritesetWindow::UpdateImageView()
 afx_msg void
 CSpritesetWindow::OnDestroy()
 {
+  Configuration::Set(KEY_SPRITESET_ZOOM_FACTOR, m_SpritesetView.GetZoomFactor());
+
   m_ImagesPalette->Destroy();
   m_AnimationPalette->Destroy();
 
