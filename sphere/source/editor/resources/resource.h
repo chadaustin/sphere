@@ -341,6 +341,10 @@
 #define ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE_RGB 40533
 #define ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE_ALPHA 40534
 #define ID_MAP_TOGGLE_LOCK_LAYERS_IN_PLACE 40535
+#define ID_MAP_SLIDE_UP                 40536
+#define ID_MAP_SLIDE_RIGHT              40537
+#define ID_MAP_SLIDE_DOWN               40538
+#define ID_MAP_SLIDE_LEFT               40539
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -349,7 +353,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        218
-#define _APS_NEXT_COMMAND_VALUE         40536
+#define _APS_NEXT_COMMAND_VALUE         40540
 #define _APS_NEXT_CONTROL_VALUE         1117
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

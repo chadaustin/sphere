@@ -168,3 +168,41 @@ sLayer::SetReflective(bool reflective)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+void
+sLayer::Translate(int dx, int dy) 
+{
+  Translate(m_Width, m_Height, m_Tiles, dx, dy);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+sLayer::Translate(int width, int height, int* tiles, int dx, int dy)
+{
+  int* old_tiles = new int[width * height];
+  memcpy(old_tiles, tiles, width * height * sizeof(int));
+
+  for (int iy = 0; iy < height; iy++) {
+    for (int ix = 0; ix < width; ix++) {
+      int sx = ix - dx;
+      int sy = iy - dy;
+
+      if (sx < 0) {
+        sx += width;
+      } else if (sx > width - 1) {
+        sx -= width;
+      }
+
+      if (sy < 0) {
+        sy += height;
+      } else if (sy > height - 1) {
+        sy -= height;
+      }
+
+      tiles[iy * width + ix] = old_tiles[sy * width + sx];
+    }
+  }
+
+  delete[] old_tiles;
+}

@@ -51,6 +51,8 @@ public:
   void SetXScrolling(float32 scrolling);
   void SetYScrolling(float32 scrolling);
 
+  void Translate(int dx, int dy);
+
 private:
   std::string m_Name;
 
@@ -70,6 +72,8 @@ private:
   bool m_Reflective;
 
   sObstructionMap m_ObstructionMap;
+
+  void Translate(int width, int height, int* m_Tiles, int dx, int dy);
 };
 
 

@@ -101,6 +101,8 @@ public:
   void SetExitScript(const char* script);
   void SetEdgeScript(int edge, const char* script);
 
+  void Translate(int dx, int dy);
+
 private:
   int m_StartX;
   int m_StartY;

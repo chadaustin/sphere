@@ -153,6 +153,13 @@ BEGIN
         MENUITEM "&Export Tileset...",          ID_MAP_EXPORTTILESET
         MENUITEM "&Import Tileset...",          ID_MAP_IMPORTTILESET
         MENUITEM "Pr&une Tileset...",           ID_MAP_PRUNETILESET
+        POPUP "&Slide"
+        BEGIN
+            MENUITEM "&Up",                         ID_MAP_SLIDE_UP
+            MENUITEM "&Right",                      ID_MAP_SLIDE_RIGHT
+            MENUITEM "&Down",                       ID_MAP_SLIDE_DOWN
+            MENUITEM "&Left",                       ID_MAP_SLIDE_LEFT
+        END
         MENUITEM "Toggle Lock Layers",          ID_MAP_TOGGLE_LOCK_LAYERS_IN_PLACE
 
     END

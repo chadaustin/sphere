@@ -31,6 +31,12 @@ BEGIN_MESSAGE_MAP(CMapWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_MAP_EXPORTTILESET,   OnExportTileset)
   ON_COMMAND(ID_MAP_IMPORTTILESET,   OnImportTileset)
   ON_COMMAND(ID_MAP_PRUNETILESET,    OnPruneTileset)
+
+  ON_COMMAND(ID_MAP_SLIDE_UP,        OnMapSlideUp)
+  ON_COMMAND(ID_MAP_SLIDE_RIGHT,     OnMapSlideRight)
+  ON_COMMAND(ID_MAP_SLIDE_DOWN,      OnMapSlideDown)
+  ON_COMMAND(ID_MAP_SLIDE_LEFT,      OnMapSlideLeft)
+
   ON_COMMAND(ID_MAP_TOGGLE_LOCK_LAYERS_IN_PLACE, OnToggleLockLayersInPlace)
   ON_NOTIFY(TCN_SELCHANGE, IDC_TAB,  OnTabChanged)
 
@@ -642,3 +648,37 @@ CMapWindow::OnToggleLockLayersInPlace()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMapWindow::OnMapSlideUp()
+{
+  m_Map.Translate(0, -1);
+  LV_MapChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMapWindow::OnMapSlideRight()
+{
+  m_Map.Translate(1, 0);
+  LV_MapChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMapWindow::OnMapSlideDown()
+{
+  m_Map.Translate(0, 1);
+  LV_MapChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMapWindow::OnMapSlideLeft()
+{
+  m_Map.Translate(-1, 0);
+  LV_MapChanged();
+}
