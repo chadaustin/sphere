@@ -89,16 +89,20 @@ static Uint8 KeyMapping[total_keys] = {
   SDLK_LEFT
 };
 
-static bool key_buffer[total_keys];
+static bool key_buffer[MAX_KEY];
+
+///////////////////////////////////////////////////////////
 
 void InitializeInput() {
-  memset(key_buffer, 0, sizeof(bool) * total_keys);
+  memset(key_buffer, false, sizeof(bool) * MAX_KEY);
 }
+
+///////////////////////////////////////////////////////////
 
 bool RefreshInput () {
   SDL_Event event;
   int result;
-  Uint8 key = 0;
+  int key = 0;
 
   //SDL_EnableKeyRepeat(1, 100);
   //SDL_ShowCursor(0);
@@ -113,17 +117,30 @@ bool RefreshInput () {
       switch (pressed) {
         case SDLK_SPACE:  key = KEY_SPACE;  break;
         case SDLK_ESCAPE: key = KEY_ESCAPE; break;
+        case SDLK_LSHIFT: key = KEY_SHIFT;  break;
         case SDLK_RSHIFT: key = KEY_SHIFT;  break;
+        case SDLK_LALT:   key = KEY_ALT;    break;
         case SDLK_RALT:   key = KEY_ALT;    break;
+        case SDLK_LCTRL:  key = KEY_CTRL;   break;
         case SDLK_RCTRL:  key = KEY_CTRL;   break;
         case SDLK_F1:     key = KEY_F1;     break;
+        case SDLK_F2:     key = KEY_F2;     break;
+        case SDLK_F3:     key = KEY_F3;     break;
+        case SDLK_F4:     key = KEY_F4;     break;
+        case SDLK_F5:     key = KEY_F5;     break;
+        case SDLK_F6:     key = KEY_F6;     break;
+        case SDLK_F7:     key = KEY_F7;     break;
+        case SDLK_F8:     key = KEY_F8;     break;
+        case SDLK_F9:     key = KEY_F9;     break;
+        case SDLK_F10:    key = KEY_F10;    break;
         case SDLK_F11:    key = KEY_F11;    break;
         case SDLK_F12:    key = KEY_F12;    break;
-        
+                                                                                
         default:
           for (int lcv = 0; lcv < total_keys; lcv++) {
             if (pressed == KeyMapping[lcv]) {
               key = lcv;
+              //std::cerr << "key: " << (int)key << std::endl;              
               break;
             }
           }
@@ -131,35 +148,46 @@ bool RefreshInput () {
       
       if (key != 0) {
         if (event.type == SDL_KEYDOWN) {
-          //std::cerr << "down: " << (int)key << std::endl;
-          key_queue.push_back(key);
-          key_buffer[key] = true;
-          
-          switch(key) {
-
-            case KEY_F10:
-              ToggleFullscreen();
-            break;
-                                
-            case KEY_F11:
-              ToggleFPS();
-            break;
-
-            case KEY_F12:
-              ShouldTakeScreenshot = true;
-            break;
-
-          };
-          
+          OnKeyDown(key);
         } else {
-          //std::cerr << "up:   " << (int)key << std::endl;
-          key_buffer[key] = false;
+          OnKeyUp(key);
         }
       }
     }
   }
+
   return true; /* not sure what to do, but I guess we succeeded! */
 }
+
+///////////////////////////////////////////////////////////
+
+void OnKeyDown(int key) {
+  //std::cerr << "down: " << (int)key << std::endl;
+  key_queue.push_back(key);
+  key_buffer[key] = true;
+          
+  switch(key) {
+
+    case KEY_F10:
+      ToggleFullscreen();
+    break;
+                                
+    case KEY_F11:
+      ToggleFPS();
+    break;
+
+    case KEY_F12:
+      ShouldTakeScreenshot = true;
+    break;
+  };
+}
+
+void onKeyUp(int key) {
+  //std::cerr << "up:   " << (int)key << std::endl;
+  key_buffer[key] = false;
+}
+
+///////////////////////////////////////////////////////////
 
 bool IsKeyPressed (int key) {
   /* 
@@ -168,26 +196,41 @@ bool IsKeyPressed (int key) {
   key_state = SDL_GetKeyState(NULL);
   return key_state[KeyMapping[key]];
   */
-  return key_buffer[key];
+
+  if (key >= 0 && key < total_keys) {
+    RefreshInput();
+    return key_buffer[key];
+  }
+  
+  return false;
 }
 
+///////////////////////////////////////////////////////////
+
 void GetKeyStates (bool keys[MAX_KEY]) {
-  for (int i = 0; i < MAX_KEY; ++i) {
+
+  for (int i = 1; i < MAX_KEY; ++i) {
     keys[i] = key_buffer[i];
-  }
+  }
 }
+
+///////////////////////////////////////////////////////////
 
 bool AreKeysLeft () {
   RefreshInput();
   return !key_queue.empty();
 }
 
+///////////////////////////////////////////////////////////
+
 int GetKey () {
   int key;
 
+  RefreshInput();
   while (key_queue.empty()) {
     RefreshInput();
   }
+
   key = key_queue.front();
   key_queue.pop_front();
   return key;

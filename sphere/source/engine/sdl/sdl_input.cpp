@@ -56,9 +56,9 @@ bool InitInput()
   VirtualKeys[SDLK_4]            = KEY_4;
   VirtualKeys[SDLK_5]            = KEY_5;
   VirtualKeys[SDLK_6]            = KEY_6;
-  VirtualKeys[SDLK_7]            = KEY_6;
-  VirtualKeys[SDLK_8]            = KEY_7;
-  VirtualKeys[SDLK_9]            = KEY_8;
+  VirtualKeys[SDLK_7]            = KEY_7;
+  VirtualKeys[SDLK_8]            = KEY_8;
+  VirtualKeys[SDLK_9]            = KEY_9;
   VirtualKeys[SDLK_MINUS]        = KEY_MINUS;
   VirtualKeys[SDLK_KP_MINUS]     = KEY_MINUS;
   VirtualKeys[SDLK_EQUALS]       = KEY_EQUALS;
