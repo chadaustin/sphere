@@ -47,15 +47,7 @@ STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Audio"
 FONT 8, "MS Sans Serif"
 BEGIN
-    LISTBOX         IDC_DRIVERLIST,16,20,84,84,LBS_SORT | 
-                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Configure Driver",IDC_CONFIGURE_DRIVER,16,112,84,14
-    LTEXT           "Name",IDC_NAME,108,20,88,8
-    LTEXT           "Author",IDC_AUTHOR,108,32,88,18
-    LTEXT           "Date",IDC_DATE,108,51,88,8
-    LTEXT           "Version",IDC_VERSION,108,64,88,8
-    LTEXT           "Description",IDC_DESCRIPTION,108,77,88,47
-    GROUPBOX        "Drivers",IDC_STATIC,8,4,196,132
+    LTEXT           "I think this is obsolete",IDC_STATIC,8,8,68,8
 END
 
 IDD_INPUT_PAGE DIALOG DISCARDABLE  0, 0, 212, 180

@@ -44,7 +44,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /G5 /MD /W3 /GX /O1 /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "WIN32_LEAN_AND_MEAN" /D "STRICT" /D "XP_PC" /D "JSFILE" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /FAs /FR /FD /c
+# ADD CPP /nologo /G5 /Gd /MD /W3 /GX /O1 /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "WIN32_LEAN_AND_MEAN" /D "STRICT" /D "XP_PC" /D "JSFILE" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /FAs /FR /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -71,7 +71,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /G5 /MDd /W3 /GX /ZI /Od /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "WIN32_LEAN_AND_MEAN" /D "STRICT" /D "XP_PC" /D "JSFILE" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /FAs /FR /FD /GZ /c
+# ADD CPP /nologo /G5 /Gd /MDd /W3 /GX /ZI /Od /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "WIN32_LEAN_AND_MEAN" /D "STRICT" /D "XP_PC" /D "JSFILE" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /FAs /FR /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -100,7 +100,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /G5 /Zp1 /MDd /W3 /GX /ZI /Od /I "../../../js" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "WIN32_LEAN_AND_MEAN" /D "STRICT" /D "XP_PC" /D "JSFILE" /FAs /YX /FD /GZ /c
-# ADD CPP /nologo /G5 /MDd /W3 /GX /ZI /Od /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "WIN32_LEAN_AND_MEAN" /D "STRICT" /D "XP_PC" /D "JSFILE" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /FAs /FR /FD /GZ /c
+# ADD CPP /nologo /G5 /Gd /MDd /W3 /GX /ZI /Od /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "WIN32_LEAN_AND_MEAN" /D "STRICT" /D "XP_PC" /D "JSFILE" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /FAs /FR /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -543,78 +543,6 @@ SOURCE=..\common\WindowStyle.cpp
 # Begin Source File
 
 SOURCE=..\common\WindowStyle.hpp
-# End Source File
-# End Group
-# Begin Group "Library Files"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=..\..\..\naikai\audiere\audiere.h
-# End Source File
-# Begin Source File
-
-SOURCE="..\third-party\jpegwrap.h"
-# End Source File
-# Begin Source File
-
-SOURCE="..\third-party\jsapi.h"
-# End Source File
-# Begin Source File
-
-SOURCE="..\third-party\jscompat.h"
-# End Source File
-# Begin Source File
-
-SOURCE="..\third-party\jscpucfg.h"
-# End Source File
-# Begin Source File
-
-SOURCE="..\third-party\jslong.h"
-# End Source File
-# Begin Source File
-
-SOURCE="..\third-party\jsosdep.h"
-# End Source File
-# Begin Source File
-
-SOURCE="..\third-party\jsotypes.h"
-# End Source File
-# Begin Source File
-
-SOURCE="..\third-party\jspubtd.h"
-# End Source File
-# Begin Source File
-
-SOURCE="..\third-party\jstypes.h"
-# End Source File
-# Begin Source File
-
-SOURCE="..\third-party\libmng.h"
-# End Source File
-# Begin Source File
-
-SOURCE="..\third-party\libmng_conf.h"
-# End Source File
-# Begin Source File
-
-SOURCE="..\third-party\libmng_types.h"
-# End Source File
-# Begin Source File
-
-SOURCE="..\third-party\png.h"
-# End Source File
-# Begin Source File
-
-SOURCE="..\third-party\pngconf.h"
-# End Source File
-# Begin Source File
-
-SOURCE="..\third-party\zconf.h"
-# End Source File
-# Begin Source File
-
-SOURCE="..\third-party\zlib.h"
 # End Source File
 # End Group
 # Begin Group "Platform Headers"

@@ -10,9 +10,6 @@ struct SPHERECONFIG
   // video
   std::string videodriver;
 
-  // audio
-  std::string audiodriver;
-
   // input
   bool joystick;
 };

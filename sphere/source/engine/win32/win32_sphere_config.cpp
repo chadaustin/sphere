@@ -21,9 +21,6 @@ bool LoadSphereConfig(SPHERECONFIG* config, const char* filename)
   // video
   config->videodriver = file.ReadString("Video", "Driver", DEFAULT_VIDEODRIVER);
 
-  // audio
-  config->audiodriver = file.ReadString("Audio", "Driver", DEFAULT_AUDIODRIVER);
-
   // input
   config->joystick = file.ReadBool("Input", "Joystick", false);
 
@@ -38,9 +35,6 @@ bool SaveSphereConfig(SPHERECONFIG* config, const char* filename)
 
   // video
   file.WriteString("Video", "Driver", config->videodriver.c_str());
-
-  // audio
-  file.WriteString("Audio", "Driver", config->audiodriver.c_str());
 
   // input
   file.WriteBool("Input", "Joystick", config->joystick);
