@@ -56,6 +56,7 @@ private:
 
   int    SecondFrame;  // position in file, used for looping
 
+  int    FrameDataSize;
   byte*  FrameData;
   int    FrameDataOffset;  // current location
 };

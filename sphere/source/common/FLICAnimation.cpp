@@ -48,6 +48,7 @@ CFLICAnimation::CFLICAnimation()
 , File(NULL)
 , NextFrame(0)
 , SecondFrame(0)
+, FrameDataSize(0)
 , FrameData(NULL)
 , FrameDataOffset(0)
 {
@@ -88,13 +89,25 @@ CFLICAnimation::Load(const char* filename, IFileSystem& fs)
   Height = FlicHeader.height;
   Delay  = FlicHeader.speed;
 
+  NextFrame   = FlicHeader.oframe1;
+  SecondFrame = FlicHeader.oframe2;
+
+  // verify that NextFrame and SecondFrame are the same
+  if (NextFrame != SecondFrame) {
+    delete File;
+    File = 0;
+    return false;
+  }
+
+  if (NextFrame == 0) {
+    NextFrame = sizeof(FlicHeader);
+    SecondFrame = NextFrame;
+  }
+
   Frame = new byte[Width * Height];
 
   CurrentFrame = 0;
   NumFrames    = FlicHeader.frames;
-
-  NextFrame   = FlicHeader.oframe1;
-  SecondFrame = FlicHeader.oframe2;
 
   return true;
 }
@@ -196,8 +209,9 @@ CFLICAnimation::ReadFrame()
 
   // read the frame out of the file
   delete[] FrameData;
-  FrameData = new byte[FrameHeader.size];
-  File->Read(FrameData, FrameHeader.size);
+  FrameDataSize = FrameHeader.size;
+  FrameData = new byte[FrameDataSize];
+  File->Read(FrameData, FrameDataSize);
   FrameDataOffset = 0;
 
   // operate on all the chunks
@@ -470,9 +484,11 @@ CFLICAnimation::DecodeChunk_COPY()
 byte
 CFLICAnimation::next_byte()
 {
-  byte b = FrameData[FrameDataOffset];
-  FrameDataOffset++;
-  return b;
+  if (FrameDataOffset < FrameDataSize) {
+    return FrameData[FrameDataOffset++];
+  } else {
+    return 0;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -480,9 +496,11 @@ CFLICAnimation::next_byte()
 sbyte
 CFLICAnimation::next_sbyte()
 {
-  sbyte b = ((sbyte*)FrameData)[FrameDataOffset];
-  FrameDataOffset++;
-  return b;
+  if (FrameDataOffset < FrameDataSize) {
+    return ((sbyte*)FrameData)[FrameDataOffset++];
+  } else {
+    return 0;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
