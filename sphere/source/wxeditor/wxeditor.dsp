@@ -517,14 +517,6 @@ SOURCE=.\SwatchServer.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\system.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\system.hpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\TileObstructionDialog.cpp
 # End Source File
 # Begin Source File
@@ -770,6 +762,14 @@ SOURCE=..\common\packed_struct.h
 # Begin Source File
 
 SOURCE=..\common\Spriteset.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\system.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\system.hpp
 # End Source File
 # Begin Source File
 

@@ -41,7 +41,7 @@
 #include "../common/strcmp_ci.hpp"
 
 // system
-#include "system.hpp"
+#include "../common/system.hpp"
 
 // libraries
 // libraries are down here because of symbol conflicts with other headers

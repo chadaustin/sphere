@@ -1138,6 +1138,14 @@ SOURCE=..\common\strcmp_ci.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\common\system.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\system.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\common\Tile.cpp
 # End Source File
 # Begin Source File

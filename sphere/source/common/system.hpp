@@ -1,12 +1,12 @@
 #ifndef SYSTEM_HPP
 #define SYSTEM_HPP
 
+#include <string>
+#include <vector>
+
 #ifdef WIN32
 #include <windows.h>
 #endif
-
-#include <string>
-#include <vector>
 
 #ifndef MAX_PATH
 #define MAX_PATH 255
@@ -23,6 +23,7 @@ bool CreateDirectory(const char* directory, const char* options);
 #endif // WIN32
 
 std::vector<std::string> GetFileList(const char* filter);
+std::vector<std::string> GetFolderList(const char* filter);
 
 #endif // SYSTEM_HPP
 

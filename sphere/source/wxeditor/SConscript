@@ -66,7 +66,6 @@ wxeditor = env.Program('wxeditor', Split("""
     SpritesetWindow.cpp
     SwatchPalette.cpp
     SwatchServer.cpp
-    system.cpp
     TileObstructionDialog.cpp
     TileObstructionView.cpp
     TilePalette.cpp

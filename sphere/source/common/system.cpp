@@ -66,3 +66,21 @@ std::vector<std::string> GetFileList(const char* filter)
   return file_list;
 }
 
+std::vector<std::string> GetFolderList(const char* filter)
+{
+  std::vector<std::string> folder_list;
+#ifdef WIN32
+  WIN32_FIND_DATA ffd;
+  HANDLE h = FindFirstFile(filter, &ffd);
+  if (h != INVALID_HANDLE_VALUE) {
+
+    do {
+      if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+        folder_list.push_back(ffd.cFileName);
+
+    } while (FindNextFile(h, &ffd));
+    FindClose(h);
+  }
+#endif
+  return folder_list;
+}

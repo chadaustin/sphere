@@ -9,7 +9,7 @@
 #include "../common/configfile.hpp"
 #include "../common/types.h"
 
-#include "../wxeditor/system.hpp"
+#include "../common/system.hpp"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -284,13 +284,41 @@ CProject::RefreshItems()
     std::vector<std::string> extensions;
     FTL.GetFileTypeExtensions(i, extensions);
 
+/*
+    std::vector<std::string> folder_list = GetFolderList("*");
+    for (int l = 0; l < folder_list.size(); l++) {
+      if (folder_list[l] != "." && folder_list[l] != "..")
+      {
+        AddItem(i, folder_list[l].c_str());
+
+        char old_folder_directory[MAX_PATH];
+        GetCurrentDirectory(MAX_PATH, old_folder_directory);
+
+        if (!SetCurrentDirectory(folder_list[l].c_str()))
+          continue;
+
+        for (int j = 0; j < extensions.size(); j++)
+        {
+          std::string filter = "*." + extensions[j];
+          std::vector<std::string> file_list = GetFileList(filter.c_str());
+
+          for (int k = 0; k < file_list.size(); k++) {
+            AddItem(i, file_list[k].c_str());
+          }
+        }
+
+        SetCurrentDirectory(old_folder_directory);
+      }
+    }
+*/
+
     for (int j = 0; j < extensions.size(); j++) {
       std::string filter = "*." + extensions[j];
        std::vector<std::string> file_list = GetFileList(filter.c_str());
 
-      for (int k = 0; k < file_list.size(); k++)
+      for (int k = 0; k < file_list.size(); k++) {
         AddItem(i, file_list[k].c_str());
-
+      }
     }
 
   }

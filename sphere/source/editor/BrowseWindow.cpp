@@ -15,7 +15,7 @@
 #include "../common/Font.hpp"
 #include "../common/AnimationFactory.hpp"
 
-#include "../wxeditor/system.hpp"
+#include "../common/system.hpp"
 
 static const int BROWSE_TIMER = 9001;
 

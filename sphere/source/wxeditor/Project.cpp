@@ -11,7 +11,7 @@
 #include "../common/configfile.hpp"
 #include "../common/types.h"
 
-#include "system.hpp"
+#include "../common/system.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 
