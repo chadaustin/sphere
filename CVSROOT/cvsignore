@@ -1,3 +1,4 @@
 *.ncb
 *.opt
 *.aps
+.sconsign
