@@ -189,7 +189,7 @@ private:
   afx_msg void OnViewPalette(UINT id);
 
 private:
-  CToolBar   m_ToolBar;
+  CToolBar   m_MainToolBar;
   CToolBar   m_ImageToolBar;
   CToolBar   m_MapToolBar;
 

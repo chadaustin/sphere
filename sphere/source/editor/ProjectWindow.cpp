@@ -15,20 +15,20 @@
 
 #include "../common/system.hpp"
 
-const int TreeID = 9865;
+static const int TreeID = 9865;
 
-const int tiGameSettings = 100;
-const int tiMaps         = 101;
-const int tiSpritesets   = 102;
-const int tiSounds       = 103;
-const int tiScripts      = 104;
-const int tiImages       = 105;
-const int tiAnimations   = 106;
-const int tiWindowStyles = 107;
-const int tiFonts        = 108;
+static const int tiGameSettings = 100;
+static const int tiMaps         = 101;
+static const int tiSpritesets   = 102;
+static const int tiSounds       = 103;
+static const int tiScripts      = 104;
+static const int tiImages       = 105;
+static const int tiAnimations   = 106;
+static const int tiWindowStyles = 107;
+static const int tiFonts        = 108;
 
 
-const int IDI_FILETYPE_BASE = 4;
+static const int IDI_FILETYPE_BASE = 4;
 
 
 BEGIN_MESSAGE_MAP(CProjectWindow, BaseProjectWindow)
@@ -234,8 +234,8 @@ static void UpdateTreeStructure(CTreeCtrl& m_TreeControl, HTREEITEM root) {
     SetCurrentDirectory(folderlist[i].c_str());
     std::vector<std::string> filelist = GetFileList("*");
 
-    for (unsigned int j = 0; j < filelist.size(); j++) {
-
+    for (unsigned int j = 0; j < filelist.size(); j++)
+    {
       int image_index = IDI_FILETYPE_BASE - 1; // Unknown icon type
       std::string filename = filelist[j];
       for (int file_type = 0; file_type < FTL.GetNumFileTypes(); file_type++) {
@@ -258,6 +258,8 @@ static void UpdateTreeStructure(CTreeCtrl& m_TreeControl, HTREEITEM root) {
         0, 0, 0, item, TVI_SORT
       );
     }
+
+    filelist.clear();
 
     if (GetFolderList("*").size() > 0)
       UpdateTreeStructure(m_TreeControl, item);
@@ -507,8 +509,7 @@ afx_msg void
 CProjectWindow::OnKeyDown(NMHDR* notify, LRESULT* result)
 {
   NMTVKEYDOWN* key = (NMTVKEYDOWN*)notify;
-  if (!key)
-    return;
+  if (!key) return;
 
   switch (key->wVKey)
   {
@@ -528,8 +529,7 @@ afx_msg void
 CProjectWindow::OnDoubleClick(NMHDR* /*notify*/, LRESULT* /*result*/)
 {
   HTREEITEM item = m_TreeControl.GetSelectedItem();
-  if (item == NULL)
-    return;
+  if (item == NULL) return;
 
   switch (m_TreeControl.GetItemData(item))
   {
@@ -539,6 +539,11 @@ CProjectWindow::OnDoubleClick(NMHDR* /*notify*/, LRESULT* /*result*/)
     break;
 
     default: {
+      if (IsTreeItemFolder(m_TreeControl, item)) {
+        m_TreeControl.Expand(item, TVE_TOGGLE);
+        return;
+      }
+
       // check to see if user clicked on an item in a folder
       if (!IsTreeItemFile(m_TreeControl, item))
         return;

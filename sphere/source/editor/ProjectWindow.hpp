@@ -58,18 +58,6 @@ private:
 
   CTreeCtrl m_TreeControl;
 
-  // keep handles to the group items
-  /*
-  HTREEITEM m_htiMaps;         bool m_htiMapsExpanded;
-  HTREEITEM m_htiSpritesets;   bool m_htiSpritesetsExpanded;
-  HTREEITEM m_htiScripts;      bool m_htiScriptsExpanded;
-  HTREEITEM m_htiSounds;       bool m_htiSoundsExpanded;
-  HTREEITEM m_htiFonts;        bool m_htiFontsExpanded;
-  HTREEITEM m_htiWindowStyles; bool m_htiWindowStylesExpanded;
-  HTREEITEM m_htiImages;       bool m_htiImagesExpanded;
-  HTREEITEM m_htiAnimations;   bool m_htiAnimationsExpanded;
-  */
-
   DECLARE_MESSAGE_MAP()
 };
 

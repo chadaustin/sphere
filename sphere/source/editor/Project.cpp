@@ -294,35 +294,40 @@ CProject::RefreshItems()
   {
     std::vector<std::string> folderlist = GetFolderList("*");
     for (unsigned int i = 0; i < folderlist.size(); i++) {
-      if (folderlist[i] != "." && folderlist[i] != "..") {
+      if (folderlist[i] != "." || folderlist[i] != "..")
+        continue;
         
-        if (!SetCurrentDirectory(m_Directory.c_str()))
-          continue;
+      if (!SetCurrentDirectory(m_Directory.c_str()))
+        continue;
 
-        if (SetCurrentDirectory(folderlist[i].c_str())) {
+      if (SetCurrentDirectory(folderlist[i].c_str()))
+      {
+        if (1)
+        {
           Group current;
           current.FolderName = folderlist[i];
           current.Files = GetFileList("*");
           m_Groups.push_back(current);
+        }
 
-          if (folderlist[i] == "scripts") {
-            if (m_GameScript.empty()) {
-              if (current.Files.size() == 0) {
-                m_GameScript = "";
-              }
-              else {
-                m_GameScript = current.Files[0];
-              }
+        if (folderlist[i] == "scripts")
+        {
+          if (m_GameScript.empty()) {
+            if (folderlist.size() == 0) {
+              m_GameScript = "";
+            }
+            else {
+              m_GameScript = folderlist[0];
+            }
 
-              if (!m_Filename.empty()) {
-                Save();
-              }
+            if (!m_Filename.empty()) {
+              Save();
             }
           }
         }
-
-        SetCurrentDirectory(m_Directory.c_str());
       }
+
+      SetCurrentDirectory(m_Directory.c_str());
     }
   }
 

@@ -298,13 +298,13 @@ CMainWindow::Create()
   LoadAccelTable(MAKEINTRESOURCE(IDR_ACCELERATOR));
 
   // create the toolbar
-  m_ToolBar.CreateEx(
+  m_MainToolBar.CreateEx(
     this,
     TBSTYLE_FLAT,
     WS_CHILD | WS_VISIBLE | CBRS_SIZE_DYNAMIC | CBRS_TOP | CBRS_GRIPPER | CBRS_FLYBY | CBRS_TOOLTIPS);
-  m_ToolBar.SetWindowText("Main");
-  m_ToolBar.LoadToolBar(IDR_TOOLBAR);
-  m_ToolBar.EnableDocking(CBRS_ALIGN_ANY);
+  m_MainToolBar.SetWindowText("Main");
+  m_MainToolBar.LoadToolBar(IDR_TOOLBAR);
+  m_MainToolBar.EnableDocking(CBRS_ALIGN_ANY);
 
   // create the toolbar
   m_ImageToolBar.CreateEx(
@@ -345,7 +345,7 @@ CMainWindow::Create()
   // enable docking
   EnableDocking(CBRS_ALIGN_ANY);
 
-  DockControlBar(&m_ToolBar,      AFX_IDW_DOCKBAR_TOP);
+  DockControlBar(&m_MainToolBar,      AFX_IDW_DOCKBAR_TOP);
   DockControlBar(&m_ImageToolBar, AFX_IDW_DOCKBAR_TOP);
   DockControlBar(&m_MapToolBar,   AFX_IDW_DOCKBAR_TOP);
 
@@ -374,9 +374,9 @@ CMainWindow::Create()
   wp = Configuration::Get(KEY_STANDARDTOOLBAR_PLACEMENT);
   if (wp.length != 0) {
     ShowWPConfig(wp);
-    m_ToolBar.SetWindowPlacement(&wp);
+    m_MainToolBar.SetWindowPlacement(&wp);
   } else {
-    m_ToolBar.ShowWindow(SW_SHOW);
+    m_MainToolBar.ShowWindow(SW_SHOW);
   }
 
 //  RecalcLayout();
@@ -835,7 +835,7 @@ CMainWindow::OnClose()
   GetWindowPlacement(&wp);
   Configuration::Set(KEY_STARTUP, wp);
 
-  m_ToolBar.GetWindowPlacement(&wp);
+  m_MainToolBar.GetWindowPlacement(&wp);
   Configuration::Set(KEY_STANDARDTOOLBAR_PLACEMENT, wp);
   ShowWPConfig(wp);
 
