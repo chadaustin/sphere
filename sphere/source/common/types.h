@@ -71,6 +71,48 @@ typedef unsigned short   uchar16;
 typedef          float   float32;
 typedef          double  float64;
 
+#elif defined(CYGWIN)
+
+
+typedef          long long qword;
+typedef signed   long long sqword;
+typedef unsigned long long uqword;
+
+typedef unsigned short   ushort;
+typedef signed   short   sshort;
+
+typedef unsigned long    ulong;
+typedef signed   long    slong;
+
+// typedef  signed char    int8;
+typedef          short     int16;
+typedef          long      int32;
+typedef          long long int64;
+
+typedef signed   int     sint;
+typedef signed   char    sint8;
+typedef signed   short   sint16;
+typedef signed   long    sint32;
+
+typedef unsigned int     uint;
+typedef unsigned char    uint8;
+typedef unsigned short   uint16;
+typedef unsigned long    uint32;
+
+typedef signed   char    schar;
+typedef unsigned char    uchar;
+
+typedef          char    char8;
+typedef signed   char    schar8;
+typedef unsigned char    uchar8;
+
+typedef          short   char16;
+typedef signed   short   schar16;
+typedef unsigned short   uchar16;
+
+typedef          float   float32;
+typedef          double  float64;
+
 #else
 
 typedef          long long qword;
@@ -85,9 +127,7 @@ typedef signed   long    slong;
 
 // typedef  signed char    int8;
 typedef          short     int16;
-#if 0
-typedef          long      int32;
-#endif
+// typed long int32;
 typedef          long long int64;
 
 typedef signed   int     sint;
@@ -98,9 +138,7 @@ typedef signed   long    sint32;
 typedef unsigned int     uint;
 typedef unsigned char    uint8;
 typedef unsigned short   uint16;
-#if 0
-typedef unsigned long    uint32;
-#endif
+// typedef unsigned long    uint32;
 
 typedef signed   char    schar;
 typedef unsigned char    uchar;
