@@ -76,6 +76,7 @@ CMapView::CMapView()
   s_MapAreaClipboardFormat = RegisterClipboardFormat("MapAreaSelection32");
   s_MapEntityClipboardFormat = RegisterClipboardFormat("MapEntitySelection32");
   s_ClipboardFormat = RegisterClipboardFormat("FlatImage32");
+  m_Clipboard = new CClipboard();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -84,6 +85,7 @@ CMapView::~CMapView()
 {
   // destroy the blit DIB
   delete m_BlitTile;
+  delete m_Clipboard;
   DestroyWindow();
   m_TileObstructions.clear();
   Configuration::Set(KEY_MAP_SPRITESET_DRAWTYPE, m_SpritesetDrawType);
@@ -708,118 +710,6 @@ CMapView::LayerAreaCopy()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RGBA* // the return value needs to be delete[] 'ed
-CMapView::GetFlatImageFromClipboard(int& width, int& height)
-{
-  if (OpenClipboard() == FALSE)
-    return NULL;
-
-  HGLOBAL memory = (HGLOBAL)GetClipboardData(s_ClipboardFormat);
-  if (memory == NULL) {
-    CloseClipboard();
-    return NULL;
-  }
-
-  // get the height and pixels from the clipboard
-  dword* ptr = (dword*)GlobalLock(memory);
-  if (ptr == NULL) {
-    CloseClipboard();
-    return NULL;
-  }
-
-  width = *ptr++;
-  height = *ptr++;
-
-  if (width <= 0 || height <= 0) {
-    CloseClipboard();
-    return NULL;
-  }
-
-  RGBA* clipboard = (RGBA*)ptr;
-  RGBA* pixels = new RGBA[width * height];
-  if (pixels == NULL) {
-    CloseClipboard();
-    return NULL;
-  }
-
-  for (int y = 0; y < height; y++) {
-    for (int x = 0; x < width; x++) {
-      pixels[y * width + x] = clipboard[y * width + x];
-    }
-  }
-
-  GlobalUnlock(memory);
-  CloseClipboard();
-
-  return pixels;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-RGBA* // the return value needs to be delete[] 'ed
-CMapView::GetBitmapImageFromClipboard(int& width, int& height)
-{
-  if (OpenClipboard() == FALSE)
-    return NULL;
-
-  HBITMAP bitmap = (HBITMAP)GetClipboardData(CF_BITMAP);
-  if (bitmap == NULL) {
-    CloseClipboard();
-    return NULL;
-  }
-
-  BITMAP b;
-  GetObject(bitmap, sizeof(b), &b);
-
-  HDC dc = CreateCompatibleDC(NULL);
-  HBITMAP oldbitmap = (HBITMAP)SelectObject(dc, bitmap);
-
-  // work out the possible width
-  for (width = 0; width < 4096; width++)
-    if (GetPixel(dc, width, 0) == CLR_INVALID)
-      break;
-
-  // work out the possible height
-  for (height = 0; height < 4096; height++)
-    if (GetPixel(dc, 0, height) == CLR_INVALID)
-      break;
-
-  if (width <= 0 || height <= 0) {
-    CloseClipboard();
-    return NULL;
-  }
-
-  RGBA* pixels = new RGBA[width * height];
-  if (pixels == NULL) {
-    CloseClipboard();
-    return NULL;
-  }
-
-  for (int iy = 0; iy < height; iy++) {
-    for (int ix = 0; ix < width; ix++)
-    {
-      COLORREF pixel = GetPixel(dc, ix, iy);
-      if (pixel == CLR_INVALID) {
-        pixel = RGB(0, 0, 0);
-      }
-
-      pixels[iy * width + ix].red   = GetRValue(pixel);
-      pixels[iy * width + ix].green = GetGValue(pixel);
-      pixels[iy * width + ix].blue  = GetBValue(pixel);
-      pixels[iy * width + ix].alpha = 255;  // there is no alpha so we use a default
-    }
-  }
-
-  SelectObject(dc, oldbitmap);
-  DeleteDC(dc);
-
-  CloseClipboard();
-
-  return pixels;  
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 void PasteMapUnderPointFunc(sMap* m_Map, const sMap& tMap, int m_SelectedLayer, int tx, int ty)
 {
   sTileset tTileset = tMap.GetTileset();
@@ -951,10 +841,12 @@ CMapView::PasteMapUnderPoint(CPoint point)
 
     int width;
     int height;
-    RGBA* pixels = GetFlatImageFromClipboard(width, height);
+    RGBA* pixels = m_Clipboard->GetFlatImageFromClipboard(width, height);
 
     if (pixels == NULL)
-      pixels = GetBitmapImageFromClipboard(width, height);
+      pixels = m_Clipboard->GetBitmapImageFromClipboard(width, height);
+
+    CloseClipboard();
 
     if (pixels != NULL)
     {
@@ -966,8 +858,9 @@ CMapView::PasteMapUnderPoint(CPoint point)
 
       image.Resize(width, height); // make sure image is a multiple of tile_width and tile_height
 
-      if (image.GetWidth() != width || image.GetHeight() != height)
+      if (image.GetWidth() != width || image.GetHeight() != height) {
         return;
+      }
 
       if (tTileset.BuildFromImage(image, m_Map->GetTileset().GetTileWidth(), m_Map->GetTileset().GetTileHeight(), true))
       {
@@ -976,8 +869,9 @@ CMapView::PasteMapUnderPoint(CPoint point)
         int layer_height = height / m_Map->GetTileset().GetTileHeight();
 
         tLayer.Resize(layer_width, layer_height);
-        if (tLayer.GetWidth() != layer_width || tLayer.GetHeight() != layer_height)
+        if (tLayer.GetWidth() != layer_width || tLayer.GetHeight() != layer_height) {
           return;
+        }
 
         int i = 0;
         for (int y = 0; y < layer_height; y++)

@@ -8,7 +8,7 @@
 #include "../common/Tileset.hpp"
 #include "DIBSection.hpp"
 #include "MapToolPalette.hpp"
-
+#include "Clipboard.hpp"
 
 class IMapViewHandler
 {
@@ -73,9 +73,6 @@ private:
 
   int FindSpritesetImageIconsIndex(int person_index, std::string filename);
 
-  RGBA* GetFlatImageFromClipboard(int& width, int& height);
-  RGBA* GetBitmapImageFromClipboard(int& width, int& height);
-
 private:
   afx_msg void OnDestroy();
   afx_msg void OnPaint();
@@ -120,6 +117,7 @@ private:
   sMap* m_Map;
 
   CDIBSection* m_BlitTile;  // for rendering tiles
+  CClipboard* m_Clipboard;
 
   int m_ZoomFactor;
   RGB m_ObstructionColor;

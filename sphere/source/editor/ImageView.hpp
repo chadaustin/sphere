@@ -8,6 +8,8 @@
 #include "ImageToolPalette.hpp"
 #include "DIBSection.hpp"
 
+#include "Clipboard.hpp"
+
 
 class CDocumentWindow;  // #include "DocumentWindow.hpp"
 
@@ -196,6 +198,8 @@ private:
   int m_RedrawY;
   int m_RedrawWidth;
   int m_RedrawHeight;
+
+  CClipboard* m_Clipboard;
 
   DECLARE_MESSAGE_MAP()
 };

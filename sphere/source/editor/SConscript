@@ -16,9 +16,10 @@ sources = Split("""
     AlphaView.cpp
     AnimationWindow.cpp
     Audio.cpp
+    Clipboard.cpp
     ColorView.cpp
-    ConvolveListDialog.cpp
     Configuration.cpp
+    ConvolveListDialog.cpp
     DIBSection.cpp
     Debug.cpp
     DocumentWindow.cpp

@@ -18,7 +18,7 @@
 
 static int s_ImageViewID = 9000;
 
-static UINT s_ClipboardFormat;
+//static UINT s_ClipboardFormat;
 
 
 BEGIN_MESSAGE_MAP(CImageView, CWnd)
@@ -98,7 +98,8 @@ CImageView::CImageView()
 {
   m_Image.SetBlendMode(CImage32::REPLACE);
   m_ShowGrid = false;
-  s_ClipboardFormat = RegisterClipboardFormat("FlatImage32");
+  //s_ClipboardFormat = RegisterClipboardFormat("FlatImage32");
+  m_Clipboard = new CClipboard();
 
   m_BlitTile = new CDIBSection(16, 16, 32);
 }
@@ -109,6 +110,8 @@ CImageView::~CImageView()
 {
   // destroy the blit DIB
   delete m_BlitTile;
+
+  delete m_Clipboard;
 
   m_SelectionPoints.clear();
 
@@ -291,25 +294,7 @@ CImageView::Copy()
   int sy = GetSelectionTopY();
   int sw = GetSelectionWidth();
   int sh = GetSelectionHeight();
-  RGBA* source = m_Image.GetPixels();
-
-  // ADD FLAT 32
-
-  // copy the image as a flat 32-bit color image
-  HGLOBAL memory = GlobalAlloc(GHND, 8 + width * height * 4);
-  if (memory == NULL) {
-    CloseClipboard();
-    return false;
-  }
-
-  dword* ptr = (dword*)GlobalLock(memory);
-  if (ptr == NULL) {
-    CloseClipboard();
-    return false;
-  }
-
-  *ptr++ = sw;
-  *ptr++ = sh;
+  const RGBA* source = m_Image.GetPixels();
 
   RGBA* flat_pixels = new RGBA[sw * sh];
   if (flat_pixels == NULL) {
@@ -327,172 +312,13 @@ CImageView::Copy()
     }
   }
 
-  memcpy(ptr, flat_pixels, sw * sh * sizeof(RGBA));
+  m_Clipboard->PutFlatImageOntoClipboard(sw, sh, flat_pixels);
+  m_Clipboard->PutBitmapImageOntoClipboard(sw, sh, flat_pixels);
+  
   delete[] flat_pixels;
-
-  // put the image on the clipboard
-  GlobalUnlock(memory);
-  SetClipboardData(s_ClipboardFormat, memory);
-
-  // ADD DIB
-  // create a pixel array to initialize the bitmap
-  BGRA* pixels = new BGRA[sw * sh];
-  if (pixels == NULL) {
-    CloseClipboard();
-    return false;
-  }
-
-  for (int iy = sy; iy < (sy + sh); iy++) {
-    for (int ix = sx; ix < (sx + sw); ix++)
-    {
-      pixels[(sh - iy + sy - 1) * (sw) + ix - sx].red   = source[iy * width + ix].red;
-      pixels[(sh - iy + sy - 1) * (sw) + ix - sx].green = source[iy * width + ix].green;
-      pixels[(sh - iy + sy - 1) * (sw) + ix - sx].blue  = source[iy * width + ix].blue;
-      pixels[(sh - iy + sy - 1) * (sw) + ix - sx].alpha = source[iy * width + ix].alpha;
-    }
-  }
-
-  // create the bitmap
-  HBITMAP bitmap = CreateBitmap(sw, sh, 1, 32, pixels);
-	BITMAPINFOHEADER header;
-	header.biSize = sizeof(header);
-	header.biWidth = sw;
-	header.biHeight = sh;
-	header.biPlanes = 1;
-	header.biBitCount = 32;
-	header.biCompression = BI_RGB;
-	header.biSizeImage = 0;
-	header.biXPelsPerMeter = 0;
-	header.biYPelsPerMeter = 0;
-	header.biClrUsed = 0;
-	header.biClrImportant = 0;
-
-	HGLOBAL hDIB = GlobalAlloc(GHND, sizeof(header) + width * height * 4);
-  char* dibPtr = (char*)GlobalLock(hDIB);
-  if (dibPtr == NULL) {
-    CloseClipboard();
-    return false;
-  }
-	memcpy(dibPtr, &header, sizeof(header));
-	memcpy(dibPtr+sizeof(header), pixels, width * height * 4);
-	GlobalUnlock(hDIB);
-
-  // put the bitmap in the clipboard
-  SetClipboardData(CF_DIB, hDIB);
-	delete[] pixels;
 
   CloseClipboard();
   return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-RGBA*
-CImageView::GetFlatImageFromClipboard(int& width, int& height)
-{
-  if (OpenClipboard() == FALSE)
-    return NULL;
-
-  HGLOBAL memory = (HGLOBAL)GetClipboardData(s_ClipboardFormat);
-  if (memory == NULL) {
-    CloseClipboard();
-    return NULL;
-  }
-
-  // get the height and pixels from the clipboard
-  dword* ptr = (dword*)GlobalLock(memory);
-  if (ptr == NULL) {
-    CloseClipboard();
-    return NULL;
-  }
-
-  width = *ptr++;
-  height = *ptr++;
-
-  if (width <= 0 || height <= 0) {
-    CloseClipboard();
-    return NULL;
-  }
-
-  RGBA* clipboard = (RGBA*)ptr;
-  RGBA* pixels = new RGBA[width * height];
-  if (pixels == NULL) {
-    CloseClipboard();
-    return NULL;
-  }
-
-  for (int y = 0; y < height; y++) {
-    for (int x = 0; x < width; x++) {
-      pixels[y * width + x] = clipboard[y * width + x];
-    }
-  }
-
-  GlobalUnlock(memory);
-  CloseClipboard();
-
-  return pixels;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-RGBA*
-CImageView::GetBitmapImageFromClipboard(int& width, int& height)
-{
-  if (OpenClipboard() == FALSE)
-    return NULL;
-
-  HBITMAP bitmap = (HBITMAP)GetClipboardData(CF_BITMAP);
-  if (bitmap == NULL) {
-    CloseClipboard();
-    return NULL;
-  }
-
-  BITMAP b;
-  GetObject(bitmap, sizeof(b), &b);
-
-  HDC dc = CreateCompatibleDC(NULL);
-  HBITMAP oldbitmap = (HBITMAP)SelectObject(dc, bitmap);
-
-  // work out the possible width
-  for (width = 0; width < 4096; width++)
-    if (GetPixel(dc, width, 0) == CLR_INVALID)
-      break;
-
-  // work out the possible height
-  for (height = 0; height < 4096; height++)
-    if (GetPixel(dc, 0, height) == CLR_INVALID)
-      break;
-
-  if (width <= 0 || height <= 0) {
-    CloseClipboard();
-    return NULL;
-  }
-
-  RGBA* pixels = new RGBA[width * height];
-  if (pixels == NULL) {
-    CloseClipboard();
-    return NULL;
-  }
-
-  for (int iy = 0; iy < height; iy++)
-    for (int ix = 0; ix < width; ix++)
-    {
-      COLORREF pixel = GetPixel(dc, ix, iy);
-      if (pixel == CLR_INVALID)
-        pixel = RGB(0, 0, 0);
-
-      pixels[iy * width + ix].red   = GetRValue(pixel);
-      pixels[iy * width + ix].green = GetGValue(pixel);
-      pixels[iy * width + ix].blue  = GetBValue(pixel);
-      pixels[iy * width + ix].alpha = 255;  // there is no alpha so we use a default
-    }
-
-  SelectObject(dc, oldbitmap);
-  DeleteDC(dc);
-
-  CloseClipboard();
-
-  return pixels;  
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -510,9 +336,11 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha, int merge
   RGBA* cpixels = NULL;
 
   // see if the flat image is in the clipboard
-  cpixels = GetFlatImageFromClipboard(cwidth, cheight);
+  cpixels = m_Clipboard->GetFlatImageFromClipboard(cwidth, cheight);
   if (cpixels == NULL)
-    cpixels = GetBitmapImageFromClipboard(cwidth, cheight);
+    cpixels = m_Clipboard->GetBitmapImageFromClipboard(cwidth, cheight);
+
+  CloseClipboard();
 
   if (cpixels != NULL) {
 
@@ -1786,6 +1614,19 @@ CImageView::OnRButtonUp(UINT flags, CPoint point)
 
   if (m_ShowAlphaMask) {
     CheckMenuItem(menu, ID_IMAGEVIEW_TOGGLEALPHAMASK, MF_BYCOMMAND | MF_CHECKED);
+  }
+
+  bool image_on_clipboard = false;
+  if (OpenClipboard()) {
+    image_on_clipboard = m_Clipboard->IsFlatImageOnClipbard() || m_Clipboard->IsBitmapImageOnClipboard();
+    CloseClipboard();
+  }
+
+  if (!image_on_clipboard) {
+    EnableMenuItem(menu, ID_IMAGEVIEW_PASTE,               MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_IMAGEVIEW_PASTE_RGB,           MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_IMAGEVIEW_PASTE_ALPHA,         MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_IMAGEVIEW_PASTE_INTOSELECTION, MF_BYCOMMAND | MF_GRAYED);
   }
 
   switch (m_Image.GetBlendMode()) {

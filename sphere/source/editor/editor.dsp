@@ -138,6 +138,14 @@ SOURCE=.\Audio.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\Clipboard.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Clipboard.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\Configuration.cpp
 # End Source File
 # Begin Source File
