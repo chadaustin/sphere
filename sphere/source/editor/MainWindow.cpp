@@ -396,6 +396,8 @@ CMainWindow::Create()
   // show the window in the initial position
   WINDOWPLACEMENT wp = Configuration::Get(KEY_STARTUP);
   if (wp.length != 0) {
+    if (wp.showCmd == SW_SHOWMINIMIZED)
+      wp.showCmd = SW_SHOW;
     SetWindowPlacement(&wp);
   } else {
     ShowWindow(SW_SHOW);
