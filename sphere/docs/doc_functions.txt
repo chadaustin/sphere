@@ -853,6 +853,10 @@ log_object.endBlock()
   animation_object.drawFrame(x, y)
     - draws the current frame into the video buffer
 
+  animation_object.drawZoomedFrame(x, y, scale);
+    - draws the current frame into the video buffer with a specified
+      zoom scale
+
 
   *** files ***
   GetFileList(directory)

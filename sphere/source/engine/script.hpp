@@ -196,6 +196,7 @@ private:
   declare_method(ssAnimationGetDelay);
   declare_method(ssAnimationReadNextFrame);
   declare_method(ssAnimationDrawFrame);
+  declare_method(ssAnimationDrawZoomedFrame);
 
   // files
   declare_constructor1(CreateFileObject, CConfigFile* file);

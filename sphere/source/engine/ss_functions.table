@@ -280,6 +280,7 @@ SS_FUNCTION(OpenLog, 1)
   //animation.getDelay()
   //animation.readNextFrame()
   //animation.drawFrame(x, y)
+  //animation.drawZoomedFrame(x, y, scale)
 
   // files
   SS_FUNCTION(GetFileList, 0)

@@ -4044,10 +4044,11 @@ CScript::CreateAnimationObject(JSContext* cx, IAnimation* animation)
 
   // assign the methods to the object
   static JSFunctionSpec fs[] = {
-    { "getNumFrames",  ssAnimationGetNumFrames,  0, 0, 0 },
-    { "getDelay",      ssAnimationGetDelay,      0, 0, 0 },
-    { "readNextFrame", ssAnimationReadNextFrame, 0, 0, 0 },
-    { "drawFrame",     ssAnimationDrawFrame,     2, 0, 0 },
+    { "getNumFrames",    ssAnimationGetNumFrames,    0, 0, 0 },
+    { "getDelay",        ssAnimationGetDelay,        0, 0, 0 },
+    { "readNextFrame",   ssAnimationReadNextFrame,   0, 0, 0 },
+    { "drawFrame",       ssAnimationDrawFrame,       2, 0, 0 },
+    { "drawZoomedFrame", ssAnimationDrawZoomedFrame, 3, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -4102,6 +4103,24 @@ begin_method(SS_ANIMATION, ssAnimationDrawFrame, 2)
 end_method()
 
 ///////////////////////////////////////
+
+begin_method(SS_ANIMATION, ssAnimationDrawZoomedFrame, 3)
+  arg_int(x);
+  arg_int(y);
+  arg_double(factor);
+  if (This->m_ShouldRender) {
+    int w = object->animation->GetWidth();
+    int h = object->animation->GetHeight();
+
+    int tx[4] = { x, x + (int)(w * factor), x + (int)(w * factor), x };
+    int ty[4] = { y, y, y + (int)(h * factor), y + (int)(h * factor) };
+
+    DirectTransformBlit(tx, ty, w, h, object->frame);
+  }
+end_method()
+
+///////////////////////////////////////
+
 
 
 ///////////////////////////////////////
