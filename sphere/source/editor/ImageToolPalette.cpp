@@ -18,6 +18,7 @@ CImageToolPalette::CImageToolPalette(CDocumentWindow* owner, IToolPaletteHandler
   AddTool(IDI_IMAGETOOL_ELLIPSE,   "Ellipse");
   AddTool(IDI_IMAGETOOL_FILL,      "Fill");
   AddTool(IDI_IMAGETOOL_SELECTION, "Selection");
+  AddTool(IDI_IMAGETOOL_FREESELECTION, "Free Selection");
 }
 
 ////////////////////////////////////////////////////////////////////////////////

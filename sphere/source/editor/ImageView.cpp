@@ -82,6 +82,7 @@ CImageView::CImageView()
 , m_CurrentTool(Tool_Pencil)
 , m_NumUndoImages(0)
 , m_UndoImages(NULL)
+, m_SelectionType(ST_Rectangle)
 , m_SelectionX(0)
 , m_SelectionY(0)
 , m_SelectionWidth(0)
@@ -106,6 +107,8 @@ CImageView::~CImageView()
 {
   // destroy the blit DIB
   delete m_BlitTile;
+
+  m_SelectionPoints.clear();
 
   ResetUndoStates();
 
@@ -602,6 +605,10 @@ CImageView::TP_ToolSelected(int tool)
 {
   // do something with the tool
   m_CurrentTool = tool;
+  switch (m_CurrentTool) {
+    case Tool_Selection: m_SelectionType = ST_Rectangle; break;
+    case Tool_FreeSelection: m_SelectionType = ST_Free; break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -972,7 +979,6 @@ CImageView::Selection()
   }
 
   Invalidate();
-  //m_Handler->IV_ImageChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1105,6 +1111,7 @@ CImageView::OnPaint()
     case Tool_Circle:    PaintCircle(drawImage); break;
     case Tool_Ellipse:   PaintEllipse(drawImage); break;
     case Tool_Selection: UpdateSelection(); break;
+    case Tool_FreeSelection: UpdateSelection(); break;
   }
 
   int width = drawImage.GetWidth();
@@ -1371,14 +1378,32 @@ CImageView::OnPaint()
   }
 
   // draw the selection box if it exists
-  if (m_SelectionWidth > 0 && m_SelectionHeight > 0) {
+  if (m_SelectionType == ST_Rectangle) {
+    if (m_SelectionWidth > 0 && m_SelectionHeight > 0) {
+      HPEN linepen = CreatePen(PS_SOLID, 1, RGB(0, 255, 255));
+      HPEN oldpen = (HPEN)SelectObject(dc, linepen);
+      MoveToEx(dc, offsetx + m_SelectionX * size, offsety + m_SelectionY * size, NULL);
+      LineTo  (dc, offsetx + m_SelectionX * size, offsety + (m_SelectionY + m_SelectionHeight) * size);
+      LineTo  (dc, offsetx + (m_SelectionX + m_SelectionWidth) * size, offsety + (m_SelectionY + m_SelectionHeight) * size);
+      LineTo  (dc, offsetx + (m_SelectionX + m_SelectionWidth) * size, offsety + m_SelectionY * size);
+      LineTo  (dc, offsetx + m_SelectionX * size, offsety + m_SelectionY * size);
+      SelectObject(dc, oldpen);
+      DeleteObject(linepen);
+    }
+  }
+  else
+  if (m_SelectionType == ST_Free)
+  // if (m_SelectionWidth > 0 && m_SelectionHeight > 0)
+  {
     HPEN linepen = CreatePen(PS_SOLID, 1, RGB(0, 255, 255));
     HPEN oldpen = (HPEN)SelectObject(dc, linepen);
-    MoveToEx(dc, offsetx + m_SelectionX * size, offsety + m_SelectionY * size, NULL);
-    LineTo  (dc, offsetx + m_SelectionX * size, offsety + (m_SelectionY + m_SelectionHeight) * size);
-    LineTo  (dc, offsetx + (m_SelectionX + m_SelectionWidth) * size, offsety + (m_SelectionY + m_SelectionHeight) * size);
-    LineTo  (dc, offsetx + (m_SelectionX + m_SelectionWidth) * size, offsety + m_SelectionY * size);
-    LineTo  (dc, offsetx + m_SelectionX * size, offsety + m_SelectionY * size);
+
+    if (m_SelectionPoints.size() > 0)
+      MoveToEx(dc, offsetx + m_SelectionPoints[0].x * size, offsety + m_SelectionPoints[0].y * size, NULL);
+
+    for (int i = 0; i < m_SelectionPoints.size(); i++) {
+      LineTo(dc, offsetx + m_SelectionPoints[i].x * size, offsety + m_SelectionPoints[i].y * size);
+    }
     SelectObject(dc, oldpen);
     DeleteObject(linepen);
   }
@@ -1512,12 +1537,44 @@ CImageView::UpdateSelection()
   if (!InImage(start))
     return;
 
-  ClipPointToWithinImage(&end);
+  if (m_SelectionType == ST_Rectangle) {
+    ClipPointToWithinImage(&end);
 
-  m_SelectionX = std::min(start.x, end.x);
-  m_SelectionY = std::min(start.y, end.y);
-  m_SelectionWidth  = std::max(start.x, end.x) - m_SelectionX;
-  m_SelectionHeight = std::max(start.y, end.y) - m_SelectionY;  
+    m_SelectionX = std::min(start.x, end.x);
+    m_SelectionY = std::min(start.y, end.y);
+    m_SelectionWidth  = std::max(start.x, end.x) - m_SelectionX;
+    m_SelectionHeight = std::max(start.y, end.y) - m_SelectionY;  
+  }
+  else
+  if (m_SelectionType == ST_Free) {
+    if (!InImage(end))
+      return;
+
+    m_SelectionPoints.push_back(end);
+
+    // work out SX, SY, SW, SH
+    if (m_SelectionPoints.size() > 0) {
+      m_SelectionX = m_SelectionPoints[0].x;
+      m_SelectionY = m_SelectionPoints[0].y;
+      m_SelectionWidth = 0;
+      m_SelectionHeight = 0;
+
+      for (int i = 0; i < m_SelectionPoints.size(); i++) {
+        if (m_SelectionPoints[i].x < m_SelectionX)
+          m_SelectionX = m_SelectionPoints[i].x; 
+        if (m_SelectionPoints[i].y < m_SelectionY)
+          m_SelectionY = m_SelectionPoints[i].y; 
+      }
+
+      for (int i = 0; i < m_SelectionPoints.size(); i++) {
+        if(m_SelectionPoints[i].x - m_SelectionX > m_SelectionWidth)
+          m_SelectionWidth = m_SelectionPoints[i].x - m_SelectionX;
+        if(m_SelectionPoints[i].y - m_SelectionY > m_SelectionHeight)
+          m_SelectionHeight = m_SelectionPoints[i].y - m_SelectionY;
+      }
+    }
+
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1537,9 +1594,15 @@ CImageView::OnLButtonDown(UINT flags, CPoint point)
   m_LastPoint = m_CurPoint;
   m_CurPoint = point;
 
-  if (m_CurrentTool != Tool_Selection) {
+  if (m_CurrentTool != Tool_Selection
+   && m_CurrentTool != Tool_FreeSelection) {
     // perform a normal click operation
     AddUndoState();
+  }
+
+  if (m_CurrentTool == Tool_FreeSelection) {
+    if (!(flags & MK_SHIFT))
+      m_SelectionPoints.clear();
   }
 
   switch (m_CurrentTool) {
@@ -1550,6 +1613,7 @@ CImageView::OnLButtonDown(UINT flags, CPoint point)
     case Tool_Circle:    Circle();    break;
     case Tool_Ellipse:   Ellipse();   break;
     case Tool_Selection: Selection(); break;
+    case Tool_FreeSelection: Selection(); break;
   }
 
   m_MouseDown = true;
@@ -1572,6 +1636,7 @@ CImageView::OnLButtonUp(UINT flags, CPoint point)
     case Tool_Circle:    Circle(); break;
     case Tool_Ellipse:   Ellipse(); break;
     case Tool_Selection: Selection(); break;
+    case Tool_FreeSelection: Selection(); break;
   }
 
   m_MouseDown = false;
@@ -1658,6 +1723,7 @@ CImageView::OnMouseMove(UINT flags, CPoint point)
     case Tool_Circle:
     case Tool_Ellipse:
     case Tool_Selection:
+    case Tool_FreeSelection:
       Invalidate();
       break;
   }
@@ -1785,21 +1851,22 @@ CImageView::OnRotateCW()
 
   AddUndoState();
   RGBA* pixels = GetSelectionPixels();
-  RotateCW(sw, sh, pixels);
+  if (RotateCW(sw, sh, pixels)) {
+    std::swap(sw, sh);
 
-  std::swap(sw, sh);
+    if (m_SelectionWidth > 0 && m_SelectionHeight > 0) {
+      m_SelectionWidth = sw;
+      m_SelectionHeight = sh;
+    }
 
-  if (m_SelectionWidth > 0 && m_SelectionHeight > 0) {
-    m_SelectionWidth = sw;
-    m_SelectionHeight = sh;
+    UpdateSelectionPixels(pixels, sx, sy, sw, sh);
+    FreeSelectionPixels(pixels);
+
+    // things have changed
+    Invalidate();
+    m_Handler->IV_ImageChanged();
+
   }
-
-  UpdateSelectionPixels(pixels, sx, sy, sw, sh);
-  FreeSelectionPixels(pixels);
-
-  // things have changed
-  Invalidate();
-  m_Handler->IV_ImageChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1814,21 +1881,21 @@ CImageView::OnRotateCCW()
 
   AddUndoState();
   RGBA* pixels = GetSelectionPixels();
-  RotateCCW(sw, sh, pixels);
+  if (RotateCCW(sw, sh, pixels)) {
+    std::swap(sw, sh);
 
-  std::swap(sw, sh);
+    if (m_SelectionWidth > 0 && m_SelectionHeight > 0) {
+      m_SelectionWidth = sw;
+      m_SelectionHeight = sh;
+    }
 
-  if (m_SelectionWidth > 0 && m_SelectionHeight > 0) {
-    m_SelectionWidth = sw;
-    m_SelectionHeight = sh;
+    UpdateSelectionPixels(pixels, sx, sy, sw, sh);
+    FreeSelectionPixels(pixels);
+
+    // things have changed
+    Invalidate();
+    m_Handler->IV_ImageChanged();
   }
-
-  UpdateSelectionPixels(pixels, sx, sy, sw, sh);
-  FreeSelectionPixels(pixels);
-
-  // things have changed
-  Invalidate();
-  m_Handler->IV_ImageChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

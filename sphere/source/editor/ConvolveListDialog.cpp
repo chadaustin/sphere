@@ -156,7 +156,7 @@ CConvolveListDialog::ShouldWrap()
 int
 CConvolveListDialog::ShouldUseRedChannel()
 {
-  return m_FilterList[m_CurrentFilter]->use_red;
+  return 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -164,21 +164,21 @@ CConvolveListDialog::ShouldUseRedChannel()
 int
 CConvolveListDialog::ShouldUseGreenChannel()
 {
-  return m_FilterList[m_CurrentFilter]->use_green;
+  return 1;
 }
 ////////////////////////////////////////////////////////////////////////////////
 
 int
 CConvolveListDialog::ShouldUseBlueChannel()
 {
-  return m_FilterList[m_CurrentFilter]->use_blue;
+  return 1;
 }
 ////////////////////////////////////////////////////////////////////////////////
 
 int
 CConvolveListDialog::ShouldUseAlphaChannel()
 {
-  return m_FilterList[m_CurrentFilter]->use_alpha;
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -18,10 +18,6 @@ public:
   double divisor;
   int clamp;
   int wrap;
-  int use_red;
-  int use_green;
-  int use_blue;
-  int use_alpha;
 
 public:
   FilterInfo() {
@@ -32,10 +28,6 @@ public:
     divisor = 0;
     clamp = 0;
     wrap = 0;
-    use_red = 1;
-    use_green = 1;
-    use_blue = 1;
-    use_alpha = 0;
   }
 
   FilterInfo(int width, int height) {
@@ -43,10 +35,6 @@ public:
     divisor = 0;
     clamp = 0;
     wrap = 0;
-    use_red = 1;
-    use_green = 1;
-    use_blue = 1;
-    use_alpha = 0;
     mask_width = width;
     mask_height = height;
     mask = new double[mask_width * mask_height];

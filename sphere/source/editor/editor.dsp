@@ -290,6 +290,10 @@ SOURCE=.\resources\imagetool_fill.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\resources\imagetool_freeselection.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\resources\imagetool_line.ico
 # End Source File
 # Begin Source File

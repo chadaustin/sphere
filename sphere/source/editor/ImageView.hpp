@@ -67,7 +67,7 @@ public:
   void Undo();
 
 private:
-  enum Tool { Tool_Pencil, Tool_Line, Tool_Rectangle, Tool_Circle, Tool_Ellipse, Tool_Fill, Tool_Selection };
+  enum Tool { Tool_Pencil, Tool_Line, Tool_Rectangle, Tool_Circle, Tool_Ellipse, Tool_Fill, Tool_Selection, Tool_FreeSelection };
 
 private:
   virtual void SP_ColorSelected(RGBA color);
@@ -76,6 +76,8 @@ private:
   POINT ConvertToPixel(POINT point);
   bool InImage(POINT p);
 
+  enum SelectionType { ST_Rectangle, ST_Free };
+  SelectionType m_SelectionType;
   bool InSelection(POINT p);
   RGBA* GetSelectionPixels();
   void UpdateSelectionPixels(const RGBA* pixels, int sx, int sy, int sw, int sh);
@@ -180,6 +182,8 @@ private:
   int m_SelectionY;
   int m_SelectionWidth;
   int m_SelectionHeight;
+
+  std::vector<POINT> m_SelectionPoints;
 
   // undo
   int    m_NumUndoImages;
