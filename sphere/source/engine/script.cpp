@@ -3120,14 +3120,14 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - set the alpha of 'layer' to 'alpha'
+      - set the mask of 'layer' to 'mask'
 */
-begin_func(SetLayerAlpha, 2)
+begin_func(SetLayerMask, 2)
   arg_int(layer);
-  arg_int(alpha);
+  arg_color(mask);
 
-  if (!This->m_Engine->GetMapEngine()->SetLayerAlpha(layer, alpha)) {
-    This->ReportMapEngineError("SetLayerAlpha() failed");
+  if (!This->m_Engine->GetMapEngine()->SetLayerMask(layer, mask)) {
+    This->ReportMapEngineError("SetLayerMask() failed");
     return JS_FALSE;
   }
 
@@ -3136,18 +3136,18 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - get the alpha currently being used by 'layer'
+      - get the mask currently being used by 'layer'
 */
-begin_func(GetLayerAlpha, 1)
+begin_func(GetLayerMask, 1)
   arg_int(layer);
 
-  int alpha;
-  if (!This->m_Engine->GetMapEngine()->GetLayerAlpha(layer, alpha)) {
-    This->ReportMapEngineError("GetLayerAlpha() failed");
+  RGBA mask;
+  if (!This->m_Engine->GetMapEngine()->GetLayerMask(layer, mask)) {
+    This->ReportMapEngineError("GetLayerMask() failed");
     return JS_FALSE;
   }
 
-  return_int(alpha);
+  return_object(CreateColorObject(cx, mask));
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////

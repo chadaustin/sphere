@@ -137,8 +137,8 @@ public:
   bool SetRenderScript(const char* script);
   bool SetLayerRenderer(int layer, const char* script);
 
-  bool SetLayerAlpha(int layer, int alpha);
-  bool GetLayerAlpha(int layer, int& alpha);
+  bool SetLayerMask(int layer, RGBA mask);
+  bool GetLayerMask(int layer, RGBA& mask);
 
   bool AttachCamera(const char* person);
   bool DetachCamera();

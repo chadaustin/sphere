@@ -6,7 +6,7 @@
 #pragma warning(disable : 4786)
 #endif
 
-#define USE_SPRITESET_SERVER
+//#define USE_SPRITESET_SERVER
 
 #include "engineinterface.hpp"
 #include "script.hpp"

@@ -1,3 +1,7 @@
+2003.08.11
+  - SetLayerAlpha/GetLayerAlpha became SetLayerMask/GetLayerMask
+  - Added a freehand selection tool for the image editor (doesn't fully work yet)
+
 2003.07.05
   - Added move entity maptool
 

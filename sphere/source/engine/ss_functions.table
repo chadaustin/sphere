@@ -182,8 +182,8 @@ SS_FUNCTION(OpenLog, 1)
     // layer renderers
     SS_FUNCTION(SetLayerRenderer, 2)
 
-    SS_FUNCTION(SetLayerAlpha, 2)
-    SS_FUNCTION(GetLayerAlpha, 1)
+    SS_FUNCTION(SetLayerMask, 2)
+    SS_FUNCTION(GetLayerMask, 1)
 
     // camera
     SS_FUNCTION(AttachCamera, 1)

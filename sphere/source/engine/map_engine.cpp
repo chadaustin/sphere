@@ -1303,31 +1303,24 @@ CMapEngine::SetLayerRenderer(int layer, const char* script)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::SetLayerAlpha(int layer, int alpha)
+CMapEngine::SetLayerMask(int layer, RGBA mask)
 {
-  if ( IsInvalidLayerError(layer, "SetLayerAlpha()") )
+  if ( IsInvalidLayerError(layer, "SetLayerMask()") )
     return false;
 
-  // valid alpha
-  if (alpha < 0) {
-    alpha = 0;
-  } else if (alpha > 255) {
-    alpha = 255;
-  }
-
-  m_Map.SetLayerAlpha(layer, alpha);
+  m_Map.SetLayerMask(layer, mask);
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::GetLayerAlpha(int layer, int& alpha)
+CMapEngine::GetLayerMask(int layer, RGBA& mask)
 {
-  if ( IsInvalidLayerError(layer, "GetLayerAlpha()") )
+  if ( IsInvalidLayerError(layer, "GetLayerMask()") )
     return false;
 
-  alpha = m_Map.GetLayerAlpha(layer);
+  mask = m_Map.GetLayerMask(layer);
   return true;
 }
 
@@ -3486,7 +3479,10 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
   }
 
     // make sure 'stepping' is valid
-    p.stepping %= p.spriteset->GetSpriteset().GetNumFrames(p.direction);
+    if (p.spriteset->GetSpriteset().GetNumFrames(p.direction))
+      p.stepping %= p.spriteset->GetSpriteset().GetNumFrames(p.direction);
+    else
+      p.stepping = 0;
 
 
     // check for obstructions
@@ -3549,7 +3545,8 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
     // frame index
     if (--p.next_frame_switch <= 0) {
-      p.stepping = (p.stepping + 1) % p.spriteset->GetSpriteset().GetNumFrames(p.direction);
+      if (p.spriteset->GetSpriteset().GetNumFrames(p.direction))
+        p.stepping = (p.stepping + 1) % p.spriteset->GetSpriteset().GetNumFrames(p.direction);
       p.frame = p.spriteset->GetSpriteset().GetFrameIndex(p.direction, p.stepping);
       p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.stepping);
     }

@@ -36,8 +36,8 @@ public:
   int ScreenToMapX(int layer, int camera_x, int sx);
   int ScreenToMapY(int layer, int camera_y, int sy);
 
-  void SetLayerAlpha(int layer, int alpha);
-  int  GetLayerAlpha(int layer);
+  void SetLayerMask(int layer, RGBA mask);
+  RGBA  GetLayerMask(int layer);
 
   const std::vector<TileDelay>& GetAnimationMap() const {
     return m_AnimationMap;
@@ -53,7 +53,7 @@ private:
   std::vector<IMAGE> m_Tiles;
   std::vector<IMAGE> m_SolidTiles; // used for reflectivity
   std::vector<int> m_LayerTimes;
-  std::vector<int> m_LayerAlphas;
+  std::vector<RGBA> m_LayerMasks;
 
   // max dimensions of non-parallax layers
   int m_MaxLayerWidth;

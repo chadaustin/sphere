@@ -427,11 +427,11 @@ log_object.endBlock()
     SetLayerReflective(layer, reflective)
       - sets whether layer should be reflective
 
-    SetLayerAlpha(layer, alpha)
-      - set the alpha of 'layer' to 'alpha'
+    SetLayerMask(layer, mask)
+      - set the color mask of 'layer' to 'mask'
 
-    GetLayerAlpha(layer)
-      - get the alpha currently being used by 'layer'
+    GetLayerMask(layer)
+      - get the color mask currently being used by 'layer'
 
     GetNumTiles()
       - return number of tiles in map

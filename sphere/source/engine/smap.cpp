@@ -75,8 +75,8 @@ SMAP::Load(const char* filename, IFileSystem& fs)
 
   // initialize layer times array
   m_LayerTimes.resize(m_Map.GetNumLayers());
-  m_LayerAlphas.resize(m_Map.GetNumLayers());
-  std::fill(m_LayerAlphas.begin(), m_LayerAlphas.end(), 255);
+  m_LayerMasks.resize(m_Map.GetNumLayers());
+  std::fill(m_LayerMasks.begin(), m_LayerMasks.end(), CreateRGBA(255, 255, 255, 255));
 
   InitializeAnimation();
 
@@ -238,7 +238,7 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
     num_cols_to_blit = layer.GetHeight();
 
   // !!!! Warning!  Repeated code!  Please fix!
-  if (m_LayerAlphas[i] == 255) {
+  if (m_LayerMasks[i] == CreateRGBA(255, 255, 255, 255)) {
 
     // how many rows/columns to blit
     int iy = num_cols_to_blit;
@@ -266,9 +266,9 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
       oy += tile_height;
     }
 
-  } else if (m_LayerAlphas[i] != 0) {
+  } else if (m_LayerMasks[i].alpha != 0) {
 
-    RGBA mask = { 255, 255, 255, m_LayerAlphas[i] };
+    RGBA mask = m_LayerMasks[i];
 
     // how many rows/columns to blit
     int iy = num_cols_to_blit;
@@ -285,7 +285,7 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
         tx %= layer.GetWidth();
         ty %= layer.GetHeight();
         IMAGE image = tiles[m_AnimationMap[layer.GetTile(tx, ty)].current];
-            
+
         BlitImageMask(image, ox, oy, mask);
       
         tx++;
@@ -411,17 +411,17 @@ SMAP::ScreenToMapY(int /*layer*/, int camera_y, int sy)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-SMAP::SetLayerAlpha(int layer, int alpha)
+SMAP::SetLayerMask(int layer, RGBA color)
 {
-  m_LayerAlphas[layer] = alpha;
+  m_LayerMasks[layer] = color;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-int
-SMAP::GetLayerAlpha(int layer)
+RGBA
+SMAP::GetLayerMask(int layer)
 {
-  return m_LayerAlphas[layer];
+  return m_LayerMasks[layer];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
