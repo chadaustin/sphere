@@ -9,7 +9,9 @@
 #define DATADIR "."
 #endif
 
-static char* unix_data_dir = DATADIR;
+#define MAX_UNIX_PATH 256
+
+static char unix_data_dir[MAX_UNIX_PATH] = DATADIR;
 static char* original_directory;
 
 int main(int argc, const char* argv[]) {
