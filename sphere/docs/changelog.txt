@@ -1,3 +1,6 @@
+2003.08.31
+  - Added shortcuts for Copy and Paste in ImageView and SpritesetView - Tim Enderling
+
 2003.08.20
   - Palettes can be dockable now - Tim Enderling
   - Added File->Browse

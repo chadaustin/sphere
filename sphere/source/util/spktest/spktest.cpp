@@ -1,6 +1,7 @@
-#include <windows.h>
 #include <iostream>
 using namespace std;
+
+#include "../../common/system.hpp"
 #include "../../common/PackageFileSystem.hpp"
 
 

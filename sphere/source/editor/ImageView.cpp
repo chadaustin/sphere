@@ -2517,3 +2517,6 @@ CImageView::OnGetAccelerator(WPARAM wParam, LPARAM lParam)
 	*ret = LoadAccelerators(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_IMAGEVIEW));  
 	return 1;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
