@@ -44,8 +44,8 @@ CTilePreviewPalette::Destroy()
   RECT rect;
   GetWindowRect(&rect);
   Configuration::Set(KEY_TILE_PREVIEW_RECT, rect);
-
-  Configuration::Set(KEY_TILE_PREVIEW_VISIBLE, IsWindowVisible() != FALSE);
+  // FIXME: IsWindowVisible() always returns FALSE here
+  //Configuration::Set(KEY_TILE_PREVIEW_VISIBLE, IsWindowVisible() != FALSE);
 
   // destroy window
   DestroyWindow();

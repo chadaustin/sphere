@@ -43,7 +43,8 @@ CWindowStylePreviewPalette::Destroy()
   RECT rect;
   GetWindowRect(&rect);
   Configuration::Set(KEY_WINDOWSTYLE_PREVIEW_RECT, rect);
-  Configuration::Set(KEY_WINDOWSTYLE_PREVIEW_VISIBLE, IsWindowVisible() != FALSE);
+  // FIXME: IsWindowVisible() always returns FALSE here
+  // Configuration::Set(KEY_WINDOWSTYLE_PREVIEW_VISIBLE, IsWindowVisible() != FALSE);
 
   // destroy window
   DestroyWindow();

@@ -32,6 +32,8 @@ CSpritesetAnimationPalette::CSpritesetAnimationPalette(CDocumentWindow* owner, s
 	ResetAnimation();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 void
 CSpritesetAnimationPalette::SetCurrentDirection(int direction)
 {
@@ -56,7 +58,8 @@ CSpritesetAnimationPalette::Destroy()
   GetWindowRect(&rect);
   Configuration::Set(KEY_SPRITESET_ANIMATION_RECT, rect);
 
-  Configuration::Set(KEY_SPRITESET_ANIMATION_VISIBLE, IsWindowVisible() != FALSE);
+  // FIXME: IsWindowVisible() always returns FALSE here
+  // Configuration::Set(KEY_SPRITESET_ANIMATION_VISIBLE, IsWindowVisible() != FALSE);
 
   KillTimer(ANIMATION_TIMER);
 

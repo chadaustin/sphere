@@ -40,8 +40,8 @@ CTilePalette::Destroy()
   RECT rect;
   GetWindowRect(&rect);
   Configuration::Set(KEY_TILES_RECT, rect);
-
-  Configuration::Set(KEY_TILES_VISIBLE, IsWindowVisible() != FALSE);
+  // FIXME: IsWindowVisible() always returns FALSE here
+  //Configuration::Set(KEY_TILES_VISIBLE, IsWindowVisible() != FALSE);
 
   // destroy window
   DestroyWindow();

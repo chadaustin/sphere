@@ -15,7 +15,7 @@ const int WM_UPDATE_PALETTE_MENU = (WM_APP + 800);
 
 	#define baseCPaletteWindow CWnd
 	#define CPaletteBar CSizingControlBarG
-#else //USE_SIZECBAR
+#else
 	#define baseCPaletteWindow CMiniFrameWnd
 #endif
 
@@ -41,9 +41,6 @@ private:
   afx_msg void OnClose();
   afx_msg void OnShowWindow(BOOL show, UINT status);
 
-protected:
-  void CreatePalette(CDocumentWindow* owner, const char* name, RECT rect, bool visible, int type);
-
 private:
   CDocumentWindow* m_Owner;
 
@@ -51,20 +48,18 @@ private:
 	CString			 m_Name;
 	CPaletteBar* m_pBarParent;
 	int					 m_PaletteNumber;
-
-public:
-	inline bool IsVisible() { return (m_pBarParent != NULL && m_pBarParent->IsVisible()) ? true : false; }
 #endif
 
+public:
+	inline bool IsVisible() {
+#ifdef USE_SIZECBAR
+    return (m_pBarParent != NULL && m_pBarParent->IsVisible()) ? true : false;
+#else
+    return IsWindowVisible() != FALSE ? true : false;
+#endif
+  }
+
   DECLARE_MESSAGE_MAP()
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
-class CVScrollPaletteWindow : public CPaletteWindow
-{
-protected:
-  CVScrollPaletteWindow(CDocumentWindow* owner, const char* name, RECT rect, bool visible);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

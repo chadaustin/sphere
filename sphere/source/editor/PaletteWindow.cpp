@@ -40,48 +40,25 @@ END_MESSAGE_MAP()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static const int PWT_NORMAL  = 0;
-static const int PWT_VSCROLL = 1;
-
-void
-CPaletteWindow::CreatePalette(CDocumentWindow* owner, const char* name, RECT rect, bool visible, int type)
+CPaletteWindow::CPaletteWindow(CDocumentWindow* owner, const char* name, RECT rect, bool visible)
 {
   m_Owner = owner;
+
 #ifdef USE_SIZECBAR
-  m_pBarParent = NULL;
   m_Name = name;
-	
-	if (owner)
-	{
-		m_PaletteNumber = owner->GetNumPalettes();
-	}
-	else
-	{
-		m_PaletteNumber = -1;
-	}
+  m_pBarParent = NULL;
+  m_PaletteNumber = (owner) ? owner->GetNumPalettes() : -1;
 #endif
+ 
 
   DWORD styles;
   if (visible)
     styles |= WS_VISIBLE;
 
 #ifndef USE_SIZECBAR
-  switch (type) {
-    case PWT_VSCROLL:
-      styles = WS_THICKFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_VSCROLL;
-    break;
-
-    default:
-      styles = WS_THICKFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN;
-  }
+  styles = WS_THICKFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN;
 #else
-  switch (type) {
-    case PWT_VSCROLL:
-      styles = WS_CHILD | WS_CLIPCHILDREN | WS_VSCROLL;
-    break;
-    default:
-      styles = WS_CHILD | WS_CLIPCHILDREN;
-  }
+  styles = WS_CHILD | WS_CLIPCHILDREN;
 #endif
 
 	if (owner)
@@ -148,20 +125,6 @@ CPaletteWindow::CPaletteWindow() {
   m_Name = "";
   m_PaletteNumber = 0;
 #endif
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-CPaletteWindow::CPaletteWindow(CDocumentWindow* owner, const char* name, RECT rect, bool visible)
-{
-  CreatePalette(owner, name, rect, visible, PWT_NORMAL);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-CVScrollPaletteWindow::CVScrollPaletteWindow(CDocumentWindow* owner, const char* name, RECT rect, bool visible)
-{
-  CreatePalette(owner, name, rect, visible, PWT_VSCROLL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -258,3 +221,6 @@ CPaletteWindow::CreateBar(bool bCreate)
 }
 
 #endif
+
+////////////////////////////////////////////////////////////////////////////////
+

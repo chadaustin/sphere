@@ -17,7 +17,7 @@ struct ISpritesetImagesPaletteHandler
 };
 
 
-class CSpritesetImagesPalette : public CVScrollPaletteWindow
+class CSpritesetImagesPalette : public CPaletteWindow
 {
 public:
   CSpritesetImagesPalette(CDocumentWindow* owner, ISpritesetImagesPaletteHandler* handler, sSpriteset* spriteset);

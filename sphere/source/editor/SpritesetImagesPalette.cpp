@@ -4,7 +4,7 @@
 #include "resource.h"
 #include "NumberDialog.hpp"
 
-BEGIN_MESSAGE_MAP(CSpritesetImagesPalette, CVScrollPaletteWindow)
+BEGIN_MESSAGE_MAP(CSpritesetImagesPalette, CPaletteWindow)
 
   ON_WM_PAINT()
   ON_WM_SIZE()
@@ -25,7 +25,7 @@ END_MESSAGE_MAP()
 ////////////////////////////////////////////////////////////////////////////////
 
 CSpritesetImagesPalette::CSpritesetImagesPalette(CDocumentWindow* owner, ISpritesetImagesPaletteHandler* handler, sSpriteset* spriteset)
-: CVScrollPaletteWindow(owner, "Spriteset Images",
+: CPaletteWindow(owner, "Spriteset Images",
   Configuration::Get(KEY_SPRITESET_IMAGES_RECT),
   Configuration::Get(KEY_SPRITESET_IMAGES_VISIBLE))
 , m_Handler(handler)
@@ -50,7 +50,8 @@ CSpritesetImagesPalette::Destroy()
   RECT rect;
   GetWindowRect(&rect);
   Configuration::Set(KEY_SPRITESET_IMAGES_RECT, rect);
-  Configuration::Set(KEY_SPRITESET_IMAGES_VISIBLE, IsWindowVisible() != FALSE);
+  // FIXME: IsWindowVisible() always returns FALSE here
+  //Configuration::Set(KEY_SPRITESET_IMAGES_VISIBLE, IsWindowVisible() != FALSE);
 
   // destroy window
   DestroyWindow();
