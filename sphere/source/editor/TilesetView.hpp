@@ -7,6 +7,8 @@
 #include "DIBSection.hpp"
 #include "../common/Tileset.hpp"
 
+#include "FontGradientDialog.hpp"
+
 
 class ITilesetViewHandler
 {
@@ -53,6 +55,8 @@ private:
   afx_msg void OnDeleteTiles();
   afx_msg void OnInsertTileset();
   afx_msg void OnAppendTileset();
+
+  afx_msg void OnReplaceColorWithColor();
 
   afx_msg void OnZoom1x();
   afx_msg void OnZoom2x();

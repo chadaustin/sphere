@@ -417,6 +417,8 @@ BEGIN
         MENUITEM "Insert Tile&set...",          ID_TILESETVIEW_INSERTTILESET
         MENUITEM "Append Ti&leset...",          ID_TILESETVIEW_APPENDTILESET
         MENUITEM SEPARATOR
+        MENUITEM "Replace Color with Color",    ID_TILESETVIEW_REPLACE_COLOR_WITH_COLOR
+
         POPUP "&Zoom"
         BEGIN
             MENUITEM "&1x",                         ID_TILESETVIEW_ZOOM_1X

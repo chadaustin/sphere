@@ -349,6 +349,7 @@
 #define ID_LAYERVIEW_SLIDE_UP           40541
 #define ID_LAYERVIEW_SLIDE_DOWN         40542
 #define ID_LAYERVIEW_SLIDE_LEFT         40543
+#define ID_TILESETVIEW_REPLACE_COLOR_WITH_COLOR 40544
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -357,7 +358,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        218
-#define _APS_NEXT_COMMAND_VALUE         40544
+#define _APS_NEXT_COMMAND_VALUE         40545
 #define _APS_NEXT_CONTROL_VALUE         1117
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

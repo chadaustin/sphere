@@ -39,6 +39,8 @@ BEGIN_MESSAGE_MAP(CTilesetView, CWnd)
   ON_COMMAND(ID_TILESETVIEW_ZOOM_4X, OnZoom4x)
   ON_COMMAND(ID_TILESETVIEW_ZOOM_8X, OnZoom8x)
 
+  ON_COMMAND(ID_TILESETVIEW_REPLACE_COLOR_WITH_COLOR, OnReplaceColorWithColor)
+
 END_MESSAGE_MAP()
 
 
@@ -702,6 +704,36 @@ CTilesetView::OnZoom8x()
   );
 
   Invalidate();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CTilesetView::OnReplaceColorWithColor()
+{
+  int start_tile = 0;
+  int num_tiles_to_change = 0;
+
+  CNumberDialog startTileDialog("Start tile index", "Value", 0, 0, m_Tileset->GetNumTiles() - 1);
+  if (startTileDialog.DoModal() == IDOK) {
+
+    start_tile = startTileDialog.GetValue();
+    CNumberDialog endTileDialog("End tile index", "Value", start_tile, start_tile, m_Tileset->GetNumTiles() - 1);
+
+    if (endTileDialog.DoModal() == IDOK) {
+      num_tiles_to_change = endTileDialog.GetValue() - start_tile;
+
+      CFontGradientDialog colorChoiceDialog;
+      if (colorChoiceDialog.DoModal() == IDOK) {
+
+        RGBA a = colorChoiceDialog.GetTopColor();
+        RGBA b = colorChoiceDialog.GetBottomColor();
+        m_Tileset->ReplaceTileRangeColorWithColor(start_tile, num_tiles_to_change, a, b);
+        Invalidate();
+
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
