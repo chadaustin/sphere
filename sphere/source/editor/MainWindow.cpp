@@ -1123,44 +1123,61 @@ CMainWindow::OnFileImportBitmapToRSS()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static void GetFilePathWithoutExtension(std::string& thepath)
+{
+  int pos = thepath.rfind(".");
+  if (pos == -1) {
+    return;
+  }
+
+  thepath = thepath.substr(0, pos);
+}
+
 afx_msg void
 CMainWindow::OnFileImportRM2KCharsetToRSS()
 {
-  CImageFileDialog InFileDialog(FDM_OPEN);
+  CImageFileDialog InFileDialog(FDM_OPEN | FDM_MULTISELECT);
   if (InFileDialog.DoModal() != IDOK)
     return;
 
-  CImage32 image;
-  if (!image.Load(InFileDialog.GetPathName())) {
-    MessageBox("Could not load image");
-    return;
-  }
+  RGBA color1;
+  RGBA color2;
+  bool ask_for_color_once = true;
+  bool always_ask_for_color = false;
 
-  if (image.GetWidth() != 288 || image.GetHeight() != 256) {
-    MessageBox("Invalid image size\nRM2K charsets are 288 by 256 images");
-    return;
-  }
+  POSITION pos = InFileDialog.GetStartPosition();
+  
+  while (pos != NULL)
+  {
+    CString path_name = InFileDialog.GetNextPathName(pos);
+    std::string title_name = path_name;
+    GetFilePathWithoutExtension(title_name);
 
-  CStringDialog OutFilename("Save As", std::string(InFileDialog.GetFileTitle() + ".spriteset").c_str());
-  if (OutFilename.DoModal() != IDOK) {
-    return;
-  } else {
+    CImage32 image;
+    if (!image.Load(path_name)) {
+      MessageBox("Could not load image: " + path_name);
+      return;
+    }
+
+    if (image.GetWidth() != 288 || image.GetHeight() != 256) {
+      MessageBox("Invalid image size\nRM2K charsets are 288 by 256 images");
+      return;
+    }
+
+    if (ask_for_color_once || always_ask_for_color) {
+      CFontGradientDialog transparent_color_dialog("Transparent color", "In", "Out", image.GetPixel(0, 0), CreateRGBA(image.GetPixel(0, 0).red, image.GetPixel(0, 0).green, image.GetPixel(0, 0).blue, 0));
+      if (transparent_color_dialog.DoModal() != IDOK)
+        return;
+      ask_for_color_once = false;
+      color1 = transparent_color_dialog.GetTopColor();
+      color2 = transparent_color_dialog.GetBottomColor();
+    }
 
     const int frame_width = 288/12;
     const int frame_height = 256/8;
     const int num_frames = 3;
     const int num_directions = 4;
     const int num_images = num_frames * num_directions;
-
-    CFontGradientDialog transparent_color_dialog("Transparent color", "In", "Out", image.GetPixel(0, 0), CreateRGBA(image.GetPixel(0, 0).red, image.GetPixel(0, 0).green, image.GetPixel(0, 0).blue, 0));
-    if (transparent_color_dialog.DoModal() != IDOK)
-      return;
-
-    const RGBA color1 = transparent_color_dialog.GetTopColor();
-    const RGBA color2 = transparent_color_dialog.GetBottomColor();
-
-    const char* base_filename = OutFilename.GetValue();
-    char filename[MAX_PATH];
 
     sSpriteset sprite;
 
@@ -1227,16 +1244,20 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
           // I'm assuming that the base is the bottom part of the frame
           sprite.SetBase(0, frame_height/2, frame_width, frame_height);
     
-          sprintf(filename, "%s.%d.rss", base_filename, sy * 4 + sx);
-          sprite.Save(filename);
-
+          char filename[MAX_PATH] = {0};
+          sprintf(filename, "%s.%d.rss", title_name.c_str(), sy * 4 + sx);
+          if (!sprite.Save(filename))
+          { 
+            MessageBox("Can't save spriteset!");
+            return;
+          }
         }
 
       }
     }
   }
 
-  MessageBox("Charset Converted!");
+  MessageBox("Charsets Converted!");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1244,54 +1265,68 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
 afx_msg void
 CMainWindow::OnFileImportRM2KChipsetToRTS()
 {
-  CImageFileDialog InFileDialog(FDM_OPEN);
+  CImageFileDialog InFileDialog(FDM_OPEN | FDM_MULTISELECT);
   if (InFileDialog.DoModal() != IDOK)
     return;
 
-  CTilesetFileDialog OutFileDialog(FDM_SAVE);
-  if (OutFileDialog.DoModal() != IDOK)
-    return;
-
   bool allow_duplicates = true;
+  bool ask_for_color_once = true;
+  bool always_ask_for_color = false;
+  RGBA color1;
+  RGBA color2;
 
-  CImage32 image;
-  if (!image.Load(InFileDialog.GetPathName()) )
+  POSITION pos = InFileDialog.GetStartPosition();
+
+  while (pos != NULL)
   {
-    MessageBox("Can't Load image!");
-    return;
+    CString path_name = InFileDialog.GetNextPathName(pos);
+    std::string title_name = path_name;
+    GetFilePathWithoutExtension(title_name);
+
+    CImage32 image;
+    if (!image.Load(path_name))
+    {
+      MessageBox("Could not load image: " + path_name);
+      return;
+    }
+
+    if (image.GetWidth() != 480 || image.GetHeight() != 256) {
+      MessageBox("Invalid image size\nRM2K chipsets are 480 by 256 images");
+      return;
+    }
+
+    sTileset tileset;
+    if (!tileset.BuildFromImage(image, 16, 16, allow_duplicates))
+    {
+      MessageBox("Can't convert image!");
+      return;
+    }
+
+    if (ask_for_color_once || always_ask_for_color) {
+      CFontGradientDialog transparent_color_dialog("Transparent color", "In", "Out", image.GetPixel(image.GetWidth() - 1, 0), CreateRGBA(image.GetPixel(image.GetWidth() - 1, 0).red, image.GetPixel(image.GetWidth() - 1, 0).green, image.GetPixel(image.GetWidth() - 1, 0).blue, 0));
+      if (transparent_color_dialog.DoModal() != IDOK)
+        return;
+
+      color1 = transparent_color_dialog.GetTopColor();
+      color2 = transparent_color_dialog.GetBottomColor();
+      ask_for_color_once = false;
+    }
+
+    for (int i = 0; i < tileset.GetNumTiles(); i++) {
+      tileset.GetTile(i).ReplaceColor(color1, color2);
+    }
+
+    char filename[MAX_PATH];
+    sprintf (filename, "%s.rts", title_name.c_str());
+
+    if (!tileset.Save(filename))
+    { 
+      MessageBox("Can't save tileset!");
+      return;
+    }
   }
 
-  if (image.GetWidth() != 480 || image.GetHeight() != 256) {
-    MessageBox("Invalid image size\nRM2K chipsets are 480 by 256 images");
-    return;
-  }
-
-  sTileset tileset;
-  if (!tileset.BuildFromImage(image, 16, 16, allow_duplicates))
-  {
-    MessageBox("Can't convert image!");
-    return;
-  }
-
-  CFontGradientDialog transparent_color_dialog("Transparent color", "In", "Out", image.GetPixel(image.GetWidth() - 1, 0), CreateRGBA(image.GetPixel(image.GetWidth() - 1, 0).red, image.GetPixel(image.GetWidth() - 1, 0).green, image.GetPixel(image.GetWidth() - 1, 0).blue, 0));
-  if (transparent_color_dialog.DoModal() != IDOK)
-    return;
-
-  const RGBA color1 = transparent_color_dialog.GetTopColor();
-  const RGBA color2 = transparent_color_dialog.GetBottomColor();
-
-  for (int i = 0; i < tileset.GetNumTiles(); i++) {
-    tileset.GetTile(i).ReplaceColor(color1, color2);
-  }
-
-  if (!tileset.Save(OutFileDialog.GetPathName()))
-  {
-    MessageBox("Can't save tileset!");
-    return;
-  }
-
-  MessageBox("Image Converted!");
- 
+  MessageBox("Chipsets Converted!"); 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
