@@ -1,15 +1,6 @@
-//#include <afxdlgs.h>
 #include <wx/dcclient.h>
 #include "ColorView.hpp"
 #include "resource.h"
-/*
-BEGIN_MESSAGE_MAP(CColorView, CWnd)
-
-  ON_WM_PAINT()
-  ON_WM_LBUTTONDOWN()
-
-END_MESSAGE_MAP()
-*/
 
 BEGIN_EVENT_TABLE(wColorView, wxWindow)
   EVT_PAINT(wColorView::OnPaint)
