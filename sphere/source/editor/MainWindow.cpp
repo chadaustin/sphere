@@ -1818,19 +1818,27 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
           sprite.SetDirectionName(5, "southwest");
           sprite.SetDirectionName(7, "northwest");
 
+          const char* directions[] = {"east", "northeast",
+                                      "east", "southeast",
+                                      "west", "southwest",
+                                      "west", "northwest"};
+
           for (int j = 0; j < num_directions; j++) {
-            int d = (j * 2) + 1;
-            int __num_frames__= sprite.GetNumFrames(d - 1) - 1;
+            const int d1 = sprite.GetDirectionNum(directions[(j * 2) + 0]);
+            const int d2 = sprite.GetDirectionNum(directions[(j * 2) + 1]);
+            const int __num_frames__= sprite.GetNumFrames(d1) - 1;
             for (int f = 0; f < __num_frames__; f++) {
-              sprite.InsertFrame(d, f);
+              //if (f > 0 || sprite.GetNumFrames(d2) == 0)
+                sprite.InsertFrame(d2, f);
             }
           }
 
           for (int j = 0; j < num_directions; j++) {
-            int d = (j * 2) + 1;
-            int __num_frames__= sprite.GetNumFrames(d - 1);
+            const int d1 = sprite.GetDirectionNum(directions[(j * 2) + 0]);
+            const int d2 = sprite.GetDirectionNum(directions[(j * 2) + 1]);
+            const int __num_frames__= sprite.GetNumFrames(d2);
             for (int f = 0; f < __num_frames__; f++) {
-              sprite.SetFrameIndex(d, f, sprite.GetFrameIndex(d - 1, f));
+              sprite.SetFrameIndex(d2, f, sprite.GetFrameIndex(d1, f));
             }
           }
 

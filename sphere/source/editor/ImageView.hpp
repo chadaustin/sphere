@@ -1,6 +1,11 @@
 #ifndef IMAGE_VIEW_HPP
 #define IMAGE_VIEW_HPP
 
+//#define SCROLLABLE_IMAGE_WINDOW 1
+
+#ifdef SCROLLABLE_IMAGE_WINDOW
+#include "ScrollWindow.hpp"
+#endif
 
 #include <afxwin.h>
 #include "../common/Image32.hpp"
@@ -23,7 +28,11 @@ public:
 
 
 class CImageView :
+#ifdef SCROLLABLE_IMAGE_WINDOW
+  public CScrollWindow,
+#else
   public CWnd,
+#endif
   public ISwatchPaletteHandler,
   public IToolPaletteHandler
 {
@@ -47,6 +56,21 @@ public:
 
   void BeforeImageChanged();
   void AfterImageChanged();
+
+#ifdef SCROLLABLE_IMAGE_WINDOW
+private:
+  void UpdateScrollBars();
+  int GetPageSizeX();
+  int GetPageSizeY();
+  int GetTotalTilesX();
+  int GetTotalTilesY();
+
+  virtual void OnHScrollChanged(int x);
+  virtual void OnVScrollChanged(int y);
+
+  int m_CurrentX;
+  int m_CurrentY;
+#endif
 
 private:
   enum MergeMethod { Merge_Replace, Merge_Blend, Merge_IntoSelection };

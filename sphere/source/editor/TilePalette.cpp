@@ -8,7 +8,9 @@ BEGIN_MESSAGE_MAP(CTilePalette, CPaletteWindow)
   ON_COMMAND(ID_FILE_ZOOM_IN, OnZoomIn)
   ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
   ON_WM_SIZE()
+#if defined(TILESET_PALETTE_DOCKED)
   ON_WM_SIZING()
+#endif
 
 END_MESSAGE_MAP()
 

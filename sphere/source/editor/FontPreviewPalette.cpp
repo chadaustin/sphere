@@ -8,6 +8,7 @@ BEGIN_MESSAGE_MAP(CFontPreviewPalette, CPaletteWindow)
 
   ON_WM_PAINT()   
   ON_WM_RBUTTONUP()
+  ON_WM_SIZE()
 
   ON_COMMAND(ID_FILE_ZOOM_IN,  OnZoomIn)
   ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
@@ -54,7 +55,7 @@ afx_msg void
 CFontPreviewPalette::OnSetText()
 {
   CStringDialog dialog("Set Preview Text", m_Text.c_str());
-  if (dialog.DoModal()) {
+  if (dialog.DoModal() == IDOK) {
     m_Text = dialog.GetValue();
     Invalidate();
     m_RedrawAll= true;
@@ -78,6 +79,16 @@ CFontPreviewPalette::Destroy()
 
   // destroy window
   DestroyWindow();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CFontPreviewPalette::OnSize(UINT type, int cx, int cy)
+{
+  m_RedrawCharacter = -1;
+  m_RedrawAll = true;
+  Invalidate();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

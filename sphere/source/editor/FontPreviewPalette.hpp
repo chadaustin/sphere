@@ -29,6 +29,8 @@ private:
   afx_msg void OnZoomIn();
   afx_msg void OnZoomOut();
 
+  void OnSize(UINT type, int cx, int cy);
+
 private:
   sFont* m_Font;
 	Zoomer m_ZoomFactor;

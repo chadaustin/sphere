@@ -689,9 +689,9 @@ inline void copyAlpha(RGBA& dest, RGBA src)
 
 inline void additiveRGBA(RGBA& dest, RGBA src)
 {
-  dest.red   = std::max(0, std::min(255, (dest.red   + ((src.red   * src.alpha) / 255))));
-  dest.green = std::max(0, std::min(255, (dest.green + ((src.green * src.alpha) / 255))));
-  dest.blue  = std::max(0, std::min(255, (dest.blue  + ((src.blue  * src.alpha) / 255))));
+  dest.red   = std::max(0, std::min(255, (dest.red   + (((int)src.red   * (int)src.alpha) / 255))));
+  dest.green = std::max(0, std::min(255, (dest.green + (((int)src.green * (int)src.alpha) / 255))));
+  dest.blue  = std::max(0, std::min(255, (dest.blue  + (((int)src.blue  * (int)src.alpha) / 255))));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -24,7 +24,13 @@ static int s_ImageViewID = 9000;
 //static UINT s_ClipboardFormat;
 
 
+//#define SCROLLABLE_IMAGE_WINDOW 1
+
+#ifdef SCROLLABLE_IMAGE_WINDOW
+BEGIN_MESSAGE_MAP(CImageView, CScrollWindow)
+#else
 BEGIN_MESSAGE_MAP(CImageView, CWnd)
+#endif
 
   ON_WM_PAINT()
   ON_WM_SIZE()
@@ -110,6 +116,10 @@ CImageView::CImageView()
 , m_RedrawHeight(0)
 , m_Clipboard(NULL)
 , m_BlitTile(NULL)
+#ifdef SCROLLABLE_IMAGE_WINDOW
+, m_CurrentX(0)
+, m_CurrentY(0)
+#endif
 {
   m_Colors[0] = CreateRGBA(255, 255, 255, 255);
   m_Colors[1] = CreateRGBA(0,   0,   0,   255);
@@ -171,15 +181,154 @@ CImageView::Create(CDocumentWindow* owner, IImageViewHandler* handler, CWnd* par
   m_SwatchPalette = new CSwatchPalette(owner, this);
   //m_ToolPalette   = new CImageToolPalette(owner, this);
 
-  return CWnd::Create(
+  BOOL retval = CWnd::Create(
 //  AfxRegisterWndClass(0, LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW)), NULL, LoadIcon(NULL, IDI_APPLICATION)),
     AfxRegisterWndClass(0, NULL, NULL, LoadIcon(NULL, IDI_APPLICATION)),
     "ImageView",
+#ifdef SCROLLABLE_IMAGE_WINDOW
+    WS_HSCROLL | WS_VSCROLL |
+#endif
     WS_CHILD | WS_VISIBLE,
     CRect(0, 0, 0, 0),
     parent_window,
     s_ImageViewID++);
+
+#ifdef SCROLLABLE_IMAGE_WINDOW
+  UpdateScrollBars();
+#endif
+
+  return retval;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+#ifdef SCROLLABLE_IMAGE_WINDOW
+void
+CImageView::UpdateScrollBars()
+{
+  SetHScrollRange(GetTotalTilesX() + 1, GetPageSizeX());
+  SetVScrollRange(GetTotalTilesY() + 1, GetPageSizeY());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Also controls the size of the slider (thumb tab). 0 = default size
+ */
+int
+CImageView::GetPageSizeX()
+{
+  if (m_Image.GetWidth() > 0) {
+    RECT ClientRect;
+    GetClientRect(&ClientRect);
+//    return ClientRect.right  / (m_Image.GetWidth() * 1);
+    // calculate size of pixel squares
+    int width = m_Image.GetWidth();
+    int height = m_Image.GetHeight();
+    int hsize = ClientRect.right / width;
+    int vsize = ClientRect.bottom / height;
+    int size = std::min(hsize, vsize);
+    if (size < 1)
+      size = 1;
+
+    return ClientRect.right  / (m_Image.GetWidth() * size);
+  }
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Amount the scrollbar scrolls when PAGE_UP/PAGE_DOWN are pressed
+ * Also controls the size of the slider (thumb tab). 0 = default size
+ */
+int
+CImageView::GetPageSizeY()
+{
+  if (m_Image.GetHeight() > 0) {
+    RECT ClientRect;
+    GetClientRect(&ClientRect);
+//    return ClientRect.bottom  / (m_Image.GetHeight() * 1);
+    // calculate size of pixel squares
+    int width = m_Image.GetWidth();
+    int height = m_Image.GetHeight();
+    int hsize = ClientRect.right / width;
+    int vsize = ClientRect.bottom / height;
+    int size = std::min(hsize, vsize);
+    if (size < 1)
+      size = 1;
+
+    return ClientRect.bottom / (m_Image.GetHeight() * size);
+  }
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CImageView::GetTotalTilesX()
+{
+  return m_Image.GetWidth() - 1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CImageView::GetTotalTilesY()
+{
+  return m_Image.GetHeight() - 1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CImageView::OnHScrollChanged(int x)
+{
+  // do the scrolling thing
+  int old_x = m_CurrentX;
+  int new_x = x;
+  CDC* dc_ = GetDC();
+  HDC dc = dc_->m_hDC;
+  HRGN region = CreateRectRgn(0, 0, 0, 0);
+  int factor = m_Image.GetWidth();
+
+  m_CurrentX = x;
+
+  //ScrollDC(dc, (old_x - new_x) * factor, 0, NULL, NULL, region, NULL);
+  //::InvalidateRgn(m_hWnd, region, FALSE);
+  Invalidate();
+  //m_RedrawWindow = 1;
+
+  DeleteObject(region);
+  ReleaseDC(dc_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CImageView::OnVScrollChanged(int y)
+{
+  // do the scrolling thing
+  int old_y = m_CurrentY;
+  int new_y = y;
+  CDC* dc_ = GetDC();
+  HDC dc = dc_->m_hDC;
+  HRGN region = CreateRectRgn(0, 0, 0, 0);
+  int factor = m_Image.GetHeight();
+
+  m_CurrentY = y;
+
+  //ScrollDC(dc, 0, (old_y - new_y) * factor, NULL, NULL, region, NULL);
+  //::InvalidateRgn(m_hWnd, region, FALSE);
+  Invalidate();
+  //m_RedrawWindow = 1;
+
+  DeleteObject(region);
+  ReleaseDC(dc_);
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -195,6 +344,10 @@ CImageView::SetImage(int width, int height, const RGBA* pixels, bool reset_undo_
   if (m_Image.GetWidth() == width && m_Image.GetHeight() == height) {
     memcpy(m_Image.GetPixels(), pixels, width * height * sizeof(RGBA));
   }
+
+#ifdef SCROLLABLE_IMAGE_WINDOW
+  UpdateScrollBars();
+#endif
 
   Invalidate();
   return true;
@@ -356,6 +509,7 @@ CImageView::Copy()
   m_Clipboard->PutBitmapImageOntoClipboard(sw, sh, flat_pixels);
   
   delete[] flat_pixels;
+  flat_pixels = NULL;
 
   CloseClipboard();
   return true;
@@ -371,8 +525,8 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha, int merge
   if (OpenClipboard() == FALSE)
     return false;
 
-  int iWidth = m_Image.GetWidth();
-  int iHeight = m_Image.GetHeight();
+  //int iWidth = m_Image.GetWidth();
+  //int iHeight = m_Image.GetHeight();
 
   int cwidth = 0;
   int cheight = 0;
@@ -390,54 +544,63 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha, int merge
     AddUndoState();
 
     // and now we merge the clipboard image with the current image
-    RGBA* iPixels = m_Image.GetPixels();
+    RGBA* iPixels = GetSelectionPixels();
+    int sx = GetSelectionLeftX();
+    int sy = GetSelectionTopY();
+    int sw = GetSelectionWidth();
+    int sh = GetSelectionHeight();
+
     int xoffset = 0;
     int yoffset = 0;
 
     if (merge_method == Merge_IntoSelection) {
-      int sx = GetSelectionLeftX();
-      int sy = GetSelectionTopY();
-      int sw = GetSelectionWidth();
-      int sh = GetSelectionHeight();
       xoffset = sx;
       yoffset = sy;
 
       // rescale cpixels
-      CImage32 tmp(cwidth, cheight, cpixels);
-      delete[] cpixels;
-      cpixels = new RGBA[sw * sh];
-      if (cpixels == NULL)
-        return false;
-
-      tmp.Rescale(sw, sh);
-      if (tmp.GetWidth() != sw || tmp.GetHeight() != sh) {
+      if (sw != cwidth || sh != cheight) {
+        CImage32 tmp(cwidth, cheight, cpixels);
         delete[] cpixels;
-        return false;
+        cpixels = NULL;
+
+        if (tmp.GetWidth() != cwidth || tmp.GetHeight() != cheight || tmp.GetPixels() == NULL)
+          return false;
+
+        cpixels = new RGBA[sw * sh];
+        if (cpixels == NULL)
+          return false;
+
+        tmp.Rescale(sw, sh);
+        if (tmp.GetWidth() != sw || tmp.GetHeight() != sh || tmp.GetPixels() == NULL) {
+          delete[] cpixels;
+          return false;
+        }
+
+        const RGBA* temp_pixels = tmp.GetPixels();
+
+        for (int i = 0; i < sw * sh; i++)
+          cpixels[i] = temp_pixels[i];
+
+        cwidth = sw;
+        cheight = sh;
       }
-
-      const RGBA* pixels = tmp.GetPixels();
-
-      for (int i = 0; i < sw * sh; i++)
-        cpixels[i] = pixels[i];
-
-      cwidth = sw;
-      cheight = sh;
     }
 
-    int max_width = cwidth; if (iWidth < cwidth) max_width = iWidth;
-    int max_height = cheight; if (iHeight < cheight) max_height = iHeight;
+    int max_width  = cwidth;  if (sw < cwidth)  max_width  = sw;
+    int max_height = cheight; if (sh < cheight) max_height = sh;
 
     for (int iy = 0; iy < max_height; iy++)
     {
       for (int ix = 0; ix < max_width; ix++)
       {
-/*
+        /*
         if (red)   iPixels[(iy + yoffset) * iWidth + (ix + xoffset)].red   = cpixels[iy * cwidth + ix].red;
         if (green) iPixels[(iy + yoffset) * iWidth + (ix + xoffset)].green = cpixels[iy * cwidth + ix].green;
         if (blue)  iPixels[(iy + yoffset) * iWidth + (ix + xoffset)].blue  = cpixels[iy * cwidth + ix].blue;
         if (alpha) iPixels[(iy + yoffset) * iWidth + (ix + xoffset)].alpha = cpixels[iy * cwidth + ix].alpha;
-*/
-        m_Image.SetPixel(ix + xoffset, iy + yoffset, cpixels[iy * cwidth + ix]);
+        */
+
+        m_Image.SetPixel((ix + xoffset), (iy + yoffset), cpixels[iy * cwidth + ix]);
       }
     }
 
@@ -709,8 +872,10 @@ CImageView::GetSelectionTopY() {
 
 void
 CImageView::FreeSelectionPixels(RGBA* pixels) {
-  if (pixels != m_Image.GetPixels())
+  if (pixels != m_Image.GetPixels()) {
     delete[] pixels;
+    pixels = NULL;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -755,80 +920,81 @@ CImageView::UpdateSelectionPixels(const RGBA* pixels, int sx, int sy, int sw, in
   int iWidth = m_Image.GetWidth();
 
   // if pixels point to image updating it wont do anything so don't bother
-  if (pixels != image) {
+  if (pixels == image)
+    return;
 
-    if (m_SelectionType == ST_Rectangle) {
-      for (int dy = sy; dy < (sy + sh); dy++) {
-        for (int dx = sx; dx < (sx + sw); dx++) {
-          image[dy * iWidth + dx] = pixels[(dy - sy) * sw + (dx - sx)];
-        }
+  if (m_SelectionType == ST_Rectangle) {
+    for (int dy = sy; dy < (sy + sh); dy++) {
+      for (int dx = sx; dx < (sx + sw); dx++) {
+        image[dy * iWidth + dx] = pixels[(dy - sy) * sw + (dx - sx)];
       }
     }
-    else
-    if (m_SelectionType == ST_Free) {
-      int selection_width = m_SelectionWidth + 1;
-      int selection_height = m_SelectionHeight + 1;
-      bool* selection_points = new bool[selection_width * selection_height];
-      if (selection_points == NULL)
-        return;
+  }
+  else
+  if (m_SelectionType == ST_Free) {
+    int selection_width = m_SelectionWidth + 1;
+    int selection_height = m_SelectionHeight + 1;
+    bool* selection_points = new bool[selection_width * selection_height];
+    if (selection_points == NULL)
+      return;
 
-      memset(selection_points, false, (selection_width * selection_height) * sizeof(bool));
+    memset(selection_points, false, (selection_width * selection_height) * sizeof(bool));
 
-      struct Local {
-        struct Color {
-          bool operator()(int, int) {
-            return true;
-          }
-        };
-
-        static inline void CopyBool(bool& dest, bool src) {
-          dest = src;
+    struct Local {
+      struct Color {
+        bool operator()(int, int) {
+          return true;
         }
       };
 
-      // draw true/false lines onto selection_points buffer
-      for (int i = 1; i < m_SelectionPoints.size(); i++) {
-        Local::Color c;
-        clipper clip = {0, 0, (selection_width - 1), (selection_height - 1)};
-        CPoint p = m_SelectionPoints[i-1];
-        CPoint q = m_SelectionPoints[i];
-        primitives::Line(selection_points, selection_width,
-                         p.x - m_SelectionX, p.y - m_SelectionY,
-                         q.x - m_SelectionX, q.y - m_SelectionY,
-                         c, clip, Local::CopyBool);
+      static inline void CopyBool(bool& dest, bool src) {
+        dest = src;
       }
+    };
 
-      // fill in gaps between lines
-      for (int dy = 0; dy < selection_height; dy++) {
-        int last_on = -1;
-        for (int dx = 0; dx < selection_width; dx++) {
-          int index = dy * selection_width + dx;
-          if (selection_points[index]) {
-            if (last_on == -1)
-              last_on = dx;
-          }
-          else {
-            for (int x = last_on; x < dx; x++) {
-              selection_points[dy * selection_width + x] = true;
-              last_on = -1;
-            }
-          }
-        }
-      }
-
-
-      // update image
-      for (int dy = sy; dy < (sy + sh); dy++) {
-        for (int dx = sx; dx < (sx + sw); dx++) {
-          int selection_index = (dy - sy) * selection_width + (dx - sx);
-          int pixel_index = (dy - sy) * sw + (dx - sx);
-          if (selection_points[selection_index])
-            image[dy * iWidth + dx] = pixels[pixel_index];
-        }
-      }
-
-      delete[] selection_points;
+    // draw true/false lines onto selection_points buffer
+    for (int i = 1; i < m_SelectionPoints.size(); i++) {
+      Local::Color c;
+      clipper clip = {0, 0, (selection_width - 1), (selection_height - 1)};
+      CPoint p = m_SelectionPoints[i-1];
+      CPoint q = m_SelectionPoints[i];
+      primitives::Line(selection_points, selection_width,
+                       p.x - m_SelectionX, p.y - m_SelectionY,
+                       q.x - m_SelectionX, q.y - m_SelectionY,
+                       c, clip, Local::CopyBool);
     }
+
+    // fill in gaps between lines
+    for (int dy = 0; dy < selection_height; dy++) {
+      int last_on = -1;
+      for (int dx = 0; dx < selection_width; dx++) {
+        int index = dy * selection_width + dx;
+        if (selection_points[index]) {
+          if (last_on == -1)
+            last_on = dx;
+        }
+        else {
+          for (int x = last_on; x < dx; x++) {
+            selection_points[dy * selection_width + x] = true;
+            last_on = -1;
+          }
+        }
+      }
+    }
+
+
+    // update image
+    for (int dy = sy; dy < (sy + sh); dy++) {
+      for (int dx = sx; dx < (sx + sw); dx++) {
+        int selection_index = (dy - sy) * selection_width + (dx - sx);
+        int pixel_index = (dy - sy) * sw + (dx - sx);
+        if (selection_points[selection_index])
+          image[dy * iWidth + dx] = pixels[pixel_index];
+      }
+    }
+
+    delete[] selection_points;
+    selection_points = NULL;
   }
 }
 
@@ -1281,19 +1447,33 @@ CImageView::OnPaint()
 
   const int totalx = size * width;
   const int totaly = size * height;
-  const int offsetx = (ClientRect.right - totalx) / 2;
+#ifdef SCROLLABLE_IMAGE_WINDOW
+  const int offsetx = (ClientRect.right - totalx) / 2  - m_CurrentX;
+  const int offsety = (ClientRect.bottom - totaly) / 2 - m_CurrentY;
+#else
+  const int offsetx = (ClientRect.right - totalx)  / 2;
   const int offsety = (ClientRect.bottom - totaly) / 2;
+#endif
 
   // draw black rectangles in the empty parts
   HBRUSH black_brush = (HBRUSH)GetStockObject(BLACK_BRUSH);
   RECT Rect;
 
+#ifdef SCROLLABLE_IMAGE_WINDOW
+  const int SCROLLBAR_WIDTH  = GetSystemMetrics(SM_CXVSCROLL);
+  const int SCROLLBAR_HEIGHT = GetSystemMetrics(SM_CXHSCROLL);
+#else
+  const int SCROLLBAR_WIDTH  = 0;
+  const int SCROLLBAR_HEIGHT = 0;
+#endif
+
+#if 1
   // top
   SetRect(&Rect, 0, 0, ClientRect.right, offsety - 1);
   FillRect(dc, &Rect, black_brush);
 
   // bottom
-  SetRect(&Rect, 0, offsety + totaly + 1, ClientRect.right, ClientRect.bottom);
+  SetRect(&Rect, 0, offsety + totaly + 1, ClientRect.right, ClientRect.bottom + SCROLLBAR_HEIGHT);
   FillRect(dc, &Rect, black_brush);
 
   // left
@@ -1301,8 +1481,12 @@ CImageView::OnPaint()
   FillRect(dc, &Rect, black_brush);
 
   // right
-  SetRect(&Rect, offsetx + totalx + 1, offsety - 1, ClientRect.right, offsety + totaly + 1);
+  SetRect(&Rect, offsetx + totalx + 1, offsety - 1, ClientRect.right + SCROLLBAR_WIDTH, offsety + totaly + 1);
   FillRect(dc, &Rect, black_brush);
+#else
+  //SetRect(&Rect, 0, 0, ClientRect.right + SCROLLBAR_WIDTH, ClientRect.bottom + SCROLLBAR_HEIGHT);
+  //FillRect(dc, &Rect, black_brush);
+#endif
 
   // assume a complete redraw
   if (m_RedrawWidth == 0 && m_RedrawHeight == 0) {
@@ -1333,10 +1517,14 @@ CImageView::OnPaint()
   if (m_RedrawX + m_RedrawWidth > m_Image.GetWidth()) m_RedrawWidth = m_Image.GetWidth() - m_RedrawX;
   if (m_RedrawY + m_RedrawHeight > m_Image.GetHeight()) m_RedrawHeight = m_Image.GetHeight() - m_RedrawY;
 
-
   StretchedBlit(_dc, m_BlitTile, size, size, m_Image.GetWidth(), m_Image.GetHeight(),
                 drawImage.GetPixels(),  m_ShowAlphaMask, &ClientRect,
-                m_RedrawX, m_RedrawY, m_RedrawWidth, m_RedrawHeight);
+                m_RedrawX, m_RedrawY, m_RedrawWidth, m_RedrawHeight,
+#ifdef SCROLLABLE_IMAGE_WINDOW
+                m_CurrentX, m_CurrentY);
+#else
+                0, 0);
+#endif
 
 
 /* // this is the old image drawing code
@@ -1471,7 +1659,8 @@ CImageView::OnPaint()
 
   if (true) {
     // draw a white rectangle around the image
-    SetRect(&Rect, offsetx - 1, offsety - 1, offsetx + totalx + 1, offsety + totaly + 1);
+    SetRect(&Rect, offsetx - 1,          offsety - 1,
+                   offsetx + totalx + 1, offsety + totaly + 1);
 
     HPEN   white_pen = CreatePen(PS_SOLID, 1, RGB(0xFF, 0xFF, 0xFF));
     HBRUSH old_brush = (HBRUSH)SelectObject(dc, GetStockObject(NULL_BRUSH));
@@ -1671,8 +1860,13 @@ CImageView::UpdateSelection()
 afx_msg void
 CImageView::OnSize(UINT type, int cx, int cy)
 {
+#ifdef SCROLLABLE_IMAGE_WINDOW
+  UpdateScrollBars();
+  CWnd::OnSize(type, cx, cy);
+#else
   Invalidate();
   CWnd::OnSize(type, cx, cy);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2868,6 +3062,7 @@ CImageView::OnFilterCustom()
                            clamp, clamp_low, clamp_high, infinite,
                            use_red, use_green, use_blue, use_alpha);
         delete[] int_mask;
+        int_mask = NULL;
       }
     }
 
