@@ -11,4 +11,4 @@ else:
 
 env = Environment(CPPFLAGS=compile_flags, LINKFLAGS=os.popen('wx-config --libs').read().strip())
 
-env.Program(target="glome", source=["main.cpp","../common/DefaultFileSystem.cpp","../common/DefaultFile.cpp","../common/configfile.cpp"])
+env.Program(target="glome", source=["main.cpp","project.cpp", "../common/DefaultFileSystem.cpp","../common/DefaultFile.cpp","../common/configfile.cpp"])
