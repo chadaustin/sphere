@@ -505,6 +505,55 @@ CMapEngine::SetLayerReflective(int layer, bool reflective)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::SetLayerWidth(int layer_index, int width)
+{
+  if ( IsInvalidLayerError(layer_index, "SetLayerWidth()") )
+    return false;
+
+  if (width <= 0 || width > 4096) {
+    m_ErrorMessage = "Invalid layer width: " + itos(width);
+    return false;
+  }
+
+  sLayer& layer = m_Map.GetMap().GetLayer(layer_index);
+  layer.Resize(width, layer.GetHeight());
+
+  if (layer.GetHeight() != width) {
+    m_ErrorMessage = "Resize failed!";
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::SetLayerHeight(int layer_index, int height)
+{
+  if ( IsInvalidLayerError(layer_index, "SetLayerHeight()") )
+    return false;
+
+  if (height <= 0 || height > 4096) {
+    m_ErrorMessage = "Invalid layer height: " + itos(height);
+    return false;
+  }
+
+  sLayer& layer = m_Map.GetMap().GetLayer(layer_index);
+  layer.Resize(layer.GetWidth(), height);
+
+
+  if (layer.GetHeight() != height) {
+    m_ErrorMessage = "Resize failed!";
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::SetLayerScaleFactorX(int layer_index, double factor_x)
 {
   if ( IsInvalidLayerError(layer_index, "SetLayerScaleFactorX()") )

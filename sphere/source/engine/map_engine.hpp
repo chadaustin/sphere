@@ -89,6 +89,8 @@ public:
   bool GetNumLayers(int& layers);
   bool GetLayerWidth(int layer, int& width);
   bool GetLayerHeight(int layer, int& height);
+  bool SetLayerWidth(int layer, int width);
+  bool SetLayerHeight(int layer, int height);
   bool GetLayerName(int layer, std::string& name);
   bool IsLayerVisible(int layer, bool& visible);
   bool SetLayerVisible(int layer, bool visible);

@@ -2410,6 +2410,39 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
+      - set width of 'layer'
+*/
+begin_func(SetLayerWidth, 1)
+  arg_int(layer);
+  arg_int(width);
+
+  if (!This->m_Engine->GetMapEngine()->SetLayerWidth(layer, width)) {
+    This->ReportMapEngineError("SetLayerWidth() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+      - set height of 'layer'
+*/
+begin_func(SetLayerHeight, 1)
+  arg_int(layer);
+  arg_int(height);
+
+  if (!This->m_Engine->GetMapEngine()->SetLayerHeight(layer, height)) {
+    This->ReportMapEngineError("SetLayerHeight() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
       - returns the name of 'layer'
 */
 begin_func(GetLayerName, 1)
