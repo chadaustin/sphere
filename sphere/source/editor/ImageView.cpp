@@ -237,35 +237,51 @@ CImageView::Copy()
   // clear the previous contents of the clipboard
   EmptyClipboard();
 
+  int sx, sy, sw, sh;
+  GetSelectionArea(sx, sy, sw, sh);
+  RGBA* source = m_Image.GetPixels();
+
   // ADD FLAT 32
 
   // copy the image as a flat 32-bit color image
   HGLOBAL memory = GlobalAlloc(GHND, 8 + width * height * 4);
   dword* ptr = (dword*)GlobalLock(memory);
 
-  *ptr++ = width;
-  *ptr++ = height;
-  memcpy(ptr, m_Image.GetPixels(), width * height * sizeof(RGBA));
+  *ptr++ = sw; // *ptr++ = width;
+  *ptr++ = sh; // *ptr++ = height;
+
+  RGBA* flat_pixels = new RGBA[sw * sh];
+  for (int iy = sy; iy < (sy + sh); iy++)
+    for (int ix = sx; ix < (sx + sw); ix++)
+    {
+      flat_pixels[(iy - sy) * (sw) + ix - sx].red   = source[iy * width + ix].red;
+      flat_pixels[(iy - sy) * (sw) + ix - sx].green = source[iy * width + ix].green;
+      flat_pixels[(iy - sy) * (sw) + ix - sx].blue  = source[iy * width + ix].blue;
+      flat_pixels[(iy - sy) * (sw) + ix - sx].alpha = source[iy * width + ix].alpha;
+    }
+
+  // memcpy(ptr, m_Image.GetPixels(), width * height * sizeof(RGBA));
+  memcpy(ptr, flat_pixels, sw * sh * sizeof(RGBA));
+  delete[] flat_pixels;
 
   // put the image on the clipboard
   GlobalUnlock(memory);
   SetClipboardData(s_ClipboardFormat, memory);
 
   // ADD DDB
-
   // create a pixel array to initialize the bitmap
-  BGRA* pixels = new BGRA[width * height];
-  RGBA* source = m_Image.GetPixels();
-  for (int iy = 0; iy < height; iy++)
-    for (int ix = 0; ix < width; ix++)
+  BGRA* pixels = new BGRA[sw * sh];
+  for (int iy = sy; iy < (sy + sh); iy++)
+    for (int ix = sx; ix < (sx + sw); ix++)
     {
-      pixels[iy * width + ix].red   = source[iy * width + ix].red;
-      pixels[iy * width + ix].green = source[iy * width + ix].green;
-      pixels[iy * width + ix].blue  = source[iy * width + ix].blue;
+      pixels[(iy - sy) * (sw) + ix - sx].red   = source[iy * width + ix].red;
+      pixels[(iy - sy) * (sw) + ix - sx].green = source[iy * width + ix].green;
+      pixels[(iy - sy) * (sw) + ix - sx].blue  = source[iy * width + ix].blue;
+      pixels[(iy - sy) * (sw) + ix - sx].alpha = source[iy * width + ix].alpha;
     }
 
   // create the bitmap
-  HBITMAP bitmap = CreateBitmap(width, height, 1, 32, pixels);
+  HBITMAP bitmap = CreateBitmap(sw, sh, 1, 32, pixels);
 
   // put the bitmap in the clipboard
   SetClipboardData(CF_BITMAP, bitmap);
