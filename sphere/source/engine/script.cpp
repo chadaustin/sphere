@@ -707,6 +707,28 @@ inline double argDouble(JSContext* cx, jsval arg)
   return d;
 }
 
+inline JSObject* argObject(JSContext* cx, jsval arg)
+{
+  if (!JSVAL_IS_OBJECT(arg)) {
+    JS_ReportError(cx, "Invalid object.");
+    return NULL;
+  }
+
+  JSObject* object;
+  JS_ValueToObject(cx, arg, &object);
+  return object;
+}
+
+inline JSObject* argArray(JSContext* cx, jsval arg)
+{
+  JSObject* array = argObject(cx, arg);
+  if (!JS_IsArrayObject(cx, array)) {
+    JS_ReportError(cx, "Invalid array.");
+    return NULL;
+  }
+  return array;
+}
+
 inline RGBA argColor(JSContext* cx, jsval arg)
 {
   if (!JSVAL_IS_OBJECT(arg)) {
@@ -834,6 +856,8 @@ inline SS_FONT* argFont(JSContext* cx, jsval arg)
 #define arg_str(name)        const char* name   = argStr(cx, argv[arg++]);                                            if (This->m_ShouldExit) return JS_FALSE
 #define arg_bool(name)       bool name          = argBool(cx, argv[arg++]);                                           if (This->m_ShouldExit) return JS_FALSE
 #define arg_double(name)     double name        = argDouble(cx, argv[arg++]);                                         if (This->m_ShouldExit) return JS_FALSE
+#define arg_object(name)     JSObject* name     = argObject(cx, argv[arg++]);                                         if (This->m_ShouldExit) return JS_FALSE
+#define arg_array(name)      JSObject* name     = argArray(cx, argv[arg++]);                                          if (This->m_ShouldExit) return JS_FALSE
 #define arg_color(name)      RGBA name          = argColor(cx, argv[arg++]);                                          if (This->m_ShouldExit) return JS_FALSE
 #define arg_surface(name)    CImage32* name     = argSurface(cx, argv[arg++]);     if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
 #define arg_colormatrix(name)CColorMatrix* name = argColorMatrix(cx, argv[arg++]); if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
@@ -4687,6 +4711,7 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
     { "drawText",         ssSurfaceDrawText,         4, 0, 0 },
     { "drawZoomedText",   ssSurfaceDrawZoomedText,   5, 0, 0 },
     { "drawTextBox",      ssSurfaceDrawTextBox,      7, 0, 0 },
+    { "applyLookup",      ssSurfaceApplyLookup,      7, 0, 0 },
     { "save",             ssSurfaceSave,             1, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
@@ -4989,6 +5014,97 @@ begin_method(SS_SURFACE, ssSurfaceCloneSection, 4)
   }
 
   return_object(CreateSurfaceObject(cx, surface));
+end_method()
+
+///////////////////////////////////////
+
+#define jsuint unsigned long
+
+/**
+  returns whether the lookup table created is a null lookup table
+  i.e. it can be skipped over
+*/
+bool GetLookUpTable(JSContext* cx, JSObject* array, unsigned char lookup[256]) {
+
+  jsuint length;
+
+  // initialize the lookup to a null-lookup
+  for (int i = 0; i < 256; i++) {
+    lookup[i] = i;
+  }
+
+  if (array == NULL)
+    return true;
+
+  JS_GetArrayLength(cx, array, &length);
+  if (length > 256)
+    length = 256;
+
+  bool is_null_lookup = true;
+
+  for (int i = 0; i < length; i++) {
+    jsval val;
+    int32 value;
+      
+    if (JS_LookupElement(cx, array, i, &val)) {
+      if (JSVAL_IS_INT(val) && JS_ValueToInt32(cx, val, &value)) {
+
+        lookup[i] = (unsigned char) value;
+        if (is_null_lookup && lookup[i] != i) {
+          is_null_lookup = false;
+        }
+      }
+    }
+  }
+
+  return is_null_lookup;
+}
+
+///////////////////////////////////////
+
+begin_method(SS_SURFACE, ssSurfaceApplyLookup, 8)
+
+  arg_int(x);
+  arg_int(y);
+  arg_int(w);
+  arg_int(h);
+
+  if (x < 0) {
+    JS_ReportError(cx, "Invalid x: %d", x);
+    return JS_FALSE;
+  }
+  if (y < 0) {
+    JS_ReportError(cx, "Invalid y: %d", y);
+    return JS_FALSE;
+  }
+
+  if (x + w > object->surface->GetWidth()) {
+    JS_ReportError(cx, "Invalid width: %d", w);
+    return JS_FALSE;
+  }
+
+  if (y + h > object->surface->GetHeight()) {
+    JS_ReportError(cx, "Invalid height: %d", h);
+    return JS_FALSE;
+  }
+
+  arg_array(rlookup);
+  arg_array(glookup);
+  arg_array(blookup);
+  arg_array(alookup);
+
+  unsigned char rlut[256];
+  unsigned char glut[256];
+  unsigned char blut[256];
+  unsigned char alut[256];
+
+  GetLookUpTable(cx, rlookup, rlut);
+  GetLookUpTable(cx, glookup, glut);
+  GetLookUpTable(cx, blookup, blut);
+  GetLookUpTable(cx, alookup, alut);
+
+  object->surface->ApplyLookup(x, y, w, h, rlut, glut, blut, alut);
+
 end_method()
 
 ///////////////////////////////////////

@@ -991,6 +991,11 @@ log_object.endBlock()
   surface_object.width
   surface_object.height
     - dimensions
+
+  surface_object.applyLookup(x, y, w, h, red_lookup, green_lookup, blue_lookup, alpha_lookup);
+    - Apply a lookup table transformation to the pixels contained in x, y, w, h
+    The lookup parameters are arrays of 256 elements containg the new pixel values.
+    e.g. var invert_lookup = [255, 254, 253, 252, 251, ..., 4, 3, 2, 1, 0];
   
   surface_object.applyColorFX(x, y, w, h,  colormatrix)
 	- Apply the colormatrix to the pixels contained in x, y, w, h

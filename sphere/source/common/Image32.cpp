@@ -712,6 +712,22 @@ CImage32::ReplaceColor(RGBA oldColor, RGBA newColor) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+CImage32::ApplyLookup(int x, int y, int w, int h, unsigned char rlut[256], unsigned char glut[256], unsigned char blut[256], unsigned char alut[256])
+{
+  for (int iy = y; iy < (y + h); ++iy) {
+    for (int ix = x; ix < (x + w); ++ix) {
+      unsigned int i = iy * m_Width + ix;
+      m_Pixels[i].red   = rlut[m_Pixels[i].red];
+      m_Pixels[i].green = glut[m_Pixels[i].green];
+      m_Pixels[i].blue  = blut[m_Pixels[i].blue];
+      m_Pixels[i].alpha = alut[m_Pixels[i].alpha];
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
 CImage32::Line(int x1, int y1, int x2, int y2, RGBA color)
 {
   clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };

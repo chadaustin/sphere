@@ -199,6 +199,7 @@ private:
   declare_method(ssSurfaceDrawZoomedText);
   declare_method(ssSurfaceDrawTextBox);
   declare_method(ssSurfaceSave);
+  declare_method(ssSurfaceApplyLookup);
 
   // color matrix
   declare_constructor1(CreateColorMatrixObject, CColorMatrix* colormatrix);

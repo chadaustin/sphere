@@ -44,6 +44,8 @@ public:
   void ApplyColorFX(int x1, int y1, int w, int h, const CColorMatrix &c);
   void ApplyColorFX4(int x1, int y1, int w, int h, const CColorMatrix &c1, const CColorMatrix &c2, const CColorMatrix &c3, const CColorMatrix &c4);
 
+  void ApplyLookup(int x, int y, int w, int h, unsigned char rlut[256], unsigned char glut[256], unsigned char blut[256], unsigned char alut[256]);
+
   void Clear();
   void Resize(int width, int height);
   void Rescale(int width, int height);
