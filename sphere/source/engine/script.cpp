@@ -61,6 +61,7 @@ struct SS_OBJECT
 
 BEGIN_SS_OBJECT(SS_SOCKET)
   NSOCKET socket;
+  bool is_open;
 END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_LOG)
@@ -116,6 +117,7 @@ END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_RAWFILE)
   IFile* file;
+  bool is_open;
 END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_BYTEARRAY)
@@ -1500,7 +1502,7 @@ begin_func(CreateColor, 3)
 
   // if alpha isn't specified, default to 255
   int a = 255; 
-  if (argc == 4) {
+  if (argc >= 4) {
     a = argInt(cx, argv[3]);
   }
 
@@ -3477,6 +3479,7 @@ CScript::CreateSocketObject(JSContext* cx, NSOCKET socket)
     { "getPendingReadSize", ssSocketGetPendingReadSize, 0, 0, 0 },
     { "read",               ssSocketRead,               1, 0, 0 },
     { "write",              ssSocketWrite,              1, 0, 0 },
+    { "close",              ssSocketClose,              0, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -3484,6 +3487,7 @@ CScript::CreateSocketObject(JSContext* cx, NSOCKET socket)
   // attach the log to this object
   SS_SOCKET* socket_object = new SS_SOCKET;
   socket_object->socket = socket;
+  socket_object->is_open = true;
   JS_SetPrivate(cx, object, socket_object);
 
   return object;
@@ -3492,7 +3496,7 @@ CScript::CreateSocketObject(JSContext* cx, NSOCKET socket)
 ////////////////////////////////////////
 
 begin_finalizer(SS_SOCKET, ssFinalizeSocket)
-  if (object->socket) {
+  if (object->socket && object->is_open) {
     CloseSocket(object->socket);
   }
 end_finalizer()
@@ -3500,7 +3504,7 @@ end_finalizer()
 ////////////////////////////////////////
 
 begin_method(SS_SOCKET, ssSocketIsConnected, 0)
-  if (object->socket) {
+  if (object->socket && object->is_open) {
     return_bool(IsConnected(object->socket));
   } else {
     return_bool(false);
@@ -3510,6 +3514,11 @@ end_method()
 ////////////////////////////////////////
 
 begin_method(SS_SOCKET, ssSocketGetPendingReadSize, 0)
+  if (!object->is_open) {
+    JS_ReportError(cx, "socket is closed!");
+    return JS_FALSE;
+  }
+
   if (object->socket) {
     return_int(GetPendingReadSize(object->socket));
   } else {
@@ -3520,6 +3529,11 @@ end_method()
 ////////////////////////////////////////
 
 begin_method(SS_SOCKET, ssSocketRead, 1)
+  if (!object->is_open) {
+    JS_ReportError(cx, "socket is closed!");
+    return JS_FALSE;
+  }
+
   if (object->socket) {
     arg_int(size);
 
@@ -3545,9 +3559,22 @@ end_method()
 ////////////////////////////////////////
 
 begin_method(SS_SOCKET, ssSocketWrite, 1)
+  if (!object->is_open) {
+    JS_ReportError(cx, "socket is closed!");
+    return JS_FALSE;
+  }
+
   if (object->socket) {
     arg_byte_array(array);
     SocketWrite(object->socket, array->array, array->size);
+  }
+end_method()
+
+////////////////////////////////////////
+
+begin_method(SS_SOCKET, ssSocketClose, 0)
+  if (object->socket && object->is_open) {
+    CloseSocket(object->socket);
   }
 end_method()
 
@@ -5011,6 +5038,7 @@ CScript::CreateFileObject(JSContext* cx, CConfigFile* file)
     { "write", ssFileWrite, 2, 0, 0 },
     { "read",  ssFileRead,  2, 0, 0 },
     { "flush", ssFileFlush, 0, 0, 0 },
+    { "close", ssFileClose, 0, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -5075,6 +5103,14 @@ end_method()
 
 ///////////////////////////////////////
 
+begin_method(SS_FILE, ssFileClose, 0)
+  if (object->file) {
+    This->m_Engine->CloseFile(object->file);
+  }
+end_method()
+
+///////////////////////////////////////
+
 
 
 ///////////////////////////////////////
@@ -5105,6 +5141,7 @@ CScript::CreateRawFileObject(JSContext* cx, IFile* file)
     { "getSize",     ssRawFileGetSize,     0, 0, 0 },
     { "read",        ssRawFileRead,        1, 0, 0 },
     { "write",       ssRawFileWrite,       1, 0, 0 },
+    { "close",       ssRawFileClose,       0, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -5112,6 +5149,7 @@ CScript::CreateRawFileObject(JSContext* cx, IFile* file)
   // attach the file to this object
   SS_RAWFILE* file_object = new SS_RAWFILE;
   file_object->file = file;
+  file_object->is_open = true;
   JS_SetPrivate(cx, object, file_object);
 
   return object;
@@ -5120,12 +5158,18 @@ CScript::CreateRawFileObject(JSContext* cx, IFile* file)
 ////////////////////////////////////////
 
 begin_finalizer(SS_RAWFILE, ssFinalizeRawFile)
-  delete object->file;
+  if (object->file && object->is_open) {
+    delete object->file;
+  }
 end_finalizer()
 
 ////////////////////////////////////////
 
 begin_method(SS_RAWFILE, ssRawFileSetPosition, 1)
+  if (!object->is_open) {
+    JS_ReportError(cx, "rawfile is closed!");
+    return JS_FALSE;
+  }
   arg_int(position);
   object->file->Seek(position);
 end_method()
@@ -5133,12 +5177,20 @@ end_method()
 ////////////////////////////////////////
 
 begin_method(SS_RAWFILE, ssRawFileGetPosition, 0)
+  if (!object->is_open) {
+    JS_ReportError(cx, "rawfile is closed!");
+    return JS_FALSE;
+  }
   return_int(object->file->Tell());
 end_method()
 
 ////////////////////////////////////////
 
 begin_method(SS_RAWFILE, ssRawFileGetSize, 0)
+  if (!object->is_open) {
+    JS_ReportError(cx, "rawfile is closed!");
+    return JS_FALSE;
+  }
   return_int(object->file->Size());
 end_method()
 
@@ -5146,6 +5198,11 @@ end_method()
 
 begin_method(SS_RAWFILE, ssRawFileRead, 1)
   arg_int(size);
+
+  if (!object->is_open) {
+    JS_ReportError(cx, "rawfile is closed!");
+    return JS_FALSE;
+  }
 
   // read the data
   byte* data = new byte[size];
@@ -5161,6 +5218,11 @@ end_method()
 begin_method(SS_RAWFILE, ssRawFileWrite, 1)
   arg_byte_array(data);
 
+  if (!object->is_open) {
+    JS_ReportError(cx, "rawfile is closed!");
+    return JS_FALSE;
+  }
+
   int wrote = object->file->Write(data->array, data->size);
 
   if (wrote < data->size) { // error!
@@ -5168,6 +5230,15 @@ begin_method(SS_RAWFILE, ssRawFileWrite, 1)
     return JS_FALSE;
   }
   
+end_method()
+
+///////////////////////////////////////
+
+begin_method(SS_RAWFILE, ssRawFileClose, 0)
+  if (object->file && object->is_open) {
+    delete object->file;
+    object->is_open = false;
+  }
 end_method()
 
 ///////////////////////////////////////

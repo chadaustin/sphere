@@ -433,8 +433,7 @@ EXPORT(void) CloseVideoDriver()
  */
 EXPORT(bool) ToggleFullScreen() {
   return true;
-
-  /*
+/*
   // this causes weird color problems, but vaguely works...
   int x, y, w, h;
   extern void __stdcall GetClippingRectangle(int*, int*, int*, int*);
@@ -465,7 +464,7 @@ EXPORT(bool) ToggleFullScreen() {
   }
 
   return false;
-  */
+*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -715,8 +714,8 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, image->texture);
 
-    float cx = ((float)x[0] + (float)x[1] + (float)x[2] + (float)x[3]) / 4.0;
-    float cy = ((float)y[0] + (float)y[1] + (float)y[2] + (float)y[3]) / 4.0;
+    int cx = (x[0] + x[1] + x[2] + x[3]) / 4;
+    int cy = (y[0] + y[1] + y[2] + y[3]) / 4;
     
     glColor4f(1, 1, 1, 1);
     glBegin(GL_TRIANGLE_FAN);

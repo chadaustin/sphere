@@ -103,6 +103,7 @@ private:
   declare_method(ssSocketGetPendingReadSize);
   declare_method(ssSocketWrite);
   declare_method(ssSocketRead);
+  declare_method(ssSocketClose);
 
   // logs
   declare_constructor1(CreateLogObject, CLog* log);
@@ -216,6 +217,7 @@ private:
   declare_method(ssFileRead);
   declare_method(ssFileWrite);
   declare_method(ssFileFlush);
+  declare_method(ssFileClose);
 
   // raw files
   declare_constructor1(CreateRawFileObject, IFile* file);
@@ -225,6 +227,7 @@ private:
   declare_method(ssRawFileGetSize);
   declare_method(ssRawFileRead);
   declare_method(ssRawFileWrite);
+  declare_method(ssRawFileClose);
 
   // byte arrays
   declare_constructor2(CreateByteArrayObject, int size, const void* data = NULL);
