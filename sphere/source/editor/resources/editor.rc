@@ -329,6 +329,8 @@ BEGIN
 
             MENUITEM "Show Wrap Flags",             ID_SCRIPT_OPTIONS_SHOW_WORD_FLAGS
 
+            MENUITEM "Highlight Current Line",      ID_SCRIPT_OPTIONS_HIGHLIGHT_CURRENT_LINE
+
             MENUITEM "Check &Spelling",             ID_SCRIPT_OPTIONS_CHECK_SPELLING
 
             MENUITEM "&View List",                  ID_SCRIPT_OPTIONS_VIEW_LIST
@@ -1148,6 +1150,8 @@ BEGIN
             MENUITEM "Current Script Functions",    ID_SCRIPTVIEW_CURRENTSCRIPTFUNCTIONS
 
             MENUITEM "Clipboard History",           ID_SCRIPTVIEW_CLIPBOARDHISTORY
+
+            MENUITEM "Control Characters",          ID_SCRIPTVIEW_CONTROL_CHARACTERS
 
         END
         MENUITEM "&Refresh",                    ID_SCRIPTVIEW_REFRESH

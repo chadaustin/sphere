@@ -215,7 +215,6 @@ public:
 
   bool GetPersonValue(const char* name, const char* key, std::string& value);
   bool SetPersonValue(const char* name, const char* key, const std::string value);
-
   
   SSPRITESET* GetPersonSpriteset(const char* name);
   bool SetPersonSpriteset(const char* name, sSpriteset& spriteset);

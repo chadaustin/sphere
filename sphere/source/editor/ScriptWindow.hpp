@@ -50,6 +50,7 @@ private:
   afx_msg void OnOptionsShowWrapFlags();
   afx_msg void OnOptionsToggleAutoComplete();
   afx_msg void OnOptionsCheckSpelling();
+  afx_msg void OnOptionsHighlightCurrentLine();
   afx_msg void OnOptionsViewList();
 
   afx_msg void OnOptionsSelectionStream();
@@ -59,6 +60,7 @@ private:
   afx_msg void OnUpdateOptionsSelectionRectangle(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsSelectionLine(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsCheckSpelling(CCmdUI* cmdui);
+  afx_msg void OnUpdateOptionsHighlightCurrentLine(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsViewList(CCmdUI* cmdui);
 
   afx_msg void OnUpdateOptionsToggleLineNumbers(CCmdUI* cmdui);
@@ -123,10 +125,12 @@ private:
   afx_msg void OnScriptViewControlStructures();
   afx_msg void OnScriptViewCurrentScriptFunctions();
   afx_msg void OnScriptViewClipboardHistory();
+  afx_msg void OnScriptViewControlCharacters();
   afx_msg void OnUpdateScriptViewSphereFunctions(CCmdUI* cmdui);
   afx_msg void OnUpdateScriptViewControlStructures(CCmdUI* cmdui);
   afx_msg void OnUpdateScriptViewCurrentScriptFunctions(CCmdUI* cmdui);
   afx_msg void OnUpdateScriptViewClipboardHistory(CCmdUI* cmdui);
+  afx_msg void OnUpdateScriptViewControlCharacters(CCmdUI* cmdui);
 
   void CreateList(int type);
 
@@ -149,6 +153,7 @@ private:
   int m_SelectionType;
   bool m_CheckSpelling;
   bool m_ShowWrapFlags;
+  bool m_HighlightCurrentLine;
 
   void UpdateBraceHighlight();
 

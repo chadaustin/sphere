@@ -4413,7 +4413,7 @@ begin_func(GetPersonValue, 2)
   if (!This->m_Engine->GetMapEngine()->GetPersonValue(name, key, value)) {
     This->ReportMapEngineError("GetPersonValue() failed");
     return JS_FALSE;
-  }  
+  }
 
   return_str(value.c_str());
 end_func()
