@@ -51,7 +51,6 @@ CImageWindow::CImageWindow(const char* image)
     }
   }
 
-
   m_DocumentType = WA_IMAGE;
 
   // create the window

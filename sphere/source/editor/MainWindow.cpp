@@ -486,6 +486,22 @@ CMainWindow::OpenDocumentWindow(int grouptype, const char* filename)
   if (window != NULL) {
     m_DocumentWindows.push_back(window);
   }
+
+  if (1) {
+    CWnd* pWindow = MDIGetActive();
+    if (pWindow != NULL)
+    {
+      long userdata = GetWindowLong(pWindow->m_hWnd, GWL_USERDATA);
+      if (userdata & WA_DOCUMENT_WINDOW) {
+        CDocumentWindow* dw = GetCurrentDocumentWindow();
+        if (dw) {
+          dw->OnToolCommand(GetImageTool());
+          dw->OnToolCommand(GetMapTool());
+        }
+      }
+    }
+  }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2110,59 +2126,9 @@ CMainWindow::OnImageToolChanged()
 
   for (int i = 0; i < m_DocumentWindows.size(); i++) {
     CDocumentWindow* dw = m_DocumentWindows[i];
-    //dw->ImageToolBarChanged(id);
     dw->OnToolCommand(id);
   }
 }
-
-////////////////////////////////////////////////////////////////////////////////
-
-/*
-afx_msg LRESULT
-CMainWindow::OnRefreshImageToolBar(WPARAM wparam, LPARAM lparam)
-{
-  UINT id = GetImageTool();
-   // todo: work out how to make it gray out the toolbar rather than just disallowing its use
-  m_ImageToolBar.EnableWindow((BOOL) lparam);
-  
-  ///
-  //if (wparam != NULL) {
-  //  CDocumentWindow* dw = (CDocumentWindow*) wparam;
-  //  dw->ImageToolBarChanged(id);
-  //}
-  ///
-
-  for (int i = 0; i < m_DocumentWindows.size(); i++) {
-    CDocumentWindow* dw = m_DocumentWindows[i];
-    dw->ImageToolBarChanged(id);
-  }
-
-  return 0;
-}
-*/
-
-////////////////////////////////////////////////////////////////////////////////
-
-/*
-afx_msg LRESULT
-CMainWindow::OnRefreshMapToolBar(WPARAM wparam, LPARAM lparam)
-{
-  UINT id = GetMapTool();
-  m_MapToolBar.EnableWindow((BOOL) lparam);
-
-  if (wparam != NULL) {
-    CDocumentWindow* dw = (CDocumentWindow*) wparam;
-    dw->MapToolBarChanged(id);
-  }
-
-  for (int i = 0; i < m_DocumentWindows.size(); i++) {
-    CDocumentWindow* dw = m_DocumentWindows[i];
-    dw->MapToolBarChanged(id);
-  }
-
-  return 0;
-}
-*/
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2181,6 +2147,8 @@ CMainWindow::OnUpdateMapCommand(CCmdUI* cmdui, UINT tool_id)
   }
   cmdui->Enable(enable);
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 #define MAKE_UPDATE_MAP_COMMAND(tool_id)                 \
 afx_msg void                                             \

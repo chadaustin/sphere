@@ -52,6 +52,8 @@ CDocumentWindow::~CDocumentWindow()
   if (this == s_CurrentDocumentWindow)
     s_CurrentDocumentWindow = NULL;
 
+  m_DocumentType = 0;
+
   AfxGetApp()->m_pMainWnd->PostMessage(WM_DW_CLOSING, 0, (LPARAM)this);
 }
 
