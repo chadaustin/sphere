@@ -1047,6 +1047,10 @@ SOURCE=..\common\rgb.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\common\sphere_version.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\common\spk.hpp
 # End Source File
 # Begin Source File
@@ -1076,10 +1080,6 @@ SOURCE=..\common\Tileset.cpp
 # Begin Source File
 
 SOURCE=..\common\Tileset.hpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\common\version.h
 # End Source File
 # Begin Source File
 
