@@ -19,3 +19,4 @@ LDADD = \
   unix/libunix.a \
   ../common/libcommon.a \
   ../jpegwrap/libjpegwrap.a
+LDFLAGS = -laudiere

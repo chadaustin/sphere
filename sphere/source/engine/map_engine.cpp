@@ -897,11 +897,11 @@ CMapEngine::CreatePerson(const char* name, const char* spriteset, bool destroy_w
   
   // load spriteset
   p.spriteset = m_Engine->LoadSpriteset(spriteset);
-  p.spriteset->AddRef();
   if (p.spriteset == NULL) {
     m_ErrorMessage = "Could not load spriteset\nPerson: " + p.description;
     return false;
   }
+  p.spriteset->AddRef();
 
   // put them in the starting position by default
   if (m_IsRunning) {

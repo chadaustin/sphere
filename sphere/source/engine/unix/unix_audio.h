@@ -3,22 +3,23 @@
 
 #include "../../common/IFileSystem.hpp"
 
-typedef void* ADR_CONTEXT;
-typedef void* ADR_STREAM;
-typedef int ADR_BOOL;
+#include "audiere.h"
 #define ADR_TRUE  1
 #define ADR_FALSE 0
 
-ADR_STREAM AdrOpenStream(ADR_CONTEXT context, const char* name);
-int AdrCloseStream(ADR_STREAM stream);
-void AdrSetStreamRepeat(ADR_STREAM stream, ADR_BOOL repeat);
-void AdrPlayStream(ADR_STREAM stream);
-int AdrPauseStream(...);
-int AdrResetStream(...);
-int AdrSetStreamVolume(...);
-int AdrGetStreamVolume(...);
-int AdrSetStreamPan(...);
-int AdrGetStreamPan(...);
+bool InitAudio();
+void CloseAudio();
+
+static ADR_FILE ADR_CALL FileOpen(void* opaque, const char* filename);
+static void     ADR_CALL FileClose(ADR_FILE file);
+static int      ADR_CALL FileRead(ADR_FILE file, void* buffer, int size);
+#ifdef ADR_NEW
+static ADR_BOOL ADR_CALL FileSeek(ADR_FILE file, int destination, ADR_SEEK_TYPE type);
+#else
+static int      ADR_CALL FileSeek(ADR_FILE file, int destination);
+#endif
+static int      ADR_CALL FileTell(ADR_FILE file);
+
 void SA_PushFileSystem(IFileSystem* fs);
 void SA_PopFileSystem();
 ADR_CONTEXT SA_GetAudiereContext();

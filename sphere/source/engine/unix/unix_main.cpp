@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <cstring>
+#include "unix_audio.h"
 
 #ifndef DATADIR
 #define DATADIR "."
@@ -21,5 +22,9 @@ int main(int argc, const char* argv[]) {
 	}
 	chdir(unix_data_dir);
 	srand((unsigned)GetTime);
+	if (!InitAudio()) {
+		printf("Sound could not be initialized...\n");
+	}
 	RunSphere(argc, argv);
+	CloseAudio();
 }

@@ -70,7 +70,7 @@ bool SwitchResolution (int x, int y, bool fullscreen) {
   if (!initialized) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
-	 SDL_WM_SetCaption("sphere 0.93a", NULL);
+	 SDL_WM_SetCaption("Sphere 0.97" , NULL);
 	 InitializeInput();
 	 initialized = true;
   } else {
@@ -78,7 +78,7 @@ bool SwitchResolution (int x, int y, bool fullscreen) {
     if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
 	 /* FIXME: the title of the game or something should be set here instead */
-	 SDL_WM_SetCaption("sphere 0.93a", NULL);
+	 SDL_WM_SetCaption("Sphere 0.97", NULL);
   }
   if (fullscreen)
 	 screen = SDL_SetVideoMode(x, y, 32, SDL_DOUBLEBUF | SDL_FULLSCREEN);
