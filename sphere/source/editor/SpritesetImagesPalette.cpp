@@ -59,6 +59,15 @@ CSpritesetImagesPalette::Destroy()
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
+CSpritesetImagesPalette::SetCurrentImage(int image)
+{
+  m_SelectedImage = image;
+  Invalidate();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
 CSpritesetImagesPalette::OnSize(UINT type, int cx, int cy)
 {
   Invalidate();
@@ -194,25 +203,26 @@ CSpritesetImagesPalette::OnRButtonUp(UINT flags, CPoint point)
   // show pop-up menu
   ClientToScreen(&point);
 
-  HMENU menu = ::LoadMenu(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_SPRITESET_IMAGES_PALETTE));
+  HMENU menu_ = ::LoadMenu(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_SPRITESET_IMAGES_PALETTE));
+  HMENU menu = GetSubMenu(menu_, 0);
 
   // disable move back if we're on the first image
   if (m_SelectedImage == 0) {
-    ::EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_MOVE_BACK, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+    ::EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_MOVE_BACK, MF_BYCOMMAND | MF_GRAYED);
   }
 
   // disable move forward if we're on the last image
   if (m_SelectedImage == m_Spriteset->GetNumImages() - 1) {
-    ::EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_MOVE_FORWARD, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+    ::EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_MOVE_FORWARD, MF_BYCOMMAND | MF_GRAYED);
   }
 
   // disable remove image if there is only one
   if (m_Spriteset->GetNumImages() == 1) {
-    ::EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGE, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+    ::EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGE, MF_BYCOMMAND | MF_GRAYED);
   }
 
-  TrackPopupMenu(GetSubMenu(menu, 0), TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, point.x, point.y, 0, m_hWnd, NULL);
-  DestroyMenu(menu);
+  TrackPopupMenu(menu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, point.x, point.y, 0, m_hWnd, NULL);
+  DestroyMenu(menu_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -262,7 +272,13 @@ CSpritesetImagesPalette::OnInsertImage()
 void
 CSpritesetImagesPalette::OnRemoveImage()
 {
-  m_Spriteset->DeleteImage(m_SelectedImage);
+  // only delete the image if we can
+  if (m_SelectedImage < 0 ||
+      m_SelectedImage >= m_Spriteset->GetNumImages() ||
+      m_Spriteset->GetNumImages() <= 1)
+  {
+    return;
+  }
 
   // update indices in the spriteset
   for (int i = 0; i < m_Spriteset->GetNumDirections(); i++) {
@@ -275,6 +291,8 @@ CSpritesetImagesPalette::OnRemoveImage()
       }
     }
   }
+
+  m_Spriteset->DeleteImage(m_SelectedImage);
 
   if (m_SelectedImage >= m_Spriteset->GetNumImages()) {
     m_SelectedImage--;

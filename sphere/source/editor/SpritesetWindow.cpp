@@ -364,6 +364,7 @@ CSpritesetWindow::SV_CurrentFrameChanged(int direction, int frame)
   m_CurrentDirection = direction;
   m_CurrentFrame = frame;
   UpdateImageView();
+  m_ImagesPalette->SetCurrentImage(m_Spriteset.GetFrameIndex(direction, frame));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -382,6 +383,7 @@ void
 CSpritesetWindow::SV_SpritesetModified()
 {
   UpdateImageView();
+  m_ImagesPalette->Invalidate();
   SetModified(true);
 }
 
@@ -413,6 +415,8 @@ CSpritesetWindow::IV_ImageChanged()
   memcpy(frame.GetPixels(), m_ImageView.GetPixels(), frame.GetWidth() * frame.GetHeight() * sizeof(RGBA));
 
   SetModified(true);
+  m_SpritesetView.Invalidate();
+  m_ImagesPalette->Invalidate();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -495,6 +499,8 @@ void
 CSpritesetWindow::SIP_SpritesetModified()
 {
   SetModified(true);
+  m_SpritesetView.Invalidate();
+  UpdateImageView();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

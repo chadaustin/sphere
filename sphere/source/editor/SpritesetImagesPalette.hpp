@@ -24,6 +24,8 @@ public:
   
   virtual void Destroy();
 
+  void SetCurrentImage(int image);
+
 private:
   afx_msg void OnSize(UINT type, int cx, int cy);
   afx_msg void OnPaint();
