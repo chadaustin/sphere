@@ -701,6 +701,13 @@ CMapWindow::TV_SwapTiles(std::vector<int> list_a, std::vector<int> list_b) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+CMapWindow::TV_TilesetSelectionChanged(int width, int height, unsigned int* tiles) {
+  m_MapView.SetTileSelection(width, height, tiles);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void 
 CMapWindow::SP_ColorSelected(RGBA color)
 {

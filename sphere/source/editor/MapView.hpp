@@ -37,6 +37,15 @@ public:
 
   void UpdateScrollBars();
 
+#if 1
+  void SetTileSelection(int width, int height, unsigned int* tiles);
+
+private:
+  int m_MultiTileWidth;
+  int m_MultiTileHeight;
+  unsigned int* m_MultiTileData;
+#endif
+
 private:
   int GetPageSizeX();
   int GetPageSizeY();

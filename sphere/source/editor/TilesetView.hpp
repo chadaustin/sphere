@@ -15,6 +15,9 @@ public:
   virtual void TV_InsertedTiles(int at, int numtiles) = 0;
   virtual void TV_DeletedTiles(int at, int numtiles) = 0;
   virtual void TV_SwapTiles(std::vector<int> list_a, std::vector<int> list_b) = 0;
+#if 1
+  virtual void TV_TilesetSelectionChanged(int width, int height, unsigned int* tiles) = 0;
+#endif
 };
 
 
@@ -103,6 +106,11 @@ public:
   int GetTileSelectionTopY();
   int GetTileSelectionRightX();
   int GetTileSelectionLowerY();
+  int GetTileSelectionWidth();
+  int GetTileSelectionHeight();
+
+  unsigned int* m_TileSelection;
+  unsigned int* GetTileSelection();
 #endif
 
   DECLARE_MESSAGE_MAP()

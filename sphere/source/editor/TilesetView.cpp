@@ -99,6 +99,7 @@ CTilesetView::CTilesetView()
 #if 1
 , m_MouseDown(false)
 , m_UsingMultiTileSelection(false)
+, m_TileSelection(NULL)
 #endif
 {
   m_ZoomFactor        = Configuration::Get(KEY_TILES_ZOOM_FACTOR);
@@ -113,6 +114,9 @@ CTilesetView::CTilesetView()
 CTilesetView::~CTilesetView()
 {
   delete m_BlitTile;
+#if 1
+  delete m_TileSelection;
+#endif
   DestroyWindow();
 }
 
@@ -240,6 +244,13 @@ CTilesetView::TilesetChanged()
     m_SelectedTile = m_Tileset->GetNumTiles() - 1;
   }
 
+#if 1
+  if (m_UsingMultiTileSelection) {
+    m_UsingMultiTileSelection = false;
+    m_Handler->TV_TilesetSelectionChanged(GetTileSelectionWidth(), GetTileSelectionHeight(), GetTileSelection());
+  }
+#endif
+
   // resize blit tile if we must
   delete m_BlitTile;
   m_BlitTile = new CDIBSection(
@@ -259,6 +270,11 @@ CTilesetView::TilesetChanged()
 void
 CTilesetView::SetSelectedTile(int tile)
 {
+  if (m_UsingMultiTileSelection) {
+    m_UsingMultiTileSelection = false;
+    m_Handler->TV_TilesetSelectionChanged(GetTileSelectionWidth(), GetTileSelectionHeight(), GetTileSelection());
+  }
+
   m_SelectedTile = tile;
   Invalidate();
 
@@ -358,6 +374,9 @@ CTilesetView::GetTileSelectionLeftX() {
   CPoint start = m_StartPoint;
   CPoint end = m_CurPoint;
 
+  if (!m_BlitTile || m_BlitTile->GetPixels() == NULL)
+    return 0;
+
   RECT client_rect;
   GetClientRect(&client_rect);
 
@@ -392,6 +411,9 @@ int
 CTilesetView::GetTileSelectionRightX() {
   CPoint start = m_StartPoint;
   CPoint end = m_CurPoint;
+
+  if (!m_BlitTile || m_BlitTile->GetPixels() == NULL)
+    return 0;
 
   RECT client_rect;
   GetClientRect(&client_rect);
@@ -428,6 +450,9 @@ CTilesetView::GetTileSelectionTopY() {
   CPoint start = m_StartPoint;
   CPoint end = m_CurPoint;
 
+  if (!m_BlitTile || m_BlitTile->GetPixels() == NULL)
+    return 0;
+
   RECT client_rect;
   GetClientRect(&client_rect);
 
@@ -463,6 +488,9 @@ CTilesetView::GetTileSelectionLowerY() {
   CPoint start = m_StartPoint;
   CPoint end = m_CurPoint;
 
+  if (!m_BlitTile || m_BlitTile->GetPixels() == NULL)
+    return 0;
+
   RECT client_rect;
   GetClientRect(&client_rect);
 
@@ -489,6 +517,69 @@ CTilesetView::GetTileSelectionLowerY() {
   }
 
   return tileselection_lower_y;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CTilesetView::GetTileSelectionWidth() {
+  if (!m_UsingMultiTileSelection)
+    return 0;
+  return GetTileSelectionRightX() - GetTileSelectionLeftX() + 1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CTilesetView::GetTileSelectionHeight() {
+  if (!m_UsingMultiTileSelection)
+    return 0;
+  return GetTileSelectionLowerY() - GetTileSelectionTopY() + 1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+unsigned int*
+CTilesetView::GetTileSelection()
+{
+  if (m_TileSelection)
+    delete m_TileSelection;
+  m_TileSelection = NULL;
+
+  if (!m_UsingMultiTileSelection)
+    return NULL;
+
+  if (!m_BlitTile || m_BlitTile->GetPixels() == NULL)
+    return NULL;
+
+  RECT client_rect;
+  GetClientRect(&client_rect);
+
+  int blit_width  = m_BlitTile->GetWidth();
+  int blit_height = m_BlitTile->GetHeight();
+
+  int tileselection_left_x  = GetTileSelectionLeftX();
+  int tileselection_right_x = GetTileSelectionRightX();
+  int tileselection_top_y   = GetTileSelectionTopY();
+  int tileselection_lower_y = GetTileSelectionLowerY();
+
+  int width  = GetTileSelectionWidth();
+  int height = GetTileSelectionHeight();
+
+  if (width <= 0 || height <= 0)
+    return NULL;
+
+  m_TileSelection = new unsigned int[width * height];
+  if (m_TileSelection) {
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        int tile = ((tileselection_top_y + y)  * (client_rect.right / blit_width)) + (tileselection_left_x + x);
+        m_TileSelection[y * width + x] = tile;
+      }
+    }
+  }
+
+  return m_TileSelection;
 }
 #endif
 
@@ -734,6 +825,8 @@ CTilesetView::OnLButtonUp(UINT flags, CPoint point)
   m_CurPoint = point;
   m_MouseDown = false;
   ReleaseCapture();
+
+  m_Handler->TV_TilesetSelectionChanged(GetTileSelectionWidth(), GetTileSelectionHeight(), GetTileSelection());
 }
 #endif
 
@@ -1150,6 +1243,14 @@ CTilesetView::OnViewTileObstructions()
 
 void
 CTilesetView::OnZoom(int zoom_factor) {
+
+#if 1
+  if (m_UsingMultiTileSelection) {
+    m_UsingMultiTileSelection = false;
+    m_Handler->TV_TilesetSelectionChanged(GetTileSelectionWidth(), GetTileSelectionHeight(), GetTileSelection());
+  }
+#endif
+
   m_ZoomFactor = zoom_factor;
   delete m_BlitTile;
   m_BlitTile = new CDIBSection(

@@ -61,15 +61,18 @@ CMapView::CMapView()
 , m_SelectedTile(0)
 , m_SelectedLayer(0)
 , m_MoveIndex(-1)
-
 , m_Clicked(false)
 , m_ShowGrid(false)
 , m_ShowTileObstructions(false)
 //, m_ShowAnimations(false)
-
 , m_PreviewLineOn(0)
 , m_RedrawWindow(0)
 , m_RedrawPreviewLine(0)
+#if 1
+, m_MultiTileWidth(0)
+, m_MultiTileHeight(0)
+, m_MultiTileData(NULL)
+#endif
 {
   m_SpritesetDrawType = Configuration::Get(KEY_MAP_SPRITESET_DRAWTYPE);  
   m_ZoomFactor        = Configuration::Get(KEY_MAP_ZOOM_FACTOR);
@@ -282,6 +285,23 @@ CMapView::SelectLayer(int layer)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+CMapView::SetTileSelection(int width, int height, unsigned int* tiles)
+{
+  if (tiles) {
+    m_MultiTileWidth = width;
+    m_MultiTileHeight = height;
+    m_MultiTileData = tiles;
+  }
+  else {
+    m_MultiTileWidth = 0;
+    m_MultiTileHeight = 0;
+    m_MultiTileData = NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
 CMapView::UpdateScrollBars()
 {
   SetHScrollRange(GetTotalTilesX() + 1, GetPageSizeX());
@@ -343,6 +363,19 @@ CMapView::Click(CPoint point)
   // change the tile
   bool map_changed = false;
 
+#if 1
+  if (m_MultiTileWidth && m_MultiTileHeight && m_MultiTileData) {
+    int old_tile = m_SelectedTile;
+    for (int ix = tx; ix < tx + m_MultiTileWidth; ix++) {
+      for (int iy = ty; iy < ty + m_MultiTileHeight; iy++) {
+        m_SelectedTile = m_MultiTileData[((iy - ty) * m_MultiTileWidth) + (ix - tx)];
+        map_changed |= SetTile(ix, iy);
+      }
+    }
+    m_SelectedTile = old_tile;
+  }
+  else
+#endif
   switch (m_CurrentTool) {
     case tool_1x1Tile: { // 1x1
       map_changed = SetTile(tx, ty);

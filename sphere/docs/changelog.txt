@@ -1,3 +1,7 @@
+2004.01.07
+  - Added a multi-tile tool, just select the tiles you want to place by holding down the
+    left mouse button in the Tiles window and drag until you have what you want to place on the map
+
 2003.12.28
   - Made Sound player in editor better (it now requests an audio-device if needed)
   - Made "Package Game!" show a percentage complete message in the status bar
