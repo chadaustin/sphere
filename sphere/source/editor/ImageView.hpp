@@ -6,6 +6,7 @@
 #include "../common/Image32.hpp"
 #include "SwatchPalette.hpp"
 #include "ImageToolPalette.hpp"
+#include "DIBSection.hpp"
 
 
 class CDocumentWindow;  // #include "DocumentWindow.hpp"
@@ -151,6 +152,7 @@ private:
   IImageViewHandler* m_Handler;
 
   CImage32 m_Image;
+  CDIBSection* m_BlitTile;  // for rendering tiles
 
   CSwatchPalette*    m_SwatchPalette;
   CImageToolPalette* m_ToolPalette;

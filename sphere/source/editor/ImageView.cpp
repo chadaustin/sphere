@@ -84,12 +84,17 @@ CImageView::CImageView()
   m_Image.SetBlendMode(CImage32::REPLACE);
   m_ShowGrid = false;
   s_ClipboardFormat = RegisterClipboardFormat("FlatImage32");
+
+  m_BlitTile = new CDIBSection(64, 64, 32);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 CImageView::~CImageView()
 {
+  // destroy the blit DIB
+  delete m_BlitTile;
+
   if (m_SwatchPalette) {
     m_SwatchPalette->Destroy();
   }
@@ -1025,6 +1030,92 @@ CImageView::OnPaint()
   SetRect(&Rect, offsetx + totalx + 1, offsety - 1, ClientRect.right, offsety + totaly + 1);
   FillRect(dc, &Rect, black_brush);
 
+
+  int num_tiles_x = ((size*width) / 64);
+  int num_tiles_y = ((size*height) / 64);
+
+  for (int ty = 0; ty <= num_tiles_y; ++ty) {
+    for (int tx = 0; tx <= num_tiles_x; ++tx) {
+      // clear the DIB
+      memset(m_BlitTile->GetPixels(), 0,  64 * 64 * 4);
+
+      BGRA* pixels = (BGRA*) m_BlitTile->GetPixels();
+
+      for (int iy = 0; iy < 64; ++iy) {    
+        for (int ix = 0; ix < 64; ++ix) { 
+          //for (int l = 0; l < size; ++l)
+          {
+
+            int sx = (ix + (tx * 64));
+            int sy = (iy + (ty * 64));
+
+            sx /= size;
+            sy /= size;
+
+            if (!(sx >= 0 && sx < width && sy >= 0 && sy < height) )
+               continue;
+
+            int counter = (iy * 64) + ix;
+
+            RGBA color = pImage[((sy * width) + sx)];
+ 
+            if (color.alpha == 255) {
+              pixels[counter].red = color.red;
+              pixels[counter].green = color.green;
+              pixels[counter/*iy * 64 + ix*/].blue = color.blue;
+              pixels[counter].alpha = color.alpha;
+            }
+            else {
+              RGBA Color1 = CreateRGBA(255, 255, 255, 255);
+              RGBA Color2 = CreateRGBA(128, 128, 128, 255);
+
+              Color1.red   = (color.red   * color.alpha + Color1.red   * (256 - color.alpha)) / 256;
+              Color1.green = (color.green * color.alpha + Color1.green * (256 - color.alpha)) / 256;
+              Color1.blue  = (color.blue  * color.alpha + Color1.blue  * (256 - color.alpha)) / 256;
+
+              Color2.red   = (color.red   * color.alpha + Color2.red   * (256 - color.alpha)) / 256;
+              Color2.green = (color.green * color.alpha + Color2.green * (256 - color.alpha)) / 256;
+              Color2.blue  = (color.blue  * color.alpha + Color2.blue  * (256 - color.alpha)) / 256;
+
+              Color1.alpha = Color2.alpha = color.alpha;
+
+              if (sx % 2 == 0) {
+                if (sy % 2 == 0) {
+                  pixels[counter].red = Color2.red;
+                  pixels[counter].green = Color2.green;
+                  pixels[counter].blue = Color2.blue;
+                }
+                else {
+                  pixels[counter].red = Color1.red;
+                  pixels[counter].green = Color1.green;
+                  pixels[counter].blue = Color1.blue;
+                }
+              } else {
+                if (sy % 2 == 0) {
+                  pixels[counter].red = Color1.red;
+                  pixels[counter].green = Color1.green;
+                  pixels[counter].blue = Color1.blue;
+                }
+                else {
+                  pixels[counter].red = Color2.red;
+                  pixels[counter].green = Color2.green;
+                  pixels[counter].blue = Color2.blue;
+                }
+              }
+  
+            }
+          }
+        }
+      }
+
+      // render the tile
+      _dc.BitBlt(offsetx + (tx * 64), offsety + (ty * 64), 64, 64,
+                CDC::FromHandle(m_BlitTile->GetDC()), 0, 0, SRCCOPY);
+    }
+  }
+
+
+/*
   // draw the image
   for (int ix = 0; ix < width; ix++)
     for (int iy = 0; iy < height; iy++)
@@ -1105,6 +1196,7 @@ CImageView::OnPaint()
       }
 
     }
+*/
 
   // draw the grid if it is enabled
   if (size >= 3 && m_ShowGrid) {

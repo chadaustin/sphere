@@ -91,9 +91,9 @@ void Blend3(destT& d, srcT s, int alpha) {
   d.green = (s.green * alpha + d.green * (256 - alpha)) / 256;
   d.blue  = (s.blue  * alpha + d.blue  * (256 - alpha)) / 256;
 #else
-  d.red   = alpha_new[s.red][alpha] + alpha_old[d.red][alpha];
+  d.red   = alpha_new[s.red][alpha]   + alpha_old[d.red][alpha];
   d.green = alpha_new[s.green][alpha] + alpha_old[d.green][alpha];
-  d.blue  = alpha_new[s.blue][alpha] + alpha_old[d.blue][alpha];
+  d.blue  = alpha_new[s.blue][alpha]  + alpha_old[d.blue][alpha];
 #endif
 }
 
@@ -106,9 +106,9 @@ void Blend4(destT& d, srcT s, int alpha) {
   d.blue  = (s.blue  * alpha + d.blue  * (256 - alpha)) / 256;
   d.alpha = (s.alpha * alpha + d.alpha * (256 - alpha)) / 256;
 #else
-  d.red   = alpha_new[s.red][alpha] + alpha_old[d.red][alpha];
-  d.green = alpha_new[s.green][alpha] + alpha_old[d.green][alpha];
-  d.blue  = alpha_new[s.blue][alpha] + alpha_old[d.blue][alpha];
+  d.red   =  alpha_new[s.red][alpha]   + alpha_old[d.red][alpha];
+  d.green =  alpha_new[s.green][alpha] + alpha_old[d.green][alpha];
+  d.blue  =  alpha_new[s.blue][alpha]  + alpha_old[d.blue][alpha];
   d.alpha  = alpha_new[s.alpha][alpha] + alpha_old[d.alpha][alpha];
 #endif
 }
