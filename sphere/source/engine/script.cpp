@@ -1855,8 +1855,12 @@ begin_func(IsTriggerAt, 3)
   arg_int(location_y);
   arg_int(layer);
 
-  return_bool(This->m_Engine->GetMapEngine()->IsTriggerAt(location_x, location_y, layer));
-
+  bool found;
+  if ( !This->m_Engine->GetMapEngine()->IsTriggerAt(location_x, location_y, layer, found) ) {
+    This->ReportMapEngineError("IsTriggerAt() failed");
+    return JS_FALSE;    
+  }
+  return_bool(found);
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1879,9 +1883,12 @@ begin_func(AreZonesAt, 3)
   arg_int(location_x);
   arg_int(location_y);
   arg_int(layer);
-
-  return_bool(This->m_Engine->GetMapEngine()->AreZonesAt(location_x, location_y, layer));
-
+  bool found;
+  if ( !This->m_Engine->GetMapEngine()->AreZonesAt(location_x, location_y, layer, found) ) {
+    This->ReportMapEngineError("AreZonesAt() failed");
+    return JS_FALSE;
+  }
+  return_bool(found);
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////

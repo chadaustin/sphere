@@ -197,6 +197,11 @@ CMapEngine::GetCurrentMap()
 bool
 CMapEngine::CallMapScript(int which)
 {
+  if (!m_IsRunning) {
+    m_ErrorMessage = "CallMapScript() called while map engine was not running";
+    return false;
+  }
+
   // make sure 'which' is valid
   if (which < 0 || which >= 6) {
     m_ErrorMessage = "CallMapScript() - script does not exist";
@@ -337,16 +342,8 @@ CMapEngine::GetNumLayers(int& layers)
 bool
 CMapEngine::GetLayerWidth(int layer, int& width)
 {
-  if (!m_IsRunning) {
-    m_ErrorMessage = "GetLayerWidth() called while map engine was not running";
+  if ( IsInvalidLayerError(layer, "GetLayerWidth()") )
     return false;
-  }
-
-  // make sure layer is valid
-  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
-    m_ErrorMessage = "Invalid layer";
-    return false;
-  }
 
   width = m_Map.GetMap().GetLayer(layer).GetWidth();
   return true;
@@ -357,16 +354,8 @@ CMapEngine::GetLayerWidth(int layer, int& width)
 bool
 CMapEngine::GetLayerHeight(int layer, int& height)
 {
-  if (!m_IsRunning) {
-    m_ErrorMessage = "GetLayerHeight() called while map engine was not running";
+  if ( IsInvalidLayerError(layer, "GetLayerHeight()") )
     return false;
-  }
-
-  // make sure layer is valid
-  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
-    m_ErrorMessage = "Invalid layer";
-    return false;
-  }
 
   height = m_Map.GetMap().GetLayer(layer).GetHeight();
   return true;
@@ -377,16 +366,8 @@ CMapEngine::GetLayerHeight(int layer, int& height)
 bool
 CMapEngine::GetLayerName(int layer, std::string& name)
 {
-  if (!m_IsRunning) {
-    m_ErrorMessage = "GetLayerName() called while map engine was not running";
+  if ( IsInvalidLayerError(layer, "GetLayerName()") )
     return false;
-  }
-
-  // make sure layer is valid
-  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
-    m_ErrorMessage = "Invalid layer";
-    return false;
-  }
 
   name = m_Map.GetMap().GetLayer(layer).GetName();
   return true;
@@ -397,16 +378,8 @@ CMapEngine::GetLayerName(int layer, std::string& name)
 bool
 CMapEngine::IsLayerVisible(int layer, bool& visible)
 {
-  if (!m_IsRunning) {
-    m_ErrorMessage = "IsLayerVisible() called while map engine was not running";
+  if ( IsInvalidLayerError(layer, "IsLayerVisible()") )
     return false;
-  }
-
-  // make sure layer is valid
-  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
-    m_ErrorMessage = "Invalid layer";
-    return false;
-  }
 
   visible = m_Map.GetMap().GetLayer(layer).IsVisible();
   return true;
@@ -417,16 +390,8 @@ CMapEngine::IsLayerVisible(int layer, bool& visible)
 bool
 CMapEngine::SetLayerVisible(int layer, bool visible)
 {
-  if (!m_IsRunning) {
-    m_ErrorMessage = "SetLayerVisible() called while map engine was not running";
+  if ( IsInvalidLayerError(layer, "SetLayerVisible()") )
     return false;
-  }
-
-  // make sure layer is valid
-  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
-    m_ErrorMessage = "Invalid layer";
-    return false;
-  }
 
   m_Map.GetMap().GetLayer(layer).SetVisible(visible);
   return true;
@@ -437,16 +402,8 @@ CMapEngine::SetLayerVisible(int layer, bool visible)
 bool
 CMapEngine::IsLayerReflective(int layer, bool& reflective)
 {
-  if (!m_IsRunning) {
-    m_ErrorMessage = "IsLayerReflective() called while map engine was not running";
+  if ( IsInvalidLayerError(layer, "IsLayerReflective()") )
     return false;
-  }
-
-  // make sure layer is valid
-  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
-    m_ErrorMessage = "Invalid layer";
-    return false;
-  }
 
   reflective = m_Map.GetMap().GetLayer(layer).IsReflective();
   return true;
@@ -457,16 +414,8 @@ CMapEngine::IsLayerReflective(int layer, bool& reflective)
 bool
 CMapEngine::SetLayerReflective(int layer, bool reflective)
 {
-  if (!m_IsRunning) {
-    m_ErrorMessage = "SetLayerReflective() called while map engine was not running";
+  if ( IsInvalidLayerError(layer, "SetLayerReflective()") )
     return false;
-  }
-
-  // make sure layer is valid
-  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
-    m_ErrorMessage = "Invalid layer";
-    return false;
-  }
 
   m_Map.GetMap().GetLayer(layer).SetReflective(reflective);
   return true;
@@ -491,16 +440,8 @@ CMapEngine::GetNumTiles(int& tiles)
 bool
 CMapEngine::SetTile(int x, int y, int layer, int tile)
 {
-  if (!m_IsRunning) {
-    m_ErrorMessage = "SetTile() called while map engine was not running";
+  if ( IsInvalidLayerError(layer, "SetTile()") )
     return false;
-  }
-
-  // make sure layer is valid
-  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
-    m_ErrorMessage = "Invalid layer";
-    return false;
-  }
 
   sLayer& l = m_Map.GetMap().GetLayer(layer);
 
@@ -519,16 +460,8 @@ CMapEngine::SetTile(int x, int y, int layer, int tile)
 bool
 CMapEngine::GetTile(int x, int y, int layer, int& tile)
 {
-  if (!m_IsRunning) {
-    m_ErrorMessage = "GetTile() called while map engine was not running";
+  if ( IsInvalidLayerError(layer, "GetTile()") )
     return false;
-  }
-
-  // make sure layer is valid
-  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
-    m_ErrorMessage = "Invalid layer";
-    return false;
-  }
 
   sLayer& l = m_Map.GetMap().GetLayer(layer);
 
@@ -714,16 +647,10 @@ CMapEngine::SetNextAnimatedTile(int current_tile, int next_tile)
 
 bool
 CMapEngine::ReplaceTilesOnLayer(int layer, int old_tile, int new_tile) {
-  if (!m_IsRunning) {
-    m_ErrorMessage = "ReplaceTilesOnLayer() called while map engine was not running";
+  if ( IsInvalidLayerError(layer, "ReplaceTilesOnLayer()") )
     return false;
-  }
 
   sMap& map = m_Map.GetMap();
-  if (layer < 0 || layer >= map.GetNumLayers()) {
-    m_ErrorMessage = "Invalid layer index used in ReplaceTilesOnLayer";
-    return false;
-  }
 
   sLayer& l = map.GetLayer(layer);
   sTileset& tileset = map.GetTileset();
@@ -753,17 +680,22 @@ CMapEngine::ExecuteTrigger(int location_x, int location_y, int layer)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::AreZonesAt(int location_x, int location_y, int layer) {
+CMapEngine::AreZonesAt(int location_x, int location_y, int layer, bool& found) {
+  found = false;
+  if ( IsInvalidLayerError(layer, "AreZonesAt()") )
+    return false;
+
   for (int i = 0; i < m_Map.GetMap().GetNumZones(); i++) {
     if (m_Map.GetMap().GetZone(i).x1 >= location_x
      && m_Map.GetMap().GetZone(i).y1 >= location_y
      && m_Map.GetMap().GetZone(i).layer == layer
      && m_Map.GetMap().GetZone(i).x2 - m_Map.GetMap().GetZone(i).x1 < location_x
      && m_Map.GetMap().GetZone(i).y2 - m_Map.GetMap().GetZone(i).y1 < location_y) {
+       found = true;
        return true;
      }
   }
-  return false;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -773,10 +705,8 @@ CMapEngine::ExecuteZones(int location_x, int location_y, int layer) {
 
   // this doesn't use layers, but I'll include the layer parameter just incase
 
-  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
-    m_ErrorMessage = "Invalid layer used in ExecuteZones()";
+  if ( IsInvalidLayerError(layer, "ExecuteZones()") )
     return false;
-  }
 
   bool found = false;
   for (int i = 0; i < m_Map.GetMap().GetNumZones(); i++) {
@@ -1016,7 +946,26 @@ CMapEngine::IsInvalidPersonError(const char* person_name, int& person_index)
   return false;
 }
 
-//////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::IsInvalidLayerError(int layer, const char* calling_func)
+{
+  if (!m_IsRunning) {
+    m_ErrorMessage = std::string(calling_func) + " called while map engine isn't running";
+    return true;
+  }
+
+  // make sure layer is valid
+  if (layer < 0 || layer >= int(m_Map.GetMap().GetNumLayers())) {
+    m_ErrorMessage = "Invalid layer index: " + itos(layer);
+    return true;
+  }
+
+  return false;
+}
+
+/////////////////////////////////////////////////////////////////////////////////
 
 bool
 CMapEngine::AttachInput(const char* name)
@@ -1115,17 +1064,8 @@ CMapEngine::SetRenderScript(const char* script)
 bool
 CMapEngine::SetLayerRenderer(int layer, const char* script)
 {
-  // make sure the engine is running
-  if (!m_IsRunning) {
-    m_ErrorMessage = "SetLayerRenderer() called while map engine isn't running";
+  if ( IsInvalidLayerError(layer, "SetLayerRenderer()") )
     return false;
-  }
-
-  // make sure layer is valid
-  if (layer < 0 || layer >= int(m_LayerRenderers.size())) {
-    m_ErrorMessage = "Invalid layer value";
-    return false;
-  }
 
   // destroy old layer renderer
   if (m_LayerRenderers[layer]) {
@@ -1150,17 +1090,8 @@ CMapEngine::SetLayerRenderer(int layer, const char* script)
 bool
 CMapEngine::SetLayerAlpha(int layer, int alpha)
 {
-  // make sure the engine is running
-  if (!m_IsRunning) {
-    m_ErrorMessage = "SetLayerRenderer() called while map engine isn't running";
+  if ( IsInvalidLayerError(layer, "SetLayerAlpha()") )
     return false;
-  }
-
-  // make sure layer is valid
-  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
-    m_ErrorMessage = "Invalid layer value";
-    return false;
-  }
 
   // valid alpha
   if (alpha < 0) {
@@ -1178,17 +1109,8 @@ CMapEngine::SetLayerAlpha(int layer, int alpha)
 bool
 CMapEngine::GetLayerAlpha(int layer, int& alpha)
 {
-  // make sure the engine is running
-  if (!m_IsRunning) {
-    m_ErrorMessage = "SetLayerRenderer() called while map engine isn't running";
+  if ( IsInvalidLayerError(layer, "GetLayerAlpha()") )
     return false;
-  }
-
-  // make sure layer is valid
-  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
-    m_ErrorMessage = "Invalid layer value";
-    return false;
-  }
 
   alpha = m_Map.GetLayerAlpha(layer);
   return true;
@@ -1613,10 +1535,8 @@ CMapEngine::SetPersonLayer(const char* name, int layer)
   }
 
   // verify layer
-  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
-    m_ErrorMessage = "Layer " + itos(layer) + " doesn't exist";
+  if ( IsInvalidLayerError(layer, "SetPersonLayer()") )
     return false;
-  }
 
   // if person has a leader, ignore the command
   if (m_Persons[person].leader != -1) {
@@ -3537,10 +3457,15 @@ CMapEngine::FindTrigger(int location_x, int location_y, int layer)
 ///////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::IsTriggerAt(int location_x, int location_y, int layer)
+CMapEngine::IsTriggerAt(int location_x, int location_y, int layer, bool& found)
 {
+  found = false;
+  if ( IsInvalidLayerError(layer, "IsTriggerAt()") )
+    return false;
+
   int trigger_index = FindTrigger(location_x, location_y, layer);
-  return (trigger_index != -1);
+  found = (trigger_index != -1);
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3549,9 +3474,7 @@ bool
 CMapEngine::ExecuteTriggerScript(int trigger_index)
 {
   if (trigger_index < 0 || trigger_index >= int(m_Triggers.size())) {
-    std::ostringstream os;
-    os << "Invalid trigger index\n";
-    m_ErrorMessage = os.str();
+    m_ErrorMessage = "Invalid trigger index";
     return false;
   }
 
@@ -3658,10 +3581,13 @@ CMapEngine::IsPersonInsideZone(int person_index, int zone_index)
 bool
 CMapEngine::ExecuteZoneScript(int zone_index)
 {
+  if(!m_IsRunning) {
+    m_ErrorMessage = "ExecuteZoneScript called while map engine isn't running.";
+    return false;
+  }
+
   if (zone_index < 0 || zone_index >= int(m_Zones.size())) {
-    std::ostringstream os;
-    os << "Invalid zone index\n";
-    m_ErrorMessage = os.str();
+    m_ErrorMessage = "Invalid zone index";
     return false;
   }
 

@@ -98,8 +98,8 @@ public:
   bool ReplaceTilesOnLayer(int layer, int old_tile, int new_tile);
 
   // trigger and zones
-  bool IsTriggerAt(int location_x, int location_y, int layer);
-  bool AreZonesAt(int location_x, int location_y, int layer);
+  bool IsTriggerAt(int location_x, int location_y, int layer, bool& found);
+  bool AreZonesAt(int location_x, int location_y, int layer, bool& found);
   bool ExecuteTrigger(int location_x, int location_y, int layer);
   bool ExecuteZones(int location_x, int location_y, int layer);
   bool ExecuteTriggerScript(int trigger_index);
@@ -326,6 +326,7 @@ private:
 
   // error checking
   bool IsInvalidPersonError(const char* person_name, int& person_index);
+  bool IsInvalidLayerError(int layer_index, const char* calling_func);
 
   // miscellaneous
   void ResetNextFrame();
