@@ -9,7 +9,7 @@
 
 
 #define EXPORT(ret) extern "C" ret __stdcall
-
+static bool fullscreen;
 
 typedef struct tagIMAGE
 {
@@ -256,20 +256,27 @@ void UpdateButtonStates(HWND dialog)
 
 EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
 {
+    static bool firstcall = true;
+
     ScreenWidth = screen_width;
     ScreenHeight = screen_height;
 
     LoadDriverConfig();
 
     SphereWindow = window;
+
+    if (firstcall) {
+      fullscreen = DriverConfig.fullscreen;
+      firstcall = false;
+    }
     
-    if (!DriverConfig.fullscreen) {
+    if (!fullscreen) {
 
         const int screenwidth = GetSystemMetrics(SM_CXSCREEN);
         const int screenheight = GetSystemMetrics(SM_CYSCREEN);
 
         RECT rect = { 0, 0, ScreenWidth * SCALE(), ScreenHeight * SCALE() };
-	DWORD style = GetWindowLong(SphereWindow, GWL_STYLE);
+        DWORD style = GetWindowLong(SphereWindow, GWL_STYLE);
         DWORD exstyle = GetWindowLong(SphereWindow, GWL_EXSTYLE);
         AdjustWindowRectEx(&rect, style, (GetMenu(SphereWindow) ? TRUE : FALSE), exstyle);
         int winwidth = rect.right - rect.left;
@@ -358,7 +365,7 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
     if (strstr((const char*)glGetString(GL_EXTENSIONS), "WGL_EXT_swap_control")) {
         wglSwapIntervalEXT    = (BOOL (__stdcall*)(int))wglGetProcAddress("wglSwapIntervalEXT");
         wglGetSwapIntervalEXT = (int (__stdcall*)())wglGetProcAddress("wglGetSwapIntervalEXT");
-        if (DriverConfig.fullscreen && DriverConfig.vsync) {
+        if (fullscreen && DriverConfig.vsync) {
             wglSwapIntervalEXT(1);
         } else {
             wglSwapIntervalEXT(0);
@@ -406,7 +413,7 @@ EXPORT(void) CloseVideoDriver()
     wglDeleteContext(MainRC);
    
     // reset screen resolution
-    if (DriverConfig.fullscreen) {
+    if (fullscreen) {
         DEVMODE dm;
         EnumDisplaySettings(NULL, ENUM_REGISTRY_SETTINGS, &dm);
         dm.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFLAGS | DM_DISPLAYFREQUENCY;
@@ -415,6 +422,30 @@ EXPORT(void) CloseVideoDriver()
         SetWindowLong(SphereWindow, GWL_STYLE, WindowStyle);
         SetWindowLong(SphereWindow, GWL_EXSTYLE, WindowStyleEx);
     }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+EXPORT(bool) ToggleFullScreen() {
+  // this causes weird color problems, but works...
+  CloseVideoDriver();
+  fullscreen = !fullscreen;
+
+  // attempt to switch
+  if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight)) {
+    return true;
+  }
+  else {
+    CloseVideoDriver();
+    fullscreen = !fullscreen;
+
+    // attempt to switch back since the switch failed
+    if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -807,7 +838,7 @@ EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
 
     } else {
         glReadPixels(x, ScreenHeight - y - h, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-//        puts(glErrorToString(error).c_str());
+        // puts(glErrorToString(error).c_str());
     }
 
     // now invert the rows

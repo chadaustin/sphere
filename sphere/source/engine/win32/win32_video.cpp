@@ -200,6 +200,20 @@ void CloseVDriver()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+bool ToggleFullScreen()
+{
+  bool (__stdcall * toggle_fullscreen)();
+  // Gets address of
+  toggle_fullscreen = (bool (__stdcall *)())GetProcAddress(GraphicsDriver, "ToggleFullScreen");
+  if (toggle_fullscreen == NULL) {
+    return true;
+  }
+
+  return toggle_fullscreen();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 bool SwitchResolution(int x, int y)
 {
   if (x == ScreenWidth && y == ScreenHeight) {

@@ -16,6 +16,7 @@ extern void SetFPSFont(SFONT* font);
 extern bool SwitchResolution(int x, int y);
 extern int  GetScreenWidth();
 extern int  GetScreenHeight();
+extern bool ToggleFullScreen();
 
 extern void FlipScreen();
 extern void (__stdcall * SetClippingRectangle)(int x, int y, int w, int h);

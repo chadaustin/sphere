@@ -7,6 +7,26 @@
 #include "../common/win32x.hpp"
 #include "resource.h"
 
+/////////////////////////////////////////////////
+
+#include <string>
+using namespace std;
+
+void WriteLog(std::string str) {
+  static bool firstcall = true;
+  FILE* file = fopen("standard32.log", firstcall ? "w+" : "a");
+  if (file) {
+    str += "\n";
+    fwrite(str.c_str(), sizeof(char), str.size(), file);
+    fclose(file);
+  }
+
+  if (firstcall) {
+    firstcall = false;
+  }
+}
+
+/////////////////////////////////////////////////
 
 typedef struct _IMAGE
 {
@@ -81,6 +101,7 @@ static LPDIRECTDRAW dd;
 static LPDIRECTDRAWSURFACE ddPrimary;
 static LPDIRECTDRAWSURFACE ddSecondary;
 
+static bool fullscreen;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -212,7 +233,15 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
   SetClippingRectangle(0, 0, screen_width, screen_height);
 
   LoadConfiguration();
-  if (Configuration.fullscreen)
+
+  static bool firstcall = true;
+  if (firstcall) {
+    fullscreen = Configuration.fullscreen;
+    firstcall = false;
+    WriteLog("First call...");
+  }
+
+  if (fullscreen)
     return InitFullscreen();
   else
     return InitWindowed();
@@ -270,6 +299,42 @@ bool InitFullscreen()
   ShowCursor(FALSE);
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Switches from fullscreen to windowed or vice-versa,
+ * updates the fullscreen flag as needed
+ * returns whether the engine should be shutdown
+ */
+EXPORT(bool) ToggleFullScreen() {
+
+  // if we haven't set a screen size, don't close the old driver
+  if (ScreenWidth != 0 || ScreenHeight != 0) {
+
+    if (fullscreen) {
+      CloseFullscreen();
+    }
+    else {
+      CloseWindowed();
+    }
+  }
+
+  fullscreen = !fullscreen;
+  if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight) == true) {
+    return true;
+  }
+  else {
+
+    // switching failed, try to revert to what it was
+    fullscreen = !fullscreen;
+    if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight) == true) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -404,7 +469,7 @@ bool InitWindowed()
 
 EXPORT(void) CloseVideoDriver()
 {
-  if (Configuration.fullscreen)
+  if (fullscreen)
     CloseFullscreen();
   else
     CloseWindowed();
@@ -517,7 +582,7 @@ void OptimizeBlitRoutine(IMAGE image)
 
 EXPORT(void) FlipScreen()
 {
-  if (Configuration.fullscreen)
+  if (fullscreen)
   {
     LPDIRECTDRAWSURFACE surface;
     if (Configuration.vsync)

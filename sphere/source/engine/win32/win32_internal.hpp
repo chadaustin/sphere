@@ -11,6 +11,7 @@
 extern bool InitVideo(HWND window, SPHERECONFIG* config);
 extern void CloseVideo();
 extern void ToggleFPS();
+extern bool ToggleFullScreen();
 
 
 // audio

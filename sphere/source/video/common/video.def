@@ -5,6 +5,8 @@ EXPORTS
   InitVideoDriver
   CloseVideoDriver
 
+  ToggleFullScreen
+
   FlipScreen
   SetClippingRectangle
   GetClippingRectangle

@@ -170,7 +170,11 @@ LRESULT CALLBACK SphereWindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM l
       // fall through
 
     case WM_KEYDOWN: {
-      if (wparam == VK_F11) {
+      if (wparam == VK_F10) {
+        if (ToggleFullScreen() == false) {
+          Shutdown(window);
+        }
+      } else if (wparam == VK_F11) {
         ToggleFPS();
       } else if (wparam == VK_F12) {
         ShouldTakeScreenshot = true;
