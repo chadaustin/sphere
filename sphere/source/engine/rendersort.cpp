@@ -25,7 +25,7 @@ CRenderSort::AddObject(int draw_x, int draw_y, int sort_y, int draw_w, int draw_
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void CalculateRotateBlitPoints(int tx[4], int ty[4], int x, int y, int w, int h, double radians);
+void CalculateRotateBlitPoints(int tx[4], int ty[4], double x, double y, double w, double h, double radians);
 
 void
 CRenderSort::DrawObjects()

@@ -6597,21 +6597,21 @@ end_method()
 
 ///////////////////////////////////////
 
-void CalculateRotateBlitPoints(int tx[4], int ty[4], int x, int y, int w, int h, double radians)
+void CalculateRotateBlitPoints(int tx[4], int ty[4], double x, double y, double w, double h, double radians)
 {
-  double r = sqrt(w * w + h * h) / 2;
+  double r = sqrt(w * w + h * h) / (double)2.0;
 
   // various useful angles
   const double PI = 3.1415927;
-  const double angle = atan((double)w / h);  // h shouldn't be zero...
+  const double angle = atan((double)w / (double)h);  // h shouldn't be zero...
   double upper_left_angle  = -angle;
   double upper_right_angle = angle;
   double lower_right_angle = PI - angle;
   double lower_left_angle  = PI + angle;
 
   // center of the image
-  int cx = x + w / 2;
-  int cy = y + h / 2;
+  double cx = (double)x + (double)w / 2.0;
+  double cy = (double)y + (double)h / 2.0;
 
   tx[0] = int(cx + r * sin(upper_left_angle  + radians));
   tx[1] = int(cx + r * sin(upper_right_angle + radians));
