@@ -457,12 +457,22 @@ CMapView::LayerAreaCopy()
   if (end_y < start_y) std::swap(start_y, end_y);
 
   sLayer& l = m_Map->GetLayer(m_SelectedLayer);
-  if (end_x >= l.GetWidth())  end_x = l.GetWidth() - 1; 
-  if (end_y >= l.GetHeight()) end_y = l.GetHeight() - 1; 
+
+  // clip end point within layer
+  // this gives negative results if start_x/start_y are outside the layer
+  if (end_x >= l.GetWidth())  end_x = l.GetWidth()  - start_x - 1; 
+  if (end_y >= l.GetHeight()) end_y = l.GetHeight() - start_y - 1; 
 
   // grab the layer
   int width = end_x - start_x + 1;
   int height = end_y - start_y + 1;
+
+  // nothing to copy
+  if (width < 0 || height < 0) {
+    CloseClipboard();
+    return;
+  }
+
   sLayer pLayer;
   sLayer newLayer;
   pLayer.Resize(width, height);
