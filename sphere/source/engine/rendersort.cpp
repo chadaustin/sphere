@@ -62,10 +62,29 @@ CRenderSort::DrawObjects()
       CalculateRotateBlitPoints(tx, ty, o.draw_x, o.draw_y, o.draw_w, o.draw_h, o.angle);
     }
 
-    if (o.mask == CreateRGBA(255, 255, 255, 255)) {
-      TransformBlitImage(o.image, tx, ty);
+    bool normal_blit = false;
+
+    // BlitImage is usually faster than TransformBlit, so use BlitImage if possible
+    if (tx[0] == tx[3] && tx[1] == tx[2] && ty[0] == ty[1] && ty[2] == ty[3]) {
+      int dw = tx[2] - tx[0] + 1;
+      int dh = ty[2] - ty[0] + 1;
+      if (dw == o.draw_w && dh == o.draw_h) {
+        normal_blit = true;
+      }
+    }
+
+    if (normal_blit) {
+      if (o.mask == CreateRGBA(255, 255, 255, 255)) {
+        BlitImage(o.image, tx[0], ty[0]);
+      } else {
+        BlitImageMask(o.image, tx[0], ty[0], o.mask);
+      }
     } else {
-      TransformBlitImageMask(o.image, tx, ty, o.mask);
+      if (o.mask == CreateRGBA(255, 255, 255, 255)) {
+        TransformBlitImage(o.image, tx, ty);
+      } else {
+        TransformBlitImageMask(o.image, tx, ty, o.mask);
+      }
     }
   }
 

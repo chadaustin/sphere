@@ -1504,8 +1504,18 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
   }
   else
   {
-    if (tx == m_CurrentCursorTileX && 
-        ty == m_CurrentCursorTileY &&
+    int num_tiles_x = 1;
+    int num_tiles_y = 1;
+
+    switch (m_CurrentTool) {
+      case tool_3x3Tile: num_tiles_x = 3; num_tiles_y = 3; break;
+      case tool_5x5Tile: num_tiles_x = 5; num_tiles_y = 5; break;
+    }
+
+    if (tx >= m_CurrentCursorTileX - (num_tiles_x/2) && 
+        ty >= m_CurrentCursorTileY - (num_tiles_y/2) &&
+        tx <= m_CurrentCursorTileX + (num_tiles_x/2) &&
+        ty <= m_CurrentCursorTileY + (num_tiles_y/2) &&
         tx <= GetTotalTilesX() &&
         ty <= GetTotalTilesY())
       {
@@ -1529,7 +1539,6 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
         dc.RestoreDC(-1);
       }
   }
-
 
 }
 
@@ -2061,19 +2070,28 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
     case tool_CopyEntity:
     case tool_PasteEntity:
     case tool_MoveEntity: {
+      int num_tiles_x = 1;
+      int num_tiles_y = 1;
+
+      switch (m_CurrentTool) {
+        case tool_3x3Tile: num_tiles_x = 3; num_tiles_y = 3; break;
+        case tool_5x5Tile: num_tiles_x = 5; num_tiles_y = 5; break;
+      }
+
       int old_x = (m_CurrentCursorTileX - m_CurrentX) * tile_width;
       int old_y = (m_CurrentCursorTileY - m_CurrentY) * tile_height;
-      RECT old_rect = { old_x, old_y, old_x + tile_width, old_y + tile_height };
+      RECT old_rect = { old_x - (tile_width * num_tiles_x/2), old_y - (tile_height * num_tiles_y/2), old_x + (tile_width * num_tiles_x), old_y + (tile_height * num_tiles_y)  };
       m_RedrawWindow = 1;
       InvalidateRect(&old_rect);
   
       m_CurrentCursorTileX = x;
       m_CurrentCursorTileY = y;
 
-      // refresh the new tile
+      // refresh the new tile(s)
       int new_y = (y - m_CurrentY) * tile_height;
       int new_x = (x - m_CurrentX) * tile_width;
-      RECT new_rect = { new_x, new_y, new_x + tile_width, new_y + tile_height };
+
+      RECT new_rect = { new_x - (tile_width * num_tiles_x/2), new_y - (tile_height * num_tiles_y/2), new_x + (tile_width * num_tiles_x), new_y + (tile_height * num_tiles_y) };
       m_RedrawWindow = 1;
       InvalidateRect(&new_rect, true);
     } break;
