@@ -13,7 +13,7 @@ static ADR_CONTEXT s_AudiereContext;
 static ADR_FILE ADR_CALL FileOpen(void* opaque, const char* filename);
 static void     ADR_CALL FileClose(ADR_FILE file);
 static int      ADR_CALL FileRead(ADR_FILE file, void* buffer, int size);
-static int      ADR_CALL FileSeek(ADR_FILE file, int destination);
+static int      ADR_CALL FileSeek(ADR_FILE file, int destination, ADR_SEEK_TYPE type);
 static int      ADR_CALL FileTell(ADR_FILE file);
 
 
@@ -79,10 +79,17 @@ static int ADR_CALL FileRead(ADR_FILE file, void* buffer, int size)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static int ADR_CALL FileSeek(ADR_FILE file, int destination)
+static int ADR_CALL FileSeek(ADR_FILE file, int destination, ADR_SEEK_TYPE type)
 {
   IFile* f = (IFile*)file;
-  f->Seek(destination);
+  int pos;
+  switch (type) {
+    case ADR_BEGIN:   pos = destination; break;
+    case ADR_CURRENT: pos = f->Tell() + destination; break;
+    case ADR_END:     pos = f->Size() + destination; break;
+    default:          return 0;
+  }
+  f->Seek(pos);
   return 1;
 }
 
