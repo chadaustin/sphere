@@ -651,6 +651,7 @@ BEGIN
 
         MENUITEM "Export to Image...",          ID_SPRITESETVIEWFRAMES_EXPORT_TO_IMAGE
 
+        MENUITEM SEPARATOR
         POPUP "&Edit Range"
         BEGIN
             POPUP "Rotate", GRAYED

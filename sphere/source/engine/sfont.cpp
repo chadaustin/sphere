@@ -84,6 +84,86 @@ SFONT::Clone()
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+SFONT::Save(const char* filename)
+{
+  return m_Font.Save(filename);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+SFONT::GetCharacterImage(int index, IMAGE& image)
+{
+  int range = m_Font.GetNumCharacters();
+  if ((int)index < 0 || (int)index >= range) {
+//    m_ErrorMessage = "Character index does not exist";
+    return false;
+  }
+
+  sFontCharacter& c = m_Font.GetCharacter(index);
+  image = CreateImage(c.GetWidth(), c.GetHeight(), c.GetPixels());
+  if (!image)
+    return false;
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+SFONT::SetCharacterImage(int index, IMAGE image)
+{
+  int range = m_Font.GetNumCharacters();
+  if ((int)index < 0 || (int)index >= range) {
+//    m_ErrorMessage = "Character index does not exist";
+    return false;
+  }
+
+  RGBA* pixels = LockImage(image);
+  if (!pixels) {
+    // m_ErrorMessage = "LockImage failed!!";
+    return false;
+  }
+
+  sFontCharacter& c = m_Font.GetCharacter(index);
+
+  c.Resize(GetImageWidth(image), GetImageHeight(image));
+  if (c.GetWidth() != GetImageWidth(image) || c.GetHeight() != GetImageHeight(image)) {
+    // m_ErrorMessage = "Resize failed!";
+    return false;
+  }
+
+  CImage32::BlendMode blend_mode = c.GetBlendMode();
+  c.SetBlendMode(CImage32::REPLACE);
+  for (int x = 0; x < c.GetWidth(); x++) {
+    for (int y = 0; y < c.GetHeight(); y++) {
+       c.SetPixel(x, y, pixels[y * GetImageWidth(image) + x]);
+    }
+  }
+  c.SetBlendMode(blend_mode);
+  
+  UnlockImage(image, false);
+
+  if (m_Images[index]) {
+    DestroyImage(m_Images[index]);
+  }
+
+  m_Images[index] = CreateImage(c.GetWidth(), c.GetHeight(), c.GetPixels());
+  if (!m_Images[index]) {
+    // m_ErrorMessage = CreateImage failed!
+    return false;
+  }
+
+  for (int i = 0; i < m_Font.GetNumCharacters(); i++)
+    if (m_Font.GetCharacter(i).GetHeight() > m_MaxHeight)
+      m_MaxHeight = m_Font.GetCharacter(i).GetHeight();
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 SFONT::DrawString(int x, int y, const char* text, RGBA mask, CImage32* surface) const
 {
   int range = m_Font.GetNumCharacters();

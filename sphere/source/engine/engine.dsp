@@ -498,6 +498,14 @@ SOURCE=..\common\packed.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\common\Playlist.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\Playlist.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\common\primitives.hpp
 # End Source File
 # Begin Source File

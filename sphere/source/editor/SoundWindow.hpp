@@ -5,24 +5,7 @@
 #include <afxcmn.h>
 #include "DocumentWindow.hpp"
 #include "Audio.hpp"
-#include "../common/DefaultFileSystem.hpp" 
-
-
-class CPlaylist {
-public:
-  CPlaylist();
-  ~CPlaylist();
-
-private:
-  std::vector<std::string> m_Filenames;
-
-public:
-  const char* GetFile(int index) const;
-  int GetNumFiles() const;
-
-  bool AppendFile(const char* filename);
-  bool LoadFromFile(const char* filename, IFileSystem& fs = g_DefaultFileSystem);
-};
+#include "../common/Playlist.hpp"
 
 
 class CSoundWindow : public CDocumentWindow

@@ -3041,10 +3041,23 @@ CMapEngine::OpenMap(const char* filename)
   // load the background music (if there is any)
   std::string music = m_Map.GetMap().GetMusicFile();
   if (music.length()) {
-    m_Music = m_Engine->LoadSound(music.c_str(), true);
-    if (!m_Music) {
-      m_ErrorMessage = "Could not load background music '" + music + "'";
-      return false;
+    
+    if (music.rfind(".m3u") == music.size() - 4) {
+      if (m_Playlist.LoadFromFile(music.c_str()) == false) {
+        m_ErrorMessage = "Could not load playlist '" + music + "'";
+        return false;
+      }
+
+      if (m_Playlist.GetNumFiles() > 0) {
+        m_Music = m_Engine->LoadSound(m_Playlist.GetFile(0), false);
+      }
+    }
+    else {
+      m_Music = m_Engine->LoadSound(music.c_str(), true);
+      if (!m_Music) {
+        m_ErrorMessage = "Could not load background music '" + music + "'";
+        return false;
+      }
     }
   }
 
@@ -3094,6 +3107,7 @@ bool
 CMapEngine::CloseMap()
 {
   // stop background music
+  m_Playlist.Clear();
   m_Music = 0;
 
   if (!DestroyMapPersons()) {

@@ -25,6 +25,7 @@ env.Library('common', Split("""
     ObstructionMap.cpp
     PackageFile.cpp
     PackageFileSystem.cpp
+    Playlist.cpp
     Spriteset.cpp
     str_util.cpp
     system.cpp

@@ -2772,7 +2772,7 @@ begin_func(GetTileImage, 1)
     return JS_FALSE; 
   }
 
-  return_object(CreateImageObject(cx, image , false));
+  return_object(CreateImageObject(cx, image, true));
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -6315,6 +6315,9 @@ CScript::CreateFontObject(JSContext* cx, SFONT* font, bool destroy)
     { "getStringWidth",  ssFontGetStringWidth,  1, 0, 0 },
     { "getStringHeight", ssFontGetStringHeight, 2, 0, 0 },
     { "clone",           ssFontClone,           0, 0, 0 },
+    { "save",            ssFontSave,            0, 0, 0 },
+    { "getCharacterImage", ssFontGetCharacterImage,    1, 0, 0 },
+    { "setCharacterImage", ssFontSetCharacterImage,    2, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -6454,6 +6457,57 @@ end_method()
 begin_method(SS_FONT, ssFontClone, 0)
   SFONT* font = object->font->Clone();
   font ? return_object(CreateFontObject(cx, font, true)) : return_object(JSVAL_NULL);
+end_method()
+
+
+///////////////////////////////////////
+
+begin_method(SS_FONT, ssFontSave, 1)
+
+  arg_str(filename);
+  const char* type = "rfn";
+  bool saved = false;
+
+  if (IsValidPath(filename) == false) {
+    JS_ReportError(cx, "Invalid filename: '%s'", filename);
+    return JS_FALSE;  
+  }
+
+  std::string path = "fonts/";
+  path += filename;
+
+  if (strcmp(type, "rfn") == 0) {
+    saved = object->font->Save(path.c_str());
+  }
+
+  return_bool( saved );
+end_method()
+
+///////////////////////////////////////
+
+begin_method(SS_FONT, ssFontGetCharacterImage, 1)
+  arg_int(index);
+  IMAGE image;
+
+  if ( !object->font->GetCharacterImage(index, image) ) {
+    This->ReportMapEngineError("font.getCharacter() failed");
+    return JS_FALSE; 
+  }
+
+  return_object(CreateImageObject(cx, image, true));
+end_method()
+
+///////////////////////////////////////
+
+begin_method(SS_FONT, ssFontSetCharacterImage, 2)
+  arg_int(index);
+  arg_image(image);
+
+  if ( !object->font->SetCharacterImage(index, image->image) ) {
+    This->ReportMapEngineError("font.setCharacter() failed");
+    return JS_FALSE; 
+  }
+
 end_method()
 
 ///////////////////////////////////////

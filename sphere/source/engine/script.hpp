@@ -160,6 +160,9 @@ private:
   declare_method(ssFontGetStringWidth);
   declare_method(ssFontGetStringHeight);
   declare_method(ssFontClone);
+  declare_method(ssFontSave);
+  declare_method(ssFontGetCharacterImage);
+  declare_method(ssFontSetCharacterImage);
 
   // window styles
   declare_constructor2(CreateWindowStyleObject, SWINDOWSTYLE* ws, bool destroy);

@@ -9,6 +9,7 @@
 #include "input.hpp"
 #include <string>
 
+#include "../common/Playlist.hpp"
 
 struct PersonData {
   std::string name;
@@ -425,6 +426,7 @@ private:
 
   SMAP       m_Map;
   audiere::OutputStreamPtr m_Music;
+  CPlaylist m_Playlist;
 
   // camera
   struct {

@@ -14,10 +14,14 @@ public:
   ~SFONT();
 
   bool Load(const char* filename, IFileSystem& fs);
+  bool Save(const char* filename);
   bool CreateFromFont(const sFont& font);
   void Destroy();
 
   SFONT* Clone();
+
+  bool GetCharacterImage(int index, IMAGE& image);
+  bool SetCharacterImage(int index, IMAGE image);
 
   bool DrawString(int x, int y, const char* text, RGBA mask, CImage32* surface = NULL) const;
   bool DrawZoomedString(int x, int y, double scale, const char* text, RGBA mask, CImage32* surface = NULL) const;
