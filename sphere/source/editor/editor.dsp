@@ -310,6 +310,10 @@ SOURCE=.\resources\entity_person.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\resources\entity_person_old.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\resources\entity_trigger.ico
 # End Source File
 # Begin Source File

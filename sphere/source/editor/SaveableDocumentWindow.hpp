@@ -35,6 +35,9 @@ protected:
   afx_msg void OnFileSaveCopyAs();
 
 private:
+  bool __SaveDocument__(const char* document_path);
+
+private:
   void UpdateProject();
 
   virtual bool GetSavePath(char* path) = 0;

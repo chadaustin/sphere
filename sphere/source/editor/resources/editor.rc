@@ -2057,7 +2057,6 @@ IDI_IMAGE               ICON    DISCARDABLE     "image.ico"
 IDI_GAME                ICON    DISCARDABLE     "game.ico"
 IDI_ANIMATION           ICON    DISCARDABLE     "animation.ico"
 IDI_ENTITY_TRIGGER      ICON    DISCARDABLE     "entity_trigger.ico"
-IDI_ENTITY_PERSON       ICON    DISCARDABLE     "entity_person.ico"
 IDI_WINDOWSTYLE         ICON    DISCARDABLE     "windowstyle.ico"
 IDI_FONT                ICON    DISCARDABLE     "font.ico"
 IDI_PV_GAME_SETTINGS    ICON    DISCARDABLE     "pv_game_settings.ico"
@@ -2093,6 +2092,8 @@ IDI_IMAGETOOL_FREESELECTION ICON    DISCARDABLE     "imagetool_freeselection.ico
 IDI_BROWSE              ICON    DISCARDABLE     "browse.ico"
 IDI_MAPTOOL_FILLRECTAREA ICON    DISCARDABLE     "maptool_fillrect.ico"
 IDI_UNKNOWN             ICON    DISCARDABLE     "unknown.ico"
+IDI_ENTITY_PERSON       ICON    DISCARDABLE     "entity_person.ico"
+IDI_ENTITY_PERSON_OLD   ICON    DISCARDABLE     "entity_person_old.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

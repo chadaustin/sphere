@@ -118,6 +118,7 @@
 #define IDD_ADJUST_BORDER               271
 #define IDD_CHECKLIST                   275
 #define IDD_TITLEBAR_PAGE               276
+#define IDI_ENTITY_PERSON_OLD           278
 #define IDC_PROJECTNAME                 1000
 #define IDC_GAMETITLE                   1001
 #define IDC_BROWSE                      1003
@@ -706,7 +707,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        277
+#define _APS_NEXT_RESOURCE_VALUE        279
 #define _APS_NEXT_COMMAND_VALUE         40816
 #define _APS_NEXT_CONTROL_VALUE         1236
 #define _APS_NEXT_SYMED_VALUE           101

@@ -8,9 +8,11 @@
 
 #include "Editor.hpp"
 
+#include <errno.h>
+
 
 BEGIN_MESSAGE_MAP(CSaveableDocumentWindow, CDocumentWindow)
-  
+
   ON_COMMAND(ID_FILE_SAVE,       OnFileSave)
   ON_COMMAND(ID_FILE_SAVEAS,     OnFileSaveAs)
   ON_COMMAND(ID_FILE_SAVECOPYAS, OnFileSaveCopyAs)
@@ -123,7 +125,7 @@ CSaveableDocumentWindow::UpdateWindowCaption()
     text = new char[20];
     if (text) strcpy(text, "Untitled");
   }
-  
+
   if (m_Modified)
     if (text) strcat(text, " *");
 
@@ -146,24 +148,45 @@ CSaveableDocumentWindow::IsSaveable() const
 
 ////////////////////////////////////////////////////////////////////////////////
 
+bool
+CSaveableDocumentWindow::__SaveDocument__(const char* document_path)
+{
+  errno = 0;
+  if (!SaveDocument(document_path)) {
+    const int error_code = errno;
+
+    char message[MAX_PATH + 1024];
+    sprintf(message, "Error: Could not save document '%s'\n", GetDocumentPath());
+
+    if (error_code != 0) {
+      sprintf(message + strlen(message), "Reason: %s", strerror(error_code));
+    }
+
+    MessageBox(message);
+
+    errno = 0;
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSaveableDocumentWindow::OnFileSave()
 {
   if (m_Saved)
   {
-    if (!SaveDocument(GetDocumentPath()))
+    if (__SaveDocument__(GetDocumentPath()))
     {
-      char message[1024];
-      sprintf(message, "Error: Could not save document '%s'", GetDocumentPath());
-      MessageBox(message);
+      // update project if it's there
+      UpdateProject();
+
+      m_Saved = true;
+      m_Modified = false;
+      UpdateWindowCaption();
     }
-
-    // update project if it's there
-    UpdateProject();
-
-    m_Saved = true;
-    m_Modified = false;
-    UpdateWindowCaption();
   }
   else
     OnFileSaveAs();
@@ -177,7 +200,7 @@ CSaveableDocumentWindow::OnFileSaveAs()
   char document_path[MAX_PATH];
   if (GetSavePath(document_path))
   {
-    if (SaveDocument(document_path))
+    if (__SaveDocument__(document_path))
     {
       // update project if it's there
       UpdateProject();
@@ -187,12 +210,6 @@ CSaveableDocumentWindow::OnFileSaveAs()
       SetDocumentPath(document_path);
       SetCaption(GetDocumentTitle());
       UpdateWindowCaption();
-    }
-    else
-    {
-      char message[1024];
-      sprintf(message, "Error: Could not save document '%s'", document_path);
-      MessageBox(message);
     }
   }
 }
@@ -205,12 +222,7 @@ CSaveableDocumentWindow::OnFileSaveCopyAs()
   char document_path[MAX_PATH];
   if (GetSavePath(document_path))
   {
-    if (!SaveDocument(document_path))
-    {
-      char message[1024];
-      sprintf(message, "Error: Could not save document '%s'", document_path);
-      MessageBox(message);
-    }
+    __SaveDocument__(document_path);
   }
 }
 
