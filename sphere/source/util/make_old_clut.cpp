@@ -12,14 +12,14 @@
 int main() {
   int v,a;
 
-  for (v=0;v<256;++v) {
+  for (a=255;a>=0;--a) {
     printf("{");
-    for (a=255;a>=0;--a) {
+    for (v=0;v<256;++v) {
       printf("0x%02x",((v*a)/255));
-      if (a>0) printf(",");
+      if (v<255) printf(",");
     }
     printf("}");
-    if (v<255) printf(",");
+    if (a>0) printf(",");
     printf("\n");
   }
 
