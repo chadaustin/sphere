@@ -6,9 +6,11 @@
 
 BEGIN_MESSAGE_MAP(CSpritesetImagesPalette, CPaletteWindow)
 
-  ON_WM_SIZE()
   ON_WM_PAINT()
+  ON_WM_SIZE()
+  ON_WM_VSCROLL()
   ON_WM_LBUTTONDOWN()
+  ON_WM_MOUSEMOVE()
   ON_WM_RBUTTONUP()
 
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_MOVE_BACK,    OnMoveBack)
@@ -30,12 +32,9 @@ CSpritesetImagesPalette::CSpritesetImagesPalette(CDocumentWindow* owner, ISprite
 , m_TopRow(0)
 , m_ZoomFactor(1)
 , m_SelectedImage(0)
+, m_BlitImage(NULL)
 {
-  m_BlitImage = new CDIBSection(
-    spriteset->GetFrameWidth(),
-    spriteset->GetFrameHeight(),
-    32
-  );
+  OnZoom(1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -340,3 +339,24 @@ CSpritesetImagesPalette::OnSwap(int new_index)
   m_Handler->SIP_SpritesetModified();
   Invalidate();
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetImagesPalette::OnZoom(double zoom) {
+  m_ZoomFactor = zoom;
+
+  if (m_BlitImage != NULL)
+    delete m_BlitImage;
+
+  m_BlitImage = new CDIBSection(
+    m_Spriteset->GetFrameWidth() * m_ZoomFactor,
+    m_Spriteset->GetFrameHeight() * m_ZoomFactor,
+    32
+  );
+
+  Invalidate();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+

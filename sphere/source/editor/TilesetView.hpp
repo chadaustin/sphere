@@ -56,8 +56,6 @@ private:
   afx_msg void OnInsertTileset();
   afx_msg void OnAppendTileset();
 
-  afx_msg void OnReplaceColorWithColor();
-
   void OnZoom(int zoom_factor);
   afx_msg void OnZoom1x();
   afx_msg void OnZoom2x();
