@@ -619,26 +619,21 @@ BEGIN
     BEGIN
         POPUP "&Custom"
         BEGIN
-            MENUITEM "Custom 1",                    ID_OBSTRUCTIONPRESETS_CUSTOM1
+            MENUITEM "Vertical Quarter Split",      ID_OBSTRUCTIONPRESETS_CUSTOM1
 
-            MENUITEM "Custom 2",                    ID_OBSTRUCTIONPRESETS_CUSTOM2
+            MENUITEM "Horizontal Quarter Split",    ID_OBSTRUCTIONPRESETS_CUSTOM2
 
-            MENUITEM "Custom 3",                    ID_OBSTRUCTIONPRESETS_CUSTOM3
+            MENUITEM "Vertical Eight Split",        ID_OBSTRUCTIONPRESETS_CUSTOM3
 
-            MENUITEM "Custom 4",                    ID_OBSTRUCTIONPRESETS_CUSTOM4
+            MENUITEM "Horizontal Eight Split",      ID_OBSTRUCTIONPRESETS_CUSTOM4
 
-            MENUITEM "Custom 5",                    ID_OBSTRUCTIONPRESETS_CUSTOM5
+            MENUITEM "Upper Left Corner",           ID_OBSTRUCTIONPRESETS_CUSTOM5
 
-            MENUITEM "Custom 6",                    ID_OBSTRUCTIONPRESETS_CUSTOM6
+            MENUITEM "Upper Right Corner",          ID_OBSTRUCTIONPRESETS_CUSTOM6
 
-            MENUITEM "Custom 7",                    ID_OBSTRUCTIONPRESETS_CUSTOM7
+            MENUITEM "Lower Left Corner",           ID_OBSTRUCTIONPRESETS_CUSTOM7
 
-            MENUITEM "Custom 8",                    ID_OBSTRUCTIONPRESETS_CUSTOM8
-
-        END
-        POPUP "&File"
-        BEGIN
-            MENUITEM "Save",                        ID_OBSTRUCTIONPRESETS_SAVE
+            MENUITEM "Lower Right Corner",          ID_OBSTRUCTIONPRESETS_CUSTOM8
 
         END
         MENUITEM "&Unblocked",                  ID_OBSTRUCTIONPRESETS_UNBLOCKED

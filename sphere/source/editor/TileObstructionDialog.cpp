@@ -32,7 +32,9 @@ BEGIN_MESSAGE_MAP(CTileObstructionDialog, CDialog)
   ON_COMMAND(ID_OBSTRUCTIONPRESETS_CUSTOM7,  OnPresetCustom)
   ON_COMMAND(ID_OBSTRUCTIONPRESETS_CUSTOM8,  OnPresetCustom)
 
+#if 0
   ON_COMMAND(ID_OBSTRUCTIONPRESETS_SAVE,        OnFileSave)
+#endif
 
 END_MESSAGE_MAP()
 
@@ -152,8 +154,8 @@ CTileObstructionDialog::OnFileSave()
       char strings[4][50];
 
       sprintf(strings[0], "%d*w/%d", seg.x1, w);
-      sprintf(strings[1], "%d*w/%d", seg.x2, w);
-      sprintf(strings[2], "%d*h/%d", seg.y1, h);
+      sprintf(strings[1], "%d*h/%d", seg.y1, h);
+      sprintf(strings[2], "%d*w/%d", seg.x2, w);
       sprintf(strings[3], "%d*h/%d", seg.y2, h);
 
       fprintf(file, "  s.AddSegment(%s, %s, %s, %s);\n", strings[0], strings[1], strings[2], strings[3]);
@@ -355,27 +357,71 @@ CTileObstructionDialog::OnPresetCustom()
   switch (id) {
 
     case (ID_OBSTRUCTIONPRESETS_CUSTOM1):
+  s.AddSegment(0*w/15, 0*h/15, 3*w/15, 0*h/15);
+  s.AddSegment(3*w/15, 0*h/15, 3*w/15, 15*h/15);
+  s.AddSegment(3*w/15, 15*h/15, 0*w/15, 15*h/15);
+  s.AddSegment(0*w/15, 15*h/15, 0*w/15, 0*h/15);
+  s.AddSegment(15*w/15, 0*h/15, 12*w/15, 0*h/15);
+  s.AddSegment(12*w/15, 0*h/15, 12*w/15, 15*h/15);
+  s.AddSegment(12*w/15, 15*h/15, 15*w/15, 15*h/15);
+  s.AddSegment(15*w/15, 15*h/15, 15*w/15, 0*h/15);
     break;
 
     case (ID_OBSTRUCTIONPRESETS_CUSTOM2):
+  s.AddSegment(0*w/15, 0*h/15, 1*w/15, 0*h/15);
+  s.AddSegment(1*w/15, 0*h/15, 1*w/15, 15*h/15);
+  s.AddSegment(1*w/15, 15*h/15, 0*w/15, 15*h/15);
+  s.AddSegment(0*w/15, 15*h/15, 0*w/15, 0*h/15);
+  s.AddSegment(14*w/15, 0*h/15, 15*w/15, 0*h/15);
+  s.AddSegment(15*w/15, 0*h/15, 15*w/15, 15*h/15);
+  s.AddSegment(15*w/15, 15*h/15, 14*w/15, 15*h/15);
+  s.AddSegment(14*w/15, 15*h/15, 14*w/15, 0*h/15);
     break;
 
     case (ID_OBSTRUCTIONPRESETS_CUSTOM3):
+  s.AddSegment(15*w/15, 0*h/15, 0*w/15, 0*h/15);
+  s.AddSegment(0*w/15, 0*h/15, 0*w/15, 3*h/15);
+  s.AddSegment(0*w/15, 3*h/15, 16*w/15, 3*h/15);
+  s.AddSegment(15*w/15, 3*h/15, 15*w/15, 0*h/15);
+  s.AddSegment(0*w/15, 15*h/15, 0*w/15, 12*h/15);
+  s.AddSegment(0*w/15, 12*h/15, 15*w/15, 13*h/15);
+  s.AddSegment(15*w/15, 12*h/15, 15*w/15, 16*h/15);
+  s.AddSegment(15*w/15, 15*h/15, 0*w/15, 15*h/15);
     break;
 
     case (ID_OBSTRUCTIONPRESETS_CUSTOM4):
+  s.AddSegment(0*w/15, 0*h/15, 16*w/15, 0*h/15);
+  s.AddSegment(15*w/15, 0*h/15, 15*w/15, 1*h/15);
+  s.AddSegment(15*w/15, 1*h/15, 0*w/15, 1*h/15);
+  s.AddSegment(0*w/15, 1*h/15, 0*w/15, 0*h/15);
+  s.AddSegment(0*w/15, 15*h/15, 0*w/15, 14*h/15);
+  s.AddSegment(0*w/15, 14*h/15, 15*w/15, 15*h/15);
+  s.AddSegment(15*w/15, 14*h/15, 15*w/15, 15*h/15);
+  s.AddSegment(15*w/15, 15*h/15, 0*w/15, 15*h/15);
     break;
 
     case (ID_OBSTRUCTIONPRESETS_CUSTOM5):
+  s.AddSegment(0*w/15, 7*h/15, 7*w/15, 0*h/15);
+  s.AddSegment(7*w/15, 0*h/15, 0*w/15, 0*h/15);
+  s.AddSegment(0*w/15, 0*h/15, 0*w/15, 7*h/15);
     break;
 
     case (ID_OBSTRUCTIONPRESETS_CUSTOM6):
+  s.AddSegment(8*w/15, 0*h/15, 15*w/15, 7*h/15);
+  s.AddSegment(15*w/15, 7*h/15, 15*w/15, 0*h/15);
+  s.AddSegment(15*w/15, 0*h/15, 9*w/15, 0*h/15);
     break;
 
     case (ID_OBSTRUCTIONPRESETS_CUSTOM7):
+  s.AddSegment(0*w/15, 8*h/15, 7*w/15, 15*h/15);
+  s.AddSegment(7*w/15, 15*h/15, 0*w/15, 15*h/15);
+  s.AddSegment(0*w/15, 15*h/15, 0*w/15, 9*h/15);
     break;
 
     case (ID_OBSTRUCTIONPRESETS_CUSTOM8):
+  s.AddSegment(15*w/15, 8*h/15, 8*w/15, 15*h/15);
+  s.AddSegment(8*w/15, 15*h/15, 15*w/15, 15*h/15);
+  s.AddSegment(15*w/15, 15*h/15, 15*w/15, 8*h/15);
     break;
 
   }
