@@ -335,48 +335,52 @@ CDocumentWindow::OnUpdateSaveableCommand(CCmdUI* cmdui)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void CDocumentWindow::DistributeAccelerator(CWnd* pWnd, MSG* pMsg) 
+BOOL CDocumentWindow::DistributeAccelerator(CWnd* pWnd, MSG* pMsg) 
 {
 	if (pWnd == NULL)
-    return;
+    return FALSE;
 
-  pWnd = pWnd->GetWindow(GW_CHILD);
-
-	HACCEL hAccel = ((CFrameWnd*)AfxGetMainWnd())->GetDefaultAccelerator();
+  pWnd = pWnd->GetWindow(GW_CHILD);	
 	
 	while (pWnd != NULL)
 	{
 		if (pWnd->IsWindowVisible())
-		{	
+		{				
 			HACCEL hCustomAccel = NULL;
 			pWnd->SendMessage(WM_GETACCELERATOR, (WPARAM)&hCustomAccel);					
 
-			::TranslateAccelerator(pWnd->m_hWnd, (hCustomAccel != NULL) ? hCustomAccel : hAccel, pMsg);	
+			if (hCustomAccel != NULL)
+			{
+				if (::TranslateAccelerator(pWnd->m_hWnd, hCustomAccel, pMsg))
+				{
+					return TRUE;
+				}
+			}
 
-			DistributeAccelerator(pWnd, pMsg);
+			if (DistributeAccelerator(pWnd, pMsg))
+			{
+				return TRUE;
+			}		
 		}
 
 		pWnd = pWnd->GetNextWindow();
 	}
+
+	return FALSE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 BOOL CDocumentWindow::PreTranslateMessage(MSG* pMsg)
 {
+	BOOL processed = FALSE;
 	if (pMsg->message >= WM_KEYFIRST && pMsg->message <= WM_KEYLAST)
 	{
-		// use document specific accelerator table over m_hAccelTable
-		HACCEL hAccel = ((CFrameWnd*)AfxGetMainWnd())->GetDefaultAccelerator();
-		
-		if (hAccel != NULL)
-		{
-			//distribute the accelerator among the windows childs		
-			DistributeAccelerator(this, pMsg);
-		}
+		//distribute the accelerator among the windows childs		
+		processed = DistributeAccelerator(this, pMsg);		
 	}
 
-	return CMDIChildWnd::PreTranslateMessage(pMsg);
+	return processed || CMDIChildWnd::PreTranslateMessage(pMsg);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

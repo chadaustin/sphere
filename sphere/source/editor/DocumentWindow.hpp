@@ -69,7 +69,7 @@ private:
 
   DECLARE_MESSAGE_MAP()
 
-	static void DistributeAccelerator(CWnd*pWnd, MSG* pMsg);
+	static BOOL DistributeAccelerator(CWnd*pWnd, MSG* pMsg);
 public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };
