@@ -49,7 +49,8 @@ files += map(lambda n: 'system_scripts/' + n,
 binfiles = []
 binfiles += map(lambda n: 'contributed/' + n,
                 ['WT_tutorial.rtf',
-                 'sphere_doc.pdf'])
+                 'sphere_doc.pdf',
+                 'sphere.chm'])
 
 for f in files:
     env.TextFile(os.path.join(BUILD_DIR, 'docs', f), f)
