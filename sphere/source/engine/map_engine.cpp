@@ -1376,15 +1376,11 @@ CMapEngine::GetPersonList(std::vector<std::string>& list)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::CreatePerson(const char* name, const char* spriteset, bool destroy_with_map)
+CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* spriteset, bool destroy_with_map)
 {
-  Person p;
+  p.name = name;
   p.destroy_with_map = destroy_with_map;
 
-  p.name = name;
-  p.description = std::string("name=[") + name + "]";
-  
-  // load spriteset
   p.spriteset = m_Engine->LoadSpriteset(spriteset);
   if (p.spriteset == NULL) {
     m_ErrorMessage = "Could not load spriteset\nPerson: " + p.description;
@@ -1392,8 +1388,7 @@ CMapEngine::CreatePerson(const char* name, const char* spriteset, bool destroy_w
   }
 
   // LoadSpriteset already calls AddRef()
-//  p.spriteset->AddRef();
-  p.mask = CreateRGBA(255, 255, 255, 255);
+  //  p.spriteset->AddRef();
 
   // put them in the starting position by default
   if (m_IsRunning) {
@@ -1405,6 +1400,25 @@ CMapEngine::CreatePerson(const char* name, const char* spriteset, bool destroy_w
     p.y     = 0;
     p.layer = 0;
   }
+
+  p.script_create            = NULL;
+  p.script_destroy           = NULL;
+  p.script_activate_touch    = NULL;
+  p.script_activate_talk     = NULL;
+  p.script_command_generator = NULL;
+
+  p.leader = -1;
+
+  p.speed_x = 1;
+  p.speed_y = 1;
+
+  p.stepping_frame_revert = 0;
+  p.stepping_frame_revert_count = 0;
+
+  p.ignorePersonObstructions = false;
+  p.ignoreTileObstructions = false;
+  
+  p.mask = CreateRGBA(255, 255, 255, 255);
 
   p.speed_x = 1;
   p.speed_y = 1;
@@ -1424,13 +1438,25 @@ CMapEngine::CreatePerson(const char* name, const char* spriteset, bool destroy_w
   p.frame = p.spriteset->GetSpriteset().GetFrameIndex(p.direction, p.stepping);
   p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.stepping);
 
-  p.script_create            = NULL;
-  p.script_destroy           = NULL;
-  p.script_activate_touch    = NULL;
-  p.script_activate_talk     = NULL;
-  p.script_command_generator = NULL;
+  return true;
+}
 
-  p.leader = -1;
+bool
+CMapEngine::CreatePerson(const char* name, const char* spriteset, bool destroy_with_map)
+{
+  Person p;
+  p.description = std::string("name=[") + name + "]";
+
+  if (!CreateDefaultPerson(p, name,  spriteset, destroy_with_map)) {
+    return false;
+  }
+  
+  // load spriteset
+  p.spriteset = m_Engine->LoadSpriteset(spriteset);
+  if (p.spriteset == NULL) {
+    m_ErrorMessage = "Could not load spriteset\nPerson: " + p.description;
+    return false;
+  }
 
   m_Persons.push_back(p);
 
@@ -2621,42 +2647,15 @@ CMapEngine::LoadMapPersons()
       std::string error;  // have to define locals before gotos
 
       Person p;
-      p.destroy_with_map = true;
-
-      p.name = person.name;
       p.description = person_string;
-
-      p.x     = person.x;
-      p.y     = person.y;
-      p.layer = person.layer;
-
-      p.speed_x = 1;
-      p.speed_y = 1;
-
-      p.stepping_frame_revert = 0;
-      p.stepping_frame_revert_count = 0;
-
-      p.ignorePersonObstructions = false;
-      p.ignoreTileObstructions = false;
-
-      // load spriteset
-      p.spriteset = m_Engine->LoadSpriteset(person.spriteset.c_str());
-      if (p.spriteset == NULL) {
+      if (!CreateDefaultPerson(p, person.name.c_str(), person.spriteset.c_str(), true)) {
         m_ErrorMessage = "Could not load spriteset\nPerson: " + person_string;
         goto spriteset_error;
       }
 
-      p.mask = CreateRGBA(255, 255, 255, 255);
-
-      p.width = p.spriteset->GetSpriteset().GetFrameWidth();
-      p.height = p.spriteset->GetSpriteset().GetFrameHeight();
-      p.spriteset->GetSpriteset().GetBase(p.base_x1, p.base_y1, p.base_x2, p.base_y2);
-
-      // whatever direction
-      p.direction = p.spriteset->GetSpriteset().GetDirectionName(0);
-      p.stepping = 0;
-      p.frame = p.spriteset->GetSpriteset().GetFrameIndex(p.direction, p.stepping);
-      p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.stepping);
+      p.x     = person.x;
+      p.y     = person.y;
+      p.layer = person.layer;
       
       // compile script_create
       p.script_create = m_Engine->CompileScript(person.script_create.c_str(), error);
@@ -2707,8 +2706,6 @@ CMapEngine::LoadMapPersons()
         m_ErrorMessage = "Could not compile OnGenerateCommands script\nPerson:" + person_string + "\n" + error;
         goto spriteset_error;
       }
-
-      p.leader = -1;
 
       // add it to the list
       m_Persons.push_back(p);

@@ -290,6 +290,7 @@ private:
   bool ExecuteScript(IEngine::script script, std::string& error);
   bool ExecuteScript(const char* script, std::string& error);
 
+  bool CreateDefaultPerson(Person& p, const char* name, const char* spriteset, bool destroy_with_map);
   bool CompileEdgeScripts();
   bool LoadMapPersons();
   bool DestroyMapPersons();
