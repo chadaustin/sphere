@@ -128,6 +128,8 @@ public:
   bool GetPersonFrame(const char* name, int& frame);
   bool SetPersonScaleAbsolute(const char* name, int width, int height);
   bool SetPersonScaleFactor(const char* name, double scale_x, double scale_y);
+  bool SetPersonMask(const char* name, RGBA mask);
+  bool GetPersonMask(const char* name, RGBA& mask);
   SSPRITESET* GetPersonSpriteset(const char* name);
 
   bool FollowPerson(const char* name, const char* leader, int pixels);
@@ -155,6 +157,7 @@ private:
     std::string name;
     std::string description;
     SSPRITESET* spriteset;
+    RGBA mask;
 
     int x;
     int y;

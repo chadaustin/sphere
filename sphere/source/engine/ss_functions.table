@@ -166,6 +166,8 @@ SS_FUNCTION(OpenLog, 1)
       SS_FUNCTION(SetPersonScaleFactor, 3)
       SS_FUNCTION(SetPersonScaleAbsolute, 3)
       SS_FUNCTION(GetPersonSpriteset, 1)
+      SS_FUNCTION(SetPersonMask, 2)
+      SS_FUNCTION(GetPersonMask, 1)
 
       SS_FUNCTION(FollowPerson,     3)
       SS_FUNCTION(SetPersonScript,  3)

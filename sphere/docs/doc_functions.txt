@@ -429,6 +429,15 @@ log_object.endBlock()
       GetPersonSpriteset(name)
         - returns the person's spriteset.
 
+      SetPersonMask(name, color)
+        - sets a color multiplier to use when drawing sprites.  if the color is
+          RGBA:(255, 0, 0, 255), only the red elements of the sprite are drawn.
+          If the color is RGBA:(255, 255, 255, 128), the sprite is drawn at
+          half transparency.
+
+      GetPersonMask(name)
+        - returns the person's current mask
+
       FollowPerson(name, leader, pixels)
         - makes the sprite 'name' follow 'pixels' pixels behind sptrite 'leader'
       

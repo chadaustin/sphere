@@ -2054,6 +2054,33 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(SetPersonMask, 2)
+  arg_str(name);
+  arg_color(mask);
+
+  if (!This->m_Engine->GetMapEngine()->SetPersonMask(name, mask)) {
+    This->ReportMapEngineError("SetPersonMask() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(GetPersonMask, 1)
+  arg_str(name);
+
+  RGBA mask;
+  if (!This->m_Engine->GetMapEngine()->GetPersonMask(name, mask)) {
+    This->ReportMapEngineError("GetPersonMask() failed");
+    return JS_FALSE;
+  }
+
+  return_object(CreateColorObject(cx, mask));  
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 begin_func(SetPersonScript, 3)
   arg_str(name);
   arg_int(which);

@@ -9,7 +9,7 @@
 class CRenderSort
 {
 public:
-  void AddObject(int draw_x, int draw_y, int sort_y, int draw_w, int draw_h, IMAGE image);
+  void AddObject(int draw_x, int draw_y, int sort_y, int draw_w, int draw_h, IMAGE image, RGBA mask);
   void DrawObjects();
 
 private:
@@ -21,6 +21,7 @@ private:
     int   draw_w;
     int   draw_h;
     IMAGE image;
+    RGBA  mask;
   };
 
 private:

@@ -5,7 +5,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CRenderSort::AddObject(int draw_x, int draw_y, int sort_y, int draw_w, int draw_h, IMAGE image)
+CRenderSort::AddObject(int draw_x, int draw_y, int sort_y, int draw_w, int draw_h, IMAGE image, RGBA mask)
 {
   Object object;
   object.draw_x = draw_x;
@@ -14,6 +14,7 @@ CRenderSort::AddObject(int draw_x, int draw_y, int sort_y, int draw_w, int draw_
   object.draw_w = draw_w;
   object.draw_h = draw_h;
   object.image  = image;
+  object.mask   = mask;
   m_objects.push_back(object);
 }
 
@@ -49,7 +50,11 @@ CRenderSort::DrawObjects()
     y[2] = o.draw_y + o.draw_h - 1;
     x[3] = o.draw_x;
     y[3] = o.draw_y + o.draw_h - 1;
-    TransformBlitImage(o.image, x, y);
+    if (o.mask == CreateRGBA(255, 255, 255, 255)) {
+      TransformBlitImage(o.image, x, y);
+    } else {
+      TransformBlitImageMask(o.image, x, y, o.mask);
+    }
   }
 
   m_objects.clear();

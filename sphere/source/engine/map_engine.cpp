@@ -909,6 +909,7 @@ CMapEngine::CreatePerson(const char* name, const char* spriteset, bool destroy_w
     return false;
   }
   p.spriteset->AddRef();
+  p.mask = CreateRGBA(255, 255, 255, 255);
 
   // put them in the starting position by default
   if (m_IsRunning) {
@@ -1278,13 +1279,43 @@ CMapEngine::SetPersonScaleFactor(const char* name, double scale_w, double scale_
 
 ////////////////////////////////////////////////////////////////////////////////
 
+bool
+CMapEngine::SetPersonMask(const char* name, RGBA mask)
+{
+  int person = FindPerson(name);
+  if (person == -1) {
+    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+    return false;
+  }
+
+  m_Persons[person].mask = mask;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetPersonMask(const char* name, RGBA& mask)
+{
+  int person = FindPerson(name);
+  if (person == -1) {
+    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+    return false;
+  }
+
+  mask = m_Persons[person].mask;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 SSPRITESET*
 CMapEngine::GetPersonSpriteset(const char* name)
 {
   int person = FindPerson(name);
   if (person == -1) {
     m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
-    return false;
+    return 0;
   }
 
   return m_Persons[person].spriteset;
@@ -1921,6 +1952,8 @@ CMapEngine::LoadMapPersons()
         goto spriteset_error;
       }
 
+      p.mask = CreateRGBA(255, 255, 255, 255);
+
       p.width = p.spriteset->GetSpriteset().GetFrameWidth();
       p.height = p.spriteset->GetSpriteset().GetFrameHeight();
       p.spriteset->GetSpriteset().GetBase(p.base_x1, p.base_y1, p.base_x2, p.base_y2);
@@ -2336,7 +2369,7 @@ CMapEngine::RenderEntities(int layer, bool flipped, int offset_x, int offset_y)
         draw_y += base_y;
       }
 
-      rs.AddObject(draw_x, draw_y, sort_y, p.width, p.height, image);
+      rs.AddObject(draw_x, draw_y, sort_y, p.width, p.height, image, p.mask);
 
     }
   }
