@@ -803,14 +803,6 @@ SOURCE=.\NumberDialog.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\OptionsDialog.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\OptionsDialog.hpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\ResizeDialog.cpp
 # End Source File
 # Begin Source File
