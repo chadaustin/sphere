@@ -715,8 +715,8 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, image->texture);
 
-    int cx = (x[0] + x[1] + x[2] + x[3]) / 4;
-    int cy = (y[0] + y[1] + y[2] + y[3]) / 4;
+    float cx = ((float)x[0] + (float)x[1] + (float)x[2] + (float)x[3]) / 4.0;
+    float cy = ((float)y[0] + (float)y[1] + (float)y[2] + (float)y[3]) / 4.0;
     
     glColor4f(1, 1, 1, 1);
     glBegin(GL_TRIANGLE_FAN);
@@ -728,13 +728,16 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
         glTexCoord2f(0, 0);
         glVertex2i(x[0], y[0]);
 
-        glTexCoord2f(image->tex_width, 0);
+        glTexCoord2f(0, image->tex_height);
         glVertex2i(x[1], y[1]);
+
+        glTexCoord2f(image->tex_width / 2, image->tex_height / 2);
+        glVertex2i(cx, cy);
 
         glTexCoord2f(image->tex_width, image->tex_height);
         glVertex2i(x[2], y[2]);
 
-        glTexCoord2f(0, image->tex_height);
+        glTexCoord2f(image->tex_width, 0);
         glVertex2i(x[3], y[3]);
 
         glTexCoord2f(0, 0);
@@ -762,24 +765,23 @@ EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
     glColor4ub(mask.red, mask.green, mask.blue, mask.alpha);
     glBegin(GL_TRIANGLE_FAN);
 
-        // center
-        glTexCoord2f(image->tex_width / 2, image->tex_height / 2);
-        glVertex2i(cx, cy);
+      // center
+      glTexCoord2f(image->tex_width / 2, image->tex_height / 2);
+      glVertex2i(cx, cy);
+ 
+      glTexCoord2f(0, 0);
+      glVertex2i(x[0], y[0]);
+ 
+      glTexCoord2f(image->tex_width, 0);
+      glVertex2i(x[1], y[1]);
+ 
+      glTexCoord2f(image->tex_width, image->tex_height);
+      glVertex2i(x[2], y[2]);
+ 
+      glTexCoord2f(0, image->tex_height);
+      glVertex2i(x[3], y[3]);
 
-        glTexCoord2f(0, 0);
-        glVertex2i(x[0], y[0]);
-
-        glTexCoord2f(image->tex_width, 0);
-        glVertex2i(x[1], y[1]);
-
-        glTexCoord2f(image->tex_width, image->tex_height);
-        glVertex2i(x[2], y[2]);
-
-        glTexCoord2f(0, image->tex_height);
-        glVertex2i(x[3], y[3]);
-
-        glTexCoord2f(0, 0);
-        glVertex2i(x[0], y[0]);
+      glTexCoord2f(0, 0);
 
     glEnd();
     

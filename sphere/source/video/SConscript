@@ -26,6 +26,7 @@ Export('VideoDriver')
 SConscript(dirs = [
     'common',
     'greyscale',
+    'harddraw',
     'interpolate16',
     'interpolate32',
     'sphere_gl',

@@ -3,6 +3,7 @@
 #include <ddraw.h>
 #include <stdio.h>
 #include "../../source/common/rgb.hpp"
+#include "../../common/primitives.hpp"
 #include "../common/video.hpp"
 #include "../common/win32x.hpp"
 #include "resource.h"
@@ -106,9 +107,9 @@ static LPDIRECTDRAWSURFACE ddSecondary;
 static LPDIRECTDRAWCLIPPER ddClipper;
 
 
-FILE* log = fopen("harddraw.log", "w");
-#define LOG(str) fputs(str, log); fputc('\n', log); fflush(log);
-#define LOGPARAM(str, param) fprintf(log, str, param); fputc('\n', log); fflush(log);
+FILE* logfile = fopen("harddraw.log", "w");
+#define CLOG(str) fputs(str, logfile); fputc('\n', logfile); fflush(logfile);
+#define CLOGPARAM(str, param) fprintf(logfile, str, param); fputc('\n', logfile); fflush(logfile);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -201,14 +202,13 @@ BOOL CALLBACK ConfigureDialogProc(HWND window, UINT message, WPARAM wparam, LPAR
 
 EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
 {
-  LOG("Got in!");
+  CLOG("Got in!");
 
   SphereWindow = window;
   ScreenWidth  = screen_width;
   ScreenHeight = screen_height;
 
   LoadConfiguration();
-
 
   // store old window styles
   OldWindowStyle = GetWindowLong(SphereWindow, GWL_STYLE);
@@ -269,7 +269,7 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
 
   ShowCursor(FALSE);
   
-  LOG("Got out!");
+  CLOG("Got out!");
   return true;
 }
 
@@ -487,7 +487,7 @@ void CreateSurface(IMAGE image)
 
 EXPORT(bool) FlipScreen()
 {
-  LOG("+FlipScreen")
+  CLOG("+FlipScreen")
 
   HRESULT ddrval = ddPrimary->Flip(NULL, DDFLIP_WAIT);
   if (ddrval == DDERR_SURFACELOST) {
@@ -495,7 +495,7 @@ EXPORT(bool) FlipScreen()
     ddPrimary->Flip(NULL, DDFLIP_WAIT);
   }
 
-  LOG("-FlipScreen")
+  CLOG("-FlipScreen")
   return true;
 }
 
@@ -507,7 +507,7 @@ EXPORT(bool) ApplyColorMask(RGBA mask)
     return true;
   }
 
-  LOG("+ApplyColorMask")
+  CLOG("+ApplyColorMask")
 
   DDSURFACEDESC ddsd;
   memset(&ddsd, 0, sizeof(ddsd));
@@ -650,7 +650,7 @@ EXPORT(bool) ApplyColorMask(RGBA mask)
 
   ddSecondary->Unlock(NULL);
 
-  LOG("-ApplyColorMask")
+  CLOG("-ApplyColorMask")
   return true;
 }
 
@@ -658,7 +658,7 @@ EXPORT(bool) ApplyColorMask(RGBA mask)
 
 EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 {
-  LOG("+CreateImage")
+  CLOG("+CreateImage")
 
   // allocate the image
   IMAGE image = new IMAGEimp;
@@ -669,7 +669,7 @@ EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
   OptimizeBlitRoutine(image);
   CreateSurface(image);
 
-  LOG("-CreateImage")
+  CLOG("-CreateImage")
   return image;
 }
 
@@ -677,7 +677,7 @@ EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 
 EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
 {
-  LOG("+GrabImage")
+  CLOG("+GrabImage")
 
   if (x < 0 ||
       y < 0 ||
@@ -755,7 +755,7 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
 
   CreateSurface(image);
 
-  LOG("-GrabImage")
+  CLOG("-GrabImage")
   return image;
 }
 
@@ -763,14 +763,14 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
 
 EXPORT(bool) DestroyImage(IMAGE image)
 {
-  LOG("+DestroyImage")
+  CLOG("+DestroyImage")
 
   image->surface->Release();
   delete[] (byte*)image->pixels;
   delete[] image->alpha;
   delete image;
 
-  LOG("-DestroyImage")
+  CLOG("-DestroyImage")
   return true;
 }
 
@@ -778,7 +778,7 @@ EXPORT(bool) DestroyImage(IMAGE image)
 
 EXPORT(bool) BlitImage(IMAGE image, int x, int y)
 {
-  LOG("+BlitImage")
+  CLOG("+BlitImage")
 
   // don't draw it if it's off the screen
   if (x + (int)image->width < ClippingRectangle.left ||
@@ -789,7 +789,7 @@ EXPORT(bool) BlitImage(IMAGE image, int x, int y)
 
   bool r = image->blit_routine(image, x, y);
 
-  LOG("-BlitImage")
+  CLOG("-BlitImage")
   return r;
 }
 
@@ -1292,6 +1292,10 @@ EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+inline void blendBGRA(BGRA& dest, RGBA source) {
+  Blend3(dest, source, source.alpha);
+}
+
 // todo: make these do something...
 
 EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask) { }
@@ -1306,7 +1310,35 @@ EXPORT(void) DrawLine(int x[2], int y[2], RGBA color) { }
 EXPORT(void) DrawGradientLine(int x[2], int y[2], RGBA colors[2]) { }
 EXPORT(void) DrawTriangle(int x[3], int y[3], RGBA color) { }
 EXPORT(void) DrawGradientTriangle(int x[3], int y[3], RGBA colors[3]) { }
-EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color) { }
+
+EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color) {
+  if (color.alpha == 0) {          // no mask
+    return;
+  } else {
+
+    // lock backbuffer
+    DDSURFACEDESC ddsd;
+    memset(&ddsd, 0, sizeof(ddsd));
+    ddsd.dwSize = sizeof(ddsd);
+    HRESULT result = ddSecondary->Lock(NULL, &ddsd, DDLOCK_WAIT, NULL);
+    if (FAILED(result)) {
+      return;
+    }
+
+    switch (BitsPerPixel) {
+      case 32:
+        BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+        primitives::Rectangle((BGRA*)screen_buffer, ScreenWidth, x, y, w, h, color, ClippingRectangle, blendBGRA);
+      break;
+
+
+    }
+
+  }
+
+  ddSecondary->Unlock(NULL);
+}
+
 EXPORT(void) DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4]) { }
 
 
