@@ -251,6 +251,7 @@ SS_FUNCTION(OpenLog, 1)
 
   // spritesets
   SS_FUNCTION(LoadSpriteset, 1)
+  //spriteset.save
   //spriteset.images
   //spriteset.directions
   //spriteset.base.x1

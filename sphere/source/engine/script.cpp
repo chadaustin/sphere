@@ -3040,6 +3040,8 @@ begin_func(LoadSpriteset, 1)
     return JS_FALSE;
   }
 
+  JS_MaybeGC(cx);
+
   return_object(CreateSpritesetObject(cx, spriteset));
 end_func()
 
@@ -3691,6 +3693,12 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
   jsval object_val = OBJECT_TO_JSVAL(object);
   JS_SetElement(cx, local_roots, 0, &object_val);
 
+  // assign methods to the object
+  static JSFunctionSpec fs[] = {
+    { "save",        ssSaveSpriteset,    1, },
+    { 0, 0, 0, 0, 0 },
+  };
+  JS_DefineFunctions(cx, object, fs);
 
 
   // DEFINE MEMBER IMAGES ARRAY
@@ -3821,6 +3829,16 @@ end_finalizer()
 
 ////////////////////////////////////////
 
+begin_method(SS_SPRITESET, ssSaveSpriteset, 1)
+  arg_str(filename);
+
+  std::string path = "spritesets/";
+  path += filename;
+
+  return ( object->spriteset->GetSpriteset().Save(path.c_str()) );
+end_method()
+
+////////////////////////////////////////
 
 
 ////////////////////////////////////////

@@ -120,6 +120,7 @@ private:
   // spriteset
   declare_constructor1(CreateSpritesetObject, SSPRITESET* spriteset);
   declare_finalizer(ssFinalizeSpriteset);
+  declare_method(ssSaveSpriteset);
 
   // spriteset base
   declare_constructor1(CreateSpritesetBaseObject, SSPRITESET* spriteset);

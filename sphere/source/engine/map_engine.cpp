@@ -1349,12 +1349,12 @@ CMapEngine::GetPersonList(std::vector<std::string>& list)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* spriteset, bool destroy_with_map)
+CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* spriteset_filename, bool destroy_with_map)
 {
   p.name = name;
   p.destroy_with_map = destroy_with_map;
 
-  p.spriteset = m_Engine->LoadSpriteset(spriteset);
+  p.spriteset = m_Engine->LoadSpriteset(spriteset_filename);
   if (p.spriteset == NULL) {
     m_ErrorMessage = "Could not load spriteset\nPerson: " + p.description;
     return false;
@@ -1418,19 +1418,13 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
 }
 
 bool
-CMapEngine::CreatePerson(const char* name, const char* spriteset, bool destroy_with_map)
+CMapEngine::CreatePerson(const char* name, const char* spriteset_filename, bool destroy_with_map)
 {
   Person p;
   p.description = std::string("name=[") + name + "]";
 
-  if (!CreateDefaultPerson(p, name,  spriteset, destroy_with_map)) {
-    return false;
-  }
-  
-  // load spriteset
-  p.spriteset = m_Engine->LoadSpriteset(spriteset);
-  if (p.spriteset == NULL) {
-    m_ErrorMessage = "Could not load spriteset\nPerson: " + p.description;
+  // Note: CreateDefaultPerson loads the spriteset
+  if (!CreateDefaultPerson(p, name,  spriteset_filename, destroy_with_map)) {
     return false;
   }
 
