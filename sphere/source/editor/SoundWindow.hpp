@@ -45,12 +45,19 @@ private:
 
   afx_msg void OnAutoAdvance();
   afx_msg void OnUpdateAutoAdvanceCommand(CCmdUI* cmdui);
+  afx_msg void OnRandomOrder();
+  afx_msg void OnUpdateRandomOrderCommand(CCmdUI* cmdui);
 
   afx_msg BOOL OnNeedText(UINT id, NMHDR* nmhdr, LRESULT* result);
 
   afx_msg void OnDropFiles(HDROP drop_info);
 
   void UpdateCaption();
+
+public:
+  int GetPan();
+  float GetPitchShift();
+  int GetVolume();
 
 private:
   CSound  m_Sound;
@@ -71,6 +78,7 @@ private:
   bool m_Repeat; 
   bool m_Playing;
   bool m_AutoAdvance;
+  bool m_RandomOrder;
   
   CPlaylist m_Playlist;
   int m_CurrentSound;

@@ -1221,7 +1221,12 @@ CImageView::Rectangle()
 
     clipper clip = { sx, sy, (sx + sw) - 1, (sy + sh) - 1 };
 
-    m_Image.Rectangle(start.x, start.y, end.x, end.y, m_Colors[m_CurrentTool], clip);
+    int x = std::min(start.x, end.x);
+    int y = std::min(start.y, end.y);
+    int width = std::max(start.x, end.x) - x;
+    int height = std::max(start.y, end.y) - y;
+
+    m_Image.Rectangle(x, y, width, height, m_Colors[m_CurrentTool], clip);
     Invalidate();
     m_Handler->IV_ImageChanged();
   }
@@ -1726,7 +1731,12 @@ CImageView::PaintRectangle(CImage32& pImage)
 
   ClipPointToWithinImage(&end);
 
-  pImage.Rectangle(start.x, start.y, end.x, end.y, m_Colors[m_CurrentTool]);
+  int x = std::min(start.x, end.x);
+  int y = std::min(start.y, end.y);
+  int width = std::max(start.x, end.x) - x;
+  int height = std::max(start.y, end.y) - y;
+
+  pImage.Rectangle(x, y, width, height, m_Colors[m_CurrentTool]);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -14,7 +14,7 @@
 static const char* Extensions[] = {
   /* maps */         "Map Files:rmp(Sphere Map Files(rmp))",
   /* spriteset */    "Spriteset Files:rss(Sphere Spriteset Files(rss))",
-  /* scripts */      "Script Files:js(JavaScript Files(js),Text files(txt),CPP Files(cpp,hpp,c,h,cxx,hxx),Java Files(java)),Python Files(py))",
+  /* scripts */      "Script Files:js(JavaScript Files(js),Text files(txt),CPP Files(cpp,hpp,c,h,cxx,hxx),Java Files(java)),Python Files(py),PHP Files(php))",
   /* sounds */       "", // "Sound Files:ogg(MP3 Files(mp3,mp2),Ogg Vorbis Files(ogg),MOD Files(mod,s3m,xm,it),WAV Files(wav),FLAC Files(flac))",
   /* fonts */        "Font Files:rfn(Sphere Font Files(rfn))",
   /* windowstyles */ "Window Style Files:rws(Sphere Window Styles(rws))",

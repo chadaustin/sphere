@@ -29,6 +29,8 @@ private:
   void OnOK();
 
   afx_msg void OnBrowseBackgroundMusic();
+  afx_msg void OnBrowseTileset();
+
   afx_msg void OnCheckSyntax();
   afx_msg void OnClickEntry();
   afx_msg void OnClickExit();

@@ -41,7 +41,8 @@ BOOL
 CMapPropertiesDialog::OnInitDialog()
 {
   // set music file
-  SetDlgItemText(IDC_MUSIC, m_Map->GetMusicFile());
+  SetDlgItemText(IDC_MUSIC,   m_Map->GetMusicFile());
+  SetDlgItemText(IDC_TILESET, m_Map->GetTilesetFile());
 
   // set script file
   CheckDlgButton(IDC_ENTRY, BST_CHECKED);
@@ -64,8 +65,9 @@ CMapPropertiesDialog::OnOK()
   CString str;
   GetDlgItemText(IDC_MUSIC, str);
   m_Map->SetMusicFile(str);
+  GetDlgItemText(IDC_TILESET, str);
+  m_Map->SetTilesetFile(str);
   m_Map->SetRepeating(IsDlgButtonChecked(IDC_REPEATING) == BST_CHECKED);
-
 
   StoreCurrentScript();
 
@@ -87,6 +89,17 @@ CMapPropertiesDialog::OnBrowseBackgroundMusic()
   CSoundFileDialog dialog(FDM_OPEN);
   if (dialog.DoModal() == IDOK) {
     SetDlgItemText(IDC_MUSIC, dialog.GetFileName());
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMapPropertiesDialog::OnBrowseTileset()
+{
+  CTilesetFileDialog dialog(FDM_OPEN);
+  if (dialog.DoModal() == IDOK) {
+    SetDlgItemText(IDC_TILESET, dialog.GetFileName());
   }
 }
 

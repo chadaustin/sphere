@@ -250,6 +250,7 @@
 #define IDC_BROWSE_MUSIC                1210
 #define IDC_SPIN_GREEN                  1210
 #define IDC_EDIT_BLUE                   1211
+#define IDC_BROWSE_TILESET              1211
 #define IDC_SPIN4                       1212
 #define IDC_SPIN_BLUE                   1212
 #define IDC_EDIT_ALPHA                  1213
@@ -715,6 +716,8 @@
 #define ID_PROJECT_GAMESETTINGS         40820
 #define ID_IRCVIEW_CLEAR                40821
 #define ID_TOOLS_IRC_CLIENT             40823
+#define ID_SOUND_RANDOM_ORDER           40824
+#define ID_FILE_NEW_FILE                40826
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -723,7 +726,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        280
-#define _APS_NEXT_COMMAND_VALUE         40824
+#define _APS_NEXT_COMMAND_VALUE         40827
 #define _APS_NEXT_CONTROL_VALUE         1242
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

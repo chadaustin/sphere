@@ -239,9 +239,9 @@ sMap::Load(const char* filename, IFileSystem& fs)
 
 
   // read the strings (tileset, music, script)
-  std::string tileset_file = ReadMapString(file); // OBSOLETE
+  m_TilesetFile = ReadMapString(file); // ...
   m_MusicFile   = ReadMapString(file);
-  ReadMapString(file);  // script file
+  ReadMapString(file);  // script file // OBSOLETE
   if (header.num_strings == 3) {
     m_EntryScript = "";
     m_ExitScript  = "";
@@ -436,15 +436,39 @@ sMap::Load(const char* filename, IFileSystem& fs)
 
 
   // if no tileset file was specified, it is appended to the map file
-  if (tileset_file.length() == 0)
+  if (m_TilesetFile.length() == 0)
   {
     if (!m_Tileset.LoadFromFile(file.get()))
     {
       return false;
     }
   }
-  else
+  else {
     m_Tileset.Clear();
+
+    char tileset_path[/*MAX_PATH*/ 4096 + 4096] = {0};
+    strcpy(tileset_path, filename);
+
+    if (strlen(tileset_path) > 0 && strlen(tileset_path) + m_TilesetFile.size() < sizeof(tileset_path)) {
+      int i;
+
+      for (i = strlen(tileset_path) - 1; i >= 0; i--) {
+        if (tileset_path[i] == '\\'
+         || tileset_path[i] == '//') {
+          strcpy(tileset_path + i + 1, m_TilesetFile.c_str());
+          break;
+        }
+      }
+    }
+
+    // open the file
+    std::auto_ptr<IFile> tile_file(fs.Open(tileset_path, IFileSystem::read));
+    if (tile_file.get()) {
+      if (!m_Tileset.LoadFromFile(tile_file.get())) {
+        return false;
+      }
+    }
+  }
 
   return true;
 }
@@ -514,10 +538,11 @@ sMap::Save(const char* filename, IFileSystem& fs)
   header.repeating      = m_Repeating;
   header.num_strings    = 9;
   header.num_zones      = m_Zones.size();
-  file->Write(&header, sizeof(header));
+  if (file->Write(&header, sizeof(header)) != sizeof(header))
+    return false;
 
   // write the strings
-  WriteMapString(file, "");  // OBSOLETE
+  WriteMapString(file, m_TilesetFile.c_str());  // ...
   WriteMapString(file, m_MusicFile.c_str());
   WriteMapString(file, "");  // OBSOLETE
   WriteMapString(file, m_EntryScript.c_str());
@@ -546,7 +571,8 @@ sMap::Save(const char* filename, IFileSystem& fs)
     lh.scrolling_y  = m_Layers[i].GetYScrolling();
     lh.num_segments = obstructions.GetNumSegments();
     lh.reflective   = (m_Layers[i].IsReflective() ? 1 : 0);
-    file->Write(&lh, sizeof(lh));
+    if (file->Write(&lh, sizeof(lh)) != sizeof(lh))
+      return false;
 
     // write the layer name
     WriteMapString(file, m_Layers[i].GetName());
@@ -663,6 +689,7 @@ sMap::Create(int width, int height, int layers)
   m_MusicFile   = "";
   m_EntryScript = "";
   m_ExitScript  = "";
+  m_TilesetFile = "";
 
   m_Layers.clear();
   m_Entities.clear();
@@ -696,6 +723,7 @@ sMap::BuildFromImage(CImage32& i, int tile_width, int tile_height, bool allow_du
   m_MusicFile   = "";
   m_EntryScript = "";
   m_ExitScript  = "";
+  m_TilesetFile = "";
 
   m_Layers.clear();
   m_Entities.clear();
@@ -905,6 +933,7 @@ sMap::Import_VergeMAP(const char* filename, const char* tilesetFilename, IFileSy
   m_MusicFile   = "";
   m_EntryScript = "";
   m_ExitScript  = "";
+  m_TilesetFile = "";
   m_Layers.clear();
   m_Entities.clear();
 
@@ -1194,6 +1223,14 @@ const char*
 sMap::GetMusicFile() const
 {
   return m_MusicFile.c_str();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+const char*
+sMap::GetTilesetFile() const
+{
+  return m_TilesetFile.c_str();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1494,6 +1531,14 @@ void
 sMap::SetMusicFile(const char* music)
 {
   m_MusicFile = music;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+sMap::SetTilesetFile(const char* tileset)
+{
+  m_TilesetFile = tileset;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

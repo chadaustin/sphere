@@ -60,6 +60,7 @@ public:
   bool IsRepeating() const;
 
   const char*   GetMusicFile() const;
+  const char*   GetTilesetFile() const;
   const char*   GetEntryScript() const;
   const char*   GetExitScript() const;
   const char*   GetEdgeScript(int edge);
@@ -103,6 +104,7 @@ public:
   void UpdateZone(int index, int x1, int y1, int x2, int y2);
 
   void SetMusicFile(const char* music);
+  void SetTilesetFile(const char* tileset);
   void SetEntryScript(const char* script);
   void SetExitScript(const char* script);
   void SetEdgeScript(int edge, const char* script);
@@ -120,6 +122,7 @@ private:
   bool m_Repeating;
 
   std::string m_MusicFile;
+  std::string m_TilesetFile;
   std::string m_EntryScript;
   std::string m_ExitScript;
   std::string m_EdgeScripts[4];

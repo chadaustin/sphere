@@ -38,10 +38,12 @@ BEGIN_MESSAGE_MAP(CSoundWindow, CDocumentWindow)
   ON_UPDATE_COMMAND_UI(ID_SOUND_NEXT, OnUpdateNextCommand)
   ON_UPDATE_COMMAND_UI(ID_SOUND_PREV, OnUpdatePrevCommand)
   ON_UPDATE_COMMAND_UI(ID_SOUND_AUTO_ADVANCE, OnUpdateAutoAdvanceCommand)
+  ON_UPDATE_COMMAND_UI(ID_SOUND_RANDOM_ORDER, OnUpdateRandomOrderCommand)
 
   ON_COMMAND(ID_SOUND_NEXT, OnSoundNext)
   ON_COMMAND(ID_SOUND_PREV, OnSoundPrev)
   ON_COMMAND(ID_SOUND_AUTO_ADVANCE, OnAutoAdvance)
+  ON_COMMAND(ID_SOUND_RANDOM_ORDER, OnRandomOrder)
 
   ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnNeedText)
 
@@ -59,7 +61,8 @@ CSoundWindow::CSoundWindow(const char* sound)
   m_Repeat = false;
   
   m_PositionDown = false;
-  m_AutoAdvance = true;
+  m_AutoAdvance  = true;
+  m_RandomOrder  = false;
 
   Create(AfxRegisterWndClass(0, NULL, NULL, AfxGetApp()->LoadIcon(IDI_SOUND)));
 
@@ -74,13 +77,12 @@ CSoundWindow::CSoundWindow(const char* sound)
   // create the volume bar and its associated friends.
   m_VolumeBar.Create(WS_CHILD | WS_VISIBLE | TBS_VERT | TBS_TOOLTIPS, CRect(), this, ID_MUSIC_VOLUMEBAR);
   m_VolumeBar.SetLineSize(20);
-  m_VolumeBar.SetRange(0, 255, true);
+  m_VolumeBar.SetRange(0, 255, TRUE);
   m_VolumeBar.SetPos(0);
   m_VolumeBarBitmap.LoadBitmap(IDB_VOLUMEBAR);
   m_VolumeBarGraphic.Create(NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_BITMAP, CRect(), this);
   m_VolumeBarGraphic.SetBitmap((HBITMAP)m_VolumeBarBitmap);
   m_Blank.Create(NULL, WS_CHILD | WS_VISIBLE, CRect(), this);
-
 
   if (1) {
     m_PanBar.Create(WS_CHILD | WS_VISIBLE | TBS_VERT | TBS_TOOLTIPS, CRect(), this, ID_MUSIC_PANBAR);
@@ -88,7 +90,7 @@ CSoundWindow::CSoundWindow(const char* sound)
     m_PanBar.SetPos(0);
     m_PanBar.SetLineSize(20);
     m_PitchBar.Create(WS_CHILD | WS_VISIBLE | TBS_VERT | TBS_TOOLTIPS, CRect(), this, ID_MUSIC_PITCHBAR);
-    m_PitchBar.SetRange((int)(0.5f * 255.0f), (255 * 2), true);
+    m_PitchBar.SetRange(0, 255 * 2, TRUE);
     m_PitchBar.SetPos(255);
     m_PitchBar.SetLineSize(20);
   }
@@ -172,9 +174,9 @@ CSoundWindow::OnSize(UINT type, int cx, int cy)
     m_StopButton.MoveWindow(CRect((cx-50) / 2, 0, cx-50, button_height));
   
   if (m_VolumeBar.m_hWnd != NULL)
-    m_VolumeBar.MoveWindow(CRect(cx-50, 0, cx-30, 90));
+    m_VolumeBar.MoveWindow(CRect(cx-50, 0, cx-30, 100));
   if (m_VolumeBarGraphic.m_hWnd != NULL)
-    m_VolumeBarGraphic.MoveWindow(CRect(cx-30, 0, cx, 90));
+    m_VolumeBarGraphic.MoveWindow(CRect(cx-30, 0, cx, 100));
   if (m_Blank.m_hWnd != NULL)
     m_Blank.MoveWindow(CRect(cx-50, 90, cx, cy));
 
@@ -183,8 +185,8 @@ CSoundWindow::OnSize(UINT type, int cx, int cy)
   }
 
   if (m_PanBar.m_hWnd != NULL && m_PitchBar.m_hWnd != NULL) {
-    m_PanBar.MoveWindow(  CRect(cx-50, 90, cx-30, 190));
-    m_PitchBar.MoveWindow(CRect(cx-30, 90, cx,    190));
+    m_PanBar.MoveWindow(  CRect(cx-50, 90, cx-30, 200));
+    m_PitchBar.MoveWindow(CRect(cx-30, 90, cx,    200));
   }
 
   CDocumentWindow::OnSize(type, cx, cy);
@@ -247,15 +249,15 @@ CSoundWindow::OnVScroll(UINT code, UINT pos, CScrollBar *scroll_bar)
 
   if (scroll_bar->m_hWnd == m_VolumeBar.m_hWnd) {
     //if (!m_VolumeBar.MouseDown)
-      m_Sound.SetVolume(255 - m_VolumeBar.GetPos());
+      m_Sound.SetVolume(GetVolume());
   }
 
   if (scroll_bar->m_hWnd == m_PitchBar.m_hWnd) {
-    m_Sound.SetPitchShift(m_PitchBar.GetPos() / 255.0f);
+    m_Sound.SetPitchShift(GetPitchShift());
   }
 
   if (scroll_bar->m_hWnd == m_PanBar.m_hWnd) {
-    m_Sound.SetPan(m_PanBar.GetPos() / 255.0f);
+    m_Sound.SetPan(GetPan() / 255.0f);
   }
 }
 
@@ -280,6 +282,33 @@ CSoundWindow::OnHScroll(UINT code, UINT pos, CScrollBar *scroll_bar)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+int
+CSoundWindow::GetPan() {
+  if (m_PanBar.m_hWnd != NULL)
+    return m_PanBar.GetPos();
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+float
+CSoundWindow::GetPitchShift() {
+  if (m_PitchBar.m_hWnd != NULL)
+    return (float)m_PitchBar.GetPos() / 255.0f;
+  return 1.0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CSoundWindow::GetVolume() {
+  if (m_VolumeBar.m_hWnd != NULL)
+    return (255 - m_VolumeBar.GetPos());
+  return 255;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSoundWindow::OnSoundPlay()
 {
@@ -297,9 +326,10 @@ CSoundWindow::OnSoundPlay()
     m_Sound.Play();
     m_Playing = true;
 
-    if (m_PanBar.m_hWnd != NULL && m_PitchBar.m_hWnd != NULL) {
-      m_Sound.SetPan((float)m_PanBar.GetPos() / 255.0f);
-      m_Sound.SetPitchShift((float)m_PitchBar.GetPos() / 255.0f);
+    if (m_PanBar.m_hWnd != NULL && m_PitchBar.m_hWnd != NULL && m_VolumeBar.m_hWnd != NULL) {
+      m_Sound.SetPan(GetPan());
+      m_Sound.SetPitchShift(GetPitchShift());
+      m_Sound.SetVolume(GetVolume());
     }
   }
 }
@@ -328,14 +358,23 @@ CSoundWindow::AdvanceSound(bool forward, bool allow_repeating)
   const int delta = forward ? 1 : -1;
   const int original_sound = m_CurrentSound;
 
-  m_CurrentSound += delta;
+  if (m_RandomOrder) {
+    int random_song = rand() % (m_Playlist.GetNumFiles() - 1);
+    if (random_song >= m_CurrentSound)
+      random_song += 1;
 
-  if (m_CurrentSound < 0) {
-    m_CurrentSound = (allow_repeating) ? m_Playlist.GetNumFiles() - 1 : original_sound;
+    m_CurrentSound = random_song;
   }
   else {
-    if (m_CurrentSound >= m_Playlist.GetNumFiles()) {
-      m_CurrentSound = (allow_repeating) ? 0 : original_sound;
+    m_CurrentSound += delta;
+
+    if (m_CurrentSound < 0) {
+      m_CurrentSound = (allow_repeating) ? (m_Playlist.GetNumFiles() - 1) : original_sound;
+    } 
+    else {
+      if (m_CurrentSound >= m_Playlist.GetNumFiles()) {
+        m_CurrentSound = (allow_repeating) ? 0 : original_sound;
+      } 
     }
   }
 
@@ -364,10 +403,10 @@ afx_msg void
 CSoundWindow::OnSoundNext()
 {
   if (AdvanceSound(true, true)) {
-    bool playing = m_Playing;
+    bool was_playing = m_Playing;
     OnSoundStop();
     UpdateCaption();
-    if (playing) OnSoundPlay();
+    if (was_playing) OnSoundPlay();
   }
 }
 
@@ -377,10 +416,10 @@ afx_msg void
 CSoundWindow::OnSoundPrev()
 {
   if (AdvanceSound(false, true)) {
-    bool playing = m_Playing;
+    bool was_playing = m_Playing;
     OnSoundStop();
     UpdateCaption();
-    if (playing) OnSoundPlay();
+    if (was_playing) OnSoundPlay();
   }
 }
 
@@ -457,6 +496,22 @@ CSoundWindow::OnUpdateAutoAdvanceCommand(CCmdUI* cmdui)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+afx_msg void
+CSoundWindow::OnRandomOrder()
+{
+  m_RandomOrder = !m_RandomOrder;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+  
+afx_msg void
+CSoundWindow::OnUpdateRandomOrderCommand(CCmdUI* cmdui)
+{
+  cmdui->SetCheck(m_RandomOrder ? TRUE : FALSE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg BOOL
 CSoundWindow::OnNeedText(UINT /*id*/, NMHDR* nmhdr, LRESULT* result)
 {
@@ -473,20 +528,20 @@ CSoundWindow::OnNeedText(UINT /*id*/, NMHDR* nmhdr, LRESULT* result)
   switch (id) {
     case ID_MUSIC_PANBAR:
       if (m_PanBar.m_hWnd != NULL) {
-        sprintf (string, "%s %1.3f",  TranslateString("pan"),  ((float)m_PanBar.GetPos() / 255.0f));
+        sprintf (string, "%s %3d",  TranslateString("pan"),  GetPan());
         ttt->lpszText = string;
       }
     break;
     case ID_MUSIC_PITCHBAR:
       if (m_PanBar.m_hWnd != NULL) {
-        sprintf (string, "%s %1.3f", TranslateString("pitch"), ((float)m_PitchBar.GetPos() / 255.0f));
+        sprintf (string, "%s %1.3f", TranslateString("pitch"), ((float)GetPitchShift()));
         ttt->lpszText = string;
       }
     break;
 
     case ID_MUSIC_VOLUMEBAR:
       if (m_VolumeBar.m_hWnd != NULL) {
-        sprintf (string, "%s %3d", TranslateString("volume"), (255 - m_VolumeBar.GetPos()));
+        sprintf (string, "%s %3d", TranslateString("volume"), GetVolume());
         ttt->lpszText = string;
       }
     break;

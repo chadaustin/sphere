@@ -842,6 +842,9 @@ CScriptWindow::SetScriptStyles()
   // for code folding
   SendEditor(SCI_SETPROPERTY, (WPARAM)"fold", (LPARAM)"1");
   SendEditor(SCI_SETPROPERTY, (WPARAM)"fold.compact", (LPARAM)"0");
+  
+  SendEditor(SCI_SETPROPERTY, (WPARAM)"fold.comment", (LPARAM)"1");
+  SendEditor(SCI_SETPROPERTY, (WPARAM)"fold.preprocessor", (LPARAM)"1");
 
   SendEditor(SCI_SETMARGINWIDTHN, MARGIN_SCRIPT_FOLD_INDEX, 20);
   SendEditor(SCI_SETMARGINMASKN, MARGIN_SCRIPT_FOLD_INDEX, SC_MASK_FOLDERS);
@@ -1676,8 +1679,8 @@ void CScriptWindow::FoldAll() {
 	}
 	for (int line = 0; line < maxLine; line++) {
 		int level = SendEditor(SCI_GETFOLDLEVEL, line);
-		if ((level & SC_FOLDLEVELHEADERFLAG) &&
-		        (SC_FOLDLEVELBASE == (level & SC_FOLDLEVELNUMBERMASK))) {
+		if ((level & SC_FOLDLEVELHEADERFLAG)
+     && (SC_FOLDLEVELBASE == (level & SC_FOLDLEVELNUMBERMASK))) {
 			if (expanding) {
 				SendEditor(SCI_SETFOLDEXPANDED, line, 1);
 				Expand(line, true, false, 0, level);

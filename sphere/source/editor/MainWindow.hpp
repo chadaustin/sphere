@@ -74,6 +74,7 @@ private:
   afx_msg void OnFileOpen();
 
 #ifdef I_SUCK
+  afx_msg void OnFileNewFile();
   afx_msg void OnFileNewProject();
   afx_msg void OnFileOpenProject();
   afx_msg void OnFileCloseProject();
@@ -286,6 +287,7 @@ private:
   CProjectWindow* m_ProjectWindow;
 
   std::string m_DefaultFolder; // file dialogs folder
+  int m_NewFileType;
 
   // manage pointers to document windows so we can enumerate and send messages to them
   std::vector<CDocumentWindow*> m_DocumentWindows;

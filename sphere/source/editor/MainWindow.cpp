@@ -111,6 +111,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
 #ifdef I_SUCK
   // project
   ON_COMMAND(ID_FILE_NEW_PROJECT,     OnFileNewProject)
+  ON_COMMAND(ID_FILE_NEW_FILE,        OnFileNewFile)
   ON_COMMAND(ID_FILE_OPEN_PROJECT,    OnFileOpenProject)
   ON_COMMAND(ID_FILE_CLOSEPROJECT,    OnFileCloseProject)
   ON_COMMAND(ID_FILE_OPENLASTPROJECT, OnFileOpenLastProject)
@@ -317,7 +318,9 @@ CMainWindow::CMainWindow()
 , m_ChildMenuResource(-1)
 , m_NextClipboardViewer(NULL)
 , m_NumImageToolsAllowed(1)
+, m_NewFileType(-1)
 {
+  m_NewFileType = GT_SCRIPTS;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1379,6 +1382,19 @@ CMainWindow::OnFileNewProject()
     sprintf (path_name, "%s\\%s\\game.sgm", path_name, projectname);
 
     Configuration::Set(KEY_LAST_PROJECT, path_name);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnFileNewFile()
+{
+  if (m_NewFileType >= 0 && m_NewFileType < NUM_GROUP_TYPES) {
+    OpenDocumentWindow(m_NewFileType, NULL);
+  } 
+  else {
+    OnFileNewProject();
   }
 }
 #endif
@@ -3181,7 +3197,16 @@ CMainWindow::OnNeedText(UINT /*id*/, NMHDR* nmhdr, LRESULT* result)
   }
 
   switch (id) {
-    case ID_FILE_NEW_PROJECT:  ttt->lpszText = "New Sphere Project"; break;
+    case ID_FILE_NEW_PROJECT:
+      if (m_NewFileType >= 0 && m_NewFileType < NUM_GROUP_TYPES) {
+        if (m_NewFileType == GT_SCRIPTS)
+          ttt->lpszText =  "New Script File";
+        else
+          ttt->lpszText =  "New Sphere File";
+      }
+      else 
+        ttt->lpszText = "New Sphere Project";
+    break;
     case ID_PROJECT_RUNSPHERE: ttt->lpszText = "Run Sphere";         break;
 
     case IDI_IMAGETOOL_LINE:          ttt->lpszText = "Line";      break;

@@ -248,6 +248,7 @@ CEditorApplication::CEditorApplication()
 BOOL
 CEditorApplication::InitInstance()
 {	
+  srand(time(NULL));
 
 #if 0 && defined(CRTDBG_MAP_ALLOC)
   _CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
