@@ -1087,6 +1087,7 @@ BEGIN
             MENUITEM "Unused Server",               ID_SERVER_2
         END
         MENUITEM "&Find...",                    ID_SCRIPT_FIND
+        MENUITEM "&Auto Reconnect",             ID_IRC_AUTO_RECONNECT
     END
 END
 

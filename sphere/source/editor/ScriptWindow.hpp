@@ -72,7 +72,15 @@ private:
   afx_msg void OnSavePointLeft(NMHDR* nmhdr, LRESULT* result);
   afx_msg void OnPosChanged(NMHDR* nmhdr, LRESULT* result);
   afx_msg void OnCharAdded(NMHDR* nmhdr, LRESULT* result);
+  afx_msg void OnMarginClick(NMHDR* nmhdr, LRESULT* result);
   void SetLineNumber(int line);
+
+#if 1
+  bool MarginClick(int position, int modifiers);
+  void Expand(int &line, const bool doExpand,
+              bool force = false, int visLevels = 0, int level = -1);
+  void FoldAll();
+#endif
 
   afx_msg void OnCopy();
   afx_msg void OnPaste();

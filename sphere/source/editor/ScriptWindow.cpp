@@ -394,6 +394,7 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_NOTIFY(SCN_SAVEPOINTLEFT,    ID_EDIT, OnSavePointLeft)
   ON_NOTIFY(SCN_UPDATEUI,         ID_EDIT, OnPosChanged)
   ON_NOTIFY(SCN_CHARADDED,        ID_EDIT, OnCharAdded)
+  ON_NOTIFY(SCN_MARGINCLICK,      ID_EDIT, OnMarginClick)
 
   ON_COMMAND(ID_FILE_ZOOM_IN, OnZoomIn)
   ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
@@ -628,6 +629,9 @@ CScriptWindow::GetScriptType()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static const int MARGIN_LINE_NUMBER_INDEX = 0;
+static const int MARGIN_SCRIPT_FOLD_INDEX = 1;
+
 void
 CScriptWindow::SetScriptStyles()
 {
@@ -676,20 +680,30 @@ CScriptWindow::SetScriptStyles()
   SendEditor(SCI_STYLECLEARALL);
 
   // set all margins to zero width
-  SendEditor(SCI_SETMARGINWIDTHN, 0, 0);
-  SendEditor(SCI_SETMARGINWIDTHN, 1, 0);
+  SendEditor(SCI_SETMARGINWIDTHN, MARGIN_LINE_NUMBER_INDEX, 0);
+  SendEditor(SCI_SETMARGINWIDTHN, MARGIN_SCRIPT_FOLD_INDEX, 0);
   SendEditor(SCI_SETMARGINWIDTHN, 2, 0);
 
   // set all margin types
-  SendEditor(SCI_SETMARGINTYPEN,  0, SC_MARGIN_NUMBER);
-  SendEditor(SCI_SETMARGINWIDTHN, 1, SC_MARGIN_SYMBOL);
-  SendEditor(SCI_SETMARGINWIDTHN, 2, SC_MARGIN_SYMBOL);
+  SendEditor(SCI_SETMARGINTYPEN,  MARGIN_LINE_NUMBER_INDEX, SC_MARGIN_NUMBER);
 
   // for code folding
-  //SendEditor(SCI_SETPROPERTY, (WPARAM)"fold", (LPARAM)"1");
-  //SendEditor(SCI_SETMARGINTYPEN, 1, SC_MARGIN_SYMBOL);
-  //SendEditor(SCI_SETMARGINMASKN, 1, SC_MASK_FOLDERS);
-  //SendEditor(SCI_SETMARGINWIDTHN, 1, 20);
+  SendEditor(SCI_SETPROPERTY, (WPARAM)"fold", (LPARAM)"1");
+  SendEditor(SCI_SETPROPERTY, (WPARAM)"fold.compact", (LPARAM)"0");
+  SendEditor(SCI_SETMARGINWIDTHN, MARGIN_SCRIPT_FOLD_INDEX, 20);
+  SendEditor(SCI_SETMARGINMASKN, MARGIN_SCRIPT_FOLD_INDEX, SC_MASK_FOLDERS);
+
+  SendEditor(SCI_SETMARGINSENSITIVEN, MARGIN_SCRIPT_FOLD_INDEX, 1);
+
+  SendEditor(SCI_MARKERDEFINE, SC_MARKNUM_FOLDER, SC_MARK_PLUS);
+  SendEditor(SCI_MARKERDEFINE, SC_MARKNUM_FOLDEROPEN, SC_MARK_MINUS);
+  SendEditor(SCI_MARKERDEFINE, SC_MARKNUM_FOLDEREND, SC_MARK_EMPTY);
+  SendEditor(SCI_MARKERDEFINE, SC_MARKNUM_FOLDERMIDTAIL, SC_MARK_EMPTY);
+  SendEditor(SCI_MARKERDEFINE, SC_MARKNUM_FOLDEROPENMID, SC_MARK_EMPTY);
+  SendEditor(SCI_MARKERDEFINE, SC_MARKNUM_FOLDERSUB, SC_MARK_EMPTY);
+  SendEditor(SCI_MARKERDEFINE, SC_MARKNUM_FOLDERTAIL, SC_MARK_EMPTY);
+
+  SendEditor(SCI_SETFOLDFLAGS, 16, 0); // 16  	Draw line below if not expanded
 
   if (m_ShowLineNumbers) {  // resize the line number margin so we can see it
     int margin_size = SendEditor(SCI_TEXTWIDTH, STYLE_LINENUMBER, (LPARAM) "_99999");
@@ -1229,8 +1243,10 @@ CScriptWindow::OnScriptGotoLine()
 
   CNumberDialog dialog("Goto Line", string, cur_line, 1, max_line);
   if (dialog.DoModal()) {
-    if (dialog.GetValue() != cur_line) {
-      SendEditor(SCI_GOTOLINE, dialog.GetValue() - 1);
+    int line_number = dialog.GetValue() - 1;
+    if (line_number != cur_line) {
+      SendEditor(SCI_ENSUREVISIBLEENFORCEPOLICY, line_number);
+      SendEditor(SCI_GOTOLINE, line_number);
     }
   }
 }
@@ -1343,6 +1359,133 @@ CScriptWindow::OnPosChanged(NMHDR* nmhdr, LRESULT* result) {
   if (m_SyntaxHighlighted)
     if (GetScriptType() == SCRIPT_TYPE_UNKNOWN || GetScriptType() == SCRIPT_TYPE_JS)
       UpdateBraceHighlight();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+#if 1
+void CScriptWindow::Expand(int &line, const bool doExpand, bool force, int visLevels, int level)
+{
+	const int lineMaxSubord = SendEditor(SCI_GETLASTCHILD, line, level & SC_FOLDLEVELNUMBERMASK);
+	
+  line++;
+	
+  while (line <= lineMaxSubord)
+  {
+		if (force) {
+			if (visLevels > 0)
+				SendEditor(SCI_SHOWLINES, line, line);
+			else
+				SendEditor(SCI_HIDELINES, line, line);
+		} else {
+			if (doExpand)
+				SendEditor(SCI_SHOWLINES, line, line);
+		}
+		
+    const int levelLine = level == -1 ? SendEditor(SCI_GETFOLDLEVEL, line) : level;
+
+    if ( !(levelLine & SC_FOLDLEVELHEADERFLAG) ) {
+      line++;
+    }
+    else
+    {
+			if (force) {
+				if (visLevels > 1)
+					SendEditor(SCI_SETFOLDEXPANDED, line, 1);
+				else
+					SendEditor(SCI_SETFOLDEXPANDED, line, 0);
+				Expand(line, doExpand, force, visLevels - 1);
+			} else {
+				if (doExpand) {
+					if (!SendEditor(SCI_GETFOLDEXPANDED, line))
+						SendEditor(SCI_SETFOLDEXPANDED, line, 1);
+				}
+				
+				Expand(line, doExpand, force, visLevels - 1);
+			}
+		}
+	}
+}
+
+void CScriptWindow::FoldAll() {
+	SendEditor(SCI_COLOURISE, 0, -1);
+	int maxLine = SendEditor(SCI_GETLINECOUNT);
+	bool expanding = true;
+	for (int lineSeek = 0; lineSeek < maxLine; lineSeek++) {
+		if (SendEditor(SCI_GETFOLDLEVEL, lineSeek) & SC_FOLDLEVELHEADERFLAG) {
+			expanding = !SendEditor(SCI_GETFOLDEXPANDED, lineSeek);
+			break;
+		}
+	}
+	for (int line = 0; line < maxLine; line++) {
+		int level = SendEditor(SCI_GETFOLDLEVEL, line);
+		if ((level & SC_FOLDLEVELHEADERFLAG) &&
+		        (SC_FOLDLEVELBASE == (level & SC_FOLDLEVELNUMBERMASK))) {
+			if (expanding) {
+				SendEditor(SCI_SETFOLDEXPANDED, line, 1);
+				Expand(line, true, false, 0, level);
+				line--;
+			} else {
+				int lineMaxSubord = SendEditor(SCI_GETLASTCHILD, line, -1);
+				SendEditor(SCI_SETFOLDEXPANDED, line, 0);
+				if (lineMaxSubord > line)
+					SendEditor(SCI_HIDELINES, line + 1, lineMaxSubord);
+			}
+		}
+	}
+}
+
+bool CScriptWindow::MarginClick(int position, int modifiers) {
+	int lineClick = SendEditor(SCI_LINEFROMPOSITION, position);
+	//Platform::DebugPrintf("Margin click %d %d %x\n", position, lineClick,
+	//	SendEditor(SCI_GETFOLDLEVEL, lineClick) & SC_FOLDLEVELHEADERFLAG);
+	if ((modifiers & SCMOD_SHIFT) && (modifiers & SCMOD_CTRL)) {
+		FoldAll();
+	} else {
+		int levelClick = SendEditor(SCI_GETFOLDLEVEL, lineClick);
+		if (levelClick & SC_FOLDLEVELHEADERFLAG) {
+			if (modifiers & SCMOD_SHIFT) {
+				// Ensure all children visible
+				SendEditor(SCI_SETFOLDEXPANDED, lineClick, 1);
+				Expand(lineClick, true, true, 100, levelClick);
+			} else if (modifiers & SCMOD_CTRL) {
+				if (SendEditor(SCI_GETFOLDEXPANDED, lineClick)) {
+					// Contract this line and all children
+					SendEditor(SCI_SETFOLDEXPANDED, lineClick, 0);
+					Expand(lineClick, false, true, 0, levelClick);
+				} else {
+					// Expand this line and all children
+					SendEditor(SCI_SETFOLDEXPANDED, lineClick, 1);
+					Expand(lineClick, true, true, 100, levelClick);
+				}
+			} else {
+				// Toggle this line
+				SendEditor(SCI_TOGGLEFOLD, lineClick);
+			}
+		}
+	}
+	return true;
+}
+#endif
+
+afx_msg void
+CScriptWindow::OnMarginClick(NMHDR* nmhdr, LRESULT* result)
+{
+  SCNotification* notify = (SCNotification*)nmhdr;
+
+  const int modifiers = notify->modifiers;
+  const int position = notify->position;
+  const int margin = notify->margin;
+  const int line_number = SendEditor(SCI_LINEFROMPOSITION, position);
+
+  switch (margin) {
+    case MARGIN_SCRIPT_FOLD_INDEX:
+    {
+      MarginClick(position, modifiers);
+      //SendEditor(SCI_TOGGLEFOLD, line_number);
+    }
+    break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
