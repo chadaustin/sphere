@@ -45,18 +45,16 @@ CMapView::OnEraseBkgnd(CDC* pDC)
 
 CMapView::CMapView()
 : m_Handler(NULL)
-
 //, m_ToolPalette(NULL)
-
 , m_Map(NULL)
-
 , m_BlitTile(NULL)
 , m_ZoomFactor(1)
 , m_ObstructionColor(CreateRGB(255, 0, 255))
 , m_HighlightColor(CreateRGB(255, 255, 0))
 , m_ZoneColor(CreateRGB(255, 0, 0))
 , m_CurrentTool(tool_1x1Tile)
-
+, m_StartX(0)
+, m_StartY(0)
 , m_CurrentX(0)
 , m_CurrentY(0)
 , m_CurrentCursorTileX(-1)
@@ -1627,11 +1625,11 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
         {
           for (int l=0; l<m_ZoomFactor; l++)
           {
-            const RGBA* s = &src[j * tile_width + k];
+            const RGBA s = src[j * tile_width + k];
             int alpha = src[j * tile_width + k].alpha;
-            dest[counter].red   = (alpha * s->red   + (255 - alpha) * dest[counter].red)   / 256;
-            dest[counter].green = (alpha * s->green + (255 - alpha) * dest[counter].green) / 256;
-            dest[counter].blue  = (alpha * s->blue  + (255 - alpha) * dest[counter].blue)  / 256;
+            dest[counter].red   = (alpha * s.red   + (255 - alpha) * dest[counter].red)   / 256;
+            dest[counter].green = (alpha * s.green + (255 - alpha) * dest[counter].green) / 256;
+            dest[counter].blue  = (alpha * s.blue  + (255 - alpha) * dest[counter].blue)  / 256;
 
 
 /*          THESE ARE TOO SLOW IN THIS INNER LOOP
@@ -1924,32 +1922,29 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
     int offset_y;
     GetRedrawRect(offset_x, offset_y, width, height);
 
-    if (tx >= m_CurrentCursorTileX - (offset_x/(tile_width*m_ZoomFactor)) && 
-        ty >= m_CurrentCursorTileY - (offset_y/(tile_height*m_ZoomFactor)) &&
-        tx < m_CurrentCursorTileX + (width/(tile_width*m_ZoomFactor)) - (offset_x/(tile_width*m_ZoomFactor)) &&
-        ty < m_CurrentCursorTileY + (height/(tile_height*m_ZoomFactor)) - (offset_x/(tile_width*m_ZoomFactor)) &&
-        tx <= GetTotalTilesX() &&
-        ty <= GetTotalTilesY())
-      {
-        dc.SaveDC();
+    if (tx >= m_CurrentCursorTileX - (offset_x/(tile_width  * m_ZoomFactor)) && 
+        ty >= m_CurrentCursorTileY - (offset_y/(tile_height * m_ZoomFactor)) &&
+        tx < m_CurrentCursorTileX + (width/(tile_width * m_ZoomFactor)) -  (offset_x/(tile_width * m_ZoomFactor)) &&
+        ty < m_CurrentCursorTileY + (height/(tile_height * m_ZoomFactor)) - (offset_y/(tile_height * m_ZoomFactor)) &&
+        tx <= GetTotalTilesX() && ty <= GetTotalTilesY())
+    {
+      dc.SaveDC();
 
-        CRect r(rect);
-        CBrush brush;
+      CRect r(rect);
+      CBrush brush;
         
-        if (m_CurrentTool == tool_MoveEntity && m_MoveIndex != -1) {
-          brush.CreateSolidBrush(RGB(255, 255, 255));
-        }
-        else {
-          brush.CreateSolidBrush(RGB(m_HighlightColor.red, 
-                               m_HighlightColor.green, 
-                               m_HighlightColor.blue));
-        }
-
-        dc.FrameRect(r, &brush);
-        brush.DeleteObject();
-
-        dc.RestoreDC(-1);
+      if (m_CurrentTool == tool_MoveEntity && m_MoveIndex != -1) {
+        brush.CreateSolidBrush(RGB(255, 255, 255));
       }
+      else {
+        brush.CreateSolidBrush(RGB(m_HighlightColor.red, m_HighlightColor.green, m_HighlightColor.blue));
+      }
+
+      dc.FrameRect(r, &brush);
+      brush.DeleteObject();
+
+      dc.RestoreDC(-1);
+    }
   }
 
 }
