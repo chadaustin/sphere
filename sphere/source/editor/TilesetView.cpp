@@ -45,6 +45,8 @@ BEGIN_MESSAGE_MAP(CTilesetView, CWnd)
   ON_COMMAND(ID_TILESETVIEW_MOVE_BACK,    OnMoveBack)
   ON_COMMAND(ID_TILESETVIEW_MOVE_FORWARD, OnMoveForward)
 
+  ON_COMMAND(ID_TILESETVIEW_VIEW_TILEOBSTRUCTIONS, OnViewTileObstructions)
+
 //  ON_COMMAND(ID_TILESETVIEW_ER_ROTATE_CW,             OnEditRangeRotateCW)
 //  ON_COMMAND(ID_TILESETVIEW_ER_ROTATE_CCW,            OnEditRangeRotateCCW)
   ON_COMMAND(ID_TILESETVIEW_ER_SLIDE_UP,              OnEditRange)
@@ -83,6 +85,7 @@ CTilesetView::CTilesetView()
 , m_SelectedTile(0)
 , m_ZoomFactor(1)
 , m_BlitTile(NULL)
+, m_ShowTileObstructions(false)
 , m_MenuShown(false)
 {
 }
@@ -562,6 +565,7 @@ CTilesetView::OnInsertTile()
   m_Tileset->InsertTiles(m_SelectedTile, 1);
   m_Handler->TV_TilesetChanged();
   UpdateScrollBar();
+  UpdateObstructionTiles();
   Invalidate();
 }
 
@@ -573,6 +577,7 @@ CTilesetView::OnAppendTile()
   m_Tileset->AppendTiles(1);
   m_Handler->TV_TilesetChanged();
   UpdateScrollBar();
+  UpdateObstructionTiles();
   Invalidate();
 }
 
@@ -596,6 +601,7 @@ CTilesetView::OnDeleteTile()
 
     m_Handler->TV_TilesetChanged();
 
+    UpdateObstructionTiles();
     UpdateScrollBar();
     Invalidate();
   }
@@ -610,6 +616,8 @@ CTilesetView::OnTileProperties()
   if (dialog.DoModal() == IDOK)
   {
     m_Handler->TV_TilesetChanged();
+    UpdateObstructionTiles();
+    Invalidate();
   }
 }
 
@@ -627,6 +635,7 @@ CTilesetView::OnInsertTiles()
     m_Tileset->InsertTiles(m_SelectedTile, dialog.GetValue());
     m_Handler->TV_TilesetChanged();
     UpdateScrollBar();
+    UpdateObstructionTiles();
     Invalidate();
   }
 }
@@ -642,6 +651,7 @@ CTilesetView::OnAppendTiles()
     m_Tileset->AppendTiles(dialog.GetValue());
     m_Handler->TV_TilesetChanged();
     UpdateScrollBar();
+    UpdateObstructionTiles();
     Invalidate();
   }
 }
@@ -668,6 +678,7 @@ CTilesetView::OnDeleteTiles()
     m_Handler->TV_SelectedTileChanged(m_SelectedTile);
     m_Handler->TV_TilesetChanged();
     UpdateScrollBar();
+    UpdateObstructionTiles();
     Invalidate();
   }
 }
@@ -705,6 +716,7 @@ CTilesetView::OnInsertTileset()
 
     // notify window
     m_Handler->TV_TilesetChanged();
+    UpdateObstructionTiles();
     UpdateScrollBar();
     Invalidate();
   }
@@ -742,6 +754,7 @@ CTilesetView::OnAppendTileset()
     // notify window
     m_Handler->TV_TilesetChanged();
     UpdateScrollBar();
+    UpdateObstructionTiles();
     Invalidate();
   }
 }
@@ -772,6 +785,7 @@ CTilesetView::OnSwap(int new_index)
 
   m_Handler->TV_SelectedTileChanged(m_SelectedTile);
   m_Handler->TV_TilesetChanged();
+  UpdateObstructionTiles();
   Invalidate();
 }
 
@@ -793,6 +807,16 @@ CTilesetView::OnMoveForward()
   if (m_SelectedTile < m_Tileset->GetNumTiles()) {
     OnSwap(m_SelectedTile + 1);
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CTilesetView::OnViewTileObstructions()
+{
+  m_ShowTileObstructions = !m_ShowTileObstructions;
+  UpdateObstructionTiles();
+  Invalidate();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -979,6 +1003,7 @@ CTilesetView::OnEditRange()
 
   if (changed) {
     m_Handler->TV_TilesetChanged();
+    UpdateObstructionTiles();
     Invalidate();
   }
 }

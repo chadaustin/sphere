@@ -561,6 +561,13 @@ BEGIN
             MENUITEM "&Forward",                    ID_TILESETVIEW_MOVE_FORWARD
 
         END
+        POPUP "&View"
+        BEGIN
+            MENUITEM "&Grid",                       ID_TILESETVIEW_VIEWGRID
+            , GRAYED
+            MENUITEM "&Tile Obstructions",          ID_TILESETVIEW_VIEW_TILEOBSTRUCTIONS
+
+        END
         MENUITEM SEPARATOR
         POPUP "&Edit Range"
         BEGIN

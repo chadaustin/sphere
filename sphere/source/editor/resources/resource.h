@@ -515,6 +515,8 @@
 #define ID_BROWSE_REFRESH               40660
 #define ID_VIEW_PROJECT                 40661
 #define ID_BROWSE_SETSIZE               40674
+#define ID_TILESETVIEW_VIEWGRID         40675
+#define ID_TILESETVIEW_VIEW_TILEOBSTRUCTIONS 40676
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -523,7 +525,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        237
-#define _APS_NEXT_COMMAND_VALUE         40675
+#define _APS_NEXT_COMMAND_VALUE         40677
 #define _APS_NEXT_CONTROL_VALUE         1182
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

@@ -63,6 +63,8 @@ private:
   afx_msg void OnMoveBack();
   afx_msg void OnMoveForward();
 
+  afx_msg void OnViewTileObstructions();
+
   // edit range
   int GetEditRangeStartIndex();
   int GetEditRangeEndIndex(int start_frame);
