@@ -78,7 +78,7 @@ private:
 
   bool InSelection(POINT p);
   RGBA* GetSelectionPixels();
-  void UpdateSelectionPixels(RGBA* pixels, int sx, int sy, int sw, int sh);
+  void UpdateSelectionPixels(const RGBA* pixels, int sx, int sy, int sw, int sh);
   int GetSelectionLeftX();
   int GetSelectionTopY();
   int GetSelectionWidth();

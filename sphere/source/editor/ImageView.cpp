@@ -715,7 +715,8 @@ CImageView::GetSelectionPixels() {
   if (m_SelectionWidth <= 0 && m_SelectionHeight <= 0) {
     return m_Image.GetPixels();
   }
-  else {
+  else
+  {
     int sx = GetSelectionLeftX();
     int sy = GetSelectionTopY();
     int sw = GetSelectionWidth();
@@ -727,11 +728,11 @@ CImageView::GetSelectionPixels() {
     if (pixels == NULL)
       return m_Image.GetPixels();
 
-    RGBA* image = m_Image.GetPixels();
+    const RGBA* image = m_Image.GetPixels();
     int iWidth = m_Image.GetWidth();
 
-    for (int dx = sx; dx < (sx + sw); dx++) {
-      for (int dy = sy; dy < (sy + sh); dy++) {
+    for (int dy = sy; dy < (sy + sh); dy++) {
+      for (int dx = sx; dx < (sx + sw); dx++) {
         pixels[(dy - yoffset) * sw + (dx - xoffset)] = image[dy * iWidth + dx];
       }
     }
@@ -743,15 +744,15 @@ CImageView::GetSelectionPixels() {
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-CImageView::UpdateSelectionPixels(RGBA* pixels, int sx, int sy, int sw, int sh)
+CImageView::UpdateSelectionPixels(const RGBA* pixels, int sx, int sy, int sw, int sh)
 {
   RGBA* image = m_Image.GetPixels();
   int iWidth = m_Image.GetWidth();
 
   // if pixels point to image updating it wont do anything so don't bother
   if (pixels != image) {
-    for (int dx = sx; dx < (sx + sw); dx++) {
-      for (int dy = sy; dy < (sy + sh); dy++) {
+    for (int dy = sy; dy < (sy + sh); dy++) {
+      for (int dx = sx; dx < (sx + sw); dx++) {
         image[dy * iWidth + dx] = pixels[(dy - sy) * sw + (dx - sx)];
       }
     }
@@ -1108,7 +1109,7 @@ CImageView::OnPaint()
 
   int width = drawImage.GetWidth();
   int height = drawImage.GetHeight();
-  RGBA* pImage = drawImage.GetPixels();
+  const RGBA* pImage = drawImage.GetPixels();
 
   if (width == 0 || height == 0 || pImage == NULL)
   {
@@ -1166,6 +1167,8 @@ CImageView::OnPaint()
   int dib_height = 16;
 
   // ensure that we redraw dib_width by dib_height squares only
+  m_RedrawWidth += m_RedrawX % dib_width;
+  m_RedrawHeight += m_RedrawY % dib_height;
   m_RedrawX -= m_RedrawX % dib_width;
   m_RedrawY -= m_RedrawY % dib_height;
   m_RedrawWidth  += dib_width; m_RedrawWidth  -= m_RedrawWidth  % dib_width;

@@ -895,6 +895,11 @@ CMapView::PasteMapUnderPoint(CPoint point)
       CImage32 image(width, height, pixels);
       delete[] pixels;
 
+      width += m_Map->GetTileset().GetTileWidth();  width -= width % m_Map->GetTileset().GetTileWidth();
+      height += m_Map->GetTileset().GetTileHeight(); height -= height % m_Map->GetTileset().GetTileHeight();
+
+      image.Resize(width, height); // make sure image is a multiple of tile_width and tile_height
+
       if (image.GetWidth() != width || image.GetHeight() != height)
         return;
 
@@ -903,8 +908,6 @@ CMapView::PasteMapUnderPoint(CPoint point)
         sLayer tLayer;
         int layer_width = width / m_Map->GetTileset().GetTileWidth();
         int layer_height = height / m_Map->GetTileset().GetTileHeight();
-        // layer_width / layer_height are sometimes calculated wrong
-        // so the resulting paste is all messed up
 
         tLayer.Resize(layer_width, layer_height);
         if (tLayer.GetWidth() != layer_width || tLayer.GetHeight() != layer_height)

@@ -367,6 +367,9 @@ CImage32::Resize(int width, int height)
   if (width * height <= 0)
     return;
 
+  if (m_Width == width && m_Height == height)
+    return;
+
   RGBA* new_pixels = new RGBA[width * height];
   if (new_pixels == NULL)
     return;
