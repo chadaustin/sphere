@@ -118,13 +118,13 @@ class constant_color {
 class constant_colorRGBA {
  public:
   constant_colorRGBA (RGBA color) {
-    m_color = SDL_MapRGBA(screen->format, color.red, color.blue,
-                          color.green, color.alpha);
+    m_color = color;
   }
-  Uint32 operator() (int i, int range) {
+  RGBA operator() (int i, int range) {
+	  return m_color;
   }
  private:
-  Uint32 m_color;
+  RGBA m_color;
 };
 
 class gradient_color {
@@ -663,7 +663,7 @@ void DrawLine (int x[2], int y[2], RGBA color) {
   if (SDL_LockSurface(screen) == 0) {
     primitives::Line((Uint32*)(screen->pixels), screen->w, x[0], y[0],
                      x[1], y[1], constant_colorRGBA(color),
-                     clipping_rectangle, blend_copy);
+                     clipping_rectangle, blend_copyRGBA);
     SDL_UnlockSurface(screen);
   }
 }

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <errno.h>
 
+using std::string;
 
 std::stack<string> directory_stack;
 
@@ -68,7 +69,6 @@ DIRECTORYLIST BeginDirectoryList (const char* mask) {
     delete dl;
     return NULL;
   }
-
   for (lcv = 0; lcv < matches.gl_pathc; lcv++) {
     /* we only want to show visible directories */
     if ((matches.gl_pathv[lcv][0] != '.') && (matches.gl_pathv[lcv][strlen(matches.gl_pathv[lcv]) - 1] == '/'))
@@ -110,7 +110,7 @@ FILELIST BeginFileList (const char* mask) {
   glob_t matches;
   int lcv;
 
-  bzero(&matches, sizeof(glob_t));
+  memset(&matches, 0, sizeof(glob_t));
   if (glob(mask, GLOB_ERR | GLOB_MARK, NULL, &matches) != 0)
     return fl;
   for (lcv = 0; lcv < matches.gl_pathc; lcv++) {
