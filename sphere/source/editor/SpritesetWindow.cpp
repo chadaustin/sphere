@@ -91,7 +91,7 @@ CSpritesetWindow::CSpritesetWindow(const char* filename)
       {
         int index = m_Spriteset.GetFrameIndex(direction, frame);
 
-        if (index < 0 || index > m_Spriteset.GetNumImages())
+        if (index < 0 || index >= m_Spriteset.GetNumImages())
         {
           if (asked_to_prune == false) {
             if (MessageBox("Error: Spriteset has some invalid image references, remove them?", "Load Spriteset", MB_YESNO) == IDNO) {
@@ -104,7 +104,7 @@ CSpritesetWindow::CSpritesetWindow(const char* filename)
             m_Spriteset.SetFrameIndex(direction, frame, 0);
           }
           else
-          if (index > m_Spriteset.GetNumImages()) {
+          if (index >= m_Spriteset.GetNumImages()) {
             m_Spriteset.SetFrameIndex(direction, frame, m_Spriteset.GetNumImages() - 1);
           }
         }

@@ -1969,6 +1969,7 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
+    ID_SCRIPT_CHECKSYNTAX   "Check the syntax of this document"
     ID_FILE_IMPORT_BITMAPTORTS "Import a tileset from an image"
     ID_FILE_IMPORT_VERGEFONTTEMPLATE 
                             "Import a font from a verge font template"
@@ -1998,6 +1999,11 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
+    ID_SCRIPT_OPTIONS_SET_FONT "Change the font used to display the document"
+    ID_SCRIPT_OPTIONS_TOGGLE_COLORS "Show or hide syntax highlighting"
+    ID_SCRIPT_OPTIONS_SET_TAB_SIZE "Change the tab size"
+    ID_SCRIPT_OPTIONS_TOGGLE_LINE_NUMBERS 
+                            "Show or hide the line numbers column"
     ID_HELP_LOCALDOCUMENTATION "Open the local documentation folder"
     ID_HELP_AEGISKNIGHTSSITE "Visit aegisknight's sphere page"
     ID_HELP_SPHEREFAQ       "Visit the frequently asked questions"
@@ -2017,7 +2023,28 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     ID_HELP_LOCAL_DOC_FUNCTIONS "Open doc_functions.txt"
+    ID_SCRIPT_OPTIONS_SELECTION_RECTANGLE "Set rectangle selection mode"
+    ID_SCRIPT_OPTIONS_SELECTION_STREAM "Set normal selection mode"
+    ID_SCRIPT_OPTIONS_SELECTION_LINE "Set line selection mode"
     ID_FILE_COPY            "Copy the current selection to the clipboard"
+    ID_SCRIPT_GOTOLINE      "Goto a line within this document"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_SCRIPT_OPTIONS_SHOW_WHITESPACE 
+                            "Show or hide visible whitespace characters"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_SCRIPT_OPTIONS_WORD_WRAP "Change word-wrap mode"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_SCRIPT_FIND          "Find text within this document"
+    ID_SCRIPT_REPLACE       "Replace text within this document"
 END
 
 #endif    // English (U.S.) resources
