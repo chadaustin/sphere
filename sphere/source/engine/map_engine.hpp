@@ -118,19 +118,22 @@ public:
 
   bool SetPersonX(const char* name, int x);
   bool SetPersonY(const char* name, int y);
+  bool SetPersonXYFloat(const char* name, double x, double y);
   bool SetPersonLayer(const char* name, int layer);
   bool SetPersonDirection(const char* name, const char* direction);
   bool SetPersonFrame(const char* name, int frame);
   bool GetPersonX(const char* name, int& x);
   bool GetPersonY(const char* name, int& y);
+  bool GetPersonXFloat(const char* name, double& x);
+  bool GetPersonYFloat(const char* name, double& y);
   bool GetPersonLayer(const char* name, int& layer);
   bool GetPersonDirection(const char* name, std::string& direction);
   bool GetPersonFrame(const char* name, int& frame);
   bool SetPersonFrameRevert(const char* name, int i);
   bool GetPersonFrameRevert(const char* name, int& i);
-  bool SetPersonSpeedXY(const char* name, int x, int y);
-  bool GetPersonSpeedX(const char* name, int& x);
-  bool GetPersonSpeedY(const char* name, int& y);
+  bool SetPersonSpeedXY(const char* name, double x, double y);
+  bool GetPersonSpeedX(const char* name, double& x);
+  bool GetPersonSpeedY(const char* name, double& y);
   bool SetPersonScaleAbsolute(const char* name, int width, int height);
   bool SetPersonScaleFactor(const char* name, double scale_x, double scale_y);
   bool SetPersonMask(const char* name, RGBA mask);
@@ -165,8 +168,8 @@ private:
     SSPRITESET* spriteset;
     RGBA mask;
 
-    int x;
-    int y;
+    double x;
+    double y;
     int layer;
     int width;
     int height;
@@ -175,8 +178,8 @@ private:
     int base_x2;
     int base_y2;
 
-	int speed_x;
-	int speed_y;
+	double speed_x;
+	double speed_y;
 
     std::string direction;
     int frame;
@@ -201,8 +204,8 @@ private:
     std::deque<Command> commands;
 
     struct AnimationState {
-      int x;
-      int y;
+      double x;
+      double y;
       int layer;
       std::string direction;
     };

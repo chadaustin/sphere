@@ -1878,6 +1878,20 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(SetPersonXYFloat, 3)
+  arg_str(name);
+  arg_double(x);
+  arg_double(y);
+
+  if (!This->m_Engine->GetMapEngine()->SetPersonXYFloat(name, x, y)) {
+    This->ReportMapEngineError("SetPersonXYFloat() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 begin_func(SetPersonLayer, 2)
   arg_str(name);
   arg_int(layer);
@@ -1915,6 +1929,34 @@ begin_func(GetPersonY, 1)
   }
 
   return_int(y);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(GetPersonXFloat, 1)
+  arg_str(name);
+
+  double x;
+  if (!This->m_Engine->GetMapEngine()->GetPersonXFloat(name, x)) {
+    This->ReportMapEngineError("GetPersonXFloat() failed");
+    return JS_FALSE;
+  }
+
+  return_double(x);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(GetPersonYFloat, 1)
+  arg_str(name);
+
+  double y;
+  if (!This->m_Engine->GetMapEngine()->GetPersonYFloat(name, y)) {
+    This->ReportMapEngineError("GetPersonYFloat() failed");
+    return JS_FALSE;
+  }
+
+  return_double(y);
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2030,7 +2072,7 @@ end_func()
 
 begin_func(SetPersonSpeed, 2)
   arg_str(name);
-  arg_int(speed);
+  arg_double(speed);
 
   if (!This->m_Engine->GetMapEngine()->SetPersonSpeedXY(name, speed, speed)) {
     This->ReportMapEngineError("SetPersonSpeed() failed");
@@ -2043,8 +2085,8 @@ end_func()
 
 begin_func(SetPersonSpeedXY, 3)
   arg_str(name);
-  arg_int(x);
-  arg_int(y);
+  arg_double(x);
+  arg_double(y);
 
   if (!This->m_Engine->GetMapEngine()->SetPersonSpeedXY(name, x, y)) {
     This->ReportMapEngineError("SetPersonSpeedXY() failed");
@@ -2058,13 +2100,13 @@ end_func()
 begin_func(GetPersonSpeedX, 1)
   arg_str(name);
 
-  int x;
+  double x;
   if (!This->m_Engine->GetMapEngine()->GetPersonSpeedX(name, x)) {
     This->ReportMapEngineError("GetPersonSpeedX() failed");
     return JS_FALSE;
   }
 
-  return_int(x);
+  return_double(x);
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2072,13 +2114,13 @@ end_func()
 begin_func(GetPersonSpeedY, 1)
   arg_str(name);
 
-  int y;
+  double y;
   if (!This->m_Engine->GetMapEngine()->GetPersonSpeedY(name, y)) {
     This->ReportMapEngineError("GetPersonSpeedY() failed");
     return JS_FALSE;
   }
 
-  return_int(y);
+  return_double(y);
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////

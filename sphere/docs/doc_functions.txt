@@ -412,6 +412,8 @@ log_object.endBlock()
       SetPersonY(name, y)
       SetPersonLayer(name, layer)
         - sets the position of the person on the map
+      SetPersonXYFloat(name, x, y)
+        - sets the position of the person with floating point accuracy
       
       SetPersonDirection(name, direction)
       SetPersonFrame(name, frame)
@@ -423,6 +425,10 @@ log_object.endBlock()
         - Gets the position of the person on the map.
           The position is based on the middle of the spriteset's base
           rectangle.
+      GetPersonXFloat(name)
+      GetPersonYFloat(name)
+        - Gets the position of the person on the map in floating point 
+          accuracy.
       
       GetPersonDirection(name)
       GetPersonFrame(name)

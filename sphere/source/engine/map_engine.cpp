@@ -1053,6 +1053,30 @@ CMapEngine::SetPersonY(const char* name, int y)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::SetPersonXYFloat(const char* name, double x, double y)
+{
+  // find person
+  int person = FindPerson(name);
+  if (person == -1) {
+    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+    return false;
+  }
+
+  // !!!! verify x and y
+
+  // if person has a leader, ignore the command
+  if (m_Persons[person].leader != -1) {
+    return true;
+  }
+
+  m_Persons[person].x = x;
+  m_Persons[person].y = y;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::SetPersonLayer(const char* name, int layer)
 {
   // find person
@@ -1172,6 +1196,36 @@ CMapEngine::GetPersonY(const char* name, int& y)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::GetPersonXFloat(const char* name, double& x)
+{
+  int person = FindPerson(name);
+  if (person == -1) {
+    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+    return false;
+  }
+
+  x = m_Persons[person].x;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetPersonYFloat(const char* name, double& y)
+{
+  int person = FindPerson(name);
+  if (person == -1) {
+    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+    return false;
+  }
+
+  y = m_Persons[person].y;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::GetPersonLayer(const char* name, int& layer)
 {
   int person = FindPerson(name);
@@ -1250,7 +1304,7 @@ CMapEngine::GetPersonFrameRevert(const char* name, int& i)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::SetPersonSpeedXY(const char* name, int x, int y)
+CMapEngine::SetPersonSpeedXY(const char* name, double x, double y)
 {
   // find person
   int person = FindPerson(name);
@@ -1274,7 +1328,7 @@ CMapEngine::SetPersonSpeedXY(const char* name, int x, int y)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::GetPersonSpeedX(const char* name, int& x)
+CMapEngine::GetPersonSpeedX(const char* name, double& x)
 {
   int person = FindPerson(name);
   if (person == -1) {
@@ -1289,7 +1343,7 @@ CMapEngine::GetPersonSpeedX(const char* name, int& x)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::GetPersonSpeedY(const char* name, int& y)
+CMapEngine::GetPersonSpeedY(const char* name, double& y)
 {
   int person = FindPerson(name);
   if (person == -1) {
@@ -2595,8 +2649,8 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
   
   // store current position
-  int x = p.x;
-  int y = p.y;
+  double x = p.x;
+  double y = p.y;
 
   // we haven't called an activation function yet
   bool activation_called = false;
@@ -2648,8 +2702,8 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     p.commands.pop_front();
 
     // store position in case the obstruction check needs to put it back
-    int old_x = p.x;
-    int old_y = p.y;
+    double old_x = p.x;
+    double old_y = p.y;
 
     
     std::string error;
