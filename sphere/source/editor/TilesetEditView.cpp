@@ -155,11 +155,17 @@ CTilesetEditView::UpdateImageView()
 {
   if (m_MultiTileWidth > 0 && m_MultiTileHeight > 0 && m_MultiTileData != NULL) {
     CImage32 image;
+    image.SetBlendMode(CImage32::REPLACE);
+
     if (image.Create(m_MultiTileWidth * m_Tileset->GetTileWidth(), m_MultiTileHeight * m_Tileset->GetTileHeight())) {
       for (int y = 0; y < m_MultiTileHeight; y++) {
         for (int x = 0; x < m_MultiTileWidth; x++) {
           unsigned int tile = m_MultiTileData[(y * m_MultiTileWidth) + x];
-          image.BlitImage(m_Tileset->GetTile(tile), x * m_Tileset->GetTileWidth(), y * m_Tileset->GetTileHeight());
+          CImage32& tile_img = m_Tileset->GetTile(tile);
+          CImage32::BlendMode mode = tile_img.GetBlendMode();
+          tile_img.SetBlendMode(CImage32::REPLACE);
+          image.BlitImage(tile_img, x * m_Tileset->GetTileWidth(), y * m_Tileset->GetTileHeight());
+          tile_img.SetBlendMode(mode);
         }
       }
 

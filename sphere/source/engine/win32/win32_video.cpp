@@ -69,7 +69,8 @@ bool InitVideo(HWND window, SPHERECONFIG* config)
   GraphicsDriver = LoadLibrary(graphics_driver.c_str());
   
   if (GraphicsDriver == NULL) {
-    puts("LoadLibrary() failed");
+    std::string error = "LoadLibrary() failed: '" + graphics_driver + "'";
+    puts(error.c_str());
     return false;
   }
 

@@ -245,6 +245,8 @@ SS_FUNCTION(OpenLog, 1)
       SS_FUNCTION(GetPersonAngle, 1)
       SS_FUNCTION(SetPersonMask, 2)
       SS_FUNCTION(GetPersonMask, 1)
+      SS_FUNCTION(GetPersonData, 1)
+      SS_FUNCTION(SetPersonData, 2)
 
       SS_FUNCTION(IgnorePersonObstructions, 2)
       SS_FUNCTION(IsIgnoringPersonObstructions, 1)

@@ -4122,6 +4122,87 @@ begin_func(SetPersonScaleAbsolute, 3)
 
 end_func()
 
+////
+
+begin_func(GetPersonData, 1)
+  arg_str(name);
+
+  std::vector<struct PersonData> data;
+
+  if (!This->m_Engine->GetMapEngine()->GetPersonData(name, data)) {
+    This->ReportMapEngineError("GetPersonData() failed");
+    return JS_FALSE;
+  }
+
+  // define class
+  static JSClass clasp = {
+    "person_data", 0,
+    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+    JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizeSound,
+  };
+  
+  // create object
+  JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
+  if (object == NULL) {
+    return NULL;
+  }
+
+  for (int i = 0; i < int(data.size()); i++) {
+
+  }
+
+  return_object(object);
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(SetPersonData, 2)
+  arg_str(name);
+  arg_object(object);
+
+  std::vector<struct PersonData> person_data;
+
+  JSIdArray* ids = JS_Enumerate(cx, object);
+  if (!ids)
+    return JS_FALSE;
+
+  for (jsint i = 0; i < ids->length; i++) {
+    jsval val;
+    if (JS_IdToValue(cx, ids[0].vector[i], &val) == JS_TRUE) {
+      struct PersonData data;
+      data.name = argStr(cx, val);
+
+      if ( JS_GetProperty(cx, object, data.name.c_str(), &val) == JS_TRUE ) {
+        data.value = argStr(cx, val);
+      }
+
+      person_data.push_back(data);
+    }
+  }
+
+  JS_DestroyIdArray(cx, ids);
+
+  if (0) {
+    std::string str = "";
+    for (int i = 0; i < int(person_data.size()); i++) {
+      str += person_data[i].name;
+      str += "='";
+      str += person_data[i].value;
+      str += "'\n";
+    }
+
+    This->ReportMapEngineError(str.c_str());
+    return JS_FALSE;
+  }
+
+  if (!This->m_Engine->GetMapEngine()->SetPersonData(name, person_data)) {
+    This->ReportMapEngineError("SetPersonData() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /**

@@ -2310,6 +2310,42 @@ CMapEngine::GetPersonMask(const char* name, RGBA& mask)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+bool
+CMapEngine::GetPersonData(const char* name, std::vector<struct PersonData>& data)
+{
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
+    return false;
+  }
+
+  Person& p = m_Persons[person];
+
+  data = m_Persons[person].person_data;
+  for (int i = 0; i < int(data.size()); i++) {
+    if (data[i].name == "num_frames") {
+      data[i].value = itos(p.spriteset->GetSpriteset().GetNumFrames(p.direction));
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::SetPersonData(const char* name, std::vector<struct PersonData> data)
+{
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
+    return false;
+  }
+
+  m_Persons[person].person_data = data;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 SSPRITESET*
 CMapEngine::GetPersonSpriteset(const char* name)
 {

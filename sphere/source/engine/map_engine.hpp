@@ -10,6 +10,12 @@
 #include <string>
 
 
+struct PersonData {
+  std::string name;
+  std::string value;
+};
+
+
 class CMapEngine
 {
 public:
@@ -196,6 +202,10 @@ public:
   bool SetPersonAngle(const char* name, double angle);
   bool SetPersonMask(const char* name, RGBA mask);
   bool GetPersonMask(const char* name, RGBA& mask);
+  
+  bool GetPersonData(const char* name, std::vector<struct PersonData>& data);
+  bool SetPersonData(const char* name, std::vector<struct PersonData> data);
+  
   SSPRITESET* GetPersonSpriteset(const char* name);
   bool SetPersonSpriteset(const char* name, sSpriteset& spriteset);
 
@@ -294,6 +304,8 @@ private:
 
     bool ignorePersonObstructions;
     bool ignoreTileObstructions;
+
+    std::vector<PersonData> person_data;
   };
 
   struct Trigger {
