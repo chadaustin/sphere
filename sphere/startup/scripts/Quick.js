@@ -1,9 +1,13 @@
 function QuickMenu()
 {
+    SetFrameRate(0);
+    
 	sphereimg.blit(0,0)
 	ProcParticles()	RenderParticles()
 	font.drawText(0,0,version)
-	screen = GrabImage(0, 0, 320, 240)
+	screen = GrabImage(0, 0, GetScreenWidth(), GetScreenHeight())
+	
+	SetFrameRate(60);
 	
 	font.setColorMask(White)
 	window = LoadWindowStyle("window.rws")
