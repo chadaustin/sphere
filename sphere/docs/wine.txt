@@ -1,0 +1,46 @@
+Running Sphere under linux using Wine
+-----------------------------------------------
+
+What do you need:
+ 1) A quite recent version of wine and kernel
+    -OR-
+    Winex 2 or above
+    (could work with earlier though)
+ 2) Latest sphere binaries
+ 3) mfc42.dll*
+
+* You can retrieve it this way:
+Mount you windows drive. Open up your windows
+directory, browse to system32 if you're using
+XP or system if you're using earlier versions
+of windows. Then, search and copy mfc42.dll to
+your working directory.
+
+Extract the latest sphere binaries to your working
+directory.
+
+Put mfc42.dll there aswell.
+
+Open you home directory. Enter the .wine dir-
+ectory.
+
+Open config in an editor
+
+If you want, you should configure a desktop so
+wine doesn't interfere with your current apps
+running on your x server.
+
+set
+
+"Desktop" = "640x480"
+
+Now open a command line.
+
+Type wine editor.exe or winex editor.exe
+
+You can not make or edit games and even play
+them under whine without much problems.
+
+If you own winex, there will also be sound.
+Wine has problems with sound, configurations
+differ per system.
