@@ -1,12 +1,12 @@
 #ifndef SYSTEM_HPP
 #define SYSTEM_HPP
 
-#include <string>
-#include <vector>
-
 #ifdef WIN32
 #include <windows.h>
 #endif
+
+#include <vector>
+#include <string>
 
 #ifndef MAX_PATH
 #define MAX_PATH 255

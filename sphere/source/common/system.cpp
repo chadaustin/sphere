@@ -1,18 +1,22 @@
-#include <vector>
-#include <string>
+
+// disable 'identifier too long' warning
+#pragma warning(disable : 4786)
+
+///////////////////////////////////////////////////////////
 
 #ifdef WIN32
 #include <windows.h>
 #endif
 
-#ifndef MAX_PATH
-#define MAX_PATH 255
-#endif
+#include <vector>
+#include <string>
 
 #ifndef WIN32
 #include <glob.h>
 #include <unistd.h>
 #endif
+
+///////////////////////////////////////////////////////////
 
 #ifndef WIN32
 bool SetCurrentDirectory(const char* directory)
@@ -35,6 +39,8 @@ bool CreateDirectory(const char* directory, const char* options) {
   return false;
 }
 #endif
+
+///////////////////////////////////////////////////////////
 
 std::vector<std::string> GetFileList(const char* filter)
 {
@@ -66,6 +72,8 @@ std::vector<std::string> GetFileList(const char* filter)
   return file_list;
 }
 
+///////////////////////////////////////////////////////////
+
 std::vector<std::string> GetFolderList(const char* filter)
 {
   std::vector<std::string> folder_list;
@@ -75,12 +83,15 @@ std::vector<std::string> GetFolderList(const char* filter)
   if (h != INVALID_HANDLE_VALUE) {
 
     do {
-      if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+      if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
         folder_list.push_back(ffd.cFileName);
-
+			}
     } while (FindNextFile(h, &ffd));
     FindClose(h);
   }
 #endif
   return folder_list;
 }
+
+///////////////////////////////////////////////////////////
+
