@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <cstring>
 #include <cstdlib>
+#include <iostream>
 
 const int MAX_LINE = 1024;
 
@@ -55,8 +56,9 @@ NSOCKET OpenAddress (const char* name, int port) {
   server.sin_addr = *(struct in_addr*)host->h_addr;
   err = connect(sock->socket, (struct sockaddr*)&server, sizeof(server));
   if (err < 0) {
-	  delete sock;
-	  return NULL;
+    std::cerr << "failed to connect to " << name << ":" << port << std::endl;
+    delete sock;
+    return NULL;
   }
   /* fcntl(sock->socket, F_SETFL, fcntl(sock->socket, F_GETFL, 0) | O_NONBLOCK); */
   sock->is_connected = true;
@@ -67,8 +69,10 @@ NSOCKET ListenOnPort (int port) {
   struct sockaddr_in address;
   NSOCKET sock = new NSOCKETimp;
 
+  std::cerr << "attempting to listen on port" << port << std::endl;
   sock->socket = socket(PF_INET, SOCK_STREAM, 0);
   if (sock->socket < 0) {
+	 std::cerr << "failed to create a socket" << std::endl;
     delete sock;
     return NULL;
   }
@@ -77,15 +81,19 @@ NSOCKET ListenOnPort (int port) {
   address.sin_family = AF_INET;
   address.sin_port = port;
   address.sin_addr.s_addr = htonl(INADDR_ANY);
+  std::cerr << "attempting to bind to port" << std::endl;
   if (bind(sock->socket, (struct sockaddr*)&address, sizeof(address)) < 0) {
+	 std::cerr << "failed to bind to socket" << std::endl;
     delete sock;
     return NULL;
   }
-  if (listen(sock->socket, 1) < 0) {
+  std::cerr << "attempting to listen on socket" << std::endl;
+  if (listen(sock->socket, 16) < 0) { /* not sure about an optimum backlog value */
+	 std::cerr << "failed to listen on socket" << std::endl;
     delete sock;
     return NULL;
   }
-  /* fcntl(sock->socket, F_SETFL, fcntl(sock->socket, F_GETFL, 0) | O_NONBLOCK); */
+  std::cerr << "socket is listening!" << std::endl;
   sock->is_listening = true;
   return sock;
 }
@@ -100,14 +108,18 @@ bool IsConnected (NSOCKET socket) {
   size_t size;
   int connection;
 
+  std::cerr << "testing for connection" << std::endl;
   if (socket->is_connected)
     return true;
   if (socket->is_listening) {
     connection = accept(socket->socket, (struct sockaddr*)&client, &size);
+	 std::cerr << "accepted a connection" << std::endl;
     if (connection >= 0) {
       close(socket->socket);
       socket->socket = connection;
+      /* fcntl(socket->socket, F_SETFL, fcntl(sock->socket, F_GETFL, 0) | O_NONBLOCK); */
       socket->is_connected = true;
+		std::cerr << "and...connected" << std::endl;
       return true;
     }
     return false;
