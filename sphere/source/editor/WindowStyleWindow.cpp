@@ -225,9 +225,11 @@ CWindowStyleWindow::SetZoomFactor(int factor)
 void
 CWindowStyleWindow::SelectBitmap(int bitmap)
 {
-  m_SelectedBitmap = bitmap;
-  SetBitmap();
-  Invalidate();
+  if (m_SelectedBitmap != bitmap) {
+    m_SelectedBitmap = bitmap;
+    SetBitmap();
+    Invalidate();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

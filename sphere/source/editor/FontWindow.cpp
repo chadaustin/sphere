@@ -118,8 +118,10 @@ CFontWindow::CFontWindow(const char* font)
 
 CFontWindow::~CFontWindow()
 {
-  if (m_FontPreviewPalette)
+  if (m_FontPreviewPalette) {
 		m_FontPreviewPalette->Destroy();
+    m_FontPreviewPalette = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -197,10 +199,13 @@ CFontWindow::OnChar(UINT c, UINT repeat, UINT flags)
 {
   //MessageBox("CFontWindow::OnChar");
   if (c >= MIN_CHARACTER && c <= MAX_CHARACTER) {
-    m_CurrentCharacter = c;
-    SetImage();
-    UpdateWindowTitle();
-    Invalidate();
+
+    if (m_CurrentCharacter != c) {
+      m_CurrentCharacter = c;
+      SetImage();
+      UpdateWindowTitle();
+      Invalidate();
+    }
   }
 }
 
