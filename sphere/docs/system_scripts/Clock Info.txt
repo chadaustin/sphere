@@ -24,19 +24,12 @@ GameClock.start();
 Do this when your game ACTUALLY starts. The
 clock object will start to keep track of the
 time. To get the time from the clock, just
-ask for the time! But make sure you put the
-returned info into a variable:
+ask for the time! getTime returns a string
+with the time formatted.
 
-var current_time = GameClock.getTime();
+font.drawText(10, 10, GameClock.getTime());
 
-The variable current_time now has the time. So
-to get the time from the variable, just access
-the variables in it:
-
-current_time.seconds = Seconds passed since clock was started
-current_time.minutes = Minutes passed since clock was started
-current_time.hours = Minutes passed since clock was started
-
+That will print out the time at 10, 10.
 So there you go. But what if you are loading a
 game? Just put info into the clock object. 
 
@@ -44,11 +37,13 @@ GameClock.seconds = 45;
 GameClock.minutes = 14;
 GameClock.hours = 3;
 
+After you input the seconds, minutes and/or hours,
+just start the clock!
 
 Pieces of the Clock Object
 
 clock.getTime()
-- Returns an object that holds time
+- Returns an string of the passed time
 
 clock.seconds
 - seconds of previous game loaded into clock

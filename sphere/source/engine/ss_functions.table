@@ -191,9 +191,7 @@ SS_FUNCTION(OpenLog, 1)
   //sound.stop()
   //sound.setVolume(volume)
   //sound.getVolume()
-  //sound.getLength()
-  //sound.getPosition()
-  //sound.setPosition(position)
+  //sound.isPlaying()
 
   // fonts
   SS_FUNCTION(GetSystemFont, 0)

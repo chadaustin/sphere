@@ -25,16 +25,33 @@ Clock.prototype.start = function()
 Clock.prototype.getTime = function()
 {
 	var current = GetTime() - this.started;
-	var timeo = new Object();
-	timeo.seconds = Math.floor((current)/1000 + this.seconds) % 60;
-	timeo.minutes = Math.floor((current)/1000/60 + this.minutes) % 60;
-	timeo.hours = Math.floor((current)/1000/60/60 + this.hours) % 60;
-	return timeo;
+	var secs = "";
+	var mins = "";
+	var hours = "";
+	if (Math.floor((current)/1000 + this.seconds) % 60 < 10)
+	{
+		secs += "0";
+	}
+	secs += Math.floor((current)/1000 + this.seconds) % 60;
+	if (Math.floor((current)/1000/60 + this.minutes) % 60 < 10)
+	{
+		mins += "0";
+	}
+	mins += Math.floor((current)/1000/60 + this.minutes) % 60;
+	if (Math.floor((current)/1000/60/60 + this.hours) % 60 < 100)
+	{
+		hours += "0";
+	}
+	if (Math.floor((current)/1000/60/60 + this.hours) % 60 < 10)
+	{
+		hours += "0";
+	}
+	hours += Math.floor((current)/1000/60/60 + this.hours) % 60;
+	return hours + ":" + mins + ":" + secs;
 }
 
 // Example:
-// var time = GameClock.getTime();
-// font.drawText(10, 10, time.seconds);
+// font.drawText(10, 10, clock.getTime());
 //
 // Every time you want to start keeping track of time, 
 // start the clock. If you are loading a game, you should

@@ -544,12 +544,6 @@ log_object.endBlock()
   sound_object.getVolume()
     - returns the sound's volume (0-255)
 
-  sound_object.setPan(pan)
-    - sets pan (-255 = left, 255 = right, 0 = center)
-
-  sound_object.getPan()
-    - returns pan
-  
   sound_object.isPlaying()
     - returns true if the sound is currently playing
 

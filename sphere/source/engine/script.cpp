@@ -2896,8 +2896,6 @@ CScript::CreateSoundObject(JSContext* cx, ADR_STREAM sound)
     { "stop",        ssSoundStop,        0, 0, 0 },
     { "setVolume",   ssSoundSetVolume,   1, 0, 0 },
     { "getVolume",   ssSoundGetVolume,   0, 0, 0 },
-    { "setPan",      ssSoundSetPan,      1, 0, 0 },
-    { "setVolume",   ssSoundGetPan,      0, 0, 0 },
     { "isPlaying",   ssSoundIsPlaying,   0, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
@@ -2945,19 +2943,6 @@ end_method()
 
 begin_method(SS_SOUND, ssSoundGetVolume, 0)
   return_int(AdrGetStreamVolume(object->sound));
-end_method()
-
-////////////////////////////////////////
-
-begin_method(SS_SOUND, ssSoundSetPan, 1)
-  arg_int(pan);
-  AdrSetStreamPan(object->sound, pan);
-end_method()
-
-////////////////////////////////////////
-
-begin_method(SS_SOUND, ssSoundGetPan, 0)
-  return_int(AdrGetStreamPan(object->sound));
 end_method()
 
 ////////////////////////////////////////
