@@ -51,7 +51,7 @@ sub fix_line_endings {
 ###########################################################
 
 sub function_to_string {
-  my ($func_name, $func_minargs, $desc_text, @func_arg_info) = @_;
+  my ($func_name, $func_minargs, $desc_text, $return_type, @func_arg_info) = @_;
   my @func_args = ();
   my @func_arg_types = ();
 
@@ -65,10 +65,19 @@ sub function_to_string {
   }
 
   my $line = "";
+
+  if (is_html()) {
+    $line .= "<span class='function_header'>";
+  }
   
-  if (&is_html()) { $line .= "<a name=\"$func_name\">"; }
-  $line .= "$func_name";
-  if (&is_html()) { $line .= "</a>"; }
+  if (is_html()) {
+    $line = "<span class='type_$return_type'>$return_type</span> ";
+  } else {
+    $line = "$return_type ";  
+  }
+  
+  if (&is_html()) { $line .= "<a name=\"$func_name\">$func_name</a>"; }
+  else { $line .= "$func_name"; }
   
   $line .= "(";
 
@@ -97,9 +106,9 @@ sub function_to_string {
     }
 
     if (is_html()) {
-      $line .= $func_args[$i] . ":<span class='type_$func_arg_types[$i]'>" . $func_arg_types[$i] . "</span>";
+      $line .= "<span class='type_$func_arg_types[$i]'>" . $func_arg_types[$i] . "</span> " . $func_args[$i];
     } else {
-      $line .= $func_args[$i] . ":" . $func_arg_types[$i];    
+      $line .= $func_arg_types[$i] . " " . $func_args[$i];
     }
 
   }
@@ -107,11 +116,27 @@ sub function_to_string {
   if ($open_bracket == 1) {
     $line .= "]";
   }
-  $line .= ")" . &end_of_line();
+  $line .= ")";
+  
+  if (is_html()) {
+    $line .= "</span>";
+  }
+  
+  $line .= &end_of_line();
 
   if ($desc_text ne "") {
+    if (is_html()) {
+      $line .= "<span class='function_desc'>";
+    }
+  
     $line .= &fix_line_endings($desc_text);
+
+    if (is_html()) {
+      $line .= "</span>";
+    }
+
     $line .= &end_of_line();
+
   }
 
   return $line;
@@ -120,8 +145,8 @@ sub function_to_string {
 ###########################################################
 
 sub method_to_string {
-  my ($func_name, $func_minargs, $desc_text, @func_args) = @_;
-  my $line = function_to_string($func_name, $func_minargs, $desc_text, @func_args);
+  my ($func_name, $func_minargs, $desc_text, $return_type, @func_args) = @_;
+  my $line = function_to_string($func_name, $func_minargs, $desc_text, $return_type, @func_args);
   my $end_line = &end_of_line();
   my @lines = split(/$end_line/, $line);
 
@@ -194,6 +219,7 @@ sub make_docs {
   my $in_method = 0;
   my @args = ();
   my @arg_types = ();
+  my $return_type = "void";
 
   my $func_name = "";
   my $func_minargs = 0;
@@ -371,19 +397,46 @@ sub make_docs {
         push (@arg_types, "font");
         push (@args, "$1");
       }
+      
+      # return_int(name)
+      if ($line =~ m/return_int\((.*?)\)/) {
+        $return_type = "int";
+      }
+
+      # return_object(name)
+      if ($line =~ m/return_double\((.*?)\)/) {
+        $return_type = "double";
+      }
+
+      # return_string(name) || return_string_n(name)
+      if ($line =~ m/return_str\((.*?)\)/ || $line =~ m/return_str_n\((.*?)\)/) {
+        $return_type = "string";
+      }
+      
+      # return_bool(name)
+      if ($line =~ m/return_bool\((.*?)\)/) {
+        $return_type = "boolean";
+      }
+      
+      # return_object(name)
+      if ($line =~ m/return_object\((.*?)\)/) {
+        $return_type = "object";
+      }
+
 
       # end_func()
       if ($in_func == 1 && $line =~ m/end_func\(\)/) {
 
         unless ($func_name eq "name") {
           print &end_of_line();          
-          print function_to_string($func_name, $func_minargs, $desc_text, @args, @arg_types);
+          print function_to_string($func_name, $func_minargs, $desc_text, $return_type, @args, @arg_types);
         }
 
         $func_name = "";
         $func_minargs = 0;
         @args = ();
         @arg_types = ();
+        $return_type = "void";
         $in_func = 0;
         $desc_text = "";
 
@@ -420,11 +473,14 @@ sub make_docs {
           if ($method_object eq "SS_FILE") {
             if ($method_name eq "ssFileWrite" || $method_name eq "ssFileRead") {
               push (@args, "default_value");
-              push (@arg_types, "void");
+              push (@arg_types, "any_type");
+              if ($method_name eq "ssFileRead") {
+                $return_type = "any_type";
+              }
             }
           }
 
-          print method_to_string(&ssobject_name_to_jsobject_name($method_object) . "." . &ssobject_method_to_jsobject_method($method_name), $method_minargs, $desc_text, @args, @arg_types);
+          print method_to_string(&ssobject_name_to_jsobject_name($method_object) . "." . &ssobject_method_to_jsobject_method($method_name), $method_minargs, $desc_text, $return_type, @args, @arg_types);
         }
 
         $method_name = "";
@@ -433,6 +489,7 @@ sub make_docs {
         $method_minargs = 0;
         @args = ();
         @arg_types = ();
+        $return_type = "void";
         $in_method = 0;
         $desc_text = "";
 

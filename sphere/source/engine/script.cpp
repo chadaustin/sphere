@@ -1273,6 +1273,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+  - Reads the script in and uses it as if it were a part of the current script.
+    But only if the script has not already been evaluated.
+    ex: RequireScript("myscript.js");
+*/
 begin_func(RequireScript, 1)
   arg_str(name);
 
@@ -1304,6 +1309,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+  - Reads in one of the preset system scripts for use in the current script.
+    But only if the script has not already been evaluated.
+    ex: RequireSystemScript("menu.js");
+*/
 begin_func(RequireSystemScript, 1)
   arg_str(name);
 
@@ -1335,6 +1345,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+  - invokes the JavaScript garbage collector
+*/
 begin_func(GarbageCollect, 0)
   JS_GC(cx);
 end_func()
@@ -1420,6 +1433,13 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+  - executes the game in sphere/games/<directory>.  This function
+    actually exits the first game and loads the one in 'directory'.
+    When the second game returns, the original is loaded again.
+    (Note that this is unlike Sphere 0.97, which returned directly
+    from ExecuteGame when the other game finished.)
+*/
 begin_func(ExecuteGame, 1)
   arg_str(directory);
 
@@ -1430,6 +1450,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+  - Exits the Sphere engine unconditionally
+*/
 begin_func(Exit, 0)
   This->m_ShouldExit = true;
   This->m_Error = "";  // don't report an error (there is none)
@@ -1461,6 +1484,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+  - restarts the current game
+*/
 begin_func(RestartGame, 0)
   This->m_Engine->RestartGame();
   This->m_Error = "";
@@ -1501,6 +1527,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - displays the contents from the video buffer onto the screen. Then the 
+      video buffer is cleared. You *need* to call this to make anything 
+      you've drawn in code to appear on the screen.
+*/
 begin_func(FlipScreen, 0)
   
   if (This->m_FrameRate == 0) {
@@ -1540,6 +1571,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - Sets a clipping rectangle of width w and height h at (x, y) into the 
+      video buffer. Anything drawn outside the rectangle is not drawn into 
+      the video buffer.
+*/
 begin_func(SetClippingRectangle, 4)
   arg_int(x);
   arg_int(y);
@@ -1550,6 +1586,15 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+     - Returns a rectangle object representing the clipping rectangle.
+       i.e.
+       var clip = GetClippingRectangle();
+           clip.x
+           clip.y
+           clip.width
+           clip.height
+*/
 begin_func(GetClippingRectangle, 0)
 
   static JSClass base_clasp = {
@@ -1574,6 +1619,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - fills the whole screen with the color specified. Note that the color
+      passed must have an alpha that is less than 255. Otherwise, it'll 
+      just make the screen solidly that color.
+*/
 begin_func(ApplyColorMask, 1)
   arg_color(c);
   if (This->ShouldRender()) {
@@ -1583,6 +1633,16 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - allows you to set the maximum frames rendered per second that 
+      the engine is allowed to draw at most.  Set to 0 in order to
+      unthrottle the graphics renderer.  Keep in mind that this
+      is not for the map engine, which uses the fps specified in the
+      MapEngine() call.  This function only controls standard drawing
+      functions and FlipScreen() outside of the map engine.  In short,
+      don't use this function if you plan to be doing rendering in your
+      own scripts in the map engine.
+*/
 begin_func(SetFrameRate, 1)
   arg_int(fps);
   // 1 fps is the lowest we can throttle
@@ -1601,12 +1661,19 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - Returns the current fps (set by SetFrameRate... note: this is
+      not the same as the map engine frame rate)
+*/
 begin_func(GetFrameRate, 0)
   return_int(This->m_FrameRate);
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - Sets the max frame rate (in frames per second) that the map engine will go at
+*/
 begin_func(SetMapEngineFrameRate, 1)
   arg_int(fps);
   if (!This->m_Engine->GetMapEngine()->SetMapEngineFrameRate(fps)) {
@@ -1617,24 +1684,36 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - Returns the current map engine frames per second rate set by either MapEngine(map, fps) or SetMapEngineFrameRate(fps)
+*/
 begin_func(GetMapEngineFrameRate, 0)
   return_int(This->m_Engine->GetMapEngine()->GetMapEngineFrameRate());
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - returns the width of the engine screen
+*/
 begin_func(GetScreenWidth, 0)
   return_int(GetScreenWidth());
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - returns the height of the engine screen
+*/
 begin_func(GetScreenHeight, 0)
   return_int(GetScreenHeight());
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - plots a point onto the video buffer at (x, y) with the color
+*/
 begin_func(Point, 3)
   if (This->ShouldRender()) {
     arg_int(x);
@@ -1647,6 +1726,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - draws a line from (x1, y1) to (x2, y2) with the color
+*/
 begin_func(Line, 5)
   if (This->ShouldRender()) {
     arg_int(x1);
@@ -1663,6 +1745,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - Draws a line from (x1, y1) to (x2, y2) with a color fade from color1 
+        to color2
+*/
 begin_func(GradientLine, 6)
   if (This->ShouldRender()) {
     arg_int(x1);
@@ -1683,6 +1769,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - Draws a filled triangle with the points (x1, y1), (x2, y2), (x3, y3), 
+        with the color c
+*/
 begin_func(Triangle, 7)
   if (This->ShouldRender()) {
     arg_int(x1);
@@ -1701,7 +1791,12 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-begin_func(GradientTriangle, 7)
+/**
+      - Draws a gradient triangle with the points (x1, y1), (x2, y2), (x3, y3),
+        with each point (c1 = color of (x1, y1), c2 = color of (x2, y2), c3 = color
+        of (x3, y3)) having a color to generate the gradient of the triangle
+*/
+begin_func(GradientTriangle, 9)
   if (This->ShouldRender()) {
     arg_int(x1);
     arg_int(y1);
@@ -1725,6 +1820,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - Draws a rectangle at (x, y) of width w and height h, filled with color c.
+*/
 begin_func(Rectangle, 5)
   if (This->ShouldRender()) {
     arg_int(x);
@@ -1739,7 +1837,14 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-begin_func(GradientRectangle, 5)
+/**
+      - Draws a gradient rectangle at (x,y) with the height h and width w.
+        Each corner of a rectangle (c_ul = color of upper left corner, 
+        c_ur = color of upper right corner, c_lr = color of lower right corner,
+        c_ll = color of lower left corner) accepts a color information to 
+        generate the gradient of the rectangle.
+*/
+begin_func(GradientRectangle, 8)
   if (This->ShouldRender()) {
     arg_int(x);
     arg_int(y);
@@ -1761,18 +1866,32 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// section: input //
+
+/**
+      - returns true or false depending if the there are keys from the key 
+        input queue.
+*/
 begin_func(AreKeysLeft, 0)
   return_bool(AreKeysLeft());
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns the first key in the queue. If there are no keys in the queue,
+        Sphere will wait until there is a key in the queue.
+*/
 begin_func(GetKey, 0)
   return_int(GetKey());
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - checks if the key has been pressed. Returns true if 'key' is
+    pressed....
+*/
 begin_func(IsKeyPressed, 1)
   arg_int(key);
   RefreshInput();
@@ -1781,6 +1900,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - checks if any key is pressed at the time.
+*/
 begin_func(IsAnyKeyPressed, 0)
   RefreshInput();
   return_bool(AnyKeyPressed());
@@ -1788,6 +1910,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - converts the key into a string, KEY_A will become "a", etc.
+      - if shift is true, returns uppercase/special value of key
+      - control keys return ""
+*/
 begin_func(GetKeyString, 2)
   arg_int(key);
   arg_bool(shift);
@@ -1796,6 +1923,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - Sets the x and y of the mouse cursor
+*/
 begin_func(SetMousePosition, 2)
   arg_int(x);
   arg_int(y);
@@ -1804,18 +1934,28 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns the x location of the mouse cursor within the engine screen
+*/
 begin_func(GetMouseX, 0)
   return_int(GetMouseX());
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns the y location of the mouse cursor within the engine screen
+*/
 begin_func(GetMouseY, 0)
   return_int(GetMouseY());
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns true if the button is pressed
+        allowed button values are: MOUSE_LEFT, MOUSE_RIGHT, MOUSE_MIDDLE
+*/
 begin_func(IsMouseButtonPressed, 1)
   arg_int(button);
   return_int(IsMouseButtonPressed(button));
@@ -1823,12 +1963,19 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns the number of joysticks available on the system
+*/
 begin_func(GetNumJoysticks, 0)
   return_int(GetNumJoysticks());
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns the current x joystick position in normalized
+        coordinates from -1 to 1 on the horizontal axis.
+*/
 begin_func(GetJoystickX, 1)
   arg_int(joy);
   RefreshInput();
@@ -1837,6 +1984,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns the current y joystick position in normalized
+        coordinates from -1 to 1 on the vertical axis.
+*/
 begin_func(GetJoystickY, 1)
   arg_int(joy);
   RefreshInput();
@@ -1845,6 +1996,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns the number of buttons available on this joystick
+*/
 begin_func(GetNumJoystickButtons, 1)
   arg_int(joy);
   RefreshInput();
@@ -1853,6 +2007,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns true if the button on joystick 'joy' is pressed
+*/
 begin_func(IsJoystickButtonPressed, 2)
   arg_int(joy);
   arg_int(but);
@@ -1862,12 +2019,25 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// section: time //
+
+/**
+    - returns the number of milliseconds since some arbitrary time.
+      ex:
+       var start = GetTime();
+       while (GetTime() < start + 1000) {}
+*/
 begin_func(GetTime, 0)
   return_int(GetTime());
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// section: networking //
+
+/**
+    - returns a string with the local name of your computer
+*/
 begin_func(GetLocalName, 0)
   char name[256];
   GetLocalName(name, 256);
@@ -1876,6 +2046,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - returns a string with the IP address of your computer
+*/
 begin_func(GetLocalAddress, 0)
   char name[256];
   GetLocalAddress(name, 256);
@@ -1884,6 +2057,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - attempts to open a connection to the computer specified with 'address' on 'port'
+      returns a socket object
+*/
 begin_func(OpenAddress, 2)
   arg_str(name);
   arg_int(port);
@@ -1892,6 +2069,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - listens for connections on port, returns a socket object if successful
+*/
 begin_func(ListenOnPort, 1)
   arg_int(port);
   return_object(CreateSocketObject(cx, ListenOnPort(port)));
@@ -1899,6 +2079,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// section: byte_arrays //
+
+/**
+    - returns a ByteArray object of 'size' bytes
+*/
 begin_func(CreateByteArray, 1)
   arg_int(size);
   return_object(CreateByteArrayObject(cx, size));
@@ -1906,6 +2091,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - returns a ByteArray object from string 'string'
+*/
 begin_func(CreateByteArrayFromString, 1)
   arg_str(str);
   return_object(CreateByteArrayObject(cx, strlen(str), str));
@@ -1913,6 +2101,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - returns a ByteArray object from string 'string'
+*/
 begin_func(CreateStringFromByteArray, 1)
   arg_byte_array(array);
   return_str_n((char*)array->array, array->size);
@@ -1920,6 +2111,14 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// section: colors //
+
+/**
+    - returns a color object with the color r is Red, g is Green, b is Blue,
+      and a is alpha (translucency of the color). 
+      Note + alpha of 0 = transparent, alpha of 255 = opaque
+           + alpha is optional, and defaults to 255 if not specified
+*/
 begin_func(CreateColor, 3)
   arg_int(r);
   arg_int(g);
@@ -1942,6 +2141,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - returns a color object that is the blended color of color c1 and c2
+*/
 begin_func(BlendColors, 2)
   arg_color(a);
   arg_color(b);
@@ -1955,6 +2157,12 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - blends two colors together, allowing you to specify the amount of each color
+      ex:
+      BlendColorsWeighted(a, b, 1, 1) // equal amounts (like BlendColors())
+      BlendColorsWeighted(a, b, 1, 2) // 33% a, 66% b
+*/
 begin_func(BlendColorsWeighted, 4)
   arg_color(a);
   arg_color(b);
@@ -1979,6 +2187,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// section: mapengine //
+
+/**
+    - starts the map engine with the map specified and runs at 'fps' frames per second
+*/
 begin_func(MapEngine, 2)
   arg_str(map);
   arg_int(fps);
@@ -1992,6 +2205,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - changes current map
+*/
 begin_func(ChangeMap, 1)
   arg_str(map);
 
@@ -2004,6 +2220,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - Returns the current map, e.g. "noisyforest.rmp"
+*/
 begin_func(GetCurrentMap, 0)
   std::string map_filename = This->m_Engine->GetMapEngine()->GetCurrentMap();
   if (map_filename == "") {
@@ -2015,6 +2234,12 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - Exits the map engine.  Note:  This tells the map engine to shut
+      down.  This does not mean the engine shuts down immediately.  You
+      must wait for the original call to MapEngine() to return before you
+      can start a new map engine.
+*/
 begin_func(ExitMapEngine, 0)
   
   if (!This->m_Engine->GetMapEngine()->Exit()) {
@@ -2026,12 +2251,18 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - Returns true if the map engine is running, false if not
+*/
 begin_func(IsMapEngineRunning, 0)
   return_bool(This->m_Engine->GetMapEngine()->IsRunning());
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - updates map engine (state of entities, color masks, etc.)
+*/
 begin_func(UpdateMapEngine, 0)
 
   if (!This->m_Engine->GetMapEngine()->Update()) {
@@ -2043,6 +2274,16 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - calls a map's script from code
+    the six events are:
+      SCRIPT_ON_ENTER_MAP
+      SCRIPT_ON_LEAVE_MAP
+      SCRIPT_ON_LEAVE_MAP_NORTH
+      SCRIPT_ON_LEAVE_MAP_EAST
+      SCRIPT_ON_LEAVE_MAP_SOUTH
+      SCRIPT_ON_LEAVE_MAP_WEST
+*/
 begin_func(CallMapScript, 1)
   arg_int(which);
 
@@ -2055,6 +2296,12 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - set the default script that the map engine should call before calling the map's specific script
+    (The default map script is called, then the map specific script is called.)
+    The events are the same from CallMapScript.
+    The map engine doesn't have to be on to set a default script.
+*/
 begin_func(SetDefaultMapScript, 2)
   arg_int(which);
   arg_str(script);
@@ -2068,6 +2315,11 @@ end_func()
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**
+    - call the default map script
+    The events are the same from CallMapScript.
+    The map engine doesn't have to be on to call a default script.
+*/
 begin_func(CallDefaultMapScript, 1)
   arg_int(which);
 
@@ -2080,6 +2332,13 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// section: layers //
+
+/**
+      - get number of layers on map
+      - in the following functions, layer 0 is the bottommost layer.
+      - layer 1 is the next one up, etc.
+*/
 begin_func(GetNumLayers, 0)
 
   int layers;
@@ -2093,6 +2352,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - get width of 'layer'
+*/
 begin_func(GetLayerWidth, 1)
   arg_int(layer);
 
@@ -2107,6 +2369,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - get height of 'layer'
+*/
 begin_func(GetLayerHeight, 1)
   arg_int(layer);
 
@@ -2121,6 +2386,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns the name of 'layer'
+*/
 begin_func(GetLayerName, 1)
   arg_int(layer);
 
@@ -2135,6 +2403,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns true if the layer is visible
+*/
 begin_func(IsLayerVisible, 1)
   arg_int(layer);
 
@@ -2149,6 +2420,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - shows 'layer' if visible == true, and hides it if visible == false
+*/
 begin_func(SetLayerVisible, 2)
   arg_int(layer);
   arg_bool(visible);
@@ -2162,6 +2436,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns true if the layer is reflective
+*/
 begin_func(IsLayerReflective, 1)
   arg_int(layer);
   bool reflective = false;
@@ -2176,6 +2453,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - sets whether layer should be reflective
+*/
 begin_func(SetLayerReflective, 2)
   arg_int(layer);
   arg_bool(reflective);
@@ -2189,6 +2469,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// section: tiles //
+
+/**
+      - return number of tiles in map
+*/
 begin_func(GetNumTiles, 0)
   
   int tiles;
@@ -2202,6 +2487,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - changes tile on map to 'tile'
+*/
 begin_func(SetTile, 4)
   arg_int(x);
   arg_int(y);
@@ -2217,6 +2505,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns tile on map
+*/
 begin_func(GetTile, 3)
   arg_int(x);
   arg_int(y);
@@ -2233,6 +2524,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns the name of the tile 'tile_index'
+*/
 begin_func(GetTileName, 1)
   arg_int(tile_index);
   
@@ -2247,6 +2541,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns width in pixels of tiles on current map
+*/
 begin_func(GetTileWidth, 0)
 
   int width;
@@ -2260,6 +2557,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns height in pixels of tiles on current map
+*/
 begin_func(GetTileHeight, 0)
 
   int height;
@@ -2273,6 +2573,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns the image of the tile 'tile_index'
+*/
 begin_func(GetTileImage, 1)
   arg_int(tile);
   IMAGE image;
@@ -2287,6 +2590,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - sets the tile 'tile_index' to the image 'image_object'
+*/
 begin_func(SetTileImage, 2)
 
   arg_int(tile);
@@ -2301,6 +2607,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - gets the animation delay of the tile 'tile'
+        If it returns 0, the tile is not animated
+*/
 begin_func(GetTileDelay, 1)
 
   arg_int(tile);
@@ -2317,6 +2627,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - sets the animation delay of the tile 'tile' to 'delay'
+        A delay of 0 is considered not animated
+*/
 begin_func(SetTileDelay, 2)
 
   arg_int(tile);
@@ -2328,8 +2642,13 @@ begin_func(SetTileDelay, 2)
   }
 
 end_func()
+
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - gets the next tile in the animation sequence of 'tile'
+        Note that if the return value is 'tile' the tile is not animated.
+*/
 begin_func(GetNextAnimatedTile, 1)
   arg_int(tile);
 
@@ -2343,6 +2662,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - sets the next tile in the animation sequence of 'tile' to 'new_tile'
+        SetNextAnimatedTile(tile, tile) turns off the tile animation for 'tile'
+*/
 begin_func(SetNextAnimatedTile, 2)
   arg_int(current_tile);
   arg_int(next_tile);
@@ -2356,6 +2679,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - Replaces all 'oldtile' tiles with 'newtile' on layer 'layer'
+*/
 begin_func(ReplaceTilesOnLayer, 3)
   arg_int(layer);
   arg_int(old_tile);
@@ -2370,6 +2696,13 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// section: triggers //
+
+/**
+      - Returns true if there is a trigger at map_x, map_y on layer.  map_x
+        and map_y are in map (per-pixel) coordinates.
+        (Currently the layer parameter is ignored, although it still must be valid.)
+*/
 begin_func(IsTriggerAt, 3)
   arg_int(location_x);
   arg_int(location_y);
@@ -2385,6 +2718,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - activates the trigger positioned on map_x, map_y, layer if one exists.
+        map_x and map_y are in map (per-pixel) coordinates.
+*/
 begin_func(ExecuteTrigger, 3)
   arg_int(location_x);
   arg_int(location_y);
@@ -2399,6 +2736,12 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// section: zones //
+
+/**
+      - returns true if there are any zones at map_x, map_y on layer
+        (Currently the layer parameter is ignored, although it still must be valid.)
+*/
 begin_func(AreZonesAt, 3)
   arg_int(location_x);
   arg_int(location_y);
@@ -2413,6 +2756,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - executes all the zones that map_x, map_y, layer is within
+        map_x and map_y are in map (per-pixel) coordinates.
+        (Currently the layer parameter is ignored, although it still must be valid.)
+*/
 begin_func(ExecuteZones, 3)
   arg_int(location_x);
   arg_int(location_y);
@@ -2427,6 +2775,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - executes the script for the zone 'zone'
+*/
 begin_func(ExecuteZoneScript, 1)
   arg_int(zone);
 
@@ -2439,6 +2790,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns the amount of zones that there is
+*/
 begin_func(GetNumZones, 0)
   int zones = 0;
   if ( !This->m_Engine->GetMapEngine()->GetNumZones(zones)) {
@@ -2450,6 +2804,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - best when called from inside a ZoneScript handler
+          it will return the index of the zone for which the current script 
+          is running
+*/
 begin_func(GetCurrentZone, 0)
   int zone = 0;
   if ( !This->m_Engine->GetMapEngine()->GetCurrentZone(zone)) {
@@ -2461,6 +2820,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - gets the x value of zone 'zone'
+*/
 begin_func(GetZoneX, 1)
   arg_int(zone);
   int x = 0;
@@ -2475,6 +2837,9 @@ end_func()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+/**
+      - gets the y value of zone 'zone'
+*/
 begin_func(GetZoneY, 1)
   arg_int(zone);
   int y = 0;
@@ -2489,6 +2854,9 @@ end_func()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+/**
+      - gets the width value of zone 'zone'
+*/
 begin_func(GetZoneWidth, 1)
   arg_int(zone);
   int w = 0;
@@ -2503,6 +2871,9 @@ end_func()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+/**
+      - gets the height value of zone 'zone'
+*/
 begin_func(GetZoneHeight, 1)
   arg_int(zone);
   int h = 0;
@@ -2517,6 +2888,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - Renders the map into the video buffer
+*/
 begin_func(RenderMap, 0)
 
   if ( !This->m_Engine->GetMapEngine()->RenderMap() ) {
@@ -2528,6 +2902,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - applies a color mask to things drawn by the map engine for 'num_frames' frames
+*/
 begin_func(SetColorMask, 2)
   arg_color(color);
   arg_int(num_frames);
@@ -2541,6 +2918,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - in 'num_frames' frames, runs 'script'
+        ex: SetDelayScript(60, "ChangeMap('forest.rmp')");
+        this tells the map engine to change to forest.rmp after 60 frames
+*/
 begin_func(SetDelayScript, 2)
   arg_int(num_frames);
   arg_str(script);
@@ -2554,6 +2936,15 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// section: input //
+
+/**
+    BindKey(key, onkeydown, onkeyup)
+      - runs the 'onkeydown' script when the 'key' is pressed down and runs 
+        'onkeyup' when the 'key' is released
+        ex: BindKey(KEY_SPACE, "mode = 'in';", "mode = 'out';");
+            refer to keys.txt for a list of key names
+*/
 begin_func(BindKey, 3)
   arg_int(key);
   arg_str(on_down);
@@ -2568,6 +2959,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - unbinds a bound key
+*/
 begin_func(UnbindKey, 1)
   arg_int(key);
 
@@ -2580,6 +2974,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - runs the 'on_down' script when the joystick 'button' is pressed down and runs
+        'on_up' when the joystick button is released
+*/
 begin_func(BindJoystickButton, 4)
   arg_int(joystick);
   arg_int(button);
@@ -2595,6 +2993,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    UnbindJoystickButton(joystick, button)
+      - unbinds a bound joystick button
+*/
 begin_func(UnbindJoystickButton, 2)
   arg_int(joystick);
   arg_int(button);
@@ -2608,6 +3010,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - makes the 'person_entity' respond to the input 
+        (up = KEY_UP, down = KEY_DOWN, left = KEY_LEFT, right = KEY_RIGHT)
+*/
 begin_func(AttachInput, 1)
   arg_str(person);
 
@@ -2620,6 +3026,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - releases input from the attached person entity
+*/
 begin_func(DetachInput, 0)
 
   if (!This->m_Engine->GetMapEngine()->DetachInput()) {
@@ -2631,6 +3040,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns true if a person is attached to the input
+*/
 begin_func(IsInputAttached, 0)
 
   bool attached;
@@ -2644,6 +3056,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns a string with the name of the person who currently holds input
+*/
 begin_func(GetInputPerson, 0)
 
   std::string person;
@@ -2657,6 +3072,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - calls 'script' after each frame (don't draw stuff in here!)
+*/
 begin_func(SetUpdateScript, 1)
   arg_str(script);
 
@@ -2669,6 +3087,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - calls 'script' after all map layers are rendered
+*/
 begin_func(SetRenderScript, 1)
   arg_str(script);
 
@@ -2681,6 +3102,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - calls the rendering 'script' after 'layer' has been rendered.
+      Only one rendering script can be used for each layer of the map
+*/
 begin_func(SetLayerRenderer, 2)
   arg_int(layer);
   arg_str(script);
@@ -2694,6 +3119,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - set the alpha of 'layer' to 'alpha'
+*/
 begin_func(SetLayerAlpha, 2)
   arg_int(layer);
   arg_int(alpha);
@@ -2707,6 +3135,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - get the alpha currently being used by 'layer'
+*/
 begin_func(GetLayerAlpha, 1)
   arg_int(layer);
 
@@ -2721,6 +3152,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - Attaches the camera view to specified person
+*/
 begin_func(AttachCamera, 1)
   arg_str(person);
 
@@ -2733,6 +3167,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - Detaches camera so it can be controlled directly
+*/
 begin_func(DetachCamera, 0)
 
   if (!This->m_Engine->GetMapEngine()->DetachCamera()) {
@@ -2744,6 +3181,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns true if the camera is attached to a person, false if the
+        camera is floating
+*/
 begin_func(IsCameraAttached, 0)
 
   bool attached;
@@ -2757,6 +3198,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns a string with the name of the person whom the camera 
+        is attached to
+*/
 begin_func(GetCameraPerson, 0)
   
   std::string person;
@@ -2770,6 +3215,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - sets the x location of the camera object on the map
+      (the center of the screen if possible)
+*/
 begin_func(SetCameraX, 1)
   arg_int(x);
 
@@ -2782,6 +3231,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - sets the y location of the camera object on the map
+      (the center of the screen if possible)
+*/
 begin_func(SetCameraY, 1)
   arg_int(y);
 
@@ -2794,6 +3247,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns the x location of the camera object on the map
+      (the center of the screen if possible)
+*/
 begin_func(GetCameraX, 0)
 
   int x;
@@ -2807,6 +3264,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns the y location of the camera object on the map
+      (the center of the screen if possible)
+*/
 begin_func(GetCameraY, 0)
 
   int y;
@@ -2820,6 +3281,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns screen coordinates of position on map
+*/
 begin_func(MapToScreenX, 2)
   arg_int(layer);
   arg_int(mx);
@@ -2835,6 +3299,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns screen coordinates of position on map
+*/
 begin_func(MapToScreenY, 2)
   arg_int(layer);
   arg_int(my);
@@ -2850,6 +3317,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns map coordinates of position on screen
+*/
 begin_func(ScreenToMapX, 2)
   arg_int(layer);
   arg_int(sx);
@@ -2865,6 +3335,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - returns map coordinates of position on screen
+*/
 begin_func(ScreenToMapY, 2)
   arg_int(layer);
   arg_int(sy);
@@ -2880,6 +3353,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - returns an array of strings representing the current person entities
+        (unnamed persons will not be in this list)
+*/
 begin_func(GetPersonList, 0)
 
   // ask the map engine for the list of names
@@ -2910,6 +3387,13 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - returns a person object with 'name' from 'spriteset'. If Sphere is 
+          unable to open the file, the engine will give an error message and 
+          exit. destroy_with_map is a boolean (true/false value), which the 
+          spriteset is destroyed when the current map is changed if the flag 
+          is set to true.
+*/
 begin_func(CreatePerson, 3)
   arg_str(name);
   arg_str(spriteset);
@@ -2926,6 +3410,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - destroys the person with the name
+*/
 begin_func(DestroyPerson, 1)
   arg_str(name);
 
@@ -2940,6 +3427,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - sets the x position of the person on the map
+*/
 begin_func(SetPersonX, 2)
   arg_str(name);
   arg_int(x);
@@ -2953,6 +3443,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - sets the y position of the person on the map
+*/
 begin_func(SetPersonY, 2)
   arg_str(name);
   arg_int(y);
@@ -2966,6 +3459,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - sets the position of the person with floating point accuracy
+*/
 begin_func(SetPersonXYFloat, 3)
   arg_str(name);
   arg_double(x);
@@ -2980,6 +3476,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - sets the position of the person on the map
+*/
 begin_func(SetPersonLayer, 2)
   arg_str(name);
   arg_int(layer);
@@ -2993,6 +3492,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - gets the position of the person on the map
+          The position is based on the middle of the spriteset's base
+          rectangle.
+*/
 begin_func(GetPersonX, 1)
   arg_str(name);
 
@@ -3007,6 +3511,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - gets the position of the person on the map
+          The position is based on the middle of the spriteset's base
+          rectangle.
+*/
 begin_func(GetPersonY, 1)
   arg_str(name);
 
@@ -3021,6 +3530,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - gets the position of the person on the map
+          The position is based on the middle of the spriteset's base
+          rectangle.
+*/
 begin_func(GetPersonXFloat, 1)
   arg_str(name);
 
@@ -3035,6 +3549,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - gets the position of the person on the map
+          The position is based on the middle of the spriteset's base
+          rectangle.
+*/
 begin_func(GetPersonYFloat, 1)
   arg_str(name);
 
@@ -3049,6 +3568,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - gets the position of the person on the map
+*/
 begin_func(GetPersonLayer, 1)
   arg_str(name);
 
@@ -3063,6 +3585,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+       - Sets whether 'person' should ignore other spriteset bases
+*/
 begin_func(IgnorePersonObstructions, 2)
   arg_str(name);
   arg_bool(ignoring);
@@ -3075,6 +3600,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+       - Returns true if 'person' is ignoring person obstructions, else false
+*/
 begin_func(IsIgnoringPersonObstructions, 1)
   arg_str(name);
   bool ignoring = false;
@@ -3088,6 +3616,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+       - Sets whether 'person' should ignore tile obstructions
+*/
 begin_func(IgnoreTileObstructions, 2)
   arg_str(name);
   arg_bool(ignoring);
@@ -3100,6 +3631,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+       - Returns true if 'person' is ignoring tile obstructions, else false
+*/
 begin_func(IsIgnoringTileObstructions, 1)
   arg_str(name);
   bool ignoring = false;
@@ -3113,6 +3647,12 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - makes the sprite 'name' follow 'pixels' pixels behind sprite 'leader'.
+        If this function is called like:
+        FollowPerson(name, "", 0),
+        the person will detach from anyone it is following.
+*/
 begin_func(FollowPerson, 3)
   arg_str(person);
   arg_str(leader);
@@ -3127,6 +3667,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - sets which direction to show
+*/
 begin_func(SetPersonDirection, 2)
   arg_str(name);
   arg_str(direction);
@@ -3140,6 +3683,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - gets which direction is being shown
+*/
 begin_func(GetPersonDirection, 1)
   arg_str(name);
 
@@ -3154,6 +3700,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - sets which frame to show
+*/
 begin_func(SetPersonFrame, 2)
   arg_str(name);
   arg_int(frame);
@@ -3167,6 +3716,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - gets which frame is being shown
+*/
 begin_func(GetPersonFrame, 1)
   arg_str(name);
 
@@ -3181,6 +3733,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - sets the delay between when the person last moved and returning to
+          first frame. 0 disables this behaviour.
+*/
 begin_func(SetPersonFrameRevert, 2)
   arg_str(name);
   arg_int(frames);
@@ -3194,6 +3750,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - gets the delay between when the person last moved and returning to
+          first frame. 0 disables this behaviour.
+*/
 begin_func(GetPersonFrameRevert, 1)
   arg_str(name);
 
@@ -3208,6 +3768,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - sets the speed at which a person moves at
+*/
 begin_func(SetPersonSpeed, 2)
   arg_str(name);
   arg_double(speed);
@@ -3221,6 +3784,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - sets the speed at which a person moves at
+*/
 begin_func(SetPersonSpeedXY, 3)
   arg_str(name);
   arg_double(x);
@@ -3235,6 +3801,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - gets the speed at which a person moves at
+*/
 begin_func(GetPersonSpeedX, 1)
   arg_str(name);
 
@@ -3249,6 +3818,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - gets the speed at which a person moves at
+*/
 begin_func(GetPersonSpeedY, 1)
   arg_str(name);
 
@@ -3263,6 +3835,12 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - rescales the sprite to a certain scale specified by scale_w and scale_h.
+          Scaling is determined by floating point numbers like, 1.5 would scale
+          the person to 1.5 times its normal size based on his original sprite
+          size.
+*/
 begin_func(SetPersonScaleFactor, 3)
   arg_str(name);
   arg_double(scale_w);
@@ -3278,6 +3856,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - rescales the sprite to width pixels and height pixels.
+*/
 begin_func(SetPersonScaleAbsolute, 3)
   arg_str(name);
   arg_int(width);
@@ -3292,6 +3873,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - returns the person's spriteset.
+*/
 begin_func(GetPersonSpriteset, 1)
   arg_str(name);
 
@@ -3308,6 +3892,10 @@ end_func()
 
 /////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - set's the person's spriteset to spriteset
+        e.g. SetPersonSpriteset("Jimmy", LoadSpriteset("jimmy.running.rss"));
+*/
 begin_func(SetPersonSpriteset, 2)
   arg_str(name);
   arg_spriteset(spriteset);
@@ -3328,6 +3916,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - returns the person's base obstruction object.
+*/
 begin_func(GetPersonBase, 1)
   arg_str(name);
 
@@ -3343,6 +3934,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - returns the person's angle that is used
+*/
 begin_func(GetPersonAngle, 1)
   arg_str(name);
   double angle;
@@ -3357,6 +3951,13 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - sets the angle which the person should be drawn at
+        Note:
+          Zero is no rotation, and angles are in radians.
+          It does not rotate the spritesets obstruction base.
+
+*/
 begin_func(SetPersonAngle, 2)
   arg_str(name);
   arg_double(angle);
@@ -3370,6 +3971,12 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - sets a color multiplier to use when drawing sprites.  if the color is
+          RGBA:(255, 0, 0, 255), only the red elements of the sprite are drawn.
+          If the color is RGBA:(255, 255, 255, 128), the sprite is drawn at
+          half transparency.
+*/
 begin_func(SetPersonMask, 2)
   arg_str(name);
   arg_color(mask);
@@ -3383,6 +3990,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - returns the person's current mask
+*/
 begin_func(GetPersonMask, 1)
   arg_str(name);
 
@@ -3397,6 +4007,17 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - sets 'script' as the thing 'name' does in a certain event
+          the five events are
+          SCRIPT_ON_CREATE
+          SCRIPT_ON_DESTROY
+          SCRIPT_ON_ACTIVATE_TOUCH
+          SCRIPT_ON_ACTIVATE_TALK
+          SCRIPT_COMMAND_GENERATOR
+          (SCRIPT_COMMAND_GENERATOR will be called when the command queue for
+           the person runs out (for random movement thingies, etc))
+*/
 begin_func(SetPersonScript, 3)
   arg_str(name);
   arg_int(which);
@@ -3411,6 +4032,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - calls a person's script from code
+         'which' constants are the same as for SetPersonScript()
+*/
 begin_func(CallPersonScript, 2)
   arg_str(name);
   arg_int(which);
@@ -3424,6 +4049,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - best when called from inside a PersonScript handler
+          it will return the name of the person for whom the current script 
+          is running
+*/
 begin_func(GetCurrentPerson, 0)
   
   std::string person;
@@ -3437,6 +4067,26 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - adds a command to the person's command queue
+          the commands are:
+            COMMAND_WAIT
+            COMMAND_FACE_NORTH
+            COMMAND_FACE_NORTHEAST
+            COMMAND_FACE_EAST
+            COMMAND_FACE_SOUTHEAST
+            COMMAND_FACE_SOUTH
+            COMMAND_FACE_SOUTHWEST
+            COMMAND_FACE_WEST
+            COMMAND_FACE_NORTHWEST
+            COMMAND_MOVE_NORTH
+            COMMAND_MOVE_EAST
+            COMMAND_MOVE_SOUTH
+            COMMAND_MOVE_WEST
+          (note: these *might* change in a future release
+          'immediate', if true, will execute the command go right away
+          if false, it will wait until the next frame)
+*/
 begin_func(QueuePersonCommand, 3)
   arg_str(name);
   arg_int(command);
@@ -3450,7 +4100,10 @@ begin_func(QueuePersonCommand, 3)
 end_func()
   
 ////////////////////////////////////////////////////////////////////////////////
-  
+
+/**
+        - adds a script command to the person's queue
+*/  
 begin_func(QueuePersonScript, 3)
   arg_str(name);
   arg_str(script);
@@ -3465,6 +4118,9 @@ end_func()
   
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - clears the command queue of sprite with the 'name'
+*/
 begin_func(ClearPersonCommands, 1)
   arg_str(name);
 
@@ -3477,6 +4133,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - returns true if the person 'name' has an empty command queue
+*/
 begin_func(IsCommandQueueEmpty, 1)
   arg_str(name);
 
@@ -3491,6 +4150,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+       - returns -1 if name isn't obstructed by a tile at x, y,
+       - returns the tile index of the tile if name is obstructed at x, y
+*/
 begin_func(GetObstructingTile, 3)
   arg_str(name);
   arg_int(x);
@@ -3507,6 +4170,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+       - returns "" if name isn't obstructed by person at x, y,
+       - returns the name of the person if name is obstructed at x, y
+*/
 begin_func(GetObstructingPerson, 3)
   arg_str(name);
   arg_int(x);
@@ -3523,6 +4190,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+       - returns true if person 'name' would be obstructed at (x, y)
+*/
 begin_func(IsPersonObstructed, 3)
   arg_str(name);
   arg_int(x);
@@ -3539,6 +4209,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - set key used to activate talk scripts
+*/
 begin_func(SetTalkActivationKey, 1)
   arg_int(key);
 
@@ -3551,12 +4224,18 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - get key used to activate talk scripts
+*/
 begin_func(GetTalkActivationKey, 0)
   return_int(This->m_Engine->GetMapEngine()->GetTalkActivationKey());
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - set distance to check for talk script activation
+*/
 begin_func(SetTalkDistance, 1)
   arg_int(pixels);
 
@@ -3569,12 +4248,19 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - get distance to check for talk script activation
+*/
 begin_func(GetTalkDistance, 0)
   return_int(This->m_Engine->GetMapEngine()->GetTalkDistance());
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - returns a spriteset object from 'filename'. If Sphere is unable to open
+      the file, the engine will give an error message and exit.
+*/
 begin_func(LoadSpriteset, 1)
   arg_str(filename);
 
@@ -3595,6 +4281,13 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - returns a sound object from 'filename'. If Sphere is unable to open
+      the file, the engine will give an error message and exit.  If the optional
+      argument 'streaming' is true or unspecified, the sound is streamed from the
+      hard drive.  Otherwise, it's loaded into memory.
+
+*/
 begin_func(LoadSound, 1)
   arg_str(filename);
   bool streaming = true;
@@ -3614,12 +4307,19 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - returns a font object of the font that the engine currently uses.
+*/
 begin_func(GetSystemFont, 0)
   return_object(CreateFontObject(cx, This->m_Engine->GetSystemFont(), false));
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - returns a font object from 'filename'. If Sphere is unable to open 
+      the file, the engine will give an error message and exit.
+*/
 begin_func(LoadFont, 1)
   arg_str(filename);
 
@@ -3635,12 +4335,21 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - returns a windowstyle object of the windowstyle that the engine currently
+      uses.
+
+*/
 begin_func(GetSystemWindowStyle, 0)
   return_object(CreateWindowStyleObject(cx, This->m_Engine->GetSystemWindowStyle(), false));
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - returns a windowstyle object from 'filename'. If Sphere is unable to open
+      the file, the engine will give an error message and exit.
+*/
 begin_func(LoadWindowStyle, 1)
   arg_str(filename);
 
@@ -3656,24 +4365,40 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - returns an image object of the System Arrow that the engine currently uses.
+*/
 begin_func(GetSystemArrow, 0)
   return_object(CreateImageObject(cx, This->m_Engine->GetSystemArrow(), false));
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - returns an image object of the System Arrow(up) that the engine currently
+      uses.
+*/
 begin_func(GetSystemUpArrow, 0)
   return_object(CreateImageObject(cx, This->m_Engine->GetSystemUpArrow(), false));
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - returns an image object of the System Arrow(down) that the engine 
+      currently uses.
+*/
 begin_func(GetSystemDownArrow, 0)
   return_object(CreateImageObject(cx, This->m_Engine->GetSystemDownArrow(), false));
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - returns an image object from 'filename'. If Sphere is unable to open or 
+      read the image, the engine will give an error message and exit. The 
+      image type that the engine supports are either PCX, BMP, JPG, and PNG.
+*/
 begin_func(LoadImage, 1)
   arg_str(filename);
 
@@ -3689,6 +4414,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - returns an image object from a section of the video buffer 
+      defined by the parameters
+*/
 begin_func(GrabImage, 4)
   arg_int(x);
   arg_int(y);
@@ -3720,6 +4449,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - returns a surface object with width x height, filled with color
+*/
 begin_func(CreateSurface, 3)
   arg_int(w);
   arg_int(h);
@@ -3740,6 +4472,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - returns a surface object with an image with the 'filename'
+*/
 begin_func(LoadSurface, 1)
   arg_str(filename);
 
@@ -3756,6 +4491,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
+   - returns a surface object captured from an area of the video buffer, 
+     at (x, y) with the width w and height h.
   @see GrabImage
 */
 begin_func(GrabSurface, 4)
@@ -3793,6 +4530,15 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - Creates a colormatrix that is used to transform the colors 
+    contained in a pixel with the following formula:
+        newcolor.red   = rn + (rr * oldcolor.red + rg * oldcolor.green + rb * oldcolor.blue) / 255;
+        newcolor.green = gn + (gr * oldcolor.red + gg * oldcolor.green + gb * oldcolor.blue) / 255;
+        newcolor.blue  = bn + (br * oldcolor.red + bg * oldcolor.green + bb * oldcolor.blue) / 255;
+    @see surface.applyColorFX
+    @see surface.applyColorFX4
+*/
 begin_func(CreateColorMatrix, 12)
   arg_int(rn);
   arg_int(rr);
@@ -3816,6 +4562,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - Returns an animation object with the filename. If Sphere is unable to 
+      open the file, the engine will give an error message and exit. Sphere 
+      supports animation formats of .flic, .fli, .flc and .mng
+*/
 begin_func(LoadAnimation, 1)
   arg_str(filename);
 
@@ -3831,6 +4582,12 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - directory = directory in which to enumerate files, "save" if not specified
+
+    - returns an array of strings, which contains the filenames that resides
+      in the 'directory' directory of the game.
+*/
 begin_func(GetFileList, 0)
 
   const char* directory = "save";
@@ -3863,6 +4620,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - returns a file object with the filename. The file is created/loaded 
+      from the "save" directory of the game. Note that any changes in the keys
+      will not be saved until the file object is destroyed.
+*/
 begin_func(OpenFile, 1)
   arg_str(filename);
 
@@ -3883,6 +4645,15 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - opens a file with the filename.
+      Unless writeable is true, the file *must* exist and reside
+      in the "other" directory of the game otherwise Sphere will give an error. 
+      If the file is opened successfully, the function will return a rawfile
+      object. If the optional argument 'writeable' is true,
+      the conents of the file will be destroyed,
+      and you will be able to write to the file.
+*/
 begin_func(OpenRawFile, 1)
   arg_str(filename);
 
@@ -3908,7 +4679,15 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-begin_func(HashFromFile, 1) {
+/**
+      - generates an MD5 of the specified raw file, which, by backtracking
+        with a ../ may refer to any file within the game directory structure.
+        The result is a 32 character string containing the hexadecimal
+        representation of the resulting 128-bit MD5 fingerprint.  Identical
+        files produce the same MD5 hash so it is an effective way to determine
+        if a file has become corrupt or altered
+*/
+begin_func(HashFromFile, 1)
   arg_str(filename);
 
   if (IsValidPath(filename) == false) {
@@ -3955,9 +4734,18 @@ begin_func(HashFromFile, 1) {
   retval[32]='\0';
 
   return_str(retval);
-}
 end_func()
 
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+      - generates an MD5 fingerprint as a hexadecimal string whose output
+        is the same as the RSA reference implementation of RFC 1321 which
+        means that the unix md5 command will return the same string for the
+        identical input.  The resulting string contains the hexadecimal
+        representation of the MD5 fingerprint for the specified byte
+        array object
+*/
 begin_func(HashByteArray, 1)
   arg_byte_array(array);
   int len,i;
@@ -4091,6 +4879,9 @@ end_finalizer()
 
 ////////////////////////////////////////
 
+/**
+    - returns true if the socket is connected
+*/
 begin_method(SS_SOCKET, ssSocketIsConnected, 0)
   if (object->socket && object->is_open) {
     return_bool(IsConnected(object->socket));
@@ -4101,6 +4892,9 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - returns the size of the next array to be read in the socket
+*/
 begin_method(SS_SOCKET, ssSocketGetPendingReadSize, 0)
   if (!object->is_open) {
     JS_ReportError(cx, "socket is closed!");
@@ -4116,6 +4910,9 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - reads from the socket, returns a ByteArray object
+*/
 begin_method(SS_SOCKET, ssSocketRead, 1)
   if (!object->is_open) {
     JS_ReportError(cx, "socket is closed!");
@@ -4146,6 +4943,9 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - writes a ByteArray object into the socket
+*/
 begin_method(SS_SOCKET, ssSocketWrite, 1)
   if (!object->is_open) {
     JS_ReportError(cx, "socket is closed!");
@@ -4160,6 +4960,9 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - closes the socket object, after this, the socket cannot be used.
+*/
 begin_method(SS_SOCKET, ssSocketClose, 0)
   if (object->socket && object->is_open) {
     CloseSocket(object->socket);
@@ -4216,6 +5019,10 @@ end_finalizer()
 
 ////////////////////////////////////////
 
+/**
+  - writes a string of text under the current block.
+    ex: myLog.write("Starting system...");
+*/
 begin_method(SS_LOG, ssLogWrite, 1)
   arg_str(text);
   object->log->Send(text);
@@ -4223,6 +5030,12 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+  - creates a "block" which is indent inside the log with the name as the 
+    title of the block. Any subsequent write commands will go under the newly 
+    created block.
+    ex: myLog.beginBlock("Video Information");
+*/
 begin_method(SS_LOG, ssLogBeginBlock, 1)
   arg_str(name);
   object->log->BeginBlock(name);
@@ -4230,6 +5043,9 @@ end_method();
 
 ////////////////////////////////////////
 
+/**
+  - closes the current log block.
+*/
 begin_method(SS_LOG, ssLogEndBlock, 0)
   object->log->EndBlock();
 end_method()
@@ -4514,6 +5330,9 @@ end_finalizer()
 
 ////////////////////////////////////////
 
+/**
+     - saves the spriteset object to 'filename'
+*/
 begin_method(SS_SPRITESET, ssSpritesetSave, 1)
   arg_str(filename);
 
@@ -4541,6 +5360,9 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+     - returns a copy of the spriteset object
+*/
 begin_method(SS_SPRITESET, ssSpritesetClone, 0)
 
   sSpriteset* s = argSpriteset(cx, OBJECT_TO_JSVAL(obj));
@@ -4613,6 +5435,10 @@ end_finalizer()
 
 ////////////////////////////////////////
 
+/**
+    - plays the sound. repeat is a boolean (true/false), that indicates if 
+      the sound should be looped
+*/
 begin_method(SS_SOUND, ssSoundPlay, 1)
   arg_bool(repeat);
   object->sound->setRepeat(repeat);
@@ -4621,12 +5447,18 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - pauses playback. call play() again to resume playback.
+*/
 begin_method(SS_SOUND, ssSoundPause, 0)
   object->sound->stop();
 end_method()
 
 ////////////////////////////////////////
 
+/**
+    - stops playback
+*/
 begin_method(SS_SOUND, ssSoundStop, 0)
   object->sound->stop();
   object->sound->reset();
@@ -4634,6 +5466,9 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - sets the volume for the sound (0-255)
+*/
 begin_method(SS_SOUND, ssSoundSetVolume, 1)
   arg_int(volume);
   object->sound->setVolume(volume / 255.0f);
@@ -4641,12 +5476,18 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - returns the sound's volume (0-255)
+*/
 begin_method(SS_SOUND, ssSoundGetVolume, 0)
   return_int(object->sound->getVolume() * 255);
 end_method()
 
 ////////////////////////////////////////
 
+/**
+    - pan can be from -255 to 255.  -255 = left, 255 = right
+*/
 begin_method(SS_SOUND, ssSoundSetPan, 1)
   arg_int(pan);
   object->sound->setPan(pan / 255.0f);
@@ -4654,12 +5495,19 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - returns the current pan of the sound
+*/
 begin_method(SS_SOUND, ssSoundGetPan, 0)
   return_int(object->sound->getPan() * 255);
 end_method()
 
 ////////////////////////////////////////
 
+/**
+    - pitch ranges from 0.5 to 2.0.  0.5 is an octave down (and half as fast)
+      while 2.0 is an octave up (and twice as fast).  pitch defaults to 1
+*/
 begin_method(SS_SOUND, ssSoundSetPitch, 1)
   arg_double(pitch);
   object->sound->setPitchShift(pitch);
@@ -4667,6 +5515,9 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - returns the current pitch
+*/
 begin_method(SS_SOUND, ssSoundGetPitch, 0)
   return_double(object->sound->getPitchShift());
 end_method()
@@ -4674,12 +5525,18 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - returns true if the sound is currently playing
+*/
 begin_method(SS_SOUND, ssSoundIsPlaying, 0)
   return_bool(object->sound->isPlaying());
 end_method()
 
 ////////////////////////////////////////
 
+/**
+    - creates a copy of the sound object (currently doesn't really work)
+*/
 begin_method(SS_SOUND, ssSoundClone, 0)
   return_object(CreateSoundObject(cx, object->sound));
 end_method()
@@ -4743,6 +5600,10 @@ end_finalizer()
 
 ///////////////////////////////////////
 
+/**
+    - Sets the color mask for a font
+    @see ApplyColorMask
+*/
 begin_method(SS_FONT, ssFontSetColorMask, 1)
   arg_color(mask);
   object->mask = mask;
@@ -4750,12 +5611,18 @@ end_method()
 
 ///////////////////////////////////////
 
+/**
+    - Gets the color mask being used by the font object
+*/
 begin_method(SS_FONT, ssFontGetColorMask, 0)
   return_object(CreateColorObject(cx, object->mask));
 end_method()
 
 ///////////////////////////////////////
 
+/**
+    - draws 'text' at x, y with the font
+*/
 begin_method(SS_FONT, ssFontDrawText, 3)
   if (This->ShouldRender()) {
     arg_int(x);
@@ -4767,6 +5634,9 @@ end_method()
 
 ///////////////////////////////////////
 
+/**
+    - draws scaled text (1.0 = normal) with (x,y) as the upper left corner
+*/
 begin_method(SS_FONT, ssFontDrawZoomedText, 4)
   if (This->ShouldRender()) {
     arg_int(x);
@@ -4780,6 +5650,18 @@ end_method()
 
 ///////////////////////////////////////
 
+/**
+    - draws a word-wrapped text at (x, y) with the width w and height h. The
+      offset is the number of pixels which the number of pixels from y which 
+      the actual drawing starts at.
+  Note: 'text' can have the following special characters within it:
+      \n - newline
+      \t - tab
+      \" - double quote
+      \' - single quote
+  
+     For example: font_object.drawTextBox(16, 16, 200, 200, 0, "Line One\nLine Two");
+*/
 begin_method(SS_FONT, ssFontDrawTextBox, 6)
   if (This->ShouldRender()) {
     arg_int(x);
@@ -4794,12 +5676,18 @@ end_method()
 
 ///////////////////////////////////////
 
+/**
+    - returns the height of the font, in pixels
+*/
 begin_method(SS_FONT, ssFontGetHeight, 0)
   return_int(object->font->GetMaxHeight());
 end_method()
 
 ///////////////////////////////////////
 
+/**
+    - returns the width of a given string, in pixels
+*/
 begin_method(SS_FONT, ssFontGetStringWidth, 1)
   arg_str(text);
   return_int(object->font->GetStringWidth(text));
@@ -4807,6 +5695,9 @@ end_method()
 
 ///////////////////////////////////////
 
+/**
+    - returns the height of the string as if it was drawn by drawTextBox
+*/
 begin_method(SS_FONT, ssFontGetStringHeight, 2)
   arg_str(text);
   arg_int(width);
@@ -4815,6 +5706,9 @@ end_method()
 
 ///////////////////////////////////////
 
+/**
+    - returns a copy of the font object
+*/
 begin_method(SS_FONT, ssFontClone, 0)
   return_object(CreateFontObject(cx, object->font, object->destroy_me));
 end_method()
@@ -4871,6 +5765,11 @@ end_finalizer()
 
 ///////////////////////////////////////
 
+/**
+    - draws the window at (x, y) with the width and height of w and h.
+      Note that window corners and edges are drawn outside of the width 
+      and height of the window.
+*/
 begin_method(SS_WINDOWSTYLE, ssWindowStyleDrawWindow, 4)
   if (This->ShouldRender()) {
     arg_int(x);
@@ -4884,6 +5783,10 @@ end_method()
 
 ///////////////////////////////////////
 
+/**
+    - sets the color mask for a windowstyle
+    @see ApplyColorMask
+*/
 begin_method(SS_WINDOWSTYLE, ssWindowStyleSetColorMask, 1)
   arg_color(color);
   object->mask = color;
@@ -4892,6 +5795,9 @@ end_method()
 
 ///////////////////////////////////////
 
+/**
+    - gets the color mask being used by the windowstyle object
+*/
 begin_method(SS_WINDOWSTYLE, ssWindowStyleGetColorMask, 0)
   return_object(CreateColorObject(cx, object->mask));
 end_method()
@@ -4955,6 +5861,9 @@ end_finalizer()
 
 ///////////////////////////////////////
 
+/**
+    - draws the image onto the video buffer at x,y
+*/
 begin_method(SS_IMAGE, ssImageBlit, 2)
   if (This->ShouldRender()) {
     arg_int(x);
@@ -4965,6 +5874,10 @@ end_method()
 
 ///////////////////////////////////////
 
+/**
+    - draws the image into the video buffer, except that the color passed
+      as 'mask' tints the image
+*/
 begin_method(SS_IMAGE, ssImageBlitMask, 3)
   if (This->ShouldRender()) {
     arg_int(x);
@@ -5007,6 +5920,11 @@ void CalculateRotateBlitPoints(int tx[4], int ty[4], int x, int y, int w, int h,
 
 ///////////////////////////////////////
 
+/**
+    - draws the image into the video buffer, except that the image is rotates 
+      in  anti-clockwise in radians, which have a range of 0-2*pi. 
+      (x,y) is the center of the blit.
+*/
 begin_method(SS_IMAGE, ssImageRotateBlit, 3)
   if (This->ShouldRender()) {
     arg_int(x);
@@ -5028,6 +5946,12 @@ end_method()
 
 ///////////////////////////////////////
 
+/**
+    - draws the image into the video buffer with zooming, with the scaling 
+      depending on factor. Normally a factor of 1 will blit a normal looking
+      image. Between 0 and 1 will shrink the image. Any values greater than 1
+      will stretch the size of the image.
+*/
 begin_method(SS_IMAGE, ssImageZoomBlit, 3)
   if (This->ShouldRender()) {
     arg_int(x);
@@ -5046,6 +5970,12 @@ end_method()
 
 ///////////////////////////////////////
 
+/**
+    - draws the image into the video buffer with "transformation", where 
+      (x1, y1) is the upper left corner, (x2, y2) the upper right corner, 
+      (x3, y3) is the lower right corner, and (x4, y4) is the lower left 
+      corner.
+*/
 begin_method(SS_IMAGE, ssImageTransformBlit, 8)
   if (This->ShouldRender()) {
     arg_int(x1);
@@ -5065,6 +5995,9 @@ end_method()
 
 ///////////////////////////////////////
 
+/**
+    - transformBlit + blitMask
+*/
 begin_method(SS_IMAGE, ssImageTransformBlitMask, 9)
   if (This->ShouldRender()) {
     arg_int(x1);
@@ -5085,6 +6018,9 @@ end_method()
 
 ///////////////////////////////////////
 
+/**
+    - returns a new surface object from the image
+*/
 begin_method(SS_IMAGE, ssImageCreateSurface, 0)
   int width  = GetImageWidth(object->image);
   int height = GetImageHeight(object->image);
@@ -5173,6 +6109,10 @@ end_finalizer()
 
 ////////////////////////////////////////
 
+/**
+    - Apply the colormatrix to the pixels contained in x, y, w, h
+    @see CreateColorMatrix
+*/
 begin_method(SS_SURFACE, ssSurfaceApplyColorFX, 5)
   arg_int(x);
   arg_int(y);
@@ -5185,6 +6125,10 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - Apply 4 color matrixes. Each corner has a seperate color matrix.
+    @see CreateColorMatrix
+*/
 begin_method(SS_SURFACE, ssSurfaceApplyColorFX4, 8)
   arg_int(x);
   arg_int(y);
@@ -5200,6 +6144,9 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - draws the surface to the video buffer at (x,y)
+*/
 begin_method(SS_SURFACE, ssSurfaceBlit, 2)
   if (This->ShouldRender()) {
 
@@ -5218,6 +6165,9 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - draws 'surface' onto the surface_object at (x, y)
+*/
 begin_method(SS_SURFACE, ssSurfaceBlitSurface, 3)
 
   arg_surface(surface);
@@ -5232,6 +6182,9 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - returns an image object from the surface object
+*/
 begin_method(SS_SURFACE, ssSurfaceCreateImage, 0)
 
   IMAGE image = CreateImage(
@@ -5250,6 +6203,12 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - pass it with either BLEND or REPLACE
+      REPLACE mode will make the surface erase the pixels needed when doing a 
+              drawing operation (setpixel, line, rectangle...)
+      BLEND will blend the pixels needed when doing a drawing operation
+*/
 begin_method(SS_SURFACE, ssSurfaceSetBlendMode, 1)
   arg_int(mode);
   object->surface->SetBlendMode(mode == CImage32::REPLACE ? CImage32::REPLACE : CImage32::BLEND);
@@ -5257,6 +6216,9 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - returns the color of the pixel at (x,y)
+*/
 begin_method(SS_SURFACE, ssSurfaceGetPixel, 2)
   arg_int(x);
   arg_int(y);
@@ -5273,6 +6235,9 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - sets the pixel at (x,y) to 'color'
+*/
 begin_method(SS_SURFACE, ssSurfaceSetPixel, 3)
   arg_int(x);
   arg_int(y);
@@ -5291,6 +6256,9 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - sets the alpha of the surface
+*/
 begin_method(SS_SURFACE, ssSurfaceSetAlpha, 1)
   arg_int(alpha);
 
@@ -5299,12 +6267,21 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - replace all pixels of the color oldColor in the surface with newColor
+*/
 begin_method(SS_SURFACE, ssSurfaceReplaceColor, 2)
   arg_color(oldColor);
   arg_color(newColor);
   object->surface->ReplaceColor(oldColor, newColor);
 end_method()
 
+////////////////////////////////////////
+
+/**
+    - draws a line onto the surface starting from (x1, y1) to (x2, y2) with 
+      the color
+*/
 begin_method(SS_SURFACE, ssSurfaceLine, 5)
   arg_int(x1);
   arg_int(y1);
@@ -5317,6 +6294,10 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - draws a filled rectangle onto the surface from (x1, y1) to (x2, y2)
+      with 'color'
+*/
 begin_method(SS_SURFACE, ssSurfaceRectangle, 5)
   arg_int(x1);
   arg_int(y1);
@@ -5329,6 +6310,10 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - draws a filled triangle with the points (x1, y1), (x2, y2), (x3, y3), 
+      with 'color'
+*/
 begin_method(SS_SURFACE, ssSurfaceTriangle, 7)
   arg_int(x1);
   arg_int(y1);
@@ -5343,6 +6328,11 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - rotates the surface anti-clockwise with the range 0 - 2*pi. The resize 
+      flag is a boolean to tell the engine to resize the surface if needed
+      to accomodate the rotated image.
+*/
 begin_method(SS_SURFACE, ssSurfaceRotate, 2)
   arg_int(degrees);
   arg_bool(autosize);
@@ -5359,6 +6349,10 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - resizes the surface images. This does not stretch or shrink the image
+      inside the surface.
+*/
 begin_method(SS_SURFACE, ssSurfaceResize, 2)
   arg_int(w);
   arg_int(h);
@@ -5378,6 +6372,9 @@ end_method()
 
 ////////////////////////////////////////
 
+/**
+    - stretches or shrinks the surface to the new width w and height h
+*/
 begin_method(SS_SURFACE, ssSurfaceRescale, 2)
   arg_int(w);
   arg_int(h);
@@ -5398,18 +6395,27 @@ end_method();
 
 ////////////////////////////////////////
 
+/**
+    - flips the surface horizontally
+*/
 begin_method(SS_SURFACE, ssSurfaceFlipHorizontally, 0)
   object->surface->FlipHorizontal();
 end_method()
 
 ////////////////////////////////////////
 
+/**
+    - flips the surface vertically
+*/
 begin_method(SS_SURFACE, ssSurfaceFlipVertically, 0)
   object->surface->FlipVertical();
 end_method()
 
 ////////////////////////////////////////
 
+/**
+    - returns a surface object, which is a copy of this surface object
+*/
 begin_method(SS_SURFACE, ssSurfaceClone, 0)
   // create the surface
   CImage32* surface = new CImage32(*object->surface);
@@ -5418,6 +6424,11 @@ end_method()
 
 ///////////////////////////////////////
 
+/**
+    - returns a new surface object with the height and width of h and w, with
+      part of image at (x,y) from the surface_object with the width w and 
+      height h.
+*/
 begin_method(SS_SURFACE, ssSurfaceCloneSection, 4)
   arg_int(x);
   arg_int(y);
@@ -5498,6 +6509,10 @@ bool GetLookUpTable(JSContext* cx, JSObject* array, unsigned char lookup[256]) {
 
 ///////////////////////////////////////
 
+/**
+    The lookup parameters are arrays of 256 elements containg the new pixel values.
+    e.g. var invert_lookup = [255, 254, 253, 252, 251, ..., 4, 3, 2, 1, 0];
+*/
 begin_method(SS_SURFACE, ssSurfaceApplyLookup, 8)
 
   arg_int(x);
@@ -5545,6 +6560,9 @@ end_method()
 
 ///////////////////////////////////////
 
+/**
+    - draws 'text' at x, y with the font onto the surface_object
+*/
 begin_method(SS_SURFACE, ssSurfaceDrawText, 4)
   arg_font(font_obj);
   arg_int(x);
@@ -5557,6 +6575,10 @@ end_method()
 
 ///////////////////////////////////////
 
+/**
+    - draws scaled text (1.0 = normal) with (x,y) as the upper left corner
+      onto the surface_object
+*/
 begin_method(SS_SURFACE, ssSurfaceDrawZoomedText, 5)
   arg_font(font_obj);
   arg_int(x);
@@ -5570,6 +6592,12 @@ end_method()
 
 ///////////////////////////////////////
 
+/**
+    - draws a word-wrapped text at (x, y) onto the surface_object with the width w and height h.
+      The offset is the number of pixels which the number of pixels from y which 
+      the actual drawing starts at. 
+      See font_object.drawTextBox for more detail.
+*/
 begin_method(SS_SURFACE, ssSurfaceDrawTextBox, 7)
   arg_font(font_obj);
   arg_int(x);
@@ -5585,6 +6613,9 @@ end_method()
 
 ///////////////////////////////////////
 
+/**
+    - saves the surface_object as a png image using the filename 'filename'
+*/
 begin_method(SS_SURFACE, ssSurfaceSave, 1)
   arg_str(filename);
   const char* type = "png";
@@ -6048,22 +7079,30 @@ end_finalizer()
 
 ///////////////////////////////////////
 
+/**
+    - returns bytearray with bytearray_to_append attached to the end of it
+*/
 begin_method(SS_BYTEARRAY, ssByteArrayConcat, 1)
-  arg_byte_array(byte_array);
+  arg_byte_array(byte_array_to_append);
 
-  int size =  object->size + byte_array->size;
+  int size =  object->size + byte_array_to_append->size;
   byte* data = new byte[size];
     memcpy(data, object->array, object->size);
-    memcpy(data + object->size, byte_array->array, byte_array->size);
+    memcpy(data + object->size, byte_array_to_append->array, byte_array_to_append->size);
 
     JSObject* concated_byte_array = CreateByteArrayObject(cx, size, data);
   delete[] data;
 
-  return_object ( concated_byte_array );
+  return_object(concated_byte_array);
 end_method()
 
 ///////////////////////////////////////
 
+/**
+    - returns a slice of the bytearray starting at start, and ending at end
+      or the end of the bytearray if end is omitted.
+      If end is a negative number, the end point is started from the end of the bytearray.
+*/
 begin_method(SS_BYTEARRAY, ssByteArraySlice, 1)
   arg_int(start_slice);
   int end_slice = object->size;
@@ -6099,7 +7138,7 @@ begin_method(SS_BYTEARRAY, ssByteArraySlice, 1)
     JSObject* byte_array = CreateByteArrayObject(cx, size, data);
   delete[] data;
 
-  return_object ( byte_array );
+  return_object(byte_array);
 end_method()
 
 ////////////////////////////////////////

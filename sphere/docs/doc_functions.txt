@@ -420,6 +420,7 @@ log_object.endBlock()
 
     SetLayerVisible(layer, visible)
       - shows 'layer' if visible == true, and hides it if visible == false
+
      IsLayerReflective(layer)
       - returns true if the layer is reflective
 
@@ -931,6 +932,7 @@ log_object.endBlock()
     - draws the window at (x, y) with the width and height of w and h.
       Note that window corners and edges are drawn outside of the width 
       and height of the window.
+
    windowstyle_object.setColorMask(color)
     - sets the color mask for a windowstyle (see ApplyColorMask)
 
@@ -1089,6 +1091,7 @@ log_object.endBlock()
     - returns a new surface object with the height and width of h and w, with
       part of image at (x,y) from the surface_object with the width w and 
       height h.
+
    surface_object.drawText(font, x, y, text)
     - draws 'text' at x, y with the font onto the surface_object
 
