@@ -85,6 +85,7 @@ private:
   afx_msg void OnFileImportBitmapToRWS();
   afx_msg void OnFileImportBitmapToRSS();
   afx_msg void OnFileImportBitmapToRTS();
+  afx_msg void OnFileImportImageToFont();
   afx_msg void OnFileImportVergeFontTemplate();
   afx_msg void OnFileImportVergeMap();
   afx_msg void OnFileImportVergeSpriteset();

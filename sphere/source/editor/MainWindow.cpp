@@ -98,6 +98,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_FILE_IMPORT_BITMAPTORWS,       OnFileImportBitmapToRWS)
   ON_COMMAND(ID_FILE_IMPORT_BITMAPTORSS,       OnFileImportBitmapToRSS)
   ON_COMMAND(ID_FILE_IMPORT_BITMAPTORTS,       OnFileImportBitmapToRTS)
+  ON_COMMAND(ID_FILE_IMPORT_IMAGETOFONT,       OnFileImportImageToFont)
   ON_COMMAND(ID_FILE_IMPORT_VERGEFONTTEMPLATE, OnFileImportVergeFontTemplate)
   ON_COMMAND(ID_FILE_IMPORT_VERGEMAP,          OnFileImportVergeMap)
   ON_COMMAND(ID_FILE_IMPORT_VERGESPRITESET,    OnFileImportVergeSpriteset)
@@ -1375,6 +1376,119 @@ CMainWindow::OnFileImportBitmapToRTS()
   if (!tileset.Save(OutFileDialog.GetPathName()))
   {
     MessageBox("Can't save tileset!");
+    return;
+  }
+
+  MessageBox("Image Converted!");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnFileImportImageToFont()
+{
+  CImageFileDialog InFileDialog(FDM_OPEN);
+  if (InFileDialog.DoModal() != IDOK)
+    return;
+
+  CFontFileDialog OutFileDialog(FDM_SAVE);
+  if (OutFileDialog.DoModal() != IDOK)
+    return;
+
+  CImage32 image;
+  if (!image.Load(InFileDialog.GetPathName())) {
+    MessageBox("Could not load image");
+    return;
+  }
+
+  RGBA no_font_color = CreateRGBA(255, 0, 0, 255);
+
+  int border_size = 1;
+  if (MessageBox("Does this image use a 1 pixel border?", "Image", MB_ICONQUESTION | MB_YESNO) == IDNO) {
+    border_size = 0;
+  }
+
+  const int characters_per_row = 16;
+  const int characters_per_col = 16;
+
+  int font_width  = (image.GetWidth()  - ((characters_per_row + 1) * border_size)) / characters_per_row;
+  int font_height = (image.GetHeight() - ((characters_per_row + 1) * border_size)) / characters_per_col;
+
+  if (image.GetWidth()  != (font_width  * characters_per_row) + ((characters_per_row + 1) * border_size)
+   || image.GetHeight() != (font_height * characters_per_col) + ((characters_per_col + 1) * border_size)) {
+    MessageBox("Invalid image width/height");
+    return;
+  }
+
+  sFont sfont;
+  if (!sfont.Create(256, font_width, font_height))
+    return;
+
+  int i = 0;
+
+  for (int fy = 0; fy < characters_per_col; fy++) {
+    for (int fx = 0; fx < characters_per_row; fx++) {
+
+      CImage32& c = sfont.GetCharacter(i);
+      c.SetBlendMode(CImage32::REPLACE);
+      int offset_x = ((fx + 1) * border_size) + (font_width  * fx);
+      int offset_y = ((fy + 1) * border_size) + (font_height * fy);
+
+      // extract the character from the image
+      for (int iy = 0; iy < c.GetHeight(); iy++) {
+        for (int ix = 0; ix < c.GetWidth(); ix++) {
+          c.SetPixel(ix, iy, image.GetPixel(offset_x + ix, offset_y + iy));
+        }
+      }
+
+      // now work out the size of the character
+      int width  = c.GetWidth();
+      int height = c.GetHeight();
+
+      bool done = false;
+      for (int x = width - 1; x >= 0; x--) {
+        for (int y = 0; y < c.GetHeight(); y++) {
+          if (c.GetPixel(x, y).red   != no_font_color.red
+           || c.GetPixel(x, y).green != no_font_color.green
+           || c.GetPixel(x, y).blue  != no_font_color.blue
+           || c.GetPixel(x, y).alpha != no_font_color.alpha) {
+            done = true;
+            break;
+          }
+        }
+        if (done) { break; } else { width--; }
+      }
+
+      done = false;
+      for (int y = height - 1; y >= 0; y--) {
+        for (int x = 0; x < c.GetWidth(); x++) {
+          if (c.GetPixel(x, y).red   != no_font_color.red
+           || c.GetPixel(x, y).green != no_font_color.green
+           || c.GetPixel(x, y).blue  != no_font_color.blue
+           || c.GetPixel(x, y).alpha != no_font_color.alpha) {
+            done = true;
+            break;
+          }
+        }
+        if (done) { break; } else { height--; }
+      }
+
+      // resize the character
+      c.Resize(width, height);
+      if (c.GetWidth() != width || c.GetHeight() != height) {
+        char string[1024];
+        sprintf(string, "Error resizing character %d to %d %d from %d %d", i, width, height, c.GetWidth(), c.GetHeight());
+        MessageBox(string);
+        return;
+      }
+
+      i += 1;
+    }
+  }
+
+  if (!sfont.Save(OutFileDialog.GetPathName()))
+  {
+    MessageBox("Can't save font!");
     return;
   }
 
