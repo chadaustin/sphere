@@ -106,13 +106,6 @@ private:
     std::vector<std::string> extensions;
     FTL.GetFileTypeExtensions(filetype::ft, (mode & FDM_SAVE ? true : false), extensions);
 
-    /*
-    if (mode & FDM_OPEN) { 
-      FTL.GetFileTypeExtensions(filetype::ft, extensions);
-    } else {
-      extensions.push_back(FTL.GetDefaultExtension(filetype::ft));
-    }*/
-
     // make a semicolon-separated string
     std::string filters;
     for (int i = 0; i < extensions.size(); i++) {

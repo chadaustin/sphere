@@ -701,6 +701,7 @@ std::string GenerateSupportedExtensionsFilter() {
   }
 
   filter += "All Files (*.*)|*.*||";
+
   return filter;
 }
 

@@ -17,7 +17,7 @@ static const char* Extensions[] = {
   /* sounds */       "Sound Files:ogg(MP3 Files(mp3,mp2),Ogg Vorbis Files(ogg),MOD Files(mod,s3m,xm,it),WAV Files(wav),FLAC Files(flac))",
   /* fonts */        "Font Files:rfn(Sphere Font Files(rfn))",
   /* windowstyles */ "Window Style Files:rws(Sphere Window Styles(rws))",
-  /* images */       "", //Image Files:png(JPEG Images(jpeg,jpg,jpe),PNG Images(png),PCX Images(pcx),Windows Bitmap Images(bmp),Truevision Targa(tga),Gif(gif),Portable Bitmap(pbm),Portable Graymap(pgm),Portable Pixel Map(ppm))",
+  /* images */       "", //Image Files:png(JPEG Images(jpeg,jpg,jpe),PNG Images(png),PCX Images(pcx),Windows Bitmap Images(bmp),Truevision Targa(tga),Gif(gif))",
   /* animations */   "Animation Files:mng,flic(MNG Animations(mng),FLIC Animations(flic,flc,fli))",
   /* tilesets */     "Tileset Files:rts(Sphere Tileset Files(rts))",
   /* packages */     "Package Files:spk(Sphere Package Files(spk))",
@@ -88,7 +88,7 @@ CFileTypeLibrary::CFileTypeLibrary()
 const char*
 CFileTypeLibrary::GetFileTypeLabel(int file_type, bool save)
 {
-  if (file_type == 6) {
+  if (file_type == GT_IMAGES) {
     return "Image Files";
   }
 
@@ -100,7 +100,7 @@ CFileTypeLibrary::GetFileTypeLabel(int file_type, bool save)
 void
 CFileTypeLibrary::GetFileTypeExtensions(int file_type, bool save, vector<string>& extensions)
 {
-  if (file_type == 6) {
+  if (file_type == GT_IMAGES) {
     corona::FileFormatDesc** formats =
       save ? corona::GetSupportedWriteFormats() : corona::GetSupportedReadFormats();
 
@@ -109,18 +109,13 @@ CFileTypeLibrary::GetFileTypeExtensions(int file_type, bool save, vector<string>
         extensions.push_back(formats[i]->getExtension(j));
       }
     }
-      /*
-      for (int i = 0; i < m_FileTypes[file_type].sub_types.size(); i++) {
-        for (int j = 0; j < m_FileTypes[file_type].sub_types[i].extensions.size(); j++) {
-          std::string ext = m_FileTypes[file_type].sub_types[i].extensions[j];
-          if (ext == "png" || ext == "tga" || ext == "pbm" || ext == "pgm" || ext == "ppm" || ext == "pcx")
-            extensions.push_back(ext);
-        }
-      }
-      */
   }
-  if (file_type == 7 && save) {
-    extensions.push_back(m_FileTypes[file_type].sub_types[0].extensions[0]);
+  else if (file_type == GT_ANIMATIONS && save) {
+    for (int i = 0; i < 1 && i < m_FileTypes[file_type].sub_types.size(); i++) {
+      for (int j = 0; j < 1 && j < m_FileTypes[file_type].sub_types[i].extensions.size(); j++) {
+        extensions.push_back(m_FileTypes[file_type].sub_types[i].extensions[j]);
+      }
+    }
   }
   else {
     for (int i = 0; i < m_FileTypes[file_type].sub_types.size(); i++) {
@@ -136,7 +131,7 @@ CFileTypeLibrary::GetFileTypeExtensions(int file_type, bool save, vector<string>
 const char*
 CFileTypeLibrary::GetDefaultExtension(int file_type, bool save)
 {
-  if (file_type == 6) {
+  if (file_type == GT_IMAGES) {
     corona::FileFormatDesc** formats =
       save ? corona::GetSupportedWriteFormats() : corona::GetSupportedReadFormats();
     return formats[0]->getExtension(0);
@@ -150,7 +145,7 @@ CFileTypeLibrary::GetDefaultExtension(int file_type, bool save)
 int
 CFileTypeLibrary::GetNumSubTypes(int file_type, bool save)
 {
-  if (file_type == 6) {
+  if (file_type == GT_IMAGES) {
     corona::FileFormatDesc** formats =
       save ? corona::GetSupportedWriteFormats() : corona::GetSupportedReadFormats();
 
@@ -162,7 +157,7 @@ CFileTypeLibrary::GetNumSubTypes(int file_type, bool save)
     return num_sub_types;
   }
 
-  if (file_type == 7 && save)
+  if (file_type == GT_ANIMATIONS && save)
     return 1;
 
   return m_FileTypes[file_type].sub_types.size();
@@ -197,13 +192,13 @@ const char* GetImageSubTypeLabel(const char* ext) {
 const char*
 CFileTypeLibrary::GetSubTypeLabel(int file_type, int sub_type, bool save)
 {
-  if (file_type == 6) {
+  if (file_type == GT_IMAGES) {
     corona::FileFormatDesc** formats =
       save ? corona::GetSupportedWriteFormats() : corona::GetSupportedReadFormats();
 
     for (size_t i = 0; formats[i]; ++i) {
       if (sub_type == i) {
-        return GetImageSubTypeLabel(formats[i]->getExtension(0)); // should be getExtensionDescription
+        return GetImageSubTypeLabel(formats[i]->getExtension(0));
       }
     }
 
@@ -218,7 +213,7 @@ CFileTypeLibrary::GetSubTypeLabel(int file_type, int sub_type, bool save)
 void
 CFileTypeLibrary::GetSubTypeExtensions(int file_type, int sub_type, bool save, vector<string>& extensions)
 {
-  if (file_type == 6) {
+  if (file_type == GT_IMAGES) {
     corona::FileFormatDesc** formats =
       save ? corona::GetSupportedWriteFormats() : corona::GetSupportedReadFormats();
 
