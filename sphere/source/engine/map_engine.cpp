@@ -4582,6 +4582,8 @@ CMapEngine::GetObstructingTile(const char* name, int x, int y, int& result)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "../common/minmax.hpp"
+
 int
 CMapEngine::FindObstructingTile(int person, int x, int y)
 {
@@ -4593,10 +4595,10 @@ CMapEngine::FindObstructingTile(int person, int x, int y)
   int bx = (p.base_x1 + p.base_x2) / 2;
   int by = (p.base_y1 + p.base_y2) / 2;
 
-  int x1 = x - bx + p.base_x1;
-  int y1 = y - by + p.base_y1;
-  int x2 = x - bx + p.base_x2;
-  int y2 = y - by + p.base_y2;
+  int x1 = x - bx + std::min(p.base_x1, p.base_x2);
+  int y1 = y - by + std::min(p.base_y1, p.base_y2);
+  int x2 = x - bx + std::max(p.base_x2, p.base_x1);
+  int y2 = y - by + std::max(p.base_y2, p.base_y2);
 
   // test per-tile obstructions
   int min_x = (x1 < x2 ? x1 : x2);
@@ -4622,8 +4624,8 @@ CMapEngine::FindObstructingTile(int person, int x, int y)
       }
 
         // get the tile object
-      int t = m_Map.GetAnimationMap()[layer.GetTile(tx, ty)].current;
-      sTile& tile = m_Map.GetMap().GetTileset().GetTile(t);
+      const int t = m_Map.GetAnimationMap()[layer.GetTile(tx, ty)].current;
+      const sTile& tile = m_Map.GetMap().GetTileset().GetTile(t);
 
       int tbx = tx * tile_width;
       int tby = ty * tile_height;
@@ -4794,7 +4796,6 @@ CMapEngine::IsObstructed(int person, int x, int y, int& obs_person)
   }
 
   obs_person = FindObstructingPerson(person, x, y);
-
   if (obs_person != -1)
     return true;
 

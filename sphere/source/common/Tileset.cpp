@@ -90,7 +90,7 @@ sTileset::Create(int num_tiles)
   word nexttile;                                \
   word delay;                                   \
   byte obsolete2_;                              \
-  byte blocked;                                 \
+  byte block_type;                              \
   word num_segments;                            \
   word name_length;                             \
   byte reserved[20];
@@ -430,11 +430,11 @@ sTileset::LoadFromFile(IFile* file)
     if (header.has_obstructions) {
     
       // skip old obstruction data if it exists
-      if (tib.blocked == 1) {
+      if (tib.block_type == 1) {
 
         file->Seek(file->Tell() + m_TileWidth * m_TileHeight);
 
-      } else if (tib.blocked == 2) {
+      } else if (tib.block_type == 2) {
 
         // read per-tile obstruction segments  
         for (int j = 0; j < tib.num_segments; j++) {
@@ -468,32 +468,36 @@ sTileset::SaveToFile(IFile* file) const
   memset(&header, 0, sizeof(header));
   memcpy(header.signature, ".rts", 4);
   header.version = 1;
-  header.num_tiles = m_Tiles.size();
-  header.tile_width = m_TileWidth;
+  header.num_tiles   = m_Tiles.size();
+  header.tile_width  = m_TileWidth;
   header.tile_height = m_TileHeight;
-  header.tile_bpp = 32;
+  header.tile_bpp    = 32;
   header.compression = 0;
   header.has_obstructions = 1;
-  file->Write(&header, sizeof(header));
+  if (file->Write(&header, sizeof(header)) != sizeof(header))
+    return false;
 
   // write the tiles
-  for (unsigned i = 0; i < m_Tiles.size(); i++)
-    file->Write(m_Tiles[i].GetPixels(), sizeof(RGBA) * m_TileWidth * m_TileHeight);
+  for (unsigned int i = 0; i < m_Tiles.size(); i++)
+    if (file->Write(m_Tiles[i].GetPixels(), (sizeof(RGBA) * m_TileWidth * m_TileHeight)) != (sizeof(RGBA) * m_TileWidth * m_TileHeight))
+      return false;
 
   // write the tile information blocks
   TILE_INFORMATION_BLOCK tib;
   memset(&tib, 0, sizeof(tib));
-  for (unsigned i = 0; i < m_Tiles.size(); i++)
+  for (unsigned int i = 0; i < m_Tiles.size(); i++)
   {
     const sObstructionMap& obs_map = m_Tiles[i].GetObstructionMap();
 
     tib.animated     = m_Tiles[i].IsAnimated();
     tib.nexttile     = m_Tiles[i].GetNextTile();
     tib.delay        = m_Tiles[i].GetDelay();
-    tib.blocked      = 2;
+    tib.block_type   = 2;
     tib.num_segments = obs_map.GetNumSegments();
     tib.name_length  = strlen(m_Tiles[i].GetName().c_str());
-    file->Write(&tib, sizeof(tib));
+
+    if (file->Write(&tib, sizeof(tib)) != sizeof(tib))
+      return false;
 
     // write the tile's name
     if (tib.name_length > 0) {
@@ -501,15 +505,16 @@ sTileset::SaveToFile(IFile* file) const
     }
 
     // write the obstruction segments
-    for (int i = 0; i < obs_map.GetNumSegments(); i++) {
+    for (int j = 0; j < obs_map.GetNumSegments(); j++) {
       word coordinates[4] = {
-        obs_map.GetSegment(i).x1,
-        obs_map.GetSegment(i).y1,
-        obs_map.GetSegment(i).x2,
-        obs_map.GetSegment(i).y2
+        obs_map.GetSegment(j).x1,
+        obs_map.GetSegment(j).y1,
+        obs_map.GetSegment(j).x2,
+        obs_map.GetSegment(j).y2
       };
 
-      file->Write(coordinates, 4 * sizeof(word));
+      if (file->Write(coordinates, (4 * sizeof(word))) != (4 * sizeof(word)))
+        return false;
     }
   }
 
