@@ -49,7 +49,7 @@ BEGIN_MESSAGE_MAP(CTilesetView, CWnd)
   ON_COMMAND(ID_TILESETVIEW_MOVE_BACK,    OnMoveBack)
   ON_COMMAND(ID_TILESETVIEW_MOVE_FORWARD, OnMoveForward)
 
-  ON_COMMAND(ID_TILESETVIEW_VIEW_TILEOBSTRUCTIONS, OnViewTileObstructions)
+  ON_COMMAND(ID_TILESETVIEW_VIEW_OBSTRUCTIONS, OnViewTileObstructions)
 
 //  ON_COMMAND(ID_TILESETVIEW_ER_ROTATE_CW,             OnEditRangeRotateCW)
 //  ON_COMMAND(ID_TILESETVIEW_ER_ROTATE_CCW,            OnEditRangeRotateCCW)
@@ -557,6 +557,10 @@ CTilesetView::OnRButtonUp(UINT flags, CPoint point)
   }
   if (m_SelectedTile == m_Tileset->GetNumTiles() - 1) {
     EnableMenuItem(menu, ID_TILESETVIEW_MOVE_FORWARD, MF_BYCOMMAND | MF_GRAYED);
+  }
+
+  if (m_ShowTileObstructions) {
+    CheckMenuItem(menu, ID_TILESETVIEW_VIEW_OBSTRUCTIONS, MF_BYCOMMAND | MF_CHECKED);
   }
 
   m_MenuShown = true;

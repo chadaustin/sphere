@@ -647,7 +647,7 @@ BEGIN
         BEGIN
             MENUITEM "&Grid",                       ID_TILESETVIEW_VIEWGRID
             , GRAYED
-            MENUITEM "&Tile Obstructions",          ID_TILESETVIEW_VIEW_TILEOBSTRUCTIONS
+            MENUITEM "&Tile Obstructions",          ID_TILESETVIEW_VIEW_OBSTRUCTIONS
 
         END
         MENUITEM SEPARATOR
