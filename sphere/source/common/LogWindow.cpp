@@ -20,7 +20,9 @@ CLogWindow::CLogWindow(HINSTANCE instance, const char* caption)
   // thread routine needs access to parameters
   m_Instance = instance;
   m_Caption  = new char[strlen(caption) + 1];
-  strcpy(m_Caption, caption);
+  if (m_Caption) {
+    strcpy(m_Caption, caption);
+  }
 
   // create thread
   DWORD thread_id;
@@ -39,7 +41,6 @@ CLogWindow::~CLogWindow()
 {
   // tell thread to shut down
 
-
   delete[] m_Caption;
 }
 
@@ -50,6 +51,8 @@ CLogWindow::WriteString(const char* string)
 {
   // combine the two strings
   char* concatenated = new char[strlen(m_CurrentString) + strlen(string) + 1];
+  if (!concatenated)
+    return;
   char* delete_me = concatenated;
   strcpy(concatenated, m_CurrentString);
   strcat(concatenated, string);

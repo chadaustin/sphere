@@ -90,7 +90,7 @@ CDocumentWindow::LoadPaletteStates()
 {
   // load the bar state based on the document class
 	CDockState state; 
-	CFrameWnd * pFrame = (CFrameWnd*)AfxGetApp()->m_pMainWnd;
+	CFrameWnd* pFrame = (CFrameWnd*)AfxGetApp()->m_pMainWnd;
 
 	state.LoadState(GetRuntimeClass()->m_lpszClassName);
 
@@ -364,7 +364,8 @@ CDocumentWindow::OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactiv
   CMDIChildWnd::OnMDIActivate(activate, active_window, inactive_window);
   CFrameWnd* pFrame = (CFrameWnd*)AfxGetApp()->m_pMainWnd;
 
-  UpdateToolBars();
+  if (activate)
+    UpdateToolBars();
 
   if (activate)
   {

@@ -27,6 +27,8 @@ public:
 
 private:
   audiere::OutputStreamPtr m_Sound;
+  bool m_ClosedAudio;
+  std::string m_Filename;
 };
 
 

@@ -16,6 +16,9 @@ BEGIN_MESSAGE_MAP(CAnimationWindow, CDocumentWindow)
   ON_COMMAND(ID_ANIMATION_PLAY, OnPlay)
   ON_COMMAND(ID_ANIMATION_STOP, OnStop)
 
+  ON_UPDATE_COMMAND_UI(ID_ANIMATION_PLAY, OnUpdatePlayCommand)
+  ON_UPDATE_COMMAND_UI(ID_ANIMATION_STOP, OnUpdateStopCommand)
+
 END_MESSAGE_MAP()
 
 
@@ -25,6 +28,7 @@ CAnimationWindow::CAnimationWindow(const char* animation)
 : CDocumentWindow(animation, IDR_ANIMATION)
 , m_BlitFrame(NULL)
 , m_Animation(NULL)
+, m_Delay(0)
 {
   m_Animation = LoadAnimation(animation);
   if (!m_Animation) {
@@ -133,6 +137,21 @@ afx_msg void
 CAnimationWindow::OnStop()
 {
   KillTimer(m_Timer);
+  m_Delay = 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CAnimationWindow::OnUpdatePlayCommand(CCmdUI* cmdui) {
+  //cmdui->Enable(m_Delay == 0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CAnimationWindow::OnUpdateStopCommand(CCmdUI* cmdui) {
+  // cmdui->Enable(m_Delay != 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

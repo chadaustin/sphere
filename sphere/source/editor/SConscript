@@ -25,6 +25,7 @@ sources = Split("""
     DIBSection.cpp
     Debug.cpp
     DocumentWindow.cpp
+    EditRange.cpp
     Editor.cpp
     EntityPersonDialog.cpp
     EntityTriggerDialog.cpp

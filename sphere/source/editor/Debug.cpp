@@ -9,7 +9,7 @@ CLogDispatcher DebugLog__;
 
 void InitializeLog()
 {
-//  DebugLog__.AddLog(new CLogFile("sde.log"));
+  // DebugLog__.AddLog(new CLogFile("sde.log"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
 #include "Audio.hpp"
-
+// #include <assert.h>
 
 static int s_InitCount = 0;
 static audiere::AudioDevicePtr s_Device;
@@ -21,6 +21,7 @@ static void InitializeAudio()
 
 static void CloseAudio()
 {
+  // assert(s_InitCount >= 1);
   if (--s_InitCount == 0) {
     s_Device = 0;
   }
@@ -30,6 +31,7 @@ static void CloseAudio()
 
 CSound::CSound()
 : m_Sound(NULL)
+, m_ClosedAudio(false)
 {
   InitializeAudio();
 }
@@ -38,7 +40,8 @@ CSound::CSound()
 
 CSound::~CSound()
 {
-  CloseAudio();
+  if (!m_ClosedAudio)
+    CloseAudio();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -46,6 +49,7 @@ CSound::~CSound()
 bool
 CSound::Load(const char* filename)
 {
+  m_Filename = filename;
   m_Sound = audiere::OpenSound(s_Device.get(), filename, true);
   return bool(m_Sound);
 }
@@ -55,8 +59,25 @@ CSound::Load(const char* filename)
 void
 CSound::Play()
 {
-  if (m_Sound) {
-    m_Sound->play();
+  if (!s_Device) {
+    InitializeAudio();
+    m_ClosedAudio = false;
+  }
+  else {
+    if (strcmp("null", s_Device.get()->getName()) == 0) {
+      CloseAudio();
+      m_ClosedAudio = true;
+      InitializeAudio();
+      m_ClosedAudio = false;
+    }
+  }
+
+  if (!IsPlaying()) {
+    if (!m_Sound) {
+      m_Sound = audiere::OpenSound(s_Device.get(), m_Filename.c_str(), true);
+    }
+    if (m_Sound)
+      m_Sound->play();
   }
 }
 
@@ -68,6 +89,12 @@ CSound::Stop()
   if (m_Sound) {
     m_Sound->stop();
     m_Sound->reset();
+    m_Sound = 0;
+  }
+
+  if (!m_ClosedAudio) {
+    m_ClosedAudio = true;
+    CloseAudio();
   }
 }
 

@@ -574,6 +574,14 @@ SOURCE=.\ImageWindow.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\common\LogWindow.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\LogWindow.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MapWindow.cpp
 # End Source File
 # Begin Source File

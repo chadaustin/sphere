@@ -24,6 +24,9 @@ private:
   afx_msg void OnPlay();
   afx_msg void OnStop();
 
+  afx_msg void OnUpdatePlayCommand(CCmdUI* cmdui);
+  afx_msg void OnUpdateStopCommand(CCmdUI* cmdui);
+
 private:
   IAnimation*  m_Animation;
   CDIBSection* m_BlitFrame;

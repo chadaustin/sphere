@@ -404,6 +404,28 @@ CProjectWindow::OnProjectItemOpen()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+bool RecycleFile(const char* filename)
+{
+  bool removed = false;
+  char directory[MAX_PATH];
+
+  SetCurrentDirectory("c:\recycled");
+
+  if (GetCurrentDirectory(MAX_PATH, directory)
+    && true) {
+    removed = !MoveFile(filename, "removed.png");
+    SetCurrentDirectory(directory);
+  }
+  else {
+    removed = !DeleteFile(filename);
+  }
+
+  return removed;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 afx_msg void
 CProjectWindow::OnProjectItemDelete()
 {
@@ -427,7 +449,7 @@ CProjectWindow::OnProjectItemDelete()
     return;
 
   // TODO: Move to recycle bin rather than delete
-  if (!DeleteFile(filename))
+  if (!RecycleFile(filename))
     MessageBox("Error: Could not delete file");
 
   m_Project->RefreshItems();

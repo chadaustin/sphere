@@ -1,3 +1,7 @@
+2003.12.28
+  - Made Sound player in editor better (it now requests an audio-device if needed)
+  - Made "Package Game!" show a percentage complete message in the status bar
+
 2003.12.25
   - Made Project View support multiple folders e.g. maps/towns/freddys.rmp and such
 

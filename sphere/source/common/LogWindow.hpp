@@ -17,10 +17,10 @@ public:
   ~CLogWindow();
 
 private:
-  virtual void WriteString(const char* string);
-  
   void AddString(const char* string);
+  virtual void WriteString(const char* string);
 
+private:
   static DWORD WINAPI ThreadRoutine(LPVOID parameter);
   static LRESULT CALLBACK WindowProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
 

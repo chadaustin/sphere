@@ -5,6 +5,7 @@
 #include "Keys.hpp"
 #include "Debug.hpp"
 #include "../engine/win32/win32_sphere_config.hpp"
+#include "../common/LogWindow.hpp"
 
 #include <afxmt.h>
 
@@ -13,14 +14,16 @@ static CMainWindow* g_MainWindow = NULL;
 
 std::string g_SphereDirectory;
 
-static CStatusBar* s_StatusBar;
+static CStatusBar* s_StatusBar = NULL;
+
+static CLogWindow* s_LogWindow = NULL;
 
 // the repository of all registred instances
 // beware of the mutex!
 
 const int MAX_ENTRIES = 100;
-const char * SPHERE_FILE_GUID = "{BD5C7EF2-BE67-4a47-8202-D8A168EFC65C}";
-const char * SPHERE_MUTEX_GUID = "{1C7F921C-C758-49d8-9E9E-B5EE7286D5EE}";
+const char* SPHERE_FILE_GUID  = "{BD5C7EF2-BE67-4a47-8202-D8A168EFC65C}";
+const char* SPHERE_MUTEX_GUID = "{1C7F921C-C758-49d8-9E9E-B5EE7286D5EE}";
 
 class CInstanceRepository
 {
@@ -40,7 +43,7 @@ public:
     }
 
 		m_Size = (int*)MapViewOfFile(m_hFileMapping, FILE_MAP_WRITE, 0, 0,
-                                 sizeof(int) + (sizeof(HWND)* MAX_ENTRIES));
+                                 sizeof(int) + (sizeof(HWND) * MAX_ENTRIES));
 		m_Instances = (HWND*)(((char*)m_Size) + sizeof(int));
 
 		// ASSERT(m_Size != NULL && m_Instances != NULL);
@@ -122,12 +125,12 @@ public:
 
 private:
 	// instances represented by their main window HWND
-	HWND	*  m_Instances;
-	int		*	 m_Size;
-	HANDLE   m_hFileMapping;
-	CMutex	 m_Mutex;
-	HWND     m_HWND;
-  bool     m_Created;
+	HWND*  m_Instances;
+	int*	 m_Size;
+	HANDLE m_hFileMapping;
+	CMutex m_Mutex;
+	HWND   m_HWND;
+  bool   m_Created;
 };
 
 // command-line parsers
@@ -241,6 +244,18 @@ CEditorApplication::InitInstance()
   SetCurrentDirectory(config_directory);
 
   g_SphereDirectory = config_directory;
+
+  /*
+  s_LogWindow = new CLogWindow(m_hInstance, "Sphere Log");
+  if (s_LogWindow) {
+    //s_LogWindow->AddString("Sphere Opened!");
+    char string[255];
+    for (int i = 0; i < 1000; i++) {
+      sprintf (string, "String %d", i);
+      //s_LogWindow->AddString(string);
+    }
+  }
+  */
 
   // create the main window
   CMainWindow* main_window = new CMainWindow();

@@ -307,9 +307,11 @@ CMainWindow::Create()
   DockControlBar(&m_ImageToolBar, AFX_IDW_DOCKBAR_TOP);
   DockControlBar(&m_MapToolBar,   AFX_IDW_DOCKBAR_TOP);
  
+#ifndef USE_SIZECBAR
   // load the command bar state
-  // this is commented out because it was crashing for me
-  //LoadBarState(szBarState);
+  // this is commented out because it's causing crashes for me
+  // LoadBarState(szBarState);
+#endif
 
   // enable drag and drop
   DragAcceptFiles(true);
@@ -600,7 +602,10 @@ CMainWindow::InsertProjectFile(CFileDialog* file_dialog, int grouptype, const ch
     else
     {
       // create an empty file that will not be valid
-      fclose(fopen(sPathName, "wb"));
+      FILE* file = fopen(sPathName, "wb");
+      if (file) {
+        fclose(file);
+      }
     }
   }
   else
@@ -726,7 +731,7 @@ CMainWindow::OnClose()
 
   // save the command bar state
 #ifndef USE_SIZECBAR
-  SaveBarState(szBarState);
+  // SaveBarState(szBarState);
 #endif
 
   // close the project
@@ -1742,6 +1747,22 @@ CMainWindow::OnProjectConfigureSphere()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void OnPackageFileWritten(const char* filename, int index, int total)
+{
+  char string[255] = {0};
+  if (index == -1) {
+    sprintf (string, "%d...", total);
+  }
+  else {
+    int percent = (int)( ((double)index / (double)total) * 100);
+    sprintf (string, "%3d%% Complete", percent);
+  }
+
+  GetStatusBar()->SetWindowText(string);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnProjectPackageGame()
 {
@@ -1760,13 +1781,14 @@ CMainWindow::OnProjectPackageGame()
   }
 
   // TODO:  show a wait dialog (no cancel)
+  // it now shows "xyz% Complete" in the status bar...
 
   CPackageFileDialog dialog(FDM_SAVE);
   dialog.m_ofn.Flags |= OFN_NOCHANGEDIR;
 
   if (dialog.DoModal() == IDOK) {
     // write the package!
-    if (!package.Write(dialog.GetPathName())) {
+    if (!package.Write(dialog.GetPathName(), OnPackageFileWritten)) {
       MessageBox("Package creation failed", "Package Game");
     } else {
       MessageBox("Package creation succeeded!", "Package Game");

@@ -21,6 +21,8 @@ BEGIN_MESSAGE_MAP(CSoundWindow, CDocumentWindow)
   ON_COMMAND(ID_SOUND_STOP, OnSoundStop)
   ON_COMMAND(ID_SOUND_REPEAT, OnSoundRepeat)
 
+  ON_UPDATE_COMMAND_UI(ID_SOUND_PLAY, OnUpdatePlayCommand)
+  ON_UPDATE_COMMAND_UI(ID_SOUND_STOP, OnUpdateStopCommand)
   ON_UPDATE_COMMAND_UI(ID_SOUND_REPEAT, OnUpdateRepeatCommand)
 
 END_MESSAGE_MAP()
@@ -171,9 +173,27 @@ CSoundWindow::OnSoundRepeat()
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
+CSoundWindow::OnUpdatePlayCommand(CCmdUI* cmdui)
+{
+  cmdui->Enable(!m_Sound.IsPlaying());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSoundWindow::OnUpdateStopCommand(CCmdUI* cmdui)
+{
+  cmdui->Enable(m_Sound.IsPlaying());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
 CSoundWindow::OnUpdateRepeatCommand(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_Repeat);
 }
+
+
 
 ////////////////////////////////////////////////////////////////////////////////

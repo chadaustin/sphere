@@ -9,13 +9,12 @@
 
 const int BLOCK_SIZE = 4096;
 
-
 ////////////////////////////////////////////////////////////////////////////////
 
 void
 CPackage::AddFile(const char* filename)
 {
-  m_files.push_back(filename);
+  m_files.push_back(filename);  
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -29,7 +28,7 @@ struct index_entry {
 };
 
 bool
-CPackage::Write(const char* filename)
+CPackage::Write(const char* filename, PackageFileWrittenCallBack file_written)
 {
   // open file
   FILE* file = fopen(filename, "wb");
@@ -51,11 +50,14 @@ CPackage::Write(const char* filename)
 
   // write all files
   std::list<std::string>::iterator i;
-  for (i = m_files.begin(); i != m_files.end(); i++) {
-
+  int file_index = 0;
+  for (i = m_files.begin(); i != m_files.end(); i++)
+  {
     // open file
     FILE* in = fopen(i->c_str(), "rb");
     if (in == NULL) {
+      if (file_written != NULL)
+        file_written(i->c_str(), file_index++, m_files.size());
       continue;
     }
 
@@ -117,6 +119,9 @@ CPackage::Write(const char* filename)
     directory.push_back(entry);
     
     fclose(in);
+
+    if (file_written != NULL)
+      file_written(i->c_str(), file_index++, m_files.size());
   }
 
   // write file directory
@@ -140,6 +145,10 @@ CPackage::Write(const char* filename)
   fwrite(&header, 1, sizeof(header), file);
 
   fclose(file);
+
+  if (file_written != NULL) // 100% done now
+    file_written(i->c_str(), file_index++, m_files.size());
+  
   return true;
 }
 

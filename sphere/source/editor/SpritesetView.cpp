@@ -991,6 +991,8 @@ CSpritesetView::OnInsertDirectionFromAnimation()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifdef MNG_SUPPORT_WRITE
+
 #include <libmng.h>
 
 const char* mng_get_error_message(mng_retcode code) {
@@ -1473,9 +1475,10 @@ mng_retcode mng_putpngimage(mng_handle hMNG, const RGBA* pixels, const int width
   bool grayscale = image_is_grayscale(pixels, width, height, x, y, w, h);
   bool has_alpha = image_has_alpha(pixels, width, height, x, y, w, h);
 
-  /*
   // If the number of colors could be MNG_BITDEPTH_1, MNG_BITDEPTH_2 or MNG_BITDEPTH_4
   // we could probably fit more colors per pixel, but I only support MNG_BITDEPTH_8 for now
+
+  /*
   unsigned long num_colors = CountColorsUsed(pixels, width, height, x, y, w, h);
   mng_int8 bit_depth = MNG_BITDEPTH_8; 
 
@@ -1580,6 +1583,11 @@ mng_retcode mng_putpngimage(mng_handle hMNG, const RGBA* pixels, const int width
     mng_uint32 filter_len     = (pixel_size * w * h) + h;
     mng_uint32 compressed_len = (pixel_size * w * h) + h;
                compressed_len += compressed_len / 100 + 12 + 8;	// extra 8 for safety
+
+    //if (bit_depth == MNG_BITDEPTH_4) {
+    //  filter_len /= 2;
+    //  compressed_len /= 2;
+    //}
 
     buffer = (unsigned char*) __mng_alloc__(filter_len);
     if (buffer == NULL)
@@ -2011,6 +2019,8 @@ mng_retcode TestAnimationCode() {
   return SaveMNGAnimationFromImages("comics.mng", GetNextImageFromFileList, GetDelayFromImageFileList, ContinueProcessing, (void*) &imagefilelist);
 }
 
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
@@ -2037,6 +2047,7 @@ CSpritesetView::OnExportDirectionAsAnimation()
                || strcmp_ci(dialog.GetFileExt(), "fli")  == 0;
 
     if (is_mng) {
+#ifdef MNG_SUPPORT_WRITE
       struct userwritedata data;
       data.spriteset = *m_Spriteset;
       data.direction = m_CurrentDirection;
@@ -2048,6 +2059,9 @@ CSpritesetView::OnExportDirectionAsAnimation()
       else {
         MessageBox(mng_get_error_message(iRC), "Error Exporting Direction As Animation", MB_OK);
       } 
+#else
+      MessageBox("Unsupported save mode", "Error Exporting Direction As Animation", MB_OK);
+#endif
     }
     else
     if (is_fli) {

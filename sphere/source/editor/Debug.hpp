@@ -41,5 +41,4 @@ private:
 
 extern void InitializeLog();
 
-
 #endif
