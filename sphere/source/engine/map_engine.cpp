@@ -242,12 +242,14 @@ CMapEngine::CallMapScript(int which)
     case SCRIPT_ON_ENTER_MAP:
       if (!ExecuteScript(m_Map.GetMap().GetEntryScript(), error)) {
         m_ErrorMessage = "Could not execute entry script\n" + error;
+        return false;
       }
     break;
 
     case SCRIPT_ON_LEAVE_MAP:
       if (!ExecuteScript(m_Map.GetMap().GetExitScript(), error)) {
         m_ErrorMessage = "Could not execute exit script\n" + error;
+        return false;
       }      
     break;
 
@@ -936,15 +938,10 @@ bool
 CMapEngine::RenderMap()
 {
   if (m_IsRunning) {
-
-    Render();
-    return true;
-
+    return Render();
   } else {
-
     m_ErrorMessage = "RenderMap() called while map engine was not running";
     return false;
-
   }
 }
 
@@ -3182,7 +3179,7 @@ CMapEngine::Render()
     if (m_LayerRenderers[i]) {
       std::string error;
       if (!ExecuteScript(m_LayerRenderers[i], error)) {
-        m_ErrorMessage = "Could not execute layer renderer\n" + error;
+        m_ErrorMessage = "Could not execute layer renderer " + itos(i) + "\n" + error;
         return false;
       }
     }
@@ -3195,8 +3192,8 @@ CMapEngine::Render()
   // render script
   if (m_RenderScript) {
     std::string error;
-    if (!ExecuteScript(m_RenderScript, error) && !m_IsRunning) {
-      m_ErrorMessage = "Could not execute update script\n" + error;
+    if (!ExecuteScript(m_RenderScript, error)) {
+      m_ErrorMessage = "Could not execute render script\n" + error;
       return false;
     }
   }
@@ -4088,10 +4085,10 @@ CMapEngine::ProcessInput()
     int dx = 0;
     int dy = 0;
 
-    if (new_keys[KEY_UP])    dy--; 
-    if (new_keys[KEY_RIGHT]) dx++;
-    if (new_keys[KEY_DOWN])  dy++;
-    if (new_keys[KEY_LEFT])  dx--;
+    if (m_BoundKeys.count(KEY_UP)    == 0 && new_keys[KEY_UP])    dy--; 
+    if (m_BoundKeys.count(KEY_RIGHT) == 0 && new_keys[KEY_RIGHT]) dx++;
+    if (m_BoundKeys.count(KEY_DOWN)  == 0 && new_keys[KEY_DOWN])  dy++;
+    if (m_BoundKeys.count(KEY_LEFT)  == 0 && new_keys[KEY_LEFT])  dx--;
 
     if (GetNumJoysticks() > 0) {
       dx += __round__(GetJoystickX(0));

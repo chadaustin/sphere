@@ -317,6 +317,9 @@ CGameEngine::GetSystemScript(const char* filename, std::string& text)
   // read script
   int size = file->Size();
   char* script = new char[size + 1];
+  if (script == NULL)
+    return false;
+
   file->Read(script, size);
   script[size] = 0;
 

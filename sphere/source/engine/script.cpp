@@ -2473,7 +2473,7 @@ end_func()
 
 begin_func(RenderMap, 0)
 
-  if (!This->m_Engine->GetMapEngine()->RenderMap()) {
+  if ( !This->m_Engine->GetMapEngine()->RenderMap() ) {
     This->ReportMapEngineError("RenderMap() failed");
     return JS_FALSE;
   }
