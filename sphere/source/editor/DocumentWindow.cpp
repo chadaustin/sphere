@@ -283,6 +283,15 @@ CDocumentWindow::MapToolBarChanged(UINT id)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+CDocumentWindow::UpdateToolBars()
+{
+  AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_IMAGETOOLBAR, (WPARAM)this, (LPARAM)FALSE);
+  AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_MAPTOOLBAR,   (WPARAM)this, (LPARAM)FALSE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg int
 CDocumentWindow::OnCreate(LPCREATESTRUCT cs)
 {
@@ -354,6 +363,8 @@ CDocumentWindow::OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactiv
 {
   CMDIChildWnd::OnMDIActivate(activate, active_window, inactive_window);
   CFrameWnd* pFrame = (CFrameWnd*)AfxGetApp()->m_pMainWnd;
+
+  UpdateToolBars();
 
   if (activate)
   {

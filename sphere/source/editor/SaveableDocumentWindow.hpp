@@ -28,6 +28,7 @@ protected:
 
   virtual void ImageToolBarChanged(UINT id);
   virtual void MapToolBarChanged(UINT id);
+  virtual void UpdateToolBars();
 
   afx_msg void OnFileSave();
   afx_msg void OnFileSaveAs();

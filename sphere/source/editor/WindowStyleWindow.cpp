@@ -124,6 +124,8 @@ CWindowStyleWindow::CWindowStyleWindow(const char* window_style)
   m_ImageView.SetColor(CreateRGBA(0, 0, 0, 255));
   m_AlphaView.SetAlpha(255);
 
+  UpdateToolBars();
+
 #ifdef USE_SIZECBAR
 	LoadPaletteStates();
 #endif
@@ -895,6 +897,14 @@ CWindowStyleWindow::GetEditRect(RECT* rect)
 void
 CWindowStyleWindow::ImageToolBarChanged(UINT id) {
   m_ImageView.OnToolChanged(id);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CWindowStyleWindow::UpdateToolBars() {
+  AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_IMAGETOOLBAR, (WPARAM)this, (LPARAM)TRUE);
+  AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_MAPTOOLBAR,   (WPARAM)this, (LPARAM)FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

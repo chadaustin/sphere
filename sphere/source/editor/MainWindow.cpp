@@ -218,6 +218,9 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_MESSAGE(WM_INSERT_PROJECT_FILE, OnInsertProjectFile)
   ON_MESSAGE(WM_REFRESH_PROJECT,     OnRefreshProject)	
 
+  ON_MESSAGE(WM_REFRESH_IMAGETOOLBAR, OnRefreshImageToolBar)
+  ON_MESSAGE(WM_REFRESH_MAPTOOLBAR,   OnRefreshMapToolBar)
+
   // document window messages
   ON_MESSAGE(WM_DW_CLOSING,          OnDocumentWindowClosing)
   ON_MESSAGE(WM_SET_CHILD_MENU,      OnSetChildMenu)
@@ -472,35 +475,7 @@ CMainWindow::OpenDocumentWindow(int grouptype, const char* filename)
     case GT_TILESETS:     window = new CMapWindow(NULL, filename);   break;
   }
 
-  if (window) {
-    UINT imagetools[] = {IDI_IMAGETOOL_PENCIL, IDI_IMAGETOOL_LINE, IDI_IMAGETOOL_RECTANGLE,
-                         IDI_IMAGETOOL_CIRCLE, IDI_IMAGETOOL_ELLIPSE, IDI_IMAGETOOL_FILL,
-                         IDI_IMAGETOOL_SELECTION, IDI_IMAGETOOL_FREESELECTION};
-    int numimagetools = sizeof(imagetools) / sizeof(*imagetools);
-    UINT imagetool = IDI_IMAGETOOL_PENCIL;
-    for (int i = 0; i < numimagetools; i++) {
-      if (m_ImageToolBar.GetToolBarCtrl().IsButtonChecked(imagetools[i]) == TRUE) {
-        imagetool = imagetools[i];
-      }
-    }
-
-    UINT maptools[] = {IDI_MAPTOOL_1X1, IDI_MAPTOOL_3X3, IDI_MAPTOOL_5X5, IDI_MAPTOOL_SELECTTILE,
-                       IDI_MAPTOOL_FILLRECTAREA, IDI_MAPTOOL_FILLAREA, IDI_MAPTOOL_COPYAREA,
-                       IDI_MAPTOOL_PASTE, IDI_MAPTOOL_COPYENTITY, IDI_MAPTOOL_PASTEENTITY,
-                       IDI_MAPTOOL_MOVEENTITY, IDI_MAPTOOL_OBS_SEGMENT, IDI_MAPTOOL_OBS_DELETE,
-                       IDI_MAPTOOL_OBS_MOVE_PT, IDI_MAPTOOL_ZONEADD, IDI_MAPTOOL_ZONEEDIT,
-                       IDI_MAPTOOL_ZONEMOVE, IDI_MAPTOOL_ZONEDELETE};
-    int nummaptools = sizeof(maptools) / sizeof(*maptools);
-    UINT maptool = IDI_MAPTOOL_1X1;
-    for (int i = 0; i < nummaptools; i++) {
-      if (m_MapToolBar.GetToolBarCtrl().IsButtonChecked(maptools[i]) == TRUE) {
-        maptool = maptools[i];
-      }
-    }
-
-    window->ImageToolBarChanged(imagetool);
-    window->MapToolBarChanged(maptool);
-
+  if (window != NULL) {
     m_DocumentWindows.push_back(window);
   }
 }
@@ -2026,6 +2001,47 @@ CMainWindow::OnUpdateWindowCloseAll(CCmdUI* cmdui)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+afx_msg UINT
+CMainWindow::GetImageTool()
+{
+  UINT tools[] = {IDI_IMAGETOOL_PENCIL, IDI_IMAGETOOL_LINE, IDI_IMAGETOOL_RECTANGLE,
+                  IDI_IMAGETOOL_CIRCLE, IDI_IMAGETOOL_ELLIPSE, IDI_IMAGETOOL_FILL,
+                  IDI_IMAGETOOL_SELECTION, IDI_IMAGETOOL_FREESELECTION};
+  int num_tools = sizeof(tools) / sizeof(*tools);
+  UINT tool = IDI_IMAGETOOL_PENCIL;
+  for (int i = 0; i < num_tools; i++) {
+    if (m_ImageToolBar.GetToolBarCtrl().IsButtonChecked(tools[i]) == TRUE) {
+      tool = tools[i];
+    }
+  }
+
+  return tool;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg UINT
+CMainWindow::GetMapTool()
+{
+  UINT tools[] = {IDI_MAPTOOL_1X1, IDI_MAPTOOL_3X3, IDI_MAPTOOL_5X5, IDI_MAPTOOL_SELECTTILE,
+                  IDI_MAPTOOL_FILLRECTAREA, IDI_MAPTOOL_FILLAREA, IDI_MAPTOOL_COPYAREA,
+                  IDI_MAPTOOL_PASTE, IDI_MAPTOOL_COPYENTITY, IDI_MAPTOOL_PASTEENTITY,
+                  IDI_MAPTOOL_MOVEENTITY, IDI_MAPTOOL_OBS_SEGMENT, IDI_MAPTOOL_OBS_DELETE,
+                  IDI_MAPTOOL_OBS_MOVE_PT, IDI_MAPTOOL_ZONEADD, IDI_MAPTOOL_ZONEEDIT,
+                  IDI_MAPTOOL_ZONEMOVE, IDI_MAPTOOL_ZONEDELETE};
+  int num_tools = sizeof(tools) / sizeof(*tools);
+  UINT tool = IDI_MAPTOOL_1X1;
+  for (int i = 0; i < num_tools; i++) {
+    if (m_MapToolBar.GetToolBarCtrl().IsButtonChecked(tools[i]) == TRUE) {
+      tool = tools[i];
+    }
+  }
+
+  return tool;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnUpdateImageCommand(CCmdUI* cmdui)
 {
@@ -2036,7 +2052,7 @@ CMainWindow::OnUpdateImageCommand(CCmdUI* cmdui)
     cmdui->Enable(FALSE);
   else
   {
-    // TODO: Replace WA_SAVEABLE with WA_TYPE == IMAGE
+    // TODO: Replace WA_SAVEABLE with WA_TYPE == IMAGE or dw->CanUseImageToolbar()
     if (GetWindowLong(pWindow->m_hWnd, GWL_USERDATA) & WA_SAVEABLE)
       cmdui->Enable(TRUE);
     else
@@ -2050,13 +2066,13 @@ afx_msg void
 CMainWindow::OnImageToolChanged()
 {
   const unsigned int id = GetCurrentMessage()->wParam;
-  UINT imagetools[] = {IDI_IMAGETOOL_PENCIL, IDI_IMAGETOOL_LINE, IDI_IMAGETOOL_RECTANGLE,
-                       IDI_IMAGETOOL_CIRCLE, IDI_IMAGETOOL_ELLIPSE, IDI_IMAGETOOL_FILL,
-                       IDI_IMAGETOOL_SELECTION, IDI_IMAGETOOL_FREESELECTION};
-  int numimagetools = sizeof(imagetools) / sizeof(*imagetools);
+  UINT tools[] = {IDI_IMAGETOOL_PENCIL, IDI_IMAGETOOL_LINE, IDI_IMAGETOOL_RECTANGLE,
+                  IDI_IMAGETOOL_CIRCLE, IDI_IMAGETOOL_ELLIPSE, IDI_IMAGETOOL_FILL,
+                  IDI_IMAGETOOL_SELECTION, IDI_IMAGETOOL_FREESELECTION};
+  int num_tools = sizeof(tools) / sizeof(*tools);
   CToolBarCtrl& ctrl = m_ImageToolBar.GetToolBarCtrl();
-  for (int i = 0; i < numimagetools; i++) {
-    ctrl.CheckButton(imagetools[i], FALSE);
+  for (int i = 0; i < num_tools; i++) {
+    ctrl.CheckButton(tools[i], FALSE);
   }
   ctrl.CheckButton(id, TRUE);
 
@@ -2064,6 +2080,49 @@ CMainWindow::OnImageToolChanged()
     CDocumentWindow* dw = m_DocumentWindows[i];
     dw->ImageToolBarChanged(id);
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg LRESULT
+CMainWindow::OnRefreshImageToolBar(WPARAM wparam, LPARAM lparam)
+{
+  UINT id = GetImageTool();
+   // todo: work out how to make it gray out the toolbar rather than just disallowing its use
+  m_ImageToolBar.EnableWindow((BOOL) lparam);
+  
+  if (wparam != NULL) {
+    CDocumentWindow* dw = (CDocumentWindow*) wparam;
+    dw->ImageToolBarChanged(id);
+  }
+
+  for (int i = 0; i < m_DocumentWindows.size(); i++) {
+    CDocumentWindow* dw = m_DocumentWindows[i];
+    dw->ImageToolBarChanged(id);
+  }
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg LRESULT
+CMainWindow::OnRefreshMapToolBar(WPARAM wparam, LPARAM lparam)
+{
+  UINT id = GetMapTool();
+  m_MapToolBar.EnableWindow((BOOL) lparam);
+
+  if (wparam != NULL) {
+    CDocumentWindow* dw = (CDocumentWindow*) wparam;
+    dw->MapToolBarChanged(id);
+  }
+
+  for (int i = 0; i < m_DocumentWindows.size(); i++) {
+    CDocumentWindow* dw = m_DocumentWindows[i];
+    dw->MapToolBarChanged(id);
+  }
+
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2078,7 +2137,7 @@ CMainWindow::OnUpdateMapCommand(CCmdUI* cmdui)
     cmdui->Enable(FALSE);
   else
   {
-    // TODO: Replace WA_SAVEABLE with WA_TYPE == MAP
+    // TODO: Replace WA_SAVEABLE with WA_TYPE == MAP or dw->CanUseMapToolbar()
     if (GetWindowLong(pWindow->m_hWnd, GWL_USERDATA) & WA_SAVEABLE)
       cmdui->Enable(TRUE);
     else
@@ -2092,16 +2151,16 @@ afx_msg void
 CMainWindow::OnMapToolChanged()
 {
   const unsigned int id = GetCurrentMessage()->wParam;
-  const UINT maptools[] = {IDI_MAPTOOL_1X1, IDI_MAPTOOL_3X3, IDI_MAPTOOL_5X5, IDI_MAPTOOL_SELECTTILE,
+  const UINT tools[] = {IDI_MAPTOOL_1X1, IDI_MAPTOOL_3X3, IDI_MAPTOOL_5X5, IDI_MAPTOOL_SELECTTILE,
                      IDI_MAPTOOL_FILLRECTAREA, IDI_MAPTOOL_FILLAREA, IDI_MAPTOOL_COPYAREA,
                      IDI_MAPTOOL_PASTE, IDI_MAPTOOL_COPYENTITY, IDI_MAPTOOL_PASTEENTITY,
                      IDI_MAPTOOL_MOVEENTITY, IDI_MAPTOOL_OBS_SEGMENT, IDI_MAPTOOL_OBS_DELETE,
                      IDI_MAPTOOL_OBS_MOVE_PT, IDI_MAPTOOL_ZONEADD, IDI_MAPTOOL_ZONEEDIT,
                      IDI_MAPTOOL_ZONEMOVE, IDI_MAPTOOL_ZONEDELETE};
-  int nummaptools = sizeof(maptools) / sizeof(*maptools);
+  int num_tools = sizeof(tools) / sizeof(*tools);
   CToolBarCtrl& ctrl = m_MapToolBar.GetToolBarCtrl();  
-  for (int i = 0; i < nummaptools; i++) {
-    ctrl.CheckButton(maptools[i], FALSE);
+  for (int i = 0; i < num_tools; i++) {
+    ctrl.CheckButton(tools[i], FALSE);
   }
   ctrl.CheckButton(id, TRUE);
 

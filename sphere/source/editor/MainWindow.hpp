@@ -39,7 +39,7 @@ public:
 	
 	void ViewPalette(int paletteNum);	
 
-	CProjectWindow * GetProjectWindow() {return m_ProjectWindow;}
+	CProjectWindow* GetProjectWindow() {return m_ProjectWindow;}
 
 private:
   bool AddToDirectory(const char* pathname, const char* sub_directory);
@@ -141,9 +141,17 @@ private:
   afx_msg void OnUpdateMapCommand(CCmdUI* cmdui);
   afx_msg void OnMapToolChanged();
 
+public:
+  afx_msg UINT GetImageTool();
+  afx_msg UINT GetMapTool();
+
+private:
   afx_msg LRESULT OnInsertProjectFile(WPARAM wparam, LPARAM lparam);
   afx_msg LRESULT OnRefreshProject(WPARAM wparam, LPARAM lparam);
 	afx_msg LRESULT OnCopyData(WPARAM wparam, LPARAM lparam);
+
+  afx_msg LRESULT OnRefreshImageToolBar(WPARAM wparam, LPARAM lparam);
+  afx_msg LRESULT OnRefreshMapToolBar(WPARAM wparam, LPARAM lparam);
 
   afx_msg LRESULT OnDocumentWindowClosing(WPARAM wparam, LPARAM lparam);
   afx_msg LRESULT OnSetChildMenu(WPARAM wparam, LPARAM lparam);

@@ -27,6 +27,7 @@ public:
 
 private:
   void ImageToolBarChanged(UINT id);
+  void UpdateToolBars();
 
 private:
   void UpdateImageView();

@@ -6,6 +6,9 @@
 #include "resource.h"
 
 
+#include "Editor.hpp"
+
+
 BEGIN_MESSAGE_MAP(CSaveableDocumentWindow, CDocumentWindow)
   
   ON_COMMAND(ID_FILE_SAVE,       OnFileSave)
@@ -13,7 +16,6 @@ BEGIN_MESSAGE_MAP(CSaveableDocumentWindow, CDocumentWindow)
   ON_COMMAND(ID_FILE_SAVECOPYAS, OnFileSaveCopyAs)
 
 END_MESSAGE_MAP()
-
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -114,18 +116,18 @@ CSaveableDocumentWindow::UpdateWindowCaption()
   if (m_Saved)
   {
     text = new char[strlen(GetCaption()) + 3];
-    strcpy(text, GetCaption());
+    if (text) strcpy(text, GetCaption());
   }
   else
   {
     text = new char[20];
-    strcpy(text, "Untitled");
+    if (text) strcpy(text, "Untitled");
   }
   
   if (m_Modified)
-    strcat(text, " *");
+    if (text) strcat(text, " *");
 
-  SetWindowText(text);
+  SetWindowText(text ? text : "(null)");
   delete[] text;
 }
 
@@ -229,6 +231,15 @@ void
 CSaveableDocumentWindow::MapToolBarChanged(UINT id)
 {
 
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CSaveableDocumentWindow::UpdateToolBars()
+{
+  AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_IMAGETOOLBAR, (WPARAM)this, (LPARAM)FALSE);
+  AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_MAPTOOLBAR,   (WPARAM)this, (LPARAM)FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

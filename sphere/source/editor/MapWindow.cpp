@@ -279,6 +279,8 @@ CMapWindow::TabChanged(int tab)
     m_LayerView.ShowWindow(SW_HIDE);
     m_TilesetEditView.ShowWindow(SW_SHOW);
   }
+
+  UpdateToolBars();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -779,6 +781,22 @@ CMapWindow::MapToolBarChanged(UINT id) {
 void
 CMapWindow::ImageToolBarChanged(UINT id) {
   m_TilesetEditView.OnToolChanged(id);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CMapWindow::UpdateToolBars() {
+  if (m_Created) {
+    if (m_TabControl.GetCurSel() == 0) {
+      AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_IMAGETOOLBAR, (WPARAM)this, (LPARAM)FALSE);
+      AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_MAPTOOLBAR,   (WPARAM)this, (LPARAM)TRUE);
+    }
+    else {
+      AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_IMAGETOOLBAR, (WPARAM)this, (LPARAM)TRUE);
+      AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_MAPTOOLBAR,   (WPARAM)this, (LPARAM)FALSE);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -38,6 +38,7 @@ public:
   virtual bool IsSaveable() const;
   virtual void ImageToolBarChanged(UINT id);
   virtual void MapToolBarChanged(UINT id);
+  virtual void UpdateToolBars();
 
 protected:
   BOOL Create(LPCTSTR class_name);

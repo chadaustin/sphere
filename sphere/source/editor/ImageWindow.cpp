@@ -67,6 +67,7 @@ CImageWindow::CImageWindow(const char* image)
   OnSize(0, ClientRect.right, ClientRect.bottom);
 
   UpdateImageView();
+  UpdateToolBars();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -284,8 +285,18 @@ CImageWindow::AV_AlphaChanged(byte alpha)
  
 void
 CImageWindow::ImageToolBarChanged(UINT id) {
-  m_ImageView.OnToolChanged(id);
+  if (m_Created)
+    m_ImageView.OnToolChanged(id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+void
+CImageWindow::UpdateToolBars() {
+  AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_IMAGETOOLBAR, (WPARAM)this, (LPARAM)TRUE);
+  AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_MAPTOOLBAR,   (WPARAM)this, (LPARAM)FALSE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
  

@@ -173,6 +173,7 @@ CSpritesetWindow::TabChanged(int tab)
   ShowFramesTab(tab == 0 ? SW_SHOW : SW_HIDE);
   ShowEditTab  (tab == 1 ? SW_SHOW : SW_HIDE);
   ShowBaseTab  (tab == 2 ? SW_SHOW : SW_HIDE);
+  UpdateToolBars();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -619,6 +620,22 @@ CSpritesetWindow::SIP_SpritesetModified()
 void
 CSpritesetWindow::ImageToolBarChanged(UINT id) {
   m_ImageView.OnToolChanged(id);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CSpritesetWindow::UpdateToolBars() {
+  if (m_Created) {
+    if (m_TabControl.GetCurSel() ==  1) {
+      AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_IMAGETOOLBAR, (WPARAM)this, (LPARAM)TRUE);
+      AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_MAPTOOLBAR,   (WPARAM)this, (LPARAM)FALSE);
+    }
+    else {
+      AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_IMAGETOOLBAR, (WPARAM)this, (LPARAM)FALSE);
+      AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_MAPTOOLBAR,   (WPARAM)this, (LPARAM)FALSE);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

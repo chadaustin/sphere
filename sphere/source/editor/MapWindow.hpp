@@ -35,6 +35,7 @@ public:
 private:
   void MapToolBarChanged(UINT id);
   void ImageToolBarChanged(UINT id);
+  void UpdateToolBars();
 
 private:
   void Create();
