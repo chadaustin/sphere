@@ -1054,7 +1054,9 @@ log_object.endBlock()
       and return an array of data the rawfile object has read. The array of 
       data are numbers representation of each byte (0-255). Note that if the 
       number of bytes that will be read, exceeds the filesize from the current 
-      position, it will only return an array of data of that is actually read.
+      position, it will only return an array of data of that is
+      actually read.  The returned object is a ByteArray, so you can do
+      the same things with it as you can with any other ByteArray.
 
   rawfile_object.write(byte_array)
     - writes the byte array to the file at the current position

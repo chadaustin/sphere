@@ -4827,14 +4827,9 @@ begin_method(SS_RAWFILE, ssRawFileRead, 1)
   byte* data = new byte[size];
   int bytes_read = object->file->Read(data, size);
 
-  // convert data, and turn it into an object :)
-  jsval* converted_data = new jsval[bytes_read];
-  for (int i = 0; i < bytes_read; i++)
-    converted_data[i] = INT_TO_JSVAL(data[i]);
-  return_object(JS_NewArrayObject(cx, bytes_read, converted_data));
-
+  JSObject* array_object = CreateByteArrayObject(cx, bytes_read, data);
   delete[] data;
-  delete[] converted_data;
+  return_object(array_object);
 end_method()
 
 ///////////////////////////////////////
