@@ -556,7 +556,7 @@ CMainWindow::UpdateMenu()
 
   // set the new menu
   CMenu* pNewMenu = CMenu::FromHandle(hNewMenu);
-  MDISetMenu(pNewMenu, pNewMenu->GetSubMenu(iWindowMenu));
+  MDISetMenu(pNewMenu, pNewMenu->GetSubMenu(iWindowMenu))->DestroyMenu();
   DrawMenuBar();
 }
 
