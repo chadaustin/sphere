@@ -10,7 +10,7 @@ COMPILER.SetupWXWindows(env)
 COMPILER.SetupZLib(env)
 COMPILER.Win32Subsystem(env)
 
-if ARGUMENTS.get('debug'):
+if (ARGUMENTS.get('debug')):
    env.Append(
    CCFLAGS = ['-DDEBUG', '-g'],
    LINKFLAGS = ['-g'])

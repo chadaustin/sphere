@@ -58,102 +58,6 @@ const int NUM_PALETTES    = 100;
 
 const char szBarState[] = "SDE_BarState";
 
-/*
-BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
-
-  ON_WM_DROPFILES()
-  ON_WM_CLOSE()
-
-  // generic file open
-  ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
-
-  // project
-  ON_COMMAND(ID_FILE_NEW_PROJECT,     OnFileNewProject)
-  ON_COMMAND(ID_FILE_OPEN_PROJECT,    OnFileOpenProject)
-  ON_COMMAND(ID_FILE_CLOSEPROJECT,    OnFileCloseProject)
-  ON_COMMAND(ID_FILE_OPENLASTPROJECT, OnFileOpenLastProject)
-
-  // file | new
-  ON_COMMAND(ID_FILE_NEW_MAP,         OnFileNewMap)
-  ON_COMMAND(ID_FILE_NEW_SPRITESET,   OnFileNewSpriteset)
-  ON_COMMAND(ID_FILE_NEW_SCRIPT,      OnFileNewScript)
-  ON_COMMAND(ID_FILE_NEW_FONT,        OnFileNewFont)
-  ON_COMMAND(ID_FILE_NEW_WINDOWSTYLE, OnFileNewWindowStyle)
-  ON_COMMAND(ID_FILE_NEW_IMAGE,       OnFileNewImage)
-
-  // file | open
-  ON_COMMAND(ID_FILE_OPEN_MAP,         OnFileOpenMap)
-  ON_COMMAND(ID_FILE_OPEN_SPRITESET,   OnFileOpenSpriteset)
-  ON_COMMAND(ID_FILE_OPEN_SCRIPT,      OnFileOpenScript)
-  ON_COMMAND(ID_FILE_OPEN_SOUND,       OnFileOpenSound)
-  ON_COMMAND(ID_FILE_OPEN_FONT,        OnFileOpenFont)
-  ON_COMMAND(ID_FILE_OPEN_WINDOWSTYLE, OnFileOpenWindowStyle)
-  ON_COMMAND(ID_FILE_OPEN_IMAGE,       OnFileOpenImage)
-  ON_COMMAND(ID_FILE_OPEN_ANIMATION,   OnFileOpenAnimation)
-
-  // file | import
-  ON_COMMAND(ID_FILE_IMPORT_IMAGETOMAPTILESET, OnFileImportImageToMap)
-  ON_COMMAND(ID_FILE_IMPORT_BITMAPTORWS,       OnFileImportBitmapToRWS)
-  ON_COMMAND(ID_FILE_IMPORT_BITMAPTORSS,       OnFileImportBitmapToRSS)
-  ON_COMMAND(ID_FILE_IMPORT_BITMAPTORTS,       OnFileImportBitmapToRTS)
-  ON_COMMAND(ID_FILE_IMPORT_VERGEFONTTEMPLATE, OnFileImportVergeFontTemplate)
-  ON_COMMAND(ID_FILE_IMPORT_VERGEMAP,          OnFileImportVergeMap)
-  ON_COMMAND(ID_FILE_IMPORT_VERGESPRITESET,    OnFileImportVergeSpriteset)
-  ON_COMMAND(ID_FILE_IMPORT_MERGE_RGBA,        OnFileImportMergeRGBA)
-  ON_COMMAND(ID_FILE_IMPORT_WINDOWSFONT,       OnFileImportWindowsFont)
-
-  ON_COMMAND(ID_FILE_SAVEALL, OnFileSaveAll)
-
-  ON_COMMAND(ID_FILE_OPTIONS, OnFileOptions)
-  ON_COMMAND(ID_FILE_EXIT,    OnClose)
-
-  // insert
-  ON_COMMAND(ID_PROJECT_INSERT_MAP,         OnProjectInsertMap)
-  ON_COMMAND(ID_PROJECT_INSERT_SPRITESET,   OnProjectInsertSpriteset)
-  ON_COMMAND(ID_PROJECT_INSERT_SCRIPT,      OnProjectInsertScript)
-  ON_COMMAND(ID_PROJECT_INSERT_SOUND,       OnProjectInsertSound)
-  ON_COMMAND(ID_PROJECT_INSERT_FONT,        OnProjectInsertFont)
-  ON_COMMAND(ID_PROJECT_INSERT_WINDOWSTYLE, OnProjectInsertWindowStyle)
-  ON_COMMAND(ID_PROJECT_INSERT_IMAGE,       OnProjectInsertImage)
-  ON_COMMAND(ID_PROJECT_INSERT_ANIMATION,   OnProjectInsertAnimation)
-
-  ON_COMMAND(ID_PROJECT_REFRESH,         OnProjectRefresh)
-  ON_COMMAND(ID_PROJECT_RUNSPHERE,       OnProjectRunSphere)
-  ON_COMMAND(ID_PROJECT_CONFIGURESPHERE, OnProjectConfigureSphere)
-  ON_COMMAND(ID_PROJECT_PACKAGE_GAME,    OnProjectPackageGame)
-
-  ON_COMMAND(ID_WINDOW_CLOSEALL, OnWindowCloseAll)
-
-  ON_COMMAND(ID_HELP_CONTENTS, OnHelpContents)
-  ON_COMMAND(ID_HELP_ABOUT,    OnHelpAbout)
-
-  ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnNeedText)
-
-  ON_UPDATE_COMMAND_UI(ID_FILE_OPENLASTPROJECT, OnUpdateOpenLastProject)
-  ON_UPDATE_COMMAND_UI(ID_FILE_CLOSEPROJECT, OnUpdateProjectCommand)
-
-  ON_UPDATE_COMMAND_UI(ID_FILE_SAVE,       OnUpdateSaveCommand)
-  ON_UPDATE_COMMAND_UI(ID_FILE_SAVEAS,     OnUpdateSaveCommand)
-  ON_UPDATE_COMMAND_UI(ID_FILE_SAVECOPYAS, OnUpdateSaveCommand)
-  ON_UPDATE_COMMAND_UI(ID_FILE_SAVEALL,    OnUpdateSaveAllCommand)
-
-  ON_UPDATE_COMMAND_UI(ID_PROJECT_RUNSPHERE, OnUpdateProjectCommand)
-  ON_UPDATE_COMMAND_UI(ID_WINDOW_CLOSEALL,   OnUpdateWindowCloseAll)
-
-  // project window message
-  ON_MESSAGE(WM_INSERT_PROJECT_FILE, OnInsertProjectFile)
-  ON_MESSAGE(WM_REFRESH_PROJECT,     OnRefreshProject)
-  
-  // document window messages
-  ON_MESSAGE(WM_DW_CLOSING,          OnDocumentWindowClosing)
-  ON_MESSAGE(WM_SET_CHILD_MENU,      OnSetChildMenu)
-  ON_MESSAGE(WM_CLEAR_CHILD_MENU,    OnClearChildMenu)
-  ON_MESSAGE(WM_UPDATE_PALETTE_MENU, OnUpdatePaletteMenu)
-  ON_COMMAND_RANGE(PALETTE_COMMAND, PALETTE_COMMAND + NUM_PALETTES, OnViewPalette)
-
-END_MESSAGE_MAP()
-*/
-
 BEGIN_EVENT_TABLE(wMainWindow, wxMDIParentFrame)
   EVT_CLOSE(wMainWindow::OnClose)
   // generic file open
@@ -244,12 +148,6 @@ wMainWindow::wMainWindow(
 
   menu = new wxMenu();
 
-    menu->Append(wID_FILE_CLOSEPROJECT,    "&Close Project");
-
-    //menu->Append(wxID_SAVE, "&Save");
-    //menu->Append(wxID_SAVEAS, "Save &As");
-    //menu->Append(wID_FILE_SAVEALL, "Save A&ll");
-
     submenu = new wxMenu();//"New");
       submenu->Append(wID_FILE_NEW_PROJECT,     "New &Project");
       submenu->AppendSeparator();
@@ -289,6 +187,7 @@ wMainWindow::wMainWindow(
     menu->Append(wID_FILE_IMPORT_, "&Import", submenu);
 
     menu->Append(wID_FILE_OPENLASTPROJECT, "Open &Previous Project");
+    menu->Append(wID_FILE_CLOSEPROJECT,    "&Close Project");
 
     menu->AppendSeparator();
 
@@ -309,14 +208,12 @@ wMainWindow::wMainWindow(
 
 
   // create the statusbar
-#ifdef WIN32
   m_StatusBar.Create(this, -1);
   m_StatusBar.SetFieldsCount(1);
 
   SetStatusBar(&m_StatusBar);
 
   ::SetStatusBar(&m_StatusBar);
-#endif
 
 }
 
@@ -687,8 +584,13 @@ void
 wMainWindow::GetGamesDirectory(char games_directory[MAX_PATH])
 {
   strcpy(games_directory, g_SphereDirectory.c_str());
+#ifdef WIN32
   if (games_directory[strlen(games_directory) - 1] != '\\')
     strcat(games_directory, "\\");
+#else
+  if (games_directory[strlen(games_directory) - 1] != '/')
+    strcat(games_directory, "/");
+#endif
   strcat(games_directory, "games");
 }
 
@@ -720,158 +622,111 @@ wMainWindow::UpdateMenu()
       delete (m_MenuBar->Remove(m_MenuBar->FindMenu("Project")));
     }
   }
+
   if(m_PreviousChildMenuResource == m_ChildMenuResource) {
     return;
   }
+
   if(m_PreviousChildMenuResource != -1) {
     delete m_MenuBar->Remove(m_MenuBar->FindMenu(m_ChildMenuTitle));
   }
+
   if(m_ChildMenuResource == -1) {
     m_PreviousChildMenuResource = m_ChildMenuResource;
     return;
   }
+
   wxMenu *childmenu = new wxMenu();
   wxMenu *submenu;
+
   switch(m_ChildMenuResource) {
-  case wID_FONT_base:
-    m_ChildMenuTitle = "F&ont";
-    childmenu->Append(wID_FONT_RESIZE,                "&Resize Character");
-    childmenu->Append(wID_FONT_RESIZEALL,             "Resize &All Characters");
-    childmenu->Append(wID_FONT_SIMPLIFY,              "&Simplify");
-    childmenu->Append(wID_FONT_MAKECOLORTRANSPARENT,  "Make Color &Transparent");
-    childmenu->AppendSeparator();
-    childmenu->Append(wID_FONT_GENERATEGRADIENT,      "Generate &Gradient");
+    case wID_FONT_base:
+      m_ChildMenuTitle = "F&ont";
+      childmenu->Append(wID_FONT_RESIZE,                "&Resize Character");
+      childmenu->Append(wID_FONT_RESIZEALL,             "Resize &All Characters");
+      childmenu->Append(wID_FONT_SIMPLIFY,              "&Simplify");
+      childmenu->Append(wID_FONT_MAKECOLORTRANSPARENT,  "Make Color &Transparent");
+      childmenu->AppendSeparator();
+      childmenu->Append(wID_FONT_GENERATEGRADIENT,      "Generate &Gradient");
     break;
-  case wID_IMAGE_base:
-    m_ChildMenuTitle = "&Image";
-    childmenu->Append(wID_IMAGE_RESIZE,               "&Resize");
-    childmenu->Append(wID_IMAGE_RESCALE,              "Re&scale");
-    childmenu->AppendSeparator();
-    childmenu->Append(wID_IMAGE_VIEWORIGINALSIZE,     "View &Origianl Size");
+
+    case wID_IMAGE_base:
+      m_ChildMenuTitle = "&Image";
+      childmenu->Append(wID_IMAGE_RESIZE,               "&Resize");
+      childmenu->Append(wID_IMAGE_RESCALE,              "Re&scale");
+      childmenu->AppendSeparator();
+      childmenu->Append(wID_IMAGE_VIEWORIGINALSIZE,     "View &Origianl Size");
     break;
-  case wID_MAP_base:
-    m_ChildMenuTitle = "&Map";
-    childmenu->Append(wID_MAP_PROPERTIES,             "&Properties");
-    childmenu->Append(wID_MAP_CHANGETILESIZE,         "&Resize Tiles");
-    childmenu->Append(wID_MAP_RESCALETILESET,         "Re&scale Tiles");
-    childmenu->Append(wID_MAP_RESIZEALLLAYERS,        "Resize &All Layers");
-    childmenu->AppendSeparator();
-    childmenu->Append(wID_MAP_EXPORTTILESET,          "&Export Tileset");
-    childmenu->Append(wID_MAP_IMPORTTILESET,          "&Import Tileset");
-    childmenu->Append(wID_MAP_PRUNETILESET,           "Pr&une Tileset");
+
+    case wID_MAP_base:
+      m_ChildMenuTitle = "&Map";
+      childmenu->Append(wID_MAP_PROPERTIES,             "&Properties");
+      childmenu->Append(wID_MAP_CHANGETILESIZE,         "&Resize Tiles");
+      childmenu->Append(wID_MAP_RESCALETILESET,         "Re&scale Tiles");
+      childmenu->Append(wID_MAP_RESIZEALLLAYERS,        "Resize &All Layers");
+      childmenu->AppendSeparator();
+      childmenu->Append(wID_MAP_EXPORTTILESET,          "&Export Tileset");
+      childmenu->Append(wID_MAP_IMPORTTILESET,          "&Import Tileset");
+      childmenu->Append(wID_MAP_PRUNETILESET,           "Pr&une Tileset");
     break;
-  case wID_SCRIPT_base:
-    m_ChildMenuTitle = "&Script";
-    childmenu->Append(wID_SCRIPT_CHECKSYNTAX,         "&Check Syntax");
-    childmenu->AppendSeparator();
-    childmenu->Append(wID_SCRIPT_FIND,                "&Find");
-    childmenu->Append(wID_SCRIPT_REPLACE,             "&Replace");
+
+    case wID_SCRIPT_base:
+      m_ChildMenuTitle = "&Script";
+      childmenu->Append(wID_SCRIPT_CHECKSYNTAX,         "&Check Syntax");
+      childmenu->AppendSeparator();
+      childmenu->Append(wID_SCRIPT_FIND,                "&Find");
+      childmenu->Append(wID_SCRIPT_REPLACE,             "&Replace");
     break;
-  case wID_SPRITESET_base:
-    m_ChildMenuTitle = "&Spriteset";
-    submenu = new wxMenu();
+
+    case wID_SPRITESET_base:
+      m_ChildMenuTitle = "&Spriteset";
+      submenu = new wxMenu();
       submenu->Append(wID_SPRITESET_ZOOM_1X,          "x&1");
       submenu->Append(wID_SPRITESET_ZOOM_2X,          "x&2");
       submenu->Append(wID_SPRITESET_ZOOM_4X,          "x&4");
       submenu->Append(wID_SPRITESET_ZOOM_8X,          "x&8");
-    childmenu->Append(wID_SPRITESET_ZOOM_, "&Zoom", submenu);
-    childmenu->AppendSeparator();
-    childmenu->Append(wID_SPRITESET_RESIZE,           "&Resize");
-    childmenu->Append(wID_SPRITESET_FILLDELAY,        "&Fill Delay");
-    childmenu->Append(wID_SPRITESET_FRAMEPROPERTIES,  "Frame &Properties");
+      childmenu->Append(wID_SPRITESET_ZOOM_, "&Zoom", submenu);
+      childmenu->AppendSeparator();
+      childmenu->Append(wID_SPRITESET_RESIZE,           "&Resize");
+      childmenu->Append(wID_SPRITESET_FILLDELAY,        "&Fill Delay");
+      childmenu->Append(wID_SPRITESET_FRAMEPROPERTIES,  "Frame &Properties");
     break;
-  case wID_WINDOWSTYLE_base:
-    m_ChildMenuTitle = "&Windowstyle";
-    submenu = new wxMenu();
-      submenu->Append(wID_WINDOWSTYLE_EDIT_UPPERLEFT,   "Upper Left");
-      submenu->Append(wID_WINDOWSTYLE_EDIT_TOP,         "Top");
-      submenu->Append(wID_WINDOWSTYLE_EDIT_UPPERRIGHT,  "Upper Right");
-      submenu->Append(wID_WINDOWSTYLE_EDIT_RIGHT,       "Right");
-      submenu->Append(wID_WINDOWSTYLE_EDIT_LOWERRIGHT,  "Lower Right");
-      submenu->Append(wID_WINDOWSTYLE_EDIT_BOTTOM,      "Bottom");
-      submenu->Append(wID_WINDOWSTYLE_EDIT_LOWERLEFT,   "Lower Left");
-      submenu->Append(wID_WINDOWSTYLE_EDIT_LEFT,        "Left");
-      submenu->Append(wID_WINDOWSTYLE_EDIT_BACKGROUND,  "Background");
-    childmenu->Append(wID_SPRITESET_ZOOM_, "&Edit", submenu);
+  
+    case wID_WINDOWSTYLE_base:
+      m_ChildMenuTitle = "&Windowstyle";
+      submenu = new wxMenu();
+        submenu->Append(wID_WINDOWSTYLE_EDIT_UPPERLEFT,   "Upper Left");
+        submenu->Append(wID_WINDOWSTYLE_EDIT_TOP,         "Top");
+        submenu->Append(wID_WINDOWSTYLE_EDIT_UPPERRIGHT,  "Upper Right");
+        submenu->Append(wID_WINDOWSTYLE_EDIT_RIGHT,       "Right");
+        submenu->Append(wID_WINDOWSTYLE_EDIT_LOWERRIGHT,  "Lower Right");
+        submenu->Append(wID_WINDOWSTYLE_EDIT_BOTTOM,      "Bottom");
+        submenu->Append(wID_WINDOWSTYLE_EDIT_LOWERLEFT,   "Lower Left");
+        submenu->Append(wID_WINDOWSTYLE_EDIT_LEFT,        "Left");
+        submenu->Append(wID_WINDOWSTYLE_EDIT_BACKGROUND,  "Background");
+      childmenu->Append(wID_SPRITESET_ZOOM_, "&Edit", submenu);
 
-    submenu = new wxMenu();
-      submenu->Append(wID_WINDOWSTYLE_ZOOM_1X,        "x&1");
-      submenu->Append(wID_WINDOWSTYLE_ZOOM_2X,        "x&2");
-      submenu->Append(wID_WINDOWSTYLE_ZOOM_4X,        "x&4");
-      submenu->Append(wID_WINDOWSTYLE_ZOOM_8X,        "x&8");
-    childmenu->Append(wID_SPRITESET_ZOOM_, "&Zoom", submenu);
+      submenu = new wxMenu();
+        submenu->Append(wID_WINDOWSTYLE_ZOOM_1X,        "x&1");
+        submenu->Append(wID_WINDOWSTYLE_ZOOM_2X,        "x&2");
+        submenu->Append(wID_WINDOWSTYLE_ZOOM_4X,        "x&4");
+        submenu->Append(wID_WINDOWSTYLE_ZOOM_8X,        "x&8");
+      childmenu->Append(wID_SPRITESET_ZOOM_, "&Zoom", submenu);
 
-    childmenu->Append(wID_WINDOWSTYLE_RESIZESECTION,  "&Resize Section");
-    childmenu->AppendSeparator();
-    childmenu->Append(wID_WINDOWSTYLE_PROPERTIES,     "&Properties");
+      childmenu->Append(wID_WINDOWSTYLE_RESIZESECTION,  "&Resize Section");
+      childmenu->AppendSeparator();
+      childmenu->Append(wID_WINDOWSTYLE_PROPERTIES,     "&Properties");
     break;
-  default:
-    m_ChildMenuResource = -1;
-    m_PreviousChildMenuResource = m_ChildMenuResource;
+
+    default:
+      m_ChildMenuResource = -1;
+      m_PreviousChildMenuResource = m_ChildMenuResource;
     return;
   }
-  if(m_ProjectOpen) {
-    m_MenuBar->Insert(2, childmenu, m_ChildMenuTitle);
-  } else {
-    m_MenuBar->Insert(1, childmenu, m_ChildMenuTitle);
-  }
+
+  m_MenuBar->Insert((m_ProjectOpen ? 2 : 1), childmenu, m_ChildMenuTitle);
   m_PreviousChildMenuResource = m_ChildMenuResource;
 
-#if 0
-todo: window specific menus
-
-  int iWindowMenu = 2;
-
-  // destroy the old menu
-  // FIXME: how to delete menu right
-  // note: gives 0 byte memory leak if not enabled but...
-  //       gives win9x MDI windowing problems if enabled...
-  //  if (GetMenu())
-  //    GetMenu()->DestroyMenu();
-
-  // create the new menu
-  HINSTANCE hInstance = AfxGetApp()->m_hInstance;
-  HMENU hNewMenu = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_MAIN));
-
-  // if a project is open, add the project menu
-  if (m_ProjectOpen)
-  {
-    HMENU hProjectMenu = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_PROJECT));
-
-    char szPopupTitle[80];
-    GetMenuString(hProjectMenu, 0, szPopupTitle, 80, MF_BYPOSITION);
-
-    InsertMenu(hNewMenu,
-               1,
-               MF_POPUP | MF_BYPOSITION | MF_STRING,
-               (UINT_PTR)GetSubMenu(hProjectMenu, 0),
-               szPopupTitle);
-
-    iWindowMenu++;
-  }
-
-  // if a child menu is set, add it
-  if (m_ChildMenuResource != -1)
-  {
-    HMENU hChildMenu = LoadMenu(hInstance, MAKEINTRESOURCE(m_ChildMenuResource));
-
-    char szPopupTitle[80];
-    GetMenuString(hChildMenu, 0, szPopupTitle, 80, MF_BYPOSITION);
-    
-    InsertMenu(hNewMenu,
-               iWindowMenu,
-               MF_POPUP | MF_BYPOSITION | MF_STRING,
-               (UINT_PTR)GetSubMenu(hChildMenu, 0),
-               szPopupTitle);
-
-    iWindowMenu++;
-  }
-
-  // set the new menu
-  CMenu* pNewMenu = CMenu::FromHandle(hNewMenu);
-  MDISetMenu(pNewMenu, pNewMenu->GetSubMenu(iWindowMenu));
-  DrawMenuBar();
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1044,15 +899,8 @@ wMainWindow::OnFileOpen(wxCommandEvent &event)
   char games_directory[MAX_PATH];
   GetGamesDirectory(games_directory);
   SetCurrentDirectory(games_directory);
-  wxFileDialog FileDialog(
-    this, "File Open", games_directory, "", filter.c_str(), wxOPEN | wxHIDE_READONLY | wxMULTIPLE
-
-/*
-    TRUE,
-    "",
-    NULL,
-    OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT,
-    filter.c_str()*/);
+  wxFileDialog FileDialog(this, "File Open", games_directory, "",
+                          filter.c_str(), wxOPEN | wxHIDE_READONLY | wxMULTIPLE);
 
   // set current directory on Win98/2000
   //FileDialog.m_ofn.lpstrInitialDir = games_directory;
@@ -1071,6 +919,8 @@ wMainWindow::OnFileOpen(wxCommandEvent &event)
       else
         OpenGameFile(thePath);
     }
+
+    UpdateMenu();
   }
 }
 

@@ -1137,7 +1137,6 @@ wImageView::OnMouseMove(wxMouseEvent &event)
 
   wxPoint current = ConvertToPixel(event.GetPosition());
 
-#ifdef WIN32
   if (InImage(current)) {
     char str[80];
     sprintf(str, "(%d, %d)", current.x, current.y);
@@ -1145,7 +1144,6 @@ wImageView::OnMouseMove(wxMouseEvent &event)
   } else {
     SetStatus(wxString(""));
   }
-#endif
 
   if (!m_MouseDown)
     return;
@@ -1167,6 +1165,7 @@ wImageView::OnMouseMove(wxMouseEvent &event)
       RefreshPixels(start.x, start.y, end.x, end.y);
       RefreshPixels(start.x, start.y, last.x, last.y);
       break;
+
     case Tool_Circle: 
       start = ConvertToPixel(m_StartPoint);
       end = ConvertToPixel(m_CurPoint);

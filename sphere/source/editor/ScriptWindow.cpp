@@ -171,7 +171,7 @@ CScriptWindow::SetScriptStyles() {
   //SendEditor(SCI_SETMARGINWIDTHN, 1, 20);
 
   if (m_ShowLineNumbers) {  // resize the line number margin so we can see it
-    SendEditor(SCI_SETMARGINWIDTHN, 0, 30);
+    SendEditor(SCI_SETMARGINWIDTHN, 0, 45);
   }
 
   SetStyle(SCE_C_DEFAULT, black, white, m_FontSize, m_Fontface.c_str());
@@ -252,6 +252,7 @@ CScriptWindow::LoadScript(const char* filename)
 
   // allocate a temporary storage buffer and read it
   char* buffer = new char[file_size + 1];
+  if (buffer == NULL) return false;
   fread(buffer, sizeof(char), file_size, file);
   
   // null-terminate the string

@@ -53,7 +53,7 @@ wProject::Create(const char* games_directory, const char* project_name)
     
   // set the project filename
   m_Filename = path;
-  m_Filename += "\\game.sgm";
+  m_Filename += "/game.sgm";
 
   // set default values in project
   m_GameTitle = "";
@@ -75,8 +75,14 @@ wProject::Open(const char* filename)
 
   // set the game directory
   m_Directory = filename;
+
+#ifdef WIN32
   if (m_Directory.rfind('\\') != std::string::npos)
     m_Directory[m_Directory.rfind('\\')] = 0;
+#else
+  if (m_Directory.rfind('/') != std::string::npos)
+    m_Directory[m_Directory.rfind('/')] = 0;
+#endif
 
   // set the game filename
   m_Filename = filename;
@@ -128,8 +134,13 @@ wProject::GetDirectory() const
 const char*
 wProject::GetGameSubDirectory() const
 {
+#ifdef WIN32
   if (strrchr(m_Directory.c_str(), '\\'))
     return strrchr(m_Directory.c_str(), '\\') + 1;
+#else
+  if (strrchr(m_Directory.c_str(), '/'))
+    return strrchr(m_Directory.c_str(), '/') + 1;
+#endif
   else
     return "";
 }
@@ -222,7 +233,6 @@ wProject::GetGroupDirectory(int grouptype)
 void
 wProject::RefreshItems()
 {
-#ifdef WIN32
   // empty the old lists
   for (int i = 0; i < NUM_GROUP_TYPES; i++)
     m_Groups[i].clear();
@@ -245,26 +255,16 @@ wProject::RefreshItems()
     for (unsigned j = 0; j < extensions.size(); j++) {
       std::string filter = "*." + extensions[j];
 
-      WIN32_FIND_DATA ffd;
-      HANDLE h = FindFirstFile(filter.c_str(), &ffd);
-      if (h == INVALID_HANDLE_VALUE)
-        continue;
-
-      do {
-
-        if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-          AddItem(i, ffd.cFileName);
-
-      } while (FindNextFile(h, &ffd));
-
-      FindClose(h);
+      std::vector<std::string> file_list = GetFileList(filter.c_str());
+      for (unsigned int m = 0; m < file_list.size(); m++) {
+        AddItem(i, file_list[m].c_str());
+      }
     }
 
   }
 
   // restore the old directory
   wxSetWorkingDirectory(old_directory);
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

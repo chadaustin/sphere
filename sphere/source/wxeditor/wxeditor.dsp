@@ -509,6 +509,14 @@ SOURCE=.\SwatchServer.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\system.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\system.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\TileObstructionDialog.cpp
 # End Source File
 # Begin Source File
