@@ -451,6 +451,7 @@ CMainWindow::Create()
   GetGamesDirectory(games_directory);
 
   m_DefaultFolder = games_directory;
+  SetCurrentDirectory(m_DefaultFolder.c_str());
 
   m_NextClipboardViewer = SetClipboardViewer();
 

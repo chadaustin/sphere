@@ -135,7 +135,7 @@ CAdjustBordersDialog::OnOK()
     return;
   }
 
-  if (m_TopPixels == 0 && m_RightPixels && m_BottomPixels && m_LeftPixels == 0) {
+  if (m_TopPixels == 0 && m_RightPixels == 0 && m_BottomPixels == 0 && m_LeftPixels == 0) {
     CDialog::OnCancel();
     return;
   }

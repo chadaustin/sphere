@@ -51,6 +51,8 @@ public:
   void Rescale(int width, int height);
   void Resample(int width, int height, bool weighted = false);
 
+  void AdjustBorders(int top, int right, int bottom, int left);
+
   int         GetWidth() const;
   int         GetHeight() const;
   RGBA        GetPixel(int x, int y) const;

@@ -222,6 +222,14 @@ SOURCE=.\Keys.table
 # End Source File
 # Begin Source File
 
+SOURCE=.\LineSorter.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\LineSorter.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MDITabs.cpp
 # End Source File
 # Begin Source File

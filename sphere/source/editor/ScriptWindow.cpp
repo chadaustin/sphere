@@ -13,12 +13,11 @@
 #include "Keys.hpp"
 #include "resource.h"
 
-#include "MainWindow.hpp"
+//#include "MainWindow.hpp"
 #include "ScriptSortToolDialog.hpp"
+#include "LineSorter.hpp"
 
 #include <afxdlgs.h>
-
-#include <ctype.h>
 
 const int ID_EDIT = 900;
 const UINT s_FindReplaceMessage = ::RegisterWindowMessage(FINDMSGSTRING);
@@ -1544,61 +1543,6 @@ CScriptWindow::SaveDocument(const char* path)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <algorithm>
-#include "../common/minmax.hpp"
-
-class ScintillaLine {
-public:
-  char* data;
-  unsigned int size;
-};
-
-class ScintillaLineComparer : public std::binary_function<unsigned int, unsigned int, bool> 
-{
-private:
-  const std::vector<ScintillaLine*>	&m_lines;
-
-public:
-  bool m_ignore_case;
-
-public:
-  ScintillaLineComparer(const std::vector<ScintillaLine*>& lines) : m_lines(lines) { }
-
-  bool operator()(unsigned int a, unsigned int b) const
-  {
-    if (a >= m_lines.size() || b >= m_lines.size()) {
-      char string[1000];
-      sprintf (string, "failed sort 5... (%d %d) (%d %d)", (int)a, (int)b, a, b);
-      GetStatusBar()->SetWindowText(string);
-      return false;
-    } 
-
-    if (m_ignore_case) {
-      for (int i = 0; i < m_lines[a]->size && i < m_lines[b]->size; i++) {
-        if (isalpha(m_lines[a]->data[i]) && isalpha(m_lines[b]->data[i])) {
-          if (tolower(m_lines[a]->data[i]) <= tolower(m_lines[b]->data[i])) {
-            return true;
-          }
-        }
-        else {
-          if (m_lines[a]->data[i] < m_lines[b]->data[i]) {
-            return true;
-          }
-        }
-      }
-    }
-    else {
-      for (int i = 0; i < m_lines[a]->size && i < m_lines[b]->size; i++) {
-        if (m_lines[a]->data[i] < m_lines[b]->data[i]) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-};
-
 afx_msg void
 CScriptWindow::OnScriptToolsSort()
 {
@@ -1607,135 +1551,15 @@ CScriptWindow::OnScriptToolsSort()
     return;
   }
 
-  int selection_start = SendEditor(SCI_LINEFROMPOSITION, SendEditor(SCI_GETSELECTIONSTART));
-  int selection_end   = SendEditor(SCI_LINEFROMPOSITION, SendEditor(SCI_GETSELECTIONEND));
+  CLineSorter line_sorter;
+  line_sorter.m_Editor = m_Editor;
 
-  if (selection_start - selection_end == 0) {
-    GetStatusBar()->SetWindowText("Nothing to sort...");
-    return;
-  }
+  line_sorter.delete_duplicates = dialog.ShouldRemoveDuplicateLines();
+  line_sorter.sort_lines        = dialog.ShouldSortLines();
+  line_sorter.reverse_lines     = dialog.ShouldReverseLines();
+  line_sorter.ignore_case       = dialog.ShouldIgnoreCase();
 
-  bool delete_duplicates = dialog.ShouldRemoveDuplicateLines();
-  bool sort_lines = dialog.ShouldSortLines();
-  bool reverse_lines = dialog.ShouldReverseLines();
-  bool ignore_case = dialog.ShouldIgnoreCase();
-
-  if (!delete_duplicates && !sort_lines && !reverse_lines) {
-    GetStatusBar()->SetWindowText("No reason to sort...");
-    return;
-  }
-
-  std::vector<ScintillaLine*> lines;
-
-  GetStatusBar()->SetWindowText("Retrieving lines for sorting...");
-
-  for (unsigned int line_number = selection_start; line_number <= selection_end; line_number++) 
-  {
-    unsigned int line_index = lines.size();
-    ScintillaLine* line_ptr = new ScintillaLine;
-    if (!line_ptr) {
-      continue;
-    }
-
-    lines.push_back(line_ptr);
-    if (line_index + 1 != lines.size()) {
-      delete line_ptr;
-      line_ptr = NULL;
-      continue;
-    }
-
-    lines[line_index]->data = NULL;
-    lines[line_index]->size = 0;
-
-    int line_length = SendEditor(SCI_LINELENGTH, line_number);
-    if (line_length >= 0) {
-      lines[line_index]->data = new char[line_length + 1];
-      if (lines[line_index]->data != NULL) {
-        lines[line_index]->size = line_length;
-        SendEditor(SCI_GETLINE, line_number, (LRESULT)lines[line_index]->data);
-        lines[line_index]->data[line_length] = '\0';
-      } else {
-        GetStatusBar()->SetWindowText("fail error 2...");
-        return;
-      }
-    }
-    else {
-      GetStatusBar()->SetWindowText("fail error 1...");
-      return;
-    }
-  }
-
-  GetStatusBar()->SetWindowText("Removing old lines...");
-
-  SendEditor(SCI_BEGINUNDOACTION);
-
-  // remove the old selection
-  SendEditor(SCI_SETTARGETSTART, SendEditor(SCI_POSITIONFROMLINE, selection_start));
-  SendEditor(SCI_SETTARGETEND,   SendEditor(SCI_POSITIONFROMLINE, selection_end + 1));
-  SendEditor(SCI_REPLACETARGET, 0, (LRESULT) "");
-
-  std::vector<unsigned int> line_indexes;
-  for (unsigned int i = 0; i < lines.size(); i++) {
-    line_indexes.push_back(i);
-  }
-
-  if (0) {
-    SendEditor(SCI_ADDTEXT, strlen("Before sort...\n"), (LPARAM)"Before sort...\n");
-    for (unsigned int i = 0; i < lines.size() && i < line_indexes.size(); i++) {
-      unsigned int line_index = line_indexes[i];
-      if (lines[line_index]->data) {
-        SendEditor(SCI_ADDTEXT, lines[line_index]->size, (LPARAM)lines[line_index]->data);
-      }
-    }
-  }
-
-  GetStatusBar()->SetWindowText("Sorting lines...");
-
-  ScintillaLineComparer line_comparer(lines);
-  line_comparer.m_ignore_case = ignore_case;
-  std::sort(line_indexes.begin(), line_indexes.end(), line_comparer);
-
-  GetStatusBar()->SetWindowText("Lines sorted...");
-
-  if (1) {
-    // SendEditor(SCI_ADDTEXT, strlen("after sort...\n"), (LPARAM)"after sort...\n");
-    for (unsigned int i = 0; i < lines.size() && i < line_indexes.size(); i++) {
-      unsigned int line_index = sort_lines ? line_indexes[(reverse_lines ? (lines.size() - 1) - i : i)] : (reverse_lines ? (lines.size() - 1) - i : i);
-
-      if (lines[line_index]->data) {
-
-        if (i > 0 && delete_duplicates) {
-          unsigned int last_index = sort_lines ? line_indexes[(reverse_lines ? (lines.size() - 1) - i + 1 : i - 1)] : (reverse_lines ? (lines.size() - 1) - i + 1 : i - 1);
-
-          if (lines[line_index]->size == lines[last_index]->size) {
-            if (memcmp(lines[line_index]->data,
-                       lines[last_index]->data,
-                       lines[line_index]->size) == 0)
-              continue;
-          }
-        }
-
-        SendEditor(SCI_ADDTEXT, lines[line_index]->size, (LPARAM)lines[line_index]->data);
-      }
-    }
-  }
-
-  SendEditor(SCI_ENDUNDOACTION);
-
-  for (unsigned int i = 0; i < lines.size(); i++) {
-    if (lines[i]->data) {
-      delete[] lines[i]->data;
-      lines[i]->data = NULL;
-      lines[i]->size = 0;
-    }
-
-    delete lines[i];
-    lines[i] = NULL;
-  }
-
-  lines.clear();
-
-  GetStatusBar()->SetWindowText("");
+  line_sorter.Sort();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -482,6 +482,43 @@ CImage32::Resample(int width, int height, bool weighted)
   }
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CImage32::AdjustBorders(int top, int right, int bottom, int left)
+{
+  const int width  = m_Width   + left + right;
+  const int height = m_Height  + top  + bottom;
+
+  if (width <= 0 || height <= 0)
+    return;
+
+  RGBA* new_pixels = new RGBA[width * height];
+  if (new_pixels == NULL)
+    return;
+
+  for (int iy = 0; iy < height; iy++) {
+    for (int ix = 0; ix < width; ix++) {
+
+      int sx = ix - left;
+      int sy = iy - top;
+
+      if (sx >= 0 && sx < m_Width && sy >= 0 && sy < m_Height) {
+        new_pixels[iy * width + ix] = m_Pixels[(iy - top) * m_Width + (ix - left)];
+      }
+      else {
+        new_pixels[iy * width + ix] = CreateRGBA(0, 0, 0, 255);
+      }
+    }
+  }
+
+  m_Width  = width;
+  m_Height = height;
+  delete[] m_Pixels;
+  m_Pixels = new_pixels;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 void
