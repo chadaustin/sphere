@@ -1522,7 +1522,7 @@ bool
 CMapEngine::GetPersonList(std::vector<std::string>& list)
 {
   list.resize(m_Persons.size());
-  for (unsigned i = 0; i < m_Persons.size(); i++) {
+  for (unsigned int i = 0; (i < m_Persons.size() && i < list.size()); i++) {
     list[i] = m_Persons[i].name;
   }
   return true;
@@ -1535,6 +1535,8 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
 {
   p.name = name;
   p.destroy_with_map = destroy_with_map;
+
+  p.person_id = -1;
 
   p.spriteset = m_Engine->LoadSpriteset(spriteset_filename);
   if (p.spriteset == NULL) {
@@ -3391,10 +3393,36 @@ CMapEngine::UpdatePersons()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+int
+CMapEngine::FindPersonByID(int person_id, int person_index)
+{
+  if (person_index >= 0 && person_index < int(m_Persons.size())) {
+    if (m_Persons[person_index].person_id == person_id)
+      return person_index;
+  }
+
+  for (int i = 0; i < int(m_Persons.size()); i++)
+  {
+    if (m_Persons[i].person_id == person_id)
+      return i;
+  }
+
+  return -1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::UpdatePerson(int person_index, bool& activated)
 {
   Person& p = m_Persons[person_index];
+  static int person_id = -1;
+
+  person_id += 1;
+  if (person_id == -1)
+    person_id += 1;
+
+  m_Persons[person_index].person_id = person_id;
 
   // if this person has a leader, skip it
   if (p.leader != -1) {
@@ -3442,7 +3470,8 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
         }
 
         // the script may have destroyed the person, so check to see that the person still exists
-        if (FindPerson(m_CurrentPerson.c_str()) != person_index) {
+        int id = FindPersonByID(person_id, person_index);
+        if (id != person_index) {
           return true;
         }
 
@@ -3503,7 +3532,8 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
         }
 
         // the script may have destroyed the person, so check to see that the person still exists
-        if (FindPerson(person_name.c_str()) != person_index) {
+        int id = FindPersonByID(person_id, person_index);
+        if (id != person_index) {
           return true;
         }
 
@@ -3577,10 +3607,10 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
             ResetNextFrame();
 
             // the script may have destroyed the person, so check to see that the person still exists
-            if (FindPerson(person_name.c_str()) != person_index) {
+            int id = FindPersonByID(person_id, person_index);
+            if (id != person_index) {
               return true;
             }
-
           }
         }
 
@@ -4237,8 +4267,7 @@ CMapEngine::ProcessInput()
   }
 
   // process default input bindings
-  if (m_IsInputAttached) {
-
+  if (m_IsInputAttached && m_Persons[m_InputPerson].commands.size() == 0) {
     int dx = 0;
     int dy = 0;
     bool moved = false;
@@ -4259,7 +4288,8 @@ CMapEngine::ProcessInput()
     if (dx < 0) { moved = true; m_Persons[m_InputPerson].commands.push_back(Person::Command(COMMAND_MOVE_WEST,  true)); }
 
     // set the direction
-    if (moved) {
+    if (moved)
+    {
       int command = -1;
       if (dx < 0) {
         if (dy < 0) {

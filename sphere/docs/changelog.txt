@@ -1,11 +1,14 @@
-2004.06.11
+2004.02.16
+  - Fix Import Spritesets from RM2K Charset (it was missing the last frame of each direction)
+  
+2004.02.11
   - Zoom in/out shortcuts CTRL and + for zoom in and CTRL and - for zoom out
   - You can now paste into the main window and it'll create a document based on the clipboard type  
   - The script editor now highlight's good and bad braces (green for good, red for bad)
     If a brace is red, your script has a problem.
   - Shift + left click selects the current color in the image editor
 
-2004.04.06
+2004.02.06
   - Added Redo to image editor
   - Added an options dialog
 
