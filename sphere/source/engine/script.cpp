@@ -1266,6 +1266,10 @@ begin_func(BlendColorsWeighted, 4)
   arg_double(w1);
   arg_double(w2);
   
+  // Fixes an issue astie was having with negative weights.
+  if (w1 < 0) w1 = 0;
+  if (w2 < 0) w2 = 0;
+  
   if (w1 + w2 == 0) {
     return_object(CreateColorObject(cx, CreateRGBA(0, 0, 0, 255)));
   } else {
