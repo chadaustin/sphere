@@ -147,6 +147,9 @@ CTilePropertiesDialog::UpdateDialog()
   // delay
   SetDlgItemInt(IDC_DELAY, tile.GetDelay());
 
+  // name
+  SetDlgItemText(IDC_TILENAME, tile.GetName().c_str());
+
   // animation flag
   if (tile.IsAnimated())
   {
@@ -176,6 +179,9 @@ CTilePropertiesDialog::StoreCurrentTile()
   int nexttile = GetDlgItemInt(IDC_NEXT_TILE);
   int delay    = GetDlgItemInt(IDC_DELAY);
 
+  CString name;
+  GetDlgItemText(IDC_TILENAME, name);
+
   if (animated == true &&
       (nexttile < 0 ||
        nexttile >= m_Tileset->GetNumTiles()))
@@ -196,6 +202,7 @@ CTilePropertiesDialog::StoreCurrentTile()
   m_Tiles[m_Tile].SetAnimated(animated);
   m_Tiles[m_Tile].SetNextTile(nexttile);
   m_Tiles[m_Tile].SetDelay(delay);
+  m_Tiles[m_Tile].SetName(std::string(name));
 
   return true;
 }

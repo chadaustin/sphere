@@ -100,6 +100,7 @@
 #define IDC_NEXT_TILE                   1020
 #define IDC_DELAY                       1033
 #define IDC_MUSIC                       1034
+#define IDC_TILENAME                    1034
 #define IDC_NEXT                        1035
 #define IDC_PREVIOUS                    1036
 #define IDC_SCREENWIDTH                 1044
