@@ -164,6 +164,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Local &Documentation",        ID_HELP_LOCALDOCUMENTATION
         MENUITEM "doc_functions.txt",           ID_HELP_LOCAL_DOC_FUNCTIONS
+        MENUITEM "changelog.txt",               ID_HELP_LOCAL_CHANGELOG
         MENUITEM SEPARATOR
         MENUITEM "&About...",                   ID_HELP_ABOUT
     END
@@ -2148,6 +2149,11 @@ STRINGTABLE DISCARDABLE
 BEGIN
     ID_SCRIPT_FIND          "Find text within this document"
     ID_SCRIPT_REPLACE       "Replace text within this document"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_HELP_LOCAL_CHANGELOG "Open changelog.txt"
 END
 
 #endif    // English (U.S.) resources
