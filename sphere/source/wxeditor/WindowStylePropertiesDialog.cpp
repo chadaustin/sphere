@@ -9,7 +9,7 @@ END_EVENT_TABLE()
 ////////////////////////////////////////////////////////////////////////////////
 
 wWindowStylePropertiesDialog::wWindowStylePropertiesDialog(wxWindow *parent, sWindowStyle* ws)
-: wxDialog()
+: wxDialog(parent, -1, "Window Style Properties", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE, "")
 , m_WindowStyle(ws)
 {
 
@@ -46,7 +46,6 @@ wWindowStylePropertiesDialog::wWindowStylePropertiesDialog(wxWindow *parent, sWi
       gridsizer->Add(subsizer);
     mainsizer->Add(gridsizer);
 
-
     subsizer = new wxBoxSizer(wxHORIZONTAL);
       subsizer->Add(new wxButton(this, wxID_OK, "OK"));
       subsizer->Add(new wxButton(this, wxID_CANCEL, "Cancel"));
@@ -56,9 +55,9 @@ wWindowStylePropertiesDialog::wWindowStylePropertiesDialog(wxWindow *parent, sWi
   mainsizer->SetSizeHints(this);
 
   switch(m_WindowStyle->GetBackgroundMode()) {
-  case sWindowStyle::TILED:     m_BackgroundMode->SetSelection(0); break;
-  //case sWindowStyle::STRETCHED: m_BackgroundMode->SetSelection(?); break;
-  case sWindowStyle::GRADIENT:  m_BackgroundMode->SetSelection(1); break;
+    case sWindowStyle::TILED:     m_BackgroundMode->SetSelection(0); break;
+    //case sWindowStyle::STRETCHED: m_BackgroundMode->SetSelection(?); break;
+    case sWindowStyle::GRADIENT:  m_BackgroundMode->SetSelection(1); break;
   }
 
 }
@@ -116,9 +115,9 @@ void
 wWindowStylePropertiesDialog::OnOK(wxCommandEvent &event)
 {
   switch(m_BackgroundMode->GetSelection()) {
-  case 0: m_WindowStyle->SetBackgroundMode(sWindowStyle::TILED); break;
-  //case ?: m_WindowStyle->SetBackgroundMode(sWindowStyle::STRETCHED); break;
-  case 1: m_WindowStyle->SetBackgroundMode(sWindowStyle::GRADIENT); break;
+    case 0: m_WindowStyle->SetBackgroundMode(sWindowStyle::TILED); break;
+    //case ?: m_WindowStyle->SetBackgroundMode(sWindowStyle::STRETCHED); break;
+    case 1: m_WindowStyle->SetBackgroundMode(sWindowStyle::GRADIENT); break;
   }
 
   m_WindowStyle->SetBackgroundColor(sWindowStyle::BACKGROUND_UPPER_LEFT,  m_UpperLeftView->GetColor());
