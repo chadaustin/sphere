@@ -283,6 +283,10 @@ SOURCE=.\resources\imagetool_circle.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\resources\imagetool_ellipse.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\resources\imagetool_fill.ico
 # End Source File
 # Begin Source File
@@ -296,6 +300,10 @@ SOURCE=.\resources\imagetool_pencil.ico
 # Begin Source File
 
 SOURCE=.\resources\imagetool_rectangle.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\resources\imagetool_selection.ico
 # End Source File
 # Begin Source File
 
@@ -1090,9 +1098,5 @@ SOURCE=..\common\WindowStyle.cpp
 SOURCE=..\common\WindowStyle.hpp
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=.\resources\imagetool_selection.ico
-# End Source File
 # End Target
 # End Project

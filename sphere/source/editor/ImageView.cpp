@@ -734,6 +734,33 @@ CImageView::Circle()
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+CImageView::Ellipse()
+{
+  if (!m_MouseDown)
+  {
+    m_StartPoint = m_CurPoint;
+    Invalidate();
+    m_Handler->IV_ImageChanged();
+  }
+  else
+  {
+    // convert pixel coordinates to image coordinates
+    POINT start = ConvertToPixel(m_StartPoint);
+    POINT end = ConvertToPixel(m_CurPoint);
+
+    // bounds check
+    if (!InImage(start) || !InImage(end))
+      return;
+
+    m_Image.Ellipse(start.x, start.y, abs(start.x - end.x), abs(start.y - end.y), m_Color);
+    Invalidate();
+    m_Handler->IV_ImageChanged();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
 CImageView::GetColor(RGBA* color, int x, int y)
 {
   // convert pixel coordinates to image coordinates
@@ -802,6 +829,7 @@ CImageView::OnPaint()
     case Tool_Line:      PaintLine(drawImage); break;
     case Tool_Rectangle: PaintRectangle(drawImage); break;
     case Tool_Circle:    PaintCircle(drawImage); break;
+    case Tool_Ellipse:   PaintEllipse(drawImage); break;
     case Tool_Selection: UpdateSelection(); break;
   }
 
@@ -1037,6 +1065,26 @@ CImageView::PaintCircle(CImage32& pImage)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+CImageView::PaintEllipse(CImage32& pImage)
+{
+  if (!m_MouseDown)
+    return;
+
+  // convert pixel coordinates to image coordinates
+  POINT start = ConvertToPixel(m_StartPoint);
+  POINT end = ConvertToPixel(m_CurPoint);
+
+  // bounds check
+  if (!InImage(start) || !InImage(end))
+    return;
+
+  pImage.Ellipse(start.x, start.y, abs(start.x - end.x), abs(start.y - end.y), m_Color);
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
 CImageView::UpdateSelection()
 {
   if (!m_MouseDown)
@@ -1085,6 +1133,7 @@ CImageView::OnLButtonDown(UINT flags, CPoint point)
     case Tool_Line:      Line();      break;
     case Tool_Rectangle: Rectangle(); break;
     case Tool_Circle:    Circle();    break;
+    case Tool_Ellipse:   Ellipse();   break;
     case Tool_Selection: Selection(); break;
   }
 
@@ -1106,6 +1155,7 @@ CImageView::OnLButtonUp(UINT flags, CPoint point)
     case Tool_Line:      Line();  break;
     case Tool_Rectangle: Rectangle(); break;
     case Tool_Circle:    Circle(); break;
+    case Tool_Ellipse:   Ellipse(); break;
     case Tool_Selection: Selection(); break;
   }
 
@@ -1187,6 +1237,7 @@ CImageView::OnMouseMove(UINT flags, CPoint point)
     case Tool_Line:
     case Tool_Rectangle:
     case Tool_Circle:
+    case Tool_Ellipse:
     case Tool_Selection:
       Invalidate();
       break;

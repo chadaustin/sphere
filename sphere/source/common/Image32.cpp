@@ -745,6 +745,71 @@ CImage32::Circle(int x, int y, int r, RGBA color)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+CImage32::Ellipse(int cx, int cy, int radx, int rady, RGBA color, int fill)
+{
+  int mx1, my1, mx2, my2;
+  int aq, bq;
+  int dx, dy;
+  int r, rx, ry;
+  int x;
+
+  if (fill) {
+    Line(cx - radx, cy, cx + radx, cy, color);
+  }
+  else
+  {
+    SetPixel(cx + radx, cy, color);
+    SetPixel(cx - radx, cy, color);
+  }
+
+  mx1 = cx - radx;  my1 = cy;
+  mx2 = cx + radx;  my2 = cy;
+
+  aq = radx * radx;
+  bq = rady * rady;
+  dx = aq<<1;
+  dy = bq<<1;
+  r = radx * bq;
+  rx = r<<1;
+  ry = 0;
+  x = radx;
+
+  while (x > 0)
+  {
+    if (r > 0)
+    {
+      my1++;
+      my2--;
+      ry += dx;
+      r -= ry;
+    }
+    if (r <= 0)
+    {
+      x--;
+      mx1++;
+      mx2--;
+      rx-=dy;
+      r+=rx;
+    }
+
+    if (fill)
+    {
+      Line(mx1, my1, mx2, my1, color);
+      Line(mx1, my2, mx2, my2, color);
+    }
+    else
+    {
+      SetPixel(mx1, my1, color);
+      SetPixel(mx2, my1, color);
+      SetPixel(mx1, my2, color);
+      SetPixel(mx2, my2, color);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
 CImage32::Rectangle(int x1, int y1, int x2, int y2, RGBA color)
 {
   // make sure x1 < x2 and y1 < y2 so we can get good w and h values

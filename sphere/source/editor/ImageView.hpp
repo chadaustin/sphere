@@ -54,7 +54,7 @@ public:
   void GetSelection(int& x, int& y, int& w, int& h);
 
 private:
-  enum Tool { Tool_Pencil, Tool_Line, Tool_Rectangle, Tool_Circle, Tool_Fill, Tool_Selection };
+  enum Tool { Tool_Pencil, Tool_Line, Tool_Rectangle, Tool_Circle, Tool_Ellipse, Tool_Fill, Tool_Selection };
 
 private:
   virtual void SP_ColorSelected(RGBA color);
@@ -71,6 +71,7 @@ private:
   void Line();
   void Rectangle();
   void Circle();
+  void Ellipse();
   void UpdateSelection();
   void Selection();
   void GetColor(RGBA* color, int x, int y);
@@ -82,6 +83,7 @@ private:
   void PaintLine(CImage32& pImage);
   void PaintRectangle(CImage32& pImage);
   void PaintCircle(CImage32& pImage);
+  void PaintEllipse(CImage32& pImage);
   afx_msg void OnSize(UINT type, int cx, int cy);
 
   afx_msg void OnLButtonDown(UINT flags, CPoint point);

@@ -15,6 +15,7 @@ CImageToolPalette::CImageToolPalette(CDocumentWindow* owner, IToolPaletteHandler
   AddTool(IDI_IMAGETOOL_LINE,      "Line");
   AddTool(IDI_IMAGETOOL_RECTANGLE, "Rectangle");
   AddTool(IDI_IMAGETOOL_CIRCLE,    "Circle");
+  AddTool(IDI_IMAGETOOL_ELLIPSE,   "Ellipse");
   AddTool(IDI_IMAGETOOL_FILL,      "Fill");
   AddTool(IDI_IMAGETOOL_SELECTION, "Selection");
 }

@@ -61,6 +61,7 @@ public:
   void ReplaceColor(RGBA oldColor, RGBA newColor);
   void Line(int x1, int y1, int x2, int y2, RGBA color);
   void Circle(int x, int y, int r, RGBA color);
+  void Ellipse(int cx, int cy, int radx, int rady, RGBA clr, int fill = false);
   void Rectangle(int x1, int y1, int x2, int y2, RGBA color);
 
   void BlitImage(CImage32& image, int x, int y);

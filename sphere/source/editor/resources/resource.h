@@ -83,6 +83,7 @@
 #define IDI_MAPTOOL_ZONEEDIT            217
 #define IDI_MAPTOOL_ZONEDELETE          218
 #define IDI_IMAGETOOL_SELECTION         219
+#define IDI_IMAGETOOL_ELLIPSE           221
 #define IDC_PROJECTNAME                 1000
 #define IDC_GAMETITLE                   1001
 #define IDC_BROWSE                      1003
@@ -365,7 +366,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        220
+#define _APS_NEXT_RESOURCE_VALUE        222
 #define _APS_NEXT_COMMAND_VALUE         40562
 #define _APS_NEXT_CONTROL_VALUE         1120
 #define _APS_NEXT_SYMED_VALUE           101
