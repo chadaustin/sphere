@@ -22,7 +22,7 @@ Clock.prototype.start = function()
 
 // Example: GameClock.start();
 
-Clock.prototype.getTime = function()
+Clock.prototype.getTime = function(a)
 {
 	var current = GetTime() - this.started;
 	var secs = "";
@@ -47,7 +47,12 @@ Clock.prototype.getTime = function()
 		hours += "0";
 	}
 	hours += Math.floor((current)/1000/60/60 + this.hours) % 60;
-	return hours + ":" + mins + ":" + secs;
+	if (a == true)
+	{
+		return [hours, mins, secs];
+	}
+	else
+		return hours + ":" + mins + ":" + secs;
 }
 
 // Example:
@@ -57,3 +62,10 @@ Clock.prototype.getTime = function()
 // start the clock. If you are loading a game, you should
 // load the time into the clock object. That way, it can keep
 // correct time with a loaded game.
+//
+// clock.getTime(true) returns the time in an array
+// Example:
+// var time = clock.getTime(true);
+// font.drawText(10, 10, time[0]); // Hours
+// font.drawText(10, 20, time[1]); // Minutes
+// font.drawText(10, 30, time[2]); // Seconds
