@@ -46,10 +46,12 @@ public:
   }
 
   void SetPitchShift(double pitch) {
+    if (!m_Sound) return;
     m_Sound->setPitchShift(pitch);
   }
 
   void SetPan(double pan) {
+    if (!m_Sound) return;
     m_Sound->setPan(pan);
   }
 

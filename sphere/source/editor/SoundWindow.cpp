@@ -168,6 +168,10 @@ CSoundWindow::OnTimer(UINT timerID)
   {
     if (m_Playing && m_Repeat) {
       m_Sound.Play();
+      if (m_PanBar.m_hWnd != NULL && m_PitchBar.m_hWnd != NULL) {
+        m_Sound.SetPan(m_PanBar.GetPos() / 255.0f);
+        m_Sound.SetPitchShift(m_PitchBar.GetPos() / 255.0f);
+      }
     }
     else {
       m_PlayButton.EnableWindow(TRUE);
@@ -233,6 +237,11 @@ CSoundWindow::OnSoundPlay()
 
   m_Sound.Play();
   m_Playing = true;
+
+  if (m_PanBar.m_hWnd != NULL && m_PitchBar.m_hWnd != NULL) {
+    m_Sound.SetPan(m_PanBar.GetPos() / 255.0f);
+    m_Sound.SetPitchShift(m_PitchBar.GetPos() / 255.0f);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
