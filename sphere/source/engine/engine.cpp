@@ -357,7 +357,7 @@ CGameEngine::LoadSpriteset(const char* filename)
   // load spriteset
   SSPRITESET* ss = new SSPRITESET;
   if (!ss->Load(path.c_str(), m_FileSystem)) {
-    delete ss;
+    ss->Release();
     return NULL;
   }
 
@@ -369,7 +369,7 @@ CGameEngine::LoadSpriteset(const char* filename)
 void
 CGameEngine::DestroySpriteset(SSPRITESET* spriteset)
 {
-  delete spriteset;
+  spriteset->Release();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

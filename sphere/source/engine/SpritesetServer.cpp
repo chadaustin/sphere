@@ -12,7 +12,7 @@ CSpritesetServer::CSpritesetServer()
 CSpritesetServer::~CSpritesetServer()
 {
   for (int i = 0; i < m_Spritesets.size(); i++)
-    delete m_Spritesets[i].spriteset;
+    m_Spritesets[i].spriteset->Release();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@ CSpritesetServer::Load(const char* filename, IFileSystem& fs)
 
   if (!spriteset.spriteset->Load(filename, fs))
   {
-    delete spriteset.spriteset;
+    spriteset.spriteset->Release();
     m_Spritesets.pop_back();
     return NULL;
   }
@@ -56,7 +56,7 @@ CSpritesetServer::Free(SSPRITESET* spriteset)
       if (--m_Spritesets[i].refcount == 0)
       {
         // remove m_Spritesets[i]
-        delete m_Spritesets[i].spriteset;
+        m_Spritesets[i].spriteset->Release();
         m_Spritesets.erase(m_Spritesets.begin() + i);
         return;
       }

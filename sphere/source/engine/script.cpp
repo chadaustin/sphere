@@ -2767,21 +2767,32 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
   };
 
-  
-  // create object
-  JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
-  if (object == NULL) {
-    return NULL;
-  }
+
+  JSObject* local_roots = JS_NewArrayObject(cx, 0, 0);
+  JS_AddRoot(cx, &local_roots);
 
   
-  // define the member images array
+  // CREATE SPRITESET OBJECT
+
+  JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
+  jsval object_val = OBJECT_TO_JSVAL(object);
+  JS_SetElement(cx, local_roots, 0, &object_val);
+
+
+
+  // DEFINE MEMBER IMAGES ARRAY
+  
   int num_images = spriteset->GetSpriteset().GetNumImages();
-  jsval* image_values = new jsval[num_images];
+  JSObject* image_array = JS_NewArrayObject(cx, 0, 0);
+  jsval image_val = OBJECT_TO_JSVAL(image_array);
+  JS_SetElement(cx, local_roots, 1, &image_val);
 
   for (int i = 0; i < num_images; i++) {
     JSObject* image = CreateImageObject(cx, spriteset->GetImage(i), false);
     
+    jsval val = OBJECT_TO_JSVAL(image);
+    JS_SetElement(cx, image_array, i, &val);
+
     // define a reference back to this spriteset
     // we need this, because the spriteset owns the images, and we don't want them
     // to be GC'd while there is an active reference to this image
@@ -2792,19 +2803,16 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
       OBJECT_TO_JSVAL(object),
       JS_PropertyStub,
       JS_PropertyStub,
-      JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT
-    );
-
-    image_values[i] = OBJECT_TO_JSVAL(image);
+      JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
   }
   
-  JSObject* image_array = JS_NewArrayObject(cx, num_images, image_values);
-  delete[] image_values;
+  
+  // DEFINE MEMBER DIRECTIONS ARRAY
 
-
-  // define the member directions array
   int num_directions = spriteset->GetSpriteset().GetNumDirections();
-  jsval* direction_values = new jsval[num_directions];
+  JSObject* direction_array = JS_NewArrayObject(cx, 0, 0);
+  jsval direction_val = OBJECT_TO_JSVAL(direction_array);
+  JS_SetElement(cx, local_roots, 2, &direction_val);
 
   for (int i = 0; i < num_directions; i++) {
     JSObject* direction = JS_NewObject(cx, &direction_clasp, NULL, NULL);
@@ -2817,37 +2825,33 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
       STRING_TO_JSVAL(JS_NewStringCopyZ(cx, spriteset->GetSpriteset().GetDirectionName(i))),
       JS_PropertyStub,
       JS_PropertyStub,
-      JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT
-    );
+      JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
 
     // create the frames array
     int num_frames = spriteset->GetSpriteset().GetNumFrames(i);
-    jsval* frame_values = new jsval[num_frames];
-
-    for (int j = 0; j < num_frames; j++) {
-      JSObject* frame_object = JS_NewObject(cx, &frame_clasp, NULL, NULL);
-      JS_DefineProperty(cx, frame_object, "index", INT_TO_JSVAL(spriteset->GetSpriteset().GetFrameIndex(i, j)), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
-      JS_DefineProperty(cx, frame_object, "delay", INT_TO_JSVAL(spriteset->GetSpriteset().GetFrameDelay(i, j)), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
-      frame_values[j] = OBJECT_TO_JSVAL(frame_object);
-    }
+    JSObject* frame_array = JS_NewArrayObject(cx, 0, 0);
 
     JS_DefineProperty(
       cx,
       direction,
       "frames",
-      OBJECT_TO_JSVAL(JS_NewArrayObject(cx, num_frames, frame_values)),
+      OBJECT_TO_JSVAL(frame_array),
       JS_PropertyStub,
       JS_PropertyStub,
-      JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT
-    );
+      JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
 
-    delete[] frame_values;
+    for (int j = 0; j < num_frames; j++) {
+      JSObject* frame_object = JS_NewObject(cx, &frame_clasp, NULL, NULL);
+      jsval frame_object_val = OBJECT_TO_JSVAL(frame_object);
+      JS_SetElement(cx, frame_array, j, &frame_object_val);
 
-    direction_values[i] = OBJECT_TO_JSVAL(direction);
+      JS_DefineProperty(cx, frame_object, "index", INT_TO_JSVAL(spriteset->GetSpriteset().GetFrameIndex(i, j)), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+      JS_DefineProperty(cx, frame_object, "delay", INT_TO_JSVAL(spriteset->GetSpriteset().GetFrameDelay(i, j)), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+    }
+
+    jsval val = OBJECT_TO_JSVAL(direction);
+    JS_SetElement(cx, direction_array, i, &val);
   }
-
-  JSObject* direction_array = JS_NewArrayObject(cx, num_directions, direction_values);
-  delete[] direction_values;
 
   
   // define the properties for this object
@@ -2873,14 +2877,12 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
 
   // attach the spriteset to this object
   
-  //assume spriteset already addref'd
-  //spriteset->AddRef();
-
   SS_SPRITESET* spriteset_object = new SS_SPRITESET;
   spriteset_object->spriteset = spriteset;
   spriteset_object->object    = object;
   JS_SetPrivate(cx, object, spriteset_object);
 
+  JS_RemoveRoot(cx, &local_roots);
   return object;
 }
 

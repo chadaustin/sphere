@@ -11,8 +11,11 @@ class SSPRITESET
 {
 public:
   SSPRITESET();
+
+private:  // use Release()
   ~SSPRITESET();
 
+public:
   void AddRef();
   void Release();
 
