@@ -91,9 +91,10 @@ public:
   void DeleteEntity(int index);
   int  FindEntity(int x, int y, int layer);
 
-  void AddZone(const sZone& zone);
+  void AddZone(sZone& zone);
   void DeleteZone(int index);
   int  FindZone(int x, int y, int layer);
+  void UpdateZone(int index, int x1, int y1, int x2, int y2);
 
   void SetMusicFile(const char* music);
   void SetEntryScript(const char* script);

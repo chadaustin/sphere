@@ -291,6 +291,7 @@ BEGIN
         END
         MENUITEM "&Delete Entity",              ID_MAPVIEW_DELETEENTITY
         MENUITEM "&Edit Entity...",             ID_MAPVIEW_EDITENTITY
+        MENUITEM "Edit Z&one...",               ID_MAPVIEW_ZONEEDIT
         MENUITEM SEPARATOR
         POPUP "&Zoom"
         BEGIN
@@ -851,6 +852,21 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
 END
 
+IDD_ZONE_EDIT DIALOG DISCARDABLE  0, 0, 186, 106
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Zone"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Execute",IDC_STATIC,5,24,27,8
+    EDITTEXT        IDC_SCRIPT,5,36,172,44,ES_MULTILINE | ES_AUTOVSCROLL | 
+                    ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL | WS_HSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,13,88,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,117,88,50,14
+    PUSHBUTTON      "Check Syntax",IDC_CHECK_SYNTAX,105,20,72,12
+    EDITTEXT        IDC_STEPS,105,5,70,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Steps between executes",IDC_STATIC,5,6,90,11
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -995,6 +1011,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 38
     END
+
+    IDD_ZONE_EDIT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 99
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -1066,6 +1090,9 @@ IDI_MAPTOOL_OBS_DELETE  ICON    DISCARDABLE     "maptool_obs_delete.ico"
 IDI_LAYER_INVISIBLE     ICON    DISCARDABLE     "layer_invisible.ico"
 IDI_LAYER_VISIBLE       ICON    DISCARDABLE     "layer_visible.ico"
 IDI_MAPTOOL_OBS_MOVE_PT ICON    DISCARDABLE     "maptool_obs_move_pt.ico"
+IDI_MAPTOOL_ZONEADD     ICON    DISCARDABLE     "maptool_zoneadd.ico"
+IDI_MAPTOOL_ZONEEDIT    ICON    DISCARDABLE     "maptool_zoneedit.ico"
+IDI_MAPTOOL_ZONEDELETE  ICON    DISCARDABLE     "maptool_zonedelete.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1094,4 +1121,5 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
 

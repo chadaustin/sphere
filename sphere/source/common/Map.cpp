@@ -311,6 +311,12 @@ sMap::Load(const char* filename, IFileSystem& fs)
 
     file->Read(&zh, sizeof(zh));
     
+    if (zh.x1 > zh.x2) {
+      std::swap(zh.x1, zh.x2);
+    }
+    if (zh.y1 > zh.y2) {
+      std::swap(zh.y1, zh.y2);
+    }
     zone.x1 = zh.x1;
     zone.y1 = zh.y1;
     zone.x2 = zh.x2;
@@ -387,6 +393,7 @@ sMap::Save(const char* filename, IFileSystem& fs)
   header.startlayer     = m_StartLayer;
   header.startdirection = m_StartDirection;
   header.num_strings    = 9;
+  header.num_zones      = m_Zones.size();
   file->Write(&header, sizeof(header));
 
   // write the strings
@@ -1242,8 +1249,14 @@ sMap::FindEntity(int x, int y, int layer)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-sMap::AddZone(const sZone& zone)
+sMap::AddZone(sZone& zone)
 {
+  if (zone.x1 > zone.x2) {
+    std::swap(zone.x1, zone.x2);
+  }
+  if (zone.y1 > zone.y2) {
+    std::swap(zone.y1, zone.y2);
+  }
   m_Zones.push_back(zone);
 }
 
@@ -1268,6 +1281,23 @@ sMap::FindZone(int x, int y, int layer)
         m_Zones[i].layer == layer)
       return i;
   return -1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+sMap::UpdateZone(int index, int x1, int y1, int x2, int y2)
+{
+  if (x1 > x2) {
+    std::swap(x1, x2);
+  }
+  if (y1 > y2) {
+    std::swap(y1, y2);
+  }
+  m_Zones[index].x1 = x1;
+  m_Zones[index].y1 = y1;
+  m_Zones[index].x2 = x2;
+  m_Zones[index].y2 = y2;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

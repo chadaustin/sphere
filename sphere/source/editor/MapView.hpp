@@ -59,7 +59,9 @@ private:
   bool IsWithinSelectFillArea(int x, int y);
   void DrawTile(CDC& dc, const RECT& rect, int tx, int ty);
   void DrawObstructions(CDC& dc);
+  void DrawZones(CDC& dc);
   void DrawPreviewLine(CDC& dc, int x1, int y1, int x2, int y2);
+  void DrawPreviewBox(CDC& dc, int x1, int y1, int x2, int y2);
 
   afx_msg void OnDestroy();
   afx_msg void OnPaint();
@@ -87,6 +89,9 @@ public:
     tool_ObsSegment,
     tool_ObsDeleteSegment,
 	  tool_ObsMoveSegmentPoint,
+    tool_ZoneAdd,
+    tool_ZoneEdit,
+    tool_ZoneDelete,
   };
 
 private:
@@ -101,6 +106,7 @@ private:
   int m_ZoomFactor;
   RGB m_ObstructionColor;
   RGB m_HighlightColor;
+  RGB m_ZoneColor;
   int m_CurrentTool;
 
   int m_CurrentX;
@@ -113,11 +119,14 @@ private:
   int m_StartX;
   int m_StartY;
 
+  int m_MoveIndex; // index of the object we are moving currently
+
   int m_PreviewX;
   int m_PreviewY;
   int m_PreviewOldX;
   int m_PreviewOldY;
   int m_PreviewLineOn;
+  int m_PreviewBoxOn;
 
   int m_RedrawWindow;
   int m_RedrawPreviewLine;

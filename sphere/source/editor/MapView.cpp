@@ -4,6 +4,7 @@
 #include "Editor.hpp"
 #include "EntityPersonDialog.hpp"
 #include "EntityTriggerDialog.hpp"
+#include "ZoneEditDialog.hpp"
 #include "../common/primitives.hpp"
 #include "resource.h"
 
@@ -40,6 +41,7 @@ CMapView::CMapView()
 , m_ZoomFactor(1)
 , m_ObstructionColor(CreateRGB(255, 0, 255))
 , m_HighlightColor(CreateRGB(255, 255, 0))
+, m_ZoneColor(CreateRGB(255, 0, 0))
 , m_CurrentTool(tool_1x1Tile)
 
 , m_CurrentX(0)
@@ -996,6 +998,42 @@ CMapView::DrawObstructions(CDC& dc)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+CMapView::DrawZones(CDC& dc)
+{
+  const int tile_width  = m_Map->GetTileset().GetTileWidth();
+  const int tile_height = m_Map->GetTileset().GetTileHeight();
+
+  CPen pen(PS_SOLID, 1, RGB(m_ZoneColor.red, m_ZoneColor.green, m_ZoneColor.blue));
+
+  dc.SaveDC();
+  dc.SelectObject(&pen);
+
+  // for each segment
+  for (int i = 0; i < m_Map->GetNumZones(); i++) {
+
+    const sMap::sZone& zone = m_Map->GetZone(i);
+
+    if(zone.layer == m_SelectedLayer) {
+      int x1 = (zone.x1 - m_CurrentX * tile_width)  * m_ZoomFactor;
+      int y1 = (zone.y1 - m_CurrentY * tile_height) * m_ZoomFactor;
+      int x2 = (zone.x2 - m_CurrentX * tile_width)  * m_ZoomFactor;
+      int y2 = (zone.y2 - m_CurrentY * tile_height) * m_ZoomFactor;
+
+      dc.MoveTo(x1, y1);
+      dc.LineTo(x2, y1);
+      dc.LineTo(x2, y2);
+      dc.LineTo(x1, y2);
+      dc.LineTo(x1, y1);
+    }
+  }
+
+  dc.RestoreDC(-1);
+  pen.DeleteObject();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
 CMapView::DrawPreviewLine(CDC& dc, int x1, int y1, int x2, int y2)
 {
   const int tile_width  = m_Map->GetTileset().GetTileWidth();
@@ -1013,6 +1051,34 @@ CMapView::DrawPreviewLine(CDC& dc, int x1, int y1, int x2, int y2)
   y2 = (y2 - m_CurrentY * tile_height) * m_ZoomFactor;
   dc.MoveTo(x1, y1);
   dc.LineTo(x2, y2);
+
+  dc.RestoreDC(-1);
+  pen.DeleteObject();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CMapView::DrawPreviewBox(CDC& dc, int x1, int y1, int x2, int y2)
+{
+  const int tile_width  = m_Map->GetTileset().GetTileWidth();
+  const int tile_height = m_Map->GetTileset().GetTileHeight();
+
+  CPen pen(PS_SOLID, 1, RGB(m_HighlightColor.red, m_HighlightColor.green, m_HighlightColor.blue));
+
+  dc.SaveDC();
+  dc.SetROP2(R2_XORPEN);
+  dc.SelectObject(&pen);
+
+  x1 = (x1 - m_CurrentX * tile_width) * m_ZoomFactor;
+  y1 = (y1 - m_CurrentY * tile_height) * m_ZoomFactor;
+  x2 = (x2 - m_CurrentX * tile_width) * m_ZoomFactor;
+  y2 = (y2 - m_CurrentY * tile_height) * m_ZoomFactor;
+  dc.MoveTo(x1, y1);
+  dc.LineTo(x2, y1);
+  dc.LineTo(x2, y2);
+  dc.LineTo(x1, y2);
+  dc.LineTo(x1, y1);
 
   dc.RestoreDC(-1);
   pen.DeleteObject();
@@ -1070,6 +1136,7 @@ CMapView::OnPaint()
       }
     }
     DrawObstructions(dc);
+    DrawZones(dc);
 
     m_RedrawWindow = 0;
     //force a redraw of the preview line after doing redraw.
@@ -1083,6 +1150,13 @@ CMapView::OnPaint()
         DrawPreviewLine(dc, m_StartX, m_StartY, m_PreviewOldX, m_PreviewOldY);
       }
       DrawPreviewLine(dc, m_StartX, m_StartY, m_PreviewX, m_PreviewY);
+    }
+    if(m_PreviewBoxOn) {
+      if(m_RedrawPreviewLine == 2) {
+        //erase previous line before drawing current line
+        DrawPreviewBox(dc, m_StartX, m_StartY, m_PreviewOldX, m_PreviewOldY);
+      }
+      DrawPreviewBox(dc, m_StartX, m_StartY, m_PreviewX, m_PreviewY);
     }
     m_RedrawPreviewLine = 0;
   }
@@ -1182,6 +1256,60 @@ CMapView::OnLButtonDown(UINT flags, CPoint point)
           return;
 		    }
       } break;
+      case tool_ZoneAdd: {
+        m_StartX = point.x / m_ZoomFactor + m_CurrentX * tile_width;
+        m_StartY = point.y / m_ZoomFactor + m_CurrentY * tile_height;
+        if(flags & MK_CONTROL) {
+          m_StartX = RoundX(m_StartX);
+          m_StartY = RoundY(m_StartY);
+        }
+        m_PreviewX = m_StartX;
+        m_PreviewY = m_StartY;
+        m_PreviewBoxOn = 1;
+        m_RedrawPreviewLine = 1;
+        Invalidate();
+      } break;
+      case tool_ZoneEdit: {
+        int x = point.x / m_ZoomFactor + m_CurrentX * tile_width;
+        int y = point.y / m_ZoomFactor + m_CurrentY * tile_height;
+        int z = m_Map->FindZone(x, y, m_SelectedLayer);
+        m_MoveIndex = z;
+        if (z == -1) {
+          break;
+        }
+        sMap::sZone& zone = m_Map->GetZone(z);
+        if (abs(x - zone.x1) < abs(x - zone.x2)) {
+          m_StartX = zone.x2;
+        } else {
+          m_StartX = zone.x1;
+        }
+        if (abs(y - zone.y1) < abs(y - zone.y2)) {
+          m_StartY = zone.y2;
+        } else {
+          m_StartY = zone.y1;
+        }
+        if(flags & MK_CONTROL) {
+          m_PreviewX = RoundX(x);
+          m_PreviewY = RoundY(y);
+        } else {
+          m_PreviewX = x;
+          m_PreviewY = y;
+        }
+        m_PreviewBoxOn = 1;
+        m_RedrawPreviewLine = 1;
+        Invalidate();
+      } break;
+      case tool_ZoneDelete: {
+        int x = point.x / m_ZoomFactor + m_CurrentX * tile_width;
+        int y = point.y / m_ZoomFactor + m_CurrentY * tile_height;
+        int z = m_Map->FindZone(x, y, m_SelectedLayer);
+        if(z != -1) {
+          m_Map->DeleteZone(z);
+          m_RedrawWindow = 1;
+          Invalidate();
+          m_Handler->MV_MapChanged();
+        }
+      } break;
     }
 
     // grab all mouse events until the user releases the button
@@ -1276,6 +1404,25 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
         Invalidate();        
       } break;
 
+      case tool_ZoneAdd:
+      case tool_ZoneEdit: {
+        if(m_MoveIndex != -1) {
+          int tile_width  = m_Map->GetTileset().GetTileWidth();
+          int tile_height = m_Map->GetTileset().GetTileHeight();
+          m_PreviewOldX = m_PreviewX;
+          m_PreviewOldY = m_PreviewY;
+          m_PreviewX = point.x / m_ZoomFactor + m_CurrentX * tile_width;
+          m_PreviewY = point.y / m_ZoomFactor + m_CurrentY * tile_height;
+          if(flags & MK_CONTROL) {
+            m_PreviewX = RoundX(m_PreviewX);
+            m_PreviewY = RoundY(m_PreviewY);
+          }
+          m_RedrawPreviewLine = 2;
+          Invalidate();
+        }
+      } break;
+      case tool_ZoneDelete: {
+      } break;
     }
   }
 
@@ -1395,6 +1542,48 @@ CMapView::OnLButtonUp(UINT flags, CPoint point)
 
     case tool_ObsDeleteSegment: {
     } break;
+    case tool_ZoneAdd: {
+      if(m_MoveIndex != -1) {
+        int x = point.x / m_ZoomFactor + m_CurrentX * tile_width;
+        int y = point.y / m_ZoomFactor + m_CurrentY * tile_height;
+        sMap::sZone zone;
+        m_PreviewLineOn = 0;
+        if(flags & MK_CONTROL) {
+          x = RoundX(x);
+          y = RoundY(y);
+        }
+        zone.x1 = m_StartX;
+        zone.y1 = m_StartY;
+        zone.x2 = x;
+        zone.y2 = y;
+        zone.layer = m_SelectedLayer;
+        zone.reactivate_in_num_steps = 8;
+        zone.script = "";
+        m_Map->AddZone(zone);
+        m_PreviewBoxOn = 0;
+        m_RedrawWindow = 1;
+        Invalidate();
+        m_Handler->MV_MapChanged();
+      }
+    } break;
+    case tool_ZoneEdit: {
+      if(m_MoveIndex != -1) {
+        int x = point.x / m_ZoomFactor + m_CurrentX * tile_width;
+        int y = point.y / m_ZoomFactor + m_CurrentY * tile_height;
+        m_PreviewLineOn = 0;
+        if(flags & MK_CONTROL) {
+          x = RoundX(x);
+          y = RoundY(y);
+        }
+        m_Map->UpdateZone(m_MoveIndex, m_StartX, m_StartY, x, y);
+        m_PreviewBoxOn = 0;
+        m_RedrawWindow = 1;
+        Invalidate();
+        m_Handler->MV_MapChanged();
+      }
+    } break;
+    case tool_ZoneDelete: {
+    } break;
 
 /*
     case mObsRectangle: {
@@ -1435,6 +1624,12 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
   int tx = (point.x / m_Map->GetTileset().GetTileWidth()) / m_ZoomFactor + m_CurrentX;
   int ty = (point.y / m_Map->GetTileset().GetTileHeight()) / m_ZoomFactor + m_CurrentY;
 
+  // map coordinates
+  int x = point.x / m_ZoomFactor + m_CurrentX * tile_width;
+  int y = point.y / m_ZoomFactor + m_CurrentY * tile_height;
+
+  int z = m_Map->FindZone(x, y, m_SelectedLayer);
+
   // validate the menu items
   bool on_entity = false;
   for (int i = 0; i < m_Map->GetNumEntities(); i++)
@@ -1455,6 +1650,10 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
     case 2: CheckMenuItem(menu, ID_MAPVIEW_ZOOM_2X, MF_BYCOMMAND | MF_CHECKED); break;
     case 4: CheckMenuItem(menu, ID_MAPVIEW_ZOOM_4X, MF_BYCOMMAND | MF_CHECKED); break;
     case 8: CheckMenuItem(menu, ID_MAPVIEW_ZOOM_8X, MF_BYCOMMAND | MF_CHECKED); break;
+  }
+
+  if(z == -1) {
+    EnableMenuItem(menu, ID_MAPVIEW_ZONEEDIT,  MF_BYCOMMAND | MF_GRAYED);
   }
 
   // show the popup menu
@@ -1599,6 +1798,14 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
       }
       break;
     }
+    case ID_MAPVIEW_ZONEEDIT:
+      {
+        CZoneEditDialog dialog(m_Map->GetZone(z));
+        if(dialog.DoModal() == IDOK) {
+          m_Handler->MV_MapChanged();
+        }
+      }
+      break;
 
     case ID_MAPVIEW_ZOOM_1X:
       SetZoomFactor(1);

@@ -343,6 +343,10 @@ SOURCE=.\resources\maptool_obs_delete.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\resources\maptool_obs_move_pt.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\resources\maptool_obs_segment.ico
 # End Source File
 # Begin Source File
@@ -853,6 +857,14 @@ SOURCE=.\WindowStylePropertiesDialog.cpp
 
 SOURCE=.\WindowStylePropertiesDialog.hpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\ZoneEditDialog.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ZoneEditDialog.hpp
+# End Source File
 # End Group
 # Begin Group "Sphere Common"
 
@@ -1074,9 +1086,5 @@ SOURCE=..\common\WindowStyle.cpp
 SOURCE=..\common\WindowStyle.hpp
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=.\resources\maptool_obs_move_pt.ico
-# End Source File
 # End Target
 # End Project

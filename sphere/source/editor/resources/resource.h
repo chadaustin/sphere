@@ -78,7 +78,11 @@
 #define IDD_TILE_OBSTRUCTION_DIALOG     211
 #define IDD_STRING                      213
 #define IDR_SPRITESET_IMAGES_PALETTE    214
+#define IDD_ZONE_EDIT                   214
 #define IDI_MAPTOOL_OBS_MOVE_PT         215
+#define IDI_MAPTOOL_ZONEADD             216
+#define IDI_MAPTOOL_ZONEEDIT            217
+#define IDI_MAPTOOL_ZONEDELETE          218
 #define IDC_PROJECTNAME                 1000
 #define IDC_GAMETITLE                   1001
 #define IDC_BROWSE                      1003
@@ -137,6 +141,7 @@
 #define IDC_EDIT_OBSTRUCTIONS           1113
 #define IDC_PRESETS                     1114
 #define IDC_VALUE                       1115
+#define IDC_STEPS                       1116
 #define ID_FILE_IMPORT_BITMAPTORSS      12241
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40003
@@ -324,6 +329,7 @@
 #define ID_IMAGEVIEW_REPLACE_RGBA       40521
 #define ID_IMAGEVIEW_REPLACE_RGB        40522
 #define ID_IMAGEVIEW_REPLACE_ALPHA      40523
+#define ID_MAPVIEW_ZONEEDIT             40524
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -331,9 +337,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        216
-#define _APS_NEXT_COMMAND_VALUE         40524
-#define _APS_NEXT_CONTROL_VALUE         1116
+#define _APS_NEXT_RESOURCE_VALUE        218
+#define _APS_NEXT_COMMAND_VALUE         40525
+#define _APS_NEXT_CONTROL_VALUE         1117
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
