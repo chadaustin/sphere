@@ -249,6 +249,7 @@ CSpritesetWindow::OnResize()
   if (dialog.DoModal() == IDOK) {
     m_Spriteset.ResizeFrames(dialog.GetWidth(), dialog.GetHeight());
     m_SpritesetView.SpritesetResized();
+    UpdateImageView();
   }
 }
 
