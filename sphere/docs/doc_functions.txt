@@ -296,6 +296,9 @@ log_object.endBlock()
   socket.read(int size) 
     - reads from the socket, returns a ByteArray object
 
+  socket.close()
+    - closes the socket object, after this, the socket cannot be used.
+
   
 *** sphere objects ***
 
@@ -1135,11 +1138,13 @@ log_object.endBlock()
   
   *** raw files ***
   OpenRawFile(filename [, writeable])
-    - opens a file with the filename. The file *must* exist and reside in the
-      "other" directory of the game otherwise Sphere will give an error. 
+    - opens a file with the filename.
+      Unless writeable is true, the file *must* exist and reside
+      in the "other" directory of the game otherwise Sphere will give an error. 
       If the file is opened successfully, the function will return a rawfile
       object. If the optional argument 'writeable' is true,
-      you will be able to write to the file.
+      the conents of the file will be destroyed,
+      and you will be able to write to the file.
     
   rawfile_object.setPosition(position)
     - sets the position that the file will be read from
@@ -1162,3 +1167,6 @@ log_object.endBlock()
   rawfile_object.write(byte_array)
     - writes the byte array to the file at the current position
       The file must have been opened as writeable for this to work.
+      
+  rawfile_object.close()
+    - closes the rawfile object, after this, the rawfile_object cannot be used anymore.
