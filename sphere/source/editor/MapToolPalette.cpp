@@ -26,7 +26,6 @@ CMapToolPalette::CMapToolPalette(CDocumentWindow* owner, IToolPaletteHandler* ha
   AddTool(IDI_MAPTOOL_ZONEADD,     "Add a Zone");
   AddTool(IDI_MAPTOOL_ZONEEDIT,    "Move a Zone");
   AddTool(IDI_MAPTOOL_ZONEDELETE,  "Delete a Zone");
-  AddTool(IDI_MAPTOOL_MULTI_TILE,  "Place Multiple Tiles");
 }
 
 ////////////////////////////////////////////////////////////////////////////////

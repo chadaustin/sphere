@@ -1149,7 +1149,6 @@ IDI_MAPTOOL_OBS_MOVE_PT ICON    DISCARDABLE     "maptool_obs_move_pt.ico"
 IDI_MAPTOOL_ZONEADD     ICON    DISCARDABLE     "maptool_zoneadd.ico"
 IDI_MAPTOOL_ZONEEDIT    ICON    DISCARDABLE     "maptool_zoneedit.ico"
 IDI_MAPTOOL_ZONEDELETE  ICON    DISCARDABLE     "maptool_zonedelete.ico"
-IDI_MAPTOOL_MULTI_TILE  ICON    DISCARDABLE     "maptool_multi_tile.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

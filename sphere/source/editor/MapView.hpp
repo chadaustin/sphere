@@ -93,7 +93,6 @@ public:
     tool_ZoneAdd,
     tool_ZoneEdit,
     tool_ZoneDelete,
-    tool_MultiTile,
   };
 
 private:
@@ -135,10 +134,6 @@ private:
 
   int m_SelectedTile;
   int m_SelectedLayer;
-
-  std::vector<int> m_MultiTileData;
-  int m_MultiTileWidth;
-  int m_MultiTileHeight;
 
   bool m_Clicked;
 
