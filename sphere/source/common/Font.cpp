@@ -9,9 +9,19 @@
 
 sFont::sFont(int num_characters, int width, int height)
 {
-  m_Characters.resize(num_characters);
-  for (int i = 0; i < num_characters; i++)
-    m_Characters[i].Resize(width, height);
+  Create(num_characters, width, height);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+sFont::Create(int num_characters, int width, int height)
+{
+	m_Characters.resize(num_characters);
+	for (int i = 0; i < num_characters; i++)
+		m_Characters[i].Resize(width, height);
+
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
