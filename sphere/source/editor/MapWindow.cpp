@@ -229,11 +229,30 @@ CMapWindow::LoadMap(const char* szMap, const char* szTileset)
     if (dialog.DoModal() == IDCANCEL)
       return false;
 
-    if (!m_Map.GetTileset().Load(dialog.GetTilesetPath()))
+    const char* tileset = dialog.GetTilesetPath();
+
+    if (!m_Map.GetTileset().Load(tileset))
     {
       AfxGetApp()->m_pMainWnd->MessageBox("Error: Could not load tileset");
       return false;
     }
+
+    // we should probably update the tileset file...
+    if (m_Map.GetTilesetFile() != NULL && strlen(m_Map.GetTilesetFile()) > 0) {
+      unsigned int offset = 0;
+
+      if (strlen(tileset)) {
+        for (int i = 0; i < strlen(tileset); i++) {
+          if (tileset[i] == '\\' || tileset[i] == '/' && i < strlen(tileset) - 1) {
+            offset = i + 1;
+          }
+        }
+      }
+
+      m_Map.SetTilesetFile(tileset + offset);
+    }
+
+    SetModified(true); // the map has changed now
   }
 
   // check if map uses any tiles out of range of the tileset

@@ -67,6 +67,9 @@ bool InitAudio(HWND window, SPHERECONFIG* config)
 void CloseAudio()
 {
   s_AudioDevice = 0;
+#if WIN32
+  s_MidiDevice = 0;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -36,6 +36,7 @@ struct SPHERECONFIG
 
   // audio
   int sound;
+  bool midi;
 
   // network
   bool allow_networking;
