@@ -1,5 +1,5 @@
 <?
-  include("utility.inc.php");
+  include_once( "utility.inc.php" );
   start();
 ?>
 
@@ -8,13 +8,13 @@
 <?
   mconnect();
   $QUERY = "SELECT * FROM NEWS_ENTRIES
-              WHERE PARENT = 0
-	      ORDER BY ID DESC";
-  $RESULT = mysql_db_query($__DATABASE, $QUERY);
-  while($R = mysql_fetch_array($RESULT)){
-    news_item($R['ID'], $R['TOPIC'], $R['DATE'], $R['AID'], $R['ICON'], $R['BODY']);
+    WHERE PARENT = 0
+    ORDER BY ID DESC";
+  $RESULT = mysql_db_query( $__DATABASE, $QUERY );
+  while( $R = mysql_fetch_array( $RESULT ) ){
+    news_item( $R['ID'], $R['TOPIC'], $R['DATE'], $R['AID'], $R['ICON'], $R['BODY'] );
   }
-
+  mysql_free_result( $RESULT );
   important_links();
 
   conclude();
