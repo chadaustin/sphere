@@ -4,6 +4,8 @@ SS_FUNCTION(GetVersion, 0)
 // script
 SS_FUNCTION(EvaluateScript, 1)
 SS_FUNCTION(EvaluateSystemScript, 1)
+SS_FUNCTION(RequireScript, 1)
+SS_FUNCTION(RequireSystemScript, 1)
 SS_FUNCTION(GarbageCollect, 0)
 
 // miscellaneous
@@ -118,6 +120,10 @@ SS_FUNCTION(OpenLog, 1)
     SS_FUNCTION(IsTriggerAt, 3)
     SS_FUNCTION(ExecuteTrigger, 3)
 
+    SS_FUNCTION(SetMapEngineFrameRate, 1)
+    SS_FUNCTION(GetMapEngineFrameRate, 0)
+
+
     // explicit control
     SS_FUNCTION(RenderMap, 0)
 
@@ -193,6 +199,11 @@ SS_FUNCTION(OpenLog, 1)
       SS_FUNCTION(GetPersonSpriteset, 1)
       SS_FUNCTION(SetPersonMask, 2)
       SS_FUNCTION(GetPersonMask, 1)
+
+      SS_FUNCTION(IgnorePersonObstructions, 2)
+      SS_FUNCTION(IsIgnoringPersonObstructions, 1)
+      SS_FUNCTION(IgnoreTileObstructions, 2)
+      SS_FUNCTION(IsIgnoringTileObstructions, 1)
 
       SS_FUNCTION(FollowPerson,     3)
       SS_FUNCTION(SetPersonScript,  3)

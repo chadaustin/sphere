@@ -238,3 +238,20 @@ void Solarize(int width, int height, int value, RGBA* pixels) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+void BlendImage(int dest_width, int dest_height, int src_width, int src_height, RGBA* dest_pixels, RGBA* src_pixels)
+{
+  for (int dx = 0; dx < dest_width; dx++) {
+    for (int dy = 0; dy < dest_height; dy++) {
+      if (dx > src_width - 1)
+        break;
+
+      if (dy > src_height - 1)
+        break;
+
+      Blend4(dest_pixels[dy * dest_width + dx], src_pixels[dy * src_width + dx], src_pixels[dy * src_width + dx].alpha);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////

@@ -6,6 +6,8 @@
 #include "../common/Spriteset.hpp"
 #include "DIBSection.hpp"
 
+#include "NumberDialog.hpp"
+#include "FontGradientDialog.hpp"
 
 class ISpritesetViewHandler
 {
@@ -61,6 +63,8 @@ private:
   afx_msg void OnCopyFrame();
   afx_msg void OnPasteFrame();
   afx_msg void OnFrameProperties();
+
+  afx_msg void OnReplaceColorWithColor();
 
 private:
   ISpritesetViewHandler* m_Handler;

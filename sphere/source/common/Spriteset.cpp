@@ -1610,3 +1610,11 @@ sSpriteset::Import_CHR2V4(FILE* file, RGB palette[256])
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+void
+sSpriteset::ReplaceIndexColorWithColor(int frame_index, RGBA old_color, RGBA replacement_color)
+{
+  m_Images[frame_index].ReplaceColor(old_color, replacement_color);
+}
+
+////////////////////////////////////////////////////////////////////////////////

@@ -33,6 +33,8 @@ BEGIN_MESSAGE_MAP(CSpritesetView, CWnd)
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_PASTE,      OnPasteFrame)
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_PROPERTIES, OnFrameProperties)
 
+  ON_COMMAND(ID_SPRITESETVIEWFRAMES_REPLACE_COLOR_WITH_COLOR, OnReplaceColorWithColor)
+
 END_MESSAGE_MAP()
 
 
@@ -731,3 +733,37 @@ CSpritesetView::OnFrameProperties()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetView::OnReplaceColorWithColor()
+{
+  int start_frame = 0;
+  int num_frames_to_change = 0;
+
+  CNumberDialog startFrameDialog("Start frame index", "Value", 0, 0, m_Spriteset->GetNumFrames(m_CurrentDirection) - 1);
+  if (startFrameDialog.DoModal() == IDOK) {
+
+    start_frame = startFrameDialog.GetValue();
+    CNumberDialog endFrameDialog("End frame index", "Value", start_frame, start_frame, m_Spriteset->GetNumFrames(m_CurrentDirection) - 1);
+
+    if (endFrameDialog.DoModal() == IDOK) {
+      num_frames_to_change = endFrameDialog.GetValue() - start_frame;
+
+      CFontGradientDialog colorChoiceDialog;
+      if (colorChoiceDialog.DoModal() == IDOK) {
+
+        RGBA old_color = colorChoiceDialog.GetTopColor();
+        RGBA replacement_color = colorChoiceDialog.GetBottomColor();
+
+        for (int i = start_frame; i < start_frame + num_frames_to_change; i++) {
+          // probably should find out if frame_index has been done already to increase speed
+          int frame_index = m_Spriteset->GetFrameIndex(m_CurrentDirection, i);
+          m_Spriteset->ReplaceIndexColorWithColor(frame_index, old_color, replacement_color);
+        }
+
+        m_Handler->SV_SpritesetModified();
+        Invalidate();
+      }
+    }
+  }
+}

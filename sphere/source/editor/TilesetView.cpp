@@ -729,6 +729,7 @@ CTilesetView::OnReplaceColorWithColor()
         RGBA a = colorChoiceDialog.GetTopColor();
         RGBA b = colorChoiceDialog.GetBottomColor();
         m_Tileset->ReplaceTileRangeColorWithColor(start_tile, num_tiles_to_change, a, b);
+        m_Handler->TV_TilesetChanged();
         Invalidate();
 
       }

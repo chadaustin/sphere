@@ -243,7 +243,15 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Find...",                    ID_SCRIPT_FIND
         MENUITEM "&Replace...",                 ID_SCRIPT_REPLACE
-        MENUITEM "Change Font",                 ID_SCRIPT_CHANGE_FONT
+        POPUP "&Options"
+        BEGIN
+            MENUITEM "Change Font",                 ID_SCRIPT_OPTIONS_SET_FONT
+
+            MENUITEM "Change Tab Size",             ID_SCRIPT_OPTIONS_SET_TAB_SIZE
+
+            MENUITEM "Toggle Colors",               ID_SCRIPT_OPTIONS_TOGGLE_COLORS
+
+        END
     END
 END
 
@@ -269,6 +277,9 @@ BEGIN
         MENUITEM "Du&plicate Layer",            ID_LAYERVIEW_DUPLICATELAYER
         MENUITEM SEPARATOR
         MENUITEM "&Export as Image...",         ID_LAYERVIEW_EXPORTASIMAGE
+        MENUITEM "&Export all visible layers as Image...", 
+                                                ID_LAYERVIEW_EXPORT_ALL_VISIBLE_LAYERS_AS_IMAGE
+
         MENUITEM SEPARATOR
         POPUP "&Slide"
         BEGIN
@@ -399,6 +410,8 @@ BEGIN
         MENUITEM "&Paste",                      ID_SPRITESETVIEWFRAMES_PASTE
         MENUITEM SEPARATOR
         MENUITEM "Pr&operties...",              ID_SPRITESETVIEWFRAMES_PROPERTIES
+
+        MENUITEM "&Replace Color With Color",   ID_SPRITESETVIEWFRAMES_REPLACE_COLOR_WITH_COLOR
 
     END
 END

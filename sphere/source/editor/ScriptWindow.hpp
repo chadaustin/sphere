@@ -20,7 +20,7 @@ private:
     return ::SendMessage(m_Editor, msg, wparam, lparam);
   }
 
-  void SetScriptStyles(std::string fontface = "Verdana");
+  void SetScriptStyles();
   void SetStyle(int style, COLORREF fore, COLORREF back = 0xFFFFFF, int size = -1, const char* face = 0);
 
   bool LoadScript(const char* filename);
@@ -33,7 +33,10 @@ private:
   afx_msg void OnScriptCheckSyntax();
   afx_msg void OnScriptFind();
   afx_msg void OnScriptReplace();
-  afx_msg void OnChangeScriptFont();
+
+  afx_msg void OnOptionsSetScriptFont();
+  afx_msg void OnOptionsToggleColors();
+  afx_msg void OnOptionsSetTabSize();
 
   afx_msg void OnSavePointReached(NMHDR* nmhdr, LRESULT* result);
   afx_msg void OnSavePointLeft(NMHDR* nmhdr, LRESULT* result);
@@ -49,6 +52,11 @@ private:
 private:
   bool m_Created;
   HWND m_Editor;
+
+  std::string m_Fontface;
+  bool m_SyntaxHighlighted;
+  int m_TabWidth;
+  bool m_KeyWordStyleIsBold;
 
   CFindReplaceDialog* m_SearchDialog;
 

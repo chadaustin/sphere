@@ -7,6 +7,7 @@
 #include "../common/Map.hpp"
 #include "resource.h"
 
+#include "../common/Filters.hpp"
 
 const int LAYER_BUTTON_HEIGHT = 20;
 
@@ -27,6 +28,7 @@ BEGIN_MESSAGE_MAP(CLayerView, CVScrollWindow)
   ON_COMMAND(ID_LAYERVIEW_DUPLICATELAYER,       OnDuplicateLayer)
   ON_COMMAND(ID_LAYERVIEW_PROPERTIES,           OnLayerProperties)
   ON_COMMAND(ID_LAYERVIEW_EXPORTASIMAGE,        OnExportLayer)
+  ON_COMMAND(ID_LAYERVIEW_EXPORT_ALL_VISIBLE_LAYERS_AS_IMAGE, OnExportAllVisibleLayers)
 
   ON_COMMAND(ID_LAYERVIEW_SLIDE_UP,             OnLayerSlideUp)
   ON_COMMAND(ID_LAYERVIEW_SLIDE_RIGHT,          OnLayerSlideRight)
@@ -463,16 +465,18 @@ CLayerView::OnLayerProperties()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static bool ExportLayerAsImage(const char* filename, sLayer& layer, sTileset& tileset)
+static bool LayerToImage(CImage32* image, sLayer& layer, sTileset& tileset)
 {
-  // create image
+  // if (image.GetWidth() != layer.GetWidth() || image.GetHeight() != layer.GetHeight())
+  //  return false;
+
+  RGBA* image_pixels = image->GetPixels();
+
   int tile_width  = tileset.GetTileWidth();
   int tile_height = tileset.GetTileHeight();
   int image_width  = layer.GetWidth()  * tile_width;
   int image_height = layer.GetHeight() * tile_height;
 
-  CImage32 image(image_width, image_height);
-  RGBA* image_pixels = image.GetPixels();
 
   // render the image
   for (int iy = 0; iy < layer.GetHeight(); iy++) {
@@ -495,7 +499,23 @@ static bool ExportLayerAsImage(const char* filename, sLayer& layer, sTileset& ti
     } // end for x
   } // end for y
 
-  return image.Save(filename);
+  return true;
+}
+
+static bool ExportLayerAsImage(const char* filename, sLayer& layer, sTileset& tileset)
+{
+  // create image
+  int tile_width  = tileset.GetTileWidth();
+  int tile_height = tileset.GetTileHeight();
+  int image_width  = layer.GetWidth()  * tile_width;
+  int image_height = layer.GetHeight() * tile_height;
+
+  CImage32 image(image_width, image_height);
+
+  if (LayerToImage(&image, layer, tileset))
+    return image.Save(filename);
+
+  return false;
 }
 
 afx_msg void
@@ -513,6 +533,83 @@ CLayerView::OnExportLayer()
       MessageBox("Could not save image", "Export Layer as Image", MB_OK);
     } else {
       MessageBox("Exported layer!", "Export Layer as Image", MB_OK);
+    }
+
+  }
+}
+
+static bool ExportAllVisibleLayersAsImage(const char* filename, sTileset& tileset, std::vector<sLayer> layers)
+{
+  if (layers.size() <= 0)
+    return false;
+  
+  int tile_width  = tileset.GetTileWidth();
+  int tile_height = tileset.GetTileHeight();
+
+  int dest_image_width = 0;
+  int dest_image_height = 0;
+
+  // find the size of the image we're going to create
+  for (int i = 0; i < layers.size(); i++) {
+    if (layers[i].GetWidth() * tile_width > dest_image_width) {
+      dest_image_width = layers[i].GetWidth() * tile_width;
+    }
+    if (layers[i].GetHeight() * tile_height > dest_image_height) {
+      dest_image_height = layers[i].GetHeight() * tile_height;
+    }
+  }
+
+  // create destination/output image
+  CImage32 dest_image(dest_image_width, dest_image_height);
+  if (layers.size() > 0) // we grab the top image and blend our way down
+    if (!LayerToImage(&dest_image, layers[layers.size() - 1], tileset))
+      return false;
+  else // nothing to export
+    return false;
+
+  if (dest_image_width <= 0 || dest_image_height <= 0)
+    return false;
+
+  for (int i = 0; i < layers.size() - 1; i++) {
+
+    int image_width  = layers[i].GetWidth()  * tile_width;
+    int image_height = layers[i].GetHeight() * tile_height;
+    CImage32 src_image(image_width, image_height);
+    
+    if (!LayerToImage(&src_image, layers[i], tileset)) {
+      return false; 
+    }
+    else {
+      // blend (dest_image, src_image)
+      BlendImage(dest_image_width, dest_image_height, image_width, image_height, dest_image.GetPixels(), src_image.GetPixels());
+    }
+
+  }
+ 
+  return dest_image.Save(filename);
+}
+
+afx_msg void
+CLayerView::OnExportAllVisibleLayers()
+{
+  // get file name to export to
+  CImageFileDialog dialog(FDM_SAVE, "Export All Visible Layers as Image");
+  if (dialog.DoModal() == IDOK) {
+
+    sTileset& tileset = m_Map->GetTileset();
+    std::vector<sLayer> layers;
+
+    for (int i = m_Map->GetNumLayers() - 1; i >= 0; --i) {
+      if (m_Map->GetLayer(i).IsVisible()) {
+        layers.push_back(m_Map->GetLayer(i));
+      }
+    }
+
+    // do the export
+    if (!ExportAllVisibleLayersAsImage(dialog.GetPathName(), tileset, layers)) {
+      MessageBox("Could not save image", "Export Layer as Image", MB_OK);
+    } else {
+      MessageBox("Exported all visible layers!", "Exported all Visible Layers as Image", MB_OK);
     }
 
   }

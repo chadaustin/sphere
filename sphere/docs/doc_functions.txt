@@ -24,6 +24,16 @@ EvaluateSystemScript(script)
   - Reads in one of the preset system scripts for use in the current script
     ex: EvaluateSystemScript("menu.js");
 
+RequireScript(script)
+  - Reads the script in and uses it as if it were a part of the current script.
+    But only if the script has not already been evaluated.
+    ex: RequireScript("myscript.js");
+
+RequireSystemScript(script)
+  - Reads in one of the preset system scripts for use in the current script.
+    But only if the script has not already been evaluated.
+    ex: RequireSystemScript("menu.js");
+
 GarbageCollect()
   - invokes the JavaScript garbage collector
 
@@ -312,6 +322,12 @@ log_object.endBlock()
 
   UpdateMapEngine()
     - updates map engine (state of entities, color masks, etc.)
+
+  SetMapEngineFrameRate(fps)
+    - Sets the max frame rate (in frames per second) that the map engine will go at
+
+  GetMapEngineFrameRate()
+    - Returns the current map engine frames per second rate set by either MapEngine(map, fps) or SetMapEngineFrameRate(fps)
   
     *** maps ***
 

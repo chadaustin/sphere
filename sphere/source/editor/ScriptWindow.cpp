@@ -27,7 +27,10 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_SCRIPT_CHECKSYNTAX,      OnScriptCheckSyntax)
   ON_COMMAND(ID_SCRIPT_FIND,             OnScriptFind)
   ON_COMMAND(ID_SCRIPT_REPLACE,          OnScriptReplace)
-  ON_COMMAND(ID_SCRIPT_CHANGE_FONT,      OnChangeScriptFont)
+
+  ON_COMMAND(ID_SCRIPT_OPTIONS_SET_FONT,      OnOptionsSetScriptFont)
+  ON_COMMAND(ID_SCRIPT_OPTIONS_TOGGLE_COLORS, OnOptionsToggleColors)
+  ON_COMMAND(ID_SCRIPT_OPTIONS_SET_TAB_SIZE,  OnOptionsSetTabSize)
 
   ON_NOTIFY(SCN_SAVEPOINTREACHED, ID_EDIT, OnSavePointReached)
   ON_NOTIFY(SCN_SAVEPOINTLEFT,    ID_EDIT, OnSavePointLeft)
@@ -45,6 +48,7 @@ CScriptWindow::CScriptWindow(const char* filename)
 : CSaveableDocumentWindow(filename, IDR_SCRIPT)
 , m_Created(false)
 , m_SearchDialog(0)
+, m_SyntaxHighlighted(true)
 {
   SetSaved(filename != NULL);
   SetModified(false);
@@ -96,7 +100,7 @@ CScriptWindow::Create()
 
   Initialize();
   ::ShowWindow(m_Editor, SW_SHOW);
-  ::UpdateWindow(m_Editor);
+  //::UpdateWindow(m_Editor);
 
   m_Created = true;
 
@@ -114,7 +118,7 @@ CScriptWindow::Create()
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CScriptWindow::SetScriptStyles(std::string fontface) {
+CScriptWindow::SetScriptStyles() {
   static const char key_words[] = 
     "break case catch continue default delete do else "
     "finally for function if in instanceof new return "
@@ -147,22 +151,31 @@ CScriptWindow::SetScriptStyles(std::string fontface) {
 
   SendEditor(SCI_SETPROPERTY, (WPARAM)"fold", (LPARAM)"1");
 
-  SetStyle(STYLE_DEFAULT, black, white, 10, fontface.c_str());
+  SetStyle(STYLE_DEFAULT, black, white, 10, m_Fontface.c_str());
   SendEditor(SCI_STYLECLEARALL);
 
-  SetStyle(SCE_C_DEFAULT, black, white, 10, fontface.c_str());
-  SetStyle(SCE_C_COMMENT,     green);
-  SetStyle(SCE_C_COMMENTLINE, green);
-  SetStyle(SCE_C_COMMENTDOC,  green);
-  SetStyle(SCE_C_NUMBER,      darkred);
-  SetStyle(SCE_C_WORD,        blue);
-  SendEditor(SCI_STYLESETBOLD, SCE_C_WORD, 1);
-  SetStyle(SCE_C_STRING,      green);
-  SetStyle(SCE_C_CHARACTER,   green);
-  SetStyle(SCE_C_OPERATOR,    purple);
-  SetStyle(SCE_C_IDENTIFIER,  black);
-  SetStyle(SCE_C_WORD2,       red);
+  SetStyle(SCE_C_DEFAULT, black, white, 10, m_Fontface.c_str());
 
+  if (m_TabWidth > 0)
+    SendEditor(SCI_SETTABWIDTH, m_TabWidth);
+
+  if (m_SyntaxHighlighted) {
+    SetStyle(SCE_C_COMMENT,     green);
+    SetStyle(SCE_C_COMMENTLINE, green);
+    SetStyle(SCE_C_COMMENTDOC,  green);
+    SetStyle(SCE_C_NUMBER,      darkred);
+    SetStyle(SCE_C_WORD,        blue);
+
+    if (m_KeyWordStyleIsBold) {
+      SendEditor(SCI_STYLESETBOLD, SCE_C_WORD, 1);
+    }
+
+    SetStyle(SCE_C_STRING,      green);
+    SetStyle(SCE_C_CHARACTER,   green);
+    SetStyle(SCE_C_OPERATOR,    purple);
+    SetStyle(SCE_C_IDENTIFIER,  black);
+    SetStyle(SCE_C_WORD2,       red);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -170,8 +183,13 @@ CScriptWindow::SetScriptStyles(std::string fontface) {
 void
 CScriptWindow::Initialize()
 {
-  SetScriptStyles("Verdana");
+  m_Fontface = Configuration::Get(KEY_SCRIPT_FONT_NAME);
+  m_SyntaxHighlighted = Configuration::Get(KEY_SCRIPT_SYNTAX_HIGHLIGHTED);
+  m_TabWidth = Configuration::Get(KEY_SCRIPT_TAB_SIZE);
+  m_KeyWordStyleIsBold = Configuration::Get(KEY_SCRIPT_KEYWORDS_IN_BOLD);
+  SetScriptStyles();
 
+  SendEditor(SCI_TOGGLEFOLD, (LPARAM)"1");
   SetLineNumber(0);
 }
 
@@ -227,6 +245,8 @@ CScriptWindow::LoadScript(const char* filename)
 
   SetModified(false);
   SendEditor(SCI_SETSAVEPOINT);
+
+  SendEditor(SCI_EMPTYUNDOBUFFER);
 
   return true;
 }
@@ -529,16 +549,43 @@ CScriptWindow::SaveDocument(const char* path)
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
-CScriptWindow::OnChangeScriptFont()
+CScriptWindow::OnOptionsToggleColors()
+{
+  m_SyntaxHighlighted = !m_SyntaxHighlighted;
+  SetScriptStyles();
+  Configuration::Set(KEY_SCRIPT_SYNTAX_HIGHLIGHTED, m_SyntaxHighlighted);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnOptionsSetScriptFont()
 {
   // Show the font dialog with all the default settings.
   CFontDialog dlg;
   if (dlg.DoModal() == IDOK) {
 
-    CString facename = dlg.GetFaceName();
-    // int size = dlg.GetSize();
+    m_Fontface = std::string(dlg.GetFaceName());
+    SetScriptStyles();
+    Configuration::Set(KEY_SCRIPT_FONT_NAME, m_Fontface);
 
-    SetScriptStyles(std::string(facename));
   }
 
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnOptionsSetTabSize()
+{
+  CNumberDialog dialog("Enter new tab width value", "Value", m_TabWidth, 1, 8);
+  if (dialog.DoModal()) {
+    if (dialog.GetValue() > 0) {
+      m_TabWidth = dialog.GetValue();
+      SetScriptStyles();
+      Configuration::Set(KEY_SCRIPT_TAB_SIZE, m_TabWidth);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////

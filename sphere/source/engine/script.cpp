@@ -756,6 +756,68 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(RequireScript, 1)
+  arg_str(name);
+
+  if (!This->m_Engine->IsScriptEvaluated(name)) {
+    // read script
+    std::string text;
+    if (!This->m_Engine->GetScriptText(name, text)) {
+      JS_ReportError(cx, "RequireScript() failed: Could not load script '%s'", name);
+      return JS_FALSE;
+    }
+
+    // increment the recursion count, checking for overflow
+    This->m_RecurseCount++;
+    if (This->m_RecurseCount > MAX_RECURSE_COUNT) {
+      JS_ReportError(cx, "RequireScript() recursed too deeply");
+      return JS_FALSE;
+    }
+
+    // execute!
+    if (!JS_EvaluateScript(cx, This->m_Global, text.c_str(), text.length(), name, 0, rval)) {
+      return JS_FALSE;
+    }
+
+    This->m_Engine->AddEvaluatedScript(name);
+    This->m_RecurseCount--;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(RequireSystemScript, 1)
+  arg_str(name);
+
+  if (!This->m_Engine->IsSystemScriptEvaluated(name)) {
+    // read script
+    std::string text;
+    if (!This->m_Engine->GetSystemScript(name, text)) {
+      JS_ReportError(cx, "RequireSystemScript() failed: Could not load script '%s'", name);
+      return JS_FALSE;
+    }
+
+    // increment the recursion count, checking for overflow
+    This->m_RecurseCount++;
+    if (This->m_RecurseCount > MAX_RECURSE_COUNT) {
+      JS_ReportError(cx, "RequireSystemScript() recursed too deeply");
+      return JS_FALSE;
+    }
+
+    // execute!
+    if (!JS_EvaluateScript(cx, This->m_Global, text.c_str(), text.length(), name, 0, rval)) {
+      return JS_FALSE;
+    }
+
+    This->m_Engine->AddEvaluatedSystemScript(name);
+
+    This->m_RecurseCount--;
+  }
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 begin_func(EvaluateScript, 1)
   arg_str(name);
 
@@ -778,6 +840,8 @@ begin_func(EvaluateScript, 1)
     return JS_FALSE;
   }
 
+  This->m_Engine->AddEvaluatedScript(name);
+
   This->m_RecurseCount--;
 
 end_func()
@@ -797,7 +861,7 @@ begin_func(EvaluateSystemScript, 1)
   // increment the recursion count, checking for overflow
   This->m_RecurseCount++;
   if (This->m_RecurseCount > MAX_RECURSE_COUNT) {
-    JS_ReportError(cx, "EvaluateScript() recursed too deeply");
+    JS_ReportError(cx, "EvaluateSystemScript() recursed too deeply");
     return JS_FALSE;
   }
 
@@ -806,6 +870,7 @@ begin_func(EvaluateSystemScript, 1)
     return JS_FALSE;
   }
 
+  This->m_Engine->AddEvaluatedSystemScript(name);
   This->m_RecurseCount--;
 
 end_func()
@@ -996,6 +1061,22 @@ end_func()
 
 begin_func(GetFrameRate, 0)
   return_int(This->m_FrameRate);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(SetMapEngineFrameRate, 1)
+  arg_int(fps);
+  if (!This->m_Engine->GetMapEngine()->SetMapEngineFrameRate(fps)) {
+    JS_ReportError(cx, "SetMapEngineFrameRate() failed: fps must be greater than zero!");
+    return JS_FALSE;
+  }
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(GetMapEngineFrameRate, 0)
+  return_int(This->m_Engine->GetMapEngine()->GetMapEngineFrameRate());
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2108,6 +2189,56 @@ begin_func(GetPersonLayer, 1)
   }
 
   return_int(layer);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(IgnorePersonObstructions, 2)
+  arg_str(name);
+  arg_bool(ignoring);
+
+  if (!This->m_Engine->GetMapEngine()->IgnorePersonObstructions(name, ignoring)) {
+    This->ReportMapEngineError("IgnorePersonObstructions() failed");
+    return JS_FALSE;
+  }
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(IsIgnoringPersonObstructions, 1)
+  arg_str(name);
+  bool ignoring = false;
+
+  if (!This->m_Engine->GetMapEngine()->IsIgnoringPersonObstructions(name, ignoring)) {
+    This->ReportMapEngineError("IsIgnoringPersonObstructions() failed");
+    return JS_FALSE;
+  }
+  return_bool(ignoring);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(IgnoreTileObstructions, 2)
+  arg_str(name);
+  arg_bool(ignoring);
+
+  if (!This->m_Engine->GetMapEngine()->IgnoreTileObstructions(name, ignoring)) {
+    This->ReportMapEngineError("IgnoreTileObstructions() failed");
+    return JS_FALSE;
+  }
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(IsIgnoringTileObstructions, 1)
+  arg_str(name);
+  bool ignoring = false;
+
+  if (!This->m_Engine->GetMapEngine()->IsIgnoringTileObstructions(name, ignoring)) {
+    This->ReportMapEngineError("IsIgnoringTileObstructions() failed");
+    return JS_FALSE;
+  }
+  return_bool(ignoring);
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////

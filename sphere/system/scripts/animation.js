@@ -13,7 +13,7 @@ Animation.prototype.addImage = function(unknown, timing){
   }
   this.timing[this.timing.length] = this.total + timing;
   this.total += timing;
-}
+}							
 
 Animation.prototype.reset = function(){
   this.tempTime = GetTime();

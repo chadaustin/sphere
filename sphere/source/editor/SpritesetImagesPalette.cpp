@@ -317,5 +317,3 @@ CSpritesetImagesPalette::OnSwap(int new_index)
   m_Handler->SIP_SpritesetModified();
   Invalidate();
 }
-
-////////////////////////////////////////////////////////////////////////////////

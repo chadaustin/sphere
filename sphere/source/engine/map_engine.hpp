@@ -150,12 +150,21 @@ public:
   bool ClearPersonCommands(const char* name);
   bool IsCommandQueueEmpty(const char* name, bool& empty);
 
+  bool IgnorePersonObstructions(const char* name, bool ignore);
+  bool IgnoreTileObstructions(const char* name, bool ignore);
+
+  bool IsIgnoringPersonObstructions(const char* name, bool& ignoring);
+  bool IsIgnoringTileObstructions(const char* name, bool& ignoring);
+
   bool IsPersonObstructed(const char* name, int x, int y, bool& result);
 
   bool SetTalkActivationKey(int key);
   bool SetTalkDistance(int pixels);
   int GetTalkActivationKey();
   int GetTalkDistance();
+
+  bool SetMapEngineFrameRate(int fps);
+  int GetMapEngineFrameRate();
 
 private:
   struct DelayScript {
@@ -215,6 +224,9 @@ private:
 
     int leader;
     std::vector<AnimationState> follow_state_queue;
+
+    bool ignorePersonObstructions;
+    bool ignoreTileObstructions;
   };
 
   struct Trigger {
@@ -277,7 +289,7 @@ private:
   void ResetNextFrame();
   int FindPerson(const char* name);
   bool IsObstructed(int person, int x, int y, int& obs_person);
-  
+
 private:
   // core map engine stuff
   IEngine* m_Engine;

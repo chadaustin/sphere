@@ -168,11 +168,62 @@ CGameEngine::DestroySystemObjects()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-
-
 // IEngine Methods
 
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+bool
+IEngine::IsScriptEvaluated(const char* filename)
+{
+  std::string name(filename);
+  bool found = false;
+  for (int i = 0; i < m_EvaluatedScripts.size(); i++) {
+    if (m_EvaluatedScripts[i] == name) {
+      found = true;
+      break;
+    }
+  }
+
+  return found;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool
+IEngine::IsSystemScriptEvaluated(const char* filename)
+{
+  bool found = false;
+  for (int i = 0; i < m_EvaluatedSystemScripts.size(); i++) {
+    if (!strcmp(m_EvaluatedSystemScripts[i].c_str(), filename)) {
+      found = true;
+      break;
+    }
+  }
+
+  return found;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void
+IEngine::AddEvaluatedScript(const char* filename)
+{
+  if (!IsScriptEvaluated(filename)) {
+    m_EvaluatedScripts.push_back(std::string(filename));
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+  
+void
+IEngine::AddEvaluatedSystemScript(const char* filename)
+{
+  if (!IsSystemScriptEvaluated(filename)) {
+    m_EvaluatedSystemScripts.push_back(std::string(filename));
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 bool
 CGameEngine::GetScriptText(const char* filename, std::string& text)

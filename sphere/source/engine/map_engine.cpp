@@ -91,6 +91,11 @@ CMapEngine::Execute(const char* filename, int fps)
     return false;
   }
 
+  if (fps <= 0) {
+    m_ErrorMessage = "fps must be greater than zero!";
+    return false;
+  }
+
   m_IsRunning = true;
 
   m_FrameRate = fps;
@@ -212,6 +217,31 @@ CMapEngine::Exit()
 bool
 CMapEngine::IsRunning() {
   return m_IsRunning;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::SetMapEngineFrameRate(int fps) {
+  if (!m_IsRunning) {
+    m_ShouldExit = true;
+    m_ErrorMessage = "SetMapEngineFrameRate() called while map engine was not running";
+    return false;
+  }
+  if (fps <= 0) {
+    m_ShouldExit = true;
+    m_ErrorMessage = "fps must be greater than zero!";
+  }
+
+  m_FrameRate = fps;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CMapEngine::GetMapEngineFrameRate() {
+  return m_FrameRate;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -458,7 +488,7 @@ CMapEngine::ReplaceTilesOnLayer(int layer, int old_tile, int new_tile) {
 bool
 CMapEngine::ExecuteTrigger(int location_x, int location_y, int layer)
 {
-  // check to see which trigger we're on
+  // check to see which trigger we're looking at on
   int trigger_index = FindTrigger(location_x, location_y, layer);
 
   return ExecuteTriggerScript(trigger_index);
@@ -998,6 +1028,9 @@ CMapEngine::CreatePerson(const char* name, const char* spriteset, bool destroy_w
   p.stepping_frame_revert = 0;
   p.stepping_frame_revert_count = 0;
 
+  p.ignorePersonObstructions = false;
+  p.ignoreTileObstructions = false;
+
   p.spriteset->GetSpriteset().GetBase(p.base_x1, p.base_y1, p.base_x2, p.base_y2);
   p.width = p.spriteset->GetSpriteset().GetFrameWidth();
   p.height = p.spriteset->GetSpriteset().GetFrameHeight();
@@ -1321,6 +1354,68 @@ CMapEngine::GetPersonDirection(const char* name, std::string& direction)
 
   direction = m_Persons[person].direction;
 //  direction = m_Persons[person].spriteset->GetSpriteset().GetDirectionNum(name);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::IgnorePersonObstructions(const char* name, bool ignoring)
+{
+  int person = FindPerson(name);
+  if (person == -1) {
+    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+    return false;
+  }
+
+  m_Persons[person].ignorePersonObstructions = ignoring;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::IsIgnoringPersonObstructions(const char* name, bool& ignoring)
+{
+  int person = FindPerson(name);
+  ignoring = false;
+  if (person == -1) {
+    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+    return false;
+  }
+
+  ignoring = m_Persons[person].ignorePersonObstructions;
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::IgnoreTileObstructions(const char* name, bool ignoring)
+{
+  int person = FindPerson(name);
+  if (person == -1) {
+    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+    return false;
+  }
+
+  m_Persons[person].ignoreTileObstructions = ignoring;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::IsIgnoringTileObstructions(const char* name, bool& ignoring)
+{
+  int person = FindPerson(name);
+  ignoring = false;
+  if (person == -1) {
+    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+    return false;
+  }
+
+  ignoring = m_Persons[person].ignoreTileObstructions;
   return true;
 }
 
@@ -2184,6 +2279,9 @@ CMapEngine::LoadMapPersons()
 
 	  p.stepping_frame_revert = 0;
 	  p.stepping_frame_revert_count = 0;
+
+    p.ignorePersonObstructions = false;
+    p.ignoreTileObstructions = false;
 
       // load spriteset
       p.spriteset = m_Engine->LoadSpriteset(person.spriteset.c_str());
@@ -3537,7 +3635,6 @@ CMapEngine::IsObstructed(int person, int x, int y, int& obs_person)
     return true;
   }
 
-
   // test per-tile obstructions
   int min_x = (x1 < x2 ? x1 : x2);
   int max_x = (x1 > x2 ? x1 : x2);
@@ -3549,29 +3646,37 @@ CMapEngine::IsObstructed(int person, int x, int y, int& obs_person)
   int min_ty = min_y / tile_height;
   int max_ty = max_y / tile_height;
 
-  for (int ty = min_ty; ty <= max_ty; ty++) {
-    for (int tx = min_tx; tx <= max_tx; tx++) {
+  if (!m_Persons[person].ignoreTileObstructions)
+  {
+    for (int ty = min_ty; ty <= max_ty; ty++) {
+      for (int tx = min_tx; tx <= max_tx; tx++) {
 
-      // if the tile is on the map
-      if (tx < 0 || ty < 0 || tx >= layer.GetWidth() || ty >= layer.GetHeight()) {
-        continue;
-      }
+        // if the tile is on the map
+        if (tx < 0 || ty < 0 || tx >= layer.GetWidth() || ty >= layer.GetHeight()) {
+          continue;
+        }
       
-      // get the tile object
-      int t = m_Map.GetAnimationMap()[layer.GetTile(tx, ty)].current;
-      sTile& tile = m_Map.GetMap().GetTileset().GetTile(t);
+        // get the tile object
+        int t = m_Map.GetAnimationMap()[layer.GetTile(tx, ty)].current;
+        sTile& tile = m_Map.GetMap().GetTileset().GetTile(t);
 
-      int tbx = tx * tile_width;
-      int tby = ty * tile_height;
+        int tbx = tx * tile_width;
+        int tby = ty * tile_height;
 
-      if (tile.GetObstructionMap().TestRectangle(x1 - tbx, y1 - tby, x2 - tbx, y2 - tby)) {
-        obs_person = -1;
-        return true;
+        if (tile.GetObstructionMap().TestRectangle(x1 - tbx, y1 - tby, x2 - tbx, y2 - tby)) {
+          obs_person = -1;
+          return true;
+        }
+
       }
-
     }
   }
 
+  // don't check other entity obstructions if this spriteset ignores them
+  if(m_Persons[person].ignorePersonObstructions) {
+    obs_person = -1;
+    return false;
+  }
 
   // check obstructions against other entities
   for (int i = 0; i < int(m_Persons.size()); i++) {
