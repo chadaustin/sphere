@@ -2531,11 +2531,11 @@ CMapEngine::LoadMapPersons()
       p.speed_x = 1;
       p.speed_y = 1;
 
-	  p.stepping_frame_revert = 0;
-	  p.stepping_frame_revert_count = 0;
+      p.stepping_frame_revert = 0;
+      p.stepping_frame_revert_count = 0;
 
-    p.ignorePersonObstructions = false;
-    p.ignoreTileObstructions = false;
+      p.ignorePersonObstructions = false;
+      p.ignoreTileObstructions = false;
 
       // load spriteset
       p.spriteset = m_Engine->LoadSpriteset(person.spriteset.c_str());
@@ -2608,6 +2608,9 @@ CMapEngine::LoadMapPersons()
 
       p.leader = -1;
 
+      // add it to the list
+      m_Persons.push_back(p);
+
       // old_person defined earlier (before goto)
       /*std::string*/ old_person = m_CurrentPerson;
       m_CurrentPerson = p.name;
@@ -2625,10 +2628,6 @@ CMapEngine::LoadMapPersons()
       }
 
       m_CurrentPerson = old_person;
-
-      // add it to the list
-      m_Persons.push_back(p);
-
       continue;
 
 spriteset_error:
