@@ -1496,7 +1496,7 @@ CScriptWindow::IsToolAvailable(UINT id)
       if (SendEditor(SCI_GETSELECTIONSTART) - SendEditor(SCI_GETSELECTIONEND)) available = TRUE;
     break;
     case ID_FILE_PASTE:
-      if (SendEditor(SCI_CANPASTE) != 0) available = TRUE;
+      if (SendEditor(SCI_CANPASTE) != 0 || IsClipboardFormatAvailable(CF_HDROP)) available = TRUE;
     break;
   }
 
@@ -1516,7 +1516,36 @@ CScriptWindow::OnCopy()
 afx_msg void
 CScriptWindow::OnPaste()
 {
-  SendEditor(SCI_PASTE);
+  if (SendEditor(SCI_CANPASTE) != 0) {
+    SendEditor(SCI_PASTE);
+  }
+  else if (IsClipboardFormatAvailable(CF_HDROP))
+  {
+    if (OpenClipboard()) {
+      HDROP hdrop = (HDROP) GetClipboardData(CF_HDROP);
+      if (hdrop) {
+        UINT num_files = DragQueryFile(hdrop, 0xFFFFFFFF, NULL, 0);
+
+        SendEditor(SCI_BEGINUNDOACTION);
+        SendEditor(SCI_REPLACESEL, 0, (LRESULT)"");
+
+        for (int i = 0; i < num_files; i++)
+        {
+          char filename[MAX_PATH + 3] = {0};
+          DragQueryFile(hdrop, i, filename, MAX_PATH);
+          
+          if (i < num_files - 1)
+            sprintf (filename + strlen(filename), "\n");
+
+          SendEditor(SCI_ADDTEXT, strlen(filename), (LPARAM)filename);
+        }
+
+        SendEditor(SCI_ENDUNDOACTION);
+      }
+
+      CloseClipboard();
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
