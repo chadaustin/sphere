@@ -3195,7 +3195,7 @@ CMapEngine::Render()
   // render script
   if (m_RenderScript) {
     std::string error;
-    if (!ExecuteScript(m_RenderScript, error)) {
+    if (!ExecuteScript(m_RenderScript, error) && !m_IsRunning) {
       m_ErrorMessage = "Could not execute update script\n" + error;
       return false;
     }

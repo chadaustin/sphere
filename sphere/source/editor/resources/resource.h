@@ -111,12 +111,14 @@
 #define IDC_TILE_BACKGROUND             1081
 #define IDC_STRETCH_BACKGROUND          1082
 #define IDC_GRADIENT_BACKGROUND         1083
+#define IDC_TILED_GRADIENT_BACKGROUND   1084
 #define IDC_UPPER_LEFT                  1085
 #define IDC_UPPER_RIGHT                 1086
 #define IDC_TOP_COLOR                   1086
 #define IDC_LOWER_LEFT                  1087
 #define IDC_LOWER_RIGHT                 1088
 #define IDC_HAS_PARALLAX                1089
+#define IDC_STRETCHED_GRADIENT_BACKGROUND 1089
 #define IDC_VERTICAL_PARALLAX           1090
 #define IDC_HORIZONTAL_PARALLAX         1091
 #define IDC_HORIZONTAL_PARALLAX_VALUE   1092
@@ -143,6 +145,10 @@
 #define IDC_AUTHOR                      1117
 #define IDC_DESCRIPTION                 1118
 #define IDC_REPEATING                   1120
+#define IDC_EDGEOFFSET_0                1121
+#define IDC_EDGEOFFSET_1                1122
+#define IDC_EDGEOFFSET_2                1123
+#define IDC_EDGEOFFSET_3                1124
 #define ID_FILE_IMPORT_BITMAPTORSS      12241
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40003
@@ -450,7 +456,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        225
 #define _APS_NEXT_COMMAND_VALUE         40648
-#define _APS_NEXT_CONTROL_VALUE         1121
+#define _APS_NEXT_CONTROL_VALUE         1122
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

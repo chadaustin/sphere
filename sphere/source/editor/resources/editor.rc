@@ -1045,31 +1045,45 @@ BEGIN
     PUSHBUTTON      "Check Syntax",IDC_CHECK_SYNTAX,108,4,72,12
 END
 
-IDD_WINDOW_STYLE_PROPERTIES DIALOG DISCARDABLE  0, 0, 186, 165
+IDD_WINDOW_STYLE_PROPERTIES DIALOG DISCARDABLE  0, 0, 199, 236
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Sans Serif"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
+    DEFPUSHBUTTON   "OK",IDOK,142,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,142,24,50,14
     CONTROL         "Tile Background Image",IDC_TILE_BACKGROUND,"Button",
-                    BS_AUTORADIOBUTTON,8,8,89,10
+                    BS_AUTORADIOBUTTON,7,8,89,10
     CONTROL         "Stretch Background",IDC_STRETCH_BACKGROUND,"Button",
-                    BS_AUTORADIOBUTTON,8,20,79,10
+                    BS_AUTORADIOBUTTON,7,20,79,10
     CONTROL         "Gradient Background",IDC_GRADIENT_BACKGROUND,"Button",
-                    BS_AUTORADIOBUTTON,8,32,83,10
+                    BS_AUTORADIOBUTTON,7,32,83,10
     CONTROL         "",IDC_UPPER_LEFT,"Static",SS_BLACKFRAME | NOT 
-                    WS_VISIBLE,12,64,60,40
+                    WS_VISIBLE,15,130,60,40
     CONTROL         "",IDC_UPPER_RIGHT,"Static",SS_BLACKFRAME | NOT 
-                    WS_VISIBLE,112,64,60,40
+                    WS_VISIBLE,115,130,60,40
     CONTROL         "",IDC_LOWER_LEFT,"Static",SS_BLACKFRAME | NOT 
-                    WS_VISIBLE,12,120,60,40
+                    WS_VISIBLE,15,189,60,40
     CONTROL         "",IDC_LOWER_RIGHT,"Static",SS_BLACKFRAME | NOT 
-                    WS_VISIBLE,112,120,60,40
-    LTEXT           "Upper Left Corner",IDC_STATIC,12,52,57,8
-    LTEXT           "Upper Right Corner",IDC_STATIC,112,52,62,8
-    LTEXT           "Lower Left Corner",IDC_STATIC,12,108,57,8
-    LTEXT           "Lower Right Corner",IDC_STATIC,112,108,62,8
+                    WS_VISIBLE,115,189,60,40
+    LTEXT           "Upper Left Corner",IDC_STATIC,15,119,57,8
+    LTEXT           "Upper Right Corner",IDC_STATIC,115,119,62,8
+    LTEXT           "Lower Left Corner",IDC_STATIC,15,175,57,8
+    LTEXT           "Lower Right Corner",IDC_STATIC,115,175,62,8
+    CONTROL         "Tiled Gradient",IDC_TILED_GRADIENT_BACKGROUND,"Button",
+                    BS_AUTORADIOBUTTON,7,42,60,10
+    CONTROL         "Stretched Gradient Background",
+                    IDC_STRETCHED_GRADIENT_BACKGROUND,"Button",
+                    BS_AUTORADIOBUTTON,7,54,116,10
+    EDITTEXT        IDC_EDGEOFFSET_0,60,76,36,15,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDGEOFFSET_1,131,76,36,15,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDGEOFFSET_2,60,95,36,15,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDGEOFFSET_3,131,95,36,15,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Top",IDC_STATIC,104,78,14,8
+    LTEXT           "Bottom",IDC_STATIC,104,100,23,8
+    LTEXT           "Left",IDC_STATIC,30,81,13,8
+    LTEXT           "Right",IDC_STATIC,30,98,18,8
+    LTEXT           "Edge Offsets",IDC_STATIC,15,66,42,8
 END
 
 IDD_FONT_GRADIENT DIALOG DISCARDABLE  0, 0, 128, 113
@@ -1230,9 +1244,9 @@ BEGIN
     IDD_WINDOW_STYLE_PROPERTIES, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 179
+        RIGHTMARGIN, 192
         TOPMARGIN, 7
-        BOTTOMMARGIN, 158
+        BOTTOMMARGIN, 229
     END
 
     IDD_FONT_GRADIENT, DIALOG
