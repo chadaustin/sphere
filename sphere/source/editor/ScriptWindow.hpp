@@ -48,6 +48,8 @@ private:
   afx_msg void OnOptionsShowWhitespace();
   afx_msg void OnOptionsWordWrap();
   afx_msg void OnOptionsToggleAutoComplete();
+  afx_msg void OnOptionsCheckSpelling();
+  afx_msg void OnOptionsViewList();
 
   afx_msg void OnOptionsSelectionStream();
   afx_msg void OnOptionsSelectionRectangle();
@@ -55,6 +57,8 @@ private:
   afx_msg void OnUpdateOptionsSelectionStream(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsSelectionRectangle(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsSelectionLine(CCmdUI* cmdui);
+  afx_msg void OnUpdateOptionsCheckSpelling(CCmdUI* cmdui);
+  afx_msg void OnUpdateOptionsViewList(CCmdUI* cmdui);
 
   afx_msg void OnUpdateOptionsToggleLineNumbers(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsToggleColors(CCmdUI* cmdui);
@@ -74,6 +78,8 @@ private:
   afx_msg void OnCharAdded(NMHDR* nmhdr, LRESULT* result);
   afx_msg void OnMarginClick(NMHDR* nmhdr, LRESULT* result);
   void SetLineNumber(int line);
+
+  void SpellCheck(const int line_number);
 
 #if 1
   bool MarginClick(int position, int modifiers);
@@ -138,6 +144,7 @@ private:
   bool m_WordWrap;
   bool m_AllowAutoComplete;
   int m_SelectionType;
+  bool m_CheckSpelling;
 
   void UpdateBraceHighlight();
 

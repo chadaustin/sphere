@@ -326,6 +326,10 @@ BEGIN
 
             MENUITEM "Toggle Word Wrap",            ID_SCRIPT_OPTIONS_WORD_WRAP
 
+            MENUITEM "Check &Spelling",             ID_SCRIPT_OPTIONS_CHECK_SPELLING
+
+            MENUITEM "&View List",                  ID_SCRIPT_OPTIONS_VIEW_LIST
+
         END
         POPUP "&Tools"
         BEGIN

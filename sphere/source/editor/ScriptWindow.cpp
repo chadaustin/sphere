@@ -372,7 +372,13 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_SCRIPT_OPTIONS_SHOW_WHITESPACE, OnOptionsShowWhitespace)
   ON_COMMAND(ID_SCRIPT_OPTIONS_WORD_WRAP, OnOptionsWordWrap)
   ON_COMMAND(ID_SCRIPT_OPTIONS_TOGGLE_AUTOCOMPLETE, OnOptionsToggleAutoComplete)
-  
+
+  ON_COMMAND(ID_SCRIPT_OPTIONS_CHECK_SPELLING, OnOptionsCheckSpelling) 
+  ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_CHECK_SPELLING, OnUpdateOptionsCheckSpelling)
+
+  ON_COMMAND(ID_SCRIPT_OPTIONS_VIEW_LIST, OnOptionsViewList) 
+  ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_VIEW_LIST, OnUpdateOptionsViewList) 
+
   ON_COMMAND(ID_SCRIPT_OPTIONS_SELECTION_STREAM, OnOptionsSelectionStream)
   ON_COMMAND(ID_SCRIPT_OPTIONS_SELECTION_RECTANGLE, OnOptionsSelectionRectangle)
   ON_COMMAND(ID_SCRIPT_OPTIONS_SELECTION_LINE, OnOptionsSelectionLine)
@@ -433,6 +439,7 @@ CScriptWindow::CScriptWindow(const char* filename, bool create_from_clipboard)
 , m_AllowAutoComplete(false)
 , m_SelectionType(SC_SEL_STREAM)
 , m_ListType(0)
+, m_CheckSpelling(false)
 {
   m_DocumentType = WA_SCRIPT;
 
@@ -495,6 +502,14 @@ CScriptWindow::Create()
   int cy = Rect.bottom - Rect.top;
   int sidebar_width = 0;
 
+  m_ListType           = Configuration::Get(KEY_SCRIPT_LIST_TYPE);
+  bool show_list       = Configuration::Get(KEY_SCRIPT_SHOW_LIST);
+
+  if ( !(m_ListType > 0 && m_ListType <= 4) ) { m_ListType = 0; }
+  if ( m_ListType != 0) {
+    sidebar_width = 120;
+  }
+
   // creates the script view
   m_Editor = ::CreateWindow(
     "Scintilla",
@@ -507,22 +522,20 @@ CScriptWindow::Create()
     AfxGetApp()->m_hInstance,
     0);
 
-  if (1) {
-    // creates the list view
-    m_List = ::CreateWindow(      
-      "LISTBOX",
-      "LISTBOX",
-      WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_CLIPCHILDREN | WS_BORDER |
-      LBS_EXTENDEDSEL | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT,
-      0,
-      0,
-      sidebar_width,
-      cy,
-      m_hWnd,
-      (HMENU)ID_EDIT,
-      AfxGetApp()->m_hInstance,
-      0);
-  }
+  // creates the list view
+  m_List = ::CreateWindow(      
+    "LISTBOX",
+    "LISTBOX",
+    WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_CLIPCHILDREN | WS_BORDER |
+    LBS_EXTENDEDSEL | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT,
+    0,
+    0,
+    sidebar_width,
+    cy,
+    m_hWnd,
+    (HMENU)ID_EDIT,
+    AfxGetApp()->m_hInstance,
+    0);
 
   Initialize();
 
@@ -531,9 +544,12 @@ CScriptWindow::Create()
   ::ShowWindow(m_Editor, SW_SHOW);
   ::UpdateWindow(m_Editor);
 
-  ::ShowWindow(m_List, SW_SHOW);
-  if (::IsWindow(m_List))
+  if (::IsWindow(m_List)) {
+    if (show_list) {
+      ::ShowWindow(m_List, SW_SHOW);
+    }
     ::UpdateWindow(m_List);
+  }
 
   m_Created = true;
 
@@ -690,6 +706,7 @@ CScriptWindow::SetScriptStyles()
   // for code folding
   SendEditor(SCI_SETPROPERTY, (WPARAM)"fold", (LPARAM)"1");
   SendEditor(SCI_SETPROPERTY, (WPARAM)"fold.compact", (LPARAM)"0");
+
   SendEditor(SCI_SETMARGINWIDTHN, MARGIN_SCRIPT_FOLD_INDEX, 20);
   SendEditor(SCI_SETMARGINMASKN, MARGIN_SCRIPT_FOLD_INDEX, SC_MASK_FOLDERS);
 
@@ -761,7 +778,7 @@ CScriptWindow::Initialize()
   m_ShowWhitespace     = Configuration::Get(KEY_SCRIPT_SHOW_WHITESPACE);
   m_WordWrap           = Configuration::Get(KEY_SCRIPT_WORD_WRAP);
   m_AllowAutoComplete  = Configuration::Get(KEY_SCRIPT_ALLOW_AUTOCOMPLETE);
-  m_ListType           = Configuration::Get(KEY_SCRIPT_LIST_TYPE);
+  m_CheckSpelling      = Configuration::Get(KEY_SCRIPT_CHECK_SPELLING);
   SetScriptStyles();
 
   SetLineNumber(0);
@@ -906,7 +923,7 @@ CScriptWindow::OnSize(UINT type, int cx, int cy)
     }
  
     ::MoveWindow(m_Editor, sidebar_width, 0, cx - sidebar_width, cy, TRUE);
-    if (::IsWindow(m_List))
+    if ( ::IsWindow(m_List) && ::IsWindowVisible(m_List) )
       ::MoveWindow(m_List, 0, 0, sidebar_width, cy, TRUE);
   }
 
@@ -1559,6 +1576,13 @@ CScriptWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
       }
     }
   }
+
+  if (m_CheckSpelling) {
+    int pos  = SendEditor(SCI_GETCURRENTPOS);
+    int line = SendEditor(SCI_LINEFROMPOSITION, pos);
+
+    SpellCheck(line);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1570,6 +1594,102 @@ CScriptWindow::SetLineNumber(int line) {
   line += 1;
   sprintf(str, "Line: %d Position: %d", line, pos);
   GetStatusBar()->SetPaneText(1, str);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void
+CScriptWindow::SpellCheck(const int line_number)
+{
+  static const int BAD_SPELLING_INDICTOR_INDEX = 0;
+  static const int BAD_SPELLING_INDICTOR_MASK = INDIC0_MASK;
+  static const int GOOD_SPELLING_INDICTOR_INDEX = 2;
+  static const int GOOD_SPELLING_INDICTOR_MASK = INDIC2_MASK;
+
+  //const int line_number = SendEditor(SCI_LINEFROMPOSITION, SendEditor(SCI_GETENDSTYLED));
+  const int start_pos   = SendEditor(SCI_POSITIONFROMLINE, (WPARAM)line_number);
+
+  int line_length = SendEditor(SCI_LINELENGTH, SendEditor(SCI_LINEFROMPOSITION, start_pos));
+
+  char text[1024 * 16];
+  if (line_length > 0 && line_length < sizeof(text)) {
+    SendEditor(SCI_GETLINE, line_number, (LRESULT)text);
+
+    SendEditor(SCI_INDICSETSTYLE, BAD_SPELLING_INDICTOR_INDEX, INDIC_SQUIGGLE);
+    SendEditor(SCI_INDICSETSTYLE, GOOD_SPELLING_INDICTOR_INDEX, INDIC_PLAIN);
+
+    static const COLORREF darkred = RGB(0x80, 0, 0);;
+    static const COLORREF white   = 0xFFFFFF;
+    SendEditor(SCI_INDICSETFORE, BAD_SPELLING_INDICTOR_INDEX,  darkred);
+    SendEditor(SCI_INDICSETFORE, GOOD_SPELLING_INDICTOR_INDEX, white);
+
+    SendEditor(SCI_STARTSTYLING, start_pos, INDICS_MASK);
+
+    for (int cur_pos = 0, last_pos = 0; cur_pos < line_length; cur_pos++)
+    {
+      if ((text[cur_pos] == ' ' || cur_pos == line_length - 1)) {
+        int length = cur_pos - last_pos;
+        if (text[cur_pos] == ' ')
+          ;
+        else
+        if (cur_pos == line_length - 1)
+          length += 1;
+        
+        if ( !(length > 0) )
+          length = 1;
+
+        const char* dictionary_2[] = {"on", "an", "it", "in", "ok", "as"};
+        const char* dictionary_3[] = {"The", "the", "cat", "sat", "did", "mat"};
+        
+        const int dictionary_2_size = sizeof(dictionary_2) / sizeof(*dictionary_2);
+        const int dictionary_3_size = sizeof(dictionary_3) / sizeof(*dictionary_3);
+
+        bool found = false;
+
+        switch (length)
+        {
+          case 2:
+            for (int i = 0; i < dictionary_2_size; i++) {
+              if (memcmp(text + last_pos, dictionary_2[i], length) == 0) {
+                found = true;
+                break;
+              }
+            }
+          break;
+
+          case 3:
+            for (int i = 0; i < dictionary_3_size; i++) {
+              if (memcmp(text + last_pos, dictionary_3[i], length) == 0) {
+                found = true;
+                break;
+              }
+            }
+          break;
+        }
+
+        if (!found) {
+          SendEditor(SCI_SETSTYLING, length, BAD_SPELLING_INDICTOR_MASK);
+        } else {
+          SendEditor(SCI_SETSTYLING, length, GOOD_SPELLING_INDICTOR_MASK);
+        }
+
+        /*
+        if (length == strlen("teh") && memcmp(text + last_pos, "teh", length) == 0) {
+          SendEditor(SCI_SETSTYLING, length, BAD_SPELLING_INDICTOR_MASK);
+        }
+        else {
+          SendEditor(SCI_SETSTYLING, length, GOOD_SPELLING_INDICTOR_MASK);
+        }
+        */
+
+        if (text[cur_pos] == ' ' && text[last_pos] != ' ')
+          SendEditor(SCI_SETSTYLING, 1, GOOD_SPELLING_INDICTOR_MASK);
+
+        last_pos = cur_pos + 1;
+      }
+    }
+
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1823,6 +1943,46 @@ CScriptWindow::OnOptionsWordWrap()
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
+CScriptWindow::OnOptionsCheckSpelling()
+{
+  m_CheckSpelling = !m_CheckSpelling;
+  SetScriptStyles();
+  RememberConfiguration();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnUpdateOptionsCheckSpelling(CCmdUI* cmdui)
+{
+  cmdui->SetCheck(m_CheckSpelling ? TRUE : FALSE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnOptionsViewList()
+{
+  if (::IsWindow(m_List)) {
+    ::ShowWindow(m_List, ::IsWindowVisible(m_List) ? SW_HIDE : SW_SHOW);
+    RECT Rect;
+    GetClientRect(&Rect);
+    OnSize(0, Rect.right /*- Rect.left*/, Rect.bottom /*- Rect.top*/);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnUpdateOptionsViewList(CCmdUI* cmdui)
+{
+  cmdui->Enable(::IsWindow(m_List) ? TRUE : FALSE);
+  cmdui->SetCheck(::IsWindow(m_List) && ::IsWindowVisible(m_List) ? TRUE : FALSE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
 CScriptWindow::OnOptionsSelectionStream()
 {
   m_SelectionType = SC_SEL_STREAM;
@@ -1944,6 +2104,8 @@ CScriptWindow::RememberConfiguration()
   Configuration::Set(KEY_SCRIPT_WORD_WRAP, m_WordWrap);
   Configuration::Set(KEY_SCRIPT_ALLOW_AUTOCOMPLETE, m_AllowAutoComplete);
   Configuration::Set(KEY_SCRIPT_LIST_TYPE, m_ListType);
+  Configuration::Set(KEY_SCRIPT_SHOW_LIST, ::IsWindow(m_List) && ::IsWindowVisible(m_List) ? true : false);
+  Configuration::Set(KEY_SCRIPT_CHECK_SPELLING, m_CheckSpelling);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
