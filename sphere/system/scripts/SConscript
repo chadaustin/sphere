@@ -1,6 +1,8 @@
-Import('base_env')
+import os
 
-base_env.Install('#/build/system/scripts', Split("""
+Import('base_env BUILD_DIR')
+
+base_env.Install(os.path.join(BUILD_DIR, 'system/scripts'), Split("""
     animation.js
     audio.js
     clock.js

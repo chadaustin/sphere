@@ -1,10 +1,10 @@
-Import('base_env SetupAudiere SetupCorona SetupMNG SetupZLib')
+Import('base_env COMPILER')
 
 env = base_env.Copy()
-SetupAudiere(env)
-SetupCorona(env)
-SetupMNG(env)
-SetupZLib(env)
+COMPILER.SetupAudiere(env)
+COMPILER.SetupCorona(env)
+COMPILER.SetupMNG(env)
+COMPILER.SetupZLib(env)
 
 env.Library('common', Split("""
     AnimationFactory.cpp

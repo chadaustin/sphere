@@ -1,1 +1,6 @@
+Import('COMPILER')
+
 SConscript(dirs = ['common', 'config', 'engine', 'util', 'video', 'wxeditor'])
+
+if COMPILER.has_mfc():
+    SConscript(dirs = ['editor'])

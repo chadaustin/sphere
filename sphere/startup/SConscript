@@ -1,6 +1,6 @@
 import os
 
-Import('base_env')
+Import('base_env BUILD_DIR')
 
 files = [
     'game.sgm',
@@ -18,4 +18,6 @@ files = [
     'windowstyles/base.rws']
 
 for f in files:
-    base_env.Install(os.path.join("#/build/startup", os.path.split(f)[0]), f)
+    base_env.Install(
+        os.path.join(os.path.join(BUILD_DIR, 'startup'),
+                     os.path.split(f)[0]), f)

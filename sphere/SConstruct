@@ -2,136 +2,167 @@ import sys
 import os
 import string
 import SCons
+import autocons
 
-Default('build')
 
-def RequireList(env, var):
-    if not env.Dictionary().has_key(var):
-        env[var] = []
-    elif not SCons.Util.is_List(env[var]):
-        env[var] = [env[var]]
+def BuildMinGWEnv():
+    env = Environment(ENV = os.environ)
+    env['BUILD_DIR']   = '#/build/mingw'
 
-# Courtesy of Ben Scott
-def ParseConfig(env, command, options):
-    "Parses xxx-config style output for compilation directives"
-
-    # Run the command
-    where = WhereIs(command)
-    if not where:
-        print '%s not found in PATH' % command
-        sys.exit(-1)
-    print "Found " + str(command) + ": " + where
-    cmd = where + ' ' + string.join(options)
-    params = string.split(os.popen(cmd).read())
-
-    # Parse its output
-    for arg in params:
-        switch = arg[0:1]
-        option = arg[1:2]
-        if switch == '-':
-            if option == 'I':
-                RequireList(env, 'CPPPATH')
-                env['CPPPATH'].append(arg[2:])
-            elif option == 'L':
-                RequireList(env, 'LIBPATH')
-                env['LIBPATH'].append(arg[2:])
-            elif option == 'l':
-                RequireList(env, 'LIBS')
-                env['LIBS'].append(arg[2:])
-            elif arg[0:11] == '-Wl,-rpath,':
-                RequireList(env, 'LINKFLAGS')
-                env['LINKFLAGS'].append(arg)
-            else:
-                RequireList(env, 'CXXFLAGS')
-                env['CXXFLAGS'].append(arg)
-        else:
-            # Must be a static library, add it to the libs
-            RequireList(env, 'LIBS')
-            env['LIBS'].append(arg)
-
-        RequireList(env, 'LIBS')
-        env['LIBS'].extend(['SDL', 'SDLmain'])
-        
-def SetupAudiere(env):
-    RequireList(env, 'LIBS')
-    env['LIBS'].extend(['audiere'])
-
-def SetupCorona(env):
-    RequireList(env, 'LIBS')
-    env['LIBS'].extend(['corona'])
-
-def SetupGL(env):
-    RequireList(env, 'LIBS')
-    if sys.platform == 'cygwin':
-        env['LIBS'].extend(['glu32', 'opengl32'])
-    else:
-        env['LIBS'].extend(['GLU', 'GL'])
-
-def SetupJS(env):
-    env.Append(LIBPATH = [Dir('#/third-party/lib')],
-               LIBS = ['js32'])
-
-def SetupMNG(env):
-    env.Append(LIBS = ['mng', 'jpeg', 'z'])
-    if sys.platform == 'cygwin':
-        env.Append(
-            CCFLAGS = ['-DMNG_NO_CMS', '-DMNG_SUPPORT_LC', '-DMNG_DLL'])
-
-def SetupSphereCommon(env):
-    env.Append(CPPPATH = ['#/source/common'],
-               LIBPATH = ['#/source/common'],
-               LIBS = ['common'])
-
-def SetupWXWindows(env):
-    env.Append(
-        CCFLAGS = ['-D__GNUWIN32__', '-D__WXMSW__', '-D__WIN32__',
-                   '-D__WIN95__', '-DSTRICT', '-DWIN32_LEAN_AND_MEAN'],
-        LIBS = ['stc', 'wxmsw', 'gdi32', 'comctl32', 'comdlg32',
-                'ole32', 'uuid', 'ws2_32'])
-
-def SetupZLib(env):
-    if sys.platform == 'cygwin':
-        env.Append(CCFLAGS = ['-DWINDOWS', '-DZLIB_DLL'])
-    env.Append(LIBS = ['z'])
-
-Export("""SetupAudiere SetupCorona SetupGL SetupJS SetupMNG SetupSphereCommon
-          SetupWXWindows SetupZLib""")
-
-base_env = Environment(ENV = os.environ)
-
-if sys.platform == 'cygwin':
-    base_env['SHLIBPREFIX'] = ''
-    base_env['SHLIBSUFFIX'] = '.dll'
-    base_env['SHCCFLAGS']   = ['$CCFLAGS']
-    base_env['SHCXXFLAGS']  = ['$CXXFLAGS']
-    base_env['LINKFLAGS']   = ['-mno-cygwin']
-    base_env['SHLINKFLAGS'] = [
+    env['SHLIBPREFIX'] = ''
+    env['SHLIBSUFFIX'] = '.dll'
+    env['SHCCFLAGS']   = ['$CCFLAGS']
+    env['SHCXXFLAGS']  = ['$CXXFLAGS']
+    env['LINKFLAGS']   = ['-mno-cygwin']
+    env['SHLINKFLAGS'] = [
         '-shared', '-Wl,--enable-stdcall-fixup', '$LINKFLAGS']
-    base_env.Append(
-        _RESINCFLAGS = '$( ${_concat("--include-dir ", RESPATH, "", locals(), globals())} $)',
-        CCFLAGS = ['-DWIN32', '-D_WIN32', '-DCYGWIN', '-DXP_PC',
-                   '-mno-cygwin', '-Wall', '-Wno-non-virtual-dtor'],
-        CPPPATH = [Dir('third-party/include')],
-        RESPATH = [Dir('third-party/include')],
-        LIBPATH = [Dir('third-party/lib')])
-    base_env['BUILDERS']['Resource'] = Builder(
+    env['BUILDERS']['RES'] = Builder(
         action = 'windres -O coff --define CYGWIN $_RESINCFLAGS $SOURCE -o $TARGET')
 
-if ARGUMENTS.get('debug'):
-    base_env.Append(
-        CCFLAGS = ['-DDEBUG', '-g'],
-        LINKFLAGS = ['-g'])
-elif ARGUMENTS.get('opt'):
-    base_env.Append(
-        CCFLAGS = ['-O2'],
-        LINKFLAGS = ['-s'])
+    env.Append(
+        _RESINCFLAGS = '${_concat("--include-dir ", RESPATH, "", locals(), globals())}',
+        CCFLAGS = ['-DWIN32', '-D_WIN32', '-DCYGWIN',
+                   '-mno-cygwin', '-Wall', '-Wno-non-virtual-dtor'],
+        CPPPATH = [Dir('third-party-mingw/include')],
+        RESPATH = [Dir('third-party-mingw/include')],
+        LIBPATH = [Dir('third-party-mingw/lib')])
 
-Export('base_env')
+    # install third-party DLLs into build directory
+    dlls = Split("audiere.dll corona.dll js32.dll libmng.dll zlib.dll")
+    for d in dlls:
+        env.Install(env['BUILD_DIR'],
+                    os.path.join('third-party-mingw/dlls', d))
+        env.Install(os.path.join(env['BUILD_DIR'], 'util'),
+                    os.path.join('third-party-mingw/dlls', d))
+
+    if ARGUMENTS.get('debug'):
+        env.Append(
+            CCFLAGS = ['-DDEBUG', '-g'],
+            LINKFLAGS = ['-g'])
+    elif ARGUMENTS.get('opt'):
+        env.Append(
+            CCFLAGS = ['-O2'],
+            LINKFLAGS = ['-s'])
+
+    return env
+
+
+def BuildVC6Env():
+    env = Environment(ENV = os.environ, tools = ['msvc', 'mslib', 'mslink'])
+    env['BUILD_DIR'] = '#/build/vc6'
+    env['LIBPREFIX'] = ''
+    env['LIBSUFFIX'] = '.lib'
+    env['SHLIBPREFIX'] = ''
+    env['SHLIBSUFFIX'] = '.dll'
+    env.Append(CXXFLAGS = ['/GX', '/MD',
+                           '/Dfor=if (0) ; else for',
+                           '/DWIN32',
+                           '/D_WIN32',
+                           '/DNOMINMAX'],
+               CPPPATH = [Dir('third-party-msvc/include')],
+               LIBPATH = [Dir('third-party-msvc/lib')])
+
+    dlls = Split("""audiere.dll Scintilla.dll SciLexer.dll corona.dll js32.dll
+                    libmng.dll zlib.dll""")
+    for d in dlls:
+        env.Install(env['BUILD_DIR'],
+                    os.path.join('third-party-msvc/dlls', d))
+        env.Install(os.path.join(env['BUILD_DIR'], 'util'),
+                    os.path.join('third-party-msvc/dlls', d))
+
+    if ARGUMENTS.get('debug'):
+        env.Append(CCFLAGS = ['/GZ', '/Z7'],
+                   LINKFLAGS = ['/debug', '/debugtype:both'])
+    elif ARGUMENTS.get('opt'):
+        pass
+
+    return env
+
+
+class Compiler:
+    def __init__(self, name):
+        if not name in ['vc6', 'mingw']:
+            raise ValueError, "Invalid compiler specified"
+
+        self.name = name
+        if name == 'vc6':
+            self.env = BuildVC6Env()
+        elif name == 'mingw':
+            self.env = BuildMinGWEnv()
+    
+    def has_mfc(self):
+        return self.name in ['vc6']
+
+    def get_env(self):
+        return self.env
+
+    def SetupAudiere(self, env):
+        env.Append(LIBS = ['audiere'])
+
+    def SetupCorona(self, env):
+        env.Append(LIBS = ['corona'])
+
+    def SetupHTMLHelp(self, env):
+        env.Append(LIBS = ['htmlhelp'])
+
+    def SetupGL(self, env):
+        env.Append(LIBS = ['glu32', 'opengl32'])
+
+    def SetupJS(self, env):
+        env.Append(CCFLAGS = ['-DXP_PC'],
+                   LIBS = ['js32'])
+
+    def SetupMFC(self, env):
+        assert self.has_mfc(), "MFC not supported in this compiler"
+        env.Append(CCFLAGS = ['/D_AFXDLL'],
+                   LINKFLAGS = ['/subsystem:windows'],
+                   LIBS = ['mfc42'])
+
+    def SetupMNG(self, env):
+        if self.name == 'mingw':
+            env.Append(LIBS = ['mng', 'jpeg', 'z'],
+                       CCFLAGS = ['-DMNG_NO_CMS', '-DMNG_SUPPORT_LC', '-DMNG_DLL'])
+        elif self.name == 'vc6':
+            env.Append(LIBS = ['libmng'],
+                       CCFLAGS = ['/DMNG_NO_CMS', '/DMNG_SUPPORT_LC', '/DMNG_DLL'])
+
+    def SetupSphereCommon(self, env):
+        env.Append(CPPPATH = ['#/source/common'],
+                   LIBPATH = ['#/source/common'],
+                   LIBS = ['common'])
+
+    def SetupWin32(self, env):
+        env.Append(LIBS = ['user32', 'gdi32', 'comctl32'])
+
+    def SetupWXWindows(self, env):
+        if self.name == 'mingw':
+            env.Append(
+                CCFLAGS = ['-D__GNUWIN32__', '-D__WXMSW__', '-D__WIN32__',
+                           '-D__WIN95__', '-DSTRICT', '-DWIN32_LEAN_AND_MEAN'],
+                LIBS = ['stc', 'wxmsw', 'gdi32', 'comctl32', 'comdlg32',
+                        'ole32', 'uuid', 'ws2_32'])
+        elif self.name == 'vc6':
+            env.Append(CCFLAGS = ['/D__WXMSW__', '/D__WIN32__', '/D__WIN95__',
+                                  '/DSTRICT', '/DWIN32_LEAN_AND_MEAN'],
+                       LIBS = ['stc', 'wxmsw', 'user32', 'gdi32', 'comctl32',
+                               'comdlg32', 'ole32', 'shell32', 'uuid',
+                               'advapi32', 'ws2_32'])
+
+    def SetupZLib(self, env):
+        if self.name == 'mingw':
+            env.Append(LIBS = ['z'],
+                       CCFLAGS = ['-DWINDOWS', '-DZLIB_DLL'])
+        elif self.name == 'vc6':
+            env.Append(LIBS = ['zlib'],
+                       CCFLAGS = ['/DWINDOWS', '/DZLIB_DLL'])
+
+
+COMPILER = Compiler(ARGUMENTS.get('compiler', 'mingw'))
+base_env = COMPILER.get_env()
+BUILD_DIR = base_env['BUILD_DIR']
+Default(BUILD_DIR)
+
+Export('base_env BUILD_DIR COMPILER')
+
 
 SConscript(dirs = ['source', 'startup', 'system'])
-
-# install third-party DLLs into build directory
-dlls = Split("audiere.dll corona.dll js32.dll libmng.dll zlib.dll")
-for d in dlls:
-    base_env.Install("#/build", os.path.join('third-party/dlls', d))
-    base_env.Install("#/build/util", os.path.join('third-party/dlls', d))

@@ -1,15 +1,13 @@
-Import("""
-  base_env SetupAudiere SetupCorona SetupJS SetupMNG SetupSphereCommon
-  SetupWXWindows SetupZLib""")
+Import("base_env BUILD_DIR COMPILER")
 
 env = base_env.Copy()
-SetupSphereCommon(env)
-SetupAudiere(env)
-SetupCorona(env)
-SetupJS(env)
-SetupMNG(env)
-SetupWXWindows(env)
-SetupZLib(env)
+COMPILER.SetupSphereCommon(env)
+COMPILER.SetupAudiere(env)
+COMPILER.SetupCorona(env)
+COMPILER.SetupJS(env)
+COMPILER.SetupMNG(env)
+COMPILER.SetupWXWindows(env)
+COMPILER.SetupZLib(env)
 
 editor = env.Program('wxeditor', Split("""
     AlphaView.cpp
@@ -81,4 +79,4 @@ editor = env.Program('wxeditor', Split("""
 # OptionsDialog
 # StringDialog
 
-env.Install('#/build', editor)
+env.Install(BUILD_DIR, editor)

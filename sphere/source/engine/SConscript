@@ -1,17 +1,15 @@
 import sys
 
-Import("""
-  base_env SetupAudiere SetupCorona SetupJS SetupMNG SetupSphereCommon
-  SetupZLib""")
+Import('base_env BUILD_DIR COMPILER')
 
 env = base_env.Copy()
-
-SetupSphereCommon(env)
-SetupAudiere(env)
-SetupCorona(env)
-SetupJS(env)
-SetupMNG(env)
-SetupZLib(env)
+COMPILER.SetupSphereCommon(env)
+COMPILER.SetupAudiere(env)
+COMPILER.SetupCorona(env)
+COMPILER.SetupJS(env)
+COMPILER.SetupMNG(env)
+COMPILER.SetupWin32(env)
+COMPILER.SetupZLib(env)
 
 env.Prepend(
     RESPATH = [Dir('win32')],
@@ -42,8 +40,7 @@ engine = env.Program('engine', Split("""
     engine.res
     """))
 
-env.Resource('engine.res', 'win32/engine.rc')
-
-env.Install('#/build', engine)
+env.RES('engine.res', 'win32/engine.rc')
+env.Install(BUILD_DIR, engine)
 
 SConscript(dirs = [md])
