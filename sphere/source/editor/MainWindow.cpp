@@ -46,6 +46,8 @@
 #include <jsapi.h>
 #include <zlib.h>
 #include <libmng.h>
+#include <audiere.h>
+#include <corona.h>
 
 
 // base for palette menu items
@@ -1438,7 +1440,7 @@ CMainWindow::OnHelpAbout()
     "Sphere Development Environment\n"
     SPHERE_VERSION "\n"
     "\n"
-    "Chad Austin (c) 1999-2001\n"
+    "Chad Austin (c) 1999-2003\n"
     "Additional code by Darklich\n"
     "Icons by Khadgar\n"
     "\n"
@@ -1448,11 +1450,15 @@ CMainWindow::OnHelpAbout()
     "\n"
     "JavaScript: %s\n"
     "zlib: %s\n"
-    "libmng: DLL %s - header %s\n",
+    "libmng: DLL %s - header %s\n"
+    "Corona: %s\n"
+    "Audiere: %s\n",
 
     JS_GetImplementationVersion(),
     zlibVersion(),
-    mng_version_text(), MNG_VERSION_TEXT);
+    mng_version_text(), MNG_VERSION_TEXT,
+    corona::GetVersion(),
+    audiere::GetVersion());
 
   MessageBox(message, "About");
 }
