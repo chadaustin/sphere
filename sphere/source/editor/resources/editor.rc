@@ -269,6 +269,13 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Export as Image...",         ID_LAYERVIEW_EXPORTASIMAGE
         MENUITEM SEPARATOR
+        POPUP "&Slide"
+        BEGIN
+            MENUITEM "&Up",                         ID_LAYERVIEW_SLIDE_UP
+            MENUITEM "&Right",                      ID_LAYERVIEW_SLIDE_RIGHT
+            MENUITEM "&Down",                       ID_LAYERVIEW_SLIDE_DOWN
+            MENUITEM "&Left",                       ID_LAYERVIEW_SLIDE_LEFT
+        END
         MENUITEM "&Properties...",              ID_LAYERVIEW_PROPERTIES
     END
 END

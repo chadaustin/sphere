@@ -28,6 +28,11 @@ BEGIN_MESSAGE_MAP(CLayerView, CVScrollWindow)
   ON_COMMAND(ID_LAYERVIEW_PROPERTIES,           OnLayerProperties)
   ON_COMMAND(ID_LAYERVIEW_EXPORTASIMAGE,        OnExportLayer)
 
+  ON_COMMAND(ID_LAYERVIEW_SLIDE_UP,             OnLayerSlideUp)
+  ON_COMMAND(ID_LAYERVIEW_SLIDE_RIGHT,          OnLayerSlideRight)
+  ON_COMMAND(ID_LAYERVIEW_SLIDE_DOWN,           OnLayerSlideDown)
+  ON_COMMAND(ID_LAYERVIEW_SLIDE_LEFT,           OnLayerSlideLeft)
+
 END_MESSAGE_MAP()
 
 
@@ -579,6 +584,42 @@ void
 CLayerView::ToggleLockLayersInPlace()
 {
   m_LayersAreLockedInPlace = !m_LayersAreLockedInPlace;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CLayerView::OnLayerSlideUp() {
+  m_Map->GetLayer(m_SelectedLayer).Translate(0, -1);
+  Invalidate();
+  m_Handler->LV_MapChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CLayerView::OnLayerSlideRight() {
+  m_Map->GetLayer(m_SelectedLayer).Translate(1, 0);
+  Invalidate();
+  m_Handler->LV_MapChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CLayerView::OnLayerSlideDown() {
+  m_Map->GetLayer(m_SelectedLayer).Translate(0, 1);
+  Invalidate();
+  m_Handler->LV_MapChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CLayerView::OnLayerSlideLeft() {
+  m_Map->GetLayer(m_SelectedLayer).Translate(-1, 0);
+  Invalidate();
+  m_Handler->LV_MapChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

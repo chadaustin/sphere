@@ -49,7 +49,12 @@ private:
   afx_msg void OnDuplicateLayer();
   afx_msg void OnLayerProperties();
   afx_msg void OnExportLayer();
-  
+
+  afx_msg void OnLayerSlideUp();
+  afx_msg void OnLayerSlideRight();
+  afx_msg void OnLayerSlideDown();
+  afx_msg void OnLayerSlideLeft();  
+
   void Click(int x, int y, bool left);
   void UpdateScrollBar();
 
