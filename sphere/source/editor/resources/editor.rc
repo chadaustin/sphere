@@ -1073,11 +1073,6 @@ BEGIN
     LTEXT           "Upper Right Corner",IDC_STATIC,115,119,62,8
     LTEXT           "Lower Left Corner",IDC_STATIC,15,175,57,8
     LTEXT           "Lower Right Corner",IDC_STATIC,115,175,62,8
-    CONTROL         "Tiled Gradient",IDC_TILED_GRADIENT_BACKGROUND,"Button",
-                    BS_AUTORADIOBUTTON,7,42,60,10
-    CONTROL         "Stretched Gradient Background",
-                    IDC_STRETCHED_GRADIENT_BACKGROUND,"Button",
-                    BS_AUTORADIOBUTTON,7,54,116,10
     EDITTEXT        IDC_EDGEOFFSET_0,60,76,36,15,ES_AUTOHSCROLL | ES_NUMBER
     EDITTEXT        IDC_EDGEOFFSET_1,131,76,36,15,ES_AUTOHSCROLL | ES_NUMBER
     EDITTEXT        IDC_EDGEOFFSET_2,60,95,36,15,ES_AUTOHSCROLL | ES_NUMBER
@@ -1087,6 +1082,12 @@ BEGIN
     LTEXT           "Left",IDC_STATIC,30,81,13,8
     LTEXT           "Right",IDC_STATIC,30,98,18,8
     LTEXT           "Edge Offsets",IDC_STATIC,15,66,42,8
+    CONTROL         "Tiled Gradient Background",
+                    IDC_TILED_GRADIENT_BACKGROUND,"Button",
+                    BS_AUTORADIOBUTTON,7,42,101,10
+    CONTROL         "Stretched Gradient Background",
+                    IDC_STRETCHED_GRADIENT_BACKGROUND,"Button",
+                    BS_AUTORADIOBUTTON,7,52,116,10
 END
 
 IDD_FONT_GRADIENT DIALOG DISCARDABLE  0, 0, 128, 113
