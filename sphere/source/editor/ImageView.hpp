@@ -104,6 +104,8 @@ private:
   afx_msg void OnReplaceAlpha();
   afx_msg void OnFilterBlur();
   afx_msg void OnFilterNoise();
+  afx_msg void OnFilterNegativeImage();
+  afx_msg void OnFilterSolarize();
   afx_msg void OnSetColorAlpha();
   afx_msg void OnScaleAlpha();
 

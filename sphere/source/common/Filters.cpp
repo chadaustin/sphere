@@ -76,7 +76,7 @@ void RotateCW(int width, RGBA* pixels)
     }
   }
 
-  delete[] old_pixels;  
+  delete[] old_pixels;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -94,7 +94,7 @@ void RotateCCW(int width, RGBA* pixels)
     }
   }
 
-  delete[] old_pixels;  
+  delete[] old_pixels;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -179,7 +179,7 @@ void Blur(int width, int height, RGBA* pixels)
 
 #undef Blur_pixel
 
-  delete[] old_pixels;  
+  delete[] old_pixels;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -199,6 +199,44 @@ void Noise(int width, int height, RGBA* pixels)
     pixels[i].red   = red;
     pixels[i].green = green;
     pixels[i].blue  = blue;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void NegativeImage(int width, int height, RGBA* pixels) {
+  int max = 255;
+  int size = width * height;
+
+  for (int i = 0; i < size; i++) {
+		pixels[i].red   = max - pixels[i].red;
+		pixels[i].green = max - pixels[i].green;
+		pixels[i].blue  = max - pixels[i].blue;
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void Solarize(int width, int height, int value, RGBA* pixels) {
+	int max = 255;
+  int lut[256];
+  int i = max;
+  int size = width * height;
+
+	for (int j = 0; j <= max; ++j) {
+    lut[j] = (j > value) ? (i) : j;
+		i--;
+	}
+
+	for (i = 0; i < size; i++) {
+    if (pixels[i].red >= 0 && pixels[i].red <= max)
+      pixels[i].red =   lut[pixels[i].red];
+
+    if (pixels[i].green >= 0 && pixels[i].green <= max)
+      pixels[i].green = lut[pixels[i].green];
+
+    if (pixels[i].blue >= 0 && pixels[i].blue <= max)
+      pixels[i].blue =  lut[pixels[i].blue];
   }
 }
 

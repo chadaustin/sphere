@@ -483,6 +483,10 @@ BEGIN
             MENUITEM "&Blur",                       ID_IMAGEVIEW_FILTER_BLUR
             MENUITEM "&Noise",                      ID_IMAGEVIEW_FILTER_NOISE
 
+            MENUITEM "Ne&gative Image",             ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE
+
+            MENUITEM "&Solarize",                   ID_IMAGEVIEW_FILTER_SOLARIZE
+
         END
         POPUP "&Replace"
         BEGIN
@@ -1121,5 +1125,4 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-
 

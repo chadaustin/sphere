@@ -5,6 +5,7 @@
 #include "../common/Filters.hpp"
 #include "resource.h"
 
+#include "NumberDialog.hpp"
 
 static int s_ImageViewID = 9000;
 
@@ -45,6 +46,8 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
   ON_COMMAND(ID_IMAGEVIEW_REPLACE_ALPHA,       OnReplaceAlpha)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_BLUR,         OnFilterBlur)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_NOISE,        OnFilterNoise)
+  ON_COMMAND(ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE, OnFilterNegativeImage)
+  ON_COMMAND(ID_IMAGEVIEW_FILTER_SOLARIZE,     OnFilterSolarize)
   ON_COMMAND(ID_IMAGEVIEW_SETCOLORALPHA,       OnSetColorAlpha)
   ON_COMMAND(ID_IMAGEVIEW_SCALEALPHA,          OnScaleAlpha)
 
@@ -177,7 +180,7 @@ CImageView::FillRGB()
       tColor.red   = m_Color.red;
       tColor.green = m_Color.green;
       tColor.blue  = m_Color.blue;
-      
+
       m_Image.SetPixel(x, y, tColor);
     }
 
@@ -303,7 +306,7 @@ CImageView::Paste()
     // things have changed
     Invalidate();
     m_Handler->IV_ImageChanged();
-    
+
     return true;
   }
 
@@ -468,7 +471,7 @@ CImageView::Click(bool force_draw)
   if (!force_draw && start.x == end.x && start.y == end.y) {
     return;
   }
-  
+
   m_Image.SetPixel(end.x, end.y, m_Color);
   Invalidate();
   m_Handler->IV_ImageChanged();
@@ -517,7 +520,7 @@ CImageView::FillMe(int x, int y, RGBA colorToReplace)
   // fill left
   if (x > 0)
     if (!memcmp(pImage + y * m_Image.GetWidth() + x - 1, &colorToReplace, sizeof(RGBA)))
-      FillMe(x-1, y, colorToReplace);  
+      FillMe(x-1, y, colorToReplace);
   // fill right
   if (x < m_Image.GetWidth() - 1)
     if (!memcmp(pImage + y * m_Image.GetWidth() + x + 1, &colorToReplace, sizeof(RGBA)))
@@ -540,7 +543,7 @@ CImageView::Line()
     // convert pixel coordinates to image coordinates
     POINT start = ConvertToPixel(m_StartPoint);
     POINT end = ConvertToPixel(m_CurPoint);
- 
+
     // bounds check
     if (!InImage(start) || !InImage(end))
       return;
@@ -567,7 +570,7 @@ CImageView::Rectangle()
     // convert pixel coordinates to image coordinates
     POINT start = ConvertToPixel(m_StartPoint);
     POINT end = ConvertToPixel(m_CurPoint);
- 
+
     // bounds check
     if (!InImage(start) || !InImage(end))
       return;
@@ -594,7 +597,7 @@ CImageView::Circle()
     // convert pixel coordinates to image coordinates
     POINT start = ConvertToPixel(m_StartPoint);
     POINT end = ConvertToPixel(m_CurPoint);
- 
+
     // bounds check
     if (!InImage(start) || !InImage(end))
       return;
@@ -803,7 +806,7 @@ CImageView::OnPaint()
           iy * size + size);
         OffsetRect(&Rect, offsetx, offsety);
         FillRect(dc, &Rect, Brush1);
-       
+
         DeleteObject(Brush1);
         DeleteObject(Brush2);
       }
@@ -816,7 +819,7 @@ CImageView::OnPaint()
   HPEN   white_pen = CreatePen(PS_SOLID, 1, RGB(0xFF, 0xFF, 0xFF));
   HBRUSH old_brush = (HBRUSH)SelectObject(dc, GetStockObject(NULL_BRUSH));
   HPEN   old_pen   = (HPEN)  SelectObject(dc, white_pen);
-  
+
   ::Rectangle(dc, Rect.left, Rect.top, Rect.right, Rect.bottom);
 
   SelectObject(dc, old_pen);
@@ -835,7 +838,7 @@ CImageView::PaintLine(CImage32& pImage)
   // convert pixel coordinates to image coordinates
   POINT start = ConvertToPixel(m_StartPoint);
   POINT end = ConvertToPixel(m_CurPoint);
- 
+
   // bounds check
   if (!InImage(start) || !InImage(end))
     return;
@@ -854,7 +857,7 @@ CImageView::PaintRectangle(CImage32& pImage)
   // convert pixel coordinates to image coordinates
   POINT start = ConvertToPixel(m_StartPoint);
   POINT end = ConvertToPixel(m_CurPoint);
- 
+
   // bounds check
   if (!InImage(start) || !InImage(end))
     return;
@@ -873,7 +876,7 @@ CImageView::PaintCircle(CImage32& pImage)
   // convert pixel coordinates to image coordinates
   POINT start = ConvertToPixel(m_StartPoint);
   POINT end = ConvertToPixel(m_CurPoint);
- 
+
   // bounds check
   if (!InImage(start) || !InImage(end))
     return;
@@ -957,7 +960,7 @@ CImageView::OnRButtonUp(UINT flags, CPoint point)
   if (m_NumUndoImages == 0) {
     EnableMenuItem(submenu, ID_IMAGEVIEW_UNDO, MF_BYCOMMAND | MF_GRAYED);
   }
-  
+
   if (m_Image.GetWidth() != m_Image.GetHeight()) {
     EnableMenuItem(menu, ID_IMAGEVIEW_ROTATE_CW,  MF_BYCOMMAND | MF_GRAYED);
     EnableMenuItem(menu, ID_IMAGEVIEW_ROTATE_CCW, MF_BYCOMMAND | MF_GRAYED);
@@ -993,19 +996,19 @@ CImageView::OnMouseMove(UINT flags, CPoint point)
 
   if (!m_MouseDown)
     return;
-  
+
   switch (m_CurrentTool)
   {
-    case Tool_Pencil: 
-      Click(false); 
+    case Tool_Pencil:
+      Click(false);
       break;
 
-    case Tool_Fill: 
+    case Tool_Fill:
       break;
 
-    case Tool_Line: 
-    case Tool_Rectangle: 
-    case Tool_Circle: 
+    case Tool_Line:
+    case Tool_Rectangle:
+    case Tool_Circle:
       Invalidate();
       break;
   }
@@ -1322,6 +1325,37 @@ CImageView::OnFilterNoise()
 
   Invalidate();
   m_Handler->IV_ImageChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnFilterNegativeImage()
+{
+  AddUndoState();
+
+  NegativeImage(m_Image.GetWidth(), m_Image.GetHeight(), m_Image.GetPixels());
+
+  Invalidate();
+  m_Handler->IV_ImageChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnFilterSolarize()
+{
+  CNumberDialog dialog("Solarize Value", "Value", 128, 0, 255);
+
+  if (dialog.DoModal() == IDOK) {
+		int value = dialog.GetValue();
+	  AddUndoState();
+
+    Solarize(m_Image.GetWidth(), m_Image.GetHeight(), value, m_Image.GetPixels());
+
+    Invalidate();
+    m_Handler->IV_ImageChanged();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
