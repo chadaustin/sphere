@@ -3312,8 +3312,9 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
         if (!ExecuteScript(c.script.c_str(), error)) {
     m_ErrorMessage = "Could not execute queued script\nPerson:" + p.description +
       "\nError:" + error;
-  }
-  break;
+        return false;
+      }
+      break;
     }
 
   // confine the input person within the map if the map is repeating
