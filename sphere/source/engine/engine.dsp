@@ -56,6 +56,10 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
 # ADD LINK32 audiere.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib winmm.lib js32.lib libpng1.lib jpegwrap.lib zlib.lib ws2_32.lib libmng.lib /nologo /subsystem:windows /pdb:none /machine:I386 /opt:nowin98
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PostBuild_Cmds=install_engine.bat
+# End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "engine - Win32 Debug"
 
