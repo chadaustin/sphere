@@ -4601,9 +4601,9 @@ CMapEngine::ProcessInput()
       if (!IsKeyBound(m_Persons[person].key_down)  && new_keys[m_Persons[person].key_down])  dy++;
       if (!IsKeyBound(m_Persons[person].key_left)  && new_keys[m_Persons[person].key_left])  dx--;
 
-      if (GetNumJoysticks() > 0) {
-        dx += __round__(GetJoystickX(0));
-        dy += __round__(GetJoystickY(0));
+      if (m_Persons[person].player_index >= 0 && m_Persons[person].player_index < GetNumJoysticks()) {
+        dx += __round__(GetJoystickX(m_Persons[person].player_index));
+        dy += __round__(GetJoystickY(m_Persons[person].player_index));
       }
 
       if (dy < 0) { moved = true; m_Persons[person].commands.push_back(Person::Command(COMMAND_MOVE_NORTH, true)); }
