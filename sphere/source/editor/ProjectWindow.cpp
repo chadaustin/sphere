@@ -136,6 +136,7 @@ void
 CProjectWindow::Update()
 {
   m_Project->RefreshItems();
+	m_TreeControl.SetRedraw(FALSE);
 
   // store the state of the items                                   
 #define CHECK_EXPANDED(item)                                        \
@@ -222,6 +223,8 @@ CProjectWindow::Update()
   EXPAND_GROUP(m_htiMaps);
 
 #undef EXPAND_GROUP
+
+	m_TreeControl.SetRedraw(TRUE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
