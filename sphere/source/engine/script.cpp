@@ -4623,6 +4623,40 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
+        - returns the person's visible status
+*/
+begin_func(IsPersonVisible, 1)
+  arg_str(name);
+
+  bool visible;
+  if (!This->m_Engine->GetMapEngine()->IsPersonVisible(name, visible)) {
+    This->ReportMapEngineError("IsPersonVisible() failed");
+    return JS_FALSE;
+  }
+
+  return_bool(visible);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+        - sets the person's visible status, true = visible, false = not visible
+        e.g. SetPersonVisible(GetCurrentPerson(), !IsPersonVisible(GetCurrentPerson()));
+*/
+begin_func(SetPersonVisible, 2)
+  arg_str(name);
+  arg_bool(visible);
+
+  if (!This->m_Engine->GetMapEngine()->SetPersonVisible(name, visible)) {
+    This->ReportMapEngineError("SetPersonVisible() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
         - sets 'script' as the thing 'name' does in a certain event
           the five events are
           SCRIPT_ON_CREATE

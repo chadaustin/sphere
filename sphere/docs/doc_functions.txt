@@ -749,6 +749,14 @@ log_object.endBlock()
       GetPersonMask(name)
         - returns the person's current mask
 
+      IsPersonVisible(name)
+        - returns the person's visible status 
+        
+
+      SetPersonVisible(name, visible)
+        - sets the person's visible status, true = visible, false = not visible
+        e.g. SetPersonVisible(GetCurrentPerson(), !IsPersonVisible(GetCurrentPerson()));
+
       GetPersonData(name)
         - gets a data object assiocated with the person 'name'
         There are certain default properties/values filled in by the engine, they are:

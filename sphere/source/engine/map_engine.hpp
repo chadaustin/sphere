@@ -216,6 +216,9 @@ public:
   bool SetPersonAngle(const char* name, double angle);
   bool SetPersonMask(const char* name, RGBA mask);
   bool GetPersonMask(const char* name, RGBA& mask);
+
+  bool IsPersonVisible(const char* person_name, bool& visible);
+  bool SetPersonVisible(const char* person_name, bool visible);
   
   bool GetPersonData(const char* name, std::vector<struct PersonData>& data);
   bool SetPersonData(const char* name, const std::vector<struct PersonData> data);
@@ -340,6 +343,8 @@ private:
 
     bool on_trigger;
     int last_trigger;
+    
+    bool is_visible;
   };
 
   struct Trigger {

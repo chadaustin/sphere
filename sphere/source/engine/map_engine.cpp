@@ -1855,6 +1855,7 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
 {
   p.name = name;
   p.destroy_with_map = destroy_with_map;
+  p.is_visible = true;
 
   for (int script_index = 0; script_index < NUM_PERSON_SCRIPTS; script_index++) {
     p.person_scripts[script_index] = NULL;
@@ -2266,6 +2267,34 @@ CMapEngine::GetPersonDirection(const char* name, std::string& direction)
 
   direction = m_Persons[person].direction;
 //  direction = m_Persons[person].spriteset->GetSpriteset().GetDirectionNum(name);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::IsPersonVisible(const char* person_name, bool& visible)
+{
+  int person = -1;
+  if ( IsInvalidPersonError(person_name, person) ) {
+    return false;
+  }
+
+  visible = m_Persons[person].is_visible;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::SetPersonVisible(const char* person_name, bool visible)
+{
+  int person = -1;
+  if ( IsInvalidPersonError(person_name, person) ) {
+    return false;
+  }
+
+  m_Persons[person].is_visible = visible;
   return true;
 }
 
@@ -4001,7 +4030,7 @@ CMapEngine::RenderEntities(int layer, bool flipped, int offset_x, int offset_y)
 
   // add non-map-specific person entities
   for (unsigned i = 0; i < m_Persons.size(); i++) {
-    if (m_Persons[i].layer == layer) {
+    if (m_Persons[i].layer == layer && m_Persons[i].is_visible) {
 
       Person& p = m_Persons[i];
       const sSpriteset& ss = p.spriteset->GetSpriteset();
