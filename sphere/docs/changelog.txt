@@ -1,4 +1,7 @@
 2003.01.09
+  - make trigger location detection more reliable by checking one
+    extra pixel to the left and one up so people can't slip between
+    two adjacent triggers.
   - fix bug where switching from larger map to smaller map makes
     Sphere think smaller map is bigger than it really is
   - when inserting person entities into a map, put them one more pixel
