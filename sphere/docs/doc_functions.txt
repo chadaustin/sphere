@@ -272,9 +272,6 @@ log_object.endBlock()
   ChangeMap(map)  
     - changes current map
     
-  GetCurrentMap()
-    - Returns the filename of the current map.
-  
   ExitMapEngine()
     - Exits the map engine
 
