@@ -297,6 +297,8 @@ CMapView::SetTileSelection(int width, int height, unsigned int* tiles)
     m_MultiTileHeight = 0;
     m_MultiTileData = NULL;
   }
+
+  Invalidate();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -366,10 +368,22 @@ CMapView::Click(CPoint point)
 #if 1
   if (m_MultiTileWidth && m_MultiTileHeight && m_MultiTileData) {
     int old_tile = m_SelectedTile;
-    for (int ix = tx; ix < tx + m_MultiTileWidth; ix++) {
-      for (int iy = ty; iy < ty + m_MultiTileHeight; iy++) {
-        m_SelectedTile = m_MultiTileData[((iy - ty) * m_MultiTileWidth) + (ix - tx)];
-        map_changed |= SetTile(ix, iy);
+    int num_times_x = 1;
+    int num_times_y = 1;
+
+    switch (m_CurrentTool) {
+      case tool_3x3Tile: num_times_x = 3; num_times_y = 3; break;
+      case tool_5x5Tile: num_times_x = 5; num_times_y = 5; break;
+    }
+
+    for (int i = 0; i < num_times_y; i++) {
+      for (int j = 0; j < num_times_x; j++) {
+        for (int ix = tx; ix < tx + m_MultiTileWidth; ix++) {
+          for (int iy = ty; iy < ty + m_MultiTileHeight; iy++) {
+            m_SelectedTile = m_MultiTileData[((iy - ty) * m_MultiTileWidth) + (ix - tx)];
+            map_changed |= SetTile((j*m_MultiTileWidth)+ix, (i*m_MultiTileHeight)+iy);
+          }
+        }
       }
     }
     m_SelectedTile = old_tile;
@@ -1648,18 +1662,16 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
   }
   else
   {
-    int num_tiles_x = 1;
-    int num_tiles_y = 1;
+    int width;
+    int height;
+    int offset_x;
+    int offset_y;
+    GetRedrawRect(offset_x, offset_y, width, height);
 
-    switch (m_CurrentTool) {
-      case tool_3x3Tile: num_tiles_x = 3; num_tiles_y = 3; break;
-      case tool_5x5Tile: num_tiles_x = 5; num_tiles_y = 5; break;
-    }
-
-    if (tx >= m_CurrentCursorTileX - (num_tiles_x/2) && 
-        ty >= m_CurrentCursorTileY - (num_tiles_y/2) &&
-        tx <= m_CurrentCursorTileX + (num_tiles_x/2) &&
-        ty <= m_CurrentCursorTileY + (num_tiles_y/2) &&
+    if (tx >= m_CurrentCursorTileX - (offset_x/tile_width) && 
+        ty >= m_CurrentCursorTileY - (offset_y/tile_height) &&
+        tx < m_CurrentCursorTileX + (width/tile_width) - (offset_x/tile_width) &&
+        ty < m_CurrentCursorTileY + (height/tile_height) - (offset_x/tile_width) &&
         tx <= GetTotalTilesX() &&
         ty <= GetTotalTilesY())
       {
@@ -2094,6 +2106,43 @@ CMapView::OnLButtonDown(UINT flags, CPoint point)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+CMapView::GetRedrawRect(int& offset_x, int& offset_y, int& width, int& height)
+{
+  const int tile_width  = m_Map->GetTileset().GetTileWidth()  * m_ZoomFactor;
+  const int tile_height = m_Map->GetTileset().GetTileHeight() * m_ZoomFactor;
+
+  int num_tiles_x = 1;
+  int num_tiles_y = 1;
+  offset_x = 0;
+  offset_y = 0;
+
+  switch (m_CurrentTool) {
+    case tool_3x3Tile: num_tiles_x = 3; num_tiles_y = 3; break;
+    case tool_5x5Tile: num_tiles_x = 5; num_tiles_y = 5; break;
+  }
+
+  switch (m_CurrentTool) {
+    case tool_3x3Tile:
+    case tool_5x5Tile:
+     offset_x = ((tile_width  * num_tiles_x)/2);
+     offset_y = ((tile_height * num_tiles_y)/2);
+    break;
+  }
+
+  if (m_MultiTileWidth && m_MultiTileHeight && m_MultiTileData) {
+    num_tiles_x = num_tiles_x * m_MultiTileWidth;
+    num_tiles_y = num_tiles_y * m_MultiTileHeight;
+    offset_x = 0;
+    offset_y = 0;
+  }
+
+  width = num_tiles_x * tile_width;
+  height = num_tiles_y * tile_height;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMapView::OnMouseMove(UINT flags, CPoint point)
 {
@@ -2120,7 +2169,7 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
       case tool_3x3Tile:
       case tool_5x5Tile:
         Click(point);
-        break;
+      break;
 
       case tool_CopyArea:
       case tool_FillRectArea:
@@ -2215,18 +2264,20 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
     case tool_CopyEntity:
     case tool_PasteEntity:
     case tool_MoveEntity: {
-      int num_tiles_x = 1;
-      int num_tiles_y = 1;
-
-      switch (m_CurrentTool) {
-        case tool_3x3Tile: num_tiles_x = 3; num_tiles_y = 3; break;
-        case tool_5x5Tile: num_tiles_x = 5; num_tiles_y = 5; break;
-        default: num_tiles_x = 1; num_tiles_y = 1;
-      }
+      int width;
+      int height;
+      int offset_x;
+      int offset_y;
+      GetRedrawRect(offset_x, offset_y, width, height);
 
       int old_x = (m_CurrentCursorTileX - m_CurrentX) * tile_width;
       int old_y = (m_CurrentCursorTileY - m_CurrentY) * tile_height;
-      RECT old_rect = { old_x - (tile_width * num_tiles_x/2), old_y - (tile_height * num_tiles_y/2), old_x + (tile_width * num_tiles_x), old_y + (tile_height * num_tiles_y)  };
+
+      RECT old_rect = { old_x - offset_x,
+                        old_y - offset_y,
+                        old_x + width,
+                        old_y + height  };
+
       m_RedrawWindow = 1;
       InvalidateRect(&old_rect);
   
@@ -2234,10 +2285,14 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
       m_CurrentCursorTileY = y;
 
       // refresh the new tile(s)
-      int new_y = (y - m_CurrentY) * tile_height;
       int new_x = (x - m_CurrentX) * tile_width;
+      int new_y = (y - m_CurrentY) * tile_height;
 
-      RECT new_rect = { new_x - (tile_width * num_tiles_x/2), new_y - (tile_height * num_tiles_y/2), new_x + (tile_width * num_tiles_x), new_y + (tile_height * num_tiles_y) };
+      RECT new_rect = { new_x - offset_x,
+                        new_y - offset_y,
+                        new_x + width,
+                        new_y + height }; 
+      
       m_RedrawWindow = 1;
       InvalidateRect(&new_rect, true);
     } break;

@@ -126,6 +126,8 @@ static HPEN CreateShadedPen(RGB color1, RGB color2, int alpha)
   return CreatePen(PS_SOLID, 1, RGB(color.red, color.green, color.blue));
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 static void DrawLayerButton(HDC dc, RECT rect, const sLayer& layer, bool pushed)
 {
   // get the menu color

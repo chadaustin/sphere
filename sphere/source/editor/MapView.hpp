@@ -174,6 +174,8 @@ private:
   //UINT m_Timer;
 	//int  m_FrameTick;
 
+  void GetRedrawRect(int& offset_x, int& offset_y, int& width, int& height);
+
   enum SpritesetDrawTypes {
     SDT_ICON,
     SDT_MINI_IMAGE,
