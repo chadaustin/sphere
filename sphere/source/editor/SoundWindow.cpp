@@ -17,6 +17,7 @@ BEGIN_MESSAGE_MAP(CSoundWindow, CDocumentWindow)
   ON_WM_SIZE()
   ON_WM_TIMER()
   ON_WM_VSCROLL()
+  ON_WM_HSCROLL()
 
   ON_COMMAND(ID_SOUND_PLAY, OnSoundPlay)
   ON_COMMAND(ID_SOUND_STOP, OnSoundStop)
@@ -170,13 +171,23 @@ CSoundWindow::OnTimer(UINT timerID)
 afx_msg void
 CSoundWindow::OnVScroll(UINT code, UINT pos, CScrollBar *scroll_bar)
 {
+  if (!scroll_bar) return;
+
   if (scroll_bar->m_hWnd == m_VolumeBar.m_hWnd) {
     //if (!m_VolumeBar.MouseDown)
       m_Sound.SetVolume(255 - m_VolumeBar.GetPos());
   }
-  else if (scroll_bar->m_hWnd == m_PositionBar.m_hWnd) {
-    if (m_Sound.IsSeekable() && 0)
-      m_Sound.SetPosition(m_PositionBar.GetPos());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSoundWindow::OnHScroll(UINT code, UINT pos, CScrollBar *scroll_bar)
+{
+  if (!scroll_bar) return;
+ 
+  if (scroll_bar->m_hWnd == m_PositionBar.m_hWnd) {
+    m_Sound.SetPosition(m_PositionBar.GetPos());
   }
 }
 
