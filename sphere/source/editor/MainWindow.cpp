@@ -1320,7 +1320,7 @@ CMainWindow::OnProjectRunSphere()
   strcpy(szCommandLine, g_SphereDirectory.c_str());
   strcat(szCommandLine, "\\engine.exe -game ");
   strcat(szCommandLine, "\"");
-  strcat(szCommandLine, m_Project.GetGameSubDirectory());
+  strcat(szCommandLine, m_Project.GetDirectory());
   strcat(szCommandLine, "\"");
 
   STARTUPINFO si;
