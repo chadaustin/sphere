@@ -1,5 +1,5 @@
 #include "unix_time.h"
-#include "SDL.h"
+#include "SDL/SDL.h"
 
 /* dword GetTime () {
   time_t current;

@@ -38,16 +38,15 @@ fi)
 
 dnl Checks for libraries.
 
-AM_PATH_SDL(1.2.0)
-AC_CHECK_LIB(z, zlibVersion,,AC_MSG_RESULT(no)
+AC_CHECK_LIB(z, zlibVersion,,
    AC_MSG_ERROR(could not find the z library))
-AC_CHECK_LIB(png, png_access_version_number,,AC_MSG_RESULT(no)
+AC_CHECK_LIB(png, png_access_version_number,,
    AC_MSG_ERROR(could not find the png library))
-AC_CHECK_LIB(jpeg, jpeg_start_compress,,AC_MSG_RESULT(no)
+AC_CHECK_LIB(jpeg, jpeg_start_compress,,
    AC_MSG_ERROR(could not find the jpeg library))
-AC_CHECK_LIB(mng, mng_initialize,,AC_MSG_RESULT(no)
+AC_CHECK_LIB(mng, mng_initialize,,
    AC_MSG_ERROR(could not find the mng library))
-AC_CHECK_LIB(js, JS_PushArguments,,AC_MSG_RESULT(no)
+AC_CHECK_LIB(js, JS_PushArguments,,
    AC_MSG_ERROR(could not find the js library))
 
 dnl Checks for header files.
@@ -63,6 +62,8 @@ AC_CHECK_HEADER(netinet/in.h)
 AC_CHECK_HEADER(sys/socket.h)
 AC_CHECK_HEADER(sys/stat.h)
 AC_CHECK_HEADER(unistd.h)
+AC_CHECK_HEADER(SDL/SDL.h,,
+  AC_MSG_ERROR(could not find SDL headers))
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 

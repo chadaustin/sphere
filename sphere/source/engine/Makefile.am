@@ -15,4 +15,9 @@ smap.cpp \
 sphere.cpp \
 sspriteset.cpp \
 swindowstyle.cpp
-LDADD = unix/libunix.a ../common/libcommon.a ../jpegwrap/libjpegwrap.a
+LDADD = \
+  unix/libunix.a \
+  ../common/libcommon.a \
+  ../jpegwrap/libjpegwrap.a \
+  -lSDL \
+  -lpthread
