@@ -8,7 +8,7 @@
 class CTilesetSelectionDialog : public CDialog
 {
 public:
-  CTilesetSelectionDialog();
+  CTilesetSelectionDialog(const char* tileset);
   ~CTilesetSelectionDialog();
 
   const char* GetTilesetPath() const;

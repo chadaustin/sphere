@@ -29,6 +29,7 @@ CNewMapDialog::CNewMapDialog(int w, int h, const char* tileset)
 : CDialog(IDD_NEW_MAP)
 , m_MapWidth(w)
 , m_MapHeight(h)
+, m_ShouldTilesetBeExternalToMap(false)
 {
   if (tileset != NULL)
     m_Tileset = tileset;
@@ -56,6 +57,13 @@ const char*
 CNewMapDialog::GetTileset() const
 {
   return m_Tileset.c_str();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CNewMapDialog::ShouldTilesetBeExternalToMap() {
+  return m_ShouldTilesetBeExternalToMap;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -151,6 +159,10 @@ CNewMapDialog::OnOK()
   {
     if (MessageBox("Are you sure you want to use an empty tileset?", NULL, MB_YESNO) == IDNO)
       return;
+  } else {
+    if (MessageBox("Store the tileset as part of the map?", NULL, MB_YESNO) == IDNO) {
+      m_ShouldTilesetBeExternalToMap = true;
+    }
   }
 
   m_Tileset   = tileset;

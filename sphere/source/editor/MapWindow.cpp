@@ -193,12 +193,27 @@ CMapWindow::LoadMap(const char* szMap, const char* szTileset)
       return false;
     }
 
+    const char* tileset = NewMapDialog.GetTileset();
+
     // attempt to load the tileset
-    if (strlen(NewMapDialog.GetTileset()) &&
-        m_Map.GetTileset().Load(NewMapDialog.GetTileset()) == false)
+    if (strlen(tileset) && m_Map.GetTileset().Load(tileset) == false)
     {
       MessageBox("Could not load tileset.\nUsing default.");
       m_Map.GetTileset().Create(1);
+    }
+
+    if (NewMapDialog.ShouldTilesetBeExternalToMap()) {
+      unsigned int offset = 0;
+
+      if (strlen(tileset)) {
+        for (int i = 0; i < strlen(tileset); i++) {
+          if (tileset[i] == '\\' || tileset[i] == '/' && i < strlen(tileset) - 1) {
+            offset = i + 1;
+          }
+        }
+      }
+
+      m_Map.SetTilesetFile(tileset + offset);
     }
 
     // set the initial name of the first layer
@@ -210,7 +225,7 @@ CMapWindow::LoadMap(const char* szMap, const char* szTileset)
   // if the tileset has no tiles, ask user to choose a tileset
   if (m_Map.GetTileset().GetNumTiles() == 0)
   {
-    CTilesetSelectionDialog dialog;
+    CTilesetSelectionDialog dialog(m_Map.GetTilesetFile());
     if (dialog.DoModal() == IDCANCEL)
       return false;
 

@@ -684,8 +684,12 @@ sMap::Save(const char* filename, IFileSystem& fs)
   } // end for zones
 
   // save the tileset
-  return m_Tileset.SaveToFile(file.get());
-}
+  if (m_TilesetFile.size() == 0) {
+    return m_Tileset.SaveToFile(file.get());
+  }
+
+  return true;
+} 
 
 ////////////////////////////////////////////////////////////////////////////////
 

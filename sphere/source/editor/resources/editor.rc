@@ -1321,15 +1321,15 @@ BEGIN
     LTEXT           "Name",IDC_STATIC,4,44,20,8
 END
 
-IDD_TILESET_SELECTION DIALOG DISCARDABLE  0, 0, 228, 45
+IDD_TILESET_SELECTION DIALOG DISCARDABLE  0, 0, 229, 58
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Select Tileset"
 FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "Map has no tileset or and invalid tileset associated with it.  Choose one.",
-                    IDC_STATIC,4,4,124,16
-    EDITTEXT        IDC_TILESET,4,28,136,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "...",IDC_TILESET_BROWSE,144,28,12,12
+    LTEXT           "Map has no tileset or an invalid tileset associated with it.  Choose one.      (The tileset should be in the same folder as the map.)",
+                    IDC_STATIC,4,4,124,33
+    EDITTEXT        IDC_TILESET,5,41,136,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_TILESET_BROWSE,145,41,12,12
     DEFPUSHBUTTON   "OK",IDOK,172,4,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,172,24,50,14
 END
@@ -1839,9 +1839,9 @@ BEGIN
     IDD_TILESET_SELECTION, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 221
+        RIGHTMARGIN, 222
         TOPMARGIN, 7
-        BOTTOMMARGIN, 38
+        BOTTOMMARGIN, 51
     END
 
     IDD_MAP_PROPERTIES, DIALOG

@@ -13,10 +13,16 @@ END_MESSAGE_MAP()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-CTilesetSelectionDialog::CTilesetSelectionDialog()
+CTilesetSelectionDialog::CTilesetSelectionDialog(const char* tileset)
 : CDialog(IDD_TILESET_SELECTION)
 , m_pSelectedTileset(NULL)
 {
+  if (tileset) {
+    m_pSelectedTileset = new char[MAX_PATH];
+    if (m_pSelectedTileset) {
+      strcpy(m_pSelectedTileset, tileset);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -31,6 +37,10 @@ CTilesetSelectionDialog::~CTilesetSelectionDialog()
 BOOL
 CTilesetSelectionDialog::OnInitDialog()
 {
+  if (m_pSelectedTileset != NULL) {
+    SetDlgItemText(IDC_TILESET, m_pSelectedTileset);
+  }
+
   return TRUE;
 }
 

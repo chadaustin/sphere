@@ -16,6 +16,8 @@ public:
   int GetMapHeight() const;
   const char* GetTileset() const;
 
+  bool ShouldTilesetBeExternalToMap();
+
 private:
   BOOL OnInitDialog();
   void OnOK();
@@ -30,6 +32,7 @@ private:
   int         m_MapWidth;
   int         m_MapHeight;
   std::string m_Tileset;
+  bool m_ShouldTilesetBeExternalToMap;
 
   DECLARE_MESSAGE_MAP()
 };
