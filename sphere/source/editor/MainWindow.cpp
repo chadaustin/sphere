@@ -142,6 +142,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_HELP_AEGISKNIGHTSSITE,   OnHelpAegisKnightsSite)
   ON_COMMAND(ID_HELP_FLIKSSITE,          OnHelpFliksSite)
   ON_COMMAND(ID_HELP_LOCALDOCUMENTATION, OnHelpLocalDocumentation)
+  ON_COMMAND(ID_HELP_LOCAL_DOC_FUNCTIONS, OnHelpLocalDocFunctions)
   ON_COMMAND(ID_HELP_ABOUT,              OnHelpAbout)
 
   ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnNeedText)
@@ -2201,6 +2202,13 @@ CMainWindow::OnHelpLocalDocumentation()
   if ((int)ShellExecute(m_hWnd, "open", docdir.c_str(), 0, 0, SW_SHOW) <= 32) {
     MessageBox("Could not open documentation directory.", "Local Documentation");
   }
+}
+
+afx_msg void
+CMainWindow::OnHelpLocalDocFunctions()
+{
+  std::string filestr = GetSphereDirectory() + "\\docs\\doc_functions.txt";
+  OpenDocumentWindow(GT_SCRIPTS, filestr.c_str());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

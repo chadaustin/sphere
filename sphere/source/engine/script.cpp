@@ -1625,6 +1625,9 @@ end_func()
     - fills the whole screen with the color specified. Note that the color
       passed must have an alpha that is less than 255. Otherwise, it'll 
       just make the screen solidly that color.
+      ApplyColorMask tints the screen's current state
+      (meaning you'll have to call it every frame
+       if you want the effect to be permanent)
 */
 begin_func(ApplyColorMask, 1)
   arg_color(c);

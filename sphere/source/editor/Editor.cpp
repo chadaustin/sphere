@@ -14,6 +14,8 @@ static CMainWindow* g_MainWindow = NULL;
 
 static std::string s_SphereDirectory;
 
+////////////////////////////////////////////////////////////////////////////////
+
 int GetEnvironmentVariableStr(const char* name, char* value, int max_len)
 {
 #ifdef WIN32
@@ -22,6 +24,8 @@ int GetEnvironmentVariableStr(const char* name, char* value, int max_len)
   return 0;
 #endif
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 std::string GetSphereDirectory() {
 
@@ -33,6 +37,8 @@ std::string GetSphereDirectory() {
   return s_SphereDirectory;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 static CStatusBar* s_StatusBar = NULL;
 
 #ifdef USE_IRC
@@ -42,6 +48,8 @@ static CStatusBar* s_StatusBar = NULL;
 static CIRCWindow* s_LogWindow = NULL;
 */
 #endif
+
+////////////////////////////////////////////////////////////////////////////////
 
 // the repository of all registred instances
 // beware of the mutex!
