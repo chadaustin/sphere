@@ -55,6 +55,8 @@
 const int PALETTE_COMMAND = 17133;
 const int NUM_PALETTES    = 100;
 
+#include "wx/toolbar.h"
+
 
 const char szBarState[] = "SDE_BarState";
 
@@ -210,6 +212,31 @@ wMainWindow::wMainWindow(
 
   SetMenuBar(m_MenuBar);
 
+  // create the main toolbar
+  m_ToolBar.Create(this, wxNO_BORDER|wxHORIZONTAL|wxTB_FLAT);
+
+  if (1) {
+    int current_x = 5;
+    int width = 16;
+
+    wxBitmap* icon = new wxBitmap( sph_game_xpm );
+    if (icon) {
+      m_ToolBar.AddTool(wID_FILE_OPEN, *icon, wxNullBitmap, FALSE, current_x, -1, (wxObject *) NULL, "Open file");
+      delete icon; icon = NULL; current_x += width + 5;
+    }
+
+    icon = new wxBitmap( sph_game_xpm );
+    if (icon) {
+      m_ToolBar.AddTool(wID_FILE_SAVE, *icon, wxNullBitmap, FALSE, current_x, -1, (wxObject *) NULL, "Save file");
+      delete icon; icon = NULL; current_x += width + 5;
+    }
+
+
+    m_ToolBar.Realize();
+  }
+
+  SetToolBar(&m_ToolBar);
+
 
   // create the statusbar
   m_StatusBar.Create(this, -1);
@@ -220,87 +247,6 @@ wMainWindow::wMainWindow(
   ::SetStatusBar(&m_StatusBar);
 
 }
-
-////////////////////////////////////////////////////////////////////////////////
-#if 0
-
-todo:
-
-bool
-wMainWindow::Create()
-{
-/*
-  // create the window
-  CMDIFrameWnd::Create(
-    AfxRegisterWndClass(0, NULL, NULL, LoadIcon(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDI_SDE))),
-    "Sphere Development Environment",
-    WS_OVERLAPPEDWINDOW,
-    rectDefault,
-    NULL,
-    MAKEINTRESOURCE(IDR_MAIN));
-*/
-
-
-/*
-  LoadAccelTable(MAKEINTRESOURCE(IDR_ACCELERATOR));
-*/
-
-/*
-  // create the toolbar
-  m_ToolBar.CreateEx(
-    this,
-    TBSTYLE_FLAT,
-    WS_CHILD | WS_VISIBLE | CBRS_SIZE_DYNAMIC | CBRS_TOP | CBRS_GRIPPER | CBRS_FLYBY | CBRS_TOOLTIPS);
-  m_ToolBar.SetWindowText("Main");
-  m_ToolBar.LoadToolBar(IDR_TOOLBAR);
-  m_ToolBar.EnableDocking(CBRS_ALIGN_ANY);
-*/
-
-/*
-  // status bar indicators
-  static const UINT indicators[] =
-  {
-    ID_SEPARATOR,           // status line indicator
-    ID_INDICATOR_CAPS,
-    ID_INDICATOR_NUM,
-  };
-
-  // create the statusbar
-  m_StatusBar.Create(this);
-  m_StatusBar.SetIndicators(indicators, sizeof(indicators)/sizeof(UINT));
-  m_StatusBar.SetBarStyle(m_StatusBar.GetBarStyle() | CBRS_FLYBY | CBRS_TOOLTIPS);
-
-  SetStatusBar(&m_StatusBar);
-*/
-  CreateStatusBar(3);
-
-
-  // enable docking
-  EnableDocking(CBRS_ALIGN_ANY);
-
-  DockControlBar(&m_ToolBar, AFX_IDW_DOCKBAR_TOP);
-
-  // load the command bar state
-  LoadBarState(szBarState);
-
-  // enable drag and drop
-  DragAcceptFiles(true);
-
-  // show the window in the initial position
-  WINDOWPLACEMENT wp = Configuration::Get(KEY_STARTUP);
-  if (wp.length != 0) {
-    SetWindowPlacement(&wp);
-  } else {
-    ShowWindow(SW_SHOW);
-  }
-
-  UpdateWindow();
-  UpdateMenu();
-  UpdatePaletteMenu();
-
-  return TRUE;
-}
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -348,9 +348,9 @@ wMapWindow::OnSize(wxSizeEvent& event)
       MapViewRect.height - TAB_HEIGHT);
 
     m_TilesetEditView->SetSize(0, TAB_HEIGHT, cx, cy - TAB_HEIGHT);
-  }
 
-  wSaveableDocumentWindow::OnSize(event);
+    wSaveableDocumentWindow::OnSize(event);
+  }
 }
 
 /*todo:

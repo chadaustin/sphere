@@ -176,10 +176,17 @@ CImageWindow::OnSize(UINT type, int cx, int cy)
 
   if (m_Created)
   {
+    /*
     m_ImageView.MoveWindow(0, 0, cx - palette_width - alpha_width, cy, FALSE);
     m_PaletteView.MoveWindow(cx - palette_width - alpha_width, 0, palette_width, cy - color_height, FALSE);
     m_ColorView.MoveWindow(cx - palette_width - alpha_width, cy - color_height, palette_width, color_height, FALSE);
     m_AlphaView.MoveWindow(cx - alpha_width, 0, alpha_width, cy, FALSE);
+    */
+
+    m_ImageView.MoveWindow(palette_width + alpha_width, 0, cx - palette_width - alpha_width, cy, FALSE);
+    m_PaletteView.MoveWindow(0, 0, palette_width, cy - color_height, FALSE);
+    m_ColorView.MoveWindow(0, cy - color_height, palette_width, color_height, FALSE);
+    m_AlphaView.MoveWindow(palette_width, 0, alpha_width, cy, FALSE);
 
     m_ImageView.Invalidate();
     m_PaletteView.Invalidate();

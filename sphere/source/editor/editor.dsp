@@ -44,7 +44,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /G5 /MD /W3 /GX /O1 /I "../../third-party-msvc/include" /D "NDEBUG" /D "STRIC" /D "_AFXDLL" /D "INCLUDE_DEPRECATED_FEATURES" /D "XP_PC" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "VC_EXTRALEAN" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /D "NOMINMAX" /D "TABBED_WINDOW_LIST" /D "USE_IRC" /D "I_SUCK" /FAs /FR /FD /c
+# ADD CPP /nologo /G5 /MD /W3 /GX /O1 /I "../../third-party-msvc/include" /D "NDEBUG" /D "STRIC" /D "_AFXDLL" /D "INCLUDE_DEPRECATED_FEATURES" /D "XP_PC" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "VC_EXTRALEAN" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /D "NOMINMAX" /D "TABBED_WINDOW_LIST" /D "USE_IRC" /D "I_SUCK" /D "SCROLLABLE_IMAGE_WINDOW" /FAs /FR /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32

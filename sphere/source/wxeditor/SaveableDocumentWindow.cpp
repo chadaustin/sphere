@@ -136,7 +136,7 @@ wSaveableDocumentWindow::UpdateWindowCaption()
   if (!IsWindow(m_hWnd))
     return;
 */
-  char* text;
+  char* text = NULL;
   if (m_Saved)
   {
     text = new char[strlen(GetCaption()) + 3];

@@ -624,10 +624,6 @@ SOURCE=.\ZoneEditDialog.cpp
 SOURCE=.\ZoneEditDialog.hpp
 # End Source File
 # End Group
-# Begin Group "Resources"
-
-# PROP Default_Filter ""
-# End Group
 # Begin Group "Sphere Common"
 
 # PROP Default_Filter ""

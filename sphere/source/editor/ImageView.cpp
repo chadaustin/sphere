@@ -218,10 +218,10 @@ CImageView::UpdateScrollBars()
 int
 CImageView::GetPageSizeX()
 {
+  /*
   if (m_Image.GetWidth() > 0) {
     RECT ClientRect;
     GetClientRect(&ClientRect);
-//    return ClientRect.right  / (m_Image.GetWidth() * 1);
     // calculate size of pixel squares
     int width = m_Image.GetWidth();
     int height = m_Image.GetHeight();
@@ -233,6 +233,7 @@ CImageView::GetPageSizeX()
 
     return ClientRect.right  / (m_Image.GetWidth() * size);
   }
+  */
 
   return 0;
 }
@@ -246,10 +247,11 @@ CImageView::GetPageSizeX()
 int
 CImageView::GetPageSizeY()
 {
+  /*
   if (m_Image.GetHeight() > 0) {
     RECT ClientRect;
     GetClientRect(&ClientRect);
-//    return ClientRect.bottom  / (m_Image.GetHeight() * 1);
+
     // calculate size of pixel squares
     int width = m_Image.GetWidth();
     int height = m_Image.GetHeight();
@@ -261,6 +263,7 @@ CImageView::GetPageSizeY()
 
     return ClientRect.bottom / (m_Image.GetHeight() * size);
   }
+  */
 
   return 0;
 }
@@ -1460,14 +1463,13 @@ CImageView::OnPaint()
   RECT Rect;
 
 #ifdef SCROLLABLE_IMAGE_WINDOW
-  const int SCROLLBAR_WIDTH  = GetSystemMetrics(SM_CXVSCROLL);
-  const int SCROLLBAR_HEIGHT = GetSystemMetrics(SM_CXHSCROLL);
+  const int SCROLLBAR_WIDTH  = GetSystemMetrics(SM_CXHSCROLL);
+  const int SCROLLBAR_HEIGHT = GetSystemMetrics(SM_CXVSCROLL);
 #else
   const int SCROLLBAR_WIDTH  = 0;
   const int SCROLLBAR_HEIGHT = 0;
 #endif
 
-#if 1
   // top
   SetRect(&Rect, 0, 0, ClientRect.right, offsety - 1);
   FillRect(dc, &Rect, black_brush);
@@ -1483,10 +1485,6 @@ CImageView::OnPaint()
   // right
   SetRect(&Rect, offsetx + totalx + 1, offsety - 1, ClientRect.right + SCROLLBAR_WIDTH, offsety + totaly + 1);
   FillRect(dc, &Rect, black_brush);
-#else
-  //SetRect(&Rect, 0, 0, ClientRect.right + SCROLLBAR_WIDTH, ClientRect.bottom + SCROLLBAR_HEIGHT);
-  //FillRect(dc, &Rect, black_brush);
-#endif
 
   // assume a complete redraw
   if (m_RedrawWidth == 0 && m_RedrawHeight == 0) {
