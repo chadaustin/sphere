@@ -1,4 +1,4 @@
-Sphere v.90
+Sphere v.97
 Chad Austin
 2001.02.07
 
@@ -10,7 +10,7 @@ in the style of Final Fantasy and Phantasy Star.
 
 
 System Requirements:
-- Pentium 100
+- Pentium 200
 - Video card with 2MB VRAM
 - Sound card for audio
 - Windows 95, 98, NT4, 2000, or later
@@ -26,8 +26,7 @@ Features:
 - 32-bit color and 256 levels of translucency
 - 8-directional movement
 - animated and reflective tiles
-- FMOD digital audio subsystem (MP3, MOD, S3M, XM, IT, MIDI, WAV)
-- four types of entities (persons, warps, triggers, doodads)
+- plays Ogg Vorbis, MOD, S3M, XM, IT, uncompressed WAV
 - graphical editing environment
 
 
@@ -67,10 +66,12 @@ Credits
 
 Code -
   Chad Austin (AegisKnight)
-  Darklich
+  Theo Reed (rizen)
+  Brandon Mechtley (malis)
+  Jacky Chong (Darklich)
 
 Intro Screen -
-  delmoi
+  Chad Okere (delmoi)
 
 
 
