@@ -17,6 +17,10 @@ public:
   ~CEntityListDialog();
 
 private:
+  afx_msg void OnSize(UINT type, int cx, int cy);
+  afx_msg void OnSizing(UINT side, LPRECT rect);
+
+private:
   sMap* m_Map;
   std::vector<sEntity*> m_Entities;
 

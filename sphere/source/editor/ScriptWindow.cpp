@@ -1575,7 +1575,25 @@ afx_msg void
 CScriptWindow::OnScriptToolsSort()
 {
   int selection_start = SendEditor(SCI_LINEFROMPOSITION, SendEditor(SCI_GETSELECTIONSTART));
-  int selection_end   = SendEditor(SCI_LINEFROMPOSITION, SendEditor(SCI_GETSELECTIONEND));
+  
+  int selection_end   = SendEditor(SCI_LINEFROMPOSITION, 
+                          SendEditor(SCI_GETLINEENDPOSITION,
+                            SendEditor(SCI_LINEFROMPOSITION, SendEditor(SCI_GETSELECTIONEND))
+                          )
+                        );
+
+  if (selection_start - selection_end == 0) {
+    GetStatusBar()->SetWindowText("Nothing to sort...");
+    return;
+  }
+
+  bool delete_duplicates = false;
+  bool sort_lines = true;
+
+  if (!delete_duplicates && !sort_lines) {
+    GetStatusBar()->SetWindowText("No reason to sort...");
+    return;
+  }
 
   std::vector<ScintillaLine*> lines;
 
@@ -1619,6 +1637,8 @@ CScriptWindow::OnScriptToolsSort()
 
   GetStatusBar()->SetWindowText("Removing old lines...");
 
+  SendEditor(SCI_BEGINUNDOACTION);
+
   // remove the old selection
   SendEditor(SCI_SETTARGETSTART, SendEditor(SCI_POSITIONFROMLINE, selection_start));
   SendEditor(SCI_SETTARGETEND,   SendEditor(SCI_POSITIONFROMLINE, selection_end));
@@ -1641,19 +1661,35 @@ CScriptWindow::OnScriptToolsSort()
 
   GetStatusBar()->SetWindowText("Sorting lines...");
 
-  std::sort(line_indexes.begin(), line_indexes.end(), ScintillaLineComparer(lines));
+  ScintillaLineComparer line_comparer(lines);
+  std::sort(line_indexes.begin(), line_indexes.end(), line_comparer);
+
+  GetStatusBar()->SetWindowText("Lines sorted...");
 
   if (1) {
     // SendEditor(SCI_ADDTEXT, strlen("after sort...\n"), (LPARAM)"after sort...\n");
     for (unsigned int i = 0; i < lines.size() && i < line_indexes.size(); i++) {
-      unsigned int line_index = line_indexes[i];
+      unsigned int line_index = sort_lines ? line_indexes[i] : i;
+
       if (lines[line_index]->data) {
+
+        if (i > 0 && delete_duplicates) {
+          unsigned int last_index = sort_lines ? line_indexes[i - 1] : i - 1;
+
+          if (lines[line_index]->size == lines[last_index]->size) {
+            if (memcmp(lines[line_index]->data,
+                       lines[last_index]->data,
+                       lines[line_index]->size) == 0)
+              continue;
+          }
+        }
+
         SendEditor(SCI_ADDTEXT, lines[line_index]->size, (LPARAM)lines[line_index]->data);
       }
     }
   }
 
-  GetStatusBar()->SetWindowText("Lines sorted...");
+  SendEditor(SCI_ENDUNDOACTION);
 
   for (unsigned int i = 0; i < lines.size(); i++) {
     if (lines[i]->data) {

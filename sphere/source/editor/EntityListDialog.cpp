@@ -59,6 +59,9 @@ BEGIN_MESSAGE_MAP(CEntityListDialog, CDialog)
   ON_COMMAND(IDC_ENTITY_DELETE_ENTITIES, OnDeleteEntities)
   ON_CBN_SELCHANGE(IDC_ENTITY_LISTBOX,   OnEntityChanged)
 
+  ON_WM_SIZE()
+  ON_WM_SIZING()
+
 END_MESSAGE_MAP()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -80,6 +83,87 @@ CEntityListDialog::~CEntityListDialog()
 	}
 
   m_Entities.clear();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CEntityListDialog::OnSizing(UINT side, LPRECT rect)
+{
+  if (!rect)
+    return;
+
+  if (rect->right - rect->left < 400) {
+    rect->right = rect->left + 400;
+  }
+
+  if (rect->bottom - rect->top < 200) {
+    rect->bottom = rect->top + 200;
+  }
+
+
+  CDialog::OnSizing(side, rect);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CEntityListDialog::OnSize(UINT type, int cx, int cy)
+{
+  int button_width = 80;
+  int button_height = 25;
+  int button_width_space = 10;
+  int button_height_space = 5;
+
+  if (GetDlgItem(IDC_ENTITY_NEW_ENTITY)) {
+    RECT rect;
+    GetDlgItem(IDC_ENTITY_NEW_ENTITY)->GetWindowRect(&rect);
+    button_width  = rect.right - rect.left;
+    button_height = rect.bottom - rect.top;
+  }
+
+  int button_x = 40;
+  int button_y = cy - (button_height * 3);
+
+  if (GetDlgItem(IDC_ENTITY_LISTBOX)) {
+    int listbox_height = cy - (button_height * 3) - button_height;
+    GetDlgItem(IDC_ENTITY_LISTBOX)->MoveWindow(20, 20, cx - 40, listbox_height, TRUE);
+  }
+
+  button_y += button_height_space;
+
+  if (GetDlgItem(IDC_ENTITY_NEW_ENTITY)) {
+    int x = button_x + (0 * button_width) + (0 * button_width_space);
+    GetDlgItem(IDC_ENTITY_NEW_ENTITY)->MoveWindow(x, button_y, button_width, button_height, TRUE);
+  }
+  
+  if (GetDlgItem(IDC_ENTITY_EDIT_ENTITY)) {
+    int x = button_x + (1 * button_width) + (1 * button_width_space);
+    GetDlgItem(IDC_ENTITY_EDIT_ENTITY)->MoveWindow(x, button_y, button_width, button_height, TRUE);
+  }
+  
+  if (GetDlgItem(IDC_ENTITY_MOVE_ENTITIES)) {
+    int x = button_x + (2 * button_width) + (2 * button_width_space);
+    GetDlgItem(IDC_ENTITY_MOVE_ENTITIES)->MoveWindow(x, button_y, button_width, button_height, TRUE);
+  }
+
+  if (GetDlgItem(IDC_ENTITY_DELETE_ENTITIES)) {
+    int x = button_x + (3 * button_width) + (3 * button_width_space);
+    GetDlgItem(IDC_ENTITY_DELETE_ENTITIES)->MoveWindow(x, button_y, button_width, button_height, TRUE);
+  }
+
+  button_y += button_height + button_height_space;
+
+  if (GetDlgItem(IDOK)) {
+    int x = button_x + (0 * button_width) + (0 * button_width_space);
+    GetDlgItem(IDOK)->MoveWindow(x, button_y, button_width, button_height, TRUE);
+  }
+  if (GetDlgItem(IDCANCEL)) {
+    int x = button_x + (1 * button_width) + (1 * button_width_space);
+    GetDlgItem(IDCANCEL)->MoveWindow(x, button_y, button_width, button_height, TRUE);
+  }
+
+  CDialog::OnSize(type, cx, cy);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
