@@ -216,6 +216,7 @@ CMainWindow::Create()
   // enable drag and drop
   DragAcceptFiles(true);
 
+
   // show the window in the initial position
   WINDOWPLACEMENT wp = Configuration::Get(KEY_STARTUP);
   if (wp.length != 0) {

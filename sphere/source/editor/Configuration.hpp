@@ -89,13 +89,14 @@ namespace Configuration {
     template<typename T>
     void Set(T key, T::type val)
     {
-        BYTE* data = (BYTE*)ToRaw(val);
         std::string hex;
+        BYTE* data = (BYTE*)ToRaw(val);
         for (int i = 0; i < GetTypeSize<T::type>(T::type()); i++) {
             hex += ToHex(data[i] >> 4);
             hex += ToHex(data[i] & 0x0F);
         }
-
+        delete[] data;
+ 
         WritePrivateProfileString("editor", T::keyname, hex.c_str(), ConfigurationFile.c_str());
     }
     

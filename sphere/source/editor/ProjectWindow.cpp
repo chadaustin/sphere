@@ -302,9 +302,6 @@ CProjectWindow::OnProjectItemOpen()
 afx_msg void
 CProjectWindow::OnProjectItemDelete()
 {
-  if (MessageBox("This will permanently delete the file.\nAre you sure you want to continue?", "Delete Project Item", MB_YESNO) == IDNO)
-    return;
-
   HTREEITEM item = m_TreeControl.GetSelectedItem();
   if (item == NULL)
     return;
@@ -334,6 +331,10 @@ CProjectWindow::OnProjectItemDelete()
   strcat(filename, m_Project->GetGroupDirectory(GroupType));
   strcat(filename, "\\");
   strcat(filename, m_TreeControl.GetItemText(item));
+
+  std::string message = "This will permanently delete the file \"" + std::string(filename) + "\".\nAre you sure you want to continue?";
+  if (MessageBox(message.c_str(), "Delete Project Item", MB_YESNO) == IDNO)
+    return;
 
   if (!DeleteFile(filename))
     MessageBox("Error: Could not delete file");

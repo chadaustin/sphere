@@ -579,6 +579,7 @@ void
 CMapWindow::TV_TilesetChanged()
 {
   m_MapView.Invalidate();
+  m_MapView.TilesetChanged();
   m_TilesetEditView.TilesetChanged();
   SetModified(true);
 }

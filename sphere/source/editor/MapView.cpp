@@ -66,7 +66,7 @@ CMapView::CMapView()
 , m_RedrawPreviewLine(0)
 
 {
-  m_SpritesetDrawType = Configuration::Get(KEY_SPRITESET_DRAWTYPE);
+  m_SpritesetDrawType    = Configuration::Get(KEY_MAP_SPRITESET_DRAWTYPE);  
   s_MapAreaClipboardFormat = RegisterClipboardFormat("MapAreaSelection32");
   s_MapEntityClipboardFormat = RegisterClipboardFormat("MapEntitySelection32");
 }
@@ -79,7 +79,7 @@ CMapView::~CMapView()
   delete m_BlitTile;
   DestroyWindow();
   m_TileObstructions.clear();
-  Configuration::Set(KEY_SPRITESET_DRAWTYPE, m_SpritesetDrawType);
+  Configuration::Set(KEY_MAP_SPRITESET_DRAWTYPE, m_SpritesetDrawType);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -108,6 +108,7 @@ CMapView::Create(CDocumentWindow* owner, IMapViewHandler* handler, CWnd* parent,
     s_MapViewID++);
 
   UpdateScrollBars();
+  UpdateObstructionTiles();
 
   return retval;
 }
@@ -132,6 +133,7 @@ CMapView::SetZoomFactor(int factor)
     m_Map->GetTileset().GetTileWidth()  * factor,
     m_Map->GetTileset().GetTileHeight() * factor,
     32);
+
   m_RedrawWindow = 1;
   Invalidate();
   UpdateScrollBars();
@@ -901,6 +903,7 @@ CMapView::FindSpritesetImageIconsIndex(int person_index, std::string filename)
     sSpriteset s;
     std::string path1 = std::string("../spritesets/" + filename);
     std::string path2 = std::string("spritesets/" + filename);
+    // std::string path3 = std::string(SphereDirectory + "/" + ProjectDirectory "/spritesets/");
     m_SpritesetImageIcons[sprite_index].filename = filename;
 
     bool loaded = false;
@@ -1162,19 +1165,8 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
             entity_width = m_SpritesetImageIcons[sprite_index].image.GetWidth();
             entity_height = m_SpritesetImageIcons[sprite_index].image.GetHeight();
 
-            entity_x = entity.x + base_x1 + (base_width/2);
-            entity_y = entity.y + base_y1 - (base_height/2);
-
-/*
-            if (person->spriteset == "tree_04.rss") {
-              int x;
-              int y;
-              x = y;
-              y = x;
-              x = x;
-              y = y;
-            }
-*/              
+            entity_x = entity.x - entity_width/2 + base_width/2;
+            entity_y = entity.y - entity_height/2 + base_height/2;
 
           }
         }
