@@ -71,7 +71,7 @@ SFONT::DrawString(int x, int y, const char* text, RGBA mask, CImage32* surface) 
   int range = m_Font.GetNumCharacters();
 
   while (*text) {
-    char c = *text;
+    unsigned char c = *text;
     if (c < 0 || c >= range) c = 0;
 
     const sFontCharacter& character = m_Font.GetCharacter(c);
@@ -117,7 +117,7 @@ SFONT::DrawZoomedString(int x, int y, double scale, const char* text, RGBA mask,
 
   while (*text) {
     unsigned char c = *text;
-    if (c < 0 || c >= range) c = 0;
+    if (c < 0 || c >= range) { text++; continue; }
     
     const sFontCharacter& character = m_Font.GetCharacter(c);
     Local::ScaleBlit(m_Images[c], int(cx), y, scale, mask, surface, character);
@@ -158,7 +158,7 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
   // parse the text into words
   while (*p) {
 
-    if (*p < 0 || *p >= range) { p++; continue; }
+    if ((unsigned char) *p < 0 || (unsigned char) *p >= range) { p++; continue; }
 
     if (*p == ' ') {          // if it's a space, draw the word
       
@@ -250,7 +250,7 @@ SFONT::GetStringWidth(const char* string) const
 
   while (*string)
   {
-    if (*string < 0 || *string >= range) { string++; continue; }
+    if ((unsigned char) *string < 0 || (unsigned char) *string >= range) { string++; continue; }
     width += m_Font.GetCharacter(*string).GetWidth();
     string++;
   }

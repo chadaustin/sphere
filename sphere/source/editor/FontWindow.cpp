@@ -52,8 +52,8 @@ CFontWindow::CFontWindow(const char* font)
       SetModified(false);
     } else {
       AfxGetApp()->m_pMainWnd->MessageBox("Could not load font, creating new");
-      m_Font.SetNumCharacters(256);
-      for (int i = 0; i < 256; i++) {
+      m_Font.SetNumCharacters(255);
+      for (int i = 0; i < 255; i++) {
         m_Font.GetCharacter(i).Resize(DEFAULT_CHARACTER_WIDTH, DEFAULT_CHARACTER_HEIGHT);
       }
 
@@ -62,8 +62,8 @@ CFontWindow::CFontWindow(const char* font)
     }
   } else {
 
-    m_Font.SetNumCharacters(256);
-    for (int i = 0; i < 256; i++) {
+    m_Font.SetNumCharacters(255);
+    for (int i = 0; i < 255; i++) {
       m_Font.GetCharacter(i).Resize(DEFAULT_CHARACTER_WIDTH, DEFAULT_CHARACTER_HEIGHT);
     }
 
@@ -123,7 +123,7 @@ CFontWindow::UpdateWindowTitle()
 
   char append[520];
   sprintf(append, " - %c - %d/%d",
-    (char)m_CurrentCharacter,
+    (unsigned char)m_CurrentCharacter,
     m_CurrentCharacter,
     m_Font.GetNumCharacters());
   strcat(title, append);
