@@ -15,6 +15,7 @@ sLayer::sLayer()
 , m_YScrolling(0)
 
 , m_Visible(true)
+, m_Reflective(false)
 {
 }
 
@@ -32,6 +33,7 @@ sLayer::sLayer(int width, int height)
 , m_YScrolling(0)
 
 , m_Visible(true)
+, m_Reflective(false)
 {
   for (int i = 0; i < width * height; i++)
     m_Tiles[i] = 0;
