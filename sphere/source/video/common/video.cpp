@@ -9,15 +9,6 @@ int       ScreenWidth;
 int       ScreenHeight;
 RECT      ClippingRectangle;
 
-#ifdef USE_ALPHA_TABLE
-unsigned char alpha_new[256][256]={
-#include "../../common/alpha_new.table"
-};
-unsigned char alpha_old[256][256]={
-#include "../../common/alpha_old.table"
-};
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 
 extern "C" BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved)

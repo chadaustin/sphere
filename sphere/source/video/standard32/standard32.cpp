@@ -2,13 +2,22 @@
 #include <windows.h>
 #include <ddraw.h>
 
-//#define USE_ALPHA_TABLE
+#define USE_ALPHA_TABLE
 
 #include "../../common/rgb.hpp"
 #include "../../common/primitives.hpp"
 #include "../common/video.hpp"
 #include "../common/win32x.hpp"
 #include "resource.h"
+
+#ifdef USE_ALPHA_TABLE
+unsigned char alpha_new[256][256]={
+#include "../../common/alpha_new.table"
+};
+unsigned char alpha_old[256][256]={
+#include "../../common/alpha_old.table"
+};
+#endif
 
 /////////////////////////////////////////////////
 
