@@ -7,6 +7,7 @@ EvaluateSystemScript("layers.js");
 
 This is so you can use the following functions:
 
+GetLayerIndex(layer_name)
 ConvertLayer(layer_index, tile_index, dont_remember_details)
 IsLayerConverted(layer_index)
 ToggleLayer(layer_index, tile_index)
@@ -15,7 +16,7 @@ ClearLayerTileDetails(layer_index)
 
 Here's what you do on the map now:
 
-You add a layer to the map and call it "roof layer"
+You add a layer to the map and call it "roof_layer"
 You draw roof tiles on this layer.
 
 Now also add a blank see through tile somewhere in your tileset.
@@ -23,6 +24,6 @@ I normally have this tile as the second tile in the tileset.
 
 Where you have your door, add the trigger:
 
-ToggleLayer(2, 1);
+ToggleLayer(GetLayerIndex("roof_layer"), 1);
 
-(Providing that the roof is on the third layer and the blank tile is the second tile in the tileset, the roof will disappear.)
+(Providing that you have a layer called "roof_layer" and the blank tile is the second tile in the tileset, the roof will disappear, or when walking back through the door, reappear.)

@@ -1,5 +1,20 @@
 var gLayerTileDetails = new Array();
 
+/** 
+  returns the index of the layer 'layer_name' 
+  returns -1 if the layer doesn't exist 
+*/ 
+function GetLayerIndex(layer_name) { 
+  var index = -1; 
+  for (var i = 0; i < GetNumLayers(); i++) { 
+    if (GetLayerName(i) == layer_name) { 
+      index = i; 
+      break; 
+    } 
+  } 
+  return index; 
+} 
+
 function ConvertLayer(layer_index, tile_index, dont_remember_details) {
   // init
   if (!dont_remember_details) {
@@ -19,7 +34,6 @@ function ConvertLayer(layer_index, tile_index, dont_remember_details) {
       SetTile(j, k, layer_index, tile_index);
     }
   }
-  
 }
 
 function ClearLayerTileDetails(layer_index) {
