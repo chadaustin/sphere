@@ -61,7 +61,8 @@ CSpritesetWindow::CSpritesetWindow(const char* filename)
 , m_CurrentDirection(0)
 , m_CurrentFrame(0)
 , m_Created(false)
-, m_ImagesPalette()
+, m_ImagesPalette(NULL)
+, m_AnimationPalette(NULL)
 {
   SetSaved(filename != NULL);
   SetModified(false);
@@ -154,6 +155,11 @@ CSpritesetWindow::Create()
 	// the window and its children are ready!
   m_Created = true;
 
+  double zoom_factor = Configuration::Get(KEY_SPRITESET_ZOOM_FACTOR);
+  if (zoom_factor != 0) {
+    m_SpritesetView.SetZoomFactor(zoom_factor);
+  }
+
   // make sure everything is moved to the correct place
   RECT client_rect;
   GetClientRect(&client_rect);
@@ -162,14 +168,9 @@ CSpritesetWindow::Create()
   UpdateImageView();
   TabChanged(0);
 
-  double zoom_factor = Configuration::Get(KEY_SPRITESET_ZOOM_FACTOR);
-  if (zoom_factor != 0) {
-    m_SpritesetView.SetZoomFactor(zoom_factor);
-  }
-
-	#ifdef USE_SIZECBAR
+#ifdef USE_SIZECBAR
 	LoadPaletteStates();
-	#endif
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -227,8 +228,8 @@ CSpritesetWindow::OnDestroy()
 {
   Configuration::Set(KEY_SPRITESET_ZOOM_FACTOR, m_SpritesetView.GetZoomFactor());
 
-  m_ImagesPalette->Destroy();
-  m_AnimationPalette->Destroy();
+  if (m_ImagesPalette)    { m_ImagesPalette->Destroy();    m_ImagesPalette = NULL;   }
+  if (m_AnimationPalette) { m_AnimationPalette->Destroy(); m_AnimationPalette =NULL; }
 
   m_SpritesetView.DestroyWindow();
   m_ImageView.DestroyWindow();
@@ -472,8 +473,8 @@ CSpritesetWindow::SV_CurrentFrameChanged(int direction, int frame)
   m_CurrentDirection = direction;
   m_CurrentFrame = frame;
   UpdateImageView();
-  m_ImagesPalette->SetCurrentImage(m_Spriteset.GetFrameIndex(direction, frame));
-  m_AnimationPalette->SetCurrentDirection(direction);
+  if (m_ImagesPalette)    m_ImagesPalette->SetCurrentImage(m_Spriteset.GetFrameIndex(direction, frame));
+  if (m_AnimationPalette) m_AnimationPalette->SetCurrentDirection(direction);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -492,8 +493,10 @@ void
 CSpritesetWindow::SV_SpritesetModified()
 {
   UpdateImageView();
-  m_ImagesPalette->SpritesetResized();
-  m_ImagesPalette->Invalidate();
+  if (m_ImagesPalette) {
+    m_ImagesPalette->SpritesetResized();
+    m_ImagesPalette->Invalidate();
+  }
   SetModified(true);
 }
 
@@ -502,7 +505,7 @@ CSpritesetWindow::SV_SpritesetModified()
 void
 CSpritesetWindow::SV_ZoomFactorChanged(double zoom)
 {
-  m_AnimationPalette->OnZoom((double)zoom);
+  if (m_AnimationPalette) m_AnimationPalette->OnZoom((double)zoom);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -534,7 +537,7 @@ CSpritesetWindow::IV_ImageChanged()
 
   SetModified(true);
   m_SpritesetView.Invalidate();
-  m_ImagesPalette->Invalidate();
+  if (m_ImagesPalette) m_ImagesPalette->Invalidate();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

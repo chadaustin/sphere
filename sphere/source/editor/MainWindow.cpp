@@ -276,6 +276,7 @@ CMainWindow::Create()
   m_ImageToolBar.EnableDocking(CBRS_ALIGN_ANY);
   m_ImageToolBar.GetToolBarCtrl().CheckButton(IDI_IMAGETOOL_PENCIL, TRUE);
 
+
   // create the toolbar
   m_MapToolBar.CreateEx(
     this,
@@ -317,7 +318,6 @@ CMainWindow::Create()
   // enable drag and drop
   DragAcceptFiles(true);
 
-
   // show the window in the initial position
   WINDOWPLACEMENT wp = Configuration::Get(KEY_STARTUP);
   if (wp.length != 0) {
@@ -328,6 +328,7 @@ CMainWindow::Create()
 
   UpdateWindow();
   UpdateMenu();
+  
   return TRUE;
 }
 
@@ -353,7 +354,9 @@ CMainWindow::CreateProject(const char* projectname, const char* gametitle)
   m_Project.SetGameTitle(gametitle);
   m_ProjectOpen = true;
   m_ProjectWindow = new CProjectWindow(this, &m_Project);
-  m_ProjectWindow->Create();
+  if (m_ProjectWindow) {
+    m_ProjectWindow->Create();
+  }
 
   UpdateMenu();
 }
@@ -375,7 +378,9 @@ CMainWindow::OpenProject(const char* filename)
 
   m_ProjectOpen = true;
   m_ProjectWindow = new CProjectWindow(this, &m_Project);
-  m_ProjectWindow->Create();
+  if (m_ProjectWindow) {
+    m_ProjectWindow->Create();
+  }
 
   UpdateMenu();
 }
@@ -2024,21 +2029,6 @@ CMainWindow::OnUpdateWindowCloseAll(CCmdUI* cmdui)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-CDocumentWindow*
-CMainWindow::GetCurrentDocumentWindow()
-{
-  CDocumentWindow* dw = NULL;
-  for (unsigned int i = 0; i < m_DocumentWindows.size(); i++) {
-    if (m_DocumentWindows[i]->IsActive()) {
-      dw = m_DocumentWindows[i];
-      break;
-    }
-  }
-  return dw;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 afx_msg UINT
 CMainWindow::GetImageTool()
 {
@@ -2437,15 +2427,20 @@ CMainWindow::ViewPalette(int paletteNum)
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
-CMainWindow::OnUpdateViewProject(CCmdUI* ui)
+CMainWindow::OnUpdateViewProject(CCmdUI* cmdui)
 {
-	ui->Enable(m_ProjectOpen);
+#ifdef FLOATING_PALETTE_WINDOW
+	cmdui->Enable(m_ProjectOpen);
+#else
+  cmdui->Enable(FALSE);
+#endif
+
 	if (m_ProjectOpen)
 	{
 #ifdef FLOATING_PALETTE_WINDOW
-	ui->SetCheck(m_ProjectWindow->IsVisible() ? 1 : 0);
+	cmdui->SetCheck(m_ProjectWindow->IsVisible() ? 1 : 0);
 #else
-	ui->SetCheck(m_ProjectWindow->IsWindowVisible() ? 1 : 0);
+	cmdui->SetCheck(m_ProjectWindow->IsWindowVisible() ? 1 : 0);
 #endif
 	}
 }

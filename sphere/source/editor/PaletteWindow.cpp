@@ -49,16 +49,15 @@ CPaletteWindow::CPaletteWindow(CDocumentWindow* owner, const char* name, RECT re
   m_pBarParent = NULL;
   m_PaletteNumber = (owner) ? owner->GetNumPalettes() : -1;
 #endif
- 
 
   DWORD styles;
-  if (visible)
-    styles |= WS_VISIBLE;
 
 #ifndef USE_SIZECBAR
   styles = WS_THICKFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN;
+  if (visible)
+    styles |= WS_VISIBLE;
 #else
-  styles = WS_CHILD | WS_CLIPCHILDREN;
+  styles = WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN;
 #endif
 
 	if (owner)
@@ -186,12 +185,19 @@ CPaletteWindow::CreateBar(bool bCreate)
 	// should only be called if there is really need to create/destroy the bar
 	ASSERT(bCreate == (m_pBarParent == NULL));
 
-	CFrameWnd * parent = (CFrameWnd*)AfxGetApp()->m_pMainWnd;
+	CFrameWnd* parent = (CFrameWnd*)AfxGetApp()->m_pMainWnd;
 
 	if (bCreate)
 	{	
 		m_pBarParent = new CPaletteBar;
-		m_pBarParent->Create(m_Name, parent,  BAR_ID_START + m_PaletteNumber);
+    if (!m_pBarParent)
+      return;
+
+    if (m_pBarParent->Create(m_Name, parent, BAR_ID_START + m_PaletteNumber) == FALSE) {
+      delete m_pBarParent;
+      m_pBarParent = NULL;
+      return;
+    }
 		
 		//move the palette window into the bar
 		if (m_hWnd != 0)

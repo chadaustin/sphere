@@ -24,6 +24,7 @@ const int WA_FONT        = 0x0080;
 
 class CPaletteWindow;  // #include "PaletteWindow.hpp"
 
+///////////////////////////////////////////////////////////
 
 class CDocumentWindow : public CMDIChildWnd
 {
@@ -47,7 +48,6 @@ public:
 
   virtual bool IsSaveable() const;
 
-  bool IsActive() const;
   virtual void OnToolCommand(UINT id);
   virtual BOOL IsToolCommandAvailable(UINT id);
 
@@ -82,8 +82,6 @@ private:
   int   m_MenuResource;
   CSize m_MinSize;
 
-  bool m_IsActive;
-
   std::vector<CPaletteWindow*> m_AttachedPalettes;
 
   DECLARE_MESSAGE_MAP()
@@ -93,5 +91,10 @@ public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };
 
+///////////////////////////////////////////////////////////
+
+CDocumentWindow* GetCurrentDocumentWindow();
+
+///////////////////////////////////////////////////////////
 
 #endif

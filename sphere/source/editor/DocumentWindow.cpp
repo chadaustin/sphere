@@ -8,6 +8,11 @@
 #include "Editor.hpp"
 #include "resource.h"
 
+static CDocumentWindow* s_CurrentDocumentWindow = NULL;
+
+CDocumentWindow* GetCurrentDocumentWindow() {
+  return s_CurrentDocumentWindow;
+}
 
 BEGIN_MESSAGE_MAP(CDocumentWindow, CMDIChildWnd)
 
@@ -28,7 +33,6 @@ END_MESSAGE_MAP()
 CDocumentWindow::CDocumentWindow(const char* document_path, int menu_resource, const CSize& min_size)
 : m_MenuResource(menu_resource)
 , m_MinSize(min_size)
-, m_IsActive(true)
 , m_DocumentType(0)
 {
   if (document_path) {
@@ -45,7 +49,9 @@ CDocumentWindow::~CDocumentWindow()
 {
   // this destructor can be called from a constructor, and the main window would
   // try to remove the window pointer before it was added
-  m_IsActive = false;
+  if (this == s_CurrentDocumentWindow)
+    s_CurrentDocumentWindow = NULL;
+
   AfxGetApp()->m_pMainWnd->PostMessage(WM_DW_CLOSING, 0, (LPARAM)this);
 }
 
@@ -177,6 +183,7 @@ CDocumentWindow::Create(LPCTSTR class_name, DWORD style)
 {
 	BOOL maximized = FALSE;
 	((CMainWindow*)AfxGetMainWnd())->MDIGetActive(&maximized);
+
   if (maximized) style |= WS_MAXIMIZE;
 
   BOOL result = CMDIChildWnd::Create(class_name, "", style);
@@ -252,12 +259,6 @@ bool
 CDocumentWindow::IsSaveable() const
 {
   return false;
-}
-
-bool
-CDocumentWindow::IsActive() const
-{
-  return m_IsActive;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -350,7 +351,7 @@ CDocumentWindow::OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactiv
   CMDIChildWnd::OnMDIActivate(activate, active_window, inactive_window);
   CFrameWnd* pFrame = (CFrameWnd*)AfxGetApp()->m_pMainWnd;
 
-  m_IsActive = (activate) ? true : false;
+  if (activate) s_CurrentDocumentWindow = this;
 
   if (activate)
   {
@@ -380,7 +381,7 @@ CDocumentWindow::OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactiv
 #else
       if (0) {
       }
-#endif
+#endif // FLOATING_PROJECT_WINDOW
 			else
 			{
 				LoadPaletteStates();
@@ -391,7 +392,7 @@ CDocumentWindow::OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactiv
     for (int i = 0; i < m_AttachedPalettes.size(); i++) {
        m_AttachedPalettes[i]->ShowPalette(true);        
     }
-#endif
+#endif // USE_SIZECBAR
   }
   else
   {

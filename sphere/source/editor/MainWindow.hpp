@@ -165,9 +165,6 @@ public:
   afx_msg UINT GetMapTool();
 
 private:
-  CDocumentWindow* GetCurrentDocumentWindow();
-
-private:
   afx_msg LRESULT OnInsertProjectFile(WPARAM wparam, LPARAM lparam);
   afx_msg LRESULT OnRefreshProject(WPARAM wparam, LPARAM lparam);
 	afx_msg LRESULT OnCopyData(WPARAM wparam, LPARAM lparam);
