@@ -44,10 +44,10 @@ static std::string       s_ScriptDirectory;
 void RunSphere(int argc, const char** argv)
 {
   // populate the game list
-  /* EnterDirectory("games"); <-- bug */
-  GetGameList(s_GameList);
-  /* LeaveDirectory(); <-- bug */
-
+  /* EnterDirectory("games");
+ <-- bug */  GetGameList(s_GameList);
+  /* LeaveDirectory();
+ <-- bug */
   // load system objects (and store script directory)
   LoadSystemObjects();
 
@@ -75,9 +75,12 @@ void RunSphere(int argc, const char** argv)
       }
 
       // run the game
-      EnterDirectory("games");
-      RunGame(argv[i + 1], parameters);
-      LeaveDirectory();
+      if (EnterDirectory("games")) {
+        RunGame(argv[i + 1], parameters);
+        LeaveDirectory();
+      } else {
+        QuitMessage("could not enter 'games' directory");
+      }
       show_menu = false;
 
     } else if (strcmp(argv[i], "-package") == 0 &&
@@ -137,47 +140,55 @@ void RunPackage(IFileSystem& fs)
 
 void RunGame(const char* game, const char* parameters)
 {
-  EnterDirectory(game);
-  CGameEngine(
-    g_DefaultFileSystem,
-    s_SystemObjects,
-    s_GameList,
-    s_ScriptDirectory.c_str(),
-    parameters
-  ).Run();
-  LeaveDirectory();
-
-  ClearKeyQueue();
+  if (EnterDirectory(game)) {
+    CGameEngine(
+      g_DefaultFileSystem,
+      s_SystemObjects,
+      s_GameList,
+      s_ScriptDirectory.c_str(),
+      parameters
+    ).Run();
+    ClearKeyQueue();
+    LeaveDirectory();
+  } else {
+    QuitMessage("Could not enter game directory");
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void GetGameList(std::vector<Game>& games)
 {
-  EnterDirectory("games");
+  if (!EnterDirectory("games")) {
+    return;
+  }
 
   // add game directories
   DIRECTORYLIST dl = BeginDirectoryList("*");
+
   while (!DirectoryListDone(dl)) {
     char directory[520];
     GetNextDirectory(dl, directory);
 
-    EnterDirectory(directory);
+    puts(directory);
 
-    // read the game name
-    CConfigFile file;
-    file.Load("game.sgm");
-    std::string gamename = file.ReadString("", "name", "");
-    
-    // if the game name is empty, the game doesn't exist
-    if (gamename.length() != 0) {
-      Game g;
-      g.name = gamename;
-      g.directory = directory;
-      games.push_back(g);
+    if (EnterDirectory(directory)) {
+
+      // read the game name
+      CConfigFile file;
+      file.Load("game.sgm");
+      std::string gamename = file.ReadString("", "name", "");
+
+      // if the game name is empty, the game doesn't exist
+      if (gamename.length() != 0) {
+        Game g;
+        g.name = gamename;
+        g.directory = directory;
+        games.push_back(g);
+      }
+
+      LeaveDirectory();
     }
-
-    LeaveDirectory();
   }
 
   EndDirectoryList(dl);
@@ -235,7 +246,7 @@ void LoadSystemObjects()
   // system down arrow
   if (!s_SystemObjects.down_arrow.Load(down_arrow.c_str())) {
     QuitMessage("Error: Could not load system down arrow");
-  }  
+  }
 
   LeaveDirectory();
 }

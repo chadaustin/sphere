@@ -11,17 +11,14 @@
 #include <string>
 #include <list>
 
-using std::string;
-using std::list;
-
 struct DIRECTORYLISTimp {
-  list<string> directories;
-  list<string>::iterator current_directory;
+  std::list<std::string> directories;
+  std::list<std::string>::iterator current_directory;
 };
 
 struct FILELISTimp {
-  list<string> files;
-  list<string>::iterator current_file;
+  std::list<std::string> files;
+  std::list<std::string>::iterator current_file;
 };
 
 typedef DIRECTORYLISTimp* DIRECTORYLIST;

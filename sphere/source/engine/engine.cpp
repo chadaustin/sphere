@@ -249,14 +249,17 @@ CGameEngine::GetGameList(std::vector<Game>& games)
 void
 CGameEngine::ExecuteGame(const char* directory)
 {
-  EnterDirectory("../games");
-  EnterDirectory(directory);
+  if (EnterDirectory("../games")) {
+    if (EnterDirectory(directory)) {
 
-  CGameEngine(m_FileSystem, m_SystemObjects, m_GameList, m_SystemScriptDirectory.c_str(), "").Run();
-  ClearScreen();
+      CGameEngine(m_FileSystem, m_SystemObjects, m_GameList, m_SystemScriptDirectory.c_str(), "").Run();
+      ClearScreen();
 
-  LeaveDirectory();
-  LeaveDirectory();
+      LeaveDirectory();
+    }
+
+    LeaveDirectory();
+  }
 
   ClearKeyQueue();
 }

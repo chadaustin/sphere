@@ -63,9 +63,12 @@ DIRECTORYLIST BeginDirectoryList (const char* mask) {
   glob_t matches;
   int lcv;
 
-  bzero(&matches, sizeof(glob_t));
-  if (glob(mask, GLOB_ERR | GLOB_MARK, NULL, &matches) != 0)
-    return dl;
+  memset(&matches, 0, sizeof(matches));
+  if (glob(mask, GLOB_ERR | GLOB_MARK, NULL, &matches) != 0) {
+    delete dl;
+    return NULL;
+  }
+
   for (lcv = 0; lcv < matches.gl_pathc; lcv++) {
     /* we only want to show visible directories */
     if ((matches.gl_pathv[lcv][0] != '.') && (matches.gl_pathv[lcv][strlen(matches.gl_pathv[lcv]) - 1] == '/'))
