@@ -691,9 +691,9 @@ log_object.endBlock()
     - draws a line onto the surface starting from (x1, y1) to (x2, y2) with 
       the color
   
-  surface_object.rectangle(x, y, w, h, color)
-    - draws a filled rectangle onto the surface at (x, y) with the width w and 
-      height h with the color
+  surface_object.rectangle(x1, y1, x2, y2, color)
+    - draws a filled rectangle onto the surface from (x1, y1) to (x2, y2)
+      with 'color'
   
   surface_object.rotate(radians, resize)
     - rotates the surface anti-clockwise with the range 0 - 2*pi. The resize 
