@@ -103,7 +103,7 @@ CSoundWindow::OnSize(UINT type, int cx, int cy)
     m_PlayButton.MoveWindow(CRect(0, 0, (cx-50) / 2, cy/*-25*/));
 
   if (m_StopButton.m_hWnd != NULL)
-    m_StopButton.MoveWindow(CRect((cx-50) / 2, 0, cx-50, cy-25));
+    m_StopButton.MoveWindow(CRect((cx-50) / 2, 0, cx-50, cy/*-25*/));
   
   if (m_VolumeBar.m_hWnd != NULL)
     m_VolumeBar.MoveWindow(CRect(cx-50, 0, cx-30, 90));
@@ -115,6 +115,7 @@ CSoundWindow::OnSize(UINT type, int cx, int cy)
 /*
   if (m_PositionBar.m_hWnd != NULL)
     m_PositionBar.MoveWindow(CRect(0, cy-25, cx, cy));
+  }
 */
 
   CDocumentWindow::OnSize(type, cx, cy);
@@ -139,6 +140,7 @@ CSoundWindow::OnTimer(UINT timerID)
       m_PlayButton.EnableWindow(TRUE);
       m_StopButton.EnableWindow(FALSE);
       m_Playing = false;
+      m_Sound.Stop();
     }
   }
 }
