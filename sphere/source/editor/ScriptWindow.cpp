@@ -33,6 +33,12 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_SCRIPT_OPTIONS_SET_TAB_SIZE,  OnOptionsSetTabSize)
   ON_COMMAND(ID_SCRIPT_OPTIONS_TOGGLE_LINE_NUMBERS,  OnOptionsToggleLineNumbers)
   ON_COMMAND(ID_SCRIPT_OPTIONS_SHOW_WHITESPACE, OnOptionsShowWhitespace)
+  ON_COMMAND(ID_SCRIPT_OPTIONS_WORD_WRAP, OnOptionsWordWrap)
+
+  ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_TOGGLE_LINE_NUMBERS, OnUpdateOptionsToggleLineNumbers)
+  ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_TOGGLE_COLORS, OnUpdateOptionsToggleColors)
+  ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_SHOW_WHITESPACE, OnUpdateOptionsShowWhitespace)
+  ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_WORD_WRAP, OnUpdateOptionsWordWrap)
 
   ON_NOTIFY(SCN_SAVEPOINTREACHED, ID_EDIT, OnSavePointReached)
   ON_NOTIFY(SCN_SAVEPOINTLEFT,    ID_EDIT, OnSavePointLeft)
@@ -52,6 +58,7 @@ CScriptWindow::CScriptWindow(const char* filename)
 , m_SearchDialog(0)
 , m_SyntaxHighlighted(true)
 , m_ShowWhitespace(false)
+, m_WordWrap(false)
 {
   SetSaved(filename != NULL);
   SetModified(false);
@@ -188,6 +195,8 @@ CScriptWindow::SetScriptStyles() {
     SendEditor(SCI_SETMARGINWIDTHN, 0, 45);
   }
 
+  SendEditor(SCI_SETWRAPMODE, ((m_WordWrap) ? (SC_WRAP_WORD) : (SC_WRAP_NONE)));
+
   SetStyle(SCE_C_DEFAULT, black, white, m_FontSize, m_Fontface.c_str());
 
   if (m_TabWidth > 0)
@@ -211,7 +220,7 @@ CScriptWindow::SetScriptStyles() {
     SetStyle(SCE_C_WORD2,       red);
   }
 
-  SendEditor(SCI_SETVIEWWS, (!m_ShowWhitespace ? 0 : 1));
+  SendEditor(SCI_SETVIEWWS, ((m_ShowWhitespace) ? (SCWS_VISIBLEALWAYS) : (SCWS_INVISIBLE)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -226,6 +235,7 @@ CScriptWindow::Initialize()
   m_KeyWordStyleIsBold = Configuration::Get(KEY_SCRIPT_KEYWORDS_IN_BOLD);
   m_ShowLineNumbers    = Configuration::Get(KEY_SCRIPT_SHOW_LINE_NUMBERS);
   m_ShowWhitespace     = Configuration::Get(KEY_SCRIPT_SHOW_WHITESPACE);
+  m_WordWrap           = Configuration::Get(KEY_SCRIPT_WORD_WRAP);
   SetScriptStyles();
 
   SendEditor(SCI_TOGGLEFOLD, (LPARAM)"1");
@@ -276,8 +286,9 @@ CScriptWindow::LoadScript(const char* filename)
   buffer[file_size] = 0;
 
   // put the buffer into the edit control
-  SendEditor(SCI_SETTEXT, 0, (LPARAM)buffer);
   SendEditor(SCI_SETSEL,  0, 0);
+  SendEditor(SCI_SETTEXT, 0, (LPARAM)"");
+  SendEditor(SCI_ADDTEXT, file_size, (LPARAM)buffer);
 
   // delete the buffer and close the file
   delete[] buffer;
@@ -686,6 +697,48 @@ CScriptWindow::OnOptionsShowWhitespace()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+afx_msg void
+CScriptWindow::OnOptionsWordWrap()
+{
+  m_WordWrap = !m_WordWrap;
+  SetScriptStyles();
+  RememberConfiguration();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnUpdateOptionsToggleLineNumbers(CCmdUI* cmdui)
+{
+  cmdui->SetCheck(m_ShowLineNumbers ? TRUE : FALSE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnUpdateOptionsToggleColors(CCmdUI* cmdui)
+{
+  cmdui->SetCheck(m_SyntaxHighlighted ? TRUE : FALSE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnUpdateOptionsShowWhitespace(CCmdUI* cmdui)
+{
+  cmdui->SetCheck(m_ShowWhitespace ? TRUE : FALSE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnUpdateOptionsWordWrap(CCmdUI* cmdui)
+{
+  cmdui->SetCheck(m_WordWrap ? TRUE : FALSE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 CScriptWindow::RememberConfiguration()
 {
@@ -695,6 +748,7 @@ CScriptWindow::RememberConfiguration()
   Configuration::Set(KEY_SCRIPT_SYNTAX_HIGHLIGHTED, m_SyntaxHighlighted);
   Configuration::Set(KEY_SCRIPT_SHOW_LINE_NUMBERS, m_ShowLineNumbers);
   Configuration::Set(KEY_SCRIPT_SHOW_WHITESPACE, m_ShowWhitespace);
+  Configuration::Set(KEY_SCRIPT_WORD_WRAP, m_WordWrap);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

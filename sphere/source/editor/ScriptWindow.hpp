@@ -40,6 +40,12 @@ private:
   afx_msg void OnOptionsSetTabSize();
   afx_msg void OnOptionsToggleLineNumbers();
   afx_msg void OnOptionsShowWhitespace();
+  afx_msg void OnOptionsWordWrap();
+
+  afx_msg void OnUpdateOptionsToggleLineNumbers(CCmdUI* cmdui);
+  afx_msg void OnUpdateOptionsToggleColors(CCmdUI* cmdui);
+  afx_msg void OnUpdateOptionsShowWhitespace(CCmdUI* cmdui);
+  afx_msg void OnUpdateOptionsWordWrap(CCmdUI* cmdui);
 
   afx_msg void OnSavePointReached(NMHDR* nmhdr, LRESULT* result);
   afx_msg void OnSavePointLeft(NMHDR* nmhdr, LRESULT* result);
@@ -63,6 +69,7 @@ private:
   bool m_ShowLineNumbers;
   int m_FontSize;
   bool m_ShowWhitespace;
+  bool m_WordWrap;
 
   CFindReplaceDialog* m_SearchDialog;
 

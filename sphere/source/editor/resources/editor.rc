@@ -271,6 +271,8 @@ BEGIN
 
             MENUITEM "Toggle Whitespace",           ID_SCRIPT_OPTIONS_SHOW_WHITESPACE
 
+            MENUITEM "Toggle Word Wrap",            ID_SCRIPT_OPTIONS_WORD_WRAP
+
         END
     END
 END

@@ -569,6 +569,7 @@
 #define ID_IRCVIEW_SLAP                 40731
 #define ID_IRCVIEW_CONTROL_OP           40732
 #define ID_IRCVIEW_CONTROL_DEOP         40733
+#define ID_SCRIPT_OPTIONS_WORD_WRAP     40734
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -577,7 +578,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        257
-#define _APS_NEXT_COMMAND_VALUE         40734
+#define _APS_NEXT_COMMAND_VALUE         40735
 #define _APS_NEXT_CONTROL_VALUE         1191
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
