@@ -4246,9 +4246,14 @@ begin_method(SS_SPRITESET, ssSpritesetSave, 1)
     return JS_FALSE;
   }
 
-  std::vector<std::string> direction_names;
-//  std::vector<int> frame_indexes;
-//  std::vector<int> frame_delays;
+  sSpriteset s;
+  s.Create(frame_width, frame_height, num_images, num_directions, 0);
+  for (int i = 0; i < num_images; i++) {
+    s.GetImage(i) = images[i];
+  }
+  delete[] images;
+
+  s.SetBase(x1, y1, x2, y2);
 
   for (int i = 0; i < num_directions; i++) {
 
@@ -4266,7 +4271,7 @@ begin_method(SS_SPRITESET, ssSpritesetSave, 1)
       return JS_FALSE;
     }
 
-    direction_names.push_back(argStr(cx, direction_name));
+    s.SetDirectionName(i, argStr(cx, direction_name));
 
     jsval frames_array_val;
 
@@ -4317,8 +4322,6 @@ begin_method(SS_SPRITESET, ssSpritesetSave, 1)
         return JS_FALSE;
       }
 
-//      frame_indexes.push_back(frame_index);
-
       int frame_delay = argInt(cx, frame_delay_val);
 
       if (frame_delay < 0) {
@@ -4326,28 +4329,13 @@ begin_method(SS_SPRITESET, ssSpritesetSave, 1)
         return JS_FALSE;
       }
 
-//      frame_delays.push_back(frame_delay);
-
+      s.InsertFrame(i, j);
+      s.SetFrameDelay(i, j, frame_delay);
+      s.SetFrameIndex(i, j, frame_index);
     }
   }
-
-  sSpriteset s;
-  s.Create(frame_width, frame_height, num_images, num_directions, 1);
-  for (int i = 0; i < num_images; i++) {
-    s.GetImage(i) = images[i];
-  }
-
-  for (int i = 0; i < direction_names.size(); i++) {
-    s.SetDirectionName(i, direction_names[i].c_str());
-  }
-
-  s.SetBase(x1, y1, x2, y2);
    
-  bool yay = s.Save(path.c_str());
-
-  delete[] images;
-
-  return_bool ( yay );
+  return_bool ( s.Save(path.c_str()) );
 end_method()
 
 ////////////////////////////////////////
