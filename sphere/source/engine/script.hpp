@@ -143,6 +143,7 @@ private:
   declare_constructor2(CreateFontObject, SFONT* font, bool destroy);
   declare_finalizer(ssFinalizeFont);
   declare_method(ssFontSetColorMask);
+  declare_method(ssFontGetColorMask);
   declare_method(ssFontDrawText);
   declare_method(ssFontDrawZoomedText);
   declare_method(ssFontDrawTextBox);
@@ -154,6 +155,8 @@ private:
   declare_constructor2(CreateWindowStyleObject, SWINDOWSTYLE* ws, bool destroy);
   declare_finalizer(ssFinalizeWindowStyle);
   declare_method(ssWindowStyleDrawWindow);
+  declare_method(ssWindowStyleSetColorMask);
+  declare_method(ssWindowStyleGetColorMask);
 
   // images
   declare_constructor2(CreateImageObject, IMAGE image, bool destroy);

@@ -89,6 +89,7 @@ END_SS_OBJECT()
 BEGIN_SS_OBJECT(SS_WINDOWSTYLE)
   bool destroy_me;
   SWINDOWSTYLE* windowstyle;
+  RGBA mask;
 END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_IMAGE)
@@ -3988,6 +3989,7 @@ CScript::CreateFontObject(JSContext* cx, SFONT* font, bool destroy)
   // assign methods to the object
   static JSFunctionSpec fs[] = {
     { "setColorMask",    ssFontSetColorMask,    1, 0, 0 },
+    { "getColorMask",    ssFontGetColorMask,    0, 0, 0 },
     { "drawText",        ssFontDrawText,        3, 0, 0 },
     { "drawZoomedText",  ssFontDrawZoomedText,  4, 0, 0 },
     { "drawTextBox",     ssFontDrawTextBox,     6, 0, 0 },
@@ -4021,6 +4023,12 @@ end_finalizer()
 begin_method(SS_FONT, ssFontSetColorMask, 1)
   arg_color(mask);
   object->mask = mask;
+end_method()
+
+///////////////////////////////////////
+
+begin_method(SS_FONT, ssFontGetColorMask, 0)
+  return_object(CreateColorObject(cx, object->mask));
 end_method()
 
 ///////////////////////////////////////
@@ -4109,6 +4117,7 @@ CScript::CreateWindowStyleObject(JSContext* cx, SWINDOWSTYLE* ws, bool destroy)
   // assign methods to the object
   static JSFunctionSpec fs[] = {
     { "drawWindow", ssWindowStyleDrawWindow, 4, 0, 0 },
+    { "setColorMask", ssWindowStyleSetColorMask, 1, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -4117,6 +4126,7 @@ CScript::CreateWindowStyleObject(JSContext* cx, SWINDOWSTYLE* ws, bool destroy)
   SS_WINDOWSTYLE* ws_object = new SS_WINDOWSTYLE;
   ws_object->windowstyle = ws;
   ws_object->destroy_me  = destroy;
+  ws_object->mask = CreateRGBA(255, 255, 255, 255);
   JS_SetPrivate(cx, object, ws_object);
 
   return object;
@@ -4139,8 +4149,22 @@ begin_method(SS_WINDOWSTYLE, ssWindowStyleDrawWindow, 4)
     arg_int(w);
     arg_int(h);
 
-    object->windowstyle->DrawWindow(x, y, w, h);
+    object->windowstyle->DrawWindow(x, y, w, h, object->mask, !(object->mask == CreateRGBA(255, 255, 255, 255)));
   }
+end_method()
+
+///////////////////////////////////////
+
+begin_method(SS_WINDOWSTYLE, ssWindowStyleSetColorMask, 1)
+  arg_color(color);
+  object->mask = color;
+end_method()
+
+
+///////////////////////////////////////
+
+begin_method(SS_WINDOWSTYLE, ssWindowStyleGetColorMask, 0)
+  return_object(CreateColorObject(cx, object->mask));
 end_method()
 
 ///////////////////////////////////////

@@ -17,20 +17,20 @@ public:
   bool CreateFromWindowStyle(const sWindowStyle& ws);
   void Destroy();
 
-  int GetBackgroundMode();
-  bool DrawBackground(int x, int y, int w, int h, int background_mode);
+  int GetBackgroundMode() const;
+  bool DrawBackground(int x, int y, int w, int h, int background_mode, const RGBA& mask, bool is_masked) const;
 
-  bool DrawTopEdge   (int x, int y, int w, int h);
-  bool DrawBottomEdge(int x, int y, int w, int h);
-  bool DrawLeftEdge  (int x, int y, int w, int h);
-  bool DrawRightEdge (int x, int y, int w, int h);
+  bool DrawTopEdge   (int x, int y, int w, int h, const RGBA& mask, bool is_masked) const;
+  bool DrawBottomEdge(int x, int y, int w, int h, const RGBA& mask, bool is_masked) const;
+  bool DrawLeftEdge  (int x, int y, int w, int h, const RGBA& mask, bool is_masked) const;
+  bool DrawRightEdge (int x, int y, int w, int h, const RGBA& mask, bool is_masked) const;
 
-  bool DrawUpperLeftCorner (int x, int y);
-  bool DrawUpperRightCorner(int x, int y);
-  bool DrawLowerLeftCorner (int x, int y);
-  bool DrawLowerRightCorner(int x, int y);
+  bool DrawUpperLeftCorner (int x, int y, const RGBA& mask, bool is_masked) const;
+  bool DrawUpperRightCorner(int x, int y, const RGBA& mask, bool is_masked) const;
+  bool DrawLowerLeftCorner (int x, int y, const RGBA& mask, bool is_masked) const;
+  bool DrawLowerRightCorner(int x, int y, const RGBA& mask, bool is_masked) const;
 
-  bool DrawWindow(int x, int y, int w, int h);
+  bool DrawWindow(int x, int y, int w, int h, const RGBA& mask, bool is_masked) const;
 
 private:
   void Initialize();
@@ -39,9 +39,9 @@ private:
   sWindowStyle m_WindowStyle;
   IMAGE m_Images[9];
 
-  bool DrawCorner(int index, int x, int y);
-  bool DrawHorizontalEdge(int index, int x, int y, int w, int h);
-  bool DrawVerticalEdge(int index, int x, int y, int w, int h);
+  bool DrawCorner(int index, int x, int y, const RGBA& mask, bool is_masked) const;
+  bool DrawHorizontalEdge(int index, int x, int y, int w, int h, const RGBA& mask, bool is_masked) const;
+  bool DrawVerticalEdge(int index, int x, int y, int w, int h, const RGBA& mask, bool is_masked) const;
 };
 
 

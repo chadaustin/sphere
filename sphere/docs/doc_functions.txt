@@ -819,7 +819,10 @@ log_object.endBlock()
       the file, the engine will give an error message and exit.
   
   font_object.setColorMask(color)
-    - Sets the colors mask for a font (see ApplyColorMask)
+    - Sets the color mask for a font (see ApplyColorMask)
+  
+  font_object.getColorMask()
+    - Gets the color mask being used by the font object
   
   font_object.drawText(x, y, text)
     - draws 'text' at x, y with the font
@@ -863,6 +866,12 @@ log_object.endBlock()
       Note that window corners and edges are drawn outside of the width 
       and height of the window.
 
+  windowstyle_object.setColorMask(color)
+    - sets the color mask for a windowstyle (see ApplyColorMask)
+
+  windowstyle_object.getColorMask()
+    - gets the color mask being used by the windowstyle object
+
   
   *** images ***
   GetSystemArrow()
