@@ -49,6 +49,8 @@ private:
   afx_msg void OnKeyDown(NMHDR* notify, LRESULT* result);
   afx_msg void OnDoubleClick(NMHDR* notify, LRESULT* result);
   afx_msg void OnRightClick(NMHDR* notify, LRESULT* result);
+  void __OnRightClick__();
+  void __OnDoubleClick__(bool allow_expand);
 
   void SelectItemAtCursor();
 

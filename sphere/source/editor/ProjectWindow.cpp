@@ -513,8 +513,12 @@ CProjectWindow::OnKeyDown(NMHDR* notify, LRESULT* result)
 
   switch (key->wVKey)
   {
-    case VK_RETURN: 
-      OnDoubleClick(NULL, NULL);
+    case VK_RETURN:
+      __OnDoubleClick__(true);
+    break;
+
+    case VK_APPS:
+      __OnRightClick__();
     break;
 
     case VK_INSERT:
@@ -525,8 +529,8 @@ CProjectWindow::OnKeyDown(NMHDR* notify, LRESULT* result)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-afx_msg void
-CProjectWindow::OnDoubleClick(NMHDR* /*notify*/, LRESULT* /*result*/)
+void
+CProjectWindow::__OnDoubleClick__(bool allow_expand)
 {
   HTREEITEM item = m_TreeControl.GetSelectedItem();
   if (item == NULL) return;
@@ -539,9 +543,11 @@ CProjectWindow::OnDoubleClick(NMHDR* /*notify*/, LRESULT* /*result*/)
     break;
 
     default: {
-      if (IsTreeItemFolder(m_TreeControl, item)) {
-        m_TreeControl.Expand(item, TVE_TOGGLE);
-        return;
+      if (allow_expand) {
+        if (IsTreeItemFolder(m_TreeControl, item)) {
+          m_TreeControl.Expand(item, TVE_TOGGLE);
+          return;
+        }
       }
 
       // check to see if user clicked on an item in a folder
@@ -563,9 +569,16 @@ CProjectWindow::OnDoubleClick(NMHDR* /*notify*/, LRESULT* /*result*/)
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
-CProjectWindow::OnRightClick(NMHDR* notify, LRESULT* result)
+CProjectWindow::OnDoubleClick(NMHDR* /*notify*/, LRESULT* /*result*/)
 {
-  SelectItemAtCursor();
+  __OnDoubleClick__(false);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CProjectWindow::__OnRightClick__()
+{
   HTREEITEM item = m_TreeControl.GetSelectedItem();
   if (item == NULL)
     return;
@@ -620,6 +633,13 @@ CProjectWindow::OnRightClick(NMHDR* notify, LRESULT* result)
     menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, Point.x, Point.y, this);
     menu.DestroyMenu();
   }
+}
+
+afx_msg void
+CProjectWindow::OnRightClick(NMHDR* /*notify*/, LRESULT* /*result*/)
+{
+  SelectItemAtCursor();
+  __OnRightClick__();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
