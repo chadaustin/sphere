@@ -166,3 +166,31 @@ two things:  Compile the string you are evaluating into run-time byte
 codes, and then interpret those byte codes.  Compiling is not a quick
 process, so you should do it as few times as you can.
 
+
+
+-- Use Look-Up-Tables (LUTs) --
+
+If you are doing a repeated transformation equation on a limited range
+of inputs (such as 0-255 for colors) you can store the results of your
+operation into a table and then reuse them.
+
+Old code:
+
+// vec can only have integral values between 0 and 255, inclusive
+for (var i = 0; i < n; ++i) {
+  vec[i] = Math.max(Math.min(2 * vec[i] * vec[i] - 3 * vec[i], 255), 0);
+}
+
+
+New code:
+
+lut = []
+for (var i = 0; i < 256; ++i) {
+  lut[i] = Math.max(Math.min(2 * i * i - 3 * i, 255), 0);
+}
+
+// looking up from a table is faster than doing the same operation
+// over and over again
+for (var i = 0; i < n; ++i) {
+  vec[i] = lut[vec[i]];
+}
