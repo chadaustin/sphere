@@ -88,6 +88,10 @@ static Uint8 KeyMapping[total_keys] = {
   SDLK_LEFT
 };
 
+#define MOUSE_LEFT 0
+#define MOUSE_MIDDLE 1
+#define MOUSE_RIGHT 2
+
 bool RefreshInput () {
   SDL_Event event;
   int result = 1;
@@ -182,7 +186,7 @@ bool IsMouseButtonPressed (int button) {
   int dummy;
 
   SDL_PumpEvents();
-  if (SDL_GetMouseState(&dummy, &dummy))
-    return true;
+  if (SDL_GetMouseState(&dummy, &dummy) & SDL_BUTTON(button + 1))
+	  return true;
   return false;
 }
