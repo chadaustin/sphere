@@ -155,6 +155,8 @@ CProjectWindow::Update()
   CHECK_EXPANDED(m_htiImages);
   CHECK_EXPANDED(m_htiAnimations);
 
+#undef CHECK_EXPANDED
+
   // delete the current contents of the tree
   m_TreeControl.DeleteAllItems();
 
@@ -182,6 +184,8 @@ CProjectWindow::Update()
   m_htiImages       = INSERT_ROOT("Images",        1, 2, tiImages);
   m_htiAnimations   = INSERT_ROOT("Animations",    1, 2, tiAnimations);
 
+#undef INSERT_ROOT
+
 #define INSERT_ITEMS(hti, grouptype, image)                      \
   for (int i = 0; i < m_Project->GetItemCount(grouptype); i++) { \
     m_TreeControl.InsertItem(                                    \
@@ -201,6 +205,7 @@ CProjectWindow::Update()
   INSERT_ITEMS(m_htiImages,       GT_IMAGES,       IDI_FILETYPE_BASE + 6);
   INSERT_ITEMS(m_htiAnimations,   GT_ANIMATIONS,   IDI_FILETYPE_BASE + 7);
 
+#undef INSERT_ITEMS
 
   // expand the groups if necessary
 #define EXPAND_GROUP(item)                          \
@@ -216,6 +221,8 @@ CProjectWindow::Update()
   EXPAND_GROUP(m_htiWindowStyles);
   EXPAND_GROUP(m_htiImages);
   EXPAND_GROUP(m_htiMaps);
+
+#undef EXPAND_GROUP
 }
 
 ////////////////////////////////////////////////////////////////////////////////

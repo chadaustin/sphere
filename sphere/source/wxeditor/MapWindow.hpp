@@ -4,7 +4,13 @@
 
 //#include <afxcmn.h>
 #include <wx/wx.h>
+
+#if 1
 #include <wx/tabctrl.h>
+#else
+#include <wx/notebook.h>
+#endif
+
 #include "SaveableDocumentWindow.hpp"
 #include "MapView.hpp"
 #include "LayerView.hpp"
@@ -49,7 +55,12 @@ private:
   void OnExportTileset(wxCommandEvent &event);
   void OnImportTileset(wxCommandEvent &event);
   void OnPruneTileset(wxCommandEvent &event);
+
+#if 1
   void OnTabChanged(wxTabEvent &event);
+#else
+  void OnTabChanged(wxNotebookEvent &event);
+#endif
 
   virtual bool GetSavePath(char* path);
   virtual bool SaveDocument(const char* path);
@@ -73,7 +84,11 @@ private:
   
   bool m_Created;  // whether or not the window has been created
 
+#if 1
   wxTabCtrl *m_TabControl;
+#else
+  wxNotebook *m_TabControl;
+#endif
 
   // views
   wMapView         *m_MapView;

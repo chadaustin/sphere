@@ -905,7 +905,9 @@ inline SS_FONT* argFont(JSContext* cx, jsval arg)
   return font;
 }
 
-inline sSpriteset* argSpriteset(JSContext* cx, jsval arg)
+///////////////////////////////////////////////////////////
+
+sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 {
   JSObject* obj = JSVAL_TO_OBJECT(arg);
 
@@ -1151,6 +1153,8 @@ inline sSpriteset* argSpriteset(JSContext* cx, jsval arg)
   return s;
 }
 
+///////////////////////////////////////////////////////////
+
 #define arg_int(name)        int name           = argInt(cx, argv[arg++]);                                            if (This->m_ShouldExit) return JS_FALSE
 #define arg_str(name)        const char* name   = argStr(cx, argv[arg++]);                                            if (This->m_ShouldExit) return JS_FALSE
 #define arg_bool(name)       bool name          = argBool(cx, argv[arg++]);                                           if (This->m_ShouldExit) return JS_FALSE
@@ -1179,7 +1183,8 @@ inline sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 // Sphere function implementations
 
 ////////////////////////////////////////////////////////////////////////////////
-
+
+
 // section: script functions //
 
 /**
@@ -1335,7 +1340,8 @@ begin_func(GarbageCollect, 0)
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
-
+
+
 // section: misc functions //
 
 /**
@@ -3749,6 +3755,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+  @see GrabImage
+*/
 begin_func(GrabSurface, 4)
   arg_int(x);
   arg_int(y);
@@ -3904,7 +3913,7 @@ begin_func(HashFromFile, 1) {
 
   if (IsValidPath(filename) == false) {
     JS_ReportError(cx, "Invalid filename: '%s'", filename);
-    return JS_FALSE;  
+    return JS_FALSE;
   }
 
   IFile* infile=This->m_Engine->OpenRawFile(filename,false);
@@ -3949,7 +3958,7 @@ begin_func(HashFromFile, 1) {
 }
 end_func()
 
-begin_func(HashByteArray,1)
+begin_func(HashByteArray, 1)
   arg_byte_array(array);
   int len,i;
   unsigned char* bptr;

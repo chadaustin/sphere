@@ -626,7 +626,7 @@ CMainWindow::OnDropFiles(HDROP hDropInfo)
   LPTSTR  lpFilename;
 
   numfiles = DragQueryFile(hDropInfo, 0xFFFFFFFF, NULL, NULL);
-  for (i=0; i<numfiles; i++)
+  for (i = 0; i < numfiles; i++)
   {
     // here's what happens, we grab the details of the file...
     // then we transfer the details to OpenGameFile
@@ -827,6 +827,8 @@ FILE_NEW_HANDLER(Font,        new CFontWindow())
 FILE_NEW_HANDLER(WindowStyle, new CWindowStyleWindow())
 FILE_NEW_HANDLER(Image,       new CImageWindow())
 
+#undef FILE_NEW_HANDLER
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #define FILE_OPEN_HANDLER(name, construct)                    \
@@ -853,6 +855,8 @@ FILE_OPEN_HANDLER(Font,        new CFontWindow(path))
 FILE_OPEN_HANDLER(WindowStyle, new CWindowStyleWindow(path))
 FILE_OPEN_HANDLER(Image,       new CImageWindow(path))
 FILE_OPEN_HANDLER(Animation,   new CAnimationWindow(path))
+
+#undef FILE_OPEN_HANDLER
 
 ////////////////////////////////////////////////////////////////////////////////
 

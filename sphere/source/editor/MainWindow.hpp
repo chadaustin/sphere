@@ -135,6 +135,8 @@ private:
 
   CProjectWindow* m_ProjectWindow;
 
+  CMenu* m_MenuBar;
+
   // manage pointers to document windows so we can enumerate and send messages to them
   std::vector<CDocumentWindow*> m_DocumentWindows;
 
