@@ -4312,16 +4312,62 @@ begin_func(GetPersonData, 1)
   }
 
   for (int i = 0; i < int(data.size()); i++) {
-    if (data[i].type == 1) {
-      if (JS_DefineProperty(cx, object, data[i].name.c_str(), DOUBLE_TO_JSVAL(JS_NewDouble(cx, data[i].double_value)),              JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE) == JS_TRUE) { }
-    } else {
-      if (JS_DefineProperty(cx, object, data[i].name.c_str(), STRING_TO_JSVAL(JS_NewStringCopyZ(cx, data[i].string_value.c_str())), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE) == JS_TRUE) { }
+    switch (data[i].type) {
+      case 1:
+        if (JS_DefineProperty(cx, object, data[i].name.c_str(), DOUBLE_TO_JSVAL(JS_NewDouble(cx, data[i].double_value)),              JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE) == JS_TRUE) { }
+      break;
+      case 2:
+        if (JS_DefineProperty(cx, object, data[i].name.c_str(), INT_TO_JSVAL(data[i].double_value),                  JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE) == JS_TRUE) { }
+      break;
+      case 3:
+        if (JS_DefineProperty(cx, object, data[i].name.c_str(), BOOLEAN_TO_JSVAL((int)data[i].double_value == 0 ? false : true),              JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE) == JS_TRUE) { }
+      break;
+
+      default:
+        if (JS_DefineProperty(cx, object, data[i].name.c_str(), STRING_TO_JSVAL(JS_NewStringCopyZ(cx, data[i].string_value.c_str())), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE) == JS_TRUE) { }
     }
   }
 
   return_object(object);
 
 end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+static void
+ParsePersonData(JSContext* cx, jsval val, std::string& string_value, double& double_value, int& type)
+{
+  bool is_object = JSVAL_IS_OBJECT(val);
+
+  string_value = "";
+  double_value = 0;
+  type = -1;
+
+  if ( !is_object
+   && (JSVAL_IS_INT(val) || JSVAL_IS_DOUBLE(val))
+   && JS_ValueToNumber(cx, val, &double_value) != JS_FALSE) {
+
+    if (JSVAL_IS_DOUBLE(val))
+      type = 1;
+    else
+    if (JSVAL_IS_INT(val))
+      type = 2;
+  }
+  else
+  if ( !is_object && JSVAL_IS_BOOLEAN(val) ) {
+    if (JSVAL_TO_BOOLEAN(val))
+      double_value = 1;
+    else
+      double_value = 0;
+
+    type = 3;
+  }
+  else { // anything else is a string
+    string_value = argStr(cx, val);
+    type = 0;
+  }
+
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -4350,21 +4396,7 @@ begin_func(SetPersonData, 2)
 
       if ( JS_GetProperty(cx, object, data.name.c_str(), &val) == JS_TRUE )
       {
-        jsdouble d;
-
-        if (!JSVAL_IS_OBJECT(val)
-         && (JSVAL_IS_INT(val) || JSVAL_IS_DOUBLE(val))
-         && JS_ValueToNumber(cx, val, &d) != JS_FALSE) {
-          data.string_value = "";
-          data.double_value = d;
-          data.type = 1;
-        }
-        else {
-          data.string_value = argStr(cx, val);
-          data.double_value = 0;
-          data.type = 0;
-        }
-
+        ParsePersonData(cx, val, data.string_value, data.double_value, data.type);
       }
 
       person_data.push_back(data);
@@ -4413,10 +4445,21 @@ begin_func(GetPersonValue, 2)
     return JS_FALSE;
   }
 
-  if (type == 1)
-    return_double(double_value);
-  else
-    return_str(string_value.c_str());
+  switch (type) {
+    case 1:
+      return_double(double_value);
+    break;
+    case 2:
+      return_int((int)double_value);
+    break;
+    case 3:
+      return_bool((int)double_value == 0 ? false : true);
+    break;
+
+    default:
+      return_str(string_value.c_str());
+  }
+
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4427,22 +4470,15 @@ begin_func(SetPersonValue, 3)
 
   std::string string_value;
   jsdouble double_value;
-  int type = 0;
+  int type = -1;
 
-  if ( !JSVAL_IS_OBJECT(argv[2])
-   && (JSVAL_IS_INT(argv[2]) || JSVAL_IS_DOUBLE(argv[2]))
-   && JS_ValueToNumber(cx, argv[2], &double_value) != JS_FALSE) {
-    type = 1;
-  }
-  else { // anything else is a string
-    string_value = argStr(cx, argv[2]);
-    type = 0;
-  }
+  ParsePersonData(cx, argv[2], string_value, double_value, type);
 
   if (!This->m_Engine->GetMapEngine()->SetPersonValue(name, key, string_value, double_value, type)) {
     This->ReportMapEngineError("SetPersonValue() failed");
     return JS_FALSE;
   }
+
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -6123,9 +6159,9 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
   // create object
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
   if (object == NULL) {
-    if (sound) sound->unref();
+    if (sound) { sound->unref(); sound = NULL; }
 #ifdef WIN32
-    if (midi)  midi->unref();
+    if (midi)  { midi->unref(); midi = NULL; }
 #endif
     return NULL;
   }
@@ -6153,8 +6189,13 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
 
   // attach the sound to this object
   SS_SOUND* sound_object = new SS_SOUND;
-  if (!sound_object)
+  if (!sound_object) {
+    if (sound) { sound->unref(); sound = NULL; }
+#ifdef WIN32
+    if (midi)  { midi->unref(); midi = NULL; }
+#endif
     return NULL;
+  }
 
   sound_object->sound = sound;
 #ifdef WIN32
@@ -6169,9 +6210,9 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
 ////////////////////////////////////////
 
 begin_finalizer(SS_SOUND, ssFinalizeSound)
-  if (object->sound) object->sound->unref();
+  if (object->sound) { object->sound->unref(); object->sound = NULL; }
 #ifdef WIN32
-  if (object->midi) object->midi->unref();
+  if (object->midi) { object->midi->unref(); object->midi = NULL; }
 #endif
 end_finalizer()
 

@@ -2636,23 +2636,39 @@ public:
     }
   }
 
-  static void SetDataDouble(std::vector<struct PersonData>& person_data, const char* name, const double value)
+  static void SetDataNumber(std::vector<struct PersonData>& person_data, const char* name, const double value, const int type)
   {
     int index = PersonDataUtil::FindDataIndex(person_data, name);
     if (index != -1) {
       person_data[index].string_value = "";
       person_data[index].double_value = value;
-      person_data[index].type = 1;
+      person_data[index].type = type;
     }
     else {
       PersonData data;
       data.name = name;
       data.string_value = "";
       data.double_value = value;
-      data.type = 1;
+      data.type = type;
       person_data.push_back(data);
     }
   }
+
+  static void SetDataDouble(std::vector<struct PersonData>& person_data, const char* name, const double value)
+  {
+    PersonDataUtil::SetDataNumber(person_data, name, (double)value, 1);
+  }
+
+  static void SetDataInt(std::vector<struct PersonData>& person_data, const char* name, const int value)
+  {
+    PersonDataUtil::SetDataNumber(person_data, name, (double)value, 2);
+  }
+
+  static void SetDataBool(std::vector<struct PersonData>& person_data, const char* name, const bool value)
+  {
+    PersonDataUtil::SetDataNumber(person_data, name, (double)value, 3);
+  }
+
 };
 
 bool
@@ -2666,10 +2682,10 @@ CMapEngine::GetPersonData(const char* name, std::vector<struct PersonData>& pers
   Person& p = m_Persons[person];
   person_data = m_Persons[person].person_data;
 
-  PersonDataUtil::SetDataDouble(person_data, "num_frames", p.spriteset->GetSpriteset().GetNumFrames(p.direction));
-  PersonDataUtil::SetDataDouble(person_data, "num_directions", p.spriteset->GetSpriteset().GetNumDirections());
-  PersonDataUtil::SetDataDouble(person_data, "width", p.width);
-  PersonDataUtil::SetDataDouble(person_data, "height", p.height);
+  PersonDataUtil::SetDataInt(person_data, "num_frames", p.spriteset->GetSpriteset().GetNumFrames(p.direction));
+  PersonDataUtil::SetDataInt(person_data, "num_directions", p.spriteset->GetSpriteset().GetNumDirections());
+  PersonDataUtil::SetDataInt(person_data, "width", p.width);
+  PersonDataUtil::SetDataInt(person_data, "height", p.height);
   PersonDataUtil::SetDataString(person_data, "leader", p.leader == -1 ? "" : m_Persons[p.leader].name.c_str());
 
   return true;
@@ -2726,8 +2742,11 @@ CMapEngine::SetPersonValue(const char* name, const char* key, const std::string 
     case 0:
       PersonDataUtil::SetDataString(person_data, key, value.c_str());
     break;
+
     case 1:
-      PersonDataUtil::SetDataDouble(person_data, key, double_value);
+    case 2:
+    case 3:
+      PersonDataUtil::SetDataNumber(person_data, key, double_value, type);
     break;
   }
 
