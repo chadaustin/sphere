@@ -4,6 +4,7 @@
 
 
 #include <sstream>
+#include <math.h>
 #include "map_engine.hpp"
 #include "render.hpp"
 #include "rendersort.hpp"
