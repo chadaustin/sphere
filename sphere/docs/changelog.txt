@@ -1,3 +1,7 @@
+2003.01.24
+  - added AreZonesAt, ExecuteZones, ExecuteZoneScript, GetZoneX/Y,
+    GetZoneWidth/Height, GetNumZones (Brian Robb)
+
 2003.01.23
   - added Get/SetTileDelay and Get/SetNextAnimatedTile (Brian Robb)
 
