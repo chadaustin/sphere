@@ -429,13 +429,13 @@ log_object.endBlock()
       GetPersonFrame(name)
         - gets the frame and direction that are currently being displayed
 
-      SetPersonScalingFactor(name, scale_w, scale_h)
+      SetPersonScaleFactor(name, scale_w, scale_h)
         - rescales the sprite to a certain scale specified by scale_w and scale_h.
           Scaling is determined by floating point numbers like, 1.5 would scale
           the person to 1.5 times its normal size based on his original sprite
           size.
 
-      SetPersonScalingAbsolute(name, width, height)
+      SetPersonScaleAbsolute(name, width, height)
         - rescales the sprite to width pixels and height pixels.
 
       GetPersonSpriteset(name)
