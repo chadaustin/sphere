@@ -787,6 +787,13 @@ log_object.endBlock()
     - draws a word-wrapped text at (x, y) with the width w and height h. The
       offset is the number of pixels which the number of pixels from y which 
       the actual drawing starts at.
+  Note: 'text' can have the following special characters within it:
+      \n - newline
+      \t - tab
+      \" - double quote
+      \' - single quote
+  
+     For example: font_object.drawTextBox(16, 16, 200, 200, 0, "Line One\nLine Two");
   
   font_object.getHeight()
     - returns the height of the font, in pixels
