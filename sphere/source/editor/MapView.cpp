@@ -1891,8 +1891,8 @@ CMapView::OnLButtonDown(UINT flags, CPoint point)
       } break;
 
       case tool_MoveEntity: {
-        int tx = (point.x / m_Map->GetTileset().GetTileWidth()) / m_ZoomFactor + m_CurrentX;
-        int ty = (point.y / m_Map->GetTileset().GetTileHeight()) / m_ZoomFactor + m_CurrentY;
+        int tx = m_CurrentX + (point.x / m_Map->GetTileset().GetTileWidth() / m_ZoomFactor);
+        int ty = m_CurrentY + (point.y / m_Map->GetTileset().GetTileHeight() / m_ZoomFactor);
 
         m_MoveIndex = -1;
 
@@ -2225,10 +2225,11 @@ CMapView::OnLButtonUp(UINT flags, CPoint point)
 
     case tool_MoveEntity: {
       if (m_MoveIndex != -1) {
-        int x = point.x / m_ZoomFactor + m_CurrentX;
-        int y = point.y / m_ZoomFactor + m_CurrentY;
-        m_Map->GetEntity(m_MoveIndex).x = x;
-        m_Map->GetEntity(m_MoveIndex).y = y;
+        int tx = m_CurrentX + (point.x / m_Map->GetTileset().GetTileWidth() / m_ZoomFactor);
+        int ty = m_CurrentY + (point.y / m_Map->GetTileset().GetTileHeight() / m_ZoomFactor);
+
+        m_Map->GetEntity(m_MoveIndex).x = tx * tile_width;
+        m_Map->GetEntity(m_MoveIndex).y = ty * tile_height;
         m_MoveIndex = -1;
         Invalidate();
         m_Handler->MV_MapChanged();

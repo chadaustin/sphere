@@ -1,6 +1,7 @@
 from SCons.Util import WhereIs
 import os
 import string
+import sys
 
 # Courtesy of Ben Scott
 def ParseConfig(env, command, options):

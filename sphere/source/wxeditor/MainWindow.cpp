@@ -1003,6 +1003,7 @@ wMainWindow::OnFileOpenLastProject(wxCommandEvent &event)
     wDocumentWindow *doc = construct;         \
     if(doc != NULL) {                         \
       m_DocumentWindows.push_back(doc);       \
+      doc->SetFocus();                        \
     }                                         \
   }
 
@@ -1028,8 +1029,10 @@ FILE_NEW_HANDLER(Image,       new wImageWindow())
         wxString path_ = filelist[i];                               \
         const char* path = path_;                                   \
         wDocumentWindow* doc = construct;                           \
-        if (doc != NULL)                                            \
+        if (doc != NULL) {                                          \
           m_DocumentWindows.push_back(doc);                         \
+          doc->SetFocus();                                          \
+        }                                                           \
       }                                                             \
     }                                                               \
   }
@@ -1563,6 +1566,7 @@ wMainWindow::OnProjectRunSphere(wxCommandEvent &event)
     &pi);                  // lpProcessInformation
   if (retval == FALSE)
 */
+
   if(wxExecute(szCommandLine) == -1) {
     ::wxMessageBox("Error: Could not execute Sphere engine");
   }

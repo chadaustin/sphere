@@ -280,9 +280,10 @@ CFLICAnimation::DecodeChunk_SS2()
   // read the number of lines to decode
   word num_lines = next_word();
 
-  int current_line = 0;
+  //  int current_line = 0;
 
-  for (int y = 0; y < num_lines; y++)
+  //for (int y = 0; y < num_lines; y++)
+  for (int current_line = 0; current_line < num_lines; current_line++)
   {
     word option_word = next_word();
 
@@ -294,6 +295,8 @@ CFLICAnimation::DecodeChunk_SS2()
       // because num_lines = 32 and option_word = 32774, so:
       // current_line += option_word > num_lines!
       current_line += abs((sword)option_word);     // absolute value is number of lines to skip
+      if (current_line >= num_lines)
+        return false;
       option_word = next_word();  // read next word
     }
 
@@ -343,7 +346,7 @@ CFLICAnimation::DecodeChunk_SS2()
       }
     }
 
-    current_line++;
+    // current_line++;
   }
 
   return true;
