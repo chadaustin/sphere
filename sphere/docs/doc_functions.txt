@@ -469,6 +469,12 @@ log_object.endBlock()
       
     SetTileImage(tile_index, image_object)
       - sets the tile 'tile_index' to the image 'image_object'
+
+    GetTileSurface(tile_index)
+      - returns the surface of the tile 'tile_index'
+      
+    SetTileSurface(tile_index, surface_object)
+      - sets the tile 'tile_index' to the surface 'surface_object'
       
     GetTileDelay(tile)
       - gets the animation delay of the tile 'tile'

@@ -6828,7 +6828,7 @@ begin_method(SS_SURFACE, ssSurfaceApplyLookup, 8)
   unsigned char rlut[256];
   unsigned char glut[256];
   unsigned char blut[256];
-  unsigned char alut[256];
+  unsigned char alut[256];  
 
   GetLookUpTable(cx, rlookup, rlut);
   GetLookUpTable(cx, glookup, glut);

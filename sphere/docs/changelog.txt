@@ -1,3 +1,9 @@
+2004.02.25
+  - Added Get/SetTileSurface
+  - if there's only one game in the games directory, execute that upon startup
+    (so if you want to distibute your game with sphere, you can just not put any other games there)
+  - Added SetLayerScaleFactorX/Y functions
+
 2004.02.16
   - Fix Import Spritesets from RM2K Charset (it was missing the last frame of each direction)
   
