@@ -540,7 +540,7 @@ CScript::ErrorReporter(JSContext* cx, const char* message, JSErrorReport* report
 
     // build an error
     std::ostringstream os;
-    os << "Script error in '" << (report->filename ? report->filename : "(no filename)") << "', line: " << report->lineno << std::endl;
+    os << "Script error in '" << (report->filename ? report->filename : "(no filename)") << "', line: " << (report->lineno + 1) << std::endl;
     os << std::endl;
     os << message << std::endl;
     if (report->linebuf) {
