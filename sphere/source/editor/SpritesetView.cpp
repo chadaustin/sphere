@@ -1171,19 +1171,6 @@ mng_bool MNG_DECL GetImageFromSpriteset(int index, CImage32& image, void* data) 
   return MNG_TRUE;
 }
 
-mng_bool MNG_DECL GetNextImageFromFileList(int index, CImage32& image, void* data) {
-  // std::vector<CImage32>& images = (std::vector<CImage32>&) data;
-  std::vector<std::string>* filelist = (std::vector<std::string>*) data;
-  if (index < 0 || index >= filelist->size())
-    return MNG_FALSE;
-
-  return image.Load((*filelist)[index].c_str()) ? MNG_TRUE : MNG_TRUE;
-}
-
-mng_uint32 MNG_DECL GetDelayFromImageFileList(int index, void* data) {
-  return 10 * 1000;
-}
-
 mng_uint32 MNG_DECL GetDelayFromSpriteset(int index, void* data) {
   userwritedata* s = (userwritedata*) data;
   return 10 * s->spriteset.GetFrameDelay(s->direction, index);
@@ -1192,7 +1179,7 @@ mng_uint32 MNG_DECL GetDelayFromSpriteset(int index, void* data) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-mng_bool MNG_DECL ContinueProcessing(int index, int total)
+static mng_bool MNG_DECL ContinueProcessing(int index, int total)
 {
   mng_bool ret = MNG_TRUE;
 

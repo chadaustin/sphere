@@ -17,7 +17,7 @@ public:
   ~CListDialog();
 
   void SetCaption(const char* caption);
-  void AddItem(const char* string);
+  int AddItem(const char* string);
   
   int GetSelection() const;
   void SetSelection(int i);

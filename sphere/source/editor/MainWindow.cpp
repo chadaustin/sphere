@@ -158,6 +158,8 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
 
   ON_COMMAND(ID_WINDOW_CLOSEALL, OnWindowCloseAll)
 
+  ON_COMMAND(ID_TOOLS_IMAGES_TO_MNG, OnToolsImagesToMNG)
+
   ON_COMMAND(ID_HELP_SPHERESITE,         OnHelpSphereSite)
   ON_COMMAND(ID_HELP_SPHEREFAQ,          OnHelpSphereFAQ)
   ON_COMMAND(ID_HELP_AEGISKNIGHTSSITE,   OnHelpAegisKnightsSite)
@@ -2629,7 +2631,7 @@ CMainWindow::OnProjectPackageGame()
     return;
   }
 
-  for (int j = files.size() - 1; j >= 0; j--) {
+  for (int j = int(files.size()) - 1; j >= 0; j--) {
     if (checklist.IsChecked(j) == false) {
       package.RemoveFile(j);
     }
@@ -2670,6 +2672,153 @@ CMainWindow::OnWindowCloseAll()
     }
 
     dw->DestroyWindow();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+#include "../common/write_mng.hpp"
+
+mng_bool MNG_DECL GetNextImageFromFileList(int index, CImage32& image, void* data) {
+  // std::vector<CImage32>& images = (std::vector<CImage32>&) data;
+  std::vector<std::string>* filelist = (std::vector<std::string>*) data;
+  if (index < 0 || index >= filelist->size())
+    return MNG_FALSE;
+
+  return image.Load((*filelist)[index].c_str()) ? MNG_TRUE : MNG_TRUE;
+}
+
+mng_uint32 MNG_DECL GetDelayFromImageFileList(int index, void* data) {
+  return 10 * 1000;
+}
+
+
+static mng_bool MNG_DECL ContinueProcessing(int index, int total)
+{
+  mng_bool ret = MNG_TRUE;
+
+  if (1) {
+    char string[255] = {0};
+    if (index == -1) {
+      sprintf (string, "%d...", total);
+    }
+    else {
+      int percent = (int)( ((double)index / (double)total) * 100);
+      sprintf (string, "%3d%% Complete", percent);
+    }
+    GetStatusBar()->SetWindowText(string);
+  }
+
+  /*
+  MSG msg;
+  int count = 0;
+  while (count++ < 4 && PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+  {
+    if (msg.message != WM_QUIT) {
+      DispatchMessage(&msg);
+    }
+    else {
+      ret = false;
+      break;
+    }
+  }
+  */
+
+  return ret;
+}
+
+
+#include "../common/system.hpp"
+
+mng_retcode TestAnimationCode(std::vector<std::string> filelist, const char* filename) {
+  return SaveMNGAnimationFromImages(filename, GetNextImageFromFileList, GetDelayFromImageFileList, ContinueProcessing, (void*) &filelist);
+}
+
+
+afx_msg void
+CMainWindow::OnToolsImagesToMNG()
+{
+  struct Local {
+    static bool IsGameFileType(const char* filename)
+    { 
+      std::vector<std::string> extensions;
+      FTL.GetFileTypeExtensions(GT_IMAGES, false, extensions);
+    
+      for (unsigned int k = 0; k < extensions.size(); k++) {
+        std::string ext = "." + extensions[k];
+        if (strcmp_ci(filename + strlen(filename) - ext.length(), ext.c_str()) == 0) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+  };
+
+  // get name of image
+  CImageFileDialog FileDialog(FDM_OPEN);
+  
+  FileDialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
+  SetCurrentDirectory(m_DefaultFolder.c_str());
+
+  if (FileDialog.DoModal() != IDOK)
+    return;
+
+  CString filename = FileDialog.GetPathName();
+  m_DefaultFolder = GetFolderFromPathName(filename);
+
+  std::vector<std::string> filelist = GetFileList("*");
+  if (filelist.size() == 0) {
+    MessageBox("No files found", "Images To MNG", MB_OK);
+    return;
+  }
+
+  CCheckListDialog checklist;
+  checklist.SetCaption("Select Files...");
+  checklist.SetMinChecked(1);
+
+  for (int i = 0; i < int(filelist.size()); i++) {
+    if ( !checklist.AddItem(filelist[i].c_str(), Local::IsGameFileType(filelist[i].c_str())) ) {
+      return;
+    }
+  }
+
+  if (checklist.DoModal() != IDOK) {
+    return;
+  }
+
+  for (int j = int(filelist.size()) - 1; j >= 0; j--) {
+    if (checklist.IsChecked(j) == false) {
+      filelist.erase(filelist.begin() + j);
+    }
+  }
+
+  if (filelist.size() == 0) {
+    MessageBox("No files to convert", "Images To MNG", MB_OK);
+    return;
+  }
+
+  CAnimationFileDialog dialog(FDM_SAVE, "Export Direction As Animation");
+  if (dialog.DoModal() == IDOK) {
+
+    bool is_mng = strcmp_ci(dialog.GetFileExt(), "mng") == 0;
+    bool is_fli = strcmp_ci(dialog.GetFileExt(), "flic") == 0
+               || strcmp_ci(dialog.GetFileExt(), "flc")  == 0
+               || strcmp_ci(dialog.GetFileExt(), "fli")  == 0;
+
+    if (is_mng) {
+      SetCurrentDirectory(m_DefaultFolder.c_str());
+      mng_retcode iRC = TestAnimationCode(filelist, dialog.GetPathName());
+      if (iRC == 0) {
+        MessageBox("Exported Animation!", "Export Direction As Animation", MB_OK);
+      }
+      else {
+        MessageBox(mng_get_error_message(iRC), "Error Exporting Direction As Animation", MB_OK);
+      }
+    }
+    else {
+      MessageBox("Unsupported save mode", "Error Exporting Direction As Animation", MB_OK);
+    }
   }
 }
 

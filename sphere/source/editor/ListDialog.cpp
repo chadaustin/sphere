@@ -52,10 +52,13 @@ CListDialog::SetCaption(const char* caption)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void
+int
 CListDialog::AddItem(const char* string)
 {
+  int num_items = m_Items.size();
   m_Items.push_back(string);
+  
+  return (m_Items.size() == num_items + 1) ? num_items : -1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -64,8 +67,10 @@ void
 CListDialog::SetSelection(int v)
 {
   m_Value = v;
-  if (m_Value >= 0 && m_Value < SendDlgItemMessage(IDC_LIST, CB_GETCOUNT)) {
-    SendDlgItemMessage(IDC_LIST, CB_SETCURSEL, m_Value);
+  if (::IsWindow(m_hWnd)) {
+    if (m_Value >= 0 && m_Value < SendDlgItemMessage(IDC_LIST, CB_GETCOUNT)) {
+      SendDlgItemMessage(IDC_LIST, CB_SETCURSEL, m_Value);
+    }
   }
 }
 

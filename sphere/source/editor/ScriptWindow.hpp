@@ -49,7 +49,6 @@ private:
   afx_msg void OnOptionsWordWrap();
   afx_msg void OnOptionsShowWrapFlags();
   afx_msg void OnOptionsToggleAutoComplete();
-  afx_msg void OnOptionsCheckSpelling();
   afx_msg void OnOptionsHighlightCurrentLine();
   afx_msg void OnOptionsViewList();
 
@@ -59,9 +58,14 @@ private:
   afx_msg void OnUpdateOptionsSelectionStream(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsSelectionRectangle(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsSelectionLine(CCmdUI* cmdui);
-  afx_msg void OnUpdateOptionsCheckSpelling(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsHighlightCurrentLine(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsViewList(CCmdUI* cmdui);
+
+#if 0
+  afx_msg void OnOptionsCheckSpelling();
+  afx_msg void OnOptionsSetSpellingLanguage();
+  afx_msg void OnUpdateOptionsCheckSpelling(CCmdUI* cmdui);
+#endif
 
   afx_msg void OnUpdateOptionsToggleLineNumbers(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsToggleColors(CCmdUI* cmdui);
@@ -83,7 +87,7 @@ private:
   afx_msg void OnMarginClick(NMHDR* nmhdr, LRESULT* result);
   void SetLineNumber(int line);
 
-  void SpellCheck(const int line_number);
+  void SpellCheck(const int start_line_number, const int num_lines_to_check);
 
 #if 1
   bool MarginClick(int position, int modifiers);
@@ -133,6 +137,12 @@ private:
   afx_msg void OnUpdateScriptViewControlCharacters(CCmdUI* cmdui);
 
   void CreateList(int type);
+
+#if 0
+private:
+  UINT m_Timer;
+  afx_msg void OnTimer(UINT event);
+#endif
 
 private:
   bool m_Created;

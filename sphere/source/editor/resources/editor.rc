@@ -153,6 +153,10 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Close &All",                  ID_WINDOW_CLOSEALL
     END
+    POPUP "&Tools"
+    BEGIN
+        MENUITEM "Images To MNG",               ID_TOOLS_IMAGES_TO_MNG
+    END
     POPUP "&Help"
     BEGIN
         POPUP "&External"
@@ -332,6 +336,8 @@ BEGIN
             MENUITEM "Highlight Current Line",      ID_SCRIPT_OPTIONS_HIGHLIGHT_CURRENT_LINE
 
             MENUITEM "Check &Spelling",             ID_SCRIPT_OPTIONS_CHECK_SPELLING
+
+            MENUITEM "Set Language",                ID_SCRIPT_OPTIONS_SET_SPELLING_LANGUAGE
 
             MENUITEM "&View List",                  ID_SCRIPT_OPTIONS_VIEW_LIST
 
@@ -2259,7 +2265,7 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_WINDOW_CLOSEALL      "Close all windows"
+    ID_WINDOW_CLOSEALL      "Convert a set of images to MNG"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -2304,6 +2310,7 @@ STRINGTABLE DISCARDABLE
 BEGIN
     ID_SCRIPT_OPTIONS_SHOW_WORD_FLAGS 
                             "Change whether visual flags are displayed for wrapped lines"
+    ID_TOOLS_IMAGES_TO_MNG  "Convert a set of images to a mng file"
 END
 
 #endif    // English (U.S.) resources
