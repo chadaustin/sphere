@@ -225,6 +225,11 @@ private:
 
   
 private:
+  // should we draw graphics?
+  bool ShouldRender() {
+    return m_ShouldRender;
+  }
+
   IEngine* m_Engine;
 
   JSRuntime* m_Runtime;

@@ -928,7 +928,7 @@ begin_func(FlipScreen, 0)
   } else {
 
     // never skip more than MAX_FRAME_SKIP frames
-    if (This->m_ShouldRender || This->m_FramesSkipped >= MAX_FRAME_SKIP) {
+    if (This->ShouldRender() || This->m_FramesSkipped >= MAX_FRAME_SKIP) {
       FlipScreen();
       ClearScreen();
 
@@ -969,7 +969,7 @@ end_func()
 
 begin_func(ApplyColorMask, 1)
   arg_color(c);
-  if (This->m_ShouldRender) {
+  if (This->ShouldRender()) {
     ApplyColorMask(c);
   }
 end_func()
@@ -978,13 +978,18 @@ end_func()
 
 begin_func(SetFrameRate, 1)
   arg_int(fps);
-  // 1 fps is the lowest we go
+  // 1 fps is the lowest we can throttle
   if (fps < 1) {
-    fps = 1;
+    This->m_ShouldRender  = true;
+    This->m_FrameRate     = 0;
+    This->m_FramesSkipped = 0;
+    This->m_IdealTime     = 0;
+  } else {
+    This->m_ShouldRender  = true;
+    This->m_FrameRate     = fps;
+    This->m_FramesSkipped = 0;
+    This->m_IdealTime     = GetTime() * fps + 1000;
   }
-  This->m_FrameRate = fps;
-  This->m_IdealTime = GetTime() * fps + 1000;
-  This->m_ShouldRender = true;
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1008,7 +1013,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 begin_func(Point, 3)
-  if (This->m_ShouldRender) {
+  if (This->ShouldRender()) {
     arg_int(x);
     arg_int(y);
     arg_color(c);
@@ -1020,7 +1025,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 begin_func(Line, 5)
-  if (This->m_ShouldRender) {
+  if (This->ShouldRender()) {
     arg_int(x1);
     arg_int(y1);
     arg_int(x2);
@@ -1036,7 +1041,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 begin_func(GradientLine, 6)
-  if (This->m_ShouldRender) {
+  if (This->ShouldRender()) {
     arg_int(x1);
     arg_int(y1);
     arg_int(x2);
@@ -1056,7 +1061,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 begin_func(Triangle, 7)
-  if (This->m_ShouldRender) {
+  if (This->ShouldRender()) {
     arg_int(x1);
     arg_int(y1);
     arg_int(x2);
@@ -1074,7 +1079,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 begin_func(GradientTriangle, 7)
-  if (This->m_ShouldRender) {
+  if (This->ShouldRender()) {
     arg_int(x1);
     arg_int(y1);
     arg_int(x2);
@@ -1098,7 +1103,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 begin_func(Rectangle, 5)
-  if (This->m_ShouldRender) {
+  if (This->ShouldRender()) {
     arg_int(x);
     arg_int(y);
     arg_int(w);
@@ -1112,7 +1117,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 begin_func(GradientRectangle, 5)
-  if (This->m_ShouldRender) {
+  if (This->ShouldRender()) {
     arg_int(x);
     arg_int(y);
     arg_int(w);
@@ -3353,7 +3358,7 @@ end_method()
 ///////////////////////////////////////
 
 begin_method(SS_FONT, ssFontDrawText, 3)
-  if (This->m_ShouldRender) {
+  if (This->ShouldRender()) {
     arg_int(x);
     arg_int(y);
     arg_str(text);
@@ -3364,7 +3369,7 @@ end_method()
 ///////////////////////////////////////
 
 begin_method(SS_FONT, ssFontDrawZoomedText, 4)
-  if (This->m_ShouldRender) {
+  if (This->ShouldRender()) {
     arg_int(x);
     arg_int(y);
     arg_double(scale);
@@ -3377,7 +3382,7 @@ end_method()
 ///////////////////////////////////////
 
 begin_method(SS_FONT, ssFontDrawTextBox, 6)
-  if (This->m_ShouldRender) {
+  if (This->ShouldRender()) {
     arg_int(x);
     arg_int(y);
     arg_int(w);
@@ -3460,7 +3465,7 @@ end_finalizer()
 ///////////////////////////////////////
 
 begin_method(SS_WINDOWSTYLE, ssWindowStyleDrawWindow, 4)
-  if (This->m_ShouldRender) {
+  if (This->ShouldRender()) {
     arg_int(x);
     arg_int(y);
     arg_int(w);
@@ -3532,7 +3537,7 @@ end_finalizer()
 ///////////////////////////////////////
 
 begin_method(SS_IMAGE, ssImageBlit, 2)
-  if (This->m_ShouldRender) {
+  if (This->ShouldRender()) {
     arg_int(x);
     arg_int(y);
     BlitImage(object->image, x, y);
@@ -3542,7 +3547,7 @@ end_method()
 ///////////////////////////////////////
 
 begin_method(SS_IMAGE, ssImageBlitMask, 3)
-  if (This->m_ShouldRender) {
+  if (This->ShouldRender()) {
     arg_int(x);
     arg_int(y);
     arg_color(clr);
@@ -3553,7 +3558,7 @@ end_method()
 ///////////////////////////////////////
 
 begin_method(SS_IMAGE, ssImageRotateBlit, 3)
-  if (This->m_ShouldRender) {
+  if (This->ShouldRender()) {
     arg_int(x);
     arg_int(y);
     arg_double(radians);
@@ -3598,7 +3603,7 @@ end_method()
 ///////////////////////////////////////
 
 begin_method(SS_IMAGE, ssImageZoomBlit, 3)
-  if (This->m_ShouldRender) {
+  if (This->ShouldRender()) {
     arg_int(x);
     arg_int(y);
     arg_double(factor);
@@ -3616,7 +3621,7 @@ end_method()
 ///////////////////////////////////////
 
 begin_method(SS_IMAGE, ssImageTransformBlit, 8)
-  if (This->m_ShouldRender) {
+  if (This->ShouldRender()) {
     arg_int(x1);
     arg_int(y1);
     arg_int(x2);
@@ -3635,7 +3640,7 @@ end_method()
 ///////////////////////////////////////
 
 begin_method(SS_IMAGE, ssImageTransformBlitMask, 9)
-  if (This->m_ShouldRender) {
+  if (This->ShouldRender()) {
     arg_int(x1);
     arg_int(y1);
     arg_int(x2);
@@ -3764,7 +3769,7 @@ end_method()
 ////////////////////////////////////////
 
 begin_method(SS_SURFACE, ssSurfaceBlit, 2)
-  if (This->m_ShouldRender) {
+  if (This->ShouldRender()) {
 
     arg_int(x);
     arg_int(y);
@@ -4097,7 +4102,7 @@ end_method()
 begin_method(SS_ANIMATION, ssAnimationDrawFrame, 2)
   arg_int(x);
   arg_int(y);
-  if (This->m_ShouldRender) {
+  if (This->ShouldRender()) {
     DirectBlit(x, y, object->animation->GetWidth(), object->animation->GetHeight(), object->frame);
   }
 end_method()
@@ -4108,7 +4113,7 @@ begin_method(SS_ANIMATION, ssAnimationDrawZoomedFrame, 3)
   arg_int(x);
   arg_int(y);
   arg_double(factor);
-  if (This->m_ShouldRender) {
+  if (This->ShouldRender()) {
     int w = object->animation->GetWidth();
     int h = object->animation->GetHeight();
 
