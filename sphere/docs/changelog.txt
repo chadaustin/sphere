@@ -5,6 +5,8 @@
     leave a gap along the edge of the center
   - fixed bug where drawing a gradient rectangle before drawing any
     images would cause the gradient to not show up
+  - open sounds in the editor as a stream so huge files don't take
+    forever to load
 
 2003.01.29
   - make ExecuteGame work no matter where the game calling it is

@@ -46,7 +46,7 @@ CSound::~CSound()
 bool
 CSound::Load(const char* filename)
 {
-  m_Sound = audiere::OpenSound(s_Device.get(), filename);
+  m_Sound = audiere::OpenSound(s_Device.get(), filename, true);
   return bool(m_Sound);
 }
 
