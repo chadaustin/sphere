@@ -80,6 +80,19 @@ CDocumentWindow::DetachPalette(CPaletteWindow* palette)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef USE_SIZECBAR
+void 
+CDocumentWindow::LoadPaletteStates()
+{
+   // load the bar state based on the document class
+   CFrameWnd * pFrame = (CFrameWnd*)AfxGetApp()->m_pMainWnd;
+   pFrame->LoadBarState(GetRuntimeClass()->m_lpszClassName);
+   CSizingControlBar::GlobalLoadState(pFrame, GetRuntimeClass()->m_lpszClassName);  
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+
 int
 CDocumentWindow::GetNumPalettes() const
 {
@@ -243,28 +256,54 @@ CDocumentWindow::OnSizing(UINT side, LPRECT rect)
 afx_msg void
 CDocumentWindow::OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactive_window)
 {
+  CMDIChildWnd::OnMDIActivate(activate, active_window, inactive_window);
+  CFrameWnd * pFrame = (CFrameWnd*)AfxGetApp()->m_pMainWnd;
+
   if (activate)
   {
-    // set the child menu resource
-    AfxGetApp()->m_pMainWnd->SendMessage(WM_SET_CHILD_MENU, m_MenuResource);
+    // set the child menu resource and update the palette menu
+    pFrame->SendMessage(WM_SET_CHILD_MENU, m_MenuResource);
 
-    // display the palettes
+#ifdef USE_SIZECBAR
+    // have to create the bars 
     for (int i = 0; i < m_AttachedPalettes.size(); i++) {
-      m_AttachedPalettes[i]->ShowWindow(SW_SHOW);
+      m_AttachedPalettes[i]->CreateBar(true);
+    } 
+    
+    if (m_AttachedPalettes.size() > 0)
+    {
+      LoadPaletteStates();
     }
+#else
+    // display the palettes     
+    for (int i = 0; i < m_AttachedPalettes.size(); i++) {
+       m_AttachedPalettes[i]->ShowPalette(true);        
+    }
+#endif
   }
   else
   {
-    // clear the child menu
-    AfxGetApp()->m_pMainWnd->SendMessage(WM_CLEAR_CHILD_MENU);
+    // clear the child menu and update the palette menu
+    pFrame->SendMessage(WM_CLEAR_CHILD_MENU);
 
+#ifdef USE_SIZECBAR
+    // save the bar state based on the document class
+    pFrame->SaveBarState(GetRuntimeClass()->m_lpszClassName);
+    CSizingControlBar::GlobalSaveState(pFrame, GetRuntimeClass()->m_lpszClassName);
+
+    // have to remove the bars actually to free the IDs
+    for (int i = 0; i < m_AttachedPalettes.size(); i++) {
+      m_AttachedPalettes[i]->CreateBar(false);
+    }
+
+    pFrame->RecalcLayout();
+#else
     // hide the palettes
     for (int i = 0; i < m_AttachedPalettes.size(); i++) {
-      m_AttachedPalettes[i]->ShowWindow(SW_HIDE);
+      m_AttachedPalettes[i]->ShowPalette(false);
     }
+#endif
   }
-  
-  CMDIChildWnd::OnMDIActivate(activate, active_window, inactive_window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -8,7 +8,8 @@
 #ifdef USE_SIZECBAR
 #define BAR_ID_START 5000
 
-#include "MainWindow.hpp"
+//#include "MainWindow.hpp"
+class MainWindow;
 
 // This technique is used, because the original files should remain unchanged,
 // and though compile conditionally.

@@ -29,6 +29,10 @@ public:
   void AttachPalette(CPaletteWindow* palette);
   void DetachPalette(CPaletteWindow* palette);
 
+#ifdef USE_SIZECBAR
+	void LoadPaletteStates();
+#endif
+
   int GetNumPalettes() const;
   CPaletteWindow* GetPalette(int i) const;
 

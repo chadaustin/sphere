@@ -20,7 +20,7 @@
 #define TAB_HEIGHT 24
 
 #ifdef USE_SIZECBAR
-IMPLEMENT_DYNAMIC(CMapWindow, CSaveableDocumentWindow)
+IMPLEMENT_DYNAMIC(CMapWindow, CMDIChildWnd)
 #endif
 
 BEGIN_MESSAGE_MAP(CMapWindow, CSaveableDocumentWindow)

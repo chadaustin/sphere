@@ -47,7 +47,7 @@ private:
 	int						m_PaletteNumber;
 
 public:
-	inline bool IsVisible() { return (m_pBarParent) ? m_pBarParent->IsVisible() : false; }
+	inline bool IsVisible() { return (m_pBarParent != NULL && m_pBarParent->IsVisible()) ? true : false; }
 #endif
 
   DECLARE_MESSAGE_MAP()
