@@ -15,6 +15,11 @@ BEGIN_MESSAGE_MAP(CTileObstructionDialog, CDialog)
   ON_COMMAND(ID_OBSTRUCTIONPRESETS_LOWERLEFT,  OnPresetLowerLeft)
   ON_COMMAND(ID_OBSTRUCTIONPRESETS_UPPERLEFT,  OnPresetUpperLeft)
 
+  ON_COMMAND(ID_OBSTRUCTIONPRESETS_LEFTHALF,    OnPresetLeftHalf)
+  ON_COMMAND(ID_OBSTRUCTIONPRESETS_RIGHTHALF,   OnPresetRightHalf)
+  ON_COMMAND(ID_OBSTRUCTIONPRESETS_TOPHALF,     OnPresetTopHalf)
+  ON_COMMAND(ID_OBSTRUCTIONPRESETS_BOTTOMHALF,  OnPresetBottomHalf)
+
 END_MESSAGE_MAP()
 
 
@@ -193,6 +198,80 @@ CTileObstructionDialog::OnPresetUpperLeft()
   s.AddSegment(0, 0, w, 0);
   s.AddSegment(0, 0, 0, h);
   s.AddSegment(0, h, w, 0);
+  m_edit_tile.GetObstructionMap() = s;
+
+  m_obstruction_view.Invalidate();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CTileObstructionDialog::OnPresetTopHalf()
+{
+  int w = m_tile->GetWidth()  - 1;
+  int h = (m_tile->GetHeight() / 2);
+
+  sObstructionMap s;
+  s.AddSegment(0, 0, w, 0);
+  s.AddSegment(0, 0, 0, h);
+  s.AddSegment(0, h, w, h);
+  s.AddSegment(w, 0, w, h);
+  m_edit_tile.GetObstructionMap() = s;
+
+  m_obstruction_view.Invalidate();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CTileObstructionDialog::OnPresetBottomHalf()
+{
+  int w = m_tile->GetWidth()  - 1;
+  int hh = (m_tile->GetHeight() / 2);
+  int fh = m_tile->GetHeight() - 1;
+
+  sObstructionMap s;
+  s.AddSegment(0, hh, w, hh);
+  s.AddSegment(0, hh, 0, fh);
+  s.AddSegment(0, fh, w, fh);
+  s.AddSegment(w, hh, w, fh);
+  m_edit_tile.GetObstructionMap() = s;
+
+  m_obstruction_view.Invalidate();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CTileObstructionDialog::OnPresetLeftHalf()
+{
+  int w = (m_tile->GetWidth() / 2) - 1;
+  int h = m_tile->GetHeight() - 1;
+
+  sObstructionMap s;
+  s.AddSegment(0, 0, w, 0);
+  s.AddSegment(0, 0, 0, h);
+  s.AddSegment(0, h, w, h);
+  s.AddSegment(w, 0, w, h);
+  m_edit_tile.GetObstructionMap() = s;
+
+  m_obstruction_view.Invalidate();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CTileObstructionDialog::OnPresetRightHalf()
+{
+  int hw = (m_tile->GetWidth() / 2);
+  int fw = m_tile->GetWidth() - 1;
+  int h = m_tile->GetHeight() - 1;
+
+  sObstructionMap s;
+  s.AddSegment(hw, 0, fw, 0);
+  s.AddSegment(hw, 0, hw, h);
+  s.AddSegment(hw, h, fw, h);
+  s.AddSegment(fw, 0, fw, h);
   m_edit_tile.GetObstructionMap() = s;
 
   m_obstruction_view.Invalidate();

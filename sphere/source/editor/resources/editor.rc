@@ -629,6 +629,14 @@ BEGIN
 
         MENUITEM "Upper Left",                  ID_OBSTRUCTIONPRESETS_UPPERLEFT
 
+        MENUITEM "Left Half",                   ID_OBSTRUCTIONPRESETS_LEFTHALF
+
+        MENUITEM "Right Half",                  ID_OBSTRUCTIONPRESETS_RIGHTHALF
+
+        MENUITEM "Top Half",                    ID_OBSTRUCTIONPRESETS_TOPHALF
+
+        MENUITEM "Bottom Half",                 ID_OBSTRUCTIONPRESETS_BOTTOMHALF
+
     END
 END
 
