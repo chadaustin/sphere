@@ -19,7 +19,6 @@ int main(int argc, char** argv)
 
     const char* filename = fs.GetFileName(i);
     cout << "Checking " << filename << "...  ";
-    
 
     std::auto_ptr<IFile> ifile(fs.Open(filename, IFileSystem::read));
     if (!ifile.get()) {
@@ -29,11 +28,14 @@ int main(int argc, char** argv)
 
     int isize = ifile->Size();
     char* idata = new char[isize];
+    if (!idata)
+      return 0;
     ifile->Read(idata, isize);
 
     FILE* cfile = fopen(filename, "rb");
     if (cfile == NULL) {
       cout << "File doesn't exist in package!" << endl;
+      delete[] idata;
       exit(0);
     }
 
@@ -41,8 +43,12 @@ int main(int argc, char** argv)
     int csize = ftell(cfile);
     rewind(cfile);
     char* cdata = new char[csize];
-    fread(cdata, 1, csize, cfile);
+    if (!cdata) {
+      delete[] idata;
+      return 0;
+  	}
 
+    fread(cdata, 1, csize, cfile);
     fclose(cfile);
 
 
@@ -54,6 +60,8 @@ int main(int argc, char** argv)
       cout << "They match!" << endl;
     }
 
+    delete[] idata;
+    delete[] cdata;
   }
 
   return 0;

@@ -1,7 +1,6 @@
 #ifndef EDITOR_HPP
 #define EDITOR_HPP
 
-
 #include <string>
 #include <afxwin.h>
 #include <afxext.h>

@@ -16,6 +16,7 @@ struct IAnimation
   virtual int GetHeight() = 0;
   virtual int GetNumFrames() = 0;
   virtual int GetDelay() = 0;
+  virtual bool IsEndOfAnimation() = 0;
 
   virtual bool ReadNextFrame(RGBA* FrameBuffer) = 0;
   virtual bool ReadNextFrame(BGRA* FrameBuffer) = 0;

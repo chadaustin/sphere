@@ -193,6 +193,7 @@ CClipboard::PutBitmapImageOntoClipboard(int width, int height, const RGBA* sourc
   char* dibPtr = (char*)GlobalLock(hDIB);
   if (dibPtr == NULL) {
     CloseClipboard();
+    delete[] pixels;
     return false;
   }
 	memcpy(dibPtr, &header, sizeof(header));

@@ -1,6 +1,5 @@
 #include "Debug.hpp"
 
-
 int LogBlock__::NumTabs;
 
 CLogDispatcher DebugLog__;

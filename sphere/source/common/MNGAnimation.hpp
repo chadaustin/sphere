@@ -24,6 +24,8 @@ public:
   bool ReadNextFrame(RGBA* FrameBuffer);
   bool ReadNextFrame(BGRA* FrameBuffer);
 
+  bool IsEndOfAnimation();
+
 private:
   void Destroy();
 
@@ -50,6 +52,7 @@ private:
 
   RGBA* m_frame_buffer;
   bool m_first_display;
+  bool m_end_of_animation;
 };
 
 

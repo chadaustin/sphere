@@ -1,8 +1,8 @@
 #ifndef DEBUG_HPP
 #define DEBUG_HPP
 
-
 #include <string>
+
 #include "../common/LogDispatcher.hpp"
 
 

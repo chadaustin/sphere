@@ -874,12 +874,11 @@ CSpritesetView::OnInsertDirectionFromImage()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-//#include "../common/AnimationFactory.hpp"
+#include "../common/AnimationFactory.hpp"
 
 afx_msg void
 CSpritesetView::OnInsertDirectionFromAnimation()
 {
-/*
   CAnimationFileDialog dialog(FDM_OPEN, "Insert Direction From Animation");
   if (dialog.DoModal() == IDOK) {
 
@@ -895,35 +894,52 @@ CSpritesetView::OnInsertDirectionFromAnimation()
     if (animation->GetWidth() != frame_width
      || animation->GetHeight() != frame_height) {
       char message[1000];
-      sprintf(message, "Invalid animation width or height: %d %d", animation->GetWidth(), animation->GetHeight());
+      sprintf(message, "Invalid animation width or height: %d %d",
+        animation->GetWidth(), animation->GetHeight());
       MessageBox(message);
       return;
     }
 
     RGBA* pixels = new RGBA[animation->GetWidth() * animation->GetHeight()];
+    if ( !pixels )
+      return;
 
-    int old_current_frame = m_CurrentFrame;
     int current_direction = m_CurrentDirection;
     m_Spriteset->InsertDirection(current_direction);
+    m_Spriteset->SetDirectionName(current_direction, dialog.GetFileName());
 
-    for (int frame_number = 0; frame_number < animation->GetNumFrames(); frame_number++) {
+    for (int frame_number = 0; !animation->IsEndOfAnimation(); frame_number++) {
+      int delay = animation->GetDelay();
       
       if (animation->ReadNextFrame((BGRA*) pixels) == false)
         break;
 
-      m_Spriteset->InsertImage(0);
-      CImage32& image = m_Spriteset->GetImage(0);
+      int current_image = m_Spriteset->GetNumImages();
+      m_Spriteset->InsertImage(current_image);
+      if (m_Spriteset->GetNumImages() != current_image + 1) {
+        delete[] pixels;
+        return;
+      }
+
+      CImage32& image = m_Spriteset->GetImage(current_image);
 
       for (int sy = 0; sy < image.GetHeight(); sy++) {
         for (int sx = 0; sx < image.GetWidth(); sx++) {
           image.SetPixel(sx, sy, pixels[sy * animation->GetWidth() + sx]);
         }
       }
+
+      m_Spriteset->InsertFrame(current_direction, frame_number);
+      if (true /*m_Spriteset->GetNumFrames(direction) == */) {
+        m_Spriteset->SetFrameIndex(current_direction, frame_number, current_image);
+        m_Spriteset->SetFrameDelay(current_direction, frame_number, delay);
+      }
     }
+
+    m_Spriteset->DeleteFrame(current_direction, m_Spriteset->GetNumFrames(current_direction) - 1);
 
     delete[] pixels;
   }
-  */
 
   UpdateMaxSizes(); 
   UpdateScrollBars();

@@ -34,10 +34,13 @@ void
 CLogDispatcher::AddLog(CLog* log, bool auto_delete)
 {
   SLogNode* p = new SLogNode;
+  if (!p)
+    return;
+
   p->next        = NULL;
   p->log         = log;
   p->auto_delete = auto_delete;
-  
+
   if (m_Head == NULL)
     m_Head = p;
   else

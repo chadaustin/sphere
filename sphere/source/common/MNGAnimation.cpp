@@ -10,6 +10,7 @@ CMNGAnimation::CMNGAnimation()
 , m_stream(NULL)
 , m_frame_buffer(NULL)
 , m_first_display(true)
+, m_end_of_animation(false)
 {
 }
 
@@ -32,6 +33,8 @@ CMNGAnimation::Load(const char* filename, IFileSystem& fs)
   if (m_file == NULL) {
     return false;
   }
+
+  m_end_of_animation = false;
 
   // initialize MNG playback
   m_stream = mng_initialize(this, CB_Allocate, CB_Free, NULL);
@@ -97,14 +100,24 @@ CMNGAnimation::GetDelay()
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMNGAnimation::IsEndOfAnimation()
+{
+  return m_end_of_animation;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMNGAnimation::ReadNextFrame(RGBA* frame_buffer)
 {
   if (m_first_display) {
     mng_display(m_stream);
     m_first_display = false;
+    m_end_of_animation = false;
   } else {
     if (mng_display_resume(m_stream) != MNG_NEEDTIMERWAIT) {
       mng_display_reset(m_stream);  // repeat
+      m_end_of_animation = true;
     }
   }
 

@@ -19,6 +19,7 @@ public:
   int GetHeight();
   int GetNumFrames();
   int GetDelay();
+  bool IsEndOfAnimation();
 
   bool ReadNextFrame(RGBA* FrameBuffer);
   bool ReadNextFrame(BGRA* FrameBuffer);
