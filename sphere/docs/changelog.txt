@@ -1,4 +1,6 @@
 2004.03.06
+  - Abort can now be done like Abort("Some error") or Abort("Some message\n");
+    The \n on the end means no file/line info is drawn to the screen
   - Added File->Options->General File Types page where there's a Open Unknown File Types As Text option
   - Added AttachPlayerInput/DetachPlayerInput
 

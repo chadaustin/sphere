@@ -73,6 +73,10 @@ Exit()
 Abort(message)
   - Exits the Sphere engine unconditionally, displays the 'message' to the 
     user
+    If you end the message with a newline it wont display the file/line
+    where the Abort occured.
+    e.g. Abort("Mistake here")
+     vs. Abort("Game over!\n");
 
 
 *** debugging (the log object) ***
