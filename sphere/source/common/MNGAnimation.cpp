@@ -17,18 +17,7 @@ CMNGAnimation::CMNGAnimation()
 
 CMNGAnimation::~CMNGAnimation()
 {
-  if (m_frame_buffer) {
-    delete[] m_frame_buffer;
-    m_frame_buffer = NULL;
-  }
-
-  if (m_stream) {
-    mng_cleanup(&m_stream);
-    m_stream = NULL;
-  }
-
-  delete m_file;
-  m_file = 0;
+  Destroy();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,7 +25,7 @@ CMNGAnimation::~CMNGAnimation()
 bool
 CMNGAnimation::Load(const char* filename, IFileSystem& fs)
 {
-  this->~CMNGAnimation();
+  Destroy();
 
   // open the file
   m_file = fs.Open(filename, IFileSystem::read);
@@ -132,6 +121,25 @@ CMNGAnimation::ReadNextFrame(BGRA* frame_buffer)
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CMNGAnimation::Destroy()
+{
+  if (m_frame_buffer) {
+    delete[] m_frame_buffer;
+    m_frame_buffer = NULL;
+  }
+
+  if (m_stream) {
+    mng_cleanup(&m_stream);
+    m_stream = NULL;
+  }
+
+  delete m_file;
+  m_file = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

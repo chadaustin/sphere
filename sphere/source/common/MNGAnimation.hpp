@@ -24,6 +24,8 @@ public:
   bool ReadNextFrame(BGRA* FrameBuffer);
 
 private:
+  void Destroy();
+
   // libmng callbacks
   static mng_ptr    MNG_DECL CB_Allocate(mng_size_t len);
   static void       MNG_DECL CB_Free(mng_ptr ptr, mng_size_t len);
