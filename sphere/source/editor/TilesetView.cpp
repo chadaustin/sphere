@@ -1041,7 +1041,13 @@ afx_msg void
 CTilesetView::OnDeleteTile()
 {
   // don't allow the tileset to be less than 1 tile
-  if (m_Tileset->GetNumTiles() > 1) {
+  if (m_Tileset->GetNumTiles() > 1)
+  {
+    int result = MessageBox("Delete selected tile?", "Delete Tile", MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2);
+    if (result == IDNO) {
+      return;
+    }
+
     // adjust map tile indices around
     m_Handler->TV_DeletedTiles(m_SelectedTile, 1);
  
