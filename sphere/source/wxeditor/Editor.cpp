@@ -4,6 +4,7 @@
 #include "Configuration.hpp"
 #include "Keys.hpp"
 #include "Debug.hpp"
+#include "../common/sphere_version.h"
 //#include "../engine/win32/win32_sphere_config.hpp"
 
 
@@ -81,7 +82,7 @@ EditorApplication::OnInit()
   wxSetWorkingDirectory(directory);
 
   // create the main window
-  wMainWindow* main_window = new wMainWindow("Sphere", wxDefaultPosition, wxSize(640, 480), wxDEFAULT_FRAME_STYLE | wxMAXIMIZE);
+  wMainWindow* main_window = new wMainWindow("Sphere wxEditor " SPHERE_VERSION, wxDefaultPosition, wxSize(640, 480), wxDEFAULT_FRAME_STYLE | wxMAXIMIZE);
 
   SetMainWindow(main_window);
 
