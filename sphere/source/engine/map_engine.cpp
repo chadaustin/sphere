@@ -2018,6 +2018,9 @@ CMapEngine::LoadMapPersons()
       p.y     = person.y;
       p.layer = person.layer;
 
+      p.speed_x = 1;
+      p.speed_y = 1;
+
       // load spriteset
       p.spriteset = m_Engine->LoadSpriteset(person.spriteset.c_str());
       if (p.spriteset == NULL) {
