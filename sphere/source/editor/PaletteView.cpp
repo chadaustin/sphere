@@ -3,6 +3,8 @@
 #include "../common/rgb.hpp"
 #include "Editor.hpp"
 
+// 2004-06-24 //
+
 static int s_iPaletteViewID = 1000;
 
 
@@ -102,7 +104,7 @@ CPaletteView::UpdatePalette(int w, int h, int pitch, BGR* pixels)
 
     BGR color1 = Rainbow[(section + 0) % NumColorSections];
     BGR color2 = Rainbow[(section + 1) % NumColorSections];
-    
+
     // calculate average color
     BGR rgb;
     rgb.red   = (color1.red   * (255 - weight) + color2.red   * weight) / 256;

@@ -1,7 +1,7 @@
 #ifndef PALETTE_VIEW_HPP
 #define PALETTE_VIEW_HPP
 
-
+// 2004-06-24 //
 
 #include <afxwin.h>
 #include "../common/rgb.hpp"
@@ -26,9 +26,10 @@ public:
 
   BOOL Create(IPaletteViewHandler* pHandler, CWnd* pParentWindow);
 
-  RGB GetColor() const;
+  RGB GetColor(int index = 0) const;
 
 private:
+  bool UpdateColor(int index, UINT flags, CPoint point);
   void UpdatePalette(int w, int h, int pitch, BGR* pixels);
 
   afx_msg void OnPaint();
@@ -43,8 +44,8 @@ private:
   IPaletteViewHandler* m_pHandler;
 
   CDIBSection* m_pPaletteDIB;
-  RGB          m_Color;
-  bool         m_bMouseDown;
+  RGB          m_Colors[2];
+  bool         m_bMouseDown[2];
 
   DECLARE_MESSAGE_MAP()
 };
