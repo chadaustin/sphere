@@ -52,6 +52,11 @@ CMNGAnimation::Load(const char* filename, IFileSystem& fs)
     && MNG_NOERROR == mng_setcb_settimer(m_stream, CB_SetTimer)) == false)
      return false;
 
+#if (MNG_VERSION_MAJOR > 1 || (MNG_VERSION_MAJOR == 1 && MNG_VERSION_MINOR > 6))
+   if (mng_setcb_processterm(m_stream, CB_ProcessTerm) != MNG_NOERROR)
+     return false;
+#endif
+
   // do some reading
   if (mng_read(m_stream) != MNG_NOERROR) {
     return false;
@@ -113,10 +118,11 @@ CMNGAnimation::IsEndOfAnimation()
 bool
 CMNGAnimation::ReadNextFrame(RGBA* frame_buffer)
 {
+  m_end_of_animation = false;
+
   if (m_first_display) {
     mng_display(m_stream);
     m_first_display = false;
-    m_end_of_animation = false;
   } else {
 
     if (mng_display_resume(m_stream) != MNG_NEEDTIMERWAIT) {
@@ -266,5 +272,27 @@ CMNGAnimation::CB_SetTimer(mng_handle handle, mng_uint32 msecs)
   This->m_delay = msecs;
   return MNG_TRUE;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+#if (MNG_VERSION_MAJOR > 1 || (MNG_VERSION_MAJOR == 1 && MNG_VERSION_MINOR > 6))
+mng_bool MNG_DECL
+CMNGAnimation::CB_ProcessTerm(mng_handle handle, mng_uint8 /* iTermaction*/,
+                              mng_uint8 /* iIteraction */,
+                              mng_uint32 /* iDelay */, mng_uint32 /* iItermax */)
+{
+  CMNGAnimation* This = (CMNGAnimation*)mng_get_userdata(handle);
+  This->m_end_of_animation = true;
+  return MNG_TRUE;
+}
+
+mng_bool   MNG_DECL
+CMNGAnimation::CB_ProcessMend(mng_handle handle, mng_uint32 iIterationsdone, mng_uint32 iIterationsleft)
+{
+  CMNGAnimation* This = (CMNGAnimation*)mng_get_userdata(handle);
+  This->m_end_of_animation = true;
+  return MNG_TRUE;
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////

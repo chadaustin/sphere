@@ -837,7 +837,6 @@ CSpritesetView::OnInsertDirectionFromImage()
       int current_image = m_Spriteset->GetNumImages();
       int current_frame = old_current_frame + i;
       
-
       m_Spriteset->InsertImage(current_image);
 
       if (current_image < m_Spriteset->GetNumImages()) {
@@ -856,8 +855,9 @@ CSpritesetView::OnInsertDirectionFromImage()
 
         if (current_direction < m_Spriteset->GetNumDirections())
         {
+          int __num_frames__ = m_Spriteset->GetNumFrames(current_direction) + 1;
           m_Spriteset->InsertFrame(current_direction, current_frame);
-          if (current_frame < m_Spriteset->GetNumFrames(current_direction)) {
+          if (__num_frames__ == m_Spriteset->GetNumFrames(current_direction)) {
             m_Spriteset->SetFrameIndex(current_direction, current_frame, current_image);
           }
         }
@@ -865,7 +865,8 @@ CSpritesetView::OnInsertDirectionFromImage()
       }
     }
 
-    m_Spriteset->DeleteFrame(current_direction, m_Spriteset->GetNumFrames(current_direction) - 1);
+    if (m_Spriteset->GetNumFrames(current_direction) > 0)
+      m_Spriteset->DeleteFrame(current_direction, m_Spriteset->GetNumFrames(current_direction) - 1);
 
   }
 
@@ -922,29 +923,47 @@ CSpritesetView::OnInsertDirectionFromAnimation()
       if (animation->IsEndOfAnimation())
         break;
 
-      int current_image = m_Spriteset->GetNumImages();
-      m_Spriteset->InsertImage(current_image);
-      if (m_Spriteset->GetNumImages() != current_image + 1) {
-        delete[] pixels;
-        return;
-      }
+      int current_image = -1;
 
-      CImage32& image = m_Spriteset->GetImage(current_image);
-
-      for (int sy = 0; sy < image.GetHeight(); sy++) {
-        for (int sx = 0; sx < image.GetWidth(); sx++) {
-          image.SetPixel(sx, sy, pixels[sy * animation->GetWidth() + sx]);
+      if (1) {
+        for (int i = 0; i < m_Spriteset->GetNumImages(); i++) {
+          if (animation->GetWidth()  == m_Spriteset->GetImage(i).GetWidth()
+           && animation->GetHeight() == m_Spriteset->GetImage(i).GetHeight()) {
+            if (memcmp(pixels, m_Spriteset->GetImage(i).GetPixels(), sizeof(RGBA) * animation->GetWidth() * animation->GetHeight()) == 0) {
+              current_image = i;
+              break;
+            }
+          }
         }
       }
 
+      if (current_image == -1) {
+        current_image = m_Spriteset->GetNumImages();
+        m_Spriteset->InsertImage(current_image);
+
+        if (m_Spriteset->GetNumImages() != current_image + 1) {
+          delete[] pixels;
+          return;
+        }
+
+        CImage32& image = m_Spriteset->GetImage(current_image);
+        for (int sy = 0; (sy < image.GetHeight() && sy < animation->GetHeight()); sy++) {
+          for (int sx = 0; (sx < image.GetWidth() && sx < animation->GetWidth()); sx++) {
+            image.SetPixel(sx, sy, pixels[sy * animation->GetWidth() + sx]);
+          }
+        }
+      }
+
+      int __num_frames__ = m_Spriteset->GetNumFrames(current_direction) + 1;
       m_Spriteset->InsertFrame(current_direction, frame_number);
-      if (true /*m_Spriteset->GetNumFrames(direction) == */) {
+      if (m_Spriteset->GetNumFrames(current_direction) == __num_frames__) {
         m_Spriteset->SetFrameIndex(current_direction, frame_number, current_image);
         m_Spriteset->SetFrameDelay(current_direction, frame_number, delay);
       }
     }
 
-    m_Spriteset->DeleteFrame(current_direction, m_Spriteset->GetNumFrames(current_direction) - 1);
+    if (m_Spriteset->GetNumFrames(current_direction) > 0)
+      m_Spriteset->DeleteFrame(current_direction, m_Spriteset->GetNumFrames(current_direction) - 1);
 
     delete[] pixels;
   }

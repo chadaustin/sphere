@@ -41,6 +41,11 @@ private:
   static mng_uint32 MNG_DECL CB_GetTickCount(mng_handle handle);
   static mng_bool   MNG_DECL CB_SetTimer(mng_handle handle, mng_uint32 msecs);
 
+#if (MNG_VERSION_MAJOR > 1 || (MNG_VERSION_MAJOR == 1 && MNG_VERSION_MINOR > 6))
+  static mng_bool   MNG_DECL CB_ProcessTerm(mng_handle handle, mng_uint8 iTermaction, mng_uint8 iIteraction, mng_uint32 iDelay, mng_uint32 iItermax);
+  static mng_bool   MNG_DECL CB_ProcessMend(mng_handle  hHandle, mng_uint32  iIterationsdone, mng_uint32  iIterationsleft);
+#endif
+
 private:
   IFile* m_file;
 
