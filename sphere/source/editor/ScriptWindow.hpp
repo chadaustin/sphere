@@ -22,6 +22,7 @@ private:
 
   void SetScriptStyles();
   void SetStyle(int style, COLORREF fore, COLORREF back = 0xFFFFFF, int size = -1, const char* face = 0);
+  void RememberConfiguration();
 
   bool LoadScript(const char* filename);
   void GetEditorText(CString& text);
@@ -59,6 +60,7 @@ private:
   int m_TabWidth;
   bool m_KeyWordStyleIsBold;
   bool m_ShowLineNumbers;
+  int m_FontSize;
 
   CFindReplaceDialog* m_SearchDialog;
 

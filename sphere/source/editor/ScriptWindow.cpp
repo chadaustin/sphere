@@ -152,7 +152,7 @@ CScriptWindow::SetScriptStyles() {
 
   SendEditor(SCI_SETPROPERTY, (WPARAM)"fold", (LPARAM)"1");
 
-  SetStyle(STYLE_DEFAULT, black, white, 10, m_Fontface.c_str());
+  SetStyle(STYLE_DEFAULT, black, white, m_FontSize, m_Fontface.c_str());
   SendEditor(SCI_STYLECLEARALL);
 
   SendEditor(SCI_SETMARGINWIDTHN, 1, 0); // assume no margin
@@ -162,7 +162,7 @@ CScriptWindow::SetScriptStyles() {
     SendEditor(SCI_SETMARGINWIDTHN, 1, 20); // we just need to resize it to see it
   }
 
-  SetStyle(SCE_C_DEFAULT, black, white, 10, m_Fontface.c_str());
+  SetStyle(SCE_C_DEFAULT, black, white, m_FontSize, m_Fontface.c_str());
 
   if (m_TabWidth > 0)
     SendEditor(SCI_SETTABWIDTH, m_TabWidth);
@@ -192,6 +192,7 @@ void
 CScriptWindow::Initialize()
 {
   m_Fontface = Configuration::Get(KEY_SCRIPT_FONT_NAME);
+  m_FontSize = Configuration::Get(KEY_SCRIPT_FONT_SIZE);
   m_SyntaxHighlighted = Configuration::Get(KEY_SCRIPT_SYNTAX_HIGHLIGHTED);
   m_TabWidth = Configuration::Get(KEY_SCRIPT_TAB_SIZE);
   m_KeyWordStyleIsBold = Configuration::Get(KEY_SCRIPT_KEYWORDS_IN_BOLD);
@@ -562,7 +563,7 @@ CScriptWindow::OnOptionsToggleColors()
 {
   m_SyntaxHighlighted = !m_SyntaxHighlighted;
   SetScriptStyles();
-  Configuration::Set(KEY_SCRIPT_SYNTAX_HIGHLIGHTED, m_SyntaxHighlighted);
+  RememberConfiguration();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -575,11 +576,10 @@ CScriptWindow::OnOptionsSetScriptFont()
   if (dlg.DoModal() == IDOK) {
 
     m_Fontface = std::string(dlg.GetFaceName());
+    m_FontSize = dlg.GetSize() / 10; // for a 12pt font dlg.GetSize() is 120
     SetScriptStyles();
-    Configuration::Set(KEY_SCRIPT_FONT_NAME, m_Fontface);
-
+    RememberConfiguration();
   }
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -587,13 +587,11 @@ CScriptWindow::OnOptionsSetScriptFont()
 afx_msg void
 CScriptWindow::OnOptionsSetTabSize()
 {
-  CNumberDialog dialog("Enter new tab width value", "Value", m_TabWidth, 1, 8);
-  if (dialog.DoModal()) {
-    if (dialog.GetValue() > 0) {
-      m_TabWidth = dialog.GetValue();
-      SetScriptStyles();
-      Configuration::Set(KEY_SCRIPT_TAB_SIZE, m_TabWidth);
-    }
+  CNumberDialog dialog("Enter new tab width value", "Value", m_TabWidth, 2, 8);
+  if (dialog.DoModal() == IDOK) {
+    m_TabWidth = dialog.GetValue();
+    SetScriptStyles();
+    RememberConfiguration();
   }
 }
 
@@ -604,6 +602,18 @@ CScriptWindow::OnOptionsToggleLineNumbers()
 {
   m_ShowLineNumbers = !m_ShowLineNumbers;
   SetScriptStyles();
+  RememberConfiguration();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CScriptWindow::RememberConfiguration()
+{
+  Configuration::Set(KEY_SCRIPT_FONT_NAME, m_Fontface);
+  Configuration::Set(KEY_SCRIPT_FONT_SIZE, m_FontSize);
+  Configuration::Set(KEY_SCRIPT_TAB_SIZE, m_TabWidth);
+  Configuration::Set(KEY_SCRIPT_SYNTAX_HIGHLIGHTED, m_SyntaxHighlighted);
   Configuration::Set(KEY_SCRIPT_SHOW_LINE_NUMBERS, m_ShowLineNumbers);
 }
 
