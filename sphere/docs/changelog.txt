@@ -1,3 +1,94 @@
+2003.01.22
+  - various fixes to the new SCons build system
+  - pruned source tree, getting rid of many obsolete directories and
+    files
+  - made build system convert text files from UNIX to DOS format when
+    installing them
+  - added an installer, which registers file types with Windows
+    (double-clicking on packages, finally!)
+
+2003.01.21
+  - fixed error message in GetPersonList() and made person name error
+    checking more compact (Brian Robb)
+  - reverted convert.js to be compatible with 0.97 games (Brian Robb)
+  - support building with VC6 and SCons in Cygwin (replacing the old
+    DevStudio build environment)
+
+2003.01.17
+  - changed OpenRawFile to take an optional writeable parameter,
+    defaults to false for compatibility with old games (Brian Robb)
+
+2003.01.16
+  - added raw_file.write() (Brian Robb)
+
+2003.01.15
+  - changing the script font remembers the font size (Brian Robb)
+  - added Get/SetLayerAlpha to the docs (Brian Robb)
+  - added GetLayerName() so you can refer to layers by name (Brian Robb)
+  - added GetObstructingTile/Person(name,x,y) to the map engine (Brian Robb)
+
+2003.01.14
+  - added more script editor options (change font, tab size, toggle
+    highlighting) (Brian Robb)
+  - added RequireScript() and RequireSystemScript() (Brian Robb)
+  - added spriteset color replacer (Brian Robb)
+  - added layerview -> export all visible layers as image (Brian Robb)
+  - added Get/SetMapEngineFrameRate() (Brian Robb)
+  - added Ignore{Person,Tile}Obstructions() and
+    IsIgnoring{Person,Tile}Obstructions() (Brian Robb)
+  - fixed bug where it was possible to undo after first opening a
+    script (Brian Robb)
+  - fixed bug where it was possible to set a frame rate of 0 using
+    MapEngine(map, 0) (Brian Robb)
+  - added line numbers in script dialog (Brian Robb)
+
+2003.01.13
+  - slightly tweaked trigger locations so you cannot slip between two
+    adjacent ones
+  - cannot delete a tile if there is only one left (Brian Robb)
+  - optionally prune tileset when using Import Image To Map (Brian Robb)
+  - added map -> slide -> up/right/down/left (doesn't move entities though)
+    (Brian Robb)
+  - added layer view -> slide -> up/right/down/left (Brian Robb)
+  - replace color with new color in tileset range (Brian Robb)
+  - layers are no longer reflective by default (Brian Robb)
+  - Change Font option in the script editor (Brian Robb)
+
+2003.01.12
+  - add support for exporting spritesets as images
+  - add support for stretched window style backgrounds
+  - add a drawZoomedFrame method to animation objects
+  - fix SetFrameRate(0)
+  - add keyboard shortcuts to the font editor so you can press a
+    letter and jump to that character.  you can also use arrow keys.
+  - added left and right arrow keyboard shortcuts to the map/tileset
+    editor.
+  - added keyboard shortcuts for some of the obstruction things
+  - added ability to paste RGB or alpha into image editor (Brian Robb)
+  - added GetCurrentMap() function (Brian Robb)
+  - added an option for drawing a grid in the image editor
+  - removed BlendPaste and changed Negative Image so it can choose
+    between RGB/Alpha/Both
+  - added GetTalkDistance() and GetTalkActivationKey() (Brian Robb)
+  - added a menu option in the map editor to lock the layers in place
+    so you don't accidentally drag them around (Brian Robb)
+  - added support for joysticks
+  - added IsTriggerAt() and ExecuteTrigger() (Brian Robb)
+
+2003.01.11
+  - display the Corona and Audiere version numbers in Help | About.
+    Also update copyright to 2003
+  - partially fix resource leak when switching between editor
+    windows.  this should alleviate a few random editor crashes.
+  - document alt-f4 in keys.txt
+  - added documentation that says you shouldn't use SetFrameRate() at
+    the same time as the map engine
+  - added NegativeImage and Solarize to image editor (Brian Robb)
+  - added a GetVersion() function that returns the current version as
+    a floating point number
+  - added some documentation for packages
+  - added a surface.replaceColor method
+
 2003.01.09
   - fix bug where Sphere would assign "north" to person entities that
     didn't even have a "north" direction.
@@ -8,7 +99,113 @@
     Sphere think smaller map is bigger than it really is
   - when inserting person entities into a map, put them one more pixel
     up and one more pixel left so they are aligned with tiles.
-  - Started changelog.  SourceForge got rid of the mailing
-    list archives (rather, they "haven't archived sphere-commits yet".
-    They suck.
   - animate obstructions with tiles
+  - ExecuteGame() changes so drivers don't keep images around
+    after the driver has been destroyed.  this prevents sphere_gl
+    texture corruption.
+  - fix a crash bug in the FLIC animation code. prevents some crashes
+    from invalid FLIC animation files.
+  - fix a crash bug in the MNG animation code
+  - fix memory leak in DestroyPerson()
+  - don't allow setPixel() or getPixel() to access pixels outside of
+    the surface
+  - standard32: don't crash when creating a surface from an image with
+    an alpha of 0
+
+2003.01.08
+  - sphere_gl: don't put a border around the window when running
+    fullscreen
+  - sphere_gl: fix GrabImage in sphere_gl
+
+2003.01.06
+  - fix a horrible invalid memory usage bug in config.exe
+
+2003.01.05
+  - added GetTileWidth and GetTileHeight to the docs
+  - added ReplaceTilesOnLayer function
+  - don't allow SetFrameRate() to take an fps less than 1
+
+2002.12.29
+  - Got Sphere to build in Cygwin with SCons (100% free software!)
+
+2002.12.28
+  - removed GetCurrentMap() from documentation, because it doesn't
+    actually exist
+  - fixed animation_object's width and height documentation
+  - added some documentation for animation_object's getNumFrames()
+    method
+  - documented system keypresses (F1 = toggle framerate throttle in
+    map engine, F11 = show fps, F12 = take screenshot)
+
+2002.12.24
+  - Fixed clipping in ApplyColorFX() (Lyell Embery)
+  - Bug fix:  MapToScreenX/Y() and ScreenToMapX/Y() were doing
+    something other than converting from map to screen coordinates
+    (and vice versa) (Lyell Embery)
+
+2002.12.23
+  - added ColorMatrix object and applyColorFX4 method to surface
+    objects (Lyell Embery)
+
+2002.12.21
+  - added ApplyColorFX() method to surface objects (Lyell Embery)
+  - added Flik's colorspace conversion system script
+  - added Flik's math.js system script
+
+2002.12.12
+  - added SetPersonFrameRevert(), which allows a person to revert to
+    the first frame of an animation after a given amount of frames
+    (Lyell Embery)
+  - added floating point precision on person object positions
+
+2002.12.11
+  - added Daroth's map_animation.js system script
+  - added documentation for map_animation.js script
+
+2002.11.08
+  - added support for movement speeds other than 1 (Lyell Embery)
+  - fixed potential crash when sound objects are destroyed
+
+2002.11.04
+  - added support for zones (Lyell Embery)
+  - added a wxeditor port of the old MFC editor (Lyell Embery)
+
+2002.10.14
+  - clarified GetPersonX and GetPersonY documentation
+
+2002.10.12
+  - upgraded Sphere to new audiere, allowing user to choose whether to
+    run without sound or not
+  - added panning and pitch shifting to sound objects
+
+2002.09.20
+  - fixed bug: infinite recursion of search text is in replace text
+    (Lyell Embery)
+  - switch focus to clicked scripts (Lyell Embery)
+
+2002.09.08
+  - added obstruction move tool (Lyell Embery)
+  - holding control while placing obstructions aligns the endpoints to
+    tile_width / 4 (Lyell Embery)
+  - draws an xor line when adding or moving an obstruction line (Lyell Embery)
+
+2002.08.04
+  - added Flik's layers system script
+  - fix bug where Sphere wouldn't report errors in render or update
+    scripts (by reverting to an older version of the JS engine)
+
+2002.07.28
+  - added IsLayerVisible and SetLayerVisible to the documentation
+
+2002.06.23
+  - clarified GetFrameRate() documentation
+
+2002.06.21
+  - reset map engine frame throttling if an update script takes more
+    than a second
+
+2002.06.20
+  - if an audio context can't be opened, try to open the null one
+
+2002.06.17
+  - 0.97 release
