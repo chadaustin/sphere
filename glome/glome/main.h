@@ -5,7 +5,7 @@
 #include "DefaultFile.hpp"
 
 static const wxChar *gs_PROJTITLE = "Glome";
-static const wxChar *gs_PROJVERS = "\nv.01a (" + __DATE__ + ")\n\n";
+static const wxChar *gs_PROJVERS = "\nv.01a (2002.04.27)\n\n";
 static const wxChar *gs_PROJAUTH = "Brandon Mechtley, Ted Reed";
 
 // our application
