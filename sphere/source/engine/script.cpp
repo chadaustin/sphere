@@ -6444,19 +6444,14 @@ begin_method(SS_SURFACE, ssSurfaceCloneSection, 4)
   arg_int(w);
   arg_int(h);
 
-  if (x < 0) {
-    x = 0;
-  }
-  if (y < 0) {
-    y = 0;
+  if (x < 0 || y < 0 || x > object->surface->GetWidth() || y > object->surface->GetHeight()) {
+    JS_ReportError(cx, "surface_object.cloneSection(%d, %d, %d, %d) failed\nInvalid x, y...", x, y, w, h);
+    return JS_FALSE;
   }
 
-  if (x + w > object->surface->GetWidth()) {
-    w = object->surface->GetWidth() - x;
-  }
-
-  if (y + h > object->surface->GetHeight()) {
-    h = object->surface->GetHeight() - y;
+  if (w < 0 || h < 0 || x + w > object->surface->GetWidth() || y + h > object->surface->GetHeight()) {
+    JS_ReportError(cx, "surface_object.cloneSection(%d, %d, %d, %d) failed\nInvalid w, h...\n", x, y, w, h);
+    return JS_FALSE;
   }
 
   // create surface object
