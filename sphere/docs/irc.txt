@@ -1,7 +1,6 @@
 How to get to #sphere
 
-Get mIRC at http://www.mirc.com/.
-Install mIRC.
+Get XChat at http://www.xchat.org/
 Connect to server irc.esper.net, port 5555.
 Join channel #sphere.
 Say hello.  :)
