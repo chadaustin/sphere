@@ -846,14 +846,258 @@ inline SS_FONT* argFont(JSContext* cx, jsval arg)
   }
 
   if (font->magic != SS_FONT_MAGIC) {
-    JS_ReportError(cx, "Invalid font object");
+    JS_ReportError(cx, "Invalid font object magic");
     return NULL;
   }
 
   return font;
 }
 
+inline sSpriteset* argSpriteset(JSContext* cx, jsval arg)
+{
+  JSObject* obj = JSVAL_TO_OBJECT(arg);
 
+  if (!argObject(cx, arg)) {
+    JS_ReportError(cx, "Invalid object.");
+    return NULL;
+  }
+
+  jsval images_array;
+  if ( !JS_GetProperty(cx, obj, "images", &images_array) ) {
+    JS_ReportError(cx, "spriteset.images array property doesn't appear to exist.");
+    return NULL;
+  }
+
+  jsval base_obstruction_val;
+  if ( !JS_GetProperty(cx, obj, "base", &base_obstruction_val) ) {
+    JS_ReportError(cx, "spriteset.base object property doesn't appear to exist.");
+    return NULL;
+  }
+
+  jsval x1_val, y1_val, x2_val, y2_val;
+
+  JSObject* base_obstruction_object = JSVAL_TO_OBJECT(base_obstruction_val);
+  if ( !JS_GetProperty(cx, base_obstruction_object, "x1", &x1_val)
+    || !JS_GetProperty(cx, base_obstruction_object, "y1", &y1_val)
+    || !JS_GetProperty(cx, base_obstruction_object, "x2", &x2_val)
+    || !JS_GetProperty(cx, base_obstruction_object, "y2", &y2_val)) {
+      JS_ReportError(cx, "spriteset.base object is invalid.");    
+      return NULL;
+    }
+
+  if (!argArray(cx, images_array)) {
+    JS_ReportError(cx, "Invalid spriteset.images array.");
+    return NULL;
+  }
+
+  jsuint num_images;
+  JSObject* images_object = JSVAL_TO_OBJECT(images_array);
+
+  if ( !JS_GetArrayLength(cx, images_object, &num_images) ) {
+    JS_ReportError(cx, "Invalid spriteset.images array length.");
+    return NULL;
+  }
+
+  if (num_images <= 0) {
+    JS_ReportError(cx, "Invalid spriteset.images length");
+    return NULL;
+  }
+
+  CImage32* images = new CImage32[num_images];
+  if (images == NULL) {
+    JS_ReportError(cx, "Cannot allocate space for spriteset.images (%d)", num_images);
+    return NULL;
+  }
+
+  for (int i = 0; i < num_images; i++) {
+    jsval image;
+    if ( !JS_GetElement(cx, images_object, i, &image) ) {
+      JS_ReportError(cx, "Invalid image %d", i);
+      return NULL;
+    } else {
+      SS_IMAGE* ss_image = argImage(cx, image);
+      if (ss_image == NULL) {
+        JS_ReportError(cx, "Invalid image: spriteset.images[%d]", i);
+        delete[] images;
+        return NULL;
+      }
+
+      int width  = GetImageWidth(ss_image->image);
+      int height = GetImageHeight(ss_image->image);
+
+      if (width <= 0) {
+        JS_ReportError(cx, "Invalid image width %d %d", width, i);
+        delete[] images;
+        return NULL;
+      }
+
+      if (height <= 0) {
+        JS_ReportError(cx, "Invalid image height %d %d", height, i);
+        delete[] images;
+        return NULL;
+      }
+
+      RGBA* pixels = LockImage(ss_image->image);
+      CImage32 tmp = CImage32(width, height, pixels);
+      images[i] = tmp;
+      UnlockImage(ss_image->image);
+
+    }
+  }
+
+  int frame_width = 0;
+  int frame_height = 0;
+
+  for (int i = 0; i < num_images; i++) {
+
+    if (i == 0) {
+      frame_width  = images[i].GetWidth();
+      frame_height = images[i].GetHeight();
+    }
+
+    if (frame_width != images[i].GetWidth() || frame_width <= 0) {
+      JS_ReportError(cx, "Invalid frame width %d %d %d", i, frame_width, images[i].GetWidth());
+      delete[] images;
+      return NULL;
+    }
+
+    if (frame_height != images[i].GetHeight() || frame_height <= 0) {
+      JS_ReportError(cx, "Invalid frame height %d %d %d", i, frame_height, images[i].GetHeight());
+      delete[] images;
+      return NULL;
+    }
+  }
+
+  int x1 = argInt(cx, x1_val);
+  int y1 = argInt(cx, y1_val);
+  int x2 = argInt(cx, x2_val);
+  int y2 = argInt(cx, y2_val);
+
+  jsval directions_array;
+  if ( !JS_GetProperty(cx, obj, "directions", &directions_array) ) {
+    JS_ReportError(cx, "spriteset.directions array property doesn't appear to exist.");
+    delete[] images;
+    return NULL;
+  }
+
+  if (!argArray(cx, directions_array)) {
+    JS_ReportError(cx, "Invalid spriteset.directions array.");
+    delete[] images;
+    return NULL;
+  }
+
+  jsuint num_directions = 0;
+  JSObject* directions_object = JSVAL_TO_OBJECT(directions_array);
+
+  if ( !JS_GetArrayLength(cx, directions_object, &num_directions) ) {
+    JS_ReportError(cx, "Invalid spriteset.directions array length.");
+    delete[] images;
+    return NULL;
+  }
+
+  if (num_directions <= 0) {
+    JS_ReportError(cx, "Invalid spriteset.directions length");
+    delete[] images;
+    return NULL;
+  }
+
+  sSpriteset* s = new sSpriteset();
+  if (s == NULL) {
+    JS_ReportError(cx, "Unable to allocate memory for spriteset");
+    delete[] images;
+    return NULL;
+  }
+
+  s->Create(frame_width, frame_height, num_images, num_directions, 0);
+  for (int i = 0; i < num_images; i++) {
+    s->GetImage(i) = images[i];
+  }
+  delete[] images;
+
+  s->SetBase(x1, y1, x2, y2);
+
+  for (int i = 0; i < num_directions; i++) {
+
+    jsval direction_object_val;
+    if ( !JS_GetElement(cx, directions_object, i, &direction_object_val) ) {
+      JS_ReportError(cx, "Invalid spriteset.directions[%d] object", i);
+      return NULL;
+    }
+
+    JSObject* direction_object = JSVAL_TO_OBJECT(direction_object_val);
+    jsval direction_name;
+
+    if ( !JS_GetProperty(cx, direction_object, "name", &direction_name) ) {
+      JS_ReportError(cx, "spriteset.directions[%d].name property doesn't appear to exist.", i);
+      return NULL;
+    }
+
+    s->SetDirectionName(i, argStr(cx, direction_name));
+
+    jsval frames_array_val;
+
+    if ( !JS_GetProperty(cx, direction_object, "frames", &frames_array_val) ) {
+      JS_ReportError(cx, "spriteset.directions[%d].frames property doesn't appear to exist.", i);
+      return NULL;
+    }
+
+    JSObject* frames_array = JSVAL_TO_OBJECT(frames_array_val);
+    jsuint num_frames = 0;
+
+    if ( !JS_GetArrayLength(cx, frames_array, &num_frames) ) {
+      JS_ReportError(cx, "Invalid spriteset.directions[%d].frames array length.", i);
+      return NULL;
+    }
+
+    if (num_frames <= 0) {
+      JS_ReportError(cx, "Invalid spriteset.directions[%d].frames length", i);
+      return NULL;
+    }
+
+    for (int j = 0; j < num_frames; j++) {
+      jsval frame_val;
+
+      if ( !JS_GetElement(cx, frames_array, j, &frame_val) ) {
+        JS_ReportError(cx, "Invalid spriteset.directions[%d].frames[%d] object", i, j);
+        return NULL;
+      }
+
+      JSObject* frame_object = JSVAL_TO_OBJECT(frame_val);
+
+      jsval frame_index_val;
+      if ( !JS_GetProperty(cx, frame_object, "index", &frame_index_val) ) {
+        JS_ReportError(cx, "spriteset.directions[%d].frames[%d].index property doesn't appear to exist.", i, j);
+        return NULL;
+      }
+
+      int frame_index = argInt(cx, frame_index_val);
+
+      if (frame_index < 0 || frame_index >= num_images) {
+        JS_ReportError(cx, "spriteset.directions[%d].frames[%d].index is an invalid image index of %d", i, j, frame_index);
+        return NULL;
+      }
+
+      jsval frame_delay_val = 0;
+      if ( !JS_GetProperty(cx, frame_object, "delay", &frame_delay_val) ) {
+        JS_ReportError(cx, "spriteset.directions[%d].frames[%d].delay property doesn't appear to exist.", i, j);
+        return NULL;
+      }
+
+      int frame_delay = argInt(cx, frame_delay_val);
+
+      if (frame_delay < 0) {
+        JS_ReportError(cx, "spriteset.directions[%d].frames[%d].delay has an invalid value", i, j);
+        return NULL;
+      }
+
+      s->InsertFrame(i, j);
+      s->SetFrameDelay(i, j, frame_delay);
+      s->SetFrameIndex(i, j, frame_index);
+    }
+  }
+
+  return s;
+}
 
 #define arg_int(name)        int name           = argInt(cx, argv[arg++]);                                            if (This->m_ShouldExit) return JS_FALSE
 #define arg_str(name)        const char* name   = argStr(cx, argv[arg++]);                                            if (This->m_ShouldExit) return JS_FALSE
@@ -4116,226 +4360,16 @@ begin_method(SS_SPRITESET, ssSpritesetSave, 1)
   std::string path = "spritesets/";
   path += filename;
 
-  if (!argObject(cx, OBJECT_TO_JSVAL(obj))) {
-    JS_ReportError(cx, "Invalid object.");
+  sSpriteset* s = argSpriteset(cx, OBJECT_TO_JSVAL(obj));
+  if (s == NULL) {
+   // JS_ReportError(cx, "spriteset.save failed");
     return JS_FALSE;
   }
 
-  jsval images_array;
-  if ( !JS_GetProperty(cx, obj, "images", &images_array) ) {
-    JS_ReportError(cx, "spriteset.images array property doesn't appear to exist.");
-    return JS_FALSE;
-  }
+  bool saved = s->Save(path.c_str());
+  delete s;
 
-  jsval base_obstruction_val;
-  if ( !JS_GetProperty(cx, obj, "base", &base_obstruction_val) ) {
-    JS_ReportError(cx, "spriteset.base object property doesn't appear to exist.");
-    return JS_FALSE;
-  }
-
-  jsval x1_val, y1_val, x2_val, y2_val;
-
-  JSObject* base_obstruction_object = JSVAL_TO_OBJECT(base_obstruction_val);
-  if ( !JS_GetProperty(cx, base_obstruction_object, "x1", &x1_val)
-    || !JS_GetProperty(cx, base_obstruction_object, "y1", &y1_val)
-    || !JS_GetProperty(cx, base_obstruction_object, "x2", &x2_val)
-    || !JS_GetProperty(cx, base_obstruction_object, "y2", &y2_val)) {
-      JS_ReportError(cx, "spriteset.base object is invalid.");    
-      return JS_FALSE;
-    }
-
-  if (!argArray(cx, images_array)) {
-    JS_ReportError(cx, "Invalid spriteset.images array.");
-    return JS_FALSE;
-  }
-
-  jsuint num_images;
-  JSObject* images_object = JSVAL_TO_OBJECT(images_array);
-
-  if ( !JS_GetArrayLength(cx, images_object, &num_images) ) {
-    JS_ReportError(cx, "Invalid spriteset.images array length.");
-    return JS_FALSE;
-  }
-
-  if (num_images <= 0) {
-    JS_ReportError(cx, "Invalid spriteset.images length");
-    return JS_FALSE;
-  }
-
-  CImage32* images = new CImage32[num_images];
-
-  for (int i = 0; i < num_images; i++) {
-    jsval image;
-    if ( !JS_GetElement(cx, images_object, i, &image) ) {
-      JS_ReportError(cx, "Invalid image %d", i);
-    } else {
-      SS_IMAGE* ss_image = argImage(cx, image);
-      if (images == NULL) {
-        JS_ReportError(cx, "Invalid image: spriteset.images[%d]", i);
-        return JS_FALSE;
-      }
-
-      int width  = GetImageWidth(ss_image->image);
-      int height = GetImageHeight(ss_image->image);
-
-      if (width <= 0) {
-        JS_ReportError(cx, "Invalid image width %d %d", width, i);
-        return JS_FALSE;
-      }
-
-      if (height <= 0) {
-        JS_ReportError(cx, "Invalid image height %d %d", height, i);
-        return JS_FALSE;
-      }
-
-      RGBA* pixels = LockImage(ss_image->image);
-      CImage32 tmp = CImage32(width, height, pixels);
-      images[i] = tmp;
-      UnlockImage(ss_image->image);
-
-    }
-  }
-
-  int frame_width = 0;
-  int frame_height = 0;
-
-  for (int i = 0; i < num_images; i++) {
-
-    if (i == 0) {
-      frame_width  = images[i].GetWidth();
-      frame_height = images[i].GetHeight();
-    }
-
-    if (frame_width != images[i].GetWidth() || frame_width <= 0) {
-      JS_ReportError(cx, "Invalid frame width %d %d %d", i, frame_width, images[i].GetWidth());
-      return JS_FALSE;
-    }
-
-    if (frame_height != images[i].GetHeight() || frame_height <= 0) {
-      JS_ReportError(cx, "Invalid frame height %d %d %d", i, frame_height, images[i].GetHeight());
-      return JS_FALSE;
-    }
-  }
-
-  int x1 = argInt(cx, x1_val);
-  int y1 = argInt(cx, y1_val);
-  int x2 = argInt(cx, x2_val);
-  int y2 = argInt(cx, y2_val);
-
-  jsval directions_array;
-  if ( !JS_GetProperty(cx, obj, "directions", &directions_array) ) {
-    JS_ReportError(cx, "spriteset.directions array property doesn't appear to exist.");
-    return JS_FALSE;
-  }
-
-  if (!argArray(cx, directions_array)) {
-    JS_ReportError(cx, "Invalid spriteset.directions array.");
-    return JS_FALSE;
-  }
-
-  jsuint num_directions = 0;
-  JSObject* directions_object = JSVAL_TO_OBJECT(directions_array);
-
-  if ( !JS_GetArrayLength(cx, directions_object, &num_directions) ) {
-    JS_ReportError(cx, "Invalid spriteset.directions array length.");
-    return JS_FALSE;
-  }
-
-  if (num_directions <= 0) {
-    JS_ReportError(cx, "Invalid spriteset.directions length");
-    return JS_FALSE;
-  }
-
-  sSpriteset s;
-  s.Create(frame_width, frame_height, num_images, num_directions, 0);
-  for (int i = 0; i < num_images; i++) {
-    s.GetImage(i) = images[i];
-  }
-  delete[] images;
-
-  s.SetBase(x1, y1, x2, y2);
-
-  for (int i = 0; i < num_directions; i++) {
-
-    jsval direction_object_val;
-    if ( !JS_GetElement(cx, directions_object, i, &direction_object_val) ) {
-      JS_ReportError(cx, "Invalid spriteset.directions[%d] object", i);
-      return JS_FALSE;
-    }
-
-    JSObject* direction_object = JSVAL_TO_OBJECT(direction_object_val);
-    jsval direction_name;
-
-    if ( !JS_GetProperty(cx, direction_object, "name", &direction_name) ) {
-      JS_ReportError(cx, "spriteset.directions[%d].name property doesn't appear to exist.", i);
-      return JS_FALSE;
-    }
-
-    s.SetDirectionName(i, argStr(cx, direction_name));
-
-    jsval frames_array_val;
-
-    if ( !JS_GetProperty(cx, direction_object, "frames", &frames_array_val) ) {
-      JS_ReportError(cx, "spriteset.directions[%d].frames property doesn't appear to exist.", i);
-      return JS_FALSE;
-    }
-
-    JSObject* frames_array = JSVAL_TO_OBJECT(frames_array_val);
-    jsuint num_frames = 0;
-
-    if ( !JS_GetArrayLength(cx, frames_array, &num_frames) ) {
-      JS_ReportError(cx, "Invalid spriteset.directions[%d].frames array length.", i);
-      return JS_FALSE;
-    }
-
-    if (num_frames <= 0) {
-      JS_ReportError(cx, "Invalid spriteset.directions[%d].frames length", i);
-      return JS_FALSE;
-    }
-
-    for (int j = 0; j < num_frames; j++) {
-      jsval frame_val;
-
-      if ( !JS_GetElement(cx, frames_array, j, &frame_val) ) {
-        JS_ReportError(cx, "Invalid spriteset.directions[%d].frames[%d] object", i, j);
-        return JS_FALSE;
-      }
-
-      JSObject* frame_object = JSVAL_TO_OBJECT(frame_val);
-
-      jsval frame_index_val;
-      if ( !JS_GetProperty(cx, frame_object, "index", &frame_index_val) ) {
-        JS_ReportError(cx, "spriteset.directions[%d].frames[%d].index property doesn't appear to exist.", i, j);
-        return JS_FALSE;
-      }
-
-      int frame_index = argInt(cx, frame_index_val);
-
-      if (frame_index < 0 || frame_index >= num_images) {
-        JS_ReportError(cx, "spriteset.directions[%d].frames[%d].index is an invalid image index of %d", i, j, frame_index);
-        return JS_FALSE;
-      }
-
-      jsval frame_delay_val = 0;
-      if ( !JS_GetProperty(cx, frame_object, "delay", &frame_delay_val) ) {
-        JS_ReportError(cx, "spriteset.directions[%d].frames[%d].delay property doesn't appear to exist.", i, j);
-        return JS_FALSE;
-      }
-
-      int frame_delay = argInt(cx, frame_delay_val);
-
-      if (frame_delay < 0) {
-        JS_ReportError(cx, "spriteset.directions[%d].frames[%d].delay has an invalid value", i, j);
-        return JS_FALSE;
-      }
-
-      s.InsertFrame(i, j);
-      s.SetFrameDelay(i, j, frame_delay);
-      s.SetFrameIndex(i, j, frame_index);
-    }
-  }
-   
-  return_bool ( s.Save(path.c_str()) );
+  return_bool ( saved );
 end_method()
 
 ////////////////////////////////////////
