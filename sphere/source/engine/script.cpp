@@ -23,6 +23,8 @@
 #include "../common/configfile.hpp"
 #include "../common/Entities.hpp"
 
+#include "../common/md5global.h"
+#include "../common/md5.h"
 
 
 const int MAX_RECURSE_COUNT = 256;
@@ -3467,9 +3469,6 @@ begin_func(OpenRawFile, 1)
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
-
-#include "../../common/md5global.h"
-#include "../../common/md5.h"
 
 begin_func(HashFromFile,1) {
   arg_str(filename);
