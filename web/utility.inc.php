@@ -2,7 +2,7 @@
 
 include_once("/home/groups/s/sp/sphere/htdocs/passwords.inc.php");
 $__DATABASE = "sphere";
-$__SITEROOT = "http://sphere.sf.net/malis-test"; //NO TAILING SLASH
+$__SITEROOT = "http://sphere.sf.net"; //NO TAILING SLASH
 
 function start(){
   include_once("/home/groups/s/sp/sphere/htdocs/doctype.inc.php"); 
