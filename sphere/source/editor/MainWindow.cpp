@@ -218,7 +218,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_MESSAGE(WM_SET_CHILD_MENU,      OnSetChildMenu)
   ON_MESSAGE(WM_CLEAR_CHILD_MENU,    OnClearChildMenu)  
 	ON_MESSAGE(WM_COPYDATA,					   OnCopyData)
-  ON_MESSAGE(WM_UPDATE_TOOLBARS,     UpdateToolBars)
+  //ON_MESSAGE(WM_UPDATE_TOOLBARS,     UpdateToolBars)
   ON_COMMAND_RANGE(PALETTE_COMMAND, PALETTE_COMMAND + NUM_PALETTES, OnViewPalette)
 
 END_MESSAGE_MAP()
@@ -2074,7 +2074,7 @@ CMainWindow::GetMapTool()
 //////////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
-CMainWindow::UpdateToolBars(WPARAM /*wparam*/, LPARAM /*lparam*/)
+CMainWindow::UpdateToolBars(WPARAM, LPARAM)
 {
   CWnd* pWindow = MDIGetActive();
   if (pWindow != NULL)

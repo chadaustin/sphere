@@ -1360,7 +1360,6 @@ CImageView::OnPaint()
     DeleteObject(linepen);
   }
 
-  // todo: make the border not redraw itself all the time (it's annoying)
   if (true) {
     // draw a white rectangle around the image
     SetRect(&Rect, offsetx - 1, offsety - 1, offsetx + totalx + 1, offsety + totaly + 1);
