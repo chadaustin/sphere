@@ -4,6 +4,7 @@
 #include "unix_time.h"
 #include "unix_input.h"
 #include "unix_internal.h"
+#include "unix_sphere_config.h"
 #include <string>
 
 /*! \file unix_video.cpp
@@ -19,9 +20,17 @@ static void SpriteBlit(IMAGE image, int x, int y);
 static void NormalBlit(IMAGE image, int x, int y);
 
 SDL_Surface* screen;
+SDL_Surface* scalen;
 SFONT* FPSFont;
 static bool FPSDisplayed;
 static bool fullscreen;
+
+int scaling;
+
+const int NORMAL = 0;
+const int SCALE2 = 1;
+const int SCALE3 = 2;
+const int SCALE1 = 3;
 
 #if 0 // already defined in Image32
 typedef struct _clipper {
@@ -72,7 +81,8 @@ void ToggleFPS () {
 
 
 
-static std::string s_window_title;
+
+static std::string s_window_title;
 std::string GetWindowTitle() {
   return s_window_title;
 }
@@ -94,10 +104,59 @@ bool SetWindowTitle(const char* text) {
   This is where all the fun begins.
   If this is the first time that SwitchResolution is called, SDL is initialized.
  */
-bool SwitchResolution (int x, int y, bool fullscreen, bool update_cliprect) {
+bool SwitchResolution (int x, int y, bool fullscreen, bool update_cliprect, int scalex) {
   static bool initialized = false;
+  int driverflags;
 
-  SDL_ShowCursor(false);
+  // The true width and height for scaling
+  int tx, ty;
+
+  SPHERECONFIG config;
+  LoadSphereConfig(&config, (GetSphereDirectory() + "/engine.ini").c_str());
+
+  // Isn't this passed as an argument yet then try reading it fuzzy from config file
+  if(config.scaling == "")
+	scalex = NORMAL;
+  if(config.scaling == "scale2x")
+	scalex = SCALE2;
+  else if(config.scaling == "scale3x")
+	scalex = SCALE3;
+  else
+	scalex = NORMAL;
+
+  bool filtering = config.filter;
+  bool showcurs  = config.showcursor;
+
+  // Override.
+  fullscreen = config.fullscreen;
+
+  // Do some pre-initialisation
+  switch(scalex)
+  {
+   default:
+    break;
+   case SCALE2:
+    tx = x * 2;
+    ty = y * 2;
+    break;
+   case SCALE3:
+    tx = x * 3;
+    ty = y * 3;
+    break;
+  }
+
+  // Set the global variable
+  scaling = scalex;
+
+  // We 'need' a custom buffer so we can filter.
+  if(scaling == 0 && filtering)
+  {
+   scaling = SCALE1;
+   // Enable creation of custom software plane double buffering for filtering (evil)
+   scalex = 1;
+   tx = x;
+   ty = y;
+  }
 
   if (!initialized) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
@@ -133,19 +192,46 @@ bool SwitchResolution (int x, int y, bool fullscreen, bool update_cliprect) {
     // keep the window title as what it was
     SetWindowTitle(GetWindowTitle().c_str());
   }
-
-  if (fullscreen)
-    screen = SDL_SetVideoMode(x,y, 32, SDL_DOUBLEBUF | SDL_FULLSCREEN);
-  else
-    screen = SDL_SetVideoMode(x,y, 32, SDL_DOUBLEBUF | SDL_ANYFORMAT);
-
-  if (screen == NULL)
+  if (scalex)
+  {
+   if (fullscreen)
+   {
+     scalen = SDL_SetVideoMode(tx,ty, 32, SDL_SWSURFACE | SDL_FULLSCREEN | SDL_DOUBLEBUF);
+     if(filtering)
+      screen = SDL_CreateRGBSurface(SDL_HWSURFACE , x, y, 32, config.r, config.g, config.b, config.a);
+     else
+      screen = SDL_CreateRGBSurface(SDL_HWSURFACE , x, y, 32, 0, 0, 0, 0);
+   }
+   else
+   {
+     scalen = SDL_SetVideoMode(tx,ty, 32, SDL_SWSURFACE | SDL_ANYFORMAT | SDL_DOUBLEBUF);
+     if(filtering)
+      screen = SDL_CreateRGBSurface(SDL_HWSURFACE , x, y, 32, config.r, config.g, config.b, config.a);
+     else
+      screen = SDL_CreateRGBSurface(SDL_HWSURFACE , x, y, 32, 0, 0, 0, 0);
+   }
+   if (scalen == NULL)
+    return false;
+   if (screen == NULL)
     return false;
 
-  SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+  }
+  else
+  {
+   if (fullscreen)
+     screen = SDL_SetVideoMode(x,y, 32, SDL_DOUBLEBUF | SDL_FULLSCREEN);
+   else
+     screen = SDL_SetVideoMode(x,y, 32, SDL_DOUBLEBUF | SDL_ANYFORMAT);
+   if (screen == NULL)
+    return false;
+  }
 
-  ScreenWidth = screen->w;
-  ScreenHeight = screen->h;
+  SDL_ShowCursor(showcurs);
+
+  ScreenWidth = x;
+  ScreenHeight = y;
+
+  SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 
   if (update_cliprect) {
     SetClippingRectangle(0, 0, screen->w, screen->h);
@@ -258,6 +344,7 @@ void SetClippingRectangle(int x, int y, int w, int h) {
 
   SDL_Rect rect;
   rect.x = x1; rect.y = y1; rect.w = w; rect.h = h;
+
   SDL_SetClipRect(screen, &rect);
 
   ClippingRectangle.left = x1;
@@ -306,7 +393,31 @@ void FlipScreen () {
     TakeScreenshot();
   }
 
-  SDL_Flip(screen);
+  // Are we scaling?
+  if(scaling)
+  {
+   static int x;
+   static int y;
+   // Optimise this by hand later
+   switch(scaling)
+   {
+    case SCALE1:
+   	SDL_BlitSurface(screen, NULL, scalen, NULL);
+	break;
+    case SCALE2:
+    	// Todo
+
+        break;
+    case SCALE3:
+
+    	break;
+   }
+   SDL_Flip(scalen);
+  }
+  else
+  {
+   SDL_Flip(screen);
+  }
 }
 
 IMAGE CreateImage(int width, int height, const RGBA* pixels) {
@@ -334,20 +445,33 @@ IMAGE GrabImage(int x, int y, int width, int height) {
   image->width        = width;
   image->height       = height;
   image->blit_routine = TileBlit;
+  if(SDL_MUSTLOCK(screen))
+  {
+   if (SDL_LockSurface(screen) != 0)
+    return NULL;
 
-  if (SDL_LockSurface(screen) != 0)
-   return NULL;
+   BGRA* Screen = (BGRA*)screen->pixels;
+   image->bgra = new BGRA[width * height];
+   for (int iy = 0; iy < height; iy++) {
+     memcpy(image->bgra + iy * width, Screen + (y + iy) * ScreenWidth + x, width * 4);
+   }
 
-  BGRA* Screen = (BGRA*)screen->pixels;
-  image->bgra = new BGRA[width * height];
-  for (int iy = 0; iy < height; iy++) {
-    memcpy(image->bgra + iy * width, Screen + (y + iy) * ScreenWidth + x, width * 4);
+   image->alpha = new byte[width * height];
+   memset(image->alpha, 255, width * height);
+
+   SDL_UnlockSurface(screen);
   }
+  else
+  {
+   BGRA* Screen = (BGRA*)screen->pixels;
+   image->bgra = new BGRA[width * height];
+   for (int iy = 0; iy < height; iy++) {
+     memcpy(image->bgra + iy * width, Screen + (y + iy) * ScreenWidth + x, width * 4);
+   }
 
-  image->alpha = new byte[width * height];
-  memset(image->alpha, 255, width * height);
-
-  SDL_UnlockSurface(screen);
+   image->alpha = new byte[width * height];
+   memset(image->alpha, 255, width * height);
+  }
   return image;
 }
 
@@ -381,12 +505,22 @@ class render_pixel_mask {
 };
 
 void BlitImageMask(IMAGE image, int x, int y, RGBA mask) {
-  if (SDL_LockSurface(screen) == 0) {
+  if(SDL_MUSTLOCK(screen))
+  {
+   if (SDL_LockSurface(screen) == 0) {
+     primitives::Blit((BGRA*)screen->pixels, ScreenWidth, x, y,
+                      image->bgra, image->alpha, image->width,
+                      image->height, ClippingRectangle,
+                      render_pixel_mask<BGRA>(mask));
+     SDL_UnlockSurface(screen);
+   }
+  }
+  else
+  {
     primitives::Blit((BGRA*)screen->pixels, ScreenWidth, x, y,
-                     image->bgra, image->alpha, image->width,
-                     image->height, ClippingRectangle,
-                     render_pixel_mask<BGRA>(mask));
-    SDL_UnlockSurface(screen);
+                      image->bgra, image->alpha, image->width,
+                      image->height, ClippingRectangle,
+                      render_pixel_mask<BGRA>(mask));
   }
 }
 
@@ -398,22 +532,42 @@ void aBlendBGRA(struct BGRA& d, struct BGRA s, int a) {
 }
 
 void TransformBlitImage(IMAGE image, int x[4], int y[4]) {
-  if (SDL_LockSurface(screen) == 0) {
-    primitives::TexturedQuad((BGRA*)screen->pixels, ScreenWidth, x, y,
-                             image->bgra, image->alpha, image->width,
-                             image->height, ClippingRectangle,
-                             aBlendBGRA);
-    SDL_UnlockSurface(screen);
+  if(SDL_MUSTLOCK(screen))
+  {
+   if (SDL_LockSurface(screen) == 0) {
+     primitives::TexturedQuad((BGRA*)screen->pixels, ScreenWidth, x, y,
+                              image->bgra, image->alpha, image->width,
+                              image->height, ClippingRectangle,
+                              aBlendBGRA);
+     SDL_UnlockSurface(screen);
+   }
+  }
+  else
+  {
+     primitives::TexturedQuad((BGRA*)screen->pixels, ScreenWidth, x, y,
+                              image->bgra, image->alpha, image->width,
+                              image->height, ClippingRectangle,
+                              aBlendBGRA);
   }
 }
 
 void TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask) {
-  if (SDL_LockSurface(screen) == 0) {
-    primitives::TexturedQuad((BGRA*)screen->pixels, ScreenWidth, x, y,
-                             image->bgra, image->alpha, image->width,
-                             image->height, ClippingRectangle,
-                             render_pixel_mask<BGRA>(mask) );
-    SDL_UnlockSurface(screen);
+  if(SDL_MUSTLOCK(screen))
+  {
+   if (SDL_LockSurface(screen) == 0) {
+     primitives::TexturedQuad((BGRA*)screen->pixels, ScreenWidth, x, y,
+                              image->bgra, image->alpha, image->width,
+                              image->height, ClippingRectangle,
+                              render_pixel_mask<BGRA>(mask) );
+     SDL_UnlockSurface(screen);
+   }
+  }
+  else
+  {
+   primitives::TexturedQuad((BGRA*)screen->pixels, ScreenWidth, x, y,
+                               image->bgra, image->alpha, image->width,
+                               image->height, ClippingRectangle,
+                               render_pixel_mask<BGRA>(mask) );
   }
 }
 
@@ -423,83 +577,158 @@ void NullBlit(IMAGE image, int x, int y) {
 void TileBlit(IMAGE image, int x, int y) {
   calculate_clipping_metrics(image->width, image->height);
 
-  if (SDL_LockSurface(screen) == 0) {
-    BGRA* dest = (BGRA*)screen->pixels + (y + image_offset_y) * ScreenWidth + image_offset_x + x;
-    BGRA* src = (BGRA*)image->bgra + image_offset_y * image->width + image_offset_x;
+  if(SDL_MUSTLOCK(screen))
+  {
+   if (SDL_LockSurface(screen) == 0) {
+     BGRA* dest = (BGRA*)screen->pixels + (y + image_offset_y) * ScreenWidth + image_offset_x + x;
+     BGRA* src = (BGRA*)image->bgra + image_offset_y * image->width + image_offset_x;
 
-    int iy = image_blit_height;
-    while (iy-- > 0) {
-      memcpy(dest, src, image_blit_width * sizeof(BGRA));
-      dest += ScreenWidth;
-      src += image->width;
-    }
-    SDL_UnlockSurface(screen);
+     int iy = image_blit_height;
+     while (iy-- > 0) {
+       memcpy(dest, src, image_blit_width * sizeof(BGRA));
+       dest += ScreenWidth;
+       src += image->width;
+     }
+     SDL_UnlockSurface(screen);
+   }
+  }
+  else
+  {
+     BGRA* dest = (BGRA*)screen->pixels + (y + image_offset_y) * ScreenWidth + image_offset_x + x;
+     BGRA* src = (BGRA*)image->bgra + image_offset_y * image->width + image_offset_x;
+
+     int iy = image_blit_height;
+     while (iy-- > 0) {
+       memcpy(dest, src, image_blit_width * sizeof(BGRA));
+       dest += ScreenWidth;
+       src += image->width;
+     }
   }
 
 }
 
 void SpriteBlit(IMAGE image, int x, int y) {
   calculate_clipping_metrics(image->width, image->height);
+  if(SDL_MUSTLOCK(screen))
+  {
+   if (SDL_LockSurface(screen) == 0) {
+     BGRA* dest = (BGRA*)screen->pixels + (y + image_offset_y) * ScreenWidth + image_offset_x + x;
+     BGRA* src = (BGRA*)image->bgra + image_offset_y * image->width + image_offset_x;
+     byte* alpha = image->alpha + image_offset_y * image->width + image_offset_x;
 
-  if (SDL_LockSurface(screen) == 0) {
-    BGRA* dest = (BGRA*)screen->pixels + (y + image_offset_y) * ScreenWidth + image_offset_x + x;
-    BGRA* src = (BGRA*)image->bgra + image_offset_y * image->width + image_offset_x;
-    byte* alpha = image->alpha + image_offset_y * image->width + image_offset_x;
+     int dest_inc = ScreenWidth - image_blit_width;
+     int src_inc = image->width - image_blit_width;
 
-    int dest_inc = ScreenWidth - image_blit_width;
-    int src_inc = image->width - image_blit_width;
+     int iy = image_blit_height;
+     while (iy-- > 0) {
+       int ix = image_blit_width;
+       while (ix-- > 0) {
 
-    int iy = image_blit_height;
-    while (iy-- > 0) {
-      int ix = image_blit_width;
-      while (ix-- > 0) {
+         if (*alpha) {
+           *dest = *src;
+         }
 
-        if (*alpha) {
-          *dest = *src;
-        }
+         dest++;
+         src++;
+         alpha++;
+       }
+       dest += dest_inc;
+       src += src_inc;
+       alpha += src_inc;
+     }
+    SDL_UnlockSurface(screen);
+   }
+  }
+  else
+  {
+     BGRA* dest = (BGRA*)screen->pixels + (y + image_offset_y) * ScreenWidth + image_offset_x + x;
+     BGRA* src = (BGRA*)image->bgra + image_offset_y * image->width + image_offset_x;
+     byte* alpha = image->alpha + image_offset_y * image->width + image_offset_x;
 
-        dest++;
-        src++;
-        alpha++;
-      }
-      dest += dest_inc;
-      src += src_inc;
-      alpha += src_inc;
-    }
-   SDL_UnlockSurface(screen);
+     int dest_inc = ScreenWidth - image_blit_width;
+     int src_inc = image->width - image_blit_width;
+
+     int iy = image_blit_height;
+     while (iy-- > 0) {
+       int ix = image_blit_width;
+       while (ix-- > 0) {
+
+         if (*alpha) {
+           *dest = *src;
+         }
+
+         dest++;
+         src++;
+         alpha++;
+       }
+       dest += dest_inc;
+       src += src_inc;
+       alpha += src_inc;
+     }
   }
 }
 
 void NormalBlit(IMAGE image, int x, int y) {
   calculate_clipping_metrics(image->width, image->height);
 
-  if (SDL_LockSurface(screen) == 0) {
-    BGRA* dest = (BGRA*)screen->pixels + (y + image_offset_y) * ScreenWidth + image_offset_x + x;
-    BGRA* src = (BGRA*)image->bgra + image_offset_y * image->width + image_offset_x;
-    byte* alpha = image->alpha + image_offset_y * image->width + image_offset_x;
+  if(SDL_MUSTLOCK(screen))
+  {
+   if (SDL_LockSurface(screen) == 0) {
+     BGRA* dest = (BGRA*)screen->pixels + (y + image_offset_y) * ScreenWidth + image_offset_x + x;
+     BGRA* src = (BGRA*)image->bgra + image_offset_y * image->width + image_offset_x;
+     byte* alpha = image->alpha + image_offset_y * image->width + image_offset_x;
 
-    int dest_inc = ScreenWidth - image_blit_width;
-    int src_inc = image->width - image_blit_width;
+     int dest_inc = ScreenWidth - image_blit_width;
+     int src_inc = image->width - image_blit_width;
 
-    int iy = image_blit_height;
-    while (iy-- > 0) {
-      int ix = image_blit_width;
-      while (ix-- > 0) {
-        byte inverse_alpha = 255 - *alpha;
+     int iy = image_blit_height;
+     while (iy-- > 0) {
+       int ix = image_blit_width;
+       while (ix-- > 0) {
+         byte inverse_alpha = 255 - *alpha;
 
-        dest->red   = src->red   + (dest->red   * inverse_alpha) / 255;
-        dest->green = src->green + (dest->green * inverse_alpha) / 255;
-        dest->blue  = src->blue  + (dest->blue  * inverse_alpha) / 255;
+         dest->red   = src->red   + (dest->red   * inverse_alpha) / 255;
+         dest->green = src->green + (dest->green * inverse_alpha) / 255;
+         dest->blue  = src->blue  + (dest->blue  * inverse_alpha) / 255;
 
-        dest++;
-        src++;
-        alpha++;
-      }
-      dest += dest_inc;
-      src += src_inc;
-      alpha += src_inc;
-    }
-    SDL_UnlockSurface(screen);
+         dest++;
+         src++;
+         alpha++;
+       }
+       dest += dest_inc;
+       src += src_inc;
+       alpha += src_inc;
+     }
+     SDL_UnlockSurface(screen);
+   }
+  }
+  else
+  {
+     BGRA* dest = (BGRA*)screen->pixels + (y + image_offset_y) * ScreenWidth + image_offset_x + x;
+     BGRA* src = (BGRA*)image->bgra + image_offset_y * image->width + image_offset_x;
+     byte* alpha = image->alpha + image_offset_y * image->width + image_offset_x;
+
+     int dest_inc = ScreenWidth - image_blit_width;
+     int src_inc = image->width - image_blit_width;
+
+     int iy = image_blit_height;
+     while (iy-- > 0) {
+       int ix = image_blit_width;
+       while (ix-- > 0) {
+         byte inverse_alpha = 255 - *alpha;
+
+         dest->red   = src->red   + (dest->red   * inverse_alpha) / 255;
+         dest->green = src->green + (dest->green * inverse_alpha) / 255;
+         dest->blue  = src->blue  + (dest->blue  * inverse_alpha) / 255;
+
+         dest++;
+         src++;
+         alpha++;
+       }
+       dest += dest_inc;
+       src += src_inc;
+       alpha += src_inc;
+     }
   }
 }
 
@@ -543,26 +772,48 @@ void UnlockImage(IMAGE image) {
 
 void DirectBlit(int x, int y, int w, int h, RGBA* pixels) {
   calculate_clipping_metrics(w, h);
+  if(SDL_MUSTLOCK(screen))
+  {
+   if (SDL_LockSurface(screen) == 0) {
+     for (int iy = image_offset_y; iy < image_offset_y + image_blit_height; iy++) {
+       for (int ix = image_offset_x; ix < image_offset_x + image_blit_width; ix++) {
+         BGRA* dest = (BGRA*)screen->pixels + (y + iy) * ScreenWidth + x + ix;
+         RGBA src = pixels[iy * w + ix];
 
-  if (SDL_LockSurface(screen) == 0) {
-    for (int iy = image_offset_y; iy < image_offset_y + image_blit_height; iy++) {
-      for (int ix = image_offset_x; ix < image_offset_x + image_blit_width; ix++) {
-        BGRA* dest = (BGRA*)screen->pixels + (y + iy) * ScreenWidth + x + ix;
-        RGBA src = pixels[iy * w + ix];
+         if (src.alpha == 255) {
+           dest->red = src.red;
+           dest->green = src.green;
+           dest->blue = src.blue;
+         }
+         else if (src.alpha > 0) {
+           dest->red =   (dest->red   * (256 - src.alpha) + src.red   * src.alpha) / 256;
+           dest->green = (dest->green * (256 - src.alpha) + src.green * src.alpha) / 256;
+           dest->blue =  (dest->blue  * (256 - src.alpha) + src.blue  * src.alpha) / 256;
+         }
+       }
+     }
+     SDL_UnlockSurface(screen);
+   }
+  }
+  else
+  {
+     for (int iy = image_offset_y; iy < image_offset_y + image_blit_height; iy++) {
+       for (int ix = image_offset_x; ix < image_offset_x + image_blit_width; ix++) {
+         BGRA* dest = (BGRA*)screen->pixels + (y + iy) * ScreenWidth + x + ix;
+         RGBA src = pixels[iy * w + ix];
 
-        if (src.alpha == 255) {
-          dest->red = src.red;
-          dest->green = src.green;
-          dest->blue = src.blue;
-        }
-        else if (src.alpha > 0) {
-          dest->red =   (dest->red   * (256 - src.alpha) + src.red   * src.alpha) / 256;
-          dest->green = (dest->green * (256 - src.alpha) + src.green * src.alpha) / 256;
-          dest->blue =  (dest->blue  * (256 - src.alpha) + src.blue  * src.alpha) / 256;
-        }
-      }
-    }
-    SDL_UnlockSurface(screen);
+         if (src.alpha == 255) {
+           dest->red = src.red;
+           dest->green = src.green;
+           dest->blue = src.blue;
+         }
+         else if (src.alpha > 0) {
+           dest->red =   (dest->red   * (256 - src.alpha) + src.red   * src.alpha) / 256;
+           dest->green = (dest->green * (256 - src.alpha) + src.green * src.alpha) / 256;
+           dest->blue =  (dest->blue  * (256 - src.alpha) + src.blue  * src.alpha) / 256;
+         }
+       }
+     }
   }
 }
 
@@ -571,29 +822,52 @@ inline void BlendRGBAtoBGRA(BGRA& d, RGBA src, RGBA alpha) {
 }
 
 void DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels) {
-  if (SDL_LockSurface(screen) == 0) {
-    primitives::TexturedQuad((BGRA*)screen->pixels, ScreenWidth, x, y,
-                             pixels, pixels, w, h, ClippingRectangle,
-                             BlendRGBAtoBGRA);
-    SDL_UnlockSurface(screen);
+  if(SDL_MUSTLOCK(screen))
+  {
+   if (SDL_LockSurface(screen) == 0) {
+     primitives::TexturedQuad((BGRA*)screen->pixels, ScreenWidth, x, y,
+                              pixels, pixels, w, h, ClippingRectangle,
+                              BlendRGBAtoBGRA);
+     SDL_UnlockSurface(screen);
+   }
+  }
+  else
+  {
+     primitives::TexturedQuad((BGRA*)screen->pixels, ScreenWidth, x, y,
+                              pixels, pixels, w, h, ClippingRectangle,
+                              BlendRGBAtoBGRA);
   }
 }
 
 void DirectGrab(int x, int y, int w, int h, RGBA* pixels) {
   if (x < 0 || y < 0 || x + w > ScreenWidth || y + h > ScreenHeight)
     return;
-
-  if (SDL_LockSurface(screen) == 0) {
-    BGRA* Screen = (BGRA*)screen->pixels;
-    for (int iy = 0; iy < h; iy++) {
-      for (int ix = 0; ix < w; ix++) {
-        pixels[iy * w + ix].red   = Screen[(y + iy) * ScreenWidth + x + ix].red;
-        pixels[iy * w + ix].green = Screen[(y + iy) * ScreenWidth + x + ix].green;
-        pixels[iy * w + ix].blue  = Screen[(y + iy) * ScreenWidth + x + ix].blue;
-        pixels[iy * w + ix].alpha = 255;
-      }
-    }
-    SDL_UnlockSurface(screen);
+  if(SDL_MUSTLOCK(screen))
+  {
+   if (SDL_LockSurface(screen) == 0) {
+     BGRA* Screen = (BGRA*)screen->pixels;
+     for (int iy = 0; iy < h; iy++) {
+       for (int ix = 0; ix < w; ix++) {
+         pixels[iy * w + ix].red   = Screen[(y + iy) * ScreenWidth + x + ix].red;
+         pixels[iy * w + ix].green = Screen[(y + iy) * ScreenWidth + x + ix].green;
+         pixels[iy * w + ix].blue  = Screen[(y + iy) * ScreenWidth + x + ix].blue;
+         pixels[iy * w + ix].alpha = 255;
+       }
+     }
+     SDL_UnlockSurface(screen);
+   }
+  }
+  else
+  {
+     BGRA* Screen = (BGRA*)screen->pixels;
+     for (int iy = 0; iy < h; iy++) {
+       for (int ix = 0; ix < w; ix++) {
+         pixels[iy * w + ix].red   = Screen[(y + iy) * ScreenWidth + x + ix].red;
+         pixels[iy * w + ix].green = Screen[(y + iy) * ScreenWidth + x + ix].green;
+         pixels[iy * w + ix].blue  = Screen[(y + iy) * ScreenWidth + x + ix].blue;
+         pixels[iy * w + ix].alpha = 255;
+       }
+     }
   }
 }
 
@@ -639,36 +913,70 @@ inline void blendBGRA(BGRA& dest, RGBA source) {
 }
 
 void DrawPoint(int x, int y, RGBA color) {
-  if (SDL_LockSurface(screen) == 0) {
-    primitives::Point((BGRA*)screen->pixels, ScreenWidth, x, y, color,
-                      ClippingRectangle, blendBGRA);
-   SDL_UnlockSurface(screen);
+  if(SDL_MUSTLOCK(screen))
+  {
+   if (SDL_LockSurface(screen) == 0) {
+     primitives::Point((BGRA*)screen->pixels, ScreenWidth, x, y, color,
+                       ClippingRectangle, blendBGRA);
+    SDL_UnlockSurface(screen);
+   }
+  }
+  else
+  {
+     primitives::Point((BGRA*)screen->pixels, ScreenWidth, x, y, color,
+                       ClippingRectangle, blendBGRA);
   }
 }
 
 void DrawLine(int x[2], int y[2], RGBA color) {
-  if (SDL_LockSurface(screen) == 0) {
-    primitives::Line((BGRA*)screen->pixels, ScreenWidth, x[0], y[0],
-                     x[1], y[1], constant_color(color),
-              ClippingRectangle, blendBGRA);
-   SDL_UnlockSurface(screen);
+  if(SDL_MUSTLOCK(screen))
+  {
+   if (SDL_LockSurface(screen) == 0) {
+     primitives::Line((BGRA*)screen->pixels, ScreenWidth, x[0], y[0],
+                      x[1], y[1], constant_color(color),
+               ClippingRectangle, blendBGRA);
+    SDL_UnlockSurface(screen);
+   }
+  }
+  else
+  {
+     primitives::Line((BGRA*)screen->pixels, ScreenWidth, x[0], y[0],
+                      x[1], y[1], constant_color(color),
+               ClippingRectangle, blendBGRA);
   }
 }
 
 void DrawGradientLine(int x[2], int y[2], RGBA colors[2]) {
-  if (SDL_LockSurface(screen) == 0) {
-    primitives::Line((BGRA*)screen->pixels, ScreenWidth, x[0], y[0],
-                     x[1], y[1], gradient_color(colors[0], colors[1]),
-              ClippingRectangle, blendBGRA);
-   SDL_UnlockSurface(screen);
+  if(SDL_MUSTLOCK(screen))
+  {
+   if (SDL_LockSurface(screen) == 0) {
+     primitives::Line((BGRA*)screen->pixels, ScreenWidth, x[0], y[0],
+                      x[1], y[1], gradient_color(colors[0], colors[1]),
+               ClippingRectangle, blendBGRA);
+    SDL_UnlockSurface(screen);
+   }
+  }
+  else
+  {
+     primitives::Line((BGRA*)screen->pixels, ScreenWidth, x[0], y[0],
+                      x[1], y[1], gradient_color(colors[0], colors[1]),
+               ClippingRectangle, blendBGRA);
   }
 }
 
 void DrawTriangle(int x[3], int y[3], RGBA color) {
-  if (SDL_LockSurface(screen) == 0) {
-    primitives::Triangle((BGRA*)screen->pixels, ScreenWidth, x, y,
-                         color, ClippingRectangle, blendBGRA);
-   SDL_UnlockSurface(screen);
+  if(SDL_MUSTLOCK(screen))
+  {
+   if (SDL_LockSurface(screen) == 0) {
+     primitives::Triangle((BGRA*)screen->pixels, ScreenWidth, x, y,
+                          color, ClippingRectangle, blendBGRA);
+    SDL_UnlockSurface(screen);
+   }
+  }
+  else
+  {
+     primitives::Triangle((BGRA*)screen->pixels, ScreenWidth, x, y,
+                          color, ClippingRectangle, blendBGRA);
   }
 }
 
@@ -686,42 +994,83 @@ inline RGBA interpolateRGBA(RGBA a, RGBA b, int i, int range) {
 }
 
 void DrawGradientTriangle(int x[3], int y[3], RGBA colors[3]) {
-  if (SDL_LockSurface(screen) == 0) {
-    primitives::GradientTriangle((BGRA*)screen->pixels, ScreenWidth,
-                                 x, y, colors, ClippingRectangle,
-                       blendBGRA, interpolateRGBA);
-   SDL_UnlockSurface(screen);
+  if(SDL_MUSTLOCK(screen))
+  {
+   if (SDL_LockSurface(screen) == 0) {
+     primitives::GradientTriangle((BGRA*)screen->pixels, ScreenWidth,
+                                  x, y, colors, ClippingRectangle,
+                        blendBGRA, interpolateRGBA);
+    SDL_UnlockSurface(screen);
+   }
+  }
+  else
+  {
+     primitives::GradientTriangle((BGRA*)screen->pixels, ScreenWidth,
+                                  x, y, colors, ClippingRectangle,
+                        blendBGRA, interpolateRGBA);
   }
 }
 
 void DrawRectangle(int x, int y, int w, int h, RGBA color) {
-  if (SDL_LockSurface(screen) == 0) {
-    if (color.alpha == 0) { // no mask
-      return;
-    } else if (color.alpha == 255) { // full mask
+  if(SDL_MUSTLOCK(screen))
+  {
+   if (SDL_LockSurface(screen) == 0) {
+     if (color.alpha == 0) { // no mask
+       return;
+     } else if (color.alpha == 255) { // full mask
 
 //      BGRA bgra = { color.blue, color.green, color.red };
 //      primitives::Rectangle((BGRA*)screen->pixels, ScreenWidth, x, y,
 //                        w, h, bgra, ClippingRectangle, copyBGRA);
-      SDL_Rect rect;
-      rect.x = x; rect.y = y; rect.w = w; rect.h = h;
-      Uint32 sdl_color =
-        SDL_MapRGB(screen->format, color.red, color.green, color.blue);
-      SDL_FillRect(screen, &rect, sdl_color);
+       SDL_Rect rect;
+       rect.x = x; rect.y = y; rect.w = w; rect.h = h;
+       Uint32 sdl_color =
+         SDL_MapRGB(screen->format, color.red, color.green, color.blue);
+       SDL_FillRect(screen, &rect, sdl_color);
 
-    } else {
-      primitives::Rectangle((BGRA*)screen->pixels, ScreenWidth, x, y,
-                          w, h, color, ClippingRectangle, blendBGRA);
-    }
-   SDL_UnlockSurface(screen);
+     } else {
+       primitives::Rectangle((BGRA*)screen->pixels, ScreenWidth, x, y,
+                           w, h, color, ClippingRectangle, blendBGRA);
+     }
+    SDL_UnlockSurface(screen);
+   }
+  }
+  else
+  {
+     if (color.alpha == 0) { // no mask
+       return;
+     } else if (color.alpha == 255) { // full mask
+
+//      BGRA bgra = { color.blue, color.green, color.red };
+//      primitives::Rectangle((BGRA*)screen->pixels, ScreenWidth, x, y,
+//                        w, h, bgra, ClippingRectangle, copyBGRA);
+       SDL_Rect rect;
+       rect.x = x; rect.y = y; rect.w = w; rect.h = h;
+       Uint32 sdl_color =
+         SDL_MapRGB(screen->format, color.red, color.green, color.blue);
+       SDL_FillRect(screen, &rect, sdl_color);
+
+     } else {
+       primitives::Rectangle((BGRA*)screen->pixels, ScreenWidth, x, y,
+                           w, h, color, ClippingRectangle, blendBGRA);
+     }
   }
 }
 
 void DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4]) {
-  if (SDL_LockSurface(screen) == 0) {
-    primitives::GradientRectangle((BGRA*)screen->pixels, ScreenWidth,
-                                  x, y, w, h, colors, ClippingRectangle,
-                       blendBGRA, interpolateRGBA);
-   SDL_UnlockSurface(screen);
+  if(SDL_MUSTLOCK(screen))
+  {
+   if (SDL_LockSurface(screen) == 0) {
+     primitives::GradientRectangle((BGRA*)screen->pixels, ScreenWidth,
+                                   x, y, w, h, colors, ClippingRectangle,
+                        blendBGRA, interpolateRGBA);
+    SDL_UnlockSurface(screen);
+   }
+  }
+  else
+  {
+     primitives::GradientRectangle((BGRA*)screen->pixels, ScreenWidth,
+                                   x, y, w, h, colors, ClippingRectangle,
+                        blendBGRA, interpolateRGBA);
   }
 }

@@ -19,12 +19,13 @@ bool InitAudio(SPHERECONFIG* config)
     break;
   
     case SOUND_OFF:
-      s_AudioDevice = audiere::OpenDevice("null");    
+      s_AudioDevice = audiere::OpenDevice("null");
     break;
   }
 
   if (!s_AudioDevice) {
-    s_AudioDevice = audiere::OpenDevice("null");    
+    s_AudioDevice = audiere::OpenDevice("null");
+    std::cout << "Error opening sound device, is it busy perhaps?" << std::endl;
   }
 
   return bool(s_AudioDevice);

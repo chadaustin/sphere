@@ -16,9 +16,16 @@ struct SPHERECONFIG
 {
   // video
   std::string videodriver;
+  std::string scaling;
+  int fullscreen;
+  int showcursor;
 
   // audio
   int sound;
+
+  // filter
+  int r, g, b, a;
+  int filter;
 };
 
 

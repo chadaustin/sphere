@@ -2,9 +2,15 @@
 #define UNIX_VIDEO_H
 
 #include "../../common/rgb.hpp"
+#include "unix_sphere_config.h"
+#include "unix_filesystem.h"
 #include <SDL.h>
 
+#include <iostream>
+
 class SFONT; /* for drawing FPS */
+
+extern int scaling;
 
 typedef struct _IMAGE {
   int width;
@@ -19,7 +25,7 @@ void SetFPSFont(SFONT* font);
 void ToggleFPS();
 
 bool SwitchResolution(int x, int y);
-bool SwitchResolution(int x, int y, bool fullscreen, bool update_cliprect);
+bool SwitchResolution(int x, int y, bool fullscreen, bool update_cliprect, int scalex = 0);
 void ToggleFullscreen();
 int  GetScreenWidth();
 int  GetScreenHeight();

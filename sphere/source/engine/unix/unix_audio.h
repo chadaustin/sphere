@@ -3,6 +3,7 @@
 
 
 #include <audiere.h>
+#include <iostream>
 #include "unix_sphere_config.h"
 
 bool InitAudio(SPHERECONFIG* config);
