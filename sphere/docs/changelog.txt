@@ -1,3 +1,6 @@
+2003.02.17
+  - you can no longer add zones that have a width and height of zero
+
 2003.02.11
   - added help menu to take you to the sphere.sf.net FAQ
   - removed the reference to MIDI files from the editor...  you can no

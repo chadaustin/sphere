@@ -1563,6 +1563,13 @@ CMapView::OnLButtonUp(UINT flags, CPoint point)
         zone.y1 = m_StartY;
         zone.x2 = x;
         zone.y2 = y;
+
+        // don't allow zones that are only one pixel big, because
+        // people can't see them.
+        if (zone.x1 == zone.x2 && zone.y1 == zone.y2) {
+          break;
+        }
+
         zone.layer = m_SelectedLayer;
         zone.reactivate_in_num_steps = 8;
         zone.script = "";
