@@ -181,6 +181,11 @@ private:
   bool m_ShowGrid;
   bool m_ShowAlphaMask;
 
+  int m_RedrawX;
+  int m_RedrawY;
+  int m_RedrawWidth;
+  int m_RedrawHeight;
+
   DECLARE_MESSAGE_MAP()
 };
 

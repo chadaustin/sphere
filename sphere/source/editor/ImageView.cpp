@@ -82,6 +82,10 @@ CImageView::CImageView()
 , m_SelectionHeight(0)
 , m_ShowGrid(false)
 , m_ShowAlphaMask(true)
+, m_RedrawX(0)
+, m_RedrawY(0)
+, m_RedrawWidth(0)
+, m_RedrawHeight(0)
 {
   m_Image.SetBlendMode(CImage32::REPLACE);
   m_ShowGrid = false;
@@ -662,6 +666,7 @@ CImageView::UpdateSelectionPixels(RGBA* pixels, int sx, int sy, int sw, int sh)
 void
 CImageView::InvalidateSelection(int sx, int sy, int sw, int sh)
 {
+/*
   // get client rectangle
   RECT ClientRect;
   GetClientRect(&ClientRect);
@@ -672,20 +677,30 @@ CImageView::InvalidateSelection(int sx, int sy, int sw, int sh)
   // calculate size of pixel squares
   int hsize = ClientRect.right / width;
   int vsize = ClientRect.bottom / height;
-  int size = std::min(hsize, vsize);
-  if (size < 1)
-    size = 1;
+  if (hsize < 1)
+    hsize = 1;
+  if (vsize < 1)
+    vsize = 1;
 
-  int totalx = size * width;
-  int totaly = size * height;
+  int totalx = hsize * width;
+  int totaly = vsize * height;
   int offsetx = (ClientRect.right - totalx) / 2;
   int offsety = (ClientRect.bottom - totaly) / 2;
 
-  RECT client;
-  GetClientRect(&client);
-
-  RECT rect = { offsetx+(sx * size), offsety+(sy * size), offsetx+((sx + sw) * size),  offsetx+((sy + sh) * size), };
+  RECT rect = { offsetx+(sx * hsize), offsety+(sy * vsize), offsetx+((sx + sw) * hsize),  offsetx+((sy + sh) * vsize), };
+  if (0) {
+    char string[255];
+    sprintf(string, "%d %d %d %d", rect.left, rect.top, rect.bottom, rect.right);
+    MessageBox(string);
+  }
   InvalidateRect(&rect);
+*/
+  m_RedrawX = sx;
+  m_RedrawY = sy;
+  m_RedrawWidth = sw;
+  m_RedrawHeight = sh;
+
+  Invalidate();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -717,7 +732,7 @@ CImageView::Click(bool force_draw)
   }
 
   m_Image.SetPixel(end.x, end.y, m_Color);
-  InvalidateSelection(end.x, end.y, 1, 1);
+  InvalidateSelection(end.x - 1, end.y - 1, 3, 3);
   m_Handler->IV_ImageChanged();
 }
 
@@ -1062,43 +1077,67 @@ CImageView::OnPaint()
   SetRect(&Rect, offsetx + totalx + 1, offsety - 1, ClientRect.right, offsety + totaly + 1);
   FillRect(dc, &Rect, black_brush);
 
-  int num_tiles_x = ((size*width) / 64);
-  int num_tiles_y = ((size*height) / 64);
+  // assume a complete redraw
+  if (m_RedrawWidth == 0 && m_RedrawHeight == 0) {
+    m_RedrawX = 0;
+    m_RedrawY = 0;
+    m_RedrawWidth = width;
+    m_RedrawHeight = height;
+  }
+
+  int dib_width = 64;
+  int dib_height = 64;
+
+  m_RedrawX -= m_RedrawX % dib_width;
+  m_RedrawY -= m_RedrawY % dib_height;
+  m_RedrawWidth  += dib_width; m_RedrawWidth  -= m_RedrawWidth  % dib_width;
+  m_RedrawHeight += dib_height; m_RedrawHeight -= m_RedrawHeight % dib_height;
+
+  if (m_RedrawX < 0) m_RedrawX = 0;
+  if (m_RedrawY < 0) m_RedrawY = 0;
+  if (m_RedrawX + m_RedrawWidth > m_Image.GetWidth()) m_RedrawWidth = m_Image.GetWidth() - m_RedrawX;
+  if (m_RedrawY + m_RedrawHeight > m_Image.GetHeight()) m_RedrawHeight = m_Image.GetHeight() - m_RedrawY;
+
+  int num_tiles_x = ((size*width) / dib_width);
+  int num_tiles_y = ((size*height) / dib_height);
 
   for (int ty = 0; ty <= num_tiles_y; ++ty) {
     for (int tx = 0; tx <= num_tiles_x; ++tx) {
+
       // clear the DIB
-      memset(m_BlitTile->GetPixels(), 0,  64 * 64 * 4);
-
+      memset(m_BlitTile->GetPixels(), 0,  dib_width * dib_height * 4);
       BGRA* pixels = (BGRA*) m_BlitTile->GetPixels();
+      bool visible = false;
 
-      for (int iy = 0; iy < 64; ++iy) {  
-        for (int ix = 0; ix < 64; ++ix) {
+      for (int iy = 0; iy < dib_height; ++iy) {  
+        for (int ix = 0; ix < dib_width; ++ix) {
           //for (int l = 0; l < size; ++l)
           {
 
-            int sx = (ix + (tx * 64));
-            int sy = (iy + (ty * 64));
+            int sx = (ix + (tx * dib_width));
+            int sy = (iy + (ty * dib_height));
 
             sx /= size;
             sy /= size;
 
-            if (!(sx >= 0 && sx < width && sy >= 0 && sy < height) )
+            if (!(sx >= m_RedrawX && sx < (m_RedrawX + m_RedrawWidth) && sy >= m_RedrawY && sy < (m_RedrawY + m_RedrawHeight)) )
                continue;
+
+            visible = true;
 
             int counter = (iy * 64) + ix;
 
             RGBA color = pImage[((sy * width) + sx)];
  
             if (color.alpha == 255 || !m_ShowAlphaMask) {
-              pixels[counter].red = color.red;
+              pixels[counter].red   = color.red;
               pixels[counter].green = color.green;
-              pixels[counter/*iy * 64 + ix*/].blue = color.blue;
+              pixels[counter].blue  = color.blue;
               pixels[counter].alpha = color.alpha;
             }
             else {
               // todo, make these colors customizable
-              RGBA Color1 = CreateRGBA(255, 255, 255, 255); //CreateRGBA(255, 40, 120, 255);
+              RGBA Color1 = CreateRGBA(255, 40, 120, 255); // CreateRGBA(255, 255, 255, 255);
               RGBA Color2 = CreateRGBA(128, 128, 128, 255);
 
               Color1.red   = (color.red   * color.alpha + Color1.red   * (256 - color.alpha)) / 256;
@@ -1140,12 +1179,15 @@ CImageView::OnPaint()
         }
       }
 
-      // render the tile
-      _dc.BitBlt(offsetx + (tx * 64), offsety + (ty * 64), 64, 64,
-                CDC::FromHandle(m_BlitTile->GetDC()), 0, 0, SRCCOPY);
+      if (visible) {
+        // render the tile
+        _dc.BitBlt(offsetx + (tx * dib_width), offsety + (ty * dib_height), dib_width, dib_height,
+                  CDC::FromHandle(m_BlitTile->GetDC()), 0, 0, SRCCOPY);
+      }
     }
   }
 
+  m_RedrawX = m_RedrawY = m_RedrawWidth = m_RedrawHeight = 0;
 
 /* // this is the old image drawing code
   // draw the image
@@ -1524,7 +1566,6 @@ CImageView::OnMouseMove(UINT flags, CPoint point)
     case Tool_Fill:
       break;
 
-    // this sucks to have to redraw the whole window when you move the mouse
     case Tool_Line:
     case Tool_Rectangle:
     case Tool_Circle:
