@@ -1493,7 +1493,7 @@ CMapEngine::QueuePersonScript(const char* name, const char* script, bool immedia
 {
   // Make sure script is not null
   if ((script == "") || (script == NULL)) {
-    m_ErrorMessage = "Null script."
+    m_ErrorMessage = "Null script.";
     return false;
   }
   
@@ -1510,7 +1510,7 @@ CMapEngine::QueuePersonScript(const char* name, const char* script, bool immedia
   }
   
   // add person to queue
-  m_Persons[person].commands.push_back(Person::Command("COMMAND_DO_SCRIPT", immediate, script));
+  m_Persons[person].commands.push_back(Person::Command(COMMAND_DO_SCRIPT, immediate, std::string(script)));
   return true;
 }
 
@@ -2503,7 +2503,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
       case COMMAND_MOVE_SOUTH:     p.y++; break;
       case COMMAND_MOVE_WEST:      p.x--; break;
       case COMMAND_DO_SCRIPT:        
-        if (!ExecuteScript(c.script, error)) {
+        if (!ExecuteScript(c.script.c_str(), error)) {
 	  m_ErrorMessage = "Could not execute queued script\nPerson:" + p.description +
 	    "\nError:" + error;
 	}
