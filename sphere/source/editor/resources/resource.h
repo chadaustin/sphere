@@ -689,6 +689,7 @@
 #define ID_IRC_AUTO_RECONNECT           40803
 #define ID_SCRIPT_OPTIONS_CHECK_SPELLING 40804
 #define ID_SCRIPT_OPTIONS_VIEW_LIST     40805
+#define ID_BROWSE_RESIZE                40806
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -697,7 +698,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        277
-#define _APS_NEXT_COMMAND_VALUE         40806
+#define _APS_NEXT_COMMAND_VALUE         40807
 #define _APS_NEXT_CONTROL_VALUE         1236
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

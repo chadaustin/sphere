@@ -1066,6 +1066,7 @@ BEGIN
     POPUP "&Browse"
     BEGIN
         MENUITEM "&Refresh",                    ID_BROWSE_REFRESH
+        MENUITEM "&Resize",                     ID_BROWSE_RESIZE
         MENUITEM "&Set Size",                   ID_BROWSE_SETSIZE
     END
 END

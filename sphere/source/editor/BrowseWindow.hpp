@@ -69,8 +69,13 @@ private:
   afx_msg void OnBrowseListRefresh();
 	afx_msg void OnBrowseSetBrowseSize();
 
+	afx_msg void OnBrowseResizeThumbs();
+	afx_msg void OnUpdateBrowseResizeThumbs(CCmdUI* cmdui);
+
 private:
   bool m_Created;  // whether or not the window has been created
+
+  bool m_Resize;
 
   CDIBSection* m_BlitTile;
   std::string m_Folder;

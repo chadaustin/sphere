@@ -34,6 +34,9 @@ BEGIN_MESSAGE_MAP(CBrowseWindow, CDocumentWindow)
   ON_COMMAND(ID_BROWSE_REFRESH, OnBrowseListRefresh)
 	ON_COMMAND(ID_BROWSE_SETSIZE, OnBrowseSetBrowseSize)
 
+  ON_COMMAND(ID_BROWSE_RESIZE, OnBrowseResizeThumbs)
+  ON_UPDATE_COMMAND_UI(ID_BROWSE_RESIZE, OnUpdateBrowseResizeThumbs)
+
   ON_COMMAND(ID_FILE_ZOOM_IN, OnZoomIn)
   ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
 
@@ -48,6 +51,7 @@ CBrowseWindow::CBrowseWindow(const char* folder, const char* filter)
 , m_BlitTile(NULL)
 , m_TopRow(0)
 , m_Created(false)
+, m_Resize(true)
 {
   m_Folder = folder;
   m_Filter = filter;
@@ -295,9 +299,11 @@ CBrowseWindow::LoadFile(const char* filename)
   }
 
   if (valid) {
-    image.Rescale(width, height);
-    if (image.GetWidth() != width && image.GetHeight() != height) {
-      valid = false;
+    if (m_Resize) {
+     image.Rescale(width, height);
+      if (image.GetWidth() != width && image.GetHeight() != height) {
+        valid = false;
+      }
     }
   }
 
@@ -429,9 +435,12 @@ CBrowseWindow::OnPaint()
           }
 
         // draw the tile into it
+        int tile_width  = m_BrowseList[it]->GetWidth()  < blit_width  ? m_BrowseList[it]->GetWidth()  : blit_width;
+        int tile_height = m_BrowseList[it]->GetHeight() < blit_height ? m_BrowseList[it]->GetHeight() : blit_height;
+
         const RGBA* tilepixels = m_BrowseList[it]->GetPixels();
-        for (int iy = 0; iy < blit_height; iy++)
-          for (int ix = 0; ix < blit_width; ix++)
+        for (int iy = 0; iy < tile_height; iy++)
+          for (int ix = 0; ix < tile_width; ix++)
           {
             int ty = iy / m_ZoomFactor.GetZoomFactor();
             int tx = ix / m_ZoomFactor.GetZoomFactor();
@@ -443,6 +452,15 @@ CBrowseWindow::OnPaint()
             pixels[d].red   = (tilepixels[t].red   * alpha + pixels[d].red   * (255 - alpha)) / 256;
             pixels[d].green = (tilepixels[t].green * alpha + pixels[d].green * (255 - alpha)) / 256;
             pixels[d].blue  = (tilepixels[t].blue  * alpha + pixels[d].blue  * (255 - alpha)) / 256;
+          }
+
+        for (int iy = m_BrowseList[it]->GetHeight(); iy < blit_height; iy++)
+          for (int ix = m_BrowseList[it]->GetWidth(); ix < blit_width; ix++)
+          {
+            int d = iy * blit_width + ix;
+            pixels[d].red = 0;
+            pixels[d].green = 0;
+            pixels[d].blue = 0;
           }
         
         // blit the tile
@@ -693,3 +711,21 @@ CBrowseWindow::OnBrowseSetBrowseSize() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CBrowseWindow::OnBrowseResizeThumbs()
+{
+  m_Resize = !m_Resize;
+  OnBrowseListRefresh();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CBrowseWindow::OnUpdateBrowseResizeThumbs(CCmdUI* cmdui)
+{
+  cmdui->SetCheck(m_Resize ? TRUE : FALSE);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
