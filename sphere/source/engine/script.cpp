@@ -5338,6 +5338,36 @@ begin_method(SS_BYTEARRAY, ssByteArrayConcat, 1)
   return_object ( concated_byte_array );
 end_method()
 
+///////////////////////////////////////
+
+begin_method(SS_BYTEARRAY, ssByteArraySlice, 1)
+  arg_int(start_slice);
+  int end_slice = object->size;
+
+  if (argc >= 2)
+    end_slice = argInt(cx, argv[1]);
+
+  int end_pos = end_slice;
+ 
+  if (end_slice < 0) {
+    end_pos = object->size - 1 - end_slice - 1;
+  }
+
+  int size = end_pos - start_slice;
+  if (size < 0 || size >= object->size) {
+    JS_ReportError(cx, "Invalid start and end positions in bytearray.slice call\nstart: %d end: %d %d %d", start_slice, end_slice, size, end_pos);
+    return JS_FALSE;
+  }
+
+  byte* data = new byte[size];
+    memcpy(data, object->array + start_slice, size);
+
+    JSObject* byte_array = CreateByteArrayObject(cx, size, data);
+  delete[] data;
+
+  return_object ( byte_array );
+end_method()
+
 ////////////////////////////////////////
 
 begin_property(SS_BYTEARRAY, ssByteArrayGetProperty)
@@ -5356,6 +5386,11 @@ begin_property(SS_BYTEARRAY, ssByteArrayGetProperty)
 
     if (strcmp(prop_id, "concat") == 0) {
       JSFunction* func = JS_NewFunction(cx, ssByteArrayConcat, 1, 0, NULL, "concat");   
+      *vp = OBJECT_TO_JSVAL(JS_GetFunctionObject(func));
+    }
+    else
+    if (strcmp(prop_id, "slice") == 0) {
+      JSFunction* func = JS_NewFunction(cx, ssByteArraySlice, 1, 0, NULL, "slice");   
       *vp = OBJECT_TO_JSVAL(JS_GetFunctionObject(func));
     }
   }

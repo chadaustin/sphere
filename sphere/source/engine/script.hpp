@@ -237,6 +237,7 @@ private:
   declare_property(ssByteArrayGetProperty);
   declare_property(ssByteArraySetProperty);
   declare_method(ssByteArrayConcat);
+  declare_method(ssByteArraySlice);
 
   
   #undef declare_property

@@ -261,6 +261,12 @@ log_object.endBlock()
   bytearray.concat(bytearray_to_append)
     - returns bytearray with bytearray_to_append attached to the end of it
 
+  bytearray.slice(start [, end])
+    - returns a slice of the bytearray starting at start, and ending at end
+      or the end of the bytearray if end is omitted.
+      If end is a negative number, the end point is started from the end of the bytearray.
+    
+
   *** networking ***
   GetLocalName()
     - returns a string with the local name of your computer
