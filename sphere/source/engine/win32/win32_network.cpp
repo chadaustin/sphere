@@ -83,6 +83,10 @@ bool GetLocalAddress(char* name, int size)
 
 NSOCKET OpenAddress(const char* name, int port)
 {
+  if (!s_NetworkInitialized) {
+    return NULL;
+  }
+
   // lookup address
   struct hostent* he = gethostbyname(name);
   if (he == NULL) {
@@ -133,6 +137,10 @@ NSOCKET OpenAddress(const char* name, int port)
 
 NSOCKET ListenOnPort(int port)
 {
+  if (!s_NetworkInitialized) {
+    return NULL;
+  }
+
   NSOCKET s = new NSOCKETimp;
   s->socket = INVALID_SOCKET;
   s->is_connected = false;

@@ -711,6 +711,7 @@
 #define IDI_MAPTOOL_SCRIPT              40819
 #define ID_PROJECT_GAMESETTINGS         40820
 #define ID_IRCVIEW_CLEAR                40821
+#define ID_MAP_ADJUSTALLLAYERS          40822
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -719,7 +720,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        280
-#define _APS_NEXT_COMMAND_VALUE         40822
+#define _APS_NEXT_COMMAND_VALUE         40823
 #define _APS_NEXT_CONTROL_VALUE         1239
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

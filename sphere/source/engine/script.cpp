@@ -2100,7 +2100,13 @@ end_func()
 begin_func(OpenAddress, 2)
   arg_str(name);
   arg_int(port);
-  return_object(CreateSocketObject(cx, OpenAddress(name, port)));
+  NSOCKET s = OpenAddress(name, port);
+  if (s == NULL) {
+    return_object(JSVAL_NULL);
+  }
+  else {
+    return_object(CreateSocketObject(cx, s));
+  }
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2110,7 +2116,13 @@ end_func()
 */
 begin_func(ListenOnPort, 1)
   arg_int(port);
-  return_object(CreateSocketObject(cx, ListenOnPort(port)));
+  NSOCKET s = ListenOnPort(port);
+  if (s == NULL) {
+    return_object(JSVAL_NULL);
+  }
+  else {
+    return_object(CreateSocketObject(cx, s));
+  }
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -6423,9 +6435,13 @@ end_method()
 */
 begin_method(SS_FONT, ssFontClone, 0)
   SFONT* font = object->font->Clone();
-  font ? return_object(CreateFontObject(cx, font, true)) : return_object(JSVAL_NULL);
+  if (font) {
+    return_object(CreateFontObject(cx, font, true));
+  }
+  else {
+    return_object(JSVAL_NULL); 
+  }
 end_method()
-
 
 ///////////////////////////////////////
 

@@ -8,11 +8,12 @@
 #include "win32_input.hpp"
 #include "../sphere.hpp"
 #include "../../common/sphere_version.h" 
+#include "resource.h"
 
 LRESULT CALLBACK SphereWindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM lparam);
 
 
-static HWND SphereWindow;
+static HWND SphereWindow = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -89,7 +90,9 @@ int __cdecl main(int argc, const char** argv)
     "SphereWindowClass", "Sphere " SPHERE_VERSION,
     WS_CAPTION | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_SYSMENU,
     CW_USEDEFAULT, 0, CW_USEDEFAULT, 0,
-    NULL, NULL, GetModuleHandle(NULL), NULL);
+    NULL,
+    NULL,//LoadMenu(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_FILE)),
+    GetModuleHandle(NULL), NULL);
   if (SphereWindow == NULL) {
     MessageBox(NULL, "Error: Could not create the window", "Sphere", MB_OK);
     return 0;
@@ -120,7 +123,7 @@ int __cdecl main(int argc, const char** argv)
   }
 
   // initialize network subsystem
-  if (InitNetworkSystem() == false) {
+  if (Config.allow_networking && InitNetworkSystem() == false) {
     CloseInput();
     CloseAudio();
     CloseVideo();
@@ -152,6 +155,8 @@ void Shutdown(HWND window) {
   DestroyWindow(window);
   exit(0);
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 LRESULT CALLBACK SphereWindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM lparam)
 {
