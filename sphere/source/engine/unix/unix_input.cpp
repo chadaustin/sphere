@@ -144,7 +144,8 @@ bool RefreshInput () {
             case KEY_F11:
               ToggleFPS();
             break;
-            case KEY_F12:
+
+            case KEY_F12:
               ShouldTakeScreenshot = true;
             break;
 

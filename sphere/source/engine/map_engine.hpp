@@ -107,6 +107,7 @@ public:
   bool ExecuteTriggerScript(int trigger_index);
   bool ExecuteZoneScript(int zone_index);
   bool GetNumZones(int& zones);
+  bool GetCurrentZone(int& zone);
   bool GetZoneX(int zone, int& x);
   bool GetZoneY(int zone, int& y);
   bool GetZoneWidth(int zone, int& width);
@@ -422,6 +423,7 @@ private:
 
   // zones
   std::vector<Zone> m_Zones;
+  int m_CurrentZone;
 
   // input handling
   bool m_Keys[MAX_KEY];

@@ -465,6 +465,11 @@ log_object.endBlock()
 
     GetNumZones()
       - returns the amount of zones that there is
+
+    GetCurrentZone()
+        - best when called from inside a ZoneScript handler
+          it will return the index of the zone for which the current script 
+          is running
       
     GetZoneX(zone)
       - gets the x value of zone 'zone'

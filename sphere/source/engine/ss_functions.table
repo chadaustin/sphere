@@ -141,6 +141,7 @@ SS_FUNCTION(OpenLog, 1)
     SS_FUNCTION(GetZoneWidth, 1)
     SS_FUNCTION(GetZoneHeight, 1)
     SS_FUNCTION(GetNumZones, 0)
+    SS_FUNCTION(GetCurrentZone, 0)
 
     SS_FUNCTION(SetMapEngineFrameRate, 1)
     SS_FUNCTION(GetMapEngineFrameRate, 0)

@@ -2009,6 +2009,17 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(GetCurrentZone, 0)
+  int zone = 0;
+  if ( !This->m_Engine->GetMapEngine()->GetCurrentZone(zone)) {
+    This->ReportMapEngineError("GetCurrentZone() failed");
+    return JS_FALSE;
+  }
+  return_int(zone);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 begin_func(GetZoneX, 1)
   arg_int(zone);
   int x = 0;

@@ -9,6 +9,7 @@
 #include "render.hpp"
 #include "rendersort.hpp"
 #include "time.hpp"
+#include "../common/minmax.hpp"
 
 static const int c_MaxSkipFrames = 10;
 
@@ -67,6 +68,8 @@ CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
 
 , m_TalkActivationKey(KEY_SPACE)
 , m_TalkActivationDistance(8)
+
+, m_CurrentZone(-1)
 {
   m_Camera.x     = 0;
   m_Camera.y     = 0;
@@ -768,11 +771,8 @@ CMapEngine::AreZonesAt(int location_x, int location_y, int layer, bool& found) {
     return false;
 
   for (int i = 0; i < m_Map.GetMap().GetNumZones(); i++) {
-    if (m_Map.GetMap().GetZone(i).x1 >= location_x
-     && m_Map.GetMap().GetZone(i).y1 >= location_y
-     && m_Map.GetMap().GetZone(i).layer == layer
-     && m_Map.GetMap().GetZone(i).x2 - m_Map.GetMap().GetZone(i).x1 < location_x
-     && m_Map.GetMap().GetZone(i).y2 - m_Map.GetMap().GetZone(i).y1 < location_y) {
+  
+     if ( IsPointWithinZone(location_x, location_y, layer, i) ) {
        found = true;
        return true;
      }
@@ -794,6 +794,8 @@ CMapEngine::ExecuteZones(int location_x, int location_y, int layer) {
   for (int i = 0; i < m_Map.GetMap().GetNumZones(); i++) {
     if (IsPointWithinZone(location_x, location_y, layer, i)) {
       found = true;
+
+      m_CurrentZone = i;
       if ( !ExecuteZoneScript(i) ) {
         return false;
       }
@@ -825,6 +827,20 @@ CMapEngine::GetNumZones(int& zones) {
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::GetCurrentZone(int& zone)
+{
+  if (m_CurrentZone == -1) {
+    m_ErrorMessage = "GetCurrentZone() called outside of a zone script";
+    return false;
+  }
+
+  zone = m_CurrentZone;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::GetZoneX(int zone, int& x) {
   if (!m_IsRunning) {
     m_ErrorMessage = "GetZoneX() called while map engine was not running";
@@ -832,7 +848,7 @@ CMapEngine::GetZoneX(int zone, int& x) {
   }
 
   if (zone < 0 || zone > m_Map.GetMap().GetNumZones()) {
-    m_ErrorMessage = "Invalid zone index";
+    m_ErrorMessage = "Invalid zone index: " + itos(zone);
     return false;
   }
 
@@ -850,7 +866,7 @@ CMapEngine::GetZoneY(int zone, int& y) {
   }
 
   if (zone < 0 || zone > m_Map.GetMap().GetNumZones()) {
-    m_ErrorMessage = "Invalid zone index";
+    m_ErrorMessage = "Invalid zone index: " + itos(zone);
     return false;
   }
 
@@ -868,7 +884,7 @@ CMapEngine::GetZoneWidth(int zone, int& width) {
   }
 
   if (zone < 0 || zone > m_Map.GetMap().GetNumZones()) {
-    m_ErrorMessage = "Invalid zone index";
+    m_ErrorMessage = "Invalid zone index: " + itos(zone);
     return false;
   }
 
@@ -886,7 +902,7 @@ CMapEngine::GetZoneHeight(int zone, int& height) {
   }
 
   if (zone < 0 || zone > m_Map.GetMap().GetNumZones()) {
-    m_ErrorMessage = "Invalid zone index";
+    m_ErrorMessage = "Invalid zone index: " + itos(zone);
     return false;
   }
 
@@ -2057,7 +2073,7 @@ CMapEngine::FollowPerson(const char* follower, const char* leader, int pixels)
 
   // verify following distance
   if (pixels < 1) {
-    m_ErrorMessage = "Invalid following distance";
+    m_ErrorMessage = "Invalid following distance: " + itos(pixels);
     return false;
   }
 
@@ -3659,16 +3675,21 @@ CMapEngine::ExecuteZoneScript(int zone_index)
   }
 
   if (zone_index < 0 || zone_index >= int(m_Zones.size())) {
-    m_ErrorMessage = "Invalid zone index";
+    m_ErrorMessage = "Invalid zone index: " + itos(zone_index);
     return false;
   }
 
   Zone& z = m_Zones[zone_index];
+  m_CurrentZone = zone_index;
 
   // execute the trigger code
   IEngine::script script = z.script;
   std::string error;
-  if (!ExecuteScript(script, error)) {
+  bool execute_script = ExecuteScript(script, error);
+
+  m_CurrentZone = -1;
+
+  if (!execute_script) {
     std::ostringstream os;
     os << "Could not compile zone ("
        << z.x1
@@ -3680,6 +3701,7 @@ CMapEngine::ExecuteZoneScript(int zone_index)
        << z.y2
        << ")\n";
     m_ErrorMessage = os.str() + error;
+
     return false;
   }
 
