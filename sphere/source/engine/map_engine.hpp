@@ -108,6 +108,10 @@ public:
   bool ExecuteTriggerScript(int trigger_index);
   bool ExecuteZoneScript(int zone_index);
   bool GetNumZones(int& zones);
+  //bool GetNumTriggers(int& triggers);
+  //bool GetCurrentTrigger(int& trigger);
+  //bool GetTriggerX(int trigger, int& x);
+  //bool GetTriggerY(int trigger, int& y);
   bool GetCurrentZone(int& zone);
   bool GetZoneX(int zone, int& x);
   bool GetZoneY(int zone, int& y);

@@ -1686,6 +1686,7 @@ CMainWindow::OnProjectMakeInstaller()
   GetCurrentDirectory(MAX_PATH, old_directory);
   SetCurrentDirectory(m_Project.GetDirectory());
 
+  /*
   bool stand_alone = false;
 
   FILE* file = fopen("installer.nsi", "wb+");
@@ -1789,6 +1790,7 @@ CMainWindow::OnProjectMakeInstaller()
     fclose(file);
 
   }
+  */
 
   SetCurrentDirectory(old_directory);
 }

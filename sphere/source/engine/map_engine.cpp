@@ -551,7 +551,7 @@ CMapEngine::GetTile(int x, int y, int layer, int& tile)
 
   // make sure x and y are valid
   if (x < 0 || y < 0 || x >= l.GetWidth() || y >= l.GetHeight()) {
-    m_ErrorMessage = "Invalid x or y";
+    m_ErrorMessage = "Invalid x or y: x: " + itos(x) + " y: " + itos(y);
     return false;
   }
 
@@ -571,7 +571,7 @@ CMapEngine::GetTileName(int tile_index, std::string& name)
 
   // make sure tile_index is valid
   if (tile_index < 0 || tile_index > m_Map.GetMap().GetTileset().GetNumTiles()) {
-    m_ErrorMessage = "Invalid tile_index";
+    m_ErrorMessage = "Invalid tile_index: " + itos(tile_index);
     return false;
   }
 
@@ -3351,7 +3351,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
   // if this person has a leader, skip it
   if (p.leader != -1) {
-    /*revert back to the first frame if reversion has been set and enough updates have passed*/
+    // revert back to the first frame if reversion has been set and enough updates have passed
     if(p.stepping_frame_revert > 0) {
       if(p.stepping_frame_revert_count++ >= p.stepping_frame_revert) {
         if(p.stepping != 0) {
@@ -3417,10 +3417,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
       }
 
     } // end (if command queue is empty)
-
-    char debug_string[200] = {0};
-    sprintf (debug_string, "%d %s", p.commands.size(), p.name.c_str());    
-    
+   
     // read the top command
     Person::Command c = p.commands.front();
     p.commands.pop_front();
@@ -3453,8 +3450,8 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
         if (!ExecuteScript(c.script.c_str(), error) || !error.empty()) {
           m_ErrorMessage = "Could not execute queued script\nPerson:"
                          + p.description + "\nError:" + error;
-        return false;
-      }
+          return false;
+        }
 
         // the script may have destroyed the person, so check to see that the person still exists
         if (FindPerson(person_name.c_str()) != person_index) {
@@ -3464,6 +3461,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
       break;
     }
 
+  // todo: this sucks, fix me
   // confine the input person within the map if the map is repeating
   if (person_index == m_InputPerson) {
     if (m_Map.GetMap().IsRepeating()) {
@@ -3515,6 +3513,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
             std::string old_person = m_CurrentPerson;
             m_CurrentPerson = m_Persons[obs_person].name;
+            std::string person_name = m_CurrentPerson;
 
             std::string error;
             if (!ExecuteScript(script, error) || !error.empty()) {
@@ -3526,8 +3525,13 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
             }
 
             m_CurrentPerson = old_person;
-
             ResetNextFrame();
+
+            // the script may have destroyed the person, so check to see that the person still exists
+            if (FindPerson(person_name.c_str()) != person_index) {
+              return true;
+            }
+
           }
         }
 
@@ -3552,6 +3556,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
     // frame index
     if (--p.next_frame_switch <= 0) {
+      const sSpriteset& t = p.spriteset->GetSpriteset();
       if (p.spriteset->GetSpriteset().GetNumFrames(p.direction))
         p.stepping = (p.stepping + 1) % p.spriteset->GetSpriteset().GetNumFrames(p.direction);
       p.frame = p.spriteset->GetSpriteset().GetFrameIndex(p.direction, p.stepping);
@@ -3568,7 +3573,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     }
 
   } else {
-    /*revert back to the first frame if reversion has been set and enough updates have passed*/
+    // revert back to the first frame if reversion has been set and enough updates have passed
     if(p.stepping_frame_revert > 0) {
       if(p.stepping_frame_revert_count++ >= p.stepping_frame_revert) {
         if(p.stepping != 0) {
@@ -3756,6 +3761,77 @@ CMapEngine::FindTrigger(int location_x, int location_y, int layer)
 
   return trigger_index;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+/*
+bool
+CMapEngine::GetNumTriggers(int& triggers)
+{
+  if(!m_IsRunning) {
+    m_ErrorMessage = "GetNumTriggers called while map engine isn't running.";
+    return false;
+  }
+  
+  triggers = int(m_Triggers.size());
+  return true;
+}
+
+bool
+CMapEngine::GetCurrentTrigger(int& trigger_index) {
+  if(!m_IsRunning) {
+    m_ErrorMessage = "GetCurrentTrigger called while map engine isn't running.";
+    return false;
+  }
+
+  if (!m_IsInputAttached) {
+    m_ErrorMessage = "Input not attached!";
+    return true;
+  }
+
+  // convenience
+  int location_x = int(m_Persons[m_InputPerson].x);
+  int location_y = int(m_Persons[m_InputPerson].y);
+  int location_layer = m_Persons[m_InputPerson].layer;
+
+  // check to see which trigger we're on
+  trigger_index = FindTrigger(location_x, location_y, location_layer);
+
+  return true;
+}
+
+bool
+CMapEngine::GetTriggerX(int trigger, int& x) {
+  if(!m_IsRunning) {
+    m_ErrorMessage = "GetTriggerX called while map engine isn't running.";
+    return false;
+  }
+
+  if (trigger < 0 || trigger > int(m_Triggers.size())) {
+    m_ErrorMessage = "Invalid trigger index: " + itos(trigger);
+    return false;
+  }
+
+  x = m_Triggers[trigger].x;
+  return true;
+}
+
+bool
+CMapEngine::GetTriggerY(int trigger, int& y) {
+  if(!m_IsRunning) {
+    m_ErrorMessage = "GetTriggerY called while map engine isn't running.";
+    return false;
+  }
+
+  if (trigger < 0 || trigger > int(m_Triggers.size())) {
+    m_ErrorMessage = "Invalid trigger index: " + itos(trigger);
+    return false;
+  }
+
+  y = m_Triggers[trigger].y;
+  return true;
+}
+*/
 
 ///////////////////////////////////////////////////////////////////////////////
 

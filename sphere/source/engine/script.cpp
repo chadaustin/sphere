@@ -2736,6 +2736,75 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#if 0
+/**
+      - returns the x value of the trigger in map (per-pixel) coordinates
+*/
+begin_func(GetTriggerX, 1)
+  arg_int(trigger_index);
+
+  int x = 0;
+  if (!This->m_Engine->GetMapEngine()->GetTriggerX(trigger_index, x)) {
+    This->ReportMapEngineError("GetTriggerX() failed");
+    return JS_FALSE;
+  }
+
+  return_int(x);
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+      - returns the x value of the trigger in map (per-pixel) coordinates
+*/
+begin_func(GetTriggerY, 1)
+  arg_int(trigger_index);
+
+  int y = 0;
+  if (!This->m_Engine->GetMapEngine()->GetTriggerY(trigger_index, y)) {
+    This->ReportMapEngineError("GetTriggerY() failed");
+    return JS_FALSE;
+  }
+
+  return_int(y);
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+      - returns the amount of zones that there is
+*/
+begin_func(GetNumTriggers, 0)
+  int triggers = 0;
+  if ( !This->m_Engine->GetMapEngine()->GetNumTriggers(triggers)) {
+    This->ReportMapEngineError("GetNumTriggers() failed");
+    return JS_FALSE;
+  }
+  return_int(triggers);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+        - best when called from inside a trigger script
+          it will return the index of the trigger for which the current script 
+          is running
+*/
+begin_func(GetCurrentTrigger, 0)
+  int trigger = 0;
+  if ( !This->m_Engine->GetMapEngine()->GetCurrentTrigger(trigger)) {
+    This->ReportMapEngineError("GetCurrentTrigger() failed");
+    return JS_FALSE;
+  }
+  return_int(trigger);
+end_func()
+
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+
 // section: zones //
 
 /**

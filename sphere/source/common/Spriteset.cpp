@@ -818,7 +818,7 @@ sSpriteset::GetNumFrames(std::string direction) const
   // prevent the engine from going dinky if it don't find the name ;)
   int d = 0;
 
-  for (unsigned i = 0; i < m_Directions.size(); i++)
+  for (unsigned i = 0; i < m_Directions.size(); i++) {
     if (strcmp_ci(direction.c_str(), m_Directions[i].name.c_str()) == 0)
     {
       d = i;
@@ -826,6 +826,7 @@ sSpriteset::GetNumFrames(std::string direction) const
       // stop immediately.
       i = m_Directions.size();
     }
+  }
 
   return m_Directions[d].frames.size();
 }
