@@ -1517,6 +1517,26 @@ sMap::FindZone(int x, int y, int layer)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+std::vector<int>
+sMap::FindZones(int x, int y, int layer)
+{
+  std::vector<int> zones;
+
+  for (unsigned int i = 0; i < m_Zones.size(); i++) {
+    if (x >= m_Zones[i].x1 &&
+        y >= m_Zones[i].y1 &&
+        x <= m_Zones[i].x2 &&
+        y <= m_Zones[i].y2 &&
+        m_Zones[i].layer == layer) {
+      zones.push_back(i);
+    }
+  }
+
+  return zones;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 sMap::UpdateZone(int index, int x1, int y1, int x2, int y2)
 {

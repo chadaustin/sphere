@@ -101,6 +101,7 @@ public:
   void AddZone(sZone& zone);
   void DeleteZone(int index);
   int  FindZone(int x, int y, int layer);
+  std::vector<int> FindZones(int x, int y, int layer);
   void UpdateZone(int index, int x1, int y1, int x2, int y2);
 
   void SetMusicFile(const char* music);

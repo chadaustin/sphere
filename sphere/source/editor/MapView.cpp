@@ -3142,10 +3142,21 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
 
     case ID_MAPVIEW_ZONEEDIT:
       {
-        CZoneEditDialog dialog(m_Map->GetZone(z), m_Map);
-        if(dialog.DoModal() == IDOK) {
+        bool changed = false;
+        std::vector<int> zones = m_Map->FindZones(x, y, m_SelectedLayer);
+
+        for (unsigned int i = 0; i < zones.size(); i++) {
+          CZoneEditDialog dialog(m_Map->GetZone(zones[i]), m_Map);
+          if(dialog.DoModal() == IDOK) {
+            changed = true;
+          }
+          else
+            break;
+        }
+
+        if (changed) {
           m_Handler->MV_MapChanged();
-          Invalidate();
+          Invalidate();      
         }
       }
       break;
