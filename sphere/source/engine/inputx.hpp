@@ -28,10 +28,13 @@ inline const char* GetKeyString(int key, bool shift)
 {
   switch (key) {
     case KEY_TILDE:      return (shift ? "~" : "`");
+    //case KEY_TILDE:      return (shift ? "@" : "`");
     case KEY_0:          return (shift ? ")" : "0");
     case KEY_1:          return (shift ? "!" : "1");
     case KEY_2:          return (shift ? "@" : "2");
     case KEY_3:          return (shift ? "#" : "3");
+    //case KEY_2:          return (shift ? "\"" : "2");
+    //case KEY_3:          return (shift ? "£" : "3");
     case KEY_4:          return (shift ? "$" : "4");
     case KEY_5:          return (shift ? "%" : "5");
     case KEY_6:          return (shift ? "^" : "6");
@@ -71,6 +74,7 @@ inline const char* GetKeyString(int key, bool shift)
     case KEY_CLOSEBRACE: return (shift ? "}" : "]");
     case KEY_SEMICOLON:  return (shift ? ":" : ";");
     case KEY_APOSTROPHE: return (shift ? "\"" : "'");
+    //case KEY_APOSTROPHE: return (shift ? "~" : "#");
     case KEY_COMMA:      return (shift ? "<" : ",");
     case KEY_PERIOD:     return (shift ? ">" : ".");
     case KEY_SLASH:      return (shift ? "?" : "/");

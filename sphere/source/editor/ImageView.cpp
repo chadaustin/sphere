@@ -1777,17 +1777,6 @@ CImageView::OnRButtonUp(UINT flags, CPoint point)
     EnableMenuItem(submenu, ID_IMAGEVIEW_REDO, MF_BYCOMMAND | MF_GRAYED);
   }
 
-  if (1) {
-    const int max_len = 1024;
-    char string[1024];
-    GetMenuString(menu, ID_IMAGEVIEW_REDO, string, max_len - 1, MF_BYCOMMAND);
-
-    sprintf (string + strlen(string), " %d %d", m_NumUndoImages, m_NumRedoImages);
-    
-    GetStatusBar()->SetWindowText(string);
-  }
-
-
   if (GetSelectionWidth() != GetSelectionHeight()) {
     EnableMenuItem(menu, ID_IMAGEVIEW_ROTATE_CW,  MF_BYCOMMAND | MF_GRAYED);
     EnableMenuItem(menu, ID_IMAGEVIEW_ROTATE_CCW, MF_BYCOMMAND | MF_GRAYED);

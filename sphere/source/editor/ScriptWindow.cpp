@@ -220,6 +220,9 @@ CScriptWindow::SetScriptStyles() {
     SetStyle(SCE_C_OPERATOR,    purple);
     SetStyle(SCE_C_IDENTIFIER,  black);
     SetStyle(SCE_C_WORD2,       red);
+
+    SetStyle(STYLE_BRACELIGHT,  green);
+    SetStyle(STYLE_BRACEBAD,    red);
   }
 
   SendEditor(SCI_SETVIEWWS, ((m_ShowWhitespace) ? (SCWS_VISIBLEALWAYS) : (SCWS_INVISIBLE)));
@@ -431,6 +434,21 @@ CScriptWindow::OnPosChanged(NMHDR* nmhdr, LRESULT* result) {
   int pos = SendEditor(SCI_GETCURRENTPOS);
   int line = SendEditor(SCI_LINEFROMPOSITION, pos);
   SetLineNumber(line);
+
+  if (1) {
+    int m = SendEditor(SCI_BRACEMATCH, pos, 0);
+    if (m != -1) {
+      SendEditor(SCI_BRACEHIGHLIGHT, pos, m);
+    }
+    else {
+      char current = SendEditor(SCI_GETCHARAT, pos, 0);
+      if (current == '{' || current == '[' || current == '('
+        || current == '}' || current == ']' || current == ')')
+      {
+        SendEditor(SCI_BRACEBADLIGHT, pos);
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

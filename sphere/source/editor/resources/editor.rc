@@ -1812,7 +1812,7 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     ID_FILE_BROWSE          "Browse for files"
-    ID_VIEW_PROJECT         "Toggle the project window"
+    ID_VIEW_PROJECT         "Show or hide the project window"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -1903,8 +1903,8 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_VIEW_TOOLBAR         "Toggle the main toolbar"
-    ID_VIEW_STATUS_BAR      "Toggle the statusbar"
+    ID_VIEW_TOOLBAR         "Show or hide the main toolbar"
+    ID_VIEW_STATUS_BAR      "Show or hide the statusbar"
 END
 
 #endif    // English (U.S.) resources
