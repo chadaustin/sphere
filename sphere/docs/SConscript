@@ -17,6 +17,7 @@ files = ['build-cygwin.txt',
          'network.txt',
          'packages.txt',
          'readme.txt',
+         'release-howto.txt',
          'Sphere Tutorial.txt',
          'unix.txt']
 files += map(lambda n: 'technical/' + n,

@@ -1,0 +1,8 @@
+How to make a release.
+
+Make sure the version numbers are correct in:
+
+  source/common/sphere_version.h
+  installer/sphere.nsi
+
+Then run ./make-installer.sh

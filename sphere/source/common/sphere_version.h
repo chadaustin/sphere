@@ -7,7 +7,7 @@ inline double GetSphereVersion() {
   return 1.0;
 }
 
-#define SPHERE_VERSION "v1.0 beta1"
+#define SPHERE_VERSION "v1.0 beta2"
 
 
 #endif
