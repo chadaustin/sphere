@@ -33,7 +33,7 @@ CDocumentWindow::CDocumentWindow(const char* document_path, int menu_resource, c
   } else {
     strcpy(m_DocumentPath, "");
   }
-  strcpy(m_Caption, GetDocumentTitle());
+  strcpy(m_Caption, GetDocumentTitle());	
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -163,7 +163,16 @@ CDocumentWindow::GetPalette(int i) const
 BOOL
 CDocumentWindow::Create(LPCTSTR class_name)
 {
+	BOOL maximized = FALSE;
+	((CMainWindow*)AfxGetMainWnd())->MDIGetActive(&maximized);
+
   BOOL result = CMDIChildWnd::Create(class_name, "");
+
+	if (maximized)
+	{
+		ShowWindow(SW_MAXIMIZE);
+	}
+
   UpdateWindowCaption();
   return result;
 }
@@ -173,7 +182,16 @@ CDocumentWindow::Create(LPCTSTR class_name)
 BOOL
 CDocumentWindow::Create(LPCTSTR class_name, DWORD style)
 {
+	BOOL maximized = FALSE;
+	((CMainWindow*)AfxGetMainWnd())->MDIGetActive(&maximized);
+
   BOOL result = CMDIChildWnd::Create(class_name, "", style);
+
+	if (maximized)
+	{
+		ShowWindow(SW_MAXIMIZE);
+	}
+
   UpdateWindowCaption();
   return result;
 }
