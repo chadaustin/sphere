@@ -30,6 +30,7 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
   ON_COMMAND(ID_IMAGEVIEW_PASTE,                 OnPaste)
   ON_COMMAND(ID_IMAGEVIEW_PASTE_RGB,             OnPasteRGB)
   ON_COMMAND(ID_IMAGEVIEW_PASTE_ALPHA,           OnPasteAlpha)
+  ON_COMMAND(ID_IMAGEVIEW_PASTE_INTOSELECTION,       OnPasteIntoSelection)
   ON_COMMAND(ID_IMAGEVIEW_VIEWGRID,              OnViewGrid)
   ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_BLEND,       OnBlendModeBlend)
   ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_REPLACE,     OnBlendModeReplace)
@@ -251,6 +252,9 @@ CImageView::Copy()
   *ptr++ = sh; // *ptr++ = height;
 
   RGBA* flat_pixels = new RGBA[sw * sh];
+  if (flat_pixels == NULL)
+    return false;
+
   for (int iy = sy; iy < (sy + sh); iy++)
     for (int ix = sx; ix < (sx + sw); ix++)
     {
@@ -271,6 +275,9 @@ CImageView::Copy()
   // ADD DDB
   // create a pixel array to initialize the bitmap
   BGRA* pixels = new BGRA[sw * sh];
+  if (pixels == NULL)
+    return false;
+
   for (int iy = sy; iy < (sy + sh); iy++)
     for (int ix = sx; ix < (sx + sw); ix++)
     {
@@ -295,12 +302,16 @@ CImageView::Copy()
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha) {
+CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha, int merge_method) {
   if (OpenClipboard() == FALSE)
     return false;
 
   int iWidth = m_Image.GetWidth();
   int iHeight = m_Image.GetHeight();
+
+  int cwidth = 0;
+  int cheight = 0;
+  RGBA* cpixels = NULL;
 
   // see if the flat image is in the clipboard
   HGLOBAL memory = (HGLOBAL)GetClipboardData(s_ClipboardFormat);
@@ -313,89 +324,110 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha) {
       return false;
     }
 
-    AddUndoState();
-
-    int width = *ptr++;
-    int height = *ptr++;
+    cwidth = *ptr++;
+    cheight = *ptr++;
     RGBA* pixels = (RGBA*)ptr;
-    RGBA* pImage = m_Image.GetPixels();
 
-    // put them into the current view
-    for (int iy = 0; iy < iHeight; iy++) {
-      for (int ix = 0; ix < iWidth; ix++)
-      {
-        if (ix < width && iy < height) {
-          int pImageIndex = iy * iWidth + ix;
-          int pixelsIndex = iy * width + ix;
+    cpixels = new RGBA[cwidth * cheight];
+    if (cpixels == NULL)
+      return false;
 
-          if (red)
-            pImage[pImageIndex].red = pixels[pixelsIndex].red;
-
-          if (green)
-            pImage[pImageIndex].green = pixels[pixelsIndex].green;
-
-          if (blue)
-            pImage[pImageIndex].blue = pixels[pixelsIndex].blue;
-
-          if (alpha)
-            pImage[pImageIndex].alpha = pixels[pixelsIndex].alpha;
-
-        }
+    for (int y = 0; y < cheight; y++) {
+      for (int x = 0; x < cwidth; x++) {
+        cpixels[y * cwidth + x] = pixels[y * cwidth + x];
       }
     }
 
     GlobalUnlock(memory);
     CloseClipboard();
+  }
 
-    // things have changed
-    Invalidate();
-    m_Handler->IV_ImageChanged();
-
-    return true;
+  HBITMAP bitmap = NULL;
+  if (cpixels == NULL) {
+    bitmap = (HBITMAP)GetClipboardData(CF_BITMAP);
   }
 
   // grab a bitmap out of the clipboard
-  HBITMAP bitmap = (HBITMAP)GetClipboardData(CF_BITMAP);
   if (bitmap != NULL)
   {
-    AddUndoState();
-
     BITMAP b;
     GetObject(bitmap, sizeof(b), &b);
 
     HDC dc = CreateCompatibleDC(NULL);
     HBITMAP oldbitmap = (HBITMAP)SelectObject(dc, bitmap);
-    RGBA* pImage = m_Image.GetPixels();
+    cwidth = iWidth;
+    cheight = iHeight;
 
-    for (int iy = 0; iy < iHeight; iy++)
-      for (int ix = 0; ix < iWidth; ix++)
+    cpixels = new RGBA[cwidth * cheight];
+    if (cpixels == NULL)
+      return false;
+
+    for (int iy = 0; iy < cheight; iy++)
+      for (int ix = 0; ix < cwidth; ix++)
       {
         COLORREF pixel = GetPixel(dc, ix, iy);
         if (pixel == CLR_INVALID)
           pixel = RGB(0, 0, 0);
 
-        if (red)
-          pImage[iy * iWidth + ix].red   = GetRValue(pixel);
-
-        if (green)
-          pImage[iy * iWidth + ix].green = GetGValue(pixel);
-
-        if (blue)
-          pImage[iy * iWidth + ix].blue  = GetBValue(pixel);
-
-        if (alpha) // there is no alpha so we use a default
-          pImage[iy * iWidth + ix].alpha = 255;
+        cpixels[iy * cwidth + ix].red   = GetRValue(pixel);
+        cpixels[iy * cwidth + ix].green = GetGValue(pixel);
+        cpixels[iy * cwidth + ix].blue  = GetBValue(pixel);
+        cpixels[iy * cwidth + ix].alpha = 255;  // there is no alpha so we use a default
       }
 
     SelectObject(dc, oldbitmap);
     DeleteDC(dc);
 
     CloseClipboard();
+  }
+
+  if (cpixels != NULL) {
+
+    AddUndoState();
+
+    // and now we merge the clipboard image with the current image
+    RGBA* iPixels = m_Image.GetPixels();
+    int xoffset = 0;
+    int yoffset = 0;
+
+    if (merge_method == Merge_IntoSelection) {
+      int sx, sy, sw, sh;
+      GetSelectionArea(sx, sy, sw, sh);
+      xoffset = sx;
+      yoffset = sy;
+      // rescale cpixels
+      CImage32 tmp(cwidth, cheight, cpixels);
+      delete[] cpixels;
+      cpixels = new RGBA[sw * sh];
+      if (cpixels == NULL)
+        return false;
+
+      tmp.Rescale(sw, sh);
+      RGBA* pixels = tmp.GetPixels();
+
+      for (int i = 0; i < sw * sh; i++)
+        cpixels[i] = pixels[i];
+
+      cwidth = sw;
+      cheight = sh;
+    }
+
+    for (int iy = 0; iy < cheight; iy++)
+    {
+      for (int ix = 0; ix < cwidth; ix++)
+      {
+        if (red) iPixels[(iy + yoffset) * iWidth + (ix + xoffset)].red = cpixels[iy * cwidth + ix].red;
+        if (green) iPixels[(iy + yoffset) * iWidth + (ix + xoffset)].green = cpixels[iy * cwidth + ix].green;
+        if (blue) iPixels[(iy + yoffset) * iWidth + (ix + xoffset)].blue = cpixels[iy * cwidth + ix].blue;
+        if (alpha) iPixels[(iy + yoffset) * iWidth + (ix + xoffset)].alpha = cpixels[iy * cwidth + ix].alpha;
+      }
+    }
 
     // things have changed
     Invalidate();
     m_Handler->IV_ImageChanged();
 
+    delete[] cpixels;
     return true;
   }
 
@@ -557,7 +589,7 @@ CImageView::Click(bool force_draw)
 //    return;
 //  }
 
-  if (!InSelection(end)) {
+  if (!InImage(end) || !InSelection(end)) {
     return;
   }
 
@@ -708,10 +740,14 @@ CImageView::Selection()
   if (!m_MouseDown)
   {
     m_StartPoint = m_CurPoint;
+    Invalidate();
+    m_Handler->IV_ImageChanged();
   }
   else
   {
     UpdateSelection();
+    Invalidate();
+    m_Handler->IV_ImageChanged();
   }
 }
 
@@ -1308,6 +1344,14 @@ afx_msg void
 CImageView::OnPasteAlpha()
 {
   PasteChannels(false, false, false, true);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnPasteIntoSelection()
+{
+  PasteChannels(true, true, true, true, Merge_IntoSelection);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

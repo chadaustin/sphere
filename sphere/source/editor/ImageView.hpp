@@ -42,8 +42,13 @@ public:
   void FillRGB();
   void FillAlpha();
 
+private:
+  enum MergeMethod { Merge_Replace, Merge_Blend, Merge_IntoSelection };
+
+public:
+
   bool Copy();
-  bool PasteChannels(bool red, bool green, bool blue, bool alpha);
+  bool PasteChannels(bool red, bool green, bool blue, bool alpha, int merge_method = Merge_Replace);
   bool Paste();
   bool PasteRGB();
   bool PasteAlpha();
@@ -97,6 +102,7 @@ private:
   afx_msg void OnPaste();
   afx_msg void OnPasteRGB();
   afx_msg void OnPasteAlpha();
+  afx_msg void OnPasteIntoSelection();
   afx_msg void OnViewGrid();
   afx_msg void OnBlendModeBlend();
   afx_msg void OnBlendModeReplace();

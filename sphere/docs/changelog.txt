@@ -1,3 +1,7 @@
+2003.03.10
+  - rearranged imageview paste menu items into a paste submenu
+  - added paste->Into Selection
+
 2003.03.08
   - added a selection tool to the image editor
   - Fill->RGB/Alpha/Both, Replace->RGB/Alpha and Scale Alpha all work within the selection now

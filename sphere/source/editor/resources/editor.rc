@@ -488,9 +488,15 @@ BEGIN
         MENUITEM "&Undo",                       ID_IMAGEVIEW_UNDO
         MENUITEM SEPARATOR
         MENUITEM "&Copy",                       ID_IMAGEVIEW_COPY
-        MENUITEM "&Paste",                      ID_IMAGEVIEW_PASTE
-        MENUITEM "Paste Alpha",                 ID_IMAGEVIEW_PASTE_ALPHA
-        MENUITEM "Paste RGB",                   ID_IMAGEVIEW_PASTE_RGB
+        POPUP "&Paste"
+        BEGIN
+            MENUITEM "Paste",                       ID_IMAGEVIEW_PASTE
+            MENUITEM "Paste RGB",                   ID_IMAGEVIEW_PASTE_INTO_SELECTION
+
+            MENUITEM "Paste Alpha",                 ID_IMAGEVIEW_PASTE_ALPHA
+            MENUITEM "Into Selection",              ID_IMAGEVIEW_PASTE_INTOSELECTION
+
+        END
         MENUITEM SEPARATOR
         MENUITEM "View &Grid",                  ID_IMAGEVIEW_VIEWGRID
         POPUP "&Blend Mode"
@@ -504,7 +510,7 @@ BEGIN
             MENUITEM "&Alpha Only",                 ID_IMAGEVIEW_BLENDMODE_ALPHAONLY
 
         END
-        POPUP "&Rotate"
+        POPUP "Rotate"
         BEGIN
             MENUITEM "&Clockwise",                  ID_IMAGEVIEW_ROTATE_CW
             MENUITEM "C&ounterclockwise",           ID_IMAGEVIEW_ROTATE_CCW
