@@ -53,6 +53,8 @@ private:
   virtual void CV_ColorChanged(RGB color);
   virtual void AV_AlphaChanged(byte alpha);
 
+  void OnPaste();
+
 private:
   bool       m_Created;
   CImage32   m_Image;

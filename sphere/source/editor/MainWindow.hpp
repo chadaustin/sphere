@@ -143,6 +143,8 @@ private:
   afx_msg void OnImageToolChanged();
   afx_msg void OnUpdateMapCommand(CCmdUI* cmdui, UINT id);
 
+  afx_msg void OnPaste();
+
   afx_msg void UpdateToolBars(WPARAM wparam = 0, LPARAM lparam = 0);
 
 #define DEFINE_UPDATE_MAP_COMMAND(tool_id) afx_msg void OnUpdateMapCommand_##tool_id(CCmdUI* cmdui);

@@ -1,13 +1,54 @@
 #include "AlphaView.hpp"
 
+////////////////////////////////////////////////////////////////////////////////
+
+BEGIN_MESSAGE_MAP(CCustomSliderCtrl, CWnd)
+  
+  ON_WM_KEYDOWN()
+  ON_WM_CHAR()
+
+END_MESSAGE_MAP()
+
+CCustomSliderCtrl::CCustomSliderCtrl()
+{  
+  CSliderCtrl::CSliderCtrl();
+}
+
+CCustomSliderCtrl::~CCustomSliderCtrl()
+{  
+  CSliderCtrl::~CSliderCtrl();
+}
+
+void CCustomSliderCtrl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+  if(nFlags&0x100)
+  {
+    CSliderCtrl::OnKeyDown(nChar, nRepCnt, nFlags);
+    return;
+  }
+  GetParent()->SendMessage(WM_KEYDOWN, nChar, nRepCnt + (((DWORD)nFlags)<<16));
+}
+
+void CCustomSliderCtrl::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+{   
+  if(nFlags&0x100)
+  {
+    CSliderCtrl::OnChar(nChar, nRepCnt, nFlags);
+    return;
+  }
+  GetParent()->SendMessage(WM_CHAR, nChar, nRepCnt + (((DWORD)nFlags)<<16));
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 static int s_AlphaViewID = 700;
-
 
 BEGIN_MESSAGE_MAP(CAlphaView, CWnd)
 
   ON_WM_SIZE()
   ON_WM_VSCROLL()
+  ON_WM_KEYDOWN()
+  ON_WM_CHAR()
 
 END_MESSAGE_MAP()
 
@@ -110,25 +151,47 @@ CAlphaView::OnSize(UINT type, int cx, int cy)
 void
 CAlphaView::OnVScroll(UINT code, UINT pos, CScrollBar* scrollbar)
 {
+  int value = m_Alpha;
+
   switch (code)
   {
-    case SB_TOP:           m_Alpha = 0;   break;
-    case SB_BOTTOM:        m_Alpha = 255; break;
-    case SB_LINEDOWN:      m_Alpha++;     break;
-    case SB_LINEUP:        m_Alpha--;     break;
-    case SB_PAGEDOWN:      m_Alpha += 16; break;
-    case SB_PAGEUP:        m_Alpha -= 16; break;
-    case SB_THUMBPOSITION: m_Alpha = pos; break;
-    case SB_THUMBTRACK:    m_Alpha = pos; break;
+    case SB_TOP:           value = 0;   break;
+    case SB_BOTTOM:        value = 255; break;
+    case SB_LINEDOWN:      value++;     break;
+    case SB_LINEUP:        value--;     break;
+    case SB_PAGEDOWN:      value += 16; break;
+    case SB_PAGEUP:        value -= 16; break;
+    case SB_THUMBPOSITION: value = pos; break;
+    case SB_THUMBTRACK:    value = pos; break;
   }
 
-  if (m_Alpha < 0)
-    m_Alpha = 0;
-  else if (m_Alpha > 255)
-    m_Alpha = 255;
+  if (value < 0)
+    value = 0;
+  else if (value > 255)
+    value = 255;
+
+  m_Alpha = value;
 
   UpdateSlider();
   m_Handler->AV_AlphaChanged(255 - m_Alpha);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void 
+CAlphaView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags) 
+{ 
+  //MessageBox("AlphaView::OnChar"); 
+  GetParent()->SendMessage(WM_CHAR, nChar, nRepCnt + (((DWORD)nFlags)<<16));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void 
+CAlphaView::OnKeyDown(UINT vk, UINT nRepCnt, UINT nFlags) 
+{ 
+  //MessageBox("AlphaView::OnKeyDown"); 
+  GetParent()->SendMessage(WM_KEYDOWN, vk, nRepCnt + (((DWORD)nFlags)<<16));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -126,6 +126,8 @@ private:
   afx_msg void OnRButtonUp(UINT flags, CPoint point);
   afx_msg void OnMouseMove(UINT flags, CPoint point);
 
+  afx_msg void OnChar(UINT nchar, UINT nrepcnt, UINT flags);
+
 public:
   afx_msg void OnKeyDown(UINT vk, UINT repeat, UINT flags);
 

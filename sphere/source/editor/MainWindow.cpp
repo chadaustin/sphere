@@ -65,6 +65,8 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_WM_DROPFILES()
   ON_WM_CLOSE()
 
+  ON_COMMAND(ID_FILE_PASTE, OnPaste)
+
   // generic file open
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
   ON_COMMAND(ID_FILE_OPTIONS, OnFileOptions)
@@ -2741,3 +2743,17 @@ CMainWindow::OnViewProject()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+afx_msg void
+CMainWindow::OnPaste()
+{
+  CDocumentWindow* dw = GetCurrentDocumentWindow();
+  if (dw != NULL) {
+    dw->SendMessage(ID_IMAGEVIEW_PASTE, 0, 0);
+    MessageBox("MainWindow::Paste");
+  }
+  else {
+    MessageBox("MainWindow::Paste");
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////

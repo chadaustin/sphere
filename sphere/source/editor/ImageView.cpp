@@ -25,6 +25,8 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
 
   ON_WM_PAINT()
   ON_WM_SIZE()
+  ON_WM_CHAR()
+  ON_WM_KEYDOWN()
 
   ON_WM_LBUTTONDOWN()
   ON_WM_LBUTTONUP()
@@ -35,7 +37,8 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
   ON_COMMAND(ID_IMAGEVIEW_UNDO,                  OnUndo)
   ON_COMMAND(ID_IMAGEVIEW_REDO,                  OnRedo)
   ON_COMMAND(ID_IMAGEVIEW_COPY,                  OnCopy)
-  ON_COMMAND(ID_IMAGEVIEW_PASTE,                 OnPaste)
+  //ON_COMMAND(ID_IMAGEVIEW_PASTE,                 OnPaste)
+  ON_COMMAND(ID_IMAGEVIEW_PASTE, OnPaste)
   ON_COMMAND(ID_IMAGEVIEW_PASTE_RGB,             OnPasteRGB)
   ON_COMMAND(ID_IMAGEVIEW_PASTE_ALPHA,           OnPasteAlpha)
   ON_COMMAND(ID_IMAGEVIEW_PASTE_INTOSELECTION,   OnPasteIntoSelection)
@@ -1862,13 +1865,26 @@ CImageView::OnMouseMove(UINT flags, CPoint point)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+afx_msg void 
+CImageView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags) 
+{ 
+  //MessageBox("ImageView::OnChar"); 
+  GetParent()->SendMessage(WM_CHAR, nChar, nRepCnt + (((DWORD)nFlags)<<16));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
-CImageView::OnKeyDown(UINT vk, UINT repeat, UINT flags)
+CImageView::OnKeyDown(UINT vk, UINT nRepCnt, UINT nFlags)
 {
   if (vk == VK_APPS) {
     POINT point;
     GetCursorPos(&point);
-    OnRButtonUp(flags, point);
+    OnRButtonUp(nFlags, point);
+  }
+  else {
+    //MessageBox("ImageView::OnKeyDown"); 
+    GetParent()->SendMessage(WM_KEYDOWN, vk, nRepCnt + (((DWORD)nFlags)<<16));
   }
 }
 
@@ -1914,6 +1930,7 @@ CImageView::OnCopy()
 afx_msg void
 CImageView::OnPaste()
 {
+  MessageBox("CImageView::Paste");
   Paste();
 }
 
