@@ -11,7 +11,7 @@
 #include "EditRange.hpp"
 #include "../common/strcmp_ci.hpp"
 
-// #include "../common/Filters.hpp"  added for CountColorsUsed
+#include "Editor.hpp"
 
 #define LABEL_WIDTH 80
 
@@ -1163,7 +1163,7 @@ struct userwritedata {
   int direction;
 };
 
-mng_bool GetImageFromSpriteset(int index, CImage32& image, void* data) {
+mng_bool MNG_DECL GetImageFromSpriteset(int index, CImage32& image, void* data) {
   userwritedata* s = (userwritedata*) data;
   if (index < 0 || index >= s->spriteset.GetNumFrames(s->direction))
     return MNG_FALSE;
@@ -1171,7 +1171,7 @@ mng_bool GetImageFromSpriteset(int index, CImage32& image, void* data) {
   return MNG_TRUE;
 }
 
-mng_bool GetNextImageFromFileList(int index, CImage32& image, void* data) {
+mng_bool MNG_DECL GetNextImageFromFileList(int index, CImage32& image, void* data) {
   // std::vector<CImage32>& images = (std::vector<CImage32>&) data;
   std::vector<std::string>* filelist = (std::vector<std::string>*) data;
   if (index < 0 || index >= filelist->size())
@@ -1180,11 +1180,11 @@ mng_bool GetNextImageFromFileList(int index, CImage32& image, void* data) {
   return image.Load((*filelist)[index].c_str()) ? MNG_TRUE : MNG_TRUE;
 }
 
-mng_uint32 GetDelayFromImageFileList(int index, void* data) {
+mng_uint32 MNG_DECL GetDelayFromImageFileList(int index, void* data) {
   return 10 * 1000;
 }
 
-mng_uint32 GetDelayFromSpriteset(int index, void* data) {
+mng_uint32 MNG_DECL GetDelayFromSpriteset(int index, void* data) {
   userwritedata* s = (userwritedata*) data;
   return 10 * s->spriteset.GetFrameDelay(s->direction, index);
   // spritesets use a frame rate and this is converting it into a sort of hashed time based system
@@ -1192,9 +1192,8 @@ mng_uint32 GetDelayFromSpriteset(int index, void* data) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "Editor.hpp"
-
-mng_bool ContinueProcessing(int index, int total) {
+mng_bool MNG_DECL ContinueProcessing(int index, int total)
+{
   mng_bool ret = MNG_TRUE;
 
   if (1) {
@@ -1229,6 +1228,7 @@ mng_bool ContinueProcessing(int index, int total) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#if 0
 #include "../common/system.hpp"
 
 mng_retcode TestAnimationCode() {
@@ -1250,6 +1250,7 @@ mng_retcode TestAnimationCode() {
 
   return SaveMNGAnimationFromImages("comics.mng", GetNextImageFromFileList, GetDelayFromImageFileList, ContinueProcessing, (void*) &imagefilelist);
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1282,8 +1283,7 @@ CSpritesetView::OnExportDirectionAsAnimation()
         MessageBox(mng_get_error_message(iRC), "Error Exporting Direction As Animation", MB_OK);
       }
     }
-    else
-    if (is_fli) {
+    else {
       MessageBox("Unsupported save mode", "Error Exporting Direction As Animation", MB_OK);
     }
   }

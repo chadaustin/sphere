@@ -125,6 +125,7 @@ BEGIN
             MENUITEM "Dutch",                       ID_FILE_LANGUAGE_DUTCH
             MENUITEM "English",                     ID_FILE_LANGUAGE_ENGLISH
             MENUITEM "German",                      ID_FILE_LANGUAGE_GERMAN
+            MENUITEM "Italian",                     ID_FILE_LANGUAGE_ITALIAN
         END
         MENUITEM "&Options...",                 ID_FILE_OPTIONS
         MENUITEM "E&xit",                       ID_FILE_EXIT

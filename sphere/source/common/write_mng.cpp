@@ -502,6 +502,12 @@ mng_retcode mng_putpngimage(mng_handle hMNG, const RGBA* pixels, const int width
   }
   */
 
+  if (has_alpha) {
+    grayscale = MNG_FALSE;
+    has_alpha = MNG_TRUE;
+    pixel_size = sizeof(RGBA);
+  }
+
   if (grayscale) {
     pixel_size = has_alpha ? 2 : 1;
   }
@@ -902,7 +908,8 @@ SaveMNGAnimationFromImages(const char* filename,
                            WriteMNG_GetImage get_image,
                            WriteMNG_GetDelay get_delay,
                            WriteMNG_ContinueProcessingImages should_continue,
-                           void* data) {
+                           void* data)
+{
 
   mng_retcode iRC;
 

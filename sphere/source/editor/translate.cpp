@@ -22,6 +22,7 @@ void SetLanguage(const char* language) {
     char directory[MAX_PATH] = {0};
     GetCurrentDirectory(MAX_PATH, directory);
     if (SetCurrentDirectory(GetSphereDirectory().c_str()) != 0) {
+      s_LanguageConfig.Save("_language_.ini");
       s_LanguageConfig.Load("language.ini");
       SetCurrentDirectory(directory);
     }
