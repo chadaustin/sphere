@@ -3274,6 +3274,27 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
   break;
     }
 
+  // confine the input person within the map if the map is repeating
+  if (person_index == m_InputPerson) {
+    if (m_Map.GetMap().IsRepeating()) {
+
+      int layer_width =  m_Map.GetMap().GetLayer(p.layer).GetWidth()  * m_Map.GetMap().GetTileset().GetTileWidth();
+      int layer_height = m_Map.GetMap().GetLayer(p.layer).GetHeight() * m_Map.GetMap().GetTileset().GetTileHeight();
+
+      while (p.x < 0)
+        p.x += layer_width;
+
+      while (p.x >= layer_width)
+        p.x -= layer_width;
+
+      while (p.y < 0)
+        p.y += layer_height;
+
+      while (p.y >= layer_height)
+        p.y -= layer_height;
+    }
+  }
+
     // make sure 'stepping' is valid
     p.stepping %= p.spriteset->GetSpriteset().GetNumFrames(p.direction);
 
