@@ -1366,7 +1366,7 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
       for (int sx = 0; sx < 4; sx++) { 
 
         // create the spriteset
-        sprite.Create(frame_width, frame_height, num_images, num_directions, num_frames);
+        sprite.Create(frame_width, frame_height, num_images, num_directions, num_frames + 1);
         sprite.SetDirectionName(0, "north");
         sprite.SetDirectionName(1, "east");
         sprite.SetDirectionName(2, "south");
@@ -1390,6 +1390,8 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
           for (int f = 0; f < num_frames; f++) {
             sprite.SetFrameIndex(d, f, d * num_frames + f);
           }
+          // there's an extra frame
+          sprite.SetFrameIndex(d, num_frames, d * num_frames + 1);
         }
 
         // the following converts a four direction spriteset to an eight direction spriteset
@@ -1406,20 +1408,20 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
 
           for (int j = 0; j < num_directions; j++) {
             int d = (j * 2) + 1;
-            for (int f = 0; f < num_frames; f++) {
-              if (sprite.GetNumFrames(d) < num_frames)
-                sprite.InsertFrame(d, f);
+            int __num_frames__= sprite.GetNumFrames(d - 1) - 1;
+            for (int f = 0; f < __num_frames__; f++) {
+              sprite.InsertFrame(d, f);
             }
           }
 
           for (int j = 0; j < num_directions; j++) {
-            int base_index = j * num_frames;
             int d = (j * 2) + 1;
-
-            for (int f = 0; f < num_frames; f++) {
-              sprite.SetFrameIndex(d, f, base_index + f);
+            int __num_frames__= sprite.GetNumFrames(d - 1);
+            for (int f = 0; f < __num_frames__; f++) {
+              sprite.SetFrameIndex(d, f, sprite.GetFrameIndex(d - 1, f));
             }
           }
+
 
           // I'm assuming that the base is the bottom part of the frame
           sprite.SetBase(0, frame_height/2, frame_width, frame_height);

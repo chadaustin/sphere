@@ -11,8 +11,8 @@
 ///////////////////////////////////////////////////////////
 
 static unsigned int
-GetEditRangeIDFromMenuID(const std::string type, unsigned int id) {
-
+GetEditRangeIDFromMenuID(const std::string type, unsigned int id)
+{
   switch (id)
   {
     case ID_SPRITESETVIEWFRAMES_ER_SLIDE_OTHER:
@@ -82,7 +82,8 @@ GetEditRangeStartIndex(int min_value, int max_value, int default_value)
 ///////////////////////////////////////////////////////////
 
 static int
-GetEditRangeEndIndex(int min_value, int max_value, int default_value) {
+GetEditRangeEndIndex(int min_value, int max_value, int default_value)
+{
   CNumberDialog dialog("End frame index", "Value", default_value, min_value, max_value);
   if (dialog.DoModal() == IDOK) {
     return dialog.GetValue();
@@ -116,7 +117,8 @@ GetEditRangeImage(const std::string type, void* data, int frame)
 ///////////////////////////////////////////////////////////
 
 static std::vector<int>
-GetEditRangeIndexes(const std::string type, const bool allow_duplicates, void* data, const int pos) {
+GetEditRangeIndexes(const std::string type, const bool allow_duplicates, void* data, const int pos)
+{
   std::vector<int> frames;
 
   if (type == "spriteset")
@@ -197,7 +199,8 @@ GetEditRangeIndexes(const std::string type, const bool allow_duplicates, void* d
 ///////////////////////////////////////////////////////////
 
 bool
-EditRange::OnEditRange(const std::string type, unsigned int id, const bool allow_duplicates, void* data, const int pos) {
+EditRange::OnEditRange(const std::string type, unsigned int id, const bool allow_duplicates, void* data, const int pos)
+{
   //const unsigned int id = GetCurrentMessage()->wParam;
   std::vector<int> frames = GetEditRangeIndexes(type, allow_duplicates, data, pos);
   bool changed = false;

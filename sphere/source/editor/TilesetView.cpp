@@ -129,7 +129,7 @@ CTilesetView::Create(ITilesetViewHandler* handler, CWnd* parent, sTileset* tiles
 {
   m_Handler = handler;
   m_Tileset = tileset;
-  
+    
   m_BlitTile = new CDIBSection(
     m_Tileset->GetTileWidth()  * m_ZoomFactor.GetZoomFactor(),
     m_Tileset->GetTileHeight() * m_ZoomFactor.GetZoomFactor(),

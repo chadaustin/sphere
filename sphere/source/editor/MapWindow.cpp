@@ -314,8 +314,17 @@ CMapWindow::OnSize(UINT uType, int cx, int cy)
     RECT MapViewRect;
     GetMapViewRect(&MapViewRect);
 
-//#define TILESET_PALETTE_DOCKED
+#define TILESET_PALETTE_DOCKED
 #ifdef TILESET_PALETTE_DOCKED
+    /*
+    if (m_TilePalette) {
+      if (uType == 0)
+        m_TilePalette->ShowWindow(SW_SHOW);
+      if (uType == 1)
+        m_TilePalette->ShowWindow(SW_HIDE);
+    }
+    */
+
     if (m_TilePalette && m_TilePalette->IsVisible())
     {
       const int SCROLLBAR_WIDTH  = GetSystemMetrics(SM_CXVSCROLL);
