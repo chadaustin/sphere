@@ -167,14 +167,24 @@ BEGIN
     POPUP "&Map"
     BEGIN
         MENUITEM "&Properties...",              ID_MAP_PROPERTIES
-        MENUITEM "&Change Tile Size...",        ID_MAP_CHANGETILESIZE
-        MENUITEM "&Rescale Tileset...",         ID_MAP_RESCALETILESET
+        POPUP "Change Size"
+        BEGIN
+            MENUITEM "&Change Tile Size...",        ID_MAP_CHANGETILESIZE
+            MENUITEM "&Rescale Tileset...",         ID_MAP_RESCALETILESET
+            MENUITEM "Resample Tileset...",         ID_MAP_RESAMPLETILESET
+        END
         MENUITEM "Re&size All Layers...",       ID_MAP_RESIZEALLLAYERS
         MENUITEM "&Edit Entities...",           ID_MAP_EDIT_ENTITIES
         MENUITEM SEPARATOR
         MENUITEM "&Export Tileset...",          ID_MAP_EXPORTTILESET
         MENUITEM "&Import Tileset...",          ID_MAP_IMPORTTILESET
         MENUITEM "Pr&une Tileset...",           ID_MAP_PRUNETILESET
+        MENUITEM SEPARATOR
+        POPUP "Tab"
+        BEGIN
+            MENUITEM "Map",                         ID_MAP_TAB_MAP
+            MENUITEM "Tiles",                       ID_MAP_TAB_TILES
+        END
         POPUP "&Slide"
         BEGIN
             MENUITEM "&Up",                         ID_MAP_SLIDE_UP
@@ -198,12 +208,22 @@ BEGIN
             MENUITEM "&8x",                         ID_SPRITESET_ZOOM_8X
         END
         MENUITEM SEPARATOR
-        MENUITEM "R&esize Spriteset...",        ID_SPRITESET_RESIZE
-        MENUITEM "Rescale Spriteset...",        ID_SPRITESET_RESCALE
-        MENUITEM "Resample Spriteset...",       ID_SPRITESET_RESAMPLE
+        POPUP "Change Size"
+        BEGIN
+            MENUITEM "R&esize Spriteset...",        ID_SPRITESET_RESIZE
+            MENUITEM "Rescale Spriteset...",        ID_SPRITESET_RESCALE
+            MENUITEM "Resample Spriteset...",       ID_SPRITESET_RESAMPLE
+        END
         MENUITEM "&Fill Delay...",              ID_SPRITESET_FILLDELAY
         MENUITEM "Frame P&roperties...",        ID_SPRITESET_FRAMEPROPERTIES
         MENUITEM "E&xport as Image...",         ID_SPRITESET_EXPORTASIMAGE
+        MENUITEM SEPARATOR
+        POPUP "Tab"
+        BEGIN
+            MENUITEM "Frames",                      ID_SPRITESET_TAB_FRAMES
+            MENUITEM "Edit",                        ID_SPRITESET_TAB_EDIT
+            MENUITEM "Base",                        ID_SPRITESET_TAB_BASE
+        END
     END
 END
 
@@ -529,18 +549,24 @@ BEGIN
         MENUITEM "&Append",                     ID_SPRITESETVIEWDIRECTIONS_APPEND
 
         MENUITEM SEPARATOR
+        POPUP "Import"
+        BEGIN
+            MENUITEM "Import From Image...",        ID_SPRITESETVIEWDIRECTIONS_IMPORT_FROM_IMAGE
+
+            MENUITEM "&Import From Animation...",   ID_SPRITESETVIEWDIRECTIONS_IMPORT_FROM_ANIMATION
+
+        END
+        POPUP "Export"
+        BEGIN
+            MENUITEM "&Export As Image...",         ID_SPRITESETVIEWDIRECTIONS_EXPORT_AS_IMAGE
+
+            MENUITEM "&Export As Animation...",     ID_SPRITESETVIEWDIRECTIONS_EXPORT_AS_ANIMATION
+
+        END
+        MENUITEM SEPARATOR
         MENUITEM "&Fill Delay...",              ID_SPRITESETVIEWDIRECTIONS_FILLDELAY
 
         MENUITEM "&Properties...",              ID_SPRITESETVIEWDIRECTIONS_PROPERTIES
-
-        MENUITEM SEPARATOR
-        MENUITEM "Import From Image...",        ID_SPRITESETVIEWDIRECTIONS_IMPORT_FROM_IMAGE
-
-        MENUITEM "&Export As Image",            ID_SPRITESETVIEWDIRECTIONS_EXPORT_AS_IMAGE
-
-        MENUITEM "&Import From Animation...",   ID_SPRITESETVIEWDIRECTIONS_IMPORT_FROM_ANIMATION
-
-        MENUITEM "&Export As Animation...",     ID_SPRITESETVIEWDIRECTIONS_EXPORT_AS_ANIMATION
 
     END
     POPUP "SpritesetView_Frames"
@@ -552,11 +578,11 @@ BEGIN
         MENUITEM "&Append",                     ID_SPRITESETVIEWFRAMES_APPEND
 
         MENUITEM SEPARATOR
-        MENUITEM "Insert Frames",               ID_SPRITESETVIEWFRAMES_INSERTFRAMES
+        MENUITEM "Insert Frames...",            ID_SPRITESETVIEWFRAMES_INSERTFRAMES
 
-        MENUITEM "Append Frames",               ID_SPRITESETVIEWFRAMES_APPENDFRAMES
+        MENUITEM "Append Frames...",            ID_SPRITESETVIEWFRAMES_APPENDFRAMES
 
-        MENUITEM "Delete Frames",               ID_SPRITESETVIEWFRAMES_REMOVEFRAMES
+        MENUITEM "Delete Frames...",            ID_SPRITESETVIEWFRAMES_REMOVEFRAMES
 
         MENUITEM SEPARATOR
         MENUITEM "&Copy (CTRL + C)",            ID_SPRITESETVIEWFRAMES_COPY

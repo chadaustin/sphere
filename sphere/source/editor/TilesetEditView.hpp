@@ -41,6 +41,10 @@ public:
   void OnToolChanged(UINT id);
   BOOL IsToolAvailable(UINT id);
 
+  afx_msg void OnKeyDown(UINT vk, UINT repeat, UINT flags);
+  afx_msg void OnKeyUp(UINT vk, UINT repeat, UINT flags);
+  afx_msg void OnTimer(UINT event);
+
 private:
   void UpdateImageView();
 

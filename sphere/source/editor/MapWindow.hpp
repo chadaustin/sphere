@@ -46,12 +46,22 @@ private:
   void GetLayerViewRect(RECT* rect);
   void TabChanged(int tab);
 
+  afx_msg void OnMapTab();
+  afx_msg void OnTilesTab();
+  afx_msg void OnUpdateMapTab(CCmdUI* cmdui);
+  afx_msg void OnUpdateTilesTab(CCmdUI* cmdui);
+
   afx_msg void OnSize(UINT type, int cx, int cy);
   afx_msg void OnKeyDown(UINT vk, UINT repeat, UINT flags);
+  afx_msg void OnKeyUp(UINT vk, UINT repeat, UINT flags);
+  afx_msg void OnTimer(UINT event);
   afx_msg BOOL OnCommand(WPARAM wparam, LPARAM lparam);
   afx_msg void OnMapProperties();
+  
   afx_msg void OnChangeTileSize();
   afx_msg void OnRescaleTileset();
+  afx_msg void OnResampleTileset();
+
   afx_msg void OnResizeAllLayers();
   afx_msg void OnExportTileset();
   afx_msg void OnImportTileset();
@@ -101,6 +111,8 @@ private:
 	// palettes
   CTilePalette* m_TilePalette;
 	CTilePreviewPalette* m_TilePreviewPalette;
+
+  UINT m_Timer;
 
   DECLARE_MESSAGE_MAP()
 };

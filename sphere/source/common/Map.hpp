@@ -47,7 +47,7 @@ public:
   void PruneTileset(std::set<int>* allowed_tiles = NULL);
   void ValidateTileIndices();
 
-  void SetTileSize(int width, int height, bool rescale = false);
+  void SetTileSize(int width, int height, int method = 0);
 
   bool Import_VergeMAP(const char* filename, const char* tilesetFilename, IFileSystem& fs = g_DefaultFileSystem);
 

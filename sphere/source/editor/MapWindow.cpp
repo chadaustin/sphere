@@ -20,6 +20,8 @@
 #define IDC_TAB 1101
 #define TAB_HEIGHT 24
 
+static const int MAP_TIMER = 9001;
+
 #ifdef USE_SIZECBAR
 IMPLEMENT_DYNAMIC(CMapWindow, CMDIChildWnd)
 #endif
@@ -28,10 +30,14 @@ BEGIN_MESSAGE_MAP(CMapWindow, CSaveableDocumentWindow)
 
   ON_WM_SIZE()
   ON_WM_KEYDOWN()
+  ON_WM_KEYUP()
+  ON_WM_TIMER()
 
   ON_COMMAND(ID_MAP_PROPERTIES,      OnMapProperties)
   ON_COMMAND(ID_MAP_CHANGETILESIZE,  OnChangeTileSize)
   ON_COMMAND(ID_MAP_RESCALETILESET,  OnRescaleTileset)
+  ON_COMMAND(ID_MAP_RESAMPLETILESET, OnResampleTileset)
+
   ON_COMMAND(ID_MAP_RESIZEALLLAYERS, OnResizeAllLayers)
   ON_COMMAND(ID_MAP_EXPORTTILESET,   OnExportTileset)
   ON_COMMAND(ID_MAP_IMPORTTILESET,   OnImportTileset)
@@ -49,6 +55,11 @@ BEGIN_MESSAGE_MAP(CMapWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_FILE_PASTE,    OnPaste)
 
   ON_NOTIFY(TCN_SELCHANGE, IDC_TAB,  OnTabChanged)
+
+  ON_COMMAND(ID_MAP_TAB_MAP,   OnMapTab)
+  ON_COMMAND(ID_MAP_TAB_TILES, OnTilesTab)
+  ON_UPDATE_COMMAND_UI(ID_MAP_TAB_MAP,   OnUpdateMapTab)
+  ON_UPDATE_COMMAND_UI(ID_MAP_TAB_TILES, OnUpdateTilesTab)
 
 END_MESSAGE_MAP()
 
@@ -118,6 +129,8 @@ CMapWindow::Create()
 #endif
 
   TabChanged(0);
+
+  m_Timer = SetTimer(MAP_TIMER, 100, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -380,6 +393,7 @@ CMapWindow::OnSize(UINT uType, int cx, int cy)
 afx_msg void
 CMapWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
 {
+  /*
   int tile = m_MapView.GetSelectedTile();
   const int tiles_per_row = (m_TilePalette == NULL) ? (0) : (m_TilePalette->GetNumTilesPerRow());
 
@@ -405,6 +419,25 @@ CMapWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
     m_TilesetEditView.SelectTile(tile);
     if (m_TilePalette) m_TilePalette->SelectTile(tile);
   }
+  */
+
+  m_TilesetEditView.OnKeyDown(vk, repeat, flags);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMapWindow::OnKeyUp(UINT vk, UINT repeat, UINT flags)
+{
+  m_TilesetEditView.OnKeyUp(vk, repeat, flags);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMapWindow::OnTimer(UINT event)
+{
+  m_TilesetEditView.OnTimer(event);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -469,7 +502,28 @@ CMapWindow::OnRescaleTileset()
   CResizeDialog dialog("Rescale Tiles", tile_width, tile_height);
   if (dialog.DoModal() == IDOK) {
     if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
-      m_Map.SetTileSize(dialog.GetWidth(), dialog.GetHeight(), true);
+      m_Map.SetTileSize(dialog.GetWidth(), dialog.GetHeight(), 1);
+
+      SetModified(true);
+      m_MapView.TilesetChanged();
+      m_TilesetEditView.TilesetChanged();
+      if (m_TilePalette) m_TilePalette->TilesetChanged();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMapWindow::OnResampleTileset()
+{
+  int tile_width  = m_Map.GetTileset().GetTileWidth();
+  int tile_height = m_Map.GetTileset().GetTileHeight();
+
+  CResizeDialog dialog("Resample Tiles", tile_width, tile_height);
+  if (dialog.DoModal() == IDOK) {
+    if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
+      m_Map.SetTileSize(dialog.GetWidth(), dialog.GetHeight(), 2);
 
       SetModified(true);
       m_MapView.TilesetChanged();
@@ -579,6 +633,40 @@ CMapWindow::OnTabChanged(NMHDR* ns, LRESULT* result)
 {
   if (ns->idFrom == IDC_TAB)
     TabChanged(m_TabControl.GetCurSel());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMapWindow::OnMapTab()
+{
+  m_TabControl.SetCurSel(0);
+  TabChanged(0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMapWindow::OnTilesTab()
+{
+  m_TabControl.SetCurSel(1);
+  TabChanged(1);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMapWindow::OnUpdateMapTab(CCmdUI* cmdui)
+{
+  cmdui->SetCheck((m_TabControl.GetCurSel() == 0) ? 1 : 0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMapWindow::OnUpdateTilesTab(CCmdUI* cmdui)
+{
+  cmdui->SetCheck((m_TabControl.GetCurSel() == 1) ? 1 : 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

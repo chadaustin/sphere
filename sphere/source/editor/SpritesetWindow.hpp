@@ -71,6 +71,13 @@ private:
 
   afx_msg void OnTabChanged(NMHDR* ns, LRESULT* result);
 
+  afx_msg void OnFramesTab();
+  afx_msg void OnEditTab();
+  afx_msg void OnBaseTab();
+  afx_msg void OnUpdateFramesTab(CCmdUI* cmdui);
+  afx_msg void OnUpdateEditTab(CCmdUI* cmdui);
+  afx_msg void OnUpdateBaseTab(CCmdUI* cmdui);
+
   virtual bool GetSavePath(char* path);
   virtual bool SaveDocument(const char* path);
 

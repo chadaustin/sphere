@@ -50,6 +50,13 @@ BEGIN_MESSAGE_MAP(CSpritesetWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_FILE_COPY,  OnCopy)
   ON_COMMAND(ID_FILE_PASTE, OnPaste)
 
+  ON_COMMAND(ID_SPRITESET_TAB_FRAMES,   OnFramesTab)
+  ON_COMMAND(ID_SPRITESET_TAB_EDIT, OnEditTab)
+  ON_COMMAND(ID_SPRITESET_TAB_BASE, OnBaseTab)
+  ON_UPDATE_COMMAND_UI(ID_SPRITESET_TAB_FRAMES, OnUpdateFramesTab)
+  ON_UPDATE_COMMAND_UI(ID_SPRITESET_TAB_EDIT,   OnUpdateEditTab)
+  ON_UPDATE_COMMAND_UI(ID_SPRITESET_TAB_BASE,   OnUpdateBaseTab)
+
   /*
   ON_UPDATE_COMMAND_UI(ID_SPRITESET_ZOOM_IN, OnUpdateZoomIn)
   ON_UPDATE_COMMAND_UI(ID_SPRITESET_ZOOM_OUT, OnUpdateZoomOut)
@@ -525,6 +532,57 @@ CSpritesetWindow::OnUpdateZoomIn(CCmdUI* cmdui)
   cmdui->Enable(m_SpritesetView.GetZoomFactor() >= 1.0/8.0);
 }
 */
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetWindow::OnFramesTab()
+{
+  m_TabControl.SetCurSel(0);
+  TabChanged(0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetWindow::OnEditTab()
+{
+  m_TabControl.SetCurSel(1);
+  TabChanged(1);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetWindow::OnBaseTab()
+{
+  m_TabControl.SetCurSel(2);
+  TabChanged(2);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetWindow::OnUpdateFramesTab(CCmdUI* cmdui)
+{
+  cmdui->SetCheck((m_TabControl.GetCurSel() == 0) ? 1 : 0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetWindow::OnUpdateEditTab(CCmdUI* cmdui)
+{
+  cmdui->SetCheck((m_TabControl.GetCurSel() == 1) ? 1 : 0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetWindow::OnUpdateBaseTab(CCmdUI* cmdui)
+{
+  cmdui->SetCheck((m_TabControl.GetCurSel() == 2) ? 1 : 0);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -628,6 +628,12 @@
 #define ID_SCRIPT_OPTIONS_SELECTION_LINE 40763
 #define ID_FILE_COPY                    40764
 #define ID_SCRIPT_GOTOLINE              40765
+#define ID_MAP_TAB_MAP                  40766
+#define ID_MAP_TAB_TILES                40767
+#define ID_SPRITESET_TAB_FRAMES         40768
+#define ID_SPRITESET_TAB_EDIT           40769
+#define ID_SPRITESET_TAB_BASE           40770
+#define ID_MAP_RESAMPLETILESET          40771
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -636,7 +642,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        268
-#define _APS_NEXT_COMMAND_VALUE         40766
+#define _APS_NEXT_COMMAND_VALUE         40772
 #define _APS_NEXT_CONTROL_VALUE         1211
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

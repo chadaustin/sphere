@@ -636,10 +636,15 @@ CTilesetView::OnPaint()
   int blit_width  = m_BlitTile->GetWidth();
   int blit_height = m_BlitTile->GetHeight();
 
+  bool multi_tiles_selected = false;
   int tileselection_left_x  = GetTileSelectionLeftX();
   int tileselection_right_x = GetTileSelectionRightX();
   int tileselection_top_y   = GetTileSelectionTopY();
   int tileselection_lower_y = GetTileSelectionLowerY();
+
+  if (m_UsingMultiTileSelection && (GetTileSelectionWidth() * GetTileSelectionHeight() > 1)) {
+    multi_tiles_selected = true;
+  }
 
   for (int iy = 0; iy < client_rect.bottom / blit_height + 1; iy++)
     for (int ix = 0; ix < client_rect.right / blit_width + 1; ix++)
@@ -700,12 +705,8 @@ CTilesetView::OnPaint()
 
         // if the tile is selected, draw a pink rectangle around it
         bool draw_border = false;
-#if 0
-        if (it == m_SelectedTile) {
-          draw_border = true;
-        }
-#else
-        if (m_UsingMultiTileSelection) {
+
+        if (multi_tiles_selected) {
           if (ix >= tileselection_left_x
            && ix <= tileselection_right_x
            && (iy + m_TopRow) >= tileselection_top_y
@@ -716,7 +717,7 @@ CTilesetView::OnPaint()
         else if (it == m_SelectedTile) {
           draw_border = true;
         }
-#endif
+
         if (draw_border)
         {
           HBRUSH newbrush = (HBRUSH)GetStockObject(NULL_BRUSH);
@@ -815,9 +816,9 @@ CTilesetView::SelectTileAtPoint(CPoint point)
   }
 
   int tile = (m_TopRow + row) * num_tiles_x + col;
-
-  if (tile >= 0 && tile < m_Tileset->GetNumTiles())
+  if (tile >= 0 && tile < m_Tileset->GetNumTiles()) {
     m_SelectedTile = tile;
+  }
 
   Invalidate();
 
@@ -836,6 +837,10 @@ CTilesetView::OnLButtonDown(UINT flags, CPoint point)
   if (m_MenuShown)
     return;
 
+  if (m_UsingMultiTileSelection || !(GetTileSelectionWidth() * GetTileSelectionHeight() > 1)) {
+    m_UsingMultiTileSelection = false;
+  }
+
   SelectTileAtPoint(point);
 
   if (GetCapture() == NULL) {
@@ -853,11 +858,14 @@ CTilesetView::OnLButtonDown(UINT flags, CPoint point)
 afx_msg void
 CTilesetView::OnLButtonUp(UINT flags, CPoint point)
 {
+  if (!m_MouseDown)
+    return;
+
   m_CurPoint = point; m_CurPoint.y += (m_TopRow * m_BlitTile->GetHeight());
   m_MouseDown = false;
   ReleaseCapture();
 
-  if (m_UsingMultiTileSelection && !(GetTileSelectionWidth() * GetTileSelectionHeight() > 1)) {
+  if (m_UsingMultiTileSelection || !(GetTileSelectionWidth() * GetTileSelectionHeight() > 1)) {
     m_UsingMultiTileSelection = false;
   }
 
@@ -903,7 +911,7 @@ CTilesetView::OnMouseMove(UINT flags, CPoint point)
 
     int tile = (m_TopRow + y) * num_tiles_x + x;
 
-    if (tile <= m_Tileset->GetNumTiles() - 1)
+    if (tile >= 0 && tile < m_Tileset->GetNumTiles())
     {
       CString tilenum;
       tilenum.Format("Tile (%i/%i)", tile, m_Tileset->GetNumTiles());
@@ -922,7 +930,7 @@ CTilesetView::OnRButtonUp(UINT flags, CPoint point)
   if (m_MenuShown)
     return;
 
-  if (m_UsingMultiTileSelection && !(GetTileSelectionWidth() * GetTileSelectionHeight() > 1)) {
+  if (m_UsingMultiTileSelection || !(GetTileSelectionWidth() * GetTileSelectionHeight() > 1)) {
     m_UsingMultiTileSelection = false;
   }
 

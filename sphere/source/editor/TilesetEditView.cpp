@@ -435,6 +435,26 @@ CTilesetEditView::OnPaste()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+afx_msg void
+CTilesetEditView::OnKeyDown(UINT vk, UINT repeat, UINT flags)
+{
+  m_ImageView.OnKeyDown(vk, repeat, flags);
+}
+
+afx_msg void
+CTilesetEditView::OnKeyUp(UINT vk, UINT repeat, UINT flags)
+{
+  m_ImageView.OnKeyUp(vk, repeat, flags);
+}
+
+afx_msg void
+CTilesetEditView::OnTimer(UINT event)
+{
+  m_ImageView.OnTimer(event);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 CTilesetEditView::OnToolChanged(UINT id)
 {

@@ -819,11 +819,11 @@ sMap::ValidateTileIndices() {
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-sMap::SetTileSize(int width, int height, bool rescale)
+sMap::SetTileSize(int width, int height, int method)
 {
   int old_width  = m_Tileset.GetTileWidth();
   int old_height = m_Tileset.GetTileHeight();
-  m_Tileset.SetTileSize(width, height, rescale);
+  m_Tileset.SetTileSize(width, height, method);
 
   if (old_width)  { m_StartX = m_StartX * width  / old_width;  }
   if (old_height) { m_StartY = m_StartY * height / old_height; }

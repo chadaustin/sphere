@@ -605,19 +605,29 @@ sTileset::GetTileHeight() const
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-sTileset::SetTileSize(int w, int h, bool rescale)
+sTileset::SetTileSize(int w, int h, int method)
 {
   m_TileWidth  = w;
   m_TileHeight = h;
 
-  if (rescale) {
-    for (unsigned i = 0; i < m_Tiles.size(); i++) {
-      m_Tiles[i].Rescale(w, h);
-    }
-  } else {
-    for (unsigned i = 0; i < m_Tiles.size(); i++) {
-      m_Tiles[i].Resize(w, h);
-    }
+  switch (method) {
+    case 0:
+      for (unsigned i = 0; i < m_Tiles.size(); i++) {
+        m_Tiles[i].Resize(w, h);
+      }
+    break;
+
+    case 1:
+      for (unsigned i = 0; i < m_Tiles.size(); i++) {
+        m_Tiles[i].Rescale(w, h);
+      }
+    break;
+
+    case 2:
+      for (unsigned i = 0; i < m_Tiles.size(); i++) {
+        m_Tiles[i].Resample(w, h);
+      }
+    break;
   }
 }
 

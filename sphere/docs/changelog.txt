@@ -1,3 +1,6 @@
+2004.02.27
+  - Added keyboard tile/image pixel editing keys (Up/Down/Left/Right space for move/place pixel)
+
 2004.02.25
   - Added Get/SetTileSurface
   - if there's only one game in the games directory, execute that upon startup
@@ -44,6 +47,8 @@
 
 2003.12.25
   - Made Project View support multiple folders e.g. maps/towns/freddys.rmp and such
+    (Currently this breaks Package Game (subfolders wont be included within the package)
+    You also have to make the folders within explorer, I don't think this is that big of a problem though.
 
 2003.12.24
   - Replaced Image/Map Tools palette with Image/Map toolbars
