@@ -95,7 +95,7 @@ CImageView::CImageView()
   m_ShowGrid = false;
   s_ClipboardFormat = RegisterClipboardFormat("FlatImage32");
 
-  m_BlitTile = new CDIBSection(64, 64, 32);
+  m_BlitTile = new CDIBSection(16, 16, 32);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1053,8 +1053,8 @@ CImageView::OnPaint()
     m_RedrawHeight = height;
   }
 
-  int dib_width = 64;
-  int dib_height = 64;
+  int dib_width = 16;
+  int dib_height = 16;
 
   // ensure that we redraw dib_width by dib_height squares only
   m_RedrawX -= m_RedrawX % dib_width;
