@@ -194,3 +194,28 @@ for (var i = 0; i < 256; ++i) {
 for (var i = 0; i < n; ++i) {
   vec[i] = lut[vec[i]];
 }
+
+
+-- Give up and disable features --
+
+One way to help lower end pc's run your game might be to simply disable some features.
+Such as:
+
+EvaluateSystemScript("layers.js");
+
+var g_pc_speed = 5;
+
+function OnEnterMap()
+{
+  var layer = GetLayerIndex("clouds");
+  if (layer != -1) {
+    if (g_pc_speed < 3) {
+      SetLayerVisible(layer, false);
+    }
+    else {
+      SetLayerVisible(layer, true);    
+    }
+  }
+}
+
+Then the clouds layer will be hidden if the pc speed variable is lower than three.
