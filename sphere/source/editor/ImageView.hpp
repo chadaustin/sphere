@@ -90,6 +90,7 @@ private:
 
   void Click(bool force_draw);
   void Fill();
+  bool IsColorToReplace(RGBA pixel, RGBA colorToReplace);
   void FillMe(int x, int y, RGBA colorToReplace);
   void Line();
   void Rectangle();

@@ -753,7 +753,7 @@ CImageView::Fill()
   if (!InImage(startPoint) || !InSelection(startPoint))
     return;
 
-  if (!memcmp(&m_Image.GetPixel(startPoint.x, startPoint.y), &m_Color, sizeof(RGBA)))
+  if (IsColorToReplace(m_Image.GetPixel(startPoint.x, startPoint.y), m_Color))
     return;
 
   FillMe(startPoint.x, startPoint.y, m_Image.GetPixel(startPoint.x, startPoint.y));
@@ -774,6 +774,18 @@ struct Point {
   int y;
 };
 
+bool
+CImageView::IsColorToReplace(RGBA pixel, RGBA colorToReplace) {
+  bool r = false;
+  switch (m_Image.GetBlendMode()) {
+    case CImage32::BLEND:      r = (pixel == colorToReplace); break;
+    case CImage32::REPLACE:    r = (pixel == colorToReplace); break;
+    case CImage32::RGB_ONLY:   r = (pixel.red == colorToReplace.red && pixel.green == colorToReplace.green && pixel.blue == colorToReplace.blue); break;
+    case CImage32::ALPHA_ONLY: r = (pixel.alpha == colorToReplace.alpha); break;
+  }
+  return r;
+}
+
 void
 CImageView::FillMe(int x, int y, RGBA colorToReplace)
 {
@@ -793,22 +805,22 @@ CImageView::FillMe(int x, int y, RGBA colorToReplace)
     q.pop();
 
     // fill up
-    if (p.y > sy && m_Image.GetPixel(p.x, p.y - 1) == colorToReplace) {
+    if (p.y > sy && IsColorToReplace(m_Image.GetPixel(p.x, p.y - 1), colorToReplace)) {
       q.push(    Point(p.x, p.y - 1));
       m_Image.SetPixel(p.x, p.y - 1, m_Color);
     }
     // fill down
-    if (p.y < height - 1 && m_Image.GetPixel(p.x, p.y + 1) == colorToReplace) {
+    if (p.y < height - 1 && IsColorToReplace(m_Image.GetPixel(p.x, p.y + 1), colorToReplace)) {
       q.push(    Point(p.x, p.y + 1));
       m_Image.SetPixel(p.x, p.y + 1, m_Color);
     }
     // fill left
-    if (p.x > sx && m_Image.GetPixel(p.x - 1, p.y) == colorToReplace) {
+    if (p.x > sx && IsColorToReplace(m_Image.GetPixel(p.x - 1, p.y), colorToReplace)) {
       q.push(    Point(p.x - 1, p.y));
       m_Image.SetPixel(p.x - 1, p.y, m_Color);
     }
     // fill right
-    if (p.x < width - 1 && m_Image.GetPixel(p.x + 1, p.y) == colorToReplace) {
+    if (p.x < width - 1 && IsColorToReplace(m_Image.GetPixel(p.x + 1, p.y), colorToReplace)) {
       q.push(    Point(p.x + 1, p.y));
       m_Image.SetPixel(p.x + 1, p.y, m_Color);
     }
