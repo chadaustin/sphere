@@ -3098,6 +3098,11 @@ begin_func(CreateSurface, 3)
   arg_int(h);
   arg_color(c);
 
+  if (w < 0 || h < 0) {
+    JS_ReportError(cx, "CreateSurface() failed\nSurfaces cannot have negative sizes...\n'%d by %d'", w, h);
+    return JS_FALSE;
+  }
+
   CImage32* surface = new CImage32(w, h);
   surface->SetBlendMode(CImage32::REPLACE);
   surface->Rectangle(0, 0, w - 1, h - 1, c);
@@ -4467,6 +4472,11 @@ begin_method(SS_SURFACE, ssSurfaceResize, 2)
   arg_int(w);
   arg_int(h);
 
+  if (w < 0 || h < 0) {
+    JS_ReportError(cx, "surface_object.resize() failed\nSurfaces cannot have negative sizes...\n'%d by %d'", w, h);
+    return JS_FALSE;
+  }
+
   object->surface->Resize(w, h);
 end_method()
 
@@ -4475,6 +4485,11 @@ end_method()
 begin_method(SS_SURFACE, ssSurfaceRescale, 2)
   arg_int(w);
   arg_int(h);
+
+  if (w < 0 || h < 0) {
+    JS_ReportError(cx, "surface_object.rescale() failed\nSurfaces cannot have negative sizes...\n'%d by %d'", w, h);
+    return JS_FALSE;
+  }
 
   object->surface->Rescale(w, h);
 end_method();
