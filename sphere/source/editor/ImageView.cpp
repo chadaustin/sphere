@@ -297,7 +297,16 @@ CImageView::Copy()
 
   // copy the image as a flat 32-bit color image
   HGLOBAL memory = GlobalAlloc(GHND, 8 + width * height * 4);
+  if (memory == NULL) {
+    CloseClipboard();
+    return false;
+  }
+
   dword* ptr = (dword*)GlobalLock(memory);
+  if (ptr == NULL) {
+    CloseClipboard();
+    return false;
+  }
 
   *ptr++ = sw;
   *ptr++ = sh;
@@ -359,7 +368,11 @@ CImageView::Copy()
 	header.biClrImportant = 0;
 
 	HGLOBAL hDIB = GlobalAlloc(GHND, sizeof(header) + width * height * 4);
-  char * dibPtr = (char*)GlobalLock(hDIB);
+  char* dibPtr = (char*)GlobalLock(hDIB);
+  if (dibPtr == NULL) {
+    CloseClipboard();
+    return false;
+  }
 	memcpy(dibPtr, &header, sizeof(header));
 	memcpy(dibPtr+sizeof(header), pixels, width * height * 4);
 	GlobalUnlock(hDIB);

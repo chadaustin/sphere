@@ -3,7 +3,7 @@
 #include "Keys.hpp"
 #include "resource.h"
 
-const int ANIMATION_TIMER = 9001;
+static const int ANIMATION_TIMER = 9001;
 
 BEGIN_MESSAGE_MAP(CSpritesetAnimationPalette, CPaletteWindow)
 

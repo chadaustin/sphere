@@ -19,7 +19,7 @@ static int s_MapAreaClipboardFormat;
 static int s_MapEntityClipboardFormat;
 static int s_ClipboardFormat;
 
-const int ANIMATION_TIMER = 9001;
+static const int ANIMATION_TIMER = 9001;
 
 
 BEGIN_MESSAGE_MAP(CMapView, CScrollWindow)
@@ -118,13 +118,14 @@ CMapView::Create(CDocumentWindow* owner, IMapViewHandler* handler, CWnd* parent,
   UpdateObstructionTiles();
 
 	//init the animation timer
-	m_FrameTick = 0;  
-  m_Timer = SetTimer(ANIMATION_TIMER,Configuration::Get(KEY_ANIMATION_DELAY), NULL);
+	m_FrameTick = 0;
+  m_Timer = SetTimer(ANIMATION_TIMER, Configuration::Get(KEY_ANIMATION_DELAY), NULL);
 	InitAnimations();
 
   return retval;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 
 void 
 CMapView::InitAnimations()
@@ -539,7 +540,16 @@ CMapView::LayerAreaCopy()
   int mapMem = newLayer.GetWidth() * newLayer.GetHeight() * sizeof(int);
   int tileMem = newTileset.GetNumTiles() * newTileset.GetTileHeight() * newTileset.GetTileWidth() * 4;
   HGLOBAL memory = GlobalAlloc(GHND, 24 + mapMem + tileMem);
+  if (memory == NULL) {
+    CloseClipboard();
+    return;
+  }
+
   dword* ptr = (dword*)GlobalLock(memory);
+  if (ptr == NULL) {
+    CloseClipboard();
+    return;
+  }
 
   *ptr++ = 0;                          //number of layers
   *ptr++ = newTileset.GetNumTiles();   //numtiles
@@ -591,7 +601,16 @@ CMapView::LayerAreaCopy()
 
   // copy the image as a flat 32-bit color image
   memory = GlobalAlloc(GHND, 8 + sw * sh * 4);
+  if (memory == NULL) {
+    CloseClipboard();
+    return;
+  }
+
   ptr = (dword*)GlobalLock(memory);
+  if (ptr == NULL) {
+    CloseClipboard();
+    return;
+  }
 
   *ptr++ = sw;
   *ptr++ = sh;
@@ -666,7 +685,16 @@ CMapView::LayerAreaCopy()
 	header.biClrImportant = 0;
 
 	HGLOBAL hDIB = GlobalAlloc(GHND, sizeof(header) + tw * width * th * height * 4);
-  char * dibPtr = (char*)GlobalLock(hDIB);
+  if (hDIB == NULL) {
+    CloseClipboard();
+    return;
+  }
+  char* dibPtr = (char*)GlobalLock(hDIB);
+  if (dibPtr == NULL) {
+    CloseClipboard();
+    return;
+  }
+
 	memcpy(dibPtr, &header, sizeof(header));
 	memcpy(dibPtr+sizeof(header), pixels, tw * width * th * height * 4);
 	GlobalUnlock(hDIB);
