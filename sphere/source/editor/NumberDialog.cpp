@@ -59,12 +59,32 @@ CNumberDialog::OnOK()
   m_NumberEdit->GetWindowText(text);
   int value = atoi(text);
 
+  int prefix = 0;
+  int digits = 0;
+
+  // count up how many digits there are in the string and if there's + or - prefix
+  for (int i = 0; i < strlen(text); i++) {
+    if (isdigit(text[i])) {
+      digits++;
+    }
+    else
+    if (i == 0) {
+      if (text[i] == '+' || text[i] == '-') {
+        prefix = 1;
+      }
+    }
+  }
+
+  if (digits == 0 || strlen(text) - digits - prefix != 0) {
+    MessageBox("Invalid number format", m_Title.c_str());
+  }
+  else
   if (value < m_Min || value > m_Max)
   {
     char string[80];
     sprintf(string, "Value must be between %d and %d", m_Min, m_Max);
     MessageBox(string, m_Title.c_str());
-  }  
+  }
   else
   {
     m_Value = value;
