@@ -55,7 +55,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 htmlhelp.lib corona.lib audiere.lib winmm.lib js32.lib zlib.lib libmng.lib /nologo /subsystem:windows /machine:I386 /libpath:"../../third-party-msvc/lib" /opt:nowin98
+# ADD LINK32 htmlhelp.lib corona.lib audiere.lib winmm.lib js32.lib zlib.lib libmng.lib wsock32.lib /nologo /subsystem:windows /machine:I386 /libpath:"../../third-party-msvc/lib" /opt:nowin98
 # SUBTRACT LINK32 /pdb:none
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
@@ -105,7 +105,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /G5 /Zp1 /MTd /W3 /Gm /Gi /GX /ZI /Od /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "VC_EXTRALEAN" /D "STRICT" /FAs /YX /FD /GZ /c
-# ADD CPP /nologo /G5 /MDd /W3 /Gm /Gi /GX /ZI /Od /I "../../third-party-msvc/include" /D "_DEBUG" /D "STRIC" /D "_AFXDLL" /D "INCLUDE_DEPRECATED_FEATURES" /D "XP_PC" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "VC_EXTRALEAN" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /D "NOMINMAX" /FAs /FR /FD /GZ /c
+# ADD CPP /nologo /G5 /MDd /W3 /Gm /Gi /GX /ZI /Od /I "../../third-party-msvc/include" /D "_DEBUG" /D "STRIC" /D "_AFXDLL" /D "INCLUDE_DEPRECATED_FEATURES" /D "XP_PC" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "VC_EXTRALEAN" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /D "NOMINMAX" /D "USE_SIZECBAR" /FAs /FR /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -116,7 +116,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 winmm.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 # SUBTRACT BASE LINK32 /profile
-# ADD LINK32 htmlhelp.lib corona.lib audiere.lib winmm.lib js32.lib zlib.lib libmng.lib /nologo /subsystem:windows /profile /debug /machine:I386 /libpath:"../../third-party-msvc/lib"
+# ADD LINK32 htmlhelp.lib corona.lib audiere.lib winmm.lib js32.lib zlib.lib libmng.lib wsock32.lib /nologo /subsystem:windows /profile /debug /machine:I386 /libpath:"../../third-party-msvc/lib"
 
 !ENDIF 
 
@@ -1215,6 +1215,50 @@ SOURCE=..\common\write_mng.cpp
 # Begin Source File
 
 SOURCE=..\common\write_mng.hpp
+# End Source File
+# End Group
+# Begin Group "irc"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\..\..\http\irc.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\http\irc.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\http\IRCWindow.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\http\IRCWindow.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\http\socket.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\http\socket.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\http\thread.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\http\thread.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\http\time.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\http\time.hpp
 # End Source File
 # End Group
 # End Target

@@ -808,8 +808,9 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
 
     glTexCoord2f(0, 0);
     glVertex2i(x[0], y[0]);
-
+  
   glEnd(); 
+  
   glDisable(GL_TEXTURE_2D);
 }
 

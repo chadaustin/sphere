@@ -59,7 +59,8 @@ CVScrollWindow::SetVScrollRange(int range, int page_size)
 afx_msg void
 CVScrollWindow::OnVScroll(UINT code, UINT pos, CScrollBar* scroll_bar)
 {
-  switch (code) {
+  switch (code)
+  {
     case SB_TOP:           m_Position = 0;           break;
     case SB_BOTTOM:        m_Position = m_Range - 1; break;
     case SB_PAGEUP:        m_Position -= m_PageSize; break;

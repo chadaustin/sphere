@@ -15,8 +15,12 @@ static CMainWindow* g_MainWindow = NULL;
 std::string g_SphereDirectory;
 
 static CStatusBar* s_StatusBar = NULL;
-static CLogWindow* s_LogWindow = NULL;
 
+#ifdef USE_IRC
+#include "../../../http/irc.hpp"
+#include "../../../http/IRCWindow.hpp"
+static CIRCWindow* s_LogWindow = NULL;
+#endif
 
 // the repository of all registred instances
 // beware of the mutex!
@@ -244,13 +248,6 @@ CEditorApplication::InitInstance()
 
   g_SphereDirectory = config_directory;
 
-  /*
-  s_LogWindow = new CLogWindow(m_hInstance, "Sphere Log");
-  if (s_LogWindow) {
-    s_LogWindow->AddString("Sphere Opened!");
-  }
-  */
-
   // create the main window
   CMainWindow* main_window = new CMainWindow();
   if (!main_window)
@@ -273,6 +270,15 @@ CEditorApplication::InitInstance()
   // parse the command line
   CEditorCommandLineInfo cli(main_window);
   ParseCommandLine(cli);
+
+#ifdef USE_IRC
+  s_LogWindow = new CIRCWindow(); // m_hInstance, "Sphere Log");
+  if (s_LogWindow) {
+    //s_LogWindow->AddString("Sphere Opened!");
+    IRC(s_LogWindow);
+  }
+#endif
+
 
   return TRUE;
 }

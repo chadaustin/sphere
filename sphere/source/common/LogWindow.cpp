@@ -40,7 +40,6 @@ CLogWindow::CLogWindow(HINSTANCE instance, const char* caption)
 CLogWindow::~CLogWindow()
 {
   // tell thread to shut down
-
   delete[] m_Caption;
 }
 
@@ -107,12 +106,12 @@ CLogWindow::AddString(const char* string)
 
   LeaveCriticalSection(&StringManagement);
 
-  InvalidateRect(m_Window, NULL, TRUE);
-
   RECT ClientRect;
   GetClientRect(m_Window, &ClientRect);
   int page_size = ClientRect.bottom / STRING_HEIGHT;
   UpdateScrollBar(page_size);
+
+  InvalidateRect(m_Window, NULL, TRUE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -220,12 +219,12 @@ CLogWindow::OnVScroll(int code, int pos)
 
   switch (code)
   {
-    case SB_LINEDOWN:      m_TopString++;                         break;
-    case SB_LINEUP:        m_TopString--;                         break;
-    case SB_PAGEDOWN:      m_TopString += PageSize;               break;
-    case SB_PAGEUP:        m_TopString -= PageSize;               break;
     case SB_TOP:           m_TopString = 0;                       break;
     case SB_BOTTOM:        m_TopString = m_NumStrings - PageSize; break;
+    case SB_PAGEUP:        m_TopString -= PageSize;               break;
+    case SB_PAGEDOWN:      m_TopString += PageSize;               break;
+    case SB_LINEUP:        m_TopString--;                         break;
+    case SB_LINEDOWN:      m_TopString++;                         break;
     case SB_THUMBPOSITION: m_TopString = pos;                     break;
     case SB_THUMBTRACK:    m_TopString = pos;                     break;
   }

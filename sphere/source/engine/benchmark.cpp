@@ -2,7 +2,7 @@
 #include "video.hpp"
 #include "input.hpp"
 #include "time.hpp"
-
+#include "render.hpp"
 
 const int TIME_PER_TEST = 1000;  // milliseconds
 const int RIGHT_RESULT_MARGIN = 180;
@@ -27,6 +27,9 @@ static int test_Rectangles();
 static int test_GradientRectangles();
 static int test_GrabImage();
 static int test_DirectGrab();
+static int test_ClearScreen();
+static int test_ClearScreenMemset();
+static int test_BlitImageBlackScreen();
 static int test_FlipScreen();
 
 
@@ -56,6 +59,9 @@ static struct {
   { "Gradient Rectangles", test_GradientRectangles  },
   { "GrabImage" ,          test_GrabImage           },
   { "DirectGrab",          test_DirectGrab          },
+  { "ClearScreen",         test_ClearScreen         },
+  { "ClearScreenMemset",         test_ClearScreenMemset         },
+  { "test_BlitImageBlackScreen", test_BlitImageBlackScreen},
   { "FlipScreen",          test_FlipScreen          },
 };
 static const int s_NumTests = sizeof(s_Tests) / sizeof(*s_Tests);
@@ -482,6 +488,60 @@ int test_DirectGrab()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+int test_ClearScreen()
+{
+  int count = 0;
+  dword start = GetTime();
+  while (start + TIME_PER_TEST > GetTime()) {
+    ClearScreen();
+    count++;
+  }
+
+  return count;
+}
+
+/////////////////////
+
+int test_BlitImageBlackScreen()
+{
+  RGBA* pixels = new RGBA[320 * 240];
+  memset(pixels, 255, sizeof(RGBA) * 320 * 240);
+  IMAGE image = CreateImage(320, 240, pixels);
+  delete[] pixels;
+
+  int count = 0;
+  dword start = GetTime();
+  while (start + TIME_PER_TEST > GetTime()) {
+    BlitImage(image, 0, 0);
+    count++;
+  }
+
+  return count;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int test_ClearScreenMemset()
+{
+  RGBA* pixels = new RGBA[320 * 240];
+
+  int count = 0;
+  dword start = GetTime();
+  while (start + TIME_PER_TEST > GetTime()) {
+    //BlitImage(image, 0, 0);
+    memset(pixels, 0, sizeof(RGBA) * 320 * 240);
+    count++;
+  }
+
+
+  delete[] pixels;
+
+  return count;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 
 int test_FlipScreen()
 {

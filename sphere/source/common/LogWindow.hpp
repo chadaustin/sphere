@@ -16,8 +16,9 @@ public:
   CLogWindow(HINSTANCE instance, const char* caption);
   ~CLogWindow();
 
-private:
+public:
   void AddString(const char* string);
+private:
   virtual void WriteString(const char* string);
 
 private:
