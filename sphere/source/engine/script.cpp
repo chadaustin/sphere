@@ -4228,6 +4228,7 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
   // assign methods to the object
   static JSFunctionSpec fs[] = {
     { "save",        ssSpritesetSave,    1, },
+    { "clone",       ssSpritesetClone,   0, },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -4393,6 +4394,23 @@ begin_method(SS_SPRITESET, ssSpritesetSave, 1)
   JS_MaybeGC(cx);
 
   return_bool ( saved );
+end_method()
+
+////////////////////////////////////////
+
+begin_method(SS_SPRITESET, ssSpritesetClone, 0)
+
+  sSpriteset* s = argSpriteset(cx, OBJECT_TO_JSVAL(obj));
+  if (s == NULL) {
+    return JS_FALSE;
+  }
+
+  return_object(CreateSpritesetObject(cx, new SSPRITESET(*s)));
+  delete s;
+
+  // spritesets can take a lot of memory, so do a little GC
+  JS_MaybeGC(cx);
+
 end_method()
 
 ////////////////////////////////////////
