@@ -77,6 +77,9 @@
 const int PALETTE_COMMAND = 17133;
 const int NUM_PALETTES    = 100;
 
+const int CDAUDIO_COMMAND = 17234;
+const int NUM_CDAUDIOS    = 26;
+
 static CDocumentWindow* s_JS_Console = NULL;
 
 const char szBarState[] = "SDE_BarState";
@@ -185,6 +188,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_PROJECT_REFRESH,         OnProjectRefresh)
   ON_COMMAND(ID_PROJECT_RUNSPHERE,       OnProjectRunSphere)
   ON_COMMAND(ID_PROJECT_CONFIGURESPHERE, OnProjectConfigureSphere)
+  ON_COMMAND(ID_PROJECT_OPENDIRECTORY,   OnProjectOpenDirectory)
   ON_COMMAND(ID_PROJECT_GAMESETTINGS,    OnProjectGameSettings)
   ON_COMMAND(ID_PROJECT_PACKAGE_GAME,    OnProjectPackageGame)
 
@@ -301,6 +305,8 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_MESSAGE(WM_CLEAR_CHILD_MENU,    OnClearChildMenu)  
   ON_MESSAGE(WM_COPYDATA,            OnCopyData)
   ON_COMMAND_RANGE(PALETTE_COMMAND, PALETTE_COMMAND + NUM_PALETTES, OnViewPalette)
+  
+  ON_COMMAND_RANGE(CDAUDIO_COMMAND, CDAUDIO_COMMAND + NUM_CDAUDIOS, OnCDAudio)
 
   ON_WM_CHANGECBCHAIN()
   ON_WM_DRAWCLIPBOARD()
@@ -1010,6 +1016,38 @@ CMainWindow::UpdateMenu()
   // create the new menu
   HINSTANCE hInstance = AfxGetApp()->m_hInstance;
   HMENU hNewMenu = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_MAIN));
+
+  do {
+    int menu_count = GetMenuItemCount(hNewMenu);
+    int i = menu_count - 2; // tools menu
+
+    if (i < 0 || i >= menu_count)
+      break;
+
+    HMENU hCDMenu = CreateMenu();
+    if (!hCDMenu)
+      break;
+
+    HMENU hSubMenu = GetSubMenu(hNewMenu, i);
+    if (!hCDMenu)
+      break;
+
+    std::vector<std::string> devices;
+    audiere::EnumerateCDDevices(devices);
+
+    for (int j = 0; j < devices.size(); j++) {
+      if (devices[j].size() > 0) {
+        std::string title = "CD Audio " + devices[j];
+        AppendMenu(hCDMenu, 0, CDAUDIO_COMMAND + j, title.c_str());
+      }
+    }
+
+    if (GetMenuItemCount(hCDMenu) == 0) {
+      AppendMenu(hCDMenu, 0, 0, "...");
+    }
+
+    AppendMenu(hSubMenu, MF_POPUP | MF_STRING, (UINT_PTR) hCDMenu, "CD Player");
+  } while (false);
 
   if (1) {
     int menu_count = GetMenuItemCount(hNewMenu);
@@ -2713,6 +2751,18 @@ CMainWindow::OnProjectGameSettings()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
+afx_msg void
+CMainWindow::OnProjectOpenDirectory()
+{
+  if ((int)ShellExecute(NULL, "open", m_Project.GetDirectory(), 0, 0, SW_SHOWNORMAL) <= 32) {
+    MessageBox("Could not open folder", m_Project.GetDirectory(), MB_OK);
+  }
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+
 #include "CheckListDialog.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3695,6 +3745,34 @@ CMainWindow::ViewPalette(int paletteNum)
 #else
       palette->ShowPalette(!palette->IsWindowVisible());
 #endif
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnCDAudio(UINT id)
+{
+  CDAudio(id - CDAUDIO_COMMAND);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void 
+CMainWindow::CDAudio(int cdNum)
+{
+  std::vector<std::string> devices;
+  audiere::EnumerateCDDevices(devices);
+
+  for (int j = 0; j < devices.size(); j++) {
+    if (j == cdNum && devices[j].size() > 0) {
+      std::string title = "cda://" + devices[j];
+      if (title.find(":", title.length() - 1) == title.length() - 1)
+        title[title.find(":", title.length() - 1)] = '\0';
+      //MessageBox(title.c_str(), NULL, MB_OK);
+      OpenDocumentWindow(GT_SOUNDS, title.c_str());
+      break;
     }
   }
 }

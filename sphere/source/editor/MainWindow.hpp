@@ -152,6 +152,7 @@ private:
   afx_msg void OnProjectRefresh();
   afx_msg void OnProjectRunSphere();
   afx_msg void OnProjectConfigureSphere();
+  afx_msg void OnProjectOpenDirectory();
   afx_msg void OnProjectGameSettings();
   afx_msg void OnProjectPackageGame();
 #endif
@@ -164,6 +165,9 @@ private:
 #ifdef USE_IRC
   afx_msg void OnToolsIRCClient();
 #endif
+
+  afx_msg void OnCDAudio(UINT id);
+  afx_msg void CDAudio(int cdNum);
 #endif
 
   afx_msg void OnHelpSphereSite();

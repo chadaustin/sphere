@@ -120,6 +120,7 @@
 #define IDD_TITLEBAR_PAGE               276
 #define IDI_ENTITY_PERSON_OLD           278
 #define IDD_ABOUT                       279
+#define IDR_CD_AUDIO                    281
 #define IDC_PROJECTNAME                 1000
 #define IDC_GAMETITLE                   1001
 #define IDC_BROWSE                      1003
@@ -721,6 +722,9 @@
 #define ID_FILE_NEW_FILE                40826
 #define ID_IMAGE_CROP                   40829
 #define ID_SOUND_PLAYLIST_REMOVE_BROKEN_FILES 40832
+#define ID_PROJECT_OPENDIRECTORY        40834
+#define ID_CDPLAYER_CDAUDIO_D           40835
+#define ID_CDPLAYER_CDAUDIO_E           40836
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -728,8 +732,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        281
-#define _APS_NEXT_COMMAND_VALUE         40834
+#define _APS_NEXT_RESOURCE_VALUE        282
+#define _APS_NEXT_COMMAND_VALUE         40837
 #define _APS_NEXT_CONTROL_VALUE         1242
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

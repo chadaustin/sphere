@@ -261,10 +261,11 @@ BEGIN
 
         END
         MENUITEM "R&efresh (F5)",               ID_PROJECT_REFRESH
-        MENUITEM "&Run Game (CTRL + F5)",       ID_PROJECT_RUNSPHERE
-        MENUITEM "Game Settings...",            ID_PROJECT_GAMESETTINGS
+        MENUITEM "&Open Directory",             ID_PROJECT_OPENDIRECTORY
         MENUITEM "&Configure Sphere...",        ID_PROJECT_CONFIGURESPHERE
+        MENUITEM "Game Settings...",            ID_PROJECT_GAMESETTINGS
         MENUITEM "Package Game!",               ID_PROJECT_PACKAGE_GAME
+        MENUITEM "&Run Game (CTRL + F5)",       ID_PROJECT_RUNSPHERE
     END
 END
 
@@ -1176,6 +1177,15 @@ BEGIN
 
         END
         MENUITEM "&Refresh",                    ID_SCRIPTVIEW_REFRESH
+    END
+END
+
+IDR_CD_AUDIO MENU DISCARDABLE 
+BEGIN
+    POPUP "CD Player"
+    BEGIN
+        MENUITEM "CD Audio D:",                 ID_CDPLAYER_CDAUDIO_D
+        MENUITEM "CD Audio E:",                 ID_CDPLAYER_CDAUDIO_E
     END
 END
 

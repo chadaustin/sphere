@@ -735,11 +735,10 @@ CScriptWindow::GetScriptType()
     return SCRIPT_TYPE_PY;
   }
 
-  if (Local::extension_compare(GetDocumentPath(), ".cpp")) {
-    return SCRIPT_TYPE_CPP;
-  }
-
-  if (Local::extension_compare(GetDocumentPath(), ".c")) {
+  if (Local::extension_compare(GetDocumentPath(), ".cpp")
+   || Local::extension_compare(GetDocumentPath(), ".c")
+   || Local::extension_compare(GetDocumentPath(), ".hpp")
+   || Local::extension_compare(GetDocumentPath(), ".h")) {
     return SCRIPT_TYPE_CPP;
   }
 
@@ -1081,7 +1080,9 @@ CScriptWindow::OnSize(UINT type, int cx, int cy)
   if (m_Created) {
     int sidebar_width = 0;
 
-    if ( ::IsWindow(m_List) && ::IsWindowVisible(m_List) ) {
+    bool list_visible = ::IsWindow(m_List) && Configuration::Get(KEY_SCRIPT_SHOW_LIST);
+
+    if ( list_visible ) {
       RECT rect;
       if ( ::GetWindowRect(m_List, &rect) ) {
         sidebar_width = rect.right - rect.left;
@@ -1089,7 +1090,7 @@ CScriptWindow::OnSize(UINT type, int cx, int cy)
     }
  
     ::MoveWindow(m_Editor, sidebar_width, 0, cx - sidebar_width, cy, TRUE);
-    if ( ::IsWindow(m_List) && ::IsWindowVisible(m_List) )
+    if ( list_visible )
       ::MoveWindow(m_List, 0, 0, sidebar_width, cy, TRUE);
   }
 

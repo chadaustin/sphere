@@ -1,3 +1,15 @@
+2004.08.28
+  - Now switching from one window to another window while maximized
+    will not show a normal window for a moment before showing
+    the maximized window
+  - The script window's List window will now show itself when it's been
+    covered up by making another window active and then going back to it.
+
+2004.07.??
+  - Added MIDI support for the engine/editor
+  - Started to work on CD player support for the editor
+  - At some point I added an irc client that still isn't that useful yet.
+
 2004.07.02
   - It is now safe to call UpdateMapEngine from an update script
    (or CallPersonScript or CallDefaultMapScript)
@@ -295,7 +307,7 @@
 2003.02.20
   - added CallMapScript(SCRIPT)
   - clarified documentation for QueuePersonCommand
-  - made it so that it just does nothing when you resize images/fonts/tile sizes
+  - it now just does nothing when you resize images/fonts/tile sizes
     to zero width or height (instead of crashing)
 
 2003.02.18
@@ -310,8 +322,8 @@
 
 2003.02.11
   - added help menu to take you to the sphere.sf.net FAQ
-  - removed the reference to MIDI files from the editor...  you can no
-    longer add them to your projects, because they are unsupported
+  - removed the reference to MIDI files from the editor...
+  (you can't add them to your projects, because they are unsupported)
 
 2003.02.09
   - removed "Alternate DirectBlit method" from sphere_gl's

@@ -5111,7 +5111,7 @@ begin_func(CreateSurface, 3)
   }
 
   surface->SetBlendMode(CImage32::REPLACE);
-  surface->Rectangle(0, 0, w - 1, h - 1, c);
+  surface->Rectangle(0, 0, w, h, c);
   surface->SetBlendMode(CImage32::BLEND);
 
   return_object(CreateSurfaceObject(cx, surface));

@@ -108,7 +108,26 @@ CSoundWindow::CSoundWindow(const char* sound)
   */
 
   if (sound != NULL) {
-    m_Playlist.AppendFile(sound);
+    const char* cda = "cda://";
+    if (memcmp(sound, cda, strlen(cda)) == 0) {
+      std::string device = sound + strlen(cda);
+      if (device.find(",") == -1) {
+
+        int num_tracks = 3;
+
+        for (int i = 0; i < num_tracks; i++) {
+          char track[100] = {0};
+          sprintf (track, "%s%s,%d", cda, device.c_str(), i);
+          m_Playlist.AppendFile(track);
+        }
+      }
+      else {
+        m_Playlist.AppendFile(sound);
+      }
+    }
+    else {
+      m_Playlist.AppendFile(sound);
+    }
   }
 
   m_PlayButton.EnableWindow(TRUE);
