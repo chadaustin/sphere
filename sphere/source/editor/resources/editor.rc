@@ -1335,7 +1335,8 @@ BEGIN
                     WS_TABSTOP,23,141,37,6
     PUSHBUTTON      "Edit",IDC_FILTER_LIST_EDIT,117,37,40,13
     CONTROL         "",IDC_PREVIEW_FRAME,"Static",SS_BLACKFRAME | NOT 
-                    WS_VISIBLE,87,116,56,32
+                    WS_VISIBLE,87,122,46,27
+    LTEXT           "Preview",IDC_STATIC,87,111,40,7
 END
 
 IDD_CONVOLVE_LIST_EDIT DIALOG DISCARDABLE  0, 0, 166, 183
@@ -1727,17 +1728,6 @@ BEGIN
     "C",            ID_SPRITESETVIEWFRAMES_COPY, VIRTKEY, CONTROL, NOINVERT
     "V",            ID_SPRITESETVIEWFRAMES_PASTE, VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_SPRITESETVIEWFRAMES_PASTE, VIRTKEY, SHIFT, NOINVERT
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// String Table
-//
-
-STRINGTABLE DISCARDABLE 
-BEGIN
-    ID_ENTITY_LIST_MOVE_LAYER "HEY!"
 END
 
 #endif    // English (U.S.) resources

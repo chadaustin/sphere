@@ -21,6 +21,7 @@ sources = Split("""
     Clipboard.cpp
     ColorView.cpp
     Configuration.cpp
+    convolve.cpp
     ConvolveListDialog.cpp
     DIBSection.cpp
     Debug.cpp

@@ -94,12 +94,15 @@ private:
 
   int m_UseRed, m_UseGreen, m_UseBlue, m_UseAlpha;
 
+  afx_msg void OnPaint();
+
 private:
   BOOL OnInitDialog();
   void OnOK();
 
   afx_msg void OnFilterChanged();
   afx_msg void OnEditFilter();
+  afx_msg void OnChannelChanged();
 
 private:
   int     m_CurrentFilter;

@@ -7,6 +7,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// BEGIN CONVOLVE LIST EDIT DIALOG //
+
 BEGIN_MESSAGE_MAP(CConvolveListEditDialog, CDialog)
   ON_COMMAND(IDC_FILTER_LIST_EDIT_CLAMP, OnClampChanged)
 END_MESSAGE_MAP()
@@ -242,11 +244,18 @@ CConvolveListEditDialog::OnOK()
   CDialog::OnOK();
 }
 
+// END CONVOLVE LIST EDIT DIALOG //
+
 ////////////////////////////////////////////////////////////////////////////////
 
 BEGIN_MESSAGE_MAP(CConvolveListDialog, CDialog)
   ON_CBN_SELCHANGE(IDC_FILTER_LIST, OnFilterChanged)
   ON_COMMAND(IDC_FILTER_LIST_EDIT, OnEditFilter)
+  ON_BN_CLICKED(IDC_FILTER_USE_RED,   OnChannelChanged)
+  ON_BN_CLICKED(IDC_FILTER_USE_GREEN, OnChannelChanged)
+  ON_BN_CLICKED(IDC_FILTER_USE_BLUE,  OnChannelChanged)
+  ON_BN_CLICKED(IDC_FILTER_USE_ALPHA, OnChannelChanged)
+  ON_WM_PAINT()
 END_MESSAGE_MAP()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -258,6 +267,76 @@ CConvolveListDialog::CConvolveListDialog(const int width, const int height, cons
 , m_Height(height)
 , m_Pixels(pixels)
 {
+}
+
+#include "DIBSection.hpp"
+#include "../common/convolve.hpp"
+
+afx_msg void
+CConvolveListDialog::OnPaint()
+{
+	CPaintDC dc(this);
+
+  RECT rect;
+  GetDlgItem(IDC_PREVIEW_FRAME)->GetWindowRect(&rect);
+  ScreenToClient(&rect);
+
+  if (m_CurrentFilter == -1) {
+    FillRect(dc, &rect, (HBRUSH)GetStockObject(BLACK_BRUSH));
+    return;
+  }
+
+  CDIBSection* blit_tile = new CDIBSection(32, 32, 32);
+  if (blit_tile && blit_tile->GetPixels() != NULL)
+  {
+    int width  = m_Width;
+    int height = m_Height;
+    if (width > 32)
+      width = 32;
+    if (height > 32)
+      height = 32;
+
+    RGBA* pixels = (RGBA*) blit_tile->GetPixels();
+
+    for (int iy = 0; iy < height; iy++) {
+      for (int ix = 0; ix < width; ix++) {
+        pixels[iy * 32 + ix].red   = m_Pixels[iy * m_Width + ix].red;
+        pixels[iy * 32 + ix].green = m_Pixels[iy * m_Width + ix].green;
+        pixels[iy * 32 + ix].blue  = m_Pixels[iy * m_Width + ix].blue;
+        pixels[iy * 32 + ix].alpha = m_Pixels[iy * m_Width + ix].alpha;
+      }
+    }
+
+    const double* double_mask = GetMask();
+    int mask_width = GetMaskWidth();
+    int mask_height = GetMaskHeight();
+
+    if (double_mask != NULL || mask_width > 0 || mask_height > 0) {
+      int offset  = GetOffset();
+      int divisor = GetDivisor();
+      int clamp   = ShouldClamp();
+      int clamp_low  = GetClampLow();
+      int clamp_high = GetClampHigh();
+      int wrap       = ShouldWrap();
+      int infinite  = 0;
+      int use_red   = ShouldUseRedChannel();
+      int use_green = ShouldUseGreenChannel();
+      int use_blue  = ShouldUseBlueChannel();
+      int use_alpha = ShouldUseAlphaChannel();
+      const char* mask_type = GetConvolveType();
+
+      double_convolve_rgba(0, 0, width, height, 32, 32, pixels, mask_width, mask_height,
+                         mask_width/2, mask_height/2, double_mask,
+                         divisor, offset, wrap,
+                         clamp, clamp_low, clamp_high, infinite,
+                         use_red, use_green, use_blue, use_alpha);
+    }
+    //
+    
+    dc.BitBlt(rect.left, rect.top, width, height, CDC::FromHandle(blit_tile->GetDC()), 0, 0, SRCCOPY);
+  }
+
+  delete blit_tile;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -542,10 +621,6 @@ CConvolveListDialog::OnOK()
   }
   else {
     SaveFilterList();
-    m_UseRed   =  IsDlgButtonChecked(IDC_FILTER_USE_RED)   == BST_CHECKED ? 1 : 0;
-    m_UseGreen =  IsDlgButtonChecked(IDC_FILTER_USE_BLUE)  == BST_CHECKED ? 1 : 0;
-    m_UseBlue  =  IsDlgButtonChecked(IDC_FILTER_USE_GREEN) == BST_CHECKED ? 1 : 0;
-    m_UseAlpha =  IsDlgButtonChecked(IDC_FILTER_USE_ALPHA) == BST_CHECKED ? 1 : 0;
     CDialog::OnOK();
   }
 }
@@ -567,8 +642,28 @@ CConvolveListDialog::UpdateButtons()
 void
 CConvolveListDialog::OnFilterChanged()
 {
-  m_CurrentFilter = SendDlgItemMessage(IDC_FILTER_LIST, LB_GETCURSEL);
-  UpdateButtons();
+  int filter = SendDlgItemMessage(IDC_FILTER_LIST, LB_GETCURSEL);
+  if (filter != m_CurrentFilter) {
+    m_CurrentFilter = filter;
+    UpdateButtons();
+    if (m_CurrentFilter >= 0 && m_CurrentFilter < m_FilterList.size()) {
+      Invalidate(FALSE);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CConvolveListDialog::OnChannelChanged()
+{
+  m_UseRed   =  IsDlgButtonChecked(IDC_FILTER_USE_RED)   == BST_CHECKED ? 1 : 0;
+  m_UseGreen =  IsDlgButtonChecked(IDC_FILTER_USE_BLUE)  == BST_CHECKED ? 1 : 0;
+  m_UseBlue  =  IsDlgButtonChecked(IDC_FILTER_USE_GREEN) == BST_CHECKED ? 1 : 0;
+  m_UseAlpha =  IsDlgButtonChecked(IDC_FILTER_USE_ALPHA) == BST_CHECKED ? 1 : 0;
+  if (m_CurrentFilter >= 0 && m_CurrentFilter < m_FilterList.size()) {
+    Invalidate(FALSE);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -580,6 +675,7 @@ CConvolveListDialog::OnEditFilter()
     CConvolveListEditDialog dialog(m_FilterList[m_CurrentFilter]);
     if (dialog.DoModal() == IDOK) {
       SortFilters();
+      Invalidate(FALSE);
     }
   }
 }

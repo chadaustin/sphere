@@ -295,6 +295,27 @@ CLayerView::OnRButtonUp(UINT flags, CPoint point)
     else
       EnableMenuItem(menu, ID_LAYERVIEW_DELETELAYER, MF_BYCOMMAND | MF_GRAYED);
 
+    int num_visible = 0;
+    for (int i = 0; i < m_Map->GetNumLayers(); i++) {
+      if (m_Map->GetLayer(i).IsVisible()) {
+        num_visible += 1;
+      }
+    }
+
+    if (num_visible > 0) {
+      EnableMenuItem(menu, ID_LAYERVIEW_EXPORT_ALL_VISIBLE_LAYERS_AS_IMAGE, MF_BYCOMMAND | MF_ENABLED);
+    }
+    else {
+      EnableMenuItem(menu, ID_LAYERVIEW_EXPORT_ALL_VISIBLE_LAYERS_AS_IMAGE, MF_BYCOMMAND | MF_GRAYED);
+    }
+
+    if (num_visible > 1) {
+      EnableMenuItem(menu, ID_LAYERVIEW_FLATTEN_VISIBLE_LAYERS, MF_BYCOMMAND | MF_ENABLED);
+    }
+    else {
+      EnableMenuItem(menu, ID_LAYERVIEW_FLATTEN_VISIBLE_LAYERS, MF_BYCOMMAND | MF_GRAYED);
+    }
+
     EnableMenuItem(menu, ID_LAYERVIEW_PROPERTIES, MF_BYCOMMAND | MF_ENABLED);
 
     ClientToScreen(&point);

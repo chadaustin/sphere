@@ -578,7 +578,6 @@
 #define ID_IRCVIEW_CONTROL_DEOP         40733
 #define ID_SCRIPT_OPTIONS_WORD_WRAP     40734
 #define ID_MAP_EDIT_ENTITIES            40735
-#define ID_ENTITY_LIST_MOVE_LAYER       40736
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects

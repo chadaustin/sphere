@@ -2306,7 +2306,7 @@ CImageView::OnFilterSaturate()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "../common/convolve.h"
+#include "../common/convolve.hpp"
 
 afx_msg void
 CImageView::OnFilterCustom()
@@ -2332,7 +2332,7 @@ CImageView::OnFilterCustom()
     int wrap = dialog.ShouldWrap();
     int infinite = 0;
     int use_red = dialog.ShouldUseRedChannel();
-    int use_green = dialog.ShouldUseBlueChannel();
+    int use_green = dialog.ShouldUseGreenChannel();
     int use_blue = dialog.ShouldUseBlueChannel();
     int use_alpha = dialog.ShouldUseAlphaChannel();
 
