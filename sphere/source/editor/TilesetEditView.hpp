@@ -65,6 +65,8 @@ private:
   virtual void CV_ColorChanged(RGB color);
   virtual void AV_AlphaChanged(byte alpha);
 
+  afx_msg void OnPaste();
+
 #if 1
 public:
   void SetTileSelection(int width, int height, unsigned int* tiles);

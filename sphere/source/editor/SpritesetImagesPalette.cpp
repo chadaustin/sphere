@@ -14,12 +14,15 @@ BEGIN_MESSAGE_MAP(CSpritesetImagesPalette, CPaletteWindow)
 
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_MOVE_BACK,    OnMoveBack)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_MOVE_FORWARD, OnMoveForward)
+
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_INSERT_IMAGE, OnInsertImage)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_APPEND_IMAGE, OnAppendImage)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGE, OnRemoveImage)
+  
+  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_INSERT_IMAGES, OnInsertImages)
+  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_APPEND_IMAGES, OnAppendImages)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGES, OnRemoveImages)
   
-
 END_MESSAGE_MAP()
 
 
@@ -409,6 +412,35 @@ CSpritesetImagesPalette::OnRemoveImage()
   m_Handler->SIP_SpritesetModified();
   m_Handler->SIP_IndexChanged(m_SelectedImage);
   Invalidate();
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CSpritesetImagesPalette::OnInsertImages() {
+  CNumberDialog dialog("Insert Images (unimplemented)", "Number of Images", 1, 1, 4096);
+  if (dialog.DoModal() == IDOK)
+  {
+
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CSpritesetImagesPalette::OnAppendImages() {
+  CNumberDialog dialog("Append Images", "Number of Images", 1, 1, 4096);
+  if (dialog.DoModal() == IDOK)
+  {
+    int num_images = dialog.GetValue();
+    for (int i = 0; i < num_images; i++) {
+      m_Spriteset->InsertImage(m_Spriteset->GetNumImages());
+    }
+
+    m_Handler->SIP_SpritesetModified();
+    Invalidate();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

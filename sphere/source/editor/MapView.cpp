@@ -31,15 +31,17 @@ BEGIN_MESSAGE_MAP(CMapView, CScrollWindow)
   ON_WM_LBUTTONUP()
   ON_WM_RBUTTONUP()
 //  ON_WM_TIMER()
-  ON_WM_ERASEBKGND()
+  //ON_WM_ERASEBKGND()
 
 END_MESSAGE_MAP()
 
+/*
 BOOL
 CMapView::OnEraseBkgnd(CDC* pDC)
 {
-  return TRUE;
+  return FALSE;
 }
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -69,6 +71,7 @@ CMapView::CMapView()
 , m_ShowTileObstructions(false)
 //, m_ShowAnimations(false)
 , m_PreviewLineOn(0)
+, m_PreviewBoxOn(0)
 , m_RedrawWindow(0)
 , m_RedrawPreviewLine(0)
 , m_MultiTileWidth(0)

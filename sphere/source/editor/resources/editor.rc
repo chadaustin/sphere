@@ -735,6 +735,8 @@ BEGIN
             , GRAYED
         END
         MENUITEM "&Properties...",              ID_TILESETVIEW_PROPERTIES
+        MENUITEM "Zoom In",                     ID_TILESETVIEW_ZOOM_IN
+        MENUITEM "Zoom Out",                    ID_TILESETVIEW_ZOOM_OUT
     END
 END
 
@@ -921,18 +923,34 @@ IDR_SPRITESET_IMAGES_PALETTE MENU DISCARDABLE
 BEGIN
     POPUP "Spriteset Images Palette"
     BEGIN
-        MENUITEM "Move &Back",                  ID_SPRITESETIMAGESPALETTE_MOVE_BACK
-
-        MENUITEM "Move &Forward",               ID_SPRITESETIMAGESPALETTE_MOVE_FORWARD
-
         MENUITEM "&Insert Image",               ID_SPRITESETIMAGESPALETTE_INSERT_IMAGE
 
         MENUITEM "&Append Image",               ID_SPRITESETIMAGESPALETTE_APPEND_IMAGE
 
-        MENUITEM "&Remove Image",               ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGE
+        MENUITEM "&Delete Image",               ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGE
 
-        MENUITEM "Remove Images",               ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGES
+        MENUITEM SEPARATOR
+        MENUITEM "I&nsert Images...",           ID_SPRITESETIMAGESPALETTE_INSERT_IMAGES
 
+        MENUITEM "Append &Images...",           ID_SPRITESETIMAGESPALETTE_APPEND_IMAGES
+
+        MENUITEM "D&elete Images...",           ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGES
+
+        MENUITEM SEPARATOR
+        POPUP "&Zoom", GRAYED
+        BEGIN
+            MENUITEM "&1x",                         ID_TILESETVIEW_ZOOM_1X
+            MENUITEM "&2x",                         ID_TILESETVIEW_ZOOM_2X
+            MENUITEM "&4x",                         ID_TILESETVIEW_ZOOM_4X
+            MENUITEM "&8x",                         ID_TILESETVIEW_ZOOM_8X
+        END
+        POPUP "&Move"
+        BEGIN
+            MENUITEM "&Back",                       ID_SPRITESETIMAGESPALETTE_MOVE_BACK
+
+            MENUITEM "&Forward",                    ID_SPRITESETIMAGESPALETTE_MOVE_FORWARD
+
+        END
     END
 END
 
@@ -1809,8 +1827,10 @@ BEGIN
     "F",            ID_SCRIPT_FIND,         VIRTKEY, CONTROL, NOINVERT
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
     "V",            ID_FILE_PASTE,          VIRTKEY, CONTROL, NOINVERT
+    VK_ADD,         ID_FILE_ZOOM_IN,        VIRTKEY, CONTROL, NOINVERT
     VK_F5,          ID_PROJECT_RUNSPHERE,   VIRTKEY, CONTROL, NOINVERT
     VK_F7,          ID_SCRIPT_CHECKSYNTAX,  VIRTKEY, NOINVERT
+    VK_SUBTRACT,    ID_FILE_ZOOM_OUT,       VIRTKEY, CONTROL, NOINVERT
 END
 
 IDR_IMAGEVIEW ACCELERATORS MOVEABLE PURE 

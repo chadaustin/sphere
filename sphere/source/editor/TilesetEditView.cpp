@@ -30,6 +30,8 @@ BEGIN_MESSAGE_MAP(CTilesetEditView, CHScrollWindow)
   ON_COMMAND(ID_TILESET_INSERTIMAGE,      OnTilesetInsertImage)
   ON_COMMAND(ID_TILESET_APPENDIMAGE,      OnTilesetAppendImage)
 
+  ON_COMMAND(ID_IMAGEVIEW_PASTE, OnPaste)
+
 END_MESSAGE_MAP()
 
 
@@ -423,6 +425,15 @@ CTilesetEditView::AV_AlphaChanged(byte alpha)
   RGBA rgba = m_ImageView.GetColor();
   rgba.alpha = alpha;
   m_ImageView.SetColor(rgba);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CTilesetEditView::OnPaste()
+{
+  //MessageBox("TilesetEditView::Paste");
+  m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_PASTE, 0), 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

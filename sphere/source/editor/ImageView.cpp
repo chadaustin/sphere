@@ -1923,6 +1923,7 @@ CImageView::OnCopy()
 afx_msg void
 CImageView::OnPaste()
 {
+  //MessageBox("ImageView::Paste");
   Paste();
 }
 

@@ -143,6 +143,8 @@ private:
   afx_msg void OnImageToolChanged();
   afx_msg void OnUpdateMapCommand(CCmdUI* cmdui, UINT id);
 
+  afx_msg void OnZoomIn();
+  afx_msg void OnZoomOut();
   afx_msg void OnPaste();
 
   afx_msg void UpdateToolBars(WPARAM wparam = 0, LPARAM lparam = 0);

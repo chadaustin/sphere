@@ -49,8 +49,8 @@ private:
   afx_msg void OnZoom2x();
   afx_msg void OnZoom4x();
   afx_msg void OnZoom8x();
-  //afx_msg void OnZoomIn();
-  //afx_msg void OnZoomOut();
+  afx_msg void OnZoomIn();
+  afx_msg void OnZoomOut();
   afx_msg void OnResize();
   afx_msg void OnRescale();
   afx_msg void OnResample();
@@ -62,6 +62,8 @@ private:
   afx_msg void OnUpdateZoom2x(CCmdUI* cmdui);
   afx_msg void OnUpdateZoom4x(CCmdUI* cmdui);
   afx_msg void OnUpdateZoom8x(CCmdUI* cmdui);
+
+  afx_msg void OnPaste();
 
   //afx_msg void OnUpdateZoomIn(CCmdUI* cmdui);
   //afx_msg void OnUpdateZoomOut(CCmdUI* cmdui);

@@ -1,10 +1,12 @@
 #include "TilePalette.hpp"
 #include "Configuration.hpp"
 #include "Keys.hpp"
-
+#include "resource.h"
 
 BEGIN_MESSAGE_MAP(CTilePalette, CPaletteWindow)
 
+  ON_COMMAND(ID_FILE_ZOOM_IN, OnZoomIn)
+  ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
   ON_WM_SIZE()
 
 END_MESSAGE_MAP()
@@ -96,6 +98,22 @@ CTilePalette::GetNumTilesPerRow() const
   if (m_Created)
     return m_TilesetView.GetNumTilesPerRow();
   return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CTilePalette::OnZoomIn()
+{
+  m_TilesetView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_TILESETVIEW_ZOOM_IN, 0), 0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CTilePalette::OnZoomOut()
+{
+  m_TilesetView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_TILESETVIEW_ZOOM_OUT, 0), 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -65,7 +65,9 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_WM_DROPFILES()
   ON_WM_CLOSE()
 
-  ON_COMMAND(ID_FILE_PASTE, OnPaste)
+  ON_COMMAND(ID_FILE_ZOOM_IN,  OnZoomIn)
+  ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
+  ON_COMMAND(ID_FILE_PASTE,    OnPaste)
 
   // generic file open
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
@@ -2742,6 +2744,30 @@ CMainWindow::OnViewProject()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnZoomIn()
+{
+  CDocumentWindow* dw = GetCurrentDocumentWindow();
+  if (dw != NULL) {
+    dw->SendMessage(ID_FILE_ZOOM_IN, 0, 0);
+  }
+  else {
+    MessageBox("MainWindow::ZoomIn");
+  }
+}
+
+afx_msg void
+CMainWindow::OnZoomOut()
+{
+  CDocumentWindow* dw = GetCurrentDocumentWindow();
+  if (dw != NULL) {
+    dw->SendMessage(ID_FILE_ZOOM_OUT, 0, 0);
+  }
+  else {
+    MessageBox("MainWindow::ZoomOut");
+  }
+}
 
 afx_msg void
 CMainWindow::OnPaste()

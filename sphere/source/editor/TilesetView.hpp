@@ -65,6 +65,8 @@ private:
   afx_msg void OnZoom2x();
   afx_msg void OnZoom4x();
   afx_msg void OnZoom8x();
+  afx_msg void OnZoomIn();
+  afx_msg void OnZoomOut();
 
   afx_msg void OnMoveBack();
   afx_msg void OnMoveForward();

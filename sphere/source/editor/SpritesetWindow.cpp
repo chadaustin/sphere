@@ -31,8 +31,8 @@ BEGIN_MESSAGE_MAP(CSpritesetWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_SPRITESET_ZOOM_2X,         OnZoom2x)
   ON_COMMAND(ID_SPRITESET_ZOOM_4X,         OnZoom4x)
   ON_COMMAND(ID_SPRITESET_ZOOM_8X,         OnZoom8x)
-  //ON_COMMAND(ID_SPRITESET_ZOOM_IN,         OnZoomIn)
-  //ON_COMMAND(ID_SPRITESET_ZOOM_OUT,        OnZoomOut)
+  ON_COMMAND(ID_FILE_ZOOM_IN,         OnZoomIn)
+  ON_COMMAND(ID_FILE_ZOOM_OUT,        OnZoomOut)
   
   ON_COMMAND(ID_SPRITESET_RESIZE,          OnResize)
   ON_COMMAND(ID_SPRITESET_RESCALE,         OnRescale)
@@ -46,6 +46,8 @@ BEGIN_MESSAGE_MAP(CSpritesetWindow, CSaveableDocumentWindow)
   ON_UPDATE_COMMAND_UI(ID_SPRITESET_ZOOM_2X, OnUpdateZoom2x)
   ON_UPDATE_COMMAND_UI(ID_SPRITESET_ZOOM_4X, OnUpdateZoom4x)
   ON_UPDATE_COMMAND_UI(ID_SPRITESET_ZOOM_8X, OnUpdateZoom8x)
+
+  ON_COMMAND(ID_FILE_PASTE, OnPaste)
 
   /*
   ON_UPDATE_COMMAND_UI(ID_SPRITESET_ZOOM_IN, OnUpdateZoomIn)
@@ -274,6 +276,48 @@ CSpritesetWindow::OnSize(UINT type, int cx, int cy)
   }
 
   CSaveableDocumentWindow::OnSize(type, cx, cy);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetWindow::OnZoomIn()
+{
+  if (m_TabControl.GetCurSel() == 0) {
+    switch ((int)m_SpritesetView.GetZoomFactor()) {
+      case 1: m_SpritesetView.SetZoomFactor(2); break;
+      case 2: m_SpritesetView.SetZoomFactor(4); break;
+      case 4: m_SpritesetView.SetZoomFactor(8); break;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetWindow::OnZoomOut()
+{
+  if (m_TabControl.GetCurSel() == 0) {
+    switch ((int)m_SpritesetView.GetZoomFactor()) {
+      case 2: m_SpritesetView.SetZoomFactor(1); break;
+      case 4: m_SpritesetView.SetZoomFactor(2); break;
+      case 8: m_SpritesetView.SetZoomFactor(4); break;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetWindow::OnPaste()
+{
+  if (m_TabControl.GetCurSel() == 0) {
+    m_SpritesetView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_SPRITESETVIEWFRAMES_PASTE, 0), 0);
+  }
+  else
+  if (m_TabControl.GetCurSel() == 1) {
+    m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_PASTE, 0), 0);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

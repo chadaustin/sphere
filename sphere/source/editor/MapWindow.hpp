@@ -62,6 +62,9 @@ private:
   afx_msg void OnMapSlideLeft();
   afx_msg void OnMapSlideOther();
   afx_msg void OnEditEntities();
+  afx_msg void OnZoomIn();
+  afx_msg void OnZoomOut();
+  afx_msg void OnPaste();
   afx_msg void OnTabChanged(NMHDR* ns, LRESULT* result);
 
   virtual bool GetSavePath(char* path);

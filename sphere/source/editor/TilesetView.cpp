@@ -48,6 +48,9 @@ BEGIN_MESSAGE_MAP(CTilesetView, CWnd)
   ON_COMMAND(ID_TILESETVIEW_ZOOM_4X, OnZoom4x)
   ON_COMMAND(ID_TILESETVIEW_ZOOM_8X, OnZoom8x)
 
+  ON_COMMAND(ID_TILESETVIEW_ZOOM_IN, OnZoomIn)
+  ON_COMMAND(ID_TILESETVIEW_ZOOM_OUT, OnZoomOut)
+
   ON_COMMAND(ID_TILESETVIEW_MOVE_BACK,    OnMoveBack)
   ON_COMMAND(ID_TILESETVIEW_MOVE_FORWARD, OnMoveForward)
 
@@ -1297,6 +1300,32 @@ afx_msg void
 CTilesetView::OnZoom8x()
 {
   OnZoom(8);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CTilesetView::OnZoomIn()
+{
+  //MessageBox("TilesetView::ZoomIn");
+  switch ((int)m_ZoomFactor) {
+    case 1: OnZoom(2); break;
+    case 2: OnZoom(4); break;
+    case 4: OnZoom(8); break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CTilesetView::OnZoomOut()
+{
+  //MessageBox("TilesetView::ZoomOut");
+  switch ((int)m_ZoomFactor) {
+    case 2: OnZoom(1); break;
+    case 4: OnZoom(2); break;
+    case 8: OnZoom(4); break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -44,6 +44,10 @@ BEGIN_MESSAGE_MAP(CMapWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_MAP_SLIDE_LEFT,      OnMapSlideLeft)
   ON_COMMAND(ID_MAP_SLIDE_OTHER,     OnMapSlideOther)
 
+  ON_COMMAND(ID_FILE_ZOOM_IN,  OnZoomIn)
+  ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
+  ON_COMMAND(ID_FILE_PASTE,    OnPaste)
+
   ON_NOTIFY(TCN_SELCHANGE, IDC_TAB,  OnTabChanged)
 
 END_MESSAGE_MAP()
@@ -811,6 +815,61 @@ CMapWindow::OnMapSlideOther()
         m_Map.Translate(dx.GetValue(), dy.GetValue());
         LV_MapChanged();
       }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMapWindow::OnZoomIn()
+{
+  if (GetFocus() != this) {
+    if ((m_TilePalette != NULL) && (GetFocus() == m_TilePalette)) {
+      m_TilePalette->SendMessage(WM_COMMAND, MAKEWPARAM(ID_FILE_ZOOM_IN, 0), 0);
+    }
+  }
+  else {
+    if (m_TabControl.GetCurSel() == 0) {
+      switch ((int)m_MapView.GetZoomFactor()) {
+        case 1: m_MapView.SetZoomFactor(2); break;
+        case 2: m_MapView.SetZoomFactor(4); break;
+        case 4: m_MapView.SetZoomFactor(8); break;
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMapWindow::OnZoomOut()
+{
+  if (GetFocus() != this) {
+    if ((m_TilePalette != NULL) && (GetFocus() == m_TilePalette)) {
+      m_TilePalette->SendMessage(WM_COMMAND, MAKEWPARAM(ID_FILE_ZOOM_OUT, 0), 0);
+    }
+  }
+  else {
+    if (m_TabControl.GetCurSel() == 0) {
+      switch ((int)m_MapView.GetZoomFactor()) {
+        case 2: m_MapView.SetZoomFactor(1); break;
+        case 4: m_MapView.SetZoomFactor(2); break;
+        case 8: m_MapView.SetZoomFactor(4); break;
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMapWindow::OnPaste()
+{
+  if (GetFocus() == this) {
+    if (m_TabControl.GetCurSel() == 1) {
+      //MessageBox("MapWindow::Paste");
+      m_TilesetEditView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_PASTE, 0), 0);
     }
   }
 }

@@ -25,6 +25,10 @@ public:
   int GetNumTilesPerRow() const;
 
 private:
+  afx_msg void OnZoomIn();
+  afx_msg void OnZoomOut();
+
+private:
   afx_msg void OnSize(UINT type, int cx, int cy);
 
 private:
