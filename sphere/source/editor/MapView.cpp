@@ -71,7 +71,19 @@ CMapView::CMapView()
 , m_RedrawWindow(0)
 , m_RedrawPreviewLine(0)
 {
-  m_SpritesetDrawType    = Configuration::Get(KEY_MAP_SPRITESET_DRAWTYPE);  
+  m_SpritesetDrawType = Configuration::Get(KEY_MAP_SPRITESET_DRAWTYPE);  
+  m_ZoomFactor        = Configuration::Get(KEY_MAP_ZOOM_FACTOR);
+
+  if (m_SpritesetDrawType != SDT_ICON
+   || m_SpritesetDrawType != SDT_MINI_IMAGE
+   || m_SpritesetDrawType != SDT_IMAGE) {
+     m_SpritesetDrawType = SDT_ICON;
+  }
+
+  if (m_ZoomFactor < 0 || m_ZoomFactor > 8) {
+    m_ZoomFactor = 1;
+  }
+
   s_MapAreaClipboardFormat = RegisterClipboardFormat("MapAreaSelection32");
   s_MapEntityClipboardFormat = RegisterClipboardFormat("MapEntitySelection32");
   s_ClipboardFormat = RegisterClipboardFormat("FlatImage32");
@@ -99,8 +111,8 @@ CMapView::Create(CDocumentWindow* owner, IMapViewHandler* handler, CWnd* parent,
   m_Map = map;
 
   m_BlitTile = new CDIBSection(
-    map->GetTileset().GetTileWidth(),
-    map->GetTileset().GetTileHeight(),
+    m_Map->GetTileset().GetTileWidth()  * m_ZoomFactor,
+    m_Map->GetTileset().GetTileHeight() * m_ZoomFactor,
     32);
 
   // create tool palette
@@ -166,6 +178,8 @@ CMapView::SetZoomFactor(int factor)
   m_RedrawWindow = 1;
   Invalidate();
   UpdateScrollBars();
+
+  Configuration::Set(KEY_MAP_ZOOM_FACTOR, m_ZoomFactor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2458,9 +2472,9 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
   */
 
   switch (m_SpritesetDrawType) {
-    case SDT_ICON:    CheckMenuItem(menu, ID_MAPVIEW_VIEWPERSONS_ICON, MF_BYCOMMAND | MF_CHECKED); break;
+    case SDT_ICON:       CheckMenuItem(menu, ID_MAPVIEW_VIEWPERSONS_ICON,      MF_BYCOMMAND | MF_CHECKED); break;
     case SDT_MINI_IMAGE: CheckMenuItem(menu, ID_MAPVIEW_VIEWPERSONS_MINIIMAGE, MF_BYCOMMAND | MF_CHECKED); break;
-    case SDT_IMAGE: CheckMenuItem(menu, ID_MAPVIEW_VIEWPERSONS_IMAGE, MF_BYCOMMAND | MF_CHECKED); break;
+    case SDT_IMAGE:      CheckMenuItem(menu, ID_MAPVIEW_VIEWPERSONS_IMAGE,     MF_BYCOMMAND | MF_CHECKED); break;
   }
 
   // disable the select tile menu if out of range
@@ -2621,18 +2635,30 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
 
     case ID_MAPVIEW_ZOOM_1X:
       SetZoomFactor(1);
+      //OnHScrollChanged(tx - ((GetPageSizeX() + 1) / 2));
+      //OnVScrollChanged(ty - ((GetPageSizeY() + 1) / 2));
+      //Invalidate();
       break;
 
     case ID_MAPVIEW_ZOOM_2X:
       SetZoomFactor(2);
+      //OnHScrollChanged(tx - ((GetPageSizeX() + 1) / 2));
+      //OnVScrollChanged(ty - ((GetPageSizeY() + 1) / 2));
+      //Invalidate();
       break;
 
     case ID_MAPVIEW_ZOOM_4X:
       SetZoomFactor(4);
+      //OnHScrollChanged(tx - ((GetPageSizeX() + 1) / 2));
+      //OnVScrollChanged(ty - ((GetPageSizeY() + 1) / 2));
+      //Invalidate();
       break;
 
     case ID_MAPVIEW_ZOOM_8X:
       SetZoomFactor(8);
+      //OnHScrollChanged(tx - ((GetPageSizeX() + 1) / 2));
+      //OnVScrollChanged(ty - ((GetPageSizeY() + 1) / 2));
+      //Invalidate();
       break;
 
     case ID_MAPVIEW_VIEWGRID:

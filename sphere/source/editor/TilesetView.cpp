@@ -11,6 +11,8 @@
 
 #include "../common/primitives.hpp"
 
+#include "Configuration.hpp"
+#include "Keys.hpp"
 
 // static const int UPDATE_TILEVIEW_TIMER = 200;
 
@@ -88,6 +90,11 @@ CTilesetView::CTilesetView()
 , m_ShowTileObstructions(false)
 , m_MenuShown(false)
 {
+  m_ZoomFactor        = Configuration::Get(KEY_TILES_ZOOM_FACTOR);
+
+  if (m_ZoomFactor < 0 || m_ZoomFactor > 8) {
+    m_ZoomFactor = 1;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -835,6 +842,8 @@ CTilesetView::OnZoom(int zoom_factor) {
   );
   UpdateScrollBar();
   Invalidate();
+
+  Configuration::Set(KEY_TILES_ZOOM_FACTOR, m_ZoomFactor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
