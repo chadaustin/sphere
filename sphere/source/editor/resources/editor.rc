@@ -316,6 +316,7 @@ BEGIN
         MENUITEM "Select &Tile",                ID_MAPVIEW_SELECTTILE
         MENUITEM SEPARATOR
         MENUITEM "&Set Entry Point",            ID_MAPVIEW_SETENTRYPOINT
+        MENUITEM "View &Grid",                  ID_MAPVIEW_VIEWGRID
         MENUITEM SEPARATOR
         MENUITEM "&Fill",                       ID_MAPVIEW_FILL
         MENUITEM SEPARATOR

@@ -137,6 +137,8 @@ private:
 
   bool m_Clicked;
 
+  bool m_ShowGrid;
+
   DECLARE_MESSAGE_MAP()
 };
 

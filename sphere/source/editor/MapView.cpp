@@ -6,6 +6,7 @@
 #include "EntityTriggerDialog.hpp"
 #include "ZoneEditDialog.hpp"
 #include "../common/primitives.hpp"
+#include "../common/minmax.hpp"
 #include "resource.h"
 
 
@@ -54,6 +55,7 @@ CMapView::CMapView()
 , m_SelectedLayer(0)
 
 , m_Clicked(false)
+, m_ShowGrid(false)
 
 , m_PreviewLineOn(0)
 , m_RedrawWindow(0)
@@ -62,6 +64,7 @@ CMapView::CMapView()
 {
   s_MapAreaClipboardFormat = RegisterClipboardFormat("MapAreaSelection32");
   s_MapEntityClipboardFormat = RegisterClipboardFormat("MapEntitySelection32");
+  m_ShowGrid = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1167,6 +1170,33 @@ CMapView::OnPaint()
     }
     m_RedrawPreviewLine = 0;
   }
+
+  if (m_ShowGrid && m_Map->GetNumLayers() > 0) {
+    int tile_width = m_Map->GetTileset().GetTileWidth();
+    int tile_height = m_Map->GetTileset().GetTileHeight();
+
+    int width = m_Map->GetLayer(0).GetWidth();
+    int height = m_Map->GetLayer(0).GetHeight();
+    int size = 1;
+    int offsetx = 0;
+    int offsety = 0;
+
+    // draw the grid if it is enabled
+    if (m_ShowGrid) {
+      HPEN linepen = CreatePen(PS_SOLID, 1, RGB(255, 0, 255));
+      HPEN oldpen = (HPEN)SelectObject(dc, linepen);
+      for (int ix = 0; ix <= width; ++ix) {
+        MoveToEx(dc, offsetx + ix * size * tile_width, offsety, NULL);
+        LineTo  (dc, offsetx + ix * size * tile_width, offsety + height * size * tile_height);
+      }
+      for (int iy = 0; iy <= height; ++iy) {
+        MoveToEx(dc, offsetx,                offsety + iy * size * tile_height, NULL);
+        LineTo  (dc, offsetx + width * size * tile_width, offsety + iy * size * tile_height);
+      }
+      SelectObject(dc, oldpen);
+      DeleteObject(linepen);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1670,6 +1700,10 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
     EnableMenuItem(menu, ID_MAPVIEW_ZONEEDIT,  MF_BYCOMMAND | MF_GRAYED);
   }
 
+  if (m_ShowGrid) {
+    CheckMenuItem(menu, ID_MAPVIEW_VIEWGRID, MF_BYCOMMAND | MF_CHECKED);
+  }
+
   // show the popup menu
   CPoint Screen = point;
   ClientToScreen(&Screen);
@@ -1835,6 +1869,13 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
 
     case ID_MAPVIEW_ZOOM_8X:
       SetZoomFactor(8);
+      break;
+
+    case ID_MAPVIEW_VIEWGRID:
+      m_ShowGrid = !m_ShowGrid;
+      m_RedrawWindow = 1;
+      Invalidate();
+      m_Handler->MV_MapChanged();
       break;
   }
 }

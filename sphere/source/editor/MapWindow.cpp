@@ -308,6 +308,7 @@ CMapWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
   m_LayerView.SetSelectedTile(tile);
   m_TilesetEditView.SelectTile(tile);
   m_TilePalette->SelectTile(tile);
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
