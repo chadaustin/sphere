@@ -1394,36 +1394,27 @@ CMainWindow::OnFileImportMergeRGBA()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-afx_msg void
-CMainWindow::OnFileImportWindowsFont()
+static bool WindowsFontToSphereFont(LOGFONT lf, COLORREF color, sFont* sphere_font)
 {
-  // windows font dialog
-  CFontDialog font_dialog(NULL, CF_FORCEFONTEXIST | CF_EFFECTS | CF_SCREENFONTS);
-  if (font_dialog.DoModal() != IDOK) {
-    return;
-  }
-  COLORREF color = font_dialog.GetColor();
-
-  // get the font from the dialog
-  LOGFONT lf;
-  font_dialog.GetCurrentFont(&lf);
-
   // grab the font
   HDC dc = CreateCompatibleDC(NULL);
   HFONT font = CreateFontIndirect(&lf);
   HFONT old_font = (HFONT)SelectObject(dc, font);
 
-  sFont sphere_font(256);
+  if (!sphere_font->Create(256))
+    return false;
   
   for (int i = 0; i < 256; i++) {
     char c = (char)i;
     SIZE size;
-    GetTextExtentPoint32(dc, &c, 1, &size);
+    if (GetTextExtentPoint32(dc, &c, 1, &size) == FALSE)
+      return false;
 
     // grab the character
     CDIBSection* dib = new CDIBSection(size.cx, size.cy, 32);
     if (dib == NULL)
-      return;
+      return false;
+
     memset(dib->GetPixels(), 255, size.cx * size.cy * 4); // opaque white
 
     RECT rect = { 0, 0, size.cx, size.cy };
@@ -1436,11 +1427,18 @@ CMainWindow::OnFileImportWindowsFont()
 
     // put it into the font
     int width = size.cx + 1;
-    sphere_font.GetCharacter(i).Resize(width, size.cy);
-    memset(sphere_font.GetCharacter(i).GetPixels(), 0, width * size.cy * 4);
+    sphere_font->GetCharacter(i).Resize(width, size.cy);
+    
+    if (sphere_font->GetCharacter(i).GetWidth() != width
+     || sphere_font->GetCharacter(i).GetHeight() != size.cy) {
+      delete dib;
+      return false;
+    }
+
+    memset(sphere_font->GetCharacter(i).GetPixels(), 0, width * size.cy * 4);
 
     BGRA* src = (BGRA*)dib->GetPixels();
-    RGBA* dst = sphere_font.GetCharacter(i).GetPixels();
+    RGBA* dst = sphere_font->GetCharacter(i).GetPixels();
     for (int iy = 0; iy < size.cy; iy++) {
       for (int ix = 0; ix < size.cx; ix++) {
         dst[iy * width + ix].red   = GetRValue(color);
@@ -1458,6 +1456,30 @@ CMainWindow::OnFileImportWindowsFont()
   DeleteObject(font);
   DeleteDC(dc);
 
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnFileImportWindowsFont()
+{
+  // windows font dialog
+  CFontDialog font_dialog(NULL, CF_FORCEFONTEXIST | CF_EFFECTS | CF_SCREENFONTS);
+  if (font_dialog.DoModal() != IDOK) {
+    return;
+  }
+
+  COLORREF color = font_dialog.GetColor();
+
+  // get the font from the dialog
+  LOGFONT lf;
+  font_dialog.GetCurrentFont(&lf);
+
+  sFont sphere_font;
+  if (!WindowsFontToSphereFont(lf, color, &sphere_font))
+    return;
+
   // save the Sphere font
   CFontFileDialog file_dialog(FDM_SAVE, "Select Output Font");
   if (file_dialog.DoModal() != IDOK) {
@@ -1467,6 +1489,7 @@ CMainWindow::OnFileImportWindowsFont()
   if (!sphere_font.Save(file_dialog.GetPathName())) {
     MessageBox("Could not save font");
   }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////

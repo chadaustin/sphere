@@ -15,7 +15,7 @@ class sFont
 public:
   sFont(int num_characters = 0, int width = 0, int height = 0);
 
-	bool Create(int num_characters, int width, int height);
+	bool Create(int num_characters, int width = 0, int height = 0);
 
   bool Load(const char* filename, IFileSystem& fs = g_DefaultFileSystem);
   bool Save(const char* filename, IFileSystem& fs = g_DefaultFileSystem) const;
