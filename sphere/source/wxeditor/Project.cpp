@@ -3,7 +3,6 @@
 #endif
 
 #include <wx/wx.h>
-#include "system.hpp"
 
 #include <set>
 #include <stdio.h>
@@ -11,6 +10,8 @@
 #include "Project.hpp"
 #include "../common/configfile.hpp"
 #include "../common/types.h"
+
+#include "system.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -284,18 +284,10 @@ CProject::RefreshItems()
 
     for (int j = 0; j < extensions.size(); j++) {
       std::string filter = "*." + extensions[j];
+       std::vector<string::string> file_list = GetFileList(filter.c_str());
 
-      WIN32_FIND_DATA ffd;
-      HANDLE h = FindFirstFile(filter.c_str(), &ffd);
-      if (h == INVALID_HANDLE_VALUE)
-        continue;
-
-      do {
-
-        if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-          AddItem(i, ffd.cFileName);
-
-      } while (FindNextFile(h, &ffd));
+      for (int k = 0; k < file_list.size(); k++)
+        AddItem(i, file_list[k].c_str());
 
       FindClose(h);
     }

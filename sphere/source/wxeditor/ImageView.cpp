@@ -9,6 +9,7 @@
 //#include "resource.h"
 #include "IDs.hpp"
 
+#include <wx/clipbrd.h>
 
 //static int s_ImageViewID = 9000;
 
@@ -118,6 +119,8 @@ wImageView::wImageView(wxWindow* parent_window, wDocumentWindow* owner, IImageVi
   m_SwatchPalette = new wSwatchPalette(owner, this);
   m_ToolPalette   = new wImageToolPalette(owner, this);
 
+  m_Clipboard = new CClipboard();
+
   m_Menu = new wxMenu();
   //submenu = m_Menu; /*todo: figure out what is wrong*/
   
@@ -196,6 +199,7 @@ wImageView::~wImageView()
 //    delete m_Submenu[i];
 //  }
   delete m_Menu;
+  delete m_Clipboard;
 }
 
 /*
@@ -329,52 +333,43 @@ wImageView::FillAlpha()
 bool
 wImageView::Copy()
 {
-/*todo:
-  if (OpenClipboard() == FALSE)
+  if (!wxTheClipboard->Open())
     return false;
 
-  int width = m_Image.GetWidth();
+  int width  = m_Image.GetWidth();
   int height = m_Image.GetHeight();
 
   // clear the previous contents of the clipboard
-  EmptyClipboard();
+  wxTheClipboard->Clear();
 
-  // ADD FLAT 32
+  int sx = 0; // GetSelectionLeftX();
+  int sy = 0; // GetSelectionTopY();
+  int sw = width; // GetSelectionWidth();
+  int sh = height; // GetSelectionHeight();
+  const RGBA* source = m_Image.GetPixels();
 
-  // copy the image as a flat 32-bit color image
-  HGLOBAL memory = GlobalAlloc(GHND, 8 + width * height * 4);
-  dword* ptr = (dword*)GlobalLock(memory);
+  RGBA* flat_pixels = new RGBA[sw * sh];
+  if (flat_pixels == NULL) {
+    wxTheClipboard->Close();
+    return false;
+  }
 
-  *ptr++ = width;
-  *ptr++ = height;
-  memcpy(ptr, m_Image.GetPixels(), width * height * sizeof(RGBA));
-
-  // put the image on the clipboard
-  GlobalUnlock(memory);
-  SetClipboardData(s_ClipboardFormat, memory);
-
-  // ADD DDB
-
-  // create a pixel array to initialize the bitmap
-  BGRA* pixels = new BGRA[width * height];
-  RGBA* source = m_Image.GetPixels();
-  for (int iy = 0; iy < height; iy++)
-    for (int ix = 0; ix < width; ix++)
+  for (int iy = sy; iy < (sy + sh); iy++) {
+    for (int ix = sx; ix < (sx + sw); ix++)
     {
-      pixels[iy * width + ix].red   = source[iy * width + ix].red;
-      pixels[iy * width + ix].green = source[iy * width + ix].green;
-      pixels[iy * width + ix].blue  = source[iy * width + ix].blue;
+      flat_pixels[(iy - sy) * (sw) + ix - sx].red   = source[iy * width + ix].red;
+      flat_pixels[(iy - sy) * (sw) + ix - sx].green = source[iy * width + ix].green;
+      flat_pixels[(iy - sy) * (sw) + ix - sx].blue  = source[iy * width + ix].blue;
+      flat_pixels[(iy - sy) * (sw) + ix - sx].alpha = source[iy * width + ix].alpha;
     }
+  }
 
-  // create the bitmap
-  HBITMAP bitmap = CreateBitmap(width, height, 1, 32, pixels);
+  //m_Clipboard->PutFlatImageOntoClipboard(sw, sh, flat_pixels);
+  m_Clipboard->PutBitmapImageOntoClipboard(sw, sh, flat_pixels);
+  
+  delete[] flat_pixels;
 
-  // put the bitmap in the clipboard
-  SetClipboardData(CF_BITMAP, bitmap);
-  delete[] pixels;
-
-  CloseClipboard();
-*/
+  wxTheClipboard->Close();
   return true;
 }
 
@@ -383,90 +378,44 @@ wImageView::Copy()
 bool
 wImageView::Paste()
 {
-/*todo:
-  if (OpenClipboard() == FALSE)
+  if (!wxTheClipboard->Open())
     return false;
 
   int iWidth = m_Image.GetWidth();
   int iHeight = m_Image.GetHeight();
 
-  // see if the flat image is in the clipboard
-  HGLOBAL memory = (HGLOBAL)GetClipboardData(s_ClipboardFormat);
-  if (memory != NULL)
-  {
-    // get the height and pixels from the clipboard
-    dword* ptr = (dword*)GlobalLock(memory);
-    if (ptr == NULL) {
-      CloseClipboard();
-      return false;
-    }
-
-    AddUndoState();
-
-    int width = *ptr++;
-    int height = *ptr++;
-    RGBA* pixels = (RGBA*)ptr;
-    RGBA* pImage = m_Image.GetPixels();
-
-    // put them into the current view
-    for (int iy = 0; iy < iHeight; iy++)
-      for (int ix = 0; ix < iWidth; ix++)
-      {
-        if (ix < width && iy < height)
-          pImage[iy * iWidth + ix] = pixels[iy * width + ix];
-        else
-          pImage[iy * iWidth + ix] = CreateRGBA(0, 0, 0, 255);
-      }
-
-    GlobalUnlock(memory);
-    CloseClipboard();
-
-    // things have changed
-    Invalidate();
-    m_Handler->IV_ImageChanged();
-    
-    return true;
-  }
+  int cwidth;
+  int cheight;
 
   // grab a bitmap out of the clipboard
-  HBITMAP bitmap = (HBITMAP)GetClipboardData(CF_BITMAP);
-  if (bitmap != NULL)
+  RGBA* bitmap_pixels = m_Clipboard->GetBitmapImageFromClipboard(cwidth, cheight);
+  if (bitmap_pixels != NULL)
   {
     AddUndoState();
 
-    BITMAP b;
-    GetObject(bitmap, sizeof(b), &b);
-
-    HDC dc = CreateCompatibleDC(NULL);
-    HBITMAP oldbitmap = (HBITMAP)SelectObject(dc, bitmap);
     RGBA* pImage = m_Image.GetPixels();
 
-    for (int iy = 0; iy < iHeight; iy++)
-      for (int ix = 0; ix < iWidth; ix++)
+    int width  = cwidth;  if (width  > iWidth)  width = iWidth;
+    int height = cheight; if (height > iHeight) height = iHeight;
+
+    for (int iy = 0; iy < height; iy++)
+      for (int ix = 0; ix < width; ix++)
       {
-        COLORREF pixel = GetPixel(dc, ix, iy);
-        if (pixel == CLR_INVALID)
-          pixel = RGB(0, 0, 0);
-        pImage[iy * iWidth + ix].red   = GetRValue(pixel);
-        pImage[iy * iWidth + ix].green = GetGValue(pixel);
-        pImage[iy * iWidth + ix].blue  = GetBValue(pixel);
+        pImage[iy * iWidth + ix].red   = bitmap_pixels[iy * cwidth + ix].red;
+        pImage[iy * iWidth + ix].green = bitmap_pixels[iy * cwidth + ix].green;
+        pImage[iy * iWidth + ix].blue  = bitmap_pixels[iy * cwidth + ix].blue;
         pImage[iy * iWidth + ix].alpha = 255;
       }
 
-    SelectObject(dc, oldbitmap);
-    DeleteDC(dc);
-
-    CloseClipboard();
+    wxTheClipboard->Close();
 
     // things have changed
-    Invalidate();
+    Refresh();
     m_Handler->IV_ImageChanged();
 
     return true;
   }
 
-  CloseClipboard();
-*/
   return false;
 }
 

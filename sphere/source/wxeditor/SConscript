@@ -19,6 +19,7 @@ wxeditor = env.Program('wxeditor', Split("""
     AlphaView.cpp
     AnimationWindow.cpp
     Audio.cpp
+    Clipboard.cpp
     ColorView.cpp
     Configuration.cpp
     DIBSection.cpp

@@ -8,6 +8,7 @@
 #include "SwatchPalette.hpp"
 #include "ImageToolPalette.hpp"
 
+#include "../editor/Clipboard.hpp"
 
 class wDocumentWindow;  // #include "DocumentWindow.hpp"
 
@@ -138,6 +139,8 @@ private:
   Image* m_UndoImages;
 
   wxMenu *m_Menu;
+
+  CClipboard* m_Clipboard;
 
 private:
 //  DECLARE_CLASS(wImageView);

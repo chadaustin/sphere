@@ -1,8 +1,8 @@
 #include "Clipboard.hpp"
+
 #include <windows.h>
 
 static unsigned int s_ClipboardFormat;
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -17,15 +17,6 @@ bool
 CClipboard::IsFlatImageOnClipbard()
 {
   return true;
-/*
-  int width, height;
-  RGBA* pixels = GetFlatImageFromClipboard(width, height);
-  if (pixels) {
-    delete[] pixels;
-    return true;
-  }
-  return false;
-*/
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -105,15 +96,6 @@ CClipboard::PutFlatImageOntoClipboard(int width, int height, const RGBA* flat_pi
 bool
 CClipboard::IsBitmapImageOnClipboard() {
   return true;
-/*
-  int width, height;
-  RGBA* pixels = GetBitmapImageFromClipboard(width, height);
-  if (pixels) {
-    delete[] pixels;
-    return true;
-  }
-  return false;
-*/
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -167,7 +149,7 @@ CClipboard::GetBitmapImageFromClipboard(int& width, int& height)
   SelectObject(dc, oldbitmap);
   DeleteDC(dc);
 
-  return pixels;  
+  return pixels;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
