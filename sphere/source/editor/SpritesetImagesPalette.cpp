@@ -15,6 +15,7 @@ BEGIN_MESSAGE_MAP(CSpritesetImagesPalette, CPaletteWindow)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_MOVE_BACK,    OnMoveBack)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_MOVE_FORWARD, OnMoveForward)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_INSERT_IMAGE, OnInsertImage)
+  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_APPEND_IMAGE, OnAppendImage)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGE, OnRemoveImage)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGES, OnRemoveImages)
   
@@ -361,6 +362,16 @@ CSpritesetImagesPalette::OnInsertImage()
   }
 
   m_SelectedImage++;
+  m_Handler->SIP_SpritesetModified();
+  Invalidate();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetImagesPalette::OnAppendImage()
+{
+  m_Spriteset->InsertImage(m_Spriteset->GetNumImages());
   m_Handler->SIP_SpritesetModified();
   Invalidate();
 }

@@ -42,6 +42,7 @@ private:
   afx_msg void OnMoveBack();
   afx_msg void OnMoveForward();
   afx_msg void OnInsertImage();
+  afx_msg void OnAppendImage();
   afx_msg void OnRemoveImage();
   afx_msg void OnRemoveImages();
 

@@ -245,6 +245,44 @@ void CMainWindow::OnUpdateFrameTitle(BOOL bAddToTitle)
 }
 #endif
 
+////////////////////////////////////////////////////////////////////////////////
+
+void ShowWPConfig(WINDOWPLACEMENT& wp) 
+{ 
+  return;
+  char buffer[200]; 
+  char size[10]; 
+  int X, Y;
+
+  if(wp.showCmd == SW_MAXIMIZE) 
+  { 
+    wsprintf(size, "Maximized"); 
+    X = wp.ptMaxPosition.x; 
+    Y = wp.ptMaxPosition.y; 
+  } 
+  else 
+  {
+    if(wp.showCmd == SW_MINIMIZE) 
+    {
+      wsprintf(size, "Minimized"); 
+      X = wp.ptMinPosition.x; 
+      Y = wp.ptMinPosition.y; 
+    } 
+    else 
+    {
+      wsprintf(size, "Normal"); 
+      X = wp.rcNormalPosition.left; 
+      Y = wp.rcNormalPosition.top; 
+    } 
+  } 
+  
+  wsprintf(buffer, "Window is %s at (%i, %i)", size, X, Y); 
+  GetMainWindow()->MessageBox(buffer, "Window Settings", MB_OK);
+} 
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 BOOL
 CMainWindow::Create()
 {
@@ -332,27 +370,30 @@ CMainWindow::Create()
     ShowWindow(SW_SHOW);
   }
 
-  RecalcLayout();
+//  RecalcLayout();
   wp = Configuration::Get(KEY_STANDARDTOOLBAR_PLACEMENT);
   if (wp.length != 0) {
+    ShowWPConfig(wp);
     m_ToolBar.SetWindowPlacement(&wp);
   } else {
     m_ToolBar.ShowWindow(SW_SHOW);
   }
 
-  RecalcLayout();
+//  RecalcLayout();
   wp = Configuration::Get(KEY_IMAGETOOLBAR_PLACEMENT);
   m_ImageToolBar.SetWindowPlacement(&wp);
   if (wp.length != 0) {
+    ShowWPConfig(wp);
     m_ImageToolBar.SetWindowPlacement(&wp);
   } else {
     m_ImageToolBar.ShowWindow(SW_SHOW);
   }
 
-  RecalcLayout();
+//  RecalcLayout();
   wp = Configuration::Get(KEY_MAPTOOLBAR_PLACEMENT);
   m_MapToolBar.SetWindowPlacement(&wp);
   if (wp.length != 0) {
+    ShowWPConfig(wp);
     m_MapToolBar.SetWindowPlacement(&wp);
   } else {
     m_MapToolBar.ShowWindow(SW_SHOW);
@@ -796,12 +837,15 @@ CMainWindow::OnClose()
 
   m_ToolBar.GetWindowPlacement(&wp);
   Configuration::Set(KEY_STANDARDTOOLBAR_PLACEMENT, wp);
+  ShowWPConfig(wp);
 
   m_ImageToolBar.GetWindowPlacement(&wp);
   Configuration::Set(KEY_IMAGETOOLBAR_PLACEMENT, wp);
+  ShowWPConfig(wp);
 
   m_MapToolBar.GetWindowPlacement(&wp);
   Configuration::Set(KEY_MAPTOOLBAR_PLACEMENT, wp);
+  ShowWPConfig(wp);
 
   // finally, destroy the window
   DestroyWindow();
