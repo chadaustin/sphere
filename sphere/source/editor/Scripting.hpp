@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include <jsapi.h>
 
 struct sCompileError
 {
@@ -30,5 +31,8 @@ struct sCompileError
 
 bool IsKeyword(const char* token);
 bool VerifyScript(const char* script, sCompileError& error);
+
+bool VerifyScript(const char* script, sCompileError& error, JSRuntime* rt, JSContext* cx, JSObject* global);
+void ErrorReporter(JSContext* cx, const char* message, JSErrorReport* report);
 
 #endif

@@ -156,6 +156,7 @@ BEGIN
     POPUP "&Tools"
     BEGIN
         MENUITEM "Images To MNG",               ID_TOOLS_IMAGES_TO_MNG
+        MENUITEM "Javascript Console",          ID_TOOLS_JS_CONSOLE
     END
     POPUP "&Help"
     BEGIN

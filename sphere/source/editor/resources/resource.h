@@ -698,6 +698,7 @@
 #define ID_SCRIPT_OPTIONS_HIGHLIGHT_CURRENT_LINE 40812
 #define ID_TOOLS_IMAGES_TO_MNG          40813
 #define ID_SCRIPT_OPTIONS_SET_SPELLING_LANGUAGE 40814
+#define ID_TOOLS_JS_CONSOLE             40815
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -706,7 +707,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        277
-#define _APS_NEXT_COMMAND_VALUE         40815
+#define _APS_NEXT_COMMAND_VALUE         40816
 #define _APS_NEXT_CONTROL_VALUE         1236
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

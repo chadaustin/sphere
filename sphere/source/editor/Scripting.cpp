@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <jsapi.h>
 #include "Scripting.hpp"
 
 
@@ -32,11 +31,7 @@ static const char* Keywords[] = {
   "true", "false",
 };
 
-
-static void ErrorReporter(JSContext* cx, const char* message, JSErrorReport* report);
-
-
-static char* s_Script;
+static char* s_Script = NULL;
 static bool s_HasError = false;
 static sCompileError s_Error;
 
@@ -55,18 +50,10 @@ bool IsKeyword(const char* token)
 
 bool VerifyScript(const char* script, sCompileError& error)
 {
-  // compile the script (checks for syntax errors)
-
-  int size = strlen(script);
-  s_Script = new char[size + 1];
-  if (!s_Script)
-    return false;
-
-  strcpy(s_Script, script);
-  
   JSRuntime* rt = JS_NewRuntime(4 * 1024 * 1024);
   if (rt == NULL) {
     delete[] s_Script;
+    s_Script = NULL;
     return false;
   }
 
@@ -96,16 +83,51 @@ bool VerifyScript(const char* script, sCompileError& error)
   JS_InitStandardClasses(cx, global);
   JS_SetErrorReporter(cx, ErrorReporter);
 
+  bool v = VerifyScript(script, error, rt, cx, global);
+
+  JS_DestroyContext(cx);
+  JS_DestroyRuntime(rt);
+
+  return v;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool VerifyScript(const char* script, sCompileError& error, JSRuntime* rt, JSContext* cx, JSObject* global)
+{
+  // compile the script (checks for syntax errors)
+  if (rt == NULL || cx == NULL || global == NULL)
+    return false;
+
+  int size = strlen(script);
+  s_Script = new char[size + 1];
+  if (!s_Script)
+    return false;
+
+  strcpy(s_Script, script);
+
   s_HasError = false;
 
   // time to actually compile
   JSScript* compiled_script = JS_CompileScript(cx, global, s_Script, size, "", 0);
   if (compiled_script) {
+
+    if (!s_HasError && error.m_TokenLine == -1) {
+
+      jsval val;
+      if (JS_ExecuteScript(cx, global, compiled_script, &val) == JS_TRUE) {
+        JSString* str = JS_ValueToString(cx, val);
+        if (str) {
+          const char* s = JS_GetStringBytes(str);
+          error.m_Message = (s ? s : "");
+        } else {
+          error.m_Message = "";
+        }
+      }
+    }
+
     JS_DestroyScript(cx, compiled_script);
   }
-
-  JS_DestroyContext(cx);
-  JS_DestroyRuntime(rt);
 
   if (s_HasError) {
     error = s_Error;
@@ -143,7 +165,7 @@ static int GetTokenStart(int line, int offset)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static void ErrorReporter(JSContext* cx, const char* message, JSErrorReport* report)
+void ErrorReporter(JSContext* cx, const char* message, JSErrorReport* report)
 {
   s_HasError = true;
 

@@ -30,6 +30,8 @@
 #include "FontWindow.hpp"
 #include "BrowseWindow.hpp"
 
+#include "ConsoleWindow.hpp"
+
 
 #ifdef USE_IRC
 #include "../../../http/irc.hpp"
@@ -63,6 +65,7 @@
 const int PALETTE_COMMAND = 17133;
 const int NUM_PALETTES    = 100;
 
+static CDocumentWindow* s_JS_Console = NULL;
 
 const char szBarState[] = "SDE_BarState";
 
@@ -159,6 +162,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_WINDOW_CLOSEALL, OnWindowCloseAll)
 
   ON_COMMAND(ID_TOOLS_IMAGES_TO_MNG, OnToolsImagesToMNG)
+  ON_COMMAND(ID_TOOLS_JS_CONSOLE, OnToolsJSConsole)
 
   ON_COMMAND(ID_HELP_SPHERESITE,         OnHelpSphereSite)
   ON_COMMAND(ID_HELP_SPHEREFAQ,          OnHelpSphereFAQ)
@@ -1064,6 +1068,11 @@ CMainWindow::OnClose()
 #ifndef USE_SIZECBAR
   // SaveBarState(szBarState);
 #endif
+
+  if (s_JS_Console) {
+    s_JS_Console->DestroyWindow();
+    s_JS_Console = NULL;
+  }
 
   // close the project
   CloseProject();
@@ -2824,6 +2833,19 @@ CMainWindow::OnToolsImagesToMNG()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+afx_msg void
+CMainWindow::OnToolsJSConsole()
+{
+  if (s_JS_Console == NULL) {
+    s_JS_Console = new CConsoleWindow();
+  }
+  else {
+    s_JS_Console->SetFocus();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void OpenURL(const std::string& url, const std::string& label)
 {
   if ((int)ShellExecute(NULL, "open", url.c_str(), 0, 0, SW_SHOW) <= 32) {
@@ -3321,6 +3343,10 @@ CMainWindow::OnDocumentWindowClosing(WPARAM wparam, LPARAM lparam)
       m_DocumentWindows.erase(m_DocumentWindows.begin() + i);
       return 0;
     }
+
+  if (window == s_JS_Console) {
+    s_JS_Console = NULL;
+  }
 
   return 0;
 }

@@ -133,6 +133,7 @@ private:
 
   afx_msg void OnWindowCloseAll();
 
+  afx_msg void OnToolsJSConsole();
   afx_msg void OnToolsImagesToMNG();
 
   afx_msg void OnHelpSphereSite();
