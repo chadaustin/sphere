@@ -1149,11 +1149,10 @@ CImageView::OnPaint()
       // clear the DIB
       memset(m_BlitTile->GetPixels(), 0,  dib_width * dib_height * 4);
       BGRA* pixels = (BGRA*) m_BlitTile->GetPixels();
-      bool visible = false;
       int current_blit_width = 0;
       int current_blit_height = 0;
 
-      for (int iy = 0; iy < dib_height; ++iy) {  
+      for (int iy = 0; iy < dib_height; ++iy) {
         int sy = (iy + (ty * dib_height)) / size;
         if (!(sy >= m_RedrawY && sy < (m_RedrawY + m_RedrawHeight)))
           continue;
@@ -1166,7 +1165,8 @@ CImageView::OnPaint()
             if (!(sx >= m_RedrawX && sx < (m_RedrawX + m_RedrawWidth)))
               continue;
 
-            current_blit_width += 1;
+            if (iy == 0)
+              current_blit_width += 1;
 
             int counter = (iy * dib_height) + ix;
 

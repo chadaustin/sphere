@@ -37,7 +37,7 @@ CDIBSection::CDIBSection(int width, int height, int bpp)
   m_hBitmap = ::CreateDIBSection(::GetDC(NULL), &bmi, DIB_RGB_COLORS, &m_pPixels, NULL, 0);
   if (m_hBitmap == NULL) {
    ::DeleteDC(m_hDC);
-   m_hDC = NULL;
+    m_hDC = NULL;
     m_iWidth = 0;
     m_iHeight = 0;
     return;
