@@ -305,7 +305,7 @@ CImage32::ApplyColorFX4(int x1, int y1, int w, int h, const CColorMatrix &c1, co
   }
   if(y1 < 0) {
     h += y1;
-    y = 0;
+    y1 = 0;
   }
   if(x1 + w >= m_Width) {
     w = m_Width - x1;
