@@ -508,7 +508,6 @@ log_object.endBlock()
   spriteset_object.directions
     - array of spriteset_direction objects
 
-
   // spriteset direction objects
   spriteset_direction.name
     - name of direction
@@ -516,14 +515,13 @@ log_object.endBlock()
   spriteset_direction.frames
     - array of spriteset_frame objects
   
-  spriteset_object.getNumDirections()
-    - returns the number of directions that the spriteset has
-  
-  spriteset_object.getNumFrames(direction)
-    - returns the number of frames in a given direction
-  
-  spriteset_object.getFrame(direction, frame)  
-    - returns an image object of a given frame from the direction
+  // spriteset_frame objects
+  spriteset_frame.index
+    - index into images array
+
+  spriteset_frame.delay
+    - number of frames before animation should switch
+
  
  
   *** sounds ***
