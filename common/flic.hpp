@@ -2,9 +2,11 @@
 #define __FLIC_H
 
 
+
 #include <stdio.h>
 #include "types.h"
 #include "colorspace.h"
+
 
 
 class CFlicAnimation
@@ -62,6 +64,7 @@ private:
   byte* FrameData;
   int   FrameDataOffset;  // current location
 };
+
 
 
 #endif
