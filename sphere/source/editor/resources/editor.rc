@@ -483,6 +483,14 @@ BEGIN
             MENUITEM "&Noise",                      ID_IMAGEVIEW_FILTER_NOISE
 
         END
+        POPUP "&Replace"
+        BEGIN
+            MENUITEM "&RGBA",                       ID_IMAGEVIEW_REPLACE_RGBA
+
+            MENUITEM "R&GB",                        ID_IMAGEVIEW_REPLACE_RGB
+            MENUITEM "&Alpha",                      ID_IMAGEVIEW_REPLACE_ALPHA
+
+        END
         MENUITEM SEPARATOR
         MENUITEM "Set Color &Alpha",            ID_IMAGEVIEW_SETCOLORALPHA
         MENUITEM "Scal&e Alpha",                ID_IMAGEVIEW_SCALEALPHA

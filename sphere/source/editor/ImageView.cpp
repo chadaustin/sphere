@@ -38,6 +38,9 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
   ON_COMMAND(ID_IMAGEVIEW_FILL_RGB,            OnFillRGB)
   ON_COMMAND(ID_IMAGEVIEW_FILL_ALPHA,          OnFillAlpha)
   ON_COMMAND(ID_IMAGEVIEW_FILL_BOTH,           OnFillBoth)
+  ON_COMMAND(ID_IMAGEVIEW_REPLACE_RGBA,        OnReplaceRGBA)
+  ON_COMMAND(ID_IMAGEVIEW_REPLACE_RGB,         OnReplaceRGB)
+  ON_COMMAND(ID_IMAGEVIEW_REPLACE_ALPHA,       OnReplaceAlpha)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_BLUR,         OnFilterBlur)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_NOISE,        OnFilterNoise)
   ON_COMMAND(ID_IMAGEVIEW_SETCOLORALPHA,       OnSetColorAlpha)
@@ -429,6 +432,15 @@ CImageView::ConvertToPixel(POINT point)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+bool
+CImageView::InImage(POINT p)
+{
+  return (p.x >= 0 && p.x < m_Image.GetWidth() &&
+          p.y >= 0 && p.y < m_Image.GetHeight());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 CImageView::Click(bool force_draw)
 {
@@ -447,10 +459,7 @@ CImageView::Click(bool force_draw)
 //    return;
 //  }
 
-  if (end.x < 0 ||
-      end.y < 0 ||
-      end.x >= m_Image.GetWidth() ||
-      end.y >= m_Image.GetHeight()) {
+  if (!InImage(end)) {
     return;
   }
 
@@ -475,10 +484,7 @@ CImageView::Fill()
   POINT startPoint = ConvertToPixel(m_CurPoint);
 
   // bounds check
-  if (startPoint.x < 0 ||
-      startPoint.y < 0 ||
-      startPoint.x >= m_Image.GetWidth() ||
-      startPoint.y >= m_Image.GetHeight())
+  if (!InImage(startPoint))
     return;
 
   if (!memcmp(&m_Image.GetPixel(startPoint.x, startPoint.y), &m_Color, sizeof(RGBA)))
@@ -534,15 +540,7 @@ CImageView::Line()
     POINT end = ConvertToPixel(m_CurPoint);
  
     // bounds check
-    if (start.x < 0 ||
-        start.y < 0 ||
-        start.x >= m_Image.GetWidth() ||
-        start.y >= m_Image.GetHeight())
-      return;
-    if (end.x < 0 ||
-        end.y < 0 ||
-        end.x >= m_Image.GetWidth() ||
-        end.y >= m_Image.GetHeight())
+    if (!InImage(start) || !InImage(end))
       return;
 
     m_Image.Line(start.x, start.y, end.x, end.y, m_Color);
@@ -569,15 +567,7 @@ CImageView::Rectangle()
     POINT end = ConvertToPixel(m_CurPoint);
  
     // bounds check
-    if (start.x < 0 ||
-        start.y < 0 ||
-        start.x >= m_Image.GetWidth() ||
-        start.y >= m_Image.GetHeight())
-      return;
-    if (end.x < 0 ||
-        end.y < 0 ||
-        end.x >= m_Image.GetWidth() ||
-        end.y >= m_Image.GetHeight())
+    if (!InImage(start) || !InImage(end))
       return;
 
     m_Image.Rectangle(start.x, start.y, end.x, end.y, m_Color);
@@ -604,15 +594,7 @@ CImageView::Circle()
     POINT end = ConvertToPixel(m_CurPoint);
  
     // bounds check
-    if (start.x < 0 ||
-        start.y < 0 ||
-        start.x >= m_Image.GetWidth() ||
-        start.y >= m_Image.GetHeight())
-      return;
-    if (end.x < 0 ||
-        end.y < 0 ||
-        end.x >= m_Image.GetWidth() ||
-        end.y >= m_Image.GetHeight())
+    if (!InImage(start) || !InImage(end))
       return;
 
     if (abs(start.x - end.x) > abs(start.y - end.y))
@@ -633,10 +615,7 @@ CImageView::GetColor(RGBA* color, int x, int y)
   POINT point = ConvertToPixel(m_CurPoint);
 
   // bounds check
-  if (point.x < 0 ||
-      point.y < 0 ||
-      point.x >= m_Image.GetWidth() ||
-      point.y >= m_Image.GetHeight())
+  if (!InImage(point))
     return;
 
   RGBA* pImage = m_Image.GetPixels();
@@ -856,15 +835,7 @@ CImageView::PaintLine(CImage32& pImage)
   POINT end = ConvertToPixel(m_CurPoint);
  
   // bounds check
-  if (start.x < 0 ||
-      start.y < 0 ||
-      start.x >= m_Image.GetWidth() ||
-      start.y >= m_Image.GetHeight())
-    return;
-  if (end.x < 0 ||
-      end.y < 0 ||
-      end.x >= m_Image.GetWidth() ||
-      end.y >= m_Image.GetHeight())
+  if (!InImage(start) || !InImage(end))
     return;
 
   pImage.Line(start.x, start.y, end.x, end.y, m_Color);
@@ -883,15 +854,7 @@ CImageView::PaintRectangle(CImage32& pImage)
   POINT end = ConvertToPixel(m_CurPoint);
  
   // bounds check
-  if (start.x < 0 ||
-      start.y < 0 ||
-      start.x >= m_Image.GetWidth() ||
-      start.y >= m_Image.GetHeight())
-    return;
-  if (end.x < 0 ||
-      end.y < 0 ||
-      end.x >= m_Image.GetWidth() ||
-      end.y >= m_Image.GetHeight())
+  if (!InImage(start) || !InImage(end))
     return;
 
   pImage.Rectangle(start.x, start.y, end.x, end.y, m_Color);
@@ -910,15 +873,7 @@ CImageView::PaintCircle(CImage32& pImage)
   POINT end = ConvertToPixel(m_CurPoint);
  
   // bounds check
-  if (start.x < 0 ||
-      start.y < 0 ||
-      start.x >= m_Image.GetWidth() ||
-      start.y >= m_Image.GetHeight())
-    return;
-  if (end.x < 0 ||
-      end.y < 0 ||
-      end.x >= m_Image.GetWidth() ||
-      end.y >= m_Image.GetHeight())
+  if (!InImage(start) || !InImage(end))
     return;
 
   if (abs(start.x - end.x) > abs(start.y - end.y))
@@ -988,13 +943,8 @@ CImageView::OnRButtonUp(UINT flags, CPoint point)
   HMENU menu = LoadMenu(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_IMAGEVIEW));
   HMENU submenu = GetSubMenu(menu, 0);
 
-  // find out where we clicked in the image
-  POINT p = ConvertToPixel(point);
-  if (p.x < 0 ||
-      p.y < 0 ||
-      p.x >= m_Image.GetWidth() ||
-      p.y >= m_Image.GetHeight()
-  ) {
+  // make sure we clicked in the image
+  if (!InImage(ConvertToPixel(point))) {
     return;
   }
 
@@ -1031,9 +981,7 @@ CImageView::OnMouseMove(UINT flags, CPoint point)
   m_CurPoint = point;
 
   POINT current = ConvertToPixel(point);
-  if (current.x >= 0                 && current.y >= 0 &&
-      current.x < m_Image.GetWidth() && current.y < m_Image.GetHeight())
-  {
+  if (InImage(current)) {
     char str[80];
     sprintf(str, "(%d, %d)", current.x, current.y);
     GetStatusBar()->SetWindowText(str);
@@ -1274,6 +1222,74 @@ CImageView::OnFillBoth()
   RGBA* pImage = m_Image.GetPixels();
   for (int i = 0; i < m_Image.GetWidth() * m_Image.GetHeight(); i++) {
     pImage[i] = m_Color;
+  }
+
+  Invalidate();
+  m_Handler->IV_ImageChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnReplaceRGBA()
+{
+  POINT p = ConvertToPixel(m_CurPoint);
+  if (!InImage(p)) {
+    return;
+  }
+
+  RGBA c = m_Image.GetPixel(p.x, p.y);
+  for (int i = 0; i < m_Image.GetWidth() * m_Image.GetHeight(); ++i) {
+    if (m_Image.GetPixels()[i] == c) {
+      m_Image.GetPixels()[i] = GetColor();
+    }
+  }
+
+  Invalidate();
+  m_Handler->IV_ImageChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnReplaceRGB()
+{
+  POINT p = ConvertToPixel(m_CurPoint);
+  if (!InImage(p)) {
+    return;
+  }
+
+  RGBA c = m_Image.GetPixel(p.x, p.y);
+  for (int i = 0; i < m_Image.GetWidth() * m_Image.GetHeight(); ++i) {
+    if (m_Image.GetPixels()[i].red   == c.red &&
+        m_Image.GetPixels()[i].green == c.green &&
+        m_Image.GetPixels()[i].blue  == c.blue)
+    {
+      m_Image.GetPixels()[i].red   = GetColor().red;
+      m_Image.GetPixels()[i].green = GetColor().green;
+      m_Image.GetPixels()[i].blue  = GetColor().blue;
+    }
+  }
+
+  Invalidate();
+  m_Handler->IV_ImageChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnReplaceAlpha()
+{
+  POINT p = ConvertToPixel(m_CurPoint);
+  if (!InImage(p)) {
+    return;
+  }
+
+  RGBA c = m_Image.GetPixel(p.x, p.y);
+  for (int i = 0; i < m_Image.GetWidth() * m_Image.GetHeight(); ++i) {
+    if (m_Image.GetPixels()[i].alpha == c.alpha) {
+      m_Image.GetPixels()[i].alpha = GetColor().alpha;
+    }
   }
 
   Invalidate();

@@ -56,6 +56,7 @@ private:
   virtual void TP_ToolSelected(int tool);
 
   POINT ConvertToPixel(POINT point);
+  bool InImage(POINT p);
 
   void Click(bool force_draw);
   void Fill();
@@ -98,6 +99,9 @@ private:
   afx_msg void OnFillRGB();
   afx_msg void OnFillAlpha();
   afx_msg void OnFillBoth();
+  afx_msg void OnReplaceRGBA();
+  afx_msg void OnReplaceRGB();
+  afx_msg void OnReplaceAlpha();
   afx_msg void OnFilterBlur();
   afx_msg void OnFilterNoise();
   afx_msg void OnSetColorAlpha();

@@ -36,6 +36,33 @@
 #include "packed_struct.h"
 
 
+inline bool operator==(const RGB& c1, const RGB& c2) {
+  return (c1.red   == c2.red &&
+          c1.green == c2.green &&
+          c1.blue  == c2.blue);
+}
+
+inline bool operator==(const BGR& c1, const BGR& c2) {
+  return (c1.red   == c2.red &&
+          c1.green == c2.green &&
+          c1.blue  == c2.blue);
+}
+
+inline bool operator==(const RGBA& c1, const RGBA& c2) {
+  return (c1.red   == c2.red &&
+          c1.green == c2.green &&
+          c1.blue  == c2.blue &&
+          c1.alpha == c2.alpha);
+}
+
+inline bool operator==(const BGRA& c1, const BGRA& c2) {
+  return (c1.red   == c2.red &&
+          c1.green == c2.green &&
+          c1.blue  == c2.blue &&
+          c1.alpha == c2.alpha);
+}
+
+
 // premultiply alpha
 template<typename destT>
 void PremultiplyAlpha(destT& d, int alpha) {
