@@ -65,6 +65,16 @@ private:
   virtual void CV_ColorChanged(RGB color);
   virtual void AV_AlphaChanged(byte alpha);
 
+#if 1
+public:
+  void SetTileSelection(int width, int height, unsigned int* tiles);
+
+private:
+  int m_MultiTileWidth;
+  int m_MultiTileHeight;
+  unsigned int* m_MultiTileData;
+#endif
+
 private:
   ITilesetEditViewHandler* m_Handler;
   sTileset* m_Tileset;

@@ -945,6 +945,11 @@ IDR_IRCVIEW MENU DISCARDABLE
 BEGIN
     POPUP "IRC View"
     BEGIN
+        POPUP "&Control"
+        BEGIN
+            MENUITEM "&Op",                         ID_IRCVIEW_CONTROL_OP
+            MENUITEM "Deop",                        ID_IRCVIEW_CONTROL_DEOP
+        END
         POPUP "&DCC"
         BEGIN
             MENUITEM "&Chat",                       ID_IRCVIEW_DCC_CHAT

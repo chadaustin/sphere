@@ -40,6 +40,11 @@ CTilesetEditView::CTilesetEditView()
 , m_Tileset(NULL)
 , m_CurrentTile(0)
 , m_Created(false)
+#if 1
+, m_MultiTileWidth(0)
+, m_MultiTileHeight(0)
+, m_MultiTileData(NULL) // m_MultiTileData is not ours to free
+#endif
 {
 }
 
@@ -106,6 +111,29 @@ CTilesetEditView::SelectTile(int tile)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#if 1
+void
+CTilesetEditView::SetTileSelection(int width, int height, unsigned int* tiles)
+{
+  if (tiles) {
+    m_MultiTileWidth = width;
+    m_MultiTileHeight = height;
+    m_MultiTileData = tiles;
+  }
+  else {
+    m_MultiTileWidth = 0;
+    m_MultiTileHeight = 0;
+    m_MultiTileData = NULL;
+  }
+
+  UpdateImageView();
+  UpdateScrollBar();
+  Invalidate();
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 CTilesetEditView::SP_ColorSelected(RGBA color)
 {
@@ -122,6 +150,22 @@ CTilesetEditView::SP_ColorSelected(RGBA color)
 void
 CTilesetEditView::UpdateImageView()
 {
+#if 1
+  if (m_MultiTileWidth > 0 && m_MultiTileHeight > 0 && m_MultiTileData) {
+    CImage32 image;
+    if (image.Create(m_MultiTileWidth * m_Tileset->GetTileWidth(), m_MultiTileHeight * m_Tileset->GetTileHeight())) {
+      for (int y = 0; y < m_MultiTileHeight; y++) {
+        for (int x = 0; x < m_MultiTileWidth; x++) {
+          unsigned int tile = m_MultiTileData[(y * m_MultiTileWidth) + x];
+          image.BlitImage(m_Tileset->GetTile(tile), x * m_Tileset->GetTileWidth(), y * m_Tileset->GetTileHeight());
+        }
+      }
+
+      m_ImageView.SetImage(image.GetWidth(), image.GetHeight(), image.GetPixels(), true);
+      return;
+    }
+  }
+#endif
   sTile& tile = m_Tileset->GetTile(m_CurrentTile);
   m_ImageView.SetImage(tile.GetWidth(), tile.GetHeight(), tile.GetPixels(), true);
 }
@@ -305,6 +349,30 @@ CTilesetEditView::OnTilesetAppendImage()
 void
 CTilesetEditView::IV_ImageChanged()
 {
+#if 1
+  if (m_MultiTileWidth > 0 && m_MultiTileHeight > 0 && m_MultiTileData) {
+    const int tile_width  = m_Tileset->GetTileWidth();
+    const int tile_height = m_Tileset->GetTileHeight();
+    const int image_width = m_ImageView.GetWidth();
+    const int image_height = m_ImageView.GetHeight();
+
+    for (int ty = 0; ty < m_MultiTileHeight; ty++) {
+      for (int tx = 0; tx < m_MultiTileWidth; tx++) {
+        const unsigned int tile = m_MultiTileData[(ty * m_MultiTileWidth) + tx];
+
+        for (int iy = 0; iy < tile_height; iy++) {
+          for (int ix = 0; ix < tile_width; ix++)
+          {
+            m_Tileset->GetTile(tile).SetPixel(ix, iy, m_ImageView.GetPixels()[((ty * tile_height) + iy) * image_width + ((tx * tile_width) + ix)]);
+          }
+        }
+
+        m_Handler->TEV_TileModified(tile);
+      }
+    }
+    return;
+  }
+#endif
   // store the old data
   memcpy(
     m_Tileset->GetTile(m_CurrentTile).GetPixels(),

@@ -725,7 +725,8 @@ CTilesetView::OnSize(UINT type, int cx, int cy)
   static int last_cx = -1;
   if (last_cx != cx) {
     m_UsingMultiTileSelection = false;
-    last_cx = cx;
+    GetTileSelection();
+    m_Handler->TV_TilesetSelectionChanged(GetTileSelectionWidth(), GetTileSelectionHeight(), m_TileSelection);
   }
 
   // reflect the changes
@@ -819,7 +820,8 @@ CTilesetView::OnLButtonUp(UINT flags, CPoint point)
   m_MouseDown = false;
   ReleaseCapture();
 
-  m_Handler->TV_TilesetSelectionChanged(GetTileSelectionWidth(), GetTileSelectionHeight(), GetTileSelection());
+  GetTileSelection();
+  m_Handler->TV_TilesetSelectionChanged(GetTileSelectionWidth(), GetTileSelectionHeight(), m_TileSelection);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1235,7 +1237,8 @@ CTilesetView::OnZoom(int zoom_factor) {
 
   if (m_UsingMultiTileSelection) {
     m_UsingMultiTileSelection = false;
-    m_Handler->TV_TilesetSelectionChanged(GetTileSelectionWidth(), GetTileSelectionHeight(), GetTileSelection());
+    GetTileSelection();
+    m_Handler->TV_TilesetSelectionChanged(GetTileSelectionWidth(), GetTileSelectionHeight(), m_TileSelection);
   }
 
   m_ZoomFactor = zoom_factor;

@@ -97,6 +97,8 @@ bool SetWindowTitle(const char* text) {
 bool SwitchResolution (int x, int y, bool fullscreen, bool update_cliprect) {
   static bool initialized = false;
 
+  SDL_ShowCursor(false);
+
   if (!initialized) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
@@ -141,7 +143,7 @@ bool SwitchResolution (int x, int y, bool fullscreen, bool update_cliprect) {
     return false;
 
   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
-  
+
   ScreenWidth = screen->w;
   ScreenHeight = screen->h;
 
@@ -298,12 +300,12 @@ void FlipScreen () {
   if (NumFlips++ % 8 == 0) {
     UpdateSystem();
   }
-    
+
   if (ShouldTakeScreenshot) {
     ShouldTakeScreenshot = false;
-    TakeScreenshot();      
+    TakeScreenshot();
   }
-    
+
   SDL_Flip(screen);
 }
 
@@ -533,7 +535,7 @@ RGBA* LockImage(IMAGE image) {
 void UnlockImage(IMAGE image) {
   delete[] image->bgra;
   delete[] image->alpha;
-  
+
   FillImagePixels(image, image->locked_pixels);
   OptimizeBlitRoutine(image);
   delete[] image->locked_pixels;

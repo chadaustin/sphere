@@ -1238,6 +1238,14 @@ SOURCE=..\common\write_mng.hpp
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=..\..\..\http\dcc.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\http\dcc.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\http\irc.cpp
 # End Source File
 # Begin Source File
