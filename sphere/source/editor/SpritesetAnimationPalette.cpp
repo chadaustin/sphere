@@ -40,7 +40,8 @@ void
 CSpritesetAnimationPalette::SetCurrentDirection(int direction)
 {
 	//only restart animation if it's really a new direction
-	if (m_SelectedDirection == direction) return;
+	if (m_SelectedDirection == direction)
+    return;
 
 	m_SelectedDirection = direction;
 	ResetAnimation();
@@ -74,16 +75,16 @@ CSpritesetAnimationPalette::OnPaint()
 {
   CPaintDC dc(this);
 
-	RECT Rect;
-	GetClientRect(&Rect);
+	RECT ClientRect;
+	GetClientRect(&ClientRect);
 
   int blit_width  = m_BlitImage->GetWidth();
   int blit_height = m_BlitImage->GetHeight();
 
   // draw black rectangle
-  dc.FillRect(&Rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+  dc.FillRect(&ClientRect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
 
-	if (m_SelectedDirection != -1)
+	if (m_SelectedDirection >= 0 && m_SelectedDirection < m_Spriteset->GetNumDirections())
 	{
 		// draw the frame
 		// fill the DIB section
@@ -99,32 +100,36 @@ CSpritesetAnimationPalette::OnPaint()
             CreateBGRA(255, 192, 192, 255));
       }
 
-    // draw the tile into it
-		int img =  m_Spriteset->GetFrameIndex(m_SelectedDirection, m_CurrentFrame);
-    RGBA* tilepixels = m_Spriteset->GetImage(img).GetPixels();
-    for (int iy = 0; iy < blit_height; iy++)
+    // draw the frame into it
+		int frame_index =  m_Spriteset->GetFrameIndex(m_SelectedDirection, m_CurrentFrame);
+    RGBA* source = m_Spriteset->GetImage(frame_index).GetPixels();
+    for (int iy = 0; iy < blit_height; iy++) {
       for (int ix = 0; ix < blit_width; ix++)
       {
         int ty = iy / m_ZoomFactor;
         int tx = ix / m_ZoomFactor;
-        int t = ty * m_Spriteset->GetFrameWidth() + tx;
-        
-        int d = iy * blit_width + ix;
 
         // this here would crash if the spriteset has been resized
         // and the spriteset animation palette hasn't been informed of the resize
         if (tx >= 0 && tx < m_Spriteset->GetFrameWidth()
           && ty >= 0 && ty < m_Spriteset->GetFrameHeight()) {
-          int alpha = tilepixels[t].alpha;
-          pixels[d].red   = (tilepixels[t].red   * alpha + pixels[d].red   * (255 - alpha)) / 256;
-          pixels[d].green = (tilepixels[t].green * alpha + pixels[d].green * (255 - alpha)) / 256;
-          pixels[d].blue  = (tilepixels[t].blue  * alpha + pixels[d].blue  * (255 - alpha)) / 256;
+  
+          int t = ty * m_Spriteset->GetFrameWidth() + tx;    
+          int d = iy * blit_width + ix;
+          int alpha = source[t].alpha;
+
+          pixels[d].red   = (source[t].red   * alpha + pixels[d].red   * (255 - alpha)) / 256;
+          pixels[d].green = (source[t].green * alpha + pixels[d].green * (255 - alpha)) / 256;
+          pixels[d].blue  = (source[t].blue  * alpha + pixels[d].blue  * (255 - alpha)) / 256;
         }
 			}
+    }
       
     // blit the frame
     CDC* tile = CDC::FromHandle(m_BlitImage->GetDC());
-    dc.BitBlt(Rect.left, Rect.top, Rect.right - Rect.left, Rect.bottom - Rect.top, tile, 0, 0, SRCCOPY);
+    dc.BitBlt(ClientRect.left, ClientRect.top,
+              ClientRect.right - ClientRect.left, ClientRect.bottom - ClientRect.top,
+              tile, 0, 0, SRCCOPY);
   }
 }
 
@@ -174,7 +179,7 @@ CSpritesetAnimationPalette::OnZoom(double zoom) {
 afx_msg void
 CSpritesetAnimationPalette::OnTimer(UINT event)
 {
-	if (m_SelectedDirection != -1)
+	if (m_SelectedDirection >= 0 && m_SelectedDirection < m_Spriteset->GetNumDirections())
 	
 	if (m_TicksLeft == 0)
 	{
@@ -207,3 +212,4 @@ CSpritesetAnimationPalette::ResetAnimation()
 		Invalidate();
 	}
 }
+
