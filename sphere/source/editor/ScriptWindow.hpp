@@ -148,6 +148,10 @@ private:
 #endif
 
 private:
+  BOOL m_SearchDown;
+  //CString m_SearchString;
+
+private:
   bool m_Created;
   HWND m_Editor;
   HWND m_List;

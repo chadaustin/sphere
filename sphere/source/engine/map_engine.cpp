@@ -3280,19 +3280,24 @@ CMapEngine::OpenMap(const char* filename)
       }
 
       if (m_Playlist.GetNumFiles() > 0) {
-        m_Music = m_Engine->LoadSound(m_Playlist.GetFile(0), false);
+        if ( !IsMidi(m_Playlist.GetFile(0)) ) {
+          m_Music = m_Engine->LoadSound(m_Playlist.GetFile(0), false);
+        }
 #ifdef WIN32
-        if (!m_Music && IsMidi(m_Playlist.GetFile(0))) {
+        if ( IsMidi(m_Playlist.GetFile(0)) ) {
           m_Midi = m_Engine->LoadMIDI(m_Playlist.GetFile(0));
         }
 #endif
       }
     }
     else {
-      m_Music = m_Engine->LoadSound(music.c_str(), true);
+
+      if ( !IsMidi(music.c_str()) ) {
+        m_Music = m_Engine->LoadSound(music.c_str(), true);
+      }
 
 #ifdef WIN32
-        if (!m_Music && IsMidi(music.c_str())) {
+        if ( IsMidi(music.c_str()) ) {
           m_Midi = m_Engine->LoadMIDI(music.c_str());
         }
 
@@ -3314,7 +3319,7 @@ CMapEngine::OpenMap(const char* filename)
   }
 #ifdef WIN32
   if (m_Midi) {
-    //m_Midi->setRepeat(true);
+    m_Midi->setRepeat(true);
     m_Midi->play();
   }
 #endif

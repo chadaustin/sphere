@@ -2,9 +2,17 @@
 // #include <assert.h>
 
 static int s_AudioInitCount = 0;
-static int s_MidiInitCount  = 0;
 static audiere::AudioDevicePtr s_AudioDevice = NULL;
+
+static int s_MidiInitCount  = 0;
 static audiere::MIDIDevicePtr  s_MidiDevice  = NULL;
+
+//#define CD_AUDIO
+
+#ifdef CD_AUDIO
+static int s_CDInitCount  = 0;
+static audiere::CDDevicePtr s_CDDevice = NULL;
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -62,6 +70,24 @@ static void InitializeMidi()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef CD_AUDIO
+static void InitializeCD()
+{
+  if (s_CDInitCount++ == 0) {
+    s_CDDevice = audiere::OpenCDDevice("E:");
+    if (s_CDDevice == NULL) {
+      s_CDDevice = audiere::OpenCDDevice("null");
+    }
+  }
+
+  if (s_CDDevice && s_CDDevice.get()) {
+    const char* device_name = s_CDDevice.get()->getName();
+  }
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+
 static void CloseAudio()
 {
   if (--s_AudioInitCount == 0) {
@@ -80,6 +106,17 @@ static void CloseMidi()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#if CD_AUDIO
+static void CloseCD()
+{
+  if (--s_CDInitCount == 0) {
+    s_CDDevice = 0;
+  }
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+
 CSound::CSound()
 : m_Sound(NULL)
 , m_Midi(NULL)
@@ -88,6 +125,9 @@ CSound::CSound()
 {
   InitializeAudio();
   InitializeMidi();
+#ifdef CD_AUDIO
+  InitializeCD();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -143,11 +183,11 @@ CSound::__GetDevice__()
 void
 CSound::__GetSound__(const char* filename)
 {
-  if (!m_Sound && !m_Midi && s_AudioDevice.get()) {
+  if (!m_Sound && !m_Midi && s_AudioDevice.get() && !IsMidi(filename)) {
     m_Sound = audiere::OpenSound(s_AudioDevice.get(), filename, true);
   }
 
-  if (!m_Sound && !m_Midi && s_MidiDevice.get() && IsMidi(filename)) {
+  if (!m_Sound && !m_Midi && s_MidiDevice.get()  && IsMidi(filename)) {
     /*
     audiere::File* file = audiere::OpenFile(filename, false);
     if (file) {
@@ -196,6 +236,11 @@ CSound::Play()
 
     if (m_Midi)
       m_Midi->play();
+
+#ifdef CD_AUDIO
+    if (s_CDDevice && s_CDDevice.get())
+      s_CDDevice->play(0);
+#endif
   }
 
   return (m_Sound || m_Midi);
@@ -216,6 +261,12 @@ CSound::Stop()
     m_Midi->stop();
     m_Midi = 0;
   }
+
+#ifdef CD_AUDIO
+  if (s_CDDevice && s_CDDevice.get())
+    s_CDDevice->stop();
+#endif
+
 
   if (!m_ClosedAudio) {
     m_ClosedAudio = true;

@@ -93,12 +93,14 @@ audiere::MIDIStream* SA_OpenMIDI(const char* filename)
   return s_MidiDevice.get()->openStream(filename);
 }
 
+/*
 audiere::MIDIStream* SA_OpenMIDI(audiere::File* file)
 {
   if (!s_MidiDevice.get())
     return NULL;
   return s_MidiDevice.get()->openStream(file);
 }
+*/
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////

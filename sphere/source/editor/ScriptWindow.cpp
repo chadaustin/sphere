@@ -480,6 +480,7 @@ CScriptWindow::CScriptWindow(const char* filename, bool create_from_clipboard)
 , m_SelectionType(SC_SEL_STREAM)
 , m_ListType(0)
 , m_CheckSpelling(false)
+, m_SearchDown(FR_DOWN)
 {
   m_DocumentType = WA_SCRIPT;
 
@@ -1435,7 +1436,8 @@ CScriptWindow::OnScriptFind()
       CString text = GetSelection();
       SendEditor(SCI_SETSELECTIONMODE, m_SelectionType);
 
-      m_SearchDialog->Create(true, text, NULL, FR_DOWN, this);
+      //m_SearchDialog->Create(true, text, NULL, FR_DOWN, this);
+      m_SearchDialog->Create(true, text, NULL, m_SearchDown, this);
     }
   }
 }
@@ -1984,6 +1986,8 @@ CScriptWindow::OnFindReplace(WPARAM, LPARAM)
   GetEditorText(str);
 
   if (m_SearchDialog->IsTerminating()) {
+    m_SearchDown = m_SearchDialog->SearchDown();
+    //m_SearchString      = m_SearchDialog->GetFindString();   
     m_SearchDialog = NULL;
   } else if (m_SearchDialog->FindNext()) {
 
@@ -2005,9 +2009,11 @@ CScriptWindow::OnFindReplace(WPARAM, LPARAM)
     }
 
     if (SendEditor(SCI_FINDTEXT, options, (LPARAM)&ttf) == -1) {
-      m_SearchDialog->MessageBox("No more matches!");
+      //m_SearchDialog->MessageBox("No more matches!");
+      GetStatusBar()->SetWindowText("No more matches!");
     } else {
       SendEditor(SCI_SETSEL, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
+      GetStatusBar()->SetWindowText("");
     }
     
   } else if (m_SearchDialog->ReplaceCurrent()) {
@@ -2034,9 +2040,11 @@ CScriptWindow::OnFindReplace(WPARAM, LPARAM)
       // now try to find the next one
       ttf.chrg.cpMin += strlen(replace_string);
       if (SendEditor(SCI_FINDTEXT, options, (LPARAM)&ttf) == -1) {
-        m_SearchDialog->MessageBox("No more matches!");
+        //m_SearchDialog->MessageBox("No more matches!");
+        GetStatusBar()->SetWindowText("No more matches!");
       } else {
         SendEditor(SCI_SETSEL, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
+        GetStatusBar()->SetWindowText("");
       }
     } else {
 

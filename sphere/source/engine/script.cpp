@@ -4910,10 +4910,14 @@ begin_func(LoadSound, 1)
   }
 
   // load sound
-  audiere::OutputStream* sound = This->m_Engine->LoadSound(filename, streaming);
+  audiere::OutputStream* sound = NULL;
+  if ( !IsMidi(filename) ) {
+    sound = This->m_Engine->LoadSound(filename, streaming);
+  }
+
 #ifdef WIN32
   audiere::MIDIStream* midi    = NULL;
-  if (!sound && IsMidi(filename)) {
+  if ( !sound && IsMidi(filename) ) {
     midi = This->m_Engine->LoadMIDI(filename); 
   }
 
@@ -5098,6 +5102,10 @@ begin_func(CreateSurface, 3)
 
   CImage32* surface = new CImage32(w, h);
   if (!surface || surface->GetWidth() != w || surface->GetHeight() != h) {
+    if (surface != NULL) {
+      delete surface;
+      surface = NULL;
+    }
     JS_ReportError(cx, "CreateSurface() failed!!");
     return JS_FALSE;
   }
@@ -5168,6 +5176,10 @@ begin_func(GrabSurface, 4)
   // create surface and grab pixels from the backbuffer
   CImage32* surface = new CImage32(w, h);
   if (!surface || surface->GetWidth() != w || surface->GetHeight() != h || surface->GetPixels() == NULL) {
+    if (surface != NULL) {
+      delete surface;
+      surface = NULL;
+    }
     JS_ReportError(cx, "GrabSurface() failed!!");
     return JS_FALSE;
   }
@@ -6178,6 +6190,7 @@ begin_method(SS_SOUND, ssSoundPlay, 1)
   }
 #ifdef WIN32
   if (object->midi) {
+    object->midi->setRepeat(repeat);
     object->midi->play();
   }
 #endif
