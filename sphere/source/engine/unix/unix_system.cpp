@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdlib.h>
 #include "unix_input.h"
 
 void UpdateSystem () {

@@ -1,5 +1,7 @@
 #include "unix_filesystem.h"
 #include <iostream>
+#include <errno.h>
+
 
 std::stack<string> directory_stack;
 
