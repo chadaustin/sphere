@@ -5,16 +5,16 @@ die() {
     exit 1
 }
 
-MIRROR=umn.dl.sourceforge.net
-MSVC6_DEP=third-party-msvc-2003.01.25.zip
-MINGW_DEP=third-party-mingw-2003.01.25.zip
+ADDRESS=sphere.sourceforge.net/flik/files
+MSVC6_DEP=third-party-msvc.zip
+MINGW_DEP=third-party-mingw.zip
 TMP=third-party-tmp
 
 mkdir -p $TMP || die
 cd $TMP || die
 
-wget http://$MIRROR/sourceforge/sphere/$MSVC6_DEP || die
-wget http://$MIRROR/sourceforge/sphere/$MINGW_DEP || die
+wget http://$ADDRESS/$MSVC6_DEP || die
+wget http://$ADDRESS/$MINGW_DEP || die
 
 cd .. || die
 
