@@ -5,6 +5,7 @@
 
 Name "Sphere 1.1"
 !define SphereDir "sphere-1.1"
+!define SphereStartMenuDir "Sphere 1.1"
 OutFile "InstallSphere1.1.exe"
 
 ; Some default compiler settings (uncomment and change at will):
@@ -30,15 +31,15 @@ SetOutPath "$INSTDIR"
 File /r *.dll *.exe docs games startup system util
 
 ; set up start menu
-CreateDirectory "$SMPROGRAMS\${SphereDir}"
-CreateShortCut "$SMPROGRAMS\${SphereDir}\Run Sphere.lnk" "$INSTDIR\engine.exe"
-CreateShortCut "$SMPROGRAMS\${SphereDir}\Configuration.lnk" "$INSTDIR\config.exe"
-CreateShortCut "$SMPROGRAMS\${SphereDir}\Editor.lnk" "$INSTDIR\editor.exe"
-CreateDirectory "$SMPROGRAMS\${SphereDir}\Documentation"
-CreateShortCut "$SMPROGRAMS\${SphereDir}\Documentation\Sphere Web Site.lnk" "http://sphere.sourceforge.net"
-CreateShortCut "$SMPROGRAMS\${SphereDir}\Documentation\AegisKnight's Site.lnk" "http://aegisknight.org/sphere"
-CreateShortCut "$SMPROGRAMS\${SphereDir}\Documentation\Flik's Tutorial Site.lnk" "http://sphere.sourceforge.net/flik/docs"
-CreateShortCut "$SMPROGRAMS\${SphereDir}\Documentation\Local Documentation.lnk" "$INSTDIR\docs"
+CreateDirectory "$SMPROGRAMS\${SphereStartMenuDir}"
+CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Run Sphere.lnk" "$INSTDIR\engine.exe"
+CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Configuration.lnk" "$INSTDIR\config.exe"
+CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Editor.lnk" "$INSTDIR\editor.exe"
+CreateDirectory "$SMPROGRAMS\${SphereStartMenuDir}\Documentation"
+CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Documentation\Sphere Web Site.lnk" "http://sphere.sourceforge.net"
+CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Documentation\AegisKnight's Site.lnk" "http://aegisknight.org/sphere"
+CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Documentation\Flik's Tutorial Site.lnk" "http://sphere.sourceforge.net/flik/docs"
+CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Documentation\Local Documentation.lnk" "$INSTDIR\docs"
 
 ; register file types
 WriteRegStr HKCR ".rfn" "" "SphereFont"
