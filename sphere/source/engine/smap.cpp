@@ -230,13 +230,12 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
   std::vector<IMAGE>& tiles = (solid ? m_SolidTiles : m_Tiles);
 
   int num_rows_to_blit = GetScreenWidth() / tile_width + 2;
-  if (!m_Map.IsRepeating() && num_rows_to_blit > layer.GetWidth())
+  if (!m_Map.IsRepeating() && !layer.HasParallax() && num_rows_to_blit > layer.GetWidth())
     num_rows_to_blit = layer.GetWidth();
 
   int num_cols_to_blit = GetScreenHeight() / tile_height + 2;
-  if (!m_Map.IsRepeating() && num_cols_to_blit > layer.GetHeight())
+  if (!m_Map.IsRepeating() && !layer.HasParallax() && num_cols_to_blit > layer.GetHeight())
     num_cols_to_blit = layer.GetHeight();
-
 
   // !!!! Warning!  Repeated code!  Please fix!
   if (m_LayerAlphas[i] == 255) {
