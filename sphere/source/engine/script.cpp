@@ -2161,6 +2161,20 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(IsCommandQueueEmpty, 1)
+  arg_str(name);
+
+  bool result;
+  if (!This->m_Engine->GetMapEngine()->IsCommandQueueEmpty(name, result)) {
+    This->ReportMapEngineError("IsCommandQueueEmpty() failed");
+    return JS_FALSE;
+  }
+
+  return_bool(result);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 begin_func(IsPersonObstructed, 3)
   arg_str(name);
   arg_int(x);

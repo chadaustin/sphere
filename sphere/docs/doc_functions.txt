@@ -487,6 +487,9 @@ log_object.endBlock()
       ClearPersonCommands(name)
         - clears the command queue of sprite with the 'name'
 
+      IsCommandQueueEmpty(name)
+        - returns true if the person 'name' has an empty command queue
+
       IsPersonObstructed(name, x, y)
       // returns true if person 'name' would be obstructed at (x, y)
 

@@ -139,6 +139,7 @@ public:
   bool QueuePersonCommand(const char* name, int command, bool immediate);
   bool QueuePersonScript(const char* name, const char* script, bool immediate);
   bool ClearPersonCommands(const char* name);
+  bool IsCommandQueueEmpty(const char* name, bool& empty);
 
   bool IsPersonObstructed(const char* name, int x, int y, bool& result);
 

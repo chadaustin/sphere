@@ -1577,6 +1577,22 @@ CMapEngine::ClearPersonCommands(const char* name)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::IsCommandQueueEmpty(const char* name, bool& empty)
+{
+  // find person
+  int person = FindPerson(name);
+  if (person == -1) {
+    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+    return false;
+  }
+
+  empty = m_Persons[person].commands.empty();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::IsPersonObstructed(const char* name, int x, int y, bool& result)
 {
   // find person
