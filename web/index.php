@@ -1,6 +1,6 @@
 <?php
-$DATE = '$Date: 2002-01-05 02:21:36 $';
-$AUTHOR = '$Author: malis $';
+$DATE = '$Date: 2002-01-12 07:35:19 $';
+$AUTHOR = '$Author: jcore $';
 $PAGE = 'index.php';
 
 require_once('constants.php');
@@ -11,9 +11,10 @@ $html = new HtmlGenerator("sphere - news");
 
 /* get articles from the last 10 days, or a maximum of 10 articles */
 $news = new SphereNews;
-$startdate = date("Y-m-d H:i:s", time() - (60 * 60 * 24 * 10));
+/* $startdate = date("Y-m-d H:i:s", time() - (60 * 60 * 24 * 30));
 $enddate = date("Y-m-d H:i:s", time());
-$articles = $news->getArticles($startdate, $enddate, 10);
+$articles = $news->getArticles($startdate, $enddate, 10); */
+$articles = $news->getArticles(NULL, NULL, 10);
 $html->divide("80%");
 $news_side_box = new HtmlBox("box", "latest news");
 for ($lcv = 0; $lcv < $articles[0]; $lcv++) {

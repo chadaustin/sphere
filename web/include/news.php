@@ -24,7 +24,12 @@ class SphereNews {
 
   function getArticles ($startdate, $enddate, $maxarticles) {
     global $DB;
-    return $DB->query("SELECT * FROM news WHERE date BETWEEN '$startdate' AND '$enddate' ORDER BY date DESC LIMIT $maxarticles");
+	 if ($startdate and $enddate)
+    	return $DB->query("SELECT * FROM news WHERE date BETWEEN '$startdate' AND '$enddate' ORDER BY date DESC LIMIT $maxarticles");
+    else if ($startdate)
+      return $DB->query("SELECT * FROM news WHERE date > '$startdate' AND ORDER BY date DESC LIMIT $maxarticles");
+    else
+      return $DB->query("SELECT * FROM news AND ORDER BY date DESC LIMIT $maxarticles");
   }
 
 }
