@@ -31,6 +31,7 @@ public:
 
   void TilesetChanged();
 
+  int GetSelectedTile();
   void SelectTile(int tile);
   void SelectLayer(int layer);
 

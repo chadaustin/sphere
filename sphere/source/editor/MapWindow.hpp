@@ -39,6 +39,7 @@ private:
   void TabChanged(int tab);
 
   afx_msg void OnSize(UINT type, int cx, int cy);
+  afx_msg void OnKeyDown(UINT vk, UINT repeat, UINT flags);
   afx_msg BOOL OnCommand(WPARAM wparam, LPARAM lparam);
   afx_msg void OnMapProperties();
   afx_msg void OnChangeTileSize();

@@ -11,6 +11,7 @@
 #include "MapPropertiesDialog.hpp"
 #include "TilePalette.hpp"
 #include "../common/rgb.hpp"
+#include "../common/minmax.hpp"
 #include "resource.h"
 
 
@@ -21,6 +22,8 @@
 BEGIN_MESSAGE_MAP(CMapWindow, CSaveableDocumentWindow)
 
   ON_WM_SIZE()
+  ON_WM_KEYDOWN()
+
   ON_COMMAND(ID_MAP_PROPERTIES,      OnMapProperties)
   ON_COMMAND(ID_MAP_CHANGETILESIZE,  OnChangeTileSize)
   ON_COMMAND(ID_MAP_RESCALETILESET,  OnRescaleTileset)
@@ -279,6 +282,24 @@ CMapWindow::OnSize(UINT uType, int cx, int cy)
   }
 
   CSaveableDocumentWindow::OnSize(uType, cx, cy);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMapWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
+{
+  int tile = m_MapView.GetSelectedTile();
+  if (vk == VK_RIGHT) {
+    tile = std::min(tile + 1, m_Map.GetTileset().GetNumTiles() - 1);
+  } else if (vk == VK_LEFT) {
+    tile = std::max(tile - 1, 0);
+  }
+
+  m_MapView.SelectTile(tile);
+  m_LayerView.SetSelectedTile(tile);
+  m_TilesetEditView.SelectTile(tile);
+  m_TilePalette->SelectTile(tile);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
