@@ -38,6 +38,7 @@ BEGIN_MESSAGE_MAP(CProjectWindow, BaseProjectWindow)
   ON_WM_SETFOCUS()
   ON_WM_DROPFILES()
 
+  ON_COMMAND(ID_PROJECTGROUP_NEW, OnProjectGroupNew)
   ON_COMMAND(ID_PROJECTGROUP_INSERT, OnProjectGroupInsert)
 
   ON_COMMAND(ID_PROJECTITEM_OPEN,   OnProjectItemOpen)
@@ -413,6 +414,26 @@ CProjectWindow::OnProjectGroupInsert()
     case tiWindowStyles: ::PostMessage(m_MainWindow->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_PROJECT_INSERT_WINDOWSTYLE, 0), 0); break;
     case tiImages:       ::PostMessage(m_MainWindow->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_PROJECT_INSERT_IMAGE,       0), 0); break;
     case tiAnimations:   ::PostMessage(m_MainWindow->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_PROJECT_INSERT_ANIMATION,   0), 0); break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CProjectWindow::OnProjectGroupNew()
+{
+  HTREEITEM item = m_TreeControl.GetSelectedItem();
+  if (!IsTreeItemFolder(m_TreeControl, item))
+    return;
+
+  switch (GetFolderType(m_TreeControl, item))
+  {
+    case tiMaps:         ::PostMessage(m_MainWindow->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_FILE_NEW_MAP,         0), 0); break;
+    case tiSpritesets:   ::PostMessage(m_MainWindow->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_FILE_NEW_SPRITESET,   0), 0); break;
+    case tiScripts:      ::PostMessage(m_MainWindow->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_FILE_NEW_SCRIPT,      0), 0); break;
+    case tiFonts:        ::PostMessage(m_MainWindow->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_FILE_NEW_FONT,        0), 0); break;
+    case tiWindowStyles: ::PostMessage(m_MainWindow->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_FILE_NEW_WINDOWSTYLE, 0), 0); break;
+    case tiImages:       ::PostMessage(m_MainWindow->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_FILE_NEW_IMAGE,       0), 0); break;
   }
 }
 

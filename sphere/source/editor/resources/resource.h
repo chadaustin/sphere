@@ -591,6 +591,7 @@
 #define ID_FONT_PREVIEW_SET_TEXT        40738
 #define ID_FILE_OPTIONS                 40739
 #define ID_IMAGEVIEW_REDO               40740
+#define ID_PROJECTGROUP_NEW             40741
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -599,7 +600,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        261
-#define _APS_NEXT_COMMAND_VALUE         40741
+#define _APS_NEXT_COMMAND_VALUE         40742
 #define _APS_NEXT_CONTROL_VALUE         1205
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

@@ -52,8 +52,9 @@ CTilesetEditView::CTilesetEditView()
 
 CTilesetEditView::~CTilesetEditView()
 {
-  if (m_Created)
+  if (m_Created) {
     DestroyWindow();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

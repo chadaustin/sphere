@@ -40,6 +40,7 @@ private:
   afx_msg void OnSetFocus(CWnd* pOldWindow);
   afx_msg void OnDropFiles(HDROP drop_info);
 
+  afx_msg void OnProjectGroupNew();
   afx_msg void OnProjectGroupInsert();
 
   afx_msg void OnProjectItemOpen();

@@ -249,6 +249,7 @@ IDR_PROJECTGROUP MENU DISCARDABLE
 BEGIN
     POPUP "Project &Group"
     BEGIN
+        MENUITEM "&New...",                     ID_PROJECTGROUP_NEW
         MENUITEM "&Insert...",                  ID_PROJECTGROUP_INSERT
     END
 END

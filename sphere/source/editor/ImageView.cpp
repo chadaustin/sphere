@@ -111,12 +111,13 @@ CImageView::CImageView()
 , m_RedrawY(0)
 , m_RedrawWidth(0)
 , m_RedrawHeight(0)
+, m_Clipboard(NULL)
+, m_BlitTile(NULL)
 {
   m_Image.SetBlendMode(CImage32::REPLACE);
   m_ShowGrid = false;
   //s_ClipboardFormat = RegisterClipboardFormat("FlatImage32");
   m_Clipboard = new CClipboard();
-
   m_BlitTile = new CDIBSection(16, 16, 32);
 
   m_ColorMask1 = CreateRGBA(Configuration::Get(KEY_COLOR_MASK_1_RED), Configuration::Get(KEY_COLOR_MASK_1_GREEN), Configuration::Get(KEY_COLOR_MASK_1_BLUE), 255);
@@ -129,15 +130,18 @@ CImageView::~CImageView()
 {
   // destroy the blit DIB
   delete m_BlitTile;
-
+  m_BlitTile = NULL;
   delete m_Clipboard;
+  m_Clipboard = NULL;
 
   m_SelectionPoints.clear();
 
   ResetUndoStates();
+  ResetRedoStates();
 
   if (m_SwatchPalette) {
     m_SwatchPalette->Destroy();
+    m_SwatchPalette = NULL;
   }
 
   //if (m_ToolPalette) {
@@ -173,6 +177,7 @@ CImageView::SetImage(int width, int height, const RGBA* pixels, bool reset_undo_
 {
   if (reset_undo_states) {
     ResetUndoStates();
+    ResetRedoStates();
   }
 
   m_Image.Resize(width, height);
