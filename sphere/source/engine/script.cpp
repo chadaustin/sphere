@@ -4592,7 +4592,9 @@ begin_method(SS_SURFACE, ssSurfaceGetPixel, 2)
   arg_int(y);
   CImage32* surface = object->surface;
   if (x < 0 || x >= surface->GetWidth() || y < 0 || y >= surface->GetHeight()) {
-    JS_ReportError(cx, "Invalid coordinates in surface.getPixel() call");
+    char string[520];
+    sprintf(string, "Invalid coordinates in surface.getPixel() call\n x: %d y: %d w: %d h: %d", x, y, surface->GetWidth(), surface->GetHeight());
+    JS_ReportError(cx, string);
     return JS_FALSE;
   }
 
@@ -4608,7 +4610,9 @@ begin_method(SS_SURFACE, ssSurfaceSetPixel, 3)
 
   CImage32* surface = object->surface;
   if (x < 0 || x >= surface->GetWidth() || y < 0 || y >= surface->GetHeight()) {
-    JS_ReportError(cx, "Invalid coordinates in surface.setPixel() call");
+    char string[520];
+    sprintf(string, "Invalid coordinates in surface.setPixel() call\n x: %d y: %d w: %d h: %d", x, y, surface->GetWidth(), surface->GetHeight());
+    JS_ReportError(cx, string);
     return JS_FALSE;
   }
 
@@ -4674,6 +4678,11 @@ begin_method(SS_SURFACE, ssSurfaceRotate, 2)
   arg_bool(autosize);
 
   object->surface->Rotate(degrees, autosize);
+
+  // redefine width and height properties
+  JS_DefineProperty(cx, obj, "width",  INT_TO_JSVAL(object->surface->GetWidth()),  JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
+  JS_DefineProperty(cx, obj, "height", INT_TO_JSVAL(object->surface->GetHeight()), JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
+
 end_method()
 
 ////////////////////////////////////////
@@ -4688,6 +4697,11 @@ begin_method(SS_SURFACE, ssSurfaceResize, 2)
   }
 
   object->surface->Resize(w, h);
+
+  // redefine width and height properties
+  JS_DefineProperty(cx, obj, "width",  INT_TO_JSVAL(object->surface->GetWidth()),  JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
+  JS_DefineProperty(cx, obj, "height", INT_TO_JSVAL(object->surface->GetHeight()), JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
+
 end_method()
 
 ////////////////////////////////////////
@@ -4702,6 +4716,12 @@ begin_method(SS_SURFACE, ssSurfaceRescale, 2)
   }
 
   object->surface->Rescale(w, h);
+
+  // redefine width and height properties
+  JS_DefineProperty(cx, obj, "width",  INT_TO_JSVAL(object->surface->GetWidth()),  JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
+  JS_DefineProperty(cx, obj, "height", INT_TO_JSVAL(object->surface->GetHeight()), JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
+
+
 end_method();
 
 ////////////////////////////////////////
