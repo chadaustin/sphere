@@ -9,6 +9,7 @@
 #include <ctype.h>
 #include <string>
 #include "sfont.hpp"
+#include "../common/minmax.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -141,7 +142,7 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
 
   int old_x, old_y, old_w, old_h;
   GetClippingRectangle(&old_x, &old_y, &old_w, &old_h);
-  SetClippingRectangle(x, y, w, h);
+  SetClippingRectangle(std::max(x, old_x), std::max(y, old_y), std::min(w, old_w), std::min(h, old_h));
 
   y += offset;
 

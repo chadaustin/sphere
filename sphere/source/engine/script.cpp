@@ -586,11 +586,11 @@ CScript::ErrorReporter(JSContext* cx, const char* message, JSErrorReport* report
     }
     This->m_Error = os.str();
 
-    //FILE* file = fopen("last_error.txt", "wb+");
-    //if (file != NULL) {
-    //  fwrite(This->m_Error.c_str(), sizeof(char), This->m_Error.length(), file); 
-    //  fclose(file);
-    //}
+    FILE* file = fopen("last_error.txt", "wb+");
+    if (file != NULL) {
+      fwrite(This->m_Error.c_str(), sizeof(char), This->m_Error.length(), file); 
+      fclose(file);
+    }
 
   } else {
     
@@ -5615,7 +5615,7 @@ begin_func(GetMapEngine, 0)
 
   // assign methods to the object
   static JSFunctionSpec fs[] = {
-    { "save",        ssMapSave,        0, 0, 0 },
+    { "save",        ssMapEngineSave,        0, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -5630,11 +5630,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-begin_method(SS_MAPENGINE, ssMapSave, 1)
+begin_method(SS_MAPENGINE, ssMapEngineSave, 1)
   arg_str(filename);
   std::string path = "maps/" + std::string(filename);
 
-  if (IsValidPath(path) == false) {
+  if (IsValidPath(path.c_str()) == false) {
     JS_ReportError(cx, "Too many ..'s in filename: '%s'", filename);
     return JS_FALSE;  
   }
