@@ -1,3 +1,6 @@
+2003.02.23
+  - fixed ExecuteZones so that it reported errors if there no zones to execute
+
 2003.02.22
   - made tileset view->zoom simplier and made it update the scrollbar when zooming
 

@@ -427,16 +427,21 @@ log_object.endBlock()
     IsTriggerAt(map_x, map_y, layer)
       - Returns true if there is a trigger at map_x, map_y on layer.  map_x
         and map_y are in map (per-pixel) coordinates.
+        (Currently the layer parameter is ignored, although it still must be valid.)
       
     ExecuteTrigger(map_x, map_y, layer)
       - activates the trigger positioned on map_x, map_y, layer if one exists.
         map_x and map_y are in map (per-pixel) coordinates.
+        (Currently the layer parameter is ignored, although it still must be valid.)
 
     IsZoneAt(map_x, map_y, layer)
       - returns true if there is a zone at map_x, map_y on layer
+        (Currently the layer parameter is ignored, although it still must be valid.)
 
     ExecuteZones(map_x, map_y, layer)
       - executes all the zones that map_x, map_y, layer is within
+        map_x and map_y are in map (per-pixel) coordinates.
+        (Currently the layer parameter is ignored, although it still must be valid.)
 
     GetNumZones()
       - returns the amount of zones that there is

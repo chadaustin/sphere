@@ -770,13 +770,30 @@ CMapEngine::AreZonesAt(int location_x, int location_y, int layer) {
 
 bool
 CMapEngine::ExecuteZones(int location_x, int location_y, int layer) {
+
+  // this doesn't use layers, but I'll include the layer parameter just incase
+
+  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
+    m_ErrorMessage = "Invalid layer used in ExecuteZones()";
+    return false;
+  }
+
+  bool found = false;
   for (int i = 0; i < m_Map.GetMap().GetNumZones(); i++) {
     if (IsPointWithinZone(location_x, location_y, layer, i)) {
+      found = true;
       if ( !ExecuteZoneScript(i) ) {
         return false;
       }
     }
   }
+
+  if (!found) {
+    m_ErrorMessage = "There are no zones at (" + itos(location_x) + ", "
+                   + itos(location_y) + ") on layer " + itos(layer);
+    return false;
+  }
+
   return true; 
 }
 
