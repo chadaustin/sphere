@@ -8,6 +8,7 @@
 #include "../common/win32x.hpp"
 #include "resource.h"
 
+
 /**
    @todo maybe this should go to rgb.cpp or some such...  but then
    every video driver depends on libcommon?
@@ -38,6 +39,11 @@ typedef struct _IMAGE
   byte* alpha;
 
   void (*blit_routine)(_IMAGE* image, int x, int y);
+
+  int clip_x;
+  int clip_y;
+  int clip_width;
+  int clip_height;
 
   RGBA* locked_pixels;
 }* IMAGE;
@@ -542,6 +548,67 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
+  Images can often have big blocks of alpha around them (e.g. fonts, spritesets)
+  This works out what parts of the image itself can be clipped from the blit
+*/
+void
+ClipImage(IMAGE image, int& clip_x, int& clip_y, int& clip_width, int& clip_height)
+{
+  clip_x = 0;
+  clip_y = 0;
+  clip_width = image->width;
+  clip_height = image->height;
+
+  bool done = false;
+  for (int x = 0; x < image->width; x++) {
+    for (int y = 0; y < image->height; y++) {
+      if (image->alpha[y * image->width + x] != 0) {
+        done = true;
+        break;
+      }
+    }
+    if (done) { break; } else { clip_x++; }
+  }
+
+  done = false;
+  for (int y = 0; y < image->height; y++) {
+    for (int x = 0; x < image->width; x++) {
+      if (image->alpha[y * image->width + x] != 0) {
+        done = true;
+        break;
+      }
+    }
+    if (done) { break; } else { clip_y++; }
+  }
+
+
+  done = false;
+  for (int x = image->width - 1; x >= clip_x; x--) {
+    for (int y = 0; y < image->height; y++) {
+      if (image->alpha[y * image->width + x] != 0) {
+        done = true;
+        break;
+      }
+    }
+    if (done) { break; } else { clip_width--; }
+  }
+
+  done = false;
+  for (int y = image->height - 1; y >= clip_y; y--) {
+    for (int x = 0; x < image->width; x++) {
+      if (image->alpha[y * image->width + x] != 0) {
+        done = true;
+        break;
+      }
+    }
+    if (done) { break; } else { clip_height--; }
+  }
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
   This works out the best way to draw the image.
   nullblit = alpha is all zero, therefore nothing to draw
   tileblit = alpha is all 255, therefore totally opaque
@@ -577,6 +644,8 @@ void OptimizeBlitRoutine(IMAGE image)
     image->blit_routine = TileBlit;
     return;
   }
+
+  ClipImage(image, image->clip_x, image->clip_y, image->clip_width, image->clip_height);
 
   // sprite blit
   bool is_sprite = true;
@@ -1003,7 +1072,8 @@ void TileBlit(IMAGE image, int x, int y)
 
 void SpriteBlit(IMAGE image, int x, int y)
 {
-  calculate_clipping_metrics(image->width, image->height);
+  //calculate_clipping_metrics(image->width, image->height);
+  calculate_clipping_metrics(image->clip_width, image->clip_height);
 
   if (BitsPerPixel == 32) {
 
@@ -1068,7 +1138,8 @@ void SpriteBlit(IMAGE image, int x, int y)
 
 void NormalBlit(IMAGE image, int x, int y)
 {
-  calculate_clipping_metrics(image->width, image->height);
+  // calculate_clipping_metrics(image->width, image->height);
+  calculate_clipping_metrics(image->clip_width, image->clip_height);
 
   if (BitsPerPixel == 32) {
 

@@ -118,14 +118,6 @@ SOURCE=..\common\win32x.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=..\..\common\begin_packed_struct.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\common\end_packed_struct.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\common\primitives.hpp
 # End Source File
 # Begin Source File
