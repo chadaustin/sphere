@@ -24,8 +24,9 @@ private:
 
   bool LoadScript(const char* filename);
   void GetEditorText(CString& text);
+  CString GetSelection();
 
-  afx_msg void OnSize(UINT yype, int cx, int cy);
+  afx_msg void OnSize(UINT type, int cx, int cy);
   afx_msg void OnSetFocus(CWnd* old);
 
   afx_msg void OnScriptCheckSyntax();

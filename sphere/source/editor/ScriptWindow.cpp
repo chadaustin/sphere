@@ -231,6 +231,25 @@ CScriptWindow::GetEditorText(CString& text)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+CString
+CScriptWindow::GetSelection()
+{
+  int start = SendEditor(SCI_GETSELECTIONSTART);
+  int end   = SendEditor(SCI_GETSELECTIONEND);
+  if (end < start) {
+    end = start;
+  }
+  int length = end - start;
+  char* str = new char[length + 1];
+  str[length] = 0;
+  SendEditor(SCI_GETSELTEXT, 0, (LPARAM)str);
+  CString result(str);
+  delete[] str;
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CScriptWindow::OnSize(UINT type, int cx, int cy)
 {
@@ -280,21 +299,9 @@ CScriptWindow::OnScriptCheckSyntax()
 afx_msg void
 CScriptWindow::OnScriptFind()
 {
-  MessageBox("broken!");
-  return;
-
   if (!m_SearchDialog) {
-    int start = SendEditor(SCI_GETSELECTIONSTART);
-    int end   = SendEditor(SCI_GETSELECTIONEND);
-    int length = end - start;
-    char* str = new char[length + 1];
-    str[length] = 0;
-    SendEditor(SCI_GETSELTEXT, 0, (LPARAM)str);
-
     m_SearchDialog = new CFindReplaceDialog;
-    m_SearchDialog->Create(true, str, NULL, FR_DOWN, this);
-
-    delete[] str;
+    m_SearchDialog->Create(true, GetSelection(), NULL, FR_DOWN, this);
   }
 }
 
@@ -303,12 +310,9 @@ CScriptWindow::OnScriptFind()
 afx_msg void
 CScriptWindow::OnScriptReplace()
 {
-  MessageBox("broken!");
-  return;
-
-  if (!m_SearchDialog == NULL) {
+  if (!m_SearchDialog) {
     m_SearchDialog = new CFindReplaceDialog;
-    m_SearchDialog->Create(false, NULL, NULL, FR_DOWN, this);
+    m_SearchDialog->Create(false, GetSelection(), NULL, FR_DOWN, this);
   }
 }
 
@@ -341,22 +345,91 @@ CScriptWindow::OnFindReplace(WPARAM, LPARAM)
   } else if (m_SearchDialog->FindNext()) {
 
     TextToFind ttf;
-    ttf.chrg.cpMin = 0;
+    ttf.chrg.cpMin = SendEditor(SCI_GETSELECTIONSTART) + 1;
     ttf.chrg.cpMax = str.GetLength();
-    ttf.lpstrText = m_SearchDialog->GetFindString().GetBuffer(0);
+    CString find_string(m_SearchDialog->GetFindString());
+    ttf.lpstrText = find_string.GetBuffer(0);
     
     int options = 0;
     options |= m_SearchDialog->MatchCase() ? SCFIND_MATCHCASE : 0;
     options |= m_SearchDialog->MatchWholeWord() ? SCFIND_WHOLEWORD : 0;
-    options |= 
-    SendEditor(SCI_FINDTEXT, options, (LPARAM)&ttf);
-
-    SendEditor(SCI_SETSEL, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
+    if (SendEditor(SCI_FINDTEXT, options, (LPARAM)&ttf) == -1) {
+      m_SearchDialog->MessageBox("No more matches!");
+    } else {
+      SendEditor(SCI_SETSEL, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
+    }
     
   } else if (m_SearchDialog->ReplaceCurrent()) {
-    
+
+    // get currently selected text
+    CString selection(GetSelection());
+    CString find_string(m_SearchDialog->GetFindString());
+
+    // build the data structure we need to find the next text
+    // before we replace the string
+    TextToFind ttf;
+    ttf.chrg.cpMin = SendEditor(SCI_GETSELECTIONSTART);
+    ttf.chrg.cpMax = str.GetLength();
+    ttf.lpstrText = find_string.GetBuffer(0);
+    int options = 0;  // ?
+
+    // if the selection is what we want to replace, then do so
+    CString replace_string(m_SearchDialog->GetReplaceString());
+    if (selection == find_string) {
+
+      // actually do the string replacing
+      SendEditor(SCI_REPLACESEL, 0, (LPARAM)(const char*)replace_string);
+
+      // now try to find the next one
+      ++ttf.chrg.cpMin;
+      if (SendEditor(SCI_FINDTEXT, options, (LPARAM)&ttf) == -1) {
+        m_SearchDialog->MessageBox("No more matches!");
+      } else {
+        SendEditor(SCI_SETSEL, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
+      }
+    } else {
+
+      if (SendEditor(SCI_FINDTEXT, options, (LPARAM)&ttf) == -1) {
+        m_SearchDialog->MessageBox("No matches!");
+      } else {
+        SendEditor(SCI_SETSEL, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
+      }
+    }
+
   } else if (m_SearchDialog->ReplaceAll()) {
 
+    // get currently selected text
+    CString selection(GetSelection());
+    CString find_string(m_SearchDialog->GetFindString());
+    CString replace_string(m_SearchDialog->GetReplaceString());
+
+    // build the data structure we need to find the next text
+    // before we replace the string
+    TextToFind ttf;
+    ttf.chrg.cpMin = SendEditor(SCI_GETSELECTIONSTART);
+    ttf.chrg.cpMax = str.GetLength();
+    ttf.lpstrText = find_string.GetBuffer(0);
+    int options = 0;  // ?
+
+    if (selection != find_string) {
+      if (SendEditor(SCI_FINDTEXT, options, (LPARAM)&ttf) != -1) {
+        SendEditor(SCI_SETSEL, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
+      }
+    }
+
+    // if the selection is what we want to replace, then do so
+    while (GetSelection() == find_string) {
+
+      // actually do the string replacing
+      SendEditor(SCI_REPLACESEL, 0, (LPARAM)(const char*)replace_string);
+
+      // now try to find the next one
+      ++ttf.chrg.cpMin;
+      if (SendEditor(SCI_FINDTEXT, options, (LPARAM)&ttf) != -1) {
+        SendEditor(SCI_SETSEL, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
+      }
+    }
+    
   }
 
   return 0;
