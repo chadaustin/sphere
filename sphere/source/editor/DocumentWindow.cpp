@@ -241,10 +241,11 @@ CDocumentWindow::GetDocumentPath() const
 const char*
 CDocumentWindow::GetDocumentTitle() const
 {
-  if (strrchr(m_DocumentPath, '\\') == NULL)
+  char* ptr = strrchr(m_DocumentPath, '\\');
+  if (ptr == NULL)
     return m_DocumentPath;
   else
-    return strrchr(m_DocumentPath, '\\') + 1;
+    return ptr + 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

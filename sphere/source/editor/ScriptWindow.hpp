@@ -56,6 +56,8 @@ private:
   void SetLineNumber(int line);
 
   afx_msg void OnPaste();
+  afx_msg void OnZoomIn();
+  afx_msg void OnZoomOut();
 
   afx_msg LRESULT OnFindReplace(WPARAM, LPARAM);
 

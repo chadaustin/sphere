@@ -1816,18 +1816,33 @@ CImageView::OnRButtonUp(UINT flags, CPoint point)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+CImageView::UpdateCursor(UINT flags, CPoint point)
+{
+  if (flags & MK_SHIFT) {
+    SetCursor(LoadCursor(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDC_IMAGETOOL_COLORPICKER)));
+  }
+  else
+  switch (m_CurrentTool)
+  {
+    case Tool_Fill:
+      SetCursor(LoadCursor(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDC_IMAGETOOL_FILL)));
+    break;
+
+    default:
+      SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW)));
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CImageView::OnMouseMove(UINT flags, CPoint point)
 {
   m_LastPoint = m_CurPoint;
   m_CurPoint = point;
 
-  if (flags & MK_SHIFT) {
-    SetCursor(LoadCursor(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDC_IMAGETOOL_COLORPICKER)));
-  }
-  else {
-    SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW)));
-  }
+  UpdateCursor(flags, point);
 
   POINT current = ConvertToPixel(point);
   if (InImage(current)) {

@@ -2393,6 +2393,30 @@ CMapView::GetRedrawRect(int& offset_x, int& offset_y, int& width, int& height)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+CMapView::UpdateCursor(UINT flags, CPoint point)
+{
+  if (flags & MK_SHIFT) {
+    SetCursor(LoadCursor(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDC_IMAGETOOL_COLORPICKER)));
+  }
+  else
+  switch (m_CurrentTool)
+  {
+    case tool_FillArea:
+      SetCursor(LoadCursor(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDC_IMAGETOOL_FILL)));
+    break;
+
+    case tool_Paste:
+      SetCursor(LoadCursor(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDC_MAPTOOL_PASTE)));
+    break;
+
+    default:
+      SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW)));
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMapView::OnMouseMove(UINT flags, CPoint point)
 {
@@ -2412,6 +2436,7 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
   else
     GetStatusBar()->SetWindowText("");
 
+  UpdateCursor(flags, point);
 
   if (m_Clicked) {
     switch (m_CurrentTool) {

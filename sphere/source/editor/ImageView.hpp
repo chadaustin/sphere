@@ -78,6 +78,8 @@ private:
   virtual void SP_ColorSelected(RGBA color);
   virtual void TP_ToolSelected(int tool);
 
+  void UpdateCursor(UINT flags, CPoint point);
+
   POINT ConvertToPixel(POINT point);
   bool InImage(POINT p);
 

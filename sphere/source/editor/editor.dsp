@@ -322,6 +322,10 @@ SOURCE=.\resources\imagetool_ellipse.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\resources\imagetool_fill.cur
+# End Source File
+# Begin Source File
+
 SOURCE=.\resources\imagetool_fill.ico
 # End Source File
 # Begin Source File

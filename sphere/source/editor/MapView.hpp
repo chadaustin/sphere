@@ -94,6 +94,8 @@ private:
   virtual void OnVScrollChanged(int y);
   virtual void TP_ToolSelected(int tool);
 
+  void UpdateCursor(UINT flags, CPoint point);
+
 public:
   void OnToolChanged(UINT id);
   BOOL IsToolAvailable(UINT id);

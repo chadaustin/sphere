@@ -1864,6 +1864,8 @@ END
 //
 
 IDC_IMAGETOOL_COLORPICKER CURSOR  DISCARDABLE     "imagetool_colorpicker.cur"
+IDC_IMAGETOOL_FILL      CURSOR  DISCARDABLE     "imagetool_fill.cur"
+IDC_MAPTOOL_PASTE       CURSOR  DISCARDABLE     "maptool_paste.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -47,6 +47,8 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_NOTIFY(SCN_UPDATEUI,         ID_EDIT, OnPosChanged)
   ON_NOTIFY(SCN_CHARADDED,        ID_EDIT, OnCharAdded)
 
+  ON_COMMAND(ID_FILE_ZOOM_IN, OnZoomIn)
+  ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
   ON_COMMAND(ID_FILE_PASTE, OnPaste)
 
   ON_REGISTERED_MESSAGE(s_FindReplaceMessage, OnFindReplace)
@@ -209,8 +211,9 @@ CScriptWindow::SetScriptStyles()
     SendEditor(SCI_SETSTYLEBITS, 5);
     SendEditor(SCI_SETKEYWORDS, 0, (LPARAM)key_words);
     SendEditor(SCI_SETKEYWORDS, 1, (LPARAM)reserved_words);
-
-    SendEditor(SCI_SETPROPERTY, (WPARAM)"fold", (LPARAM)"1");
+  }
+  else {
+    SendEditor(SCI_SETLEXER, SCLEX_CONTAINER);
   }
 
   if (!(m_FontSize >= 0 && m_FontSize <= 72))
@@ -230,6 +233,7 @@ CScriptWindow::SetScriptStyles()
   SendEditor(SCI_SETMARGINWIDTHN, 2, SC_MARGIN_SYMBOL);
 
   // for code folding
+  //SendEditor(SCI_SETPROPERTY, (WPARAM)"fold", (LPARAM)"1");
   //SendEditor(SCI_SETMARGINTYPEN, 1, SC_MARGIN_SYMBOL);
   //SendEditor(SCI_SETMARGINMASKN, 1, SC_MASK_FOLDERS);
   //SendEditor(SCI_SETMARGINWIDTHN, 1, 20);
@@ -461,6 +465,7 @@ afx_msg void
 CScriptWindow::OnSavePointReached(NMHDR* nmhdr, LRESULT* result)
 {
   SetModified(false);
+  SetScriptStyles();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -479,7 +484,23 @@ CScriptWindow::OnPaste()
   SendEditor(SCI_PASTE);
 }
 
-///////
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnZoomIn()
+{
+  SendEditor(SCI_ZOOMIN);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnZoomOut()
+{
+  SendEditor(SCI_ZOOMOUT);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 static
 bool is_brace(char ch) {
