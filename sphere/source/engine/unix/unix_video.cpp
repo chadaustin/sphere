@@ -156,21 +156,20 @@ class gradient_colorRGBA {
  public:
   gradient_colorRGBA (RGBA color1, RGBA color2)
     : m_color1(color1), m_color2(color2) { }
-  Uint32 operator() (int i, int range) {
+  RGBA operator() (int i, int range) {
     if (range == 0) {
-      return SDL_MapRGBA(screen->format, m_color1.red, m_color1.green,
-                         m_color1.blue, m_color1.alpha);
+      return m_color1;
     }
-    RGBA c;
-
-    c.red = (i * m_color2.red + (range - i) * m_color1.red) / range;
-    c.green = (i * m_color2.green + (range - i) * m_color1.green) / range;
-    c.blue = (i * m_color2.blue + (range - i) * m_color1.blue) / range;
-    c.alpha = (i * m_color2.alpha + (range - i) * m_color1.alpha) / range;
-    return SDL_MapRGBA(screen->format, c.red, c.blue, c.green, c.alpha);
+    RGBA color;
+    color.red   = (i * m_color2.red   + (range - i) * m_color1.red)   / range;
+    color.green = (i * m_color2.green + (range - i) * m_color1.green) / range;
+    color.blue  = (i * m_color2.blue  + (range - i) * m_color1.blue)  / range;
+    color.alpha = (i * m_color2.alpha + (range - i) * m_color1.alpha) / range;
+    return color;
   }
  private:
-  RGBA m_color1, m_color2;
+  RGBA m_color1;
+  RGBA m_color2;
 };
 
 #if 0 /* old */
@@ -673,7 +672,7 @@ void DrawGradientLine (int x[2], int y[2], RGBA color[2]) {
   if (SDL_LockSurface(screen) == 0) {
     primitives::Line((Uint32*)(screen->pixels), screen->w, x[0], y[0],
                      x[1], y[1], gradient_colorRGBA(color[0], color[1]),
-                     clipping_rectangle, blend_copy);
+                     clipping_rectangle, blend_copyRGBA);
     SDL_UnlockSurface(screen);
   }
 }
