@@ -43,6 +43,9 @@ CMapPropertiesDialog::OnInitDialog()
   // set script file
   CheckDlgButton(IDC_ENTRY, BST_CHECKED);
 
+  // check "repeating" button
+  CheckDlgButton(IDC_REPEATING, (m_Map->IsRepeating() ? BST_CHECKED : BST_UNCHECKED));
+
   // put script in edit control
   LoadNewScript();
 
@@ -58,6 +61,8 @@ CMapPropertiesDialog::OnOK()
   CString str;
   GetDlgItemText(IDC_MUSIC, str);
   m_Map->SetMusicFile(str);
+  m_Map->SetRepeating(IsDlgButtonChecked(IDC_REPEATING) == BST_CHECKED);
+
 
   StoreCurrentScript();
 

@@ -1,3 +1,6 @@
+2003.06.10
+  - added flatten all visible layers to the editor
+
 2003.06.08
   - Flik added
     spriteset.filename

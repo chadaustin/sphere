@@ -55,6 +55,7 @@ public:
   int GetStartY() const;
   int GetStartLayer() const;
   int GetStartDirection() const;
+  bool IsRepeating() const;
 
   const char*   GetMusicFile() const;
   const char*   GetEntryScript() const;
@@ -81,6 +82,7 @@ public:
   void SetStartY(int y);
   void SetStartLayer(int layer);
   void SetStartDirection(int direction);
+  void SetRepeating(bool repeat);
 
   void InsertLayer(int where, const sLayer& layer);
   void InsertLayerFromMap(int where, const sMap& map, int layer);
@@ -110,6 +112,7 @@ private:
   int m_StartY;
   int m_StartLayer;
   int m_StartDirection;
+  bool m_Repeating;
 
   std::string m_MusicFile;
   std::string m_EntryScript;
@@ -174,6 +177,18 @@ inline const sMap::sZone&
 sMap::GetZone(int index) const
 {
   return m_Zones[index];
+}
+
+inline void
+sMap::SetRepeating(bool repeat)
+{
+  m_Repeating = repeat;
+}
+
+inline bool
+sMap::IsRepeating() const
+{
+  return m_Repeating;
 }
 
 #endif

@@ -470,6 +470,7 @@ CLayerView::OnLayerProperties()
 
   parallax_enabled = parallax_enabled && (m_Map->GetStartLayer() != m_SelectedLayer);
 
+
   // show the dialog box
   CLayerPropertiesDialog Dialog(m_Map->GetLayer(m_SelectedLayer), parallax_enabled);
   if (Dialog.DoModal() == IDOK) {

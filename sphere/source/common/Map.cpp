@@ -23,6 +23,7 @@ sMap::sMap()
 , m_StartY(0)
 , m_StartLayer(0)
 , m_StartDirection(0)
+, m_Repeating(false)
 {
 }
 
@@ -33,6 +34,7 @@ sMap::sMap(int width, int height, int layers)
 , m_StartY(0)
 , m_StartLayer(0)
 , m_StartDirection(0)
+, m_Repeating(false)
 {
   m_Layers.resize(layers);
   for (int i = 0; i < layers; i++)
@@ -61,7 +63,8 @@ sMap::~sMap()
   byte startdirection;                          \
   word num_strings;                             \
   word num_zones;                               \
-  byte reserved[235];
+  byte repeating;                               \
+  byte reserved[234];
 #include "packed_struct.h"
 
 #define STRUCT_NAME LAYER_HEADER
@@ -191,6 +194,8 @@ sMap::Load(const char* filename, IFileSystem& fs)
   m_StartY         = header.starty;
   m_StartLayer     = header.startlayer;
   m_StartDirection = header.startdirection;
+  m_Repeating      = (header.repeating != 0);
+
 
   // read the strings (tileset, music, script)
   std::string tileset_file = ReadMapString(file); // OBSOLETE
@@ -425,6 +430,7 @@ sMap::Save(const char* filename, IFileSystem& fs)
   header.starty         = m_StartY;
   header.startlayer     = m_StartLayer;
   header.startdirection = m_StartDirection;
+  header.repeating      = m_Repeating;
   header.num_strings    = 9;
   header.num_zones      = m_Zones.size();
   file->Write(&header, sizeof(header));

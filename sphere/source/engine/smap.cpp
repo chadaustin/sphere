@@ -172,21 +172,26 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
 
   // if map is wider than the screen...
   if (tile_width * m_MaxLayerWidth > GetScreenWidth()) {
-    if (camera_x < cx) {
-      offset_x = cx - camera_x;
-    } else if (camera_x > m_MaxLayerWidth * tile_width - cx) {
-      offset_x = m_MaxLayerWidth * tile_width - camera_x - cx;
+    if (m_Map.IsRepeating() == false) {
+      if (camera_x < cx) {
+        offset_x = cx - camera_x;
+      } else if (camera_x > m_MaxLayerWidth * tile_width - cx) {
+        offset_x = m_MaxLayerWidth * tile_width - camera_x - cx;
+      }
     }
   } else {
-    offset_x = cx - camera_x;
+     offset_x = cx - camera_x;
   }
-
+   
   // if map is higher than the screen...
   if (tile_height * m_MaxLayerHeight > GetScreenHeight()) {
-    if (camera_y < cy) {
-      offset_y = cy - camera_y;
-    } else if (camera_y > m_MaxLayerHeight * tile_height - cy) {
-      offset_y = m_MaxLayerHeight * tile_height - camera_y - cy;
+
+    if (m_Map.IsRepeating() == false) {
+      if (camera_y < cy) {
+        offset_y = cy - camera_y;
+      } else if (camera_y > m_MaxLayerHeight * tile_height - cy) {
+        offset_y = m_MaxLayerHeight * tile_height - camera_y - cy;
+      }
     }
   } else {
     offset_y = cy - camera_y;
@@ -229,12 +234,14 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
 
     // how many rows/columns to blit
     int iy = GetScreenHeight() / tile_height + 2;
+
     while (iy--) {
 
       int tx = numerator_x / tile_width;
       int ox = -(numerator_x % tile_width);
 
       int ix = GetScreenWidth() / tile_width + 2;
+
       while (ix--) {
 
         tx %= layer.GetWidth();
@@ -257,12 +264,14 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
 
     // how many rows/columns to blit
     int iy = GetScreenHeight() / tile_height + 2;
+
     while (iy--) {
 
       int tx = numerator_x / tile_width;
       int ox = -(numerator_x % tile_width);
 
       int ix = GetScreenWidth() / tile_width + 2;
+
       while (ix--) {
 
         tx %= layer.GetWidth();
@@ -280,6 +289,7 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
     }
 
   }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
