@@ -557,7 +557,7 @@ CImageView::Click(bool force_draw)
 //    return;
 //  }
 
-  if (!InImage(end)) {
+  if (!InSelection(end)) {
     return;
   }
 
@@ -582,7 +582,7 @@ CImageView::Fill()
   POINT startPoint = ConvertToPixel(m_CurPoint);
 
   // bounds check
-  if (!InImage(startPoint))
+  if (!InImage(startPoint) || !InSelection(startPoint))
     return;
 
   if (!memcmp(&m_Image.GetPixel(startPoint.x, startPoint.y), &m_Color, sizeof(RGBA)))
@@ -609,8 +609,10 @@ struct Point {
 void
 CImageView::FillMe(int x, int y, RGBA colorToReplace)
 {
-  const int width  = m_Image.GetWidth();
-  const int height = m_Image.GetHeight();
+  int sx, sy, sw, sh;
+  GetSelectionArea(sx, sy, sw, sh);
+  const int width  = sx + sw;
+  const int height = sy + sh;
 
   std::stack<Point> q;
   q.push(    Point(x, y));
@@ -621,7 +623,7 @@ CImageView::FillMe(int x, int y, RGBA colorToReplace)
     q.pop();
 
     // fill up
-    if (p.y > 0 && m_Image.GetPixel(p.x, p.y - 1) == colorToReplace) {
+    if (p.y > sy && m_Image.GetPixel(p.x, p.y - 1) == colorToReplace) {
       q.push(    Point(p.x, p.y - 1));
       m_Image.SetPixel(p.x, p.y - 1, m_Color);
     }
@@ -631,7 +633,7 @@ CImageView::FillMe(int x, int y, RGBA colorToReplace)
       m_Image.SetPixel(p.x, p.y + 1, m_Color);
     }
     // fill left
-    if (p.x > 0 && m_Image.GetPixel(p.x - 1, p.y) == colorToReplace) {
+    if (p.x > sx && m_Image.GetPixel(p.x - 1, p.y) == colorToReplace) {
       q.push(    Point(p.x - 1, p.y));
       m_Image.SetPixel(p.x - 1, p.y, m_Color);
     }
@@ -706,14 +708,10 @@ CImageView::Selection()
   if (!m_MouseDown)
   {
     m_StartPoint = m_CurPoint;
-    Invalidate();
-    m_Handler->IV_ImageChanged();
   }
   else
   {
     UpdateSelection();
-    Invalidate();
-    m_Handler->IV_ImageChanged();
   }
 }
 
