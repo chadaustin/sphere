@@ -636,12 +636,26 @@ CMapEngine::UnbindKey(int key)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::AttachInput(const char* person)
+CMapEngine::IsInvalidPersonError(const char* person_name, int& person_index)
+{
+  person_index = FindPerson(person_name);
+
+  if (person_index == -1) {
+    m_ErrorMessage = "Person '" + std::string(person_name) + "' doesn't exist";
+    return true;
+  }
+
+  return false;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::AttachInput(const char* name)
 {
   // make sure the person entity exists
-  m_InputPerson = FindPerson(person);
-  if (m_InputPerson == -1) {
-    m_ErrorMessage = "Person '" + std::string(person) + "' doesn't exist";
+  m_InputPerson = -1;
+  if ( IsInvalidPersonError(name, m_InputPerson) ) {
     return false;
   }
 
@@ -815,12 +829,11 @@ CMapEngine::GetLayerAlpha(int layer, int& alpha)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::AttachCamera(const char* person)
+CMapEngine::AttachCamera(const char* name)
 {
   // make sure the person entity exists
-  m_CameraPerson = FindPerson(person);
-  if (m_CameraPerson == -1) {
-    m_ErrorMessage = "Person '" + std::string(person) + "' doesn't exist";
+  m_CameraPerson = -1;
+  if ( IsInvalidPersonError(name, m_CameraPerson) ) {
     return false;
   }
 
@@ -1133,9 +1146,8 @@ bool
 CMapEngine::SetPersonX(const char* name, int x)
 {
   // find person
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1156,9 +1168,8 @@ bool
 CMapEngine::SetPersonY(const char* name, int y)
 {
   // find person
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1179,9 +1190,8 @@ bool
 CMapEngine::SetPersonXYFloat(const char* name, double x, double y)
 {
   // find person
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1203,9 +1213,8 @@ bool
 CMapEngine::SetPersonLayer(const char* name, int layer)
 {
   // find person
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1230,9 +1239,8 @@ bool
 CMapEngine::SetPersonDirection(const char* name, const char* direction)
 {
   // find person
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1262,9 +1270,8 @@ bool
 CMapEngine::SetPersonFrame(const char* name, int frame)
 {
   // find person
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1291,9 +1298,8 @@ CMapEngine::SetPersonFrame(const char* name, int frame)
 bool
 CMapEngine::GetPersonX(const char* name, int& x)
 {
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1306,9 +1312,8 @@ CMapEngine::GetPersonX(const char* name, int& x)
 bool
 CMapEngine::GetPersonY(const char* name, int& y)
 {
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1321,9 +1326,8 @@ CMapEngine::GetPersonY(const char* name, int& y)
 bool
 CMapEngine::GetPersonXFloat(const char* name, double& x)
 {
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1336,9 +1340,8 @@ CMapEngine::GetPersonXFloat(const char* name, double& x)
 bool
 CMapEngine::GetPersonYFloat(const char* name, double& y)
 {
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1351,9 +1354,8 @@ CMapEngine::GetPersonYFloat(const char* name, double& y)
 bool
 CMapEngine::GetPersonLayer(const char* name, int& layer)
 {
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1366,9 +1368,8 @@ CMapEngine::GetPersonLayer(const char* name, int& layer)
 bool
 CMapEngine::GetPersonDirection(const char* name, std::string& direction)
 {
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1382,9 +1383,8 @@ CMapEngine::GetPersonDirection(const char* name, std::string& direction)
 bool
 CMapEngine::IgnorePersonObstructions(const char* name, bool ignoring)
 {
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1397,10 +1397,9 @@ CMapEngine::IgnorePersonObstructions(const char* name, bool ignoring)
 bool
 CMapEngine::IsIgnoringPersonObstructions(const char* name, bool& ignoring)
 {
-  int person = FindPerson(name);
+  int person = -1;
   ignoring = false;
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1413,9 +1412,8 @@ CMapEngine::IsIgnoringPersonObstructions(const char* name, bool& ignoring)
 bool
 CMapEngine::IgnoreTileObstructions(const char* name, bool ignoring)
 {
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1428,10 +1426,9 @@ CMapEngine::IgnoreTileObstructions(const char* name, bool ignoring)
 bool
 CMapEngine::IsIgnoringTileObstructions(const char* name, bool& ignoring)
 {
-  int person = FindPerson(name);
+  int person = -1;
   ignoring = false;
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1444,9 +1441,8 @@ CMapEngine::IsIgnoringTileObstructions(const char* name, bool& ignoring)
 bool
 CMapEngine::GetPersonFrame(const char* name, int& frame)
 {
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1460,9 +1456,8 @@ bool
 CMapEngine::SetPersonFrameRevert(const char* name, int i)
 {
   // find person
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1476,9 +1471,8 @@ bool
 CMapEngine::GetPersonFrameRevert(const char* name, int& i)
 {
   // find person
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1492,9 +1486,8 @@ bool
 CMapEngine::SetPersonSpeedXY(const char* name, double x, double y)
 {
   // find person
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1515,9 +1508,8 @@ CMapEngine::SetPersonSpeedXY(const char* name, double x, double y)
 bool
 CMapEngine::GetPersonSpeedX(const char* name, double& x)
 {
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1530,9 +1522,8 @@ CMapEngine::GetPersonSpeedX(const char* name, double& x)
 bool
 CMapEngine::GetPersonSpeedY(const char* name, double& y)
 {
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1545,9 +1536,8 @@ CMapEngine::GetPersonSpeedY(const char* name, double& y)
 bool
 CMapEngine::SetPersonScaleAbsolute(const char* name, int width, int height)
 {
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1570,9 +1560,8 @@ CMapEngine::SetPersonScaleAbsolute(const char* name, int width, int height)
 bool
 CMapEngine::SetPersonScaleFactor(const char* name, double scale_w, double scale_h)
 {
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1613,9 +1602,8 @@ CMapEngine::SetPersonScaleFactor(const char* name, double scale_w, double scale_
 bool
 CMapEngine::SetPersonMask(const char* name, RGBA mask)
 {
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1628,9 +1616,8 @@ CMapEngine::SetPersonMask(const char* name, RGBA mask)
 bool
 CMapEngine::GetPersonMask(const char* name, RGBA& mask)
 {
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1643,9 +1630,8 @@ CMapEngine::GetPersonMask(const char* name, RGBA& mask)
 SSPRITESET*
 CMapEngine::GetPersonSpriteset(const char* name)
 {
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return 0;
   }
 
@@ -1658,8 +1644,8 @@ bool
 CMapEngine::FollowPerson(const char* follower, const char* leader, int pixels)
 {
   // get follower index
-  int follower_index = FindPerson(follower);
-  if (follower_index == -1) {
+  int follower_index = -1;
+  if ( IsInvalidPersonError(follower, follower_index) ) {
     m_ErrorMessage = "Follower person '" + std::string(follower) + "' not found";
     return false;
   }
@@ -1674,8 +1660,8 @@ CMapEngine::FollowPerson(const char* follower, const char* leader, int pixels)
   }
 
   // get leader index
-  int leader_index = FindPerson(leader);
-  if (leader_index == -1) {
+  int leader_index = -1;
+  if ( IsInvalidPersonError(leader, leader_index) ) {
     m_ErrorMessage = "Leader person '" + std::string(leader) + "' not found";
     return false;
   }
@@ -1733,9 +1719,8 @@ CMapEngine::SetPersonScript(const char* name, int which, const char* script)
   }
 
   // find the person
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1778,9 +1763,8 @@ CMapEngine::CallPersonScript(const char* name, int which)
   }
 
   // find the person
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1843,9 +1827,8 @@ CMapEngine::QueuePersonCommand(const char* name, int command, bool immediate)
   }
 
   // find person
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1871,9 +1854,8 @@ CMapEngine::QueuePersonScript(const char* name, const char* script, bool immedia
   }
   
   // find person
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1893,9 +1875,8 @@ bool
 CMapEngine::ClearPersonCommands(const char* name)
 {
   // find person
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1915,9 +1896,8 @@ bool
 CMapEngine::IsCommandQueueEmpty(const char* name, bool& empty)
 {
   // find person
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -1931,9 +1911,8 @@ bool
 CMapEngine::IsPersonObstructed(const char* name, int x, int y, bool& result)
 {
   // find person
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
@@ -3666,9 +3645,8 @@ bool
 CMapEngine::GetObstructingTile(const char* name, int x, int y, int& result)
 {
   // find person
-  int person = FindPerson(name);
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
     result = -1;
     return false;
   }
@@ -3736,17 +3714,17 @@ bool
 CMapEngine::GetObstructingPerson(const char* name, int x, int y, std::string& result)
 {
   // find person
-  int person = FindPerson(name);
+  int person = -1;
   int found = -1;
-  if (person == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+  if ( IsInvalidPersonError(name, person) ) {
     result = "";
     return false;
   }
 
   found = FindObstructingPerson(person, x, y);
-  if (found != -1)
+  if (found != -1) {
     result = m_Persons[found].name;
+  }
 
   return true;
 }

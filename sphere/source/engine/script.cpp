@@ -2033,7 +2033,7 @@ begin_func(GetPersonList, 0)
   // ask the map engine for the list of names
   std::vector<std::string> names;
   if (!This->m_Engine->GetMapEngine()->GetPersonList(names)) {
-    This->ReportMapEngineError("GetNumPersons() failed");
+    This->ReportMapEngineError("GetPersonList() failed");
     return JS_FALSE;
   }
 

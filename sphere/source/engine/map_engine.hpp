@@ -292,6 +292,9 @@ private:
   void ProcessUnboundKeyUp(int key);
   void DestroyBoundKeys();
 
+  // error checking
+  bool IsInvalidPersonError(const char* person_name, int& person_index);
+
   // miscellaneous
   void ResetNextFrame();
   int FindPerson(const char* name);
