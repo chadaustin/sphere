@@ -3,6 +3,8 @@
     located on the filesystem
   - fix bug where OpenRawFile('blah', true) wouldn't actually create
     the file
+  - Added new functions to joysticks.js system script and improved old
+    functions' robustness (Brian Robb)
 
 2003.01.28
   - added Flik's joysticks.js system script

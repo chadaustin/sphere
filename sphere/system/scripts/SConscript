@@ -13,6 +13,7 @@ base_env.Install(os.path.join(BUILD_DIR, 'system/scripts'), Split("""
     graphics.js
     input.js
     intro.js
+    joysticks.js
     layers.js
     map_animation.js
     math.js
