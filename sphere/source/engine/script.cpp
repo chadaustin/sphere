@@ -608,6 +608,8 @@ CScript::ErrorReporter(JSContext* cx, const char* message, JSErrorReport* report
 
   }
 
+  //printf ("%s", This->m_Error.c_str());
+
   This->m_ShouldExit = true;
 }
 
@@ -701,7 +703,7 @@ inline int argInt(JSContext* cx, jsval arg)
   int32 i;
 
   if (JSVAL_IS_OBJECT(arg)) {
-    JS_ReportError(cx, "Invalid integer.");
+    JS_ReportError(cx, "Invalid integer (parameter is an object)");
     return false;
   }
 
@@ -1216,7 +1218,7 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 
 ///////////////////////////////////////////////////////////
 
-#define arg_int(name)        int name           = argInt(cx, argv[arg++]);                                            if (This->m_ShouldExit) return JS_FALSE
+#define arg_int(name)        int name           = argInt(cx, argv[arg++]);                                            if (This->m_ShouldExit) { JS_ReportError(cx, "Argument (%d), invalid integer", arg - 1); return JS_FALSE; }
 #define arg_str(name)        const char* name   = argStr(cx, argv[arg++]);                                            if (This->m_ShouldExit) return JS_FALSE
 #define arg_bool(name)       bool name          = argBool(cx, argv[arg++]);                                           if (This->m_ShouldExit) return JS_FALSE
 #define arg_double(name)     double name        = argDouble(cx, argv[arg++]);                                         if (This->m_ShouldExit) return JS_FALSE
@@ -6288,7 +6290,8 @@ end_method()
     - returns a copy of the font object
 */
 begin_method(SS_FONT, ssFontClone, 0)
-  return_object(CreateFontObject(cx, object->font, object->destroy_me));
+  SFONT* font = object->font->Clone();
+  font ? return_object(CreateFontObject(cx, font, true)) : return_object(JSVAL_NULL);
 end_method()
 
 ///////////////////////////////////////
@@ -6319,6 +6322,7 @@ CScript::CreateWindowStyleObject(JSContext* cx, SWINDOWSTYLE* ws, bool destroy)
   static JSFunctionSpec fs[] = {
     { "drawWindow", ssWindowStyleDrawWindow, 4, 0, 0 },
     { "setColorMask", ssWindowStyleSetColorMask, 1, 0, 0 },
+    { "getColorMask", ssWindowStyleGetColorMask, 0, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -7114,12 +7118,13 @@ begin_method(SS_SURFACE, ssSurfaceCloneSection, 4)
 
   // create surface object
   CImage32* surface = new CImage32(w, h);
-
-  for (int iy = 0; iy < h; iy++) {
-    memcpy(
-      surface->GetPixels() + iy * w,
-      object->surface->GetPixels() + (iy + y) * object->surface->GetWidth() + x,
-      w * sizeof(RGBA));
+  if (surface) {
+    for (int iy = 0; iy < h; iy++) {
+      memcpy(
+        surface->GetPixels() + iy * w,
+        object->surface->GetPixels() + (iy + y) * object->surface->GetWidth() + x,
+        w * sizeof(RGBA));
+    }
   }
 
   return_object(CreateSurfaceObject(cx, surface));

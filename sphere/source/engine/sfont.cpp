@@ -44,6 +44,7 @@ SFONT::Load(const char* filename, IFileSystem& fs)
 bool
 SFONT::CreateFromFont(const sFont& font)
 {
+  Destroy();
   m_Font = font;
   return Initialize();
 }
@@ -57,13 +58,27 @@ SFONT::Destroy()
     for (int i = 0; i < m_Font.GetNumCharacters(); i++) {
       if (m_Images[i]) {
         DestroyImage(m_Images[i]);
+        m_Images[i] = NULL;
       }
     }
+
+    delete[] m_Images;
+    m_Images = NULL;
   }
-  delete[] m_Images;
-  m_Images = NULL;
 
   m_MaxHeight = 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+SFONT*
+SFONT::Clone()
+{
+  SFONT* font = new SFONT;
+  if (font) {
+    font->CreateFromFont(m_Font);
+  }
+  return font;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -74,13 +89,13 @@ SFONT::DrawString(int x, int y, const char* text, RGBA mask, CImage32* surface) 
   int range = m_Font.GetNumCharacters();
 
   while (*text) {
-    unsigned char c = *text;
-    if ((int)c < 0 || (int)c >= range) c = 0;
+    unsigned char ch = (unsigned char) *text;
+    if ((int)ch < 0 || (int)ch >= range) { text++; continue; }
 
-    const sFontCharacter& character = m_Font.GetCharacter(c);
+    const sFontCharacter& character = m_Font.GetCharacter(ch);
     
     if (surface == NULL) {
-      BlitImageMask(m_Images[c], x, y, mask);
+      BlitImageMask(m_Images[ch], x, y, mask);
     }
     else {
       CImage32 tmp(character);
@@ -119,11 +134,11 @@ SFONT::DrawZoomedString(int x, int y, double scale, const char* text, RGBA mask,
   int range = m_Font.GetNumCharacters();
 
   while (*text) {
-    unsigned char c = *text;
-    if ((int)c < 0 || (int)c >= range) { text++; continue; }
+    unsigned char ch = (unsigned char) *text;
+    if ((int)ch < 0 || (int)ch >= range) { text++; continue; }
     
-    const sFontCharacter& character = m_Font.GetCharacter(c);
-    Local::ScaleBlit(m_Images[c], int(cx), y, scale, mask, surface, character);
+    const sFontCharacter& character = m_Font.GetCharacter(ch);
+    Local::ScaleBlit(m_Images[ch], int(cx), y, scale, mask, surface, character);
 
     cx += scale * character.GetWidth();
     text++;
@@ -161,9 +176,10 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
   // parse the text into words
   while (*p) {
 
-    if ((int) *p < 0 || (int) *p >= range) { p++; continue; }
+    unsigned char ch = (unsigned char) *p;
+    if ((int)ch < 0 || (int)ch >= range) { p++; continue; }
 
-    if (*p == ' ') {          // if it's a space, draw the word
+    if (ch == ' ') {          // if it's a space, draw the word
       
       if (dx + word_width + space_width > w) {
         dx = word_width + space_width;
@@ -178,7 +194,7 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
       word.resize(0);
       word_width = 0;
 
-    } else if (*p == '\t') {  // if it's a tab, draw the word
+    } else if (ch == '\t') {  // if it's a tab, draw the word
 
       if (dx + word_width + tab_width > w) {
         dx = word_width + tab_width;
@@ -193,7 +209,7 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
       word.resize(0);
       word_width = 0;
 
-    } else if (*p == '\n') {  // newline time, awww yeah
+    } else if (ch == '\n') {  // newline time, awww yeah
 
       DrawString(x + dx, y + dy, word.c_str(), mask, surface);
       dx = 0;
@@ -203,7 +219,7 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
 
     } else {
 
-      int char_width = m_Font.GetCharacter(*p).GetWidth();
+      int char_width = m_Font.GetCharacter(ch).GetWidth();
 
       // if we've gone over the limit and dx = 0, draw the old word and split the new one off
       if (word_width + char_width > w && dx == 0) {
@@ -216,7 +232,7 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
         dy += max_height;
       }
 
-      word += *p;
+      word += ch;
       word_width += char_width;
 
     }
@@ -241,8 +257,10 @@ SFONT::GetStringWidth(const char* string) const
 
   while (*string)
   {
-    if ((int) *string < 0 || (int) *string >= range) { string++; continue; }
-    width += m_Font.GetCharacter(*string).GetWidth();
+    unsigned char ch = (unsigned char) *string;
+    if ((int)ch < 0 || (int)ch >= range) { string++; continue; }
+
+    width += m_Font.GetCharacter(ch).GetWidth();
     string++;
   }
   return width;
@@ -273,9 +291,10 @@ SFONT::GetStringHeight(const char* string, int width) const
 
   while (*p) {
 
-    if ((int)*p < 0 || (int)*p >= range) { p++; continue; }
+    unsigned char ch = (unsigned char) *p;
+    if ((int)ch < 0 || (int)ch >= range) { p++; continue; }
 
-    if (*p == ' ') {          // if it's a space, draw the word
+    if (ch == ' ') {          // if it's a space, draw the word
       
       if (dx + word_width + space_width > width) {
         dx = word_width + space_width;
@@ -287,7 +306,7 @@ SFONT::GetStringHeight(const char* string, int width) const
       word.resize(0);
       word_width = 0;
 
-    } else if (*p == '\t') {  // if it's a tab, draw the word
+    } else if (ch == '\t') {  // if it's a tab, draw the word
 
       if (dx + word_width + tab_width > width) {
         dx = word_width + tab_width;
@@ -298,7 +317,7 @@ SFONT::GetStringHeight(const char* string, int width) const
 
       word_width = 0;
 
-    } else if (*p == '\n') {  // newline time, awww yeah
+    } else if (ch == '\n') {  // newline time, awww yeah
 
       dx = 0;
       dy += max_height;
@@ -307,7 +326,7 @@ SFONT::GetStringHeight(const char* string, int width) const
 
     } else {
 
-      int char_width = m_Font.GetCharacter(*p).GetWidth();
+      int char_width = m_Font.GetCharacter(ch).GetWidth();
 
       // if we've gone over the limit and dx = 0, draw the old word and split the new one off
       if (word_width + char_width > width && dx == 0) {
@@ -319,7 +338,7 @@ SFONT::GetStringHeight(const char* string, int width) const
         dy += max_height;
       }
 
-      word += *p;
+      word += ch;
       word_width += char_width;
 
     }
@@ -340,6 +359,9 @@ SFONT::Initialize()
 {
   m_MaxHeight = 0;
 
+  if ( !(m_Font.GetNumCharacters() > 0) )
+    return false;
+
   m_Images = new IMAGE[m_Font.GetNumCharacters()];
   if (m_Images == NULL)
     return false;
@@ -349,10 +371,17 @@ SFONT::Initialize()
     sFontCharacter& c = m_Font.GetCharacter(i);
     m_Images[i] = CreateImage(c.GetWidth(), c.GetHeight(), c.GetPixels());
 
-    if (m_Images[i] == NULL) {
+    if (m_Images[i] == NULL)
+    {
+      printf ("SFONT::Initialize() failed to create character[%d] (w=%d h=%d)\n", i, c.GetWidth(), c.GetHeight());
+
       for (int j = 0; j < i; j++) {
         DestroyImage(m_Images[j]);
+        m_Images[j] = NULL;
       }
+
+      delete[] m_Images;
+      m_Images = NULL;
       return false;
     }
 

@@ -40,6 +40,9 @@ std::string
 CGameEngine::Run()
 {
   m_Script = new CScript(this);
+  if (!m_Script)
+    return "";
+
   m_RestartGame = false;
 
   // initialize map engine
@@ -215,9 +218,9 @@ CGameEngine::DestroySystemObjects()
 {
   m_SystemFont.Destroy();
   m_SystemWindowStyle.Destroy();
-  DestroyImage(m_SystemArrow);
-  DestroyImage(m_SystemUpArrow);
-  DestroyImage(m_SystemDownArrow);
+  if (m_SystemArrow)     DestroyImage(m_SystemArrow);     m_SystemArrow = NULL;
+  if (m_SystemUpArrow)   DestroyImage(m_SystemUpArrow);   m_SystemUpArrow = NULL;
+  if (m_SystemDownArrow) DestroyImage(m_SystemDownArrow); m_SystemDownArrow = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

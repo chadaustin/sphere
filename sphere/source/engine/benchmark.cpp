@@ -75,7 +75,10 @@ void BeginBenchmarks(const SSystemObjects& system_objects)
 
   // create a drawable system font
   SFONT font;
-  font.CreateFromFont(system_objects.font);
+  if (!font.CreateFromFont(system_objects.font)) {
+    //QuitMessage("Could not create system font");
+    return;
+  }
 
   for (int i = 0; i < s_NumTests; i++) {
     

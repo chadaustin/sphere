@@ -7,7 +7,7 @@ void
 StretchedBlit(CPaintDC& dc, CDIBSection* blit_tile,
               const double pixel_width, const double pixel_height,
               const int image_width, const int image_height,
-              const RGBA* src_pixels, RECT* ClientRect,
+              const RGBA* src_pixels, bool show_alpha_mask, RECT* ClientRect,
               int redraw_x, int redraw_y, int redraw_width, int redraw_height)
 {
   if (pixel_width <= 0 || pixel_height <= 0
@@ -57,7 +57,7 @@ StretchedBlit(CPaintDC& dc, CDIBSection* blit_tile,
       RGBA color = src_pixels[iy * image_width + ix];
 
       // opaque
-      if (color.alpha == 255)
+      if (color.alpha == 255 || !show_alpha_mask)
       {
         HBRUSH brush = CreateSolidBrush(RGB(color.red, color.green, color.blue));
 
@@ -167,7 +167,7 @@ StretchedBlit(CPaintDC& dc, CDIBSection* blit_tile,
 
             RGBA color = src_pixels[((sy * image_width) + sx)];
  
-            if (color.alpha == 255 /* || !true */) {
+            if (color.alpha == 255 || !show_alpha_mask ) {
               dst_pixels[counter].red   = color.red;
               dst_pixels[counter].green = color.green;
               dst_pixels[counter].blue  = color.blue;

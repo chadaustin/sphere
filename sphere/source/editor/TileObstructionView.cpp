@@ -78,7 +78,7 @@ CTileObstructionView::OnPaint()
   StretchedBlit(dc_, &m_BlitTile,
                 hsize, vsize,
                 m_tile->GetWidth(), m_tile->GetHeight(),
-                m_pixels, &rect,
+                m_pixels, true, &rect,
                 0, 0, m_tile->GetWidth(), m_tile->GetHeight());
 }
 

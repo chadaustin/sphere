@@ -101,6 +101,9 @@ sFont::Load(const char* filename, IFileSystem& fs)
     if (header.version == 1)
     {
       byte* buffer = new byte[character_header.width * character_header.height];
+      if (!buffer)
+        return false;
+
       if (file->Read(buffer, character_header.width * character_header.height) != character_header.width * character_header.height)
 				return false;
 

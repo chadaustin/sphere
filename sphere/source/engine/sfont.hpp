@@ -17,6 +17,8 @@ public:
   bool CreateFromFont(const sFont& font);
   void Destroy();
 
+  SFONT* Clone();
+
   bool DrawString(int x, int y, const char* text, RGBA mask, CImage32* surface = NULL) const;
   bool DrawZoomedString(int x, int y, double scale, const char* text, RGBA mask, CImage32* surface = NULL) const;
   bool DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGBA mask, CImage32* surface = NULL) const;

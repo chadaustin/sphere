@@ -2275,7 +2275,7 @@ CMainWindow::OnProjectRefresh()
 afx_msg void
 CMainWindow::OnProjectRunSphere()
 {
-  char szCommandLine[MAX_PATH + 80];
+  char szCommandLine[MAX_PATH + 128];
   strcpy(szCommandLine, GetSphereDirectory().c_str());
   strcat(szCommandLine, "\\engine.exe -game ");
   strcat(szCommandLine, "\"");

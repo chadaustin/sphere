@@ -1308,7 +1308,8 @@ CImageView::OnPaint()
 
 
   StretchedBlit(_dc, m_BlitTile, size, size, m_Image.GetWidth(), m_Image.GetHeight(),
-                     m_Image.GetPixels(), &ClientRect, m_RedrawX, m_RedrawY, m_RedrawWidth, m_RedrawHeight);
+                m_Image.GetPixels(),  m_ShowAlphaMask, &ClientRect,
+                m_RedrawX, m_RedrawY, m_RedrawWidth, m_RedrawHeight);
 
 
 /* // this is the old image drawing code
