@@ -1,6 +1,9 @@
 2003.01.24
   - added AreZonesAt, ExecuteZones, ExecuteZoneScript, GetZoneX/Y,
     GetZoneWidth/Height, GetNumZones (Brian Robb)
+  - made the Run Sphere button in the editor work no matter what
+    project is open.  now you can open a project file anywhere on your
+    hard drive and run the game with the lightning bolt.
 
 2003.01.23
   - added Get/SetTileDelay and Get/SetNextAnimatedTile (Brian Robb)
