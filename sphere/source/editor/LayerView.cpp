@@ -40,6 +40,7 @@ CLayerView::CLayerView()
 , m_SelectedLayer(0)
 , m_SelectedTile(0)
 , m_IsDragging(false)
+, m_LayersAreLockedInPlace(false)
 {
 }
 
