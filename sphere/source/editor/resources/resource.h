@@ -6,6 +6,7 @@
 #define IDD_NEW_PROJECT                 103
 #define IDR_TOOLBAR                     106
 #define IDD_FILETYPES_PAGE              106
+#define IDC_IMAGETOOL_COLORPICKER       106
 #define IDI_SDE                         108
 #define IDI_PROJECT                     109
 #define IDR_MAP                         111
@@ -609,7 +610,6 @@
 #define ID_FILE_ZOOM_OUT                40747
 #define ID_SPRITESETIMAGESPALETTE_APPEND_IMAGES 40748
 #define ID_SPRITESETIMAGESPALETTE_INSERT_IMAGES 40749
-#define ID_TILESETVIEW_ZOOM_OUT         40751
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -617,7 +617,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        262
+#define _APS_NEXT_RESOURCE_VALUE        263
 #define _APS_NEXT_COMMAND_VALUE         40752
 #define _APS_NEXT_CONTROL_VALUE         1210
 #define _APS_NEXT_SYMED_VALUE           101

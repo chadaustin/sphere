@@ -73,7 +73,8 @@ CFLICAnimation::Load(const char* filename, IFileSystem& fs)
 
   // read the header
   SFlicHeader FlicHeader;
-  File->Read(&FlicHeader, sizeof(FlicHeader));
+  if (File->Read(&FlicHeader, sizeof(FlicHeader)) != sizeof(FlicHeader))
+    return false;
 
   // test the FLIC for validity
   if (FlicHeader.depth != 8)
@@ -97,6 +98,8 @@ CFLICAnimation::Load(const char* filename, IFileSystem& fs)
   }
 
   Frame = new byte[Width * Height];
+  if (!Frame)
+    return false;
 
   CurrentFrame = 0;
   NumFrames    = FlicHeader.frames;
@@ -200,7 +203,8 @@ CFLICAnimation::ReadFrame()
 
   // read the frame header
   SFrameHeader FrameHeader;
-  File->Read(&FrameHeader, sizeof(FrameHeader));
+  if (File->Read(&FrameHeader, sizeof(FrameHeader)) != sizeof(FrameHeader))
+    return false;
 
   // increment the current frame index
   CurrentFrame++;
@@ -219,7 +223,11 @@ CFLICAnimation::ReadFrame()
   delete[] FrameData;
   FrameDataSize = FrameHeader.size;
   FrameData = new byte[FrameDataSize];
-  File->Read(FrameData, FrameDataSize);
+  if (!FrameData)
+    return false;
+
+  if (File->Read(FrameData, FrameDataSize) != FrameDataSize)
+    return false;
   FrameDataOffset = 0;
 
   // operate on all the chunks

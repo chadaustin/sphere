@@ -164,7 +164,8 @@ CImageView::Create(CDocumentWindow* owner, IImageViewHandler* handler, CWnd* par
   //m_ToolPalette   = new CImageToolPalette(owner, this);
 
   return CWnd::Create(
-    AfxRegisterWndClass(0, LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW)), NULL, LoadIcon(NULL, IDI_APPLICATION)),
+//  AfxRegisterWndClass(0, LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW)), NULL, LoadIcon(NULL, IDI_APPLICATION)),
+    AfxRegisterWndClass(0, NULL, NULL, LoadIcon(NULL, IDI_APPLICATION)),
     "ImageView",
     WS_CHILD | WS_VISIBLE,
     CRect(0, 0, 0, 0),
@@ -1830,6 +1831,13 @@ CImageView::OnMouseMove(UINT flags, CPoint point)
 {
   m_LastPoint = m_CurPoint;
   m_CurPoint = point;
+
+  if (flags & MK_SHIFT) {
+    SetCursor(LoadCursor(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDC_IMAGETOOL_COLORPICKER)));
+  }
+  else {
+    SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW)));
+  }
 
   POINT current = ConvertToPixel(point);
   if (InImage(current)) {
