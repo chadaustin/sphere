@@ -1,4 +1,5 @@
 #include "unix_input.h"
+#include "unix_video.h"
 #include "SDL.h"
 #include <deque>
 #include <iostream>
@@ -108,6 +109,16 @@ bool RefreshInput () {
           key = KEY_ALT; break;
         case SDLK_RCTRL:
           key = KEY_CTRL; break;
+		  /* for some reason the following don't work
+		  case SDLK_F11:
+		    ToggleFPS(); break;
+		  case SDLK_F12:
+		    ToggleFullscreen(); break; */
+		  /* temporary */
+		  case SDLK_d:
+		    ToggleFPS(); break;
+		  case SDLK_f:
+		    ToggleFullscreen(); break;
         default:
           for (int lcv = 0; lcv < total_keys; lcv++) {
             if (pressed == KeyMapping[lcv]) {

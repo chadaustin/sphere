@@ -1430,7 +1430,7 @@ EOF
 else
   echo "$ac_t""no" 1>&6
 echo "$ac_t""no" 1>&6
-   { echo "configure: error: count not find the png library" 1>&2; exit 1; }
+   { echo "configure: error: could not find the png library" 1>&2; exit 1; }
 fi
 
 echo $ac_n "checking for jpeg_start_compress in -ljpeg""... $ac_c" 1>&6
@@ -1675,7 +1675,7 @@ EOF
 else
   echo "$ac_t""no" 1>&6
 echo "$ac_t""no" 1>&6
-   { echo "configure: error: count not find the js library" 1>&2; exit 1; }
+   { echo "configure: error: could not find the js library" 1>&2; exit 1; }
 fi
 
 

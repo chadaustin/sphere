@@ -1,15 +1,17 @@
 #include "unix_video.h"
 #include "unix_input.h"
+#include "unix_time.h"
 #include "../../common/primitives.hpp"
 #include <cstring>
 #include <assert.h>
+#include "../sfont.hpp"
 
 SFONT* FPSFont;
 static bool FPSDisplayed;
 static SDL_Surface* screen;
 static SDL_Surface* double_buffer; /* double trouble */
 static RGBA global_mask; /* bad, jcore! bad! */
-static SDL_PixelFormat* image_format;
+static SDL_PixelFormat* image_format; /* another bad hack */
 
 /* a special clipping rect that the primitives routines can deal with */
 typedef struct _CLIPPER {
@@ -272,7 +274,7 @@ void ToggleFPS () {
 
   This is where all the fun begins.  If this is the first time that SwitchResolution
   is called, SDL is initialized. */
-bool SwitchResolution (int x, int y) {
+bool SwitchResolution (int x, int y, bool fullscreen) {
   static bool initialized = false;
 
   if (!initialized) {
@@ -283,7 +285,10 @@ bool SwitchResolution (int x, int y) {
     if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
   }
-  screen = SDL_SetVideoMode(x, y, 32, SDL_HWSURFACE | SDL_DOUBLEBUF); /* | SDL_FULLSCREEN); */
+  if (fullscreen)
+	 screen = SDL_SetVideoMode(x, y, 32, SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_FULLSCREEN);
+  else
+    screen = SDL_SetVideoMode(x, y, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
   if (screen == NULL)
     return false;
   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
@@ -291,6 +296,13 @@ bool SwitchResolution (int x, int y) {
   initialized = true;
   SetClippingRectangle(0, 0, screen->w, screen->h);
   return true;
+}
+
+void ToggleFullscreen () {
+  static bool fullscreen = false;
+
+  SwitchResolution(GetScreenWidth(), GetScreenHeight(), fullscreen ? false : true);
+  fullscreen = !fullscreen;
 }
 
 int GetScreenWidth () {
@@ -302,8 +314,32 @@ int GetScreenHeight () {
 }
 
 void FlipScreen () {
+  static bool initialized = false;
+  static int LastUpdate;
+  static int FPS;
+  static int CurrentFrames;
+
+  if (!initialized) {
+	 LastUpdate = GetTime();
+	 FPS = 0;
+	 CurrentFrames = 0;
+	 initialized = true;
+  }
+  if (FPSFont && FPSDisplayed) {
+    if (GetTime() > LastUpdate + 1000) {
+      FPS = CurrentFrames;
+      CurrentFrames = 0;
+      LastUpdate = GetTime();
+    }
+    char fps[80];
+    sprintf(fps, "FPS: %d", FPS);
+    FPSFont->DrawString(0, 0, fps, CreateRGBA(255, 255, 255, 255));
+  }
+  CurrentFrames++;
+  static int NumFlips;
+  if (NumFlips++ % 8 == 0);
+    RefreshInput();
   SDL_Flip(screen);
-	RefreshInput();
 }
 
 void SetClippingRectangle (int x, int y, int w, int h) {
@@ -393,9 +429,11 @@ void BlitImage (IMAGE image, int x, int y) {
 
   dest.x = x;
   dest.y = y;
+  SDL_UnlockSurface(screen);
+  SDL_UnlockSurface(image);
   assert(SDL_BlitSurface(image, NULL, screen, &dest) == 0);
-  assert(dest.w == 320);
-  assert(dest.h == 240); */
+  assert(dest.w == image->w);
+  assert(dest.h == image->h); */
   unixBlit((Uint32*)(screen->pixels), screen->w, x, y,
            (Uint32*)(image->pixels), image->w, image->h,
 			  clipping_rectangle, straight_copy);

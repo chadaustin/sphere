@@ -10,7 +10,8 @@ typedef SDL_Surface* IMAGE;
 void SetFPSFont(SFONT* font);
 void ToggleFPS();
 
-bool SwitchResolution(int x, int y);
+bool SwitchResolution(int x, int y, bool fullscreen = false);
+void ToggleFullscreen();
 int  GetScreenWidth();
 int  GetScreenHeight();
 
