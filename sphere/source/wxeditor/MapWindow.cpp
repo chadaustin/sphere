@@ -45,11 +45,13 @@ BEGIN_EVENT_TABLE(wMapWindow, wSaveableDocumentWindow)
   EVT_MENU(wID_MAP_EXPORTTILESET,   wMapWindow::OnExportTileset)
   EVT_MENU(wID_MAP_IMPORTTILESET,   wMapWindow::OnImportTileset)
   EVT_MENU(wID_MAP_PRUNETILESET,    wMapWindow::OnPruneTileset)
+
 #if 1
   EVT_TAB_SEL_CHANGED(wID_MAP_TAB,  wMapWindow::OnTabChanged)
 #else
   EVT_NOTEBOOK_PAGE_CHANGED(wID_MAP_TAB,  wMapWindow::OnTabChanged)
 #endif
+
 END_EVENT_TABLE()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -86,13 +88,12 @@ wMapWindow::Create()
   //wSaveableDocumentWindow::Create(AfxRegisterWndClass(0, NULL, NULL, AfxGetApp()->LoadIcon(IDI_MAP)));
 
 #if 1
-  m_TabControl = new wxTabCtrl(this, wID_MAP_TAB, wxDefaultPosition, wxDefaultSize);
+  m_TabControl = new wxTabCtrl(this, wID_MAP_TAB); // wxDefaultPosition, wxDefaultSize
   m_TabControl->InsertItem(0, "Map");
   m_TabControl->InsertItem(1, "Tileset");
 #else
   wxNotebookPage* mapviewpage = new wxNotebookPage();
   wxNotebookPage* tileviewpage = new wxNotebookPage();
-
   m_TabControl = new wxNotebook(this, wID_MAP_TAB);
   m_TabControl->InsertPage(0, mapviewpage, "Map");
   m_TabControl->InsertPage(1, tileviewpage, "Tileset");
@@ -112,11 +113,8 @@ wMapWindow::Create()
   RECT ClientRect;
   GetClientRect(&ClientRect);
   OnSize(0, ClientRect.right - ClientRect.left, ClientRect.bottom - ClientRect.top);
-
-  m_TilePalette = new CTilePalette(this, this, &m_Map.GetTileset());
-
-  TabChanged(0);
 */
+
   TabChanged(0);
   wxSizeEvent event(GetSize());
   OnSize(event);
@@ -236,7 +234,7 @@ void
 wMapWindow::GetMapViewRect(wxRect *Rect)
 {
   const int SCROLLBAR_WIDTH  = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X);
-//  const int SCROLLBAR_HEIGHT = wxSystemSettings::GetMetric(wxSYS_HSCROLL_Y);
+  // const int SCROLLBAR_HEIGHT = wxSystemSettings::GetMetric(wxSYS_HSCROLL_Y);
 
   wxSize ClientSize = GetClientSize();
 
@@ -249,7 +247,7 @@ void
 wMapWindow::GetLayerViewRect(wxRect* Rect)
 {
   const int SCROLLBAR_WIDTH  = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X);
-//  const int SCROLLBAR_HEIGHT = wxSystemSettings::GetMetric(wxSYS_HSCROLL_Y);
+  // const int SCROLLBAR_HEIGHT = wxSystemSettings::GetMetric(wxSYS_HSCROLL_Y);
 
   wxSize ClientSize = GetClientSize();
 

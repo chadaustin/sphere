@@ -47,7 +47,7 @@ private:
   void TabChanged(int tab);
 
   void OnSize(wxSizeEvent& event);
-//  void OnCommand(wxCommandEvent &event);
+  //  void OnCommand(wxCommandEvent &event);
   void OnMapProperties(wxCommandEvent &event);
   void OnChangeTileSize(wxCommandEvent &event);
   void OnRescaleTileset(wxCommandEvent &event);
@@ -97,7 +97,7 @@ private:
 
   // palettes
   wTilePalette* m_TilePalette;
-//  CTilePreviewPalette* m_TilePreviewPalette;
+  //  CTilePreviewPalette* m_TilePreviewPalette;
 
 private:
 //  DECLARE_CLASS(wMapWindow)
