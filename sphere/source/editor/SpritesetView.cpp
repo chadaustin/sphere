@@ -1189,11 +1189,47 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
   iRC = mng_set_srgb(hMNG, true);
   if (iRC != 0) return iRC;
 
-  iRC = mng_putchunk_back (hMNG, 255, 255, 255, 0, 0, MNG_BACKGROUNDIMAGE_NOTILE);
+  //iRC = mng_putchunk_back (hMNG, 255, 255, 255, 0, 0, MNG_BACKGROUNDIMAGE_NOTILE);
+  //if (iRC != 0) return iRC;
+
+  iRC = mng_putchunk_fram  (hMNG,
+                            MNG_FALSE,
+                            MNG_FRAMINGMODE_3,
+                            0,
+                            NULL,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0);
   if (iRC != 0) return iRC;
 
   for (int i = 0; i < images.size(); i++) {
     const CImage32& image = images[i];
+
+    /*
+    iRC = mng_putchunk_defi(hMNG,
+                            i,
+                            MNG_DONOTSHOW_VISIBLE,
+                            MNG_CONCRETE,
+                            MNG_TRUE,
+                            0,
+                            0,
+                            MNG_TRUE,
+                            0,
+                            image.GetWidth(),
+                            0,
+                            image.GetHeight());
+    if (iRC != 0) return iRC;
+    */
 
     iRC = mng_putchunk_ihdr (hMNG, image.GetWidth(), image.GetHeight(),
 			MNG_BITDEPTH_8, MNG_COLORTYPE_RGBA, MNG_COMPRESSION_DEFLATE,
