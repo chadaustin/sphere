@@ -15,11 +15,12 @@ public:
 
   bool Load(const char* filename, IFileSystem& fs);
   bool CreateFromWindowStyle(const sWindowStyle& ws);
+  void Destroy();
+
   bool DrawWindow(int x, int y, int w, int h);
 
 private:
   void Initialize();
-  void Destroy();
 
 private:
   sWindowStyle m_WindowStyle;

@@ -41,7 +41,9 @@ GetGameList()
     - game.directory
 
 ExecuteGame(directory)
-  - executes the game in sphere/games/<directory>
+  - executes the game in sphere/games/<directory>.  This function
+  actually exits the first game and loads the one in 'directory'.
+  When the second game returns, the original is loaded again.
 
 Exit()
   - Exits the Sphere engine unconditionally

@@ -875,14 +875,8 @@ end_func()
 begin_func(ExecuteGame, 1)
   arg_str(directory);
 
-  // make sure resolution switches don't affect the parent game
-  int old_width  = GetScreenWidth();
-  int old_height = GetScreenHeight();
-
   This->m_Engine->ExecuteGame(directory);
-
-  SwitchResolution(old_width, old_height);
-
+  return JS_FALSE;
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////

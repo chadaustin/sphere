@@ -33,7 +33,7 @@ CGameEngine::CGameEngine(IFileSystem& fs,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void
+std::string
 CGameEngine::Run()
 {
   m_Script = new CScript(this);
@@ -99,6 +99,9 @@ CGameEngine::Run()
   m_MapEngine = NULL;
 
   delete m_Script;
+  m_Script = 0;
+
+  return m_NextGame;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -156,6 +159,8 @@ CGameEngine::CreateSystemObjects()
 void
 CGameEngine::DestroySystemObjects()
 {
+  m_SystemFont.Destroy();
+  m_SystemWindowStyle.Destroy();
   DestroyImage(m_SystemArrow);
   DestroyImage(m_SystemUpArrow);
   DestroyImage(m_SystemDownArrow);
@@ -238,19 +243,7 @@ CGameEngine::GetGameList(std::vector<Game>& games)
 void
 CGameEngine::ExecuteGame(const char* directory)
 {
-  if (EnterDirectory("../games")) {
-    if (EnterDirectory(directory)) {
-
-      CGameEngine(m_FileSystem, m_SystemObjects, m_GameList, m_SystemScriptDirectory.c_str(), "").Run();
-      ClearScreen();
-
-      LeaveDirectory();
-    }
-
-    LeaveDirectory();
-  }
-
-  ClearKeyQueue();
+  m_NextGame = directory;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

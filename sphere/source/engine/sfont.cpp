@@ -49,6 +49,22 @@ SFONT::CreateFromFont(const sFont& font)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+SFONT::Destroy()
+{
+  if (m_Images) {
+    for (int i = 0; i < m_Font.GetNumCharacters(); i++) {
+      if (m_Images[i]) {
+        DestroyImage(m_Images[i]);
+      }
+    }
+  }
+  delete[] m_Images;
+  m_Images = NULL;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 bool
 SFONT::DrawString(int x, int y, const char* text, RGBA mask) const
 {
@@ -321,18 +337,6 @@ SFONT::Initialize()
   }
 
   return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void
-SFONT::Destroy()
-{
-  for (int i = 0; i < m_Font.GetNumCharacters(); i++) {
-    DestroyImage(m_Images[i]);
-  }
-  delete[] m_Images;
-  m_Images = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -136,10 +136,13 @@ void RunPackage(IFileSystem& fs)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void RunGame(const char* game, const char* parameters)
-{
+std::string DoRunGame(const char* game, const char* parameters) {
+  printf("Game: %s\n", game);
+  printf("Parameters: %s\n", parameters);
+
+  std::string result;
   if (EnterDirectory(game)) {
-    CGameEngine(
+    result = CGameEngine(
       g_DefaultFileSystem,
       s_SystemObjects,
       s_GameList,
@@ -150,6 +153,27 @@ void RunGame(const char* game, const char* parameters)
     LeaveDirectory();
   } else {
     QuitMessage("Could not enter game directory");
+  }
+
+  return result;
+}
+
+void RunGame(const char* game, const char* parameters) {
+  // first = game directory, second = parameters
+  typedef std::pair<std::string, std::string> Game;
+  std::stack<Game> games;
+  games.push(Game(game, parameters));
+
+  while (!games.empty()) {
+    Game g = games.top();
+    games.pop();
+
+    std::string result = DoRunGame(g.first.c_str(), g.second.c_str());
+    if (!result.empty()) {
+      // add the original game back to the stack
+      games.push(g);
+      games.push(Game("games/" + result, ""));
+    }
   }
 }
 

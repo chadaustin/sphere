@@ -24,7 +24,12 @@ public:
     const char* script_directory,
     const char* parameters);
 
-  void Run();
+  /**
+   * Runs the game.  If this returns a value, run a new game and then
+   * run this game again (push the new game on a disk).  Otherwise, do
+   * nothing.
+   */
+  std::string Run();
 
 private:
   void ShowError(const char* message);
@@ -100,10 +105,12 @@ private:
 
   CScript* m_Script;
 
+  // the next game to be executed
+  std::string m_NextGame;
+
   // opened file list
   std::map<CConfigFile*, SFileInfo> m_OpenFiles;
 
-  // map engine
   CMapEngine* m_MapEngine;
 };
 

@@ -48,6 +48,19 @@ SWINDOWSTYLE::CreateFromWindowStyle(const sWindowStyle& ws)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+SWINDOWSTYLE::Destroy()
+{
+  for (int i = 0; i < 9; i++) {
+    if (m_Images[i]) {
+      DestroyImage(m_Images[i]);
+      m_Images[i] = NULL;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 bool
 SWINDOWSTYLE::DrawWindow(int x, int y, int w, int h)
 {
@@ -175,19 +188,6 @@ SWINDOWSTYLE::Initialize()
   for (int i = 0; i < 9; i++) {
     CImage32& image = m_WindowStyle.GetBitmap(i);
     m_Images[i] = CreateImage(image.GetWidth(), image.GetHeight(), image.GetPixels());
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void
-SWINDOWSTYLE::Destroy()
-{
-  for (int i = 0; i < 9; i++) {
-    if (m_Images[i]) {
-      DestroyImage(m_Images[i]);
-      m_Images[i] = NULL;
-    }
   }
 }
 

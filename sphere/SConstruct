@@ -3,7 +3,7 @@ import os
 import string
 import SCons
 
-Default('.')
+Default('build')
 
 def RequireList(env, var):
     if not env.Dictionary().has_key(var):

@@ -15,6 +15,7 @@ public:
 
   bool Load(const char* filename, IFileSystem& fs);
   bool CreateFromFont(const sFont& font);
+  void Destroy();
 
   bool DrawString(int x, int y, const char* text, RGBA mask) const;
   bool DrawZoomedString(int x, int y, double scale, const char* text, RGBA mask) const;
@@ -26,7 +27,6 @@ public:
 
 private:
   bool Initialize();
-  void Destroy();
 
 private:
   sFont  m_Font;
