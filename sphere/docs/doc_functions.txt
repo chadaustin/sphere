@@ -968,6 +968,5 @@ log_object.endBlock()
       number of bytes that will be read, exceeds the filesize from the current 
       position, it will only return an array of data of that is actually read.
 
-
-  rawfile_object.write(string)
-    - writes 'string' to the file at the current position
+  rawfile_object.write(byte_array)
+    - writes the byte array to the file at the current position

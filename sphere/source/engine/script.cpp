@@ -4564,8 +4564,16 @@ end_method()
 ///////////////////////////////////////
 
 begin_method(SS_RAWFILE, ssRawFileWrite, 1)
-  arg_str(data);
-  object->file->Write(data, strlen(data));
+  arg_byte_array(data);
+
+  // convert the data from a byte array to a string
+  byte* converted_data = new byte[data->size];
+  for (int i = 0; i < data->size; ++i)
+    converted_data[i] = data->array[i];
+
+  object->file->Write(converted_data, data->size);
+
+  delete[] converted_data;
 end_method()
 
 ///////////////////////////////////////

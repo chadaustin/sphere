@@ -31,7 +31,7 @@ static void GetSphereDirectory(char sphere_directory[MAX_PATH])
 static void LoadSphereConfiguration(SPHERECONFIG* config)
 {
   char ConfigPath[MAX_PATH];
-  GetSphereDirectory(ConfigPath);
+  GetSphereDirectory(ConfigPath); // I think this should be \\bin\\engine.ini
   strcat(ConfigPath, "\\engine.ini");
 
   // Loads configuration settings
