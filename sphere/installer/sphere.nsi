@@ -3,8 +3,8 @@
 
 ; NOTE: this .NSI script is designed for NSIS v1.8+
 
-Name "Sphere 1.0 beta3"
-OutFile "InstallSphere1.0b3.exe"
+Name "Sphere 1.0"
+OutFile "InstallSphere1.0.exe"
 
 ; Some default compiler settings (uncomment and change at will):
 ; SetCompress auto ; (can be off or force)
