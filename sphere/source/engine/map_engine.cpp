@@ -60,6 +60,10 @@ CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
   m_Camera.layer = 0;
 
   memset(&m_Keys, 0, sizeof(bool) * MAX_KEY);
+
+  for (int i = 0; i < 7; i++) {
+    m_DefaultMapScripts[i] = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -80,6 +84,12 @@ CMapEngine::~CMapEngine()
     m_RenderScript = NULL;
   }
 
+  for (int i = 0; i < 7; i++) {
+    if (m_DefaultMapScripts[i]) {
+      m_Engine->DestroyScript(m_DefaultMapScripts[i]);
+      m_DefaultMapScripts[i] = NULL;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -251,6 +261,60 @@ CMapEngine::CallMapScript(int which)
       }
     break;
   }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::CallDefaultMapScript(int which) {
+  // make sure 'which' is valid
+  if (which < 0 || which >= 6) {
+    m_ErrorMessage = "CallDefaultMapScript() - script does not exist";
+    return false;
+  }
+    
+  if (m_DefaultMapScripts[which] == NULL
+   || m_DefaultMapScripts[which] == "")
+    return true;
+
+  std::string error;
+  if (!ExecuteScript(m_DefaultMapScripts[which], error)) {
+    std::string list[6] = {"enter", "exit", "north", "east", "south", "west"};
+    m_ErrorMessage = "Could not execute default " + list[which] + " map script\n" + error;
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::SetDefaultMapScript(int which, const char* script) {
+  // make sure 'which' is valid
+  if (which < 0 || which >= 6) {
+    m_ErrorMessage = "SetDefaultMapScript() - script does not exist";
+    return false;
+  }
+
+  // try to compile the script
+  std::string error;
+  IEngine::script s = m_Engine->CompileScript(script, error);
+  if (s == NULL) {
+    m_ErrorMessage = "Could not compile script\n" + error;
+    return false;
+  }
+
+  // locate the old script
+  IEngine::script* ps = &m_DefaultMapScripts[which];
+
+  // now replace the script
+  if (*ps) {
+    m_Engine->DestroyScript(*ps);
+  }
+  *ps = s;
 
   return true;
 }
@@ -2304,9 +2368,8 @@ CMapEngine::OpenMap(const char* filename)
   m_CurrentMap = filename;
 
   // execute entry script
-  std::string error;
-  if (!ExecuteScript(m_Map.GetMap().GetEntryScript(), error)) {
-    m_ErrorMessage = "Entry Script Error:\n" + error;
+  if (!CallDefaultMapScript(SCRIPT_ON_ENTER_MAP)
+   || !CallMapScript(SCRIPT_ON_ENTER_MAP)) {
 
     // stop background music
     m_Music = 0;
@@ -2362,9 +2425,8 @@ CMapEngine::CloseMap()
   m_Engine->DestroyScript(m_WestScript);
 
   // execute exit script
-  std::string error;
-  if (!ExecuteScript(m_Map.GetMap().GetExitScript(), error)) {
-    m_ErrorMessage = "Exit Script Error:\n" + error;
+  if (!CallDefaultMapScript(SCRIPT_ON_LEAVE_MAP)
+   || !CallMapScript(SCRIPT_ON_LEAVE_MAP)) {
     m_CurrentMap = "";
     return false;
   }
@@ -3677,13 +3739,15 @@ CMapEngine::UpdateEdgeScripts()
 
   if (m_Camera.x < 0) {                                 // west
     
-    if (!CallMapScript(SCRIPT_ON_LEAVE_MAP_WEST)) {
+    if (!CallDefaultMapScript(SCRIPT_ON_LEAVE_MAP_WEST)
+     || !CallMapScript(SCRIPT_ON_LEAVE_MAP_WEST)) {
       return false;
     }    
 
   } else if (m_Camera.x > tile_width * layer_width) {   // east
 
-    if (!CallMapScript(SCRIPT_ON_LEAVE_MAP_EAST)) {
+    if (!CallDefaultMapScript(SCRIPT_ON_LEAVE_MAP_EAST)
+     || !CallMapScript(SCRIPT_ON_LEAVE_MAP_EAST)) {
       return false;
     }    
 
@@ -3691,13 +3755,15 @@ CMapEngine::UpdateEdgeScripts()
 
   if (m_Camera.y < 0) {                                 // north
     
-    if (!CallMapScript(SCRIPT_ON_LEAVE_MAP_NORTH)) {
+    if (!CallDefaultMapScript(SCRIPT_ON_LEAVE_MAP_NORTH)
+     || !CallMapScript(SCRIPT_ON_LEAVE_MAP_NORTH)) {
       return false;
     }    
 
   } else if (m_Camera.y > tile_height * layer_height) { // south
 
-    if (!CallMapScript(SCRIPT_ON_LEAVE_MAP_SOUTH)) {
+    if (!CallDefaultMapScript(SCRIPT_ON_LEAVE_MAP_SOUTH)
+     || !CallMapScript(SCRIPT_ON_LEAVE_MAP_SOUTH)) {
       return false;
     }
 

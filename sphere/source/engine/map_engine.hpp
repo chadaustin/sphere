@@ -70,6 +70,8 @@ public:
   bool IsRunning();
   bool Update();
   bool CallMapScript(int which);
+  bool CallDefaultMapScript(int which);
+  bool SetDefaultMapScript(int which, const char* script);
 
   std::string GetCurrentMap();
 
@@ -380,6 +382,9 @@ private:
   IEngine::script m_UpdateScript;
   IEngine::script m_RenderScript;
   std::vector<IEngine::script> m_LayerRenderers;
+
+  // default map scripts
+  IEngine::script m_DefaultMapScripts[6];
 
   // color masks
   int m_NumFrames;

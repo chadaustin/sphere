@@ -1,6 +1,7 @@
 2003.03.10
   - rearranged imageview paste menu items into a paste submenu
   - added paste->Into Selection
+  - added SetDefaultMapScript and CallDefaultMapScript
 
 2003.03.08
   - added a selection tool to the image editor

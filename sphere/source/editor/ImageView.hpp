@@ -56,10 +56,6 @@ public:
   bool CanUndo() const;
   void Undo();
 
-  void GetSelection(int& sx, int& sy, int& sw, int& sh);
-  RGBA* GetSelectionPixels();
-  void UpdateSelectionPixels(RGBA* pixels, int sx, int sy, int sw, int sh);
-
 private:
   enum Tool { Tool_Pencil, Tool_Line, Tool_Rectangle, Tool_Circle, Tool_Ellipse, Tool_Fill, Tool_Selection };
 
@@ -69,8 +65,11 @@ private:
 
   POINT ConvertToPixel(POINT point);
   bool InImage(POINT p);
+
   bool InSelection(POINT p);
   void GetSelectionArea(int& x, int& y, int& w, int& h);
+  RGBA* GetSelectionPixels();
+  void UpdateSelectionPixels(RGBA* pixels, int sx, int sy, int sw, int sh);
 
   void Click(bool force_draw);
   void Fill();

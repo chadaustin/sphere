@@ -350,6 +350,12 @@ log_object.endBlock()
       SCRIPT_ON_LEAVE_MAP_SOUTH
       SCRIPT_ON_LEAVE_MAP_WEST
   
+  SetDefaultMapScript(which, script)
+    - set the default script that the map engine should call before calling the map's specific script
+    (The default map script is called, then the map specific script is called.)
+    The events are the same from CallMapScript.
+    The map engine doesn't have to be on to set a default script.
+  
     *** maps ***
 
     GetNumLayers()
