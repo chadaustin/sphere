@@ -739,6 +739,11 @@ inline RGBA argColor(JSContext* cx, jsval arg)
     return CreateRGBA(0, 0, 0, 0);
   }
 
+  if (JS_IsArrayObject(cx, JSVAL_TO_OBJECT(arg))) {
+    JS_ReportError(cx, "Invalid color object");
+    return CreateRGBA(0, 0, 0, 0);
+  }
+
   SS_COLOR* color = (SS_COLOR*)JS_GetPrivate(cx, JSVAL_TO_OBJECT(arg));
   if (color == NULL) {
     JS_ReportError(cx, "Invalid color object");
@@ -756,6 +761,11 @@ inline RGBA argColor(JSContext* cx, jsval arg)
 inline CImage32* argSurface(JSContext* cx, jsval arg)
 {
   if (!JSVAL_IS_OBJECT(arg)) {
+    JS_ReportError(cx, "Invalid surface object");
+    return NULL;
+  }
+
+  if (JS_IsArrayObject(cx, JSVAL_TO_OBJECT(arg))) {
     JS_ReportError(cx, "Invalid surface object");
     return NULL;
   }
@@ -823,6 +833,11 @@ inline SS_IMAGE* argImage(JSContext* cx, jsval arg)
     return NULL;
   }
 
+  if (JS_IsArrayObject(cx, JSVAL_TO_OBJECT(arg))) {
+    JS_ReportError(cx, "Invalid image object");
+    return NULL;
+  }
+
   SS_IMAGE* image = (SS_IMAGE*)JS_GetPrivate(cx, JSVAL_TO_OBJECT(arg));
   if (image == NULL) {
     JS_ReportError(cx, "Invalid image object");
@@ -835,6 +850,11 @@ inline SS_IMAGE* argImage(JSContext* cx, jsval arg)
 inline SS_FONT* argFont(JSContext* cx, jsval arg)
 {
   if (!JSVAL_IS_OBJECT(arg)) {
+    JS_ReportError(cx, "Invalid font object");
+    return NULL;
+  }
+
+  if (JS_IsArrayObject(cx, JSVAL_TO_OBJECT(arg))) {
     JS_ReportError(cx, "Invalid font object");
     return NULL;
   }
