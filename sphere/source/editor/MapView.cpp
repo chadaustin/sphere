@@ -884,6 +884,41 @@ CMapView::IsWithinSelectFillArea(int x, int y)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+int
+CMapView::FindSpritesetImageIconsIndex(std::string filename)
+{
+  int sprite_index = -1;
+  for (unsigned int i = 0; i < m_SpritesetImageIcons.size(); ++i) {
+    if (filename == m_SpritesetImageIcons[i].filename) {
+      sprite_index = i;
+      break;
+    }
+  }
+
+  if (sprite_index == -1) {
+    sSpriteset s;
+    std::string path1 = std::string("../spritesets/" + filename);
+    std::string path2 = std::string("spritesets/" + filename);
+
+    if (s.Load(path1.c_str()) || s.Load(path2.c_str())) {
+      if (s.GetNumImages() > 0) {
+        sprite_index = m_SpritesetImageIcons.size();
+        CImage32 image(s.GetImage(0));
+        image.Rescale(m_Map->GetTileset().GetTileWidth(), m_Map->GetTileset().GetTileHeight());
+        SpritesetImageIcon ico(filename, s.GetImage(0), image);
+        m_SpritesetImageIcons.push_back(ico);
+      }
+    }
+  }
+
+  if (sprite_index < 0 || sprite_index >= m_SpritesetImageIcons.size())
+    sprite_index = -1;
+
+  return sprite_index;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
 {
@@ -1034,42 +1069,19 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
 
           case sEntity::PERSON: {
             sPersonEntity* person = (sPersonEntity*) &entity;
-            std::string filename = person->spriteset;
-
-            int sprite_index = -1;
-            for (unsigned int i = 0; i < m_SpritesetImageIcons.size(); ++i) {
-              if (filename == m_SpritesetImageIcons[i].filename) {
-                sprite_index = i;
-                break;
-              }
-            }
+            int sprite_index = FindSpritesetImageIconsIndex(person->spriteset);
 
             if (sprite_index == -1) {
-              sSpriteset s;
-              std::string path1 = std::string("../spritesets/" + filename);
-              std::string path2 = std::string("spritesets/" + filename);
-
-              if (s.Load(path1.c_str())
-               || s.Load(path2.c_str())) {
-                if (s.GetNumImages() > 0) {
-                  s.RescaleFrames(tile_width, tile_height);
-                  sprite_index = m_SpritesetImageIcons.size();
-                  SpritesetImageIcon ico(s.GetImage(0), filename);
-                  m_SpritesetImageIcons.push_back(ico);
-                }
-              }
-            }
-
-            if (sprite_index < 0 || sprite_index >= m_SpritesetImageIcons.size()) {
               DrawIconEx(dc.m_hDC, rect.left, rect.top, icon, tw, th, 0, NULL, DI_NORMAL);
               continue;
             }
           
-            const RGBA* src = m_SpritesetImageIcons[sprite_index].image.GetPixels();
+            const CImage32& image = m_SpritesetImageIcons[sprite_index].icon;
+            const RGBA* src = image.GetPixels();
             BGRA* dest = (BGRA*)m_BlitTile->GetPixels();
 
-            int sprite_width = m_SpritesetImageIcons[sprite_index].image.GetWidth();
-            int sprite_height = m_SpritesetImageIcons[sprite_index].image.GetHeight();
+            const int sprite_width = image.GetWidth();
+            const int sprite_height = image.GetHeight();
             tile_width = std::min(tile_width, sprite_width);
             tile_height = std::min(tile_height, sprite_height);
 
@@ -1107,7 +1119,96 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
   }
   else
   if (m_SpritesetDrawType == SDT_IMAGE) {
+    // draw entities
+    for (int i = 0; i < m_Map->GetNumEntities(); ++i)
+    {
+      sEntity& entity = m_Map->GetEntity(i);
 
+      int sw = tile_width;
+      int sh = tile_height;
+
+      switch (entity.GetEntityType()) {
+        case sEntity::PERSON: {
+          sPersonEntity* person = (sPersonEntity*) &entity;
+          int sprite_index = FindSpritesetImageIconsIndex(person->spriteset);
+          if (sprite_index != - 1) {
+            sw = m_SpritesetImageIcons[sprite_index].image.GetWidth();
+            sh = m_SpritesetImageIcons[sprite_index].image.GetHeight();
+          }
+        }
+        break;
+      }            
+
+      if (tx >= entity.x / tile_width  && tx < (entity.x + sw) / tile_width
+       && ty >= entity.y / tile_height && ty < (entity.y + sh) / tile_height
+       && m_Map->GetLayer(entity.layer).IsVisible())
+      {
+        HICON icon;
+        switch (entity.GetEntityType())
+        {
+          case sEntity::PERSON:  icon = AfxGetApp()->LoadIcon(IDI_ENTITY_PERSON); break;
+          case sEntity::TRIGGER: icon = AfxGetApp()->LoadIcon(IDI_ENTITY_TRIGGER); break;
+        }
+
+        int tw = m_Map->GetTileset().GetTileWidth()  * m_ZoomFactor;
+        int th = m_Map->GetTileset().GetTileHeight() * m_ZoomFactor;
+
+        switch (entity.GetEntityType()) {
+
+          case sEntity::PERSON: {
+            sPersonEntity* person = (sPersonEntity*) &entity;
+            int sprite_index = FindSpritesetImageIconsIndex(person->spriteset);
+
+            if (sprite_index < 0 || sprite_index >= m_SpritesetImageIcons.size()) {
+              DrawIconEx(dc.m_hDC, rect.left, rect.top, icon, tw, th, 0, NULL, DI_NORMAL);
+              continue;
+            }
+          
+            const CImage32& image = m_SpritesetImageIcons[sprite_index].image;
+            const RGBA* src = image.GetPixels();
+            BGRA* dest = (BGRA*)m_BlitTile->GetPixels();
+
+            const int sprite_width = image.GetWidth();
+            const int sprite_height = image.GetHeight();
+
+            int offset_x = (tx - (entity.x / tile_width)) * tile_width;
+            int offset_y = (ty - (entity.y / tile_height)) * tile_height;
+
+            tile_width = std::min(tile_width, sprite_width);
+            tile_height = std::min(tile_height, sprite_height);
+
+            should_render_tile = true;
+
+            int counter = 0;
+
+            for (int j=0; j<tile_height; j++)
+            {
+              for (int k=0; k<tile_width; k++)
+                for (int l=0; l<m_ZoomFactor; l++)
+                {
+                  RGBA s = src[(j + offset_y) * sprite_width + (k + offset_x)];
+                  int alpha = src[(j + offset_y) * sprite_width + (k + offset_x)].alpha;
+                  dest[counter].red   = (alpha * s.red   + (255 - alpha) * dest[counter].red)   / 256;
+                  dest[counter].green = (alpha * s.green + (255 - alpha) * dest[counter].green) / 256;
+                  dest[counter].blue  = (alpha * s.blue  + (255 - alpha) * dest[counter].blue)  / 256;
+                  counter++;
+                }
+
+              for (int k=1; k<m_ZoomFactor; k++)
+              {
+                memcpy(dest + counter, dest + (counter - tile_width * m_ZoomFactor), tile_width * m_ZoomFactor * sizeof(RGBA));
+                counter += tile_width * m_ZoomFactor;
+              }
+            }
+          } 
+          break;
+
+          case sEntity::TRIGGER:
+            DrawIconEx(dc.m_hDC, rect.left, rect.top, icon, tw, th, 0, NULL, DI_NORMAL);
+          break;
+        }
+      }
+    }
   }
 
   if (should_render_tile) {

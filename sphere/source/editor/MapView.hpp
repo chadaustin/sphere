@@ -64,9 +64,11 @@ private:
   void DrawPreviewLine(CDC& dc, int x1, int y1, int x2, int y2);
   void DrawPreviewBox(CDC& dc, int x1, int y1, int x2, int y2);
 
-public:
   void UpdateObstructionTile(int tile);
   void UpdateObstructionTiles();
+
+  int FindSpritesetImageIconsIndex(std::string filename);
+
 
 private:
   afx_msg void OnDestroy();
@@ -155,12 +157,14 @@ private:
 
   class SpritesetImageIcon {
     public:
-      SpritesetImageIcon(CImage32 pImage, std::string pFilename) {
-        image = pImage;
+      SpritesetImageIcon(std::string pFilename, CImage32 pImage, CImage32 pIcon) {
         filename = pFilename;
+        image = pImage;
+        icon = pIcon;
       }
-      CImage32 image;
       std::string filename;
+      CImage32 image;
+      CImage32 icon;
   };
 
   std::vector<SpritesetImageIcon> m_SpritesetImageIcons;
