@@ -3816,7 +3816,13 @@ end_method()
 begin_method(SS_SURFACE, ssSurfaceGetPixel, 2)
   arg_int(x);
   arg_int(y);
-  return_object(CreateColorObject(cx, object->surface->GetPixel(x, y)));
+  CImage32* surface = object->surface;
+  if (x < 0 || x >= surface->GetWidth() || y < 0 || y >= surface->GetHeight()) {
+    JS_ReportError(cx, "Invalid coordinates in surface.getPixel() call");
+    return JS_FALSE;
+  }
+
+  return_object(CreateColorObject(cx, surface->GetPixel(x, y)));
 end_method()
 
 ////////////////////////////////////////
@@ -3825,6 +3831,12 @@ begin_method(SS_SURFACE, ssSurfaceSetPixel, 3)
   arg_int(x);
   arg_int(y);
   arg_color(c);
+
+  CImage32* surface = object->surface;
+  if (x < 0 || x >= surface->GetWidth() || y < 0 || y >= surface->GetHeight()) {
+    JS_ReportError(cx, "Invalid coordinates in surface.setPixel() call");
+    return JS_FALSE;
+  }
 
   object->surface->SetPixel(x, y, c);
 end_method()
