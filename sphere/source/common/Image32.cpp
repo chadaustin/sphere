@@ -399,7 +399,7 @@ CImage32::Rescale(int width, int height)
   VertAspectRatio = (double)height / (double)m_Height; // (dstHeight / srcHeight) * 100
 
   // floating point, should be faster than my crappy fixed-point...
-  for (y=0; y<height; y++)
+  for (y=0; y<height; y++) {
     for (x=0; x<width; x++)
     {
       ix = x / HorzAspectRatio;
@@ -409,6 +409,68 @@ CImage32::Rescale(int width, int height)
         if ((iy >= 0) && (iy < m_Height))
           NewPixels[(y * width) + x] = m_Pixels[((int)iy * m_Width) + (int)ix];
     }
+  }
+
+  m_Width  = width;
+  m_Height = height;
+  delete[] m_Pixels;
+  m_Pixels = NewPixels;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+static RGBA BlendColorsWeighted(RGBA a, RGBA b, double w1, double w2) {
+  if (w1 < 0) w1 = 0;
+  if (w2 < 0) w2 = 0;
+  
+  if (w1 + w2 == 0) {
+    return CreateRGBA(0, 0, 0, 255);
+  } else {
+    return CreateRGBA(
+      int((a.red   * w1 + b.red   * w2) / (w1 + w2)),
+      int((a.green * w1 + b.green * w2) / (w1 + w2)),
+      int((a.blue  * w1 + b.blue  * w2) / (w1 + w2)),
+      int((a.alpha * w1 + b.alpha * w2) / (w1 + w2))
+    );
+  }
+}
+
+
+void
+CImage32::Resample(int width, int height, bool weighted)
+{
+  if (width * height <= 0)
+    return;
+
+  RGBA* NewPixels = new RGBA[width * height];
+  if (NewPixels == NULL)
+    return;
+  
+  double HorzAspectRatio = (double) width / (double) m_Width;
+  double VertAspectRatio = (double) height / (double) m_Height;
+
+  for (int y = 0; y < height; y++) {
+    for (int x = 0; x < width; x++) {
+
+      double x1 = (x + 0.25) / HorzAspectRatio;
+      double y1 = (y + 0.0) / VertAspectRatio;
+
+      double x2 = (x + 0.75) / HorzAspectRatio;
+      double y2 = (y + 0.0) / VertAspectRatio;
+
+      double w1 = weighted ? x2 - x1 : 0.5;
+      double w2 = weighted ? x2 - x1 : 0.5;
+
+      if ((x1 >= 0) && (x1 < m_Width) && ((y1 >= 0) && (y1 < m_Height))) {
+        if ((x2 >= 0) && (x2 < m_Width) && ((y2 >= 0) && (y2 < m_Height))) {
+          NewPixels[(y * width) + x] = BlendColorsWeighted(m_Pixels[((int) y1 * m_Width) + (int) x1], m_Pixels[((int) y2 * m_Width) + (int) x2], w1, w2);
+        }
+        else {
+          NewPixels[(y * width) + x] = m_Pixels[((int) y1 * m_Width) + (int) x1];
+        }
+      }
+    }
+  }
 
   m_Width  = width;
   m_Height = height;

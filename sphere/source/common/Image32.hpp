@@ -40,6 +40,7 @@ public:
   void Clear();
   void Resize(int width, int height);
   void Rescale(int width, int height);
+  void Resample(int width, int height, bool weighted = false);
 
   int         GetWidth() const;
   int         GetHeight() const;

@@ -15,6 +15,7 @@ BEGIN_MESSAGE_MAP(CImageWindow, CSaveableDocumentWindow)
 
   ON_COMMAND(ID_IMAGE_RESIZE,             OnImageResize)
   ON_COMMAND(ID_IMAGE_RESCALE,            OnImageRescale)
+  ON_COMMAND(ID_IMAGE_RESAMPLE,           OnImageResample)
   ON_COMMAND(ID_IMAGE_VIEWATORIGINALSIZE, OnImageViewOriginalSize)
 
 END_MESSAGE_MAP()
@@ -127,6 +128,21 @@ CImageWindow::OnImageRescale()
   if (dialog.DoModal() == IDOK) {
     if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
       m_Image.Rescale(dialog.GetWidth(), dialog.GetHeight());
+      SetModified(true);
+      UpdateImageView();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageWindow::OnImageResample()
+{
+  CResizeDialog dialog("Resample Image", m_Image.GetWidth(), m_Image.GetHeight());
+  if (dialog.DoModal() == IDOK) {
+    if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
+      m_Image.Resample(dialog.GetWidth(), dialog.GetHeight());
       SetModified(true);
       UpdateImageView();
     }

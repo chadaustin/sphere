@@ -264,6 +264,7 @@ BEGIN
     BEGIN
         MENUITEM "&Resize...",                  ID_IMAGE_RESIZE
         MENUITEM "R&escale...",                 ID_IMAGE_RESCALE
+        MENUITEM "Re&sample...",                ID_IMAGE_RESAMPLE
         MENUITEM SEPARATOR
         MENUITEM "&View at Original Size",      ID_IMAGE_VIEWATORIGINALSIZE
     END
