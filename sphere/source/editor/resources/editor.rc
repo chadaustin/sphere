@@ -146,8 +146,6 @@ BEGIN
     END
     POPUP "&Window"
     BEGIN
-        MENUITEM "&Split",                      ID_WINDOW_SPLIT
-        MENUITEM SEPARATOR
         MENUITEM "Tile &Horizontally",          ID_WINDOW_TILE_HORZ
         MENUITEM "Tile &Vertically",            ID_WINDOW_TILE_VERT
         MENUITEM "&Cascade",                    ID_WINDOW_CASCADE
@@ -1694,6 +1692,15 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,91,175,50,14
 END
 
+IDD_TITLEBAR_PAGE DIALOG DISCARDABLE  0, 0, 210, 154
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Titlebar"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_TITLEBAR,19,28,171,13,ES_AUTOHSCROLL
+    LTEXT           "Titlebar",IDC_STATIC,18,13,51,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1925,6 +1932,14 @@ BEGIN
         RIGHTMARGIN, 189
         TOPMARGIN, 7
         BOTTOMMARGIN, 189
+    END
+
+    IDD_TITLEBAR_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 147
     END
 END
 #endif    // APSTUDIO_INVOKED

@@ -266,13 +266,47 @@ BOOL CALLBACK FileTypeGeneralDialogProc(HWND window, UINT message, WPARAM wparam
 
   return FALSE;
 }
+
+///////////////////////////////////////////////////////////
+
+static
+BOOL CALLBACK TitlebarDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
+{
+  switch (message)
+  {
+    case WM_INITDIALOG:
+    {
+      char title[1024] = {0};
+      GetMainWindow()->GetWindowText(title, sizeof(title));
+      SetDlgItemText(window, IDC_TITLEBAR, title);
+      return TRUE;
+    }
+
+    case WM_NOTIFY:
+    {
+      PSHNOTIFY* psn = (PSHNOTIFY*)lparam;
+      if (psn->hdr.code == UINT(PSN_APPLY))
+      {
+        char title[1024] = {0};
+        GetDlgItemText(window, IDC_TITLEBAR, title, sizeof(title));
+        GetMainWindow()->SetWindowText(title);
+        return TRUE;
+      }
+
+      return FALSE;
+    }
+    
+  }
+
+  return FALSE;
+}
     
 ///////////////////////////////////////////////////////////
 
 void
 COptionsDialog::Execute()
 {
-  PROPSHEETPAGE Pages[2];
+  PROPSHEETPAGE Pages[3];
   const int num_pages = sizeof(Pages) / sizeof(*Pages);
 
   // default values
@@ -292,6 +326,10 @@ COptionsDialog::Execute()
 
   Pages[current_page].pszTemplate = MAKEINTRESOURCE(IDD_FILETYPES_GENERAL_PAGE);
   Pages[current_page].pfnDlgProc  = FileTypeGeneralDialogProc;
+  current_page += 1;
+
+  Pages[current_page].pszTemplate = MAKEINTRESOURCE(IDD_TITLEBAR_PAGE);
+  Pages[current_page].pfnDlgProc  = TitlebarDialogProc;
   current_page += 1;
 
   // create the dialog box

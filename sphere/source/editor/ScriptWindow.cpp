@@ -487,34 +487,41 @@ CScriptWindow::Create()
   CSaveableDocumentWindow::Create(
     AfxRegisterWndClass(0, LoadCursor(NULL, IDC_ARROW), NULL, AfxGetApp()->LoadIcon(IDI_SCRIPT)));
 
+  RECT Rect;
+  GetClientRect(&Rect);
+
+  int cx = Rect.right - Rect.left;
+  int cy = Rect.bottom - Rect.top;
+  int sidebar_width = 0;
+
   // creates the script view
   m_Editor = ::CreateWindow(
     "Scintilla",
     "Source",
     WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_CLIPCHILDREN,
-    0, 0,
-    100, 100,
+    sidebar_width, 0,
+    cx - sidebar_width, cy,
     m_hWnd,
     (HMENU)ID_EDIT,
     AfxGetApp()->m_hInstance,
     0);
 
-  /*
-  // creates the list view
-  m_List = ::CreateWindow(      
-    "LISTBOX",
-    "LISTBOX",
-    WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_CLIPCHILDREN | WS_BORDER |
-    LBS_EXTENDEDSEL | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT,
-    0,
-    0,
-    100,
-    250,
-    m_hWnd,
-    (HMENU)ID_EDIT,
-    AfxGetApp()->m_hInstance,
-    0);
-  */
+  if (1) {
+    // creates the list view
+    m_List = ::CreateWindow(      
+      "LISTBOX",
+      "LISTBOX",
+      WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_CLIPCHILDREN | WS_BORDER |
+      LBS_EXTENDEDSEL | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT,
+      0,
+      0,
+      sidebar_width,
+      cy,
+      m_hWnd,
+      (HMENU)ID_EDIT,
+      AfxGetApp()->m_hInstance,
+      0);
+  }
 
   Initialize();
 
@@ -530,8 +537,6 @@ CScriptWindow::Create()
   m_Created = true;
 
   // update the size of the view
-  RECT Rect;
-  GetClientRect(&Rect);
   OnSize(0, Rect.right /*- Rect.left*/, Rect.bottom /*- Rect.top*/);
 
   // give the view focus
