@@ -11,6 +11,7 @@
 #include "inputx.hpp"
 #include "render.hpp"
 #include "system.hpp"
+#include "time.hpp"
 #include "../common/AnimationFactory.hpp"
 #include "../common/configfile.hpp"
 
@@ -107,6 +108,13 @@ CGameEngine::Run()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void Delay(int ms)
+{
+  dword end = GetTime() + ms;
+  while (GetTime() < end) {
+  }
+}
+
 void
 CGameEngine::ShowError(const char* message)
 {
@@ -118,6 +126,7 @@ CGameEngine::ShowError(const char* message)
   m_SystemFont.DrawTextBox(0, 0, GetScreenWidth(), GetScreenHeight(), 0, message, white);
   FlipScreen();
 
+  Delay(1000);
   ClearKeyQueue();
   GetKey();
 }

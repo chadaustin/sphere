@@ -999,14 +999,15 @@ begin_func(ExecuteGame, 1)
   arg_str(directory);
 
   This->m_Engine->ExecuteGame(directory);
+  This->m_Error = "";
   return JS_FALSE;
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
 begin_func(Exit, 0)
-  // don't report an error (there is none)
   This->m_ShouldExit = true;
+  This->m_Error = "";  // don't report an error (there is none)
   return JS_FALSE;
 end_func()
 

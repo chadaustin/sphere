@@ -323,7 +323,10 @@ log_object.endBlock()
     - Returns the current map, e.g. "noisyforest.rmp"
     
   ExitMapEngine()
-    - Exits the map engine
+    - Exits the map engine.  Note:  This tells the map engine to shut
+      down.  This does not mean the engine shuts down immediately.  You
+      must wait for the original call to MapEngine() to return before you
+      can start a new map engine.
 
   IsMapEngineRunning()
     - Returns true if the map engine is running, false if not

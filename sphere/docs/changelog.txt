@@ -9,6 +9,12 @@
     start point, and zones appropriately as well
   - changed the Paste Area tool's tooltip to "Paste Area" instead of
     "Paste"
+  - clarified documentation for ExitMapEngine()
+  - added a 1000 millisecond delay before error messages go away
+  - when zone scripts fail, the map engine stops (just like triggers
+    and person scripts)
+  - calling Exit() in a bound script or person script or trigger
+    (etc.) no longer gives an error
 
 2003.02.05
   - fixed GrabImage crash bug in standard16 and interpolate16

@@ -204,8 +204,7 @@ CMapEngine::Exit()
     return true;
 
   } else {
-    // shouldn't this be ExitMapEngine()?
-    m_ErrorMessage = "Exit() called while map engine was not running";
+    m_ErrorMessage = "ExitMapEngine() called while map engine was not running";
     return false;
 
   }
@@ -3381,8 +3380,11 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     if (px > py) s = px;
     else s = py;
 
-    while (s-- > 0)
-      UpdateZones();
+    while (s-- > 0) {
+      if (!UpdateZones()) {
+        return false;
+      }
+    }
   }
 
   return true;
