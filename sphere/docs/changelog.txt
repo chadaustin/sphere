@@ -1,3 +1,6 @@
+2003.01.23
+  - added Get/SetTileDelay and Get/SetNextAnimatedTile (Brian Robb)
+
 2003.01.22
   - various fixes to the new SCons build system
   - pruned source tree, getting rid of many obsolete directories and
