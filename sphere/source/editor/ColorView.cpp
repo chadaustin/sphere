@@ -113,12 +113,16 @@ CColorView::OnPaint()
       int height = ClientRect.bottom;
 
       ClientRect.left  += width / 2;
+      ClientRect.bottom -= height / 2;
       dc.FillRect(&ClientRect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
       ClientRect.left  -= width / 2;
+      ClientRect.bottom += height / 2;
     
       ClientRect.top += height / 2;
+      ClientRect.right -= width / 2;
       dc.FillRect(&ClientRect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
       ClientRect.top -= height / 2;
+      ClientRect.right += width / 2;
     }
  
     CBrush* brush = new CBrush(RGB(m_ColorA.red, m_ColorA.green, m_ColorA.blue));

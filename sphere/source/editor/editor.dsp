@@ -898,6 +898,14 @@ SOURCE=.\AdjustBordersDialog.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\CheckListDialog.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\CheckListDialog.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ColorAdjustDialog.cpp
 # End Source File
 # Begin Source File

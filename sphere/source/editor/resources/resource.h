@@ -116,6 +116,7 @@
 #define IDD_FILETYPES_REGISTER_PAGE     269
 #define IDD_LINE_SORTER                 270
 #define IDD_ADJUST_BORDER               271
+#define IDD_CHECKLIST                   275
 #define IDC_PROJECTNAME                 1000
 #define IDC_GAMETITLE                   1001
 #define IDC_BROWSE                      1003
@@ -686,9 +687,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        275
+#define _APS_NEXT_RESOURCE_VALUE        276
 #define _APS_NEXT_COMMAND_VALUE         40799
-#define _APS_NEXT_CONTROL_VALUE         1233
+#define _APS_NEXT_CONTROL_VALUE         1234
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

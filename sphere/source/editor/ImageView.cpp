@@ -1678,13 +1678,13 @@ CImageView::OnSize(UINT type, int cx, int cy)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CImageView::OnLeftClick(UINT flags, CPoint point)
+CImageView::OnMouseClick(int index, UINT flags, CPoint point)
 {
   m_LastPoint = m_CurPoint;
   m_CurPoint = point;
 
-  if (m_MouseDown[0]) {
-    switch (m_SelectedTools[0]) {
+  if (m_MouseDown[index]) {
+    switch (m_SelectedTools[index]) {
       case Tool_Pencil:    break;
       case Tool_Fill:      break;
       case Tool_Line:      Line();  break;
@@ -1701,67 +1701,18 @@ CImageView::OnLeftClick(UINT flags, CPoint point)
       OnColorPicker();
     }
     else {
-      if (m_SelectedTools[0] != Tool_Selection
-       && m_SelectedTools[0] != Tool_FreeSelection) {
+      if (m_SelectedTools[index] != Tool_Selection
+       && m_SelectedTools[index] != Tool_FreeSelection) {
         // perform a normal click operation
         AddUndoState();
       }
 
-      if (m_SelectedTools[0] == Tool_FreeSelection) {
+      if (m_SelectedTools[index] == Tool_FreeSelection) {
         if (!(flags & MK_SHIFT))
           m_SelectionPoints.clear();
       }
 
-      switch (m_SelectedTools[0]) {
-        case Tool_Pencil:    Click(true); break;
-        case Tool_Fill:      Fill();      break;
-        case Tool_Line:      Line();      break;
-        case Tool_Rectangle: Rectangle(); break;
-        case Tool_Circle:    Circle();    break;
-        case Tool_Ellipse:   Ellipse();   break;
-        case Tool_Selection: Selection(); break;
-        case Tool_FreeSelection: Selection(); break;
-      }
-    }
-  }
-}
-
-void
-CImageView::OnRightClick(UINT flags, CPoint point)
-{
-  m_LastPoint = m_CurPoint;
-  m_CurPoint = point;
-
-  if (m_MouseDown[1]) {
-    switch (m_SelectedTools[1]) {
-      case Tool_Pencil:    break;
-      case Tool_Fill:      break;
-      case Tool_Line:      Line();  break;
-      case Tool_Rectangle: Rectangle(); break;
-      case Tool_Circle:    Circle(); break;
-      case Tool_Ellipse:   Ellipse(); break;
-      case Tool_Selection: Selection(); break;
-      case Tool_FreeSelection: Selection(); break;
-    }
-  }
-  else
-  {
-    if (flags & MK_SHIFT) {
-      OnColorPicker();
-    }
-    else {
-      if (m_SelectedTools[1] != Tool_Selection
-       && m_SelectedTools[1] != Tool_FreeSelection) {
-        // perform a normal click operation
-        AddUndoState();
-      }
-
-      if (m_SelectedTools[1] == Tool_FreeSelection) {
-        if (!(flags & MK_SHIFT))
-          m_SelectionPoints.clear();
-      }
-
-      switch (m_SelectedTools[1]) {
+      switch (m_SelectedTools[index]) {
         case Tool_Pencil:    Click(true); break;
         case Tool_Fill:      Fill();      break;
         case Tool_Line:      Line();      break;
@@ -1781,11 +1732,11 @@ afx_msg void
 CImageView::OnLButtonDown(UINT flags, CPoint point)
 {
   if (flags & MK_SHIFT) {
-    OnLeftClick(flags, point);
+    OnMouseClick(0, flags, point);
   }
   else {
     m_CurrentTool = 0;
-    OnLeftClick(flags, point);
+    OnMouseClick(0, flags, point);
     m_MouseDown[0] = true;
     SetCapture();
   }
@@ -1799,7 +1750,7 @@ CImageView::OnLButtonUp(UINT flags, CPoint point)
   if (!m_MouseDown[0])
     return;
 
-  OnLeftClick(flags, point);
+  OnMouseClick(0, flags, point);
   m_MouseDown[0] = false;
   ReleaseCapture();
 }
@@ -1813,11 +1764,11 @@ CImageView::OnRButtonDown(UINT flags, CPoint point)
     return;
 
   if (flags & MK_SHIFT) {
-    OnRightClick(flags, point);
+    OnMouseClick(1, flags, point);
   }
   else {
     m_CurrentTool = 1;
-    OnRightClick(flags, point);
+    OnMouseClick(1, flags, point);
     m_MouseDown[1] = true;
     SetCapture();
   }
@@ -1832,7 +1783,7 @@ CImageView::OnRButtonUp(UINT flags, CPoint point)
     if (!m_MouseDown[1])
       return;
 
-    OnRightClick(flags, point);
+    OnMouseClick(1, flags, point);
     m_MouseDown[1] = false;
     ReleaseCapture();
 
@@ -1949,47 +1900,27 @@ CImageView::OnMouseMove(UINT flags, CPoint point)
 
   const int current_tool = m_CurrentTool;
 
-  m_CurrentTool = 0;
-  if (m_MouseDown[m_CurrentTool])
-  {
-    switch (m_SelectedTools[m_CurrentTool])
+  for (int i = 0; i < 2; i++) {
+    m_CurrentTool = i;
+    if (m_MouseDown[m_CurrentTool])
     {
-      case Tool_Pencil:
-        Click(false);
-      break;
+      switch (m_SelectedTools[m_CurrentTool])
+      {
+        case Tool_Pencil:
+          Click(false);
+        break;
+ 
+        case Tool_Fill: break;
 
-      case Tool_Fill: break;
-
-      case Tool_Line:
-      case Tool_Rectangle:
-      case Tool_Circle:
-      case Tool_Ellipse:
-      case Tool_Selection:
-      case Tool_FreeSelection:
-        Invalidate();
-      break;
-    }
-  }
-
-  m_CurrentTool = 1;
-  if (m_MouseDown[m_CurrentTool])
-  {
-    switch (m_SelectedTools[m_CurrentTool])
-    {
-      case Tool_Pencil:
-        Click(false);
-      break;
-
-      case Tool_Fill: break;
-
-      case Tool_Line:
-      case Tool_Rectangle:
-      case Tool_Circle:
-      case Tool_Ellipse:
-      case Tool_Selection:
-      case Tool_FreeSelection:
-        Invalidate();
-      break;
+        case Tool_Line:
+        case Tool_Rectangle:
+        case Tool_Circle:
+        case Tool_Ellipse:
+        case Tool_Selection:
+        case Tool_FreeSelection:
+          Invalidate();
+        break;
+      }
     }
   }
 
@@ -2044,7 +1975,7 @@ CImageView::OnKeyDown(UINT vk, UINT nRepCnt, UINT nFlags)
 
   if (vk == VK_SPACE) {
     if (!m_MouseDown[0]) {
-      OnLeftClick(nFlags, m_CurPoint);
+      OnMouseClick(0, nFlags, m_CurPoint);
       m_MouseDown[0] = true;
     }
   }
@@ -2057,11 +1988,11 @@ CImageView::OnKeyUp(UINT vk, UINT nRepCnt, UINT nFlags)
 {
   if (vk == VK_SPACE) {
     if (nFlags & MK_SHIFT) {
-      OnLeftClick(nFlags, m_CurPoint);
+      OnMouseClick(0, nFlags, m_CurPoint);
     }
     else {
       if (m_MouseDown[0]) {
-        OnLeftClick(nFlags, m_CurPoint);
+        OnMouseClick(0, nFlags, m_CurPoint);
         m_MouseDown[0] = false;
       }
     }

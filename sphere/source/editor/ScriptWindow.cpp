@@ -499,6 +499,7 @@ CScriptWindow::Create()
     AfxGetApp()->m_hInstance,
     0);
 
+  /*
   // creates the list view
   m_List = ::CreateWindow(      
     "LISTBOX",
@@ -513,6 +514,7 @@ CScriptWindow::Create()
     (HMENU)ID_EDIT,
     AfxGetApp()->m_hInstance,
     0);
+  */
 
   Initialize();
 
@@ -522,7 +524,8 @@ CScriptWindow::Create()
   ::UpdateWindow(m_Editor);
 
   ::ShowWindow(m_List, SW_SHOW);
-  ::UpdateWindow(m_List);
+  if (::IsWindow(m_List))
+    ::UpdateWindow(m_List);
 
   m_Created = true;
 
@@ -543,6 +546,9 @@ void
 CScriptWindow::CreateList(int type)
 {
   m_ListType = type;
+
+  if (!::IsWindow(m_List))
+    return;
 
   ::SendMessage(m_List, LB_RESETCONTENT, 0, 0);
 
@@ -873,7 +879,7 @@ CScriptWindow::OnSize(UINT type, int cx, int cy)
   if (m_Created) {
     int sidebar_width = 0;
 
-    if ( ::IsWindowVisible(m_List) ) {
+    if ( ::IsWindow(m_List) && ::IsWindowVisible(m_List) ) {
       RECT rect;
       if ( ::GetWindowRect(m_List, &rect) ) {
         sidebar_width = rect.right - rect.left;
@@ -881,7 +887,8 @@ CScriptWindow::OnSize(UINT type, int cx, int cy)
     }
  
     ::MoveWindow(m_Editor, sidebar_width, 0, cx - sidebar_width, cy, TRUE);
-    ::MoveWindow(m_List, 0, 0, sidebar_width, cy, TRUE);
+    if (::IsWindow(m_List))
+      ::MoveWindow(m_List, 0, 0, sidebar_width, cy, TRUE);
   }
 
   CSaveableDocumentWindow::OnSize(type, cx, cy);
@@ -1209,13 +1216,16 @@ afx_msg void
 CScriptWindow::OnScriptGotoLine()
 {
   int pos = SendEditor(SCI_GETCURRENTPOS);
-  int cur_line = SendEditor(SCI_LINEFROMPOSITION, pos);
+  int cur_line = SendEditor(SCI_LINEFROMPOSITION, pos) + 1;
   int max_line = SendEditor(SCI_GETLINECOUNT);
 
-  CNumberDialog dialog("Goto Line", "Line Number", cur_line, 1, max_line);
+  char string[1024];
+  sprintf(string, "Line Number [%d / %d]", 1, max_line);
+
+  CNumberDialog dialog("Goto Line", string, cur_line, 1, max_line);
   if (dialog.DoModal()) {
     if (dialog.GetValue() != cur_line) {
-      SendEditor(SCI_GOTOLINE, dialog.GetValue());
+      SendEditor(SCI_GOTOLINE, dialog.GetValue() - 1);
     }
   }
 }

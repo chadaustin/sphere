@@ -49,7 +49,7 @@ public:
       mode & FDM_OPEN ? TRUE : FALSE,
       FTL.GetDefaultExtension(filetype::ft, (mode & FDM_SAVE ? true : false)),
       NULL,
-      OFN_HIDEREADONLY |
+      OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | 
         (mode & FDM_OPEN && !(mode & FDM_MAYNOTEXIST) ? OFN_FILEMUSTEXIST : 0) |
         (mode & FDM_MULTISELECT ? OFN_ALLOWMULTISELECT : 0),
       GenerateFilter(mode),

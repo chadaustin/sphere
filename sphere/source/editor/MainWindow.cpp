@@ -252,9 +252,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_WM_CHANGECBCHAIN()
   ON_WM_DRAWCLIPBOARD()
 
-#if 1
-  ON_NOTIFY(NM_RCLICK, AFX_IDW_TOOLBAR, OnNMRclick)
-#endif
+//  ON_NOTIFY(NM_RCLICK, AFX_IDW_TOOLBAR, OnNMRclick)
 
 END_MESSAGE_MAP()
 
@@ -266,7 +264,7 @@ CMainWindow::CMainWindow()
 , m_ProjectWindow(NULL)
 , m_ChildMenuResource(-1)
 , m_NextClipboardViewer(NULL)
-, m_NumImageToolsAllowed(2)
+, m_NumImageToolsAllowed(1)
 {
 }
 
@@ -517,7 +515,7 @@ CMainWindow::OnDrawClipboard()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#if 1
+/*
 afx_msg void
 CMainWindow::OnNMRclick(NMHDR *pNMHDR, LRESULT *pResult)
 {
@@ -548,7 +546,15 @@ CMainWindow::OnNMRclick(NMHDR *pNMHDR, LRESULT *pResult)
     GetStatusBar()->SetWindowText(string);
   }
 }
-#endif
+*/
+
+////////////////////////////////////////////////////////////////////////////////
+
+const char*
+CMainWindow::GetDefaultFolder() const
+{
+  return m_DefaultFolder.c_str();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1130,6 +1136,8 @@ std::string GenerateSupportedExtensionsFilter() {
   return filter;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 static
 std::string GetFolderFromPathName(CString thePath)
 {
@@ -1142,6 +1150,8 @@ std::string GetFolderFromPathName(CString thePath)
 
   return folder;
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
 CMainWindow::OnFileOpen()
@@ -2507,7 +2517,11 @@ CMainWindow::OnProjectConfigureSphere()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void __cdecl OnPackageFileWritten(const char* filename, int index, int total)
+#include "CheckListDialog.hpp"
+
+////////////////////////////////////////////////////////////////////////////////
+
+void OnPackageFileWritten(const char* filename, int index, int total)
 {
   char string[MAX_PATH + 1024] = {0};
   if (index == -1) {
@@ -2531,25 +2545,83 @@ void __cdecl OnPackageFileWritten(const char* filename, int index, int total)
 afx_msg void
 CMainWindow::OnProjectPackageGame()
 {
+  struct Local {
+    static bool IsGameFileType(const char* filename)
+    { 
+      if (strcmp_ci(filename + strlen(filename) - 3, "ini") == 0) {
+        return true;
+      }
+
+      if (strcmp_ci(filename + strlen(filename) - 3, "dat") == 0) {
+        return true;
+      }
+
+      if (strcmp_ci(filename + strlen(filename) - 3, "sgm") == 0) {
+        return true;
+      }
+
+      for (int i = 0; i < NUM_GROUP_TYPES; i++)
+      {
+        std::vector<std::string> extensions;
+        FTL.GetFileTypeExtensions(i, false, extensions);
+    
+        for (unsigned int k = 0; k < extensions.size(); k++) {
+          std::string ext = "." + extensions[k];
+          if (strcmp_ci(filename + strlen(filename) - ext.length(), ext.c_str()) == 0) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+  };
+
+
   char old_directory[MAX_PATH];
   GetCurrentDirectory(MAX_PATH, old_directory);
-  SetCurrentDirectory(m_Project.GetDirectory());
+  if (SetCurrentDirectory(m_Project.GetDirectory()) == 0) {
+    char string[1024 + MAX_PATH];
+    sprintf (string, "Cannot open game directory\n '%s'", m_Project.GetDirectory());
+    MessageBox(string, "Package Game", MB_OK | MB_ICONERROR);
+    return;
+  }
 
   // go into game directory and add all files
   std::list<std::string> files;
-  EnumerateFiles("*", "", files);
+  EnumerateFiles("*", "", "", files);
 
-  //std::string msg = "";
+  if (files.size() == 0)
+    return;
 
   CPackage package;
   std::list<std::string>::iterator i;
   for (i = files.begin(); i != files.end(); i++) {
     package.AddFile(i->c_str());
-    //msg += i->c_str();
-    //msg += " ";
   }
-  
-  //MessageBox(msg.c_str());
+
+  CCheckListDialog checklist;
+  checklist.SetCaption("Select Package Files...");
+  checklist.SetMinChecked(1);
+
+  for (i = files.begin(); i != files.end(); i++) {
+    if ( !checklist.AddItem(i->c_str(), Local::IsGameFileType(i->c_str())) ) {
+      return;
+    }
+  }
+
+  if (checklist.DoModal() != IDOK) {
+    return;
+  }
+
+  for (int j = files.size() - 1; j >= 0; j--) {
+    if (checklist.IsChecked(j) == false) {
+      package.RemoveFile(j);
+    }
+  }
+
+  if (package.GetNumFiles() == 0) {
+    return;
+  }
 
   // TODO:  show a wait dialog (no cancel)
   // it now shows "xyz% Complete" in the status bar...
@@ -2559,10 +2631,11 @@ CMainWindow::OnProjectPackageGame()
 
   if (dialog.DoModal() == IDOK) {
     // write the package!
-    if (!package.Write(dialog.GetPathName(), OnPackageFileWritten)) {
-      MessageBox("Package creation failed", "Package Game");
+    std::string filename = dialog.GetPathName();
+    if ( !package.Write(filename.c_str(), &OnPackageFileWritten) ) {
+      MessageBox("Package creation failed", "Package Game", MB_OK | MB_ICONERROR);
     } else {
-      MessageBox("Package creation succeeded!", "Package Game");
+      MessageBox("Package creation succeeded!", "Package Game", MB_OK);
     }
   }
 
@@ -2597,29 +2670,39 @@ void OpenURL(const std::string& url, const std::string& label)
   }
 }
 
+void PromptURL(const std::string& url, const std::string& label)
+{
+  CStringDialog dialog(label.c_str(), url.c_str());
+  if (dialog.DoModal() == IDOK) {
+    OpenURL(url, label);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnHelpSphereSite()
 {
-  OpenURL("http://sphere.sourceforge.net/", "Open Sphere Site");
+  PromptURL("http://sphere.sourceforge.net/", "Open Sphere Site");
 }
 
 afx_msg void
 CMainWindow::OnHelpSphereFAQ()
 {
-  OpenURL("http://sphere.sourceforge.net/modules.php?op=modload&name=FAQ&file=index",
+  PromptURL("http://sphere.sourceforge.net/modules.php?op=modload&name=FAQ&file=index",
           "Open Frequently Asked Questions");
 }
 
 afx_msg void
 CMainWindow::OnHelpAegisKnightsSite()
 {
-  OpenURL("http://aegisknight.org/sphere", "Open AegisKnight's Site");
+  PromptURL("http://aegisknight.org/sphere", "Open AegisKnight's Site");
 }
 
 afx_msg void
 CMainWindow::OnHelpFliksSite()
 {
-  OpenURL("http://sphere.sourceforge.net/flik/docs", "Open Flik's Tutorial Site");
+  PromptURL("http://sphere.sourceforge.net/flik/docs", "Open Flik's Tutorial Site");
 }
 
 ////////////////////////////////////////////////////////////////////////////////

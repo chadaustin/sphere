@@ -8,7 +8,7 @@
 #include "../common/common_palettes.hpp"
 #include "resource.h"
 #include <stdio.h>
-
+#include "Editor.hpp"
 
 #define SWATCH_TILE_SIZE 10
 
@@ -307,6 +307,9 @@ CSwatchPalette::OnFileLoad()
     "All Files (*.*)|*.*||"
   );
 
+  SetCurrentDirectory(GetMainWindow()->GetDefaultFolder());
+  Dialog.m_ofn.lpstrInitialDir = GetMainWindow()->GetDefaultFolder();
+
   if (Dialog.DoModal() != IDOK) {
     return;
   }
@@ -355,6 +358,9 @@ CSwatchPalette::OnFileSave()
     "Sphere Swatch Files (*.sswatch)|*.sswatch|" \
     "C source file (*.cswatch)|*.cswatch|" \
     "All Files (*.*)|*.*||");
+
+  SetCurrentDirectory(GetMainWindow()->GetDefaultFolder());
+  Dialog.m_ofn.lpstrInitialDir = GetMainWindow()->GetDefaultFolder();
 
   if (Dialog.DoModal() != IDOK) {
     return;

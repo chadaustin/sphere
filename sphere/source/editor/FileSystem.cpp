@@ -53,12 +53,16 @@ int FileSize(const char* filename)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool EnumerateFiles(const char* filter, const char* directory, std::list<std::string>& files)
+bool EnumerateFiles(const char* filter, const char* directory, const char* directory_prefix, std::list<std::string>& files)
 {
   // store current directory
   char old_directory[MAX_PATH];
   GetCurrentDirectory(MAX_PATH, old_directory);
-  SetCurrentDirectory(directory);
+  if (strcmp(directory, "") != 0) {
+    if (SetCurrentDirectory(directory) == 0) {
+      return false;
+    }
+  }
 
   // add files in this directory
   WIN32_FIND_DATA ffd;
@@ -67,10 +71,10 @@ bool EnumerateFiles(const char* filter, const char* directory, std::list<std::st
     do {
       if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
 
-        std::string root_path = directory;
+        std::string root_path = directory_prefix;
+        root_path += directory;
         root_path += ffd.cFileName;
         files.push_back(root_path);
-
       }
     } while (FindNextFile(search, &ffd));
     FindClose(search);
@@ -84,10 +88,15 @@ bool EnumerateFiles(const char* filter, const char* directory, std::list<std::st
           strcmp(ffd.cFileName, ".") != 0 &&
           strcmp(ffd.cFileName, "..") != 0) {
 
-        std::string directory = ffd.cFileName;
-        directory += "/";
-        EnumerateFiles(filter, directory.c_str(), files);
+        std::string target_directory = ffd.cFileName;
+        target_directory += "/";
 
+        std::string target_prefix = directory_prefix;
+        if (strcmp(directory, "") != 0) {
+          target_prefix += directory;
+        }
+
+        EnumerateFiles(filter, target_directory.c_str(), target_prefix.c_str(), files);
       }
     } while (FindNextFile(search, &ffd));
     FindClose(search);

@@ -11,6 +11,8 @@ BEGIN_MESSAGE_MAP(CPaletteView, CWnd)
   ON_WM_PAINT()
   ON_WM_LBUTTONDOWN()
   ON_WM_LBUTTONUP()
+  ON_WM_RBUTTONDOWN()
+  ON_WM_RBUTTONUP()
   ON_WM_MOUSEMOVE()
   ON_WM_SIZE()
 
@@ -21,9 +23,10 @@ END_MESSAGE_MAP()
 
 CPaletteView::CPaletteView()
 : m_pPaletteDIB(NULL)
-, m_Color(CreateRGB(0, 0, 0))
-, m_bMouseDown(false)
 {
+  m_Colors[0] = CreateRGB(255, 255, 255);
+  m_Colors[1] = CreateRGB(0, 0, 0);
+  m_bMouseDown[0] = m_bMouseDown[1] = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -31,6 +34,7 @@ CPaletteView::CPaletteView()
 CPaletteView::~CPaletteView()
 {
   delete m_pPaletteDIB;
+  m_pPaletteDIB = NULL;
   DestroyWindow();
 }
 
@@ -52,9 +56,9 @@ CPaletteView::Create(IPaletteViewHandler* pHandler, CWnd* pParentWindow)
 ////////////////////////////////////////////////////////////////////////////////
 
 RGB
-CPaletteView::GetColor() const
+CPaletteView::GetColor(int index) const
 {
-  return m_Color;
+  return m_Colors[index];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -155,10 +159,10 @@ CPaletteView::OnPaint()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-afx_msg void
-CPaletteView::OnLButtonDown(UINT flags, CPoint point)
+bool
+CPaletteView::UpdateColor(int index, UINT flags, CPoint point)
 {
-  if (!m_pPaletteDIB || m_pPaletteDIB->GetPixels() == NULL) return;
+  if (!m_pPaletteDIB || m_pPaletteDIB->GetPixels() == NULL) return false;
 
   // bounds check
   RECT ClientRect;
@@ -167,25 +171,29 @@ CPaletteView::OnLButtonDown(UINT flags, CPoint point)
       point.y < 0 ||
       point.x >= ClientRect.right ||
       point.y >= ClientRect.bottom)
-    return;
+    return false;
 
   // get color
   BGR* pixels = (BGR*)m_pPaletteDIB->GetPixels();
   BGR color = pixels[point.y * m_pPaletteDIB->GetWidth() + point.x];
 
-  m_Color.red   = color.red;
-  m_Color.green = color.green;
-  m_Color.blue  = color.blue;
+  m_Colors[index].red   = color.red;
+  m_Colors[index].green = color.green;
+  m_Colors[index].blue  = color.blue;
 
-  m_bMouseDown = true;
-  SetCapture();
+  m_pHandler->PV_ColorChanged(index, m_Colors[index]);
+  return true;
+}
 
-  // tell parent window that the color has changed
-  m_pHandler->PV_ColorChanged(m_Color);
+////////////////////////////////////////////////////////////////////////////////
 
-  char string[255];
-  sprintf(string, "color=[%d %d %d]", m_Color.red, m_Color.green, m_Color.blue);
-  GetStatusBar()->SetPaneText(1, string);
+afx_msg void
+CPaletteView::OnLButtonDown(UINT flags, CPoint point)
+{
+  if (UpdateColor(0, flags, point)) {
+    m_bMouseDown[0] = true;
+    SetCapture();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -193,7 +201,27 @@ CPaletteView::OnLButtonDown(UINT flags, CPoint point)
 afx_msg void
 CPaletteView::OnLButtonUp(UINT flags, CPoint point)
 {
-  m_bMouseDown = false;
+  m_bMouseDown[0] = false;
+  ReleaseCapture();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CPaletteView::OnRButtonDown(UINT flags, CPoint point)
+{
+  if (UpdateColor(1, flags, point)) {
+    m_bMouseDown[1] = true;
+    SetCapture();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CPaletteView::OnRButtonUp(UINT flags, CPoint point)
+{
+  m_bMouseDown[1] = false;
   ReleaseCapture();
 }
 
@@ -202,34 +230,11 @@ CPaletteView::OnLButtonUp(UINT flags, CPoint point)
 afx_msg void
 CPaletteView::OnMouseMove(UINT flags, CPoint point)
 {
-  // bounds check
-  if (!m_bMouseDown)
-    return;
+  if (m_bMouseDown[0])
+    UpdateColor(0, flags, point);
 
-  if (!m_pPaletteDIB || m_pPaletteDIB->GetPixels() == NULL) return;
-
-  RECT ClientRect;
-  GetClientRect(&ClientRect);
-  if (point.x < 0 ||
-      point.y < 0 ||
-      point.x >= ClientRect.right ||
-      point.y >= ClientRect.bottom)
-    return;
-
-  // get color
-  BGR* pixels = (BGR*)m_pPaletteDIB->GetPixels();
-  BGR color = pixels[point.y * m_pPaletteDIB->GetWidth() + point.x];
-
-  m_Color.red   = color.red;
-  m_Color.green = color.green;
-  m_Color.blue  = color.blue;
-
-  // tell parent window that the color has changed
-  m_pHandler->PV_ColorChanged(m_Color);
-
-  char string[255];
-  sprintf(string, "color=[%d %d %d]", m_Color.red, m_Color.green, m_Color.blue);
-  GetStatusBar()->SetPaneText(1, string);
+  if (m_bMouseDown[1])
+    UpdateColor(1, flags, point);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

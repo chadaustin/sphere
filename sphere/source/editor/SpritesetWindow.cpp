@@ -172,6 +172,7 @@ CSpritesetWindow::Create()
   m_SpritesetView.Create(this, this, &m_Spriteset);
   m_ImageView.Create(this, this, this);
   m_PaletteView.Create(this, this);
+  m_ColorView.SetNumColors(2);
   m_ColorView.Create(this, this);
   m_AlphaView.Create(this, this);
   m_SpriteBaseView.Create(this, this, &m_Spriteset);
@@ -732,11 +733,11 @@ CSpritesetWindow::IV_ColorChanged(RGBA color)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CSpritesetWindow::PV_ColorChanged(RGB color)
+CSpritesetWindow::PV_ColorChanged(int index, RGB color)
 {
   RGBA rgba = { color.red, color.green, color.blue, m_AlphaView.GetAlpha() };
-  m_ImageView.SetColor(0, rgba);
-  m_ColorView.SetColor(0, color);
+  m_ImageView.SetColor(index, rgba);
+  m_ColorView.SetColor(index, color);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

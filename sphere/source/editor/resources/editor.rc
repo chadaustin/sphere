@@ -1685,6 +1685,15 @@ BEGIN
     LTEXT           "Right",IDC_STATIC,23,95,18,8
 END
 
+IDD_CHECKLIST DIALOG DISCARDABLE  0, 0, 196, 196
+STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Check List Dialog"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,25,175,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,91,175,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1908,6 +1917,14 @@ BEGIN
         RIGHTMARGIN, 172
         TOPMARGIN, 7
         BOTTOMMARGIN, 176
+    END
+
+    IDD_CHECKLIST, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 189
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 189
     END
 END
 #endif    // APSTUDIO_INVOKED

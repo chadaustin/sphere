@@ -9,7 +9,7 @@
 extern bool PathExists(const char* pathname);
 extern bool FileExists(const char* filename);
 extern int  FileSize(const char* filename);
-extern bool EnumerateFiles(const char* filter, const char* directory, std::list<std::string>& files);
+extern bool EnumerateFiles(const char* filter, const char* directory, const char* directory_prefix, std::list<std::string>& files);
 
 
 #endif

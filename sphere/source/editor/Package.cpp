@@ -6,7 +6,6 @@
 #include "Package.hpp"
 #include "../common/spk.hpp"
 
-
 const int BLOCK_SIZE = 4096;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -19,6 +18,26 @@ CPackage::AddFile(const char* filename)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+CPackage::RemoveFile(int index)
+{
+  std::list<std::string>::iterator iter = m_files.begin();
+  for (int i = 0; i < index; i++)
+    iter++;
+  m_files.erase(iter);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CPackage::GetNumFiles() const
+{
+  return int(m_files.size());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 // this struct needs external linkage
 struct index_entry {
   std::string name;
@@ -27,8 +46,8 @@ struct index_entry {
   dword compressed_size;
 };
 
-bool
-CPackage::Write(const char* filename, PackageFileWrittenCallBack file_written)
+bool 
+CPackage::Write(const char* filename, PackageFileWritten file_written)
 {
   // open file
   FILE* file = fopen(filename, "wb");
@@ -43,7 +62,10 @@ CPackage::Write(const char* filename, PackageFileWrittenCallBack file_written)
   header.version = 1;
   header.num_files = 0;     // update this
   header.index_offset = 0;  // update this
-  fwrite(&header, 1, sizeof(header), file);
+  if (fwrite(&header, 1, sizeof(header), file) != sizeof(header)) {
+    fclose(file);
+    return false;
+  }
 
   // make a directory index
   std::list<index_entry> directory;
@@ -56,9 +78,8 @@ CPackage::Write(const char* filename, PackageFileWrittenCallBack file_written)
     // open file
     FILE* in = fopen(i->c_str(), "rb");
     if (in == NULL) {
-      if (file_written != NULL)
-        file_written(i->c_str(), file_index++, m_files.size());
-      continue;
+      fclose(file);
+      return false;
     }
 
     header.num_files++;
@@ -93,7 +114,11 @@ CPackage::Write(const char* filename, PackageFileWrittenCallBack file_written)
 
       // if output is ready, write it
       if (stream.avail_out == 0) {
-        fwrite(out_block, 1, BLOCK_SIZE, file);
+        if (fwrite(out_block, 1, BLOCK_SIZE, file) != BLOCK_SIZE) {
+          fclose(file);
+          deflateEnd(&stream);
+          return false;
+        }
         stream.next_out  = out_block;
         stream.avail_out = BLOCK_SIZE;
       }
@@ -101,14 +126,22 @@ CPackage::Write(const char* filename, PackageFileWrittenCallBack file_written)
 
     // flush the output stream
     while (deflate(&stream, Z_FINISH) != Z_STREAM_END) {
-      fwrite(out_block, 1, BLOCK_SIZE - stream.avail_out, file);
+      if (fwrite(out_block, 1, BLOCK_SIZE - stream.avail_out, file) != BLOCK_SIZE - stream.avail_out) {
+        fclose(file);
+        deflateEnd(&stream);
+        return false;
+      }
       stream.next_out  = out_block;
       stream.avail_out = BLOCK_SIZE;
     }
 
     // write the *final* bit of compressed data
     if (stream.avail_out != BLOCK_SIZE) {
-      fwrite(out_block, 1, BLOCK_SIZE - stream.avail_out, file);
+      if (fwrite(out_block, 1, BLOCK_SIZE - stream.avail_out, file) != BLOCK_SIZE - stream.avail_out) {
+        fclose(file);
+        deflateEnd(&stream);
+        return false;
+      }
     }
 
     deflateEnd(&stream);
@@ -120,7 +153,7 @@ CPackage::Write(const char* filename, PackageFileWrittenCallBack file_written)
     
     fclose(in);
 
-    if (file_written != NULL)
+    if (file_written)
       file_written(i->c_str(), file_index++, m_files.size());
   }
 
@@ -136,17 +169,24 @@ CPackage::Write(const char* filename, PackageFileWrittenCallBack file_written)
     entry.file_offset = j->file_offset;
     entry.file_size = j->file_size;
     entry.compressed_size = j->compressed_size;
-    fwrite(&entry, 1, sizeof(entry), file);
-    fwrite(j->name.c_str(), 1, j->name.length() + 1, file);
+    if (fwrite(&entry, 1, sizeof(entry), file) != sizeof(entry)
+     || fwrite(j->name.c_str(), 1, j->name.length() + 1, file) != j->name.length() + 1) {
+      fclose(file);
+      return false;
+    }
   }
 
   // rewrite the header
   rewind(file);
-  fwrite(&header, 1, sizeof(header), file);
+  if (fwrite(&header, 1, sizeof(header), file) != sizeof(header)) {
+    fclose(file);
+    return false;
+  }
 
   fclose(file);
 
-  if (file_written != NULL) // 100% done now
+  // 100% done now
+  if (file_written)
     file_written("", file_index++, m_files.size());
   
   return true;

@@ -76,6 +76,7 @@ CTilesetEditView::Create(CWnd* parent, CDocumentWindow* owner, ITilesetEditViewH
   // create the views
   m_ImageView.Create(owner, this, this);
   m_PaletteView.Create(this, this);
+  m_ColorView.SetNumColors(2);
   m_ColorView.Create(this, this);
   m_AlphaView.Create(this, this);
 
@@ -397,12 +398,12 @@ CTilesetEditView::IV_ColorChanged(RGBA color)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CTilesetEditView::PV_ColorChanged(RGB color)
+CTilesetEditView::PV_ColorChanged(int index, RGB color)
 {
-  m_ColorView.SetColor(0, color);
+  m_ColorView.SetColor(index, color);
   byte alpha = m_AlphaView.GetAlpha();
   RGBA c = { color.red, color.green, color.blue, alpha };
-  m_ImageView.SetColor(0, c);
+  m_ImageView.SetColor(index, c);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

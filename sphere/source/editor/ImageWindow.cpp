@@ -383,12 +383,11 @@ CImageWindow::IV_ColorChanged(RGBA color)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CImageWindow::PV_ColorChanged(RGB rgb)
+CImageWindow::PV_ColorChanged(int index, RGB rgb)
 {
-  m_ColorView.SetColor(0, rgb);
-
+  m_ColorView.SetColor(index, rgb);
   RGBA rgba = { rgb.red, rgb.green, rgb.blue, m_ImageView.GetColor().alpha };
-  m_ImageView.SetColor(0, rgba);
+  m_ImageView.SetColor(index, rgba);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

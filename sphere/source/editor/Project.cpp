@@ -10,6 +10,7 @@
 #include "../common/types.h"
 
 #include "../common/system.hpp"
+#include "FileSystem.hpp"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -328,37 +329,20 @@ CProject::RefreshItems()
   if (SetCurrentDirectory(m_Directory.c_str()) != 0)
   {
     UpdateGroupItems(m_Groups);
-/*
-    for (unsigned int i = 0; i < folderlist.size(); i++) {
-      if (folderlist[i] == "." || folderlist[i] == "..")
-        continue;
-        
-      if (!SetCurrentDirectory(m_Directory.c_str()))
-        continue;
 
-      if (SetCurrentDirectory(folderlist[i].c_str()))
-      {
 
-        if (folderlist[i] == "scripts")
-        {
-          if (m_GameScript.empty()) {
-            if (folderlist.size() == 0) {
-              m_GameScript = "";
-            }
-            else {
-              m_GameScript = folderlist[0];
-            }
+    if (m_GameScript.empty())
+    {
+      if (GetItemCount(GT_SCRIPTS) == 1) {
+        m_GameScript = GetItem(GT_SCRIPTS, 0);
+      }
 
-            if (!m_Filename.empty()) {
-              Save();
-            }
-          }
-        }
+      if (!m_Filename.empty()) {
+        Save();
       }
 
       SetCurrentDirectory(m_Directory.c_str());
     }
-*/
   }
 
   // restore the old directory

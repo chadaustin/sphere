@@ -44,12 +44,16 @@ CClipboard::GetFlatImageFromClipboard(int& width, int& height)
   height = *ptr++;
 
   if (width <= 0 || height <= 0) {
+    width = 0;
+    height = 0;
     return NULL;
   }
 
   RGBA* clipboard = (RGBA*)ptr;
   RGBA* pixels = new RGBA[width * height];
   if (pixels == NULL) {
+    width = 0;
+    height = 0;
     return NULL;
   }
 
@@ -127,25 +131,32 @@ CClipboard::GetBitmapImageFromClipboard(int& width, int& height)
   height = b.bmHeight;
 
   if (width <= 0 || height <= 0) {
+    width = 0;
+    height = 0;
     return NULL;
   }
 
   RGBA* pixels = new RGBA[width * height];
   if (pixels == NULL) {
+    width = 0;
+    height = 0;
     return NULL;
   }
 
+  memset(pixels, 255, sizeof(RGBA) * width * height);
+
+  // todo: GetPixel/GetR/G/BValue are extremely slow, fix it!
+  RGBA* ptr = pixels;
   for (int iy = 0; iy < height; iy++) {
     for (int ix = 0; ix < width; ix++)
     {
       COLORREF pixel = GetPixel(dc, ix, iy);
-      if (pixel == CLR_INVALID)
-        pixel = RGB(0, 0, 0);
-
-      pixels[iy * width + ix].red   = GetRValue(pixel);
-      pixels[iy * width + ix].green = GetGValue(pixel);
-      pixels[iy * width + ix].blue  = GetBValue(pixel);
-      pixels[iy * width + ix].alpha = 255;  // there is no alpha so we use a default
+      if (pixel != CLR_INVALID) {
+        ptr->red   = GetRValue(pixel);
+        ptr->green = GetGValue(pixel);
+        ptr->blue  = GetBValue(pixel);
+      }
+      ptr++;
     }
   }
 

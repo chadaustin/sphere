@@ -120,8 +120,7 @@ private:
   void PaintEllipse(CImage32& pImage);
   afx_msg void OnSize(UINT type, int cx, int cy);
 
-  void OnLeftClick(UINT flags, CPoint point);
-  void OnRightClick(UINT flags, CPoint point);
+  void OnMouseClick(int index, UINT flags, CPoint point);
 
   afx_msg void OnLButtonDown(UINT flags, CPoint point);
   afx_msg void OnLButtonUp(UINT flags, CPoint point);

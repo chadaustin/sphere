@@ -215,9 +215,7 @@ private:
 
   void OnLanguageChanged();
 
-#if 1
-  afx_msg void OnNMRclick(NMHDR *pNMHDR, LRESULT *pResult);
-#endif
+//  afx_msg void OnNMRclick(NMHDR *pNMHDR, LRESULT *pResult);
 
 private:
   HWND m_NextClipboardViewer;
@@ -226,6 +224,8 @@ private:
 
 public:
   std::vector<std::string> m_ClipboardHistory;
+
+  const char* GetDefaultFolder() const;
 
 private:
   CToolBar   m_MainToolBar;
