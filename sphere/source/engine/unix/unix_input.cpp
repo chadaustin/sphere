@@ -1,6 +1,7 @@
 #include "unix_input.h"
 #include "SDL.h"
 #include <deque>
+#include <iostream>
 
 static std::deque<Uint8> keys;
 
@@ -110,7 +111,7 @@ bool RefreshInput () {
         default:
           for (int lcv = 0; lcv < total_keys; lcv++) {
             if (pressed == KeyMapping[lcv]) {
-              key = KeyMapping[lcv];
+              key = lcv;
               break;
             }
           }
