@@ -30,6 +30,8 @@ public:
    */
   std::string Run();
 
+  bool Restarted();
+
 private:
   void ShowError(const char* message);
   void CreateSystemObjects();
@@ -46,6 +48,7 @@ private:
 
   virtual void GetGameList(std::vector<Game>& games);
   virtual void ExecuteGame(const char* directory);
+  virtual void RestartGame();
 
   virtual script CompileScript(const char* script, std::string& error);
   virtual bool ExecuteScript(script s, bool& should_exit, std::string& error);
@@ -111,6 +114,7 @@ private:
 
   // the next game to be executed
   std::string m_NextGame;
+  bool m_RestartGame;
 
   // opened file list
   std::map<CConfigFile*, SFileInfo> m_OpenFiles;

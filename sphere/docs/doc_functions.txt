@@ -64,6 +64,9 @@ ExecuteGame(directory)
     that this is unlike Sphere 0.97, which returned directly from
     ExecuteGame when the other game finished.)
 
+RestartGame()
+  - restarts the current game
+
 Exit()
   - Exits the Sphere engine unconditionally
 

@@ -1069,6 +1069,17 @@ begin_func(ExecuteGame, 1)
   return JS_FALSE;
 end_func()
 
+begin_func(RestartGame, 0)
+  This->m_Engine->RestartGame();
+  This->m_Error = "";
+
+  // close the map engine
+  if (This->m_Engine->GetMapEngine()->IsRunning())
+    This->m_Engine->GetMapEngine()->Exit();
+
+  return JS_FALSE;
+end_func()
+
 ////////////////////////////////////////////////////////////////////////////////
 
 begin_func(Exit, 0)

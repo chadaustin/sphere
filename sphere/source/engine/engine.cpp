@@ -30,6 +30,7 @@ CGameEngine::CGameEngine(IFileSystem& fs,
 , m_Parameters(parameters)
 , m_Script(NULL)
 , m_MapEngine(NULL)
+, m_RestartGame(false)
 {
 }
 
@@ -39,6 +40,7 @@ std::string
 CGameEngine::Run()
 {
   m_Script = new CScript(this);
+  m_RestartGame = false;
 
   // initialize map engine
   m_MapEngine = new CMapEngine(this, m_FileSystem);
@@ -340,6 +342,22 @@ void
 CGameEngine::ExecuteGame(const char* directory)
 {
   m_NextGame = GetSphereDirectory() + "/games/" + directory;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CGameEngine::RestartGame()
+{  
+  m_RestartGame = true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CGameEngine::Restarted()
+{
+  return m_RestartGame;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

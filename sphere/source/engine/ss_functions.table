@@ -15,6 +15,7 @@ SS_FUNCTION(CreateStringFromCode, 1)
 SS_FUNCTION(GetVersionString, 0)
 SS_FUNCTION(GetGameList, 0)
 SS_FUNCTION(ExecuteGame, 1)
+SS_FUNCTION(RestartGame, 0)
 SS_FUNCTION(Exit, 0)
 SS_FUNCTION(Abort, 1)
 
