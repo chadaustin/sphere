@@ -485,10 +485,6 @@ mng_retcode mng_putpngimage(mng_handle hMNG, const RGBA* pixels, const int width
   // If the number of colors could be MNG_BITDEPTH_1, MNG_BITDEPTH_2 or MNG_BITDEPTH_4
   // we could probably fit more colors per pixel, but I only support MNG_BITDEPTH_8 for now
 
-  if (has_alpha) {
-    pixel_size = sizeof(RGBA);
-  }
-
   /*
   unsigned long num_colors = CountColorsUsed(pixels, width, height, x, y, w, h);
   mng_int8 bit_depth = MNG_BITDEPTH_8;
@@ -601,8 +597,9 @@ mng_retcode mng_putpngimage(mng_handle hMNG, const RGBA* pixels, const int width
     //}
 
     buffer = (unsigned char*) __mng_alloc__(filter_len);
-    if (buffer == NULL)
+    if (buffer == NULL) {
       return MNG_OUTOFMEMORY;
+    }
 
     compressed = (unsigned char*) __mng_alloc__(compressed_len);
     if (compressed == NULL) {
@@ -668,18 +665,6 @@ ____SaveMNGAnimationFromImages____(mng_handle hMNG,
   int max_frame_width = 0;
   int max_frame_height = 0;
 
-  //if (!(images.size() >= 1))
-  //  return -1;
-
-  /*
-  for (int i = 0; i < images.size(); i++) {
-    if (max_frame_width < images[i].GetWidth())
-      max_frame_width = images[i].GetWidth();
-    if (max_frame_height < images[i].GetHeight())
-      max_frame_height = images[i].GetHeight();
-  }
-  */
-
   mng_palette8 GlobalPalette;
   int GlobalPaletteSize = 0;
   mng_bool can_use_global_palette = MNG_TRUE;
@@ -691,8 +676,8 @@ ____SaveMNGAnimationFromImages____(mng_handle hMNG,
   mng_bool playtime_known = MNG_TRUE;
 
   CImage32 __temp__;
-  while (get_image(num_images, __temp__, data) == MNG_TRUE && (max_images == -1 || num_images < max_images)) {
-
+  while (get_image(num_images, __temp__, data) == MNG_TRUE && (max_images == -1 || num_images < max_images))
+  {
     if (max_frame_width < __temp__.GetWidth())
       max_frame_width = __temp__.GetWidth();
     if (max_frame_height < __temp__.GetHeight())
@@ -717,7 +702,6 @@ ____SaveMNGAnimationFromImages____(mng_handle hMNG,
 
     if (!should_continue(-1, num_images))
       return -1;
-
   }
 
   if (max_frame_width <= 0 || max_frame_height <= 0) {

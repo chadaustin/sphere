@@ -27,6 +27,7 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_SCRIPT_CHECKSYNTAX,      OnScriptCheckSyntax)
   ON_COMMAND(ID_SCRIPT_FIND,             OnScriptFind)
   ON_COMMAND(ID_SCRIPT_REPLACE,          OnScriptReplace)
+  ON_COMMAND(ID_SCRIPT_GOTOLINE,         OnScriptGotoLine)
 
   ON_COMMAND(ID_SCRIPT_OPTIONS_SET_FONT,      OnOptionsSetScriptFont)
   ON_COMMAND(ID_SCRIPT_OPTIONS_TOGGLE_COLORS, OnOptionsToggleColors)
@@ -485,6 +486,23 @@ CScriptWindow::OnScriptReplace()
       SendEditor(SCI_SETSELECTIONMODE, m_SelectionType);
 
       m_SearchDialog->Create(false, text, NULL, FR_DOWN, this);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnScriptGotoLine()
+{
+  int pos = SendEditor(SCI_GETCURRENTPOS);
+  int cur_line = SendEditor(SCI_LINEFROMPOSITION, pos);
+  int max_line = SendEditor(SCI_GETLINECOUNT);
+
+  CNumberDialog dialog("Goto Line", "Line Number", cur_line, 1, max_line);
+  if (dialog.DoModal()) {
+    if (dialog.GetValue() != cur_line) {
+      SendEditor(SCI_GOTOLINE, dialog.GetValue());
     }
   }
 }

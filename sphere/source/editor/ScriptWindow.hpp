@@ -34,6 +34,7 @@ private:
   afx_msg void OnScriptCheckSyntax();
   afx_msg void OnScriptFind();
   afx_msg void OnScriptReplace();
+  afx_msg void OnScriptGotoLine();
 
   afx_msg void OnOptionsSetScriptFont();
   afx_msg void OnOptionsToggleColors();
