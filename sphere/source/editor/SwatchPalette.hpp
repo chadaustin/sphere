@@ -37,6 +37,9 @@ private:
   afx_msg void OnFileSave();
   afx_msg void OnDefaultDOS();
   afx_msg void OnDefaultVERGE();
+  afx_msg void OnDefaultPlasma();
+  afx_msg void OnDefaultRGB332();
+  afx_msg void OnDefaultVisibone2();
   afx_msg void OnInsertColorBefore();
   afx_msg void OnInsertColorAfter();
   afx_msg void OnReplaceColor();

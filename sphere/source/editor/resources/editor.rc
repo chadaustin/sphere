@@ -749,6 +749,12 @@ BEGIN
 
             MENUITEM "&VERGE",                      ID_SWATCHPALETTE_DEFAULT_VERGE
 
+            MENUITEM "&PLASMA",                     ID_SWATCHPALETTE_DEFAULT_PLASMA
+
+            MENUITEM "&RGB332",                     ID_SWATCHPALETTE_DEFAULT_RGB332
+
+            MENUITEM "&VISIBONE2",                  ID_SWATCHPALETTE_DEFAULT_VISIBONE2
+
         END
         MENUITEM SEPARATOR
         MENUITEM "&Insert Color Before",        ID_SWATCHPALETTE_INSERTBEFORE

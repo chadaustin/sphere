@@ -7,6 +7,7 @@
 #include "../common/configfile.hpp"
 #include "../common/common_palettes.hpp"
 #include "resource.h"
+#include <stdio.h>
 
 
 #define SWATCH_TILE_SIZE 10
@@ -24,6 +25,9 @@ BEGIN_MESSAGE_MAP(CSwatchPalette, CPaletteWindow)
   ON_COMMAND(ID_SWATCHPALETTE_FILE_SAVE,     OnFileSave)
   ON_COMMAND(ID_SWATCHPALETTE_DEFAULT_DOS,   OnDefaultDOS)
   ON_COMMAND(ID_SWATCHPALETTE_DEFAULT_VERGE, OnDefaultVERGE)
+  ON_COMMAND(ID_SWATCHPALETTE_DEFAULT_PLASMA, OnDefaultPlasma)
+  ON_COMMAND(ID_SWATCHPALETTE_DEFAULT_RGB332, OnDefaultRGB332)
+  ON_COMMAND(ID_SWATCHPALETTE_DEFAULT_VISIBONE2, OnDefaultVisibone2)
 
   ON_COMMAND(ID_SWATCHPALETTE_INSERTBEFORE, OnInsertColorBefore)
   ON_COMMAND(ID_SWATCHPALETTE_INSERTAFTER,  OnInsertColorAfter)
@@ -333,30 +337,50 @@ CSwatchPalette::OnFileSave()
     FALSE, "sswatch", NULL,
     OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
     "Sphere Swatch Files (*.sswatch)|*.sswatch|" \
+    "C source file (*.c)|*.c|" \
     "All Files (*.*)|*.*||");
 
   if (Dialog.DoModal() != IDOK) {
     return;
   }
 
-  // create swatch file
-  CConfigFile file;
-  file.WriteInt("sphere_swatch", "version", 1);
-  file.WriteInt("", "numcolors", swatch->GetNumColors());
+  if (Dialog.GetFileExt() == "c") {
 
-  for (int i = 0; i < swatch->GetNumColors(); i++)
-  {
-    char color_str[80];
-    sprintf(color_str, "color%d", i);
+    FILE* file = fopen(Dialog.GetPathName(), "wb+");
+    if (file == NULL)
+      return;
 
-    RGBA rgba = swatch->GetColor(i);
-    file.WriteInt(color_str, "red",   rgba.red);
-    file.WriteInt(color_str, "green", rgba.green);
-    file.WriteInt(color_str, "blue",  rgba.blue);
-    file.WriteInt(color_str, "alpha", rgba.alpha);
+    fprintf(file, "RGB palette[%d] =\n{\n", swatch->GetNumColors());
+
+    for (int i = 0; i < swatch->GetNumColors(); i++)
+    {
+      RGBA rgba = swatch->GetColor(i);
+      fprintf(file, "  {%d, %d, %d}%s\n", rgba.red, rgba.green, rgba.blue, i < swatch->GetNumColors() - 1 ? "," : "");
+    }
+
+    fprintf(file, "};\n"); 
+    fclose(file);
   }
+  else {
+    // create swatch file
+    CConfigFile file;
+    file.WriteInt("sphere_swatch", "version", 1);
+    file.WriteInt("", "numcolors", swatch->GetNumColors());
 
-  file.Save(Dialog.GetPathName());
+    for (int i = 0; i < swatch->GetNumColors(); i++)
+    {
+      char color_str[80];
+      sprintf(color_str, "color%d", i);
+
+      RGBA rgba = swatch->GetColor(i);
+      file.WriteInt(color_str, "red",   rgba.red);
+      file.WriteInt(color_str, "green", rgba.green);
+      file.WriteInt(color_str, "blue",  rgba.blue);
+      file.WriteInt(color_str, "alpha", rgba.alpha);
+    }
+
+    file.Save(Dialog.GetPathName());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -396,6 +420,75 @@ CSwatchPalette::OnDefaultVERGE()
       verge_palette[i].red,
       verge_palette[i].green,
       verge_palette[i].blue,
+      255
+    };
+    swatch->SetColor(i, color);
+  }
+
+  UpdateScrollBar();
+  Invalidate();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSwatchPalette::OnDefaultPlasma()
+{
+  CSwatchServer* swatch = CSwatchServer::Instance();
+
+  swatch->Clear();
+  for (int i = 0; i < 256; i++)
+  {
+    RGBA color = {
+      plasma_palette[i].red,
+      plasma_palette[i].green,
+      plasma_palette[i].blue,
+      255
+    };
+    swatch->SetColor(i, color);
+  }
+
+  UpdateScrollBar();
+  Invalidate();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSwatchPalette::OnDefaultRGB332()
+{
+  CSwatchServer* swatch = CSwatchServer::Instance();
+
+  swatch->Clear();
+  for (int i = 0; i < 256; i++)
+  {
+    RGBA color = {
+      rgb332_palette[i].red,
+      rgb332_palette[i].green,
+      rgb332_palette[i].blue,
+      255
+    };
+    swatch->SetColor(i, color);
+  }
+
+  UpdateScrollBar();
+  Invalidate();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSwatchPalette::OnDefaultVisibone2()
+{
+  CSwatchServer* swatch = CSwatchServer::Instance();
+
+  swatch->Clear();
+  for (int i = 0; i < 256; i++)
+  {
+    RGBA color = {
+      visibone2_palette[i].red,
+      visibone2_palette[i].green,
+      visibone2_palette[i].blue,
       255
     };
     swatch->SetColor(i, color);
