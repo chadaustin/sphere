@@ -491,7 +491,7 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
     {
       image->bgra[i].red   = (pixels[i].red   * pixels[i].alpha) / 256;
       image->bgra[i].green = (pixels[i].green * pixels[i].alpha) / 256;
-      image->bgra[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 256;;
+      image->bgra[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 256;
     }
   }
   else
@@ -1115,15 +1115,17 @@ EXPORT(RGBA*) LockImage(IMAGE image)
 {
   image->locked_pixels = new RGBA[image->width * image->height];
 
+  // Note: this tends to round the pixel down, so we add 1 to compenstate
+
   // rgb
   if (BitsPerPixel == 32)
   {
     for (int i = 0; i < image->width * image->height; i++)
     {
       if (image->alpha[i]) {
-        image->locked_pixels[i].red   = (image->bgra[i].red   * 256) / image->alpha[i];
-        image->locked_pixels[i].green = (image->bgra[i].green * 256) / image->alpha[i];
-        image->locked_pixels[i].blue  = (image->bgra[i].blue  * 256) / image->alpha[i];
+        image->locked_pixels[i].red   = 1 + (image->bgra[i].red   * 256) / image->alpha[i];
+        image->locked_pixels[i].green = 1 + (image->bgra[i].green * 256) / image->alpha[i];
+        image->locked_pixels[i].blue  = 1 + (image->bgra[i].blue  * 256) / image->alpha[i];
       }
     }
   }
@@ -1132,9 +1134,9 @@ EXPORT(RGBA*) LockImage(IMAGE image)
     for (int i = 0; i < image->width * image->height; i++)
     {
       if (image->alpha[i]) {
-        image->locked_pixels[i].red   = (image->bgr[i].red   * 256) / image->alpha[i];
-        image->locked_pixels[i].green = (image->bgr[i].green * 256) / image->alpha[i];
-        image->locked_pixels[i].blue  = (image->bgr[i].blue  * 256) / image->alpha[i];
+        image->locked_pixels[i].red   = 1 + (image->bgr[i].red   * 256) / image->alpha[i];
+        image->locked_pixels[i].green = 1 + (image->bgr[i].green * 256) / image->alpha[i];
+        image->locked_pixels[i].blue  = 1 + (image->bgr[i].blue  * 256) / image->alpha[i];
       }
     }
   }

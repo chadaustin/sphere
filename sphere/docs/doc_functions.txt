@@ -973,7 +973,7 @@ log_object.endBlock()
     - draws the surface to the video buffer at (x,y)
   
   surface_object.blitSurface(surface, x, y)
-    - draws the surface into the video buffer at (x,y)
+    - draws 'surface' onto 'surface_object' at (x,y)
   
   surface_object.createImage()
     - returns an image object from the surface object

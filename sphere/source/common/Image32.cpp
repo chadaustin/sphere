@@ -268,6 +268,7 @@ CImage32::ApplyColorFX(int x1, int y1, int w, int h, const CColorMatrix &c)
   }
   x2 = x1 + w;
   y2 = y1 + h;
+
   for(y = y1; y < y2; y++) {
     for(x = x1, i = y * m_Width + x1; x < x2; x++, i++) {
       pixel = m_Pixels[i];
