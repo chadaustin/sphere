@@ -83,8 +83,19 @@ public:
   bool SetNextAnimatedTile(int current_tile, int next_tile);
 
   bool ReplaceTilesOnLayer(int layer, int old_tile, int new_tile);
+
+  // trigger and zones
   bool IsTriggerAt(int location_x, int location_y, int layer);
+  bool AreZonesAt(int location_x, int location_y, int layer);
   bool ExecuteTrigger(int location_x, int location_y, int layer);
+  bool ExecuteZones(int location_x, int location_y, int layer);
+  bool ExecuteTriggerScript(int trigger_index);
+  bool ExecuteZoneScript(int zone_index);
+  bool GetNumZones(int& zones);
+  bool GetZoneX(int zone, int& x);
+  bool GetZoneY(int zone, int& y);
+  bool GetZoneWidth(int zone, int& width);
+  bool GetZoneHeight(int zone, int& height);
 
   bool RenderMap();
 
@@ -283,11 +294,10 @@ private:
   bool UpdateFollower(int person_index);
 
   int FindTrigger(int location_x, int location_y, int layer);
-  bool ExecuteTriggerScript(int trigger_index);
   bool UpdateTriggers();
 
+  bool IsPointWithinZone(int location_x, int location_y, int location_layer, int zone_index);
   bool IsPersonInsideZone(int person_index, int zone_index);
-  bool ExecuteZoneScript(int zone_index);
   bool UpdateZones();
 
   bool UpdateColorMasks();

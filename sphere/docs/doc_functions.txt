@@ -409,6 +409,30 @@ log_object.endBlock()
       - activates the trigger positioned on map_x, map_y, layer if one exists.
         map_x and map_y are in map (per-pixel) coordinates.
 
+    IsZoneAt(map_x, map_y, layer)
+      - returns true if there is a zone at map_x, map_y on layer
+
+    ExecuteZones(map_x, map_y, layer)
+      - executes all the zones that map_x, map_y, layer is within
+
+    GetNumZones()
+      - returns the amount of zones that there is
+      
+    GetZoneX(zone)
+      - gets the x value of zone 'zone'
+
+    GetZoneY(zone)
+      - gets the y value of zone 'zone'
+
+    GetZoneWidth(zone)
+      - gets the width value of zone 'zone'
+
+    GetZoneHeight(zone)
+      - gets the height value of zone 'zone'
+
+    ExecuteZoneScript(zone)
+      - executes the script for the zone 'zone'
+
     RenderMap()
       - Renders the map into the video buffer
 

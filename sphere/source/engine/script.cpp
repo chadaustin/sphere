@@ -1789,6 +1789,109 @@ begin_func(ExecuteTrigger, 3)
 
 end_func()
 
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(AreZonesAt, 3)
+  arg_int(location_x);
+  arg_int(location_y);
+  arg_int(layer);
+
+  return_bool(This->m_Engine->GetMapEngine()->AreZonesAt(location_x, location_y, layer));
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(ExecuteZones, 3)
+  arg_int(location_x);
+  arg_int(location_y);
+  arg_int(layer);
+
+  if (!This->m_Engine->GetMapEngine()->ExecuteZones(location_x, location_y, layer)) {
+    This->ReportMapEngineError("ExecuteZones() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(ExecuteZoneScript, 1)
+  arg_int(zone);
+
+  if ( !This->m_Engine->GetMapEngine()->ExecuteZoneScript(zone) ) {
+    This->ReportMapEngineError("ExecuteZoneScript() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(GetNumZones, 0)
+  int zones = 0;
+  if ( !This->m_Engine->GetMapEngine()->GetNumZones(zones)) {
+    This->ReportMapEngineError("GetNumZones() failed");
+    return JS_FALSE;
+  }
+  return_int(zones);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(GetZoneX, 1)
+  arg_int(zone);
+  int x = 0;
+
+  if ( !This->m_Engine->GetMapEngine()->GetZoneX(zone, x) ) {
+    This->ReportMapEngineError("GetZoneX() failed");
+    return JS_FALSE;
+  }
+
+  return_int(x);
+end_func()
+
+///////////////////////////////////////////////////////////////////////////////
+
+begin_func(GetZoneY, 1)
+  arg_int(zone);
+  int y = 0;
+
+  if ( !This->m_Engine->GetMapEngine()->GetZoneY(zone, y) ) {
+    This->ReportMapEngineError("GetZoneY() failed");
+    return JS_FALSE;
+  }
+
+  return_int(y);
+end_func()
+
+///////////////////////////////////////////////////////////////////////////////
+
+begin_func(GetZoneWidth, 1)
+  arg_int(zone);
+  int w = 0;
+
+  if ( !This->m_Engine->GetMapEngine()->GetZoneWidth(zone, w) ) {
+    This->ReportMapEngineError("GetZoneWidth() failed");
+    return JS_FALSE;
+  }
+
+  return_int(w);
+end_func()
+
+///////////////////////////////////////////////////////////////////////////////
+
+begin_func(GetZoneHeight, 1)
+  arg_int(zone);
+  int h = 0;
+
+  if ( !This->m_Engine->GetMapEngine()->GetZoneHeight(zone, h) ) {
+    This->ReportMapEngineError("GetZoneHeight() failed");
+    return JS_FALSE;
+  }
+
+  return_int(h);
+end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -651,8 +651,122 @@ CMapEngine::ExecuteTrigger(int location_x, int location_y, int layer)
 {
   // check to see which trigger we're looking at on
   int trigger_index = FindTrigger(location_x, location_y, layer);
-
   return ExecuteTriggerScript(trigger_index);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::AreZonesAt(int location_x, int location_y, int layer) {
+  for (int i = 0; i < m_Map.GetMap().GetNumZones(); i++) {
+    if (m_Map.GetMap().GetZone(i).x1 >= location_x
+     && m_Map.GetMap().GetZone(i).y1 >= location_y
+     && m_Map.GetMap().GetZone(i).layer == layer
+     && m_Map.GetMap().GetZone(i).x2 - m_Map.GetMap().GetZone(i).x1 < location_x
+     && m_Map.GetMap().GetZone(i).y2 - m_Map.GetMap().GetZone(i).y1 < location_y) {
+       return true;
+     }
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::ExecuteZones(int location_x, int location_y, int layer) {
+  for (int i = 0; i < m_Map.GetMap().GetNumZones(); i++) {
+    if (IsPointWithinZone(location_x, location_y, layer, i)) {
+      if ( !ExecuteZoneScript(i) ) {
+        return false;
+      }
+    }
+  }
+  return true; 
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetNumZones(int& zones) {
+  if (!m_IsRunning) {
+    m_ErrorMessage = "GetNumZones() called while map engine was not running";
+    return false;
+  }
+
+  zones = m_Map.GetMap().GetNumZones();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetZoneX(int zone, int& x) {
+  if (!m_IsRunning) {
+    m_ErrorMessage = "GetZoneX() called while map engine was not running";
+    return false;
+  }
+
+  if (zone < 0 || zone > m_Map.GetMap().GetNumZones()) {
+    m_ErrorMessage = "Invalid zone index";
+    return false;
+  }
+
+  x = m_Map.GetMap().GetZone(zone).x1;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetZoneY(int zone, int& y) {
+  if (!m_IsRunning) {
+    m_ErrorMessage = "GetZoneY() called while map engine was not running";
+    return false;
+  }
+
+  if (zone < 0 || zone > m_Map.GetMap().GetNumZones()) {
+    m_ErrorMessage = "Invalid zone index";
+    return false;
+  }
+
+  y = m_Map.GetMap().GetZone(zone).y1;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetZoneWidth(int zone, int& width) {
+  if (!m_IsRunning) {
+    m_ErrorMessage = "GetZoneWidth() called while map engine was not running";
+    return false;
+  }
+
+  if (zone < 0 || zone > m_Map.GetMap().GetNumZones()) {
+    m_ErrorMessage = "Invalid zone index";
+    return false;
+  }
+
+  width = m_Map.GetMap().GetZone(zone).x2 - m_Map.GetMap().GetZone(zone).x1;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetZoneHeight(int zone, int& height) {
+  if (!m_IsRunning) {
+    m_ErrorMessage = "GetZoneHeight() called while map engine was not running";
+    return false;
+  }
+
+  if (zone < 0 || zone > m_Map.GetMap().GetNumZones()) {
+    m_ErrorMessage = "Invalid zone index";
+    return false;
+  }
+
+  height = m_Map.GetMap().GetZone(zone).y2 - m_Map.GetMap().GetZone(zone).y1;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3388,18 +3502,9 @@ CMapEngine::UpdateTriggers()
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::IsPersonInsideZone(int person_index, int zone_index)
-{
-  if (person_index < 0 || person_index >= int(m_Persons.size()))
-    return false;
-
+CMapEngine::IsPointWithinZone(int location_x, int location_y, int location_layer, int zone_index) {
   if (zone_index < 0 || zone_index >= int(m_Zones.size()))
     return false;
-
-  // convenience
-  int location_x = int(m_Persons[person_index].x);
-  int location_y = int(m_Persons[person_index].y);
-  int location_l = m_Persons[person_index].layer;
 
   Zone& z = m_Zones[zone_index];
 
@@ -3407,7 +3512,21 @@ CMapEngine::IsPersonInsideZone(int person_index, int zone_index)
           location_y >= z.y1 &&
           location_x <= z.x2 && 
           location_y <= z.y2 &&
-          location_l == z.layer);
+          location_layer == z.layer);
+}
+
+bool
+CMapEngine::IsPersonInsideZone(int person_index, int zone_index)
+{
+  if (person_index < 0 || person_index >= int(m_Persons.size()))
+    return false;
+
+  // convenience
+  int location_x = int(m_Persons[person_index].x);
+  int location_y = int(m_Persons[person_index].y);
+  int location_l = m_Persons[person_index].layer;
+
+  return IsPointWithinZone(location_x, location_y, location_l, zone_index);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
