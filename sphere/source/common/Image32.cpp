@@ -18,6 +18,12 @@
 #include "strcmp_ci.hpp"
 #include "minmax.hpp"
 
+unsigned char alpha_old[256][256]={
+#include "alpha_old.table"
+};
+unsigned char alpha_new[256][256]={
+#include "alpha_new.table"
+};
 
 struct CoronaFileAdapter : public corona::DLLImplementation<corona::File> {
   CoronaFileAdapter(IFile* file) {

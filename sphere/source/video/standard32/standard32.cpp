@@ -1,6 +1,7 @@
 #define DIRECTDRAW_VERSION 0x0300
 #include <windows.h>
 #include <ddraw.h>
+#define USE_ALPHA_TABLE
 #include "../../common/rgb.hpp"
 #include "../../common/primitives.hpp"
 #include "../common/video.hpp"
@@ -89,7 +90,7 @@ static bool fullscreen;
 EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
 {
   driverinfo->name        = "Standard 32-bit Color";
-  driverinfo->author      = "Chad Austin";
+  driverinfo->author      = "Chad Austin et al.";
   driverinfo->date        = __DATE__;
   driverinfo->version     = "1.00";
   driverinfo->description = "24/32-bit color output in both windowed and fullscreen modes";
@@ -483,15 +484,20 @@ void CloseWindowed()
 
 void FillImagePixels(IMAGE image, RGBA* pixels)
 {
+  int al;
   // fill the image pixels
   if (BitsPerPixel == 32)
   {
     image->bgra = new BGRA[image->width * image->height];
     for (int i = 0; i < image->width * image->height; i++)
     {
-      image->bgra[i].red   = (pixels[i].red   * pixels[i].alpha) / 256;
-      image->bgra[i].green = (pixels[i].green * pixels[i].alpha) / 256;
-      image->bgra[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 256;
+//      image->bgra[i].red   = (pixels[i].red   * pixels[i].alpha) / 256;
+//      image->bgra[i].green = (pixels[i].green * pixels[i].alpha) / 256;
+//      image->bgra[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 256;
+      al=pixels[i].alpha;
+      image->bgra[i].red   = alpha_new[pixels[i].red][al];
+      image->bgra[i].green = alpha_new[pixels[i].green][al];
+      image->bgra[i].blue  = alpha_new[pixels[i].blue][al];
     }
   }
   else
@@ -499,9 +505,13 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
     image->bgr  = new BGR[image->width * image->height];
     for (int i = 0; i < image->width * image->height; i++)
     {
-      image->bgr[i].red   = (pixels[i].red   * pixels[i].alpha) / 256;
-      image->bgr[i].green = (pixels[i].green * pixels[i].alpha) / 256;
-      image->bgr[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 256;
+//      image->bgr[i].red   = (pixels[i].red   * pixels[i].alpha) / 256;
+//      image->bgr[i].green = (pixels[i].green * pixels[i].alpha) / 256;
+//      image->bgr[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 256;
+      al=pixels[i].alpha;
+      image->bgr[i].red   = alpha_new[pixels[i].red][al];
+      image->bgr[i].green = alpha_new[pixels[i].green][al];
+      image->bgr[i].blue  = alpha_new[pixels[i].blue][al];
     }
   }
 
@@ -738,15 +748,22 @@ public:
   void operator()(pixelT& dst, pixelT src, byte alpha)
   {
     // do the masking on the source pixel
-    alpha     = (int)alpha     * m_mask.alpha / 256;
-    src.red   = (int)src.red   * m_mask.red   / 256;
-    src.green = (int)src.green * m_mask.green / 256;
-    src.blue  = (int)src.blue  * m_mask.blue  / 256;
+    //alpha     = (int)alpha     * m_mask.alpha / 256;
+    //src.red   = (int)src.red   * m_mask.red   / 256;
+    //src.green = (int)src.green * m_mask.green / 256;
+    //src.blue  = (int)src.blue  * m_mask.blue  / 256;
+    alpha     = alpha_new[alpha][m_mask.alpha];
+    src.red   = alpha_new[src.red][m_mask.red];
+    src.green = alpha_new[src.green][m_mask.green];
+    src.blue  = alpha_new[src.blue][m_mask.blue];
 
     // blit to the dest pixel
-    dst.red   = (dst.red   * (256 - alpha) + src.red   * alpha) / 256;
-    dst.green = (dst.green * (256 - alpha) + src.green * alpha) / 256;
-    dst.blue  = (dst.blue  * (256 - alpha) + src.blue  * alpha) / 256;
+    //dst.red   = (dst.red   * (256 - alpha) + src.red   * alpha) / 256;
+    //dst.green = (dst.green * (256 - alpha) + src.green * alpha) / 256;
+    //dst.blue  = (dst.blue  * (256 - alpha) + src.blue  * alpha) / 256;
+    dst.red   = alpha_old[dst.red][alpha]+alpha_new[src.red][alpha];
+    dst.green = alpha_old[dst.green][alpha]+alpha_new[src.green][alpha];
+    dst.blue  = alpha_old[dst.blue][alpha]+alpha_new[src.blue][alpha];
 
   }
 
@@ -796,9 +813,12 @@ void aBlendBGR(struct BGR& d, struct BGR s, int a)
 {
 #if 1
   // blit to the dest pixel
-  d.red   = (d.red   * (256 - a)) / 256 + s.red;
-  d.green = (d.green * (256 - a)) / 256 + s.green;
-  d.blue  = (d.blue  * (256 - a)) / 256 + s.blue;
+//  d.red   = (d.red   * (256 - a)) / 256 + s.red;
+//  d.green = (d.green * (256 - a)) / 256 + s.green;
+//  d.blue  = (d.blue  * (256 - a)) / 256 + s.blue;
+  d.red   = alpha_old[d.red][a] + s.red;
+  d.green = alpha_old[d.green][a] + s.green;
+  d.blue  = alpha_old[d.blue][a] + s.blue;
 #else
   d.red=((d.red*(a^0xff))>>8)+s.red;
   d.green=((d.green*(a^0xff))>>8)+s.green;
@@ -810,9 +830,12 @@ void aBlendBGRA(struct BGRA& d, struct BGRA s, int a)
 {
 #if 1
   // blit to the dest pixel
-  d.red   = (d.red   * (256 - a)) / 256 + s.red;
-  d.green = (d.green * (256 - a)) / 256 + s.green;
-  d.blue  = (d.blue  * (256 - a)) / 256 + s.blue;
+//  d.red   = (d.red   * (256 - a)) / 256 + s.red;
+//  d.green = (d.green * (256 - a)) / 256 + s.green;
+//  d.blue  = (d.blue  * (256 - a)) / 256 + s.blue;
+  d.red   = alpha_old[d.red][a] + s.red;
+  d.green = alpha_old[d.green][a] + s.green;
+  d.blue  = alpha_old[d.blue][a] + s.blue;
 #else
   d.red=((d.red*(a^0xff))>>8)+s.red;
   d.green=((d.green*(a^0xff))>>8)+s.green;
@@ -954,9 +977,9 @@ void SpriteBlit(IMAGE image, int x, int y)
           *dest = *src;
         }
 
-        dest++;
-        src++;
-        alpha++;
+        ++dest;
+        ++src;
+        ++alpha;
       }
 
       dest += dest_inc;
@@ -982,9 +1005,9 @@ void SpriteBlit(IMAGE image, int x, int y)
           *dest = *src;
         }
 
-        dest++;
-        src++;
-        alpha++;
+        ++dest;
+        ++src;
+        ++alpha;
       }
 
       dest += dest_inc;
@@ -1012,20 +1035,25 @@ void NormalBlit(IMAGE image, int x, int y)
     int src_inc  = image->width - image_blit_width;
 
     int iy = image_blit_height;
+    word a;   // do stack alloc outside inner loops
     while (iy-- > 0) {
       int ix = image_blit_width;
       while (ix-- > 0) {
 
-        word a = *alpha;
-        word b = 256 - a;
+//        word a = *alpha;
+//        word b = 256 - a;
+//
+//        dest->red   = (dest->red   * b) / 256 + src->red;
+//        dest->green = (dest->green * b) / 256 + src->green;
+//        dest->blue  = (dest->blue  * b) / 256 + src->blue;
 
-        dest->red   = (dest->red   * b) / 256 + src->red;
-        dest->green = (dest->green * b) / 256 + src->green;
-        dest->blue  = (dest->blue  * b) / 256 + src->blue;
+        dest->red   = alpha_old[dest->red][a] + src->red;
+        dest->green = alpha_old[dest->green][a] + src->green;
+        dest->blue  = alpha_old[dest->blue][a] + src->blue;
 
-        dest++;
-        src++;
-        alpha++;
+        ++dest;
+        ++src;
+        ++alpha;
       }
 
       dest  += dest_inc;
@@ -1041,34 +1069,46 @@ void NormalBlit(IMAGE image, int x, int y)
     int src_inc  = image->width - image_blit_width;
 
     int iy = image_blit_height;
+    dword d;
+    dword s;
+    word a;
     while (iy-- > 0) {
       int ix = image_blit_width;
       while (ix-- > 0) {
 
-        word a = *alpha;
-        word b = 256 - a;
+        a = *alpha;
+        //word b = 256 - a;
 
-        dword d = *dest;
-        dword s = *src;
+        d = *dest;
+        s = *src;
 
         dword result;
-        result = ((d & 0xFF) * b >> 8) + (s & 0xFF);
+        //result = ((d & 0xFF) * b >> 8) + (s & 0xFF);
+        result = alpha_old[d & 0xFF][a]+alpha_new[s & 0xFF][a];
 
         d >>= 8;
         s >>= 8;
 
-        result |= ((d & 0xFF) * b + ((s & 0xFF) << 8)) & 0xFF00;
+        //result |= ((d & 0xFF) * b + ((s & 0xFF) << 8)) & 0xFF00;
+        result |= (alpha_old[d & 0xFF][a]+alpha_new[s & 0xFF][a]) << 8;
 
         d >>= 8;
         s >>= 8;
 
-        result |= (((d & 0xFF) * b + ((s & 0xFF) << 8)) & 0xFF00) << 8;
+        //result |= (((d & 0xFF) * b + ((s & 0xFF) << 8)) & 0xFF00) << 8;
+        result |= (alpha_old[d & 0xFF][a]+alpha_new[s & 0xFF][a]) << 16;
+
+        d >>= 8;
+        s >>= 8;
+
+        //result |= (((d & 0xFF) * b + ((s & 0xFF) << 8)) & 0xFF00) << 8;
+        result |= (alpha_old[d & 0xFF][a]+alpha_new[s & 0xFF][a]) << 24;
 
         *dest = result;
 
-        dest++;
-        src++;
-        alpha++;
+        ++dest;
+        ++src;
+        ++alpha;
       }
 
       dest  += dest_inc;
@@ -1083,22 +1123,28 @@ void NormalBlit(IMAGE image, int x, int y)
     BGR*  dest  = (BGR*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
     BGR*  src   = (BGR*)image->bgr   +       image_offset_y * image->width + image_offset_x;
     byte* alpha = image->alpha       +       image_offset_y * image->width + image_offset_x;
+    byte al;
 
     int dest_inc = ScreenWidth  - image_blit_width;
     int src_inc  = image->width - image_blit_width;
 
     int iy = image_blit_height;
+    int ix;
     while (iy-- > 0) {
-      int ix = image_blit_width;
+      ix = image_blit_width;
       while (ix-- > 0) {
 
-        dest->red   = (dest->red   * (256 - *alpha)) / 256 + src->red;
-        dest->green = (dest->green * (256 - *alpha)) / 256 + src->green;
-        dest->blue  = (dest->blue  * (256 - *alpha)) / 256 + src->blue;
+//        dest->red   = (dest->red   * (256 - *alpha)) / 256 + src->red;
+//        dest->green = (dest->green * (256 - *alpha)) / 256 + src->green;
+//        dest->blue  = (dest->blue  * (256 - *alpha)) / 256 + src->blue;
+        al=*alpha;
+        dest->red   = alpha_old[dest->red][al] + src->red;
+        dest->green = alpha_old[dest->green][al] + src->green;
+        dest->blue  = alpha_old[dest->blue][al] + src->blue;
 
-        dest++;
-        src++;
-        alpha++;
+        ++dest;
+        ++src;
+        ++alpha;
       }
 
       dest  += dest_inc;
@@ -1198,9 +1244,12 @@ EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels)
         }
         else if (src.alpha > 0)
         {
-          dest->red   = (dest->red   * (256 - src.alpha) + src.red   * src.alpha) / 256;
-          dest->green = (dest->green * (256 - src.alpha) + src.green * src.alpha) / 256;
-          dest->blue  = (dest->blue  * (256 - src.alpha) + src.blue  * src.alpha) / 256;
+          //dest->red   = (dest->red   * (256 - src.alpha) + src.red   * src.alpha) / 256;
+          //dest->green = (dest->green * (256 - src.alpha) + src.green * src.alpha) / 256;
+          //dest->blue  = (dest->blue  * (256 - src.alpha) + src.blue  * src.alpha) / 256;
+          dest->red   = alpha_old[dest->red][src.alpha] + alpha_new[src.red][src.alpha];
+          dest->green = alpha_old[dest->green][src.alpha] + alpha_new[src.green][src.alpha];
+          dest->blue  = alpha_old[dest->blue][src.alpha] + alpha_new[src.blue][src.alpha];
         }
       }
   }
@@ -1220,9 +1269,12 @@ EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels)
         }
         else if (src.alpha > 0)
         {
-          dest->red   = (dest->red   * (256 - src.alpha) + src.red   * src.alpha) / 256;
-          dest->green = (dest->green * (256 - src.alpha) + src.green * src.alpha) / 256;
-          dest->blue  = (dest->blue  * (256 - src.alpha) + src.blue  * src.alpha) / 256;
+          //dest->red   = (dest->red   * (256 - src.alpha) + src.red   * src.alpha) / 256;
+          //dest->green = (dest->green * (256 - src.alpha) + src.green * src.alpha) / 256;
+          //dest->blue  = (dest->blue  * (256 - src.alpha) + src.blue  * src.alpha) / 256;
+          dest->red   = alpha_old[dest->red][src.alpha] + alpha_new[src.red][src.alpha];
+          dest->green = alpha_old[dest->green][src.alpha] + alpha_new[src.green][src.alpha];
+          dest->blue  = alpha_old[dest->blue][src.alpha] + alpha_new[src.blue][src.alpha];
         } // end for
       } // end for
   } // end if (BitsPerPixel)

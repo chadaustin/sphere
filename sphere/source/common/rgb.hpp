@@ -1,9 +1,14 @@
 #ifndef RGB_HPP
 #define RGB_HPP
 
+#define USE_ALPHA_TABLE
 
 #include "types.h"
 
+#ifdef USE_ALPHA_TABLE
+extern unsigned char alpha_old[256][256];
+extern unsigned char alpha_new[256][256];
+#endif
 
 #define STRUCT_NAME RGB
 #define STRUCT_BODY \
@@ -66,36 +71,61 @@ inline bool operator==(const BGRA& c1, const BGRA& c2) {
 // premultiply alpha
 template<typename destT>
 void PremultiplyAlpha(destT& d, int alpha) {
+#ifndef USE_ALPHA_TABLE
   d.red   = d.red   * alpha / 256;
   d.green = d.green * alpha / 256;
   d.blue  = d.blue  * alpha / 256;
+#else
+  d.red   = alpha_new[d.red][alpha];
+  d.green = alpha_new[d.green][alpha];
+  d.blue  = alpha_new[d.blue][alpha];
+#endif
 }
 
 
 // blends two colors together
 template<typename destT, typename srcT>
 void Blend3(destT& d, srcT s, int alpha) {
+#ifndef USE_ALPHA_TABLE
   d.red   = (s.red   * alpha + d.red   * (256 - alpha)) / 256;
   d.green = (s.green * alpha + d.green * (256 - alpha)) / 256;
   d.blue  = (s.blue  * alpha + d.blue  * (256 - alpha)) / 256;
+#else
+  d.red   = alpha_new[s.red][alpha] + alpha_old[d.red][alpha];
+  d.green = alpha_new[s.green][alpha] + alpha_old[d.green][alpha];
+  d.blue  = alpha_new[s.blue][alpha] + alpha_old[d.blue][alpha];
+#endif
 }
 
 
 template<typename destT, typename srcT>
 void Blend4(destT& d, srcT s, int alpha) {
+#ifndef USE_ALPHA_TABLE
   d.red   = (s.red   * alpha + d.red   * (256 - alpha)) / 256;
   d.green = (s.green * alpha + d.green * (256 - alpha)) / 256;
   d.blue  = (s.blue  * alpha + d.blue  * (256 - alpha)) / 256;
   d.alpha = (s.alpha * alpha + d.alpha * (256 - alpha)) / 256;
+#else
+  d.red   = alpha_new[s.red][alpha] + alpha_old[d.red][alpha];
+  d.green = alpha_new[s.green][alpha] + alpha_old[d.green][alpha];
+  d.blue  = alpha_new[s.blue][alpha] + alpha_old[d.blue][alpha];
+  d.alpha  = alpha_new[s.alpha][alpha] + alpha_old[d.alpha][alpha];
+#endif
 }
 
 
 // blends two colors if source has premultiplied alpha
 template<typename destT, typename srcT>
 void BlendPA(destT& d, srcT s, int alpha) {
+#ifndef USE_ALPHA_TABLE
   d.red   = s.red   + d.red   * (256 - alpha) / 256;
   d.green = s.green + d.green * (256 - alpha) / 256;
   d.blue  = s.blue  + d.blue  * (256 - alpha) / 256;
+#else
+  d.red   = s.red   + alpha_old[d.red][alpha];
+  d.green = s.green + alpha_old[d.green][alpha];
+  d.blue  = s.blue  + alpha_old[d.blue][alpha];
+#endif
 }
 
 
