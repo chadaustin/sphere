@@ -734,6 +734,14 @@ SOURCE=.\TilesetView.hpp
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\FontPreviewPalette.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\FontPreviewPalette.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ImageToolPalette.cpp
 # End Source File
 # Begin Source File

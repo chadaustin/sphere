@@ -77,6 +77,7 @@ CFontWindow::CFontWindow(const char* font)
 : CSaveableDocumentWindow(font, IDR_FONT)
 , m_CurrentCharacter(MIN_CHARACTER)
 , m_CurrentColor(CreateRGBA(0, 0, 0, 255))
+, m_FontPreviewPalette(NULL)
 , m_Created(false)
 {
   if (font) {
@@ -144,6 +145,8 @@ CFontWindow::Create()
   RGB rgb = { m_CurrentColor.red, m_CurrentColor.green, m_CurrentColor.blue };
   m_ColorView.SetColor(rgb);
   m_AlphaView.SetAlpha(m_CurrentColor.alpha);
+
+  m_FontPreviewPalette = new CFontPreviewPalette(this, &m_Font);
 
   UpdateWindowTitle();
 	
@@ -293,7 +296,8 @@ CFontWindow::OnFontResize()
         c.Resize(dialog.GetWidth(), dialog.GetHeight());
         SetModified(true);
         SetImage();
-			}
+        if (m_FontPreviewPalette) m_FontPreviewPalette->OnCharacterChanged(-1);
+      }
     }
   }
 }
@@ -338,7 +342,8 @@ CFontWindow::OnFontResizeAll()
 			if (modified) {
         SetModified(true);
         SetImage();
-			}
+        if (m_FontPreviewPalette) m_FontPreviewPalette->OnCharacterChanged(-1);
+      }
     }
   }
 }
@@ -380,6 +385,8 @@ CFontWindow::OnFontSimplify()
     if (modified) {
       SetModified(true);
       SetImage();
+
+      if (m_FontPreviewPalette) m_FontPreviewPalette->OnCharacterChanged(-1);
     }
   }
 }
@@ -408,6 +415,7 @@ CFontWindow::OnFontMakeColorTransparent() {
   if (modified) {
     SetModified(true);
     SetImage();
+    if (m_FontPreviewPalette) m_FontPreviewPalette->OnCharacterChanged(m_CurrentCharacter);
   }
 }
 
@@ -422,6 +430,8 @@ CFontWindow::OnFontGenerateGradient()
 
     SetModified(true);
     SetImage();
+
+    if (m_FontPreviewPalette) m_FontPreviewPalette->OnCharacterChanged(m_CurrentCharacter);
   }
 }
 
@@ -517,6 +527,8 @@ CFontWindow::IV_ImageChanged()
 
   SetModified(true);
   UpdateWindowTitle();
+
+  if (m_FontPreviewPalette) m_FontPreviewPalette->OnCharacterChanged(m_CurrentCharacter);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -571,6 +583,7 @@ CFontWindow::OnEditRange()
   if (EditRange::OnEditRange("font", id, false, (void*) &m_Font, m_CurrentCharacter)) {
     SetModified(true);
     SetImage();
+    if (m_FontPreviewPalette) m_FontPreviewPalette->OnCharacterChanged(-1);
   }
 }
 

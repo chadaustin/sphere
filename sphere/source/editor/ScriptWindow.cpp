@@ -192,15 +192,17 @@ CScriptWindow::SetScriptStyles() {
   //SendEditor(SCI_SETMARGINWIDTHN, 1, 20);
 
   if (m_ShowLineNumbers) {  // resize the line number margin so we can see it
-    SendEditor(SCI_SETMARGINWIDTHN, 0, 45);
+    int margin_size = SendEditor(SCI_TEXTWIDTH, STYLE_LINENUMBER, (LPARAM) "_99999");
+    SendEditor(SCI_SETMARGINWIDTHN, 0, margin_size);
   }
 
   SendEditor(SCI_SETWRAPMODE, ((m_WordWrap) ? (SC_WRAP_WORD) : (SC_WRAP_NONE)));
 
   SetStyle(SCE_C_DEFAULT, black, white, m_FontSize, m_Fontface.c_str());
 
-  if (m_TabWidth > 0)
+  if (m_TabWidth > 0) {
     SendEditor(SCI_SETTABWIDTH, m_TabWidth);
+  }
 
   if (m_SyntaxHighlighted) {
     SetStyle(SCE_C_COMMENT,     green);
@@ -467,21 +469,51 @@ CScriptWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
 */
 
   if (notify->ch == '\n') {
-    int pos = SendEditor(SCI_GETCURRENTPOS);
+    int pos  = SendEditor(SCI_GETCURRENTPOS);
     int line = SendEditor(SCI_LINEFROMPOSITION, pos);
 
     if (line > 0) {
       char text[1024 * 16];
-      SendEditor(SCI_GETLINE, line - 1, (LRESULT)text);
-      std::string str;
-      int i = 0;
-      while (text[i] == ' ' || text[i] == '\t') {
-        str += text[i++];
-      }
+      int line_length = SendEditor(SCI_LINELENGTH, line - 1);
+      if (line_length > 0 && line_length < sizeof(text)) {
+        SendEditor(SCI_GETLINE, line - 1, (LRESULT)text);
+        std::string str;
+        int i = 0;
+        while (text[i] == ' ' || text[i] == '\t') {
+          str += text[i++];
+        }
 
-      SendEditor(SCI_REPLACESEL, 0, (LRESULT)str.c_str());
+        /*
+        if (1) {
+          i = line_length;
+          while (text[i] != '{' && i >= 0 && i > line_length - 5) { i--; }
+          if (text[i] == '{') {
+            str += "  ";
+          }
+
+          i = 0;
+          while (i++ < 100) {
+            int m = SendEditor(SCI_BRACEMATCH, i, 0);
+            if (m != -1) {
+              pos = pos;
+            }
+          }
+
+          if (1) {
+
+            while (text[i] != '}' && i >= 0 && i > line_length - 5) { i--; }
+            if (text[i] == '}') {
+              str.erase(0, 2);
+            }
+          }
+        }
+        */
+
+        SendEditor(SCI_REPLACESEL, 0, (LRESULT)str.c_str());
+      }
     }
   }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////

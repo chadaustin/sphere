@@ -940,7 +940,12 @@ IDR_IRC MENU DISCARDABLE
 BEGIN
     POPUP "&IRC"
     BEGIN
-        MENUITEM "&Join Channel",               ID_JOIN_CHANNEL
+        POPUP "&Join"
+        BEGIN
+            MENUITEM "&Channel",                    ID_JOIN_CHANNEL
+            MENUITEM "#sphere",                     ID_JOIN_CHANNEL
+            MENUITEM "#ninex",                      ID_JOIN_CHANNEL
+        END
     END
 END
 

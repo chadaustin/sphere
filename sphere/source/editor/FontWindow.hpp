@@ -8,7 +8,7 @@
 #include "ColorView.hpp"
 #include "AlphaView.hpp"
 #include "../common/Font.hpp"
-
+#include "FontPreviewPalette.hpp"
 
 class CFontWindow
 : public CSaveableDocumentWindow
@@ -69,6 +69,8 @@ private:
   CColorView   m_ColorView;
   CAlphaView   m_AlphaView;
   CScrollBar   m_ScrollBar;
+
+  CFontPreviewPalette* m_FontPreviewPalette;
 
   DECLARE_MESSAGE_MAP()
 };
