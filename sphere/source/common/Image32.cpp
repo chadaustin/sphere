@@ -1,3 +1,7 @@
+#ifdef _MSC_VER
+#pragma warning(disable : 4786)
+#endif
+
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -14,31 +18,24 @@
 #include "strcmp_ci.hpp"
 
 
-
-struct CoronaFileAdapter : public corona::File {
+struct CoronaFileAdapter : public corona::DLLImplementation<corona::File> {
   CoronaFileAdapter(IFile* file) {
     m_File = file;
   }
 
   ~CoronaFileAdapter() {
-    // When we upgrade past Corona 0.2.0, close() will go away.
-    close();
-  }
-
-  void close() {
     delete m_File;
-    m_File = 0;
   }
 
-  int read(void* buffer, int size) {
+  int COR_CALL read(void* buffer, int size) {
     return m_File->Read(buffer, size);
   }
 
-  int write(void* buffer, int size) {
+  int COR_CALL write(const void* buffer, int size) {
     return m_File->Write(buffer, size);
   }
 
-  bool seek(int pos, SeekMode mode) {
+  bool COR_CALL seek(int pos, SeekMode mode) {
     int abs_pos;
     switch (mode) {
       case BEGIN:   abs_pos = pos; break;
@@ -50,7 +47,7 @@ struct CoronaFileAdapter : public corona::File {
     return (abs_pos == m_File->Tell());
   }
 
-  int tell() {
+  int COR_CALL tell() {
     return m_File->Tell();
   }
 
