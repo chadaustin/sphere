@@ -416,7 +416,7 @@ sSpriteset::Import_BMP(
   const char* filename,
   int frame_width,
   int frame_height,
-  RGBA transparent)
+  RGBA old_color, RGBA new_color)
 {
   CImage32 image;
   if (!image.Load(filename)) {
@@ -432,10 +432,14 @@ sSpriteset::Import_BMP(
   int num_pixels = image.GetWidth() * image.GetHeight();
   while (num_pixels--) {
     
-    if (pixels->red   == transparent.red   &&
-        pixels->green == transparent.green &&
-        pixels->blue  == transparent.blue) {
-      pixels->alpha = 0;
+    if (pixels->red   == old_color.red   &&
+        pixels->green == old_color.green &&
+        pixels->blue  == old_color.blue  &&
+        pixels->alpha == old_color.alpha) {
+      pixels->red = new_color.red;
+      pixels->green = new_color.green;
+      pixels->blue  = new_color.blue;
+      pixels->alpha = new_color.alpha;
     }
 
     pixels++;
@@ -1371,7 +1375,7 @@ sSpriteset::Import_CHR2V2(FILE* file, RGB palette[256])
         while (j < (int)walkcodeLength[i] && walkcode[i][j] >= 48 &&
                walkcode[i][j] <= 57)
         {
-          token[l] = walkcode[i][j];
+          tokesn[l] = walkcode[i][j];
           l++;
           j++;
         }

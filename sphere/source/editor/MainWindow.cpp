@@ -1105,8 +1105,13 @@ CMainWindow::OnFileImportBitmapToRSS()
   if (ResizeDialog.DoModal() != IDOK)
     return;
 
+  CFontGradientDialog transparent_color_dialog("Transparent color", "In", "Out", CreateRGBA(255, 0, 255, 255), CreateRGBA(255, 0, 255, 0));
+  if (transparent_color_dialog.DoModal() != IDOK)
+    return;
+
   sSpriteset sprite;
-  if (sprite.Import_BMP(InFileDialog.GetPathName(), ResizeDialog.GetWidth(), ResizeDialog.GetHeight(), CreateRGBA(255, 0, 255, 255)) == false)
+  if (sprite.Import_BMP(InFileDialog.GetPathName(), ResizeDialog.GetWidth(), ResizeDialog.GetHeight(), 
+      transparent_color_dialog.GetTopColor(), transparent_color_dialog.GetBottomColor()) == false)
   {
     MessageBox("Can't Import file", "Error");
     return;

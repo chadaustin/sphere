@@ -23,7 +23,7 @@ public:
   bool Load(const char* filename, IFileSystem& fs = g_DefaultFileSystem);
   bool Save(const char* filename, IFileSystem& fs = g_DefaultFileSystem) const;
 
-  bool Import_BMP(const char* filename, int frame_width, int frame_height, RGBA transparent);
+  bool Import_BMP(const char* filename, int frame_width, int frame_height, RGBA old_color, RGBA new_color);
   bool Import_CHR(const char* filename, const char* palette_file);
 
   bool Export_PNG_Compact_Vertical(const char* filename);

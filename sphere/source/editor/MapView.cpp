@@ -356,6 +356,241 @@ CMapView::GetTotalTilesY()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/*
+#ifndef NO_TERRAFORMING
+static bool IsTerraformable(int tile) {
+  return (tile == 360     || tile == 361
+       || tile == 360 + 6 || tile == 361 + 6);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+static enum {
+   TF_NONE  = 0x00000000,
+   TF_LEFT  = 0x00000001,
+   TF_RIGHT = 0x00000010,
+   TF_UP    = 0x00000100,
+   TF_DOWN  = 0x00001000,
+   TF_ALL   = TF_LEFT | TF_RIGHT | TF_DOWN | TF_UP,
+   TF_HORZ  = TF_LEFT | TF_RIGHT,
+   TF_VERT  = TF_UP | TF_DOWN,
+   TF_UPPER_LEFT  = TF_LEFT | TF_UP,
+   TF_UPPER_RIGHT = TF_LEFT | TF_UP,
+   TF_LOWER_LEFT = TF_LEFT | TF_DOWN,
+   TF_LOWER_RIGHT = TF_LEFT | TF_DOWN,
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+static int GetTerraformSet(const int tile)
+{
+  int tile_offset = 0;
+  int set = 0;
+
+try_again:
+  switch (tile - tile_offset) {
+    case 360: break;
+    case 361: break;
+    case 362: break;
+    
+    case 390: break;
+    case 391: break;
+    case 392: break;
+    
+    case 420: break;
+    case 421: break;  
+    case 422: break;         
+    
+    case 450: break;
+    case 451: break;
+    case 452: break;
+            
+    case 480: break;
+    case 481: break;
+    case 482: break;
+
+    case 510: break;
+    case 511: break;
+    case 512: break;
+
+    default:
+      if (tile_offset == 0) {
+        tile_offset += 6;
+        set += 1;
+        goto try_again;
+      }
+      set = -1;
+  }
+
+  return set;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+static int GetTerraformTile(const int tile, const int type)
+{
+  int set = GetTerraformSet(tile);
+
+  if (type & TF_ALL) {
+    return set == 0 ? 421 : 421 + 6;
+  }
+
+  if (type & TF_NONE) {
+    return set == 0 ? 361 : 361 + 6;
+  }
+
+  if (type & TF_VERT) {
+    return set == 0 ? 481 : 481 + 6;
+  }
+
+  if (type & TF_HORZ) {
+    return set == 0 ? 511 : 511 + 6;
+  }
+
+  ///////////////////////////
+
+  if (type & TF_UPPER_LEFT) {
+    return set == 0 ? 390 : 390 + 6;
+  }
+
+  if (type & TF_LOWER_LEFT) {
+    return set == 0 ? 450 : 450 + 6;
+  }
+
+  if (type & TF_UPPER_RIGHT) {
+    return set == 0 ? 392 : 392 + 6;
+  }
+
+  if (type & TF_LOWER_RIGHT) {
+    return set == 0 ? 452 : 452 + 6;
+  }
+
+  ///////////////////////////
+
+  if (type & TF_LEFT) {
+    return set == 0 ? 510 : 510 + 6;
+  }
+
+  if (type & TF_RIGHT) {
+    return set == 0 ? 512 : 512 + 6;
+  }
+
+  if (type & TF_UP) {
+    return set == 0 ? 480 : 480 + 6;
+  }
+
+  if (type & TF_DOWN) {
+    return set == 0 ? 482 : 482 + 6;
+  }
+
+  ///////////////////////////
+
+  return tile;
+}
+
+int GetTerraformType(const int tile) {
+
+  int type;
+  int tile_offset = 0;
+
+try_again:
+  switch (tile - tile_offset) {
+    case 360: type = TF_ALL; break;
+    case 361: type = TF_NONE; break;
+    case 362: type = TF_ALL; break;
+    
+    case 390: type = TF_UPPER_LEFT; break;
+    case 391: type = TF_UP; break;
+    case 392: type = TF_UPPER_RIGHT; break;
+    
+    case 420: type = TF_LEFT | TF_DOWN | TF_UP; break;
+    case 421: type = TF_ALL; break;  
+    case 422: type = TF_RIGHT | TF_DOWN | TF_UP; break;         
+    
+    case 450: type = TF_LOWER_LEFT; break;
+    case 451: type = TF_DOWN; break;
+    case 452: type = TF_LOWER_RIGHT; break;
+            
+    case 480: type = TF_DOWN; break;
+    case 481: type = TF_VERT; break;
+    case 482: type = TF_UP; break;
+
+    case 510: type = TF_LEFT; break;
+    case 511: type = TF_HORZ; break;
+    case 512: type = TF_RIGHT; break;
+
+    default:
+      if (tile_offset == 0) {
+        tile_offset += 6;
+        goto try_again;
+      }
+      type = TF_NONE;
+  }
+
+  return type;
+}
+
+bool Terraform(const int tx, const int ty, const int m_SelectedTile)
+{
+  const int selected_tile = m_SelectedTile;
+  const int original_tile = m_Map->GetLayer(m_SelectedLayer).GetTile(tx, ty);
+
+  if (!IsTerraformable(selected_tile))
+    return false;
+
+  int terraform_grid[3][3] = {-1};
+  int terraform_types[3][3] = {TF_NONE};
+  const int terraform_delta = 3/2;
+  const int terraform_size = 3;
+
+  for (int y = 0; y < terraform_size; y++) {
+    for (int x = 0; x < terraform_size; x++) {
+      sLayer& layer = m_Map->GetLayer(m_SelectedLayer);
+      int ix = tx + x + terraform_delta;
+      int iy = ty + y + terraform_delta;
+      if (ix < 0 || ix >= layer.GetWidth()
+       || iy < 0 || iy >= layer.GetHeight())
+        continue;
+            
+      int tile = terraform_grid[x][y] = m_Map->GetLayer(m_SelectedLayer).GetTile(ix, iy);
+      terraform_types[x][y] = GetTerraformType(tile);
+    }
+  }
+
+  terraform_grid[terraform_size/2][terraform_size/2] = selected_tile;
+  terraform_types[terraform_size/2][terraform_size/2] = GetTerraformType(selected_tile);
+
+  for (int y = terraform_size/2; y <= terraform_size/2; y++) {
+    for (int x = terraform_size/2; x <= terraform_size/2; x++) {
+      terraform_types[x][y] |= (int) terraform_types[x - 1][y - 0] & TF_LEFT;
+      terraform_types[x][y] |= (int) terraform_types[x - 0][y - 1] & TF_UP;
+      terraform_types[x][y] |= (int) terraform_types[x - 0][y + 1] & TF_DOWN;
+      terraform_types[x][y] |= (int) terraform_types[x + 1][y - 0] & TF_RIGHT;
+    }
+  }
+
+  for (int y = 0; y <= terraform_size; y++) {
+    for (int x = 0; x <= terraform_size; x++) {
+      int tile = m_SelectedTile;
+      m_SelectedTile = GetTerraformTile(terraform_grid[x][y], terraform_types[x][y]);
+      if (m_SelectedTile != -1) {
+              map_changed |= SetTile(tx + x - terraform_delta, ty + y - terraform_delta);
+            }
+            m_SelectedTile = tile;
+          }
+        }
+
+      }
+      else {
+        map_changed |= SetTile(tx, ty);
+      }
+
+      m_SelectedTile = selected_tile;
+}
+#endif
+*/
+
 void
 CMapView::Click(CPoint point)
 {
@@ -2279,7 +2514,12 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
       int height;
       int offset_x;
       int offset_y;
+
+      static int m_PreviousRedrawTool = m_CurrentTool;
+      int temp_tool = m_CurrentTool;
+      m_CurrentTool = m_PreviousRedrawTool;
       GetRedrawRect(offset_x, offset_y, width, height);
+      m_CurrentTool = m_PreviousRedrawTool = temp_tool;
 
       int old_x = (m_CurrentCursorTileX - m_CurrentX) * tile_width;
       int old_y = (m_CurrentCursorTileY - m_CurrentY) * tile_height;
@@ -2294,6 +2534,8 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
   
       m_CurrentCursorTileX = x;
       m_CurrentCursorTileY = y;
+
+      GetRedrawRect(offset_x, offset_y, width, height);
 
       // refresh the new tile(s)
       int new_x = (x - m_CurrentX) * tile_width;
