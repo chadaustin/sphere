@@ -31,6 +31,17 @@ files += map(lambda n: 'technical/' + n,
               'rws.txt',
               'spk.txt',
               'videodriver.txt'])
+files += map(lambda n: 'system_scripts/' + n,
+             ['Clock Info.txt',
+              'animation.txt',
+              'audio.txt',
+              'convert.txt',
+              'fademessage.txt',
+              'layers.txt',
+              'map_animation.txt',
+              'menu.txt',
+              'timer.txt',
+              'wintro.txt'])
 
 for f in files:
     env.TextFile(os.path.join(BUILD_DIR, 'docs', f), f)
