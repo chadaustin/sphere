@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <string>
 #include "sfont.hpp"
 
 
@@ -72,7 +73,7 @@ SFONT::DrawZoomedString(int x, int y, double scale, const char* text, RGBA mask)
 {
   struct Local
   {
-    static inline ScaleBlit(IMAGE i, int x, int y, double scale, RGBA mask) {
+    static inline void ScaleBlit(IMAGE i, int x, int y, double scale, RGBA mask) {
       int w = GetImageWidth(i);
       int h = GetImageHeight(i);
       int ax[4] = { x, x + (int)(scale * w), x + (int)(scale * w), x };

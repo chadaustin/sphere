@@ -1,6 +1,10 @@
 #ifndef MAP_ENGINE_HPP
 #define MAP_ENGINE_HPP
 
+#if defined(unix)
+  #include <sys/types.h>
+  typedef u_int64_t qword;
+#endif
 
 #include <deque>
 #include <map>
@@ -8,6 +12,7 @@
 #include "smap.hpp"
 #include "audio.hpp"
 #include "input.hpp"
+#include <string>
 
 
 class CMapEngine
