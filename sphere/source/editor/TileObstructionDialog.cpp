@@ -77,7 +77,7 @@ CTileObstructionDialog::OnInitDialog()
 void
 CTileObstructionDialog::OnOK()
 {
-  for (int i = 0; i < m_obstruction_maps.size(); i++) {
+  for (unsigned int i = 0; i < m_obstruction_maps.size(); i++) {
     m_tiles[i].GetObstructionMap() = m_obstruction_maps[i];
   }
 
@@ -149,9 +149,14 @@ CTileObstructionDialog::OnPresets()
 bool
 CTileObstructionDialog::StoreTile()
 {
-  m_obstruction_maps[m_current_tile] = m_edit_tile.GetObstructionMap();
-  //*m_tile = m_edit_tile;
-  return true;
+  if (m_current_tile >= 0 && m_current_tile < m_tileset->GetNumTiles() - 1)
+  {
+    m_tiles[m_current_tile] = m_edit_tile;
+    m_obstruction_maps[m_current_tile] = m_edit_tile.GetObstructionMap();
+    return true;
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
