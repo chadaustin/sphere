@@ -104,6 +104,9 @@ class Compiler:
         elif name == 'linux':
             self.env = BuildLinuxEnv()
 
+    def __str__(self):
+        return self.name
+
     def is_win32(self):
         return self.name in ['mingw', 'vc6']
     
@@ -188,7 +191,22 @@ class Compiler:
                        CCFLAGS = ['/DWINDOWS', '/DZLIB_DLL'])
 
 
-COMPILER = Compiler(ARGUMENTS.get('compiler', 'vc6'))
+env = Environment(ENV = os.environ)
+if env.Detect('cl'):
+    default_compiler = 'vc6'
+elif sys.platform == 'cygwin':
+    default_compiler = 'mingw'
+elif string.find(sys.platform, 'linux') != -1:
+    default_compiler = 'linux'
+else:
+    print "Can't determine default compiler!  Defaulting to VC6..."
+    default_compiler = 'vc6'
+
+
+COMPILER = Compiler(ARGUMENTS.get('compiler', default_compiler))
+
+print "Using compiler:", str(COMPILER)
+
 base_env = COMPILER.get_env()
 BUILD_DIR = base_env['BUILD_DIR']
 Default(BUILD_DIR)

@@ -4,6 +4,7 @@
 
 
 #include <sstream>
+#include <memory>
 #include <math.h>
 #include "script.hpp"
 

@@ -4,6 +4,7 @@
 
 
 #include <algorithm>
+#include <memory>
 #include "engine.hpp"
 #include "map_engine.hpp"
 #include "filesystem.hpp"

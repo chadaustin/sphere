@@ -10,10 +10,6 @@
 
   #include "unix/unix_video.h"
 
-#elif defined(__linux__) || defined(__UNIX__)
-
-  #include "linux/video.hpp"
-
 #else
 
   #error unsupported platform

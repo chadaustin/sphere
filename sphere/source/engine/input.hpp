@@ -10,10 +10,6 @@
 
   #include "unix/unix_input.h"
 
-#elif defined(__linux__) || defined(__UNIX__)
-
-  #include "linux/input.hpp"
-
 #else
 
   #error unsupported platform

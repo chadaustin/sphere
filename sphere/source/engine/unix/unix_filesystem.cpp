@@ -4,6 +4,17 @@
 using std::string;
 
 std::stack<string> directory_stack;
+std::string sphere_directory;
+
+void SetSphereDirectory() {
+  char dir[1024] = { 0 };
+  getcwd(dir, 1024);
+  sphere_directory = dir;
+}
+
+std::string GetSphereDirectory() {
+  return sphere_directory;
+}
 
 /*! \brief return the current working directory */
 bool GetDirectory (string& directory) {

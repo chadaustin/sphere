@@ -10,10 +10,6 @@
 
   #include "unix/unix_audio.h"
 
-#elif defined(__linux__) || defined(__UNIX__)
-
-  #include "linux/audio.h"
-
 #else
 
   #error unsupported platform

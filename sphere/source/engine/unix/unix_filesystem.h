@@ -24,6 +24,9 @@ struct FILELISTimp {
 typedef DIRECTORYLISTimp* DIRECTORYLIST;
 typedef FILELISTimp* FILELIST;
 
+void SetSphereDirectory();
+std::string GetSphereDirectory();
+
 bool GetDirectory(std::string& directory);
 bool MakeDirectory(const char* directory);
 

@@ -10,10 +10,6 @@
 
   #include "unix/unix_filesystem.h"
 
-#elif defined(__linux__) || defined(__UNIX__)
-
-  #include "linux/filesystem.hpp"
-
 #else
 
   #error unsupported platform

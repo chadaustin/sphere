@@ -4,6 +4,7 @@
 
 
 #include <string>
+#include <memory>
 #include <stdlib.h>
 #include "Map.hpp"
 #include "Layer.hpp"

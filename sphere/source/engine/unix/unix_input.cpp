@@ -200,3 +200,25 @@ bool IsMouseButtonPressed (int button) {
 	  return true;
   return false;
 }
+
+
+// NO JOYSTICK SUPPORT
+
+int GetNumJoysticks() {
+    return 0;
+}
+
+float GetJoystickX(int joy) {
+    return 0;
+}
+
+float GetJoystickY(int joy) {
+    return 0;
+}
+
+int GetNumJoystickButtons(int joy) {
+    return 0;
+}
+bool IsJoystickButtonPressed(int joy, int button) {
+    return false;
+}
