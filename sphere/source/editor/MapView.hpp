@@ -144,6 +144,21 @@ private:
   bool m_ShowTileObstructions;
   std::vector<sTile> m_TileObstructions; // when View->Tile Obstructions is on, we render these
 
+#if 0
+
+  class SpritesetImageIcon {
+    public:
+      SpritesetImageIcon(CImage32 pImage, std::string pFilename) {
+        image = pImage;
+        filename = pFilename;
+      }
+      CImage32 image;
+      std::string filename;
+  };
+
+  std::vector<SpritesetImageIcon> m_SpritesetImageIcons;
+#endif
+
   DECLARE_MESSAGE_MAP()
 };
 

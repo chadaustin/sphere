@@ -957,33 +957,6 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
   dc.BitBlt(rect.left, rect.top, tile_width * m_ZoomFactor, tile_height * m_ZoomFactor,
             CDC::FromHandle(m_BlitTile->GetDC()), 0, 0, SRCCOPY);
 
-
-  // check if it's in fill or area select mode (not clicked)
-  if ((m_CurrentTool == tool_FillArea && !m_Clicked) &&
-      (m_CurrentTool == tool_CopyArea && !m_Clicked))
-  {
-  }
-  else
-  {
-    if (tx == m_CurrentCursorTileX && 
-        ty == m_CurrentCursorTileY &&
-        tx <= GetTotalTilesX() &&
-        ty <= GetTotalTilesY())
-      {
-        dc.SaveDC();
-
-        CRect r(rect);
-        CBrush brush;
-        brush.CreateSolidBrush(RGB(m_HighlightColor.red, 
-                               m_HighlightColor.green, 
-                               m_HighlightColor.blue));
-        dc.FrameRect(r, &brush);
-        brush.DeleteObject();
-
-        dc.RestoreDC(-1);
-      }
-  }
-
   // draw start point
   if (tx == m_Map->GetStartX() / tile_width &&
       ty == m_Map->GetStartY() / tile_height &&
@@ -1052,26 +1025,37 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
       switch (entity.GetEntityType()) {
 
         case sEntity::PERSON: {
-          sSpriteset s;
           sPersonEntity* person = (sPersonEntity*) &entity;
-          std::string path = "c:\\sphere\\games\\dizzy-test\\spritesets\\" + person->spriteset;
+          std::string path = "../spritesets/" + person->spriteset;
 
-          if (!s.Load(path.c_str()) || s.GetNumImages() <= 0) {
+          int sprite_index = -1;
+          for (unsigned int i = 0; i < m_SpritesetImageIcons.size(); ++i) {
+            if (path == m_SpritesetImageIcons[i].filename) {
+              sprite_index = i;
+              break;
+            }
+          }
+
+          if (sprite_index == -1) {
+            sSpriteset s;
+            if (s.Load(path.c_str()) && s.GetNumImages() > 0) {
+              s.RescaleFrames(tw / m_ZoomFactor, th / m_ZoomFactor);
+              sprite_index = m_SpritesetImageIcons.size();
+              SpritesetImageIcon ico(s.GetImage(0), path);
+              m_SpritesetImageIcons.push_back(ico);
+            }
+          }
+
+          if (sprite_index < 0 || sprite_index >= m_SpritesetImageIcons.size()) {
+            DrawIconEx(dc.m_hDC, rect.left, rect.top, icon, tw, th, 0, NULL, DI_NORMAL);
             continue;
           }
           
-          s.RescaleFrames(tw / m_ZoomFactor, th / m_ZoomFactor);
-
-          const RGBA* src = s.GetImage(0).GetPixels();
-
-          // clear the DIB
-          memset(m_BlitTile->GetPixels(), 0,  m_ZoomFactor * m_ZoomFactor * tile_width * tile_height * 4);
-
-
+          const RGBA* src = m_SpritesetImageIcons[sprite_index].image.GetPixels();
           BGRA* dest = (BGRA*)m_BlitTile->GetPixels();
 
-          int tile_width = s.GetFrameWidth();
-          int tile_height = s.GetFrameHeight();
+          int tile_width = m_SpritesetImageIcons[sprite_index].image.GetWidth();
+          int tile_height = m_SpritesetImageIcons[sprite_index].image.GetHeight();
 
           int counter = 0;
           for (int j=0; j<tile_height; j++)
@@ -1110,6 +1094,34 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
   }
 
 #endif
+
+  // check if it's in fill or area select mode (not clicked)
+  if ((m_CurrentTool == tool_FillArea && !m_Clicked) &&
+      (m_CurrentTool == tool_CopyArea && !m_Clicked))
+  {
+  }
+  else
+  {
+    if (tx == m_CurrentCursorTileX && 
+        ty == m_CurrentCursorTileY &&
+        tx <= GetTotalTilesX() &&
+        ty <= GetTotalTilesY())
+      {
+        dc.SaveDC();
+
+        CRect r(rect);
+        CBrush brush;
+        brush.CreateSolidBrush(RGB(m_HighlightColor.red, 
+                               m_HighlightColor.green, 
+                               m_HighlightColor.blue));
+        dc.FrameRect(r, &brush);
+        brush.DeleteObject();
+
+        dc.RestoreDC(-1);
+      }
+  }
+
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
