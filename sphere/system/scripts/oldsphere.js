@@ -39,7 +39,6 @@ function StringWidth(str)
   system_font.getStringWidth(str);
 }
 
-
 function GetFontHeight()
 {
   system_font.getHeight();
@@ -53,11 +52,6 @@ function DrawTextBox(x, y, w, h, offset, text)
 // old window stuff
 
 var system_windowstyle = GetSystemWindowStyle();
-
-function GetSystemWindowStyle()
-{
-  return system_windowstyle;
-}
 
 function SetWindowStyle(filename)
 {
