@@ -57,7 +57,7 @@ files.extend(map(lambda n: 'system_scripts/' + n,
 
 # files that should be installed without unix->dos translation
 binfiles = map(lambda n: 'contributed/' + n,
-               ['WT_tutorial.rtf',
+               ['WT_tutorial.doc',
                 'sphere_doc.pdf',
                 'sphere.chm'])
 
@@ -65,4 +65,3 @@ for f in files:
     env.TextFile(os.path.join(BUILD_DIR, 'docs', f), f)
 for f in binfiles:
     env.InstallAs(os.path.join(BUILD_DIR, 'docs', f), f)
-
