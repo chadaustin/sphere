@@ -5290,14 +5290,12 @@ CScript::CreateByteArrayObject(JSContext* cx, int size, const void* data)
     return NULL;
   }
 
-/*
   // add the methods into the object
   static JSFunctionSpec fs[] = {
     { "concat",       ssByteArrayConcat,    1, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
-*/
 
   // give the object a "length" property
   JS_DefineProperty(cx, object, "length", INT_TO_JSVAL(size), JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
@@ -5326,7 +5324,6 @@ end_finalizer()
 
 ///////////////////////////////////////
 
-/*
 begin_method(SS_BYTEARRAY, ssByteArrayConcat, 1)
   arg_byte_array(byte_array);
 
@@ -5340,7 +5337,6 @@ begin_method(SS_BYTEARRAY, ssByteArrayConcat, 1)
 
   return_object ( concated_byte_array );
 end_method()
-*/
 
 ////////////////////////////////////////
 
@@ -5354,6 +5350,14 @@ begin_property(SS_BYTEARRAY, ssByteArrayGetProperty)
     }
 
     *vp = INT_TO_JSVAL(object->array[prop_id]);
+  }
+  else {
+    const char* prop_id = argStr(cx, id);
+
+    if (strcmp(prop_id, "concat") == 0) {
+      JSFunction* func = JS_NewFunction(cx, ssByteArrayConcat, 1, 0, NULL, "concat");   
+      *vp = OBJECT_TO_JSVAL(JS_GetFunctionObject(func));
+    }
   }
 
 end_property()

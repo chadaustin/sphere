@@ -258,6 +258,8 @@ log_object.endBlock()
   bytearray_object[index]
     - returns the allows you to access the index in the array
 
+  bytearray.concat(bytearray_to_append)
+    - returns bytearray with bytearray_to_append attached to the end of it
 
   *** networking ***
   GetLocalName()

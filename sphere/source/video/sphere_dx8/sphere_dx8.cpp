@@ -561,12 +561,18 @@ void EXPORT UnlockImage(IMAGE image)
 
 void EXPORT DirectBlit(int x, int y, int w, int h, RGBA* pixels)
 {
+  IMAGE i = CreateImage(w, h, pixels);
+  BlitImage(i, x, y);
+  DestroyImage(i);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void EXPORT DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels)
 {
+  IMAGE i = CreateImage(w, h, pixels);
+  TransformBlitImage(i, x, y);
+  DestroyImage(i);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
