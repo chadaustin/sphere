@@ -10,17 +10,12 @@
 #include <stdio.h>
 
 int main() {
-  int v,a;
-
-  for (a=255;a>=0;--a) {
+  for (int a = 0; a < 256; ++a) {
     printf("{");
-    for (v=0;v<256;++v) {
-      printf("0x%02x",((v*a)/255));
-      if (v<255) printf(",");
+    for (int v = 0; v < 256; ++v) {
+      printf("0x%02x,",  v * (255 - a) / 255);
     }
-    printf("}");
-    if (a>0) printf(",");
-    printf("\n");
+    printf("},\n");
   }
 
   return 0;

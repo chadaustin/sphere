@@ -140,7 +140,6 @@ std::string DoRunGame(const char* game, const char* parameters) {
   printf("Parameters: %s\n", parameters);
 
   std::string result;
-  bool restarted;
 
   if (EnterDirectory(game)) {
     CGameEngine engine(
@@ -151,6 +150,7 @@ std::string DoRunGame(const char* game, const char* parameters) {
       parameters
     );
 
+    bool restarted;
     do {
       result = engine.Run();
       restarted = engine.Restarted();
@@ -202,7 +202,6 @@ void RunGame(const char* game, const char* parameters) {
   typedef std::pair<std::string, std::string> GamePair;
   std::stack<GamePair> games;
   games.push(GamePair(game, parameters));
-  bool restarted = false;
 
   while (!games.empty()) {
     GamePair g = games.top();

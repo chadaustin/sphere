@@ -2,14 +2,18 @@
 #include <windows.h>
 #include <ddraw.h>
 
-#define USE_ALPHA_TABLE
-
 #include "../../common/rgb.hpp"
 #include "../../common/primitives.hpp"
 #include "../common/video.hpp"
 #include "../common/win32x.hpp"
 #include "resource.h"
 
+/**
+ * @todo maybe this should go to rgb.cpp or some such...  but then
+ * every video driver depends on libcommon?
+ */
+
+/*
 #ifdef USE_ALPHA_TABLE
 unsigned char alpha_new[256][256]={
 #include "../../common/alpha_new.table"
@@ -18,6 +22,7 @@ unsigned char alpha_old[256][256]={
 #include "../../common/alpha_old.table"
 };
 #endif
+*/
 
 /////////////////////////////////////////////////
 
