@@ -2931,7 +2931,7 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
       trigger.y = py;
       trigger.layer = m_SelectedLayer;
 
-      CEntityTriggerDialog dialog(trigger);
+      CEntityTriggerDialog dialog(trigger, m_Map);
       if (dialog.DoModal() == IDOK)
       {
         // insert it into the map
@@ -2981,7 +2981,7 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
             }
           
             case sEntity::TRIGGER: {
-              CEntityTriggerDialog dialog((sTriggerEntity&)e);
+              CEntityTriggerDialog dialog((sTriggerEntity&)e, m_Map);
               if (dialog.DoModal() == IDOK) {
                 m_Handler->MV_MapChanged();
               }
@@ -2996,7 +2996,7 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
 
     case ID_MAPVIEW_ZONEEDIT:
       {
-        CZoneEditDialog dialog(m_Map->GetZone(z));
+        CZoneEditDialog dialog(m_Map->GetZone(z), m_Map);
         if(dialog.DoModal() == IDOK) {
           m_Handler->MV_MapChanged();
         }

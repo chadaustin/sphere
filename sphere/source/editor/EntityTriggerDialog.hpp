@@ -4,12 +4,12 @@
 
 #include <afxwin.h>
 #include "../common/Entities.hpp"
-
+class sMap; // #include "../common/Map.hpp"
 
 class CEntityTriggerDialog : public CDialog
 {
 public:
-  CEntityTriggerDialog(sTriggerEntity& trigger);
+  CEntityTriggerDialog(sTriggerEntity& trigger, sMap* map);
 
 private:
   BOOL OnInitDialog();
@@ -19,6 +19,7 @@ private:
 
 private:
   sTriggerEntity& m_Trigger;
+  sMap* m_Map;
 
   DECLARE_MESSAGE_MAP()
 };

@@ -9,12 +9,21 @@ BEGIN_MESSAGE_MAP(CZoneEditDialog, CDialog)
 
 END_MESSAGE_MAP()
 
+////////////////////////////////////////////////////////////////////////////////
+
+static inline std::string itos(int i)
+{
+  char s[20];
+  sprintf(s, "%d", i);
+  return s;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
-CZoneEditDialog::CZoneEditDialog(sMap::sZone& zone)
+CZoneEditDialog::CZoneEditDialog(sMap::sZone& zone, sMap* map)
 : CDialog(IDD_ZONE_EDIT)
 , m_Zone(zone)
+, m_Map(map)
 {
 }
 
@@ -25,6 +34,15 @@ CZoneEditDialog::OnInitDialog()
 {
   SetDlgItemText(IDC_SCRIPT, m_Zone.script.c_str());
   SetDlgItemInt(IDC_STEPS, m_Zone.reactivate_in_num_steps, FALSE);
+
+  // add layer names in "layer_index - layer_name" style to dropdown layer list
+  for (int i = 0; i < m_Map->GetNumLayers(); i++) {
+    std::string layer_info = itos(i) + " - " + m_Map->GetLayer(i).GetName();
+    SendDlgItemMessage(IDC_LAYER, CB_ADDSTRING, 0, (LPARAM)layer_info.c_str());
+    if (i == m_Zone.layer)
+      SendDlgItemMessage(IDC_LAYER, CB_SETCURSEL, m_Zone.layer);
+  }
+  
   return TRUE;
 }
 
@@ -38,6 +56,8 @@ CZoneEditDialog::OnOK()
   m_Zone.reactivate_in_num_steps = GetDlgItemInt(IDC_STEPS, NULL, FALSE);
   m_Zone.script = script;
   
+  m_Zone.layer = SendDlgItemMessage(IDC_LAYER, CB_GETCURSEL);
+
   CDialog::OnOK();
 }
 
