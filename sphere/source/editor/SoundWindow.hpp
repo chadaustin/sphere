@@ -45,17 +45,29 @@ private:
   afx_msg void OnSoundStop();
   afx_msg void OnSoundRepeat();
 
-  afx_msg void OnNextSound();
-  afx_msg void OnPrevSound();
+  bool AdvanceSound(bool forward, bool allow_repeating);
+
+  bool NextSound();
+  bool PrevSound();
+
+  afx_msg void OnSoundNext();
+  afx_msg void OnSoundPrev();
 
   afx_msg void OnUpdatePlayCommand(CCmdUI* cmdui);
   afx_msg void OnUpdatePauseCommand(CCmdUI* cmdui);
   afx_msg void OnUpdateStopCommand(CCmdUI* cmdui);
   afx_msg void OnUpdateRepeatCommand(CCmdUI* cmdui);
+  afx_msg void OnUpdateNextCommand(CCmdUI* cmdui);
+  afx_msg void OnUpdatePrevCommand(CCmdUI* cmdui);
+
+  afx_msg void OnAutoAdvance();
+  afx_msg void OnUpdateAutoAdvanceCommand(CCmdUI* cmdui);
 
   afx_msg BOOL OnNeedText(UINT id, NMHDR* nmhdr, LRESULT* result);
 
   afx_msg void OnDropFiles(HDROP drop_info);
+
+  void UpdateCaption();
 
 private:
   CSound  m_Sound;
@@ -75,6 +87,7 @@ private:
 
   bool m_Repeat; 
   bool m_Playing;
+  bool m_AutoAdvance;
   
   CPlaylist m_Playlist;
   int m_CurrentSound;

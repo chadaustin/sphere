@@ -277,6 +277,9 @@ BEGIN
         MENUITEM "Pause",                       ID_SOUND_PAUSE
         MENUITEM "&Stop",                       ID_SOUND_STOP
         MENUITEM "&Repeat",                     ID_SOUND_REPEAT
+        MENUITEM "&Next",                       ID_SOUND_NEXT
+        MENUITEM "&Prev",                       ID_SOUND_PREV
+        MENUITEM "Auto Advance",                ID_SOUND_AUTO_ADVANCE
     END
 END
 

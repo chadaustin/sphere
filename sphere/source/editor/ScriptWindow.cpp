@@ -429,6 +429,8 @@ CScriptWindow::CScriptWindow(const char* filename, bool create_from_clipboard)
 , m_SelectionType(SC_SEL_STREAM)
 , m_ListType(0)
 {
+  m_DocumentType = WA_SCRIPT;
+
   SetSaved(filename != NULL);
   SetModified(false);
 

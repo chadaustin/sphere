@@ -251,7 +251,6 @@
 #define IDC_USE_ALPHA                   1218
 #define IDC_LIST                        1220
 #define IDC_OPENUNKNOWNFILETYPES        1221
-#define IDC_STATIC_WIDTH                1222
 #define ID_FILE_IMPORT_BITMAPTORSS      12241
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40003
@@ -664,6 +663,9 @@
 #define ID_SCRIPTVIEW_CONTROLSTRUCTURES 40788
 #define ID_SCRIPTVIEW_CURRENTSCRIPTFUNCTIONS 40789
 #define ID_SCRIPT_TOOLS_SORT            40791
+#define ID_SOUND_NEXT                   40792
+#define ID_SOUND_PREV                   40793
+#define ID_SOUND_AUTO_ADVANCE           40794
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -672,7 +674,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        270
-#define _APS_NEXT_COMMAND_VALUE         40792
+#define _APS_NEXT_COMMAND_VALUE         40795
 #define _APS_NEXT_CONTROL_VALUE         1225
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

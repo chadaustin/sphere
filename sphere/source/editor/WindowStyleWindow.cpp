@@ -83,6 +83,8 @@ CWindowStyleWindow::CWindowStyleWindow(const char* window_style)
 , m_ZoomFactor(4)
 , m_HighlightPen(new CPen(PS_SOLID, 1, 0xFF00FF))
 {
+  m_DocumentType = WA_WINDOWSTYLE;
+
   // allocate DIB sections and empty them
   for (int i = 0; i < 9; i++)
     m_DIBs[i] = NULL;
@@ -110,8 +112,6 @@ CWindowStyleWindow::CWindowStyleWindow(const char* window_style)
     SetSaved(false);
     SetModified(false);
   }
-
-  m_DocumentType = WA_WINDOWSTYLE;
 
   // create the window and child widgets
   Create(AfxRegisterWndClass(0, ::LoadCursor(NULL, IDC_ARROW), NULL, AfxGetApp()->LoadIcon(IDI_WINDOWSTYLE)));

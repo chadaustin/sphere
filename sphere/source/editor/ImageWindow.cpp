@@ -43,6 +43,8 @@ CImageWindow::CImageWindow(const char* image, bool create_from_clipboard)
 : CSaveableDocumentWindow(image, IDR_IMAGE)
 , m_Created(false)
 {
+  m_DocumentType = WA_IMAGE;
+
   SetSaved(image != NULL);
   SetModified(false);
 
@@ -123,7 +125,6 @@ CImageWindow::CImageWindow(const char* image, bool create_from_clipboard)
   m_ColorView.Create(this, this);
   m_AlphaView.Create(this, this);
 
-  m_DocumentType = WA_IMAGE;
   m_Created = true;
 
 #ifdef USE_SIZECBAR

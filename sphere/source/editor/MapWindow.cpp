@@ -73,14 +73,14 @@ CMapWindow::CMapWindow(const char* map, const char* tileset)
 , m_TilePalette(NULL)
 , m_TilePreviewPalette(NULL)
 {
+  m_DocumentType = WA_MAP;
+
   // LoadMap() displays message boxes if something goes wrong
   // SetSaved() and SetModified() are called in here
   if (!LoadMap(map, tileset)) {
     delete this;
     return;
   }
-
-  m_DocumentType = WA_MAP;
 
   Create();
 }

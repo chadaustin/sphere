@@ -8,14 +8,20 @@
 #include "translate.hpp"
 #include "resource.h"
 
+////////////////////////////////////////////////////////////////////////////////
+
 CPlaylist::CPlaylist()
 {
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 CPlaylist::~CPlaylist()
 {
   m_Filenames.clear();
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 const char*
 CPlaylist::GetFile(int index) const
@@ -23,11 +29,15 @@ CPlaylist::GetFile(int index) const
   return m_Filenames[index].c_str();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 int
 CPlaylist::GetNumFiles() const
 {
   return m_Filenames.size();
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 bool
 CPlaylist::AppendFile(const char* filename)
@@ -37,6 +47,7 @@ CPlaylist::AppendFile(const char* filename)
   return size + 1 == int(m_Filenames.size());
 }
 
+////////////////////////////////////////////////////////////////////////////////
 
 // returns false if eof
 inline bool read_line(IFile* file, std::string& s)
@@ -58,6 +69,8 @@ inline bool read_line(IFile* file, std::string& s)
 
   return !eof;
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 bool
 CPlaylist::LoadFromFile(const char* filename, IFileSystem& fs)
@@ -83,6 +96,7 @@ CPlaylist::LoadFromFile(const char* filename, IFileSystem& fs)
   return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 
 const int TIMER_UPDATE_SOUND_WINDOW = 987;
 const int ID_MUSIC_VOLUMEBAR   = 40102;
@@ -109,6 +123,13 @@ BEGIN_MESSAGE_MAP(CSoundWindow, CDocumentWindow)
   ON_UPDATE_COMMAND_UI(ID_SOUND_PAUSE, OnUpdatePauseCommand)
   ON_UPDATE_COMMAND_UI(ID_SOUND_STOP,  OnUpdateStopCommand)
   ON_UPDATE_COMMAND_UI(ID_SOUND_REPEAT, OnUpdateRepeatCommand)
+  ON_UPDATE_COMMAND_UI(ID_SOUND_NEXT, OnUpdateNextCommand)
+  ON_UPDATE_COMMAND_UI(ID_SOUND_PREV, OnUpdatePrevCommand)
+  ON_UPDATE_COMMAND_UI(ID_SOUND_AUTO_ADVANCE, OnUpdateAutoAdvanceCommand)
+
+  ON_COMMAND(ID_SOUND_NEXT, OnSoundNext)
+  ON_COMMAND(ID_SOUND_PREV, OnSoundPrev)
+  ON_COMMAND(ID_SOUND_AUTO_ADVANCE, OnAutoAdvance)
 
   ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnNeedText)
 
@@ -126,6 +147,7 @@ CSoundWindow::CSoundWindow(const char* sound)
   m_Repeat = false;
   
   m_PositionDown = false;
+  m_AutoAdvance = true;
 
   Create(AfxRegisterWndClass(0, NULL, NULL, AfxGetApp()->LoadIcon(IDI_SOUND)));
 
@@ -249,8 +271,8 @@ CSoundWindow::OnSize(UINT type, int cx, int cy)
   }
 
   if (m_PanBar.m_hWnd != NULL && m_PitchBar.m_hWnd != NULL) {
-    m_PanBar.MoveWindow(CRect(cx-50, 90, cx-30, 180));
-    m_PitchBar.MoveWindow(CRect(cx-30, 90, cx, 180));
+    m_PanBar.MoveWindow(  CRect(cx-50, 90, cx-30, 190));
+    m_PitchBar.MoveWindow(CRect(cx-30, 90, cx,    190));
   }
 
   CDocumentWindow::OnSize(type, cx, cy);
@@ -274,16 +296,28 @@ CSoundWindow::OnTimer(UINT timerID)
   }
   else
   {
-    if (m_Playing && m_Repeat) {
-
-      if (1) OnNextSound();
-      OnSoundPlay();
+    if (m_Playing) {
+      if (!m_AutoAdvance) {
+        if (!m_Repeat) {
+          OnSoundStop();
+        }
+        else {
+          OnSoundPlay();
+        }
+      }
+      else {
+        OnSoundStop();
+        if (NextSound()) {
+          OnSoundPlay();
+        }
+      }
     }
-    else {
+    
+    if (!m_Playing) {
       m_PlayButton.EnableWindow(TRUE);
       m_StopButton.EnableWindow(FALSE);     
-      m_Playing = false;
-      m_Sound.Stop();
+
+      OnSoundStop();
 
       if (m_PositionBar.m_hWnd != NULL) {
         m_PositionBar.SetPos(0);
@@ -346,9 +380,7 @@ CSoundWindow::OnSoundPlay()
   if (m_CurrentSound >= 0 && m_CurrentSound < m_Playlist.GetNumFiles()) {
     LoadSound(m_Playlist.GetFile(m_CurrentSound));
 
-    char szWindowTitle[MAX_PATH + 1024];
-    sprintf (szWindowTitle, "%s [%d / %d]", strrchr(m_Playlist.GetFile(m_CurrentSound), '\\') + 1, m_CurrentSound, m_Playlist.GetNumFiles());
-    SetCaption(szWindowTitle);
+    UpdateCaption();
 
     m_Sound.Play();
     m_Playing = true;
@@ -378,28 +410,66 @@ CSoundWindow::OnSoundStop()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-afx_msg void
-CSoundWindow::OnNextSound()
+bool
+CSoundWindow::AdvanceSound(bool forward, bool allow_repeating)
 {
-  m_CurrentSound += 1;
+  const int delta = forward ? 1 : -1;
+  const int original_sound = m_CurrentSound;
 
-  if (m_CurrentSound < 0)
-    m_CurrentSound = m_Playlist.GetNumFiles() - 1;
-  if (m_CurrentSound >= m_Playlist.GetNumFiles())
-    m_CurrentSound = 0;
+  m_CurrentSound += delta;
+
+  if (m_CurrentSound < 0) {
+    m_CurrentSound = (allow_repeating) ? m_Playlist.GetNumFiles() - 1 : original_sound;
+  }
+  else {
+    if (m_CurrentSound >= m_Playlist.GetNumFiles()) {
+      m_CurrentSound = (allow_repeating) ? 0 : original_sound;
+    }
+  }
+
+  return m_CurrentSound != original_sound;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CSoundWindow::NextSound()
+{
+  return AdvanceSound(true, m_Repeat);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CSoundWindow::PrevSound()
+{
+  return AdvanceSound(false, m_Repeat);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
-CSoundWindow::OnPrevSound()
+CSoundWindow::OnSoundNext()
 {
-  m_CurrentSound -= 1;
+  if (AdvanceSound(true, true)) {
+    bool playing = m_Playing;
+    OnSoundStop();
+    UpdateCaption();
+    if (playing) OnSoundPlay();
+  }
+}
 
-  if (m_CurrentSound < 0)
-    m_CurrentSound = m_Playlist.GetNumFiles() - 1;
-  if (m_CurrentSound >= m_Playlist.GetNumFiles())
-    m_CurrentSound = 0;
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSoundWindow::OnSoundPrev()
+{
+  if (AdvanceSound(false, true)) {
+    bool playing = m_Playing;
+    OnSoundStop();
+    UpdateCaption();
+    if (playing) OnSoundPlay();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -439,6 +509,38 @@ afx_msg void
 CSoundWindow::OnUpdateRepeatCommand(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_Repeat);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSoundWindow::OnUpdateNextCommand(CCmdUI* cmdui)
+{
+  cmdui->Enable(m_Playlist.GetNumFiles() > 1);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSoundWindow::OnUpdatePrevCommand(CCmdUI* cmdui)
+{
+  cmdui->Enable(m_Playlist.GetNumFiles() > 1);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSoundWindow::OnAutoAdvance()
+{
+  m_AutoAdvance = !m_AutoAdvance;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+  
+afx_msg void
+CSoundWindow::OnUpdateAutoAdvanceCommand(CCmdUI* cmdui)
+{
+  cmdui->SetCheck(m_AutoAdvance ? TRUE : FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -487,9 +589,24 @@ CSoundWindow::OnNeedText(UINT /*id*/, NMHDR* nmhdr, LRESULT* result)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+CSoundWindow::UpdateCaption()
+{
+  char szWindowTitle[MAX_PATH + 1024];
+  const char* filename = strrchr(m_Playlist.GetFile(m_CurrentSound), '\\') + 1;
+
+  sprintf (szWindowTitle, "%s [%d / %d]", filename, m_CurrentSound, m_Playlist.GetNumFiles());
+  SetCaption(szWindowTitle);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSoundWindow::OnDropFiles(HDROP drop_info)
 {
+  if (!drop_info)
+    return;
+
   UINT num_files = DragQueryFile(drop_info, 0xFFFFFFFF, NULL, 0);
 
   struct Local {
@@ -506,16 +623,19 @@ CSoundWindow::OnDropFiles(HDROP drop_info)
   // add all files to the playlist
   for (unsigned int i = 0; i < num_files; i++) {
 
-    char path[MAX_PATH];
-    DragQueryFile(drop_info, i, path, MAX_PATH);
+    char path[MAX_PATH + 1] = {0};
+    if (DragQueryFile(drop_info, i, path, MAX_PATH) != 0) {
 
-    if (Local::extension_compare(path, ".m3u"))
-      m_Playlist.LoadFromFile(path);
-    else
-      m_Playlist.AppendFile(path);
+      if (Local::extension_compare(path, ".m3u"))
+        m_Playlist.LoadFromFile(path);
+      else
+        m_Playlist.AppendFile(path);
+    }
   }
 
   DragFinish(drop_info);
+
+  UpdateCaption();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
