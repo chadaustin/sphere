@@ -327,6 +327,15 @@ BEGIN
             MENUITEM "&Grid",                       ID_MAPVIEW_VIEWGRID
             MENUITEM "&Tile Obstructions",          ID_MAPVIEW_VIEWTILEOBSTRUCTIONS
 
+            POPUP "&Persons As"
+            BEGIN
+                MENUITEM "&Icons",                      ID_MAPVIEW_VIEWPERSONS_ICON
+
+                MENUITEM "&Mini images",                ID_MAPVIEW_VIEWPERSONS_MINIIMAGE
+
+                MENUITEM "Image",                       ID_MAPVIEW_VIEWPERSONS_IMAGE
+
+            END
         END
         MENUITEM SEPARATOR
         MENUITEM "&Fill",                       ID_MAPVIEW_FILL

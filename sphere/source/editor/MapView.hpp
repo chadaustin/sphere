@@ -64,9 +64,11 @@ private:
   void DrawPreviewLine(CDC& dc, int x1, int y1, int x2, int y2);
   void DrawPreviewBox(CDC& dc, int x1, int y1, int x2, int y2);
 
+public:
   void UpdateObstructionTile(int tile);
   void UpdateObstructionTiles();
 
+private:
   afx_msg void OnDestroy();
   afx_msg void OnPaint();
   afx_msg void OnSize(UINT type, int cx, int cy);
@@ -144,7 +146,12 @@ private:
   bool m_ShowTileObstructions;
   std::vector<sTile> m_TileObstructions; // when View->Tile Obstructions is on, we render these
 
-#if 1
+  enum SpritesetDrawTypes {
+    SDT_ICON,
+    SDT_MINI_IMAGE,
+    SDT_IMAGE,
+  };
+  int m_SpritesetDrawType;
 
   class SpritesetImageIcon {
     public:
@@ -157,7 +164,7 @@ private:
   };
 
   std::vector<SpritesetImageIcon> m_SpritesetImageIcons;
-#endif
+
 
   DECLARE_MESSAGE_MAP()
 };

@@ -63,6 +63,8 @@ CMapView::CMapView()
 , m_RedrawPreviewLine(0)
 
 {
+  m_SpritesetDrawType = SDT_ICON;
+
   s_MapAreaClipboardFormat = RegisterClipboardFormat("MapAreaSelection32");
   s_MapEntityClipboardFormat = RegisterClipboardFormat("MapEntitySelection32");
 }
@@ -982,132 +984,137 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
     dc.RestoreDC(-1);
   }
 
-#if 0
-  // draw entities
-  for (int i = 0; i < m_Map->GetNumEntities(); ++i)
-  {
-    sEntity& entity = m_Map->GetEntity(i);
-    if (tx == entity.x / tile_width &&
-        ty == entity.y / tile_height &&
-        m_Map->GetLayer(entity.layer).IsVisible())
-    {
-      HICON icon;
-      switch (entity.GetEntityType())
-      {
-        case sEntity::PERSON:  icon = AfxGetApp()->LoadIcon(IDI_ENTITY_PERSON); break;
-        case sEntity::TRIGGER: icon = AfxGetApp()->LoadIcon(IDI_ENTITY_TRIGGER); break;
-      }
+  bool should_render_tile = false;
 
-      int tw = m_Map->GetTileset().GetTileWidth()  * m_ZoomFactor;
-      int th = m_Map->GetTileset().GetTileHeight() * m_ZoomFactor;
-      DrawIconEx(dc.m_hDC, rect.left, rect.top, icon, tw, th, 0, NULL, DI_NORMAL);
+  if (m_SpritesetDrawType == SDT_ICON) {
+    // draw entities
+    for (int i = 0; i < m_Map->GetNumEntities(); ++i)
+    {
+      sEntity& entity = m_Map->GetEntity(i);
+      if (tx == entity.x / tile_width &&
+          ty == entity.y / tile_height &&
+          m_Map->GetLayer(entity.layer).IsVisible())
+      {
+        HICON icon;
+        switch (entity.GetEntityType())
+        { 
+          case sEntity::PERSON:  icon = AfxGetApp()->LoadIcon(IDI_ENTITY_PERSON); break;
+          case sEntity::TRIGGER: icon = AfxGetApp()->LoadIcon(IDI_ENTITY_TRIGGER); break;
+        }
+
+        int tw = m_Map->GetTileset().GetTileWidth()  * m_ZoomFactor;
+        int th = m_Map->GetTileset().GetTileHeight() * m_ZoomFactor;
+        DrawIconEx(dc.m_hDC, rect.left, rect.top, icon, tw, th, 0, NULL, DI_NORMAL);
+      }
     }
   }
-#else
-  // draw entities
-  bool sprites_drawn = false;
+  else
+  if (m_SpritesetDrawType == SDT_MINI_IMAGE) {
 
-  for (int i = 0; i < m_Map->GetNumEntities(); ++i)
-  {
-    sEntity& entity = m_Map->GetEntity(i);
-
-    if (tx == entity.x / tile_width &&
-        ty == entity.y / tile_height &&
-        m_Map->GetLayer(entity.layer).IsVisible())
+    // draw entities
+    for (int i = 0; i < m_Map->GetNumEntities(); ++i)
     {
-      HICON icon;
-      switch (entity.GetEntityType())
+      sEntity& entity = m_Map->GetEntity(i);
+
+      if (tx == entity.x / tile_width &&
+          ty == entity.y / tile_height &&
+          m_Map->GetLayer(entity.layer).IsVisible())
       {
-        case sEntity::PERSON:  icon = AfxGetApp()->LoadIcon(IDI_ENTITY_PERSON); break;
-        case sEntity::TRIGGER: icon = AfxGetApp()->LoadIcon(IDI_ENTITY_TRIGGER); break;
-      }
+        HICON icon;
+        switch (entity.GetEntityType())
+        {
+          case sEntity::PERSON:  icon = AfxGetApp()->LoadIcon(IDI_ENTITY_PERSON); break;
+          case sEntity::TRIGGER: icon = AfxGetApp()->LoadIcon(IDI_ENTITY_TRIGGER); break;
+        }
 
-      int tw = m_Map->GetTileset().GetTileWidth()  * m_ZoomFactor;
-      int th = m_Map->GetTileset().GetTileHeight() * m_ZoomFactor;
+        int tw = m_Map->GetTileset().GetTileWidth()  * m_ZoomFactor;
+        int th = m_Map->GetTileset().GetTileHeight() * m_ZoomFactor;
 
-      switch (entity.GetEntityType()) {
+        switch (entity.GetEntityType()) {
 
-        case sEntity::PERSON: {
-          sPersonEntity* person = (sPersonEntity*) &entity;
-          std::string filename = person->spriteset;
+          case sEntity::PERSON: {
+            sPersonEntity* person = (sPersonEntity*) &entity;
+            std::string filename = person->spriteset;
 
-          int sprite_index = -1;
-          for (unsigned int i = 0; i < m_SpritesetImageIcons.size(); ++i) {
-            if (filename == m_SpritesetImageIcons[i].filename) {
-              sprite_index = i;
-              break;
-            }
-          }
-
-          if (sprite_index == -1) {
-            sSpriteset s;
-            std::string path1 = std::string("../spritesets/" + filename);
-            std::string path2 = std::string("spritesets/" + filename);
-
-            if (s.Load(path1.c_str())
-             || s.Load(path2.c_str())) {
-              if (s.GetNumImages() > 0) {
-                s.RescaleFrames(tile_width, tile_height);
-                sprite_index = m_SpritesetImageIcons.size();
-                SpritesetImageIcon ico(s.GetImage(0), filename);
-                m_SpritesetImageIcons.push_back(ico);
+            int sprite_index = -1;
+            for (unsigned int i = 0; i < m_SpritesetImageIcons.size(); ++i) {
+              if (filename == m_SpritesetImageIcons[i].filename) {
+                sprite_index = i;
+                break;
               }
             }
-          }
 
-          if (sprite_index < 0 || sprite_index >= m_SpritesetImageIcons.size()) {
-            DrawIconEx(dc.m_hDC, rect.left, rect.top, icon, tw, th, 0, NULL, DI_NORMAL);
-            continue;
-          }
+            if (sprite_index == -1) {
+              sSpriteset s;
+              std::string path1 = std::string("../spritesets/" + filename);
+              std::string path2 = std::string("spritesets/" + filename);
+
+              if (s.Load(path1.c_str())
+               || s.Load(path2.c_str())) {
+                if (s.GetNumImages() > 0) {
+                  s.RescaleFrames(tile_width, tile_height);
+                  sprite_index = m_SpritesetImageIcons.size();
+                  SpritesetImageIcon ico(s.GetImage(0), filename);
+                  m_SpritesetImageIcons.push_back(ico);
+                }
+              }
+            }
+
+            if (sprite_index < 0 || sprite_index >= m_SpritesetImageIcons.size()) {
+              DrawIconEx(dc.m_hDC, rect.left, rect.top, icon, tw, th, 0, NULL, DI_NORMAL);
+              continue;
+            }
           
-          const RGBA* src = m_SpritesetImageIcons[sprite_index].image.GetPixels();
-          BGRA* dest = (BGRA*)m_BlitTile->GetPixels();
+            const RGBA* src = m_SpritesetImageIcons[sprite_index].image.GetPixels();
+            BGRA* dest = (BGRA*)m_BlitTile->GetPixels();
 
-          int sprite_width = m_SpritesetImageIcons[sprite_index].image.GetWidth();
-          int sprite_height = m_SpritesetImageIcons[sprite_index].image.GetHeight();
-          tile_width = std::min(tile_width, sprite_width);
-          tile_height = std::min(tile_height, sprite_height);
+            int sprite_width = m_SpritesetImageIcons[sprite_index].image.GetWidth();
+            int sprite_height = m_SpritesetImageIcons[sprite_index].image.GetHeight();
+            tile_width = std::min(tile_width, sprite_width);
+            tile_height = std::min(tile_height, sprite_height);
 
-          sprites_drawn = true;
+            should_render_tile = true;
 
-          int counter = 0;
-          for (int j=0; j<tile_height; j++)
-          {
-            for (int k=0; k<tile_width; k++)
-              for (int l=0; l<m_ZoomFactor; l++)
-              {
-                RGBA s = src[j * sprite_width + k];
-                int alpha = src[j * sprite_width + k].alpha;
-                dest[counter].red   = (alpha * s.red   + (255 - alpha) * dest[counter].red)   / 256;
-                dest[counter].green = (alpha * s.green + (255 - alpha) * dest[counter].green) / 256;
-                dest[counter].blue  = (alpha * s.blue  + (255 - alpha) * dest[counter].blue)  / 256;
-                counter++;
-              }
-
-            for (int k=1; k<m_ZoomFactor; k++)
+            int counter = 0;
+            for (int j=0; j<tile_height; j++)
             {
-              memcpy(dest + counter, dest + (counter - tile_width * m_ZoomFactor), tile_width * m_ZoomFactor * sizeof(RGBA));
-              counter += tile_width * m_ZoomFactor;
+              for (int k=0; k<tile_width; k++)
+                for (int l=0; l<m_ZoomFactor; l++)
+                {
+                  RGBA s = src[j * sprite_width + k];
+                  int alpha = src[j * sprite_width + k].alpha;
+                  dest[counter].red   = (alpha * s.red   + (255 - alpha) * dest[counter].red)   / 256;
+                  dest[counter].green = (alpha * s.green + (255 - alpha) * dest[counter].green) / 256;
+                  dest[counter].blue  = (alpha * s.blue  + (255 - alpha) * dest[counter].blue)  / 256;
+                  counter++;
+                }
+
+              for (int k=1; k<m_ZoomFactor; k++)
+              {
+                memcpy(dest + counter, dest + (counter - tile_width * m_ZoomFactor), tile_width * m_ZoomFactor * sizeof(RGBA));
+                counter += tile_width * m_ZoomFactor;
+              }
             }
-          }
+          } 
+          break;
 
-        } 
-        break;
-
-        case sEntity::TRIGGER:
-          DrawIconEx(dc.m_hDC, rect.left, rect.top, icon, tw, th, 0, NULL, DI_NORMAL);
-        break;
+          case sEntity::TRIGGER:
+            DrawIconEx(dc.m_hDC, rect.left, rect.top, icon, tw, th, 0, NULL, DI_NORMAL);
+          break;
+        }
       }
     }
   }
+  else
+  if (m_SpritesetDrawType == SDT_IMAGE) {
 
-  if (sprites_drawn) {
+  }
+
+  if (should_render_tile) {
     // render the tile
     dc.BitBlt(rect.left, rect.top, tile_width * m_ZoomFactor, tile_height * m_ZoomFactor,
     CDC::FromHandle(m_BlitTile->GetDC()), 0, 0, SRCCOPY);
   }
-
-#endif
 
   // check if it's in fill or area select mode (not clicked)
   if ((m_CurrentTool == tool_FillArea && !m_Clicked) &&
@@ -1875,6 +1882,12 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
     CheckMenuItem(menu, ID_MAPVIEW_VIEWTILEOBSTRUCTIONS, MF_BYCOMMAND | MF_CHECKED);
   }
 
+  switch (m_SpritesetDrawType) {
+    case SDT_ICON:    CheckMenuItem(menu, ID_MAPVIEW_VIEWPERSONS_ICON, MF_BYCOMMAND | MF_CHECKED); break;
+    case SDT_MINI_IMAGE: CheckMenuItem(menu, ID_MAPVIEW_VIEWPERSONS_MINIIMAGE, MF_BYCOMMAND | MF_CHECKED); break;
+    case SDT_IMAGE: CheckMenuItem(menu, ID_MAPVIEW_VIEWPERSONS_IMAGE, MF_BYCOMMAND | MF_CHECKED); break;
+  }
+
   // disable the select tile menu if out of range
   if ( (tx >= 0 && tx < m_Map->GetLayer(m_SelectedLayer).GetWidth()
    && ty >= 0 && ty < m_Map->GetLayer(m_SelectedLayer).GetHeight()) == false ) {
@@ -2062,6 +2075,24 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
       Invalidate();
       //m_Handler->MV_MapChanged();
       break;
+
+     case ID_MAPVIEW_VIEWPERSONS_ICON:
+       m_RedrawWindow = 1;
+       Invalidate();
+       m_SpritesetDrawType = SDT_ICON;
+     break;
+
+     case ID_MAPVIEW_VIEWPERSONS_MINIIMAGE:
+       m_RedrawWindow = 1;
+       Invalidate();
+       m_SpritesetDrawType = SDT_MINI_IMAGE;
+     break;
+
+     case ID_MAPVIEW_VIEWPERSONS_IMAGE:
+       m_RedrawWindow = 1;
+       Invalidate();
+       m_SpritesetDrawType = SDT_IMAGE;
+     break;
 
   }
 }

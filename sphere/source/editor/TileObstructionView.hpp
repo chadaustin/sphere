@@ -4,7 +4,7 @@
 
 #include <afxwin.h>
 #include "../common/Tile.hpp"
-
+class sMap;
 
 class CTileObstructionView : public CWnd
 {
@@ -27,6 +27,7 @@ private:
 
 private:
   sTile* m_tile;
+  sMap* m_map;
   RGBA* m_pixels;
 
   bool m_mouse_down;

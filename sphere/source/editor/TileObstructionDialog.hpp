@@ -6,7 +6,6 @@
 #include "TileObstructionView.hpp"
 #include "../common/Tile.hpp"
 
-
 class CTileObstructionDialog : public CDialog
 {
 public:
