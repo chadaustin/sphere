@@ -13,6 +13,7 @@ public:
   ~CFLICAnimation();
 
   bool Load(const char* filename, IFileSystem& fs = g_DefaultFileSystem);
+  bool Save(const char* filename, IFileSystem& fs = g_DefaultFileSystem);
 
   int GetWidth();
   int GetHeight();

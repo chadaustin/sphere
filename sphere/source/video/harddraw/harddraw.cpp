@@ -346,6 +346,7 @@ bool SetDisplayMode()
   }
 
   CLOG("-SetDisplayMode");
+  CLOGPARAM("  BitsPerPixel: %d", BitsPerPixel);
   return result ? true : false;
 }
 
@@ -459,6 +460,7 @@ void OptimizeBlitRoutine(IMAGE image)
   if (is_empty)
   {
     image->blit_routine = NullBlit;
+    CLOG("OptimizeBlitRoutine: NullBlit");
     return;
   }
 
@@ -473,6 +475,7 @@ void OptimizeBlitRoutine(IMAGE image)
   if (is_tile)
   {
     image->blit_routine = TileBlit;
+    CLOG("OptimizeBlitRoutine: TileBlit");
     return;
   }
 
@@ -488,10 +491,12 @@ void OptimizeBlitRoutine(IMAGE image)
   if (is_sprite)
   {
     image->blit_routine = SpriteBlit;
+    CLOG("OptimizeBlitRoutine: SpriteBlit");
     return;
   }
 
   // normal blit
+  CLOG("OptimizeBlitRoutine: NormalBlit");
   image->blit_routine = NormalBlit;
 }
 

@@ -3,6 +3,7 @@
 
 
 #include "rgb.hpp"
+#include "DefaultFileSystem.hpp"
 
 
 // interface
@@ -18,6 +19,8 @@ struct IAnimation
 
   virtual bool ReadNextFrame(RGBA* FrameBuffer) = 0;
   virtual bool ReadNextFrame(BGRA* FrameBuffer) = 0;
+
+  virtual bool Save(const char* filename, IFileSystem& fs) = 0;
 };
 
 

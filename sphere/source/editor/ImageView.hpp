@@ -77,6 +77,8 @@ private:
   void FreeSelectionPixels(RGBA* pixels);
   void InvalidateSelection(int sx, int sy, int sw, int sh);
 
+  void ClipPointToWithinImage(POINT* point);
+
   void Click(bool force_draw);
   void Fill();
   void FillMe(int x, int y, RGBA colorToReplace);

@@ -715,7 +715,7 @@ CImageView::Click(bool force_draw)
   }
 
   m_Image.SetPixel(end.x, end.y, m_Color);
-  InvalidateSelection(end.x - 1, end.y - 1, 2, 2);
+  InvalidateSelection(end.x, end.y, 1, 1);
   m_Handler->IV_ImageChanged();
 }
 
@@ -876,8 +876,8 @@ CImageView::Selection()
     UpdateSelection();
   }
 
-  InvalidateSelection(GetSelectionLeftX() - 1, GetSelectionTopY() - 1, GetSelectionWidth() + 2, GetSelectionHeight() + 2);
-  m_Handler->IV_ImageChanged();
+  Invalidate();
+  //m_Handler->IV_ImageChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1070,8 +1070,8 @@ CImageView::OnPaint()
 
       BGRA* pixels = (BGRA*) m_BlitTile->GetPixels();
 
-      for (int iy = 0; iy < 64; ++iy) {    
-        for (int ix = 0; ix < 64; ++ix) { 
+      for (int iy = 0; iy < 64; ++iy) {  
+        for (int ix = 0; ix < 64; ++ix) {
           //for (int l = 0; l < size; ++l)
           {
 
@@ -1083,10 +1083,6 @@ CImageView::OnPaint()
 
             if (!(sx >= 0 && sx < width && sy >= 0 && sy < height) )
                continue;
-
-            //RECT current_rect = { (sx), (sy), (sx) + 64, (sy) + 64, };
-            //if (!_dc.RectVisible(&current_rect))
-            //  return;
 
             int counter = (iy * 64) + ix;
 
@@ -1148,7 +1144,7 @@ CImageView::OnPaint()
   }
 
 
-/*
+/* // this is the old image drawing code
   // draw the image
   for (int ix = 0; ix < width; ix++)
     for (int iy = 0; iy < height; iy++)
@@ -1287,8 +1283,10 @@ CImageView::PaintLine(CImage32& pImage)
   POINT end = ConvertToPixel(m_CurPoint);
 
   // bounds check
-  if (!InImage(start) || !InImage(end))
+  if (!InImage(start))
     return;
+
+  ClipPointToWithinImage(&end);
 
   pImage.Line(start.x, start.y, end.x, end.y, m_Color);
 }
@@ -1306,8 +1304,10 @@ CImageView::PaintRectangle(CImage32& pImage)
   POINT end = ConvertToPixel(m_CurPoint);
 
   // bounds check
-  if (!InImage(start) || !InImage(end))
+  if (!InImage(start))
     return;
+
+  ClipPointToWithinImage(&end);
 
   pImage.Rectangle(start.x, start.y, end.x, end.y, m_Color);
 }
@@ -1357,6 +1357,16 @@ CImageView::PaintEllipse(CImage32& pImage)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+CImageView::ClipPointToWithinImage(POINT* point) {
+  if (point->x < 0) point->x = 0;
+  if (point->y < 0) point->y = 0;
+  if (point->x > m_Image.GetWidth())  point->x = m_Image.GetWidth();
+  if (point->y > m_Image.GetHeight()) point->y = m_Image.GetHeight();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
 CImageView::UpdateSelection()
 {
   if (!m_MouseDown)
@@ -1370,11 +1380,7 @@ CImageView::UpdateSelection()
   if (!InImage(start))
     return;
 
-  // clip the end point within the image
-  if (end.x < 0) end.x = 0;
-  if (end.y < 0) end.y = 0;
-  if (end.x > m_Image.GetWidth())  end.x = m_Image.GetWidth();
-  if (end.y > m_Image.GetHeight()) end.y = m_Image.GetHeight();
+  ClipPointToWithinImage(&end);
 
   m_SelectionX = std::min(start.x, end.x);
   m_SelectionY = std::min(start.y, end.y);
@@ -1511,6 +1517,7 @@ CImageView::OnMouseMove(UINT flags, CPoint point)
     case Tool_Fill:
       break;
 
+    // this sucks to have to redraw the whole window when you move the mouse
     case Tool_Line:
     case Tool_Rectangle:
     case Tool_Circle:
