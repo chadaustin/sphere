@@ -1085,11 +1085,6 @@ CMapEngine::SetPersonDirection(const char* name, const char* direction)
     return false;
   }
 
-  if (m_Persons[person].spriteset->GetSpriteset().GetDirectionNum(direction) == -1) {
-    m_ErrorMessage = "Person '" + std::string(name) + "' direction '" + std::string(direction) + "' doesn't exist";
-    return false;
-  }
-
   m_Persons[person].direction = direction;
   return true;
 }
@@ -1171,8 +1166,8 @@ CMapEngine::GetPersonDirection(const char* name, std::string& direction)
     return false;
   }
 
-  //direction = m_Persons[person].direction;
-  direction = m_Persons[person].spriteset->GetSpriteset().GetDirectionNum(name);
+  direction = m_Persons[person].direction;
+//  direction = m_Persons[person].spriteset->GetSpriteset().GetDirectionNum(name);
   return true;
 }
 
@@ -2443,16 +2438,6 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     switch (c.command) {
       
       case COMMAND_WAIT: break;
-/*
-      case COMMAND_FACE_NORTH:     p.direction = sSpriteset::NORTH;     break;
-      case COMMAND_FACE_NORTHEAST: p.direction = sSpriteset::NORTHEAST; break;
-      case COMMAND_FACE_EAST:      p.direction = sSpriteset::EAST;      break;
-      case COMMAND_FACE_SOUTHEAST: p.direction = sSpriteset::SOUTHEAST; break;
-      case COMMAND_FACE_SOUTH:     p.direction = sSpriteset::SOUTH;     break;
-      case COMMAND_FACE_SOUTHWEST: p.direction = sSpriteset::SOUTHWEST; break;
-      case COMMAND_FACE_WEST:      p.direction = sSpriteset::WEST;      break;
-      case COMMAND_FACE_NORTHWEST: p.direction = sSpriteset::NORTHWEST; break;
-*/
       case COMMAND_FACE_NORTH:     p.direction = "north";     break;
       case COMMAND_FACE_NORTHEAST: p.direction = "northeast"; break;
       case COMMAND_FACE_EAST:      p.direction = "east";      break;
