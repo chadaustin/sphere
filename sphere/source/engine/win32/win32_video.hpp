@@ -32,7 +32,7 @@ extern void  (__stdcall * TransformBlitImageMask)(IMAGE image, int x[4], int y[4
 extern int   (__stdcall * GetImageWidth)(IMAGE image);
 extern int   (__stdcall * GetImageHeight)(IMAGE image);
 extern RGBA* (__stdcall * LockImage)(IMAGE image);
-extern void  (__stdcall * UnlockImage)(IMAGE image);
+extern void  (__stdcall * UnlockImage)(IMAGE image, bool pixels_changed);
 extern void  (__stdcall * DirectBlit)(int x, int y, int w, int h, RGBA* pixels);
 extern void  (__stdcall * DirectTransformBlit)(int x[4], int y[4], int w, int h, RGBA* pixels);
 extern void  (__stdcall * DirectGrab)(int x, int y, int w, int h, RGBA* pixels);

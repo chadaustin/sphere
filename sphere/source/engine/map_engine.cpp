@@ -689,7 +689,13 @@ CMapEngine::SetTileImage(int tile, IMAGE image) {
   }
 
   RGBA* pixels = LockImage(image);
+  if (!pixels) {
+    m_ErrorMessage = "LockImage failed!!";
+    return false;
+  }
+
   CImage32& tile_image = m_Map.GetMap().GetTileset().GetTile(tile);
+  CImage32::BlendMode blend_mode = tile_image.GetBlendMode();
   tile_image.SetBlendMode(CImage32::REPLACE);
 
   for (int x = 0; x < m_Map.GetMap().GetTileset().GetTileWidth(); x++) {
@@ -697,7 +703,9 @@ CMapEngine::SetTileImage(int tile, IMAGE image) {
        tile_image.SetPixel(x, y, pixels[y * GetImageWidth(image) + x]);
     }
   }
-  UnlockImage(image);
+  
+  UnlockImage(image, false);
+  tile_image.SetBlendMode(blend_mode);
 
   m_Map.UpdateTile(tile);
   m_Map.UpdateSolidTile(tile);

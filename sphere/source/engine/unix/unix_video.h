@@ -44,7 +44,7 @@ void TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask);
 int GetImageWidth(IMAGE image);
 int GetImageHeight(IMAGE image);
 RGBA* LockImage(IMAGE image);
-void UnlockImage(IMAGE image);
+void UnlockImage(IMAGE image, bool pixels_changed);
 void DirectBlit(int x, int y, int w, int h, RGBA* pixels);
 void DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels);
 void DirectGrab(int x, int y, int w, int h, RGBA* pixels);

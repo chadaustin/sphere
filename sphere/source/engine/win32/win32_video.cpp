@@ -27,7 +27,7 @@ void  (__stdcall * TransformBlitImageMask)(IMAGE image, int x[4], int y[4], RGBA
 int   (__stdcall * GetImageWidth)(IMAGE image);
 int   (__stdcall * GetImageHeight)(IMAGE image);
 RGBA* (__stdcall * LockImage)(IMAGE image);
-void  (__stdcall * UnlockImage)(IMAGE image);
+void  (__stdcall * UnlockImage)(IMAGE image, bool pixels_changed);
 void  (__stdcall * DirectBlit)(int x, int y, int w, int h, RGBA* pixels);
 void  (__stdcall * DirectTransformBlit)(int x[4], int y[4], int w, int h, RGBA* pixels);
 void  (__stdcall * DirectGrab)(int x, int y, int w, int h, RGBA* pixels);

@@ -1038,10 +1038,21 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
       }
 
       RGBA* pixels = LockImage(ss_image->image);
-      CImage32 tmp = CImage32(width, height, pixels);
-      images[i] = tmp;
-      UnlockImage(ss_image->image);
+      if (!pixels) {
+        JS_ReportError(cx, "LockImage failed");
+        return NULL;
+      }
 
+      CImage32 tmp = CImage32(width, height, pixels);
+
+      UnlockImage(ss_image->image, false);
+
+      if (tmp.GetWidth() != width || tmp.GetHeight() != height) {
+        JS_ReportError(cx, "Temporary image allocation failed");
+        return NULL;
+      }
+
+      images[i] = tmp;
     }
   }
 
@@ -4651,6 +4662,11 @@ begin_func(CreateSurface, 3)
   }
 
   CImage32* surface = new CImage32(w, h);
+  if (!surface || surface->GetWidth() != w || surface->GetHeight() != h) {
+    JS_ReportError(cx, "CreateSurface() failed!!");
+    return JS_FALSE;
+  }
+
   surface->SetBlendMode(CImage32::REPLACE);
   surface->Rectangle(0, 0, w - 1, h - 1, c);
   surface->SetBlendMode(CImage32::BLEND);
@@ -4711,6 +4727,11 @@ begin_func(GrabSurface, 4)
 
   // create surface and grab pixels from the backbuffer
   CImage32* surface = new CImage32(w, h);
+  if (!surface || surface->GetWidth() != w || surface->GetHeight() != h) {
+    JS_ReportError(cx, "GrabSurface() failed!!");
+    return JS_FALSE;
+  }
+
   DirectGrab(x, y, w, h, surface->GetPixels());
 
   return_object(CreateSurfaceObject(cx, surface));
@@ -6233,7 +6254,13 @@ begin_method(SS_IMAGE, ssImageCreateSurface, 0)
 
   CImage32* surface = new CImage32(width, height, pixels);
 
-  UnlockImage(object->image);
+  if (!surface || surface->GetWidth() != width || surface->GetHeight() != height) {
+    if (surface) { delete surface; surface = NULL; }
+    JS_ReportError(cx, "createSurface() failed!!");
+    return JS_FALSE;
+  }
+
+  UnlockImage(object->image, false);
 
   return_object(CreateSurfaceObject(cx, surface));
 end_method()

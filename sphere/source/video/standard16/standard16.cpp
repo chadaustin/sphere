@@ -1048,14 +1048,18 @@ EXPORT(RGBA*) LockImage(IMAGE image)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(void) UnlockImage(IMAGE image)
+EXPORT(void) UnlockImage(IMAGE image, bool pixels_changed)
 {
-  delete[] image->rgb;
-  delete[] image->alpha;
+  if (pixels_changed) {
+    delete[] image->rgb;
+    delete[] image->alpha;
 
-  FillImagePixels(image, image->locked_pixels);
-  OptimizeBlitRoutine(image);
+    FillImagePixels(image, image->locked_pixels);
+    OptimizeBlitRoutine(image);
+  }
+
   delete[] image->locked_pixels;
+  image->locked_pixels = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -878,11 +878,13 @@ EXPORT(RGBA*) LockImage(IMAGE image)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(void) UnlockImage(IMAGE image)
+EXPORT(void) UnlockImage(IMAGE image, bool pixels_changed)
 {
-  glDeleteTextures(1, &image->texture);
-  CreateTexture(image);
-  image->special = AnalyzePixels(image->width, image->height, image->pixels);
+  if (pixels_changed) {
+    glDeleteTextures(1, &image->texture);
+    CreateTexture(image);
+    image->special = AnalyzePixels(image->width, image->height, image->pixels);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

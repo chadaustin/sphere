@@ -549,11 +549,13 @@ RGBA* EXPORT LockImage(IMAGE image)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT UnlockImage(IMAGE image)
+void EXPORT UnlockImage(IMAGE image, bool pixels_changed)
 {
-  image->texture->Release();
-  if (!CreateTexture(image)) {
-    // uh oh...
+  if (pixels_changed) {
+    image->texture->Release();
+    if (!CreateTexture(image)) {
+      // uh oh...
+    }
   }
 }
 

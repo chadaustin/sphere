@@ -2,10 +2,15 @@
 #include <windows.h>
 #include <ddraw.h>
 #include <stdio.h>
-#include "../../source/common/rgb.hpp"
+
+// sphere common includes
+#include "../../common/rgb.hpp"
 #include "../../common/primitives.hpp"
+
+// video common includes
 #include "../common/video.hpp"
 #include "../common/win32x.hpp"
+
 #include "resource.h"
 
 
@@ -1055,14 +1060,18 @@ EXPORT(RGBA*) LockImage(IMAGE image)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(void) UnlockImage(IMAGE image)
+EXPORT(void) UnlockImage(IMAGE image, bool pixels_changed)
 {
-  delete[] (byte*)image->pixels;
-  delete[] image->alpha;
+  if (pixels_changed) {
+    delete[] (byte*)image->pixels;
+    delete[] image->alpha;
   
-  FillImagePixels(image, image->locked_pixels);
-  OptimizeBlitRoutine(image);
+    FillImagePixels(image, image->locked_pixels);
+    OptimizeBlitRoutine(image);
+  }
+
   delete[] image->locked_pixels;
+  image->locked_pixels = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

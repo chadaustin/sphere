@@ -256,7 +256,7 @@ void BlitImageMask(IMAGE image, int x, int y, RGBA mask)
     i++;
   }
 
-  UnlockImage(image);
+  UnlockImage(image, true);
   BlitImage(image, x, y);
 }
 
@@ -290,7 +290,7 @@ RGBA* LockImage(IMAGE image)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void UnlockImage(IMAGE image)
+void UnlockImage(IMAGE image, bool pixels_changed)
 {
   SDL_Surface* surface = (SDL_Surface*)image;
   SDL_UnlockSurface(surface);

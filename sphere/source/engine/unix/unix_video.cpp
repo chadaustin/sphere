@@ -761,12 +761,16 @@ RGBA* LockImage(IMAGE image) {
   return image->locked_pixels;
 }
 
-void UnlockImage(IMAGE image) {
-  delete[] image->bgra;
-  delete[] image->alpha;
+void UnlockImage(IMAGE image, bool pixels_changed) {
 
-  FillImagePixels(image, image->locked_pixels);
-  OptimizeBlitRoutine(image);
+  if (pixels_changed) {
+    delete[] image->bgra;
+    delete[] image->alpha;
+
+    FillImagePixels(image, image->locked_pixels);
+    OptimizeBlitRoutine(image);
+  }
+
   delete[] image->locked_pixels;
 }
 
