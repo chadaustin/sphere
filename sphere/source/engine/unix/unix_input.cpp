@@ -88,9 +88,11 @@ static Uint8 KeyMapping[total_keys] = {
   SDLK_LEFT
 };
 
-#define MOUSE_LEFT 0
-#define MOUSE_MIDDLE 1
-#define MOUSE_RIGHT 2
+static bool key_buffer[total_keys];
+
+void InitializeInput() {
+  memset(key_buffer, 0, total_keys);
+}
 
 bool RefreshInput () {
   SDL_Event event;
@@ -104,7 +106,7 @@ bool RefreshInput () {
       break;
     if (event.type == SDL_QUIT)
       exit(0);
-    else if (event.type == SDL_KEYDOWN) {
+    else if ((event.type == SDL_KEYDOWN) || (event.type == SDL_KEYUP)) {
       pressed = event.key.keysym.sym;
       switch (pressed) {
         case SDLK_RSHIFT:
@@ -131,19 +133,25 @@ bool RefreshInput () {
             }
           }
       };
-      if (key != 0)
-        keys.push_back(key);
+      if (key != 0) {
+		  if (event.type == SDL_KEYDOWN) {
+          keys.push_back(key);
+			 key_buffer[key] = true;
+		  } else {
+			 key_buffer[key] = false;
+		  }
+		}
     }
   }
 }
 
 bool IsKeyPressed (int key) {
-  Uint8* key_state;
+  /* Uint8* key_state;
 
+  SDL_PumpEvents();
   key_state = SDL_GetKeyState(NULL);
-  if (key_state[KeyMapping[key]])
-    return true;
-  return false;
+  return key_state[KeyMapping[key]]; */
+  return key_buffer[key];
 }
 
 bool AreKeysLeft () {

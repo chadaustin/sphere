@@ -88,6 +88,7 @@
 #define MOUSE_MIDDLE   1
 #define MOUSE_RIGHT    2
 
+void InitializeInput();
 bool RefreshInput();
 bool IsKeyPressed(int key);
 bool AreKeysLeft();

@@ -24,7 +24,7 @@ bool GetLocalAddress (char* name, int size) {
 
   if(!GetLocalName(hostname, 256))
     return false;
-  host = gethostbyname2(hostname, AF_INET);
+  host = gethostbyname(hostname);
   if (!host)
     return false;
   address = inet_ntoa(*(struct in_addr*)host->h_addr);
@@ -42,24 +42,23 @@ NSOCKET OpenAddress (const char* name, int port) {
   NSOCKET sock = new NSOCKETimp;
   int err;
 
-  sock->socket = socket(PF_INET, SOCK_STREAM, 0);
+  sock->is_connected = false;
+  sock->is_listening = false;
+  sock->socket = socket(AF_INET, SOCK_STREAM, 0);
   if (sock->socket < 0) {
     delete sock;
     return NULL;
   }
-  sock->is_connected = false;
-  sock->is_listening = false;
   host = gethostbyname(name);
   server.sin_family = AF_INET;
   server.sin_port = htons(port);
   server.sin_addr = *(struct in_addr*)host->h_addr;
-  fcntl(sock->socket, F_SETFL, fcntl(sock->socket, F_GETFL, 0) | O_NONBLOCK);
   err = connect(sock->socket, (struct sockaddr*)&server, sizeof(server));
-  if ((err < 0) && (errno != EINPROGRESS)) {
-    delete sock;
-    free(host);
-    return NULL;
+  if (err < 0) {
+	  delete sock;
+	  return NULL;
   }
+  /* fcntl(sock->socket, F_SETFL, fcntl(sock->socket, F_GETFL, 0) | O_NONBLOCK); */
   sock->is_connected = true;
   return sock;
 }
@@ -82,11 +81,11 @@ NSOCKET ListenOnPort (int port) {
     delete sock;
     return NULL;
   }
-  fcntl(sock->socket, F_SETFL, fcntl(sock->socket, F_GETFL, 0) | O_NONBLOCK);
   if (listen(sock->socket, 1) < 0) {
     delete sock;
     return NULL;
   }
+  /* fcntl(sock->socket, F_SETFL, fcntl(sock->socket, F_GETFL, 0) | O_NONBLOCK); */
   sock->is_listening = true;
   return sock;
 }
@@ -127,7 +126,7 @@ int GetPendingReadSize (NSOCKET socket) {
   if (!IsConnected(socket))
     return -1;
   /* We don't have ioctl's FIONREAD in POSIX or GNU, so instead we'll peek at the data.  Note that this function probably will perform a little bit differently than the win32 version, but won't affect program correctness. */
-  num_bytes = recv(socket->socket, buffer, 1024, MSG_PEEK);
+  num_bytes = recv(socket->socket, buffer, MAX_LINE, MSG_PEEK);
   if (num_bytes == -1) {
     if (errno == EWOULDBLOCK)
       return 0;
@@ -159,6 +158,8 @@ int SocketRead (NSOCKET socket, void* buffer, int size) {
 }
 
 void SocketWrite (NSOCKET socket, void* buffer, int size) {
+  int num_written;
+
   if (IsConnected(socket))
-    write(socket->socket, buffer, size);
+    num_written = write(socket->socket, buffer, size);
 }

@@ -71,6 +71,8 @@ bool SwitchResolution (int x, int y, bool fullscreen) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
 	 SDL_WM_SetCaption("sphere 0.93a", NULL);
+	 InitializeInput();
+	 initialized = true;
   } else {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
     if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
@@ -88,7 +90,6 @@ bool SwitchResolution (int x, int y, bool fullscreen) {
   SDL_ConvertSurface(screen, real_screen->format, 0); */
   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
   FPSDisplayed = false;
-  initialized = true;
   ScreenWidth = screen->w;
   ScreenHeight = screen->h;
   SetClippingRectangle(0, 0, screen->w, screen->h);
