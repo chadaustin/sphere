@@ -10,6 +10,7 @@
   - moving between two adjacent triggers now activates the new one
     (this may be a regression from when I fixed the trigger detection
     to be pixel-perfect)
+  - added IsLayerReflective and SetLayerReflective (Brian Robb)
 
 2003.01.29
   - make ExecuteGame work no matter where the game calling it is
