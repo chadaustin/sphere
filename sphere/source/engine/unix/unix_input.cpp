@@ -148,6 +148,12 @@ bool IsKeyPressed (int key) {
   return key_buffer[key];
 }
 
+void GetKeyStates (bool keys[MAX_KEY]) {
+  for (int i = 0; i < MAX_KEY; ++i) {
+    keys[i] = IsKeyPressed(i);
+  }
+}
+
 bool AreKeysLeft () {
   RefreshInput();
   return !keys.empty();

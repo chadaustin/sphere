@@ -11,7 +11,7 @@ static SPHERECONFIG* Config = NULL;
 
 
 // mapping from Sphere key codes to Windows key codes
-int VirtualKeys[256] =
+int SphereToWindows[MAX_KEY] =
 {
   0,
   VK_ESCAPE,
@@ -93,13 +93,15 @@ int VirtualKeys[256] =
   VK_LEFT,
 };
 
+int WindowsToSphere[MAX_KEY]; // build dynamically
+
 
 // keyboard state tables (accessed with virtual keys)
-static byte CurrentKeyBuffer[256];
-static byte KeyBuffer[256];
+static byte CurrentKeyBuffer[MAX_KEY];
+static byte KeyBuffer[MAX_KEY];
 
 // keyboard key queue (virtual keys also)
-std::queue<int> KeyQueue;
+static std::queue<int> KeyQueue;
 
 // joystick variables
 static UINT JoystickID;
@@ -130,6 +132,14 @@ static bool MouseState[3];
 
 bool InitInput(HWND window, SPHERECONFIG* config)
 {
+  // build mapping from Windows to Sphere keys
+  for (int i = 0; i < MAX_KEY; ++i) {
+    int k = SphereToWindows[i];
+    if (k >= 0 && k < MAX_KEY) {
+      WindowsToSphere[k] = i;
+    }
+  }
+
   SphereWindow = window;
   Config = config;
 
@@ -178,34 +188,21 @@ bool CloseInput(void)
 
 void OnKeyDown(int virtual_key)
 {
-  // find the Sphere key code that corresponds with the virtual key
-  int key = 0;
-  for (int i = 0; i < sizeof(VirtualKeys) / sizeof(VirtualKeys[0]); i++) {
-    if (virtual_key == VirtualKeys[i]) {
-      key = i;
-      break;
-    }
+  if (virtual_key >= 0 && virtual_key < MAX_KEY) {
+    int key = WindowsToSphere[virtual_key];
+    CurrentKeyBuffer[key] = 1;
+    KeyQueue.push(key);
   }
-
-  CurrentKeyBuffer[key] = 1;
-
-  // add the key to the key queue
-  KeyQueue.push(key);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void OnKeyUp(int virtual_key)
 {
-  int key = 0;
-  for (int i = 0; i < sizeof(VirtualKeys) / sizeof(VirtualKeys[0]); i++) {
-    if (virtual_key == VirtualKeys[i]) {
-      key = i;
-      break;
-    }
+  if (virtual_key >= 0 && virtual_key < MAX_KEY) {
+    int key = WindowsToSphere[virtual_key];
+    CurrentKeyBuffer[key] = 0;
   }
-
-  CurrentKeyBuffer[key] = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -234,25 +231,23 @@ void OnMouseUp(int button)
 
 bool RefreshInput()
 {
-  JOYINFO ji;
-  int joymidx, joymidy;
-
   UpdateSystem();
 
   // update currently pressed keys
-  memcpy(KeyBuffer, CurrentKeyBuffer, 256);
+  memcpy(KeyBuffer, CurrentKeyBuffer, MAX_KEY);
 
   if (Config->joystick)
   {
     // get joystick position information
+    JOYINFO ji;
     joyGetPos(JoystickID, &ji);
     JoyButton1Pressed = (ji.wButtons & JOY_BUTTON1) != 0;
     JoyButton2Pressed = (ji.wButtons & JOY_BUTTON2) != 0;
     JoyButton3Pressed = (ji.wButtons & JOY_BUTTON3) != 0;
     JoyButton4Pressed = (ji.wButtons & JOY_BUTTON4) != 0;
 
-    joymidx = (JoyMinX + JoyMaxX) / 2;
-    joymidy = (JoyMinY + JoyMaxY) / 2;
+    int joymidx = (JoyMinX + JoyMaxX) / 2;
+    int joymidy = (JoyMinY + JoyMaxY) / 2;
 
     if      ((int)ji.wXpos < (JoyMinX + 3 * joymidx) / 4) JoyX = -1;
     else if ((int)ji.wXpos > (JoyMaxX + 3 * joymidx) / 4) JoyX = 1;
@@ -285,6 +280,16 @@ bool IsKeyPressed(int key)
 
   // find the Sphere key code that corresponds with the virtual key
   return (KeyBuffer[key] != 0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void GetKeyStates(bool keys[MAX_KEY])
+{
+  UpdateSystem();
+  for (int i = 0; i < MAX_KEY; ++i) {
+    keys[i] = (KeyBuffer[i] != 0);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

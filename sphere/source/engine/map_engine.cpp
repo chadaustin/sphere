@@ -2918,23 +2918,21 @@ CMapEngine::UpdateEdgeScripts()
 bool
 CMapEngine::ProcessInput()
 {
-  for (int i = 0; i < MAX_KEY; i++) {
-    m_Keys[i] = IsKeyPressed(i);
-  }
-
+  GetKeyStates(m_Keys);
   RefreshInput();
+  bool new_keys[MAX_KEY];
+  GetKeyStates(new_keys);
 
   // clear the key queue
   while (AreKeysLeft()) {
     GetKey();
   }
 
-
   // check to see if key state has changed
   for (int i = 0; i < MAX_KEY; i++) {
-    if (IsKeyPressed(i) != m_Keys[i]) {
+    if (new_keys[i] != m_Keys[i]) {
 
-      if (IsKeyPressed(i)) {            // event: key down
+      if (new_keys[i]) {                // event: key down
 
         if (m_BoundKeys.count(i) > 0) {
 

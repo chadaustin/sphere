@@ -97,6 +97,7 @@ extern bool RefreshInput();
 
 // keyboard
 extern bool IsKeyPressed(int key);
+extern void GetKeyStates(bool keys[MAX_KEY]);
 
 // keyboard key queue
 extern bool AreKeysLeft();

@@ -91,6 +91,7 @@
 void InitializeInput();
 bool RefreshInput();
 bool IsKeyPressed(int key);
+void GetKeyStates(bool keys[MAX_KEY]);
 bool AreKeysLeft();
 int GetKey();
 
