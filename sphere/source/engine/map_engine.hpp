@@ -241,8 +241,6 @@ private:
     SSPRITESET* spriteset;
     RGBA mask;
 
-    char person_id; // used so that UpdatePerson can check the entity still exists
-
     bool is_angled;
     double angle;
 
@@ -364,7 +362,6 @@ private:
   // miscellaneous
   void ResetNextFrame();
   int FindPerson(const char* name);
-  int FindPersonByID(int person_id, int person_index); // used by UpdatePerson only
   bool IsObstructed(int person, int x, int y, int& obs_person);
   int FindObstructingTile(int person, int x, int y);
   int FindObstructingPerson(int person, int x, int y);

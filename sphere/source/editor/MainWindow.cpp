@@ -1498,6 +1498,42 @@ CMainWindow::OnFileImportRM2KChipsetToRTS()
       tileset.GetTile(i).ReplaceColor(color1, color2);
     }
 
+    // make with the animated tiles
+    if (1) {
+      int tiles_per_row = image.GetWidth() / 16;
+
+      for (int i = 0; i < 8; i++) {
+        tileset.GetTile((i * tiles_per_row) + 0).SetNextTile((i * tiles_per_row) + 1);
+        tileset.GetTile((i * tiles_per_row) + 1).SetNextTile((i * tiles_per_row) + 2);
+        tileset.GetTile((i * tiles_per_row) + 2).SetNextTile((i * tiles_per_row) + 0);
+
+        tileset.GetTile((i * tiles_per_row) + 0).SetAnimated(true);
+        tileset.GetTile((i * tiles_per_row) + 1).SetAnimated(true);
+        tileset.GetTile((i * tiles_per_row) + 2).SetAnimated(true);
+        tileset.GetTile((i * tiles_per_row) + 0).SetDelay(8);
+        tileset.GetTile((i * tiles_per_row) + 1).SetDelay(8);
+        tileset.GetTile((i * tiles_per_row) + 2).SetDelay(8);
+
+
+        if (i < 4) {
+          tileset.GetTile((i * tiles_per_row) + 3).SetNextTile((i * tiles_per_row) + 4);
+          tileset.GetTile((i * tiles_per_row) + 4).SetNextTile((i * tiles_per_row) + 5);
+          tileset.GetTile((i * tiles_per_row) + 5).SetNextTile((i * tiles_per_row) + 3);
+        } else {
+          tileset.GetTile((i * tiles_per_row) + 3).SetNextTile((i * tiles_per_row) + tiles_per_row);
+          tileset.GetTile((i * tiles_per_row) + 4).SetNextTile((i * tiles_per_row) + tiles_per_row);
+          tileset.GetTile((i * tiles_per_row) + 5).SetNextTile((i * tiles_per_row) + tiles_per_row);
+        }
+
+        tileset.GetTile((i * tiles_per_row) + 3).SetAnimated(true);
+        tileset.GetTile((i * tiles_per_row) + 4).SetAnimated(true);
+        tileset.GetTile((i * tiles_per_row) + 5).SetAnimated(true);
+        tileset.GetTile((i * tiles_per_row) + 3).SetDelay(8);
+        tileset.GetTile((i * tiles_per_row) + 4).SetDelay(8);
+        tileset.GetTile((i * tiles_per_row) + 5).SetDelay(8);
+      }
+    }
+
     char filename[MAX_PATH];
     sprintf (filename, "%s.rts", title_name.c_str());
 

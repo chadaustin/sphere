@@ -1536,8 +1536,6 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
   p.name = name;
   p.destroy_with_map = destroy_with_map;
 
-  p.person_id = -1;
-
   p.spriteset = m_Engine->LoadSpriteset(spriteset_filename);
   if (p.spriteset == NULL) {
     m_ErrorMessage = "Could not load spriteset: '" + std::string(spriteset_filename) + "'\nPerson: " + p.description;
@@ -3393,36 +3391,10 @@ CMapEngine::UpdatePersons()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-int
-CMapEngine::FindPersonByID(int person_id, int person_index)
-{
-  if (person_index >= 0 && person_index < int(m_Persons.size())) {
-    if (m_Persons[person_index].person_id == person_id)
-      return person_index;
-  }
-
-  for (int i = 0; i < int(m_Persons.size()); i++)
-  {
-    if (m_Persons[i].person_id == person_id)
-      return i;
-  }
-
-  return -1;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 bool
 CMapEngine::UpdatePerson(int person_index, bool& activated)
 {
   Person& p = m_Persons[person_index];
-  static int person_id = -1;
-
-  person_id += 1;
-  if (person_id == -1)
-    person_id += 1;
-
-  m_Persons[person_index].person_id = person_id;
 
   // if this person has a leader, skip it
   if (p.leader != -1) {
@@ -3460,6 +3432,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
         // set current person
         std::string old_person = m_CurrentPerson;
         m_CurrentPerson = p.name;
+        std::string person_name = m_CurrentPerson;
 
         std::string error;
         if (!ExecuteScript(p.script_command_generator, error)) {
@@ -3470,8 +3443,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
         }
 
         // the script may have destroyed the person, so check to see that the person still exists
-        int id = FindPersonByID(person_id, person_index);
-        if (id != person_index) {
+        if (FindPerson(person_name.c_str()) != person_index) {
           return true;
         }
 
@@ -3532,8 +3504,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
         }
 
         // the script may have destroyed the person, so check to see that the person still exists
-        int id = FindPersonByID(person_id, person_index);
-        if (id != person_index) {
+        if (FindPerson(person_name.c_str()) != person_index) {
           return true;
         }
 
@@ -3607,8 +3578,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
             ResetNextFrame();
 
             // the script may have destroyed the person, so check to see that the person still exists
-            int id = FindPersonByID(person_id, person_index);
-            if (id != person_index) {
+            if (FindPerson(person_name.c_str()) != person_index) {
               return true;
             }
           }
@@ -3727,6 +3697,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
               std::string old_person = m_CurrentPerson;
               m_CurrentPerson = m_Persons[obs_person].name;
+              std::string person_name = m_CurrentPerson;
 
               std::string error;
               if (!ExecuteScript(s, error)) {
@@ -3737,6 +3708,11 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
               }
 
               m_CurrentPerson = old_person;
+
+              // the script may have destroyed the person, so check to see that the person still exists
+              if (FindPerson(person_name.c_str()) != person_index) {
+                return true;
+              }
             }
 
             ResetNextFrame();
