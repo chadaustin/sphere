@@ -23,37 +23,38 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
   ON_WM_RBUTTONUP()
   ON_WM_MOUSEMOVE()
 
-  ON_COMMAND(ID_IMAGEVIEW_COLORPICKER,         OnColorPicker)
-  ON_COMMAND(ID_IMAGEVIEW_UNDO,                OnUndo)
-  ON_COMMAND(ID_IMAGEVIEW_COPY,                OnCopy)
-  ON_COMMAND(ID_IMAGEVIEW_PASTE,               OnPaste)
-  ON_COMMAND(ID_IMAGEVIEW_PASTE_RGB,           OnPasteRGB)
-  ON_COMMAND(ID_IMAGEVIEW_PASTE_ALPHA,         OnPasteAlpha)
-  ON_COMMAND(ID_IMAGEVIEW_BLEND_PASTE,         OnBlendPaste)
-  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_BLEND,     OnBlendModeBlend)
-  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_REPLACE,   OnBlendModeReplace)
-  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_RGBONLY,   OnBlendModeRGBOnly)
-  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_ALPHAONLY, OnBlendModeAlphaOnly)
-  ON_COMMAND(ID_IMAGEVIEW_ROTATE_CW,           OnRotateCW)
-  ON_COMMAND(ID_IMAGEVIEW_ROTATE_CCW,          OnRotateCCW)
-  ON_COMMAND(ID_IMAGEVIEW_SLIDE_UP,            OnSlideUp)
-  ON_COMMAND(ID_IMAGEVIEW_SLIDE_RIGHT,         OnSlideRight)
-  ON_COMMAND(ID_IMAGEVIEW_SLIDE_DOWN,          OnSlideDown)
-  ON_COMMAND(ID_IMAGEVIEW_SLIDE_LEFT,          OnSlideLeft)
-  ON_COMMAND(ID_IMAGEVIEW_FLIP_HORIZONTALLY,   OnFlipHorizontally)
-  ON_COMMAND(ID_IMAGEVIEW_FLIP_VERTICALLY,     OnFlipVertically)
-  ON_COMMAND(ID_IMAGEVIEW_FILL_RGB,            OnFillRGB)
-  ON_COMMAND(ID_IMAGEVIEW_FILL_ALPHA,          OnFillAlpha)
-  ON_COMMAND(ID_IMAGEVIEW_FILL_BOTH,           OnFillBoth)
-  ON_COMMAND(ID_IMAGEVIEW_REPLACE_RGBA,        OnReplaceRGBA)
-  ON_COMMAND(ID_IMAGEVIEW_REPLACE_RGB,         OnReplaceRGB)
-  ON_COMMAND(ID_IMAGEVIEW_REPLACE_ALPHA,       OnReplaceAlpha)
-  ON_COMMAND(ID_IMAGEVIEW_FILTER_BLUR,         OnFilterBlur)
-  ON_COMMAND(ID_IMAGEVIEW_FILTER_NOISE,        OnFilterNoise)
+  ON_COMMAND(ID_IMAGEVIEW_COLORPICKER,           OnColorPicker)
+  ON_COMMAND(ID_IMAGEVIEW_UNDO,                  OnUndo)
+  ON_COMMAND(ID_IMAGEVIEW_COPY,                  OnCopy)
+  ON_COMMAND(ID_IMAGEVIEW_PASTE,                 OnPaste)
+  ON_COMMAND(ID_IMAGEVIEW_PASTE_RGB,             OnPasteRGB)
+  ON_COMMAND(ID_IMAGEVIEW_PASTE_ALPHA,           OnPasteAlpha)
+  ON_COMMAND(ID_IMAGEVIEW_BLEND_PASTE,           OnBlendPaste)
+  ON_COMMAND(ID_IMAGEVIEW_VIEWGRID,              OnViewGrid)
+  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_BLEND,       OnBlendModeBlend)
+  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_REPLACE,     OnBlendModeReplace)
+  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_RGBONLY,     OnBlendModeRGBOnly)
+  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_ALPHAONLY,   OnBlendModeAlphaOnly)
+  ON_COMMAND(ID_IMAGEVIEW_ROTATE_CW,             OnRotateCW)
+  ON_COMMAND(ID_IMAGEVIEW_ROTATE_CCW,            OnRotateCCW)
+  ON_COMMAND(ID_IMAGEVIEW_SLIDE_UP,              OnSlideUp)
+  ON_COMMAND(ID_IMAGEVIEW_SLIDE_RIGHT,           OnSlideRight)
+  ON_COMMAND(ID_IMAGEVIEW_SLIDE_DOWN,            OnSlideDown)
+  ON_COMMAND(ID_IMAGEVIEW_SLIDE_LEFT,            OnSlideLeft)
+  ON_COMMAND(ID_IMAGEVIEW_FLIP_HORIZONTALLY,     OnFlipHorizontally)
+  ON_COMMAND(ID_IMAGEVIEW_FLIP_VERTICALLY,       OnFlipVertically)
+  ON_COMMAND(ID_IMAGEVIEW_FILL_RGB,              OnFillRGB)
+  ON_COMMAND(ID_IMAGEVIEW_FILL_ALPHA,            OnFillAlpha)
+  ON_COMMAND(ID_IMAGEVIEW_FILL_BOTH,             OnFillBoth)
+  ON_COMMAND(ID_IMAGEVIEW_REPLACE_RGBA,          OnReplaceRGBA)
+  ON_COMMAND(ID_IMAGEVIEW_REPLACE_RGB,           OnReplaceRGB)
+  ON_COMMAND(ID_IMAGEVIEW_REPLACE_ALPHA,         OnReplaceAlpha)
+  ON_COMMAND(ID_IMAGEVIEW_FILTER_BLUR,           OnFilterBlur)
+  ON_COMMAND(ID_IMAGEVIEW_FILTER_NOISE,          OnFilterNoise)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE, OnFilterNegativeImage)
-  ON_COMMAND(ID_IMAGEVIEW_FILTER_SOLARIZE,     OnFilterSolarize)
-  ON_COMMAND(ID_IMAGEVIEW_SETCOLORALPHA,       OnSetColorAlpha)
-  ON_COMMAND(ID_IMAGEVIEW_SCALEALPHA,          OnScaleAlpha)
+  ON_COMMAND(ID_IMAGEVIEW_FILTER_SOLARIZE,       OnFilterSolarize)
+  ON_COMMAND(ID_IMAGEVIEW_SETCOLORALPHA,         OnSetColorAlpha)
+  ON_COMMAND(ID_IMAGEVIEW_SCALEALPHA,            OnScaleAlpha)
 
 END_MESSAGE_MAP()
 
@@ -68,8 +69,10 @@ CImageView::CImageView()
 , m_CurrentTool(Tool_Pencil)
 , m_NumUndoImages(0)
 , m_UndoImages(NULL)
+, m_ShowGrid(false)
 {
   m_Image.SetBlendMode(CImage32::REPLACE);
+  m_ShowGrid = false;
   s_ClipboardFormat = RegisterClipboardFormat("FlatImage32");
 }
 
@@ -964,6 +967,22 @@ CImageView::OnPaint()
 
     }
 
+  // draw the grid if it is enabled
+  if (size >= 3 && m_ShowGrid) {
+    HPEN linepen = CreatePen(PS_SOLID, 1, RGB(255, 0, 255));
+    HPEN oldpen = (HPEN)SelectObject(dc, linepen);
+    for (int ix = 0; ix <= width; ++ix) {
+      MoveToEx(dc, offsetx + ix * size, offsety, NULL);
+      LineTo  (dc, offsetx + ix * size, offsety + height * size);
+    }
+    for (int iy = 0; iy <= height; ++iy) {
+      MoveToEx(dc, offsetx,                offsety + iy * size, NULL);
+      LineTo  (dc, offsetx + width * size, offsety + iy * size);
+    }
+    SelectObject(dc, oldpen);
+    DeleteObject(linepen);
+  }
+
   // draw a white rectangle around the image
   SetRect(&Rect, offsetx - 1, offsety - 1, offsetx + totalx + 1, offsety + totaly + 1);
 
@@ -1117,6 +1136,10 @@ CImageView::OnRButtonUp(UINT flags, CPoint point)
     EnableMenuItem(menu, ID_IMAGEVIEW_ROTATE_CCW, MF_BYCOMMAND | MF_GRAYED);
   }
 
+  if (m_ShowGrid) {
+    CheckMenuItem(menu, ID_IMAGEVIEW_VIEWGRID, MF_BYCOMMAND | MF_CHECKED);
+  }
+
   switch (m_Image.GetBlendMode()) {
     case CImage32::BLEND:      CheckMenuItem(menu, ID_IMAGEVIEW_BLENDMODE_BLEND,     MF_BYCOMMAND | MF_CHECKED); break;
     case CImage32::REPLACE:    CheckMenuItem(menu, ID_IMAGEVIEW_BLENDMODE_REPLACE,   MF_BYCOMMAND | MF_CHECKED); break;
@@ -1223,6 +1246,15 @@ CImageView::OnBlendPaste()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnViewGrid()
+{
+  m_ShowGrid = !m_ShowGrid;
+  Invalidate();
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
 CImageView::OnBlendModeBlend()

@@ -92,6 +92,7 @@ private:
   afx_msg void OnPaste();
   afx_msg void OnPasteRGB();
   afx_msg void OnPasteAlpha();
+  afx_msg void OnViewGrid();
   afx_msg void OnBlendPaste();
   afx_msg void OnBlendModeBlend();
   afx_msg void OnBlendModeReplace();
@@ -144,6 +145,8 @@ private:
   // undo
   int    m_NumUndoImages;
   Image* m_UndoImages;
+
+  bool m_ShowGrid;
 
   DECLARE_MESSAGE_MAP()
 };

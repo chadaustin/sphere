@@ -446,6 +446,7 @@ BEGIN
         MENUITEM "Paste RGB",                   ID_IMAGEVIEW_PASTE_RGB
         MENUITEM "Blend Paste",                 ID_IMAGEVIEW_BLEND_PASTE
         MENUITEM SEPARATOR
+        MENUITEM "View &Grid",                  ID_IMAGEVIEW_VIEWGRID
         POPUP "&Blend Mode"
         BEGIN
             MENUITEM "&Blend",                      ID_IMAGEVIEW_BLENDMODE_BLEND
