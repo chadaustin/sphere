@@ -1,8 +1,9 @@
 #ifndef CONVOLVE_LIST_DIALOG_HPP
 #define CONVOLVE_LIST_DIALOG_HPP
 
+#pragma warning(disable: 4786)
+
 #include <afxwin.h>
-#include <string>
 #include <vector>
 
 #include "../common/map.hpp"

@@ -198,7 +198,6 @@ CFontWindow::SetImage()
 afx_msg void
 CFontWindow::OnChar(UINT c, UINT repeat, UINT flags)
 {
-  //MessageBox("CFontWindow::OnChar");
   if (c >= MIN_CHARACTER && c <= MAX_CHARACTER) {
 
     if (m_CurrentCharacter != c) {
@@ -215,8 +214,6 @@ CFontWindow::OnChar(UINT c, UINT repeat, UINT flags)
 afx_msg void
 CFontWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
 {
-  //MessageBox("CFontWindow::OnKeyDown");
-
   int old_char = m_CurrentCharacter;
   if (vk == VK_RIGHT) {
     m_CurrentCharacter = std::min(m_CurrentCharacter + 1, MAX_CHARACTER);

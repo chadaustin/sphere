@@ -934,11 +934,27 @@ SOURCE=.\LayerPropertiesDialog.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ListDialog.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ListDialog.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MapPropertiesDialog.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\MapPropertiesDialog.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\MoveLayerDialog.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\MoveLayerDialog.hpp
 # End Source File
 # Begin Source File
 

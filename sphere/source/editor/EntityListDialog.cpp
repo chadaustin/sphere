@@ -1,12 +1,12 @@
 #include "EntityListDialog.hpp"
 #include "resource.h"
-//#include <algorithm>
-//#include <fstream>
 
 #include "EntityPersonDialog.hpp"
 #include "EntityTriggerDialog.hpp"
 
 #include "NumberDialog.hpp"
+#include "ListDialog.hpp"
+#include "MoveLayerDialog.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -297,6 +297,8 @@ CEntityListDialog::OnMoveEntities()
   if (!(list.size() > 0))
     return;
 
+  CLayerMoveDialog layer_dialog(m_Map);
+
   // find out the biggest width and height of layers
   int width = 0;
   int height = 0;
@@ -310,16 +312,13 @@ CEntityListDialog::OnMoveEntities()
 
   int dx;
   int dy;
-  int layer;
-
-  CNumberDialog dld("Move Layer", "Layer Index", -1, -1, m_Map->GetNumLayers());
-  if (dld.DoModal() == IDOK) {
-    layer = dld.GetValue();
-    if (layer != -1) {
+  
+  if (layer_dialog.DoModal() == IDOK) {
+    if (layer_dialog.LayerChanged()) {
+      int layer = layer_dialog.GetLayer();
       OnMoveEntities(0, 0, layer);
     }
-    else
-    if (layer == -1) {
+    else {
       CNumberDialog dxd("Slide Horizontally", "Value", 0, -width, width); 
       if (dxd.DoModal() == IDOK)
       {
