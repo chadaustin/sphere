@@ -63,6 +63,8 @@ wProjectWindow::wProjectWindow(wMainWindow* main_window, wProject* project)
 , m_MainWindow(main_window)
 , m_Project(project)
 , m_TreeCreated(false)
+, m_TreeControl(NULL)
+, m_TreeImages(NULL)
 /*
 , m_htiMaps(NULL)
 , m_htiSpritesets(NULL)
@@ -84,24 +86,35 @@ wProjectWindow::wProjectWindow(wMainWindow* main_window, wProject* project)
 */
 {
   wxBoxSizer *mainsizer = new wxBoxSizer(wxVERTICAL);
-  
-  mainsizer->Add(m_TreeControl = new wxTreeCtrl(this, wID_PROJECTWINDOWS_TREE, wxDefaultPosition, wxDefaultSize, /*wxTR_HIDE_ROOT | wxTR_LINES_AT_ROOT |*/ wxTR_HAS_BUTTONS), 1, wxGROW);
+  if (mainsizer) {
+    m_TreeControl = new wxTreeCtrl(this, wID_PROJECTWINDOWS_TREE, wxDefaultPosition, wxDefaultSize, /*wxTR_HIDE_ROOT | wxTR_LINES_AT_ROOT |*/ wxTR_HAS_BUTTONS);
+    if (m_TreeControl) {
+      mainsizer->Add(m_TreeControl, 1, wxGROW);
+      SetSizer(mainsizer);
+    }
+  }
 
-  SetSizer(mainsizer);
   Update();
 
   m_TreeImages = new wxImageList(16, 16);
-  m_TreeImages->Add(wxIcon(sph_game_xpm));
-  m_TreeControl->SetImageList(m_TreeImages);
+  if (m_TreeImages) {
+    m_TreeImages->Add(wxIcon(sph_game_xpm));
+    m_TreeControl->SetImageList(m_TreeImages);
+  }
 
-  m_TreeControl->SetFocus();
+  if (m_TreeControl) {
+    m_TreeControl->SetFocus();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 wProjectWindow::~wProjectWindow()
 {
-  delete m_TreeImages;
+  if (m_TreeImages) {
+    delete m_TreeImages;
+    m_TreeImages = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -125,13 +138,14 @@ wProjectWindow::OnActivate(wxTreeEvent &event)
     m_MainWindow->OpenGameSettings();
     return;
   }
+
   for(int i = 0; i < PROJECT_TREESIZE; i++) {
     if(m_TreeGroups[i] == event.GetItem()) {
       event.Skip();
-
       return;
     }
   }
+
   int GroupType = -1;
   for(int i = 0; i < PROJECT_TREESIZE; i++) {
     if(m_TreeGroups[i] == m_TreeControl->GetParent(event.GetItem())) {

@@ -89,6 +89,8 @@ CColorAdjustDialog::OnInitDialog()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "../../../code/image_proc/image/hsi.hpp"
+
 bool
 CColorAdjustDialog::DrawPreview(CPaintDC& dc, RECT* rect)
 {
@@ -130,14 +132,46 @@ CColorAdjustDialog::DrawPreview(CPaintDC& dc, RECT* rect)
   int use_blue  = ShouldUseBlueChannel();
   int use_alpha = ShouldUseAlphaChannel();
 
-  for (int iy = 0; iy < current_height; iy++) {
-    for (int ix = 0; ix < current_width; ix++) {
-      if (use_red)   pixels[iy * width + ix].red   += red_value;
-      if (use_green) pixels[iy * width + ix].green += green_value;
-      if (use_blue)  pixels[iy * width + ix].blue  += blue_value;
-      if (use_alpha) pixels[iy * width + ix].alpha += alpha_value;
-    }
-  } 
+  int method = 1;
+
+  if (method == 0) {
+
+    for (int iy = 0; iy < current_height; iy++) {
+      for (int ix = 0; ix < current_width; ix++) {
+        if (use_red)   pixels[iy * width + ix].red   += red_value;
+        if (use_green) pixels[iy * width + ix].green += green_value;
+        if (use_blue)  pixels[iy * width + ix].blue  += blue_value;
+        if (use_alpha) pixels[iy * width + ix].alpha += alpha_value;
+      }
+    } 
+
+  }
+  else {
+    double h_value = ((double)red_value   / (double)255.0) * ((double)2.0 * 3.14);
+    double s_value = ((double)green_value / (double)255.0);
+    double i_value = ((double)blue_value  / (double)255.0);
+
+    for (int iy = 0; iy < current_height; iy++) {
+      for (int ix = 0; ix < current_width; ix++) {
+        double r = pixels[iy * width + ix].red   / 255.0;
+        double g = pixels[iy * width + ix].green / 255.0;
+        double b = pixels[iy * width + ix].blue  / 255.0;
+        double h, s, i;
+        RGBtoHSI(r, g, b, &h, &s, &i);
+
+        if (use_red)   h += h_value;
+        if (use_green) s += s_value;
+        if (use_blue)  i += i_value;
+        if (use_alpha) pixels[iy * width + ix].alpha += alpha_value;
+
+        HSItoRGB(h, s, i, &r, &g, &b);
+
+        pixels[iy * width + ix].red   = r * 255;
+        pixels[iy * width + ix].green = g * 255;
+        pixels[iy * width + ix].blue  = b * 255;
+      }
+    } 
+  }
 
   /////////////////////////////////////////////////////////
 

@@ -951,11 +951,11 @@ wMainWindow::OnFileNewProject(wxCommandEvent &event)
 
   if (newprojectdialog.ShowModal() == wxID_OK)
   {
-    char projectname[32];
-    char gametitle[32];
+    char projectname[32] = {0};
+    char gametitle[32] = {0};
 
     strncpy(projectname, newprojectdialog.GetProjectName(), 32);
-    strncpy(gametitle, newprojectdialog.GetGameTitle(), 32);
+    strncpy(gametitle,   newprojectdialog.GetGameTitle(), 32);
 
     CreateProject(projectname, gametitle);
   }
