@@ -381,6 +381,22 @@ log_object.endBlock()
       
     SetTileImage(tile_index, image_object)
       - sets the tile 'tile_index' to the image 'image_object'
+      
+    GetTileDelay(tile)
+      - gets the animation delay of the tile 'tile'
+        If it returns 0, the tile is not animated
+
+    SetTileDelay(tile, delay)
+      - sets the animation delay of the tile 'tile' to 'delay'
+        A delay of 0 is concerned not animated
+
+    GetNextAnimatedTile(tile)
+      - gets the next tile in the animation sequence of 'tile'
+        Note that if the return value is 'tile' the tile is not animated.
+      
+    SetNextAnimatedTile(tile, next_tile)
+      - sets the next tile in the animation sequence of 'tile' to 'new_tile'
+        SetNextAnimatedTile(tile, tile) turns off the tile animation for 'tile'
 
     ReplaceTilesOnLayer(layer, oldtile, newtile)
       - Replaces all 'oldtile' tiles with 'newtile' on layer 'layer'

@@ -506,7 +506,7 @@ CMapEngine::SetTileImage(int tile, IMAGE image) {
     return false;
   }
 
-  if (tile < 0 || tile > m_Map.GetMap().GetTileset().GetNumTiles()) {
+  if (tile < 0 || tile >= m_Map.GetMap().GetTileset().GetNumTiles()) {
     m_ErrorMessage = "Tile index does not exist";
     return false;
   }
@@ -535,6 +535,82 @@ CMapEngine::SetTileImage(int tile, IMAGE image) {
   return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetTileDelay(int tile, int& delay)
+{
+  if (!m_IsRunning) {
+    m_ErrorMessage = "GetTileDelay() called while map engine was not running";
+    return false;
+  }
+
+  if (tile < 0 || tile >= m_Map.GetMap().GetTileset().GetNumTiles()) {
+    m_ErrorMessage = "Tile index does not exist";
+    return false;
+  }
+
+  delay = m_Map.GetMap().GetTileset().GetTile(tile).GetDelay();
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::SetTileDelay(int tile, int delay)
+{
+  if (!m_IsRunning) {
+    m_ErrorMessage = "SetTileDelay() called while map engine was not running";
+    return false;
+  }
+
+  if (tile < 0 || tile >= m_Map.GetMap().GetTileset().GetNumTiles()) {
+    m_ErrorMessage = "Tile index does not exist";
+    return false;
+  }
+
+  if (delay < 1) {
+    m_ErrorMessage = "Delay must be greater than zero";
+    return false;
+  }
+
+  m_Map.GetMap().GetTileset().GetTile(tile).SetDelay(delay);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetNextAnimatedTile(int& tile)
+{
+  if (tile < 0 || tile >= m_Map.GetMap().GetTileset().GetNumTiles()) {
+    m_ErrorMessage = "Tile index does not exist";
+    return false;
+  }
+
+  tile = m_Map.GetMap().GetTileset().GetTile(tile).GetNextTile();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::SetNextAnimatedTile(int current_tile, int next_tile)
+{
+  if (current_tile < 0 || current_tile >= m_Map.GetMap().GetTileset().GetNumTiles()) {
+    m_ErrorMessage = "Tile index does not exist";
+    return false;
+  }
+
+  if (next_tile < 0 || next_tile >= m_Map.GetMap().GetTileset().GetNumTiles()) {
+    m_ErrorMessage = "Tile index does not exist";
+    return false;
+  }
+
+  m_Map.GetMap().GetTileset().GetTile(current_tile).SetNextTile(next_tile);
+  return true;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -77,6 +77,10 @@ public:
 
   bool GetTileImage(int tile, IMAGE& image);
   bool SetTileImage(int tile, IMAGE image);
+  bool GetTileDelay(int tile, int& delay);
+  bool SetTileDelay(int tile, int delay);
+  bool GetNextAnimatedTile(int& tile);
+  bool SetNextAnimatedTile(int current_tile, int next_tile);
 
   bool ReplaceTilesOnLayer(int layer, int old_tile, int new_tile);
   bool IsTriggerAt(int location_x, int location_y, int layer);

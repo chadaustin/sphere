@@ -1697,6 +1697,61 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(GetTileDelay, 1)
+
+  arg_int(tile);
+  int delay = 0;
+
+  if ( !This->m_Engine->GetMapEngine()->GetTileDelay(tile, delay) ) {
+    This->ReportMapEngineError("GetTileDelay() failed");
+    return JS_FALSE;
+  }
+
+  return_int(delay);
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(SetTileDelay, 2)
+
+  arg_int(tile);
+  arg_int(delay);
+
+  if ( !This->m_Engine->GetMapEngine()->SetTileDelay(tile, delay) ) {
+    This->ReportMapEngineError("SetTileDelay() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(GetNextAnimatedTile, 1)
+  arg_int(tile);
+
+  if ( !This->m_Engine->GetMapEngine()->GetNextAnimatedTile(tile) ) {
+    This->ReportMapEngineError("GetNextAnimatedTile() failed");
+    return JS_FALSE;
+  }
+
+  return_int(tile);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(SetNextAnimatedTile, 2)
+  arg_int(current_tile);
+  arg_int(next_tile);
+
+  if ( !This->m_Engine->GetMapEngine()->SetNextAnimatedTile(current_tile, next_tile) ) {
+    This->ReportMapEngineError("SetNextAnimatedTile() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 begin_func(ReplaceTilesOnLayer, 3)
   arg_int(layer);
   arg_int(old_tile);
