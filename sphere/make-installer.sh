@@ -1,8 +1,8 @@
 #!/bin/sh
 
-build() { 
-  scons $* 2>&1 || die | tee build.log) 
-}
+#build() { # I've yet to test this
+#  scons $* 2>&1 || die | tee build.log
+#}
 
 die() {
     echo "Aborting..."
@@ -14,7 +14,7 @@ INSTALL=installer
 DIRS="docs games startup system util"
 
 echo "Building Sphere..."
-build -v compiler=vc6 opt=1 || die
+scons compiler=vc6 opt=1 || die
 
 echo "Cleaning old files..."
 rm -rf $INSTALL/*.exe || die

@@ -111,7 +111,7 @@ sFont::Load(const char* filename, IFileSystem& fs)
         m_Characters[i].GetPixels()[j].blue  = 255;
         m_Characters[i].GetPixels()[j].alpha = buffer[j];
       }
-      
+
       delete[] buffer;
     }
     else { // version 2 (RGBA)
@@ -181,9 +181,12 @@ GenerateGradient(CImage32& c, int max_alpha, RGBA top, RGBA bottom)
 void
 sFont::GenerateGradient(RGBA top, RGBA bottom)
 {
+  unsigned int i;
+
   // get the max character height
   int max_height = 0;
-  for (unsigned int i = 0; i < m_Characters.size(); i++) {
+
+  for (i = 0; i < m_Characters.size(); i++) {
     if (m_Characters[i].GetHeight() > max_height) {
       max_height = m_Characters[i].GetHeight();
     }
@@ -192,7 +195,7 @@ sFont::GenerateGradient(RGBA top, RGBA bottom)
   int max_alpha = max_height - 1;
 
   // generate the gradient for each character
-  for (unsigned int i = 0; i < m_Characters.size(); i++) {
+  for (i = 0; i < m_Characters.size(); i++) {
     sFontCharacter& c = m_Characters[i];
     ::GenerateGradient(c, max_alpha, top, bottom);
   }
@@ -239,7 +242,7 @@ sFont::ImportVergeTemplate(
     int y = i * (char_height + 1) + 1;
     while (*row) {
 
-      // build a font character from the position (x,y) in the image  
+      // build a font character from the position (x,y) in the image
       sFontCharacter c(char_width + 1, char_height);
       for (int ix = 0; ix < char_width; ix++) {
         for (int iy = 0; iy < char_height; iy++) {
