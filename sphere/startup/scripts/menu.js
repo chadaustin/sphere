@@ -41,12 +41,14 @@ Menu.prototype.addItem = function(name, callback, color) {
 Menu.prototype.execute = function(x, y, w, h) {
   with (this) {
     var background = GrabImage(0, 0, GetScreenWidth(), GetScreenHeight());
-    hi=0;
-    for(wi=0; wi<w; wi+=GetScreenWidth()*(20/320)){
+    hi=0; wi = 0;
+    while(hi != h && wi != w){
       background.blit(0,0);
       window_style.drawWindow(GetScreenWidth()/2-wi/2, GetScreenHeight()/2-hi/2, wi, hi);
-      if(hi<h) hi+=GetScreenWidth()*(20/320);
-			if(hi>h) hi=h;
+	if(hi < h) hi += 20;
+	if(wi < w) wi += 20;
+	if(hi > h) hi = h;
+	if(wi > w) wi = w;
       Delay(1000/60);
       FlipScreen();
       
@@ -96,7 +98,10 @@ Menu.prototype.execute = function(x, y, w, h) {
         mh = h - up_arrow.height - down_arrow.height;
         tot = items.length;
         top = mh / tot * top_selection;
-        bot = top + mh / tot*shown_items;
+	
+	bot = top + (mh / tot) * shown_items;
+	if(tot <= shown_items) bot = GetScreenHeight() - 16 - up_arrow.height - y - down_arrow.height; // a hack because I am lazy.
+        
         mid_fill.transformBlit(x + w - mid_arrow.width + 1, y + up_arrow.height + top + 1,
                                x + w - 1,                   y + up_arrow.height + top + 1,
                                x + w - 1,                   y + up_arrow.height + bot - 2,
