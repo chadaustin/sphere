@@ -152,6 +152,8 @@ public:
 
   bool SetTalkActivationKey(int key);
   bool SetTalkDistance(int pixels);
+  int GetTalkActivationKey();
+  int GetTalkDistance();
 
 private:
   struct DelayScript {

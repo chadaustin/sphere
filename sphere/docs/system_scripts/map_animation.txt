@@ -20,7 +20,7 @@ SetRenderScript("UpdateMapAnimation()");
 
 which will then play the animations. I usually call this AFTER I call all the PlayAnimations I want. However, let's say you've already created a set of animations and now you want a new set, what do you do? Simple. Write this:
 
-ClearArray();
+ClearMapAnimationArray();
 
 and a new set of animations can be inserted into the array. You can then call PlayAnimation() and SetRenderScript() appropriately.
 

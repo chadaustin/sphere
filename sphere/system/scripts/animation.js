@@ -29,5 +29,5 @@ Animation.prototype.blit = function(x, y){
       return;
     }
   }
-  Abort("Timing error, please please please tell fenix that his code sucks.");
+  // Abort("Timing error, please please please tell fenix that his code sucks.");
 }
