@@ -49,6 +49,9 @@ public:
   double GetLayerScaleFactorX(int layer);
   double GetLayerScaleFactorY(int layer);
 
+  void SetLayerAngle(int layer, double angle);
+  double GetLayerAngle(int layer);
+
 private:
   void InitializeAnimation();
 
@@ -117,6 +120,20 @@ inline double
 SMAP::GetLayerScaleFactorY(int layer)
 {
   return m_LayerInfo[layer].zoomFactorY;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+inline void
+SMAP::SetLayerAngle(int layer, double angle)
+{
+  m_LayerInfo[layer].angle = angle;
+}
+
+inline double
+SMAP::GetLayerAngle(int layer)
+{
+  return m_LayerInfo[layer].angle;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

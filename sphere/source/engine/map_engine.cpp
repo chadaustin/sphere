@@ -539,6 +539,30 @@ CMapEngine::SetLayerScaleFactorY(int layer_index, double factor_y)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::GetLayerAngle(int layer_index, double& angle)
+{
+  if ( IsInvalidLayerError(layer_index, "GetLayerAngle()") )
+    return false;
+
+  angle = m_Map.GetLayerAngle(layer_index);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::SetLayerAngle(int layer_index, double angle)
+{
+  if ( IsInvalidLayerError(layer_index, "SetLayerAngle()") )
+    return false;
+
+  m_Map.SetLayerAngle(layer_index, angle);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::GetNumTiles(int& tiles)
 {
   if (!m_IsRunning) {
@@ -2950,8 +2974,7 @@ bool
 CMapEngine::OpenMap(const char* filename)
 {
   // load the map
-  std::string path = "maps/";
-  path += filename;
+  std::string path = "maps/"; path += filename;
   if (!m_Map.Load(path.c_str(), m_FileSystem)) {
     m_ErrorMessage = "Could not load map '";
     m_ErrorMessage += filename;
@@ -2961,20 +2984,26 @@ CMapEngine::OpenMap(const char* filename)
 
   // if a person entity is here, it's not map-specific
   // so put it in the starting position!
-  for (unsigned i = 0; i < m_Persons.size(); i++) {
+  for (unsigned int i = 0; i < m_Persons.size(); i++) {
     m_Persons[i].x     = m_Map.GetMap().GetStartX();
     m_Persons[i].y     = m_Map.GetMap().GetStartY();
     m_Persons[i].layer = m_Map.GetMap().GetStartLayer();
 
     // update follow queues
     if (m_Persons[i].leader != -1) {
-      for (unsigned j = 0; j < m_Persons[i].follow_state_queue.size(); j++) {
+      for (unsigned int j = 0; j < m_Persons[i].follow_state_queue.size(); j++) {
         m_Persons[i].follow_state_queue[j].x         = m_Persons[i].x;
         m_Persons[i].follow_state_queue[j].y         = m_Persons[i].y;
         m_Persons[i].follow_state_queue[j].layer     = m_Persons[i].layer;
         m_Persons[i].follow_state_queue[j].direction = m_Persons[i].direction;
       }
     }
+  }
+
+  // reset all the layer angles
+  for (unsigned int i = 0; i < m_Map.GetMap().GetNumLayers(); i++)
+  {
+    m_Map.SetLayerAngle(i, 0.0);
   }
 
   if (!CompileEdgeScripts()) { return false; }
@@ -3005,7 +3034,7 @@ CMapEngine::OpenMap(const char* filename)
 
   // initialize the layer script array
   m_LayerRenderers.resize(m_Map.GetMap().GetNumLayers());
-  for (unsigned i = 0; i < m_LayerRenderers.size(); i++) {
+  for (unsigned int i = 0; i < m_LayerRenderers.size(); i++) {
     m_LayerRenderers[i] = NULL;
   }
 

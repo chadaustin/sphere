@@ -450,6 +450,15 @@ log_object.endBlock()
       - Sets the y zoom/scale factor for the layer 'layer_index' to 'factor_y'
         e.g. SetLayerScaleFactor(0, 2); will make the layer zoom in to twice the normal size
 
+    GetLayerAngle(layer_index)
+      - Gets the angle (in radians) for the layer 'layer_index'
+        e.g. var angle = GetLayerAngle(0) will get the angle for the first layer
+        An angle of 0.0 is not rotated at all.
+
+    SetLayerAngle(layer_index, angle)
+      - Sets the angle (in radians) for the layer 'layer_index' to 'angle'
+        e.g. SetLayerAngle(0, Math.PI) will make the layer rotate slightly
+
     GetNumTiles()
       - return number of tiles in map
 

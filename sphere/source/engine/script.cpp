@@ -2618,6 +2618,44 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+      - Gets the angle (in radians) for the layer 'layer_index'
+        e.g. var angle = GetLayerAngle(0) will get the angle for the first layer
+        An angle of 0.0 is not rotated at all.
+        @see SetLayerAngle
+*/
+begin_func(GetLayerAngle, 1)
+  arg_int(layer_index);
+  double angle = 0.0;
+
+  if (!This->m_Engine->GetMapEngine()->GetLayerAngle(layer_index, angle)) {
+    This->ReportMapEngineError("GetLayerAngle() failed");
+    return JS_FALSE;
+  }
+
+  return_double(angle);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+      - Sets the angle (in radians) for the layer 'layer_index' to 'angle'
+        e.g. SetLayerAngle(0, Math.PI) will make the layer rotate slightly
+        @see GetLayerAngle
+*/
+begin_func(SetLayerAngle, 2)
+  arg_int(layer_index);
+  arg_double(angle);
+
+  if (!This->m_Engine->GetMapEngine()->SetLayerAngle(layer_index, angle)) {
+    This->ReportMapEngineError("SetLayerAngle() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 // section: tiles //
 
 /**

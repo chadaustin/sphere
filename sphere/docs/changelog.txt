@@ -1,3 +1,10 @@
+2004.05.06
+  - Added GetLayerAngle/SetLayerAngle (thanks to K9)
+  - Added code-folding to the script editor
+    (Use CTRL + SHIFT + Left Click on the +/-'s in the margin to show/hide all folds
+  - Started to attempt adding a spell checker
+  - Made the script's list sidebar hideable
+
 2004.04.14
   - Moved statusbar text like map tile x, y and line/position into
     a seperate pane on the statusbar

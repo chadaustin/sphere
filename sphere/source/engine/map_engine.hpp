@@ -93,6 +93,8 @@ public:
   bool SetLayerReflective(int layer, bool reflective);
   bool SetLayerScaleFactorX(int layer_index, double factor_x);
   bool SetLayerScaleFactorY(int layer_index, double factor_y);
+  bool GetLayerAngle(int layer_index, double& angle);
+  bool SetLayerAngle(int layer_index, double angle);
 
   bool AppendLayer(int width, int height, int tile_index);
 
