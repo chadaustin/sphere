@@ -97,6 +97,8 @@ public:
 
   bool GetTileImage(int tile, IMAGE& image);
   bool SetTileImage(int tile, IMAGE image);
+  bool GetTileSurface(int tile, CImage32* surface);
+  bool SetTileSurface(int tile, const CImage32* surface);
   bool GetTileDelay(int tile, int& delay);
   bool SetTileDelay(int tile, int delay);
   bool GetNextAnimatedTile(int& tile);

@@ -2705,6 +2705,58 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
+      - returns the surface of the tile 'tile_index'
+*/
+begin_func(GetTileSurface, 1)
+
+  arg_int(tile);
+
+  int width = 0;
+  int height = 0;
+
+  if (!This->m_Engine->GetMapEngine()->GetTileWidth(width)
+   || !This->m_Engine->GetMapEngine()->GetTileHeight(height)) {
+    This->ReportMapEngineError("GetTileSurface() failed");
+    return JS_FALSE;
+  }
+
+  CImage32* surface = new CImage32(width, height);
+  if (!surface || surface->GetWidth() != width || surface->GetHeight() != height) {
+    This->ReportMapEngineError("GetTileSurface() failed!!");
+    return JS_FALSE; 
+  }
+
+  if (!This->m_Engine->GetMapEngine()->GetTileSurface(tile, surface)) {
+    delete surface;
+    surface = NULL;
+    This->ReportMapEngineError("GetTileSurface() failed");
+    return JS_FALSE; 
+  }
+
+  return_object(CreateSurfaceObject(cx, surface));
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+      - sets the tile 'tile_index' to the surface 'surface_object'
+*/
+begin_func(SetTileSurface, 2)
+
+  arg_int(tile);
+  arg_surface(surface);
+
+  if (!This->m_Engine->GetMapEngine()->SetTileSurface(tile, surface)) {
+    This->ReportMapEngineError("SetTileSurface() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
       - gets the animation delay of the tile 'tile'
         If it returns 0, the tile is not animated
 */
@@ -6327,8 +6379,10 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
 
   // attach the surface to this object
   SS_SURFACE* surface_object = new SS_SURFACE;
-  surface_object->surface = surface;
-  JS_SetPrivate(cx, object, surface_object);
+  if (surface_object) {
+    surface_object->surface = surface;
+    JS_SetPrivate(cx, object, surface_object);
+  }
 
   return object;
 }
@@ -6698,8 +6752,8 @@ typedef uint32 jsuint;
   returns whether the lookup table created is a null lookup table
   i.e. it can be skipped over
 */
-bool GetLookUpTable(JSContext* cx, JSObject* array, unsigned char lookup[256]) {
-
+bool GetLookUpTable(JSContext* cx, JSObject* array, unsigned char lookup[256])
+{
   jsuint length;
 
   // initialize the lookup to a null-lookup
@@ -6716,7 +6770,7 @@ bool GetLookUpTable(JSContext* cx, JSObject* array, unsigned char lookup[256]) {
 
   bool is_null_lookup = true;
 
-  for (unsigned i = 0; i < length; i++) {
+  for (unsigned int i = 0; i < length; i++) {
     jsval val;
     int32 value;
       

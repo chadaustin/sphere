@@ -666,8 +666,8 @@ CMapEngine::GetTileImage(int tile, IMAGE& image) {
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::SetTileImage(int tile, IMAGE image) {
-
+CMapEngine::SetTileImage(int tile, IMAGE image)
+{
   if (!m_IsRunning) {
     m_ErrorMessage = "SetTileImage() called while map engine was not running";
     return false;
@@ -706,6 +706,73 @@ CMapEngine::SetTileImage(int tile, IMAGE image) {
   
   UnlockImage(image, false);
   tile_image.SetBlendMode(blend_mode);
+
+  m_Map.UpdateTile(tile);
+  m_Map.UpdateSolidTile(tile);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetTileSurface(int tile, CImage32* surface)
+{
+  if (!m_IsRunning) {
+    m_ErrorMessage = "GetTileSurface() called while map engine was not running";
+    return false;
+  }
+
+  if (tile < 0 || tile >= m_Map.GetMap().GetTileset().GetNumTiles()) {
+    m_ErrorMessage = "Tile index does not exist";
+    return false;
+  }
+
+  *surface = m_Map.GetMap().GetTileset().GetTile(tile);  
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::SetTileSurface(int tile, const CImage32* surface)
+{
+  if (!surface) {
+    m_ErrorMessage = "SetTileSurface() failed!!";
+    return false;
+  }
+
+  if (!m_IsRunning) {
+    m_ErrorMessage = "SetTileSurface() called while map engine was not running";
+    return false;
+  }
+
+  if (tile < 0 || tile >= m_Map.GetMap().GetTileset().GetNumTiles()) {
+    m_ErrorMessage = "Tile index does not exist";
+    return false;
+  }
+
+  int width  = surface->GetWidth();
+  int height = surface->GetHeight();
+  const RGBA* src_pixels = surface->GetPixels();
+
+  if ( width != m_Map.GetMap().GetTileset().GetTileWidth() ) {
+    m_ErrorMessage = "Image used in SetTileSurface call doesn't match the tile width";
+    return false;
+  }
+
+  if ( height != m_Map.GetMap().GetTileset().GetTileHeight() ) {
+    m_ErrorMessage = "Image used in SetTileSurface call doesn't match the tile height";
+    return false;
+  }
+
+  RGBA* dest_pixels = m_Map.GetMap().GetTileset().GetTile(tile).GetPixels();
+
+  for (int y = 0; y < height; y++) {
+    for (int x = 0; x < width; x++) {
+      dest_pixels[y * width + x] = src_pixels[y * width + x];
+    }
+  }
 
   m_Map.UpdateTile(tile);
   m_Map.UpdateSolidTile(tile);
