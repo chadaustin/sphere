@@ -5,6 +5,7 @@
 #include "ResizeDialog.hpp"
 #include "FontGradientDialog.hpp"
 #include "resource.h"
+#include "../common/minmax.hpp"
 
 
 #define IDC_FONTSCROLL 900
@@ -23,6 +24,8 @@
 
 BEGIN_MESSAGE_MAP(CFontWindow, CSaveableDocumentWindow)
 
+  ON_WM_CHAR()  
+  ON_WM_KEYDOWN()
   ON_WM_SIZE()
   ON_WM_HSCROLL()
 
@@ -136,6 +139,36 @@ CFontWindow::SetImage()
   sFontCharacter& c = m_Font.GetCharacter(m_CurrentCharacter);
   m_ImageView.SetImage(c.GetWidth(), c.GetHeight(), c.GetPixels());
   m_ScrollBar.SetScrollPos(m_CurrentCharacter);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CFontWindow::OnChar(UINT c, UINT repeat, UINT flags)
+{
+  if (c >= MIN_CHARACTER && c <= MAX_CHARACTER) {
+    m_CurrentCharacter = c;
+    SetImage();
+    UpdateWindowTitle();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CFontWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
+{
+  int old_char = m_CurrentCharacter;
+  if (vk == VK_RIGHT) {
+    m_CurrentCharacter = std::min(m_CurrentCharacter + 1, MAX_CHARACTER);
+  } else if (vk == VK_LEFT) {
+    m_CurrentCharacter = std::max(m_CurrentCharacter - 1, MIN_CHARACTER);
+  }
+
+  if (m_CurrentCharacter != old_char) {
+    SetImage();
+    UpdateWindowTitle();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

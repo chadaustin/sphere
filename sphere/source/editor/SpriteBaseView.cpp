@@ -1,4 +1,5 @@
 #include "SpriteBaseView.hpp"
+#include "../common/minmax.hpp"
 
 
 static int s_ViewID = 450;
@@ -98,7 +99,7 @@ CSpriteBaseView::WindowToImage(int* x, int* y)
   // calculate size of pixel squares
   int hsize = ClientRect.right / m_Sprite->GetWidth();
   int vsize = ClientRect.bottom / m_Sprite->GetHeight();
-  int size = min(hsize, vsize);
+  int size = std::min(hsize, vsize);
   if (size < 1)
     size = 1;
 
@@ -160,7 +161,7 @@ CSpriteBaseView::OnPaint()
   // calculate size of pixel squares
   int hsize = ClientRect.right / width;
   int vsize = ClientRect.bottom / height;
-  int size = min(hsize, vsize);
+  int size = std::min(hsize, vsize);
   if (size < 1)
     size = 1;
 

@@ -26,6 +26,8 @@ private:
   void UpdateWindowTitle();
   void SetImage();
 
+  afx_msg void OnChar(UINT c, UINT repeat, UINT flags);
+  afx_msg void OnKeyDown(UINT vk, UINT repeat, UINT flags);
   afx_msg void OnSize(UINT type, int cx, int cy);
   afx_msg void OnHScroll(UINT sbcode, UINT pos, CScrollBar* scroll_bar);
 

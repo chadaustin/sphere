@@ -3,6 +3,7 @@
 #include "ImageView.hpp"
 #include "Editor.hpp"
 #include "../common/Filters.hpp"
+#include "../common/minmax.hpp"
 #include "resource.h"
 
 #include "NumberDialog.hpp"
@@ -417,7 +418,7 @@ CImageView::ConvertToPixel(POINT point)
   int height = m_Image.GetHeight();
   int hsize = ClientRect.right / width;
   int vsize = ClientRect.bottom / height;
-  int size = min(hsize, vsize);
+  int size = std::min(hsize, vsize);
   if (size < 1)
     size = 1;
 
@@ -703,7 +704,7 @@ CImageView::OnPaint()
   // calculate size of pixel squares
   int hsize = ClientRect.right / width;
   int vsize = ClientRect.bottom / height;
-  int size = min(hsize, vsize);
+  int size = std::min(hsize, vsize);
   if (size < 1)
     size = 1;
 

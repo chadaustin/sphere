@@ -6,6 +6,7 @@
 #include "FileDialogs.hpp"
 #include "WindowStylePropertiesDialog.hpp"
 #include "resource.h"
+#include "../common/minmax.hpp"
 
 
 const int ID_ALPHASLIDER = 7001;
@@ -821,7 +822,7 @@ CWindowStyleWindow::GetBorderWidth_Left() const
   int w1 = m_WindowStyle.GetBitmap(sWindowStyle::LEFT).GetWidth();
   int w2 = m_WindowStyle.GetBitmap(sWindowStyle::UPPER_LEFT).GetWidth();
   int w3 = m_WindowStyle.GetBitmap(sWindowStyle::LOWER_LEFT).GetWidth();
-  return max(w1, max(w2, w3)) * m_ZoomFactor;
+  return std::max(w1, std::max(w2, w3)) * m_ZoomFactor;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -832,7 +833,7 @@ CWindowStyleWindow::GetBorderWidth_Top() const
   int h1 = m_WindowStyle.GetBitmap(sWindowStyle::TOP).GetHeight();
   int h2 = m_WindowStyle.GetBitmap(sWindowStyle::UPPER_LEFT).GetHeight();
   int h3 = m_WindowStyle.GetBitmap(sWindowStyle::UPPER_RIGHT).GetHeight();
-  return max(h1, max(h2, h3)) * m_ZoomFactor;
+  return std::max(h1, std::max(h2, h3)) * m_ZoomFactor;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -843,7 +844,7 @@ CWindowStyleWindow::GetBorderWidth_Right() const
   int w1 = m_WindowStyle.GetBitmap(sWindowStyle::RIGHT).GetWidth();
   int w2 = m_WindowStyle.GetBitmap(sWindowStyle::UPPER_RIGHT).GetWidth();
   int w3 = m_WindowStyle.GetBitmap(sWindowStyle::LOWER_RIGHT).GetWidth();
-  return max(w1, max(w2, w3)) * m_ZoomFactor;
+  return std::max(w1, std::max(w2, w3)) * m_ZoomFactor;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -854,7 +855,7 @@ CWindowStyleWindow::GetBorderWidth_Bottom() const
   int h1 = m_WindowStyle.GetBitmap(sWindowStyle::BOTTOM).GetHeight();
   int h2 = m_WindowStyle.GetBitmap(sWindowStyle::LOWER_LEFT).GetHeight();
   int h3 = m_WindowStyle.GetBitmap(sWindowStyle::LOWER_RIGHT).GetHeight();
-  return max(h1, max(h2, h3)) * m_ZoomFactor;
+  return std::max(h1, std::max(h2, h3)) * m_ZoomFactor;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
