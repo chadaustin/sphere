@@ -14,7 +14,7 @@ function GetString(x, y, font, max_chars)
     
     background.blit(0, 0);
     font.drawText(x, y, str);
-    font.drawText(x + font.getStringWidth(str.slice(0, cursor_position), cursor_position), y, (Math.sin(GetTime()>>8) > 0) ? "|" : " ");
+    font.drawText(x - 1 + font.getStringWidth(str.slice(0, cursor_position), cursor_position), y, (Math.sin(GetTime()>>8) > 0) ? "|" : " ");
 
     FlipScreen();
     
