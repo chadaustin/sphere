@@ -359,6 +359,7 @@ CDocumentWindow::OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactiv
   {
     //OnToolCommand( ((CMainWindow*)pFrame)->GetImageTool() );
     //OnToolCommand( ((CMainWindow*)pFrame)->GetMapTool() );
+    pFrame->SendMessage(WM_UPDATE_TOOLBARS);
 
     // set the child menu resource and update the palette menu
     pFrame->SendMessage(WM_SET_CHILD_MENU, m_MenuResource);

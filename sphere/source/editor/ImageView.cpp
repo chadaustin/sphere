@@ -1681,10 +1681,9 @@ CImageView::OnMouseMove(UINT flags, CPoint point)
   {
     case Tool_Pencil:
       Click(false);
-      break;
+    break;
 
-    case Tool_Fill:
-      break;
+    case Tool_Fill: break;
 
     case Tool_Line:
     case Tool_Rectangle:
@@ -1693,7 +1692,7 @@ CImageView::OnMouseMove(UINT flags, CPoint point)
     case Tool_Selection:
     case Tool_FreeSelection:
       Invalidate();
-      break;
+    break;
   }
 }
 

@@ -10,6 +10,7 @@
 #include "FontGradientDialog.hpp"
 
 #include "../common/primitives.hpp"
+#include "../common/minmax.hpp"
 
 #include "Configuration.hpp"
 #include "Keys.hpp"
@@ -30,6 +31,10 @@ BEGIN_MESSAGE_MAP(CTilesetView, CWnd)
   ON_WM_LBUTTONDOWN()
   ON_WM_MOUSEMOVE()
   ON_WM_RBUTTONUP()
+
+#if 1
+  ON_WM_LBUTTONUP()
+#endif
 
   ON_COMMAND(ID_TILESETVIEW_INSERTTILE,    OnInsertTile)
   ON_COMMAND(ID_TILESETVIEW_APPENDTILE,    OnAppendTile)
@@ -91,10 +96,14 @@ CTilesetView::CTilesetView()
 , m_BlitTile(NULL)
 , m_ShowTileObstructions(false)
 , m_MenuShown(false)
+#if 1
+, m_MouseDown(false)
+, m_UsingMultiTileSelection(false)
+#endif
 {
   m_ZoomFactor        = Configuration::Get(KEY_TILES_ZOOM_FACTOR);
 
-  if (m_ZoomFactor < 0 || m_ZoomFactor > 8) {
+  if (m_ZoomFactor <= 0 || m_ZoomFactor >= 8) {
     m_ZoomFactor = 1;
   }
 }
@@ -198,20 +207,22 @@ CTilesetView::TileChanged(int tile)
 {
   RECT client_rect;
   GetClientRect(&client_rect);
-  int num_tiles_x = client_rect.right / m_BlitTile->GetWidth();
+  int blit_width  = m_Tileset->GetTileWidth()  * m_ZoomFactor;
+  int blit_height = m_Tileset->GetTileHeight() * m_ZoomFactor;
+  int num_tiles_x = client_rect.right / blit_width;
   if (num_tiles_x == 0)
     return;
 
   int col = tile % num_tiles_x;
   int row = tile / num_tiles_x;
   
-  int x = col * m_BlitTile->GetWidth();
-  int y = (row - m_TopRow) * m_BlitTile->GetHeight();
+  int x = col * blit_width;
+  int y = (row - m_TopRow) * blit_height;
 
   UpdateObstructionTile(tile);
 
   RECT rect;
-  SetRect(&rect, x, y, x + m_BlitTile->GetWidth(), y + m_BlitTile->GetHeight());
+  SetRect(&rect, x, y, x + blit_width, y + blit_height);
   InvalidateRect(&rect);
 }
 
@@ -250,6 +261,9 @@ CTilesetView::SetSelectedTile(int tile)
 {
   m_SelectedTile = tile;
   Invalidate();
+
+  if (!m_BlitTile || m_BlitTile->GetPixels() == NULL)
+    return;
 
   //scroll into view
   RECT client_rect;
@@ -310,6 +324,9 @@ CTilesetView::UpdateScrollBar()
 int
 CTilesetView::GetPageSize()
 {
+  if (!m_BlitTile || m_BlitTile->GetPixels() == NULL)
+    return -1;
+
   RECT ClientRect;
   GetClientRect(&ClientRect);
   return ClientRect.bottom / m_BlitTile->GetHeight();
@@ -320,6 +337,9 @@ CTilesetView::GetPageSize()
 int
 CTilesetView::GetNumRows()
 {
+  if (!m_BlitTile || m_BlitTile->GetPixels() == NULL)
+    return -1;
+
   RECT client_rect;
   GetClientRect(&client_rect);
   int num_tiles_x = client_rect.right / m_BlitTile->GetWidth();
@@ -340,8 +360,49 @@ CTilesetView::OnPaint()
   RECT client_rect;
   GetClientRect(&client_rect);
 
+  if (!m_BlitTile || m_BlitTile->GetPixels() == NULL) {
+    dc.FillRect(&client_rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+    return;
+  }
+
   int blit_width  = m_BlitTile->GetWidth();
   int blit_height = m_BlitTile->GetHeight();
+
+#if 1
+  CPoint start = m_StartPoint;
+  CPoint end = m_CurPoint;
+
+  start.x = start.x / m_BlitTile->GetWidth();
+  start.y = start.y / m_BlitTile->GetHeight();
+  end.x = end.x / m_BlitTile->GetWidth();
+  end.y = end.y / m_BlitTile->GetHeight();
+
+  int tileselection_left_x  = std::min(start.x, end.x);
+  int tileselection_top_y   = std::min(start.y, end.y);
+  int tileselection_right_x = std::max(start.x, end.x);
+  int tileselection_lower_y = std::max(start.y, end.y);
+
+  if (tileselection_left_x < 0)
+    tileselection_left_x = 0;
+  if (tileselection_top_y < 0)
+    tileselection_top_y = 0;
+
+  // must be atleast one tile
+  if (tileselection_right_x == tileselection_left_x)
+    tileselection_right_x += 1;
+  if (tileselection_lower_y == tileselection_top_y)
+    tileselection_lower_y += 1;
+
+  //while ((tileselection_lower_y * (client_rect.right / blit_width)) + tileselection_right_x > m_Tileset->GetNumTiles()) {
+  //  tileselection_lower_y -= 1;
+  //}
+
+  CString tileinfo;
+  tileinfo.Format("(%d,%d)->(%d,%d)", tileselection_left_x, tileselection_top_y,
+                                      tileselection_right_x, tileselection_lower_y);
+  //GetStatusBar()->SetWindowText(tileinfo);
+#endif
+
 
   for (int iy = 0; iy < client_rect.bottom / blit_height + 1; iy++)
     for (int ix = 0; ix < client_rect.right / blit_width + 1; ix++)
@@ -365,11 +426,11 @@ CTilesetView::OnPaint()
         BGRA* pixels = (BGRA*)m_BlitTile->GetPixels();
         
         // make a checkerboard
-        for (int iy = 0; iy < blit_height; iy++)
-          for (int ix = 0; ix < blit_width; ix++)
+        for (int py = 0; py < blit_height; py++)
+          for (int px = 0; px < blit_width; px++)
           {
-            pixels[iy * blit_width + ix] = 
-              ((ix / 8 + iy / 8) % 2 ?
+            pixels[py * blit_width + px] = 
+              ((px / 8 + py / 8) % 2 ?
                 CreateBGRA(255, 255, 255, 255) :
                 CreateBGRA(255, 192, 192, 255)
               );
@@ -381,14 +442,14 @@ CTilesetView::OnPaint()
           tilepixels = m_TileObstructions[it].GetPixels();
         }
 
-        for (int iy = 0; iy < blit_height; iy++)
-          for (int ix = 0; ix < blit_width; ix++)
+        for (int py = 0; py < blit_height; py++)
+          for (int px = 0; px < blit_width; px++)
           {
-            int ty = iy / m_ZoomFactor;
-            int tx = ix / m_ZoomFactor;
+            int ty = py / m_ZoomFactor;
+            int tx = px / m_ZoomFactor;
             int t = ty * m_Tileset->GetTileWidth() + tx;
             
-            int d = iy * blit_width + ix;
+            int d = py * blit_width + px;
 
             int alpha = tilepixels[t].alpha;
             pixels[d].red   = (tilepixels[t].red   * alpha + pixels[d].red   * (255 - alpha)) / 256;
@@ -401,7 +462,25 @@ CTilesetView::OnPaint()
         dc.BitBlt(Rect.left, Rect.top, Rect.right - Rect.left, Rect.bottom - Rect.top, tile, 0, 0, SRCCOPY);
 
         // if the tile is selected, draw a pink rectangle around it
-        if (it == m_SelectedTile)
+        bool draw_border = false;
+#if 0
+        if (it == m_SelectedTile) {
+          draw_border = true;
+        }
+#else
+        if (m_UsingMultiTileSelection) {
+          if (ix >= tileselection_left_x
+           && ix < tileselection_right_x
+           && (iy + m_TopRow) >= tileselection_top_y
+           && (iy + m_TopRow) < tileselection_lower_y) {
+            draw_border = true;
+          }
+        }
+        else if (it == m_SelectedTile) {
+          draw_border = true;
+        }
+#endif
+        if (draw_border)
         {
           HBRUSH newbrush = (HBRUSH)GetStockObject(NULL_BRUSH);
           CBrush* oldbrush = dc.SelectObject(CBrush::FromHandle(newbrush));
@@ -444,6 +523,14 @@ CTilesetView::OnSize(UINT type, int cx, int cy)
     }
   }
 
+#if 1
+  static int last_cx = -1;
+  if (last_cx != cx) {
+    m_UsingMultiTileSelection = false;
+    last_cx = cx;
+  }
+#endif
+
   // reflect the changes
   UpdateScrollBar();
   Invalidate();
@@ -474,6 +561,9 @@ CTilesetView::OnVScroll(UINT code, UINT pos, CScrollBar* scroll_bar)
 afx_msg void
 CTilesetView::OnLButtonDown(UINT flags, CPoint point)
 {
+  if (!m_BlitTile || m_BlitTile->GetPixels() == NULL)
+    return;
+
   if (m_MenuShown)
     return;
 
@@ -498,13 +588,37 @@ CTilesetView::OnLButtonDown(UINT flags, CPoint point)
 
   // the selected tile changed, so tell the parent window
   m_Handler->TV_SelectedTileChanged(m_SelectedTile);
+
+#if 1
+  m_StartPoint = point; m_StartPoint.y += (m_TopRow * m_BlitTile->GetHeight());
+  m_CurPoint = point;   m_CurPoint.y   += (m_TopRow * m_BlitTile->GetHeight());
+
+  m_MouseDown = true;
+  m_UsingMultiTileSelection = true;
+  SetCapture();
+#endif
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+#if 1
+afx_msg void
+CTilesetView::OnLButtonUp(UINT flags, CPoint point)
+{
+  m_CurPoint = point;
+  m_MouseDown = false;
+  ReleaseCapture();
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
 CTilesetView::OnMouseMove(UINT flags, CPoint point)
 {
+  if (!m_BlitTile || m_BlitTile->GetPixels() == NULL)
+    return;
+
   RECT client_rect;
   GetClientRect(&client_rect);
   int num_tiles_x = client_rect.right / m_BlitTile->GetWidth();
@@ -514,7 +628,7 @@ CTilesetView::OnMouseMove(UINT flags, CPoint point)
 
   int tile = (m_TopRow + y) * num_tiles_x + x;
 
-  if (tile <= m_Tileset->GetNumTiles() -1)
+  if (tile <= m_Tileset->GetNumTiles() - 1)
   {
     CString tilenum;
     tilenum.Format("Tile (%i/%i)", tile, m_Tileset->GetNumTiles());
@@ -523,6 +637,10 @@ CTilesetView::OnMouseMove(UINT flags, CPoint point)
   else
     GetStatusBar()->SetWindowText("");
 
+  if (m_MouseDown) {
+    m_CurPoint = point; m_CurPoint.y += (m_TopRow * m_BlitTile->GetHeight());
+    Invalidate();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -535,6 +653,9 @@ CTilesetView::OnRButtonUp(UINT flags, CPoint point)
 
   // select the tile
   OnLButtonDown(flags, point);
+#if 1
+  OnLButtonUp(flags, point);
+#endif
 
   // show pop-up menu
   ClientToScreen(&point);

@@ -87,6 +87,16 @@ private:
   void UpdateObstructionTiles();
   void UpdateObstructionTile(int tile);
 
+#if 1
+  CPoint m_StartPoint;
+  CPoint m_CurPoint;
+
+  bool m_MouseDown;
+  bool m_UsingMultiTileSelection;
+
+  afx_msg void OnLButtonUp(UINT flags, CPoint point);
+#endif
+
   DECLARE_MESSAGE_MAP()
 };
 

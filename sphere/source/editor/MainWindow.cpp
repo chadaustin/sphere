@@ -227,6 +227,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_MESSAGE(WM_SET_CHILD_MENU,      OnSetChildMenu)
   ON_MESSAGE(WM_CLEAR_CHILD_MENU,    OnClearChildMenu)  
 	ON_MESSAGE(WM_COPYDATA,					   OnCopyData)
+  ON_MESSAGE(WM_UPDATE_TOOLBARS,     UpdateToolBars)
   ON_COMMAND_RANGE(PALETTE_COMMAND, PALETTE_COMMAND + NUM_PALETTES, OnViewPalette)
 
 END_MESSAGE_MAP()
@@ -487,21 +488,7 @@ CMainWindow::OpenDocumentWindow(int grouptype, const char* filename)
     m_DocumentWindows.push_back(window);
   }
 
-  if (1) {
-    CWnd* pWindow = MDIGetActive();
-    if (pWindow != NULL)
-    {
-      long userdata = GetWindowLong(pWindow->m_hWnd, GWL_USERDATA);
-      if (userdata & WA_DOCUMENT_WINDOW) {
-        CDocumentWindow* dw = GetCurrentDocumentWindow();
-        if (dw) {
-          dw->OnToolCommand(GetImageTool());
-          dw->OnToolCommand(GetMapTool());
-        }
-      }
-    }
-  }
-
+  UpdateToolBars();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -956,9 +943,13 @@ CMainWindow::OnFileBrowse()
 #define FILE_NEW_HANDLER(name, construct)    \
   afx_msg void                               \
   CMainWindow::OnFileNew##name()             \
-  {                                          \
+{                                            \
+  CDocumentWindow* dw = construct;           \
+  if (dw) {                                  \
     m_DocumentWindows.push_back(construct);  \
-  }
+    UpdateToolBars();                        \
+  }                                          \
+}
 
 FILE_NEW_HANDLER(Map,         new CMapWindow())
 FILE_NEW_HANDLER(Script,      new CScriptWindow())
@@ -981,7 +972,11 @@ FILE_NEW_HANDLER(Image,       new CImageWindow())
       while (pos != NULL) {                                   \
         CString path_ = Dialog.GetNextPathName(pos);          \
         const char* path = path_;                             \
-        m_DocumentWindows.push_back(construct);               \
+        CDocumentWindow* dw = construct;                      \
+        if (dw) {                                             \
+          m_DocumentWindows.push_back(dw);                    \
+          UpdateToolBars();                                   \
+        }                                                     \
       }                                                       \
     }                                                         \
   }
@@ -1011,7 +1006,11 @@ CMainWindow::OnFileOpenTileset()
     while (pos != NULL) {
       CString path_ = Dialog.GetNextPathName(pos);
       const char* path = path_;
-      m_DocumentWindows.push_back(new CMapWindow(NULL, path));
+      CDocumentWindow* dw = new CMapWindow(NULL, path);
+      if (dw) {
+        m_DocumentWindows.push_back(dw);
+        UpdateToolBars();
+      }
     }
   }
 }
@@ -2087,6 +2086,25 @@ CMainWindow::GetMapTool()
 //////////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
+CMainWindow::UpdateToolBars(WPARAM /*wparam*/, LPARAM /*lparam*/)
+{
+  CWnd* pWindow = MDIGetActive();
+  if (pWindow != NULL)
+  {
+    long userdata = GetWindowLong(pWindow->m_hWnd, GWL_USERDATA);
+    if (userdata & WA_DOCUMENT_WINDOW) {
+      CDocumentWindow* dw = GetCurrentDocumentWindow();
+      if (dw) {
+        dw->OnToolCommand(GetImageTool());
+        dw->OnToolCommand(GetMapTool());
+      }
+    }
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
 CMainWindow::OnUpdateImageCommand(CCmdUI* cmdui)
 {
   BOOL enable = FALSE;
@@ -2124,10 +2142,7 @@ CMainWindow::OnImageToolChanged()
   }
   ctrl.CheckButton(id, TRUE);
 
-  for (int i = 0; i < m_DocumentWindows.size(); i++) {
-    CDocumentWindow* dw = m_DocumentWindows[i];
-    dw->OnToolCommand(id);
-  }
+  UpdateToolBars();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2197,10 +2212,7 @@ CMainWindow::OnMapToolChanged()
   }
   ctrl.CheckButton(id, TRUE);
 
-  for (int i = 0; i < m_DocumentWindows.size(); i++) {
-    CDocumentWindow* dw = m_DocumentWindows[i];
-    dw->OnToolCommand(id);
-  }
+  UpdateToolBars();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

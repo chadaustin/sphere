@@ -19,6 +19,7 @@ class CProjectWindow;   // ProjectWindow.hpp
 // send this to the main window to insert a file
 #define WM_INSERT_PROJECT_FILE (WM_APP + 923) // wparam = 0, path = (char*)lparam
 #define WM_REFRESH_PROJECT     (WM_APP + 924) // wparam = 0, lparam = 0
+#define WM_UPDATE_TOOLBARS     (WM_APP + 925) // wparam = 0, lparam = 0
 #define CD_OPEN_GAME_FILE			 1							// WM_COPYDATA dwData constant
 
 class CMainWindow : public CMDIFrameWnd
@@ -134,6 +135,8 @@ private:
   afx_msg void OnUpdateImageCommand(CCmdUI* cmdui);
   afx_msg void OnImageToolChanged();
   afx_msg void OnUpdateMapCommand(CCmdUI* cmdui, UINT id);
+
+  afx_msg void UpdateToolBars(WPARAM wparam = 0, LPARAM lparam = 0);
 
 #define DEFINE_UPDATE_MAP_COMMAND(tool_id) afx_msg void OnUpdateMapCommand_##tool_id(CCmdUI* cmdui);
 
