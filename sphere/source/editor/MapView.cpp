@@ -2376,11 +2376,15 @@ CMapView::GetRedrawRect(int& offset_x, int& offset_y, int& width, int& height)
     break;
   }
 
-  if (m_MultiTileWidth && m_MultiTileHeight && m_MultiTileData) {
-    num_tiles_x = num_tiles_x * m_MultiTileWidth;
-    num_tiles_y = num_tiles_y * m_MultiTileHeight;
-    offset_x = 0;
-    offset_y = 0;
+  if (m_CurrentTool == tool_1x1Tile
+   || m_CurrentTool == tool_3x3Tile
+   || m_CurrentTool == tool_5x5Tile) {
+    if (m_MultiTileWidth && m_MultiTileHeight && m_MultiTileData) {
+      num_tiles_x = num_tiles_x * m_MultiTileWidth;
+      num_tiles_y = num_tiles_y * m_MultiTileHeight;
+      offset_x = 0;
+      offset_y = 0;
+    }
   }
 
   width = num_tiles_x * tile_width;
@@ -2906,10 +2910,13 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
       if (dialog.DoModal() == IDOK)
       {
         // insert it into the map
-        m_Map->AddEntity(new sPersonEntity(person));
-        m_RedrawWindow = 1;
-        Invalidate();
-        m_Handler->MV_MapChanged();
+        sPersonEntity* entity = new sPersonEntity(person);
+        if (entity) {
+          m_Map->AddEntity(entity);
+          m_RedrawWindow = 1;
+          Invalidate();
+          m_Handler->MV_MapChanged();
+        }
       }
       break;
     }
@@ -2925,10 +2932,13 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
       if (dialog.DoModal() == IDOK)
       {
         // insert it into the map
-        m_Map->AddEntity(new sTriggerEntity(trigger));
-        m_RedrawWindow = 1;
-        Invalidate();
-        m_Handler->MV_MapChanged();
+        sTriggerEntity* entity = new sTriggerEntity(trigger);
+        if (entity) {
+          m_Map->AddEntity(entity);
+          m_RedrawWindow = 1;
+          Invalidate();
+          m_Handler->MV_MapChanged();
+        }
       }
       break;
     }
