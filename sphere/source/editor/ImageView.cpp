@@ -297,10 +297,10 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha) {
       for (int ix = 0; ix < iWidth; ix++)
       {
         if (ix < width && iy < height) {
-					int pImageIndex = iy * iWidth + ix;
-					int pixelsIndex = iy * width + ix;
+          int pImageIndex = iy * iWidth + ix;
+          int pixelsIndex = iy * width + ix;
 
-					if (red)
+          if (red)
             pImage[pImageIndex].red = pixels[pixelsIndex].red;
 
           if (green)
@@ -309,12 +309,12 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha) {
           if (blue)
             pImage[pImageIndex].blue = pixels[pixelsIndex].blue;
 
-					if (alpha)
+          if (alpha)
             pImage[pImageIndex].alpha = pixels[pixelsIndex].alpha;
 
         }
       }
-		}
+    }
 
     GlobalUnlock(memory);
     CloseClipboard();
@@ -346,16 +346,17 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha) {
         if (pixel == CLR_INVALID)
           pixel = RGB(0, 0, 0);
 
-				if (red)
+        if (red)
           pImage[iy * iWidth + ix].red   = GetRValue(pixel);
-				if (green)
+
+        if (green)
           pImage[iy * iWidth + ix].green = GetGValue(pixel);
 
-				if (blue)
-  				pImage[iy * iWidth + ix].blue  = GetBValue(pixel);
+        if (blue)
+          pImage[iy * iWidth + ix].blue  = GetBValue(pixel);
 
-				if (alpha) // there is no alpha so we use a default
-  				pImage[iy * iWidth + ix].alpha = 255;
+        if (alpha) // there is no alpha so we use a default
+          pImage[iy * iWidth + ix].alpha = 255;
       }
 
     SelectObject(dc, oldbitmap);
@@ -370,7 +371,7 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha) {
     return true;
   }
 
-	return false;
+  return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1389,8 +1390,8 @@ CImageView::OnFilterSolarize()
   CNumberDialog dialog("Solarize Value", "Value", 128, 0, 255);
 
   if (dialog.DoModal() == IDOK) {
-		int value = dialog.GetValue();
-	  AddUndoState();
+    int value = dialog.GetValue();
+    AddUndoState();
 
     Solarize(m_Image.GetWidth(), m_Image.GetHeight(), value, m_Image.GetPixels());
 

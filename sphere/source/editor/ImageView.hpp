@@ -43,10 +43,10 @@ public:
   void FillAlpha();
 
   bool Copy();
-	bool PasteChannels(bool red, bool green, bool blue, bool alpha);
+  bool PasteChannels(bool red, bool green, bool blue, bool alpha);
   bool Paste();
-	bool PasteRGB();
-	bool PasteAlpha();
+  bool PasteRGB();
+  bool PasteAlpha();
 
   bool CanUndo() const;
   void Undo();
@@ -87,8 +87,8 @@ private:
   afx_msg void OnUndo();
   afx_msg void OnCopy();
   afx_msg void OnPaste();
-	afx_msg void OnPasteRGB();
-	afx_msg void OnPasteAlpha();
+  afx_msg void OnPasteRGB();
+  afx_msg void OnPasteAlpha();
   afx_msg void OnBlendModeBlend();
   afx_msg void OnBlendModeReplace();
   afx_msg void OnBlendModeRGBOnly();
