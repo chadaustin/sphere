@@ -1,3 +1,4 @@
+#include <string>
 #include <windows.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -43,6 +44,20 @@ struct DRIVERCONFIG
     bool     vsync;
     bool     pixpoint;
 };
+
+
+std::string glErrorToString(GLenum error) {
+    switch (error) {
+        case GL_NO_ERROR:          return "No Error";
+        case GL_INVALID_ENUM:      return "Invalid Enum";
+        case GL_INVALID_VALUE:     return "Invalid Value";
+        case GL_INVALID_OPERATION: return "Invalid Operation";
+        case GL_STACK_OVERFLOW:    return "Stack Overflow";
+        case GL_STACK_UNDERFLOW:   return "Stack Underflow";
+        case GL_OUT_OF_MEMORY:     return "Out of Memory";
+        default:                   return "Unknown Error";
+    }
+}
 
 
 // forward declaration of DirectGrab implementation
@@ -803,7 +818,7 @@ EXPORT(void, DirectGrab)(int x, int y, int w, int h, RGBA* pixels)
         
         // manually scale the framebuffer down
         RGBA* new_pixels = new RGBA[4 * w * h];
-        glReadPixels(x * 2, (ScreenHeight - y - 1) * 2, w * 2, h * 2, GL_RGBA, GL_UNSIGNED_BYTE, new_pixels);
+        glReadPixels(x * 2, y * 2, w * 2, h * 2, GL_RGBA, GL_UNSIGNED_BYTE, new_pixels);
 
         for (int i = 0; i < w; i++) {
             for (int j = 0; j < h; j++) {
@@ -814,10 +829,11 @@ EXPORT(void, DirectGrab)(int x, int y, int w, int h, RGBA* pixels)
         delete[] new_pixels;
 
     } else {
-        glReadPixels(x, ScreenHeight - y - 1, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+        glReadPixels(x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+//        puts(glErrorToString(error).c_str());
     }
 
-    // now reverse the pixels
+    // now invert the rows
     RGBA* row = new RGBA[w];
     for (int i = 0; i < h / 2; i++) {
         // swap row [i] and row [h - i - 1]
