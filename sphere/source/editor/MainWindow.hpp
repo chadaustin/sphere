@@ -81,6 +81,7 @@ private:
   afx_msg void OnFileImportVergeSpriteset();
   afx_msg void OnFileImportMergeRGBA();
   afx_msg void OnFileImportWindowsFont();
+  afx_msg void OnFileImportRM2KCharsetToRSS();
 
   afx_msg void OnFileSaveAll();
 

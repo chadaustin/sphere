@@ -439,6 +439,7 @@
 #define ID_OBSTRUCTIONPRESETS_CUSTOM8   40644
 #define ID_IMAGEVIEW_VIEWALPHAMASK      40645
 #define ID_IMAGEVIEW_TOGGLEALPHAMASK    40645
+#define ID_FILE_IMPORT_RM2KCHARSETTORSS 40646
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -447,7 +448,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        225
-#define _APS_NEXT_COMMAND_VALUE         40646
+#define _APS_NEXT_COMMAND_VALUE         40648
 #define _APS_NEXT_CONTROL_VALUE         1121
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

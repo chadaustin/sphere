@@ -33,6 +33,7 @@
 #include "GameSettingsDialog.hpp"
 #include "FileDialogs.hpp"
 #include "ResizeDialog.hpp"
+#include "StringDialog.hpp"
 
 // common
 #include "../common/sphere_version.h"
@@ -98,6 +99,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_FILE_IMPORT_VERGESPRITESET,    OnFileImportVergeSpriteset)
   ON_COMMAND(ID_FILE_IMPORT_MERGE_RGBA,        OnFileImportMergeRGBA)
   ON_COMMAND(ID_FILE_IMPORT_WINDOWSFONT,       OnFileImportWindowsFont)
+  ON_COMMAND(ID_FILE_IMPORT_RM2KCHARSETTORSS,  OnFileImportRM2KCharsetToRSS)
 
   ON_COMMAND(ID_FILE_SAVEALL, OnFileSaveAll)
 
@@ -959,6 +961,86 @@ CMainWindow::OnFileImportBitmapToRSS()
   }
 
   MessageBox("Import Successful!");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnFileImportRM2KCharsetToRSS()
+{
+  CImageFileDialog InFileDialog(FDM_OPEN);
+  if (InFileDialog.DoModal() != IDOK)
+    return;
+
+  CStringDialog OutFilename("Save As", "rm2k.spriteset");
+  if (OutFilename.DoModal() != IDOK)
+    return;
+
+  CImage32 image;
+  if (!image.Load(InFileDialog.GetPathName())) {
+    MessageBox("Could not load image");
+    return;
+  }
+
+  if (image.GetWidth() != 288 || image.GetHeight() != 256) {
+    MessageBox("Invalid image size");
+    return;
+  } else {
+
+    const char* base_filename = OutFilename.GetValue();
+
+    const int frame_width = 288/12;
+    const int frame_height = 256/8;
+    const int num_frames = 3;
+    const int num_directions = 4;
+    const int num_images = num_frames * num_directions;
+
+    // I'm assuming that the very first pixel in the image is the one that's supposed to be transparent
+    const RGB transparent = CreateRGB(image.GetPixel(0, 0).red, image.GetPixel(0, 0).green, image.GetPixel(0, 0).blue);
+
+    // create the spriteset
+    sSpriteset sprite;
+    sprite.Create(frame_width, frame_height, num_images, num_directions, num_frames);
+    sprite.SetDirectionName(0, "north");
+    sprite.SetDirectionName(1, "east");
+    sprite.SetDirectionName(2, "south");
+    sprite.SetDirectionName(3, "west");
+
+    // there are eight spritesets per chipset, 4 rows, 2 columns
+    for (int sy = 0; sy < 2; sy++) {
+      for (int sx = 0; sx < 4; sx++) { 
+  
+        for (int d = 0; d < num_directions; d++) {
+          for (int f = 0; f < num_frames; f++) {
+            CImage32& frame = sprite.GetImage(d * num_frames + f);
+            int offset_x = (sx * frame_width * num_frames) + f * frame_width;
+            int offset_y = (sy * frame_height * num_directions) + d * frame_height;
+            for (int y = 0; y < frame_height; y++) {
+              for (int x = 0; x < frame_height; x++) {
+                frame.SetPixel(x, y, image.GetPixel(x + offset_x, y + offset_y));
+              }
+            }
+            frame.SetColorAlpha(transparent, 0);
+          }
+        }
+
+        for (int d = 0; d < num_directions; d++) {
+          for (int f = 0; f < num_frames; f++) {
+            sprite.SetFrameIndex(d, f, d * num_frames + f);
+          }
+        }
+
+        // I'm assuming that the base is the bottom part of the frame
+        sprite.SetBase(0, frame_height/2, frame_width, frame_height);
+    
+        char filename[255];
+        sprintf(filename, "%s.%d.rss", base_filename, sy * 4 + sx);
+        sprite.Save(filename);
+      }
+    }
+  }
+
+  MessageBox("Charset Converted!");
 }
 
 ////////////////////////////////////////////////////////////////////////////////

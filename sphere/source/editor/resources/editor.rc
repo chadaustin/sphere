@@ -103,6 +103,9 @@ BEGIN
             MENUITEM "W&indows Font to Sphere Font...", 
                                                     ID_FILE_IMPORT_WINDOWSFONT
 
+            MENUITEM "RM2K Charset to Spritesets...", 
+                                                    ID_FILE_IMPORT_RM2KCHARSETTORSS
+
         END
         MENUITEM "Open &Last Project",          ID_FILE_OPENLASTPROJECT
         MENUITEM "&Close Project",              ID_FILE_CLOSEPROJECT
