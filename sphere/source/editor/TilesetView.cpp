@@ -566,7 +566,7 @@ CTilesetView::GetTileSelection()
   int width  = GetTileSelectionWidth();
   int height = GetTileSelectionHeight();
 
-  if (!(width > 1 && height > 1))
+  if (GetTileSelectionWidth() * GetTileSelectionHeight() <= 1)
     return NULL;
 
   m_TileSelection = new unsigned int[width * height];
@@ -920,7 +920,7 @@ CTilesetView::OnRButtonUp(UINT flags, CPoint point)
 
 #if 1
   // these menu items don't really make sense when you have a region of tiles selected
-  if (GetTileSelectionWidth() > 1 || GetTileSelectionHeight() > 1)
+  if (GetTileSelectionWidth() * GetTileSelectionHeight() > 1)
   {
     EnableMenuItem(menu, ID_TILESETVIEW_INSERTTILE, MF_BYCOMMAND | MF_GRAYED);
     EnableMenuItem(menu, ID_TILESETVIEW_APPENDTILE, MF_BYCOMMAND | MF_GRAYED);

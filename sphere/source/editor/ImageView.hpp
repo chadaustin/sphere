@@ -193,6 +193,9 @@ private:
   int m_SelectionWidth;
   int m_SelectionHeight;
 
+  RGBA m_ColorMask1;
+  RGBA m_ColorMask2;
+
   std::vector<POINT> m_SelectionPoints;
 
   // undo

@@ -125,11 +125,15 @@ CMapWindow::Destroy()
   m_MapView.DestroyWindow();
   m_TilesetEditView.DestroyWindow();
 
-	if (m_TilePreviewPalette)
+  if (m_TilePreviewPalette) {
 		m_TilePreviewPalette->Destroy();
+    m_TilePreviewPalette = NULL;
+  }
 
-  if (m_TilePalette)
+  if (m_TilePalette) {
     m_TilePalette->Destroy();
+    m_TilePalette = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -528,7 +532,7 @@ CMapWindow::MV_SelectedTileChanged(int tile)
   m_LayerView.SetSelectedTile(tile);
   m_TilesetEditView.SelectTile(tile);
   if (m_TilePalette) m_TilePalette->SelectTile(tile);
-	m_TilePreviewPalette->OnImageChanged(m_Map.GetTileset().GetTile(tile));
+	if (m_TilePreviewPalette) m_TilePreviewPalette->OnImageChanged(m_Map.GetTileset().GetTile(tile));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -571,7 +575,7 @@ CMapWindow::TEV_SelectedTileChanged(int tile)
   m_LayerView.SetSelectedTile(tile);
   if (m_TilePalette) m_TilePalette->SelectTile(tile);
   m_MapView.SelectTile(tile);
-	m_TilePreviewPalette->OnImageChanged(m_Map.GetTileset().GetTile(tile));
+	if (m_TilePreviewPalette) m_TilePreviewPalette->OnImageChanged(m_Map.GetTileset().GetTile(tile));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -582,7 +586,7 @@ CMapWindow::TEV_TileModified(int tile)
   SetModified(true);
   m_MapView.Invalidate();
   if (m_TilePalette) m_TilePalette->TileChanged(tile);
-	m_TilePreviewPalette->OnImageChanged(m_Map.GetTileset().GetTile(tile));
+	if (m_TilePreviewPalette) m_TilePreviewPalette->OnImageChanged(m_Map.GetTileset().GetTile(tile));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -603,7 +607,7 @@ CMapWindow::TV_SelectedTileChanged(int tile)
   m_LayerView.SetSelectedTile(tile);
   m_MapView.SelectTile(tile);
   m_TilesetEditView.SelectTile(tile);
-	m_TilePreviewPalette->OnImageChanged(m_Map.GetTileset().GetTile(tile));
+	if (m_TilePreviewPalette) m_TilePreviewPalette->OnImageChanged(m_Map.GetTileset().GetTile(tile));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -614,7 +618,7 @@ CMapWindow::TV_TilesetChanged()
   m_MapView.Invalidate();
   m_MapView.TilesetChanged();
   m_TilesetEditView.TilesetChanged();
-  m_TilePreviewPalette->OnImageChanged(m_Map.GetTileset().GetTile(m_MapView.GetSelectedTile()));
+  if (m_TilePreviewPalette) m_TilePreviewPalette->OnImageChanged(m_Map.GetTileset().GetTile(m_MapView.GetSelectedTile()));
   SetModified(true);
 }
 

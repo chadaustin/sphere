@@ -154,6 +154,8 @@ static inline void twMoveControl(CWnd& control, int x, int y, int w, int h)
   control.Invalidate();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CTilesetEditView::OnSize(UINT type, int cx, int cy)
 {

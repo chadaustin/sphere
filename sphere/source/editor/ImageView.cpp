@@ -105,6 +105,9 @@ CImageView::CImageView()
   m_Clipboard = new CClipboard();
 
   m_BlitTile = new CDIBSection(16, 16, 32);
+
+  m_ColorMask1 = CreateRGBA(Configuration::Get(KEY_COLOR_MASK_1_RED), Configuration::Get(KEY_COLOR_MASK_1_GREEN), Configuration::Get(KEY_COLOR_MASK_1_BLUE), 255);
+  m_ColorMask2 = CreateRGBA(Configuration::Get(KEY_COLOR_MASK_2_RED), Configuration::Get(KEY_COLOR_MASK_2_GREEN), Configuration::Get(KEY_COLOR_MASK_2_BLUE), 255);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1075,16 +1078,16 @@ CImageView::OnPaint()
   GetClientRect(&ClientRect);
 
   // calculate size of pixel squares
-  int hsize = ClientRect.right / width;
-  int vsize = ClientRect.bottom / height;
+  const int hsize = ClientRect.right / width;
+  const int vsize = ClientRect.bottom / height;
   int size = std::min(hsize, vsize);
   if (size < 1)
     size = 1;
 
-  int totalx = size * width;
-  int totaly = size * height;
-  int offsetx = (ClientRect.right - totalx) / 2;
-  int offsety = (ClientRect.bottom - totaly) / 2;
+  const int totalx = size * width;
+  const int totaly = size * height;
+  const int offsetx = (ClientRect.right - totalx) / 2;
+  const int offsety = (ClientRect.bottom - totaly) / 2;
 
   // draw black rectangles in the empty parts
   HBRUSH black_brush = (HBRUSH)GetStockObject(BLACK_BRUSH);
@@ -1117,13 +1120,15 @@ CImageView::OnPaint()
   int dib_width = 16;
   int dib_height = 16;
 
-  // ensure that we redraw dib_width by dib_height squares only
-  m_RedrawWidth += m_RedrawX % dib_width;
-  m_RedrawHeight += m_RedrawY % dib_height;
-  m_RedrawX -= m_RedrawX % dib_width;
-  m_RedrawY -= m_RedrawY % dib_height;
-  m_RedrawWidth  += dib_width; m_RedrawWidth  -= m_RedrawWidth  % dib_width;
-  m_RedrawHeight += dib_height; m_RedrawHeight -= m_RedrawHeight % dib_height;
+//  if (m_RedrawWidth > 8 || m_RedrawHeight > 8) {
+    // ensure that we redraw dib_width by dib_height squares only
+    m_RedrawWidth += m_RedrawX % dib_width;
+    m_RedrawHeight += m_RedrawY % dib_height;
+    m_RedrawX -= m_RedrawX % dib_width;
+    m_RedrawY -= m_RedrawY % dib_height;
+    m_RedrawWidth  += dib_width; m_RedrawWidth  -= m_RedrawWidth  % dib_width;
+    m_RedrawHeight += dib_height; m_RedrawHeight -= m_RedrawHeight % dib_height;
+//  }
 
   // clamp redraw values within image
   if (m_RedrawX < 0) m_RedrawX = 0;
@@ -1131,12 +1136,13 @@ CImageView::OnPaint()
   if (m_RedrawX + m_RedrawWidth > m_Image.GetWidth()) m_RedrawWidth = m_Image.GetWidth() - m_RedrawX;
   if (m_RedrawY + m_RedrawHeight > m_Image.GetHeight()) m_RedrawHeight = m_Image.GetHeight() - m_RedrawY;
 
-  int num_tiles_x = ((size*width) / dib_width);
-  int num_tiles_y = ((size*height) / dib_height);
+  int num_tiles_x = ((size * width) / dib_width);
+  int num_tiles_y = ((size * height) / dib_height);
 
-  RGBA color_mask_1 = CreateRGBA(Configuration::Get(KEY_COLOR_MASK_1_RED), Configuration::Get(KEY_COLOR_MASK_1_GREEN), Configuration::Get(KEY_COLOR_MASK_1_BLUE), 255);
-  RGBA color_mask_2 = CreateRGBA(Configuration::Get(KEY_COLOR_MASK_2_RED), Configuration::Get(KEY_COLOR_MASK_2_GREEN), Configuration::Get(KEY_COLOR_MASK_2_BLUE), 255);
+  const RGBA color_mask_1 = m_ColorMask1;
+  const RGBA color_mask_2 = m_ColorMask2;
 
+//  if (m_RedrawWidth > 8 || m_RedrawHeight > 8) {
   for (int ty = 0; ty <= num_tiles_y; ++ty) {
     for (int tx = 0; tx <= num_tiles_x; ++tx) {
 
@@ -1156,7 +1162,8 @@ CImageView::OnPaint()
             sx /= size;
             sy /= size;
 
-            if (!(sx >= m_RedrawX && sx < (m_RedrawX + m_RedrawWidth) && sy >= m_RedrawY && sy < (m_RedrawY + m_RedrawHeight)) )
+            if (!(sx >= m_RedrawX && sx < (m_RedrawX + m_RedrawWidth)
+              && sy >= m_RedrawY && sy < (m_RedrawY + m_RedrawHeight)) )
                continue;
 
             visible = true;
@@ -1640,9 +1647,11 @@ CImageView::OnRButtonUp(UINT flags, CPoint point)
   }
 
   bool image_on_clipboard = false;
-  if (!m_Clipboard && OpenClipboard()) {
-    image_on_clipboard = m_Clipboard->IsFlatImageOnClipbard() || m_Clipboard->IsBitmapImageOnClipboard();
-    CloseClipboard();
+  if (m_Clipboard) {
+    if (OpenClipboard()) {
+      image_on_clipboard = m_Clipboard->IsFlatImageOnClipbard() || m_Clipboard->IsBitmapImageOnClipboard();
+      CloseClipboard();
+    }
   }
 
   if (!image_on_clipboard) {

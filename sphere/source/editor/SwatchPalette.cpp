@@ -120,6 +120,12 @@ CSwatchPalette::OnPaint()
   RECT rect;
 
   GetClientRect(&rect);
+
+  if (!swatch) {
+    // draw black rectangle
+    dc.FillRect(&rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+    return;
+  }
   
   for (int iy = 0; iy < rect.bottom / SWATCH_TILE_SIZE + 1; iy++)
     for (int ix = 0; ix < rect.right / SWATCH_TILE_SIZE + 1; ix++)
@@ -212,6 +218,7 @@ afx_msg void
 CSwatchPalette::OnLButtonDown(UINT nFlags, CPoint point)
 {
   CSwatchServer* swatch = CSwatchServer::Instance();
+  if (!swatch) return;
 
   RECT rect;
   GetClientRect(&rect);
@@ -289,6 +296,7 @@ afx_msg void
 CSwatchPalette::OnFileLoad()
 {
   CSwatchServer* swatch = CSwatchServer::Instance();
+  if (!swatch) return;
 
   CFileDialog Dialog(
     TRUE, "sswatch", NULL,
@@ -302,7 +310,9 @@ CSwatchPalette::OnFileLoad()
   }
 
   // open file
-  CConfigFile file(Dialog.GetPathName());
+  CConfigFile file;
+  if (!file.Load(Dialog.GetPathName()))
+    return;
 
   // check version  
   int ver = file.ReadInt("sphere_swatch", "version", 0);
@@ -393,6 +403,7 @@ afx_msg void
 CSwatchPalette::OnDefaultDOS()
 {
   CSwatchServer* swatch = CSwatchServer::Instance();
+  if (!swatch) return;
 
   swatch->Clear();
   for (int i = 0; i < 256; i++)
@@ -416,6 +427,7 @@ afx_msg void
 CSwatchPalette::OnDefaultVERGE()
 {
   CSwatchServer* swatch = CSwatchServer::Instance();
+  if (!swatch) return;
 
   swatch->Clear();
   for (int i = 0; i < 256; i++)
@@ -439,6 +451,7 @@ afx_msg void
 CSwatchPalette::OnDefaultPlasma()
 {
   CSwatchServer* swatch = CSwatchServer::Instance();
+  if (!swatch) return;
 
   swatch->Clear();
   for (int i = 0; i < 256; i++)
@@ -462,6 +475,7 @@ afx_msg void
 CSwatchPalette::OnDefaultRGB332()
 {
   CSwatchServer* swatch = CSwatchServer::Instance();
+  if (!swatch) return;
 
   swatch->Clear();
   for (int i = 0; i < 256; i++)
@@ -485,6 +499,7 @@ afx_msg void
 CSwatchPalette::OnDefaultVisibone2()
 {
   CSwatchServer* swatch = CSwatchServer::Instance();
+  if (!swatch) return;
 
   swatch->Clear();
   for (int i = 0; i < 256; i++)
@@ -508,6 +523,7 @@ afx_msg void
 CSwatchPalette::OnInsertColorBefore()
 {
   CSwatchServer* swatch = CSwatchServer::Instance();
+  if (!swatch) return;
 
   swatch->InsertColor(m_RightClickColor, m_Color);
 
@@ -521,6 +537,8 @@ afx_msg void
 CSwatchPalette::OnInsertColorAfter()
 {
   CSwatchServer* swatch = CSwatchServer::Instance();
+  if (!swatch) return;
+
   swatch->InsertColor(m_RightClickColor + 1, m_Color);
 
   UpdateScrollBar();
@@ -533,6 +551,7 @@ afx_msg void
 CSwatchPalette::OnReplaceColor()
 {
   CSwatchServer* swatch = CSwatchServer::Instance();
+  if (!swatch) return;
 
   if (m_RightClickColor >= 0 && m_RightClickColor < swatch->GetNumColors()) {
     swatch->SetColor(m_RightClickColor, m_Color);
@@ -548,6 +567,7 @@ afx_msg void
 CSwatchPalette::OnDeleteColor()
 {
   CSwatchServer* swatch = CSwatchServer::Instance();
+  if (!swatch) return;
   swatch->DeleteColor(m_RightClickColor);
 
   if (m_SelectedColor > swatch->GetNumColors() - 1) {
@@ -612,6 +632,7 @@ int
 CSwatchPalette::GetNumRows()
 {
   CSwatchServer* swatch = CSwatchServer::Instance();
+  if (!swatch) return -1;
 
   RECT client_rect;
   GetClientRect(&client_rect);
