@@ -1,5 +1,6 @@
 Special keys in the engine:
 
+ALT-F4 = force quit Sphere engine
 F1 = toggle framerate throttle in map engine
 F11 = show FPS
 F12 = take screenshot
