@@ -1,0 +1,22 @@
+Sphere for UNIX
+
+Requirements:
+- GNU C library
+- SDL (Simple DirectMedia Library, http://www.libsdl.org/)
+- libpng (Portable Network Graphics library, http://www.libpng.org/)
+- libjpeg (Joint Photographic Experts Group image library, http://www.ijg.org/)
+- libmng (Multiple-image Network Graphics, http://www.libmng.org/)
+- lcms (Little CMS color engine, http://www.littlecms.com/)
+- zlib (compression library, http://www.gzip.org/zlib/)
+- a little-endian machine*
+
+Currently the Sphere engine is the only component being ported.  More details, 
+along with build instructions, can be found in the source/engine/unix directory.
+The editor and support utilities may also get ported in the future (although
+this would require significant source rewrites).
+
+* The creator of Sphere (Chad Austin) assumes that Sphere will not run correctly
+on big-endian machines.  From looking at the code I would have to agree.  If you
+manage to run sphere on a big-endian machine, please tell us!
+
+  Chris Forno             (jcore@geekmeet.org, jcore on irc.dal.net) 

@@ -6,7 +6,18 @@ SFONT* FPSFont;
 bool FPSDisplayed;
 SDL_Surface* screen;
 SDL_Surface* double_buffer; /* double trouble */
+RGBA global_mask; /* bad, jcore! bad! */
+typedef void (*mask_routine)(Uint32, Uint32&, SDL_Format*);
 
+template <typename leftT, typename rightT>
+inline MIN (leftT left, rightT right) {
+  left < right ? left : right;
+}
+
+template <typename leftT, typename rightT>
+inline MAX (leftT left, rightT right) {
+  left > right ? left : right;
+}
 
 /* \brief set the fps font
 
@@ -133,9 +144,6 @@ void DestroyImage (IMAGE image) {
   SDL_FreeSurface(surface);
 }
 
-void UtilityBlit (IMAGE image, int x, int y, RGBA mask) {
-}
-
 void BlitImage (IMAGE image, int x, int y) {
   SDL_Rect dest;
 
@@ -144,21 +152,47 @@ void BlitImage (IMAGE image, int x, int y) {
   SDL_BlitSurface(image, NULL, screen, &dest);
 }
 
-void BlitImageMask (IMAGE image, int x, int y, RGBA mask) {
-  int lcv;
-  int firstscan;
-  int lastscan;
+void StraightBlit (IMAGE image, int x, int y, mask_routine routine) {
+  int lcv_v, lcv_h;
+  int scanlines;
+  int width;
   SDL_Rect clip;
-  Uint32* pixel;
+  Uint32* ipixel, spixel;
 
   if (SDL_LockSurface(screen) == 0) {
     clip = SDL_GetClipRect(screen, &clip);
-    firstscan = x > clip.x ? x : clip.x;
-    lastscan = (image->h + y) < (clip.y + clip.h) ? (image->h + y) : (clip.y + clip.h);
-    for (lcv = firstscan; lcv <= lastscan; lcv++) { 
-      
+    scanlines = MIN(image->h + y, clip.h) - MAX(y, clip.y);
+    width = MIN(image->w + x, clip.w) - MAX(x, clip.x);
+    dpixel = static_cast<Uint32*>(screen->pixels) + (MAX(y, clip.y) * screen->w + MAX(x, clip.x));
+    spixel = static_cast<Uint32*>(image->pixels);
+    for (lcv_v = 0; lcv_v < scanlines; lcv_v++) {
+      for (lcv_h = 0; lcv_h < width; lcv_h++) {
+        routine(*(spixel + lcv_h), *(dpixel + lcv_h), image->format);
+      }
+      pixel += image->width;
     }
   }
+}
+
+void rgba_mask (Uint32 src, Uint32& dest, SDL_PixelFormat* fmt) {
+  Uint8 sr, sg, sb, sa;
+  Uint8 dr, dg, db, da;
+
+  SDL_GetRGBA(src, fmt, &sr, &sg, &sb, &sa);
+  SDL_GetRGBA(dest, fmt, &dr, &dg, &db, &da);
+  sa = sa * global_mask.alpha / 256;
+  sr = sr * global_mask.red / 256;
+  sg = sg * global_mask.green / 256;
+  sb = sb * global_mask.blue / 256;
+  dr = (dr * (256 - sa) + sr * sa) / 256;
+  dg = (dg * (256 - sa) + sg * sa) / 256;
+  db = (db * (256 - sa) + sb * sa) / 256;
+  dest = SDL_MapRGBA(fmt, dr, dg, db, da);
+}
+
+void BlitImageMask (IMAGE image, int x, int y, RGBA mask) {
+  global_mask = mask;
+  StraightBlit(image, x, y, rgba_mask);
 }
 
 void TransformBlitImage (IMAGE image, int x[4], int y[4]) {
@@ -168,15 +202,21 @@ void TransformBlitImageMask (IMAGE image, int x[4], int y[4], RGBA mask) {
 }
 
 int GetImageWidth (IMAGE image) {
+  return image->w;
 }
 
 int GetImageHeight (IMAGE image) {
+  return image->h;
 }
 
+/* this is where endianess problems start */
 RGBA* LockImage (IMAGE image) {
+  SDL_LockSurface(image);
+  return image->pixels;
 }
 
 void UnlockImage (IMAGE image) {
+  SDL_UnlockSurface(image);
 }
 
 void DirectBlit (int x, int y, int w, int h, RGBA* pixels) {
