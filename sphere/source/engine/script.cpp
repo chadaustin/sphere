@@ -2864,6 +2864,9 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
   for (int i = 0; i < num_directions; i++) {
     JSObject* direction = JS_NewObject(cx, &direction_clasp, NULL, NULL);
 
+    jsval val = OBJECT_TO_JSVAL(direction);
+    JS_SetElement(cx, direction_array, i, &val);
+
     // set name property
     JS_DefineProperty(
       cx,
@@ -2895,9 +2898,6 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
       JS_DefineProperty(cx, frame_object, "index", INT_TO_JSVAL(spriteset->GetSpriteset().GetFrameIndex(i, j)), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
       JS_DefineProperty(cx, frame_object, "delay", INT_TO_JSVAL(spriteset->GetSpriteset().GetFrameDelay(i, j)), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
     }
-
-    jsval val = OBJECT_TO_JSVAL(direction);
-    JS_SetElement(cx, direction_array, i, &val);
   }
 
 
