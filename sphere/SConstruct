@@ -79,7 +79,7 @@ def BuildVC6Env():
                    LINKFLAGS = ['/debug', '/debugtype:both'])
     elif ARGUMENTS.get('opt'):
         env.Append(CCFLAGS = ['/O1', '/GF'],
-                   LINKFLAGS = ['/opt:ref', '/release', '/opt:nowin98'])
+                   LINKFLAGS = ['/opt:ref', '/release'])
 
     return env
 
