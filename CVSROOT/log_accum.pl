@@ -21,7 +21,7 @@
 #
 
 #
-# $Id: log_accum.pl,v 1.2 2001-09-26 02:43:01 aegis Exp $
+# $Id: log_accum.pl,v 1.3 2001-12-03 20:46:39 aegis Exp $
 #
 
 require 5.005;		# might work with older perl5
@@ -87,6 +87,7 @@ my $FILE_PREFIX = "#cvs.files";
 #}
 
 $MAILADDRS = 'sphere-commits@lists.sourceforge.net';
+$PROJECT = 'sphere';
 
 ############################################################
 #
@@ -112,7 +113,7 @@ my $TAGS_FILE     = "$BASE_FN.tags";
 
 my $X_BRANCH_HDR  = "X-ISUGameDev-CVS-Branch:";
 
-my $CVSROOT       = $ENV{'CVSROOT'} || "/cvsroot/isugamedev";
+my $CVSROOT       = $ENV{'CVSROOT'} || "/cvsroot/$PROJECT";
 
 my $PID = getpgrp();		# Process id; used for generating filenames.
 
@@ -141,7 +142,7 @@ sub print_exit_message {
 sub cleanup_lockfiles {
     my $base_dir = (split(/\s/, "$ARGV[0]"))[0];
     my $module = (split('/', "$base_dir"))[0];
-    print "Cleaing up garbage CVS locks in $module...\n";
+    print "Cleaning up garbage CVS locks in $module...\n";
     File::Find::find({wanted => \&wanted}, "$CVSROOT/$module");
 }
 
@@ -592,7 +593,7 @@ sub format_summaries {
 
 		if ( $minor_rev > 1 ) {
 			my $old_minor_rev = $minor_rev - 1;
-			push(@text, "http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/isugamedev/$files[$rev].diff?r1=$major_rev.$old_minor_rev\&r2=$revs[$rev]");
+			push(@text, "http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/$PROJECT/$files[$rev].diff?r1=$major_rev.$old_minor_rev\&r2=$revs[$rev]");
 		}
 	}
 
