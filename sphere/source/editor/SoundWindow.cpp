@@ -37,6 +37,32 @@ CPlaylist::AppendFile(const char* file)
   return size + 1 == int(m_Filenames.size());
 }
 
+bool
+CPlaylist::LoadFromFile(const char* filename)
+{
+  FILE* file = fopen(filename, "rb");
+  if (!file)
+    return false;
+
+  char buffer[MAX_PATH] = {0};
+  int offset = 0;
+
+  /*
+  while (!feof(file)) {
+    int size = fread(buffer + offset, MAX_PATH - offset, buffer, file);
+    if (size > 0) {
+      for (int i = 0; i < size; i++) {
+        if (buffer[offset + i] == '\n') {
+
+        }
+      }
+    }
+  }
+  */
+
+  return true;
+}
+
 
 const int TIMER_UPDATE_SOUND_WINDOW = 987;
 const int ID_MUSIC_VOLUMEBAR   = 40102;

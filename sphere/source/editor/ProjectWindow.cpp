@@ -13,6 +13,8 @@
 #include "keys.hpp"
 #include "FileTypes.hpp"
 
+#include "Editor.hpp"
+
 #include "../common/system.hpp"
 
 static const int TreeID = 9865;
@@ -598,14 +600,19 @@ CProjectWindow::__OnRightClick__()
       case tiImages:
       case tiAnimations:
       {
-        CMenu Menu;
-        Menu.LoadMenu(IDR_PROJECTGROUP);
+        CMenu menu;
+        menu.LoadMenu(IDR_PROJECTGROUP);
 
         POINT Point;
         GetCursorPos(&Point);
-        Menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, Point.x, Point.y, this);
+
+        CMenu* sub_menu = menu.GetSubMenu(0);
+        if (sub_menu) {
+          TranslateMenu(sub_menu->GetSafeHmenu());
+          sub_menu->TrackPopupMenu(TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, Point.x, Point.y, this);
+        }
       
-        Menu.DestroyMenu();
+        menu.DestroyMenu();
         return;
       }
     }
@@ -630,7 +637,12 @@ CProjectWindow::__OnRightClick__()
     POINT Point;
     GetCursorPos(&Point);
 
-    menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, Point.x, Point.y, this);
+    CMenu* sub_menu = menu.GetSubMenu(0);
+    if (sub_menu) {
+      TranslateMenu(sub_menu->GetSafeHmenu());
+      sub_menu->TrackPopupMenu(TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, Point.x, Point.y, this);
+    }
+
     menu.DestroyMenu();
   }
 }

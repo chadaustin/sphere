@@ -119,6 +119,11 @@ BEGIN
         MENUITEM "Sa&ve Copy As...",            ID_FILE_SAVECOPYAS
         MENUITEM "Save All &Windows",           ID_FILE_SAVEALL
         MENUITEM SEPARATOR
+        POPUP "&Language"
+        BEGIN
+            MENUITEM "English",                     ID_FILE_LANGUAGE_ENGLISH
+            MENUITEM "German",                      ID_FILE_LANGUAGE_GERMAN
+        END
         MENUITEM "&Options...",                 ID_FILE_OPTIONS
         MENUITEM "E&xit",                       ID_FILE_EXIT
     END

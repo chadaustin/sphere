@@ -102,6 +102,11 @@ private:
 
   afx_msg void OnFileOptions();
 
+  afx_msg void OnFileLanguageEnglish();
+  afx_msg void OnFileLanguageGerman();
+  afx_msg void OnUpdateFileLanguageEnglish(CCmdUI* cmdui);
+  afx_msg void OnUpdateFileLanguageGerman(CCmdUI* cmdui);
+
 	afx_msg void OnViewProject();
 
   afx_msg void OnProjectInsertMap();

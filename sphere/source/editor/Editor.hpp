@@ -31,4 +31,10 @@ extern CStatusBar* GetStatusBar();
 
 extern CMainWindow* GetMainWindow();
 
+const char* TranslateString(const char* string);
+void TranslateMenu(HMENU menu);
+
+const char* GetLanguage();
+void SetLanguage(const char* language);
+
 #endif

@@ -20,6 +20,7 @@ public:
   int GetNumFiles() const;
 
   bool AppendFile(const char* file);
+  bool LoadFromFile(const char* filename);
 };
 
 

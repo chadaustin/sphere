@@ -347,3 +347,40 @@ CMainWindow* GetMainWindow()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+#include "../common/configfile.hpp"
+
+static char* s_Language = "English";
+
+const char* GetLanguage() { return s_Language; }
+void SetLanguage(const char* language) { s_Language = strdup(language); }
+
+const char* TranslateString(const char* string)
+{
+  const char* language = GetLanguage();
+
+  static bool once = false;
+  static CConfigFile config;
+
+  if (!once) {
+    once = true;
+    if (!config.Load("language.ini"))
+      return string;
+  }
+
+  return config.ReadString(language, string, string).c_str();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void TranslateMenu(HMENU menu)
+{
+  char buffer[1024] = {0};
+  int count = GetMenuItemCount(menu);
+  for (int i = 0; i < count; i++) {
+    GetMenuString(menu, i, buffer, 1000, MF_BYPOSITION);
+    ModifyMenu(menu, i, MF_BYPOSITION, GetMenuItemID(menu, i), TranslateString(buffer));
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////

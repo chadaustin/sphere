@@ -77,6 +77,11 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
   ON_COMMAND(ID_FILE_OPTIONS, OnFileOptions)
 
+  ON_COMMAND(ID_FILE_LANGUAGE_ENGLISH, OnFileLanguageEnglish)
+  ON_COMMAND(ID_FILE_LANGUAGE_GERMAN,  OnFileLanguageGerman)
+  ON_UPDATE_COMMAND_UI(ID_FILE_LANGUAGE_ENGLISH, OnUpdateFileLanguageEnglish)
+  ON_UPDATE_COMMAND_UI(ID_FILE_LANGUAGE_GERMAN,  OnUpdateFileLanguageGerman)
+
   // project
   ON_COMMAND(ID_FILE_NEW_PROJECT,     OnFileNewProject)
   ON_COMMAND(ID_FILE_OPEN_PROJECT,    OnFileOpenProject)
@@ -777,11 +782,14 @@ CMainWindow::UpdateMenu()
     char szPopupTitle[80];
     GetMenuString(hProjectMenu, 0, szPopupTitle, 80, MF_BYPOSITION);
 
+    HMENU hProjectMenuSubMenu = GetSubMenu(hProjectMenu, 0);
+    TranslateMenu(hProjectMenuSubMenu);
+
     InsertMenu(hNewMenu,
                3,
                MF_POPUP | MF_BYPOSITION | MF_STRING,
-               (UINT_PTR)GetSubMenu(hProjectMenu, 0),
-               szPopupTitle);
+               (UINT_PTR)hProjectMenuSubMenu,
+               TranslateString(szPopupTitle));
 
     iWindowMenu++;
   }
@@ -999,6 +1007,32 @@ CMainWindow::OnFileOptions()
 {
   COptionsDialog dialog;
   dialog.Execute();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnFileLanguageEnglish()
+{
+  SetLanguage("English");
+}
+
+afx_msg void
+CMainWindow::OnFileLanguageGerman()
+{
+  SetLanguage("German");
+}
+
+afx_msg void
+CMainWindow::OnUpdateFileLanguageEnglish(CCmdUI* cmdui)
+{
+  cmdui->SetCheck( (strcmp(GetLanguage(), "English") == 0 ) ? TRUE : FALSE );
+}
+
+afx_msg void
+CMainWindow::OnUpdateFileLanguageGerman(CCmdUI* cmdui)
+{
+  cmdui->SetCheck( (strcmp(GetLanguage(), "German") == 0 ) ? TRUE : FALSE );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
