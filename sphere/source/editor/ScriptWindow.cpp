@@ -842,7 +842,7 @@ CScriptWindow::SaveDocument(const char* path)
   char* str = new char[length + 1];
   if (str) {
     str[length] = 0;
-    SendEditor(SCI_GETTEXT, length, (LPARAM)str);
+    SendEditor(SCI_GETTEXT, length + 1, (LPARAM)str);
 
     fwrite(str, 1, length, file);
     fclose(file);

@@ -29,6 +29,7 @@ public:
   bool UpdateTile(int tile_index);
 
   sMap& GetMap();
+  const sMap& GetMap() const;
 
   void RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, int& offset_y);
   int MapToScreenX(int layer, int camera_x, int mx);
@@ -80,6 +81,15 @@ SMAP::GetMap()
 {
   return m_Map;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+const inline sMap&
+SMAP::GetMap() const
+{
+  return m_Map;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -115,6 +115,7 @@ SS_FUNCTION(OpenLog, 1)
 
   SS_FUNCTION(GetMapEngine, 0)
   // map_engine.save(filename)
+  // map_engine.tileset.appendTiles(num_tiles)
 
     // maps
     SS_FUNCTION(GetNumLayers, 0)

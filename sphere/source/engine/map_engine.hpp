@@ -245,6 +245,8 @@ public:
   bool SetMapEngineFrameRate(int fps);
   int GetMapEngineFrameRate();
 
+  SMAP& GetMap() { return m_Map; }
+  const SMAP& GetMap() const { return m_Map; }
   bool SaveMap(const char* filename);
 
 private:

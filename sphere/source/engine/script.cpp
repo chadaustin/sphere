@@ -47,7 +47,7 @@ const dword SS_FILE_MAGIC        = 0x672d369a;
 const dword SS_RAWFILE_MAGIC     = 0x29bcd805;
 const dword SS_BYTEARRAY_MAGIC   = 0x2295027f;
 const dword SS_MAPENGINE_MAGIC   = 0x42424401;
-
+const dword SS_TILESET_MAGIC     = 0x43434402;
 
 struct SS_OBJECT
 {
@@ -130,6 +130,10 @@ BEGIN_SS_OBJECT(SS_BYTEARRAY)
 END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_MAPENGINE)
+  int __value__;
+END_SS_OBJECT()
+
+BEGIN_SS_OBJECT(SS_TILESET)
   int __value__;
 END_SS_OBJECT()
 
@@ -7774,6 +7778,42 @@ end_property()
 
 ///////////////////////////////////////////////////////////
 
+JSObject*
+CScript::CreateTilesetObject(JSContext* cx, const sTileset& tileset)
+{
+  // define raw file class
+  static JSClass clasp = {
+    "tileset", JSCLASS_HAS_PRIVATE,
+    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+    JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
+  };
+
+  // create the object
+  JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
+  if (object == NULL) {
+    return NULL;
+  }
+
+  // add the methods into the object
+  static JSFunctionSpec fs[] = {
+    { "appendTiles", ssTilesetAppendTiles, 1, 0, 0 },
+    { "save", ssTilesetSave, 1, 0, 0 },
+    { 0, 0, 0, 0, 0 },
+  };
+  JS_DefineFunctions(cx, object, fs);
+
+  // attach the file to this object
+  SS_TILESET* tileset_object = new SS_TILESET;
+  if (tileset_object) {
+    tileset_object->__value__ = 0;
+    JS_SetPrivate(cx, object, tileset_object);
+  }
+
+  return object;
+}
+
+///////////////////////////////////////////////////////////
+
 begin_func(GetMapEngine, 0)
 
   if ( !This->m_Engine->GetMapEngine()->IsRunning() ) {
@@ -7804,6 +7844,11 @@ begin_func(GetMapEngine, 0)
   if (mapengine_object) {
     mapengine_object->__value__ = 1;
     JS_SetPrivate(cx, object, mapengine_object);
+
+    JS_DefineProperty(cx, object, "tileset",
+      OBJECT_TO_JSVAL(CreateTilesetObject(cx, This->m_Engine->GetMapEngine()->GetMap().GetMap().GetTileset())),
+      JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
+
   }
 
   return_object(object);
@@ -7830,4 +7875,36 @@ end_method()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_method(SS_TILESET, ssTilesetAppendTiles, 1)
+  arg_int(num_tiles);
 
+  if ( !This->m_Engine->GetMapEngine()->IsRunning() ) {
+    This->ReportMapEngineError("tileset.appendTiles() failed");
+    return JS_FALSE;
+  }
+
+  This->m_Engine->GetMapEngine()->GetMap().GetMap().GetTileset().AppendTiles(num_tiles);
+
+end_method()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_method(SS_TILESET, ssTilesetSave, 1)
+  arg_str(filename);
+  std::string path = "maps/" + std::string(filename);
+
+  if (IsValidPath(path.c_str()) == false) {
+    JS_ReportError(cx, "Invalid filename: '%s'", filename);
+    return JS_FALSE;  
+  }
+
+  if ( !This->m_Engine->GetMapEngine()->IsRunning() ) {
+    This->ReportMapEngineError("tileset.save() failed");
+    return JS_FALSE;
+  }
+
+  This->m_Engine->GetMapEngine()->GetMap().GetMap().GetTileset().Save(filename);
+
+end_method()
+
+////////////////////////////////////////////////////////////////////////////////

@@ -22,6 +22,7 @@
 #include "../common/IFileSystem.hpp"
 #include "../common/Image32.hpp"
 #include "../common/ColorMatrix.hpp"
+#include "../common/Map.hpp"
 
 
 // EVIL EVIL export!
@@ -246,6 +247,11 @@ private:
 
   // mapengine objects
   declare_method(ssMapEngineSave);
+
+  // tileset objects
+  declare_constructor1(CreateTilesetObject, const sTileset& tileset);
+  declare_method(ssTilesetAppendTiles);
+  declare_method(ssTilesetSave);
   
   #undef declare_property
   #undef declare_method
