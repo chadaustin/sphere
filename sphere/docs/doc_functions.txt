@@ -595,7 +595,9 @@ log_object.endBlock()
         - returns the person's current mask
 
       FollowPerson(name, leader, pixels)
-        - makes the sprite 'name' follow 'pixels' pixels behind sprite 'leader'
+        - makes the sprite 'name' follow 'pixels' pixels behind sprite
+        'leader'.  If this function is called like FollowPerson(name,
+        "", 0), the person will detach from anyone it is following.
       
       SetPersonScript(name, which, script)
         - sets 'script' as the thing 'name' does in a certain event
