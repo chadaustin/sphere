@@ -1,3 +1,7 @@
+from SCons.Util import WhereIs
+import os
+import string
+
 # Courtesy of Ben Scott
 def ParseConfig(env, command, options):
     "Parses xxx-config style output for compilation directives"
@@ -17,25 +21,15 @@ def ParseConfig(env, command, options):
         option = arg[1:2]
         if switch == '-':
             if option == 'I':
-                RequireList(env, 'CPPPATH')
-                env['CPPPATH'].append(arg[2:])
+                env.Append(CPPPATH = [arg[2:]])
             elif option == 'L':
-                RequireList(env, 'LIBPATH')
-                env['LIBPATH'].append(arg[2:])
+                env.Append(LIBPATH = [arg[2:]])
             elif option == 'l':
-                RequireList(env, 'LIBS')
-                env['LIBS'].append(arg[2:])
+                env.Append(LIBS = [arg[2:]])
             elif arg[0:11] == '-Wl,-rpath,':
-                RequireList(env, 'LINKFLAGS')
-                env['LINKFLAGS'].append(arg)
+                env.Append(LINKFLAGS = [arg])
             else:
-                RequireList(env, 'CXXFLAGS')
-                env['CXXFLAGS'].append(arg)
+                env.Append(CXXFLAGS = [arg])
         else:
             # Must be a static library, add it to the libs
-            RequireList(env, 'LIBS')
-            env['LIBS'].append(arg)
-
-        RequireList(env, 'LIBS')
-        env['LIBS'].extend(['SDL', 'SDLmain'])
-        
+            env.Append(LIBS = [arg])

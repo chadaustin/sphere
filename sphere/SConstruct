@@ -84,9 +84,15 @@ def BuildVC6Env():
     return env
 
 
+def BuildLinuxEnv():
+    env = Environment(ENV = os.environ)
+    env['BUILD_DIR'] = "#/build/linux"
+    return env
+
+
 class Compiler:
     def __init__(self, name):
-        if not name in ['vc6', 'mingw']:
+        if not name in ['vc6', 'mingw', 'linux']:
             raise ValueError, "Invalid compiler specified"
 
         self.name = name
@@ -94,9 +100,17 @@ class Compiler:
             self.env = BuildVC6Env()
         elif name == 'mingw':
             self.env = BuildMinGWEnv()
+        elif name == 'linux':
+            self.env = BuildLinuxEnv()
+
+    def is_win32(self):
+        return self.name in ['mingw', 'vc6']
     
     def has_mfc(self):
         return self.name in ['vc6']
+
+    def needs_sdl(self):
+        return self.name in ['linux']
 
     def get_env(self):
         return self.env
@@ -105,7 +119,7 @@ class Compiler:
         if self.name == 'vc6':
             env.Append(LINKFLAGS = ['/subsystem:windows'])
         elif self.name == 'mingw':
-            env.Append(LINKFLAGS = ['-mwindows'])            
+            env.Append(LINKFLAGS = ['-mwindows'])
 
     def SetupAudiere(self, env):
         env.Append(LIBS = ['audiere'])
@@ -120,8 +134,10 @@ class Compiler:
         env.Append(LIBS = ['glu32', 'opengl32'])
 
     def SetupJS(self, env):
-        env.Append(CCFLAGS = ['-DXP_PC'],
-                   LIBS = ['js32'])
+        if self.name in ['vc6', 'mingw']:
+            env.Append(CCFLAGS = ['-DXP_PC'], LIBS = ['js32'])
+        elif self.name == 'linux':
+            env.Append(CCFLAGS = ['-DXP_UNIX'], LIBS = ['js'])
 
     def SetupMFC(self, env):
         assert self.has_mfc(), "MFC not supported in this compiler"
@@ -136,6 +152,9 @@ class Compiler:
         elif self.name == 'vc6':
             env.Append(LIBS = ['libmng'],
                        CCFLAGS = ['/DMNG_NO_CMS', '/DMNG_SUPPORT_LC', '/DMNG_DLL'])
+
+    def SetupSDL(self, env):
+        autocons.ParseConfig(env, 'sdl-config', ['--cflags', '--libs'])
 
     def SetupSphereCommon(self, env):
         env.Append(CPPPATH = ['#/source/common'],

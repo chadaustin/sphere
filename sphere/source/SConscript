@@ -1,6 +1,9 @@
 Import('COMPILER')
 
-SConscript(dirs = ['common', 'config', 'engine', 'util', 'video', 'wxeditor'])
+SConscript(dirs = ['common', 'engine', 'util', 'wxeditor'])
+
+if COMPILER.is_win32():
+    SConscript(dirs = ['config', 'video'])
 
 if COMPILER.has_mfc():
     SConscript(dirs = ['editor'])
