@@ -349,7 +349,7 @@ CMainWindow::Create()
   // enable docking
   EnableDocking(CBRS_ALIGN_ANY);
 
-  DockControlBar(&m_MainToolBar,      AFX_IDW_DOCKBAR_TOP);
+  DockControlBar(&m_MainToolBar,  AFX_IDW_DOCKBAR_TOP);
   DockControlBar(&m_ImageToolBar, AFX_IDW_DOCKBAR_TOP);
   DockControlBar(&m_MapToolBar,   AFX_IDW_DOCKBAR_TOP);
 
@@ -374,30 +374,22 @@ CMainWindow::Create()
     ShowWindow(SW_SHOW);
   }
 
-//  RecalcLayout();
   wp = Configuration::Get(KEY_STANDARDTOOLBAR_PLACEMENT);
   if (wp.length != 0) {
-    ShowWPConfig(wp);
     m_MainToolBar.SetWindowPlacement(&wp);
   } else {
     m_MainToolBar.ShowWindow(SW_SHOW);
   }
 
-//  RecalcLayout();
   wp = Configuration::Get(KEY_IMAGETOOLBAR_PLACEMENT);
-  m_ImageToolBar.SetWindowPlacement(&wp);
   if (wp.length != 0) {
-    ShowWPConfig(wp);
     m_ImageToolBar.SetWindowPlacement(&wp);
   } else {
     m_ImageToolBar.ShowWindow(SW_SHOW);
   }
 
-//  RecalcLayout();
   wp = Configuration::Get(KEY_MAPTOOLBAR_PLACEMENT);
-  m_MapToolBar.SetWindowPlacement(&wp);
   if (wp.length != 0) {
-    ShowWPConfig(wp);
     m_MapToolBar.SetWindowPlacement(&wp);
   } else {
     m_MapToolBar.ShowWindow(SW_SHOW);
