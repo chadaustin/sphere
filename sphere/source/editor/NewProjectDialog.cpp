@@ -38,8 +38,8 @@ CNewProjectDialog::GetGameTitle()
 bool
 CNewProjectDialog::ValidateValues(std::string& error)
 {
-  GetDlgItemText(IDC_PROJECTNAME, m_szProjectName, 32);
-  GetDlgItemText(IDC_GAMETITLE,   m_szGameTitle, 32);
+  GetDlgItemText(IDC_PROJECTNAME, m_szProjectName, sizeof(m_szProjectName));
+  GetDlgItemText(IDC_GAMETITLE,   m_szGameTitle,   sizeof(m_szGameTitle));
 
   if (strlen(m_szProjectName) == 0)
   {

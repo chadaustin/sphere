@@ -25,6 +25,7 @@
 #include "../common/PackageFileSystem.hpp"
 #include "../common/configfile.hpp"
 #include "../common/sphere_version.h"
+#include "../common/strcmp_ci.hpp"
 
 
 static void RunPackage(IFileSystem& fs);
@@ -43,6 +44,18 @@ static std::string       s_ScriptDirectory;
 
 void RunSphere(int argc, const char** argv)
 {
+  // local functions
+  struct Local {
+    static inline bool extension_compare(const char* path, const char* extension) {
+      int path_length = strlen(path);
+      int ext_length  = strlen(extension);
+      return (
+        path_length >= ext_length &&
+        strcmp_ci(path + path_length - ext_length, extension) == 0
+      );
+    }
+  };
+
   // populate the game list
   GetGameList(s_GameList);
 
@@ -50,6 +63,7 @@ void RunSphere(int argc, const char** argv)
   LoadSystemObjects();
 
   bool show_menu = true;
+  int package_name_index = -1;
 
   // check for manual game selection
   for (int i = 1; i < argc; i++) {
@@ -78,41 +92,13 @@ void RunSphere(int argc, const char** argv)
         LeaveDirectory();
       } else {
         QuitMessage("could not enter 'games' directory");
+        return;
       }
       show_menu = false;
 
     } else if (strcmp(argv[i], "-package") == 0 &&
                i < argc - 1) {  // if last parameter is a command, it doesn't mean anything
-
-      const char* package_name = argv[i + 1];
-      if (strrchr(package_name, '/')) {
-        package_name = strrchr(package_name, '/') + 1;
-      } else if (strrchr(package_name, '\\')) {
-        package_name = strrchr(package_name, '\\') + 1;
-      }
-
-      // make sure "packages" directory exists
-      MakeDirectory("packages");
-      EnterDirectory("packages");
-
-      // now make a directory based on the name of the package
-      MakeDirectory(package_name);
-      EnterDirectory(package_name);
-
-      // run the package
-      CPackageFileSystem fs(argv[i + 1]);
-      if (fs.GetNumFiles() == 0) {
-        std::ostringstream os;
-        os << "Could not open package '" << argv[i + 1] << "'";
-        QuitMessage(os.str().c_str());
-      }
-
-      RunPackage(fs);
-      show_menu = false;
-
-      LeaveDirectory();
-      LeaveDirectory();
-
+      package_name_index = i + 1;
     }
     else if (strcmp(argv[i], "-version") == 0) {
       printf ("sphere engine %s [%s]\n", SPHERE_VERSION, __DATE__);
@@ -129,6 +115,43 @@ void RunSphere(int argc, const char** argv)
       show_menu = false;
       i = argc;
     }
+    else
+    if (i == 1 && Local::extension_compare(argv[i], ".spk")) {
+      package_name_index = i;
+    }
+  }
+
+  if (package_name_index != -1) {
+    const char* package_name = argv[package_name_index];
+    if (strrchr(package_name, '/')) {
+      package_name = strrchr(package_name, '/') + 1;
+    } else if (strrchr(package_name, '\\')) {
+      package_name = strrchr(package_name, '\\') + 1;
+    }
+
+    // open the package
+    CPackageFileSystem fs(argv[package_name_index]);
+    if (fs.GetNumFiles() == 0) {
+      std::ostringstream os;
+      os << "Could not open package '" << argv[package_name_index] << "'";
+      QuitMessage(os.str().c_str());
+      return;
+    }
+
+    // make sure "packages" directory exists
+    MakeDirectory("packages");
+    EnterDirectory("packages");
+
+    // now make a directory based on the name of the package
+    MakeDirectory(package_name);
+    EnterDirectory(package_name);
+
+    // run the game
+    RunPackage(fs);
+    show_menu = false;
+
+    LeaveDirectory();
+    LeaveDirectory();
   }
 
   // start the game specified on the command line
@@ -182,6 +205,7 @@ std::string DoRunGame(const char* game, const char* parameters) {
     LeaveDirectory();
   } else {
     QuitMessage(game);
+    return "";
   }
 
   return result;
@@ -276,18 +300,22 @@ void LoadSystemObjects()
 {
   if (!EnterDirectory("system")) {
     QuitMessage("System directory not found");
+    return;
   }
 
   // store system scripts directory
   if (!EnterDirectory("scripts")) {
     QuitMessage("System scripts directory not found");
+    return;
   }
+
   GetDirectory(s_ScriptDirectory);
   LeaveDirectory();
 
   CConfigFile file;
   if (!file.Load("system.ini")) {
     QuitMessage("Unable to open system.ini");
+    return;
   }
 
   std::string font         = file.ReadString("", "Font",        "unknown");
@@ -296,36 +324,41 @@ void LoadSystemObjects()
   std::string up_arrow     = file.ReadString("", "UpArrow",     "unknown");
   std::string down_arrow   = file.ReadString("", "DownArrow",   "unknown");
 
-  char error_string[255];
+  char error_string[4096 + 1024];
 
   // system font
   if (!s_SystemObjects.font.Load(font.c_str(), g_DefaultFileSystem)) {
     sprintf(error_string, "Error: Could not load system font: '%s'", font.c_str());
     QuitMessage(error_string);
+    return;
   }
 
   // system window style
   if (!s_SystemObjects.window_style.Load(window_style.c_str())) {
     sprintf(error_string, "Error: Could not load system window style: '%s'", window_style.c_str());
     QuitMessage(error_string);
+    return;
   }
 
   // system arrow
   if (!s_SystemObjects.arrow.Load(arrow.c_str())) {
     sprintf(error_string, "Error: Could not load system arrow: '%s'", arrow.c_str());
     QuitMessage(error_string);
+    return;
   }
 
   // system up arrow
   if (!s_SystemObjects.up_arrow.Load(up_arrow.c_str())) {
     sprintf(error_string, "Error: Could not load system up arrow: '%s'", up_arrow.c_str());
     QuitMessage(error_string);
+    return;
   }
 
   // system down arrow
   if (!s_SystemObjects.down_arrow.Load(down_arrow.c_str())) {
     sprintf(error_string, "Error: Could not load system down arrow: '%s'", down_arrow.c_str());
     QuitMessage(error_string);
+    return;
   }
 
   LeaveDirectory();

@@ -33,20 +33,26 @@ public:
 
   BOOL Create();
 
+#ifdef I_SUCK
   void CreateProject(const char* projectname, const char* gametitle);
   void OpenProject(const char* filename);
   void CloseProject();
+#endif
 
   const char* GetProjectDirectory() const;
 
 	static BOOL IsProjectFile(const char * filename);
+#ifdef I_SUCK
   void OpenGameSettings();
+#endif
   void OpenGameFile(const char* filename);
   void OpenDocumentWindow(int grouptype, const char* filename);
 	
 	void ViewPalette(int paletteNum);	
 
+#ifdef I_SUCK
 	CProjectWindow* GetProjectWindow() {return m_ProjectWindow;}
+#endif
 
 private:
   bool AddToDirectory(const char* pathname, const char* sub_directory);
@@ -59,27 +65,38 @@ private:
   afx_msg void OnDropFiles(HDROP hDropInfo);
   afx_msg void OnClose();
 
+#ifdef I_SUCK
   afx_msg void OnFileBrowse();
+#endif
   
   afx_msg void OnFileClose();
   afx_msg void OnFileOpen();
 
+#ifdef I_SUCK
   afx_msg void OnFileNewProject();
   afx_msg void OnFileOpenProject();
   afx_msg void OnFileCloseProject();
   afx_msg void OnFileOpenLastProject();
+#endif
 
+#ifdef I_SUCK
   afx_msg void OnFileNewMap();
   afx_msg void OnFileNewSpriteset();
+#endif
   afx_msg void OnFileNewScript();
+#ifdef I_SUCK
   afx_msg void OnFileNewFont();
   afx_msg void OnFileNewWindowStyle();
   afx_msg void OnFileNewImage();
   afx_msg void OnFileNewDoodad();
+#endif
 
+#ifdef I_SUCK
   afx_msg void OnFileOpenMap();
   afx_msg void OnFileOpenSpriteset();
+#endif
   afx_msg void OnFileOpenScript();
+#ifdef I_SUCK
   afx_msg void OnFileOpenSound();
   afx_msg void OnFileOpenFont();
   afx_msg void OnFileOpenWindowStyle();
@@ -87,7 +104,9 @@ private:
   afx_msg void OnFileOpenAnimation();
   // afx_msg void OnFileOpenDoodad();
   afx_msg void OnFileOpenTileset();
+#endif
 
+#ifdef I_SUCK
   afx_msg void OnFileImportImageToMap();
   afx_msg void OnFileImportBitmapToRWS();
   afx_msg void OnFileImportBitmapToRSS();
@@ -100,6 +119,7 @@ private:
   afx_msg void OnFileImportWindowsFont();
   afx_msg void OnFileImportRM2KCharsetToRSS();
   afx_msg void OnFileImportRM2KChipsetToRTS();
+#endif
 
   afx_msg void OnFileSaveAll();
 
@@ -114,6 +134,7 @@ private:
   afx_msg void OnUpdateFileLanguageGerman(CCmdUI* cmdui);
   afx_msg void OnUpdateFileLanguageItalian(CCmdUI* cmdui);
 
+#ifdef I_SUCK
 	afx_msg void OnViewProject();
 
   afx_msg void OnProjectInsertMap();
@@ -130,11 +151,14 @@ private:
   afx_msg void OnProjectRunSphere();
   afx_msg void OnProjectConfigureSphere();
   afx_msg void OnProjectPackageGame();
+#endif
 
   afx_msg void OnWindowCloseAll();
 
+#ifdef I_SUCK
   afx_msg void OnToolsJSConsole();
   afx_msg void OnToolsImagesToMNG();
+#endif
 
   afx_msg void OnHelpSphereSite();
   afx_msg void OnHelpSphereFAQ();
@@ -154,7 +178,9 @@ private:
   afx_msg void OnUpdateSaveAllCommand(CCmdUI* cmdui);
   afx_msg void OnUpdateWindowCloseAll(CCmdUI* cmdui);
 	afx_msg void OnUpdatePaletteMenu(CCmdUI* cmdui);
-	afx_msg void OnUpdateViewProject(CCmdUI* cmdui);
+#ifdef I_SUCK
+  afx_msg void OnUpdateViewProject(CCmdUI* cmdui);
+#endif
   afx_msg void OnUpdateFileCloseCommand(CCmdUI* cmdui);
 
   afx_msg void OnUpdateImageCommand(CCmdUI* cmdui);
@@ -209,9 +235,11 @@ public:
   int GetNumImageToolsAllowed() const;
 
 private:
+#ifdef I_SUCK
   afx_msg LRESULT OnInsertProjectFile(WPARAM wparam, LPARAM lparam);
   afx_msg LRESULT OnRefreshProject(WPARAM wparam, LPARAM lparam);
-	afx_msg LRESULT OnCopyData(WPARAM wparam, LPARAM lparam);
+#endif
+  afx_msg LRESULT OnCopyData(WPARAM wparam, LPARAM lparam);
 
   afx_msg LRESULT OnDocumentWindowClosing(WPARAM wparam, LPARAM lparam);
   afx_msg LRESULT OnSetChildMenu(WPARAM wparam, LPARAM lparam);

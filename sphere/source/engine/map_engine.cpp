@@ -3821,10 +3821,7 @@ CMapEngine::UpdatePersons()
   for (int i = 0; i < int(m_Persons.size()); i++)
   {
     const int num_persons = int(m_Persons.size());
-    if (i == 3) {
-      i = 3;
-      i = 3;
-    }
+    if (i >= num_persons) { break; }
 
     bool activated;
     if (!UpdatePerson(i, activated)) {
@@ -3832,10 +3829,6 @@ CMapEngine::UpdatePersons()
     }
 
     anything_activated |= activated;
-
-    if (i >= num_persons) {
-      break;
-    }
   }
 
   m_TalkActivationAllowed = !anything_activated;
@@ -3849,6 +3842,7 @@ bool
 CMapEngine::UpdatePerson(int person_index, bool& activated)
 {
   Person* p = &m_Persons[person_index];
+  activated = false;
 
   /*
   char debug_str[10000] = {0};
@@ -3878,7 +3872,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
   // we haven't called an activation function yet
   bool activation_called = false;
-  bool should_animate = false;
+  bool should_animate    = false;
 
   bool processing = true;
   bool force_stop = false;
@@ -3958,13 +3952,21 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
       case COMMAND_MOVE_SOUTH:     p->y+=p->speed_y; break;
       case COMMAND_MOVE_WEST:      p->x-=p->speed_x; break;
       case COMMAND_DO_SCRIPT:
+      {
+        const std::string old_person = m_CurrentPerson;
+        m_CurrentPerson = m_Persons[person_index].name;
 
-        std::string person_name = p->name;
+        const std::string person_name = m_Persons[person_index].name;
 
         if (!ExecuteScript(c.script.c_str(), error) || !error.empty()) {
           m_ErrorMessage = "Could not execute queued script\nPerson:"
                          + p->description + "\nError:" + error;
           return false;
+        }
+
+        m_CurrentPerson = old_person;
+        if (qword(GetTime()) * m_FrameRate > m_NextFrame) {
+          ResetNextFrame();
         }
 
         // the script may have destroyed the person, so check to see that the person still exists
@@ -3973,8 +3975,8 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
         }
 
         p = &m_Persons[person_index];
-
-      break;
+        break;
+      }
     }
 
     // todo: this sucks, fix me
@@ -4100,8 +4102,6 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     }
   }
 
-  activated = false;
-
   // test if talk activation script should be called
   if (m_InputPerson == person_index) {
     // if the activation key is pressed
@@ -4176,7 +4176,6 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
               }
 
               m_CurrentPerson = old_person;
-
               ResetNextFrame();
 
               // the script may have destroyed the person, so check to see that the person still exists

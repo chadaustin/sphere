@@ -1,3 +1,16 @@
+2004.05.18
+  - Fixed package game image loading problems
+  - You can now drag and drop spk files onto the engine.exe to play them
+  - Added more details about file save errors
+
+2004.05.16
+  - Fixed bug that made the engine crash when creating
+    people in a person's on generate commands script
+  - added -version and -help commands to engine.exe
+
+2004.05.12
+  - Added Tools->Javascript Console and Tools->Images To MNG...
+
 2004.05.06
   - Added GetLayerAngle/SetLayerAngle (thanks to K9)
   - Added code-folding to the script editor

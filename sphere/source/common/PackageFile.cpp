@@ -9,6 +9,7 @@ CPackageFile::Close()
 {
   if (!m_in_package) {
     fclose(m_file);
+    m_file = NULL;
   } else {
     inflateEnd(&m_stream);
   }

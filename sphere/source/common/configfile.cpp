@@ -90,41 +90,46 @@ CConfigFile::Load(const char* filename, IFileSystem& fs)
     // read a line
     std::string line;
     done = !read_line(file.get(), line);
-    const char* string = line.c_str();
+    if (line.size() > 0) {
+      const char* string = line.c_str();
 
-    // parse it
+      // parse it
     
-    // eliminate whitespace
-    skip_whitespace(string);
+      // eliminate whitespace
+      skip_whitespace(string);
 
-    if (string[0] == '[') {  // it's a section
-      string++;
+      if (strlen(string) == 0)
+        break;
 
-      current_section = "";
-      while (*string != ']') {
-        current_section += *string++;
+      if (string[0] == '[') {  // it's a section
+        string++;
+
+        current_section = "";
+        while (*string && *string != ']') {
+          current_section += *string++;
+        } 
+        string++;
+      } else {                 // it's a key=value pair
+ 
+        // read key
+        std::string key;
+        while (*string && *string != '=') {
+          key += *string++;
+        }
+ 
+        if (*string == 0) {
+          continue; // skip lines without equals
+        }
+        string++; // skip the '='
+
+        std::string value;
+        while (*string) {
+          value += *string++;
+        }
+
+        // add the item
+        WriteString(current_section.c_str(), key.c_str(), value.c_str());
       }
-      string++;
-    } else {                 // it's a key=value pair
-
-      // read key
-      std::string key;
-      while (*string != '=' && *string) {
-        key += *string++;
-      }
-
-      if (*string == 0) {
-        continue; // skip lines without equals
-      }
-      string++; // skip the '='
-
-      std::string value;
-      while (*string) {
-        value += *string++;
-      }
-
-      // add the item
-      WriteString(current_section.c_str(), key.c_str(), value.c_str());
     }
   }
 
@@ -243,9 +248,15 @@ CConfigFile::WriteString(const char* section, const char* key, const char* value
 void
 CConfigFile::WriteInt(const char* section, const char* key, int value)
 {
+  /*
   std::ostringstream os;
   os << value;
-  WriteString(section, key, os.str().c_str());
+  */
+
+  char valstr[1024] = {0};
+  sprintf (valstr, "%d", value);
+
+  WriteString(section, key, valstr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -270,6 +270,11 @@ const int ANIMATION_TIMER = 9000;
   "Math.sin(radian) "
   "Math.sqrt(value) "
   "Math.tan(radian) "
+  "Number.MAX_VALUE "
+  "Number.MIN_VALUE "
+  "Number.NaN "
+  "Number.NEGATIVE_INFINITY "
+  "Number.POSITIVE_INFINITY "
   "OpenAddress(address,port) "
   "OpenFile(filename) "
   "OpenLog(filename) "
@@ -279,6 +284,19 @@ const int ANIMATION_TIMER = 9000;
   "QueuePersonScript(name,script,immediate) "
   "REPLACE "
   "Rectangle(x,y,w,h,c) "
+  "RegExp.compile(newpatten,attributes) "
+  "RegExp.exec(string) "
+  "RegExp.global "
+  "RegExp.ignoreCase "
+  "RegExp.input "
+  "RegExp.lastIndex "
+  "RegExp.lastMatch "
+  "RegExp.lastParen "
+  "RegExp.leftContext "
+  "RegExp.multiline "
+  "RegExp.rightContext "
+  "RegExp.source "
+  "RegExp.test(string) "
   "RenderMap() "
   "ReplaceTilesOnLayer(layer,oldtile,newtile) "
   "RequireScript(script) "
@@ -678,6 +696,9 @@ CScriptWindow::CreateList(int type)
       "GS - (Group Separator)",	0x1d,
       "RS - (Record Separator)",	0x1e,
       "US - (Unit Separator)",	0x1f,
+
+      "LF - (Line Feed)", '\n',
+      "CR - (Carriage Return)", '\r',
     };
     
     const int num_control_characters = sizeof(control_characters) / sizeof(*control_characters);
@@ -1598,6 +1619,8 @@ void CScriptWindow::Expand(int &line, const bool doExpand, bool force, int visLe
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 void CScriptWindow::FoldAll() {
 	SendEditor(SCI_COLOURISE, 0, -1);
 	int maxLine = SendEditor(SCI_GETLINECOUNT);
@@ -1625,6 +1648,8 @@ void CScriptWindow::FoldAll() {
 		}
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 bool CScriptWindow::MarginClick(int position, int modifiers) {
 	int lineClick = SendEditor(SCI_LINEFROMPOSITION, position);
@@ -1658,6 +1683,8 @@ bool CScriptWindow::MarginClick(int position, int modifiers) {
 	return true;
 }
 #endif
+
+////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
 CScriptWindow::OnMarginClick(NMHDR* nmhdr, LRESULT* result)
@@ -1898,11 +1925,12 @@ CScriptWindow::OnFindReplace(WPARAM, LPARAM)
     TextToFind ttf;
     ttf.chrg.cpMin = SendEditor(SCI_GETSELECTIONSTART) + 1;
     ttf.chrg.cpMax = str.GetLength();
+
     CString find_string(m_SearchDialog->GetFindString());
     ttf.lpstrText = find_string.GetBuffer(0);
     
     int options = 0;
-    options |= m_SearchDialog->MatchCase() ? SCFIND_MATCHCASE : 0;
+    options |= m_SearchDialog->MatchCase()      ? SCFIND_MATCHCASE : 0;
     options |= m_SearchDialog->MatchWholeWord() ? SCFIND_WHOLEWORD : 0;
     BOOL search_down = m_SearchDialog->SearchDown();
 

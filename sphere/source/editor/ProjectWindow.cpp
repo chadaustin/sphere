@@ -539,10 +539,12 @@ CProjectWindow::__OnDoubleClick__(bool allow_expand)
 
   switch (m_TreeControl.GetItemData(item))
   {
+#ifdef I_SUCK
     case tiGameSettings:
       // open game window
-      m_MainWindow->OpenGameSettings();
+      if (m_MainWindow) m_MainWindow->OpenGameSettings();
     break;
+#endif
 
     default: {
       if (allow_expand) {
@@ -561,7 +563,7 @@ CProjectWindow::__OnDoubleClick__(bool allow_expand)
       strcat(szFilename, "\\");
       strcat(szFilename, GetTreeItemPathName(m_TreeControl, item).c_str());
 
-      m_MainWindow->OpenGameFile(szFilename);
+      if (m_MainWindow) m_MainWindow->OpenGameFile(szFilename);
 
       break;
     }

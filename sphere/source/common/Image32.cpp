@@ -27,7 +27,9 @@ unsigned char alpha_new[256][256]={
 #include "alpha_new.table"
 };
 
-/*
+/**
+ * CoronaFileAdapter is needed to read/write images from default/package filesystems
+ */
 struct CoronaFileAdapter : public corona::DLLImplementation<corona::File> {
   CoronaFileAdapter(IFile* file) {
     m_File = file;
@@ -60,7 +62,6 @@ struct CoronaFileAdapter : public corona::DLLImplementation<corona::File> {
 private:
   IFile* m_File;
 };
-*/
 
 
 // INLINE HELPER FUNCTIONS
@@ -216,32 +217,36 @@ CImage32::Load(const char* filename, IFileSystem& fs)
 {
   using namespace corona;
 
-  /*
   std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::read));
   if (!file.get()) {
     return false;
   }
-  */
 
-  //CoronaFileAdapter cfa(file.get());
+  CoronaFileAdapter cfa(file.get());
+
   std::auto_ptr<Image> img(
-    OpenImage(/*&cfa*/ filename, FF_AUTODETECT, PF_R8G8B8A8));
+    OpenImage(&cfa, FF_AUTODETECT, PF_R8G8B8A8));
+
   if (!img.get()) {
     return false;
   }
 
   if (m_Width * m_Height != img->getWidth() * img->getHeight()) {
     delete[] m_Pixels;
-    m_Pixels = new RGBA[img->getWidth() * img->getHeight()];
+    if (img->getWidth() > 0 && img->getHeight() > 0) {
+      m_Pixels = new RGBA[img->getWidth() * img->getHeight()];
+    }
   }
 
   m_Width = 0;
   m_Height = 0;
 
   if (m_Pixels) {
-    m_Width  = img->getWidth();
-    m_Height = img->getHeight();
-    memcpy(m_Pixels, img->getPixels(), m_Width * m_Height * 4);
+    if (img->getWidth() > 0 && img->getHeight() > 0) {
+      m_Width  = img->getWidth();
+      m_Height = img->getHeight();
+      memcpy(m_Pixels, img->getPixels(), m_Width * m_Height * 4);
+    }
   }
 
   return (m_Pixels && m_Width > 0 && m_Height > 0);

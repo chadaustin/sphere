@@ -19,18 +19,20 @@
 
 // document windows
 #include "MainWindow.hpp"
+#ifdef I_SUCK
 #include "ProjectWindow.hpp"
 #include "MapWindow.hpp"
 #include "SpritesetWindow.hpp"
 #include "SoundWindow.hpp"
-#include "ScriptWindow.hpp"
 #include "ImageWindow.hpp"
 #include "AnimationWindow.hpp"
 #include "WindowStyleWindow.hpp"
 #include "FontWindow.hpp"
 #include "BrowseWindow.hpp"
-
 #include "ConsoleWindow.hpp"
+#endif
+#include "ScriptWindow.hpp"
+#include "PaletteWindow.hpp"
 
 
 #ifdef USE_IRC
@@ -39,26 +41,32 @@
 #endif
 
 // dialogs
+#ifdef I_SUCK
 #include "NewProjectDialog.hpp"
 #include "GameSettingsDialog.hpp"
-#include "FileDialogs.hpp"
 #include "ResizeDialog.hpp"
-#include "StringDialog.hpp"
 #include "FontGradientDialog.hpp"
+#endif
+#include "FileDialogs.hpp"
+#include "StringDialog.hpp"
 
 // common
 #include "../common/sphere_version.h"
-#include "../common/Map.hpp"
 #include "../common/strcmp_ci.hpp"
 #include "../common/system.hpp"
+#ifdef I_SUCK
+#include "../common/Map.hpp"
+#endif
 
 // libraries
 // libraries are down here because of symbol conflicts with other headers
+#ifdef I_SUCK
 #include <jsapi.h>
 #include <zlib.h>
 #include <libmng.h>
 #include <audiere.h>
 #include <corona.h>
+#endif
 
 
 // base for palette menu items
@@ -96,31 +104,42 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_UPDATE_COMMAND_UI(ID_FILE_LANGUAGE_GERMAN,  OnUpdateFileLanguageGerman)
   ON_UPDATE_COMMAND_UI(ID_FILE_LANGUAGE_ITALIAN, OnUpdateFileLanguageItalian)
 
+#ifdef I_SUCK
   // project
   ON_COMMAND(ID_FILE_NEW_PROJECT,     OnFileNewProject)
   ON_COMMAND(ID_FILE_OPEN_PROJECT,    OnFileOpenProject)
   ON_COMMAND(ID_FILE_CLOSEPROJECT,    OnFileCloseProject)
   ON_COMMAND(ID_FILE_OPENLASTPROJECT, OnFileOpenLastProject)
+#endif
 
+#ifdef I_SUCK
   // file | new
   ON_COMMAND(ID_FILE_NEW_MAP,         OnFileNewMap)
   ON_COMMAND(ID_FILE_NEW_SPRITESET,   OnFileNewSpriteset)
+#endif
   ON_COMMAND(ID_FILE_NEW_SCRIPT,      OnFileNewScript)
+#ifdef I_SUCK
   ON_COMMAND(ID_FILE_NEW_FONT,        OnFileNewFont)
   ON_COMMAND(ID_FILE_NEW_WINDOWSTYLE, OnFileNewWindowStyle)
   ON_COMMAND(ID_FILE_NEW_IMAGE,       OnFileNewImage)
+#endif
 
+#ifdef I_SUCK
   // file | open
   ON_COMMAND(ID_FILE_OPEN_MAP,         OnFileOpenMap)
   ON_COMMAND(ID_FILE_OPEN_SPRITESET,   OnFileOpenSpriteset)
+#endif
   ON_COMMAND(ID_FILE_OPEN_SCRIPT,      OnFileOpenScript)
+#ifdef I_SUCK
   ON_COMMAND(ID_FILE_OPEN_SOUND,       OnFileOpenSound)
   ON_COMMAND(ID_FILE_OPEN_FONT,        OnFileOpenFont)
   ON_COMMAND(ID_FILE_OPEN_WINDOWSTYLE, OnFileOpenWindowStyle)
   ON_COMMAND(ID_FILE_OPEN_IMAGE,       OnFileOpenImage)
   ON_COMMAND(ID_FILE_OPEN_ANIMATION,   OnFileOpenAnimation)
   ON_COMMAND(ID_FILE_OPEN_TILESET,     OnFileOpenTileset)
+#endif
 
+#ifdef I_SUCK
   // file | import
   ON_COMMAND(ID_FILE_IMPORT_IMAGETOMAPTILESET, OnFileImportImageToMap)
   ON_COMMAND(ID_FILE_IMPORT_BITMAPTORWS,       OnFileImportBitmapToRWS)
@@ -134,14 +153,18 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_FILE_IMPORT_WINDOWSFONT,       OnFileImportWindowsFont)
   ON_COMMAND(ID_FILE_IMPORT_RM2KCHARSETTORSS,  OnFileImportRM2KCharsetToRSS)
   ON_COMMAND(ID_FILE_IMPORT_RM2KCHIPSETTORTS,  OnFileImportRM2KChipsetToRTS)
+#endif
 
   ON_COMMAND(ID_FILE_SAVEALL, OnFileSaveAll)
 
   ON_COMMAND(ID_FILE_EXIT,    OnClose)
 
+#ifdef I_SUCK
   ON_COMMAND(ID_FILE_BROWSE,  OnFileBrowse)
+#endif
   ON_COMMAND(ID_FILE_CLOSE,   OnFileClose)
 
+#ifdef I_SUCK
   // insert
   ON_COMMAND(ID_PROJECT_INSERT_MAP,         OnProjectInsertMap)
   ON_COMMAND(ID_PROJECT_INSERT_SPRITESET,   OnProjectInsertSpriteset)
@@ -151,18 +174,23 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_PROJECT_INSERT_WINDOWSTYLE, OnProjectInsertWindowStyle)
   ON_COMMAND(ID_PROJECT_INSERT_IMAGE,       OnProjectInsertImage)
   ON_COMMAND(ID_PROJECT_INSERT_ANIMATION,   OnProjectInsertAnimation)
+#endif
 
+#ifdef I_SUCK
   ON_COMMAND(ID_PROJECT_REFRESH,         OnProjectRefresh)
   ON_COMMAND(ID_PROJECT_RUNSPHERE,       OnProjectRunSphere)
   ON_COMMAND(ID_PROJECT_CONFIGURESPHERE, OnProjectConfigureSphere)
   ON_COMMAND(ID_PROJECT_PACKAGE_GAME,    OnProjectPackageGame)
 
 	ON_COMMAND(ID_VIEW_PROJECT,            OnViewProject)
+#endif
 
   ON_COMMAND(ID_WINDOW_CLOSEALL, OnWindowCloseAll)
 
+#ifdef I_SUCK
   ON_COMMAND(ID_TOOLS_IMAGES_TO_MNG, OnToolsImagesToMNG)
   ON_COMMAND(ID_TOOLS_JS_CONSOLE, OnToolsJSConsole)
+#endif
 
   ON_COMMAND(ID_HELP_SPHERESITE,         OnHelpSphereSite)
   ON_COMMAND(ID_HELP_SPHEREFAQ,          OnHelpSphereFAQ)
@@ -175,8 +203,10 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
 
   ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnNeedText)
 
+#ifdef I_SUCK
   ON_UPDATE_COMMAND_UI(ID_FILE_OPENLASTPROJECT, OnUpdateOpenLastProject)
   ON_UPDATE_COMMAND_UI(ID_FILE_CLOSEPROJECT, OnUpdateProjectCommand)
+#endif
 
   ON_UPDATE_COMMAND_UI(ID_FILE_CLOSE,       OnUpdateFileCloseCommand)
 
@@ -244,11 +274,15 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_UPDATE_COMMAND_UI(ID_WINDOW_CLOSEALL,   OnUpdateWindowCloseAll)
   ON_UPDATE_COMMAND_UI(ID_VIEW_PALETTES,     OnUpdatePaletteMenu)
   ON_UPDATE_COMMAND_UI(PALETTE_COMMAND,	     OnUpdatePaletteMenu)
+#ifdef I_SUCK
   ON_UPDATE_COMMAND_UI(ID_VIEW_PROJECT,	     OnUpdateViewProject)
+#endif
 
   // project window message
+#ifdef I_SUCK
   ON_MESSAGE(WM_INSERT_PROJECT_FILE, OnInsertProjectFile)
   ON_MESSAGE(WM_REFRESH_PROJECT,     OnRefreshProject)	
+#endif
 
   // document window messages
   ON_MESSAGE(WM_DW_CLOSING,          OnDocumentWindowClosing)
@@ -567,6 +601,7 @@ CMainWindow::GetDefaultFolder() const
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 void
 CMainWindow::CreateProject(const char* projectname, const char* gametitle)
 {
@@ -593,9 +628,11 @@ CMainWindow::CreateProject(const char* projectname, const char* gametitle)
 
   UpdateMenu();
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 void
 CMainWindow::OpenProject(const char* filename)
 {
@@ -619,9 +656,11 @@ CMainWindow::OpenProject(const char* filename)
 
   UpdateMenu();
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 void
 CMainWindow::CloseProject()
 {
@@ -642,14 +681,17 @@ CMainWindow::CloseProject()
     UpdateMenu();
   }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 void
 CMainWindow::OpenGameSettings()
 {
   CGameSettingsDialog(&m_Project).DoModal();
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -680,11 +722,13 @@ CMainWindow::OpenGameFile(const char* filename)
   if (!filename || strlen(filename) == 0)
     return;
 
+#ifdef I_SUCK
 	if (IsProjectFile(filename))
 	{
 		OpenProject(filename);
     return;
 	}
+#endif
 
   for (int i = 0; i < NUM_GROUP_TYPES; i++) {
     std::vector<std::string> extensions;
@@ -746,9 +790,12 @@ CMainWindow::OpenDocumentWindow(int grouptype, const char* filename)
   CDocumentWindow* window = NULL;
   switch (grouptype)
   {
+#ifdef I_SUCK
     case GT_MAPS:         window = new CMapWindow(filename);         break;
     case GT_SPRITESETS:   window = new CSpritesetWindow(filename);   break;
+#endif
     case GT_SCRIPTS:      window = new CScriptWindow(filename);      break;
+#ifdef I_SUCK
     case GT_SOUNDS:       window = new CSoundWindow(filename);       break;
     case GT_FONTS:        window = new CFontWindow(filename);        break;
     case GT_WINDOWSTYLES: window = new CWindowStyleWindow(filename); break;
@@ -756,6 +803,7 @@ CMainWindow::OpenDocumentWindow(int grouptype, const char* filename)
     case GT_ANIMATIONS:   window = new CAnimationWindow(filename);   break;
     case GT_TILESETS:     window = new CMapWindow(NULL, filename);   break;
     case GT_PLAYLISTS:    window = new CSoundWindow(filename);       break;
+#endif
   }
 
   if (window != NULL) {
@@ -1074,8 +1122,10 @@ CMainWindow::OnClose()
     s_JS_Console = NULL;
   }
 
+#ifdef I_SUCK
   // close the project
   CloseProject();
+#endif
 
   // store the window state
   WINDOWPLACEMENT wp;
@@ -1198,9 +1248,11 @@ CMainWindow::OnFileOpen()
     {
       CString thePath = FileDialog.GetNextPathName(pos);
 
+#ifdef I_SUCK
       if (!strcmp_ci(thePath.Right(8), "game.sgm"))
         OpenProject(thePath);
       else
+#endif
         OpenGameFile(thePath);
     }
   }
@@ -1281,6 +1333,7 @@ CMainWindow::OnUpdateFileLanguageItalian(CCmdUI* cmdui)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileNewProject()
 {
@@ -1291,21 +1344,23 @@ CMainWindow::OnFileNewProject()
     char projectname[32];
     char gametitle[32];
 
-    strncpy(projectname, newprojectdialog.GetProjectName(), 32);
-    strncpy(gametitle, newprojectdialog.GetGameTitle(), 32);
+    strncpy(projectname, newprojectdialog.GetProjectName(), sizeof(projectname));
+    strncpy(gametitle,   newprojectdialog.GetGameTitle(),   sizeof(gametitle));
 
     CreateProject(projectname, gametitle);
 
     char path_name[MAX_PATH];
     GetGamesDirectory(path_name);
-    sprintf (path_name, "%s\\%s\\game.sgm", path_name, gametitle);
+    sprintf (path_name, "%s\\%s\\game.sgm", path_name, projectname);
 
     Configuration::Set(KEY_LAST_PROJECT, path_name);
   }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileOpenProject()
 {
@@ -1326,17 +1381,21 @@ CMainWindow::OnFileOpenProject()
     OpenProject(FileDialog.GetPathName());
   }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileCloseProject()
 {
   CloseProject();
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileOpenLastProject()
 {
@@ -1344,6 +1403,7 @@ CMainWindow::OnFileOpenLastProject()
     OpenProject(Configuration::Get(KEY_LAST_PROJECT).c_str());
   }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1355,6 +1415,7 @@ CMainWindow::OnFileClose()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileBrowse()
 {
@@ -1386,6 +1447,7 @@ CMainWindow::OnFileBrowse()
       m_DocumentWindows.push_back(browse_window);
   }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1400,12 +1462,16 @@ CMainWindow::OnFileBrowse()
   }                                          \
 }
 
+#ifdef I_SUCK
 FILE_NEW_HANDLER(Map,         new CMapWindow())
+#endif
 FILE_NEW_HANDLER(Script,      new CScriptWindow())
+#ifdef I_SUCK
 FILE_NEW_HANDLER(Spriteset,   new CSpritesetWindow())
 FILE_NEW_HANDLER(Font,        new CFontWindow())
 FILE_NEW_HANDLER(WindowStyle, new CWindowStyleWindow())
 FILE_NEW_HANDLER(Image,       new CImageWindow())
+#endif
 
 #undef FILE_NEW_HANDLER
 
@@ -1438,19 +1504,24 @@ FILE_NEW_HANDLER(Image,       new CImageWindow())
   }
 
 
+#ifdef I_SUCK
 FILE_OPEN_HANDLER(Map,         new CMapWindow(path))
+#endif
 FILE_OPEN_HANDLER(Script,      new CScriptWindow(path))
+#ifdef I_SUCK
 FILE_OPEN_HANDLER(Spriteset,   new CSpritesetWindow(path))
 FILE_OPEN_HANDLER(Sound,       new CSoundWindow(path))
 FILE_OPEN_HANDLER(Font,        new CFontWindow(path))
 FILE_OPEN_HANDLER(WindowStyle, new CWindowStyleWindow(path))
 FILE_OPEN_HANDLER(Image,       new CImageWindow(path))
 FILE_OPEN_HANDLER(Animation,   new CAnimationWindow(path))
+#endif
 
 #undef FILE_OPEN_HANDLER
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileOpenTileset()
 {
@@ -1481,10 +1552,11 @@ CMainWindow::OnFileOpenTileset()
     }
   }
 }
-
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportImageToMap()
 {
@@ -1543,9 +1615,11 @@ CMainWindow::OnFileImportImageToMap()
     MessageBox("Error saving map");
   }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportBitmapToRWS()
 {
@@ -1584,9 +1658,11 @@ CMainWindow::OnFileImportBitmapToRWS()
 
   MessageBox("Import Successful!");
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportBitmapToRSS()
 {
@@ -1629,6 +1705,7 @@ CMainWindow::OnFileImportBitmapToRSS()
 
   MessageBox("Import Successful!");
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1642,6 +1719,7 @@ static void GetFilePathWithoutExtension(std::string& thepath)
   thepath = thepath.substr(0, pos);
 }
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportRM2KCharsetToRSS()
 {
@@ -1775,9 +1853,11 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
 
   MessageBox("Charsets Converted!");
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportRM2KChipsetToRTS()
 {
@@ -1912,9 +1992,11 @@ CMainWindow::OnFileImportRM2KChipsetToRTS()
 
   MessageBox("Chipsets Converted!"); 
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportBitmapToRTS()
 {
@@ -1963,9 +2045,11 @@ CMainWindow::OnFileImportBitmapToRTS()
 
   MessageBox("Image Converted!");
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportImageToFont()
 {
@@ -2082,9 +2166,11 @@ CMainWindow::OnFileImportImageToFont()
 
   MessageBox("Image Converted!");
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportVergeFontTemplate()
 {
@@ -2125,9 +2211,11 @@ CMainWindow::OnFileImportVergeFontTemplate()
 
   MessageBox("Font imported successfully!", "Import VERGE font template");
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportVergeMap()
 {
@@ -2175,9 +2263,11 @@ CMainWindow::OnFileImportVergeMap()
     }
   }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportVergeSpriteset()
 {
@@ -2221,9 +2311,11 @@ CMainWindow::OnFileImportVergeSpriteset()
     }
   }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportMergeRGBA()
 {
@@ -2279,9 +2371,11 @@ CMainWindow::OnFileImportMergeRGBA()
 
   MessageBox("Image merged successfully");
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 static bool WindowsFontToSphereFont(LOGFONT lf, COLORREF color, sFont* sphere_font)
 {
   // grab the font
@@ -2346,9 +2440,11 @@ static bool WindowsFontToSphereFont(LOGFONT lf, COLORREF color, sFont* sphere_fo
 
   return true;
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportWindowsFont()
 {
@@ -2385,6 +2481,7 @@ CMainWindow::OnFileImportWindowsFont()
   }
 
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2402,6 +2499,7 @@ CMainWindow::OnFileSaveAll()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 #define PROJECT_INSERT_HANDLER(type, group_type)                        \
 afx_msg void                                                            \
 CMainWindow::OnProjectInsert##type()                                    \
@@ -2435,9 +2533,11 @@ PROJECT_INSERT_HANDLER(Font,        GT_FONTS)
 PROJECT_INSERT_HANDLER(WindowStyle, GT_WINDOWSTYLES)
 PROJECT_INSERT_HANDLER(Image,       GT_IMAGES)
 PROJECT_INSERT_HANDLER(Animation,   GT_ANIMATIONS)
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnProjectRefresh()
 {
@@ -2445,9 +2545,11 @@ CMainWindow::OnProjectRefresh()
     m_ProjectWindow->Update();
   }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnProjectRunSphere()
 {
@@ -2508,9 +2610,11 @@ CMainWindow::OnProjectRunSphere()
   if (retval == FALSE)
     MessageBox("Error: Could not execute Sphere engine");
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnProjectConfigureSphere()
 {
@@ -2541,6 +2645,7 @@ CMainWindow::OnProjectConfigureSphere()
   if (retval == FALSE)
     MessageBox("Error: Could not configure Sphere");
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2548,6 +2653,7 @@ CMainWindow::OnProjectConfigureSphere()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 void OnPackageFileWritten(const char* filename, int index, int total)
 {
   char string[MAX_PATH + 1024] = {0};
@@ -2566,9 +2672,11 @@ void OnPackageFileWritten(const char* filename, int index, int total)
 
   GetStatusBar()->SetWindowText(string);
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnProjectPackageGame()
 {
@@ -2668,6 +2776,7 @@ CMainWindow::OnProjectPackageGame()
 
   SetCurrentDirectory(old_directory);
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2686,6 +2795,7 @@ CMainWindow::OnWindowCloseAll()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 #include "../common/write_mng.hpp"
 
 mng_bool MNG_DECL GetNextImageFromFileList(int index, CImage32& image, void* data) {
@@ -2736,14 +2846,12 @@ static mng_bool MNG_DECL ContinueProcessing(int index, int total)
   return ret;
 }
 
-
-#include "../common/system.hpp"
-
 mng_retcode TestAnimationCode(std::vector<std::string> filelist, const char* filename) {
   return SaveMNGAnimationFromImages(filename, GetNextImageFromFileList, GetDelayFromImageFileList, ContinueProcessing, (void*) &filelist);
 }
+#endif
 
-
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnToolsImagesToMNG()
 {
@@ -2830,9 +2938,11 @@ CMainWindow::OnToolsImagesToMNG()
     }
   }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnToolsJSConsole()
 {
@@ -2843,6 +2953,7 @@ CMainWindow::OnToolsJSConsole()
     s_JS_Console->SetFocus();
   }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2937,26 +3048,21 @@ CMainWindow::OnHelpAbout()
     "\n"
     "Build Date: " __DATE__ "\n"
     "Build Time: " __TIME__ "\n"
-    "\n"
-    "Audiere: %s\n"
+    "\n");
+
+#ifdef I_SUCK
+  sprintf (message + strlen(message), "Audiere: %s\n", audiere::GetVersion());
+  sprintf (message + strlen(message), "Corona: %s\n", corona::GetVersion());
 #ifdef USE_SIZECBAR
-		"CSizingControlBar: %s\n"
+  sprintf (message + strlen(message), "CSizingControlBar: %s\n", SIZECBAR_VERSION);
 #endif
-    "Corona: %s\n"
-    "JavaScript: %s\n"
-    "libmng: DLL %s - header %s\n"
-    "scintilla: 1.60\n"
-    "zlib: %s\n"
-		,
-    audiere::GetVersion(),
-#ifdef USE_SIZECBAR
-		SIZECBAR_VERSION,
+  sprintf (message + strlen(message), "JavaScript: %s\n", JS_GetImplementationVersion());
+  sprintf (message + strlen(message), "libmng: DLL %s - header %s\n", mng_version_text(), MNG_VERSION_TEXT);
 #endif
-    corona::GetVersion(),
-    JS_GetImplementationVersion(),
-    mng_version_text(), MNG_VERSION_TEXT,
-    zlibVersion()
-		);
+  sprintf (message + strlen(message), "scintilla: 1.60\n");
+#ifdef I_SUCK
+  sprintf (message + strlen(message), "zlib: %s\n", zlibVersion());
+#endif
 
   MessageBox(message, "About");
 }
@@ -3267,6 +3373,7 @@ CMainWindow::OnMapToolChanged()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg LRESULT
 CMainWindow::OnInsertProjectFile(WPARAM wparam, LPARAM lparam)
 {
@@ -3300,9 +3407,11 @@ CMainWindow::OnInsertProjectFile(WPARAM wparam, LPARAM lparam)
 
   return 0;
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg LRESULT
 CMainWindow::OnRefreshProject(WPARAM /*wparam*/, LPARAM /*lparam*/)
 {
@@ -3313,6 +3422,7 @@ CMainWindow::OnRefreshProject(WPARAM /*wparam*/, LPARAM /*lparam*/)
 
   return 0;
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3460,6 +3570,7 @@ CMainWindow::ViewPalette(int paletteNum)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnUpdateViewProject(CCmdUI* cmdui)
 {
@@ -3478,9 +3589,11 @@ CMainWindow::OnUpdateViewProject(CCmdUI* cmdui)
 #endif
 	}
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnViewProject()
 {
@@ -3492,6 +3605,7 @@ CMainWindow::OnViewProject()
 #endif
 #endif
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3535,10 +3649,12 @@ CMainWindow::OnPaste()
     if (IsClipboardFormatAvailable(CF_TEXT)) {
       dw = new CScriptWindow(NULL, true);
     }
+#ifdef I_SUCK
     else
     if (IsClipboardFormatAvailable(CF_BITMAP)) {
       dw = new CImageWindow(NULL, true);
     }
+#endif
 
     if (dw) {
       m_DocumentWindows.push_back(dw);
@@ -3587,10 +3703,12 @@ CMainWindow::OnUpdatePaste(CCmdUI* cmdui)
     if (IsClipboardFormatAvailable(CF_TEXT)) {
       enable = TRUE;
     }
+#ifdef I_SUCK
     else
     if (IsClipboardFormatAvailable(CF_BITMAP)) {
       enable = TRUE;
     }
+#endif
   }
 
   cmdui->Enable(enable);

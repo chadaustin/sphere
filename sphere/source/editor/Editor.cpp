@@ -1,9 +1,15 @@
 
 #pragma warning(disable: 4786)
 
+#if 0 && defined(_DEBUG)
+#define CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+#endif
+
 #include "Editor.hpp"
 #include "MainWindow.hpp"
-#include "Audio.hpp"
+//#include "Audio.hpp"
 #include "Configuration.hpp"
 #include "Keys.hpp"
 #include "Debug.hpp"
@@ -242,7 +248,13 @@ CEditorApplication::CEditorApplication()
 BOOL
 CEditorApplication::InitInstance()
 {	
-	// look for another instance
+
+#if 0 && defined(CRTDBG_MAP_ALLOC)
+  _CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+  _CrtSetBreakAlloc(22);
+#endif
+
+  // look for another instance
 	m_Instances = new CInstanceRepository();
   
   if (m_Instances) {

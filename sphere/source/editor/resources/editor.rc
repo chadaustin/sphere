@@ -615,6 +615,14 @@ BEGIN
         MENUITEM "&Append",                     ID_SPRITESETVIEWDIRECTIONS_APPEND
 
         MENUITEM SEPARATOR
+        POPUP "Insert Copy"
+        BEGIN
+            MENUITEM "Flip Horizontally",           ID_SPRITESETVIEWDIRECTIONS_INSERTCOPY_FLIPHORIZONTALLY
+
+            MENUITEM "Flip Vertically",             ID_SPRITESETVIEWDIRECTIONS_INSERTCOPY_FLIPVERTICALLY
+
+        END
+        MENUITEM SEPARATOR
         POPUP "Import"
         BEGIN
             MENUITEM "Import From Image...",        ID_SPRITESETVIEWDIRECTIONS_IMPORT_FROM_IMAGE

@@ -56,6 +56,10 @@ private:
   afx_msg void OnAppendDirection();
   afx_msg void OnDirectionProperties();
 
+  void CopyDirection(bool flip_horizontally, bool flip_vertically);
+  afx_msg void OnInsertCopyFlipVertically();
+  afx_msg void OnInsertCopyFlipHorizontally();
+
   afx_msg void OnInsertFrame();
   afx_msg void OnDeleteFrame();
   afx_msg void OnAppendFrame();

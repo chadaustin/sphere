@@ -37,6 +37,9 @@ BEGIN_MESSAGE_MAP(CSpritesetView, CWnd)
   ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_EXPORT_AS_ANIMATION, OnExportDirectionAsAnimation)
   ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_EXPORT_AS_IMAGE, OnExportDirectionAsImage)
 
+  ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_INSERTCOPY_FLIPVERTICALLY,   OnInsertCopyFlipVertically)
+  ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_INSERTCOPY_FLIPHORIZONTALLY, OnInsertCopyFlipHorizontally)
+
   ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_FILLDELAY,  OnFillDelay)
 
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_INSERT,     OnInsertFrame)
@@ -703,6 +706,134 @@ CSpritesetView::OnAppendDirection()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+CSpritesetView::CopyDirection(bool flip_horizontally, bool flip_vertically)
+{
+  int old_current_direction = m_CurrentDirection;
+  int new_current_direction = m_CurrentDirection + 1;
+
+  int num_directions = m_Spriteset->GetNumDirections() + 1;
+  m_Spriteset->InsertDirection(new_current_direction);
+  if (m_Spriteset->GetNumDirections() != num_directions)
+    return;
+
+  std::string direction_name = m_Spriteset->GetDirectionName(old_current_direction);
+
+  if (flip_horizontally) {
+    int pos = direction_name.find("north");
+    if (pos != -1)
+      direction_name.replace(pos, strlen("north"), "south");
+    else
+    {
+      pos = direction_name.find("south");
+      if (pos != -1)
+        direction_name.replace(pos, strlen("south"), "north");
+      else
+      {
+        pos = direction_name.find("up");
+        if (pos != -1)
+          direction_name.replace(pos, strlen("up"), "down");
+        else
+        {
+          pos = direction_name.find("down");
+          if (pos != -1)
+            direction_name.replace(pos, strlen("down"), "up");
+        }
+      }
+    }
+  }
+
+  if (flip_horizontally) {
+    int pos = direction_name.find("east");
+    if (pos != -1)
+      direction_name.replace(pos, strlen("east"), "west");
+    else
+    {
+      pos = direction_name.find("west");
+      if (pos != -1)
+        direction_name.replace(pos, strlen("west"), "east");
+      else
+      {
+        pos = direction_name.find("left");
+        if (pos != -1)
+          direction_name.replace(pos, strlen("left"), "right");
+        else
+        {
+          pos = direction_name.find("right");
+          if (pos != -1)
+            direction_name.replace(pos, strlen("right"), "left");
+        }
+      }
+    }
+  }
+
+  m_Spriteset->SetDirectionName(new_current_direction, direction_name.c_str());
+
+  for (int i = 0; i < m_Spriteset->GetNumFrames(old_current_direction); i++)
+  {
+    int image_index = m_Spriteset->GetFrameIndex(old_current_direction, i);
+    if (flip_horizontally || flip_vertically) {
+
+      CImage32 image = m_Spriteset->GetImage(image_index);
+      image_index = -1;
+
+      if (flip_horizontally)
+        image.FlipHorizontal();
+      if (flip_vertically)
+        image.FlipVertical();
+
+      for (int i = 0; i < m_Spriteset->GetNumImages(); i++) {
+        if (m_Spriteset->GetImage(i) == image) {
+          image_index = i;
+          break;
+        }
+      }
+
+      if (image_index == -1) {
+        image_index = m_Spriteset->GetNumImages();
+        m_Spriteset->InsertImage(image_index);
+        if (image_index != m_Spriteset->GetNumImages() - 1)
+          return;
+        m_Spriteset->GetImage(image_index) = image;
+      }
+    }
+
+    int num_frames = m_Spriteset->GetNumFrames(new_current_direction) + 1;
+    m_Spriteset->InsertFrame(new_current_direction, i);
+    if (num_frames != m_Spriteset->GetNumFrames(new_current_direction))
+      return;
+    
+    m_Spriteset->SetFrameIndex(new_current_direction, i, image_index);
+  }
+
+  if (m_Spriteset->GetNumFrames(new_current_direction) > 0)
+    m_Spriteset->DeleteFrame(new_current_direction, m_Spriteset->GetNumFrames(new_current_direction) - 1);
+
+  UpdateMaxSizes();
+  UpdateScrollBars();
+  Invalidate();
+  m_Handler->SV_CurrentFrameChanged(m_CurrentDirection, m_CurrentFrame);
+  m_Handler->SV_SpritesetModified();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetView::OnInsertCopyFlipHorizontally()
+{
+  CopyDirection(true, false);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetView::OnInsertCopyFlipVertically()
+{
+  CopyDirection(false, true);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSpritesetView::OnDirectionProperties()
 {
@@ -889,12 +1020,21 @@ CSpritesetView::OnImportFrameFromImage()
   if (!(m_CurrentFrame >= 0 && m_CurrentFrame < m_Spriteset->GetNumFrames(m_CurrentDirection)))
     return;
 
-  CImageFileDialog dialog(FDM_OPEN, "Insert Frame From Image");
-  if (dialog.DoModal() == IDOK) {
+  CImageFileDialog dialog(FDM_OPEN | FDM_MULTISELECT, "Insert Frame From Image");
+  if (dialog.DoModal() != IDOK)
+    return;
+
+  POSITION pos = dialog.GetStartPosition();
+
+  int current_frame = m_CurrentFrame;
+
+  while (pos != NULL)
+  {
+    CString path_name = dialog.GetNextPathName(pos);
 
     CImage32 image;
-    if ( !image.Load(dialog.GetPathName()) ) {
-      MessageBox("Error loading image.");
+    if ( !image.Load( path_name ) ) {
+      MessageBox("Error loading image.\n'" + path_name + "'");
       return;
     }
 
@@ -925,19 +1065,21 @@ CSpritesetView::OnImportFrameFromImage()
     }
 
     int num_frames = m_Spriteset->GetNumFrames(m_CurrentDirection);
-    m_Spriteset->InsertFrame(m_CurrentDirection, m_CurrentFrame);
+    m_Spriteset->InsertFrame(m_CurrentDirection, current_frame);
     if (num_frames != m_Spriteset->GetNumFrames(m_CurrentDirection) - 1)
       return;
 
-    m_Spriteset->SetFrameIndex(m_CurrentDirection, m_CurrentFrame, image_index);
-
-    UpdateMaxSizes();
-    UpdateScrollBars();
-    Invalidate();
-    m_Handler->SV_SpritesetModified();
-
+    m_Spriteset->SetFrameIndex(m_CurrentDirection, current_frame, image_index);
     //MessageBox("Imported frame successfully");
+
+    current_frame += 1;
   }
+
+
+  UpdateMaxSizes();
+  UpdateScrollBars();
+  Invalidate();
+  m_Handler->SV_SpritesetModified();
 
 }
 
@@ -968,38 +1110,75 @@ CSpritesetView::OnExportFrameToImage()
 afx_msg void
 CSpritesetView::OnInsertDirectionFromImage()
 {
-  CImageFileDialog dialog(FDM_OPEN, "Insert Direction From Image");
-  if (dialog.DoModal() == IDOK) {
+  CImageFileDialog dialog(FDM_OPEN | FDM_MULTISELECT, "Insert Direction From Image");
+  if (dialog.DoModal() != IDOK)
+    return;
 
-    int frame_width = m_Spriteset->GetFrameWidth();
-    int frame_height = m_Spriteset->GetFrameHeight();
+  int frames_so_far = 0;
+  int current_direction = m_CurrentDirection;
+
+  POSITION pos = dialog.GetStartPosition();
+  
+  while (pos != NULL)
+  {
+    CString path_name = dialog.GetNextPathName(pos);
+
+    const int frame_width = m_Spriteset->GetFrameWidth();
+    const int frame_height = m_Spriteset->GetFrameHeight();
 
     CImage32 image;
-    if ( !image.Load(dialog.GetPathName()) ) {
-      MessageBox("Error loading image.");
+    if ( !image.Load( path_name ) ) {
+      MessageBox("Error loading image.\n'" + path_name + "'");
       return;
     }
 
     if (image.GetWidth() % frame_width > 0
      || image.GetHeight() % frame_height > 0) {
-      MessageBox("Invalid image width or height.");
+      MessageBox("Invalid image width or height.\n'" + path_name + "'");
       return;
     }
 
+    if (frames_so_far > 0 && true) {
+      if (frames_so_far > 0) {
+        current_direction += 1;
+        frames_so_far = 0;
+      }
+    }
+
     int num_frames = image.GetWidth() / frame_width;
-    int old_current_frame = m_CurrentFrame;
+    int old_current_frame = m_CurrentFrame + frames_so_far;
 
     int x = 0;
     int y = 0;
 
-    int current_direction = m_CurrentDirection;
-    m_Spriteset->InsertDirection(current_direction);
+    if (frames_so_far == 0) {
+      m_Spriteset->InsertDirection(current_direction);
+    }
 
     for (int i = 0; i < num_frames; i++) {
-      int current_image = m_Spriteset->GetNumImages();
       int current_frame = old_current_frame + i;
 
-      m_Spriteset->InsertImage(current_image);
+      int current_image = -1;
+      if (1) {
+        for (int i = 0; i < m_Spriteset->GetNumImages(); i++) {
+          const CImage32& img = m_Spriteset->GetImage(i);
+          if (image == img) {
+            current_image = i;
+            break;
+          }
+        }
+      }
+
+      if (current_image == -1) {
+        current_image = m_Spriteset->GetNumImages();
+        m_Spriteset->InsertImage(current_image);
+
+        if (m_Spriteset->GetNumImages() != current_image + 1) {
+          return;
+        }
+
+        m_Spriteset->GetImage(current_image) = image;
+      }
 
       if (current_image < m_Spriteset->GetNumImages()) {
 
@@ -1027,9 +1206,10 @@ CSpritesetView::OnInsertDirectionFromImage()
       }
     }
 
-    if (m_Spriteset->GetNumFrames(current_direction) > 0)
+    if (frames_so_far == 0 && m_Spriteset->GetNumFrames(current_direction) > 0)
       m_Spriteset->DeleteFrame(current_direction, m_Spriteset->GetNumFrames(current_direction) - 1);
 
+    frames_so_far += num_frames;
   }
 
   UpdateMaxSizes();

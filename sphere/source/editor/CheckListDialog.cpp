@@ -46,7 +46,7 @@ CCheckListDialog::OnInitDialog()
   m_CheckList.Create(WS_VISIBLE | WS_VSCROLL | WS_TABSTOP | WS_BORDER | 
                      LBS_NOINTEGRALHEIGHT | LBS_HASSTRINGS | LBS_EXTENDEDSEL,
                      rect, this, IDC_CHECKLIST);
-  
+
   for (int i = 0; i < int(m_Items.size()); i++) {
     m_CheckList.AddString(m_Items[i].c_str());
     m_CheckList.SetCheck(i, m_CheckStates[i] ? TRUE : FALSE);
@@ -183,6 +183,7 @@ CCheckListDialog::ValidateValues(std::string& error)
 {
   if (m_MinChecked > 0 || m_MaxChecked > -1) {
     int num_checked = 0;
+
     for (int i = 0; i < m_CheckList.GetCount(); i++) {
       if (i < int(m_CheckStates.size())) {
         m_CheckStates[i] = m_CheckList.GetCheck(i) ? true : false;
@@ -197,6 +198,7 @@ CCheckListDialog::ValidateValues(std::string& error)
       error = string;
       return false;
     }
+
     if (m_MaxChecked > -1 && num_checked >= m_MaxChecked) {
       char string[1024];
       sprintf (string, "Please check at-most %d items", m_MaxChecked);
