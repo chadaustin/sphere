@@ -16,6 +16,7 @@ sources = Split("""
     AlphaView.cpp
     AnimationWindow.cpp
     Audio.cpp
+    BrowseWindow.cpp
     Clipboard.cpp
     ColorView.cpp
     Configuration.cpp
