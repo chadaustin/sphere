@@ -8,6 +8,7 @@ static bool FPSDisplayed;
 static SDL_Surface* screen;
 static SDL_Surface* double_buffer; /* double trouble */
 static RGBA global_mask; /* bad, jcore! bad! */
+static SDL_PixelFormat* image_format;
 
 /* a special clipping rect that the primitives routines can deal with */
 typedef struct _CLIPPER {
@@ -49,7 +50,7 @@ void blend_alpha (Uint32& dest, Uint32 src) {
   Uint8 sr, sg, sb, sa;
   Uint8 dr, dg, db, da;
 
-  SDL_GetRGBA(src, screen->format, &sr, &sg, &sb, &sa);
+  SDL_GetRGBA(src, image_format, &sr, &sg, &sb, &sa);
   SDL_GetRGBA(dest, screen->format, &dr, &dg, &db, &da);
   sa = (int)sa * global_mask.alpha / 256;
   sr = (int)sr * global_mask.red / 256;
@@ -80,7 +81,7 @@ void blend_copy (Uint32& dest, Uint32 src) {
   Uint8 sr, sg, sb, sa;
   Uint8 dr, dg, db, da;
 
-  SDL_GetRGBA(src, screen->format, &sr, &sg, &sb, &sa);
+  SDL_GetRGBA(src, image_format, &sr, &sg, &sb, &sa);
   SDL_GetRGBA(dest, screen->format, &dr, &dg, &db, &da);
   dr = (sr * sa + dr * (256 - sa)) / 256;
   dg = (sg * sa + dg * (256 - sa)) / 256;
@@ -126,8 +127,8 @@ class constant_colorRGBA {
 class gradient_color {
  public:
   gradient_color (Uint32 color1, Uint32 color2) {
-    SDL_GetRGBA(color1, screen->format, &m_r1, &m_g1, &m_b1, &m_a1);
-    SDL_GetRGBA(color2, screen->format, &m_r2, &m_g2, &m_b2, &m_a2);
+    SDL_GetRGBA(color1, image_format, &m_r1, &m_g1, &m_b1, &m_a1);
+    SDL_GetRGBA(color2, image_format, &m_r2, &m_g2, &m_b2, &m_a2);
   }
 
   Uint32 operator() (int i, int range) {
@@ -196,6 +197,7 @@ bool SwitchResolution (int x, int y) {
       return false;
     FPSDisplayed = false;
     initialized = true;
+    SetClippingRectangle(0, 0, screen->w, screen->h);
     return true;
   } else {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
@@ -206,6 +208,7 @@ bool SwitchResolution (int x, int y) {
       return false;
     FPSDisplayed = false;
     initialized = true;
+	 SetClippingRectangle(0, 0, screen->w, screen->h);
     return true;
   }
 }
@@ -268,6 +271,10 @@ IMAGE CreateImage (int width, int height, const RGBA* pixels) {
     SDL_FreeSurface(surface);
     return NULL;
   }
+  if (image_format == NULL) {
+	  image_format = new SDL_PixelFormat;
+	  memcpy(image_format, surface->format, sizeof(SDL_PixelFormat));
+  }
   memcpy(surface->pixels, pixels, 4 * width * height);
   SDL_UnlockSurface(surface);
   return surface;
@@ -328,12 +335,73 @@ void StraightBlit (IMAGE image, int x, int y, routineT routine) {
       spixel += image->w;
       dpixel += screen->w;
     }
+	 SDL_UnlockSurface(screen);
+  }
+}
+
+template<typename pixelT, typename clipT, typename renderT>
+void unixBlit(
+  pixelT* surface,
+  int pitch,
+  const int x,
+  const int y,
+  pixelT* texture,
+  int tex_width,
+  int tex_height,
+  clipT clipper,
+  renderT renderer)
+{
+  int image_offset_x = 0;
+  int image_offset_y = 0;
+  int image_blit_width = tex_width;
+  int image_blit_height = tex_height;
+
+  if (x < clipper.left) {
+    image_offset_x = (clipper.left - x);
+    image_blit_width -= image_offset_x;
+  }
+
+  if (y < clipper.top) {
+    image_offset_y = (clipper.top - y);
+    image_blit_height -= image_offset_y;
+  }
+  
+  if (x + (int)tex_width - 1 > clipper.right) {
+    image_blit_width -= (x + tex_width - clipper.right - 1);
+  }
+
+  if (y + (int)tex_height - 1 > clipper.bottom) {
+    image_blit_height -= (y + tex_height - clipper.bottom - 1);
+  }
+
+  // heh, funny abbreviations
+  pixelT* dst = surface + (y + image_offset_y) * pitch + image_offset_x + x;
+  pixelT* src = texture +       image_offset_y * tex_width + image_offset_x;
+
+  int dst_inc = pitch - image_blit_width;
+  int src_inc = tex_width - image_blit_width;
+
+  int iy = image_blit_height;
+  while (iy-- > 0) {
+    int ix = image_blit_width;
+    while (ix-- > 0) {
+		renderer(*dst, *src);
+
+      dst++;
+      src++;
+    }
+
+    dst += dst_inc;
+    src += src_inc;
   }
 }
 
 void BlitImageMask (IMAGE image, int x, int y, RGBA mask) {
   global_mask = mask;
-  StraightBlit(image, x, y, blend_alpha);
+  /* StraightBlit(image, x, y, blend_alpha); */
+  unixBlit((Uint32*)(screen->pixels), screen->w, x, y,
+           (Uint32*)(image->pixels), image->w, image->h,
+			  clipping_rectangle, blend_alpha);
 }
 
 void aBlendRGBA (Uint32& dest, Uint32 src) {
