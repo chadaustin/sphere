@@ -251,6 +251,8 @@ BEGIN
 
             MENUITEM "Toggle Colors",               ID_SCRIPT_OPTIONS_TOGGLE_COLORS
 
+            MENUITEM "Toggle Line Numbers",         ID_SCRIPT_OPTIONS_TOGGLE_LINE_NUMBERS
+
         END
     END
 END

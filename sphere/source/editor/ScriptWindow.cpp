@@ -31,6 +31,7 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_SCRIPT_OPTIONS_SET_FONT,      OnOptionsSetScriptFont)
   ON_COMMAND(ID_SCRIPT_OPTIONS_TOGGLE_COLORS, OnOptionsToggleColors)
   ON_COMMAND(ID_SCRIPT_OPTIONS_SET_TAB_SIZE,  OnOptionsSetTabSize)
+  ON_COMMAND(ID_SCRIPT_OPTIONS_TOGGLE_LINE_NUMBERS,  OnOptionsToggleLineNumbers)
 
   ON_NOTIFY(SCN_SAVEPOINTREACHED, ID_EDIT, OnSavePointReached)
   ON_NOTIFY(SCN_SAVEPOINTLEFT,    ID_EDIT, OnSavePointLeft)
@@ -154,6 +155,13 @@ CScriptWindow::SetScriptStyles() {
   SetStyle(STYLE_DEFAULT, black, white, 10, m_Fontface.c_str());
   SendEditor(SCI_STYLECLEARALL);
 
+  SendEditor(SCI_SETMARGINWIDTHN, 1, 0); // assume no margin
+
+  if (m_ShowLineNumbers) {
+    SendEditor(SCI_SETMARGINTYPEN, 1, 1); // first margin is line numbers
+    SendEditor(SCI_SETMARGINWIDTHN, 1, 20); // we just need to resize it to see it
+  }
+
   SetStyle(SCE_C_DEFAULT, black, white, 10, m_Fontface.c_str());
 
   if (m_TabWidth > 0)
@@ -187,6 +195,7 @@ CScriptWindow::Initialize()
   m_SyntaxHighlighted = Configuration::Get(KEY_SCRIPT_SYNTAX_HIGHLIGHTED);
   m_TabWidth = Configuration::Get(KEY_SCRIPT_TAB_SIZE);
   m_KeyWordStyleIsBold = Configuration::Get(KEY_SCRIPT_KEYWORDS_IN_BOLD);
+  m_ShowLineNumbers = Configuration::Get(KEY_SCRIPT_SHOW_LINE_NUMBERS);
   SetScriptStyles();
 
   SendEditor(SCI_TOGGLEFOLD, (LPARAM)"1");
@@ -586,6 +595,16 @@ CScriptWindow::OnOptionsSetTabSize()
       Configuration::Set(KEY_SCRIPT_TAB_SIZE, m_TabWidth);
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnOptionsToggleLineNumbers()
+{
+  m_ShowLineNumbers = !m_ShowLineNumbers;
+  SetScriptStyles();
+  Configuration::Set(KEY_SCRIPT_SHOW_LINE_NUMBERS, m_ShowLineNumbers);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
