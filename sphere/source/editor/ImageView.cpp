@@ -658,6 +658,37 @@ CImageView::UpdateSelectionPixels(RGBA* pixels, int sx, int sy, int sw, int sh)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+CImageView::InvalidateSelection(int sx, int sy, int sw, int sh)
+{
+  // get client rectangle
+  RECT ClientRect;
+  GetClientRect(&ClientRect);
+
+  int width = m_Image.GetWidth();
+  int height = m_Image.GetHeight();
+
+  // calculate size of pixel squares
+  int hsize = ClientRect.right / width;
+  int vsize = ClientRect.bottom / height;
+  int size = std::min(hsize, vsize);
+  if (size < 1)
+    size = 1;
+
+  int totalx = size * width;
+  int totaly = size * height;
+  int offsetx = (ClientRect.right - totalx) / 2;
+  int offsety = (ClientRect.bottom - totaly) / 2;
+
+  RECT client;
+  GetClientRect(&client);
+
+  RECT rect = { offsetx+(sx * size), offsety+(sy * size), offsetx+((sx + sw) * size),  offsetx+((sy + sh) * size), };
+  InvalidateRect(&rect);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
 CImageView::Click(bool force_draw)
 {
   if (m_Image.GetWidth() == 0 || m_Image.GetHeight() == 0)
@@ -684,7 +715,7 @@ CImageView::Click(bool force_draw)
   }
 
   m_Image.SetPixel(end.x, end.y, m_Color);
-  Invalidate();
+  InvalidateSelection(end.x - 1, end.y - 1, 2, 2);
   m_Handler->IV_ImageChanged();
 }
 
@@ -825,7 +856,7 @@ CImageView::Rectangle()
     int sh = GetSelectionHeight();
 
     m_Image.Rectangle(start.x, start.y, end.x, end.y, m_Color, sx, sy, (sx + sw), (sy + sh));
-    Invalidate();
+    InvalidateSelection(sx, sy, sw, sh);
     m_Handler->IV_ImageChanged();
   }
 }
@@ -839,13 +870,13 @@ CImageView::Selection()
   if (!m_MouseDown)
   {
     m_StartPoint = m_CurPoint;
-    Invalidate();
+    InvalidateSelection(m_SelectionX, m_SelectionY, m_SelectionWidth, m_SelectionHeight);
     m_Handler->IV_ImageChanged();
   }
   else
   {
     UpdateSelection();
-    Invalidate();
+    InvalidateSelection(m_SelectionX, m_SelectionY, m_SelectionWidth, m_SelectionHeight);
     m_Handler->IV_ImageChanged();
   }
 }
@@ -1030,7 +1061,6 @@ CImageView::OnPaint()
   SetRect(&Rect, offsetx + totalx + 1, offsety - 1, ClientRect.right, offsety + totaly + 1);
   FillRect(dc, &Rect, black_brush);
 
-
   int num_tiles_x = ((size*width) / 64);
   int num_tiles_y = ((size*height) / 64);
 
@@ -1054,6 +1084,10 @@ CImageView::OnPaint()
 
             if (!(sx >= 0 && sx < width && sy >= 0 && sy < height) )
                continue;
+
+            //RECT current_rect = { (sx), (sy), (sx) + 64, (sy) + 64, };
+            //if (!_dc.RectVisible(&current_rect))
+            //  return;
 
             int counter = (iy * 64) + ix;
 
@@ -1334,14 +1368,19 @@ CImageView::UpdateSelection()
   POINT end = ConvertToPixel(m_CurPoint);
 
   // bounds check
-  if (!InImage(start) || !InImage(end))
+  if (!InImage(start))
     return;
+
+  // clip the end point within the image
+  if (end.x < 0) end.x = 0;
+  if (end.y < 0) end.y = 0;
+  if (end.x > m_Image.GetWidth())  end.x = m_Image.GetWidth();
+  if (end.y > m_Image.GetHeight()) end.y = m_Image.GetHeight();
 
   m_SelectionX = std::min(start.x, end.x);
   m_SelectionY = std::min(start.y, end.y);
   m_SelectionWidth  = std::max(start.x, end.x) - m_SelectionX;
   m_SelectionHeight = std::max(start.y, end.y) - m_SelectionY;  
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2009,7 +2048,7 @@ CImageView::OnFilterBlur()
   UpdateSelectionPixels(pixels, sx, sy, sw, sh);
   FreeSelectionPixels(pixels);
 
-  Invalidate();
+  InvalidateSelection(sx, sy, sw, sh);
   m_Handler->IV_ImageChanged();
 }
 
@@ -2030,7 +2069,7 @@ CImageView::OnFilterNoise()
   UpdateSelectionPixels(pixels, sx, sy, sw, sh);
   FreeSelectionPixels(pixels);
 
-  Invalidate();
+  InvalidateSelection(sx, sy, sw, sh);
   m_Handler->IV_ImageChanged();
 }
 
@@ -2052,7 +2091,7 @@ CImageView::OnFilterNegativeImage(bool red, bool green, bool blue, bool alpha)
   UpdateSelectionPixels(pixels, sx, sy, sw, sh);
   FreeSelectionPixels(pixels);
 
-  Invalidate();
+  InvalidateSelection(sx, sy, sw, sh);
   m_Handler->IV_ImageChanged();
 }
 
@@ -2101,7 +2140,7 @@ CImageView::OnFilterSolarize()
     UpdateSelectionPixels(pixels, sx, sy, sw, sh);
     FreeSelectionPixels(pixels);
 
-    Invalidate();
+    InvalidateSelection(sx, sy, sw, sh);
     m_Handler->IV_ImageChanged();
   }
 }
@@ -2128,7 +2167,7 @@ CImageView::OnFilterAdjustBrightness()
       UpdateSelectionPixels(pixels, sx, sy, sw, sh);
       FreeSelectionPixels(pixels);
 
-      Invalidate();
+      InvalidateSelection(sx, sy, sw, sh);
       m_Handler->IV_ImageChanged();
     }
   }
@@ -2157,7 +2196,7 @@ CImageView::OnFilterAdjustGamma()
       UpdateSelectionPixels(pixels, sx, sy, sw, sh);
       FreeSelectionPixels(pixels);
 
-      Invalidate();
+      InvalidateSelection(sx, sy, sw, sh);
       m_Handler->IV_ImageChanged();
     }
 
@@ -2199,7 +2238,7 @@ CImageView::OnScaleAlpha()
     }
   }
 
-  Invalidate();
+  InvalidateSelection(sx, sy, sw, sh);
   m_Handler->IV_ImageChanged();
 }
 
