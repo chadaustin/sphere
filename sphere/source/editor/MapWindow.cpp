@@ -700,9 +700,9 @@ CMapWindow::OnMapSlideOther()
       height = m_Map.GetLayer(i).GetHeight();
   }
 
-  CNumberDialog dx("Slide Horizontally", "Value", 0, 0, width); 
+  CNumberDialog dx("Slide Horizontally", "Value", 0, -width, width); 
   if (dx.DoModal() == IDOK) {
-    CNumberDialog dy("Slide Vertically", "Value", 0, 0, height); 
+    CNumberDialog dy("Slide Vertically", "Value", 0, -height, height); 
     if (dy.DoModal() == IDOK) {
       if (dx.GetValue() != 0 || dy.GetValue() != 0) {
         m_Map.Translate(dx.GetValue(), dy.GetValue());

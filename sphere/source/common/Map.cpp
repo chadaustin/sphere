@@ -1412,16 +1412,22 @@ sMap::SetEdgeScript(int edge, const char* script)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// when layer_to_translate = -1, translate all layers
 void 
-sMap::Translate(int dx, int dy)
+sMap::Translate(int dx, int dy, int layer_to_translate)
 {
   bool persons = true;
   bool triggers = true;
   bool zones = true;
   bool startpoint = true;
 
-  for (unsigned j = 0; j < m_Layers.size(); j++) {
-    m_Layers[j].Translate(dx, dy);
+  if (layer_to_translate == -1) {
+    for (unsigned j = 0; j < m_Layers.size(); j++) {
+      m_Layers[j].Translate(dx, dy);
+    }
+  }
+  else {
+    m_Layers[layer_to_translate].Translate(dx, dy);
   }
 
   int tile_width = GetTileset().GetTileWidth();
@@ -1431,7 +1437,7 @@ sMap::Translate(int dx, int dy)
 
     int type = GetEntity(i).GetEntityType();
 
-    if (type == sEntity::PERSON && persons == true
+    if (type == sEntity::PERSON  && persons  == true
      || type == sEntity::TRIGGER && triggers == true) {
 
       int layer = GetEntity(i).layer;
@@ -1448,8 +1454,10 @@ sMap::Translate(int dx, int dy)
       if (y < 0) y = layer_height + y;
       else if (y >= layer_height) y = y - layer_height;
 
-      GetEntity(i).x = x;
-      GetEntity(i).y = y;
+      if (layer_to_translate == -1 || layer == layer_to_translate) {
+        GetEntity(i).x = x;
+        GetEntity(i).y = y;
+      }
     }
   }
 
@@ -1472,10 +1480,12 @@ sMap::Translate(int dx, int dy)
       if (y < 0) y = layer_height + y;
       else if (y >= layer_height) y = y - layer_height;
 
-      GetZone(i).x1 = x;
-      GetZone(i).y1 = y;
-      GetZone(i).x2 = x + width;
-      GetZone(i).y2 = y + height;
+      if (layer_to_translate == -1 || layer == layer_to_translate) {
+        GetZone(i).x1 = x;
+        GetZone(i).y1 = y;
+        GetZone(i).x2 = x + width;
+        GetZone(i).y2 = y + height;
+      }
     }
   }
 
@@ -1483,8 +1493,9 @@ sMap::Translate(int dx, int dy)
     int x = GetStartX() + (dx * tile_width);
     int y = GetStartY() + (dy * tile_height);
 
-    int layer_width =  GetLayer(GetStartLayer()).GetWidth() * tile_width;
-    int layer_height = GetLayer(GetStartLayer()).GetHeight() * tile_height;
+    int layer = GetStartLayer();
+    int layer_width =  GetLayer(layer).GetWidth() * tile_width;
+    int layer_height = GetLayer(layer).GetHeight() * tile_height;
 
     // handle wrap around
     if (x < 0) x = layer_width + x;
@@ -1493,8 +1504,10 @@ sMap::Translate(int dx, int dy)
     if (y < 0) y = layer_height + y;
     else if (y >= layer_height) y = y - layer_height;
 
-    SetStartX(x);
-    SetStartY(y);
+    if (layer_to_translate == -1 || layer == layer_to_translate) {
+      SetStartX(x);
+      SetStartY(y);
+    }
   }
 }
 

@@ -103,7 +103,7 @@ public:
   void SetExitScript(const char* script);
   void SetEdgeScript(int edge, const char* script);
 
-  void Translate(int dx, int dy);
+  void Translate(int dx, int dy, int layer_to_translate = -1);
 
 private:
   int m_StartX;

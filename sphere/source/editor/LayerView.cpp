@@ -712,7 +712,7 @@ CLayerView::ToggleLockLayersInPlace()
 
 afx_msg void
 CLayerView::OnLayerSlideUp() {
-  m_Map->GetLayer(m_SelectedLayer).Translate(0, -1);
+  m_Map->Translate(0, -1, m_SelectedLayer);
   Invalidate();
   m_Handler->LV_MapChanged();
 }
@@ -721,7 +721,7 @@ CLayerView::OnLayerSlideUp() {
 
 afx_msg void
 CLayerView::OnLayerSlideRight() {
-  m_Map->GetLayer(m_SelectedLayer).Translate(1, 0);
+  m_Map->Translate(1, 0, m_SelectedLayer);
   Invalidate();
   m_Handler->LV_MapChanged();
 }
@@ -730,7 +730,7 @@ CLayerView::OnLayerSlideRight() {
 
 afx_msg void
 CLayerView::OnLayerSlideDown() {
-  m_Map->GetLayer(m_SelectedLayer).Translate(0, 1);
+  m_Map->Translate(0, 1, m_SelectedLayer);
   Invalidate();
   m_Handler->LV_MapChanged();
 }
@@ -739,7 +739,7 @@ CLayerView::OnLayerSlideDown() {
 
 afx_msg void
 CLayerView::OnLayerSlideLeft() {
-  m_Map->GetLayer(m_SelectedLayer).Translate(-1, 0);
+  m_Map->Translate(-1, 0, m_SelectedLayer);
   Invalidate();
   m_Handler->LV_MapChanged();
 }
@@ -748,12 +748,12 @@ CLayerView::OnLayerSlideLeft() {
 
 afx_msg void
 CLayerView::OnLayerSlideOther() {
-  CNumberDialog dx("Slide Horizontally", "Value", 0, 0, m_Map->GetLayer(m_SelectedLayer).GetWidth()); 
+  CNumberDialog dx("Slide Horizontally", "Value", 0, m_Map->GetLayer(m_SelectedLayer).GetWidth() * -1, m_Map->GetLayer(m_SelectedLayer).GetWidth()); 
   if (dx.DoModal() == IDOK) {
-    CNumberDialog dy("Slide Vertically", "Value", 0, 0, m_Map->GetLayer(m_SelectedLayer).GetHeight()); 
+    CNumberDialog dy("Slide Vertically", "Value", 0, m_Map->GetLayer(m_SelectedLayer).GetHeight() * -1, m_Map->GetLayer(m_SelectedLayer).GetHeight()); 
     if (dy.DoModal() == IDOK) {
       if (dx.GetValue() != 0 || dy.GetValue() != 0) {
-        m_Map->GetLayer(m_SelectedLayer).Translate(dx.GetValue(), dy.GetValue());
+        m_Map->Translate(dx.GetValue(), dy.GetValue(), m_SelectedLayer);
         Invalidate();
         m_Handler->LV_MapChanged();
       }

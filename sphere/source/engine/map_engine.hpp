@@ -230,6 +230,9 @@ private:
     double speed_x;
     double speed_y;
 
+    double angle;
+    bool is_angled;
+
     std::string direction;
     int frame;
 

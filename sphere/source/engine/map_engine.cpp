@@ -1399,6 +1399,9 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
   p.ignorePersonObstructions = false;
   p.ignoreTileObstructions = false;
 
+  p.is_angled = false;
+  p.angle = 0;
+
   p.spriteset->GetSpriteset().GetBase(p.base_x1, p.base_y1, p.base_x2, p.base_y2);
   p.width = p.spriteset->GetSpriteset().GetFrameWidth();
   p.height = p.spriteset->GetSpriteset().GetFrameHeight();
