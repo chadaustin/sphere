@@ -110,9 +110,11 @@ CImageWindow::OnImageResize()
 {
   CResizeDialog dialog("Resize Image", m_Image.GetWidth(), m_Image.GetHeight());
   if (dialog.DoModal() == IDOK) {
-    m_Image.Resize(dialog.GetWidth(), dialog.GetHeight());
-    SetModified(true);
-    UpdateImageView();
+    if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
+      m_Image.Resize(dialog.GetWidth(), dialog.GetHeight());
+      SetModified(true);
+      UpdateImageView();
+    }
   }
 }
 
@@ -123,9 +125,11 @@ CImageWindow::OnImageRescale()
 {
   CResizeDialog dialog("Rescale Image", m_Image.GetWidth(), m_Image.GetHeight());
   if (dialog.DoModal() == IDOK) {
-    m_Image.Rescale(dialog.GetWidth(), dialog.GetHeight());
-    SetModified(true);
-    UpdateImageView();
+    if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
+      m_Image.Rescale(dialog.GetWidth(), dialog.GetHeight());
+      SetModified(true);
+      UpdateImageView();
+    }
   }
 }
 

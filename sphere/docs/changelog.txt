@@ -1,6 +1,8 @@
 2003.02.20
   - added CallMapScript(SCRIPT)
   - clarified documentation for QueuePersonCommand
+  - made it so that it just does nothing when you resize images/fonts/tile sizes
+    to zero width or height (instead of crashing)
 
 2003.02.18
   - show the version number in the engine and editor windows as well

@@ -337,12 +337,14 @@ CMapWindow::OnChangeTileSize()
   CResizeDialog dialog("Resize Tiles", tile_width, tile_height);
   if (dialog.DoModal() == IDOK)
   {
-    m_Map.SetTileSize(dialog.GetWidth(), dialog.GetHeight());
+    if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
+      m_Map.SetTileSize(dialog.GetWidth(), dialog.GetHeight());
 
-    SetModified(true);
-    m_MapView.TilesetChanged();
-    m_TilesetEditView.TilesetChanged();
-    m_TilePalette->TilesetChanged();
+      SetModified(true);
+      m_MapView.TilesetChanged();
+      m_TilesetEditView.TilesetChanged();
+      m_TilePalette->TilesetChanged();
+    }
   }
 }
 
@@ -356,12 +358,14 @@ CMapWindow::OnRescaleTileset()
 
   CResizeDialog dialog("Rescale Tiles", tile_width, tile_height);
   if (dialog.DoModal() == IDOK) {
-    m_Map.SetTileSize(dialog.GetWidth(), dialog.GetHeight(), true);
+    if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
+      m_Map.SetTileSize(dialog.GetWidth(), dialog.GetHeight(), true);
 
-    SetModified(true);
-    m_MapView.TilesetChanged();
-    m_TilesetEditView.TilesetChanged();
-    m_TilePalette->TilesetChanged();
+      SetModified(true);
+      m_MapView.TilesetChanged();
+      m_TilesetEditView.TilesetChanged();
+      m_TilePalette->TilesetChanged();
+    }
   }
 }
 
@@ -388,13 +392,16 @@ CMapWindow::OnResizeAllLayers()
   CResizeDialog dialog("Resize All Layers", max_layer_width, max_layer_height);
   if (dialog.DoModal() == IDOK) {
 
-    for (int i = 0; i < m_Map.GetNumLayers(); i++) {
-      m_Map.GetLayer(i).Resize(dialog.GetWidth(), dialog.GetHeight());
-    }
+    if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
 
-    SetModified(true);
-    m_MapView.UpdateScrollBars();
-    Invalidate();
+      for (int i = 0; i < m_Map.GetNumLayers(); i++) {
+        m_Map.GetLayer(i).Resize(dialog.GetWidth(), dialog.GetHeight());
+      }
+
+      SetModified(true);
+      m_MapView.UpdateScrollBars();
+      Invalidate();
+    }
   }
 }
 

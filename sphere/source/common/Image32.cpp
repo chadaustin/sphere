@@ -358,6 +358,9 @@ void
 CImage32::Resize(int width, int height)
 {
   RGBA* new_pixels = new RGBA[width * height];
+  if (new_pixels == NULL)
+    return;
+
   for (int ix = 0; ix < width; ix++)
     for (int iy = 0; iy < height; iy++)
     {

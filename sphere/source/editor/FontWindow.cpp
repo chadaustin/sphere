@@ -244,9 +244,12 @@ CFontWindow::OnFontResize()
   CResizeDialog dialog("Resize Font Character", c.GetWidth(), c.GetHeight());
   if (dialog.DoModal() == IDOK)
   {
-    c.Resize(dialog.GetWidth(), dialog.GetHeight());
-    SetModified(true);
-    SetImage();
+    if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0)
+    {
+      c.Resize(dialog.GetWidth(), dialog.GetHeight());
+      SetModified(true);
+      SetImage();
+    }
   }
 }
 
@@ -272,15 +275,18 @@ CFontWindow::OnFontResizeAll()
   CResizeDialog dialog("Resize All Font Characters", max_x, max_y);
   if (dialog.DoModal() == IDOK) {
 
-    for (int i = 0; i < m_Font.GetNumCharacters(); i++) {
-      m_Font.GetCharacter(i).Resize(
-        dialog.GetWidth(),
-        dialog.GetHeight()
-      );
-    }
+    if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
 
-    SetModified(true);
-    SetImage();
+      for (int i = 0; i < m_Font.GetNumCharacters(); i++) {
+        m_Font.GetCharacter(i).Resize(
+          dialog.GetWidth(),
+          dialog.GetHeight()
+        );
+      }
+
+      SetModified(true);
+      SetImage();
+    }
   }
 }
 
