@@ -508,6 +508,40 @@ CMapEngine::SetLayerReflective(int layer, bool reflective)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::SetLayerScaleFactorX(int layer_index, double factor_x)
+{
+  if ( IsInvalidLayerError(layer_index, "SetLayerScaleFactorX()") )
+    return false;
+
+  if (factor_x <= 0) {
+    m_ErrorMessage = "Scale factor must be greater than zero";
+    return false;
+  }
+
+  m_Map.SetLayerScaleFactorX(layer_index, factor_x);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::SetLayerScaleFactorY(int layer_index, double factor_y)
+{
+  if ( IsInvalidLayerError(layer_index, "SetLayerScaleFactorY()") )
+    return false;
+
+  if (factor_y <= 0) {
+    m_ErrorMessage = "Scale factor must be greater than zero";
+    return false;
+  }
+
+  m_Map.SetLayerScaleFactorY(layer_index, factor_y);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::GetNumTiles(int& tiles)
 {
   if (!m_IsRunning) {
@@ -2096,25 +2130,31 @@ CMapEngine::SetPersonScaleFactor(const char* name, double scale_w, double scale_
   Person& p = m_Persons[person];
 
   // convert to integer ;)
+  double width = p.spriteset->GetSpriteset().GetFrameWidth();
+  double height = p.spriteset->GetSpriteset().GetFrameHeight();
+
+/*
   int base_x1;
   int base_y1;
   int base_x2;
   int base_y2;
-  double width = p.spriteset->GetSpriteset().GetFrameWidth();
-  double height = p.spriteset->GetSpriteset().GetFrameHeight();
   p.spriteset->GetSpriteset().GetBase(base_x1, base_y1, base_x2, base_y2);
+*/
 
-  p.width = (int)(scale_w * width);
+  p.width =  (int)(scale_w * width);
   p.height = (int)(scale_h * height);
+
+/*
   p.base_x1 = (int)(scale_w * (double)base_x1);
   p.base_y1 = (int)(scale_h * (double)base_y1);
   p.base_x2 = (int)(scale_w * (double)base_x2);
   p.base_y2 = (int)(scale_h * (double)base_y2);
-
+*/
 
   // oopsies on scaling problems? ;)
-  if (p.width < 1) p.width = 1;
+  if (p.width  < 1) p.width  = 1;
   if (p.height < 1) p.height = 1;
+
 /*
   if (p.base_x1 < 0 && p.width > 1 && base_x1 != 0) p.base_x1 = 1;
   if (p.base_x2 < 0 && p.width > 1 && base_x2 != 0) p.base_x2 = 1;

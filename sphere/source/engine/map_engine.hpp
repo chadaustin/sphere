@@ -85,6 +85,8 @@ public:
   bool SetLayerVisible(int layer, bool visible);
   bool IsLayerReflective(int layer, bool& reflective);
   bool SetLayerReflective(int layer, bool reflective);
+  bool SetLayerScaleFactorX(int layer_index, double factor_x);
+  bool SetLayerScaleFactorY(int layer_index, double factor_y);
 
   bool GetNumTiles(int& tiles);
   bool SetTile(int x, int y, int layer, int tile);

@@ -51,12 +51,12 @@ CRenderSort::DrawObjects()
     int ty[4];
     tx[0] = o.draw_x;
     ty[0] = o.draw_y;
-    tx[1] = o.draw_x + o.draw_w - 1;
+    tx[1] = o.draw_x + o.draw_w /*- 1*/;
     ty[1] = o.draw_y;
-    tx[2] = o.draw_x + o.draw_w - 1;
-    ty[2] = o.draw_y + o.draw_h - 1;
+    tx[2] = o.draw_x + o.draw_w /*- 1*/;
+    ty[2] = o.draw_y + o.draw_h /*- 1*/;
     tx[3] = o.draw_x;
-    ty[3] = o.draw_y + o.draw_h - 1;
+    ty[3] = o.draw_y + o.draw_h /* - 1*/;
 
     if (o.is_angled) {
       CalculateRotateBlitPoints(tx, ty, o.draw_x, o.draw_y, o.draw_w, o.draw_h, o.angle);
@@ -67,9 +67,9 @@ CRenderSort::DrawObjects()
 
     // BlitImage is usually faster than TransformBlit, so use BlitImage if possible
     if (tx[0] == tx[3] && tx[1] == tx[2] && ty[0] == ty[1] && ty[2] == ty[3]) {
-      int dw = tx[2] - tx[0] + 1;
-      int dh = ty[2] - ty[0] + 1;
-      if (dw == o.draw_w && dh == o.draw_h) {
+      int dw = tx[2] - tx[0] /*+ 1*/;
+      int dh = ty[2] - ty[0] /*+ 1*/;
+      if (dw == GetImageWidth(o.image) && dh == GetImageHeight(o.image)) {
         normal_blit = true;
       }
     }

@@ -2471,6 +2471,7 @@ end_func()
 
 /**
       - shows 'layer' if visible == true, and hides it if visible == false
+      e.g. SetLayerVisible(0, !IsLayerVisisble(0)); will toggle layer zero's visibility
 */
 begin_func(SetLayerVisible, 2)
   arg_int(layer);
@@ -2511,6 +2512,42 @@ begin_func(SetLayerReflective, 2)
 
   if (!This->m_Engine->GetMapEngine()->SetLayerReflective(layer, reflective)) {
     This->ReportMapEngineError("SetLayerReflective() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+      - Sets the x zoom/scale factor for the layer 'layer_index' to 'factor_x'
+        e.g. SetLayerScaleFactor(0, 0.5) will make the layer zoom out to half the normal size
+        @see SetPersonScaleFactor
+*/
+begin_func(SetLayerScaleFactorX, 2)
+  arg_int(layer_index);
+  arg_double(factor_x);
+
+  if (!This->m_Engine->GetMapEngine()->SetLayerScaleFactorX(layer_index, factor_x)) {
+    This->ReportMapEngineError("SetLayerScaleFactorX() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+      - Sets the y zoom/scale factor for the layer 'layer_index' to 'factor_y'
+        e.g. SetLayerScaleFactor(0, 2) will make the layer zoom in to twice the normal size
+        @see SetPersonScaleFactor
+*/
+begin_func(SetLayerScaleFactorY, 2)
+  arg_int(layer_index);
+  arg_double(factor_y);
+
+  if (!This->m_Engine->GetMapEngine()->SetLayerScaleFactorY(layer_index, factor_y)) {
+    This->ReportMapEngineError("SetLayerScaleFactorY() failed");
     return JS_FALSE;
   }
 
@@ -3271,6 +3308,7 @@ end_func()
 
 /**
       - set the mask of 'layer' to 'mask'
+      e.g. SetLayerMask(0, CreateColor(255, 0, 0, 128)); will make the layer semi red
 */
 begin_func(SetLayerMask, 2)
   arg_int(layer);

@@ -409,32 +409,42 @@ log_object.endBlock()
       - in the following functions, layer 0 is the bottommost layer.
       - layer 1 is the next one up, etc.
 
-    GetLayerName(layer)
+    GetLayerName(layer_index)
       - returns the name of 'layer'
 
-    GetLayerWidth(layer)
+    GetLayerWidth(layer_index)
       - get width of 'layer'
 
-    GetLayerHeight(layer)
+    GetLayerHeight(layer_index)
       - get height of 'layer'
 
-    IsLayerVisible(layer)
+    IsLayerVisible(layer_index)
       - returns true if the layer is visible
 
-    SetLayerVisible(layer, visible)
-      - shows 'layer' if visible == true, and hides it if visible == false
+    SetLayerVisible(layer_index, visible)
+      - shows 'layer_index' if visible == true, and hides it if visible == false
+      e.g. SetLayerVisible(0, !IsLayerVisisble(0)); will toggle layer zero's visibility
 
-     IsLayerReflective(layer)
+     IsLayerReflective(layer_index)
       - returns true if the layer is reflective
 
-    SetLayerReflective(layer, reflective)
+    SetLayerReflective(layer_index, reflective)
       - sets whether layer should be reflective
 
-    SetLayerMask(layer, mask)
+    SetLayerMask(layer_index, mask)
       - set the color mask of 'layer' to 'mask'
+      e.g. SetLayerMask(0, CreateColor(255, 0, 0, 128)); will make the layer semi red
 
-    GetLayerMask(layer)
+    GetLayerMask(layer_index)
       - get the color mask currently being used by 'layer'
+
+    SetLayerScaleFactorX(layer_index, factor_x)
+      - Sets the x zoom/scale factor for the layer 'layer_index' to 'factor_x'
+        e.g. SetLayerScaleFactor(0, 0.5); will make the layer zoom out to half the normal size
+
+    SetLayerScaleFactorY(layer_index, factor_y)
+      - Sets the y zoom/scale factor for the layer 'layer_index' to 'factor_y'
+        e.g. SetLayerScaleFactor(0, 2); will make the layer zoom in to twice the normal size
 
     GetNumTiles()
       - return number of tiles in map

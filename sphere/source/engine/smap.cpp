@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include "smap.hpp"
 
+void CalculateRotateBlitPoints(int tx[], int ty[], int x, int y, int w, int h, double radians);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -20,6 +21,8 @@ SMAP::~SMAP()
   for (unsigned i = 0; i < m_SolidTiles.size(); i++) {
     DestroyImage(m_SolidTiles[i]);
   }
+
+  m_LayerInfo.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -32,10 +35,14 @@ SMAP::UpdateTile(int i) {
 
   sTile& tile = m_Map.GetTileset().GetTile(i);
 
-  if (m_Tiles[i])
+  if (m_Tiles[i]) {
     DestroyImage(m_Tiles[i]);
+  }
 
   m_Tiles[i] = CreateImage(tile.GetWidth(), tile.GetHeight(), tile.GetPixels());
+  if (m_Tiles[i] == NULL)
+    return false;
+
   return true;
 }
 
@@ -57,6 +64,9 @@ SMAP::UpdateSolidTile(int i) {
     DestroyImage(m_SolidTiles[i]);
 
   m_SolidTiles[i] = CreateImage(tile.GetWidth(), tile.GetHeight(), tile.GetPixels());
+  if (m_SolidTiles[i] == NULL)
+    return false;
+
   return true;
 }
 
@@ -74,9 +84,19 @@ SMAP::Load(const char* filename, IFileSystem& fs)
     return false;
 
   // initialize layer times array
-  m_LayerTimes.resize(m_Map.GetNumLayers());
-  m_LayerMasks.resize(m_Map.GetNumLayers());
-  std::fill(m_LayerMasks.begin(), m_LayerMasks.end(), CreateRGBA(255, 255, 255, 255));
+  m_LayerInfo.resize(m_Map.GetNumLayers());
+
+  if (m_LayerInfo.size()  != m_Map.GetNumLayers()) {
+    return false;
+  }
+
+  for (unsigned int i = 0; i < m_LayerInfo.size(); i++) {
+    m_LayerInfo[i].time = 0;
+    m_LayerInfo[i].angle = 0;
+    m_LayerInfo[i].zoomFactorX = 1;
+    m_LayerInfo[i].zoomFactorY = 1;
+    m_LayerInfo[i].mask = CreateRGBA(255, 255, 255, 255);
+  }
 
   InitializeAnimation();
 
@@ -89,6 +109,10 @@ SMAP::Load(const char* filename, IFileSystem& fs)
 
   // create the image array
   m_Tiles.resize(m_Map.GetTileset().GetNumTiles());
+  if (m_Tiles.size() != m_Map.GetTileset().GetNumTiles()) {
+    return false;
+  }
+
   std::fill(m_Tiles.begin(), m_Tiles.end(), IMAGE(0));
   for (int i = 0; i < m_Map.GetTileset().GetNumTiles(); i++) {
     UpdateTile(i);
@@ -96,6 +120,10 @@ SMAP::Load(const char* filename, IFileSystem& fs)
 
   // create the solid image array
   m_SolidTiles.resize(m_Map.GetTileset().GetNumTiles());
+  if (m_SolidTiles.size() != m_Map.GetTileset().GetNumTiles()) {
+    return false;
+  }
+
   std::fill(m_SolidTiles.begin(), m_SolidTiles.end(), IMAGE(0));
   for (int i = 0; i < m_Map.GetTileset().GetNumTiles(); i++) {
     UpdateSolidTile(i);
@@ -104,8 +132,9 @@ SMAP::Load(const char* filename, IFileSystem& fs)
   // calculate maximum non-parallax layer dimensions
   m_MaxLayerWidth = 0;
   m_MaxLayerHeight = 0;
-  for (int i = 0; i < m_Map.GetNumLayers(); i++) {
-    sLayer& layer = m_Map.GetLayer(i);
+  for (int i = 0; i < m_Map.GetNumLayers(); i++)
+  {
+    const sLayer& layer = m_Map.GetLayer(i);
     if (layer.HasParallax() == false) {
       if (layer.GetWidth() > m_MaxLayerWidth) {
         m_MaxLayerWidth = layer.GetWidth();
@@ -125,8 +154,8 @@ void
 SMAP::UpdateMap()
 {
   // update layer times for autoscrolling
-  for (unsigned i = 0; i < m_LayerTimes.size(); i++) {
-    m_LayerTimes[i]++;
+  for (unsigned int i = 0; i < m_LayerInfo.size(); i++) {
+    m_LayerInfo[i].time++;
   }
 
   // update animations
@@ -162,6 +191,8 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
 
   const int tile_width = m_Map.GetTileset().GetTileWidth();
   const int tile_height = m_Map.GetTileset().GetTileHeight();
+  const int blit_width  = tile_width  * m_LayerInfo[i].zoomFactorX;
+  const int blit_height = tile_height * m_LayerInfo[i].zoomFactorY;
 
   const int cx = GetScreenWidth()  / 2;
   const int cy = GetScreenHeight() / 2;
@@ -171,12 +202,12 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
   offset_y = 0;
 
   // if map is wider than the screen...
-  if (tile_width * m_MaxLayerWidth > GetScreenWidth()) {
+  if (blit_width * m_MaxLayerWidth > GetScreenWidth()) {
     if (m_Map.IsRepeating() == false) {
       if (camera_x < cx) {
         offset_x = cx - camera_x;
-      } else if (camera_x > m_MaxLayerWidth * tile_width - cx) {
-        offset_x = m_MaxLayerWidth * tile_width - camera_x - cx;
+      } else if (camera_x > m_MaxLayerWidth * blit_width - cx) {
+        offset_x = m_MaxLayerWidth * blit_width - camera_x - cx;
       }
     }
   } else {
@@ -184,13 +215,13 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
   }
    
   // if map is higher than the screen...
-  if (tile_height * m_MaxLayerHeight > GetScreenHeight()) {
+  if (blit_height * m_MaxLayerHeight > GetScreenHeight()) {
 
     if (m_Map.IsRepeating() == false) {
       if (camera_y < cy) {
         offset_y = cy - camera_y;
-      } else if (camera_y > m_MaxLayerHeight * tile_height - cy) {
-        offset_y = m_MaxLayerHeight * tile_height - camera_y - cy;
+      } else if (camera_y > m_MaxLayerHeight * blit_height - cy) {
+        offset_y = m_MaxLayerHeight * blit_height - camera_y - cy;
       }
     }
   } else {
@@ -202,8 +233,8 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
   int parallax_y = 0;
   if (layer.HasParallax()) {
     // autoscrolling
-    parallax_x = int(m_LayerTimes[i] * layer.GetXScrolling());
-    parallax_y = int(m_LayerTimes[i] * layer.GetYScrolling());
+    parallax_x = int(m_LayerInfo[i].time * layer.GetXScrolling());
+    parallax_y = int(m_LayerInfo[i].time * layer.GetYScrolling());
 
     // parallax
     parallax_x -= int((camera_x + offset_x - cx) * (layer.GetXParallax() - 1));
@@ -214,39 +245,43 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
   int numerator_x = camera_x - cx + offset_x - parallax_x;
   int numerator_y = camera_y - cy + offset_y - parallax_y;
   while (numerator_x < 0) {
-    numerator_x += tile_width * layer.GetWidth();
+    numerator_x += blit_width * layer.GetWidth();
   }
   while (numerator_y < 0) {
-    numerator_y += tile_height * layer.GetHeight();
+    numerator_y += blit_height * layer.GetHeight();
   }
 
   // t[x,y] = indices into the layer
   // o[x,y] = rendering offsets
   // i[x,y] = number of rows/columns to render
 
-  int ty = numerator_y / tile_height;
-  int oy = -(numerator_y % tile_height);
+  int ty = numerator_y / blit_height;
+  int oy = -(numerator_y % blit_height);
 
   std::vector<IMAGE>& tiles = (solid ? m_SolidTiles : m_Tiles);
 
-  int num_rows_to_blit = GetScreenWidth() / tile_width + 2;
-  if (!m_Map.IsRepeating() && !layer.HasParallax() && num_rows_to_blit > layer.GetWidth())
+  int num_rows_to_blit = GetScreenWidth() / blit_width + 2;
+  if (!m_Map.IsRepeating() && !layer.HasParallax() && num_rows_to_blit > layer.GetWidth()) {
     num_rows_to_blit = layer.GetWidth();
+  }
 
-  int num_cols_to_blit = GetScreenHeight() / tile_height + 2;
-  if (!m_Map.IsRepeating() && !layer.HasParallax() && num_cols_to_blit > layer.GetHeight())
+  int num_cols_to_blit = GetScreenHeight() / blit_height + 2;
+  if (!m_Map.IsRepeating() && !layer.HasParallax() && num_cols_to_blit > layer.GetHeight()) {
     num_cols_to_blit = layer.GetHeight();
+  }
 
   // !!!! Warning!  Repeated code!  Please fix!
-  if (m_LayerMasks[i] == CreateRGBA(255, 255, 255, 255)) {
+  if (m_LayerInfo[i].mask == CreateRGBA(255, 255, 255, 255)) {
 
     // how many rows/columns to blit
     int iy = num_cols_to_blit;
 
     while (iy--) {
 
-      int tx = numerator_x / tile_width;
-      int ox = -(numerator_x % tile_width);
+      //int tx = numerator_x / tile_width;
+      //int ox = -(numerator_x % tile_width);
+      int tx = numerator_x / blit_width;
+      int ox = -(numerator_x % blit_width);
 
       int ix = num_rows_to_blit;
 
@@ -255,28 +290,47 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
         tx %= layer.GetWidth();
         ty %= layer.GetHeight();
         IMAGE image = tiles[m_AnimationMap[layer.GetTile(tx, ty)].current];
-            
-        BlitImage(image, ox, oy);
-      
+
+        if (m_LayerInfo[i].zoomFactorX != 1 || m_LayerInfo[i].zoomFactorY != 1) {
+          int tx[4];
+          int ty[4];
+
+          tx[0] = ox;
+          ty[0] = oy;
+          tx[1] = ox + blit_width;
+          ty[1] = oy;
+          tx[2] = ox + blit_width;
+          ty[2] = oy + blit_height;
+          tx[3] = ox;
+          ty[3] = oy + blit_height;
+
+          TransformBlitImage(image, tx, ty);
+
+        } else {
+          BlitImage(image, ox, oy);
+        }
+
         tx++;
-        ox += tile_width;
+        //ox += tile_width;
+        ox += blit_width;
       }
 
       ty++;
-      oy += tile_height;
+      //oy += tile_height;
+      oy += blit_height;
     }
 
-  } else if (m_LayerMasks[i].alpha != 0) {
+  } else if (m_LayerInfo[i].mask.alpha != 0) {
 
-    RGBA mask = m_LayerMasks[i];
+    RGBA mask = m_LayerInfo[i].mask;
 
     // how many rows/columns to blit
     int iy = num_cols_to_blit;
 
     while (iy--) {
 
-      int tx = numerator_x / tile_width;
-      int ox = -(numerator_x % tile_width);
+      int tx = numerator_x / blit_width;
+      int ox = -(numerator_x % blit_width);
 
       int ix = num_rows_to_blit;
 
@@ -286,14 +340,31 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
         ty %= layer.GetHeight();
         IMAGE image = tiles[m_AnimationMap[layer.GetTile(tx, ty)].current];
 
-        BlitImageMask(image, ox, oy, mask);
+        if (m_LayerInfo[i].zoomFactorX != 1 || m_LayerInfo[i].zoomFactorY != 1) {
+          int tx[4];
+          int ty[4];
+
+          tx[0] = ox;
+          ty[0] = oy;
+          tx[1] = ox + blit_width;
+          ty[1] = oy;
+          tx[2] = ox + blit_width;
+          ty[2] = oy + blit_height;
+          tx[3] = ox;
+          ty[3] = oy + blit_height;
+
+          TransformBlitImageMask(image, tx, ty, mask);
+
+        } else {
+          BlitImageMask(image, ox, oy, mask);
+        }        
       
         tx++;
-        ox += tile_width;
+        ox += blit_width;
       }
 
       ty++;
-      oy += tile_height;
+      oy += blit_height;
     }
 
   }
@@ -413,7 +484,7 @@ SMAP::ScreenToMapY(int /*layer*/, int camera_y, int sy)
 void
 SMAP::SetLayerMask(int layer, RGBA color)
 {
-  m_LayerMasks[layer] = color;
+  m_LayerInfo[layer].mask = color;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -421,7 +492,7 @@ SMAP::SetLayerMask(int layer, RGBA color)
 RGBA
 SMAP::GetLayerMask(int layer)
 {
-  return m_LayerMasks[layer];
+  return m_LayerInfo[layer].mask;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -432,11 +503,12 @@ SMAP::InitializeAnimation()
   sTileset& tileset = m_Map.GetTileset();
   m_AnimationMap.resize(tileset.GetNumTiles());
 
-  for (int i = 0; i < tileset.GetNumTiles(); i++) {
+  for (unsigned int i = 0; (i < tileset.GetNumTiles() && i < m_AnimationMap.size()); i++) {
     m_AnimationMap[i].current = i;
     m_AnimationMap[i].delay = tileset.GetTile(i).GetDelay();
     m_AnimationMap[i].next = tileset.GetTile(i).GetNextTile();
   }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////

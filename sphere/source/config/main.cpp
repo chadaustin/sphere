@@ -167,13 +167,13 @@ void BuildDriverList()
       fclose(f);
 
       if (IsValidDriver(filename.c_str())) {
-        filename = "../../../windows/desktop/sphere/source/video/" + filename;
+        filename = "../../../win/desktop/sphere/source/video/" + filename;
         video_driver_list.push_back(filename);
       }
     }
   };
   
-  if (SetCurrentDirectory("C:\\WINDOWS\\Desktop\\sphere\\source\\video") == 0)
+  if (SetCurrentDirectory("C:\\win\\Desktop\\sphere\\source\\video") == 0)
     return;
 
   handle = FindFirstFile("*", &ffd);

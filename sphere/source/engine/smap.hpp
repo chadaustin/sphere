@@ -43,17 +43,27 @@ public:
     return m_AnimationMap;
   }
 
+  void SetLayerScaleFactorX(int layer, double factor_x);
+  void SetLayerScaleFactorY(int layer, double factor_y);
+
 private:
   void InitializeAnimation();
 
 private:
+  struct LayerInfo {
+    int    time;
+    RGBA   mask;
+    double angle;
+    double zoomFactorX;
+    double zoomFactorY;
+  };
+
   sMap m_Map;
   std::vector<TileDelay> m_AnimationMap;
 
   std::vector<IMAGE> m_Tiles;
   std::vector<IMAGE> m_SolidTiles; // used for reflectivity
-  std::vector<int> m_LayerTimes;
-  std::vector<RGBA> m_LayerMasks;
+  std::vector<LayerInfo> m_LayerInfo;
 
   // max dimensions of non-parallax layers
   int m_MaxLayerWidth;
@@ -67,6 +77,22 @@ inline sMap&
 SMAP::GetMap()
 {
   return m_Map;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+inline void
+SMAP::SetLayerScaleFactorX(int layer, double factor_x)
+{
+  m_LayerInfo[layer].zoomFactorX = factor_x;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+inline void
+SMAP::SetLayerScaleFactorY(int layer, double factor_y)
+{
+  m_LayerInfo[layer].zoomFactorY = factor_y;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
