@@ -240,7 +240,7 @@ private:
   declare_method(ssByteArraySlice);
 
   // mapengine objects
-  declare_method(ssMapSave);
+  declare_method(ssMapEngineSave);
   
   #undef declare_property
   #undef declare_method
