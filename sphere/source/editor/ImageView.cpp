@@ -2831,6 +2831,9 @@ CImageView::IsToolAvailable(UINT id)
     case IDI_IMAGETOOL_FILL:          available = TRUE; break;
     case IDI_IMAGETOOL_SELECTION:     available = TRUE; break;
     case IDI_IMAGETOOL_FREESELECTION: available = TRUE; break;
+
+    case ID_FILE_COPY:  available = TRUE; break;
+    case ID_FILE_PASTE: if (IsClipboardFormatAvailable(CF_BITMAP)) available = TRUE; break;
   }
 
   return available;

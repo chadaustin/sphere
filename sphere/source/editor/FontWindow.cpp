@@ -42,6 +42,7 @@ BEGIN_MESSAGE_MAP(CFontWindow, CSaveableDocumentWindow)
 
   ON_COMMAND(ID_FONT_EXPORTTOIMAGE,      OnFontExportToImage)
 
+  ON_COMMAND(ID_FILE_COPY,  OnCopy)
   ON_COMMAND(ID_FILE_PASTE, OnPaste)
   ON_COMMAND(ID_FILE_ZOOM_IN, OnZoomIn)
   ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
@@ -624,6 +625,14 @@ CFontWindow::OnZoomOut()
       m_FontPreviewPalette->SendMessage(WM_COMMAND, MAKEWPARAM(ID_FILE_ZOOM_OUT, 0), 0);
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CFontWindow::OnCopy()
+{
+  m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_COPY, 0), 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

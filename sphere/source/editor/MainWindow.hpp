@@ -146,7 +146,11 @@ private:
 
   afx_msg void OnZoomIn();
   afx_msg void OnZoomOut();
+  afx_msg void OnCopy();
   afx_msg void OnPaste();
+
+  afx_msg void OnUpdateCopy(CCmdUI* cmdui);
+  afx_msg void OnUpdatePaste(CCmdUI* cmdui);
 
   afx_msg void UpdateToolBars(WPARAM wparam = 0, LPARAM lparam = 0);
 

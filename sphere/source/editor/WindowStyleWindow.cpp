@@ -42,6 +42,8 @@ BEGIN_MESSAGE_MAP(CWindowStyleWindow, CSaveableDocumentWindow)
 
   ON_COMMAND(ID_FILE_ZOOM_IN, OnZoomIn)
   ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
+
+  ON_COMMAND(ID_FILE_COPY,  OnCopy)
   ON_COMMAND(ID_FILE_PASTE, OnPaste)
 
   ON_COMMAND(ID_WINDOWSTYLE_PROPERTIES, OnProperties)
@@ -702,6 +704,14 @@ CWindowStyleWindow::OnZoomOut()
       case 8: SetZoomFactor(4); break;
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CWindowStyleWindow::OnCopy()
+{
+  m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_COPY, 0), 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

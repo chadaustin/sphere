@@ -53,6 +53,7 @@ private:
   virtual void CV_ColorChanged(RGB color);
   virtual void AV_AlphaChanged(byte alpha);
 
+  void OnCopy();
   void OnPaste();
 
 private:

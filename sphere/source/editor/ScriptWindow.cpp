@@ -56,6 +56,7 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
 
   ON_COMMAND(ID_FILE_ZOOM_IN, OnZoomIn)
   ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
+  ON_COMMAND(ID_FILE_COPY,  OnCopy)
   ON_COMMAND(ID_FILE_PASTE, OnPaste)
 
   ON_REGISTERED_MESSAGE(s_FindReplaceMessage, OnFindReplace)
@@ -503,6 +504,33 @@ afx_msg void
 CScriptWindow::OnSavePointLeft(NMHDR* nmhdr, LRESULT* result)
 {
   SetModified(true);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+BOOL
+CScriptWindow::IsToolCommandAvailable(UINT id)
+{
+  BOOL available = FALSE;
+  
+  switch (id) {
+    case ID_FILE_COPY:
+      if (SendEditor(SCI_GETSELECTIONSTART) - SendEditor(SCI_GETSELECTIONEND)) available = TRUE;
+    break;
+    case ID_FILE_PASTE:
+      if (SendEditor(SCI_CANPASTE) != 0) available = TRUE;
+    break;
+  }
+
+  return available;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnCopy()
+{
+  SendEditor(SCI_COPY);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -27,6 +27,7 @@ BEGIN_MESSAGE_MAP(CImageWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_IMAGE_VIEWATORIGINALSIZE, OnImageViewOriginalSize)
   ON_UPDATE_COMMAND_UI(ID_IMAGE_VIEWATORIGINALSIZE, OnUpdateImageViewOriginalSizeCommand)
 
+  ON_COMMAND(ID_FILE_COPY,  OnCopy)
   ON_COMMAND(ID_FILE_PASTE, OnPaste)
 
 END_MESSAGE_MAP()
@@ -371,8 +372,20 @@ CImageWindow::IsToolCommandAvailable(UINT id) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+CImageWindow::OnCopy() {
+  if (m_Created) {
+    m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_COPY, 0), 0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
 CImageWindow::OnPaste() {
   if (m_Created) {
     m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_PASTE, 0), 0);
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+

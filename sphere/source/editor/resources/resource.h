@@ -626,6 +626,7 @@
 #define ID_SCRIPT_OPTIONS_SELECTION_RECTANGLE 40761
 #define ID_SCRIPT_OPTIONS_SELECTION_STREAM 40762
 #define ID_SCRIPT_OPTIONS_SELECTION_LINE 40763
+#define ID_FILE_COPY                    40764
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -634,7 +635,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        268
-#define _APS_NEXT_COMMAND_VALUE         40764
+#define _APS_NEXT_COMMAND_VALUE         40765
 #define _APS_NEXT_CONTROL_VALUE         1211
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

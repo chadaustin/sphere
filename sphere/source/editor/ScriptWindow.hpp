@@ -62,9 +62,12 @@ private:
   afx_msg void OnCharAdded(NMHDR* nmhdr, LRESULT* result);
   void SetLineNumber(int line);
 
+  afx_msg void OnCopy();
   afx_msg void OnPaste();
   afx_msg void OnZoomIn();
   afx_msg void OnZoomOut();
+
+  BOOL IsToolCommandAvailable(UINT id);
 
   afx_msg LRESULT OnFindReplace(WPARAM, LPARAM);
 

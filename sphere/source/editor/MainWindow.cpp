@@ -67,7 +67,11 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
 
   ON_COMMAND(ID_FILE_ZOOM_IN,  OnZoomIn)
   ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
+  ON_COMMAND(ID_FILE_COPY,     OnCopy)
   ON_COMMAND(ID_FILE_PASTE,    OnPaste)
+
+  ON_UPDATE_COMMAND_UI(ID_FILE_COPY,  OnUpdateCopy)
+  ON_UPDATE_COMMAND_UI(ID_FILE_PASTE, OnUpdatePaste)
 
   // generic file open
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
@@ -740,7 +744,7 @@ CMainWindow::GetGamesDirectory(char games_directory[MAX_PATH])
 afx_msg void
 CMainWindow::UpdateMenu()
 {
-  int iWindowMenu = 2;
+  int iWindowMenu = 3;
 
   // destroy the old menu
   // FIXME: how to delete menu right
@@ -762,7 +766,7 @@ CMainWindow::UpdateMenu()
     GetMenuString(hProjectMenu, 0, szPopupTitle, 80, MF_BYPOSITION);
 
     InsertMenu(hNewMenu,
-               1,
+               3,
                MF_POPUP | MF_BYPOSITION | MF_STRING,
                (UINT_PTR)GetSubMenu(hProjectMenu, 0),
                szPopupTitle);
@@ -2882,6 +2886,55 @@ CMainWindow::OnPaste()
       UpdateToolBars();
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnCopy()
+{
+  CDocumentWindow* dw = GetCurrentDocumentWindow();
+  if (dw != NULL) {
+    dw->SendMessage(ID_FILE_COPY, 0, 0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnUpdateCopy(CCmdUI* cmdui)
+{
+  BOOL enable = FALSE;
+  CDocumentWindow* dw = GetCurrentDocumentWindow();
+  if (dw) {
+    enable = dw->IsToolCommandAvailable(ID_FILE_COPY);
+  }
+
+  cmdui->Enable(enable);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnUpdatePaste(CCmdUI* cmdui)
+{
+  BOOL enable = FALSE;
+
+  CDocumentWindow* dw = GetCurrentDocumentWindow();
+  if (dw) {
+    enable = dw->IsToolCommandAvailable(ID_FILE_PASTE);
+  }
+  else {
+    if (IsClipboardFormatAvailable(CF_TEXT)) {
+      enable = TRUE;
+    }
+    else
+    if (IsClipboardFormatAvailable(CF_BITMAP)) {
+      enable = TRUE;
+    }
+  }
+
+  cmdui->Enable(enable);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -63,6 +63,7 @@ private:
   afx_msg void OnUpdateZoom4x(CCmdUI* cmdui);
   afx_msg void OnUpdateZoom8x(CCmdUI* cmdui);
 
+  afx_msg void OnCopy();
   afx_msg void OnPaste();
 
   //afx_msg void OnUpdateZoomIn(CCmdUI* cmdui);

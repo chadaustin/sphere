@@ -47,6 +47,7 @@ BEGIN_MESSAGE_MAP(CSpritesetWindow, CSaveableDocumentWindow)
   ON_UPDATE_COMMAND_UI(ID_SPRITESET_ZOOM_4X, OnUpdateZoom4x)
   ON_UPDATE_COMMAND_UI(ID_SPRITESET_ZOOM_8X, OnUpdateZoom8x)
 
+  ON_COMMAND(ID_FILE_COPY,  OnCopy)
   ON_COMMAND(ID_FILE_PASTE, OnPaste)
 
   /*
@@ -316,6 +317,22 @@ CSpritesetWindow::OnZoomOut()
         case 4: m_SpritesetView.SetZoomFactor(2); break;
         case 8: m_SpritesetView.SetZoomFactor(4); break;
       }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetWindow::OnCopy()
+{
+  if (GetFocus() == this) {
+    if (m_TabControl.GetCurSel() == 0) {
+      m_SpritesetView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_SPRITESETVIEWFRAMES_COPY, 0), 0);
+    }
+    else
+    if (m_TabControl.GetCurSel() == 1) {
+      m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_COPY, 0), 0);
     }
   }
 }
@@ -693,8 +710,29 @@ CSpritesetWindow::SIP_SpritesetModified()
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CSpritesetWindow::OnToolCommand(UINT id) {
-  m_ImageView.OnToolChanged(id);
+CSpritesetWindow::OnToolCommand(UINT id)
+{
+  switch (id)
+  {
+    case ID_FILE_COPY:
+      if (m_Created) {
+        if (m_TabControl.GetCurSel() == 0) {
+          m_SpritesetView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_SPRITESETVIEWFRAMES_COPY, 0), 0);
+        }
+      }
+    break;
+
+    case ID_FILE_PASTE:
+      if (m_Created) {
+        if (m_TabControl.GetCurSel() == 0) {
+          m_SpritesetView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_SPRITESETVIEWFRAMES_PASTE, 0), 0);
+        }
+      }
+    break;
+
+    default:
+      m_ImageView.OnToolChanged(id);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -704,7 +742,17 @@ CSpritesetWindow::IsToolCommandAvailable(UINT id) {
   BOOL available = FALSE;
 
   if (m_Created) {
-    if (m_TabControl.GetCurSel() ==  1) {
+    if (m_TabControl.GetCurSel() == 0) {
+      switch (id) {
+        case ID_FILE_COPY:  available = TRUE; break;
+        case ID_FILE_PASTE: {
+          if (IsClipboardFormatAvailable(CF_BITMAP))
+            available = TRUE;
+        }
+        break;
+      }
+    }
+    else if (m_TabControl.GetCurSel() ==  1) {
       available = m_ImageView.IsToolAvailable(id);
     }
   }
