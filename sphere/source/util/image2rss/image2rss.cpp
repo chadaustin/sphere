@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../../common/Spriteset.hpp"
+#include "../../common/rgb.hpp"
 
 
 #define VERGE_STYLE_IMPORT
@@ -16,10 +17,11 @@ bool VergeImageImport(sSpriteset& spriteset, const char* filename, int spriteWid
   if ((image.GetHeight() / 8) < spriteWidth && (image.GetWidth() / 6) < spriteHeight)
     return false;
 
-  spriteset.Create(8, 8);
-  spriteset.ResizeFrames(spriteWidth, spriteHeight);
+  //spriteset.Create(8, 8);
+  //spriteset.ResizeFrames(spriteWidth, spriteHeight);
+  spriteset.Create(spriteWidth, spriteHeight, 30, 8, 8);
 
-  // replace transparent color with 
+  // make a color transparent in the image
   for (int i = 0; i < image.GetWidth() * image.GetHeight(); i++)
   {
     RGBA& pixel = image.GetPixels()[i];
@@ -29,12 +31,25 @@ bool VergeImageImport(sSpriteset& spriteset, const char* filename, int spriteWid
       pixel.alpha = 0;
   }
 
+  // insert the "frames" into the spriteset
+  for (int row=0; row<6; row++)
+    for (int col=0; col<5; col++)
+    {
+      CImage32& frame = spriteset.GetImage((row * 5)+col);
+
+      for (int i=0; i<spriteHeight; i++)
+        memcpy(frame.GetPixels() + (i * spriteWidth), 
+               image.GetPixels() + (((row*spriteHeight) + i + 1 + (1*row)) * image.GetWidth() + 1 + (1*col) + (col*spriteWidth)),
+               spriteWidth * sizeof(RGBA));
+    }
+
 #define CopyFrame(direction, row, frame, column)            \
 {                                                           \
-  for (int k=0; k<spriteHeight; k++) \
+  /*for (int k=0; k<spriteHeight; k++) \
     memcpy(spriteset.GetFrame(direction, frame).GetPixels() + (k * spriteWidth),  \
     image.GetPixels() + (((row*spriteHeight) + k + 1 + (1*row)) * image.GetWidth() + 1 +(1*column) + (column*spriteWidth)), \
-    spriteWidth * sizeof(RGBA)); \
+    spriteWidth * sizeof(RGBA)); */ \
+    spriteset.SetFrameIndex(direction, frame, (row * 5) + column); \
 }
 
 #define CopyRow(direction, row)    \
@@ -129,7 +144,7 @@ int main(int argc, char** argv)
     return EXIT_FAILURE;
   }
 
-  if (!spriteset.Import_BMP(argv[1], atoi(argv[2]), atoi(argv[3]), black))
+  if (!spriteset.Import_BMP(argv[1], atoi(argv[2]), atoi(argv[3]), CreateRGBA(0,0,0,255)))
   {
     printf("Error: Could not import Image '%s' \n", argv[1]);
     return EXIT_FAILURE;
