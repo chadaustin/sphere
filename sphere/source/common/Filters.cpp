@@ -116,10 +116,15 @@ inline RGBA BlurPixel(int width, int height, RGBA* pixels, int x, int y)
   return pixels[y * width + x];
 }
 
-void Blur(int width, int height, RGBA* pixels)
+void Blur(int width, int height, RGBA* pixels, int mask_width = 3, int mask_height = 3)
 {
   RGBA* old_pixels = new RGBA[width * height];
   memcpy(old_pixels, pixels, width * height * sizeof(RGBA));
+
+  // the greater width/height is, the more blurry the effect
+  int mask_xoffset = mask_width / 2;
+  int mask_yoffset = mask_height / 2;
+  int mask_size = mask_width * mask_height;
 
 #define Blur_pixel(x, y) BlurPixel(width, height, pixels, ix + x, iy + y)
 
@@ -130,6 +135,15 @@ void Blur(int width, int height, RGBA* pixels)
       int destb = 0;
       int desta = 0;
 
+      for (int my = 0; my < mask_height; my++) {
+        for (int mx = 0; mx < mask_width; mx++) {
+          destr += Blur_pixel(mx - mask_xoffset, my - mask_yoffset).red;
+          destg += Blur_pixel(mx - mask_xoffset, my - mask_yoffset).green;
+          destb += Blur_pixel(mx - mask_xoffset, my - mask_yoffset).blue;
+          desta += Blur_pixel(mx - mask_xoffset, my - mask_yoffset).alpha;
+        }
+      }
+/*
       destr += Blur_pixel(-1, -1).red;
       destr += Blur_pixel(-1,  0).red;
       destr += Blur_pixel(-1,  1).red;
@@ -169,11 +183,12 @@ void Blur(int width, int height, RGBA* pixels)
       desta += Blur_pixel( 1, -1).alpha;
       desta += Blur_pixel( 1,  0).alpha;
       desta += Blur_pixel( 1,  1).alpha;
+*/
 
-      pixels[iy * width + ix].red   = destr / 9;
-      pixels[iy * width + ix].green = destg / 9;
-      pixels[iy * width + ix].blue  = destb / 9;
-      pixels[iy * width + ix].alpha = desta / 9;
+      pixels[iy * width + ix].red   = destr / mask_size;
+      pixels[iy * width + ix].green = destg / mask_size;
+      pixels[iy * width + ix].blue  = destb / mask_size;
+      pixels[iy * width + ix].alpha = desta / mask_size;
     }
   }
 
