@@ -163,18 +163,7 @@ CDocumentWindow::GetPalette(int i) const
 BOOL
 CDocumentWindow::Create(LPCTSTR class_name)
 {
-	BOOL maximized = FALSE;
-	((CMainWindow*)AfxGetMainWnd())->MDIGetActive(&maximized);
-
-  BOOL result = CMDIChildWnd::Create(class_name, "");
-
-	if (maximized)
-	{
-		ShowWindow(SW_MAXIMIZE);
-	}
-
-  UpdateWindowCaption();
-  return result;
+  return Create(class_name, WS_CHILD | WS_VISIBLE | WS_OVERLAPPEDWINDOW);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -184,13 +173,9 @@ CDocumentWindow::Create(LPCTSTR class_name, DWORD style)
 {
 	BOOL maximized = FALSE;
 	((CMainWindow*)AfxGetMainWnd())->MDIGetActive(&maximized);
+  if (maximized) style |= WS_MAXIMIZE;
 
   BOOL result = CMDIChildWnd::Create(class_name, "", style);
-
-	if (maximized)
-	{
-		ShowWindow(SW_MAXIMIZE);
-	}
 
   UpdateWindowCaption();
   return result;
