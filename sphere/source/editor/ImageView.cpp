@@ -856,7 +856,7 @@ CImageView::Rectangle()
     int sh = GetSelectionHeight();
 
     m_Image.Rectangle(start.x, start.y, end.x, end.y, m_Color, sx, sy, (sx + sw), (sy + sh));
-    InvalidateSelection(sx, sy, sw, sh);
+    Invalidate();
     m_Handler->IV_ImageChanged();
   }
 }
@@ -870,15 +870,14 @@ CImageView::Selection()
   if (!m_MouseDown)
   {
     m_StartPoint = m_CurPoint;
-    InvalidateSelection(m_SelectionX, m_SelectionY, m_SelectionWidth, m_SelectionHeight);
-    m_Handler->IV_ImageChanged();
   }
   else
   {
     UpdateSelection();
-    InvalidateSelection(m_SelectionX, m_SelectionY, m_SelectionWidth, m_SelectionHeight);
-    m_Handler->IV_ImageChanged();
   }
+
+  InvalidateSelection(GetSelectionLeftX() - 1, GetSelectionTopY() - 1, GetSelectionWidth() + 2, GetSelectionHeight() + 2);
+  m_Handler->IV_ImageChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
