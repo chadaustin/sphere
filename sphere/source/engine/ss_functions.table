@@ -88,6 +88,8 @@ SS_FUNCTION(OpenLog, 1)
   SS_FUNCTION(CreateByteArray, 1)
   SS_FUNCTION(CreateByteArrayFromString, 1)
   SS_FUNCTION(CreateStringFromByteArray, 1)
+  // generate an MD5 hash
+  SS_FUNCTION(HashByteArray, 1)
   // array.length
   // array[index]
 
@@ -358,3 +360,5 @@ SS_FUNCTION(OpenLog, 1)
   //rawfile.getSize()
   //rawfile.read(num_bytes)
   //rawfile.close()
+  // generate an MD5 hash
+  SS_FUNCTION(HashFromFile, 1)

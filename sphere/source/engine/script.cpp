@@ -624,7 +624,7 @@ static bool IsValidPath(const char* path)
   int num_double_dots = 0;
   bool prev_was_dot = false;
 
-  for (int i = 0; i < strlen(path); ++i) {
+  for (unsigned int i = 0; i < strlen(path); ++i) {
     if (path[i] == '.') {
       if (prev_was_dot) {
         num_double_dots += 1;
@@ -1061,6 +1061,14 @@ begin_func(ExecuteGame, 1)
 
   This->m_Engine->ExecuteGame(directory);
   This->m_Error = "";
+  return JS_FALSE;
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(Exit, 0)
+  This->m_ShouldExit = true;
+  This->m_Error = "";  // don't report an error (there is none)
 
   // close the map engine
   if (This->m_Engine->GetMapEngine()->IsRunning())
@@ -1068,6 +1076,22 @@ begin_func(ExecuteGame, 1)
 
   return JS_FALSE;
 end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(Abort, 1)
+  arg_str(message);
+
+  // close the map engine
+  if (This->m_Engine->GetMapEngine()->IsRunning())
+    This->m_Engine->GetMapEngine()->Exit();
+
+  This->m_ShouldExit = true;
+  JS_ReportError(cx, "%s", message);
+  return JS_FALSE;
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
 
 begin_func(RestartGame, 0)
   This->m_Engine->RestartGame();
@@ -1077,23 +1101,6 @@ begin_func(RestartGame, 0)
   if (This->m_Engine->GetMapEngine()->IsRunning())
     This->m_Engine->GetMapEngine()->Exit();
 
-  return JS_FALSE;
-end_func()
-
-////////////////////////////////////////////////////////////////////////////////
-
-begin_func(Exit, 0)
-  This->m_ShouldExit = true;
-  This->m_Error = "";  // don't report an error (there is none)
-  return JS_FALSE;
-end_func()
-
-////////////////////////////////////////////////////////////////////////////////
-
-begin_func(Abort, 1)
-  arg_str(message);
-  This->m_ShouldExit = true;
-  JS_ReportError(cx, "%s", message);
   return JS_FALSE;
 end_func()
 
@@ -3461,6 +3468,92 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "../../common/md5global.h"
+#include "../../common/md5.h"
+
+begin_func(HashFromFile,1) {
+  arg_str(filename);
+
+  if (IsValidPath(filename) == false) {
+    JS_ReportError(cx, "Too many ..'s in filename: '%s'", filename);
+    return JS_FALSE;  
+  }
+
+  IFile* infile=This->m_Engine->OpenRawFile(filename,false);
+  if (infile==NULL) {
+    JS_ReportError(cx, "HashFromFile could not open '%s'", filename);
+    return JS_FALSE;
+  }
+
+  MD5_CTX ctx;
+  MD5Init(&ctx);
+
+  // Read file and update hash as blocks are read
+  byte chunk[4096];
+  int todo=0;
+  for (todo=infile->Size(); todo>4095; todo-=4096) {
+    infile->Read(chunk,4096);
+    MD5Update(&ctx,chunk,4096);
+  }
+  // read last bit
+  if (todo>0) {
+    infile->Read(chunk,todo);
+    MD5Update(&ctx,chunk,todo);
+  }
+  delete infile;
+
+  // get the hash
+  unsigned char digest[16];
+  MD5Final(digest,&ctx);
+
+  char retval[33];
+  char* sptr;
+  // Format into a string
+  sptr=retval;
+  for (int i=0;i<16;++i) {
+    sprintf(sptr,"%02x",digest[i]);
+    ++sptr;
+    ++sptr;
+  }
+  retval[32]='\0';
+
+  return_str(retval);
+}
+end_func()
+
+begin_func(HashByteArray,1)
+  arg_byte_array(array);
+  int len,i;
+  unsigned char* bptr;
+  char* sptr;
+  unsigned char digest[16];
+  char retval[33];
+  MD5_CTX ctx;
+
+  // Set up data
+  len=array->size;
+  bptr=(unsigned char*)array->array;
+
+  // Generate MD5 hash on it
+  MD5Init(&ctx);
+  MD5Update(&ctx,bptr,len);
+  MD5Final(digest,&ctx);
+
+  // Format into a string
+  sptr=retval;
+  for (i=0;i<16;++i) {
+    sprintf(sptr,"%02x",digest[i]);
+    ++sptr;
+    ++sptr;
+  }
+  retval[32]='\0';
+
+  return_str(retval);
+end_func()
+
+
+////////////////////////////////////////////////////////////////////////////////
+
 
 
 // OBJECTS
@@ -3963,7 +4056,7 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
     JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
 
   // attach the spriteset to this object
-  
+
   SS_SPRITESET* spriteset_object = new SS_SPRITESET;
   spriteset_object->spriteset = spriteset;
   spriteset_object->object    = object;
