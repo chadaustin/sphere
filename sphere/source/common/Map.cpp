@@ -1366,7 +1366,7 @@ sMap::SetEdgeScript(int edge, const char* script)
 void 
 sMap::Translate(int dx, int dy)
 {
-  for (int i = 0; i < m_Layers.size(); i++) {
+  for (unsigned i = 0; i < m_Layers.size(); i++) {
     m_Layers[i].Translate(dx, dy);
   }
 }

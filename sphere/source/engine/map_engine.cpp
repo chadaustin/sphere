@@ -3080,7 +3080,7 @@ CMapEngine::IsTriggerAt(int location_x, int location_y, int layer)
 bool
 CMapEngine::ExecuteTriggerScript(int trigger_index)
 {
-  if (trigger_index < 0 || trigger_index > m_Triggers.size()) {
+  if (trigger_index < 0 || trigger_index >= int(m_Triggers.size())) {
     std::ostringstream os;
     os << "Invalid trigger index\n";
     m_ErrorMessage = os.str();
