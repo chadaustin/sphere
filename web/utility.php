@@ -1,5 +1,5 @@
 <?php
-$SITEROOT = "/";
+$SITEROOT = "";
 $DOCUMENTROOT = "/home/groups/s/sp/sphere/htdocs";
 
 require("$DOCUMENTROOT/mysql.php");
