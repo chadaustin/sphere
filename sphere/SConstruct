@@ -107,4 +107,4 @@ if ARGUMENTS.get('debug', 0):
 
 Export('base_env')
 
-SConscript(dirs = ['source', 'system'])
+SConscript(dirs = ['source', 'startup', 'system'])

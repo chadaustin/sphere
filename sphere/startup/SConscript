@@ -1,0 +1,21 @@
+import os
+
+Import('base_env')
+
+files = [
+    'game.sgm',
+    'fonts/base.rfn',
+    'images/bot.png',
+    'images/down.png',
+    'images/fil.png',
+    'images/intro.jpeg',
+    'images/mid.png',
+    'images/top.png',
+    'images/up.png',
+    'scripts/main.js',
+    'scripts/menu.js',
+    'sounds/intro.wav',
+    'windowstyles/base.rws']
+
+for f in files:
+    base_env.Install(os.path.join("#/build/startup", os.path.split(f)[0]), f)
