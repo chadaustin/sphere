@@ -325,7 +325,7 @@ CImageView::Copy()
   GlobalUnlock(memory);
   SetClipboardData(s_ClipboardFormat, memory);
 
-  // ADD DDB
+  // ADD DIB
   // create a pixel array to initialize the bitmap
   BGRA* pixels = new BGRA[sw * sh];
   if (pixels == NULL) {
@@ -336,19 +336,37 @@ CImageView::Copy()
   for (int iy = sy; iy < (sy + sh); iy++) {
     for (int ix = sx; ix < (sx + sw); ix++)
     {
-      pixels[(iy - sy) * (sw) + ix - sx].red   = source[iy * width + ix].red;
-      pixels[(iy - sy) * (sw) + ix - sx].green = source[iy * width + ix].green;
-      pixels[(iy - sy) * (sw) + ix - sx].blue  = source[iy * width + ix].blue;
-      pixels[(iy - sy) * (sw) + ix - sx].alpha = source[iy * width + ix].alpha;
+      pixels[(sh - iy + sy - 1) * (sw) + ix - sx].red   = source[iy * width + ix].red;
+      pixels[(sh - iy + sy - 1) * (sw) + ix - sx].green = source[iy * width + ix].green;
+      pixels[(sh - iy + sy - 1) * (sw) + ix - sx].blue  = source[iy * width + ix].blue;
+      pixels[(sh - iy + sy - 1) * (sw) + ix - sx].alpha = source[iy * width + ix].alpha;
     }
   }
 
   // create the bitmap
   HBITMAP bitmap = CreateBitmap(sw, sh, 1, 32, pixels);
+	BITMAPINFOHEADER header;
+	header.biSize = sizeof(header);
+	header.biWidth = sw;
+	header.biHeight = sh;
+	header.biPlanes = 1;
+	header.biBitCount = 32;
+	header.biCompression = BI_RGB;
+	header.biSizeImage = 0;
+	header.biXPelsPerMeter = 0;
+	header.biYPelsPerMeter = 0;
+	header.biClrUsed = 0;
+	header.biClrImportant = 0;
+
+	HGLOBAL hDIB = GlobalAlloc(GHND, sizeof(header) + width * height * 4);
+  char * dibPtr = (char*)GlobalLock(hDIB);
+	memcpy(dibPtr, &header, sizeof(header));
+	memcpy(dibPtr+sizeof(header), pixels, width * height * 4);
+	GlobalUnlock(hDIB);
 
   // put the bitmap in the clipboard
-  SetClipboardData(CF_BITMAP, bitmap);
-  delete[] pixels;
+  SetClipboardData(CF_DIB, hDIB);
+	delete[] pixels;
 
   CloseClipboard();
   return true;

@@ -10,6 +10,7 @@
 #include "AlphaView.hpp"
 #include "SpriteBaseView.hpp"
 #include "SpritesetImagesPalette.hpp"
+#include "SpritesetAnimationPalette.hpp"
 #include "../common/Spriteset.hpp"
 
 
@@ -62,6 +63,7 @@ private:
   virtual void SV_SpritesetModified();
   virtual void SV_CopyCurrentFrame();
   virtual void SV_PasteCurrentFrame();
+	virtual void SV_ZoomFactorChanged(int zoom);
   virtual void IV_ImageChanged();
   virtual void IV_ColorChanged(RGBA color);
   virtual void PV_ColorChanged(RGB color);
@@ -92,6 +94,7 @@ private:
 
   // palette
   CSpritesetImagesPalette* m_ImagesPalette;
+	CSpritesetAnimationPalette * m_AnimationPalette;
 
   DECLARE_MESSAGE_MAP()
 };

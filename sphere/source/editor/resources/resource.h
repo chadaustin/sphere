@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by editor.rc
 //
 #define IDR_MAIN                        101
@@ -469,6 +469,7 @@
 #define ID_FILE_IMPORT_RM2KCHIPSETTORTS 40654
 #define ID_FILE_OPEN_TILESET            40655
 #define ID_IMAGEVIEW_FILTER_CUSTOM      40656
+#define ID_MAPVIEW_VIEWANIMATIONS       40657
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -477,7 +478,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        232
-#define _APS_NEXT_COMMAND_VALUE         40657
+#define _APS_NEXT_COMMAND_VALUE         40658
 #define _APS_NEXT_CONTROL_VALUE         1144
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

@@ -17,6 +17,7 @@ public:
   virtual void SV_SpritesetModified() = 0;
   virtual void SV_CopyCurrentFrame() = 0;
   virtual void SV_PasteCurrentFrame() = 0;
+	virtual void SV_ZoomFactorChanged(int zoom) = 0;
 };
 
 

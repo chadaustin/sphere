@@ -138,6 +138,7 @@ CSpritesetWindow::Create()
 
   // create the palette
   m_ImagesPalette = new CSpritesetImagesPalette(this, this, &m_Spriteset);
+	m_AnimationPalette = new CSpritesetAnimationPalette(this, &m_Spriteset);
 
   // the window and its children are ready!
   m_Created = true;
@@ -207,6 +208,7 @@ afx_msg void
 CSpritesetWindow::OnDestroy()
 {
   m_ImagesPalette->Destroy();
+	m_AnimationPalette->Destroy();
 
   m_SpritesetView.DestroyWindow();
   m_ImageView.DestroyWindow();
@@ -428,6 +430,7 @@ CSpritesetWindow::SV_CurrentFrameChanged(int direction, int frame)
   m_CurrentFrame = frame;
   UpdateImageView();
   m_ImagesPalette->SetCurrentImage(m_Spriteset.GetFrameIndex(direction, frame));
+	m_AnimationPalette->SetCurrentDirection(direction);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -448,6 +451,14 @@ CSpritesetWindow::SV_SpritesetModified()
   UpdateImageView();
   m_ImagesPalette->Invalidate();
   SetModified(true);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CSpritesetWindow::SV_ZoomFactorChanged(int zoom)
+{
+	m_AnimationPalette->OnZoom((double)zoom);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

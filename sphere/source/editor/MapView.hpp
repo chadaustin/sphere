@@ -69,6 +69,8 @@ private:
   void UpdateObstructionTile(int tile);
   void UpdateObstructionTiles();
 
+	void InitAnimations();
+
   int FindSpritesetImageIconsIndex(int person_index, std::string filename);
 
   RGBA* GetFlatImageFromClipboard(int& width, int& height);
@@ -82,6 +84,7 @@ private:
   afx_msg void OnMouseMove(UINT flags, CPoint point);
   afx_msg void OnLButtonUp(UINT flags, CPoint point);
   afx_msg void OnRButtonUp(UINT flags, CPoint point);
+  afx_msg void OnTimer(UINT event);
 
   virtual void OnHScrollChanged(int x);
   virtual void OnVScrollChanged(int y);
@@ -155,6 +158,10 @@ private:
   bool m_ShowGrid;
   bool m_ShowTileObstructions;
   std::vector<sTile> m_TileObstructions; // when View->Tile Obstructions is on, we render these
+	bool m_ShowAnimations;
+
+  UINT m_Timer;
+	int  m_FrameTick;
 
   enum SpritesetDrawTypes {
     SDT_ICON,

@@ -46,7 +46,7 @@ protected:
   const char* GetCaption();
   virtual void UpdateWindowCaption();
 
-  afx_msg void OnCreate(LPCREATESTRUCT cs);
+  afx_msg int OnCreate(LPCREATESTRUCT cs);
   afx_msg void OnClose();
   afx_msg void OnSizing(UINT side, LPRECT rect);
   afx_msg void OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactive_window);

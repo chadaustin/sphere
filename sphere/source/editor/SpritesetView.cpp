@@ -146,6 +146,7 @@ void
 CSpritesetView::SetZoomFactor(int zoom)
 {
   m_ZoomFactor = zoom;
+	m_Handler->SV_ZoomFactorChanged(zoom);
   UpdateMaxSizes();
   Invalidate();
   UpdateScrollBars();

@@ -620,8 +620,8 @@ sTileset::SetTileSize(int w, int h, bool rescale)
 
 void
 sTileset::InsertTiles(int insert_at, int num_tiles)
-{
-  // resize the tile array
+{	
+	// resize the tile array
   m_Tiles.insert(m_Tiles.begin() + insert_at, num_tiles, sTile(m_TileWidth, m_TileHeight));
 }
 

@@ -697,11 +697,11 @@ CMainWindow::OnFileOpen()
 
   // convert extension set into a string
   std::string all_filter;
-  std::set<std::string>::iterator i;
-  for (i = extensions.begin(); i != extensions.end(); i++) {
+  std::set<std::string>::iterator j;
+  for (j = extensions.begin(); j != extensions.end(); j++) {
     all_filter += ";";
     all_filter += "*.";
-    all_filter += *i;
+    all_filter += *j;
   }
 
   // generate a huge filter that supports all file types!
@@ -1777,7 +1777,7 @@ CMainWindow::OnUpdateWindowCloseAll(CCmdUI* cmdui)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-afx_msg void
+afx_msg LRESULT
 CMainWindow::OnInsertProjectFile(WPARAM wparam, LPARAM lparam)
 {
   // local functions
@@ -1803,22 +1803,25 @@ CMainWindow::OnInsertProjectFile(WPARAM wparam, LPARAM lparam)
     for (int j = 0; j < extensions.size(); j++) {
       if (Local::extension_compare(path, extensions[j].c_str())) {
         InsertProjectFile(NULL, i, path);
-        return;
+        return 0;
       }
     }
   }
 
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-afx_msg void
+afx_msg LRESULT
 CMainWindow::OnRefreshProject(WPARAM /*wparam*/, LPARAM /*lparam*/)
 {
   m_Project.RefreshItems();
   if (m_ProjectWindow) {
     m_ProjectWindow->Update();
   }
+
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

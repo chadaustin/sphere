@@ -19,6 +19,8 @@ static int s_MapAreaClipboardFormat;
 static int s_MapEntityClipboardFormat;
 static int s_ClipboardFormat;
 
+const int ANIMATION_TIMER = 9001;
+
 
 BEGIN_MESSAGE_MAP(CMapView, CScrollWindow)
 
@@ -63,6 +65,7 @@ CMapView::CMapView()
 , m_Clicked(false)
 , m_ShowGrid(false)
 , m_ShowTileObstructions(false)
+, m_ShowAnimations(false)
 
 , m_PreviewLineOn(0)
 , m_RedrawWindow(0)
@@ -114,7 +117,25 @@ CMapView::Create(CDocumentWindow* owner, IMapViewHandler* handler, CWnd* parent,
   UpdateScrollBars();
   UpdateObstructionTiles();
 
+	//init the animation timer
+	m_FrameTick = 0;  
+  m_Timer = SetTimer(ANIMATION_TIMER,Configuration::Get(KEY_ANIMATION_DELAY), NULL);
+	InitAnimations();
+
   return retval;
+}
+
+
+void 
+CMapView::InitAnimations()
+{
+	//init animations in tileset
+	int tileNum = m_Map->GetTileset().GetNumTiles();
+
+	for (int i = 0; i < tileNum; i++)
+	{
+		m_Map->GetTileset().GetTile(i).InitAnimation(i, m_FrameTick);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -208,6 +229,7 @@ CMapView::TilesetChanged()
     32);
 
   UpdateObstructionTiles();
+	InitAnimations();
 
   m_RedrawWindow = 1;
   Invalidate();
@@ -604,8 +626,7 @@ CMapView::LayerAreaCopy()
   GlobalUnlock(memory);
   SetClipboardData(s_ClipboardFormat, memory);
 
-
-  // ADD DDB
+  // ADD DIB
   // create a pixel array to initialize the bitmap
   BGRA* pixels = new BGRA[width * tw * height * th];
   if (pixels == NULL) {
@@ -620,7 +641,7 @@ CMapView::LayerAreaCopy()
 
       for (int iy = 0; iy < th; iy++) {
         for (int ix = 0; ix < tw; ix++) {
-          int counter = (((ty - start_y) * th) + iy) * (tw * width) + (((tx - start_x) * tw) + ix);
+          int counter = (height * th - (((ty - start_y) * th) + iy) - 1) * (tw * width) + (((tx - start_x) * tw) + ix);
           pixels[counter].red   = source[iy * tw + ix].red;
           pixels[counter].green = source[iy * tw + ix].green;
           pixels[counter].blue  = source[iy * tw + ix].blue;
@@ -630,12 +651,29 @@ CMapView::LayerAreaCopy()
     }
   }
 
-  // create the bitmap
-  HBITMAP bitmap = CreateBitmap(width * tw, height * th, 1, 32, pixels);
+	// create the bitmap  
+	BITMAPINFOHEADER header;
+	header.biSize = sizeof(header);
+	header.biWidth = tw * width;
+	header.biHeight = th * height;
+	header.biPlanes = 1;
+	header.biBitCount = 32;
+	header.biCompression = BI_RGB;
+	header.biSizeImage = 0;
+	header.biXPelsPerMeter = 0;
+	header.biYPelsPerMeter = 0;
+	header.biClrUsed = 0;
+	header.biClrImportant = 0;
+
+	HGLOBAL hDIB = GlobalAlloc(GHND, sizeof(header) + tw * width * th * height * 4);
+  char * dibPtr = (char*)GlobalLock(hDIB);
+	memcpy(dibPtr, &header, sizeof(header));
+	memcpy(dibPtr+sizeof(header), pixels, tw * width * th * height * 4);
+	GlobalUnlock(hDIB);
 
   // put the bitmap in the clipboard
-  SetClipboardData(CF_BITMAP, bitmap);
-  delete[] pixels;
+  SetClipboardData(CF_DIB, hDIB);
+	delete[] pixels;
 
   CloseClipboard();
 }
@@ -1302,6 +1340,7 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
   int tile_width  = m_Map->GetTileset().GetTileWidth();
   int tile_height = m_Map->GetTileset().GetTileHeight();
 
+
   // clear the DIB
   memset(m_BlitTile->GetPixels(), 0,  m_ZoomFactor * m_ZoomFactor * tile_width * tile_height * 4);
 
@@ -1319,7 +1358,7 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
         tx < layer.GetWidth() &&
         ty < layer.GetHeight())
     {
-      int tile = layer.GetTile(tx, ty);
+      int tile = m_Map->GetTileset().GetTile(layer.GetTile(tx, ty)).GetCurrentShown();
       const RGBA* src = m_Map->GetTileset().GetTile(tile).GetPixels();
       BGRA* dest = (BGRA*)m_BlitTile->GetPixels();
 
@@ -2476,6 +2515,11 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
     CheckMenuItem(menu, ID_MAPVIEW_VIEWTILEOBSTRUCTIONS, MF_BYCOMMAND | MF_CHECKED);
   }
 
+	if (m_ShowAnimations) {
+
+		CheckMenuItem(menu, ID_MAPVIEW_VIEWANIMATIONS, MF_BYCOMMAND | MF_CHECKED);
+	}
+
   switch (m_SpritesetDrawType) {
     case SDT_ICON:    CheckMenuItem(menu, ID_MAPVIEW_VIEWPERSONS_ICON, MF_BYCOMMAND | MF_CHECKED); break;
     case SDT_MINI_IMAGE: CheckMenuItem(menu, ID_MAPVIEW_VIEWPERSONS_MINIIMAGE, MF_BYCOMMAND | MF_CHECKED); break;
@@ -2658,7 +2702,7 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
       m_RedrawWindow = 1;
       Invalidate();
       //m_Handler->MV_MapChanged();
-      break;
+      break;	  
 
     case ID_MAPVIEW_VIEWTILEOBSTRUCTIONS:
       m_ShowTileObstructions = !m_ShowTileObstructions;
@@ -2668,6 +2712,11 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
       m_RedrawWindow = 1;
       Invalidate();
       //m_Handler->MV_MapChanged();
+      break;
+
+		case ID_MAPVIEW_VIEWANIMATIONS:
+	    m_ShowAnimations = !m_ShowAnimations;  
+			InitAnimations();
       break;
 
      case ID_MAPVIEW_VIEWPERSONS_ICON:
@@ -2743,6 +2792,72 @@ CMapView::TP_ToolSelected(int tool)
   // do something
   m_CurrentTool = tool;
   Invalidate(); // we should just invalidate the tiles needed according to the old/new tools
+}
+
+afx_msg void
+CMapView::OnTimer(UINT event)
+{
+	if (!m_ShowAnimations) return;
+
+  //invalidate all visible animated tiles, changing their shown tile
+  int NumTilesX = GetPageSizeX()+1;
+  int NumTilesY = GetPageSizeY()+1;
+  int tile_width  = m_Map->GetTileset().GetTileWidth();
+  int tile_height = m_Map->GetTileset().GetTileHeight();
+  int layers = m_Map->GetNumLayers();
+  CDC * pDC = GetDC();
+	
+	m_FrameTick++;
+
+	int numTiles = m_Map->GetTileset().GetNumTiles();
+	for (int i = 0; i < numTiles; i++)
+	{
+		  m_Map->GetTileset().GetTile(i).
+				UpdateAnimation(m_FrameTick, m_Map->GetTileset());
+	}
+
+  for (int ix = 0; ix < NumTilesX; ix++) 
+  {
+		for (int iy = 0; iy < NumTilesY; iy++) 
+		{
+			for (int i = 0; i < layers; i++)
+			{
+				const sLayer& layer = m_Map->GetLayer(i);
+				
+				if (layer.IsVisible() == false) 
+				{
+					continue;
+				}
+
+				if (m_CurrentX + ix < layer.GetWidth() &&
+					  m_CurrentY + iy < layer.GetHeight()) 
+				{
+					int tile = layer.GetTile(m_CurrentX + ix,m_CurrentY + iy);
+					if (m_Map->GetTileset().GetTile(tile).IsUpdated()) 
+					{
+						RECT Rect =
+						{
+							ix  * tile_width  * m_ZoomFactor,
+							iy  * tile_height * m_ZoomFactor,
+							ix  * tile_width  * m_ZoomFactor + tile_width  * m_ZoomFactor,
+							iy  * tile_height * m_ZoomFactor + tile_height * m_ZoomFactor,
+						};
+						
+						//This refers to the clipping region
+						// (client area excluding hidden parts)
+						// instead of the update region (area needed to be redrawn).
+						if (pDC->RectVisible(&Rect))
+						{	
+							InvalidateRect(&Rect);
+					  }
+						break;
+					}
+				}
+			}
+		}
+	}
+
+  m_RedrawWindow = 1;  
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -174,10 +174,11 @@ CDocumentWindow::IsSaveable() const
 
 ////////////////////////////////////////////////////////////////////////////////
 
-afx_msg void
+afx_msg int
 CDocumentWindow::OnCreate(LPCREATESTRUCT cs)
 {
   SetWindowLong(m_hWnd, GWL_USERDATA, WA_DOCUMENT_WINDOW | (IsSaveable() ? WA_SAVEABLE : 0));
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

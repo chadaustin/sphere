@@ -119,8 +119,8 @@ private:
   afx_msg void OnUpdateSaveAllCommand(CCmdUI* cmdui);
   afx_msg void OnUpdateWindowCloseAll(CCmdUI* cmdui);
 
-  afx_msg void OnInsertProjectFile(WPARAM wparam, LPARAM lparam);
-  afx_msg void OnRefreshProject(WPARAM wparam, LPARAM lparam);
+  afx_msg LRESULT OnInsertProjectFile(WPARAM wparam, LPARAM lparam);
+  afx_msg LRESULT OnRefreshProject(WPARAM wparam, LPARAM lparam);
 
   afx_msg LRESULT OnDocumentWindowClosing(WPARAM wparam, LPARAM lparam);
   afx_msg LRESULT OnSetChildMenu(WPARAM wparam, LPARAM lparam);

@@ -6,6 +6,7 @@
 #include "ObstructionMap.hpp"
 #include <string>
 
+class sTileset;
 
 class sTile : public CImage32
 {
@@ -22,11 +23,16 @@ public:
   int  GetNextTile() const;
   int  GetDelay() const;
   std::string GetName() const;
+	int  GetCurrentShown() const;
+	bool IsUpdated() const;
+
 
   void SetAnimated(bool animated);
   void SetNextTile(int next_tile);
   void SetDelay(int delay);
-  void SetName(std::string tile_name);
+  void SetName(std::string tile_name);	
+	void InitAnimation(int thisTile, int frame);
+	void UpdateAnimation(int frame, const sTileset & parent);
 
 private:
   bool m_Animated;
@@ -34,7 +40,12 @@ private:
   int  m_Delay;
   std::string m_Name;
 
-  sObstructionMap m_ObstructionMap;
+	sObstructionMap m_ObstructionMap;
+
+	// for animating the tile actually in CMapView
+	int  m_CurrentShown; // current tile shown; even used without animation
+	int  m_UpdateFrame;  // next frame count the tile shown needs to be switched  
+	bool m_Updated; // tile changed in last UpdateAnimation-call
 };
 
 
@@ -50,7 +61,6 @@ sTile::GetNextTile() const
 {
   return m_NextTile;
 }
-
 
 inline int
 sTile::GetDelay() const
@@ -77,6 +87,18 @@ inline std::string
 sTile::GetName() const
 {
   return m_Name;
+}
+
+inline bool
+sTile::IsUpdated() const
+{
+	return m_Updated;
+}
+
+inline int
+sTile::GetCurrentShown() const
+{
+	return m_CurrentShown;
 }
 
 #endif
