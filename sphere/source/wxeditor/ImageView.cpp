@@ -589,7 +589,7 @@ wImageView::Click(bool force_draw)
   }
   
   m_Image.SetPixel(end.x, end.y, m_Color);
-  Refresh();
+  RefreshPixels(start.x, start.y, end.x, end.y);
   m_Handler->IV_ImageChanged();
 }
 
@@ -651,7 +651,8 @@ wImageView::Line()
   if (!m_MouseDown)
   {
     m_StartPoint = m_CurPoint;
-    Refresh();
+    wxPoint start = ConvertToPixel(m_StartPoint);
+    RefreshPixels(start.x, start.y, start.x, start.y);
     m_Handler->IV_ImageChanged();
   }
   else
@@ -665,7 +666,7 @@ wImageView::Line()
       return;
 
     m_Image.Line(start.x, start.y, end.x, end.y, m_Color);
-    Refresh();
+    RefreshPixels(start.x, start.y, end.x, end.y);
     m_Handler->IV_ImageChanged();
   }
 }
@@ -678,7 +679,8 @@ wImageView::Rectangle()
   if (!m_MouseDown)
   {
     m_StartPoint = m_CurPoint;
-    Refresh();
+    wxPoint start = ConvertToPixel(m_StartPoint);
+    RefreshPixels(start.x, start.y, start.x, start.y);
     m_Handler->IV_ImageChanged();
   }
   else
@@ -692,7 +694,7 @@ wImageView::Rectangle()
       return;
 
     m_Image.Rectangle(start.x, start.y, end.x, end.y, m_Color);
-    Refresh();
+    RefreshPixels(start.x, start.y, end.x, end.y);
     m_Handler->IV_ImageChanged();
   }
 }
@@ -705,7 +707,8 @@ wImageView::Circle()
   if (!m_MouseDown)
   {
     m_StartPoint = m_CurPoint;
-    Refresh();
+    wxPoint start = ConvertToPixel(m_StartPoint);
+    RefreshPixels(start.x, start.y, start.x, start.y);
     m_Handler->IV_ImageChanged();
   }
   else
@@ -718,11 +721,15 @@ wImageView::Circle()
     if (!InImage(start) || !InImage(end))
       return;
 
-    if (abs(start.x - end.x) > abs(start.y - end.y))
-      m_Image.Circle(start.x, start.y, abs(start.x - end.x), m_Color);
-    else
-      m_Image.Circle(start.x, start.y, abs(start.y - end.y), m_Color);
-    Refresh();
+    int r;
+    if (abs(start.x - end.x) > abs(start.y - end.y)) {
+      r = abs(start.x - end.x);
+    } else {
+      r = abs(start.y - end.y);
+    }
+
+    m_Image.Circle(start.x, start.y, r, m_Color);
+    RefreshPixels(start.x - r, start.y - r, start.x + r, start.y + r);
     m_Handler->IV_ImageChanged();
   }
 }
@@ -785,6 +792,36 @@ wImageView::ResetUndoStates()
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+wImageView::RefreshPixels(int x1, int y1, int x2, int y2) 
+{
+  wxSize ClientSize(GetClientSize());
+  int width = m_Image.GetWidth();
+  int height = m_Image.GetHeight();
+  int hsize = ClientSize.GetWidth() / width;
+  int vsize = ClientSize.GetHeight() / height;
+  int size = std::_cpp_min(hsize, vsize);
+  if (size < 1)
+    size = 1;
+  int totalx = size * width;
+  int totaly = size * height;
+  int offsetx = (ClientSize.GetWidth() - totalx) / 2;
+  int offsety = (ClientSize.GetHeight() - totaly) / 2;
+
+  if(x1 > x2) {
+	  std::swap(x1, x2);
+  }
+  if(y1 > y2) {
+	  std::swap(y1, y2);
+  }
+  x1--; y1--;
+  x2++; y2++;
+  wxRect rect(offsetx + x1 * size, offsety + y1 * size, (x2 - x1 + 1) * size, (y2 - y1 + 1) * size);
+  Refresh(TRUE, &rect);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
 wImageView::OnPaint(wxPaintEvent &event)
 {
   wxPaintDC dc(this);
@@ -814,6 +851,8 @@ wImageView::OnPaint(wxPaintEvent &event)
     dc.SetPen(wxNullPen);
     return;
   }
+
+  wxRegion region = GetUpdateRegion();
 
   // get client rectangle
   wxSize ClientSize(GetClientSize());
@@ -850,69 +889,72 @@ wImageView::OnPaint(wxPaintEvent &event)
   dc.SetPen(wxNullPen);
 
   // draw the image
-  for (int ix = 0; ix < width; ix++)
-    for (int iy = 0; iy < height; iy++)
-    {
-      RGBA color = pImage[iy * width + ix];
-
-      // opaque
-      if (color.alpha == 255)
+  for (int ix = 0; ix < width; ix++) {
+    if(region.Contains(offsetx + ix * size, offsety, size, totaly)) {
+      for (int iy = 0; iy < height; iy++)
       {
-        dc.SetBrush(wxBrush(wxColour(color.red, color.green, color.blue), wxSOLID));
-        dc.SetPen(wxPen(wxColour(color.red, color.green, color.blue), 1, wxSOLID));
+        if(region.Contains(offsetx + ix * size, offsety + iy * size, size, size)) {
+          RGBA color = pImage[iy * width + ix];
 
-        dc.DrawRectangle(offsetx + ix * size, offsety + iy * size, size, size);
+          // opaque
+          if (color.alpha == 255)
+          {
+            dc.SetBrush(wxBrush(wxColour(color.red, color.green, color.blue), wxSOLID));
+            dc.SetPen(wxPen(wxColour(color.red, color.green, color.blue), 1, wxSOLID));
 
-        dc.SetBrush(wxNullBrush);
-        dc.SetPen(wxNullPen);
-      }
-      // translucent
-      else
-      {
-        // calculate background grid colors
-        RGB Color1 = CreateRGB(255, 255, 255);
-        RGB Color2 = CreateRGB(128, 128, 128);
+            dc.DrawRectangle(offsetx + ix * size, offsety + iy * size, size, size);
 
-        Color1.red   = (color.red   * color.alpha + Color1.red   * (256 - color.alpha)) / 256;
-        Color1.green = (color.green * color.alpha + Color1.green * (256 - color.alpha)) / 256;
-        Color1.blue  = (color.blue  * color.alpha + Color1.blue  * (256 - color.alpha)) / 256;
+            dc.SetBrush(wxNullBrush);
+            dc.SetPen(wxNullPen);
+          }
+          // translucent
+          else
+          {
+            // calculate background grid colors
+            RGB Color1 = CreateRGB(255, 255, 255);
+            RGB Color2 = CreateRGB(128, 128, 128);
 
-        Color2.red   = (color.red   * color.alpha + Color2.red   * (256 - color.alpha)) / 256;
-        Color2.green = (color.green * color.alpha + Color2.green * (256 - color.alpha)) / 256;
-        Color2.blue  = (color.blue  * color.alpha + Color2.blue  * (256 - color.alpha)) / 256;
+            Color1.red   = (color.red   * color.alpha + Color1.red   * (256 - color.alpha)) / 256;
+            Color1.green = (color.green * color.alpha + Color1.green * (256 - color.alpha)) / 256;
+            Color1.blue  = (color.blue  * color.alpha + Color1.blue  * (256 - color.alpha)) / 256;
 
-        wxColour color1(Color1.red, Color1.green, Color1.blue);
-        wxColour color2(Color2.red, Color2.green, Color2.blue);
+            Color2.red   = (color.red   * color.alpha + Color2.red   * (256 - color.alpha)) / 256;
+            Color2.green = (color.green * color.alpha + Color2.green * (256 - color.alpha)) / 256;
+            Color2.blue  = (color.blue  * color.alpha + Color2.blue  * (256 - color.alpha)) / 256;
 
-        // draw rectangles
+            wxColour color1(Color1.red, Color1.green, Color1.blue);
+            wxColour color2(Color2.red, Color2.green, Color2.blue);
+
+            // draw rectangles
 
 
-        dc.SetBrush(wxBrush(color1, wxSOLID));
-        dc.SetPen(wxPen(color1, 1, wxSOLID));
+            dc.SetBrush(wxBrush(color1, wxSOLID));
+            dc.SetPen(wxPen(color1, 1, wxSOLID));
 
-        // upper left
-        dc.DrawRectangle(offsetx + ix * size, offsety + iy * size, size / 2, size / 2);
+            // upper left
+            dc.DrawRectangle(offsetx + ix * size, offsety + iy * size, size / 2, size / 2);
 
-        // lower right
-        dc.DrawRectangle(offsetx + ix * size + size / 2, offsety + iy * size + size / 2, (size + 1) / 2, (size + 1) / 2);
+            // lower right
+            dc.DrawRectangle(offsetx + ix * size + size / 2, offsety + iy * size + size / 2, (size + 1) / 2, (size + 1) / 2);
 
        
 
-        dc.SetBrush(wxBrush(color2, wxSOLID));
-        dc.SetPen(wxPen(color2, 1, wxSOLID));
+            dc.SetBrush(wxBrush(color2, wxSOLID));
+            dc.SetPen(wxPen(color2, 1, wxSOLID));
 
-        // upper right
-        dc.DrawRectangle(offsetx + ix * size + size / 2, offsety + iy * size, (size + 1) / 2, size / 2);
+            // upper right
+            dc.DrawRectangle(offsetx + ix * size + size / 2, offsety + iy * size, (size + 1) / 2, size / 2);
 
-        // lower left
-        dc.DrawRectangle(offsetx + ix * size, offsety + iy * size + size / 2, size / 2, (size + 1) / 2);
+            // lower left
+            dc.DrawRectangle(offsetx + ix * size, offsety + iy * size + size / 2, size / 2, (size + 1) / 2);
 
-        dc.SetBrush(wxNullBrush);
-        dc.SetPen(wxNullPen);
+            dc.SetBrush(wxNullBrush);
+            dc.SetPen(wxNullPen);
+          }
+        }
       }
-
     }
-
+  }
   // draw a white rectangle around the image
   dc.SetBrush(wxBrush(wxColour(0xff, 0xff, 0xff), wxTRANSPARENT));
   dc.SetPen(wxPen(wxColour(0xff, 0xff, 0xff), 1, wxSOLID));
@@ -1084,6 +1126,9 @@ wImageView::OnRButtonUp(wxMouseEvent &event)
 void
 wImageView::OnMouseMove(wxMouseEvent &event)
 {
+  wxPoint start;
+  wxPoint end;
+  wxPoint last;
   m_LastPoint = m_CurPoint;
   m_CurPoint = event.GetPosition();
 
@@ -1110,8 +1155,26 @@ wImageView::OnMouseMove(wxMouseEvent &event)
 
     case Tool_Line: 
     case Tool_Rectangle: 
+      start = ConvertToPixel(m_StartPoint);
+      end = ConvertToPixel(m_CurPoint);
+      last = ConvertToPixel(m_LastPoint);
+      RefreshPixels(start.x, start.y, end.x, end.y);
+      RefreshPixels(start.x, start.y, last.x, last.y);
+      break;
     case Tool_Circle: 
-      Refresh();
+      start = ConvertToPixel(m_StartPoint);
+      end = ConvertToPixel(m_CurPoint);
+      last = ConvertToPixel(m_LastPoint);
+      end.x = abs(start.x - end.x);
+      end.y = abs(start.y - end.y);
+      last.x = abs(start.x - last.x);
+      last.y = abs(start.y - last.y);
+      int r = end.x;
+      if(end.y > r) {r = end.y;}
+      if(last.x > r) {r = last.x;}
+      if(last.y > r) {r = last.y;}
+
+      RefreshPixels(start.x - r, start.y - r, start.x + r, start.y + r);
       break;
   }
 }

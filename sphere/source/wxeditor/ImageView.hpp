@@ -70,6 +70,8 @@ private:
   void AddUndoState();
   void ResetUndoStates();
 
+  void RefreshPixels(int x1, int y1, int x2, int y2);
+
   void OnPaint(wxPaintEvent &event);
   void PaintLine(CImage32& pImage);
   void PaintRectangle(CImage32& pImage);
