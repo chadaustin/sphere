@@ -1232,8 +1232,10 @@ sMap::DeleteLayer(int where, bool delete_tiles)
 
   m_Layers.erase(m_Layers.begin() + where);
 
-  // now prune tiles in set
-  PruneTileset(&tiles);
+  if (delete_tiles) {
+    // now prune tiles in set
+    PruneTileset(&tiles);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
