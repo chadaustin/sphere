@@ -1,0 +1,127 @@
+/* graphics.css
+   $Id: graphics.css,v 1.1 2001-12-29 03:16:56 jcore Exp $
+   full graphics stylesheet */
+
+a {
+  text-decoration: none;
+  color: rgb(77, 111, 135);
+  background-color: transparent;
+}
+
+a:hover {
+  color: rgb(255, 255, 255);
+  background-color: rgb(77, 111, 135);
+}
+
+img { border: 0; }
+
+body {
+  color: rgb(53, 79, 97);
+  background: url("images/background.jpg") white no-repeat scroll 50% 20px;
+  font-family: verdana, helvetica, sans-serif;
+}
+
+table.main {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+}
+
+table.main td.menu {
+  text-align: center;
+  width: 100%;
+  background: url("http://sphere.sourceforge.net/images/topbar.png");
+}
+
+table.menu {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+table.menu td {
+  border-bottom: 1px solid rgb(53, 79, 97);
+  color: rgb(53, 79, 97);
+  background-color: rgb(255, 255, 255);
+  font-size: smaller;
+}
+
+table.menu td.menuleft a, table.menu td.menuright a {
+  display: block;
+  padding: 2px;
+  border-bottom: 1px solid rgb(53, 79, 97);
+}
+
+table.menu td a.last { border-bottom: 0px; }
+
+td.menucenter {
+  border-style: solid;
+  border-color: rgb(53, 79, 97);
+  border-width: 0px 1px 0px 1px;
+  text-align: center;
+}
+
+table.menu td.menuleft a { text-align: right; }
+
+table.menu td.menuright a { text-align: left; }
+
+table.main td.body { padding: 10px; }
+
+table.main td.tail { text-align: center; }
+
+.icons { display: block; }
+
+table.left {
+  width: 68%;
+  float: left;
+}
+
+table.right {
+  width: 30%;
+  float: right;
+}
+
+table.box, table.news {
+  width: 100%;
+  font-size: smaller;
+}
+
+table.box td.head, table.news td.head {
+  border: 1px solid rgb(53, 79, 97);
+  background: url("images/sidebar.png");
+}
+
+table.box td.head {
+  text-align: center;
+}
+
+table.news td.head {
+  text-align: left;
+}
+
+table.news td.head img {
+  vertical-align: middle;
+}
+
+table.box td.body, table.news td.body {
+  border-style: solid;
+  border-color: rgb(53, 79, 97);
+  border-width: 0px 1px 1px 1px;
+  background: url("images/itmbbg.gif");
+}
+
+td.tail p.notes {
+  font-size: smaller;
+}
+
+table.news td.body {
+  font-size: smaller;
+}
+
+.sig {
+  text-align: right;
+}
+
+table.box textarea {
+  width: 100%;
+}
