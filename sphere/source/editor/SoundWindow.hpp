@@ -22,6 +22,8 @@ private:
   afx_msg void OnSoundStop();
   afx_msg void OnSoundRepeat();
 
+  afx_msg void OnUpdateRepeatCommand(CCmdUI* cmdui);
+
 private:
   CSound  m_Sound;
   CButton m_PlayButton;

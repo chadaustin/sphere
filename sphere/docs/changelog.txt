@@ -1,3 +1,8 @@
+2003.12.24
+  - Replaced Image/Map Tools palette with Image/Map toolbars
+  - Made repeat command have a tick next to it when repeating
+  - Added shortkey key combos to the menu's
+
 2003.12.14
   - Added Import Direction From Animation and Export Direction To Animation
 

@@ -26,6 +26,9 @@ public:
   ~CImageWindow();
 
 private:
+  void ImageToolBarChanged(UINT id);
+
+private:
   void UpdateImageView();
 
   afx_msg void OnSize(UINT type, int cx, int cy);

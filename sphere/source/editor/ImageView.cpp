@@ -82,7 +82,7 @@ END_MESSAGE_MAP()
 CImageView::CImageView()
 : m_Color(CreateRGBA(0, 0, 0, 255))
 , m_SwatchPalette(NULL)
-, m_ToolPalette(NULL)
+//, m_ToolPalette(NULL)
 , m_MouseDown(false)
 , m_CurrentTool(Tool_Pencil)
 , m_NumUndoImages(0)
@@ -124,9 +124,9 @@ CImageView::~CImageView()
     m_SwatchPalette->Destroy();
   }
 
-  if (m_ToolPalette) {
-    m_ToolPalette->Destroy();
-  }
+  //if (m_ToolPalette) {
+  //  m_ToolPalette->Destroy();
+  //}
 
   DestroyWindow();
 }
@@ -139,7 +139,7 @@ CImageView::Create(CDocumentWindow* owner, IImageViewHandler* handler, CWnd* par
   m_Handler = handler;
 
   m_SwatchPalette = new CSwatchPalette(owner, this);
-  m_ToolPalette   = new CImageToolPalette(owner, this);
+  //m_ToolPalette   = new CImageToolPalette(owner, this);
 
   return CWnd::Create(
     AfxRegisterWndClass(0, LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW)), NULL, LoadIcon(NULL, IDI_APPLICATION)),
@@ -160,7 +160,9 @@ CImageView::SetImage(int width, int height, const RGBA* pixels, bool reset_undo_
   }
 
   m_Image.Resize(width, height);
-  memcpy(m_Image.GetPixels(), pixels, width * height * sizeof(RGBA));
+  if (m_Image.GetWidth() == width && m_Image.GetHeight() == height) {
+    memcpy(m_Image.GetPixels(), pixels, width * height * sizeof(RGBA));
+  }
 
   Invalidate();
   return true;
@@ -2552,3 +2554,22 @@ CImageView::OnGetAccelerator(WPARAM wParam, LPARAM lParam)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+afx_msg void
+CImageView::OnToolChanged(UINT id)
+{
+  switch (id) {
+    case IDI_IMAGETOOL_PENCIL:        m_CurrentTool = Tool_Pencil; break;
+    case IDI_IMAGETOOL_LINE:          m_CurrentTool = Tool_Line; break;
+    case IDI_IMAGETOOL_RECTANGLE:     m_CurrentTool = Tool_Rectangle; break;
+    case IDI_IMAGETOOL_CIRCLE:        m_CurrentTool = Tool_Circle; break;
+    case IDI_IMAGETOOL_ELLIPSE:       m_CurrentTool = Tool_Ellipse; break;
+    case IDI_IMAGETOOL_FILL:          m_CurrentTool = Tool_Fill; break;
+    case IDI_IMAGETOOL_SELECTION:     m_CurrentTool = Tool_Selection; break;
+    case IDI_IMAGETOOL_FREESELECTION: m_CurrentTool = Tool_FreeSelection; break;
+  }
+
+  TP_ToolSelected(m_CurrentTool);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+ 

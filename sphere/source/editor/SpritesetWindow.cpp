@@ -29,6 +29,8 @@ BEGIN_MESSAGE_MAP(CSpritesetWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_SPRITESET_ZOOM_2X,         OnZoom2x)
   ON_COMMAND(ID_SPRITESET_ZOOM_4X,         OnZoom4x)
   ON_COMMAND(ID_SPRITESET_ZOOM_8X,         OnZoom8x)
+  //ON_COMMAND(ID_SPRITESET_ZOOM_IN,         OnZoomIn)
+  //ON_COMMAND(ID_SPRITESET_ZOOM_OUT,        OnZoomOut)
   
   ON_COMMAND(ID_SPRITESET_RESIZE,          OnResize)
   ON_COMMAND(ID_SPRITESET_RESCALE,         OnRescale)
@@ -42,6 +44,11 @@ BEGIN_MESSAGE_MAP(CSpritesetWindow, CSaveableDocumentWindow)
   ON_UPDATE_COMMAND_UI(ID_SPRITESET_ZOOM_2X, OnUpdateZoom2x)
   ON_UPDATE_COMMAND_UI(ID_SPRITESET_ZOOM_4X, OnUpdateZoom4x)
   ON_UPDATE_COMMAND_UI(ID_SPRITESET_ZOOM_8X, OnUpdateZoom8x)
+
+  /*
+  ON_UPDATE_COMMAND_UI(ID_SPRITESET_ZOOM_IN, OnUpdateZoomIn)
+  ON_UPDATE_COMMAND_UI(ID_SPRITESET_ZOOM_OUT, OnUpdateZoomOut)
+  */
 
 END_MESSAGE_MAP()
 
@@ -410,6 +417,16 @@ CSpritesetWindow::OnUpdateZoom8x(CCmdUI* cmdui)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/*
+afx_msg void
+CSpritesetWindow::OnUpdateZoomIn(CCmdUI* cmdui)
+{
+  cmdui->Enable(m_SpritesetView.GetZoomFactor() >= 1.0/8.0);
+}
+*/
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSpritesetWindow::OnTabChanged(NMHDR* ns, LRESULT* result)
 {
@@ -474,7 +491,7 @@ CSpritesetWindow::SV_SpritesetModified()
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CSpritesetWindow::SV_ZoomFactorChanged(int zoom)
+CSpritesetWindow::SV_ZoomFactorChanged(double zoom)
 {
   m_AnimationPalette->OnZoom((double)zoom);
 }
@@ -595,6 +612,13 @@ CSpritesetWindow::SIP_SpritesetModified()
   SetModified(true);
   m_SpritesetView.Invalidate();
   UpdateImageView();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CSpritesetWindow::ImageToolBarChanged(UINT id) {
+  m_ImageView.OnToolChanged(id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

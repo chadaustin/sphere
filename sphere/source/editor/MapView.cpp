@@ -41,7 +41,7 @@ END_MESSAGE_MAP()
 CMapView::CMapView()
 : m_Handler(NULL)
 
-, m_ToolPalette(NULL)
+//, m_ToolPalette(NULL)
 
 , m_Map(NULL)
 
@@ -116,7 +116,7 @@ CMapView::Create(CDocumentWindow* owner, IMapViewHandler* handler, CWnd* parent,
     32);
 
   // create tool palette
-  m_ToolPalette = new CMapToolPalette(owner, this);
+  // m_ToolPalette = new CMapToolPalette(owner, this);
 
   // create the window object
   BOOL retval = CWnd::Create(
@@ -1765,9 +1765,9 @@ CMapView::DrawPreviewBox(CDC& dc, int x1, int y1, int x2, int y2)
 afx_msg void
 CMapView::OnDestroy()
 {
-  if (m_ToolPalette) {
-    m_ToolPalette->Destroy();
-  }
+  //if (m_ToolPalette) {
+  //  m_ToolPalette->Destroy();
+  //}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2833,3 +2833,30 @@ CMapView::OnTimer(UINT event)
 */
 
 ////////////////////////////////////////////////////////////////////////////////
+
+void
+CMapView::OnToolChanged(UINT id) {
+
+  switch (id) {
+    case IDI_MAPTOOL_1X1: m_CurrentTool = tool_1x1Tile; break;
+    case IDI_MAPTOOL_3X3: m_CurrentTool = tool_3x3Tile; break;
+    case IDI_MAPTOOL_5X5: m_CurrentTool = tool_5x5Tile; break;
+    case IDI_MAPTOOL_SELECTTILE: m_CurrentTool = tool_SelectTile; break;
+    case IDI_MAPTOOL_FILLRECTAREA: m_CurrentTool = tool_FillRectArea; break;
+    case IDI_MAPTOOL_FILLAREA: m_CurrentTool = tool_FillArea; break;
+    case IDI_MAPTOOL_COPYAREA: m_CurrentTool = tool_CopyArea; break;
+    case IDI_MAPTOOL_PASTE: m_CurrentTool = tool_Paste; break;
+    case IDI_MAPTOOL_COPYENTITY: m_CurrentTool = tool_CopyEntity; break;
+    case IDI_MAPTOOL_PASTEENTITY: m_CurrentTool = tool_PasteEntity; break;
+    case IDI_MAPTOOL_MOVEENTITY: m_CurrentTool = tool_MoveEntity; break;
+    case IDI_MAPTOOL_OBS_SEGMENT: m_CurrentTool = tool_ObsSegment; break;
+    case IDI_MAPTOOL_OBS_DELETE: m_CurrentTool = tool_ObsDeleteSegment; break;
+    case IDI_MAPTOOL_OBS_MOVE_PT: m_CurrentTool = tool_ObsMoveSegmentPoint; break;
+    case IDI_MAPTOOL_ZONEADD: m_CurrentTool = tool_ZoneAdd; break;
+    case IDI_MAPTOOL_ZONEEDIT: m_CurrentTool = tool_ZoneEdit; break;
+    case IDI_MAPTOOL_ZONEMOVE: m_CurrentTool = tool_ZoneMove; break;
+    case IDI_MAPTOOL_ZONEDELETE: m_CurrentTool = tool_ZoneDelete; break;
+  }
+
+  TP_ToolSelected(m_CurrentTool);
+}

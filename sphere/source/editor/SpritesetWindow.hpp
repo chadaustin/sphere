@@ -31,6 +31,9 @@ public:
   CSpritesetWindow(const char* filename = NULL);
 
 private:
+  void ImageToolBarChanged(UINT id);
+
+private:
   void Create();
   void TabChanged(int tab);
   void ShowFramesTab(int show);
@@ -45,6 +48,8 @@ private:
   afx_msg void OnZoom2x();
   afx_msg void OnZoom4x();
   afx_msg void OnZoom8x();
+  //afx_msg void OnZoomIn();
+  //afx_msg void OnZoomOut();
   afx_msg void OnResize();
   afx_msg void OnRescale();
   afx_msg void OnResample();
@@ -57,6 +62,9 @@ private:
   afx_msg void OnUpdateZoom4x(CCmdUI* cmdui);
   afx_msg void OnUpdateZoom8x(CCmdUI* cmdui);
 
+  //afx_msg void OnUpdateZoomIn(CCmdUI* cmdui);
+  //afx_msg void OnUpdateZoomOut(CCmdUI* cmdui);
+
   afx_msg void OnTabChanged(NMHDR* ns, LRESULT* result);
 
   virtual bool GetSavePath(char* path);
@@ -67,7 +75,7 @@ private:
   virtual void SV_SpritesetModified();
   virtual void SV_CopyCurrentFrame();
   virtual void SV_PasteCurrentFrame();
-	virtual void SV_ZoomFactorChanged(int zoom);
+	virtual void SV_ZoomFactorChanged(double zoom);
   virtual void IV_ImageChanged();
   virtual void IV_ColorChanged(RGBA color);
   virtual void PV_ColorChanged(RGB color);

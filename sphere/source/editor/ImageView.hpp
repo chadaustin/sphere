@@ -168,13 +168,18 @@ private:
   RGBA* GetBitmapImageFromClipboard(int& width, int& height);
 
 private:
+  afx_msg void OnUpdateImageCommand(CCmdUI* cmdui);
+public:
+  afx_msg void OnToolChanged(UINT id);
+
+private:
   IImageViewHandler* m_Handler;
 
   CImage32 m_Image;
   CDIBSection* m_BlitTile;  // for rendering tiles
 
   CSwatchPalette*    m_SwatchPalette;
-  CImageToolPalette* m_ToolPalette;
+  //CImageToolPalette* m_ToolPalette;
 
   // drawing
   RGBA  m_Color;

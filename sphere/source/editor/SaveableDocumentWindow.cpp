@@ -201,7 +201,7 @@ CSaveableDocumentWindow::OnFileSaveCopyAs()
     if (!SaveDocument(document_path))
     {
       char message[1024];
-      sprintf(message, "Error: Could not save document '%s'", GetDocumentPath());
+      sprintf(message, "Error: Could not save document '%s'", document_path);
       MessageBox(message);
     }
   }
@@ -213,6 +213,22 @@ void
 CSaveableDocumentWindow::UpdateProject()
 {
   AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_PROJECT);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CSaveableDocumentWindow::ImageToolBarChanged(UINT id)
+{
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CSaveableDocumentWindow::MapToolBarChanged(UINT id)
+{
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////

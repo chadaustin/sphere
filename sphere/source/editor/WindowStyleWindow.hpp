@@ -29,6 +29,9 @@ public:
   ~CWindowStyleWindow();
 
 private:
+  void ImageToolBarChanged(UINT id);
+
+private:
   void UpdateDIBSection(int bitmap);
   void UpdateDIBSections();
   void SetBitmap();

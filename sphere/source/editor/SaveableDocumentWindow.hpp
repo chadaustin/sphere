@@ -26,6 +26,9 @@ protected:
 
   virtual bool IsSaveable() const;
 
+  virtual void ImageToolBarChanged(UINT id);
+  virtual void MapToolBarChanged(UINT id);
+
   afx_msg void OnFileSave();
   afx_msg void OnFileSaveAs();
   afx_msg void OnFileSaveCopyAs();

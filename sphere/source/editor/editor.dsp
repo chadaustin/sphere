@@ -44,7 +44,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /G5 /MD /W3 /GX /O1 /I "../../third-party-msvc/include" /D "NDEBUG" /D "STRIC" /D "_AFXDLL" /D "INCLUDE_DEPRECATED_FEATURES" /D "XP_PC" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "VC_EXTRALEAN" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /D "NOMINMAX" /D "USE_SIZECBAR" /FAs /FR /FD /c
+# ADD CPP /nologo /G5 /MD /W3 /GX /O1 /I "../../third-party-msvc/include" /D "NDEBUG" /D "STRIC" /D "_AFXDLL" /D "INCLUDE_DEPRECATED_FEATURES" /D "XP_PC" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "VC_EXTRALEAN" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /D "NOMINMAX" /FAs /FR /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -298,6 +298,10 @@ SOURCE=.\resources\image.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\resources\image_toolbar.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=.\resources\imagetool_circle.ico
 # End Source File
 # Begin Source File
@@ -342,6 +346,10 @@ SOURCE=.\resources\map.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\resources\map_toolbar.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=.\resources\maptool.ico
 # End Source File
 # Begin Source File
@@ -367,6 +375,10 @@ SOURCE=.\resources\maptool_copyentity.ico
 # Begin Source File
 
 SOURCE=.\resources\maptool_fillarea.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\resources\maptool_fillrect.ico
 # End Source File
 # Begin Source File
 

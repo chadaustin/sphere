@@ -95,6 +95,9 @@
 #define IDD_CONVOLVE_LIST_EDIT          232
 #define IDI_BROWSE                      234
 #define IDR_BROWSE                      235
+#define IDR_IMAGETOOLBAR                248
+#define IDR_MAPTOOLBAR                  250
+#define IDI_MAPTOOL_FILLRECTAREA        252
 #define IDC_PROJECTNAME                 1000
 #define IDC_GAMETITLE                   1001
 #define IDC_BROWSE                      1003
@@ -550,15 +553,16 @@
 #define ID_SPRITESET_RESAMPLE           40708
 #define ID_IMAGEVIEW_FILTER_GRAYSCALE   40711
 #define ID_IMAGE_COUNTCOLORS            40712
+#define ID_VIEW_MAPTOOLBAR              40720
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        239
-#define _APS_NEXT_COMMAND_VALUE         40713
+#define _APS_3D_CONTROLS                     1
+#define _APS_NEXT_RESOURCE_VALUE        253
+#define _APS_NEXT_COMMAND_VALUE         40722
 #define _APS_NEXT_CONTROL_VALUE         1182
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

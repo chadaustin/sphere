@@ -153,7 +153,7 @@ CSpritesetView::SetFrame(int frame)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CSpritesetView::SetZoomFactor(int zoom)
+CSpritesetView::SetZoomFactor(double zoom)
 {
   m_ZoomFactor = zoom;
 	m_Handler->SV_ZoomFactorChanged(zoom);
@@ -164,7 +164,7 @@ CSpritesetView::SetZoomFactor(int zoom)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-int
+double
 CSpritesetView::GetZoomFactor() const
 {
   return m_ZoomFactor;
@@ -973,8 +973,9 @@ CSpritesetView::OnInsertDirectionFromAnimation()
       m_Spriteset->InsertFrame(current_direction, frame_number);
       if (m_Spriteset->GetNumFrames(current_direction) == __num_frames__) {
         int delay = animation->GetDelay();
+        if (delay)
+          m_Spriteset->SetFrameDelay(current_direction, frame_number, delay / 10);
         m_Spriteset->SetFrameIndex(current_direction, frame_number, current_image);
-        m_Spriteset->SetFrameDelay(current_direction, frame_number, delay);
       }
     }
 
@@ -1639,7 +1640,7 @@ mng_retcode mng_putpngimage(mng_handle hMNG, const RGBA* pixels, const int width
 
 
 typedef bool (*GetImage)(int index, CImage32&, void*);
-typedef int  (*GetDelay)(int index, void*);
+typedef mng_uint32  (*GetDelay)(int index, void*);
 typedef bool (*ContinueProcessingImages)(int, int);
 
 #include "Editor.hpp"
@@ -1699,11 +1700,11 @@ bool GetNextImageFromFileList(int index, CImage32& image, void* data) {
   return image.Load((*filelist)[index].c_str());
 }
 
-int GetDelayFromImageFileList(int index, void* data) {
+mng_uint32 GetDelayFromImageFileList(int index, void* data) {
   return 10 * 1000;
 }
 
-int GetDelayFromSpriteset(int index, void* data) {
+mng_uint32 GetDelayFromSpriteset(int index, void* data) {
   userwritedata* s = (userwritedata*) data;
   return 10 * s->spriteset.GetFrameDelay(s->direction, index);
   // spritesets use a frame rate and this is converting it into a sort of hashed time based system
@@ -1739,6 +1740,9 @@ ____SaveMNGAnimationFromImages____(mng_handle hMNG,
   int max_images = -1;
   int num_images = 0;
 
+  mng_uint32 totaldelay = 0;
+  bool playtime_known = true;
+
   CImage32 __temp__;
   while (get_image(num_images, __temp__, data) == true && (max_images == -1 || num_images < max_images)) {
 
@@ -1746,6 +1750,17 @@ ____SaveMNGAnimationFromImages____(mng_handle hMNG,
       max_frame_width = __temp__.GetWidth();
     if (max_frame_height < __temp__.GetHeight())
       max_frame_height = __temp__.GetHeight();
+
+    if (playtime_known) {
+      mng_uint32 delay = get_delay(num_images, data);
+      if (delay && (delay + totaldelay > totaldelay)) {
+        totaldelay += delay;
+      }
+      else {
+        playtime_known = false;
+        totaldelay = 0;
+      }
+    }
 
     if (can_use_global_palette
      && !image_to_palette(GlobalPalette, &GlobalPaletteSize, __temp__.GetWidth(), __temp__.GetHeight(), __temp__.GetPixels())) {
@@ -1755,6 +1770,7 @@ ____SaveMNGAnimationFromImages____(mng_handle hMNG,
 
     if (!should_continue(-1, num_images))
       return -1;
+
   }
 
   if (max_frame_width <= 0 || max_frame_height <= 0) {
@@ -1772,7 +1788,7 @@ ____SaveMNGAnimationFromImages____(mng_handle hMNG,
   if (iRC != 0) return iRC;
  
   iRC = mng_putchunk_mhdr (hMNG, max_frame_width, max_frame_height,
-          1000, 0, num_images, 0, MNG_SIMPLICITY_TRANSPARENCY);
+          1000, 0, num_images, totaldelay, MNG_SIMPLICITY_TRANSPARENCY);
 
   if (iRC != 0) return iRC;
 
@@ -1796,20 +1812,20 @@ ____SaveMNGAnimationFromImages____(mng_handle hMNG,
   char text[100] = {0};
   sprintf (text, "%s", repeating ? "Infinite" : "Once");
   iRC = mng_putchunk_text(hMNG,
-                          strlen("REPEAT_TYPE"), "REPEAT_TYPE",
+                          strlen("RepeatType"), "RepeatType",
                           strlen(text), text);
   if (iRC != 0) return iRC;
   sprintf (text, "%d", repeating ? 1 : repeat_count);
   iRC = mng_putchunk_text(hMNG,
-                          strlen("REPEAT_COUNT"), "REPEAT_COUNT",
+                          strlen("RepeatCount"), "RepeatCount",
                           strlen(text), text);
   if (iRC != 0) return iRC;
   iRC = mng_putchunk_text(hMNG,
-                          strlen("DATE"), "DATE",
+                          strlen("BuildDate"), "BuildDate",
                           strlen(__DATE__), __DATE__);
   if (iRC != 0) return iRC;
   iRC = mng_putchunk_text(hMNG,
-                          strlen("TIME"), "TIME",
+                          strlen("BuildTime"), "BuildTime",
                           strlen(__TIME__), __TIME__);
   if (iRC != 0) return iRC;
   

@@ -132,6 +132,16 @@ private:
 	afx_msg void OnUpdatePaletteMenu(CCmdUI* cmdui);
 	afx_msg void OnUpdateViewProject(CCmdUI* cmdui);
 
+	//afx_msg void OnUpdateViewImageToolBar(CCmdUI* cmdui);
+	//afx_msg void OnUpdateViewMapToolBar(CCmdUI* cmdui);
+  //afx_msg void OnViewImageToolBar();
+  //afx_msg void OnViewMapToolBar();
+
+  afx_msg void OnUpdateImageCommand(CCmdUI* cmdui);
+  afx_msg void OnImageToolChanged();
+  afx_msg void OnUpdateMapCommand(CCmdUI* cmdui);
+  afx_msg void OnMapToolChanged();
+
   afx_msg LRESULT OnInsertProjectFile(WPARAM wparam, LPARAM lparam);
   afx_msg LRESULT OnRefreshProject(WPARAM wparam, LPARAM lparam);
 	afx_msg LRESULT OnCopyData(WPARAM wparam, LPARAM lparam);
@@ -144,6 +154,8 @@ private:
 
 private:
   CToolBar   m_ToolBar;
+  CToolBar   m_ImageToolBar;
+  CToolBar   m_MapToolBar;
 
   CStatusBar m_StatusBar;
 

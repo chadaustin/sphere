@@ -14,7 +14,7 @@ public:
   virtual void SV_SpritesetModified() = 0;
   virtual void SV_CopyCurrentFrame() = 0;
   virtual void SV_PasteCurrentFrame() = 0;
-	virtual void SV_ZoomFactorChanged(int zoom) = 0;
+	virtual void SV_ZoomFactorChanged(double zoom) = 0;
 };
 
 
@@ -29,8 +29,8 @@ public:
   void SetDirection(int direction);
   void SetFrame(int frame);
   
-  void SetZoomFactor(int zoom);
-  int GetZoomFactor() const;
+  void SetZoomFactor(double zoom);
+  double GetZoomFactor() const;
 
   void SpritesetResized();
 
@@ -80,7 +80,7 @@ private:
   
   CDIBSection* m_DrawBitmap;
 
-  int m_ZoomFactor;
+  double m_ZoomFactor;
   int m_MaxFrameWidth;
   int m_MaxFrameHeight;
 

@@ -88,6 +88,9 @@ private:
   virtual void TP_ToolSelected(int tool);
 
 public:
+  void OnToolChanged(UINT id);
+
+public:
   enum editMode {
     tool_1x1Tile,
     tool_3x3Tile,
@@ -112,7 +115,7 @@ public:
 private:
   IMapViewHandler* m_Handler;
 
-  CMapToolPalette* m_ToolPalette;
+  //CMapToolPalette* m_ToolPalette;
 
   sMap* m_Map;
 

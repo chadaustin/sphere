@@ -21,6 +21,8 @@ BEGIN_MESSAGE_MAP(CSoundWindow, CDocumentWindow)
   ON_COMMAND(ID_SOUND_STOP, OnSoundStop)
   ON_COMMAND(ID_SOUND_REPEAT, OnSoundRepeat)
 
+  ON_UPDATE_COMMAND_UI(ID_SOUND_REPEAT, OnUpdateRepeatCommand)
+
 END_MESSAGE_MAP()
 
 
@@ -164,6 +166,14 @@ afx_msg void
 CSoundWindow::OnSoundRepeat()
 {
   m_Repeat = !m_Repeat;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSoundWindow::OnUpdateRepeatCommand(CCmdUI* cmdui)
+{
+  cmdui->SetCheck(m_Repeat);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

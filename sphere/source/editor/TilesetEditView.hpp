@@ -37,6 +37,9 @@ public:
   void SelectTile(int tile);
   void SP_ColorSelected(RGBA color);
 
+public:
+  void OnToolChanged(UINT id);
+
 private:
   void UpdateImageView();
 

@@ -36,6 +36,8 @@ public:
   CPaletteWindow* GetPalette(int i) const;
 
   virtual bool IsSaveable() const;
+  virtual void ImageToolBarChanged(UINT id);
+  virtual void MapToolBarChanged(UINT id);
 
 protected:
   BOOL Create(LPCTSTR class_name);

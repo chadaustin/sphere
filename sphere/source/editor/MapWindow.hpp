@@ -33,6 +33,10 @@ public:
   ~CMapWindow();
 
 private:
+  void MapToolBarChanged(UINT id);
+  void ImageToolBarChanged(UINT id);
+
+private:
   void Create();
   void Destroy();
 

@@ -25,6 +25,9 @@ public:
   ~CFontWindow();
 
 private:
+  void ImageToolBarChanged(UINT id);
+
+private:
   void Create();
   void UpdateWindowTitle();
   void SetImage();

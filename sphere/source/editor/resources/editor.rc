@@ -114,7 +114,7 @@ BEGIN
         MENUITEM "Open &Last Project",          ID_FILE_OPENLASTPROJECT
         MENUITEM "&Close Project",              ID_FILE_CLOSEPROJECT
         MENUITEM SEPARATOR
-        MENUITEM "&Save",                       ID_FILE_SAVE
+        MENUITEM "&Save (CTRL + S)",            ID_FILE_SAVE
         MENUITEM "Save &As...",                 ID_FILE_SAVEAS
         MENUITEM "Sa&ve Copy As...",            ID_FILE_SAVECOPYAS
         MENUITEM "Save All &Windows",           ID_FILE_SAVEALL
@@ -123,7 +123,7 @@ BEGIN
     END
     POPUP "&View"
     BEGIN
-        MENUITEM "&Tool Bar",                   ID_VIEW_TOOLBAR
+        MENUITEM "&Main Tool Bar",              ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
         MENUITEM "&Project",                    ID_VIEW_PROJECT
         POPUP "&Palettes"
@@ -141,10 +141,13 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "&Sphere Web Site",            ID_HELP_SPHERESITE
-        MENUITEM "Frequently Asked &Questions", ID_HELP_SPHEREFAQ
-        MENUITEM "&AegisKnight's Site",         ID_HELP_AEGISKNIGHTSSITE
-        MENUITEM "&Flik's Web Site",            ID_HELP_FLIKSSITE
+        POPUP "&External"
+        BEGIN
+            MENUITEM "&Sphere Web Site",            ID_HELP_SPHERESITE
+            MENUITEM "Frequently Asked &Questions", ID_HELP_SPHEREFAQ
+            MENUITEM "&AegisKnight's Site",         ID_HELP_AEGISKNIGHTSSITE
+            MENUITEM "&Flik's Web Site",            ID_HELP_FLIKSSITE
+        END
         MENUITEM SEPARATOR
         MENUITEM "Local &Documentation",        ID_HELP_LOCALDOCUMENTATION
         MENUITEM SEPARATOR
@@ -182,7 +185,7 @@ BEGIN
         POPUP "&Zoom"
         BEGIN
             MENUITEM "&1x",                         ID_SPRITESET_ZOOM_1X
-            MENUITEM "&2x",                         ID_SPRITESET_ZOOM_2X
+            MENUITEM "&2x (CTRL + 2)",              ID_SPRITESET_ZOOM_2X
             MENUITEM "&4x",                         ID_SPRITESET_ZOOM_4X
             MENUITEM "&8x",                         ID_SPRITESET_ZOOM_8X
         END
@@ -214,8 +217,8 @@ BEGIN
             MENUITEM "&Animation...",               ID_PROJECT_INSERT_ANIMATION
 
         END
-        MENUITEM "R&efresh",                    ID_PROJECT_REFRESH
-        MENUITEM "&Run Game",                   ID_PROJECT_RUNSPHERE
+        MENUITEM "R&efresh (F5)",               ID_PROJECT_REFRESH
+        MENUITEM "&Run Game (CTRL + F5)",       ID_PROJECT_RUNSPHERE
         MENUITEM "&Configure Sphere...",        ID_PROJECT_CONFIGURESPHERE
         MENUITEM "Package Game!",               ID_PROJECT_PACKAGE_GAME
         MENUITEM "Make Installer",              ID_PROJECT_MAKE_INSTALLER
@@ -253,9 +256,9 @@ IDR_SCRIPT MENU DISCARDABLE
 BEGIN
     POPUP "&Script"
     BEGIN
-        MENUITEM "&Check Syntax...",            ID_SCRIPT_CHECKSYNTAX
+        MENUITEM "&Check Syntax... (F7)",       ID_SCRIPT_CHECKSYNTAX
         MENUITEM SEPARATOR
-        MENUITEM "&Find...",                    ID_SCRIPT_FIND
+        MENUITEM "&Find... (CTRL + F)",         ID_SCRIPT_FIND
         MENUITEM "&Replace...",                 ID_SCRIPT_REPLACE
         POPUP "&Options"
         BEGIN
@@ -529,8 +532,8 @@ BEGIN
         MENUITEM "&Append",                     ID_SPRITESETVIEWFRAMES_APPEND
 
         MENUITEM SEPARATOR
-        MENUITEM "&Copy",                       ID_SPRITESETVIEWFRAMES_COPY
-        MENUITEM "&Paste",                      ID_SPRITESETVIEWFRAMES_PASTE
+        MENUITEM "&Copy (CTRL + C)",            ID_SPRITESETVIEWFRAMES_COPY
+        MENUITEM "&Paste (CTRL + V)",           ID_SPRITESETVIEWFRAMES_PASTE
         MENUITEM SEPARATOR
         POPUP "&Edit Range"
         BEGIN
@@ -777,12 +780,12 @@ BEGIN
     BEGIN
         MENUITEM "Co&lor Picker",               ID_IMAGEVIEW_COLORPICKER
         MENUITEM SEPARATOR
-        MENUITEM "&Undo",                       ID_IMAGEVIEW_UNDO
+        MENUITEM "&Undo (CTRL + Z)",            ID_IMAGEVIEW_UNDO
         MENUITEM SEPARATOR
-        MENUITEM "&Copy",                       ID_IMAGEVIEW_COPY
+        MENUITEM "&Copy (CTRL + C)",            ID_IMAGEVIEW_COPY
         POPUP "&Paste"
         BEGIN
-            MENUITEM "Paste",                       ID_IMAGEVIEW_PASTE
+            MENUITEM "Paste (CTRL + V)",            ID_IMAGEVIEW_PASTE
             MENUITEM "Paste RGB",                   ID_IMAGEVIEW_PASTE_INTO_SELECTION
 
             MENUITEM "Paste Alpha",                 ID_IMAGEVIEW_PASTE_ALPHA
@@ -1533,6 +1536,40 @@ BEGIN
     BUTTON      ID_PROJECT_RUNSPHERE
 END
 
+IDR_IMAGETOOLBAR TOOLBAR DISCARDABLE  16, 16
+BEGIN
+    BUTTON      IDI_IMAGETOOL_PENCIL
+    BUTTON      IDI_IMAGETOOL_LINE
+    BUTTON      IDI_IMAGETOOL_RECTANGLE
+    BUTTON      IDI_IMAGETOOL_CIRCLE
+    BUTTON      IDI_IMAGETOOL_ELLIPSE
+    BUTTON      IDI_IMAGETOOL_FILL
+    BUTTON      IDI_IMAGETOOL_SELECTION
+    BUTTON      IDI_IMAGETOOL_FREESELECTION
+END
+
+IDR_MAPTOOLBAR TOOLBAR DISCARDABLE  16, 16
+BEGIN
+    BUTTON      193
+    BUTTON      IDI_MAPTOOL_3X3
+    BUTTON      IDI_MAPTOOL_5X5
+    BUTTON      IDI_MAPTOOL_SELECTTILE
+    BUTTON      IDI_MAPTOOL_FILLRECTAREA
+    BUTTON      IDI_MAPTOOL_FILLAREA
+    BUTTON      IDI_MAPTOOL_COPYAREA
+    BUTTON      IDI_MAPTOOL_PASTE
+    BUTTON      IDI_MAPTOOL_COPYENTITY
+    BUTTON      IDI_MAPTOOL_PASTEENTITY
+    BUTTON      IDI_MAPTOOL_MOVEENTITY
+    BUTTON      IDI_MAPTOOL_OBS_SEGMENT
+    BUTTON      IDI_MAPTOOL_OBS_DELETE
+    BUTTON      IDI_MAPTOOL_OBS_MOVE_PT
+    BUTTON      IDI_MAPTOOL_ZONEADD
+    BUTTON      IDI_MAPTOOL_ZONEEDIT
+    BUTTON      IDI_MAPTOOL_ZONEMOVE
+    BUTTON      IDI_MAPTOOL_ZONEDELETE
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1541,6 +1578,8 @@ END
 
 IDR_TOOLBAR             BITMAP  MOVEABLE PURE   "toolbar.bmp"
 IDB_VOLUMEBAR           BITMAP  MOVEABLE PURE   "volumebar.bmp"
+IDR_IMAGETOOLBAR        BITMAP  DISCARDABLE     "image_toolbar.bmp"
+IDR_MAPTOOLBAR          BITMAP  DISCARDABLE     "map_toolbar.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1594,6 +1633,7 @@ IDI_MAPTOOL_ZONEMOVE    ICON    DISCARDABLE     "maptool.ico"
 IDI_MAPTOOL_MOVEENTITY  ICON    DISCARDABLE     "maptool_moveentity.ico"
 IDI_IMAGETOOL_FREESELECTION ICON    DISCARDABLE     "imagetool_freeselection.ico"
 IDI_BROWSE              ICON    DISCARDABLE     "browse.ico"
+IDI_MAPTOOL_FILLRECTAREA ICON    DISCARDABLE     "maptool_fillrect.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1602,11 +1642,12 @@ IDI_BROWSE              ICON    DISCARDABLE     "browse.ico"
 
 IDR_ACCELERATOR ACCELERATORS MOVEABLE PURE 
 BEGIN
+    "1",            ID_SPRITESET_ZOOM_1X,   VIRTKEY, CONTROL, NOINVERT
+    "2",            ID_SPRITESET_ZOOM_2X,   VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_SCRIPT_FIND,         VIRTKEY, CONTROL, NOINVERT
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
-    VK_F5,          ID_PROJECT_REFRESH,     VIRTKEY, NOINVERT
     VK_F5,          ID_PROJECT_RUNSPHERE,   VIRTKEY, CONTROL, NOINVERT
     VK_F7,          ID_SCRIPT_CHECKSYNTAX,  VIRTKEY, NOINVERT
-    "2",            ID_SPRITESET_ZOOM_2X,   VIRTKEY, CONTROL, NOINVERT
 END
 
 IDR_IMAGEVIEW ACCELERATORS MOVEABLE PURE 
