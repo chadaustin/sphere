@@ -1,8 +1,13 @@
-There are several ways to optimize JS.  As I think of them, I'll add
+There are several ways to optimize your JavaScript in Sphere.  As I
+think of them or people suggest new optimization techniques, I'll add
 them to here.
 
 
--- Optimizing Sphere --
+==== OPTIMIZING SPHERE ====
+
+
+-- Efficient Resource Management --
+
 
 Only load Sphere objects once as few times as you can.  For example,
 this is sure to be REALLY slow:
@@ -36,7 +41,11 @@ var image = GetImage('image.png')  # this actually loads the image
 var image = GetImage('image.png')  # this returns the one already loaded
 
 
--- Optimizing JS --
+==== OPTIMIZING JAVASCRIPT ====
+
+
+-- Common Subexpression Removal --
+
 
 If you do something like:
 
@@ -70,3 +79,73 @@ var y = 80 * x;  // MUCH simpler!
 
 Sure, it's a contrived example, but I'm sure you can find some ways to
 algebraicly manipulate your scripts to make them faster.
+
+
+-- Removing Small Functions --
+
+
+Apparently, function calls in SpiderMonkey have significant overhead.
+If you have a small function that only does a few things, try moving
+it out of the function, like such:
+
+function mac(n, coeff, scalar) {
+  return n * coeff + scalar;
+}
+
+sum = 0;
+for (var i = 0; i < 1000; ++i) {
+  sum += mac(n, coeff_vec[i], scalar_vec[i]);
+}
+
+--> becomes -->
+
+sum = 0;
+for (var i = 0; i < 1000; ++i) {
+  sum += n * coeff_vec[i] + scalar_vec[i];
+}
+
+
+-- Run-time Code Generation --
+
+The nice thing about interpreted languages like JavaScript, Python,
+and Scheme is that it's very easy to generate code while your program
+is running and compile it into a new function.  Let's say you have
+several functions which all do something like this:
+
+if (mode == BLEND) {
+  // blend my image
+} else {
+  // draw my image without transparency
+}
+
+Comparing in your functions all of the time can be awfully slow.
+Let's say that 'mode' is only set once, or at least rarely.  A faster,
+but more complex, way to write your code is like this:
+
+if (mode == BLEND) {
+  funcstr = "/* put image blending code here */";
+} else {
+  funcstr = "/* put normal drawing code here */";
+}
+
+func = new Function(funcstr);
+
+// ...
+
+func()
+
+This way your 'mode' comparison only happens once, and after that you
+call a customized function that does what you want as quickly as
+possible.
+
+
+-- Avoid Using Eval Repeatedly --
+
+'eval' (and related things such as creating new Functions from
+strings) while a very convenient and powerful JavaScript feature,
+should not be overused, especially in loops.  Because it's so
+flexible, you pay the price in performance.  eval actually has to do
+two things:  Compile the string you are evaluating into run-time byte
+codes, and then interpret those byte codes.  Compiling is not a quick
+process, so you should do it as few times as you can.
+
