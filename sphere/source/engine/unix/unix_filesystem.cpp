@@ -1,4 +1,5 @@
 #include "unix_filesystem.h"
+#include <iostream>
 
 std::stack<string> directory_stack;
 
@@ -17,7 +18,7 @@ bool GetDirectory (string& directory) {
 /*! \brief create a directory */
 bool MakeDirectory (const char* directory) {
   /* we've got to assume a file access mode since sphere isn't aware of these */
-  if (mkdir(directory, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0)
+  if ((mkdir(directory, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0) && (errno != EEXIST))
     return false;
   return true;
 }
@@ -60,26 +61,31 @@ DIRECTORYLIST BeginDirectoryList (const char* mask) {
   glob_t matches;
   int lcv;
 
-  dl->current_directory = dl->directories.end();
   bzero(&matches, sizeof(glob_t));
   if (glob(mask, GLOB_ERR | GLOB_MARK, NULL, &matches) != 0)
     return dl;
   for (lcv = 0; lcv < matches.gl_pathc; lcv++) {
     /* we only want to show visible directories */
-    if ((matches.gl_pathv[lcv][0] != '.') && (matches.gl_pathv[lcv][strlen(matches.gl_pathv[lcv])] == '/'))
+    if ((matches.gl_pathv[lcv][0] != '.') && (matches.gl_pathv[lcv][strlen(matches.gl_pathv[lcv]) - 1] == '/'))
       dl->directories.push_back(matches.gl_pathv[lcv]);
   }
   globfree(&matches);
+  dl->current_directory = dl->directories.begin();
   return dl;
 }
 
 /*! \brief clean memory used by the directory list */
 void EndDirectoryList (DIRECTORYLIST dl) {
-  dl->directories.clear();
+  if (dl != NULL) {
+    dl->directories.clear();
+    delete dl;
+  }
 }
 
 /*! \brief determine if the directory list is finished */
 bool DirectoryListDone (DIRECTORYLIST dl) {
+  if (dl == NULL)
+    return true;
   return (dl->current_directory == dl->directories.end());
 }
 
@@ -99,33 +105,38 @@ FILELIST BeginFileList (const char* mask) {
   glob_t matches;
   int lcv;
 
-  fl->current_file = fl->files.end();
   bzero(&matches, sizeof(glob_t));
   if (glob(mask, GLOB_ERR | GLOB_MARK, NULL, &matches) != 0)
     return fl;
   for (lcv = 0; lcv < matches.gl_pathc; lcv++) {
     /* we only want to show visible files */
-    if ((matches.gl_pathv[lcv][0] != '.') && (matches.gl_pathv[lcv][strlen(matches.gl_pathv[lcv])] != '/'))
+    if ((matches.gl_pathv[lcv][0] != '.') && (matches.gl_pathv[lcv][strlen(matches.gl_pathv[lcv]) - 1] != '/'))
       fl->files.push_back(matches.gl_pathv[lcv]);
   }
   globfree(&matches);
+  fl->current_file = fl->files.begin();
   return fl;
 }
 
 /*! \brief clean up the memory used by a file list */
 void EndFileList (FILELIST fl) {
-  fl->files.clear();
+  if (fl != NULL) {
+    fl->files.clear();
+    delete fl;
+  }
 }
 
 /*! \brief determine if the file list is finished */
 bool FileListDone (FILELIST fl) {
+  if (fl == NULL)
+	 return true;
   return (fl->current_file == fl->files.end());
 }
 
 /*! \brief get the next directory from the listing
 
   Due to GNU's globbing, these are returned alphabetically */
-void GetNextFile (FILELIST fl, char directory[FILENAME_MAX]) {
-  strcpy(directory, fl->current_file->c_str());
+void GetNextFile (FILELIST fl, char file[FILENAME_MAX]) {
+  strcpy(file, fl->current_file->c_str());
   fl->current_file++;
 }

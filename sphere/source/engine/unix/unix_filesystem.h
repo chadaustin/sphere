@@ -41,6 +41,6 @@ void          GetNextDirectory(DIRECTORYLIST dl, char directory[FILENAME_MAX]);
 FILELIST BeginFileList(const char* mask);
 void     EndFileList(FILELIST fl);
 bool     FileListDone(FILELIST fl);
-void     GetNextFile(FILELIST fl, char directory[FILENAME_MAX]);
+void     GetNextFile(FILELIST fl, char file[FILENAME_MAX]);
 
 #endif /* UNIX_FILESYSTEM_H */
