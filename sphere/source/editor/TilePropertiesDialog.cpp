@@ -73,6 +73,21 @@ CTilePropertiesDialog::OnAnimatedClicked()
   {
     GetDlgItem(IDC_NEXT_TILE)->EnableWindow(TRUE);
     GetDlgItem(IDC_DELAY)->EnableWindow(TRUE);
+
+    // if the next tile is zero or invalid, set the tile to default tile animation
+    if (m_Tiles[m_Tile].GetNextTile() <= 0 || m_Tiles[m_Tile].GetNextTile() >= m_Tileset->GetNumTiles())
+    {
+      int tile = m_Tile + 1;
+      if (tile >= m_Tileset->GetNumTiles())
+        tile = 0;
+
+      m_Tiles[m_Tile].SetNextTile(tile);
+      m_Tiles[m_Tile].SetDelay(8);
+      m_Tiles[m_Tile].SetAnimated(true);
+
+      UpdateDialog();
+    }
+
   }
   else
   {
