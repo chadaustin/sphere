@@ -95,3 +95,60 @@ std::vector<std::string> GetFolderList(const char* filter)
 
 ///////////////////////////////////////////////////////////
 
+std::string GetFilePath(const char* filename) {
+  std::string path = filename;
+  if (path.rfind("/") == -1) {
+    path = "";
+  }
+  else {
+    path = path.substr(0, path.rfind("/"));
+  }
+
+  return path;
+}
+
+///////////////////////////////////////////////////////////
+
+std::string GetFileTitle(const char* filename) {
+  std::string title = filename;
+  if (strrchr(filename, '/') != NULL)
+    title = strrchr(filename, '/') + 1;
+  return title;
+}
+
+///////////////////////////////////////////////////////////
+
+bool IsDirectory(const char* filename) {
+  std::string title = GetFileTitle(filename);
+  std::string path = GetFilePath(filename);
+
+  std::vector<std::string> folderlist = GetFolderList(path == "" ? "*" : (path + "/" + "*").c_str());
+
+  for (int i = 0; i < folderlist.size(); i++) {
+    if (title == folderlist[i]) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+///////////////////////////////////////////////////////////
+
+bool IsFile(const char* filename) {
+  std::string title = GetFileTitle(filename);
+  std::string path = GetFilePath(filename);
+
+  std::vector<std::string> filelist = GetFileList(path == "" ? "*" : (path + "/" + "*").c_str());
+
+  for (int i = 0; i < filelist.size(); i++) {
+    if (title == filelist[i]) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+///////////////////////////////////////////////////////////
+

@@ -696,7 +696,7 @@ std::string GenerateSupportedExtensionsFilter() {
       type_filter += "*." + e[j];
     }
 
-    filter += FTL.GetFileTypeLabel(i);
+    filter += FTL.GetFileTypeLabel(i, false);
     filter += " (" + type_filter + ")|" + type_filter + "|";
   }
 

@@ -30,8 +30,9 @@ public:
   // mutators
   void AddSegment(int x1, int y1, int x2, int y2);
   void RemoveSegment(int i);
-
   void RemoveSegmentByPoint(int x, int y);
+
+  void Simplify();
 
   int FindSegmentByPoint(int x, int y);
 

@@ -229,3 +229,98 @@ sObstructionMap::DistanceToPoint(int x1, int y1, int x2, int y2)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+void
+sObstructionMap::Simplify() {
+  if (m_Segments.size() == 0)
+    return;
+
+  int i = 0;
+
+  do {
+	sObstructionMap::Segment& A = m_Segments[i];
+
+	int A_vertical=(A.x2-A.x1==0);
+	int mA,bA;
+	if (!A_vertical) {
+		mA=(A.y2 - A.y1) / (A.x2 - A.x1);
+	    bA=A.y1 - (mA * A.x1);
+	}
+
+    for (int j = i+1; j < m_Segments.size(); j++) {
+      sObstructionMap::Segment& B = m_Segments[j];
+
+	  int B_vertical=(B.x2-B.x1==0);
+	  if (B_vertical && A_vertical) {
+	    if (B.x1==A.x1) {
+		  // vertical lines are at same x
+		  // so test for y overlap
+		  if ( (A.y1 <= B.y1 && A.y2 >= B.y1) ||
+			(A.y1 <= B.y2 && A.y2 >= B.y2) ) {
+			// coordinates overlap
+
+			// determine endpoints of unified line
+			
+		  int new_y1=(A.y1 < B.y1) ? (A.y1):(B.y1);
+			int new_y2=(A.y2 < B.y2) ? (B.y2):(A.y2);
+
+			// change the A line to the new line
+			A.y1=new_y1;
+			A.y2=new_y2;
+
+			// swap B line to end and delete
+			int lastSegment=m_Segments.size()-1;
+			sObstructionMap::Segment& L=m_Segments[lastSegment];
+			std::swap(B,L);
+			RemoveSegment(lastSegment);
+              
+			// restart j loop
+			j=i;
+			continue;
+		  }
+		}
+	  } else if (!A_vertical && !B_vertical) {
+		// determine m and b of segment B
+		int mB=(B.y2 - B.y1) / (B.x2 - B.x1);
+		int bB=B.y1 - (mB * B.x1);
+		// is A and B the same line
+		if (mA==mB && bA==bB) {
+		  // if so check for overlapping X coords
+		  // (along the same line you may check
+		  // either coordinate for incidence)
+		  if ( (A.x1 <= B.x1 && A.x2 >= B.x1) ||
+		    (A.x1 <= B.x2 && A.x2 >= B.x2) ) {
+			// coordinates overlap
+
+			// determine endpoints of unified line
+			int new_x1,new_x2;// master
+			int new_y1,new_y2;// slave (y=mx+b)
+		    new_x1=(A.x1 < B.x1) ? (A.x1):(B.x1);
+			new_x2=(A.x2 < B.x2) ? (B.x2):(A.x2);
+			new_y1=(mA*new_x1)+bA;
+			new_y2=(mA*new_x2)+bA;
+
+			// A line becomes the new line
+			A.x1=new_x1;
+			A.x2=new_x2;
+			A.y1=new_y1;
+			A.y2=new_y2;
+
+			// swap B line to end and delete
+			int lastSegment=m_Segments.size()-1;
+			sObstructionMap::Segment& L=m_Segments[lastSegment];
+			std::swap(B,L);
+			RemoveSegment(lastSegment);
+			  
+			// restart j loop
+			j=i;
+			continue;
+		  }
+		}
+	  }
+	}
+    ++i;
+  } while ((i+1)<m_Segments.size());
+}
+
+////////////////////////////////////////////////////////////////////////////////

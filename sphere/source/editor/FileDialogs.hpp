@@ -47,7 +47,7 @@ public:
   CSphereFileDialog(int mode, const char* title = NULL)
   : CFileDialog(
       mode & FDM_OPEN ? TRUE : FALSE,
-      FTL.GetDefaultExtension(filetype::ft),
+      FTL.GetDefaultExtension(filetype::ft, (mode & FDM_SAVE ? true : false)),
       NULL,
       OFN_HIDEREADONLY |
         (mode & FDM_OPEN && !(mode & FDM_MAYNOTEXIST) ? OFN_FILEMUSTEXIST : 0) |
@@ -83,8 +83,8 @@ private:
     std::string filter = GenerateOverallFilter(mode);
     
     // generate filters for all of the subtypes 
-    if (FTL.GetNumSubTypes(filetype::ft) != 1) {
-      for (int i = 0; i < FTL.GetNumSubTypes(filetype::ft); i++) {
+    if (FTL.GetNumSubTypes(filetype::ft, (mode & FDM_SAVE ? true : false)) != 1) {
+      for (int i = 0; i < FTL.GetNumSubTypes(filetype::ft, (mode & FDM_SAVE ? true : false)); i++) {
         filter += GenerateSubTypeFilter(mode, i);
       }
     }
@@ -122,7 +122,7 @@ private:
       }
     }
 
-    std::string filter = FTL.GetFileTypeLabel(filetype::ft);
+    std::string filter = FTL.GetFileTypeLabel(filetype::ft, (mode & FDM_SAVE ? true : false));
     filter += " (" + filters + ")";
     filter += "|" + filters + "|";
     return filter;
@@ -146,7 +146,7 @@ private:
       }
     }
 
-    std::string filter = FTL.GetSubTypeLabel(filetype::ft, sub_type);
+    std::string filter = FTL.GetSubTypeLabel(filetype::ft, sub_type, (mode & FDM_SAVE ? true : false));
     filter += " (" + filters + ")";
     filter += "|" + filters + "|";
 

@@ -32,11 +32,11 @@ class CFileTypeLibrary
 public:
   CFileTypeLibrary();
 
-  const char* GetFileTypeLabel(int file_type);
+  const char* GetFileTypeLabel(int file_type, bool save);
   void        GetFileTypeExtensions(int file_type, bool save, std::vector<std::string>& extensions);
-  const char* GetDefaultExtension(int file_type);
-  int         GetNumSubTypes(int file_type);
-  const char* GetSubTypeLabel(int file_type, int sub_type);
+  const char* GetDefaultExtension(int file_type, bool save);
+  int         GetNumSubTypes(int file_type, bool save);
+  const char* GetSubTypeLabel(int file_type, int sub_type, bool save);
   void        GetSubTypeExtensions(int file_type, int sub_type, bool save, std::vector<std::string>& extensions); 
 
 private:

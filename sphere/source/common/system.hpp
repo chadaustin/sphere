@@ -25,5 +25,9 @@ bool CreateDirectory(const char* directory, const char* options);
 std::vector<std::string> GetFileList(const char* filter);
 std::vector<std::string> GetFolderList(const char* filter);
 
-#endif // SYSTEM_HPP
+std::string GetFileTitle(const char* filename);
+std::string GetFilePath(const char* filename);
+bool IsDirectory(const char* filename);
+bool IsFile(const char* filename);
 
+#endif // SYSTEM_HPP
