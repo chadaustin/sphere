@@ -38,7 +38,7 @@
 
 // common
 #include "FolderDialog.hpp"
-#include "../common/version.h"
+#include "../common/sphere_version.h"
 #include "../common/Map.hpp"
 #include "../common/strcmp_ci.hpp"
 

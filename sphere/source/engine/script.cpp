@@ -18,7 +18,7 @@
 #include "swindowstyle.hpp"
 #include "time.hpp"
 
-#include "../common/version.h"
+#include "../common/sphere_version.h"
 #include "../common/configfile.hpp"
 #include "../common/Entities.hpp"
 
