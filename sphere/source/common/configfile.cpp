@@ -61,11 +61,11 @@ CConfigFile::Load(const char* filename, IFileSystem& fs)
 
   std::string current_section = "";
 
-  bool eof = false;
-  while (!eof) {
+  bool done = false;
+  while (!done) {
     // read a line
     std::string line;
-    eof = !read_line(file.get(), line);
+    done = !read_line(file.get(), line);
     const char* string = line.c_str();
 
     // parse it

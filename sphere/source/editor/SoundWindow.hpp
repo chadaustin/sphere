@@ -5,6 +5,7 @@
 #include <afxcmn.h>
 #include "DocumentWindow.hpp"
 #include "Audio.hpp"
+#include "../common/DefaultFileSystem.hpp" 
 
 
 class CPlaylist {
@@ -19,8 +20,8 @@ public:
   const char* GetFile(int index) const;
   int GetNumFiles() const;
 
-  bool AppendFile(const char* file);
-  bool LoadFromFile(const char* filename);
+  bool AppendFile(const char* filename);
+  bool LoadFromFile(const char* filename, IFileSystem& fs = g_DefaultFileSystem);
 };
 
 

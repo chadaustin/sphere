@@ -7,7 +7,6 @@
 #include "Editor.hpp"
 #include "resource.h"
 
-
 CPlaylist::CPlaylist()
 {
 }
@@ -30,35 +29,55 @@ CPlaylist::GetNumFiles() const
 }
 
 bool
-CPlaylist::AppendFile(const char* file)
+CPlaylist::AppendFile(const char* filename)
 {
   int size = int(m_Filenames.size());
-  m_Filenames.push_back(file);
+  m_Filenames.push_back(filename);
   return size + 1 == int(m_Filenames.size());
 }
 
-bool
-CPlaylist::LoadFromFile(const char* filename)
+
+// returns false if eof
+inline bool read_line(IFile* file, std::string& s)
 {
-  FILE* file = fopen(filename, "rb");
-  if (!file)
+  s = "";
+  
+  char c;
+  if (file->Read(&c, 1) == 0) {
     return false;
+  }
 
-  char buffer[MAX_PATH] = {0};
-  int offset = 0;
+  bool eof = false;
+  while (!eof && c != '\n') {
+    if (c != '\r') {
+      s += c;
+    }
+    eof = (file->Read(&c, 1) == 0);
+  }
 
-  /*
-  while (!feof(file)) {
-    int size = fread(buffer + offset, MAX_PATH - offset, buffer, file);
-    if (size > 0) {
-      for (int i = 0; i < size; i++) {
-        if (buffer[offset + i] == '\n') {
+  return !eof;
+}
 
-        }
-      }
+bool
+CPlaylist::LoadFromFile(const char* filename, IFileSystem& fs)
+{
+  // open the file
+  std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::read));
+  if (!file.get()) {
+    return false;
+  }
+
+  std::string str;
+  bool done = false;
+
+  while (!done) {
+    if (read_line(file.get(), str) == false)
+      done = true;
+
+    if (str[0] != '#' && str.size() > 0) {
+      AppendFile(str.c_str());
     }
   }
-  */
 
   return true;
 }
@@ -112,9 +131,9 @@ CSoundWindow::CSoundWindow(const char* sound)
   CFont* pFont = CFont::FromHandle((HFONT)GetStockObject(DEFAULT_GUI_FONT));
   
   // create the buttons
-  m_PlayButton.Create("Play", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, CRect(), this, ID_SOUND_PLAY);
+  m_PlayButton.Create(TranslateString("Play"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, CRect(), this, ID_SOUND_PLAY);
   m_PlayButton.SetFont(pFont);
-  m_StopButton.Create("Stop", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, CRect(), this, ID_SOUND_STOP);
+  m_StopButton.Create(TranslateString("Stop"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, CRect(), this, ID_SOUND_STOP);
   m_StopButton.SetFont(pFont);
 
   // create the volume bar and its associated friends.
@@ -164,10 +183,6 @@ CSoundWindow::~CSoundWindow()
 void
 CSoundWindow::LoadSound(const char* sound)
 {
-  char szWindowTitle[MAX_PATH];
-  strcpy(szWindowTitle, strrchr(sound, '\\') + 1);
-  SetCaption(szWindowTitle);
-
   // load the sample
   if (!m_Sound.Load(sound))
   {
@@ -330,6 +345,10 @@ CSoundWindow::OnSoundPlay()
   if (m_CurrentSound >= 0 && m_CurrentSound < m_Playlist.GetNumFiles()) {
     LoadSound(m_Playlist.GetFile(m_CurrentSound));
 
+    char szWindowTitle[MAX_PATH + 1024];
+    sprintf (szWindowTitle, "%s [%d / %d]", strrchr(m_Playlist.GetFile(m_CurrentSound), '\\') + 1, m_CurrentSound, m_Playlist.GetNumFiles());
+    SetCaption(szWindowTitle);
+
     m_Sound.Play();
     m_Playing = true;
 
@@ -439,20 +458,20 @@ CSoundWindow::OnNeedText(UINT /*id*/, NMHDR* nmhdr, LRESULT* result)
   switch (id) {
     case ID_MUSIC_PANBAR:
       if (m_PanBar.m_hWnd != NULL) {
-        sprintf (string, "pan %1.3f",    ((float)m_PanBar.GetPos() / 255.0f));
+        sprintf (string, "%s %1.3f",  TranslateString("pan"),  ((float)m_PanBar.GetPos() / 255.0f));
         ttt->lpszText = string;
       }
     break;
     case ID_MUSIC_PITCHBAR:
       if (m_PanBar.m_hWnd != NULL) {
-        sprintf (string, "pitch %1.3f",  ((float)m_PitchBar.GetPos() / 255.0f));
+        sprintf (string, "%s %1.3f", TranslateString("pitch"), ((float)m_PitchBar.GetPos() / 255.0f));
         ttt->lpszText = string;
       }
     break;
 
     case ID_MUSIC_VOLUMEBAR:
       if (m_VolumeBar.m_hWnd != NULL) {
-        sprintf (string, "volume %3d", (255 - m_VolumeBar.GetPos()));
+        sprintf (string, "%s %3d", TranslateString("volume"), (255 - m_VolumeBar.GetPos()));
         ttt->lpszText = string;
       }
     break;
@@ -472,13 +491,27 @@ CSoundWindow::OnDropFiles(HDROP drop_info)
 {
   UINT num_files = DragQueryFile(drop_info, 0xFFFFFFFF, NULL, 0);
 
+  struct Local {
+    static inline bool extension_compare(const char* path, const char* extension) {
+      int path_length = strlen(path);
+      int ext_length  = strlen(extension);
+      return (
+        path_length >= ext_length &&
+        strcmp(path + path_length - ext_length, extension) == 0
+      );
+    }
+  };
+
   // add all files to the playlist
   for (unsigned int i = 0; i < num_files; i++) {
 
     char path[MAX_PATH];
     DragQueryFile(drop_info, i, path, MAX_PATH);
 
-    m_Playlist.AppendFile(path);
+    if (Local::extension_compare(path, ".m3u"))
+      m_Playlist.LoadFromFile(path);
+    else
+      m_Playlist.AppendFile(path);
   }
 
   DragFinish(drop_info);

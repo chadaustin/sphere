@@ -10,6 +10,8 @@
 #include "../engine/win32/win32_sphere_config.hpp"
 #include "../common/LogWindow.hpp"
 
+#include "../common/configfile.hpp"
+
 #include <afxmt.h>
 
 static CEditorApplication g_Application;
@@ -17,7 +19,8 @@ static CMainWindow* g_MainWindow = NULL;
 
 static std::string s_SphereDirectory;
 
-static std::string s_Language = "English";
+static std::string s_LanguageName = "English";
+static CConfigFile s_LanguageConfig;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -280,7 +283,7 @@ CEditorApplication::InitInstance()
 
   s_SphereDirectory = config_directory;
 
-  s_Language = Configuration::Get(KEY_LANGUAGE);
+  SetLanguage(Configuration::Get(KEY_LANGUAGE).c_str());
 
   // create the main window
   CMainWindow* main_window = new CMainWindow();
@@ -355,31 +358,29 @@ CMainWindow* GetMainWindow()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "../common/configfile.hpp"
-
 const char* GetLanguage() {
-  return s_Language.c_str();
+  return s_LanguageName.c_str();
 }
 
 void SetLanguage(const char* language) {
-  s_Language = language;
+  s_LanguageName = language;
+
+  if (1) {
+    char directory[MAX_PATH] = {0};
+    GetCurrentDirectory(MAX_PATH, directory);
+    if (SetCurrentDirectory(GetSphereDirectory().c_str()) != 0) {
+      s_LanguageConfig.Load("language.ini");
+      SetCurrentDirectory(directory);
+    }
+  }
+
   Configuration::Set(KEY_LANGUAGE, language);
 }
 
 const char* TranslateString(const char* string)
 {
   const char* language = GetLanguage();
-
-  static bool once = false;
-  static CConfigFile config;
-
-  if (!once) {
-    once = true;
-    if (!config.Load("language.ini"))
-      return string;
-  }
-
-  return config.ReadString(language, string, string).c_str();
+  return s_LanguageConfig.ReadString(language, string, string).c_str();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -388,17 +389,18 @@ void TranslateMenu(HMENU menu)
 {
   int count = GetMenuItemCount(menu);
   for (int i = 0; i < count; i++) {
-    //MENUITEMINFO menu_item_info;
-    //if (GetMenuItemInfo(menu, i, TRUE, &menu_item_info))
-    {
-      //if ((menu_item_info.fType & MFT_SEPARATOR) == false)
-      {
-        char buffer[1024] = {0};
-        GetMenuString(menu, i, buffer, 1000, MF_BYPOSITION);
-        if (strlen(buffer) > 0) {
-          ModifyMenu(menu, i, MF_BYPOSITION, GetMenuItemID(menu, i), TranslateString(buffer));
-        }
-      }
+
+    char buffer[1024] = {0};
+    GetMenuString(menu, i, buffer, 1000, MF_BYPOSITION);
+    if (strlen(buffer) > 0) {
+      ModifyMenu(menu, i, MF_BYPOSITION, GetMenuItemID(menu, i), TranslateString(buffer));
+    }
+  }
+
+  for (int i = 0; i < count; i++) {
+    HMENU sub_menu = GetSubMenu(menu, i);
+    if (sub_menu != NULL) {
+      TranslateMenu(sub_menu);
     }
   }
 }
