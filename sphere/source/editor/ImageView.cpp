@@ -1324,6 +1324,8 @@ CImageView::OnReplaceRGBA()
     return;
   }
 
+  AddUndoState();
+
   m_Image.ReplaceColor(m_Image.GetPixel(p.x, p.y), GetColor());
 
   Invalidate();
@@ -1339,6 +1341,8 @@ CImageView::OnReplaceRGB()
   if (!InImage(p)) {
     return;
   }
+
+  AddUndoState();
 
   RGBA c = m_Image.GetPixel(p.x, p.y);
   for (int i = 0; i < m_Image.GetWidth() * m_Image.GetHeight(); ++i) {
@@ -1365,6 +1369,8 @@ CImageView::OnReplaceAlpha()
   if (!InImage(p)) {
     return;
   }
+
+  AddUndoState();
 
   RGBA c = m_Image.GetPixel(p.x, p.y);
   for (int i = 0; i < m_Image.GetWidth() * m_Image.GetHeight(); ++i) {
