@@ -95,6 +95,7 @@ if sys.platform == 'cygwin':
         CCFLAGS = ['-DWIN32', '-D_WIN32', '-DCYGWIN', '-DXP_PC',
                    '-mno-cygwin'],
         CPPPATH = [Dir('third-party/include')],
+        RESPATH = [Dir('third-party/include')],
         LIBPATH = [Dir('third-party/lib')],
         LINKFLAGS = ['-mno-cygwin'])
     base_env['BUILDERS']['Resource'] = Builder(

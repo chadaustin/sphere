@@ -11,6 +11,7 @@ SetupMNG(env)
 SetupZLib(env)
 
 env.Prepend(
+    RESPATH = [Dir('win32')],
     LIBPATH = ['../common', 'win32'],
     LIBS = ['common', 'win32'])
 
@@ -35,7 +36,10 @@ engine = env.Program('engine', Split("""
     sphere.cpp
     sspriteset.cpp
     swindowstyle.cpp
+    engine.res
     """))
+
+env.Resource('engine.res', 'win32/engine.rc')
 
 env.Install('#/build', engine)
 
