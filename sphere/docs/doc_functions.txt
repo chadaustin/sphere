@@ -810,7 +810,9 @@ log_object.endBlock()
     - returns that height of the animation
   
   animation_object.getNumFrames()
-    - returns the number of frames the animation contains
+    - returns the number of frames the animation contains.  If the
+      animation is an MNG file, the number of frames is unknown, and
+      this function returns 0.
   
   animation_object.getDelay()
     - returns the delay between frames, in milliseconds
