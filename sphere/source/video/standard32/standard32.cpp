@@ -1071,18 +1071,22 @@ EXPORT(RGBA*, LockImage)(IMAGE image)
   {
     for (int i = 0; i < image->width * image->height; i++)
     {
-      image->locked_pixels[i].red   = (image->bgra[i].red   * 256) / image->alpha[i];
-      image->locked_pixels[i].green = (image->bgra[i].green * 256) / image->alpha[i];
-      image->locked_pixels[i].blue  = (image->bgra[i].blue  * 256) / image->alpha[i];
+      if (image->alpha[i]) {
+        image->locked_pixels[i].red   = (image->bgra[i].red   * 256) / image->alpha[i];
+        image->locked_pixels[i].green = (image->bgra[i].green * 256) / image->alpha[i];
+        image->locked_pixels[i].blue  = (image->bgra[i].blue  * 256) / image->alpha[i];
+      }
     }
   }
   else
   {
     for (int i = 0; i < image->width * image->height; i++)
     {
-      image->locked_pixels[i].red   = (image->bgr[i].red   * 256) / image->alpha[i];
-      image->locked_pixels[i].green = (image->bgr[i].green * 256) / image->alpha[i];
-      image->locked_pixels[i].blue  = (image->bgr[i].blue  * 256) / image->alpha[i];
+      if (image->alpha[i]) {
+        image->locked_pixels[i].red   = (image->bgr[i].red   * 256) / image->alpha[i];
+        image->locked_pixels[i].green = (image->bgr[i].green * 256) / image->alpha[i];
+        image->locked_pixels[i].blue  = (image->bgr[i].blue  * 256) / image->alpha[i];
+      }
     }
   }
 
