@@ -38,9 +38,8 @@ function intro()
 
 function main_menu()
 {
-  while (AreKeysLeft()){
-		GetKey();
-        RenderM();
+  while (AreKeysLeft()) {
+    GetKey();
   }
   var image = LoadSurface("intro.jpeg");
   var sound = LoadSound("intro.wav");
