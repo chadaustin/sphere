@@ -3,6 +3,8 @@
 
 #include "../common/str_util.hpp"
 
+#include <afxcmn.h>
+
 ////////////////////////////////////////////////////////////////////////////////
 
 BEGIN_MESSAGE_MAP(CColorAdjustDialog, CDialog)
@@ -10,6 +12,10 @@ BEGIN_MESSAGE_MAP(CColorAdjustDialog, CDialog)
   ON_BN_CLICKED(IDC_USE_GREEN, OnChannelChanged)
   ON_BN_CLICKED(IDC_USE_BLUE,  OnChannelChanged)
   ON_BN_CLICKED(IDC_USE_ALPHA, OnChannelChanged)
+  ON_EN_CHANGE(IDC_EDIT_RED,   OnValueChanged)
+  ON_EN_CHANGE(IDC_EDIT_GREEN, OnValueChanged)
+  ON_EN_CHANGE(IDC_EDIT_BLUE,  OnValueChanged)
+  ON_EN_CHANGE(IDC_EDIT_ALPHA, OnValueChanged)
   ON_WM_PAINT()
 END_MESSAGE_MAP()
 
@@ -20,13 +26,23 @@ CColorAdjustDialog::CColorAdjustDialog(const int width, const int height, const 
 , m_Width(width)
 , m_Height(height)
 , m_Pixels(pixels)
+, m_blit_tile(NULL)
+, m_RedValue(0)
+, m_GreenValue(0)
+, m_BlueValue(0)
+, m_AlphaValue(0)
 {
+  m_blit_tile = new CDIBSection(32, 32, 32);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 CColorAdjustDialog::~CColorAdjustDialog()
 {
+  if (m_blit_tile) {
+    delete m_blit_tile;
+    m_blit_tile = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -40,71 +56,101 @@ CColorAdjustDialog::OnInitDialog()
   CheckDlgButton(IDC_USE_GREEN, BST_CHECKED);
   CheckDlgButton(IDC_USE_BLUE,  BST_CHECKED);
   CheckDlgButton(IDC_USE_ALPHA, BST_UNCHECKED);
-  
+
+  SetDlgItemInt(IDC_EDIT_RED,   m_RedValue);
+  SetDlgItemInt(IDC_EDIT_GREEN, m_GreenValue);
+  SetDlgItemInt(IDC_EDIT_BLUE,  m_BlueValue);
+  SetDlgItemInt(IDC_EDIT_ALPHA, m_AlphaValue);
+
+  CSpinButtonCtrl* spin = (CSpinButtonCtrl*) GetDlgItem(IDC_SPIN_RED);
+  if (spin) {
+    spin->SetRange(-255, 255);
+  }
+
+  spin = (CSpinButtonCtrl*) GetDlgItem(IDC_SPIN_GREEN);
+  if (spin) {
+    spin->SetRange(-255, 255);
+  }
+
+  spin = (CSpinButtonCtrl*) GetDlgItem(IDC_SPIN_BLUE);
+  if (spin) {
+    spin->SetRange(-255, 255);
+  }
+
+  spin = (CSpinButtonCtrl*) GetDlgItem(IDC_SPIN_ALPHA);
+  if (spin) {
+    spin->SetRange(-255, 255);
+  }
+
+
   OnChannelChanged();
   return FALSE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "DIBSection.hpp"
-
 bool
 CColorAdjustDialog::DrawPreview(CPaintDC& dc, RECT* rect)
 {
-  CDIBSection* blit_tile = new CDIBSection(32, 32, 32);
-  if (!blit_tile || blit_tile->GetPixels() == NULL)
-  {
+  if (!m_blit_tile || m_blit_tile->GetPixels() == NULL || rect == NULL) {
     return false;
   }
 
   /////////////////////////////////////////////////////////
 
-  int width  = m_Width;
-  int height = m_Height;
-  if (width > 32)
-    width = 32;
-  if (height > 32)
-    height = 32;
+  const int width  = m_blit_tile->GetWidth();
+  const int height = m_blit_tile->GetHeight();
+  int current_width = m_Width;
+  if (current_width > width)
+    current_width = width;
+  int current_height = m_Height;
+  if (current_height > height)
+    current_height = height;
 
-  RGBA* pixels = (RGBA*) blit_tile->GetPixels();
+  BGRA* pixels = (BGRA*) m_blit_tile->GetPixels();
 
-  for (int iy = 0; iy < height; iy++) {
-    for (int ix = 0; ix < width; ix++) {
-      pixels[iy * 32 + ix].red   = m_Pixels[iy * m_Width + ix].red;
-      pixels[iy * 32 + ix].green = m_Pixels[iy * m_Width + ix].green;
-      pixels[iy * 32 + ix].blue  = m_Pixels[iy * m_Width + ix].blue;
-      pixels[iy * 32 + ix].alpha = m_Pixels[iy * m_Width + ix].alpha;
+  for (int iy = 0; iy < current_height; iy++) {
+    for (int ix = 0; ix < current_width; ix++) {
+      pixels[iy * width + ix].red   = m_Pixels[iy * m_Width + ix].red;
+      pixels[iy * width + ix].green = m_Pixels[iy * m_Width + ix].green;
+      pixels[iy * width + ix].blue  = m_Pixels[iy * m_Width + ix].blue;
+      pixels[iy * width + ix].alpha = m_Pixels[iy * m_Width + ix].alpha;
     }
   }
 
   /////////////////////////////////////////////////////////
 
-  int red_value = 0;
-  int green_value = 0;
-  int blue_value = 0;
-  int alpha_value = 0;
+  int red_value   = GetRedValue();
+  int green_value = GetGreenValue();
+  int blue_value  = GetBlueValue();
+  int alpha_value = GetAlphaValue();
 
   int use_red   = ShouldUseRedChannel();
   int use_green = ShouldUseGreenChannel();
   int use_blue  = ShouldUseBlueChannel();
   int use_alpha = ShouldUseAlphaChannel();
 
-  for (int iy = 0; iy < height; iy++) {
-    for (int ix = 0; ix < width; ix++) {
-      if (use_red)   pixels[iy * 32 + ix].red   += red_value;
-      if (use_green) pixels[iy * 32 + ix].green += green_value;
-      if (use_blue)  pixels[iy * 32 + ix].blue  += blue_value;
-      if (use_alpha) pixels[iy * 32 + ix].alpha += alpha_value;
+  for (int iy = 0; iy < current_height; iy++) {
+    for (int ix = 0; ix < current_width; ix++) {
+      if (use_red)   pixels[iy * width + ix].red   += red_value;
+      if (use_green) pixels[iy * width + ix].green += green_value;
+      if (use_blue)  pixels[iy * width + ix].blue  += blue_value;
+      if (use_alpha) pixels[iy * width + ix].alpha += alpha_value;
     }
   } 
 
   /////////////////////////////////////////////////////////
 
-  dc.BitBlt(rect->left, rect->top, width, height, CDC::FromHandle(blit_tile->GetDC()), 0, 0, SRCCOPY);
+  dc.BitBlt(rect->left, rect->top, current_width, current_height, CDC::FromHandle(m_blit_tile->GetDC()), 0, 0, SRCCOPY);
 
-  delete blit_tile;
-  blit_tile = NULL;
+  if (1) {
+    rect->left += current_width;
+    dc.FillRect(rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+    rect->left -= current_width;
+    rect->top += current_height;
+    dc.FillRect(rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+    rect->top -= current_height;
+  }
 
   return true;
 }
@@ -128,7 +174,7 @@ CColorAdjustDialog::OnPaint()
 ////////////////////////////////////////////////////////////////////////////////
 
 int
-CColorAdjustDialog::ShouldUseRedChannel()
+CColorAdjustDialog::ShouldUseRedChannel() const
 {
   return m_UseRed;
 }
@@ -136,23 +182,55 @@ CColorAdjustDialog::ShouldUseRedChannel()
 ////////////////////////////////////////////////////////////////////////////////
 
 int
-CColorAdjustDialog::ShouldUseGreenChannel()
+CColorAdjustDialog::ShouldUseGreenChannel() const
 {
   return m_UseGreen;
 }
 ////////////////////////////////////////////////////////////////////////////////
 
 int
-CColorAdjustDialog::ShouldUseBlueChannel()
+CColorAdjustDialog::ShouldUseBlueChannel() const
 {
   return m_UseBlue;
 }
 ////////////////////////////////////////////////////////////////////////////////
 
 int
-CColorAdjustDialog::ShouldUseAlphaChannel()
+CColorAdjustDialog::ShouldUseAlphaChannel() const
 {
   return m_UseAlpha;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CColorAdjustDialog::GetRedValue() const
+{
+  return m_RedValue;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CColorAdjustDialog::GetGreenValue() const
+{
+  return m_GreenValue;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CColorAdjustDialog::GetBlueValue() const
+{
+  return m_BlueValue;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CColorAdjustDialog::GetAlphaValue() const
+{
+  return m_AlphaValue;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -176,6 +254,11 @@ CColorAdjustDialog::UpdateButtons()
 void
 CColorAdjustDialog::OnValueChanged()
 {
+  m_RedValue   = GetDlgItemInt(IDC_EDIT_RED);
+  m_GreenValue = GetDlgItemInt(IDC_EDIT_GREEN);
+  m_BlueValue  = GetDlgItemInt(IDC_EDIT_BLUE);
+  m_AlphaValue = GetDlgItemInt(IDC_EDIT_ALPHA);
+
   UpdateButtons();
   Invalidate(FALSE);
 }

@@ -2732,9 +2732,45 @@ afx_msg void
 CImageView::OnFilterColorAdjuster()
 {
   CColorAdjustDialog dialog(m_Image.GetWidth(), m_Image.GetHeight(), m_Image.GetPixels());
-  if (dialog.DoModal() == IDOK) {
-    
-  }  
+  if (dialog.DoModal() != IDOK)
+    return;
+
+  int sx = GetSelectionLeftX();
+  int sy = GetSelectionTopY();
+  int sw = GetSelectionWidth();
+  int sh = GetSelectionHeight();
+
+  const int width  = m_Image.GetWidth();
+  const int height = m_Image.GetHeight();
+  RGBA* pixels = m_Image.GetPixels();
+
+  int red_value   = dialog.GetRedValue();
+  int green_value = dialog.GetGreenValue();
+  int blue_value  = dialog.GetBlueValue();
+  int alpha_value = dialog.GetAlphaValue();
+
+  int use_red   = dialog.ShouldUseRedChannel();
+  int use_green = dialog.ShouldUseGreenChannel();
+  int use_blue  = dialog.ShouldUseBlueChannel();
+  int use_alpha = dialog.ShouldUseAlphaChannel();
+
+  if ((use_red || use_green || use_blue || use_alpha)
+   && (red_value || green_value || blue_value && alpha_value)) {
+
+    AddUndoState();
+
+    for (int iy = 0; iy < height; iy++) {
+      for (int ix = 0; ix < width; ix++) {
+        if (use_red)   pixels[iy * width + ix].red   += red_value;
+        if (use_green) pixels[iy * width + ix].green += green_value;
+        if (use_blue)  pixels[iy * width + ix].blue  += blue_value;
+        if (use_alpha) pixels[iy * width + ix].alpha += alpha_value;
+      }
+    } 
+
+    Invalidate();
+    m_Handler->IV_ImageChanged();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

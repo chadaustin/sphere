@@ -242,14 +242,18 @@
 #define IDC_ZONE_HEIGHT                 1204
 #define IDC_ZONE_WIDTH                  1205
 #define IDC_SPIN2                       1207
+#define IDC_SPIN_RED                    1207
 #define IDC_EDIT_RED                    1208
 #define IDC_EDIT_GREEN                  1209
 #define IDC_SPIN3                       1210
 #define IDC_BROWSE_MUSIC                1210
+#define IDC_SPIN_GREEN                  1210
 #define IDC_EDIT_BLUE                   1211
 #define IDC_SPIN4                       1212
+#define IDC_SPIN_BLUE                   1212
 #define IDC_EDIT_ALPHA                  1213
 #define IDC_SPIN5                       1214
+#define IDC_SPIN_ALPHA                  1214
 #define IDC_USE_RED                     1215
 #define IDC_USE_GREEN                   1216
 #define IDC_USE_BLUE                    1217
@@ -711,7 +715,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        279
 #define _APS_NEXT_COMMAND_VALUE         40818
-#define _APS_NEXT_CONTROL_VALUE         1236
+#define _APS_NEXT_CONTROL_VALUE         1237
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "../common/rgb.hpp"
+#include "DIBSection.hpp"
 
 ///////////////////////////////////////////////////////////
 
@@ -16,10 +17,15 @@ public:
   CColorAdjustDialog(const int width, const int height, const RGBA* pixels);
   ~CColorAdjustDialog();
 
-  int ShouldUseRedChannel();
-  int ShouldUseGreenChannel();
-  int ShouldUseBlueChannel();
-  int ShouldUseAlphaChannel();
+  int ShouldUseRedChannel() const;
+  int ShouldUseGreenChannel() const;
+  int ShouldUseBlueChannel() const;
+  int ShouldUseAlphaChannel() const;
+
+  int GetRedValue() const;
+  int GetGreenValue() const;
+  int GetBlueValue() const;
+  int GetAlphaValue() const;
 
 private:
   const int m_Width;
@@ -29,6 +35,10 @@ private:
 private:
   void UpdateButtons();
   int m_UseRed, m_UseGreen, m_UseBlue, m_UseAlpha;
+  int m_RedValue, m_GreenValue, m_BlueValue, m_AlphaValue;
+
+private:
+  CDIBSection* m_blit_tile;
 
 private:
   BOOL OnInitDialog();

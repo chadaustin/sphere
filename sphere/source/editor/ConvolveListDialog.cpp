@@ -288,21 +288,32 @@ CConvolveListDialog::DrawPreview(CPaintDC& dc, RECT* rect)
 
   /////////////////////////////////////////////////////////
 
-  int width  = m_Width;
-  int height = m_Height;
-  if (width > 32)
-    width = 32;
-  if (height > 32)
-    height = 32;
+  const int width  = blit_tile->GetWidth();
+  const int height = blit_tile->GetHeight();
+  int current_width  = m_Width;
+  int current_height = m_Height;
+  if (current_width > width)
+    current_width = width;
+  if (current_height > height)
+    current_height = height;
 
   RGBA* pixels = (RGBA*) blit_tile->GetPixels();
 
-  for (int iy = 0; iy < height; iy++) {
-    for (int ix = 0; ix < width; ix++) {
-      pixels[iy * 32 + ix].red   = m_Pixels[iy * m_Width + ix].red;
-      pixels[iy * 32 + ix].green = m_Pixels[iy * m_Width + ix].green;
-      pixels[iy * 32 + ix].blue  = m_Pixels[iy * m_Width + ix].blue;
-      pixels[iy * 32 + ix].alpha = m_Pixels[iy * m_Width + ix].alpha;
+  for (int iy = 0; iy < current_height; iy++) {
+    for (int ix = 0; ix < current_width; ix++) {
+      pixels[iy * width + ix].red   = m_Pixels[iy * m_Width + ix].red;
+      pixels[iy * width + ix].green = m_Pixels[iy * m_Width + ix].green;
+      pixels[iy * width + ix].blue  = m_Pixels[iy * m_Width + ix].blue;
+      pixels[iy * width + ix].alpha = m_Pixels[iy * m_Width + ix].alpha;
+    }
+  }
+
+  for (int iy = current_height; iy < height; iy++) {
+    for (int ix = current_width; ix < width; ix++) {
+      pixels[iy * width + ix].red   = 0;
+      pixels[iy * width + ix].green = 0;
+      pixels[iy * width + ix].blue  = 0;
+      pixels[iy * width + ix].alpha = 255;
     }
   }
 
@@ -325,13 +336,13 @@ CConvolveListDialog::DrawPreview(CPaintDC& dc, RECT* rect)
   int clamp_high = GetClampHigh();
   int wrap      = ShouldWrap();
   int infinite  = 0;
-  int use_red   = ShouldUseRedChannel();
+  int use_red   = ShouldUseBlueChannel();//ShouldUseRedChannel();
   int use_green = ShouldUseGreenChannel();
-  int use_blue  = ShouldUseBlueChannel();
+  int use_blue  = ShouldUseRedChannel();//ShouldUseBlueChannel();//RGBA* pixels is actually BGRA* pixels but incorrectly cast... ¬_¬
   int use_alpha = ShouldUseAlphaChannel();
   const char* mask_type = GetConvolveType();
 
-  double_convolve_rgba(0, 0, width, height, 32, 32, pixels, mask_width, mask_height,
+  double_convolve_rgba(0, 0, width, height, width, height, pixels, mask_width, mask_height,
                        mask_width/2, mask_height/2, double_mask,
                        divisor, offset, wrap,
                        clamp, clamp_low, clamp_high, infinite,
@@ -339,8 +350,17 @@ CConvolveListDialog::DrawPreview(CPaintDC& dc, RECT* rect)
 
   ///////////////////////////////////////////////////////////
   
-  dc.BitBlt(rect->left, rect->top, width, height, CDC::FromHandle(blit_tile->GetDC()), 0, 0, SRCCOPY);
+  dc.BitBlt(rect->left, rect->top, current_width, current_height, CDC::FromHandle(blit_tile->GetDC()), 0, 0, SRCCOPY);
   
+  if (1) {
+    rect->left += current_width;
+    dc.FillRect(rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+    rect->left -= current_width;
+    rect->top += current_height;
+    dc.FillRect(rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+    rect->top -= current_height;
+  }
+
   delete blit_tile;
   blit_tile = NULL;
 
