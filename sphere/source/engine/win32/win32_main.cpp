@@ -18,12 +18,11 @@ static HWND SphereWindow;
 
 static void GetSphereDirectory(char sphere_directory[MAX_PATH])
 {
-#ifdef NDEBUG
   GetModuleFileName(GetModuleHandle(NULL), sphere_directory, MAX_PATH);
-  *strrchr(sphere_directory, '\\') = 0;
-#else
-  GetCurrentDirectory(MAX_PATH, sphere_directory);
-#endif
+  char* last_backslash = strrchr(sphere_directory, '\\');
+  if (last_backslash) {
+    *last_backslash = 0;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

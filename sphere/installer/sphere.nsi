@@ -34,7 +34,45 @@ CreateShortCut "$SMPROGRAMS\Sphere\Run Sphere.lnk" "$INSTDIR\engine.exe"
 CreateShortCut "$SMPROGRAMS\Sphere\Configuration.lnk" "$INSTDIR\config.exe"
 CreateShortCut "$SMPROGRAMS\Sphere\Editor.lnk" "$INSTDIR\editor.exe"
 
+; register file types
+WriteRegStr HKCR ".rfn" "" "SphereFont"
+WriteRegStr HKCR ".rmp" "" "SphereMap"
+WriteRegStr HKCR ".rss" "" "SphereSpriteset"
+WriteRegStr HKCR ".rws" "" "SphereWindowStyle"
+WriteRegStr HKCR ".sgm" "" "SphereGame"
+WriteRegStr HKCR ".spk" "" "SpherePackage"
 
+WriteRegStr HKCR "SphereFont" "" "Sphere Font File"
+WriteRegStr HKCR "SphereFont\\DefaultIcon" "" "$INSTDIR\editor.exe,13"
+WriteRegStr HKCR "SphereFont\\shell" "" "open"
+WriteRegStr HKCR "SphereFont\\shell\\open\\command" "" '"$INSTDIR\editor.exe" "%1"'
+
+WriteRegStr HKCR "SphereMap" "" "Sphere Map File"
+WriteRegStr HKCR "SphereMap\\DefaultIcon" "" "$INSTDIR\editor.exe,3"
+WriteRegStr HKCR "SphereMap\\shell" "" "open"
+WriteRegStr HKCR "SphereMap\\shell\\open\\command" "" '"$INSTDIR\editor.exe" "%1"'
+
+WriteRegStr HKCR "SphereSpriteset" "" "Sphere Spriteset File"
+WriteRegStr HKCR "SphereSpriteset\\DefaultIcon" "" "$INSTDIR\editor.exe,5"
+WriteRegStr HKCR "SphereSpriteset\\shell" "" "open"
+WriteRegStr HKCR "SphereSpriteset\\shell\\open\\command" "" '"$INSTDIR\editor.exe" "%1"'
+
+WriteRegStr HKCR "SphereWindowStyle" "" "Sphere Window Style File"
+WriteRegStr HKCR "SphereWindowStyle\\DefaultIcon" "" "$INSTDIR\editor.exe,12"
+WriteRegStr HKCR "SphereWindowStyle\\shell" "" "open"
+WriteRegStr HKCR "SphereWindowStyle\\shell\\open\\command" "" '"$INSTDIR\editor.exe" "%1"'
+
+WriteRegStr HKCR "SphereGame" "" "Sphere Project File"
+WriteRegStr HKCR "SphereGame\\DefaultIcon" "" "$INSTDIR\editor.exe,1"
+WriteRegStr HKCR "SphereGame\\shell" "" "open"
+WriteRegStr HKCR "SphereGame\\shell\\open\\command" "" '"$INSTDIR\editor.exe" "%1"'
+
+WriteRegStr HKCR "SpherePackage" "" "Sphere Package File"
+WriteRegStr HKCR "SpherePackage\\DefaultIcon" "" "$INSTDIR\editor.exe,8"
+WriteRegStr HKCR "SpherePackage\\shell" "" "open"
+WriteRegStr HKCR "SpherePackage\\shell\\open\\command" "" '"$INSTDIR\engine.exe" -package "%1"'
+
+; set up unistaller
 WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\aegisknight.org\Sphere" "" "$INSTDIR"
 WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\Sphere" "DisplayName" "Sphere (remove only)"
 WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\Sphere" "UninstallString" '"$INSTDIR\uninst.exe"'
@@ -53,6 +91,21 @@ DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\aegisknight.org\Sphere"
 DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Sphere"
 Delete "$INSTDIR\*.exe"
 Delete "$INSTDIR\*.dll"
+
+DeleteRegKey HKCR ".rfn"
+DeleteRegKey HKCR ".rmp"
+DeleteRegKey HKCR ".rss"
+DeleteRegKey HKCR ".rws"
+DeleteRegKey HKCR ".sgm"
+DeleteRegKey HKCR ".spk"
+
+DeleteRegKey HKCR "SphereFont"
+DeleteRegKey HKCR "SphereMap"
+DeleteRegKey HKCR "SphereSpriteset"
+DeleteRegKey HKCR "SphereWindowStyle"
+DeleteRegKey HKCR "SphereGame"
+DeleteRegKey HKCR "SpherePackage"
+
 RMDir /r "$INSTDIR\docs"
 RMDir /r "$INSTDIR\startup"
 RMDir /r "$INSTDIR\system"

@@ -207,7 +207,8 @@ bool SwitchResolution(int x, int y)
 
   if (!InitVDriver(x, y)) {
     FreeLibrary(GraphicsDriver);
-    QuitMessage("Could not switch resolutions");
+    QuitMessage("Could not switch resolutions.  Try configuring\n"
+                "Sphere to run in a window (non-fullscreen.)");
   }
   return true;
 }
