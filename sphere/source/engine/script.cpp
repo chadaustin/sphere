@@ -586,11 +586,11 @@ CScript::ErrorReporter(JSContext* cx, const char* message, JSErrorReport* report
     }
     This->m_Error = os.str();
 
-    FILE* file = fopen("last_error.txt", "wb+");
-    if (file != NULL) {
-      fwrite(This->m_Error.c_str(), sizeof(char), This->m_Error.length(), file); 
-      fclose(file);
-    }
+    //FILE* file = fopen("last_error.txt", "wb+");
+    //if (file != NULL) {
+    //  fwrite(This->m_Error.c_str(), sizeof(char), This->m_Error.length(), file); 
+    //  fclose(file);
+    //}
 
   } else {
     
@@ -629,6 +629,11 @@ static bool IsValidPath(const char* path)
   int num_double_dots = 0;
   bool prev_was_dot = false;
 
+  // empty path
+  if (strlen(path) == 0) {
+    return false;
+  }
+
   for (unsigned int i = 0; i < strlen(path); ++i) {
     if (path[i] == '.') {
       if (prev_was_dot) {
@@ -641,7 +646,17 @@ static bool IsValidPath(const char* path)
     }
   }
 
-  return (num_double_dots <= 1);
+  // path is trying to do things like "../../../"
+  if (num_double_dots > 1) {
+    return false;
+  }
+
+  // path begins with /
+  if (strcmp(path, "/") == 0) {
+    return false;
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1407,7 +1422,7 @@ begin_func(OpenLog, 1)
   arg_str(filename);
 
   if (IsValidPath(filename) == false) {
-    JS_ReportError(cx, "Too many ..'s in filename: '%s'", filename);
+    JS_ReportError(cx, "Invalid filename: '%s'", filename);
     return JS_FALSE;  
   }
 
@@ -3716,7 +3731,7 @@ begin_func(GetFileList, 0)
   }
 
   if (IsValidPath(directory) == false) {
-    JS_ReportError(cx, "Too many ..'s in directory path: '%s'", directory);
+    JS_ReportError(cx, "Invalid directory: '%s'", directory);
     return JS_FALSE;  
   }
 
@@ -3744,7 +3759,7 @@ begin_func(OpenFile, 1)
   arg_str(filename);
 
   if (IsValidPath(filename) == false) {
-    JS_ReportError(cx, "Too many ..'s in filename: '%s'", filename);
+    JS_ReportError(cx, "Invalid filename: '%s'", filename);
     return JS_FALSE;  
   }
 
@@ -3764,7 +3779,7 @@ begin_func(OpenRawFile, 1)
   arg_str(filename);
 
   if (IsValidPath(filename) == false) {
-    JS_ReportError(cx, "Too many ..'s in filename: '%s'", filename);
+    JS_ReportError(cx, "Invalid filename: '%s'", filename);
     return JS_FALSE;  
   }
 
@@ -3789,7 +3804,7 @@ begin_func(HashFromFile,1) {
   arg_str(filename);
 
   if (IsValidPath(filename) == false) {
-    JS_ReportError(cx, "Too many ..'s in filename: '%s'", filename);
+    JS_ReportError(cx, "Invalid filename: '%s'", filename);
     return JS_FALSE;  
   }
 
@@ -4395,7 +4410,7 @@ begin_method(SS_SPRITESET, ssSpritesetSave, 1)
   arg_str(filename);
 
   if (IsValidPath(filename) == false) {
-    JS_ReportError(cx, "Too many ..'s in filename: '%s'", filename);
+    JS_ReportError(cx, "Invalid filename: '%s'", filename);
     return JS_FALSE;
   }
 
@@ -5469,7 +5484,7 @@ begin_method(SS_SURFACE, ssSurfaceSave, 1)
   bool saved = false;
 
   if (IsValidPath(filename) == false) {
-    JS_ReportError(cx, "Too many ..'s in filename: '%s'", filename);
+    JS_ReportError(cx, "Invalid filename: '%s'", filename);
     return JS_FALSE;  
   }
 
@@ -6064,7 +6079,7 @@ begin_method(SS_MAPENGINE, ssMapEngineSave, 1)
   std::string path = "maps/" + std::string(filename);
 
   if (IsValidPath(path.c_str()) == false) {
-    JS_ReportError(cx, "Too many ..'s in filename: '%s'", filename);
+    JS_ReportError(cx, "Invalid filename: '%s'", filename);
     return JS_FALSE;  
   }
 
