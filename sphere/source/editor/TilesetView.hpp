@@ -17,6 +17,7 @@ public:
   virtual void TV_TilesetChanged() = 0;
   virtual void TV_InsertedTiles(int at, int numtiles) = 0;
   virtual void TV_DeletedTiles(int at, int numtiles) = 0;
+  virtual void TV_SwapTiles(std::vector<int> list_a, std::vector<int> list_b) = 0;
 };
 
 
@@ -62,6 +63,9 @@ private:
   afx_msg void OnZoom4x();
   afx_msg void OnZoom8x();
 
+  afx_msg void OnMoveBack();
+  afx_msg void OnMoveForward();
+
   // edit range
   int GetEditRangeStartIndex();
   int GetEditRangeEndIndex(int start_frame);
@@ -84,6 +88,7 @@ private:
   CDIBSection* m_BlitTile;
 
   bool m_MenuShown;
+  void OnSwap(int new_index);
 
   DECLARE_MESSAGE_MAP()
 };

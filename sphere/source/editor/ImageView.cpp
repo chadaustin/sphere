@@ -142,7 +142,7 @@ CImageView::Create(CDocumentWindow* owner, IImageViewHandler* handler, CWnd* par
 bool
 CImageView::SetImage(int width, int height, const RGBA* pixels)
 {
-  ResetUndoStates();
+//  ResetUndoStates();
 
   m_Image.Resize(width, height);
   memcpy(m_Image.GetPixels(), pixels, width * height * sizeof(RGBA));
@@ -198,6 +198,26 @@ RGBA
 CImageView::GetColor() const
 {
   return m_Color;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CImageView::BeforeImageChanged()
+{
+  AddUndoState();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CImageView::AfterImageChanged()
+{ // if the image dimensions change, the selection area needs to change too
+  m_SelectionX = std::min(m_SelectionX, m_Image.GetWidth());
+  m_SelectionY = std::min(m_SelectionY, m_Image.GetHeight());
+  m_SelectionWidth = std::min(m_SelectionWidth, m_Image.GetWidth() - m_SelectionX - 1);
+  m_SelectionHeight = std::min(m_SelectionHeight, m_Image.GetHeight() - m_SelectionY - 1);
+  Invalidate();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -481,9 +501,10 @@ CImageView::CanUndo() const
 void
 CImageView::Undo()
 {
-  Image* i = m_UndoImages + m_NumUndoImages - 1;
-  memcpy(m_Image.GetPixels(), i->pixels, m_Image.GetWidth() * m_Image.GetHeight() * sizeof(RGBA));
-  delete[] i->pixels;
+  Image* img = m_UndoImages + m_NumUndoImages - 1;
+  m_Image.Resize(img->width, img->height);
+  memcpy(m_Image.GetPixels(), img->pixels, img->width * img->height * sizeof(RGBA));
+  delete[] img->pixels;
 
   Image* new_images = new Image[m_NumUndoImages - 1];
   for (int i = 0; i < m_NumUndoImages - 1; i++)

@@ -206,26 +206,26 @@ CSpritesetImagesPalette::OnRButtonUp(UINT flags, CPoint point)
   // show pop-up menu
   ClientToScreen(&point);
 
-  HMENU menu_ = ::LoadMenu(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_SPRITESET_IMAGES_PALETTE));
-  HMENU menu = GetSubMenu(menu_, 0);
+  HMENU menu = ::LoadMenu(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_SPRITESET_IMAGES_PALETTE));
+  HMENU submenu = GetSubMenu(menu, 0);
 
   // disable move back if we're on the first image
   if (m_SelectedImage == 0) {
-    ::EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_MOVE_BACK, MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(submenu, ID_SPRITESETIMAGESPALETTE_MOVE_BACK, MF_BYCOMMAND | MF_GRAYED);
   }
 
   // disable move forward if we're on the last image
   if (m_SelectedImage == m_Spriteset->GetNumImages() - 1) {
-    ::EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_MOVE_FORWARD, MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(submenu, ID_SPRITESETIMAGESPALETTE_MOVE_FORWARD, MF_BYCOMMAND | MF_GRAYED);
   }
 
   // disable remove image if there is only one
   if (m_Spriteset->GetNumImages() == 1) {
-    ::EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGE, MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(submenu, ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGE, MF_BYCOMMAND | MF_GRAYED);
   }
 
-  TrackPopupMenu(menu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, point.x, point.y, 0, m_hWnd, NULL);
-  DestroyMenu(menu_);
+  TrackPopupMenu(submenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, point.x, point.y, 0, m_hWnd, NULL);
+  DestroyMenu(menu);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

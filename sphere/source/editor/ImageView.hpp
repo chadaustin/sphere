@@ -43,8 +43,17 @@ public:
   void FillRGB();
   void FillAlpha();
 
+  void BeforeImageChanged();
+  void AfterImageChanged();
+
 private:
   enum MergeMethod { Merge_Replace, Merge_Blend, Merge_IntoSelection };
+
+  struct Image {
+    int width;
+    int height;
+    RGBA* pixels;
+  };
 
 public:
 
@@ -144,13 +153,6 @@ private:
   afx_msg void OnFilterSolarize();
   afx_msg void OnSetColorAlpha();
   afx_msg void OnScaleAlpha();
-
-private:
-  struct Image
-  {
-    int width, height;
-    RGBA* pixels;
-  };
 
 private:
   IImageViewHandler* m_Handler;

@@ -549,7 +549,11 @@ CSpritesetWindow::SIP_IndexChanged(int index)
 {
   int old_index = m_Spriteset.GetFrameIndex(m_CurrentDirection, m_CurrentFrame);
   if (old_index != index) {
-    m_Spriteset.SetFrameIndex(m_CurrentDirection, m_CurrentFrame, index);
+
+    // only change the spritesets frame index if we're on the Frames Tab
+    if (m_TabControl.GetCurFocus() == 0)
+      m_Spriteset.SetFrameIndex(m_CurrentDirection, m_CurrentFrame, index);
+
     UpdateImageView();
     SetModified(true);
     Invalidate();

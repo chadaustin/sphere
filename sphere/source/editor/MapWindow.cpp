@@ -644,6 +644,29 @@ CMapWindow::TV_DeletedTiles(int at, int numtiles)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+  This takes two lists, where tile = list_b[i] if (tile == list_a[i]);
+*/
+void
+CMapWindow::TV_SwapTiles(std::vector<int> list_a, std::vector<int> list_b) {
+  for (int i = 0; i < m_Map.GetNumLayers(); i++) {
+    for (int y = 0; y < m_Map.GetLayer(i).GetHeight(); y++) {
+      for (int x = 0; x < m_Map.GetLayer(i).GetWidth(); x++) {
+        int tile = m_Map.GetLayer(i).GetTile(x, y);
+        for (int j = 0; ((j < list_a.size()) && (j < list_b.size())); j++) {
+          if (tile == list_a[j]) {
+            tile = list_b[j];
+            m_Map.GetLayer(i).SetTile(x, y, tile);
+            break;
+          }
+        }
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void 
 CMapWindow::SP_ColorSelected(RGBA color)
 {

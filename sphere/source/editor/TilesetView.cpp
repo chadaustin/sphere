@@ -39,6 +39,9 @@ BEGIN_MESSAGE_MAP(CTilesetView, CWnd)
   ON_COMMAND(ID_TILESETVIEW_ZOOM_4X, OnZoom4x)
   ON_COMMAND(ID_TILESETVIEW_ZOOM_8X, OnZoom8x)
 
+  ON_COMMAND(ID_TILESETVIEW_MOVE_BACK,    OnMoveBack)
+  ON_COMMAND(ID_TILESETVIEW_MOVE_FORWARD, OnMoveForward)
+
 //  ON_COMMAND(ID_TILESETVIEW_ER_ROTATE_CW,             OnEditRangeRotateCW)
 //  ON_COMMAND(ID_TILESETVIEW_ER_ROTATE_CCW,            OnEditRangeRotateCCW)
 //  ON_COMMAND(ID_TILESETVIEW_ER_SLIDE_UP,              OnEditRangeSlideUp)
@@ -659,6 +662,55 @@ CTilesetView::OnAppendTileset()
     m_Handler->TV_TilesetChanged();
     UpdateScrollBar();
     Invalidate();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CTilesetView::OnSwap(int new_index)
+{
+  int current = m_SelectedTile;
+  
+  // convenience
+  int one = new_index;
+  int two = current;
+
+  std::vector<int> list_a; list_a.push_back(one); list_a.push_back(two);
+  std::vector<int> list_b; list_b.push_back(two); list_b.push_back(one);
+
+  // swap the tile indexes
+  m_Handler->TV_SwapTiles(list_a, list_b);
+
+  // swap the tiles
+  std::swap(
+    m_Tileset->GetTile(one),
+    m_Tileset->GetTile(two)
+  );
+  m_SelectedTile = new_index;
+
+  m_Handler->TV_SelectedTileChanged(m_SelectedTile);
+  m_Handler->TV_TilesetChanged();
+  Invalidate();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CTilesetView::OnMoveBack()
+{
+  if (m_SelectedTile > 0) {
+    OnSwap(m_SelectedTile - 1);
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CTilesetView::OnMoveForward()
+{
+  if (m_SelectedTile < m_Tileset->GetNumTiles()) {
+    OnSwap(m_SelectedTile + 1);
   }
 }
 

@@ -15,6 +15,7 @@ CMapToolPalette::CMapToolPalette(CDocumentWindow* owner, IToolPaletteHandler* ha
   AddTool(IDI_MAPTOOL_3X3,         "3x3");
   AddTool(IDI_MAPTOOL_5X5,         "5x5");
   AddTool(IDI_MAPTOOL_SELECTTILE,  "Select Tile");
+  AddTool(IDI_MAPTOOL_FILLAREA,    "Fill (Rectanglar) Area");
   AddTool(IDI_MAPTOOL_FILLAREA,    "Fill Area");
   AddTool(IDI_MAPTOOL_COPYAREA,    "Copy Area");
   AddTool(IDI_MAPTOOL_PASTE,       "Paste Area");

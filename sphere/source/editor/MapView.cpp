@@ -12,6 +12,7 @@
 
 #include "Configuration.hpp"
 #include "Keys.hpp"
+#include <stack>
 
 static int s_MapViewID = 2000;
 static int s_MapAreaClipboardFormat;
@@ -654,7 +655,7 @@ CMapView::PasteMapUnderPoint(CPoint point)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CMapView::FillArea()
+CMapView::FillRectArea()
 {
   // precalculate stuff
   int start_x = m_StartCursorTileX;
@@ -670,6 +671,81 @@ CMapView::FillArea()
   for (int y=0; y<height && y+start_y<m_Map->GetLayer(m_SelectedLayer).GetHeight(); y++)
     for (int x=0; x<width && x+start_x<m_Map->GetLayer(m_SelectedLayer).GetWidth(); x++)
       m_Map->GetLayer(m_SelectedLayer).SetTile(x+start_x, y+start_y, m_SelectedTile);
+
+  m_RedrawWindow = 1;
+  Invalidate();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+struct Point {
+  Point(int x_, int y_) {
+    x = x_;
+    y = y_;
+  }
+
+  int x;
+  int y;
+};
+
+
+void
+CMapView::FillMe(int x, int y, int layer, int tileToReplace)
+{
+  int sx = 0; // GetSelectionLeftX();
+  int sy = 0; // GetSelectionTopY();
+  int sw = m_Map->GetLayer(layer).GetWidth(); // GetSelectionWidth();
+  int sh = m_Map->GetLayer(layer).GetHeight(); //GetSelectionHeight();
+  const int width  = sx + sw;
+  const int height = sy + sh;
+
+  std::stack<Point> q;
+  q.push(    Point(x, y));
+  m_Map->GetLayer(layer).SetTile(x, y, m_SelectedTile);
+
+  while (!q.empty()) {
+    Point p = q.top();
+    q.pop();
+
+    // fill up
+    if (p.y > sy && m_Map->GetLayer(layer).GetTile(p.x, p.y - 1) == tileToReplace) {
+      q.push(    Point(p.x, p.y - 1));
+      m_Map->GetLayer(layer).SetTile(p.x, p.y - 1, m_SelectedTile);
+    }
+    // fill down
+    if (p.y < height - 1 && m_Map->GetLayer(layer).GetTile(p.x, p.y + 1) == tileToReplace) {
+      q.push(    Point(p.x, p.y + 1));
+      m_Map->GetLayer(layer).SetTile(p.x, p.y + 1, m_SelectedTile);
+    }
+    // fill left
+    if (p.x > sx && m_Map->GetLayer(layer).GetTile(p.x - 1, p.y) == tileToReplace) {
+      q.push(    Point(p.x - 1, p.y));
+      m_Map->GetLayer(layer).SetTile(p.x - 1, p.y, m_SelectedTile);
+    }
+    // fill right
+    if (p.x < width - 1 && m_Map->GetLayer(layer).GetTile(p.x + 1, p.y) == tileToReplace) {
+      q.push(    Point(p.x + 1, p.y));
+      m_Map->GetLayer(layer).SetTile(p.x + 1, p.y, m_SelectedTile);
+    }
+  }
+}
+
+
+void
+CMapView::FillArea()
+{
+  // precalculate stuff
+  int start_x = m_StartCursorTileX;
+  int start_y = m_StartCursorTileY;
+  int end_x = m_CurrentCursorTileX;
+  int end_y = m_CurrentCursorTileY;
+  if (end_x < start_x) std::swap(start_x, end_x); 
+  if (end_y < start_y) std::swap(start_y, end_y);
+
+  if (m_Map->GetLayer(m_SelectedLayer).GetTile(start_x, start_y) == m_SelectedTile)
+    return;
+
+  FillMe(start_x, start_y, m_SelectedLayer, m_Map->GetLayer(m_SelectedLayer).GetTile(start_x, start_y));
 
   m_RedrawWindow = 1;
   Invalidate();
@@ -986,7 +1062,7 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
 /*          THESE ARE TOO SLOW IN THIS INNER LOOP
             // additional draw rules
             // area fill
-            if (m_CurrentTool == tool_FillArea && IsWithinSelectFillArea(tx, ty))
+            if (m_CurrentTool == tool_FillRectArea && IsWithinSelectFillArea(tx, ty))
               if (m_Clicked)
               {
                 RGBA p = m_Map->GetTileset().GetTile(m_SelectedTile).GetPixel(k, j);
@@ -1252,7 +1328,7 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
   }
 
   // check if it's in fill or area select mode (not clicked)
-  if ((m_CurrentTool == tool_FillArea && !m_Clicked) &&
+  if ((m_CurrentTool == tool_FillRectArea && !m_Clicked) &&
       (m_CurrentTool == tool_CopyArea && !m_Clicked))
   {
   }
@@ -1545,6 +1621,7 @@ CMapView::OnLButtonDown(UINT flags, CPoint point)
       } break;
 
       case tool_CopyArea:
+      case tool_FillRectArea:
       case tool_FillArea: {
         int x = point.x / zoom_tile_width  + m_CurrentX;
         int y = point.y / zoom_tile_height + m_CurrentY;
@@ -1695,6 +1772,7 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
         break;
 
       case tool_CopyArea:
+      case tool_FillRectArea:
       case tool_FillArea:
         {
           // clear out the old area
@@ -1800,6 +1878,7 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
     } break;
 
     case tool_CopyArea:
+    case tool_FillRectArea:
     case tool_FillArea: {
       if (!m_Clicked) {
         int old_x = (m_CurrentCursorTileX - m_CurrentX) * tile_width;
@@ -1836,6 +1915,10 @@ CMapView::OnLButtonUp(UINT flags, CPoint point)
 
   switch (m_CurrentTool)
   {
+    case tool_FillRectArea: {
+      FillRectArea();
+    } break;
+
     case tool_FillArea: {
       FillArea();
     } break;

@@ -339,7 +339,7 @@ CProjectWindow::OnProjectItemDelete()
   strcat(filename, "\\");
   strcat(filename, m_TreeControl.GetItemText(item));
 
-  std::string message = "This will permanently delete the file \"" + std::string(filename) + "\".\nAre you sure you want to continue?";
+  std::string message = "This will permanently delete the file: \"" + std::string(filename) + "\"\nAre you sure you want to continue?";
   if (MessageBox(message.c_str(), "Delete Project Item", MB_YESNO) == IDNO)
     return;
 

@@ -362,7 +362,8 @@ CMainWindow::OpenDocumentWindow(int grouptype, const char* filename)
     case GT_ANIMATIONS:   window = new CAnimationWindow(filename);   break;
   }
 
-  m_DocumentWindows.push_back(window);
+  if (window)
+    m_DocumentWindows.push_back(window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

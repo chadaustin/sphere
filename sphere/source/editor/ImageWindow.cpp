@@ -3,6 +3,7 @@
 #include "ImageWindow.hpp"
 #include "ResizeDialog.hpp"
 #include "FileDialogs.hpp"
+#include "RotateDialog.hpp"
 #include "resource.h"
 
 
@@ -16,6 +17,7 @@ BEGIN_MESSAGE_MAP(CImageWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_IMAGE_RESIZE,             OnImageResize)
   ON_COMMAND(ID_IMAGE_RESCALE,            OnImageRescale)
   ON_COMMAND(ID_IMAGE_RESAMPLE,           OnImageResample)
+  ON_COMMAND(ID_IMAGE_ROTATE,             OnImageRotate)
   ON_COMMAND(ID_IMAGE_VIEWATORIGINALSIZE, OnImageViewOriginalSize)
 
 END_MESSAGE_MAP()
@@ -112,9 +114,11 @@ CImageWindow::OnImageResize()
   CResizeDialog dialog("Resize Image", m_Image.GetWidth(), m_Image.GetHeight());
   if (dialog.DoModal() == IDOK) {
     if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
+      m_ImageView.BeforeImageChanged();
       m_Image.Resize(dialog.GetWidth(), dialog.GetHeight());
       SetModified(true);
       UpdateImageView();
+      m_ImageView.AfterImageChanged();
     }
   }
 }
@@ -127,9 +131,11 @@ CImageWindow::OnImageRescale()
   CResizeDialog dialog("Rescale Image", m_Image.GetWidth(), m_Image.GetHeight());
   if (dialog.DoModal() == IDOK) {
     if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
+      m_ImageView.BeforeImageChanged();
       m_Image.Rescale(dialog.GetWidth(), dialog.GetHeight());
       SetModified(true);
       UpdateImageView();
+      m_ImageView.AfterImageChanged();
     }
   }
 }
@@ -142,10 +148,27 @@ CImageWindow::OnImageResample()
   CResizeDialog dialog("Resample Image", m_Image.GetWidth(), m_Image.GetHeight());
   if (dialog.DoModal() == IDOK) {
     if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
+      m_ImageView.BeforeImageChanged();
       m_Image.Resample(dialog.GetWidth(), dialog.GetHeight());
       SetModified(true);
       UpdateImageView();
+      m_ImageView.AfterImageChanged();
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageWindow::OnImageRotate()
+{
+  CRotateDialog dialog("Rotate Image", "Rotate (0-360)", 90.0);
+  if (dialog.DoModal() == IDOK) {
+    m_ImageView.BeforeImageChanged();
+    m_Image.Rotate(dialog.GetValue(), true);
+    SetModified(true);
+    UpdateImageView();
+    m_ImageView.AfterImageChanged();
   }
 }
 
@@ -185,6 +208,7 @@ CImageWindow::SaveDocument(const char* path)
 void
 CImageWindow::IV_ImageChanged()
 {
+  m_Image.Resize(m_ImageView.GetWidth(), m_ImageView.GetHeight());
   memcpy(m_Image.GetPixels(), m_ImageView.GetPixels(), m_Image.GetWidth() * m_Image.GetHeight() * sizeof(RGBA));
   SetModified(true);
 }

@@ -818,6 +818,14 @@ SOURCE=.\ResizeDialog.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\RotateDialog.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\RotateDialog.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\SpritePropertiesDialog.cpp
 # End Source File
 # Begin Source File

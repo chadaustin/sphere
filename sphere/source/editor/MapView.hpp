@@ -53,6 +53,8 @@ private:
   void MapAreaCopy();
   void LayerAreaCopy();
   void PasteMapUnderPoint(CPoint point);
+  void FillMe(int x, int y, int layer, int tileToReplace);
+  void FillRectArea();
   void FillArea();
   void EntityCopy(CPoint point);
   void EntityPaste(CPoint point);
@@ -68,7 +70,6 @@ private:
   void UpdateObstructionTiles();
 
   int FindSpritesetImageIconsIndex(int person_index, std::string filename);
-
 
 private:
   afx_msg void OnDestroy();
@@ -89,6 +90,7 @@ public:
     tool_3x3Tile,
     tool_5x5Tile,
     tool_SelectTile,
+    tool_FillRectArea,
     tool_FillArea,
     tool_CopyArea,
     tool_Paste,
