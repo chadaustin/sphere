@@ -1,6 +1,6 @@
-Sphere v.97
+Sphere v1.0
 Chad Austin
-2001.02.07
+2003.01.22
 
 
 
@@ -15,7 +15,7 @@ System Requirements:
 - Sound card for audio
 - Windows 95, 98, NT4, 2000, or later
 - DirectX 3 for fullscreen video drivers
-
+- OpenGL-accelerated video card for hardware acceleration (sphere_gl)
 
 
 Features:
@@ -26,8 +26,9 @@ Features:
 - 32-bit color and 256 levels of translucency
 - 8-directional movement
 - animated and reflective tiles
-- plays Ogg Vorbis, MOD, S3M, XM, IT, uncompressed WAV
+- plays Ogg Vorbis, MP3, FLAC, MOD, S3M, XM, IT, and uncompressed WAV
 - graphical editing environment
+- keyboard, mouse, and joystick support
 
 
 
@@ -46,11 +47,11 @@ Included video drivers:
 
 
 
-Known issues
-- Some things aren't implemented
-- As the editor matures, things in the engine are going to break.  Be prepared
-  to make small changes to your game
-- If you find more, please e-mail me
+Known Issues
+- See the project page on SourceForge for bug reports and feature
+  requests.  http://sourceforge.net/projects/sphere
+- The editor may randomly crash after using it for an extended amount
+  of time.  Save your work often.
 
 
 
@@ -69,6 +70,7 @@ Code -
   Theo Reed (rizen)
   Brandon Mechtley (malis)
   Jacky Chong (Darklich)
+  Brian Robb (Flik)
 
 Intro Screen -
   Chad Okere (delmoi)
