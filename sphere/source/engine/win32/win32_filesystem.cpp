@@ -63,6 +63,9 @@ bool MakeDirectory(const char* directory)
 
 bool EnterDirectory(const char* directory)
 {
+  if (strcmp(directory, "") == 0)
+    return false;
+
   // get the old directory and remember it
   char old_directory[MAX_PATH];
   GetCurrentDirectory(MAX_PATH, old_directory);

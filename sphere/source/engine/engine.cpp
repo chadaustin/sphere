@@ -44,7 +44,10 @@ CGameEngine::Run()
   m_MapEngine = new CMapEngine(this, m_FileSystem);
 
   // initialize - load game information
-  CConfigFile game_information("game.sgm", m_FileSystem);
+  CConfigFile game_information;
+  if ( !game_information.Load("game.sgm", m_FileSystem) ) {
+  //  ShowError("Unable to load game.sgm");
+  }
 
   int game_width  = game_information.ReadInt("", "screen_width",  320);
   int game_height = game_information.ReadInt("", "screen_height", 240);
@@ -137,13 +140,33 @@ CGameEngine::ShowError(const char* message)
 
   SetClippingRectangle(0, 0, GetScreenWidth(), GetScreenHeight());
 
-  ClearScreen();
-  m_SystemFont.DrawTextBox(0, 0, GetScreenWidth(), GetScreenHeight(), 0, message, white);
-  FlipScreen();
+  bool done = false;
+  bool keys_cleared = false;
+  dword time = GetTime() + 1000;
 
-  Delay(1000);
-  ClearKeyQueue();
-  GetKey();
+  while (!done) {
+    ClearScreen();
+    m_SystemFont.DrawTextBox(0, 16, GetScreenWidth(), GetScreenHeight(), 0, message, white);
+
+    //if (time < GetTime()) {
+    //  int y = 16 + m_SystemFont.GetStringHeight(message, GetScreenWidth());
+    //  m_SystemFont.DrawString(0, y, "Press Any Key to continue...", white);
+    //}
+
+    FlipScreen();
+
+    if (time < GetTime()) {
+      if (!keys_cleared) {
+        ClearKeyQueue();
+        keys_cleared = true;
+      }
+
+      if (AreKeysLeft()) {
+        done = true;
+      }
+
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1061,6 +1061,11 @@ begin_func(ExecuteGame, 1)
 
   This->m_Engine->ExecuteGame(directory);
   This->m_Error = "";
+
+  // close the map engine
+  if (This->m_Engine->GetMapEngine()->IsRunning())
+    This->m_Engine->GetMapEngine()->Exit();
+
   return JS_FALSE;
 end_func()
 
