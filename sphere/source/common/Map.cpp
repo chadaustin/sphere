@@ -447,6 +447,7 @@ sMap::Load(const char* filename, IFileSystem& fs)
     m_Tileset.Clear();
 
     char tileset_path[/*MAX_PATH*/ 4096 + 4096] = {0};
+    bool okay = false;
     strcpy(tileset_path, filename);
 
     if (strlen(tileset_path) > 0 && strlen(tileset_path) + m_TilesetFile.size() < sizeof(tileset_path)) {
@@ -454,11 +455,17 @@ sMap::Load(const char* filename, IFileSystem& fs)
 
       for (i = strlen(tileset_path) - 1; i >= 0; i--) {
         if (tileset_path[i] == '\\'
-         || tileset_path[i] == '//') {
+         || tileset_path[i] == '/') {
           strcpy(tileset_path + i + 1, m_TilesetFile.c_str());
+          okay = true;
           break;
         }
       }
+    }
+
+    if (!okay) {
+      memset(tileset_path, 0, sizeof(tileset_path));
+      strcpy(tileset_path, m_TilesetFile.c_str());
     }
 
     // open the file
