@@ -1,5 +1,6 @@
 2003.05.14
   - adding drawText/drawZoomedText/drawTextBox surface methods
+  - added surface.save(filename)
 
 2003.05.12
   - adding support for joysticks in linux/unix

@@ -1123,6 +1123,30 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(GetClippingRectangle, 0)
+
+  static JSClass base_clasp = {
+    "base", 0,
+    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+    JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
+  };
+
+  JSObject* clip_obj = JS_NewObject(cx, &base_clasp, NULL, NULL);
+
+  int x, y, w, h;
+  GetClippingRectangle(&x, &y, &w, &h);
+
+  JS_DefineProperty(cx, clip_obj, "x",      INT_TO_JSVAL(x), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+  JS_DefineProperty(cx, clip_obj, "y",      INT_TO_JSVAL(y), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+  JS_DefineProperty(cx, clip_obj, "width",  INT_TO_JSVAL(w),  JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+  JS_DefineProperty(cx, clip_obj, "height", INT_TO_JSVAL(h),  JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+  return_object(clip_obj);
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 begin_func(ApplyColorMask, 1)
   arg_color(c);
   if (This->ShouldRender()) {
@@ -3719,7 +3743,7 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
 
   // assign methods to the object
   static JSFunctionSpec fs[] = {
-    { "save",        ssSaveSpriteset,    1, },
+    { "save",        ssSpritesetSave,    1, },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -3853,7 +3877,9 @@ end_finalizer()
 
 ////////////////////////////////////////
 
-begin_method(SS_SPRITESET, ssSaveSpriteset, 1)
+// Note: This basically just saves the spriteset as it was when you loaded it
+// Really it needs to find out what changes were made by script and save that
+begin_method(SS_SPRITESET, ssSpritesetSave, 1)
   arg_str(filename);
 
   std::string path = "spritesets/";
@@ -4441,6 +4467,7 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
     { "drawText",         ssSurfaceDrawText,         4, 0, 0 },
     { "drawZoomedText",   ssSurfaceDrawZoomedText,   5, 0, 0 },
     { "drawTextBox",      ssSurfaceDrawTextBox,      7, 0, 0 },
+    { "save",             ssSurfaceSave,             2, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -4760,6 +4787,17 @@ begin_method(SS_SURFACE, ssSurfaceDrawTextBox, 7)
 
   font_obj->font->DrawTextBox(x, y, w, h, offset, text, font_obj->mask, object->surface);
 
+end_method()
+
+///////////////////////////////////////
+
+begin_method(SS_SURFACE, ssSurfaceSave, 1)
+  arg_str(filename);
+
+  std::string path = "images/";
+  path += filename;
+
+  return_bool( object->surface->Save(path.c_str()) );
 end_method()
 
 ///////////////////////////////////////

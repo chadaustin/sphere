@@ -120,7 +120,7 @@ private:
   // spriteset
   declare_constructor1(CreateSpritesetObject, SSPRITESET* spriteset);
   declare_finalizer(ssFinalizeSpriteset);
-  declare_method(ssSaveSpriteset);
+  declare_method(ssSpritesetSave);
 
   // spriteset base
   declare_constructor1(CreateSpritesetBaseObject, SSPRITESET* spriteset);
@@ -195,6 +195,7 @@ private:
   declare_method(ssSurfaceDrawText);
   declare_method(ssSurfaceDrawZoomedText);
   declare_method(ssSurfaceDrawTextBox);
+  declare_method(ssSurfaceSave);
 
   // color matrix
   declare_constructor1(CreateColorMatrixObject, CColorMatrix* colormatrix);

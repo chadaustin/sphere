@@ -29,6 +29,7 @@ SS_FUNCTION(OpenLog, 1)
   // video
   SS_FUNCTION(FlipScreen, 0)
   SS_FUNCTION(SetClippingRectangle, 4)
+  SS_FUNCTION(GetClippingRectangle, 0)
   SS_FUNCTION(ApplyColorMask, 1)
   SS_FUNCTION(SetFrameRate, 1)
   SS_FUNCTION(GetFrameRate, 0)
@@ -327,6 +328,7 @@ SS_FUNCTION(OpenLog, 1)
   //surface.flipVertically()
   //surface.clone()
   //surface.cloneSection(x, y, w, h)
+  //surface.save(filename, type)
 
   // color matrix
   SS_FUNCTION(CreateColorMatrix, 12)

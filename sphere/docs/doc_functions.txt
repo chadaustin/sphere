@@ -107,6 +107,15 @@ log_object.endBlock()
     - Sets a clipping rectangle of width w and height h at (x, y) into the 
       video buffer. Anything drawn outside the rectangle is not drawn into 
       the video buffer.
+      
+   GetClippingRectangle()
+     - Returns a rectangle object representing the clipping rectangle.
+       i.e.
+       var clip = GetClippingRectangle();
+           clip.x
+           clip.y
+           clip.width
+           clip.height
   
   ApplyColorMask(color)
     - fills the whole screen with the color specified. Note that the color
@@ -445,8 +454,8 @@ log_object.endBlock()
         map_x and map_y are in map (per-pixel) coordinates.
         (Currently the layer parameter is ignored, although it still must be valid.)
 
-    IsZoneAt(map_x, map_y, layer)
-      - returns true if there is a zone at map_x, map_y on layer
+    AreZonesAt(map_x, map_y, layer)
+      - returns true if there are any zones at map_x, map_y on layer
         (Currently the layer parameter is ignored, although it still must be valid.)
 
     ExecuteZones(map_x, map_y, layer)
@@ -1032,6 +1041,9 @@ log_object.endBlock()
       The offset is the number of pixels which the number of pixels from y which 
       the actual drawing starts at. 
       See font_object.drawTextBox for more detail.
+
+  surface_object.save(filename)
+    - saves the surface_object as a png image using the filename 'filename'
 
   *** color matrix ***
   CreateColorMatrix(rn, rr, rg, rb,  gn, gr, gg, gb,  bn, br, bg, bb)
