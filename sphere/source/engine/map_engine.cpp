@@ -1225,17 +1225,8 @@ CMapEngine::GetCameraY(int& y)
 bool
 CMapEngine::MapToScreenX(int layer, int mx, int& sx)
 {
-  if (!m_IsRunning) {
-    m_ErrorMessage = "MapToScreenX() called while map engine was not running";
+  if ( IsInvalidLayerError(layer, "MapToScreenX()") )
     return false;
-  }
-
-  // validate layers
-  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
-    m_ErrorMessage = "Invalid layer index";
-    return false;
-  }
-
   sx = m_Map.MapToScreenX(layer, m_Camera.x, mx);
   return true;
 }
@@ -1245,16 +1236,8 @@ CMapEngine::MapToScreenX(int layer, int mx, int& sx)
 bool
 CMapEngine::MapToScreenY(int layer, int my, int& sy)
 {
-  if (!m_IsRunning) {
-    m_ErrorMessage = "MapToScreenY() called while map engine was not running";
+  if ( IsInvalidLayerError(layer, "MapToScreenY()") )
     return false;
-  }
-
-  // validate layers
-  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
-    m_ErrorMessage = "Invalid layer index";
-    return false;
-  }
 
   sy = m_Map.MapToScreenY(layer, m_Camera.y, my);
   return true;
@@ -1265,16 +1248,8 @@ CMapEngine::MapToScreenY(int layer, int my, int& sy)
 bool
 CMapEngine::ScreenToMapX(int layer, int sx, int& mx)
 {
-  if (!m_IsRunning) {
-    m_ErrorMessage = "ScreenToMapX() called while map engine was not running";
+  if ( IsInvalidLayerError(layer, "ScreenToMapX()") )
     return false;
-  }
-
-  // validate layers
-  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
-    m_ErrorMessage = "Invalid layer index";
-    return false;
-  }
 
   mx = m_Map.ScreenToMapX(layer, m_Camera.x, sx);
   return true;
@@ -1285,16 +1260,8 @@ CMapEngine::ScreenToMapX(int layer, int sx, int& mx)
 bool
 CMapEngine::ScreenToMapY(int layer, int sy, int& my)
 {
-  if (!m_IsRunning) {
-    m_ErrorMessage = "ScreenToMapY() called while map engine was not running";
+  if ( IsInvalidLayerError(layer, "ScreenToMapY()") )
     return false;
-  }
-
-  // validate layers
-  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
-    m_ErrorMessage = "Invalid layer index";
-    return false;
-  }
 
   my = m_Map.ScreenToMapY(layer, m_Camera.y, sy);
   return true;
@@ -4037,9 +4004,9 @@ int
 CMapEngine::FindObstructingPerson(int person, int x, int y)
 {
   const Person& p = m_Persons[person];
-//  const sLayer& layer = m_Map.GetMap().GetLayer(p.layer);
-//  const int tile_width  = m_Map.GetMap().GetTileset().GetTileWidth();
-//  const int tile_height = m_Map.GetMap().GetTileset().GetTileHeight();
+  //  const sLayer& layer = m_Map.GetMap().GetLayer(p.layer);
+  //  const int tile_width  = m_Map.GetMap().GetTileset().GetTileWidth();
+  //  const int tile_height = m_Map.GetMap().GetTileset().GetTileHeight();
 
   int bx = (p.base_x1 + p.base_x2) / 2;
   int by = (p.base_y1 + p.base_y2) / 2;

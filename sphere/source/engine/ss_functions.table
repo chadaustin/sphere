@@ -27,7 +27,7 @@ SS_FUNCTION(OpenLog, 1)
 // system interfaces
 
   // video
-  SS_FUNCTION(FlipScreen, 1)
+  SS_FUNCTION(FlipScreen, 0)
   SS_FUNCTION(SetClippingRectangle, 4)
   SS_FUNCTION(ApplyColorMask, 1)
   SS_FUNCTION(SetFrameRate, 1)
@@ -49,7 +49,7 @@ SS_FUNCTION(OpenLog, 1)
     // keyboard
     SS_FUNCTION(AreKeysLeft, 0)
     SS_FUNCTION(GetKey, 0)
-    SS_FUNCTION(IsKeyPressed, 1)
+    SS_FUNCTION(IsKeyPressed, 0)
     SS_FUNCTION(IsAnyKeyPressed, 0)
     SS_FUNCTION(GetKeyString, 2)
 
