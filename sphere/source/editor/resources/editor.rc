@@ -541,6 +541,10 @@ BEGIN
         MENUITEM "&Copy (CTRL + C)",            ID_SPRITESETVIEWFRAMES_COPY
         MENUITEM "&Paste (CTRL + V)",           ID_SPRITESETVIEWFRAMES_PASTE
         MENUITEM SEPARATOR
+        MENUITEM "Import from Image...",        ID_SPRITESETVIEWFRAMES_IMPORT_FROM_IMAGE
+
+        MENUITEM "Export to Image...",          ID_SPRITESETVIEWFRAMES_EXPORT_TO_IMAGE
+
         POPUP "&Edit Range"
         BEGIN
             POPUP "Rotate", GRAYED
@@ -1444,6 +1448,42 @@ BEGIN
                     63,15
 END
 
+IDD_COLOR_ADJUST DIALOG DISCARDABLE  0, 0, 164, 188
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Color Adjust"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,23,158,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,91,159,50,14
+    CONTROL         "Red",IDC_FILTER_USE_RED,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,23,115,32,6
+    CONTROL         "Green",IDC_FILTER_USE_GREEN,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,23,124,36,6
+    CONTROL         "Blue",IDC_FILTER_USE_BLUE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,23,132,36,6
+    CONTROL         "Alpha",IDC_FILTER_USE_ALPHA,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,23,141,37,6
+    CONTROL         "",IDC_PREVIEW_FRAME,"Static",SS_BLACKFRAME | NOT 
+                    WS_VISIBLE,87,122,46,27
+    LTEXT           "Preview",IDC_STATIC,87,111,40,7
+    CONTROL         "Spin2",IDC_SPIN2,"msctls_updown32",UDS_ARROWKEYS,115,28,
+                    11,11
+    EDITTEXT        IDC_EDIT_RED,55,28,57,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDIT_GREEN,55,47,57,11,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "Spin2",IDC_SPIN3,"msctls_updown32",UDS_ARROWKEYS,115,47,
+                    11,11
+    EDITTEXT        IDC_EDIT_BLUE,55,63,57,11,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "Spin2",IDC_SPIN4,"msctls_updown32",UDS_ARROWKEYS,115,63,
+                    11,11
+    EDITTEXT        IDC_EDIT_ALPHA,55,81,57,11,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "Spin2",IDC_SPIN5,"msctls_updown32",UDS_ARROWKEYS,115,81,
+                    11,11
+    LTEXT           "Red",IDC_STATIC,19,30,14,8
+    LTEXT           "Green",IDC_STATIC,19,49,23,8
+    LTEXT           "Blue",IDC_STATIC,19,63,15,8
+    LTEXT           "Alpha",IDC_STATIC,19,79,19,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1627,6 +1667,14 @@ BEGIN
         RIGHTMARGIN, 203
         TOPMARGIN, 7
         BOTTOMMARGIN, 147
+    END
+
+    IDD_COLOR_ADJUST, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 157
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
     END
 END
 #endif    // APSTUDIO_INVOKED

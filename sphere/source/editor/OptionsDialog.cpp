@@ -113,6 +113,8 @@ void UnregisterFile(const char* ext)
   if (!IsRegistered(ext))
     return;
 
+  return;
+
   const char* filetype = __getfiletype__(ext);
   char extension[1024] = {0};
   sprintf (extension, ".%s", ext);

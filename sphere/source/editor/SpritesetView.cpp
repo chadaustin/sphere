@@ -47,6 +47,9 @@ BEGIN_MESSAGE_MAP(CSpritesetView, CWnd)
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_PASTE,      OnPasteFrame)
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_PROPERTIES, OnFrameProperties)
 
+  ON_COMMAND(ID_SPRITESETVIEWFRAMES_IMPORT_FROM_IMAGE, OnImportFrameFromImage)
+  ON_COMMAND(ID_SPRITESETVIEWFRAMES_EXPORT_TO_IMAGE,   OnExportFrameToImage)
+
 //  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_ROTATE_CW,             OnEditRangeRotateCW)
 //  ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_ROTATE_CCW,            OnEditRangeRotateCCW)
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_ER_SLIDE_UP,              OnEditRange)
@@ -836,6 +839,90 @@ CSpritesetView::OnFrameProperties()
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
+CSpritesetView::OnImportFrameFromImage()
+{
+  if (!(m_CurrentDirection >= 0 && m_CurrentDirection < m_Spriteset->GetNumDirections()))
+    return;
+  if (!(m_CurrentFrame >= 0 && m_CurrentFrame < m_Spriteset->GetNumFrames(m_CurrentDirection)))
+    return;
+
+  CImageFileDialog dialog(FDM_OPEN, "Insert Frame From Image");
+  if (dialog.DoModal() == IDOK) {
+
+    CImage32 image;
+    if ( !image.Load(dialog.GetPathName()) ) {
+      MessageBox("Error loading image.");
+      return;
+    }
+
+    int frame_width = m_Spriteset->GetFrameWidth();
+    int frame_height = m_Spriteset->GetFrameHeight();
+
+    if (image.GetWidth() != frame_width
+     || image.GetHeight() != frame_height) {
+      MessageBox("Image and frame sizes do not match.");
+      return;
+    }
+
+    int image_index = -1;
+
+    for (int i = 0; i < m_Spriteset->GetNumImages(); i++) {
+      if (m_Spriteset->GetImage(i) == image) {
+        image_index = i;
+        break;
+      }
+    }
+
+    if (image_index == -1) {
+      image_index = m_Spriteset->GetNumImages();
+      m_Spriteset->InsertImage(image_index);
+      if (image_index != m_Spriteset->GetNumImages() - 1)
+        return;
+      m_Spriteset->GetImage(image_index) = image;
+    }
+
+    int num_frames = m_Spriteset->GetNumFrames(m_CurrentDirection);
+    m_Spriteset->InsertFrame(m_CurrentDirection, m_CurrentFrame);
+    if (num_frames != m_Spriteset->GetNumFrames(m_CurrentDirection) - 1)
+      return;
+
+    m_Spriteset->SetFrameIndex(m_CurrentDirection, m_CurrentFrame, image_index);
+
+    UpdateMaxSizes();
+    UpdateScrollBars();
+    Invalidate();
+    m_Handler->SV_SpritesetModified();
+
+    //MessageBox("Imported frame successfully");
+  }
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetView::OnExportFrameToImage()
+{
+  if (!(m_CurrentDirection >= 0 && m_CurrentDirection < m_Spriteset->GetNumDirections()))
+    return;
+  if (!(m_CurrentFrame >= 0 && m_CurrentFrame < m_Spriteset->GetNumFrames(m_CurrentDirection)))
+    return;
+
+  CImageFileDialog dialog(FDM_SAVE, "Export Frame To Image");
+  if (dialog.DoModal() == IDOK) {
+    CImage32& i = m_Spriteset->GetImage(m_Spriteset->GetFrameIndex(m_CurrentDirection, m_CurrentFrame));
+    if (i.Save(dialog.GetPathName())) {
+      MessageBox("Exported frame succesfully");
+    }
+    else {
+      MessageBox("Error saving image");
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
 CSpritesetView::OnInsertDirectionFromImage()
 {
   CImageFileDialog dialog(FDM_OPEN, "Insert Direction From Image");
@@ -906,6 +993,8 @@ CSpritesetView::OnInsertDirectionFromImage()
   UpdateScrollBars();
   Invalidate();
   m_Handler->SV_SpritesetModified();
+
+  //MessageBox("Imported direction successfully");
 }
 
 ///////////////////////////////////////////////////////////////////////////////

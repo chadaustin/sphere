@@ -104,6 +104,7 @@
 #define IDR_IRCVIEW                     256
 #define IDD_ENTITY_LIST                 257
 #define IDR_FONT_PREVIEW                259
+#define IDD_COLOR_ADJUST                261
 #define IDC_PROJECTNAME                 1000
 #define IDC_GAMETITLE                   1001
 #define IDC_BROWSE                      1003
@@ -226,6 +227,14 @@
 #define IDC_ZONE_X                      1203
 #define IDC_ZONE_HEIGHT                 1204
 #define IDC_ZONE_WIDTH                  1205
+#define IDC_SPIN2                       1207
+#define IDC_EDIT_RED                    1208
+#define IDC_EDIT_GREEN                  1209
+#define IDC_SPIN3                       1210
+#define IDC_EDIT_BLUE                   1211
+#define IDC_SPIN4                       1212
+#define IDC_EDIT_ALPHA                  1213
+#define IDC_SPIN5                       1214
 #define ID_FILE_IMPORT_BITMAPTORSS      12241
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40003
@@ -592,6 +601,8 @@
 #define ID_FILE_OPTIONS                 40739
 #define ID_IMAGEVIEW_REDO               40740
 #define ID_PROJECTGROUP_NEW             40741
+#define ID_SPRITESETVIEWFRAMES_IMPORT_FROM_IMAGE 40742
+#define ID_SPRITESETVIEWFRAMES_EXPORT_TO_IMAGE 40743
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -599,9 +610,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        261
-#define _APS_NEXT_COMMAND_VALUE         40742
-#define _APS_NEXT_CONTROL_VALUE         1205
+#define _APS_NEXT_RESOURCE_VALUE        262
+#define _APS_NEXT_COMMAND_VALUE         40744
+#define _APS_NEXT_CONTROL_VALUE         1210
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -173,6 +173,9 @@ CScriptWindow::SetScriptStyles() {
 
   SendEditor(SCI_SETPROPERTY, (WPARAM)"fold", (LPARAM)"1");
 
+  if (!(m_FontSize >= 0 && m_FontSize <= 72))
+    m_FontSize = 10;
+
   SetStyle(STYLE_DEFAULT, black, white, m_FontSize, m_Fontface.c_str());
   SendEditor(SCI_STYLECLEARALL);
 
@@ -428,27 +431,37 @@ CScriptWindow::OnSavePointLeft(NMHDR* nmhdr, LRESULT* result)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static
+bool is_brace(char ch) {
+  return (ch == '{' || ch == '[' || ch == '('
+       || ch == '}' || ch == ']' || ch == ')');
+}
+
+void
+CScriptWindow::UpdateBraceHighlight()
+{
+  int pos = SendEditor(SCI_GETCURRENTPOS);
+  if (is_brace(SendEditor(SCI_GETCHARAT, pos)))
+  {
+    int m = SendEditor(SCI_BRACEMATCH, pos, 0);
+    if (m != -1) {
+      SendEditor(SCI_BRACEHIGHLIGHT, pos, m);
+    } 
+    else {
+      SendEditor(SCI_BRACEBADLIGHT, pos);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CScriptWindow::OnPosChanged(NMHDR* nmhdr, LRESULT* result) {
   SCNotification* notify = (SCNotification*)nmhdr;
   int pos = SendEditor(SCI_GETCURRENTPOS);
   int line = SendEditor(SCI_LINEFROMPOSITION, pos);
   SetLineNumber(line);
-
-  if (1) {
-    int m = SendEditor(SCI_BRACEMATCH, pos, 0);
-    if (m != -1) {
-      SendEditor(SCI_BRACEHIGHLIGHT, pos, m);
-    }
-    else {
-      char current = SendEditor(SCI_GETCHARAT, pos, 0);
-      if (current == '{' || current == '[' || current == '('
-        || current == '}' || current == ']' || current == ')')
-      {
-        SendEditor(SCI_BRACEBADLIGHT, pos);
-      }
-    }
-  }
+  UpdateBraceHighlight();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -531,7 +544,6 @@ CScriptWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
       }
     }
   }
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -702,7 +714,13 @@ afx_msg void
 CScriptWindow::OnOptionsSetScriptFont()
 {
   // Show the font dialog with all the default settings.
-  CFontDialog dlg;
+  LOGFONT lf;
+  memset((void*)&lf, 0, sizeof(lf));
+  if (m_Fontface.size() < 31) {
+    memcpy(lf.lfFaceName, m_Fontface.c_str(), m_Fontface.size());
+  }
+
+  CFontDialog dlg(&lf);
   if (dlg.DoModal() == IDOK) {
 
     m_Fontface = std::string(dlg.GetFaceName());

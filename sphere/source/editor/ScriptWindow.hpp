@@ -71,6 +71,8 @@ private:
   bool m_ShowWhitespace;
   bool m_WordWrap;
 
+  void UpdateBraceHighlight();
+
   CFindReplaceDialog* m_SearchDialog;
 
   DECLARE_MESSAGE_MAP()
