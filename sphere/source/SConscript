@@ -1,1 +1,1 @@
-SConscript(dirs = ['common', 'config', 'engine', 'video', 'wxeditor'])
+SConscript(dirs = ['common', 'config', 'engine', 'util', 'video', 'wxeditor'])

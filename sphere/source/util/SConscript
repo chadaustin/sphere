@@ -1,0 +1,15 @@
+import os
+
+Import('base_env SetupCorona SetupSphereCommon SetupZLib')
+
+env = base_env.Copy()
+SetupSphereCommon(env)
+SetupCorona(env)
+SetupZLib(env)
+
+utils = ['alphamerge', 'chr2rss', 'image2map', 'image2rss', 'rss2image',
+         'setrsstrans', 'spktest', 'tst2rts', 'vmap2rmp', 'vsp2rts']
+
+for u in utils:
+    program = env.Program(source = os.path.join(u, u + '.cpp'))
+    env.Install('#/build/util', program)

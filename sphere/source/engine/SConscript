@@ -1,9 +1,12 @@
 import sys
 
-Import('base_env SetupAudiere SetupCorona SetupJS SetupMNG SetupZLib')
+Import("""
+  base_env SetupAudiere SetupCorona SetupJS SetupMNG SetupSphereCommon
+  SetupZLib""")
 
 env = base_env.Copy()
 
+SetupSphereCommon(env)
 SetupAudiere(env)
 SetupCorona(env)
 SetupJS(env)
@@ -12,8 +15,8 @@ SetupZLib(env)
 
 env.Prepend(
     RESPATH = [Dir('win32')],
-    LIBPATH = ['../common', 'win32'],
-    LIBS = ['common', 'win32'])
+    LIBPATH = ['win32'],
+    LIBS = ['win32'])
 
 if sys.platform == 'cygwin':
     env.Append(LIBS = ['winmm', 'wsock32'])

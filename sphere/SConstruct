@@ -77,6 +77,11 @@ def SetupMNG(env):
         env.Append(
             CCFLAGS = ['-DMNG_NO_CMS', '-DMNG_SUPPORT_LC', '-DMNG_DLL'])
 
+def SetupSphereCommon(env):
+    env.Append(CPPPATH = ['#/source/common'],
+               LIBPATH = ['#/source/common'],
+               LIBS = ['common'])
+
 def SetupWXWindows(env):
     env.Append(
         CCFLAGS = ['-D__GNUWIN32__', '-D__WXMSW__', '-D__WIN32__',
@@ -89,8 +94,8 @@ def SetupZLib(env):
         env.Append(CCFLAGS = ['-DWINDOWS', '-DZLIB_DLL'])
     env.Append(LIBS = ['z'])
 
-Export("""SetupAudiere SetupCorona SetupGL SetupJS SetupMNG SetupWXWindows
-          SetupZLib""")
+Export("""SetupAudiere SetupCorona SetupGL SetupJS SetupMNG SetupSphereCommon
+          SetupWXWindows SetupZLib""")
 
 base_env = Environment(ENV = os.environ)
 
@@ -124,3 +129,9 @@ elif ARGUMENTS.get('opt'):
 Export('base_env')
 
 SConscript(dirs = ['source', 'startup', 'system'])
+
+# install third-party DLLs into build directory
+dlls = Split("audiere.dll corona.dll js32.dll libmng.dll zlib.dll")
+for d in dlls:
+    base_env.Install("#/build", os.path.join('third-party/dlls', d))
+    base_env.Install("#/build/util", os.path.join('third-party/dlls', d))
