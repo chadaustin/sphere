@@ -138,9 +138,9 @@ void
 CSpritesetView::SpritesetResized()
 {
   UpdateMaxSizes();
-  Invalidate();
   UpdateScrollBars();
   m_Handler->SV_SpritesetModified();
+  Invalidate();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

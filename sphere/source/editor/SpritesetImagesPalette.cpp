@@ -115,7 +115,7 @@ CSpritesetImagesPalette::OnPaint()
               ((ix / 8 + iy / 8) % 2 ?
                 CreateBGRA(255, 255, 255, 255) :
                 CreateBGRA(255, 192, 192, 255));
-          }        
+          }
 
         // draw the tile into it
         RGBA* tilepixels = m_Spriteset->GetImage(it).GetPixels();
@@ -128,10 +128,15 @@ CSpritesetImagesPalette::OnPaint()
             
             int d = iy * blit_width + ix;
 
-            int alpha = tilepixels[t].alpha;
-            pixels[d].red   = (tilepixels[t].red   * alpha + pixels[d].red   * (255 - alpha)) / 256;
-            pixels[d].green = (tilepixels[t].green * alpha + pixels[d].green * (255 - alpha)) / 256;
-            pixels[d].blue  = (tilepixels[t].blue  * alpha + pixels[d].blue  * (255 - alpha)) / 256;
+            // this here would crash if the spriteset has been resized
+            // and the spriteset images pallete hasn't been informed of the resize
+            if (tx >= 0 && tx < m_Spriteset->GetFrameWidth()
+             && ty >= 0 && ty < m_Spriteset->GetFrameHeight()) {
+              int alpha = tilepixels[t].alpha;
+              pixels[d].red   = (tilepixels[t].red   * alpha + pixels[d].red   * (255 - alpha)) / 256;
+              pixels[d].green = (tilepixels[t].green * alpha + pixels[d].green * (255 - alpha)) / 256;
+              pixels[d].blue  = (tilepixels[t].blue  * alpha + pixels[d].blue  * (255 - alpha)) / 256;
+            }
           }
         
         // blit the tile
