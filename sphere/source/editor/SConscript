@@ -35,6 +35,7 @@ sources = Split("""
     FileTypes.cpp
     FontGradientDialog.cpp
     FontWindow.cpp
+    FontPreviewPalette.cpp
     GameSettingsDialog.cpp
     HScrollWindow.cpp
     ImageToolPalette.cpp
