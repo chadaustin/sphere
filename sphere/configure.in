@@ -66,8 +66,6 @@ AC_CHECK_LIB(jpeg, jpeg_start_compress,,AC_MSG_RESULT(no)
    AC_MSG_ERROR(could not find the jpeg library))
 AC_CHECK_LIB(mng, mng_initialize,,AC_MSG_RESULT(no)
    AC_MSG_ERROR(could not find the mng library))
-AC_CHECK_LIB(lcms, cmsOpenProfileFromFile,,AC_MSG_RESULT(no)
-   AC_MSG_ERROR(could not find the lcms library))
 AC_CHECK_LIB(js, JS_PushArguments,,AC_MSG_RESULT(no)
    AC_MSG_ERROR(could not find the js library))
 
