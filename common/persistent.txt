@@ -1,0 +1,69 @@
+TPersistent Template Documentation
+Chad Austin
+6.22.1999
+
+
+
+Syntax:
+  TPersistent<type> object("key", defaultvalue);
+
+
+Notes:
+  If a default value is not specified, TPersistent sets it to zero.
+
+
+Restrictions:
+  May only be used in Win32 (fopen() and fclose() don't work on Windows CE at the moment, so it uses the Win32 file APIs.)
+  Cannot be used with objects that require a deep copy.
+  Cannot be used with types over 256 bytes.  This maximum value size may be changed in persistent.cpp.
+  Keys are unique up to 32 characters.  This may be changed in persistent.cpp.
+  By default, persistent objects are stored to the hidden file "config".  This may be changed in persistent.cpp.
+  The keys are case-sensitive.
+  Two persistent objects of different types with the same key have undefined behavior.
+  printf()-style functions do not work with these types directly, you must cast them.
+  Persistent arrays are not allowed, put them in a struct first.
+  Persistent pointers store the pointer value, but not what the pointer points to.
+  If the persistent data is used on both big- and little-endian, the data is undefined.
+
+
+Examples:
+
+
+int main()
+{
+  TPersistent<float> Cash("Cash");
+  float delta;
+
+  cout << "You have " << Cash << " dollars." << endl;
+  cout << "How much money do you want to add? ";
+  cin >> delta;
+
+  Cash += delta;
+
+  return 0;
+}
+
+
+int main()
+{
+  TPersistent<int> i("Counter");
+
+  cout << "Quit this program at any time and it will begin where it last left off.";
+  for (; i < 10000; i++)    
+    cout << i << endl;
+
+  return 0;
+}
+
+
+int main()
+{
+  TPersistent<int> i("i");
+  TPersistent<int> j("j");
+
+  j *= i;
+  ++i;
+    
+  printf("%d\n", i);  // WRONG!
+  printf("%d\n", (int)i);
+}

@@ -1,0 +1,34 @@
+// COMPRESSION //
+
+set w = empty
+while characters-left-in-input
+  read K
+  if (wK is in dictionary)
+    w = wK
+  else
+    write code for w
+    add wK to dictionary
+    w = K
+  end if
+end while
+write code for w
+
+
+// DECOMPRESSION //
+
+read old_code
+output old_code
+while characters-left-in-input
+  read new_code
+  if new_code is not in the dictionary
+    STRING = translation of old_code
+    STRING += first character in STRING
+  else
+    STRING = translation of new_code
+  end if
+
+  output STRING
+  CHARACTER = first character in STRING
+  add old_code + CHARACTER to dictionary
+  old_code = new_code
+end while

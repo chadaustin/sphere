@@ -1,0 +1,103 @@
+Huffman Compression Routines
+Chad Austin (aegis@nerv-un.net)
+5.27.99
+
+
+The Huffman algorithm is an algorithm that takes data and compresses it
+statistically.  These two functions are provided as public domain software
+and can be integrated into any project.
+
+
+File Listing
+  compress.exe                  - Huffman file compressor (Win32 binary)
+  decompress.exe                - Huffman file decompressor (Win32 binary)
+  huffman.h                     - Include file for huffman.c
+  huffman.c                     - Definitions for HuffmanEncode() and HuffmanDecode()
+  huffman.dsw                   - Visual C++ 6.0 Workspace
+  huffman.txt                   - This document
+  compress/compress.c           - Source for Huffman file compressor
+  compress/compress.dsp         - Visual C++ 6.0 Project
+  decompress/decompress.c       - Source for Huffman file decompressor
+  decompress/decompress.dsp     - Visual C++ 6.0 Project
+
+
+
+====
+
+typedef struct
+{
+  dword buffersize;
+  byte* buffer;
+} HBUFFER;
+
+====
+
+void HuffmanEncode(const HBUFFER* source, HBUFFER* result)
+
+Arguments
+  source - buffer of data to be compressed
+  result - compressed buffer
+
+Return Value
+  none
+
+This function takes a buffer of any size and compresses it, storing the result
+in 'result'.  Keep in mind that HuffmanEncode() calls malloc() to create the
+resulting buffer, so use free() to delete the memory after it is used.
+
+====
+
+void HuffmanDecode(const HBUFFER* source, HBUFFER* result)
+
+Arguments
+  source - compressed buffer data
+  result - uncompressed data
+
+Return Value
+  none
+
+This function takes a buffer previously compressed by HuffmanEncode() and
+decompresses it to its original state.  Just like HuffmanEncode(),
+HuffmanDecode() allocates the resulting buffer with malloc(), so call free()
+to delete it after it is used.
+
+====
+
+Format of Compressed Buffer
+
+Original buffer size (4-bytes)
+Huffman tree (undefined size)
+Bit stream (undefined size)
+
+=====
+
+Algorithm for Decoding the Compressed Buffer
+
+buffersize = read dword
+tree = read tree
+node = top of tree
+while decodedbytes < buffersize
+  read bit
+  if bit is 0
+    node = node.left
+  if bit is 1
+    node = node.right
+  if node is leaf
+    output node.character
+    increment decodedbytes
+end while
+
+====
+
+Algorithm for Reading the Binary Tree
+
+read byte
+if byte is 0
+  tree is not leaf
+  tree.left = read tree
+  tree.right = read tree
+else
+  tree is leaf
+  tree.character = read byte
+end if
+  
