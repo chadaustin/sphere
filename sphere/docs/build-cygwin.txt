@@ -1,13 +1,15 @@
-How to Build Sphere in Windows
+How to Build Sphere in Windows with Cygwin
 Chad Austin (aegis@aegisknight.org)
-2002.06.20 (Version 0.97)
+2003.01.22 (Version 1.0)
 
 
 
 Requirements
 --
 
-Microsoft Visual C++ 6.0
+An Internet Connection
+Cygwin (www.cygwin.com)
+SCons (www.scons.org)
 
 
 
@@ -22,16 +24,23 @@ Getting Third-party Headers, Libraries, and DLLs
 --
 
 Sphere depends on a lot of external code.  You can download them all
-individually, or get prebuilt libraries and headers for VC6 on the
+individually, or get prebuilt libraries and headers for mingw on the
 SourceForge downloads page
 (https://sourceforge.net/project/showfiles.php?group_id=1551).
 
 After you have all of the headers and libraries, put them in
-SPHERE_ROOT/source/third-party.
+SPHERE_ROOT/third-party-mingw
+
+There should be two directories inside of
+SPHERE_ROOT/third-party-mingw...  include and lib.
 
 
 Compiling
 --
 
-Open sphere.dsw, and compile away.  If you have troubles, send me an
-e-mail (address at the top of the document).
+Open a Cygwin prompt, cd to the sphere directory, and type:
+
+scons compiler=mingw
+
+If you have troubles, send me an e-mail (address at the top of the
+document).
