@@ -10,6 +10,8 @@
 #include "MapToolPalette.hpp"
 #include "Clipboard.hpp"
 
+#include "MapScripting.hpp"
+
 class IMapViewHandler
 {
 public:
@@ -54,6 +56,7 @@ private:
   int RoundY(int y);
   
   void Click(CPoint point);
+  bool __SetTile__(int tx, int ty, int layer_index, int new_tile);
   bool SetTile(int tx, int ty);
   void SelectTileUnderPoint(CPoint point);
   void PasteEntityUnderPoint(CPoint point);
@@ -120,7 +123,158 @@ public:
     tool_ZoneEdit,
     tool_ZoneMove,
     tool_ZoneDelete,
+    tool_Script,
   };
+
+private:
+  sMapScripting m_Scripter;
+  bool m_script_running;
+  void ExecuteScript(const char* string);
+
+private:
+  static DWORD WINAPI ThreadRoutine(LPVOID parameter);
+
+public:
+  bool SetTile(int x, int y, int layer, int tile) {
+    if ( !(layer >= 0 && layer < m_Map->GetNumLayers()) ) {
+      return false;
+    }
+
+    if ( !(x >= 0 && y >= 0 && x < m_Map->GetLayer(layer).GetWidth() && y < m_Map->GetLayer(layer).GetHeight()) ) {
+      return false;
+    }
+
+    if ( !(tile >= 0 && tile < m_Map->GetTileset().GetNumTiles()) ) {
+      return false;
+    }
+
+    __SetTile__(x, y, layer, tile);
+    return true;
+  }
+
+  bool GetTile(int x, int y, int layer, int& tile) {
+    if ( !(layer >= 0 && layer < m_Map->GetNumLayers()) ) {
+      return false;
+    }
+
+    if ( !(x >= 0 && y >= 0 && x < m_Map->GetLayer(layer).GetWidth() && y < m_Map->GetLayer(layer).GetHeight()) ) {
+      return false;
+    }
+
+    tile = m_Map->GetLayer(layer).GetTile(x, y);
+    return true;
+  }
+
+  bool GetTileWidth(int& width) {
+    width = m_Map->GetTileset().GetTileWidth();
+    return true;
+  }
+
+  bool GetTileHeight(int& height) {
+    height = m_Map->GetTileset().GetTileHeight();
+    return true;
+  }
+
+  bool GetNumTiles(int& num_tiles) {
+    num_tiles = m_Map->GetTileset().GetNumTiles();
+    return true;
+  }
+
+  bool GetLayerWidth(const int layer, int& width) {
+    if ( !(layer >= 0 && layer < m_Map->GetNumLayers()) ) {
+      return false;
+    }
+
+    width = m_Map->GetLayer(layer).GetWidth();
+    return true;
+  }
+
+  bool GetLayerHeight(const int layer, int& height) {
+    if ( !(layer >= 0 && layer < m_Map->GetNumLayers()) ) {
+      return false;
+    }
+
+    height = m_Map->GetLayer(layer).GetHeight();
+    return true;
+  }
+
+  bool GetNumLayers(int& num_layers) {
+    num_layers = m_Map->GetNumLayers();
+    return true;
+  }
+
+  bool GetLayerScaleFactorX(const int layer, double& zoom_factor) {
+    if ( !(layer >= 0 && layer < m_Map->GetNumLayers()) ) {
+      return false;
+    }
+
+    zoom_factor = m_ZoomFactor;
+    return true;
+  }
+
+  bool GetLayerScaleFactorY(const int layer, double& zoom_factor) {
+    if ( !(layer >= 0 && layer < m_Map->GetNumLayers()) ) {
+      return false;
+    }
+
+    zoom_factor = m_ZoomFactor;
+    return true;
+  }
+
+  bool MapToScreenX(const int layer, const int mx, int& sx) {
+    if ( !(layer >= 0 && layer < m_Map->GetNumLayers()) ) {
+      return false;
+    }
+
+    sx = mx - ((m_CurrentX * m_Map->GetTileset().GetTileWidth()) * m_ZoomFactor);
+    return true;
+  }
+
+  bool MapToScreenY(const int layer, const int my, int& sy) {
+    if ( !(layer >= 0 && layer < m_Map->GetNumLayers()) ) {
+      return false;
+    }
+
+    sy = my - ((m_CurrentY * m_Map->GetTileset().GetTileHeight()) * m_ZoomFactor);
+    return true;
+  }
+
+  bool ScreenToMapX(const int layer, const int sx, int& mx) {
+    if ( !(layer >= 0 && layer < m_Map->GetNumLayers()) ) {
+      return false;
+    }
+
+    mx = sx + ((m_CurrentX * m_Map->GetTileset().GetTileWidth()) * m_ZoomFactor);
+    return true;
+  }
+
+  bool ScreenToMapY(const int layer, const int sy, int& my) {
+    if ( !(layer >= 0 && layer < m_Map->GetNumLayers()) ) {
+      return false;
+    }
+
+    my = sy + ((m_CurrentY * m_Map->GetTileset().GetTileHeight()) * m_ZoomFactor);
+    return true;
+  }
+
+  bool IsMouseButtonPressed(int button) {
+    bool pressed = false;
+    if (button == 0)
+      pressed = m_Clicked;
+    return pressed;
+  }
+
+  int GetScreenWidth() {
+    RECT ClientRect;
+    GetClientRect(&ClientRect);
+    return ClientRect.right;
+  }
+
+  int GetScreenHeight() {
+    RECT ClientRect;
+    GetClientRect(&ClientRect);
+    return ClientRect.bottom;
+  }
 
 private:
   IMapViewHandler* m_Handler;

@@ -2137,6 +2137,7 @@ CImageView::OnKeyDown(UINT vk, UINT nRepCnt, UINT nFlags)
     POINT point = m_CurPoint;
     ClientToScreen(&point);
     OnRButtonUp(nFlags, point);
+    return;
   }
 
   RECT ClientRect;

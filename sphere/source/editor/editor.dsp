@@ -1445,5 +1445,41 @@ SOURCE=..\..\..\http\time.cpp
 SOURCE=..\..\..\http\time.hpp
 # End Source File
 # End Group
+# Begin Group "Scripting"
+
+# PROP Default_Filter ""
+# Begin Group "env"
+
+# PROP Default_Filter ""
+# Begin Group "win32"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\engine\win32\win32_time.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\engine\win32\win32_time.hpp
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=..\engine\time.hpp
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=.\MapScripting.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\MapScripting.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ss_functions.table
+# End Source File
+# End Group
 # End Target
 # End Project

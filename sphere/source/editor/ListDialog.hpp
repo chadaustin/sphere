@@ -21,6 +21,7 @@ public:
   
   int GetSelection() const;
   void SetSelection(int i);
+  const char* GetItemText(int index) const;
 
 private:
   BOOL OnInitDialog();

@@ -68,6 +68,7 @@ CMapView::CMapView()
 , m_MultiTileWidth(0)
 , m_MultiTileHeight(0)
 , m_MultiTileData(NULL)
+, m_script_running(false)
 {
   m_SpritesetDrawType = Configuration::Get(KEY_MAP_SPRITESET_DRAWTYPE);  
   m_ZoomFactor        = Configuration::Get(KEY_MAP_ZOOM_FACTOR);
@@ -92,6 +93,8 @@ CMapView::CMapView()
 
 CMapView::~CMapView()
 {
+  m_Scripter.Destroy();
+
   // destroy the blit DIB
   delete m_BlitTile;
   delete m_Clipboard;
@@ -654,22 +657,22 @@ CMapView::Click(CPoint point)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapView::SetTile(int tx, int ty)
+CMapView::__SetTile__(int tx, int ty, int layer_index, int new_tile)
 {
-  sLayer& Layer = m_Map->GetLayer(m_SelectedLayer);
+  sLayer& layer = m_Map->GetLayer(layer_index);
 
   if (tx < 0 ||
       ty < 0 ||
-      tx >= Layer.GetWidth() ||
-      ty >= Layer.GetHeight()) {
+      tx >= layer.GetWidth() ||
+      ty >= layer.GetHeight()) {
     return false;
   }
 
-  int oldtile = Layer.GetTile(tx, ty);
-  Layer.SetTile(tx, ty, m_SelectedTile);
+  int oldtile = layer.GetTile(tx, ty);
+  layer.SetTile(tx, ty, new_tile);
 
   // if the tile has changed, invalidate it
-  if (oldtile != m_SelectedTile)
+  if (oldtile != new_tile)
   {
     int tile_width  = m_Map->GetTileset().GetTileWidth();
     int tile_height = m_Map->GetTileset().GetTileHeight();
@@ -688,6 +691,14 @@ CMapView::SetTile(int tx, int ty)
   }
 
   return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapView::SetTile(int tx, int ty)
+{
+  return SetTile(tx, ty, m_SelectedLayer, m_SelectedTile);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2220,6 +2231,37 @@ CMapView::OnLButtonDown(UINT flags, CPoint point)
         Click(point); 
       } break;
 
+      case tool_Script:
+      {
+        if (!m_script_running && !m_Scripter.m_IsRunning) {
+          char filename[MAX_PATH] = {0};
+          sprintf (filename, "%s/editor_script.js", GetSphereDirectory().c_str());
+
+          FILE* file = fopen(filename, "rb");
+          if (file) {
+            std::string script = "";
+            while (!feof(file)) {
+              char string[1025] = {0};
+              fread(string, sizeof(string) - 1, sizeof(char), file);
+              script += string;
+            }
+
+            fclose(file);
+            file = NULL;
+
+            ExecuteScript(script.c_str());
+          }
+          else {
+            char message[MAX_PATH + 1024];
+            sprintf(message, "Cannot open script \"%s\"", filename);
+            GetStatusBar()->SetWindowText(message);
+          }
+        }
+        else if (m_Scripter.m_IsRunning) {
+          GetStatusBar()->SetWindowText("Still Running...");
+        }
+      } break;
+
       case tool_SelectTile: {
         SelectTileUnderPoint(point); 
       } break;
@@ -3328,6 +3370,10 @@ CMapView::OnTimer(UINT event)
 void
 CMapView::OnToolChanged(UINT id, int tool_index)
 {
+  if (m_Scripter.m_IsRunning) {
+    m_Scripter.Destroy();
+  }
+
   switch (id) {
     case IDI_MAPTOOL_1X1: m_CurrentTool = tool_1x1Tile; break;
     case IDI_MAPTOOL_3X3: m_CurrentTool = tool_3x3Tile; break;
@@ -3347,6 +3393,16 @@ CMapView::OnToolChanged(UINT id, int tool_index)
     case IDI_MAPTOOL_ZONEEDIT: m_CurrentTool = tool_ZoneEdit; break;
     case IDI_MAPTOOL_ZONEMOVE: m_CurrentTool = tool_ZoneMove; break;
     case IDI_MAPTOOL_ZONEDELETE: m_CurrentTool = tool_ZoneDelete; break;
+    case IDI_MAPTOOL_SCRIPT:
+      if (!m_Scripter.m_IsCreated) {
+        m_Scripter.Create();
+        m_Scripter.InitializeSphereConstants();
+        m_Scripter.InitializeSphereFunctions();
+        m_Scripter.SetPrivate((void*) this);
+      }
+      
+      m_CurrentTool = tool_Script;
+    break;
   }
 
   TP_ToolSelected(m_CurrentTool, tool_index);
@@ -3394,9 +3450,73 @@ CMapView::IsToolAvailable(UINT id)
     case IDI_MAPTOOL_ZONEEDIT:   available = (m_Map->GetNumZones() > 0) ? TRUE : FALSE; break;
     case IDI_MAPTOOL_ZONEMOVE:   available = (m_Map->GetNumZones() > 0) ? TRUE : FALSE; break;
     case IDI_MAPTOOL_ZONEDELETE: available = (m_Map->GetNumZones() > 0) ? TRUE : FALSE; break;
+    case IDI_MAPTOOL_SCRIPT: available = TRUE; break;
   }
 
   return available;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CMapView::ExecuteScript(const char* script)
+{
+  if (m_script_running)
+    return;
+
+  m_script_running = true;
+  if (!m_Scripter.SetScript(script)) {
+    m_script_running = false;
+    return;
+  }
+
+  DWORD thread_id;
+  if (CreateThread(NULL, 0, ThreadRoutine, (LPVOID) this, 0, &thread_id) == NULL) {
+    m_script_running = false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+DWORD WINAPI
+CMapView::ThreadRoutine(LPVOID parameter)
+{
+  CMapView* map_view = (CMapView*) parameter;
+  if (!map_view)
+    return 0;
+
+  if (!map_view->m_Scripter.rt || !map_view->m_Scripter.cx || !map_view->m_Scripter.global)
+    return 0;
+
+  bool show_message = true;
+  if (strlen(map_view->m_Scripter.m_Script) > strlen("var ")
+    && memcmp(map_view->m_Scripter.m_Script, "var ", strlen("var ")) == 0) {
+    show_message = false;
+  }
+
+  GetStatusBar()->SetWindowText("Running...");
+
+  sCompileError error; error.m_TokenLine = -2;
+  bool has_error = !map_view->m_Scripter.__VerifyScript__(NULL, error);
+
+  if (!error.m_Message.empty()) {
+    // "var x;" shouldn't print 'undefined'...
+    if (!show_message && error.m_Message != "undefined")
+      show_message = true;
+  }
+
+  if ((has_error || show_message) && map_view) { // show_message
+    GetStatusBar()->SetWindowText(error.m_Message.c_str());
+  }
+  else {
+    GetStatusBar()->SetWindowText("...");
+  }
+
+  if (map_view) {
+    map_view->m_script_running = false;
+  }
+
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

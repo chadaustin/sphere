@@ -61,7 +61,7 @@ private:
   afx_msg void OnUpdateOptionsHighlightCurrentLine(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsViewList(CCmdUI* cmdui);
 
-#if 0
+#ifdef SPELLING_CHECKER
   afx_msg void OnOptionsCheckSpelling();
   afx_msg void OnOptionsSetSpellingLanguage();
   afx_msg void OnUpdateOptionsCheckSpelling(CCmdUI* cmdui);
@@ -89,12 +89,10 @@ private:
 
   void SpellCheck(const int start_line_number, const int num_lines_to_check);
 
-#if 1
   bool MarginClick(int position, int modifiers);
   void Expand(int &line, const bool doExpand,
               bool force = false, int visLevels = 0, int level = -1);
   void FoldAll();
-#endif
 
   afx_msg void OnCopy();
   afx_msg void OnPaste();
@@ -141,7 +139,7 @@ private:
 
   void CreateList(int type);
 
-#if 0
+#ifdef SPELLING_CHECKER
 private:
   UINT m_Timer;
   afx_msg void OnTimer(UINT event);

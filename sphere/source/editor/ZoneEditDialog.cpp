@@ -134,7 +134,7 @@ CZoneEditDialog::OnCheckSyntax()
 
   // check for errors
   sCompileError error;
-  if (VerifyScript(script, error)) {
+  if (sScripting::VerifyScript(script, error)) {
     MessageBox("No syntax errors", "Check Syntax");
   } else {
     // show error

@@ -1,14 +1,11 @@
 #pragma warning(disable : 4786)
 
+#include <errno.h>
 
 #include "SaveableDocumentWindow.hpp"
 #include "MainWindow.hpp"
 #include "resource.h"
-
-
 #include "Editor.hpp"
-
-#include <errno.h>
 
 
 BEGIN_MESSAGE_MAP(CSaveableDocumentWindow, CDocumentWindow)
@@ -114,7 +111,7 @@ CSaveableDocumentWindow::UpdateWindowCaption()
   if (!IsWindow(m_hWnd))
     return;
 
-  char* text;
+  char* text = NULL;
   if (m_Saved)
   {
     text = new char[strlen(GetCaption()) + 3];
@@ -131,6 +128,7 @@ CSaveableDocumentWindow::UpdateWindowCaption()
 
   SetWindowText(text ? text : "(null)");
   delete[] text;
+  text = NULL;
 
 #ifdef TABBED_WINDOW_LIST
   CFrameWnd* pFrame = (CFrameWnd*)AfxGetApp()->m_pMainWnd;
@@ -173,15 +171,35 @@ CSaveableDocumentWindow::__SaveDocument__(const char* document_path)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static bool __DoesFileExist__(const char* filename)
+{
+  bool exists = false;
+
+  FILE* file = fopen(filename, "rb");
+  if (file) {
+    exists = true;
+    fclose(file);
+  }
+
+  return exists;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSaveableDocumentWindow::OnFileSave()
 {
   if (m_Saved)
   {
-    if (__SaveDocument__(GetDocumentPath()))
+    const char* path = GetDocumentPath();
+    bool exists = __DoesFileExist__(path);
+ 
+    if (__SaveDocument__(path))
     {
       // update project if it's there
-      UpdateProject();
+      if (!exists) {
+        UpdateProject();
+      }
 
       m_Saved = true;
       m_Modified = false;
@@ -200,10 +218,14 @@ CSaveableDocumentWindow::OnFileSaveAs()
   char document_path[MAX_PATH];
   if (GetSavePath(document_path))
   {
+    bool exists = __DoesFileExist__(document_path);
+
     if (__SaveDocument__(document_path))
     {
       // update project if it's there
-      UpdateProject();
+      if (!exists) {
+        UpdateProject();
+      }
 
       m_Saved = true;
       m_Modified = false;

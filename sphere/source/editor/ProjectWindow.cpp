@@ -82,11 +82,11 @@ CProjectWindow::Create()
   
   // create widgets
   m_TreeControl.Create(
-    WS_VISIBLE | WS_CHILD | TVS_SHOWSELALWAYS | TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS,
+    WS_VISIBLE | WS_CHILD | TVS_SHOWSELALWAYS | TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_DISABLEDRAGDROP,
     CRect(0, 0, 0, 0),
     this,
     TreeID);
-  m_TreeControl.SetFocus();
+  //m_TreeControl.SetFocus();
 
   HIMAGELIST image_list = ImageList_Create(16, 16, ILC_COLOR8 | ILC_MASK, 3, 1);
   ImageList_AddIcon(image_list, AfxGetApp()->LoadIcon(IDI_PV_GAME_SETTINGS));
@@ -375,8 +375,9 @@ CProjectWindow::OnSize(UINT type, int cx, int cy)
 afx_msg void
 CProjectWindow::OnSetFocus(CWnd* old_window)
 {
-  if (m_TreeControl.m_hWnd)
+  if (old_window != NULL && old_window->m_hWnd == m_hWnd && m_TreeControl.m_hWnd) {
     m_TreeControl.SetFocus();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -384,6 +385,9 @@ CProjectWindow::OnSetFocus(CWnd* old_window)
 afx_msg void
 CProjectWindow::OnDropFiles(HDROP drop_info)
 {
+  if (!drop_info)
+    return;
+
   UINT num_files = DragQueryFile(drop_info, 0xFFFFFFFF, NULL, 0);
 
   // add all files to the project
@@ -511,22 +515,26 @@ afx_msg void
 CProjectWindow::OnKeyDown(NMHDR* notify, LRESULT* result)
 {
   NMTVKEYDOWN* key = (NMTVKEYDOWN*)notify;
-  if (!key) return;
+  if (!key || !result) return;
 
   switch (key->wVKey)
   {
     case VK_RETURN:
       __OnDoubleClick__(true);
+      *result = 0;
     break;
 
     case VK_APPS:
       __OnRightClick__();
+      *result = 0;
     break;
 
     case VK_INSERT:
       OnProjectGroupInsert();
+      *result = 0;
     break;
   }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////

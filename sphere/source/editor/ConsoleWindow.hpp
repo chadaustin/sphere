@@ -91,11 +91,8 @@ private:
   static DWORD WINAPI ThreadRoutine(LPVOID parameter);
 
 public:
-  JSRuntime* rt;
-  JSContext* cx;
-  JSObject* global;
-
-  bool m_is_ready;
+  bool m_script_running;
+  sScripting m_Scripter;
 
 private:
   bool m_Created;

@@ -268,7 +268,7 @@ CScript::CScript(IEngine* engine)
     JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
   };
-  
+
   // create global object
   m_Global = JS_NewObject(m_Context, &global_class, NULL, NULL);
   if (m_Global == NULL) {
@@ -296,7 +296,7 @@ CScript::~CScript()
 {
   if (m_Runtime) {
     if (m_Context) {
-      JS_DestroyContext(m_Context); 
+      JS_DestroyContext(m_Context);
       m_Context = NULL;
     }
 
@@ -421,7 +421,7 @@ CScript::InitializeSphereConstants()
     const char* name;
     int         value;
   } constants[] = {
-    
+
     // surface - setBlendMode constants
 
     { "REPLACE", CImage32::REPLACE },
@@ -603,7 +603,7 @@ CScript::ErrorReporter(JSContext* cx, const char* message, JSErrorReport* report
 
   //FILE* file = fopen("last_error.txt", "wb+");
   //if (file != NULL) {
-  //  fwrite(This->m_Error.c_str(), sizeof(char), This->m_Error.length(), file); 
+  //  fwrite(This->m_Error.c_str(), sizeof(char), This->m_Error.length(), file);
   //  fclose(file);
   //}
 
@@ -648,7 +648,7 @@ static bool IsValidPath(const char* path)
       if (prev_was_dot) {
         num_double_dots += 1;
       }
-      prev_was_dot = true;      
+      prev_was_dot = true;
     }
     else {
       prev_was_dot = false;
@@ -695,112 +695,7 @@ inline void USED(T /*t*/) { }
 
 
 // parameter grabbing
-
-inline int argInt(JSContext* cx, jsval arg)
-{
-  int32 i;
-
-  if (JSVAL_IS_OBJECT(arg)) {
-    JS_ReportError(cx, "Invalid integer (parameter is an object)");
-    return false;
-  }
-
-  if (JS_ValueToInt32(cx, arg, &i) == JS_FALSE) {
-    JS_ReportError(cx, "Invalid integer.");
-    return 0; // invalid integer
-  }
-
-  return i;
-}
-
-///////////////////////////////////////////////////////////
-
-inline const char* argStr(JSContext* cx, jsval arg)
-{
-  JSString* str = JS_ValueToString(cx, arg);
-  if (str) {
-    const char* s = JS_GetStringBytes(str);
-    return (s ? s : "");
-  } else {
-    return "";
-  }
-}
-
-///////////////////////////////////////////////////////////
-
-inline bool argBool(JSContext* cx, jsval arg)
-{
-  JSBool b;
-
-  if (JSVAL_IS_OBJECT(arg)) {
-    JS_ReportError(cx, "Invalid boolean.");
-    return false;
-  }
-
-  if (JS_ValueToBoolean(cx, arg, &b) == JS_FALSE) {
-    return false;
-  }
-
-  return (b == JS_TRUE);
-}
-
-///////////////////////////////////////////////////////////
-
-inline double argDouble(JSContext* cx, jsval arg)
-{
-  jsdouble d;
-
-  if (JSVAL_IS_OBJECT(arg)) {
-    JS_ReportError(cx, "Invalid double.");
-    return 0;
-  }
-
-  if (!JSVAL_IS_INT(arg) && !JSVAL_IS_DOUBLE(arg)) {
-    JS_ReportError(cx, "Invalid double.");
-    return 0;
-  }
-
-  if (JS_ValueToNumber(cx, arg, &d) == JS_FALSE) {
-    JS_ReportError(cx, "Invalid double.");
-    return 0;
-  }
-
-  return d;
-}
-
-///////////////////////////////////////////////////////////
-
-inline JSObject* argObject(JSContext* cx, jsval arg)
-{
-  if (!JSVAL_IS_OBJECT(arg)) {
-    JS_ReportError(cx, "Invalid object.");
-    return NULL;
-  }
-
-  JSObject* object;
-  if (JS_ValueToObject(cx, arg, &object) == JS_FALSE) {
-    JS_ReportError(cx, "Invalid object.");
-    return NULL; 
-  }
-
-  return object;
-}
-
-///////////////////////////////////////////////////////////
-
-inline JSObject* argArray(JSContext* cx, jsval arg)
-{
-  JSObject* array = argObject(cx, arg);
-  if (array == NULL)
-    return NULL;
-
-  if (!JS_IsArrayObject(cx, array)) {
-    JS_ReportError(cx, "Invalid array.");
-    return NULL;
-  }
-
-  return array;
-}
+#include "parameters.cpp"
 
 ///////////////////////////////////////////////////////////
 
@@ -990,7 +885,7 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     || JS_GetProperty(cx, base_obstruction_object, "y1", &y1_val) == JS_FALSE
     || JS_GetProperty(cx, base_obstruction_object, "x2", &x2_val) == JS_FALSE
     || JS_GetProperty(cx, base_obstruction_object, "y2", &y2_val) == JS_FALSE ) {
-    JS_ReportError(cx, "spriteset.base object is invalid.");    
+    JS_ReportError(cx, "spriteset.base object is invalid.");
     return NULL;
   }
 
@@ -1001,7 +896,7 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     JS_ReportError(cx, "Invalid spriteset.images array.");
     return NULL;
   }
- 
+
   if ( JS_GetArrayLength(cx, images_object, &num_images) == JS_FALSE ) {
     JS_ReportError(cx, "Invalid spriteset.images array length.");
     return NULL;
@@ -1476,14 +1371,14 @@ end_func()
     - game.description   Bite-sized summary of game.
 */
 begin_func(GetGameList, 0)
-  
+
   // get the list of games
   std::vector<Game> games;
   This->m_Engine->GetGameList(games);
 
   static JSClass clasp = {
     "object", 0,
-    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, 
+    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
   };
 
@@ -1492,7 +1387,7 @@ begin_func(GetGameList, 0)
   for (int i = 0; i < array_size; i++) {
     JSObject* element = JS_NewObject(cx, &clasp, NULL, NULL);
     array[i] = OBJECT_TO_JSVAL(element);
-    
+
     jsval name_val = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, games[i].name.c_str()));
     jsval dir_val  = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, games[i].directory.c_str()));
     jsval auth_val = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, games[i].author.c_str()));
@@ -1566,7 +1461,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-  - Exits the Sphere engine unconditionally, displays the 'message' to the 
+  - Exits the Sphere engine unconditionally, displays the 'message' to the
     user
 */
 begin_func(Abort, 1)
@@ -1600,8 +1495,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-  - opens a log file for use under the filename. If Sphere is unable to open 
-    the file for logging, the engine will give an error message and exit. 
+  - opens a log file for use under the filename. If Sphere is unable to open
+    the file for logging, the engine will give an error message and exit.
     If Sphere is successful in opening the file, it will return a log object
     for use.
     ex: var myLog = OpenLog("game.log");
@@ -1611,7 +1506,7 @@ begin_func(OpenLog, 1)
 
   if (IsValidPath(filename) == false) {
     JS_ReportError(cx, "Invalid filename: '%s'", filename);
-    return JS_FALSE;  
+    return JS_FALSE;
   }
 
   CLog* log = This->m_Engine->OpenLog(filename);
@@ -1633,7 +1528,7 @@ end_func()
       you've drawn in code to appear on the screen.
 */
 begin_func(FlipScreen, 0)
-  
+
   if (This->m_FrameRate == 0) {
 
     FlipScreen();
@@ -1653,7 +1548,7 @@ begin_func(FlipScreen, 0)
 
     if (GetTime() * This->m_FrameRate < (dword)This->m_IdealTime) {
       This->m_ShouldRender = true;
-      
+
       // delay!
       while (GetTime() * This->m_FrameRate < (dword)This->m_IdealTime) { }
 
@@ -1663,7 +1558,7 @@ begin_func(FlipScreen, 0)
 
     // update timing variables
     This->m_IdealTime += 1000;
-    
+
   }
 
 end_func()
@@ -1671,8 +1566,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-    - Sets a clipping rectangle of width w and height h at (x, y) into the 
-      video buffer. Anything drawn outside the rectangle is not drawn into 
+    - Sets a clipping rectangle of width w and height h at (x, y) into the
+      video buffer. Anything drawn outside the rectangle is not drawn into
       the video buffer.
 */
 begin_func(SetClippingRectangle, 4)
@@ -1720,7 +1615,7 @@ end_func()
 
 /**
     - fills the whole screen with the color specified. Note that the color
-      passed must have an alpha that is less than 255. Otherwise, it'll 
+      passed must have an alpha that is less than 255. Otherwise, it'll
       just make the screen solidly that color.
       ApplyColorMask tints the screen's current state
       (meaning you'll have to call it every frame
@@ -1736,7 +1631,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-    - allows you to set the maximum frames rendered per second that 
+    - allows you to set the maximum frames rendered per second that
       the engine is allowed to draw at most.  Set to 0 in order to
       unthrottle the graphics renderer.  Keep in mind that this
       is not for the map engine, which uses the fps specified in the
@@ -1768,13 +1663,13 @@ end_func()
     (note: this is not the same as the map engine frame rate)
 */
 begin_func(GetFrameRate, 0)
-  bool calculate = false; 
+  bool calculate = false;
   int frame_rate = This->m_FrameRate;
- 
+
   if (argc >= 1) {
     calculate = argBool(cx, argv[0]);
     if (calculate) {
-      
+
     }
   }
 
@@ -1848,7 +1743,7 @@ begin_func(Line, 5)
     arg_int(x2);
     arg_int(y2);
     arg_color(c);
-  
+
     int x[2] = { x1, x2 };
     int y[2] = { y1, y2 };
     DrawLine(x, y, c);
@@ -1858,7 +1753,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - Draws a line from (x1, y1) to (x2, y2) with a color fade from color1 
+      - Draws a line from (x1, y1) to (x2, y2) with a color fade from color1
         to color2
 */
 begin_func(GradientLine, 6)
@@ -1869,7 +1764,7 @@ begin_func(GradientLine, 6)
     arg_int(y2);
     arg_color(c1);
     arg_color(c2);
-  
+
     int x[2] = { x1, x2 };
     int y[2] = { y1, y2 };
     RGBA c[2];
@@ -1882,7 +1777,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - Draws a filled triangle with the points (x1, y1), (x2, y2), (x3, y3), 
+      - Draws a filled triangle with the points (x1, y1), (x2, y2), (x3, y3),
         with the color c
 */
 begin_func(Triangle, 7)
@@ -1951,9 +1846,9 @@ end_func()
 
 /**
       - Draws a gradient rectangle at (x,y) with the height h and width w.
-        Each corner of a rectangle (c_ul = color of upper left corner, 
+        Each corner of a rectangle (c_ul = color of upper left corner,
         c_ur = color of upper right corner, c_lr = color of lower right corner,
-        c_ll = color of lower left corner) accepts a color information to 
+        c_ll = color of lower left corner) accepts a color information to
         generate the gradient of the rectangle.
 */
 begin_func(GradientRectangle, 8)
@@ -1981,7 +1876,7 @@ end_func()
 // section: input //
 
 /**
-      - returns true or false depending if the there are keys from the key 
+      - returns true or false depending if the there are keys from the key
         input queue.
 */
 begin_func(AreKeysLeft, 0)
@@ -2070,6 +1965,12 @@ end_func()
 */
 begin_func(IsMouseButtonPressed, 1)
   arg_int(button);
+
+  if ( !(button == MOUSE_LEFT || button == MOUSE_RIGHT || button == MOUSE_MIDDLE) ) {
+    JS_ReportError(cx, "Invalid mouse button");
+    return JS_FALSE;
+  }
+
   return_int(IsMouseButtonPressed(button));
 end_func()
 
@@ -2227,7 +2128,7 @@ end_func()
 
 /**
     - returns a color object with the color r is Red, g is Green, b is Blue,
-      and a is alpha (translucency of the color). 
+      and a is alpha (translucency of the color).
       Note + alpha of 0 = transparent, alpha of 255 = opaque
            + alpha is optional, and defaults to 255 if not specified
 */
@@ -2237,7 +2138,7 @@ begin_func(CreateColor, 3)
   arg_int(b);
 
   // if alpha isn't specified, default to 255
-  int a = 255; 
+  int a = 255;
   if (argc >= 4) {
     a = argInt(cx, argv[3]);
   }
@@ -2280,11 +2181,11 @@ begin_func(BlendColorsWeighted, 4)
   arg_color(b);
   arg_double(w1);
   arg_double(w2);
-  
+
   // Fixes an issue astie was having with negative weights.
   if (w1 < 0) w1 = 0;
   if (w2 < 0) w2 = 0;
-  
+
   if (w1 + w2 == 0) {
     return_object(CreateColorObject(cx, CreateRGBA(0, 0, 0, 255)));
   } else {
@@ -2353,7 +2254,7 @@ end_func()
       can start a new map engine.
 */
 begin_func(ExitMapEngine, 0)
-  
+
   if (!This->m_Engine->GetMapEngine()->Exit()) {
     This->ReportMapEngineError("ExitMapEngine() failed");
     return JS_FALSE;
@@ -2662,7 +2563,7 @@ end_func()
       - return number of tiles in map
 */
 begin_func(GetNumTiles, 0)
-  
+
   int tiles;
   if (!This->m_Engine->GetMapEngine()->GetNumTiles(tiles)) {
     This->ReportMapEngineError("GetNumTiles() failed");
@@ -2699,7 +2600,7 @@ begin_func(GetTile, 3)
   arg_int(x);
   arg_int(y);
   arg_int(layer);
-  
+
   int tile;
   if (!This->m_Engine->GetMapEngine()->GetTile(x, y, layer, tile)) {
     This->ReportMapEngineError("GetTile() failed");
@@ -2716,7 +2617,7 @@ end_func()
 */
 begin_func(GetTileName, 1)
   arg_int(tile_index);
-  
+
   std::string name;
   if (!This->m_Engine->GetMapEngine()->GetTileName(tile_index, name)) {
     This->ReportMapEngineError("GetTileName() failed");
@@ -2769,7 +2670,7 @@ begin_func(GetTileImage, 1)
 
   if (!This->m_Engine->GetMapEngine()->GetTileImage(tile, image)) {
     This->ReportMapEngineError("GetTileImage() failed");
-    return JS_FALSE; 
+    return JS_FALSE;
   }
 
   return_object(CreateImageObject(cx, image, true));
@@ -2787,7 +2688,7 @@ begin_func(SetTileImage, 2)
 
   if (!This->m_Engine->GetMapEngine()->SetTileImage(tile, image->image)) {
     This->ReportMapEngineError("SetTileImage() failed");
-    return JS_FALSE;    
+    return JS_FALSE;
   }
 
 end_func()
@@ -2813,14 +2714,14 @@ begin_func(GetTileSurface, 1)
   CImage32* surface = new CImage32(width, height);
   if (!surface || surface->GetWidth() != width || surface->GetHeight() != height) {
     This->ReportMapEngineError("GetTileSurface() failed!!");
-    return JS_FALSE; 
+    return JS_FALSE;
   }
 
   if (!This->m_Engine->GetMapEngine()->GetTileSurface(tile, surface)) {
     delete surface;
     surface = NULL;
     This->ReportMapEngineError("GetTileSurface() failed");
-    return JS_FALSE; 
+    return JS_FALSE;
   }
 
   return_object(CreateSurfaceObject(cx, surface));
@@ -2950,7 +2851,7 @@ begin_func(IsTriggerAt, 3)
   bool found;
   if ( !This->m_Engine->GetMapEngine()->IsTriggerAt(location_x, location_y, layer, found) ) {
     This->ReportMapEngineError("IsTriggerAt() failed");
-    return JS_FALSE;    
+    return JS_FALSE;
   }
   return_bool(found);
 end_func()
@@ -3028,7 +2929,7 @@ end_func()
 
 /**
         - best when called from inside a trigger script
-          it will return the index of the trigger for which the current script 
+          it will return the index of the trigger for which the current script
           is running
 */
 begin_func(GetCurrentTrigger, 0)
@@ -3114,7 +3015,7 @@ end_func()
 
 /**
         - best when called from inside a ZoneScript handler
-          it will return the index of the zone for which the current script 
+          it will return the index of the zone for which the current script
           is running
 */
 begin_func(GetCurrentZone, 0)
@@ -3248,7 +3149,7 @@ end_func()
 begin_func(SetColorMask, 2)
   arg_color(color);
   arg_int(num_frames);
-  
+
   if (!This->m_Engine->GetMapEngine()->SetColorMask(color, num_frames)) {
     This->ReportMapEngineError("SetColorMask() failed");
     return JS_FALSE;
@@ -3280,7 +3181,7 @@ end_func()
 
 /**
     BindKey(key, onkeydown, onkeyup)
-      - runs the 'onkeydown' script when the 'key' is pressed down and runs 
+      - runs the 'onkeydown' script when the 'key' is pressed down and runs
         'onkeyup' when the 'key' is released
         ex: BindKey(KEY_SPACE, "mode = 'in';", "mode = 'out';");
             refer to keys.txt for a list of key names
@@ -3351,7 +3252,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - makes the 'person_entity' respond to the input 
+      - makes the 'person_entity' respond to the input
         (up = KEY_UP, down = KEY_DOWN, left = KEY_LEFT, right = KEY_RIGHT)
 */
 begin_func(AttachInput, 1)
@@ -3565,11 +3466,11 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns a string with the name of the person whom the camera 
+      - returns a string with the name of the person whom the camera
         is attached to
 */
 begin_func(GetCameraPerson, 0)
-  
+
   std::string person;
   if (!This->m_Engine->GetMapEngine()->GetCameraPerson(person)) {
     This->ReportMapEngineError("GetCameraPerson() failed");
@@ -3754,10 +3655,10 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - returns a person object with 'name' from 'spriteset'. If Sphere is 
-          unable to open the file, the engine will give an error message and 
-          exit. destroy_with_map is a boolean (true/false value), which the 
-          spriteset is destroyed when the current map is changed if the flag 
+        - returns a person object with 'name' from 'spriteset'. If Sphere is
+          unable to open the file, the engine will give an error message and
+          exit. destroy_with_map is a boolean (true/false value), which the
+          spriteset is destroyed when the current map is changed if the flag
           is set to true.
 */
 begin_func(CreatePerson, 3)
@@ -4332,7 +4233,7 @@ begin_func(GetPersonData, 1)
     JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizeSound,
   };
-  
+
   // create object
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
   if (object == NULL) {
@@ -4377,7 +4278,7 @@ begin_func(SetPersonData, 2)
       data.name = argStr(cx, val);
 
       if ( JS_GetProperty(cx, object, data.name.c_str(), &val) == JS_TRUE )
-      {     
+      {
         jsdouble d;
 
         if (!JSVAL_IS_OBJECT(val)
@@ -4609,7 +4510,7 @@ begin_func(GetPersonMask, 1)
     return JS_FALSE;
   }
 
-  return_object(CreateColorObject(cx, mask));  
+  return_object(CreateColorObject(cx, mask));
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4658,11 +4559,11 @@ end_func()
 
 /**
         - best when called from inside a PersonScript handler
-          it will return the name of the person for whom the current script 
+          it will return the name of the person for whom the current script
           is running
 */
 begin_func(GetCurrentPerson, 0)
-  
+
   std::string person;
   if (!This->m_Engine->GetMapEngine()->GetCurrentPerson(person)) {
     This->ReportMapEngineError("GetCurrentPerson() failed");
@@ -4705,24 +4606,24 @@ begin_func(QueuePersonCommand, 3)
   }
 
 end_func()
-  
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
         - adds a script command to the person's queue
-*/  
+*/
 begin_func(QueuePersonScript, 3)
   arg_str(name);
   arg_str(script);
   arg_bool(immediate);
-  
+
   if (!This->m_Engine->GetMapEngine()->QueuePersonScript(name, script, immediate)) {
     This->ReportMapEngineError("QueuePersonScript() failed");
     return JS_FALSE;
   }
 
 end_func()
-  
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -4942,7 +4843,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-    - returns a font object from 'filename'. If Sphere is unable to open 
+    - returns a font object from 'filename'. If Sphere is unable to open
       the file, the engine will give an error message and exit.
 */
 begin_func(LoadFont, 1)
@@ -5010,7 +4911,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-    - returns an image object of the System Arrow(down) that the engine 
+    - returns an image object of the System Arrow(down) that the engine
       currently uses.
 */
 begin_func(GetSystemDownArrow, 0)
@@ -5020,8 +4921,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-    - returns an image object from 'filename'. If Sphere is unable to open or 
-      read the image, the engine will give an error message and exit. The 
+    - returns an image object from 'filename'. If Sphere is unable to open or
+      read the image, the engine will give an error message and exit. The
       image type that the engine supports are either PCX, BMP, JPG, and PNG.
 */
 begin_func(LoadImage, 1)
@@ -5040,7 +4941,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-    - returns an image object from a section of the video buffer 
+    - returns an image object from a section of the video buffer
       defined by the parameters
 */
 begin_func(GrabImage, 4)
@@ -5121,7 +5022,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-   - returns a surface object captured from an area of the video buffer, 
+   - returns a surface object captured from an area of the video buffer,
      at (x, y) with the width w and height h.
   @see GrabImage
 */
@@ -5166,7 +5067,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-    - Creates a colormatrix that is used to transform the colors 
+    - Creates a colormatrix that is used to transform the colors
     contained in a pixel with the following formula:
         newcolor.red   = rn + (rr * oldcolor.red + rg * oldcolor.green + rb * oldcolor.blue) / 255;
         newcolor.green = gn + (gr * oldcolor.red + gg * oldcolor.green + gb * oldcolor.blue) / 255;
@@ -5198,8 +5099,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-    - Returns an animation object with the filename. If Sphere is unable to 
-      open the file, the engine will give an error message and exit. Sphere 
+    - Returns an animation object with the filename. If Sphere is unable to
+      open the file, the engine will give an error message and exit. Sphere
       supports animation formats of .flic, .fli, .flc and .mng
 */
 begin_func(LoadAnimation, 1)
@@ -5232,7 +5133,7 @@ begin_func(GetFileList, 0)
 
   if (IsValidPath(directory) == false) {
     JS_ReportError(cx, "Invalid directory: '%s'", directory);
-    return JS_FALSE;  
+    return JS_FALSE;
   }
 
   // enumerate the files and return an array of string objects
@@ -5256,7 +5157,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-    - returns a file object with the filename. The file is created/loaded 
+    - returns a file object with the filename. The file is created/loaded
       from the "save" directory of the game. Note that any changes in the keys
       will not be saved until the file object is destroyed.
 */
@@ -5265,7 +5166,7 @@ begin_func(OpenFile, 1)
 
   if (IsValidPath(filename) == false) {
     JS_ReportError(cx, "Invalid filename: '%s'", filename);
-    return JS_FALSE;  
+    return JS_FALSE;
   }
 
   // open file
@@ -5283,7 +5184,7 @@ end_func()
 /**
     - opens a file with the filename.
       Unless writeable is true, the file *must* exist and reside
-      in the "other" directory of the game otherwise Sphere will give an error. 
+      in the "other" directory of the game otherwise Sphere will give an error.
       If the file is opened successfully, the function will return a rawfile
       object. If the optional argument 'writeable' is true,
       the contents of the file will be destroyed,
@@ -5294,7 +5195,7 @@ begin_func(OpenRawFile, 1)
 
   if (IsValidPath(filename) == false) {
     JS_ReportError(cx, "Invalid filename: '%s'", filename);
-    return JS_FALSE;  
+    return JS_FALSE;
   }
 
   bool writeable = false;
@@ -5427,7 +5328,7 @@ end_func()
     if (!object) {                                      \
       return;                                           \
     }
-  
+
 #define end_finalizer()           \
     delete object;                \
     JS_SetPrivate(cx, obj, NULL); \
@@ -5478,7 +5379,7 @@ CScript::CreateSocketObject(JSContext* cx, NSOCKET socket)
     JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizeSocket,
   };
-  
+
   // create the object
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
   if (object == NULL) {
@@ -5635,7 +5536,7 @@ CScript::CreateLogObject(JSContext* cx, CLog* log)
     JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizeLog,
   };
-  
+
   // create the object
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
   if (object == NULL) {
@@ -5682,8 +5583,8 @@ end_method()
 ////////////////////////////////////////
 
 /**
-  - creates a "block" which is indent inside the log with the name as the 
-    title of the block. Any subsequent write commands will go under the newly 
+  - creates a "block" which is indent inside the log with the name as the
+    title of the block. Any subsequent write commands will go under the newly
     created block.
     ex: myLog.beginBlock("Video Information");
 */
@@ -5719,7 +5620,7 @@ CScript::CreateColorObject(JSContext* cx, RGBA color)
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizeColor,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL,
   };
-  
+
   // create the object
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
   if (object == NULL) {
@@ -5837,7 +5738,7 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
 
   JS_AddRoot(cx, &local_roots);
 
-  
+
   // CREATE SPRITESET OBJECT
 
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
@@ -5857,7 +5758,7 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
 
 
   // DEFINE MEMBER IMAGES ARRAY
-  
+
   int num_images = spriteset->GetSpriteset().GetNumImages();
   JSObject* image_array = JS_NewArrayObject(cx, 0, 0);
   if (!image_array)
@@ -5871,7 +5772,7 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
     if (!image) {
       return NULL;
     }
-    
+
     jsval val = OBJECT_TO_JSVAL(image);
     JS_SetElement(cx, image_array, i, &val);
 
@@ -5887,8 +5788,8 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
       JS_PropertyStub,
       JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
   }
-  
-  
+
+
   // DEFINE MEMBER DIRECTIONS ARRAY
 
   int num_directions = spriteset->GetSpriteset().GetNumDirections();
@@ -5955,7 +5856,7 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
 
   jsval base_val = OBJECT_TO_JSVAL(base_object);
   JS_SetElement(cx, local_roots, 3, &base_val);
-  
+
   // define the properties for this object
   JS_DefineProperty(
     cx,
@@ -6086,7 +5987,7 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
     JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizeSound,
   };
-  
+
   // create object
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
   if (object == NULL) {
@@ -6135,7 +6036,7 @@ end_finalizer()
 ////////////////////////////////////////
 
 /**
-    - plays the sound. repeat is a boolean (true/false), that indicates if 
+    - plays the sound. repeat is a boolean (true/false), that indicates if
       the sound should be looped
 */
 begin_method(SS_SOUND, ssSoundPlay, 1)
@@ -6297,7 +6198,7 @@ CScript::CreateFontObject(JSContext* cx, SFONT* font, bool destroy)
     JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizeFont,
   };
-  
+
   // create object
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
   if (object == NULL) {
@@ -6326,12 +6227,12 @@ CScript::CreateFontObject(JSContext* cx, SFONT* font, bool destroy)
   SS_FONT* font_object = new SS_FONT;
   if (!font_object)
     return NULL;
-  
+
   font_object->font       = font;
   font_object->destroy_me = destroy;
   font_object->mask       = CreateRGBA(255, 255, 255, 255);
   JS_SetPrivate(cx, object, font_object);
- 
+
   return object;
 }
 
@@ -6397,14 +6298,14 @@ end_method()
 
 /**
     - draws a word-wrapped text at (x, y) with the width w and height h. The
-      offset is the number of pixels which the number of pixels from y which 
+      offset is the number of pixels which the number of pixels from y which
       the actual drawing starts at.
     Note: 'text' can have the following special characters within it:
       \n - newline
       \t - tab
       \" - double quote
       \' - single quote
-  
+
      For example: font_object.drawTextBox(16, 16, 200, 200, 0, "Line One\nLine Two");
 */
 begin_method(SS_FONT, ssFontDrawTextBox, 6)
@@ -6470,7 +6371,7 @@ begin_method(SS_FONT, ssFontSave, 1)
 
   if (IsValidPath(filename) == false) {
     JS_ReportError(cx, "Invalid filename: '%s'", filename);
-    return JS_FALSE;  
+    return JS_FALSE;
   }
 
   std::string path = "fonts/";
@@ -6491,7 +6392,7 @@ begin_method(SS_FONT, ssFontGetCharacterImage, 1)
 
   if ( !object->font->GetCharacterImage(index, image) ) {
     This->ReportMapEngineError("font.getCharacter() failed");
-    return JS_FALSE; 
+    return JS_FALSE;
   }
 
   return_object(CreateImageObject(cx, image, true));
@@ -6505,7 +6406,7 @@ begin_method(SS_FONT, ssFontSetCharacterImage, 2)
 
   if ( !object->font->SetCharacterImage(index, image->image) ) {
     This->ReportMapEngineError("font.setCharacter() failed");
-    return JS_FALSE; 
+    return JS_FALSE;
   }
 
 end_method()
@@ -6527,7 +6428,7 @@ CScript::CreateWindowStyleObject(JSContext* cx, SWINDOWSTYLE* ws, bool destroy)
     JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizeWindowStyle,
   };
-  
+
   // create object
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
   if (object == NULL) {
@@ -6568,7 +6469,7 @@ end_finalizer()
 
 /**
     - draws the window at (x, y) with the width and height of w and h.
-      Note that window corners and edges are drawn outside of the width 
+      Note that window corners and edges are drawn outside of the width
       and height of the window.
 */
 begin_method(SS_WINDOWSTYLE, ssWindowStyleDrawWindow, 4)
@@ -6619,7 +6520,7 @@ CScript::CreateImageObject(JSContext* cx, IMAGE image, bool destroy)
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizeImage,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL,
   };
-  
+
   // create the object
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
   if (object == NULL) {
@@ -6725,8 +6626,8 @@ void CalculateRotateBlitPoints(int tx[4], int ty[4], double x, double y, double 
 ///////////////////////////////////////
 
 /**
-    - draws the image into the video buffer, except that the image is rotates 
-      in  anti-clockwise in radians, which have a range of 0-2*pi. 
+    - draws the image into the video buffer, except that the image is rotates
+      in  anti-clockwise in radians, which have a range of 0-2*pi.
       (x,y) is the center of the blit.
 */
 begin_method(SS_IMAGE, ssImageRotateBlit, 3)
@@ -6751,7 +6652,7 @@ end_method()
 ///////////////////////////////////////
 
 /**
-    - draws the image into the video buffer with zooming, with the scaling 
+    - draws the image into the video buffer with zooming, with the scaling
       depending on factor. Normally a factor of 1 will blit a normal looking
       image. Between 0 and 1 will shrink the image. Any values greater than 1
       will stretch the size of the image.
@@ -6775,9 +6676,9 @@ end_method()
 ///////////////////////////////////////
 
 /**
-    - draws the image into the video buffer with "transformation", where 
-      (x1, y1) is the upper left corner, (x2, y2) the upper right corner, 
-      (x3, y3) is the lower right corner, and (x4, y4) is the lower left 
+    - draws the image into the video buffer with "transformation", where
+      (x1, y1) is the upper left corner, (x2, y2) the upper right corner,
+      (x3, y3) is the lower right corner, and (x4, y4) is the lower left
       corner.
 */
 begin_method(SS_IMAGE, ssImageTransformBlit, 8)
@@ -6861,7 +6762,7 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizeSurface,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL,
   };
-  
+
   // create the object
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
   if (object == NULL) {
@@ -6969,7 +6870,7 @@ begin_method(SS_SURFACE, ssSurfaceBlit, 2)
 
     arg_int(x);
     arg_int(y);
-  
+
     DirectBlit(
       x,
       y,
@@ -7061,7 +6962,7 @@ end_method()
 
 /**
     - pass it with either BLEND or REPLACE
-      REPLACE mode will make the surface erase the pixels needed when doing a 
+      REPLACE mode will make the surface erase the pixels needed when doing a
               drawing operation (setpixel, line, rectangle...)
       BLEND will blend the pixels needed when doing a drawing operation
 */
@@ -7135,7 +7036,7 @@ end_method()
 ////////////////////////////////////////
 
 /**
-    - draws a line onto the surface starting from (x1, y1) to (x2, y2) with 
+    - draws a line onto the surface starting from (x1, y1) to (x2, y2) with
       the color
 */
 begin_method(SS_SURFACE, ssSurfaceLine, 5)
@@ -7167,7 +7068,7 @@ end_method()
 ////////////////////////////////////////
 
 /**
-    - draws a filled triangle with the points (x1, y1), (x2, y2), (x3, y3), 
+    - draws a filled triangle with the points (x1, y1), (x2, y2), (x3, y3),
       with 'color'
 */
 begin_method(SS_SURFACE, ssSurfaceTriangle, 7)
@@ -7195,7 +7096,7 @@ begin_method(SS_SURFACE, ssSurfaceGradientLine, 6)
   arg_int(y2);
   arg_color(c1);
   arg_color(c2);
-  
+
   RGBA c[2];
   c[0] = c1;
   c[1] = c2;
@@ -7231,7 +7132,7 @@ end_method()
 ////////////////////////////////////////
 
 /**
-    - draws a filled gradient triangle with the points (x1, y1), (x2, y2), (x3, y3), 
+    - draws a filled gradient triangle with the points (x1, y1), (x2, y2), (x3, y3),
     @see GradientTriangle
 */
 begin_method(SS_SURFACE, ssSurfaceGradientTriangle, 7)
@@ -7256,7 +7157,7 @@ end_method()
 ////////////////////////////////////////
 
 /**
-    - rotates the surface anti-clockwise with the range 0 - 2*pi. The resize 
+    - rotates the surface anti-clockwise with the range 0 - 2*pi. The resize
       flag is a boolean to tell the engine to resize the surface if needed
       to accomodate the rotated image.
 */
@@ -7347,13 +7248,13 @@ begin_method(SS_SURFACE, ssSurfaceClone, 0)
   // create the surface
   CImage32* surface = new CImage32(*object->surface);
   return_object(CreateSurfaceObject(cx, surface));
-end_method()  
+end_method()
 
 ///////////////////////////////////////
 
 /**
     - returns a new surface object with the height and width of h and w, with
-      part of image at (x,y) from the surface_object with the width w and 
+      part of image at (x,y) from the surface_object with the width w and
       height h.
 */
 begin_method(SS_SURFACE, ssSurfaceCloneSection, 4)
@@ -7415,7 +7316,7 @@ bool GetLookUpTable(JSContext* cx, JSObject* array, unsigned char lookup[256])
   for (unsigned int i = 0; i < length; i++) {
     jsval val;
     int32 value;
-      
+
     if (JS_LookupElement(cx, array, i, &val)) {
       if (JSVAL_IS_INT(val) && JS_ValueToInt32(cx, val, &value)) {
 
@@ -7470,7 +7371,7 @@ begin_method(SS_SURFACE, ssSurfaceApplyLookup, 8)
   unsigned char rlut[256];
   unsigned char glut[256];
   unsigned char blut[256];
-  unsigned char alut[256];  
+  unsigned char alut[256];
 
   GetLookUpTable(cx, rlookup, rlut);
   GetLookUpTable(cx, glookup, glut);
@@ -7517,8 +7418,8 @@ end_method()
 
 /**
     - draws a word-wrapped text at (x, y) onto the surface_object with the width w and height h.
-      The offset is the number of pixels which the number of pixels from y which 
-      the actual drawing starts at. 
+      The offset is the number of pixels which the number of pixels from y which
+      the actual drawing starts at.
       See font_object.drawTextBox for more detail.
 */
 begin_method(SS_SURFACE, ssSurfaceDrawTextBox, 7)
@@ -7546,7 +7447,7 @@ begin_method(SS_SURFACE, ssSurfaceSave, 1)
 
   if (IsValidPath(filename) == false) {
     JS_ReportError(cx, "Invalid filename: '%s'", filename);
-    return JS_FALSE;  
+    return JS_FALSE;
   }
 
   if (argc >= 2) {
@@ -7580,7 +7481,7 @@ CScript::CreateColorMatrixObject(JSContext* cx, CColorMatrix* colormatrix)
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizeColorMatrix,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL,
   };
-  
+
   // create the object
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
   if (object == NULL) {
@@ -7632,7 +7533,7 @@ CScript::CreateAnimationObject(JSContext* cx, IAnimation* animation)
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizeAnimation,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL,
   };
-  
+
   // create the object
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
   if (object == NULL) {
@@ -7742,7 +7643,7 @@ CScript::CreateFileObject(JSContext* cx, CConfigFile* file)
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizeFile,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL,
   };
-  
+
   // create the object
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
   if (object == NULL) {
@@ -7812,7 +7713,7 @@ begin_method(SS_FILE, ssFileRead, 2)
     std::string str = object->file->ReadString("", key, argStr(cx, argv[1]));
     return_str(str.c_str());
   }
-end_method()  
+end_method()
 
 ///////////////////////////////////////
 
@@ -7961,7 +7862,7 @@ begin_method(SS_RAWFILE, ssRawFileWrite, 1)
     JS_ReportError(cx, "rawfile.write() failed miserably!");
     return JS_FALSE;
   }
-  
+
 end_method()
 
 ///////////////////////////////////////
@@ -7987,7 +7888,7 @@ CScript::CreateByteArrayObject(JSContext* cx, int size, const void* data)
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizeByteArray,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL,
   };
-  
+
   // create the object
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
   if (object == NULL) {
@@ -8074,7 +7975,7 @@ begin_method(SS_BYTEARRAY, ssByteArraySlice, 1)
     end_slice = argInt(cx, argv[1]);
 
   int end_pos = end_slice;
- 
+
   if (end_slice < 0) {
     end_pos = object->size - 1 - end_slice - 1;
   }
@@ -8123,12 +8024,12 @@ begin_property(SS_BYTEARRAY, ssByteArrayGetProperty)
     const char* prop_id = argStr(cx, id);
 
     if (strcmp(prop_id, "concat") == 0) {
-      JSFunction* func = JS_NewFunction(cx, ssByteArrayConcat, 1, 0, NULL, "concat");   
+      JSFunction* func = JS_NewFunction(cx, ssByteArrayConcat, 1, 0, NULL, "concat");
       *vp = OBJECT_TO_JSVAL(JS_GetFunctionObject(func));
     }
     else
     if (strcmp(prop_id, "slice") == 0) {
-      JSFunction* func = JS_NewFunction(cx, ssByteArraySlice, 1, 0, NULL, "slice");   
+      JSFunction* func = JS_NewFunction(cx, ssByteArraySlice, 1, 0, NULL, "slice");
       *vp = OBJECT_TO_JSVAL(JS_GetFunctionObject(func));
     }
   }
@@ -8199,7 +8100,7 @@ begin_func(GetMapEngine, 0)
     JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
   };
-  
+
   // create the object
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
   if (object == NULL) {
@@ -8236,7 +8137,7 @@ begin_method(SS_MAPENGINE, ssMapEngineSave, 1)
 
   if (IsValidPath(path.c_str()) == false) {
     JS_ReportError(cx, "Invalid filename: '%s'", filename);
-    return JS_FALSE;  
+    return JS_FALSE;
   }
 
   if ( !This->m_Engine->GetMapEngine()->IsRunning() ) {
@@ -8272,7 +8173,7 @@ begin_method(SS_MAPENGINE, ssMapEngineLayerAppend, 3)
 
   sLayer layer;
   layer.Resize(layer_width, layer_height);
-  
+
   if (layer.GetWidth() != layer_width
    && layer.GetHeight() != layer_height) {
     This->ReportMapEngineError("map_engine.appendLayer() failed");
@@ -8310,7 +8211,7 @@ begin_method(SS_TILESET, ssTilesetSave, 1)
 
   if (IsValidPath(path.c_str()) == false) {
     JS_ReportError(cx, "Invalid filename: '%s'", filename);
-    return JS_FALSE;  
+    return JS_FALSE;
   }
 
   if ( !This->m_Engine->GetMapEngine()->IsRunning() ) {

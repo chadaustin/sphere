@@ -250,6 +250,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZONEEDIT,   OnUpdateMapCommand_IDI_MAPTOOL_ZONEEDIT)
   ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZONEMOVE,   OnUpdateMapCommand_IDI_MAPTOOL_ZONEMOVE)
   ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZONEDELETE, OnUpdateMapCommand_IDI_MAPTOOL_ZONEDELETE)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_SCRIPT, OnUpdateMapCommand_IDI_MAPTOOL_SCRIPT)
 
   ON_COMMAND(IDI_MAPTOOL_1X1,    OnMapToolChanged)
   ON_COMMAND(IDI_MAPTOOL_3X3,    OnMapToolChanged)
@@ -269,6 +270,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(IDI_MAPTOOL_ZONEEDIT,    OnMapToolChanged)
   ON_COMMAND(IDI_MAPTOOL_ZONEMOVE,    OnMapToolChanged)
   ON_COMMAND(IDI_MAPTOOL_ZONEDELETE,    OnMapToolChanged)
+  ON_COMMAND(IDI_MAPTOOL_SCRIPT,    OnMapToolChanged)
 
   ON_UPDATE_COMMAND_UI(ID_PROJECT_RUNSPHERE, OnUpdateProjectCommand)
   ON_UPDATE_COMMAND_UI(ID_WINDOW_CLOSEALL,   OnUpdateWindowCloseAll)
@@ -3116,6 +3118,7 @@ CMainWindow::OnNeedText(UINT /*id*/, NMHDR* nmhdr, LRESULT* result)
     case IDI_MAPTOOL_ZONEEDIT:    ttt->lpszText = "Edit a Zone";   break;
     case IDI_MAPTOOL_ZONEMOVE:    ttt->lpszText = "Move a Zone";   break;
     case IDI_MAPTOOL_ZONEDELETE:  ttt->lpszText = "Delete a Zone"; break;
+    case IDI_MAPTOOL_SCRIPT:      ttt->lpszText = "Execute a script"; break;
 
     default:                   ttt->lpszText = ""; break;
   }
@@ -3141,10 +3144,7 @@ CMainWindow::OnUpdateOpenLastProject(CCmdUI* cmdui)
 afx_msg void
 CMainWindow::OnUpdateProjectCommand(CCmdUI* cmdui)
 {
-  if (m_ProjectOpen)
-    cmdui->Enable(TRUE);
-  else
-    cmdui->Enable(FALSE);
+  cmdui->Enable(m_ProjectOpen ? TRUE : FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3228,7 +3228,7 @@ CMainWindow::GetMapTool(int index)
                   IDI_MAPTOOL_PASTE, IDI_MAPTOOL_COPYENTITY, IDI_MAPTOOL_PASTEENTITY,
                   IDI_MAPTOOL_MOVEENTITY, IDI_MAPTOOL_OBS_SEGMENT, IDI_MAPTOOL_OBS_DELETE,
                   IDI_MAPTOOL_OBS_MOVE_PT, IDI_MAPTOOL_ZONEADD, IDI_MAPTOOL_ZONEEDIT,
-                  IDI_MAPTOOL_ZONEMOVE, IDI_MAPTOOL_ZONEDELETE};
+                  IDI_MAPTOOL_ZONEMOVE, IDI_MAPTOOL_ZONEDELETE, IDI_MAPTOOL_SCRIPT};
   int num_tools = sizeof(tools) / sizeof(*tools);
   UINT tool = IDI_MAPTOOL_1X1;
   for (int i = 0; i < num_tools; i++) {
@@ -3354,6 +3354,7 @@ MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZONEADD)
 MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZONEEDIT)
 MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZONEMOVE)
 MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZONEDELETE)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_SCRIPT)
 
 #undef MAKE_UPDATE_MAP_COMMAND
 
@@ -3368,7 +3369,7 @@ CMainWindow::OnMapToolChanged()
                      IDI_MAPTOOL_PASTE, IDI_MAPTOOL_COPYENTITY, IDI_MAPTOOL_PASTEENTITY,
                      IDI_MAPTOOL_MOVEENTITY, IDI_MAPTOOL_OBS_SEGMENT, IDI_MAPTOOL_OBS_DELETE,
                      IDI_MAPTOOL_OBS_MOVE_PT, IDI_MAPTOOL_ZONEADD, IDI_MAPTOOL_ZONEEDIT,
-                     IDI_MAPTOOL_ZONEMOVE, IDI_MAPTOOL_ZONEDELETE};
+                     IDI_MAPTOOL_ZONEMOVE, IDI_MAPTOOL_ZONEDELETE, IDI_MAPTOOL_SCRIPT};
   int num_tools = sizeof(tools) / sizeof(*tools);
   CToolBarCtrl& ctrl = m_MapToolBar.GetToolBarCtrl();  
   for (int i = 0; i < num_tools; i++) {

@@ -41,9 +41,7 @@ static CConsoleWindow* s_ConsoleWindow = NULL;
 CConsoleWindow::CConsoleWindow()
 : CDocumentWindow("Javascript Console", -1, CSize(400, 100))
 , m_Created(false)
-, rt(NULL)
-, cx(NULL)
-, m_is_ready(true)
+, m_script_running(false)
 {
   s_ConsoleWindow = this;
 
@@ -56,20 +54,7 @@ CConsoleWindow::CConsoleWindow()
 
 CConsoleWindow::~CConsoleWindow()
 {
-  /*
-  FILE* file = fopen("c:\\windows\\desktop\\debug.txt", "wb+");
-  if (file) {
-    fprintf(file, "%d %d %d", m_is_ready, s_IsRunning, s_ShouldExit);
-    fclose(file);
-    //exit(1);
-  }
-  */
-
-  s_ShouldExit = true;
-  while (!m_is_ready && s_IsRunning == true && s_ShouldExit == true) { }
-
-  if (cx) { JS_DestroyContext(cx); cx = NULL; }
-  if (rt) { JS_DestroyRuntime(rt); rt = NULL; }
+  m_Scripter.Destroy();
   s_ConsoleWindow = NULL;
 }
 
@@ -150,36 +135,7 @@ CConsoleWindow::Create()
 
 ///////////
 
-  rt = JS_NewRuntime(4 * 1024 * 1024);
-  if (rt == NULL) {
-    return false;
-  }
-
-  cx = JS_NewContext(rt, 8 * 1024);
-  if (cx == NULL) {
-    JS_DestroyRuntime(rt);
-    rt = NULL;
-    return false;
-  }
-
-  static JSClass global_class = {
-    "global", 0,
-    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
-    JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
-  };
-
-  global = JS_NewObject(cx, &global_class, NULL, NULL);
-  if (global == NULL) {
-    JS_DestroyContext(cx);
-    cx = NULL;
-    JS_DestroyRuntime(rt);
-    rt = NULL;
-    return false;
-  }
-
-  JS_InitStandardClasses(cx, global);
-  JS_SetErrorReporter(cx, ErrorReporter);
-  JS_SetBranchCallback(cx, BranchCallback);
+  m_Scripter.Create();
 
 /////////
  
@@ -338,7 +294,7 @@ CConsoleWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
 
   SCNotification* notify = (SCNotification*)nmhdr;
   if (nmhdr->hwndFrom == __m_InputBar__) {
-    if (m_is_ready && notify->ch == '\n') {
+    if (!m_script_running && notify->ch == '\n') {
 
       int line = 0;
       int len = SendInputBar(SCI_LINELENGTH, (WPARAM) line);
@@ -449,27 +405,26 @@ CConsoleWindow::ThreadRoutine(LPVOID parameter)
   if (!s_ConsoleWindow)
     return 0;
 
-  if (!s_ConsoleWindow->rt || !s_ConsoleWindow->cx || !s_ConsoleWindow->global)
+  if (!s_ConsoleWindow->m_Scripter.rt || !s_ConsoleWindow->m_Scripter.cx || !s_ConsoleWindow->m_Scripter.global)
     return 0;
 
-  const char* string = (const char*) parameter;
-
   sCompileError error; error.m_TokenLine = -1;
-  
-  bool has_error = !VerifyScript(string, error, s_ConsoleWindow->rt, s_ConsoleWindow->cx, s_ConsoleWindow->global);
-  bool show_message = true;
 
-  if (has_error || error.m_Message.c_str() > 0) {
-    if (!has_error) {
-      if (strlen(string) > strlen("var ")
-       && memcmp(string, "var ", strlen("var ")) == 0
-       && error.m_Message == "undefined") {
-        show_message = false;
-      }
-    }
+  bool show_message = true;
+  if (strlen(s_ConsoleWindow->m_Scripter.m_Script) > strlen("var ")
+    && memcmp(s_ConsoleWindow->m_Scripter.m_Script, "var ", strlen("var ")) == 0) {
+    show_message = false;
+  }
+ 
+  bool has_error = !s_ConsoleWindow->m_Scripter.__VerifyScript__(NULL, error);
+
+  if (!error.m_Message.empty()) {
+    // "var x;" shouldn't print 'undefined'...
+    if (!show_message && error.m_Message != "undefined")
+      show_message = true;
   }
 
-  if (s_ConsoleWindow) {
+  if (s_ConsoleWindow && IsWindow(s_ConsoleWindow->m_hWnd)) {
     s_ConsoleWindow->SetCaption("Javascript Console");
   }
 
@@ -480,7 +435,7 @@ CConsoleWindow::ThreadRoutine(LPVOID parameter)
   }
 
   if (s_ConsoleWindow) {
-    s_ConsoleWindow->m_is_ready = true;
+    s_ConsoleWindow->m_script_running = false;
   }
 
   return 0;
@@ -491,17 +446,21 @@ CConsoleWindow::ThreadRoutine(LPVOID parameter)
 void
 CConsoleWindow::EvaluateString(const char* string)
 {
-  if (m_is_ready) {
-    SetCaption("Javascript Console [running]");
+  if (m_script_running)
+    return;
 
-    m_is_ready = false;
-    static char __string__[1024] = {0};
-    strcpy(__string__, string);
+  m_script_running = true;
 
-    DWORD thread_id;
-    if (CreateThread(NULL, 0, ThreadRoutine, (LPVOID) __string__, 0, &thread_id) == NULL) {
-      m_is_ready = true;
-    }
+  SetCaption("Javascript Console [running]");
+
+  if (!m_Scripter.SetScript(string)) {
+    m_script_running = false;
+    return;
+  }
+
+  DWORD thread_id;
+  if (CreateThread(NULL, 0, ThreadRoutine, (LPVOID) NULL, 0, &thread_id) == NULL) {
+    m_script_running = false;
   }
 }
 

@@ -139,9 +139,9 @@ CMapWindow::Create()
 void
 CMapWindow::Destroy()
 {
+  m_MapView.DestroyWindow();
   m_TabControl.DestroyWindow();
   m_LayerView.DestroyWindow();
-  m_MapView.DestroyWindow();
   m_TilesetEditView.DestroyWindow();
 
   if (m_TilePreviewPalette) {

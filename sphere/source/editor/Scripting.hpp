@@ -28,15 +28,42 @@ struct sCompileError
   int         m_TokenLine;
 };
 
-extern bool s_ShouldExit;
-extern bool s_IsRunning;
+class sScripting {
+public:
+  char* m_Script;
+  bool  m_HasError;
+  sCompileError m_Error;
 
-bool IsKeyword(const char* token);
-bool VerifyScript(const char* script, sCompileError& error);
+  bool m_IsRunning;
+  bool m_ShouldExit;
+  bool m_IsCreated;
 
-bool VerifyScript(const char* script, sCompileError& error, JSRuntime* rt, JSContext* cx, JSObject* global);
-void ErrorReporter(JSContext* cx, const char* message, JSErrorReport* report);
+  JSRuntime* rt;
+  JSContext* cx;
+  JSObject* global;
 
-JSBool BranchCallback(JSContext* cx, JSScript* script);
+  void* m_private_data;
+
+  sScripting();
+  ~sScripting();
+
+public:
+  int GetTokenStart(int line, int offset);
+
+public:
+  bool SetScript(const char* script);
+  void SetPrivate(void* data);
+  void* GetPrivate();
+
+public:
+  bool Create();
+  void Destroy();
+
+  static bool IsKeyword(const char* token);
+  static bool VerifyScript(const char* script, sCompileError& error);
+
+  bool __VerifyScript__(const char* script, sCompileError& error);
+};
 
 #endif
+

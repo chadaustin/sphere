@@ -23,7 +23,7 @@ static const int ID_EDIT = 900;
 static const UINT s_FindReplaceMessage = ::RegisterWindowMessage(FINDMSGSTRING);
 
 
-#if 0
+#ifdef SPELLING_CHECKER
 const int ANIMATION_TIMER = 9000;
 #include <aspell.h>
 #endif
@@ -383,7 +383,7 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_WM_SIZE()
   ON_WM_SETFOCUS()
   ON_WM_CONTEXTMENU()
-#if 0
+#ifdef SPELLING_CHECKER
   ON_WM_TIMER()
 #endif
 
@@ -402,7 +402,7 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_SCRIPT_OPTIONS_TOGGLE_AUTOCOMPLETE, OnOptionsToggleAutoComplete)
   ON_COMMAND(ID_SCRIPT_OPTIONS_HIGHLIGHT_CURRENT_LINE, OnOptionsHighlightCurrentLine)
 
-#if 0
+#if SPELLING_CHECKER
   ON_COMMAND(ID_SCRIPT_OPTIONS_CHECK_SPELLING, OnOptionsCheckSpelling) 
   ON_COMMAND(ID_SCRIPT_OPTIONS_SET_SPELLING_LANGUAGE, OnOptionsSetSpellingLanguage)
   ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_CHECK_SPELLING, OnUpdateOptionsCheckSpelling)
@@ -599,7 +599,7 @@ CScriptWindow::Create()
   // give the view focus
   ::SetFocus(m_Editor);
 
-#if 0
+#ifdef SPELLING_CHECKER
   if (m_CheckSpelling) {
     m_Timer = SetTimer(ANIMATION_TIMER, 1000, NULL);
   }
@@ -1090,7 +1090,7 @@ CScriptWindow::OnSetFocus(CWnd* old)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#if 0
+#ifdef SPELLING_CHECKER
 afx_msg void
 CScriptWindow::OnTimer(UINT event)
 {
@@ -1390,7 +1390,7 @@ CScriptWindow::OnScriptCheckSyntax()
 
   // verify the script
   sCompileError error;
-  if (!VerifyScript(text, error))
+  if (!sScripting::VerifyScript(text, error))
   {
     // show the error message
     MessageBox(error.m_Message.c_str(), "Check syntax", MB_OK);
@@ -1575,7 +1575,6 @@ CScriptWindow::OnPosChanged(NMHDR* nmhdr, LRESULT* result) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#if 1
 void CScriptWindow::Expand(int &line, const bool doExpand, bool force, int visLevels, int level)
 {
 	const int lineMaxSubord = SendEditor(SCI_GETLASTCHILD, line, level & SC_FOLDLEVELNUMBERMASK);
@@ -1682,7 +1681,6 @@ bool CScriptWindow::MarginClick(int position, int modifiers) {
 	}
 	return true;
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1714,7 +1712,6 @@ CScriptWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
   SCNotification* notify = (SCNotification*)nmhdr;
 
 #if 1
-
   //if (m_AllowAutoComplete && notify->ch != '\r' && notify->ch != '\n' && notify->ch != ' ')
   if (m_AllowAutoComplete && isalpha(notify->ch))
   {
@@ -1732,7 +1729,6 @@ CScriptWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
       //SendEditor(SCI_SETCHARSDEFAULT);
     }
   }
-
 #endif
 
   if (notify->ch == '\n') {
@@ -1795,7 +1791,76 @@ CScriptWindow::SetLineNumber(int line) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#if 0
+#ifdef SPELLING_CHECKER
+class SpellCheckUtil {
+public:
+  AspellCanHaveError* ret;
+  AspellConfig* config;
+  AspellSpeller* speller;
+  AspellDocumentChecker* checker;
+
+  SpellCheckUtil() {
+    ret = NULL;
+    config = NULL;
+    speller = NULL;
+    checker = NULL;
+  }
+
+  bool Create() {
+    if (config == NULL) {
+      config = new_aspell_config();
+      if (config == NULL)
+        return false;
+
+      aspell_config_replace(config, "dict-dir", "C:\\WINDOWS\\Desktop\\sphere\\source\\editor\\output\\Profile\\dict");
+      aspell_config_replace(config, "data-dir", "C:\\WINDOWS\\Desktop\\sphere\\source\\editor\\output\\Profile\\data");
+      aspell_config_replace(config, "lang", Configuration::Get(KEY_SCRIPT_SPELLING_LANGUAGE).c_str());
+    }
+
+    if (0) {
+      char error[100000];
+      strcpy(error, aspell_config_retrieve(config, "lang"));
+      strcpy(error, aspell_config_retrieve(config, "jargon"));
+      strcpy(error, aspell_config_retrieve(config, "size"));
+      strcpy(error, aspell_config_retrieve(config, "module"));
+    }
+
+    ret = new_aspell_speller(config);
+    delete_aspell_config(config);
+    config = NULL;
+
+    if (aspell_error(ret) != 0) {
+      char error[100000];
+      strcpy(error, aspell_error_message(ret));
+      GetStatusBar()->SetWindowText(error);
+      return false;
+    }
+
+    speller = to_aspell_speller(ret);
+
+    /* Set up the document checker */
+    ret = new_aspell_document_checker(speller);
+    if (aspell_error(ret) != 0) {
+      char error[100000];
+      strcpy(error, aspell_error_message(ret));
+      //  printf("Error: %s\n",aspell_error_message(ret));
+        return false;
+    }
+
+    checker = to_aspell_document_checker(ret);
+
+    return true;
+  } 
+
+  void Destroy() {
+    delete_aspell_document_checker(checker);
+    checker = NULL;
+
+    delete_aspell_speller(speller);
+    speller = NULL;
+  }
+};
+
 void
 CScriptWindow::SpellCheck(const int start_line_number, const int num_lines_to_check)
 {
@@ -1804,54 +1869,9 @@ CScriptWindow::SpellCheck(const int start_line_number, const int num_lines_to_ch
   static const int GOOD_SPELLING_INDICTOR_INDEX = 2;
   static const int GOOD_SPELLING_INDICTOR_MASK = INDIC2_MASK;
 
-  //const int line_number = SendEditor(SCI_LINEFROMPOSITION, SendEditor(SCI_GETENDSTYLED));
-
-  AspellCanHaveError* ret = NULL;
-  AspellConfig* config = NULL;
-  if (config == NULL) {
-    config = new_aspell_config();
-    if (config == NULL)
-      return;
-
-    aspell_config_replace(config, "dict-dir", "C:\\WINDOWS\\Desktop\\sphere\\source\\editor\\output\\Profile\\dict");
-    aspell_config_replace(config, "data-dir", "C:\\WINDOWS\\Desktop\\sphere\\source\\editor\\output\\Profile\\data");
-    aspell_config_replace(config, "lang", "en_US");
-  }
-
-#if 0
-  if (0) {
-    char error[100000];
-    strcpy(error, aspell_config_retrieve(config, "lang"));
-    strcpy(error, aspell_config_retrieve(config, "jargon"));
-    strcpy(error, aspell_config_retrieve(config, "size"));
-    strcpy(error, aspell_config_retrieve(config, "module"));
-  }
-#endif
-
-  ret = new_aspell_speller(config);
-  delete_aspell_config(config);
-  config = NULL;
-
-  if (aspell_error(ret) != 0) {
-    char error[100000];
-    strcpy(error, aspell_error_message(ret));
-    GetStatusBar()->SetWindowText(error);
+  SpellCheckUtil spell_check;
+  if (!spell_check.Create())
     return;
-  }
-
-  AspellSpeller* speller = to_aspell_speller(ret);
-  AspellDocumentChecker* checker;
-
-  /* Set up the document checker */
-  ret = new_aspell_document_checker(speller);
-  if (aspell_error(ret) != 0) {
-    char error[100000];
-    strcpy(error, aspell_error_message(ret));
-    //  printf("Error: %s\n",aspell_error_message(ret));
-    return;
-  }
-
-  checker = to_aspell_document_checker(ret);
 
   SendEditor(SCI_INDICSETSTYLE, BAD_SPELLING_INDICTOR_INDEX, INDIC_SQUIGGLE);
   SendEditor(SCI_INDICSETSTYLE, GOOD_SPELLING_INDICTOR_INDEX, INDIC_HIDDEN);
@@ -1877,18 +1897,21 @@ CScriptWindow::SpellCheck(const int start_line_number, const int num_lines_to_ch
     char text[1024 * 16];
     if (line_length > 0 && line_length < sizeof(text))
     {
+      SendEditor(SCI_STARTSTYLING, start_pos, 0x1f);
+      SendEditor(SCI_COLOURISE, start_pos, start_pos + line_length);
+
       memset(text, 0, sizeof(text));
       SendEditor(SCI_GETLINE, line_number, (LRESULT)text);
 
       SendEditor(SCI_STARTSTYLING, start_pos, INDICS_MASK);
 
-      aspell_document_checker_process(checker, text, -1);
+      aspell_document_checker_process(spell_check.checker, text, -1);
 
       int last_offset = 0;
       AspellToken token;
 
       SendEditor(SCI_SETSTYLING, 0, GOOD_SPELLING_INDICTOR_MASK);
-      while (token = aspell_document_checker_next_misspelling(checker), token.len != 0)
+      while (token = aspell_document_checker_next_misspelling(spell_check.checker), token.len != 0)
       {
         SendEditor(SCI_SETSTYLING, token.offset - last_offset, GOOD_SPELLING_INDICTOR_MASK);
         SendEditor(SCI_SETSTYLING, token.len, BAD_SPELLING_INDICTOR_MASK);
@@ -1901,12 +1924,7 @@ CScriptWindow::SpellCheck(const int start_line_number, const int num_lines_to_ch
   }
 
   //GetStatusBar()->SetWindowText(string);
-
-  delete_aspell_document_checker(checker);
-  checker = NULL;
-
-  delete_aspell_speller(speller);
-  speller = NULL;
+  spell_check.Destroy();
 }
 #endif
 
@@ -2181,7 +2199,7 @@ CScriptWindow::OnOptionsHighlightCurrentLine()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#if 0
+#ifdef SPELLING_CHECKER
 afx_msg void
 CScriptWindow::OnOptionsCheckSpelling()
 {
@@ -2201,7 +2219,7 @@ CScriptWindow::OnOptionsCheckSpelling()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#if 0
+#ifdef SPELLING_CHECKER
 afx_msg void
 CScriptWindow::OnUpdateOptionsCheckSpelling(CCmdUI* cmdui)
 {
@@ -2211,7 +2229,7 @@ CScriptWindow::OnUpdateOptionsCheckSpelling(CCmdUI* cmdui)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#if 0
+#ifdef SPELLING_CHECKER
 #include "ListDialog.hpp"
 
 afx_msg void
@@ -2226,7 +2244,7 @@ CScriptWindow::OnOptionsSetSpellingLanguage()
 
     aspell_config_replace(config, "dict-dir", "C:\\WINDOWS\\Desktop\\sphere\\source\\editor\\output\\Profile\\dict");
     aspell_config_replace(config, "data-dir", "C:\\WINDOWS\\Desktop\\sphere\\source\\editor\\output\\Profile\\data");
-    aspell_config_replace(config, "lang", "en_US");
+    aspell_config_replace(config, "lang", Configuration::Get(KEY_SCRIPT_SPELLING_LANGUAGE).c_str());
   }
 
   CListDialog dialog;
@@ -2262,11 +2280,11 @@ CScriptWindow::OnOptionsSetSpellingLanguage()
 
   ////////
 
-  if (dialog.DoModal() == IDOK) {
-
-  }
-
   delete_aspell_config(config);
+
+  if (dialog.DoModal() == IDOK) {
+    Configuration::Set(KEY_SCRIPT_SPELLING_LANGUAGE, dialog.GetItemText(dialog.GetSelection()));
+  }
 }
 #endif
 
