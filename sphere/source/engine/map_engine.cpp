@@ -1700,14 +1700,22 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
   if (p.base_x1 > p.base_x2) std::swap(p.base_x1, p.base_x2);
   if (p.base_y1 > p.base_y2) std::swap(p.base_y1, p.base_y2);
 
-  p.width = p.spriteset->GetSpriteset().GetFrameWidth();
+  p.width  = p.spriteset->GetSpriteset().GetFrameWidth();
   p.height = p.spriteset->GetSpriteset().GetFrameHeight();
 
   p.direction = p.spriteset->GetSpriteset().GetDirectionName(0);
-  p.stepping = 0;
-  p.frame = p.spriteset->GetSpriteset().GetFrameIndex(p.direction, p.stepping);
-  p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.stepping);
+  //p.stepping = 0;
+  p.frame = 0;
 
+  /*
+  if (p.frame < 0 || p.frame >= p.spriteset->GetSpriteset().GetNumFrames(p.direction)) {
+    m_ErrorMessage = "Bad frame! Bad! " + itos(p.frame);
+    m_ErrorMessage += "...\n" + p.direction;
+    return false;
+  }
+  */
+
+  p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.frame);
   return true;
 }
 
@@ -1900,7 +1908,7 @@ CMapEngine::SetPersonDirection(const char* name, const char* direction)
   p.direction = direction;
 
   // make sure 'stepping' is valid
-  p.stepping %= p.spriteset->GetSpriteset().GetNumFrames(p.direction);
+  //p.stepping %= p.spriteset->GetSpriteset().GetNumFrames(p.direction);
 
   return true;
 }
@@ -1930,7 +1938,6 @@ CMapEngine::SetPersonFrame(const char* name, int frame)
   }
 
   m_Persons[person].frame = frame;
-  m_Persons[person].stepping = frame;
   return true;
 }
 
@@ -2358,11 +2365,7 @@ CMapEngine::SetPersonSpriteset(const char* name, sSpriteset& spriteset)
     m_Persons[person_index].frame %= spriteset.GetNumFrames(m_Persons[person_index].direction);
   }
 
-  // make sure stepping is valid
-  m_Persons[person_index].stepping = m_Persons[person_index].frame;
-
   spriteset.GetBase(m_Persons[person_index].base_x1, m_Persons[person_index].base_y1, m_Persons[person_index].base_x2, m_Persons[person_index].base_y2);
-
   return true;
 }
 
@@ -3409,8 +3412,8 @@ CMapEngine::RenderEntities(int layer, bool flipped, int offset_x, int offset_y)
       const sSpriteset& ss = p.spriteset->GetSpriteset();
 
       IMAGE image = (flipped
-        ? p.spriteset->GetFlipImage(ss.GetFrameIndex(p.direction, p.stepping))
-        : p.spriteset->GetImage(ss.GetFrameIndex(p.direction, p.stepping))
+        ? p.spriteset->GetFlipImage(ss.GetFrameIndex(p.direction, p.frame))
+        : p.spriteset->GetImage(ss.GetFrameIndex(p.direction, p.frame))
       );
 
       // calculate distance from upper-left corner of image to center of base
@@ -3525,10 +3528,9 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     // revert back to the first frame if reversion has been set and enough updates have passed
     if(p.stepping_frame_revert > 0) {
       if(p.stepping_frame_revert_count++ >= p.stepping_frame_revert) {
-        if(p.stepping != 0) {
-          p.stepping = 0;
-          p.frame = p.spriteset->GetSpriteset().GetFrameIndex(p.direction, p.stepping);
-          p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.stepping);
+        if(p.frame != 0) {
+          p.frame = 0;
+          p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.frame);
         }
       }
     }
@@ -3657,11 +3659,11 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     }
   }
 
-    // make sure 'stepping' is valid
+    // make sure frame is valid
     if (p.spriteset->GetSpriteset().GetNumFrames(p.direction))
-      p.stepping %= p.spriteset->GetSpriteset().GetNumFrames(p.direction);
+      p.frame %= p.spriteset->GetSpriteset().GetNumFrames(p.direction);
     else
-      p.stepping = 0;
+      p.frame = 0;
 
 
     // check for obstructions
@@ -3729,10 +3731,10 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
     // frame index
     if (--p.next_frame_switch <= 0) {
-      if (p.spriteset->GetSpriteset().GetNumFrames(p.direction))
-        p.stepping = (p.stepping + 1) % p.spriteset->GetSpriteset().GetNumFrames(p.direction);
-      p.frame = p.spriteset->GetSpriteset().GetFrameIndex(p.direction, p.stepping);
-      p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.stepping);
+      const int num_frames = p.spriteset->GetSpriteset().GetNumFrames(p.direction);
+      if (num_frames > 0)
+        p.frame = (p.frame + 1) % num_frames;
+      p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.frame);
     }
 
     // followers
@@ -3748,10 +3750,9 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     // revert back to the first frame if reversion has been set and enough updates have passed
     if(p.stepping_frame_revert > 0) {
       if(p.stepping_frame_revert_count++ >= p.stepping_frame_revert) {
-        if(p.stepping != 0) {
-          p.stepping = 0;
-          p.frame = p.spriteset->GetSpriteset().GetFrameIndex(p.direction, p.stepping);
-          p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.stepping);
+        if(p.frame != 0) {
+          p.frame = 0;
+          p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.frame);
         }
       }
     }
@@ -3878,9 +3879,8 @@ CMapEngine::UpdateFollower(int person_index)
   p.layer     = p.follow_state_queue[0].layer;
   p.direction = p.follow_state_queue[0].direction;
 
-  // make sure 'stepping' is valid
-  p.stepping %= p.spriteset->GetSpriteset().GetNumFrames(p.direction);
-
+  // make sure frame is valid
+  p.frame %= p.spriteset->GetSpriteset().GetNumFrames(p.direction);
   p.stepping_frame_revert_count = 0;
 
   // update the follow state
@@ -3896,9 +3896,9 @@ CMapEngine::UpdateFollower(int person_index)
 
   // frame index
   if (--p.next_frame_switch <= 0) {
-    p.stepping = (p.stepping + 1) % p.spriteset->GetSpriteset().GetNumFrames(p.direction);
-    p.frame = p.spriteset->GetSpriteset().GetFrameIndex(p.direction, p.stepping);
-    p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.stepping);
+    const int num_frames = p.spriteset->GetSpriteset().GetNumFrames(p.direction);
+    p.frame = (p.frame + 1) % num_frames;
+    p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.frame);
   }
 
   // now update any followers of this one

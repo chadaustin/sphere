@@ -5584,9 +5584,11 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
   // attach the spriteset to this object
 
   SS_SPRITESET* spriteset_object = new SS_SPRITESET;
-  spriteset_object->spriteset = spriteset;
-  spriteset_object->object    = object;
-  JS_SetPrivate(cx, object, spriteset_object);
+  if (spriteset_object) {
+    spriteset_object->spriteset = spriteset;
+    spriteset_object->object    = object;
+    JS_SetPrivate(cx, object, spriteset_object);
+  }
 
   JS_RemoveRoot(cx, &local_roots);
   return object;

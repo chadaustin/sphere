@@ -362,6 +362,11 @@ BEGIN
             MENUITEM "&Left",                       ID_LAYERVIEW_SLIDE_LEFT
             MENUITEM "&Other...",                   ID_LAYERVIEW_SLIDE_OTHER
         END
+        POPUP "Move"
+        BEGIN
+            MENUITEM "&Up",                         ID_LAYERVIEW_MOVE_UP
+            MENUITEM "&Down",                       ID_LAYERVIEW_MOVE_DOWN
+        END
         MENUITEM "Toggle Lock Layers",          ID_LAYERVIEW_TOGGLE_LOCK_LAYERS_IN_PLACE
 
         MENUITEM "&Properties...",              ID_LAYERVIEW_PROPERTIES

@@ -264,7 +264,6 @@ private:
     std::string direction;
     int frame;
 
-    int stepping;
     int next_frame_switch;
     int stepping_frame_revert;
     int stepping_frame_revert_count;

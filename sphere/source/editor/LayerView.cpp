@@ -37,6 +37,10 @@ BEGIN_MESSAGE_MAP(CLayerView, CVScrollWindow)
   ON_COMMAND(ID_LAYERVIEW_SLIDE_DOWN,           OnLayerSlideDown)
   ON_COMMAND(ID_LAYERVIEW_SLIDE_LEFT,           OnLayerSlideLeft)
   ON_COMMAND(ID_LAYERVIEW_SLIDE_OTHER,          OnLayerSlideOther)
+
+  ON_COMMAND(ID_LAYERVIEW_MOVE_UP, OnLayerMoveUp)
+  ON_COMMAND(ID_LAYERVIEW_MOVE_DOWN, OnLayerMoveDown)
+
   ON_COMMAND(ID_LAYERVIEW_TOGGLE_LOCK_LAYERS_IN_PLACE, OnToggleLockLayersInPlace)
 
 END_MESSAGE_MAP()
@@ -314,6 +318,13 @@ CLayerView::OnRButtonUp(UINT flags, CPoint point)
     }
     else {
       EnableMenuItem(menu, ID_LAYERVIEW_FLATTEN_VISIBLE_LAYERS, MF_BYCOMMAND | MF_GRAYED);
+    }
+
+    if (m_SelectedLayer == m_Map->GetNumLayers() - 1 || !(m_Map->GetNumLayers() > 1)) {
+      EnableMenuItem(menu, ID_LAYERVIEW_MOVE_UP, MF_BYCOMMAND | MF_GRAYED);
+    }
+    if (m_SelectedLayer == 0 || !(m_Map->GetNumLayers() > 1)) {
+      EnableMenuItem(menu, ID_LAYERVIEW_MOVE_DOWN, MF_BYCOMMAND | MF_GRAYED);
     }
 
     EnableMenuItem(menu, ID_LAYERVIEW_PROPERTIES, MF_BYCOMMAND | MF_ENABLED);
@@ -865,6 +876,36 @@ void
 CLayerView::ToggleLockLayersInPlace()
 {
   m_LayersAreLockedInPlace = !m_LayersAreLockedInPlace;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CLayerView::OnLayerMoveUp()
+{
+  if (m_SelectedLayer + 1 < m_Map->GetNumLayers()) {
+    m_Map->SwapLayers(m_SelectedLayer, m_SelectedLayer + 1);
+    m_SelectedLayer++;
+
+    Invalidate();
+    m_Handler->LV_MapChanged();
+    m_Handler->LV_SelectedLayerChanged(m_SelectedLayer);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CLayerView::OnLayerMoveDown()
+{
+  if (m_SelectedLayer - 1 >= 0) {
+    m_Map->SwapLayers(m_SelectedLayer, m_SelectedLayer - 1);
+    m_SelectedLayer--;
+
+    Invalidate();
+    m_Handler->LV_MapChanged();
+    m_Handler->LV_SelectedLayerChanged(m_SelectedLayer);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
