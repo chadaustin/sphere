@@ -1498,6 +1498,20 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(ReplaceTilesOnLayer, 3)
+  arg_int(layer);
+  arg_int(old_tile);
+  arg_int(new_tile);
+
+  if (!This->m_Engine->GetMapEngine()->ReplaceTilesOnLayer(layer, old_tile, new_tile)) {
+    This->ReportMapEngineError("ReplaceTilesOnLayer() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 begin_func(RenderMap, 0)
 
   if (!This->m_Engine->GetMapEngine()->RenderMap()) {

@@ -407,6 +407,36 @@ CMapEngine::GetTileHeight(int& height)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::ReplaceTilesOnLayer(int layer, int old_tile, int new_tile) {
+  if (!m_IsRunning) {
+    m_ErrorMessage = "ReplaceTilesOnLayer() called while map engine was not running";
+    return false;
+  }
+
+  sMap& map = m_Map.GetMap();
+  if (layer < 0 || layer >= map.GetNumLayers()) {
+    m_ErrorMessage = "Invalid layer index used in ReplaceTilesOnLayer";
+    return false;
+  }
+
+  sLayer& l = map.GetLayer(layer);
+  sTileset& tileset = map.GetTileset();
+  if (old_tile < 0 || old_tile >= tileset.GetNumTiles()) {
+    m_ErrorMessage = "Invalid old tile index in ReplaceTilesOnLayer";
+    return false;
+  }
+  if (new_tile < 0 || new_tile >= tileset.GetNumTiles()) {
+    m_ErrorMessage = "Invalid new tile index in ReplaceTilesOnLayer";
+    return false;
+  }
+
+  l.Replace(old_tile, new_tile);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::RenderMap()
 {
   if (m_IsRunning) {

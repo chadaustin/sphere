@@ -315,6 +315,9 @@ log_object.endBlock()
     GetTileHeight()
       - returns height in pixels of tiles on current map
 
+    ReplaceTilesOnLayer(layer, oldtile, newtile)
+      - Replaces all 'oldtile' tiles with 'newtile' on layer 'layer'
+
 
     RenderMap()
       - Renders the map into the video buffer

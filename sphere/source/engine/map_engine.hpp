@@ -71,6 +71,7 @@ public:
   bool GetTile(int x, int y, int layer, int& tile);
   bool GetTileWidth(int& width);
   bool GetTileHeight(int& height);
+  bool ReplaceTilesOnLayer(int layer, int old_tile, int new_tile);
 
   bool RenderMap();
 
