@@ -323,7 +323,7 @@ void StraightBlit (IMAGE image, int x, int y, routineT routine) {
     spixel = static_cast<Uint32*>(image->pixels);
     for (lcv_v = 0; lcv_v < scanlines; lcv_v++) {
       for (lcv_h = 0; lcv_h < width; lcv_h++) {
-        routine(*(spixel + lcv_h), *(dpixel + lcv_h));
+        routine(*(dpixel + lcv_h), *(spixel + lcv_h));
       }
       spixel += image->w;
       dpixel += screen->w;
