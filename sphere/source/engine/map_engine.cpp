@@ -3270,10 +3270,10 @@ CMapEngine::UpdateTriggers()
 bool
 CMapEngine::IsPersonInsideZone(int person_index, int zone_index)
 {
-  if (person_index < 0 || person_index >= m_Persons.size())
+  if (person_index < 0 || person_index >= int(m_Persons.size()))
     return false;
 
-  if (zone_index < 0 || zone_index >= m_Zones.size())
+  if (zone_index < 0 || zone_index >= int(m_Zones.size()))
     return false;
 
   // convenience
@@ -3757,9 +3757,9 @@ int
 CMapEngine::FindObstructingPerson(int person, int x, int y)
 {
   const Person& p = m_Persons[person];
-  const sLayer& layer = m_Map.GetMap().GetLayer(p.layer);
-  const int tile_width  = m_Map.GetMap().GetTileset().GetTileWidth();
-  const int tile_height = m_Map.GetMap().GetTileset().GetTileHeight();
+//  const sLayer& layer = m_Map.GetMap().GetLayer(p.layer);
+//  const int tile_width  = m_Map.GetMap().GetTileset().GetTileWidth();
+//  const int tile_height = m_Map.GetMap().GetTileset().GetTileHeight();
 
   int bx = (p.base_x1 + p.base_x2) / 2;
   int by = (p.base_y1 + p.base_y2) / 2;
@@ -3850,9 +3850,9 @@ CMapEngine::IsObstructed(int person, int x, int y, int& obs_person)
   const Person& p = m_Persons[person];
   //  const sSpriteset& s = p.spriteset->GetSpriteset();
   const sObstructionMap& obs_map = m_Map.GetMap().GetLayer(p.layer).GetObstructionMap();
-  const int tile_width  = m_Map.GetMap().GetTileset().GetTileWidth();
-  const int tile_height = m_Map.GetMap().GetTileset().GetTileHeight();
-  const sLayer& layer = m_Map.GetMap().GetLayer(p.layer);
+//  const int tile_width  = m_Map.GetMap().GetTileset().GetTileWidth();
+//  const int tile_height = m_Map.GetMap().GetTileset().GetTileHeight();
+//  const sLayer& layer = m_Map.GetMap().GetLayer(p.layer);
 
   // test obstruction map
   int bx = (p.base_x1 + p.base_x2) / 2;
