@@ -604,11 +604,11 @@ CImage32::Rotate(double radians, bool autoSize)
 void
 CImage32::RotateCW()
 {
-  // only works on square images
-  if (m_Width != m_Height)
-    return;
-
-  ::RotateCW(m_Width, m_Height, m_Pixels);
+  if (::RotateCW(m_Width, m_Height, m_Pixels)) {
+    int temp = m_Width;
+    m_Width = m_Height;
+    m_Height = temp;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -616,11 +616,11 @@ CImage32::RotateCW()
 void
 CImage32::RotateCCW()
 {
-  // only works on square images
-  if (m_Width != m_Height)
-    return;
-
-  ::RotateCCW(m_Width, m_Height, m_Pixels);
+  if (::RotateCCW(m_Width, m_Height, m_Pixels)) {
+    int temp = m_Width;
+    m_Width = m_Height;
+    m_Height = temp;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

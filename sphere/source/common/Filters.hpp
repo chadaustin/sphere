@@ -8,8 +8,8 @@
 extern void FlipHorizontally(int width, int height, RGBA* pixels);
 extern void FlipVertically(int width, int height, RGBA* pixels);
 extern void Translate(int width, int height, RGBA* pixels, int dx, int dy);
-extern void RotateCW(int src_width, int src_height, RGBA* pixels);
-extern void RotateCCW(int src_width, int src_height, RGBA* pixels);
+extern bool RotateCW(int src_width, int src_height, RGBA* pixels);
+extern bool RotateCCW(int src_width, int src_height, RGBA* pixels);
 extern void Blur(int width, int height, RGBA* pixels, int mask_width = 3, int mask_height = 3);
 extern void Noise(int width, int height, RGBA* pixels);
 extern void NegativeImage(int width, int height, bool red, bool green, bool blue, bool alpha, RGBA* pixels);

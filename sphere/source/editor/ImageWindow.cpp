@@ -180,6 +180,9 @@ CImageWindow::OnImageRotate()
 afx_msg void
 CImageWindow::OnImageViewOriginalSize()
 {
+  if (IsZoomed())
+    return;
+
   // FIXME: use correct GetSystemMetrics calls.  :)  Better yet, AdjustWindowRect
   CSaveableDocumentWindow::SetWindowPos(&wndTop, 0, 0, m_Image.GetWidth() + 72 + 12, m_Image.GetHeight() + 31, SWP_NOMOVE | SWP_NOOWNERZORDER);
   OnSize(0, m_Image.GetWidth() + 72, m_Image.GetHeight());
