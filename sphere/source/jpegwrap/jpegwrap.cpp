@@ -62,8 +62,13 @@ static void    JPEG_emit_message(j_common_ptr cinfo, int msg_level);
 
 
 // little-endian
-inline byte MAKE_RGBA(byte red, byte green, byte blue, byte alpha) {
-  return (alpha << 24) + (blue << 16) + (green << 8) + red;
+#if defined(_WIN32)
+inline dword MAKE_RGBA(byte red, byte green, byte blue, byte alpha) {
+#elif defined(unix)
+#include <sys/types.h>
+inline u_int32_t MAKE_RGBA(byte red, byte green, byte blue, byte alpha) {
+#endif
+return (alpha << 24) + (blue << 16) + (green << 8) + red;
 }
 
 
