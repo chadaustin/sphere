@@ -499,7 +499,10 @@ log_object.endBlock()
   spriteset_object.directions
     - array of spriteset_direction objects
 
-  // spriteset direction objects
+  spriteset_object.base
+    - spriteset_base object
+
+  // spriteset_direction objects
   spriteset_direction.name
     - name of direction
 
@@ -512,6 +515,12 @@ log_object.endBlock()
 
   spriteset_frame.delay
     - number of frames before animation should switch
+
+  // spriteset_base object
+  base.x1 }
+  base.y1 } the coordinates of the base rectangle
+  base.x2 }
+  base.y2 }
 
  
  
