@@ -56,6 +56,50 @@ function DoesPersonExist(person)
 
 ///////////////////////////////////////////////////////////
 
+function GetNumJoystickPlayers() {
+  var num = 0;
+  for (var i = 0; i < gPersonJoysticks.length; i++) {
+    if (gPersonJoysticks[i].destroy == false) {
+      num += 1;
+    }
+  }
+  return num;
+}
+
+///////////////////////////////////////////////////////////
+
+function IsJoystickAttached(joystick) {
+  if (joystick < 0 || joystick >= GetNumJoysticks())
+  {
+    Abort("Joystick " + joystick + " does not exist");
+  }
+
+  for (var i = 0; i < gPersonJoysticks.length; i++) {
+    if (gPersonJoysticks[i].joystick == joystick)
+      return (gPersonJoysticks[i].destroy == false);
+  }
+
+  return false;
+}
+
+///////////////////////////////////////////////////////////
+
+function GetJoystickPerson(joystick) {
+  if (joystick < 0 || joystick >= GetNumJoysticks())
+  {
+    Abort("Joystick " + joystick + " does not exist");
+  }
+
+  for (var i = 0; i < gPersonJoysticks.length; i++) {
+    if (gPersonJoysticks[i].joystick == joystick)
+      return gPersonJoysticks[i].name;
+  }
+
+  Abort("Joystick " + joystick + " is not attached");
+}
+
+///////////////////////////////////////////////////////////
+
 function BindJoystickButton(joystick, joystick_button, on_press_script, on_release_script) {
   if (joystick < 0 || joystick >= GetNumJoysticks())
   {
@@ -82,9 +126,10 @@ function BindJoystickButton(joystick, joystick_button, on_press_script, on_relea
     var binded_joystick = new Object();
         binded_joystick.joystick = joystick;
         binded_joystick.buttons  = new Array();
+        
 
     gBindedJoysticks.push(binded_joystick);
-  }    
+  }
 
   var button_found = false;
 
@@ -92,6 +137,7 @@ function BindJoystickButton(joystick, joystick_button, on_press_script, on_relea
     if (gBindedJoysticks[joystick_index].buttons[k].name == joystick_button) {
       gBindedJoysticks[joystick_index].buttons[k].on_press   = new Function(on_press_script);
       gBindedJoysticks[joystick_index].buttons[k].on_release = new Function(on_release_script);
+      gBindedJoysticks[joystick_index].buttons[k].destroy = false;
       button_found = true;
       break;
     }
@@ -103,6 +149,7 @@ function BindJoystickButton(joystick, joystick_button, on_press_script, on_relea
         binded_button.name = joystick_button;
         binded_button.on_press   = new Function(on_press_script);
         binded_button.on_release = new Function(on_release_script);
+        binded_button.destroy = false;
     
     gBindedJoysticks[joystick_index].buttons.push(binded_button);
   }
@@ -129,7 +176,7 @@ function UnbindJoystickButton(joystick, joystick_button) {
 
   for (var k = 0; k < gBindedJoysticks[joystick_index].buttons.length; k++) {
     if (gBindedJoysticks[joystick_index].buttons[k].name == joystick_button) {
-      gBindedJoysticks[joystick_index].buttons.splice(k, 1);
+      gBindedJoysticks[joystick_index].buttons[k].destroy = true;
       break;
     }
   }
@@ -176,7 +223,7 @@ function DetachJoystick(joystick, name) {
 
   for (var i = 0; i < gPersonJoysticks.length; i++) {
     if (gPersonJoysticks[i].name == name) {
-      gPersonJoysticks.splice(i, 1);
+      gPersonJoysticks[i].destroy = true;
       return true;
     }
   }
@@ -188,6 +235,22 @@ function DetachJoystick(joystick, name) {
 function UpdateJoysticks() {
   UpdateBindedJoysticks();
   UpdatePersonJoysticks();
+
+  for (var i = 0; i < gPersonJoysticks.length; i++) {
+    if (gPersonJoysticks[i].destroy) {
+      gPersonJoysticks.splice(i, 1);
+      i -= 1;
+    }
+  }
+
+  for (var j = 0; j < gBindedJoysticks.length; j++) {
+    for (var k = 0; k < gBindedJoysticks[j].buttons.length; k++) {
+      if (gBindedJoysticks[j].buttons[k].destroy) {
+        gBindedJoysticks[j].buttons.splice(k, 1);
+        k -= 1;
+      }
+    }
+  }
 }
 
 ///////////////////////////////////////////////////////////
@@ -196,7 +259,11 @@ function UpdateBindedJoysticks() {
 
   for (var j = 0; j < gBindedJoysticks.length; j++) {
     for (var k = 0; k < gBindedJoysticks[j].buttons.length; k++) {
-      if (IsJoystickButtonPressed(gBindedJoysticks[j].joystick, gBindedJoysticks[j].buttons[k].name) {
+
+      if (gBindedJoysticks[j].buttons[k].destroy)
+        continue;
+
+      if (IsJoystickButtonPressed(gBindedJoysticks[j].joystick, gBindedJoysticks[j].buttons[k].name)) {
         if (gBindedJoysticks[j].buttons[k].pressed == false) {
           gBindedJoysticks[j].buttons[k].pressed = true;
           gBindedJoysticks[j].buttons[k].on_press();
@@ -208,6 +275,7 @@ function UpdateBindedJoysticks() {
           gBindedJoysticks[j].buttons[k].on_release();
         }
       }
+
     }
   }
 }
@@ -218,7 +286,7 @@ function UpdatePersonJoysticks()
 {
   for (var i = 0; i < gPersonJoysticks.length; i++) {
 
-    if (gPersonJoysticks[i].joystick >= 0 && gPersonJoysticks[i].joystick < GetNumJoysticks())
+    if (!gPersonJoysticks[i].destroy && gPersonJoysticks[i].joystick >= 0 && gPersonJoysticks[i].joystick < GetNumJoysticks())
     {
 
       var dx = GetJoystickX(gPersonJoysticks[i].joystick);
