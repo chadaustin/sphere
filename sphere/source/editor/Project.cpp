@@ -265,62 +265,45 @@ CProject::GetGroupDirectory(int grouptype)
 void
 CProject::RefreshItems()
 {
-  // empty the old lists
-  for (int i = 0; i < NUM_GROUP_TYPES; i++)
-    m_Groups[i].clear();
+  m_Groups.clear();
 
   // store the old directory
   char old_directory[MAX_PATH];
   GetCurrentDirectory(MAX_PATH, old_directory);
 
-  for (int i = 0; i < NUM_GROUP_TYPES; i++)
-  {
-    SetCurrentDirectory(m_Directory.c_str());
-    
-    if (!SetCurrentDirectory(GetGroupDirectory(i)))
-      continue;
-
-    // add all extensions to this set
-    std::vector<std::string> extensions;
-    FTL.GetFileTypeExtensions(i, false, extensions);
-
-/*
-    std::vector<std::string> folder_list = GetFolderList("*");
-    for (int l = 0; l < folder_list.size(); l++) {
-      if (folder_list[l] != "." && folder_list[l] != "..")
-      {
-        AddItem(i, folder_list[l].c_str());
-
-        char old_folder_directory[MAX_PATH];
-        GetCurrentDirectory(MAX_PATH, old_folder_directory);
-
-        if (!SetCurrentDirectory(folder_list[l].c_str()))
+  if (SetCurrentDirectory(m_Directory.c_str())) {
+    std::vector<std::string> folderlist = GetFolderList("*");
+    for (unsigned int i = 0; i < folderlist.size(); i++) {
+      if (folderlist[i] != "." && folderlist[i] != "..") {
+        
+        if (!SetCurrentDirectory(m_Directory.c_str()))
           continue;
 
-        for (int j = 0; j < extensions.size(); j++)
-        {
-          std::string filter = "*." + extensions[j];
-          std::vector<std::string> file_list = GetFileList(filter.c_str());
+        if (SetCurrentDirectory(folderlist[i].c_str())) {
+          Group current;
+          current.FolderName = folderlist[i];
+          current.Files = GetFileList("*");
+          m_Groups.push_back(current);
 
-          for (int k = 0; k < file_list.size(); k++) {
-            AddItem(i, file_list[k].c_str());
+          if (folderlist[i] == "scripts") {
+            if (m_GameScript.empty()) {
+              if (current.Files.size() == 0) {
+                m_GameScript = "";
+              }
+              else {
+                m_GameScript = current.Files[0];
+              }
+
+              if (!m_Filename.empty()) {
+                Save();
+              }
+            }
           }
         }
 
-        SetCurrentDirectory(old_folder_directory);
+        SetCurrentDirectory(m_Directory.c_str());
       }
     }
-*/
-
-    for (int j = 0; j < extensions.size(); j++) {
-      std::string filter = "*." + extensions[j];
-       std::vector<std::string> file_list = GetFileList(filter.c_str());
-
-      for (int k = 0; k < file_list.size(); k++) {
-        AddItem(i, file_list[k].c_str());
-      }
-    }
-
   }
 
   // restore the old directory
@@ -330,52 +313,60 @@ CProject::RefreshItems()
 ////////////////////////////////////////////////////////////////////////////////
 
 int
+CProject::GetItemCount(const char* groupname) const {
+  for (unsigned int i = 0; i < m_Groups.size(); i++) {
+    if (strcmp(groupname, m_Groups[i].FolderName.c_str()) == 0)
+      return m_Groups[i].Files.size();
+  }
+
+  return 0;
+}
+
+int
 CProject::GetItemCount(int group_type) const
 {
-  return m_Groups[group_type].size();
+  const char* groupname = GetGroupDirectory(group_type);
+  return groupname == NULL ? 0 : GetItemCount(groupname);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const char*
-CProject::GetItem(int group_type, int i) const
+CProject::GetItem(int group_type, int index) const
 {
-  return m_Groups[group_type][i].c_str();
+  const char* groupname = GetGroupDirectory(group_type);
+  return groupname == NULL ? 0 : GetItem(groupname, index);
+}
+
+const char*
+CProject::GetItem(const char* groupname, int index) const {
+  for (unsigned int i = 0; i < m_Groups.size(); i++) {
+    if (strcmp(groupname, m_Groups[i].FolderName.c_str()) == 0)
+      return m_Groups[i].Files[index].c_str();
+  }
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CProject::HasItem(int group_type, const char* item) const
+CProject::HasItem(const char* groupname, const char* item) const
 {
-  for (int i = 0; i < GetItemCount(group_type); i++)
-    if (strcmp(item, GetItem(group_type, i)) == 0)
-      return true;
+  for (unsigned int i = 0; i < m_Groups.size(); i++) {
+    if (strcmp(m_Groups[i].FolderName.c_str(), groupname) == 0) {
+      for (unsigned int j = 0; j < m_Groups[i].Files.size(); j++) {
+        if (strcmp(m_Groups[i].Files[j].c_str(), item) == 0)
+          return true;
+      }
+    }
+  }
   return false;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
-void
-CProject::AddItem(int grouptype, const char* filename)
+bool
+CProject::HasItem(int group_type, const char* item) const
 {
-  Group& group = m_Groups[grouptype];
-
-  // make sure it's not in the group already
-  for (int i = 0; i < group.size(); i++)
-    if (filename == group[i])
-      return;
-
-  // if we're adding a script to the project and we don't have a game script,
-  // set it.
-  if (grouptype == GT_SCRIPTS && m_GameScript.empty()) {
-    m_GameScript = filename;
-    if (!m_Filename.empty()) {
-      Save();
-    }
-  }
-
-  group.push_back(filename);
+  return HasItem(GetGroupDirectory(group_type), item);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -391,8 +382,7 @@ CProject::Destroy()
   m_ScreenWidth = 0;
   m_ScreenHeight = 0;
 
-  for (int i = 0; i < NUM_GROUP_TYPES; i++)
-    m_Groups[i].clear();
+  m_Groups.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

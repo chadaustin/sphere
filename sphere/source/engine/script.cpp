@@ -4720,7 +4720,7 @@ end_func()
       in the "other" directory of the game otherwise Sphere will give an error. 
       If the file is opened successfully, the function will return a rawfile
       object. If the optional argument 'writeable' is true,
-      the conents of the file will be destroyed,
+      the contents of the file will be destroyed,
       and you will be able to write to the file.
 */
 begin_func(OpenRawFile, 1)
@@ -4931,9 +4931,11 @@ CScript::CreateSocketObject(JSContext* cx, NSOCKET socket)
 
   // attach the log to this object
   SS_SOCKET* socket_object = new SS_SOCKET;
-  socket_object->socket = socket;
-  socket_object->is_open = true;
-  JS_SetPrivate(cx, object, socket_object);
+  if (socket_object) {
+    socket_object->socket = socket;
+    socket_object->is_open = true;
+    JS_SetPrivate(cx, object, socket_object);
+  }
 
   return object;
 }
@@ -7062,10 +7064,14 @@ begin_method(SS_RAWFILE, ssRawFileRead, 1)
 
   // read the data
   byte* data = new byte[size];
+  if (!data)
+    return_object(JSVAL_NULL);
+
   int bytes_read = object->file->Read(data, size);
 
   JSObject* array_object = CreateByteArrayObject(cx, bytes_read, data);
   delete[] data;
+
   return_object(array_object);
 end_method()
 
@@ -7121,6 +7127,7 @@ CScript::CreateByteArrayObject(JSContext* cx, int size, const void* data)
   // add the methods into the object
   static JSFunctionSpec fs[] = {
     { "concat",       ssByteArrayConcat,    1, 0, 0 },
+    { "slice",        ssByteArraySlice,     1, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -7130,16 +7137,18 @@ CScript::CreateByteArrayObject(JSContext* cx, int size, const void* data)
 
   // attach the file to this object
   SS_BYTEARRAY* array_object = new SS_BYTEARRAY;
-  array_object->size = size;
-  array_object->array = new byte[size];
+  if (array_object) {
+    array_object->size = size;
+    array_object->array = new byte[size];
 
-  if (data) {
-    memcpy(array_object->array, data, size);
-  } else {
-    memset(array_object->array, 0, size);
+    if (data) {
+      memcpy(array_object->array, data, size);
+    } else {
+      memset(array_object->array, 0, size);
+    }
+
+    JS_SetPrivate(cx, object, array_object);
   }
-
-  JS_SetPrivate(cx, object, array_object);
 
   return object;
 }
@@ -7160,13 +7169,18 @@ begin_method(SS_BYTEARRAY, ssByteArrayConcat, 1)
 
   int size =  object->size + byte_array_to_append->size;
   byte* data = new byte[size];
+  if (!data) {
+    return_object(JSVAL_NULL);
+  }
+  else {
     memcpy(data, object->array, object->size);
     memcpy(data + object->size, byte_array_to_append->array, byte_array_to_append->size);
 
     JSObject* concated_byte_array = CreateByteArrayObject(cx, size, data);
-  delete[] data;
+    delete[] data;
+    return_object(concated_byte_array);
+  }
 
-  return_object(concated_byte_array);
 end_method()
 
 ///////////////////////////////////////
@@ -7206,12 +7220,14 @@ begin_method(SS_BYTEARRAY, ssByteArraySlice, 1)
   }
 
   byte* data = new byte[size];
+  if (!data) {
+    return_object(JSVAL_NULL);
+  } else {
     memcpy(data, object->array + start_slice, size);
-
     JSObject* byte_array = CreateByteArrayObject(cx, size, data);
-  delete[] data;
-
-  return_object(byte_array);
+    delete[] data;
+    return_object(byte_array);
+  }
 end_method()
 
 ////////////////////////////////////////
@@ -7285,9 +7301,10 @@ begin_func(GetMapEngine, 0)
   JS_DefineFunctions(cx, object, fs);
 
   SS_MAPENGINE* mapengine_object = new SS_MAPENGINE;
-  mapengine_object->__value__ = 1;
-  JS_SetPrivate(cx, object, mapengine_object);
-
+  if (mapengine_object) {
+    mapengine_object->__value__ = 1;
+    JS_SetPrivate(cx, object, mapengine_object);
+  }
 
   return_object(object);
 end_func()

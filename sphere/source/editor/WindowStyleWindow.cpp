@@ -124,9 +124,9 @@ CWindowStyleWindow::CWindowStyleWindow(const char* window_style)
   m_ImageView.SetColor(CreateRGBA(0, 0, 0, 255));
   m_AlphaView.SetAlpha(255);
 
-	#ifdef USE_SIZECBAR
+#ifdef USE_SIZECBAR
 	LoadPaletteStates();
-	#endif
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -600,6 +600,9 @@ CWindowStyleWindow::OnResizeSection()
     RECT Rect;
     GetClientRect(&Rect);
     OnSize(0, Rect.right, Rect.bottom);
+
+    if (m_WindowStylePreviewPalette)
+      m_WindowStylePreviewPalette->OnWindowStyleChanged();
   }
 }
 
@@ -784,6 +787,9 @@ CWindowStyleWindow::IV_ImageChanged()
 
   UpdateDIBSection(m_SelectedBitmap);
   Invalidate();
+
+  if (m_WindowStylePreviewPalette)
+    m_WindowStylePreviewPalette->OnWindowStyleChanged();
 
   SetModified(true);
 }

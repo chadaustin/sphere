@@ -15,7 +15,7 @@ DefaultFileSystem g_DefaultFileSystem;
 IFile*
 DefaultFileSystem::Open(const char* filename, int mode)
 {
-  #ifdef _WIN32
+#ifdef _WIN32
   if (mode == IFileSystem::read) {
 
     // make sure the filename has the correct case
@@ -63,8 +63,7 @@ DefaultFileSystem::Open(const char* filename, int mode)
     }
 
   }
-  #endif
-
+#endif
 
   // build a fopen() format string
   char md[4] = { 0, 0, 0, 0 };

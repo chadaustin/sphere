@@ -41,15 +41,22 @@ public:
 
   void RefreshItems();
 
+  int         GetItemCount(const char* groupname) const;
   int         GetItemCount(int grouptype) const;
+  const char* GetItem(const char* groupname, int index) const;
   const char* GetItem(int grouptype, int index) const;
+  bool        HasItem(const char* groupname, const char* item) const;
   bool        HasItem(int grouptype, const char* item) const;
 
 private:
-  typedef std::vector<std::string> Group;
+  class Group {
+  public:
+    std::string FolderName;
+    std::vector<std::string> Files;
+  };
 
 private:
-  void AddItem(int grouptype, const char* filename);
+  //void AddItem(int grouptype, const char* filename);
   void Destroy();
 
 private:
@@ -64,7 +71,7 @@ private:
   int m_ScreenWidth;
   int m_ScreenHeight;
 
-  Group m_Groups[NUM_GROUP_TYPES];
+  std::vector<Group> m_Groups;
 };
 
 

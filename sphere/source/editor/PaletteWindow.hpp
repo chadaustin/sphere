@@ -48,9 +48,9 @@ private:
   CDocumentWindow* m_Owner;
 
 #ifdef USE_SIZECBAR
-	CString				m_Name;
-	CPaletteBar * m_pBarParent;
-	int						m_PaletteNumber;
+	CString			 m_Name;
+	CPaletteBar* m_pBarParent;
+	int					 m_PaletteNumber;
 
 public:
 	inline bool IsVisible() { return (m_pBarParent != NULL && m_pBarParent->IsVisible()) ? true : false; }

@@ -9,7 +9,6 @@ using std::vector;
 
 #include <corona.h>
 
- // format DefaultFileTypeText:DefaultFileTypeExtension(Text1(FileType1Extenstion),FileType2(FileType2Extenstion)
 static const char* Extensions[] = {
   /* maps */         "Map Files:rmp(Sphere Map Files(rmp))",
   /* spriteset */    "Spriteset Files:rss(Sphere Spriteset Files(rss))",
@@ -85,6 +84,13 @@ CFileTypeLibrary::CFileTypeLibrary()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+int
+CFileTypeLibrary::GetNumFileTypes() {
+  return m_FileTypes.size();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 const char*
 CFileTypeLibrary::GetFileTypeLabel(int file_type, bool save)
 {
@@ -104,8 +110,8 @@ CFileTypeLibrary::GetFileTypeExtensions(int file_type, bool save, vector<string>
     corona::FileFormatDesc** formats =
       save ? corona::GetSupportedWriteFormats() : corona::GetSupportedReadFormats();
 
-    for (size_t i = 0; formats[i]; ++i) {
-      for (size_t j = 0; j < 1 && formats[i]->getExtensionCount(); ++j) {
+    for (size_t i = 0; formats[i] != NULL; ++i) {
+      for (size_t j = 0; j < formats[i]->getExtensionCount(); ++j) {
         extensions.push_back(formats[i]->getExtension(j));
       }
     }
@@ -150,7 +156,7 @@ CFileTypeLibrary::GetNumSubTypes(int file_type, bool save)
       save ? corona::GetSupportedWriteFormats() : corona::GetSupportedReadFormats();
 
     int num_sub_types = 0;
-    for (size_t i = 0; formats[i]; ++i) {
+    for (size_t i = 0; formats[i] != NULL; ++i) {
       num_sub_types += 1;
     }
 
@@ -196,7 +202,7 @@ CFileTypeLibrary::GetSubTypeLabel(int file_type, int sub_type, bool save)
     corona::FileFormatDesc** formats =
       save ? corona::GetSupportedWriteFormats() : corona::GetSupportedReadFormats();
 
-    for (size_t i = 0; formats[i]; ++i) {
+    for (size_t i = 0; formats[i] != NULL; ++i) {
       if (sub_type == i) {
         return GetImageSubTypeLabel(formats[i]->getExtension(0));
       }
@@ -217,7 +223,7 @@ CFileTypeLibrary::GetSubTypeExtensions(int file_type, int sub_type, bool save, v
     corona::FileFormatDesc** formats =
       save ? corona::GetSupportedWriteFormats() : corona::GetSupportedReadFormats();
 
-    for (size_t i = 0; formats[i]; ++i) {
+    for (size_t i = 0; formats[i] != NULL; ++i) {
       if (sub_type == i) {
         for (size_t j = 0; j < formats[i]->getExtensionCount(); ++j) {
           extensions.push_back(formats[i]->getExtension(j));

@@ -813,7 +813,9 @@ IFile*
 CGameEngine::OpenRawFile(const char* filename, bool writeable)
 {
   int mode = (writeable ? IFileSystem::write : IFileSystem::read);
-  MakeDirectory("other");
+  if (writeable)
+    MakeDirectory("other");
+
   std::string path = "other/";
   path += filename;
 

@@ -345,20 +345,37 @@ CFontWindow::OnFontSimplify()
 {
   if (MessageBox("This will convert the entire font to opaque and transparent.\nIs this okay?", NULL, MB_YESNO) == IDYES)
   {
+	  bool modified = false;
     for (int i = 0; i < m_Font.GetNumCharacters(); i++)
     {
       sFontCharacter& c = m_Font.GetCharacter(i);
-      for (int j = 0; j < c.GetWidth() * c.GetHeight(); j++)
-      {
-        if (c.GetPixels()[j].alpha < 128)
-          c.GetPixels()[j].alpha = 0;
-        else
-          c.GetPixels()[j].alpha = 255;
+      int j;
+
+      if (!modified) {
+        for (j = 0; j < c.GetWidth() * c.GetHeight(); j++) {
+          if (c.GetPixels()[j].alpha != 0
+           && c.GetPixels()[j].alpha != 255) {
+            modified = true;
+            break;
+          }
+        }
+      }
+
+      if (modified) {
+        for (j = 0; j < c.GetWidth() * c.GetHeight(); j++)
+        {
+          if (c.GetPixels()[j].alpha < 128)
+            c.GetPixels()[j].alpha = 0;
+          else
+            c.GetPixels()[j].alpha = 255;
+        }
       }
     }
 
-    SetModified(true);
-    SetImage();
+    if (modified) {
+      SetModified(true);
+      SetImage();
+    }
   }
 }
 
@@ -367,6 +384,7 @@ CFontWindow::OnFontSimplify()
 afx_msg void
 CFontWindow::OnFontMakeColorTransparent() {
   RGB color = m_ColorView.GetColor();
+  bool modified = false;
   for (int i = 0; i < m_Font.GetNumCharacters(); ++i) {
     sFontCharacter& c = m_Font.GetCharacter(i);
     for (int j = 0; j < c.GetWidth() * c.GetHeight(); ++j) {
@@ -374,13 +392,18 @@ CFontWindow::OnFontMakeColorTransparent() {
           c.GetPixels()[j].green == color.green &&
           c.GetPixels()[j].blue  == color.blue)
       {
-        c.GetPixels()[j].alpha = 0;
+        if (c.GetPixels()[j].alpha != 0) {
+          c.GetPixels()[j].alpha = 0;
+          modified = true;
+        }
       }
     }
   }
 
-  SetModified(true);
-  SetImage();
+  if (modified) {
+    SetModified(true);
+    SetImage();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -221,7 +221,6 @@ BEGIN
         MENUITEM "&Run Game (CTRL + F5)",       ID_PROJECT_RUNSPHERE
         MENUITEM "&Configure Sphere...",        ID_PROJECT_CONFIGURESPHERE
         MENUITEM "Package Game!",               ID_PROJECT_PACKAGE_GAME
-        MENUITEM "Make Installer",              ID_PROJECT_MAKE_INSTALLER
     END
 END
 
@@ -1634,6 +1633,7 @@ IDI_MAPTOOL_MOVEENTITY  ICON    DISCARDABLE     "maptool_moveentity.ico"
 IDI_IMAGETOOL_FREESELECTION ICON    DISCARDABLE     "imagetool_freeselection.ico"
 IDI_BROWSE              ICON    DISCARDABLE     "browse.ico"
 IDI_MAPTOOL_FILLRECTAREA ICON    DISCARDABLE     "maptool_fillrect.ico"
+IDI_UNKNOWN             ICON    DISCARDABLE     "unknown.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

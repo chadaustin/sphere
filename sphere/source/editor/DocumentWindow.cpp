@@ -353,7 +353,7 @@ afx_msg void
 CDocumentWindow::OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactive_window)
 {
   CMDIChildWnd::OnMDIActivate(activate, active_window, inactive_window);
-  CFrameWnd * pFrame = (CFrameWnd*)AfxGetApp()->m_pMainWnd;
+  CFrameWnd* pFrame = (CFrameWnd*)AfxGetApp()->m_pMainWnd;
 
   if (activate)
   {
@@ -369,7 +369,7 @@ CDocumentWindow::OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactiv
     if (m_AttachedPalettes.size() > 0)
     {
 			// the project palette should stay visible/invisible
-			CPaletteWindow * pProjectWindow = (CPaletteWindow*)((CMainWindow*)pFrame)->GetProjectWindow();
+			CPaletteWindow* pProjectWindow = (CPaletteWindow*)((CMainWindow*)pFrame)->GetProjectWindow();
 			if (pProjectWindow != NULL)
 			{
 				bool bProjectVisible = pProjectWindow->IsVisible();

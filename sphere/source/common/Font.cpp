@@ -161,6 +161,24 @@ sFont::Save(const char* filename, IFileSystem& fs) const
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+GenerateGradient(CImage32& c, int max_alpha, RGBA top, RGBA bottom)
+{
+  for (int iy = 0; iy < c.GetHeight(); iy++) {
+    int width = c.GetWidth();
+    RGBA* p = c.GetPixels() + iy * c.GetWidth();
+    while (width--) {
+      p->red   = (top.red   * (max_alpha - iy) + bottom.red   * iy) / max_alpha;
+      p->green = (top.green * (max_alpha - iy) + bottom.green * iy) / max_alpha;
+      p->blue  = (top.blue  * (max_alpha - iy) + bottom.blue  * iy) / max_alpha;
+      p->alpha = p->alpha * (top.alpha  * (max_alpha - iy) + bottom.alpha  * iy) / max_alpha / 256;
+      p++;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
 sFont::GenerateGradient(RGBA top, RGBA bottom)
 {
   // get the max character height
@@ -176,18 +194,7 @@ sFont::GenerateGradient(RGBA top, RGBA bottom)
   // generate the gradient for each character
   for (unsigned int i = 0; i < m_Characters.size(); i++) {
     sFontCharacter& c = m_Characters[i];
-
-    for (int iy = 0; iy < c.GetHeight(); iy++) {
-      int width = c.GetWidth();
-      RGBA* p = c.GetPixels() + iy * c.GetWidth();
-      while (width--) {
-        p->red   = (top.red   * (max_alpha - iy) + bottom.red   * iy) / max_alpha;
-        p->green = (top.green * (max_alpha - iy) + bottom.green * iy) / max_alpha;
-        p->blue  = (top.blue  * (max_alpha - iy) + bottom.blue  * iy) / max_alpha;
-        p->alpha = p->alpha * (top.alpha  * (max_alpha - iy) + bottom.alpha  * iy) / max_alpha / 256;
-        p++;
-      }
-    }
+    ::GenerateGradient(c, max_alpha, top, bottom);
   }
 }
 

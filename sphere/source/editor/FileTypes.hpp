@@ -5,7 +5,6 @@
 #include <vector>
 #include <string>
 
-
 // supported file groups
 enum
 {
@@ -32,6 +31,7 @@ class CFileTypeLibrary
 public:
   CFileTypeLibrary();
 
+  int GetNumFileTypes();
   const char* GetFileTypeLabel(int file_type, bool save);
   void        GetFileTypeExtensions(int file_type, bool save, std::vector<std::string>& extensions);
   const char* GetDefaultExtension(int file_type, bool save);

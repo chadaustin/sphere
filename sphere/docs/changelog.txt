@@ -1,3 +1,6 @@
+2003.12.25
+  - Made Project View support multiple folders e.g. maps/towns/freddys.rmp and such
+
 2003.12.24
   - Replaced Image/Map Tools palette with Image/Map toolbars
   - Made repeat command have a tick next to it when repeating
