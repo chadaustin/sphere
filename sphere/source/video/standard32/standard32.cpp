@@ -499,9 +499,6 @@ void CloseWindowed()
 
 void FillImagePixels(IMAGE image, RGBA* pixels)
 {
-#ifdef USE_ALPHA_TABLE
-  unsigned char al;
-#endif
   // fill the image pixels
   if (BitsPerPixel == 32)
   {
@@ -509,10 +506,9 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
     for (int i = 0; i < image->width * image->height; ++i)
     {
 #ifdef USE_ALPHA_TABLE
-      al = pixels[i].alpha;
-      image->bgra[i].red   = alpha_new[al][pixels[i].red  ];
-      image->bgra[i].green = alpha_new[al][pixels[i].green];
-      image->bgra[i].blue  = alpha_new[al][pixels[i].blue ];
+      image->bgra[i].red   = alpha_new[pixels[i].alpha][pixels[i].red  ];
+      image->bgra[i].green = alpha_new[pixels[i].alpha][pixels[i].green];
+      image->bgra[i].blue  = alpha_new[pixels[i].alpha][pixels[i].blue ];
 #else
       image->bgra[i].red   = (pixels[i].red   * pixels[i].alpha) / 256;
       image->bgra[i].green = (pixels[i].green * pixels[i].alpha) / 256;
@@ -526,10 +522,9 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
     for (int i = 0; i < image->width * image->height; ++i)
     {
 #ifdef USE_ALPHA_TABLE
-      al = pixels[i].alpha;
-      image->bgr[i].red   = alpha_new[al][pixels[i].red  ];
-      image->bgr[i].green = alpha_new[al][pixels[i].green];
-      image->bgr[i].blue  = alpha_new[al][pixels[i].blue ];
+      image->bgr[i].red   = alpha_new[pixels[i].alpha][pixels[i].red  ];
+      image->bgr[i].green = alpha_new[pixels[i].alpha][pixels[i].green];
+      image->bgr[i].blue  = alpha_new[pixels[i].alpha][pixels[i].blue ];
 #else
       image->bgr[i].red   = (pixels[i].red   * pixels[i].alpha) / 256;
       image->bgr[i].green = (pixels[i].green * pixels[i].alpha) / 256;

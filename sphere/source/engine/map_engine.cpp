@@ -12,7 +12,6 @@
 
 static const int c_MaxSkipFrames = 10;
 
-/*
 static inline void MapEngineLog(const std::string text) {
   static bool firstcall = true;
   FILE* file = fopen("mapengine.log", ((firstcall) ? ("w+") : ("a")));
@@ -25,7 +24,6 @@ static inline void MapEngineLog(const std::string text) {
 
   fprintf(stderr, "%s\n", text.c_str());
 }
-*/
 
 static inline std::string itos(int i)
 {
@@ -2369,6 +2367,23 @@ CMapEngine::GetTalkActivationKey()
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::SetTalkActivationButton(int button)
+{
+  m_JoystickTalkButton = button;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CMapEngine::GetTalkActivationButton()
+{
+  return m_JoystickTalkButton;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::SetTalkDistance(int pixels)
 {
   m_TalkActivationDistance = pixels;
@@ -3884,6 +3899,10 @@ CMapEngine::UpdateEdgeScripts()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static inline int round(double v) {
+  return floor(v + 0.5);
+}
+
 bool
 CMapEngine::ProcessInput()
 {
@@ -3938,7 +3957,6 @@ CMapEngine::ProcessInput()
     }
   }
 
-
   // process default input bindings
   if (m_IsInputAttached) {
 
@@ -3951,8 +3969,8 @@ CMapEngine::ProcessInput()
     if (new_keys[KEY_LEFT])  dx--;
 
     if (GetNumJoysticks() > 0) {
-      dx += (int) (GetJoystickX(0));
-      dy += (int) (GetJoystickY(0));
+      dx += round(GetJoystickX(0));
+      dy += round(GetJoystickY(0));
     }
 
     if (dy < 0) m_Persons[m_InputPerson].commands.push_back(Person::Command(COMMAND_MOVE_NORTH, true));

@@ -199,9 +199,12 @@ public:
   bool GetObstructingTile(const char* name, int x, int y, int& result);
   bool GetObstructingPerson(const char* name, int x, int y, std::string& result);
 
+
   bool SetTalkActivationKey(int key);
-  bool SetTalkDistance(int pixels);
+  bool SetTalkActivationButton(int button);
   int GetTalkActivationKey();
+  int GetTalkActivationButton();
+  bool SetTalkDistance(int pixels);
   int GetTalkDistance();
 
   bool SetMapEngineFrameRate(int fps);
