@@ -748,9 +748,9 @@ CLayerView::OnLayerSlideLeft() {
 
 afx_msg void
 CLayerView::OnLayerSlideOther() {
-  CNumberDialog dx("Slide Horizontally", "Value", 0, m_Map->GetLayer(m_SelectedLayer).GetWidth() * -1, m_Map->GetLayer(m_SelectedLayer).GetWidth()); 
+  CNumberDialog dx("Slide Horizontally", "Value", 0, -m_Map->GetLayer(m_SelectedLayer).GetWidth(), m_Map->GetLayer(m_SelectedLayer).GetWidth()); 
   if (dx.DoModal() == IDOK) {
-    CNumberDialog dy("Slide Vertically", "Value", 0, m_Map->GetLayer(m_SelectedLayer).GetHeight() * -1, m_Map->GetLayer(m_SelectedLayer).GetHeight()); 
+    CNumberDialog dy("Slide Vertically", "Value", 0, -m_Map->GetLayer(m_SelectedLayer).GetHeight(), m_Map->GetLayer(m_SelectedLayer).GetHeight()); 
     if (dy.DoModal() == IDOK) {
       if (dx.GetValue() != 0 || dy.GetValue() != 0) {
         m_Map->Translate(dx.GetValue(), dy.GetValue(), m_SelectedLayer);

@@ -1614,9 +1614,9 @@ CImageView::OnSlideLeft()
 afx_msg void
 CImageView::OnSlideOther()
 {
-  CNumberDialog dx("Slide Horizontally", "Value", 0, 0, GetSelectionWidth()); 
+  CNumberDialog dx("Slide Horizontally", "Value", 0, -GetSelectionWidth(), GetSelectionWidth()); 
   if (dx.DoModal() == IDOK) {
-    CNumberDialog dy("Slide Vertically", "Value", 0, 0, GetSelectionHeight()); 
+    CNumberDialog dy("Slide Vertically", "Value", 0, -GetSelectionHeight(), GetSelectionHeight()); 
     if (dy.DoModal() == IDOK) {
       if (dx.GetValue() != 0 || dy.GetValue() != 0) {
 
