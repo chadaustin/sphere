@@ -6,6 +6,23 @@ them to here.
 ==== OPTIMIZING SPHERE ====
 
 
+-- Fewer Layers in your Maps --
+
+The fewer layers you use in your maps, the faster they draw.  Beaker
+says:
+
+Also, reducing the number of layers used in a map is always a good
+thing. Sometimes you can get of a layer of a map by making new tiles
+which are overlays of several other ones and then place them in some
+other layer. Or if there arn't that many tiles being used in that
+layer, you might be able to manually blit the tiles using a layer
+rendering script. If there's only five tiles in the layer, then a
+script that only blits those five tiles might be better than making a
+layer for them in which sphere would have to go through all the blank
+tiles in that layer as well.
+
+
+
 -- Efficient Resource Management --
 
 
