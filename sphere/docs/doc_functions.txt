@@ -441,6 +441,9 @@ log_object.endBlock()
     GetTile(x, y, layer)
       - returns tile on map
 
+    GetTileName(tile_index)
+      - returns the name of the tile 'tile_index'
+
     GetTileWidth()
       - returns width in pixels of tiles on current map
 

@@ -23,6 +23,7 @@ sTile::sTile(const sTile& rhs)
   m_NextTile       = rhs.m_NextTile;
   m_Delay          = rhs.m_Delay;
   m_ObstructionMap = rhs.m_ObstructionMap;
+  m_Name           = rhs.m_Name;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,6 +37,7 @@ sTile::operator=(const sTile& rhs)
   m_NextTile       = rhs.m_NextTile;
   m_Delay          = rhs.m_Delay;
   m_ObstructionMap = rhs.m_ObstructionMap;
+  m_Name           = rhs.m_Name;
 
   return *this;
 }
@@ -62,6 +64,22 @@ void
 sTile::SetDelay(int delay)
 {
   m_Delay = delay;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+sTile::SetName(std::string tile_name)
+{
+  m_Name = tile_name;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+std::string
+sTile::GetName()
+{
+  return m_Name;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

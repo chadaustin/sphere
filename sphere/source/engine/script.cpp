@@ -2187,6 +2187,20 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(GetTileName, 1)
+  arg_int(tile_index);
+  
+  std::string name;
+  if (!This->m_Engine->GetMapEngine()->GetTileName(tile_index, name)) {
+    This->ReportMapEngineError("GetTileName() failed");
+    return JS_FALSE;
+  }
+
+  return_str(name.c_str());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 begin_func(GetTileWidth, 0)
 
   int width;

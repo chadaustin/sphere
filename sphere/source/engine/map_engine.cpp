@@ -560,6 +560,26 @@ CMapEngine::GetTile(int x, int y, int layer, int& tile)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::GetTileName(int tile_index, std::string& name)
+{
+  if (!m_IsRunning) {
+    m_ErrorMessage = "GetTileName() called while map engine was not running";
+    return false;
+  }
+
+  // make sure tile_index is valid
+  if (tile_index < 0 || tile_index > m_Map.GetMap().GetTileset().GetNumTiles()) {
+    m_ErrorMessage = "Invalid tile_index";
+    return false;
+  }
+
+  name = m_Map.GetMap().GetTileset().GetTile(tile_index).GetName();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::GetTileWidth(int& width)
 {
   if (!m_IsRunning) {

@@ -20,15 +20,18 @@ public:
   bool IsAnimated() const;
   int  GetNextTile() const;
   int  GetDelay() const;
+  std::string GetName();
 
   void SetAnimated(bool animated);
   void SetNextTile(int next_tile);
   void SetDelay(int delay);
+  void SetName(std::string tile_name);
 
 private:
   bool m_Animated;
   int  m_NextTile;
   int  m_Delay;
+  std::string m_Name;
 
   sObstructionMap m_ObstructionMap;
 };

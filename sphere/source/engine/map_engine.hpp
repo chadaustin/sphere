@@ -87,6 +87,7 @@ public:
   bool GetNumTiles(int& tiles);
   bool SetTile(int x, int y, int layer, int tile);
   bool GetTile(int x, int y, int layer, int& tile);
+  bool GetTileName(int tile_index, std::string& name);
   bool GetTileWidth(int& width);
   bool GetTileHeight(int& height);
 
