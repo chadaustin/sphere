@@ -263,21 +263,6 @@ log_object.endBlock()
   + all color components are from 0-255 (unsigned 8-bits each, 4x8bit == 32bit)
 
 
-  *** maps ***
-  LoadMap(filename)
-    - loads the map from 'filename'
-
-  map_object.layers
-    - array of map_layer objects
-
-  map_object.start
-    START POSITION
-    - map_object.start.x
-    - map_object.start.y
-    - map_object.start.layer
-
-  map_object.
-  
   /* maps */
   
   MapEngine(map, fps)
