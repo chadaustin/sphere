@@ -26,7 +26,6 @@ struct FILELISTimp
 };
 
 
-
 std::stack<std::string> DirectoryStack;
 
 

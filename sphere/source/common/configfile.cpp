@@ -51,6 +51,8 @@ inline bool read_line(IFile* file, std::string& s)
 bool
 CConfigFile::Load(const char* filename, IFileSystem& fs)
 {
+  printf("Loading config file: %s\n", filename);
+
   m_sections.erase(m_sections.begin(), m_sections.end());
 
   // open the file

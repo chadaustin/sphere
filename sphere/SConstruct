@@ -72,31 +72,39 @@ def SetupJS(env):
                LIBS = ['js32'])
 
 def SetupMNG(env):
-    env.Append(LIBS = ['mng', 'jpeg'])
+    env.Append(LIBS = ['mng', 'jpeg', 'z'])
+    if sys.platform == 'cygwin':
+        env.Append(
+            CCFLAGS = ['-DMNG_NO_CMS', '-DMNG_SUPPORT_LC', '-DMNG_DLL'])
+    
 
 def SetupZLib(env):
+    if sys.platform == 'cygwin':
+        env.Append(CCFLAGS = ['-DWINDOWS', '-DZLIB_DLL'])
     env.Append(LIBS = ['z'])
-
-#def SetupSDL(env):
-#    if sys.platform == 'cygwin':
-#        env.Append(CPPPATH = '/usr/local/include/SDL')
-#    else:
-#        ParseConfig(env, 'sdl-config', Split('--cflags --libs'))
 
 Export('SetupAudiere SetupCorona SetupGL SetupJS SetupMNG SetupZLib')
 
 base_env = Environment(ENV = os.environ)
 
 if sys.platform == 'cygwin':
-    base_env.Append(CCFLAGS = ['-DCOR_CALL=',
-                               '-DADR_CALL=',
-                               '-DWIN32',
-                               '-D_WIN32',
-                               '-DCYGWIN',
-                               '-DXP_PC'],
-                    CPPPATH = [Dir('third-party/include')],
-                    LIBPATH = [Dir('third-party/lib')])
+    base_env['SHLIBPREFIX'] = ''
+    base_env['SHLIBSUFFIX'] = '.dll'
+    base_env.Append(
+        _RESINCFLAGS = '$( ${_concat("--include-dir ", RESPATH, "", locals(), globals())} $)',
+        CCFLAGS = ['-DWIN32', '-D_WIN32', '-DCYGWIN', '-DXP_PC',
+                   '-mno-cygwin'],
+        CPPPATH = [Dir('third-party/include')],
+        LIBPATH = [Dir('third-party/lib')],
+        LINKFLAGS = ['-mno-cygwin'])
+    base_env['BUILDERS']['Resource'] = Builder(
+        action = 'windres -O coff --define CYGWIN $_RESINCFLAGS $SOURCE -o $TARGET')
+
+if ARGUMENTS.get('debug', 0):
+    base_env.Append(
+        CCFLAGS = ['-DDEBUG', '-g'],
+        LINKFLAGS = ['-g'])
 
 Export('base_env')
 
-SConscript(dirs = ['source'])
+SConscript(dirs = ['source', 'system'])

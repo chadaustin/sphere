@@ -1,0 +1,15 @@
+Import('base_env')
+
+base_env.Install('#/build/system', Split("""
+    arial.rfn
+    dauphin.rfn
+    down_arrow.png
+    mike.rfn
+    pointer.png
+    system.ini
+    system.rfn
+    system.rws
+    up_arrow.png
+    """))
+
+SConscript(dirs = ['scripts'])

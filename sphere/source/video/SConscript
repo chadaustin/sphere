@@ -1,0 +1,8 @@
+SConscript(dirs = [
+    'common',
+    'interpolate16',
+    'interpolate32',
+    'sphere_gl',
+    'standard8',
+    'standard16',
+    'standard32'])

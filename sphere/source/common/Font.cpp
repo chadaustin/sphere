@@ -41,6 +41,7 @@ sFont::Load(const char* filename, IFileSystem& fs)
 {
   std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::read));
   if (!file.get()) {
+    printf("Could not open font file: %s\n", filename);
     return false;
   }
 
@@ -50,6 +51,7 @@ sFont::Load(const char* filename, IFileSystem& fs)
   if (memcmp(header.signature, ".rfn", 4) != 0 ||
       (header.version != 1 && header.version != 2))
   {
+    printf("Invalid font header");
     return false;
   }
 

@@ -1,0 +1,25 @@
+Import('base_env')
+
+base_env.Install('#/build/system/scripts', Split("""
+    animation.js
+    audio.js
+    clock.js
+    colors.js
+    colorspace.js
+    convert.js
+    fademessage.js
+    graphics.js
+    input.js
+    intro.js
+    layers.js
+    map_animation.js
+    math.js
+    menu.js
+    old_spriteset.js
+    oldsphere.js
+    screen.js
+    time.js
+    timed_animation.js
+    timer.js
+    wintro.js
+    """))

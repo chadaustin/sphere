@@ -65,8 +65,10 @@ bool InitVideo(HWND window, SPHERECONFIG* config)
   // Loads driver
   std::string graphics_driver = "system/video/" + config->videodriver;
   GraphicsDriver = LoadLibrary(graphics_driver.c_str());
-  if (GraphicsDriver == NULL)
+  if (GraphicsDriver == NULL) {
+    puts("LoadLibrary() failed");
     return false;
+  }
 
   // Gets addresses of all of the graphics functions
   assign(_FlipScreen,            GetProcAddress(GraphicsDriver, "FlipScreen"));
@@ -121,6 +123,7 @@ bool InitVideo(HWND window, SPHERECONFIG* config)
       !DrawRectangle ||
       !DrawGradientRectangle)
   {
+    puts("Couldn't get all entry points");
     FreeLibrary(GraphicsDriver);
     return false;
   }
