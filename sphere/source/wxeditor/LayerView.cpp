@@ -238,7 +238,9 @@ static void DrawLayerButton(wxDC &dc, wxRect rect, const sLayer& layer, bool pus
   SetTextColor(dc, 0x000000);
   SetBkColor(dc, 0xFFFFFF);
   SetBkMode(dc, TRANSPARENT);
-  DrawText(dc, layer.GetName(), strlen(layer.GetName()), &rect, DT_CENTER | DT_VCENTER);
+ 
+  DrawText(dc, layer.GetName(), strlen(layer.GetName().c_str()), &rect, DT_CENTER | DT_VCENTER);
+
 */
   
   // clean up

@@ -1,6 +1,22 @@
 var gLayerTileDetails = new Array();
 
 /** 
+  returns the index of the tile 'name' 
+  returns -1 if the tile doesn't exist 
+*/ 
+function GetTileIndex(name) { 
+  var index = -1; 
+  for (var i = 0; i < GetNumLayers(); i++) { 
+    if (GetTileName(i) == name) { 
+      index = i; 
+      break; 
+    } 
+  } 
+  return index; 
+} 
+
+
+/** 
   returns the index of the layer 'layer_name' 
   returns -1 if the layer doesn't exist 
 */ 

@@ -7,6 +7,7 @@ EvaluateSystemScript("layers.js");
 
 This is so you can use the following functions:
 
+GetTileIndex(tile_name)
 GetLayerIndex(layer_name)
 ConvertLayer(layer_index, tile_index, dont_remember_details)
 IsLayerConverted(layer_index)
@@ -26,4 +27,16 @@ Where you have your door, add the trigger:
 
 ToggleLayer(GetLayerIndex("roof_layer"), 1);
 
-(Providing that you have a layer called "roof_layer" and the blank tile is the second tile in the tileset, the roof will disappear, or when walking back through the door, reappear.)
+(Providing that you have a layer called "roof_layer"
+and the blank tile is the second tile in the tileset,
+the roof will disappear,
+or when walking back through the door, reappear.)
+
+You can also write:
+
+ToggleLayer(GetLayerIndex("roof_layer"), GetTileIndex("blank"));
+
+(Providing that you have a layer called "roof_layer"
+and a tile called 'blank',
+the the roof will disappear,
+or when walking back through the door, reappear.)
