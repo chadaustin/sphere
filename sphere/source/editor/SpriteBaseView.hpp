@@ -27,6 +27,8 @@ private:
   void Drag(int x, int y);
   void WindowToImage(int* x, int* y);
 
+  void UpdateStatusBar();
+
   afx_msg void OnSize(UINT type, int cx, int cy);
   afx_msg void OnPaint();
 

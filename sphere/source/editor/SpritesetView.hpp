@@ -58,11 +58,15 @@ private:
   afx_msg void OnInsertFrame();
   afx_msg void OnDeleteFrame();
   afx_msg void OnAppendFrame();
+  afx_msg void OnInsertFrames();
+  afx_msg void OnAppendFrames();
+  afx_msg void OnRemoveFrames();
+  
   afx_msg void OnCopyFrame();
   afx_msg void OnPasteFrame();
   afx_msg void OnFrameProperties();
   afx_msg void OnFillDelay();
-  afx_msg void OnRemoveFrames();
+  
   afx_msg void OnImportFrameFromImage();
   afx_msg void OnExportFrameToImage();
 

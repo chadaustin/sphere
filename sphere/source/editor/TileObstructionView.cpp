@@ -57,12 +57,17 @@ CTileObstructionView::OnPaint()
   CPaintDC dc_(this);
   HDC dc = dc_.m_hDC;
 
-  // draw tile and obstruction lines onto backbuffer tile
-  RenderTile();
-
   // get window size
   RECT rect;
   GetClientRect(&rect);
+
+  if (!m_pixels) {
+    FillRect(dc, &rect, (HBRUSH)GetStockObject(BLACK_BRUSH));
+    return;
+  }
+
+  // draw tile and obstruction lines onto backbuffer tile
+  RenderTile();
 
   // draw the pixels
   for (int iy = 0; iy < m_tile->GetHeight(); iy++) {
@@ -147,6 +152,9 @@ CTileObstructionView::OnRButtonDown(UINT flags, CPoint point)
 void
 CTileObstructionView::RenderTile()
 {
+  if (!m_pixels)
+    return;
+
   struct Local {
     struct Color {
       RGBA operator()(int, int) {

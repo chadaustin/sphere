@@ -105,7 +105,7 @@ CTilePalette::GetNumTilesPerRow() const
 afx_msg void
 CTilePalette::OnZoomIn()
 {
-  m_TilesetView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_TILESETVIEW_ZOOM_IN, 0), 0);
+  m_TilesetView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_FILE_ZOOM_IN, 0), 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -113,7 +113,7 @@ CTilePalette::OnZoomIn()
 afx_msg void
 CTilePalette::OnZoomOut()
 {
-  m_TilesetView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_TILESETVIEW_ZOOM_OUT, 0), 0);
+  m_TilesetView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_FILE_ZOOM_OUT, 0), 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

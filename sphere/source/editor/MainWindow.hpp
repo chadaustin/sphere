@@ -149,6 +149,8 @@ private:
 
   afx_msg void UpdateToolBars(WPARAM wparam = 0, LPARAM lparam = 0);
 
+  void DockControlBarLeftOf(CToolBar* Bar, CToolBar* LeftOf);
+
 #define DEFINE_UPDATE_MAP_COMMAND(tool_id) afx_msg void OnUpdateMapCommand_##tool_id(CCmdUI* cmdui);
 
 DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_1X1)

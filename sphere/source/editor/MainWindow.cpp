@@ -286,6 +286,28 @@ void ShowWPConfig(WINDOWPLACEMENT& wp)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+CMainWindow::DockControlBarLeftOf(CToolBar* Bar, CToolBar* LeftOf)
+{
+	CRect rect;
+	DWORD dw;
+	UINT n;
+
+  RecalcLayout(TRUE);
+	
+	LeftOf->GetWindowRect(&rect);
+	rect.OffsetRect(1,0);
+	dw=LeftOf->GetBarStyle();
+	n = 0;
+	if (n == 0 && dw & CBRS_ALIGN_TOP)    n = AFX_IDW_DOCKBAR_TOP;
+	if (n == 0 && dw & CBRS_ALIGN_BOTTOM) n = AFX_IDW_DOCKBAR_BOTTOM;
+	if (n == 0 && dw & CBRS_ALIGN_LEFT)   n = AFX_IDW_DOCKBAR_LEFT;
+	if (n == 0 && dw & CBRS_ALIGN_RIGHT)  n = AFX_IDW_DOCKBAR_RIGHT;
+	
+	DockControlBar(Bar,n,&rect);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 BOOL
 CMainWindow::Create()
@@ -350,8 +372,8 @@ CMainWindow::Create()
   EnableDocking(CBRS_ALIGN_ANY);
 
   DockControlBar(&m_MainToolBar,  AFX_IDW_DOCKBAR_TOP);
-  DockControlBar(&m_ImageToolBar, AFX_IDW_DOCKBAR_TOP);
-  DockControlBar(&m_MapToolBar,   AFX_IDW_DOCKBAR_TOP);
+  DockControlBarLeftOf(&m_ImageToolBar, &m_MainToolBar);
+  DockControlBarLeftOf(&m_MapToolBar, &m_ImageToolBar);
 
 #ifdef TABBED_WINDOW_LIST
   m_wndMDITabs.Create(this, MT_IMAGES);
@@ -374,6 +396,7 @@ CMainWindow::Create()
     ShowWindow(SW_SHOW);
   }
 
+  /*
   wp = Configuration::Get(KEY_STANDARDTOOLBAR_PLACEMENT);
   if (wp.length != 0) {
     m_MainToolBar.SetWindowPlacement(&wp);
@@ -394,6 +417,7 @@ CMainWindow::Create()
   } else {
     m_MapToolBar.ShowWindow(SW_SHOW);
   }
+  */
 
   UpdateWindow();
   UpdateMenu();

@@ -56,6 +56,11 @@ private:
   afx_msg void OnZoomIn();
   afx_msg void OnZoomOut();
 
+  afx_msg void OnZoom1X();
+  afx_msg void OnZoom2X();
+  afx_msg void OnZoom4X();
+  afx_msg void OnZoom8X();
+
 private:
   ISpritesetImagesPaletteHandler* m_Handler;
   sSpriteset* m_Spriteset;

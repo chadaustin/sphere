@@ -40,9 +40,11 @@ BEGIN_MESSAGE_MAP(CSpritesetView, CWnd)
   ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_FILLDELAY,  OnFillDelay)
 
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_INSERT,     OnInsertFrame)
-  ON_COMMAND(ID_SPRITESETVIEWFRAMES_DELETE,     OnDeleteFrame)
-  ON_COMMAND(ID_SPRITESETVIEWFRAMES_REMOVEFRAMES, OnRemoveFrames)
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_APPEND,     OnAppendFrame)
+  ON_COMMAND(ID_SPRITESETVIEWFRAMES_DELETE,     OnDeleteFrame)
+  ON_COMMAND(ID_SPRITESETVIEWFRAMES_INSERTFRAMES, OnInsertFrames)
+  ON_COMMAND(ID_SPRITESETVIEWFRAMES_APPENDFRAMES, OnAppendFrames)
+  ON_COMMAND(ID_SPRITESETVIEWFRAMES_REMOVEFRAMES, OnRemoveFrames)
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_COPY,       OnCopyFrame)
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_PASTE,      OnPasteFrame)
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_PROPERTIES, OnFrameProperties)
@@ -514,8 +516,10 @@ CSpritesetView::OnRButtonUp(UINT flags, CPoint point)
     HMENU menu = GetSubMenu(base_menu, 1);
 
     // enable/disable the menu items
-    if (m_Spriteset->GetNumFrames(m_CurrentDirection) < 2)
-      EnableMenuItem(menu, ID_SPRITESETVIEWFRAMES_DELETE, MF_BYCOMMAND | MF_GRAYED);
+    if (m_Spriteset->GetNumFrames(m_CurrentDirection) <= 1) {
+      EnableMenuItem(menu, ID_SPRITESETVIEWFRAMES_DELETE,       MF_BYCOMMAND | MF_GRAYED);
+      EnableMenuItem(menu, ID_SPRITESETVIEWFRAMES_REMOVEFRAMES, MF_BYCOMMAND | MF_GRAYED);
+    }
 
     m_MenuDisplayed = true;
 
@@ -746,13 +750,53 @@ CSpritesetView::OnDeleteFrame()
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
+CSpritesetView::OnInsertFrames()
+{
+  CNumberDialog dialog("Insert Frames", "Number of Frames", 1, 1, 4096);
+  if (dialog.DoModal() == IDOK)
+  {
+    int num_frames = dialog.GetValue();
+    while (num_frames-- > 0) {
+      m_Spriteset->InsertFrame(m_CurrentDirection, m_CurrentFrame);
+    }
+
+    UpdateMaxSizes();
+    UpdateScrollBars();
+    Invalidate();
+    m_Handler->SV_SpritesetModified();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetView::OnAppendFrames()
+{
+  CNumberDialog dialog("Append Frames", "Number of Frames", 1, 1, 4096);
+  if (dialog.DoModal() == IDOK)
+  {
+    int num_frames = dialog.GetValue();
+    while (num_frames-- > 0) {
+      m_Spriteset->InsertFrame(m_CurrentDirection, m_Spriteset->GetNumFrames(m_CurrentDirection));
+    }
+
+    UpdateMaxSizes();
+    UpdateScrollBars();
+    Invalidate();
+    m_Handler->SV_SpritesetModified();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
 CSpritesetView::OnRemoveFrames()
 {
   CNumberDialog dialog("Delete Frames", "Number of Frames", 1, 1, m_Spriteset->GetNumFrames(m_CurrentDirection) - m_CurrentFrame - 1);
   if (dialog.DoModal() == IDOK)
   {
     int num_images = dialog.GetValue();
-    while (num_images-- >= 0) {
+    while (num_images-- > 0) {
       OnDeleteFrame();
     }
 

@@ -152,6 +152,9 @@ CTilePropertiesDialog::UpdateDialog()
   if (!m_Tiles)
     return;
 
+  GetDlgItem(IDC_NEXT)->EnableWindow(m_Tileset->GetNumTiles() > 1 ? TRUE : FALSE);
+  GetDlgItem(IDC_PREVIOUS)->EnableWindow(m_Tileset->GetNumTiles() > 1 ? TRUE : FALSE);
+
   // put default values in
   sTile& tile = m_Tiles[m_Tile];
 

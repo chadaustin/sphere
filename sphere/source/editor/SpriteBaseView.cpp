@@ -1,5 +1,6 @@
 #include "SpriteBaseView.hpp"
 #include "../common/minmax.hpp"
+#include "Editor.hpp"
 
 
 static int s_ViewID = 450;
@@ -53,10 +54,24 @@ CSpriteBaseView::Create(CWnd* parent, ISpriteBaseViewHandler* handler, sSpritese
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void 
+CSpriteBaseView::UpdateStatusBar()
+{
+  int x1, y1, x2, y2;
+  m_Spriteset->GetBase(x1, y1, x2, y2);
+
+  char text[1024];
+  sprintf (text, "Base: %d %d %d %d", x1, y1, x2, y2);
+  GetStatusBar()->SetWindowText(text);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 CSpriteBaseView::SetSprite(const CImage32* sprite)
 {
   m_Sprite = sprite;
+  UpdateStatusBar();
   Invalidate();
 }
 
@@ -69,7 +84,7 @@ CSpriteBaseView::BeginDrag(int x, int y)
 
   m_Spriteset->SetBase(x, y, x, y);
   m_Handler->SBV_SpritesetModified();
-
+  UpdateStatusBar();
   Invalidate();
 }
 
@@ -85,7 +100,7 @@ CSpriteBaseView::Drag(int x, int y)
 
   m_Spriteset->SetBase(x1, y1, x, y);
   m_Handler->SBV_SpritesetModified();
-
+  UpdateStatusBar();
   Invalidate();
 }
 

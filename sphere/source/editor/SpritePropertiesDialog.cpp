@@ -34,6 +34,9 @@ CSpritePropertiesDialog::~CSpritePropertiesDialog()
 void
 CSpritePropertiesDialog::UpdateDialog()
 {
+  GetDlgItem(IDC_NEXT)->EnableWindow(m_Spriteset->GetNumFrames(m_Direction) > 1 ? TRUE : FALSE);
+  GetDlgItem(IDC_PREVIOUS)->EnableWindow(m_Spriteset->GetNumFrames(m_Direction) > 1 ? TRUE : FALSE);
+
   int delay = m_DelayList ? m_DelayList[m_Frame] : m_Spriteset->GetFrameDelay(m_Direction, m_Frame);
   SetDlgItemInt(IDC_DELAY, delay);
 

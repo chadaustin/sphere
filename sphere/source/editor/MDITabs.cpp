@@ -29,6 +29,8 @@ CMDITabs::CMDITabs()
   m_bTop    = false;
 }
 
+/////////////////////////////////////////////////////////////////////////////
+
 BEGIN_MESSAGE_MAP(CMDITabs, CTabCtrl)
   //{{AFX_MSG_MAP(CMDITabs)
   ON_NOTIFY_REFLECT(TCN_SELCHANGE, OnSelChange)
@@ -74,6 +76,8 @@ afx_msg LRESULT CMDITabs::OnSizeParent(WPARAM, LPARAM lParam)
   return 0;
 }
 
+/////////////////////////////////////////////////////////////////////////////
+
 void CMDITabs::OnSelChange(NMHDR* pNMHDR, LRESULT* pResult)
 {
   TCITEM item;
@@ -82,6 +86,8 @@ void CMDITabs::OnSelChange(NMHDR* pNMHDR, LRESULT* pResult)
   ::BringWindowToTop(HWND(item.lParam));
   *pResult = 0;
 }
+
+/////////////////////////////////////////////////////////////////////////////
 
 void CMDITabs::Update()
 {
@@ -149,6 +155,8 @@ void CMDITabs::Update()
   RedrawWindow(NULL, NULL, RDW_FRAME|RDW_INVALIDATE|RDW_ERASE);
   SetRedraw(true);
 }
+
+/////////////////////////////////////////////////////////////////////////////
 
 void CMDITabs::OnPaint()
 {
@@ -229,6 +237,8 @@ void CMDITabs::OnPaint()
   }
 }
 
+/////////////////////////////////////////////////////////////////////////////
+
 void CMDITabs::OnNcPaint()
 {
   HDC hdc = ::GetWindowDC(m_hWnd);
@@ -261,6 +271,8 @@ void CMDITabs::OnNcPaint()
   ::DeleteObject(pen);
   ::ReleaseDC(m_hWnd, hdc);
 }
+
+/////////////////////////////////////////////////////////////////////////////
 
 void CMDITabs::Create(CFrameWnd* pMainFrame, DWORD dwStyle)
 {
@@ -303,6 +315,8 @@ void CMDITabs::Create(CFrameWnd* pMainFrame, DWORD dwStyle)
   //SetItemSize(CSize(50, 0)); // Fixed Width Experiment
 }
 
+/////////////////////////////////////////////////////////////////////////////
+
 void CMDITabs::OnContextMenu(CWnd* pWnd, CPoint point) 
 {
   TCHITTESTINFO hit;
@@ -326,6 +340,8 @@ void CMDITabs::OnContextMenu(CWnd* pWnd, CPoint point)
   }
 }
 
+/////////////////////////////////////////////////////////////////////////////
+
 void CMDITabs::OnLButtonDblClk(UINT nFlags, CPoint point) 
 {
   int i = GetCurSel();
@@ -335,6 +351,14 @@ void CMDITabs::OnLButtonDblClk(UINT nFlags, CPoint point)
     item.mask = TCIF_PARAM;
     GetItem(i, &item);
     HWND hWnd = HWND(item.lParam);
-    ::ShowWindow(hWnd, SW_MAXIMIZE);
+
+    if (::IsIconic(hWnd) || ::IsZoomed(hWnd)) {
+      ::ShowWindow(hWnd, SW_RESTORE);
+    }
+    else {
+      ::ShowWindow(hWnd, SW_MAXIMIZE);
+    }
   }
 }
+
+/////////////////////////////////////////////////////////////////////////////

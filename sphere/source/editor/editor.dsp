@@ -306,6 +306,10 @@ SOURCE=.\resources\imagetool_circle.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\resources\imagetool_colorpicker.cur
+# End Source File
+# Begin Source File
+
 SOURCE=.\resources\imagetool_colorpicker.ico
 # End Source File
 # Begin Source File
@@ -1317,9 +1321,5 @@ SOURCE=..\..\..\http\time.cpp
 SOURCE=..\..\..\http\time.hpp
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=.\resources\imagetool_colorpicker.cur
-# End Source File
 # End Target
 # End Project

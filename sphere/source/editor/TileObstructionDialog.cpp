@@ -69,6 +69,9 @@ CTileObstructionDialog::OnInitDialog()
   GetClientRect(&rect);
   OnSize(0, rect.right, rect.bottom);
 
+  GetDlgItem(IDC_NEXT)->EnableWindow(m_tileset->GetNumTiles() > 1 ? TRUE : FALSE);
+  GetDlgItem(IDC_PREVIOUS)->EnableWindow(m_tileset->GetNumTiles() > 1 ? TRUE : FALSE);
+
   return TRUE;
 }
 
@@ -149,7 +152,8 @@ CTileObstructionDialog::OnPresets()
 bool
 CTileObstructionDialog::StoreTile()
 {
-  if (m_current_tile >= 0 && m_current_tile < m_tileset->GetNumTiles() - 1)
+  if (m_current_tile >= 0 && m_current_tile < m_tileset->GetNumTiles()
+   && m_current_tile < m_obstruction_maps.size())
   {
     m_tiles[m_current_tile] = m_edit_tile;
     m_obstruction_maps[m_current_tile] = m_edit_tile.GetObstructionMap();

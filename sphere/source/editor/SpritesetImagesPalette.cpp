@@ -26,6 +26,11 @@ BEGIN_MESSAGE_MAP(CSpritesetImagesPalette, CPaletteWindow)
   ON_COMMAND(ID_FILE_ZOOM_IN,  OnZoomIn)
   ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
 
+  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_ZOOM_1X, OnZoom1X)
+  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_ZOOM_2X, OnZoom2X)
+  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_ZOOM_4X, OnZoom4X)
+  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_ZOOM_8X, OnZoom8X)
+
 END_MESSAGE_MAP()
 
 
@@ -230,26 +235,37 @@ CSpritesetImagesPalette::OnRButtonUp(UINT flags, CPoint point)
   // show pop-up menu
   ClientToScreen(&point);
 
-  HMENU menu = ::LoadMenu(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_SPRITESET_IMAGES_PALETTE));
-  HMENU submenu = GetSubMenu(menu, 0);
+  HMENU menu_ = ::LoadMenu(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_SPRITESET_IMAGES_PALETTE));
+  HMENU menu = GetSubMenu(menu_, 0);
+
+  if (m_ZoomFactor == 1) {
+    CheckMenuItem(menu, ID_SPRITESETIMAGESPALETTE_ZOOM_1X, MF_BYCOMMAND | MF_CHECKED);
+  } else if (m_ZoomFactor == 2) {
+    CheckMenuItem(menu, ID_SPRITESETIMAGESPALETTE_ZOOM_2X, MF_BYCOMMAND | MF_CHECKED);
+  } else if (m_ZoomFactor == 4) {
+    CheckMenuItem(menu, ID_SPRITESETIMAGESPALETTE_ZOOM_4X, MF_BYCOMMAND | MF_CHECKED);
+  } else if (m_ZoomFactor == 8) {
+    CheckMenuItem(menu, ID_SPRITESETIMAGESPALETTE_ZOOM_8X, MF_BYCOMMAND | MF_CHECKED);
+  }
 
   // disable move back if we're on the first image
-  if (m_SelectedImage == 0) {
-    EnableMenuItem(submenu, ID_SPRITESETIMAGESPALETTE_MOVE_BACK, MF_BYCOMMAND | MF_GRAYED);
+  if (!(m_Spriteset->GetNumImages() > 1) || m_SelectedImage == 0) {
+    EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_MOVE_BACK, MF_BYCOMMAND | MF_GRAYED);
   }
 
   // disable move forward if we're on the last image
-  if (m_SelectedImage == m_Spriteset->GetNumImages() - 1) {
-    EnableMenuItem(submenu, ID_SPRITESETIMAGESPALETTE_MOVE_FORWARD, MF_BYCOMMAND | MF_GRAYED);
+  if ( !(m_Spriteset->GetNumImages() > 1) || m_SelectedImage == m_Spriteset->GetNumImages() - 1) {
+    EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_MOVE_FORWARD, MF_BYCOMMAND | MF_GRAYED);
   }
 
   // disable remove image if there is only one
-  if (m_Spriteset->GetNumImages() == 1) {
-    EnableMenuItem(submenu, ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGE, MF_BYCOMMAND | MF_GRAYED);
+  if (m_Spriteset->GetNumImages() <= 1) {
+    EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGE,  MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGES, MF_BYCOMMAND | MF_GRAYED);
   }
 
-  TrackPopupMenu(submenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, point.x, point.y, 0, m_hWnd, NULL);
-  DestroyMenu(menu);
+  TrackPopupMenu(menu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, point.x, point.y, 0, m_hWnd, NULL);
+  DestroyMenu(menu_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -457,7 +473,11 @@ CSpritesetImagesPalette::OnAppendImages() {
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CSpritesetImagesPalette::OnRemoveImages() {
+CSpritesetImagesPalette::OnRemoveImages()
+{
+  if ( !(m_Spriteset->GetNumImages() > 1))
+    return;
+
   CNumberDialog dialog("Delete Images", "Number of Images", 1, 1, m_Spriteset->GetNumImages() - m_SelectedImage - 1);
   if (dialog.DoModal() == IDOK)
   {
@@ -553,6 +573,34 @@ CSpritesetImagesPalette::OnZoomOut()
     case 4: OnZoom(2); break;
     case 8: OnZoom(4); break;
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetImagesPalette::OnZoom1X() {
+  OnZoom(1);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetImagesPalette::OnZoom2X() {
+  OnZoom(2);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetImagesPalette::OnZoom4X() {
+  OnZoom(4);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetImagesPalette::OnZoom8X() {
+  OnZoom(8);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
