@@ -234,6 +234,7 @@ private:
   // byte arrays
   declare_constructor2(CreateByteArrayObject, int size, const void* data = NULL);
   declare_finalizer(ssFinalizeByteArray);
+  //declare_method(ssByteArrayConcat);
   declare_property(ssByteArrayGetProperty);
   declare_property(ssByteArraySetProperty);
 

@@ -4520,7 +4520,7 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
     { "drawText",         ssSurfaceDrawText,         4, 0, 0 },
     { "drawZoomedText",   ssSurfaceDrawZoomedText,   5, 0, 0 },
     { "drawTextBox",      ssSurfaceDrawTextBox,      7, 0, 0 },
-    { "save",             ssSurfaceSave,             2, 0, 0 },
+    { "save",             ssSurfaceSave,             1, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -4721,9 +4721,11 @@ begin_method(SS_SURFACE, ssSurfaceRotate, 2)
 
   object->surface->Rotate(degrees, autosize);
 
-  // redefine width and height properties
-  JS_DefineProperty(cx, obj, "width",  INT_TO_JSVAL(object->surface->GetWidth()),  JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
-  JS_DefineProperty(cx, obj, "height", INT_TO_JSVAL(object->surface->GetHeight()), JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
+  if (autosize) {
+    // redefine width and height properties
+    JS_DefineProperty(cx, obj, "width",  INT_TO_JSVAL(object->surface->GetWidth()),  JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
+    JS_DefineProperty(cx, obj, "height", INT_TO_JSVAL(object->surface->GetHeight()), JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
+  }
 
 end_method()
 
@@ -4866,11 +4868,22 @@ end_method()
 
 begin_method(SS_SURFACE, ssSurfaceSave, 1)
   arg_str(filename);
+  const char* type = "png";
+
+  bool saved = false;
+
+  if (argc >= 2) {
+    type = argStr(cx, argv[1]);
+  }
 
   std::string path = "images/";
   path += filename;
 
-  return_bool( object->surface->Save(path.c_str()) );
+  if (strcmp(type, "png")) {
+    saved = object->surface->Save(path.c_str());
+  }
+
+  return_bool( saved );
 end_method()
 
 ///////////////////////////////////////
@@ -5252,8 +5265,8 @@ end_method()
 begin_method(SS_RAWFILE, ssRawFileClose, 0)
   if (object->file && object->is_open) {
     delete object->file;
-    object->is_open = false;
   }
+  object->is_open = false;
 end_method()
 
 ///////////////////////////////////////
@@ -5276,6 +5289,15 @@ CScript::CreateByteArrayObject(JSContext* cx, int size, const void* data)
   if (object == NULL) {
     return NULL;
   }
+
+/*
+  // add the methods into the object
+  static JSFunctionSpec fs[] = {
+    { "concat",       ssByteArrayConcat,    1, 0, 0 },
+    { 0, 0, 0, 0, 0 },
+  };
+  JS_DefineFunctions(cx, object, fs);
+*/
 
   // give the object a "length" property
   JS_DefineProperty(cx, object, "length", INT_TO_JSVAL(size), JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
@@ -5304,19 +5326,42 @@ end_finalizer()
 
 ///////////////////////////////////////
 
+/*
+begin_method(SS_BYTEARRAY, ssByteArrayConcat, 1)
+  arg_byte_array(byte_array);
+
+  int size =  object->size + byte_array->size;
+  byte* data = new byte[size];
+    memcpy(data, object->array, object->size);
+    memcpy(data + object->size, byte_array->array, byte_array->size);
+
+    JSObject* concated_byte_array = CreateByteArrayObject(cx, size, data);
+  delete[] data;
+
+  return_object ( concated_byte_array );
+end_method()
+*/
+
+////////////////////////////////////////
+
 begin_property(SS_BYTEARRAY, ssByteArrayGetProperty)
-  int prop_id = argInt(cx, id);
-  if (prop_id < 0 || prop_id >= object->size) {
-    JS_ReportError(cx, "Byte array access out of bounds (%d)", prop_id);
-    return JS_FALSE;
+
+  if (JSVAL_IS_INT(id)) {
+    int prop_id = argInt(cx, id);
+    if (prop_id < 0 || prop_id >= object->size) {
+      JS_ReportError(cx, "Byte array access out of bounds (%d)", prop_id);
+      return JS_FALSE;
+    }
+
+    *vp = INT_TO_JSVAL(object->array[prop_id]);
   }
 
-  *vp = INT_TO_JSVAL(object->array[prop_id]);
 end_property()
 
 ////////////////////////////////////////
 
 begin_property(SS_BYTEARRAY, ssByteArraySetProperty)
+
   int prop_id = argInt(cx, id);
   if (prop_id < 0 || prop_id >= object->size) {
     JS_ReportError(cx, "Byte array access out of bounds (%d)", prop_id);
@@ -5327,3 +5372,4 @@ begin_property(SS_BYTEARRAY, ssByteArraySetProperty)
 end_property()
 
 ////////////////////////////////////////
+

@@ -384,7 +384,7 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
     // render initialization
     glEnable(GL_SCISSOR_TEST);
     glScissor(0, 0, ScreenWidth, ScreenHeight);
-//    glEnable(GL_TEXTURE_2D);
+    //    glEnable(GL_TEXTURE_2D);
     glShadeModel(GL_SMOOTH);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

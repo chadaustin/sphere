@@ -64,6 +64,7 @@ static bool CreateTexture(IMAGE image);
 
 void EXPORT DirectGrab(int x, int y, int w, int h, RGBA* pixels);
 void EXPORT BlitImageMask(IMAGE image, int x, int y, RGBA mask);
+void EXPORT TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask);
 
 
 // globals
@@ -73,7 +74,7 @@ static IDirect3D8*       s_Direct3D;
 static IDirect3DDevice8* s_Direct3DDevice;
 static int               s_ScreenWidth;
 static int               s_ScreenHeight;
-
+static bool              s_Fullscreen;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -193,6 +194,8 @@ BOOL CALLBACK ConfigureDriverDialogProc(HWND dialog, UINT message, WPARAM wparam
 
 bool EXPORT InitVideoDriver(HWND window, int screen_width, int screen_height)
 {
+  static bool firstcall = true;
+
   LoadConfig();
 
   // create the Direct3D object
@@ -202,9 +205,14 @@ bool EXPORT InitVideoDriver(HWND window, int screen_width, int screen_height)
     return false;
   }
 
+  if (firstcall) {
+    s_Fullscreen = s_Configuration.fullscreen;
+    firstcall = false;
+  }
+  
   // set the display mode
   D3DDISPLAYMODE display_mode;
-  if (s_Configuration.fullscreen) {   // FULLSCREEN
+  if (s_Fullscreen) {   // FULLSCREEN
 
     display_mode.RefreshRate = 0;  // use default
     display_mode.Format      = D3DFMT_A8R8G8B8;
@@ -241,7 +249,7 @@ bool EXPORT InitVideoDriver(HWND window, int screen_width, int screen_height)
   // define how we want our application displayed
   D3DPRESENT_PARAMETERS d3dpp;
   memset(&d3dpp, 0, sizeof(d3dpp));
-  d3dpp.Windowed         = (s_Configuration.fullscreen ? FALSE : TRUE);
+  d3dpp.Windowed         = (s_Fullscreen ? FALSE : TRUE);
   d3dpp.SwapEffect       = D3DSWAPEFFECT_DISCARD;
   d3dpp.BackBufferFormat = display_mode.Format;
   d3dpp.BackBufferWidth  = display_mode.Width;
@@ -492,12 +500,30 @@ void EXPORT BlitImageMask(IMAGE image, int x, int y, RGBA mask)
 
 void EXPORT TransformBlitImage(IMAGE image, int x[4], int y[4])
 {
+  TransformBlitImageMask(image, x, y, CreateRGBA(255, 255, 255, 255));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void EXPORT TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
 {
+  D3DCOLOR c = D3DCOLOR_RGBA(mask.red, mask.green, mask.blue, mask.alpha);
+  int w = image->width;
+  int h = image->height;
+  float u = image->tex_width;
+  float v = image->tex_height;
+
+  TEXTURE_VERTEX vertex[] = {
+    { (float)x[0],     (float)y[0],      0.0f, 1.0f, c, 0.0f, 0.0f, },
+    { (float)x[1],     (float)y[1],      0.0f, 1.0f, c, u,    0.0f, },
+    { (float)x[2],     (float)y[2],  0.0f, 1.0f, c, u,    v, },
+    { (float)x[3],     (float)y[3],  0.0f, 1.0f, c, 0.0f, v, },
+  };
+
+  s_Direct3DDevice->SetVertexShader(TEXTURE_VERTEX_FORMAT);
+  s_Direct3DDevice->SetTexture(0, image->texture);
+  s_Direct3DDevice->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, vertex, sizeof(*vertex));
+  s_Direct3DDevice->SetTexture(0, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
