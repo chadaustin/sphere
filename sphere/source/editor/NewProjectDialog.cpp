@@ -1,6 +1,6 @@
 #include "NewProjectDialog.hpp"
 #include "resource.h"
-
+#include <ctype.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -45,6 +45,13 @@ CNewProjectDialog::OnOK()
   {
     MessageBox("Please enter a project name", "New Project");
     return;
+  }
+
+  for (unsigned int i = 0; i < strlen(m_szProjectName); i++) {
+    if (m_szProjectName[i] != '_' && !isalpha(m_szProjectName[i])) {
+      MessageBox("Project name must contain only A-Z or _", "New Project");
+      return;
+    }
   }
 
   if (strlen(m_szGameTitle) == 0)

@@ -72,8 +72,10 @@ CBrowseWindow::~CBrowseWindow()
 {
   // destroy all the child windows
   Destroy();
-  if (m_BlitTile)
+  if (m_BlitTile) {
     delete m_BlitTile;
+    m_BlitTile = NULL;
+  }
   ClearBrowseList();
   m_FileList.clear();
 }

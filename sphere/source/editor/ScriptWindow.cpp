@@ -514,10 +514,10 @@ CScriptWindow::Create()
     AfxGetApp()->m_hInstance,
     0);
 
-  m_ListType = 2;
-  CreateList(m_ListType);
-
   Initialize();
+
+  CreateList(m_ListType);
+  
   ::ShowWindow(m_Editor, SW_SHOW);
   ::UpdateWindow(m_Editor);
 
@@ -735,7 +735,8 @@ CScriptWindow::Initialize()
   m_ShowLineNumbers    = Configuration::Get(KEY_SCRIPT_SHOW_LINE_NUMBERS);
   m_ShowWhitespace     = Configuration::Get(KEY_SCRIPT_SHOW_WHITESPACE);
   m_WordWrap           = Configuration::Get(KEY_SCRIPT_WORD_WRAP);
-  m_AllowAutoComplete = Configuration::Get(KEY_SCRIPT_ALLOW_AUTOCOMPLETE);
+  m_AllowAutoComplete  = Configuration::Get(KEY_SCRIPT_ALLOW_AUTOCOMPLETE);
+  m_ListType           = Configuration::Get(KEY_SCRIPT_LIST_TYPE);
   SetScriptStyles();
 
   SetLineNumber(0);
@@ -947,17 +948,19 @@ public:
   }
 
   static void ProcessSelected(HWND list,
-              void (*process_selected)(HWND list, int index, void* data),
+              void (*process_selected)(HWND list, int list_index, int process_index, void* data),
               void* data)
   {
     int i;
+    int p;
     const int list_count = ::SendMessage(list, LB_GETCOUNT, 0, 0);
       
-    for (i = 0; i < list_count; i++)
+    for (i = 0, p = 0; i < list_count; i++)
     {
       int selected = ::SendMessage(list, LB_GETSEL, (WPARAM) i, 0);
       if (selected > 0) {
-        process_selected(list, i, data);
+        process_selected(list, i, p, data);
+        p++;
       }
     }
   }
@@ -971,7 +974,7 @@ CScriptWindow::OnScriptViewInsert()
 {
   struct Local {
 
-    static void process_selected(HWND list, int index, void* data)
+    static void process_selected(HWND list, int list_index, int process_index, void* data)
     {
       HWND editor = (HWND) data;
 
@@ -992,11 +995,11 @@ CScriptWindow::OnScriptViewInsert()
         }
       }
 
-      int len = ::SendMessage(list, LB_GETTEXTLEN, index, 0);
+      int len = ::SendMessage(list, LB_GETTEXTLEN, list_index, 0);
       if (len > 0) {
         char* buffer = new char[len + 1];
         if (buffer) {
-          ::SendMessage(list, LB_GETTEXT, index, (WPARAM)buffer);
+          ::SendMessage(list, LB_GETTEXT, list_index, (WPARAM)buffer);
           buffer[len] = 0;
 
           std::string str = "";
@@ -1011,8 +1014,17 @@ CScriptWindow::OnScriptViewInsert()
             }
           }
 
+          if (process_index == 1) {
+            ::SendMessage(editor, SCI_ADDTEXT, strlen("\n"), (WPARAM)"\n");
+          }
+
           ::SendMessage(editor, SCI_ADDTEXT, str.size(), (WPARAM)str.c_str());
           delete[] buffer;
+
+          if (process_index > 0) {
+            ::SendMessage(editor, SCI_ADDTEXT, strlen("\n"), (WPARAM)"\n");
+          }
+
         }
       }
     }
@@ -1052,6 +1064,7 @@ afx_msg void
 CScriptWindow::OnScriptViewSphereFunctions()
 {
   CreateList(1);
+  RememberConfiguration();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1060,6 +1073,7 @@ afx_msg void
 CScriptWindow::OnScriptViewControlStructures()
 {
   CreateList(2);
+  RememberConfiguration();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1068,6 +1082,7 @@ afx_msg void
 CScriptWindow::OnScriptViewCurrentScriptFunctions()
 {
   CreateList(3);
+  RememberConfiguration();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1076,6 +1091,7 @@ afx_msg void
 CScriptWindow::OnScriptViewClipboardHistory()
 {
   CreateList(4);
+  RememberConfiguration();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1760,6 +1776,7 @@ CScriptWindow::RememberConfiguration()
   Configuration::Set(KEY_SCRIPT_SHOW_WHITESPACE, m_ShowWhitespace);
   Configuration::Set(KEY_SCRIPT_WORD_WRAP, m_WordWrap);
   Configuration::Set(KEY_SCRIPT_ALLOW_AUTOCOMPLETE, m_AllowAutoComplete);
+  Configuration::Set(KEY_SCRIPT_LIST_TYPE, m_ListType);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

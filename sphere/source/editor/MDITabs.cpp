@@ -331,7 +331,7 @@ void CMDITabs::OnContextMenu(CWnd* pWnd, CPoint point)
 
     HWND hWnd = HWND(item.lParam);
     SetCurSel(i);
-    ::BringWindowToTop(hWnd);
+    //::BringWindowToTop(hWnd);
 
     HMENU menu = HMENU(::SendMessage(::GetTopWindow(hWnd), WM_GETTABSYSMENU, 0, 0));
     if (menu == 0) menu = ::GetSystemMenu(hWnd, FALSE);

@@ -2455,17 +2455,17 @@ CMainWindow::OnProjectPackageGame()
   std::list<std::string> files;
   EnumerateFiles("*", "", files);
 
-  std::string msg = "";
+  //std::string msg = "";
 
   CPackage package;
   std::list<std::string>::iterator i;
   for (i = files.begin(); i != files.end(); i++) {
     package.AddFile(i->c_str());
-    msg += i->c_str();
-    msg += " ";
+    //msg += i->c_str();
+    //msg += " ";
   }
   
-  MessageBox(msg.c_str());
+  //MessageBox(msg.c_str());
 
   // TODO:  show a wait dialog (no cancel)
   // it now shows "xyz% Complete" in the status bar...
