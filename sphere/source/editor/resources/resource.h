@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
+// Microsoft Developer Studio generated include file.
 // Used by editor.rc
 //
 #define IDR_MAIN                        101
@@ -162,6 +162,10 @@
 #define IDC_TOP_COLOR_TEXT              1131
 #define IDC_BOTTOM_COLOR_TEXT           1132
 #define IDC_FILTER_LIST                 1142
+#define IDC_FILTER_USE_RED              1149
+#define IDC_FILTER_USE_GREEN            1150
+#define IDC_FILTER_USE_BLUE             1151
+#define IDC_FILTER_USE_ALPHA            1152
 #define ID_FILE_IMPORT_BITMAPTORSS      12241
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40003
@@ -479,7 +483,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        232
 #define _APS_NEXT_COMMAND_VALUE         40658
-#define _APS_NEXT_CONTROL_VALUE         1144
+#define _APS_NEXT_CONTROL_VALUE         1150
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

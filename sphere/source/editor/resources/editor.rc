@@ -1188,6 +1188,14 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,91,159,50,14
     LISTBOX         IDC_FILTER_LIST,25,28,78,76,LBS_SORT | 
                     LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Red",IDC_FILTER_USE_RED,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,23,115,62,6
+    CONTROL         "Green",IDC_FILTER_USE_GREEN,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,23,124,62,6
+    CONTROL         "Blue",IDC_FILTER_USE_BLUE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,23,132,62,6
+    CONTROL         "Alpha",IDC_FILTER_USE_ALPHA,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,23,141,62,6
 END
 
 

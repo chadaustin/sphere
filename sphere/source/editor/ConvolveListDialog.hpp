@@ -74,6 +74,8 @@ private:
   void LoadFilterList();
   void SaveFilterList();
 
+  int m_UseRed, m_UseGreen, m_UseBlue, m_UseAlpha;
+
 private:
   BOOL OnInitDialog();
   void OnOK();
