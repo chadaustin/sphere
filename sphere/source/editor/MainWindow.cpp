@@ -812,7 +812,9 @@ CMainWindow::OnFileBrowse()
     if (*strrchr(szDirectory, '\\'))
       *strrchr(szDirectory, '\\') = 0;
 
-    m_DocumentWindows.push_back(new CBrowseWindow(szDirectory, "*"));
+    CBrowseWindow* browse_window = new CBrowseWindow(szDirectory, "*");
+    if (browse_window)
+      m_DocumentWindows.push_back(browse_window);
   }
 }
 
@@ -1526,6 +1528,30 @@ CMainWindow::OnProjectRunSphere()
   strcat(szCommandLine, "\"");
   strcat(szCommandLine, m_Project.GetDirectory());
   strcat(szCommandLine, "\"");
+
+  if (false) {
+    char filename[MAX_PATH];
+    memset(filename, 0, MAX_PATH);
+
+    // find the currently open map
+    // todo: fix this, we shouldn't just be checking if the window is visible
+    for (int i = 0; i < m_DocumentWindows.size(); i++) {
+      const CDocumentWindow* dw = m_DocumentWindows[i];
+      if (dw->IsWindowVisible()) {
+        strcpy(filename, dw->GetFilename());
+        strcpy(filename, strrchr(filename, '\\') + 1);
+      }
+    }
+
+    std::string __filename__(strlwr(filename)); // make the extension lowercase
+
+    if (__filename__.rfind(".rmp") == __filename__.size() - 4) {
+      strcat(szCommandLine, " -parameters ");
+      strcat(szCommandLine, "\"'");
+      strcat(szCommandLine, filename);   
+      strcat(szCommandLine, "'\"");
+    }
+  }
 
   STARTUPINFO si;
   memset(&si, 0, sizeof(si));
