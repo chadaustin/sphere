@@ -830,7 +830,7 @@ EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
         
         // manually scale the framebuffer down
         RGBA* new_pixels = new RGBA[4 * w * h];
-        glReadPixels(x * 2, y * 2, w * 2, h * 2, GL_RGBA, GL_UNSIGNED_BYTE, new_pixels);
+        glReadPixels(x * 2, (ScreenHeight - y - h) * 2, w * 2, h * 2, GL_RGBA, GL_UNSIGNED_BYTE, new_pixels);
 
         for (int i = 0; i < w; i++) {
             for (int j = 0; j < h; j++) {
@@ -841,20 +841,21 @@ EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
         delete[] new_pixels;
 
     } else {
-        glReadPixels(x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+        glReadPixels(x, ScreenHeight - y - h, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 //        puts(glErrorToString(error).c_str());
     }
 
     // now invert the rows
     RGBA* row = new RGBA[w];
-    for (int i = 0; i < h / 2; i++) {
-        // swap row [i] and row [h - i - 1]
-        RGBA* top = pixels + i * w;
-        RGBA* bot = pixels + (h - i - 1) * w;
+    RGBA* top = pixels;
+    RGBA* bot = pixels + w * (h - 1);
+    while (top < bot) {
+      memcpy(row, top, w * sizeof(RGBA));
+      memcpy(top, bot, w * sizeof(RGBA));
+      memcpy(bot, row, w * sizeof(RGBA));
 
-        memcpy(row, top, w * sizeof(RGBA));
-        memcpy(top, bot, w * sizeof(RGBA));
-        memcpy(bot, row, w * sizeof(RGBA));
+      top += w;
+      bot -= w;
     }
 
     delete[] row;

@@ -837,7 +837,7 @@ void OptimizeBlitRoutine(IMAGE image)
 EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
 {
   if (x < 0 ||
-      y > 0 ||
+      y < 0 ||
       x + width > ScreenWidth ||
       y + height > ScreenHeight)
     return NULL;

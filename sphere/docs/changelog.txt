@@ -1,3 +1,8 @@
+2003.02.05
+  - fixed GrabImage crash bug in standard16 and interpolate16
+  - fixed: GrabImage in sphere_gl grabbed the wrong pixels (and
+    inverted them too)
+
 2003.02.04
   - fixed bug where phantom buttons would appear in tool palettes while
     resizing them
