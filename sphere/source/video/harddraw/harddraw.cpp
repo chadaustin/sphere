@@ -1275,13 +1275,66 @@ EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-inline void blendBGRA(BGRA& dest, RGBA source) {
-  Blend3(dest, source, source.alpha);
+inline void blendBGRA(BGRA& dest, RGBA src) {
+  Blend3(dest, src, src.alpha);
+}
+
+inline void copyBGRA(BGRA& dest, RGBA src) {
+  dest.red = src.red;
+  dest.green = src.green;
+  dest.blue = src.blue;
+  dest.alpha = src.alpha;
+}
+
+inline void BlendRGBAtoBGRA(BGRA& d, RGBA src, RGBA alpha)
+{
+  Blend3(d, src, alpha.alpha);
 }
 
 // todo: make these do something...
 
 ////////////////////////////////////////////////////////////////////////////////
+
+class constant_color
+{
+public:
+  constant_color(RGBA color)
+  : m_color(color) {
+  }
+
+  RGBA operator()(int i, int range) {
+    return m_color;
+  }
+
+private:
+  RGBA m_color;
+};
+
+class gradient_color
+{
+public:
+  gradient_color(RGBA color1, RGBA color2)
+  : m_color1(color1)
+  , m_color2(color2) {
+  }
+
+  RGBA operator()(int i, int range) {
+    if (range == 0) {
+      return m_color1;
+    }
+    RGBA color;
+    color.red   = (i * m_color2.red   + (range - i) * m_color1.red)   / range;
+    color.green = (i * m_color2.green + (range - i) * m_color1.green) / range;
+    color.blue  = (i * m_color2.blue  + (range - i) * m_color1.blue)  / range;
+    color.alpha = (i * m_color2.alpha + (range - i) * m_color1.alpha) / range;
+    return color;
+  }
+
+private:
+  RGBA m_color1;
+  RGBA m_color2;
+};
+
 
 template<typename pixelT>
 class render_pixel_mask
@@ -1334,8 +1387,31 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask) {
   ddSecondary->Unlock(NULL);  
 }
 
-EXPORT(void) DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels) { }
+EXPORT(void) DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels) {
 
+  // lock backbuffer
+  DDSURFACEDESC ddsd;
+  if ( GetLockedSurface(&ddsd) == false)
+    return;
+
+  if (BitsPerPixel == 32) {
+    BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+    primitives::TexturedQuad(
+      (BGRA*)screen_buffer,
+      ScreenWidth,
+      x,
+      y,
+      pixels,
+      pixels,
+      w,
+      h,
+      ClippingRectangle,
+      BlendRGBAtoBGRA
+    );
+  } 
+
+  ddSecondary->Unlock(NULL);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1353,6 +1429,21 @@ void aBlendBGRA(struct BGRA& d, struct BGRA s, int a)
   d.red   = (d.red   * (256 - a)) / 256 + s.red;
   d.green = (d.green * (256 - a)) / 256 + s.green;
   d.blue  = (d.blue  * (256 - a)) / 256 + s.blue;
+}
+
+inline RGBA interpolateRGBA(RGBA a, RGBA b, int i, int range)
+{
+  if (range == 0) {
+    return a;
+  }
+
+  RGBA result = {
+    (a.red   * (range - i) + b.red   * i) / range,
+    (a.green * (range - i) + b.green * i) / range,
+    (a.blue  * (range - i) + b.blue  * i) / range,
+    (a.alpha * (range - i) + b.alpha * i) / range,
+  };
+  return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1411,11 +1502,71 @@ EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask) 
   ddSecondary->Unlock(NULL);
 }
 
-EXPORT(void) DrawPoint(int x, int y, RGBA color) { }
-EXPORT(void) DrawLine(int x[2], int y[2], RGBA color) { }
-EXPORT(void) DrawGradientLine(int x[2], int y[2], RGBA colors[2]) { }
-EXPORT(void) DrawTriangle(int x[3], int y[3], RGBA color) { }
-EXPORT(void) DrawGradientTriangle(int x[3], int y[3], RGBA colors[3]) { }
+EXPORT(void) DrawPoint(int x, int y, RGBA color) {
+  DDSURFACEDESC ddsd;
+  if ( GetLockedSurface(&ddsd) == false)
+    return;
+
+  if (BitsPerPixel == 32) {
+    BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+    primitives::Point((BGRA*)screen_buffer, ScreenWidth, x, y, color, ClippingRectangle, blendBGRA);
+  }
+
+  ddSecondary->Unlock(NULL);
+}
+
+EXPORT(void) DrawLine(int x[2], int y[2], RGBA color) {
+  DDSURFACEDESC ddsd;
+  if ( GetLockedSurface(&ddsd) == false)
+    return;
+
+  if (BitsPerPixel == 32) {
+    BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+    primitives::Line((BGRA*)screen_buffer, ScreenWidth, x[0], y[0], x[1], y[1], constant_color(color), ClippingRectangle, blendBGRA);
+  }
+
+  ddSecondary->Unlock(NULL);
+}
+
+EXPORT(void) DrawGradientLine(int x[2], int y[2], RGBA colors[2]) {
+  DDSURFACEDESC ddsd;
+  if ( GetLockedSurface(&ddsd) == false)
+    return;
+
+  if (BitsPerPixel == 32) {
+    BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+    primitives::Line((BGRA*)screen_buffer, ScreenWidth, x[0], y[0], x[1], y[1], gradient_color(colors[0], colors[1]), ClippingRectangle, blendBGRA);
+  }
+
+  ddSecondary->Unlock(NULL);
+}
+
+EXPORT(void) DrawTriangle(int x[3], int y[3], RGBA color) {
+  DDSURFACEDESC ddsd;
+  if ( GetLockedSurface(&ddsd) == false)
+    return;
+
+  if (BitsPerPixel == 32) {
+    BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+    primitives::Triangle((BGRA*)screen_buffer, ScreenWidth, x, y, color, ClippingRectangle, blendBGRA);
+  }
+
+  ddSecondary->Unlock(NULL);
+}
+
+EXPORT(void) DrawGradientTriangle(int x[3], int y[3], RGBA colors[3]) {
+  DDSURFACEDESC ddsd;
+  if ( GetLockedSurface(&ddsd) == false)
+    return;
+
+  if (BitsPerPixel == 32) {
+    BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+    primitives::GradientTriangle((BGRA*)screen_buffer, ScreenWidth, x, y, colors, ClippingRectangle, blendBGRA, interpolateRGBA);
+  }
+
+
+  ddSecondary->Unlock(NULL);
+}
 
 EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color) {
   if (color.alpha == 0) {          // no mask
@@ -1430,7 +1581,7 @@ EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color) {
     switch (BitsPerPixel) {
       case 32:
         BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
-        primitives::Rectangle((BGRA*)screen_buffer, ScreenWidth, x, y, w, h, color, ClippingRectangle, blendBGRA);
+        primitives::Rectangle((BGRA*)screen_buffer, ScreenWidth, x, y, w, h, color, ClippingRectangle, (color.alpha == 255 ? copyBGRA : blendBGRA));
       break;
     }
 
@@ -1439,7 +1590,19 @@ EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color) {
   ddSecondary->Unlock(NULL);
 }
 
-EXPORT(void) DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4]) { }
+EXPORT(void) DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4]) {
+  // lock backbuffer
+  DDSURFACEDESC ddsd;
+  if ( GetLockedSurface(&ddsd) == false)
+    return;
+
+  if (BitsPerPixel == 32) {
+    BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+    primitives::GradientRectangle((BGRA*)screen_buffer, ScreenWidth, x, y, w, h, colors, ClippingRectangle, blendBGRA, interpolateRGBA);
+  }
+
+  ddSecondary->Unlock(NULL);
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
