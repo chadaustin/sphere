@@ -7,7 +7,7 @@
 //#include "../engine/win32/win32_sphere_config.hpp"
 
 
-static EditorApplication g_Application;
+//static EditorApplication g_Application;
 
 
 std::string g_SphereDirectory;

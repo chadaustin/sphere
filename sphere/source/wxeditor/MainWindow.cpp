@@ -990,6 +990,7 @@ wMainWindow::OnClose(wxCloseEvent &event)
   // finally, destroy the window
   DestroyWindow();
 */
+
   Destroy();
 }
 
@@ -1849,6 +1850,7 @@ wMainWindow::ProcessEvent(wxEvent &event)
     m_InsideEventProcess--;
     return retval;
   }
+
   return false;
 }
 

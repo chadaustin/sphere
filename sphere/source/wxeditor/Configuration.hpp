@@ -118,6 +118,7 @@ namespace Configuration {
             hex += ToHex(data[i] >> 4);
             hex += ToHex(data[i] & 0x0F);
         }
+        delete[] data;
 
         wxFileConfig config("sphere-editor", "", ConfigurationFile.c_str(), "", wxCONFIG_USE_LOCAL_FILE);
         config.Write(T::keyname, hex.c_str());
