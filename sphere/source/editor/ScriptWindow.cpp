@@ -2,6 +2,7 @@
 
 #include <Scintilla.h>
 #include <SciLexer.h>
+#include "Editor.hpp"
 #include "ScriptWindow.hpp"
 #include "FileDialogs.hpp"
 #include "NumberDialog.hpp"
@@ -28,6 +29,7 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
 
   ON_NOTIFY(SCN_SAVEPOINTREACHED, ID_EDIT, OnSavePointReached)
   ON_NOTIFY(SCN_SAVEPOINTLEFT,    ID_EDIT, OnSavePointLeft)
+  ON_NOTIFY(SCN_UPDATEUI,         ID_EDIT, OnPosChanged)
 
   ON_REGISTERED_MESSAGE(s_FindReplaceMessage, OnFindReplace)
 
@@ -158,6 +160,8 @@ CScriptWindow::Initialize()
   SetStyle(SCE_C_OPERATOR,    purple);
   SetStyle(SCE_C_IDENTIFIER,  black);
   SetStyle(SCE_C_WORD2,       red);
+
+  SetLineNumber(0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -332,6 +336,25 @@ afx_msg void
 CScriptWindow::OnSavePointLeft(NMHDR* nmhdr, LRESULT* result)
 {
   SetModified(true);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnPosChanged(NMHDR* nmhdr, LRESULT* result) {
+  SCNotification* notify = (SCNotification*)nmhdr;
+  int pos = SendEditor(SCI_GETCURRENTPOS);
+  int line = SendEditor(SCI_LINEFROMPOSITION, pos);
+  SetLineNumber(line);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CScriptWindow::SetLineNumber(int line) {
+  char str[80];
+  sprintf(str, "Line: %d", line);
+  GetStatusBar()->SetWindowText(str);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
