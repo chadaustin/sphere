@@ -48,7 +48,7 @@ public:
   bool        HasItem(const char* groupname, const char* item) const;
   bool        HasItem(int grouptype, const char* item) const;
 
-private:
+public:
   class Group {
   public:
     std::string FolderName;

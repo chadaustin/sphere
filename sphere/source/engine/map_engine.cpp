@@ -4276,7 +4276,7 @@ CMapEngine::UpdateZones()
     return true;
   }
 
-  for (unsigned i = 0; i < m_Zones.size(); i++) {
+  for (unsigned int i = 0; i < m_Zones.size(); i++) {
 
     // check if the person is inside the zone
     if (IsPersonInsideZone(m_InputPerson, i)) {
@@ -4291,11 +4291,11 @@ CMapEngine::UpdateZones()
         if (!ExecuteZoneScript(i))
           return false;
 
-        if (current_map != m_CurrentMap) {
-          return false;
-        }
-
         ResetNextFrame();
+
+        if (current_map != m_CurrentMap) {
+          return true;
+        }      
       }
     }
   }

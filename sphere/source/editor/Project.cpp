@@ -281,6 +281,40 @@ CProject::GetGroupDirectory(int grouptype)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static bool UpdateItems(std::vector<CProject::Group>& m_Groups);
+
+static void UpdateGroupItems(std::vector<CProject::Group>& m_Groups)
+{
+  std::vector<std::string> folderlist = GetFolderList("*");
+  for (unsigned int i = 0; i < folderlist.size(); i++) {
+    if (!strcmp(folderlist[i].c_str(), ".")
+     || !strcmp(folderlist[i].c_str(), "..")) {
+      continue;
+    }
+
+    // insert files into that folder
+    char directory[MAX_PATH] = {0};
+    GetCurrentDirectory(MAX_PATH, directory);
+    SetCurrentDirectory(folderlist[i].c_str());
+    std::vector<std::string> filelist = GetFileList("*");
+
+    if (1) {
+      CProject::Group current;
+      current.FolderName = folderlist[i];
+      current.Files = GetFileList("*");
+      m_Groups.push_back(current);
+    }
+
+    filelist.clear();
+
+    if (GetFolderList("*").size() > 0) {
+      UpdateGroupItems(m_Groups);
+    }
+
+    SetCurrentDirectory(directory);
+  }
+}
+
 void
 CProject::RefreshItems()
 {
@@ -292,7 +326,8 @@ CProject::RefreshItems()
 
   if (SetCurrentDirectory(m_Directory.c_str()) != 0)
   {
-    std::vector<std::string> folderlist = GetFolderList("*");
+    UpdateGroupItems(m_Groups);
+/*
     for (unsigned int i = 0; i < folderlist.size(); i++) {
       if (folderlist[i] == "." || folderlist[i] == "..")
         continue;
@@ -302,13 +337,6 @@ CProject::RefreshItems()
 
       if (SetCurrentDirectory(folderlist[i].c_str()))
       {
-        if (1)
-        {
-          Group current;
-          current.FolderName = folderlist[i];
-          current.Files = GetFileList("*");
-          m_Groups.push_back(current);
-        }
 
         if (folderlist[i] == "scripts")
         {
@@ -329,6 +357,7 @@ CProject::RefreshItems()
 
       SetCurrentDirectory(m_Directory.c_str());
     }
+*/
   }
 
   // restore the old directory
@@ -351,7 +380,7 @@ int
 CProject::GetItemCount(int group_type) const
 {
   const char* groupname = GetGroupDirectory(group_type);
-  return groupname == NULL ? 0 : GetItemCount(groupname);
+  return GetItemCount(groupname);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
