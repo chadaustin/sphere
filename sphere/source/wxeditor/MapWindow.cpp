@@ -41,10 +41,14 @@ BEGIN_EVENT_TABLE(wMapWindow, wSaveableDocumentWindow)
   EVT_MENU(wID_MAP_PROPERTIES,      wMapWindow::OnMapProperties)
   EVT_MENU(wID_MAP_CHANGETILESIZE,  wMapWindow::OnChangeTileSize)
   EVT_MENU(wID_MAP_RESCALETILESET,  wMapWindow::OnRescaleTileset)
+  EVT_MENU(wID_MAP_RESAMPLETILESET,  wMapWindow::OnResampleTileset)
   EVT_MENU(wID_MAP_RESIZEALLLAYERS, wMapWindow::OnResizeAllLayers)
   EVT_MENU(wID_MAP_EXPORTTILESET,   wMapWindow::OnExportTileset)
   EVT_MENU(wID_MAP_IMPORTTILESET,   wMapWindow::OnImportTileset)
   EVT_MENU(wID_MAP_PRUNETILESET,    wMapWindow::OnPruneTileset)
+
+  EVT_MENU(wID_MAP_TAB_MAP,         wMapWindow::OnMapTab)
+  EVT_MENU(wID_MAP_TAB_TILES,       wMapWindow::OnTilesTab)
 
 #ifdef USE_WXTABCTRL
   EVT_TAB_SEL_CHANGED(wID_MAP_TAB,  wMapWindow::OnTabChanged)
@@ -96,14 +100,18 @@ wMapWindow::Create()
 
 #ifdef USE_WXTABCTRL
   m_TabControl = new wxTabCtrl(this, wID_MAP_TAB); // wxDefaultPosition, wxDefaultSize);
-  m_TabControl->InsertItem(0, "Map");
-  m_TabControl->InsertItem(1, "Tileset");
+  if (m_TabControl) {
+    m_TabControl->InsertItem(0, "Map");
+    m_TabControl->InsertItem(1, "Tileset");
+  }
 #else
   wxNotebookPage* mapviewpage = new wxNotebookPage(this, -1);
   wxNotebookPage* tileviewpage = new wxNotebookPage(this, -1);
   m_NotebookControl = new wxNotebook(this, wID_MAP_TAB);
-  m_NotebookControl->InsertPage(0, mapviewpage, "Map");
-  m_NotebookControl->InsertPage(1, tileviewpage, "Tileset");
+  if (m_NotebookControl) {
+    m_NotebookControl->InsertPage(0, mapviewpage, "Map");
+    m_NotebookControl->InsertPage(1, tileviewpage, "Tileset");
+  }
 #endif
 
   m_Created = true;  // the window and children are ready!
@@ -262,6 +270,34 @@ wMapWindow::GetLayerViewRect(wxRect* Rect)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+wMapWindow::OnMapTab(wxCommandEvent& event)
+{
+#ifdef USE_WXTABCTRL
+  m_TabControl->SetCurSel(0);
+#else
+  m_NotebookControl->SetSelection(0);
+#endif
+
+  TabChanged(0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+wMapWindow::OnTilesTab(wxCommandEvent& event)
+{
+#ifdef USE_WXTABCTRL
+  m_TabControl->SetCurSel(1);
+#else
+  m_NotebookControl->SetSelection(1);
+#endif
+
+  TabChanged(1);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
 wMapWindow::TabChanged(int tab)
 {
   if (tab == 0)
@@ -366,7 +402,26 @@ wMapWindow::OnRescaleTileset(wxCommandEvent &event)
 
     wResizeDialog dialog(this, "Rescale Tiles", tile_width, tile_height);
     if (dialog.ShowModal() == wxID_OK) {
-        m_Map.GetTileset().SetTileSize(dialog.GetWidth(), dialog.GetHeight(), true);
+        m_Map.GetTileset().SetTileSize(dialog.GetWidth(), dialog.GetHeight(), 1);
+
+        SetModified(true);
+        m_MapView->TilesetChanged();
+        m_TilesetEditView->TilesetChanged();
+        m_TilePalette->TilesetChanged();
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+wMapWindow::OnResampleTileset(wxCommandEvent &event)
+{
+    int tile_width  = m_Map.GetTileset().GetTileWidth();
+    int tile_height = m_Map.GetTileset().GetTileHeight();
+
+    wResizeDialog dialog(this, "Resample Tiles", tile_width, tile_height);
+    if (dialog.ShowModal() == wxID_OK) {
+        m_Map.GetTileset().SetTileSize(dialog.GetWidth(), dialog.GetHeight(), 2);
 
         SetModified(true);
         m_MapView->TilesetChanged();

@@ -761,6 +761,14 @@ SOURCE=..\common\packed_struct.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\common\resample.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\resample.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\common\Spriteset.cpp
 # End Source File
 # Begin Source File

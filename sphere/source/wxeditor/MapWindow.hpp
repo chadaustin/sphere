@@ -51,6 +51,7 @@ private:
   void OnMapProperties(wxCommandEvent &event);
   void OnChangeTileSize(wxCommandEvent &event);
   void OnRescaleTileset(wxCommandEvent &event);
+  void OnResampleTileset(wxCommandEvent &event);
   void OnResizeAllLayers(wxCommandEvent &event);
   void OnExportTileset(wxCommandEvent &event);
   void OnImportTileset(wxCommandEvent &event);
@@ -61,6 +62,9 @@ private:
 #else
   void OnNotebookChanged(wxNotebookEvent &event);
 #endif
+
+  void OnMapTab(wxCommandEvent& event);
+  void OnTilesTab(wxCommandEvent& event);
 
   virtual bool GetSavePath(char* path);
   virtual bool SaveDocument(const char* path);

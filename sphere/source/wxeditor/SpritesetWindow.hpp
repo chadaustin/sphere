@@ -52,6 +52,11 @@ private:
   void OnFillDelay(wxCommandEvent &event);
   void OnFrameProperties(wxCommandEvent &event);
 
+  void OnFramesTab(wxCommandEvent &event);
+  void OnEditTab(wxCommandEvent &event);
+  void OnBaseTab(wxCommandEvent &event);
+
+
 /*todo:
   void OnUpdateZoom1x(CCmdUI* cmdui);
   void OnUpdateZoom2x(CCmdUI* cmdui);

@@ -58,6 +58,11 @@ BEGIN_EVENT_TABLE(wSpritesetWindow, wSaveableDocumentWindow)
   EVT_MENU(wID_SPRITESET_RESIZE,          wSpritesetWindow::OnResize)
   EVT_MENU(wID_SPRITESET_FILLDELAY,       wSpritesetWindow::OnFillDelay)
   EVT_MENU(wID_SPRITESET_FRAMEPROPERTIES, wSpritesetWindow::OnFrameProperties)
+
+  EVT_MENU(wID_SPRITESET_TAB_FRAMES,  wSpritesetWindow::OnFramesTab)
+  EVT_MENU(wID_SPRITESET_TAB_EDIT,    wSpritesetWindow::OnEditTab)
+  EVT_MENU(wID_SPRITESET_TAB_BASE,    wSpritesetWindow::OnBaseTab)
+  
 END_EVENT_TABLE()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -373,6 +378,48 @@ wSpritesetWindow::OnNotebookChanged(wxNotebookEvent &event)
     TabChanged(m_NotebookControl->GetSelection());
 }
 #endif
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+wSpritesetWindow::OnFramesTab(wxCommandEvent &event)
+{
+#ifdef USE_WXTABCTRL
+  m_TabControl->SetCurSel(0);
+#else
+  m_NotebookControl->SetSelection(0);
+#endif
+
+  TabChanged(0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+wSpritesetWindow::OnEditTab(wxCommandEvent &event)
+{
+#ifdef USE_WXTABCTRL
+  m_TabControl->SetCurSel(1);
+#else
+  m_NotebookControl->SetSelection(1);
+#endif
+
+  TabChanged(1);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+wSpritesetWindow::OnBaseTab(wxCommandEvent &event)
+{
+#ifdef USE_WXTABCTRL
+  m_TabControl->SetCurSel(2);
+#else
+  m_NotebookControl->SetSelection(2);
+#endif
+
+  TabChanged(2);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 

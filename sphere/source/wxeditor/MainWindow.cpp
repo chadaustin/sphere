@@ -673,6 +673,12 @@ wMainWindow::UpdateMenu()
       childmenu->Append(wID_MAP_EXPORTTILESET,          "&Export Tileset");
       childmenu->Append(wID_MAP_IMPORTTILESET,          "&Import Tileset");
       childmenu->Append(wID_MAP_PRUNETILESET,           "Pr&une Tileset");
+
+      submenu = new wxMenu();
+        submenu->Append(wID_MAP_TAB_MAP,     "Map");
+        submenu->Append(wID_MAP_TAB_TILES,   "Tiles");
+      childmenu->Append(wID_MAP_TAB_, "&Tab", submenu);
+
     break;
 
     case wID_SCRIPT_base:
@@ -695,6 +701,13 @@ wMainWindow::UpdateMenu()
       childmenu->Append(wID_SPRITESET_RESIZE,           "&Resize");
       childmenu->Append(wID_SPRITESET_FILLDELAY,        "&Fill Delay");
       childmenu->Append(wID_SPRITESET_FRAMEPROPERTIES,  "Frame &Properties");
+    
+      submenu = new wxMenu();
+        submenu->Append(wID_SPRITESET_TAB_FRAMES, "Frames");
+        submenu->Append(wID_SPRITESET_TAB_EDIT,   "Edit");
+        submenu->Append(wID_SPRITESET_TAB_BASE,   "Base");
+      childmenu->Append(wID_SPRITESET_TAB_, "&Tab", submenu);
+
     break;
 
     case wID_WINDOWSTYLE_base:
@@ -1003,7 +1016,6 @@ wMainWindow::OnFileOpenLastProject(wxCommandEvent &event)
     wDocumentWindow *doc = construct;         \
     if(doc != NULL) {                         \
       m_DocumentWindows.push_back(doc);       \
-      doc->SetFocus();                        \
     }                                         \
   }
 
@@ -1031,7 +1043,6 @@ FILE_NEW_HANDLER(Image,       new wImageWindow())
         wDocumentWindow* doc = construct;                           \
         if (doc != NULL) {                                          \
           m_DocumentWindows.push_back(doc);                         \
-          doc->SetFocus();                                          \
         }                                                           \
       }                                                             \
     }                                                               \
