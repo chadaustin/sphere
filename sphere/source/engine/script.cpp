@@ -171,11 +171,8 @@ CScriptCode::Execute(bool& should_exit)
   // update the system (handle quit messages if we must)
   UpdateSystem();
 
-  // store old error message
-//  std::string old_error = script_object->m_Error;
-
-  // reset the error to nothing
-//  script_object->m_Error = "";
+  // default error message if the error reporter isn't called
+  script_object->m_Error = "Unspecified Error";
 
   jsval rval;
   JSBool result = JS_ExecuteScript(m_Context, m_Global, m_Script, &rval);
@@ -185,9 +182,6 @@ CScriptCode::Execute(bool& should_exit)
   if (script_object->m_Error == "") {
     succeeded = true;
   }
-
-  // restore error message
-//  script_object->m_Error = old_error;
 
   should_exit = script_object->m_ShouldExit;
   return succeeded;
