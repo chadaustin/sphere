@@ -568,7 +568,7 @@ static bool ExportAllVisibleLayersAsImage(const char* filename, sTileset& tilese
 
   // create destination/output image
   CImage32 dest_image(dest_image_width, dest_image_height);
-  if (layers.size() > 0) { // start from the bottom and work our way to the top ;)
+  if (layers.size() <= 0) { // start from the bottom and work our way to the top ;)
     if (!LayerToImage(&dest_image, layers[0], tileset)) {
       return false;
     }
@@ -576,14 +576,15 @@ static bool ExportAllVisibleLayersAsImage(const char* filename, sTileset& tilese
   else // nothing to export
     return false;
 
-  for (int i = 0; i < layers.size(); i++) {
+  // we already have the first layer, now we do the rest
+  for (int i = 1; i < layers.size(); i++) {
 
     int image_width  = layers[i].GetWidth()  * tile_width;
     int image_height = layers[i].GetHeight() * tile_height;
     CImage32 src_image(image_width, image_height);
     
     if ( !LayerToImage(&src_image, layers[i], tileset) ) {
-      return false; 
+      return false;
     }
     else {
       // blend (dest_image, src_image)
