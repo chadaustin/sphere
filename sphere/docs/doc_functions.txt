@@ -52,13 +52,17 @@ GetVersionString()
 
 GetGameList()
   - Returns array of game objects
-    - game.name
-    - game.directory
+    - game.name          Name of game
+    - game.directory     Directory (project name) where game is stored
+    - game.author        Who wrote it?
+    - game.description   Bite-sized summary of game.
 
 ExecuteGame(directory)
   - executes the game in sphere/games/<directory>.  This function
-  actually exits the first game and loads the one in 'directory'.
-  When the second game returns, the original is loaded again.
+    actually exits the first game and loads the one in 'directory'.
+    When the second game returns, the original is loaded again.  (Note
+    that this is unlike Sphere 0.97, which returned directly from
+    ExecuteGame when the other game finished.)
 
 Exit()
   - Exits the Sphere engine unconditionally

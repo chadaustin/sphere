@@ -240,6 +240,7 @@ private:
   std::string m_Error;  // if empty, there is no error
   bool m_ShouldExit;
 
+  bool m_GCEnabled;
   int m_GCCount;
 
 
@@ -254,6 +255,9 @@ private:
 
   // it needs to access m_Error
   friend class CScriptCode;
+  
+  // it needs to access m_GCEnabled
+  friend class NoGCBlock;
 };
 
 

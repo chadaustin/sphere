@@ -16,6 +16,8 @@ CProject::CProject()
 : m_ScreenWidth(320)
 , m_ScreenHeight(240)
 {
+  m_GameTitle   = "Untitled";
+  m_Author      = "Unknown";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -54,9 +56,11 @@ CProject::Create(const char* games_directory, const char* project_name)
   m_Filename += "\\game.sgm";
 
   // set default values in project
-  m_GameTitle = "";
-  m_GameScript = "";
+  m_GameTitle   = "Untitled";
+  m_Author      = "Unknown";
+  m_Description = "";
 
+  m_GameScript = "";
   m_ScreenWidth = 320;
   m_ScreenHeight = 240;
 
@@ -82,11 +86,14 @@ CProject::Open(const char* filename)
   // load the game.sgm
   CConfigFile config(m_Filename.c_str());
 
-  m_GameTitle = config.ReadString("", "name", "");
+  m_GameTitle   = config.ReadString("", "name",        "Untitled");
+  m_Author      = config.ReadString("", "author",      "Unknown");
+  m_Description = config.ReadString("", "description", "");
+
   m_GameScript = config.ReadString("", "script", "");
 
   // screen dimensions
-  m_ScreenWidth = config.ReadInt("", "screen_width", 320);
+  m_ScreenWidth  = config.ReadInt("", "screen_width", 320);
   m_ScreenHeight = config.ReadInt("", "screen_height", 240);
 
   RefreshItems();
@@ -103,6 +110,9 @@ CProject::Save() const
   CConfigFile config;
 
   config.WriteString("", "name", m_GameTitle.c_str());
+  config.WriteString("", "author", m_Author.c_str());
+  config.WriteString("", "description", m_Description.c_str());
+
   config.WriteString("", "script", m_GameScript.c_str());
 
   // screen dimensions
@@ -143,6 +153,22 @@ CProject::GetGameTitle() const
 ////////////////////////////////////////////////////////////////////////////////
 
 const char*
+CProject::GetAuthor() const
+{
+  return m_Author.c_str();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+const char*
+CProject::GetDescription() const
+{
+  return m_Description.c_str();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+const char*
 CProject::GetGameScript() const
 {
   return m_GameScript.c_str();
@@ -170,6 +196,22 @@ void
 CProject::SetGameTitle(const char* game_title)
 {
   m_GameTitle = game_title;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CProject::SetAuthor(const char* author)
+{
+  m_Author = author;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CProject::SetDescription(const char* description)
+{
+  m_Description = description;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -301,6 +343,15 @@ CProject::AddItem(int grouptype, const char* filename)
   for (int i = 0; i < group.size(); i++)
     if (filename == group[i])
       return;
+
+  // if we're adding a script to the project and we don't have a game script,
+  // set it.
+  if (grouptype == GT_SCRIPTS && m_GameScript.empty()) {
+    m_GameScript = filename;
+    if (!m_Filename.empty()) {
+      Save();
+    }
+  }
 
   group.push_back(filename);
 }

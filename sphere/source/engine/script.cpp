@@ -122,6 +122,25 @@ BEGIN_SS_OBJECT(SS_BYTEARRAY)
 END_SS_OBJECT()
 
 
+
+class NoGCBlock
+{
+public:
+  NoGCBlock(CScript* script) {
+    m_script = script;
+    m_script->m_GCEnabled = false;
+  }
+
+  ~NoGCBlock() {
+    m_script->m_GCEnabled = true;
+  }
+
+private:
+  CScript* m_script;
+};
+
+
+
 /////////////////
 // CScriptCode //
 /////////////////
@@ -206,6 +225,8 @@ CScript::CScript(IEngine* engine)
 , m_Runtime(NULL)
 , m_Context(NULL)
 , m_Global(NULL)
+
+, m_GCEnabled(true)
 , m_GCCount(0)
 
 , m_RecurseCount(0)
@@ -563,15 +584,16 @@ JSBool
 CScript::BranchCallback(JSContext* cx, JSScript* script)
 {
   CScript* This = (CScript*)JS_GetContextPrivate(cx);
+  if (This) {
+    // handle garbage collection
+    if (This->m_GCEnabled && This->m_GCCount++ >= 1024) {
+      // handle system events
+      UpdateSystem();
 
-  // handle garbage collection
-  if (This->m_GCCount++ >= 1024) {
-    // handle system events
-    UpdateSystem();
-
-    // garbage collect!
-    JS_GC(cx);
-    This->m_GCCount = 0;
+      // garbage collect!
+      JS_GC(cx);
+      This->m_GCCount = 0;
+    }
   }
 
   return JS_TRUE;
@@ -589,6 +611,7 @@ inline void USED(T /*t*/) { }
 #define begin_func(name, minargs)                                                                      \
   JSBool CScript::ss##name(JSContext* cx, JSObject* obj, uintN argc, jsval* argv, jsval* rval) {       \
     CScript* This = (CScript*)JS_GetContextPrivate(cx);                                                \
+    NoGCBlock no_gc__(This);                                                                           \
     if (argc < minargs) {                                                                              \
       JS_ReportError(cx, "%s called with less than %s parameters", #name, #minargs);                   \
       *rval = JSVAL_NULL;                                                                              \
@@ -934,20 +957,32 @@ begin_func(GetGameList, 0)
     
     jsval name_val = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, games[i].name.c_str()));
     jsval dir_val  = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, games[i].directory.c_str()));
+    jsval auth_val = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, games[i].author.c_str()));
+    jsval desc_val = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, games[i].description.c_str()));
 
     // define the 'name' property
     JS_DefineProperty(
       cx, element, "name", name_val,
       JS_PropertyStub, JS_PropertyStub,
-      JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT
-    );
+      JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
 
     // define the 'directory' property
     JS_DefineProperty(
       cx, element, "directory", dir_val,
       JS_PropertyStub, JS_PropertyStub,
-      JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT
-    );
+      JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+    // define the 'author' property
+    JS_DefineProperty(
+      cx, element, "author", auth_val,
+      JS_PropertyStub, JS_PropertyStub,
+      JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+    // define the 'description' property
+    JS_DefineProperty(
+      cx, element, "description", desc_val,
+      JS_PropertyStub, JS_PropertyStub,
+      JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
   }
 
   // create the array
@@ -3200,7 +3235,7 @@ end_func()
 #define begin_method(Object, name, minargs)                                                            \
   JSBool CScript::name(JSContext* cx, JSObject* obj, uintN argc, jsval* argv, jsval* rval) {           \
     CScript* This = (CScript*)JS_GetContextPrivate(cx);                                                \
-    USED(This);                                                                                        \
+    NoGCBlock no_gc__(This);                                                                           \
     Object* object = (Object*)JS_GetPrivate(cx, obj);                                                  \
     if (object == NULL || object->magic != Object##_MAGIC) {                /* invalid object */       \
       JS_ReportError(cx, "%s called on invalid object", #name, #minargs);                              \

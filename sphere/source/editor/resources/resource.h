@@ -142,6 +142,9 @@
 #define IDC_PRESETS                     1114
 #define IDC_VALUE                       1115
 #define IDC_STEPS                       1116
+#define IDC_AUTHOR                      1117
+#define IDC_DESCRIPTION                 1118
+#define IDC_CUSTOM1                     1119
 #define ID_FILE_IMPORT_BITMAPTORSS      12241
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40003
@@ -363,7 +366,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        218
 #define _APS_NEXT_COMMAND_VALUE         40552
-#define _APS_NEXT_CONTROL_VALUE         1117
+#define _APS_NEXT_CONTROL_VALUE         1120
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

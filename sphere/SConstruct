@@ -25,7 +25,8 @@ def BuildMinGWEnv():
                    '-mno-cygwin', '-Wall', '-Wno-non-virtual-dtor'],
         CPPPATH = [Dir('third-party-mingw/include')],
         RESPATH = [Dir('third-party-mingw/include')],
-        LIBPATH = [Dir('third-party-mingw/lib')])
+        LIBPATH = [Dir('third-party-mingw/lib'),
+                   Dir('third-party-mingw/dlls')])
 
     # install third-party DLLs into build directory
     dlls = Split("audiere.dll corona.dll js32.dll libmng.dll zlib.dll")

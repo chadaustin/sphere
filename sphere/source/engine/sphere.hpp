@@ -14,6 +14,8 @@ struct Game
 {
   std::string name;
   std::string directory;
+  std::string author;
+  std::string description;
 
   bool operator<(const Game& rhs) const {
     return (strcmp_ci(name.c_str(), rhs.name.c_str()) < 0);

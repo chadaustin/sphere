@@ -24,11 +24,15 @@ public:
   const char* GetGameSubDirectory() const;
 
   const char* GetGameTitle() const;
+  const char* GetAuthor() const;
+  const char* GetDescription() const;
   const char* GetGameScript() const;
   int         GetScreenWidth() const;
   int         GetScreenHeight() const;
 
   void SetGameTitle(const char* game_title);
+  void SetAuthor(const char* author);
+  void SetDescription(const char* description);
   void SetGameScript(const char* game_script);
   void SetScreenWidth(int width);
   void SetScreenHeight(int height);
@@ -53,8 +57,10 @@ private:
   std::string m_Filename;
 
   std::string m_GameTitle;
-  std::string m_GameScript;
+  std::string m_Author;
+  std::string m_Description;
 
+  std::string m_GameScript;
   int m_ScreenWidth;
   int m_ScreenHeight;
 

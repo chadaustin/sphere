@@ -1,3 +1,13 @@
+2003.01.25
+  - upgraded JS engine to 1.5 RC 5, which should improve framerates
+    and fix a few crashes.
+  - improved GetGameList() so that it returns author and description
+    information as well
+  - the Game Settings dialog box now has author and description
+    information
+  - you no longer need to explicitly set the game script.  The first
+    script added to the project is automatically set as the game script.
+
 2003.01.24
   - added AreZonesAt, ExecuteZones, ExecuteZoneScript, GetZoneX/Y,
     GetZoneWidth/Height, GetNumZones (Brian Robb)

@@ -21,6 +21,10 @@ CGameSettingsDialog::OnInitDialog()
   SetDlgItemText(IDC_GAMETITLE, m_Project->GetGameTitle());
   SendDlgItemMessage(IDC_GAMETITLE, EM_SETSEL, 0, -1);
 
+  // set game author and description
+  SetDlgItemText(IDC_AUTHOR, m_Project->GetAuthor());
+  SetDlgItemText(IDC_DESCRIPTION, m_Project->GetDescription());
+
   // fill script list
   if (m_Project->GetItemCount(GT_SCRIPTS) > 0)
   {
@@ -67,6 +71,14 @@ CGameSettingsDialog::OnOK()
   CString sGameTitle;
   GetDlgItemText(IDC_GAMETITLE, sGameTitle);
   m_Project->SetGameTitle(sGameTitle);
+
+  CString author;
+  GetDlgItemText(IDC_AUTHOR, author);
+  m_Project->SetAuthor(author);
+  
+  CString description;
+  GetDlgItemText(IDC_DESCRIPTION, description);
+  m_Project->SetDescription(description);
   
   // if the project contains any scripts, set it to the one that's selected
   if (m_Project->GetItemCount(GT_SCRIPTS) > 0)
