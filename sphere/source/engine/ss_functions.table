@@ -86,6 +86,7 @@ SS_FUNCTION(OpenLog, 1)
   SS_FUNCTION(CreateByteArray, 1)
   SS_FUNCTION(CreateByteArrayFromString, 1)
   SS_FUNCTION(CreateStringFromByteArray, 1)
+  // array.length
   // array[index]
 
   // colors
@@ -244,6 +245,10 @@ SS_FUNCTION(OpenLog, 1)
   //sound.stop()
   //sound.setVolume(volume)
   //sound.getVolume()
+  //sound.setPan(pan)
+  //sound.getPan()
+  //sound.setPitch(pitch)
+  //sound.getPitch()
   //sound.isPlaying()
 
   // fonts
