@@ -1937,6 +1937,24 @@ CMapEngine::CreatePerson(const char* name, const char* spriteset_filename, bool 
 
   m_Persons.push_back(p);
 
+  // execute default script_create
+  std::string error;
+  if (m_default_person_scripts[SCRIPT_ON_CREATE] != NULL) {
+    if (!m_Engine->IsScriptBeingUsed(m_DefaultMapScripts[SCRIPT_ON_CREATE])) {
+
+      const std::string old_person = m_CurrentPerson;
+      m_CurrentPerson = name;
+
+      if (!ExecuteScript(m_default_person_scripts[SCRIPT_ON_CREATE], error)) {
+        m_ErrorMessage = "Could not execute default OnCreate script\nPerson:" + p.description + "\n" + error;
+        m_CurrentPerson = old_person;
+        return false;
+      }
+
+      m_CurrentPerson = old_person;
+    }
+  }
+
   return true;
 }
 
@@ -2924,7 +2942,7 @@ CMapEngine::CallPersonScript(const char* name, int which)
       //m_Persons[person].person_scripts_running[which] = true;
 
       // set the current person
-      std::string old_person = m_CurrentPerson;
+      const std::string old_person = m_CurrentPerson;
       m_CurrentPerson = m_Persons[person].name;
      
       if ( !ExecuteScript(*ps, error) ) {
@@ -2985,7 +3003,7 @@ CMapEngine::CallDefaultPersonScript(const char* name, int which)
       //m_Persons[person].person_scripts_running[which] = true;
 
       // set the current person
-      std::string old_person = m_CurrentPerson;
+      const std::string old_person = m_CurrentPerson;
       m_CurrentPerson = m_Persons[person].name;
      
       if ( !ExecuteScript(*ps, error) ) {
@@ -3570,12 +3588,23 @@ CMapEngine::LoadMapPersons()
 
 
       // execute default script_create
-      if (m_default_person_scripts[SCRIPT_ON_CREATE] != NULL && !ExecuteScript(m_default_person_scripts[SCRIPT_ON_CREATE], error)) {
+      if (m_default_person_scripts[SCRIPT_ON_CREATE] != NULL) {
+        if (!m_Engine->IsScriptBeingUsed(m_default_person_scripts[SCRIPT_ON_CREATE])) {        
+          
+          const std::string person_name = m_CurrentPerson;
 
-        m_ErrorMessage = "Could not execute default OnCreate script\nPerson:" + person_string + "\n" + error;
-        m_Persons.erase(m_Persons.end() - 1);
-        
-        goto spriteset_error;
+          if (!ExecuteScript(m_default_person_scripts[SCRIPT_ON_CREATE], error)) {
+            m_ErrorMessage = "Could not execute default OnCreate script\nPerson:" + person_string + "\n" + error;
+            m_Persons.erase(m_Persons.end() - 1);
+            goto spriteset_error;
+          }
+
+          // the script may have destroyed the person, so check to see that the person still exists
+          if (FindPerson(person_name.c_str()) != i) {
+            m_CurrentPerson = old_person;
+            continue;
+          }
+        }
       }
 
       // execute script_create

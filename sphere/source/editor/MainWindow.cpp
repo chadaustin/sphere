@@ -808,9 +808,14 @@ CMainWindow::OpenDocumentWindow(int grouptype, const char* filename)
 {
   // if a document window has the same filename, just give it focus
   for (unsigned int i = 0; i < m_DocumentWindows.size(); i++) {
-    if (strcmp(m_DocumentWindows[i]->GetFilename(), filename) == 0) {
-      m_DocumentWindows[i]->SetFocus();
-      return;
+    if (m_DocumentWindows[i]) {
+      const char* __filename__ = m_DocumentWindows[i]->GetFilename();
+      if (__filename__ != NULL && filename != NULL) {
+        if (strcmp(__filename__, filename) == 0) {
+          m_DocumentWindows[i]->SetFocus();
+          return;
+        }
+      }
     }
   }
 
