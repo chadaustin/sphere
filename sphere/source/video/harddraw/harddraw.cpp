@@ -74,7 +74,7 @@ inline RGBA Unpack555(word pixel)
   return rgba;
 }
 
-
+static bool GetLockedSurface(DDSURFACEDESC* ddsd);
 
 static void LoadConfiguration();
 static void SaveConfiguration();
@@ -106,11 +106,19 @@ static LPDIRECTDRAWSURFACE ddPrimary;
 static LPDIRECTDRAWSURFACE ddSecondary;
 static LPDIRECTDRAWCLIPPER ddClipper;
 
-
 FILE* logfile = fopen("harddraw.log", "w");
 #define CLOG(str) fputs(str, logfile); fputc('\n', logfile); fflush(logfile);
 #define CLOGPARAM(str, param) fprintf(logfile, str, param); fputc('\n', logfile); fflush(logfile);
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+static bool GetLockedSurface(DDSURFACEDESC* ddsd) {
+  memset(ddsd, 0, sizeof(DDSURFACEDESC));
+  ddsd->dwSize = sizeof(DDSURFACEDESC);
+  HRESULT result = ddSecondary->Lock(NULL, ddsd, DDLOCK_WAIT, NULL);
+  return (FAILED(result) == false);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -510,12 +518,8 @@ EXPORT(bool) ApplyColorMask(RGBA mask)
   CLOG("+ApplyColorMask")
 
   DDSURFACEDESC ddsd;
-  memset(&ddsd, 0, sizeof(ddsd));
-  ddsd.dwSize = sizeof(ddsd);
-  HRESULT result = ddSecondary->Lock(NULL, &ddsd, DDLOCK_WAIT, NULL);
-  if (FAILED(result)) {
+  if ( GetLockedSurface(&ddsd) == false)
     return false;
-  }
 
   // premultiply the alpha
   mask.red   = mask.red   * mask.alpha / 255;
@@ -691,14 +695,9 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
   image->height       = height;
   image->blit_routine = TileBlit;
 
-  // lock backbuffer
   DDSURFACEDESC ddsd;
-  memset(&ddsd, 0, sizeof(ddsd));
-  ddsd.dwSize = sizeof(ddsd);
-  HRESULT result = ddSecondary->Lock(NULL, &ddsd, DDLOCK_WAIT, NULL);
-  if (FAILED(result)) {
+  if ( GetLockedSurface(&ddsd) == false)
     return false;
-  }
 
   // grab backbuffer pixels and put them in image
   switch (BitsPerPixel) {
@@ -817,12 +816,8 @@ bool SpriteBlit(IMAGE image, int x, int y)
 
   // lock backbuffer
   DDSURFACEDESC ddsd;
-  memset(&ddsd, 0, sizeof(ddsd));
-  ddsd.dwSize = sizeof(ddsd);
-  HRESULT result = ddSecondary->Lock(NULL, &ddsd, DDLOCK_WAIT, NULL);
-  if (FAILED(result)) {
+  if ( GetLockedSurface(&ddsd) == false)
     return false;
-  }
 
   switch (BitsPerPixel) {
     case 32: {
@@ -869,12 +864,8 @@ bool NormalBlit(IMAGE image, int x, int y)
 
   // lock backbuffer
   DDSURFACEDESC ddsd;
-  memset(&ddsd, 0, sizeof(ddsd));
-  ddsd.dwSize = sizeof(ddsd);
-  HRESULT result = ddSecondary->Lock(NULL, &ddsd, DDLOCK_WAIT, NULL);
-  if (FAILED(result)) {
+  if ( GetLockedSurface(&ddsd) == false)
     return false;
-  }
 
   switch (BitsPerPixel) {
     case 32: {
@@ -1062,12 +1053,8 @@ EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels, int method)
 
   // lock backbuffer
   DDSURFACEDESC ddsd;
-  memset(&ddsd, 0, sizeof(ddsd));
-  ddsd.dwSize = sizeof(ddsd);
-  HRESULT result = ddSecondary->Lock(NULL, &ddsd, DDLOCK_WAIT, NULL);
-  if (FAILED(result)) {
+  if ( GetLockedSurface(&ddsd) == false)
     return;
-  }
 
   if (method == 1) {   // RGB
 
@@ -1232,12 +1219,8 @@ EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
 
   // lock backbuffer
   DDSURFACEDESC ddsd;
-  memset(&ddsd, 0, sizeof(ddsd));
-  ddsd.dwSize = sizeof(ddsd);
-  HRESULT result = ddSecondary->Lock(NULL, &ddsd, DDLOCK_WAIT, NULL);
-  if (FAILED(result)) {
+  if ( GetLockedSurface(&ddsd) == false)
     return;
-  }
 
   switch (BitsPerPixel) {
     case 32: {
@@ -1302,8 +1285,104 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask) { }
 
 EXPORT(void) DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels) { }
 
-EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4]) { }
-EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask) { }
+
+///////////////////////////////////////////////////////////////////////////////
+
+void aBlendBGR(struct BGR& d, struct BGR s, int a)
+{
+  // blit to the dest pixel
+  d.red   = (d.red   * (256 - a)) / 256 + s.red;
+  d.green = (d.green * (256 - a)) / 256 + s.green;
+  d.blue  = (d.blue  * (256 - a)) / 256 + s.blue;
+}
+
+void aBlendBGRA(struct BGRA& d, struct BGRA s, int a)
+{
+  // blit to the dest pixel
+  d.red   = (d.red   * (256 - a)) / 256 + s.red;
+  d.green = (d.green * (256 - a)) / 256 + s.green;
+  d.blue  = (d.blue  * (256 - a)) / 256 + s.blue;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4]) {
+
+  // lock backbuffer
+  DDSURFACEDESC ddsd;
+  if ( GetLockedSurface(&ddsd) == false)
+    return;
+
+  if (BitsPerPixel == 32) {
+    BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+    primitives::TexturedQuad(
+      (BGRA*)screen_buffer,
+      ScreenWidth,
+      x,
+      y,
+      (BGRA*) image->locked_pixels,
+      image->alpha,
+      image->width,
+      image->height,
+      ClippingRectangle,
+      aBlendBGRA
+    );
+  }
+
+  ddSecondary->Unlock(NULL);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+template<typename pixelT>
+class render_pixel_mask
+{
+public:
+  render_pixel_mask(RGBA mask) : m_mask(mask) { }
+  void operator()(pixelT& dst, pixelT src, byte alpha)
+  {
+    // do the masking on the source pixel
+    alpha     = (int)alpha     * m_mask.alpha / 256;
+    src.red   = (int)src.red   * m_mask.red   / 256;
+    src.green = (int)src.green * m_mask.green / 256;
+    src.blue  = (int)src.blue  * m_mask.blue  / 256;
+
+    // blit to the dest pixel
+    dst.red   = (dst.red   * (256 - alpha) + src.red   * alpha) / 256;
+    dst.green = (dst.green * (256 - alpha) + src.green * alpha) / 256;
+    dst.blue  = (dst.blue  * (256 - alpha) + src.blue  * alpha) / 256;
+  }
+
+private:
+  RGBA m_mask;
+};
+
+EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask) {
+
+  // lock backbuffer
+  DDSURFACEDESC ddsd;
+  if ( GetLockedSurface(&ddsd) == false)
+    return;
+
+  if (BitsPerPixel == 32) {
+    BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+    primitives::TexturedQuad(
+      (BGRA*)screen_buffer,
+      ScreenWidth,
+      x,
+      y,
+      (BGRA*) image->locked_pixels,
+      image->alpha,
+      image->width,
+      image->height,
+      ClippingRectangle,
+      render_pixel_mask<BGRA>(mask)
+    );
+  }
+
+  ddSecondary->Unlock(NULL);
+}
 
 EXPORT(void) DrawPoint(int x, int y, RGBA color) { }
 EXPORT(void) DrawLine(int x[2], int y[2], RGBA color) { }
@@ -1316,22 +1395,16 @@ EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color) {
     return;
   } else {
 
-    // lock backbuffer
-    DDSURFACEDESC ddsd;
-    memset(&ddsd, 0, sizeof(ddsd));
-    ddsd.dwSize = sizeof(ddsd);
-    HRESULT result = ddSecondary->Lock(NULL, &ddsd, DDLOCK_WAIT, NULL);
-    if (FAILED(result)) {
-      return;
-    }
+  // lock backbuffer
+  DDSURFACEDESC ddsd;
+  if ( GetLockedSurface(&ddsd) == false)
+    return;
 
     switch (BitsPerPixel) {
       case 32:
         BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
         primitives::Rectangle((BGRA*)screen_buffer, ScreenWidth, x, y, w, h, color, ClippingRectangle, blendBGRA);
       break;
-
-
     }
 
   }
