@@ -720,6 +720,7 @@
 #define ID_SOUND_RANDOM_ORDER           40824
 #define ID_FILE_NEW_FILE                40826
 #define ID_IMAGE_CROP                   40829
+#define ID_SOUND_PLAYLIST_REMOVE_BROKEN_FILES 40832
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -728,7 +729,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        281
-#define _APS_NEXT_COMMAND_VALUE         40830
+#define _APS_NEXT_COMMAND_VALUE         40834
 #define _APS_NEXT_CONTROL_VALUE         1242
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

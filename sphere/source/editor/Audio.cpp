@@ -2,21 +2,49 @@
 // #include <assert.h>
 
 static int s_AudioInitCount = 0;
-static int s_MidiInitCount = 0;
-static audiere::AudioDevicePtr s_AudioDevice;
-static audiere::MIDIDevicePtr s_MidiDevice;
+static int s_MidiInitCount  = 0;
+static audiere::AudioDevicePtr s_AudioDevice = NULL;
+static audiere::MIDIDevicePtr  s_MidiDevice  = NULL;
+
+////////////////////////////////////////////////////////////////////////////////
+
+static bool IsMidi(const char* filename)
+{
+  struct Local {
+    static inline bool extension_compare(const char* path, const char* extension) {
+      int path_length = strlen(path);
+      int ext_length  = strlen(extension);
+      return (
+        path_length >= ext_length &&
+        strcmp(path + path_length - ext_length, extension) == 0
+      );
+    }
+  };
+
+  if (Local::extension_compare(filename, ".mid"))  return true;
+  if (Local::extension_compare(filename, ".midi")) return true;
+  if (Local::extension_compare(filename, ".rmi"))  return true;
+
+  return false;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
 static void InitializeAudio()
 {
   if (s_AudioInitCount++ == 0) {
-    s_AudioDevice = audiere::OpenDevice();
+    s_AudioDevice = audiere::OpenDevice("winmm");
     if (!s_AudioDevice) {
       s_AudioDevice = audiere::OpenDevice("null");
     }
   }
+
+  if (s_AudioDevice && s_AudioDevice.get()) {
+    const char* device_name = s_AudioDevice.get()->getName();
+  }
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 static void InitializeMidi()
 {
@@ -25,6 +53,10 @@ static void InitializeMidi()
     if (s_MidiDevice == NULL) {
       s_MidiDevice = audiere::OpenMIDIDevice("null");
     }
+  }
+
+  if (s_MidiDevice && s_MidiDevice.get()) {
+    const char* device_name = s_MidiDevice.get()->getName();
   }
 }
 
@@ -70,6 +102,67 @@ CSound::~CSound()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+CSound::__GetDevice__()
+{
+  if (!s_MidiDevice) {
+    InitializeMidi();
+    m_ClosedMidi = false;
+  }
+  else {
+    if (s_MidiDevice.get() && s_MidiDevice.get()->getName() != NULL) {
+      const char* device_name = s_MidiDevice.get()->getName();
+      if (strcmp("null", device_name) == 0) {
+        CloseMidi();
+        m_ClosedMidi = true;
+        InitializeMidi();
+        m_ClosedMidi = false;
+      }
+    }
+  }
+
+  if (!s_AudioDevice) {
+    InitializeAudio();
+    m_ClosedAudio = false;
+  }
+  else {
+    if (s_AudioDevice.get() && s_AudioDevice.get()->getName() != NULL) {
+      const char* device_name = s_AudioDevice.get()->getName();
+      if (strcmp("null", device_name) == 0) {
+        CloseAudio();
+        m_ClosedAudio = true;
+        InitializeAudio();
+        m_ClosedAudio = false;
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CSound::__GetSound__(const char* filename)
+{
+  if (!m_Sound && !m_Midi && s_AudioDevice.get()) {
+    m_Sound = audiere::OpenSound(s_AudioDevice.get(), filename, true);
+  }
+
+  if (!m_Sound && !m_Midi && s_MidiDevice.get() && IsMidi(filename)) {
+    /*
+    audiere::File* file = audiere::OpenFile(filename, false);
+    if (file) {
+      m_Midi = s_MidiDevice.get()->openStream(file);
+      file = NULL;
+    }
+    */
+
+    m_Midi = s_MidiDevice.get()->openStream(filename);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 bool
 CSound::Load(const char* filename)
 {
@@ -77,43 +170,10 @@ CSound::Load(const char* filename)
     Stop();
   }
 
-  ///////
-
-  if (!s_AudioDevice) {
-    InitializeAudio();
-    m_ClosedAudio = false;
-  }
-  else {
-    if (s_AudioDevice.get() && s_AudioDevice.get()->getName() && strcmp("null", s_AudioDevice.get()->getName()) == 0) {
-      CloseAudio();
-      m_ClosedAudio = true;
-      InitializeAudio();
-      m_ClosedAudio = false;
-    }
-  }
-
-  if (!s_MidiDevice) {
-    InitializeMidi();
-    m_ClosedMidi = false;
-  }
-  else {
-    if (s_MidiDevice.get() && s_MidiDevice.get()->getName() && strcmp("null", s_MidiDevice.get()->getName()) == 0) {
-      CloseMidi();
-      m_ClosedMidi = true;
-      InitializeMidi();
-      m_ClosedMidi = false;
-    }
-  }
-
-  ///////
+  __GetDevice__();
+  __GetSound__(filename);
 
   m_Filename = filename;
-  m_Sound = audiere::OpenSound(s_AudioDevice.get(), filename, true);
-
-  if (!m_Sound) {
-    if (s_MidiDevice.get())
-      m_Midi = s_MidiDevice.get()->openStream(filename);
-  }
 
   if (!m_Sound && !m_Midi) {
     Stop();
@@ -124,46 +184,12 @@ CSound::Load(const char* filename)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void
+bool
 CSound::Play()
 {
-  ///////
-
-  if (!s_AudioDevice) {
-    InitializeAudio();
-    m_ClosedAudio = false;
-  }
-  else {
-    if (s_AudioDevice.get() && s_AudioDevice.get()->getName() && strcmp("null", s_AudioDevice.get()->getName()) == 0) {
-      CloseAudio();
-      m_ClosedAudio = true;
-      InitializeAudio();
-      m_ClosedAudio = false;
-    }
-  }
-
-  if (!s_MidiDevice) {
-    InitializeMidi();
-    m_ClosedMidi = false;
-  }
-  else {
-    if (s_MidiDevice.get() && s_MidiDevice.get()->getName() && strcmp("null", s_MidiDevice.get()->getName()) == 0) {
-      CloseMidi();
-      m_ClosedMidi = true;
-      InitializeMidi();
-      m_ClosedMidi = false;
-    }
-  }
-
-  ///////
-
   if (!IsPlaying()) {
-    if (!m_Sound && !m_Midi && s_AudioDevice.get()) {
-      m_Sound = audiere::OpenSound(s_AudioDevice.get(), m_Filename.c_str(), true);
-    }
-    if (!m_Sound && !m_Midi && s_MidiDevice.get()) {
-      m_Midi = s_MidiDevice.get()->openStream(m_Filename.c_str());
-    }
+    __GetDevice__();
+    __GetSound__(m_Filename.c_str());
 
     if (m_Sound)
       m_Sound->play();
@@ -171,6 +197,8 @@ CSound::Play()
     if (m_Midi)
       m_Midi->play();
   }
+
+  return (m_Sound || m_Midi);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -234,7 +262,7 @@ CSound::IsPlaying() const
 bool
 CSound::IsSeekable()  {
   if (m_Sound) return m_Sound->isSeekable();
-  if (m_Midi) return true;
+  if (m_Midi)  return true;
   return false;
 }
 

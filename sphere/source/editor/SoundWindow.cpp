@@ -221,7 +221,7 @@ CSoundWindow::OnTimer(UINT timerID)
         m_Playing = m_Repeat;
 
         if (m_Repeat) {
-          m_Sound.Play();
+          PlaySound();
         }
       }
     }
@@ -324,14 +324,16 @@ CSoundWindow::OnSoundPlay()
     
   LoadSound(m_Playlist.GetFile(m_CurrentSound));
   UpdateCaption();
-  m_Sound.Play();
-  m_Playing = true;
-  m_Stopped = false;
+  
+  if (PlaySound()) {
+    m_Playing = true;
+    m_Stopped = false;
 
-  if (m_PanBar.m_hWnd != NULL && m_PitchBar.m_hWnd != NULL && m_VolumeBar.m_hWnd != NULL) {
-    m_Sound.SetPan(GetPan());
-    m_Sound.SetPitchShift(GetPitchShift());
-    m_Sound.SetVolume(GetVolume());
+    if (m_PanBar.m_hWnd != NULL && m_PitchBar.m_hWnd != NULL && m_VolumeBar.m_hWnd != NULL) {
+      m_Sound.SetPan(GetPan());
+      m_Sound.SetPitchShift(GetPitchShift());
+      m_Sound.SetVolume(GetVolume());
+    } 
   }
 }
 
@@ -385,6 +387,25 @@ CSoundWindow::AdvanceSound(bool forward, bool allow_repeating)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CSoundWindow::PlaySound()
+{
+  if (!m_Sound.Play()) {
+    if (m_CurrentSound >= 0 && m_CurrentSound < m_Playlist.GetNumFiles()) {
+      // if it fails, show an error message
+      char string[MAX_PATH + 1024];
+      sprintf (string, "Error: Could not load sound file\n'%s'", m_Playlist.GetFile(m_CurrentSound));
+      GetStatusBar()->SetWindowText(string);
+    }
+
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CSoundWindow::NextSound()
 {
   return AdvanceSound(true, m_Repeat);
@@ -403,11 +424,14 @@ CSoundWindow::PrevSound()
 afx_msg void
 CSoundWindow::OnSoundNext()
 {
-  if (AdvanceSound(true, true)) {
-    const bool was_playing = m_Playing;
-    m_Sound.Stop();
+  const bool was_playing = m_Playing;
+  m_Sound.Stop();
+
+  if (AdvanceSound(true, m_Repeat) && was_playing) {
+    OnSoundPlay();
+  }
+  else {
     UpdateCaption();
-    if (was_playing) OnSoundPlay();
   }
 }
 
@@ -416,11 +440,14 @@ CSoundWindow::OnSoundNext()
 afx_msg void
 CSoundWindow::OnSoundPrev()
 {
-  if (AdvanceSound(false, true)) {
-    const bool was_playing = m_Playing;
-    m_Sound.Stop();
+  const bool was_playing = m_Playing;
+  m_Sound.Stop();
+
+  if (AdvanceSound(false, m_Repeat) && was_playing) {
+    OnSoundPlay();
+  }
+  else {
     UpdateCaption();
-    if (was_playing) OnSoundPlay();
   }
 }
 
@@ -468,7 +495,17 @@ CSoundWindow::OnUpdateRepeatCommand(CCmdUI* cmdui)
 afx_msg void
 CSoundWindow::OnUpdateNextCommand(CCmdUI* cmdui)
 {
-  cmdui->Enable(m_Playlist.GetNumFiles() > 1);
+  BOOL enabled = FALSE;
+  if (m_Playlist.GetNumFiles() > 1) {
+    if (m_RandomOrder) {
+      enabled = TRUE;
+    }
+    else if (m_Repeat || m_CurrentSound < m_Playlist.GetNumFiles() - 1) {
+      enabled = TRUE;
+    }
+  }
+
+  cmdui->Enable(enabled);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -476,7 +513,17 @@ CSoundWindow::OnUpdateNextCommand(CCmdUI* cmdui)
 afx_msg void
 CSoundWindow::OnUpdatePrevCommand(CCmdUI* cmdui)
 {
-  cmdui->Enable(m_Playlist.GetNumFiles() > 1);
+  BOOL enabled = FALSE;
+  if (m_Playlist.GetNumFiles() > 1) {
+    if (m_RandomOrder) {
+      enabled = TRUE;
+    }
+    else if (m_Repeat || m_CurrentSound > 0) {
+      enabled = TRUE;
+    }
+  }
+
+  cmdui->Enable(enabled);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -285,10 +285,10 @@ BEGIN
         MENUITEM "Pause",                       ID_SOUND_PAUSE
         MENUITEM "&Stop",                       ID_SOUND_STOP
         MENUITEM "&Repeat",                     ID_SOUND_REPEAT
-        MENUITEM "Random &Order",               ID_SOUND_RANDOM_ORDER
         MENUITEM "&Next",                       ID_SOUND_NEXT
         MENUITEM "&Prev",                       ID_SOUND_PREV
-        MENUITEM "Auto Advance",                ID_SOUND_AUTO_ADVANCE
+        MENUITEM "Random &Order",               ID_SOUND_RANDOM_ORDER
+        MENUITEM "&Auto Advance",               ID_SOUND_AUTO_ADVANCE
     END
 END
 
@@ -2361,6 +2361,11 @@ STRINGTABLE DISCARDABLE
 BEGIN
     ID_FILE_NEW_FILE        "Create a new file"
     ID_IMAGE_CROP           "Crop the image to the current selection"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_SOUND_PLAYLIST_REMOVE_BROKEN_FILES "Remove broken files from playlist"
 END
 
 #endif    // English (U.S.) resources

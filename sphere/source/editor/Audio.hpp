@@ -17,7 +17,7 @@ public:
   ~CSound();
 
   bool Load(const char* filename);
-  void Play();
+  bool Play();
   void Stop();
 
   int  GetVolume();
@@ -38,6 +38,9 @@ private:
   bool m_ClosedAudio;
   bool m_ClosedMidi;
   std::string m_Filename;
+
+  void __GetDevice__();
+  void __GetSound__(const char* filename);
 };
 
 

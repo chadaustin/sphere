@@ -30,6 +30,7 @@ private:
 
   bool AdvanceSound(bool forward, bool allow_repeating);
 
+  bool PlaySound();
   bool NextSound();
   bool PrevSound();
 
