@@ -1,3 +1,9 @@
+2003.06.14
+  - Added GetMapEngine().save(filename)
+
+2003.06.13
+  - made AttachInput work with the joystick aswell as the keyboard
+
 2003.06.11
   - fixed bug where maps smaller than the screen would repeat themselves
   - added option for repeating maps

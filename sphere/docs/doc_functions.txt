@@ -241,6 +241,13 @@ log_object.endBlock()
        var start = GetTime();
        while (GetTime() < start + 1000) {}
 
+  *** MapEngine object ***
+  GetMapEngine()
+    - returns the mapengine object currently being used by the map engine.
+   
+  mapengine_object.save(filename)
+    - saves the map to filename
+
 
   *** ByteArray object ***
   ByteArrays are pretty much only used for networking (see below for Network 

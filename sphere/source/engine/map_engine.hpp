@@ -206,6 +206,8 @@ public:
   bool SetMapEngineFrameRate(int fps);
   int GetMapEngineFrameRate();
 
+  bool SaveMap(const char* filename);
+
 private:
   struct DelayScript {
     int frames_left;

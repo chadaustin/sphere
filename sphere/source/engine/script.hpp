@@ -239,6 +239,8 @@ private:
   declare_method(ssByteArrayConcat);
   declare_method(ssByteArraySlice);
 
+  // mapengine objects
+  declare_method(ssMapSave);
   
   #undef declare_property
   #undef declare_method

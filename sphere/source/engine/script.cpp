@@ -46,6 +46,7 @@ const dword SS_ANIMATION_MAGIC   = 0x4c4ba103;
 const dword SS_FILE_MAGIC        = 0x672d369a;
 const dword SS_RAWFILE_MAGIC     = 0x29bcd805;
 const dword SS_BYTEARRAY_MAGIC   = 0x2295027f;
+const dword SS_MAPENGINE_MAGIC   = 0x42424401;
 
 
 struct SS_OBJECT
@@ -127,7 +128,9 @@ BEGIN_SS_OBJECT(SS_BYTEARRAY)
   byte* array;
 END_SS_OBJECT()
 
-
+BEGIN_SS_OBJECT(SS_MAPENGINE)
+  int __value__;
+END_SS_OBJECT()
 
 class NoGCBlock
 {
@@ -5048,7 +5051,7 @@ begin_method(SS_SURFACE, ssSurfaceSave, 1)
   std::string path = "images/";
   path += filename;
 
-  if (strcmp(type, "png")) {
+  if (strcmp(type, "png") == 0) {
     saved = object->surface->Save(path.c_str());
   }
 
@@ -5589,5 +5592,61 @@ begin_property(SS_BYTEARRAY, ssByteArraySetProperty)
   object->array[prop_id] = (byte)argInt(cx, *vp);
 end_property()
 
-////////////////////////////////////////
+///////////////////////////////////////////////////////////
+
+begin_func(GetMapEngine, 0)
+
+  if ( !This->m_Engine->GetMapEngine()->IsRunning() ) {
+    This->ReportMapEngineError("GetMapEngine() failed");
+    return JS_FALSE;
+  }
+
+  static JSClass clasp = {
+    "map", JSCLASS_HAS_PRIVATE,
+    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+    JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
+  };
+  
+  // create the object
+  JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
+  if (object == NULL) {
+    return NULL;
+  }
+
+  // assign methods to the object
+  static JSFunctionSpec fs[] = {
+    { "save",        ssMapSave,        0, 0, 0 },
+    { 0, 0, 0, 0, 0 },
+  };
+  JS_DefineFunctions(cx, object, fs);
+
+  SS_MAPENGINE* mapengine_object = new SS_MAPENGINE;
+  mapengine_object->__value__ = 1;
+  JS_SetPrivate(cx, object, mapengine_object);
+
+
+  return_object(object);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_method(SS_MAPENGINE, ssMapSave, 1)
+  arg_str(filename);
+  std::string path = "maps/" + std::string(filename);
+
+  if (IsValidPath(path) == false) {
+    JS_ReportError(cx, "Too many ..'s in filename: '%s'", filename);
+    return JS_FALSE;  
+  }
+
+  if ( !This->m_Engine->GetMapEngine()->IsRunning() ) {
+    This->ReportMapEngineError("map_engine.save() failed");
+    return JS_FALSE;
+  }
+
+  return_bool (  This->m_Engine->GetMapEngine()->SaveMap(path.c_str()) );
+end_method()
+
+////////////////////////////////////////////////////////////////////////////////
+
 

@@ -432,6 +432,8 @@ EXPORT(void) CloseVideoDriver()
  * returns whether the engine should *not* be shutdown
  */
 EXPORT(bool) ToggleFullScreen() {
+  return true;
+/*
   // this causes weird color problems, but vaguely works...
   int x, y, w, h;
   extern void __stdcall GetClippingRectangle(int*, int*, int*, int*);
@@ -462,6 +464,7 @@ EXPORT(bool) ToggleFullScreen() {
   }
 
   return false;
+*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////
