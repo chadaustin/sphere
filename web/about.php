@@ -1,12 +1,13 @@
 <?
-$DATE = '$Date: 2001-12-29 03:59:22 $';
+$DATE = '$Date: 2002-01-03 02:36:16 $';
 $AUTHOR = '$Author: jcore $';
+$PAGE = 'about.php';
 
-require('utility.php');
+require_once('constants.php');
+require_once('include/html.php');
 
-doctype();
-head("sphere - about");
-$features = array();
+$html = new HtmlGenerator("sphere - about");
+$html->divide("50%");
 $features['overview'] = <<<OVERVIEW
 Sphere is a 2D RPG engine. It allows people to create role-playing games like Final Fantasy VI or Phantasy Star.
 OVERVIEW;
@@ -28,15 +29,14 @@ The Sphere engine is based around maps. Maps use tilesets, which are collections
 Objects in Sphere are represented as entities. Townspeople are defined with spritesets, which are collections of frames. People can walk in eight directions, and have special directions (usually used for emotions or running). Unlike most RPG engines, spritesets in Sphere have a variable size. Large animal spritesets are used just as easily as people.
 ENGINE;
 $features['editor'] = <<<EDITOR
- Sphere comes with an integrated environment for editing maps, spritesets, scripts, fonts, etc. You can even play your game's music and sound effects while you work.
+Sphere comes with an integrated environment for editing maps, spritesets, scripts, fonts, etc. You can even play your game's music and sound effects while you work.
 EDITOR;
 
-$featurestext = "";
-foreach ($features as $feature_name => $feature) {
-  $featurestext .= generateBox("box", $feature_name, $feature);
+foreach ($features as $key => $value) {
+  $box = new HtmlBox("box", $key);
+  $box->append($value);
+  $html->appendBox($box, 0);
 }
+$html->generate();
 
-
-echo generatePane("left", $featurestext);
-tail();
 ?>

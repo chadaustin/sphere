@@ -1,53 +1,73 @@
 <?php
-$DATE = '$Date: 2001-12-30 23:32:43 $';
+$DATE = '$Date: 2002-01-03 02:36:16 $';
 $AUTHOR = '$Author: jcore $';
+$PAGE = 'admin/addnews.php';
+$ACCESS = 'reporter';
 
-require('../utility.php');
+require_once('../constants.php');
+require_once('../include/html.php');
+require_once('../include/news.php');
 
-function accessDenied () {
-  echo <<<HTML
-<p>You do not have access to this area.</p>
-HTML;
+$news = new SphereNews;
+if ($articleicon) {
+  if (!$articletitle)
+    fatalError("you must include an article title");
+  if (!$articlebrief)
+    fatalError("you must include an article brief");
+  if (strlen($articletitle) > 64)
+    fatalError("article title length must be less than 65 characters");
+  if (strlen($articlebrief) > 255)
+    die("article brief length must be less than 256 characters");
+  $text = NULL;
+  if ($HTTP_POST_FILES['articlefile']['tmp_name'] and $HTTP_POST_FILES['articlefile']['tmp_name'] != 'none') {
+    $filename = $HTTP_POST_FILES['articlefile']['tmp_name'];
+    $filesize = $HTTP_POST_FILES['articlefile']['size'];
+    if (!is_uploaded_file($filename))
+      fatalError("please upload a file");
+    else
+      $file = fopen($filename, "r") or die("unable to open temporary file");
+      $text = fread($file, $filesize);
+  }
+  $result = $news->addArticle($articleicon, $articletitle, $articlebrief, $text);
+  if ($result)
+    fatalError($result);
+  $html = new HtmlGenerator("sphere - news article submission");
+  $box = new HtmlBox("box", "success");
+  $box->puts("your news article has been submitted successfully");
+  $html->divide("50%");
+  $html->appendBox($box, 0);
+  $html->generate();
+} else {
+  $html = new HtmlGenerator("sphere - add a news article");
+  $html->divide("100%");
+  $box = new HtmlBox("box", "news article");
+  $input = <<<TEXT
+<form enctype="multipart/form-data" action="addnews.php" method="post">
+  <div>
+    <label>icon</label><br />
+    <select name="articleicon">
+
+TEXT;
+  foreach ($ICONS as $icon_name => $dummy) {
+    $input .= "      <option>$icon_name</option>\n";
+  }
+  $input .= <<<TEXT
+    </select><br />
+    <label>title</label><br />
+    <input type="text" name="articletitle" size="65" maxlength="64" /><br />
+    <label>brief (keep it &lt; 256 characters!)</label><br />
+    <textarea class="full" name="articlebrief" rows="3"></textarea><br />
+    <input type="hidden" name="MAX_FILE_SIZE" value="6144" />
+    <label>text</label><br />
+    <input type="file" name="articlefile" />
+    <hr>
+    <input type="submit" />
+  </div>
+</form>
+TEXT;
+  $box->append($input);
+  $html->appendBox($box, 0);
+  $html->generate();
 }
 
-doctype();
-head("sphere - news articles admin");
-$conn = new MySQLConnection;
-$user = $conn->getUser($sphereusername);
-if ($user) {
-  if ($user->level & 1) { /* news bit */
-    if ($articleicon and $articletitle and $articletext) {
-      $result = $conn->addNewsArticle($user->username, $articleicon, $articletitle, $articletext);
-      if ($result)
-        echo "<p>Error: $result</p>";
-      else
-        echo "<p>News article submitted successfully</p>";
-    } else {
-      $icon_options = "";
-      foreach ($ICONS as $icon_name => $dummy) {
-        $icon_options = $icon_options . "            <option>$icon_name</option>\n";
-      }
-      $input = <<<INPUT
-        <form action="addnews.php" method="post">
-        <div>
-          <label>icon</label><br />
-          <select name="articleicon">
-$icon_options          </select><br />
-          <label>title</label><br />
-          <input class="full" type="text" name="articletitle" maxlength="255" /><br />
-          <label>text</label><br />
-          <textarea class="full" name="articletext" rows="15"></textarea><br />
-          <hr>
-          <input type="submit" />
-        </div>
-        </form>
-INPUT;
-      echo generateBox("box", "news details", $input);
-    }
-  } else
-    accessDenied();
-} else
-  accessDenied();
-  
-tail();
 ?>
