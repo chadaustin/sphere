@@ -64,6 +64,16 @@ private:
   afx_msg void OnZoom4x();
   afx_msg void OnZoom8x();
 
+  // edit range
+  int GetEditRangeStartIndex();
+  int GetEditRangeEndIndex(int start_frame);
+  std::vector<int> GetEditRangeIndexes();
+
+  afx_msg void OnEditRangeSlideOther();
+  afx_msg void OnEditRangeFlipHorizontally();
+  afx_msg void OnEditRangeFlipVertically();
+  afx_msg void OnEditRangeReplaceRGBA();
+
 private:
   ITilesetViewHandler* m_Handler;
 

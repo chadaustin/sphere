@@ -45,8 +45,6 @@ public:
   sTile&       GetTile(int i);
   const sTile& GetTile(int i) const;
 
-  void ReplaceTileRangeColorWithColor(int start_tile, int num_tiles_to_change, RGBA find_color, RGBA replace_color);
-
 private:
   int m_TileWidth;
   int m_TileHeight;

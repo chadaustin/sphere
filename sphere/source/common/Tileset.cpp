@@ -648,22 +648,6 @@ sTileset::AppendImage(const char* filename)
   return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
-void
-sTileset::ReplaceTileRangeColorWithColor(int start_tile, int num_tiles_to_change, RGBA find_color, RGBA replace_color)
-{
-  if (start_tile < 0 || start_tile > GetNumTiles() - 1)
-    return;
-
-  if (num_tiles_to_change < 0 || start_tile + num_tiles_to_change > GetNumTiles() - 1)
-    return;
-
-
-  for (int i = start_tile; i < (start_tile + num_tiles_to_change); ++i) {
-    m_Tiles[i].ReplaceColor(find_color, replace_color);
-  }
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 
