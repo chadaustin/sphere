@@ -230,7 +230,8 @@ CSpritesetView::DrawDirection(HDC dc, int direction, int y)
 
     if (RectVisible(dc, &c))
     {
-      if (i + m_LeftFrame < m_Spriteset->GetNumFrames(direction))
+      if ((i + m_LeftFrame < m_Spriteset->GetNumFrames(direction))
+       && !(!m_DrawBitmap || m_DrawBitmap->GetPixels() == NULL))
       {
         UpdateDrawBitmap(direction, i + m_LeftFrame);
         DrawFrame(dc, LABEL_WIDTH + i * m_MaxFrameWidth, y, direction, i + m_LeftFrame);
@@ -246,6 +247,10 @@ CSpritesetView::DrawDirection(HDC dc, int direction, int y)
 void
 CSpritesetView::DrawFrame(HDC dc, int x, int y, int direction, int frame)
 {
+  if (!m_DrawBitmap || m_DrawBitmap->GetPixels() == NULL) {
+    return;
+  }
+
   int index = m_Spriteset->GetFrameIndex(direction, frame);
   CImage32& sprite = m_Spriteset->GetImage(index);
   BitBlt(dc, x, y, m_MaxFrameWidth, m_MaxFrameHeight, m_DrawBitmap->GetDC(), 0, 0, SRCCOPY);

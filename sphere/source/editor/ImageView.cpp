@@ -1065,7 +1065,7 @@ CImageView::OnPaint()
   int height = drawImage.GetHeight();
   const RGBA* pImage = drawImage.GetPixels();
 
-  if (width == 0 || height == 0 || pImage == NULL)
+  if (width == 0 || height == 0 || pImage == NULL || !m_BlitTile || m_BlitTile->GetPixels() == NULL)
   {
     RECT ClientRect;
     GetClientRect(&ClientRect);

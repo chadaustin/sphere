@@ -1346,6 +1346,11 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
   int tile_width  = m_Map->GetTileset().GetTileWidth();
   int tile_height = m_Map->GetTileset().GetTileHeight();
 
+  if (!m_BlitTile || m_BlitTile->GetPixels() == NULL) {
+    dc.FillRect(&rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+    return;
+  }
+
   // clear the DIB
   memset(m_BlitTile->GetPixels(), 0,  m_ZoomFactor * m_ZoomFactor * tile_width * tile_height * 4);
 

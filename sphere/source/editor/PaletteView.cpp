@@ -144,7 +144,7 @@ CPaletteView::OnPaint()
   RECT ClientRect;
   GetClientRect(&ClientRect);
 
-  if (m_pPaletteDIB)
+  if (m_pPaletteDIB && m_pPaletteDIB->GetPixels() != NULL)
   {
     dc.BitBlt(0, 0, ClientRect.right, ClientRect.bottom, CDC::FromHandle(m_pPaletteDIB->GetDC()), 0, 0, SRCCOPY);
   }
@@ -158,7 +158,7 @@ CPaletteView::OnPaint()
 afx_msg void
 CPaletteView::OnLButtonDown(UINT flags, CPoint point)
 {
-  if (!m_pPaletteDIB) return;
+  if (!m_pPaletteDIB || m_pPaletteDIB->GetPixels() == NULL) return;
 
   // bounds check
   RECT ClientRect;
@@ -202,7 +202,7 @@ CPaletteView::OnMouseMove(UINT flags, CPoint point)
   if (!m_bMouseDown)
     return;
 
-  if (!m_pPaletteDIB) return;
+  if (!m_pPaletteDIB || m_pPaletteDIB->GetPixels() == NULL) return;
 
   RECT ClientRect;
   GetClientRect(&ClientRect);
@@ -248,7 +248,7 @@ CPaletteView::OnSize(UINT type, int cx, int cy)
     m_pPaletteDIB = new CDIBSection(cw, ch, 24);
   }
 
-  if (m_pPaletteDIB) {
+  if (m_pPaletteDIB && m_pPaletteDIB->GetPixels() != NULL) {
     BGR* pixels = (BGR*)m_pPaletteDIB->GetPixels();
     UpdatePalette(cx, cy, cw, pixels);
   }

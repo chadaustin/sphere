@@ -77,6 +77,11 @@ CSpritesetAnimationPalette::OnPaint()
 	RECT ClientRect;
 	GetClientRect(&ClientRect);
 
+  if (!m_BlitImage || m_BlitImage->GetPixels() == NULL) {
+    dc.FillRect(&ClientRect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+    return;
+  }
+
   int blit_width  = m_BlitImage->GetWidth();
   int blit_height = m_BlitImage->GetHeight();
 

@@ -156,6 +156,9 @@ CWindowStyleWindow::UpdateDIBSection(int bitmap)
   int dib_height = m_WindowStyle.GetBitmap(bitmap).GetHeight() * m_ZoomFactor;
   m_DIBs[bitmap] = new CDIBSection(dib_width, dib_height, 32);
   
+  if (!m_DIBs[bitmap] || m_DIBs[bitmap]->GetPixels() == NULL)
+    return;
+
   // fill the DIB with data
   BGRA* dest  = (BGRA*)m_DIBs[bitmap]->GetPixels();
   CImage32& b = m_WindowStyle.GetBitmap(bitmap);
@@ -242,6 +245,10 @@ CWindowStyleWindow::DrawCorner(CDC& dc, int bitmap, int x, int y, int w, int h)
 {
   CDIBSection* dib = m_DIBs[bitmap];
 
+  if (!dib || dib->GetPixels()) {
+    return;
+  }
+
   // calculate correct corner offsets so the the images are flush with the image editor
   int offsetx = 0;
   int offsety = 0;
@@ -312,6 +319,10 @@ CWindowStyleWindow::DrawEdgeH(CDC& dc, int bitmap, int x, int y, int x2, int h)
 {
   CDIBSection* dib = m_DIBs[bitmap];
 
+  if (!dib || dib->GetPixels()) {
+    return;
+  }
+
   // calculate correct edge offsets so the the images are flush with the image editor
   int offsety = 0;
   switch (bitmap)
@@ -373,6 +384,10 @@ void
 CWindowStyleWindow::DrawEdgeV(CDC& dc, int bitmap, int x, int y, int y2, int w)
 {
   CDIBSection* dib = m_DIBs[bitmap];
+
+  if (!dib || dib->GetPixels()) {
+    return;
+  }
 
   // calculate correct edge offsets so the the images are flush with the image editor
   int offsetx = 0;
