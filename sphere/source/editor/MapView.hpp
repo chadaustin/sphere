@@ -144,7 +144,7 @@ private:
   bool m_ShowTileObstructions;
   std::vector<sTile> m_TileObstructions; // when View->Tile Obstructions is on, we render these
 
-#if 0
+#if 1
 
   class SpritesetImageIcon {
     public:

@@ -982,7 +982,7 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
     dc.RestoreDC(-1);
   }
 
-#if 1
+#if 0
   // draw entities
   for (int i = 0; i < m_Map->GetNumEntities(); ++i)
   {
@@ -1005,9 +1005,12 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
   }
 #else
   // draw entities
+  bool sprites_drawn = false;
+
   for (int i = 0; i < m_Map->GetNumEntities(); ++i)
   {
     sEntity& entity = m_Map->GetEntity(i);
+
     if (tx == entity.x / tile_width &&
         ty == entity.y / tile_height &&
         m_Map->GetLayer(entity.layer).IsVisible())
@@ -1026,11 +1029,11 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
 
         case sEntity::PERSON: {
           sPersonEntity* person = (sPersonEntity*) &entity;
-          std::string path = "../spritesets/" + person->spriteset;
+          std::string filename = person->spriteset;
 
           int sprite_index = -1;
           for (unsigned int i = 0; i < m_SpritesetImageIcons.size(); ++i) {
-            if (path == m_SpritesetImageIcons[i].filename) {
+            if (filename == m_SpritesetImageIcons[i].filename) {
               sprite_index = i;
               break;
             }
@@ -1038,11 +1041,17 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
 
           if (sprite_index == -1) {
             sSpriteset s;
-            if (s.Load(path.c_str()) && s.GetNumImages() > 0) {
-              s.RescaleFrames(tw / m_ZoomFactor, th / m_ZoomFactor);
-              sprite_index = m_SpritesetImageIcons.size();
-              SpritesetImageIcon ico(s.GetImage(0), path);
-              m_SpritesetImageIcons.push_back(ico);
+            std::string path1 = std::string("../spritesets/" + filename);
+            std::string path2 = std::string("spritesets/" + filename);
+
+            if (s.Load(path1.c_str())
+             || s.Load(path2.c_str())) {
+              if (s.GetNumImages() > 0) {
+                s.RescaleFrames(tile_width, tile_height);
+                sprite_index = m_SpritesetImageIcons.size();
+                SpritesetImageIcon ico(s.GetImage(0), filename);
+                m_SpritesetImageIcons.push_back(ico);
+              }
             }
           }
 
@@ -1054,8 +1063,12 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
           const RGBA* src = m_SpritesetImageIcons[sprite_index].image.GetPixels();
           BGRA* dest = (BGRA*)m_BlitTile->GetPixels();
 
-          int tile_width = m_SpritesetImageIcons[sprite_index].image.GetWidth();
-          int tile_height = m_SpritesetImageIcons[sprite_index].image.GetHeight();
+          int sprite_width = m_SpritesetImageIcons[sprite_index].image.GetWidth();
+          int sprite_height = m_SpritesetImageIcons[sprite_index].image.GetHeight();
+          tile_width = std::min(tile_width, sprite_width);
+          tile_height = std::min(tile_height, sprite_height);
+
+          sprites_drawn = true;
 
           int counter = 0;
           for (int j=0; j<tile_height; j++)
@@ -1063,8 +1076,8 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
             for (int k=0; k<tile_width; k++)
               for (int l=0; l<m_ZoomFactor; l++)
               {
-                RGBA s = src[j * tile_width + k];
-                int alpha = src[j * tile_width + k].alpha;
+                RGBA s = src[j * sprite_width + k];
+                int alpha = src[j * sprite_width + k].alpha;
                 dest[counter].red   = (alpha * s.red   + (255 - alpha) * dest[counter].red)   / 256;
                 dest[counter].green = (alpha * s.green + (255 - alpha) * dest[counter].green) / 256;
                 dest[counter].blue  = (alpha * s.blue  + (255 - alpha) * dest[counter].blue)  / 256;
@@ -1078,12 +1091,7 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
             }
           }
 
-        }
-
-        // render the tile
-        dc.BitBlt(rect.left, rect.top, tile_width * m_ZoomFactor, tile_height * m_ZoomFactor,
-        CDC::FromHandle(m_BlitTile->GetDC()), 0, 0, SRCCOPY);
-
+        } 
         break;
 
         case sEntity::TRIGGER:
@@ -1091,6 +1099,12 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
         break;
       }
     }
+  }
+
+  if (sprites_drawn) {
+    // render the tile
+    dc.BitBlt(rect.left, rect.top, tile_width * m_ZoomFactor, tile_height * m_ZoomFactor,
+    CDC::FromHandle(m_BlitTile->GetDC()), 0, 0, SRCCOPY);
   }
 
 #endif
