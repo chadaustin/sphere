@@ -420,7 +420,9 @@ log_object.endBlock()
       GetPersonX(name)
       GetPersonY(name)
       GetPersonLayer(name)
-        - gets the position of the person on the map
+        - Gets the position of the person on the map.
+          The position is based on the middle of the spriteset's base
+          rectangle.
       
       GetPersonDirection(name)
       GetPersonFrame(name)
