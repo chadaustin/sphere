@@ -651,8 +651,8 @@ static bool IsValidPath(const char* path)
     return false;
   }
 
-  // path begins with /
-  if (strcmp(path, "/") == 0) {
+  // path begins with backslash or forwardslash
+  if (strcmp(path, "/") == 0 || strcmp(path, "\\") == 0) {
     return false;
   }
 
