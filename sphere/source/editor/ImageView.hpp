@@ -67,11 +67,13 @@ private:
   bool InImage(POINT p);
 
   bool InSelection(POINT p);
-  void GetSelectionArea(int& x, int& y, int& w, int& h);
   RGBA* GetSelectionPixels();
   void UpdateSelectionPixels(RGBA* pixels, int sx, int sy, int sw, int sh);
+  int GetSelectionLeftX();
+  int GetSelectionTopY();
   int GetSelectionWidth();
   int GetSelectionHeight();
+  void FreeSelectionPixels(RGBA* pixels);
 
   void Click(bool force_draw);
   void Fill();
