@@ -173,7 +173,7 @@ class Compiler:
                        CCFLAGS = ['-DMNG_NO_CMS', '-DMNG_SUPPORT_LC', '-DMNG_DLL'])
         elif self.name == 'vc6':
             env.Append(LIBS = ['libmng'],
-                       CCFLAGS = ['/DMNG_NO_CMS', '/DMNG_SUPPORT_LC', '/DMNG_DLL'])
+                       CCFLAGS = ['/DMNG_USE_DLL', '/DMNG_SKIP_LCMS', '/DMNG_SKIP_IJG6B'])
 
         elif self.name == 'linux':
             env.Append(LIBS = ['mng', 'jpeg', 'z'])

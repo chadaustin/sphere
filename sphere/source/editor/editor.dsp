@@ -1216,6 +1216,14 @@ SOURCE=..\common\WindowStyle.cpp
 
 SOURCE=..\common\WindowStyle.hpp
 # End Source File
+# Begin Source File
+
+SOURCE=..\common\write_mng.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\write_mng.hpp
+# End Source File
 # End Group
 # End Target
 # End Project

@@ -35,4 +35,5 @@ env.Library('common', Split("""
     configfile.cpp
     resample.cpp
     md5.c
+    write_mng.cpp
 """))
