@@ -254,6 +254,8 @@ void UpdateButtonStates(HWND dialog)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+EXPORT(void) CloseVideoDriver();
+
 EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
 {
     static bool firstcall = true;
@@ -303,7 +305,8 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
                       WS_POPUP | WS_CLIPSIBLINGS);
         SetWindowLong(SphereWindow, GWL_EXSTYLE, 0);
 
-        if (ChangeDisplaySettings(&dm, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL) {
+        if (ChangeDisplaySettings(&dm, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL
+          || dm.dmBitsPerPel != DriverConfig.bpp) {
             MessageBox(SphereWindow, "Unable to set display mode.", "Video Error", MB_ICONERROR);
             return false;
         }
@@ -679,8 +682,8 @@ static inline float sphere_y_to_opengl_y(int y) {
 
 EXPORT(void) BlitImage(IMAGE image, int x, int y)
 {
-    extern void __stdcall BlitImageMask(IMAGE image, int x, int y, RGBA mask);
-    BlitImageMask(image, x, y, CreateRGBA(255, 255, 255, 255));
+  extern void __stdcall BlitImageMask(IMAGE image, int x, int y, RGBA mask);
+  BlitImageMask(image, x, y, CreateRGBA(255, 255, 255, 255));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
