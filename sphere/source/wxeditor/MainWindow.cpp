@@ -1157,7 +1157,8 @@ wMainWindow::OnFileImportBitmapToRSS(wxCommandEvent &event)
     return;
 
   sSpriteset sprite;
-  if (sprite.Import_BMP(InFileDialog.GetPath(), ResizeDialog.GetWidth(), ResizeDialog.GetHeight(), CreateRGBA(255, 0, 255, 255)) == false)
+  if (sprite.Import_BMP(InFileDialog.GetPath(), ResizeDialog.GetWidth(), ResizeDialog.GetHeight(),
+                        CreateRGBA(255, 0, 255, 255), CreateRGBA(255, 0, 255, 0)) == false)
   {
     ::wxMessageBox("Can't Import file", "Error");
     return;

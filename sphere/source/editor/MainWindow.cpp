@@ -278,10 +278,6 @@ CMainWindow::Create()
   m_ImageToolBar.EnableDocking(CBRS_ALIGN_ANY);
   m_ImageToolBar.GetToolBarCtrl().CheckButton(IDI_IMAGETOOL_PENCIL, TRUE);
 
-  WINDOWPLACEMENT twp = Configuration::Get(KEY_IMAGETOOLBAR_PLACEMENT);
-  m_ImageToolBar.SetWindowPlacement(&twp);
-
-
   // create the toolbar
   m_MapToolBar.CreateEx(
     this,
@@ -337,13 +333,27 @@ CMainWindow::Create()
   }
 
   wp = Configuration::Get(KEY_STANDARDTOOLBAR_PLACEMENT);
-  m_ToolBar.SetWindowPlacement(&wp);
+  if (wp.length != 0) {
+    m_ToolBar.SetWindowPlacement(&wp);
+  } else {
+    m_ToolBar.ShowWindow(SW_SHOW);
+  }
 
   wp = Configuration::Get(KEY_IMAGETOOLBAR_PLACEMENT);
   m_ImageToolBar.SetWindowPlacement(&wp);
+  if (wp.length != 0) {
+    m_ImageToolBar.SetWindowPlacement(&wp);
+  } else {
+    m_ImageToolBar.ShowWindow(SW_SHOW);
+  }
 
   wp = Configuration::Get(KEY_MAPTOOLBAR_PLACEMENT);
   m_MapToolBar.SetWindowPlacement(&wp);
+  if (wp.length != 0) {
+    m_MapToolBar.SetWindowPlacement(&wp);
+  } else {
+    m_MapToolBar.ShowWindow(SW_SHOW);
+  }
 
   UpdateWindow();
   UpdateMenu();

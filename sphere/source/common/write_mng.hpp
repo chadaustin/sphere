@@ -19,6 +19,7 @@ SaveMNGAnimationFromImages(const char* filename,
                            WriteMNG_ContinueProcessingImages should_continue,
                            void* data);
 
-#endif
+#endif // NO_WRITE_MNG
 
-#endif WRITE_MNG_H
+#endif // WRITE_MNG_H
+

@@ -95,6 +95,10 @@ def BuildVC6Env():
 def BuildLinuxEnv():
     env = Environment(ENV = os.environ)
     env['BUILD_DIR'] = "#/build/linux"
+
+    # no write_mng support for linux
+    env.Append(CXXFLAGS = ['-DNO_WRITE_MNG'])
+
     return env
 
 ###########################################################
@@ -173,10 +177,10 @@ class Compiler:
     def SetupMNG(self, env):
         if self.name == 'mingw':
             env.Append(LIBS = ['mng'],
-                       CCFLAGS = ['-DMNG_NO_CMS', '-DMNG_SUPPORT_LC', '-DMNG_DLL'])
+            CCFLAGS = ['-DMNG_NO_CMS', '-DMNG_SUPPORT_LC', '-DMNG_DLL'])
         elif self.name == 'vc6':
             env.Append(LIBS = ['libmng'],
-                       CCFLAGS = ['/DMNG_USE_DLL', '/DMNG_SKIP_LCMS', '/DMNG_SKIP_IJG6B'])
+            CCFLAGS = ['/DMNG_USE_DLL', '/DMNG_SKIP_LCMS', '/DMNG_SKIP_IJG6B'])
 
         elif self.name == 'linux':
             env.Append(LIBS = ['mng', 'jpeg', 'z'])

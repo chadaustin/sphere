@@ -2,6 +2,7 @@
 
 #include <libmng.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "write_mng.hpp"
 
@@ -9,6 +10,10 @@
 #include "rgb.hpp"
 
 #include "../common/sphere_version.h"
+
+#ifndef MAX_PATH
+#define MAX_PATH 1024
+#endif
 
 const char* mng_get_error_message(mng_retcode code) {
   switch (code) {
@@ -930,3 +935,4 @@ SaveMNGAnimationFromImages(const char* filename,
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif
+

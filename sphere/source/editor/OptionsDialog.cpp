@@ -42,6 +42,10 @@ bool IsRegistered(const char* ext)
     
     if (retval == 0) {
       retval = RegOpenKey(HKEY_CLASSES_ROOT, filetype, &key);
+
+	  if (retval == 0) {
+	  }
+
       RegCloseKey(key);
 
       if (retval == 0) {
@@ -69,7 +73,13 @@ void RegisterFile(const char* ext)
   {
     HKEY key;
     char command[MAX_PATH + 1024];
-    sprintf (command, "\"%s\" \"%%1\"", sphere_editor);
+
+    if (strcmp(ext, "spk") == 0) {
+      sprintf (command, "\"%s\" \"%%1\"", sphere_engine);
+    }
+    else {
+      sprintf (command, "\"%s\" \"%%1\"", sphere_editor);
+    }
 
     // register the extension
     RegCreateKey(HKEY_CLASSES_ROOT, extension, &key);
@@ -86,7 +96,18 @@ void RegisterFile(const char* ext)
 static
 void UnregisterFile(const char* ext)
 {
+  if (!IsRegistered(ext))
+    return;
 
+  const char* filetype = __getfiletype__(ext);
+  char extension[1024] = {0};
+  sprintf (extension, ".%s", ext);
+
+  if (1)
+  {
+    RegDeleteKey(HKEY_CLASSES_ROOT, extension);
+    RegDeleteKey(HKEY_CLASSES_ROOT, filetype);
+  }
 }
 
 ///////////////////////////////////////////////////////////
@@ -108,17 +129,15 @@ BOOL CALLBACK FileTypeDialogProc(HWND window, UINT message, WPARAM wparam, LPARA
         }
       }
 
-      if (SendDlgItemMessage(window, IDC_FILETYPE_LIST, LB_GETCOUNT, 0, 0) <= 0) {
-        EnableWindow(GetDlgItem(window, IDC_FILETYPES_REGISTER_TYPES), FALSE);
-        EnableWindow(GetDlgItem(window, IDC_FILETYPES_UNREGISTER_TYPES), FALSE);
-      }
+      int sel_count = SendDlgItemMessage(window, IDC_FILETYPE_LIST, LB_GETSELCOUNT, 0, 0);
+      EnableWindow(GetDlgItem(window, IDC_FILETYPES_REGISTER_TYPES), sel_count > 0 ? TRUE : FALSE);
+      EnableWindow(GetDlgItem(window, IDC_FILETYPES_UNREGISTER_TYPES), sel_count > 0 ? TRUE : FALSE);
     }
 
     static void SelectedFileTypes(HWND window, void (*SelectedFileTypeOperation)(const char* ext))
     {
       for (int i = 0; i < SendDlgItemMessage(window, IDC_FILETYPE_LIST, LB_GETCOUNT, 0, 0); i++) {
-        int selected = SendDlgItemMessage(window, IDC_FILETYPE_LIST, (UINT) LB_GETSEL, (WPARAM) i, 0);
-        if (selected > 0) {
+        if (SendDlgItemMessage(window, IDC_FILETYPE_LIST, (UINT) LB_GETSEL, (WPARAM) i, 0) > 0) {
           int len = SendDlgItemMessage(window, IDC_FILETYPE_LIST, LB_GETTEXTLEN, i, 0);
           if (len > 0 && len < 1020) {
             char text[1024];
