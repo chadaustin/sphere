@@ -253,6 +253,9 @@ SS_FUNCTION(OpenLog, 1)
       SS_FUNCTION(IgnoreTileObstructions, 2)
       SS_FUNCTION(IsIgnoringTileObstructions, 1)
 
+      SS_FUNCTION(GetPersonIgnoreList, 1)
+      SS_FUNCTION(SetPersonIgnoreList, 2)
+
       SS_FUNCTION(FollowPerson,     3)
       SS_FUNCTION(SetPersonScript,  3)
       SS_FUNCTION(CallPersonScript, 2)

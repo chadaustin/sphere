@@ -823,6 +823,14 @@ log_object.endBlock()
       IsIgnoringTileObstructions(person)
        - Returns true if 'person' is ignoring tile obstructions, else false
 
+      GetPersonIgnoreList(person)
+       - Returns a list of people that 'name' is ignoring
+
+      SetPersonIgnoreList(person, ignore_list)
+       - Tells 'person' to ignore everyone in ignore_list
+       e.g. SetPersonIgnoreList("White-Bomberman", ["bomb", "powerup"]);
+       Tells White-Bomberman to not be obstructed by bombs or powerups
+
       SetTalkActivationKey(key)
       GetTalkActivationKey()
         - set key used to activate talk scripts

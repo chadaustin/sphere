@@ -2087,6 +2087,34 @@ CMapEngine::IsIgnoringTileObstructions(const char* name, bool& ignoring)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::SetPersonIgnoreList(const char* name, std::vector<std::string> ignore_list)
+{
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
+    return false;
+  }
+
+  m_Persons[person].ignored_persons = ignore_list;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetPersonIgnoreList(const char* name, std::vector<std::string>& ignore_list)
+{
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
+    return false;
+  }
+
+  ignore_list = m_Persons[person].ignored_persons;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::GetPersonFrame(const char* name, int& frame)
 {
   int person = -1;
@@ -4840,6 +4868,12 @@ CMapEngine::FindObstructingPerson(int person, int x, int y)
         goto skip_this_guy;
       }
       j = m_Persons[j].leader;
+    }
+
+    for (j = 0; j < int(m_Persons[person].ignored_persons.size()); j++) {
+      if (m_Persons[person].ignored_persons[j] == m_Persons[i].name) {
+        goto skip_this_guy;
+      }
     }
 
     goto dont_skip;

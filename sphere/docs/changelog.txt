@@ -1,3 +1,8 @@
+2004.03.03
+  - Added surface.gradientLine surface.gradientRectangle and surface.gradientTriangle functions
+  - GradientLine now draws the colors in the correct order in standard32/16/8 etc
+  - Added Get/SetPersonIgnoreList for telling a certain person to ignore certain other persons
+
 2004.02.29
   - Added Get/SetPersonData (useful for finding out the number of frames in the person's current direction)
     and storing various data about a person.

@@ -224,6 +224,9 @@ public:
   bool IsIgnoringPersonObstructions(const char* name, bool& ignoring);
   bool IsIgnoringTileObstructions(const char* name, bool& ignoring);
 
+  bool GetPersonIgnoreList(const char* name, std::vector<std::string>& ignore_list);
+  bool SetPersonIgnoreList(const char* name, std::vector<std::string> ignore_list);
+
   bool IsPersonObstructed(const char* name, int x, int y, bool& result);
   bool GetObstructingTile(const char* name, int x, int y, int& result);
   bool GetObstructingPerson(const char* name, int x, int y, std::string& result);
@@ -305,6 +308,7 @@ private:
     bool ignorePersonObstructions;
     bool ignoreTileObstructions;
 
+    std::vector<std::string> ignored_persons;
     std::vector<PersonData> person_data;
   };
 

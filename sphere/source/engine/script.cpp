@@ -3899,6 +3899,74 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
+       - Returns a list of people that 'name' is ignoring
+*/
+begin_func(GetPersonIgnoreList, 1)
+  arg_str(name);
+  std::vector<std::string> ignore_list;
+
+  if (!This->m_Engine->GetMapEngine()->GetPersonIgnoreList(name, ignore_list)) {
+    This->ReportMapEngineError("GetPersonIgnoreList() failed");
+    return JS_FALSE;
+  }
+
+  // create an array of JS strings with which to initialize the array
+  jsval* valarray = new jsval[ignore_list.size()];
+  for (unsigned i = 0; i < ignore_list.size(); i++) {
+    valarray[i] = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, ignore_list[i].c_str()));
+  }
+
+  // create the array object
+  JSObject* array = JS_NewArrayObject(cx, ignore_list.size(), valarray);
+  if (array == NULL) {
+    JS_ReportError(cx, "Fatal Error!  JS_NewArrayObject() failed!");
+    delete[] valarray;
+    return JS_FALSE;
+  }
+
+  // delete our temporary jsval array and return the JS array
+  delete[] valarray;
+  return_object(array);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+       - Tells 'name' to ignore everyone in list
+       e.g. SetPersonIgnoreList("White-Bomberman", ["bomb", "powerup"]);
+       Tells White-Bomberman to not be obstructed by bombs or powerups
+*/
+begin_func(SetPersonIgnoreList, 2)
+  arg_str(name);
+  arg_array(array);
+
+  std::vector<std::string> ignore_list;
+
+  jsuint length;
+
+  JS_GetArrayLength(cx, array, &length);
+  ignore_list.resize(length);
+
+  for (unsigned int i = 0; i < length; i++) {
+    jsval val;
+
+    if (JS_LookupElement(cx, array, i, &val)) {
+      if (JSVAL_IS_STRING(val)) {
+        ignore_list[i] = argStr(cx, val);
+      }
+    }
+  }
+
+  if (!This->m_Engine->GetMapEngine()->SetPersonIgnoreList(name, ignore_list)) {
+    This->ReportMapEngineError("SetPersonIgnoreList() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
         - makes the sprite 'name' follow 'pixels' pixels behind sprite 'leader'.
         If this function is called like:
         FollowPerson(name, "", 0),
