@@ -4,7 +4,6 @@
 #include "Configuration.hpp"
 #include "Keys.hpp"
 #include "Debug.hpp"
-#include "FolderDialog.hpp"
 #include "../engine/win32/win32_sphere_config.hpp"
 
 

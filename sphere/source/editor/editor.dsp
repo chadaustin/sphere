@@ -735,14 +735,6 @@ SOURCE=.\FileDialogs.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\FolderDialog.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\FolderDialog.hpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\FontGradientDialog.cpp
 # End Source File
 # Begin Source File

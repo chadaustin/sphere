@@ -3,7 +3,6 @@
 #include "Configuration.hpp"
 #include "Keys.hpp"
 #include "resource.h"
-#include "FolderDialog.hpp"
 
 
 BEGIN_MESSAGE_MAP(COptionsDialog, CDialog)
