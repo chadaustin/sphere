@@ -1105,8 +1105,10 @@ log_object.endBlock()
       the actual drawing starts at. 
       See font_object.drawTextBox for more detail.
 
-  surface_object.save(filename [, image_type])
-    - saves the surface_object as a png image using the filename 'filename'
+  surface_object.save(filename)
+    - saves the surface_object as an image using the filename 'filename'
+      the image type is determined by the extension of the file
+      e.g. surface.save("test.png") saves a png image called test.png
 
   *** color matrix ***
   CreateColorMatrix(rn, rr, rg, rb,  gn, gr, gg, gb,  bn, br, bg, bb)

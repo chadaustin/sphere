@@ -121,6 +121,7 @@ END_SS_OBJECT()
 BEGIN_SS_OBJECT(SS_RAWFILE)
   IFile* file;
   bool is_open;
+  bool is_writeable;
 END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_BYTEARRAY)
@@ -4743,7 +4744,7 @@ begin_func(OpenRawFile, 1)
     return JS_FALSE;
   }
 
-  return_object(CreateRawFileObject(cx, file));
+  return_object(CreateRawFileObject(cx, file, writeable));
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -6700,7 +6701,6 @@ end_method()
 begin_method(SS_SURFACE, ssSurfaceSave, 1)
   arg_str(filename);
   const char* type = "png";
-
   bool saved = false;
 
   if (IsValidPath(filename) == false) {
@@ -6709,7 +6709,7 @@ begin_method(SS_SURFACE, ssSurfaceSave, 1)
   }
 
   if (argc >= 2) {
-    type = argStr(cx, argv[1]);
+  //  type = argStr(cx, argv[1]);
   }
 
   std::string path = "images/";
@@ -6982,7 +6982,7 @@ end_method()
 ///////////////////////////////////////
 
 JSObject*
-CScript::CreateRawFileObject(JSContext* cx, IFile* file)
+CScript::CreateRawFileObject(JSContext* cx, IFile* file, bool writeable)
 {
   // define raw file class
   static JSClass clasp = {
@@ -7014,6 +7014,7 @@ CScript::CreateRawFileObject(JSContext* cx, IFile* file)
   SS_RAWFILE* file_object = new SS_RAWFILE;
   file_object->file = file;
   file_object->is_open = true;
+  file_object->is_writeable = writeable;
   JS_SetPrivate(cx, object, file_object);
 
   return object;
@@ -7088,6 +7089,11 @@ begin_method(SS_RAWFILE, ssRawFileWrite, 1)
 
   if (!object->is_open) {
     JS_ReportError(cx, "rawfile is closed!");
+    return JS_FALSE;
+  }
+
+  if (!object->is_writeable) {
+    JS_ReportError(cx, "rawfile is not writeable!");
     return JS_FALSE;
   }
 

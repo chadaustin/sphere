@@ -224,7 +224,7 @@ private:
   declare_method(ssFileClose);
 
   // raw files
-  declare_constructor1(CreateRawFileObject, IFile* file);
+  declare_constructor2(CreateRawFileObject, IFile* file, bool writeable);
   declare_finalizer(ssFinalizeRawFile);
   declare_method(ssRawFileSetPosition);
   declare_method(ssRawFileGetPosition);
