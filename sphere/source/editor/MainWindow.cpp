@@ -309,7 +309,7 @@ CMainWindow::Create()
 
   DockControlBar(&m_ToolBar,      AFX_IDW_DOCKBAR_TOP);
   DockControlBar(&m_ImageToolBar, AFX_IDW_DOCKBAR_TOP);
-  DockControlBar(&m_MapToolBar, AFX_IDW_DOCKBAR_TOP);
+  DockControlBar(&m_MapToolBar,   AFX_IDW_DOCKBAR_TOP);
 
 #ifdef TABBED_WINDOW_LIST
   m_wndMDITabs.Create(this, MT_IMAGES);
@@ -332,6 +332,7 @@ CMainWindow::Create()
     ShowWindow(SW_SHOW);
   }
 
+  RecalcLayout();
   wp = Configuration::Get(KEY_STANDARDTOOLBAR_PLACEMENT);
   if (wp.length != 0) {
     m_ToolBar.SetWindowPlacement(&wp);
@@ -339,6 +340,7 @@ CMainWindow::Create()
     m_ToolBar.ShowWindow(SW_SHOW);
   }
 
+  RecalcLayout();
   wp = Configuration::Get(KEY_IMAGETOOLBAR_PLACEMENT);
   m_ImageToolBar.SetWindowPlacement(&wp);
   if (wp.length != 0) {
@@ -347,6 +349,7 @@ CMainWindow::Create()
     m_ImageToolBar.ShowWindow(SW_SHOW);
   }
 
+  RecalcLayout();
   wp = Configuration::Get(KEY_MAPTOOLBAR_PLACEMENT);
   m_MapToolBar.SetWindowPlacement(&wp);
   if (wp.length != 0) {

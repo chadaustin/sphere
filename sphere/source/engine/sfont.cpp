@@ -16,6 +16,7 @@
 SFONT::SFONT()
 {
   m_Images = NULL;
+  m_MaxHeight = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -61,6 +62,8 @@ SFONT::Destroy()
   }
   delete[] m_Images;
   m_Images = NULL;
+
+  m_MaxHeight = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -231,18 +234,6 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
 ////////////////////////////////////////////////////////////////////////////////
 
 int
-SFONT::GetMaxHeight() const
-{
-  int max_height = 0;
-  for (int i = 0; i < m_Font.GetNumCharacters(); i++)
-    if (m_Font.GetCharacter(i).GetHeight() > max_height)
-      max_height = m_Font.GetCharacter(i).GetHeight();
-  return max_height;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-int
 SFONT::GetStringWidth(const char* string) const
 {
   int width = 0;
@@ -347,12 +338,14 @@ SFONT::GetStringHeight(const char* string, int width) const
 bool
 SFONT::Initialize()
 {
+  m_MaxHeight = 0;
+
   m_Images = new IMAGE[m_Font.GetNumCharacters()];
   if (m_Images == NULL)
     return false;
 
-  for (int i = 0; i < m_Font.GetNumCharacters(); i++) {
-
+  for (int i = 0; i < m_Font.GetNumCharacters(); i++)
+  {
     sFontCharacter& c = m_Font.GetCharacter(i);
     m_Images[i] = CreateImage(c.GetWidth(), c.GetHeight(), c.GetPixels());
 
@@ -364,6 +357,10 @@ SFONT::Initialize()
     }
 
   }
+
+  for (int i = 0; i < m_Font.GetNumCharacters(); i++)
+    if (m_Font.GetCharacter(i).GetHeight() > m_MaxHeight)
+      m_MaxHeight = m_Font.GetCharacter(i).GetHeight();
 
   return true;
 }

@@ -21,7 +21,7 @@ public:
   bool DrawZoomedString(int x, int y, double scale, const char* text, RGBA mask, CImage32* surface = NULL) const;
   bool DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGBA mask, CImage32* surface = NULL) const;
 
-  int GetMaxHeight() const;
+  inline int GetMaxHeight() const { return m_MaxHeight; }
   int GetStringWidth(const char* string) const;
   int GetStringHeight(const char* string, int width) const;
 
@@ -31,6 +31,8 @@ private:
 private:
   sFont  m_Font;
   IMAGE* m_Images;
+
+  int m_MaxHeight;
 };
 
 

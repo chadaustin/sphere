@@ -1777,6 +1777,136 @@ BEGIN
     VK_INSERT,      ID_SPRITESETVIEWFRAMES_PASTE, VIRTKEY, SHIFT, NOINVERT
 END
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_OPEN_SOUND      "Open a sound"
+    ID_FILE_SAVEAS          "Save the active document as..."
+    ID_FILE_SAVECOPYAS      "Save a copy of active document"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_IMPORT_WINDOWSFONT "Import a font from a windows font"
+    ID_FILE_OPENLASTPROJECT "Open the last game project"
+    ID_FILE_SAVEALL         "Save all active documents"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_OPTIONS         "Configure editor options"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_HELP_ABOUT           "Display general info about the editor"
+    ID_FILE_EXIT            "Exit the editor"
+    ID_FILE_CLOSEPROJECT    "Close the current game project"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_BROWSE          "Browse for files"
+    ID_VIEW_PROJECT         "Toggle the project window"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_HELP_SPHERESITE      "Visit http://sphere.sf.net"
+    ID_HELP_FLIKSSITE       "Visit Flik's doc site"
+    ID_FILE_NEW_PROJECT     "Start a new game project"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_NEW_MAP         "Create a new map"
+    ID_FILE_NEW_SPRITESET   "Create a new spriteset"
+    ID_FILE_NEW_SCRIPT      "Create a new script"
+    ID_FILE_NEW_IMAGE       "Create a new image"
+    ID_FILE_OPEN_PROJECT    "Open a game project"
+    ID_FILE_OPEN_MAP        "Open a map"
+    ID_FILE_OPEN_SPRITESET  "Open a spriteset"
+    ID_FILE_OPEN_SCRIPT     "Open a script"
+    ID_FILE_OPEN_IMAGE      "Open an image"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_NEW_WINDOWSTYLE "Create a new windowstyle"
+    ID_FILE_NEW_FONT        "Create a new font"
+    ID_FILE_OPEN_WINDOWSTYLE "Open a windowstyle"
+    ID_FILE_OPEN_FONT       "Open a font"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_IMPORT_RM2KCHARSETTORSS "Import spritesets from a RM2K charset"
+    ID_FILE_IMPORT_RM2KCHIPSETTORTS "Import a tileset from a RM2K chipset"
+    ID_FILE_OPEN_TILESET    "Open a tileset"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_OPEN_ANIMATION  "Open an animation"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_IMPORT_IMAGETOMAPTILESET "Import a map from an image"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_IMPORT_BITMAPTORTS "Import a tileset from an image"
+    ID_FILE_IMPORT_VERGEFONTTEMPLATE 
+                            "Import a font from a verge font template"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_IMPORT_BITMAPTORSS "Import a spriteset from an image"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_IMPORT_VERGEMAP "Import a map from a verge map"
+    ID_FILE_IMPORT_VERGESPRITESET "Import a spriteset from a verge spriteset"
+    ID_FILE_IMPORT_IMAGETOFONT "Import a font from an image"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_IMPORT_BITMAPTORWS "Import a windowstyle from an image"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_IMPORT_MERGE_RGBA "Combine a rgb image and an alpha image"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_HELP_LOCALDOCUMENTATION "Open the local documentation folder"
+    ID_HELP_AEGISKNIGHTSSITE "Visit aegisknight's sphere page"
+    ID_HELP_SPHEREFAQ       "Visit the frequently asked questions"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_WINDOW_CLOSEALL      "Close all windows"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_VIEW_TOOLBAR         "Toggle the main toolbar"
+    ID_VIEW_STATUS_BAR      "Toggle the statusbar"
+END
+
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
