@@ -76,7 +76,7 @@ static LPDIRECTDRAWSURFACE ddSecondary;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(void, GetDriverInfo)(DRIVERINFO* driverinfo)
+EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
 {
   driverinfo->name        = "8-bit greyscale";
   driverinfo->author      = "Chad Austin";
@@ -87,7 +87,7 @@ EXPORT(void, GetDriverInfo)(DRIVERINFO* driverinfo)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(void, ConfigureDriver)(HWND parent)
+EXPORT(void) ConfigureDriver(HWND parent)
 {
   LoadConfiguration();
   DialogBox(DriverInstance, MAKEINTRESOURCE(IDD_CONFIGURE), parent, ConfigureDialogProc);
@@ -216,7 +216,7 @@ BOOL CALLBACK ConfigureDialogProc(HWND window, UINT message, WPARAM wparam, LPAR
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(bool, InitVideoDriver)(HWND window, int screen_width, int screen_height)
+EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
 {
   SphereWindow = window;
   ScreenWidth  = screen_width;
@@ -430,7 +430,7 @@ bool InitWindowed()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(void, CloseVideoDriver)()
+EXPORT(void) CloseVideoDriver()
 {
   if (Configuration.fullscreen)
     CloseFullscreen();
@@ -460,7 +460,7 @@ void CloseWindowed()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(void, FlipScreen)()
+EXPORT(void) FlipScreen()
 {
   if (Configuration.fullscreen)
   {
@@ -529,7 +529,7 @@ EXPORT(void, FlipScreen)()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(IMAGE, CreateImage)(int width, int height, RGBA* pixels)
+EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 {
   IMAGE image = new _IMAGE;
   image->width = width;
@@ -607,7 +607,7 @@ void OptimizeBlitRoutine(IMAGE image)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(IMAGE, GrabImage)(int x, int y, int width, int height)
+EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
 {
   if (x < 0 ||
       y < 0 ||
@@ -636,7 +636,7 @@ EXPORT(IMAGE, GrabImage)(int x, int y, int width, int height)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(void, DestroyImage)(IMAGE image)
+EXPORT(void) DestroyImage(IMAGE image)
 {
   delete[] image->grey;
   delete[] image->alpha;
@@ -645,7 +645,7 @@ EXPORT(void, DestroyImage)(IMAGE image)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(void, BlitImage)(IMAGE image, int x, int y)
+EXPORT(void) BlitImage(IMAGE image, int x, int y)
 {
   // don't draw it if it's off the screen
   if (x + (int)image->width < ClippingRectangle.left ||
@@ -679,7 +679,7 @@ private:
 };
 
 
-EXPORT(void, BlitImageMask)(IMAGE image, int x, int y, RGBA mask)
+EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
 {
   byte m = (mask.red + mask.green + mask.blue) / 3;
 
@@ -704,7 +704,7 @@ inline void render_pixel(byte& d, byte s, int a)
   d = (d * (256 - a) + s * a) / 256;
 }
 
-EXPORT(void, TransformBlitImage)(IMAGE image, int x[4], int y[4])
+EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
 {
   primitives::TexturedQuad(
     ScreenBuffer,
@@ -721,7 +721,7 @@ EXPORT(void, TransformBlitImage)(IMAGE image, int x[4], int y[4])
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(void, TransformBlitImageMask)(IMAGE image, int x[4], int y[4], RGBA mask)
+EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
 {
   byte m = (mask.red + mask.green + mask.blue) / 3;
 
@@ -792,21 +792,21 @@ void NormalBlit(IMAGE image, int x, int y)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(int, GetImageWidth)(IMAGE image)
+EXPORT(int) GetImageWidth(IMAGE image)
 {
   return image->width;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(int, GetImageHeight)(IMAGE image)
+EXPORT(int) GetImageHeight(IMAGE image)
 {
   return image->height;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(RGBA*, LockImage)(IMAGE image)
+EXPORT(RGBA*) LockImage(IMAGE image)
 {
   image->locked_pixels = new RGBA[image->width * image->height];
 
@@ -827,7 +827,7 @@ EXPORT(RGBA*, LockImage)(IMAGE image)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(void, UnlockImage)(IMAGE image)
+EXPORT(void) UnlockImage(IMAGE image)
 {
   delete[] image->grey;
   delete[] image->alpha;
@@ -839,7 +839,7 @@ EXPORT(void, UnlockImage)(IMAGE image)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(void, DirectBlit)(int x, int y, int w, int h, RGBA* pixels)
+EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels)
 {
   calculate_clipping_metrics(w, h);
   
@@ -868,7 +868,7 @@ inline void renderRGBA(byte& d, RGBA s, RGBA a)
   d = (d * (256 - alpha) + src * alpha) / 256;
 }
 
-EXPORT(void, DirectTransformBlit)(int x[4], int y[4], int w, int h, RGBA* pixels)
+EXPORT(void) DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels)
 {
   primitives::TexturedQuad(
     ScreenBuffer,
@@ -885,7 +885,7 @@ EXPORT(void, DirectTransformBlit)(int x[4], int y[4], int w, int h, RGBA* pixels
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(void, DirectGrab)(int x, int y, int w, int h, RGBA* pixels)
+EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
 {
   if (x < 0 ||
       y < 0 ||
@@ -949,28 +949,28 @@ inline void blendRGBA(byte& dest, RGBA source) {
   dest = (byte)((color * source.alpha + dest * (256 - source.alpha)) / 256);
 }
 
-EXPORT(void, DrawPoint)(int x, int y, RGBA color)
+EXPORT(void) DrawPoint(int x, int y, RGBA color)
 {
   primitives::Point(ScreenBuffer, ScreenWidth, x, y, color, ClippingRectangle, blendRGBA);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(void, DrawLine)(int x[2], int y[2], RGBA color)
+EXPORT(void) DrawLine(int x[2], int y[2], RGBA color)
 {
   primitives::Line(ScreenBuffer, ScreenWidth, x[0], y[0], x[1], y[1], constant_color(color), ClippingRectangle, blendRGBA);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(void, DrawGradientLine)(int x[2], int y[2], RGBA colors[2])
+EXPORT(void) DrawGradientLine(int x[2], int y[2], RGBA colors[2])
 {
   primitives::Line(ScreenBuffer, ScreenWidth, x[0], y[0], x[1], y[1], gradient_color(colors[0], colors[1]), ClippingRectangle, blendRGBA);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(void, DrawTriangle)(int x[3], int y[3], RGBA color)
+EXPORT(void) DrawTriangle(int x[3], int y[3], RGBA color)
 {
   primitives::Triangle(ScreenBuffer, ScreenWidth, x, y, color, ClippingRectangle, blendRGBA);
 }
@@ -992,7 +992,7 @@ inline RGBA interpolateRGBA(RGBA a, RGBA b, int i, int range)
   return result;
 }
 
-EXPORT(void, DrawGradientTriangle)(int x[3], int y[3], RGBA colors[3])
+EXPORT(void) DrawGradientTriangle(int x[3], int y[3], RGBA colors[3])
 {
   primitives::GradientTriangle(ScreenBuffer, ScreenWidth, x, y, colors, ClippingRectangle, blendRGBA, interpolateRGBA);
 }
@@ -1003,7 +1003,7 @@ inline void copyByte(byte& dest, byte source) {
   dest = source;
 }
 
-EXPORT(void, DrawRectangle)(int x, int y, int w, int h, RGBA color)
+EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color)
 {
   if (color.alpha == 0) {          // no mask
 
@@ -1023,7 +1023,7 @@ EXPORT(void, DrawRectangle)(int x, int y, int w, int h, RGBA color)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(void, DrawGradientRectangle)(int x, int y, int w, int h, RGBA colors[4])
+EXPORT(void) DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
 {
   primitives::GradientRectangle(ScreenBuffer, ScreenWidth, x, y, w, h, colors, ClippingRectangle, blendRGBA, interpolateRGBA);
 }

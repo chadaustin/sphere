@@ -2,7 +2,7 @@
 #define VIDEO_H
 
 
-#define EXPORT(ret, name) extern "C" ret __stdcall name
+#define EXPORT(ret) extern "C" ret __stdcall
 
 
 // Driver info
@@ -16,8 +16,8 @@ typedef struct
 } DRIVERINFO;
 
 
-EXPORT(void, SetClippingRectangle)(int x, int y, int w, int h);
-EXPORT(void, GetClippingRectangle)(int* x, int* y, int* w, int* h);
+EXPORT(void) SetClippingRectangle(int x, int y, int w, int h);
+EXPORT(void) GetClippingRectangle(int* x, int* y, int* w, int* h);
 
 extern HINSTANCE DriverInstance;
 extern int       ScreenWidth;

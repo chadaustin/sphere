@@ -20,7 +20,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(void, SetClippingRectangle)(int x, int y, int w, int h)
+EXPORT(void) SetClippingRectangle(int x, int y, int w, int h)
 {
   int x1 = x;
   int y1 = y;
@@ -54,7 +54,7 @@ EXPORT(void, SetClippingRectangle)(int x, int y, int w, int h)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EXPORT(void, GetClippingRectangle)(int* x, int* y, int* w, int* h)
+EXPORT(void) GetClippingRectangle(int* x, int* y, int* w, int* h)
 {
   *x = ClippingRectangle.left;
   *y = ClippingRectangle.top;
