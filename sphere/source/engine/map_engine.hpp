@@ -154,6 +154,11 @@ private:
 public:
   bool BindKey(int key, const char* on_key_down, const char* on_key_up);
   bool UnbindKey(int key);
+
+private:
+  bool IsJoystickButtonBound(int joystick, int button);
+
+public:
   bool BindJoystickButton(int joystick, int button, const char* on_key_down, const char* on_key_up);
   bool UnbindJoystickButton(int joystick, int button);
 

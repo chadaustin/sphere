@@ -1,3 +1,6 @@
+2004.12.05
+  - Binding the talk key now disables talking to people.
+
 2004.11.21
   - Added IsPersonVisible(person) and SetPersonVisible(person, visible)
 

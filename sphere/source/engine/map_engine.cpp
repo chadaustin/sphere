@@ -1324,6 +1324,26 @@ CMapEngine::UnbindKey(int key)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::IsJoystickButtonBound(int joystick, int button)
+{
+  int bound_joystick_index = -1;
+  for (int i = 0; i < int(m_BoundJoysticks.size()); ++i) {
+    if (m_BoundJoysticks[i].m_Joystick == joystick) {
+      bound_joystick_index = i;
+      break;
+    }
+  }
+
+  if (bound_joystick_index == -1) {
+    return false;
+  }
+
+  return (m_BoundJoysticks[bound_joystick_index].m_BoundButtons.count(button) > 0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::BindJoystickButton(int joystick, int button, const char* on_key_down, const char* on_key_up)
 {
   int bound_joystick_index = -1;
@@ -4423,8 +4443,8 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
   // test if talk activation script should be called
   if (m_InputPerson == person_index) {
     // if the activation key is pressed
-    if (m_Keys[m_TalkActivationKey]
-    || (GetNumJoysticks() > 0 && IsJoystickButtonPressed(0, m_JoystickTalkButton))) {
+    if ( (m_Keys[m_TalkActivationKey] && !IsKeyBound(m_TalkActivationKey)) 
+     || (GetNumJoysticks() > 0 && IsJoystickButtonPressed(0, m_JoystickTalkButton)) && !IsJoystickButtonBound(0, m_JoystickTalkButton)) {
 
       int talk_x = int(m_Persons[m_InputPerson].x);
       int talk_y = int(m_Persons[m_InputPerson].y);
