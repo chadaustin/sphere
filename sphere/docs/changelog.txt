@@ -4,6 +4,7 @@
   - fix trigger activation so you can activate a trigger more than
     once on a map
   - make rawfile.read return a ByteArray object
+  - redraw the map after ResizeAllLayers
 
 2003.02.05
   - fixed GrabImage crash bug in standard16 and interpolate16

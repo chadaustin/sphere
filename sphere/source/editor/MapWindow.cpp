@@ -394,6 +394,7 @@ CMapWindow::OnResizeAllLayers()
 
     SetModified(true);
     m_MapView.UpdateScrollBars();
+    Invalidate();
   }
 }
 
