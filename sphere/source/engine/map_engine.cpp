@@ -3429,7 +3429,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
         std::string person_name = p.name;
 
-        if (!ExecuteScript(c.script.c_str(), error)) {
+        if (!ExecuteScript(c.script.c_str(), error) || !error.empty()) {
           m_ErrorMessage = "Could not execute queued script\nPerson:"
                          + p.description + "\nError:" + error;
         return false;
