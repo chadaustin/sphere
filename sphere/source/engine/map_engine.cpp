@@ -2270,8 +2270,8 @@ CMapEngine::RenderEntities(int layer, bool flipped, int offset_x, int offset_y)
       const sSpriteset& ss = p.spriteset->GetSpriteset();
 
       IMAGE image = (flipped
-        ? p.spriteset->GetFlipImage(ss.GetFrameIndex(p.direction, p.frame))
-        : p.spriteset->GetImage(ss.GetFrameIndex(p.direction, p.frame))
+        ? p.spriteset->GetFlipImage(ss.GetFrameIndex(p.direction, p.stepping))
+        : p.spriteset->GetImage(ss.GetFrameIndex(p.direction, p.stepping))
       );
 
 

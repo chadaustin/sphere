@@ -2,7 +2,7 @@
 #define VERSION_H
 
 
-#define SPHERE_VERSION "v.93"
+#define SPHERE_VERSION "v.94a"
 
 
 #endif
