@@ -1,6 +1,4 @@
-import os, sys
-true = 1
-false = 0
+import os, string, sys
 
 Default('.')
 
@@ -18,13 +16,13 @@ use_audiere = ARGUMENTS.get('audio', '1')
 ## print "Sphere data will install to " + os.path.join(install_prefix, 'share/sphere')
 
 libraries = ['z','corona','js','SDL','mng']
-compile_flags = '-DXP_UNIX -DVERSION=' + version
-compile_flags += ' -DDATADIR=' + install_prefix + '/share/sphere '
-compile_flags += os.popen('sdl-config --cflags').read().strip()
+compile_flags = ['-DXP_UNIX', '-DVERSION=' + version ]
+compile_flags.append('-DDATADIR=' + install_prefix + '/share/sphere')
+compile_flags.extend(string.split(os.popen('sdl-config --cflags').read()))
 if use_audiere == '1':
 	libraries.append('audiere')
-	compile_flags += ' -DAUDIO'
-linker_flags = os.popen('sdl-config --libs').read().strip()
+	compile_flags.append('-DAUDIO')
+linker_flags = string.split(os.popen('sdl-config --libs').read())
 	
 print 'Starting build for Sphere ' + version + '.'
 
@@ -34,7 +32,7 @@ SConscript('source/common/SConscript', 'env')
 SConscript('source/engine/SConscript', 'env')
 engine = env.Program(
         target = "bin/sphere",
-        source = "source/engine/libengine.a source/common/libcommon.a")
+        source = Split("source/engine/libengine.a source/common/libcommon.a"))
 env.Install(os.path.join(install_prefix, 'bin'), engine)
 
 docs = ['Sphere Tutorial.txt', 'build.txt', 'doc_functions.txt',

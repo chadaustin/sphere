@@ -1,8 +1,9 @@
 Import('env')
-################################################################################
-env.Library(target='engine', source='benchmark.cpp render.cpp simage.cpp \
-sspriteset.cpp engine.cpp rendersort.cpp smap.cpp swindowstyle.cpp log.cpp \
-script.cpp sphere.cpp map_engine.cpp sfont.cpp SpritesetServer.cpp \
-unix/unix_audio.cpp unix/unix_network.cpp unix/unix_time.cpp unix/unix_filesystem.cpp \
-unix/unix_screenshot.cpp unix/unix_video.cpp unix/unix_input.cpp unix/unix_sphere_config.cpp \
-unix/unix_main.cpp unix/unix_system.cpp')
+
+env.Library('engine', Split("""
+    benchmark.cpp render.cpp simage.cpp sspriteset.cpp engine.cpp
+    rendersort.cpp smap.cpp swindowstyle.cpp log.cpp script.cpp sphere.cpp
+    map_engine.cpp sfont.cpp SpritesetServer.cpp unix/unix_audio.cpp
+    unix/unix_network.cpp unix/unix_time.cpp unix/unix_filesystem.cpp
+    unix/unix_screenshot.cpp unix/unix_video.cpp unix/unix_input.cpp
+    unix/unix_sphere_config.cpp unix/unix_main.cpp unix/unix_system.cpp"""))

@@ -1,9 +1,9 @@
 Import('env')
-################################################################################
-env.Library(target='common', source='AnimationFactory.cpp Image32.cpp \
-ObstructionMap.cpp common_palettes.cpp Layer.cpp PackageFile.cpp \
-configfile.cpp Log.cpp PackageFileSystem.cpp DefaultFile.cpp LogDispatcher.cpp \
-Spriteset.cpp DefaultFileSystem.cpp LogFile.cpp Tile.cpp Entities.cpp \
-LogNull.cpp Tileset.cpp Filters.cpp WindowStyle.cpp FLICAnimation.cpp Map.cpp \
-Font.cpp MNGAnimation.cpp')
+
+env.Library('common', Split("""
+    AnimationFactory.cpp Image32.cpp ObstructionMap.cpp common_palettes.cpp
+    Layer.cpp PackageFile.cpp configfile.cpp Log.cpp PackageFileSystem.cpp
+    DefaultFile.cpp LogDispatcher.cpp Spriteset.cpp DefaultFileSystem.cpp
+    LogFile.cpp Tile.cpp Entities.cpp LogNull.cpp Tileset.cpp Filters.cpp
+    WindowStyle.cpp FLICAnimation.cpp Map.cpp Font.cpp MNGAnimation.cpp"""))
 
