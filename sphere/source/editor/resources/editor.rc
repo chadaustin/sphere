@@ -316,9 +316,12 @@ BEGIN
         MENUITEM "Select &Tile",                ID_MAPVIEW_SELECTTILE
         MENUITEM SEPARATOR
         MENUITEM "&Set Entry Point",            ID_MAPVIEW_SETENTRYPOINT
-        MENUITEM "View &Grid",                  ID_MAPVIEW_VIEWGRID
-        MENUITEM "View &Tile Obstructions",     ID_MAPVIEW_VIEWTILEOBSTRUCTIONS
+        POPUP "&View"
+        BEGIN
+            MENUITEM "&Grid",                       ID_MAPVIEW_VIEWGRID
+            MENUITEM "&Tile Obstructions",          ID_MAPVIEW_VIEWTILEOBSTRUCTIONS
 
+        END
         MENUITEM SEPARATOR
         MENUITEM "&Fill",                       ID_MAPVIEW_FILL
         MENUITEM SEPARATOR

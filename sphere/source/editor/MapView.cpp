@@ -882,6 +882,7 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
 
 
             // todo: this is horribly slow now, make it quicker
+            // todo: when you zoom in, vertical lines don't look right
             if (m_ShowTileObstructions) {
 
               struct Local {
@@ -902,7 +903,8 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
               // draw the obstruction segments
              Local::Color c;
 
-             RECT clipper = { 0, 0, m_tile.GetWidth() - 1, m_tile.GetHeight() - 1 };
+             RECT clipper = { 0, 0, (m_tile.GetWidth() * m_ZoomFactor)  - 1, (m_tile.GetHeight() * m_ZoomFactor)  - 1  };
+
              const sObstructionMap& obs_map = m_tile.GetObstructionMap();
              for (int i = 0; i < obs_map.GetNumSegments(); i++) {
     
@@ -910,11 +912,11 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
 
                  primitives::Line(
                    (RGBA*) dest,
-                   m_tile.GetWidth(),
-                   s.x1,
-                   s.y1,
-                   s.x2,
-                   s.y2,
+                   m_tile.GetWidth() * m_ZoomFactor,
+                   (int) ( s.x1 * m_ZoomFactor),
+                   (int) ( s.y1 * m_ZoomFactor),
+                   (int) ( s.x2 * m_ZoomFactor),
+                   (int) ( s.y2 * m_ZoomFactor),
                    c,
                    clipper,
                    Local::CopyRGBA

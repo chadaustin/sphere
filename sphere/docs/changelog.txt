@@ -1,7 +1,10 @@
 
+2003.05.06
+  - added ability to view tile obstructions from within editor
+  - added font.getColorMask(), windowstyle.setColorMask(color) and windowstyle.getColorMask()
+
 2003.05.04
-  - made it so errors are now logged to gamedir/last_error.txt
-  - fixes so that engine/sdl sort of compiles
+  - fixes so that the SDL subsystem sort of compiles
   - fixed SetTileImage blend-mode bug
 
 2003.05.01

@@ -579,11 +579,11 @@ CScript::ErrorReporter(JSContext* cx, const char* message, JSErrorReport* report
     }
     This->m_Error = os.str();
 
-    FILE* file = fopen("last_error.txt", "wb+");
-    if (file != NULL) {
-      fwrite(This->m_Error.c_str(), sizeof(char), This->m_Error.length(), file); 
-      fclose(file);
-    }
+    //FILE* file = fopen("last_error.txt", "wb+");
+    //if (file != NULL) {
+    //  fwrite(This->m_Error.c_str(), sizeof(char), This->m_Error.length(), file); 
+    //  fclose(file);
+    //}
 
   } else {
     
