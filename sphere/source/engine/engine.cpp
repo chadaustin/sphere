@@ -389,7 +389,6 @@ CGameEngine::ExecuteScript(script s, bool& should_exit, std::string& error)
   so->AddRef();
 
   if (so->Execute(should_exit) == false) {
-
     error = m_Script->GetError();
     so->Release();
     return false;
@@ -453,6 +452,7 @@ CGameEngine::LoadSpriteset(const char* filename)
   std::string path = "spritesets/";
   path += filename;
 
+#if 1
   // load spriteset
   SSPRITESET* ss = new SSPRITESET;
   if (!ss->Load(path.c_str(), m_FileSystem, std::string(filename))) {
@@ -461,6 +461,9 @@ CGameEngine::LoadSpriteset(const char* filename)
   }
 
   return ss;
+#else
+  return m_SpritesetServer.Load(path.c_str(), m_FileSystem);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -468,7 +471,11 @@ CGameEngine::LoadSpriteset(const char* filename)
 void
 CGameEngine::DestroySpriteset(SSPRITESET* spriteset)
 {
+#if 1
   spriteset->Release();
+#else
+  m_SpritesetServer.Free(spriteset);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

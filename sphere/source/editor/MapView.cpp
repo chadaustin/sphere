@@ -595,6 +595,119 @@ CMapView::LayerAreaCopy()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+RGBA* // the return value needs to be delete[] 'ed
+CMapView::GetBitmapImageFromClipboard(int& width, int& height)
+{
+  if (OpenClipboard() == FALSE)
+    return NULL;
+
+  HBITMAP bitmap = (HBITMAP)GetClipboardData(CF_BITMAP);
+  if (bitmap == NULL) {
+    CloseClipboard();
+    return NULL;
+  }
+
+  BITMAP b;
+  GetObject(bitmap, sizeof(b), &b);
+
+  HDC dc = CreateCompatibleDC(NULL);
+  HBITMAP oldbitmap = (HBITMAP)SelectObject(dc, bitmap);
+
+  // work out the possible width
+  for (width = 0; width < 4096; width++)
+    if (GetPixel(dc, width, 0) == CLR_INVALID)
+      break;
+
+  // work out the possible height
+  for (height = 0; height < 4096; height++)
+    if (GetPixel(dc, 0, height) == CLR_INVALID)
+      break;
+
+  if (width <= 0 || height <= 0) {
+    CloseClipboard();
+    return NULL;
+  }
+
+  RGBA* pixels = new RGBA[width * height];
+  if (pixels == NULL) {
+    CloseClipboard();
+    return NULL;
+  }
+
+  for (int iy = 0; iy < height; iy++) {
+    for (int ix = 0; ix < width; ix++)
+    {
+      COLORREF pixel = GetPixel(dc, ix, iy);
+      if (pixel == CLR_INVALID) {
+        pixel = RGB(0, 0, 0);
+      }
+
+      pixels[iy * width + ix].red   = GetRValue(pixel);
+      pixels[iy * width + ix].green = GetGValue(pixel);
+      pixels[iy * width + ix].blue  = GetBValue(pixel);
+      pixels[iy * width + ix].alpha = 255;  // there is no alpha so we use a default
+    }
+  }
+
+  SelectObject(dc, oldbitmap);
+  DeleteDC(dc);
+
+  CloseClipboard();
+
+  return pixels;  
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void PasteMapUnderPointFunc(sMap* m_Map, const sMap& tMap, int m_SelectedLayer, int tx, int ty)
+{
+  sTileset tTileset = tMap.GetTileset();
+  std::vector<int> newTileLoc;
+  const int tile_width = tTileset.GetTileWidth();
+  const int tile_height = tTileset.GetTileHeight();
+
+  // relocate all the tiles, add the tiles to the actual tileset if needed
+  for (int i = 0; i < tTileset.GetNumTiles(); i++) {
+    newTileLoc.push_back(i);
+  }
+
+    for (int i = 0; i < tTileset.GetNumTiles(); i++) {
+      bool found = false;
+      sTileset& cTileset = m_Map->GetTileset();
+
+      for (int j = 0; j < cTileset.GetNumTiles(); j++) {
+        if (memcmp(tTileset.GetTile(i).GetPixels(), cTileset.GetTile(j).GetPixels(), tile_width * tile_height * 4) == 0) {
+          newTileLoc[i] = j;
+          found = true;
+        }
+      }
+
+      if (!found) {
+        // add to the end
+        m_Map->GetTileset().AppendTiles(1);
+        newTileLoc[i] = m_Map->GetTileset().GetNumTiles() - 1;
+        memcpy(m_Map->GetTileset().GetTile(newTileLoc[i]).GetPixels(), tTileset.GetTile(i).GetPixels(), tile_width * tile_height * 4);
+      }
+    }
+
+    if (tMap.GetNumLayers() == 1)
+    {
+      sLayer tLayer = tMap.GetLayer(0);
+
+      // update the map data offsets
+      for (int y = 0; y < tLayer.GetHeight(); y++)
+        for (int x = 0; x < tLayer.GetWidth(); x++)
+          tLayer.SetTile(x, y, newTileLoc[tLayer.GetTile(x, y)]);
+
+      // finally, overwrite the existing map data
+      for (int y=ty; y<m_Map->GetLayer(m_SelectedLayer).GetHeight() && y-ty<tLayer.GetHeight(); y++)
+        for (int x=tx; x<m_Map->GetLayer(m_SelectedLayer).GetWidth() && x-tx<tLayer.GetWidth(); x++)
+          m_Map->GetLayer(m_SelectedLayer).SetTile(x, y, tLayer.GetTile(x-tx, y-ty));
+    }
+
+  
+}
+
 void
 CMapView::PasteMapUnderPoint(CPoint point)
 {
@@ -609,6 +722,9 @@ CMapView::PasteMapUnderPoint(CPoint point)
     return;
   }
 
+  sMap tMap;
+  sTileset& tTileset = tMap.GetTileset();
+
   HGLOBAL memory = (HGLOBAL)GetClipboardData(s_MapAreaClipboardFormat);
   if (memory != NULL)
   {
@@ -617,9 +733,7 @@ CMapView::PasteMapUnderPoint(CPoint point)
     int num_tiles = *ptr++;
     int tile_width = *ptr++;
     int tile_height = *ptr++;
-    sLayer tLayer;
-    sMap tMap;
-    sTileset tTileset;
+
     std::vector<int> newTileLoc;
 
     if (m_Map->GetTileset().GetTileWidth() != tile_width ||
@@ -632,6 +746,8 @@ CMapView::PasteMapUnderPoint(CPoint point)
     // extract the map array from memory
     if (num_layers == 0)
     {
+      sLayer tLayer;
+
       int width = *ptr++;
       int height = *ptr++;
 
@@ -639,6 +755,8 @@ CMapView::PasteMapUnderPoint(CPoint point)
       for (int y=0; y<height; y++)
         for (int x=0; x<width; x++)
           tLayer.SetTile(x, y, *ptr++);
+
+      tMap.InsertLayer(0, tLayer);
     }
 
     // extract the tiles from memory
@@ -658,50 +776,50 @@ CMapView::PasteMapUnderPoint(CPoint point)
       }
     }
 
-    // relocate all the tiles, add the tiles to the actual tileset if needed
-    for (int i = 0; i < num_tiles; i++) {
-      newTileLoc.push_back(i);
-    }
-
-    for (int i = 0; i < num_tiles; i++) {
-      bool found = false;
-      sTileset& cTileset = m_Map->GetTileset();
-
-      for (int j = 0; j < cTileset.GetNumTiles(); j++) {
-        if (memcmp(tTileset.GetTile(i).GetPixels(), cTileset.GetTile(j).GetPixels(), tile_width * tile_height * 4) == 0) {
-          newTileLoc[i] = j;
-          found = true;
-        }
-      }
-
-      if (!found) {
-        // add to the end
-        m_Map->GetTileset().AppendTiles(1);
-        newTileLoc[i] = m_Map->GetTileset().GetNumTiles() - 1;
-        memcpy(m_Map->GetTileset().GetTile(newTileLoc[i]).GetPixels(), tTileset.GetTile(i).GetPixels(), tile_width * tile_height * 4);
-      }
-    }
-
-    if (num_layers == 0)
-    {
-      // update the map data offsets
-      for (int y=0; y<tLayer.GetHeight(); y++)
-        for (int x=0; x<tLayer.GetWidth(); x++)
-          tLayer.SetTile(x, y, newTileLoc[tLayer.GetTile(x, y)]);
-
-      // finally, overwrite the existing map data
-      for (int y=ty; y<m_Map->GetLayer(m_SelectedLayer).GetHeight() && y-ty<tLayer.GetHeight(); y++)
-        for (int x=tx; x<m_Map->GetLayer(m_SelectedLayer).GetWidth() && x-tx<tLayer.GetWidth(); x++)
-          m_Map->GetLayer(m_SelectedLayer).SetTile(x, y, tLayer.GetTile(x-tx, y-ty));
-    }
+    PasteMapUnderPointFunc(m_Map, tMap, m_SelectedLayer, tx, ty);
 
     m_RedrawWindow = 1;
     Invalidate();
+    m_Handler->MV_MapChanged();
+    // m_Handler->MV_TilesetChanged();!!
+  }
+  else {
+    CloseClipboard();
+
+    int width;
+    int height;
+    RGBA* pixels = GetBitmapImageFromClipboard(width, height);
+    if (pixels != NULL)
+    {
+      CImage32 image(width, height, pixels);
+      delete[] pixels;
+
+      tTileset.BuildFromImage(image, m_Map->GetTileset().GetTileWidth(), m_Map->GetTileset().GetTileHeight(), true);
+
+      if (1)
+      {
+        sLayer tLayer;
+        int layer_width = width / m_Map->GetTileset().GetTileWidth();
+        int layer_height = width / m_Map->GetTileset().GetTileHeight();
+
+        tLayer.Resize(layer_width, layer_height);
+        int i = 0;
+        for (int y=0; y<layer_height; y++)
+          for (int x=0; x<layer_width; x++)
+            tLayer.SetTile(x, y, i++);
+
+        tMap.InsertLayer(0, tLayer);
+      }
+
+      PasteMapUnderPointFunc(m_Map, tMap, m_SelectedLayer, tx, ty);
+
+      m_RedrawWindow = 1;
+      Invalidate();
+      m_Handler->MV_MapChanged();
+      // m_Handler->MV_TilesetChanged();!!
+    }
   }
 
-  CloseClipboard();
-
-  m_Handler->MV_MapChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2018,6 +2136,7 @@ CMapView::OnLButtonUp(UINT flags, CPoint point)
         m_Map->GetEntity(m_MoveIndex).y = y;
         m_MoveIndex = -1;
         Invalidate();
+        m_Handler->MV_MapChanged();
       }
     } break;
 

@@ -463,7 +463,7 @@ wMapWindow::OnPruneTileset(wxCommandEvent &event)
 void
 wMapWindow::OnTabChanged(wxTabEvent &event)
 {
-  TabChanged(0);// m_TabControl->GetCurFocus());
+  TabChanged(m_TabControl->GetCurFocus());
 }
 #else
 void

@@ -737,7 +737,7 @@ wMainWindow::UpdatePaletteMenu()
 #if 0
 
   HMENU menu = GetMenu()->m_hMenu;
-  HMENU view_menu = GetSubMenu(menu, m_ProjectOpen ? 2 : 1);
+  HMENU view_menu = GetSubMenu(menu, (m_ProjectOpen ? 2 : 1));
 
   // delete the old palette menu
   DeleteMenu(view_menu, 2, MF_BYPOSITION);
@@ -920,7 +920,7 @@ wMainWindow::OnFileOpen(wxCommandEvent &event)
         OpenGameFile(thePath);
     }
 
-    UpdateMenu();
+//    UpdateMenu();
   }
 }
 

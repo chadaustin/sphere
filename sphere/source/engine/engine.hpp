@@ -12,6 +12,10 @@
 #include "sphere.hpp"
 #include "../common/IFileSystem.hpp"
 
+#if 0
+#include "spritesetserver.hpp"
+#endif
+
 
 class CGameEngine : private IEngine
 {
@@ -111,6 +115,10 @@ private:
   IMAGE        m_SystemDownArrow;
 
   CScript* m_Script;
+
+#if 0
+  CSpritesetServer m_SpritesetServer;
+#endif
 
   // the next game to be executed
   std::string m_NextGame;

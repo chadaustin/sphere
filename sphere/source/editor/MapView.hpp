@@ -71,6 +71,8 @@ private:
 
   int FindSpritesetImageIconsIndex(int person_index, std::string filename);
 
+  RGBA* GetBitmapImageFromClipboard(int& width, int& height);
+
 private:
   afx_msg void OnDestroy();
   afx_msg void OnPaint();
