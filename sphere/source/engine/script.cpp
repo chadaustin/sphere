@@ -909,7 +909,7 @@ inline sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     return NULL;
   }
 
-  for (int i = 0; i < num_images; i++) {
+  for (unsigned i = 0; i < num_images; i++) {
     jsval image;
     if ( !JS_GetElement(cx, images_object, i, &image) ) {
       JS_ReportError(cx, "Invalid image %d", i);
@@ -948,7 +948,7 @@ inline sSpriteset* argSpriteset(JSContext* cx, jsval arg)
   int frame_width = 0;
   int frame_height = 0;
 
-  for (int i = 0; i < num_images; i++) {
+  for (unsigned i = 0; i < num_images; i++) {
 
     if (i == 0) {
       frame_width  = images[i].GetWidth();
@@ -1009,14 +1009,14 @@ inline sSpriteset* argSpriteset(JSContext* cx, jsval arg)
   }
 
   s->Create(frame_width, frame_height, num_images, num_directions, 0);
-  for (int i = 0; i < num_images; i++) {
+  for (unsigned i = 0; i < num_images; i++) {
     s->GetImage(i) = images[i];
   }
   delete[] images;
 
   s->SetBase(x1, y1, x2, y2);
 
-  for (int i = 0; i < num_directions; i++) {
+  for (unsigned i = 0; i < num_directions; i++) {
 
     jsval direction_object_val;
     if ( !JS_GetElement(cx, directions_object, i, &direction_object_val) ) {
@@ -1054,7 +1054,7 @@ inline sSpriteset* argSpriteset(JSContext* cx, jsval arg)
       return NULL;
     }
 
-    for (int j = 0; j < num_frames; j++) {
+    for (unsigned j = 0; j < num_frames; j++) {
       jsval frame_val;
 
       if ( !JS_GetElement(cx, frames_array, j, &frame_val) ) {
@@ -1072,7 +1072,7 @@ inline sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 
       int frame_index = argInt(cx, frame_index_val);
 
-      if (frame_index < 0 || frame_index >= num_images) {
+      if (frame_index < 0 || frame_index >= int(num_images)) {
         JS_ReportError(cx, "spriteset.directions[%d].frames[%d].index is an invalid image index of %d", i, j, frame_index);
         return NULL;
       }
@@ -5317,7 +5317,7 @@ bool GetLookUpTable(JSContext* cx, JSObject* array, unsigned char lookup[256]) {
 
   bool is_null_lookup = true;
 
-  for (int i = 0; i < length; i++) {
+  for (unsigned i = 0; i < length; i++) {
     jsval val;
     int32 value;
       
@@ -6001,7 +6001,7 @@ begin_func(GetMapEngine, 0)
   // create the object
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
   if (object == NULL) {
-    return NULL;
+    return JS_FALSE;
   }
 
   // assign methods to the object

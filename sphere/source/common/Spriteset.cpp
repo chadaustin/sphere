@@ -206,9 +206,6 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
 
     //**// BEGIN VERSION TWO //**//
 
-    if (header.num_directions < 0 || header.num_images < 0)
-      return false;
-
     m_Images.clear();
     m_Directions.resize(header.num_directions);
     for (int i = 0; i < header.num_directions; i++) {
@@ -257,9 +254,6 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
 
 
     //**// BEGIN VERSION THREE //**//
-
-    if (header.num_directions < 0 || header.num_images < 0)
-      return false;
 
     // read the images
     m_Images.resize(header.num_images);

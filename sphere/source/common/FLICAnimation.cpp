@@ -76,7 +76,7 @@ CFLICAnimation::Load(const char* filename, IFileSystem& fs)
   File->Read(&FlicHeader, sizeof(FlicHeader));
 
   // test the FLIC for validity
-  if (FlicHeader.depth != 8 && FlicHeader.width >= 0 && FlicHeader.height >= 0)
+  if (FlicHeader.depth != 8)
   {
     delete File;
     File = 0;

@@ -68,10 +68,10 @@ CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
 , m_TalkActivationKey(KEY_SPACE)
 , m_TalkActivationDistance(8)
 
-, m_JoystickCancelButton(0)
-, m_JoystickTalkButton(2)
-
 , m_CurrentZone(-1)
+
+, m_JoystickTalkButton(2)
+, m_JoystickCancelButton(0)
 {
   m_Camera.x     = 0;
   m_Camera.y     = 0;

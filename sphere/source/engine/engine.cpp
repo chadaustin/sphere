@@ -29,8 +29,8 @@ CGameEngine::CGameEngine(IFileSystem& fs,
 , m_SystemScriptDirectory(script_directory)
 , m_Parameters(parameters)
 , m_Script(NULL)
-, m_MapEngine(NULL)
 , m_RestartGame(false)
+, m_MapEngine(NULL)
 {
 }
 

@@ -68,14 +68,11 @@ void RotateCW(int src_width, int src_height, RGBA* pixels)
   RGBA* old_pixels = new RGBA[src_width * src_height];
   memcpy(old_pixels, pixels, src_width * src_height * sizeof(RGBA));
 
-  int dest_width = src_height;
-  int dest_height = src_width;
-
   for (int iy = 0; iy < src_height; iy++) {
     for (int ix = 0; ix < src_width; ix++) {
       int dx = src_width - iy - 1;
       int dy = ix;
-      pixels[dy * dest_width + dx] = old_pixels[iy * src_width + ix];
+      pixels[dy * src_width + dx] = old_pixels[iy * src_width + ix];
     }
   }
 
@@ -89,14 +86,11 @@ void RotateCCW(int src_width, int src_height, RGBA* pixels)
   RGBA* old_pixels = new RGBA[src_width * src_height];
   memcpy(old_pixels, pixels, src_width * src_height * sizeof(RGBA));
 
-  int dest_width = src_height;
-  int dest_height = src_width;
-
   for (int iy = 0; iy < src_height; iy++) {
     for (int ix = 0; ix < src_width; ix++) {
       int dx = iy;
       int dy = src_width - ix - 1;
-      pixels[dy * dest_width + dx] = old_pixels[iy * src_width + ix];
+      pixels[dy * src_width + dx] = old_pixels[iy * src_width + ix];
     }
   }
 
