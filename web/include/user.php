@@ -194,8 +194,10 @@ class SphereUser {
     global $PERMISSIONS;
     $permissions = array();
     foreach ($PERMISSIONS as $perm => $bit) {
-      if ($this->permissions & $bit or $this->permissions & 1 and $bit != 1)
-        $permissions[] = $perm;
+      if ($bit != 1) {
+        if ($this->permissions & $bit or $this->permissions & 1)
+          $permissions[] = $perm;
+      }
     }
     return $permissions;
   }
