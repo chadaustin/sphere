@@ -5,23 +5,38 @@
 #include "Audio.hpp"
 
 
+static int s_InitCount = 0;
 static ADR_CONTEXT s_Context;
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool InitializeAudio()
+static void InitializeAudio()
 {
-  s_Context = AdrCreateContext(NULL);
-  return (s_Context != NULL);
+  if (s_InitCount++ == 0) {
+    ADR_CONTEXT_ATTR attr = AdrCreateContextAttr();
+    AdrContextAttrSetOutputDevice(attr, "autodetect");
+    
+    s_Context = AdrCreateContext(attr);
+    if (!s_Context) {
+      AdrContextAttrSetOutputDevice(attr, "null");
+      s_Context = AdrCreateContext(attr);
+    }
+
+    AdrDestroyContextAttr(attr);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void CloseAudio()
+static void CloseAudio()
 {
-  AdrDestroyContext(s_Context);
-  s_Context = NULL;
+  if (--s_InitCount == 0) {
+    if (s_Context) {
+      AdrDestroyContext(s_Context);
+      s_Context = NULL;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -29,6 +44,7 @@ void CloseAudio()
 CSound::CSound()
 : m_Sound(NULL)
 {
+  InitializeAudio();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -39,6 +55,8 @@ CSound::~CSound()
     AdrCloseStream(m_Sound);
     m_Sound = NULL;
   }
+
+  CloseAudio();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -51,8 +69,13 @@ CSound::Load(const char* filename)
     m_Sound = NULL;
   }
 
-  m_Sound = AdrOpenStream(s_Context, filename);
-  return (m_Sound != NULL);
+  if (s_Context) {
+    m_Sound = AdrOpenStream(s_Context, filename);
+    return (m_Sound != NULL);
+  } else {
+    m_Sound = NULL;
+    return NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,7 +83,9 @@ CSound::Load(const char* filename)
 void
 CSound::Play()
 {
-  AdrPlayStream(m_Sound);
+  if (m_Sound) {
+    AdrPlayStream(m_Sound);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -68,8 +93,10 @@ CSound::Play()
 void
 CSound::Stop()
 {
-  AdrPauseStream(m_Sound);
-  AdrResetStream(m_Sound);
+  if (m_Sound) {
+    AdrPauseStream(m_Sound);
+    AdrResetStream(m_Sound);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -77,7 +104,11 @@ CSound::Stop()
 int
 CSound::GetVolume()
 {
-  return AdrGetStreamVolume(m_Sound);
+  if (m_Sound) {
+    return AdrGetStreamVolume(m_Sound);
+  } else {
+    return 0;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -85,7 +116,9 @@ CSound::GetVolume()
 void
 CSound::SetVolume(int Volume)
 {
-  AdrSetStreamVolume(m_Sound, Volume);
+  if (m_Sound) {
+    AdrSetStreamVolume(m_Sound, Volume);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

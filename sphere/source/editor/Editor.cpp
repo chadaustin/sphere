@@ -73,15 +73,6 @@ CEditorApplication::InitInstance()
   SPHERECONFIG sphere_config;
   LoadSphereConfig(&sphere_config, "engine.ini");
 
-  // initialize the audio
-  if (!InitializeAudio())
-  {
-    MessageBox(m_pMainWnd->m_hWnd, "Could not initialize audio", "Error", MB_OK);
-    m_pMainWnd->DestroyWindow();
-    delete m_pMainWnd;
-    return false;
-  }
-
   // parse the command line
   CEditorCommandLineInfo cli(main_window);
   ParseCommandLine(cli);

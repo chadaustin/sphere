@@ -5,10 +5,6 @@
 #include <audiere.h>
 
 
-bool InitializeAudio();
-void CloseAudio();
-
-
 class CSound
 {
 public:

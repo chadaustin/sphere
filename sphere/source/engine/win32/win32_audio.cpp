@@ -28,6 +28,12 @@ bool InitAudio(HWND window, SPHERECONFIG* config)
     attr, FileOpen, FileClose, FileRead, FileSeek, FileTell);
 
   s_AudiereContext = AdrCreateContext(attr);
+
+  if (!s_AudiereContext) {
+    AdrContextAttrSetOutputDevice(attr, "null");
+    s_AudiereContext = AdrCreateContext(attr);
+  }
+
   AdrDestroyContextAttr(attr);
 
   return (s_AudiereContext != NULL);
