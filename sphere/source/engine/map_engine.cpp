@@ -68,6 +68,9 @@ CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
 , m_TalkActivationKey(KEY_SPACE)
 , m_TalkActivationDistance(8)
 
+, m_JoystickCancelButton(0)
+, m_JoystickTalkButton(2)
+
 , m_CurrentZone(-1)
 {
   m_Camera.x     = 0;
@@ -3391,7 +3394,8 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
   // test if talk activation script should be called
   if (m_InputPerson == person_index) {
     // if the activation key is pressed
-    if (m_Keys[m_TalkActivationKey]) {
+    if (m_Keys[m_TalkActivationKey]
+    || (GetNumJoysticks() > 0 && IsJoystickButtonPressed(0, m_JoystickTalkButton))) {
       
       int talk_x = int(m_Persons[m_InputPerson].x);
       int talk_y = int(m_Persons[m_InputPerson].y);
@@ -3922,6 +3926,11 @@ CMapEngine::ProcessInput()
     if (new_keys[KEY_DOWN])  dy++;
     if (new_keys[KEY_LEFT])  dx--;
 
+    if (GetNumJoysticks() > 0) {
+      dx += (int) (GetJoystickX(0));
+      dy += (int) (GetJoystickY(0));
+    }
+
     if (dy < 0) m_Persons[m_InputPerson].commands.push_back(Person::Command(COMMAND_MOVE_NORTH, true));
     if (dx > 0) m_Persons[m_InputPerson].commands.push_back(Person::Command(COMMAND_MOVE_EAST,  true));
     if (dy > 0) m_Persons[m_InputPerson].commands.push_back(Person::Command(COMMAND_MOVE_SOUTH, true));
@@ -3957,6 +3966,12 @@ CMapEngine::ProcessInput()
 
   }  
 
+
+  if (GetNumJoysticks() > 0) {
+    if (IsJoystickButtonPressed(0, m_JoystickCancelButton)) {
+      // m_ShouldExit = true;
+    }
+  }
 
   return true;
 }

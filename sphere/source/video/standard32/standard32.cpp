@@ -747,6 +747,7 @@ public:
     dst.red   = (dst.red   * (256 - alpha) + src.red   * alpha) / 256;
     dst.green = (dst.green * (256 - alpha) + src.green * alpha) / 256;
     dst.blue  = (dst.blue  * (256 - alpha) + src.blue  * alpha) / 256;
+
   }
 
 private:
@@ -793,18 +794,30 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
 
 void aBlendBGR(struct BGR& d, struct BGR s, int a)
 {
+#if 1
   // blit to the dest pixel
   d.red   = (d.red   * (256 - a)) / 256 + s.red;
   d.green = (d.green * (256 - a)) / 256 + s.green;
   d.blue  = (d.blue  * (256 - a)) / 256 + s.blue;
+#else
+  d.red=((d.red*(a^0xff))>>8)+s.red;
+  d.green=((d.green*(a^0xff))>>8)+s.green;
+  d.blue=((d.blue*(a^0xff))>>8)+s.blue;
+#endif
 }
 
 void aBlendBGRA(struct BGRA& d, struct BGRA s, int a)
 {
+#if 1
   // blit to the dest pixel
   d.red   = (d.red   * (256 - a)) / 256 + s.red;
   d.green = (d.green * (256 - a)) / 256 + s.green;
   d.blue  = (d.blue  * (256 - a)) / 256 + s.blue;
+#else
+  d.red=((d.red*(a^0xff))>>8)+s.red;
+  d.green=((d.green*(a^0xff))>>8)+s.green;
+  d.blue=((d.blue*(a^0xff))>>8)+s.blue;
+#endif
 }
 
 EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])

@@ -427,6 +427,9 @@ private:
 
   // input handling
   bool m_Keys[MAX_KEY];
+
+  int m_JoystickTalkButton;
+  int m_JoystickCancelButton;
 };
 
 
