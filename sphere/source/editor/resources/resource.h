@@ -137,6 +137,7 @@
 #define IDC_WEST                        1106
 #define IDC_SCRIPT_TYPE                 1110
 #define IDC_REFLECTIVE                  1111
+#define IDC_LAYER                       1111
 #define IDC_BOTTOM_COLOR                1112
 #define IDC_EDIT_OBSTRUCTIONS           1113
 #define IDC_PRESETS                     1114
@@ -456,7 +457,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        225
 #define _APS_NEXT_COMMAND_VALUE         40648
-#define _APS_NEXT_CONTROL_VALUE         1122
+#define _APS_NEXT_CONTROL_VALUE         1124
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

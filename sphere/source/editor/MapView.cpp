@@ -1943,7 +1943,7 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
       person.y = py;
       person.layer = m_SelectedLayer;
 
-      CEntityPersonDialog dialog(person);
+      CEntityPersonDialog dialog(person, m_Map);
       if (dialog.DoModal() == IDOK)
       {
         // insert it into the map
@@ -2001,7 +2001,7 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
 
           switch (e.GetEntityType()) {
             case sEntity::PERSON: {
-              CEntityPersonDialog dialog((sPersonEntity&)e);
+              CEntityPersonDialog dialog((sPersonEntity&)e, m_Map);
               if (dialog.DoModal() == IDOK) {
                 m_Handler->MV_MapChanged();
               }
