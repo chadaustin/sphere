@@ -1,15 +1,23 @@
+2003.08.14
+  - Added a Spriteset Animation pallete
+  (so you can preview what the spriteset's animation will look like) - Tim Enderling
+
 2003.08.11
   - SetLayerAlpha/GetLayerAlpha became SetLayerMask/GetLayerMask
+    (Just as fast as LayerAlpha's, but can do per layer color tinting much like ApplyColorMask)
   - Added a freehand selection tool for the image editor (doesn't fully work yet)
 
 2003.07.05
   - Added move entity maptool
+  - You can now paste images from the clipboard onto the map using the Paste Area tool.
 
 2003.07.03
   - Don't allow Image->View At Original Size when image is maximized...
-  - wxeditor now uses wxNotebook
+  - wxeditor now uses wxNotebook (and is now known to compile in linux using wxGTK-2.4.1)
   - copy map tool now also copies the map as an image too
   - Added File->Import->RM2K charset to spritesets...
+  - Added File->Import->RM2K chipset to tileset.
+  - Added Custom Filters for images (currently you can't define your own though)
 
 2003.07.31
   - MapView "Fill Area" became "Fill Rectanglar Area"
