@@ -1,6 +1,6 @@
 <?php
-$DATE = '$Date: 2002-01-03 03:21:27 $';
-$AUTHOR = '$Author: jcore $';
+$DATE = '$Date: 2002-01-05 02:21:36 $';
+$AUTHOR = '$Author: malis $';
 $PAGE = 'index.php';
 
 require_once('constants.php');
@@ -39,13 +39,13 @@ $html->divide("20%");
 if (!$USER) {
   $box = new HtmlBox("box", "login");
   $text = <<<TEXT
-<form action="$SITEROOT/tools/userlogin.php" method="post" name="login">
+<form action="$SITEROOT/tools/userlogin.php" method="post" id="login">
   <div>
     <label>username: </label>
     <input class="full" type="text" name="username" maxlength="32" /><br />
     <label>password: </label>
     <input class="full" type="password" name="password" maxlength="12" /><br />
-    <div class="sig"><a href="Javascript:document.login.submit()">login</a></div>
+    <div class="sig"><a href="Javascript:document.getElementById('login').submit()">login</a></div>
   </div>
 </form>
 
