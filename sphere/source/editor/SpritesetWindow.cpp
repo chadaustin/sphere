@@ -117,6 +117,10 @@ CSpritesetWindow::CSpritesetWindow(const char* filename)
     m_Spriteset.SetDirectionName(6, "west");
     m_Spriteset.SetDirectionName(7, "northwest");
 
+    // the set base to the lower half of the spriteset
+    m_Spriteset.SetBase(0, (m_Spriteset.GetFrameHeight()/2),
+                         m_Spriteset.GetFrameWidth() - 1, m_Spriteset.GetFrameHeight() - 1);
+
     SetSaved(false);
   }
 

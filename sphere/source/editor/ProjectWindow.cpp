@@ -339,9 +339,11 @@ CProjectWindow::OnSysCommand(UINT id, LPARAM param)
 {
   if (id == SC_CLOSE)
 	{
-		// do not close it damnit!
-		// and oh, Ctrl-F4 calls close MDI window, if ya don't know.
-		ShowWindow(SW_HIDE);
+    if (!IsZoomed()) {
+  		// do not close it damnit!
+	  	// and oh, Ctrl-F4 calls close MDI window, if ya don't know.
+		  ShowWindow(SW_HIDE);
+    }
 	}
 	else
 	{
