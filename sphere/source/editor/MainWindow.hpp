@@ -100,6 +100,8 @@ private:
 
   afx_msg void OnFileSaveAll();
 
+  afx_msg void OnFileOptions();
+
 	afx_msg void OnViewProject();
 
   afx_msg void OnProjectInsertMap();

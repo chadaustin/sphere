@@ -67,6 +67,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
 
   // generic file open
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
+  ON_COMMAND(ID_FILE_OPTIONS, OnFileOptions)
 
   // project
   ON_COMMAND(ID_FILE_NEW_PROJECT,     OnFileNewProject)
@@ -277,6 +278,9 @@ CMainWindow::Create()
   m_ImageToolBar.EnableDocking(CBRS_ALIGN_ANY);
   m_ImageToolBar.GetToolBarCtrl().CheckButton(IDI_IMAGETOOL_PENCIL, TRUE);
 
+  WINDOWPLACEMENT twp = Configuration::Get(KEY_IMAGETOOLBAR_PLACEMENT);
+  m_ImageToolBar.SetWindowPlacement(&twp);
+
 
   // create the toolbar
   m_MapToolBar.CreateEx(
@@ -331,6 +335,15 @@ CMainWindow::Create()
   } else {
     ShowWindow(SW_SHOW);
   }
+
+  wp = Configuration::Get(KEY_STANDARDTOOLBAR_PLACEMENT);
+  m_ToolBar.SetWindowPlacement(&wp);
+
+  wp = Configuration::Get(KEY_IMAGETOOLBAR_PLACEMENT);
+  m_ImageToolBar.SetWindowPlacement(&wp);
+
+  wp = Configuration::Get(KEY_MAPTOOLBAR_PLACEMENT);
+  m_MapToolBar.SetWindowPlacement(&wp);
 
   UpdateWindow();
   UpdateMenu();
@@ -636,7 +649,7 @@ CMainWindow::InsertProjectFile(CFileDialog* file_dialog, int grouptype, const ch
 void
 CMainWindow::GetGamesDirectory(char games_directory[MAX_PATH])
 {
-  strcpy(games_directory, g_SphereDirectory.c_str());
+  strcpy(games_directory, GetSphereDirectory().c_str());
   if (games_directory[strlen(games_directory) - 1] != '\\')
     strcat(games_directory, "\\");
   strcat(games_directory, "games");
@@ -763,6 +776,15 @@ CMainWindow::OnClose()
   GetWindowPlacement(&wp);
   Configuration::Set(KEY_STARTUP, wp);
 
+  m_ToolBar.GetWindowPlacement(&wp);
+  Configuration::Set(KEY_STANDARDTOOLBAR_PLACEMENT, wp);
+
+  m_ImageToolBar.GetWindowPlacement(&wp);
+  Configuration::Set(KEY_IMAGETOOLBAR_PLACEMENT, wp);
+
+  m_MapToolBar.GetWindowPlacement(&wp);
+  Configuration::Set(KEY_MAPTOOLBAR_PLACEMENT, wp);
+
   // finally, destroy the window
   DestroyWindow();
 }
@@ -848,6 +870,17 @@ CMainWindow::OnFileOpen()
         OpenGameFile(thePath);
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+#include "OptionsDialog.hpp"
+
+afx_msg void
+CMainWindow::OnFileOptions()
+{
+  COptionsDialog dialog;
+  dialog.Execute();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1843,7 +1876,7 @@ afx_msg void
 CMainWindow::OnProjectRunSphere()
 {
   char szCommandLine[MAX_PATH + 80];
-  strcpy(szCommandLine, g_SphereDirectory.c_str());
+  strcpy(szCommandLine, GetSphereDirectory().c_str());
   strcat(szCommandLine, "\\engine.exe -game ");
   strcat(szCommandLine, "\"");
   strcat(szCommandLine, m_Project.GetDirectory());
@@ -1856,8 +1889,13 @@ CMainWindow::OnProjectRunSphere()
     // find the currently open map
     CDocumentWindow* dw = GetCurrentDocumentWindow();
     if (dw) {
-      strcpy(filename, dw->GetFilename());
-      strcpy(filename, strrchr(filename, '\\') + 1);
+      const char* document_filename = dw->GetFilename();
+      if (document_filename) {
+        strcpy(filename, document_filename);
+        char* ptr = strrchr(filename, '\\');
+        if (ptr != NULL)
+          strcpy(filename, ptr + 1);
+      }
     }
 
     std::string __filename__(strlwr(filename)); // make the extension lowercase
@@ -1877,7 +1915,7 @@ CMainWindow::OnProjectRunSphere()
   PROCESS_INFORMATION pi;
   
   char sphere_directory[MAX_PATH];
-  strcpy(sphere_directory, g_SphereDirectory.c_str());
+  strcpy(sphere_directory, GetSphereDirectory().c_str());
 
   BOOL retval = CreateProcess(
     NULL,                  // lpApplicationName
@@ -1901,7 +1939,7 @@ afx_msg void
 CMainWindow::OnProjectConfigureSphere()
 {
   char sphere_directory[MAX_PATH];
-  strcpy(sphere_directory, g_SphereDirectory.c_str());
+  strcpy(sphere_directory, GetSphereDirectory().c_str());
 
   char szCommandLine[MAX_PATH + 80];
   strcpy(szCommandLine, sphere_directory);
@@ -2039,7 +2077,7 @@ CMainWindow::OnHelpFliksSite()
 afx_msg void
 CMainWindow::OnHelpLocalDocumentation()
 {
-  std::string docdir = g_SphereDirectory + "\\docs";
+  std::string docdir = GetSphereDirectory() + "\\docs";
   if ((int)ShellExecute(m_hWnd, "open", docdir.c_str(), 0, 0, SW_SHOW) <= 32) {
     MessageBox("Could not open documentation directory.", "Local Documentation");
   }

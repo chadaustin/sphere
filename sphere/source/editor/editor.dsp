@@ -502,6 +502,14 @@ SOURCE=.\MainWindow.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\OptionsDialog.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\OptionsDialog.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ProjectWindow.cpp
 # End Source File
 # Begin Source File

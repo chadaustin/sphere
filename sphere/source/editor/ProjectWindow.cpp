@@ -486,6 +486,8 @@ afx_msg void
 CProjectWindow::OnKeyDown(NMHDR* notify, LRESULT* result)
 {
   NMTVKEYDOWN* key = (NMTVKEYDOWN*)notify;
+  if (!key)
+    return;
 
   switch (key->wVKey)
   {

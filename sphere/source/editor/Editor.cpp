@@ -12,7 +12,26 @@
 static CEditorApplication g_Application;
 static CMainWindow* g_MainWindow = NULL;
 
-std::string g_SphereDirectory;
+static std::string s_SphereDirectory;
+
+int GetEnvironmentVariableStr(const char* name, char* value, int max_len)
+{
+#ifdef WIN32
+  return (int) GetEnvironmentVariable(name, value, max_len);
+#else
+  return 0;
+#endif
+}
+
+std::string GetSphereDirectory() {
+
+  char dir[MAX_PATH] = {0};
+
+  if (GetEnvironmentVariableStr("SPHERE_DIRECTORY", dir, MAX_PATH) != 0)
+    return dir;
+
+  return s_SphereDirectory;
+}
 
 static CStatusBar* s_StatusBar = NULL;
 
@@ -246,7 +265,7 @@ CEditorApplication::InitInstance()
   Configuration::ConfigurationFile = std::string(config_directory) + "\\editor.ini";
   SetCurrentDirectory(config_directory);
 
-  g_SphereDirectory = config_directory;
+  s_SphereDirectory = config_directory;
 
   // create the main window
   CMainWindow* main_window = new CMainWindow();

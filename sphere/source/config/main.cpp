@@ -285,6 +285,10 @@ BOOL CALLBACK VideoDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
       // update the driver information
       SendMessage(window, WM_COMMAND, MAKEWPARAM(IDC_DRIVERLIST, LBN_SELCHANGE), 0);
 
+      if ((int) SendDlgItemMessage(window, IDC_DRIVERLIST, LB_GETCURSEL, 0, 0) == -1) {
+        EnableWindow(GetDlgItem(window, IDC_CONFIGURE_DRIVER), FALSE);
+      }
+
       SetFocus(GetDlgItem(window, IDC_DRIVERLIST));
       return FALSE;
     }
@@ -309,8 +313,12 @@ BOOL CALLBACK VideoDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
       {
         char drivername[MAX_PATH];
         int sel = SendDlgItemMessage(window, IDC_DRIVERLIST, LB_GETCURSEL, 0, 0);
-        if (sel == -1)
+        if (sel == -1) {
           return TRUE;
+        }
+        else {
+          EnableWindow(GetDlgItem(window, IDC_CONFIGURE_DRIVER), TRUE);
+        }
 
         SendDlgItemMessage(window, IDC_DRIVERLIST, LB_GETTEXT, sel, (LPARAM)drivername);
 

@@ -2,12 +2,15 @@
 #include "Configuration.hpp"
 #include "Keys.hpp"
 #include "resource.h"
+#include "StringDialog.hpp"
 
 BEGIN_MESSAGE_MAP(CFontPreviewPalette, CPaletteWindow)
 
   ON_WM_PAINT()   
   ON_WM_RBUTTONUP()
   ON_WM_ERASEBKGND()
+
+  ON_COMMAND(ID_FONT_PREVIEW_SET_TEXT, OnSetText)
 
 END_MESSAGE_MAP()
 
@@ -23,6 +26,7 @@ CFontPreviewPalette::CFontPreviewPalette(CDocumentWindow* owner, sFont* font)
 , m_RedrawCharacter(-1)
 , m_BlitImage(NULL)
 {
+  m_Text = "The quick brown fox jumped over the lazy dog";
   OnZoom(2);
 }
 
@@ -41,6 +45,18 @@ CFontPreviewPalette::OnCharacterChanged(int character)
 {
 	m_RedrawCharacter = character;
 	Invalidate();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CFontPreviewPalette::OnSetText()
+{
+  CStringDialog dialog("Set Preview Text", m_Text.c_str());
+  if (dialog.DoModal()) {
+    m_Text = dialog.GetValue();
+    Invalidate();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -81,7 +97,7 @@ CFontPreviewPalette::OnPaint()
   int blit_height = m_BlitImage->GetHeight();
 
   int offset_x = 0;
-  const char* text = "The quick brown fox jumped over the lazy dog";
+  const char* text = m_Text.c_str();
 
 	for (int i = 0; i < strlen(text); i++)
   {
@@ -161,16 +177,14 @@ CFontPreviewPalette::OnPaint()
 afx_msg void
 CFontPreviewPalette::OnRButtonUp(UINT flags, CPoint point)
 {
-  /* //no menu needed for now
   // show pop-up menu
   ClientToScreen(&point);
 
-  HMENU menu = ::LoadMenu(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_FONT_PREVIEW_PALETTE));
+  HMENU menu = ::LoadMenu(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_FONT_PREVIEW));
   HMENU submenu = GetSubMenu(menu, 0);
 
   TrackPopupMenu(submenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, point.x, point.y, 0, m_hWnd, NULL);
   DestroyMenu(menu);
-  */
 }
 
 ///////////////////////////////////////////////////////////////////////////////

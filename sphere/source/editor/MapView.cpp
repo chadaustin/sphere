@@ -1624,13 +1624,15 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
       for (int j=0; j<tile_height; j++)
       {
         for (int k=0; k<tile_width; k++)
+        {
           for (int l=0; l<m_ZoomFactor; l++)
           {
-            RGBA s = src[j * tile_width + k];
+            const RGBA* s = &src[j * tile_width + k];
             int alpha = src[j * tile_width + k].alpha;
-            dest[counter].red   = (alpha * s.red   + (255 - alpha) * dest[counter].red)   / 256;
-            dest[counter].green = (alpha * s.green + (255 - alpha) * dest[counter].green) / 256;
-            dest[counter].blue  = (alpha * s.blue  + (255 - alpha) * dest[counter].blue)  / 256;
+            dest[counter].red   = (alpha * s->red   + (255 - alpha) * dest[counter].red)   / 256;
+            dest[counter].green = (alpha * s->green + (255 - alpha) * dest[counter].green) / 256;
+            dest[counter].blue  = (alpha * s->blue  + (255 - alpha) * dest[counter].blue)  / 256;
+
 
 /*          THESE ARE TOO SLOW IN THIS INNER LOOP
             // additional draw rules
@@ -1651,6 +1653,7 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
 
             counter++;
           }
+        }
 
         for (int k=1; k<m_ZoomFactor; k++)
         {

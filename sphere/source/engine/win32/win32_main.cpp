@@ -199,14 +199,14 @@ LRESULT CALLBACK SphereWindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM l
     case WM_MOUSEMOVE: {
       SetCursor(NULL);
 
-      int x = LOWORD(lparam);
+      int x = ((int)(short)LOWORD(lparam));
       if (x < 0) {
         x = 0;
       } else if (x > GetScreenWidth() - 1) {
         x = GetScreenWidth() - 1;
       }
 
-      int y = HIWORD(lparam);
+      int y = ((int)(short)HIWORD(lparam));
       if (y < 0) {
         y = 0;
       } else if (y > GetScreenHeight() - 1) {

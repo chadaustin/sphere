@@ -28,14 +28,16 @@ struct FILELISTimp
 
 std::stack<std::string> DirectoryStack;
 
-int GetEnvironmentVariableStr(const char* name, char* value, int max_len) {
+////////////////////////////////////////////////////////////////////////////////
+
+int GetEnvironmentVariableStr(const char* name, char* value, int max_len)
+{
 #ifdef WIN32
   return (int) GetEnvironmentVariable(name, value, max_len);
 #else
   return 0;
 #endif
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 

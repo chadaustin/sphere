@@ -16,6 +16,7 @@ public:
   virtual void Destroy();
 
 	void OnCharacterChanged(int character);
+  afx_msg void OnSetText();
 
 private:
 	void OnZoom(double zoom);
@@ -29,6 +30,7 @@ private:
   sFont* m_Font;
 	double m_ZoomFactor;
   int m_RedrawCharacter;
+  std::string m_Text;
 
   CDIBSection* m_BlitImage;
   DECLARE_MESSAGE_MAP()

@@ -119,6 +119,7 @@ BEGIN
         MENUITEM "Sa&ve Copy As...",            ID_FILE_SAVECOPYAS
         MENUITEM "Save All &Windows",           ID_FILE_SAVEALL
         MENUITEM SEPARATOR
+        MENUITEM "&Options...",                 ID_FILE_OPTIONS
         MENUITEM "E&xit",                       ID_FILE_EXIT
     END
     POPUP "&View"
@@ -974,6 +975,14 @@ BEGIN
     END
 END
 
+IDR_FONT_PREVIEW MENU DISCARDABLE 
+BEGIN
+    POPUP "&Font Preview"
+    BEGIN
+        MENUITEM "Set &Text",                   ID_FONT_PREVIEW_SET_TEXT
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1410,6 +1419,21 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,80,168,50,14
 END
 
+IDD_FILETYPES_PAGE DIALOG DISCARDABLE  0, 0, 210, 154
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "File Types"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LISTBOX         IDC_FILETYPE_LIST,18,17,89,110,LBS_NOINTEGRALHEIGHT | 
+                    LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Register Types",IDC_FILETYPES_REGISTER_TYPES,127,28,63,
+                    15
+    PUSHBUTTON      "Unregister Types",IDC_FILETYPES_UNREGISTER_TYPES,128,46,
+                    63,15
+    PUSHBUTTON      "Restore Defaults",IDC_FILETYPES_RESTORE_DEFAULTS,128,64,
+                    63,15
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1585,6 +1609,14 @@ BEGIN
         RIGHTMARGIN, 256
         TOPMARGIN, 7
         BOTTOMMARGIN, 182
+    END
+
+    IDD_FILETYPES_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 147
     END
 END
 #endif    // APSTUDIO_INVOKED
