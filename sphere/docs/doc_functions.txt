@@ -285,6 +285,9 @@ log_object.endBlock()
   
   ChangeMap(map)  
     - changes current map
+    
+  GetCurrentMap()
+    - Returns the filename of the current map.
   
   ExitMapEngine()
     - Exits the map engine
@@ -388,8 +391,8 @@ log_object.endBlock()
     MapToScreenY(layer, y)
       - returns screen coordinates of position on map
 
-    ScreenToCameraX(layer, x)
-    ScreenToCameraY(layer, y)
+    ScreenToMapX(layer, x)
+    ScreenToMapY(layer, y)
       - returns map coordinates of position on screen
 
   
