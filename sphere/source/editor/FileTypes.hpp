@@ -23,7 +23,7 @@ enum
   //GT_UNKNOWN,
 
   // GT_TILESETS = NUM_GROUP_TYPES,  // this one shouldn't be listed in projects
-  GT_PACKAGES,
+  GT_PACKAGES = NUM_GROUP_TYPES,
 };
 
 

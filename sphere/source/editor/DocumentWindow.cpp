@@ -82,7 +82,7 @@ CDocumentWindow::AttachPalette(CPaletteWindow* palette)
 {
   m_AttachedPalettes.push_back(palette);
 #if 1
-  m_AttachedPalettesStates.push_back(palette->IsVisible());
+  m_AttachedPalettesStates.push_back(false);
 #endif
 }
 

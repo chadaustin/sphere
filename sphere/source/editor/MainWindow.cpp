@@ -710,6 +710,9 @@ CMainWindow::OnDropFiles(HDROP hDropInfo)
   int     length;
   LPTSTR  lpFilename;
 
+  if (hDropInfo == NULL)
+    return;
+
   numfiles = DragQueryFile(hDropInfo, 0xFFFFFFFF, NULL, NULL);
   for (i = 0; i < numfiles; i++)
   {

@@ -933,6 +933,34 @@ BEGIN
     END
 END
 
+IDR_IRC MENU DISCARDABLE 
+BEGIN
+    POPUP "&IRC"
+    BEGIN
+        MENUITEM "&Join Channel",               ID_JOIN_CHANNEL
+    END
+END
+
+IDR_IRCVIEW MENU DISCARDABLE 
+BEGIN
+    POPUP "IRC View"
+    BEGIN
+        POPUP "&DCC"
+        BEGIN
+            MENUITEM "&Chat",                       ID_IRCVIEW_DCC_CHAT
+            , GRAYED
+            MENUITEM "&Send",                       ID_IRCVIEW_DCC_SEND
+        END
+        POPUP "&CTCP"
+        BEGIN
+            MENUITEM "&Ping",                       ID_IRCVIEW_CTCP_PING
+            MENUITEM "&Time",                       ID_IRCVIEW_CTCP_TIME
+            MENUITEM "&Version",                    ID_IRCVIEW_CTCP_VERSION
+        END
+        MENUITEM "&Slap",                       ID_IRCVIEW_SLAP
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

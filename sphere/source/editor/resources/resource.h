@@ -99,6 +99,8 @@
 #define IDR_MAPTOOLBAR                  250
 #define IDI_MAPTOOL_FILLRECTAREA        252
 #define IDI_UNKNOWN                     254
+#define IDR_IRC                         255
+#define IDR_IRCVIEW                     256
 #define IDC_PROJECTNAME                 1000
 #define IDC_GAMETITLE                   1001
 #define IDC_BROWSE                      1003
@@ -558,6 +560,13 @@
 #define ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGES 40722
 #define ID_SPRITESETVIEWFRAMES_REMOVEFRAMES 40723
 #define ID_IMAGEVIEW_FILTER_SATURATE    40724
+#define ID_JOIN_CHANNEL                 40725
+#define ID_IRCVIEW_DCC_SEND             40726
+#define ID_IRCVIEW_DCC_CHAT             40727
+#define ID_IRCVIEW_CTCP_PING            40728
+#define ID_IRCVIEW_CTCP_TIME            40729
+#define ID_IRCVIEW_CTCP_VERSION         40730
+#define ID_IRCVIEW_SLAP                 40731
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -565,8 +574,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        255
-#define _APS_NEXT_COMMAND_VALUE         40725
+#define _APS_NEXT_RESOURCE_VALUE        257
+#define _APS_NEXT_COMMAND_VALUE         40732
 #define _APS_NEXT_CONTROL_VALUE         1191
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

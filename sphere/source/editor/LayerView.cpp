@@ -211,6 +211,8 @@ static void DrawLayerButton(HDC dc, RECT rect, const sLayer& layer, bool pushed)
   DeleteObject(very_dark);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CLayerView::OnPaint()
 {
@@ -411,7 +413,7 @@ CLayerView::OnInsertLayerFromImage()
 afx_msg void
 CLayerView::OnDeleteLayer()
 {
-  int result = MessageBox("Delete associated tiles?", "Delete Layer", MB_YESNOCANCEL);
+  int result = MessageBox("Delete associated tiles?", "Delete Layer", MB_YESNOCANCEL | MB_ICONQUESTION | MB_DEFBUTTON3);
   if (result == IDCANCEL) {
     return;
   }
