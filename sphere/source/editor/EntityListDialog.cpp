@@ -6,6 +6,8 @@
 #include "EntityPersonDialog.hpp"
 #include "EntityTriggerDialog.hpp"
 
+#include "NumberDialog.hpp"
+
 ////////////////////////////////////////////////////////////////////////////////
 
 sEntity* CloneEntity(const sEntity& entity)
@@ -52,9 +54,10 @@ sEntity* CloneEntity(const sEntity& entity)
 
 BEGIN_MESSAGE_MAP(CEntityListDialog, CDialog)
 
-  ON_COMMAND(IDC_ENTITY_DELETE, OnDeleteEntities)
-  ON_COMMAND(IDC_ENTITY_EDIT, OnEditEntity)
-  ON_CBN_SELCHANGE(IDC_ENTITY_LISTBOX, OnEntityChanged)
+  ON_COMMAND(IDC_ENTITY_EDIT_ENTITY,     OnEditEntity)
+  ON_COMMAND(IDC_ENTITY_MOVE_ENTITIES,   OnMoveEntities)
+  ON_COMMAND(IDC_ENTITY_DELETE_ENTITIES, OnDeleteEntities)
+  ON_CBN_SELCHANGE(IDC_ENTITY_LISTBOX,   OnEntityChanged)
 
 END_MESSAGE_MAP()
 
@@ -94,7 +97,9 @@ CEntityListDialog::UpdateEntityDetails(char string[2048], int entity_index, sMap
     return;
   }
 
-  sprintf (string, "ID: %5d - Layer: %3d", entity_index, entity->layer);
+  sprintf (string, "ID: %3d X: %3d Y: %3d - Layer: %3d", entity_index,
+              (entity->x / map->GetTileset().GetTileWidth()),
+              (entity->y / map->GetTileset().GetTileHeight()), entity->layer);
 
   if (entity->layer >= 0 && entity->layer < map->GetNumLayers()) {
     if (strlen(map->GetLayer(entity->layer).GetName()) < 512) {
@@ -117,17 +122,19 @@ CEntityListDialog::UpdateEntityDetails(char string[2048], int entity_index, sMap
     sprintf (string + strlen(string), " - Type: %s", type);
   }
 
-
   switch (entity->GetEntityType()) {
     case sEntity::TRIGGER:
       if (((sTriggerEntity*)entity)->script.size() < 512) {
-        sprintf (string + strlen(string), " - Script: %s", ((sTriggerEntity*)entity)->script.c_str());
+        sprintf (string + strlen(string), " - Script: '%s'", ((sTriggerEntity*)entity)->script.c_str());
       }
     break;
 
     case sEntity::PERSON:
       if (((sPersonEntity*)entity)->name.size() < 512) {
-        sprintf (string + strlen(string), " - Name: %s", ((sPersonEntity*)entity)->name.c_str());
+        sprintf (string + strlen(string), " - Name: '%s'", ((sPersonEntity*)entity)->name.c_str());
+      }
+      if (((sPersonEntity*)entity)->spriteset.size() < 512) {
+        sprintf (string + strlen(string), " - Spriteset: '%s'", ((sPersonEntity*)entity)->spriteset.c_str());
       }
     break;
   }
@@ -192,7 +199,7 @@ void
 CEntityListDialog::UpdateButtons()
 {
   BOOL enable_edit = FALSE;
-  BOOL enable_delete = FALSE;
+  BOOL enable_move_and_delete = FALSE;
 
   int num_selected = SendDlgItemMessage(IDC_ENTITY_LISTBOX, LB_GETSELCOUNT);
   if (num_selected == 1) {
@@ -200,11 +207,12 @@ CEntityListDialog::UpdateButtons()
   }
 
   if (num_selected >= 1) {
-    enable_delete = TRUE;
+    enable_move_and_delete = TRUE;
   }
 
-  GetDlgItem(IDC_ENTITY_EDIT)->EnableWindow(enable_edit);
-  GetDlgItem(IDC_ENTITY_DELETE)->EnableWindow(enable_delete);
+  GetDlgItem(IDC_ENTITY_EDIT_ENTITY)->EnableWindow(enable_edit);
+  GetDlgItem(IDC_ENTITY_DELETE_ENTITIES)->EnableWindow(enable_move_and_delete);
+  GetDlgItem(IDC_ENTITY_MOVE_ENTITIES)->EnableWindow(enable_move_and_delete);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -223,6 +231,108 @@ CEntityListDialog::GetSelectedEntities()
   }
 
   return list;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CEntityListDialog::OnMoveEntities(int dx, int dy, int layer)
+{
+  std::vector<int> list = GetSelectedEntities();
+  if (!(list.size() > 0))
+    return;
+
+  for (int i = int(list.size() - 1); i >= 0; i--)
+  {
+    if (list[i] >= 0 && list[i] < m_Entities.size()) {
+      if (m_Entities[list[i]] != NULL)
+      {
+        sEntity* entity = m_Entities[list[i]];
+        const int tile_width  = m_Map->GetTileset().GetTileWidth();
+        const int tile_height = m_Map->GetTileset().GetTileHeight();
+
+        bool changed = false;
+        if (layer != -1) {
+          if (entity->layer != layer) {
+            entity->layer = layer;
+            changed = true;
+          }
+        }
+        else
+        if (entity->layer >= 0 && entity->layer < m_Map->GetNumLayers()) {
+          const int layer_width  =  m_Map->GetLayer(entity->layer).GetWidth() * tile_width;
+          const int layer_height = m_Map->GetLayer(entity->layer).GetHeight() * tile_height;
+
+          int x = entity->x + (dx * tile_width);
+          int y = entity->y + (dy * tile_height);
+
+          // handle wrap around
+          if (x < 0) x = layer_width + x;
+          else if (x >= layer_width) x = x - layer_width;
+
+          if (y < 0) y = layer_height + y;
+          else if (y >= layer_height) y = y - layer_height;
+
+          entity->x = x;
+          entity->y = y;
+        }
+
+        if (changed) {
+          char string[2048];
+          UpdateEntityDetails(string, list[i], m_Map);
+          SendDlgItemMessage(IDC_ENTITY_LISTBOX, LB_DELETESTRING, list[i], 0);
+          SendDlgItemMessage(IDC_ENTITY_LISTBOX, LB_INSERTSTRING, list[i], (LPARAM)string);
+        }
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CEntityListDialog::OnMoveEntities()
+{
+  std::vector<int> list = GetSelectedEntities();
+  if (!(list.size() > 0))
+    return;
+
+  // find out the biggest width and height of layers
+  int width = 0;
+  int height = 0;
+  
+  for (int i = 0; i < m_Map->GetNumLayers(); i++) {
+    if (m_Map->GetLayer(i).GetWidth() > width)
+      width = m_Map->GetLayer(i).GetWidth();
+    if (m_Map->GetLayer(i).GetHeight() > height)
+      height = m_Map->GetLayer(i).GetHeight();
+  }
+
+  int dx;
+  int dy;
+  int layer;
+
+  CNumberDialog dld("Move Layer", "Layer Index", -1, -1, m_Map->GetNumLayers());
+  if (dld.DoModal() == IDOK) {
+    layer = dld.GetValue();
+    if (layer != -1) {
+      OnMoveEntities(0, 0, layer);
+    }
+    else
+    if (layer == -1) {
+      CNumberDialog dxd("Slide Horizontally", "Value", 0, -width, width); 
+      if (dxd.DoModal() == IDOK)
+      {
+        dx = dxd.GetValue();
+        CNumberDialog dyd("Slide Vertically", "Value", 0, -height, height); 
+        if (dyd.DoModal() == IDOK)
+        {
+          dy = dyd.GetValue();
+          OnMoveEntities(dx, dy, -1);
+        }
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

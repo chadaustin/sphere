@@ -1538,22 +1538,24 @@ sMap::Translate(int dx, int dy, int layer_to_translate)
      || (type == sEntity::TRIGGER && triggers == true)) {
 
       int layer = GetEntity(i).layer;
-      int layer_width = GetLayer(layer).GetWidth() * tile_width;
-      int layer_height = GetLayer(layer).GetHeight() * tile_height;
+      if (layer >= 0 && layer < GetNumLayers()) {
+        int layer_width = GetLayer(layer).GetWidth() * tile_width;
+        int layer_height = GetLayer(layer).GetHeight() * tile_height;
 
-      int x = GetEntity(i).x + (dx * tile_width);
-      int y = GetEntity(i).y + (dy * tile_height);
+        int x = GetEntity(i).x + (dx * tile_width);
+        int y = GetEntity(i).y + (dy * tile_height);
 
-      // handle wrap around
-      if (x < 0) x = layer_width + x;
-      else if (x >= layer_width) x = x - layer_width;
+        // handle wrap around
+        if (x < 0) x = layer_width + x;
+        else if (x >= layer_width) x = x - layer_width;
 
-      if (y < 0) y = layer_height + y;
-      else if (y >= layer_height) y = y - layer_height;
+        if (y < 0) y = layer_height + y;
+        else if (y >= layer_height) y = y - layer_height;
 
-      if (layer_to_translate == -1 || layer == layer_to_translate) {
-        GetEntity(i).x = x;
-        GetEntity(i).y = y;
+        if (layer_to_translate == -1 || layer == layer_to_translate) {
+          GetEntity(i).x = x;
+          GetEntity(i).y = y;
+        }
       }
     }
   }
@@ -1561,26 +1563,28 @@ sMap::Translate(int dx, int dy, int layer_to_translate)
   if (zones) {
     for (int i = 0; i < GetNumZones(); i++) {
       int layer = GetZone(i).layer;
-      int x = GetZone(i).x1 + (dx * tile_width);
-      int y = GetZone(i).y1 + (dy * tile_height);
-      int width = GetZone(i).x2 - GetZone(i).x1;
-      int height = GetZone(i).y2 - GetZone(i).y1;
+      if (layer >= 0 && layer < GetNumLayers()) {
+        int x = GetZone(i).x1 + (dx * tile_width);
+        int y = GetZone(i).y1 + (dy * tile_height);
+        int width = GetZone(i).x2 - GetZone(i).x1;
+        int height = GetZone(i).y2 - GetZone(i).y1;
 
-      int layer_width =  GetLayer(layer).GetWidth() * tile_width;
-      int layer_height = GetLayer(layer).GetHeight() * tile_height;
+        int layer_width =  GetLayer(layer).GetWidth() * tile_width;
+        int layer_height = GetLayer(layer).GetHeight() * tile_height;
 
-      // handle wrap around
-      if (x < 0) x = layer_width + x;
-      else if (x >= layer_width) x = x - layer_width;
+        // handle wrap around
+        if (x < 0) x = layer_width + x;
+        else if (x >= layer_width) x = x - layer_width;
 
-      if (y < 0) y = layer_height + y;
-      else if (y >= layer_height) y = y - layer_height;
+        if (y < 0) y = layer_height + y;
+        else if (y >= layer_height) y = y - layer_height;
 
-      if (layer_to_translate == -1 || layer == layer_to_translate) {
-        GetZone(i).x1 = x;
-        GetZone(i).y1 = y;
-        GetZone(i).x2 = x + width;
-        GetZone(i).y2 = y + height;
+        if (layer_to_translate == -1 || layer == layer_to_translate) {
+          GetZone(i).x1 = x;
+          GetZone(i).y1 = y;
+          GetZone(i).x2 = x + width;
+          GetZone(i).y2 = y + height;
+        }
       }
     }
   }

@@ -23,6 +23,8 @@ private:
   afx_msg void OnEntityChanged();
   afx_msg void OnEditEntity();
   afx_msg void OnDeleteEntities();
+  afx_msg void OnMoveEntities();
+  afx_msg void OnMoveEntities(int dx, int dy, int layer);
 
   void UpdateButtons();
   void UpdateEntityDetails(char string[2048], int entity_index, sMap* map);
