@@ -18,6 +18,7 @@ private:
   afx_msg void OnBrowseSpriteset();
   afx_msg void OnCheckSyntax();
   afx_msg void OnScriptChanged();
+  afx_msg void OnGenerateName();
 
   void SetScript();
   void StoreScript();

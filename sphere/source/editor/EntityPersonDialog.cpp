@@ -8,6 +8,7 @@ BEGIN_MESSAGE_MAP(CEntityPersonDialog, CDialog)
 
   ON_COMMAND(IDC_BROWSE_SPRITESET, OnBrowseSpriteset)
   ON_COMMAND(IDC_CHECK_SYNTAX,     OnCheckSyntax)
+  ON_COMMAND(IDC_GENERATE_NAME,    OnGenerateName)
 
   ON_CBN_SELCHANGE(IDC_SCRIPT_TYPE, OnScriptChanged)
 
@@ -143,6 +144,93 @@ CEntityPersonDialog::OnCheckSyntax()
     );
     GetDlgItem(IDC_SCRIPT)->SetFocus();
 
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CEntityPersonDialog::OnGenerateName()
+{
+  CString str;
+  GetDlgItemText(IDC_SPRITESET, str);
+
+  std::string filename = str;
+  str.MakeLower();
+  std::string lower_filename = str;
+
+  GetDlgItemText(IDC_NAME, str);
+  std::string current_name = str;
+
+  if (filename.size() > 0 && lower_filename.size() > 0)
+  {
+    if (lower_filename.rfind(".rss") == lower_filename.size() - 4)
+    {
+      char gen_name[MAX_PATH + 80] = {0};
+      memcpy(gen_name, filename.c_str(), filename.size() - 4);
+      gen_name[filename.size() - 4] = '_';
+
+      bool current_name_valid = false;
+      bool is_unique = false;
+
+      if (current_name.size() > strlen(gen_name)) {
+        if (memcmp(current_name.c_str(), gen_name, strlen(gen_name)) == 0) {
+          int id = 1;
+          if (sscanf(current_name.c_str() + strlen(gen_name), "%d$", &id) == 1) {
+            current_name_valid = true;
+            is_unique = true;
+          }
+        }
+      }
+
+      if (current_name_valid) {
+        bool found = false;
+
+        for (int i = 0; i < m_Map->GetNumEntities(); i++) {
+          sEntity& e = m_Map->GetEntity(i);
+          if (e.GetEntityType() == sEntity::PERSON) {
+            sPersonEntity& p = (sPersonEntity&)e;
+            if (p.name == current_name) {
+              if (found) {
+                is_unique = false;
+                break;
+              }
+
+              found = true;
+            }
+          }
+        }
+
+
+      }
+
+      if (!is_unique) {
+        int unique_id = 1;
+
+        for (int i = 0; i < m_Map->GetNumEntities(); i++) {
+          sEntity& e = m_Map->GetEntity(i);
+          if (e.GetEntityType() == sEntity::PERSON) {
+            sPersonEntity& p = (sPersonEntity&)e;
+
+            if (p.name.size() > strlen(gen_name)) {
+              if (memcmp(p.name.c_str(), gen_name, strlen(gen_name)) == 0) {
+                int id = unique_id;
+ 
+                if (sscanf(p.name.c_str() + strlen(gen_name), "%d$", &id) == 1) {
+                  if (id >= unique_id) {
+                    unique_id = id + 1;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        sprintf (gen_name + strlen(gen_name), "%d", unique_id);
+        str = gen_name;
+        SetDlgItemText(IDC_NAME, str);
+      }
+    }
   }
 }
 

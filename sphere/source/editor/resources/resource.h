@@ -276,6 +276,7 @@
 #define IDC_DEFAULT_TEXT                1239
 #define IDC_CUSTOM_TEXT                 1240
 #define IDC_USE_COMMON_TEXT_FILETYPES   1241
+#define IDC_GENERATE_NAME               1242
 #define ID_FILE_IMPORT_BITMAPTORSS      12241
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40003
@@ -737,7 +738,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        282
 #define _APS_NEXT_COMMAND_VALUE         40841
-#define _APS_NEXT_CONTROL_VALUE         1242
+#define _APS_NEXT_CONTROL_VALUE         1243
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
