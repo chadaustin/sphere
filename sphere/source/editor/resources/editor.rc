@@ -327,6 +327,8 @@ BEGIN
 
             MENUITEM "Toggle Word Wrap",            ID_SCRIPT_OPTIONS_WORD_WRAP
 
+            MENUITEM "Show Wrap Flags",             ID_SCRIPT_OPTIONS_SHOW_WORD_FLAGS
+
             MENUITEM "Check &Spelling",             ID_SCRIPT_OPTIONS_CHECK_SPELLING
 
             MENUITEM "&View List",                  ID_SCRIPT_OPTIONS_VIEW_LIST
@@ -1094,6 +1096,7 @@ BEGIN
         END
         MENUITEM "&Find...",                    ID_SCRIPT_FIND
         MENUITEM "&Auto Reconnect",             ID_IRC_AUTO_RECONNECT
+        MENUITEM "Show Timestamps",             ID_IRC_SHOW_TIMESTAMPS
     END
 END
 
@@ -2278,7 +2281,7 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_SCRIPT_OPTIONS_WORD_WRAP "Change whether autocomplete is allowed"
+    ID_SCRIPT_OPTIONS_WORD_WRAP "Change whether long lines are wrapped"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -2290,6 +2293,12 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     ID_HELP_LOCAL_CHANGELOG "Open changelog.txt"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_SCRIPT_OPTIONS_SHOW_WORD_FLAGS 
+                            "Change whether visual flags are displayed for wrapped lines"
 END
 
 #endif    // English (U.S.) resources

@@ -371,6 +371,7 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_SCRIPT_OPTIONS_TOGGLE_LINE_NUMBERS,  OnOptionsToggleLineNumbers)
   ON_COMMAND(ID_SCRIPT_OPTIONS_SHOW_WHITESPACE, OnOptionsShowWhitespace)
   ON_COMMAND(ID_SCRIPT_OPTIONS_WORD_WRAP, OnOptionsWordWrap)
+  ON_COMMAND(ID_SCRIPT_OPTIONS_SHOW_WORD_FLAGS, OnOptionsShowWrapFlags)
   ON_COMMAND(ID_SCRIPT_OPTIONS_TOGGLE_AUTOCOMPLETE, OnOptionsToggleAutoComplete)
 
   ON_COMMAND(ID_SCRIPT_OPTIONS_CHECK_SPELLING, OnOptionsCheckSpelling) 
@@ -392,6 +393,7 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_TOGGLE_COLORS, OnUpdateOptionsToggleColors)
   ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_SHOW_WHITESPACE, OnUpdateOptionsShowWhitespace)
   ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_WORD_WRAP, OnUpdateOptionsWordWrap)
+  ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_SHOW_WORD_FLAGS, OnUpdateOptionsShowWrapFlags)
   ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_TOGGLE_AUTOCOMPLETE, OnUpdateOptionsToggleAutoComplete)
 
   ON_COMMAND(ID_SCRIPT_TOOLS_SORT, OnScriptLineSorter)
@@ -437,6 +439,7 @@ CScriptWindow::CScriptWindow(const char* filename, bool create_from_clipboard)
 , m_SyntaxHighlighted(true)
 , m_ShowWhitespace(false)
 , m_WordWrap(false)
+, m_ShowWrapFlags(false)
 , m_AllowAutoComplete(false)
 , m_SelectionType(SC_SEL_STREAM)
 , m_ListType(0)
@@ -729,6 +732,7 @@ CScriptWindow::SetScriptStyles()
   }
 
   SendEditor(SCI_SETWRAPMODE, ((m_WordWrap) ? (SC_WRAP_WORD) : (SC_WRAP_NONE)));
+  SendEditor(SCI_SETWRAPVISUALFLAGS, ((m_ShowWrapFlags) ? (SC_WRAPVISUALFLAG_END) : (SC_WRAPVISUALFLAG_NONE)));
 
   SetStyle(SCE_C_DEFAULT, black, white, m_FontSize, m_Fontface.c_str());
 
@@ -778,6 +782,7 @@ CScriptWindow::Initialize()
   m_ShowLineNumbers    = Configuration::Get(KEY_SCRIPT_SHOW_LINE_NUMBERS);
   m_ShowWhitespace     = Configuration::Get(KEY_SCRIPT_SHOW_WHITESPACE);
   m_WordWrap           = Configuration::Get(KEY_SCRIPT_WORD_WRAP);
+  m_ShowWrapFlags      = Configuration::Get(KEY_SCRIPT_SHOW_WRAP_FLAGS);
   m_AllowAutoComplete  = Configuration::Get(KEY_SCRIPT_ALLOW_AUTOCOMPLETE);
   m_CheckSpelling      = Configuration::Get(KEY_SCRIPT_CHECK_SPELLING);
   SetScriptStyles();
@@ -1385,14 +1390,6 @@ CScriptWindow::OnPosChanged(NMHDR* nmhdr, LRESULT* result) {
   int line = SendEditor(SCI_LINEFROMPOSITION, pos);
   SetLineNumber(line);
 
-
-  if (m_CheckSpelling) {
-    int pos  = SendEditor(SCI_GETCURRENTPOS);
-    int line = SendEditor(SCI_LINEFROMPOSITION, pos);
-
-    //SpellCheck(line);
-  }
-
   if (m_SyntaxHighlighted)
     if (GetScriptType() == SCRIPT_TYPE_UNKNOWN || GetScriptType() == SCRIPT_TYPE_JS)
       UpdateBraceHighlight();
@@ -1599,6 +1596,13 @@ CScriptWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
       }
     }
   }
+
+  if (m_CheckSpelling) {
+    int pos  = SendEditor(SCI_GETCURRENTPOS);
+    int line = SendEditor(SCI_LINEFROMPOSITION, pos);
+
+    SpellCheck(line);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1638,7 +1642,7 @@ CScriptWindow::SpellCheck(const int line_number)
     SendEditor(SCI_INDICSETFORE, BAD_SPELLING_INDICTOR_INDEX,  darkred);
     //SendEditor(SCI_INDICSETFORE, GOOD_SPELLING_INDICTOR_INDEX, white);
 
-    //SendEditor(SCI_STARTSTYLING, start_pos, 0x1f);
+    SendEditor(SCI_STARTSTYLING, start_pos, 0x1f);
     SendEditor(SCI_COLOURISE, start_pos, start_pos + line_length);
 
     SendEditor(SCI_STARTSTYLING, start_pos, INDICS_MASK);
@@ -1775,8 +1779,10 @@ CScriptWindow::SpellCheck(const int line_number)
     }
 
     //GetStatusBar()->SetWindowText(string);
-
+    SendEditor(SCI_STARTSTYLING, start_pos + line_length, 0x1f);
+    SendEditor(SCI_COLOURISE, start_pos, start_pos + line_length);
   }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2030,6 +2036,16 @@ CScriptWindow::OnOptionsWordWrap()
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
+CScriptWindow::OnOptionsShowWrapFlags()
+{
+  m_ShowWrapFlags = !m_ShowWrapFlags;
+  SetScriptStyles();
+  RememberConfiguration();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
 CScriptWindow::OnOptionsCheckSpelling()
 {
   m_CheckSpelling = !m_CheckSpelling;
@@ -2163,6 +2179,14 @@ CScriptWindow::OnUpdateOptionsWordWrap(CCmdUI* cmdui)
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
+CScriptWindow::OnUpdateOptionsShowWrapFlags(CCmdUI* cmdui)
+{
+  cmdui->SetCheck(m_ShowWrapFlags ? TRUE : FALSE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
 CScriptWindow::OnOptionsToggleAutoComplete()
 {
   m_AllowAutoComplete = !m_AllowAutoComplete;
@@ -2189,6 +2213,7 @@ CScriptWindow::RememberConfiguration()
   Configuration::Set(KEY_SCRIPT_SHOW_LINE_NUMBERS, m_ShowLineNumbers);
   Configuration::Set(KEY_SCRIPT_SHOW_WHITESPACE, m_ShowWhitespace);
   Configuration::Set(KEY_SCRIPT_WORD_WRAP, m_WordWrap);
+  Configuration::Set(KEY_SCRIPT_SHOW_WRAP_FLAGS, m_ShowWrapFlags);
   Configuration::Set(KEY_SCRIPT_ALLOW_AUTOCOMPLETE, m_AllowAutoComplete);
   Configuration::Set(KEY_SCRIPT_LIST_TYPE, m_ListType);
   Configuration::Set(KEY_SCRIPT_SHOW_LIST, ::IsWindow(m_List) && ::IsWindowVisible(m_List) ? true : false);

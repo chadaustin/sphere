@@ -47,6 +47,7 @@ private:
   afx_msg void OnOptionsToggleLineNumbers();
   afx_msg void OnOptionsShowWhitespace();
   afx_msg void OnOptionsWordWrap();
+  afx_msg void OnOptionsShowWrapFlags();
   afx_msg void OnOptionsToggleAutoComplete();
   afx_msg void OnOptionsCheckSpelling();
   afx_msg void OnOptionsViewList();
@@ -64,6 +65,7 @@ private:
   afx_msg void OnUpdateOptionsToggleColors(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsShowWhitespace(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsWordWrap(CCmdUI* cmdui);
+  afx_msg void OnUpdateOptionsShowWrapFlags(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsToggleAutoComplete(CCmdUI* cmdui);
 
   /////////////////////////////////////
@@ -146,6 +148,7 @@ private:
   bool m_AllowAutoComplete;
   int m_SelectionType;
   bool m_CheckSpelling;
+  bool m_ShowWrapFlags;
 
   void UpdateBraceHighlight();
 
