@@ -1383,7 +1383,7 @@ CMainWindow::OnProjectPackageGame()
 
   // go into game directory and add all files
   std::list<std::string> files;
-  EnumerateFiles("*.*", "", files);
+  EnumerateFiles("*", "", files);
 
   CPackage package;
   std::list<std::string>::iterator i;

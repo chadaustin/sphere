@@ -2,6 +2,8 @@
   - show the version number in the engine and editor windows as well
     as the start menu
   - integrated SDHawk's startup game
+  - include all files in packages, including files without dots in
+    their name
 
 2003.02.17
   - you can no longer add zones that have a width and height of zero

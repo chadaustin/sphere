@@ -6,7 +6,6 @@
 
 #include <algorithm>
 #include <sstream>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -191,8 +190,6 @@ void GetGameList(std::vector<Game>& games)
   while (!DirectoryListDone(dl)) {
     char directory[520];
     GetNextDirectory(dl, directory);
-
-    puts(directory);
 
     if (EnterDirectory(directory)) {
 
