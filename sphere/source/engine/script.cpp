@@ -3575,8 +3575,8 @@ end_method()
 begin_method(SS_SOCKET, ssSocketClose, 0)
   if (object->socket && object->is_open) {
     CloseSocket(object->socket);
-    object->is_open = false;
   }
+  object->is_open = false;
 end_method()
 
 ////////////////////////////////////////
@@ -3965,6 +3965,7 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
     { "setPitch",    ssSoundSetPitch,    1, },
     { "getPitch",    ssSoundGetPitch,    0, },
     { "isPlaying",   ssSoundIsPlaying,   0, },
+    { "clone",       ssSoundClone,       0, },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -4052,6 +4053,12 @@ end_method()
 
 ////////////////////////////////////////
 
+begin_method(SS_SOUND, ssSoundClone, 0)
+  return_object(CreateSoundObject(cx, object->sound));
+end_method()
+
+////////////////////////////////////////
+
 
 
 ////////////////////////////////////////
@@ -4084,6 +4091,7 @@ CScript::CreateFontObject(JSContext* cx, SFONT* font, bool destroy)
     { "getHeight",       ssFontGetHeight,       0, 0, 0 },
     { "getStringWidth",  ssFontGetStringWidth,  1, 0, 0 },
     { "getStringHeight", ssFontGetStringHeight, 2, 0, 0 },
+    { "clone",           ssFontClone,           0, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -4176,6 +4184,12 @@ begin_method(SS_FONT, ssFontGetStringHeight, 2)
   arg_str(text);
   arg_int(width);
   return_int(object->font->GetStringHeight(text, width));
+end_method()
+
+///////////////////////////////////////
+
+begin_method(SS_FONT, ssFontClone, 0)
+  return_object(CreateFontObject(cx, object->font, object->destroy_me));
 end_method()
 
 ///////////////////////////////////////

@@ -139,6 +139,7 @@ private:
   declare_method(ssSoundSetPitch);
   declare_method(ssSoundGetPitch);
   declare_method(ssSoundIsPlaying);
+  declare_method(ssSoundClone);
 
   // fonts
   declare_constructor2(CreateFontObject, SFONT* font, bool destroy);
@@ -151,6 +152,7 @@ private:
   declare_method(ssFontGetHeight);
   declare_method(ssFontGetStringWidth);
   declare_method(ssFontGetStringHeight);
+  declare_method(ssFontClone);
 
   // window styles
   declare_constructor2(CreateWindowStyleObject, SWINDOWSTYLE* ws, bool destroy);
