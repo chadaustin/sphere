@@ -2499,7 +2499,7 @@ JSObject*
 CScript::CreateSocketObject(JSContext* cx, NSOCKET socket)
 {
   static JSClass clasp = {
-    "log", JSCLASS_HAS_PRIVATE,
+    "socket", JSCLASS_HAS_PRIVATE,
     JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizeSocket,
   };
