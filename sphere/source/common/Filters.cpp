@@ -116,7 +116,7 @@ inline RGBA BlurPixel(int width, int height, RGBA* pixels, int x, int y)
   return pixels[y * width + x];
 }
 
-void Blur(int width, int height, RGBA* pixels, int mask_width = 3, int mask_height = 3)
+void Blur(int width, int height, RGBA* pixels, int mask_width, int mask_height)
 {
   RGBA* old_pixels = new RGBA[width * height];
   memcpy(old_pixels, pixels, width * height * sizeof(RGBA));
@@ -272,3 +272,32 @@ void BlendImage(int dest_width, int dest_height, int src_width, int src_height, 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+void AdjustBrightness(int width, int height, RGBA* pixels, int dred, int dgreen, int dblue, int dalpha)
+{
+  for (int dx = 0; dx < width; dx++) {
+    for (int dy = 0; dy < height; dy++) {
+
+      int red =   pixels[dy * width + dx].red   + dred;
+      int green = pixels[dy * width + dx].green + dgreen;
+      int blue =  pixels[dy * width + dx].blue  + dblue;
+      int alpha = pixels[dy * width + dx].alpha + dalpha;
+
+      // clamp to [0,255]
+      red   = (red   < 0 ? 0 : (red   > 255 ? 255 : red));
+      green = (green < 0 ? 0 : (green > 255 ? 255 : green));
+      blue  = (blue  < 0 ? 0 : (blue  > 255 ? 255 : blue));
+      alpha = (alpha < 0 ? 0 : (alpha > 255 ? 255 : alpha));
+
+      pixels[dy * width + dx].red   = red;
+      pixels[dy * width + dx].green = green;
+      pixels[dy * width + dx].blue  = blue;
+      pixels[dy * width + dx].alpha = alpha;
+
+    }
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+

@@ -52,6 +52,7 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
   ON_COMMAND(ID_IMAGEVIEW_REPLACE_ALPHA,         OnReplaceAlpha)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_BLUR,           OnFilterBlur)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_NOISE,          OnFilterNoise)
+  ON_COMMAND(ID_IMAGEVIEW_FILTER_ADJUST_BRIGHTNESS, OnFilterAdjustBrightness)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE_RGB, OnFilterNegativeImageRGB)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE_ALPHA, OnFilterNegativeImageAlpha)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE_RGBA, OnFilterNegativeImageRGBA)
@@ -1508,6 +1509,26 @@ CImageView::OnFilterSolarize()
 
     Invalidate();
     m_Handler->IV_ImageChanged();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnFilterAdjustBrightness()
+{
+  CNumberDialog dialog("Adjustment Value", "Value", 0, -255, 255);
+
+  if (dialog.DoModal() == IDOK) {
+    int value = dialog.GetValue();
+    if (value != 0) {
+      AddUndoState();
+
+      AdjustBrightness(m_Image.GetWidth(), m_Image.GetHeight(), m_Image.GetPixels(), value, value, value);
+
+      Invalidate();
+      m_Handler->IV_ImageChanged();
+    }
   }
 }
 

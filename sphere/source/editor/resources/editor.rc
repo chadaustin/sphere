@@ -546,6 +546,8 @@ BEGIN
 
             MENUITEM "&Solarize",                   ID_IMAGEVIEW_FILTER_SOLARIZE
 
+            MENUITEM "&Adjust Brightness",          ID_IMAGEVIEW_FILTER_ADJUST_BRIGHTNESS
+
         END
         POPUP "&Replace"
         BEGIN
@@ -668,7 +670,7 @@ CAPTION "Number"
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "Number Text",IDC_NUMBERTEXT,4,4,120,16
-    EDITTEXT        IDC_NUMBER,4,25,40,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_NUMBER,4,25,40,12,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "OK",IDOK,130,4,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,130,22,50,14
 END
