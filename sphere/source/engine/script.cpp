@@ -1179,9 +1179,91 @@ inline sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 // Sphere function implementations
 
 ////////////////////////////////////////////////////////////////////////////////
+
+// section: script functions //
 
+/**
+  - Returns the current version of Sphere as a floating point number
+    (e.g. 1.0 or 1.1)
+*/
 begin_func(GetVersion, 0)
   return_double(GetSphereVersion());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+  - Returns the current Sphere version string
+*/
+begin_func(GetVersionString, 0)
+  return_str(SPHERE_VERSION);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+  - Reads the script in and uses it as if it were a part of the current script.
+    ex: EvaluateScript("myscript.js");
+*/
+begin_func(EvaluateScript, 1)
+  arg_str(name);
+
+  // read script
+  std::string text;
+  if (!This->m_Engine->GetScriptText(name, text)) {
+    JS_ReportError(cx, "EvaluateScript() failed: Could not load script '%s'", name);
+    return JS_FALSE;
+  }
+
+  // increment the recursion count, checking for overflow
+  This->m_RecurseCount++;
+  if (This->m_RecurseCount > MAX_RECURSE_COUNT) {
+    JS_ReportError(cx, "EvaluateScript() recursed too deeply");
+    return JS_FALSE;
+  }
+
+  // execute!
+  if (!JS_EvaluateScript(cx, This->m_Global, text.c_str(), text.length(), name, 0, rval)) {
+    return JS_FALSE;
+  }
+
+  This->m_Engine->AddEvaluatedScript(name);
+
+  This->m_RecurseCount--;
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+  - Reads in one of the preset system scripts for use in the current script
+    ex: EvaluateSystemScript("menu.js");
+*/
+begin_func(EvaluateSystemScript, 1)
+  arg_str(name);
+
+  // read script
+  std::string text;
+  if (!This->m_Engine->GetSystemScript(name, text)) {
+    JS_ReportError(cx, "EvaluateSystemScript() failed: Could not load script '%s'", name);
+    return JS_FALSE;
+  }
+
+  // increment the recursion count, checking for overflow
+  This->m_RecurseCount++;
+  if (This->m_RecurseCount > MAX_RECURSE_COUNT) {
+    JS_ReportError(cx, "EvaluateSystemScript() recursed too deeply");
+    return JS_FALSE;
+  }
+
+  // execute!
+  if (!JS_EvaluateScript(cx, This->m_Global, text.c_str(), text.length(), name, 0, rval)) {
+    return JS_FALSE;
+  }
+
+  This->m_Engine->AddEvaluatedSystemScript(name);
+  This->m_RecurseCount--;
+
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1248,71 +1330,17 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-begin_func(EvaluateScript, 1)
-  arg_str(name);
-
-  // read script
-  std::string text;
-  if (!This->m_Engine->GetScriptText(name, text)) {
-    JS_ReportError(cx, "EvaluateScript() failed: Could not load script '%s'", name);
-    return JS_FALSE;
-  }
-
-  // increment the recursion count, checking for overflow
-  This->m_RecurseCount++;
-  if (This->m_RecurseCount > MAX_RECURSE_COUNT) {
-    JS_ReportError(cx, "EvaluateScript() recursed too deeply");
-    return JS_FALSE;
-  }
-
-  // execute!
-  if (!JS_EvaluateScript(cx, This->m_Global, text.c_str(), text.length(), name, 0, rval)) {
-    return JS_FALSE;
-  }
-
-  This->m_Engine->AddEvaluatedScript(name);
-
-  This->m_RecurseCount--;
-
-end_func()
-
-////////////////////////////////////////////////////////////////////////////////
-
-begin_func(EvaluateSystemScript, 1)
-  arg_str(name);
-
-  // read script
-  std::string text;
-  if (!This->m_Engine->GetSystemScript(name, text)) {
-    JS_ReportError(cx, "EvaluateSystemScript() failed: Could not load script '%s'", name);
-    return JS_FALSE;
-  }
-
-  // increment the recursion count, checking for overflow
-  This->m_RecurseCount++;
-  if (This->m_RecurseCount > MAX_RECURSE_COUNT) {
-    JS_ReportError(cx, "EvaluateSystemScript() recursed too deeply");
-    return JS_FALSE;
-  }
-
-  // execute!
-  if (!JS_EvaluateScript(cx, This->m_Global, text.c_str(), text.length(), name, 0, rval)) {
-    return JS_FALSE;
-  }
-
-  This->m_Engine->AddEvaluatedSystemScript(name);
-  This->m_RecurseCount--;
-
-end_func()
-
-////////////////////////////////////////////////////////////////////////////////
-
 begin_func(GarbageCollect, 0)
   JS_GC(cx);
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
+
+// section: misc functions //
 
+/**
+  - creates a single-character string based on the code passed in, i.e. 65 is "A"
+*/
 begin_func(CreateStringFromCode, 1)
   arg_int(code);
   jschar c[2] = { (jschar)code, 0 };
@@ -1322,12 +1350,13 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-begin_func(GetVersionString, 0)
-  return_str(SPHERE_VERSION);
-end_func()
-
-////////////////////////////////////////////////////////////////////////////////
-
+/**
+  - Returns array of game objects
+    - game.name          Name of game
+    - game.directory     Directory (project name) where game is stored
+    - game.author        Who wrote it?
+    - game.description   Bite-sized summary of game.
+*/
 begin_func(GetGameList, 0)
   
   // get the list of games
@@ -1408,6 +1437,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+  - Exits the Sphere engine unconditionally, displays the 'message' to the 
+    user
+*/
 begin_func(Abort, 1)
   arg_str(message);
 
@@ -1435,6 +1468,13 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+  - opens a log file for use under the filename. If Sphere is unable to open 
+    the file for logging, the engine will give an error message and exit. 
+    If Sphere is successful in opening the file, it will return a log object
+    for use.
+    ex: var myLog = OpenLog("game.log");
+*/
 begin_func(OpenLog, 1)
   arg_str(filename);
 
@@ -3859,7 +3899,7 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-begin_func(HashFromFile,1) {
+begin_func(HashFromFile, 1) {
   arg_str(filename);
 
   if (IsValidPath(filename) == false) {
@@ -5407,7 +5447,7 @@ end_method()
 
 typedef uint32 jsuint;
 
-/**
+/*
   returns whether the lookup table created is a null lookup table
   i.e. it can be skipped over
 */

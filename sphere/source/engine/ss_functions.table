@@ -367,5 +367,6 @@ SS_FUNCTION(OpenLog, 1)
   //rawfile.getSize()
   //rawfile.read(num_bytes)
   //rawfile.close()
+  
   // generate an MD5 hash
   SS_FUNCTION(HashFromFile, 1)
