@@ -1387,11 +1387,10 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
         }
 
         for (int d = 0; d < num_directions; d++) {
-          for (int f = 0; f < num_frames; f++) {
-            sprite.SetFrameIndex(d, f, d * num_frames + f);
-          }
-          // there's an extra frame
-          sprite.SetFrameIndex(d, num_frames, d * num_frames + 1);
+          sprite.SetFrameIndex(d, 0, d * num_frames +  1);
+          sprite.SetFrameIndex(d, 1, d * num_frames +  0);
+          sprite.SetFrameIndex(d, 2, d * num_frames +  1);
+          sprite.SetFrameIndex(d, 3, d * num_frames +  2);
         }
 
         // the following converts a four direction spriteset to an eight direction spriteset
