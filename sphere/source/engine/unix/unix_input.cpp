@@ -105,6 +105,7 @@ bool RefreshInput () {
       exit(0);
     else if ((event.type == SDL_KEYDOWN) || (event.type == SDL_KEYUP)) {
       pressed = event.key.keysym.sym;
+
       switch (pressed) {
         case SDLK_RSHIFT:
           key = KEY_SHIFT; break;
@@ -128,11 +129,11 @@ bool RefreshInput () {
       };
       if (key != 0) {
 		  if (event.type == SDL_KEYDOWN) {
-			 std::cerr << "down: " << (int)key << std::endl;
+			 //std::cerr << "down: " << (int)key << std::endl;
           keys.push_back(key);
 			 key_buffer[key] = true;
 		  } else {
-			 std::cerr << "up:   " << (int)key << std::endl;
+			 //std::cerr << "up:   " << (int)key << std::endl;
 			 key_buffer[key] = false;
 		  }
 		}
@@ -219,6 +220,7 @@ float GetJoystickY(int joy) {
 int GetNumJoystickButtons(int joy) {
     return 0;
 }
+
 bool IsJoystickButtonPressed(int joy, int button) {
     return false;
 }

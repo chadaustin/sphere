@@ -63,10 +63,13 @@ void ToggleFPS () {
   FPSDisplayed = !FPSDisplayed;
 }
 
+
+
 /*
  \brief change the title of the game to text
 */
 bool SetWindowTitle(const char* text) {
+  SDL_WM_SetCaption(text, NULL);
   return true;
 }
 
@@ -79,13 +82,14 @@ bool SetWindowTitle(const char* text) {
 bool SwitchResolution (int x, int y, bool fullscreen) {
   static bool initialized = false;
 
-  char caption[80];
-  sprintf(caption, "Sphere %s", SPHERE_VERSION);
-
   if (!initialized) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
+
+   char caption[80];
+   sprintf(caption, "Sphere %s", SPHERE_VERSION);
    SDL_WM_SetCaption(caption , NULL);
+
    InitializeInput();
    initialized = true;
   } else {
@@ -93,7 +97,7 @@ bool SwitchResolution (int x, int y, bool fullscreen) {
     if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
    /* FIXME: the title of the game or something should be set here instead */
-   SDL_WM_SetCaption(caption, NULL);
+   //SDL_WM_SetCaption(caption, NULL);
   }
   if (fullscreen)
    screen = SDL_SetVideoMode(x, y, 32, SDL_DOUBLEBUF | SDL_FULLSCREEN);

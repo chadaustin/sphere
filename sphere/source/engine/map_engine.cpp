@@ -10,7 +10,6 @@
 #include "rendersort.hpp"
 #include "time.hpp"
 
-
 static const int c_MaxSkipFrames = 10;
 
 
@@ -616,7 +615,7 @@ CMapEngine::SetTileImage(int tile, IMAGE image) {
 
   RGBA* pixels = LockImage(image);
   CImage32& tile_image = m_Map.GetMap().GetTileset().GetTile(tile);
-  tile_image.SetBlendMode(CImage32::BlendMode::REPLACE);
+  tile_image.SetBlendMode(CImage32::REPLACE);
   
   for (int x = 0; x < m_Map.GetMap().GetTileset().GetTileWidth(); x++) {
     for (int y = 0; y < m_Map.GetMap().GetTileset().GetTileHeight(); y++) {
