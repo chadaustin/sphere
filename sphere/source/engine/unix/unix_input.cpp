@@ -96,14 +96,11 @@ void InitializeInput() {
 
 bool RefreshInput () {
   SDL_Event event;
-  int result = 1;
+  int result;
   Uint8 key = 0;
   Uint8 pressed;
 
-  while (result) {
-    result = SDL_PollEvent(&event);
-    if (!result)
-      break;
+  while (result = SDL_PollEvent(&event)) {
     if (event.type == SDL_QUIT)
       exit(0);
     else if ((event.type == SDL_KEYDOWN) || (event.type == SDL_KEYUP)) {
@@ -129,9 +126,11 @@ bool RefreshInput () {
       };
       if (key != 0) {
 		  if (event.type == SDL_KEYDOWN) {
+			 std::cerr << "down: " << (int)key << std::endl;
           keys.push_back(key);
 			 key_buffer[key] = true;
 		  } else {
+			 std::cerr << "up:   " << (int)key << std::endl;
 			 key_buffer[key] = false;
 		  }
 		}
