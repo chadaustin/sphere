@@ -96,7 +96,7 @@ SOURCE=.\harddraw.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\common\video.c
+SOURCE=..\common\video.cpp
 # End Source File
 # Begin Source File
 
@@ -104,7 +104,7 @@ SOURCE=..\common\video.def
 # End Source File
 # Begin Source File
 
-SOURCE=..\common\win32x.c
+SOURCE=..\common\win32x.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"

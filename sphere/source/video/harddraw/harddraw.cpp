@@ -2,9 +2,9 @@
 #include <windows.h>
 #include <ddraw.h>
 #include <stdio.h>
-#include "../../../source/common/rgb.h"
-#include "../common/video.h"
-#include "../common/win32x.h"
+#include "../../source/common/rgb.hpp"
+#include "../common/video.hpp"
+#include "../common/win32x.hpp"
 #include "resource.h"
 
 
@@ -113,7 +113,7 @@ FILE* log = fopen("harddraw.log", "w");
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT GetDriverInfo(DRIVERINFO* driverinfo)
+EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
 {
   driverinfo->name        = "Hardware Accelerated Driver";
   driverinfo->author      = "Chad Austin";
@@ -124,7 +124,7 @@ void EXPORT GetDriverInfo(DRIVERINFO* driverinfo)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT ConfigureDriver(HWND parent)
+EXPORT(void) ConfigureDriver(HWND parent)
 {
   LoadConfiguration();
   DialogBox(DriverInstance, MAKEINTRESOURCE(IDD_CONFIGURE), parent, ConfigureDialogProc);
@@ -199,7 +199,7 @@ BOOL CALLBACK ConfigureDialogProc(HWND window, UINT message, WPARAM wparam, LPAR
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool EXPORT InitVideoDriver(HWND window, int screen_width, int screen_height)
+EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
 {
   LOG("Got in!");
 
@@ -270,6 +270,13 @@ bool EXPORT InitVideoDriver(HWND window, int screen_width, int screen_height)
   ShowCursor(FALSE);
   
   LOG("Got out!");
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+EXPORT(bool) ToggleFullScreen()
+{
   return true;
 }
 
@@ -349,7 +356,7 @@ bool CreateSurfaces()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool EXPORT CloseVideoDriver()
+EXPORT(bool) CloseVideoDriver()
 {
   SetWindowLong(SphereWindow, GWL_STYLE,   OldWindowStyle);
   SetWindowLong(SphereWindow, GWL_EXSTYLE, OldWindowStyleEx);
@@ -478,7 +485,7 @@ void CreateSurface(IMAGE image)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool EXPORT FlipScreen()
+EXPORT(bool) FlipScreen()
 {
   LOG("+FlipScreen")
 
@@ -494,7 +501,7 @@ bool EXPORT FlipScreen()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool EXPORT ApplyColorMask(RGBA mask)
+EXPORT(bool) ApplyColorMask(RGBA mask)
 {
   if (mask.alpha == 0) {
     return true;
@@ -649,7 +656,7 @@ bool EXPORT ApplyColorMask(RGBA mask)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-IMAGE EXPORT CreateImage(int width, int height, RGBA* pixels)
+EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 {
   LOG("+CreateImage")
 
@@ -668,7 +675,7 @@ IMAGE EXPORT CreateImage(int width, int height, RGBA* pixels)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-IMAGE EXPORT GrabImage(int x, int y, int width, int height)
+EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
 {
   LOG("+GrabImage")
 
@@ -754,7 +761,7 @@ IMAGE EXPORT GrabImage(int x, int y, int width, int height)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool EXPORT DestroyImage(IMAGE image)
+EXPORT(bool) DestroyImage(IMAGE image)
 {
   LOG("+DestroyImage")
 
@@ -769,7 +776,7 @@ bool EXPORT DestroyImage(IMAGE image)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool EXPORT BlitImage(IMAGE image, int x, int y)
+EXPORT(bool) BlitImage(IMAGE image, int x, int y)
 {
   LOG("+BlitImage")
 
@@ -967,21 +974,21 @@ bool NormalBlit(IMAGE image, int x, int y)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-int EXPORT GetImageWidth(IMAGE image)
+EXPORT(int) GetImageWidth(IMAGE image)
 {
   return image->width;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-int EXPORT GetImageHeight(IMAGE image)
+EXPORT(int) GetImageHeight(IMAGE image)
 {
   return image->height;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RGBA* EXPORT LockImage(IMAGE image)
+EXPORT(RGBA*) LockImage(IMAGE image)
 {
   image->locked_pixels = new RGBA[image->width * image->height];
 
@@ -1034,7 +1041,7 @@ RGBA* EXPORT LockImage(IMAGE image)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT UnlockImage(IMAGE image)
+EXPORT(void) UnlockImage(IMAGE image)
 {
   delete[] (byte*)image->pixels;
   delete[] image->alpha;
@@ -1046,7 +1053,7 @@ void EXPORT UnlockImage(IMAGE image)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT DirectBlit(int x, int y, int w, int h, RGBA* pixels, int method)
+EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels, int method)
 {
   if (method == 0)
     return;
@@ -1215,7 +1222,7 @@ void EXPORT DirectBlit(int x, int y, int w, int h, RGBA* pixels, int method)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT DirectGrab(int x, int y, int w, int h, RGBA* pixels)
+EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
 {
   if (x < 0 ||
       y < 0 ||
@@ -1282,5 +1289,25 @@ void EXPORT DirectGrab(int x, int y, int w, int h, RGBA* pixels)
 
   ddSecondary->Unlock(NULL);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+// todo: make these do something...
+
+EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask) { }
+
+EXPORT(void) DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels) { }
+
+EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4]) { }
+EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask) { }
+
+EXPORT(void) DrawPoint(int x, int y, RGBA color) { }
+EXPORT(void) DrawLine(int x[2], int y[2], RGBA color) { }
+EXPORT(void) DrawGradientLine(int x[2], int y[2], RGBA colors[2]) { }
+EXPORT(void) DrawTriangle(int x[3], int y[3], RGBA color) { }
+EXPORT(void) DrawGradientTriangle(int x[3], int y[3], RGBA colors[3]) { }
+EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color) { }
+EXPORT(void) DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4]) { }
+
 
 ////////////////////////////////////////////////////////////////////////////////
