@@ -535,6 +535,11 @@ BEGIN
 
         MENUITEM "&Append",                     ID_SPRITESETVIEWFRAMES_APPEND
 
+        MENUITEM SEPARATOR
+        MENUITEM "Insert Frames",               ID_SPRITESETVIEWFRAMES_INSERTFRAMES
+
+        MENUITEM "Append Frames",               ID_SPRITESETVIEWFRAMES_APPENDFRAMES
+
         MENUITEM "Delete Frames",               ID_SPRITESETVIEWFRAMES_REMOVEFRAMES
 
         MENUITEM SEPARATOR
@@ -937,10 +942,14 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "&Zoom", GRAYED
         BEGIN
-            MENUITEM "&1x",                         ID_TILESETVIEW_ZOOM_1X
-            MENUITEM "&2x",                         ID_TILESETVIEW_ZOOM_2X
-            MENUITEM "&4x",                         ID_TILESETVIEW_ZOOM_4X
-            MENUITEM "&8x",                         ID_TILESETVIEW_ZOOM_8X
+            MENUITEM "&1x",                         ID_SPRITESETIMAGESPALETTE_ZOOM_1X
+
+            MENUITEM "&2x",                         ID_SPRITESETIMAGESPALETTE_ZOOM_2X
+
+            MENUITEM "&4x",                         ID_SPRITESETIMAGESPALETTE_ZOOM_4X
+
+            MENUITEM "&8x",                         ID_SPRITESETIMAGESPALETTE_ZOOM_8X
+
         END
         POPUP "&Move"
         BEGIN
