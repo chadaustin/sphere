@@ -270,10 +270,12 @@ CTilesetView::TilesetChanged()
 void
 CTilesetView::SetSelectedTile(int tile)
 {
+#if 1
   if (m_UsingMultiTileSelection) {
     m_UsingMultiTileSelection = false;
     m_Handler->TV_TilesetSelectionChanged(GetTileSelectionWidth(), GetTileSelectionHeight(), GetTileSelection());
   }
+#endif
 
   m_SelectedTile = tile;
   Invalidate();

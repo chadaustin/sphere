@@ -1150,23 +1150,23 @@ CImageView::OnPaint()
       memset(m_BlitTile->GetPixels(), 0,  dib_width * dib_height * 4);
       BGRA* pixels = (BGRA*) m_BlitTile->GetPixels();
       bool visible = false;
+      int current_blit_width = 0;
+      int current_blit_height = 0;
 
       for (int iy = 0; iy < dib_height; ++iy) {  
+        int sy = (iy + (ty * dib_height)) / size;
+        if (!(sy >= m_RedrawY && sy < (m_RedrawY + m_RedrawHeight)))
+          continue;
+
         for (int ix = 0; ix < dib_width; ++ix) {
           //for (int l = 0; l < size; ++l)
           {
+            int sx = (ix + (tx * dib_width)) / size;
 
-            int sx = (ix + (tx * dib_width));
-            int sy = (iy + (ty * dib_height));
+            if (!(sx >= m_RedrawX && sx < (m_RedrawX + m_RedrawWidth)))
+              continue;
 
-            sx /= size;
-            sy /= size;
-
-            if (!(sx >= m_RedrawX && sx < (m_RedrawX + m_RedrawWidth)
-              && sy >= m_RedrawY && sy < (m_RedrawY + m_RedrawHeight)) )
-               continue;
-
-            visible = true;
+            current_blit_width += 1;
 
             int counter = (iy * dib_height) + ix;
 
@@ -1218,12 +1218,13 @@ CImageView::OnPaint()
   
             }
           }
-        }
+        }      
+        current_blit_height++;
       }
 
-      if (visible) {
+      if (current_blit_width && current_blit_height) {
         // render the tile
-        _dc.BitBlt(offsetx + (tx * dib_width), offsety + (ty * dib_height), dib_width, dib_height,
+        _dc.BitBlt(offsetx + (tx * dib_width), offsety + (ty * dib_height), current_blit_width, current_blit_height,
                   CDC::FromHandle(m_BlitTile->GetDC()), 0, 0, SRCCOPY);
       }
     }
