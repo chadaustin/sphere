@@ -745,11 +745,11 @@ void TexturedQuad(
     // render the scanline pixels
     if (minX == maxX) {
 
-      renderer(surface[iy * pitch + minX], texture[minV * tex_width + minU], mask[minV * tex_width + minU]);
+      //renderer(surface[iy * pitch + minX], texture[minV * tex_width + minU], mask[minV * tex_width + minU]);
 
     } else {
 
-      for (int ix = minX; ix <= maxX; ix++) {
+      for (int ix = minX + 1; ix <= maxX; ix++) {
 
         int iu = minU + (ix - oldMinX) * (maxU - minU) / (oldMaxX - oldMinX);
         int iv = minV + (ix - oldMinX) * (maxV - minV) / (oldMaxX - oldMinX);
