@@ -30,8 +30,6 @@ struct CONFIGURATION
   bool vsync;
 };
 
-
-
 // FUNCTION PROTOTYPES //
 
 static void LoadConfiguration();
@@ -113,7 +111,9 @@ static LPDIRECTDRAWSURFACE ddSecondary;
 static HDC     RenderDC;
 static HBITMAP RenderBitmap;
 
-
+// Fix for alpha transparency bug
+#define ALPHA_TRANSPARENCY_HIGH 244
+#define ALPHA_TRANSPARENCY_LOW 8
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -523,16 +523,34 @@ EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 void FillImagePixels(IMAGE image, RGBA* pixels)
 {
   // rgb
+  RGBA pixel;
+
   image->rgb = new word[image->width * image->height];
   if (PixelFormat == RGB565)
   {
-    for (int i = 0; i < image->width * image->height; i++)
-      image->rgb[i] = PackPixel565(pixels[i]);
+    for (int i = 0; i < image->width * image->height; i++) {
+      pixel = pixels[i];
+      if (pixel.alpha < ALPHA_TRANSPARENCY_HIGH) {
+        // premultiply
+        pixel.red   = (pixel.red   * pixel.alpha) / 255;
+        pixel.green = (pixel.green * pixel.alpha) / 255;
+        pixel.blue  = (pixel.blue  * pixel.alpha) / 255;
+      }
+      image->rgb[i] = PackPixel565(pixel);
+    }
   }
   else
   {
-    for (int i = 0; i < image->width * image->height; i++)
-      image->rgb[i] = PackPixel555(pixels[i]);
+    for (int i = 0; i < image->width * image->height; i++) {
+      pixel = pixels[i];
+      if (pixel.alpha < ALPHA_TRANSPARENCY_HIGH) {
+        // premultiply
+        pixel.red   = (pixel.red   * pixel.alpha) / 255;
+        pixel.green = (pixel.green * pixel.alpha) / 255;
+        pixel.blue  = (pixel.blue  * pixel.alpha) / 255;
+      }
+      image->rgb[i] = PackPixel555(pixel);
+    }
   }
 
   // alpha
@@ -548,7 +566,7 @@ void OptimizeBlitRoutine(IMAGE image)
   // null blit
   bool is_empty = true;
   for (int i = 0; i < image->width * image->height; i++)
-    if (image->alpha[i] != 0)
+    if (image->alpha[i] >= ALPHA_TRANSPARENCY_LOW)
     {
       is_empty = false;
       break;
@@ -562,7 +580,7 @@ void OptimizeBlitRoutine(IMAGE image)
   // tile blit
   bool is_tile = true;
   for (int i = 0; i < image->width * image->height; i++)
-    if (image->alpha[i] != 255)
+    if (image->alpha[i] < ALPHA_TRANSPARENCY_HIGH)
     {
       is_tile = false;
       break;
@@ -576,8 +594,8 @@ void OptimizeBlitRoutine(IMAGE image)
   // sprite blit
   bool is_sprite = true;
   for (int i = 0; i < image->width * image->height; i++)
-    if (image->alpha[i] != 0 &&
-        image->alpha[i] != 255)
+    if (image->alpha[i] >= ALPHA_TRANSPARENCY_LOW &&
+        image->alpha[i] < ALPHA_TRANSPARENCY_HIGH)
     {
       is_sprite = false;
       break;
@@ -654,16 +672,16 @@ public:
     RGBA d = UnpackPixel565(dst);
     RGBA s = UnpackPixel565(src);
 
-    // do the masking on the source pixel
-    alpha   = alpha   * m_mask.alpha / 256;
-    s.red   = s.red   * m_mask.red   / 256;
-    s.green = s.green * m_mask.green / 256;
-    s.blue  = s.blue  * m_mask.blue  / 256;
+    alpha   = (alpha   * m_mask.alpha) / 255;
+    s.blue  = (s.blue  * m_mask.blue)  / 255;
+    s.green = (s.green * m_mask.green) / 255;
+    s.red   = (s.red   * m_mask.red)   / 255;
 
     // blit to the dest pixel
-    d.red   = (d.red   * (256 - alpha) + s.red   * alpha) / 256;
-    d.green = (d.green * (256 - alpha) + s.green * alpha) / 256;
-    d.blue  = (d.blue  * (256 - alpha) + s.blue  * alpha) / 256;
+    byte b = alpha ^ 0xFF;
+    d.blue = ((s.blue * m_mask.alpha) + (d.blue * b)) / 255;
+    d.green = ((s.green * m_mask.alpha) + (d.green * b)) / 255;
+    d.red = ((s.red * m_mask.alpha) + (d.red * b)) / 255;
 
     dst = PackPixel565(d);
   }
@@ -682,16 +700,16 @@ public:
     RGBA d = UnpackPixel555(dst);
     RGBA s = UnpackPixel555(src);
 
-    // do the masking on the source pixel
-    alpha   = alpha   * m_mask.alpha / 256;
-    s.red   = s.red   * m_mask.red   / 256;
-    s.green = s.green * m_mask.green / 256;
-    s.blue  = s.blue  * m_mask.blue  / 256;
+    alpha   = (alpha   * m_mask.alpha) / 255;
+    s.blue  = (s.blue  * m_mask.blue)  / 255;
+    s.green = (s.green * m_mask.green) / 255;
+    s.red   = (s.red   * m_mask.red)   / 255;
 
     // blit to the dest pixel
-    d.red   = (d.red   * (256 - alpha) + s.red   * alpha) / 256;
-    d.green = (d.green * (256 - alpha) + s.green * alpha) / 256;
-    d.blue  = (d.blue  * (256 - alpha) + s.blue  * alpha) / 256;
+    byte b = alpha ^ 0xFF;
+    d.blue = ((s.blue * m_mask.alpha) + (d.blue * b)) / 255;
+    d.green = ((s.green * m_mask.alpha) + (d.green * b)) / 255;
+    d.red = ((s.red * m_mask.alpha) + (d.red * b)) / 255;
 
     dst = PackPixel555(d);
   }
@@ -742,9 +760,9 @@ inline void renderpixel565(word& d, const word& s, int a)
 {
   RGBA out = UnpackPixel565(d);
   RGBA in  = UnpackPixel565(s);
-  out.red   = (in.red   * a + out.red   * (256 - a)) / 256;
-  out.green = (in.green * a + out.green * (256 - a)) / 256;
-  out.blue  = (in.blue  * a + out.blue  * (256 - a)) / 256;
+  out.red   = (in.red)   + ((out.red * (a ^ 0xFF)) / 255);
+  out.green = (in.green) + ((out.green * (a ^ 0xFF)) / 255);
+  out.blue  = (in.blue)  + ((out.blue  * (a ^ 0xFF)) / 255);
   d = PackPixel565(out);
 }
 
@@ -752,14 +770,23 @@ inline void renderpixel555(word& d, const word& s, int a)
 {
   RGBA out = UnpackPixel555(d);
   RGBA in  = UnpackPixel555(s);
-  out.red   = (in.red   * a + out.red   * (256 - a)) / 256;
-  out.green = (in.green * a + out.green * (256 - a)) / 256;
-  out.blue  = (in.blue  * a + out.blue  * (256 - a)) / 256;
+  out.red   = (in.red)   + ((out.red * (a ^ 0xFF)) / 255);
+  out.green = (in.green) + ((out.green * (a ^ 0xFF)) / 255);
+  out.blue  = (in.blue)  + ((out.blue  * (a ^ 0xFF)) / 255);
   d = PackPixel555(out);
 }
 
 EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
 {
+  if (x[0] == x[3] && x[1] == x[2] && y[0] == y[1] && y[2] == y[3]) {
+    int dw = x[2] - x[0] + 1;
+    int dh = y[2] - y[0] + 1;
+    if (dw == image->width && dh == image->height) {
+      BlitImage(image, x[0], y[0]);
+      return;
+    }
+  }
+
   if (PixelFormat == RGB565) {
     primitives::TexturedQuad(ScreenBuffer, ScreenWidth, x, y, image->rgb, image->alpha, image->width, image->height, ClippingRectangle, renderpixel565);
   } else {
@@ -816,14 +843,19 @@ void SpriteBlit(IMAGE image, int x, int y)
   int dest_inc = ScreenWidth  - image_blit_width;
   int src_inc  = image->width - image_blit_width;
 
+  word* maskArray[2];
+
   int iy = image_blit_height;
   while (iy-- > 0) {
     int ix = image_blit_width;
     while (ix-- > 0) {
+
+      // use a pointer array to remove the if
+
+      maskArray[0] = dest;
+      maskArray[1] = src;
       
-      if (*alpha) {
-        *dest = *src;
-      }
+      *dest = *(maskArray[*alpha >= ALPHA_TRANSPARENCY_HIGH]);
 
       dest++;
       src++;
@@ -842,6 +874,8 @@ void NormalBlit(IMAGE image, int x, int y)
 {
   calculate_clipping_metrics(image->width, image->height);
 
+  byte a;
+
   if (PixelFormat == RGB565)
   {
     word* dest  = (word*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
@@ -856,12 +890,22 @@ void NormalBlit(IMAGE image, int x, int y)
       int ix = image_blit_width;
       while (ix-- > 0) {
         
-        RGBA out = UnpackPixel565(*dest);
-        RGBA in  = UnpackPixel565(*src);
-        out.red   = (in.red   * *alpha + out.red   * (256 - *alpha)) / 256;
-        out.green = (in.green * *alpha + out.green * (256 - *alpha)) / 256;
-        out.blue  = (in.blue  * *alpha + out.blue  * (256 - *alpha)) / 256;
-        *dest = PackPixel565(out);
+        a = *alpha;
+
+        if (a >= ALPHA_TRANSPARENCY_HIGH) {
+
+          *dest = *src;
+
+        } else if (a > ALPHA_TRANSPARENCY_LOW) {
+          RGBA out = UnpackPixel565(*dest);
+          RGBA in  = UnpackPixel565(*src);
+          a ^= 0xFF;
+          out.red   = (in.red)   + (out.red   * a / 255);
+          out.green = (in.green) + (out.green * a / 255);
+          out.blue  = (in.blue)  + (out.blue  * a / 255);
+          *dest = PackPixel565(out);
+
+        }
 
         dest++;
         src++;
@@ -889,12 +933,23 @@ void NormalBlit(IMAGE image, int x, int y)
       int ix = image_blit_width;
       while (ix-- > 0) {
         
-        RGBA out = UnpackPixel555(*dest);
-        RGBA in  = UnpackPixel555(*src);
-        out.red   = (in.red   * *alpha + out.red   * (256 - *alpha)) / 256;
-        out.green = (in.green * *alpha + out.green * (256 - *alpha)) / 256;
-        out.blue  = (in.blue  * *alpha + out.blue  * (256 - *alpha)) / 256;
-        *dest = PackPixel555(out);
+        a = *alpha;
+
+        if (a >= ALPHA_TRANSPARENCY_HIGH) {
+
+          *dest = *src;
+
+        } else if (a > ALPHA_TRANSPARENCY_LOW) {
+
+          RGBA out = UnpackPixel555(*dest);
+          RGBA in  = UnpackPixel555(*src);
+          a ^= 0xFF;
+          out.red   = (in.red)   + (out.red   * a / 255);
+          out.green = (in.green) + (out.green * a / 255);
+          out.blue  = (in.blue)  + (out.blue  * a / 255);
+          *dest = PackPixel555(out);
+        
+        }
 
         dest++;
         src++;
@@ -925,22 +980,50 @@ EXPORT(int) GetImageHeight(IMAGE image)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+inline int ClipByte(int value) {
+int iClipped;
+	value = (value & (-(int)!(value < 0)));
+	iClipped = -(int)(value > 255);
+	return (255 & iClipped) | (value & ~iClipped);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 EXPORT(RGBA*) LockImage(IMAGE image)
 {
   image->locked_pixels = new RGBA[image->width * image->height];
+  byte a;
 
   // rgb
   if (PixelFormat == RGB565)
   {
     // 5:6:5
-    for (int i = 0; i < image->width * image->height; i++)
-      image->locked_pixels[i] = UnpackPixel565(image->rgb[i]);
+    for (int i = 0; i < image->width * image->height; i++) {
+      a = image->alpha[i];
+      // if transparent, just leave empty
+      if (a >= ALPHA_TRANSPARENCY_LOW) {
+        image->locked_pixels[i] = UnpackPixel565(image->rgb[i]);
+        // unpremultiply
+        image->locked_pixels[i].blue  = ClipByte((image->locked_pixels[i].blue  * (65535 / a)) / 255);
+        image->locked_pixels[i].green = ClipByte((image->locked_pixels[i].green * (65535 / a)) / 255);
+        image->locked_pixels[i].red   = ClipByte((image->locked_pixels[i].red   * (65535 / a)) / 255);
+      }
+    }
   }
   else
   {
     // 5:5:5
-    for (int i = 0; i < image->width * image->height; i++)
-      image->locked_pixels[i] = UnpackPixel555(image->rgb[i]);
+    for (int i = 0; i < image->width * image->height; i++) {
+      a = image->alpha[i];
+      // if transparent, just leave empty
+      if (a >= ALPHA_TRANSPARENCY_LOW) {
+        image->locked_pixels[i] = UnpackPixel555(image->rgb[i]);
+        // unpremultiply
+        image->locked_pixels[i].blue  = ClipByte((image->locked_pixels[i].blue  * (65535 / a)) / 255);
+        image->locked_pixels[i].green = ClipByte((image->locked_pixels[i].green * (65535 / a)) / 255);
+        image->locked_pixels[i].red   = ClipByte((image->locked_pixels[i].red   * (65535 / a)) / 255);
+      } 
+    }
   }
 
   // alpha
@@ -979,9 +1062,9 @@ EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels)
   
         RGBA out = UnpackPixel565(*dest);
         RGBA in  = pixels[iy * w + ix];
-        out.red   = (in.red   * alpha + out.red   * (256 - alpha)) / 256;
-        out.green = (in.green * alpha + out.green * (256 - alpha)) / 256;
-        out.blue  = (in.blue  * alpha + out.blue  * (256 - alpha)) / 256;
+        out.red   = (in.red   * alpha + out.red   * (alpha ^ 0xFF)) / 256;
+        out.green = (in.green * alpha + out.green * (alpha ^ 0xFF)) / 256;
+        out.blue  = (in.blue  * alpha + out.blue  * (alpha ^ 0xFF)) / 256;
 
         *dest = PackPixel565(out);
       }
@@ -997,9 +1080,9 @@ EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels)
   
         RGBA out = UnpackPixel555(*dest);
         RGBA in  = pixels[iy * w + ix];
-        out.red   = (in.red   * alpha + out.red   * (256 - alpha)) / 256;
-        out.green = (in.green * alpha + out.green * (256 - alpha)) / 256;
-        out.blue  = (in.blue  * alpha + out.blue  * (256 - alpha)) / 256;
+        out.red   = (in.red   * alpha + out.red   * (alpha ^ 0xFF)) / 256;
+        out.green = (in.green * alpha + out.green * (alpha ^ 0xFF)) / 256;
+        out.blue  = (in.blue  * alpha + out.blue  * (alpha ^ 0xFF)) / 256;
 
         *dest = PackPixel555(out);
       }
@@ -1012,9 +1095,9 @@ inline void blendRGBAto565(word& d, RGBA s, RGBA alpha)
 {
   RGBA out = UnpackPixel565(d);
   byte a = alpha.alpha;
-  out.red   = (s.red   * a + out.red   * (256 - a)) / 256;
-  out.green = (s.green * a + out.green * (256 - a)) / 256;
-  out.blue  = (s.blue  * a + out.blue  * (256 - a)) / 256;
+  out.red   = (s.red   * a + out.red   * (a ^ 0xFF)) / 256;
+  out.green = (s.green * a + out.green * (a ^ 0xFF)) / 256;
+  out.blue  = (s.blue  * a + out.blue  * (a ^ 0xFF)) / 256;
   d = PackPixel565(out);
 }
 
@@ -1022,9 +1105,9 @@ inline void blendRGBAto555(word& d, RGBA s, RGBA alpha)
 {
   RGBA out = UnpackPixel555(d);
   byte a = alpha.alpha;
-  out.red   = (s.red   * a + out.red   * (256 - a)) / 256;
-  out.green = (s.green * a + out.green * (256 - a)) / 256;
-  out.blue  = (s.blue  * a + out.blue  * (256 - a)) / 256;
+  out.red   = (s.red   * a + out.red   * (a ^ 0xFF)) / 256;
+  out.green = (s.green * a + out.green * (a ^ 0xFF)) / 256;
+  out.blue  = (s.blue  * a + out.blue  * (a ^ 0xFF)) / 256;
   d = PackPixel555(out);
 }
 
