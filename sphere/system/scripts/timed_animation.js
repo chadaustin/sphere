@@ -1,7 +1,7 @@
 function TimedAnimation(animation)
 {
   if (this instanceof TimedAnimation == false) {
-    return new Menu();
+    return new TimedAnimation(animation);
   }
 
   this.animation = animation;
