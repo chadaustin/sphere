@@ -1,3 +1,11 @@
+2003.05.04
+  - made it so errors are now logged to gamedir/last_error.txt
+  - fixes so that engine/sdl sort of compiles
+
+2003.05.01
+  - added a linux doc for compiling sphere on linux
+  - fixes so scons compiles in linux
+  
 2003.04.25
   - fixed MapView->View Grid so it takes into account zoom factors
   - fixed bug where map editor would crash if you used "Select Tile" on out of range tiles
