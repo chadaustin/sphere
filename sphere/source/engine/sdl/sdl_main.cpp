@@ -1,7 +1,19 @@
 #include <SDL.h>
 #include "../sphere.hpp"
 #include "sdl_internal.hpp"
-#include "sdl_filesystem.hpp"
+//#include "sdl_filesystem.hpp"
+
+int GetDefaultWidth() {
+  return 320;
+}
+
+int GetDefaultHeight() {
+  return 240;
+}
+
+void GetDirectory(std::string sphere_dir) {
+  sphere_dir = "sphere";
+}
 
 
 void ProcessEvent(SDL_Event event);

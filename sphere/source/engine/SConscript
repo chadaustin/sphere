@@ -47,20 +47,6 @@ engine_sources = Split("""
 if COMPILER.is_win32():
     engine_sources.append('engine.res')
     env.RES('engine.res', 'win32/engine.rc')
-#else:
-#    sdl_sources = Split("""
-#    sdl/sdl_network.cpp
-#    sdl/sdl_time.cpp
-#    sdl/sdl_audio.cpp
-#    sdl/sdl_audio.hpp
-#    sdl/sdl_input.cpp
-#    sdl/sdl_main.cpp
-#    sdl/sdl_screenshot.cpp
-#    sdl/sdl_video.cpp
-#    """)
-#    print "SDL_sources: ", sdl_sources
-#    engine_sources += sdl_sources
-
 
 engine = env.Program('engine', engine_sources)
 env.Install(BUILD_DIR, engine)

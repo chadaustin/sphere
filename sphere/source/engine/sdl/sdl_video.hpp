@@ -30,6 +30,7 @@ extern bool  DestroyImage(IMAGE image);
 extern bool  BlitImage(IMAGE image, int x, int y);
 extern void  BlitImageMask(IMAGE image, int x, int y, RGBA mask);
 extern void  TransformBlitImage(IMAGE image, int x[4], int y[4]);
+extern void  TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask);
 extern int   GetImageWidth(IMAGE image);
 extern int   GetImageHeight(IMAGE image);
 extern RGBA* LockImage(IMAGE image);

@@ -2,8 +2,8 @@
 #include "sdl_internal.hpp"
 #include "sdl_time.hpp"
 #include "sdl_video.hpp"
-#include ".././common/primitives.hpp"
-#include ".././common/rgb.hpp"
+#include "../../common/primitives.hpp"
+#include "../../common/rgb.hpp"
 #include "../sfont.hpp"
 
 // windows is a wierd creature. if you use the RECT it's not gonna work.
@@ -118,7 +118,7 @@ bool FlipScreen()
 
     char fps[80];
     sprintf(fps, "FPS: %d", FPS);
-    FPSFont->DrawString(0, 0, fps);
+    FPSFont->DrawString(0, 0, fps, CreateRGBA(255, 255, 255, 255));
   }
 
   CurrentFrames++;
@@ -386,6 +386,13 @@ void  TransformBlitImage(IMAGE image, int x[4], int y[4])
 
   SDL_UnlockSurface(s_FrameBuffer);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+void TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask) {
+
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 void DirectBlit(int x, int y, int w, int h, RGBA* pixels)

@@ -95,6 +95,7 @@ extern bool RefreshInput();
 
 // keyboard
 extern bool IsKeyPressed(int key);
+extern void GetKeyStates(bool keys[MAX_KEY]);
 
 // keyboard key queue
 extern bool AreKeysLeft();
@@ -106,5 +107,11 @@ extern int  GetMouseY();
 extern bool IsMouseButtonPressed(int button);
 extern void SetMousePosition(int x, int y);
 
+// joystick
+extern int GetNumJoysticks();
+extern float GetJoystickX(int joy); // returns value in range [-1, 1]
+extern float GetJoystickY(int joy); // returns value in range [-1, 1]
+extern int GetNumJoystickButtons(int joy);
+extern bool IsJoystickButtonPressed(int joy, int button);
 
 #endif

@@ -4,6 +4,8 @@ Import('base_env COMPILER')
 env = base_env.Copy()
 COMPILER.SetupSDL(env) 
 
+env.Append(CPPPATH = ['#/source/engine/unix'], LIBPATH = ['#/source/engine/unix'], LIBS = ['unix'])
+
 env.Library('unix', Split("""
     unix_audio.cpp
     unix_filesystem.cpp

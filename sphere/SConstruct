@@ -119,6 +119,9 @@ class Compiler:
 
     def needs_sdl(self):
         return self.name in ['linux']
+        
+    def has_wxwindows(self):
+        return self.name in ['mingw', 'vc6']
 
     def get_env(self):
         return self.env
@@ -165,10 +168,8 @@ class Compiler:
             env.Append(LIBS = ['mng', 'jpeg', 'z'])
 
     def SetupSDL(self, env):
-        env.Append(CPPPATH = ['#/source/engine/unix'],
-                   LIBPATH = ['#/source/engine/unix'],
-                   LIBS = ['unix'])
-        autocons.ParseConfig(env, 'sdl-config', ['--cflags', '--libs'])
+        if self.name == 'linux':
+            autocons.ParseConfig(env, 'sdl-config', ['--cflags', '--libs'])
         
 
     def SetupSphereCommon(self, env):

@@ -204,6 +204,16 @@ bool RefreshInput()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void GetKeyStates(bool keys[MAX_KEY])
+{
+  UpdateSystem();
+  for (int i = 0; i < MAX_KEY; ++i) {
+    keys[i] = (KeyBuffer[i] != 0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 bool IsKeyPressed(int key)
 {
   UpdateSystem();
@@ -263,3 +273,26 @@ void SetMousePosition(int x, int y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+int GetNumJoysticks() {
+  return 0;
+}
+
+float GetJoystickX(int joy) { // returns value in range [-1, 1]
+  return 0;
+}
+
+float GetJoystickY(int joy) { // returns value in range [-1, 1]
+  return 0;
+}
+
+int GetNumJoystickButtons(int joy) {
+  return 0;
+}
+
+bool IsJoystickButtonPressed(int joy, int button) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+

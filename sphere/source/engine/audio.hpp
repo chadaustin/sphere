@@ -1,3 +1,4 @@
+
 #if defined(SPHERE_SDL)
 
   #include "sdl/sdl_audio.hpp"
@@ -15,3 +16,4 @@
   #error unsupported platform
 
 #endif
+
