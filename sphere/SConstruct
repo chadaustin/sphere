@@ -168,7 +168,7 @@ class Compiler:
                        CCFLAGS = ['/DWINDOWS', '/DZLIB_DLL'])
 
 
-COMPILER = Compiler(ARGUMENTS.get('compiler', 'mingw'))
+COMPILER = Compiler(ARGUMENTS.get('compiler', 'vc6'))
 base_env = COMPILER.get_env()
 BUILD_DIR = base_env['BUILD_DIR']
 Default(BUILD_DIR)
@@ -176,4 +176,4 @@ Default(BUILD_DIR)
 Export('base_env BUILD_DIR COMPILER')
 
 
-SConscript(dirs = ['source', 'startup', 'system'])
+SConscript(dirs = ['docs', 'source', 'startup', 'system'])

@@ -1,0 +1,12 @@
+import os
+
+Import('base_env BUILD_DIR')
+
+files = ['Sphere Tutorial.txt',
+         'build.txt',
+         'changelog.txt',
+         'gpl.txt']
+
+for f in files:
+    base_env.Install(os.path.join(BUILD_DIR, 'docs'), f)
+
