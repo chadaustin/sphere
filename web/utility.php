@@ -1,6 +1,6 @@
 <?php
-$SITEROOT = "/~jcore/sphere_test";
-$DOCUMENTROOT = "/home/jcore/public_html/sphere_test";
+$SITEROOT = "/";
+$DOCUMENTROOT = "/home/groups/s/sp/sphere/htdocs";
 
 require("$DOCUMENTROOT/mysql.php");
 

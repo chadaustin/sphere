@@ -2,15 +2,15 @@
 require("$DOCUMENTROOT/passwords.inc.php");
 
 class MySQLConnection {
-  var $HOST = "localhost";
-  var $USER = "jcore";
+  var $HOST = "mysql";
+  var $USER = "sphere";
   var $DATABASE = "sphere";
 
   var $connection;
 
   function MySQLConnection () {
-    global $MYSQL_PASSWORD;
-    $this->connection = mysql_connect($this->HOST, $this->USER, $MYSQL_PASSWORD) or die("could not connect to MySQL server on {$this->HOST}");
+    global $__PASS_MYSQL;
+    $this->connection = mysql_connect($this->HOST, $this->USER, $__PASS_MYSQL) or die("could not connect to MySQL server on {$this->HOST}");
     mysql_select_db($this->DATABASE) or die("could not select database {$this->DATABASE}");
   }
 
