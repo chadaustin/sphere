@@ -32,6 +32,11 @@ function FadeToColor(msecs, clr)
     FlipScreen();
   }
 
+  color.alpha = 255;
+  image.blit(0, 0);
+  ApplyColorMask(color);
+  FlipScreen();
+
   image.blit(0, 0);
 }
 
@@ -49,6 +54,11 @@ function FadeFromColor(msecs, clr)
     ApplyColorMask(color);
     FlipScreen();
   }
+
+  color.alpha = 0;
+  image.blit(0, 0);
+  ApplyColorMask(color);
+  FlipScreen();
 
   image.blit(0, 0);
 }
