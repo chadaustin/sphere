@@ -6,6 +6,7 @@
 #include "audiere.h"
 #define ADR_TRUE  1
 #define ADR_FALSE 0
+#define ADR_NEW
 
 bool InitAudio();
 void CloseAudio();
