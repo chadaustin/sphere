@@ -275,7 +275,9 @@ CSpritesetWindow::OnFillDelay()
       }
     }
 
-    SetModified(modified);
+    if (modified) {
+      SetModified(modified);
+    }
   }
 }
 
