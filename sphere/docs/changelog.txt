@@ -1,3 +1,6 @@
+2003.01.28
+  - added Flik's joysticks.js system script
+
 2003.01.25
   - upgraded JS engine to 1.5 RC 5, which should improve framerates
     and fix a few crashes.
