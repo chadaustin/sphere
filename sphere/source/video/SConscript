@@ -17,8 +17,8 @@ def VideoDriver(name, source, resource, libs):
             source = [source]
         source.append(drv.RES(resource + '.res', resource + '.rc'))
         source.append('../common/video.def')
-    drv.Install(os.path.join(BUILD_DIR, 'system/video'),
-                drv.SharedLibrary(name, source))
+    drv.SharedLibrary(name, source)
+    drv.Install(os.path.join(BUILD_DIR, 'system/video'), name + '.dll')
 
 
 Export('VideoDriver')
