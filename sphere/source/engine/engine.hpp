@@ -6,13 +6,14 @@
 #pragma warning(disable : 4786)
 #endif
 
+#define USE_SPRITESET_SERVER
 
 #include "engineinterface.hpp"
 #include "script.hpp"
 #include "sphere.hpp"
 #include "../common/IFileSystem.hpp"
 
-#if 0
+#ifdef USE_SPRITESET_SERVER
 #include "spritesetserver.hpp"
 #endif
 
@@ -116,7 +117,7 @@ private:
 
   CScript* m_Script;
 
-#if 0
+#ifdef USE_SPRITESET_SERVER
   CSpritesetServer m_SpritesetServer;
 #endif
 

@@ -1,8 +1,5 @@
 #include <windows.h>
-#include <assert.h>
 #include "DIBSection.hpp"
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -17,7 +14,13 @@ CDIBSection::CDIBSection(int width, int height, int bpp)
 
   // create the DC
   m_hDC = ::CreateCompatibleDC(NULL);
-  assert(m_hDC != NULL);
+  if (m_hDC == NULL) {
+    m_hDC = NULL;
+    m_hBitmap = NULL;
+    m_iWidth = 0;
+    m_iHeight = 0;
+    return;
+  }
 
   // define bitmap attributes
   BITMAPINFO bmi;
@@ -32,7 +35,13 @@ CDIBSection::CDIBSection(int width, int height, int bpp)
 
   // create the bitmap
   m_hBitmap = ::CreateDIBSection(::GetDC(NULL), &bmi, DIB_RGB_COLORS, &m_pPixels, NULL, 0);
-  assert(m_hBitmap != NULL);
+  if (m_hBitmap == NULL) {
+   ::DeleteDC(m_hDC);
+   m_hDC = NULL;
+    m_iWidth = 0;
+    m_iHeight = 0;
+    return;
+  }
 
   // select the bitmap into the DC
   ::SelectObject(m_hDC, m_hBitmap);

@@ -15,7 +15,7 @@ static const char* Extensions[] = {
   /* sounds */       "Sound Files:ogg(MP3 Files(mp3,mp2),Ogg Vorbis Files(ogg),MOD Files(mod,s3m,xm,it),WAV Files(wav),FLAC Files(flac))",
   /* fonts */        "Font Files:rfn(Sphere Font Files(rfn))",
   /* windowstyles */ "Window Style Files:rws(Sphere Window Styles(rws))",
-  /* images */       "Image Files:png(JPEG Images(jpeg,jpg,jpe),PNG Images(png),PCX Images(pcx),Windows Bitmap Images(bmp),Truevision Targa(tga))",
+  /* images */       "Image Files:png(JPEG Images(jpeg,jpg,jpe),PNG Images(png),PCX Images(pcx),Windows Bitmap Images(bmp),Truevision Targa(tga),Gif(gif))",
   /* animations */   "Animation Files:mng,flic(MNG Animations(mng),FLIC Animations(flic,flc,fli))",
   /* tilesets */     "Tileset Files:rts(Sphere Tileset Files(rts))",
   /* packages */     "Package Files:spk(Sphere Package Files(spk))",
@@ -29,9 +29,10 @@ CFileTypeLibrary FTL;
 
 CFileTypeLibrary::CFileTypeLibrary()
 {
-  m_FileTypes.resize(sizeof(Extensions) / sizeof(*Extensions));
+  const int num_extensions = sizeof(Extensions) / sizeof(*Extensions);
+  m_FileTypes.resize(num_extensions);
 
-  for (int i = 0; i < sizeof(Extensions) / sizeof(*Extensions); i++) {
+  for (int i = 0; i < num_extensions; i++) {
     const char* s = Extensions[i];
     FileType& ft = m_FileTypes[i];
 

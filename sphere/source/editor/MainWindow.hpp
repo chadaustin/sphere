@@ -71,7 +71,7 @@ private:
   afx_msg void OnFileOpenImage();
   afx_msg void OnFileOpenAnimation();
   // afx_msg void OnFileOpenDoodad();
-  // afx_msg void OnFileOpenTileset();
+  afx_msg void OnFileOpenTileset();
 
   afx_msg void OnFileImportImageToMap();
   afx_msg void OnFileImportBitmapToRWS();

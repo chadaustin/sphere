@@ -452,7 +452,7 @@ CGameEngine::LoadSpriteset(const char* filename)
   std::string path = "spritesets/";
   path += filename;
 
-#if 1
+#ifndef USE_SPRITESET_SERVER
   // load spriteset
   SSPRITESET* ss = new SSPRITESET;
   if (!ss->Load(path.c_str(), m_FileSystem, std::string(filename))) {
@@ -471,7 +471,7 @@ CGameEngine::LoadSpriteset(const char* filename)
 void
 CGameEngine::DestroySpriteset(SSPRITESET* spriteset)
 {
-#if 1
+#ifndef USE_SPRITESET_SERVER
   spriteset->Release();
 #else
   m_SpritesetServer.Free(spriteset);

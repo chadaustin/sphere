@@ -1508,9 +1508,6 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
     return false;
   }
 
-  // LoadSpriteset already calls AddRef()
-  //  p.spriteset->AddRef();
-
   // put them in the starting position by default
   if (m_IsRunning) {
     p.x     = m_Map.GetMap().GetStartX();
@@ -2168,8 +2165,9 @@ CMapEngine::SetPersonSpriteset(const char* name, sSpriteset& spriteset)
   }
 
   // release the old spriteset
+  //m_Engine->DestroySpriteset(m_Persons[person_index].spriteset);
   m_Persons[person_index].spriteset->Release();
-
+  
   // create and insert the new spriteset (the constructor calls AddRef)
   m_Persons[person_index].spriteset = new SSPRITESET(spriteset);
   if (m_Persons[person_index].spriteset == NULL) {
