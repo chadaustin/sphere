@@ -2059,7 +2059,6 @@ CMainWindow::OnHelpAbout()
     "Additional code by Jacky Chong (Darklich) and Brian Robb (Flik)\n"
     "Icons by DRosen and Khadgar\n"
     "\n"
-    "\n"
     "Build Date: " __DATE__ "\n"
     "Build Time: " __TIME__ "\n"
     "\n"
@@ -2070,7 +2069,7 @@ CMainWindow::OnHelpAbout()
     "Corona: %s\n"
     "JavaScript: %s\n"
     "libmng: DLL %s - header %s\n"
-    "scintilla: 1.58\n",
+    "scintilla: 1.58\n"
     "zlib: %s\n"
 		,
     audiere::GetVersion(),

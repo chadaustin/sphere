@@ -905,7 +905,9 @@ CImageView::Rectangle()
     int sw = GetSelectionWidth();
     int sh = GetSelectionHeight();
 
-    m_Image.Rectangle(start.x, start.y, end.x, end.y, m_Color, sx, sy, (sx + sw), (sy + sh));
+    clipper clip = { sx, sy, (sx + sw) - 1, (sy + sh) - 1 };
+
+    m_Image.Rectangle(start.x, start.y, end.x, end.y, m_Color, clip);
     Invalidate();
     m_Handler->IV_ImageChanged();
   }
@@ -980,7 +982,13 @@ CImageView::Ellipse()
     if (!InImage(start) || !InImage(end))
       return;
 
-    m_Image.Ellipse(start.x, start.y, abs(start.x - end.x), abs(start.y - end.y), m_Color);
+    int sx = GetSelectionLeftX();
+    int sy = GetSelectionTopY();
+    int sw = GetSelectionWidth();
+    int sh = GetSelectionHeight();
+
+    clipper clip = { sx, sy, (sx + sw) - 1, (sy + sh) - 1 };
+    m_Image.Ellipse(start.x, start.y, abs(start.x - end.x), abs(start.y - end.y), m_Color,  0, clip);
     Invalidate();
     m_Handler->IV_ImageChanged();
   }
@@ -2303,7 +2311,7 @@ CImageView::OnFilterSaturate()
 afx_msg void
 CImageView::OnFilterCustom()
 {
-  CConvolveListDialog dialog;
+  CConvolveListDialog dialog(m_Image.GetWidth(), m_Image.GetHeight(), m_Image.GetPixels());
 
   if (dialog.DoModal() == IDOK) {
     const double* double_mask = dialog.GetMask();

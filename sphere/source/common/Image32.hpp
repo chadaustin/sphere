@@ -64,6 +64,7 @@ public:
   void RotateCW();
   void RotateCCW(); 
   
+  void SetPixel(int x, int y, RGBA color, clipper clip);
   void SetPixel(int x, int y, RGBA color);
   void SetAlpha(int alpha);
   void SetColorAlpha(RGB color, int alpha);
@@ -75,7 +76,9 @@ public:
 
   void Circle(int x, int y, int r, RGBA color);
   void Ellipse(int cx, int cy, int radx, int rady, RGBA clr, int fill = false);
-  void Rectangle(int x1, int y1, int x2, int y2, RGBA color, int cx = 0, int cy = 0, int cwidth = -1, int cheight = -1);
+  void Ellipse(int cx, int cy, int radx, int rady, RGBA clr, int fill, clipper clip);
+  void Rectangle(int x1, int y1, int x2, int y2, RGBA color);
+  void Rectangle(int x1, int y1, int x2, int y2, RGBA color, clipper clip);
   void Triangle(int x1, int y1, int x2, int y2, int x3, int y3, RGBA color);
 
   void BlitImage(CImage32& image, int x, int y);
@@ -106,6 +109,8 @@ inline
 CImage32::~CImage32()
 {
   delete[] m_Pixels;
+  m_Width = 0;
+  m_Height = 0;
 }
 
 

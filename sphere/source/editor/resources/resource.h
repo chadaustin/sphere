@@ -209,6 +209,7 @@
 #define IDC_FILTER_LIST_EDIT_OFFSET     1180
 #define IDC_FILTER_LIST_EDIT_WRAP       1181
 #define IDC_FILTER_LIST_EDIT_DIVISOR    1182
+#define IDC_PREVIEW_FRAME               1191
 #define ID_FILE_IMPORT_BITMAPTORSS      12241
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40003
@@ -579,7 +580,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        257
 #define _APS_NEXT_COMMAND_VALUE         40735
-#define _APS_NEXT_CONTROL_VALUE         1191
+#define _APS_NEXT_CONTROL_VALUE         1192
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -1325,14 +1325,16 @@ BEGIN
     LISTBOX         IDC_FILTER_LIST,25,28,78,76,LBS_SORT | 
                     LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Red",IDC_FILTER_USE_RED,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,23,115,62,6
+                    WS_TABSTOP,23,115,32,6
     CONTROL         "Green",IDC_FILTER_USE_GREEN,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,23,124,62,6
+                    WS_TABSTOP,23,124,36,6
     CONTROL         "Blue",IDC_FILTER_USE_BLUE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,23,132,62,6
+                    WS_TABSTOP,23,132,36,6
     CONTROL         "Alpha",IDC_FILTER_USE_ALPHA,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,23,141,62,6
+                    WS_TABSTOP,23,141,37,6
     PUSHBUTTON      "Edit",IDC_FILTER_LIST_EDIT,117,37,40,13
+    CONTROL         "",IDC_PREVIEW_FRAME,"Static",SS_BLACKFRAME | NOT 
+                    WS_VISIBLE,87,116,56,32
 END
 
 IDD_CONVOLVE_LIST_EDIT DIALOG DISCARDABLE  0, 0, 166, 183

@@ -251,9 +251,12 @@ END_MESSAGE_MAP()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-CConvolveListDialog::CConvolveListDialog()
+CConvolveListDialog::CConvolveListDialog(const int width, const int height, const RGBA* pixels)
 : CDialog(IDD_CONVOLVE_LIST)
 , m_CurrentFilter(-1)
+, m_Width(width)
+, m_Height(height)
+, m_Pixels(pixels)
 {
 }
 
@@ -262,6 +265,7 @@ CConvolveListDialog::CConvolveListDialog()
 CConvolveListDialog::~CConvolveListDialog() {
   for (int i = 0; i < m_FilterList.size(); i++) {
     delete m_FilterList[i];
+    m_FilterList[i] = NULL;
   }
   m_FilterList.clear();
 }
@@ -311,14 +315,14 @@ CConvolveListDialog::LoadFilterList() {
 
   if (m_FilterList.size() == 0) {
     FilterInfo* a = new FilterInfo(3, 3);
-    if (a->mask) {
+    if (a && a->mask) {
       a->name = "Null_Filter";
       a->mask[4] = 1;
       m_FilterList.push_back(a);
     }
 
     FilterInfo* b = new FilterInfo(3, 3);
-    if (b->mask) {
+    if (b && b->mask) {
       b->name = "Sharpen_Filter";
       for (int i = 0; i < 9; i++)
         b->mask[i] = -1;
@@ -329,7 +333,7 @@ CConvolveListDialog::LoadFilterList() {
     }
 
     FilterInfo* c = new FilterInfo(5, 5);
-    if (c->mask) {
+    if (c && c->mask) {
       c->name = "Blur_Filter";
       c->divisor = 25;
       for (int i = 0; i < 25; i++)
@@ -338,7 +342,7 @@ CConvolveListDialog::LoadFilterList() {
     }
 
     FilterInfo* d = new FilterInfo(3, 3);
-    if (d->mask) {
+    if (d && d->mask) {
       d->name = "Emboss_Filter";
       d->mask[0] = -2;
       d->mask[4] = 4;
@@ -531,8 +535,9 @@ CConvolveListDialog::GetConvolveType()
 void
 CConvolveListDialog::OnOK()
 {
-  if (m_CurrentFilter < 0 || m_CurrentFilter >= m_FilterList.size())
+  if (m_CurrentFilter < 0 || m_CurrentFilter >= m_FilterList.size()) {
     CDialog::OnCancel();
+  }
   else {
     SaveFilterList();
     m_UseRed   =  IsDlgButtonChecked(IDC_FILTER_USE_RED)   == BST_CHECKED ? 1 : 0;

@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "../common/rgb.hpp"
+
 ///////////////////////////////////////////////////////////
 
 class FilterInfo {
@@ -60,7 +62,7 @@ public:
 class CConvolveListDialog : public CDialog
 {
 public:
-  CConvolveListDialog();
+  CConvolveListDialog(const int width, const int height, const RGBA* pixels);
   ~CConvolveListDialog();
 
   const double* GetMask();
@@ -77,6 +79,11 @@ public:
   int GetClampLow();
   int GetClampHigh();
   const char* GetConvolveType();
+
+private:
+  const int m_Width;
+  const int m_Height;
+  const RGBA* m_Pixels;
 
 private:
   void SortFilters();

@@ -657,15 +657,21 @@ private:
 };
 
 void
-CImage32::SetPixel(int x, int y, RGBA color)
+CImage32::SetPixel(int x, int y, RGBA color, clipper clip)
 {
-  clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
   switch (m_BlendMode) {
     case REPLACE:    primitives::Point(m_Pixels, m_Width, x, y, color, clip, copyRGBA);  break;
     case BLEND:      primitives::Point(m_Pixels, m_Width, x, y, color, clip, blendRGBA); break;
     case RGB_ONLY:   primitives::Point(m_Pixels, m_Width, x, y, color, clip, copyRGB);   break;
     case ALPHA_ONLY: primitives::Point(m_Pixels, m_Width, x, y, color, clip, copyAlpha); break;
   }
+}
+
+void
+CImage32::SetPixel(int x, int y, RGBA color)
+{
+  clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+  SetPixel(x, y, color, clip);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -782,6 +788,13 @@ CImage32::Circle(int x, int y, int r, RGBA color)
 void
 CImage32::Ellipse(int cx, int cy, int radx, int rady, RGBA color, int fill)
 {
+  clipper clip = {0, 0, m_Width - 1, m_Height - 1};
+  Ellipse(cx, cy, radx, rady, color, fill, clip);
+}
+
+void
+CImage32::Ellipse(int cx, int cy, int radx, int rady, RGBA color, int fill, clipper clip)
+{
   int mx1, my1, mx2, my2;
   int aq, bq;
   int dx, dy;
@@ -789,12 +802,12 @@ CImage32::Ellipse(int cx, int cy, int radx, int rady, RGBA color, int fill)
   int x;
 
   if (fill) {
-    Line(cx - radx, cy, cx + radx, cy, color);
+    Line(cx - radx, cy, cx + radx, cy, color, clip);
   }
   else
   {
-    SetPixel(cx + radx, cy, color);
-    SetPixel(cx - radx, cy, color);
+    SetPixel(cx + radx, cy, color, clip);
+    SetPixel(cx - radx, cy, color, clip);
   }
 
   mx1 = cx - radx;  my1 = cy;
@@ -829,15 +842,15 @@ CImage32::Ellipse(int cx, int cy, int radx, int rady, RGBA color, int fill)
 
     if (fill)
     {
-      Line(mx1, my1, mx2, my1, color);
-      Line(mx1, my2, mx2, my2, color);
+      Line(mx1, my1, mx2, my1, color, clip);
+      Line(mx1, my2, mx2, my2, color, clip);
     }
     else
     {
-      SetPixel(mx1, my1, color);
-      SetPixel(mx2, my1, color);
-      SetPixel(mx1, my2, color);
-      SetPixel(mx2, my2, color);
+      SetPixel(mx1, my1, color, clip);
+      SetPixel(mx2, my1, color, clip);
+      SetPixel(mx1, my2, color, clip);
+      SetPixel(mx2, my2, color, clip);
     }
   }
 }
@@ -845,7 +858,14 @@ CImage32::Ellipse(int cx, int cy, int radx, int rady, RGBA color, int fill)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CImage32::Rectangle(int x1, int y1, int x2, int y2, RGBA color, int cx, int cy, int cwidth, int cheight)
+CImage32::Rectangle(int x1, int y1, int x2, int y2, RGBA color)
+{
+  clipper clip = { 0, 0, m_Width -1, m_Height - 1 };
+  Rectangle(x1, y1, x2, y2, color, clip);
+}
+
+void
+CImage32::Rectangle(int x1, int y1, int x2, int y2, RGBA color, clipper clip)
 {
   // make sure x1 < x2 and y1 < y2 so we can get good w and h values
   if (x1 > x2) {
@@ -857,10 +877,6 @@ CImage32::Rectangle(int x1, int y1, int x2, int y2, RGBA color, int cx, int cy, 
   int w = x2 - x1 + 1;
   int h = y2 - y1 + 1;
 
-  if (cwidth <= -1) cwidth = m_Width;
-  if (cheight <= -1) cheight = m_Height;
-
-  clipper clip = { cx, cy, cwidth - 1, cheight - 1 };
   switch (m_BlendMode) {
     case REPLACE:    primitives::Rectangle(m_Pixels, m_Width, x1, y1, w, h, color, clip, copyRGBA);  break;
     case BLEND:      primitives::Rectangle(m_Pixels, m_Width, x1, y1, w, h, color, clip, blendRGBA); break;

@@ -328,7 +328,7 @@ afx_msg void
 CMapWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
 {
   int tile = m_MapView.GetSelectedTile();
-  const int tiles_per_row = m_TilePalette->GetNumTilesPerRow();
+  const int tiles_per_row = (m_TilePalette == NULL) ? (0) : (m_TilePalette->GetNumTilesPerRow());
 
   if (vk == VK_RIGHT) {
     tile = std::min(tile + 1, m_Map.GetTileset().GetNumTiles() - 1);
@@ -343,6 +343,8 @@ CMapWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
       tile += tiles_per_row;
     }
   }
+
+  //if (vk == VK_APPS) {  }
 
   m_MapView.SelectTile(tile);
   m_LayerView.SetSelectedTile(tile);
@@ -491,7 +493,7 @@ CMapWindow::OnImportTileset()
 afx_msg void
 CMapWindow::OnPruneTileset()
 {
-  if (MessageBox("Are you sure you want to remove unused tiles?", "Prune Tileset", MB_ICONQUESTION | MB_YESNO) == IDYES) {
+  if (MessageBox("Are you sure you want to remove unused tiles?", "Prune Tileset", MB_ICONQUESTION | MB_YESNO | MB_DEFBUTTON2) == IDYES) {
     m_Map.PruneTileset();
 
     SetModified(true);
