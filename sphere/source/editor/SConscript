@@ -1,0 +1,87 @@
+Import("base_env BUILD_DIR COMPILER")
+
+env = base_env.Copy()
+env.Append(CPPPATH = [Dir('resources')])
+COMPILER.SetupSphereCommon(env)
+COMPILER.SetupAudiere(env)
+COMPILER.SetupCorona(env)
+COMPILER.SetupHTMLHelp(env)
+COMPILER.SetupJS(env)
+COMPILER.SetupMFC(env)
+COMPILER.SetupMNG(env)
+COMPILER.SetupZLib(env)
+COMPILER.Win32Subsystem(env)
+
+sources = Split("""
+    AlphaView.cpp
+    AnimationWindow.cpp
+    Audio.cpp
+    ColorView.cpp
+    Configuration.cpp
+    DIBSection.cpp
+    Debug.cpp
+    DocumentWindow.cpp
+    Editor.cpp
+    EntityPersonDialog.cpp
+    EntityTriggerDialog.cpp
+    FileSystem.cpp
+    FileTypes.cpp
+    FontGradientDialog.cpp
+    FontWindow.cpp
+    GameSettingsDialog.cpp
+    HScrollWindow.cpp
+    ImageToolPalette.cpp
+    ImageView.cpp
+    ImageWindow.cpp
+    Keys.cpp
+    LayerPropertiesDialog.cpp
+    LayerView.cpp
+    MainWindow.cpp
+    MapPropertiesDialog.cpp
+    MapToolPalette.cpp
+    MapView.cpp
+    MapWindow.cpp
+    NewMapDialog.cpp
+    NewProjectDialog.cpp
+    NumberDialog.cpp
+    OptionsDialog.cpp
+    Package.cpp
+    PaletteView.cpp
+    PaletteWindow.cpp
+    Project.cpp
+    ProjectWindow.cpp
+    RGBAView.cpp
+    ResizeDialog.cpp
+    SaveableDocumentWindow.cpp
+    ScriptWindow.cpp
+    Scripting.cpp
+    ScrollWindow.cpp
+    SoundWindow.cpp
+    SpriteBaseView.cpp
+    SpritePropertiesDialog.cpp
+    SpritesetImagesPalette.cpp
+    SpritesetView.cpp
+    SpritesetWindow.cpp
+    StringDialog.cpp
+    SwatchPalette.cpp
+    SwatchServer.cpp
+    TileObstructionDialog.cpp
+    TileObstructionView.cpp
+    TilePalette.cpp
+    TilePropertiesDialog.cpp
+    TilesetEditView.cpp
+    TilesetSelectionDialog.cpp
+    TilesetView.cpp
+    ToolPalette.cpp
+    VScrollWindow.cpp
+    WindowStylePropertiesDialog.cpp
+    WindowStyleWindow.cpp
+    ZoneEditDialog.cpp
+""")
+sources.append(env.Object('win32_sphere_config',
+                          '../engine/win32/win32_sphere_config.cpp'))
+sources.append(env.RES('editor.res', 'resources/editor.rc'))
+
+editor = env.Program('editor', sources)
+
+env.Install(BUILD_DIR, editor)
