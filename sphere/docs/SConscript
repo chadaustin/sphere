@@ -21,6 +21,16 @@ files = ['build.txt',
          'Sphere Tutorial.txt',
          'sphere_cvs.txt',
          'unix.txt']
+files += map(lambda n: 'technical/' + n,
+             ['coding-style.txt',
+              'gameinf.txt',
+              'rfn.txt',
+              'rmp.txt',
+              'rss.txt',
+              'rts.txt',
+              'rws.txt',
+              'spk.txt',
+              'videodriver.txt'])
 
 for f in files:
     env.TextFile(os.path.join(BUILD_DIR, 'docs', f), f)
