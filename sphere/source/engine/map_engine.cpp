@@ -1101,12 +1101,21 @@ CMapEngine::SetPersonFrame(const char* name, int frame)
     return false;
   }
 
+  Person& p = m_Persons[person];
+
   // if person has a leader, ignore the command
-  if (m_Persons[person].leader != -1) {
+  if (p.leader != -1) {
     return true;
   }
 
+  if (frame < 0) {
+    frame = 0;
+  } else {
+    frame %= p.spriteset->GetSpriteset().GetNumFrames(p.direction);
+  }
+
   m_Persons[person].frame = frame;
+  m_Persons[person].stepping = frame;
   return true;
 }
 
@@ -2541,54 +2550,44 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
       int talk_y = m_Persons[m_InputPerson].y;
       int tad = m_TalkActivationDistance;
 
-/*
-      switch (m_Persons[m_InputPerson].spriteset->GetSpriteset().GetDefaultDirection(m_Persons[m_InputPerson].direction)) {
-        case sSpriteset::NORTH:                    talk_y -= tad; break;
-        case sSpriteset::NORTHEAST: talk_x += tad; talk_y -= tad; break;
-        case sSpriteset::EAST:      talk_x += tad;                break;
-        case sSpriteset::SOUTHEAST: talk_x += tad; talk_y += tad; break;
-        case sSpriteset::SOUTH:                    talk_y += tad; break;
-        case sSpriteset::SOUTHWEST: talk_x -= tad; talk_y += tad; break;
-        case sSpriteset::WEST:      talk_x -= tad;                break;
-        case sSpriteset::NORTHWEST: talk_x -= tad; talk_y -= tad; break;
-      }
+      // god this is slow...
+      if (m_Persons[m_InputPerson].direction == "north") {
 
-/*
-      switch (m_Persons[m_InputPerson].direction) {
-        case 0:                talk_y -= tad; break;
-        case 1: talk_x += tad; talk_y -= tad; break;
-        case 2: talk_x += tad;                break;
-        case 3: talk_x += tad; talk_y += tad; break;
-        case 4:                talk_y += tad; break;
-        case 5: talk_x -= tad; talk_y += tad; break;
-        case 6: talk_x -= tad;                break;
-        case 7: talk_x -= tad; talk_y -= tad; break;
-      }
+        talk_y -= tad;
 
-/*
-      switch (m_Persons[m_InputPerson].direction) {
-        case 0:                talk_y -= tad; break;
-        case 1: talk_x += tad; talk_y -= tad; break;
-        case 2: talk_x += tad;                break;
-        case 3: talk_x += tad; talk_y += tad; break;
-        case 4:                talk_y += tad; break;
-        case 5: talk_x -= tad; talk_y += tad; break;
-        case 6: talk_x -= tad;                break;
-        case 7: talk_x -= tad; talk_y -= tad; break;
-      }
+      } else if (m_Persons[m_InputPerson].direction == "north_east") {
 
-/*
-      switch (m_Persons[m_InputPerson].direction) {
-        case 0:                talk_y -= tad; break;
-        case 1: talk_x += tad; talk_y -= tad; break;
-        case 2: talk_x += tad;                break;
-        case 3: talk_x += tad; talk_y += tad; break;
-        case 4:                talk_y += tad; break;
-        case 5: talk_x -= tad; talk_y += tad; break;
-        case 6: talk_x -= tad;                break;
-        case 7: talk_x -= tad; talk_y -= tad; break;
+        talk_x += tad;
+        talk_y -= tad;
+
+      } else if (m_Persons[m_InputPerson].direction == "east") {
+
+        talk_x += tad;
+
+      } else if (m_Persons[m_InputPerson].direction == "south_east") {
+
+        talk_x += tad;
+        talk_y += tad;
+
+      } else if (m_Persons[m_InputPerson].direction == "south") {
+
+        talk_y += tad;
+
+      } else if (m_Persons[m_InputPerson].direction == "south_west") {
+
+        talk_x -= tad;
+        talk_y += tad;
+
+      } else if (m_Persons[m_InputPerson].direction == "west") {
+
+        talk_x -= tad;
+
+      } else if (m_Persons[m_InputPerson].direction == "north_west") {
+
+        talk_x -= tad;
+        talk_y -= tad;
+
       }
-*/
 
       // if a person obstructs that spot, call his activation script
       int obs_person;

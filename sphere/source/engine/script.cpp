@@ -46,13 +46,12 @@ const dword SS_BYTEARRAY_MAGIC   = 0x2295027f;
 
 struct SS_OBJECT
 {
-  SS_OBJECT(dword m) : magic(m) { }
   dword magic;  // for object verification
 };
 
 #define BEGIN_SS_OBJECT(name)             \
   struct name : SS_OBJECT {               \
-    name() : SS_OBJECT(name##_MAGIC) { }
+    name() { magic = name##_MAGIC; }
 
 #define END_SS_OBJECT() \
   };
