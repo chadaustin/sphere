@@ -18,8 +18,13 @@ bool
 sFont::Create(int num_characters, int width, int height)
 {
   m_Characters.resize(num_characters);
-  for (int i = 0; i < num_characters; i++)
+  for (int i = 0; i < m_Characters.size(); i++) {
     m_Characters[i].Resize(width, height);
+    if (m_Characters[i].GetWidth() != width
+     || m_Characters[i].GetHeight() != height) {
+      return false;
+    }
+  }
 
   return true;
 }
@@ -76,7 +81,7 @@ sFont::Load(const char* filename, IFileSystem& fs)
 		return false;
 
   // read them
-  for (unsigned i = 0; i < m_Characters.size(); i++)
+  for (unsigned int i = 0; i < m_Characters.size(); i++)
   {
     CHARACTER_HEADER character_header;
     if (file->Read(&character_header, sizeof(character_header)) != sizeof(character_header))
@@ -137,7 +142,7 @@ sFont::Save(const char* filename, IFileSystem& fs) const
     return false;
 
   // write characters
-  for (unsigned i = 0; i < m_Characters.size(); i++)
+  for (unsigned int i = 0; i < m_Characters.size(); i++)
   {
     CHARACTER_HEADER character_header;
     memset(&character_header, 0, sizeof(character_header));
@@ -160,7 +165,7 @@ sFont::GenerateGradient(RGBA top, RGBA bottom)
 {
   // get the max character height
   int max_height = 0;
-  for (unsigned i = 0; i < m_Characters.size(); i++) {
+  for (unsigned int i = 0; i < m_Characters.size(); i++) {
     if (m_Characters[i].GetHeight() > max_height) {
       max_height = m_Characters[i].GetHeight();
     }
@@ -169,7 +174,7 @@ sFont::GenerateGradient(RGBA top, RGBA bottom)
   int max_alpha = max_height - 1;
 
   // generate the gradient for each character
-  for (unsigned i = 0; i < m_Characters.size(); i++) {
+  for (unsigned int i = 0; i < m_Characters.size(); i++) {
     sFontCharacter& c = m_Characters[i];
 
     for (int iy = 0; iy < c.GetHeight(); iy++) {

@@ -502,6 +502,14 @@ SOURCE=..\common\primitives.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\common\resample.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\resample.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\common\rgb.hpp
 # End Source File
 # Begin Source File

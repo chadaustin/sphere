@@ -119,6 +119,9 @@ CFileTypeLibrary::GetFileTypeExtensions(int file_type, bool save, vector<string>
       }
       */
   }
+  if (file_type == 7 && save) {
+    extensions.push_back(m_FileTypes[file_type].sub_types[0].extensions[0]);
+  }
   else {
     for (int i = 0; i < m_FileTypes[file_type].sub_types.size(); i++) {
       for (int j = 0; j < m_FileTypes[file_type].sub_types[i].extensions.size(); j++) {
@@ -158,6 +161,9 @@ CFileTypeLibrary::GetNumSubTypes(int file_type, bool save)
 
     return num_sub_types;
   }
+
+  if (file_type == 7 && save)
+    return 1;
 
   return m_FileTypes[file_type].sub_types.size();
 }

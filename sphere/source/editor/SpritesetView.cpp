@@ -909,10 +909,15 @@ CSpritesetView::OnInsertDirectionFromAnimation()
     m_Spriteset->InsertDirection(current_direction);
     m_Spriteset->SetDirectionName(current_direction, dialog.GetFileName());
 
-    for (int frame_number = 0; !animation->IsEndOfAnimation(); frame_number++) {
+    int max_frames = animation->GetNumFrames() == 0 ? 255 : animation->GetNumFrames();
+
+    for (int frame_number = 0; frame_number < max_frames; frame_number++) {
       int delay = animation->GetDelay();
       
-      if (animation->ReadNextFrame((BGRA*) pixels) == false)
+      if (animation->ReadNextFrame((RGBA*) pixels) == false)
+        break;
+
+      if (animation->IsEndOfAnimation())
         break;
 
       int current_image = m_Spriteset->GetNumImages();
@@ -950,7 +955,145 @@ CSpritesetView::OnInsertDirectionFromAnimation()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static int
+#include <libmng.h>
+
+const char* mng_get_error_message(mng_retcode code) {
+  switch (code) {
+    case (MNG_NOERROR):          return "er.. indicates all's well";    break;
+    case (MNG_OUTOFMEMORY):      return "oops, buy some megabytes!";    break;
+    case (MNG_INVALIDHANDLE):    return "call mng_initialize first";    break;
+    case (MNG_NOCALLBACK):       return "set the callbacks please";     break;
+    case (MNG_UNEXPECTEDEOF):    return "what'd ya do with the data?";  break;
+    case (MNG_ZLIBERROR):        return "zlib burped";                  break;
+    case (MNG_JPEGERROR):        return "jpglib complained";            break;
+    case (MNG_LCMSERROR):        return "little cms stressed out";      break;
+    case (MNG_NOOUTPUTPROFILE):  return "no output-profile defined";    break;
+    case (MNG_NOSRGBPROFILE):    return "no sRGB-profile defined";      break;
+    case (MNG_BUFOVERFLOW):      return "zlib output-buffer overflow";  break;
+    case (MNG_FUNCTIONINVALID):  return "ay, totally inappropriate";    break;
+    case (MNG_OUTPUTERROR):      return "disk full ?";                  break;
+    case (MNG_JPEGBUFTOOSMALL):  return "can't handle buffer overflow"; break;
+    case (MNG_NEEDMOREDATA):     return "I'm hungry, give me more";     break;
+    case (MNG_NEEDTIMERWAIT):    return "Sleep a while then wake me";   break;
+    case (MNG_NEEDSECTIONWAIT):  return "just processed a SEEK";        break;
+    case (MNG_APPIOERROR):       return "application I/O error";        break;
+    case (MNG_APPTIMERERROR):    return "application timing error";     break;
+    case (MNG_APPCMSERROR):      return "application CMS error";        break;
+    case (MNG_APPMISCERROR):     return "application other error";      break;
+    case (MNG_APPTRACEABORT):    return "application aborts on trace";  break;
+    case (MNG_INTERNALERROR):    return "internal inconsistancy";       break;
+    case (MNG_INVALIDSIG):       return "invalid graphics file";        break;
+    case (MNG_INVALIDCRC):       return "crc check failed";             break;
+    case (MNG_INVALIDLENGTH):    return "chunklength mystifies me";     break;
+    case (MNG_SEQUENCEERROR):    return "invalid chunk sequence";       break;
+    case (MNG_CHUNKNOTALLOWED):  return "completely out-of-place";      break;
+    case (MNG_MULTIPLEERROR):    return "only one occurence allowed";   break;
+    case (MNG_PLTEMISSING):      return "indexed-color requires PLTE";  break;
+    case (MNG_IDATMISSING):      return "IHDR-block requires IDAT";     break;
+    case (MNG_CANNOTBEEMPTY):    return "must contain some data";       break;
+    case (MNG_GLOBALLENGTHERR):  return "global data incorrect";        break;
+    case (MNG_INVALIDBITDEPTH):  return "bitdepth out-of-range";        break;
+    case (MNG_INVALIDCOLORTYPE): return "colortype out-of-range";       break;
+    case (MNG_INVALIDCOMPRESS):  return "compression method invalid";   break;
+    case (MNG_INVALIDFILTER):    return "filter method invalid";        break;
+    case (MNG_INVALIDINTERLACE): return "interlace method invalid";     break;
+    case (MNG_NOTENOUGHIDAT):    return "ran out of compressed data";   break;
+    case (MNG_PLTEINDEXERROR):   return "palette-index out-of-range";   break;
+    case (MNG_NULLNOTFOUND):     return "couldn't find null-separator"; break;
+    case (MNG_KEYWORDNULL):      return "keyword cannot be empty";      break;
+    case (MNG_OBJECTUNKNOWN):    return "the object can't be found";    break;
+    case (MNG_OBJECTEXISTS):     return "the object already exists";    break;
+    case (MNG_TOOMUCHIDAT):      return "got too much compressed data"; break;
+    case (MNG_INVSAMPLEDEPTH):   return "sampledepth out-of-range";     break;
+    case (MNG_INVOFFSETSIZE):    return "invalid offset-size";          break;
+    case (MNG_INVENTRYTYPE):     return "invalid entry-type";           break;
+    case (MNG_ENDWITHNULL):      return "may not end with NULL";        break;
+    case (MNG_INVIMAGETYPE):     return "invalid image_type";           break;
+    case (MNG_INVDELTATYPE):     return "invalid delta_type";           break;
+    case (MNG_INVALIDINDEX):     return "index-value invalid";          break;
+    case (MNG_TOOMUCHJDAT):      return "got too much compressed data"; break;
+    case (MNG_JPEGPARMSERR):     return "JHDR/JPEG parms do not match"; break;
+    case (MNG_INVFILLMETHOD):    return "invalid fill_method";          break;
+    case (MNG_OBJNOTCONCRETE):   return "object must be concrete";      break;
+    case (MNG_TARGETNOALPHA):    return "object has no alpha-channel";  break;
+    case (MNG_MNGTOOCOMPLEX):    return "can't handle complexity";      break;
+    case (MNG_UNKNOWNCRITICAL):  return "unknown critical chunk found"; break;
+    case (MNG_UNSUPPORTEDNEED):  return "nEED requirement unsupported"; break;
+    case (MNG_INVALIDDELTA):     return "Delta operation illegal";      break;
+    case (MNG_INVALIDMETHOD):    return "invalid MAGN method";          break;
+    case (MNG_INVALIDCNVSTYLE):  return "can't make anything of this";  break;
+    case (MNG_WRONGCHUNK):       return "accessing the wrong chunk";    break;
+    case (MNG_INVALIDENTRYIX):   return "accessing the wrong entry";    break;
+    case (MNG_NOHEADER):         return "must have had header first";   break;
+    case (MNG_NOCORRCHUNK):      return "can't find parent chunk";      break;
+    case (MNG_NOMHDR):           return "no MNG header available";      break;
+    case (MNG_IMAGETOOLARGE):    return "input-image way too big";      break;
+    case (MNG_NOTANANIMATION):   return "file not a MNG";               break;
+    case (MNG_FRAMENRTOOHIGH):   return "frame-nr out-of-range";        break;
+    case (MNG_LAYERNRTOOHIGH):   return "layer-nr out-of-range";        break;
+    case (MNG_PLAYTIMETOOHIGH):  return "playtime out-of-range";        break;
+    case (MNG_FNNOTIMPLEMENTED): return "function not yet available";   break;
+    case (MNG_IMAGEFROZEN):      return "stopped displaying";           break;
+  }
+  return "Unknown error code";
+}
+
+
+typedef struct userdata {
+  FILE* file;
+  char filename[1024];
+} userdata;
+
+typedef userdata* userdatap;
+
+mng_ptr MNG_DECL mng_alloc (mng_size_t iLen) { return (mng_ptr)calloc (1, iLen); }
+void MNG_DECL mng_free (mng_ptr pPtr, mng_size_t iLen) { if (iLen) free (pPtr); }
+
+mng_bool MNG_DECL
+mng_write_stream (mng_handle mng, mng_ptr buffer, mng_uint32 size, mng_uint32p iWritten)
+{
+	userdatap userdata = (userdatap) mng_get_userdata(mng);
+	*iWritten = fwrite(buffer, 1, size, userdata->file);
+	return MNG_TRUE;
+}
+
+mng_bool MNG_DECL mng_open_stream (mng_handle mng)
+{
+  userdatap userdata = (userdatap) mng_get_userdata(mng);
+  userdata->file = fopen(userdata->filename, "wb+");
+  return (userdata->file) ? MNG_TRUE : MNG_FALSE;
+}
+
+mng_bool MNG_DECL mng_close_stream (mng_handle mng)
+{
+  userdatap userdata = (userdatap) mng_get_userdata(mng);
+  if (userdata->file)
+    fclose(userdata->file);
+	return MNG_TRUE;
+}
+
+void image_add_filter_byte(const RGBA* pixels, const int width, const int height, unsigned char* filtered)
+{
+  int x;
+	int y;
+  unsigned char* ptr = filtered;
+
+  for (y = 0; y < height; y++) {
+    for (x = 0; x < width; x++)
+    {
+      if (x == 0) {
+  			*ptr++ = 0;
+      }
+
+      *ptr++ = pixels[(y * width) + x].red;
+      *ptr++ = pixels[(y * width) + x].green;
+  	  *ptr++ = pixels[(y * width) + x].blue;
+      *ptr++ = pixels[(y * width) + x].alpha;
+		}
+	}
+}
+
+static mng_retcode
 SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& images)
 {
   if (!(images.size() >= 1))
@@ -966,7 +1109,93 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
       return -1;
   }
 
-  return -1;
+
+	mng_handle hMNG = mng_initialize (MNG_NULL, mng_alloc, mng_free, MNG_NULL);
+  userdatap pMydata = (userdatap)calloc (1, sizeof (userdata));
+  strcpy(pMydata->filename, filename);
+  mng_set_userdata(hMNG, pMydata);
+
+  mng_setcb_writedata(hMNG, mng_write_stream);
+	mng_setcb_openstream(hMNG, mng_open_stream);
+	mng_setcb_closestream(hMNG, mng_close_stream);
+
+  mng_retcode iRC = 0;
+
+  iRC = mng_create (hMNG);
+   
+  if (iRC != 0) return iRC;
+
+   iRC = mng_putchunk_mhdr (hMNG, frame_width, frame_height,
+          250,
+          0,
+          0,
+          0,
+          0);
+
+   if (iRC != 0) return iRC;
+
+   iRC = mng_putchunk_text(hMNG,
+                           strlen(MNG_TEXT_SOFTWARE), MNG_TEXT_SOFTWARE,
+                           strlen("Sphere"), "Sphere");
+
+  //iRC = mng_set_srgb(hMNG, true);
+  //if (iRC != 0) return iRC;
+
+  if (iRC != 0) return iRC;
+
+  for (int i = 0; i < images.size(); i++) {
+    const CImage32& image = images[i];
+
+    iRC = mng_putchunk_ihdr (hMNG, frame_width, frame_height,
+			MNG_BITDEPTH_8, MNG_COLORTYPE_RGBA, MNG_COMPRESSION_DEFLATE,
+			MNG_FILTER_NONE, MNG_INTERLACE_NONE);
+
+    if (iRC != 0) return iRC;
+
+    mng_uint32 filter_len = (sizeof(RGBA) * image.GetWidth() * image.GetHeight()) + image.GetHeight();
+    mng_uint32 compressed_len = (sizeof(RGBA) * image.GetWidth() * image.GetHeight()) + image.GetHeight();
+  	           compressed_len += compressed_len / 100 + 12 + 8;	// extra 8 for safety
+
+    unsigned char* buffer = new unsigned char[filter_len];
+    if (buffer == NULL)
+      return MNG_OUTOFMEMORY;
+
+     unsigned char* compressed = new unsigned char[compressed_len];
+     if (compressed == NULL) {
+       delete[] buffer;
+       return MNG_OUTOFMEMORY;
+     }
+
+    image_add_filter_byte(image.GetPixels(), image.GetWidth(), image.GetHeight(), buffer);
+
+    uLong dstLen = compressed_len;
+    uLong srcLen = filter_len;
+    if (compress2(compressed, &dstLen, buffer, srcLen, 9) != Z_OK) {
+      delete[] buffer;
+      delete[] compressed;
+      return -1;
+    }
+
+    iRC = mng_putchunk_idat(hMNG, dstLen, compressed);
+
+    delete[] buffer;
+    delete[] compressed;
+
+    if (iRC != 0) return iRC;
+
+    iRC = mng_putchunk_iend (hMNG);
+    if (iRC != 0) return iRC;  
+  }
+
+  iRC = mng_putchunk_mend (hMNG);
+  if (iRC != 0) return iRC;
+
+  iRC = mng_write(hMNG);
+  if (iRC != 0) return iRC;
+
+  iRC = mng_cleanup(&hMNG);
+
+  return iRC;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -974,7 +1203,6 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
 afx_msg void
 CSpritesetView::OnExportDirectionAsAnimation()
 {
-/*
   CAnimationFileDialog dialog(FDM_SAVE, "Export Direction As Animation");
   if (dialog.DoModal() == IDOK) {
 
@@ -991,7 +1219,6 @@ CSpritesetView::OnExportDirectionAsAnimation()
       MessageBox(mng_get_error_message(iRC), "Error Exporting Direction As Animation", MB_OK);
     }
   }
-*/
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -117,6 +117,7 @@ NSOCKET OpenAddress(const char* name, int port)
   addr.sin_family = AF_INET;
   addr.sin_addr   = address;
   addr.sin_port   = htons(port);
+
   if (connect(s->socket, (sockaddr*)&addr, sizeof(addr)) != 0) {
     if (WSAGetLastError() != WSAEWOULDBLOCK) {
       closesocket(s->socket);
@@ -135,6 +136,7 @@ NSOCKET ListenOnPort(int port)
   NSOCKET s = new NSOCKETimp;
   s->socket = INVALID_SOCKET;
   s->is_connected = false;
+  s->is_listening = false;
 
   // create socket
   s->socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
