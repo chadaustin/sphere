@@ -5,7 +5,7 @@
 #include <audiere.h>
 
 
-extern audiere::AudioDevice* SA_GetAudioDevice();
+audiere::OutputStream* SA_OpenSound(audiere::File* file, bool streaming);
 
 
 #endif

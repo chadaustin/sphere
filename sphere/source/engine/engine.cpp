@@ -524,8 +524,8 @@ CGameEngine::LoadSound(const char* filename, bool streaming)
     return 0;
   }
 
-  audiere::RefPtr<AudiereFile> adrfile(new AudiereFile(file));
-  return audiere::OpenSound(SA_GetAudioDevice(), adrfile.get(), streaming);
+  audiere::FilePtr adrfile(new AudiereFile(file));
+  return SA_OpenSound(adrfile.get(), streaming);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
