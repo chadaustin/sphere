@@ -1,5 +1,5 @@
 <?php
-$DATE = '$Date: 2002-01-03 02:36:16 $';
+$DATE = '$Date: 2002-01-03 03:21:27 $';
 $AUTHOR = '$Author: jcore $';
 $PAGE = 'index.php';
 
@@ -23,7 +23,7 @@ for ($lcv = 0; $lcv < $articles[0]; $lcv++) {
   $datetime = str_replace(" ", "", $datetime);
   $datetime = str_replace(":", "", $datetime);
   $title = <<<TITLE
-<a name="$lcv" /><img src="$SITEROOT/images/icons/{$ICONS[$article->icon]}" alt="{$article->icon}">{$article->date}: <b>{$article->title}</b>
+<a name="$lcv" /><img src="$SITEROOT/images/icons/{$ICONS[$article->icon]}" alt="{$article->icon}" />{$article->date}: <b>{$article->title}</b>
 TITLE;
   $box = new HtmlBox("news", $title);
   $box->puts($article->brief);
