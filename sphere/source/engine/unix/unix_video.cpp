@@ -63,6 +63,13 @@ void ToggleFPS () {
   FPSDisplayed = !FPSDisplayed;
 }
 
+/*
+ \brief change the title of the game to text
+*/
+bool SetWindowTitle(const char* text) {
+  return true;
+}
+
 /*!
   \brief switch the screen resolution
 

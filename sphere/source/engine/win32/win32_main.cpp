@@ -7,14 +7,12 @@
 #include "win32_internal.hpp"
 #include "win32_input.hpp"
 #include "../sphere.hpp"
-#include "../../common/sphere_version.h"
-
+#include "../../common/sphere_version.h" 
 
 LRESULT CALLBACK SphereWindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM lparam);
 
 
 static HWND SphereWindow;
-
 
 ////////////////////////////////////////////////////////////////////////////////
 

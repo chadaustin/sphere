@@ -160,6 +160,12 @@ void ToggleFPS()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+bool SetWindowTitle(const char* text) {
+  return (SetWindowText(SphereWindow, text) == TRUE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 bool InitVDriver(int x, int y)
 {
   bool (__stdcall * InitVideoDriver)(HWND window, int screen_width, int screen_height);

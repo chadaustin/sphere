@@ -47,5 +47,6 @@ extern void  DrawGradientTriangle(int x[3], int y[3], RGBA color[3]);
 extern void  DrawRectangle(int x, int y, int w, int h, RGBA color);
 extern void  DrawGradientRectangle(int x, int y, int w, int h, RGBA color[4]);
 
+extern bool SetWindowTitle(const char* text);
 
 #endif

@@ -157,21 +157,55 @@ std::string DoRunGame(const char* game, const char* parameters) {
   return result;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+Game ReadGameInfo(const char* directory) {
+
+  Game g;
+
+  if (EnterDirectory(directory)) {
+
+    // read the game name
+    CConfigFile file;
+    file.Load("game.sgm");
+    std::string gamename    = file.ReadString("", "name", "");
+    std::string author      = file.ReadString("", "author", "Unknown");
+    std::string description = file.ReadString("", "description", "");
+
+    LeaveDirectory();
+
+    // if the game name is empty, the game doesn't exist
+    if (gamename.length() != 0) {
+      g.name = gamename;
+      g.directory = directory;
+      g.author = author;
+      g.description = description;
+    }
+  }
+
+  return g;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 void RunGame(const char* game, const char* parameters) {
   // first = game directory, second = parameters
-  typedef std::pair<std::string, std::string> Game;
-  std::stack<Game> games;
-  games.push(Game(game, parameters));
+  typedef std::pair<std::string, std::string> GamePair;
+  std::stack<GamePair> games;
+  games.push(GamePair(game, parameters));
 
   while (!games.empty()) {
-    Game g = games.top();
+    GamePair g = games.top();
     games.pop();
+
+    Game t = ReadGameInfo(g.first.c_str());
+    SetWindowTitle((t.name.empty()) ? "Sphere" : t.name.c_str());
 
     std::string result = DoRunGame(g.first.c_str(), g.second.c_str());
     if (!result.empty()) {
       // add the original game back to the stack
       games.push(g);
-      games.push(Game(result, ""));
+      games.push(GamePair(result, ""));
     }
   }
 }
@@ -190,28 +224,13 @@ void GetGameList(std::vector<Game>& games)
   while (!DirectoryListDone(dl)) {
     char directory[520];
     GetNextDirectory(dl, directory);
-
-    if (EnterDirectory(directory)) {
-
-      // read the game name
-      CConfigFile file;
-      file.Load("game.sgm");
-      std::string gamename    = file.ReadString("", "name", "");
-      std::string author      = file.ReadString("", "author", "Unknown");
-      std::string description = file.ReadString("", "description", "");
+    Game g = ReadGameInfo(directory);
 
       // if the game name is empty, the game doesn't exist
-      if (gamename.length() != 0) {
-        Game g;
-        g.name = gamename;
-        g.directory = directory;
-        g.author = author;
-        g.description = description;
-        games.push_back(g);
-      }
-
-      LeaveDirectory();
+    if (g.name.length() != 0) {
+      games.push_back(g);
     }
+
   }
 
   EndDirectoryList(dl);

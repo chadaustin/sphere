@@ -49,4 +49,6 @@ void DrawGradientTriangle(int x[3], int y[3], RGBA color[3]);
 void DrawRectangle(int x, int y, int w, int h, RGBA color);
 void DrawGradientRectangle(int x, int y, int w, int h, RGBA color[4]);
 
+bool SetWindowTitle(const char* text);
+
 #endif /* UNIX_VIDEO_H */

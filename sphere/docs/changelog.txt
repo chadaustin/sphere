@@ -1,3 +1,5 @@
+2003.05.11
+  - engine title now says the game name that you're playing instead of "Sphere"
 
 2003.05.06
   - added ability to view tile obstructions from within editor

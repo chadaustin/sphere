@@ -44,5 +44,6 @@ extern void  (__stdcall * DrawGradientTriangle)(int x[3], int y[3], RGBA color[3
 extern void  (__stdcall * DrawRectangle)(int x, int y, int w, int h, RGBA color);
 extern void  (__stdcall * DrawGradientRectangle)(int x, int y, int w, int h, RGBA color[4]);
 
+extern bool SetWindowTitle(const char* text);
 
 #endif
