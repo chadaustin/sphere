@@ -9,6 +9,7 @@
 #include "render.hpp"
 #include "rendersort.hpp"
 #include "time.hpp"
+#include "PlayerConfig.hpp"
 
 static const int c_MaxSkipFrames = 10;
 
@@ -1535,40 +1536,17 @@ CMapEngine::AttachPlayerInput(const char* name, int player)
 
   m_InputPersons.push_back(person);
 
-  switch (player) {
-    case 0:
-      p.key_up    = KEY_UP;
-      p.key_down  = KEY_DOWN;
-      p.key_left  = KEY_LEFT;
-      p.key_right = KEY_RIGHT;
-    break;
-
-    case 1:
-      p.key_up    = KEY_W;
-      p.key_down  = KEY_S;
-      p.key_left  = KEY_A;
-      p.key_right = KEY_D;
-    break;
-
-    case 2:
-      p.key_up    = KEY_I;
-      p.key_down  = KEY_K;
-      p.key_left  = KEY_J;
-      p.key_right = KEY_L;
-    break;
-
-    case 3:
-      p.key_up    = KEY_G;
-      p.key_down  = KEY_V;
-      p.key_left  = KEY_C;
-      p.key_right = KEY_B;
-    break;
-
-    default:
-      p.key_up    = -1;
-      p.key_down  = -1;
-      p.key_left  = -1;
-      p.key_right = -1;
+  struct __PLAYERCONFIG__* config = GetPlayerConfig(player);
+  if (config) {
+    p.key_up    = config->key_up;
+    p.key_down  = config->key_down;
+    p.key_left  = config->key_left;
+    p.key_right = config->key_right;
+    p.keyboard_input_allowed = config->keyboard_input_allowed;
+    p.joypad_input_allowed   = config->joypad_input_allowed;
+  } else {
+    p.keyboard_input_allowed = false;
+    p.joypad_input_allowed = false;
   }
 
   return true;
@@ -5051,14 +5029,18 @@ CMapEngine::ProcessInput()
       int dy = 0;
       bool moved = false;
 
-      if (!IsKeyBound(m_Persons[person].key_up)    && new_keys[m_Persons[person].key_up])    dy--;
-      if (!IsKeyBound(m_Persons[person].key_right) && new_keys[m_Persons[person].key_right]) dx++;
-      if (!IsKeyBound(m_Persons[person].key_down)  && new_keys[m_Persons[person].key_down])  dy++;
-      if (!IsKeyBound(m_Persons[person].key_left)  && new_keys[m_Persons[person].key_left])  dx--;
+      if (m_Persons[person].keyboard_input_allowed) {
+        if (!IsKeyBound(m_Persons[person].key_up)    && new_keys[m_Persons[person].key_up])    dy--;
+        if (!IsKeyBound(m_Persons[person].key_right) && new_keys[m_Persons[person].key_right]) dx++;
+        if (!IsKeyBound(m_Persons[person].key_down)  && new_keys[m_Persons[person].key_down])  dy++;
+        if (!IsKeyBound(m_Persons[person].key_left)  && new_keys[m_Persons[person].key_left])  dx--;
+      }
 
-      if (m_Persons[person].player_index >= 0 && m_Persons[person].player_index < GetNumJoysticks()) {
-        dx += __round__(GetJoystickX(m_Persons[person].player_index));
-        dy += __round__(GetJoystickY(m_Persons[person].player_index));
+      if (m_Persons[person].joypad_input_allowed) {
+        if (m_Persons[person].player_index >= 0 && m_Persons[person].player_index < GetNumJoysticks()) {
+          dx += __round__(GetJoystickX(m_Persons[person].player_index));
+          dy += __round__(GetJoystickY(m_Persons[person].player_index));
+        }
       }
 
       if (dy < 0) { moved = true; m_Persons[person].commands.push_back(Person::Command(COMMAND_MOVE_NORTH, true)); }

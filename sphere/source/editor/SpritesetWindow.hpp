@@ -93,7 +93,7 @@ private:
 	virtual void SV_ZoomFactorChanged(double zoom);
   virtual void IV_ImageChanged();
   virtual void IV_ColorChanged(RGBA color);
-  virtual void PV_ColorChanged(RGB color);
+  virtual void PV_ColorChanged(int index, RGB color);
   virtual void CV_ColorChanged(int index, RGB color);
   virtual void AV_AlphaChanged(byte alpha);
   virtual void SBV_SpritesetModified();

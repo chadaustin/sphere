@@ -170,6 +170,14 @@ SOURCE=.\map_engine.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\PlayerConfig.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\PlayerConfig.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\render.cpp
 # End Source File
 # Begin Source File

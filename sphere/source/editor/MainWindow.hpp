@@ -174,6 +174,7 @@ private:
   afx_msg void OnHelpSphereFAQ();
   afx_msg void OnHelpAegisKnightsSite();
   afx_msg void OnHelpFliksSite();
+  afx_msg void OnHelpSphericalSite();
   afx_msg void OnHelpLocalDocumentation();
   afx_msg void OnHelpLocalDocFunctions();
   afx_msg void OnHelpLocalChangelog();

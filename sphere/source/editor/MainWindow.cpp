@@ -209,6 +209,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_HELP_SPHEREFAQ,          OnHelpSphereFAQ)
   ON_COMMAND(ID_HELP_AEGISKNIGHTSSITE,   OnHelpAegisKnightsSite)
   ON_COMMAND(ID_HELP_FLIKSSITE,          OnHelpFliksSite)
+  ON_COMMAND(ID_HELP_SPHERICALSITE,      OnHelpSphericalSite)
   ON_COMMAND(ID_HELP_LOCALDOCUMENTATION, OnHelpLocalDocumentation)
   ON_COMMAND(ID_HELP_LOCAL_DOC_FUNCTIONS, OnHelpLocalDocFunctions)
   ON_COMMAND(ID_HELP_LOCAL_CHANGELOG,     OnHelpLocalChangelog)
@@ -3127,6 +3128,12 @@ afx_msg void
 CMainWindow::OnHelpFliksSite()
 {
   PromptURL("http://sphere.sourceforge.net/flik/docs", "Open Flik's Tutorial Site");
+}
+
+afx_msg void
+CMainWindow::OnHelpSphericalSite()
+{
+  PromptURL("http://www.spheredev.net/forums", "Open Spherical Site");
 }
 
 ////////////////////////////////////////////////////////////////////////////////

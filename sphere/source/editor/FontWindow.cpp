@@ -682,7 +682,7 @@ CFontWindow::IV_ColorChanged(RGBA color)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CFontWindow::PV_ColorChanged(RGB color)
+CFontWindow::PV_ColorChanged(int index, RGB color)
 {
   m_CurrentColor.red   = color.red;
   m_CurrentColor.green = color.green;
@@ -690,8 +690,8 @@ CFontWindow::PV_ColorChanged(RGB color)
 
   RGB rgb = { color.red, color.green, color.blue };
 
-  m_ImageView.SetColor(0, m_CurrentColor);
-  m_ColorView.SetColor(0, rgb);
+  m_ImageView.SetColor(index, m_CurrentColor);
+  m_ColorView.SetColor(index, rgb);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

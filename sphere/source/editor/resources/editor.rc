@@ -167,6 +167,7 @@ BEGIN
             MENUITEM "Frequently Asked &Questions", ID_HELP_SPHEREFAQ
             MENUITEM "&AegisKnight's Site",         ID_HELP_AEGISKNIGHTSSITE
             MENUITEM "&Flik's Web Site",            ID_HELP_FLIKSSITE
+            MENUITEM "Spherical Web Site",          ID_HELP_SPHERICALSITE
         END
         MENUITEM SEPARATOR
         MENUITEM "Local &Documentation",        ID_HELP_LOCALDOCUMENTATION

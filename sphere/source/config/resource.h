@@ -15,7 +15,9 @@
 #define IDC_DRIVERLIST                  1033
 #define IDC_CHECK1                      1044
 #define IDC_ALLOW_NETWORKING            1044
+#define IDC_KEYBOARD_INPUT              1044
 #define IDC_CONFIGURE_DRIVER            1045
+#define IDC_JOYPAD_INPUT                1045
 #define IDC_SOUND_AUTODETECT            1054
 #define IDC_SOUND_ON                    1055
 #define IDC_SOUND_OFF                   1056

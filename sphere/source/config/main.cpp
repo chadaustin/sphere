@@ -464,76 +464,64 @@ BOOL CALLBACK NetworkDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM
 
 BOOL CALLBACK InputDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
-  struct PlayerConfig {
-    char KEY_UP[25];
-    char KEY_DOWN[25];
-    char KEY_LEFT[25];
-    char KEY_RIGHT[25];
-  };
-
-  static struct PlayerConfig PlayerConfigurations[4];
   static int current_player = 0;
 
   struct Local {
-
-    static void Init(PlayerConfig configurations[4])
-    {
-      strcpy(configurations[0].KEY_UP,    "KEY_UP");
-      strcpy(configurations[0].KEY_DOWN,  "KEY_DOWN");
-      strcpy(configurations[0].KEY_LEFT,  "KEY_LEFT");
-      strcpy(configurations[0].KEY_RIGHT, "KEY_RIGHT");
-
-      strcpy(configurations[1].KEY_UP,    "KEY_W");
-      strcpy(configurations[1].KEY_DOWN,  "KEY_S");
-      strcpy(configurations[1].KEY_LEFT,  "KEY_A");
-      strcpy(configurations[1].KEY_RIGHT, "KEY_F");
-
-      strcpy(configurations[2].KEY_UP,    "KEY_I");
-      strcpy(configurations[2].KEY_DOWN,  "KEY_K");
-      strcpy(configurations[2].KEY_LEFT,  "KEY_J");
-      strcpy(configurations[2].KEY_RIGHT, "KEY_L");
-
-      strcpy(configurations[3].KEY_UP,    "KEY_8");
-      strcpy(configurations[3].KEY_DOWN,  "KEY_5");
-      strcpy(configurations[3].KEY_LEFT,  "KEY_4");
-      strcpy(configurations[3].KEY_RIGHT, "KEY_6");
-    }
   
-    static const char* GetUpKey(PlayerConfig configurations[4], int player)
+    static const char* GetUpKey(struct SPHERECONFIG* config, int player)
     {
       if (player >= 0 && player < 4) {
-        return configurations[player].KEY_UP;
+        return config->player_configurations[player].key_up_str;
       }
 
       return "";
     }
 
-    static const char* GetDownKey(PlayerConfig configurations[4], int player)
+    static const char* GetDownKey(struct SPHERECONFIG* config, int player)
     {
       if (player >= 0 && player < 4) {
-        return configurations[player].KEY_DOWN;
+        return config->player_configurations[player].key_down_str;
       }
 
       return "";
     }
 
-    static const char* GetLeftKey(PlayerConfig configurations[4], int player)
+    static const char* GetLeftKey(struct SPHERECONFIG* config, int player)
     {
       if (player >= 0 && player < 4) {
-        return configurations[player].KEY_LEFT;
+        return config->player_configurations[player].key_left_str;
       }
 
       return "";
     }
 
-    static const char* GetRightKey(PlayerConfig configurations[4], int player)
+    static const char* GetRightKey(struct SPHERECONFIG* config, int player)
     {
       if (player >= 0 && player < 4) {
-        return configurations[player].KEY_RIGHT;
+        return config->player_configurations[player].key_right_str;
       }
 
       return "";
     }
+
+
+    static bool IsKeyboardInputAllowed(struct SPHERECONFIG* config, int player)
+    {
+      if (player >= 0 && player < 4) {
+        return config->player_configurations[player].keyboard_input_allowed;
+      }
+
+      return false;
+    }
+
+    static bool IsJoypadInputAllowed(struct SPHERECONFIG* config, int player)
+    {
+      if (player >= 0 && player < 4) {
+        return config->player_configurations[player].joypad_input_allowed;
+      }
+
+      return false;
+    } 
   };
 
       const char* keys[] = {
@@ -596,49 +584,77 @@ BOOL CALLBACK InputDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
   {
     case WM_INITDIALOG:
     {
-      Local::Init(PlayerConfigurations);
-
       // add the players
       for (unsigned int i = 0; i < 4; i++) {
-        char player_index[100];
+        char player_index[100] = {0};
         sprintf (player_index, "%d", (int) i);
-        SendDlgItemMessage(window, IDC_PLAYER_INDEX, CB_ADDSTRING, 0, (LPARAM)player_index);
-        SendDlgItemMessage(window, IDC_PLAYER_INDEX, CB_SETCURSEL, 0, 0 );
+        SendDlgItemMessage(window, IDC_PLAYER_INDEX, CB_ADDSTRING, 0, (LPARAM)player_index);       
       }
+
+      SendDlgItemMessage(window, IDC_PLAYER_INDEX, CB_SETCURSEL, 0, 0);
 
       for (unsigned int i = 0; i < sizeof(keys) / sizeof(*keys); i++) {
         SendDlgItemMessage(window, IDC_KEYCOMBO_UP,    CB_ADDSTRING, 0, (LPARAM)keys[i]);
         SendDlgItemMessage(window, IDC_KEYCOMBO_DOWN,  CB_ADDSTRING, 0, (LPARAM)keys[i]);
         SendDlgItemMessage(window, IDC_KEYCOMBO_LEFT,  CB_ADDSTRING, 0, (LPARAM)keys[i]);
         SendDlgItemMessage(window, IDC_KEYCOMBO_RIGHT, CB_ADDSTRING, 0, (LPARAM)keys[i]);
+      } 
+
+      if (1) {
+        int player = 0;
+        SendDlgItemMessage(window, IDC_KEYCOMBO_UP,    CB_SELECTSTRING, 0, (LPARAM)Local::GetUpKey(&Config, player));
+        SendDlgItemMessage(window, IDC_KEYCOMBO_DOWN,  CB_SELECTSTRING, 0, (LPARAM)Local::GetDownKey(&Config, player));
+        SendDlgItemMessage(window, IDC_KEYCOMBO_LEFT,  CB_SELECTSTRING, 0, (LPARAM)Local::GetLeftKey(&Config, player));
+        SendDlgItemMessage(window, IDC_KEYCOMBO_RIGHT, CB_SELECTSTRING, 0, (LPARAM)Local::GetRightKey(&Config, player));
+        CheckDlgButton(window, IDC_KEYBOARD_INPUT, (Config.player_configurations[player].keyboard_input_allowed ? BST_CHECKED : BST_UNCHECKED));
+        CheckDlgButton(window, IDC_JOYPAD_INPUT,   (Config.player_configurations[player].joypad_input_allowed   ? BST_CHECKED : BST_UNCHECKED));
       }
-   
-      SendDlgItemMessage(window, IDC_KEYCOMBO_UP,    CB_SELECTSTRING, 0, (LPARAM)Local::GetUpKey(PlayerConfigurations, 0));
-      SendDlgItemMessage(window, IDC_KEYCOMBO_DOWN,  CB_SELECTSTRING, 0, (LPARAM)Local::GetDownKey(PlayerConfigurations, 0));
-      SendDlgItemMessage(window, IDC_KEYCOMBO_LEFT,  CB_SELECTSTRING, 0, (LPARAM)Local::GetLeftKey(PlayerConfigurations, 0));
-      SendDlgItemMessage(window, IDC_KEYCOMBO_RIGHT, CB_SELECTSTRING, 0, (LPARAM)Local::GetRightKey(PlayerConfigurations, 0));
 
       SetFocus(GetDlgItem(window, IDC_PLAYER_INDEX));
       return FALSE;
     }
 
+    case WM_NOTIFY:
+    {
+      PSHNOTIFY* psn = (PSHNOTIFY*)lparam;
+      if (psn->hdr.code == UINT(PSN_APPLY))
+      {
+        strcpy(Config.player_configurations[current_player].key_up_str,     keys[SendDlgItemMessage(window, IDC_KEYCOMBO_UP,    CB_GETCURSEL, 0, 0)]);
+        strcpy(Config.player_configurations[current_player].key_down_str,   keys[SendDlgItemMessage(window, IDC_KEYCOMBO_DOWN,  CB_GETCURSEL, 0, 0)]);
+        strcpy(Config.player_configurations[current_player].key_left_str,   keys[SendDlgItemMessage(window, IDC_KEYCOMBO_LEFT,  CB_GETCURSEL, 0, 0)]);
+        strcpy(Config.player_configurations[current_player].key_right_str,  keys[SendDlgItemMessage(window, IDC_KEYCOMBO_RIGHT, CB_GETCURSEL, 0, 0)]);
+        Config.player_configurations[current_player].keyboard_input_allowed = IsDlgButtonChecked(window, IDC_KEYBOARD_INPUT) ? true : false;
+        Config.player_configurations[current_player].joypad_input_allowed   = IsDlgButtonChecked(window, IDC_JOYPAD_INPUT)   ? true : false;
+        return TRUE;
+      }
+
+      return FALSE;
+    }
+    break;
+
     case WM_COMMAND:
+    {
      if (LOWORD(wparam) == IDC_PLAYER_INDEX && HIWORD(wparam) == CBN_SELCHANGE)
      {
-       strcpy(PlayerConfigurations[current_player].KEY_UP,     keys[SendDlgItemMessage(window, IDC_KEYCOMBO_UP,    CB_GETCURSEL, 0, 0)]);
-       strcpy(PlayerConfigurations[current_player].KEY_DOWN,   keys[SendDlgItemMessage(window, IDC_KEYCOMBO_DOWN,  CB_GETCURSEL, 0, 0)]);
-       strcpy(PlayerConfigurations[current_player].KEY_LEFT,   keys[SendDlgItemMessage(window, IDC_KEYCOMBO_LEFT,  CB_GETCURSEL, 0, 0)]);
-       strcpy(PlayerConfigurations[current_player].KEY_RIGHT,  keys[SendDlgItemMessage(window, IDC_KEYCOMBO_RIGHT, CB_GETCURSEL, 0, 0)]);
+       strcpy(Config.player_configurations[current_player].key_up_str,     keys[SendDlgItemMessage(window, IDC_KEYCOMBO_UP,    CB_GETCURSEL, 0, 0)]);
+       strcpy(Config.player_configurations[current_player].key_down_str,   keys[SendDlgItemMessage(window, IDC_KEYCOMBO_DOWN,  CB_GETCURSEL, 0, 0)]);
+       strcpy(Config.player_configurations[current_player].key_left_str,   keys[SendDlgItemMessage(window, IDC_KEYCOMBO_LEFT,  CB_GETCURSEL, 0, 0)]);
+       strcpy(Config.player_configurations[current_player].key_right_str,  keys[SendDlgItemMessage(window, IDC_KEYCOMBO_RIGHT, CB_GETCURSEL, 0, 0)]);
+       Config.player_configurations[current_player].keyboard_input_allowed = IsDlgButtonChecked(window, IDC_KEYBOARD_INPUT) ? true : false;
+       Config.player_configurations[current_player].joypad_input_allowed   = IsDlgButtonChecked(window, IDC_JOYPAD_INPUT)   ? true : false;
 
        int player = SendDlgItemMessage(window, IDC_PLAYER_INDEX, CB_GETCURSEL, 0, 0);
-       SendDlgItemMessage(window, IDC_KEYCOMBO_UP,    CB_SELECTSTRING, 0, (LPARAM)Local::GetUpKey(PlayerConfigurations, player));
-       SendDlgItemMessage(window, IDC_KEYCOMBO_DOWN,  CB_SELECTSTRING, 0, (LPARAM)Local::GetDownKey(PlayerConfigurations, player));
-       SendDlgItemMessage(window, IDC_KEYCOMBO_LEFT,  CB_SELECTSTRING, 0, (LPARAM)Local::GetLeftKey(PlayerConfigurations, player));
-       SendDlgItemMessage(window, IDC_KEYCOMBO_RIGHT, CB_SELECTSTRING, 0, (LPARAM)Local::GetRightKey(PlayerConfigurations, player));
+       SendDlgItemMessage(window, IDC_KEYCOMBO_UP,    CB_SELECTSTRING, 0, (LPARAM)Local::GetUpKey(&Config, player));
+       SendDlgItemMessage(window, IDC_KEYCOMBO_DOWN,  CB_SELECTSTRING, 0, (LPARAM)Local::GetDownKey(&Config, player));
+       SendDlgItemMessage(window, IDC_KEYCOMBO_LEFT,  CB_SELECTSTRING, 0, (LPARAM)Local::GetLeftKey(&Config, player));
+       SendDlgItemMessage(window, IDC_KEYCOMBO_RIGHT, CB_SELECTSTRING, 0, (LPARAM)Local::GetRightKey(&Config, player));
+       CheckDlgButton(window, IDC_KEYBOARD_INPUT, (Config.player_configurations[player].keyboard_input_allowed ? BST_CHECKED : BST_UNCHECKED));
+       CheckDlgButton(window, IDC_JOYPAD_INPUT,   (Config.player_configurations[player].joypad_input_allowed   ? BST_CHECKED : BST_UNCHECKED));
        current_player = player;
      }
 
      return FALSE;
+    }
     break;
 
   }

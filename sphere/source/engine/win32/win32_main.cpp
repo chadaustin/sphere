@@ -7,6 +7,7 @@
 #include "win32_internal.hpp"
 #include "win32_input.hpp"
 #include "../sphere.hpp"
+#include "../PlayerConfig.hpp"
 #include "../../common/sphere_version.h" 
 #include "resource.h"
 
@@ -25,6 +26,75 @@ static void LoadSphereConfiguration(SPHERECONFIG* config)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+int KeyStringToKeyCode(char* key_string)
+{
+  if (strlen(key_string) >= strlen("KEY_X")) {
+    if (strlen(key_string) == strlen("KEY_X")) {
+      switch (key_string[strlen("KEY_")]) {
+        case 'A': return KEY_A;
+        case 'B': return KEY_B;
+        case 'C': return KEY_C;
+        case 'D': return KEY_D;
+        case 'E': return KEY_E;
+        case 'F': return KEY_F;
+        case 'G': return KEY_G;
+        case 'H': return KEY_H;
+        case 'I': return KEY_I;
+        case 'J': return KEY_J;
+        case 'K': return KEY_K;
+        case 'L': return KEY_L;
+        case 'M': return KEY_M;
+        case 'N': return KEY_N;
+        case 'O': return KEY_O;
+        case 'P': return KEY_P;
+        case 'Q': return KEY_Q;
+        case 'R': return KEY_R;
+        case 'S': return KEY_S;
+        case 'T': return KEY_T;
+        case 'U': return KEY_U;
+        case 'V': return KEY_V;
+        case 'W': return KEY_W;
+        case 'X': return KEY_X;
+        case 'Y': return KEY_Y;
+        case 'Z': return KEY_Z;
+        case '0': return KEY_0;
+        case '1': return KEY_1;
+        case '2': return KEY_2;
+        case '3': return KEY_3;
+        case '4': return KEY_4;
+        case '5': return KEY_5;
+        case '6': return KEY_6;
+        case '7': return KEY_7;
+        case '8': return KEY_8;
+        case '9': return KEY_9;
+      }
+
+      return -1;
+    }
+
+    if (strcmp(key_string, "KEY_UP")  == 0) return KEY_UP;
+    if (strcmp(key_string, "KEY_DOWN")  == 0) return KEY_DOWN;
+    if (strcmp(key_string, "KEY_LEFT")  == 0) return KEY_LEFT;
+    if (strcmp(key_string, "KEY_RIGHT")  == 0) return KEY_RIGHT;
+
+    if (strcmp(key_string, "KEY_TILDE")  == 0) return KEY_TILDE;
+    if (strcmp(key_string, "KEY_MINUS")  == 0) return KEY_MINUS;
+    if (strcmp(key_string, "KEY_EQUALS") == 0) return KEY_EQUALS;
+    if (strcmp(key_string, "KEY_SPACE")  == 0) return KEY_SPACE;
+    if (strcmp(key_string, "KEY_OPENBRACE")  == 0) return KEY_OPENBRACE;
+    if (strcmp(key_string, "KEY_CLOSEBRACE") == 0) return KEY_CLOSEBRACE;
+    if (strcmp(key_string, "KEY_SEMICOLON")  == 0) return KEY_SEMICOLON;
+    if (strcmp(key_string, "KEY_COMMA")  == 0) return KEY_COMMA;
+    if (strcmp(key_string, "KEY_APOSTROPHE") == 0) return KEY_APOSTROPHE;
+    if (strcmp(key_string, "KEY_PERIOD") == 0) return KEY_PERIOD;
+    if (strcmp(key_string, "KEY_SLASH")  == 0) return KEY_SLASH;
+    if (strcmp(key_string, "KEY_BACKSLASH") == 0) return KEY_BACKSLASH;
+
+  }
+
+  return -1;
+}
+
 int __cdecl main(int argc, const char** argv)
 {
   // seed the random number generator
@@ -42,6 +112,7 @@ int __cdecl main(int argc, const char** argv)
   // load it from a file
   SPHERECONFIG Config;
   LoadSphereConfiguration(&Config);
+
   if (Config.videodriver.length() == 0) {
 
     // tell user
@@ -69,6 +140,16 @@ int __cdecl main(int argc, const char** argv)
       MessageBox(NULL, "Could not load configuration", "Sphere", MB_OK);
       return 0;
     }
+  }
+
+  for (int i = 0; i < 4; i++) {
+    SetPlayerConfig(i,
+      KeyStringToKeyCode(Config.player_configurations[i].key_up_str),
+      KeyStringToKeyCode(Config.player_configurations[i].key_down_str),
+      KeyStringToKeyCode(Config.player_configurations[i].key_left_str),
+      KeyStringToKeyCode(Config.player_configurations[i].key_right_str),
+      Config.player_configurations[i].keyboard_input_allowed,
+      Config.player_configurations[i].joypad_input_allowed);
   }
 
   // register the window class

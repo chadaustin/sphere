@@ -12,6 +12,52 @@ const char* DEFAULT_RENDER      = "";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static
+void InitializePlayerConfig(PLAYERCONFIG* config, int player_index)
+{
+  if (!config) return;
+
+  switch (player_index) {
+    case 0:
+      strcpy(config->key_up_str,    "KEY_UP");
+      strcpy(config->key_down_str,  "KEY_DOWN");
+      strcpy(config->key_left_str,  "KEY_LEFT");
+      strcpy(config->key_right_str, "KEY_RIGHT");
+      config->keyboard_input_allowed = true;
+      config->joypad_input_allowed = true;
+    break;
+
+    case 1:
+      strcpy(config->key_up_str,"KEY_W");
+      strcpy(config->key_down_str,  "KEY_S");
+      strcpy(config->key_left_str,  "KEY_A");
+      strcpy(config->key_right_str, "KEY_F");
+      config->keyboard_input_allowed = true;
+      config->joypad_input_allowed = true;
+    break;
+
+    case 2:
+      strcpy(config->key_up_str,"KEY_I");
+      strcpy(config->key_down_str,  "KEY_K");
+      strcpy(config->key_left_str,  "KEY_J");
+      strcpy(config->key_right_str, "KEY_L");
+      config->keyboard_input_allowed = true;
+      config->joypad_input_allowed = true;
+    break;
+
+    case 3:
+      strcpy(config->key_up_str,"KEY_8");
+      strcpy(config->key_down_str,  "KEY_5");
+      strcpy(config->key_left_str,  "KEY_4");
+      strcpy(config->key_right_str, "KEY_6");
+      config->keyboard_input_allowed = true;
+      config->joypad_input_allowed = true;
+    break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 bool LoadSphereConfig(SPHERECONFIG* config, const char* filename)
 {
   CConfigFile file;

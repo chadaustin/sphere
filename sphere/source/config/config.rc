@@ -67,7 +67,7 @@ BEGIN
     LTEXT           "Down Key",IDC_STATIC,39,52,34,8
     LTEXT           "Right Key",IDC_STATIC,39,86,32,8
     LTEXT           "Note that these settings may be completely ignored by the game itself.",
-                    IDC_STATIC,28,142,143,19
+                    IDC_STATIC,27,145,143,19
     LTEXT           "Player Index",IDC_STATIC,38,19,41,11
     COMBOBOX        IDC_PLAYER_INDEX,83,17,62,76,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
@@ -79,6 +79,12 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_KEYCOMBO_RIGHT,83,85,62,76,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Keyboard Input Allowed?",IDC_KEYBOARD_INPUT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,41,115,112,13
+    CONTROL         "Joypad Input Allowed?",IDC_JOYPAD_INPUT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,41,129,112,13
+    LTEXT           "Allow player to be controlled by...",IDC_STATIC,41,106,
+                    123,11
 END
 
 IDD_NETWORK_PAGE DIALOG DISCARDABLE  0, 0, 212, 181

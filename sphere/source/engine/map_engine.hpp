@@ -271,6 +271,8 @@ private:
     IEngine::script script;
   };
 
+  static struct __PLAYERCONFIG__ player_configurations[4];
+
   struct Person {
     bool destroy_with_map;
 
@@ -333,6 +335,8 @@ private:
     int key_up;
     int key_left;
     int key_right;
+    bool keyboard_input_allowed;
+    bool joypad_input_allowed;
 
     bool on_trigger;
     int last_trigger;
