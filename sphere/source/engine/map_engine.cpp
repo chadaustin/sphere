@@ -1503,6 +1503,9 @@ CMapEngine::ClearPersonCommands(const char* name)
     return true;
   }
 
+  // process any current key input
+  ProcessInput();
+
   // clear queue
   m_Persons[person].commands.clear();
   return true;
