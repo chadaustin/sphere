@@ -574,6 +574,9 @@ log_object.endBlock()
   font_object.getStringWidth(string)
     - returns the width of a given string, in pixels
 
+  font.object.getStringHeight(string, width)
+    - returns the height of the string as if it was drawn by drawTextBox
+
 
   *** window styles ***
   GetSystemWindowStyle()

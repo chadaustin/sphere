@@ -2976,12 +2976,13 @@ CScript::CreateFontObject(JSContext* cx, SFONT* font, bool destroy)
 
   // assign methods to the object
   static JSFunctionSpec fs[] = {
-    { "setColorMask",   ssFontSetColorMask,   1, 0, 0 },
-    { "drawText",       ssFontDrawText,       3, 0, 0 },
-    { "drawZoomedText", ssFontDrawZoomedText, 4, 0, 0 },
-    { "drawTextBox",    ssFontDrawTextBox,    6, 0, 0 },
-    { "getHeight",      ssFontGetHeight,      0, 0, 0 },
-    { "getStringWidth", ssFontGetStringWidth, 1, 0, 0 },
+    { "setColorMask",    ssFontSetColorMask,    1, 0, 0 },
+    { "drawText",        ssFontDrawText,        3, 0, 0 },
+    { "drawZoomedText",  ssFontDrawZoomedText,  4, 0, 0 },
+    { "drawTextBox",     ssFontDrawTextBox,     6, 0, 0 },
+    { "getHeight",       ssFontGetHeight,       0, 0, 0 },
+    { "getStringWidth",  ssFontGetStringWidth,  1, 0, 0 },
+    { "getStringHeight", ssFontGetStringHeight, 2, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -3060,6 +3061,14 @@ end_method()
 begin_method(SS_FONT, ssFontGetStringWidth, 1)
   arg_str(text);
   return_int(object->font->GetStringWidth(text));
+end_method()
+
+///////////////////////////////////////
+
+begin_method(SS_FONT, ssFontGetStringHeight, 2)
+  arg_str(text);
+  arg_int(width);
+  return_int(object->font->GetStringHeight(text, width));
 end_method()
 
 ///////////////////////////////////////

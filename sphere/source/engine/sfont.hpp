@@ -22,6 +22,7 @@ public:
 
   int GetMaxHeight() const;
   int GetStringWidth(const char* string) const;
+  int GetStringHeight(const char* string, int width) const;
 
 private:
   bool Initialize();

@@ -140,6 +140,7 @@ private:
   declare_method(ssFontDrawTextBox);
   declare_method(ssFontGetHeight);
   declare_method(ssFontGetStringWidth);
+  declare_method(ssFontGetStringHeight);
 
   // window styles
   declare_constructor2(CreateWindowStyleObject, SWINDOWSTYLE* ws, bool destroy);
