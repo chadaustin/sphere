@@ -21,7 +21,7 @@ CWindowStylePreviewPalette::CWindowStylePreviewPalette(CDocumentWindow* owner, s
 , m_ZoomFactor(1)
 , m_BlitImage(NULL)
 {
-  OnZoom(2);
+  OnZoom(m_ZoomFactor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -150,7 +150,7 @@ CWindowStylePreviewPalette::OnPaint()
 	RECT ClientRect;
 	GetClientRect(&ClientRect);
 
-  if (!m_BlitImage || m_BlitImage->GetPixels()) {
+  if (!m_BlitImage || m_BlitImage->GetPixels() == NULL) {
     // draw black rectangle
     dc.FillRect(&ClientRect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
     return;

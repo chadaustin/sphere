@@ -69,6 +69,10 @@ CWindowStyleWindow::CWindowStyleWindow(const char* window_style)
 , m_ZoomFactor(4)
 , m_HighlightPen(new CPen(PS_SOLID, 1, 0xFF00FF))
 {
+  // allocate DIB sections and empty them
+  for (int i = 0; i < 9; i++)
+    m_DIBs[i] = NULL;
+
   if (window_style) {
 
     // load the window style
@@ -77,10 +81,6 @@ CWindowStyleWindow::CWindowStyleWindow(const char* window_style)
       MessageBox("Could not load window style.  Creating new.");
       m_WindowStyle.Create(16, 16);
     }
-  
-    // allocate DIB sections and empty them
-    for (int i = 0; i < 9; i++)
-      m_DIBs[i] = NULL;
     UpdateDIBSections();
 
     SetSaved(true);
@@ -89,15 +89,10 @@ CWindowStyleWindow::CWindowStyleWindow(const char* window_style)
   } else {
 
     m_WindowStyle.Create(16, 16);
-
-    // allocate DIB sections and empty them
-    for (int i = 0; i < 9; i++)
-      m_DIBs[i] = NULL;
     UpdateDIBSections();
 
     SetSaved(false);
     SetModified(false);
-
   }
 
   m_DocumentType = WA_WINDOWSTYLE;
@@ -141,8 +136,9 @@ CWindowStyleWindow::~CWindowStyleWindow()
   if (m_WindowStylePreviewPalette)
 		m_WindowStylePreviewPalette->Destroy();
 
-  m_HighlightPen->DeleteObject();
+  if (m_HighlightPen) m_HighlightPen->DeleteObject();
   delete m_HighlightPen;
+  m_HighlightPen = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -302,7 +298,7 @@ CWindowStyleWindow::DrawCorner(CDC& dc, int bitmap, int x, int y, int w, int h)
   region.DeleteObject();
 
   // if it's the selected bitmap, put a pink rectangle around it
-  if (bitmap == m_SelectedBitmap)
+  if (m_HighlightPen && bitmap == m_SelectedBitmap)
   {
     dc.SaveDC();
     dc.SelectObject(m_HighlightPen);
@@ -368,7 +364,7 @@ CWindowStyleWindow::DrawEdgeH(CDC& dc, int bitmap, int x, int y, int x2, int h)
   region.DeleteObject();
 
   // if bitmap is selected, draw pink selection square
-  if (bitmap == m_SelectedBitmap)
+  if (m_HighlightPen && bitmap == m_SelectedBitmap)
   {
     dc.SaveDC();
     dc.SelectObject(m_HighlightPen);
@@ -430,7 +426,7 @@ CWindowStyleWindow::DrawEdgeV(CDC& dc, int bitmap, int x, int y, int y2, int w)
   region.DeleteObject();
 
   // if bitmap is selected, draw pink selection square
-  if (bitmap == m_SelectedBitmap)
+  if (m_HighlightPen && bitmap == m_SelectedBitmap)
   {
     dc.SaveDC();
     dc.SelectObject(m_HighlightPen);
