@@ -39,65 +39,70 @@ namespace Configuration {
 
 
     inline unsigned FromHex(char c) {
-        if (c >= 'A' && c <= 'F') {
-            return c - 'A' + 10;
-        }
+      if (c >= 'A' && c <= 'F') {
+        return (c - 'A' + 10);
+      }
 
-        if (c >= 'a' && c <= 'f') {
-            return c - 'a' + 10;
-        }
+      if (c >= 'a' && c <= 'f') {
+        return (c - 'a' + 10);
+      }
 
-        if (c >= '0' && c <= '9') {
-          return c - '0';
-        }
+      if (c >= '0' && c <= '9') {
+        return (c - '0');
+      }
 
-        return 0;
+      return 0;
     }
 
 
     // Retrieves a configuration setting
     // Usage:  var = Configuration::Get(KEY);
     template<typename T>
-    T::type Get(T key)
+    T::type Get(T /*key*/)
     {
-        char str[8193];
-        GetPrivateProfileString("editor", T::keyname, "", str, 8193, ConfigurationFile.c_str());
+      char str[8193];
+      GetPrivateProfileString("editor", T::keyname, "", str, 8193, ConfigurationFile.c_str());
 
-        DWORD size = GetTypeSize<T::type>(T::type());
-        if (strlen(str) < size * 2) {
-            return T::default_value;
-        }
+      int size = GetTypeSize<T::type>(T::type());
+      if (int(strlen(str)) < size * 2) {
+        return T::default_value;
+      }
 
-        BYTE* data = new BYTE[size];
-        for (int i = 0; i < size; i++) {
-            data[i] = FromHex(str[i * 2]) * 16 + FromHex(str[i * 2 + 1]);
-        }
+      BYTE* data = new BYTE[size];
+      if (!data)
+        return T::default_value;
 
-        T::type t = FromRaw<T::type>(data, T::type());
-        delete[] data;
-        return t;
+      for (int i = 0; i < size; i++) {
+        data[i] = (FromHex(str[i * 2]) * 16) + FromHex(str[(i * 2) + 1]);
+      }
+
+      T::type t = FromRaw<T::type>(data, T::type());
+      delete[] data;
+
+      return t;
     }
 
     
     inline char ToHex(unsigned i) {
-        return (i >= 10 ? ('A' + i - 10) : ('0' + i));
+      return (i >= 10 ? (char)('A' + i - 10) : (char)('0' + i));
     }
 
 
     // Sets a configuration setting
     // Usage:  Configuration::Set(KEY, value);
     template<typename T>
-    void Set(T key, T::type val)
+    void Set(T /*key*/, T::type val)
     {
-        std::string hex;
-        BYTE* data = (BYTE*)ToRaw(val);
-        for (int i = 0; i < GetTypeSize<T::type>(T::type()); i++) {
-            hex += ToHex(data[i] >> 4);
-            hex += ToHex(data[i] & 0x0F);
-        }
-        delete[] data;
- 
-        WritePrivateProfileString("editor", T::keyname, hex.c_str(), ConfigurationFile.c_str());
+      std::string hex;
+      BYTE* data = (BYTE*)ToRaw(val);
+      if (!data) return;
+      for (int i = 0; i < GetTypeSize<T::type>(T::type()); i++) {
+        hex += ToHex(data[i] >> 4);
+        hex += ToHex(data[i] & 0x0F);
+      }
+      delete[] data;
+
+      WritePrivateProfileString("editor", T::keyname, hex.c_str(), ConfigurationFile.c_str());
     }
     
 
@@ -115,12 +120,13 @@ namespace Configuration {
 
     // GRAH, how many of these template problems will I find in one day?
     // these functions now have a worthless parameter like FromRaw does
-    inline int GetTypeSize<bool>(bool b = bool()) { return sizeof(bool); }
-    inline int GetTypeSize<int>(int i = int()) { return sizeof(int); }
-    inline int GetTypeSize<double>(double d = double()) { return sizeof(double); }
-    inline int GetTypeSize<std::string>(std::string s = std::string()) { return 4096; } // only supports up to 4096-1 characters
-    inline int GetTypeSize<WINDOWPLACEMENT>(WINDOWPLACEMENT wp = WINDOWPLACEMENT()) { return sizeof(WINDOWPLACEMENT); }
-    inline int GetTypeSize<RECT>(RECT w = RECT()) { return sizeof(RECT); }
+    inline int GetTypeSize<bool>(bool /*b = bool()*/) { return sizeof(bool); }
+    inline int GetTypeSize<unsigned char>(unsigned char /*uc = unsigned char()*/) { return sizeof(unsigned char); }
+    inline int GetTypeSize<int>(int /*i = int()*/) { return sizeof(int); }
+    inline int GetTypeSize<double>(double /*d = double()*/) { return sizeof(double); }
+    inline int GetTypeSize<std::string>(std::string /*s = std::string()*/) { return 4096; } // only supports up to 4096-1 characters
+    inline int GetTypeSize<WINDOWPLACEMENT>(WINDOWPLACEMENT /*wp = WINDOWPLACEMENT()*/) { return sizeof(WINDOWPLACEMENT); }
+    inline int GetTypeSize<RECT>(RECT /*w = RECT()*/) { return sizeof(RECT); }
 
     
     // *** ToRaw() ***
@@ -131,7 +137,15 @@ namespace Configuration {
     inline void* ToRaw<bool>(bool val)
     {
         BYTE* b = new BYTE[sizeof(bool)];
-        memcpy(b, &val, sizeof(bool));
+        if (b) memcpy(b, &val, sizeof(bool));
+        return b;
+    }
+
+    template<>
+    inline void* ToRaw<unsigned char>(unsigned char val)
+    {
+        BYTE* b = new BYTE[sizeof(unsigned char)];
+        if (b) memcpy(b, &val, sizeof(unsigned char));
         return b;
     }
 
@@ -139,7 +153,7 @@ namespace Configuration {
     inline void* ToRaw<int>(int val)
     {
         BYTE* b = new BYTE[sizeof(int)];
-        memcpy(b, &val, sizeof(int));
+        if (b) memcpy(b, &val, sizeof(int));
         return b;
     }
 
@@ -147,7 +161,7 @@ namespace Configuration {
     inline void* ToRaw<double>(double val)
     {
         BYTE* b = new BYTE[sizeof(double)];
-        memcpy(b, &val, sizeof(double));
+        if (b) memcpy(b, &val, sizeof(double));
         return b;
     }
 
@@ -155,7 +169,7 @@ namespace Configuration {
     inline void* ToRaw<std::string>(std::string val)
     {
         char* str = new char[GetTypeSize<std::string>(std::string())];
-        strcpy(str, val.c_str());
+        if (str) strcpy(str, val.c_str());
         return str;
     }
 
@@ -163,7 +177,7 @@ namespace Configuration {
     inline void* ToRaw<WINDOWPLACEMENT>(WINDOWPLACEMENT wp)
     {
       BYTE* b = new BYTE[sizeof(WINDOWPLACEMENT)];
-      memcpy(b, &wp, sizeof(WINDOWPLACEMENT));
+      if (b) memcpy(b, &wp, sizeof(WINDOWPLACEMENT));
       return b;
     }
 
@@ -171,7 +185,7 @@ namespace Configuration {
     inline void* ToRaw<RECT>(RECT r)
     {
       BYTE* b = new BYTE[sizeof(RECT)];
-      memcpy(b, &r, sizeof(RECT));
+      if (b) memcpy(b, &r, sizeof(RECT));
       return b;
     }
 
@@ -184,7 +198,7 @@ namespace Configuration {
     // Down with VC++!  Long live gcc!
 
     template<>    
-    inline bool FromRaw<bool>(void* raw, bool b)
+    inline bool FromRaw<bool>(void* raw, bool /*b*/)
     {
         bool t;
         memcpy(&t, raw, sizeof(bool));
@@ -192,7 +206,15 @@ namespace Configuration {
     }
 
     template<>
-    inline int FromRaw<int>(void* raw, int i)
+    inline unsigned char FromRaw<unsigned char>(void* raw, unsigned char /*i*/)
+    {
+        unsigned char t;
+        memcpy(&t, raw, sizeof(unsigned char));
+        return t;
+    }
+
+    template<>
+    inline int FromRaw<int>(void* raw, int /*i*/)
     {
         int t;
         memcpy(&t, raw, sizeof(int));
@@ -200,7 +222,7 @@ namespace Configuration {
     }
 
     template<>    
-    inline double FromRaw<double>(void* raw, double d)
+    inline double FromRaw<double>(void* raw, double /*d*/)
     {
         double t;
         memcpy(&t, raw, sizeof(double));
@@ -208,7 +230,7 @@ namespace Configuration {
     }
 
     template<>    
-    inline std::string FromRaw<std::string>(void* raw, std::string s)
+    inline std::string FromRaw<std::string>(void* raw, std::string /*s*/)
     {
         return std::string((char*)raw);
     }

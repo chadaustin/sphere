@@ -50,7 +50,7 @@ private:
 private:
   void ClearBrowseList();
   bool LoadFile(const char* filename);
-  void OpenFile(int index);
+  void OpenFile(unsigned int index);
 
 private:
   int GetPageSize();

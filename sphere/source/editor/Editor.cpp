@@ -54,7 +54,6 @@ public:
     }
 
     m_Created = true;
-
   }
 
 	void lock()
@@ -193,7 +192,7 @@ public:
 private:
   void ParseParam(LPCTSTR parameter, BOOL /*flag*/, BOOL /*last*/)
   {
-    m_MainWindow->OpenGameFile(parameter);
+    if (m_MainWindow) m_MainWindow->OpenGameFile(parameter);
   }
 
 private:
@@ -226,10 +225,10 @@ CEditorApplication::InitInstance()
 
 			if (cli.mayInstanceExit())
 			{						
-					m_Instances->unlock();
-					delete m_Instances;
-					m_Instances = NULL;
-					return FALSE;
+			  m_Instances->unlock();
+				delete m_Instances;
+				m_Instances = NULL;
+				return FALSE;
 			}		
     }
 
@@ -294,6 +293,7 @@ CEditorApplication::ExitInstance()
 		m_Instances->unregisterInstance();
 		m_Instances->unlock();
 		delete m_Instances;
+    m_Instances = NULL;
 	}
 
   return 0;

@@ -105,8 +105,8 @@ CSpritesetAnimationPalette::OnPaint()
     for (int iy = 0; iy < blit_height; iy++) {
       for (int ix = 0; ix < blit_width; ix++)
       {
-        int ty = iy / m_ZoomFactor;
-        int tx = ix / m_ZoomFactor;
+        int ty = (int)(iy / m_ZoomFactor);
+        int tx = (int)(ix / m_ZoomFactor);
 
         // this here would crash if the spriteset has been resized
         // and the spriteset animation palette hasn't been informed of the resize

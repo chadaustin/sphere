@@ -174,13 +174,13 @@ void Line(
     if (fabs(slope) < 1) {
 
       if (x1 < x2) {
-        float cy = y1;
+        float cy = (float) y1;
         for (int ix = x1; ix <= x2; ix++) {
           renderer(surface[(int)cy * pitch + ix], getcolor(o_x2 - ix, o_x2 - o_x1));
           cy += slope;
         }
       } else {
-        float cy = y1;
+        float cy = (float) y1;
         for (int ix = x1; ix >= x2; ix--) {
           renderer(surface[(int)cy * pitch + ix], getcolor(ix - o_x2, o_x1 - o_x2));
           cy -= slope;
@@ -190,13 +190,13 @@ void Line(
     } else {   // more vertical than horizontal...
 
       if (y1 < y2) {
-        float cx = x1;
+        float cx = (float) x1;
         for (int iy = y1; iy <= y2; iy++) {
           renderer(surface[iy * pitch + (int)cx], getcolor(o_y1 - iy, o_y2 - o_y1));
           cx += 1 / slope;
         }
       } else {
-        float cx = x1;
+        float cx = (float) x1;
         for (int iy = y1; iy >= y2; iy--) {
           renderer(surface[iy * pitch + (int)cx], getcolor(iy - o_y2, o_y1 - o_y2));
           cx -= 1 / slope;

@@ -493,7 +493,7 @@ static bool LayerToImage(CImage32* image, sLayer& layer, sTileset& tileset)
   int tile_width  = tileset.GetTileWidth();
   int tile_height = tileset.GetTileHeight();
   int image_width  = layer.GetWidth()  * tile_width;
-  int image_height = layer.GetHeight() * tile_height;
+  // int image_height = layer.GetHeight() * tile_height;
 
 
   // render the image
@@ -562,7 +562,7 @@ CLayerView::OnExportLayer()
 
 static bool ExportAllVisibleLayersAsImage(const char* filename, sTileset& tileset, std::vector<sLayer> layers)
 {
-  if (layers.size() <= 0)
+  if (!(layers.size() >= 1))
     return false;
   
   int tile_width  = tileset.GetTileWidth();
@@ -572,7 +572,7 @@ static bool ExportAllVisibleLayersAsImage(const char* filename, sTileset& tilese
   int dest_image_height = 0;
 
   // find the size of the image we're going to create
-  for (int i = 0; i < layers.size(); i++) {
+  for (unsigned int i = 0; i < layers.size(); i++) {
     if (layers[i].GetWidth() * tile_width > dest_image_width) {
       dest_image_width = layers[i].GetWidth() * tile_width;
     }
@@ -595,7 +595,7 @@ static bool ExportAllVisibleLayersAsImage(const char* filename, sTileset& tilese
     return false;
 
   // we already have the first layer, now we do the rest
-  for (int i = 1; i < layers.size(); i++) {
+  for (int i = 1; i < int(layers.size()); i++) {
 
     int image_width  = layers[i].GetWidth()  * tile_width;
     int image_height = layers[i].GetHeight() * tile_height;
@@ -646,11 +646,13 @@ CLayerView::OnExportAllVisibleLayers()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/*
 static bool CompareTiles(sTile& tile_a, sTile& tile_b) {
   if (tile_a.GetWidth() != tile_b.GetWidth()) return false;
   if (tile_a.GetHeight() != tile_b.GetHeight()) return false;
   return memcmp(tile_a.GetPixels(), tile_b.GetPixels(), tile_a.GetWidth() * tile_a.GetHeight() * sizeof(RGBA)) == 0;
 }
+*/
 
 /**
   This takes all the visible layers, and merges them into one,
@@ -659,7 +661,7 @@ static bool CompareTiles(sTile& tile_a, sTile& tile_b) {
 afx_msg void
 CLayerView::OnFlattenVisibleLayers()
 {
-  sTileset& tileset = m_Map->GetTileset();
+  //sTileset& tileset = m_Map->GetTileset();
   std::vector<sLayer> layers;
 
   // get a list of the visible layers
@@ -669,7 +671,7 @@ CLayerView::OnFlattenVisibleLayers()
     }
   }
 
-  if (layers.size() <= 0) {
+  if (!(layers.size() >= 1)) {
     MessageBox("No layers are visible!", "No layers are visible", MB_OK);
   }
   else 
@@ -682,7 +684,7 @@ CLayerView::OnFlattenVisibleLayers()
     int height = 0;
 
     // find the size of the image we're going to create
-    for (int i = 0; i < layers.size(); i++) {
+    for (int i = 0; i < int(layers.size()); i++) {
       if (layers[i].GetWidth() > width) {
         width = layers[i].GetWidth();
       }
@@ -709,7 +711,7 @@ CLayerView::OnFlattenVisibleLayers()
         new_tile.Clear();
         blended_tile_indexes.clear();
 
-        for (int i = 0; i < layers.size(); ++i) {
+        for (unsigned int i = 0; i < layers.size(); ++i) {
 
           if (y < layers[i].GetHeight() && x < layers[i].GetWidth()) {
             sTile& tile = tileset.GetTile(layers[i].GetTile(x, y));
@@ -763,7 +765,7 @@ CLayerView::OnFlattenVisibleLayers()
     }
 
     // turn the layers that were visible off
-    for (int i = 0; i < layers.size(); i++) {
+    for (unsigned int i = 0; i < layers.size(); i++) {
       m_Map->GetLayer(i).SetVisible(false);
     }
 

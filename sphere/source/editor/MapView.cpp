@@ -108,7 +108,7 @@ CMapView::~CMapView()
 ////////////////////////////////////////////////////////////////////////////////
 
 BOOL
-CMapView::Create(CDocumentWindow* owner, IMapViewHandler* handler, CWnd* parent, sMap* map)
+CMapView::Create(CDocumentWindow* /*owner*/, IMapViewHandler* handler, CWnd* parent, sMap* map)
 {
   m_Handler = handler;
   m_Map = map;
@@ -232,7 +232,7 @@ void
 CMapView::UpdateObstructionTiles() {
   if (m_ShowTileObstructions) {
     m_TileObstructions.resize(m_Map->GetTileset().GetNumTiles());
-    for (int i = 0; i < m_TileObstructions.size(); ++i) {
+    for (int i = 0; i < int(m_TileObstructions.size()); ++i) {
       UpdateObstructionTile(i);
     }
   }
@@ -582,7 +582,7 @@ CMapView::LayerAreaCopy()
       int tileOffset = -1;
 
       // check for recurrance of the tile
-      for (int z=0; z<usedTiles.size(); z++)
+      for (int z = 0; z < int(usedTiles.size()); z++)
         if (usedTiles[z] == pLayer.GetTile(x, y))
           tileOffset = z;
 
@@ -653,8 +653,8 @@ CMapView::LayerAreaCopy()
 
 
 
-  const int lw = l.GetWidth();
-  const int lh = l.GetHeight();
+  //const int lw = l.GetWidth();
+  //const int lh = l.GetHeight();
   const int tw = m_Map->GetTileset().GetTileWidth();
   const int th = m_Map->GetTileset().GetTileHeight();
 
@@ -1293,10 +1293,10 @@ int
 CMapView::FindSpritesetImageIconsIndex(int person_index, std::string filename)
 {
   int sprite_index = person_index;
-  if (m_Map->GetNumEntities() != m_SpritesetImageIcons.size())
+  if (m_Map->GetNumEntities() != int(m_SpritesetImageIcons.size()))
     m_SpritesetImageIcons.resize(m_Map->GetNumEntities());
 
-  if (sprite_index < 0 || sprite_index > m_SpritesetImageIcons.size())
+  if (sprite_index < 0 || sprite_index > int(m_SpritesetImageIcons.size()))
     sprite_index = -1;
 
   if (sprite_index != -1 && m_SpritesetImageIcons[sprite_index].filename != filename) {
@@ -1332,7 +1332,7 @@ CMapView::FindSpritesetImageIconsIndex(int person_index, std::string filename)
   if (sprite_index != -1 && m_SpritesetImageIcons[sprite_index].created == false)
     sprite_index = -1;
 
-  if (sprite_index < 0 || sprite_index > m_SpritesetImageIcons.size())
+  if (sprite_index < 0 || sprite_index > int(m_SpritesetImageIcons.size()))
     sprite_index = -1;
 
   return sprite_index;
@@ -1348,7 +1348,6 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
 
   // clear the DIB
   memset(m_BlitTile->GetPixels(), 0,  m_ZoomFactor * m_ZoomFactor * tile_width * tile_height * 4);
-
 
   // draw the tile
   for (int i = 0; i < m_Map->GetNumLayers(); i++)
@@ -1368,8 +1367,10 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
       const RGBA* src = m_Map->GetTileset().GetTile(tile).GetPixels();
       BGRA* dest = (BGRA*)m_BlitTile->GetPixels();
 
-      if (m_ShowTileObstructions && tile >= 0 && tile < m_TileObstructions.size()) {
-        src = m_TileObstructions[tile].GetPixels();
+      if (m_ShowTileObstructions) {
+        if (tile >= 0 && tile < int(m_TileObstructions.size())) {
+          src = m_TileObstructions[tile].GetPixels();
+        }
       }
 
       int counter = 0;
@@ -1454,16 +1455,18 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
           ty == entity.y / tile_height &&
           m_Map->GetLayer(entity.layer).IsVisible())
       {
-        HICON icon;
+        HICON icon = NULL;
         switch (entity.GetEntityType())
         { 
           case sEntity::PERSON:  icon = AfxGetApp()->LoadIcon(IDI_ENTITY_PERSON); break;
           case sEntity::TRIGGER: icon = AfxGetApp()->LoadIcon(IDI_ENTITY_TRIGGER); break;
         }
 
-        int tw = m_Map->GetTileset().GetTileWidth()  * m_ZoomFactor;
-        int th = m_Map->GetTileset().GetTileHeight() * m_ZoomFactor;
-        DrawIconEx(dc.m_hDC, rect.left, rect.top, icon, tw, th, 0, NULL, DI_NORMAL);
+        if (icon) {
+          int tw = m_Map->GetTileset().GetTileWidth()  * m_ZoomFactor;
+          int th = m_Map->GetTileset().GetTileHeight() * m_ZoomFactor;
+          DrawIconEx(dc.m_hDC, rect.left, rect.top, icon, tw, th, 0, NULL, DI_NORMAL);
+        }
       }
     }
   }
@@ -1479,7 +1482,7 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
           ty == entity.y / tile_height &&
           m_Map->GetLayer(entity.layer).IsVisible())
       {
-        HICON icon;
+        HICON icon = NULL;
         switch (entity.GetEntityType())
         {
           case sEntity::PERSON:  icon = AfxGetApp()->LoadIcon(IDI_ENTITY_PERSON); break;
@@ -1496,7 +1499,9 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
             int sprite_index = FindSpritesetImageIconsIndex(i, person->spriteset);
 
             if (sprite_index == -1) {
-              DrawIconEx(dc.m_hDC, rect.left, rect.top, icon, tw, th, 0, NULL, DI_NORMAL);
+              if (icon) {
+                DrawIconEx(dc.m_hDC, rect.left, rect.top, icon, tw, th, 0, NULL, DI_NORMAL);
+              }
               continue;
             }
           
@@ -1580,7 +1585,7 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
        && ty >= entity_y / tile_height && ty < (entity_y + entity_height) / tile_height
        && m_Map->GetLayer(entity.layer).IsVisible())
       {
-        HICON icon;
+        HICON icon = NULL;
         switch (entity.GetEntityType())
         {
           case sEntity::PERSON:  icon = AfxGetApp()->LoadIcon(IDI_ENTITY_PERSON); break;
@@ -1597,7 +1602,9 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
             int sprite_index = FindSpritesetImageIconsIndex(i, person->spriteset);
 
             if (sprite_index == -1) {
-              DrawIconEx(dc.m_hDC, rect.left, rect.top, icon, tw, th, 0, NULL, DI_NORMAL);
+              if (icon) {
+                DrawIconEx(dc.m_hDC, rect.left, rect.top, icon, tw, th, 0, NULL, DI_NORMAL);
+              }
               continue;
             }
           

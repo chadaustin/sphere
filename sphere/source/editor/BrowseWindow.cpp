@@ -159,7 +159,7 @@ CBrowseWindow::OnTimer(UINT event) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CBrowseWindow::OpenFile(int index) {
+CBrowseWindow::OpenFile(unsigned int index) {
 
   char directory[MAX_PATH] = {0};
   if ( GetCurrentDirectory(MAX_PATH, directory) != 0) {
@@ -321,8 +321,10 @@ CBrowseWindow::LoadFile(const char* filename)
 void
 CBrowseWindow::ClearBrowseList()
 {
-  for (int i = 0; i < m_BrowseList.size(); i++)
+  for (unsigned int i = 0; i < m_BrowseList.size(); i++) {
     delete m_BrowseList[i];
+    m_BrowseList[i] = NULL;
+  }
   m_BrowseList.clear();
 }
 
@@ -389,6 +391,11 @@ CBrowseWindow::OnPaint()
   RECT client_rect;
   GetClientRect(&client_rect);
 
+  if (!m_BlitTile || m_BlitTile->GetPixels() == NULL) {
+    dc.FillRect(&client_rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+    return;
+  }
+
   int blit_width  = m_BlitTile->GetWidth();
   int blit_height = m_BlitTile->GetHeight();
 
@@ -422,7 +429,7 @@ CBrowseWindow::OnPaint()
                 CreateBGRA(255, 255, 255, 255) :
                 CreateBGRA(255, 192, 192, 255)
               );
-          }        
+          }
 
         // draw the tile into it
         const RGBA* tilepixels = m_BrowseList[it]->GetPixels();

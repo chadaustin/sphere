@@ -108,7 +108,7 @@ private:
 
     // make a semicolon-separated string
     std::string filters;
-    for (int i = 0; i < extensions.size(); i++) {
+    for (unsigned int i = 0; i < extensions.size(); i++) {
       filters += "*." + extensions[i];
       if (i < extensions.size() - 1) {
         filters += ";";
@@ -132,7 +132,7 @@ private:
 
     // make a semicolon-separated string
     std::string filters;
-    for (int i = 0; i < extensions.size(); i++) {
+    for (unsigned int i = 0; i < extensions.size(); i++) {
       filters += "*." + extensions[i];
       if (i < extensions.size() - 1) {
         filters += ";";

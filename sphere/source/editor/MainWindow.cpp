@@ -437,7 +437,7 @@ CMainWindow::OpenGameFile(const char* filename)
     std::vector<std::string> extensions;
     FTL.GetFileTypeExtensions(i, false, extensions);
     
-    for (int k = 0; k < extensions.size(); k++) {
+    for (unsigned int k = 0; k < extensions.size(); k++) {
       std::string ext = "." + extensions[k];
       if (strcmp_ci(filename + strlen(filename) - ext.length(), ext.c_str()) == 0) {
         OpenDocumentWindow(i, filename);       
@@ -453,7 +453,7 @@ void
 CMainWindow::OpenDocumentWindow(int grouptype, const char* filename)
 {
   // if a document window has the same filename, just give it focus
-  for (int i = 0; i < m_DocumentWindows.size(); i++) {
+  for (unsigned int i = 0; i < m_DocumentWindows.size(); i++) {
     if (strcmp(m_DocumentWindows[i]->GetFilename(), filename) == 0) {
       m_DocumentWindows[i]->SetFocus();
       return;
@@ -720,7 +720,7 @@ afx_msg void
 CMainWindow::OnClose()
 {
   // ask if the child windows should be destroyed
-  for (int i = 0; i < m_DocumentWindows.size(); i++)
+  for (unsigned int i = 0; i < m_DocumentWindows.size(); i++)
   {
     if (m_DocumentWindows[i]->Close())
       m_DocumentWindows[i]->DestroyWindow();
@@ -754,7 +754,7 @@ std::string GenerateSupportedExtensionsFilter() {
   for (int i = 0; i < NUM_GROUP_TYPES; i++) {
     std::vector<std::string> e;
     FTL.GetFileTypeExtensions(i, false, e);
-    for (int j = 0; j < e.size(); j++) {
+    for (unsigned int j = 0; j < e.size(); j++) {
       std::string poop = e[j];
       extensions.insert(poop);
     }
@@ -778,7 +778,7 @@ std::string GenerateSupportedExtensionsFilter() {
     FTL.GetFileTypeExtensions(i, false, e);
 
     std::string type_filter;
-    for (int j = 0; j < e.size(); j++) {
+    for (unsigned int j = 0; j < e.size(); j++) {
       if (j != 0) {
         type_filter += ";";
       }
@@ -1620,7 +1620,7 @@ CMainWindow::OnFileImportWindowsFont()
 afx_msg void
 CMainWindow::OnFileSaveAll()
 {
-  for (int i = 0; i < m_DocumentWindows.size(); i++) {
+  for (unsigned int i = 0; i < m_DocumentWindows.size(); i++) {
     CDocumentWindow* dw = m_DocumentWindows[i];
     if (dw->IsSaveable()) {
       CSaveableDocumentWindow* sdw = (CSaveableDocumentWindow*)dw;
@@ -1680,13 +1680,10 @@ CMainWindow::OnProjectRunSphere()
     memset(filename, 0, MAX_PATH);
 
     // find the currently open map
-    // todo: fix this, we shouldn't just be checking if the window is visible
-    for (int i = 0; i < m_DocumentWindows.size(); i++) {
-      const CDocumentWindow* dw = m_DocumentWindows[i];
-      if (dw->IsWindowVisible()) {
-        strcpy(filename, dw->GetFilename());
-        strcpy(filename, strrchr(filename, '\\') + 1);
-      }
+    CDocumentWindow* dw = GetCurrentDocumentWindow();
+    if (dw) {
+      strcpy(filename, dw->GetFilename());
+      strcpy(filename, strrchr(filename, '\\') + 1);
     }
 
     std::string __filename__(strlwr(filename)); // make the extension lowercase
@@ -1815,7 +1812,7 @@ CMainWindow::OnProjectPackageGame()
 afx_msg void
 CMainWindow::OnWindowCloseAll()
 {
-  for (int i = 0; i < m_DocumentWindows.size(); i++) {
+  for (unsigned int i = 0; i < m_DocumentWindows.size(); i++) {
     CDocumentWindow* dw = m_DocumentWindows[i];
     if (dw->Close() == false) {
       break;
@@ -2011,7 +2008,7 @@ CMainWindow::OnUpdateSaveAllCommand(CCmdUI* cmdui)
   bool can_save = false;
 
   // if any window is modified or unsaved, enable it!
-  for (int i = 0; i < m_DocumentWindows.size(); i++) {
+  for (unsigned int i = 0; i < m_DocumentWindows.size(); i++) {
     CDocumentWindow* dw = m_DocumentWindows[i];
     if (dw->IsSaveable()) {
       CSaveableDocumentWindow* sdw = (CSaveableDocumentWindow*)dw;
@@ -2231,7 +2228,7 @@ CMainWindow::OnInsertProjectFile(WPARAM wparam, LPARAM lparam)
     std::vector<std::string> extensions;
     FTL.GetFileTypeExtensions(i, false, extensions);
 
-    for (int j = 0; j < extensions.size(); j++) {
+    for (unsigned int j = 0; j < extensions.size(); j++) {
       if (Local::extension_compare(path, extensions[j].c_str())) {
         InsertProjectFile(NULL, i, path);
         return 0;
@@ -2278,7 +2275,7 @@ CMainWindow::OnDocumentWindowClosing(WPARAM wparam, LPARAM lparam)
   CDocumentWindow* window = (CDocumentWindow*)lparam;
 
   // remove window from list
-  for (int i = 0; i < m_DocumentWindows.size(); i++)
+  for (unsigned int i = 0; i < m_DocumentWindows.size(); i++)
     if (m_DocumentWindows[i] == window)
     {
       m_DocumentWindows.erase(m_DocumentWindows.begin() + i);

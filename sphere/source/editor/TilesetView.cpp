@@ -198,7 +198,7 @@ void
 CTilesetView::UpdateObstructionTiles() {
   if (m_ShowTileObstructions) {
     m_TileObstructions.resize(m_Tileset->GetNumTiles());
-    for (int i = 0; i < m_TileObstructions.size(); ++i) {
+    for (int i = 0; i < int(m_TileObstructions.size()); ++i) {
       UpdateObstructionTile(i);
     }
   }
@@ -383,7 +383,6 @@ CTilesetView::GetTileSelectionLeftX() {
   GetClientRect(&client_rect);
 
   int blit_width  = m_BlitTile->GetWidth();
-  int blit_height = m_BlitTile->GetHeight();
 
   start.x = start.x / m_BlitTile->GetWidth();
   start.y = start.y / m_BlitTile->GetHeight();
@@ -421,7 +420,6 @@ CTilesetView::GetTileSelectionRightX() {
   GetClientRect(&client_rect);
 
   int blit_width  = m_BlitTile->GetWidth();
-  int blit_height = m_BlitTile->GetHeight();
 
   start.x = start.x / m_BlitTile->GetWidth();
   start.y = start.y / m_BlitTile->GetHeight();
@@ -459,7 +457,6 @@ CTilesetView::GetTileSelectionTopY() {
   GetClientRect(&client_rect);
 
   int blit_width  = m_BlitTile->GetWidth();
-  int blit_height = m_BlitTile->GetHeight();
 
   start.x = start.x / m_BlitTile->GetWidth();
   start.y = start.y / m_BlitTile->GetHeight();
@@ -497,7 +494,6 @@ CTilesetView::GetTileSelectionLowerY() {
   GetClientRect(&client_rect);
 
   int blit_width  = m_BlitTile->GetWidth();
-  int blit_height = m_BlitTile->GetHeight();
 
   start.x = start.x / m_BlitTile->GetWidth();
   start.y = start.y / m_BlitTile->GetHeight();
@@ -558,12 +554,9 @@ CTilesetView::GetTileSelection()
   GetClientRect(&client_rect);
 
   int blit_width  = m_BlitTile->GetWidth();
-  int blit_height = m_BlitTile->GetHeight();
 
   int tileselection_left_x  = GetTileSelectionLeftX();
-  int tileselection_right_x = GetTileSelectionRightX();
   int tileselection_top_y   = GetTileSelectionTopY();
-  int tileselection_lower_y = GetTileSelectionLowerY();
 
   int width  = GetTileSelectionWidth();
   int height = GetTileSelectionHeight();
@@ -644,7 +637,7 @@ CTilesetView::OnPaint()
 
         // draw the tile into it
         const RGBA* tilepixels = m_Tileset->GetTile(it).GetPixels();
-        if (m_ShowTileObstructions && it >= 0 && it < m_TileObstructions.size()) {
+        if (m_ShowTileObstructions && it >= 0 && it < int(m_TileObstructions.size())) {
           tilepixels = m_TileObstructions[it].GetPixels();
         }
 

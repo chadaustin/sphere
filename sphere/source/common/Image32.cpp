@@ -244,7 +244,7 @@ CImage32::Load(const char* filename, IFileSystem& fs)
     memcpy(m_Pixels, img->getPixels(), m_Width * m_Height * 4);
   }
 
-  return true;
+  return (m_Pixels && m_Width > 0 && m_Height > 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

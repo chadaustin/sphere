@@ -14,6 +14,8 @@ const char* DEFAULT_VIDEODRIVER = "standard32.dll";
 
 bool LoadSphereConfig(SPHERECONFIG* config, const char* filename)
 {
+  if (!config) return false;
+
   CConfigFile file;
   file.Load(filename);
   config->videodriver = file.ReadString("Video", "Driver",     DEFAULT_VIDEODRIVER);
@@ -25,6 +27,8 @@ bool LoadSphereConfig(SPHERECONFIG* config, const char* filename)
 
 bool SaveSphereConfig(SPHERECONFIG* config, const char* filename)
 {
+  if (!config) return false;
+
   CConfigFile file;
   file.WriteString("Video", "Driver",     config->videodriver.c_str());
   file.WriteInt   ("Audio", "Preference", config->sound);

@@ -16,7 +16,7 @@ public:
 private:
   BOOL InitInstance();
   int  ExitInstance();	
-	CInstanceRepository * m_Instances;
+	CInstanceRepository* m_Instances;
 };
 
 
