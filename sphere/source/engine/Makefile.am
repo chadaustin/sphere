@@ -1,22 +1,26 @@
 SUBDIRS = unix
 
-bin_PROGRAMS = sphere
+bin_PROGRAMS = \
+	sphere
+
 sphere_SOURCES = \
-benchmark.cpp \
-engine.cpp \
-log.cpp \
-map_engine.cpp \
-render.cpp \
-rendersort.cpp \
-script.cpp \
-sfont.cpp \
-simage.cpp \
-smap.cpp \
-sphere.cpp \
-sspriteset.cpp \
-swindowstyle.cpp
+	benchmark.cpp \
+	engine.cpp \
+	log.cpp \
+	map_engine.cpp \
+	render.cpp \
+	rendersort.cpp \
+	script.cpp \
+	sfont.cpp \
+	simage.cpp \
+	smap.cpp \
+	sphere.cpp \
+	sspriteset.cpp \
+	swindowstyle.cpp
+
 LDADD = \
-  unix/libunix.a \
-  ../common/libcommon.a \
-  ../jpegwrap/libjpegwrap.a
-LDFLAGS = -laudiere
+	unix/libunix.a \
+	../common/libcommon.a
+
+LDFLAGS = \
+	-laudiere
