@@ -33,6 +33,7 @@ struct IEngine
   virtual bool GetSystemScript(const char* filename, std::string& text) = 0;
 
   virtual script CompileScript(const char* script, std::string& error) = 0;
+  virtual bool IsScriptBeingUsed(script s) = 0;
   virtual bool ExecuteScript(script s, bool& should_exit, std::string& error) = 0;
   virtual void DestroyScript(script s) = 0;
 
@@ -54,7 +55,7 @@ struct IEngine
 
   virtual SWINDOWSTYLE* GetSystemWindowStyle() = 0;
   virtual SWINDOWSTYLE* LoadWindowStyle(const char* filename) = 0;
-  virtual void DestroyWindowStyle(SWINDOWSTYLE* font) = 0;
+  virtual void DestroyWindowStyle(SWINDOWSTYLE* windowstyle) = 0;
 
   virtual audiere::OutputStream* LoadSound(const char* filename, bool streaming) = 0;
 

@@ -387,6 +387,18 @@ CGameEngine::CompileScript(const char* script, std::string& error)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#include <assert.h>
+
+bool
+CGameEngine::IsScriptBeingUsed(script s)
+{
+  assert(s);
+  CScriptCode* so = (CScriptCode*)s;
+  return so->IsBeingUsed();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 bool
 CGameEngine::ExecuteScript(script s, bool& should_exit, std::string& error)
 {

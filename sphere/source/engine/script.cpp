@@ -166,6 +166,7 @@ CScriptCode::CScriptCode(JSContext* context, JSObject* global, JSScript* script)
 , m_Global(global)
 , m_Script(script)
 , m_NumReferences(1)
+, m_BeingUsed(false)
 {
   m_ScriptObject = JS_NewScriptObject(context, script);
   JS_AddRoot(context, &m_ScriptObject);
@@ -200,8 +201,18 @@ CScriptCode::Release()
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CScriptCode::IsBeingUsed()
+{
+  return (m_BeingUsed);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CScriptCode::Execute(bool& should_exit)
 {
+  m_BeingUsed = true;
+
   // get a handle to the parent CScript object
   CScript* script_object = (CScript*)JS_GetContextPrivate(m_Context);
 
@@ -221,6 +232,8 @@ CScriptCode::Execute(bool& should_exit)
   }
 
   should_exit = script_object->m_ShouldExit;
+
+  m_BeingUsed = false;
   return succeeded;
 }
 

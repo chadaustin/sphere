@@ -56,6 +56,7 @@ private:
   virtual void RestartGame();
 
   virtual script CompileScript(const char* script, std::string& error);
+  virtual bool IsScriptBeingUsed(script s);
   virtual bool ExecuteScript(script s, bool& should_exit, std::string& error);
   virtual void DestroyScript(script s);
 

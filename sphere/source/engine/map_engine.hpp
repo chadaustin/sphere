@@ -54,6 +54,7 @@ public:
     SCRIPT_ON_ACTIVATE_TOUCH,
     SCRIPT_ON_ACTIVATE_TALK,
     SCRIPT_COMMAND_GENERATOR,
+    NUM_PERSON_SCRIPTS
   };
 
   enum {
@@ -63,6 +64,7 @@ public:
     SCRIPT_ON_LEAVE_MAP_EAST,
     SCRIPT_ON_LEAVE_MAP_SOUTH,
     SCRIPT_ON_LEAVE_MAP_WEST,
+    NUM_MAP_SCRIPTS
   };
 
 public:
@@ -298,11 +300,8 @@ private:
     int stepping_frame_revert;
     int stepping_frame_revert_count;
 
-    IEngine::script script_create;
-    IEngine::script script_destroy;
-    IEngine::script script_activate_touch;
-    IEngine::script script_activate_talk;
-    IEngine::script script_command_generator;
+    IEngine::script person_scripts[5];
+    //bool person_scripts_running[5];
 
     struct Command {
       Command(int c, bool i, std::string s = "") : command(c), immediate(i), script(s) { }
@@ -368,6 +367,7 @@ private:
   bool CompileEdgeScripts();
   bool LoadMapPersons();
   bool DestroyMapPersons();
+  void DestroyPersonScripts(Person& p);
   bool DestroyPersonStructure(Person& p);
   bool LoadTriggers();
   void DestroyTriggers();
@@ -442,8 +442,8 @@ private:
   int  m_InputPerson;
   bool m_TouchActivationAllowed;
   bool m_TalkActivationAllowed;
-  bool m_IsTouching;
-  bool m_IsTalking;
+  //bool m_IsTouching;
+  //bool m_IsTalking;
 
   std::vector<int> m_InputPersons;
 
@@ -459,13 +459,14 @@ private:
 
   // general scripts
   IEngine::script m_UpdateScript;
-  bool m_UpdateScriptRunning;
+  //bool m_UpdateScriptRunning;
   IEngine::script m_RenderScript;
-  bool m_RenderScriptRunning;
+  //bool m_RenderScriptRunning;
   std::vector<IEngine::script> m_LayerRenderers;
 
   // default map scripts
-  IEngine::script m_DefaultMapScripts[6];
+  IEngine::script m_DefaultMapScripts[NUM_MAP_SCRIPTS];
+  //bool m_DefaultMapScriptRunnings[6];
 
   // color masks
   int m_NumFrames;

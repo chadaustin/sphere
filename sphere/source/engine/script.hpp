@@ -41,6 +41,7 @@ public:
   void AddRef();
   void Release();
   bool Execute(bool& should_exit); // return value of the script is ignored
+  bool IsBeingUsed();
 
 private:
   CScriptCode(JSContext* context, JSObject* global, JSScript* script);
@@ -52,6 +53,7 @@ private:
   JSScript*  m_Script;
   JSObject*  m_ScriptObject;
   int        m_NumReferences;
+  bool       m_BeingUsed;
 
   friend class CScript;
 };

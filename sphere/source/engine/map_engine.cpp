@@ -52,8 +52,8 @@ CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
 , m_InputPerson(-1)
 , m_TouchActivationAllowed(true)
 , m_TalkActivationAllowed(true)
-, m_IsTouching(false)
-, m_IsTalking(false)
+//, m_IsTouching(false)
+//, m_IsTalking(false)
 , m_IsCameraAttached(false)
 , m_CameraPerson(-1)
 
@@ -62,9 +62,9 @@ CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
 , m_SouthScript(NULL)
 , m_WestScript(NULL)
 , m_UpdateScript(NULL)
-, m_UpdateScriptRunning(false)
+//, m_UpdateScriptRunning(false)
 , m_RenderScript(NULL)
-, m_RenderScriptRunning(false)
+//, m_RenderScriptRunning(false)
 
 , m_TalkActivationKey(KEY_SPACE)
 , m_TalkActivationDistance(8)
@@ -80,8 +80,9 @@ CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
 
   memset(&m_Keys, 0, sizeof(bool) * MAX_KEY);
 
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < NUM_MAP_SCRIPTS; i++) {
     m_DefaultMapScripts[i] = NULL;
+  //  m_DefaultMapScriptRunnings[i] = false;
   }
 }
 
@@ -103,10 +104,11 @@ CMapEngine::~CMapEngine()
     m_RenderScript = NULL;
   }
 
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < NUM_MAP_SCRIPTS; i++) {
     if (m_DefaultMapScripts[i]) {
       m_Engine->DestroyScript(m_DefaultMapScripts[i]);
       m_DefaultMapScripts[i] = NULL;
+      //m_DefaultMapScriptRunnings[i] = false;
     }
   }
 }
@@ -232,7 +234,7 @@ CMapEngine::CallMapScript(int which)
   }
 
   // make sure 'which' is valid
-  if (which < 0 || which >= 6) {
+  if (which < 0 || which >= NUM_MAP_SCRIPTS) {
     m_ErrorMessage = "CallMapScript() - script does not exist";
     return false;
   }
@@ -289,9 +291,10 @@ CMapEngine::CallMapScript(int which)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::CallDefaultMapScript(int which) {
+CMapEngine::CallDefaultMapScript(int which)
+{
   // make sure 'which' is valid
-  if (which < 0 || which >= 6) {
+  if (which < 0 || which >= NUM_MAP_SCRIPTS) {
     m_ErrorMessage = "CallDefaultMapScript() - script does not exist";
     return false;
   }
@@ -300,11 +303,22 @@ CMapEngine::CallDefaultMapScript(int which) {
    || m_DefaultMapScripts[which] == "")
     return true;
 
-  std::string error;
-  if (!ExecuteScript(m_DefaultMapScripts[which], error)) {
-    std::string list[6] = {"enter", "exit", "north", "east", "south", "west"};
-    m_ErrorMessage = "Could not execute default " + list[which] + " map script\n" + error;
+  std::string list[NUM_MAP_SCRIPTS] = {"enter", "exit", "north", "east", "south", "west"};
+
+  if (m_Engine->IsScriptBeingUsed(m_DefaultMapScripts[which])) {
+    m_ErrorMessage = "Default " + list[which] + " map script already running!";
     return false;
+  }
+
+  if (!m_Engine->IsScriptBeingUsed(m_DefaultMapScripts[which])) {
+    std::string error;
+    //m_DefaultMapScriptRunnings[which] = true;
+    if (!ExecuteScript(m_DefaultMapScripts[which], error)) {
+      //m_DefaultMapScriptRunnings[which] = false;
+      m_ErrorMessage = "Could not execute default " + list[which] + " map script\n" + error;
+      return false;
+    }
+    //m_DefaultMapScriptRunnings[which] = false;
   }
 
   return true;
@@ -315,7 +329,7 @@ CMapEngine::CallDefaultMapScript(int which) {
 bool
 CMapEngine::SetDefaultMapScript(int which, const char* script) {
   // make sure 'which' is valid
-  if (which < 0 || which >= 6) {
+  if (which < 0 || which >= NUM_MAP_SCRIPTS) {
     m_ErrorMessage = "SetDefaultMapScript() - script does not exist";
     return false;
   }
@@ -1819,11 +1833,10 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
   p.name = name;
   p.destroy_with_map = destroy_with_map;
 
-  p.script_create            = NULL;
-  p.script_destroy           = NULL;
-  p.script_activate_touch    = NULL;
-  p.script_activate_talk     = NULL;
-  p.script_command_generator = NULL;
+  for (int script_index = 0; script_index < NUM_PERSON_SCRIPTS; script_index++) {
+    p.person_scripts[script_index] = NULL;
+    //p.person_scripts_running[script_index] = false;
+  }
 
   p.player_index = -1;
   p.key_up    = -1;
@@ -2593,6 +2606,7 @@ CMapEngine::GetPersonData(const char* name, std::vector<struct PersonData>& pers
   PersonDataUtil::SetDataDouble(person_data, "num_directions", p.spriteset->GetSpriteset().GetNumDirections());
   PersonDataUtil::SetDataDouble(person_data, "width", p.width);
   PersonDataUtil::SetDataDouble(person_data, "height", p.height);
+  PersonDataUtil::SetDataString(person_data, "leader", p.leader == -1 ? "" : m_Persons[p.leader].name.c_str());
 
   return true;
 }
@@ -2799,7 +2813,7 @@ bool
 CMapEngine::SetPersonScript(const char* name, int which, const char* script)
 {
   // verify the script constant
-  if (which < 0 || which >= 5) {
+  if (which < 0 || which >= NUM_PERSON_SCRIPTS) {
     m_ErrorMessage = "SetPersonScript() - script does not exist";
     return false;
   }
@@ -2819,14 +2833,7 @@ CMapEngine::SetPersonScript(const char* name, int which, const char* script)
   }
 
   // find out which script we're changing
-  IEngine::script* ps = NULL;
-  switch (which) {
-    case 0: ps = &m_Persons[person].script_create;            break;
-    case 1: ps = &m_Persons[person].script_destroy;           break;
-    case 2: ps = &m_Persons[person].script_activate_touch;    break;
-    case 3: ps = &m_Persons[person].script_activate_talk;     break;
-    case 4: ps = &m_Persons[person].script_command_generator; break;
-  }
+  IEngine::script* ps = &m_Persons[person].person_scripts[which];
 
   // now replace the script
   if (*ps) {
@@ -2843,7 +2850,7 @@ bool
 CMapEngine::CallPersonScript(const char* name, int which)
 {
   // make sure 'which' is valid
-  if (which < 0 || which >= 5) {
+  if (which < 0 || which >= NUM_PERSON_SCRIPTS) {
     m_ErrorMessage = "SetPersonScript() - script does not exist";
     return false;
   }
@@ -2854,35 +2861,46 @@ CMapEngine::CallPersonScript(const char* name, int which)
     return false;
   }
 
-  // set the current person
-  std::string old_person = m_CurrentPerson;
-  m_CurrentPerson = m_Persons[person].name;
-
   // find out which script we're dealing with
-  IEngine::script* ps = NULL;
   bool reset_time = false;
-  switch (which) {
-    case 0: ps = &m_Persons[person].script_create;            break;
-    case 1: ps = &m_Persons[person].script_destroy;           break;
-    case 2: ps = &m_Persons[person].script_activate_touch;    reset_time = true; break;
-    case 3: ps = &m_Persons[person].script_activate_talk;     reset_time = true; break;
-    case 4: ps = &m_Persons[person].script_command_generator; break;
-  }
+  IEngine::script* ps = &m_Persons[person].person_scripts[which];
 
   if (*ps) {
 
-    std::string error;
-    if ( !ExecuteScript(*ps, error) ) {
-      m_ErrorMessage = "Could not execute person script\n" + error;
+    bool running = m_Engine->IsScriptBeingUsed(m_Persons[person].person_scripts[which]);
+
+    if (which == SCRIPT_ON_ACTIVATE_TOUCH || which == SCRIPT_ON_ACTIVATE_TALK)
+      reset_time = true;
+
+    std::string list[5] = {"OnCreate", "OnDestroy", "OnActivate (touch)", "OnActivate (talk)", "OnCommandGenerator"};
+
+    if (running) {
+      m_ErrorMessage = "Person " + list[which] + " script already running!";
       return false;
-    }
-    if (reset_time) {
-      ResetNextFrame();
-    }
+    } else {
+      std::string error;
+      //m_Persons[person].person_scripts_running[which] = true;
 
+      // set the current person
+      std::string old_person = m_CurrentPerson;
+      m_CurrentPerson = m_Persons[person].name;
+     
+      if ( !ExecuteScript(*ps, error) ) {
+        m_ErrorMessage = "Could not execute person " + list[which] + " script\n" + error;
+        //m_Persons[person].person_scripts_running[which] = false;
+        m_CurrentPerson = old_person;
+        return false;
+      }
+
+      m_CurrentPerson = old_person;
+
+      if (reset_time) {
+        ResetNextFrame();
+      }
+
+      //m_Persons[person].person_scripts_running[which] = false;
+    }
   }
-
-  m_CurrentPerson = old_person;
 
   return true;
 }
@@ -3400,8 +3418,8 @@ CMapEngine::LoadMapPersons()
 
       // compile script_create
       if (!person.script_create.empty()) {
-        p.script_create = m_Engine->CompileScript(person.script_create.c_str(), error);
-        if (p.script_create == NULL) {
+        p.person_scripts[SCRIPT_ON_CREATE] = m_Engine->CompileScript(person.script_create.c_str(), error);
+        if (p.person_scripts[SCRIPT_ON_CREATE] == NULL) {
           m_ErrorMessage = "Could not compile OnCreate script\nPerson:" + person_string + "\n" + error;
           goto spriteset_error;
         }
@@ -3409,8 +3427,8 @@ CMapEngine::LoadMapPersons()
 
       // compile script_destroy
       if (!person.script_destroy.empty()) {
-        p.script_destroy = m_Engine->CompileScript(person.script_destroy.c_str(), error);
-        if (p.script_destroy == NULL) {
+        p.person_scripts[SCRIPT_ON_DESTROY] = m_Engine->CompileScript(person.script_destroy.c_str(), error);
+        if (p.person_scripts[SCRIPT_ON_DESTROY] == NULL) {
           m_ErrorMessage = "Could not compile OnDestroy script\nPerson:" + person_string + "\n" + error;
           goto spriteset_error;
         }
@@ -3418,8 +3436,8 @@ CMapEngine::LoadMapPersons()
 
       // compile script_activate_touch
       if (!person.script_activate_touch.empty()) {
-        p.script_activate_touch = m_Engine->CompileScript(person.script_activate_touch.c_str(), error);
-        if (p.script_activate_touch == NULL) {
+        p.person_scripts[SCRIPT_ON_ACTIVATE_TOUCH] = m_Engine->CompileScript(person.script_activate_touch.c_str(), error);
+        if (p.person_scripts[SCRIPT_ON_ACTIVATE_TOUCH] == NULL) {
           m_ErrorMessage = "Could not compile OnActivate (touch) script\nPerson:" + person_string + "\n" + error;
           goto spriteset_error;
         }
@@ -3427,8 +3445,8 @@ CMapEngine::LoadMapPersons()
 
       // compile script_activate_talk
       if (!person.script_activate_talk.empty()) {
-        p.script_activate_talk = m_Engine->CompileScript(person.script_activate_talk.c_str(), error);
-        if (p.script_activate_talk == NULL) {
+        p.person_scripts[SCRIPT_ON_ACTIVATE_TALK] = m_Engine->CompileScript(person.script_activate_talk.c_str(), error);
+        if (p.person_scripts[SCRIPT_ON_ACTIVATE_TALK] == NULL) {
           m_ErrorMessage = "Could not compile OnActivate (talk) script\nPerson:" + person_string + "\n" + error;
           goto spriteset_error;
         }
@@ -3436,8 +3454,8 @@ CMapEngine::LoadMapPersons()
 
       // compile script_command_generator
       if (!person.script_generate_commands.empty()) {
-        p.script_command_generator = m_Engine->CompileScript(person.script_generate_commands.c_str(), error);
-        if (p.script_command_generator == NULL) {
+        p.person_scripts[SCRIPT_COMMAND_GENERATOR] = m_Engine->CompileScript(person.script_generate_commands.c_str(), error);
+        if (p.person_scripts[SCRIPT_COMMAND_GENERATOR] == NULL) {
           m_ErrorMessage = "Could not compile OnGenerateCommands script\nPerson:" + person_string + "\n" + error;
           goto spriteset_error;
         }
@@ -3451,7 +3469,7 @@ CMapEngine::LoadMapPersons()
       m_CurrentPerson = p.name;
 
       // execute script_create
-      if (p.script_create != NULL && !ExecuteScript(p.script_create, error)) {
+      if (p.person_scripts[SCRIPT_ON_CREATE] != NULL && !ExecuteScript(p.person_scripts[SCRIPT_ON_CREATE], error)) {
 
         m_ErrorMessage = "Could not execute OnCreate script\nPerson:" + person_string + "\n" + error;
         m_Persons.erase(m_Persons.end() - 1);
@@ -3464,12 +3482,7 @@ CMapEngine::LoadMapPersons()
 
 spriteset_error:
       if (p.spriteset)                { m_Engine->DestroySpriteset(p.spriteset); }
-      if (p.script_create)            { m_Engine->DestroyScript(p.script_create);         p.script_create  = NULL;              }
-      if (p.script_destroy)           { m_Engine->DestroyScript(p.script_destroy);        p.script_destroy = NULL;              }
-      if (p.script_activate_touch)    { m_Engine->DestroyScript(p.script_activate_touch); p.script_activate_touch = NULL;       }
-      if (p.script_activate_talk)     { m_Engine->DestroyScript(p.script_activate_talk);  p.script_activate_talk = NULL;        }
-      if (p.script_command_generator) { m_Engine->DestroyScript(p.script_command_generator); p.script_command_generator = NULL; }
-
+      DestroyPersonScripts(p);
       DestroyMapPersons();
 
       return false;
@@ -3544,18 +3557,31 @@ CMapEngine::DestroyMapPersons()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+CMapEngine::DestroyPersonScripts(Person& p)
+{
+  for (int script_index = 0; script_index < NUM_PERSON_SCRIPTS; script_index++) {
+    if (p.person_scripts[script_index] != NULL) {
+      m_Engine->DestroyScript(p.person_scripts[script_index]);
+      p.person_scripts[script_index] = NULL;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::DestroyPersonStructure(Person& p)
 {
   // execute OnDestroy scripts (if it exists)
-  if (p.script_destroy) {
+  if (p.person_scripts[SCRIPT_ON_DESTROY]) {
 
     // set current person
     std::string old_person = m_CurrentPerson;
     m_CurrentPerson = p.name;
 
     std::string error;
-    if (!ExecuteScript(p.script_destroy, error)) {
+    if (!ExecuteScript(p.person_scripts[SCRIPT_ON_DESTROY], error)) {
       m_ErrorMessage = "Could not execute OnDestroy script\nPerson:";
       m_ErrorMessage += p.description + "\n" + error;
       return false;
@@ -3567,12 +3593,7 @@ CMapEngine::DestroyPersonStructure(Person& p)
 
 
   m_Engine->DestroySpriteset(p.spriteset);
-
-  if (p.script_create)            { m_Engine->DestroyScript(p.script_create);         p.script_create  = NULL;              }
-  if (p.script_destroy)           { m_Engine->DestroyScript(p.script_destroy);        p.script_destroy = NULL;              }
-  if (p.script_activate_touch)    { m_Engine->DestroyScript(p.script_activate_touch); p.script_activate_touch = NULL;       }
-  if (p.script_activate_talk)     { m_Engine->DestroyScript(p.script_activate_talk);  p.script_activate_talk = NULL;        }
-  if (p.script_command_generator) { m_Engine->DestroyScript(p.script_command_generator); p.script_command_generator = NULL; }
+  DestroyPersonScripts(p);
 
   return true;
 }
@@ -3751,15 +3772,15 @@ CMapEngine::Render()
     ApplyColorMask(m_CurrentColorMask);
 
   // render script
-  if (m_RenderScript && !m_RenderScriptRunning) {
+  if (m_RenderScript && !m_Engine->IsScriptBeingUsed(m_RenderScript)) {
     std::string error;
-    m_RenderScriptRunning = true;
+    //m_RenderScriptRunning = true;
     if (!ExecuteScript(m_RenderScript, error)) {
       m_ErrorMessage = "Could not execute render script\n" + error;
-      m_RenderScriptRunning = false;
+      //m_RenderScriptRunning = false;
       return false;
     }
-    m_RenderScriptRunning = false;
+    //m_RenderScriptRunning = false;
   }
 
   return true;
@@ -3846,15 +3867,15 @@ CMapEngine::UpdateWorld(bool input_valid)
   }
 
   // call update script
-  if (m_UpdateScript && !m_UpdateScriptRunning) {
+  if (m_UpdateScript && !m_Engine->IsScriptBeingUsed(m_UpdateScript)) {
     std::string error;
-    m_UpdateScriptRunning = true;
+    //m_UpdateScriptRunning = true;
     if (!ExecuteScript(m_UpdateScript, error)) {
       m_ErrorMessage = "Could not execute update script\n" + error;
-      m_UpdateScriptRunning = false;
+      //m_UpdateScriptRunning = false;
       return false;
     }
-    m_UpdateScriptRunning = false;
+    //m_UpdateScriptRunning = false;
 
     // if we took more than a second to run the update script, reset the timer
     if (qword(GetTime()) * m_FrameRate > m_NextFrame) {
@@ -3940,7 +3961,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     // if this entity has no commands, execute generator
     if (p->commands.empty()) {
 
-      if (p->script_command_generator) {
+      if (p->person_scripts[SCRIPT_COMMAND_GENERATOR]) {
 
         // set current person
         std::string old_person = m_CurrentPerson;
@@ -3948,7 +3969,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
         std::string person_name = m_CurrentPerson;
 
         std::string error;
-        if (!ExecuteScript(p->script_command_generator, error)) {
+        if (!ExecuteScript(p->person_scripts[SCRIPT_COMMAND_GENERATOR], error)) {
           m_ErrorMessage = "Error executing person command generator\nPerson:"
             + p->description +
             "\nError:" + error;
@@ -4081,12 +4102,12 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
       // and if a person caused the obstruction
       // and if the activation function has not already
       if (obs_person != -1) {
-        if (m_TouchActivationAllowed && !m_IsTouching) {
+        if (m_TouchActivationAllowed) {
 
-          IEngine::script script = m_Persons[obs_person].script_activate_touch;
+          IEngine::script script = m_Persons[obs_person].person_scripts[SCRIPT_ON_ACTIVATE_TOUCH];
 
           // execute the script!
-          if (script) {
+          if (script && !m_Engine->IsScriptBeingUsed(script)) {
 
             const std::string old_person = m_CurrentPerson;
             m_CurrentPerson = m_Persons[obs_person].name;
@@ -4094,16 +4115,16 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
             const std::string person_name = m_Persons[person_index].name;
 
             std::string error;
-            m_IsTouching = true;
+            //m_IsTouching = true;
             if (!ExecuteScript(script, error) || !error.empty()) {
               m_ErrorMessage = "Error executing person activation (touch) script\n"
                 "Person:"
                 + p->description +
                 "\nError:" + error;
-              m_IsTouching = false;
+              //m_IsTouching = false;
               return false;
             }
-            m_IsTouching = false;
+            //m_IsTouching = false;
 
             m_CurrentPerson = old_person;
             ResetNextFrame();
@@ -4219,10 +4240,10 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
         if (obs_person != -1) {
 
           activated = true;
-          if (m_TalkActivationAllowed && !m_IsTalking) {
+          if (m_TalkActivationAllowed) {
 
-            IEngine::script s = m_Persons[obs_person].script_activate_talk;
-            if (s) {
+            IEngine::script s = m_Persons[obs_person].person_scripts[SCRIPT_ON_ACTIVATE_TALK];
+            if (s && m_Engine->IsScriptBeingUsed(s)) {
 
               const std::string old_person = m_CurrentPerson;
               m_CurrentPerson = m_Persons[obs_person].name;
@@ -4230,15 +4251,15 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
               const std::string person_name = m_Persons[person_index].name;
 
               std::string error;
-              m_IsTalking = true;
+              //m_IsTalking = true;
               if (!ExecuteScript(s, error)) {
                 m_ErrorMessage = "Error executing person activation (talk) script\n"
                   "Person:" + p->description +
                   "\nError:" + error;
-                m_IsTalking = false;
+                //m_IsTalking = false;
                 return false;
               }
-              m_IsTalking = false;
+              //m_IsTalking = false;
 
               m_CurrentPerson = old_person;
               ResetNextFrame();
