@@ -1,4 +1,5 @@
 #include "unix_video.h"
+#include "../../common/primitives.hpp"
 #include <cstring>
 
 SFONT* FPSFont;
@@ -6,7 +7,24 @@ static bool FPSDisplayed;
 static SDL_Surface* screen;
 static SDL_Surface* double_buffer; /* double trouble */
 static RGBA global_mask; /* bad, jcore! bad! */
-typedef void (*mask_routine)(Uint32, Uint32&, SDL_PixelFormat*);
+
+/* a special clipping rect that the primitives routines can deal with */
+typedef struct _CLIPPER {
+  int left, right, top, bottom;
+} CLIPPER;
+
+static CLIPPER clipping_rectangle; /* convenience for primitives */
+
+inline CLIPPER MakeClipper (SDL_Rect rect) {
+  CLIPPER clipper;
+
+  clipper.left = rect.x;
+  clipper.right = rect.x + rect.w - 1;
+  clipper.top = rect.y;
+  clipper.bottom = rect.y + rect.h - 1;
+
+  return clipper;
+}
 
 template <typename leftT, typename rightT>
 inline leftT MIN (leftT left, rightT right) {
@@ -17,6 +35,138 @@ template <typename leftT, typename rightT>
 inline leftT MAX (leftT left, rightT right) {
   left > right ? left : right;
 }
+
+void straight_copy (Uint32& dest, Uint32 src) {
+  dest = src;
+}
+
+void blend_copy (Uint32& dest, Uint32 src) {
+  Uint8 sr, sg, sb, sa;
+  Uint8 dr, dg, db, da;
+
+  SDL_GetRGBA(src, screen->format, &sr, &sg, &sb, &sa);
+  SDL_GetRGBA(dest, screen->format, &dr, &dg, &db, &da);
+  sa = sa * global_mask.alpha / 256;
+  sr = sr * global_mask.red / 256;
+  sg = sg * global_mask.green / 256;
+  sb = sb * global_mask.blue / 256;
+  dr = (dr * (256 - sa) + sr * sa) / 256;
+  dg = (dg * (256 - sa) + sg * sa) / 256;
+  db = (db * (256 - sa) + sb * sa) / 256;
+  dest = SDL_MapRGBA(screen->format, dr, dg, db, da);
+}
+
+void straight_copyRGBA (Uint32& dest, RGBA src) {
+  dest = SDL_MapRGBA(screen->format, src.red, src.green, src.blue, src.alpha);
+}
+
+void blend_copyRGBA (Uint32& dest, RGBA src) {
+  Uint8 r, g, b, a;
+
+  SDL_GetRGBA(dest, screen->format, &r, &g, &b, &a);
+  a = src.alpha;
+  a = a * global_mask.alpha / 256;
+  src.red = src.red * global_mask.red / 256;
+  src.green = src.green * global_mask.green / 256;
+  src.blue = src.blue * global_mask.blue / 256;
+  r = (r * (256 - a) + r * a) / 256;
+  g = (g * (256 - a) + g * a) / 256;
+  b = (b * (256 - a) + b * a) / 256;
+  dest = SDL_MapRGBA(screen->format, r, g, b, a);
+}
+
+void blend_alpha (Uint32& dest, Uint32 src) {
+  Uint8 sr, sg, sb, sa;
+  Uint8 dr, dg, db, da;
+
+  SDL_GetRGBA(src, screen->format, &sr, &sg, &sb, &sa);
+  SDL_GetRGBA(dest, screen->format, &dr, &dg, &db, &da);
+  dr = (sr * sa + dr * (256 - sa)) / 256;
+  dg = (sg * sa + dg * (256 - sa)) / 256;
+  db = (db * sa + db * (256 - sa)) / 256;
+  dest = SDL_MapRGBA(screen->format, dr, dg, db, da);
+}
+
+void blend_alphaRGBA (Uint32& dest, RGBA src) {
+  Uint8 r, g, b, a;
+
+  SDL_GetRGBA(dest, screen->format, &r, &g, &b, &a);
+  r = (src.red * src.alpha + r * (256 - src.alpha)) / 256;
+  g = (src.green * src.alpha + g * (256 - src.alpha)) / 256;
+  b = (src.blue * src.alpha + b * (256 - src.alpha)) / 256;
+  dest = SDL_MapRGBA(screen->format, r, g, b, a);
+}
+
+class constant_color {
+ public:
+  constant_color (Uint32 color)
+    : m_color(color) { }
+
+  Uint32 operator() (int i, int range) {
+    return m_color;
+  }
+
+ private:
+  Uint32 m_color;
+};
+
+class constant_colorRGBA {
+ public:
+  constant_colorRGBA (RGBA color) {
+    m_color = SDL_MapRGBA(screen->format, color.red, color.blue,
+                          color.green, color.alpha);
+  }
+  Uint32 operator() (int i, int range) {
+  }
+ private:
+  Uint32 m_color;
+};
+
+class gradient_color {
+ public:
+  gradient_color (Uint32 color1, Uint32 color2) {
+    SDL_GetRGBA(color1, screen->format, &m_r1, &m_g1, &m_b1, &m_a1);
+    SDL_GetRGBA(color2, screen->format, &m_r2, &m_g2, &m_b2, &m_a2);
+  }
+
+  Uint32 operator() (int i, int range) {
+    if (range == 0) {
+      return SDL_MapRGBA(screen->format, m_r1, m_g1, m_b1, m_a1);
+    }
+    Uint8 r, g, b, a;
+
+    r = (i * m_r2 + (range - i) * m_r1) / range;
+    g = (i * m_g2 + (range - i) * m_g1) / range;
+    b = (i * m_b2 + (range - i) * m_b1) / range;
+    a = (i * m_a2 + (range - i) * m_a1) / range;
+    return SDL_MapRGBA(screen->format, r, g, b, a);
+  }
+
+ private:
+  Uint8 m_r1, m_g1, m_b1, m_a1;
+  Uint8 m_r2, m_g2, m_b2, m_a2;
+};
+
+class gradient_colorRGBA {
+ public:
+  gradient_colorRGBA (RGBA color1, RGBA color2)
+    : m_color1(color1), m_color2(color2) { }
+  Uint32 operator() (int i, int range) {
+    if (range == 0) {
+      return SDL_MapRGBA(screen->format, m_color1.red, m_color1.green,
+                         m_color1.blue, m_color1.alpha);
+    }
+    RGBA c;
+
+    c.red = (i * m_color2.red + (range - i) * m_color1.red) / range;
+    c.green = (i * m_color2.green + (range - i) * m_color1.green) / range;
+    c.blue = (i * m_color2.blue + (range - i) * m_color1.blue) / range;
+    c.alpha = (i * m_color2.alpha + (range - i) * m_color1.alpha) / range;
+    return SDL_MapRGBA(screen->format, c.red, c.blue, c.green, c.alpha);
+  }
+ private:
+  RGBA m_color1, m_color2;
+};
 
 /* \brief set the fps font
 
@@ -79,6 +229,7 @@ void SetClippingRectangle (int x, int y, int w, int h) {
   rect.w = w;
   rect.h = h;
   SDL_SetClipRect(screen, &rect);
+  clipping_rectangle = MakeClipper(rect);
 }
 
 void GetClippingRectangle (int* x, int* y, int* w, int* h) {
@@ -153,7 +304,8 @@ void BlitImage (IMAGE image, int x, int y) {
   SDL_BlitSurface(image, NULL, screen, &dest);
 }
 
-void StraightBlit (IMAGE image, int x, int y, mask_routine routine) {
+template <typename routineT>
+void StraightBlit (IMAGE image, int x, int y, routineT routine) {
   int lcv_v, lcv_h;
   int scanlines;
   int width;
@@ -169,7 +321,7 @@ void StraightBlit (IMAGE image, int x, int y, mask_routine routine) {
     spixel = static_cast<Uint32*>(image->pixels);
     for (lcv_v = 0; lcv_v < scanlines; lcv_v++) {
       for (lcv_h = 0; lcv_h < width; lcv_h++) {
-        routine(*(spixel + lcv_h), *(dpixel + lcv_h), image->format);
+        routine(*(spixel + lcv_h), *(dpixel + lcv_h));
       }
       spixel += image->w;
       dpixel += screen->w;
@@ -177,31 +329,22 @@ void StraightBlit (IMAGE image, int x, int y, mask_routine routine) {
   }
 }
 
-void rgba_mask (Uint32 src, Uint32& dest, SDL_PixelFormat* fmt) {
-  Uint8 sr, sg, sb, sa;
-  Uint8 dr, dg, db, da;
-
-  SDL_GetRGBA(src, fmt, &sr, &sg, &sb, &sa);
-  SDL_GetRGBA(dest, fmt, &dr, &dg, &db, &da);
-  sa = sa * global_mask.alpha / 256;
-  sr = sr * global_mask.red / 256;
-  sg = sg * global_mask.green / 256;
-  sb = sb * global_mask.blue / 256;
-  dr = (dr * (256 - sa) + sr * sa) / 256;
-  dg = (dg * (256 - sa) + sg * sa) / 256;
-  db = (db * (256 - sa) + sb * sa) / 256;
-  dest = SDL_MapRGBA(fmt, dr, dg, db, da);
-}
-
 void BlitImageMask (IMAGE image, int x, int y, RGBA mask) {
   global_mask = mask;
-  StraightBlit(image, x, y, rgba_mask);
+  StraightBlit(image, x, y, blend_alpha);
 }
 
 void TransformBlitImage (IMAGE image, int x[4], int y[4]) {
+  if (SDL_LockSurface(screen) == 0) {
+/*    primitives::TexturedQuad((Uint32*)(screen->pixels), screen->w, x, y, */
+    SDL_UnlockSurface(screen);
+  }
 }
 
 void TransformBlitImageMask (IMAGE image, int x[4], int y[4], RGBA mask) {
+  if (SDL_LockSurface(screen) == 0) {
+    SDL_UnlockSurface(screen);
+  }
 }
 
 int GetImageWidth (IMAGE image) {
@@ -212,7 +355,6 @@ int GetImageHeight (IMAGE image) {
   return image->h;
 }
 
-/* this is where endianess problems start */
 RGBA* LockImage (IMAGE image) {
   SDL_LockSurface(image);
   return reinterpret_cast<RGBA*>(image->pixels);
@@ -223,31 +365,97 @@ void UnlockImage (IMAGE image) {
 }
 
 void DirectBlit (int x, int y, int w, int h, RGBA* pixels) {
+  SDL_Surface* temp;
+
+  temp = CreateImage(w, h, pixels);
+  BlitImage(temp, x, y);
+  DestroyImage(temp);
 }
 
 void DirectTransformBlit (int x[4], int y[4], int w, int h, RGBA* pixels) {
+  SDL_Surface* temp;
+
+  temp = CreateImage(w, h, pixels);
+  TransformBlitImage(temp, x, y);
+  DestroyImage(temp);
 }
 
 void DirectGrab (int x, int y, int w, int h, RGBA* pixels) {
+  SDL_Surface* temp;
+
+  temp = GrabImage(x, y, w, h);
+  SDL_LockSurface(temp);
+  memcpy(pixels, temp->pixels, w * h * 4);
+  SDL_UnlockSurface(temp);
+  DestroyImage(temp);
 }
 
 void DrawPoint (int x, int y, RGBA color) {
+  if (SDL_LockSurface(screen) == 0) {
+    primitives::Point((Uint32*)(screen->pixels), screen->w, x, y, color,
+                      clipping_rectangle, blend_copyRGBA);
+    SDL_UnlockSurface(screen);
+  }
 }
 
 void DrawLine (int x[2], int y[2], RGBA color) {
+  if (SDL_LockSurface(screen) == 0) {
+    primitives::Line((Uint32*)(screen->pixels), screen->w, x[0], y[0],
+                     x[1], y[1], constant_colorRGBA(color),
+                     clipping_rectangle, blend_copy);
+    SDL_UnlockSurface(screen);
+  }
 }
 
 void DrawGradientLine (int x[2], int y[2], RGBA color[2]) {
+  if (SDL_LockSurface(screen) == 0) {
+    primitives::Line((Uint32*)(screen->pixels), screen->w, x[0], y[0],
+                     x[1], y[1], gradient_colorRGBA(color[0], color[1]),
+                     clipping_rectangle, blend_copy);
+    SDL_UnlockSurface(screen);
+  }
 }
 
 void DrawTriangle (int x[3], int y[3], RGBA color) {
+  if (SDL_LockSurface(screen) == 0) {
+    primitives::Triangle((Uint32*)(screen->pixels), screen->w, x, y,
+                          color, clipping_rectangle, blend_copyRGBA);
+    SDL_UnlockSurface(screen);
+  }
+}
+
+inline RGBA interpolateRGBA(RGBA a, RGBA b, int i, int range) {
+  if (range == 0)
+    return a;
+  RGBA result = {
+    (a.red   * (range - i) + b.red   * i) / range,
+    (a.green * (range - i) + b.green * i) / range,
+    (a.blue  * (range - i) + b.blue  * i) / range,
+    (a.alpha * (range - i) + b.alpha * i) / range
+  };
+  return result;
 }
 
 void DrawGradientTriangle (int x[3], int y[3], RGBA color[3]) {
+  if (SDL_LockSurface(screen) == 0) {
+    primitives::GradientTriangle((Uint32*)(screen->pixels), screen->w,
+      x, y, color, clipping_rectangle, blend_copyRGBA, interpolateRGBA);
+    SDL_UnlockSurface(screen);
+  }
 }
 
 void DrawRectangle (int x, int y, int w, int h, RGBA color) {
+  if (SDL_LockSurface(screen) == 0) {
+    primitives::Rectangle((Uint32*)(screen->pixels), screen->w, x, y, w, h,
+                          color, clipping_rectangle, blend_copyRGBA);
+    SDL_UnlockSurface(screen);
+  }
 }
 
 void DrawGradientRectangle (int x, int y, int w, int h, RGBA color[4]) {
+  if (SDL_LockSurface(screen) == 0) {
+    primitives::GradientRectangle((Uint32*)(screen->pixels), screen->w,
+      x, y, w, h, color, clipping_rectangle, blend_copyRGBA, interpolateRGBA);
+    SDL_UnlockSurface(screen);
+  }
 }

@@ -59,12 +59,12 @@ inline void clip_segment(int& x1, int& y1, int& x2, int& y2, float slope, int le
   }
 
   if (x1 < left) {
-    y1 -= (x1 - left) * slope;
+    y1 -= (int)((x1 - left) * slope);
     x1 = left;
   }
 
   if (x2 > right) {
-    y2 -= (x2 - right) * slope;
+    y2 -= (int)((x2 - right) * slope);
     x2 = right;
   }
 
@@ -265,7 +265,7 @@ void Triangle(
     } else {
       float slope = float(sorted_x[2] - sorted_x[0]) / (sorted_y[2] - sorted_y[0]);
       mid_x1 = sorted_x[1];
-      mid_x2 = sorted_x[0] + slope * (sorted_y[1] - sorted_y[0]);
+      mid_x2 = (int)(sorted_x[0] + slope * (sorted_y[1] - sorted_y[0]));
     }
     int mid_y = sorted_y[1];
 
@@ -306,7 +306,7 @@ void Triangle(
     } else {
       float slope = float(sorted_x[2] - sorted_x[0]) / (sorted_y[2] - sorted_y[0]);
       mid_x1 = sorted_x[1];
-      mid_x2 = sorted_x[2] + slope * (sorted_y[1] - sorted_y[2]);
+      mid_x2 = (int)(sorted_x[2] + slope * (sorted_y[1] - sorted_y[2]));
     }
     int mid_y = sorted_y[1];
 
@@ -401,7 +401,7 @@ void GradientTriangle(
     } else {
       float slope = float(sorted_x[2] - sorted_x[0]) / (sorted_y[2] - sorted_y[0]);
       mid_x1 = sorted_x[1];
-      mid_x2 = sorted_x[0] + slope * (sorted_y[1] - sorted_y[0]);
+      mid_x2 = (int)(sorted_x[0] + slope * (sorted_y[1] - sorted_y[0]));
       mid_c1 = sorted_c[1];
       mid_c2 = interpolator(sorted_c[0], sorted_c[2], sorted_y[1] - sorted_y[0], sorted_y[2] - sorted_y[0]);
     }
@@ -456,7 +456,7 @@ void GradientTriangle(
     } else {
       float slope = float(sorted_x[2] - sorted_x[0]) / (sorted_y[2] - sorted_y[0]);
       mid_x1 = sorted_x[1];
-      mid_x2 = sorted_x[2] + slope * (sorted_y[1] - sorted_y[2]);
+      mid_x2 = (int)(sorted_x[2] + slope * (sorted_y[1] - sorted_y[2]));
       mid_c1 = sorted_c[1];
       mid_c2 = interpolator(sorted_c[0], sorted_c[2], sorted_y[1] - sorted_y[0], sorted_y[2] - sorted_y[0]);
     }
