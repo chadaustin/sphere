@@ -120,14 +120,14 @@ CEntityListDialog::UpdateEntityDetails(char string[2048], int entity_index, sMap
 
   switch (entity->GetEntityType()) {
     case sEntity::TRIGGER:
-      if (((sTriggerEntity&)entity).script.size() < 512) {
-        sprintf (string + strlen(string), " - Script: %s", ((sTriggerEntity&)entity).script.c_str());
+      if (((sTriggerEntity*)entity)->script.size() < 512) {
+        sprintf (string + strlen(string), " - Script: %s", ((sTriggerEntity*)entity)->script.c_str());
       }
     break;
 
     case sEntity::PERSON:
-      if (((sPersonEntity&)entity).name.size() < 512) {
-        sprintf (string + strlen(string), " - Name: %s", ((sPersonEntity&)entity).name.c_str());
+      if (((sPersonEntity*)entity)->name.size() < 512) {
+        sprintf (string + strlen(string), " - Name: %s", ((sPersonEntity*)entity)->name.c_str());
       }
     break;
   }
