@@ -61,14 +61,17 @@ static void    JPEG_emit_message(j_common_ptr cinfo, int msg_level);
 #define JPEG_FUNCTION(ret, name) ret JPEG_CALL name
 
 
-// little-endian
 #if defined(_WIN32)
-inline dword MAKE_RGBA(byte red, byte green, byte blue, byte alpha) {
+  #include <windows.h>
+  typedef DWORD dword;
 #elif defined(unix)
-#include <sys/types.h>
-inline u_int32_t MAKE_RGBA(byte red, byte green, byte blue, byte alpha) {
+  #include <sys/types.h>
+  typedef u_int32_t dword;
 #endif
-return (alpha << 24) + (blue << 16) + (green << 8) + red;
+
+// little-endian
+inline dword MAKE_RGBA(byte red, byte green, byte blue, byte alpha) {
+  return (alpha << 24) + (blue << 16) + (green << 8) + red;
 }
 
 
