@@ -115,9 +115,17 @@ CTilesetEditView::SelectTile(int tile)
 void
 CTilesetEditView::SetTileSelection(int width, int height, unsigned int* tiles)
 {
-  m_MultiTileWidth = width;
-  m_MultiTileHeight = height;
-  m_MultiTileData = tiles;
+  if (width > 0 && height > 0 && tiles != NULL) {
+    m_MultiTileWidth = width;
+    m_MultiTileHeight = height;
+    m_MultiTileData = tiles;
+  }
+  else {
+    m_MultiTileWidth  = 0;
+    m_MultiTileHeight = 0;
+    m_MultiTileData   = NULL;
+  }
+
   UpdateImageView();
   UpdateScrollBar();
   Invalidate();
