@@ -5,6 +5,7 @@
 #include <SDL.h>
 
 class SFONT; /* for drawing FPS */
+
 typedef struct _IMAGE {
   int width;
   int height;

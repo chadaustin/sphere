@@ -485,8 +485,8 @@ CImage32::Resample(int width, int height, bool weighted)
           RGBA& color_c = m_Pixels[((int) y1 * m_Width) + (int) x2]; // top right
           RGBA& color_d = m_Pixels[((int) y2 * m_Width) + (int) x1]; // bottom left
           
-          RGBA& top    = BlendColorsWeighted(color_a, color_c, w1, w2);
-          RGBA& bottom = BlendColorsWeighted(color_d, color_b, w1, w2);
+          RGBA top    = BlendColorsWeighted(color_a, color_c, w1, w2);
+          RGBA bottom = BlendColorsWeighted(color_d, color_b, w1, w2);
 
           NewPixels[(y * width) + x] = BlendColorsWeighted(top, bottom, w3, w4);
         }
