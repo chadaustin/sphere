@@ -1120,11 +1120,6 @@ BEGIN
             MENUITEM "Data Packets",                ID_DEBUG_DATA_PACKETS
             MENUITEM "Unknown Text",                ID_DEBUG_UNKNOWN_TEXT
         END
-        POPUP "&Server"
-        BEGIN
-            MENUITEM "Unused Server",               ID_SERVER_1
-            MENUITEM "Unused Server",               ID_SERVER_2
-        END
         MENUITEM "&Find...",                    ID_SCRIPT_FIND
         MENUITEM "&Auto Reconnect",             ID_IRC_AUTO_RECONNECT
         MENUITEM "Show Timestamps",             ID_IRC_SHOW_TIMESTAMPS
@@ -1733,7 +1728,7 @@ BEGIN
     CONTROL         "Reverse Line Order",IDC_LINESORT_REVERSELINES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,18,29,77,10
     CONTROL         "Remove Duplicate Lines",IDC_LINESORT_DELETEDUPLICATES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,42,93,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,43,93,10
     CONTROL         "Case Insensitive",IDC_LINESORT_IGNORECASE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,18,57,67,10
     DEFPUSHBUTTON   "OK",IDOK,125,7,50,14

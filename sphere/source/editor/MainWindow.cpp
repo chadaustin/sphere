@@ -780,7 +780,7 @@ CMainWindow::OpenGameFile(const char* filename)
 
   char proto[100] = "";
 
-  for (int i = 0; i < strlen(filename); i++) {
+  for (int i = 0; i < strlen(filename) && i < sizeof(proto); i++) {
     if (strncmp(filename + i, "://", 3) == 0) {
       strncpy(proto, filename, i);
       break;
@@ -796,7 +796,6 @@ CMainWindow::OpenGameFile(const char* filename)
 #ifdef USE_IRC
   if (strcmp(proto, "irc") == 0) {
     const char* address = filename + strlen("irc://");
-    //int port = 6667;
 
     CDocumentWindow* window = new CIRCWindow(address);
     if (window) {
@@ -3077,7 +3076,8 @@ CMainWindow::OnToolsJSConsole()
 afx_msg void
 CMainWindow::OnToolsIRCClient()
 {
-  OpenGameFile("irc://irc.esper.net");
+  std::string address = Configuration::Get(KEY_IRC_ADDRESS);
+  OpenGameFile(address.c_str());
 }
 #endif
 #endif

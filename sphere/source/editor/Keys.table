@@ -84,3 +84,4 @@ DEFINE_KEY(KEY_COLOR_MASK_2_BLUE,  unsigned char, 128)
 
 DEFINE_KEY(KEY_IRC_NICKNAME, std::string, "")
 DEFINE_KEY(KEY_IRC_ALT_NICKNAME, std::string, "")
+DEFINE_KEY(KEY_IRC_ADDRESS, std::string, "irc://irc.esper.net")

@@ -18,41 +18,99 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class ScintillaLineComparer : public std::binary_function<unsigned int, unsigned int, bool> 
+/*
+bool line_compare_ignore_case(ScintillaLine* a, ScintillaLine* b, bool ignore_case)
+{
+  if (!a || !b)
+    return false;
+
+  for (int i = 0; i < m_lines[a]->size && i < m_lines[b]->size; i++) {
+    if (isalpha(a->data[i]) && isalpha(b->data[i])) {
+      if (tolower(a->data[i]) <= tolower(b->data[i])) {
+        //printf ("1. %d, %s belongs before %d, %s", m_lines[a]->size, m_lines[a]->data, m_lines[b]->size, m_lines[b]->data);
+        return true;
+      }
+    }
+    else {
+      if (a->data[i] < b->data[i]) {
+        //printf ("2. %d, %s belongs before %d, %s", m_lines[a]->size, m_lines[a]->data, m_lines[b]->size, m_lines[b]->data);
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+bool line_compare(ScintillaLine* a, ScintillaLine* b, bool ignore_case)
+{
+  if (!a || !b)
+    return false;
+
+  for (int i = 0; i < a->size && i < b->size; i++) {
+    if (a->data[i] < b->data[i]) {
+      //printf ("%c belongs before %c\n", m_lines[a]->data[i], m_lines[b]->data[i]);
+      return true;
+    }
+  }
+
+  return false;
+}
+*/
+
+class ScintillaLineComparer : public std::binary_function<int, int, bool> 
 {
 private:
-  const std::vector<ScintillaLine*>	&m_lines;
+  const std::vector<ScintillaLine*>& m_lines;
 
 public:
   bool m_ignore_case;
 
 public:
-  ScintillaLineComparer(const std::vector<ScintillaLine*>& lines) : m_lines(lines) { }
+  ScintillaLineComparer(const std::vector<ScintillaLine*>& lines) : m_lines(lines) {
+    m_ignore_case = false;
+  }
 
-  bool operator()(unsigned int a, unsigned int b) const
+  bool operator()(const int a, const int b) const
   {
-    if (a >= m_lines.size() || b >= m_lines.size()) {
+    if (a < 0) {
+      return false;
+    }
+
+    if (b < 0) {
+      return false;
+    }
+
+    if (a >= m_lines.size()) {
+      return false;
+    }
+    
+    if (b >= m_lines.size()) {
       return false;
     } 
 
     if (m_ignore_case) {
       for (int i = 0; i < m_lines[a]->size && i < m_lines[b]->size; i++) {
-        if (isalpha(m_lines[a]->data[i]) && isalpha(m_lines[b]->data[i])) {
-          if (tolower(m_lines[a]->data[i]) <= tolower(m_lines[b]->data[i])) {
-            return true;
+        int x = m_lines[a]->data[i];
+        int y = m_lines[b]->data[i];
+        if (isalpha(x) && isalpha(y)) {
+          if (tolower(x) != tolower(y)) {
+            return (tolower(x) < tolower(y)) ? true : false;
           }
         }
         else {
-          if (m_lines[a]->data[i] < m_lines[b]->data[i]) {
-            return true;
+          if (x != y) {
+          return (x < y) ? true : false;
           }
         }
       }
     }
     else {
       for (int i = 0; i < m_lines[a]->size && i < m_lines[b]->size; i++) {
-        if (m_lines[a]->data[i] < m_lines[b]->data[i]) {
-          return true;
+        int x = m_lines[a]->data[i];
+        int y = m_lines[b]->data[i];
+        if (x != y) {
+          return (x < y) ? true : false;
         }
       }
     }
@@ -182,15 +240,15 @@ CLineSorter::Sort()
   SendEditor(SCI_SETTARGETEND,   SendEditor(SCI_POSITIONFROMLINE, end_line + 1));
   SendEditor(SCI_REPLACETARGET, 0, (LRESULT) "");
 
-  std::vector<unsigned int> line_indexes;
-  for (unsigned int i = 0; i < m_Lines.size(); i++) {
+  std::vector</*unsigned*/ int> line_indexes;
+  for (/*unsigned*/ int i = 0; i < m_Lines.size(); i++) {
     line_indexes.push_back(i);
   }
 
   if (0) {
     SendEditor(SCI_ADDTEXT, strlen("Before sort...\n"), (LRESULT)"Before sort...\n");
-    for (unsigned int i = 0; i < m_Lines.size() && i < line_indexes.size(); i++) {
-      unsigned int line_index = line_indexes[i];
+    for (/*unsigned*/ int i = 0; i < m_Lines.size() && i < line_indexes.size(); i++) {
+      /*unsigned*/ int line_index = line_indexes[i];
       if (m_Lines[line_index]->data) {
         SendEditor(SCI_ADDTEXT, m_Lines[line_index]->size, (LRESULT)m_Lines[line_index]->data);
       }
@@ -199,27 +257,57 @@ CLineSorter::Sort()
 
   SetStatusText("Sorting lines...");
 
+  if (0) {
+    printf("Before sorting\n");
+    std::vector<int>::iterator it;
+    int i = 0;
+    for (it = line_indexes.begin(); it != line_indexes.end(); it++)
+    {
+      printf("line_indexes[%d] = %d\n", i, (*it));
+       i++;
+    }
+  }
+
   ScintillaLineComparer line_comparer(m_Lines);
   line_comparer.m_ignore_case = ignore_case;
-  std::sort(line_indexes.begin(), line_indexes.end(), line_comparer);
+  std::stable_sort(line_indexes.begin(), line_indexes.end(), line_comparer);
+
+  if (1) {
+    printf("After sorting\n");
+    std::vector<int>::iterator it;
+    int i = 0;
+    for (it = line_indexes.begin(); it != line_indexes.end(); it++)
+    {
+      printf("line_indexes[%d] = %d\n", i, (*it));
+      i++;
+    }
+  }
 
   SetStatusText("Lines sorted...");
 
   if (1) {
+    int max_lines = m_Lines.size() - 1;
+    int last_index = 0;
+    int line_index;
+
     // SendEditor(SCI_ADDTEXT, strlen("after sort...\n"), (LPARAM)"after sort...\n");
-    for (unsigned int i = 0; i < m_Lines.size() && i < line_indexes.size(); i++) {
-      unsigned int line_index = sort_lines ? line_indexes[(reverse_lines ? (m_Lines.size() - 1) - i : i)] : (reverse_lines ? (m_Lines.size() - 1) - i : i);
+    for (/*unsigned*/ int i = 0; i < m_Lines.size() && i < line_indexes.size(); i++, last_index = line_index) {
+      line_index = (reverse_lines ? max_lines - i : i);
+
+      if (sort_lines) {
+        line_index = line_indexes[line_index];
+      }
 
       if (m_Lines[line_index]->data) {
 
         if (i > 0 && delete_duplicates) {
-          unsigned int last_index = sort_lines ? line_indexes[(reverse_lines ? (m_Lines.size() - 1) - i + 1 : i - 1)] : (reverse_lines ? (m_Lines.size() - 1) - i + 1 : i - 1);
 
           if (m_Lines[line_index]->size == m_Lines[last_index]->size) {
             if (memcmp(m_Lines[line_index]->data,
                        m_Lines[last_index]->data,
-                       m_Lines[line_index]->size) == 0)
+                       m_Lines[line_index]->size) == 0) {
               continue;
+            }
           }
         }
 
