@@ -55,6 +55,10 @@ CImageWindow::CImageWindow(const char* image)
 
   m_Created = true;
 
+#ifdef USE_SIZECBAR
+	LoadPaletteStates();
+#endif
+
   // make sure everything is in the right position
   RECT ClientRect;
   GetClientRect(&ClientRect);

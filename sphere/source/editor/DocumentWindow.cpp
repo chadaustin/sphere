@@ -335,6 +335,31 @@ CDocumentWindow::OnUpdateSaveableCommand(CCmdUI* cmdui)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void CDocumentWindow::DistributeAccelerator(CWnd*pWnd, MSG* pMsg) 
+{
+	ASSERT(pWnd != NULL);
+	pWnd = pWnd->GetWindow(GW_CHILD);
+
+	HACCEL hAccel = ((CFrameWnd*)AfxGetMainWnd())->GetDefaultAccelerator();
+	
+	while (pWnd != NULL)
+	{
+		if (pWnd->IsWindowVisible())
+		{	
+			HACCEL hCustomAccel = NULL;
+			pWnd->SendMessage(WM_GETACCELERATOR, (WPARAM)&hCustomAccel);					
+
+			::TranslateAccelerator(pWnd->m_hWnd, (hCustomAccel != NULL) ? hCustomAccel : hAccel, pMsg);	
+
+			DistributeAccelerator(pWnd, pMsg);
+		}
+
+		pWnd = pWnd->GetNextWindow();
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 BOOL CDocumentWindow::PreTranslateMessage(MSG* pMsg)
 {
 	if (pMsg->message >= WM_KEYFIRST && pMsg->message <= WM_KEYLAST)
@@ -345,20 +370,7 @@ BOOL CDocumentWindow::PreTranslateMessage(MSG* pMsg)
 		if (hAccel != NULL)
 		{
 			//distribute the accelerator among the windows childs		
-			CWnd * pWnd = GetWindow(GW_CHILD);
-			
-			while (pWnd != NULL)
-			{
-				if (pWnd->IsWindowVisible())
-				{	
-					HACCEL hCustomAccel = NULL;
-					pWnd->SendMessage(WM_GETACCELERATOR, (WPARAM)&hCustomAccel);
-
-					::TranslateAccelerator(pWnd->m_hWnd, (hCustomAccel != NULL) ? hCustomAccel : hAccel, pMsg);	
-				}
-
-				pWnd = pWnd->GetNextWindow();
-			}
+			DistributeAccelerator(this, pMsg);
 		}
 	}
 

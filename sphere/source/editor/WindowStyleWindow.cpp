@@ -123,6 +123,10 @@ CWindowStyleWindow::CWindowStyleWindow(const char* window_style)
   m_ColorView.SetColor(CreateRGB(0, 0, 0));
   m_ImageView.SetColor(CreateRGBA(0, 0, 0, 255));
   m_AlphaView.SetAlpha(255);
+
+	#ifdef USE_SIZECBAR
+	LoadPaletteStates();
+	#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

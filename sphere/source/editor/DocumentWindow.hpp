@@ -68,6 +68,8 @@ private:
   std::vector<CPaletteWindow*> m_AttachedPalettes;
 
   DECLARE_MESSAGE_MAP()
+
+	static void DistributeAccelerator(CWnd*pWnd, MSG* pMsg);
 public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };
