@@ -1,0 +1,60 @@
+clock.js by WIP (Trapper Bigelow)
+
+There are no functions built-in to sphere
+that can do a game clock, so I decided to
+make my own function.
+
+How to Use clock.js
+Well, I use it in my game object. My game
+object is just a variable that holds info
+such as current party, money, etc. Well,
+to use this clock, simply create a new
+variable in your game object. If you don't
+use game objects, simply make a new global
+variable to put your clock in. For the new
+variable, simply put:
+
+var GameClock = new Clock();
+
+Boom! You have a clock object. But the time
+isn't ticking. So, you must start the clock:
+
+GameClock.start();
+
+Do this when your game ACTUALLY starts. The
+clock object will start to keep track of the
+time. To get the time from the clock, just
+ask for the time! But make sure you put the
+returned info into a variable:
+
+var current_time = GameClock.getTime();
+
+The variable current_time now has the time. So
+to get the time from the variable, just access
+the variables in it:
+
+current_time.seconds = Seconds passed since clock was started
+current_time.minutes = Minutes passed since clock was started
+current_time.hours = Minutes passed since clock was started
+
+So there you go. But what if you are loading a
+game? Just put info into the clock object. 
+
+GameClock.seconds = 45;
+GameClock.minutes = 14;
+GameClock.hours = 3;
+
+
+Pieces of the Clock Object
+
+clock.getTime()
+- Returns an object that holds time
+
+clock.seconds
+- seconds of previous game loaded into clock
+
+clock.minutes
+- minutes of previous game loaded into clock
+
+clock.hours
+- hours of previous game loaded into clock
