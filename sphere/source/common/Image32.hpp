@@ -59,10 +59,10 @@ public:
   void SetAlpha(int alpha);
   void SetColorAlpha(RGB color, int alpha);
   void ReplaceColor(RGBA oldColor, RGBA newColor);
-  void Line(int x1, int y1, int x2, int y2, RGBA color);
+  void Line(int x1, int y1, int x2, int y2, RGBA color, int cx = 0, int cy = 0, int cwidth = -1, int cheight =  -1);
   void Circle(int x, int y, int r, RGBA color);
   void Ellipse(int cx, int cy, int radx, int rady, RGBA clr, int fill = false);
-  void Rectangle(int x1, int y1, int x2, int y2, RGBA color);
+  void Rectangle(int x1, int y1, int x2, int y2, RGBA color, int cx = 0, int cy = 0, int cwidth = -1, int cheight = -1);
 
   void BlitImage(CImage32& image, int x, int y);
 

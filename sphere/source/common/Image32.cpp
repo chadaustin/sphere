@@ -712,9 +712,12 @@ CImage32::ReplaceColor(RGBA oldColor, RGBA newColor) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CImage32::Line(int x1, int y1, int x2, int y2, RGBA color)
+CImage32::Line(int x1, int y1, int x2, int y2, RGBA color, int cx, int cy, int cwidth, int cheight)
 {
-  clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+  if (cwidth <= -1) cwidth = m_Width;
+  if (cwidth <= -1) cheight = m_Height;
+
+  clipper clip = { cx, cy, cwidth - 1, cheight - 1 };
   switch (m_BlendMode) {
     case REPLACE:    primitives::Line(m_Pixels, m_Width, x1, y1, x2, y2, constant_color(color), clip, copyRGBA);  break;
     case BLEND:      primitives::Line(m_Pixels, m_Width, x1, y1, x2, y2, constant_color(color), clip, blendRGBA); break;
@@ -810,7 +813,7 @@ CImage32::Ellipse(int cx, int cy, int radx, int rady, RGBA color, int fill)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CImage32::Rectangle(int x1, int y1, int x2, int y2, RGBA color)
+CImage32::Rectangle(int x1, int y1, int x2, int y2, RGBA color, int cx, int cy, int cwidth, int cheight)
 {
   // make sure x1 < x2 and y1 < y2 so we can get good w and h values
   if (x1 > x2) {
@@ -822,7 +825,10 @@ CImage32::Rectangle(int x1, int y1, int x2, int y2, RGBA color)
   int w = x2 - x1 + 1;
   int h = y2 - y1 + 1;
 
-  clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+  if (cwidth <= -1) cwidth = m_Width;
+  if (cheight <= -1) cheight = m_Height;
+
+  clipper clip = { cx, cy, cwidth - 1, cheight - 1 };
   switch (m_BlendMode) {
     case REPLACE:    primitives::Rectangle(m_Pixels, m_Width, x1, y1, w, h, color, clip, copyRGBA);  break;
     case BLEND:      primitives::Rectangle(m_Pixels, m_Width, x1, y1, w, h, color, clip, blendRGBA); break;

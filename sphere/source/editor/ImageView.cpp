@@ -746,7 +746,10 @@ CImageView::Line()
     if (!InImage(start) || !InImage(end))
       return;
 
-    m_Image.Line(start.x, start.y, end.x, end.y, m_Color);
+    int sx, sy, sw, sh;
+    GetSelectionArea(sx, sy, sw, sh);
+
+    m_Image.Line(start.x, start.y, end.x, end.y, m_Color, sx, sy, (sx + sw), (sy + sh));
     Invalidate();
     m_Handler->IV_ImageChanged();
   }
@@ -773,7 +776,10 @@ CImageView::Rectangle()
     if (!InImage(start) || !InImage(end))
       return;
 
-    m_Image.Rectangle(start.x, start.y, end.x, end.y, m_Color);
+    int sx, sy, sw, sh;
+    GetSelectionArea(sx, sy, sw, sh);
+
+    m_Image.Rectangle(start.x, start.y, end.x, end.y, m_Color, sx, sy, (sx + sw), (sy + sh));
     Invalidate();
     m_Handler->IV_ImageChanged();
   }
