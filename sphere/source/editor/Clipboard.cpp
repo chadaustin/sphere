@@ -26,6 +26,9 @@ CClipboard::IsFlatImageOnClipbard()
 RGBA*
 CClipboard::GetFlatImageFromClipboard(int& width, int& height)
 {
+  width = 0;
+  height = 0;
+
   HGLOBAL memory = (HGLOBAL)GetClipboardData(s_ClipboardFormat);
   if (memory == NULL) {
     return NULL;
@@ -107,6 +110,9 @@ CClipboard::IsBitmapImageOnClipboard() {
 RGBA*
 CClipboard::GetBitmapImageFromClipboard(int& width, int& height)
 {
+  width = 0;
+  height = 0;
+
   HBITMAP bitmap = (HBITMAP)GetClipboardData(CF_BITMAP);
   if (bitmap == NULL) {
     return NULL;
@@ -119,18 +125,6 @@ CClipboard::GetBitmapImageFromClipboard(int& width, int& height)
   HBITMAP oldbitmap = (HBITMAP)SelectObject(dc, bitmap);
   width  = b.bmWidth;
   height = b.bmHeight;
-
-  /*
-  // work out the possible width
-  for (width = 0; width < 4096; width++)
-    if (GetPixel(dc, width, 0) == CLR_INVALID)
-      break;
-
-  // work out the possible height
-  for (height = 0; height < 4096; height++)
-    if (GetPixel(dc, 0, height) == CLR_INVALID)
-      break;
-  */
 
   if (width <= 0 || height <= 0) {
     return NULL;

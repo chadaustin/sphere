@@ -325,12 +325,14 @@ CSpritesetWindow::OnZoomOut()
 afx_msg void
 CSpritesetWindow::OnPaste()
 {
-  if (m_TabControl.GetCurSel() == 0) {
-    m_SpritesetView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_SPRITESETVIEWFRAMES_PASTE, 0), 0);
-  }
-  else
-  if (m_TabControl.GetCurSel() == 1) {
-    m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_PASTE, 0), 0);
+  if (GetFocus() == this) {
+    if (m_TabControl.GetCurSel() == 0) {
+      m_SpritesetView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_SPRITESETVIEWFRAMES_PASTE, 0), 0);
+    }
+    else
+    if (m_TabControl.GetCurSel() == 1) {
+      m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_PASTE, 0), 0);
+    }
   }
 }
 

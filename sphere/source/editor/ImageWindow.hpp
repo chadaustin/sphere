@@ -22,7 +22,7 @@ class CImageWindow
 	DECLARE_DYNAMIC(CImageWindow)
 #endif
 public:
-  CImageWindow(const char* image = NULL);
+  CImageWindow(const char* image = NULL, bool create_from_clipboard = false);
   ~CImageWindow();
 
 private:

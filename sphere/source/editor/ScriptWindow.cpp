@@ -54,7 +54,7 @@ END_MESSAGE_MAP()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-CScriptWindow::CScriptWindow(const char* filename)
+CScriptWindow::CScriptWindow(const char* filename, bool create_from_clipboard)
 : CSaveableDocumentWindow(filename, IDR_SCRIPT)
 , m_Created(false)
 , m_SearchDialog(0)
@@ -69,6 +69,10 @@ CScriptWindow::CScriptWindow(const char* filename)
     return;
   }
 
+  if (!filename && create_from_clipboard) {
+    OnPaste();
+  }
+  else
   if (filename) {
     LoadScript(filename);
   }

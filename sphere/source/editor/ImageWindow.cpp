@@ -34,7 +34,7 @@ END_MESSAGE_MAP()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-CImageWindow::CImageWindow(const char* image)
+CImageWindow::CImageWindow(const char* image, bool create_from_clipboard)
 : CSaveableDocumentWindow(image, IDR_IMAGE)
 , m_Created(false)
 {
@@ -48,11 +48,51 @@ CImageWindow::CImageWindow(const char* image)
       return;
     }
   } else {
+
     if (!m_Image.Create(16, 16)) {
       AfxGetApp()->m_pMainWnd->MessageBox("Error: Could not create image");
       delete this;
       return;
     }
+
+    if (create_from_clipboard && m_ImageView.m_Clipboard != NULL) {
+      if (AfxGetApp()->m_pMainWnd->OpenClipboard() != FALSE) {
+
+        int width = 0, height = 0;
+        RGBA* pixels = NULL;
+
+        if (pixels == NULL && m_ImageView.m_Clipboard->IsFlatImageOnClipbard()) {
+          pixels = m_ImageView.m_Clipboard->GetFlatImageFromClipboard(width, height);
+        }
+
+        if (pixels == NULL && m_ImageView.m_Clipboard->IsBitmapImageOnClipboard()) {
+          pixels = m_ImageView.m_Clipboard->GetBitmapImageFromClipboard(width, height);
+        }
+
+        CloseClipboard();
+
+        if (width > 0 && height > 0 && pixels != NULL) {
+          if (!m_Image.Create(width, height)) {
+            delete[] pixels;
+            pixels = NULL;
+            AfxGetApp()->m_pMainWnd->MessageBox("Error: Could not create image");
+            delete this;
+            return;
+          }
+
+          for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+              m_Image.SetPixel(x, y, pixels[y * width + x]);
+            }
+          }
+        }
+
+        delete[] pixels;
+        pixels = NULL;
+
+      }
+    }
+
   }
 
   m_DocumentType = WA_IMAGE;

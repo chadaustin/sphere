@@ -2745,9 +2745,11 @@ CMainWindow::OnZoomIn()
     dw->SendMessage(ID_FILE_ZOOM_IN, 0, 0);
   }
   else {
-    MessageBox("MainWindow::ZoomIn");
+    //MessageBox("MainWindow::ZoomIn");
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
 CMainWindow::OnZoomOut()
@@ -2757,9 +2759,11 @@ CMainWindow::OnZoomOut()
     dw->SendMessage(ID_FILE_ZOOM_OUT, 0, 0);
   }
   else {
-    MessageBox("MainWindow::ZoomOut");
+    //MessageBox("MainWindow::ZoomOut");
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
 CMainWindow::OnPaste()
@@ -2769,8 +2773,21 @@ CMainWindow::OnPaste()
     dw->SendMessage(ID_FILE_PASTE, 0, 0);
   }
   else {
-    //MessageBox("MainWindow::Paste");
+    CDocumentWindow* dw = NULL;
+    if (IsClipboardFormatAvailable(CF_TEXT)) {
+      dw = new CScriptWindow(NULL, true);
+    }
+    else
+    if (IsClipboardFormatAvailable(CF_BITMAP)) {
+      dw = new CImageWindow(NULL, true);
+    }
+
+    if (dw) {
+      m_DocumentWindows.push_back(dw);
+      UpdateToolBars();
+    }
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+

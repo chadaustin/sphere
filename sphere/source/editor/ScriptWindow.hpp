@@ -10,7 +10,7 @@ class CScriptWindow
 : public CSaveableDocumentWindow
 {
 public:
-  CScriptWindow(const char* filename = NULL);
+  CScriptWindow(const char* filename = NULL, bool create_from_clipboard = false);
 
 private:
   bool Create();

@@ -735,8 +735,6 @@ BEGIN
             , GRAYED
         END
         MENUITEM "&Properties...",              ID_TILESETVIEW_PROPERTIES
-        MENUITEM "Zoom In",                     ID_TILESETVIEW_ZOOM_IN
-        MENUITEM "Zoom Out",                    ID_TILESETVIEW_ZOOM_OUT
     END
 END
 

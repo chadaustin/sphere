@@ -223,8 +223,10 @@ private:
   int m_RedrawWidth;
   int m_RedrawHeight;
 
+public:
   CClipboard* m_Clipboard;
 
+private:
   DECLARE_MESSAGE_MAP()
 };
 
