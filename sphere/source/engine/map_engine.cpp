@@ -2491,7 +2491,7 @@ CMapEngine::GetPersonData(const char* name, std::vector<struct PersonData>& pers
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::SetPersonData(const char* name, std::vector<struct PersonData> data)
+CMapEngine::SetPersonData(const char* name, const std::vector<struct PersonData> data)
 {
   int person = -1;
   if ( IsInvalidPersonError(name, person) ) {
@@ -2499,6 +2499,24 @@ CMapEngine::SetPersonData(const char* name, std::vector<struct PersonData> data)
   }
 
   m_Persons[person].person_data = data;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetPersonValue(const char* name, const char* key, std::string& value)
+{
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::SetPersonValue(const char* name, const char* key, const std::string value)
+{
+
   return true;
 }
 

@@ -36,6 +36,9 @@ private:
   CSliderCtrl m_PositionBar;
   bool m_PositionDown;
 
+  CSliderCtrl m_PanBar;
+  CSliderCtrl m_PitchBar;
+
   CStatic m_VolumeBarGraphic;
   CBitmap m_VolumeBarBitmap;
   CStatic m_Blank;

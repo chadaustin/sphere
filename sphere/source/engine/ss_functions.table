@@ -116,6 +116,7 @@ SS_FUNCTION(OpenLog, 1)
   SS_FUNCTION(GetMapEngine, 0)
   // map_engine.save(filename)
   // map_engine.tileset.appendTiles(num_tiles)
+  // map_engine.appendLayer(tile_index)
 
     // maps
     SS_FUNCTION(GetNumLayers, 0)
@@ -250,6 +251,8 @@ SS_FUNCTION(OpenLog, 1)
       SS_FUNCTION(GetPersonMask, 1)
       SS_FUNCTION(GetPersonData, 1)
       SS_FUNCTION(SetPersonData, 2)
+      SS_FUNCTION(GetPersonValue, 2)
+      SS_FUNCTION(SetPersonValue, 3)
 
       SS_FUNCTION(IgnorePersonObstructions, 2)
       SS_FUNCTION(IsIgnoringPersonObstructions, 1)

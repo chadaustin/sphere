@@ -94,6 +94,8 @@ public:
   bool SetLayerScaleFactorX(int layer_index, double factor_x);
   bool SetLayerScaleFactorY(int layer_index, double factor_y);
 
+  bool AppendLayer(int width, int height, int tile_index);
+
   bool GetNumTiles(int& tiles);
   bool SetTile(int x, int y, int layer, int tile);
   bool GetTile(int x, int y, int layer, int& tile);
@@ -207,7 +209,11 @@ public:
   bool GetPersonMask(const char* name, RGBA& mask);
   
   bool GetPersonData(const char* name, std::vector<struct PersonData>& data);
-  bool SetPersonData(const char* name, std::vector<struct PersonData> data);
+  bool SetPersonData(const char* name, const std::vector<struct PersonData> data);
+
+  bool GetPersonValue(const char* name, const char* key, std::string& value);
+  bool SetPersonValue(const char* name, const char* key, const std::string value);
+
   
   SSPRITESET* GetPersonSpriteset(const char* name);
   bool SetPersonSpriteset(const char* name, sSpriteset& spriteset);

@@ -45,6 +45,14 @@ public:
     return m_Sound->getLength();
   }
 
+  void SetPitchShift(double pitch) {
+    m_Sound->setPitchShift(pitch);
+  }
+
+  void SetPan(double pan) {
+    m_Sound->setPan(pan);
+  }
+
 private:
   audiere::OutputStreamPtr m_Sound;
   bool m_ClosedAudio;

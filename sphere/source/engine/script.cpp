@@ -4319,6 +4319,34 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(GetPersonValue, 2)
+  arg_str(name);
+  arg_str(key);
+  std::string value;
+
+  if (!This->m_Engine->GetMapEngine()->GetPersonValue(name, key, value)) {
+    This->ReportMapEngineError("GetPersonValue() failed");
+    return JS_FALSE;
+  }  
+
+  return_str(value.c_str());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(SetPersonValue, 3)
+  arg_str(name);
+  arg_str(key);
+  arg_str(value);
+
+  if (!This->m_Engine->GetMapEngine()->SetPersonValue(name, key, value)) {
+    This->ReportMapEngineError("SetPersonValue() failed");
+    return JS_FALSE;
+  }
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 /**
         - returns the person's spriteset.
 */
@@ -6075,11 +6103,14 @@ CScript::CreateFontObject(JSContext* cx, SFONT* font, bool destroy)
 
   // attach the font to this object
   SS_FONT* font_object = new SS_FONT;
+  if (!font_object)
+    return NULL;
+  
   font_object->font       = font;
   font_object->destroy_me = destroy;
   font_object->mask       = CreateRGBA(255, 255, 255, 255);
   JS_SetPrivate(cx, object, font_object);
-
+ 
   return object;
 }
 
@@ -7832,6 +7863,7 @@ begin_func(GetMapEngine, 0)
   // assign methods to the object
   static JSFunctionSpec fs[] = {
     { "save",        ssMapEngineSave,        0, 0, 0 },
+    { "appendLayer", ssMapEngineLayerAppend, 1, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -7867,6 +7899,47 @@ begin_method(SS_MAPENGINE, ssMapEngineSave, 1)
   }
 
   return_bool (  This->m_Engine->GetMapEngine()->SaveMap(path.c_str()) );
+end_method()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_method(SS_MAPENGINE, ssMapEngineLayerAppend, 3)
+  arg_int(layer_width);
+  arg_int(layer_height);
+  arg_int(tile_index);
+
+  if ( !This->m_Engine->GetMapEngine()->IsRunning() ) {
+    This->ReportMapEngineError("map_engine.appendLayer() failed");
+    return JS_FALSE;
+  }
+
+  if ( !(layer_width >= 0 && layer_width < 4096
+    && layer_height >= 0 && layer_height < 4096) ) {
+    This->ReportMapEngineError("map_engine.appendLayer() failed");
+    return JS_FALSE;
+  }
+
+  if ( !(tile_index >= 0 && tile_index < This->m_Engine->GetMapEngine()->GetMap().GetMap().GetTileset().GetNumTiles()) ) {
+    This->ReportMapEngineError("map_engine.appendLayer() failed");
+    return JS_FALSE;
+  }
+
+  sLayer layer;
+  layer.Resize(layer_width, layer_height);
+  
+  if (layer.GetWidth() != layer_width
+   && layer.GetHeight() != layer_height) {
+    This->ReportMapEngineError("map_engine.appendLayer() failed");
+    return JS_FALSE;
+  }
+
+  for (int y = 0; y < layer.GetHeight(); y++) {
+    for (int x = 0; x < layer.GetWidth(); x++) {
+      layer.SetTile(x, y, tile_index);
+    }
+  }
+
+  This->m_Engine->GetMapEngine()->GetMap().GetMap().AppendLayer(layer);
 end_method()
 
 ////////////////////////////////////////////////////////////////////////////////

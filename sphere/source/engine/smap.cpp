@@ -199,10 +199,6 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
   const int cx = GetScreenWidth()  / 2;
   const int cy = GetScreenHeight() / 2;
 
-  if (1) {
-   // m_LayerInfo[i].angle += 0.1;
-  }
-
   // calculate camera offsets
   offset_x = 0;
   offset_y = 0;
@@ -212,8 +208,8 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
     if (m_Map.IsRepeating() == false) {
       if (camera_x < cx) {
         offset_x = cx - camera_x;
-      } else if (camera_x > m_MaxLayerWidth * blit_width - cx) {
-        offset_x = m_MaxLayerWidth * blit_width - camera_x - cx;
+      } else if (camera_x > (m_MaxLayerWidth * blit_width) - cx) {
+        offset_x = (m_MaxLayerWidth * blit_width) - camera_x - cx;
       }
     }
   } else {
@@ -226,8 +222,8 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
     if (m_Map.IsRepeating() == false) {
       if (camera_y < cy) {
         offset_y = cy - camera_y;
-      } else if (camera_y > m_MaxLayerHeight * blit_height - cy) {
-        offset_y = m_MaxLayerHeight * blit_height - camera_y - cy;
+      } else if (camera_y > (m_MaxLayerHeight * blit_height) - cy) {
+        offset_y = (m_MaxLayerHeight * blit_height) - camera_y - cy;
       }
     }
   } else {
@@ -251,10 +247,10 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
   int numerator_x = camera_x - cx + offset_x - parallax_x;
   int numerator_y = camera_y - cy + offset_y - parallax_y;
   while (numerator_x < 0) {
-    numerator_x += blit_width * layer.GetWidth();
+    numerator_x += (blit_width * layer.GetWidth());
   }
   while (numerator_y < 0) {
-    numerator_y += blit_height * layer.GetHeight();
+    numerator_y += (blit_height * layer.GetHeight());
   }
 
   // t[x,y] = indices into the layer

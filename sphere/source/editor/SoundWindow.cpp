@@ -11,6 +11,9 @@ const int TIMER_UPDATE_SOUND_WINDOW = 987;
 const int ID_MUSIC_VOLUMEBAR   = 40102;
 const int ID_MUSIC_POSITIONBAR = 40103;
 
+const int ID_MUSIC_PANBAR = 40104;
+const int ID_MUSIC_PITCHBAR = 40105;
+
 
 BEGIN_MESSAGE_MAP(CSoundWindow, CDocumentWindow)
   
@@ -76,6 +79,18 @@ CSoundWindow::CSoundWindow(const char* sound)
   m_VolumeBarGraphic.SetBitmap((HBITMAP)m_VolumeBarBitmap);
   m_Blank.Create(NULL, WS_CHILD | WS_VISIBLE, CRect(), this);
 
+
+  if (1) {
+    m_PanBar.Create(WS_CHILD | WS_VISIBLE | TBS_VERT, CRect(), this, ID_MUSIC_PANBAR);
+    m_PanBar.SetRange(-255, 255, true);
+    m_PanBar.SetPos(0);
+    m_PanBar.SetLineSize(20);
+    m_PitchBar.Create(WS_CHILD | WS_VISIBLE | TBS_VERT, CRect(), this, ID_MUSIC_PITCHBAR);
+    m_PitchBar.SetRange(5, 500, true);
+    m_PitchBar.SetPos(255);
+    m_PitchBar.SetLineSize(20);
+  }
+
   if (m_Sound.IsSeekable()) {
     m_PositionBar.Create(WS_CHILD | WS_VISIBLE | TBS_HORZ, CRect(), this, ID_MUSIC_POSITIONBAR);
     m_PositionBar.SetLineSize(20);
@@ -125,6 +140,11 @@ CSoundWindow::OnSize(UINT type, int cx, int cy)
     m_PositionBar.MoveWindow(CRect(0, button_height, cx, cy));
   }
 
+  if (m_PanBar.m_hWnd != NULL && m_PitchBar.m_hWnd != NULL) {
+    m_PanBar.MoveWindow(CRect(cx-50, 90, cx-30, 180));
+    m_PitchBar.MoveWindow(CRect(cx-30, 90, cx, 180));
+  }
+
   CDocumentWindow::OnSize(type, cx, cy);
 }
 
@@ -172,6 +192,14 @@ CSoundWindow::OnVScroll(UINT code, UINT pos, CScrollBar *scroll_bar)
   if (scroll_bar->m_hWnd == m_VolumeBar.m_hWnd) {
     //if (!m_VolumeBar.MouseDown)
       m_Sound.SetVolume(255 - m_VolumeBar.GetPos());
+  }
+
+  if (scroll_bar->m_hWnd == m_PitchBar.m_hWnd) {
+    m_Sound.SetPitchShift(m_PitchBar.GetPos() / 255.0f);
+  }
+
+  if (scroll_bar->m_hWnd == m_PanBar.m_hWnd) {
+    m_Sound.SetPan(m_PanBar.GetPos() / 255.0f);
   }
 }
 

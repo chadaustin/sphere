@@ -23,6 +23,7 @@
 #include "../common/Image32.hpp"
 #include "../common/ColorMatrix.hpp"
 #include "../common/Map.hpp"
+#include "../common/Layer.hpp"
 
 
 // EVIL EVIL export!
@@ -247,6 +248,7 @@ private:
 
   // mapengine objects
   declare_method(ssMapEngineSave);
+  declare_method(ssMapEngineLayerAppend);
 
   // tileset objects
   declare_constructor1(CreateTilesetObject, const sTileset& tileset);
