@@ -350,6 +350,7 @@
 #define ID_SCRIPT_OPTIONS_TOGGLE_LINE_NUMBERS 40551
 #define ID_HELP_LOCALDOCUMENTATION      40552
 #define ID_HELP_AEGISKNIGHTSSITE        40553
+#define ID_HELP_SPHEREFAQ               40554
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -358,7 +359,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        218
-#define _APS_NEXT_COMMAND_VALUE         40554
+#define _APS_NEXT_COMMAND_VALUE         40555
 #define _APS_NEXT_CONTROL_VALUE         1120
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

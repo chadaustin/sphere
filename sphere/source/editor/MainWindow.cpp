@@ -121,6 +121,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_WINDOW_CLOSEALL, OnWindowCloseAll)
 
   ON_COMMAND(ID_HELP_SPHERESITE,         OnHelpSphereSite)
+  ON_COMMAND(ID_HELP_SPHEREFAQ,          OnHelpSphereFAQ)
   ON_COMMAND(ID_HELP_AEGISKNIGHTSSITE,   OnHelpAegisKnightsSite)
   ON_COMMAND(ID_HELP_FLIKSSITE,          OnHelpFliksSite)
   ON_COMMAND(ID_HELP_LOCALDOCUMENTATION, OnHelpLocalDocumentation)
@@ -1439,6 +1440,13 @@ afx_msg void
 CMainWindow::OnHelpSphereSite()
 {
   OpenURL("http://sphere.sourceforge.net/", "Open Sphere Site");
+}
+
+afx_msg void
+CMainWindow::OnHelpSphereFAQ()
+{
+  OpenURL("http://sphere.sourceforge.net/modules.php?op=modload&name=FAQ&file=index",
+          "Open Frequently Asked Questions");
 }
 
 afx_msg void

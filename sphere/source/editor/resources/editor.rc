@@ -134,6 +134,7 @@ BEGIN
     POPUP "&Help"
     BEGIN
         MENUITEM "&Sphere Web Site",            ID_HELP_SPHERESITE
+        MENUITEM "Frequently Asked &Questions", ID_HELP_SPHEREFAQ
         MENUITEM "&AegisKnight's Site",         ID_HELP_AEGISKNIGHTSSITE
         MENUITEM "&Flik's Web Site",            ID_HELP_FLIKSSITE
         MENUITEM SEPARATOR
