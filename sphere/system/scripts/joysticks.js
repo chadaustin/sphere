@@ -121,7 +121,7 @@ function BindJoystickButton(joystick, joystick_button, on_press_script, on_relea
     }
   }
 
-  if (joystick_found == true) {
+  if (joystick_found == false) {
     joystick_index = gBindedJoysticks.length;
     var binded_joystick = new Object();
         binded_joystick.joystick = joystick;
@@ -291,6 +291,9 @@ function UpdatePersonJoysticks()
 
       var dx = GetJoystickX(gPersonJoysticks[i].joystick);
       var dy = GetJoystickY(gPersonJoysticks[i].joystick);
+
+      dx = Math.round(dx * 10) / 10;
+      dy = Math.round(dy * 10) / 10;
 
       if (dy < 0) QueuePersonCommand(gPersonJoysticks[i].name, COMMAND_MOVE_NORTH, true);
       if (dx > 0) QueuePersonCommand(gPersonJoysticks[i].name, COMMAND_MOVE_EAST,  true);
