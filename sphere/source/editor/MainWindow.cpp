@@ -1025,23 +1025,20 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
     const RGBA color2 = transparent_color_dialog.GetBottomColor();
 
     const char* base_filename = OutFilename.GetValue();
-    char filename[255];
+    char filename[MAX_PATH];
 
-    // create the spriteset
     sSpriteset sprite;
-    sprite.Create(frame_width, frame_height, num_images, num_directions, num_frames);
-    sprite.SetDirectionName(0, "north");
-    sprite.SetDirectionName(1, "northeast");
-    sprite.SetDirectionName(2, "east");
-    sprite.SetDirectionName(3, "southeast");
-    sprite.SetDirectionName(4, "south");
-    sprite.SetDirectionName(5, "southwest");
-    sprite.SetDirectionName(6, "west");
-    sprite.SetDirectionName(7, "northwest");
 
     // there are eight spritesets per chipset, 4 rows, 2 columns
     for (int sy = 0; sy < 2; sy++) {
       for (int sx = 0; sx < 4; sx++) { 
+
+        // create the spriteset
+        sprite.Create(frame_width, frame_height, num_images, num_directions, num_frames);
+        sprite.SetDirectionName(0, "north");
+        sprite.SetDirectionName(1, "east");
+        sprite.SetDirectionName(2, "south");
+        sprite.SetDirectionName(3, "west");
   
         for (int d = 0; d < num_directions; d++) {
           for (int f = 0; f < num_frames; f++) {
@@ -1063,11 +1060,43 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
           }
         }
 
-        // I'm assuming that the base is the bottom part of the frame
-        sprite.SetBase(0, frame_height/2, frame_width, frame_height);
+        // the following converts a four direction spriteset to an eight direction spriteset
+        sprite.InsertDirection(1);
+        sprite.InsertDirection(3);
+        sprite.InsertDirection(5);
+        sprite.InsertDirection(7);
+
+        if (sprite.GetNumDirections() == 8) {
+          sprite.SetDirectionName(1, "northeast");
+          sprite.SetDirectionName(3, "southeast");
+          sprite.SetDirectionName(5, "southwest");
+          sprite.SetDirectionName(7, "northwest");
+
+          for (int j = 0; j < num_directions; j++) {
+            int d = (j * 2) + 1;
+            for (int f = 0; f < num_frames; f++) {
+              if (sprite.GetNumFrames(d) < num_frames)
+                sprite.InsertFrame(d, f);
+            }
+          }
+
+          for (int j = 0; j < num_directions; j++) {
+            int base_index = j * num_frames;
+            int d = (j * 2) + 1;
+
+            for (int f = 0; f < num_frames; f++) {
+              sprite.SetFrameIndex(d, f, base_index + f);
+            }
+          }
+
+          // I'm assuming that the base is the bottom part of the frame
+          sprite.SetBase(0, frame_height/2, frame_width, frame_height);
     
-        sprintf(filename, "%s.%d.rss", base_filename, sy * 4 + sx);
-        sprite.Save(filename);
+          sprintf(filename, "%s.%d.rss", base_filename, sy * 4 + sx);
+          sprite.Save(filename);
+
+        }
+
       }
     }
   }
