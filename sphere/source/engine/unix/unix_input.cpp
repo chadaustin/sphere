@@ -113,12 +113,12 @@ bool RefreshInput () {
           key = KEY_ALT; break;
         case SDLK_RCTRL:
           key = KEY_CTRL; break;
-	case SDLK_F11:
-	  printf("F11 Pressed...");
-	  ToggleFPS(); break;
-	case SDLK_F12:
-	  printf("F12 Pressed...");
-	  ToggleFullscreen(); break;
+  case SDLK_F11:
+    printf("F11 Pressed...");
+    ToggleFPS(); break;
+  case SDLK_F12:
+    printf("F12 Pressed...");
+    ToggleFullscreen(); break;
         default:
           for (int lcv = 0; lcv < total_keys; lcv++) {
             if (pressed == KeyMapping[lcv]) {
@@ -128,15 +128,15 @@ bool RefreshInput () {
           }
       };
       if (key != 0) {
-		  if (event.type == SDL_KEYDOWN) {
-			 //std::cerr << "down: " << (int)key << std::endl;
+      if (event.type == SDL_KEYDOWN) {
+       //std::cerr << "down: " << (int)key << std::endl;
           keys.push_back(key);
-			 key_buffer[key] = true;
-		  } else {
-			 //std::cerr << "up:   " << (int)key << std::endl;
-			 key_buffer[key] = false;
-		  }
-		}
+       key_buffer[key] = true;
+      } else {
+       //std::cerr << "up:   " << (int)key << std::endl;
+       key_buffer[key] = false;
+      }
+    }
     }
   }
   return true; /* not sure what to do, but I guess we succeeded! */
@@ -198,29 +198,68 @@ bool IsMouseButtonPressed (int button) {
 
   SDL_PumpEvents();
   if (SDL_GetMouseState(&dummy, &dummy) & SDL_BUTTON(button + 1))
-	  return true;
+    return true;
   return false;
 }
 
 
-// NO JOYSTICK SUPPORT
+// JOYSTICK SUPPORT
 
-int GetNumJoysticks() {
-    return 0;
+///////////////////////////////////////////////////////////
+
+int GetNumJoysticks()
+{
+  return SDL_NumJoysticks();
 }
 
-float GetJoystickX(int joy) {
+///////////////////////////////////////////////////////////
+
+
+float GetJoystickX(int joy_index)
+{
+  SDL_Joystick* joy = SDL_JoystickOpen(joy_index);
+  if (joy == NULL)
     return 0;
+
+  Sint16 value = SDL_JoystickGetAxis(joy, 0);
+
+  // GetAxis returns between -32768 to 32768 so we map that onto -1.0 to 1.0
+  return ((float) value / (float) 32768.0);
 }
 
-float GetJoystickY(int joy) {
+///////////////////////////////////////////////////////////
+
+float GetJoystickY(int joy_index)
+{
+  SDL_Joystick* joy = SDL_JoystickOpen(joy_index);
+  if (joy == NULL)
     return 0;
+
+  Sint16 value = SDL_JoystickGetAxis(joy, 1);
+
+  // GetAxis returns between -32768 to 32768 so we map that onto -1.0 to 1.0
+  return ((float) value / (float) 32768.0);
 }
 
-int GetNumJoystickButtons(int joy) {
+///////////////////////////////////////////////////////////
+
+int GetNumJoystickButtons(int joy_index)
+{
+  SDL_Joystick* joy = SDL_JoystickOpen(joy_index);
+  if (joy == NULL)
     return 0;
+  return SDL_JoystickNumButtons(joy);
 }
 
-bool IsJoystickButtonPressed(int joy, int button) {
+///////////////////////////////////////////////////////////
+
+bool IsJoystickButtonPressed(int joy_index, int button)
+{
+  SDL_Joystick* joy = SDL_JoystickOpen(joy_index);
+  if (joy == NULL)
     return false;
+
+  return (SDL_JoystickGetButton(joy, button) == 1);
 }
+
+///////////////////////////////////////////////////////////
