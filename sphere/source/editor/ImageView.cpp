@@ -390,10 +390,13 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha, int merge
     {
       for (int ix = 0; ix < max_width; ix++)
       {
+/*
         if (red)   iPixels[(iy + yoffset) * iWidth + (ix + xoffset)].red   = cpixels[iy * cwidth + ix].red;
         if (green) iPixels[(iy + yoffset) * iWidth + (ix + xoffset)].green = cpixels[iy * cwidth + ix].green;
         if (blue)  iPixels[(iy + yoffset) * iWidth + (ix + xoffset)].blue  = cpixels[iy * cwidth + ix].blue;
         if (alpha) iPixels[(iy + yoffset) * iWidth + (ix + xoffset)].alpha = cpixels[iy * cwidth + ix].alpha;
+*/
+        m_Image.SetPixel(ix + xoffset, iy + yoffset, cpixels[iy * cwidth + ix]);
       }
     }
 
