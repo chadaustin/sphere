@@ -25,6 +25,8 @@ static int test_Triangles();
 static int test_GradientTriangles();
 static int test_Rectangles();
 static int test_GradientRectangles();
+static int test_GrabImage();
+static int test_DirectGrab();
 static int test_FlipScreen();
 
 
@@ -52,6 +54,8 @@ static struct {
   { "Gradient Triangles",  test_GradientTriangles   },
   { "Rectangles",          test_Rectangles          },
   { "Gradient Rectangles", test_GradientRectangles  },
+  { "GrabImage" ,          test_GrabImage           },
+  { "DirectGrab",          test_DirectGrab          },
   { "FlipScreen",          test_FlipScreen          },
 };
 static const int s_NumTests = sizeof(s_Tests) / sizeof(*s_Tests);
@@ -441,6 +445,39 @@ int test_GradientRectangles()
     count++;
   }
 
+  return count;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int test_GrabImage()
+{
+  int count = 0;
+  dword start = GetTime();
+  while (start + TIME_PER_TEST > GetTime()) {
+    IMAGE img = GrabImage(0, 0, 32, 32);
+    DestroyImage(img);
+    count++;
+  }
+
+  return count;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int test_DirectGrab()
+{
+  RGBA* pixels = new RGBA[32 * 32];
+  if (!pixels) return 0;
+
+  int count = 0;
+  dword start = GetTime();
+  while (start + TIME_PER_TEST > GetTime()) {
+    DirectGrab(0, 0, 32, 32, pixels);
+    count++;
+  }
+
+  delete[] pixels;
   return count;
 }
 
