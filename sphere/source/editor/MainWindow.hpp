@@ -108,6 +108,7 @@ private:
   afx_msg void OnProjectRunSphere();
   afx_msg void OnProjectConfigureSphere();
   afx_msg void OnProjectPackageGame();
+  afx_msg void OnProjectMakeInstaller();
 
   afx_msg void OnWindowCloseAll();
 

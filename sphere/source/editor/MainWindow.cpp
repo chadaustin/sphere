@@ -41,6 +41,7 @@
 #include "../common/sphere_version.h"
 #include "../common/Map.hpp"
 #include "../common/strcmp_ci.hpp"
+#include "../common/system.hpp"
 
 // libraries
 // libraries are down here because of symbol conflicts with other headers
@@ -125,6 +126,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_PROJECT_RUNSPHERE,       OnProjectRunSphere)
   ON_COMMAND(ID_PROJECT_CONFIGURESPHERE, OnProjectConfigureSphere)
   ON_COMMAND(ID_PROJECT_PACKAGE_GAME,    OnProjectPackageGame)
+  ON_COMMAND(ID_PROJECT_MAKE_INSTALLER,  OnProjectMakeInstaller)
 
 	ON_COMMAND(ID_VIEW_PROJECT,            OnViewProject)
 
@@ -1670,6 +1672,122 @@ CMainWindow::OnProjectPackageGame()
     } else {
       MessageBox("Package creation succeeded!", "Package Game");
     }
+  }
+
+  SetCurrentDirectory(old_directory);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnProjectMakeInstaller()
+{
+  char old_directory[MAX_PATH];
+  GetCurrentDirectory(MAX_PATH, old_directory);
+  SetCurrentDirectory(m_Project.GetDirectory());
+
+  bool stand_alone = false;
+
+  FILE* file = fopen("installer.nsi", "wb+");
+  if (file) {
+
+    fprintf (file, "; This is a NSIS (nullsoft install script) for %s by %s\n\n", m_Project.GetGameTitle(), m_Project.GetAuthor());
+
+    fprintf (file, "Name \"%s\"\n", m_Project.GetGameTitle());
+    fprintf (file, "OutFile \"%s.exe\"\n", m_Project.GetDirectory());
+
+    if (stand_alone) {
+      fprintf (file, "InstallDir \"$PROGRAMFILES\\%s\"\n", m_Project.GetGameTitle());
+    }
+    else {
+      fprintf (file, "InstallDir \"$PROGRAMFILES\\sphere\"\n");
+    }
+
+    if (stand_alone) {
+      fprintf (file, "DirText \"Please select the path where you want to install$\\r%s\"\n", m_Project.GetGameTitle());
+    }
+    else {
+      fprintf (file, "DirText \"Please select your Sphere path below$\\r(You will be able to proceed when Sphere is detected):\"\n");
+    }
+
+    fprintf (file, "DirShow show\n");
+
+    fprintf (file, "\n;-----------------------------\n\n");
+
+    fprintf (file, "Section \"\"\n\n");
+
+    if (stand_alone) {
+      fprintf (file, "  !define InstallDirectory \"$INSTDIR\"\n");
+    }
+    else {
+
+      fprintf (file, "  !define SphereDirectory \"$INSTDIR\"\n");
+      fprintf (file, "  !define InstallDirectory \"$INSTDIR\\games\\%s\"\n", m_Project.GetGameTitle());
+
+      fprintf (file, "\n  IfFileExists \"${SphereDirectory}\\engine.exe\" okay\n");
+      fprintf (file, "  MessageBox MB_OK \"Can not find sphere $\\r$\\\"${SphereDirectory}\\engine.exe$\\\"\"\n");
+      fprintf (file, "    Quit\n");
+      fprintf (file, "  okay:\n\n");
+    }
+
+    if (stand_alone) {
+      const char* engine_file_list[] = {"audiere.dll", "corona.dll", "engine.exe", "js32.dll", "libmng.dll", "zlib.dll"};
+      const char* editor_file_list[] = {"editor.exe", "SciLexer.dll", "Scintilla.dll"};
+      const int engine_file_list_size = sizeof(engine_file_list) / sizeof(*engine_file_list);
+      const int editor_file_list_size = sizeof(editor_file_list) / sizeof(*editor_file_list);
+
+      fprintf (file, "  SetOutPath \"${InstallDirectory}\"\n");
+
+      if (true) {
+        fprintf (file, "  File ");
+        for (int i = 0; i < engine_file_list_size; i++)
+          fprintf (file, "\"..\\..\\%s\"", engine_file_list[i]);
+        fprintf (file, "\n");
+      }
+
+      if (false) {
+        fprintf (file, "  File ");
+        for (int i = 0; i < editor_file_list_size; i++)
+          fprintf (file, "\"..\\..\\%s\"", editor_file_list[i]);
+        fprintf (file, "\n");
+      }
+
+      fprintf (file, "  File /r ..\\..\\system\n\n");
+      fprintf (file, "  SetOutPath \"${InstallDirectory}\\startup\"\n");
+    }
+    else {
+      fprintf (file, "  SetOutPath \"${InstallDirectory}\"\n");
+    }
+
+    fprintf (file, "  File /r * ");
+    for (int i = 0; i < NUM_GROUP_TYPES; i++) {
+      if (m_Project.GetItemCount(i)) {
+        fprintf (file, "%s ", m_Project.GetGroupDirectory(i));
+      }
+    }
+
+    fprintf (file, "\n");
+
+    if (stand_alone) {
+      fprintf (file, "\n");
+      fprintf (file, "  CreateDirectory \"$SMPROGRAMS\\%s\"\n", m_Project.GetGameTitle());
+      fprintf (file, "  CreateShortCut \"$SMPROGRAMS\\%s\\%s.lnk\" \"${InstallDirectory}\\engine.exe\" \"%s\"\n", m_Project.GetGameTitle(), m_Project.GetGameTitle(), "icon.ico");
+      fprintf (file, "  CreateShortCut \"$SMPROGRAMS\\%s\\config.lnk\" \"${InstallDirectory}\\config.exe\"\n");
+      fprintf (file, "\n");
+    }
+    else {
+      fprintf (file, "\n");
+      fprintf (file, "  !define SphereStartMenuDirectory \"Sphere\"\n");
+      fprintf (file, "\n");
+      fprintf (file, "  SetOutPath \"${SphereDirectory}\"\n");
+      fprintf (file, "  CreateDirectory \"$SMPROGRAMS\\${SphereStartMenuDirectory}\\games\\%s\"\n", m_Project.GetGameTitle());
+      fprintf (file, "  CreateShortCut \"$SMPROGRAMS\\${SphereStartMenuDirectory}\\games\\%s\\%s.lnk\" \"${SphereDirectory}\\engine.exe\" `-game \"%s\"` \"%s\"\n", m_Project.GetGameTitle(), m_Project.GetGameSubDirectory(), m_Project.GetGameSubDirectory(), "icon.ico");
+      fprintf (file, "\n");
+    }
+
+    fprintf (file, "SectionEnd\n");
+    fclose(file);
+
   }
 
   SetCurrentDirectory(old_directory);

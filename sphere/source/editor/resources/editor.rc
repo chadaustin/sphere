@@ -217,6 +217,7 @@ BEGIN
         MENUITEM "&Run Game",                   ID_PROJECT_RUNSPHERE
         MENUITEM "&Configure Sphere...",        ID_PROJECT_CONFIGURESPHERE
         MENUITEM "Package Game!",               ID_PROJECT_PACKAGE_GAME
+        MENUITEM "Make Installer",              ID_PROJECT_MAKE_INSTALLER
     END
 END
 

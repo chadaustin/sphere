@@ -9,7 +9,6 @@
 #include "../common/types.h"
 #include "resource.h"
 
-
 const int TreeID = 9865;
 
 const int tiGameSettings = 100;
@@ -497,6 +496,5 @@ CProjectWindow::SelectItemAtCursor()
   else
     m_TreeControl.SelectItem(NULL);
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
