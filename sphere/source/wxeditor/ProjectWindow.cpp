@@ -151,8 +151,13 @@ wProjectWindow::OnActivate(wxTreeEvent &event)
     return;
   }
 
+#ifdef WIN32
   m_MainWindow->OpenDocumentWindow(GroupType, 
       wxString(m_Project->GetDirectory()) + "\\" + m_Project->GetGroupDirectory(GroupType) + "\\" + m_TreeControl->GetItemText(event.GetItem()));
+#else
+  m_MainWindow->OpenDocumentWindow(GroupType, 
+      wxString(m_Project->GetDirectory()) + "/" + m_Project->GetGroupDirectory(GroupType) + "/" + m_TreeControl->GetItemText(event.GetItem()));
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -458,9 +463,6 @@ CProjectWindow::OnProjectItemOpen()
 afx_msg void
 CProjectWindow::OnProjectItemDelete()
 {
-  if (MessageBox("This will permanently delete the file.\nAre you sure you want to continue?", "Delete Project Item", MB_YESNO) == IDNO)
-    return;
-
   HTREEITEM item = m_TreeControl.GetSelectedItem();
   if (item == NULL)
     return;
@@ -490,6 +492,12 @@ CProjectWindow::OnProjectItemDelete()
   strcat(filename, m_Project->GetGroupDirectory(GroupType));
   strcat(filename, "\\");
   strcat(filename, m_TreeControl.GetItemText(item));
+
+  char string[MAX_PATH + 255];
+  sprintf(string, "This will permanently delete the file: '%s'\nAre you sure you want to continue?", filename);
+
+  if (MessageBox(string, "Delete Project Item", MB_YESNO) == IDNO)
+    return;
 
   if (!DeleteFile(filename))
     MessageBox("Error: Could not delete file");
@@ -556,9 +564,17 @@ CProjectWindow::OnDoubleClick(NMHDR* / *notify* /, LRESULT* / *result* /)
       // build file path
       char szFilename[MAX_PATH];
       strcpy(szFilename, m_Project->GetDirectory());
+#ifdef WIN32
       strcat(szFilename, "\\");
+#else
+      strcat(szFilename, "\\");
+#endif
       strcat(szFilename, m_Project->GetGroupDirectory(GroupType));
+#ifdef WIN32
       strcat(szFilename, "\\");
+#else
+      strcat(szFilename, "\\");
+#endif
       strcat(szFilename, m_TreeControl.GetItemText(item));
 
       m_MainWindow->OpenDocumentWindow(GroupType, szFilename);

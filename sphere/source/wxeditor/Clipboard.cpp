@@ -55,7 +55,7 @@ CClipboard::GetBitmapImageFromClipboard(int& width, int& height)
   if (!wxTheClipboard->GetData(data_object))
     return NULL;
 
-  wxBitmap& bmp = data_object.GetBitmap();
+  wxBitmap bmp = data_object.GetBitmap();
   wxImage image = bmp.ConvertToImage();
   unsigned char* data = image.GetData();
 

@@ -444,6 +444,7 @@ wMainWindow::OpenDocumentWindow(int grouptype, const char* filename)
   }
 
   m_DocumentWindows.push_back(window);
+  window->SetFocus();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1022,7 +1023,9 @@ FILE_NEW_HANDLER(Image,       new wImageWindow())
       {                                                             \
         wxString path_ = filelist[i];                               \
         const char* path = path_;                                   \
-        m_DocumentWindows.push_back(construct);                     \
+        wDocumentWindow* doc = construct;                           \
+        if (doc != NULL)                                            \
+          m_DocumentWindows.push_back(doc);                         \
       }                                                             \
     }                                                               \
   }

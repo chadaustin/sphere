@@ -907,6 +907,7 @@ wImageView::OnPaint(wxPaintEvent &event)
       }
     }
   }
+
   // draw a white rectangle around the image
   dc.SetBrush(wxBrush(wxColour(0xff, 0xff, 0xff), wxTRANSPARENT));
   dc.SetPen(wxPen(wxColour(0xff, 0xff, 0xff), 1, wxSOLID));
