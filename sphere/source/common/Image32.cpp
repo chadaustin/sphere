@@ -246,8 +246,9 @@ CImage32::GetBlendMode() const
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CImage32::ApplyColorFX(int x1, int y1, int w, int h, CColorMatrix &c)
+CImage32::ApplyColorFX(int x1, int y1, int w, int h, const CColorMatrix &c)
 {
+  int i;
   int x, y;
   int x2, y2;
   RGBA pixel;
@@ -272,13 +273,13 @@ CImage32::ApplyColorFX(int x1, int y1, int w, int h, CColorMatrix &c)
   x2 = x1 + w;
   y2 = y1 + h;
   for(y = y1; y < y2; y++) {
-    for(x = x1; x < x2; x++) {
-      pixel = m_Pixels[y * m_Width + x];
-      pixeld.red   = std_max(0, std_min(255, c.rn + (pixel.red * c.rr + pixel.green * c.rg + pixel.blue * c.rb) / 255));
-      pixeld.green = std_max(0, std_min(255, c.gn + (pixel.red * c.gr + pixel.green * c.gg + pixel.blue * c.gb) / 255));
-      pixeld.blue  = std_max(0, std_min(255, c.bn + (pixel.red * c.br + pixel.green * c.bg + pixel.blue * c.bb) / 255));
+    for(x = x1, i = y * m_Width + x1; x < x2; x++, i++) {
+      pixel = m_Pixels[i];
+      pixeld.red   = std_max(0, std_min(255, c.rn + ((pixel.red * c.rr + pixel.green * c.rg + pixel.blue * c.rb) >> 8)));
+      pixeld.green = std_max(0, std_min(255, c.gn + ((pixel.red * c.gr + pixel.green * c.gg + pixel.blue * c.gb) >> 8)));
+      pixeld.blue  = std_max(0, std_min(255, c.bn + ((pixel.red * c.br + pixel.green * c.bg + pixel.blue * c.bb) >> 8)));
       pixeld.alpha = pixel.alpha;
-      m_Pixels[y * m_Width + x] = pixeld;
+      m_Pixels[i] = pixeld;
     }
   }
 }
@@ -286,10 +287,11 @@ CImage32::ApplyColorFX(int x1, int y1, int w, int h, CColorMatrix &c)
 ////////////////////////////////////////////////////////////////////////////////
 
 void 
-CImage32::ApplyColorFX4(int x1, int y1, int w, int h, CColorMatrix &c1, CColorMatrix &c2, CColorMatrix &c3, CColorMatrix &c4)
+CImage32::ApplyColorFX4(int x1, int y1, int w, int h, const CColorMatrix &c1, const CColorMatrix &c2, const CColorMatrix &c3, const CColorMatrix &c4)
 {
+  int i;
   int x, y;
-  int x0 = x1, y0 = x2;
+  int x0 = x1, y0 = y1;
   int w0 = w, h0 = h;
   int x2, y2;
   RGBA pixel;
@@ -336,31 +338,19 @@ CImage32::ApplyColorFX4(int x1, int y1, int w, int h, CColorMatrix &c1, CColorMa
     INTER(c1, c3, ca, bg) INTER(c2, c4, cb, bg)
     INTER(c1, c3, ca, bb) INTER(c2, c4, cb, bb)
 
-    for(x = x1; x < x2; x++) {
-      i1 = (x0 + w0 - x);
-      i2 = (x - x0);
-      i3 = w0;
-      INTER(ca, cb, c, rn)
-      INTER(ca, cb, c, rr)
-      INTER(ca, cb, c, rg)
-      INTER(ca, cb, c, rb)
+#undef INTER
+#define INTER(src1, src2, member) (src1.member * i1 + src2.member * i2)
+    for(x = x1, i = y * m_Width + x1; x < x2; x++, i++) {
+      //i1 = (x0 + w0 - x) * 256 / w0;
+      i2 = (x - x0) * 256 / w0;
+      i1 = 256 - i2;
 
-      INTER(ca, cb, c, gn)
-      INTER(ca, cb, c, gr)
-      INTER(ca, cb, c, gg)
-      INTER(ca, cb, c, gb)
-
-      INTER(ca, cb, c, bn)
-      INTER(ca, cb, c, br)
-      INTER(ca, cb, c, bg)
-      INTER(ca, cb, c, bb)
-
-      pixel = m_Pixels[y * m_Width + x];
-      pixeld.red   = std_max(0, std_min(255, c.rn + (pixel.red * c.rr + pixel.green * c.rg + pixel.blue * c.rb) / 255));
-      pixeld.green = std_max(0, std_min(255, c.gn + (pixel.red * c.gr + pixel.green * c.gg + pixel.blue * c.gb) / 255));
-      pixeld.blue  = std_max(0, std_min(255, c.bn + (pixel.red * c.br + pixel.green * c.bg + pixel.blue * c.bb) / 255));
+      pixel = m_Pixels[i];
+      pixeld.red   = std_max(0, std_min(255, (INTER(ca, cb, rn) >> 8) + ((pixel.red * INTER(ca, cb, rr) + pixel.green * INTER(ca, cb, rg) + pixel.blue * INTER(ca, cb, rb)) >> 16)));
+      pixeld.green = std_max(0, std_min(255, (INTER(ca, cb, gn) >> 8) + ((pixel.red * INTER(ca, cb, gr) + pixel.green * INTER(ca, cb, gg) + pixel.blue * INTER(ca, cb, gb)) >> 16)));
+      pixeld.blue  = std_max(0, std_min(255, (INTER(ca, cb, bn) >> 8) + ((pixel.red * INTER(ca, cb, br) + pixel.green * INTER(ca, cb, bg) + pixel.blue * INTER(ca, cb, bb)) >> 16)));
       pixeld.alpha = pixel.alpha;
-      m_Pixels[y * m_Width + x] = pixeld;
+      m_Pixels[i] = pixeld;
     }
   }
 #undef INTER

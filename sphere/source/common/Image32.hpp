@@ -33,8 +33,8 @@ public:
   void      SetBlendMode(BlendMode mode);
   BlendMode GetBlendMode() const;
 
-  void ApplyColorFX(int x1, int y1, int w, int h, CColorMatrix &c);
-  void ApplyColorFX4(int x1, int y1, int w, int h, CColorMatrix &c1, CColorMatrix &c2, CColorMatrix &c3, CColorMatrix &c4);
+  void ApplyColorFX(int x1, int y1, int w, int h, const CColorMatrix &c);
+  void ApplyColorFX4(int x1, int y1, int w, int h, const CColorMatrix &c1, const CColorMatrix &c2, const CColorMatrix &c3, const CColorMatrix &c4);
 
   void Clear();
   void Resize(int width, int height);
