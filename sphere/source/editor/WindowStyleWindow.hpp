@@ -47,6 +47,10 @@ private:
   afx_msg void OnSize(UINT type, int cx, int cy);
   afx_msg void OnPaint();
 
+  afx_msg void OnKeyDown(UINT vk, UINT repeat, UINT flags);
+  afx_msg void OnKeyUp(UINT vk, UINT repeat, UINT flags);
+  afx_msg void OnTimer(UINT event);
+
   afx_msg void OnEditUpperLeft();
   afx_msg void OnEditTop();
   afx_msg void OnEditUpperRight();
@@ -57,7 +61,10 @@ private:
   afx_msg void OnEditLeft();
   afx_msg void OnEditBackground();
 
+  void ResizeSection(int width, int height, int method);
   afx_msg void OnResizeSection();
+  afx_msg void OnRescaleSection();
+  afx_msg void OnResampleSection();
 
   afx_msg void OnZoom1x();
   afx_msg void OnZoom2x();
@@ -120,6 +127,8 @@ private:
   CPen* m_HighlightPen;
 
 	CWindowStylePreviewPalette* m_WindowStylePreviewPalette;
+
+  UINT m_Timer;
 
   DECLARE_MESSAGE_MAP()
 };

@@ -94,6 +94,7 @@ private:
 
   int m_UseRed, m_UseGreen, m_UseBlue, m_UseAlpha;
 
+  bool DrawPreview(CPaintDC& dc, RECT* rect);
   afx_msg void OnPaint();
 
 private:

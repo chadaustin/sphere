@@ -166,6 +166,7 @@ private:
   afx_msg void OnFilterCustom();
   afx_msg void OnFilterGrayscale();
   afx_msg void OnFilterSaturate();
+  afx_msg void OnFilterColorAdjuster();
   afx_msg void OnFilterBlur();
   afx_msg void OnFilterNoise();
   afx_msg void OnFilterAdjustBrightness();

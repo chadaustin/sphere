@@ -15,6 +15,7 @@
 
 #include "NumberDialog.hpp"
 #include "ConvolveListDialog.hpp"
+#include "ColorAdjustDialog.hpp"
 
 static int s_ImageViewID = 9000;
 
@@ -68,6 +69,7 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_CUSTOM,         OnFilterCustom)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_GRAYSCALE,      OnFilterGrayscale)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_SATURATE,       OnFilterSaturate)
+  ON_COMMAND(ID_IMAGEVIEW_FILTER_COLORADJUSTER,  OnFilterColorAdjuster)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_ADJUST_BRIGHTNESS, OnFilterAdjustBrightness)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_ADJUST_GAMMA, OnFilterAdjustGamma)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE_RGB, OnFilterNegativeImageRGB)
@@ -2716,6 +2718,17 @@ CImageView::OnFilterSaturate()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+afx_msg void
+CImageView::OnFilterColorAdjuster()
+{
+  CColorAdjustDialog dialog(m_Image.GetWidth(), m_Image.GetHeight(), m_Image.GetPixels());
+  if (dialog.DoModal() == IDOK) {
+    
+  }  
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 #include "../common/convolve.hpp"
 
 afx_msg void
@@ -2756,7 +2769,7 @@ CImageView::OnFilterCustom()
 
     RGBA* pixels = GetSelectionPixels();
 
-    if (mask_type == "double") {
+    if (strcmp(mask_type, "double") == 0) {
       double_convolve_rgba(0, 0, sw, sh, sw, sh, pixels, mask_width, mask_height,
                            mask_width/2, mask_height/2, double_mask,
                            divisor, offset, wrap,
@@ -2764,7 +2777,7 @@ CImageView::OnFilterCustom()
                            use_red, use_green, use_blue, use_alpha);
     }
 
-    if (mask_type == "int") {
+    if (strcmp(mask_type, "int") == 0) {
       int* int_mask = new int[mask_width * mask_height];
       if (int_mask) {
 

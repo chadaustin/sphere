@@ -16,6 +16,8 @@
 #define IDC_TAB 800
 #define TAB_HEIGHT 24
 
+static const int SPRITESET_TIMER = 9001;
+
 #ifdef USE_SIZECBAR
 IMPLEMENT_DYNAMIC(CSpritesetWindow, CMDIChildWnd)
 #endif
@@ -24,6 +26,9 @@ BEGIN_MESSAGE_MAP(CSpritesetWindow, CSaveableDocumentWindow)
 
   ON_WM_DESTROY()
   ON_WM_SIZE()
+  ON_WM_KEYDOWN()
+  ON_WM_KEYUP()
+  ON_WM_TIMER()
 
   ON_NOTIFY(TCN_SELCHANGE, IDC_TAB, OnTabChanged)
 
@@ -195,6 +200,8 @@ CSpritesetWindow::Create()
 #ifdef USE_SIZECBAR
 	LoadPaletteStates();
 #endif
+
+  m_Timer = SetTimer(SPRITESET_TIMER, 100, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -236,6 +243,26 @@ CSpritesetWindow::ShowBaseTab(int show)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+afx_msg void
+CSpritesetWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
+{
+  m_ImageView.OnKeyDown(vk, repeat, flags);
+}
+
+afx_msg void
+CSpritesetWindow::OnKeyUp(UINT vk, UINT repeat, UINT flags)
+{
+  m_ImageView.OnKeyUp(vk, repeat, flags);
+}
+
+afx_msg void
+CSpritesetWindow::OnTimer(UINT event)
+{
+  m_ImageView.OnTimer(event);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 CSpritesetWindow::UpdateImageView()
 {  
@@ -252,8 +279,8 @@ CSpritesetWindow::OnDestroy()
 {
   Configuration::Set(KEY_SPRITESET_ZOOM_FACTOR, m_SpritesetView.GetZoomFactor());
 
-  if (m_ImagesPalette)    { m_ImagesPalette->Destroy();    m_ImagesPalette = NULL;   }
-  if (m_AnimationPalette) { m_AnimationPalette->Destroy(); m_AnimationPalette =NULL; }
+  if (m_ImagesPalette)    { m_ImagesPalette->Destroy();    m_ImagesPalette    = NULL; }
+  if (m_AnimationPalette) { m_AnimationPalette->Destroy(); m_AnimationPalette = NULL; }
 
   m_SpritesetView.DestroyWindow();
   m_ImageView.DestroyWindow();

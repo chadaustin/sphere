@@ -866,6 +866,14 @@ SOURCE=.\WindowStylePreviewPalette.hpp
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\ColorAdjustDialog.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ColorAdjustDialog.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ConvolveListDialog.cpp
 # End Source File
 # Begin Source File

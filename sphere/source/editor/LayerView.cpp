@@ -561,6 +561,8 @@ static bool ExportLayerAsImage(const char* filename, sLayer& layer, sTileset& ti
   return false;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CLayerView::OnExportLayer()
 {
@@ -637,6 +639,8 @@ static bool ExportAllVisibleLayersAsImage(const char* filename, sTileset& tilese
   return dest_image.Save(filename);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CLayerView::OnExportAllVisibleLayers()
 {
@@ -668,14 +672,6 @@ CLayerView::OnExportAllVisibleLayers()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-/*
-static bool CompareTiles(sTile& tile_a, sTile& tile_b) {
-  if (tile_a.GetWidth() != tile_b.GetWidth()) return false;
-  if (tile_a.GetHeight() != tile_b.GetHeight()) return false;
-  return memcmp(tile_a.GetPixels(), tile_b.GetPixels(), tile_a.GetWidth() * tile_a.GetHeight() * sizeof(RGBA)) == 0;
-}
-*/
 
 /**
   This takes all the visible layers, and merges them into one,

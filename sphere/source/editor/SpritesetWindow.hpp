@@ -34,6 +34,10 @@ private:
   void OnToolCommand(UINT id);
   BOOL IsToolCommandAvailable(UINT id);
 
+  afx_msg void OnKeyDown(UINT vk, UINT repeat, UINT flags);
+  afx_msg void OnKeyUp(UINT vk, UINT repeat, UINT flags);
+  afx_msg void OnTimer(UINT event);
+
 private:
   void Create();
   void TabChanged(int tab);
@@ -118,6 +122,8 @@ private:
   // palette
   CSpritesetImagesPalette* m_ImagesPalette;
 	CSpritesetAnimationPalette* m_AnimationPalette;
+
+  UINT m_Timer;
 
   DECLARE_MESSAGE_MAP()
 };

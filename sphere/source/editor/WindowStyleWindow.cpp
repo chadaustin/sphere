@@ -12,6 +12,8 @@
 const int ID_ALPHASLIDER = 7001;
 const int ID_ALPHASTATIC = 7002;
 
+static const int WINDOWSTYLE_TIMER = 9001;
+
 #ifdef USE_SIZECBAR
 IMPLEMENT_DYNAMIC(CWindowStyleWindow, CMDIChildWnd)
 #endif
@@ -22,6 +24,10 @@ BEGIN_MESSAGE_MAP(CWindowStyleWindow, CSaveableDocumentWindow)
   ON_WM_SIZE()
   ON_WM_VSCROLL()
   ON_WM_PAINT()
+
+  ON_WM_KEYDOWN()
+  ON_WM_KEYUP()
+  ON_WM_TIMER()
 
   ON_COMMAND(ID_WINDOWSTYLE_EDIT_UPPERLEFT,  OnEditUpperLeft)
   ON_COMMAND(ID_WINDOWSTYLE_EDIT_TOP,        OnEditTop)
@@ -34,6 +40,8 @@ BEGIN_MESSAGE_MAP(CWindowStyleWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_WINDOWSTYLE_EDIT_BACKGROUND, OnEditBackground)
 
   ON_COMMAND(ID_WINDOWSTYLE_RESIZESECTION,    OnResizeSection)
+  ON_COMMAND(ID_WINDOWSTYLE_RESCALESECTION,   OnRescaleSection)
+  ON_COMMAND(ID_WINDOWSTYLE_RESAMPLESECTION,  OnResampleSection)
 
   ON_COMMAND(ID_WINDOWSTYLE_ZOOM_1X, OnZoom1x)
   ON_COMMAND(ID_WINDOWSTYLE_ZOOM_2X, OnZoom2x)
@@ -132,6 +140,9 @@ CWindowStyleWindow::CWindowStyleWindow(const char* window_style)
 #ifdef USE_SIZECBAR
 	LoadPaletteStates();
 #endif
+
+ 
+  m_Timer = SetTimer(WINDOWSTYLE_TIMER, 100, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -479,6 +490,26 @@ CWindowStyleWindow::OnLButtonDown(UINT flags, CPoint point)
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
+CWindowStyleWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
+{
+  m_ImageView.OnKeyDown(vk, repeat, flags);
+}
+
+afx_msg void
+CWindowStyleWindow::OnKeyUp(UINT vk, UINT repeat, UINT flags)
+{
+  m_ImageView.OnKeyUp(vk, repeat, flags);
+}
+
+afx_msg void
+CWindowStyleWindow::OnTimer(UINT event)
+{
+  m_ImageView.OnTimer(event);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
 CWindowStyleWindow::OnSize(UINT type, int cx, int cy)
 {
   if (m_Created)
@@ -602,6 +633,34 @@ CWindowStyleWindow::OnEditBackground()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+CWindowStyleWindow::ResizeSection(int width, int height, int method)
+{
+  CImage32& bitmap = m_WindowStyle.GetBitmap(m_SelectedBitmap);
+  switch (method) {
+    case 0: bitmap.Resize(width, height);   break;
+    case 1: bitmap.Rescale(width, height);  break;
+    case 2: bitmap.Resample(width, height); break;
+  }
+
+  SetModified(true);
+
+  // update the window
+  SetBitmap();
+  UpdateDIBSections();
+  Invalidate();
+
+  // resize the window
+  RECT Rect;
+  GetClientRect(&Rect);
+  OnSize(0, Rect.right, Rect.bottom);
+
+  if (m_WindowStylePreviewPalette)
+    m_WindowStylePreviewPalette->OnWindowStyleChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CWindowStyleWindow::OnResizeSection()
 {
@@ -610,22 +669,35 @@ CWindowStyleWindow::OnResizeSection()
   Dialog.SetRange(1, 1024, 1, 1024);
   if (Dialog.DoModal() == IDOK)
   {
-    m_WindowStyle.GetBitmap(m_SelectedBitmap).Resize(Dialog.GetWidth(), Dialog.GetHeight());
+    ResizeSection(Dialog.GetWidth(), Dialog.GetHeight(), 0);
+  }
+}
 
-    SetModified(true);
+////////////////////////////////////////////////////////////////////////////////
 
-    // update the window
-    SetBitmap();
-    UpdateDIBSections();
-    Invalidate();
+afx_msg void
+CWindowStyleWindow::OnRescaleSection()
+{
+  CImage32& b = m_WindowStyle.GetBitmap(m_SelectedBitmap);
+  CResizeDialog Dialog("Rescale Window Style Section", b.GetWidth(), b.GetHeight());
+  Dialog.SetRange(1, 1024, 1, 1024);
+  if (Dialog.DoModal() == IDOK)
+  {
+    ResizeSection(Dialog.GetWidth(), Dialog.GetHeight(), 1);
+  }
+}
 
-    // resize the window
-    RECT Rect;
-    GetClientRect(&Rect);
-    OnSize(0, Rect.right, Rect.bottom);
+////////////////////////////////////////////////////////////////////////////////
 
-    if (m_WindowStylePreviewPalette)
-      m_WindowStylePreviewPalette->OnWindowStyleChanged();
+afx_msg void
+CWindowStyleWindow::OnResampleSection()
+{
+  CImage32& b = m_WindowStyle.GetBitmap(m_SelectedBitmap);
+  CResizeDialog Dialog("Resample Window Style Section", b.GetWidth(), b.GetHeight());
+  Dialog.SetRange(1, 1024, 1, 1024);
+  if (Dialog.DoModal() == IDOK)
+  {
+    ResizeSection(Dialog.GetWidth(), Dialog.GetHeight(), 2);
   }
 }
 

@@ -242,6 +242,10 @@
 #define IDC_SPIN4                       1212
 #define IDC_EDIT_ALPHA                  1213
 #define IDC_SPIN5                       1214
+#define IDC_USE_RED                     1215
+#define IDC_USE_GREEN                   1216
+#define IDC_USE_BLUE                    1217
+#define IDC_USE_ALPHA                   1218
 #define ID_FILE_IMPORT_BITMAPTORSS      12241
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40003
@@ -637,6 +641,9 @@
 #define ID_MAP_RESAMPLETILESET          40771
 #define ID_MAPVIEW_VIEWGRIDSCREEN       40772
 #define ID_MAPVIEW_VIEWGRIDNONE         40773
+#define ID_WINDOWSTYLE_RESAMPLESECTION  40774
+#define ID_WINDOWSTYLE_RESCALESECTION   40775
+#define ID_IMAGEVIEW_FILTER_COLORADJUSTER 40776
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -645,8 +652,8 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        268
-#define _APS_NEXT_COMMAND_VALUE         40774
-#define _APS_NEXT_CONTROL_VALUE         1211
+#define _APS_NEXT_COMMAND_VALUE         40777
+#define _APS_NEXT_CONTROL_VALUE         1219
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

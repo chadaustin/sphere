@@ -320,9 +320,12 @@ IDR_IMAGE MENU DISCARDABLE
 BEGIN
     POPUP "&Image"
     BEGIN
-        MENUITEM "&Resize...",                  ID_IMAGE_RESIZE
-        MENUITEM "R&escale...",                 ID_IMAGE_RESCALE
-        MENUITEM "Re&sample...",                ID_IMAGE_RESAMPLE
+        POPUP "&Change Size"
+        BEGIN
+            MENUITEM "&Resize...",                  ID_IMAGE_RESIZE
+            MENUITEM "R&escale...",                 ID_IMAGE_RESCALE
+            MENUITEM "Re&sample...",                ID_IMAGE_RESAMPLE
+        END
         MENUITEM "Rotate...",                   ID_IMAGE_ROTATE
         MENUITEM "Count Colors Used",           ID_IMAGE_COUNTCOLORS
         MENUITEM SEPARATOR
@@ -340,10 +343,14 @@ BEGIN
         MENUITEM "&Delete Layer",               ID_LAYERVIEW_DELETELAYER
         MENUITEM "Du&plicate Layer",            ID_LAYERVIEW_DUPLICATELAYER
         MENUITEM SEPARATOR
-        MENUITEM "&Export as Image...",         ID_LAYERVIEW_EXPORTASIMAGE
-        MENUITEM "&Export all visible layers as Image...", 
-                                                ID_LAYERVIEW_EXPORT_ALL_VISIBLE_LAYERS_AS_IMAGE
+        POPUP "&Export"
+        BEGIN
+            MENUITEM "&Export as Image...",         ID_LAYERVIEW_EXPORTASIMAGE
 
+            MENUITEM "&Export all visible layers as Image...", 
+                                                    ID_LAYERVIEW_EXPORT_ALL_VISIBLE_LAYERS_AS_IMAGE
+
+        END
         MENUITEM "&Flatten all visible layers", ID_LAYERVIEW_FLATTEN_VISIBLE_LAYERS
 
         MENUITEM SEPARATOR
@@ -516,21 +523,21 @@ BEGIN
     BEGIN
         POPUP "&Edit"
         BEGIN
+            MENUITEM "Background",                  ID_WINDOWSTYLE_EDIT_BACKGROUND
+
             MENUITEM "Upper Left",                  ID_WINDOWSTYLE_EDIT_UPPERLEFT
 
             MENUITEM "Top",                         ID_WINDOWSTYLE_EDIT_TOP
             MENUITEM "Upper Right",                 ID_WINDOWSTYLE_EDIT_UPPERRIGHT
 
+            MENUITEM "Left",                        ID_WINDOWSTYLE_EDIT_LEFT
             MENUITEM "Right",                       ID_WINDOWSTYLE_EDIT_RIGHT
-
-            MENUITEM "Lower Right",                 ID_WINDOWSTYLE_EDIT_LOWERRIGHT
-
-            MENUITEM "Bottom",                      ID_WINDOWSTYLE_EDIT_BOTTOM
 
             MENUITEM "Lower Left",                  ID_WINDOWSTYLE_EDIT_LOWERLEFT
 
-            MENUITEM "Left",                        ID_WINDOWSTYLE_EDIT_LEFT
-            MENUITEM "Background",                  ID_WINDOWSTYLE_EDIT_BACKGROUND
+            MENUITEM "Bottom",                      ID_WINDOWSTYLE_EDIT_BOTTOM
+
+            MENUITEM "Lower Right",                 ID_WINDOWSTYLE_EDIT_LOWERRIGHT
 
         END
         POPUP "&Zoom"
@@ -540,7 +547,15 @@ BEGIN
             MENUITEM "&4x",                         ID_WINDOWSTYLE_ZOOM_4X
             MENUITEM "&8x",                         ID_WINDOWSTYLE_ZOOM_8X
         END
-        MENUITEM "&Resize Section...",          ID_WINDOWSTYLE_RESIZESECTION
+        POPUP "&Change Size"
+        BEGIN
+            MENUITEM "&Resize Section...",          ID_WINDOWSTYLE_RESIZESECTION
+
+            MENUITEM "Rescale Section...",          ID_WINDOWSTYLE_RESCALESECTION
+
+            MENUITEM "Resample Section...",         ID_WINDOWSTYLE_RESAMPLESECTION
+
+        END
         MENUITEM SEPARATOR
         MENUITEM "&Properties...",              ID_WINDOWSTYLE_PROPERTIES
     END
@@ -921,6 +936,8 @@ BEGIN
             MENUITEM "&Grayscale",                  ID_IMAGEVIEW_FILTER_GRAYSCALE
 
             MENUITEM "&Saturate",                   ID_IMAGEVIEW_FILTER_SATURATE
+
+            MENUITEM "&Color Adjuster...",          ID_IMAGEVIEW_FILTER_COLORADJUSTER
 
             MENUITEM "&Custom Filter...",           ID_IMAGEVIEW_FILTER_CUSTOM
 
@@ -1431,13 +1448,13 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,91,159,50,14
     LISTBOX         IDC_FILTER_LIST,25,28,78,76,LBS_SORT | 
                     LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Red",IDC_FILTER_USE_RED,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,23,115,32,6
-    CONTROL         "Green",IDC_FILTER_USE_GREEN,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Red",IDC_USE_RED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    23,115,32,6
+    CONTROL         "Green",IDC_USE_GREEN,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,23,124,36,6
-    CONTROL         "Blue",IDC_FILTER_USE_BLUE,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Blue",IDC_USE_BLUE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,23,132,36,6
-    CONTROL         "Alpha",IDC_FILTER_USE_ALPHA,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Alpha",IDC_USE_ALPHA,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,23,141,37,6
     PUSHBUTTON      "Edit",IDC_FILTER_LIST_EDIT,117,37,40,13
     CONTROL         "",IDC_PREVIEW_FRAME,"Static",SS_BLACKFRAME | NOT 
@@ -1533,13 +1550,13 @@ FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,23,158,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,91,159,50,14
-    CONTROL         "Red",IDC_FILTER_USE_RED,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,23,115,32,6
-    CONTROL         "Green",IDC_FILTER_USE_GREEN,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Red",IDC_USE_RED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    23,115,32,6
+    CONTROL         "Green",IDC_USE_GREEN,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,23,124,36,6
-    CONTROL         "Blue",IDC_FILTER_USE_BLUE,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Blue",IDC_USE_BLUE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,23,132,36,6
-    CONTROL         "Alpha",IDC_FILTER_USE_ALPHA,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Alpha",IDC_USE_ALPHA,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,23,141,37,6
     CONTROL         "",IDC_PREVIEW_FRAME,"Static",SS_BLACKFRAME | NOT 
                     WS_VISIBLE,87,122,46,27
