@@ -365,6 +365,19 @@ CTilesetView::GetNumRows()
 ////////////////////////////////////////////////////////////////////////////////
 
 int
+CTilesetView::GetNumTilesPerRow() const
+{
+  if (!m_BlitTile || m_BlitTile->GetPixels() == NULL)
+    return 0;
+
+  RECT client_rect;
+  GetClientRect(&client_rect);
+  return client_rect.right / m_BlitTile->GetWidth();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
 CTilesetView::GetTileSelectionLeftX()
 {
   if (!m_UsingMultiTileSelection) return 0;

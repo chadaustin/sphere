@@ -22,6 +22,8 @@ public:
   void SelectTile(int tile);
   int GetSelectedTile() const;
 
+  int GetNumTilesPerRow() const;
+
 private:
   afx_msg void OnSize(UINT type, int cx, int cy);
 

@@ -2070,6 +2070,7 @@ CMainWindow::OnHelpAbout()
     "Corona: %s\n"
     "JavaScript: %s\n"
     "libmng: DLL %s - header %s\n"
+    "scintilla: 1.58\n",
     "zlib: %s\n"
 		,
     audiere::GetVersion(),

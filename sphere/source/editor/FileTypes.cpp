@@ -4,8 +4,6 @@
 #include <string>
 #include <string.h>
 #include "FileTypes.hpp"
-using std::string;
-using std::vector;
 
 #include <corona.h>
 #include <audiere.h>
@@ -65,7 +63,7 @@ CFileTypeLibrary::CFileTypeLibrary()
 
       // get extensions
       while (*s != ',' && *s != ')') {
-        string ext;
+        std::string ext;
         while (*s != ',' && *s != ')') {
           ext += *s;
           s++;
@@ -109,7 +107,7 @@ CFileTypeLibrary::GetFileTypeLabel(int file_type, bool save)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CFileTypeLibrary::GetFileTypeExtensions(int file_type, bool save, vector<string>& extensions)
+CFileTypeLibrary::GetFileTypeExtensions(int file_type, bool save, std::vector<std::string>& extensions)
 {
   if (file_type == GT_IMAGES) {
     corona::FileFormatDesc** formats =
@@ -234,7 +232,8 @@ const char* GetSoundSubTypeLabel(const char* ext) {
     return "Speex Files";
   if (strcmp(ext, "aiff") == 0 || strcmp(ext, "aifc") == 0)
     return "AIFF Files";
-
+  if (strcmp(ext, "spc") == 0)
+    return "SPC Files";
   return "Unknown Sound";
 }
 
@@ -275,7 +274,7 @@ CFileTypeLibrary::GetSubTypeLabel(int file_type, int sub_type, bool save)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CFileTypeLibrary::GetSubTypeExtensions(int file_type, int sub_type, bool save, vector<string>& extensions)
+CFileTypeLibrary::GetSubTypeExtensions(int file_type, int sub_type, bool save, std::vector<std::string>& extensions)
 {
   if (file_type == GT_IMAGES) {
     corona::FileFormatDesc** formats =

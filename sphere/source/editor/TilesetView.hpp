@@ -33,6 +33,8 @@ public:
   void SetSelectedTile(int tile);
   int  GetSelectedTile() const;
 
+  int GetNumTilesPerRow() const;
+
 private:
   int GetPageSize();
   int GetNumRows();

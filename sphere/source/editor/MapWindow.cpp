@@ -328,17 +328,26 @@ afx_msg void
 CMapWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
 {
   int tile = m_MapView.GetSelectedTile();
+  const int tiles_per_row = m_TilePalette->GetNumTilesPerRow();
+
   if (vk == VK_RIGHT) {
     tile = std::min(tile + 1, m_Map.GetTileset().GetNumTiles() - 1);
   } else if (vk == VK_LEFT) {
     tile = std::max(tile - 1, 0);
+  } else if (vk == VK_UP) {
+    if (tile - tiles_per_row >= 0) {
+      tile -= tiles_per_row;
+    }
+  } else if (vk == VK_DOWN) {
+    if (tile + tiles_per_row < m_Map.GetTileset().GetNumTiles() - 1) {
+      tile += tiles_per_row;
+    }
   }
 
   m_MapView.SelectTile(tile);
   m_LayerView.SetSelectedTile(tile);
   m_TilesetEditView.SelectTile(tile);
   if (m_TilePalette) m_TilePalette->SelectTile(tile);
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
