@@ -71,6 +71,8 @@ SMAP::Load(const char* filename, IFileSystem& fs)
   }
 
   // calculate maximum non-parallax layer dimensions
+  m_MaxLayerWidth = 0;
+  m_MaxLayerHeight = 0;
   for (int i = 0; i < m_Map.GetNumLayers(); i++) {
     sLayer& layer = m_Map.GetLayer(i);
     if (layer.HasParallax() == false) {

@@ -1,4 +1,6 @@
 2003.01.09
+  - fix bug where switching from larger map to smaller map makes
+    Sphere think smaller map is bigger than it really is
   - when inserting person entities into a map, put them one more pixel
     up and one more pixel left so they are aligned with tiles.
   - Started changelog.  SourceForge got rid of the mailing
