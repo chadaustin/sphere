@@ -28,21 +28,30 @@ struct FILELISTimp
 
 std::stack<std::string> DirectoryStack;
 
+int GetEnvironmentVariableStr(const char* name, char* value, int max_len) {
+#ifdef WIN32
+  return (int) GetEnvironmentVariable(name, value, max_len);
+#else
+  return 0;
+#endif
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
 std::string GetSphereDirectory()
 {
-  char dir[MAX_PATH];
-#if 1
+  char dir[MAX_PATH] = {0};
+
+  if (GetEnvironmentVariableStr("SPHERE_DIRECTORY", dir, MAX_PATH) != 0)
+    return dir;
+
   GetModuleFileName(GetModuleHandle(0), dir, MAX_PATH);
   char* last_backslash = strrchr(dir, '\\');
   if (last_backslash) {
     *last_backslash = 0;
   }
-#else
-  strcpy(dir, "c:\\sphere");
-#endif
+
   return dir;
 }
 
