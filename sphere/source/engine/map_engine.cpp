@@ -3233,6 +3233,11 @@ CMapEngine::IsObstructed(int person, int x, int y, int& obs_person)
       continue;
     }
 
+    // if people aren't on the same layer, skip
+    if (m_Persons[i].layer != m_Persons[person].layer) {
+      continue;
+    }
+
     // if this entity is a follower of the current entity, don't check it
     int j = m_Persons[i].leader;
     while (j != -1) {
