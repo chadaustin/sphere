@@ -33,6 +33,8 @@ public:
 
   void RemoveSegmentByPoint(int x, int y);
 
+  int FindSegmentByPoint(int x, int y);
+
 private:
   double DistanceToSegment(int x, int y, int i);
   double DistanceToPoint(int x1, int y1, int x2, int y2);

@@ -1065,6 +1065,7 @@ IDI_MAPTOOL_OBS_SEGMENT ICON    DISCARDABLE     "maptool_obs_segment.ico"
 IDI_MAPTOOL_OBS_DELETE  ICON    DISCARDABLE     "maptool_obs_delete.ico"
 IDI_LAYER_INVISIBLE     ICON    DISCARDABLE     "layer_invisible.ico"
 IDI_LAYER_VISIBLE       ICON    DISCARDABLE     "layer_visible.ico"
+IDI_MAPTOOL_OBS_MOVE_PT ICON    DISCARDABLE     "maptool_obs_move_pt.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

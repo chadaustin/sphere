@@ -78,6 +78,7 @@
 #define IDD_TILE_OBSTRUCTION_DIALOG     211
 #define IDD_STRING                      213
 #define IDR_SPRITESET_IMAGES_PALETTE    214
+#define IDI_MAPTOOL_OBS_MOVE_PT         215
 #define IDC_PROJECTNAME                 1000
 #define IDC_GAMETITLE                   1001
 #define IDC_BROWSE                      1003
@@ -330,7 +331,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        215
+#define _APS_NEXT_RESOURCE_VALUE        216
 #define _APS_NEXT_COMMAND_VALUE         40524
 #define _APS_NEXT_CONTROL_VALUE         1116
 #define _APS_NEXT_SYMED_VALUE           101

@@ -158,9 +158,20 @@ sObstructionMap::RemoveSegment(int i)
 void
 sObstructionMap::RemoveSegmentByPoint(int x, int y)
 {
+  int point = FindSegmentByPoint(x, y);
+  if (point != -1) {
+    RemoveSegment(point);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+sObstructionMap::FindSegmentByPoint(int x, int y)
+{
   // if there aren't any segments, don't do anything
   if (m_Segments.size() == 0) {
-    return;
+    return -1;
   }
 
   // find minimum distance
@@ -174,8 +185,7 @@ sObstructionMap::RemoveSegmentByPoint(int x, int y)
     }
   }
 
-  // remove that point
-  RemoveSegment(point);
+  return point;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

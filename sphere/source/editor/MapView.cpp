@@ -52,6 +52,11 @@ CMapView::CMapView()
 , m_SelectedLayer(0)
 
 , m_Clicked(false)
+
+, m_PreviewLineOn(0)
+, m_RedrawWindow(0)
+, m_RedrawPreviewLine(0)
+
 {
   s_MapAreaClipboardFormat = RegisterClipboardFormat("MapAreaSelection32");
   s_MapEntityClipboardFormat = RegisterClipboardFormat("MapEntitySelection32");
@@ -116,6 +121,7 @@ CMapView::SetZoomFactor(int factor)
     m_Map->GetTileset().GetTileWidth()  * factor,
     m_Map->GetTileset().GetTileHeight() * factor,
     32);
+  m_RedrawWindow = 1;
   Invalidate();
   UpdateScrollBars();
 }
@@ -131,6 +137,7 @@ CMapView::TilesetChanged()
     m_Map->GetTileset().GetTileHeight() * m_ZoomFactor,
     32);
 
+  m_RedrawWindow = 1;
   Invalidate();
   UpdateScrollBars();
 }
@@ -149,6 +156,7 @@ void
 CMapView::SelectLayer(int layer)
 {
   m_SelectedLayer = layer;
+  m_RedrawWindow = 1;
   Invalidate();
 }
 
@@ -276,6 +284,7 @@ CMapView::SetTile(int tx, int ty)
       (tx - m_CurrentX) * tile_width  * m_ZoomFactor + tile_width  * m_ZoomFactor,
       (ty - m_CurrentY) * tile_height * m_ZoomFactor + tile_height * m_ZoomFactor,
     };
+    m_RedrawWindow = 1;
     InvalidateRect(&Rect);
 
     return true;
@@ -304,6 +313,43 @@ CMapView::SelectTileUnderPoint(CPoint Point)
     // change the current tile
     m_Handler->MV_SelectedTileChanged(tile);
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//Aligns a point to a quarter tile margin on the X axis
+//
+//Note: it will align to the nearest pixel against the margin between pixel
+//
+//a 16 pixel wide tile would align to pixels marked "O" 
+//("=" other pixels, "|" margin)
+//
+//  |O = = O|O = = O|O = = O|O = = O|
+//
+//Note: Margins will not align properly with tiles that have a width not 
+//divisable by 4.
+//
+int
+CMapView::RoundX(int x) {
+  int w = m_Map->GetTileset().GetTileWidth() / 4;
+  int v = x % w;
+  x -= v;
+  if(v > w / 2) {
+    x += w - 1;
+  }
+  return x;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//same as RoundX() but for the Y axis
+int
+CMapView::RoundY(int y) {
+  int h = m_Map->GetTileset().GetTileWidth() / 4;
+  int v = y % h;
+  y -= v;
+  if(v > h / 2) {
+    y += h - 1;
+  }
+  return y;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -521,6 +567,7 @@ CMapView::PasteMapUnderPoint(CPoint point)
           m_Map->GetLayer(m_SelectedLayer).SetTile(x, y, tLayer.GetTile(x-tx, y-ty));
     }
 
+    m_RedrawWindow = 1;
     Invalidate();
   }
 
@@ -549,6 +596,7 @@ CMapView::FillArea()
     for (int x=0; x<width && x+start_x<m_Map->GetLayer(m_SelectedLayer).GetWidth(); x++)
       m_Map->GetLayer(m_SelectedLayer).SetTile(x+start_x, y+start_y, m_SelectedTile);
 
+  m_RedrawWindow = 1;
   Invalidate();
 }
 
@@ -947,6 +995,31 @@ CMapView::DrawObstructions(CDC& dc)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+CMapView::DrawPreviewLine(CDC& dc, int x1, int y1, int x2, int y2)
+{
+  const int tile_width  = m_Map->GetTileset().GetTileWidth();
+  const int tile_height = m_Map->GetTileset().GetTileHeight();
+
+  CPen pen(PS_SOLID, 1, RGB(m_HighlightColor.red, m_HighlightColor.green, m_HighlightColor.blue));
+
+  dc.SaveDC();
+  dc.SetROP2(R2_XORPEN);
+  dc.SelectObject(&pen);
+
+  x1 = (x1 - m_CurrentX * tile_width) * m_ZoomFactor;
+  y1 = (y1 - m_CurrentY * tile_height) * m_ZoomFactor;
+  x2 = (x2 - m_CurrentX * tile_width) * m_ZoomFactor;
+  y2 = (y2 - m_CurrentY * tile_height) * m_ZoomFactor;
+  dc.MoveTo(x1, y1);
+  dc.LineTo(x2, y2);
+
+  dc.RestoreDC(-1);
+  pen.DeleteObject();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMapView::OnDestroy()
 {
@@ -962,35 +1035,57 @@ CMapView::OnPaint()
 {
   CPaintDC dc(this);
 
-  int NumTilesX = GetPageSizeX() + 1;
-  int NumTilesY = GetPageSizeY() + 1;
-
-  // draw all tiles visible in the client window
-  for (int ix = 0; ix < NumTilesX; ix++) {
-    for (int iy = 0; iy < NumTilesY; iy++) {
-
-      // visibility check
-      int tile_width  = m_Map->GetTileset().GetTileWidth();
-      int tile_height = m_Map->GetTileset().GetTileHeight();
-      RECT Rect = {
-        ix * tile_width  * m_ZoomFactor,
-        iy * tile_height * m_ZoomFactor,
-        ix * tile_width  * m_ZoomFactor + tile_width  * m_ZoomFactor,
-        iy * tile_height * m_ZoomFactor + tile_height * m_ZoomFactor,
-      };
-
-      if (dc.RectVisible(&Rect)) {
-
-        // draw tile  
-        int tx = ix + m_CurrentX;
-        int ty = iy + m_CurrentY;
-        DrawTile(dc, Rect, tx, ty);
-
-      }
-    }
+  if(!m_RedrawWindow && !m_RedrawPreviewLine) {
+    //window was invalidated without setting any redraws. Assume a complete 
+    //redraw is needed/intended
+    m_RedrawWindow = 1;
   }
 
-  DrawObstructions(dc);
+  if(m_RedrawWindow) {
+    int NumTilesX = GetPageSizeX() + 1;
+    int NumTilesY = GetPageSizeY() + 1;
+
+    // draw all tiles visible in the client window
+    for (int ix = 0; ix < NumTilesX; ix++) {
+      for (int iy = 0; iy < NumTilesY; iy++) {
+
+        // visibility check
+        int tile_width  = m_Map->GetTileset().GetTileWidth();
+        int tile_height = m_Map->GetTileset().GetTileHeight();
+        RECT Rect = {
+          ix * tile_width  * m_ZoomFactor,
+          iy * tile_height * m_ZoomFactor,
+          ix * tile_width  * m_ZoomFactor + tile_width  * m_ZoomFactor,
+          iy * tile_height * m_ZoomFactor + tile_height * m_ZoomFactor,
+        };
+
+        if (dc.RectVisible(&Rect)) {
+
+          // draw tile  
+          int tx = ix + m_CurrentX;
+          int ty = iy + m_CurrentY;
+          DrawTile(dc, Rect, tx, ty);
+
+        }
+      }
+    }
+    DrawObstructions(dc);
+
+    m_RedrawWindow = 0;
+    //force a redraw of the preview line after doing redraw.
+    m_RedrawPreviewLine = 1;
+  }
+
+  if(m_RedrawPreviewLine) {
+    if(m_PreviewLineOn) {
+      if(m_RedrawPreviewLine == 2) {
+        //erase previous line before drawing current line
+        DrawPreviewLine(dc, m_StartX, m_StartY, m_PreviewOldX, m_PreviewOldY);
+      }
+      DrawPreviewLine(dc, m_StartX, m_StartY, m_PreviewX, m_PreviewY);
+    }
+    m_RedrawPreviewLine = 0;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1040,6 +1135,15 @@ CMapView::OnLButtonDown(UINT flags, CPoint point)
       case tool_ObsSegment: {
         m_StartX = point.x / m_ZoomFactor + m_CurrentX * tile_width;
         m_StartY = point.y / m_ZoomFactor + m_CurrentY * tile_height;
+        if(flags & MK_CONTROL) {
+          m_StartX = RoundX(m_StartX);
+          m_StartY = RoundY(m_StartY);
+        }
+        m_PreviewX = m_StartX;
+        m_PreviewY = m_StartY;
+        m_PreviewLineOn = 1;
+        m_RedrawPreviewLine = 1;
+        Invalidate();
       } break;
 
       case tool_ObsDeleteSegment: {
@@ -1047,8 +1151,36 @@ CMapView::OnLButtonDown(UINT flags, CPoint point)
         int x = point.x / m_ZoomFactor + m_CurrentX * tile_width;
         int y = point.y / m_ZoomFactor + m_CurrentY * tile_height;
         m_Map->GetLayer(m_SelectedLayer).GetObstructionMap().RemoveSegmentByPoint(x, y);
+
+        m_RedrawWindow = 1;
         Invalidate();
         m_Handler->MV_MapChanged();
+      } break;
+      case tool_ObsMoveSegmentPoint: {
+        //Moves a point on an obstruction segment by deleting the segment
+        //and creating a new one with the start point being the point not
+        //being moved.
+        int x = point.x / m_ZoomFactor + m_CurrentX * tile_width;
+        int y = point.y / m_ZoomFactor + m_CurrentY * tile_height;
+        int seg = m_Map->GetLayer(m_SelectedLayer).GetObstructionMap().FindSegmentByPoint(x, y);
+        if(seg != -1) {
+          const sObstructionMap::Segment& segment = m_Map->GetLayer(m_SelectedLayer).GetObstructionMap().GetSegment(seg);
+          if((segment.x1 - x) * (segment.x1 - x) + (segment.y1 - y) * (segment.y1 - y) < 
+              (segment.x2 - x) * (segment.x2 - x) + (segment.y2 - y) * (segment.y2 - y)) {
+            m_StartX = segment.x2;
+            m_StartY = segment.y2;
+          } else {
+            m_StartX = segment.x1;
+            m_StartY = segment.y1;
+          }
+          m_Map->GetLayer(m_SelectedLayer).GetObstructionMap().RemoveSegment(seg);
+          m_RedrawWindow = 1;
+          Invalidate();
+		      m_Handler->MV_MapChanged();
+          m_PreviewLineOn = 1;
+		    } else {
+          return;
+		    }
       } break;
     }
 
@@ -1119,12 +1251,30 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
           //CRgn total_rgn;
           new_rgn.CombineRgn(&old_rgn, &new_rgn, RGN_OR);
           InvalidateRgn(&new_rgn);
+          m_RedrawWindow = 1;
           new_rgn.DeleteObject();
         }
         break;
 
       case tool_Paste:
         break;
+
+      case tool_ObsMoveSegmentPoint:
+      case tool_ObsSegment: {
+        int tile_width  = m_Map->GetTileset().GetTileWidth();
+        int tile_height = m_Map->GetTileset().GetTileHeight();
+        m_PreviewOldX = m_PreviewX;
+        m_PreviewOldY = m_PreviewY;
+        m_PreviewX = point.x / m_ZoomFactor + m_CurrentX * tile_width;
+        m_PreviewY = point.y / m_ZoomFactor + m_CurrentY * tile_height;
+        if(flags & MK_CONTROL) {
+          m_PreviewX = RoundX(m_PreviewX);
+          m_PreviewY = RoundY(m_PreviewY);
+        }
+        //signal that a preview line erase and update is required.
+        m_RedrawPreviewLine = 2;
+        Invalidate();        
+      } break;
 
     }
   }
@@ -1142,6 +1292,7 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
       int old_x = (m_CurrentCursorTileX - m_CurrentX) * tile_width;
       int old_y = (m_CurrentCursorTileY - m_CurrentY) * tile_height;
       RECT old_rect = { old_x, old_y, old_x + tile_width, old_y + tile_height };
+      m_RedrawWindow = 1;
       InvalidateRect(&old_rect);
   
       m_CurrentCursorTileX = x;
@@ -1151,6 +1302,7 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
       int new_y = (y - m_CurrentY) * tile_height;
       int new_x = (x - m_CurrentX) * tile_width;
       RECT new_rect = { new_x, new_y, new_x + tile_width, new_y + tile_height };
+      m_RedrawWindow = 1;
       InvalidateRect(&new_rect, true);
     } break;
 
@@ -1160,6 +1312,7 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
         int old_x = (m_CurrentCursorTileX - m_CurrentX) * tile_width;
         int old_y = (m_CurrentCursorTileY - m_CurrentY) * tile_height;
         RECT old_rect = { old_x, old_y, old_x + tile_width, old_y + tile_height };
+        m_RedrawWindow = 1;
         InvalidateRect(&old_rect);
   
         m_CurrentCursorTileX = x;
@@ -1169,6 +1322,7 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
         int new_y = (y - m_CurrentY) * tile_height;
         int new_x = (x - m_CurrentX) * tile_width;
         RECT new_rect = { new_x, new_y, new_x + tile_width, new_y + tile_height };
+        m_RedrawWindow = 1;
         InvalidateRect(&new_rect, true);
       } break;
     }
@@ -1207,6 +1361,7 @@ CMapView::OnLButtonUp(UINT flags, CPoint point)
       if (new_y < old_y) std::swap(new_y, old_y);
       RECT rect = { old_x, old_y, new_x + zoom_tile_width, new_y + zoom_tile_height };
 
+      m_RedrawWindow = 1;
       InvalidateRect(&rect);
       LayerAreaCopy();
     } break;
@@ -1219,14 +1374,21 @@ CMapView::OnLButtonUp(UINT flags, CPoint point)
       EntityPaste(point);
     } break;
 
+    case tool_ObsMoveSegmentPoint:
     case tool_ObsSegment: {
       int x = point.x / m_ZoomFactor + m_CurrentX * tile_width;
       int y = point.y / m_ZoomFactor + m_CurrentY * tile_height;
+      m_PreviewLineOn = 0;
+      if(flags & MK_CONTROL) {
+        x = RoundX(x);
+        y = RoundY(y);
+      }
       m_Map->GetLayer(m_SelectedLayer).GetObstructionMap().AddSegment(
         m_StartX, m_StartY, x, y
       );
 
       // we should just invalidate the area that the new line covers...
+      m_RedrawWindow = 1;
       Invalidate();
       m_Handler->MV_MapChanged();
     } break;
@@ -1328,6 +1490,7 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
       m_Map->SetStartY(py);
       m_Map->SetStartLayer(m_SelectedLayer);
 
+      m_RedrawWindow = 1;
       Invalidate();
       m_Handler->MV_MapChanged();
       break;
@@ -1342,6 +1505,7 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
             layer.SetTile(ix, iy, m_SelectedTile);
           }
         }
+        m_RedrawWindow = 1;
         Invalidate();
         m_Handler->MV_MapChanged();
 
@@ -1362,6 +1526,7 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
       {
         // insert it into the map
         m_Map->AddEntity(new sPersonEntity(person));
+        m_RedrawWindow = 1;
         Invalidate();
         m_Handler->MV_MapChanged();
       }
@@ -1380,6 +1545,7 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
       {
         // insert it into the map
         m_Map->AddEntity(new sTriggerEntity(trigger));
+        m_RedrawWindow = 1;
         Invalidate();
         m_Handler->MV_MapChanged();
       }
@@ -1395,6 +1561,7 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
 
           m_Map->DeleteEntity(ie);
 
+          m_RedrawWindow = 1;
           Invalidate();
           m_Handler->MV_MapChanged();
           break;
@@ -1467,6 +1634,7 @@ CMapView::OnHScrollChanged(int x)
   int factor = m_ZoomFactor * m_Map->GetTileset().GetTileWidth();
   ScrollDC(dc, (old_x - new_x) * factor, 0, NULL, NULL, region, NULL);
   ::InvalidateRgn(m_hWnd, region, FALSE);
+  m_RedrawWindow = 1;
   DeleteObject(region);
 
   ReleaseDC(dc_);
@@ -1488,6 +1656,7 @@ CMapView::OnVScrollChanged(int y)
   int factor = m_ZoomFactor * m_Map->GetTileset().GetTileHeight();
   ScrollDC(dc, 0, (old_y - new_y) * factor, NULL, NULL, region, NULL);
   ::InvalidateRgn(m_hWnd, region, FALSE);
+  m_RedrawWindow = 1;
   DeleteObject(region);
 
   ReleaseDC(dc_);

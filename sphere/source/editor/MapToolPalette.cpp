@@ -22,6 +22,7 @@ CMapToolPalette::CMapToolPalette(CDocumentWindow* owner, IToolPaletteHandler* ha
   AddTool(IDI_MAPTOOL_PASTEENTITY, "Paste Entity");
   AddTool(IDI_MAPTOOL_OBS_SEGMENT, "Obstruction Segment");
   AddTool(IDI_MAPTOOL_OBS_DELETE,  "Delete Obstruction Segment");
+  AddTool(IDI_MAPTOOL_OBS_MOVE_PT, "Move Obstruction Segment Point");
 }
 
 ////////////////////////////////////////////////////////////////////////////////

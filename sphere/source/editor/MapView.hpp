@@ -41,6 +41,9 @@ private:
   int GetPageSizeY();
   int GetTotalTilesX();
   int GetTotalTilesY();
+
+  int RoundX(int x);
+  int RoundY(int y);
   
   void Click(CPoint point);
   bool SetTile(int tx, int ty);
@@ -56,6 +59,7 @@ private:
   bool IsWithinSelectFillArea(int x, int y);
   void DrawTile(CDC& dc, const RECT& rect, int tx, int ty);
   void DrawObstructions(CDC& dc);
+  void DrawPreviewLine(CDC& dc, int x1, int y1, int x2, int y2);
 
   afx_msg void OnDestroy();
   afx_msg void OnPaint();
@@ -82,6 +86,7 @@ public:
     tool_PasteEntity,
     tool_ObsSegment,
     tool_ObsDeleteSegment,
+	  tool_ObsMoveSegmentPoint,
   };
 
 private:
@@ -107,6 +112,15 @@ private:
 
   int m_StartX;
   int m_StartY;
+
+  int m_PreviewX;
+  int m_PreviewY;
+  int m_PreviewOldX;
+  int m_PreviewOldY;
+  int m_PreviewLineOn;
+
+  int m_RedrawWindow;
+  int m_RedrawPreviewLine;
 
   int m_SelectedTile;
   int m_SelectedLayer;
