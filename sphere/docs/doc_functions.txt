@@ -96,7 +96,10 @@ log_object.endBlock()
   
   SetFrameRate(fps)
     - allows you to set the maximum frames rendered per second that 
-      the engine is allowed to draw at most.
+      the engine is allowed to draw at most.  Keep in mind that this
+      is not for the map engine, which uses the fps specified in the
+      MapEngine() call.  This function only controls standard drawing
+      functions and FlipScreen() outside of the map engine.
   
   GetFrameRate()
     - Returns the current fps (set by SetFrameRate... note: this is
