@@ -53,6 +53,9 @@ private:
   void OnSwap(int new_index);
   void OnZoom(double zoom);
 
+  afx_msg void OnZoomIn();
+  afx_msg void OnZoomOut();
+
 private:
   ISpritesetImagesPaletteHandler* m_Handler;
   sSpriteset* m_Spriteset;

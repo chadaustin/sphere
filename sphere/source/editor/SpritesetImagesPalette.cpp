@@ -23,6 +23,9 @@ BEGIN_MESSAGE_MAP(CSpritesetImagesPalette, CPaletteWindow)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_APPEND_IMAGES, OnAppendImages)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGES, OnRemoveImages)
   
+  ON_COMMAND(ID_FILE_ZOOM_IN,  OnZoomIn)
+  ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
+
 END_MESSAGE_MAP()
 
 
@@ -309,7 +312,11 @@ CSpritesetImagesPalette::GetPageSize()
 {
   RECT ClientRect;
   GetClientRect(&ClientRect);
-  return ClientRect.bottom / m_Spriteset->GetFrameHeight();
+
+  if (!m_BlitImage || m_BlitImage->GetHeight() == 0)
+    return -1;
+
+  return ClientRect.bottom / m_BlitImage->GetHeight();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -319,7 +326,11 @@ CSpritesetImagesPalette::GetNumRows()
 {
   RECT client_rect;
   GetClientRect(&client_rect);
-  int num_tiles_x = client_rect.right / m_Spriteset->GetFrameWidth();
+  
+  if (!m_BlitImage || m_BlitImage->GetWidth() == 0)
+    return -1;
+
+  int num_tiles_x = client_rect.right / m_BlitImage->GetWidth();
 
   if (num_tiles_x == 0)
     return -1;
@@ -522,3 +533,26 @@ CSpritesetImagesPalette::OnZoom(double zoom) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+afx_msg void
+CSpritesetImagesPalette::OnZoomIn()
+{
+  switch ((int)m_ZoomFactor) {
+    case 1: OnZoom(2); break;
+    case 2: OnZoom(4); break;
+    case 4: OnZoom(8); break;
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetImagesPalette::OnZoomOut()
+{
+  switch ((int)m_ZoomFactor) {
+    case 2: OnZoom(1); break;
+    case 4: OnZoom(2); break;
+    case 8: OnZoom(4); break;
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////

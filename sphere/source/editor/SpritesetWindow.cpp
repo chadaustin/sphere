@@ -283,11 +283,18 @@ CSpritesetWindow::OnSize(UINT type, int cx, int cy)
 afx_msg void
 CSpritesetWindow::OnZoomIn()
 {
-  if (m_TabControl.GetCurSel() == 0) {
-    switch ((int)m_SpritesetView.GetZoomFactor()) {
-      case 1: m_SpritesetView.SetZoomFactor(2); break;
-      case 2: m_SpritesetView.SetZoomFactor(4); break;
-      case 4: m_SpritesetView.SetZoomFactor(8); break;
+  if (GetFocus() != this) {
+    if ((m_ImagesPalette != NULL) && (GetFocus() == m_ImagesPalette)) {
+      m_ImagesPalette->SendMessage(WM_COMMAND, MAKEWPARAM(ID_FILE_ZOOM_IN, 0), 0);
+    }
+  }
+  else {
+    if (m_TabControl.GetCurSel() == 0) {
+      switch ((int)m_SpritesetView.GetZoomFactor()) {
+        case 1: m_SpritesetView.SetZoomFactor(2); break;
+        case 2: m_SpritesetView.SetZoomFactor(4); break;
+        case 4: m_SpritesetView.SetZoomFactor(8); break;
+      }
     }
   }
 }
@@ -297,11 +304,18 @@ CSpritesetWindow::OnZoomIn()
 afx_msg void
 CSpritesetWindow::OnZoomOut()
 {
-  if (m_TabControl.GetCurSel() == 0) {
-    switch ((int)m_SpritesetView.GetZoomFactor()) {
-      case 2: m_SpritesetView.SetZoomFactor(1); break;
-      case 4: m_SpritesetView.SetZoomFactor(2); break;
-      case 8: m_SpritesetView.SetZoomFactor(4); break;
+  if (GetFocus() != this) {
+    if ((m_ImagesPalette != NULL) && (GetFocus() == m_ImagesPalette)) {
+      m_ImagesPalette->SendMessage(WM_COMMAND, MAKEWPARAM(ID_FILE_ZOOM_OUT, 0), 0);
+    }
+  }
+  else {
+    if (m_TabControl.GetCurSel() == 0) {
+      switch ((int)m_SpritesetView.GetZoomFactor()) {
+        case 2: m_SpritesetView.SetZoomFactor(1); break;
+        case 4: m_SpritesetView.SetZoomFactor(2); break;
+        case 8: m_SpritesetView.SetZoomFactor(4); break;
+      }
     }
   }
 }
