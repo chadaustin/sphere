@@ -200,7 +200,7 @@ void GetGameList(std::vector<Game>& games)
       CConfigFile file;
       file.Load("game.sgm");
       std::string gamename    = file.ReadString("", "name", "");
-      std::string author      = file.ReadString("", "author", "Untitled");
+      std::string author      = file.ReadString("", "author", "Unknown");
       std::string description = file.ReadString("", "description", "");
 
       // if the game name is empty, the game doesn't exist
