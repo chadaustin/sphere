@@ -803,7 +803,7 @@ void EXPORT DirectGrab(int x, int y, int w, int h, RGBA* pixels)
         
         // manually scale the framebuffer down
         RGBA* new_pixels = new RGBA[4 * w * h];
-        glReadPixels(x * 2, y * 2, w * 2, h * 2, GL_RGBA, GL_UNSIGNED_BYTE, new_pixels);
+        glReadPixels(x * 2, (ScreenHeight - y - 1) * 2, w * 2, h * 2, GL_RGBA, GL_UNSIGNED_BYTE, new_pixels);
 
         for (int i = 0; i < w; i++) {
             for (int j = 0; j < h; j++) {
@@ -814,7 +814,7 @@ void EXPORT DirectGrab(int x, int y, int w, int h, RGBA* pixels)
         delete[] new_pixels;
 
     } else {
-        glReadPixels(x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+        glReadPixels(x, ScreenHeight - y - 1, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
     }
 
     // now reverse the pixels
