@@ -3,8 +3,9 @@
 #endif
 
 
-#include <vector>
+#include <stack>
 #include <string>
+#include <vector>
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,10 +15,8 @@
 
 struct DIRECTORYLISTimp
 {
-  int    numdirectories;
-  char** directories;
-
-  int    currentdirectory;
+  std::vector<std::string> directories;
+  int currentdirectory;
 };
 
 
@@ -29,12 +28,7 @@ struct FILELISTimp
 
 
 
-static int DirectoryStackSize;
-static char** DirectoryStack;
-
-
-static char OriginalDirectory[520];
-static char BaseDirectory[520];
+std::stack<std::string> DirectoryStack;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -58,17 +52,10 @@ bool MakeDirectory(const char* directory)
 
 bool EnterDirectory(const char* directory)
 {
-  char olddirectory[MAX_PATH];
-
-  // get the old directory
-  GetCurrentDirectory(MAX_PATH, olddirectory);
-  
-  // push it on the stack
-  DirectoryStack = (char**)realloc(DirectoryStack, sizeof(char*) * (DirectoryStackSize + 1));
-  DirectoryStack[DirectoryStackSize] = (char*)malloc(strlen(olddirectory) + 1);
-  strcpy(DirectoryStack[DirectoryStackSize], olddirectory);
-
-  DirectoryStackSize++;
+  // get the old directory and remember it
+  char old_directory[MAX_PATH];
+  GetCurrentDirectory(MAX_PATH, old_directory);
+  DirectoryStack.push(old_directory);
 
   // set the new directory
   return (SetCurrentDirectory(directory) != 0);
@@ -78,60 +65,37 @@ bool EnterDirectory(const char* directory)
 
 bool LeaveDirectory()
 {
-  char olddirectory[MAX_PATH];
-
-  // get the previous directory off of the stack
-  strcpy(olddirectory, DirectoryStack[DirectoryStackSize - 1]);
-
-  // pop the topmost entry
-  DirectoryStackSize--;
-  free(DirectoryStack[DirectoryStackSize]);
-  DirectoryStack = (char**)realloc(DirectoryStack, sizeof(char*) * DirectoryStackSize);
-
-  // set it
-  if (SetCurrentDirectory(olddirectory))
-    return true;
-  else
-    return false;
+  std::string old = DirectoryStack.top();
+  DirectoryStack.pop();
+  return (SetCurrentDirectory(old.c_str()) != 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 DIRECTORYLIST BeginDirectoryList(const char* mask)
 {
-  DIRECTORYLISTimp* dl = (DIRECTORYLISTimp*)malloc(sizeof(DIRECTORYLISTimp));
-  WIN32_FIND_DATA ffd;
-  HANDLE fh;
-
-  // obviously, there are no directories at first
-  dl->numdirectories = 0;
-  dl->directories = NULL;
-
+  DIRECTORYLISTimp* dl = new DIRECTORYLISTimp;
   dl->currentdirectory = 0;
 
-  fh = FindFirstFile(mask, &ffd);
-  if (fh == INVALID_HANDLE_VALUE)  // if there are no directories, we're done searching
+  WIN32_FIND_DATA ffd;
+  HANDLE fh = FindFirstFile(mask, &ffd);
+  
+  // if there are no directories, we're done searching
+  if (fh == INVALID_HANDLE_VALUE) {
     return dl;
+  }
 
   // build the directory list
-  do
-  {
+  do {
     // it has to be a directory and it can't start with a period
     if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY &&
         ffd.cFileName[0] != '.')
     {
-
-      dl->directories = (char**)realloc(dl->directories, (sizeof(char*) * (dl->numdirectories + 1)));
-      dl->directories[dl->numdirectories] = (char*)malloc(strlen(ffd.cFileName) + 1);
-      strcpy(dl->directories[dl->numdirectories], ffd.cFileName);
-      dl->numdirectories++;
-
+      dl->directories.push_back(ffd.cFileName);
     }
-
   } while (FindNextFile(fh, &ffd));
 
   FindClose(fh);
-
   return dl;
 }
 
@@ -139,25 +103,21 @@ DIRECTORYLIST BeginDirectoryList(const char* mask)
 
 void EndDirectoryList(DIRECTORYLIST dl)
 {
-  for (int i = 0; i < dl->numdirectories; i++)
-    free(dl->directories[i]);
-  free(dl->directories);
-
-  free(dl);
+  delete dl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 bool DirectoryListDone(DIRECTORYLIST dl)
 {
-  return !(dl->currentdirectory < dl->numdirectories);
+  return (dl->currentdirectory >= dl->directories.size());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void GetNextDirectory(DIRECTORYLIST dl, char directory[FILENAME_MAX])
 {
-  strcpy(directory, dl->directories[dl->currentdirectory]);
+  strcpy(directory, dl->directories[dl->currentdirectory].c_str());
   dl->currentdirectory++;
 }
 
