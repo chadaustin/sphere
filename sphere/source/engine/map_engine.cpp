@@ -461,11 +461,7 @@ CMapEngine::ExecuteTrigger(int location_x, int location_y, int layer)
   // check to see which trigger we're on
   int trigger_index = FindTrigger(location_x, location_y, layer);
 
-  if (!ExecuteTriggerScript(trigger_index)) {
-    return false;
-  }
-
-  return true;
+  return ExecuteTriggerScript(trigger_index);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3059,8 +3055,8 @@ CMapEngine::FindTrigger(int location_x, int location_y, int layer)
   for (unsigned i = 0; i < m_Triggers.size(); i++) {
     int dx = m_Triggers[i].x - location_x;
     int dy = m_Triggers[i].y - location_y;
-    if (dx < tile_width / 2 && dx >= -tile_width / 2 &&
-        dy < tile_height / 2 && dy >= -tile_height / 2) {
+    if (dx <= tile_width / 2 && dx > -tile_width / 2 &&
+        dy <= tile_height / 2 && dy > -tile_height / 2) {
       trigger_index = i;
       break;
     }
