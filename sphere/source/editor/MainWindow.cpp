@@ -3059,37 +3059,84 @@ CMainWindow::OnHelpLocalChangelog()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+class CAboutDialog : public CDialog
+{
+public:
+  CAboutDialog(std::string text);
+  ~CAboutDialog();
+
+private:
+  std::string m_text;
+
+private:
+  BOOL OnInitDialog();
+
+private:
+  DECLARE_MESSAGE_MAP()
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+BEGIN_MESSAGE_MAP(CAboutDialog, CDialog)
+END_MESSAGE_MAP()
+
+CAboutDialog::CAboutDialog(std::string text)
+: CDialog(IDD_ABOUT)
+, m_text(text)
+{
+}
+
+CAboutDialog::~CAboutDialog()
+{
+  m_text.resize(0);
+}
+
+BOOL
+CAboutDialog::OnInitDialog()
+{
+  SetDlgItemText(IDC_ABOUT_TEXT, m_text.c_str());
+  return FALSE;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 afx_msg void
 CMainWindow::OnHelpAbout()
 {
   char message[1024];
   sprintf(message,
-    "Sphere Development Environment\n"
-    SPHERE_VERSION "\n"
-    "\n"
-    "Chad Austin (c) 1999-2003\n"
-    "Additional code by Jacky Chong (Darklich) and Brian Robb (Flik)\n"
-    "Icons by DRosen and Khadgar\n"
-    "\n"
-    "Build Date: " __DATE__ "\n"
-    "Build Time: " __TIME__ "\n"
-    "\n");
+    "Sphere Development Environment\r\n"
+    SPHERE_VERSION "\r\n"
+    "\r\n"
+    "Chad Austin (c) 1999-2003\r\n"
+    "Additional code by:\r\n"
+    "Jacky Chong (Darklich)\r\n"
+    "Brian Robb (Flik)\r\n"
+    "Icons by DRosen and Khadgar\r\n"
+    "\r\n"
+    "Build Date: " __DATE__ "\r\n"
+    "Build Time: " __TIME__ "\r\n"
+    "\r\n");
 
 #ifdef I_SUCK
-  sprintf (message + strlen(message), "Audiere: %s\n", audiere::GetVersion());
-  sprintf (message + strlen(message), "Corona: %s\n", corona::GetVersion());
+  sprintf (message + strlen(message), "Audiere: %s\r\n", audiere::GetVersion());
+  sprintf (message + strlen(message), "Corona: %s\r\n", corona::GetVersion());
 #ifdef USE_SIZECBAR
-  sprintf (message + strlen(message), "CSizingControlBar: %s\n", SIZECBAR_VERSION);
+  sprintf (message + strlen(message), "CSizingControlBar: %s\r\n", SIZECBAR_VERSION);
 #endif
-  sprintf (message + strlen(message), "JavaScript: %s\n", JS_GetImplementationVersion());
-  sprintf (message + strlen(message), "libmng: DLL %s - header %s\n", mng_version_text(), MNG_VERSION_TEXT);
+  sprintf (message + strlen(message), "JavaScript: %s\r\n", JS_GetImplementationVersion());
+  sprintf (message + strlen(message), "libmng: DLL %s - header %s\r\n", mng_version_text(), MNG_VERSION_TEXT);
 #endif
-  sprintf (message + strlen(message), "scintilla: 1.60\n");
+  sprintf (message + strlen(message), "scintilla: 1.60\r\n");
 #ifdef I_SUCK
-  sprintf (message + strlen(message), "zlib: %s\n", zlibVersion());
+  sprintf (message + strlen(message), "zlib: %s\r\n", zlibVersion());
 #endif
 
-  MessageBox(message, "About");
+  //MessageBox(message, "About");
+
+  CAboutDialog dialog(message);
+  dialog.DoModal();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

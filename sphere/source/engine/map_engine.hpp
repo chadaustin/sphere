@@ -364,6 +364,7 @@ private:
 
   bool CreateDefaultPerson(Person& p, const char* name, const char* spriteset, bool destroy_with_map);
   bool CompileEdgeScripts();
+  void DestroyEdgeScripts();
   bool LoadMapPersons();
   bool DestroyMapPersons();
   void DestroyPersonScripts(Person& p);

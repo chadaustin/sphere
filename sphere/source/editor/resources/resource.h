@@ -119,6 +119,7 @@
 #define IDD_CHECKLIST                   275
 #define IDD_TITLEBAR_PAGE               276
 #define IDI_ENTITY_PERSON_OLD           278
+#define IDD_ABOUT                       279
 #define IDC_PROJECTNAME                 1000
 #define IDC_GAMETITLE                   1001
 #define IDC_BROWSE                      1003
@@ -269,6 +270,7 @@
 #define IDC_BOTTOM                      1230
 #define IDC_LEFT                        1231
 #define IDC_TITLEBAR                    1234
+#define IDC_ABOUT_TEXT                  1237
 #define ID_FILE_IMPORT_BITMAPTORSS      12241
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40003
@@ -708,6 +710,7 @@
 #define ID_SPRITESETVIEWDIRECTIONS_INSERTCOPY_FLIPHORIZONTALLY 40817
 #define IDI_MAPTOOL_SCRIPT              40819
 #define ID_PROJECT_GAMESETTINGS         40820
+#define ID_IRCVIEW_CLEAR                40821
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -715,9 +718,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        279
-#define _APS_NEXT_COMMAND_VALUE         40821
-#define _APS_NEXT_CONTROL_VALUE         1237
+#define _APS_NEXT_RESOURCE_VALUE        280
+#define _APS_NEXT_COMMAND_VALUE         40822
+#define _APS_NEXT_CONTROL_VALUE         1239
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

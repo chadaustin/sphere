@@ -1141,6 +1141,7 @@ BEGIN
             MENUITEM "&Version",                    ID_IRCVIEW_CTCP_VERSION
         END
         MENUITEM "&Slap",                       ID_IRCVIEW_SLAP
+        MENUITEM "Clear",                       ID_IRCVIEW_CLEAR
     END
 END
 
@@ -1744,6 +1745,16 @@ BEGIN
     LTEXT           "Titlebar",IDC_STATIC,18,13,51,8
 END
 
+IDD_ABOUT DIALOG DISCARDABLE  0, 0, 223, 190
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,88,169,50,14
+    EDITTEXT        IDC_ABOUT_TEXT,17,11,190,150,ES_MULTILINE | ES_READONLY | 
+                    NOT WS_BORDER
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1983,6 +1994,14 @@ BEGIN
         RIGHTMARGIN, 203
         TOPMARGIN, 7
         BOTTOMMARGIN, 147
+    END
+
+    IDD_ABOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 216
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 183
     END
 END
 #endif    // APSTUDIO_INVOKED

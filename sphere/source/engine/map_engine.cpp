@@ -3169,10 +3169,7 @@ CMapEngine::OpenMap(const char* filename)
     m_Music = 0;
 
     // destroy edge scripts
-    if (m_NorthScript) { m_Engine->DestroyScript(m_NorthScript); m_NorthScript = NULL; }
-    if (m_EastScript)  { m_Engine->DestroyScript(m_EastScript);  m_EastScript  = NULL; }
-    if (m_SouthScript) { m_Engine->DestroyScript(m_SouthScript); m_SouthScript = NULL; }
-    if (m_WestScript)  { m_Engine->DestroyScript(m_WestScript);  m_WestScript  = NULL; }
+    DestroyEdgeScripts();
 
     m_CurrentMap = "";
     return false;
@@ -3214,10 +3211,7 @@ CMapEngine::CloseMap()
   m_LayerRenderers.resize(0);
 
   // destroy edge scripts
-  if (m_NorthScript) { m_Engine->DestroyScript(m_NorthScript); m_NorthScript = NULL; }
-  if (m_EastScript)  { m_Engine->DestroyScript(m_EastScript);  m_EastScript  = NULL; }
-  if (m_SouthScript) { m_Engine->DestroyScript(m_SouthScript); m_SouthScript = NULL; }
-  if (m_WestScript)  { m_Engine->DestroyScript(m_WestScript);  m_WestScript  = NULL; }
+  DestroyEdgeScripts();
 
   // execute exit script
   if (!CallDefaultMapScript(SCRIPT_ON_LEAVE_MAP)
@@ -3336,6 +3330,7 @@ CMapEngine::CompileEdgeScripts()
   if (strlen(m_Map.GetMap().GetEdgeScript(sMap::NORTH)) > 0) {
     m_NorthScript = m_Engine->CompileScript(m_Map.GetMap().GetEdgeScript(sMap::NORTH), error);
     if (m_NorthScript == NULL) {
+      DestroyEdgeScripts();
       m_ErrorMessage = "Could not compile north script\n" + error;
       return false;
     }
@@ -3345,9 +3340,7 @@ CMapEngine::CompileEdgeScripts()
   if (strlen(m_Map.GetMap().GetEdgeScript(sMap::EAST)) > 0) {
     m_EastScript = m_Engine->CompileScript(m_Map.GetMap().GetEdgeScript(sMap::EAST), error);
     if (m_EastScript == NULL) {
-  
-      if (m_NorthScript) { m_Engine->DestroyScript(m_NorthScript); m_NorthScript = NULL; }
-
+      DestroyEdgeScripts();
       m_ErrorMessage = "Could not compile east script\n" + error;
       return false;
     }
@@ -3357,10 +3350,7 @@ CMapEngine::CompileEdgeScripts()
   if (strlen(m_Map.GetMap().GetEdgeScript(sMap::SOUTH)) > 0) {
     m_SouthScript = m_Engine->CompileScript(m_Map.GetMap().GetEdgeScript(sMap::SOUTH), error);
     if (m_SouthScript == NULL) {
-
-      if (m_NorthScript) { m_Engine->DestroyScript(m_NorthScript); m_NorthScript = NULL; }
-      if (m_EastScript)  { m_Engine->DestroyScript(m_EastScript);  m_EastScript  = NULL; }
-
+      DestroyEdgeScripts();
       m_ErrorMessage = "Could not compile south script\n" + error;
       return false;
     }
@@ -3370,17 +3360,24 @@ CMapEngine::CompileEdgeScripts()
   if (strlen(m_Map.GetMap().GetEdgeScript(sMap::WEST)) > 0) {
     m_WestScript = m_Engine->CompileScript(m_Map.GetMap().GetEdgeScript(sMap::WEST), error);
     if (m_WestScript == NULL) {
-
-      if (m_NorthScript) { m_Engine->DestroyScript(m_NorthScript); m_NorthScript = NULL; }
-      if (m_EastScript)  { m_Engine->DestroyScript(m_EastScript);  m_EastScript  = NULL; }
-      if (m_SouthScript) { m_Engine->DestroyScript(m_SouthScript); m_SouthScript = NULL; }
-
+      DestroyEdgeScripts();
       m_ErrorMessage = "Could not compile west script\n" + error;
       return false;
     }
   }
 
   return true;
+}
+
+///
+
+void
+CMapEngine::DestroyEdgeScripts()
+{
+  if (m_NorthScript) { m_Engine->DestroyScript(m_NorthScript); m_NorthScript = NULL; }
+  if (m_EastScript)  { m_Engine->DestroyScript(m_EastScript);  m_EastScript  = NULL; }
+  if (m_SouthScript) { m_Engine->DestroyScript(m_SouthScript); m_SouthScript = NULL; }
+  if (m_WestScript)  { m_Engine->DestroyScript(m_WestScript);  m_WestScript  = NULL; }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4243,7 +4240,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
           if (m_TalkActivationAllowed) {
 
             IEngine::script s = m_Persons[obs_person].person_scripts[SCRIPT_ON_ACTIVATE_TALK];
-            if (s && m_Engine->IsScriptBeingUsed(s)) {
+            if (s && !m_Engine->IsScriptBeingUsed(s)) {
 
               const std::string old_person = m_CurrentPerson;
               m_CurrentPerson = m_Persons[obs_person].name;
