@@ -502,6 +502,8 @@ static bool LayerToImage(CImage32* image, sLayer& layer, sTileset& tileset)
   return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 static bool ExportLayerAsImage(const char* filename, sLayer& layer, sTileset& tileset)
 {
   // create image
@@ -538,6 +540,8 @@ CLayerView::OnExportLayer()
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 static bool ExportAllVisibleLayersAsImage(const char* filename, sTileset& tileset, std::vector<sLayer> layers)
 {
   if (layers.size() <= 0)
@@ -561,9 +565,11 @@ static bool ExportAllVisibleLayersAsImage(const char* filename, sTileset& tilese
 
   // create destination/output image
   CImage32 dest_image(dest_image_width, dest_image_height);
-  if (layers.size() > 0) // we grab the top image and blend our way down
-    if (!LayerToImage(&dest_image, layers[layers.size() - 1], tileset))
+  if (layers.size() > 0) { // we grab the top image and blend our way down
+    if (!LayerToImage(&dest_image, layers[layers.size() - 1], tileset)) {
       return false;
+    }
+  }
   else // nothing to export
     return false;
 
@@ -599,19 +605,23 @@ CLayerView::OnExportAllVisibleLayers()
     sTileset& tileset = m_Map->GetTileset();
     std::vector<sLayer> layers;
 
+    // get a list of the visible layers
     for (int i = m_Map->GetNumLayers() - 1; i >= 0; --i) {
       if (m_Map->GetLayer(i).IsVisible()) {
         layers.push_back(m_Map->GetLayer(i));
       }
     }
 
-    // do the export
-    if (!ExportAllVisibleLayersAsImage(dialog.GetPathName(), tileset, layers)) {
-      MessageBox("Could not save image", "Export Layer as Image", MB_OK);
-    } else {
-      MessageBox("Exported all visible layers!", "Exported all Visible Layers as Image", MB_OK);
+    if (layers.size() <= 0)
+      MessageBox("No layers are visible!", "No layers are visible", MB_OK);
+    else {
+      // do the export
+      if (!ExportAllVisibleLayersAsImage(dialog.GetPathName(), tileset, layers)) {
+        MessageBox("Could not save image", "Export All Visible Layers as Image", MB_OK);
+      } else {
+        MessageBox("Exported all visible layers!", "Exported all Visible Layers as Image", MB_OK);
+      }
     }
-
   }
 }
 
