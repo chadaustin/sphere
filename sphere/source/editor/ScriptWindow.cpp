@@ -225,6 +225,7 @@ CScriptWindow::Initialize()
   m_TabWidth = Configuration::Get(KEY_SCRIPT_TAB_SIZE);
   m_KeyWordStyleIsBold = Configuration::Get(KEY_SCRIPT_KEYWORDS_IN_BOLD);
   m_ShowLineNumbers    = Configuration::Get(KEY_SCRIPT_SHOW_LINE_NUMBERS);
+  m_ShowWhitespace     = Configuration::Get(KEY_SCRIPT_SHOW_WHITESPACE);
   SetScriptStyles();
 
   SendEditor(SCI_TOGGLEFOLD, (LPARAM)"1");
@@ -673,6 +674,7 @@ CScriptWindow::OnOptionsShowWhitespace()
 {
   m_ShowWhitespace = !m_ShowWhitespace;
   SetScriptStyles();
+  RememberConfiguration();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -685,6 +687,7 @@ CScriptWindow::RememberConfiguration()
   Configuration::Set(KEY_SCRIPT_TAB_SIZE, m_TabWidth);
   Configuration::Set(KEY_SCRIPT_SYNTAX_HIGHLIGHTED, m_SyntaxHighlighted);
   Configuration::Set(KEY_SCRIPT_SHOW_LINE_NUMBERS, m_ShowLineNumbers);
+  Configuration::Set(KEY_SCRIPT_SHOW_WHITESPACE, m_ShowWhitespace);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
