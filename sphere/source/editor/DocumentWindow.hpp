@@ -48,8 +48,8 @@ public:
 
   virtual bool IsSaveable() const;
 
-  virtual void OnToolCommand(UINT id);
-  virtual BOOL IsToolCommandAvailable(UINT id);
+  virtual void OnToolChanged(UINT id, int tool_index);
+  virtual BOOL IsToolAvailable(UINT id);
 
 protected:
   BOOL Create(LPCTSTR class_name);

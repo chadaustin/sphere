@@ -1050,18 +1050,18 @@ CMapWindow::OnPaste()
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CMapWindow::OnToolCommand(UINT id)
+CMapWindow::OnToolChanged(UINT id, int tool_index)
 {
   if (m_Created) {
-    m_MapView.OnToolChanged(id);
-    m_TilesetEditView.OnToolChanged(id);
+    m_MapView.OnToolChanged(id, tool_index);
+    m_TilesetEditView.OnToolChanged(id, tool_index);
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 BOOL
-CMapWindow::IsToolCommandAvailable(UINT id)
+CMapWindow::IsToolAvailable(UINT id)
 {
   BOOL available = FALSE;
 

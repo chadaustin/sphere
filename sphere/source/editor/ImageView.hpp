@@ -39,8 +39,8 @@ public:
   RGBA*       GetPixels();
   const RGBA* GetPixels() const;
 
-  void SetColor(RGBA color);
-  RGBA GetColor() const;
+  void SetColor(int index, RGBA color);
+  RGBA GetColor(int index = 0) const;
 
   void FillRGB();
   void FillAlpha();
@@ -76,7 +76,7 @@ private:
 
 private:
   virtual void SP_ColorSelected(RGBA color);
-  virtual void TP_ToolSelected(int tool);
+  virtual void TP_ToolSelected(int tool, int tool_index);
 
   void UpdateCursor(UINT flags, CPoint point);
 
@@ -121,8 +121,11 @@ private:
   afx_msg void OnSize(UINT type, int cx, int cy);
 
   void OnLeftClick(UINT flags, CPoint point);
+  void OnRightClick(UINT flags, CPoint point);
+
   afx_msg void OnLButtonDown(UINT flags, CPoint point);
   afx_msg void OnLButtonUp(UINT flags, CPoint point);
+  afx_msg void OnRButtonDown(UINT flags, CPoint point);
   afx_msg void OnRButtonUp(UINT flags, CPoint point);
   afx_msg void OnMouseMove(UINT flags, CPoint point);
 
@@ -183,7 +186,7 @@ private:
 	afx_msg LRESULT OnGetAccelerator(WPARAM wParam, LPARAM lParam);
 
 public:
-  afx_msg void OnToolChanged(UINT id);
+  afx_msg void OnToolChanged(UINT id, int tool_index);
   BOOL IsToolAvailable(UINT id);
 
 private:
@@ -196,12 +199,14 @@ private:
   //CImageToolPalette* m_ToolPalette;
 
   // drawing
-  RGBA  m_Color;
+  RGBA  m_Colors[2];
   POINT m_StartPoint;
   POINT m_CurPoint;
   POINT m_LastPoint;
-  bool  m_MouseDown;
-  int   m_CurrentTool;
+
+  bool  m_MouseDown[2];
+  int m_SelectedTools[2];
+  int m_CurrentTool;
 
   int m_SelectionX;
   int m_SelectionY;

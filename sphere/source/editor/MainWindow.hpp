@@ -193,9 +193,15 @@ DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZONEDELETE)
 
   afx_msg void OnMapToolChanged();
 
+private:
+  int m_NumImageToolsAllowed;
+  int m_SelectedImageTools[2];
+
 public:
-  afx_msg UINT GetImageTool();
-  afx_msg UINT GetMapTool();
+  afx_msg UINT GetImageTool(int index);
+  afx_msg UINT GetMapTool(int index);
+
+  int GetNumImageToolsAllowed() const;
 
 private:
   afx_msg LRESULT OnInsertProjectFile(WPARAM wparam, LPARAM lparam);

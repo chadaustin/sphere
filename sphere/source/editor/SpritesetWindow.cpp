@@ -725,7 +725,7 @@ void
 CSpritesetWindow::IV_ColorChanged(RGBA color)
 {
   RGB rgb = { color.red, color.green, color.blue };
-  m_ColorView.SetColor(rgb);
+  m_ColorView.SetColor(0, rgb);
   m_AlphaView.SetAlpha(color.alpha);
 }
 
@@ -735,17 +735,17 @@ void
 CSpritesetWindow::PV_ColorChanged(RGB color)
 {
   RGBA rgba = { color.red, color.green, color.blue, m_AlphaView.GetAlpha() };
-  m_ImageView.SetColor(rgba);
-  m_ColorView.SetColor(color);
+  m_ImageView.SetColor(0, rgba);
+  m_ColorView.SetColor(0, color);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CSpritesetWindow::CV_ColorChanged(RGB color)
+CSpritesetWindow::CV_ColorChanged(int index, RGB color)
 {
   RGBA rgba = { color.red, color.green, color.blue, m_AlphaView.GetAlpha() };
-  m_ImageView.SetColor(rgba);
+  m_ImageView.SetColor(index, rgba);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -755,7 +755,7 @@ CSpritesetWindow::AV_AlphaChanged(byte alpha)
 {
   RGBA rgba = m_ImageView.GetColor();
   rgba.alpha = alpha;
-  m_ImageView.SetColor(rgba);
+  m_ImageView.SetColor(0, rgba);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -774,8 +774,8 @@ CSpritesetWindow::SP_ColorSelected(RGBA color)
   byte alpha = color.alpha;
   RGB  rgb   = { color.red, color.green, color.blue };
 
-  m_ImageView.SetColor(color);
-  m_ColorView.SetColor(rgb);
+  m_ImageView.SetColor(0, color);
+  m_ColorView.SetColor(0, rgb);
   m_AlphaView.SetAlpha(alpha);
 }
 
@@ -808,7 +808,7 @@ CSpritesetWindow::SIP_SpritesetModified()
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CSpritesetWindow::OnToolCommand(UINT id)
+CSpritesetWindow::OnToolChanged(UINT id, int tool_index)
 {
   switch (id)
   {
@@ -829,14 +829,14 @@ CSpritesetWindow::OnToolCommand(UINT id)
     break;
 
     default:
-      m_ImageView.OnToolChanged(id);
+      m_ImageView.OnToolChanged(id, tool_index);
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 BOOL
-CSpritesetWindow::IsToolCommandAvailable(UINT id) {
+CSpritesetWindow::IsToolAvailable(UINT id) {
   BOOL available = FALSE;
 
   if (m_Created) {

@@ -1239,8 +1239,13 @@ CScriptWindow::OnSavePointLeft(NMHDR* nmhdr, LRESULT* result)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+CScriptWindow::OnToolChanged(UINT id, int tool_index) {
+
+}
+
 BOOL
-CScriptWindow::IsToolCommandAvailable(UINT id)
+CScriptWindow::IsToolAvailable(UINT id)
 {
   BOOL available = FALSE;
   

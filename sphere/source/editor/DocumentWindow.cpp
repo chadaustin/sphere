@@ -290,7 +290,7 @@ CDocumentWindow::IsSaveable() const
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CDocumentWindow::OnToolCommand(UINT id)
+CDocumentWindow::OnToolChanged(UINT id, int tool_index)
 {
 
 }
@@ -298,7 +298,7 @@ CDocumentWindow::OnToolCommand(UINT id)
 ////////////////////////////////////////////////////////////////////////////////
 
 BOOL
-CDocumentWindow::IsToolCommandAvailable(UINT id)
+CDocumentWindow::IsToolAvailable(UINT id)
 {
   return FALSE;
 }
@@ -384,8 +384,10 @@ CDocumentWindow::OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactiv
     //OnToolCommand( ((CMainWindow*)pFrame)->GetImageTool() );
     //OnToolCommand( ((CMainWindow*)pFrame)->GetMapTool() );
     // pFrame->SendMessage(WM_UPDATE_TOOLBARS);
-    OnToolCommand( ((CMainWindow*)pFrame)->GetImageTool() );
-    OnToolCommand( ((CMainWindow*)pFrame)->GetMapTool()   );
+    OnToolChanged( ((CMainWindow*)pFrame)->GetImageTool(0), 0);
+    OnToolChanged( ((CMainWindow*)pFrame)->GetMapTool(0),   0);
+    OnToolChanged( ((CMainWindow*)pFrame)->GetImageTool(1), 1);
+    OnToolChanged( ((CMainWindow*)pFrame)->GetMapTool(1),   1);
 
     // set the child menu resource and update the palette menu
     pFrame->SendMessage(WM_SET_CHILD_MENU, m_MenuResource);

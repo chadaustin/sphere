@@ -25,8 +25,8 @@ public:
   ~CFontWindow();
 
 private:
-  void OnToolCommand(UINT id);
-  BOOL IsToolCommandAvailable(UINT id);
+  void OnToolChanged(UINT id, int tool_index);
+  BOOL IsToolAvailable(UINT id);
 
 private:
   void Create();
@@ -58,7 +58,7 @@ private:
   virtual void IV_ImageChanged();
   virtual void IV_ColorChanged(RGBA color);
   virtual void PV_ColorChanged(RGB color);
-  virtual void CV_ColorChanged(RGB color);
+  virtual void CV_ColorChanged(int index, RGB color);
   virtual void AV_AlphaChanged(byte alpha);
 
   // edit range

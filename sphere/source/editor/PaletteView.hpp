@@ -14,7 +14,7 @@ class CDIBSection;  // #include "DIBSection.hpp"
 class IPaletteViewHandler
 {
 public:
-  virtual void PV_ColorChanged(RGB color) = 0;
+  virtual void PV_ColorChanged(int index, RGB color) = 0;
 };
 
 
@@ -34,6 +34,8 @@ private:
   afx_msg void OnPaint();
   afx_msg void OnLButtonDown(UINT flags, CPoint point);
   afx_msg void OnLButtonUp(UINT flags, CPoint point);
+  afx_msg void OnRButtonDown(UINT flags, CPoint point);
+  afx_msg void OnRButtonUp(UINT flags, CPoint point);
   afx_msg void OnMouseMove(UINT flags, CPoint point);
   afx_msg void OnSize(UINT type, int cx, int cy);
 

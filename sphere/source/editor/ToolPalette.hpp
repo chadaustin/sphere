@@ -16,7 +16,7 @@ class CMainWindow;
 class IToolPaletteHandler
 {
 public:
-  virtual void TP_ToolSelected(int tool) = 0;
+  virtual void TP_ToolSelected(int tool, int tool_index) = 0;
 };
 
 

@@ -3235,7 +3235,7 @@ CMapView::OnVScrollChanged(int y)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CMapView::TP_ToolSelected(int tool)
+CMapView::TP_ToolSelected(int tool, int tool_index)
 {
   // do something
   m_CurrentTool = tool;
@@ -3316,7 +3316,7 @@ CMapView::OnTimer(UINT event)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CMapView::OnToolChanged(UINT id)
+CMapView::OnToolChanged(UINT id, int tool_index)
 {
   switch (id) {
     case IDI_MAPTOOL_1X1: m_CurrentTool = tool_1x1Tile; break;
@@ -3339,7 +3339,7 @@ CMapView::OnToolChanged(UINT id)
     case IDI_MAPTOOL_ZONEDELETE: m_CurrentTool = tool_ZoneDelete; break;
   }
 
-  TP_ToolSelected(m_CurrentTool);
+  TP_ToolSelected(m_CurrentTool, tool_index);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

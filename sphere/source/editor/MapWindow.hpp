@@ -33,8 +33,8 @@ public:
   ~CMapWindow();
 
 private:
-  void OnToolCommand(UINT id);
-  BOOL IsToolCommandAvailable(UINT id);
+  void OnToolChanged(UINT id, int tool_index);
+  BOOL IsToolAvailable(UINT id);
 
 private:
   void Create();

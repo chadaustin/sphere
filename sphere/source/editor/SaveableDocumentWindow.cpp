@@ -224,7 +224,8 @@ CSaveableDocumentWindow::UpdateProject()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void CSaveableDocumentWindow::OnToolCommand(UINT id) { }
-BOOL CSaveableDocumentWindow::IsToolCommandAvailable(UINT id) {
-  return FALSE;
-}
+void CSaveableDocumentWindow::OnToolChanged(UINT id, int tool_index) { }
+BOOL CSaveableDocumentWindow::IsToolAvailable(UINT id) { return FALSE; }
+
+////////////////////////////////////////////////////////////////////////////////
+

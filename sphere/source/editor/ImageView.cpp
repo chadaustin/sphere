@@ -34,6 +34,7 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
 
   ON_WM_LBUTTONDOWN()
   ON_WM_LBUTTONUP()
+  ON_WM_RBUTTONDOWN()
   ON_WM_RBUTTONUP()
   ON_WM_MOUSEMOVE()
 
@@ -89,11 +90,9 @@ END_MESSAGE_MAP()
 ////////////////////////////////////////////////////////////////////////////////
 
 CImageView::CImageView()
-: m_Color(CreateRGBA(255, 255, 255, 255))
-, m_SwatchPalette(NULL)
+: m_SwatchPalette(NULL)
 //, m_ToolPalette(NULL)
-, m_MouseDown(false)
-, m_CurrentTool(Tool_Pencil)
+, m_CurrentTool(0)
 , m_NumUndoImages(0)
 , m_UndoImages(NULL)
 , m_NumRedoImages(0)
@@ -112,6 +111,13 @@ CImageView::CImageView()
 , m_Clipboard(NULL)
 , m_BlitTile(NULL)
 {
+  m_Colors[0] = CreateRGBA(255, 255, 255, 255);
+  m_Colors[1] = CreateRGBA(0,   0,   0,   255);
+
+  m_SelectedTools[0] = Tool_Pencil;
+  m_SelectedTools[1] = Tool_Pencil;
+  m_MouseDown[0] = m_MouseDown[1] = false;
+
   m_CurPoint.x = 0;
   m_CurPoint.y = 0;
   m_LastPoint.x = -1;
@@ -229,18 +235,18 @@ CImageView::GetPixels() const
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CImageView::SetColor(RGBA color)
+CImageView::SetColor(int index, RGBA color)
 {
-  m_Color = color;
+  m_Colors[index] = color;
   m_SwatchPalette->SetColor(color);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 RGBA
-CImageView::GetColor() const
+CImageView::GetColor(int index) const
 {
-  return m_Color;
+  return m_Colors[index];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -275,9 +281,9 @@ CImageView::FillRGB()
     for (int x = 0; x < m_Image.GetWidth(); x++)
     {
       RGBA tColor = m_Image.GetPixel(x, y);
-      tColor.red   = m_Color.red;
-      tColor.green = m_Color.green;
-      tColor.blue  = m_Color.blue;
+      tColor.red   = m_Colors[m_CurrentTool].red;
+      tColor.green = m_Colors[m_CurrentTool].green;
+      tColor.blue  = m_Colors[m_CurrentTool].blue;
 
       m_Image.SetPixel(x, y, tColor);
     }
@@ -298,7 +304,7 @@ CImageView::FillAlpha()
     for (int x = 0; x < m_Image.GetWidth(); x++)
     {
       RGBA tColor = m_Image.GetPixel(x, y);
-      tColor.alpha = m_Color.alpha;
+      tColor.alpha = m_Colors[m_CurrentTool].alpha;
 
       m_Image.SetPixel(x, y, tColor);
     }
@@ -586,18 +592,18 @@ CImageView::Redo()
 void
 CImageView::SP_ColorSelected(RGBA color)
 {
-  m_Color = color;
+  m_Colors[m_CurrentTool] = color;
   m_Handler->IV_ColorChanged(color);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CImageView::TP_ToolSelected(int tool)
+CImageView::TP_ToolSelected(int tool, int tool_index)
 {
   // do something with the tool
-  m_CurrentTool = tool;
-  switch (m_CurrentTool) {
+  m_SelectedTools[tool_index] = tool;
+  switch (m_SelectedTools[tool_index]) {
     case Tool_Selection: m_SelectionType = ST_Rectangle; break;
     case Tool_FreeSelection: m_SelectionType = ST_Free; break;
   }
@@ -875,7 +881,7 @@ CImageView::Click(bool force_draw)
   }
 
   RGBA old_pixel = m_Image.GetPixel(end.x, end.y);
-  m_Image.SetPixel(end.x, end.y, m_Color);
+  m_Image.SetPixel(end.x, end.y, m_Colors[m_CurrentTool]);
   RGBA new_pixel = m_Image.GetPixel(end.x, end.y);
 
   // has the image actually changed?
@@ -894,7 +900,7 @@ CImageView::Click(bool force_draw)
 void
 CImageView::Fill()
 {
-  if (m_MouseDown)
+  if (m_MouseDown[m_CurrentTool])
     return;
 
   // convert pixel coordinates to image coordinates
@@ -904,7 +910,7 @@ CImageView::Fill()
   if (!InImage(startPoint) || !InSelection(startPoint))
     return;
 
-  if (IsColorToReplace(m_Image.GetPixel(startPoint.x, startPoint.y), m_Color))
+  if (IsColorToReplace(m_Image.GetPixel(startPoint.x, startPoint.y), m_Colors[m_CurrentTool]))
     return;
 
   FillMe(startPoint.x, startPoint.y, m_Image.GetPixel(startPoint.x, startPoint.y));
@@ -949,7 +955,7 @@ CImageView::FillMe(int x, int y, RGBA colorToReplace)
 
   std::stack<Point> q;
   q.push(    Point(x, y));
-  m_Image.SetPixel(x, y, m_Color);
+  m_Image.SetPixel(x, y, m_Colors[m_CurrentTool]);
 
   const int max_size = width * height;
   int current_size = 0;
@@ -961,22 +967,22 @@ CImageView::FillMe(int x, int y, RGBA colorToReplace)
     // fill up
     if (p.y > sy && IsColorToReplace(m_Image.GetPixel(p.x, p.y - 1), colorToReplace)) {
       if (current_size < max_size) q.push(    Point(p.x, p.y - 1));
-      m_Image.SetPixel(p.x, p.y - 1, m_Color);
+      m_Image.SetPixel(p.x, p.y - 1, m_Colors[m_CurrentTool]);
     }
     // fill down
     if (p.y < height - 1 && IsColorToReplace(m_Image.GetPixel(p.x, p.y + 1), colorToReplace)) {
       if (current_size < max_size) q.push(    Point(p.x, p.y + 1));
-      m_Image.SetPixel(p.x, p.y + 1, m_Color);
+      m_Image.SetPixel(p.x, p.y + 1, m_Colors[m_CurrentTool]);
     }
     // fill left
     if (p.x > sx && IsColorToReplace(m_Image.GetPixel(p.x - 1, p.y), colorToReplace)) {
       if (current_size < max_size) q.push(    Point(p.x - 1, p.y));
-      m_Image.SetPixel(p.x - 1, p.y, m_Color);
+      m_Image.SetPixel(p.x - 1, p.y, m_Colors[m_CurrentTool]);
     }
     // fill right
     if (p.x < width - 1 && IsColorToReplace(m_Image.GetPixel(p.x + 1, p.y), colorToReplace)) {
       if (current_size < max_size) q.push(    Point(p.x + 1, p.y));
-      m_Image.SetPixel(p.x + 1, p.y, m_Color);
+      m_Image.SetPixel(p.x + 1, p.y, m_Colors[m_CurrentTool]);
     }
 
     current_size += 1;
@@ -989,7 +995,7 @@ CImageView::FillMe(int x, int y, RGBA colorToReplace)
 void
 CImageView::Line()
 {
-  if (!m_MouseDown)
+  if (!m_MouseDown[m_CurrentTool])
   {
     m_StartPoint = m_CurPoint;
     Invalidate();
@@ -1011,7 +1017,7 @@ CImageView::Line()
     int sh = GetSelectionHeight();
 
     clipper clip = {sx, sy, (sx + sw) - 1, (sy + sh) - 1};
-    m_Image.Line(start.x, start.y, end.x, end.y, m_Color, clip);
+    m_Image.Line(start.x, start.y, end.x, end.y, m_Colors[m_CurrentTool], clip);
     Invalidate();
     m_Handler->IV_ImageChanged();
   }
@@ -1022,7 +1028,7 @@ CImageView::Line()
 void
 CImageView::Rectangle()
 {
-  if (!m_MouseDown)
+  if (!m_MouseDown[m_CurrentTool])
   {
     m_StartPoint = m_CurPoint;
     Invalidate();
@@ -1045,7 +1051,7 @@ CImageView::Rectangle()
 
     clipper clip = { sx, sy, (sx + sw) - 1, (sy + sh) - 1 };
 
-    m_Image.Rectangle(start.x, start.y, end.x, end.y, m_Color, clip);
+    m_Image.Rectangle(start.x, start.y, end.x, end.y, m_Colors[m_CurrentTool], clip);
     Invalidate();
     m_Handler->IV_ImageChanged();
   }
@@ -1057,7 +1063,7 @@ CImageView::Rectangle()
 void
 CImageView::Selection()
 {
-  if (!m_MouseDown)
+  if (!m_MouseDown[m_CurrentTool])
   {
     m_StartPoint = m_CurPoint;
   }
@@ -1074,7 +1080,7 @@ CImageView::Selection()
 void
 CImageView::Circle()
 {
-  if (!m_MouseDown)
+  if (!m_MouseDown[m_CurrentTool])
   {
     m_StartPoint = m_CurPoint;
     Invalidate();
@@ -1091,9 +1097,9 @@ CImageView::Circle()
       return;
 
     if (abs(start.x - end.x) > abs(start.y - end.y))
-      m_Image.Circle(start.x, start.y, abs(start.x - end.x), m_Color);
+      m_Image.Circle(start.x, start.y, abs(start.x - end.x), m_Colors[m_CurrentTool]);
     else
-      m_Image.Circle(start.x, start.y, abs(start.y - end.y), m_Color);
+      m_Image.Circle(start.x, start.y, abs(start.y - end.y), m_Colors[m_CurrentTool]);
     Invalidate();
     m_Handler->IV_ImageChanged();
   }
@@ -1104,7 +1110,7 @@ CImageView::Circle()
 void
 CImageView::Ellipse()
 {
-  if (!m_MouseDown)
+  if (!m_MouseDown[m_CurrentTool])
   {
     m_StartPoint = m_CurPoint;
     Invalidate();
@@ -1126,7 +1132,7 @@ CImageView::Ellipse()
     int sh = GetSelectionHeight();
 
     clipper clip = { sx, sy, (sx + sw) - 1, (sy + sh) - 1 };
-    m_Image.Ellipse(start.x, start.y, abs(start.x - end.x), abs(start.y - end.y), m_Color,  0, clip);
+    m_Image.Ellipse(start.x, start.y, abs(start.x - end.x), abs(start.y - end.y), m_Colors[m_CurrentTool],  0, clip);
     Invalidate();
     m_Handler->IV_ImageChanged();
   }
@@ -1147,9 +1153,9 @@ CImageView::GetColor(RGBA* color, int x, int y)
   RGBA* pImage = m_Image.GetPixels();
 
   // now that we have image coordinates, we can update the image
-  if (memcmp(pImage + point.y * m_Image.GetWidth() + point.x, &m_Color, sizeof(RGBA)) != 0)
+  if (memcmp(pImage + point.y * m_Image.GetWidth() + point.x, &m_Colors[m_CurrentTool], sizeof(RGBA)) != 0)
   {
-    m_Color = pImage[point.y * m_Image.GetWidth() + point.x];
+    m_Colors[m_CurrentTool] = pImage[point.y * m_Image.GetWidth() + point.x];
   }
 }
 
@@ -1219,7 +1225,11 @@ CImageView::OnPaint()
   HDC dc = _dc.m_hDC;
 
   CImage32 drawImage(m_Image);
-  switch(m_CurrentTool)
+
+  const int current_tool = m_CurrentTool;
+
+  m_CurrentTool = 0;
+  switch(m_SelectedTools[m_CurrentTool])
   {
     case Tool_Pencil:    break;
     case Tool_Fill:      break;
@@ -1230,6 +1240,21 @@ CImageView::OnPaint()
     case Tool_Selection: UpdateSelection(); break;
     case Tool_FreeSelection: UpdateSelection(); break;
   }
+
+  m_CurrentTool = 1;
+  switch(m_SelectedTools[m_CurrentTool])
+  {
+    case Tool_Pencil:    break;
+    case Tool_Fill:      break;
+    case Tool_Line:      PaintLine(drawImage); break;
+    case Tool_Rectangle: PaintRectangle(drawImage); break;
+    case Tool_Circle:    PaintCircle(drawImage); break;
+    case Tool_Ellipse:   PaintEllipse(drawImage); break;
+    case Tool_Selection: UpdateSelection(); break;
+    case Tool_FreeSelection: UpdateSelection(); break;
+  }
+
+  m_CurrentTool = current_tool;
 
   int width = drawImage.GetWidth();
   int height = drawImage.GetHeight();
@@ -1479,7 +1504,7 @@ CImageView::OnPaint()
 void
 CImageView::PaintLine(CImage32& pImage)
 {
-  if (!m_MouseDown)
+  if (!m_MouseDown[m_CurrentTool])
     return;
 
   // convert pixel coordinates to image coordinates
@@ -1492,7 +1517,7 @@ CImageView::PaintLine(CImage32& pImage)
 
   ClipPointToWithinImage(&end);
 
-  pImage.Line(start.x, start.y, end.x, end.y, m_Color);
+  pImage.Line(start.x, start.y, end.x, end.y, m_Colors[m_CurrentTool]);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1500,7 +1525,7 @@ CImageView::PaintLine(CImage32& pImage)
 void
 CImageView::PaintRectangle(CImage32& pImage)
 {
-  if (!m_MouseDown)
+  if (!m_MouseDown[m_CurrentTool])
     return;
 
   // convert pixel coordinates to image coordinates
@@ -1513,7 +1538,7 @@ CImageView::PaintRectangle(CImage32& pImage)
 
   ClipPointToWithinImage(&end);
 
-  pImage.Rectangle(start.x, start.y, end.x, end.y, m_Color);
+  pImage.Rectangle(start.x, start.y, end.x, end.y, m_Colors[m_CurrentTool]);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1521,7 +1546,7 @@ CImageView::PaintRectangle(CImage32& pImage)
 void
 CImageView::PaintCircle(CImage32& pImage)
 {
-  if (!m_MouseDown)
+  if (!m_MouseDown[m_CurrentTool])
     return;
 
   // convert pixel coordinates to image coordinates
@@ -1533,9 +1558,9 @@ CImageView::PaintCircle(CImage32& pImage)
     return;
 
   if (abs(start.x - end.x) > abs(start.y - end.y))
-    pImage.Circle(start.x, start.y, abs(start.x - end.x), m_Color);
+    pImage.Circle(start.x, start.y, abs(start.x - end.x), m_Colors[m_CurrentTool]);
   else
-    pImage.Circle(start.x, start.y, abs(start.y - end.y), m_Color);
+    pImage.Circle(start.x, start.y, abs(start.y - end.y), m_Colors[m_CurrentTool]);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1543,7 +1568,7 @@ CImageView::PaintCircle(CImage32& pImage)
 void
 CImageView::PaintEllipse(CImage32& pImage)
 {
-  if (!m_MouseDown)
+  if (!m_MouseDown[m_CurrentTool])
     return;
 
   // convert pixel coordinates to image coordinates
@@ -1554,7 +1579,7 @@ CImageView::PaintEllipse(CImage32& pImage)
   if (!InImage(start) || !InImage(end))
     return;
 
-  pImage.Ellipse(start.x, start.y, abs(start.x - end.x), abs(start.y - end.y), m_Color);
+  pImage.Ellipse(start.x, start.y, abs(start.x - end.x), abs(start.y - end.y), m_Colors[m_CurrentTool]);
 
 }
 
@@ -1573,7 +1598,7 @@ CImageView::ClipPointToWithinImage(POINT* point) {
 void
 CImageView::UpdateSelection()
 {
-  if (!m_MouseDown)
+  if (!m_MouseDown[m_CurrentTool])
     return;
 
   // convert pixel coordinates to image coordinates
@@ -1658,8 +1683,8 @@ CImageView::OnLeftClick(UINT flags, CPoint point)
   m_LastPoint = m_CurPoint;
   m_CurPoint = point;
 
-  if (m_MouseDown) {
-    switch (m_CurrentTool) {
+  if (m_MouseDown[0]) {
+    switch (m_SelectedTools[0]) {
       case Tool_Pencil:    break;
       case Tool_Fill:      break;
       case Tool_Line:      Line();  break;
@@ -1676,18 +1701,67 @@ CImageView::OnLeftClick(UINT flags, CPoint point)
       OnColorPicker();
     }
     else {
-      if (m_CurrentTool != Tool_Selection
-       && m_CurrentTool != Tool_FreeSelection) {
+      if (m_SelectedTools[0] != Tool_Selection
+       && m_SelectedTools[0] != Tool_FreeSelection) {
         // perform a normal click operation
         AddUndoState();
       }
 
-      if (m_CurrentTool == Tool_FreeSelection) {
+      if (m_SelectedTools[0] == Tool_FreeSelection) {
         if (!(flags & MK_SHIFT))
           m_SelectionPoints.clear();
       }
 
-      switch (m_CurrentTool) {
+      switch (m_SelectedTools[0]) {
+        case Tool_Pencil:    Click(true); break;
+        case Tool_Fill:      Fill();      break;
+        case Tool_Line:      Line();      break;
+        case Tool_Rectangle: Rectangle(); break;
+        case Tool_Circle:    Circle();    break;
+        case Tool_Ellipse:   Ellipse();   break;
+        case Tool_Selection: Selection(); break;
+        case Tool_FreeSelection: Selection(); break;
+      }
+    }
+  }
+}
+
+void
+CImageView::OnRightClick(UINT flags, CPoint point)
+{
+  m_LastPoint = m_CurPoint;
+  m_CurPoint = point;
+
+  if (m_MouseDown[1]) {
+    switch (m_SelectedTools[1]) {
+      case Tool_Pencil:    break;
+      case Tool_Fill:      break;
+      case Tool_Line:      Line();  break;
+      case Tool_Rectangle: Rectangle(); break;
+      case Tool_Circle:    Circle(); break;
+      case Tool_Ellipse:   Ellipse(); break;
+      case Tool_Selection: Selection(); break;
+      case Tool_FreeSelection: Selection(); break;
+    }
+  }
+  else
+  {
+    if (flags & MK_SHIFT) {
+      OnColorPicker();
+    }
+    else {
+      if (m_SelectedTools[1] != Tool_Selection
+       && m_SelectedTools[1] != Tool_FreeSelection) {
+        // perform a normal click operation
+        AddUndoState();
+      }
+
+      if (m_SelectedTools[1] == Tool_FreeSelection) {
+        if (!(flags & MK_SHIFT))
+          m_SelectionPoints.clear();
+      }
+
+      switch (m_SelectedTools[1]) {
         case Tool_Pencil:    Click(true); break;
         case Tool_Fill:      Fill();      break;
         case Tool_Line:      Line();      break;
@@ -1710,8 +1784,9 @@ CImageView::OnLButtonDown(UINT flags, CPoint point)
     OnLeftClick(flags, point);
   }
   else {
+    m_CurrentTool = 0;
     OnLeftClick(flags, point);
-    m_MouseDown = true;
+    m_MouseDown[0] = true;
     SetCapture();
   }
 }
@@ -1721,12 +1796,31 @@ CImageView::OnLButtonDown(UINT flags, CPoint point)
 afx_msg void
 CImageView::OnLButtonUp(UINT flags, CPoint point)
 {
-  if (!m_MouseDown)
+  if (!m_MouseDown[0])
     return;
 
   OnLeftClick(flags, point);
-  m_MouseDown = false;
+  m_MouseDown[0] = false;
   ReleaseCapture();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnRButtonDown(UINT flags, CPoint point)
+{
+  if ( !(GetMainWindow()->GetNumImageToolsAllowed() > 1) )
+    return;
+
+  if (flags & MK_SHIFT) {
+    OnRightClick(flags, point);
+  }
+  else {
+    m_CurrentTool = 1;
+    OnRightClick(flags, point);
+    m_MouseDown[1] = true;
+    SetCapture();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1734,6 +1828,17 @@ CImageView::OnLButtonUp(UINT flags, CPoint point)
 afx_msg void
 CImageView::OnRButtonUp(UINT flags, CPoint point)
 {
+  if ( GetMainWindow()->GetNumImageToolsAllowed() > 1) {
+    if (!m_MouseDown[1])
+      return;
+
+    OnRightClick(flags, point);
+    m_MouseDown[1] = false;
+    ReleaseCapture();
+
+    return;
+  }
+
   // make sure we clicked in the image
   if (!InImage(ConvertToPixel(point))) {
     return;
@@ -1805,14 +1910,19 @@ CImageView::UpdateCursor(UINT flags, CPoint point)
     SetCursor(LoadCursor(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDC_IMAGETOOL_COLORPICKER)));
   }
   else
-  switch (m_CurrentTool)
   {
-    case Tool_Fill:
-      SetCursor(LoadCursor(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDC_IMAGETOOL_FILL)));
-    break;
+    /*
+    switch (m_SelectedTools[0])
+    {
+      case Tool_Fill:
+        SetCursor(LoadCursor(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDC_IMAGETOOL_FILL)));
+      break;
 
-    default:
-      SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW)));
+      default:
+        SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW)));
+    }
+    */
+    SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW)));
   }
 }
 
@@ -1830,33 +1940,60 @@ CImageView::OnMouseMove(UINT flags, CPoint point)
   if (InImage(current)) {
     char str[1024];
     RGBA color = m_Image.GetPixel(current.x, current.y);
-    sprintf(str, "x,y=(%d, %d) color=[%d, %d, %d, %d]", current.x, current.y, 
-                  color.red, color.green, color.blue, color.alpha);
+    sprintf(str, "x,y=(%d, %d) color=[%d, %d, %d, %d] (%d %d %d)", current.x, current.y, 
+                  color.red, color.green, color.blue, color.alpha, m_MouseDown[0], m_MouseDown[1], m_CurrentTool);
     GetStatusBar()->SetPaneText(1, str);
   } else {
     GetStatusBar()->SetPaneText(1, "");
   }
 
-  if (!m_MouseDown)
-    return;
+  const int current_tool = m_CurrentTool;
 
-  switch (m_CurrentTool)
+  m_CurrentTool = 0;
+  if (m_MouseDown[m_CurrentTool])
   {
-    case Tool_Pencil:
-      Click(false);
-    break;
+    switch (m_SelectedTools[m_CurrentTool])
+    {
+      case Tool_Pencil:
+        Click(false);
+      break;
 
-    case Tool_Fill: break;
+      case Tool_Fill: break;
 
-    case Tool_Line:
-    case Tool_Rectangle:
-    case Tool_Circle:
-    case Tool_Ellipse:
-    case Tool_Selection:
-    case Tool_FreeSelection:
-      Invalidate();
-    break;
+      case Tool_Line:
+      case Tool_Rectangle:
+      case Tool_Circle:
+      case Tool_Ellipse:
+      case Tool_Selection:
+      case Tool_FreeSelection:
+        Invalidate();
+      break;
+    }
   }
+
+  m_CurrentTool = 1;
+  if (m_MouseDown[m_CurrentTool])
+  {
+    switch (m_SelectedTools[m_CurrentTool])
+    {
+      case Tool_Pencil:
+        Click(false);
+      break;
+
+      case Tool_Fill: break;
+
+      case Tool_Line:
+      case Tool_Rectangle:
+      case Tool_Circle:
+      case Tool_Ellipse:
+      case Tool_Selection:
+      case Tool_FreeSelection:
+        Invalidate();
+      break;
+    }
+  }
+
+  m_CurrentTool = current_tool;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1906,9 +2043,9 @@ CImageView::OnKeyDown(UINT vk, UINT nRepCnt, UINT nFlags)
   }
 
   if (vk == VK_SPACE) {
-    if (!m_MouseDown) {
+    if (!m_MouseDown[0]) {
       OnLeftClick(nFlags, m_CurPoint);
-      m_MouseDown = true;
+      m_MouseDown[0] = true;
     }
   }
 }
@@ -1923,9 +2060,9 @@ CImageView::OnKeyUp(UINT vk, UINT nRepCnt, UINT nFlags)
       OnLeftClick(nFlags, m_CurPoint);
     }
     else {
-      if (m_MouseDown) {
+      if (m_MouseDown[0]) {
         OnLeftClick(nFlags, m_CurPoint);
-        m_MouseDown = false;
+        m_MouseDown[0] = false;
       }
     }
   }
@@ -2019,7 +2156,7 @@ CImageView::OnTimer(UINT event)
     }
   }
 
-  if (!m_MouseDown) {
+  if (!m_MouseDown[0]) {
     if (cursor_moved) {
 
       POINT current = ConvertToPixel(m_CurPoint);
@@ -2036,7 +2173,7 @@ CImageView::OnTimer(UINT event)
   }
   else
   {
-    switch (m_CurrentTool)
+    switch (m_SelectedTools[0])
     {
       case Tool_Pencil:
         Click(false);
@@ -2061,8 +2198,8 @@ CImageView::OnTimer(UINT event)
 afx_msg void
 CImageView::OnColorPicker()
 {
-  GetColor(&m_Color, m_CurPoint.x, m_CurPoint.y);
-  m_Handler->IV_ColorChanged(m_Color);
+  GetColor(&m_Colors[m_CurrentTool], m_CurPoint.x, m_CurPoint.y);
+  m_Handler->IV_ColorChanged(m_Colors[m_CurrentTool]);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2428,9 +2565,9 @@ CImageView::OnFillRGB()
 
   for (int dx = sx; dx < (sx + sw); dx++) {
     for (int dy = sy; dy < sy + sh; dy++) {
-      pImage[dy * width + dx].red   = m_Color.red;
-      pImage[dy * width + dx].green = m_Color.green;
-      pImage[dy * width + dx].blue  = m_Color.blue;
+      pImage[dy * width + dx].red   = m_Colors[m_CurrentTool].red;
+      pImage[dy * width + dx].green = m_Colors[m_CurrentTool].green;
+      pImage[dy * width + dx].blue  = m_Colors[m_CurrentTool].blue;
     } 
   }
 
@@ -2455,7 +2592,7 @@ CImageView::OnFillAlpha()
 
   for (int dx = sx; dx < (sx + sw); dx++) {
     for (int dy = sy; dy < sy + sh; dy++) {
-      pImage[dy * width + dx].alpha = m_Color.alpha;
+      pImage[dy * width + dx].alpha = m_Colors[m_CurrentTool].alpha;
     } 
   }
 
@@ -2480,7 +2617,7 @@ CImageView::OnFillBoth()
 
   for (int dx = sx; dx < (sx + sw); dx++) {
     for (int dy = sy; dy < (sy + sh); dy++) {
-      pImage[dy * width + dx] = m_Color;
+      pImage[dy * width + dx] = m_Colors[m_CurrentTool];
     } 
   }
 
@@ -2924,7 +3061,7 @@ CImageView::OnSetColorAlpha()
 {
   AddUndoState();
 
-  RGB c = { m_Color.red, m_Color.green, m_Color.blue };
+  RGB c = { m_Colors[m_CurrentTool].red, m_Colors[m_CurrentTool].green, m_Colors[m_CurrentTool].blue };
   
   int sx = GetSelectionLeftX();
   int sy = GetSelectionTopY();
@@ -2932,7 +3069,7 @@ CImageView::OnSetColorAlpha()
   int sh = GetSelectionHeight();
 
   // m_Image.SetColorAlpha(c, m_Color.alpha);
-  m_Image.SetColorAlpha(sx, sy, sw, sh, c, m_Color.alpha);
+  m_Image.SetColorAlpha(sx, sy, sw, sh, c, m_Colors[m_CurrentTool].alpha);
 
   Invalidate();
   m_Handler->IV_ImageChanged();
@@ -2955,7 +3092,7 @@ CImageView::OnScaleAlpha()
 
   for (int dx = sx; dx < (sx + sw); dx++) {
     for (int dy = sy; dy < (sy + sh); dy++) {
-      pixels[dy * width + dx].alpha = (int) pixels[dy * width + dx].alpha * m_Color.alpha / 255;
+      pixels[dy * width + dx].alpha = (int) pixels[dy * width + dx].alpha * m_Colors[m_CurrentTool].alpha / 255;
     }
   }
 
@@ -2979,20 +3116,20 @@ CImageView::OnGetAccelerator(WPARAM wParam, LPARAM lParam)
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
-CImageView::OnToolChanged(UINT id)
+CImageView::OnToolChanged(UINT id, int tool_index)
 {
   switch (id) {
-    case IDI_IMAGETOOL_PENCIL:        m_CurrentTool = Tool_Pencil; break;
-    case IDI_IMAGETOOL_LINE:          m_CurrentTool = Tool_Line; break;
-    case IDI_IMAGETOOL_RECTANGLE:     m_CurrentTool = Tool_Rectangle; break;
-    case IDI_IMAGETOOL_CIRCLE:        m_CurrentTool = Tool_Circle; break;
-    case IDI_IMAGETOOL_ELLIPSE:       m_CurrentTool = Tool_Ellipse; break;
-    case IDI_IMAGETOOL_FILL:          m_CurrentTool = Tool_Fill; break;
-    case IDI_IMAGETOOL_SELECTION:     m_CurrentTool = Tool_Selection; break;
-    case IDI_IMAGETOOL_FREESELECTION: m_CurrentTool = Tool_FreeSelection; break;
+    case IDI_IMAGETOOL_PENCIL:        m_SelectedTools[tool_index] = Tool_Pencil; break;
+    case IDI_IMAGETOOL_LINE:          m_SelectedTools[tool_index] = Tool_Line; break;
+    case IDI_IMAGETOOL_RECTANGLE:     m_SelectedTools[tool_index] = Tool_Rectangle; break;
+    case IDI_IMAGETOOL_CIRCLE:        m_SelectedTools[tool_index] = Tool_Circle; break;
+    case IDI_IMAGETOOL_ELLIPSE:       m_SelectedTools[tool_index] = Tool_Ellipse; break;
+    case IDI_IMAGETOOL_FILL:          m_SelectedTools[tool_index] = Tool_Fill; break;
+    case IDI_IMAGETOOL_SELECTION:     m_SelectedTools[tool_index] = Tool_Selection; break;
+    case IDI_IMAGETOOL_FREESELECTION: m_SelectedTools[tool_index] = Tool_FreeSelection; break;
   }
 
-  TP_ToolSelected(m_CurrentTool);
+  TP_ToolSelected(m_SelectedTools[tool_index], tool_index);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

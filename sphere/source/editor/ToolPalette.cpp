@@ -133,7 +133,7 @@ CToolPalette::OnNeedText(UINT /*id*/, NMHDR* hdr, LRESULT* result)
 afx_msg void
 CToolPalette::OnToolSelected(UINT id)
 {
-  m_Handler->TP_ToolSelected(id - BUTTON_BASE);
+  //m_Handler->TP_ToolSelected(id - BUTTON_BASE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

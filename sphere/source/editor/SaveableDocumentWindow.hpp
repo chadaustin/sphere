@@ -18,8 +18,8 @@ public:
   bool IsModified() const;
 
 public:
-  virtual void OnToolCommand(UINT id);
-  virtual BOOL IsToolCommandAvailable(UINT id);
+  virtual void OnToolChanged(UINT id, int tool_index);
+  virtual BOOL IsToolAvailable(UINT id);
 
 protected:
   void SetSaved(bool saved);

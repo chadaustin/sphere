@@ -134,7 +134,7 @@ CFontWindow::Create()
 {
   // create window
   CSaveableDocumentWindow::Create(AfxRegisterWndClass(0, ::LoadCursor(NULL, IDC_ARROW), NULL, AfxGetApp()->LoadIcon(IDI_FONT)));
-  
+
   // create children
   m_ImageView.Create(this, this, this);
   m_PaletteView.Create(this, this);
@@ -153,8 +153,11 @@ CFontWindow::Create()
   OnSize(0, ClientRect.right, ClientRect.bottom);
 
   SetImage();
-  RGB rgb = { m_CurrentColor.red, m_CurrentColor.green, m_CurrentColor.blue };
-  m_ColorView.SetColor(rgb);
+  RGB rgb_a = { m_CurrentColor.red, m_CurrentColor.green, m_CurrentColor.blue };
+  RGB rgb_b = { 0, 0, 0 };
+  m_ColorView.SetNumColors(2);
+  m_ColorView.SetColor(0, rgb_a);
+  m_ColorView.SetColor(1, rgb_b);
   m_AlphaView.SetAlpha(m_CurrentColor.alpha);
 
   m_FontPreviewPalette = new CFontPreviewPalette(this, &m_Font);
@@ -672,7 +675,7 @@ CFontWindow::IV_ColorChanged(RGBA color)
 {
   m_CurrentColor = color;
   RGB rgb = { color.red, color.green, color.blue };
-  m_ColorView.SetColor(rgb);
+  m_ColorView.SetColor(0, rgb);
   m_AlphaView.SetAlpha(color.alpha);
 }
 
@@ -684,19 +687,22 @@ CFontWindow::PV_ColorChanged(RGB color)
   m_CurrentColor.red   = color.red;
   m_CurrentColor.green = color.green;
   m_CurrentColor.blue  = color.blue;
-  m_ImageView.SetColor(m_CurrentColor);
-  m_ColorView.SetColor(color);
+
+  RGB rgb = { color.red, color.green, color.blue };
+
+  m_ImageView.SetColor(0, m_CurrentColor);
+  m_ColorView.SetColor(0, rgb);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CFontWindow::CV_ColorChanged(RGB color)
+CFontWindow::CV_ColorChanged(int index, RGB color)
 {
   m_CurrentColor.red   = color.red;
   m_CurrentColor.green = color.green;
   m_CurrentColor.blue  = color.blue;
-  m_ImageView.SetColor(m_CurrentColor);
+  m_ImageView.SetColor(index, m_CurrentColor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -705,7 +711,7 @@ void
 CFontWindow::AV_AlphaChanged(byte alpha)
 {
   m_CurrentColor.alpha = alpha;
-  m_ImageView.SetColor(m_CurrentColor);
+  m_ImageView.SetColor(0, m_CurrentColor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -763,18 +769,18 @@ CFontWindow::OnPaste()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-BOOL
-CFontWindow::IsToolCommandAvailable(UINT id)
+void
+CFontWindow::OnToolChanged(UINT id, int tool_index)
 {
-  return m_ImageView.IsToolAvailable(id);
+  m_ImageView.OnToolChanged(id, tool_index);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void
-CFontWindow::OnToolCommand(UINT id)
+BOOL
+CFontWindow::IsToolAvailable(UINT id)
 {
-  m_ImageView.OnToolChanged(id);
+  return m_ImageView.IsToolAvailable(id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

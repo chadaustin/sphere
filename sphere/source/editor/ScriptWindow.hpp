@@ -79,7 +79,8 @@ private:
   afx_msg void OnZoomIn();
   afx_msg void OnZoomOut();
 
-  BOOL IsToolCommandAvailable(UINT id);
+  void OnToolChanged(UINT id, int tool_index);
+  BOOL IsToolAvailable(UINT id);
 
   afx_msg LRESULT OnFindReplace(WPARAM, LPARAM);
 

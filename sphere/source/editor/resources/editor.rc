@@ -146,6 +146,8 @@ BEGIN
     END
     POPUP "&Window"
     BEGIN
+        MENUITEM "&Split",                      ID_WINDOW_SPLIT
+        MENUITEM SEPARATOR
         MENUITEM "Tile &Horizontally",          ID_WINDOW_TILE_HORZ
         MENUITEM "Tile &Vertically",            ID_WINDOW_TILE_VERT
         MENUITEM "&Cascade",                    ID_WINDOW_CASCADE

@@ -266,6 +266,7 @@ CMainWindow::CMainWindow()
 , m_ProjectWindow(NULL)
 , m_ChildMenuResource(-1)
 , m_NextClipboardViewer(NULL)
+, m_NumImageToolsAllowed(2)
 {
 }
 
@@ -356,13 +357,14 @@ CMainWindow::Create()
   LoadAccelTable(MAKEINTRESOURCE(IDR_ACCELERATOR));
 
   // create the toolbar
-  m_MainToolBar.CreateEx(
+  if (m_MainToolBar.CreateEx(
     this,
     TBSTYLE_FLAT,
-    WS_CHILD | WS_VISIBLE | CBRS_SIZE_DYNAMIC | CBRS_TOP | CBRS_GRIPPER | CBRS_FLYBY | CBRS_TOOLTIPS);
-  m_MainToolBar.SetWindowText("Main");
-  m_MainToolBar.LoadToolBar(IDR_TOOLBAR);
-  m_MainToolBar.EnableDocking(CBRS_ALIGN_ANY);
+    WS_CHILD | WS_VISIBLE | CBRS_SIZE_DYNAMIC | CBRS_TOP | CBRS_GRIPPER | CBRS_FLYBY | CBRS_TOOLTIPS)) {
+    m_MainToolBar.SetWindowText("Main");
+    m_MainToolBar.LoadToolBar(IDR_TOOLBAR);
+    m_MainToolBar.EnableDocking(CBRS_ALIGN_ANY);
+  }
 
   // create the toolbar
   m_ImageToolBar.CreateEx(
@@ -373,6 +375,7 @@ CMainWindow::Create()
   m_ImageToolBar.LoadToolBar(IDR_IMAGETOOLBAR);
   m_ImageToolBar.EnableDocking(CBRS_ALIGN_ANY);
   m_ImageToolBar.GetToolBarCtrl().CheckButton(IDI_IMAGETOOL_PENCIL, TRUE);
+  m_SelectedImageTools[0] = m_SelectedImageTools[1] = IDI_IMAGETOOL_PENCIL;
 
   // create the toolbar
   m_MapToolBar.CreateEx(
@@ -518,22 +521,31 @@ CMainWindow::OnDrawClipboard()
 afx_msg void
 CMainWindow::OnNMRclick(NMHDR *pNMHDR, LRESULT *pResult)
 {
+  if ( !(m_NumImageToolsAllowed > 1) )
+    return;
+
   POINT point;
   
   GetCursorPos(&point);
   ::ScreenToClient(m_ImageToolBar.GetToolBarCtrl().m_hWnd, &point);
 
-  UINT tools[] = {IDI_IMAGETOOL_PENCIL, IDI_IMAGETOOL_LINE, IDI_IMAGETOOL_RECTANGLE,
+  const UINT tools[] = {IDI_IMAGETOOL_PENCIL, IDI_IMAGETOOL_LINE, IDI_IMAGETOOL_RECTANGLE,
                   IDI_IMAGETOOL_CIRCLE, IDI_IMAGETOOL_ELLIPSE, IDI_IMAGETOOL_FILL,
                   IDI_IMAGETOOL_SELECTION, IDI_IMAGETOOL_FREESELECTION};
-  int num_tools = sizeof(tools) / sizeof(*tools);
+  const int num_tools = sizeof(tools) / sizeof(*tools);
 
+  int index = m_ImageToolBar.GetToolBarCtrl().HitTest(&point);
+  if (index >= 0 && index < num_tools) {
+    const unsigned int id = tools[index];
+    m_SelectedImageTools[1] = id;
+    CToolBarCtrl& ctrl = m_ImageToolBar.GetToolBarCtrl();
+    for (int i = 0; i < num_tools; i++) {
+      ctrl.CheckButton(tools[i], (m_SelectedImageTools[0] == tools[i] || m_SelectedImageTools[1] == tools[i]) ? TRUE : FALSE);
+    }
 
-  int hit = m_ImageToolBar.GetToolBarCtrl().HitTest(&point);
-  if (hit >= 0 && hit < num_tools) {
     char string[1000];
-    sprintf (string, "%d", hit);
-    //MessageBox(string);
+    sprintf (string, "Left=%d, Right=%d", m_SelectedImageTools[0], m_SelectedImageTools[1]);
+    GetStatusBar()->SetWindowText(string);
   }
 }
 #endif
@@ -2808,27 +2820,24 @@ CMainWindow::OnUpdateWindowCloseAll(CCmdUI* cmdui)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-afx_msg UINT
-CMainWindow::GetImageTool()
+int
+CMainWindow::GetNumImageToolsAllowed() const
 {
-  UINT tools[] = {IDI_IMAGETOOL_PENCIL, IDI_IMAGETOOL_LINE, IDI_IMAGETOOL_RECTANGLE,
-                  IDI_IMAGETOOL_CIRCLE, IDI_IMAGETOOL_ELLIPSE, IDI_IMAGETOOL_FILL,
-                  IDI_IMAGETOOL_SELECTION, IDI_IMAGETOOL_FREESELECTION};
-  int num_tools = sizeof(tools) / sizeof(*tools);
-  UINT tool = IDI_IMAGETOOL_PENCIL;
-  for (int i = 0; i < num_tools; i++) {
-    if (m_ImageToolBar.GetToolBarCtrl().IsButtonChecked(tools[i]) == TRUE) {
-      tool = tools[i];
-    }
-  }
-
-  return tool;
+  return m_NumImageToolsAllowed;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg UINT
-CMainWindow::GetMapTool()
+CMainWindow::GetImageTool(int index)
+{
+  return m_SelectedImageTools[index];
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg UINT
+CMainWindow::GetMapTool(int index)
 {
   UINT tools[] = {IDI_MAPTOOL_1X1, IDI_MAPTOOL_3X3, IDI_MAPTOOL_5X5, IDI_MAPTOOL_SELECTTILE,
                   IDI_MAPTOOL_FILLRECTAREA, IDI_MAPTOOL_FILLAREA, IDI_MAPTOOL_COPYAREA,
@@ -2859,8 +2868,10 @@ CMainWindow::UpdateToolBars(WPARAM, LPARAM)
     if (userdata & WA_DOCUMENT_WINDOW) {
       CDocumentWindow* dw = GetCurrentDocumentWindow();
       if (dw) {
-        dw->OnToolCommand(GetImageTool());
-        dw->OnToolCommand(GetMapTool());
+        dw->OnToolChanged(GetImageTool(0), 0);
+        dw->OnToolChanged(GetMapTool(0), 0);
+        dw->OnToolChanged(GetImageTool(1), 1);
+        dw->OnToolChanged(GetMapTool(1), 1);
       }
     }
   }
@@ -2882,7 +2893,7 @@ CMainWindow::OnUpdateImageCommand(CCmdUI* cmdui)
      || userdata & WA_MAP) {
       CDocumentWindow* dw = GetCurrentDocumentWindow();
       if (dw) {
-        enable = dw->IsToolCommandAvailable(IDI_IMAGETOOL_PENCIL);
+        enable = dw->IsToolAvailable(IDI_IMAGETOOL_PENCIL);
       }
     }
   }
@@ -2896,16 +2907,21 @@ afx_msg void
 CMainWindow::OnImageToolChanged()
 {
   const unsigned int id = GetCurrentMessage()->wParam;
-  UINT tools[] = {IDI_IMAGETOOL_PENCIL, IDI_IMAGETOOL_LINE, IDI_IMAGETOOL_RECTANGLE,
+  const UINT tools[] = {IDI_IMAGETOOL_PENCIL, IDI_IMAGETOOL_LINE, IDI_IMAGETOOL_RECTANGLE,
                   IDI_IMAGETOOL_CIRCLE, IDI_IMAGETOOL_ELLIPSE, IDI_IMAGETOOL_FILL,
                   IDI_IMAGETOOL_SELECTION, IDI_IMAGETOOL_FREESELECTION};
-  int num_tools = sizeof(tools) / sizeof(*tools);
+  const int num_tools = sizeof(tools) / sizeof(*tools);
   CToolBarCtrl& ctrl = m_ImageToolBar.GetToolBarCtrl();
-  for (int i = 0; i < num_tools; i++) {
-    ctrl.CheckButton(tools[i], FALSE);
-  }
-  ctrl.CheckButton(id, TRUE);
 
+  m_SelectedImageTools[0] = id;
+  if (m_NumImageToolsAllowed == 1) {
+    m_SelectedImageTools[1] = id;
+  }
+
+  for (int i = 0; i < num_tools; i++) {
+    ctrl.CheckButton(tools[i], (m_SelectedImageTools[0] == tools[i] || m_SelectedImageTools[1] == tools[i]) ? TRUE : FALSE);
+  }
+  
   UpdateToolBars();
 }
 
@@ -2920,7 +2936,7 @@ CMainWindow::OnUpdateMapCommand(CCmdUI* cmdui, UINT tool_id)
     if (GetWindowLong(pWindow->m_hWnd, GWL_USERDATA) & WA_MAP) {
       CDocumentWindow* dw = GetCurrentDocumentWindow();
       if (dw) {
-        enable = dw->IsToolCommandAvailable(tool_id);
+        enable = dw->IsToolAvailable(tool_id);
       }
     }
   }
@@ -3276,7 +3292,7 @@ CMainWindow::OnUpdateCopy(CCmdUI* cmdui)
   BOOL enable = FALSE;
   CDocumentWindow* dw = GetCurrentDocumentWindow();
   if (dw) {
-    enable = dw->IsToolCommandAvailable(ID_FILE_COPY);
+    enable = dw->IsToolAvailable(ID_FILE_COPY);
   }
 
   cmdui->Enable(enable);
@@ -3291,7 +3307,7 @@ CMainWindow::OnUpdatePaste(CCmdUI* cmdui)
 
   CDocumentWindow* dw = GetCurrentDocumentWindow();
   if (dw) {
-    enable = dw->IsToolCommandAvailable(ID_FILE_PASTE);
+    enable = dw->IsToolAvailable(ID_FILE_PASTE);
   }
   else {
     if (IsClipboardFormatAvailable(CF_TEXT)) {

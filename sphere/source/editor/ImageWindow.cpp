@@ -124,6 +124,7 @@ CImageWindow::CImageWindow(const char* image, bool create_from_clipboard)
   }
 
   m_PaletteView.Create(this, this);
+  m_ColorView.SetNumColors(2);
   m_ColorView.Create(this, this);
   m_AlphaView.Create(this, this);
 
@@ -375,28 +376,28 @@ void
 CImageWindow::IV_ColorChanged(RGBA color)
 {
   RGB rgb = { color.red, color.green, color.blue };
-  m_ColorView.SetColor(rgb);
+  m_ColorView.SetColor(0, rgb);
   m_AlphaView.SetAlpha(color.alpha);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CImageWindow::PV_ColorChanged(RGB color)
+CImageWindow::PV_ColorChanged(RGB rgb)
 {
-  m_ColorView.SetColor(color);
+  m_ColorView.SetColor(0, rgb);
 
-  RGBA rgba = { color.red, color.green, color.blue, m_ImageView.GetColor().alpha };
-  m_ImageView.SetColor(rgba);
+  RGBA rgba = { rgb.red, rgb.green, rgb.blue, m_ImageView.GetColor().alpha };
+  m_ImageView.SetColor(0, rgba);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CImageWindow::CV_ColorChanged(RGB color)
+CImageWindow::CV_ColorChanged(int index, RGB color)
 {
   RGBA rgba = { color.red, color.green, color.blue, m_ImageView.GetColor().alpha };
-  m_ImageView.SetColor(rgba);
+  m_ImageView.SetColor(index, rgba);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -406,22 +407,22 @@ CImageWindow::AV_AlphaChanged(byte alpha)
 {
   RGBA rgba = m_ImageView.GetColor();
   rgba.alpha = alpha;
-  m_ImageView.SetColor(rgba);
+  m_ImageView.SetColor(0, rgba);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
  
 void
-CImageWindow::OnToolCommand(UINT id) {
+CImageWindow::OnToolChanged(UINT id, int tool_index) {
   if (m_Created) {
-    m_ImageView.OnToolChanged(id);
+    m_ImageView.OnToolChanged(id, tool_index);
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 BOOL
-CImageWindow::IsToolCommandAvailable(UINT id) {
+CImageWindow::IsToolAvailable(UINT id) {
   BOOL available = FALSE;
   if (m_Created) {
     available = m_ImageView.IsToolAvailable(id);

@@ -31,8 +31,8 @@ public:
   CSpritesetWindow(const char* filename = NULL);
 
 private:
-  void OnToolCommand(UINT id);
-  BOOL IsToolCommandAvailable(UINT id);
+  void OnToolChanged(UINT id, int tool_index);
+  BOOL IsToolAvailable(UINT id);
 
   afx_msg void OnKeyDown(UINT vk, UINT repeat, UINT flags);
   afx_msg void OnKeyUp(UINT vk, UINT repeat, UINT flags);
@@ -94,7 +94,7 @@ private:
   virtual void IV_ImageChanged();
   virtual void IV_ColorChanged(RGBA color);
   virtual void PV_ColorChanged(RGB color);
-  virtual void CV_ColorChanged(RGB color);
+  virtual void CV_ColorChanged(int index, RGB color);
   virtual void AV_AlphaChanged(byte alpha);
   virtual void SBV_SpritesetModified();
   virtual void SP_ColorSelected(RGBA color);

@@ -133,8 +133,10 @@ CWindowStyleWindow::CWindowStyleWindow(const char* window_style)
   OnSize(0, ClientRect.right, ClientRect.bottom);
 
   // make sure the various views start with matching values
-  m_ColorView.SetColor(CreateRGB(0, 0, 0));
-  m_ImageView.SetColor(CreateRGBA(0, 0, 0, 255));
+  m_ColorView.SetColor(0, CreateRGB(255, 255, 255));
+  m_ColorView.SetColor(1, CreateRGB(0, 0, 0));
+  m_ImageView.SetColor(0, CreateRGBA(255, 255, 255, 255));
+  m_ImageView.SetColor(0, CreateRGBA(0, 0, 0, 255));
   m_AlphaView.SetAlpha(255);
 
 #ifdef USE_SIZECBAR
@@ -958,7 +960,7 @@ void
 CWindowStyleWindow::IV_ColorChanged(RGBA color)
 {
   RGB rgb = { color.red, color.green, color.blue };
-  m_ColorView.SetColor(rgb);
+  m_ColorView.SetColor(0, rgb);
   m_AlphaView.SetAlpha(color.alpha);
 }
 
@@ -968,17 +970,17 @@ void
 CWindowStyleWindow::PV_ColorChanged(RGB color)
 {
   RGBA rgba = { color.red, color.green, color.blue, m_AlphaView.GetAlpha() };
-  m_ImageView.SetColor(rgba);
-  m_ColorView.SetColor(color);
+  m_ImageView.SetColor(0, rgba);
+  m_ColorView.SetColor(0, color);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CWindowStyleWindow::CV_ColorChanged(RGB color)
+CWindowStyleWindow::CV_ColorChanged(int index, RGB color)
 {
   RGBA rgba = { color.red, color.green, color.blue, m_AlphaView.GetAlpha() };
-  m_ImageView.SetColor(rgba);
+  m_ImageView.SetColor(index, rgba);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -988,7 +990,7 @@ CWindowStyleWindow::AV_AlphaChanged(byte alpha)
 {
   RGBA rgba = m_ImageView.GetColor();
   rgba.alpha = alpha;
-  m_ImageView.SetColor(rgba);
+  m_ImageView.SetColor(0, rgba);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1051,14 +1053,14 @@ CWindowStyleWindow::GetEditRect(RECT* rect)
 ////////////////////////////////////////////////////////////////////////////////
  
 void
-CWindowStyleWindow::OnToolCommand(UINT id) {
-  m_ImageView.OnToolChanged(id);
+CWindowStyleWindow::OnToolChanged(UINT id, int tool_index) {
+  m_ImageView.OnToolChanged(id, tool_index);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 BOOL
-CWindowStyleWindow::IsToolCommandAvailable(UINT id) {
+CWindowStyleWindow::IsToolAvailable(UINT id) {
   BOOL available = FALSE;
   available = m_ImageView.IsToolAvailable(id);
   return available;

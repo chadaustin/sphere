@@ -139,8 +139,8 @@ CTilesetEditView::SP_ColorSelected(RGBA color)
   byte alpha = color.alpha;
   RGB  rgb   = { color.red, color.green, color.blue };
 
-  m_ImageView.SetColor(color);
-  m_ColorView.SetColor(rgb);
+  m_ImageView.SetColor(0, color);
+  m_ColorView.SetColor(0, rgb);
   m_AlphaView.SetAlpha(alpha);
 }
 
@@ -390,7 +390,7 @@ CTilesetEditView::IV_ColorChanged(RGBA color)
 {
   RGBA rgba = m_ImageView.GetColor();
   RGB rgb = { rgba.red, rgba.green, rgba.blue };
-  m_ColorView.SetColor(rgb);
+  m_ColorView.SetColor(0, rgb);
   m_AlphaView.SetAlpha(rgba.alpha);
 }
 
@@ -399,20 +399,20 @@ CTilesetEditView::IV_ColorChanged(RGBA color)
 void
 CTilesetEditView::PV_ColorChanged(RGB color)
 {
-  m_ColorView.SetColor(color);
+  m_ColorView.SetColor(0, color);
   byte alpha = m_AlphaView.GetAlpha();
   RGBA c = { color.red, color.green, color.blue, alpha };
-  m_ImageView.SetColor(c);
+  m_ImageView.SetColor(0, c);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CTilesetEditView::CV_ColorChanged(RGB color)
+CTilesetEditView::CV_ColorChanged(int index, RGB color)
 {
   byte alpha = m_AlphaView.GetAlpha();
   RGBA rgba = { color.red, color.green, color.blue, alpha };
-  m_ImageView.SetColor(rgba);
+  m_ImageView.SetColor(index, rgba);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -422,7 +422,7 @@ CTilesetEditView::AV_AlphaChanged(byte alpha)
 {
   RGBA rgba = m_ImageView.GetColor();
   rgba.alpha = alpha;
-  m_ImageView.SetColor(rgba);
+  m_ImageView.SetColor(0, rgba);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -456,9 +456,9 @@ CTilesetEditView::OnTimer(UINT event)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CTilesetEditView::OnToolChanged(UINT id)
+CTilesetEditView::OnToolChanged(UINT id, int tool_index)
 {
-  m_ImageView.OnToolChanged(id);
+  m_ImageView.OnToolChanged(id, tool_index);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -92,12 +92,12 @@ private:
 
   virtual void OnHScrollChanged(int x);
   virtual void OnVScrollChanged(int y);
-  virtual void TP_ToolSelected(int tool);
+  virtual void TP_ToolSelected(int tool, int tool_index);
 
   void UpdateCursor(UINT flags, CPoint point);
 
 public:
-  void OnToolChanged(UINT id);
+  void OnToolChanged(UINT id, int tool_index);
   BOOL IsToolAvailable(UINT id);
 
 public:
