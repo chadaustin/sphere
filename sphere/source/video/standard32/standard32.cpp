@@ -9,7 +9,6 @@
 #include "resource.h"
 
 
-
 /**
    @todo maybe this should go to rgb.cpp or some such...  but then
    every video driver depends on libcommon?
@@ -920,7 +919,7 @@ void aBlendBGR(struct BGR& d, struct BGR s, int a)
   // blit to the dest pixel
 #ifdef USE_ALPHA_TABLE
   d.red   = alpha_old[a][d.red]   + s.red;
-  d.green = alpha_old[a][d.green] + s.blue;
+  d.green = alpha_old[a][d.green] + s.green;
   d.blue  = alpha_old[a][d.blue]  + s.blue;
 #else
   d.red   = (d.red   * (256 - a)) / 256 + s.red;
@@ -1233,7 +1232,7 @@ void NormalBlit(IMAGE image, int x, int y)
 #ifdef USE_ALPHA_TABLE
         result |= (alpha_old[a][d & 0xFF] + (s & 0xFF)) << 24;
 #else
-        result |= (((d & 0xFF) * b + ((s & 0xFF) << 8)) & 0xFF00) << 8;
+        result |= (((d & 0xFF) * b + ((s & 0xFF) << 8)) & 0xFF00) << 16;
 #endif
 
         *dest = result;

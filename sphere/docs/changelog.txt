@@ -1,3 +1,10 @@
+2003.12.14
+  - Added Import Direction From Animation and Export Direction To Animation
+
+2003.12.09
+  - Made Resample better (or more correct) - gau_veldt
+  - Added Resample Spriteset
+
 2003.08.31
   - Added shortcuts for Copy and Paste in ImageView and SpritesetView - Tim Enderling
 
