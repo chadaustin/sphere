@@ -63,8 +63,11 @@ EditorApplication::OnInit()
   //  *strrchr(config_directory, '\\') = 0;
   //Configuration::ConfigurationFile = std::string(config_directory) + "\\editor.ini";
 
-  wxString config_directory =  wxGetCwd();
-  Configuration::ConfigurationFile = std::string(config_directory) + "editor.ini";//todo: verify this will produce the correct filename
+  wxString config_directory = wxGetCwd();
+  if (config_directory.Right(1) != "\\" || config_directory.Right(1) != "/") {
+      config_directory += "/";
+  }
+  Configuration::ConfigurationFile = config_directory + "editor.ini";
 
   // get the startup directory
   // THE STUB WILL TAKE CARE OF STARTING THE EXECUTABLE IN THE RIGHT WORKING DIR
