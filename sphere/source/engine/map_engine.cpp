@@ -342,7 +342,7 @@ bool
 CMapEngine::IsLayerVisible(int layer, bool& visible)
 {
   if (!m_IsRunning) {
-    m_ErrorMessage = "IsLayerHeight() called while map engine was not running";
+    m_ErrorMessage = "IsLayerVisible() called while map engine was not running";
     return false;
   }
 
@@ -373,6 +373,46 @@ CMapEngine::SetLayerVisible(int layer, bool visible)
   }
 
   m_Map.GetMap().GetLayer(layer).SetVisible(visible);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::IsLayerReflective(int layer, bool& reflective)
+{
+  if (!m_IsRunning) {
+    m_ErrorMessage = "IsLayerReflective() called while map engine was not running";
+    return false;
+  }
+
+  // make sure layer is valid
+  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
+    m_ErrorMessage = "Invalid layer";
+    return false;
+  }
+
+  reflective = m_Map.GetMap().GetLayer(layer).IsReflective();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::SetLayerReflective(int layer, bool reflective)
+{
+  if (!m_IsRunning) {
+    m_ErrorMessage = "SetLayerReflective() called while map engine was not running";
+    return false;
+  }
+
+  // make sure layer is valid
+  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
+    m_ErrorMessage = "Invalid layer";
+    return false;
+  }
+
+  m_Map.GetMap().GetLayer(layer).SetReflective(reflective);
   return true;
 }
 

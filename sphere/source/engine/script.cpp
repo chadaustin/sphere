@@ -1610,7 +1610,7 @@ end_func()
 begin_func(IsLayerVisible, 1)
   arg_int(layer);
 
-  bool visible;
+  bool visible = false;
   if (!This->m_Engine->GetMapEngine()->IsLayerVisible(layer, visible)) {
     This->ReportMapEngineError("IsLayerVisible() failed");
     return JS_FALSE;
@@ -1627,6 +1627,33 @@ begin_func(SetLayerVisible, 2)
 
   if (!This->m_Engine->GetMapEngine()->SetLayerVisible(layer, visible)) {
     This->ReportMapEngineError("SetLayerVisible() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(IsLayerReflective, 1)
+  arg_int(layer);
+  bool reflective = false;
+
+  if (!This->m_Engine->GetMapEngine()->IsLayerReflective(layer, reflective)) {
+    This->ReportMapEngineError("IsLayerReflective() failed");
+    return JS_FALSE;
+  }
+
+  return_bool(reflective);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(SetLayerReflective, 2)
+  arg_int(layer);
+  arg_bool(reflective);
+
+  if (!This->m_Engine->GetMapEngine()->SetLayerReflective(layer, reflective)) {
+    This->ReportMapEngineError("SetLayerReflective() failed");
     return JS_FALSE;
   }
 

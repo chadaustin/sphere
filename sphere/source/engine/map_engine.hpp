@@ -69,6 +69,9 @@ public:
   bool GetLayerName(int layer, std::string& name);
   bool IsLayerVisible(int layer, bool& visible);
   bool SetLayerVisible(int layer, bool visible);
+  bool IsLayerReflective(int layer, bool& reflective);
+  bool SetLayerReflective(int layer, bool reflective);
+
   bool GetNumTiles(int& tiles);
   bool SetTile(int x, int y, int layer, int tile);
   bool GetTile(int x, int y, int layer, int& tile);

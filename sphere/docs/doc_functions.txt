@@ -358,6 +358,12 @@ log_object.endBlock()
 
     SetLayerVisible(layer, visible)
       - shows 'layer' if visible == true, and hides it if visible == false
+
+    IsLayerReflective(layer)
+      - returns true if the layer is reflective
+
+    SetLayerReflective(layer, reflective)
+      - sets whether layer should be reflective
 
     SetLayerAlpha(layer, alpha)
       - set the alpha of 'layer' to 'alpha'
