@@ -177,7 +177,6 @@ public:
   bool SetPersonAngle(const char* name, double angle);
   bool SetPersonMask(const char* name, RGBA mask);
   bool GetPersonMask(const char* name, RGBA& mask);
-  bool GetPersonFilename(const char* name, std::string& filename);
   SSPRITESET* GetPersonSpriteset(const char* name);
 
   bool FollowPerson(const char* name, const char* leader, int pixels);
