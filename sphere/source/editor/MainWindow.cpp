@@ -1403,9 +1403,9 @@ CMainWindow::OnFileImportImageToFont()
 
   RGBA no_font_color = CreateRGBA(255, 0, 0, 255);
 
-  int border_size = 1;
-  if (MessageBox("Does this image use a 1 pixel border?", "Image", MB_ICONQUESTION | MB_YESNO) == IDNO) {
-    border_size = 0;
+  int border_size = 0;
+  if (MessageBox("Does this image use a 1 pixel border?", "Image", MB_ICONQUESTION | MB_YESNO) == IDYES) {
+    border_size = 1;
   }
 
   const int characters_per_row = 16;

@@ -70,24 +70,24 @@ static BOOL CALLBACK ConfigureDriverDialogProc(HWND window, UINT msg, WPARAM wpa
 static void UpdateButtonStates(HWND dialog);
 
 
-DRIVERCONFIG DriverConfig;
+static DRIVERCONFIG DriverConfig;
 #define SCALE()  (DriverConfig.scale ? 2  : 1)
 #define SCALEF() (DriverConfig.scale ? 2.0f : 1.0f)
 #define FILTER() (SCALE() == 1 ? GL_NEAREST : (DriverConfig.bilinear ? GL_LINEAR : GL_NEAREST))
 
 
-HINSTANCE DriverInstance;
+static HINSTANCE DriverInstance;
 
-int ScreenWidth;
-int ScreenHeight;
+static int ScreenWidth;
+static int ScreenHeight;
 
-GLint MaxTexSize; // width or height
+static GLint MaxTexSize; // width or height
 
-HWND  SphereWindow;
-DWORD WindowStyle;   // } only use in fullscreen
-DWORD WindowStyleEx; // }
-HDC   MainDC;
-HGLRC MainRC;
+static HWND  SphereWindow;
+static DWORD WindowStyle;   // } only use in fullscreen
+static DWORD WindowStyleEx; // }
+static HDC   MainDC;
+static HGLRC MainRC;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -169,87 +169,89 @@ EXPORT(void) ConfigureDriver(HWND parent)
 
 BOOL CALLBACK ConfigureDriverDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
-    switch (message) {
-        case WM_INITDIALOG: {
-            switch (DriverConfig.bpp) {
-                case 24: {
-                    CheckDlgButton(window, IDC_BPP_24, BST_CHECKED);
-                    break;
-                }
+  switch (message)
+  {
+    case WM_INITDIALOG:
+    {
+      switch (DriverConfig.bpp)
+      {
+        case 24:
+          CheckDlgButton(window, IDC_BPP_24, BST_CHECKED);
+        break;
 
-                case 32: {
-                    CheckDlgButton(window, IDC_BPP_32, BST_CHECKED);
-                    break;
-                }
+        case 32:
+          CheckDlgButton(window, IDC_BPP_32, BST_CHECKED);
+        break;
                 
-                default: {
-                    CheckDlgButton(window, IDC_BPP_16, BST_CHECKED);
-                    break;
-                }
-            }
+        default:
+          CheckDlgButton(window, IDC_BPP_16, BST_CHECKED);
+        break;
+      }
 
-            if (DriverConfig.scale) {
-                CheckDlgButton(window, IDC_SCALE, BST_CHECKED);
-            }
-            if (DriverConfig.bilinear) {
-                CheckDlgButton(window, IDC_BILINEAR, BST_CHECKED);
-            }
-            if (DriverConfig.fullscreen) {
-                CheckDlgButton(window, IDC_FULLSCREEN, BST_CHECKED);
-            }
-            if (DriverConfig.vsync) {
-                CheckDlgButton(window, IDC_VSYNC, BST_CHECKED);
-            }
+      if (DriverConfig.scale) {
+        CheckDlgButton(window, IDC_SCALE, BST_CHECKED);
+      }
+      if (DriverConfig.bilinear) {
+        CheckDlgButton(window, IDC_BILINEAR, BST_CHECKED);
+      }
+      if (DriverConfig.fullscreen) {
+        CheckDlgButton(window, IDC_FULLSCREEN, BST_CHECKED);
+      }
+      if (DriverConfig.vsync) {
+        CheckDlgButton(window, IDC_VSYNC, BST_CHECKED);
+      }
 
-            UpdateButtonStates(window);
+      UpdateButtonStates(window);
             
-            return TRUE;
-        }
-
-        case WM_COMMAND: {
-            if (HIWORD(wparam) == BN_CLICKED) {
-                UpdateButtonStates(window);
-            }
-
-            switch (LOWORD(wparam)) {
-                case IDOK: {
-                    if (IsDlgButtonChecked(window, IDC_BPP_24) == BST_CHECKED) {
-                        DriverConfig.bpp = 24;
-                    } else if (IsDlgButtonChecked(window, IDC_BPP_32) == BST_CHECKED) {
-                        DriverConfig.bpp = 32;
-                    } else {
-                        DriverConfig.bpp = 16;
-                    }
-
-                    DriverConfig.scale = (IsDlgButtonChecked(window, IDC_SCALE) == BST_CHECKED);
-                    DriverConfig.bilinear = (IsDlgButtonChecked(window, IDC_BILINEAR) == BST_CHECKED);
-                    DriverConfig.fullscreen = (IsDlgButtonChecked(window, IDC_FULLSCREEN) == BST_CHECKED);
-                    DriverConfig.vsync = (IsDlgButtonChecked(window, IDC_VSYNC) == BST_CHECKED);
-
-                    SaveDriverConfig();
-                    EndDialog(window, 0);
-                    return TRUE;
-                }
-
-                case IDCANCEL: {
-                    EndDialog(window, 0);
-                    return TRUE;
-                }
-            }
-        }
-
-        default: {
-            return FALSE;
-        }
+      return TRUE;
     }
+
+    case WM_COMMAND:
+    {
+      if (HIWORD(wparam) == BN_CLICKED) {
+        UpdateButtonStates(window);
+      }
+
+      switch (LOWORD(wparam))
+      {
+        case IDOK:
+          if (IsDlgButtonChecked(window, IDC_BPP_24) == BST_CHECKED) {
+            DriverConfig.bpp = 24;
+          } else if (IsDlgButtonChecked(window, IDC_BPP_32) == BST_CHECKED) {
+            DriverConfig.bpp = 32;
+          } else {
+            DriverConfig.bpp = 16;
+          }
+
+          DriverConfig.scale      = (IsDlgButtonChecked(window, IDC_SCALE)      == BST_CHECKED);
+          DriverConfig.bilinear   = (IsDlgButtonChecked(window, IDC_BILINEAR)   == BST_CHECKED);
+          DriverConfig.fullscreen = (IsDlgButtonChecked(window, IDC_FULLSCREEN) == BST_CHECKED);
+          DriverConfig.vsync      = (IsDlgButtonChecked(window, IDC_VSYNC)      == BST_CHECKED);
+
+          SaveDriverConfig();
+          EndDialog(window, 0);
+          return TRUE;
+        break;
+
+        case IDCANCEL:
+          EndDialog(window, 0);
+          return TRUE;
+        break;
+      }
+    }
+
+    default:
+      return FALSE;
+    break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void UpdateButtonStates(HWND dialog)
 {
-    EnableWindow(GetDlgItem(dialog, IDC_VSYNC),    IsDlgButtonChecked(dialog, IDC_FULLSCREEN) == BST_CHECKED);
-    EnableWindow(GetDlgItem(dialog, IDC_BILINEAR), IsDlgButtonChecked(dialog, IDC_SCALE)      == BST_CHECKED);
+  EnableWindow(GetDlgItem(dialog, IDC_VSYNC),    IsDlgButtonChecked(dialog, IDC_FULLSCREEN) == BST_CHECKED);
+  EnableWindow(GetDlgItem(dialog, IDC_BILINEAR), IsDlgButtonChecked(dialog, IDC_SCALE)      == BST_CHECKED);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -391,6 +393,9 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
   glLoadIdentity();
   //glTranslatef(0.375, 0.375, 0.0);
 
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glClearDepth(1.0);
+
   // render initialization
   glEnable(GL_SCISSOR_TEST);
   glScissor(0, 0, ScreenWidth, ScreenHeight);
@@ -496,6 +501,9 @@ EXPORT(bool) ToggleFullScreen() {
 EXPORT(void) FlipScreen()
 {
   SwapBuffers(MainDC);
+  //extern void __stdcall DrawRectangle(int x, int y, int w, int h, RGBA mask);
+  //DrawRectangle(0, 0, 320, 240, CreateRGBA(0, 0, 0, 255));
+  glClear(GL_COLOR_BUFFER_BIT);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -695,22 +703,26 @@ EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 
 EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
 {
-    RGBA* pixels = new RGBA[width * height];
-    if (!pixels)
-      return NULL;
-    DirectGrab(x, y, width, height, pixels);
-    IMAGE result = CreateImage(width, height, pixels);
-    delete[] pixels;
-    return result;
+  RGBA* pixels = new RGBA[width * height];
+  if (!pixels) return NULL;
+  DirectGrab(x, y, width, height, pixels);
+  IMAGE result = CreateImage(width, height, pixels);
+  delete[] pixels;
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 EXPORT(void) DestroyImage(IMAGE image)
 {
-    glDeleteTextures(1, &image->texture);
-    delete[] image->pixels;
-    delete image;
+  glDeleteTextures(1, &image->texture);
+  image->texture = NULL;
+  image->tex_width = 0;
+  image->tex_height = 0;
+  delete[] image->pixels;
+  image->pixels = NULL;
+  delete image;
+  image = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -735,203 +747,212 @@ EXPORT(void) BlitImage(IMAGE image, int x, int y)
 
 EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
 {
-    if (image->special == tagIMAGE::EMPTY) {
-        return;
-    }
+  if (image->special == tagIMAGE::EMPTY) {
+    return;
+  }
 
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, image->texture);
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, image->texture);
 
-    glColor4ub(mask.red, mask.green, mask.blue, mask.alpha);
-    glBegin(GL_QUADS);
+  glColor4ub(mask.red, mask.green, mask.blue, mask.alpha);
+  glBegin(GL_QUADS);
 
-        glTexCoord2f(0, 0);
-        glVertex2i(x, y);
+    glTexCoord2f(0, 0);
+    glVertex2i(x, y);
+ 
+    glTexCoord2f(image->tex_width, 0); 
+    glVertex2i(x + image->width, y);
 
-        glTexCoord2f(image->tex_width, 0);
-        glVertex2i(x + image->width, y);
+    glTexCoord2f(image->tex_width, image->tex_height);
+    glVertex2i(x + image->width, y + image->height);
 
-        glTexCoord2f(image->tex_width, image->tex_height);
-        glVertex2i(x + image->width, y + image->height);
+    glTexCoord2f(0, image->tex_height);
+    glVertex2i(x, y + image->height);
 
-        glTexCoord2f(0, image->tex_height);
-        glVertex2i(x, y + image->height);
-
-    glEnd();
-    glDisable(GL_TEXTURE_2D);
+  glEnd();
+  glDisable(GL_TEXTURE_2D);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
 {
-    if (image->special == tagIMAGE::EMPTY) {
-        return;
-    }
+  if (image->special == tagIMAGE::EMPTY) {
+    return;
+  }
 
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, image->texture);
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, image->texture);
 
-    int cx = (x[0] + x[1] + x[2] + x[3]) / 4;
-    int cy = (y[0] + y[1] + y[2] + y[3]) / 4;
+  int cx = (x[0] + x[1] + x[2] + x[3]) / 4;
+  int cy = (y[0] + y[1] + y[2] + y[3]) / 4;
     
-    glColor4f(1, 1, 1, 1);
-    glBegin(GL_TRIANGLE_FAN);
+  glColor4f(1, 1, 1, 1);
+  glBegin(GL_TRIANGLE_FAN);
 
       // center
-      glTexCoord2f(image->tex_width / 2, image->tex_height / 2);
-      glVertex2i(cx, cy);
+    glTexCoord2f(image->tex_width / 2, image->tex_height / 2);
+    glVertex2i(cx, cy);
  
-      glTexCoord2f(0, 0);
-      glVertex2i(x[0], y[0]);
+    glTexCoord2f(0, 0);
+    glVertex2i(x[0], y[0]);
  
-      glTexCoord2f(image->tex_width, 0);
-      glVertex2i(x[1], y[1]);
+    glTexCoord2f(image->tex_width, 0);
+    glVertex2i(x[1], y[1]);
  
-      glTexCoord2f(image->tex_width, image->tex_height);
-      glVertex2i(x[2], y[2]);
+    glTexCoord2f(image->tex_width, image->tex_height);
+    glVertex2i(x[2], y[2]);
  
-      glTexCoord2f(0, image->tex_height);
-      glVertex2i(x[3], y[3]);
+    glTexCoord2f(0, image->tex_height);
+    glVertex2i(x[3], y[3]);
 
-      glTexCoord2f(0, 0);
-      glVertex2i(x[0], y[0]);
+    glTexCoord2f(0, 0);
+    glVertex2i(x[0], y[0]);
 
-    glEnd();
-    
-    glDisable(GL_TEXTURE_2D);
+  glEnd(); 
+  glDisable(GL_TEXTURE_2D);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
 {
-    if (image->special == tagIMAGE::EMPTY) {
-        return;
-    }
+  if (image->special == tagIMAGE::EMPTY) {
+    return;
+  }
 
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, image->texture);
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, image->texture);
 
-    int cx = (x[0] + x[1] + x[2] + x[3]) / 4;
-    int cy = (y[0] + y[1] + y[2] + y[3]) / 4;
+  int cx = (x[0] + x[1] + x[2] + x[3]) / 4;
+  int cy = (y[0] + y[1] + y[2] + y[3]) / 4;
+   
+  glColor4ub(mask.red, mask.green, mask.blue, mask.alpha);
+  glBegin(GL_TRIANGLE_FAN);
+
+    // center
+    glTexCoord2f(image->tex_width / 2, image->tex_height / 2);
+    glVertex2i(cx, cy);
+ 
+    glTexCoord2f(0, 0);
+    glVertex2i(x[0], y[0]);
+ 
+    glTexCoord2f(image->tex_width, 0);
+    glVertex2i(x[1], y[1]);
+ 
+    glTexCoord2f(image->tex_width, image->tex_height);
+    glVertex2i(x[2], y[2]);
+ 
+    glTexCoord2f(0, image->tex_height);
+    glVertex2i(x[3], y[3]);
+
+    glTexCoord2f(0, 0);
+    glVertex2i(x[0], y[0]);
+
+  glEnd();
     
-    glColor4ub(mask.red, mask.green, mask.blue, mask.alpha);
-    glBegin(GL_TRIANGLE_FAN);
-
-      // center
-      glTexCoord2f(image->tex_width / 2, image->tex_height / 2);
-      glVertex2i(cx, cy);
- 
-      glTexCoord2f(0, 0);
-      glVertex2i(x[0], y[0]);
- 
-      glTexCoord2f(image->tex_width, 0);
-      glVertex2i(x[1], y[1]);
- 
-      glTexCoord2f(image->tex_width, image->tex_height);
-      glVertex2i(x[2], y[2]);
- 
-      glTexCoord2f(0, image->tex_height);
-      glVertex2i(x[3], y[3]);
-
-      glTexCoord2f(0, 0);
-      glVertex2i(x[0], y[0]);
-
-    glEnd();
-    
-    glDisable(GL_TEXTURE_2D);
+  glDisable(GL_TEXTURE_2D);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 EXPORT(int) GetImageWidth(IMAGE image)
 {
-    return image->width;
+  return image->width;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 EXPORT(int) GetImageHeight(IMAGE image)
 {
-    return image->height;
+  return image->height;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 EXPORT(RGBA*) LockImage(IMAGE image)
 {
-    return image->pixels;
+  return image->pixels;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 EXPORT(void) UnlockImage(IMAGE image)
 {
-    glDeleteTextures(1, &image->texture);
-    CreateTexture(image);
-    image->special = AnalyzePixels(image->width, image->height, image->pixels);
+  glDeleteTextures(1, &image->texture);
+  CreateTexture(image);
+  image->special = AnalyzePixels(image->width, image->height, image->pixels);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels)
 {
-    IMAGE i = CreateImage(w, h, pixels);
+  IMAGE i = CreateImage(w, h, pixels);
+  if (i) {
     BlitImage(i, x, y);
     DestroyImage(i);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 EXPORT(void) DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels)
 {
-    IMAGE i = CreateImage(w, h, pixels);
+  IMAGE i = CreateImage(w, h, pixels);
+  if (i) {
     TransformBlitImage(i, x, y);
     DestroyImage(i);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
 {
-    if (x < 0 || y < 0 || x + w > ScreenWidth || y + h > ScreenHeight) {
-        return;
+  if (x < 0 || y < 0 || x + w > ScreenWidth || y + h > ScreenHeight) {
+    return;
+  }
+
+  if (SCALE() == 2) {
+      
+    // manually scale the framebuffer down
+    RGBA* new_pixels = new RGBA[4 * w * h];
+    if (!new_pixels)
+      return;
+
+    glReadPixels(x * 2, (ScreenHeight - y - h) * 2, w * 2, h * 2, GL_RGBA, GL_UNSIGNED_BYTE, new_pixels);
+
+    for (int i = 0; i < w; i++) {
+      for (int j = 0; j < h; j++) {
+        pixels[j * w + i] = new_pixels[(j * 2) * (w * 2) + i * 2];
+      }
     }
 
-    if (SCALE() == 2) {
-        
-        // manually scale the framebuffer down
-        RGBA* new_pixels = new RGBA[4 * w * h];
-        glReadPixels(x * 2, (ScreenHeight - y - h) * 2, w * 2, h * 2, GL_RGBA, GL_UNSIGNED_BYTE, new_pixels);
+    delete[] new_pixels;
 
-        for (int i = 0; i < w; i++) {
-            for (int j = 0; j < h; j++) {
-                pixels[j * w + i] = new_pixels[(j * 2) * (w * 2) + i * 2];
-            }
-        }
+  } else {
+    glReadPixels(x, ScreenHeight - y - h, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    // puts(glErrorToString(error).c_str());
+  }
 
-        delete[] new_pixels;
+  // now invert the rows
+  RGBA* row = new RGBA[w];
+  if (!row)
+    return;
 
-    } else {
-        glReadPixels(x, ScreenHeight - y - h, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-        // puts(glErrorToString(error).c_str());
-    }
+  RGBA* top = pixels;
+  RGBA* bot = pixels + w * (h - 1);
+  while (top < bot) {
+    memcpy(row, top, w * sizeof(RGBA));
+    memcpy(top, bot, w * sizeof(RGBA));
+    memcpy(bot, row, w * sizeof(RGBA));
 
-    // now invert the rows
-    RGBA* row = new RGBA[w];
-    RGBA* top = pixels;
-    RGBA* bot = pixels + w * (h - 1);
-    while (top < bot) {
-      memcpy(row, top, w * sizeof(RGBA));
-      memcpy(top, bot, w * sizeof(RGBA));
-      memcpy(bot, row, w * sizeof(RGBA));
+    top += w;
+    bot -= w;
+  }
 
-      top += w;
-      bot -= w;
-    }
-
-    delete[] row;
+  delete[] row;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -447,13 +447,17 @@ CFontWindow::OnFontExportToImage()
   if (!(font_width > 0 && font_height > 0))
     return;
 
-  int border_size = 1;
-  if (MessageBox("Use a 1 pixel border?", "Font", MB_ICONQUESTION | MB_YESNO) == IDNO) {
-    border_size = 0;
+  int border_size = 0;
+  if (MessageBox("Use a 1 pixel border?", "Font", MB_ICONQUESTION | MB_YESNO) == IDYES) {
+    border_size = 1;
   }
 
+  int num_characters_per_row = 16;
+  int num_characters_per_col = 16;
+
   CImage32 image;
-  if (!image.Create(font_width * 16 + ((16 + 1) * border_size), font_height * 16 + ((16 + 1) * border_size)))
+  if (!image.Create(font_width * num_characters_per_row + ((num_characters_per_row + 1) * border_size),
+                    font_height * num_characters_per_col + ((num_characters_per_col + 1) * border_size)))
     return;
 
   image.Rectangle(0, 0, image.GetWidth(), image.GetHeight(), CreateRGBA(255, 0, 0, 255));
@@ -461,9 +465,9 @@ CFontWindow::OnFontExportToImage()
 
   int i = 0;
 
-  for (int fy = 0; fy < 16; fy++)
+  for (int fy = 0; fy < num_characters_per_col; fy++)
   {
-    for (int fx = 0; fx < 16; fx++)
+    for (int fx = 0; fx < num_characters_per_row; fx++)
     {
       CImage32 c = m_Font.GetCharacter(i);
       int x = ((fx + 1) * border_size) + (font_width  * fx);
