@@ -1,4 +1,5 @@
 #include "unix_video.h"
+#include "unix_input.h"
 #include "../../common/primitives.hpp"
 #include <cstring>
 
@@ -50,10 +51,10 @@ void blend_alpha (Uint32& dest, Uint32 src) {
 
   SDL_GetRGBA(src, screen->format, &sr, &sg, &sb, &sa);
   SDL_GetRGBA(dest, screen->format, &dr, &dg, &db, &da);
-  sa = sa * global_mask.alpha / 256;
-  sr = sr * global_mask.red / 256;
-  sg = sg * global_mask.green / 256;
-  sb = sb * global_mask.blue / 256;
+  sa = (int)sa * global_mask.alpha / 256;
+  sr = (int)sr * global_mask.red / 256;
+  sg = (int)sg * global_mask.green / 256;
+  sb = (int)sb * global_mask.blue / 256;
   dr = (dr * (256 - sa) + sr * sa) / 256;
   dg = (dg * (256 - sa) + sg * sa) / 256;
   db = (db * (256 - sa) + sb * sa) / 256;
@@ -190,8 +191,7 @@ bool SwitchResolution (int x, int y) {
   if (!initialized) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
-    /* screen = SDL_SetVideoMode(x, y, 32, SDL_FULLSCREEN | SDL_HWSURFACE | SDL_DOUBLEBUF); */
-	 screen = SDL_SetVideoMode(x, y, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
+	 screen = SDL_SetVideoMode(x, y, 32, SDL_HWSURFACE | SDL_DOUBLEBUF); /* | SDL_FULLSCREEN); */
     if (screen == NULL)
       return false;
     FPSDisplayed = false;
@@ -201,8 +201,7 @@ bool SwitchResolution (int x, int y) {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) == -1)
       return false;
-    /* screen = SDL_SetVideoMode(x, y, 32, SDL_FULLSCREEN | SDL_HWSURFACE | SDL_DOUBLEBUF); */
-	 screen = SDL_SetVideoMode(x, y, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
+	 screen = SDL_SetVideoMode(x, y, 32, SDL_HWSURFACE | SDL_DOUBLEBUF); /* | SDL_FULLSCREEN); */
     if (screen == NULL)
       return false;
     FPSDisplayed = false;
@@ -221,6 +220,7 @@ int GetScreenHeight () {
 
 void FlipScreen () {
   SDL_Flip(screen);
+	RefreshInput();
 }
 
 void SetClippingRectangle (int x, int y, int w, int h) {
