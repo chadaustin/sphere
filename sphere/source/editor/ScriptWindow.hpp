@@ -113,6 +113,7 @@ private:
 private:
   afx_msg void OnScriptViewInsert();
   afx_msg void OnScriptViewDelete();
+  afx_msg void OnScriptViewRefresh();
   afx_msg void OnUpdateScriptViewInsert(CCmdUI* cmdui);
   afx_msg void OnUpdateScriptViewDelete(CCmdUI* cmdui);
 

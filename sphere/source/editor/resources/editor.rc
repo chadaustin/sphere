@@ -1134,8 +1134,8 @@ BEGIN
     POPUP "Script View"
     BEGIN
         MENUITEM "&Insert",                     ID_SCRIPTVIEW_INSERT
-        MENUITEM "Delete",                      ID_SCRIPTVIEW_DELETE
-        POPUP "View"
+        MENUITEM "&Delete",                     ID_SCRIPTVIEW_DELETE
+        POPUP "&View"
         BEGIN
             MENUITEM "Sphere Functions",            ID_SCRIPTVIEW_SPHEREFUNCTIONS
 
@@ -1146,6 +1146,7 @@ BEGIN
             MENUITEM "Clipboard History",           ID_SCRIPTVIEW_CLIPBOARDHISTORY
 
         END
+        MENUITEM "&Refresh",                    ID_SCRIPTVIEW_REFRESH
     END
 END
 

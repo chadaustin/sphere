@@ -25,6 +25,7 @@ CFontPreviewPalette::CFontPreviewPalette(CDocumentWindow* owner, sFont* font)
   Configuration::Get(KEY_FONT_PREVIEW_VISIBLE))
 ,  m_Font(font)
 //, m_ZoomFactor(1)
+, m_RedrawAll(true)
 , m_RedrawCharacter(-1)
 , m_BlitImage(NULL)
 {
@@ -37,8 +38,14 @@ CFontPreviewPalette::CFontPreviewPalette(CDocumentWindow* owner, sFont* font)
 void
 CFontPreviewPalette::OnCharacterChanged(int character)
 {
-	m_RedrawCharacter = character;
-	Invalidate();
+  if (!m_RedrawAll) {
+  	m_RedrawCharacter = character;
+  }
+  else {
+    m_RedrawCharacter = -1;
+  }
+
+  Invalidate();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,6 +57,7 @@ CFontPreviewPalette::OnSetText()
   if (dialog.DoModal()) {
     m_Text = dialog.GetValue();
     Invalidate();
+    m_RedrawAll= true;
   }
 }
 
@@ -79,6 +87,12 @@ CFontPreviewPalette::OnPaint()
 {
   CPaintDC dc(this);
 
+  const int redraw_character = m_RedrawCharacter;
+  const int redraw_all = m_RedrawAll;
+
+  m_RedrawCharacter = -1;
+  m_RedrawAll = false;
+
 	RECT ClientRect;
 	GetClientRect(&ClientRect);
 
@@ -88,8 +102,8 @@ CFontPreviewPalette::OnPaint()
     return;
   }
 
-  int blit_width  = m_BlitImage->GetWidth();
-  int blit_height = m_BlitImage->GetHeight();
+  const int blit_width  = m_BlitImage->GetWidth();
+  const int blit_height = m_BlitImage->GetHeight();
 
   int offset_x = 0;
   const char* text = m_Text.c_str();
@@ -101,7 +115,7 @@ CFontPreviewPalette::OnPaint()
 
     const CImage32& image = m_Font->GetCharacter(text[i]);
 
-   	if (text[i] == m_RedrawCharacter || m_RedrawCharacter == -1)
+   	if (redraw_all || (int)text[i] == redraw_character)
     {
 		  // draw the frame
 		  // fill the DIB section
@@ -145,8 +159,8 @@ CFontPreviewPalette::OnPaint()
       CDC* tile = CDC::FromHandle(m_BlitImage->GetDC());
       dc.BitBlt(ClientRect.left + offset_x,
 			          ClientRect.top,
-                ClientRect.right - ClientRect.left,
-						  	ClientRect.bottom - ClientRect.top,
+                image.GetWidth()  * m_ZoomFactor.GetZoomFactor(),
+						  	blit_height,
                 tile, 0, 0, SRCCOPY);
     }
 
@@ -163,8 +177,6 @@ CFontPreviewPalette::OnPaint()
     dc.FillRect(&rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
     rect.top -= blit_height;
   }
-
-  m_RedrawCharacter = -1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -211,6 +223,7 @@ CFontPreviewPalette::OnZoom(double zoom) {
   }
 
   m_RedrawCharacter = -1;
+  m_RedrawAll = true;
 
   Invalidate();
 }

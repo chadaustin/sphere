@@ -33,6 +33,7 @@ private:
   sFont* m_Font;
 	Zoomer m_ZoomFactor;
   int m_RedrawCharacter;
+  bool m_RedrawAll;
   std::string m_Text;
 
   CDIBSection* m_BlitImage;

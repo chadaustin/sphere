@@ -409,8 +409,9 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
 
   ON_REGISTERED_MESSAGE(s_FindReplaceMessage, OnFindReplace)
 
-  ON_COMMAND(ID_SCRIPTVIEW_INSERT, OnScriptViewInsert)
-  ON_COMMAND(ID_SCRIPTVIEW_DELETE, OnScriptViewDelete)
+  ON_COMMAND(ID_SCRIPTVIEW_INSERT,  OnScriptViewInsert)
+  ON_COMMAND(ID_SCRIPTVIEW_DELETE,  OnScriptViewDelete)
+  ON_COMMAND(ID_SCRIPTVIEW_REFRESH, OnScriptViewRefresh)
 
   ON_UPDATE_COMMAND_UI(ID_SCRIPTVIEW_INSERT, OnUpdateScriptViewInsert)
   ON_UPDATE_COMMAND_UI(ID_SCRIPTVIEW_DELETE, OnUpdateScriptViewDelete)
@@ -1087,6 +1088,14 @@ afx_msg void
 CScriptWindow::OnScriptViewDelete()
 {
   ListBoxUtil::RemoveSelected(m_List);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnScriptViewRefresh()
+{
+  CreateList(m_ListType);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
