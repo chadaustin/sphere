@@ -123,6 +123,7 @@ function generatePane ($side, $body) {
         <td>
 $body
         </td>
+      </tr>
       </table>
 PANE;
 }

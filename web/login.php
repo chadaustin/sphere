@@ -1,5 +1,5 @@
 <?php
-$DATE = '$Date: 2001-12-29 03:16:56 $';
+$DATE = '$Date: 2001-12-29 05:44:04 $';
 $AUTHOR = '$Author: jcore $';
 
 require('utility.php');
@@ -12,11 +12,11 @@ if ($sphereusername) {
   $input = <<<INPUT
         <form action="$SITEROOT/tools/userlogin.php" method="post">
         <div>
-          <label for="username">username</label><br />
+          <label>username</label><br />
           <input type="text" name="username" size="33" maxlength="32" /><br />
-          <label for="password">password</label><br />
+          <label>password</label><br />
           <input type="password" name="password" size="13" maxlength="12" /><br />
-          <hr>
+          <hr />
           <input type="submit" />
         </div>
         </form>

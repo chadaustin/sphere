@@ -1,5 +1,5 @@
 <?php
-$DATE = '$Date: 2001-12-29 03:16:56 $';
+$DATE = '$Date: 2001-12-29 05:44:04 $';
 $AUTHOR = '$Author: jcore $';
 
 require('utility.php');
@@ -9,33 +9,33 @@ head("sphere - user registration");
 $input = <<<INPUT
         <form action="$SITEROOT/tools/useradd.php" method="post">
         <div>
-          <label for="username">username *</label><br />
+          <label>username *</label><br />
           <input type="text" name="username" size="33" maxlength="32" /><br />
-          <label for="password">password *</label><br />
+          <label>password *</label><br />
           <input type="password" name="password" size="13" maxlength="12" /><br />
-          <label for="verifypass">verify password *</label><br />
+          <label>verify password *</label><br />
           <input type="password" name="verifypass" size="13" maxlength="12" /><br />
-          <label for="email">email address</label><br />
+          <label>email address</label><br />
           <input type="text" name="email" size="40" maxlength="255" /><br />
-          <label for="firstname">first name</label><br />
+          <label>first name</label><br />
           <input type="text" name="firstname" size="20" maxlength="64" /><br />
-          <label for="lastname">last name</label><br />
+          <label>last name</label><br />
           <input type="text" name="lastname" size="20" maxlength="64" /><br />
           <label>birthdate</label><br />
-          <label for="year">year</label>
+          <label>year</label>
           <input type="text" name="year" size="5" maxlength="4" />
-          <label for="month">month</label>
+          <label>month</label>
           <input type="text" name="month" size="3" maxlength="2" />
-          <label for="day">day</label>
+          <label>day</label>
           <input type="text" name="day" size="3" maxlength="2" /><br />
-          <label for="photo">photo URL (square aspect ratio)</label><br />
+          <label>photo URL (square aspect ratio)</label><br />
           <input type="text" name="photo" size="50" value="http://" maxlength="255" /><br />
-          <label for="website">website URL</label><br />
+          <label>website URL</label><br />
           <input type="text" name="website" size="50" value="http://" maxlength="255" /><br />
-          <label for="notify">I would like to receive email notifications about new sphere developments</label>
+          <label>I would like to receive email notifications about new sphere developments</label>
           <input type="checkbox" name="notify" /><br />
           <hr />
-          <input type="submit">
+          <input type="submit" />
         </div>
         </form>
 INPUT;
