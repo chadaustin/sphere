@@ -26,6 +26,7 @@ env.Library('common', Split("""
     PackageFile.cpp
     PackageFileSystem.cpp
     Spriteset.cpp
+    str_util.cpp
     Tile.cpp
     Tileset.cpp
     WindowStyle.cpp
