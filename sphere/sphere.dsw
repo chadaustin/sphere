@@ -123,18 +123,6 @@ Package=<4>
 
 ###############################################################################
 
-Project: "jpegwrap"=.\source\jpegwrap\jpegwrap.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
 Project: "rss2image"=.\source\util\rss2image\rss2image.dsp - Package Owner=<4>
 
 Package=<5>

@@ -31,10 +31,10 @@ print 'Starting build for Sphere ' + version + '.'
 env = Environment(LIBS=libraries, CPPFLAGS=compile_flags, LINKFLAGS=linker_flags)
 
 SConscript('source/common/SConscript', 'env')
-SConscript('source/jpegwrap/SConscript', 'env')
 SConscript('source/engine/SConscript', 'env')
-engine = env.Program(target="bin/sphere", source='source/engine/libengine.a \
-source/common/libcommon.a source/jpegwrap/libjpegwrap.a')
+engine = env.Program(
+        target = "bin/sphere",
+        source = "source/engine/libengine.a source/common/libcommon.a")
 env.Install(os.path.join(install_prefix, 'bin'), engine)
 
 docs = ['Sphere Tutorial.txt', 'build.txt', 'doc_functions.txt',

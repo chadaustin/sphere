@@ -60,25 +60,6 @@ public:
   void BlitImage(CImage32& image, int x, int y);
 
 private:
-  // PNG
-  bool Import_PNG(const char* filename, IFileSystem& fs);
-
-  // JPEG
-  bool Import_JPEG(const char* filename, IFileSystem& fs);
-  
-  // BMP
-  bool Import_BMP(const char* filename, IFileSystem& fs);
-  bool BMP_ReadRGB(IFile* file, int imagesize, int bpp, BGRA* Pal);
-  bool BMP_ReadRLE8(IFile* file, BGRA* Pal);
-  bool BMP_ReadRLE4(IFile* file, int bpp, int NumPal, RGBA* Pal);
-
-  // PCX
-  bool Import_PCX(const char* filename, IFileSystem& fs);
-  void PCX_ReadScanline(IFile* file, int scansize, byte* scanline);
-
-  bool Export_PNG(const char* filename, IFileSystem& fs) const;
-
-private:
   int   m_Width;
   int   m_Height;
   RGBA* m_Pixels;

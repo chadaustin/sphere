@@ -46,7 +46,6 @@
 // libraries are down here because of symbol conflicts with other headers
 #include <jsapi.h>
 #include <zlib.h>
-#include <png.h>
 #include <libmng.h>
 
 
@@ -1433,8 +1432,6 @@ CMainWindow::OnHelpContents()
 afx_msg void
 CMainWindow::OnHelpAbout()
 {
-  png_uint_32 png_version = png_access_version_number();
-
   char message[1024];
   sprintf(message,
     "Sphere Development Environment\n"
@@ -1450,12 +1447,10 @@ CMainWindow::OnHelpAbout()
     "\n"
     "JavaScript: %s\n"
     "zlib: %s\n"
-    "libpng: DLL %d.%d.%d - header %s\n"
     "libmng: DLL %s - header %s\n",
 
     JS_GetImplementationVersion(),
     zlibVersion(),
-    png_version / 10000, (png_version % 10000) / 100, (png_version % 100), PNG_LIBPNG_VER_STRING,
     mng_version_text(), MNG_VERSION_TEXT);
 
   MessageBox(message, "About");

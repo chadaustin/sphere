@@ -109,6 +109,10 @@ AC_CHECK_FUNCS(getcwd)
 CXXFLAGS="$SDL_CFLAGS $CXXFLAGS -DXP_UNIX"
 LIBS="$SDL_LIBS $LIBS"
 
-AC_OUTPUT(Makefile source/Makefile source/common/Makefile \
-  source/engine/Makefile source/engine/unix/Makefile \
-  source/jpegwrap/Makefile)
+AC_OUTPUT(
+        Makefile
+        source/Makefile
+        source/common/Makefile
+        source/engine/Makefile
+        source/engine/unix/Makefile
+)

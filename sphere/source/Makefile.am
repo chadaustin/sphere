@@ -1,1 +1,1 @@
-SUBDIRS = common jpegwrap engine
+SUBDIRS = common engine
