@@ -4504,6 +4504,7 @@ CScript::CreateRawFileObject(JSContext* cx, IFile* file)
     { "getPosition", ssRawFileGetPosition, 0, 0, 0 },
     { "getSize",     ssRawFileGetSize,     0, 0, 0 },
     { "read",        ssRawFileRead,        1, 0, 0 },
+    { "write",       ssRawFileWrite,       1, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -4562,6 +4563,10 @@ end_method()
 
 ///////////////////////////////////////
 
+begin_method(SS_RAWFILE, ssRawFileWrite, 1)
+  arg_str(data);
+  object->file->Write(data, strlen(data));
+end_method()
 
 ///////////////////////////////////////
 // BYTE ARRAY OBJECTS /////////////////

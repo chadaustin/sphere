@@ -720,7 +720,7 @@ CGameEngine::OpenRawFile(const char* filename)
   std::string path = "other/";
   path += filename;
 
-  return m_FileSystem.Open(path.c_str(), IFileSystem::read);
+  return m_FileSystem.Open(path.c_str(), IFileSystem::read | IFileSystem::write);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

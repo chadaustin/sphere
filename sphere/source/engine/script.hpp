@@ -211,6 +211,7 @@ private:
   declare_method(ssRawFileGetPosition);
   declare_method(ssRawFileGetSize);
   declare_method(ssRawFileRead);
+  declare_method(ssRawFileWrite);
 
   // byte arrays
   declare_constructor2(CreateByteArrayObject, int size, const void* data = NULL);
