@@ -203,6 +203,7 @@ private:
   declare_finalizer(ssFinalizeFile);
   declare_method(ssFileRead);
   declare_method(ssFileWrite);
+  declare_method(ssFileFlush);
 
   // raw files
   declare_constructor1(CreateRawFileObject, IFile* file);

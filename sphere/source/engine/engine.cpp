@@ -688,6 +688,25 @@ CGameEngine::OpenFile(const char* filename)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+CGameEngine::FlushFile(CConfigFile* file)
+{
+  // find where the file is in the map
+  std::map<CConfigFile*, SFileInfo>::iterator i;
+  for (i = m_OpenFiles.begin(); i != m_OpenFiles.end(); i++) {
+    if (i->first == file) {
+      // save it
+      std::string path = "save/";
+      path += i->second.filename;
+
+      i->first->Save(path.c_str(), m_FileSystem);
+      break;
+    }
+  }  
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
 CGameEngine::CloseFile(CConfigFile* file)
 {
   // find where the file is in the map

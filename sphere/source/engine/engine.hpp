@@ -83,6 +83,7 @@ private:
 
   virtual void GetFileList(const char* directory, std::vector<std::string>& vs);
   virtual CConfigFile* OpenFile(const char* filename);
+  virtual void FlushFile(CConfigFile* file);
   virtual void CloseFile(CConfigFile* file);
   
   virtual IFile* OpenRawFile(const char* filename, bool writeable);

@@ -1020,6 +1020,10 @@ log_object.endBlock()
   file_object.write(key, value)
     - writes a value (string, number, boolean) to the file under the key name
 
+  file_object.flush()
+    - writes the file to disk immediately...  this way you don't have
+      to wait for it to save when the file object is garbage collected
+
   
   *** raw files ***
   OpenRawFile(filename [, writeable])

@@ -4685,6 +4685,7 @@ CScript::CreateFileObject(JSContext* cx, CConfigFile* file)
   static JSFunctionSpec fs[] = {
     { "write", ssFileWrite, 2, 0, 0 },
     { "read",  ssFileRead,  2, 0, 0 },
+    { "flush", ssFileFlush, 0, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -4742,6 +4743,13 @@ begin_method(SS_FILE, ssFileRead, 2)
 end_method()  
 
 ///////////////////////////////////////
+
+begin_method(SS_FILE, ssFileFlush, 0)
+  This->m_Engine->FlushFile(object->file);
+end_method()
+
+///////////////////////////////////////
+
 
 
 ///////////////////////////////////////
