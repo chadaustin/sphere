@@ -157,14 +157,22 @@ private:
 
   class SpritesetImageIcon {
     public:
-      SpritesetImageIcon(std::string pFilename, CImage32 pImage, CImage32 pIcon) {
+      SpritesetImageIcon(std::string pFilename, CImage32 pImage, CImage32 pIcon, int px1, int py1, int px2, int py2) {
         filename = pFilename;
         image = pImage;
         icon = pIcon;
+        x1 = px1;
+        y1 = py1;
+        x2 = px2;
+        y2 = py2;
       }
       std::string filename;
       CImage32 image;
       CImage32 icon;
+      int x1;
+      int y1;
+      int x2;
+      int y2;
   };
 
   std::vector<SpritesetImageIcon> m_SpritesetImageIcons;

@@ -907,8 +907,10 @@ CMapView::FindSpritesetImageIconsIndex(std::string filename)
       if (s.GetNumImages() > 0) {
         sprite_index = m_SpritesetImageIcons.size();
         CImage32 image(s.GetImage(0));
+        int x1, y1, x2, y2;
+        s.GetBase(x1, y1, x2, y2);
         image.Rescale(m_Map->GetTileset().GetTileWidth(), m_Map->GetTileset().GetTileHeight());
-        SpritesetImageIcon ico(filename, s.GetImage(0), image);
+        SpritesetImageIcon ico(filename, s.GetImage(0), image, x1, y1, x2, y2);
         m_SpritesetImageIcons.push_back(ico);
       }
     }
@@ -1127,23 +1129,33 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
     {
       sEntity& entity = m_Map->GetEntity(i);
 
-      int sw = tile_width;
-      int sh = tile_height;
+      int entity_width = tile_width;
+      int entity_height = tile_height;
+      int entity_x = entity.x;
+      int entity_y = entity.y;
 
       switch (entity.GetEntityType()) {
         case sEntity::PERSON: {
           sPersonEntity* person = (sPersonEntity*) &entity;
           int sprite_index = FindSpritesetImageIconsIndex(person->spriteset);
           if (sprite_index != - 1) {
-            sw = m_SpritesetImageIcons[sprite_index].image.GetWidth();
-            sh = m_SpritesetImageIcons[sprite_index].image.GetHeight();
+            int x1 = m_SpritesetImageIcons[sprite_index].x1;
+            int y1 = m_SpritesetImageIcons[sprite_index].y1;
+            int x2 = m_SpritesetImageIcons[sprite_index].x2;
+            int y2 = m_SpritesetImageIcons[sprite_index].y2;
+            int base_width  = std::max(x1, x2) - std::min(x1, x2);
+            int base_height = std::max(y1, y2) - std::min(y1, y2);
+            entity_width = m_SpritesetImageIcons[sprite_index].image.GetWidth();
+            entity_height = m_SpritesetImageIcons[sprite_index].image.GetHeight();
+            entity_x = entity.x - (entity_width / 2) + (base_width / 2);
+            entity_y = entity.y - (entity_height / 2) + (base_height / 2);
           }
         }
         break;
-      }            
+      }
 
-      if (tx >= entity.x / tile_width  && tx < (entity.x + sw) / tile_width
-       && ty >= entity.y / tile_height && ty < (entity.y + sh) / tile_height
+      if (tx >= entity_x / tile_width  && tx < (entity_x + entity_width) / tile_width
+       && ty >= entity_y / tile_height && ty < (entity_y + entity_height) / tile_height
        && m_Map->GetLayer(entity.layer).IsVisible())
       {
         HICON icon;
@@ -1174,8 +1186,8 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
             const int sprite_width = image.GetWidth();
             const int sprite_height = image.GetHeight();
 
-            int offset_x = (tx - (entity.x / tile_width)) * tile_width;
-            int offset_y = (ty - (entity.y / tile_height)) * tile_height;
+            int offset_x = (tx - (entity_x / tile_width)) * tile_width;
+            int offset_y = (ty - (entity_y / tile_height)) * tile_height;
 
             tile_width = std::min(tile_width, sprite_width);
             tile_height = std::min(tile_height, sprite_height);
