@@ -37,6 +37,8 @@ public:
   void OpenProject(const char* filename);
   void CloseProject();
 
+  const char* GetProjectDirectory() const;
+
 	static BOOL IsProjectFile(const char * filename);
   void OpenGameSettings();
   void OpenGameFile(const char* filename);

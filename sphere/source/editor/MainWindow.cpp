@@ -604,6 +604,13 @@ CMainWindow::IsProjectFile(const char* filename)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const char*
+CMainWindow::GetProjectDirectory() const
+{
+  return !m_ProjectOpen ? "" : m_Project.GetDirectory();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 void
 CMainWindow::OpenGameFile(const char* filename)

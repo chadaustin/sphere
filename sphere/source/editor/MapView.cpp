@@ -1536,14 +1536,14 @@ CMapView::FindSpritesetImageIconsIndex(int person_index, std::string filename)
 
   if (sprite_index != -1 && m_SpritesetImageIcons[sprite_index].filename != filename) {
     sSpriteset s;
-    std::string path1 = std::string("../spritesets/" + filename);
-    std::string path2 = std::string("spritesets/" + filename);
-    // std::string path3 = std::string(SphereDirectory + "/" + ProjectDirectory "/spritesets/");
     m_SpritesetImageIcons[sprite_index].filename = filename;
+
+    std::string path = (GetMainWindow()->GetProjectDirectory());
+                path += "\\spritesets\\" + filename;
 
     bool loaded = false;
 
-    if (s.Load(path1.c_str()) || s.Load(path2.c_str())) {
+    if (s.Load(path.c_str())) {
       if (s.GetNumImages() > 0) {
         CImage32 image(s.GetImage(0));
         int x1, y1, x2, y2;
