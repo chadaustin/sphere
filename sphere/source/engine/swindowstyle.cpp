@@ -72,20 +72,21 @@ bool
 SWINDOWSTYLE::DrawBackground(int x, int y, int w, int h, int background_mode)
 {
   IMAGE image = m_Images[8];
-  int width = GetImageWidth(image);
-  int height = GetImageHeight(image);
-
-  int ox, oy, ow, oh;
-  GetClippingRectangle(&ox, &oy, &ow, &oh);
-  SetClippingRectangle(x, y, w, h);
-
 
   if (background_mode == sWindowStyle::TILED) {
+    int ox, oy, ow, oh;
+    int width = GetImageWidth(image);
+    int height = GetImageHeight(image);
+    GetClippingRectangle(&ox, &oy, &ow, &oh);
+    SetClippingRectangle(x, y, w, h);
+
     for (int ix = 0; ix < w / width + 1; ix++) {
       for (int iy = 0; iy < h / height + 1; iy++) {
         BlitImage(image, x + ix * width, y + iy * height);
       }
     }
+
+    SetClippingRectangle(ox, oy, ow, oh);
   } else if (background_mode == sWindowStyle::STRETCHED) {
     int tx[4] = { x, x + w, x + w, x };
     int ty[4] = { y, y, y + h, y + h };
@@ -98,8 +99,6 @@ SWINDOWSTYLE::DrawBackground(int x, int y, int w, int h, int background_mode)
     colors[3] = m_WindowStyle.GetBackgroundColor(sWindowStyle::BACKGROUND_LOWER_LEFT);
     DrawGradientRectangle(x, y, w, h, colors);
   }
-
-  SetClippingRectangle(ox, oy, ow, oh);
 
   return true;
 }
