@@ -973,6 +973,10 @@ end_func()
 
 begin_func(SetFrameRate, 1)
   arg_int(fps);
+  // 1 fps is the lowest we go
+  if (fps < 1) {
+    fps = 1;
+  }
   This->m_FrameRate = fps;
   This->m_IdealTime = GetTime() * fps + 1000;
   This->m_ShouldRender = true;
