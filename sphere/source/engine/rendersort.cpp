@@ -64,6 +64,7 @@ CRenderSort::DrawObjects()
 
     bool normal_blit = false;
 
+    /*
     // BlitImage is usually faster than TransformBlit, so use BlitImage if possible
     if (tx[0] == tx[3] && tx[1] == tx[2] && ty[0] == ty[1] && ty[2] == ty[3]) {
       int dw = tx[2] - tx[0] + 1;
@@ -72,6 +73,7 @@ CRenderSort::DrawObjects()
         normal_blit = true;
       }
     }
+    */
 
     if (normal_blit) {
       if (o.mask == CreateRGBA(255, 255, 255, 255)) {

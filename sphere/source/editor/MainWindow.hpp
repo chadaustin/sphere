@@ -141,6 +141,7 @@ private:
 
 private:
   CToolBar   m_ToolBar;
+
   CStatusBar m_StatusBar;
 
   bool     m_ProjectOpen;

@@ -223,7 +223,8 @@ CMainWindow::Create()
   DockControlBar(&m_ToolBar, AFX_IDW_DOCKBAR_TOP);
  
   // load the command bar state
-  LoadBarState(szBarState);
+  // this is commented out because it was crashing for me
+  //LoadBarState(szBarState);
 
   // enable drag and drop
   DragAcceptFiles(true);
