@@ -12,7 +12,7 @@ bool IsInvalidNumber(const char* text, bool& number_is_floating_point, bool& num
   int fdigits = 0;
 
   // count up how many digits there are in the string and if there's + or - prefix
-  for (int i = 0; i < strlen(text); i++) {
+  for (unsigned int i = 0; i < strlen(text); i++) {
     if (isdigit(text[i])) {
       point == 0 ? digits++ : fdigits++;
       whitespace_after = 0;

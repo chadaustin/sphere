@@ -13,6 +13,22 @@ CNumberDialog::CNumberDialog(const char* title, const char* text, int value, int
 
 , m_Min(min)
 , m_Max(max)
+, m_FloatingPointAllowed(false)
+{
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+CNumberDialog::CNumberDialog(const char* title, const char* text, double value, double min, double max)
+: CDialog(IDD_NUMBER)
+, m_Title(title)
+, m_Text(text)
+
+, m_Value(value)
+
+, m_Min(min)
+, m_Max(max)
+, m_FloatingPointAllowed(true)
 {
 }
 
@@ -20,6 +36,14 @@ CNumberDialog::CNumberDialog(const char* title, const char* text, int value, int
 
 int
 CNumberDialog::GetValue() const
+{
+  return (int) m_Value;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+double
+CNumberDialog::GetDoubleValue() const
 {
   return m_Value;
 }
@@ -59,17 +83,22 @@ CNumberDialog::OnOK()
 {
   CString text;
   m_NumberEdit->GetWindowText(text);
-  int value = atoi(text);
+  double value = atof(text);
 
   bool percentage, floating;
-  if (IsInvalidNumber(text, floating, percentage) || floating || percentage) {
+  if (IsInvalidNumber(text, floating, percentage) || (floating && !m_FloatingPointAllowed) || percentage) {
     MessageBox("Invalid number format", m_Title.c_str());
   }
   else
   if (value < m_Min || value > m_Max)
   {
     char string[80];
-    sprintf(string, "Value must be between %d and %d", m_Min, m_Max);
+    if (m_FloatingPointAllowed) {
+      sprintf(string, "Value must be between %.3f and %.3f", m_Min, m_Max);
+    }
+    else {
+      sprintf(string, "Value must be between %d and %d", (int) m_Min, (int) m_Max);
+    }
     MessageBox(string, m_Title.c_str());
   }
   else

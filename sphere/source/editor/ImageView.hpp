@@ -129,6 +129,7 @@ private:
   afx_msg void OnFilterBlur();
   afx_msg void OnFilterNoise();
   afx_msg void OnFilterAdjustBrightness();
+  afx_msg void OnFilterAdjustGamma();
   afx_msg void OnFilterNegativeImage(bool red, bool green, bool blue, bool alpha);
   afx_msg void OnFilterNegativeImageRGB();
   afx_msg void OnFilterNegativeImageAlpha();

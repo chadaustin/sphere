@@ -54,6 +54,7 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_BLUR,           OnFilterBlur)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_NOISE,          OnFilterNoise)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_ADJUST_BRIGHTNESS, OnFilterAdjustBrightness)
+  ON_COMMAND(ID_IMAGEVIEW_FILTER_ADJUST_GAMMA, OnFilterAdjustGamma)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE_RGB, OnFilterNegativeImageRGB)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE_ALPHA, OnFilterNegativeImageAlpha)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE_RGBA, OnFilterNegativeImageRGBA)
@@ -1979,6 +1980,34 @@ CImageView::OnFilterAdjustBrightness()
       Invalidate();
       m_Handler->IV_ImageChanged();
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnFilterAdjustGamma()
+{
+  CNumberDialog dialog("Adjustment Value", "Value", 0.0, -10.0, 10.0);
+
+  if (dialog.DoModal() == IDOK) {
+    double value = dialog.GetDoubleValue();
+
+    if (value != 1.0) {
+      AddUndoState();
+
+      int sx, sy, sw, sh;
+      GetSelectionArea(sx, sy, sw, sh);
+      RGBA* pixels = GetSelectionPixels();
+
+      AdjustGamma(sw, sh, pixels, value, value, value);
+      UpdateSelectionPixels(pixels, sx, sy, sw, sh);
+      if (pixels != m_Image.GetPixels()) delete[] pixels;
+
+      Invalidate();
+      m_Handler->IV_ImageChanged();
+    }
+
   }
 }
 

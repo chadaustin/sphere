@@ -556,6 +556,8 @@ BEGIN
 
             MENUITEM "&Adjust Brightness",          ID_IMAGEVIEW_FILTER_ADJUST_BRIGHTNESS
 
+            MENUITEM "Adjust &Gamma",               ID_IMAGEVIEW_FILTER_ADJUST_GAMMA
+
         END
         POPUP "&Replace"
         BEGIN
