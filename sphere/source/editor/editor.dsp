@@ -1014,6 +1014,14 @@ SOURCE=.\RotateDialog.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ScriptSortToolDialog.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ScriptSortToolDialog.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\SpritePropertiesDialog.cpp
 # End Source File
 # Begin Source File

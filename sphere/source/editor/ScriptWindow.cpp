@@ -14,6 +14,7 @@
 #include "resource.h"
 
 #include "MainWindow.hpp"
+#include "ScriptSortToolDialog.hpp"
 
 #include <afxdlgs.h>
 
@@ -570,7 +571,6 @@ CScriptWindow::CreateList(int type)
     ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"while (1)\n{\n  // ...\n}\n");
     ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"switch (1)\n{\n  case (1):\n    // ...\n  break;\n}\n");
     ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"function func_name()\n{\n  // ...\n}\n");
-    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"d\ne\nf\na\nb\nc\n");
   }
 
   if (m_ListType == 3) {
@@ -578,7 +578,6 @@ CScriptWindow::CreateList(int type)
   }
 
   if (m_ListType == 4) {
-    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"done sometime today...");
     CMainWindow* main_window = GetMainWindow();
     if (main_window) {
       for (unsigned int i = 0; i < main_window->m_ClipboardHistory.size(); i++) {
@@ -1582,6 +1581,11 @@ public:
 afx_msg void
 CScriptWindow::OnScriptToolsSort()
 {
+  CScriptSortToolDialog dialog;
+  if (dialog.DoModal() != IDOK) {
+    return;
+  }
+
   int selection_start = SendEditor(SCI_LINEFROMPOSITION, SendEditor(SCI_GETSELECTIONSTART));
   int selection_end   = SendEditor(SCI_LINEFROMPOSITION, SendEditor(SCI_GETSELECTIONEND));
 
@@ -1590,9 +1594,9 @@ CScriptWindow::OnScriptToolsSort()
     return;
   }
 
-  bool delete_duplicates = false;
-  bool sort_lines = true;
-  bool reverse_lines = false;
+  bool delete_duplicates = dialog.ShouldRemoveDuplicateLines();
+  bool sort_lines = dialog.ShouldSortLines();
+  bool reverse_lines = dialog.ShouldReverseLines();
 
   if (!delete_duplicates && !sort_lines && !reverse_lines) {
     GetStatusBar()->SetWindowText("No reason to sort...");
@@ -1678,7 +1682,7 @@ CScriptWindow::OnScriptToolsSort()
       if (lines[line_index]->data) {
 
         if (i > 0 && delete_duplicates) {
-          unsigned int last_index = sort_lines ? line_indexes[(reverse_lines ? (lines.size() - 1) - i : i) - 1] : (reverse_lines ? (lines.size() - 1) - i : i) - 1;
+          unsigned int last_index = sort_lines ? line_indexes[(reverse_lines ? (lines.size() - 1) - i + 1 : i - 1)] : (reverse_lines ? (lines.size() - 1) - i + 1 : i - 1);
 
           if (lines[line_index]->size == lines[last_index]->size) {
             if (memcmp(lines[line_index]->data,

@@ -114,6 +114,7 @@
 #define IDC_MAPTOOL_PASTEENTITY         267
 #define IDD_LIST                        268
 #define IDD_FILETYPES_REGISTER_PAGE     269
+#define IDD_SCRIPT_SORT                 270
 #define IDC_PROJECTNAME                 1000
 #define IDC_GAMETITLE                   1001
 #define IDC_BROWSE                      1003
@@ -251,6 +252,9 @@
 #define IDC_USE_ALPHA                   1218
 #define IDC_LIST                        1220
 #define IDC_OPENUNKNOWNFILETYPES        1221
+#define IDC_SORT_TOOL_REVERSELINES      1225
+#define IDC_SORT_TOOL_SORTLINES         1226
+#define IDC_SORT_TOOL_DELETEDUPLICATES  1227
 #define ID_FILE_IMPORT_BITMAPTORSS      12241
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40003
@@ -673,9 +677,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        270
+#define _APS_NEXT_RESOURCE_VALUE        271
 #define _APS_NEXT_COMMAND_VALUE         40795
-#define _APS_NEXT_CONTROL_VALUE         1225
+#define _APS_NEXT_CONTROL_VALUE         1228
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
