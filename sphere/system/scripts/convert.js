@@ -1,39 +1,39 @@
 function ScreenX(mapx)
 {
-	return mapx - (MapToScreenX(0, GetCameraX()) - GetScreenWidth() / 2);
+  return MapToScreenX(0, mapx);
 }
 
 function ScreenY(mapy)
 {
-	return mapy - (MapToScreenY(0, GetCameraY()) - GetScreenHeight() / 2);
+  return MapToScreenY(0, mapy);
 }
 
 function TopX()
 {
-	if (ScreenX(GetCameraX()) >= GetScreenWidth() / 2)
-	{
-		return -(ScreenX(GetCameraX()) - GetCameraX());
-	}
-	else
-		return 0;
+  if (ScreenX(GetCameraX()) >= GetScreenWidth() / 2)
+  {
+    return - (ScreenX(GetCameraX()) - GetCameraX());
+  }
+  else
+    return 0;
 }
 
 function TopY()
 {
-	if (ScreenY(GetCameraY()) >= GetScreenHeight() / 2)
-	{
-		return -(ScreenY(GetCameraY()) - GetCameraY());
-	}
-	else
-		return 0;
+  if (ScreenY(GetCameraY()) >= GetScreenHeight() / 2)
+  {
+    return - (ScreenY(GetCameraY()) - GetCameraY());
+  }
+  else
+    return 0;
 }
 
 function MapX(screenx)
 {
-	return screenx + TopX();
+  return TopX() + MapToScreenX(0, screenx);
 }
 
 function MapY(screeny)
 {
-	return screeny + TopY();
+  return TopY() + MapToScreenY(0, screeny);
 }
