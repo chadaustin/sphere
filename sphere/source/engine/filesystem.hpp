@@ -1,8 +1,4 @@
-#ifdef SPHERE_SDL
-
-  #include "sdl/sdl_filesystem.hpp"
-
-#elif _WIN32
+#ifdef WIN32
 
   #include "win32/win32_filesystem.hpp"
 

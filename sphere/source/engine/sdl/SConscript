@@ -6,7 +6,6 @@ COMPILER.SetupSDL(env)
 
 env.Append(CPPPATH = ['#/source/engine/sdl'], LIBPATH = ['#/source/engine/sdl'], LIBS = ['sdl'])
 
-
 env.Library('sdl', Split("""
     sdl_network.cpp
     sdl_time.cpp
