@@ -92,13 +92,6 @@ CFLICAnimation::Load(const char* filename, IFileSystem& fs)
   NextFrame   = FlicHeader.oframe1;
   SecondFrame = FlicHeader.oframe2;
 
-  // verify that NextFrame and SecondFrame are the same
-  if (NextFrame != SecondFrame) {
-    delete File;
-    File = 0;
-    return false;
-  }
-
   if (NextFrame == 0) {
     NextFrame = sizeof(FlicHeader);
     SecondFrame = NextFrame;
