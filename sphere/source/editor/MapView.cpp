@@ -8,7 +8,7 @@
 #include "../common/primitives.hpp"
 #include "../common/minmax.hpp"
 #include "resource.h"
-
+#include "../common/spriteset.hpp"
 
 static int s_MapViewID = 2000;
 static int s_MapAreaClipboardFormat;
@@ -1009,8 +1009,9 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
     dc.RestoreDC(-1);
   }
 
+#if 1
   // draw entities
-  for (int i = 0; i < m_Map->GetNumEntities(); i++)
+  for (int i = 0; i < m_Map->GetNumEntities(); ++i)
   {
     sEntity& entity = m_Map->GetEntity(i);
     if (tx == entity.x / tile_width &&
@@ -1029,6 +1030,86 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
       DrawIconEx(dc.m_hDC, rect.left, rect.top, icon, tw, th, 0, NULL, DI_NORMAL);
     }
   }
+#else
+  // draw entities
+  for (int i = 0; i < m_Map->GetNumEntities(); ++i)
+  {
+    sEntity& entity = m_Map->GetEntity(i);
+    if (tx == entity.x / tile_width &&
+        ty == entity.y / tile_height &&
+        m_Map->GetLayer(entity.layer).IsVisible())
+    {
+      HICON icon;
+      switch (entity.GetEntityType())
+      {
+        case sEntity::PERSON:  icon = AfxGetApp()->LoadIcon(IDI_ENTITY_PERSON); break;
+        case sEntity::TRIGGER: icon = AfxGetApp()->LoadIcon(IDI_ENTITY_TRIGGER); break;
+      }
+
+      int tw = m_Map->GetTileset().GetTileWidth()  * m_ZoomFactor;
+      int th = m_Map->GetTileset().GetTileHeight() * m_ZoomFactor;
+
+      switch (entity.GetEntityType()) {
+
+        case sEntity::PERSON: {
+          sSpriteset s;
+          sPersonEntity* person = (sPersonEntity*) &entity;
+          std::string path = "c:\\sphere\\games\\dizzy-test\\spritesets\\" + person->spriteset;
+
+          if (!s.Load(path.c_str()) || s.GetNumImages() <= 0) {
+            continue;
+          }
+          
+          s.RescaleFrames(tw / m_ZoomFactor, th / m_ZoomFactor);
+
+          const RGBA* src = s.GetImage(0).GetPixels();
+
+          // clear the DIB
+          memset(m_BlitTile->GetPixels(), 0,  m_ZoomFactor * m_ZoomFactor * tile_width * tile_height * 4);
+
+
+          BGRA* dest = (BGRA*)m_BlitTile->GetPixels();
+
+          int tile_width = s.GetFrameWidth();
+          int tile_height = s.GetFrameHeight();
+
+          int counter = 0;
+          for (int j=0; j<tile_height; j++)
+          {
+            for (int k=0; k<tile_width; k++)
+              for (int l=0; l<m_ZoomFactor; l++)
+              {
+                RGBA s = src[j * tile_width + k];
+                int alpha = src[j * tile_width + k].alpha;
+                dest[counter].red   = (alpha * s.red   + (255 - alpha) * dest[counter].red)   / 256;
+                dest[counter].green = (alpha * s.green + (255 - alpha) * dest[counter].green) / 256;
+                dest[counter].blue  = (alpha * s.blue  + (255 - alpha) * dest[counter].blue)  / 256;
+                counter++;
+              }
+
+            for (int k=1; k<m_ZoomFactor; k++)
+            {
+              memcpy(dest + counter, dest + (counter - tile_width * m_ZoomFactor), tile_width * m_ZoomFactor * sizeof(RGBA));
+              counter += tile_width * m_ZoomFactor;
+            }
+          }
+
+        }
+
+        // render the tile
+        dc.BitBlt(rect.left, rect.top, tile_width * m_ZoomFactor, tile_height * m_ZoomFactor,
+        CDC::FromHandle(m_BlitTile->GetDC()), 0, 0, SRCCOPY);
+
+        break;
+
+        case sEntity::TRIGGER:
+          DrawIconEx(dc.m_hDC, rect.left, rect.top, icon, tw, th, 0, NULL, DI_NORMAL);
+        break;
+      }
+    }
+  }
+
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -42,6 +42,7 @@ private:
   afx_msg void OnZoom4x();
   afx_msg void OnZoom8x();
   afx_msg void OnResize();
+  afx_msg void OnRescale();
   afx_msg void OnFillDelay();
   afx_msg void OnFrameProperties();
   afx_msg void OnExportAsImage();

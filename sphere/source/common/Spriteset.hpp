@@ -41,6 +41,7 @@ public:
   int  GetFrameWidth() const;
   int  GetFrameHeight() const;
   void ResizeFrames(int width, int height);
+  void RescaleFrames(int width, int height);
 
   void InsertDirection(int direction);
   void DeleteDirection(int direction);
@@ -66,8 +67,6 @@ public:
 
   void GetBase(int& x1, int& y1, int& x2, int& y2) const;
   void SetBase(int x1, int y1, int x2, int y2);  
-
-  void ReplaceIndexColorWithColor(int index, RGBA old_color, RGBA replacment_color);
 
 public:
   enum { NORTH, NORTHEAST, EAST, SOUTHEAST, SOUTH, SOUTHWEST, WEST, NORTHWEST, OTHER };

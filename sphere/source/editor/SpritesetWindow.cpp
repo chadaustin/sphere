@@ -27,6 +27,7 @@ BEGIN_MESSAGE_MAP(CSpritesetWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_SPRITESET_ZOOM_4X,         OnZoom4x)
   ON_COMMAND(ID_SPRITESET_ZOOM_8X,         OnZoom8x)
   ON_COMMAND(ID_SPRITESET_RESIZE,          OnResize)
+  ON_COMMAND(ID_SPRITESET_RESCALE,         OnRescale)
   ON_COMMAND(ID_SPRITESET_FILLDELAY,       OnFillDelay)
   ON_COMMAND(ID_SPRITESET_FRAMEPROPERTIES, OnFrameProperties)
   ON_COMMAND(ID_SPRITESET_EXPORTASIMAGE,   OnExportAsImage)
@@ -249,6 +250,19 @@ CSpritesetWindow::OnResize()
   CResizeDialog dialog("Resize Spriteset", m_Spriteset.GetFrameWidth(), m_Spriteset.GetFrameHeight());
   if (dialog.DoModal() == IDOK) {
     m_Spriteset.ResizeFrames(dialog.GetWidth(), dialog.GetHeight());
+    m_SpritesetView.SpritesetResized();
+    UpdateImageView();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetWindow::OnRescale()
+{
+  CResizeDialog dialog("Rescale Spriteset", m_Spriteset.GetFrameWidth(), m_Spriteset.GetFrameHeight());
+  if (dialog.DoModal() == IDOK) {
+    m_Spriteset.RescaleFrames(dialog.GetWidth(), dialog.GetHeight());
     m_SpritesetView.SpritesetResized();
     UpdateImageView();
   }
