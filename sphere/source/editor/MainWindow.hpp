@@ -106,6 +106,8 @@ private:
   afx_msg void OnHelpContents();
   afx_msg void OnHelpAbout();
 
+  afx_msg BOOL OnNeedText(UINT id, NMHDR* nmhdr, LRESULT* result);
+
   afx_msg void OnUpdateOpenLastProject(CCmdUI* cmdui);
   afx_msg void OnUpdateProjectCommand(CCmdUI* cmdui);
   afx_msg void OnUpdateSaveCommand(CCmdUI* cmdui);

@@ -125,6 +125,8 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_HELP_CONTENTS, OnHelpContents)
   ON_COMMAND(ID_HELP_ABOUT,    OnHelpAbout)
 
+  ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnNeedText)
+
   ON_UPDATE_COMMAND_UI(ID_FILE_OPENLASTPROJECT, OnUpdateOpenLastProject)
   ON_UPDATE_COMMAND_UI(ID_FILE_CLOSEPROJECT, OnUpdateProjectCommand)
 
@@ -179,7 +181,7 @@ CMainWindow::Create()
   m_ToolBar.CreateEx(
     this,
     TBSTYLE_FLAT,
-    WS_CHILD | WS_VISIBLE | CBRS_SIZE_DYNAMIC | CBRS_TOP | CBRS_GRIPPER | CBRS_FLYBY);
+    WS_CHILD | WS_VISIBLE | CBRS_SIZE_DYNAMIC | CBRS_TOP | CBRS_GRIPPER | CBRS_FLYBY | CBRS_TOOLTIPS);
   m_ToolBar.SetWindowText("Main");
   m_ToolBar.LoadToolBar(IDR_TOOLBAR);
   m_ToolBar.EnableDocking(CBRS_ALIGN_ANY);
@@ -187,9 +189,9 @@ CMainWindow::Create()
   // status bar indicators
   static const UINT indicators[] =
   {
-	  ID_SEPARATOR,           // status line indicator
-	  ID_INDICATOR_CAPS,
-	  ID_INDICATOR_NUM,
+    ID_SEPARATOR,           // status line indicator
+    ID_INDICATOR_CAPS,
+    ID_INDICATOR_NUM,
   };
 
   // create the statusbar
@@ -1454,6 +1456,27 @@ CMainWindow::OnHelpAbout()
     mng_version_text(), MNG_VERSION_TEXT);
 
   MessageBox(message, "About");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg BOOL
+CMainWindow::OnNeedText(UINT /*id*/, NMHDR* nmhdr, LRESULT* result)
+{
+  TOOLTIPTEXT* ttt = (TOOLTIPTEXT*)nmhdr;
+  UINT id = nmhdr->idFrom;
+  if (ttt->uFlags & TTF_IDISHWND) {
+    id = ::GetDlgCtrlID((HWND)id);
+  }
+
+  switch (id) {
+  case ID_FILE_NEW_PROJECT:  ttt->lpszText = "New Sphere Project"; break;
+  case ID_PROJECT_RUNSPHERE: ttt->lpszText = "Run Sphere";         break;
+  default:                   ttt->lpszText = "";                   break;
+  }
+
+  *result = 0;
+  return TRUE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
