@@ -484,7 +484,7 @@ CMapEngine::GetTileImage(int tile, IMAGE& image) {
     return false;
   }
 
-  if (tile < 0 || tile > m_Map.GetMap().GetTileset().GetNumTiles()) {
+  if (tile < 0 || tile >= m_Map.GetMap().GetTileset().GetNumTiles()) {
     m_ErrorMessage = "Tile index does not exist";
     return false;
   }
@@ -570,7 +570,7 @@ CMapEngine::SetTileDelay(int tile, int delay)
     return false;
   }
 
-  if (delay < 1) {
+  if (delay < 0) {
     m_ErrorMessage = "Delay must be greater than zero";
     return false;
   }
@@ -589,7 +589,9 @@ CMapEngine::GetNextAnimatedTile(int& tile)
     return false;
   }
 
-  tile = m_Map.GetMap().GetTileset().GetTile(tile).GetNextTile();
+  if (m_Map.GetMap().GetTileset().GetTile(tile).GetDelay() > 0)
+    tile = m_Map.GetMap().GetTileset().GetTile(tile).GetNextTile();
+
   return true;
 }
 
