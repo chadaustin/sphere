@@ -15,6 +15,7 @@ CResizeDialog::CResizeDialog(const char* caption, int default_width, int default
 , m_MaxWidth(65535)
 , m_MinHeight(0)
 , m_MaxHeight(65536)
+, m_AllowPercentages(true)
 {
 }
 
@@ -27,6 +28,14 @@ CResizeDialog::SetRange(int min_width, int max_width, int min_height, int max_he
   m_MaxWidth  = max_width;
   m_MinHeight = min_height;
   m_MaxHeight = max_height;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CResizeDialog::AllowPercentages(bool allow)
+{
+  m_AllowPercentages = allow;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -74,7 +83,9 @@ CResizeDialog::ValidateValues(std::string& error)
   bool floating = false;
 
   if (IsInvalidNumber(width_text, floating, width_percentage) || floating
-   || IsInvalidNumber(height_text, floating, height_percentage) || floating) {
+   || IsInvalidNumber(height_text, floating, height_percentage) || floating
+   || (!m_AllowPercentages && width_percentage)
+   || (!m_AllowPercentages && height_percentage)) {
     error = "Invalid number format";
     return false;
   }

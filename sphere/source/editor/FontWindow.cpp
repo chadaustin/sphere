@@ -327,7 +327,7 @@ CFontWindow::OnFontAdjustBorders()
 
   if (1) {
     CListDialog list_dialog;
-    list_dialog.SetCaption("Which character do you want to adjust the borders of?");
+    list_dialog.SetCaption("Which character?");
     list_dialog.AddItem("This character");
     list_dialog.AddItem("All characters");
 
@@ -419,6 +419,7 @@ CFontWindow::OnFontResizeAll()
 
   CResizeDialog dialog("Resize All Font Characters", max_x, max_y);
 	dialog.SetRange(1, 4096, 1, 4096);
+  dialog.AllowPercentages(false);
 
   if (dialog.DoModal() == IDOK) {
 

@@ -12,6 +12,7 @@ public:
   CResizeDialog(const char* caption, int default_width, int default_height);
 
   void SetRange(int min_width, int max_width, int min_height, int max_height);
+  void AllowPercentages(bool allow);
 
   int GetWidth() const;
   int GetHeight() const;
@@ -29,6 +30,8 @@ private:
   int m_MaxWidth;
   int m_MinHeight;
   int m_MaxHeight;
+
+  bool m_AllowPercentages;
 
   bool ValidateValues(std::string& error);
 };

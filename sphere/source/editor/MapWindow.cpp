@@ -581,6 +581,7 @@ CMapWindow::OnResizeAllLayers()
   // show the dialog
   CResizeDialog dialog("Resize All Layers", max_layer_width, max_layer_height);
 	dialog.SetRange(1, 4906, 1, 4906);
+  dialog.AllowPercentages(false);
 
   if (dialog.DoModal() == IDOK) {
 
