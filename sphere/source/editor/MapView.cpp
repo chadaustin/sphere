@@ -895,16 +895,24 @@ CMapView::PasteMapUnderPoint(CPoint point)
       CImage32 image(width, height, pixels);
       delete[] pixels;
 
+      if (image.GetWidth() != width || image.GetHeight() != height)
+        return;
+
       if (tTileset.BuildFromImage(image, m_Map->GetTileset().GetTileWidth(), m_Map->GetTileset().GetTileHeight(), true))
       {
         sLayer tLayer;
         int layer_width = width / m_Map->GetTileset().GetTileWidth();
         int layer_height = height / m_Map->GetTileset().GetTileHeight();
+        // layer_width / layer_height are sometimes calculated wrong
+        // so the resulting paste is all messed up
 
         tLayer.Resize(layer_width, layer_height);
+        if (tLayer.GetWidth() != layer_width || tLayer.GetHeight() != layer_height)
+          return;
+
         int i = 0;
-        for (int y=0; y<layer_height; y++)
-          for (int x=0; x<layer_width; x++)
+        for (int y = 0; y < layer_height; y++)
+          for (int x = 0; x < layer_width; x++)
             tLayer.SetTile(x, y, i++);
 
         tMap.InsertLayer(0, tLayer);
@@ -2138,7 +2146,8 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
 
       case tool_ZoneAdd:
       case tool_ZoneEdit: {
-        if(m_MoveIndex != -1) {
+        //if(m_MoveIndex != -1)
+        {
           int tile_width  = m_Map->GetTileset().GetTileWidth();
           int tile_height = m_Map->GetTileset().GetTileHeight();
           m_PreviewOldX = m_PreviewX;
@@ -2306,7 +2315,8 @@ CMapView::OnLButtonUp(UINT flags, CPoint point)
     } break;
 
     case tool_ZoneAdd: {
-      if(m_MoveIndex != -1) {
+      //if(m_MoveIndex != -1)
+      {
         int x = point.x / m_ZoomFactor + m_CurrentX * tile_width;
         int y = point.y / m_ZoomFactor + m_CurrentY * tile_height;
         sMap::sZone zone;
@@ -2338,7 +2348,8 @@ CMapView::OnLButtonUp(UINT flags, CPoint point)
     } break;
 
     case tool_ZoneEdit: {
-      if(m_MoveIndex != -1) {
+      if(m_MoveIndex != -1)
+      {
         int x = point.x / m_ZoomFactor + m_CurrentX * tile_width;
         int y = point.y / m_ZoomFactor + m_CurrentY * tile_height;
         m_PreviewLineOn = 0;
@@ -2355,7 +2366,8 @@ CMapView::OnLButtonUp(UINT flags, CPoint point)
     } break;
 
     case tool_ZoneMove: {
-      if(m_MoveIndex != -1) {
+      if(m_MoveIndex != -1)
+      {
         int x = point.x / m_ZoomFactor + m_CurrentX * tile_width;
         int y = point.y / m_ZoomFactor + m_CurrentY * tile_height;
         m_PreviewLineOn = 0;
