@@ -971,9 +971,10 @@ EXPORT(void) DrawPoint(int x, int y, RGBA color)
 EXPORT(void) DrawLine(int x[2], int y[2], RGBA color)
 {
   glBegin(GL_LINES);
-  glColor4ubv((GLubyte*)&color);
-  glVertex2f(sphere_x_to_opengl_x(x[0]), sphere_y_to_opengl_y(y[0]));
-  glVertex2f(sphere_x_to_opengl_x(x[1]), sphere_y_to_opengl_y(y[1]));
+    //glColor4ubv((GLubyte*)&color);
+    glColor4ub(color.red, color.green, color.blue, color.alpha);
+    glVertex2f(sphere_x_to_opengl_x(x[0]), sphere_y_to_opengl_y(y[0]));
+    glVertex2f(sphere_x_to_opengl_x(x[1]), sphere_y_to_opengl_y(y[1]));
   glEnd();
 }
 
@@ -982,10 +983,12 @@ EXPORT(void) DrawLine(int x[2], int y[2], RGBA color)
 EXPORT(void) DrawGradientLine(int x[2], int y[2], RGBA colors[2])
 {
   glBegin(GL_LINES);
-  glColor4ubv((GLubyte*)(colors + 0));
-  glVertex2f(sphere_x_to_opengl_x(x[0]), sphere_y_to_opengl_y(y[1]));
-  glColor4ubv((GLubyte*)(colors + 1));
-  glVertex2f(sphere_x_to_opengl_x(x[1]), sphere_y_to_opengl_y(y[1]));
+    //glColor4ubv((GLubyte*)(colors + 0));
+    glColor4ub(colors[0].red, colors[0].green, colors[0].blue, colors[0].alpha);
+    glVertex2f(sphere_x_to_opengl_x(x[0]), sphere_y_to_opengl_y(y[0]));
+    //glColor4ubv((GLubyte*)(colors + 1));
+    glColor4ub(colors[1].red, colors[1].green, colors[1].blue, colors[1].alpha);
+    glVertex2f(sphere_x_to_opengl_x(x[1]), sphere_y_to_opengl_y(y[1]));
   glEnd();
 }
 
