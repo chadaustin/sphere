@@ -568,6 +568,7 @@ CScriptWindow::CreateList(int type)
     ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"while (1)\n{\n  // ...\n}\n");
     ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"switch (1)\n{\n  case (1):\n    // ...\n  break;\n}\n");
     ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"function func_name()\n{\n  // ...\n}\n");
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"d\ne\nf\na\nb\nc\n");
   }
 
   if (m_ListType == 3) {
@@ -1537,35 +1538,61 @@ CScriptWindow::SaveDocument(const char* path)
 #include <algorithm>
 #include "../common/minmax.hpp"
 
-  struct Line {
-    char* data;
-    unsigned int size;
-  };
+class ScintillaLine {
+public:
+  char* data;
+  unsigned int size;
+};
+
+class ScintillaLineComparer : public std::binary_function<unsigned int, unsigned int, bool> 
+{
+private:
+  const std::vector<ScintillaLine*>	&m_lines;
+
+public:
+  ScintillaLineComparer(const std::vector<ScintillaLine*>& lines) : m_lines(lines) { }
+
+  bool operator()(unsigned int a, unsigned int b) const
+  {
+    if (a >= m_lines.size() || b >= m_lines.size()) {
+      char string[1000];
+      sprintf (string, "failed sort 5... (%d %d) (%d %d)", (int)a, (int)b, a, b);
+      GetStatusBar()->SetWindowText(string);
+      return false;
+    }
+
+    for (int i = 0; i < m_lines[a]->size && i < m_lines[b]->size; i++) {
+      if (m_lines[a]->data[i] < m_lines[b]->data[i]) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+};
 
 afx_msg void
 CScriptWindow::OnScriptToolsSort()
 {
-  struct Local {
-    static int compare(const struct Line* a, const struct Line* b) {
-      return (a->data != 0 && b->data != NULL) ? memcmp(a->data, b->data, std::min(a->size, b->size)) : 0;
-    }
-  };
-
   int selection_start = SendEditor(SCI_LINEFROMPOSITION, SendEditor(SCI_GETSELECTIONSTART));
   int selection_end   = SendEditor(SCI_LINEFROMPOSITION, SendEditor(SCI_GETSELECTIONEND));
 
-  std::vector<struct Line*> lines;
+  std::vector<ScintillaLine*> lines;
+
+  GetStatusBar()->SetWindowText("Retrieving lines for sorting...");
 
   for (unsigned int line_number = selection_start; line_number <= selection_end; line_number++) 
   {
     unsigned int line_index = lines.size();
-    struct Line* line_ptr = new struct Line;
-    if (!line_ptr)
+    ScintillaLine* line_ptr = new ScintillaLine;
+    if (!line_ptr) {
       continue;
+    }
 
     lines.push_back(line_ptr);
     if (line_index + 1 != lines.size()) {
       delete line_ptr;
+      line_ptr = NULL;
       continue;
     }
 
@@ -1573,25 +1600,60 @@ CScriptWindow::OnScriptToolsSort()
     lines[line_index]->size = 0;
 
     int line_length = SendEditor(SCI_LINELENGTH, line_number);
-    if (line_length > 0) {
+    if (line_length >= 0) {
       lines[line_index]->data = new char[line_length + 1];
       if (lines[line_index]->data != NULL) {
         lines[line_index]->size = line_length;
         SendEditor(SCI_GETLINE, line_number, (LRESULT)lines[line_index]->data);
         lines[line_index]->data[line_length] = '\0';
+      } else {
+        GetStatusBar()->SetWindowText("fail error 2...");
+        return;
+      }
+    }
+    else {
+      GetStatusBar()->SetWindowText("fail error 1...");
+      return;
+    }
+  }
+
+  GetStatusBar()->SetWindowText("Removing old lines...");
+
+  // remove the old selection
+  SendEditor(SCI_SETTARGETSTART, SendEditor(SCI_POSITIONFROMLINE, selection_start));
+  SendEditor(SCI_SETTARGETEND,   SendEditor(SCI_POSITIONFROMLINE, selection_end));
+  SendEditor(SCI_REPLACETARGET, 0, (LRESULT) "");
+
+  std::vector<unsigned int> line_indexes;
+  for (unsigned int i = 0; i < lines.size(); i++) {
+    line_indexes.push_back(i);
+  }
+
+  if (0) {
+    SendEditor(SCI_ADDTEXT, strlen("Before sort...\n"), (LPARAM)"Before sort...\n");
+    for (unsigned int i = 0; i < lines.size() && i < line_indexes.size(); i++) {
+      unsigned int line_index = line_indexes[i];
+      if (lines[line_index]->data) {
+        SendEditor(SCI_ADDTEXT, lines[line_index]->size, (LPARAM)lines[line_index]->data);
       }
     }
   }
 
-  std::sort(lines.begin(), lines.end(), Local::compare);
+  GetStatusBar()->SetWindowText("Sorting lines...");
 
-  SendEditor(SCI_REPLACESEL, 0, (LRESULT)"");
+  std::sort(line_indexes.begin(), line_indexes.end(), ScintillaLineComparer(lines));
 
-  for (unsigned int i = 0; i < lines.size(); i++) {
-    if (lines[i]->data) {
-      SendEditor(SCI_ADDTEXT, lines[i]->size, (LPARAM)lines[i]->data);
+  if (1) {
+    // SendEditor(SCI_ADDTEXT, strlen("after sort...\n"), (LPARAM)"after sort...\n");
+    for (unsigned int i = 0; i < lines.size() && i < line_indexes.size(); i++) {
+      unsigned int line_index = line_indexes[i];
+      if (lines[line_index]->data) {
+        SendEditor(SCI_ADDTEXT, lines[line_index]->size, (LPARAM)lines[line_index]->data);
+      }
     }
   }
+
+  GetStatusBar()->SetWindowText("Lines sorted...");
 
   for (unsigned int i = 0; i < lines.size(); i++) {
     if (lines[i]->data) {
@@ -1605,6 +1667,8 @@ CScriptWindow::OnScriptToolsSort()
   }
 
   lines.clear();
+
+  GetStatusBar()->SetWindowText("");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
