@@ -1,15 +1,20 @@
-function GetString(x, y, font)
+function GetString(x, y, font, max_chars)
 {
   var background = GrabImage(0, 0, GetScreenWidth(), GetScreenHeight());
   
   var str = "";
   var cursor_position = 0;
 
+  // No max given, default to 256
+  if (typeof(max_chars) != "number") {
+    max_chars = 256;
+  }
+
   while (true) {
     
     background.blit(0, 0);
     font.drawText(x, y, str);
-    font.drawText(x + font.getStringWidth(str.slice(0, cursor_position), cursor_position), y, "|");
+    font.drawText(x + font.getStringWidth(str.slice(0, cursor_position), cursor_position), y, (Math.sin(GetTime()>>8) > 0) ? "|" : " ");
 
     FlipScreen();
     
@@ -33,6 +38,15 @@ function GetString(x, y, font)
           break;
         }
 
+        // delete
+        case KEY_DELETE : {
+          if (str != "") {
+           str = str.slice(0, cursor_position ) + str.slice(cursor_position +1 );
+          }
+
+          break;
+        }
+
         case KEY_LEFT: {
            if (cursor_position > 0)
              cursor_position -= 1;
@@ -44,10 +58,20 @@ function GetString(x, y, font)
             cursor_position += 1;
           break;
         }
+
+        case KEY_HOME: {
+          cursor_position = 0;
+          break;
+        }
+
+        case KEY_END: {
+          cursor_position = str.length;
+          break;
+        }        
         
         default: {
           var shift = IsKeyPressed(KEY_SHIFT);
-          if (GetKeyString(key, shift) != "") {
+          if (GetKeyString(key, shift) != "" && (str.length < max_chars)) {
             str = str.slice(0, cursor_position) + GetKeyString(key, shift) + str.slice(cursor_position);
             cursor_position += 1;
           }
