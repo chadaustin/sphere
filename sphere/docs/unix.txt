@@ -1,3 +1,8 @@
+This document is way out of date.  Whoever updates the Linux port
+should update this too.
+
+
+
 Sphere for UNIX
 
 Requirements:
