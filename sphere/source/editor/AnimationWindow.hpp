@@ -21,6 +21,9 @@ private:
   afx_msg void OnPaint();
   afx_msg void OnTimer(UINT event);
 
+  afx_msg void OnPlay();
+  afx_msg void OnStop();
+
 private:
   IAnimation*  m_Animation;
   CDIBSection* m_BlitFrame;

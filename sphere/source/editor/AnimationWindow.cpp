@@ -13,6 +13,9 @@ BEGIN_MESSAGE_MAP(CAnimationWindow, CDocumentWindow)
   ON_WM_PAINT()
   ON_WM_TIMER()
 
+  ON_COMMAND(ID_ANIMATION_PLAY, OnPlay)
+  ON_COMMAND(ID_ANIMATION_STOP, OnStop)
+
 END_MESSAGE_MAP()
 
 
@@ -35,8 +38,8 @@ CAnimationWindow::CAnimationWindow(const char* animation)
 
   Create(AfxRegisterWndClass(0, NULL, NULL, AfxGetApp()->LoadIcon(IDI_ANIMATION)));
 
-  m_Delay = m_Animation->GetDelay();
-  m_Timer = SetTimer(ANIMATION_TIMER, m_Delay, NULL);
+  //m_Delay = m_Animation->GetDelay();
+  //m_Timer = SetTimer(ANIMATION_TIMER, m_Delay, NULL);
 
   return;
 }
@@ -112,6 +115,24 @@ CAnimationWindow::OnTimer(UINT event)
   }
 
   Invalidate();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CAnimationWindow::OnPlay()
+{
+  m_Delay = m_Animation->GetDelay();
+  KillTimer(m_Timer);
+  m_Timer = SetTimer(ANIMATION_TIMER, m_Delay, NULL);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CAnimationWindow::OnStop()
+{
+  KillTimer(m_Timer);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
