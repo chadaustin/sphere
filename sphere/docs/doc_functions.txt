@@ -285,12 +285,20 @@ log_object.endBlock()
 
     GetNumLayers()
       - get number of layers on map
+      - in the following functions, layer 0 is the bottommost layer.
+      - layer 1 is the next one up, etc.
 
     GetLayerWidth(layer)
       - get width of 'layer'
 
     GetLayerHeight(layer)
       - get height of 'layer'
+
+    IsLayerVisible(layer)
+      - returns true if the layer is visible
+
+    SetLayerVisible(layer, visible)
+      - shows 'layer' if visible == true, and hides it if visible == false
 
     GetNumTiles()
       - return number of tiles in map
