@@ -4,6 +4,18 @@ EvaluateScript("menu.js");
 EvaluateSystemScript("colors.js");
 
 
+var sound = LoadSound("intro.wav");
+var image = LoadSurface("intro.jpeg");
+image.rescale(GetScreenWidth(), GetScreenHeight());
+image = image.createImage();
+
+var font         = LoadFont("base.rfn");
+var window_style = LoadWindowStyle("base.rws");
+var arrow        = GetSystemArrow();
+var up_arrow     = GetSystemUpArrow();
+var down_arrow   = GetSystemDownArrow();
+  
+
 function game()
 {
   intro();
@@ -13,11 +25,6 @@ function game()
 
 function intro()
 {
-  var image = LoadSurface("intro.jpeg");
-  var sound = LoadSound("intro.wav");
-  image.rescale(GetScreenWidth(), GetScreenHeight());
-  image = image.createImage();
-
   sound.play(false);
   
   image.blit(0, 0);
@@ -30,9 +37,7 @@ function intro()
   GetKey();
   
   image.blit(0, 0);
-  ApplyColorMask(Black);  // FadeOut() leaves the backbuffer in place
-  
-  sound.stop();
+  ApplyColorMask(Black);  // FadeOut() leaves the backbuffer in place  
 }
 
 
@@ -42,17 +47,7 @@ function main_menu()
   while (AreKeysLeft()){
 	GetKey();
   }
-  var image = LoadSurface("intro.jpeg");
-  var sound = LoadSound("intro.wav");
-  image.rescale(GetScreenWidth(), GetScreenHeight());
-  image = image.createImage();
-  
-  var font         = LoadFont("base.rfn");
-  var window_style = LoadWindowStyle("base.rws");
-  var arrow        = GetSystemArrow();
-  var up_arrow     = GetSystemUpArrow();
-  var down_arrow   = GetSystemDownArrow();
-  
+
   // load the game list
   var game_list = GetGameList();
   if (game_list.length == 0) {
@@ -79,7 +74,10 @@ function main_menu()
     image.blit(0, 0);
     font.drawText(9, GetScreenHeight()-14, "Sphere " + GetVersionString());
     font.setColorMask(White);
-    font.drawText(GetScreenWidth()-9-font.getStringWidth("Chad Austin (c) 1997-2003"), GetScreenHeight()-14, "Chad Austin (c) 1997-2001");
+    var str = "Chad Austin (c) 1997-2003";
+    font.drawText(GetScreenWidth() - 9 - font.getStringWidth(str),
+                  GetScreenHeight() - 14,
+                  str);
     menu.execute(16, 16, GetScreenWidth() - 32, GetScreenHeight() - 32);
   }
   
