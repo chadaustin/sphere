@@ -136,7 +136,7 @@ CTilePropertiesDialog::OnEditObstructions()
   if (!m_Tiles)
     return;
 
-  CTileObstructionDialog dialog(m_Tiles + m_Tile);
+  CTileObstructionDialog dialog(m_Tileset, m_Tiles, m_Tile);
   dialog.DoModal();
 }
 

@@ -32,6 +32,9 @@ BEGIN_MESSAGE_MAP(CTileObstructionDialog, CDialog)
   ON_COMMAND(ID_OBSTRUCTIONPRESETS_CUSTOM7,  OnPresetCustom)
   ON_COMMAND(ID_OBSTRUCTIONPRESETS_CUSTOM8,  OnPresetCustom)
 
+  ON_COMMAND(IDC_NEXT, OnNext)
+  ON_COMMAND(IDC_PREVIOUS, OnPrevious)
+
 #if 0
   ON_COMMAND(ID_OBSTRUCTIONPRESETS_SAVE,        OnFileSave)
 #endif
@@ -41,11 +44,18 @@ END_MESSAGE_MAP()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-CTileObstructionDialog::CTileObstructionDialog(sTile* tile)
+CTileObstructionDialog::CTileObstructionDialog(sTileset* tileset, sTile* tiles, int tile_index)
 : CDialog(IDD_TILE_OBSTRUCTION_DIALOG)
-, m_tile(tile)
+, m_tileset(tileset)
+, m_tiles(tiles)
+, m_current_tile(tile_index)
 {
-  m_edit_tile = *tile;
+  m_edit_tile = m_tiles[m_current_tile];
+  m_obstruction_maps.resize(tileset->GetNumTiles());
+
+  for (unsigned int i = 0; i < m_obstruction_maps.size(); i++) {
+    m_obstruction_maps[i] = tiles[i].GetObstructionMap();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,8 +77,12 @@ CTileObstructionDialog::OnInitDialog()
 void
 CTileObstructionDialog::OnOK()
 {
-  *m_tile = m_edit_tile;
-  CDialog::OnOK();
+  for (int i = 0; i < m_obstruction_maps.size(); i++) {
+    m_tiles[i].GetObstructionMap() = m_obstruction_maps[i];
+  }
+
+  if (StoreTile())
+    CDialog::OnOK();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -95,6 +109,14 @@ CTileObstructionDialog::OnSize(UINT type, int cx, int cy)
   if (GetDlgItem(IDC_PRESETS)) {
     GetDlgItem(IDC_PRESETS)->MoveWindow(cx - button_width, button_height * 3, button_width, button_height);
   }
+
+  if (GetDlgItem(IDC_NEXT)) {
+    GetDlgItem(IDC_NEXT)->MoveWindow(cx - button_width, button_height * 5, button_width, button_height);
+  }
+
+  if (GetDlgItem(IDC_PREVIOUS)) {
+    GetDlgItem(IDC_PREVIOUS)->MoveWindow(cx - button_width, button_height * 6, button_width, button_height);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -120,6 +142,44 @@ CTileObstructionDialog::OnPresets()
     m_hWnd,
     NULL
   );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CTileObstructionDialog::StoreTile()
+{
+  m_obstruction_maps[m_current_tile] = m_edit_tile.GetObstructionMap();
+  //*m_tile = m_edit_tile;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CTileObstructionDialog::OnNext() {
+  if (StoreTile()) {
+    m_current_tile += 1;
+    if (m_tileset->GetNumTiles() <= m_current_tile)
+      m_current_tile = 0;
+    m_edit_tile = m_tiles[m_current_tile];
+    m_edit_tile.GetObstructionMap() = m_obstruction_maps[m_current_tile];
+    Invalidate();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CTileObstructionDialog::OnPrevious() {
+  if (StoreTile()) {
+    m_current_tile -= 1;
+    if (m_current_tile < 0)
+      m_current_tile = m_tileset->GetNumTiles() - 1;
+    m_edit_tile = m_tiles[m_current_tile];
+    m_edit_tile.GetObstructionMap() = m_obstruction_maps[m_current_tile];
+    Invalidate();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -187,8 +247,8 @@ CTileObstructionDialog::OnPresetUnblocked()
 afx_msg void
 CTileObstructionDialog::OnPresetBlocked()
 {
-  int w = m_tile->GetWidth()  - 1;
-  int h = m_tile->GetHeight() - 1;
+  int w = m_edit_tile.GetWidth()  - 1;
+  int h = m_edit_tile.GetHeight() - 1;
 
   sObstructionMap s;
   s.AddSegment(0, 0, w, 0);
@@ -205,8 +265,8 @@ CTileObstructionDialog::OnPresetBlocked()
 afx_msg void
 CTileObstructionDialog::OnPresetUpperRight()
 {
-  int w = m_tile->GetWidth()  - 1;
-  int h = m_tile->GetHeight() - 1;
+  int w = m_edit_tile.GetWidth()  - 1;
+  int h = m_edit_tile.GetHeight() - 1;
 
   sObstructionMap s;
   s.AddSegment(0, 0, w, 0);
@@ -222,8 +282,8 @@ CTileObstructionDialog::OnPresetUpperRight()
 afx_msg void
 CTileObstructionDialog::OnPresetLowerRight()
 {
-  int w = m_tile->GetWidth()  - 1;
-  int h = m_tile->GetHeight() - 1;
+  int w = m_edit_tile.GetWidth()  - 1;
+  int h = m_edit_tile.GetHeight() - 1;
 
   sObstructionMap s;
   s.AddSegment(w, 0, w, h);
@@ -239,8 +299,8 @@ CTileObstructionDialog::OnPresetLowerRight()
 afx_msg void
 CTileObstructionDialog::OnPresetLowerLeft()
 {
-  int w = m_tile->GetWidth()  - 1;
-  int h = m_tile->GetHeight() - 1;
+  int w = m_edit_tile.GetWidth()  - 1;
+  int h = m_edit_tile.GetHeight() - 1;
 
   sObstructionMap s;
   s.AddSegment(0, 0, 0, h);
@@ -256,8 +316,8 @@ CTileObstructionDialog::OnPresetLowerLeft()
 afx_msg void
 CTileObstructionDialog::OnPresetUpperLeft()
 {
-  int w = m_tile->GetWidth()  - 1;
-  int h = m_tile->GetHeight() - 1;
+  int w = m_edit_tile.GetWidth()  - 1;
+  int h = m_edit_tile.GetHeight() - 1;
 
   sObstructionMap s;
   s.AddSegment(0, 0, w, 0);
@@ -273,8 +333,8 @@ CTileObstructionDialog::OnPresetUpperLeft()
 afx_msg void
 CTileObstructionDialog::OnPresetTopHalf()
 {
-  int w = m_tile->GetWidth()  - 1;
-  int h = (m_tile->GetHeight() / 2);
+  int w = m_edit_tile.GetWidth()  - 1;
+  int h = (m_edit_tile.GetHeight() / 2);
 
   sObstructionMap s;
   s.AddSegment(0, 0, w, 0);
@@ -291,9 +351,9 @@ CTileObstructionDialog::OnPresetTopHalf()
 afx_msg void
 CTileObstructionDialog::OnPresetBottomHalf()
 {
-  int w = m_tile->GetWidth()  - 1;
-  int hh = (m_tile->GetHeight() / 2);
-  int fh = m_tile->GetHeight() - 1;
+  int w = m_edit_tile.GetWidth()  - 1;
+  int hh = (m_edit_tile.GetHeight() / 2);
+  int fh = m_edit_tile.GetHeight() - 1;
 
   sObstructionMap s;
   s.AddSegment(0, hh, w, hh);
@@ -310,8 +370,8 @@ CTileObstructionDialog::OnPresetBottomHalf()
 afx_msg void
 CTileObstructionDialog::OnPresetLeftHalf()
 {
-  int w = (m_tile->GetWidth() / 2) - 1;
-  int h = m_tile->GetHeight() - 1;
+  int w = (m_edit_tile.GetWidth() / 2) - 1;
+  int h = m_edit_tile.GetHeight() - 1;
 
   sObstructionMap s;
   s.AddSegment(0, 0, w, 0);
@@ -328,9 +388,9 @@ CTileObstructionDialog::OnPresetLeftHalf()
 afx_msg void
 CTileObstructionDialog::OnPresetRightHalf()
 {
-  int hw = (m_tile->GetWidth() / 2);
-  int fw = m_tile->GetWidth() - 1;
-  int h = m_tile->GetHeight() - 1;
+  int hw = (m_edit_tile.GetWidth() / 2);
+  int fw = m_edit_tile.GetWidth() - 1;
+  int h = m_edit_tile.GetHeight() - 1;
 
   sObstructionMap s;
   s.AddSegment(hw, 0, fw, 0);
@@ -347,8 +407,8 @@ CTileObstructionDialog::OnPresetRightHalf()
 afx_msg void
 CTileObstructionDialog::OnPresetCustom()
 {
-  int w = m_tile->GetWidth()  - 1;
-  int h = m_tile->GetHeight() - 1;
+  int w = m_edit_tile.GetWidth()  - 1;
+  int h = m_edit_tile.GetHeight() - 1;
 
   sObstructionMap s;
 

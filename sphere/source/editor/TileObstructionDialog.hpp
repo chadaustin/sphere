@@ -4,12 +4,12 @@
 
 #include <afxwin.h>
 #include "TileObstructionView.hpp"
-#include "../common/Tile.hpp"
+#include "../common/Tileset.hpp"
 
 class CTileObstructionDialog : public CDialog
 {
 public:
-  CTileObstructionDialog(sTile* tile);
+  CTileObstructionDialog(sTileset* tileset, sTile* tiles, int tile_index);
 
 private:
   virtual BOOL OnInitDialog();
@@ -33,7 +33,15 @@ private:
   afx_msg void OnFileSave();
 
 private:
-  sTile* m_tile;
+  bool StoreTile();
+  afx_msg void OnNext();
+  afx_msg void OnPrevious();
+
+private:
+  int m_current_tile;
+  sTileset* m_tileset;
+  sTile* m_tiles;
+  std::vector<sObstructionMap> m_obstruction_maps;
   sTile m_edit_tile;  // the tile you edit
 
   CTileObstructionView m_obstruction_view;
