@@ -15,6 +15,7 @@
     and person scripts)
   - calling Exit() in a bound script or person script or trigger
     (etc.) no longer gives an error
+  - added Eric Duvic's circles.js system script
 
 2003.02.05
   - fixed GrabImage crash bug in standard16 and interpolate16

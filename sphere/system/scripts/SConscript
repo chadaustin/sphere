@@ -5,6 +5,7 @@ Import('base_env BUILD_DIR')
 base_env.Install(os.path.join(BUILD_DIR, 'system/scripts'), Split("""
     animation.js
     audio.js
+    circles.js
     clock.js
     colors.js
     colorspace.js
