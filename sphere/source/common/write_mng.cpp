@@ -650,9 +650,9 @@ mng_retcode mng_putpngimage(mng_handle hMNG, const RGBA* pixels, const int width
 
 static mng_retcode
 ____SaveMNGAnimationFromImages____(mng_handle hMNG,
-                           GetImage get_image,
-                           GetDelay get_delay,
-                           ContinueProcessingImages should_continue,
+                           WriteMNG_GetImage get_image,
+                           WriteMNG_GetDelay get_delay,
+                           WriteMNG_ContinueProcessingImages should_continue,
                            void* data) {
   int max_frame_width = 0;
   int max_frame_height = 0;
@@ -874,9 +874,9 @@ ____SaveMNGAnimationFromImages____(mng_handle hMNG,
 
 static mng_retcode
 __SaveMNGAnimationFromImages__(mng_handle hMNG, const char* filename,
-                           GetImage get_image,
-                           GetDelay get_delay,
-                           ContinueProcessingImages should_continue,
+                           WriteMNG_GetImage get_image,
+                           WriteMNG_GetDelay get_delay,
+                           WriteMNG_ContinueProcessingImages should_continue,
                            void* data)
 {
   userdatap pMydata = (userdatap)calloc (1, sizeof (userdata));
@@ -904,9 +904,9 @@ __SaveMNGAnimationFromImages__(mng_handle hMNG, const char* filename,
 
 mng_retcode
 SaveMNGAnimationFromImages(const char* filename,
-                           GetImage get_image,
-                           GetDelay get_delay,
-                           ContinueProcessingImages should_continue,
+                           WriteMNG_GetImage get_image,
+                           WriteMNG_GetDelay get_delay,
+                           WriteMNG_ContinueProcessingImages should_continue,
                            void* data) {
 
   mng_retcode iRC;

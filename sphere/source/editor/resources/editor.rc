@@ -530,6 +530,8 @@ BEGIN
 
         MENUITEM "&Append",                     ID_SPRITESETVIEWFRAMES_APPEND
 
+        MENUITEM "Delete Frames",               ID_SPRITESETVIEWFRAMES_REMOVEFRAMES
+
         MENUITEM SEPARATOR
         MENUITEM "&Copy (CTRL + C)",            ID_SPRITESETVIEWFRAMES_COPY
         MENUITEM "&Paste (CTRL + V)",           ID_SPRITESETVIEWFRAMES_PASTE
@@ -929,6 +931,8 @@ BEGIN
         MENUITEM "&Insert Image",               ID_SPRITESETIMAGESPALETTE_INSERT_IMAGE
 
         MENUITEM "&Remove Image",               ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGE
+
+        MENUITEM "Remove Images",               ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGES
 
     END
 END

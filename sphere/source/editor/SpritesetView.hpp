@@ -62,6 +62,7 @@ private:
   afx_msg void OnPasteFrame();
   afx_msg void OnFrameProperties();
   afx_msg void OnFillDelay();
+  afx_msg void OnRemoveFrames();
 
   afx_msg void OnInsertDirectionFromImage();
   afx_msg void OnExportDirectionAsImage();

@@ -43,6 +43,7 @@ private:
   afx_msg void OnMoveForward();
   afx_msg void OnInsertImage();
   afx_msg void OnRemoveImage();
+  afx_msg void OnRemoveImages();
 
   void OnSwap(int new_index);
   void OnZoom(double zoom);

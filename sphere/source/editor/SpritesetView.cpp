@@ -41,6 +41,7 @@ BEGIN_MESSAGE_MAP(CSpritesetView, CWnd)
 
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_INSERT,     OnInsertFrame)
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_DELETE,     OnDeleteFrame)
+  ON_COMMAND(ID_SPRITESETVIEWFRAMES_REMOVEFRAMES, OnRemoveFrames)
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_APPEND,     OnAppendFrame)
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_COPY,       OnCopyFrame)
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_PASTE,      OnPasteFrame)
@@ -732,6 +733,32 @@ CSpritesetView::OnDeleteFrame()
   Invalidate();
   m_Handler->SV_CurrentFrameChanged(m_CurrentDirection, m_CurrentFrame);
   m_Handler->SV_SpritesetModified();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetView::OnRemoveFrames()
+{
+  CNumberDialog dialog("Delete Frames", "Number of Frames", 1, 1, m_Spriteset->GetNumFrames(m_CurrentDirection) - m_CurrentFrame - 1);
+  if (dialog.DoModal() == IDOK)
+  {
+    int num_images = dialog.GetValue();
+    while (num_images-- >= 0) {
+      OnDeleteFrame();
+    }
+
+    // make sure selected tile is still valid
+    if (m_CurrentFrame >= m_Spriteset->GetNumFrames(m_CurrentDirection)) {
+      m_CurrentFrame = m_Spriteset->GetNumFrames(m_CurrentDirection) - 1;
+    }
+
+    UpdateMaxSizes();
+    UpdateScrollBars();
+    Invalidate();
+    m_Handler->SV_CurrentFrameChanged(m_CurrentDirection, m_CurrentFrame);
+    m_Handler->SV_SpritesetModified();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

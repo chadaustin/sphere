@@ -2,7 +2,7 @@
 #include "Configuration.hpp"
 #include "Keys.hpp"
 #include "resource.h"
-
+#include "NumberDialog.hpp"
 
 BEGIN_MESSAGE_MAP(CSpritesetImagesPalette, CVScrollPaletteWindow)
 
@@ -16,6 +16,8 @@ BEGIN_MESSAGE_MAP(CSpritesetImagesPalette, CVScrollPaletteWindow)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_MOVE_FORWARD, OnMoveForward)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_INSERT_IMAGE, OnInsertImage)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGE, OnRemoveImage)
+  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGES, OnRemoveImages)
+  
 
 END_MESSAGE_MAP()
 
@@ -390,6 +392,30 @@ CSpritesetImagesPalette::OnRemoveImage()
   m_Handler->SIP_SpritesetModified();
   m_Handler->SIP_IndexChanged(m_SelectedImage);
   Invalidate();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CSpritesetImagesPalette::OnRemoveImages() {
+  CNumberDialog dialog("Delete Images", "Number of Images", 1, 1, m_Spriteset->GetNumImages() - m_SelectedImage - 1);
+  if (dialog.DoModal() == IDOK)
+  {
+    int num_images = dialog.GetValue();
+    while (num_images-- >= 0) {
+      OnRemoveImage();
+    }
+
+    // make sure selected tile is still valid
+    if (m_SelectedImage >= m_Spriteset->GetNumImages()) {
+      m_SelectedImage = m_Spriteset->GetNumImages() - 1;
+    }
+
+    m_Handler->SIP_SpritesetModified();
+    m_Handler->SIP_IndexChanged(m_SelectedImage);
+    UpdateScrollBar();
+    Invalidate();   
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -6,15 +6,15 @@ class CImage32;
 
 const char* mng_get_error_message(mng_retcode code);
 
-typedef mng_bool (*GetImage)(int image_index, CImage32& image, void* data);
-typedef mng_uint32 (*GetDelay)(int index, void* data);
-typedef mng_bool (*ContinueProcessingImages)(int image_index, int total);
+typedef mng_bool   (*WriteMNG_GetImage)(int image_index, CImage32& image, void* data);
+typedef mng_uint32 (*WriteMNG_GetDelay)(int index, void* data);
+typedef mng_bool   (*WriteMNG_ContinueProcessingImages)(int image_index, int total);
 
 mng_retcode
 SaveMNGAnimationFromImages(const char* filename,
-                           GetImage get_image,
-                           GetDelay get_delay,
-                           ContinueProcessingImages should_continue,
+                           WriteMNG_GetImage get_image,
+                           WriteMNG_GetDelay get_delay,
+                           WriteMNG_ContinueProcessingImages should_continue,
                            void* data);
 
 #endif WRITE_MNG_H
