@@ -34,6 +34,13 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_SCRIPT_OPTIONS_TOGGLE_LINE_NUMBERS,  OnOptionsToggleLineNumbers)
   ON_COMMAND(ID_SCRIPT_OPTIONS_SHOW_WHITESPACE, OnOptionsShowWhitespace)
   ON_COMMAND(ID_SCRIPT_OPTIONS_WORD_WRAP, OnOptionsWordWrap)
+  
+  ON_COMMAND(ID_SCRIPT_OPTIONS_SELECTION_STREAM, OnOptionsSelectionStream)
+  ON_COMMAND(ID_SCRIPT_OPTIONS_SELECTION_RECTANGLE, OnOptionsSelectionRectangle)
+  ON_COMMAND(ID_SCRIPT_OPTIONS_SELECTION_LINE, OnOptionsSelectionLine)
+  ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_SELECTION_STREAM, OnUpdateOptionsSelectionStream)
+  ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_SELECTION_RECTANGLE, OnUpdateOptionsSelectionRectangle)
+  ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_SELECTION_LINE, OnUpdateOptionsSelectionLine)
 
   ON_UPDATE_COMMAND_UI(ID_SCRIPT_CHECKSYNTAX,      OnUpdateScriptCheckSyntax)
 
@@ -65,6 +72,7 @@ CScriptWindow::CScriptWindow(const char* filename, bool create_from_clipboard)
 , m_SyntaxHighlighted(true)
 , m_ShowWhitespace(false)
 , m_WordWrap(false)
+, m_SelectionType(SC_SEL_STREAM)
 {
   SetSaved(filename != NULL);
   SetModified(false);
@@ -383,13 +391,18 @@ CScriptWindow::GetSelection()
   if (end < start) {
     end = start;
   }
+
   int length = end - start;
   char* str = new char[length + 1];
-  str[length] = 0;
-  SendEditor(SCI_GETSELTEXT, 0, (LPARAM)str);
-  CString result(str);
-  delete[] str;
-  return result;
+  if (str) {
+    str[length] = 0;
+    SendEditor(SCI_GETSELTEXT, 0, (LPARAM)str);
+    CString result(str);
+    delete[] str;
+    return result;
+  }
+
+  return "";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -446,7 +459,14 @@ CScriptWindow::OnScriptFind()
 {
   if (!m_SearchDialog) {
     m_SearchDialog = new CFindReplaceDialog;
-    m_SearchDialog->Create(true, GetSelection(), NULL, FR_DOWN, this);
+    if (m_SearchDialog) {
+      
+      SendEditor(SCI_SETSELECTIONMODE, SC_SEL_STREAM);
+      CString text = GetSelection();
+      SendEditor(SCI_SETSELECTIONMODE, m_SelectionType);
+
+      m_SearchDialog->Create(true, text, NULL, FR_DOWN, this);
+    }
   }
 }
 
@@ -457,7 +477,14 @@ CScriptWindow::OnScriptReplace()
 {
   if (!m_SearchDialog) {
     m_SearchDialog = new CFindReplaceDialog;
-    m_SearchDialog->Create(false, GetSelection(), NULL, FR_DOWN, this);
+    if (m_SearchDialog) {
+
+      SendEditor(SCI_SETSELECTIONMODE, SC_SEL_STREAM);
+      CString text = GetSelection();
+      SendEditor(SCI_SETSELECTIONMODE, m_SelectionType);
+
+      m_SearchDialog->Create(false, text, NULL, FR_DOWN, this);
+    }
   }
 }
 
@@ -844,6 +871,53 @@ CScriptWindow::OnOptionsWordWrap()
   m_WordWrap = !m_WordWrap;
   SetScriptStyles();
   RememberConfiguration();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnOptionsSelectionStream()
+{
+  m_SelectionType = SC_SEL_STREAM;
+  SendEditor(SCI_SETSELECTIONMODE, m_SelectionType);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnOptionsSelectionRectangle()
+{
+  m_SelectionType = SC_SEL_RECTANGLE;
+  SendEditor(SCI_SETSELECTIONMODE, m_SelectionType);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnOptionsSelectionLine()
+{
+  m_SelectionType = SC_SEL_LINES;
+  SendEditor(SCI_SETSELECTIONMODE, m_SelectionType);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnUpdateOptionsSelectionStream(CCmdUI* cmdui)
+{
+  cmdui->SetCheck((SendEditor(SCI_GETSELECTIONMODE) == SC_SEL_STREAM) ? TRUE : FALSE);
+}
+
+afx_msg void
+CScriptWindow::OnUpdateOptionsSelectionRectangle(CCmdUI* cmdui)
+{
+  cmdui->SetCheck((SendEditor(SCI_GETSELECTIONMODE) == SC_SEL_RECTANGLE) ? TRUE : FALSE);
+}
+
+afx_msg void
+CScriptWindow::OnUpdateOptionsSelectionLine(CCmdUI* cmdui)
+{
+  cmdui->SetCheck((SendEditor(SCI_GETSELECTIONMODE) == SC_SEL_LINES) ? TRUE : FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -265,6 +265,15 @@ BEGIN
         MENUITEM "&Replace...",                 ID_SCRIPT_REPLACE
         POPUP "&Options"
         BEGIN
+            POPUP "Selection Mode"
+            BEGIN
+                MENUITEM "Normal Selection",            ID_SCRIPT_OPTIONS_SELECTION_STREAM
+
+                MENUITEM "Rectangle Selection",         ID_SCRIPT_OPTIONS_SELECTION_RECTANGLE
+
+                MENUITEM "Line Selection",              ID_SCRIPT_OPTIONS_SELECTION_LINE
+
+            END
             MENUITEM "Change Font",                 ID_SCRIPT_OPTIONS_SET_FONT
 
             MENUITEM "Change Tab Size",             ID_SCRIPT_OPTIONS_SET_TAB_SIZE
