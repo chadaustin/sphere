@@ -154,10 +154,9 @@ std::string DoRunGame(const char* game, const char* parameters) {
     do {
       result = engine.Run();
       restarted = engine.Restarted();
-    }
-    while (restarted);
+      ClearKeyQueue();
+    }  while (restarted);
 
-    ClearKeyQueue();
     LeaveDirectory();
   } else {
     QuitMessage("Could not enter game directory");
@@ -264,36 +263,47 @@ void LoadSystemObjects()
   GetDirectory(s_ScriptDirectory);
   LeaveDirectory();
 
-  CConfigFile file("system.ini");
+  CConfigFile file;
+  if (!file.Load("system.ini")) {
+    QuitMessage("Unable to open system.ini");
+  }
+
   std::string font         = file.ReadString("", "Font",        "unknown");
   std::string window_style = file.ReadString("", "WindowStyle", "unknown");
   std::string arrow        = file.ReadString("", "Arrow",       "unknown");
   std::string up_arrow     = file.ReadString("", "UpArrow",     "unknown");
   std::string down_arrow   = file.ReadString("", "DownArrow",   "unknown");
 
+  char error_string[255];
+
   // system font
   if (!s_SystemObjects.font.Load(font.c_str(), g_DefaultFileSystem)) {
-    QuitMessage("Error: Could not load system font");
+    sprintf(error_string, "Error: Could not load system font: '%s'", font.c_str());
+    QuitMessage(error_string);
   }
 
   // system window style
   if (!s_SystemObjects.window_style.Load(window_style.c_str())) {
-    QuitMessage("Error: Could not load system window style");
-  }
-
-  // system up arrow
-  if (!s_SystemObjects.up_arrow.Load(up_arrow.c_str())) {
-    QuitMessage("Error: Could not load system up arrow");
+    sprintf(error_string, "Error: Could not load system window style: '%s'", window_style.c_str());
+    QuitMessage(error_string);
   }
 
   // system arrow
   if (!s_SystemObjects.arrow.Load(arrow.c_str())) {
-    QuitMessage("Error: Could not load system arrow");
+    sprintf(error_string, "Error: Could not load system arrow: '%s'", arrow.c_str());
+    QuitMessage(error_string);
+  }
+
+  // system up arrow
+  if (!s_SystemObjects.up_arrow.Load(up_arrow.c_str())) {
+    sprintf(error_string, "Error: Could not load system up arrow: '%s'", up_arrow.c_str());
+    QuitMessage(error_string);
   }
 
   // system down arrow
   if (!s_SystemObjects.down_arrow.Load(down_arrow.c_str())) {
-    QuitMessage("Error: Could not load system down arrow");
+    sprintf(error_string, "Error: Could not load system down arrow: '%s'", down_arrow.c_str());
+    QuitMessage(error_string);
   }
 
   LeaveDirectory();

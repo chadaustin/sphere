@@ -94,7 +94,7 @@ bool SwitchResolution (int x, int y, bool fullscreen, bool update_cliprect) {
   static bool initialized = false;
 
   if (!initialized) {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD | SDL_INIT_JOYSTICK) == -1)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
 
     // Clean up on exit, exit on window close and interrupt
@@ -102,12 +102,24 @@ bool SwitchResolution (int x, int y, bool fullscreen, bool update_cliprect) {
 
     InitializeInput();
     initialized = true;
+
+    SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+
+    if(SDL_WasInit(SDL_INIT_JOYSTICK)!=0)
+      printf("Joysticks are initialized.\n");
+    else
+      printf("Joysticks are not initialized.\n");
+
   } else {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
+    SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
     if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
 
-    SetWindowTitle(window_title.c_str()); // keep the window title as what it was
+    SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+
+    // keep the window title as what it was
+    SetWindowTitle(window_title.c_str());
   }
 
   if (fullscreen)
@@ -118,8 +130,10 @@ bool SwitchResolution (int x, int y, bool fullscreen, bool update_cliprect) {
   if (screen == NULL)
     return false;
 
-  /* screen = SDL_CreateRGBSurface(0, real_screen->w, real_screen->h, 32, 0, 0, 0, 0);
-  SDL_ConvertSurface(screen, real_screen->format, 0); */
+ /*
+  screen = SDL_CreateRGBSurface(0, real_screen->w, real_screen->h, 32, 0, 0, 0, 0);
+  SDL_ConvertSurface(screen, real_screen->format, 0);
+ */
   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
   
   ScreenWidth = screen->w;
@@ -488,9 +502,11 @@ RGBA* LockImage(IMAGE image) {
   image->locked_pixels = new RGBA[image->width * image->height];
   // rgb
   for (int i = 0; i < image->width * image->height; i++) {
-    image->locked_pixels[i].red   = (image->bgra[i].red   * 256) / image->alpha[i];
-    image->locked_pixels[i].green = (image->bgra[i].green * 256) / image->alpha[i];
-    image->locked_pixels[i].blue  = (image->bgra[i].blue  * 256) / image->alpha[i];
+    if (image->alpha[i]) {
+      image->locked_pixels[i].red   = (image->bgra[i].red * 256) / image->alpha[i];
+      image->locked_pixels[i].green = (image->bgra[i].green * 256) / image->alpha[i];
+      image->locked_pixels[i].blue  = (image->bgra[i].blue * 256) / image->alpha[i];
+    }
   }
   // alpha
   for (int i = 0; i < image->width * image->height; i++)

@@ -104,9 +104,7 @@ bool RefreshInput () {
   int result;
   int key = 0;
   
-  int count = 0;
-
-  while (result = SDL_PollEvent(&event) && count++ < 4) {
+  while (result = SDL_PollEvent(&event)) {
     if (event.type == SDL_QUIT)
       exit(0);
     else if ((event.type == SDL_KEYDOWN) || (event.type == SDL_KEYUP))
@@ -161,9 +159,12 @@ bool RefreshInput () {
 ///////////////////////////////////////////////////////////
 
 void OnKeyDown(int key) {
-  //std::cerr << "down: " << (int)key << std::endl;
+  //std::cerr << "down: " << key << std::endl;
   key_queue.push_back(key);
   key_buffer[key] = true;
+
+  if (key == KEY_M)
+    std::cerr << "M down" << std::endl;
           
   switch(key) {
 
@@ -182,8 +183,11 @@ void OnKeyDown(int key) {
 }
 
 void OnKeyUp(int key) {
-  //std::cerr << "up:   " << (int)key << std::endl;
+  //std::cerr << "up:   " << key << std::endl;
   key_buffer[key] = false;
+
+  if (key == KEY_M)
+    std::cerr << "M up" << std::endl;
 }
 
 ///////////////////////////////////////////////////////////
@@ -276,6 +280,9 @@ bool IsMouseButtonPressed (int button) {
 
 int GetNumJoysticks()
 {
+  if (SDL_NumJoysticks() > 0)
+    std::cerr<< SDL_NumJoysticks() << std::endl;
+
   return SDL_NumJoysticks();
 }
 
@@ -284,6 +291,9 @@ int GetNumJoysticks()
 
 float GetJoystickX(int joy_index)
 {
+  if (joy_index >= 0 && joy_index < SDL_NumJoysticks())
+    return 0;
+
   SDL_Joystick* joy = SDL_JoystickOpen(joy_index);
   if (joy == NULL)
     return 0;
@@ -298,6 +308,9 @@ float GetJoystickX(int joy_index)
 
 float GetJoystickY(int joy_index)
 {
+  if (joy_index >= 0 && joy_index < SDL_NumJoysticks())
+    return 0;
+
   SDL_Joystick* joy = SDL_JoystickOpen(joy_index);
   if (joy == NULL)
     return 0;
@@ -312,9 +325,13 @@ float GetJoystickY(int joy_index)
 
 int GetNumJoystickButtons(int joy_index)
 {
+  if (joy_index >= 0 && joy_index < SDL_NumJoysticks())
+    return 0;
+
   SDL_Joystick* joy = SDL_JoystickOpen(joy_index);
   if (joy == NULL)
     return 0;
+
   return SDL_JoystickNumButtons(joy);
 }
 
@@ -322,8 +339,14 @@ int GetNumJoystickButtons(int joy_index)
 
 bool IsJoystickButtonPressed(int joy_index, int button)
 {
+  if (joy_index >= 0 && joy_index < SDL_NumJoysticks())
+    return false;
+
   SDL_Joystick* joy = SDL_JoystickOpen(joy_index);
   if (joy == NULL)
+    return false;
+
+  if (button < 0 || button >= SDL_JoystickNumButtons(joy))
     return false;
 
   return (SDL_JoystickGetButton(joy, button) == 1);

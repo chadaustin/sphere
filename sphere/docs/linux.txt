@@ -15,6 +15,7 @@ spidermonkey  -  http://www.mozilla.org/js/spidermonkey/
   or the spidermonkey.tar.gz found at the files page at http://sf.net/projects/sphere/
 SDL  -  http://www.libsdl.org/
 libmng  -  http://www.libmng.org/
+libpng  -  http://www.libpng.org/
 scons  -  http://www.scons.org/
 
 zlib (compression library, http://www.gzip.org/zlib/)
@@ -24,16 +25,20 @@ Optionally, you can also get:
 libvorbis  -  http://www.vorbis.com
 libjpeg  -  http://www.ijg.org/ or ftp://ftp.uu.net/graphics/jpeg/ 
 
+[The editor does not yet build in linux.]
 To also install wxeditor, you will need:
 
 wxwindows  - http://www.wxwindows.org/
 
+
+-----------------------------------------------------------
 
 To install SDL:
 You need the SDL development library RPM, and so you do something like:
 
 rpm -i libSDL1.2-devel-1.2.5-5mdk
 
+-----------------------------------------------------------
 
 To install corona:
 You download the corona.tar.gz file, and so you do something like:
@@ -49,8 +54,22 @@ The next step may just be me... but you need to make sure the lib is properly in
 
 cd src
 cd .libs
-cp libcorona-1.0.0.so /lib
+cp libcorona-1.0.0.so /lib # or cp libcorona-1.0.0.so /usr/lib
 
+This is just a check you can do, feel free to skip it, but I like to make sure corona supports png, so you do:
+cd ..
+cd .. # we should be back in corona-1.0.0 now
+cd examples/formats
+./formats
+
+If it says png is supported? Good news, if not, sphere pretty much wont run.
+
+Then run ldconfig to update your library path details.
+
+su
+ldconfig
+
+-----------------------------------------------------------
 
 To install audiere:
 You download the audiere.tar.gz file, and you do something like:
@@ -67,8 +86,14 @@ The next step may just be me... but you need to make sure the lib is properly in
 
 cd src
 cd .libs
-cp libaudiere-1.9.2.so /lib
+cp libaudiere-1.9.2.so /lib # or cp libaudiere-1.9.2.so /usr/lib
 
+Then run ldconfig to update your library path details.
+
+su
+ldconfig
+
+-----------------------------------------------------------
 
 To install SpiderMonkey:
 You download the SpiderMonkey.tar.gz file, and you do something like:
@@ -80,18 +105,28 @@ cd SpiderMonkey-1.5.0
 make
 make install
 
+-----------------------------------------------------------
 
 To install libmng:
 You download the libmng.rpm file, and so you do something like:
 
 rpm -i libmng1-devel-1.0.3-2mdk
 
+-----------------------------------------------------------
 
-To install Scons:
-You need the scons RPM, and then you do something like:
+To install SCons:
+You'll need the scons RPM, and then you can do something like:
 
 rpm -i scons-0.13-1.noarch.rpm
 
+If you prefer using the tar.gz version, installing it looks like:
+
+gunzip scons-0.13-1.tar.gz
+tar -xf scons-0.13-1.tar
+cd scons-0.13-1
+python setup.py install
+
+-----------------------------------------------------------
 
 If all goes well, you now should be able to move onto installing sphere.
 
@@ -100,7 +135,7 @@ Getting the source
 Using your favorite CVS client, download the sphere module from CVS.
 Instructions are at <https://sourceforge.net/cvs/?group_id=1551>.
 
-Once you've done that, goto the directory and run SCons
+Once you've done that, goto into the top level sphere directory and run scons
 
 cd sphere
 scons

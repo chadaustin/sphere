@@ -686,7 +686,7 @@ void
 CGameEngine::GetFileList(const char* directory, std::vector<std::string>& vs)
 {
   // enter the save directory
-  MakeDirectory(directory);
+  //MakeDirectory(directory);
   if (!EnterDirectory(directory)) {
     return;
   }
@@ -705,17 +705,20 @@ CGameEngine::GetFileList(const char* directory, std::vector<std::string>& vs)
 
   LeaveDirectory();
 
-  // add currently open files too
-  std::map<CConfigFile*, SFileInfo>::iterator i;
-  for (i = m_OpenFiles.begin(); i != m_OpenFiles.end(); i++) {
-    std::string filename = i->second.filename;
+  // if we're listing the save game directory files...
+  if (strcmp(directory, "save") == 0) {
+    // add currently open files too
+    std::map<CConfigFile*, SFileInfo>::iterator i;
+    for (i = m_OpenFiles.begin(); i != m_OpenFiles.end(); i++) {
+      std::string filename = i->second.filename;
 
-    // only insert the filename if it's not in the list
-    std::vector<std::string>::iterator i = std::find(vs.begin(), vs.end(), filename);
-    if (i == vs.end()) {
-      vs.push_back(filename);
-    } else {
-      *i = filename;
+      // only insert the filename if it's not in the list
+      std::vector<std::string>::iterator i = std::find(vs.begin(), vs.end(), filename);
+      if (i == vs.end()) {
+        vs.push_back(filename);
+      } else {
+        *i = filename;
+      }
     }
   }
 }

@@ -12,6 +12,7 @@
 
 static const int c_MaxSkipFrames = 10;
 
+/*
 static inline void MapEngineLog(const std::string text) {
   static bool firstcall = true;
   FILE* file = fopen("mapengine.log", ((firstcall) ? ("w+") : ("a")));
@@ -24,6 +25,7 @@ static inline void MapEngineLog(const std::string text) {
 
   fprintf(stderr, "%s\n", text.c_str());
 }
+*/
 
 static inline std::string itos(int i)
 {
@@ -185,8 +187,6 @@ CMapEngine::ChangeMap(const char* filename)
       m_Persons[i].commands.clear();
     }
 
-
-    // MapEngineLog("Changing map to " + std::string(filename) + "...\n");
     // open new one
     if (!OpenMap(filename)) {
       return false;
