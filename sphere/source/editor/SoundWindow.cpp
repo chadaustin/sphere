@@ -41,7 +41,9 @@ CSoundWindow::CSoundWindow(const char* sound)
   if (!m_Sound.Load(sound))
   {
     // if it fails, show a message box and close the window
-    MessageBox("Could not load sound file");
+    char string[MAX_PATH + 1024];
+    sprintf (string, "Error: Could not load sound file\n'%s'", sound);
+    MessageBox(string);
     delete this;
     return;
   }

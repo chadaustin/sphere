@@ -352,10 +352,12 @@ CMapWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
 
   //if (vk == VK_APPS) {  }
 
-  m_MapView.SelectTile(tile);
-  m_LayerView.SetSelectedTile(tile);
-  m_TilesetEditView.SelectTile(tile);
-  if (m_TilePalette) m_TilePalette->SelectTile(tile);
+  if (tile != m_MapView.GetSelectedTile()) {
+    m_MapView.SelectTile(tile);
+    m_LayerView.SetSelectedTile(tile);
+    m_TilesetEditView.SelectTile(tile);
+    if (m_TilePalette) m_TilePalette->SelectTile(tile);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

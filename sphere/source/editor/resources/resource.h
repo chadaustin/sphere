@@ -616,6 +616,7 @@
 #define ID_SPRITESETIMAGESPALETTE_ZOOM_2X 40755
 #define ID_SPRITESETIMAGESPALETTE_ZOOM_4X 40756
 #define ID_SPRITESETIMAGESPALETTE_ZOOM_8X 40757
+#define ID_FILE_UNDO                    40758
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -624,7 +625,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        263
-#define _APS_NEXT_COMMAND_VALUE         40758
+#define _APS_NEXT_COMMAND_VALUE         40760
 #define _APS_NEXT_CONTROL_VALUE         1210
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

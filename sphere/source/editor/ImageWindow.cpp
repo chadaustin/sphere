@@ -43,7 +43,9 @@ CImageWindow::CImageWindow(const char* image, bool create_from_clipboard)
 
   if (image) {
     if (!m_Image.Load(image)) {
-      AfxGetApp()->m_pMainWnd->MessageBox("Error: Could not load image");
+      char string[MAX_PATH + 1024];
+      sprintf (string, "Error: Could not load image\n'%s'", image);
+      AfxGetApp()->m_pMainWnd->MessageBox(string);
       delete this;
       return;
     }

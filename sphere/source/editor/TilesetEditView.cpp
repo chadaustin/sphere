@@ -153,8 +153,7 @@ CTilesetEditView::SP_ColorSelected(RGBA color)
 void
 CTilesetEditView::UpdateImageView()
 {
-#if 1
-  if (m_MultiTileWidth > 0 && m_MultiTileHeight > 0 && m_MultiTileData) {
+  if (m_MultiTileWidth > 0 && m_MultiTileHeight > 0 && m_MultiTileData != NULL) {
     CImage32 image;
     if (image.Create(m_MultiTileWidth * m_Tileset->GetTileWidth(), m_MultiTileHeight * m_Tileset->GetTileHeight())) {
       for (int y = 0; y < m_MultiTileHeight; y++) {
@@ -168,7 +167,7 @@ CTilesetEditView::UpdateImageView()
       return;
     }
   }
-#endif
+  
   sTile& tile = m_Tileset->GetTile(m_CurrentTile);
   m_ImageView.SetImage(tile.GetWidth(), tile.GetHeight(), tile.GetPixels(), true);
 }
@@ -352,8 +351,7 @@ CTilesetEditView::OnTilesetAppendImage()
 void
 CTilesetEditView::IV_ImageChanged()
 {
-#if 1
-  if (m_MultiTileWidth > 0 && m_MultiTileHeight > 0 && m_MultiTileData) {
+  if (m_MultiTileWidth > 0 && m_MultiTileHeight > 0 && m_MultiTileData != NULL) {
     const int tile_width  = m_Tileset->GetTileWidth();
     const int tile_height = m_Tileset->GetTileHeight();
     const int image_width = m_ImageView.GetWidth();
@@ -375,7 +373,7 @@ CTilesetEditView::IV_ImageChanged()
     }
     return;
   }
-#endif
+
   // store the old data
   memcpy(
     m_Tileset->GetTile(m_CurrentTile).GetPixels(),
@@ -432,7 +430,6 @@ CTilesetEditView::AV_AlphaChanged(byte alpha)
 void
 CTilesetEditView::OnPaste()
 {
-  //MessageBox("TilesetEditView::Paste");
   m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_PASTE, 0), 0);
 }
 

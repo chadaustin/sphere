@@ -66,6 +66,8 @@ private:
   virtual void AV_AlphaChanged(byte alpha);
 
   afx_msg void OnPaste();
+  afx_msg void OnUndo();
+  afx_msg void OnRedo();
 
 #if 1
 public:
