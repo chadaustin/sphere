@@ -1550,7 +1550,24 @@ CImageView::UpdateSelection()
     if (!InImage(end))
       return;
 
-    m_SelectionPoints.push_back(end);
+    if (m_SelectionPoints.size() > 0) {
+      POINT last = m_SelectionPoints[m_SelectionPoints.size() - 1];
+      int rise = end.y - last.y;
+      int run = end.x - last.x;
+      POINT a;
+      POINT b;
+      if (abs(run) > abs(rise)) {
+        a.x = last.x + run; a.y = last.y;
+      }
+      else {
+        a.x = last.x; a.y = last.y + rise;
+      }
+      b.x = end.x; b.y = end.y;
+      m_SelectionPoints.push_back(a);
+      m_SelectionPoints.push_back(b);
+    } else {
+      m_SelectionPoints.push_back(end);
+    }
 
     // work out SX, SY, SW, SH
     if (m_SelectionPoints.size() > 0) {
@@ -1648,14 +1665,14 @@ CImageView::OnLButtonUp(UINT flags, CPoint point)
 afx_msg void
 CImageView::OnRButtonUp(UINT flags, CPoint point)
 {
-  // show the image view menu
-  HMENU menu = LoadMenu(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_IMAGEVIEW));
-  HMENU submenu = GetSubMenu(menu, 0);
-
   // make sure we clicked in the image
   if (!InImage(ConvertToPixel(point))) {
     return;
   }
+
+  // show the image view menu
+  HMENU menu = LoadMenu(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_IMAGEVIEW));
+  HMENU submenu = GetSubMenu(menu, 0);
 
   m_CurPoint = point;
   ClientToScreen(&point);
