@@ -10,6 +10,7 @@
   - bumped version number to 1.0 beta 1 (beta release!)
   - added GetTileImage() and SetTileImage() (BrianRobb)
   - fixed a ton of bugs in the spriteset editor
+  - made line numbers count from 1 instead of 0 (Brian Robb)
 
 2003.01.21
   - fixed error message in GetPersonList() and made person name error
