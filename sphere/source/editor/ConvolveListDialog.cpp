@@ -86,14 +86,18 @@ CConvolveListEditDialog::OnInitDialog()
   CheckDlgButton(IDC_FILTER_LIST_EDIT_CLAMP,   m_FilterInfo->clamp ? BST_CHECKED : BST_UNCHECKED);
   CheckDlgButton(IDC_FILTER_LIST_EDIT_WRAP,    m_FilterInfo->wrap  ? BST_CHECKED : BST_UNCHECKED);
 
+  char string[80];
+
   NumberEdit = (CEdit*)GetDlgItem(IDC_FILTER_CLIP_LOW);
-  NumberEdit->SetWindowText("0");
+  sprintf(string, "%d", m_FilterInfo->clamp_low);
+  NumberEdit->SetWindowText(string);
   if (!m_FilterInfo->clamp) {
     NumberEdit->EnableWindow(false);
   }
 
   NumberEdit = (CEdit*)GetDlgItem(IDC_FILTER_CLIP_HIGH);
-  NumberEdit->SetWindowText("255");
+  sprintf(string, "%d", m_FilterInfo->clamp_high);
+  NumberEdit->SetWindowText(string);
   if (!m_FilterInfo->clamp) {
     NumberEdit->EnableWindow(false);
   }
@@ -101,7 +105,6 @@ CConvolveListEditDialog::OnInitDialog()
   NumberEdit = (CEdit*)GetDlgItem(IDC_FILTER_LIST_EDIT_NAME);
   NumberEdit->SetWindowText(m_FilterInfo->name.c_str());
 
-  char string[80];
   sprintf(string, "%d", m_FilterInfo->offset);
   NumberEdit = (CEdit*)GetDlgItem(IDC_FILTER_LIST_EDIT_OFFSET);
   NumberEdit->SetWindowText(string);
@@ -206,10 +209,10 @@ CConvolveListEditDialog::OnOK()
       MessageBox("Invalid number format");
       return;
     }
-  }
 
-  // m_LowValue = atoi(low_text);
-  // m_HighValue = atoi(high_text);
+    m_FilterInfo->clamp_low = atoi(low_text);
+    m_FilterInfo->clamp_high = atoi(high_text);
+  }
 
   CString offset_text;
   NumberEdit = (CEdit*)GetDlgItem(IDC_FILTER_LIST_EDIT_OFFSET);
@@ -459,6 +462,18 @@ int
 CConvolveListDialog::ShouldClamp()
 {
   return m_FilterList[m_CurrentFilter]->clamp;
+}
+
+int
+CConvolveListDialog::GetClampLow()
+{
+  return m_FilterList[m_CurrentFilter]->clamp_low;
+}
+
+int
+CConvolveListDialog::GetClampHigh()
+{
+  return m_FilterList[m_CurrentFilter]->clamp_high;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

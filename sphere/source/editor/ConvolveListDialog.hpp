@@ -18,6 +18,8 @@ public:
   double divisor;
   int clamp;
   int wrap;
+  int clamp_low;
+  int clamp_high;
 
 public:
   FilterInfo() {
@@ -28,6 +30,8 @@ public:
     divisor = 0;
     clamp = 0;
     wrap = 0;
+    clamp_low = 0;
+    clamp_high = 255;
   }
 
   FilterInfo(int width, int height) {
@@ -35,6 +39,8 @@ public:
     divisor = 0;
     clamp = 0;
     wrap = 0;
+    clamp_low = 0;
+    clamp_high = 255;
     mask_width = width;
     mask_height = height;
     mask = new double[mask_width * mask_height];
@@ -68,6 +74,8 @@ public:
   int ShouldUseGreenChannel();
   int ShouldUseBlueChannel();
   int ShouldUseAlphaChannel();
+  int GetClampLow();
+  int GetClampHigh();
 
 private:
   void SortFilters();

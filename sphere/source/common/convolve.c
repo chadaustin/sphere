@@ -2,7 +2,8 @@ void
 CONVOLUTION_NAME(int x, int y, int w, int h, int width, int height,
                  CONVOLUTION_PIXEL_TYPE* pixels, int mask_width, int mask_height,
                  int mask_xoffset, int mask_yoffset, const CONVOLUTION_TYPE* mask,
-                 int divisor, int offset, int wrap, int clamp, int infinite,
+                 int divisor, int offset, int wrap,
+                 int clamp, int clamp_low, int clamp_high, int infinite,
                  int use_red, int use_green, int use_blue, int use_alpha)
 {
   CONVOLUTION_TYPE red;
@@ -88,10 +89,10 @@ CONVOLUTION_NAME(int x, int y, int w, int h, int width, int height,
       }
 
       if (clamp) {
-        red   = (red   < 0 ? 0 : (red   > 255 ? 255 : red));
-        green = (green < 0 ? 0 : (green > 255 ? 255 : green));
-        blue  = (blue  < 0 ? 0 : (blue  > 255 ? 255 : blue));
-        alpha = (alpha < 0 ? 0 : (alpha > 255 ? 255 : alpha));
+        red   = (red   < clamp_low ? 0 : (red   > clamp_high ? clamp_high : red));
+        green = (green < clamp_low ? 0 : (green > clamp_high ? clamp_high : green));
+        blue  = (blue  < clamp_low ? 0 : (blue  > clamp_high ? clamp_high : blue));
+        alpha = (alpha < clamp_low ? 0 : (alpha > clamp_high ? clamp_high : alpha));
       }
 
       if (use_red)

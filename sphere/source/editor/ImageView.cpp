@@ -2221,6 +2221,8 @@ CImageView::OnFilterCustom()
     int offset = dialog.GetOffset();
     int divisor = dialog.GetDivisor();
     int clamp = dialog.ShouldClamp();
+    int clamp_low = dialog.GetClampLow();
+    int clamp_high = dialog.GetClampHigh();
     int wrap = dialog.ShouldWrap();
     int infinite = 0;
     int use_red = dialog.ShouldUseRedChannel();
@@ -2241,9 +2243,10 @@ CImageView::OnFilterCustom()
     if (mask_type == "double") {
       double_convolve_rgba(0, 0, sw, sh, sw, sh, pixels, mask_width, mask_height,
                            mask_width/2, mask_height/2, mask,
-                           divisor, offset, wrap, clamp, infinite,
+                           divisor, offset, wrap,
+                           clamp, clamp_low, clamp_high, infinite,
                            use_red, use_green, use_blue, use_alpha);
-    } 
+    }
 
     UpdateSelectionPixels(pixels, sx, sy, sw, sh);
     FreeSelectionPixels(pixels);
