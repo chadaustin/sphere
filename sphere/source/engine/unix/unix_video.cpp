@@ -334,15 +334,164 @@ void BlitImageMask (IMAGE image, int x, int y, RGBA mask) {
   StraightBlit(image, x, y, blend_alpha);
 }
 
+void aBlendRGBA (Uint32& dest, Uint32 src) {
+  Uint8 sr, sg, sb, sa;
+  Uint8 dr, dg, db, da;
+
+  SDL_GetRGBA(src, screen->format, &sr, &sg, &sb, &sa);
+  SDL_GetRGBA(dest, screen->format, &dr, &dg, &db, &da);
+  dest = SDL_MapRGBA(screen->format,
+    (dr * (256 - sa)) / 256 + sr,
+    (dg * (256 - sa)) / 256 + sg,
+    (db * (256 - sa)) / 256 + sb,
+    da
+  );
+}
+
+using primitives::bracket;
+/* this is a slightly modified copy of a function in primitives.hpp
+   it was modified so that it could work on surfaces without a separate
+   alpha channel */
+template<typename destT, typename srcT, typename clipT,
+         typename renderT>
+void unixTexturedQuad (destT* surface, int pitch, const int x[4], const int y[4],
+                   srcT* texture, int tex_width, int tex_height,
+                   clipT clipper, renderT renderer) {
+  // find top and bottom points
+  int top = 0;
+  int bottom = 0;
+  for (int i = 1; i < 4; i++) {
+    if (y[i] < y[top]) {
+      top = i;
+    }
+    if (y[i] > y[bottom]) {
+      bottom = i;
+    }
+  }
+
+  // perform clipping in the y axis
+  int oldMinY = y[top];
+  int oldMaxY = y[bottom];
+  int minY = bracket<int>(y[top], clipper.top, clipper.bottom);
+  int maxY = bracket<int>(y[bottom], clipper.top, clipper.bottom);
+
+  // precalculate line segment information
+  struct segment {
+    // y1 < y2, always
+    int x1, x2;
+    int y1, y2;
+    int u1, u2;
+    int v1, v2;
+  } segments[4];
+
+  // segment 0 = top
+  // segment 1 = right
+  // segment 2 = bottom
+  // segment 3 = left
+
+  for (int i = 0; i < 4; i++) {
+    segment* s = segments + i;
+
+    int p1 = i;
+    int p2 = (i + 1) & 3;  // x & 3 == x % 4
+
+    s->x1 = x[p1];
+    s->y1 = y[p1];
+    s->u1 = (i == 1 || i == 2 ? tex_width  - 1 : 0);
+    s->v1 = (i == 2 || i == 3 ? tex_height - 1 : 0);
+
+    s->x2 = x[p2];
+    s->y2 = y[p2];
+    s->u2 = (i == 0 || i == 1 ? tex_width  - 1 : 0);
+    s->v2 = (i == 1 || i == 2 ? tex_height - 1 : 0);
+
+    if (y[p1] > y[p2]) {
+      std::swap(s->x1, s->x2);
+      std::swap(s->y1, s->y2);
+      std::swap(s->u1, s->u2);
+      std::swap(s->v1, s->v2);
+    }
+  }
+
+  // draw scanlines
+  for (int iy = minY; iy <= maxY; iy++) {
+
+    // find minimum and maximum x values
+
+    // initial boundary values
+    int minX = clipper.right + 1;
+    int maxX = clipper.left - 1;
+
+    // default values in case no 
+    int minU = 0;
+    int minV = 0;
+    int maxU = 0;
+    int maxV = 0;
+
+    // intersect iy in each line
+    for (int i = 0; i < 4; i++) {
+      segment* s = segments + i;
+
+      // if iy is even in the segment and segment's length is not zero
+      if (s->y1 <= iy && iy <= s->y2) {
+        int x = (s->y1 == s->y2 ?
+          s->x1 :
+          s->x1 + (iy - s->y1) * (s->x2 - s->x1) / (s->y2 - s->y1));
+        int u = (s->y1 == s->y2 ?
+          s->u1 :
+          s->u1 + (iy - s->y1) * (s->u2 - s->u1) / (s->y2 - s->y1));
+        int v = (s->y1 == s->y2 ?
+          s->v1 :
+          s->v1 + (iy - s->y1) * (s->v2 - s->v1) / (s->y2 - s->y1));
+
+        // update minimum and maximum x values
+        if (x < minX) {
+          minX = x;
+          minU = u;
+          minV = v;
+        }
+        if (x > maxX) {
+          maxX = x;
+          maxU = u;
+          maxV = v;
+        }
+      }
+    }
+
+    // now clip the x extents
+    int oldMinX = minX;
+    int oldMaxX = maxX;
+    minX = bracket<int>(minX, clipper.left, clipper.right);
+    maxX = bracket<int>(maxX, clipper.left, clipper.right);
+   
+    // render the scanline pixels
+    if (minX == maxX) {
+      renderer(surface[iy * pitch + minX], texture[minV * tex_width + minU]);
+    } else {
+      for (int ix = minX; ix <= maxX; ix++) {
+        int iu = minU + (ix - oldMinX) * (maxU - minU) / (oldMaxX - oldMinX);
+        int iv = minV + (ix - oldMinX) * (maxV - minV) / (oldMaxX - oldMinX);
+        renderer(surface[iy * pitch + ix], texture[iv * tex_width + iu]);
+      }
+    }
+  } // end for scanlines
+}
+
 void TransformBlitImage (IMAGE image, int x[4], int y[4]) {
   if (SDL_LockSurface(screen) == 0) {
-/*    primitives::TexturedQuad((Uint32*)(screen->pixels), screen->w, x, y, */
+    unixTexturedQuad((Uint32*)(screen->pixels), screen->w, x, y,
+                     (Uint32*)(image->pixels), image->w, image->h,
+                     clipping_rectangle, aBlendRGBA);
     SDL_UnlockSurface(screen);
   }
 }
 
 void TransformBlitImageMask (IMAGE image, int x[4], int y[4], RGBA mask) {
   if (SDL_LockSurface(screen) == 0) {
+    global_mask = mask;
+    unixTexturedQuad((Uint32*)(screen->pixels), screen->w, x, y,
+                     (Uint32*)(image->pixels), image->w, image->h,
+                     clipping_rectangle, blend_alpha);
     SDL_UnlockSurface(screen);
   }
 }
