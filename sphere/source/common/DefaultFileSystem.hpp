@@ -8,7 +8,8 @@
 class DefaultFileSystem : public IFileSystem
 {
 public:
-  virtual IFile* Open(const char* filename, int mode);
+  IFile* Open(const char* filename, int mode);
+  const char* GetFileSystemName() { return "default"; }
 };
 
 

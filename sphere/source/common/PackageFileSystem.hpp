@@ -20,6 +20,8 @@ public:
   int GetNumFiles() const;
   const char* GetFileName(int i) const;
 
+  const char* GetFileSystemName() { return "package"; }
+
 private:
   struct fileinfo {
     std::string name;

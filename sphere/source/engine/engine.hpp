@@ -17,6 +17,7 @@
 #include "spritesetserver.hpp"
 #endif
 
+bool IsMidi(const char* filename);
 
 class CGameEngine : private IEngine
 {
@@ -77,6 +78,9 @@ private:
   virtual void DestroyWindowStyle(SWINDOWSTYLE* ws);
 
   virtual audiere::OutputStream* LoadSound(const char* filename, bool streaming);
+#ifdef WIN32
+  virtual audiere::MIDIStream* LoadMIDI(const char* filename);
+#endif
 
   virtual IMAGE GetSystemArrow();
   virtual IMAGE GetSystemUpArrow();

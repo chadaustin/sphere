@@ -430,6 +430,9 @@ private:
 
   SMAP       m_Map;
   audiere::OutputStreamPtr m_Music;
+#ifdef WIN32
+  audiere::MIDIStreamPtr m_Midi;
+#endif
   CPlaylist m_Playlist;
 
   // camera

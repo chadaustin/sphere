@@ -82,6 +82,9 @@ END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_SOUND)
   audiere::OutputStream* sound;
+#ifdef WIN32
+  audiere::MIDIStream* midi;
+#endif
 END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_FONT)
@@ -4908,12 +4911,27 @@ begin_func(LoadSound, 1)
 
   // load sound
   audiere::OutputStream* sound = This->m_Engine->LoadSound(filename, streaming);
-  if (!sound) {
+#ifdef WIN32
+  audiere::MIDIStream* midi    = NULL;
+  if (!sound && IsMidi(filename)) {
+    midi = This->m_Engine->LoadMIDI(filename); 
+  }
+
+  if (!sound && !midi)
+#else
+  // In Linux midi filetypes will work but be sound = NULL
+  if (!sound && !IsMidi(filename))
+#endif
+  {
     JS_ReportError(cx, "Could not load sound '%s'", filename);
     return JS_FALSE;
   }
 
+#ifdef WIN32
+  return_object(CreateSoundObject(cx, sound, midi));
+#else
   return_object(CreateSoundObject(cx, sound));
+#endif
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -6072,9 +6090,16 @@ end_method()
 ////////////////////////////////////////
 
 JSObject*
+#ifdef WIN32
+CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound, audiere::MIDIStream* midi)
+#else
 CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
+#endif
 {
-  sound->ref();
+  if (sound) sound->ref();
+#ifdef WIN32
+  if (midi)  midi->ref();
+#endif
 
   // define class
   static JSClass clasp = {
@@ -6117,6 +6142,10 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
     return NULL;
 
   sound_object->sound = sound;
+#ifdef WIN32
+  sound_object->midi = midi;
+#endif
+
   JS_SetPrivate(cx, object, sound_object);
 
   return object;
@@ -6125,7 +6154,10 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
 ////////////////////////////////////////
 
 begin_finalizer(SS_SOUND, ssFinalizeSound)
-  object->sound->unref();
+  if (object->sound) object->sound->unref();
+#ifdef WIN32
+  if (object->midi) object->midi->unref();
+#endif
 end_finalizer()
 
 ////////////////////////////////////////
@@ -6136,8 +6168,16 @@ end_finalizer()
 */
 begin_method(SS_SOUND, ssSoundPlay, 1)
   arg_bool(repeat);
-  object->sound->setRepeat(repeat);
-  object->sound->play();
+
+  if (object->sound) {
+    object->sound->setRepeat(repeat);
+    object->sound->play();
+  }
+#ifdef WIN32
+  if (object->midi) {
+    object->midi->play();
+  }
+#endif
 end_method()
 
 ////////////////////////////////////////
@@ -6146,7 +6186,10 @@ end_method()
     - pauses playback. call play() again to resume playback.
 */
 begin_method(SS_SOUND, ssSoundPause, 0)
-  object->sound->stop();
+  if (object->sound) object->sound->stop();
+#ifdef WIN32
+  if (object->midi) object->midi->stop();
+#endif
 end_method()
 
 ////////////////////////////////////////
@@ -6155,8 +6198,13 @@ end_method()
     - stops playback
 */
 begin_method(SS_SOUND, ssSoundStop, 0)
-  object->sound->stop();
-  object->sound->reset();
+  if (object->sound) {
+    object->sound->stop();
+    object->sound->reset();
+  }
+#ifdef WIN32
+  if (object->midi) object->midi->stop();
+#endif
 end_method()
 
 ////////////////////////////////////////
@@ -6166,7 +6214,7 @@ end_method()
 */
 begin_method(SS_SOUND, ssSoundSetVolume, 1)
   arg_int(volume);
-  object->sound->setVolume(volume / 255.0f);
+  if (object->sound) object->sound->setVolume(volume / 255.0f);
 end_method()
 
 ////////////////////////////////////////
@@ -6175,7 +6223,8 @@ end_method()
     - returns the sound's volume (0-255)
 */
 begin_method(SS_SOUND, ssSoundGetVolume, 0)
-  return_int(object->sound->getVolume() * 255);
+  if (object->sound) return_int(object->sound->getVolume() * 255);
+  else return_int(255);
 end_method()
 
 ////////////////////////////////////////
@@ -6185,7 +6234,7 @@ end_method()
 */
 begin_method(SS_SOUND, ssSoundSetPan, 1)
   arg_int(pan);
-  object->sound->setPan(pan / 255.0f);
+  if (object->sound) object->sound->setPan(pan / 255.0f);
 end_method()
 
 ////////////////////////////////////////
@@ -6194,7 +6243,8 @@ end_method()
     - returns the current pan of the sound
 */
 begin_method(SS_SOUND, ssSoundGetPan, 0)
-  return_int(object->sound->getPan() * 255);
+  if (object->sound) return_int(object->sound->getPan() * 255);
+  else return_int(0);
 end_method()
 
 ////////////////////////////////////////
@@ -6205,7 +6255,7 @@ end_method()
 */
 begin_method(SS_SOUND, ssSoundSetPitch, 1)
   arg_double(pitch);
-  object->sound->setPitchShift(pitch);
+  if (object->sound) object->sound->setPitchShift(pitch);
 end_method()
 
 ////////////////////////////////////////
@@ -6214,7 +6264,8 @@ end_method()
     - returns the current pitch
 */
 begin_method(SS_SOUND, ssSoundGetPitch, 0)
-  return_double(object->sound->getPitchShift());
+  if (object->sound) return_double(object->sound->getPitchShift());
+  else return_double(1.0);
 end_method()
 
 
@@ -6224,7 +6275,12 @@ end_method()
     - returns true if the sound is currently playing
 */
 begin_method(SS_SOUND, ssSoundIsPlaying, 0)
-  return_bool(object->sound->isPlaying());
+  if (object->sound) return_bool(object->sound->isPlaying());
+#ifdef WIN32
+  else
+  if (object->midi) return_bool(object->midi->isPlaying());
+#endif
+  else return_bool(false);
 end_method()
 
 ////////////////////////////////////////
@@ -6234,7 +6290,8 @@ end_method()
       Not all sound types are seekable, Ogg is.
 */
 begin_method(SS_SOUND, ssSoundIsSeekable, 0)
-  return_bool(object->sound->isSeekable());
+  if (object->sound) return_bool(object->sound->isSeekable());
+  else return_bool(true);
 end_method()
 
 ////////////////////////////////////////
@@ -6244,7 +6301,12 @@ end_method()
       returns zero if the sound isn't seekable
 */
 begin_method(SS_SOUND, ssSoundGetPosition, 0)
-  return_int(object->sound->getPosition());
+  if (object->sound) return_int(object->sound->getPosition());
+#ifdef WIN32
+  else
+  if (object->midi)  return_int(object->midi->getPosition());
+#endif
+  else return_int(0);
 end_method()
 
 ////////////////////////////////////////
@@ -6255,7 +6317,10 @@ end_method()
 */
 begin_method(SS_SOUND, ssSoundSetPosition, 1)
   arg_int(pos);
-  object->sound->setPosition(pos);
+  if (object->sound) object->sound->setPosition(pos);
+#ifdef WIN32
+  if (object->midi)  object->midi->setPosition(pos);
+#endif
 end_method()
 
 ////////////////////////////////////////
@@ -6264,7 +6329,12 @@ end_method()
     - gets the length of the sound
 */
 begin_method(SS_SOUND, ssSoundGetLength, 0)
-  return_int(object->sound->getLength());
+  if (object->sound) return_int(object->sound->getLength());
+#ifdef WIN32
+  else
+  if (object->midi)  return_int(object->midi->getLength());
+#endif
+  else return_int(0);
 end_method()
 
 ////////////////////////////////////////
@@ -6273,7 +6343,11 @@ end_method()
     - creates a copy of the sound object (currently doesn't really work)
 */
 begin_method(SS_SOUND, ssSoundClone, 0)
+#ifdef WIN32
+  return_object(CreateSoundObject(cx, object->sound, object->midi));
+#else
   return_object(CreateSoundObject(cx, object->sound));
+#endif
 end_method()
 
 ////////////////////////////////////////

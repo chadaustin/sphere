@@ -12,6 +12,8 @@ struct IFileSystem
 
   virtual ~IFileSystem() { }
   virtual IFile* Open(const char* filename, int mode) = 0;
+
+  virtual const char* GetFileSystemName() = 0;
 };
 
 

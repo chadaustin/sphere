@@ -15,6 +15,7 @@
 
 class CMapEngine;
 
+bool IsMidi(const char* filename);
 
 struct IEngine
 {
@@ -58,6 +59,9 @@ struct IEngine
   virtual void DestroyWindowStyle(SWINDOWSTYLE* windowstyle) = 0;
 
   virtual audiere::OutputStream* LoadSound(const char* filename, bool streaming) = 0;
+#ifdef WIN32
+  virtual audiere::MIDIStream* LoadMIDI(const char* filename) = 0;
+#endif
 
   virtual IMAGE GetSystemArrow() = 0;
   virtual IMAGE GetSystemUpArrow() = 0;

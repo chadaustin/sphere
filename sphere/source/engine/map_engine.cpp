@@ -47,6 +47,9 @@ CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
 , m_ThrottleFPS(true)
 
 , m_Music(NULL)
+#ifdef WIN32
+, m_Midi(NULL)
+#endif
 
 , m_IsInputAttached(false)
 , m_InputPerson(-1)
@@ -148,6 +151,9 @@ CMapEngine::Execute(const char* filename, int fps)
   m_LastTrigger = -1;
   m_ErrorMessage = "";
   m_Music = 0;
+#ifdef WIN32
+  m_Midi = 0;
+#endif
 
   m_NumFrames = 0;
   m_FramesLeft = 0;
@@ -1457,6 +1463,7 @@ CMapEngine::DetachInput()
     DetachPlayerInput(m_Persons[m_InputPerson].name.c_str());
   }
 
+  m_InputPerson = -1;
   m_IsInputAttached = false;
   return true;
 }
@@ -1504,7 +1511,19 @@ CMapEngine::AttachPlayerInput(const char* name, int player)
     return false;
   }
 
-  m_InputPersons.push_back(person);
+  // detach player
+  for (unsigned int i = 0; i < m_Persons.size(); i++) {
+    if (m_Persons[i].player_index == player) {
+      for (unsigned int j = 0; j < m_InputPersons.size(); j++) {
+        if (m_InputPersons[j] == i) {
+          m_Persons[i].player_index = -1;
+          m_InputPersons.erase(m_InputPersons.begin() + j);
+          break;
+        }
+      }
+      break;
+    }
+  }
 
   Person& p = m_Persons[person];
   p.player_index = player;
@@ -1513,6 +1532,8 @@ CMapEngine::AttachPlayerInput(const char* name, int player)
     m_InputPerson = person;
     m_IsInputAttached = true;
   }
+
+  m_InputPersons.push_back(person);
 
   switch (player) {
     case 0:
@@ -1564,15 +1585,19 @@ CMapEngine::DetachPlayerInput(const char* name)
   }
 
   int player = -1;
+
   for (int i = 0; i < int(m_InputPersons.size()); i++) {
     if (m_InputPersons[i] == person) {
-      player = i;
+      player = m_Persons[m_InputPersons[i]].player_index;
+      m_Persons[m_InputPersons[i]].player_index = -1;
+      m_InputPersons.erase(m_InputPersons.begin() + i);
       break;
     }
   }
 
-  if (player != -1) {
-    m_InputPersons.erase(m_InputPersons.begin() + player);
+  if (player == 0) {
+    m_InputPerson = -1;
+    m_IsInputAttached = false;
   }
 
   return true;
@@ -1967,6 +1992,13 @@ CMapEngine::DestroyPerson(const char* name)
   for (int i = 0; i < int(m_Persons.size()); i++) {
     if (m_Persons[i].name == name) {
 
+      // detach camera if necessary
+      if (i == m_CameraPerson) {
+        m_IsCameraAttached = false;
+      } else if (m_CameraPerson > i) {
+        m_CameraPerson--;
+      }
+
       // detach input if necessary
       if (i == m_InputPerson) {
         m_IsInputAttached = false;
@@ -1976,6 +2008,7 @@ CMapEngine::DestroyPerson(const char* name)
 
       for (int j = 0; j < int(m_InputPersons.size()); j++) {
         if (m_InputPersons[j] == i) {
+          m_Persons[m_InputPersons[j]].player_index = -1;
           m_InputPersons.erase(m_InputPersons.begin() + j);
           j--;
         } else if (m_InputPersons[j] > i) {
@@ -1983,12 +2016,6 @@ CMapEngine::DestroyPerson(const char* name)
         }
       }
 
-      // detach camera if necessary
-      if (i == m_CameraPerson) {
-        m_IsCameraAttached = false;
-      } else if (m_CameraPerson > i) {
-        m_CameraPerson--;
-      }
 
       // update all leader indices
       for (int j = 0; j < int(m_Persons.size()); j++) {
@@ -3254,11 +3281,26 @@ CMapEngine::OpenMap(const char* filename)
 
       if (m_Playlist.GetNumFiles() > 0) {
         m_Music = m_Engine->LoadSound(m_Playlist.GetFile(0), false);
+#ifdef WIN32
+        if (!m_Music && IsMidi(m_Playlist.GetFile(0))) {
+          m_Midi = m_Engine->LoadMIDI(m_Playlist.GetFile(0));
+        }
+#endif
       }
     }
     else {
       m_Music = m_Engine->LoadSound(music.c_str(), true);
-      if (!m_Music) {
+
+#ifdef WIN32
+        if (!m_Music && IsMidi(music.c_str())) {
+          m_Midi = m_Engine->LoadMIDI(music.c_str());
+        }
+
+      if (!m_Music && !m_Midi)
+#else
+      if (!m_Music)
+#endif
+      {
         m_ErrorMessage = "Could not load background music '" + music + "'";
         return false;
       }
@@ -3270,6 +3312,12 @@ CMapEngine::OpenMap(const char* filename)
     m_Music->setRepeat(true);
     m_Music->play();
   }
+#ifdef WIN32
+  if (m_Midi) {
+    //m_Midi->setRepeat(true);
+    m_Midi->play();
+  }
+#endif
 
   // initialize camera
   m_Camera.x     = m_Map.GetMap().GetStartX();
@@ -3288,6 +3336,10 @@ CMapEngine::OpenMap(const char* filename)
 
     // stop background music
     m_Music = 0;
+
+#ifdef WIN32
+    m_Midi = 0;
+#endif
 
     // destroy edge scripts
     DestroyEdgeScripts();
@@ -3308,6 +3360,10 @@ CMapEngine::CloseMap()
   // stop background music
   m_Playlist.Clear();
   m_Music = 0;
+
+#ifdef WIN32
+  m_Midi = 0;
+#endif
 
   if (!DestroyMapPersons()) {
     m_CurrentMap = "";
@@ -3641,6 +3697,13 @@ CMapEngine::DestroyMapPersons()
 
     if (m_Persons[i].destroy_with_map) {
 
+      // detach camera if necessary
+      if (i == m_CameraPerson) {
+        m_IsCameraAttached = false;
+      } else if (m_CameraPerson > i) {
+        m_CameraPerson--;
+      }
+
       // detach input if necessary
       if (i == m_InputPerson) {
         m_IsInputAttached = false;
@@ -3650,18 +3713,12 @@ CMapEngine::DestroyMapPersons()
 
       for (int j = 0; j < int(m_InputPersons.size()); j++) {
         if (m_InputPersons[j] == i) {
+          m_Persons[m_InputPersons[j]].player_index = -1;
           m_InputPersons.erase(m_InputPersons.begin() + j);
           j--;
         } else if (m_InputPersons[j] > i) {
           m_InputPersons[j]--;
         }
-      }
-
-      // detach camera if necessary
-      if (i == m_CameraPerson) {
-        m_IsCameraAttached = false;
-      } else if (m_CameraPerson > i) {
-        m_CameraPerson--;
       }
 
       // update all leader indices
@@ -4418,7 +4475,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
   }
 
   for (int j = 0; j < int(m_InputPersons.size()); j++) {
-    if (j == person_index) {
+    if (m_InputPersons[j] == person_index) {
       int px = int(fabs(x - p->x));
       int py = int(fabs(y - p->y));
       int s;

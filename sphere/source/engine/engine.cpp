@@ -18,6 +18,28 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
+bool IsMidi(const char* filename)
+{
+  struct Local {
+    static inline bool extension_compare(const char* path, const char* extension) {
+      int path_length = strlen(path);
+      int ext_length  = strlen(extension);
+      return (
+        path_length >= ext_length &&
+        strcmp(path + path_length - ext_length, extension) == 0
+      );
+    }
+  };
+
+  if (Local::extension_compare(filename, ".mid"))  return true;
+  if (Local::extension_compare(filename, ".midi")) return true;
+  if (Local::extension_compare(filename, ".rmi"))  return true;
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 CGameEngine::CGameEngine(IFileSystem& fs,
                          const SSystemObjects& system_objects,
                          const std::vector<Game>& game_list,
@@ -637,6 +659,36 @@ CGameEngine::LoadSound(const char* filename, bool streaming)
   audiere::FilePtr adrfile(new AudiereFile(file));
   return SA_OpenSound(adrfile.get(), streaming);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+#ifdef WIN32
+audiere::MIDIStream*
+CGameEngine::LoadMIDI(const char* filename)
+{
+  if (!IsMidi(filename))
+    return NULL;
+
+  std::string path = "sounds/";
+  path += filename;
+
+  if (strcmp(g_DefaultFileSystem.GetFileSystemName(), m_FileSystem.GetFileSystemName()) != 0) {
+    /*
+    IFile* file = m_FileSystem.Open(path.c_str(), IFileSystem::read);
+    if (!file) {
+      return 0;
+    }
+
+    audiere::FilePtr adrfile(new AudiereFile(file));
+    return SA_OpenMIDI(adrfile.get());
+    */
+
+    return NULL;
+  }
+
+  return SA_OpenMIDI(path.c_str());
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 

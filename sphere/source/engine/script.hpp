@@ -132,7 +132,11 @@ private:
   declare_constructor1(CreateSpritesetBaseObject, SSPRITESET* spriteset);
 
   // sounds
+#ifdef WIN32
+  declare_constructor2(CreateSoundObject, audiere::OutputStream* sound, audiere::MIDIStream* midi);
+#else
   declare_constructor1(CreateSoundObject, audiere::OutputStream* sound);
+#endif
   declare_finalizer(ssFinalizeSound);
   declare_method(ssSoundPlay);
   declare_method(ssSoundPause);
