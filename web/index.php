@@ -1,5 +1,5 @@
 <?php
-$DATE = '$Date: 2001-12-29 03:16:56 $';
+$DATE = '$Date: 2001-12-30 23:23:27 $';
 $AUTHOR = '$Author: jcore $';
 
 require('utility.php');
@@ -19,7 +19,7 @@ foreach ($articles as $article) {
   $head = <<<HEAD
 <a name="$counter" />
 <img src="$SITEROOT/images/icons/{$ICONS[$article->icon]}" alt="{$article->icon}" />
-<b>{$article->date}</b>: {$article->title}
+{$article->date}: <b>{$article->title}</b>
 HEAD;
   $author = $article->author;
   $body = <<<BODY
@@ -32,13 +32,6 @@ BODY;
 $right = "";
 $counter = 0;
 $body = "";
-foreach ($articles as $article) {
-  $counter++;
-  $body .= <<<BODY
-<a href="#$counter">{$article->title}</a><br />
-BODY;
-}
-$right .= generateBox("box", "latest news", $body);
 
 if ($sphereusername) {
   $user = $conn->getUser($sphereusername);
@@ -49,10 +42,39 @@ TEXT;
     $youraccount .= '<br />You may <a href="admin/addnews.php">add a new news article</a>.';
 }
 else {
+  $login = <<<LOGIN
+<script language="JavaScript">
+  function keyHandler (event, form) {
+    if (event && event.keyCode == 13)
+      form.submit();
+    else
+      return true;
+  }
+</script>
+<form action="$SITEROOT/tools/userlogin.php" method="post" name="login">
+<div>
+  <label>username: </label>
+  <input type="text" name="username" maxlength="32"><br />
+  <label>password: </label>
+  <input type="password" name="password" maxlength="12" onKeyPress="return keyHandler(event, this.form)"><br />
+  <div class="sig"><a href="Javascript:document.login.submit()">login</a></div>
+</div>
+</form>
+LOGIN;
+$right .= generateBox("box", "login", $login);
+}
+
+foreach ($articles as $article) {
+  $counter++;
+  $body .= <<<BODY
+<a href="#$counter">{$article->title}</a><br />
+BODY;
+}
+  $right .= generateBox("box", "latest news", $body);
+
   $youraccount = <<<TEXT
 You can register for a free account on sphere.sourceforge.net.  The account system doesn't do anything useful yet unless you have an elevated user level.
 TEXT;
-}
 $youraccount .= "<br />Please report any bugs in the new user system to jcore.";
 $right .= generateBox("box", "your account", $youraccount);
 
