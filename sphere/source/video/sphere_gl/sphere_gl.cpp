@@ -828,11 +828,21 @@ EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static inline float sphere_x_to_opengl_x(int x) {
+  return (float) x + 0.5f;
+}
+
+static inline float sphere_y_to_opengl_y(int y) {
+  return (float) y + 0.5f;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 EXPORT(void) DrawPoint(int x, int y, RGBA color)
 {
   glBegin(GL_POINTS);
   glColor4ubv((GLubyte*)&color);
-  glVertex2f(x - 0.5f, y - 0.5f);
+  glVertex2f(sphere_x_to_opengl_x(x), sphere_y_to_opengl_y(y));
   glEnd();
 }
 
@@ -842,8 +852,8 @@ EXPORT(void) DrawLine(int x[2], int y[2], RGBA color)
 {
   glBegin(GL_LINES);
   glColor4ubv((GLubyte*)&color);
-  glVertex2f(x[0] - 0.5f, y[0] - 0.5f);
-  glVertex2f(x[1] - 0.5f, y[1] - 0.5f);
+  glVertex2f(sphere_x_to_opengl_x(x[0]), sphere_x_to_opengl_y(y[0]));
+  glVertex2f(sphere_x_to_opengl_x(x[1]), sphere_y_to_opengl_y(y[1]));
   glEnd();
 }
 
@@ -853,9 +863,9 @@ EXPORT(void) DrawGradientLine(int x[2], int y[2], RGBA colors[2])
 {
   glBegin(GL_LINES);
   glColor4ubv((GLubyte*)(colors + 0));
-  glVertex2f(x[0] - 0.5f, y[0] - 0.5f);
+  glVertex2f(sphere_x_to_opengl_x(x[0]), sphere_y_to_opengl_y(y[1]));
   glColor4ubv((GLubyte*)(colors + 1));
-  glVertex2f(x[1] - 0.5f, y[1] - 0.5f);
+  glVertex2f(sphere_x_to_opengl_x(x[1]), sphere_y_to_opengl_y([1]));
   glEnd();
 }
 
@@ -865,9 +875,9 @@ EXPORT(void) DrawTriangle(int x[3], int y[3], RGBA color)
 {
   glBegin(GL_TRIANGLES);
   glColor4ubv((GLubyte*)&color);
-  glVertex2f(x[0] - 0.5f, y[0] - 0.5f);
-  glVertex2f(x[1] - 0.5f, y[1] - 0.5f);
-  glVertex2f(x[2] - 0.5f, y[2] - 0.5f);
+  glVertex2f(sphere_x_to_opengl_x(x[0]), sphere_y_to_opengl_y(y[0]));
+  glVertex2f(sphere_x_to_opengl_x(x[1]), sphere_y_to_opengl_y(y[1]));
+  glVertex2f(sphere_x_to_opengl_x(x[2]), sphere_y_to_opengl_y(y[2]));
   glEnd();
 }
 
@@ -877,23 +887,15 @@ EXPORT(void) DrawGradientTriangle(int x[3], int y[3], RGBA colors[3])
 {
   glBegin(GL_TRIANGLES);
   glColor4ubv((GLubyte*)(colors + 0));
-  glVertex2f(x[0] - 0.5f, y[0] - 0.5f);
+  glVertex2f(sphere_x_to_opengl_x(x[0]), sphere_y_to_opengl_y(y[0]));
   glColor4ubv((GLubyte*)(colors + 1));
-  glVertex2f(x[1] - 0.5f, y[1] - 0.5f);
+  glVertex2f(sphere_x_to_opengl_x(x[1]), sphere_y_to_opengl_y(y[1]));
   glColor4ubv((GLubyte*)(colors + 2));
-  glVertex2f(x[2] - 0.5f, y[2] - 0.5f);
+  glVertex2f(sphere_x_to_opengl_x(x[2]), sphere_y_to_opengl_y(y[2]));
   glEnd();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-static inline float sphere_x_to_opengl_x(int x) {
-  return 0.5f + (float) x;
-}
-
-static inline float sphere_y_to_opengl_y(int y) {
-  return (float) y + 0.5f;
-}
 
 EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color)
 {
