@@ -2,11 +2,25 @@ import os
 
 Import('base_env BUILD_DIR')
 
-files = ['Sphere Tutorial.txt',
-         'build.txt',
+env = base_env.Copy()
+env['BUILDERS']['TextFile'] = Builder(action = 'unix2dos < $SOURCE > $TARGET')
+
+files = ['build.txt',
          'changelog.txt',
-         'gpl.txt']
+         'doc_functions.txt',
+         'gpl.txt',
+         'how-to-build.txt',
+         'irc.txt',
+         'keys.txt',
+         'lack_of_documentation.txt',
+         'legal.txt',
+         'links.txt',
+         'network.txt',
+         'packages.txt',
+         'readme.txt',
+         'Sphere Tutorial.txt',
+         'sphere_cvs.txt',
+         'unix.txt']
 
 for f in files:
-    base_env.Install(os.path.join(BUILD_DIR, 'docs'), f)
-
+    env.TextFile(os.path.join(BUILD_DIR, 'docs', f), f)
