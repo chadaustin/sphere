@@ -7,6 +7,8 @@
   - redraw the map after ResizeAllLayers
   - when resizing or rescaling the tileset, move entities, the
     start point, and zones appropriately as well
+  - changed the Paste Area tool's tooltip to "Paste Area" instead of
+    "Paste"
 
 2003.02.05
   - fixed GrabImage crash bug in standard16 and interpolate16

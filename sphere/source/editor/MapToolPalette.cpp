@@ -17,7 +17,7 @@ CMapToolPalette::CMapToolPalette(CDocumentWindow* owner, IToolPaletteHandler* ha
   AddTool(IDI_MAPTOOL_SELECTTILE,  "Select Tile");
   AddTool(IDI_MAPTOOL_FILLAREA,    "Fill Area");
   AddTool(IDI_MAPTOOL_COPYAREA,    "Copy Area");
-  AddTool(IDI_MAPTOOL_PASTE,       "Paste");
+  AddTool(IDI_MAPTOOL_PASTE,       "Paste Area");
   AddTool(IDI_MAPTOOL_COPYENTITY,  "Copy Entity");
   AddTool(IDI_MAPTOOL_PASTEENTITY, "Paste Entity");
   AddTool(IDI_MAPTOOL_OBS_SEGMENT, "Obstruction Segment");
