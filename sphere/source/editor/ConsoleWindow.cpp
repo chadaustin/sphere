@@ -36,13 +36,17 @@ END_MESSAGE_MAP()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static CConsoleWindow* s_ConsoleWindow = NULL;
+
 CConsoleWindow::CConsoleWindow()
 : CDocumentWindow("Javascript Console", -1, CSize(400, 100))
 , m_Created(false)
 , rt(NULL)
 , cx(NULL)
-, global(NULL)
+, m_is_ready(true)
 {
+  s_ConsoleWindow = this;
+
   if (!Create()) {
     return;
   }
@@ -52,8 +56,21 @@ CConsoleWindow::CConsoleWindow()
 
 CConsoleWindow::~CConsoleWindow()
 {
+  /*
+  FILE* file = fopen("c:\\windows\\desktop\\debug.txt", "wb+");
+  if (file) {
+    fprintf(file, "%d %d %d", m_is_ready, s_IsRunning, s_ShouldExit);
+    fclose(file);
+    //exit(1);
+  }
+  */
+
+  s_ShouldExit = true;
+  while (!m_is_ready && s_IsRunning == true && s_ShouldExit == true) { }
+
   if (cx) { JS_DestroyContext(cx); cx = NULL; }
   if (rt) { JS_DestroyRuntime(rt); rt = NULL; }
+  s_ConsoleWindow = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -93,7 +110,7 @@ CConsoleWindow::Create()
     "Source",
     WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_CLIPCHILDREN,
     0,        0,
-    __cx__ - 100, __cy__ - bar,
+    __cx__, __cy__ - bar,
     m_hWnd,
     (HMENU)ID_EDIT,
     AfxGetApp()->m_hInstance,
@@ -162,6 +179,7 @@ CConsoleWindow::Create()
 
   JS_InitStandardClasses(cx, global);
   JS_SetErrorReporter(cx, ErrorReporter);
+  JS_SetBranchCallback(cx, BranchCallback);
 
 /////////
  
@@ -320,7 +338,7 @@ CConsoleWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
 
   SCNotification* notify = (SCNotification*)nmhdr;
   if (nmhdr->hwndFrom == __m_InputBar__) {
-    if (notify->ch == '\n') {
+    if (m_is_ready && notify->ch == '\n') {
 
       int line = 0;
       int len = SendInputBar(SCI_LINELENGTH, (WPARAM) line);
@@ -425,15 +443,23 @@ CConsoleWindow::IsToolAvailable(UINT id)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void
-CConsoleWindow::EvaluateString(const char* string)
+DWORD WINAPI
+CConsoleWindow::ThreadRoutine(LPVOID parameter)
 {
+  if (!s_ConsoleWindow)
+    return 0;
+
+  if (!s_ConsoleWindow->rt || !s_ConsoleWindow->cx || !s_ConsoleWindow->global)
+    return 0;
+
+  const char* string = (const char*) parameter;
+
   sCompileError error; error.m_TokenLine = -1;
-  bool has_error = !VerifyScript(string, error, rt, cx, global);
+  
+  bool has_error = !VerifyScript(string, error, s_ConsoleWindow->rt, s_ConsoleWindow->cx, s_ConsoleWindow->global);
+  bool show_message = true;
 
   if (has_error || error.m_Message.c_str() > 0) {
-    bool show_message = true;
-
     if (!has_error) {
       if (strlen(string) > strlen("var ")
        && memcmp(string, "var ", strlen("var ")) == 0
@@ -441,13 +467,43 @@ CConsoleWindow::EvaluateString(const char* string)
         show_message = false;
       }
     }
-
-    if (show_message)
-      AddString(error.m_Message.c_str());
   }
+
+  if (s_ConsoleWindow) {
+    s_ConsoleWindow->SetCaption("Javascript Console");
+  }
+
+  if (show_message) {
+    if (s_ConsoleWindow) {
+      s_ConsoleWindow->AddString(error.m_Message.c_str());
+    }
+  }
+
+  if (s_ConsoleWindow) {
+    s_ConsoleWindow->m_is_ready = true;
+  }
+
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+CConsoleWindow::EvaluateString(const char* string)
+{
+  if (m_is_ready) {
+    SetCaption("Javascript Console [running]");
 
+    m_is_ready = false;
+    static char __string__[1024] = {0};
+    strcpy(__string__, string);
+
+    DWORD thread_id;
+    if (CreateThread(NULL, 0, ThreadRoutine, (LPVOID) __string__, 0, &thread_id) == NULL) {
+      m_is_ready = true;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 

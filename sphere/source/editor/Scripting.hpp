@@ -28,11 +28,15 @@ struct sCompileError
   int         m_TokenLine;
 };
 
+extern bool s_ShouldExit;
+extern bool s_IsRunning;
 
 bool IsKeyword(const char* token);
 bool VerifyScript(const char* script, sCompileError& error);
 
 bool VerifyScript(const char* script, sCompileError& error, JSRuntime* rt, JSContext* cx, JSObject* global);
 void ErrorReporter(JSContext* cx, const char* message, JSErrorReport* report);
+
+JSBool BranchCallback(JSContext* cx, JSScript* script);
 
 #endif

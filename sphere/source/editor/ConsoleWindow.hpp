@@ -88,9 +88,14 @@ public:
   }
 
 private:
+  static DWORD WINAPI ThreadRoutine(LPVOID parameter);
+
+public:
   JSRuntime* rt;
   JSContext* cx;
   JSObject* global;
+
+  bool m_is_ready;
 
 private:
   bool m_Created;

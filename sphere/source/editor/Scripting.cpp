@@ -35,6 +35,8 @@ static char* s_Script = NULL;
 static bool s_HasError = false;
 static sCompileError s_Error;
 
+bool s_IsRunning = false;
+bool s_ShouldExit = false;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -82,6 +84,7 @@ bool VerifyScript(const char* script, sCompileError& error)
 
   JS_InitStandardClasses(cx, global);
   JS_SetErrorReporter(cx, ErrorReporter);
+  // JS_SetBranchCallback(cx, BranchCallback);
 
   bool v = VerifyScript(script, error, rt, cx, global);
 
@@ -93,8 +96,12 @@ bool VerifyScript(const char* script, sCompileError& error)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+JSScript* compiled_script = NULL;
+
 bool VerifyScript(const char* script, sCompileError& error, JSRuntime* rt, JSContext* cx, JSObject* global)
 {
+  s_ShouldExit = false;
+
   // compile the script (checks for syntax errors)
   if (rt == NULL || cx == NULL || global == NULL)
     return false;
@@ -107,9 +114,10 @@ bool VerifyScript(const char* script, sCompileError& error, JSRuntime* rt, JSCon
   strcpy(s_Script, script);
 
   s_HasError = false;
+  s_IsRunning = true;
 
   // time to actually compile
-  JSScript* compiled_script = JS_CompileScript(cx, global, s_Script, size, "", 0);
+  compiled_script = JS_CompileScript(cx, global, s_Script, size, "", 0);
   if (compiled_script) {
 
     if (!s_HasError && error.m_TokenLine == -1) {
@@ -127,6 +135,7 @@ bool VerifyScript(const char* script, sCompileError& error, JSRuntime* rt, JSCon
     }
 
     JS_DestroyScript(cx, compiled_script);
+    compiled_script = NULL;
   }
 
   if (s_HasError) {
@@ -136,6 +145,9 @@ bool VerifyScript(const char* script, sCompileError& error, JSRuntime* rt, JSCon
   // we're done
   delete[] s_Script;
   s_Script = NULL;
+
+  s_IsRunning = false;
+
   return !s_HasError;
 }
 
@@ -177,3 +189,25 @@ void ErrorReporter(JSContext* cx, const char* message, JSErrorReport* report)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+JSBool BranchCallback(JSContext* cx, JSScript* script)
+{
+  // handle garbage collection
+  // garbage collect!
+  JS_GC(cx);
+
+  /*
+  if (s_ShouldExit) {
+    FILE* file = fopen("c:\\windows\\desktop\\debug1.txt", "wb+");
+    if (file) {
+      fprintf (file, "woo!");
+      fclose(file);
+    }
+  }
+  */
+
+  return (!s_IsRunning || s_ShouldExit) ? JS_FALSE : JS_TRUE;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
