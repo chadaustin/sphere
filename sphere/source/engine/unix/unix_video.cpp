@@ -72,13 +72,17 @@ void ToggleFPS () {
 
 
 
-static std::string window_title;
+static std::string s_window_title;
+std::string GetWindowTitle() {
+  return s_window_title;
+}
+
 /*
  \brief change the title of the game to text
  */
 bool SetWindowTitle(const char* text) {
   // SDL forgets the title when going to/from fullscreen, so remember it
-  window_title = text;
+  s_window_title = text;
   SDL_WM_SetCaption(text, NULL);
   return true;
 }
@@ -105,26 +109,27 @@ bool SwitchResolution (int x, int y, bool fullscreen, bool update_cliprect) {
 
     SDL_InitSubSystem(SDL_INIT_JOYSTICK);
 
-    if (SDL_WasInit(SDL_INIT_JOYSTICK)) {
-      printf("Joysticks are initialized.\n");
-      printf("There are %d joysticks attached.\n", SDL_NumJoysticks());
-      for (int i = 0; i < SDL_NumJoysticks(); i++) {
-        printf("Joystick[%d].name = %s\n", i, SDL_JoystickName(i));
+    if (1) {
+      if (SDL_WasInit(SDL_INIT_JOYSTICK)) {
+        printf("Joysticks are initialized.\n");
+        printf("There are %d joysticks attached.\n", SDL_NumJoysticks());
+        for (int i = 0; i < SDL_NumJoysticks(); i++) {
+          printf("Joystick[%d].name = %s\n", i, SDL_JoystickName(i));
+        }
+      }
+      else {
+        printf("Joysticks are not initialized.\n");
       }
     }
-    else
-      printf("Joysticks are not initialized.\n");
 
   } else {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
-    //SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
+
     if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
 
-    //SDL_InitSubSystem(SDL_INIT_JOYSTICK);
-
     // keep the window title as what it was
-    SetWindowTitle(window_title.c_str());
+    SetWindowTitle(GetWindowTitle().c_str());
   }
 
   if (fullscreen)
@@ -135,10 +140,6 @@ bool SwitchResolution (int x, int y, bool fullscreen, bool update_cliprect) {
   if (screen == NULL)
     return false;
 
- /*
-  screen = SDL_CreateRGBSurface(0, real_screen->w, real_screen->h, 32, 0, 0, 0, 0);
-  SDL_ConvertSurface(screen, real_screen->format, 0);
- */
   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
   
   ScreenWidth = screen->w;
@@ -254,7 +255,7 @@ void SetClippingRectangle(int x, int y, int w, int h) {
    y2 = ScreenHeight - 1;
 
   SDL_Rect rect;
-  rect.x = x1; rect.y = y1; rect.w = x2 - x1; rect.h = y2 - y1;
+  rect.x = x1; rect.y = y1; rect.w = w; rect.h = h;
   SDL_SetClipRect(screen, &rect);
 
   ClippingRectangle.left = x1;
@@ -304,11 +305,6 @@ void FlipScreen () {
   }
     
   SDL_Flip(screen);
-  /*
-  SDL_Rect dest = {0, 0, 0, 0};
-  SDL_BlitSurface(screen, NULL, real_screen, &dest);
-  SDL_UpdateRect(real_screen, 0, 0, ScreenWidth, ScreenHeight);
-  */
 }
 
 IMAGE CreateImage(int width, int height, const RGBA* pixels) {
@@ -322,6 +318,12 @@ IMAGE CreateImage(int width, int height, const RGBA* pixels) {
   return image;
 }
 
+void DestroyImage(IMAGE image) {
+  delete[] image->bgra;
+  delete[] image->alpha;
+  delete image;
+}
+
 IMAGE GrabImage(int x, int y, int width, int height) {
   if (x < 0 || y < 0 || x + width > ScreenWidth || y + height > ScreenHeight)
     return NULL;
@@ -333,21 +335,18 @@ IMAGE GrabImage(int x, int y, int width, int height) {
 
   if (SDL_LockSurface(screen) != 0)
    return NULL;
+
   BGRA* Screen = (BGRA*)screen->pixels;
   image->bgra = new BGRA[width * height];
-  for (int iy = 0; iy < height; iy++)
-    memcpy(image->bgra + iy * width, Screen + (y + iy) * ScreenWidth + x,
-           width * 4);
+  for (int iy = 0; iy < height; iy++) {
+    memcpy(image->bgra + iy * width, Screen + (y + iy) * ScreenWidth + x, width * 4);
+  }
+
   image->alpha = new byte[width * height];
   memset(image->alpha, 255, width * height);
+
   SDL_UnlockSurface(screen);
   return image;
-}
-
-void DestroyImage(IMAGE image) {
-  delete[] image->bgra;
-  delete[] image->alpha;
-  delete image;
 }
 
 void BlitImage(IMAGE image, int x, int y) {
@@ -391,9 +390,9 @@ void BlitImageMask(IMAGE image, int x, int y, RGBA mask) {
 
 void aBlendBGRA(struct BGRA& d, struct BGRA s, int a) {
   // blit to the dest pixel
-  d.red   = (d.red   * (256 - a)) / 256 + s.red;
-  d.green = (d.green * (256 - a)) / 256 + s.green;
-  d.blue  = (d.blue  * (256 - a)) / 256 + s.blue;
+  d.red   = s.red   + (d.red   * (256 - a)) / 256;
+  d.green = s.green + (d.green * (256 - a)) / 256;
+  d.blue  = s.blue  + (d.blue  * (256 - a)) / 256;
 }
 
 void TransformBlitImage(IMAGE image, int x[4], int y[4]) {
@@ -434,6 +433,7 @@ void TileBlit(IMAGE image, int x, int y) {
     }
     SDL_UnlockSurface(screen);
   }
+
 }
 
 void SpriteBlit(IMAGE image, int x, int y) {
@@ -451,9 +451,11 @@ void SpriteBlit(IMAGE image, int x, int y) {
     while (iy-- > 0) {
       int ix = image_blit_width;
       while (ix-- > 0) {
+
         if (*alpha) {
           *dest = *src;
         }
+
         dest++;
         src++;
         alpha++;
@@ -481,12 +483,11 @@ void NormalBlit(IMAGE image, int x, int y) {
     while (iy-- > 0) {
       int ix = image_blit_width;
       while (ix-- > 0) {
-        word a = *alpha;
-        word b = 256 - a;
+        byte inverse_alpha = 255 - *alpha;
 
-        dest->red = (dest->red * b) / 256 + src->red;
-        dest->green = (dest->green * b) / 256 + src->green;
-        dest->blue = (dest->blue * b) / 256 + src->blue;
+        dest->red   = src->red   + (dest->red   * inverse_alpha) / 255;
+        dest->green = src->green + (dest->green * inverse_alpha) / 255;
+        dest->blue  = src->blue  + (dest->blue  * inverse_alpha) / 255;
 
         dest++;
         src++;
@@ -496,7 +497,7 @@ void NormalBlit(IMAGE image, int x, int y) {
       src += src_inc;
       alpha += src_inc;
     }
-   SDL_UnlockSurface(screen);
+    SDL_UnlockSurface(screen);
   }
 }
 
@@ -510,17 +511,22 @@ int GetImageHeight(IMAGE image) {
 
 RGBA* LockImage(IMAGE image) {
   image->locked_pixels = new RGBA[image->width * image->height];
+  if (image->locked_pixels == NULL)
+    return NULL;
+
   // rgb
   for (int i = 0; i < image->width * image->height; i++) {
     if (image->alpha[i]) {
-      image->locked_pixels[i].red   = (image->bgra[i].red * 256) / image->alpha[i];
+      image->locked_pixels[i].red   = (image->bgra[i].red   * 256) / image->alpha[i];
       image->locked_pixels[i].green = (image->bgra[i].green * 256) / image->alpha[i];
-      image->locked_pixels[i].blue  = (image->bgra[i].blue * 256) / image->alpha[i];
+      image->locked_pixels[i].blue  = (image->bgra[i].blue  * 256) / image->alpha[i];
     }
   }
+
   // alpha
   for (int i = 0; i < image->width * image->height; i++)
     image->locked_pixels[i].alpha = image->alpha[i];
+
   return image->locked_pixels;
 }
 
@@ -537,7 +543,7 @@ void DirectBlit(int x, int y, int w, int h, RGBA* pixels) {
   calculate_clipping_metrics(w, h);
 
   if (SDL_LockSurface(screen) == 0) {
-    for (int iy = image_offset_y; iy < image_offset_y + image_blit_height; iy++)
+    for (int iy = image_offset_y; iy < image_offset_y + image_blit_height; iy++) {
       for (int ix = image_offset_x; ix < image_offset_x + image_blit_width; ix++) {
         BGRA* dest = (BGRA*)screen->pixels + (y + iy) * ScreenWidth + x + ix;
         RGBA src = pixels[iy * w + ix];
@@ -548,12 +554,13 @@ void DirectBlit(int x, int y, int w, int h, RGBA* pixels) {
           dest->blue = src.blue;
         }
         else if (src.alpha > 0) {
-          dest->red = (dest->red * (256 - src.alpha) + src.red * src.alpha) / 256;
+          dest->red =   (dest->red   * (256 - src.alpha) + src.red   * src.alpha) / 256;
           dest->green = (dest->green * (256 - src.alpha) + src.green * src.alpha) / 256;
-          dest->blue = (dest->blue * (256 - src.alpha) + src.blue * src.alpha) / 256;
+          dest->blue =  (dest->blue  * (256 - src.alpha) + src.blue  * src.alpha) / 256;
         }
       }
-   SDL_UnlockSurface(screen);
+    }
+    SDL_UnlockSurface(screen);
   }
 }
 
@@ -573,16 +580,18 @@ void DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels) {
 void DirectGrab(int x, int y, int w, int h, RGBA* pixels) {
   if (x < 0 || y < 0 || x + w > ScreenWidth || y + h > ScreenHeight)
     return;
+
   if (SDL_LockSurface(screen) == 0) {
     BGRA* Screen = (BGRA*)screen->pixels;
-    for (int iy = 0; iy < h; iy++)
+    for (int iy = 0; iy < h; iy++) {
       for (int ix = 0; ix < w; ix++) {
         pixels[iy * w + ix].red   = Screen[(y + iy) * ScreenWidth + x + ix].red;
         pixels[iy * w + ix].green = Screen[(y + iy) * ScreenWidth + x + ix].green;
         pixels[iy * w + ix].blue  = Screen[(y + iy) * ScreenWidth + x + ix].blue;
         pixels[iy * w + ix].alpha = 255;
+      }
     }
-   SDL_UnlockSurface(screen);
+    SDL_UnlockSurface(screen);
   }
 }
 

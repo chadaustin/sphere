@@ -2162,21 +2162,43 @@ CMapEngine::GetPersonSpriteset(const char* name)
 bool
 CMapEngine::SetPersonSpriteset(const char* name, sSpriteset& spriteset)
 {
-  int person = -1;
-  if ( IsInvalidPersonError(name, person) ) {
+  int person_index = -1;
+  if ( IsInvalidPersonError(name, person_index) ) {
     return false;
   }
 
-  sSpriteset old_spriteset = m_Persons[person].spriteset->GetSpriteset();
-
   // release the old spriteset
-  m_Persons[person].spriteset->Release();
+  m_Persons[person_index].spriteset->Release();
 
   // create and insert the new spriteset (the constructor calls AddRef)
-  SSPRITESET* s = new SSPRITESET(spriteset);
-  m_Persons[person].spriteset = s;
+  m_Persons[person_index].spriteset = new SSPRITESET(spriteset);
+  if (m_Persons[person_index].spriteset == NULL) {
+    return false;
+  }
 
-  // todo, keep the person's data (current direction/frame, etc) in tact)
+  // make sure direction is valid
+  bool is_valid_direction = false;
+
+  for (int i = 0; i < spriteset.GetNumDirections(); i++) {
+    if (m_Persons[person_index].direction == spriteset.GetDirectionName(i)) {
+      is_valid_direction = true;
+      break;
+    }
+  }
+
+  if (is_valid_direction == false) {
+    m_Persons[person_index].direction = spriteset.GetDirectionName(0);
+  }
+
+  // make sure frame is valid
+  if (m_Persons[person_index].frame < 0) {
+    m_Persons[person_index].frame = 0;
+  } else {
+    m_Persons[person_index].frame %= spriteset.GetNumFrames(m_Persons[person_index].direction);
+  }
+
+  // make sure stepping is valid
+  m_Persons[person_index].stepping = m_Persons[person_index].frame;
 
   return true;
 }

@@ -271,11 +271,13 @@ sub make_docs {
     if (!$no_desc_text && $in_comment == 1) {
       my $temp_line = $line;
 
-      # @see name
-      if ($temp_line =~ m/\@see (.*)/) {
-        my $r = $1;
-        $temp_line =~ s/\@see $r/\@see <a href=\"#$r\">$r<\/a>/;
-      }
+        # @see name
+        if ($temp_line =~ m/\@see (.*)/) {
+          my $r = $1;
+          if (is_html()) {
+            $temp_line =~ s/\@see $r/\@see <a href=\"#$r\">$r<\/a>/;
+          }
+        }
 
       $desc_text .= $temp_line;
 

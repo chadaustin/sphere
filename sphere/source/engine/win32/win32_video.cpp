@@ -63,8 +63,9 @@ void assign(T& dest, U src)
 bool InitVideo(HWND window, SPHERECONFIG* config)
 {
   // Loads driver
-  std::string graphics_driver = "system/video/" + config->videodriver;
+  std::string graphics_driver =  "system/video/" + config->videodriver;
   GraphicsDriver = LoadLibrary(graphics_driver.c_str());
+
   if (GraphicsDriver == NULL) {
     puts("LoadLibrary() failed");
     return false;

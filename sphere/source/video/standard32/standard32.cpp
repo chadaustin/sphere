@@ -9,6 +9,7 @@
 #include "resource.h"
 
 
+
 /**
    @todo maybe this should go to rgb.cpp or some such...  but then
    every video driver depends on libcommon?
@@ -767,6 +768,18 @@ EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+EXPORT(void) DestroyImage(IMAGE image)
+{
+  if (BitsPerPixel == 32)
+    delete[] image->bgra;
+  else
+    delete[] image->bgr;
+  delete[] image->alpha;
+  delete image;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
 {
   if (x < 0 ||
@@ -804,18 +817,6 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
   memset(image->alpha, 255, width * height);
 
   return image;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-EXPORT(void) DestroyImage(IMAGE image)
-{
-  if (BitsPerPixel == 32)
-    delete[] image->bgra;
-  else
-    delete[] image->bgr;
-  delete[] image->alpha;
-  delete image;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -919,7 +920,7 @@ void aBlendBGR(struct BGR& d, struct BGR s, int a)
   // blit to the dest pixel
 #ifdef USE_ALPHA_TABLE
   d.red   = alpha_old[a][d.red]   + s.red;
-  d.green = alpha_old[a][d.green] + s.green;
+  d.green = alpha_old[a][d.green] + s.blue;
   d.blue  = alpha_old[a][d.blue]  + s.blue;
 #else
   d.red   = (d.red   * (256 - a)) / 256 + s.red;
