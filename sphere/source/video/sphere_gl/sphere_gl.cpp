@@ -721,27 +721,24 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
     glColor4f(1, 1, 1, 1);
     glBegin(GL_TRIANGLE_FAN);
 
-        // center
-        glTexCoord2f(image->tex_width / 2, image->tex_height / 2);
-        glVertex2i(cx, cy);
+      // center
+      glTexCoord2f(image->tex_width / 2, image->tex_height / 2);
+      glVertex2i(cx, cy);
+ 
+      glTexCoord2f(0, 0);
+      glVertex2i(x[0], y[0]);
+ 
+      glTexCoord2f(image->tex_width, 0);
+      glVertex2i(x[1], y[1]);
+ 
+      glTexCoord2f(image->tex_width, image->tex_height);
+      glVertex2i(x[2], y[2]);
+ 
+      glTexCoord2f(0, image->tex_height);
+      glVertex2i(x[3], y[3]);
 
-        glTexCoord2f(0, 0);
-        glVertex2i(x[0], y[0]);
-
-        glTexCoord2f(0, image->tex_height);
-        glVertex2i(x[1], y[1]);
-
-        glTexCoord2f(image->tex_width / 2, image->tex_height / 2);
-        glVertex2i(cx, cy);
-
-        glTexCoord2f(image->tex_width, image->tex_height);
-        glVertex2i(x[2], y[2]);
-
-        glTexCoord2f(image->tex_width, 0);
-        glVertex2i(x[3], y[3]);
-
-        glTexCoord2f(0, 0);
-        glVertex2i(x[0], y[0]);
+      glTexCoord2f(0, 0);
+      glVertex2i(x[0], y[0]);
 
     glEnd();
     
@@ -782,6 +779,7 @@ EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
       glVertex2i(x[3], y[3]);
 
       glTexCoord2f(0, 0);
+      glVertex2i(x[0], y[0]);
 
     glEnd();
     
