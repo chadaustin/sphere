@@ -138,6 +138,7 @@ private:
   bool m_Clicked;
 
   bool m_ShowGrid;
+  bool m_ShowTileObstructions;
 
   DECLARE_MESSAGE_MAP()
 };

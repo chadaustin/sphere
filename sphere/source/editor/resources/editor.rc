@@ -317,6 +317,8 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Set Entry Point",            ID_MAPVIEW_SETENTRYPOINT
         MENUITEM "View &Grid",                  ID_MAPVIEW_VIEWGRID
+        MENUITEM "View &Tile Obstructions",     ID_MAPVIEW_VIEWTILEOBSTRUCTIONS
+
         MENUITEM SEPARATOR
         MENUITEM "&Fill",                       ID_MAPVIEW_FILL
         MENUITEM SEPARATOR

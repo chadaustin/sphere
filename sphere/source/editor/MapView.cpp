@@ -56,6 +56,7 @@ CMapView::CMapView()
 
 , m_Clicked(false)
 , m_ShowGrid(false)
+, m_ShowTileObstructions(false)
 
 , m_PreviewLineOn(0)
 , m_RedrawWindow(0)
@@ -879,6 +880,49 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
               if (m_Clicked)
                 Blend3(dest[counter], m_HighlightColor, 80);
 */
+
+
+            // todo: this is horribly slow now, make it quicker
+            if (m_ShowTileObstructions) {
+
+              struct Local {
+                struct Color {
+                  RGBA operator()(int, int) {
+                    return CreateRGBA(255, 0, 255, 255);
+                  }
+                };
+
+                static inline void CopyRGBA(RGBA& dest, RGBA src) {
+                  dest = src;
+                }
+             };
+
+             sTile& m_tile = m_Map->GetTileset().GetTile(tile);
+             RGBA* m_pixels = m_tile.GetPixels();
+
+              // draw the obstruction segments
+             Local::Color c;
+
+             RECT clipper = { 0, 0, m_tile.GetWidth() - 1, m_tile.GetHeight() - 1 };
+             const sObstructionMap& obs_map = m_tile.GetObstructionMap();
+             for (int i = 0; i < obs_map.GetNumSegments(); i++) {
+    
+               const sObstructionMap::Segment& s = obs_map.GetSegment(i);
+
+                 primitives::Line(
+                   m_pixels,
+                   m_tile.GetWidth(),
+                   s.x1,
+                   s.y1,
+                   s.x2,
+                   s.y2,
+                   c,
+                   clipper,
+                   Local::CopyRGBA
+                 );
+               }
+            }
+
             counter++;
           }
 
@@ -895,7 +939,6 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
   // render the tile
   dc.BitBlt(rect.left, rect.top, tile_width * m_ZoomFactor, tile_height * m_ZoomFactor,
             CDC::FromHandle(m_BlitTile->GetDC()), 0, 0, SRCCOPY);
-
 
 
   // check if it's in fill or area select mode (not clicked)
@@ -1704,6 +1747,10 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
     CheckMenuItem(menu, ID_MAPVIEW_VIEWGRID, MF_BYCOMMAND | MF_CHECKED);
   }
 
+  if (m_ShowTileObstructions) {
+    CheckMenuItem(menu, ID_MAPVIEW_VIEWTILEOBSTRUCTIONS, MF_BYCOMMAND | MF_CHECKED);
+  }
+
   // disable the select tile menu if out of range
   if ( (tx >= 0 && tx < m_Map->GetLayer(m_SelectedLayer).GetWidth()
    && ty >= 0 && ty < m_Map->GetLayer(m_SelectedLayer).GetHeight()) == false ) {
@@ -1881,6 +1928,14 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
       Invalidate();
       m_Handler->MV_MapChanged();
       break;
+
+    case ID_MAPVIEW_VIEWTILEOBSTRUCTIONS:
+      m_ShowTileObstructions = !m_ShowTileObstructions;
+      m_RedrawWindow = 1;
+      Invalidate();
+      m_Handler->MV_MapChanged();
+      break;
+
   }
 }
 
