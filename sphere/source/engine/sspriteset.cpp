@@ -10,7 +10,26 @@ SSPRITESET::SSPRITESET()
 : m_Images(NULL)
 , m_FlipImages(NULL)
 , m_RefCount(1)
+, m_Filename("")
 {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+SSPRITESET::SSPRITESET(sSpriteset& s)
+: m_Images(NULL)
+, m_FlipImages(NULL)
+, m_RefCount(1)
+, m_Filename("")
+{
+  m_Spriteset = s;
+
+  m_Images = new IMAGE[m_Spriteset.GetNumImages()];
+  m_FlipImages = new IMAGE[m_Spriteset.GetNumImages()];
+  for (int i = 0; i < m_Spriteset.GetNumImages(); i++) {
+    m_Images[i]     = CreateFrameImage(i);
+    m_FlipImages[i] = CreateFlipFrameImage(i);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -73,15 +92,15 @@ SSPRITESET::GetSpriteset() const
 {
   return m_Spriteset;
 }
-
+ 
 ////////////////////////////////////////////////////////////////////////////////
 
 std::string
-SSPRITESET::GetFilename() const
-{
+SSPRITESET::GetFilename() const {
   return m_Filename;
 }
- 
+
+
 ////////////////////////////////////////////////////////////////////////////////
 
 int

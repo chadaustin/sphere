@@ -178,6 +178,7 @@ public:
   bool SetPersonMask(const char* name, RGBA mask);
   bool GetPersonMask(const char* name, RGBA& mask);
   SSPRITESET* GetPersonSpriteset(const char* name);
+  bool SetPersonSpriteset(const char* name, sSpriteset& spriteset);
 
   bool FollowPerson(const char* name, const char* leader, int pixels);
   bool SetPersonScript(const char* name, int which, const char* script);

@@ -11,6 +11,7 @@ class SSPRITESET
 {
 public:
   SSPRITESET();
+  SSPRITESET(sSpriteset& s);
 
 protected:  // use Release()
   ~SSPRITESET();

@@ -2045,6 +2045,30 @@ CMapEngine::GetPersonSpriteset(const char* name)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::SetPersonSpriteset(const char* name, sSpriteset& spriteset)
+{
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
+    return false;
+  }
+
+  sSpriteset old_spriteset = m_Persons[person].spriteset->GetSpriteset();
+
+  // release the old spriteset
+  m_Persons[person].spriteset->Release();
+
+  // create and insert the new spriteset (the constructor calls AddRef)
+  SSPRITESET* s = new SSPRITESET(spriteset);
+  m_Persons[person].spriteset = s;
+
+  // todo, keep the person's data (current direction/frame, etc) in tact)
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::FollowPerson(const char* follower, const char* leader, int pixels)
 {
   // get follower index

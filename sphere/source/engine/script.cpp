@@ -1111,6 +1111,7 @@ inline sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 #define arg_byte_array(name) SS_BYTEARRAY* name = argByteArray(cx, argv[arg++]);   if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
 #define arg_image(name)      SS_IMAGE* name     = argImage(cx, argv[arg++]);       if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
 #define arg_font(name)       SS_FONT* name      = argFont(cx, argv[arg++]);        if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
+#define arg_spriteset(name)  sSpriteset* name   = argSpriteset(cx, argv[arg++]);   if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
 
 // return values
 
@@ -3165,6 +3166,26 @@ begin_func(GetPersonSpriteset, 1)
   return_object(CreateSpritesetObject(cx, spriteset));
 end_func()
 
+/////////////////////////////////////////////////////////////////////////////////
+
+begin_func(SetPersonSpriteset, 2)
+  arg_str(name);
+  arg_spriteset(spriteset);
+
+  if (!This->m_Engine->GetMapEngine()->SetPersonSpriteset(name, *spriteset)) {
+    JS_ReportError(cx, "Could not find person '%s'", name);
+    delete spriteset;
+    return JS_FALSE;
+  }
+
+  delete spriteset;
+
+  // spritesets can take a lot of memory, so do a little GC
+  JS_MaybeGC(cx);
+
+
+end_func()
+
 ////////////////////////////////////////////////////////////////////////////////
 
 begin_func(GetPersonBase, 1)
@@ -4362,12 +4383,14 @@ begin_method(SS_SPRITESET, ssSpritesetSave, 1)
 
   sSpriteset* s = argSpriteset(cx, OBJECT_TO_JSVAL(obj));
   if (s == NULL) {
-   // JS_ReportError(cx, "spriteset.save failed");
     return JS_FALSE;
   }
 
   bool saved = s->Save(path.c_str());
   delete s;
+
+  // spritesets can take a lot of memory, so do a little GC
+  JS_MaybeGC(cx);
 
   return_bool ( saved );
 end_method()

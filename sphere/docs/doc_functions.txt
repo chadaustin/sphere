@@ -667,6 +667,10 @@ log_object.endBlock()
       GetPersonSpriteset(name)
         - returns the person's spriteset.
 
+      SetPersonSpriteset(name, spriteset)
+        - set's the person's spriteset to spriteset
+        e.g. SetPersonSpriteset("Jimmy", LoadSpriteset("jimmy.running.rss"));
+
       GetPersonBase(name)
         - returns the person's base obstruction object.
 
