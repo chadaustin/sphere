@@ -2165,9 +2165,13 @@ CMapEngine::SetPersonSpriteset(const char* name, sSpriteset& spriteset)
 
   // create and insert the new spriteset (the constructor calls AddRef)
   m_Persons[person_index].spriteset = new SSPRITESET(spriteset);
+
   if (m_Persons[person_index].spriteset == NULL) {
     return false;
   }
+
+  // need to put m_Persons[person_index].spriteset back into the spriteset server
+  // but it'll have no filename id
 
   // make sure direction is valid
   bool is_valid_direction = false;

@@ -15,34 +15,21 @@ SSPRITESET::SSPRITESET()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-SSPRITESET::SSPRITESET(sSpriteset& s)
+SSPRITESET::SSPRITESET(const sSpriteset& s)
 : m_Images(NULL)
 , m_FlipImages(NULL)
 , m_RefCount(1)
 , m_Filename("")
 {
   m_Spriteset = s;
-
-  m_Images = new IMAGE[m_Spriteset.GetNumImages()];
-  if (!m_Images) { return; }
-  m_FlipImages = new IMAGE[m_Spriteset.GetNumImages()];
-  if (!m_FlipImages) { delete[] m_Images; m_Images = NULL; return; }
-  for (int i = 0; i < m_Spriteset.GetNumImages(); i++) {
-    m_Images[i]     = CreateFrameImage(i);
-    m_FlipImages[i] = CreateFlipFrameImage(i);
-  }
+  Create();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 SSPRITESET::~SSPRITESET()
 {
-  for (int i = 0; i < m_Spriteset.GetNumImages(); i++) {
-    DestroyImage(m_Images[i]);
-    DestroyImage(m_FlipImages[i]);
-  }
-  delete[] m_Images;
-  delete[] m_FlipImages;
+  Destroy();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -74,8 +61,18 @@ SSPRITESET::Load(const char* filename, IFileSystem& fs, std::string pfilename)
     return false;
   }
 
-  m_Filename = pfilename;
+  if (!Create())
+    return false;
 
+  m_Filename = pfilename;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+SSPRITESET::Create()
+{
   m_Images = new IMAGE[m_Spriteset.GetNumImages()];
   if (!m_Images) { return false; }
   m_FlipImages = new IMAGE[m_Spriteset.GetNumImages()];
@@ -83,10 +80,25 @@ SSPRITESET::Load(const char* filename, IFileSystem& fs, std::string pfilename)
 
   for (int i = 0; i < m_Spriteset.GetNumImages(); i++) {
     m_Images[i]     = CreateFrameImage(i);
+    if (!m_Images[i]) { Destroy(); return false; }
     m_FlipImages[i] = CreateFlipFrameImage(i);
+    if (!m_FlipImages[i]) { Destroy(); return false; }
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+SSPRITESET::Destroy()
+{
+  for (int i = 0; i < m_Spriteset.GetNumImages(); i++) {
+    if (m_Images)     if (m_Images[i])  DestroyImage(m_Images[i]);
+    if (m_FlipImages) if (m_FlipImages) DestroyImage(m_FlipImages[i]);
+  }
+  delete[] m_Images;     m_Images = NULL;
+  delete[] m_FlipImages; m_FlipImages = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -5404,8 +5404,8 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
 
 begin_finalizer(SS_SPRITESET, ssFinalizeSpriteset)
   // destroy the spriteset
-  //This->m_Engine->DestroySpriteset(object->spriteset);
-  object->spriteset->Release();
+  This->m_Engine->DestroySpriteset(object->spriteset);
+  //object->spriteset->Release();
 end_finalizer()
 
 ////////////////////////////////////////
@@ -5431,6 +5431,7 @@ begin_method(SS_SPRITESET, ssSpritesetSave, 1)
 
   bool saved = s->Save(path.c_str());
   delete s;
+  s = NULL;
 
   // spritesets can take a lot of memory, so do a little GC
   JS_MaybeGC(cx);
@@ -5450,8 +5451,14 @@ begin_method(SS_SPRITESET, ssSpritesetClone, 0)
     return JS_FALSE;
   }
 
-  return_object(CreateSpritesetObject(cx, new SSPRITESET(*s)));
+  SSPRITESET* clone = new SSPRITESET(*s);
   delete s;
+  s = NULL;
+
+  if (!clone)
+    return JS_FALSE;
+
+  return_object(CreateSpritesetObject(cx, clone));
 
   // spritesets can take a lot of memory, so do a little GC
   JS_MaybeGC(cx);

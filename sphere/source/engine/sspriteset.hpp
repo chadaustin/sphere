@@ -11,7 +11,7 @@ class SSPRITESET
 {
 public:
   SSPRITESET();
-  SSPRITESET(sSpriteset& s);
+  SSPRITESET(const sSpriteset& s);
 
 protected:  // use Release()
   ~SSPRITESET();
@@ -28,6 +28,10 @@ public:
   int GetNumImages() const;
   IMAGE GetImage(int i) const;
   IMAGE GetFlipImage(int i) const;
+
+private:
+  bool Create();
+  void Destroy();
 
 private:
   IMAGE CreateFrameImage(int image);

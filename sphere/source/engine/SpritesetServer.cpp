@@ -11,8 +11,9 @@ CSpritesetServer::CSpritesetServer()
 
 CSpritesetServer::~CSpritesetServer()
 {
-  for (unsigned int i = 0; i < m_Spritesets.size(); i++)
+  for (unsigned int i = 0; i < m_Spritesets.size(); i++) {
     m_Spritesets[i].spriteset->Release();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,9 +51,11 @@ CSpritesetServer::Load(const char* filename, IFileSystem& fs)
 void
 CSpritesetServer::Free(SSPRITESET* spriteset)
 {
-  // find the spriteset
-  for (unsigned int i = 0; i < m_Spritesets.size(); i++)
-    if (spriteset == m_Spritesets[i].spriteset)
+  bool found = false;
+
+  for (unsigned int i = 0; i < m_Spritesets.size(); i++) {
+    if (spriteset == m_Spritesets[i].spriteset) {
+      found = true;
       if (--m_Spritesets[i].refcount == 0)
       {
         // remove m_Spritesets[i]
@@ -60,6 +63,13 @@ CSpritesetServer::Free(SSPRITESET* spriteset)
         m_Spritesets.erase(m_Spritesets.begin() + i);
         return;
       }
+    }
+  }
+
+  // the spriteset server does not own this spriteset
+  if (!found) {
+    spriteset->Release();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
