@@ -10,7 +10,7 @@ word version;          // must be 1 or 2
 byte edge_width;       // only valid if version == 1
 byte background_mode;  // 0 = tiled, 1 = stretched, 2 = gradient (uses corner_colors)
 RGBA corner_colors[4]; // upper left, upper right, lower left, lower right
-byte reserved[44];
+byte reserved[40];
 
 
 ---- Version 1 ----
