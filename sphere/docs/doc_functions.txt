@@ -563,6 +563,19 @@ log_object.endBlock()
   sound_object.getVolume()
     - returns the sound's volume (0-255)
 
+  sound_object.setPan(pan)
+    - pan can be from -255 to 255.  -255 = left, 255 = right
+
+  sound_object.getPan()
+    - returns the current pan of the sound
+
+  sound_object.setPitch(pitch)
+    - pitch ranges from 0.5 to 2.0.  0.5 is an octave down (and half as fast)
+      while 2.0 is an octave up (and twice as fast).  pitch defaults to 1
+
+  sound_object.getPitch()
+    - returns the current pitch
+
   sound_object.isPlaying()
     - returns true if the sound is currently playing
 

@@ -121,7 +121,7 @@ private:
   declare_finalizer(ssFinalizeSpriteset);
 
   // sounds
-  declare_constructor1(CreateSoundObject, ADR_STREAM sound);
+  declare_constructor1(CreateSoundObject, audiere::OutputStream* sound);
   declare_finalizer(ssFinalizeSound);
   declare_method(ssSoundPlay);
   declare_method(ssSoundStop);
@@ -129,6 +129,8 @@ private:
   declare_method(ssSoundGetVolume);
   declare_method(ssSoundSetPan);
   declare_method(ssSoundGetPan);
+  declare_method(ssSoundSetPitch);
+  declare_method(ssSoundGetPitch);
   declare_method(ssSoundIsPlaying);
 
   // fonts

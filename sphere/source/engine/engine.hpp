@@ -23,7 +23,6 @@ public:
     const std::vector<Game>& game_list,
     const char* script_directory,
     const char* parameters);
-  ~CGameEngine();
 
   void Run();
 
@@ -60,8 +59,7 @@ private:
   virtual SWINDOWSTYLE* LoadWindowStyle(const char* filename);
   virtual void DestroyWindowStyle(SWINDOWSTYLE* ws);
 
-  virtual ADR_STREAM LoadSound(const char* filename);
-  virtual void DestroySound(ADR_STREAM sound);
+  virtual audiere::OutputStream* LoadSound(const char* filename);
 
   virtual IMAGE GetSystemArrow();
   virtual IMAGE GetSystemUpArrow();

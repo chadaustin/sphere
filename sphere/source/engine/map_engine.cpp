@@ -94,7 +94,7 @@ CMapEngine::Execute(const char* filename, int fps)
 
   m_OnTrigger = false;
   m_ErrorMessage = "";
-  m_Music = NULL;
+  m_Music = 0;
 
   m_NumFrames = 0;
   m_FramesLeft = 0;
@@ -1685,7 +1685,7 @@ CMapEngine::OpenMap(const char* filename)
   std::string music = m_Map.GetMap().GetMusicFile();
   if (music.length()) {
     m_Music = m_Engine->LoadSound(music.c_str());
-    if (m_Music == NULL) {
+    if (!m_Music) {
       m_ErrorMessage = "Could not load background music '" + music + "'";
       return false;
     }
@@ -1693,8 +1693,8 @@ CMapEngine::OpenMap(const char* filename)
 
   // start background music
   if (m_Music) {
-    AdrSetStreamRepeat(m_Music, ADR_TRUE);
-    AdrPlayStream(m_Music);
+    m_Music->setRepeat(true);
+    m_Music->play();
   }
   
   // initialize camera
@@ -1714,10 +1714,7 @@ CMapEngine::OpenMap(const char* filename)
     m_ErrorMessage = "Entry Script Error:\n" + error;
 
     // stop background music
-    if (m_Music) {
-      m_Engine->DestroySound(m_Music);
-      m_Music = NULL;
-    }
+    m_Music = 0;
 
     // destroy edge scripts
     m_Engine->DestroyScript(m_NorthScript);
@@ -1738,10 +1735,7 @@ bool
 CMapEngine::CloseMap()
 {
   // stop background music
-  if (m_Music) {
-    m_Engine->DestroySound(m_Music);
-    m_Music = NULL;
-  }
+  m_Music = 0;
 
   if (!DestroyMapPersons()) {
     return false;

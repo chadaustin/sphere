@@ -29,15 +29,6 @@ CGameEngine::CGameEngine(IFileSystem& fs,
 , m_Script(NULL)
 , m_MapEngine(NULL)
 {
-  // set audio file callbacks
-  SA_PushFileSystem(&m_FileSystem);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-CGameEngine::~CGameEngine()
-{
-  SA_PopFileSystem();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -442,21 +433,61 @@ CGameEngine::DestroyWindowStyle(SWINDOWSTYLE* ws)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-ADR_STREAM
+class AudiereFile : public audiere::RefImplementation<audiere::File> {
+public:
+  AudiereFile(IFile* file) {
+    m_file = file;
+  }
+
+  ~AudiereFile() {
+    m_file->Close();
+    delete m_file;
+  }
+
+  int ADR_CALL read(void* buffer, int size) {
+    return m_file->Read(buffer, size);
+  }
+
+  bool ADR_CALL seek(int position, SeekMode mode) {
+    switch (mode) {
+      case BEGIN:
+        m_file->Seek(position);
+        return true;
+
+      case CURRENT:
+        m_file->Seek(position + m_file->Tell());
+        return true;
+
+      case END:
+        m_file->Seek(position + m_file->Size());
+        return true;
+
+      default:
+        return false;
+    }
+  }
+
+  int ADR_CALL tell() {
+    return m_file->Tell();
+  }
+
+private:
+  IFile* m_file;
+};
+
+audiere::OutputStream*
 CGameEngine::LoadSound(const char* filename)
 {
   std::string path = "sounds/";
   path += filename;
 
-  return AdrOpenStream(SA_GetAudiereContext(), path.c_str());
-}
+  IFile* file = m_FileSystem.Open(path.c_str(), IFileSystem::read);
+  if (!file) {
+    return 0;
+  }
 
-////////////////////////////////////////////////////////////////////////////////
-
-void
-CGameEngine::DestroySound(ADR_STREAM sound)
-{
-  AdrCloseStream(sound);
+  audiere::RefPtr<AudiereFile> adrfile(new AudiereFile(file));
+  return audiere::OpenSound(SA_GetAudioDevice(), adrfile.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

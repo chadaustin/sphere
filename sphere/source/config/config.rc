@@ -47,7 +47,13 @@ STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Audio"
 FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "I think this is obsolete",IDC_STATIC,8,8,68,8
+    GROUPBOX        "Sound Preferences",IDC_STATIC,8,8,196,60
+    CONTROL         "Use sound if possible",IDC_SOUND_AUTODETECT,"Button",
+                    BS_AUTORADIOBUTTON,16,24,83,10
+    CONTROL         "Always use sound",IDC_SOUND_ON,"Button",
+                    BS_AUTORADIOBUTTON,16,36,73,10
+    CONTROL         "No sound",IDC_SOUND_OFF,"Button",BS_AUTORADIOBUTTON,16,
+                    48,47,10
 END
 
 IDD_INPUT_PAGE DIALOG DISCARDABLE  0, 0, 212, 180

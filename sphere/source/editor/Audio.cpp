@@ -1,12 +1,8 @@
-#include <stdio.h>
-#include <audiere.h>
-#include "Configuration.hpp"
-#include "Keys.hpp"
 #include "Audio.hpp"
 
 
 static int s_InitCount = 0;
-static ADR_CONTEXT s_Context;
+static audiere::AudioDevicePtr s_Device;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -14,16 +10,10 @@ static ADR_CONTEXT s_Context;
 static void InitializeAudio()
 {
   if (s_InitCount++ == 0) {
-    ADR_CONTEXT_ATTR attr = AdrCreateContextAttr();
-    AdrContextAttrSetOutputDevice(attr, "autodetect");
-    
-    s_Context = AdrCreateContext(attr);
-    if (!s_Context) {
-      AdrContextAttrSetOutputDevice(attr, "null");
-      s_Context = AdrCreateContext(attr);
+    s_Device = audiere::OpenDevice();
+    if (!s_Device) {
+      s_Device = audiere::OpenDevice("null");
     }
-
-    AdrDestroyContextAttr(attr);
   }
 }
 
@@ -32,10 +22,7 @@ static void InitializeAudio()
 static void CloseAudio()
 {
   if (--s_InitCount == 0) {
-    if (s_Context) {
-      AdrDestroyContext(s_Context);
-      s_Context = NULL;
-    }
+    s_Device = 0;
   }
 }
 
@@ -51,11 +38,6 @@ CSound::CSound()
 
 CSound::~CSound()
 {
-  if (m_Sound) {
-    AdrCloseStream(m_Sound);
-    m_Sound = NULL;
-  }
-
   CloseAudio();
 }
 
@@ -64,18 +46,8 @@ CSound::~CSound()
 bool
 CSound::Load(const char* filename)
 {
-  if (m_Sound) {
-    AdrCloseStream(m_Sound);
-    m_Sound = NULL;
-  }
-
-  if (s_Context) {
-    m_Sound = AdrOpenStream(s_Context, filename);
-    return (m_Sound != NULL);
-  } else {
-    m_Sound = NULL;
-    return NULL;
-  }
+  m_Sound = audiere::OpenSound(s_Device.get(), filename);
+  return bool(m_Sound);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -84,7 +56,7 @@ void
 CSound::Play()
 {
   if (m_Sound) {
-    AdrPlayStream(m_Sound);
+    m_Sound->play();
   }
 }
 
@@ -94,8 +66,8 @@ void
 CSound::Stop()
 {
   if (m_Sound) {
-    AdrPauseStream(m_Sound);
-    AdrResetStream(m_Sound);
+    m_Sound->stop();
+    m_Sound->reset();
   }
 }
 
@@ -105,7 +77,7 @@ int
 CSound::GetVolume()
 {
   if (m_Sound) {
-    return AdrGetStreamVolume(m_Sound);
+    return m_Sound->getVolume() * 255;
   } else {
     return 0;
   }
@@ -117,7 +89,7 @@ void
 CSound::SetVolume(int Volume)
 {
   if (m_Sound) {
-    AdrSetStreamVolume(m_Sound, Volume);
+    m_Sound->setVolume(Volume / 255.0f);
   }
 }
 
@@ -127,7 +99,7 @@ bool
 CSound::IsPlaying() const
 {
   if (m_Sound) {
-    return (AdrIsStreamPlaying(m_Sound) == ADR_TRUE);
+    return m_Sound->isPlaying();
   } else {
     return false;
   }

@@ -307,6 +307,14 @@ BOOL CALLBACK AudioDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
     case WM_INITDIALOG:
     {
       SetFocus(GetDlgItem(window, IDC_DRIVERLIST));
+
+      switch (Config.sound) {
+        case SOUND_ON:         CheckDlgButton(window, IDC_SOUND_ON,         BST_CHECKED); break;
+        case SOUND_OFF:        CheckDlgButton(window, IDC_SOUND_OFF,        BST_CHECKED); break;
+        case SOUND_AUTODETECT: 
+        default:               CheckDlgButton(window, IDC_SOUND_AUTODETECT, BST_CHECKED); break;
+      }
+
       return FALSE;
     }
 
@@ -317,6 +325,13 @@ BOOL CALLBACK AudioDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
       PSHNOTIFY* psn = (PSHNOTIFY*)lparam;
       if (psn->hdr.code == PSN_APPLY)
       {
+        if (IsDlgButtonChecked(window, IDC_SOUND_ON) == BST_CHECKED) {
+          Config.sound = SOUND_ON;
+        } else if (IsDlgButtonChecked(window, IDC_SOUND_OFF) == BST_CHECKED) {
+          Config.sound = SOUND_OFF;
+        } else {
+          Config.sound = SOUND_AUTODETECT;
+        }
         return TRUE;
       }
 

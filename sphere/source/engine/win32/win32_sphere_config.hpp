@@ -5,10 +5,20 @@
 #include <string>
 
 
+enum {
+  SOUND_AUTODETECT,
+  SOUND_ON,
+  SOUND_OFF,
+};
+
+
 struct SPHERECONFIG
 {
   // video
   std::string videodriver;
+
+  // audio
+  int sound;
 
   // input
   bool joystick;

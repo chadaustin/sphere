@@ -274,7 +274,7 @@ private:
   qword m_NextFrame;
 
   SMAP       m_Map;
-  ADR_STREAM m_Music;
+  audiere::OutputStreamPtr m_Music;
 
   // camera
   struct {

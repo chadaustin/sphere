@@ -75,8 +75,7 @@ BEGIN_SS_OBJECT(SS_SPRITESET)
 END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_SOUND)
-  ADR_STREAM sound;
-  bool is_playing;
+  audiere::OutputStream* sound;
 END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_FONT)
@@ -2231,8 +2230,8 @@ begin_func(LoadSound, 1)
   arg_str(filename);
 
   // load sound
-  ADR_STREAM sound = This->m_Engine->LoadSound(filename);
-  if (sound == NULL) {
+  audiere::OutputStream* sound = This->m_Engine->LoadSound(filename);
+  if (!sound) {
     JS_ReportError(cx, "Could not load sound '%s'", filename);
     return JS_FALSE;
   }
@@ -2965,8 +2964,10 @@ end_finalizer()
 ////////////////////////////////////////
 
 JSObject*
-CScript::CreateSoundObject(JSContext* cx, ADR_STREAM sound)
+CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
 {
+  sound->ref();
+
   // define class
   static JSClass clasp = {
     "sound", JSCLASS_HAS_PRIVATE,
@@ -2977,6 +2978,7 @@ CScript::CreateSoundObject(JSContext* cx, ADR_STREAM sound)
   // create object
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
   if (object == NULL) {
+    sound->unref();
     return NULL;
   }
 
@@ -2986,6 +2988,10 @@ CScript::CreateSoundObject(JSContext* cx, ADR_STREAM sound)
     { "stop",        ssSoundStop,        0, 0, 0 },
     { "setVolume",   ssSoundSetVolume,   1, 0, 0 },
     { "getVolume",   ssSoundGetVolume,   0, 0, 0 },
+    { "setPan",      ssSoundSetPan,      1, 0, 0 },
+    { "getPan",      ssSoundGetPan,      0, 0, 0 },
+    { "setPitch",    ssSoundSetPitch,    1, 0, 0 },
+    { "getPitch",    ssSoundGetPitch,    0, 0, 0 },
     { "isPlaying",   ssSoundIsPlaying,   0, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
@@ -3002,43 +3008,68 @@ CScript::CreateSoundObject(JSContext* cx, ADR_STREAM sound)
 ////////////////////////////////////////
 
 begin_finalizer(SS_SOUND, ssFinalizeSound)
-  AdrCloseStream(object->sound);
+  object->sound->unref();
 end_finalizer()
 
 ////////////////////////////////////////
 
 begin_method(SS_SOUND, ssSoundPlay, 1)
   arg_bool(repeat);
-  AdrSetStreamRepeat(object->sound, (repeat ? ADR_TRUE : ADR_FALSE));
-  AdrPlayStream(object->sound);
-  object->is_playing = true;
+  object->sound->setRepeat(repeat);
+  object->sound->play();
 end_method()
 
 ////////////////////////////////////////
 
 begin_method(SS_SOUND, ssSoundStop, 0)
-  AdrPauseStream(object->sound);
-  AdrResetStream(object->sound);
-  object->is_playing = false;
+  object->sound->stop();
+  object->sound->reset();
 end_method()
 
 ////////////////////////////////////////
 
 begin_method(SS_SOUND, ssSoundSetVolume, 1)
   arg_int(volume);
-  AdrSetStreamVolume(object->sound, volume);
+  object->sound->setVolume(volume / 255.0f);
 end_method()
 
 ////////////////////////////////////////
 
 begin_method(SS_SOUND, ssSoundGetVolume, 0)
-  return_int(AdrGetStreamVolume(object->sound));
+  return_int(object->sound->getVolume() * 255);
 end_method()
 
 ////////////////////////////////////////
 
+begin_method(SS_SOUND, ssSoundSetPan, 1)
+  arg_int(pan);
+  object->sound->setPan(pan / 255.0f);
+end_method()
+
+////////////////////////////////////////
+
+begin_method(SS_SOUND, ssSoundGetPan, 0)
+  return_int(object->sound->getPan() * 255);
+end_method()
+
+////////////////////////////////////////
+
+begin_method(SS_SOUND, ssSoundSetPitch, 1)
+  arg_double(pitch);
+  object->sound->setPitchShift(pitch);
+end_method()
+
+////////////////////////////////////////
+
+begin_method(SS_SOUND, ssSoundGetPitch, 0)
+  return_double(object->sound->getPitchShift());
+end_method()
+
+
+////////////////////////////////////////
+
 begin_method(SS_SOUND, ssSoundIsPlaying, 0)
-  return_bool(object->is_playing);
+  return_bool(object->sound->isPlaying());
 end_method()
 
 ////////////////////////////////////////

@@ -2,6 +2,11 @@
 #define AUDIO_HPP
 
 
+#ifdef _MSC_VER
+#pragma warning(disable : 4786)
+#endif
+
+
 #include <audiere.h>
 
 
@@ -21,7 +26,7 @@ public:
   bool IsPlaying() const;
 
 private:
-  ADR_STREAM m_Sound;
+  audiere::OutputStreamPtr m_Sound;
 };
 
 
