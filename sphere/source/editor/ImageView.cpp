@@ -1,5 +1,6 @@
 #pragma warning(disable : 4786)
 
+#include <stack>
 #include "ImageView.hpp"
 #include "Editor.hpp"
 #include "../common/Filters.hpp"
@@ -539,28 +540,51 @@ CImageView::Fill()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+struct Point {
+  Point(int x_, int y_) {
+    x = x_;
+    y = y_;
+  }
+
+  int x;
+  int y;
+};
+
 void
 CImageView::FillMe(int x, int y, RGBA colorToReplace)
 {
-  RGBA* pImage = m_Image.GetPixels();
+  const int width  = m_Image.GetWidth();
+  const int height = m_Image.GetHeight();
+
+  std::stack<Point> q;
+  q.push(    Point(x, y));
   m_Image.SetPixel(x, y, m_Color);
 
-  // fill up
-  if (y > 0)
-    if (!memcmp(pImage + (y - 1) * m_Image.GetWidth() + x, &colorToReplace, sizeof(RGBA)))
-      FillMe(x, y-1, colorToReplace);
-  // fill down
-  if (y < m_Image.GetHeight() - 1)
-    if (!memcmp(pImage + (y + 1) * m_Image.GetWidth() + x, &colorToReplace, sizeof(RGBA)))
-      FillMe(x, y+1, colorToReplace);
-  // fill left
-  if (x > 0)
-    if (!memcmp(pImage + y * m_Image.GetWidth() + x - 1, &colorToReplace, sizeof(RGBA)))
-      FillMe(x-1, y, colorToReplace);
-  // fill right
-  if (x < m_Image.GetWidth() - 1)
-    if (!memcmp(pImage + y * m_Image.GetWidth() + x + 1, &colorToReplace, sizeof(RGBA)))
-      FillMe(x+1, y, colorToReplace);
+  while (!q.empty()) {
+    Point p = q.top();
+    q.pop();
+
+    // fill up
+    if (p.y > 0 && m_Image.GetPixel(p.x, p.y - 1) == colorToReplace) {
+      q.push(    Point(p.x, p.y - 1));
+      m_Image.SetPixel(p.x, p.y - 1, m_Color);
+    }
+    // fill down
+    if (p.y < height - 1 && m_Image.GetPixel(p.x, p.y + 1) == colorToReplace) {
+      q.push(    Point(p.x, p.y + 1));
+      m_Image.SetPixel(p.x, p.y + 1, m_Color);
+    }
+    // fill left
+    if (p.x > 0 && m_Image.GetPixel(p.x - 1, p.y) == colorToReplace) {
+      q.push(    Point(p.x - 1, p.y));
+      m_Image.SetPixel(p.x - 1, p.y, m_Color);
+    }
+    // fill right
+    if (p.x < width - 1 && m_Image.GetPixel(p.x + 1, p.y) == colorToReplace) {
+      q.push(    Point(p.x + 1, p.y));
+      m_Image.SetPixel(p.x + 1, p.y, m_Color);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
