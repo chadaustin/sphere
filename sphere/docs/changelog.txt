@@ -1,6 +1,7 @@
 2003.03.06
   - added a resample image to the image editor
   - added an "other" slide menu option (so you can specify how much to slide by)
+  - triggers/persons and zones are now also slided
 
 2003.02.23
   - fixed ExecuteZones so that it reported errors if there no zones to execute

@@ -1415,8 +1415,67 @@ sMap::SetEdgeScript(int edge, const char* script)
 void 
 sMap::Translate(int dx, int dy)
 {
-  for (unsigned i = 0; i < m_Layers.size(); i++) {
-    m_Layers[i].Translate(dx, dy);
+  bool persons = true;
+  bool triggers = true;
+  bool zones = true;
+
+  for (unsigned j = 0; j < m_Layers.size(); j++) {
+    m_Layers[j].Translate(dx, dy);
+  }
+
+  int tile_width = GetTileset().GetTileWidth();
+  int tile_height = GetTileset().GetTileHeight();
+
+  for (int i = 0; i < GetNumEntities(); i++) {
+
+    int type = GetEntity(i).GetEntityType();
+
+    if (type == sEntity::PERSON && persons == true
+     || type == sEntity::TRIGGER && triggers == true) {
+
+      int layer = GetEntity(i).layer;
+      int layer_width = GetLayer(layer).GetWidth() * tile_width;
+      int layer_height = GetLayer(layer).GetHeight() * tile_height;
+
+      int x = GetEntity(i).x + (dx * tile_width);
+      int y = GetEntity(i).y + (dy * tile_height);
+
+      // handle wrap around
+      if (x < 0) x = layer_width + x;
+      else if (x >= layer_width) x = x - layer_width;
+
+      if (y < 0) y = layer_height + y;
+      else if (y >= layer_height) y = y - layer_height;
+
+      GetEntity(i).x = x;
+      GetEntity(i).y = y;
+    }
+  }
+
+  if (zones) {
+    for (int i = 0; i < GetNumZones(); i++) {
+
+      int layer = GetZone(i).layer;
+      int x = GetZone(i).x1 + (dx * tile_width);
+      int y = GetZone(i).y1 + (dy * tile_height);
+      int width = GetZone(i).x2 - GetZone(i).x1;
+      int height = GetZone(i).y2 - GetZone(i).y1;
+
+      int layer_width =  GetLayer(layer).GetWidth() * tile_width;
+      int layer_height = GetLayer(layer).GetHeight() * tile_height;
+
+      // handle wrap around
+      if (x < 0) x = layer_width + x;
+      else if (x >= layer_width) x = x - layer_width;
+
+      if (y < 0) y = layer_height + y;
+      else if (y >= layer_height) y = y - height;
+
+      GetZone(i).x1 = x;
+      GetZone(i).y1 = y;
+      GetZone(i).x2 = x + width;
+      GetZone(i).y2 = y + height;
+    }
   }
 }
 
