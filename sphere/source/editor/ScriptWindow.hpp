@@ -4,21 +4,26 @@
 
 #include <afxext.h>
 #include "SaveableDocumentWindow.hpp"
-#include "ScriptView.hpp"
 
 
 class CScriptWindow 
 : public CSaveableDocumentWindow
-, private IScriptViewHandler
 {
 public:
   CScriptWindow(const char* filename = NULL);
-  ~CScriptWindow();
 
 private:
-  void Create();
+  bool Create();
+  void Initialize();
+
+  LRESULT SendEditor(UINT msg, WPARAM wparam = 0, LPARAM lparam = 0) {
+    return ::SendMessage(m_Editor, msg, wparam, lparam);
+  }
+
+  void SetStyle(int style, COLORREF fore, COLORREF back = 0xFFFFFF, int size = -1, const char* face = 0);
 
   bool LoadScript(const char* filename);
+  void GetEditorText(CString& text);
 
   afx_msg void OnSize(UINT yype, int cx, int cy);
   afx_msg void OnSetFocus(CWnd* old);
@@ -37,8 +42,8 @@ private:
   virtual void SV_ScriptChanged();
 
 private:
-  bool        m_Created;
-  CScriptView m_Edit;
+  bool m_Created;
+  HWND m_Editor;
 
   DECLARE_MESSAGE_MAP()
 };

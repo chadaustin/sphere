@@ -1,5 +1,7 @@
 #pragma warning(disable : 4786)
 
+#include <Scintilla.h>
+#include <SciLexer.h>
 #include "ScriptWindow.hpp"
 #include "FileDialogs.hpp"
 #include "NumberDialog.hpp"
@@ -39,7 +41,10 @@ CScriptWindow::CScriptWindow(const char* filename)
   SetSaved(filename != NULL);
   SetModified(false);
 
-  Create();
+  if (!Create()) {
+    return;
+  }
+
   if (filename) {
     LoadScript(filename);
   }
@@ -47,21 +52,43 @@ CScriptWindow::CScriptWindow(const char* filename)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-CScriptWindow::~CScriptWindow()
-{
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void
+bool
 CScriptWindow::Create()
 {
+  static HINSTANCE scintilla;
+  if (!scintilla) {
+    scintilla = LoadLibrary("SciLexer.dll");
+    if (!scintilla) {
+      ::MessageBox(
+        NULL,
+        "Could not load Scintilla component (SciLexer.dll)",
+        "Script Editor",
+        MB_OK | MB_ICONERROR);
+      delete this;
+      return false;
+    }
+  }
+  
+
   // create the child window
   CSaveableDocumentWindow::Create(
     AfxRegisterWndClass(0, LoadCursor(NULL, IDC_ARROW), NULL, AfxGetApp()->LoadIcon(IDI_SCRIPT)));
 
   // creates the script view
-  m_Edit.Create(this, this);
+  m_Editor = ::CreateWindow(
+    "Scintilla",
+    "Source",
+    WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_CLIPCHILDREN,
+    0, 0,
+    100, 100,
+    m_hWnd,
+    0,
+    AfxGetApp()->m_hInstance,
+    0);
+
+  Initialize();
+  ::ShowWindow(m_Editor, SW_SHOW);
+  ::UpdateWindow(m_Editor);
 
   m_Created = true;
 
@@ -71,7 +98,72 @@ CScriptWindow::Create()
   OnSize(0, Rect.right - Rect.left, Rect.bottom - Rect.top);
 
   // give the view focus
-  m_Edit.SetFocus();
+  ::SetFocus(m_Editor);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CScriptWindow::Initialize()
+{
+  static const char key_words[] = 
+    "break case catch continue default delete do else "
+    "finally for function if in instanceof new return "
+    "switch this throw try typeof var void while with ";
+
+  static const char reserved_words[] =
+    "abstract enum int short "
+    "boolean export interface static "
+    "byte extends long super "
+    "char final native synchronized "
+    "class float package throws "
+    "const goto private transient "
+    "debugger implements protected volatile "
+    "double import public ";
+
+  static const COLORREF black  = 0x000000;
+  static const COLORREF white  = 0xFFFFFF;
+  static const COLORREF red    = RGB(0xFF, 0, 0);
+  static const COLORREF green  = RGB(0, 0xFF, 0);
+  static const COLORREF blue   = RGB(0, 0, 0xFF);
+  static const COLORREF purple = RGB(0xFF, 0, 0xFF);
+  static const COLORREF yellow = RGB(0xFF, 0xFF, 0);
+
+  SendEditor(SCI_SETLEXERLANGUAGE, 0, (WPARAM)"javascript");
+  SendEditor(SCI_SETSTYLEBITS, 5);
+  SendEditor(SCI_SETKEYWORDS, 0, (LPARAM)key_words);
+
+  SetStyle(STYLE_DEFAULT, black, white, 10, "Verdana");
+  SendEditor(SCI_STYLECLEARALL);
+
+  SetStyle(SCE_C_DEFAULT, red, white, 10, "Verdana");
+  SetStyle(SCE_C_COMMENT, red);
+  SetStyle(SCE_C_NUMBER, green);
+  SetStyle(SCE_C_STRING, blue);
+  SetStyle(SCE_C_IDENTIFIER, purple);
+  SetStyle(SCE_C_WORD, yellow);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CScriptWindow::SetStyle(
+  int style,
+  COLORREF fore,
+  COLORREF back,
+  int size,
+  const char* face)
+{
+  SendEditor(SCI_STYLESETFORE, style, fore);
+  SendEditor(SCI_STYLESETBACK, style, back);
+  if (size >= 1) {
+    SendEditor(SCI_STYLESETSIZE, style, size);
+  }
+  if (face) {
+    SendEditor(SCI_STYLESETFONT, style, (LPARAM)face);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -97,9 +189,8 @@ CScriptWindow::LoadScript(const char* filename)
   buffer[file_size] = 0;
 
   // put the buffer into the edit control
-  m_Edit.SetWindowText(buffer);
-  m_Edit.FormatAll();
-  m_Edit.SetSel(0, 0);
+  SendEditor(SCI_SETTEXT, 0, (LPARAM)buffer);
+  SendEditor(SCI_SETSEL,  0, 0);
 
   // delete the buffer and close the file
   delete[] buffer;
@@ -112,11 +203,27 @@ CScriptWindow::LoadScript(const char* filename)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+CScriptWindow::GetEditorText(CString& text)
+{
+  int length = SendEditor(SCI_GETLENGTH);
+  char* str = new char[length + 1];
+  str[length] = 0;
+
+  SendEditor(SCI_GETTEXT, length + 1, (LPARAM)str);
+
+  text = str;
+  delete[] str;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CScriptWindow::OnSize(UINT type, int cx, int cy)
 {
-  if (m_Created)
-    m_Edit.MoveWindow(0, 0, cx, cy);
+  if (m_Created) {
+    ::MoveWindow(m_Editor, 0, 0, cx, cy, TRUE);
+  }
 
   CSaveableDocumentWindow::OnSize(type, cx, cy);
 }
@@ -126,8 +233,9 @@ CScriptWindow::OnSize(UINT type, int cx, int cy)
 afx_msg void
 CScriptWindow::OnSetFocus(CWnd* old)
 {
-  if (m_Created)
-    m_Edit.SetFocus();
+  if (m_Created) {
+    ::SetFocus(m_Editor);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -136,8 +244,9 @@ afx_msg void
 CScriptWindow::OnScriptCheckSyntax()
 {
   CString text;
-  m_Edit.GetWindowText(text);
+  GetEditorText(text);
 
+/*
   // verify the script
   sCompileError error;
   if (!VerifyScript(text, error))
@@ -149,6 +258,7 @@ CScriptWindow::OnScriptCheckSyntax()
   }
   else
     MessageBox("Script is valid");
+*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -156,7 +266,7 @@ CScriptWindow::OnScriptCheckSyntax()
 afx_msg void
 CScriptWindow::OnScriptFind()
 {
-  m_Edit.ScriptFindWord();
+//  m_Edit.ScriptFindWord();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -164,7 +274,7 @@ CScriptWindow::OnScriptFind()
 afx_msg void
 CScriptWindow::OnScriptReplace()
 {
-  m_Edit.ScriptFindReplaceWord();
+//  m_Edit.ScriptFindReplaceWord();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -172,6 +282,7 @@ CScriptWindow::OnScriptReplace()
 afx_msg void
 CScriptWindow::OnScriptSetDefaultFont()
 {
+/*
   LOGFONT lf;
   memset(&lf, 0, sizeof(lf));
   HDC screen = ::GetDC(NULL);
@@ -198,6 +309,7 @@ CScriptWindow::OnScriptSetDefaultFont()
     m_Edit.FormatAll();
     m_Edit.Invalidate();
   }
+*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -205,10 +317,12 @@ CScriptWindow::OnScriptSetDefaultFont()
 afx_msg void
 CScriptWindow::OnScriptSetTabSize()
 {
+/*
   CNumberDialog dialog("Set Tab Size", "Tab Size", Configuration::Get(KEY_SCRIPT_TAB_SIZE), 1, 16);
   if (dialog.DoModal() == IDOK) {
     Configuration::Set(KEY_SCRIPT_TAB_SIZE, dialog.GetValue());
   }
+*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -216,7 +330,7 @@ CScriptWindow::OnScriptSetTabSize()
 afx_msg void
 CScriptWindow::OnScriptShowColors()
 {
-  m_Edit.ScriptShowColors();
+//  m_Edit.ScriptShowColors();
 }
 
 ////////////////////////////////////////////////////////////////////////////////v
@@ -224,7 +338,7 @@ CScriptWindow::OnScriptShowColors()
 afx_msg void 
 CScriptWindow::OnScriptEnableAutoIndent()
 {
-  m_Edit.ScriptAutoIndent();
+//  m_Edit.ScriptAutoIndent();
 }
 
 ////////////////////////////////////////////////////////////////////////////////v
@@ -250,10 +364,8 @@ CScriptWindow::SaveDocument(const char* path)
     return false;
 
   CString text;
-  m_Edit.GetWindowText(text);
-
+  GetEditorText(text);
   fwrite((const char*)text, 1, text.GetLength(), file);
-
   fclose(file);
   return true;
 }

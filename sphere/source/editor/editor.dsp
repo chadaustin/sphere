@@ -611,14 +611,6 @@ SOURCE=.\RGBAView.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ScriptView.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ScriptView.hpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\SpriteBaseView.cpp
 # End Source File
 # Begin Source File
