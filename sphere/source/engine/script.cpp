@@ -2386,6 +2386,8 @@ begin_func(CreatePerson, 3)
     return JS_FALSE;
   }
 
+  JS_MaybeGC(cx);
+
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2397,6 +2399,8 @@ begin_func(DestroyPerson, 1)
     This->ReportMapEngineError("DestroyPerson() failed");
     return JS_FALSE;
   }
+
+  JS_MaybeGC(cx);
 
 end_func()
 
