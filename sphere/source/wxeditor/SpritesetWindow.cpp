@@ -156,6 +156,9 @@ wSpritesetWindow::Create()
 void
 wSpritesetWindow::TabChanged(int tab)
 {
+  // not ideal... but it works
+  wxFocusEvent dummy;
+  this->OnGetFocus(dummy);
   ShowFramesTab(tab == 0);
   ShowEditTab  (tab == 1);
   ShowBaseTab  (tab == 2);

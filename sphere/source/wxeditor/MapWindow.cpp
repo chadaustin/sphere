@@ -301,6 +301,9 @@ wMapWindow::OnTilesTab(wxCommandEvent& event)
 void
 wMapWindow::TabChanged(int tab)
 {
+  // not ideal... but it works
+  wxFocusEvent dummy;
+  this->OnGetFocus(dummy);
   if (tab == 0)
   {
     m_MapView->Show();

@@ -47,7 +47,7 @@ wPaletteWindow::wPaletteWindow(wDocumentWindow* owner, const char* name,
   Create(owner, -1, name, pos, size,
   // on gtk+ FRAME_TOOL_WINDOW has no sizing or closing handles with wxWindow
   // on gtk+ wxTHICK_FRAME | wxCAPTION | wxFRAME_FLOAT_ON_PARENT does not give you sizing handles with miniframe
-         wxCAPTION | wxFRAME_FLOAT_ON_PARENT);
+        wxTHICK_FRAME | wxCAPTION | wxFRAME_FLOAT_ON_PARENT);
 #endif
 
   Show();/*todo:fix this*/
