@@ -3248,6 +3248,7 @@ CScript::CreateImageObject(JSContext* cx, IMAGE image, bool destroy)
     { "zoomBlit",          ssImageZoomBlit,          3, 0, 0 },
     { "transformBlit",     ssImageTransformBlit,     8, 0, 0 },
     { "transformBlitMask", ssImageTransformBlitMask, 9, 0, 0 },
+    { "createSurface",     ssImageCreateSurface,     0, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -3394,6 +3395,20 @@ begin_method(SS_IMAGE, ssImageTransformBlitMask, 9)
     int y[4] = { y1, y2, y3, y4 };
     TransformBlitImageMask(object->image, x, y, mask);
   }
+end_method()
+
+///////////////////////////////////////
+
+begin_method(SS_IMAGE, ssImageCreateSurface, 0)
+  int width  = GetImageWidth(object->image);
+  int height = GetImageHeight(object->image);
+  RGBA* pixels = LockImage(object->image);
+
+  CImage32* surface = new CImage32(width, height, pixels);
+
+  UnlockImage(object->image);
+
+  return_object(CreateSurfaceObject(cx, surface));
 end_method()
 
 ///////////////////////////////////////

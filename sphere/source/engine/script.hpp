@@ -156,6 +156,7 @@ private:
   declare_method(ssImageZoomBlit);
   declare_method(ssImageTransformBlit);
   declare_method(ssImageTransformBlitMask);
+  declare_method(ssImageCreateSurface);
 
   // surfaces
   declare_constructor1(CreateSurfaceObject, CImage32* surface);

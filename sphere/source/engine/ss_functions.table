@@ -222,6 +222,11 @@ SS_FUNCTION(OpenLog, 1)
   SS_FUNCTION(LoadImage, 1)
   SS_FUNCTION(GrabImage, 4)
   //image.blit(x, y)
+  //image.blitMask(x, y, color)
+  //image.rotateBlit(x, y, radians)
+  //image.zoomBlit(x, y, factor)
+  //image.transformBlit(x1, y1, x2, y2, x3, y3, x4, y4)
+  //image.createSurface()
   //image.width
   //image.height
   
