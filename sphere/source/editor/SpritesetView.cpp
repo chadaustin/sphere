@@ -895,6 +895,7 @@ CSpritesetView::OnInsertDirectionFromAnimation()
       return;
     }
 
+    /*
     if (animation->GetWidth() != frame_width
      || animation->GetHeight() != frame_height) {
       char message[1000];
@@ -903,10 +904,7 @@ CSpritesetView::OnInsertDirectionFromAnimation()
       MessageBox(message);
       return;
     }
-
-    RGBA* pixels = new RGBA[animation->GetWidth() * animation->GetHeight()];
-    if ( !pixels )
-      return;
+    */
 
     int current_direction = m_CurrentDirection;
     m_Spriteset->InsertDirection(current_direction);
@@ -915,24 +913,43 @@ CSpritesetView::OnInsertDirectionFromAnimation()
     int max_frames = animation->GetNumFrames() == 0 ? 255 : animation->GetNumFrames();
 
     for (int frame_number = 0; frame_number < max_frames; frame_number++) {
-      int delay = animation->GetDelay();
-      
-      if (animation->ReadNextFrame((RGBA*) pixels) == false)
-        break;
 
-      if (animation->IsEndOfAnimation())
+      if (animation->GetWidth()  < 0 || animation->GetWidth() > 4096
+        || animation->GetHeight() < 0 || animation->GetHeight() > 4096) {
         break;
+      }
+
+      RGBA* pixels = new RGBA[animation->GetWidth() * animation->GetHeight()];
+      if ( !pixels )
+        return;
+
+      if (animation->ReadNextFrame((RGBA*) pixels) == false
+       || animation->IsEndOfAnimation()) {
+        delete[] pixels;
+        break;
+      }
+
+      CImage32 image;
+      if (!image.Create(m_Spriteset->GetFrameWidth(), m_Spriteset->GetFrameHeight())) {
+        delete[] pixels;
+        break;
+      }
+ 
+      for (int y = 0; (y < image.GetHeight() && y < animation->GetHeight()); y++) {
+        for (int x = 0; (x < image.GetWidth() && x < animation->GetWidth()); x++) {
+          image.SetPixel(x, y, pixels[y * animation->GetWidth() + x]);
+        }
+      }
+
+      delete[] pixels;
 
       int current_image = -1;
-
       if (1) {
         for (int i = 0; i < m_Spriteset->GetNumImages(); i++) {
-          if (animation->GetWidth()  == m_Spriteset->GetImage(i).GetWidth()
-           && animation->GetHeight() == m_Spriteset->GetImage(i).GetHeight()) {
-            if (memcmp(pixels, m_Spriteset->GetImage(i).GetPixels(), sizeof(RGBA) * animation->GetWidth() * animation->GetHeight()) == 0) {
-              current_image = i;
-              break;
-            }
+          const CImage32& img = m_Spriteset->GetImage(i);
+          if (image == img) {
+            current_image = i;
+            break;
           }
         }
       }
@@ -942,21 +959,16 @@ CSpritesetView::OnInsertDirectionFromAnimation()
         m_Spriteset->InsertImage(current_image);
 
         if (m_Spriteset->GetNumImages() != current_image + 1) {
-          delete[] pixels;
           return;
         }
 
-        CImage32& image = m_Spriteset->GetImage(current_image);
-        for (int sy = 0; (sy < image.GetHeight() && sy < animation->GetHeight()); sy++) {
-          for (int sx = 0; (sx < image.GetWidth() && sx < animation->GetWidth()); sx++) {
-            image.SetPixel(sx, sy, pixels[sy * animation->GetWidth() + sx]);
-          }
-        }
+        m_Spriteset->GetImage(current_image) = image;
       }
 
       int __num_frames__ = m_Spriteset->GetNumFrames(current_direction) + 1;
       m_Spriteset->InsertFrame(current_direction, frame_number);
       if (m_Spriteset->GetNumFrames(current_direction) == __num_frames__) {
+        int delay = animation->GetDelay();
         m_Spriteset->SetFrameIndex(current_direction, frame_number, current_image);
         m_Spriteset->SetFrameDelay(current_direction, frame_number, delay);
       }
@@ -964,8 +976,6 @@ CSpritesetView::OnInsertDirectionFromAnimation()
 
     if (m_Spriteset->GetNumFrames(current_direction) > 0)
       m_Spriteset->DeleteFrame(current_direction, m_Spriteset->GetNumFrames(current_direction) - 1);
-
-    delete[] pixels;
   }
 
   UpdateMaxSizes(); 
@@ -1149,16 +1159,18 @@ int findcolorfrompalette(const mng_palette8 palette, int palette_size, int red, 
 }
 
 
-void rgb_palette_image_add_filter_byte(const mng_palette8 palette, int palette_size, const RGBA* pixels, const int width, const int height, unsigned char* filtered)
+void rgb_palette_image_add_filter_byte(const mng_palette8 palette, int palette_size,
+                                       const RGBA* pixels, const int sx, const int sy, const int sw, const int sh,
+                                       const int width, const int height, unsigned char* filtered)
 {
   int x;
 	int y;
   unsigned char* ptr = filtered;
 
-  for (y = 0; y < height; y++) {
-    for (x = 0; x < width; x++)
+  for (y = sy; y < sy + sh; y++) {
+    for (x = sx; x < sx + sw; x++)
     {
-      if (x == 0) {
+      if (x == sx) {
   			*ptr++ = 0;
       }
 
@@ -1371,24 +1383,8 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
   //iRC = mng_putchunk_back (hMNG, 255, 255, 255, 0, 0, MNG_BACKGROUNDIMAGE_NOTILE);
   //if (iRC != 0) return iRC;
 
-  iRC = mng_putchunk_fram  (hMNG,
-                            MNG_FALSE,
-                            MNG_FRAMINGMODE_3,
-                            0,
-                            NULL,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0);
+  iRC = mng_putchunk_fram  (hMNG,  MNG_FALSE,  MNG_FRAMINGMODE_3,
+                            0,  NULL,  0, 0,  0, 0, 0, 0,  0,  0,  0, 0, 0, 0, 0);
   if (iRC != 0) return iRC;
 
   mng_palette8 GlobalPalette;
@@ -1410,6 +1406,8 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
   for (int i = 0; i < images.size(); i++) {
     const CImage32& image = images[i];
 
+    int x = 0, y = 0, w = image.GetWidth(), h = image.GetHeight();
+
     bool has_alpha = false;
     for (int j = 0; (j < image.GetWidth() * image.GetHeight()); j++) {
       if (image.GetPixels()[j].alpha != 255) {
@@ -1420,15 +1418,42 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
 
     if (i > 0) {
       if (images[i - 1].GetWidth() == image.GetWidth()
-        && images[i - 1].GetHeight() == image.GetHeight()) {
-        int x, y, w, h;
+       && images[i - 1].GetHeight() == image.GetHeight()) {
         calc_different_area(images[i - 1].GetPixels(), image.GetPixels(), image.GetWidth(), image.GetHeight(), &x, &y, &w, &h);
+
+        /*
         char string[255];
         sprintf (string, "%d %d %d %d\n", x, y, w, h);
         iRC = mng_putchunk_text(hMNG,
                           strlen("Debug"), "Debug",
                           strlen(string), string);
         if (iRC != 0) return iRC;
+        */
+
+        if (x != 0 || y != 0 || w != image.GetWidth() || h != image.GetHeight()) {
+        
+          iRC = mng_putchunk_fram(hMNG,
+                                  MNG_TRUE,
+                                  MNG_FRAMINGMODE_1,
+                                  0,
+                                  MNG_NULL,
+                                  MNG_CHANGEDELAY_NO,
+                                  MNG_CHANGETIMOUT_NO,
+                                  MNG_CHANGECLIPPING_NEXTSUBFRAME,
+                                  MNG_CHANGESYNCID_NO,
+                                  0,
+                                  0,
+                                  MNG_BOUNDARY_ABSOLUTE,
+                                  x,
+                                  w,
+                                  y,
+                                  h,
+                                  0,
+                                  MNG_NULL);
+          if (iRC != 0) return iRC;
+        }
+
+
       }
     }
 
@@ -1490,13 +1515,13 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
     }
     else {
       if (can_use_global_palette) {
-        iRC = mng_putchunk_ihdr (hMNG, image.GetWidth(), image.GetHeight(),
+        iRC = mng_putchunk_ihdr (hMNG, w, h,
 					MNG_BITDEPTH_8, MNG_COLORTYPE_INDEXED, MNG_COMPRESSION_DEFLATE,
 					MNG_FILTER_ADAPTIVE, MNG_INTERLACE_NONE);
         if (iRC != 0) return iRC;
 
-        mng_uint32 filter_len     = (sizeof(char) * image.GetWidth() * image.GetHeight()) + image.GetHeight();
-        mng_uint32 compressed_len = (sizeof(char) * image.GetWidth() * image.GetHeight()) + image.GetHeight();
+        mng_uint32 filter_len     = (sizeof(char) * w * h) + h;
+        mng_uint32 compressed_len = (sizeof(char) * w * h) + h;
     	             compressed_len += compressed_len / 100 + 12 + 8;	// extra 8 for safety
   
         unsigned char* buffer = new unsigned char[filter_len];
@@ -1509,7 +1534,7 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
            return MNG_OUTOFMEMORY;
          }
 
-        rgb_palette_image_add_filter_byte(GlobalPalette, GlobalPaletteSize, image.GetPixels(), image.GetWidth(), image.GetHeight(), buffer);
+        rgb_palette_image_add_filter_byte(GlobalPalette, GlobalPaletteSize, image.GetPixels(), x, y, w, h, image.GetWidth(), image.GetHeight(), buffer);
 
         // write empty PLTE to use the global PLTE
 				iRC = mng_putchunk_plte (hMNG, 0, GlobalPalette);
