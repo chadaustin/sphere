@@ -654,8 +654,9 @@ log_object.endBlock()
 
       SetPersonAngle(name, angle)
         - sets the angle which the person should be drawn at
-          zero is no rotation.
-          angles are in radians.
+        Note:
+          Zero is no rotation, and angles are in radians.
+          It does not rotate the spritesets obstruction base.
 
       SetPersonMask(name, color)
         - sets a color multiplier to use when drawing sprites.  if the color is

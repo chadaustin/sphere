@@ -619,6 +619,27 @@ CScript::BranchCallback(JSContext* cx, JSScript* script)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static bool IsValidPath(const char* path)
+{
+  int num_double_dots = 0;
+  bool prev_was_dot = false;
+
+  for (int i = 0; i < strlen(path); ++i) {
+    if (path[i] == '.') {
+      if (prev_was_dot) {
+        num_double_dots += 1;
+      }
+      prev_was_dot = true;      
+    }
+    else {
+      prev_was_dot = false;
+    }
+  }
+
+  return (num_double_dots <= 1);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 template<typename T>
 inline void USED(T /*t*/) { }
@@ -1064,6 +1085,12 @@ end_func()
 
 begin_func(OpenLog, 1)
   arg_str(filename);
+
+  if (IsValidPath(filename) == false) {
+    JS_ReportError(cx, "Too many ..'s in filename: '%s'", filename);
+    return JS_FALSE;  
+  }
+
   CLog* log = This->m_Engine->OpenLog(filename);
 
   if (log == NULL) {
@@ -3348,6 +3375,11 @@ begin_func(GetFileList, 0)
     directory = argStr(cx, argv[0]);
   }
 
+  if (IsValidPath(filename) == false) {
+    JS_ReportError(cx, "Too many ..'s in directory path: '%s'", directory);
+    return JS_FALSE;  
+  }
+
   // enumerate the files and return an array of string objects
 
   // get list of files from engine
@@ -3371,6 +3403,11 @@ end_func()
 begin_func(OpenFile, 1)
   arg_str(filename);
 
+  if (IsValidPath(filename) == false) {
+    JS_ReportError(cx, "Too many ..'s in filename: '%s'", filename);
+    return JS_FALSE;  
+  }
+
   // open file
   CConfigFile* file = This->m_Engine->OpenFile(filename);
   if (file == NULL) {
@@ -3385,6 +3422,11 @@ end_func()
 
 begin_func(OpenRawFile, 1)
   arg_str(filename);
+
+  if (IsValidPath(filename) == false) {
+    JS_ReportError(cx, "Too many ..'s in filename: '%s'", filename);
+    return JS_FALSE;  
+  }
 
   bool writeable = false;
   if (argc > 1) {
@@ -3920,6 +3962,11 @@ end_finalizer()
 // Really it needs to find out what changes were made by script and save that
 begin_method(SS_SPRITESET, ssSpritesetSave, 1)
   arg_str(filename);
+
+  if (IsValidPath(filename) == false) {
+    JS_ReportError(cx, "Too many ..'s in filename: '%s'", filename);
+    return JS_FALSE;  
+  }
 
   std::string path = "spritesets/";
   path += filename;
@@ -4871,6 +4918,11 @@ begin_method(SS_SURFACE, ssSurfaceSave, 1)
   const char* type = "png";
 
   bool saved = false;
+
+  if (IsValidPath(filename) == false) {
+    JS_ReportError(cx, "Too many ..'s in filename: '%s'", filename);
+    return JS_FALSE;  
+  }
 
   if (argc >= 2) {
     type = argStr(cx, argv[1]);
