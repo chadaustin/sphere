@@ -991,7 +991,7 @@ CSpritesetView::OnInsertDirectionFromAnimation()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef MNG_SUPPORT_WRITE
+//#ifdef MNG_SUPPORT_WRITE
 
 #include <libmng.h>
 
@@ -2019,7 +2019,7 @@ mng_retcode TestAnimationCode() {
   return SaveMNGAnimationFromImages("comics.mng", GetNextImageFromFileList, GetDelayFromImageFileList, ContinueProcessing, (void*) &imagefilelist);
 }
 
-#endif
+//#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -2047,7 +2047,7 @@ CSpritesetView::OnExportDirectionAsAnimation()
                || strcmp_ci(dialog.GetFileExt(), "fli")  == 0;
 
     if (is_mng) {
-#ifdef MNG_SUPPORT_WRITE
+//#ifdef MNG_SUPPORT_WRITE
       struct userwritedata data;
       data.spriteset = *m_Spriteset;
       data.direction = m_CurrentDirection;
@@ -2059,9 +2059,11 @@ CSpritesetView::OnExportDirectionAsAnimation()
       else {
         MessageBox(mng_get_error_message(iRC), "Error Exporting Direction As Animation", MB_OK);
       } 
+/*
 #else
       MessageBox("Unsupported save mode", "Error Exporting Direction As Animation", MB_OK);
 #endif
+*/
     }
     else
     if (is_fli) {
@@ -2149,7 +2151,7 @@ CSpritesetView::OnGetAccelerator(WPARAM wParam, LPARAM lParam)
 	// Also a message map entry is needed like: 	
 	//		ON_MESSAGE(WM_GETACCELERATOR, OnGetAccelerator)
 
-	HACCEL * ret = ((HACCEL*)wParam);
+	HACCEL* ret = ((HACCEL*)wParam);
 	*ret = LoadAccelerators(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_SPRITESETVIEW));  
 	return 1;
 }

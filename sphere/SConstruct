@@ -237,6 +237,16 @@ COMPILER = Compiler(ARGUMENTS.get('compiler', default_compiler))
 
 print "Using compiler:", str(COMPILER)
 
+if ARGUMENTS.get('debug'):
+  compile_mode = "debug";
+elif ARGUMENTS.get('opt'):
+  compile_mode = "optimized";
+else:
+   compile_mode = "";
+
+if compile_mode != "":
+  print "Compiling in", compile_mode, "mode";
+
 base_env = COMPILER.get_env()
 
 # common options
