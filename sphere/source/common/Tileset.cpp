@@ -92,7 +92,8 @@ sTileset::Create(int num_tiles)
   byte obsolete2_;                              \
   byte blocked;                                 \
   word num_segments;                            \
-  byte reserved[22];
+  word name_length;                             \
+  byte reserved[20];
 #include "packed_struct.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -100,6 +101,26 @@ sTileset::Create(int num_tiles)
 // make sure all structs are the correct size
 ASSERT_STRUCT_SIZE(TILESET_HEADER,         256)
 ASSERT_STRUCT_SIZE(TILE_INFORMATION_BLOCK, 32)
+
+////////////////////////////////////////////////////////////////////////////////
+
+inline std::string ReadTileString(IFile* file, word length)
+{
+  std::string s;
+  for (int i = 0; i < length; i++) {
+    char c;
+    file->Read(&c, 1);
+    s += c;
+  }
+  return s;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+inline void WriteTileString(IFile* file, std::string str)
+{
+  file->Write(str.c_str(), str.size());
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -404,6 +425,7 @@ sTileset::LoadFromFile(IFile* file)
     m_Tiles[i].SetAnimated(tib.animated ? true : false);
     m_Tiles[i].SetNextTile(tib.nexttile);
     m_Tiles[i].SetDelay(tib.delay);
+    m_Tiles[i].SetName(ReadTileString(file, tib.name_length));
 
     if (header.has_obstructions) {
     
@@ -470,7 +492,13 @@ sTileset::SaveToFile(IFile* file) const
     tib.delay        = m_Tiles[i].GetDelay();
     tib.blocked      = 2;
     tib.num_segments = obs_map.GetNumSegments();
+    tib.name_length  = strlen(m_Tiles[i].GetName().c_str());
     file->Write(&tib, sizeof(tib));
+
+    // write the tile's name
+    if (tib.name_length > 0) {
+      WriteTileString(file, m_Tiles[i].GetName());
+    }
 
     // write the obstruction segments
     for (int i = 0; i < obs_map.GetNumSegments(); i++) {

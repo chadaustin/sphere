@@ -20,7 +20,7 @@ public:
   bool IsAnimated() const;
   int  GetNextTile() const;
   int  GetDelay() const;
-  std::string GetName();
+  std::string GetName() const;
 
   void SetAnimated(bool animated);
   void SetNextTile(int next_tile);
@@ -71,5 +71,11 @@ sTile::GetObstructionMap() const
   return m_ObstructionMap;
 }
 
+
+inline std::string
+sTile::GetName() const
+{
+  return m_Name;
+}
 
 #endif
