@@ -40,10 +40,12 @@ typedef struct _IMAGE
 
   void (*blit_routine)(_IMAGE* image, int x, int y);
 
+#ifdef USE_CLIP_IMAGE
   int clip_x;
   int clip_y;
   int clip_width;
   int clip_height;
+#endif
 
   RGBA* locked_pixels;
 }* IMAGE;
@@ -416,6 +418,8 @@ bool CreateSurfaces()
 
   // allocate a blitting buffer
   ScreenBuffer = new byte[ScreenWidth * ScreenHeight * (BitsPerPixel / 8)];
+  if (ScreenBuffer == NULL)
+    return false;
 
   return true;
 }
@@ -560,7 +564,7 @@ bool FillImagePixels(IMAGE image, RGBA* pixels)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#if 0
+#if USE_CLIP_IMAGE
 /**
   Images can often have big blocks of alpha around them (e.g. fonts, spritesets)
   This works out what parts of the image itself can be clipped from the blit
@@ -660,7 +664,9 @@ void OptimizeBlitRoutine(IMAGE image)
     return;
   }
 
-  // ClipImage(image, image->clip_x, image->clip_y, image->clip_width, image->clip_height);
+#ifdef USE_CLIP_IMAGE
+  ClipImage(image, image->clip_x, image->clip_y, image->clip_width, image->clip_height);
+#endif
 
   // sprite blit
   bool is_sprite = true;
@@ -920,10 +926,16 @@ private:
 
 EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
 {
-  // if the mask doesn't affect the imageblit, fallback onto BlitImage
-  if (mask.red == 255 && mask.green == 255 && mask.blue == 255 && mask.alpha == 255) {
-    BlitImage(image, x, y);
+  if (mask.alpha == 0) {
     return;
+  }
+
+  if (mask.alpha == 255) {
+    // if the mask doesn't affect the imageblit, fallback onto BlitImage
+    if (mask.red == 255 && mask.green == 255 && mask.blue == 255) {
+      BlitImage(image, x, y);
+      return;
+    }
   }
 
   if (BitsPerPixel == 32) {
@@ -1119,8 +1131,11 @@ void TileBlit(IMAGE image, int x, int y)
 
 void SpriteBlit(IMAGE image, int x, int y)
 {
-  //calculate_clipping_metrics(image->width, image->height);
+#ifdef USE_CLIP_IMAGE
   calculate_clipping_metrics(image->clip_width, image->clip_height);
+#else
+  calculate_clipping_metrics(image->width, image->height);
+#endif
 
   if (BitsPerPixel == 32) {
 
@@ -1185,8 +1200,11 @@ void SpriteBlit(IMAGE image, int x, int y)
 
 void NormalBlit(IMAGE image, int x, int y)
 {
-  // calculate_clipping_metrics(image->width, image->height);
+#ifdef USE_CLIP_IMAGE
   calculate_clipping_metrics(image->clip_width, image->clip_height);
+#else
+  calculate_clipping_metrics(image->width, image->height);
+#endif
 
   if (BitsPerPixel == 32) {
 
@@ -1356,6 +1374,8 @@ EXPORT(int) GetImageHeight(IMAGE image)
 EXPORT(RGBA*) LockImage(IMAGE image)
 {
   image->locked_pixels = new RGBA[image->width * image->height];
+  if (!image->locked_pixels)
+    return NULL;
 
   // rgb
   if (BitsPerPixel == 32)
