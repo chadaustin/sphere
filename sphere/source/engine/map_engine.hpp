@@ -388,6 +388,7 @@ private:
 
   // triggers
   bool m_OnTrigger;
+  int m_LastTrigger;
   std::vector<Trigger> m_Triggers;
 
   // persons

@@ -50,6 +50,7 @@ CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
 , m_RenderScript(NULL)
 
 , m_OnTrigger(false)
+, m_LastTrigger(-1)
 
 , m_TalkActivationKey(KEY_SPACE)
 , m_TalkActivationDistance(8)
@@ -101,6 +102,7 @@ CMapEngine::Execute(const char* filename, int fps)
   m_FrameRate = fps;
 
   m_OnTrigger = false;
+  m_LastTrigger = -1;
   m_ErrorMessage = "";
   m_Music = 0;
 
@@ -3515,7 +3517,7 @@ CMapEngine::UpdateTriggers()
   // check to see which trigger we're on
   int trigger_index = FindTrigger(location_x, location_y, location_layer);
 
-  if (m_OnTrigger) {
+  if (m_OnTrigger && trigger_index == m_LastTrigger) {
 
     if (trigger_index == -1) {
       m_OnTrigger = false;
@@ -3531,6 +3533,7 @@ CMapEngine::UpdateTriggers()
 
       ResetNextFrame();
       m_OnTrigger = true;
+      m_LastTrigger = trigger_index;
 
     }
   }

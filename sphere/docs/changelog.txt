@@ -7,6 +7,9 @@
     images would cause the gradient to not show up
   - open sounds in the editor as a stream so huge files don't take
     forever to load
+  - moving between two adjacent triggers now activates the new one
+    (this may be a regression from when I fixed the trigger detection
+    to be pixel-perfect)
 
 2003.01.29
   - make ExecuteGame work no matter where the game calling it is
