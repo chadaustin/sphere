@@ -3,7 +3,6 @@
 #include "sspriteset.hpp"
 #include "../common/Spriteset.hpp"
 
-
 ////////////////////////////////////////////////////////////////////////////////
 
 SSPRITESET::SSPRITESET()
@@ -76,7 +75,10 @@ SSPRITESET::Load(const char* filename, IFileSystem& fs, std::string pfilename)
   m_Filename = pfilename;
 
   m_Images = new IMAGE[m_Spriteset.GetNumImages()];
+  if (!m_Images) { return false; }
   m_FlipImages = new IMAGE[m_Spriteset.GetNumImages()];
+  if (!m_FlipImages) { delete[] m_Images; m_Images = NULL; return false; }
+
   for (int i = 0; i < m_Spriteset.GetNumImages(); i++) {
     m_Images[i]     = CreateFrameImage(i);
     m_FlipImages[i] = CreateFlipFrameImage(i);

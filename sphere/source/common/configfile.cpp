@@ -180,10 +180,12 @@ CConfigFile::ReadString(const char* section, const char* key, const char* def)
 int
 CConfigFile::ReadInt(const char* section, const char* key, int def)
 {
-  std::ostringstream defstr;
-  defstr << def;
+  //std::ostringstream defstr;
+  //defstr << def;
+  char defstr[1024] = {0};
+  sprintf (defstr, "%d", def);
 
-  return atoi(ReadString(section, key, defstr.str().c_str()).c_str());
+  return atoi(ReadString(section, key, defstr).c_str());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

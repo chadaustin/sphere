@@ -108,6 +108,9 @@ public:
   void Translate(int dx, int dy, int layer_to_translate = -1);
 
 private:
+  void ClearEntityList();
+
+private:
   int m_StartX;
   int m_StartY;
   int m_StartLayer;

@@ -45,10 +45,33 @@ sMap::sMap(int width, int height, int layers)
 
 sMap::~sMap()
 {
-  for (int i = 0; i < GetNumEntities(); i++) {
+  ClearEntityList();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+sMap::ClearEntityList()
+{
+  for (int i = 0; i < GetNumEntities(); i++)
+  {
+    int type = GetEntity(i).GetEntityType();
+
+    if (type == sEntity::PERSON) {
+      delete (sPersonEntity*) m_Entities[i];
+  		m_Entities[i] = NULL;
+    }
+
+    if (type == sEntity::TRIGGER) {
+      delete (sTriggerEntity*) m_Entities[i];
+	  	m_Entities[i] = NULL;
+    }
+
     delete m_Entities[i];
-		m_Entities[i] = NULL;
+	  m_Entities[i] = NULL;
 	}
+
+  m_Entities.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -302,11 +325,7 @@ sMap::Load(const char* filename, IFileSystem& fs)
   } // end for layer
 
   // delete the old entities
-	for (int i = 0; i < GetNumEntities(); i++) {
-    delete m_Entities[i];
-		m_Entities[i] = NULL;
-	}
-  m_Entities.clear();
+  ClearEntityList();
 
   // read entities
   for (int i = 0; i < header.num_entities; i++)
@@ -321,38 +340,40 @@ sMap::Load(const char* filename, IFileSystem& fs)
       // PERSON
       case 1:
       {
-        sPersonEntity* person = new sPersonEntity;
+        entity = new sPersonEntity;
+        if (!entity)
+          return false;
 
         // read the person data
-        person->name      = ReadMapString(file);
-        person->spriteset = ReadMapString(file);
+        ((sPersonEntity*)entity)->name      = ReadMapString(file);
+        ((sPersonEntity*)entity)->spriteset = ReadMapString(file);
 
         word num_strings = ReadMapWord(file);
 
         // strings
-        if (num_strings >= 1) person->script_create            = ReadMapString(file);
-        if (num_strings >= 2) person->script_destroy           = ReadMapString(file);
-        if (num_strings >= 3) person->script_activate_touch    = ReadMapString(file);
-        if (num_strings >= 4) person->script_activate_talk     = ReadMapString(file);
-        if (num_strings >= 5) person->script_generate_commands = ReadMapString(file);
+        if (num_strings >= 1) ((sPersonEntity*)entity)->script_create            = ReadMapString(file);
+        if (num_strings >= 2) ((sPersonEntity*)entity)->script_destroy           = ReadMapString(file);
+        if (num_strings >= 3) ((sPersonEntity*)entity)->script_activate_touch    = ReadMapString(file);
+        if (num_strings >= 4) ((sPersonEntity*)entity)->script_activate_talk     = ReadMapString(file);
+        if (num_strings >= 5) ((sPersonEntity*)entity)->script_generate_commands = ReadMapString(file);
 
         // reserved
         for (int i = 0; i < 16; i++)
           ReadMapByte(file);
 
-        entity = person;
         break;
       }
 
       // TRIGGER
       case 2:
       {
-        sTriggerEntity* trigger = new sTriggerEntity;
+        entity = new sTriggerEntity;
+        if (!entity)
+          return false;
 
         // read/set the trigger data
-        trigger->script = ReadMapString(file);
+        ((sTriggerEntity*)entity)->script = ReadMapString(file);
 
-        entity = trigger;
         break;
       }
 
@@ -1368,6 +1389,17 @@ sMap::AddEntity(sEntity* entity)
 void
 sMap::DeleteEntity(int index)
 {
+  int type = GetEntity(index).GetEntityType();
+  if (type == sEntity::PERSON) {
+    delete (sPersonEntity*) m_Entities[index];
+		m_Entities[index] = NULL;
+  }
+
+  if (type == sEntity::TRIGGER) {
+    delete (sTriggerEntity*) m_Entities[index];
+   	m_Entities[index] = NULL;
+  }
+
   delete m_Entities[index];
 	m_Entities[index] = NULL;
   m_Entities.erase(m_Entities.begin() + index);
