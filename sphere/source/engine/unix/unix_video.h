@@ -2,7 +2,7 @@
 #define UNIX_VIDEO_H
 
 #include "../../common/rgb.hpp"
-#include "SDL/SDL.h"
+#include "SDL.h"
 
 class SFONT; /* for drawing FPS */
 typedef struct _IMAGE {

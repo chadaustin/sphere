@@ -1,6 +1,6 @@
 #include "unix_input.h"
 #include "unix_video.h"
-#include "SDL/SDL.h"
+#include "SDL.h"
 #include <deque>
 #include <iostream>
 
@@ -136,6 +136,7 @@ bool RefreshInput () {
 		}
     }
   }
+  return true; /* not sure what to do, but I guess we succeeded! */
 }
 
 bool IsKeyPressed (int key) {

@@ -18,6 +18,4 @@ swindowstyle.cpp
 LDADD = \
   unix/libunix.a \
   ../common/libcommon.a \
-  ../jpegwrap/libjpegwrap.a \
-  -lSDL \
-  -lpthread
+  ../jpegwrap/libjpegwrap.a

@@ -38,6 +38,7 @@ fi)
 
 dnl Checks for libraries.
 
+AM_PATH_SDL(1.2.0)
 AC_CHECK_LIB(z, zlibVersion,,
    AC_MSG_ERROR(could not find the z library))
 AC_CHECK_LIB(png, png_access_version_number,,
@@ -62,8 +63,8 @@ AC_CHECK_HEADER(netinet/in.h)
 AC_CHECK_HEADER(sys/socket.h)
 AC_CHECK_HEADER(sys/stat.h)
 AC_CHECK_HEADER(unistd.h)
-AC_CHECK_HEADER(SDL/SDL.h,,
-  AC_MSG_ERROR(could not find SDL headers))
+dnl AC_CHECK_HEADER(SDL/SDL.h,,
+dnl   AC_MSG_ERROR(could not find SDL headers))
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 
