@@ -59,7 +59,8 @@ sWindowStyle::Load(const char* filename, IFileSystem& fs)
 
   // read the header
   WINDOWSTYLE_HEADER header;
-  file->Read(&header, sizeof(header));
+  if (file->Read(&header, sizeof(header)) != sizeof(header))
+		return false;
 
   // check the header
   if (memcmp(header.signature, ".rws", 4) != 0 ||

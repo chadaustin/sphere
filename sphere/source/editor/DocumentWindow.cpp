@@ -1,5 +1,8 @@
+// disable 'identifier too long' warning
+#pragma warning(disable : 4786)
+
 #include "DocumentWindow.hpp"
-//#include "MainWindow.hpp"
+#include "MainWindow.hpp"
 #include "WindowCommands.hpp"
 #include "PaletteWindow.hpp"
 #include "resource.h"
