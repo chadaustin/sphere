@@ -246,13 +246,18 @@ CFontWindow::OnFontResize()
 {
   sFontCharacter& c = m_Font.GetCharacter(m_CurrentCharacter);
   CResizeDialog dialog("Resize Font Character", c.GetWidth(), c.GetHeight());
+	dialog.SetRange(1, 4096, 1, 4096);
+
   if (dialog.DoModal() == IDOK)
   {
-    if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0)
+    if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0
+		 && dialog.GetWidth() <= 4096 && dialog.GetHeight() <= 4096)
     {
-      c.Resize(dialog.GetWidth(), dialog.GetHeight());
-      SetModified(true);
-      SetImage();
+			if ( !(dialog.GetWidth() == c.GetWidth() && dialog.GetHeight() == c.GetHeight()) ) {
+        c.Resize(dialog.GetWidth(), dialog.GetHeight());
+        SetModified(true);
+        SetImage();
+			}
     }
   }
 }
@@ -277,19 +282,27 @@ CFontWindow::OnFontResizeAll()
   }
 
   CResizeDialog dialog("Resize All Font Characters", max_x, max_y);
+	dialog.SetRange(1, 4096, 1, 4096);
+
   if (dialog.DoModal() == IDOK) {
 
-    if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
+    if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0
+		 && dialog.GetWidth() <= 4096 && dialog.GetHeight() <= 4096)
+    {
+
+			bool modified = false;
 
       for (int i = 0; i < m_Font.GetNumCharacters(); i++) {
-        m_Font.GetCharacter(i).Resize(
-          dialog.GetWidth(),
-          dialog.GetHeight()
-        );
+
+				sFontCharacter& c = m_Font.GetCharacter(i);
+				modified |= ( !(dialog.GetWidth() == c.GetWidth() && dialog.GetHeight() == c.GetHeight()) );
+        c.Resize(dialog.GetWidth(), dialog.GetHeight());
       }
 
-      SetModified(true);
-      SetImage();
+			if (modified) {
+        SetModified(true);
+        SetImage();
+			}
     }
   }
 }

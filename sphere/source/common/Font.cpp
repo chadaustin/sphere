@@ -47,7 +47,9 @@ sFont::Load(const char* filename, IFileSystem& fs)
 
   // read and check header
   FONT_HEADER header;
-  file->Read(&header, sizeof(header));
+  if (file->Read(&header, sizeof(header)) != sizeof(header))
+		return false;
+
   if (memcmp(header.signature, ".rfn", 4) != 0 ||
       (header.version != 1 && header.version != 2))
   {
@@ -60,24 +62,32 @@ sFont::Load(const char* filename, IFileSystem& fs)
 
   // allocate characters
   m_Characters.resize(header.num_characters);
+	if (m_Characters.size() != header.num_characters)
+		return false;
 
   // read them
   for (unsigned i = 0; i < m_Characters.size(); i++)
   {
     CHARACTER_HEADER character_header;
-    file->Read(&character_header, sizeof(character_header));
+    if (file->Read(&character_header, sizeof(character_header)) != sizeof(character_header))
+			return false;
 
     // is the character size feasible?
-    if (character_header.width > 1000 || character_header.height > 1000)
+    if (character_header.width  < 0 || character_header.width  > 4096
+		 || character_header.height < 0 || character_header.height > 4096)
       return false;
 
     m_Characters[i].Resize(character_header.width, character_header.height);
+		if (m_Characters[i].GetWidth()  != character_header.width
+		 || m_Characters[i].GetHeight() != character_header.height)
+		   return false;
 
     // version 1 = greyscale
     if (header.version == 1)
     {
       byte* buffer = new byte[character_header.width * character_header.height];
-      file->Read(buffer, character_header.width * character_header.height);
+      if (file->Read(buffer, character_header.width * character_header.height) != character_header.width * character_header.height)
+				return false;
 
       for (int j = 0; j < character_header.width * character_header.height; j++)
       {
@@ -89,9 +99,11 @@ sFont::Load(const char* filename, IFileSystem& fs)
       
       delete[] buffer;
     }
-    else  // version 2 (RGBA)
-      file->Read(m_Characters[i].GetPixels(), sizeof(RGBA) * character_header.width * character_header.height);
-  }
+    else { // version 2 (RGBA)
+      if (file->Read(m_Characters[i].GetPixels(), sizeof(RGBA) * character_header.width * character_header.height) != sizeof(RGBA) * character_header.width * character_header.height)
+				return false;
+    }
+	}
 
   return true;
 }
@@ -111,7 +123,8 @@ sFont::Save(const char* filename, IFileSystem& fs) const
   memcpy(header.signature, ".rfn", 4);
   header.version = 2;
   header.num_characters = m_Characters.size();
-  file->Write(&header, sizeof(header));
+  if (file->Write(&header, sizeof(header)) != sizeof(header))
+		return false;
 
   // write characters
   for (unsigned i = 0; i < m_Characters.size(); i++)
@@ -120,8 +133,11 @@ sFont::Save(const char* filename, IFileSystem& fs) const
     memset(&character_header, 0, sizeof(character_header));
     character_header.width  = m_Characters[i].GetWidth();
     character_header.height = m_Characters[i].GetHeight();
-    file->Write(&character_header, sizeof(character_header));
-    file->Write(m_Characters[i].GetPixels(), character_header.width * character_header.height * sizeof(RGBA));
+    if (file->Write(&character_header, sizeof(character_header)) != sizeof(character_header))
+			return false;
+
+    if (file->Write(m_Characters[i].GetPixels(), character_header.width * character_header.height * sizeof(RGBA)) != character_header.width * character_header.height * sizeof(RGBA))
+			return false;
   }
 
   return true;

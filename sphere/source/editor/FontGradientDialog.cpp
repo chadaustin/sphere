@@ -10,6 +10,7 @@ CFontGradientDialog::CFontGradientDialog()
 , m_bottom_color(CreateRGBA(255, 255, 255, 255))
 , m_Text1("Top Color")
 , m_Text2("Bottom Color")
+, m_Caption("Generate Gradient")
 {
 }
 
