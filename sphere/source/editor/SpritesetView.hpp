@@ -65,6 +65,7 @@ private:
   afx_msg void OnFrameProperties();
 
   afx_msg void OnReplaceColorWithColor();
+  afx_msg void OnInsertDirectionFromImage();
   afx_msg void OnExportDirectionAsImage();
 
 private:

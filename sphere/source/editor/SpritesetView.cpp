@@ -26,6 +26,7 @@ BEGIN_MESSAGE_MAP(CSpritesetView, CWnd)
   ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_DELETE,     OnDeleteDirection)
   ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_APPEND,     OnAppendDirection)
   ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_PROPERTIES, OnDirectionProperties)
+  ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_IMPORT_FROM_IMAGE, OnInsertDirectionFromImage)
   ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_EXPORT_AS_IMAGE, OnExportDirectionAsImage)
 
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_INSERT,     OnInsertFrame)
@@ -773,6 +774,80 @@ CSpritesetView::OnReplaceColorWithColor()
 ///////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
+CSpritesetView::OnInsertDirectionFromImage()
+{
+  CImageFileDialog dialog(FDM_OPEN, "Insert Direction From Image");
+  if (dialog.DoModal() == IDOK) {
+
+    int frame_width = m_Spriteset->GetFrameWidth();
+    int frame_height = m_Spriteset->GetFrameHeight();
+
+    CImage32 image;
+    if ( !image.Load(dialog.GetPathName()) ) {
+      MessageBox("Error loading image.");
+      return;
+    }
+
+    if (image.GetWidth() % frame_width > 0
+     || image.GetHeight() % frame_height > 0) {
+      MessageBox("Invalid image width or height.");
+      return;
+    }
+
+    int num_frames = image.GetWidth() / frame_width;
+    int old_current_frame = m_CurrentFrame;
+
+    int x = 0;
+    int y = 0;
+
+    int current_direction = m_CurrentDirection;
+    m_Spriteset->InsertDirection(current_direction);
+
+    for (int i = 0; i < num_frames; i++) {
+      int current_image = m_Spriteset->GetNumImages();
+      int current_frame = old_current_frame + i;
+      
+
+      m_Spriteset->InsertImage(current_image);
+
+      if (current_image < m_Spriteset->GetNumImages()) {
+
+        CImage32& frame = m_Spriteset->GetImage(current_image);
+        // having to set the blend mode seems weird to me
+        frame.SetBlendMode(CImage32::BlendMode::REPLACE);
+
+        for (int sy = 0; sy < frame.GetHeight(); sy++) {
+          for (int sx = 0; sx < frame.GetWidth(); sx++) {
+            frame.SetPixel(sx, sy, image.GetPixel(x + sx, y + sy));
+          }
+        }
+
+        x += frame.GetWidth();
+
+        if (current_direction < m_Spriteset->GetNumDirections())
+        {
+          m_Spriteset->InsertFrame(current_direction, current_frame);
+          if (current_frame < m_Spriteset->GetNumFrames(current_direction)) {
+            m_Spriteset->SetFrameIndex(current_direction, current_frame, current_image);
+          }
+        }
+
+      }
+    }
+
+    m_Spriteset->DeleteFrame(current_direction, m_Spriteset->GetNumFrames(current_direction) - 1);
+
+  }
+
+  UpdateMaxSizes(); 
+  UpdateScrollBars();
+  Invalidate();
+  m_Handler->SV_SpritesetModified();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
 CSpritesetView::OnExportDirectionAsImage()
 {
   // get file name to export to
@@ -794,6 +869,7 @@ CSpritesetView::OnExportDirectionAsImage()
     }
 
     CImage32 image(image_width, image_height);
+    image.SetBlendMode(CImage32::BlendMode::REPLACE);
 
     int x = 0;
     int y = 0;
