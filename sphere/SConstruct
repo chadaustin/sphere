@@ -6,7 +6,7 @@ false = 0
 
 major_version = 0
 minor_version = 97
-version = str(major_version) + '.' + str(minor_version)
+version = '%d.%d' % (major_version, minor_version)
 
 install_prefix = ARGUMENTS.get('install_prefix', '/usr/local')
 use_audiere = ARGUMENTS.get('audio', '1')
