@@ -24,6 +24,8 @@ public:
     TILED,
     STRETCHED,
     GRADIENT,
+    TILED_GRADIENT,
+    STRETCHED_GRADIENT
   };
 
   enum {
@@ -31,6 +33,13 @@ public:
     BACKGROUND_UPPER_RIGHT = 1,
     BACKGROUND_LOWER_LEFT  = 2,
     BACKGROUND_LOWER_RIGHT = 3,
+  };
+
+  enum {
+    EDGE_LEFT   = 0,
+    EDGE_TOP    = 1,
+    EDGE_RIGHT  = 2,
+    EDGE_BOTTOM = 3
   };
 
 public:
@@ -49,6 +58,9 @@ public:
   void SetBackgroundMode(int mode);
   int  GetBackgroundMode() const;
 
+  void SetEdgeOffset(int edge, byte offset);
+  byte  GetEdgeOffset(int edge) const;
+
   void SetBackgroundColor(int corner, RGBA color);
   RGBA GetBackgroundColor(int corner) const;
 
@@ -62,6 +74,7 @@ private:
 
   int m_BackgroundMode;
   RGBA m_BackgroundCorners[4];
+  byte m_EdgeOffsets[4];
 };
 
 
@@ -90,6 +103,20 @@ inline int
 sWindowStyle::GetBackgroundMode() const
 {
   return m_BackgroundMode;
+}
+
+
+inline void
+sWindowStyle::SetEdgeOffset(int edge, byte offset)
+{
+  m_EdgeOffsets[edge] = offset;
+}
+
+
+inline byte
+sWindowStyle::GetEdgeOffset(int edge) const
+{
+  return m_EdgeOffsets[edge];
 }
 
 

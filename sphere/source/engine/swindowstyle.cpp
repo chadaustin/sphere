@@ -73,7 +73,12 @@ SWINDOWSTYLE::DrawBackground(int x, int y, int w, int h, int background_mode, co
 {
   IMAGE image = m_Images[8];
 
-  if (background_mode == sWindowStyle::TILED) {
+  x -= m_WindowStyle.GetEdgeOffset(sWindowStyle::EDGE_LEFT);
+  y -= m_WindowStyle.GetEdgeOffset(sWindowStyle::EDGE_TOP);
+  w += m_WindowStyle.GetEdgeOffset(sWindowStyle::EDGE_LEFT) + m_WindowStyle.GetEdgeOffset(sWindowStyle::EDGE_RIGHT);
+  h += m_WindowStyle.GetEdgeOffset(sWindowStyle::EDGE_TOP)  + m_WindowStyle.GetEdgeOffset(sWindowStyle::EDGE_BOTTOM);
+
+  if ((background_mode == sWindowStyle::TILED) || (background_mode == sWindowStyle::TILED_GRADIENT)) {
     int ox, oy, ow, oh;
     int width = GetImageWidth(image);
     int height = GetImageHeight(image);
@@ -96,7 +101,7 @@ SWINDOWSTYLE::DrawBackground(int x, int y, int w, int h, int background_mode, co
     }
 
     SetClippingRectangle(ox, oy, ow, oh);
-  } else if (background_mode == sWindowStyle::STRETCHED) {
+  } else if ((background_mode == sWindowStyle::STRETCHED) || (background_mode == sWindowStyle::STRETCHED_GRADIENT)) {
     int tx[4] = { x, x + w, x + w, x };
     int ty[4] = { y, y, y + h, y + h };
     if ( !is_masked ) {
@@ -105,7 +110,9 @@ SWINDOWSTYLE::DrawBackground(int x, int y, int w, int h, int background_mode, co
     else {
       TransformBlitImageMask(image, tx, ty, mask);
     }
-  } else {
+  }
+
+  if ((background_mode == sWindowStyle::GRADIENT) || (background_mode == sWindowStyle::STRETCHED_GRADIENT) || (background_mode == sWindowStyle::TILED_GRADIENT)) {
     RGBA colors[4];
     colors[0] = m_WindowStyle.GetBackgroundColor(sWindowStyle::BACKGROUND_UPPER_LEFT);
     colors[1] = m_WindowStyle.GetBackgroundColor(sWindowStyle::BACKGROUND_UPPER_RIGHT);

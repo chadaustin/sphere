@@ -21,6 +21,10 @@ sWindowStyle::Create(int width, int height)
   m_BackgroundCorners[1] = CreateRGBA(0, 0, 0, 255);
   m_BackgroundCorners[2] = CreateRGBA(0, 0, 0, 255);
   m_BackgroundCorners[3] = CreateRGBA(0, 0, 0, 255);
+  m_EdgeOffsets[0]       = 0;
+  m_EdgeOffsets[1]       = 0;
+  m_EdgeOffsets[2]       = 0;
+  m_EdgeOffsets[3]       = 0;
 
   for (int i = 0; i < 9; i++)
   {
@@ -38,7 +42,8 @@ sWindowStyle::Create(int width, int height)
   byte edge_width;  /* only valid if version == 1 */    \
   byte background_mode;                                 \
   RGBA corner_colors[4];                                \
-  byte reserved[40];
+  byte edge_offsets[4];                                 \
+  byte reserved[36];  
 #include "packed_struct.h"
 
 ASSERT_STRUCT_SIZE(WINDOWSTYLE_HEADER, 64)
@@ -65,6 +70,7 @@ sWindowStyle::Load(const char* filename, IFileSystem& fs)
 
   m_BackgroundMode = header.background_mode;
   memcpy(m_BackgroundCorners, header.corner_colors, sizeof(RGBA) * 4);
+  memcpy(m_EdgeOffsets, header.edge_offsets, sizeof(byte) * 4);
 
   if (header.version == 1)
   {
@@ -98,6 +104,7 @@ sWindowStyle::Save(const char* filename, IFileSystem& fs) const
   header.version = 2;
   header.background_mode = m_BackgroundMode;
   memcpy(header.corner_colors, m_BackgroundCorners, sizeof(RGBA) * 4);
+  memcpy(header.edge_offsets, m_EdgeOffsets, sizeof(byte) * 4);
   file->Write(&header, sizeof(header));
 
   // write the bitmaps
