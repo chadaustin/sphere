@@ -12,10 +12,7 @@ static ADR_CONTEXT s_Context;
 
 bool InitializeAudio()
 {
-  s_Context = AdrCreateContext(
-    "autodetect", "",
-    NULL, NULL, NULL, NULL, NULL, NULL
-  );
+  s_Context = AdrCreateContext(NULL);
   return (s_Context != NULL);
 }
 

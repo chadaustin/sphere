@@ -22,15 +22,13 @@ static int      ADR_CALL FileTell(ADR_FILE file);
 bool InitAudio(HWND window, SPHERECONFIG* config)
 {
   // create the context
-  s_AudiereContext = AdrCreateContext(
-    "autodetect", "",
-    NULL,
-    FileOpen,
-    FileClose,
-    FileRead,
-    FileSeek,
-    FileTell
-  );
+  ADR_CONTEXT_ATTR attr = AdrCreateContextAttr();
+  AdrContextAttrSetOutputDevice(attr, "autodetect");
+  AdrContextAttrSetFileCallbacks(
+    attr, FileOpen, FileClose, FileRead, FileSeek, FileTell);
+
+  s_AudiereContext = AdrCreateContext(attr);
+  AdrDestroyContextAttr(attr);
 
   return (s_AudiereContext != NULL);
 }
