@@ -731,6 +731,12 @@ CMainWindow::OnFileNewProject()
     strncpy(gametitle, newprojectdialog.GetGameTitle(), 32);
 
     CreateProject(projectname, gametitle);
+
+    char path_name[MAX_PATH];
+    GetGamesDirectory(path_name);
+    sprintf (path_name, "%s\\%s\\game.sgm", path_name, gametitle);
+
+    Configuration::Set(KEY_LAST_PROJECT, path_name);
   }
 }
 
@@ -752,8 +758,9 @@ CMainWindow::OnFileOpenProject()
   // set current directory on Win98/2000
   FileDialog.m_ofn.lpstrInitialDir = games_directory;
 
-  if (FileDialog.DoModal() == IDOK)
+  if (FileDialog.DoModal() == IDOK) {
     OpenProject(FileDialog.GetPathName());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

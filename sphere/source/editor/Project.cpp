@@ -49,6 +49,7 @@ CProject::Create(const char* games_directory, const char* project_name)
   char path[MAX_PATH];
   if (GetCurrentDirectory(MAX_PATH, path) == FALSE)
     return false;
+
   m_Directory = path;
     
   // set the project filename
