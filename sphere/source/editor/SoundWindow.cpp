@@ -211,23 +211,22 @@ CSoundWindow::OnTimer(UINT timerID)
   else
   {
     if (m_Playing) {
-      if (!m_AutoAdvance) {
-        if (!m_Repeat) {
-          OnSoundStop();
-        }
-        else {
-          OnSoundPlay();
-        }
-      }
-      else {
-        OnSoundStop();
+      if (m_Playlist.GetNumFiles() > 1 && m_AutoAdvance) {
         if (NextSound()) {
           OnSoundPlay();
         }
       }
+      else {
+        m_Sound.Stop();
+        m_Playing = m_Repeat;
+
+        if (m_Repeat) {
+          m_Sound.Play();
+        }
+      }
     }
     
-    if (!m_Playing) {
+    if (!m_Playing && !m_Stopped) {
       m_PlayButton.EnableWindow(TRUE);
       m_StopButton.EnableWindow(FALSE);     
 
@@ -236,6 +235,8 @@ CSoundWindow::OnTimer(UINT timerID)
       if (m_PositionBar.m_hWnd != NULL) {
         m_PositionBar.SetPos(0);
       }
+
+      m_Stopped = true;
     }
   }
 }
@@ -316,21 +317,21 @@ CSoundWindow::OnSoundPlay()
   if (m_Sound.IsPlaying())
     return;
 
-  m_Playing = false;
+  if ( !(m_CurrentSound >= 0 && m_CurrentSound < m_Playlist.GetNumFiles()) ) {
+    m_Playing = false;
+    return;
+  }
+    
+  LoadSound(m_Playlist.GetFile(m_CurrentSound));
+  UpdateCaption();
+  m_Sound.Play();
+  m_Playing = true;
+  m_Stopped = false;
 
-  if (m_CurrentSound >= 0 && m_CurrentSound < m_Playlist.GetNumFiles()) {
-    LoadSound(m_Playlist.GetFile(m_CurrentSound));
-
-    UpdateCaption();
-
-    m_Sound.Play();
-    m_Playing = true;
-
-    if (m_PanBar.m_hWnd != NULL && m_PitchBar.m_hWnd != NULL && m_VolumeBar.m_hWnd != NULL) {
-      m_Sound.SetPan(GetPan());
-      m_Sound.SetPitchShift(GetPitchShift());
-      m_Sound.SetVolume(GetVolume());
-    }
+  if (m_PanBar.m_hWnd != NULL && m_PitchBar.m_hWnd != NULL && m_VolumeBar.m_hWnd != NULL) {
+    m_Sound.SetPan(GetPan());
+    m_Sound.SetPitchShift(GetPitchShift());
+    m_Sound.SetVolume(GetVolume());
   }
 }
 
@@ -403,8 +404,8 @@ afx_msg void
 CSoundWindow::OnSoundNext()
 {
   if (AdvanceSound(true, true)) {
-    bool was_playing = m_Playing;
-    OnSoundStop();
+    const bool was_playing = m_Playing;
+    m_Sound.Stop();
     UpdateCaption();
     if (was_playing) OnSoundPlay();
   }
@@ -416,8 +417,8 @@ afx_msg void
 CSoundWindow::OnSoundPrev()
 {
   if (AdvanceSound(false, true)) {
-    bool was_playing = m_Playing;
-    OnSoundStop();
+    const bool was_playing = m_Playing;
+    m_Sound.Stop();
     UpdateCaption();
     if (was_playing) OnSoundPlay();
   }
@@ -541,7 +542,7 @@ CSoundWindow::OnNeedText(UINT /*id*/, NMHDR* nmhdr, LRESULT* result)
 
     case ID_MUSIC_VOLUMEBAR:
       if (m_VolumeBar.m_hWnd != NULL) {
-        sprintf (string, "%s %3d", TranslateString("volume"), GetVolume());
+        sprintf (string, "%s %3d %s", TranslateString("volume"), GetVolume(), (m_Sound.IsPlaying() ? "playing" : "not playing"));
         ttt->lpszText = string;
       }
     break;

@@ -697,7 +697,7 @@ CGameEngine::LoadSurface(const char* filename)
 
   // load image
   CImage32* image = new CImage32;
-  if (!image->Load(path.c_str(), m_FileSystem)) {
+  if (!image || !image->Load(path.c_str(), m_FileSystem)) {
     delete image;
     return NULL;
   }

@@ -430,10 +430,6 @@ SOURCE=..\common\Image32.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\common\Interface.hpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\common\Layer.cpp
 # End Source File
 # Begin Source File

@@ -77,6 +77,7 @@ private:
 
   bool m_Repeat; 
   bool m_Playing;
+  bool m_Stopped;
   bool m_AutoAdvance;
   bool m_RandomOrder;
   

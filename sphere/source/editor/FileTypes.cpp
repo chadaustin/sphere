@@ -242,6 +242,8 @@ const char* GetSoundSubTypeLabel(const char* ext) {
     return "AIFF Files";
   if (strcmp(ext, "spc") == 0)
     return "SPC Files";
+  if (strcmp(ext, "mid") == 0 || strcmp(ext, "midi") == 0 || strcmp(ext, "rmi") == 0)
+    return "MIDI Files";
   return "Unknown Sound";
 }
 

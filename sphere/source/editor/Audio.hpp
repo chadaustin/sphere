@@ -34,7 +34,9 @@ public:
 
 private:
   audiere::OutputStreamPtr m_Sound;
+  audiere::MIDIStreamPtr   m_Midi;
   bool m_ClosedAudio;
+  bool m_ClosedMidi;
   std::string m_Filename;
 };
 
