@@ -887,21 +887,27 @@ EXPORT(void) DrawGradientTriangle(int x[3], int y[3], RGBA colors[3])
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static inline float sphere_x_to_opengl_x(int x) {
+  return 0.5f + (float) x;
+}
+
+static inline float sphere_y_to_opengl_y(int y) {
+  return (float) y + 0.5f;
+}
+
 EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color)
 {
   if (color.alpha == 0) {
     return;
   }
 
-  float o = SCALE() - 0.5f;
-
   glTranslatef(-0.5f, -0.5f, 0.0f);
   glBegin(GL_QUADS);
   glColor4ubv((GLubyte*)&color);
-  glVertex2f(x,         y);
-  glVertex2f(x + w + o, y);
-  glVertex2f(x + w + o, y + h + o);
-  glVertex2f(x,         y + h + o);
+  glVertex2f(sphere_x_to_opengl_x(x),     sphere_y_to_opengl_y(y));
+  glVertex2f(sphere_x_to_opengl_x(x + w), sphere_y_to_opengl_y(y));
+  glVertex2f(sphere_x_to_opengl_x(x + w), sphere_y_to_opengl_y(y + h));
+  glVertex2f(sphere_x_to_opengl_x(x),     sphere_y_to_opengl_y(y + h));
   glEnd();
   glTranslatef(0.5f, 0.5f, 0.0f);
 }
@@ -910,14 +916,12 @@ EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color)
 
 EXPORT(void) DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
 {
-  float o = SCALE() - 0.5f;
-
   glTranslatef(-0.5f, -0.5f, 0.0f);
   glBegin(GL_QUADS);
-  glColor4ubv((GLubyte*)(colors + 0)); glVertex2f(x,         y);
-  glColor4ubv((GLubyte*)(colors + 1)); glVertex2f(x + w + o, y);
-  glColor4ubv((GLubyte*)(colors + 2)); glVertex2f(x + w + o, y + h + o);
-  glColor4ubv((GLubyte*)(colors + 3)); glVertex2f(x,         y + h + o);
+  glColor4ubv((GLubyte*)(colors + 0)); glVertex2f(sphere_x_to_opengl_x(x),     sphere_y_to_opengl_y(y));
+  glColor4ubv((GLubyte*)(colors + 1)); glVertex2f(sphere_x_to_opengl_x(x + w), sphere_y_to_opengl_y(y));
+  glColor4ubv((GLubyte*)(colors + 2)); glVertex2f(sphere_x_to_opengl_x(x + w), sphere_y_to_opengl_y(y + h));
+  glColor4ubv((GLubyte*)(colors + 3)); glVertex2f(sphere_x_to_opengl_x(x),     sphere_y_to_opengl_y(y + h));
   glEnd();
   glTranslatef(0.5f, 0.5f, 0.0f);
 }
