@@ -72,8 +72,6 @@ GLint MaxTexSize; // width or height
 HWND  SphereWindow;
 HDC   MainDC;
 HGLRC MainRC;
-DWORD WindowStyle;
-DWORD ExWindowStyle;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -256,8 +254,6 @@ bool EXPORT InitVideoDriver(HWND window, int screen_width, int screen_height)
     LoadDriverConfig();
 
     SphereWindow = window;
-    WindowStyle = GetWindowLong(SphereWindow, GWL_STYLE);
-    ExWindowStyle = GetWindowLong(SphereWindow, GWL_EXSTYLE);
     
     if (!DriverConfig.fullscreen) {
 
@@ -265,10 +261,9 @@ bool EXPORT InitVideoDriver(HWND window, int screen_width, int screen_height)
         const int screenheight = GetSystemMetrics(SM_CYSCREEN);
 
         RECT rect = { 0, 0, ScreenWidth * SCALE(), ScreenHeight * SCALE() };
-	DWORD style = WS_POPUP | WS_CAPTION | WS_CLIPSIBLINGS;
-        SetWindowLong(SphereWindow, GWL_STYLE, style);
-        SetWindowLong(SphereWindow, GWL_EXSTYLE, 0);
-        AdjustWindowRect(&rect, style, (GetMenu(SphereWindow) ? TRUE : FALSE));
+	DWORD style = GetWindowLong(SphereWindow, GWL_STYLE);
+        DWORD exstyle = GetWindowLong(SphereWindow, GWL_EXSTYLE);
+        AdjustWindowRectEx(&rect, style, (GetMenu(SphereWindow) ? TRUE : FALSE), exstyle);
         int winwidth = rect.right - rect.left;
         int winheight = rect.bottom - rect.top;
         SetWindowPos(SphereWindow, HWND_TOP,
@@ -292,8 +287,6 @@ bool EXPORT InitVideoDriver(HWND window, int screen_width, int screen_height)
         }
 
         // Set up window
-        SetWindowLong(SphereWindow, GWL_STYLE, WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-        SetWindowLong(SphereWindow, GWL_EXSTYLE, 0);
         SetWindowPos(SphereWindow, HWND_TOPMOST, 0, 0, ScreenWidth * SCALE(), ScreenHeight * SCALE(), SWP_SHOWWINDOW);
     }
     
@@ -404,10 +397,6 @@ void EXPORT CloseVideoDriver()
         dm.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFLAGS | DM_DISPLAYFREQUENCY;
         ChangeDisplaySettings(&dm, 0);
     }
-
-    // Restore window styles
-    SetWindowLong(SphereWindow, GWL_STYLE, WindowStyle);
-    SetWindowLong(SphereWindow, GWL_EXSTYLE, ExWindowStyle);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
