@@ -778,6 +778,8 @@ void
 CMapView::PasteMapUnderPoint(CPoint point)
 {
   //TODO: add map area selection paste
+  if (!m_Clipboard)
+    return;
 
   int tx = m_CurrentX + (point.x / m_Map->GetTileset().GetTileWidth() / m_ZoomFactor);
   int ty = m_CurrentY + (point.y / m_Map->GetTileset().GetTileHeight() / m_ZoomFactor);
@@ -2891,7 +2893,7 @@ CMapView::IsToolAvailable(UINT id)
     case IDI_MAPTOOL_FILLAREA: available = TRUE; break;
     case IDI_MAPTOOL_COPYAREA: available = TRUE; break;
     case IDI_MAPTOOL_PASTE:
-      if (OpenClipboard() != FALSE) {
+      if (m_Clipboard != NULL && OpenClipboard() != FALSE) {
         if (m_Clipboard->IsBitmapImageOnClipboard()
           || m_Clipboard->IsFlatImageOnClipbard()
           || IsClipboardFormatAvailable(s_MapAreaClipboardFormat)) {

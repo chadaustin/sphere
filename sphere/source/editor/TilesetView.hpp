@@ -54,6 +54,8 @@ private:
   afx_msg void OnInsertTileset();
   afx_msg void OnAppendTileset();
 
+  void SelectTileAtPoint(CPoint point);
+
   void OnZoom(int zoom_factor);
   afx_msg void OnZoom1x();
   afx_msg void OnZoom2x();
@@ -95,6 +97,12 @@ private:
   bool m_UsingMultiTileSelection;
 
   afx_msg void OnLButtonUp(UINT flags, CPoint point);
+
+public:
+  int GetTileSelectionLeftX();
+  int GetTileSelectionTopY();
+  int GetTileSelectionRightX();
+  int GetTileSelectionLowerY();
 #endif
 
   DECLARE_MESSAGE_MAP()

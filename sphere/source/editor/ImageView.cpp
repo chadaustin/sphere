@@ -286,6 +286,9 @@ CImageView::FillAlpha()
 bool
 CImageView::Copy()
 {
+  if (!m_Clipboard) 
+    return false;
+
   if (OpenClipboard() == FALSE)
     return false;
 
@@ -330,6 +333,9 @@ CImageView::Copy()
 
 bool
 CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha, int merge_method) {
+  if (!m_Clipboard) 
+    return false;
+
   if (OpenClipboard() == FALSE)
     return false;
 
@@ -581,7 +587,7 @@ CImageView::GetSelectionTopY() {
 void
 CImageView::FreeSelectionPixels(RGBA* pixels) {
   if (pixels != m_Image.GetPixels())
-    free(pixels);
+    delete[] pixels;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1634,7 +1640,7 @@ CImageView::OnRButtonUp(UINT flags, CPoint point)
   }
 
   bool image_on_clipboard = false;
-  if (OpenClipboard()) {
+  if (!m_Clipboard && OpenClipboard()) {
     image_on_clipboard = m_Clipboard->IsFlatImageOnClipbard() || m_Clipboard->IsBitmapImageOnClipboard();
     CloseClipboard();
   }
@@ -1834,7 +1840,6 @@ CImageView::OnRotateCW()
     // things have changed
     Invalidate();
     m_Handler->IV_ImageChanged();
-
   }
 }
 

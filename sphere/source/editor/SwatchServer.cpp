@@ -2,7 +2,7 @@
 #include "SwatchServer.hpp"
 
 
-CSwatchServer* CSwatchServer::s_Server;
+CSwatchServer* CSwatchServer::s_Server = NULL;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -38,15 +38,17 @@ CSwatchServer::CSwatchServer()
 
   // read the swatch buffer
   RGBA* buffer = new RGBA[(size + 3) / 4];
-  RegQueryValueEx(key, "SwatchColors", NULL, NULL, (LPBYTE)buffer, &size);
+  if (buffer) {
+    RegQueryValueEx(key, "SwatchColors", NULL, NULL, (LPBYTE)buffer, &size);
 
-  // parse it and add to the server
-  RGBA* p = buffer;
-  for (int i = 0; i < size / 4; i++) {
-    m_Colors.push_back(*p++);
-  }
+    // parse it and add to the server
+    RGBA* p = buffer;
+    for (int i = 0; i < size / 4; i++) {
+      m_Colors.push_back(*p++);
+    }
   
-  delete[] buffer;
+    delete[] buffer;
+  }
   RegCloseKey(key);
 }
 
@@ -62,14 +64,16 @@ CSwatchServer::~CSwatchServer()
 
   // make the swatch buffer
   RGBA* buffer = new RGBA[m_Colors.size()];
-  for (int i = 0; i < m_Colors.size(); i++) {
-    buffer[i] = m_Colors[i];
+  if (buffer) {
+    for (int i = 0; i < m_Colors.size(); i++) {
+      buffer[i] = m_Colors[i];
+    }
+
+    // write the swatch buffer
+    RegSetValueEx(key, "SwatchColors", 0, REG_BINARY, (BYTE*)buffer, m_Colors.size() * sizeof(RGBA));
+
+    delete[] buffer;
   }
-
-  // write the swatch buffer
-  RegSetValueEx(key, "SwatchColors", 0, REG_BINARY, (BYTE*)buffer, m_Colors.size() * sizeof(RGBA));
-
-  delete[] buffer;
   RegCloseKey(key);
 }
 
@@ -79,6 +83,7 @@ void __cdecl
 CSwatchServer::OnExitHandler()
 {
   delete s_Server;
+  s_Server = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

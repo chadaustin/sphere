@@ -209,18 +209,9 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_UPDATE_COMMAND_UI(PALETTE_COMMAND,	     OnUpdatePaletteMenu)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_PROJECT,	     OnUpdateViewProject)
 
-  // TODO: Image/Map Toolbars should be reopenable after closing them (currently you have to reopen editor.exe)
-	//ON_UPDATE_COMMAND_UI(ID_VIEW_IMAGETOOLBAR,	   OnUpdateViewImageToolBar)
-	//ON_UPDATE_COMMAND_UI(ID_VIEW_MAPTOOLBAR,	     OnUpdateViewMapToolBar)
-  //ON_COMMAND(ID_VIEW_IMAGETOOLBAR, OnViewImageToolBar)
-  //ON_COMMAND(ID_VIEW_MAPTOOLBAR, OnViewMapToolBar)
-
   // project window message
   ON_MESSAGE(WM_INSERT_PROJECT_FILE, OnInsertProjectFile)
   ON_MESSAGE(WM_REFRESH_PROJECT,     OnRefreshProject)	
-
-  // ON_MESSAGE(WM_REFRESH_IMAGETOOLBAR, OnRefreshImageToolBar)
-  // ON_MESSAGE(WM_REFRESH_MAPTOOLBAR,   OnRefreshMapToolBar)
 
   // document window messages
   ON_MESSAGE(WM_DW_CLOSING,          OnDocumentWindowClosing)
@@ -2320,14 +2311,14 @@ CMainWindow::OnClearChildMenu(WPARAM wparam, LPARAM lparam)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CMainWindow::OnUpdatePaletteMenu(CCmdUI* ui)
+CMainWindow::OnUpdatePaletteMenu(CCmdUI* cmdui)
 {
-	if (ui->m_pSubMenu == NULL) return;
+	if (cmdui->m_pSubMenu == NULL) return;
 
 	// remove the old palette menu	
-	while(ui->m_pSubMenu->GetMenuItemCount() > 0)
+	while(cmdui->m_pSubMenu->GetMenuItemCount() > 0)
 	{
-		ui->m_pSubMenu->RemoveMenu(0, MF_BYPOSITION);
+		cmdui->m_pSubMenu->RemoveMenu(0, MF_BYPOSITION);
 	}
 
   // add a new one
@@ -2356,7 +2347,7 @@ CMainWindow::OnUpdatePaletteMenu(CCmdUI* ui)
           visible = MF_CHECKED;
         }
 
-        ui->m_pSubMenu->AppendMenu(visible, PALETTE_COMMAND + i, title);
+        cmdui->m_pSubMenu->AppendMenu(visible, PALETTE_COMMAND + i, title);
       }
 
       empty = (window->GetNumPalettes() == 0);
@@ -2366,8 +2357,8 @@ CMainWindow::OnUpdatePaletteMenu(CCmdUI* ui)
 
   // if nothing was added, make an empty palette menu
   if (empty) {
-    ui->m_pSubMenu->AppendMenu(0, ID_VIEW_PALETTES, "...");
-    ui->m_pSubMenu->EnableMenuItem(0, MF_BYPOSITION | MF_GRAYED);
+    cmdui->m_pSubMenu->AppendMenu(0, ID_VIEW_PALETTES, "...");
+    cmdui->m_pSubMenu->EnableMenuItem(0, MF_BYPOSITION | MF_GRAYED);
   }
 
   return;
@@ -2424,41 +2415,6 @@ CMainWindow::OnUpdateViewProject(CCmdUI* cmdui)
 #endif
 	}
 }
-
-////////////////////////////////////////////////////////////////////////////////
-
-/*
-afx_msg void
-CMainWindow::OnUpdateViewImageToolBar(CCmdUI* cmdui)
-{
-  cmdui->SetCheck(m_ImageToolBar.IsWindowVisible());
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-afx_msg void
-CMainWindow::OnUpdateViewMapToolBar(CCmdUI* cmdui)
-{
-  cmdui->SetCheck(m_MapToolBar.IsWindowVisible());
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-afx_msg void
-CMainWindow::OnViewImageToolBar()
-{
-  m_ImageToolBar.EnableWindow(m_ImageToolBar.IsWindowEnabled() ? FALSE : TRUE);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-afx_msg void
-CMainWindow::OnViewMapToolBar()
-{
-  m_MapToolBar.EnableWindow(m_MapToolBar.IsWindowEnabled() ? FALSE : TRUE);
-  //m_MapToolBar.ShowWindow(m_MapToolBar.IsWindowVisible() ? FALSE : TRUE);
-}
-*/
 
 ////////////////////////////////////////////////////////////////////////////////
 

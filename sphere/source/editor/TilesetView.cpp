@@ -352,6 +352,148 @@ CTilesetView::GetNumRows()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#if 1
+int
+CTilesetView::GetTileSelectionLeftX() {
+  CPoint start = m_StartPoint;
+  CPoint end = m_CurPoint;
+
+  RECT client_rect;
+  GetClientRect(&client_rect);
+
+  int blit_width  = m_BlitTile->GetWidth();
+  int blit_height = m_BlitTile->GetHeight();
+
+  start.x = start.x / m_BlitTile->GetWidth();
+  start.y = start.y / m_BlitTile->GetHeight();
+  end.x = end.x / m_BlitTile->GetWidth();
+  end.y = end.y / m_BlitTile->GetHeight();
+
+  int tileselection_left_x  = std::min(start.x, end.x);
+  int tileselection_top_y   = std::min(start.y, end.y);
+  int tileselection_right_x = std::max(start.x, end.x);
+  int tileselection_lower_y = std::max(start.y, end.y);
+
+  if (tileselection_left_x < 0)
+    tileselection_left_x = 0;
+  if (tileselection_top_y < 0)
+    tileselection_top_y = 0;
+
+  while ((tileselection_lower_y * (client_rect.right / blit_width)) + tileselection_right_x >= m_Tileset->GetNumTiles()) {
+    tileselection_lower_y -= 1;
+  }
+
+  return tileselection_left_x;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CTilesetView::GetTileSelectionRightX() {
+  CPoint start = m_StartPoint;
+  CPoint end = m_CurPoint;
+
+  RECT client_rect;
+  GetClientRect(&client_rect);
+
+  int blit_width  = m_BlitTile->GetWidth();
+  int blit_height = m_BlitTile->GetHeight();
+
+  start.x = start.x / m_BlitTile->GetWidth();
+  start.y = start.y / m_BlitTile->GetHeight();
+  end.x = end.x / m_BlitTile->GetWidth();
+  end.y = end.y / m_BlitTile->GetHeight();
+
+  int tileselection_left_x  = std::min(start.x, end.x);
+  int tileselection_top_y   = std::min(start.y, end.y);
+  int tileselection_right_x = std::max(start.x, end.x);
+  int tileselection_lower_y = std::max(start.y, end.y);
+
+  if (tileselection_left_x < 0)
+    tileselection_left_x = 0;
+  if (tileselection_top_y < 0)
+    tileselection_top_y = 0;
+
+  while ((tileselection_lower_y * (client_rect.right / blit_width)) + tileselection_right_x >= m_Tileset->GetNumTiles()) {
+    tileselection_lower_y -= 1;
+  }
+
+  return tileselection_right_x;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CTilesetView::GetTileSelectionTopY() {
+  CPoint start = m_StartPoint;
+  CPoint end = m_CurPoint;
+
+  RECT client_rect;
+  GetClientRect(&client_rect);
+
+  int blit_width  = m_BlitTile->GetWidth();
+  int blit_height = m_BlitTile->GetHeight();
+
+  start.x = start.x / m_BlitTile->GetWidth();
+  start.y = start.y / m_BlitTile->GetHeight();
+  end.x = end.x / m_BlitTile->GetWidth();
+  end.y = end.y / m_BlitTile->GetHeight();
+
+  int tileselection_left_x  = std::min(start.x, end.x);
+  int tileselection_top_y   = std::min(start.y, end.y);
+  int tileselection_right_x = std::max(start.x, end.x);
+  int tileselection_lower_y = std::max(start.y, end.y);
+
+  if (tileselection_left_x < 0)
+    tileselection_left_x = 0;
+  if (tileselection_top_y < 0)
+    tileselection_top_y = 0;
+
+  while ((tileselection_lower_y * (client_rect.right / blit_width)) + tileselection_right_x >= m_Tileset->GetNumTiles()) {
+    tileselection_lower_y -= 1;
+  }
+
+  return tileselection_top_y;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CTilesetView::GetTileSelectionLowerY() {
+  CPoint start = m_StartPoint;
+  CPoint end = m_CurPoint;
+
+  RECT client_rect;
+  GetClientRect(&client_rect);
+
+  int blit_width  = m_BlitTile->GetWidth();
+  int blit_height = m_BlitTile->GetHeight();
+
+  start.x = start.x / m_BlitTile->GetWidth();
+  start.y = start.y / m_BlitTile->GetHeight();
+  end.x = end.x / m_BlitTile->GetWidth();
+  end.y = end.y / m_BlitTile->GetHeight();
+
+  int tileselection_left_x  = std::min(start.x, end.x);
+  int tileselection_top_y   = std::min(start.y, end.y);
+  int tileselection_right_x = std::max(start.x, end.x);
+  int tileselection_lower_y = std::max(start.y, end.y);
+
+  if (tileselection_left_x < 0)
+    tileselection_left_x = 0;
+  if (tileselection_top_y < 0)
+    tileselection_top_y = 0;
+
+  while ((tileselection_lower_y * (client_rect.right / blit_width)) + tileselection_right_x >= m_Tileset->GetNumTiles()) {
+    tileselection_lower_y -= 1;
+  }
+
+  return tileselection_lower_y;
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CTilesetView::OnPaint()
 {
@@ -369,40 +511,11 @@ CTilesetView::OnPaint()
   int blit_height = m_BlitTile->GetHeight();
 
 #if 1
-  CPoint start = m_StartPoint;
-  CPoint end = m_CurPoint;
-
-  start.x = start.x / m_BlitTile->GetWidth();
-  start.y = start.y / m_BlitTile->GetHeight();
-  end.x = end.x / m_BlitTile->GetWidth();
-  end.y = end.y / m_BlitTile->GetHeight();
-
-  int tileselection_left_x  = std::min(start.x, end.x);
-  int tileselection_top_y   = std::min(start.y, end.y);
-  int tileselection_right_x = std::max(start.x, end.x);
-  int tileselection_lower_y = std::max(start.y, end.y);
-
-  if (tileselection_left_x < 0)
-    tileselection_left_x = 0;
-  if (tileselection_top_y < 0)
-    tileselection_top_y = 0;
-
-  // must be atleast one tile
-  if (tileselection_right_x == tileselection_left_x)
-    tileselection_right_x += 1;
-  if (tileselection_lower_y == tileselection_top_y)
-    tileselection_lower_y += 1;
-
-  //while ((tileselection_lower_y * (client_rect.right / blit_width)) + tileselection_right_x > m_Tileset->GetNumTiles()) {
-  //  tileselection_lower_y -= 1;
-  //}
-
-  CString tileinfo;
-  tileinfo.Format("(%d,%d)->(%d,%d)", tileselection_left_x, tileselection_top_y,
-                                      tileselection_right_x, tileselection_lower_y);
-  //GetStatusBar()->SetWindowText(tileinfo);
+  int tileselection_left_x  = GetTileSelectionLeftX();
+  int tileselection_right_x = GetTileSelectionRightX();
+  int tileselection_top_y   = GetTileSelectionTopY();
+  int tileselection_lower_y = GetTileSelectionLowerY();
 #endif
-
 
   for (int iy = 0; iy < client_rect.bottom / blit_height + 1; iy++)
     for (int ix = 0; ix < client_rect.right / blit_width + 1; ix++)
@@ -470,9 +583,9 @@ CTilesetView::OnPaint()
 #else
         if (m_UsingMultiTileSelection) {
           if (ix >= tileselection_left_x
-           && ix < tileselection_right_x
+           && ix <= tileselection_right_x
            && (iy + m_TopRow) >= tileselection_top_y
-           && (iy + m_TopRow) < tileselection_lower_y) {
+           && (iy + m_TopRow) <= tileselection_lower_y) {
             draw_border = true;
           }
         }
@@ -558,13 +671,10 @@ CTilesetView::OnVScroll(UINT code, UINT pos, CScrollBar* scroll_bar)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-afx_msg void
-CTilesetView::OnLButtonDown(UINT flags, CPoint point)
+void
+CTilesetView::SelectTileAtPoint(CPoint point)
 {
   if (!m_BlitTile || m_BlitTile->GetPixels() == NULL)
-    return;
-
-  if (m_MenuShown)
     return;
 
   RECT client_rect;
@@ -588,14 +698,30 @@ CTilesetView::OnLButtonDown(UINT flags, CPoint point)
 
   // the selected tile changed, so tell the parent window
   m_Handler->TV_SelectedTileChanged(m_SelectedTile);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CTilesetView::OnLButtonDown(UINT flags, CPoint point)
+{
+  if (!m_BlitTile || m_BlitTile->GetPixels() == NULL)
+    return;
+
+  if (m_MenuShown)
+    return;
+
+  SelectTileAtPoint(point);
 
 #if 1
-  m_StartPoint = point; m_StartPoint.y += (m_TopRow * m_BlitTile->GetHeight());
-  m_CurPoint = point;   m_CurPoint.y   += (m_TopRow * m_BlitTile->GetHeight());
+  if (GetCapture() == NULL) {
+    m_StartPoint = point; m_StartPoint.y += (m_TopRow * m_BlitTile->GetHeight());
+    m_CurPoint   = point; m_CurPoint.y   += (m_TopRow * m_BlitTile->GetHeight());
 
-  m_MouseDown = true;
-  m_UsingMultiTileSelection = true;
-  SetCapture();
+    m_MouseDown = true;
+    m_UsingMultiTileSelection = true;
+    SetCapture();
+  }
 #endif
 }
 
@@ -619,27 +745,46 @@ CTilesetView::OnMouseMove(UINT flags, CPoint point)
   if (!m_BlitTile || m_BlitTile->GetPixels() == NULL)
     return;
 
-  RECT client_rect;
-  GetClientRect(&client_rect);
-  int num_tiles_x = client_rect.right / m_BlitTile->GetWidth();
+#if 1
+  if (m_UsingMultiTileSelection) {
+    if (m_MouseDown) {
+      m_CurPoint = point; m_CurPoint.y += (m_TopRow * m_BlitTile->GetHeight());
+      Invalidate();
+    }
 
-  int x = point.x / (m_Tileset->GetTileWidth()  * m_ZoomFactor);
-  int y = point.y / (m_Tileset->GetTileHeight() * m_ZoomFactor);
+    int tileselection_left_x  = GetTileSelectionLeftX();
+    int tileselection_right_x = GetTileSelectionRightX();
+    int tileselection_top_y   = GetTileSelectionTopY();
+    int tileselection_lower_y = GetTileSelectionLowerY();
 
-  int tile = (m_TopRow + y) * num_tiles_x + x;
-
-  if (tile <= m_Tileset->GetNumTiles() - 1)
-  {
-    CString tilenum;
-    tilenum.Format("Tile (%i/%i)", tile, m_Tileset->GetNumTiles());
-    GetStatusBar()->SetWindowText(tilenum);
+    if (tileselection_left_x - tileselection_right_x
+      || tileselection_top_y - tileselection_lower_y) {
+      CString tileinfo;
+      tileinfo.Format("Tiles (%d,%d)->(%d,%d)", tileselection_left_x, tileselection_top_y,
+                                      tileselection_right_x, tileselection_lower_y);
+      GetStatusBar()->SetWindowText(tileinfo);
+      return;
+    }
   }
-  else
-    GetStatusBar()->SetWindowText("");
+#endif
+  {
+    RECT client_rect;
+    GetClientRect(&client_rect);
+    int num_tiles_x = client_rect.right / m_BlitTile->GetWidth();
 
-  if (m_MouseDown) {
-    m_CurPoint = point; m_CurPoint.y += (m_TopRow * m_BlitTile->GetHeight());
-    Invalidate();
+    int x = point.x / (m_Tileset->GetTileWidth()  * m_ZoomFactor);
+    int y = point.y / (m_Tileset->GetTileHeight() * m_ZoomFactor);
+
+    int tile = (m_TopRow + y) * num_tiles_x + x;
+
+    if (tile <= m_Tileset->GetNumTiles() - 1)
+    {
+      CString tilenum;
+      tilenum.Format("Tile (%i/%i)", tile, m_Tileset->GetNumTiles());
+      GetStatusBar()->SetWindowText(tilenum);
+    }
+    else
+      GetStatusBar()->SetWindowText("");
   }
 }
 
@@ -652,10 +797,7 @@ CTilesetView::OnRButtonUp(UINT flags, CPoint point)
     return;
 
   // select the tile
-  OnLButtonDown(flags, point);
-#if 1
-  OnLButtonUp(flags, point);
-#endif
+  SelectTileAtPoint(point);
 
   // show pop-up menu
   ClientToScreen(&point);
@@ -683,6 +825,54 @@ CTilesetView::OnRButtonUp(UINT flags, CPoint point)
   if (m_ShowTileObstructions) {
     CheckMenuItem(menu, ID_TILESETVIEW_VIEW_OBSTRUCTIONS, MF_BYCOMMAND | MF_CHECKED);
   }
+
+#if 1
+  // these menu items don't really make sense when you have a region of tiles selected
+  if (m_UsingMultiTileSelection)
+  {
+    EnableMenuItem(menu, ID_TILESETVIEW_INSERTTILE, MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_APPENDTILE, MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_DELETETILE, MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_PROPERTIES, MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_INSERTTILES,   MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_APPENDTILES,   MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_DELETETILES,   MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_INSERTTILESET, MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_APPENDTILESET, MF_BYCOMMAND | MF_GRAYED);
+
+    EnableMenuItem(menu, ID_TILESETVIEW_MOVE_BACK,    MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_MOVE_FORWARD, MF_BYCOMMAND | MF_GRAYED);
+
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_ROTATE_CW,  MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_ROTATE_CCW, MF_BYCOMMAND | MF_GRAYED);
+
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_SLIDE_UP,    MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_SLIDE_RIGHT, MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_SLIDE_DOWN,  MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_SLIDE_LEFT,  MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_SLIDE_OTHER, MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_FLIP_HORIZONTALLY, MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_FLIP_VERTICALLY,   MF_BYCOMMAND | MF_GRAYED);
+
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_FILL_RGB,   MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_FILL_ALPHA, MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_FILL_BOTH,  MF_BYCOMMAND | MF_GRAYED);
+
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_REPLACE_RGBA,  MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_REPLACE_RGB,   MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_REPLACE_ALPHA, MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_FLT_BLUR,      MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_FLT_NOISE,     MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_FLT_ADJUST_BRIGHTNESS, MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_FLT_ADJUST_GAMMA,      MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_FLT_NEGATIVE_IMAGE_RGB,   MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_FLT_NEGATIVE_IMAGE_ALPHA, MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_FLT_NEGATIVE_IMAGE_RGBA,  MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_FLT_SOLARIZE,  MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_SETCOLORALPHA, MF_BYCOMMAND | MF_GRAYED);
+    EnableMenuItem(menu, ID_TILESETVIEW_ER_SCALEALPHA,    MF_BYCOMMAND | MF_GRAYED);
+  }
+#endif
 
   m_MenuShown = true;
   TrackPopupMenu(menu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, point.x, point.y, 0, m_hWnd, NULL);

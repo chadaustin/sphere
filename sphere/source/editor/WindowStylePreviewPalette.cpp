@@ -58,6 +58,9 @@ CWindowStylePreviewPalette::DrawBitmap(CPaintDC& dc, int bitmap, int x, int y, i
 	RECT ClientRect;
 	GetClientRect(&ClientRect);
 
+  if (!m_BlitImage || m_BlitImage->GetPixels() == NULL)
+    return;
+
   int blit_width  = m_BlitImage->GetWidth();
   int blit_height = m_BlitImage->GetHeight();
 
@@ -146,6 +149,12 @@ CWindowStylePreviewPalette::OnPaint()
 
 	RECT ClientRect;
 	GetClientRect(&ClientRect);
+
+  if (!m_BlitImage || m_BlitImage->GetPixels()) {
+    // draw black rectangle
+    dc.FillRect(&ClientRect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+    return;
+  }
 
   int blit_width  = m_BlitImage->GetWidth();
   int blit_height = m_BlitImage->GetHeight();
