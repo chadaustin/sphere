@@ -375,12 +375,13 @@ CScriptWindow::GetEditorText(CString& text)
 {
   int length = SendEditor(SCI_GETLENGTH);
   char* str = new char[length + 1];
-  str[length] = 0;
+  if (str) {
+    str[length] = 0;
 
-  SendEditor(SCI_GETTEXT, length + 1, (LPARAM)str);
-
-  text = str;
-  delete[] str;
+    SendEditor(SCI_GETTEXT, length + 1, (LPARAM)str);
+    text = str;
+    delete[] str;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

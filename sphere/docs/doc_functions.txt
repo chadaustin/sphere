@@ -979,6 +979,7 @@ log_object.endBlock()
   GrabImage(x, y, w, h)
     - returns an image object from a section of the video buffer 
       defined by the parameters
+      (see GrabSurface)
   
   image_object.blit(x, y)
     - draws the image onto the video buffer at x,y
@@ -1027,6 +1028,7 @@ log_object.endBlock()
   GrabSurface(x, y, w, h)
    - returns a surface object captured from an area of the video buffer, 
      at (x, y) with the width w and height h.
+     (see GrabImage)
 
   surface_object.width
   surface_object.height

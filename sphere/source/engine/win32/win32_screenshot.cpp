@@ -22,6 +22,9 @@ void SetScreenshotDirectory(const char* directory)
 void TakeScreenshot()
 {
   CImage32 screen(GetScreenWidth(), GetScreenHeight());
+  if (screen.GetWidth() != GetScreenWidth() || screen.GetHeight() != GetScreenHeight())
+    return;
+
   DirectGrab(0, 0, GetScreenWidth(), GetScreenHeight(), screen.GetPixels());
 
   // try to create the screenshot directory

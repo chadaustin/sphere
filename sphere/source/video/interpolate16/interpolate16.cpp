@@ -270,6 +270,8 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
     return false;
 
   ScreenBuffer = new word[ScreenWidth * ScreenHeight];
+  if (!ScreenBuffer)
+    return false;
 
   return true;
 }
@@ -850,20 +852,36 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
     return NULL;
 
   IMAGE image = new _IMAGE;
+  if (!image)
+    return NULL;
+
   image->width        = width;
   image->height       = height;
   image->blit_routine = TileBlit;
   
   image->rgb = new word[width * height];
+  if (!image->rgb) {
+    delete image;
+    image = NULL;
+    return NULL;
+  }
+
   image->alpha = new byte[width * height];
+  if (!image->rgb) {
+    delete[] image->rgb;
+    delete image;
+    image = NULL;
+    return NULL;
+  }
 
-  for (int iy = 0; iy < height; iy++)
-    memcpy(image->rgb + iy * width,
-           ScreenBuffer + (y + iy) * ScreenWidth + x,
-           width * 2);
-  
+  for (int iy = 0; iy < height; iy++) {
+    memcpy(image->rgb + (iy * width),
+           ScreenBuffer + ((y + iy) * ScreenWidth) + x,
+           width * sizeof(word));
+  }
+
   memset(image->alpha, 255, width * height);
-
+  
   return image;
 }
 
@@ -1151,10 +1169,13 @@ EXPORT(void) UnlockImage(IMAGE image)
 {
   delete[] image->rgb;
   delete[] image->alpha;
+  image->rgb = NULL;
+  image->alpha = NULL;
 
   FillImagePixels(image, image->locked_pixels);
   OptimizeBlitRoutine(image);
   delete[] image->locked_pixels;
+  image->locked_pixels = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1258,7 +1279,7 @@ EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
     for (int iy = 0; iy < h; iy++)
       for (int ix = 0; ix < w; ix++)
       {
-        pixels[iy * w + ix]       = UnpackPixel555(ScreenBuffer[(y + iy) * ScreenHeight + x + x]);
+        pixels[iy * w + ix]       = UnpackPixel555(ScreenBuffer[(y + iy) * ScreenWidth + x + ix]);
         pixels[iy * w + ix].alpha = 255;
       }
   }

@@ -149,12 +149,21 @@ CMapWindow::LoadMap(const char* szMap, const char* szTileset)
   SetSaved(szMap != NULL);
   SetModified(false);
 
+  bool create_new_map = true;
+  if (szMap != NULL) {
+    if (m_Map.Load(szMap)) {
+      create_new_map = false;
+    }
+  }
+
   // try to load the map
-  if (szMap == NULL || !m_Map.Load(szMap))
+  if (create_new_map)
   {
     if (szMap) {
-      int retval = AfxGetApp()->m_pMainWnd->MessageBox("Could not load map.\nCreate new?", NULL, MB_YESNO);
-      if (retval != IDYES) {
+      char string[1024 + MAX_PATH];
+      sprintf (string, "Could not load map '%s'\nCreate new?", szMap);
+
+      if (AfxGetApp()->m_pMainWnd->MessageBox(string, NULL, MB_YESNO) != IDYES) {
         return false;
       }
     }

@@ -13,7 +13,7 @@
 static
 const char* __getfiletype__(const char* ext)
 {
-  const char* filetype = "";
+  const char* filetype = ext;
 
   if (strcmp(ext, "rmp") == 0) filetype = "SphereMap";
   if (strcmp(ext, "rss") == 0) filetype = "SphereSpriteset";
@@ -34,7 +34,7 @@ __get_sphere_command__(const char* ext, char* command)
   std::string sphere_engine = GetSphereDirectory() + "\\engine.exe";
 
   if (strcmp(ext, "spk") == 0) {
-    sprintf (command, "\"%s\" \"%%1\"", sphere_engine);
+    sprintf (command, "\"%s\" \"%%1\"", sphere_engine.c_str());
   }
   else {
     sprintf (command, "\"%s\" \"%%1\"", sphere_editor);

@@ -32,7 +32,9 @@ CAnimationWindow::CAnimationWindow(const char* animation)
 {
   m_Animation = LoadAnimation(animation);
   if (!m_Animation) {
-    AfxGetApp()->m_pMainWnd->MessageBox("Error: Could not load animation");
+    char string[1024];
+    sprintf (string, "Error: Could not load animation", animation);
+    AfxGetApp()->m_pMainWnd->MessageBox(string);
     delete this;
     return;
   }

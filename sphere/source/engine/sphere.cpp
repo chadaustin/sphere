@@ -117,9 +117,13 @@ void RunSphere(int argc, const char** argv)
 
   // start the game specified on the command line
   if (show_menu) {
+    //std::vector<std::string> folder_list = GetFolderList("games/*");
+    //if (folder_list.size() == 1) {
 
-    RunGame("startup", "");
-
+    //}
+    //else {
+      RunGame("startup", "");
+    //}
   }
 
   DestroySystemObjects();

@@ -278,6 +278,10 @@ void Triangle(
     // render all scanlines
     int min_y = maximum<int>(clipper.top, top_y);
     int max_y = minimum<int>(clipper.bottom, mid_y);
+
+    if (min_y == max_y)
+      return;
+
     for (int iy = min_y; iy <= max_y; iy++) {
 
       // calculate edges of scanline
@@ -323,6 +327,10 @@ void Triangle(
     // render all scanlines
     int min_y = maximum<int>(clipper.top, mid_y);
     int max_y = minimum<int>(clipper.bottom, bottom_y);
+
+    if (min_y == max_y)
+      return;
+
     for (int iy = min_y; iy <= max_y; iy++) {
 
       // calculate edges of scanline

@@ -84,7 +84,9 @@ CWindowStyleWindow::CWindowStyleWindow(const char* window_style)
     // load the window style
     if (m_WindowStyle.Load(window_style) == false)
     {
-      MessageBox("Could not load window style.  Creating new.");
+      char string[1024 + MAX_PATH];
+      sprintf (string, "Could not load window style '%s'\nCreating new.", window_style);
+      MessageBox(string);
       m_WindowStyle.Create(16, 16);
     }
     UpdateDIBSections();
