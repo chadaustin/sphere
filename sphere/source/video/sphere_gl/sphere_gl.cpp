@@ -7,7 +7,7 @@
 #include "resource.h"
 
 
-#define EXPORT __stdcall
+#define EXPORT(ret, name) extern "C" ret __stdcall name
 
 
 typedef struct tagIMAGE
@@ -46,7 +46,7 @@ struct DRIVERCONFIG
 
 
 // forward declaration of DirectGrab implementation
-void EXPORT DirectGrab(int x, int y, int w, int h, RGBA* pixels);
+EXPORT(void, DirectGrab)(int x, int y, int w, int h, RGBA* pixels);
 
 BOOL (APIENTRY *wglSwapIntervalEXT)(int interval);
 int (APIENTRY *wglGetSwapIntervalEXT)();
@@ -76,7 +76,7 @@ HGLRC MainRC;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-BOOL WINAPI DllMain(HINSTANCE inst, DWORD, LPVOID)
+extern "C" BOOL WINAPI DllMain(HINSTANCE inst, DWORD, LPVOID)
 {
     DriverInstance = inst;
     return TRUE;
@@ -129,7 +129,7 @@ void SaveDriverConfig()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT GetDriverInfo(DRIVERINFO* driverinfo)
+EXPORT(void, GetDriverInfo)(DRIVERINFO* driverinfo)
 {
     driverinfo->name        = "OpenGL";
     driverinfo->author      = "Jamie Gennis, Kisai, Chad Austin";
@@ -140,7 +140,7 @@ void EXPORT GetDriverInfo(DRIVERINFO* driverinfo)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT ConfigureDriver(HWND parent)
+EXPORT(void, ConfigureDriver)(HWND parent)
 {
     LoadDriverConfig();
 
@@ -246,7 +246,7 @@ void UpdateButtonStates(HWND dialog)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool EXPORT InitVideoDriver(HWND window, int screen_width, int screen_height)
+EXPORT(bool, InitVideoDriver)(HWND window, int screen_width, int screen_height)
 {
     ScreenWidth = screen_width;
     ScreenHeight = screen_height;
@@ -375,7 +375,7 @@ bool EXPORT InitVideoDriver(HWND window, int screen_width, int screen_height)
     // get max texture size
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &MaxTexSize);
 
-    void EXPORT SetClippingRectangle(int, int, int, int);
+    extern void __stdcall SetClippingRectangle(int, int, int, int);
     SetClippingRectangle(0, 0, ScreenWidth, ScreenHeight);
 
     return true;
@@ -383,7 +383,7 @@ bool EXPORT InitVideoDriver(HWND window, int screen_width, int screen_height)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT CloseVideoDriver()
+EXPORT(void, CloseVideoDriver)()
 {
     // good bye, OpenGL...
     wglMakeCurrent(NULL, NULL);
@@ -401,21 +401,21 @@ void EXPORT CloseVideoDriver()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT FlipScreen()
+EXPORT(void, FlipScreen)()
 {
     SwapBuffers(MainDC);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT SetClippingRectangle(int x, int y, int w, int h)
+EXPORT(void, SetClippingRectangle)(int x, int y, int w, int h)
 {
     glScissor(x * SCALE(), (ScreenHeight - y - h) * SCALE(), w * SCALE(), h * SCALE());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT GetClippingRectangle(int* x, int* y, int* w, int* h)
+EXPORT(void, GetClippingRectangle)(int* x, int* y, int* w, int* h)
 {
     GLint cliprect[4];
     glGetIntegerv(GL_SCISSOR_BOX, cliprect);
@@ -563,7 +563,7 @@ static int AnalyzePixels(int width, int height, RGBA* pixels)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-IMAGE EXPORT CreateImage(int width, int height, RGBA* pixels)
+EXPORT(IMAGE, CreateImage)(int width, int height, RGBA* pixels)
 {
     // put default values in image object
     IMAGE image = new tagIMAGE;
@@ -579,7 +579,7 @@ IMAGE EXPORT CreateImage(int width, int height, RGBA* pixels)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-IMAGE EXPORT GrabImage(int x, int y, int width, int height)
+EXPORT(IMAGE, GrabImage)(int x, int y, int width, int height)
 {
     RGBA* pixels = new RGBA[width * height];
     DirectGrab(x, y, width, height, pixels);
@@ -590,7 +590,7 @@ IMAGE EXPORT GrabImage(int x, int y, int width, int height)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT DestroyImage(IMAGE image)
+EXPORT(void, DestroyImage)(IMAGE image)
 {
     glDeleteTextures(1, &image->texture);
     delete[] image->pixels;
@@ -599,15 +599,15 @@ void EXPORT DestroyImage(IMAGE image)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT BlitImage(IMAGE image, int x, int y)
+EXPORT(void, BlitImage)(IMAGE image, int x, int y)
 {
-    extern void EXPORT BlitImageMask(IMAGE image, int x, int y, RGBA mask);
+    extern void __stdcall BlitImageMask(IMAGE image, int x, int y, RGBA mask);
     BlitImageMask(image, x, y, CreateRGBA(255, 255, 255, 255));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT BlitImageMask(IMAGE image, int x, int y, RGBA mask)
+EXPORT(void, BlitImageMask)(IMAGE image, int x, int y, RGBA mask)
 {
     if (image->special == tagIMAGE::EMPTY) {
         return;
@@ -637,7 +637,7 @@ void EXPORT BlitImageMask(IMAGE image, int x, int y, RGBA mask)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT TransformBlitImage(IMAGE image, int x[4], int y[4])
+EXPORT(void, TransformBlitImage)(IMAGE image, int x[4], int y[4])
 {
     if (image->special == tagIMAGE::EMPTY) {
         return;
@@ -678,7 +678,7 @@ void EXPORT TransformBlitImage(IMAGE image, int x[4], int y[4])
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
+EXPORT(void, TransformBlitImageMask)(IMAGE image, int x[4], int y[4], RGBA mask)
 {
     if (image->special == tagIMAGE::EMPTY) {
         return;
@@ -719,28 +719,28 @@ void EXPORT TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-int EXPORT GetImageWidth(IMAGE image)
+EXPORT(int, GetImageWidth)(IMAGE image)
 {
     return image->width;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-int EXPORT GetImageHeight(IMAGE image)
+EXPORT(int, GetImageHeight)(IMAGE image)
 {
     return image->height;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RGBA* EXPORT LockImage(IMAGE image)
+EXPORT(RGBA*, LockImage)(IMAGE image)
 {
     return image->pixels;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT UnlockImage(IMAGE image)
+EXPORT(void, UnlockImage)(IMAGE image)
 {
     glDeleteTextures(1, &image->texture);
     CreateTexture(image);
@@ -749,7 +749,7 @@ void EXPORT UnlockImage(IMAGE image)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT DirectBlit(int x, int y, int w, int h, RGBA* pixels)
+EXPORT(void, DirectBlit)(int x, int y, int w, int h, RGBA* pixels)
 {
     IMAGE i = CreateImage(w, h, pixels);
     BlitImage(i, x, y);
@@ -784,7 +784,7 @@ void EXPORT DirectBlit(int x, int y, int w, int h, RGBA* pixels)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels)
+EXPORT(void, DirectTransformBlit)(int x[4], int y[4], int w, int h, RGBA* pixels)
 {
     IMAGE i = CreateImage(w, h, pixels);
     TransformBlitImage(i, x, y);
@@ -793,7 +793,7 @@ void EXPORT DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT DirectGrab(int x, int y, int w, int h, RGBA* pixels)
+EXPORT(void, DirectGrab)(int x, int y, int w, int h, RGBA* pixels)
 {
     if (x < 0 || y < 0 || x + w > ScreenWidth || y + h > ScreenHeight) {
         return;
@@ -834,7 +834,7 @@ void EXPORT DirectGrab(int x, int y, int w, int h, RGBA* pixels)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT DrawPoint(int x, int y, RGBA color)
+EXPORT(void, DrawPoint)(int x, int y, RGBA color)
 {
   glBegin(GL_POINTS);
   glColor4ubv((GLubyte*)&color);
@@ -844,7 +844,7 @@ void EXPORT DrawPoint(int x, int y, RGBA color)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT DrawLine(int x[2], int y[2], RGBA color)
+EXPORT(void, DrawLine)(int x[2], int y[2], RGBA color)
 {
   glBegin(GL_LINES);
   glColor4ubv((GLubyte*)&color);
@@ -855,7 +855,7 @@ void EXPORT DrawLine(int x[2], int y[2], RGBA color)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT DrawGradientLine(int x[2], int y[2], RGBA colors[2])
+EXPORT(void, DrawGradientLine)(int x[2], int y[2], RGBA colors[2])
 {
   glBegin(GL_LINES);
   glColor4ubv((GLubyte*)(colors + 0));
@@ -867,7 +867,7 @@ void EXPORT DrawGradientLine(int x[2], int y[2], RGBA colors[2])
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT DrawTriangle(int x[3], int y[3], RGBA color)
+EXPORT(void, DrawTriangle)(int x[3], int y[3], RGBA color)
 {
   glBegin(GL_TRIANGLES);
   glColor4ubv((GLubyte*)&color);
@@ -879,7 +879,7 @@ void EXPORT DrawTriangle(int x[3], int y[3], RGBA color)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT DrawGradientTriangle(int x[3], int y[3], RGBA colors[3])
+EXPORT(void, DrawGradientTriangle)(int x[3], int y[3], RGBA colors[3])
 {
   glBegin(GL_TRIANGLES);
   glColor4ubv((GLubyte*)(colors + 0));
@@ -893,7 +893,7 @@ void EXPORT DrawGradientTriangle(int x[3], int y[3], RGBA colors[3])
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT DrawRectangle(int x, int y, int w, int h, RGBA color)
+EXPORT(void, DrawRectangle)(int x, int y, int w, int h, RGBA color)
 {
   if (color.alpha == 0) {
     return;
@@ -912,7 +912,7 @@ void EXPORT DrawRectangle(int x, int y, int w, int h, RGBA color)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EXPORT DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
+EXPORT(void, DrawGradientRectangle)(int x, int y, int w, int h, RGBA colors[4])
 {
   glTranslatef(-0.5f, -0.5f, 0.0f);
   glBegin(GL_QUADS);

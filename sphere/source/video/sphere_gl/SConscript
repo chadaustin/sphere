@@ -1,0 +1,7 @@
+Import('base_env VideoDriver')
+
+win32x = base_env.SharedObject('win32x', '../common/win32x.cpp')
+VideoDriver('sphere_gl',
+            ['sphere_gl.cpp', win32x],
+            'sphere_gl',
+            ['opengl32', 'glu32', 'gdi32'])

@@ -1,0 +1,6 @@
+Import('VideoDriver')
+
+VideoDriver('interpolate32',
+            'interpolate32.cpp',
+            'interpolate32',
+            ['gdi32', 'ddraw', 'vidcommon'])
