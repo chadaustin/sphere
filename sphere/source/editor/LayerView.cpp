@@ -563,26 +563,26 @@ static bool ExportAllVisibleLayersAsImage(const char* filename, sTileset& tilese
     }
   }
 
+  if (dest_image_width <= 0 || dest_image_height <= 0)
+    return false;
+
   // create destination/output image
   CImage32 dest_image(dest_image_width, dest_image_height);
-  if (layers.size() > 0) { // we grab the top image and blend our way down
-    if (!LayerToImage(&dest_image, layers[layers.size() - 1], tileset)) {
+  if (layers.size() > 0) { // start from the bottom and work our way to the top ;)
+    if (!LayerToImage(&dest_image, layers[0], tileset)) {
       return false;
     }
   }
   else // nothing to export
     return false;
 
-  if (dest_image_width <= 0 || dest_image_height <= 0)
-    return false;
-
-  for (int i = 0; i < layers.size() - 1; i++) {
+  for (int i = 0; i < layers.size(); i++) {
 
     int image_width  = layers[i].GetWidth()  * tile_width;
     int image_height = layers[i].GetHeight() * tile_height;
     CImage32 src_image(image_width, image_height);
     
-    if (!LayerToImage(&src_image, layers[i], tileset)) {
+    if ( !LayerToImage(&src_image, layers[i], tileset) ) {
       return false; 
     }
     else {
@@ -606,7 +606,7 @@ CLayerView::OnExportAllVisibleLayers()
     std::vector<sLayer> layers;
 
     // get a list of the visible layers
-    for (int i = m_Map->GetNumLayers() - 1; i >= 0; --i) {
+    for (int i = 0; i < m_Map->GetNumLayers(); i++) {
       if (m_Map->GetLayer(i).IsVisible()) {
         layers.push_back(m_Map->GetLayer(i));
       }

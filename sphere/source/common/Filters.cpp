@@ -249,6 +249,8 @@ void BlendImage(int dest_width, int dest_height, int src_width, int src_height, 
       if (dy > src_height - 1)
         break;
 
+      
+      // Blend4(dest_pixels[dy * dest_width + dx], src_pixels[dy * src_width + dx], src_pixels[dy * src_width + dx].alpha);
       Blend4(dest_pixels[dy * dest_width + dx], src_pixels[dy * src_width + dx], src_pixels[dy * src_width + dx].alpha);
     }
   }
