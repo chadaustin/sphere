@@ -1,4 +1,5 @@
 #include "ImageView.hpp"
+#include "Editor.hpp"
 #include "../common/Filters.hpp"
 #include "resource.h"
 
@@ -1029,10 +1030,21 @@ CImageView::OnMouseMove(UINT flags, CPoint point)
   m_LastPoint = m_CurPoint;
   m_CurPoint = point;
 
+  POINT current = ConvertToPixel(point);
+  if (current.x >= 0                 && current.y >= 0 &&
+      current.x < m_Image.GetWidth() && current.y < m_Image.GetHeight())
+  {
+    char str[80];
+    sprintf(str, "(%d, %d)", current.x, current.y);
+    GetStatusBar()->SetWindowText(str);
+  } else {
+    GetStatusBar()->SetWindowText("");
+  }
+
   if (!m_MouseDown)
     return;
   
-  switch(m_CurrentTool)
+  switch (m_CurrentTool)
   {
     case Tool_Pencil: 
       Click(false); 
