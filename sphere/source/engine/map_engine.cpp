@@ -4417,7 +4417,7 @@ CMapEngine::DestroyBoundKeys()
 
   m_BoundKeys.clear();
 
-  for (int j = 0; j < m_BoundJoysticks.size(); j++)
+  for (int j = 0; j < int(m_BoundJoysticks.size()); j++)
   {
     std::map<int, KeyScripts>::iterator i;
     for (i = m_BoundJoysticks[j].m_BoundButtons.begin(); i != m_BoundJoysticks[j].m_BoundButtons.end(); i++) {
@@ -4442,7 +4442,7 @@ CMapEngine::ResetNextFrame()
 int
 CMapEngine::FindPerson(const char* name)
 {
-  for (unsigned i = 0; i < m_Persons.size(); i++) {
+  for (int i = 0; i < int(m_Persons.size()); i++) {
     if (m_Persons[i].name == name) {
       return i;
     }

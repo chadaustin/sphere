@@ -137,7 +137,7 @@ GetEditRangeIndexes(const std::string type, const bool allow_duplicates, void* d
           bool already_added = false;
 
           if (!allow_duplicates) { 
-            for (int j = 0; j < frames.size(); j++) {
+            for (int j = 0; j < int(frames.size()); j++) {
               if (frames[j] == frame_index) {
                 already_added = true;
                 break;
@@ -251,7 +251,7 @@ EditRange::OnEditRange(const std::string type, unsigned int id, const bool allow
     }
 
     if (dx != 0 || dy != 0) {
-      for (int i = 0; i < frames.size(); i++) {
+      for (int i = 0; i < int(frames.size()); i++) {
         CImage32* image = GetEditRangeImage(type, data, frames[i]);
         image->Translate(dx, dy);
       }
@@ -263,7 +263,7 @@ EditRange::OnEditRange(const std::string type, unsigned int id, const bool allow
   ////////////////////////////////////////////////////////////////////////////////
 
   if (id == ID_SPRITESETVIEWFRAMES_ER_FLIP_HORIZONTALLY) {
-    for (int i = 0; i < frames.size(); i++) {
+    for (int i = 0; i < int(frames.size()); i++) {
       CImage32* image = GetEditRangeImage(type, data, frames[i]);
       image->FlipHorizontal();
     }
@@ -273,7 +273,7 @@ EditRange::OnEditRange(const std::string type, unsigned int id, const bool allow
   ////////////////////////////////////////////////////////////////////////////////
 
   if (id == ID_SPRITESETVIEWFRAMES_ER_FLIP_VERTICALLY) {
-    for (int i = 0; i < frames.size(); i++) {
+    for (int i = 0; i < int(frames.size()); i++) {
       CImage32* image = GetEditRangeImage(type, data, frames[i]);
       image->FlipVertical();
     }
@@ -290,7 +290,7 @@ EditRange::OnEditRange(const std::string type, unsigned int id, const bool allow
       RGBA old_color = colorChoiceDialog.GetTopColor();
       RGBA replacement_color = colorChoiceDialog.GetBottomColor();
 
-      for (int i = 0; i < frames.size(); i++) {
+      for (int i = 0; i < int(frames.size()); i++) {
         CImage32* image = GetEditRangeImage(type, data, frames[i]);
         image->ReplaceColor(old_color, replacement_color);
       }

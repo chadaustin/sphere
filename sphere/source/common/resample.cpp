@@ -236,7 +236,7 @@ public:
     void apply_avg(ClumpBuffer<double>& vals, X* dest) {
       static double den;
       static SmartRGBA sum;
-      static int i,j;
+      static unsigned int i,j;
       den = 0.0;
 #if 0
       if (vals.length() != size) throw StringError("Size of pixel/proportion ClumpBuffers do not match");

@@ -124,7 +124,7 @@ bool IsDirectory(const char* filename) {
 
   std::vector<std::string> folderlist = GetFolderList(path == "" ? "*" : (path + "/" + "*").c_str());
 
-  for (int i = 0; i < folderlist.size(); i++) {
+  for (int i = 0; i < int(folderlist.size()); i++) {
     if (title == folderlist[i]) {
       return true;
     }
@@ -141,7 +141,7 @@ bool IsFile(const char* filename) {
 
   std::vector<std::string> filelist = GetFileList(path == "" ? "*" : (path + "/" + "*").c_str());
 
-  for (int i = 0; i < filelist.size(); i++) {
+  for (int i = 0; i < int(filelist.size()); i++) {
     if (title == filelist[i]) {
       return true;
     }

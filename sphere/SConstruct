@@ -44,6 +44,9 @@ def BuildMinGWEnv():
         env.Append(
             CCFLAGS = ['-O2', '-s'],
             LINKFLAGS = ['-s'])
+            
+    # no write_mng support for mingw
+    env.Append(CXXFLAGS = ['-DNO_WRITE_MNG'])
 
     return env
 

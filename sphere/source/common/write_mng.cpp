@@ -1,3 +1,5 @@
+#ifndef NO_WRITE_MNG
+
 #include <libmng.h>
 #include <stdio.h>
 
@@ -926,3 +928,5 @@ SaveMNGAnimationFromImages(const char* filename,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+#endif

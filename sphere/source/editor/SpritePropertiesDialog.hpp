@@ -17,10 +17,18 @@ public:
   BOOL OnInitDialog();
   void OnOK();
 
+  afx_msg void OnNextTile();
+  afx_msg void OnPrevTile();
+
+private:
+  void UpdateDialog();
+
 private:
   sSpriteset* m_Spriteset;
   int         m_Direction;
   int         m_Frame;
+
+  DECLARE_MESSAGE_MAP()
 };
 
 

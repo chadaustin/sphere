@@ -1,6 +1,8 @@
 #ifndef WRITE_MNG_H
 #define WRITE_MNG_H
 
+#ifndef NO_WRITE_MNG
+
 #include <libmng.h>
 class CImage32;
 
@@ -16,5 +18,7 @@ SaveMNGAnimationFromImages(const char* filename,
                            WriteMNG_GetDelay get_delay,
                            WriteMNG_ContinueProcessingImages should_continue,
                            void* data);
+
+#endif
 
 #endif WRITE_MNG_H

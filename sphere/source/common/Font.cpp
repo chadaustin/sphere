@@ -18,7 +18,7 @@ bool
 sFont::Create(int num_characters, int width, int height)
 {
   m_Characters.resize(num_characters);
-  for (int i = 0; i < m_Characters.size(); i++) {
+  for (int i = 0; i < int(m_Characters.size()); i++) {
     m_Characters[i].Resize(width, height);
     if (m_Characters[i].GetWidth() != width
      || m_Characters[i].GetHeight() != height) {
