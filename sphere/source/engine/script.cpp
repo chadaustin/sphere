@@ -4198,7 +4198,7 @@ begin_method(SS_SPRITESET, ssSpritesetSave, 1)
     }
 
     if (frame_height != images[i].GetHeight() || frame_height <= 0) {
-      JS_ReportError(cx, "Invalid frame height");
+      JS_ReportError(cx, "Invalid frame height %d %d %d", i, frame_height, images[i].GetHeight());
       return JS_FALSE;
     }
   }
@@ -4228,14 +4228,61 @@ begin_method(SS_SPRITESET, ssSpritesetSave, 1)
     return JS_FALSE;
   }
 
-  int num_frames = 4;
+  std::vector<std::string> direction_names;
+
+  for (int i = 0; i < num_directions; i++) {
+
+    jsval direction_object_val;
+    if ( !JS_GetElement(cx, directions_object, i, &direction_object_val) ) {
+      JS_ReportError(cx, "Invalid spriteset.directions[%d] object", i);
+      return JS_FALSE;
+    }
+
+    JSObject* direction_object = JSVAL_TO_OBJECT(direction_object_val);
+    jsval direction_name;
+
+    if ( !JS_GetProperty(cx, direction_object, "name", &direction_name) ) {
+      JS_ReportError(cx, "spriteset.directions[%d].name property doesn't appear to exist.", i);
+      return JS_FALSE;
+    }
+
+    direction_names.push_back(argStr(cx, direction_name));
+
+    jsval frames_array_val;
+
+    if ( !JS_GetProperty(cx, direction_object, "frames", &frames_array_val) ) {
+      JS_ReportError(cx, "spriteset.directions[%d].frames property doesn't appear to exist.", i);
+      return JS_FALSE;
+    }
+
+    JSObject* frames_array = JSVAL_TO_OBJECT(frames_array_val);
+    jsuint num_frames = 0;
+
+    if ( !JS_GetArrayLength(cx, frames_array, &num_frames) ) {
+      JS_ReportError(cx, "Invalid spriteset.directions[%d].frames array length.", i);
+      return JS_FALSE;
+    }
+
+    if (num_frames <= 0) {
+      JS_ReportError(cx, "Invalid spriteset.directions[%d].frames length", i);
+      return JS_FALSE;
+    }
+
+    for (int j = 0; j < num_frames; j++) {
+      //jsval frame;
+    }
+  }
 
   sSpriteset s;
-  s.Create(frame_width, frame_height, num_images, num_directions, num_frames);
+  s.Create(frame_width, frame_height, num_images, num_directions, 1);
   for (int i = 0; i < num_images; i++) {
     s.GetImage(i) = images[i];
   }
-  
+
+  for (int i = 0; i < direction_names.size(); i++) {
+    s.SetDirectionName(i, direction_names[i].c_str());
+  }
+   
   bool yay = s.Save(path.c_str());
 
   delete[] images;

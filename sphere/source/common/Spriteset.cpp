@@ -140,6 +140,9 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
     return false;
   }
 
+  if (header.frame_width <= 0 || header.frame_height <= 0)
+    return false;
+
   m_FrameWidth  = header.frame_width;
   m_FrameHeight = header.frame_height;
 
@@ -203,6 +206,9 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
 
     //**// BEGIN VERSION TWO //**//
 
+    if (header.num_directions < 0 || header.num_images < 0)
+      return false;
+
     m_Images.clear();
     m_Directions.resize(header.num_directions);
     for (int i = 0; i < header.num_directions; i++) {
@@ -252,6 +258,9 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
 
     //**// BEGIN VERSION THREE //**//
 
+    if (header.num_directions < 0 || header.num_images < 0)
+      return false;
+
     // read the images
     m_Images.resize(header.num_images);
     for (int i = 0; i < header.num_images; i++) {
@@ -271,6 +280,10 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
       if (file->Read(&num_frames, 2) != 2) {
         return false;
       }
+
+      if (num_frames <= 0)
+        return false;
+
       file->Seek(file->Tell() + 6);
 
       // read name length
@@ -278,6 +291,9 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
       if (file->Read(&name_length, 2) != 2) {
         return false;
       }
+
+      if (name_length <= 0)
+        return false;
       
       // read the name
       char* name = new char[name_length];
