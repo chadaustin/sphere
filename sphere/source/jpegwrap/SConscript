@@ -1,0 +1,2 @@
+Import('env')
+env.Library(target='jpegwrap', source='jpegwrap.cpp')

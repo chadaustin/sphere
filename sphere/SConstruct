@@ -1,0 +1,117 @@
+import os, sys
+true = 1
+false = 0
+
+################################################################################
+
+major_version = 0
+minor_version = 97
+version = str(major_version) + '.' + str(minor_version)
+
+install_prefix = ARGUMENTS.get('install_prefix', '/usr/local')
+use_audiere = ARGUMENTS.get('audio', '1')
+
+## print "Using install prefix " + install_prefix
+## print "Sphere will install to " + os.path.join(install_prefix, 'bin')
+## print "Sphere data will install to " + os.path.join(install_prefix, 'share/sphere')
+
+libraries = ['z','jpeg','png','js','SDL','mng']
+compile_flags = '-DXP_UNIX -DVERSION=' + version
+compile_flags += ' -DDATADIR=' + install_prefix + '/share/sphere '
+compile_flags += os.popen('sdl-config --cflags').read().strip()
+if use_audiere == '1':
+	libraries.append('audiere')
+	compile_flags += ' -DAUDIO'
+linker_flags = os.popen('sdl-config --libs').read().strip()
+	
+print 'Starting build for Sphere ' + version + '.'
+
+env = Environment(LIBS=libraries, CPPFLAGS=compile_flags, LINKFLAGS=linker_flags)
+
+SConscript('source/common/SConscript', 'env')
+SConscript('source/jpegwrap/SConscript', 'env')
+SConscript('source/engine/SConscript', 'env')
+env.Program(target="sphere", source=' source/engine/libengine.a \
+source/common/libcommon.a source/jpegwrap/libjpegwrap.a')
+env.Install(os.path.join(install_prefix, 'bin'), 'sphere')
+
+docs = ['Sphere Tutorial.txt', 'build.txt', 'doc_functions.txt',
+'gpl.txt', 'irc.txt', 'keys.txt', 'lack_of_documentation.txt',
+'legal.txt', 'links.txt', 'network.txt', 'readme.txt',
+'sphere_cvs.txt', 'sphere_rules.txt', 'unix.txt']
+
+docs = map(lambda n: os.path.join('docs', n), docs)
+env.Install(os.path.join(install_prefix,   'share/sphere/docs'), docs)
+
+#for doc in docs:
+#	env.Install(os.path.join(install_prefix, \
+#        'share/sphere/docs'), os.path.join('docs', doc))
+
+docs = ['sphere_todo.txt', 'spritesets.txt']
+
+for doc in docs:
+	env.Install(os.path.join(install_prefix, 'share/sphere/docs/old'), \
+		    os.path.join('docs/old', doc))
+		
+docs = ['Clock Info.txt', 'animation.txt', 'audio.txt', 'convert.txt', 'menu.txt', 
+'timer.txt']
+
+docs = map(lambda n: os.path.join('docs/system_scripts', n), docs)
+env.Install(os.path.join(install_prefix,   'share/sphere/docs/system_scripts'), docs)
+
+#for doc in docs:
+#	env.Install(os.path.join(install_prefix,   'share/sphere/docs/system_scripts'), docs)
+	
+docs = ['audiodriver.txt', 'coding-style.txt', 'gameinf.txt', 'rfn.txt', 'rmp.txt', 
+'rss.txt', 'rts.txt', 'rws.txt', 'spk.txt', 'videodriver.txt']
+
+for doc in docs:
+	env.Install(os.path.join(install_prefix, 'share/sphere/docs/technical'), \
+		    os.path.join('docs/technical', doc))
+
+files = ['arial.rfn', 'dauphin.rfn', 'down_arrow.png', 'mike.rfn', 'pointer.png',
+'system.ini', 'system.rfn', 'system.rws', 'up_arrow.png']
+
+for file in files:
+	env.Install(os.path.join(install_prefix, 'share/sphere/system'), \
+		    os.path.join('system', file))
+
+files = ['animation.js', 'audio.js', 'clock.js', 'colors.js',
+	 'convert.js', 'graphics.js', 'input.js', 'intro.js',
+	 'menu.js', 'oldsphere.js', 'screen.js', 'timed_animation.js',
+	 'time.js', 'timer.js']
+
+
+for file in files: env.Install(os.path.join(install_prefix,
+	'share/sphere/system/scripts'),
+	os.path.join('system/scripts', file))
+
+env.Install(os.path.join(install_prefix, 'share/sphere/startup'),
+os.path.join('startup', 'game.sgm'))
+
+env.Install(os.path.join(install_prefix,
+'share/sphere/startup/fonts'), os.path.join('startup/fonts',
+'base.rfn'))
+
+files = ['bot.png', 'down.png', 'fil.png', 'intro.jpeg', 'mid.png',
+'top.png', 'up.png']
+
+for file in files:
+	env.Install(os.path.join(install_prefix, 'share/sphere/startup/images'),
+	    os.path.join('startup/images', file))
+
+files = ['main.js', 'menu.js']
+
+for file in files:
+	env.Install(os.path.join(install_prefix, 'share/sphere/startup/scripts'),
+	    os.path.join('startup/scripts', file))
+
+env.Install(os.path.join(install_prefix,
+'share/sphere/startup/sounds'), os.path.join('startup/sounds',
+'intro.wav'))
+
+env.Install(os.path.join(install_prefix, 'share/sphere/startup/windowstyles'),
+os.path.join('startup/windowstyles', 'base.rws'))
+		
+env.Alias('install', os.path.join(install_prefix, 'bin'))
+env.Alias('install', os.path.join(install_prefix, 'share/sphere'))

@@ -112,12 +112,12 @@ bool RefreshInput () {
           key = KEY_ALT; break;
         case SDLK_RCTRL:
           key = KEY_CTRL; break;
-		  case SDLK_F11:
-		    printf("F11 Pressed...");
-		    ToggleFPS(); break;
-		  case SDLK_F12:
-	            printf("F12 Pressed...");
-		    ToggleFullscreen(); break;
+	case SDLK_F11:
+	  printf("F11 Pressed...");
+	  ToggleFPS(); break;
+	case SDLK_F12:
+	  printf("F12 Pressed...");
+	  ToggleFullscreen(); break;
         default:
           for (int lcv = 0; lcv < total_keys; lcv++) {
             if (pressed == KeyMapping[lcv]) {
@@ -128,11 +128,11 @@ bool RefreshInput () {
       };
       if (key != 0) {
 		  if (event.type == SDL_KEYDOWN) {
-			 /* std::cerr << "down: " << (int)key << std::endl; */
+			 std::cerr << "down: " << (int)key << std::endl;
           keys.push_back(key);
 			 key_buffer[key] = true;
 		  } else {
-			 /* std::cerr << "up:   " << (int)key << std::endl; */
+			 std::cerr << "up:   " << (int)key << std::endl;
 			 key_buffer[key] = false;
 		  }
 		}
