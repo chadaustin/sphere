@@ -5,6 +5,8 @@ Import('base_env BUILD_DIR')
 env = base_env.Copy()
 env['BUILDERS']['TextFile'] = Builder(action = 'unix2dos < $SOURCE > $TARGET')
 
+# files that should be converted from unix format to DOS format as part
+# of the build
 files = ['build-cygwin.txt',
          'build-msvc.txt',
          'changelog.txt',
@@ -43,5 +45,14 @@ files += map(lambda n: 'system_scripts/' + n,
               'timer.txt',
               'wintro.txt'])
 
+# files that should be installed without unix->dos translation
+binfiles = []
+binfiles += map(lambda n: 'contributed/' + n,
+                ['WT_tutorial.rtf',
+                 'sphere_doc.pdf'])
+
 for f in files:
     env.TextFile(os.path.join(BUILD_DIR, 'docs', f), f)
+for f in binfiles:
+    env.InstallAs(os.path.join(BUILD_DIR, 'docs', f), f)
+
