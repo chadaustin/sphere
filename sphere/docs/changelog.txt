@@ -1,3 +1,7 @@
+2003.04.25
+  - fixed MapView->View Grid so it takes into account zoom factors
+  - fixed bug where map editor would crash if you used "Select Tile" on out of range tiles
+
 2003.04.21
   - added playlist system script
   - added more menu items to the Edit Range menu in tile-view and spriteset-view

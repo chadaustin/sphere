@@ -1177,7 +1177,7 @@ CMapView::OnPaint()
 
     int width = m_Map->GetLayer(0).GetWidth();
     int height = m_Map->GetLayer(0).GetHeight();
-    int size = 1;
+    int size = 1 * GetZoomFactor();
     int offsetx = 0;
     int offsety = 0;
 
@@ -1704,6 +1704,12 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
     CheckMenuItem(menu, ID_MAPVIEW_VIEWGRID, MF_BYCOMMAND | MF_CHECKED);
   }
 
+  // disable the select tile menu if out of range
+  if ( (tx >= 0 && tx < m_Map->GetLayer(m_SelectedLayer).GetWidth()
+   && ty >= 0 && ty < m_Map->GetLayer(m_SelectedLayer).GetHeight()) == false ) {
+    EnableMenuItem(menu, ID_MAPVIEW_SELECTTILE,  MF_BYCOMMAND | MF_GRAYED);
+  }
+
   // show the popup menu
   CPoint Screen = point;
   ClientToScreen(&Screen);
@@ -1725,9 +1731,7 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
   {
     case ID_MAPVIEW_SELECTTILE:
     {
-      int tile = m_Map->GetLayer(m_SelectedLayer).GetTile(tx, ty);
-      m_SelectedTile = tile;
-      m_Handler->MV_SelectedTileChanged(tile);
+      SelectTileUnderPoint(point);
       break;
     }
 
