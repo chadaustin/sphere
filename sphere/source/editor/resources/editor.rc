@@ -266,6 +266,7 @@ BEGIN
     POPUP "&Sound"
     BEGIN
         MENUITEM "&Play",                       ID_SOUND_PLAY
+        MENUITEM "Pause",                       ID_SOUND_PAUSE
         MENUITEM "&Stop",                       ID_SOUND_STOP
         MENUITEM "&Repeat",                     ID_SOUND_REPEAT
     END

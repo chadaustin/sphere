@@ -143,6 +143,10 @@ private:
   declare_method(ssSoundGetPitch);
   declare_method(ssSoundIsPlaying);
   declare_method(ssSoundClone);
+  declare_method(ssSoundGetPosition);
+  declare_method(ssSoundSetPosition);
+  declare_method(ssSoundIsSeekable);
+  declare_method(ssSoundGetLength);
 
   // fonts
   declare_constructor2(CreateFontObject, SFONT* font, bool destroy);

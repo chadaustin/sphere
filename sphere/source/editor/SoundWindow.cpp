@@ -22,12 +22,14 @@ BEGIN_MESSAGE_MAP(CSoundWindow, CDocumentWindow)
   ON_WM_VSCROLL()
   ON_WM_HSCROLL()
 
-  ON_COMMAND(ID_SOUND_PLAY, OnSoundPlay)
-  ON_COMMAND(ID_SOUND_STOP, OnSoundStop)
+  ON_COMMAND(ID_SOUND_PLAY,   OnSoundPlay)
+  //ON_COMMAND(ID_SOUND_PAUSE,  OnSoundPause)
+  ON_COMMAND(ID_SOUND_STOP,   OnSoundStop)
   ON_COMMAND(ID_SOUND_REPEAT, OnSoundRepeat)
 
-  ON_UPDATE_COMMAND_UI(ID_SOUND_PLAY, OnUpdatePlayCommand)
-  ON_UPDATE_COMMAND_UI(ID_SOUND_STOP, OnUpdateStopCommand)
+  ON_UPDATE_COMMAND_UI(ID_SOUND_PLAY,  OnUpdatePlayCommand)
+  ON_UPDATE_COMMAND_UI(ID_SOUND_PAUSE, OnUpdatePauseCommand)
+  ON_UPDATE_COMMAND_UI(ID_SOUND_STOP,  OnUpdateStopCommand)
   ON_UPDATE_COMMAND_UI(ID_SOUND_REPEAT, OnUpdateRepeatCommand)
 
 END_MESSAGE_MAP()
@@ -247,6 +249,13 @@ CSoundWindow::OnSoundPlay()
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
+CSoundWindow::OnSoundPause()
+{
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
 CSoundWindow::OnSoundStop()
 {
   m_Sound.Stop();
@@ -267,6 +276,13 @@ afx_msg void
 CSoundWindow::OnUpdatePlayCommand(CCmdUI* cmdui)
 {
   cmdui->Enable(!m_Sound.IsPlaying());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSoundWindow::OnUpdatePauseCommand(CCmdUI* cmdui)
+{
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -138,3 +138,41 @@ CSound::IsPlaying() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+bool
+CSound::IsSeekable()  {
+  if (!m_Sound) return false;
+  return m_Sound->isSeekable();
+}
+
+void
+CSound::SetPosition(int pos) {
+  if (!m_Sound) return;
+  m_Sound->setPosition(pos);
+}
+
+int
+CSound::GetPosition() {
+  if (!m_Sound) return 0;
+  return m_Sound->getPosition();
+}
+
+int
+CSound::GetLength() {
+  if (!m_Sound) return 0;
+  return m_Sound->getLength();
+}
+
+void
+CSound::SetPitchShift(double pitch) {
+  if (!m_Sound) return;
+  m_Sound->setPitchShift(pitch);
+}
+
+void
+CSound::SetPan(double pan) {
+  if (!m_Sound) return;
+  m_Sound->setPan(pan);
+}
+
+////////////////////////////////////////////////////////////////////////////////

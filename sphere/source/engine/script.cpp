@@ -5364,11 +5364,12 @@ CScript::CreateSocketObject(JSContext* cx, NSOCKET socket)
 
   // attach the log to this object
   SS_SOCKET* socket_object = new SS_SOCKET;
-  if (socket_object) {
-    socket_object->socket = socket;
-    socket_object->is_open = true;
-    JS_SetPrivate(cx, object, socket_object);
-  }
+  if (!socket_object)
+    return NULL;
+
+  socket_object->socket = socket;
+  socket_object->is_open = true;
+  JS_SetPrivate(cx, object, socket_object);
 
   return object;
 }
@@ -5518,6 +5519,9 @@ CScript::CreateLogObject(JSContext* cx, CLog* log)
 
   // attach the log to this object
   SS_LOG* log_object = new SS_LOG;
+  if (!log_object)
+    return NULL;
+
   log_object->log = log;
   JS_SetPrivate(cx, object, log_object);
 
@@ -5600,6 +5604,9 @@ CScript::CreateColorObject(JSContext* cx, RGBA color)
 
   // attach the color to this object
   SS_COLOR* color_object = new SS_COLOR;
+  if (!color_object)
+    return NULL;
+
   color_object->color = color;
   JS_SetPrivate(cx, object, color_object);
 
@@ -5825,11 +5832,12 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
   // attach the spriteset to this object
 
   SS_SPRITESET* spriteset_object = new SS_SPRITESET;
-  if (spriteset_object) {
-    spriteset_object->spriteset = spriteset;
-    spriteset_object->object    = object;
-    JS_SetPrivate(cx, object, spriteset_object);
-  }
+  if (!spriteset_object)
+    return NULL;
+
+  spriteset_object->spriteset = spriteset;
+  spriteset_object->object    = object;
+  JS_SetPrivate(cx, object, spriteset_object);
 
   JS_RemoveRoot(cx, &local_roots);
   return object;
@@ -5906,7 +5914,6 @@ end_method()
 JSObject*
 CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
 {
-
   sound->ref();
 
   // define class
@@ -5935,6 +5942,10 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
     { "setPitch",    ssSoundSetPitch,    1, },
     { "getPitch",    ssSoundGetPitch,    0, },
     { "isPlaying",   ssSoundIsPlaying,   0, },
+    { "isSeekable",  ssSoundIsSeekable,  0, },
+    { "getPosition", ssSoundGetPosition, 0, },
+    { "setPosition", ssSoundSetPosition, 1, },
+    { "getLength",   ssSoundGetLength,   0, },
     { "clone",       ssSoundClone,       0, },
     { 0, 0, 0, 0, 0 },
   };
@@ -5942,6 +5953,9 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
 
   // attach the sound to this object
   SS_SOUND* sound_object = new SS_SOUND;
+  if (!sound_object)
+    return NULL;
+
   sound_object->sound = sound;
   JS_SetPrivate(cx, object, sound_object);
 
@@ -6051,6 +6065,46 @@ end_method()
 */
 begin_method(SS_SOUND, ssSoundIsPlaying, 0)
   return_bool(object->sound->isPlaying());
+end_method()
+
+////////////////////////////////////////
+
+/**
+    - returns true if the sound is seekable
+      Not all sound types are seekable, Ogg is.
+*/
+begin_method(SS_SOUND, ssSoundIsSeekable, 0)
+  return_bool(object->sound->isSeekable());
+end_method()
+
+////////////////////////////////////////
+
+/**
+    - returns the position of the sound
+      returns zero if the sound isn't seekable
+*/
+begin_method(SS_SOUND, ssSoundGetPosition, 0)
+  return_int(object->sound->getPosition());
+end_method()
+
+////////////////////////////////////////
+
+/**
+    - sets the position of the sound
+      if the sound isn't seekable, this does nothing
+*/
+begin_method(SS_SOUND, ssSoundSetPosition, 1)
+  arg_int(pos);
+  object->sound->setPosition(pos);
+end_method()
+
+////////////////////////////////////////
+
+/**
+    - gets the length of the sound
+*/
+begin_method(SS_SOUND, ssSoundGetLength, 0)
+  return_int(object->sound->getLength());
 end_method()
 
 ////////////////////////////////////////
@@ -6178,7 +6232,7 @@ end_method()
     - draws a word-wrapped text at (x, y) with the width w and height h. The
       offset is the number of pixels which the number of pixels from y which 
       the actual drawing starts at.
-  Note: 'text' can have the following special characters within it:
+    Note: 'text' can have the following special characters within it:
       \n - newline
       \t - tab
       \" - double quote
@@ -6271,6 +6325,9 @@ CScript::CreateWindowStyleObject(JSContext* cx, SWINDOWSTYLE* ws, bool destroy)
 
   // attach the window style to this object
   SS_WINDOWSTYLE* ws_object = new SS_WINDOWSTYLE;
+  if (ws_object)
+    return NULL;
+
   ws_object->windowstyle = ws;
   ws_object->destroy_me  = destroy;
   ws_object->mask = CreateRGBA(255, 255, 255, 255);
@@ -6368,6 +6425,9 @@ CScript::CreateImageObject(JSContext* cx, IMAGE image, bool destroy)
 
   // attach the image to this object
   SS_IMAGE* image_object = new SS_IMAGE;
+  if (!image_object)
+    return NULL;
+
   image_object->image       = image;
   image_object->destroy_me  = destroy;
   JS_SetPrivate(cx, object, image_object);
@@ -6628,10 +6688,11 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
 
   // attach the surface to this object
   SS_SURFACE* surface_object = new SS_SURFACE;
-  if (surface_object) {
-    surface_object->surface = surface;
-    JS_SetPrivate(cx, object, surface_object);
-  }
+  if (!surface_object)
+    return NULL;
+
+  surface_object->surface = surface;
+  JS_SetPrivate(cx, object, surface_object);
 
   return object;
 }
@@ -7278,6 +7339,9 @@ CScript::CreateColorMatrixObject(JSContext* cx, CColorMatrix* colormatrix)
 
   // attach the surface to this object
   SS_COLORMATRIX* colormatrix_object = new SS_COLORMATRIX;
+  if (!colormatrix_object)
+    return NULL;
+
   colormatrix_object->colormatrix = colormatrix;
   JS_SetPrivate(cx, object, colormatrix_object);
 
@@ -7331,8 +7395,16 @@ CScript::CreateAnimationObject(JSContext* cx, IAnimation* animation)
 
   // attach the animation to this object
   SS_ANIMATION* animation_object = new SS_ANIMATION;
+  if (!animation_object)
+    return NULL;
+
   animation_object->animation = animation;
   animation_object->frame = new RGBA[animation->GetWidth() * animation->GetHeight()];
+  if (!animation_object->frame) {
+    delete animation_object;
+    return NULL;
+  }
+
   animation->ReadNextFrame(animation_object->frame);
   JS_SetPrivate(cx, object, animation_object);
 
@@ -7428,6 +7500,9 @@ CScript::CreateFileObject(JSContext* cx, CConfigFile* file)
 
   // attach the file to this object
   SS_FILE* file_object = new SS_FILE;
+  if (!file_object)
+    return NULL;
+
   file_object->file = file;
   JS_SetPrivate(cx, object, file_object);
 
@@ -7531,6 +7606,9 @@ CScript::CreateRawFileObject(JSContext* cx, IFile* file, bool writeable)
 
   // attach the file to this object
   SS_RAWFILE* file_object = new SS_RAWFILE;
+  if (!file_object)
+    return NULL;
+
   file_object->file = file;
   file_object->is_open = true;
   file_object->is_writeable = writeable;
@@ -7668,18 +7746,24 @@ CScript::CreateByteArrayObject(JSContext* cx, int size, const void* data)
 
   // attach the file to this object
   SS_BYTEARRAY* array_object = new SS_BYTEARRAY;
-  if (array_object) {
-    array_object->size = size;
-    array_object->array = new byte[size];
+  if (!array_object)
+    return NULL;
 
-    if (data) {
-      memcpy(array_object->array, data, size);
-    } else {
-      memset(array_object->array, 0, size);
-    }
+  array_object->size = size;
+  array_object->array = new byte[size];
 
-    JS_SetPrivate(cx, object, array_object);
+  if (!array_object->array) {
+    delete array_object;
+    return NULL;
   }
+
+  if (data) {
+    memcpy(array_object->array, data, size);
+  } else {
+    memset(array_object->array, 0, size);
+  }
+
+  JS_SetPrivate(cx, object, array_object);
 
   return object;
 }
@@ -7831,10 +7915,11 @@ CScript::CreateTilesetObject(JSContext* cx, const sTileset& tileset)
 
   // attach the file to this object
   SS_TILESET* tileset_object = new SS_TILESET;
-  if (tileset_object) {
-    tileset_object->__value__ = 0;
-    JS_SetPrivate(cx, object, tileset_object);
-  }
+  if (!tileset_object)
+    return NULL;
+
+  tileset_object->__value__ = 0;
+  JS_SetPrivate(cx, object, tileset_object);
 
   return object;
 }
@@ -7869,15 +7954,15 @@ begin_func(GetMapEngine, 0)
   JS_DefineFunctions(cx, object, fs);
 
   SS_MAPENGINE* mapengine_object = new SS_MAPENGINE;
-  if (mapengine_object) {
-    mapengine_object->__value__ = 1;
-    JS_SetPrivate(cx, object, mapengine_object);
+  if (!mapengine_object)
+    return NULL;
 
-    JS_DefineProperty(cx, object, "tileset",
-      OBJECT_TO_JSVAL(CreateTilesetObject(cx, This->m_Engine->GetMapEngine()->GetMap().GetMap().GetTileset())),
-      JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
+  mapengine_object->__value__ = 1;
+  JS_SetPrivate(cx, object, mapengine_object);
 
-  }
+  JS_DefineProperty(cx, object, "tileset",
+    OBJECT_TO_JSVAL(CreateTilesetObject(cx, This->m_Engine->GetMapEngine()->GetMap().GetMap().GetTileset())),
+    JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
 
   return_object(object);
 end_func()

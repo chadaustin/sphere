@@ -651,6 +651,7 @@
 #define ID_IMAGEVIEW_FILTER_COLORADJUSTER 40776
 #define ID_LAYERVIEW_MOVE_DOWN          40777
 #define ID_LAYERVIEW_MOVE_UP            40778
+#define ID_SOUND_PAUSE                  40779
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -659,7 +660,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        270
-#define _APS_NEXT_COMMAND_VALUE         40779
+#define _APS_NEXT_COMMAND_VALUE         40780
 #define _APS_NEXT_CONTROL_VALUE         1222
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

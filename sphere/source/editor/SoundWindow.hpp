@@ -20,10 +20,12 @@ private:
   afx_msg void OnHScroll(UINT code, UINT pos, CScrollBar *scroll_bar);
 
   afx_msg void OnSoundPlay();
+  afx_msg void OnSoundPause();
   afx_msg void OnSoundStop();
   afx_msg void OnSoundRepeat();
 
   afx_msg void OnUpdatePlayCommand(CCmdUI* cmdui);
+  afx_msg void OnUpdatePauseCommand(CCmdUI* cmdui);
   afx_msg void OnUpdateStopCommand(CCmdUI* cmdui);
   afx_msg void OnUpdateRepeatCommand(CCmdUI* cmdui);
 

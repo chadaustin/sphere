@@ -936,6 +936,20 @@ log_object.endBlock()
   sound_object.isPlaying()
     - returns true if the sound is currently playing
 
+  sound_object.isSeekable()
+    - returns true if the sound is seekable
+      Not all sound types are seekable, Ogg is.
+
+  sound_object.getPosition()
+    - returns the position of the sound
+      returns zero if the sound isn't seekable
+
+  sound_object.setPosition(pos)
+    - sets the position of the sound
+      if the sound isn't seekable, this does nothing
+
+  sound_object.getLength()
+    - gets the length of the sound
 
   *** fonts ***
   GetSystemFont()
@@ -961,7 +975,7 @@ log_object.endBlock()
     - draws a word-wrapped text at (x, y) with the width w and height h. The
       offset is the number of pixels which the number of pixels from y which 
       the actual drawing starts at.
-  Note: 'text' can have the following special characters within it:
+    Note: 'text' can have the following special characters within it:
       \n - newline
       \t - tab
       \" - double quote

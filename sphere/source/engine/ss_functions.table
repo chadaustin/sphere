@@ -306,6 +306,9 @@ SS_FUNCTION(OpenLog, 1)
   //sound.setPitch(pitch)
   //sound.getPitch()
   //sound.isPlaying()
+  //sound.getPosition()
+  //sound.setPosition(pos)
+  //sound.isSeekable()
 
   // fonts
   SS_FUNCTION(GetSystemFont, 0)
