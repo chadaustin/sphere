@@ -16,8 +16,8 @@ People ask me about making games in Sphere and what you can and can't do with
 them.  I personally would prefer that they be free with all the scripts available
 for viewing.  However, you can go ahead and make commercial games or shareware or
 whatever.  You can include the Sphere binaries with your game, although you must
-say that Sphere is available for free at http://www.aegisknight.org/.  And make
-please talk with me beforehand so I can approve the distribution.  I think that's
-all.
+say that Sphere is available for free at http://www.aegisknight.org/. 
+Also please talk with me beforehand so I can approve the distribution.
+I think that's all.
 
 This document is a result of typing important stuff late at night.
