@@ -126,6 +126,9 @@ public:
   bool GetPersonLayer(const char* name, int& layer);
   bool GetPersonDirection(const char* name, std::string& direction);
   bool GetPersonFrame(const char* name, int& frame);
+  bool SetPersonSpeedXY(const char* name, int x, int y);
+  bool GetPersonSpeedX(const char* name, int& x);
+  bool GetPersonSpeedY(const char* name, int& y);
   bool SetPersonScaleAbsolute(const char* name, int width, int height);
   bool SetPersonScaleFactor(const char* name, double scale_x, double scale_y);
   bool SetPersonMask(const char* name, RGBA mask);
@@ -169,6 +172,9 @@ private:
     int base_y1;
     int base_x2;
     int base_y2;
+
+	int speed_x;
+	int speed_y;
 
     std::string direction;
     int frame;

@@ -922,6 +922,9 @@ CMapEngine::CreatePerson(const char* name, const char* spriteset, bool destroy_w
     p.layer = 0;
   }
 
+  p.speed_x = 1;
+  p.speed_y = 1;
+
   p.spriteset->GetSpriteset().GetBase(p.base_x1, p.base_y1, p.base_x2, p.base_y2);
   p.width = p.spriteset->GetSpriteset().GetFrameWidth();
   p.height = p.spriteset->GetSpriteset().GetFrameHeight();
@@ -1206,6 +1209,60 @@ CMapEngine::GetPersonFrame(const char* name, int& frame)
   }
 
   frame = m_Persons[person].frame;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::SetPersonSpeedXY(const char* name, int x, int y)
+{
+  // find person
+  int person = FindPerson(name);
+  if (person == -1) {
+    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+    return false;
+  }
+
+  // !!!! verify x
+
+  // if person has a leader, ignore the command
+  if (m_Persons[person].leader != -1) {
+    return true;
+  }
+
+  m_Persons[person].speed_x = x;
+  m_Persons[person].speed_y = y;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetPersonSpeedX(const char* name, int& x)
+{
+  int person = FindPerson(name);
+  if (person == -1) {
+    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+    return false;
+  }
+
+  x = m_Persons[person].speed_x;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetPersonSpeedY(const char* name, int& y)
+{
+  int person = FindPerson(name);
+  if (person == -1) {
+    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+    return false;
+  }
+
+  y = m_Persons[person].speed_y;
   return true;
 }
 
@@ -2556,10 +2613,10 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
       case COMMAND_FACE_SOUTHWEST: p.direction = "southwest"; break;
       case COMMAND_FACE_WEST:      p.direction = "west";      break;
       case COMMAND_FACE_NORTHWEST: p.direction = "northwest"; break;
-      case COMMAND_MOVE_NORTH:     p.y--; break;
-      case COMMAND_MOVE_EAST:      p.x++; break;
-      case COMMAND_MOVE_SOUTH:     p.y++; break;
-      case COMMAND_MOVE_WEST:      p.x--; break;
+      case COMMAND_MOVE_NORTH:     p.y-=p.speed_y; break;
+      case COMMAND_MOVE_EAST:      p.x+=p.speed_x; break;
+      case COMMAND_MOVE_SOUTH:     p.y+=p.speed_y; break;
+      case COMMAND_MOVE_WEST:      p.x-=p.speed_x; break;
       case COMMAND_DO_SCRIPT:        
         if (!ExecuteScript(c.script.c_str(), error)) {
 	  m_ErrorMessage = "Could not execute queued script\nPerson:" + p.description +

@@ -428,6 +428,14 @@ log_object.endBlock()
       GetPersonFrame(name)
         - gets the frame and direction that are currently being displayed
 
+      SetPersonSpeed(name, speed)
+      SetPersonSpeedXY(name, speed_x, speed_y)
+	- sets the speed at which a person moves at
+	
+      GetPersonSpeedX(name)
+      GetPersonSpeedY(name)
+        - gets the speed at which a person moves at
+
       SetPersonScaleFactor(name, scale_w, scale_h)
         - rescales the sprite to a certain scale specified by scale_w and scale_h.
           Scaling is determined by floating point numbers like, 1.5 would scale
