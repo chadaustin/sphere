@@ -154,6 +154,9 @@ CMapEngine::ChangeMap(const char* filename)
       return false;
     }
 
+    // reset map engine timing
+    m_NextFrame = (qword)GetTime() * m_FrameRate;  // update next rendering time
+
     return true;
 
   } else {
