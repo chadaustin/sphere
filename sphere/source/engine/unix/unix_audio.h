@@ -4,8 +4,9 @@
 
 #include <audiere.h>
 
+bool InitAudio();
+void CloseAudio();
 
 audiere::OutputStream* SA_OpenSound(audiere::File* file, bool streaming);
-
 
 #endif

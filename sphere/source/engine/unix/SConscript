@@ -1,4 +1,7 @@
-Import('base_env')
+Import('base_env COMPILER')
+
+if COMPILER.needs_sdl():
+    COMPILER.SetupSDL(base_env)
 
 base_env.Library('unix', Split("""
     unix_audio.cpp

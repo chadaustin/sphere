@@ -3,8 +3,9 @@
 
 ; NOTE: this .NSI script is designed for NSIS v1.8+
 
-Name "Sphere 1.0"
-OutFile "InstallSphere1.0.exe"
+Name "Sphere 1.1"
+!define SphereDir "sphere-1.1"
+OutFile "InstallSphere1.1.exe"
 
 ; Some default compiler settings (uncomment and change at will):
 ; SetCompress auto ; (can be off or force)
@@ -29,15 +30,15 @@ SetOutPath "$INSTDIR"
 File /r *.dll *.exe docs games startup system util
 
 ; set up start menu
-CreateDirectory "$SMPROGRAMS\Sphere 1.0"
-CreateShortCut "$SMPROGRAMS\Sphere 1.0\Run Sphere.lnk" "$INSTDIR\engine.exe"
-CreateShortCut "$SMPROGRAMS\Sphere 1.0\Configuration.lnk" "$INSTDIR\config.exe"
-CreateShortCut "$SMPROGRAMS\Sphere 1.0\Editor.lnk" "$INSTDIR\editor.exe"
-CreateDirectory "$SMPROGRAMS\Sphere 1.0\Documentation"
-CreateShortCut "$SMPROGRAMS\Sphere 1.0\Documentation\Sphere Web Site.lnk" "http://sphere.sourceforge.net"
-CreateShortCut "$SMPROGRAMS\Sphere 1.0\Documentation\AegisKnight's Site.lnk" "http://aegisknight.org/sphere"
-CreateShortCut "$SMPROGRAMS\Sphere 1.0\Documentation\Flik's Tutorial Site.lnk" "http://sphere.sourceforge.net/flik/docs"
-CreateShortCut "$SMPROGRAMS\Sphere 1.0\Documentation\Local Documentation.lnk" "$INSTDIR\docs"
+CreateDirectory "$SMPROGRAMS\${SphereDir}"
+CreateShortCut "$SMPROGRAMS\${SphereDir}\Run Sphere.lnk" "$INSTDIR\engine.exe"
+CreateShortCut "$SMPROGRAMS\${SphereDir}\Configuration.lnk" "$INSTDIR\config.exe"
+CreateShortCut "$SMPROGRAMS\${SphereDir}\Editor.lnk" "$INSTDIR\editor.exe"
+CreateDirectory "$SMPROGRAMS\${SphereDir}\Documentation"
+CreateShortCut "$SMPROGRAMS\${SphereDir}\Documentation\Sphere Web Site.lnk" "http://sphere.sourceforge.net"
+CreateShortCut "$SMPROGRAMS\${SphereDir}\Documentation\AegisKnight's Site.lnk" "http://aegisknight.org/sphere"
+CreateShortCut "$SMPROGRAMS\${SphereDir}\Documentation\Flik's Tutorial Site.lnk" "http://sphere.sourceforge.net/flik/docs"
+CreateShortCut "$SMPROGRAMS\${SphereDir}\Documentation\Local Documentation.lnk" "$INSTDIR\docs"
 
 ; register file types
 WriteRegStr HKCR ".rfn" "" "SphereFont"
@@ -115,7 +116,7 @@ RMDir /r "$INSTDIR\docs"
 RMDir /r "$INSTDIR\startup"
 RMDir /r "$INSTDIR\system"
 RMDir /r "$INSTDIR\util"
-RMDir /r "$SMPROGRAMS\Sphere 1.0"
+RMDir /r "$SMPROGRAMS\${SphereDir}"
 MessageBox MB_OK|MB_ICONEXCLAMATION "Games have not been deleted.  You must delete them yourself from $INSTDIR\games."
 SectionEnd ; end of uninstall section
 

@@ -157,6 +157,9 @@ class Compiler:
             env.Append(LIBS = ['libmng'],
                        CCFLAGS = ['/DMNG_NO_CMS', '/DMNG_SUPPORT_LC', '/DMNG_DLL'])
 
+        elif self.name == 'linux':
+            env.Append(LIBS = ['mng', 'jpeg', 'z'])
+
     def SetupSDL(self, env):
         autocons.ParseConfig(env, 'sdl-config', ['--cflags', '--libs'])
 
@@ -166,7 +169,8 @@ class Compiler:
                    LIBS = ['common'])
 
     def SetupWin32(self, env):
-        env.Append(LIBS = ['user32', 'gdi32', 'comctl32'])
+        if COMPILER.is_win32():
+            env.Append(LIBS = ['user32', 'gdi32', 'comctl32'])
 
     def SetupWXWindows(self, env):
         if self.name == 'mingw':

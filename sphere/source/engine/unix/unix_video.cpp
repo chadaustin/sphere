@@ -64,24 +64,24 @@ void ToggleFPS () {
 
   This is where all the fun begins.  If this is the first time that SwitchResolution
   is called, SDL is initialized. */
-bool SwitchResolution (int x, int y, bool fullscreen = false) {
+bool SwitchResolution (int x, int y, bool fullscreen) {
   static bool initialized = false;
 
   if (!initialized) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
-	 SDL_WM_SetCaption("Sphere 0.97" , NULL);
-	 InitializeInput();
-	 initialized = true;
+   SDL_WM_SetCaption("Sphere 0.97" , NULL);
+   InitializeInput();
+   initialized = true;
   } else {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
     if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
-	 /* FIXME: the title of the game or something should be set here instead */
-	 SDL_WM_SetCaption("Sphere 0.97", NULL);
+   /* FIXME: the title of the game or something should be set here instead */
+   SDL_WM_SetCaption("Sphere 0.97", NULL);
   }
   if (fullscreen)
-	 screen = SDL_SetVideoMode(x, y, 32, SDL_DOUBLEBUF | SDL_FULLSCREEN);
+   screen = SDL_SetVideoMode(x, y, 32, SDL_DOUBLEBUF | SDL_FULLSCREEN);
   else
     screen = SDL_SetVideoMode(x, y, 32, SDL_DOUBLEBUF | SDL_ANYFORMAT);
   if (screen == NULL)
@@ -171,25 +171,25 @@ void SetClippingRectangle(int x, int y, int w, int h) {
 
   // validate x values
   if (x1 < 0)
-	 x1 = 0;
+   x1 = 0;
   else if (x1 > ScreenWidth - 1)
-	 x1 = ScreenWidth - 1;
+   x1 = ScreenWidth - 1;
 
   if (x2 < 0)
-	 x2 = 0;
+   x2 = 0;
   else if (x2 > ScreenWidth - 1)
-	 x2 = ScreenWidth - 1;
+   x2 = ScreenWidth - 1;
 
   // validate y values
   if (y1 < 0)
-	 y1 = 0;
+   y1 = 0;
   else if (y1 > ScreenHeight - 1)
-	 y1 = ScreenHeight - 1;
+   y1 = ScreenHeight - 1;
 
   if (y2 < 0)
-	 y2 = 0;
+   y2 = 0;
   else if (y2 > ScreenHeight - 1)
-	 y2 = ScreenHeight - 1;
+   y2 = ScreenHeight - 1;
 
   ClippingRectangle.left = x1;
   ClippingRectangle.right = x2;
@@ -211,10 +211,10 @@ void FlipScreen () {
   static int CurrentFrames;
 
   if (!initialized) {
-	 LastUpdate = GetTime();
-	 FPS = 0;
-	 CurrentFrames = 0;
-	 initialized = true;
+   LastUpdate = GetTime();
+   FPS = 0;
+   CurrentFrames = 0;
+   initialized = true;
   }
   if (FPSFont && FPSDisplayed) {
     if (GetTime() > LastUpdate + 1000) {
@@ -257,7 +257,7 @@ IMAGE GrabImage(int x, int y, int width, int height) {
   image->blit_routine = TileBlit;
 
   if (SDL_LockSurface(screen) != 0)
-	 return NULL;
+   return NULL;
   BGRA* Screen = (BGRA*)screen->pixels;
   image->bgra = new BGRA[width * height];
   for (int iy = 0; iy < height; iy++)
@@ -387,7 +387,7 @@ void SpriteBlit(IMAGE image, int x, int y) {
       src += src_inc;
       alpha += src_inc;
     }
-	 SDL_UnlockSurface(screen);
+   SDL_UnlockSurface(screen);
   }
 }
 
@@ -421,7 +421,7 @@ void NormalBlit(IMAGE image, int x, int y) {
       src += src_inc;
       alpha += src_inc;
     }
-	 SDL_UnlockSurface(screen);
+   SDL_UnlockSurface(screen);
   }
 }
 
@@ -476,7 +476,7 @@ void DirectBlit(int x, int y, int w, int h, RGBA* pixels) {
           dest->blue = (dest->blue * (256 - src.alpha) + src.blue * src.alpha) / 256;
         }
       }
-	 SDL_UnlockSurface(screen);
+   SDL_UnlockSurface(screen);
   }
 }
 
@@ -505,7 +505,7 @@ void DirectGrab(int x, int y, int w, int h, RGBA* pixels) {
         pixels[iy * w + ix].blue  = Screen[(y + iy) * ScreenWidth + x + ix].blue;
         pixels[iy * w + ix].alpha = 255;
     }
-	 SDL_UnlockSurface(screen);
+   SDL_UnlockSurface(screen);
   }
 }
 
@@ -554,7 +554,7 @@ void DrawPoint(int x, int y, RGBA color) {
   if (SDL_LockSurface(screen) == 0) {
     primitives::Point((BGRA*)screen->pixels, ScreenWidth, x, y, color,
                       ClippingRectangle, blendBGRA);
-	 SDL_UnlockSurface(screen);
+   SDL_UnlockSurface(screen);
   }
 }
 
@@ -562,8 +562,8 @@ void DrawLine(int x[2], int y[2], RGBA color) {
   if (SDL_LockSurface(screen) == 0) {
     primitives::Line((BGRA*)screen->pixels, ScreenWidth, x[0], y[0],
                      x[1], y[1], constant_color(color),
-							ClippingRectangle, blendBGRA);
-	 SDL_UnlockSurface(screen);
+              ClippingRectangle, blendBGRA);
+   SDL_UnlockSurface(screen);
   }
 }
 
@@ -571,8 +571,8 @@ void DrawGradientLine(int x[2], int y[2], RGBA colors[2]) {
   if (SDL_LockSurface(screen) == 0) {
     primitives::Line((BGRA*)screen->pixels, ScreenWidth, x[0], y[0],
                      x[1], y[1], gradient_color(colors[0], colors[1]),
-							ClippingRectangle, blendBGRA);
-	 SDL_UnlockSurface(screen);
+              ClippingRectangle, blendBGRA);
+   SDL_UnlockSurface(screen);
   }
 }
 
@@ -580,7 +580,7 @@ void DrawTriangle(int x[3], int y[3], RGBA color) {
   if (SDL_LockSurface(screen) == 0) {
     primitives::Triangle((BGRA*)screen->pixels, ScreenWidth, x, y,
                          color, ClippingRectangle, blendBGRA);
-	 SDL_UnlockSurface(screen);
+   SDL_UnlockSurface(screen);
   }
 }
 
@@ -601,8 +601,8 @@ void DrawGradientTriangle(int x[3], int y[3], RGBA colors[3]) {
   if (SDL_LockSurface(screen) == 0) {
     primitives::GradientTriangle((BGRA*)screen->pixels, ScreenWidth,
                                  x, y, colors, ClippingRectangle,
-										   blendBGRA, interpolateRGBA);
-	 SDL_UnlockSurface(screen);
+                       blendBGRA, interpolateRGBA);
+   SDL_UnlockSurface(screen);
   }
 }
 
@@ -613,12 +613,12 @@ void DrawRectangle(int x, int y, int w, int h, RGBA color) {
     } else if (color.alpha == 255) { // full mask
       BGRA bgra = { color.blue, color.green, color.red };
       primitives::Rectangle((BGRA*)screen->pixels, ScreenWidth, x, y,
-		                      w, h, bgra, ClippingRectangle, copyBGRA);
+                          w, h, bgra, ClippingRectangle, copyBGRA);
     } else {
       primitives::Rectangle((BGRA*)screen->pixels, ScreenWidth, x, y,
-		                      w, h, color, ClippingRectangle, blendBGRA);
+                          w, h, color, ClippingRectangle, blendBGRA);
     }
-	 SDL_UnlockSurface(screen);
+   SDL_UnlockSurface(screen);
   }
 }
 
@@ -626,7 +626,7 @@ void DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4]) {
   if (SDL_LockSurface(screen) == 0) {
     primitives::GradientRectangle((BGRA*)screen->pixels, ScreenWidth,
                                   x, y, w, h, colors, ClippingRectangle,
-											 blendBGRA, interpolateRGBA);
-	 SDL_UnlockSurface(screen);
+                       blendBGRA, interpolateRGBA);
+   SDL_UnlockSurface(screen);
   }
 }
