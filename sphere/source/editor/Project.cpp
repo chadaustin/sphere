@@ -282,7 +282,7 @@ CProject::RefreshItems()
 
     // add all extensions to this set
     std::vector<std::string> extensions;
-    FTL.GetFileTypeExtensions(i, extensions);
+    FTL.GetFileTypeExtensions(i, false, extensions);
 
 /*
     std::vector<std::string> folder_list = GetFolderList("*");

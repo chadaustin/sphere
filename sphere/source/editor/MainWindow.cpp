@@ -351,7 +351,7 @@ CMainWindow::OpenGameFile(const char* filename)
 
   for (int i = 0; i < NUM_GROUP_TYPES; i++) {
     std::vector<std::string> extensions;
-    FTL.GetFileTypeExtensions(i, extensions);
+    FTL.GetFileTypeExtensions(i, false, extensions);
     
     for (int k = 0; k < extensions.size(); k++) {
       std::string ext = "." + extensions[k];
@@ -664,7 +664,7 @@ std::string GenerateSupportedExtensionsFilter() {
   std::set<std::string> extensions;
   for (int i = 0; i < NUM_GROUP_TYPES; i++) {
     std::vector<std::string> e;
-    FTL.GetFileTypeExtensions(i, e);
+    FTL.GetFileTypeExtensions(i, false, e);
     for (int j = 0; j < e.size(); j++) {
       std::string poop = e[j];
       extensions.insert(poop);
@@ -686,7 +686,7 @@ std::string GenerateSupportedExtensionsFilter() {
   filter += "Project File (game.sgm)|game.sgm|";
   for (int i = 0; i < NUM_GROUP_TYPES; i++) {
     std::vector<std::string> e;
-    FTL.GetFileTypeExtensions(i, e);
+    FTL.GetFileTypeExtensions(i, false, e);
 
     std::string type_filter;
     for (int j = 0; j < e.size(); j++) {
@@ -2027,7 +2027,7 @@ CMainWindow::OnInsertProjectFile(WPARAM wparam, LPARAM lparam)
   for (int i = 0; i < NUM_GROUP_TYPES; i++ ) {
 
     std::vector<std::string> extensions;
-    FTL.GetFileTypeExtensions(i, extensions);
+    FTL.GetFileTypeExtensions(i, false, extensions);
 
     for (int j = 0; j < extensions.size(); j++) {
       if (Local::extension_compare(path, extensions[j].c_str())) {

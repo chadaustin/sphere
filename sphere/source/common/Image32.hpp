@@ -34,7 +34,7 @@ public:
   CImage32& operator=(const CImage32& image);
   bool operator==(const CImage32& rhs) const;
 
-  void Create(int width, int height);
+  bool Create(int width, int height);
   bool Load(const char* filename, IFileSystem& fs = g_DefaultFileSystem);
   bool Save(const char* filename, IFileSystem& fs = g_DefaultFileSystem) const;
   

@@ -165,7 +165,7 @@ CImage32::operator==(const CImage32& rhs) const
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void
+bool
 CImage32::Create(int width, int height)
 {
   delete[] m_Pixels;
@@ -173,8 +173,16 @@ CImage32::Create(int width, int height)
   m_Width  = width;
   m_Height = height;
   m_Pixels = new RGBA[width * height];
+  if (m_Pixels == NULL) {
+    m_Width = 0;
+    m_Height = 0;
+    return false;
+  }
+
   for (int i = 0; i < width * height; i++)
     m_Pixels[i] = CreateRGBA(0, 0, 0, 255);
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -211,7 +219,9 @@ CImage32::Load(const char* filename, IFileSystem& fs)
   m_Width  = img->getWidth();
   m_Height = img->getHeight();
   m_Pixels = new RGBA[m_Width * m_Height];
-  memcpy(m_Pixels, img->getPixels(), m_Width * m_Height * 4);
+  if (m_Pixels) {
+    memcpy(m_Pixels, img->getPixels(), m_Width * m_Height * 4);
+  }
 
   return true;
 }

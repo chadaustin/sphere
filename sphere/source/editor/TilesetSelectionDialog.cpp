@@ -51,6 +51,9 @@ CTilesetSelectionDialog::OnOK()
   delete[] m_pSelectedTileset;
 
   m_pSelectedTileset = new char[MAX_PATH];
+  if (m_pSelectedTileset == NULL)
+    return;
+
   GetDlgItemText(IDC_TILESET, m_pSelectedTileset, MAX_PATH);
 
   if (strlen(m_pSelectedTileset) == 0)

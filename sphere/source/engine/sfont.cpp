@@ -348,6 +348,9 @@ bool
 SFONT::Initialize()
 {
   m_Images = new IMAGE[m_Font.GetNumCharacters()];
+  if (m_Images == NULL)
+    return false;
+
   for (int i = 0; i < m_Font.GetNumCharacters(); i++) {
 
     sFontCharacter& c = m_Font.GetCharacter(i);

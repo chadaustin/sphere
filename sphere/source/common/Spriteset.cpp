@@ -29,7 +29,7 @@ sSpriteset::~sSpriteset()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void
+bool
 sSpriteset::Create(
   int frame_width,
   int frame_height,
@@ -43,17 +43,21 @@ sSpriteset::Create(
 
   // initialize the images
   m_Images.resize(num_images);
-  for (int i = 0; i < num_images; i++) {
+  for (int i = 0; i < m_Images.size(); i++) {
     m_Images[i].Resize(frame_width, frame_height);
+    if (m_Images[i].GetWidth() != frame_width
+     || m_Images[i].GetHeight() != frame_height) {
+       return false;
+    }
   }
 
   // initialize the directions
   m_Directions.resize(num_directions);
-  for (int i = 0; i < num_directions; i++) {
+  for (int i = 0; i < m_Directions.size(); i++) {
 
     // initialize the frames
     m_Directions[i].frames.resize(num_frames);
-    for (int j = 0; j < num_frames; j++) {
+    for (int j = 0; j < m_Directions[i].frames.size(); j++) {
 
       m_Directions[i].name = "unnamed";
       m_Directions[i].frames[j].index = 0;
@@ -62,6 +66,8 @@ sSpriteset::Create(
     }
 
   }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

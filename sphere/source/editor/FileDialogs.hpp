@@ -82,16 +82,19 @@ private:
     // generate a filter with all supported types
     std::string filter = GenerateOverallFilter(mode);
     
-    // generate filters for all of the subtypes    
-    if (mode & FDM_OPEN && FTL.GetNumSubTypes(filetype::ft) != 1) {
+    // generate filters for all of the subtypes 
+    if (FTL.GetNumSubTypes(filetype::ft) != 1) {
       for (int i = 0; i < FTL.GetNumSubTypes(filetype::ft); i++) {
-        filter += GenerateSubTypeFilter(i);
+        filter += GenerateSubTypeFilter(mode, i);
       }
     }
 
     filter += "All Files (*.*)|*.*||";
     
     m_filter = new char[filter.length() + 1];
+    if (m_filter == NULL)
+      return NULL;
+
     strcpy(m_filter, filter.c_str());
     return m_filter;
   }
@@ -101,11 +104,14 @@ private:
   {
     // get all extensions
     std::vector<std::string> extensions;
+    FTL.GetFileTypeExtensions(filetype::ft, (mode & FDM_SAVE ? true : false), extensions);
+
+    /*
     if (mode & FDM_OPEN) { 
       FTL.GetFileTypeExtensions(filetype::ft, extensions);
     } else {
       extensions.push_back(FTL.GetDefaultExtension(filetype::ft));
-    }
+    }*/
 
     // make a semicolon-separated string
     std::string filters;
@@ -123,11 +129,13 @@ private:
   }
 
 
-  static std::string GenerateSubTypeFilter(int sub_type)
+  static std::string GenerateSubTypeFilter(int mode, int sub_type)
   {
     // get all extensions
     std::vector<std::string> extensions;
-    FTL.GetSubTypeExtensions(filetype::ft, sub_type, extensions);
+    FTL.GetSubTypeExtensions(filetype::ft, sub_type, (mode & FDM_SAVE ? true : false), extensions);
+    if (extensions.size() == 0)
+      return "";
 
     // make a semicolon-separated string
     std::string filters;
@@ -141,6 +149,7 @@ private:
     std::string filter = FTL.GetSubTypeLabel(filetype::ft, sub_type);
     filter += " (" + filters + ")";
     filter += "|" + filters + "|";
+
     return filter;
   }
 

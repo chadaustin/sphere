@@ -19,7 +19,7 @@ public:
   sSpriteset();
   ~sSpriteset();
 
-  void Create(int frame_width, int frame_height, int num_images, int num_directions, int num_frames);
+  bool Create(int frame_width, int frame_height, int num_images, int num_directions, int num_frames);
   bool Load(const char* filename, IFileSystem& fs = g_DefaultFileSystem);
   bool Save(const char* filename, IFileSystem& fs = g_DefaultFileSystem) const;
 

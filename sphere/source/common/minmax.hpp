@@ -3,6 +3,9 @@
 
 #include <algorithm>
 
+// if you have problems with this file in vc6
+// make sure NOMINMAX is defined
+
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 
 namespace std {
