@@ -6,7 +6,6 @@ Requirements:
 - libpng (Portable Network Graphics library, http://www.libpng.org/)
 - libjpeg (Joint Photographic Experts Group image library, http://www.ijg.org/)
 - libmng (Multiple-image Network Graphics, http://www.libmng.org/)
-- lcms (Little CMS color engine, http://www.littlecms.com/)
 - zlib (compression library, http://www.gzip.org/zlib/)
 - SpiderMonkey (JavaScript-C Engine, http://www.mozilla.org/js/spidermonkey/)
 - a little-endian machine*
