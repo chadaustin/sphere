@@ -85,6 +85,8 @@ int ScreenHeight;
 GLint MaxTexSize; // width or height
 
 HWND  SphereWindow;
+DWORD WindowStyle;   // } only use in fullscreen
+DWORD WindowStyleEx; // }
 HDC   MainDC;
 HGLRC MainRC;
 
@@ -296,6 +298,13 @@ EXPORT(bool, InitVideoDriver)(HWND window, int screen_width, int screen_height)
         dm.dmPelsWidth  = ScreenWidth * SCALE();
         dm.dmPelsHeight = ScreenHeight * SCALE();
 
+        WindowStyle   = GetWindowLong(SphereWindow, GWL_STYLE);
+        WindowStyleEx = GetWindowLong(SphereWindow, GWL_EXSTYLE);
+
+        SetWindowLong(SphereWindow, GWL_STYLE,
+                      WS_POPUP | WS_CLIPSIBLINGS);
+        SetWindowLong(SphereWindow, GWL_EXSTYLE, 0);
+
         if (ChangeDisplaySettings(&dm, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL) {
             MessageBox(SphereWindow, "Unable to set display mode.", "Video Error", MB_ICONERROR);
             return false;
@@ -411,6 +420,9 @@ EXPORT(void, CloseVideoDriver)()
         EnumDisplaySettings(NULL, ENUM_REGISTRY_SETTINGS, &dm);
         dm.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFLAGS | DM_DISPLAYFREQUENCY;
         ChangeDisplaySettings(&dm, 0);
+
+        SetWindowLong(SphereWindow, GWL_STYLE, WindowStyle);
+        SetWindowLong(SphereWindow, GWL_EXSTYLE, WindowStyleEx);
     }
 }
 
