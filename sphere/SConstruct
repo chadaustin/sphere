@@ -71,7 +71,7 @@ def BuildVC6Env():
                     os.path.join('third-party-msvc/dlls', d))
 
     sysdlls = Split("MSVCRT.DLL MSVCP60.DLL MFC42.DLL")
-    for d in dlls:
+    for d in sysdlls:
         env.Install(env['BUILD_DIR'], WhereIs(d))
 
     if ARGUMENTS.get('debug'):
