@@ -1316,7 +1316,7 @@ wMainWindow::OnFileImportBitmapToRTS(wxCommandEvent &event)
   }
 
   sTileset tileset;
-  if (!tileset.BuildFromImage(image, ResizeDialog.GetWidth(), ResizeDialog.GetHeight()))
+  if (!tileset.BuildFromImage(image, ResizeDialog.GetWidth(), ResizeDialog.GetHeight(), false))
   {
     ::wxMessageBox("Can't convert image!");
     return;
