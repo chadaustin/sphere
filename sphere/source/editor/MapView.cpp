@@ -57,6 +57,7 @@ CMapView::CMapView()
 , m_StartCursorTileY(-1)
 , m_SelectedTile(0)
 , m_SelectedLayer(0)
+, m_MoveIndex(-1)
 
 , m_Clicked(false)
 , m_ShowGrid(false)
@@ -1394,9 +1395,16 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
 
         CRect r(rect);
         CBrush brush;
-        brush.CreateSolidBrush(RGB(m_HighlightColor.red, 
+        
+        if (m_CurrentTool == tool_MoveEntity && m_MoveIndex != -1) {
+          brush.CreateSolidBrush(RGB(255, 255, 255));
+        }
+        else {
+          brush.CreateSolidBrush(RGB(m_HighlightColor.red, 
                                m_HighlightColor.green, 
                                m_HighlightColor.blue));
+        }
+
         dc.FrameRect(r, &brush);
         brush.DeleteObject();
 
@@ -1680,6 +1688,22 @@ CMapView::OnLButtonDown(UINT flags, CPoint point)
         m_StartCursorTileY = y;
       } break;
 
+      case tool_MoveEntity: {
+        int tx = (point.x / m_Map->GetTileset().GetTileWidth()) / m_ZoomFactor + m_CurrentX;
+        int ty = (point.y / m_Map->GetTileset().GetTileHeight()) / m_ZoomFactor + m_CurrentY;
+
+        m_MoveIndex = -1;
+
+        for (int i = 0; i < m_Map->GetNumEntities(); i++) {
+          if (m_Map->GetEntity(i).x / m_Map->GetTileset().GetTileWidth() == tx
+           && m_Map->GetEntity(i).y / m_Map->GetTileset().GetTileHeight() == ty
+           && m_Map->GetEntity(i).layer == m_SelectedLayer) {
+             m_MoveIndex = i;
+             break;
+           }
+        }
+      } break;
+
       case tool_ObsSegment: {
         m_StartX = point.x / m_ZoomFactor + m_CurrentX * tile_width;
         m_StartY = point.y / m_ZoomFactor + m_CurrentY * tile_height;
@@ -1704,6 +1728,7 @@ CMapView::OnLButtonDown(UINT flags, CPoint point)
         Invalidate();
         m_Handler->MV_MapChanged();
       } break;
+
       case tool_ObsMoveSegmentPoint: {
         //Moves a point on an obstruction segment by deleting the segment
         //and creating a new one with the start point being the point not
@@ -1730,6 +1755,7 @@ CMapView::OnLButtonDown(UINT flags, CPoint point)
           return;
 		    }
       } break;
+
       case tool_ZoneAdd: {
         m_StartX = point.x / m_ZoomFactor + m_CurrentX * tile_width;
         m_StartY = point.y / m_ZoomFactor + m_CurrentY * tile_height;
@@ -1743,6 +1769,7 @@ CMapView::OnLButtonDown(UINT flags, CPoint point)
         m_RedrawPreviewLine = 1;
         Invalidate();
       } break;
+
       case tool_ZoneEdit: {
         int x = point.x / m_ZoomFactor + m_CurrentX * tile_width;
         int y = point.y / m_ZoomFactor + m_CurrentY * tile_height;
@@ -1773,6 +1800,7 @@ CMapView::OnLButtonDown(UINT flags, CPoint point)
         m_RedrawPreviewLine = 1;
         Invalidate();
       } break;
+
       case tool_ZoneDelete: {
         int x = point.x / m_ZoomFactor + m_CurrentX * tile_width;
         int y = point.y / m_ZoomFactor + m_CurrentY * tile_height;
@@ -1784,6 +1812,7 @@ CMapView::OnLButtonDown(UINT flags, CPoint point)
           m_Handler->MV_MapChanged();
         }
       } break;
+
     }
 
     // grab all mouse events until the user releases the button
@@ -1896,8 +1925,10 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
           Invalidate();
         }
       } break;
+
       case tool_ZoneDelete: {
       } break;
+
     }
   }
 
@@ -1910,7 +1941,8 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
     case tool_SelectTile:
     case tool_Paste:
     case tool_CopyEntity:
-    case tool_PasteEntity: {
+    case tool_PasteEntity:
+    case tool_MoveEntity: {
       int old_x = (m_CurrentCursorTileX - m_CurrentX) * tile_width;
       int old_y = (m_CurrentCursorTileY - m_CurrentY) * tile_height;
       RECT old_rect = { old_x, old_y, old_x + tile_width, old_y + tile_height };
@@ -1978,6 +2010,17 @@ CMapView::OnLButtonUp(UINT flags, CPoint point)
       EntityCopy(point);
     } break;
 
+    case tool_MoveEntity: {
+      if (m_MoveIndex != -1) {
+        int x = point.x / m_ZoomFactor + m_CurrentX;
+        int y = point.y / m_ZoomFactor + m_CurrentY;
+        m_Map->GetEntity(m_MoveIndex).x = x;
+        m_Map->GetEntity(m_MoveIndex).y = y;
+        m_MoveIndex = -1;
+        Invalidate();
+      }
+    } break;
+
     case tool_CopyArea: {
       // clear out the old area
       int old_x = (m_StartCursorTileX - m_CurrentX)   * zoom_tile_width;
@@ -2022,6 +2065,7 @@ CMapView::OnLButtonUp(UINT flags, CPoint point)
 
     case tool_ObsDeleteSegment: {
     } break;
+
     case tool_ZoneAdd: {
       if(m_MoveIndex != -1) {
         int x = point.x / m_ZoomFactor + m_CurrentX * tile_width;
@@ -2053,6 +2097,7 @@ CMapView::OnLButtonUp(UINT flags, CPoint point)
         m_Handler->MV_MapChanged();
       }
     } break;
+
     case tool_ZoneEdit: {
       if(m_MoveIndex != -1) {
         int x = point.x / m_ZoomFactor + m_CurrentX * tile_width;
@@ -2069,6 +2114,32 @@ CMapView::OnLButtonUp(UINT flags, CPoint point)
         m_Handler->MV_MapChanged();
       }
     } break;
+
+    case tool_ZoneMove: {
+      if(m_MoveIndex != -1) {
+        int x = point.x / m_ZoomFactor + m_CurrentX * tile_width;
+        int y = point.y / m_ZoomFactor + m_CurrentY * tile_height;
+        m_PreviewLineOn = 0;
+        if(flags & MK_CONTROL) {
+          x = RoundX(x);
+          y = RoundY(y);
+        }
+
+        sMap::sZone& z = m_Map->GetZone(m_MoveIndex);
+        int width = z.x2 - z.x1;
+        int height = z.y2 - z.y1;
+        z.x1 = x;
+        z.y1 = y;
+        z.x2 = x + width;
+        z.y2 = y + height;
+
+        m_PreviewBoxOn = 0;
+        m_RedrawWindow = 1;
+        Invalidate();
+        m_Handler->MV_MapChanged();
+      }
+    } break;
+
     case tool_ZoneDelete: {
     } break;
 

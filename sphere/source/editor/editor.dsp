@@ -1113,5 +1113,13 @@ SOURCE=..\common\WindowStyle.cpp
 SOURCE=..\common\WindowStyle.hpp
 # End Source File
 # End Group
+# Begin Source File
+
+SOURCE=.\resources\ico00001.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\resources\maptool_.ico
+# End Source File
 # End Target
 # End Project

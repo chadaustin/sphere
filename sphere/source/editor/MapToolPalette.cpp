@@ -21,11 +21,13 @@ CMapToolPalette::CMapToolPalette(CDocumentWindow* owner, IToolPaletteHandler* ha
   AddTool(IDI_MAPTOOL_PASTE,       "Paste Area");
   AddTool(IDI_MAPTOOL_COPYENTITY,  "Copy Entity");
   AddTool(IDI_MAPTOOL_PASTEENTITY, "Paste Entity");
+  AddTool(IDI_MAPTOOL_MOVEENTITY,  "Move Entity");
   AddTool(IDI_MAPTOOL_OBS_SEGMENT, "Obstruction Segment");
   AddTool(IDI_MAPTOOL_OBS_DELETE,  "Delete Obstruction Segment");
   AddTool(IDI_MAPTOOL_OBS_MOVE_PT, "Move Obstruction Segment Point");
   AddTool(IDI_MAPTOOL_ZONEADD,     "Add a Zone");
-  AddTool(IDI_MAPTOOL_ZONEEDIT,    "Move a Zone");
+  AddTool(IDI_MAPTOOL_ZONEEDIT,    "Edit a Zone");
+  AddTool(IDI_MAPTOOL_ZONEMOVE,    "Move a Zone");
   AddTool(IDI_MAPTOOL_ZONEDELETE,  "Delete a Zone");
 }
 

@@ -1402,6 +1402,8 @@ IDI_MAPTOOL_ZONEEDIT    ICON    DISCARDABLE     "maptool_zoneedit.ico"
 IDI_MAPTOOL_ZONEDELETE  ICON    DISCARDABLE     "maptool_zonedelete.ico"
 IDI_IMAGETOOL_SELECTION ICON    DISCARDABLE     "imagetool_selection.ico"
 IDI_IMAGETOOL_ELLIPSE   ICON    DISCARDABLE     "imagetool_ellipse.ico"
+IDI_MAPTOOL_ZONEMOVE    ICON    DISCARDABLE     "maptool_.ico"
+IDI_MAPTOOL_MOVEENTITY  ICON    DISCARDABLE     "maptool_moveentity.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -96,11 +96,13 @@ public:
     tool_Paste,
     tool_CopyEntity,
     tool_PasteEntity,
+    tool_MoveEntity,
     tool_ObsSegment,
     tool_ObsDeleteSegment,
 	  tool_ObsMoveSegmentPoint,
     tool_ZoneAdd,
     tool_ZoneEdit,
+    tool_ZoneMove,
     tool_ZoneDelete,
   };
 

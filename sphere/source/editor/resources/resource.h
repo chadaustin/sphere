@@ -87,6 +87,8 @@
 #define IDD_DIALOG1                     222
 #define IDD_DIALOG2                     223
 #define IDD_ROTATE                      225
+#define IDI_MAPTOOL_ZONEMOVE            228
+#define IDI_MAPTOOL_MOVEENTITY          229
 #define IDC_PROJECTNAME                 1000
 #define IDC_GAMETITLE                   1001
 #define IDC_BROWSE                      1003
@@ -470,7 +472,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        228
+#define _APS_NEXT_RESOURCE_VALUE        230
 #define _APS_NEXT_COMMAND_VALUE         40656
 #define _APS_NEXT_CONTROL_VALUE         1133
 #define _APS_NEXT_SYMED_VALUE           101
