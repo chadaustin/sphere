@@ -79,7 +79,7 @@ CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
 
   memset(&m_Keys, 0, sizeof(bool) * MAX_KEY);
 
-  for (int i = 0; i < 7; i++) {
+  for (int i = 0; i < 6; i++) {
     m_DefaultMapScripts[i] = NULL;
   }
 }
@@ -102,7 +102,7 @@ CMapEngine::~CMapEngine()
     m_RenderScript = NULL;
   }
 
-  for (int i = 0; i < 7; i++) {
+  for (int i = 0; i < 6; i++) {
     if (m_DefaultMapScripts[i]) {
       m_Engine->DestroyScript(m_DefaultMapScripts[i]);
       m_DefaultMapScripts[i] = NULL;
@@ -3910,7 +3910,7 @@ bool
 CMapEngine::UpdateColorMasks()
 {
   // update color masks
-  if (m_NumFrames != 0 && m_FramesLeft > 0) {
+  if (m_FramesLeft > 0 && m_NumFrames > 0) {
 
     m_CurrentColorMask.red   = (m_DestinationColorMask.red   * (m_NumFrames - m_FramesLeft) + m_PreviousColorMask.red   * m_FramesLeft) / m_NumFrames;
     m_CurrentColorMask.green = (m_DestinationColorMask.green * (m_NumFrames - m_FramesLeft) + m_PreviousColorMask.green * m_FramesLeft) / m_NumFrames;
