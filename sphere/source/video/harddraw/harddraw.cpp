@@ -1281,7 +1281,58 @@ inline void blendBGRA(BGRA& dest, RGBA source) {
 
 // todo: make these do something...
 
-EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask) { }
+////////////////////////////////////////////////////////////////////////////////
+
+template<typename pixelT>
+class render_pixel_mask
+{
+public:
+  render_pixel_mask(RGBA mask) : m_mask(mask) { }
+  void operator()(pixelT& dst, pixelT src, byte alpha)
+  {
+    // do the masking on the source pixel
+    alpha     = (int)alpha     * m_mask.alpha / 256;
+    src.red   = (int)src.red   * m_mask.red   / 256;
+    src.green = (int)src.green * m_mask.green / 256;
+    src.blue  = (int)src.blue  * m_mask.blue  / 256;
+
+    // blit to the dest pixel
+    dst.red   = (dst.red   * (256 - alpha) + src.red   * alpha) / 256;
+    dst.green = (dst.green * (256 - alpha) + src.green * alpha) / 256;
+    dst.blue  = (dst.blue  * (256 - alpha) + src.blue  * alpha) / 256;
+  }
+
+private:
+  RGBA m_mask;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask) {
+  // lock backbuffer
+  DDSURFACEDESC ddsd;
+  if ( GetLockedSurface(&ddsd) == false)
+    return;
+
+  if (BitsPerPixel == 32) {
+    BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+    primitives::Blit(
+      (BGRA*)screen_buffer,
+      ScreenWidth,
+      x,
+      y,
+      (BGRA*)image->locked_pixels,
+      image->alpha,
+      image->width,
+      image->height,
+      ClippingRectangle,
+      render_pixel_mask<BGRA>(mask)
+    );
+
+  }
+
+  ddSecondary->Unlock(NULL);  
+}
 
 EXPORT(void) DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels) { }
 
@@ -1333,30 +1384,6 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4]) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-
-template<typename pixelT>
-class render_pixel_mask
-{
-public:
-  render_pixel_mask(RGBA mask) : m_mask(mask) { }
-  void operator()(pixelT& dst, pixelT src, byte alpha)
-  {
-    // do the masking on the source pixel
-    alpha     = (int)alpha     * m_mask.alpha / 256;
-    src.red   = (int)src.red   * m_mask.red   / 256;
-    src.green = (int)src.green * m_mask.green / 256;
-    src.blue  = (int)src.blue  * m_mask.blue  / 256;
-
-    // blit to the dest pixel
-    dst.red   = (dst.red   * (256 - alpha) + src.red   * alpha) / 256;
-    dst.green = (dst.green * (256 - alpha) + src.green * alpha) / 256;
-    dst.blue  = (dst.blue  * (256 - alpha) + src.blue  * alpha) / 256;
-  }
-
-private:
-  RGBA m_mask;
-};
 
 EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask) {
 
