@@ -55,7 +55,7 @@ def BuildVC6Env():
     env['LIBSUFFIX'] = '.lib'
     env['SHLIBPREFIX'] = ''
     env['SHLIBSUFFIX'] = '.dll'
-    env.Append(CXXFLAGS = ['/GX', '/MD',
+    env.Append(CXXFLAGS = ['/GX', '/MD', '/W3',
                            '/Dfor=if (0) ; else for',
                            '/DWIN32',
                            '/D_WIN32',
