@@ -1,8 +1,8 @@
 #include <memory>
+#include <stdio.h>
 #include <string.h>
 #include "WindowStyle.hpp"
 #include "packed.hpp"
-
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -29,7 +29,9 @@ sWindowStyle::Create(int width, int height)
   for (int i = 0; i < 9; i++)
   {
     m_Bitmaps[i].Resize(width, height);
-    memset(m_Bitmaps[i].GetPixels(), 0, width * height * sizeof(RGBA));
+    if (m_Bitmaps[i].GetWidth() == width && m_Bitmaps[i].GetHeight() == height) {
+      memset(m_Bitmaps[i].GetPixels(), 0, width * height * sizeof(RGBA));
+    }
   }
 }
 
@@ -54,8 +56,9 @@ bool
 sWindowStyle::Load(const char* filename, IFileSystem& fs)
 {
   std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::read));
-  if (!file.get())
+  if (!file.get()) {
     return false;
+  }
 
   // read the header
   WINDOWSTYLE_HEADER header;
@@ -132,8 +135,11 @@ sWindowStyle::Import(const char* filename, RGBA transColor, IFileSystem& fs)
 
   int winWidth = image.GetWidth() / 3;
   int winHeight = image.GetHeight() / 3;
-  for (int i=0; i<9; i++)
+  for (int i=0; i<9; i++) {
     m_Bitmaps[i].Resize(winWidth, winHeight);
+    if (m_Bitmaps[i].GetWidth() != winWidth || m_Bitmaps[i].GetHeight() != winHeight)
+      return false;
+  }
 
   // now to check for transparent color
   RGBA transparent = transColor;
@@ -164,6 +170,8 @@ sWindowStyle::Import(const char* filename, RGBA transColor, IFileSystem& fs)
   CopyEdge(winWidth,   winHeight*2, winHeight*3, m_Bitmaps[5]);
   CopyEdge(winWidth*2, winHeight*2, winHeight*3, m_Bitmaps[4]);
 
+#undef CopyEdge
+
   return true;
 }
 
@@ -185,23 +193,36 @@ sWindowStyle::WriteBitmap(IFile* file, const CImage32* bitmap)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void
+bool
 sWindowStyle::ReadBitmap(IFile* file, CImage32* bitmap)
 {
   word w, h;
   file->Read(&w, 2);
   file->Read(&h, 2);
   bitmap->Resize(w, h);
-  file->Read(bitmap->GetPixels(), sizeof(RGBA) * w * h);
+  if (bitmap->GetWidth() != w || bitmap->GetHeight() != h)
+    return false;
+
+  if (file->Read(bitmap->GetPixels(), sizeof(RGBA) * w * h) != sizeof(RGBA) * w * h)
+    return false;
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void
+bool
 sWindowStyle::ReadBitmap(IFile* file, CImage32* bitmap, int edge_width)
 {
   bitmap->Resize(edge_width, edge_width);
-  file->Read(bitmap->GetPixels(), sizeof(RGBA) * edge_width * edge_width);
+  if (bitmap->GetWidth() != edge_width || bitmap->GetHeight() != edge_width)
+    return false;
+
+  if (file->Read(bitmap->GetPixels(), sizeof(RGBA) * edge_width * edge_width)
+     != sizeof(RGBA) * edge_width * edge_width)
+     return false;
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

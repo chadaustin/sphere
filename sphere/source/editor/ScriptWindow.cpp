@@ -505,6 +505,13 @@ CScriptWindow::OnFindReplace(WPARAM, LPARAM)
     int options = 0;
     options |= m_SearchDialog->MatchCase() ? SCFIND_MATCHCASE : 0;
     options |= m_SearchDialog->MatchWholeWord() ? SCFIND_WHOLEWORD : 0;
+    BOOL search_down = m_SearchDialog->SearchDown();
+
+    if (!search_down) {
+      ttf.chrg.cpMin = ttf.chrg.cpMin - 2; // selection_start - 1
+      ttf.chrg.cpMax = 0;
+    }
+
     if (SendEditor(SCI_FINDTEXT, options, (LPARAM)&ttf) == -1) {
       m_SearchDialog->MessageBox("No more matches!");
     } else {

@@ -66,8 +66,8 @@ public:
 
 private:
   static bool WriteBitmap(IFile* file, const CImage32* bitmap);
-  static void ReadBitmap(IFile* file, CImage32* bitmap);
-  static void ReadBitmap(IFile* file, CImage32* bitmap, int edge_width);
+  static bool ReadBitmap(IFile* file, CImage32* bitmap);
+  static bool ReadBitmap(IFile* file, CImage32* bitmap, int edge_width);
 
 private:
   CImage32 m_Bitmaps[9];
