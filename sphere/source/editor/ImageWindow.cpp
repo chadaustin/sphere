@@ -44,7 +44,11 @@ CImageWindow::CImageWindow(const char* image)
       return;
     }
   } else {
-    m_Image.Create(16, 16);
+    if (!m_Image.Create(16, 16)) {
+      AfxGetApp()->m_pMainWnd->MessageBox("Error: Could not create image");
+      delete this;
+      return;
+    }
   }
 
 
@@ -70,7 +74,6 @@ CImageWindow::CImageWindow(const char* image)
   OnSize(0, ClientRect.right, ClientRect.bottom);
 
   UpdateImageView();
-  UpdateToolBars();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -287,17 +290,21 @@ CImageWindow::AV_AlphaChanged(byte alpha)
 ////////////////////////////////////////////////////////////////////////////////
  
 void
-CImageWindow::ImageToolBarChanged(UINT id) {
-  if (m_Created)
+CImageWindow::OnToolCommand(UINT id) {
+  if (m_Created) {
     m_ImageView.OnToolChanged(id);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void
-CImageWindow::UpdateToolBars() {
-  AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_IMAGETOOLBAR, (WPARAM)this, (LPARAM)TRUE);
-  AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_MAPTOOLBAR,   (WPARAM)this, (LPARAM)FALSE);
+BOOL
+CImageWindow::IsToolCommandAvailable(UINT id) {
+  BOOL available = FALSE;
+  if (m_Created) {
+    available = m_ImageView.IsToolAvailable(id);
+  }
+  return available;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

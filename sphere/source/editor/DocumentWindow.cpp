@@ -28,7 +28,8 @@ END_MESSAGE_MAP()
 CDocumentWindow::CDocumentWindow(const char* document_path, int menu_resource, const CSize& min_size)
 : m_MenuResource(menu_resource)
 , m_MinSize(min_size)
-, m_DocumentType(0x0000)
+, m_IsActive(true)
+, m_DocumentType(0)
 {
   if (document_path) {
     strcpy(m_DocumentPath, document_path);
@@ -44,6 +45,7 @@ CDocumentWindow::~CDocumentWindow()
 {
   // this destructor can be called from a constructor, and the main window would
   // try to remove the window pointer before it was added
+  m_IsActive = false;
   AfxGetApp()->m_pMainWnd->PostMessage(WM_DW_CLOSING, 0, (LPARAM)this);
 }
 
@@ -252,32 +254,26 @@ CDocumentWindow::IsSaveable() const
   return false;
 }
 
+bool
+CDocumentWindow::IsActive() const
+{
+  return m_IsActive;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CDocumentWindow::ImageToolBarChanged(UINT id)
+CDocumentWindow::OnToolCommand(UINT id)
 {
 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void
-CDocumentWindow::MapToolBarChanged(UINT id)
+BOOL
+CDocumentWindow::IsToolCommandAvailable(UINT id)
 {
-
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void
-CDocumentWindow::UpdateToolBars()
-{
-  ImageToolBarChanged(GetMainWindow()->GetImageTool());
-  MapToolBarChanged(GetMainWindow()->GetMapTool());
-
-  AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_IMAGETOOLBAR, (WPARAM)NULL, (LPARAM)FALSE);
-  AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_MAPTOOLBAR,   (WPARAM)NULL, (LPARAM)FALSE);
+  return FALSE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -354,11 +350,13 @@ CDocumentWindow::OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactiv
   CMDIChildWnd::OnMDIActivate(activate, active_window, inactive_window);
   CFrameWnd* pFrame = (CFrameWnd*)AfxGetApp()->m_pMainWnd;
 
-  if (activate)
-    UpdateToolBars();
+  m_IsActive = (activate) ? true : false;
 
   if (activate)
   {
+    //OnToolCommand( ((CMainWindow*)pFrame)->GetImageTool() );
+    //OnToolCommand( ((CMainWindow*)pFrame)->GetMapTool() );
+
     // set the child menu resource and update the palette menu
     pFrame->SendMessage(WM_SET_CHILD_MENU, m_MenuResource);
 

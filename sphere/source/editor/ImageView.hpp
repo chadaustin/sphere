@@ -167,10 +167,9 @@ private:
   RGBA* GetFlatImageFromClipboard(int& width, int& height);
   RGBA* GetBitmapImageFromClipboard(int& width, int& height);
 
-private:
-  afx_msg void OnUpdateImageCommand(CCmdUI* cmdui);
 public:
   afx_msg void OnToolChanged(UINT id);
+  BOOL IsToolAvailable(UINT id);
 
 private:
   IImageViewHandler* m_Handler;

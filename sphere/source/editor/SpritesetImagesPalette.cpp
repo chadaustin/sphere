@@ -36,6 +36,7 @@ CSpritesetImagesPalette::CSpritesetImagesPalette(CDocumentWindow* owner, ISprite
 , m_BlitImage(NULL)
 {
   OnZoom(1);
+  UpdateScrollBar();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -49,7 +50,6 @@ CSpritesetImagesPalette::Destroy()
   RECT rect;
   GetWindowRect(&rect);
   Configuration::Set(KEY_SPRITESET_IMAGES_RECT, rect);
-
   Configuration::Set(KEY_SPRITESET_IMAGES_VISIBLE, IsWindowVisible() != FALSE);
 
   // destroy window

@@ -282,7 +282,7 @@ CMapWindow::TabChanged(int tab)
     m_TilesetEditView.ShowWindow(SW_SHOW);
   }
 
-  UpdateToolBars();
+  //UpdateToolBars();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -771,34 +771,34 @@ CMapWindow::OnMapSlideOther()
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 void
-CMapWindow::MapToolBarChanged(UINT id) {
-  m_MapView.OnToolChanged(id);
+CMapWindow::OnToolCommand(UINT id)
+{
+  if (m_Created) {
+    m_MapView.OnToolChanged(id);
+    m_TilesetEditView.OnToolChanged(id);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void
-CMapWindow::ImageToolBarChanged(UINT id) {
-  m_TilesetEditView.OnToolChanged(id);
-}
+BOOL
+CMapWindow::IsToolCommandAvailable(UINT id)
+{
+  BOOL available = FALSE;
 
-////////////////////////////////////////////////////////////////////////////////
-
-void
-CMapWindow::UpdateToolBars() {
   if (m_Created) {
     if (m_TabControl.GetCurSel() == 0) {
-      AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_IMAGETOOLBAR, (WPARAM)this, (LPARAM)FALSE);
-      AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_MAPTOOLBAR,   (WPARAM)this, (LPARAM)TRUE);
+      available = m_MapView.IsToolAvailable(id);
     }
     else {
-      AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_IMAGETOOLBAR, (WPARAM)this, (LPARAM)TRUE);
-      AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_MAPTOOLBAR,   (WPARAM)this, (LPARAM)FALSE);
+      available = m_TilesetEditView.IsToolAvailable(id);
     }
   }
+
+  return available;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

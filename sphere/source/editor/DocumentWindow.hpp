@@ -46,9 +46,10 @@ public:
   CPaletteWindow* GetPalette(int i) const;
 
   virtual bool IsSaveable() const;
-  virtual void ImageToolBarChanged(UINT id);
-  virtual void MapToolBarChanged(UINT id);
-  virtual void UpdateToolBars();
+
+  bool IsActive() const;
+  virtual void OnToolCommand(UINT id);
+  virtual BOOL IsToolCommandAvailable(UINT id);
 
 protected:
   BOOL Create(LPCTSTR class_name);
@@ -81,11 +82,13 @@ private:
   int   m_MenuResource;
   CSize m_MinSize;
 
+  bool m_IsActive;
+
   std::vector<CPaletteWindow*> m_AttachedPalettes;
 
   DECLARE_MESSAGE_MAP()
 
-	static BOOL DistributeAccelerator(CWnd*pWnd, MSG* pMsg);
+	static BOOL DistributeAccelerator(CWnd* pWnd, MSG* pMsg);
 public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };

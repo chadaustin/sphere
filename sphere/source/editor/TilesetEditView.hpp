@@ -39,6 +39,7 @@ public:
 
 public:
   void OnToolChanged(UINT id);
+  BOOL IsToolAvailable(UINT id);
 
 private:
   void UpdateImageView();

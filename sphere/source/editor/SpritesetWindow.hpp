@@ -31,8 +31,8 @@ public:
   CSpritesetWindow(const char* filename = NULL);
 
 private:
-  void ImageToolBarChanged(UINT id);
-  void UpdateToolBars();
+  void OnToolCommand(UINT id);
+  BOOL IsToolCommandAvailable(UINT id);
 
 private:
   void Create();

@@ -2573,3 +2573,24 @@ CImageView::OnToolChanged(UINT id)
 
 ////////////////////////////////////////////////////////////////////////////////
  
+BOOL
+CImageView::IsToolAvailable(UINT id)
+{
+  BOOL available = FALSE;
+
+  switch (id) {
+    case IDI_IMAGETOOL_PENCIL:        available = TRUE; break;
+    case IDI_IMAGETOOL_LINE:          available = TRUE; break;
+    case IDI_IMAGETOOL_RECTANGLE:     available = TRUE; break;
+    case IDI_IMAGETOOL_CIRCLE:        available = TRUE; break;
+    case IDI_IMAGETOOL_ELLIPSE:       available = TRUE; break;
+    case IDI_IMAGETOOL_FILL:          available = TRUE; break;
+    case IDI_IMAGETOOL_SELECTION:     available = TRUE; break;
+    case IDI_IMAGETOOL_FREESELECTION: available = TRUE; break;
+  }
+
+  return available;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+ 

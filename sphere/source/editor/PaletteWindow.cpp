@@ -62,23 +62,25 @@ CPaletteWindow::CreatePalette(CDocumentWindow* owner, const char* name, RECT rec
 #endif
 
   DWORD styles;
+  if (visible)
+    styles |= WS_VISIBLE;
 
 #ifndef USE_SIZECBAR
   switch (type) {
     case PWT_VSCROLL:
-      styles = WS_VISIBLE | WS_THICKFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_VSCROLL;
+      styles = WS_THICKFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_VSCROLL;
     break;
 
     default:
-      styles = WS_VISIBLE | WS_THICKFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN;
+      styles = WS_THICKFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN;
   }
 #else
   switch (type) {
     case PWT_VSCROLL:
-      styles = WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN | WS_VSCROLL;
+      styles = WS_CHILD | WS_CLIPCHILDREN | WS_VSCROLL;
     break;
     default:
-      styles = WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN;
+      styles = WS_CHILD | WS_CLIPCHILDREN;
   }
 #endif
 
@@ -131,7 +133,9 @@ CPaletteWindow::CreatePalette(CDocumentWindow* owner, const char* name, RECT rec
     0
   );
 
-	ShowWindow(SW_SHOW);
+  if (visible) {
+  	ShowWindow(SW_SHOW);
+  }
 #endif
 }
 

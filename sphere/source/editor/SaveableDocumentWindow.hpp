@@ -17,6 +17,10 @@ public:
   bool IsSaved() const;
   bool IsModified() const;
 
+public:
+  virtual void OnToolCommand(UINT id);
+  virtual BOOL IsToolCommandAvailable(UINT id);
+
 protected:
   void SetSaved(bool saved);
   void SetModified(bool modified);
@@ -25,10 +29,6 @@ protected:
   virtual void UpdateWindowCaption();
 
   virtual bool IsSaveable() const;
-
-  virtual void ImageToolBarChanged(UINT id);
-  virtual void MapToolBarChanged(UINT id);
-  virtual void UpdateToolBars();
 
   afx_msg void OnFileSave();
   afx_msg void OnFileSaveAs();

@@ -905,21 +905,6 @@ BEGIN
     END
 END
 
-IDR_SCRIPTVIEW MENU DISCARDABLE 
-BEGIN
-    POPUP "&ScriptView"
-    BEGIN
-        MENUITEM "&Undo",                       ID_SCRIPTVIEW_UNDO
-        MENUITEM SEPARATOR
-        MENUITEM "Cu&t",                        ID_SCRIPTVIEW_CUT
-        MENUITEM "&Copy",                       ID_SCRIPTVIEW_COPY
-        MENUITEM "&Paste",                      ID_SCRIPTVIEW_PASTE
-        MENUITEM "&Delete",                     ID_SCRIPTVIEW_DELETE
-        MENUITEM SEPARATOR
-        MENUITEM "Select &All",                 ID_SCRIPTVIEW_SELECTALL
-    END
-END
-
 IDR_SPRITESET_IMAGES_PALETTE MENU DISCARDABLE 
 BEGIN
     POPUP "Spriteset Images Palette"

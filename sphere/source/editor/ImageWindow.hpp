@@ -26,8 +26,8 @@ public:
   ~CImageWindow();
 
 private:
-  void ImageToolBarChanged(UINT id);
-  void UpdateToolBars();
+  void OnToolCommand(UINT id);
+  BOOL IsToolCommandAvailable(UINT id);
 
 private:
   void UpdateImageView();

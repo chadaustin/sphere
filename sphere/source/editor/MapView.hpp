@@ -89,6 +89,7 @@ private:
 
 public:
   void OnToolChanged(UINT id);
+  BOOL IsToolAvailable(UINT id);
 
 public:
   enum editMode {

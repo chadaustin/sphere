@@ -84,7 +84,7 @@ CMapView::CMapView()
     m_ZoomFactor = 1;
   }
 
-  s_MapAreaClipboardFormat = RegisterClipboardFormat("MapAreaSelection32");
+  s_MapAreaClipboardFormat   = RegisterClipboardFormat("MapAreaSelection32");
   s_MapEntityClipboardFormat = RegisterClipboardFormat("MapEntitySelection32");
   s_ClipboardFormat = RegisterClipboardFormat("FlatImage32");
   m_Clipboard = new CClipboard();
@@ -1021,10 +1021,20 @@ CMapView::EntityCopy(CPoint point)
   int tile_height = m_Map->GetTileset().GetTileHeight();
   int tx = m_CurrentX + (point.x / tile_width  / m_ZoomFactor);
   int ty = m_CurrentY + (point.y / tile_height / m_ZoomFactor);
-  int px = (tx * tile_width)  + (tile_width  / 2);
-  int py = (ty * tile_height) + (tile_height / 2);
-  
-  int entity_num = m_Map->FindEntity(px, py, m_SelectedLayer);
+  //int px = (tx * tile_width)  + (tile_width  / 2);
+  //int py = (ty * tile_height) + (tile_height / 2);
+
+  int entity_num = -1; // m_Map->FindEntity(px, py, m_SelectedLayer);
+
+  for (int i = 0; i < m_Map->GetNumEntities(); i++) {
+    if (m_Map->GetEntity(i).x / m_Map->GetTileset().GetTileWidth() == tx
+     && m_Map->GetEntity(i).y / m_Map->GetTileset().GetTileHeight() == ty
+     && m_Map->GetEntity(i).layer == m_SelectedLayer) {
+      entity_num = i;
+      break;
+    }
+  }  
+
   if (entity_num == -1) {
     return;
   }
@@ -1088,14 +1098,16 @@ CMapView::EntityCopy(CPoint point)
 
       // allocate memory and go!
       HGLOBAL memory = GlobalAlloc(GHND, mem_needed);
-      dword* ptr = (dword*)GlobalLock(memory);
-      *ptr++ = sEntity::TRIGGER;
-      *ptr++ = function_size;
-      char* c_ptr = (char*)ptr;
-      memcpy(c_ptr, trigger.script.c_str(), function_size);
+      if (memory != NULL) {
+        dword* ptr = (dword*)GlobalLock(memory);
+        *ptr++ = sEntity::TRIGGER;
+        *ptr++ = function_size;
+        char* c_ptr = (char*)ptr;
+        memcpy(c_ptr, trigger.script.c_str(), function_size);
       
-      GlobalUnlock(memory);
-      SetClipboardData(s_MapEntityClipboardFormat, memory);
+        GlobalUnlock(memory);
+        SetClipboardData(s_MapEntityClipboardFormat, memory);
+      }
     } break;
   }
 
@@ -1185,9 +1197,11 @@ CMapView::EntityPaste(CPoint point)
         int function_size = *ptr++;
         char* function_text = new char[function_size + 1];
         char* c_ptr = (char*)ptr;
-        memcpy(function_text, c_ptr, function_size);
-        function_text[function_size] = 0;
-        trigger.script = function_text;
+        if (function_text) {
+          memcpy(function_text, c_ptr, function_size);
+          function_text[function_size] = 0;
+          trigger.script = function_text;
+        }
 
         // pop the darn thing into the map
         m_Map->AddEntity(new sTriggerEntity(trigger));
@@ -2835,8 +2849,8 @@ CMapView::OnTimer(UINT event)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CMapView::OnToolChanged(UINT id) {
-
+CMapView::OnToolChanged(UINT id)
+{
   switch (id) {
     case IDI_MAPTOOL_1X1: m_CurrentTool = tool_1x1Tile; break;
     case IDI_MAPTOOL_3X3: m_CurrentTool = tool_3x3Tile; break;
@@ -2860,3 +2874,52 @@ CMapView::OnToolChanged(UINT id) {
 
   TP_ToolSelected(m_CurrentTool);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+BOOL
+CMapView::IsToolAvailable(UINT id)
+{
+  BOOL available = FALSE;
+
+  switch (id) {
+    case IDI_MAPTOOL_1X1: available = TRUE; break;
+    case IDI_MAPTOOL_3X3: available = TRUE; break;
+    case IDI_MAPTOOL_5X5: available = TRUE; break;
+    case IDI_MAPTOOL_SELECTTILE:   available = TRUE; break;
+    case IDI_MAPTOOL_FILLRECTAREA: available = TRUE; break;
+    case IDI_MAPTOOL_FILLAREA: available = TRUE; break;
+    case IDI_MAPTOOL_COPYAREA: available = TRUE; break;
+    case IDI_MAPTOOL_PASTE:
+      if (OpenClipboard() != FALSE) {
+        if (m_Clipboard->IsBitmapImageOnClipboard()
+          || m_Clipboard->IsFlatImageOnClipbard()
+          || IsClipboardFormatAvailable(s_MapAreaClipboardFormat)) {
+          available = TRUE;
+        }
+        CloseClipboard();
+      }      
+    break;
+    case IDI_MAPTOOL_COPYENTITY:  available = (m_Map->GetNumEntities() > 0) ? TRUE : FALSE; break;
+    case IDI_MAPTOOL_PASTEENTITY: 
+      if (OpenClipboard() != FALSE) {
+        if (IsClipboardFormatAvailable(s_MapEntityClipboardFormat)) {
+          available = TRUE;
+        }
+        CloseClipboard();
+      }      
+    break;
+    case IDI_MAPTOOL_MOVEENTITY:  available = (m_Map->GetNumEntities() > 0) ? TRUE : FALSE; break;
+    case IDI_MAPTOOL_OBS_SEGMENT: available = TRUE; break;
+    case IDI_MAPTOOL_OBS_DELETE:  available = (m_Map->GetLayer(m_SelectedLayer).GetObstructionMap().GetNumSegments() > 0) ? TRUE : FALSE; break;
+    case IDI_MAPTOOL_OBS_MOVE_PT: available = (m_Map->GetLayer(m_SelectedLayer).GetObstructionMap().GetNumSegments() > 0) ? TRUE : FALSE; break;
+    case IDI_MAPTOOL_ZONEADD:  available = TRUE; break;
+    case IDI_MAPTOOL_ZONEEDIT:   available = (m_Map->GetNumZones() > 0) ? TRUE : FALSE; break;
+    case IDI_MAPTOOL_ZONEMOVE:   available = (m_Map->GetNumZones() > 0) ? TRUE : FALSE; break;
+    case IDI_MAPTOOL_ZONEDELETE: available = (m_Map->GetNumZones() > 0) ? TRUE : FALSE; break;
+  }
+
+  return available;
+}
+
+////////////////////////////////////////////////////////////////////////////////

@@ -51,10 +51,12 @@ CSwatchPalette::CSwatchPalette(CDocumentWindow* owner, ISwatchPaletteHandler* ha
 , m_SelectedColor(0)
 , m_RightClickColor(0)
 {
+  /*
   RECT rect;
   GetClientRect(&rect);
   OnSize(0, rect.right, rect.bottom);
   UpdateScrollBar();
+  */
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -66,7 +68,6 @@ CSwatchPalette::Destroy()
   RECT rect;
   GetWindowRect(&rect);
   Configuration::Set(KEY_SWATCH_RECT, rect);
-
   Configuration::Set(KEY_SWATCH_VISIBLE, IsWindowVisible() != FALSE);
 
   DestroyWindow();

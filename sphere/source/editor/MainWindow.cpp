@@ -165,24 +165,25 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(IDI_IMAGETOOL_SELECTION, OnImageToolChanged)
   ON_COMMAND(IDI_IMAGETOOL_FREESELECTION, OnImageToolChanged)
 
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_1X1,    OnUpdateMapCommand)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_3X3,    OnUpdateMapCommand)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_5X5,    OnUpdateMapCommand)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_SELECTTILE,    OnUpdateMapCommand)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_FILLRECTAREA,    OnUpdateMapCommand)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_FILLAREA,    OnUpdateMapCommand)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_COPYAREA,    OnUpdateMapCommand)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_PASTE,    OnUpdateMapCommand)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_COPYENTITY,    OnUpdateMapCommand)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_PASTEENTITY,    OnUpdateMapCommand)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_MOVEENTITY,    OnUpdateMapCommand)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_OBS_SEGMENT,    OnUpdateMapCommand)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_OBS_DELETE,    OnUpdateMapCommand)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_OBS_MOVE_PT,    OnUpdateMapCommand)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZONEADD,    OnUpdateMapCommand)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZONEEDIT,    OnUpdateMapCommand)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZONEMOVE,    OnUpdateMapCommand)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZONEDELETE,    OnUpdateMapCommand)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_1X1,    OnUpdateMapCommand_IDI_MAPTOOL_1X1)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_3X3,    OnUpdateMapCommand_IDI_MAPTOOL_3X3)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_5X5,    OnUpdateMapCommand_IDI_MAPTOOL_5X5)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_SELECTTILE,   OnUpdateMapCommand_IDI_MAPTOOL_SELECTTILE)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_FILLRECTAREA, OnUpdateMapCommand_IDI_MAPTOOL_FILLRECTAREA)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_FILLAREA,     OnUpdateMapCommand_IDI_MAPTOOL_FILLAREA)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_COPYAREA,     OnUpdateMapCommand_IDI_MAPTOOL_COPYAREA)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_PASTE,        OnUpdateMapCommand_IDI_MAPTOOL_PASTE)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_COPYENTITY,   OnUpdateMapCommand_IDI_MAPTOOL_COPYENTITY)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_PASTEENTITY,  OnUpdateMapCommand_IDI_MAPTOOL_PASTEENTITY)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_MOVEENTITY,   OnUpdateMapCommand_IDI_MAPTOOL_MOVEENTITY)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_OBS_SEGMENT,  OnUpdateMapCommand_IDI_MAPTOOL_OBS_SEGMENT)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_OBS_DELETE,   OnUpdateMapCommand_IDI_MAPTOOL_OBS_DELETE)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_OBS_MOVE_PT,  OnUpdateMapCommand_IDI_MAPTOOL_OBS_MOVE_PT)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZONEADD,    OnUpdateMapCommand_IDI_MAPTOOL_ZONEADD)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZONEEDIT,   OnUpdateMapCommand_IDI_MAPTOOL_ZONEEDIT)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZONEMOVE,   OnUpdateMapCommand_IDI_MAPTOOL_ZONEMOVE)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZONEDELETE, OnUpdateMapCommand_IDI_MAPTOOL_ZONEDELETE)
+
   ON_COMMAND(IDI_MAPTOOL_1X1,    OnMapToolChanged)
   ON_COMMAND(IDI_MAPTOOL_3X3,    OnMapToolChanged)
   ON_COMMAND(IDI_MAPTOOL_5X5,    OnMapToolChanged)
@@ -218,8 +219,8 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_MESSAGE(WM_INSERT_PROJECT_FILE, OnInsertProjectFile)
   ON_MESSAGE(WM_REFRESH_PROJECT,     OnRefreshProject)	
 
-  ON_MESSAGE(WM_REFRESH_IMAGETOOLBAR, OnRefreshImageToolBar)
-  ON_MESSAGE(WM_REFRESH_MAPTOOLBAR,   OnRefreshMapToolBar)
+  // ON_MESSAGE(WM_REFRESH_IMAGETOOLBAR, OnRefreshImageToolBar)
+  // ON_MESSAGE(WM_REFRESH_MAPTOOLBAR,   OnRefreshMapToolBar)
 
   // document window messages
   ON_MESSAGE(WM_DW_CLOSING,          OnDocumentWindowClosing)
@@ -2023,6 +2024,21 @@ CMainWindow::OnUpdateWindowCloseAll(CCmdUI* cmdui)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+CDocumentWindow*
+CMainWindow::GetCurrentDocumentWindow()
+{
+  CDocumentWindow* dw = NULL;
+  for (unsigned int i = 0; i < m_DocumentWindows.size(); i++) {
+    if (m_DocumentWindows[i]->IsActive()) {
+      dw = m_DocumentWindows[i];
+      break;
+    }
+  }
+  return dw;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg UINT
 CMainWindow::GetImageTool()
 {
@@ -2067,24 +2083,23 @@ CMainWindow::GetMapTool()
 afx_msg void
 CMainWindow::OnUpdateImageCommand(CCmdUI* cmdui)
 {
-  // const unsigned int id = GetCurrentMessage()->wParam;
-
+  BOOL enable = FALSE;
   CWnd* pWindow = MDIGetActive();
-  if (pWindow == NULL)
-    cmdui->Enable(FALSE);
-  else
+  if (pWindow != NULL)
   {
-    // TODO: Replace WA_SAVEABLE with WA_TYPE == IMAGE or dw->CanUseImageToolbar()
     long userdata = GetWindowLong(pWindow->m_hWnd, GWL_USERDATA);
     if (userdata & WA_IMAGE
      || userdata & WA_FONT
      || userdata & WA_SPRITESET
      || userdata & WA_MAP) {
-      cmdui->Enable(TRUE);
+      CDocumentWindow* dw = GetCurrentDocumentWindow();
+      if (dw) {
+        enable = dw->IsToolCommandAvailable(IDI_IMAGETOOL_PENCIL);
+      }
     }
-    else
-      cmdui->Enable(FALSE);
   }
+
+  cmdui->Enable(enable);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2105,12 +2120,14 @@ CMainWindow::OnImageToolChanged()
 
   for (int i = 0; i < m_DocumentWindows.size(); i++) {
     CDocumentWindow* dw = m_DocumentWindows[i];
-    dw->ImageToolBarChanged(id);
+    //dw->ImageToolBarChanged(id);
+    dw->OnToolCommand(id);
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/*
 afx_msg LRESULT
 CMainWindow::OnRefreshImageToolBar(WPARAM wparam, LPARAM lparam)
 {
@@ -2118,12 +2135,12 @@ CMainWindow::OnRefreshImageToolBar(WPARAM wparam, LPARAM lparam)
    // todo: work out how to make it gray out the toolbar rather than just disallowing its use
   m_ImageToolBar.EnableWindow((BOOL) lparam);
   
-  /*
-  if (wparam != NULL) {
-    CDocumentWindow* dw = (CDocumentWindow*) wparam;
-    dw->ImageToolBarChanged(id);
-  }
-  */
+  ///
+  //if (wparam != NULL) {
+  //  CDocumentWindow* dw = (CDocumentWindow*) wparam;
+  //  dw->ImageToolBarChanged(id);
+  //}
+  ///
 
   for (int i = 0; i < m_DocumentWindows.size(); i++) {
     CDocumentWindow* dw = m_DocumentWindows[i];
@@ -2132,9 +2149,11 @@ CMainWindow::OnRefreshImageToolBar(WPARAM wparam, LPARAM lparam)
 
   return 0;
 }
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/*
 afx_msg LRESULT
 CMainWindow::OnRefreshMapToolBar(WPARAM wparam, LPARAM lparam)
 {
@@ -2153,26 +2172,53 @@ CMainWindow::OnRefreshMapToolBar(WPARAM wparam, LPARAM lparam)
 
   return 0;
 }
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
-CMainWindow::OnUpdateMapCommand(CCmdUI* cmdui)
+CMainWindow::OnUpdateMapCommand(CCmdUI* cmdui, UINT tool_id)
 {
-  // const unsigned int id = GetCurrentMessage()->wParam;
-
+  BOOL enable = FALSE;
   CWnd* pWindow = MDIGetActive();
-  if (pWindow == NULL)
-    cmdui->Enable(FALSE);
-  else
-  {
-    // TODO: Replace WA_SAVEABLE with WA_TYPE == MAP or dw->CanUseMapToolbar()
-    if (GetWindowLong(pWindow->m_hWnd, GWL_USERDATA) & WA_MAP)
-      cmdui->Enable(TRUE);
-    else
-      cmdui->Enable(FALSE);
+  if (pWindow != NULL) {
+    if (GetWindowLong(pWindow->m_hWnd, GWL_USERDATA) & WA_MAP) {
+      CDocumentWindow* dw = GetCurrentDocumentWindow();
+      if (dw) {
+        enable = dw->IsToolCommandAvailable(tool_id);
+      }
+    }
   }
+  cmdui->Enable(enable);
 }
+
+#define MAKE_UPDATE_MAP_COMMAND(tool_id)                 \
+afx_msg void                                             \
+CMainWindow::OnUpdateMapCommand_##tool_id(CCmdUI* cmdui) \
+{                                                        \
+  OnUpdateMapCommand(cmdui, tool_id);                    \
+}
+
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_1X1)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_3X3)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_5X5)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_SELECTTILE)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_FILLRECTAREA)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_FILLAREA)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_COPYAREA)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_PASTE)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_COPYENTITY)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_PASTEENTITY)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_MOVEENTITY)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_OBS_SEGMENT)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_OBS_DELETE)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_OBS_MOVE_PT)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZONEADD)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZONEEDIT)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZONEMOVE)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZONEDELETE)
+
+#undef MAKE_UPDATE_MAP_COMMAND
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2195,7 +2241,7 @@ CMainWindow::OnMapToolChanged()
 
   for (int i = 0; i < m_DocumentWindows.size(); i++) {
     CDocumentWindow* dw = m_DocumentWindows[i];
-    dw->MapToolBarChanged(id);
+    dw->OnToolCommand(id);
   }
 }
 

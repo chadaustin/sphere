@@ -10,7 +10,7 @@
 #include <afxext.h>
 #include "Project.hpp"
 #include "SwatchServer.hpp"
-
+#include "resource.h"
 
 class CDocumentWindow;  // DocumentWindow.hpp
 class CProjectWindow;   // ProjectWindow.hpp
@@ -131,14 +131,33 @@ private:
 	afx_msg void OnUpdatePaletteMenu(CCmdUI* cmdui);
 	afx_msg void OnUpdateViewProject(CCmdUI* cmdui);
 
-	//afx_msg void OnUpdateViewImageToolBar(CCmdUI* cmdui);
-	//afx_msg void OnUpdateViewMapToolBar(CCmdUI* cmdui);
-  //afx_msg void OnViewImageToolBar();
-  //afx_msg void OnViewMapToolBar();
-
   afx_msg void OnUpdateImageCommand(CCmdUI* cmdui);
   afx_msg void OnImageToolChanged();
-  afx_msg void OnUpdateMapCommand(CCmdUI* cmdui);
+  afx_msg void OnUpdateMapCommand(CCmdUI* cmdui, UINT id);
+
+#define DEFINE_UPDATE_MAP_COMMAND(tool_id) afx_msg void OnUpdateMapCommand_##tool_id(CCmdUI* cmdui);
+
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_1X1)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_3X3)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_5X5)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_SELECTTILE)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_FILLRECTAREA)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_FILLAREA)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_COPYAREA)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_PASTE)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_COPYENTITY)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_PASTEENTITY)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_MOVEENTITY)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_OBS_SEGMENT)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_OBS_DELETE)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_OBS_MOVE_PT)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZONEADD)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZONEEDIT)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZONEMOVE)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZONEDELETE)
+
+#undef DEFINE_UPDATE_MAP_COMMAND
+
   afx_msg void OnMapToolChanged();
 
 public:
@@ -146,12 +165,15 @@ public:
   afx_msg UINT GetMapTool();
 
 private:
+  CDocumentWindow* GetCurrentDocumentWindow();
+
+private:
   afx_msg LRESULT OnInsertProjectFile(WPARAM wparam, LPARAM lparam);
   afx_msg LRESULT OnRefreshProject(WPARAM wparam, LPARAM lparam);
 	afx_msg LRESULT OnCopyData(WPARAM wparam, LPARAM lparam);
 
-  afx_msg LRESULT OnRefreshImageToolBar(WPARAM wparam, LPARAM lparam);
-  afx_msg LRESULT OnRefreshMapToolBar(WPARAM wparam, LPARAM lparam);
+  //afx_msg LRESULT OnRefreshImageToolBar(WPARAM wparam, LPARAM lparam);
+  //afx_msg LRESULT OnRefreshMapToolBar(WPARAM wparam, LPARAM lparam);
 
   afx_msg LRESULT OnDocumentWindowClosing(WPARAM wparam, LPARAM lparam);
   afx_msg LRESULT OnSetChildMenu(WPARAM wparam, LPARAM lparam);

@@ -219,27 +219,7 @@ CSaveableDocumentWindow::UpdateProject()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void
-CSaveableDocumentWindow::ImageToolBarChanged(UINT id)
-{
-
+void CSaveableDocumentWindow::OnToolCommand(UINT id) { }
+BOOL CSaveableDocumentWindow::IsToolCommandAvailable(UINT id) {
+  return FALSE;
 }
-
-////////////////////////////////////////////////////////////////////////////////
-
-void
-CSaveableDocumentWindow::MapToolBarChanged(UINT id)
-{
-
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void
-CSaveableDocumentWindow::UpdateToolBars()
-{
-  AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_IMAGETOOLBAR, (WPARAM)this, (LPARAM)FALSE);
-  AfxGetApp()->m_pMainWnd->SendMessage(WM_REFRESH_MAPTOOLBAR,   (WPARAM)this, (LPARAM)FALSE);
-}
-
-////////////////////////////////////////////////////////////////////////////////

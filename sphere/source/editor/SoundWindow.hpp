@@ -32,6 +32,7 @@ private:
   CButton m_StopButton;
 
   CSliderCtrl m_VolumeBar;
+  //CSliderCtrl m_PositionBar;
   CStatic m_VolumeBarGraphic;
   CBitmap m_VolumeBarBitmap;
   CStatic m_Blank;

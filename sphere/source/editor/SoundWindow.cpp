@@ -8,7 +8,8 @@
 
 
 const int TIMER_UPDATE_SOUND_WINDOW = 987;
-const int ID_MUSIC_VOLUMEBAR = 40102;
+const int ID_MUSIC_VOLUMEBAR   = 40102;
+const int ID_MUSIC_POSITIONBAR = 40103;
 
 
 BEGIN_MESSAGE_MAP(CSoundWindow, CDocumentWindow)
@@ -70,6 +71,12 @@ CSoundWindow::CSoundWindow(const char* sound)
   m_VolumeBarGraphic.SetBitmap((HBITMAP)m_VolumeBarBitmap);
   m_Blank.Create(NULL, WS_CHILD | WS_VISIBLE, CRect(), this);
 
+/*
+  m_PositionBar.Create(WS_CHILD | WS_VISIBLE | TBS_HORZ, CRect(), this, ID_MUSIC_POSITIONBAR);
+  m_PositionBar.SetLineSize(20);
+  m_PositionBar.SetRange(0, 100, true);
+  m_PositionBar.SetPos(0);
+*/
 
   // make sure the buttons are in the right position
   RECT Rect;
@@ -93,10 +100,10 @@ afx_msg void
 CSoundWindow::OnSize(UINT type, int cx, int cy)
 {
   if (m_PlayButton.m_hWnd != NULL)
-    m_PlayButton.MoveWindow(CRect(0, 0, (cx-50) / 2, cy));
+    m_PlayButton.MoveWindow(CRect(0, 0, (cx-50) / 2, cy/*-25*/));
 
   if (m_StopButton.m_hWnd != NULL)
-    m_StopButton.MoveWindow(CRect((cx-50) / 2, 0, cx-50, cy));
+    m_StopButton.MoveWindow(CRect((cx-50) / 2, 0, cx-50, cy-25));
   
   if (m_VolumeBar.m_hWnd != NULL)
     m_VolumeBar.MoveWindow(CRect(cx-50, 0, cx-30, 90));
@@ -104,6 +111,11 @@ CSoundWindow::OnSize(UINT type, int cx, int cy)
     m_VolumeBarGraphic.MoveWindow(CRect(cx-30, 0, cx, 90));
   if (m_Blank.m_hWnd != NULL)
     m_Blank.MoveWindow(CRect(cx-50, 90, cx, cy));
+
+/*
+  if (m_PositionBar.m_hWnd != NULL)
+    m_PositionBar.MoveWindow(CRect(0, cy-25, cx, cy));
+*/
 
   CDocumentWindow::OnSize(type, cx, cy);
 }
@@ -193,7 +205,5 @@ CSoundWindow::OnUpdateRepeatCommand(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_Repeat);
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
