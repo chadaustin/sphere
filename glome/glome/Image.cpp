@@ -24,6 +24,11 @@ namespace sde {
       return m_buffer[(p.y*m_x)+p.x];
     }
 
+    inline RGBA* GetPixels()
+    {
+      return m_buffer;
+    }
+
   protected:
     u16 m_x, m_y;
     RGBA* m_buffer;
