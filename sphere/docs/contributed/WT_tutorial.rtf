@@ -339,7 +339,7 @@ There are basically two types of loops:    for loop and while loop.\par
   \cf2 var \cf5 a \cf4 =\cf5  \cf6 0\cf4 ;\par
   \cf2 var\cf4  \cf5 y\cf4  = \cf6 0\cf4 ;\cf5\par
   \par
-  while\cf2  \cf4 (\cf5 a < 10\cf4 )\cf5    \cf3 // If b is equal to 0...\par
+  while\cf2  \cf4 (\cf5 a < 10\cf4 )\cf3\par
 \cf4   \{\cf5\par
     main_font\cf4 .\cf5 drawText \cf4 (\cf6 0\cf4 ,\cf5  y\cf4 ,\cf5  a\cf4 );\par
     \cf5 a\cf4  ++;\par
@@ -605,8 +605,8 @@ Okay, go to your main script \cf1 (In my case, game.js) \cf5 Make sure you keep 
 \par
 \cf2 function\cf5  Text_Box \cf4 (\cf5 txt\cf4 )\cf5\par
 \cf4\{\cf5\par
-  win_main.drawWindow\cf4 (\cf6 16\cf4 ,\cf5  \cf6 16\cf4 ,\cf5 GetScreenWidth\cf4 ()-\cf6 32\cf4 ,\cf5 GetScreenHeight\cf4 ()-\cf6 192\cf4 );\cf5\par
-  fnt_main.drawTextBox\cf4 (\cf6 20\cf4 ,\cf5  \cf6 22\cf4 ,\cf5 GetScreenWidth\cf4 ()-\cf6 34\cf5 ,GetScreenHeight\cf4 ()-\cf6 202\cf4 ,\cf5  \cf6 0\cf4 ,\cf5  txt\cf4 );\cf5     \par
+  main_font.drawWindow\cf4 (\cf6 16\cf4 ,\cf5  \cf6 16\cf4 ,\cf5 GetScreenWidth\cf4 ()-\cf6 32\cf4 ,\cf5 GetScreenHeight\cf4 ()-\cf6 192\cf4 );\cf5\par
+  main_window.drawTextBox\cf4 (\cf6 20\cf4 ,\cf5  \cf6 22\cf4 ,\cf5 GetScreenWidth\cf4 ()-\cf6 34\cf5 ,GetScreenHeight\cf4 ()-\cf6 202\cf4 ,\cf5  \cf6 0\cf4 ,\cf5  txt\cf4 );\cf5     \par
   FlipScreen\cf4 ();\cf5   \par
   RenderMap\cf4 ();\cf5\par
 \par
@@ -898,7 +898,7 @@ Now for the status menu!\cf4\par
 \cf5       menu\cf4 .\cf5 addItem \cf4 (\cf5 Members\cf4 [\cf5 i\cf4 ].\cf5 name\cf4 ,\cf5  \cf2 new \cf5 Function\cf4 (\cf3 "Show_Stats("\cf4 +\cf5 i\cf4 +\cf3 ");"\cf5 ) \cf4 );\cf5  \cf4\par
 \pard\nowidctlpar     \}\par
   \}\par
-  \cf5 menu.execute \cf4 (\cf6 10\cf4 ,\cf5  \cf6 40\cf4 ,\cf5  \cf6 110\cf4 ,\cf5  \cf6 64\cf4 ); \par
+  \cf5 menu\cf4 .\cf5 execute \cf4 (\cf6 10\cf4 ,\cf5  \cf6 40\cf4 ,\cf5  \cf6 110\cf4 ,\cf5  \cf6 64\cf4 ); \par
 \}\cf1\par
 \par
 \cf5 So what's "new Function ("");"  ? Well, it's another hard one to explain, I don't know it to well, but that's the only way I know how to make the menu open up "i" from the for loop. You could do new function() \{  ShowStats (i);  \}  But that doesn't like to work for some reason... I suppose i'll just tell you it's the same thing, except what you write is in the "" of the Function, and to add the "i" you -have- to have the "+i+" bit.  So it's like this:    \cf2 new \cf5 Function\cf4 (\cf3 " ShowStats ("\cf5  \cf4 +\cf5  i \cf4 +\cf5  \cf3 "); "\cf4 );  \par
