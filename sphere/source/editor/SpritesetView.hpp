@@ -5,6 +5,7 @@
 #include <afxwin.h>
 #include "../common/Spriteset.hpp"
 #include "DIBSection.hpp"
+#include "Zoomer.hpp"
 
 class ISpritesetViewHandler
 {
@@ -87,7 +88,7 @@ private:
   
   CDIBSection* m_DrawBitmap;
 
-  double m_ZoomFactor;
+  Zoomer m_ZoomFactor;
   int m_MaxFrameWidth;
   int m_MaxFrameHeight;
 

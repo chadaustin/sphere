@@ -7,7 +7,6 @@ BEGIN_MESSAGE_MAP(CTilePreviewPalette, CPaletteWindow)
 
   ON_WM_PAINT()   
   ON_WM_RBUTTONUP()
-  ON_WM_ERASEBKGND()
 
 END_MESSAGE_MAP()
 
@@ -19,18 +18,9 @@ CTilePreviewPalette::CTilePreviewPalette(CDocumentWindow* owner, CImage32 image)
   Configuration::Get(KEY_TILE_PREVIEW_RECT),
   Configuration::Get(KEY_TILE_PREVIEW_VISIBLE))
 ,  m_Image(image)
-, m_ZoomFactor(1)
 , m_BlitImage(NULL)
 {
   OnZoom(1);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-BOOL
-CTilePreviewPalette::OnEraseBkgnd(CDC* pDC)
-{
-  return TRUE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -114,8 +104,8 @@ CTilePreviewPalette::OnPaint()
       for (int iy = 0; iy < blit_height; iy++) {
         for (int ix = 0; ix < blit_width; ix++)
         {
-          int ty = iy / m_ZoomFactor;
-          int tx = ix / m_ZoomFactor;
+          int ty = iy / m_ZoomFactor.GetZoomFactor();
+          int tx = ix / m_ZoomFactor.GetZoomFactor();
 
           // this here would crash if the tileset has been resized
           // and the spriteset animation palette hasn't been informed of the resize
@@ -135,8 +125,8 @@ CTilePreviewPalette::OnPaint()
       
       // blit the frame
       CDC* tile = CDC::FromHandle(m_BlitImage->GetDC());
-      dc.BitBlt(ClientRect.left + (tx * m_Image.GetWidth()) * m_ZoomFactor,
-			          ClientRect.top + (ty * m_Image.GetHeight()) * m_ZoomFactor,
+      dc.BitBlt(ClientRect.left + (tx * m_Image.GetWidth()) * m_ZoomFactor.GetZoomFactor(),
+			          ClientRect.top + (ty * m_Image.GetHeight()) * m_ZoomFactor.GetZoomFactor(),
                 ClientRect.right - ClientRect.left,
 						  	ClientRect.bottom - ClientRect.top,
                 tile, 0, 0, SRCCOPY);
@@ -165,13 +155,13 @@ CTilePreviewPalette::OnRButtonUp(UINT flags, CPoint point)
 
 afx_msg void
 CTilePreviewPalette::OnZoom(double zoom) {
-  m_ZoomFactor = zoom;
+  m_ZoomFactor.SetZoomFactor(zoom);
 
   if (m_BlitImage != NULL)
     delete m_BlitImage;
 
-	int width  = m_Image.GetWidth() * m_ZoomFactor;
-	int height = m_Image.GetHeight() * m_ZoomFactor; 
+	int width  = m_Image.GetWidth() * m_ZoomFactor.GetZoomFactor();
+	int height = m_Image.GetHeight() * m_ZoomFactor.GetZoomFactor(); 
 
   m_BlitImage = new CDIBSection(width, height, 32);
 

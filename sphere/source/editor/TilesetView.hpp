@@ -6,6 +6,7 @@
 #include <afxext.h>
 #include "DIBSection.hpp"
 #include "../common/Tileset.hpp"
+#include "Zoomer.hpp"
 
 class ITilesetViewHandler
 {
@@ -60,7 +61,7 @@ private:
 
   void SelectTileAtPoint(CPoint point);
   
-  void OnZoom(int zoom_factor);
+  void OnZoom(double zoom_factor);
   afx_msg void OnZoom1x();
   afx_msg void OnZoom2x();
   afx_msg void OnZoom4x();
@@ -82,7 +83,7 @@ private:
 
   int m_TopRow;
   int m_SelectedTile;
-  int m_ZoomFactor;
+  Zoomer m_ZoomFactor;
 
   CDIBSection* m_BlitTile;
 

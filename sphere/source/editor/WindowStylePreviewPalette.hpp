@@ -5,7 +5,7 @@
 #include "PaletteWindow.hpp"
 #include "DIBSection.hpp"
 #include "../common/WindowStyle.hpp"
-
+#include "Zoomer.hpp"
 
 class CDocumentWindow;
 
@@ -31,14 +31,13 @@ private:
   afx_msg void OnPaint();
   afx_msg void OnRButtonUp(UINT flags, CPoint point);
 	afx_msg void OnTimer(UINT event);
-  BOOL OnEraseBkgnd(CDC* pDC);
-
+  
   afx_msg void OnZoomIn();
   afx_msg void OnZoomOut();
 
 private:
   sWindowStyle* m_WindowStyle;
-	double m_ZoomFactor;
+	Zoomer m_ZoomFactor;
 
   CDIBSection* m_BlitImage;
   DECLARE_MESSAGE_MAP()

@@ -5,7 +5,7 @@
 #include "PaletteWindow.hpp"
 #include "DIBSection.hpp"
 #include "../common/Spriteset.hpp"
-
+#include "Zoomer.hpp"
 
 class CDocumentWindow;
 
@@ -23,13 +23,12 @@ private:
   afx_msg void OnPaint();
   afx_msg void OnRButtonUp(UINT flags, CPoint point);
 	afx_msg void OnTimer(UINT event);
-  BOOL OnEraseBkgnd(CDC* pDC);
 
   void ResetAnimation();
 
 private:
 	sSpriteset* m_Spriteset;    
-	double m_ZoomFactor;
+	Zoomer m_ZoomFactor;
 
 	int m_SelectedDirection;
 	int m_CurrentFrame;

@@ -5,6 +5,7 @@
 #include "PaletteWindow.hpp"
 #include "DIBSection.hpp"
 #include "../common/Image32.hpp"
+#include "Zoomer.hpp"
 
 
 class CDocumentWindow;
@@ -25,11 +26,10 @@ private:
   afx_msg void OnPaint();
   afx_msg void OnRButtonUp(UINT flags, CPoint point);
 	afx_msg void OnTimer(UINT event);
-  BOOL OnEraseBkgnd(CDC* pDC);
 
 private:
   CImage32 m_Image;
-	double m_ZoomFactor;
+	Zoomer m_ZoomFactor;
 
   CDIBSection* m_BlitImage;
   DECLARE_MESSAGE_MAP()

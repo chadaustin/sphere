@@ -21,10 +21,9 @@ CWindowStylePreviewPalette::CWindowStylePreviewPalette(CDocumentWindow* owner, s
   Configuration::Get(KEY_WINDOWSTYLE_PREVIEW_RECT),
   Configuration::Get(KEY_WINDOWSTYLE_PREVIEW_VISIBLE))
 ,  m_WindowStyle(windowstyle)
-, m_ZoomFactor(1)
 , m_BlitImage(NULL)
 {
-  OnZoom(m_ZoomFactor);
+  OnZoom(1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -92,8 +91,8 @@ CWindowStylePreviewPalette::DrawBitmap(CPaintDC& dc, int bitmap, int x, int y, i
   for (int iy = 0; iy < blit_height; iy++) {
     for (int ix = 0; ix < blit_width; ix++)
     {
-      int ty = iy / m_ZoomFactor;
-      int tx = ix / m_ZoomFactor;
+      int ty = iy / m_ZoomFactor.GetZoomFactor();
+      int tx = ix / m_ZoomFactor.GetZoomFactor();
 
       // this here would crash if the tileset has been resized
       // and the spriteset animation palette hasn't been informed of the resize
@@ -113,10 +112,10 @@ CWindowStylePreviewPalette::DrawBitmap(CPaintDC& dc, int bitmap, int x, int y, i
       
    // blit the frame
    CDC* tile = CDC::FromHandle(m_BlitImage->GetDC());
-   dc.BitBlt(ClientRect.left + x * m_ZoomFactor,
-			       ClientRect.top  + y * m_ZoomFactor,
-             m_Image.GetWidth()  * m_ZoomFactor,
-	  	 	 	   m_Image.GetHeight() * m_ZoomFactor,
+   dc.BitBlt(ClientRect.left + x * m_ZoomFactor.GetZoomFactor(),
+			       ClientRect.top  + y * m_ZoomFactor.GetZoomFactor(),
+             m_Image.GetWidth()  * m_ZoomFactor.GetZoomFactor(),
+	  	 	 	   m_Image.GetHeight() * m_ZoomFactor.GetZoomFactor(),
              tile, 0, 0, SRCCOPY);
 
 }
@@ -217,7 +216,7 @@ CWindowStylePreviewPalette::OnRButtonUp(UINT flags, CPoint point)
 
 afx_msg void
 CWindowStylePreviewPalette::OnZoom(double zoom) {
-  m_ZoomFactor = zoom;
+  m_ZoomFactor.SetZoomFactor(zoom);
 
   if (m_BlitImage != NULL)
     delete m_BlitImage;
@@ -233,8 +232,8 @@ CWindowStylePreviewPalette::OnZoom(double zoom) {
 	}
 
   if (width > 0 && height > 0) {
-    width *= m_ZoomFactor;
-    height *= m_ZoomFactor;
+    width *= m_ZoomFactor.GetZoomFactor();
+    height *= m_ZoomFactor.GetZoomFactor();
     m_BlitImage = new CDIBSection(width, height, 32);
   }
 
@@ -246,11 +245,8 @@ CWindowStylePreviewPalette::OnZoom(double zoom) {
 afx_msg void
 CWindowStylePreviewPalette::OnZoomIn()
 {
-  switch ((int)m_ZoomFactor) {
-    case 1: OnZoom(2); break;
-    case 2: OnZoom(4); break;
-    case 4: OnZoom(8); break;
-  }
+  m_ZoomFactor.ZoomIn();
+  OnZoom(m_ZoomFactor.GetZoomFactor());
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -258,11 +254,8 @@ CWindowStylePreviewPalette::OnZoomIn()
 afx_msg void
 CWindowStylePreviewPalette::OnZoomOut()
 {
-  switch ((int)m_ZoomFactor) {
-    case 2: OnZoom(1); break;
-    case 4: OnZoom(2); break;
-    case 8: OnZoom(4); break;
-  }
+  m_ZoomFactor.ZoomOut();
+  OnZoom(m_ZoomFactor.GetZoomFactor());
 }
 
 //////////////////////////////////////////////////////////////////////////////

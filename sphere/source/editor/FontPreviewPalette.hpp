@@ -5,6 +5,7 @@
 #include "PaletteWindow.hpp"
 #include "DIBSection.hpp"
 #include "../common/Font.hpp"
+#include "Zoomer.hpp"
 
 class CDocumentWindow;
 
@@ -30,7 +31,7 @@ private:
 
 private:
   sFont* m_Font;
-	double m_ZoomFactor;
+	Zoomer m_ZoomFactor;
   int m_RedrawCharacter;
   std::string m_Text;
 

@@ -5,10 +5,9 @@
 #include "PaletteWindow.hpp"
 #include "DIBSection.hpp"
 #include "../common/Spriteset.hpp"
-
+#include "Zoomer.hpp"
 
 class CDocumentWindow;
-
 
 struct ISpritesetImagesPaletteHandler
 {
@@ -66,7 +65,7 @@ private:
   sSpriteset* m_Spriteset;
 
   int m_TopRow;
-  double m_ZoomFactor;
+  Zoomer m_ZoomFactor;
 
   int m_SelectedImage;
   CDIBSection* m_BlitImage;

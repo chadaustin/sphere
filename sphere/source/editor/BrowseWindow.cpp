@@ -34,6 +34,9 @@ BEGIN_MESSAGE_MAP(CBrowseWindow, CDocumentWindow)
   ON_COMMAND(ID_BROWSE_REFRESH, OnBrowseListRefresh)
 	ON_COMMAND(ID_BROWSE_SETSIZE, OnBrowseSetBrowseSize)
 
+  ON_COMMAND(ID_FILE_ZOOM_IN, OnZoomIn)
+  ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
+
 END_MESSAGE_MAP()
 
 
@@ -43,7 +46,6 @@ CBrowseWindow::CBrowseWindow(const char* folder, const char* filter)
 : CDocumentWindow(folder, IDR_BROWSE, CSize(400, 100))
 , m_SelectedImage(0)
 , m_BlitTile(NULL)
-, m_ZoomFactor(1)
 , m_TopRow(0)
 , m_Created(false)
 {
@@ -54,8 +56,8 @@ CBrowseWindow::CBrowseWindow(const char* folder, const char* filter)
   m_ImageHeight = 100;
 
   m_BlitTile = new CDIBSection(
-    m_ImageWidth * m_ZoomFactor,
-    m_ImageHeight * m_ZoomFactor,
+    m_ImageWidth * m_ZoomFactor.GetZoomFactor(),
+    m_ImageHeight * m_ZoomFactor.GetZoomFactor(),
     32
   );
 
@@ -429,8 +431,8 @@ CBrowseWindow::OnPaint()
         for (int iy = 0; iy < blit_height; iy++)
           for (int ix = 0; ix < blit_width; ix++)
           {
-            int ty = iy / m_ZoomFactor;
-            int tx = ix / m_ZoomFactor;
+            int ty = iy / m_ZoomFactor.GetZoomFactor();
+            int tx = ix / m_ZoomFactor.GetZoomFactor();
             int t = ty * m_BrowseList[it]->GetWidth() + tx;
             
             int d = iy * blit_width + ix;
@@ -516,8 +518,8 @@ CBrowseWindow::OnMouseMove(UINT flags, CPoint point)
   GetClientRect(&client_rect);
   int num_tiles_x = client_rect.right / m_BlitTile->GetWidth();
 
-  int x = point.x / (m_BlitTile->GetWidth()  * m_ZoomFactor);
-  int y = point.y / (m_BlitTile->GetHeight() * m_ZoomFactor);
+  int x = point.x / (m_BlitTile->GetWidth()  * m_ZoomFactor.GetZoomFactor());
+  int y = point.y / (m_BlitTile->GetHeight() * m_ZoomFactor.GetZoomFactor());
 
   int tile = (m_TopRow + y) * num_tiles_x + x;
 
@@ -612,6 +614,40 @@ CBrowseWindow::GetNumRows()
 ///////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
+CBrowseWindow::OnZoomIn()
+{
+  m_ZoomFactor.ZoomIn();
+  OnZoom(m_ZoomFactor.GetZoomFactor());
+  Invalidate();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CBrowseWindow::OnZoomOut()
+{
+  m_ZoomFactor.ZoomOut();
+  OnZoom(m_ZoomFactor.GetZoomFactor());
+  Invalidate(); 
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void
+CBrowseWindow::OnZoom(double zoom_factor)
+{
+  m_ZoomFactor.SetZoomFactor(zoom_factor);
+
+  m_BlitTile = new CDIBSection(
+    m_ImageWidth * m_ZoomFactor.GetZoomFactor(),
+    m_ImageHeight * m_ZoomFactor.GetZoomFactor(),
+    32
+  );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
 CBrowseWindow::OnBrowseListRefresh() {
   m_FileList.clear();
   ClearBrowseList();
@@ -643,17 +679,11 @@ CBrowseWindow::OnBrowseSetBrowseSize() {
   	 && dialog.GetWidth()  >= 1
 		 && dialog.GetWidth()   < 4096
 		 && dialog.GetHeight() >= 1
-		 && dialog.GetHeight()  < 4096) {
-
-		  m_ImageWidth = dialog.GetWidth();
-		  m_ImageHeight = dialog.GetHeight();
-
-	    m_BlitTile = new CDIBSection(
-        m_ImageWidth * m_ZoomFactor,
-        m_ImageHeight * m_ZoomFactor,
-        32
-      );
-    
+		 && dialog.GetHeight()  < 4096)
+    {
+      m_ImageWidth = dialog.GetWidth();
+      m_ImageHeight = dialog.GetHeight();
+      OnZoom(m_ZoomFactor.GetZoomFactor()); 
 		  OnBrowseListRefresh();
 		}
 

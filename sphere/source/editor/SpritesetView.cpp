@@ -92,7 +92,6 @@ CSpritesetView::CSpritesetView()
 , m_CurrentFrame(0)
 
 , m_DrawBitmap(NULL)
-, m_ZoomFactor(1)
 , m_MaxFrameWidth(0)
 , m_MaxFrameHeight(0)
 
@@ -160,8 +159,8 @@ CSpritesetView::SetFrame(int frame)
 void
 CSpritesetView::SetZoomFactor(double zoom)
 {
-  m_ZoomFactor = zoom;
-	m_Handler->SV_ZoomFactorChanged(zoom);
+  m_ZoomFactor.SetZoomFactor(zoom);
+	m_Handler->SV_ZoomFactorChanged(m_ZoomFactor.GetZoomFactor());
   UpdateMaxSizes();
   Invalidate();
   UpdateScrollBars();
@@ -172,7 +171,7 @@ CSpritesetView::SetZoomFactor(double zoom)
 double
 CSpritesetView::GetZoomFactor() const
 {
-  return m_ZoomFactor;
+  return m_ZoomFactor.GetZoomFactor();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -192,8 +191,8 @@ void
 CSpritesetView::UpdateMaxSizes()
 {
   // apply the zoom ratio
-  m_MaxFrameWidth  = m_Spriteset->GetFrameWidth()  * m_ZoomFactor;
-  m_MaxFrameHeight = m_Spriteset->GetFrameHeight() * m_ZoomFactor;
+  m_MaxFrameWidth  = m_Spriteset->GetFrameWidth()  * m_ZoomFactor.GetZoomFactor();
+  m_MaxFrameHeight = m_Spriteset->GetFrameHeight() * m_ZoomFactor.GetZoomFactor();
 
   // update the draw bitmap
   delete m_DrawBitmap;
@@ -267,7 +266,7 @@ CSpritesetView::DrawFrame(HDC dc, int x, int y, int direction, int frame)
     HPEN old_pen = (HPEN)SelectObject(dc, new_pen);
     HBRUSH old_brush = (HBRUSH)SelectObject(dc, brush);
 
-    Rectangle(dc, x, y, x + sprite.GetWidth() * m_ZoomFactor, y + sprite.GetHeight() * m_ZoomFactor);
+    Rectangle(dc, x, y, x + sprite.GetWidth() * m_ZoomFactor.GetZoomFactor(), y + sprite.GetHeight() * m_ZoomFactor.GetZoomFactor());
 
     SelectObject(dc, old_pen);
     SelectObject(dc, old_brush);
@@ -293,10 +292,10 @@ CSpritesetView::UpdateDrawBitmap(int direction, int frame)
   for (int iy = 0; iy < dst_height; iy++)
     for (int ix = 0; ix < dst_width; ix++)
     {
-      if (ix < src_width * m_ZoomFactor && iy < src_height * m_ZoomFactor)
+      if (ix < src_width * m_ZoomFactor.GetZoomFactor() && iy < src_height * m_ZoomFactor.GetZoomFactor())
       {
-        int sx = ix / m_ZoomFactor;
-        int sy = iy / m_ZoomFactor;
+        int sx = ix / m_ZoomFactor.GetZoomFactor();
+        int sy = iy / m_ZoomFactor.GetZoomFactor();
         dst_pixels[iy * dst_width + ix].red   = src_pixels[sy * src_width + sx].red;
         dst_pixels[iy * dst_width + ix].green = src_pixels[sy * src_width + sx].green;
         dst_pixels[iy * dst_width + ix].blue  = src_pixels[sy * src_width + sx].blue;
@@ -309,7 +308,7 @@ CSpritesetView::UpdateDrawBitmap(int direction, int frame)
   HDC dc = m_DrawBitmap->GetDC();
   HPEN   old_pen   = (HPEN)SelectObject(dc, GetStockObject(WHITE_PEN));
   HBRUSH old_brush = (HBRUSH)SelectObject(dc, GetStockObject(NULL_BRUSH));
-  Rectangle(dc, 0, 0, src_width * m_ZoomFactor, src_height* m_ZoomFactor);
+  Rectangle(dc, 0, 0, src_width * m_ZoomFactor.GetZoomFactor(), src_height* m_ZoomFactor.GetZoomFactor());
   SelectObject(dc, old_pen);
   SelectObject(dc, old_brush);
 }

@@ -31,17 +31,8 @@ BEGIN_MESSAGE_MAP(CMapView, CScrollWindow)
   ON_WM_LBUTTONUP()
   ON_WM_RBUTTONUP()
 //  ON_WM_TIMER()
-  //ON_WM_ERASEBKGND()
 
 END_MESSAGE_MAP()
-
-/*
-BOOL
-CMapView::OnEraseBkgnd(CDC* pDC)
-{
-  return FALSE;
-}
-*/
 
 ////////////////////////////////////////////////////////////////////////////////
 

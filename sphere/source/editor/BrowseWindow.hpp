@@ -4,6 +4,7 @@
 #include <afxcmn.h>
 #include "DocumentWindow.hpp"
 #include "DIBSection.hpp"
+#include "Zoomer.hpp"
 
 #include <vector>
 #include <string>
@@ -47,6 +48,11 @@ private:
   afx_msg void OnMouseMove(UINT flags, CPoint point);
   afx_msg void OnVScroll(UINT code, UINT pos, CScrollBar* scroll_bar);
 
+  afx_msg void OnZoomIn();
+  afx_msg void OnZoomOut();
+
+  void OnZoom(double zoom_factor);
+
 private:
   void ClearBrowseList();
   bool LoadFile(const char* filename);
@@ -72,7 +78,7 @@ private:
 
   int m_TopRow;
   int m_SelectedImage;
-  double m_ZoomFactor;
+  Zoomer m_ZoomFactor;
 
 
   int m_ImageWidth;

@@ -43,7 +43,7 @@ CSpritesetImagesPalette::CSpritesetImagesPalette(CDocumentWindow* owner, ISprite
 , m_Handler(handler)
 , m_Spriteset(spriteset)
 , m_TopRow(0)
-, m_ZoomFactor(1)
+//, m_ZoomFactor(1)
 , m_SelectedImage(0)
 , m_BlitImage(NULL)
 {
@@ -83,7 +83,7 @@ CSpritesetImagesPalette::SetCurrentImage(int image)
 afx_msg void
 CSpritesetImagesPalette::SpritesetResized()
 {
-  OnZoom(m_ZoomFactor);
+  OnZoom(m_ZoomFactor.GetZoomFactor());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -149,8 +149,8 @@ CSpritesetImagesPalette::OnPaint()
         for (int iy = 0; iy < blit_height; iy++)
           for (int ix = 0; ix < blit_width; ix++)
           {
-            int ty = iy / m_ZoomFactor;
-            int tx = ix / m_ZoomFactor;
+            int ty = iy / m_ZoomFactor.GetZoomFactor();
+            int tx = ix / m_ZoomFactor.GetZoomFactor();
             int t = ty * m_Spriteset->GetFrameWidth() + tx;
             
             int d = iy * blit_width + ix;
@@ -238,13 +238,13 @@ CSpritesetImagesPalette::OnRButtonUp(UINT flags, CPoint point)
   HMENU menu_ = ::LoadMenu(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_SPRITESET_IMAGES_PALETTE));
   HMENU menu = GetSubMenu(menu_, 0);
 
-  if (m_ZoomFactor == 1) {
+  if (m_ZoomFactor.GetZoomFactor() == 1) {
     CheckMenuItem(menu, ID_SPRITESETIMAGESPALETTE_ZOOM_1X, MF_BYCOMMAND | MF_CHECKED);
-  } else if (m_ZoomFactor == 2) {
+  } else if (m_ZoomFactor.GetZoomFactor() == 2) {
     CheckMenuItem(menu, ID_SPRITESETIMAGESPALETTE_ZOOM_2X, MF_BYCOMMAND | MF_CHECKED);
-  } else if (m_ZoomFactor == 4) {
+  } else if (m_ZoomFactor.GetZoomFactor() == 4) {
     CheckMenuItem(menu, ID_SPRITESETIMAGESPALETTE_ZOOM_4X, MF_BYCOMMAND | MF_CHECKED);
-  } else if (m_ZoomFactor == 8) {
+  } else if (m_ZoomFactor.GetZoomFactor() == 8) {
     CheckMenuItem(menu, ID_SPRITESETIMAGESPALETTE_ZOOM_8X, MF_BYCOMMAND | MF_CHECKED);
   }
 
@@ -536,14 +536,14 @@ CSpritesetImagesPalette::OnSwap(int new_index)
 
 afx_msg void
 CSpritesetImagesPalette::OnZoom(double zoom) {
-  m_ZoomFactor = zoom;
+  m_ZoomFactor.SetZoomFactor(zoom);
 
   if (m_BlitImage != NULL)
     delete m_BlitImage;
 
   m_BlitImage = new CDIBSection(
-    m_Spriteset->GetFrameWidth() * m_ZoomFactor,
-    m_Spriteset->GetFrameHeight() * m_ZoomFactor,
+    m_Spriteset->GetFrameWidth() * m_ZoomFactor.GetZoomFactor(),
+    m_Spriteset->GetFrameHeight() * m_ZoomFactor.GetZoomFactor(),
     32
   );
 
@@ -556,11 +556,15 @@ CSpritesetImagesPalette::OnZoom(double zoom) {
 afx_msg void
 CSpritesetImagesPalette::OnZoomIn()
 {
+/*
   switch ((int)m_ZoomFactor) {
     case 1: OnZoom(2); break;
     case 2: OnZoom(4); break;
     case 4: OnZoom(8); break;
   }
+*/
+  m_ZoomFactor.ZoomIn();
+  OnZoom(m_ZoomFactor.GetZoomFactor());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -568,11 +572,15 @@ CSpritesetImagesPalette::OnZoomIn()
 afx_msg void
 CSpritesetImagesPalette::OnZoomOut()
 {
+/*
   switch ((int)m_ZoomFactor) {
     case 2: OnZoom(1); break;
     case 4: OnZoom(2); break;
     case 8: OnZoom(4); break;
   }
+*/
+  m_ZoomFactor.ZoomOut();
+  OnZoom(m_ZoomFactor.GetZoomFactor());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

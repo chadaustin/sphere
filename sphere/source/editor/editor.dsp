@@ -260,6 +260,10 @@ SOURCE=..\engine\win32\win32_sphere_config.cpp
 
 SOURCE=..\engine\win32\win32_sphere_config.hpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\Zoomer.hpp
+# End Source File
 # End Group
 # Begin Group "Resources"
 

@@ -10,7 +10,6 @@ BEGIN_MESSAGE_MAP(CSpritesetAnimationPalette, CPaletteWindow)
   ON_WM_PAINT()   
   ON_WM_RBUTTONUP()
   ON_WM_TIMER()
-  ON_WM_ERASEBKGND()
 
 END_MESSAGE_MAP()
 
@@ -23,7 +22,6 @@ CSpritesetAnimationPalette::CSpritesetAnimationPalette(CDocumentWindow* owner, s
   Configuration::Get(KEY_SPRITESET_ANIMATION_VISIBLE))
 , m_Spriteset(spriteset)
 , m_SelectedDirection(0) //m_SelectedDirection(-1)
-, m_ZoomFactor(1)
 , m_BlitImage(NULL)
 {
   OnZoom(1);
@@ -31,14 +29,6 @@ CSpritesetAnimationPalette::CSpritesetAnimationPalette(CDocumentWindow* owner, s
 	//init the animation timer
   m_Timer = SetTimer(ANIMATION_TIMER, Configuration::Get(KEY_SPRITESET_ANIMATION_DELAY), NULL);
 	ResetAnimation();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-BOOL
-CSpritesetAnimationPalette::OnEraseBkgnd(CDC* pDC)
-{
-  return TRUE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -128,8 +118,8 @@ CSpritesetAnimationPalette::OnPaint()
     for (int iy = 0; iy < blit_height; iy++) {
       for (int ix = 0; ix < blit_width; ix++)
       {
-        int ty = (int)(iy / m_ZoomFactor);
-        int tx = (int)(ix / m_ZoomFactor);
+        int ty = (int)(iy / m_ZoomFactor.GetZoomFactor());
+        int tx = (int)(ix / m_ZoomFactor.GetZoomFactor());
 
         // this here would crash if the spriteset has been resized
         // and the spriteset animation palette hasn't been informed of the resize
@@ -176,13 +166,13 @@ CSpritesetAnimationPalette::OnRButtonUp(UINT flags, CPoint point)
 
 afx_msg void
 CSpritesetAnimationPalette::OnZoom(double zoom) {
-  m_ZoomFactor = zoom;
+  m_ZoomFactor.SetZoomFactor(zoom);
 
   if (m_BlitImage != NULL)
     delete m_BlitImage;
 
-	int width  = m_Spriteset->GetFrameWidth() * m_ZoomFactor;
-	int height = m_Spriteset->GetFrameHeight() * m_ZoomFactor; 
+	int width  = m_Spriteset->GetFrameWidth() * m_ZoomFactor.GetZoomFactor();
+	int height = m_Spriteset->GetFrameHeight() * m_ZoomFactor.GetZoomFactor(); 
 
   m_BlitImage = new CDIBSection(width, height, 32);
 

@@ -24,7 +24,7 @@ CFontPreviewPalette::CFontPreviewPalette(CDocumentWindow* owner, sFont* font)
   Configuration::Get(KEY_FONT_PREVIEW_RECT),
   Configuration::Get(KEY_FONT_PREVIEW_VISIBLE))
 ,  m_Font(font)
-, m_ZoomFactor(1)
+//, m_ZoomFactor(1)
 , m_RedrawCharacter(-1)
 , m_BlitImage(NULL)
 {
@@ -122,8 +122,8 @@ CFontPreviewPalette::OnPaint()
       for (int iy = 0; iy < blit_height; iy++) {
         for (int ix = 0; ix < blit_width; ix++)
         {
-          int ty = iy / m_ZoomFactor;
-          int tx = ix / m_ZoomFactor;
+          int ty = iy / m_ZoomFactor.GetZoomFactor();
+          int tx = ix / m_ZoomFactor.GetZoomFactor();
 
           // this here would crash if the tileset has been resized
           // and the spriteset animation palette hasn't been informed of the resize
@@ -150,7 +150,7 @@ CFontPreviewPalette::OnPaint()
                 tile, 0, 0, SRCCOPY);
     }
 
-    offset_x += image.GetWidth() * m_ZoomFactor;
+    offset_x += image.GetWidth() * m_ZoomFactor.GetZoomFactor();
   }
 
   // draw black rectangle around tile
@@ -186,7 +186,7 @@ CFontPreviewPalette::OnRButtonUp(UINT flags, CPoint point)
 
 afx_msg void
 CFontPreviewPalette::OnZoom(double zoom) {
-  m_ZoomFactor = zoom;
+  m_ZoomFactor.SetZoomFactor(zoom);
 
   int width  = 0;
 	int height = 0; 
@@ -202,8 +202,8 @@ CFontPreviewPalette::OnZoom(double zoom) {
   }
 
   if (width > 0 && height > 0) {
-    width  *= m_ZoomFactor;
-    height *= m_ZoomFactor;
+    width  *= m_ZoomFactor.GetZoomFactor();
+    height *= m_ZoomFactor.GetZoomFactor();
 
     if (width > 0 && height > 0) {
       m_BlitImage = new CDIBSection(width, height, 32);
@@ -220,11 +220,8 @@ CFontPreviewPalette::OnZoom(double zoom) {
 afx_msg void
 CFontPreviewPalette::OnZoomIn()
 {
-  switch ((int)m_ZoomFactor) {
-    case 1: OnZoom(2); break;
-    case 2: OnZoom(4); break;
-    case 4: OnZoom(8); break;
-  }
+  m_ZoomFactor.ZoomIn();
+  OnZoom(m_ZoomFactor.GetZoomFactor());
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -232,11 +229,8 @@ CFontPreviewPalette::OnZoomIn()
 afx_msg void
 CFontPreviewPalette::OnZoomOut()
 {
-  switch ((int)m_ZoomFactor) {
-    case 2: OnZoom(1); break;
-    case 4: OnZoom(2); break;
-    case 8: OnZoom(4); break;
-  }
+  m_ZoomFactor.ZoomOut();
+  OnZoom(m_ZoomFactor.GetZoomFactor());
 }
 
 //////////////////////////////////////////////////////////////////////////////

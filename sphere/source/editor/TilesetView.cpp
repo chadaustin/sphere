@@ -92,7 +92,6 @@ CTilesetView::CTilesetView()
 , m_Tileset(NULL)
 , m_TopRow(0)
 , m_SelectedTile(0)
-, m_ZoomFactor(1)
 , m_BlitTile(NULL)
 , m_ShowTileObstructions(false)
 , m_MenuShown(false)
@@ -103,11 +102,13 @@ CTilesetView::CTilesetView()
   m_StartPoint.x = m_StartPoint.y = 0;
   m_CurPoint.x = m_CurPoint.y = 0;
 
-  m_ZoomFactor        = Configuration::Get(KEY_TILES_ZOOM_FACTOR);
+  double zoom = Configuration::Get(KEY_TILES_ZOOM_FACTOR);
 
-  if (m_ZoomFactor <= 0 || m_ZoomFactor >= 8) {
-    m_ZoomFactor = 1;
+  if (zoom <= 0 || zoom >= 8) {
+    zoom = 1;
   }
+
+  m_ZoomFactor.SetZoomFactor(zoom);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -130,8 +131,8 @@ CTilesetView::Create(ITilesetViewHandler* handler, CWnd* parent, sTileset* tiles
   m_Tileset = tileset;
   
   m_BlitTile = new CDIBSection(
-    m_Tileset->GetTileWidth()  * m_ZoomFactor,
-    m_Tileset->GetTileHeight() * m_ZoomFactor,
+    m_Tileset->GetTileWidth()  * m_ZoomFactor.GetZoomFactor(),
+    m_Tileset->GetTileHeight() * m_ZoomFactor.GetZoomFactor(),
     32
   );
 
@@ -212,8 +213,8 @@ CTilesetView::TileChanged(int tile)
 {
   RECT client_rect;
   GetClientRect(&client_rect);
-  int blit_width  = m_Tileset->GetTileWidth()  * m_ZoomFactor;
-  int blit_height = m_Tileset->GetTileHeight() * m_ZoomFactor;
+  int blit_width  = m_Tileset->GetTileWidth()  * m_ZoomFactor.GetZoomFactor();
+  int blit_height = m_Tileset->GetTileHeight() * m_ZoomFactor.GetZoomFactor();
   int num_tiles_x = client_rect.right / blit_width;
   if (num_tiles_x == 0)
     return;
@@ -253,8 +254,8 @@ CTilesetView::TilesetChanged()
   // resize blit tile if we must
   delete m_BlitTile;
   m_BlitTile = new CDIBSection(
-    m_Tileset->GetTileWidth()  * m_ZoomFactor,
-    m_Tileset->GetTileHeight() * m_ZoomFactor,
+    m_Tileset->GetTileWidth()  * m_ZoomFactor.GetZoomFactor(),
+    m_Tileset->GetTileHeight() * m_ZoomFactor.GetZoomFactor(),
     32
   );
 
@@ -681,8 +682,8 @@ CTilesetView::OnPaint()
         for (int py = 0; py < blit_height; py++)
           for (int px = 0; px < blit_width; px++)
           {
-            int ty = py / m_ZoomFactor;
-            int tx = px / m_ZoomFactor;
+            int ty = py / m_ZoomFactor.GetZoomFactor();
+            int tx = px / m_ZoomFactor.GetZoomFactor();
             int t = ty * m_Tileset->GetTileWidth() + tx;
             
             int d = py * blit_width + px;
@@ -897,8 +898,8 @@ CTilesetView::OnMouseMove(UINT flags, CPoint point)
     GetClientRect(&client_rect);
     int num_tiles_x = client_rect.right / m_BlitTile->GetWidth();
 
-    int x = point.x / (m_Tileset->GetTileWidth()  * m_ZoomFactor);
-    int y = point.y / (m_Tileset->GetTileHeight() * m_ZoomFactor);
+    int x = point.x / (m_Tileset->GetTileWidth()  * m_ZoomFactor.GetZoomFactor());
+    int y = point.y / (m_Tileset->GetTileHeight() * m_ZoomFactor.GetZoomFactor());
 
     int tile = (m_TopRow + y) * num_tiles_x + x;
 
@@ -934,13 +935,13 @@ CTilesetView::OnRButtonUp(UINT flags, CPoint point)
   HMENU menu_ = LoadMenu(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_TILESETVIEW));
   HMENU menu = GetSubMenu(menu_, 0);
 
-  if (m_ZoomFactor == 1) {
+  if (m_ZoomFactor.GetZoomFactor() == 1) {
     CheckMenuItem(menu, ID_TILESETVIEW_ZOOM_1X, MF_BYCOMMAND | MF_CHECKED);
-  } else if (m_ZoomFactor == 2) {
+  } else if (m_ZoomFactor.GetZoomFactor() == 2) {
     CheckMenuItem(menu, ID_TILESETVIEW_ZOOM_2X, MF_BYCOMMAND | MF_CHECKED);
-  } else if (m_ZoomFactor == 4) {
+  } else if (m_ZoomFactor.GetZoomFactor() == 4) {
     CheckMenuItem(menu, ID_TILESETVIEW_ZOOM_4X, MF_BYCOMMAND | MF_CHECKED);
-  } else if (m_ZoomFactor == 8) {
+  } else if (m_ZoomFactor.GetZoomFactor() == 8) {
     CheckMenuItem(menu, ID_TILESETVIEW_ZOOM_8X, MF_BYCOMMAND | MF_CHECKED);
   }
 
@@ -1282,7 +1283,7 @@ CTilesetView::OnViewTileObstructions()
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CTilesetView::OnZoom(int zoom_factor) {
+CTilesetView::OnZoom(double zoom_factor) {
 
 
   if (m_UsingMultiTileSelection) {
@@ -1291,17 +1292,17 @@ CTilesetView::OnZoom(int zoom_factor) {
     m_Handler->TV_TilesetSelectionChanged(GetTileSelectionWidth(), GetTileSelectionHeight(), GetTileSelection());
   }
 
-  m_ZoomFactor = zoom_factor;
+  m_ZoomFactor.SetZoomFactor(zoom_factor);
   delete m_BlitTile;
   m_BlitTile = new CDIBSection(
-    m_Tileset->GetTileWidth()  * m_ZoomFactor,
-    m_Tileset->GetTileHeight() * m_ZoomFactor,
+    m_Tileset->GetTileWidth()  * m_ZoomFactor.GetZoomFactor(),
+    m_Tileset->GetTileHeight() * m_ZoomFactor.GetZoomFactor(),
     32
   );
   UpdateScrollBar();
   Invalidate();
 
-  Configuration::Set(KEY_TILES_ZOOM_FACTOR, m_ZoomFactor);
+  Configuration::Set(KEY_TILES_ZOOM_FACTOR, m_ZoomFactor.GetZoomFactor());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1342,11 +1343,15 @@ afx_msg void
 CTilesetView::OnZoomIn()
 {
   //MessageBox("TilesetView::ZoomIn");
+/*
   switch ((int)m_ZoomFactor) {
     case 1: OnZoom(2); break;
     case 2: OnZoom(4); break;
     case 4: OnZoom(8); break;
   }
+*/
+  m_ZoomFactor.ZoomIn();
+  OnZoom(m_ZoomFactor.GetZoomFactor());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1355,11 +1360,15 @@ afx_msg void
 CTilesetView::OnZoomOut()
 {
   //MessageBox("TilesetView::ZoomOut");
+/*
   switch ((int)m_ZoomFactor) {
     case 2: OnZoom(1); break;
     case 4: OnZoom(2); break;
     case 8: OnZoom(4); break;
   }
+*/
+  m_ZoomFactor.ZoomOut();
+  OnZoom(m_ZoomFactor.GetZoomFactor());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -49,9 +49,6 @@ public:
   void AfterImageChanged();
 
 private:
-  BOOL OnEraseBkgnd(CDC* pDC);
-
-private:
   enum MergeMethod { Merge_Replace, Merge_Blend, Merge_IntoSelection };
 
   struct Image {
