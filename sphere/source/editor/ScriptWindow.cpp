@@ -348,6 +348,7 @@ CScriptWindow::LoadScript(const char* filename)
   if (file == NULL)
     return false;
 
+  /*
   // allocate a temporary storage buffer and read it
   char* buffer = new char[file_size + 1];
   if (buffer == NULL) return false;
@@ -363,13 +364,33 @@ CScriptWindow::LoadScript(const char* filename)
 
   // delete the buffer and close the file
   delete[] buffer;
+  */
+
+  int total_read = 0;
+  char status_text[1024] = {0};
+  sprintf (status_text, "%d%%...", (int)(((double)total_read / (double)file_size) * 100));
+  GetStatusBar()->SetWindowText(status_text);
+
+  while (!feof(file)) {
+    char buffer[4096] = {0};
+    int read_size = fread(buffer, sizeof(char), 4096, file);
+    if (read_size > 0) {
+      SendEditor(SCI_ADDTEXT, read_size, (LPARAM)buffer);
+      total_read += read_size;
+    }
+
+    sprintf (status_text, "%d%%...", (int)(((double)total_read / (double)file_size) * 100));
+    GetStatusBar()->SetWindowText(status_text);
+  }
+
+  sprintf (status_text, "%d%%...", (int)(((double)total_read / (double)file_size) * 100));
+  GetStatusBar()->SetWindowText(status_text);
+   
   fclose(file);
 
   SetModified(false);
   SendEditor(SCI_SETSAVEPOINT);
-
   SendEditor(SCI_EMPTYUNDOBUFFER);
-
   SendEditor(SCI_SETSEL,  0, 0);
 
   return true;
@@ -616,7 +637,8 @@ CScriptWindow::OnPosChanged(NMHDR* nmhdr, LRESULT* result) {
   int line = SendEditor(SCI_LINEFROMPOSITION, pos);
   SetLineNumber(line);
   if (m_SyntaxHighlighted)
-    UpdateBraceHighlight();
+    if (GetScriptType() == SCRIPT_TYPE_UNKNOWN || GetScriptType() == SCRIPT_TYPE_JS)
+      UpdateBraceHighlight();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -960,15 +982,18 @@ CScriptWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
 #if 1
 
   if (m_AllowAutoComplete && notify->ch != '\r' && notify->ch != '\n' && notify->ch != ' ') {
-    SendEditor(SCI_SETWORDCHARS, 0, (LPARAM)"_.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
-    int cur_pos  = SendEditor(SCI_GETCURRENTPOS);
-    int word_pos = SendEditor(SCI_WORDSTARTPOSITION, cur_pos);
-    int len = cur_pos - word_pos;
-    if (word_pos >= 0 && len > 0) {
-      SendEditor(SCI_AUTOCSHOW, cur_pos - word_pos, (LPARAM)sFunctionDefinitions);
-    }
+    if (GetScriptType() == SCRIPT_TYPE_UNKNOWN || GetScriptType() == SCRIPT_TYPE_JS)
+    {
+      SendEditor(SCI_SETWORDCHARS, 0, (LPARAM)"_.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+      int cur_pos  = SendEditor(SCI_GETCURRENTPOS);
+      int word_pos = SendEditor(SCI_WORDSTARTPOSITION, cur_pos);
+      int len = cur_pos - word_pos;
+      if (word_pos >= 0 && len > 0) {
+        SendEditor(SCI_AUTOCSHOW, cur_pos - word_pos, (LPARAM)sFunctionDefinitions);
+      }
 
-    SendEditor(SCI_SETCHARSDEFAULT);
+      SendEditor(SCI_SETCHARSDEFAULT);
+    }
   }
 
 #endif
