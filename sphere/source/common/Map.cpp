@@ -1290,6 +1290,14 @@ sMap::SwapLayers(int layer1, int layer2)
   }
 
   std::swap(m_Layers[layer1], m_Layers[layer2]);
+
+  for (unsigned int i = 0; i < m_Entities.size(); i++) {
+    if (m_Entities[i]->layer == layer1) {
+      m_Entities[i]->layer = layer2;
+    } else if (m_Entities[i]->layer == layer2) {
+      m_Entities[i]->layer = layer1;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1322,7 +1330,7 @@ sMap::DeleteEntity(int index)
 int
 sMap::FindEntity(int x, int y, int layer)
 {
-  for (unsigned i = 0; i < m_Entities.size(); i++)
+  for (unsigned int i = 0; i < m_Entities.size(); i++)
     if (m_Entities[i]->x == x &&
         m_Entities[i]->y == y &&
         m_Entities[i]->layer == layer)
@@ -1357,7 +1365,7 @@ sMap::DeleteZone(int index)
 int
 sMap::FindZone(int x, int y, int layer)
 {
-  for (unsigned i = 0; i < m_Zones.size(); i++)
+  for (unsigned int i = 0; i < m_Zones.size(); i++)
     if (x >= m_Zones[i].x1 &&
         y >= m_Zones[i].y1 &&
         x <= m_Zones[i].x2 &&
@@ -1428,7 +1436,7 @@ sMap::Translate(int dx, int dy, int layer_to_translate)
   bool startpoint = true;
 
   if (layer_to_translate == -1) {
-    for (unsigned j = 0; j < m_Layers.size(); j++) {
+    for (unsigned int j = 0; j < m_Layers.size(); j++) {
       m_Layers[j].Translate(dx, dy);
     }
   }
@@ -1443,8 +1451,8 @@ sMap::Translate(int dx, int dy, int layer_to_translate)
 
     int type = GetEntity(i).GetEntityType();
 
-    if (type == sEntity::PERSON  && persons  == true
-     || type == sEntity::TRIGGER && triggers == true) {
+    if ((type == sEntity::PERSON  && persons  == true)
+     || (type == sEntity::TRIGGER && triggers == true)) {
 
       int layer = GetEntity(i).layer;
       int layer_width = GetLayer(layer).GetWidth() * tile_width;

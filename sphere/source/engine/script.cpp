@@ -4317,7 +4317,7 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
       STRING_TO_JSVAL(JS_NewStringCopyZ(cx, spriteset->GetSpriteset().GetDirectionName(i))),
       JS_PropertyStub,
       JS_PropertyStub,
-      JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+      JSPROP_ENUMERATE | JSPROP_PERMANENT);
 
     // create the frames array
     int num_frames = spriteset->GetSpriteset().GetNumFrames(i);
