@@ -3309,11 +3309,20 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
       case COMMAND_MOVE_SOUTH:     p.y+=p.speed_y; break;
       case COMMAND_MOVE_WEST:      p.x-=p.speed_x; break;
       case COMMAND_DO_SCRIPT:        
+
+        std::string person_name = p.name;
+
         if (!ExecuteScript(c.script.c_str(), error)) {
     m_ErrorMessage = "Could not execute queued script\nPerson:" + p.description +
       "\nError:" + error;
         return false;
       }
+
+        // the script may have destroyed the person, so check to see that the person still exists
+        if (FindPerson(person_name.c_str()) != person_index) {
+          return true;
+        }
+
       break;
     }
 
