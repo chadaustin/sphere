@@ -1,3 +1,8 @@
+2003.02.18
+  - show the version number in the engine and editor windows as well
+    as the start menu
+  - integrated SDHawk's startup game
+
 2003.02.17
   - you can no longer add zones that have a width and height of zero
 

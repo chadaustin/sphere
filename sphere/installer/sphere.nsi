@@ -29,15 +29,15 @@ SetOutPath "$INSTDIR"
 File /r *.dll *.exe docs games startup system util
 
 ; set up start menu
-CreateDirectory "$SMPROGRAMS\Sphere"
-CreateShortCut "$SMPROGRAMS\Sphere\Run Sphere.lnk" "$INSTDIR\engine.exe"
-CreateShortCut "$SMPROGRAMS\Sphere\Configuration.lnk" "$INSTDIR\config.exe"
-CreateShortCut "$SMPROGRAMS\Sphere\Editor.lnk" "$INSTDIR\editor.exe"
-CreateDirectory "$SMPROGRAMS\Sphere\Documentation"
-CreateShortCut "$SMPROGRAMS\Sphere\Documentation\Sphere Web Site.lnk" "http://sphere.sourceforge.net"
-CreateShortCut "$SMPROGRAMS\Sphere\Documentation\AegisKnight's Site.lnk" "http://aegisknight.org/sphere"
-CreateShortCut "$SMPROGRAMS\Sphere\Documentation\Flik's Tutorial Site.lnk" "http://sphere.sourceforge.net/flik/docs"
-CreateShortCut "$SMPROGRAMS\Sphere\Documentation\Local Documentation.lnk" "$INSTDIR\docs"
+CreateDirectory "$SMPROGRAMS\Sphere 1.0"
+CreateShortCut "$SMPROGRAMS\Sphere 1.0\Run Sphere.lnk" "$INSTDIR\engine.exe"
+CreateShortCut "$SMPROGRAMS\Sphere 1.0\Configuration.lnk" "$INSTDIR\config.exe"
+CreateShortCut "$SMPROGRAMS\Sphere 1.0\Editor.lnk" "$INSTDIR\editor.exe"
+CreateDirectory "$SMPROGRAMS\Sphere 1.0\Documentation"
+CreateShortCut "$SMPROGRAMS\Sphere 1.0\Documentation\Sphere Web Site.lnk" "http://sphere.sourceforge.net"
+CreateShortCut "$SMPROGRAMS\Sphere 1.0\Documentation\AegisKnight's Site.lnk" "http://aegisknight.org/sphere"
+CreateShortCut "$SMPROGRAMS\Sphere 1.0\Documentation\Flik's Tutorial Site.lnk" "http://sphere.sourceforge.net/flik/docs"
+CreateShortCut "$SMPROGRAMS\Sphere 1.0\Documentation\Local Documentation.lnk" "$INSTDIR\docs"
 
 ; register file types
 WriteRegStr HKCR ".rfn" "" "SphereFont"
@@ -115,7 +115,7 @@ RMDir /r "$INSTDIR\docs"
 RMDir /r "$INSTDIR\startup"
 RMDir /r "$INSTDIR\system"
 RMDir /r "$INSTDIR\util"
-RMDir /r "$SMPROGRAMS\Sphere"
+RMDir /r "$SMPROGRAMS\Sphere 1.0"
 MessageBox MB_OK|MB_ICONEXCLAMATION "Games have not been deleted.  You must delete them yourself from $INSTDIR\games."
 SectionEnd ; end of uninstall section
 

@@ -171,7 +171,7 @@ CMainWindow::Create()
   // create the window
   CMDIFrameWnd::Create(
     AfxRegisterWndClass(0, NULL, NULL, LoadIcon(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDI_SDE))),
-    "Sphere Development Environment",
+    "Sphere " SPHERE_VERSION " Development Environment",
     WS_OVERLAPPEDWINDOW,
     rectDefault,
     NULL,

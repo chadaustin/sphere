@@ -7,6 +7,7 @@
 #include "win32_internal.hpp"
 #include "win32_input.hpp"
 #include "../sphere.hpp"
+#include "../../common/sphere_version.h"
 
 
 LRESULT CALLBACK SphereWindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -87,7 +88,7 @@ int __cdecl main(int argc, const char** argv)
 
   // create the sphere window
   SphereWindow = CreateWindow(
-    "SphereWindowClass", "Sphere",
+    "SphereWindowClass", "Sphere " SPHERE_VERSION,
     WS_CAPTION | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_SYSMENU,
     CW_USEDEFAULT, 0, CW_USEDEFAULT, 0,
     NULL, NULL, GetModuleHandle(NULL), NULL);
