@@ -243,6 +243,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Find...",                    ID_SCRIPT_FIND
         MENUITEM "&Replace...",                 ID_SCRIPT_REPLACE
+        MENUITEM "Change Font",                 ID_SCRIPT_CHANGE_FONT
     END
 END
 

@@ -13,6 +13,7 @@
 #include "Keys.hpp"
 #include "resource.h"
 
+#include <afxdlgs.h>
 
 const int ID_EDIT = 900;
 const UINT s_FindReplaceMessage = ::RegisterWindowMessage(FINDMSGSTRING);
@@ -26,6 +27,7 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_SCRIPT_CHECKSYNTAX,      OnScriptCheckSyntax)
   ON_COMMAND(ID_SCRIPT_FIND,             OnScriptFind)
   ON_COMMAND(ID_SCRIPT_REPLACE,          OnScriptReplace)
+  ON_COMMAND(ID_SCRIPT_CHANGE_FONT,      OnChangeScriptFont)
 
   ON_NOTIFY(SCN_SAVEPOINTREACHED, ID_EDIT, OnSavePointReached)
   ON_NOTIFY(SCN_SAVEPOINTLEFT,    ID_EDIT, OnSavePointLeft)
@@ -112,8 +114,7 @@ CScriptWindow::Create()
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CScriptWindow::Initialize()
-{
+CScriptWindow::SetScriptStyles(std::string fontface) {
   static const char key_words[] = 
     "break case catch continue default delete do else "
     "finally for function if in instanceof new return "
@@ -146,10 +147,10 @@ CScriptWindow::Initialize()
 
   SendEditor(SCI_SETPROPERTY, (WPARAM)"fold", (LPARAM)"1");
 
-  SetStyle(STYLE_DEFAULT, black, white, 10, "Verdana");
+  SetStyle(STYLE_DEFAULT, black, white, 10, fontface.c_str());
   SendEditor(SCI_STYLECLEARALL);
 
-  SetStyle(SCE_C_DEFAULT, black, white, 10, "Verdana");
+  SetStyle(SCE_C_DEFAULT, black, white, 10, fontface.c_str());
   SetStyle(SCE_C_COMMENT,     green);
   SetStyle(SCE_C_COMMENTLINE, green);
   SetStyle(SCE_C_COMMENTDOC,  green);
@@ -161,6 +162,15 @@ CScriptWindow::Initialize()
   SetStyle(SCE_C_OPERATOR,    purple);
   SetStyle(SCE_C_IDENTIFIER,  black);
   SetStyle(SCE_C_WORD2,       red);
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CScriptWindow::Initialize()
+{
+  SetScriptStyles("Verdana");
 
   SetLineNumber(0);
 }
@@ -517,3 +527,18 @@ CScriptWindow::SaveDocument(const char* path)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnChangeScriptFont()
+{
+  // Show the font dialog with all the default settings.
+  CFontDialog dlg;
+  if (dlg.DoModal() == IDOK) {
+
+    CString facename = dlg.GetFaceName();
+    // int size = dlg.GetSize();
+
+    SetScriptStyles(std::string(facename));
+  }
+
+}
