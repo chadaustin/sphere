@@ -946,12 +946,13 @@ log_object.endBlock()
 
   
   *** raw files ***
-  OpenRawFile(filename)
+  OpenRawFile(filename [, writeable])
     - opens a file with the filename. The file *must* exist and reside in the
       "other" directory of the game otherwise Sphere will give an error. 
       If the file is opened successfully, the function will return a rawfile
-      object.
-  
+      object. If the optional argument 'writeable' is true,
+      you will be able to write to the file.
+    
   rawfile_object.setPosition(position)
     - sets the position that the file will be read from
   
@@ -970,3 +971,4 @@ log_object.endBlock()
 
   rawfile_object.write(byte_array)
     - writes the byte array to the file at the current position
+      The file must have been opened as writeable for this to work.

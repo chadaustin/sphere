@@ -715,12 +715,16 @@ CGameEngine::CloseFile(CConfigFile* file)
 ////////////////////////////////////////////////////////////////////////////////
 
 IFile*
-CGameEngine::OpenRawFile(const char* filename)
+CGameEngine::OpenRawFile(const char* filename, bool writeable)
 {
+  int mode = IFileSystem::read;
   std::string path = "other/";
   path += filename;
 
-  return m_FileSystem.Open(path.c_str(), IFileSystem::read | IFileSystem::write);
+  if (writeable)
+    mode = IFileSystem::read | IFileSystem::write;
+
+  return m_FileSystem.Open(path.c_str(), mode);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

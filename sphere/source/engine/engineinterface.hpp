@@ -72,7 +72,7 @@ struct IEngine
   virtual CConfigFile* OpenFile(const char* filename) = 0;
   virtual void CloseFile(CConfigFile* file) = 0;
 
-  virtual IFile* OpenRawFile(const char* filename) = 0;
+  virtual IFile* OpenRawFile(const char* filename, bool writeable) = 0;
 
   std::vector<std::string> m_EvaluatedScripts;
   std::vector<std::string> m_EvaluatedSystemScripts;

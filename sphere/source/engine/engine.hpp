@@ -81,7 +81,7 @@ private:
   virtual CConfigFile* OpenFile(const char* filename);
   virtual void CloseFile(CConfigFile* file);
   
-  virtual IFile* OpenRawFile(const char* filename);
+  virtual IFile* OpenRawFile(const char* filename, bool writeable);
 
 private:
   struct SFileInfo {

@@ -1123,7 +1123,7 @@ CMapEngine::DestroyPerson(const char* name)
     }
   }
 
-  m_ErrorMessage = "Pperson '" + std::string(name) + "' doesn't exist";
+  m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
   return false;
 }
 

@@ -2948,8 +2948,13 @@ end_func()
 begin_func(OpenRawFile, 1)
   arg_str(filename);
 
+  bool writeable = false;
+  if (argc > 1) {
+    writeable = argBool(cx, argv[arg++]);
+  }
+
   // open file
-  IFile* file = This->m_Engine->OpenRawFile(filename);
+  IFile* file = This->m_Engine->OpenRawFile(filename, writeable);
   if (file == NULL) {
     JS_ReportError(cx, "Could not open raw file '%s'", filename);
     return JS_FALSE;
@@ -4571,9 +4576,15 @@ begin_method(SS_RAWFILE, ssRawFileWrite, 1)
   for (int i = 0; i < data->size; ++i)
     converted_data[i] = data->array[i];
 
-  object->file->Write(converted_data, data->size);
+  int wrote = object->file->Write(converted_data, data->size);
 
   delete[] converted_data;
+
+  if (wrote < data->size) { // error!
+    JS_ReportError(cx, "rawfile.write() failed miserably!");
+    return JS_FALSE;
+  }
+  
 end_method()
 
 ///////////////////////////////////////
