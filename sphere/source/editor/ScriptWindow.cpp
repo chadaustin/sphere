@@ -1535,18 +1535,76 @@ CScriptWindow::SaveDocument(const char* path)
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <algorithm>
+#include "../common/minmax.hpp"
+
+  struct Line {
+    char* data;
+    unsigned int size;
+  };
 
 afx_msg void
 CScriptWindow::OnScriptToolsSort()
 {
   struct Local {
-    static int compare(std::string a, std::string b) {
-      return strcmp((const char*) a.c_str(), (const char*) b.c_str());
+    static int compare(const struct Line* a, const struct Line* b) {
+      return (a->data != 0 && b->data != NULL) ? memcmp(a->data, b->data, std::min(a->size, b->size)) : 0;
     }
   };
 
-  std::vector<std::string> lines;
+  int selection_start = SendEditor(SCI_LINEFROMPOSITION, SendEditor(SCI_GETSELECTIONSTART));
+  int selection_end   = SendEditor(SCI_LINEFROMPOSITION, SendEditor(SCI_GETSELECTIONEND));
+
+  std::vector<struct Line*> lines;
+
+  for (unsigned int line_number = selection_start; line_number <= selection_end; line_number++) 
+  {
+    unsigned int line_index = lines.size();
+    struct Line* line_ptr = new struct Line;
+    if (!line_ptr)
+      continue;
+
+    lines.push_back(line_ptr);
+    if (line_index + 1 != lines.size()) {
+      delete line_ptr;
+      continue;
+    }
+
+    lines[line_index]->data = NULL;
+    lines[line_index]->size = 0;
+
+    int line_length = SendEditor(SCI_LINELENGTH, line_number);
+    if (line_length > 0) {
+      lines[line_index]->data = new char[line_length + 1];
+      if (lines[line_index]->data != NULL) {
+        lines[line_index]->size = line_length;
+        SendEditor(SCI_GETLINE, line_number, (LRESULT)lines[line_index]->data);
+        lines[line_index]->data[line_length] = '\0';
+      }
+    }
+  }
+
   std::sort(lines.begin(), lines.end(), Local::compare);
+
+  SendEditor(SCI_REPLACESEL, 0, (LRESULT)"");
+
+  for (unsigned int i = 0; i < lines.size(); i++) {
+    if (lines[i]->data) {
+      SendEditor(SCI_ADDTEXT, lines[i]->size, (LPARAM)lines[i]->data);
+    }
+  }
+
+  for (unsigned int i = 0; i < lines.size(); i++) {
+    if (lines[i]->data) {
+      delete[] lines[i]->data;
+      lines[i]->data = NULL;
+      lines[i]->size = 0;
+    }
+
+    delete lines[i];
+    lines[i] = NULL;
+  }
+
+  lines.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
