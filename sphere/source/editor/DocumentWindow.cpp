@@ -80,6 +80,9 @@ CDocumentWindow::GetFilename() const
 void
 CDocumentWindow::AttachPalette(CPaletteWindow* palette)
 {
+  if (palette == NULL)
+    return;
+
   m_AttachedPalettes.push_back(palette);
 #if 1
   m_AttachedPalettesStates.push_back(false);
@@ -91,7 +94,7 @@ CDocumentWindow::AttachPalette(CPaletteWindow* palette)
 void
 CDocumentWindow::DetachPalette(CPaletteWindow* palette)
 {
-  for (int i = 0; i < m_AttachedPalettes.size(); i++) {
+  for (int i = 0; i < int(m_AttachedPalettes.size()); i++) {
     if (m_AttachedPalettes[i] == palette) {
       m_AttachedPalettes.erase(m_AttachedPalettes.begin() + i);
 #if 1
@@ -167,7 +170,7 @@ CDocumentWindow::LoadPaletteStates()
 int
 CDocumentWindow::GetNumPalettes() const
 {
-  return m_AttachedPalettes.size();
+  return int(m_AttachedPalettes.size());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -384,7 +387,7 @@ CDocumentWindow::OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactiv
 
 #ifdef USE_SIZECBAR
     // have to create the bars 
-    for (int i = 0; i < m_AttachedPalettes.size(); i++) {
+    for (int i = 0; i < int(m_AttachedPalettes.size()); i++) {
       m_AttachedPalettes[i]->CreateBar(true);
     } 
     
@@ -410,7 +413,7 @@ CDocumentWindow::OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactiv
     }
 #else
     // display the palettes     
-    for (int i = 0; i < m_AttachedPalettes.size(); i++) {
+    for (int i = 0; i < int(m_AttachedPalettes.size()); i++) {
 #if 1 
       if (m_AttachedPalettesStates[i])
 #endif
@@ -429,14 +432,14 @@ CDocumentWindow::OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactiv
     CSizingControlBar::GlobalSaveState(pFrame, GetRuntimeClass()->m_lpszClassName);
 
     // have to remove the bars actually to free the IDs
-    for (int i = 0; i < m_AttachedPalettes.size(); i++) {
+    for (int i = 0; i < int(m_AttachedPalettes.size()); i++) {
       m_AttachedPalettes[i]->CreateBar(false);
     }
 
     pFrame->RecalcLayout();
 #else
     // hide the palettes
-    for (int i = 0; i < m_AttachedPalettes.size(); i++) {
+    for (int i = 0; i < int(m_AttachedPalettes.size()); i++) {
 #if 1
       m_AttachedPalettesStates[i] = m_AttachedPalettes[i]->IsVisible();
 #endif

@@ -8,7 +8,7 @@ Hinweis: © 2001 by Christian Rodemeyer
 \****************************************************************************/
 
 #include "MDITabs.h"
-#include <AFXPRIV.H>
+#include <afxpriv.h>
 #include <algorithm>
 #include <vector>
 
@@ -101,9 +101,9 @@ void CMDITabs::Update()
   TCITEM item;
   char text[256];
   item.pszText = text;
-  int i;
+  int i = GetItemCount();
 
-  for (i = GetItemCount(); i--;)  // for each tab
+  while ( i-- > 0 )  // for each tab
   {
     item.mask = TCIF_PARAM;
     GetItem(i, &item);

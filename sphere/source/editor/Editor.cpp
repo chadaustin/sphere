@@ -36,9 +36,11 @@ std::string GetSphereDirectory() {
 static CStatusBar* s_StatusBar = NULL;
 
 #ifdef USE_IRC
+/*
 #include "../../../http/irc.hpp"
 #include "../../../http/IRCWindow.hpp"
 static CIRCWindow* s_LogWindow = NULL;
+*/
 #endif
 
 // the repository of all registred instances
@@ -276,7 +278,6 @@ CEditorApplication::InitInstance()
   m_pMainWnd = main_window;
   g_MainWindow = main_window;
 
-
   if (m_Instances) {
     // register this instance 
 	  m_Instances->registerInstance(main_window->m_hWnd);
@@ -291,11 +292,13 @@ CEditorApplication::InitInstance()
   ParseCommandLine(cli);
 
 #ifdef USE_IRC
+/*
   s_LogWindow = new CIRCWindow(); // m_hInstance, "Sphere Log");
   if (s_LogWindow) {
     //s_LogWindow->AddString("Sphere Opened!");
     IRC(s_LogWindow);
   }
+*/
 #endif
 
   return TRUE;

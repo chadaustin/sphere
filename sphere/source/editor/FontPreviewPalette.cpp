@@ -65,6 +65,7 @@ void
 CFontPreviewPalette::Destroy()
 {
   delete m_BlitImage;
+  m_BlitImage = NULL;
 
   // save state
   RECT rect;
@@ -99,7 +100,7 @@ CFontPreviewPalette::OnPaint()
   int offset_x = 0;
   const char* text = m_Text.c_str();
 
-	for (int i = 0; i < strlen(text); i++)
+	for (int i = 0; i < int(strlen(text)); i++)
   {
     if ((int)text[i] < 0 || (int)text[i] >= m_Font->GetNumCharacters())
       continue;

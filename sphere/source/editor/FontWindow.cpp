@@ -114,6 +114,8 @@ CFontWindow::CFontWindow(const char* font)
 
 CFontWindow::~CFontWindow()
 {
+  if (m_FontPreviewPalette)
+		m_FontPreviewPalette->Destroy();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
