@@ -6,6 +6,8 @@
 #include "SoundWindow.hpp"
 #include "Editor.hpp"
 #include "translate.hpp"
+#include "Configuration.hpp"
+#include "Keys.hpp"
 #include "resource.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -55,14 +57,16 @@ END_MESSAGE_MAP()
 CSoundWindow::CSoundWindow(const char* sound)
 : CDocumentWindow(sound, IDR_SOUND, CSize(200, 120))
 {
+  m_PositionDown = false;
+
   m_CurrentSound = 0;
 
   m_Playing = false;
-  m_Repeat = false;
-  
-  m_PositionDown = false;
-  m_AutoAdvance  = true;
-  m_RandomOrder  = false;
+  m_Stopped = false;
+
+  m_Repeat = Configuration::Get(KEY_SOUND_REPEAT);
+  m_AutoAdvance  = Configuration::Get(KEY_SOUND_AUTOADVANCE);
+  m_RandomOrder  = Configuration::Get(KEY_SOUND_RANDOMORDER);
 
   Create(AfxRegisterWndClass(0, NULL, NULL, AfxGetApp()->LoadIcon(IDI_SOUND)));
 
@@ -95,7 +99,9 @@ CSoundWindow::CSoundWindow(const char* sound)
     m_PitchBar.SetLineSize(20);
   }
 
-  m_Playlist.AppendFile(sound);
+  if (sound != NULL) {
+    m_Playlist.AppendFile(sound);
+  }
 
   m_PlayButton.EnableWindow(TRUE);
   m_StopButton.EnableWindow(FALSE);
@@ -106,6 +112,9 @@ CSoundWindow::CSoundWindow(const char* sound)
   OnSize(0, Rect.right - Rect.left, Rect.bottom - Rect.top);
 
   DragAcceptFiles();
+
+  SetTimer(TIMER_UPDATE_SOUND_WINDOW, 100, NULL);
+  OnTimer(TIMER_UPDATE_SOUND_WINDOW);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -149,13 +158,9 @@ CSoundWindow::LoadSound(const char* sound)
     }
   }
 
-  // make sure the buttons are in the right position
   RECT Rect;
   GetClientRect(&Rect);
   OnSize(0, Rect.right - Rect.left, Rect.bottom - Rect.top);
-
-  SetTimer(TIMER_UPDATE_SOUND_WINDOW, 100, NULL);
-  OnTimer(TIMER_UPDATE_SOUND_WINDOW);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -208,8 +213,7 @@ CSoundWindow::OnTimer(UINT timerID)
     m_PlayButton.EnableWindow(FALSE);
     m_StopButton.EnableWindow(TRUE);
   }
-  else
-  {
+  else {
     if (m_Playing) {
       if (m_Playlist.GetNumFiles() > 1 && m_AutoAdvance) {
         if (NextSound()) {
@@ -225,7 +229,7 @@ CSoundWindow::OnTimer(UINT timerID)
         }
       }
     }
-    
+
     if (!m_Playing && !m_Stopped) {
       m_PlayButton.EnableWindow(TRUE);
       m_StopButton.EnableWindow(FALSE);     
@@ -317,7 +321,7 @@ CSoundWindow::OnSoundPlay()
   if (m_Sound.IsPlaying())
     return;
 
-  if ( !(m_CurrentSound >= 0 && m_CurrentSound < m_Playlist.GetNumFiles()) ) {
+  if ( m_CurrentSound < 0 || m_CurrentSound >= m_Playlist.GetNumFiles() ) {
     m_Playing = false;
     return;
   }
@@ -372,11 +376,11 @@ CSoundWindow::AdvanceSound(bool forward, bool allow_repeating)
     m_CurrentSound += delta;
 
     if (m_CurrentSound < 0) {
-      m_CurrentSound = (allow_repeating) ? (m_Playlist.GetNumFiles() - 1) : original_sound;
+      m_CurrentSound   = (!allow_repeating) ? original_sound : (m_Playlist.GetNumFiles() - 1);
     } 
     else {
       if (m_CurrentSound >= m_Playlist.GetNumFiles()) {
-        m_CurrentSound = (allow_repeating) ? 0 : original_sound;
+        m_CurrentSound = (!allow_repeating) ? original_sound : 0;
       } 
     }
   }
@@ -457,6 +461,7 @@ afx_msg void
 CSoundWindow::OnSoundRepeat()
 {
   m_Repeat = !m_Repeat;
+  Configuration::Set(KEY_SOUND_REPEAT, m_Repeat);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -532,6 +537,7 @@ afx_msg void
 CSoundWindow::OnAutoAdvance()
 {
   m_AutoAdvance = !m_AutoAdvance;
+  Configuration::Set(KEY_SOUND_AUTOADVANCE, m_AutoAdvance);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -548,6 +554,7 @@ afx_msg void
 CSoundWindow::OnRandomOrder()
 {
   m_RandomOrder = !m_RandomOrder;
+  Configuration::Set(KEY_SOUND_RANDOMORDER, m_RandomOrder);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

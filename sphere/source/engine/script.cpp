@@ -6111,7 +6111,10 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
   // create object
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
   if (object == NULL) {
-    sound->unref();
+    if (sound) sound->unref();
+#ifdef WIN32
+    if (midi)  midi->unref();
+#endif
     return NULL;
   }
 
@@ -6291,7 +6294,12 @@ end_method()
 */
 begin_method(SS_SOUND, ssSoundIsSeekable, 0)
   if (object->sound) return_bool(object->sound->isSeekable());
-  else return_bool(true);
+#ifdef WIN32
+  else
+  if (object->midi) return_bool(true);
+#endif
+  else
+  return_bool(false);
 end_method()
 
 ////////////////////////////////////////
