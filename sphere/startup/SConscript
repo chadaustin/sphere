@@ -4,18 +4,22 @@ Import('base_env BUILD_DIR')
 
 files = [
     'game.sgm',
-    'fonts/base.rfn',
-    'images/bot.png',
-    'images/down.png',
-    'images/fil.png',
-    'images/intro.jpeg',
-    'images/mid.png',
-    'images/top.png',
-    'images/up.png',
+    'Icons.txt',
+    'images/big_particle.png',
+    'images/Default.png',
+    'images/mouse.png',
+    'images/particle.png',
+    'images/small_particle.png',
+    'images/sphere2.png',
     'scripts/main.js',
-    'scripts/menu.js',
-    'sounds/intro.wav',
-    'windowstyles/base.rws']
+    'scripts/Icon.js',
+    'scripts/Normal.js',
+    'scripts/Particle.js',
+    'scripts/ParticleDefine.js',
+    'scripts/Quick.js',
+    'sounds/intro.mp3',
+    'windowstyles/window.rws',
+    'windowstyles/swindow.rws']
 
 for f in files:
     base_env.Install(

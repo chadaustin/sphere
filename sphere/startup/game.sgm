@@ -1,4 +1,6 @@
-name=startup
+author=SDHawk
+description=My entry for the Sphere 1.0 new Startup Game Compo!
+name=Sphere Startup
 screen_height=240
 screen_width=320
 script=main.js
