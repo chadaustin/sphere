@@ -1075,17 +1075,23 @@ CMapEngine::SetPersonDirection(const char* name, const char* direction)
     return false;
   }
 
+  Person& p = m_Persons[person];
+
   // if person has a leader, ignore the command
-  if (m_Persons[person].leader != -1) {
+  if (p.leader != -1) {
     return true;
   }
 
-  if (m_Persons[person].spriteset->GetSpriteset().GetDirectionNum(direction) == -1) {
+  if (p.spriteset->GetSpriteset().GetDirectionNum(direction) == -1) {
     m_ErrorMessage = "Person '" + std::string(name) + "' direction '" + std::string(direction) + "' doesn't exist";
     return false;
   }
 
-  m_Persons[person].direction = direction;
+  p.direction = direction;
+  
+  // make sure 'stepping' is valid
+  p.stepping %= p.spriteset->GetSpriteset().GetNumFrames(p.direction);
+
   return true;
 }
 
@@ -2462,6 +2468,10 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
     }
 
+    // make sure 'stepping' is valid
+    p.stepping %= p.spriteset->GetSpriteset().GetNumFrames(p.direction);
+
+
     // check for obstructions
     int obs_person;
     if (IsObstructed(person_index, p.x, p.y, obs_person)) {
@@ -2521,7 +2531,6 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
     // frame index
     if (--p.next_frame_switch <= 0) {
-      //p.frame = (p.frame + 1) % p.spriteset->GetSpriteset().GetNumFrames(p.direction);
       p.stepping = (p.stepping + 1) % p.spriteset->GetSpriteset().GetNumFrames(p.direction);
       p.frame = p.spriteset->GetSpriteset().GetFrameIndex(p.direction, p.stepping);
       p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.stepping);
@@ -2650,6 +2659,9 @@ CMapEngine::UpdateFollower(int person_index)
   p.layer     = p.follow_state_queue[0].layer;
   p.direction = p.follow_state_queue[0].direction;
 
+  // make sure 'stepping' is valid
+  p.stepping %= p.spriteset->GetSpriteset().GetNumFrames(p.direction);
+
   // update the follow state
   for (int i = 0; i < (int)p.follow_state_queue.size() - 1; i++) {
     p.follow_state_queue[i] = p.follow_state_queue[i + 1];
@@ -2663,7 +2675,6 @@ CMapEngine::UpdateFollower(int person_index)
 
   // frame index
   if (--p.next_frame_switch <= 0) {
-    //p.frame = (p.frame + 1) % p.spriteset->GetSpriteset().GetNumFrames(p.direction);
     p.stepping = (p.stepping + 1) % p.spriteset->GetSpriteset().GetNumFrames(p.direction);
     p.frame = p.spriteset->GetSpriteset().GetFrameIndex(p.direction, p.stepping);
     p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.stepping);
