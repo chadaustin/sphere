@@ -4,6 +4,7 @@
 #include "unix_time.h"
 #include "unix_input.h"
 #include "unix_internal.h"
+#include <string>
 
 /*! \file unix_video.cpp
   This is a modified version of standard32.cpp
@@ -66,10 +67,13 @@ void ToggleFPS () {
 
 
 
+static std::string window_title;
 /*
  \brief change the title of the game to text
  */
 bool SetWindowTitle(const char* text) {
+  // SDL forgets the title when going to/from fullscreen, so remember it
+  window_title = text;
   SDL_WM_SetCaption(text, NULL);
   return true;
 }
@@ -91,12 +95,14 @@ bool SwitchResolution (int x, int y, bool fullscreen) {
     // Clean up on exit, exit on window close and interrupt
     atexit(SDL_Quit);
 
-   InitializeInput();
-   initialized = true;
+    InitializeInput();
+    initialized = true;
   } else {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
     if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
+
+    SetWindowTitle(window_title.c_str()); // keep the window title as what it was
   }
 
   if (fullscreen)

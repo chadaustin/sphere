@@ -5,7 +5,7 @@
 #include <deque>
 #include <iostream>
 
-static std::deque<Uint8> keys;
+static std::deque<Uint8> key_queue;
 
 const int total_keys = 78;
 static Uint8 KeyMapping[total_keys] = {
@@ -92,13 +92,16 @@ static Uint8 KeyMapping[total_keys] = {
 static bool key_buffer[total_keys];
 
 void InitializeInput() {
-  memset(key_buffer, 0, total_keys);
+  memset(key_buffer, 0, sizeof(bool) * total_keys);
 }
 
 bool RefreshInput () {
   SDL_Event event;
   int result;
   Uint8 key = 0;
+
+  //SDL_EnableKeyRepeat(1, 100);
+  //SDL_ShowCursor(0);
 
   while (result = SDL_PollEvent(&event)) {
     if (event.type == SDL_QUIT)
@@ -129,7 +132,7 @@ bool RefreshInput () {
       if (key != 0) {
         if (event.type == SDL_KEYDOWN) {
           //std::cerr << "down: " << (int)key << std::endl;
-          keys.push_back(key);
+          key_queue.push_back(key);
           key_buffer[key] = true;
           
           switch(key) {
@@ -141,7 +144,6 @@ bool RefreshInput () {
             case KEY_F11:
               ToggleFPS();
             break;
-
             case KEY_F12:
               ShouldTakeScreenshot = true;
             break;
@@ -170,23 +172,23 @@ bool IsKeyPressed (int key) {
 
 void GetKeyStates (bool keys[MAX_KEY]) {
   for (int i = 0; i < MAX_KEY; ++i) {
-    keys[i] = IsKeyPressed(i);
+    keys[i] = key_buffer[i];
   }
 }
 
 bool AreKeysLeft () {
   RefreshInput();
-  return !keys.empty();
+  return !key_queue.empty();
 }
 
 int GetKey () {
   int key;
 
-  while (keys.empty()) {
+  while (key_queue.empty()) {
     RefreshInput();
   }
-  key = keys.front();
-  keys.pop_front();
+  key = key_queue.front();
+  key_queue.pop_front();
   return key;
 }
 

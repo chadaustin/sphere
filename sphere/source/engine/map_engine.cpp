@@ -3822,7 +3822,7 @@ CMapEngine::ProcessInput()
   RefreshInput();
   bool new_keys[MAX_KEY];
   GetKeyStates(new_keys);
-
+  
   // clear the key queue
   while (AreKeysLeft()) {
     GetKey();
@@ -3830,6 +3830,7 @@ CMapEngine::ProcessInput()
 
   // check to see if key state has changed
   for (int i = 0; i < MAX_KEY; i++) {
+
     if (new_keys[i] != m_Keys[i]) {
 
       if (new_keys[i]) {                // event: key down
@@ -3962,7 +3963,6 @@ CMapEngine::ProcessUnboundKeyDown(int key)
 
     case KEY_ESCAPE: {
       m_ShouldExit = true;
-      fprintf(stderr, "Exit map engine\n");
     } break;
 
 
