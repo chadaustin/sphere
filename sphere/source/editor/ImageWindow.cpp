@@ -9,6 +9,9 @@
 
 #define ID_ALPHASLIDER 900
 
+#ifdef USE_SIZECBAR
+IMPLEMENT_DYNAMIC(CImageWindow, CMDIChildWnd)
+#endif
 
 BEGIN_MESSAGE_MAP(CImageWindow, CSaveableDocumentWindow)
 

@@ -37,6 +37,8 @@ public:
 	
 	void ViewPalette(int paletteNum);	
 
+	CProjectWindow * GetProjectWindow() {return m_ProjectWindow;}
+
 private:
   bool AddToDirectory(const char* pathname, const char* sub_directory);
   bool CheckDirectory(const char* filename, const char* sub_directory);
@@ -90,6 +92,8 @@ private:
 
   afx_msg void OnFileSaveAll();
 
+	afx_msg void OnViewProject();
+
   afx_msg void OnProjectInsertMap();
   afx_msg void OnProjectInsertSpriteset();
   afx_msg void OnProjectInsertScript();
@@ -113,6 +117,7 @@ private:
   afx_msg void OnHelpFliksSite();
   afx_msg void OnHelpLocalDocumentation();
   afx_msg void OnHelpAbout();
+	
 
   afx_msg BOOL OnNeedText(UINT id, NMHDR* nmhdr, LRESULT* result);
 
@@ -122,6 +127,7 @@ private:
   afx_msg void OnUpdateSaveAllCommand(CCmdUI* cmdui);
   afx_msg void OnUpdateWindowCloseAll(CCmdUI* cmdui);
 	afx_msg void OnUpdatePaletteMenu(CCmdUI* cmdui);
+	afx_msg void OnUpdateViewProject(CCmdUI* cmdui);
 
   afx_msg LRESULT OnInsertProjectFile(WPARAM wparam, LPARAM lparam);
   afx_msg LRESULT OnRefreshProject(WPARAM wparam, LPARAM lparam);

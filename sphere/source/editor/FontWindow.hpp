@@ -17,6 +17,9 @@ class CFontWindow
 , private IColorViewHandler
 , private IAlphaViewHandler
 {
+#ifdef USE_SIZECBAR
+	DECLARE_DYNAMIC(CFontWindow)
+#endif
 public:
   CFontWindow(const char* font = NULL);
   ~CFontWindow();

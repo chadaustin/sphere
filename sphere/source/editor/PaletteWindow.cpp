@@ -50,7 +50,15 @@ CPaletteWindow::CreatePalette(CDocumentWindow* owner, const char* name, RECT rec
 #ifdef USE_SIZECBAR
   m_pBarParent = NULL;
   m_Name = name;
-  m_PaletteNumber = owner->GetNumPalettes();
+	
+	if (owner)
+	{
+		m_PaletteNumber = owner->GetNumPalettes();
+	}
+	else
+	{
+		m_PaletteNumber = -1;
+	}
 #endif
 
   DWORD styles;
@@ -74,7 +82,10 @@ CPaletteWindow::CreatePalette(CDocumentWindow* owner, const char* name, RECT rec
   }
 #endif
 
-  owner->AttachPalette(this);
+	if (owner)
+	{
+		owner->AttachPalette(this);
+	}
 
   // make sure the palette is visible!
   if (rect.right <= rect.left ||
@@ -153,7 +164,10 @@ CVScrollPaletteWindow::CVScrollPaletteWindow(CDocumentWindow* owner, const char*
 
 CPaletteWindow::~CPaletteWindow()
 {
-  m_Owner->DetachPalette(this);
+	if (m_Owner)
+	{
+		m_Owner->DetachPalette(this);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////

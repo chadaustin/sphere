@@ -2,6 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by editor.rc
 //
+
 #define IDR_MAIN                        101
 #define IDD_NEW_PROJECT                 103
 #define IDR_TOOLBAR                     106
@@ -513,7 +514,7 @@
 #define ID_MAPVIEW_VIEWANIMATIONS       40657
 #define ID_FILE_BROWSE                  40658
 #define ID_BROWSE_REFRESH               40660
-#define ID_ACCELERATOR40672             40672
+#define ID_VIEW_PROJECT                 40661
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects

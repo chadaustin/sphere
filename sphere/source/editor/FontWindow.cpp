@@ -21,6 +21,9 @@
 #define ALPHA_WIDTH      32
 #define SCROLLBAR_HEIGHT 16
 
+#ifdef USE_SIZECBAR
+IMPLEMENT_DYNAMIC(CFontWindow, CMDIChildWnd)
+#endif
 
 BEGIN_MESSAGE_MAP(CFontWindow, CSaveableDocumentWindow)
 

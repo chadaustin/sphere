@@ -1,4 +1,5 @@
 #include "DocumentWindow.hpp"
+#include "MainWindow.hpp"
 #include "WindowCommands.hpp"
 #include "PaletteWindow.hpp"
 #include "resource.h"
@@ -283,7 +284,11 @@ CDocumentWindow::OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactiv
     
     if (m_AttachedPalettes.size() > 0)
     {
+			// the project palette should stay visible/invisible
+			CPaletteWindow * pProjectWindow = (CPaletteWindow*)((CMainWindow*)pFrame)->GetProjectWindow();
+			bool bProjectVisible = pProjectWindow->IsVisible();
       LoadPaletteStates();
+			pProjectWindow->ShowPalette(bProjectVisible);
     }
 #else
     // display the palettes     

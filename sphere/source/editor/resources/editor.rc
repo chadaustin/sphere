@@ -125,6 +125,7 @@ BEGIN
     BEGIN
         MENUITEM "&Tool Bar",                   ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+        MENUITEM "&Project",                    ID_VIEW_PROJECT
         POPUP "&Palettes"
         BEGIN
             MENUITEM "...",                         ID_VIEW_PALETTES

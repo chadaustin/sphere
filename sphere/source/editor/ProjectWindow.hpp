@@ -4,13 +4,13 @@
 
 #include <afxwin.h>
 #include <afxcmn.h>
-
+#include "PaletteWindow.hpp"
 
 class CMainWindow; // MainWindow.hpp
 class CProject;    // Project.hpp
 
 
-class CProjectWindow : public CMDIChildWnd
+class CProjectWindow : public CPaletteWindow
 {
 public:
   CProjectWindow(CMainWindow* main_window, CProject* project);

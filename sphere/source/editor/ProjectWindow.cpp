@@ -26,7 +26,7 @@ const int tiFonts        = 108;
 const int IDI_FILETYPE_BASE = 3;
 
 
-BEGIN_MESSAGE_MAP(CProjectWindow, CMDIChildWnd)
+BEGIN_MESSAGE_MAP(CProjectWindow, CPaletteWindow)
 
   ON_WM_SYSCOMMAND()
   ON_WM_SIZE()
@@ -50,7 +50,7 @@ END_MESSAGE_MAP()
 CProjectWindow::CProjectWindow(CMainWindow* main_window, CProject* project)
 : m_MainWindow(main_window)
 , m_Project(project)
-
+, CPaletteWindow(NULL, "Project", CRect(0,0,200,200), true)
 , m_htiMaps(NULL)
 , m_htiSpritesets(NULL)
 , m_htiScripts(NULL)
@@ -76,14 +76,14 @@ CProjectWindow::CProjectWindow(CMainWindow* main_window, CProject* project)
 BOOL
 CProjectWindow::Create()
 {
-  char szProjectName[512];
-  sprintf(szProjectName, "Project [%s]", m_Project->GetGameSubDirectory());
+  /*char szProjectName[512];
+  sprintf(szProjectName, "Project [%s]", m_Project->GetGameSubDirectory());	
 
   // create the window
-  CMDIChildWnd::Create(
+  CPaletteWindow::Create(
     AfxRegisterWndClass(CS_NOCLOSE, NULL, NULL, AfxGetApp()->LoadIcon(IDI_PROJECT)),
     szProjectName,
-    WS_CHILD | WS_VISIBLE | WS_OVERLAPPEDWINDOW);
+    WS_CHILD | WS_VISIBLE | WS_OVERLAPPEDWINDOW);*/
 
   // create widgets
   m_TreeControl.Create(
@@ -128,7 +128,7 @@ BOOL
 CProjectWindow::DestroyWindow()
 {
   m_TreeControl.DestroyWindow();
-  return CMDIChildWnd::DestroyWindow();
+  return CPaletteWindow::DestroyWindow();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -245,7 +245,7 @@ CProjectWindow::OnSize(UINT type, int cx, int cy)
   if (m_TreeControl.m_hWnd)
     m_TreeControl.MoveWindow(CRect(0, 0, cx, cy), TRUE);
 
-  CMDIChildWnd::OnSize(type, cx, cy);
+  CPaletteWindow::OnSize(type, cx, cy);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -18,6 +18,9 @@ class CImageWindow
   , private IColorViewHandler
   , private IAlphaViewHandler
 {
+#ifdef USE_SIZECBAR
+	DECLARE_DYNAMIC(CImageWindow)
+#endif
 public:
   CImageWindow(const char* image = NULL);
   ~CImageWindow();

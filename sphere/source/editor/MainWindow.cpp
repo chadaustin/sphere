@@ -126,6 +126,8 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_PROJECT_CONFIGURESPHERE, OnProjectConfigureSphere)
   ON_COMMAND(ID_PROJECT_PACKAGE_GAME,    OnProjectPackageGame)
 
+	ON_COMMAND(ID_VIEW_PROJECT,            OnViewProject)
+
   ON_COMMAND(ID_WINDOW_CLOSEALL, OnWindowCloseAll)
 
   ON_COMMAND(ID_HELP_SPHERESITE,         OnHelpSphereSite)
@@ -149,6 +151,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_UPDATE_COMMAND_UI(ID_WINDOW_CLOSEALL,   OnUpdateWindowCloseAll)
   ON_UPDATE_COMMAND_UI(ID_VIEW_PALETTES,     OnUpdatePaletteMenu)
   ON_UPDATE_COMMAND_UI(PALETTE_COMMAND,	     OnUpdatePaletteMenu)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_PROJECT,	     OnUpdateViewProject)
 
   // project window message
   ON_MESSAGE(WM_INSERT_PROJECT_FILE, OnInsertProjectFile)
@@ -1982,3 +1985,24 @@ CMainWindow::ViewPalette(int paletteNum)
     }
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void
+CMainWindow::OnUpdateViewProject(CCmdUI * ui)
+{
+	ui->Enable(m_ProjectOpen);
+
+	if (m_ProjectOpen && m_ProjectWindow->IsVisible())
+	{
+		ui->SetCheck();
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnViewProject()
+{
+	m_ProjectWindow->ShowPalette(!m_ProjectWindow->IsVisible());
+}
+
