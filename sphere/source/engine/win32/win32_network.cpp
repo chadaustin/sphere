@@ -96,6 +96,10 @@ NSOCKET OpenAddress(const char* name, int port)
   in_addr address = *(in_addr*)(he->h_addr);
 
   NSOCKET s = new NSOCKETimp;
+  if (!s) {
+    return NULL;
+  }
+
   s->socket = INVALID_SOCKET;
   s->is_connected = false;
   s->is_listening = false;
@@ -142,6 +146,9 @@ NSOCKET ListenOnPort(int port)
   }
 
   NSOCKET s = new NSOCKETimp;
+  if (!s)
+    return NULL;
+
   s->socket = INVALID_SOCKET;
   s->is_connected = false;
   s->is_listening = false;
@@ -192,6 +199,7 @@ void CloseSocket(NSOCKET socket)
 {
   closesocket(socket->socket);
   delete socket;
+  socket = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

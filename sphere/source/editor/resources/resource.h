@@ -271,6 +271,9 @@
 #define IDC_LEFT                        1231
 #define IDC_TITLEBAR                    1234
 #define IDC_ABOUT_TEXT                  1237
+#define IDC_DEFAULT_TEXT                1239
+#define IDC_CUSTOM_TEXT                 1240
+#define IDC_USE_COMMON_TEXT_FILETYPES   1241
 #define ID_FILE_IMPORT_BITMAPTORSS      12241
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40003
@@ -711,7 +714,7 @@
 #define IDI_MAPTOOL_SCRIPT              40819
 #define ID_PROJECT_GAMESETTINGS         40820
 #define ID_IRCVIEW_CLEAR                40821
-#define ID_MAP_ADJUSTALLLAYERS          40822
+#define ID_TOOLS_IRC_CLIENT             40823
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -720,8 +723,8 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        280
-#define _APS_NEXT_COMMAND_VALUE         40823
-#define _APS_NEXT_CONTROL_VALUE         1239
+#define _APS_NEXT_COMMAND_VALUE         40824
+#define _APS_NEXT_CONTROL_VALUE         1242
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

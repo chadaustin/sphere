@@ -195,6 +195,9 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
 #ifdef I_SUCK
   ON_COMMAND(ID_TOOLS_IMAGES_TO_MNG, OnToolsImagesToMNG)
   ON_COMMAND(ID_TOOLS_JS_CONSOLE, OnToolsJSConsole)
+#ifdef USE_IRC
+  ON_COMMAND(ID_TOOLS_IRC_CLIENT, OnToolsIRCClient)
+#endif
 #endif
 
   ON_COMMAND(ID_HELP_SPHERESITE,         OnHelpSphereSite)
@@ -389,13 +392,28 @@ CMainWindow::DockControlBarLeftOf(CToolBar* Bar, CToolBar* LeftOf)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const char*
+CMainWindow::GetDefaultWindowText() {
+  return "Sphere " SPHERE_VERSION " Development Environment";
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 BOOL
 CMainWindow::Create()
 {
+  std::string title = "";
+  bool use_defaulttext = Configuration::Get(KEY_MAINWINDOW_USE_DEFAULTTEXT);
+  if (!use_defaulttext) {
+    title = Configuration::Get(KEY_MAINWINDOW_CUSTOM_TEXT);
+    if (title.length() == 0)
+      title = GetDefaultWindowText();
+  }
+
   // create the window
   CMDIFrameWnd::Create(
     AfxRegisterWndClass(0, NULL, NULL, LoadIcon(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDI_SDE))),
-    "Sphere " SPHERE_VERSION " Development Environment",
+    (use_defaulttext) ? (GetDefaultWindowText()) : (title.c_str()),
     WS_OVERLAPPEDWINDOW,
     rectDefault,
     NULL,
@@ -2978,6 +2996,18 @@ CMainWindow::OnToolsJSConsole()
     s_JS_Console->SetFocus();
   }
 }
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+
+#ifdef I_SUCK
+#ifdef USE_IRC
+afx_msg void
+CMainWindow::OnToolsIRCClient()
+{
+  OpenGameFile("irc://irc.esper.net");
+}
+#endif
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -730,11 +730,21 @@ CScriptWindow::GetScriptType()
     return SCRIPT_TYPE_JS;
   }
 
-  /*
   if (Local::extension_compare(GetDocumentPath(), ".py")) {
     return SCRIPT_TYPE_PY;
   }
-  */
+
+  if (Local::extension_compare(GetDocumentPath(), ".cpp")) {
+    return SCRIPT_TYPE_CPP;
+  }
+
+  if (Local::extension_compare(GetDocumentPath(), ".c")) {
+    return SCRIPT_TYPE_CPP;
+  }
+
+  if (Local::extension_compare(GetDocumentPath(), ".java")) {
+    return SCRIPT_TYPE_JAVA;
+  }
 
   if (strlen(GetDocumentPath()) == 0) {
     return SCRIPT_TYPE_UNDETERMINABLE;
@@ -753,7 +763,11 @@ bool
 CScriptWindow::IsSyntaxHighlightable()
 {
   CScriptWindow::ScriptType type = GetScriptType();
-  return (type == SCRIPT_TYPE_JS || type == SCRIPT_TYPE_UNDETERMINABLE);
+  return (type == SCRIPT_TYPE_JS
+       || type == SCRIPT_TYPE_UNDETERMINABLE
+       || type == SCRIPT_TYPE_CPP
+       || type == SCRIPT_TYPE_JAVA
+       || type == SCRIPT_TYPE_PY);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -790,22 +804,23 @@ CScriptWindow::SetScriptStyles()
   static const COLORREF brown   = RGB(0xB5, 0x6F, 0x32);
   static const COLORREF darkred = RGB(0x80, 0, 0);
 
-  if (GetScriptType() == SCRIPT_TYPE_UNDETERMINABLE || GetScriptType() == SCRIPT_TYPE_JS)
+  if (GetScriptType() == SCRIPT_TYPE_UNDETERMINABLE
+   || GetScriptType() == SCRIPT_TYPE_JS
+   || GetScriptType() == SCRIPT_TYPE_CPP
+   || GetScriptType() == SCRIPT_TYPE_JAVA)
   {
     SendEditor(SCI_SETLEXER, SCLEX_CPP);  // JavaScript uses the C++ lexer
     SendEditor(SCI_SETSTYLEBITS, 5);
     SendEditor(SCI_SETKEYWORDS, 0, (LPARAM)key_words);
     SendEditor(SCI_SETKEYWORDS, 1, (LPARAM)reserved_words);
   }
-  /*
   else
   if (GetScriptType() == SCRIPT_TYPE_PY) {
-    SendEditor(SCI_SETLEXER, SCLEX_PYTHON);  // JavaScript uses the C++ lexer
+    SendEditor(SCI_SETLEXER, SCLEX_PYTHON);
     SendEditor(SCI_SETSTYLEBITS, 5);
     SendEditor(SCI_SETKEYWORDS, 0, (LPARAM)key_words);
     SendEditor(SCI_SETKEYWORDS, 1, (LPARAM)reserved_words);
   }
-  */
   else {
     SendEditor(SCI_SETLEXER, SCLEX_NULL);
   }
@@ -858,7 +873,9 @@ CScriptWindow::SetScriptStyles()
   }
 
   if (GetScriptType() == SCRIPT_TYPE_UNDETERMINABLE
-   || GetScriptType() == SCRIPT_TYPE_JS) {
+   || GetScriptType() == SCRIPT_TYPE_JS
+   || GetScriptType() == SCRIPT_TYPE_CPP
+   || GetScriptType() == SCRIPT_TYPE_JAVA) {
     if (m_SyntaxHighlighted) {
       SetStyle(SCE_C_COMMENT,     green);
       SetStyle(SCE_C_COMMENTLINE, green);
@@ -882,7 +899,6 @@ CScriptWindow::SetScriptStyles()
       SetStyle(STYLE_BRACEBAD,    red);
     }
   }
-  /*
   else
   if (GetScriptType() == SCRIPT_TYPE_PY)
   {
@@ -899,7 +915,6 @@ CScriptWindow::SetScriptStyles()
     SetStyle(SCE_P_COMMENTBLOCK, green);
     SetStyle(SCE_P_STRINGEOL, green);
   }
-  */
 
   SendEditor(SCI_SETVIEWWS, ((m_ShowWhitespace) ? (SCWS_VISIBLEALWAYS) : (SCWS_INVISIBLE)));
 

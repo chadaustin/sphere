@@ -157,6 +157,7 @@ BEGIN
     BEGIN
         MENUITEM "Images To MNG",               ID_TOOLS_IMAGES_TO_MNG
         MENUITEM "Javascript Console",          ID_TOOLS_JS_CONSOLE
+        MENUITEM "&IRC Client",                 ID_TOOLS_IRC_CLIENT
     END
     POPUP "&Help"
     BEGIN
@@ -1265,20 +1266,20 @@ BEGIN
     GROUPBOX        "Parallax",IDC_STATIC,4,116,176,52
     LTEXT           "Horizontal",IDC_STATIC,8,131,32,8
     CONTROL         "Slider2",IDC_HORIZONTAL_PARALLAX,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,52,128,100,16
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,40,127,111,16
     LTEXT           "Static",IDC_HORIZONTAL_PARALLAX_VALUE,156,131,19,8
     LTEXT           "Vertical",IDC_STATIC,8,147,24,8
     CONTROL         "Slider1",IDC_VERTICAL_PARALLAX,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,52,144,100,16
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,40,144,111,16
     LTEXT           "Static",IDC_VERTICAL_PARALLAX_VALUE,156,147,19,8
     GROUPBOX        "Automatic Scrolling",IDC_STATIC,4,176,176,52
     LTEXT           "Horizontal",IDC_STATIC,8,192,32,8
     CONTROL         "Slider2",IDC_HORIZONTAL_SCROLLING,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,52,189,100,16
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,40,189,114,16
     LTEXT           "Static",IDC_HORIZONTAL_SCROLLING_VALUE,156,192,19,8
     LTEXT           "Vertical",IDC_STATIC,8,208,24,8
     CONTROL         "Slider1",IDC_VERTICAL_SCROLLING,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,52,205,100,16
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,40,205,114,16
     LTEXT           "Static",IDC_VERTICAL_SCROLLING_VALUE,156,208,19,8
     DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
@@ -1629,6 +1630,9 @@ BEGIN
     CONTROL         "Open Unknown Filetypes As Text",
                     IDC_OPENUNKNOWNFILETYPES,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,24,17,124,13
+    CONTROL         "Use Common Text Filetypes",
+                    IDC_USE_COMMON_TEXT_FILETYPES,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,23,33,136,13
 END
 
 IDD_COLOR_ADJUST DIALOG DISCARDABLE  0, 0, 164, 188
@@ -1741,8 +1745,12 @@ STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Titlebar"
 FONT 8, "MS Sans Serif"
 BEGIN
-    EDITTEXT        IDC_TITLEBAR,19,28,171,13,ES_AUTOHSCROLL
-    LTEXT           "Titlebar",IDC_STATIC,18,13,51,8
+    EDITTEXT        IDC_TITLEBAR,21,28,171,13,ES_AUTOHSCROLL
+    LTEXT           "Titlebar",IDC_STATIC,21,13,51,8
+    CONTROL         "Default text",IDC_DEFAULT_TEXT,"Button",
+                    BS_AUTORADIOBUTTON,21,48,166,14
+    CONTROL         "Custom text",IDC_CUSTOM_TEXT,"Button",
+                    BS_AUTORADIOBUTTON,21,65,173,11
 END
 
 IDD_ABOUT DIALOG DISCARDABLE  0, 0, 223, 190

@@ -41,6 +41,7 @@ public:
 
   const char* GetProjectDirectory() const;
 
+  static const char* GetDefaultWindowText();
 	static BOOL IsProjectFile(const char * filename);
 #ifdef I_SUCK
   void OpenGameSettings();
@@ -159,6 +160,9 @@ private:
 #ifdef I_SUCK
   afx_msg void OnToolsJSConsole();
   afx_msg void OnToolsImagesToMNG();
+#ifdef USE_IRC
+  afx_msg void OnToolsIRCClient();
+#endif
 #endif
 
   afx_msg void OnHelpSphereSite();

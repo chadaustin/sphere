@@ -1125,7 +1125,6 @@ log_object.endBlock()
     - Apply 4 color matrixes. Each corner has a seperate color matrix.
 	  (see CreateColorMatrix)
 
-
   surface_object.blit(x, y)
     - draws the surface to the video buffer at (x,y)
   

@@ -5,13 +5,16 @@
 #include <string.h>
 #include "FileTypes.hpp"
 
+#include "Configuration.hpp"
+#include "Keys.hpp"
+
 #include <corona.h>
 #include <audiere.h>
 
 static const char* Extensions[] = {
   /* maps */         "Map Files:rmp(Sphere Map Files(rmp))",
   /* spriteset */    "Spriteset Files:rss(Sphere Spriteset Files(rss))",
-  /* scripts */      "Script Files:js(JavaScript Files(js))",
+  /* scripts */      "Script Files:js(JavaScript Files(js),Text files(txt),CPP Files(cpp,hpp,c,h,cxx,hxx),Java Files(java)),Python Files(py))",
   /* sounds */       "", // "Sound Files:ogg(MP3 Files(mp3,mp2),Ogg Vorbis Files(ogg),MOD Files(mod,s3m,xm,it),WAV Files(wav),FLAC Files(flac))",
   /* fonts */        "Font Files:rfn(Sphere Font Files(rfn))",
   /* windowstyles */ "Window Style Files:rws(Sphere Window Styles(rws))",
@@ -130,7 +133,8 @@ CFileTypeLibrary::GetFileTypeExtensions(int file_type, bool save, std::vector<st
       }
     }
   }
-  else if (file_type == GT_ANIMATIONS && save) {
+  else if ((file_type == GT_ANIMATIONS && save)
+    || (file_type == GT_SCRIPTS && !Configuration::Get(USE_COMMON_TEXT_FILETYPES))) {
     for (int i = 0; i < 1 && i < m_FileTypes[file_type].sub_types.size(); i++) {
       for (int j = 0; j < 1 && j < m_FileTypes[file_type].sub_types[i].extensions.size(); j++) {
         extensions.push_back(m_FileTypes[file_type].sub_types[i].extensions[j]);
@@ -186,6 +190,9 @@ CFileTypeLibrary::GetNumSubTypes(int file_type, bool save)
     audiere::GetSupportedFileFormats(ffd);
     return ffd.size();
   }
+
+  if (file_type == GT_SCRIPTS && !Configuration::Get(USE_COMMON_TEXT_FILETYPES))
+    return 1;
 
   if (file_type == GT_ANIMATIONS && save)
     return 1;

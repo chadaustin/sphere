@@ -11,6 +11,8 @@
 #include <afxwin.h>
 #include <afxcmn.h>
 
+static int s_PropertyPage = 0;
+
 ///////////////////////////////////////////////////////////
 
 static
@@ -230,6 +232,15 @@ BOOL CALLBACK FileTypeRegisterDialogProc(HWND window, UINT message, WPARAM wpara
       return FALSE;
     }
 
+    case WM_NOTIFY:
+    {
+      PSHNOTIFY* psn = (PSHNOTIFY*)lparam;
+      if (psn->hdr.code == UINT(PSN_APPLY))
+      {
+        
+      }
+    }
+
     default:
       return FALSE;
   }
@@ -246,7 +257,8 @@ BOOL CALLBACK FileTypeGeneralDialogProc(HWND window, UINT message, WPARAM wparam
   {
     case WM_INITDIALOG:
     {
-      CheckDlgButton(window, IDC_OPENUNKNOWNFILETYPES, (Configuration::Get(OPEN_UNKNOWN_FILETYPES_AS_TEXT) ? BST_CHECKED : BST_UNCHECKED));
+      CheckDlgButton(window, IDC_OPENUNKNOWNFILETYPES,      (Configuration::Get(OPEN_UNKNOWN_FILETYPES_AS_TEXT) ? BST_CHECKED : BST_UNCHECKED));
+      CheckDlgButton(window, IDC_USE_COMMON_TEXT_FILETYPES, (Configuration::Get(USE_COMMON_TEXT_FILETYPES)      ? BST_CHECKED : BST_UNCHECKED));
       return TRUE;
     }
 
@@ -255,7 +267,8 @@ BOOL CALLBACK FileTypeGeneralDialogProc(HWND window, UINT message, WPARAM wparam
       PSHNOTIFY* psn = (PSHNOTIFY*)lparam;
       if (psn->hdr.code == UINT(PSN_APPLY))
       {
-        Configuration::Set(OPEN_UNKNOWN_FILETYPES_AS_TEXT, (IsDlgButtonChecked(window, IDC_OPENUNKNOWNFILETYPES) == BST_CHECKED));
+        Configuration::Set(OPEN_UNKNOWN_FILETYPES_AS_TEXT, (IsDlgButtonChecked(window, IDC_OPENUNKNOWNFILETYPES)      == BST_CHECKED));
+        Configuration::Set(USE_COMMON_TEXT_FILETYPES,      (IsDlgButtonChecked(window, IDC_USE_COMMON_TEXT_FILETYPES) == BST_CHECKED));
         return TRUE;
       }
 
@@ -276,9 +289,15 @@ BOOL CALLBACK TitlebarDialogProc(HWND window, UINT message, WPARAM wparam, LPARA
   {
     case WM_INITDIALOG:
     {
-      char title[1024] = {0};
-      GetMainWindow()->GetWindowText(title, sizeof(title));
-      SetDlgItemText(window, IDC_TITLEBAR, title);
+      bool use_defaulttext = Configuration::Get(KEY_MAINWINDOW_USE_DEFAULTTEXT);
+      if (use_defaulttext) {
+        CheckDlgButton(window, IDC_DEFAULT_TEXT, BST_CHECKED);
+      } else {
+        CheckDlgButton(window, IDC_CUSTOM_TEXT, BST_CHECKED);
+      }
+      
+      std::string text = Configuration::Get(KEY_MAINWINDOW_CUSTOM_TEXT);
+      SetDlgItemText(window, IDC_TITLEBAR, text.c_str());
       return TRUE;
     }
 
@@ -288,8 +307,19 @@ BOOL CALLBACK TitlebarDialogProc(HWND window, UINT message, WPARAM wparam, LPARA
       if (psn->hdr.code == UINT(PSN_APPLY))
       {
         char title[1024] = {0};
+        bool use_defaulttext = (IsDlgButtonChecked(window, IDC_DEFAULT_TEXT) == BST_CHECKED);
+
         GetDlgItemText(window, IDC_TITLEBAR, title, sizeof(title));
-        GetMainWindow()->SetWindowText(title);
+       
+        if (use_defaulttext) {
+          GetMainWindow()->SetWindowText(CMainWindow::GetDefaultWindowText());
+        } else {
+          GetMainWindow()->SetWindowText(title);
+        }
+
+        Configuration::Set(KEY_MAINWINDOW_CUSTOM_TEXT, title);
+        Configuration::Set(KEY_MAINWINDOW_USE_DEFAULTTEXT, use_defaulttext);
+
         return TRUE;
       }
 
@@ -332,6 +362,13 @@ COptionsDialog::Execute()
   Pages[current_page].pfnDlgProc  = TitlebarDialogProc;
   current_page += 1;
 
+  /*
+  // get the previously shown page index
+  current_page = Configuration::Get(KEY_OPTIONS_PAGE);
+  if ( !(current_page >= 0 && current_page < num_pages) )
+    current_page = 0;
+  */
+
   // create the dialog box
   PROPSHEETHEADER psh;
   memset(&psh, 0, sizeof(psh));
@@ -342,10 +379,11 @@ COptionsDialog::Execute()
   psh.hIcon       = NULL;
   psh.pszCaption  = "Sphere Options";
   psh.nPages      = num_pages;
-  psh.nStartPage  = 0;
+  psh.nStartPage  = current_page;
   psh.ppsp        = Pages;
 
   PropertySheet(&psh);
+  //  Configuration::Set(KEY_OPTIONS_PAGE, s_PropertyPage);
 }
 
 ///////////////////////////////////////////////////////////

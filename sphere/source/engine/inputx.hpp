@@ -7,8 +7,11 @@
 
 inline bool AnyKeyPressed()
 {
+  bool key_states[MAX_KEY];
+  GetKeyStates(key_states);
+
   for (int i = 0; i < MAX_KEY; i++) {
-    if (IsKeyPressed(i)) {
+    if (key_states[i]) {
       return true;
     }
   }
