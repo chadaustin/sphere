@@ -6,7 +6,6 @@
 
 // system
 #include <afxdlgs.h>
-#include <htmlhelp.h>
 
 // core
 #include "Editor.hpp"
@@ -123,8 +122,11 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
 
   ON_COMMAND(ID_WINDOW_CLOSEALL, OnWindowCloseAll)
 
-  ON_COMMAND(ID_HELP_CONTENTS, OnHelpContents)
-  ON_COMMAND(ID_HELP_ABOUT,    OnHelpAbout)
+  ON_COMMAND(ID_HELP_SPHERESITE,         OnHelpSphereSite)
+  ON_COMMAND(ID_HELP_AEGISKNIGHTSSITE,   OnHelpAegisKnightsSite)
+  ON_COMMAND(ID_HELP_FLIKSSITE,          OnHelpFliksSite)
+  ON_COMMAND(ID_HELP_LOCALDOCUMENTATION, OnHelpLocalDocumentation)
+  ON_COMMAND(ID_HELP_ABOUT,              OnHelpAbout)
 
   ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnNeedText)
 
@@ -1432,11 +1434,43 @@ CMainWindow::OnWindowCloseAll()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-afx_msg void
-CMainWindow::OnHelpContents()
+void OpenURL(const std::string& url, const std::string& label)
 {
-  if (HtmlHelp(m_hWnd, "docs/editor.chm", HH_DISPLAY_TOC, 0) == NULL) {
-    MessageBox("Error: Could not open help file", "Help Contents");
+  if ((int)ShellExecute(NULL, "open", url.c_str(), 0, 0, SW_SHOW) <= 32) {
+    MessageBox(
+      NULL,
+      ("Could not open web site.  Visit " + url).c_str(),
+      label.c_str(),
+      MB_OK);
+  }
+}
+
+afx_msg void
+CMainWindow::OnHelpSphereSite()
+{
+  OpenURL("http://sphere.sourceforge.net/", "Open Sphere Site");
+}
+
+afx_msg void
+CMainWindow::OnHelpAegisKnightsSite()
+{
+  OpenURL("http://aegisknight.org/sphere", "Open AegisKnight's Site");
+}
+
+afx_msg void
+CMainWindow::OnHelpFliksSite()
+{
+  OpenURL("http://sphere.sourceforge.net/flik/docs", "Open Flik's Tutorial Site");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnHelpLocalDocumentation()
+{
+  std::string docdir = g_SphereDirectory + "\\docs";
+  if ((int)ShellExecute(m_hWnd, "open", docdir.c_str(), 0, 0, SW_SHOW) <= 32) {
+    MessageBox("Could not open documentation directory.", "Local Documentation");
   }
 }
 
@@ -1451,8 +1485,8 @@ CMainWindow::OnHelpAbout()
     SPHERE_VERSION "\n"
     "\n"
     "Chad Austin (c) 1999-2003\n"
-    "Additional code by Darklich\n"
-    "Icons by Khadgar\n"
+    "Additional code by Jacky Chong (Darklich) and Brian Robb (Flik)\n"
+    "Icons by DRosen and Khadgar\n"
     "\n"
     "\n"
     __DATE__ "\n"

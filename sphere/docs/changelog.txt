@@ -14,6 +14,7 @@
   - fix GetCurrentMap() in map entry scripts
   - don't crash when loading a corrupt spriteset
   - added file_object.flush()
+  - added links to web sites and documentation from the editor's help menu
 
 2003.01.29
   - make ExecuteGame work no matter where the game calling it is

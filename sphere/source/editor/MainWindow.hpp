@@ -103,7 +103,10 @@ private:
 
   afx_msg void OnWindowCloseAll();
 
-  afx_msg void OnHelpContents();
+  afx_msg void OnHelpSphereSite();
+  afx_msg void OnHelpAegisKnightsSite();
+  afx_msg void OnHelpFliksSite();
+  afx_msg void OnHelpLocalDocumentation();
   afx_msg void OnHelpAbout();
 
   afx_msg BOOL OnNeedText(UINT id, NMHDR* nmhdr, LRESULT* result);

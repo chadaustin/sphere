@@ -152,7 +152,9 @@
 #define ID_FILE_OPTIONS                 40011
 #define ID_PROJECT_INSERT_MAP           40014
 #define ID_HELP_CONTENTS                40016
+#define ID_HELP_SPHERESITE              40016
 #define ID_HELP_TUTORIAL                40017
+#define ID_HELP_FLIKSSITE               40017
 #define ID_PROJECT_INSERT_SPRITESET     40018
 #define ID_PROJECT_INSERT_SCRIPT        40020
 #define ID_PROJECT_INSERT_IMAGE         40021
@@ -357,6 +359,8 @@
 #define ID_LAYERVIEW_EXPORT_ALL_VISIBLE_LAYERS_AS_IMAGE 40549
 #define ID_SCRIPT_OPTIONS_SET_TAB_SIZE  40550
 #define ID_SCRIPT_OPTIONS_TOGGLE_LINE_NUMBERS 40551
+#define ID_HELP_LOCALDOCUMENTATION      40552
+#define ID_HELP_AEGISKNIGHTSSITE        40553
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -365,7 +369,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        218
-#define _APS_NEXT_COMMAND_VALUE         40552
+#define _APS_NEXT_COMMAND_VALUE         40554
 #define _APS_NEXT_CONTROL_VALUE         1120
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
