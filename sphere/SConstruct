@@ -167,7 +167,7 @@ class Compiler:
 
     def SetupMNG(self, env):
         if self.name == 'mingw':
-            env.Append(LIBS = ['mng', 'jpeg', 'z'],
+            env.Append(LIBS = ['mng'],
                        CCFLAGS = ['-DMNG_NO_CMS', '-DMNG_SUPPORT_LC', '-DMNG_DLL'])
         elif self.name == 'vc6':
             env.Append(LIBS = ['libmng'],
