@@ -6325,7 +6325,7 @@ CScript::CreateWindowStyleObject(JSContext* cx, SWINDOWSTYLE* ws, bool destroy)
 
   // attach the window style to this object
   SS_WINDOWSTYLE* ws_object = new SS_WINDOWSTYLE;
-  if (ws_object)
+  if (!ws_object)
     return NULL;
 
   ws_object->windowstyle = ws;

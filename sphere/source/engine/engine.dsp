@@ -116,7 +116,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib winmm.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 # SUBTRACT BASE LINK32 /pdb:none /incremental:no
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ws2_32.lib corona.lib audiere.lib winmm.lib js32.lib zlib.lib libmng.lib /nologo /subsystem:windows /profile /debug /machine:I386 /out:"c:\sphere\engine.exe" /libpath:"../../third-party-msvc/lib"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ws2_32.lib corona.lib audiere.lib winmm.lib js32.lib zlib.lib libmng.lib /nologo /subsystem:windows /profile /debug /machine:I386 /out:"c:\win\desktop\sphere-binaries\engine.exe" /libpath:"../../third-party-msvc/lib"
 
 !ENDIF 
 

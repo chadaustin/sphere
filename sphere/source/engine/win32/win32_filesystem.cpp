@@ -43,18 +43,21 @@ int GetEnvironmentVariableStr(const char* name, char* value, int max_len)
 
 std::string GetSphereDirectory()
 {
-  char dir[MAX_PATH] = {0};
+  char engine_directory[MAX_PATH] = {0};
+  char sphere_directory[MAX_PATH] = {0};
 
-  if (GetEnvironmentVariableStr("SPHERE_DIRECTORY", dir, MAX_PATH) != 0)
-    return dir;
-
-  GetModuleFileName(GetModuleHandle(0), dir, MAX_PATH);
-  char* last_backslash = strrchr(dir, '\\');
+  GetModuleFileName(GetModuleHandle(0), engine_directory, MAX_PATH);
+  char* last_backslash = strrchr(engine_directory, '\\');
   if (last_backslash) {
     *last_backslash = 0;
   }
 
-  return dir;
+  if (strcmp(engine_directory, "C:\\WIN\\DESKTOP\\SPHERE-BINARIES") != 0) {
+    if (GetEnvironmentVariableStr("SPHERE_DIRECTORY", sphere_directory, MAX_PATH) != 0)
+      return sphere_directory;
+  }
+
+  return engine_directory;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
