@@ -1640,6 +1640,18 @@ CMainWindow::OnFileOpenTileset()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static void GetFilePathWithoutExtension(std::string& thepath)
+{
+  int pos = thepath.rfind(".");
+  if (pos == -1) {
+    return;
+  }
+
+  thepath = thepath.substr(0, pos);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportImageToMap()
@@ -1655,6 +1667,22 @@ CMainWindow::OnFileImportImageToMap()
 
   CString filename = FileDialog.GetPathName();
   m_DefaultFolder = GetFolderFromPathName(filename);
+
+  CMapFileDialog OutFileDialog(FDM_SAVE);
+  OutFileDialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
+  SetCurrentDirectory(m_DefaultFolder.c_str());
+
+  char output_filename[MAX_PATH + 1024] = {0};
+
+  if (1) {
+    std::string filename = FileDialog.GetPathName();
+    GetFilePathWithoutExtension(filename);
+    sprintf (output_filename, "%s.rmp", filename.c_str());
+    OutFileDialog.m_ofn.lpstrFile = output_filename;
+  }
+
+  if (OutFileDialog.DoModal() == IDCANCEL)
+    return;
 
   CResizeDialog resize_dialog("Tile Dimensions", 16, 16);
   if (resize_dialog.DoModal() != IDOK)
@@ -1681,21 +1709,16 @@ CMainWindow::OnFileImportImageToMap()
     return;
   }
 
-  char fn[MAX_PATH + 1024] = {0};
-
-  strcpy(fn, filename);
-  strcpy(strrchr(fn, '.'), ".rmp");
-
-  bool saved = map.Save(fn);
+  bool saved = map.Save(OutFileDialog.GetPathName());
 
   if (saved) {
     char message[MAX_PATH + 2048] = {0};
-    sprintf (message, "Conversion successful\nMap saved as '%s'", fn);
+    sprintf (message, "Conversion successful\nMap saved as '%s'", OutFileDialog.GetPathName());
     MessageBox(message);
   }
   else {
     char message[MAX_PATH + 2048] = {0};
-    sprintf (message, "Error saving map: '%s'", fn);
+    sprintf (message, "Error saving map: '%s'", OutFileDialog.GetPathName());
     MessageBox(message);
   }
 }
@@ -1718,9 +1741,17 @@ CMainWindow::OnFileImportBitmapToRWS()
   m_DefaultFolder = GetFolderFromPathName(InFileDialog.GetPathName());
 
   CWindowStyleFileDialog OutFileDialog(FDM_SAVE);
-
   OutFileDialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
   SetCurrentDirectory(m_DefaultFolder.c_str());
+
+  char output_filename[MAX_PATH + 1024] = {0};
+
+  if (1) {
+    std::string filename = InFileDialog.GetPathName();
+    GetFilePathWithoutExtension(filename);
+    sprintf (output_filename, "%s.rws", filename.c_str());
+    OutFileDialog.m_ofn.lpstrFile = output_filename;
+  }
 
   if (OutFileDialog.DoModal() == IDCANCEL)
     return;
@@ -1740,7 +1771,7 @@ CMainWindow::OnFileImportBitmapToRWS()
     return;
   }
 
-  MessageBox("Import Successful!\n WindowStyle saved as '" + OutFileDialog.GetPathName() + "'");
+  MessageBox("Import Successful!\nWindowStyle saved as '" + OutFileDialog.GetPathName() + "'");
 }
 #endif
 
@@ -1761,6 +1792,15 @@ CMainWindow::OnFileImportBitmapToRSS()
   m_DefaultFolder = GetFolderFromPathName(InFileDialog.GetPathName());
 
   CSpritesetFileDialog OutFileDialog(FDM_SAVE);
+  char output_filename[MAX_PATH + 1024] = {0};
+
+  if (1) {
+    std::string filename = InFileDialog.GetPathName();
+    GetFilePathWithoutExtension(filename);
+    sprintf (output_filename, "%s.rss", filename.c_str());
+    OutFileDialog.m_ofn.lpstrFile = output_filename;
+  }
+
   if (OutFileDialog.DoModal() != IDOK)
     return;
 
@@ -1777,31 +1817,21 @@ CMainWindow::OnFileImportBitmapToRSS()
   if (sprite.Import_BMP(InFileDialog.GetPathName(), ResizeDialog.GetWidth(), ResizeDialog.GetHeight(), 
       transparent_color_dialog.GetTopColor(), transparent_color_dialog.GetBottomColor()) == false)
   {
-    MessageBox("Can't Import file", "Error");
+    MessageBox("Cannot Import file '" + InFileDialog.GetPathName() + "'", "Error");
     return;
   }
 
   if (sprite.Save(OutFileDialog.GetPathName()) == false)
   {
-    MessageBox("Can't Save file!");
+    MessageBox("Can't Save file! '" + OutFileDialog.GetPathName() + "'");
     return;
   }
 
-  MessageBox("Import Successful!");
+  MessageBox("Import Successful!\nSpriteset saved as '" + OutFileDialog.GetPathName() + "'");
 }
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
-
-static void GetFilePathWithoutExtension(std::string& thepath)
-{
-  int pos = thepath.rfind(".");
-  if (pos == -1) {
-    return;
-  }
-
-  thepath = thepath.substr(0, pos);
-}
 
 #ifdef I_SUCK
 afx_msg void
@@ -2080,9 +2110,11 @@ CMainWindow::OnFileImportRM2KChipsetToRTS()
       MessageBox("Can't save tileset!");
       return;
     }
-  }
 
-  MessageBox("Chipsets Converted!"); 
+    char message[MAX_PATH + 1024] = {0};
+    sprintf (message, "Chipset Converted!\nTileset saved as '%s'", filename);
+    MessageBox(message); 
+  }
 }
 #endif
 
@@ -2103,6 +2135,15 @@ CMainWindow::OnFileImportBitmapToRTS()
   m_DefaultFolder = GetFolderFromPathName(InFileDialog.GetPathName());
 
   CTilesetFileDialog OutFileDialog(FDM_SAVE);
+  char output_filename[MAX_PATH + 1024] = {0};
+
+  if (1) {
+    std::string filename = InFileDialog.GetPathName();
+    GetFilePathWithoutExtension(filename);
+    sprintf (output_filename, "%s.rts", filename.c_str());
+    OutFileDialog.m_ofn.lpstrFile = output_filename;
+  }
+
   if (OutFileDialog.DoModal() != IDOK)
     return;
 
@@ -2135,7 +2176,7 @@ CMainWindow::OnFileImportBitmapToRTS()
     return;
   }
 
-  MessageBox("Image Converted!");
+  MessageBox("Image Converted!\nTileset saved as '" + OutFileDialog.GetPathName() + "'");
 }
 #endif
 
@@ -2156,6 +2197,16 @@ CMainWindow::OnFileImportImageToFont()
   m_DefaultFolder = GetFolderFromPathName(InFileDialog.GetPathName());
 
   CFontFileDialog OutFileDialog(FDM_SAVE);
+
+  char output_filename[MAX_PATH + 1024] = {0};
+
+  if (1) {
+    std::string filename = InFileDialog.GetPathName();
+    GetFilePathWithoutExtension(filename);
+    sprintf (output_filename, "%s.rfn", filename.c_str());
+    OutFileDialog.m_ofn.lpstrFile = output_filename;
+  }
+
   if (OutFileDialog.DoModal() != IDOK)
     return;
 
@@ -2252,11 +2303,11 @@ CMainWindow::OnFileImportImageToFont()
 
   if (!sfont.Save(OutFileDialog.GetPathName()))
   {
-    MessageBox("Can't save font!");
+    MessageBox("Can't save font! '" + OutFileDialog.GetPathName() + "'");
     return;
   }
 
-  MessageBox("Image Converted!");
+  MessageBox("Image Converted!\nFont saved as '" + OutFileDialog.GetPathName() + "'");
 }
 #endif
 
@@ -2457,11 +2508,11 @@ CMainWindow::OnFileImportMergeRGBA()
   }
 
   if (!out.Save(out_dialog.GetPathName())) {
-    MessageBox("Can't save image '" + out_dialog.GetFileName() + "'");
+    MessageBox("Can't save image '" + out_dialog.GetPathName() + "'");
     return;
   }
 
-  MessageBox("Image merged successfully");
+  MessageBox("Image merged successfully\nImage saved as '" + out_dialog.GetPathName() + "'");
 }
 #endif
 
@@ -2569,9 +2620,10 @@ CMainWindow::OnFileImportWindowsFont()
   m_DefaultFolder = GetFolderFromPathName(file_dialog.GetPathName());
 
   if (!sphere_font.Save(file_dialog.GetPathName())) {
-    MessageBox("Could not save font");
+    MessageBox("Could not save font '" + file_dialog.GetPathName() + "'");
+  } else {
+    MessageBox("Font imported!\nFont saved as '" + file_dialog.GetPathName() + "'");
   }
-
 }
 #endif
 
@@ -2830,7 +2882,7 @@ CMainWindow::OnProjectPackageGame()
   GetCurrentDirectory(MAX_PATH, old_directory);
   if (SetCurrentDirectory(m_Project.GetDirectory()) == 0) {
     char string[1024 + MAX_PATH];
-    sprintf (string, "Cannot open game directory\n '%s'", m_Project.GetDirectory());
+    sprintf (string, "Cannot open game directory\n'%s'", m_Project.GetDirectory());
     MessageBox(string, "Package Game", MB_OK | MB_ICONERROR);
     return;
   }
