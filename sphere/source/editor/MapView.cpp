@@ -2309,7 +2309,8 @@ CMapView::OnLButtonDown(UINT flags, CPoint point)
         Invalidate();
       } break;
 
-      case tool_ZoneEdit: {
+      case tool_ZoneEdit:
+      case tool_ZoneMove: {
         int x = point.x / m_ZoomFactor + m_CurrentX * tile_width;
         int y = point.y / m_ZoomFactor + m_CurrentY * tile_height;
         int z = m_Map->FindZone(x, y, m_SelectedLayer);
@@ -2507,6 +2508,22 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
         }
       } break;
 
+      case tool_ZoneMove:
+      {
+        int tile_width  = m_Map->GetTileset().GetTileWidth();
+        int tile_height = m_Map->GetTileset().GetTileHeight();
+        m_PreviewOldX = m_PreviewX;
+        m_PreviewOldY = m_PreviewY;
+        m_PreviewX = point.x / m_ZoomFactor + m_CurrentX * tile_width;
+        m_PreviewY = point.y / m_ZoomFactor + m_CurrentY * tile_height;
+        if(flags & MK_CONTROL) {
+          m_PreviewX = RoundX(m_PreviewX);
+          m_PreviewY = RoundY(m_PreviewY);
+        }
+        m_RedrawPreviewLine = 2;
+        Invalidate();
+      }
+
       case tool_ZoneDelete: {
       } break;
 
@@ -2695,7 +2712,10 @@ CMapView::OnLButtonUp(UINT flags, CPoint point)
 
         // don't allow zones that are only one pixel big, because
         // people can't see them.
-        if (zone.x1 == zone.x2 && zone.y1 == zone.y2) {
+        if (zone.x1 == zone.x2 || zone.y1 == zone.y2) {
+          m_PreviewBoxOn = 0;
+          m_RedrawWindow = 1;
+          Invalidate();
           break;
         }
 
@@ -2720,6 +2740,13 @@ CMapView::OnLButtonUp(UINT flags, CPoint point)
           x = RoundX(x);
           y = RoundY(y);
         }
+
+        // ensure that the zone is atleast one pixel big
+        if (m_StartX == x)
+          x+=1;
+        if (m_StartY == y)
+          y+=1;
+
         m_Map->UpdateZone(m_MoveIndex, m_StartX, m_StartY, x, y);
         m_PreviewBoxOn = 0;
         m_RedrawWindow = 1;
@@ -3011,6 +3038,7 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
         CZoneEditDialog dialog(m_Map->GetZone(z), m_Map);
         if(dialog.DoModal() == IDOK) {
           m_Handler->MV_MapChanged();
+          Invalidate();
         }
       }
       break;

@@ -44,6 +44,9 @@ bool IsRegistered(const char* ext)
       retval = RegOpenKey(HKEY_CLASSES_ROOT, filetype, &key);
 
 	  if (retval == 0) {
+		//char buffer[1024 + MAX_PATH] = {0};
+		//long size = sizeof(buffer);
+		//RegQueryValue(key, "shell\\open\\command", buffer, &size);
 	  }
 
       RegCloseKey(key);

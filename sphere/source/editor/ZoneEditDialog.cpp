@@ -1,7 +1,7 @@
 #include "ZoneEditDialog.hpp"
 #include "Scripting.hpp"
 #include "resource.h"
-
+#include "../common/str_util.hpp"
 
 BEGIN_MESSAGE_MAP(CZoneEditDialog, CDialog)
 
@@ -42,6 +42,20 @@ CZoneEditDialog::OnInitDialog()
     if (i == m_Zone.layer)
       SendDlgItemMessage(IDC_LAYER, CB_SETCURSEL, m_Zone.layer);
   }
+
+  char string[1024];
+
+  sprintf (string, "%d", m_Zone.x1);
+  SetDlgItemText(IDC_ZONE_X, string);
+
+  sprintf (string, "%d", m_Zone.y1);
+  SetDlgItemText(IDC_ZONE_Y, string);
+
+  sprintf (string, "%d", m_Zone.x2 - m_Zone.x1);
+  SetDlgItemText(IDC_ZONE_WIDTH, string);
+
+  sprintf (string, "%d", m_Zone.y2 - m_Zone.y1);
+  SetDlgItemText(IDC_ZONE_HEIGHT, string);
   
   return TRUE;
 }
@@ -57,6 +71,55 @@ CZoneEditDialog::OnOK()
   m_Zone.script = script;
   
   m_Zone.layer = SendDlgItemMessage(IDC_LAYER, CB_GETCURSEL);
+
+
+  bool floating_point, percentage;
+
+  int x, y, w, h;
+
+  CString string;
+  GetDlgItemText(IDC_ZONE_X, string);
+
+  if (IsInvalidNumber(string, floating_point, percentage) || floating_point || percentage) {
+    MessageBox("Invalid number format");
+    return;
+  }
+
+  x = atoi(string);
+  if (x < 0) { MessageBox("Invalid zone x"); return; }
+
+  GetDlgItemText(IDC_ZONE_Y, string);
+
+  if (IsInvalidNumber(string, floating_point, percentage) || floating_point || percentage) {
+    MessageBox("Invalid number format"); return;
+  }
+
+  y = atoi(string);
+  if (y < 0) { MessageBox("Invalid zone y"); return; }
+
+  GetDlgItemText(IDC_ZONE_WIDTH, string);
+
+  if (IsInvalidNumber(string, floating_point, percentage) || floating_point || percentage) {
+    MessageBox("Invalid number format");
+    return;
+  }
+
+  w = atoi(string);
+  if (w <= 0) { MessageBox("Invalid zone width"); return; }
+
+  GetDlgItemText(IDC_ZONE_HEIGHT, string);
+
+  if (IsInvalidNumber(string, floating_point, percentage) || floating_point || percentage) {
+    MessageBox("Invalid number format"); return;
+  }
+
+  h = atoi(string);
+  if (h <= 0) { MessageBox("Invalid zone height"); return; }
+
+  m_Zone.x1 = x;
+  m_Zone.y1 = y;
+  m_Zone.x2 = x + w;
+  m_Zone.y2 = y + h;
 
   CDialog::OnOK();
 }
