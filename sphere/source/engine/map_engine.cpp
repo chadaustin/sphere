@@ -925,6 +925,9 @@ CMapEngine::CreatePerson(const char* name, const char* spriteset, bool destroy_w
   p.speed_x = 1;
   p.speed_y = 1;
 
+  p.stepping_frame_revert = 0;
+  p.stepping_frame_revert_count = 0;
+
   p.spriteset->GetSpriteset().GetBase(p.base_x1, p.base_y1, p.base_x2, p.base_y2);
   p.width = p.spriteset->GetSpriteset().GetFrameWidth();
   p.height = p.spriteset->GetSpriteset().GetFrameHeight();
@@ -1209,6 +1212,38 @@ CMapEngine::GetPersonFrame(const char* name, int& frame)
   }
 
   frame = m_Persons[person].frame;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::SetPersonFrameRevert(const char* name, int i)
+{
+  // find person
+  int person = FindPerson(name);
+  if (person == -1) {
+    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+    return false;
+  }
+
+  m_Persons[person].stepping_frame_revert = i;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetPersonFrameRevert(const char* name, int& i)
+{
+  // find person
+  int person = FindPerson(name);
+  if (person == -1) {
+    m_ErrorMessage = "Person '" + std::string(name) + "' doesn't exist";
+    return false;
+  }
+
+  i = m_Persons[person].stepping_frame_revert;
   return true;
 }
 
@@ -2021,6 +2056,9 @@ CMapEngine::LoadMapPersons()
       p.speed_x = 1;
       p.speed_y = 1;
 
+	  p.stepping_frame_revert = 0;
+	  p.stepping_frame_revert_count = 0;
+
       // load spriteset
       p.spriteset = m_Engine->LoadSpriteset(person.spriteset.c_str());
       if (p.spriteset == NULL) {
@@ -2542,6 +2580,16 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
   // if this person has a leader, skip it
   if (p.leader != -1) {
+    /*revert back to the first frame if reversion has been set and enough updates have passed*/
+    if(p.stepping_frame_revert > 0) {
+      if(p.stepping_frame_revert_count++ >= p.stepping_frame_revert) {
+        if(p.stepping != 0) {
+          p.stepping = 0;
+          p.frame = p.spriteset->GetSpriteset().GetFrameIndex(p.direction, p.stepping);
+          p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.stepping);
+        }
+      }
+    }
     return true;
   }
 
@@ -2688,6 +2736,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
   // if position has changed, update frame index and state of followers
   if (x != p.x || y != p.y) {
+    p.stepping_frame_revert_count = 0;
 
     // frame index
     if (--p.next_frame_switch <= 0) {
@@ -2705,8 +2754,18 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
       }
     }
 
+  } else {
+    /*revert back to the first frame if reversion has been set and enough updates have passed*/
+    if(p.stepping_frame_revert > 0) {
+      if(p.stepping_frame_revert_count++ >= p.stepping_frame_revert) {
+        if(p.stepping != 0) {
+          p.stepping = 0;
+          p.frame = p.spriteset->GetSpriteset().GetFrameIndex(p.direction, p.stepping);
+          p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.stepping);
+        }
+      }
+    }
   }
-
 
   activated = false;
 
@@ -2821,6 +2880,8 @@ CMapEngine::UpdateFollower(int person_index)
 
   // make sure 'stepping' is valid
   p.stepping %= p.spriteset->GetSpriteset().GetNumFrames(p.direction);
+
+  p.stepping_frame_revert_count = 0;
 
   // update the follow state
   for (int i = 0; i < (int)p.follow_state_queue.size() - 1; i++) {

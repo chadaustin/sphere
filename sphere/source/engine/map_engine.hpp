@@ -126,6 +126,8 @@ public:
   bool GetPersonLayer(const char* name, int& layer);
   bool GetPersonDirection(const char* name, std::string& direction);
   bool GetPersonFrame(const char* name, int& frame);
+  bool SetPersonFrameRevert(const char* name, int i);
+  bool GetPersonFrameRevert(const char* name, int& i);
   bool SetPersonSpeedXY(const char* name, int x, int y);
   bool GetPersonSpeedX(const char* name, int& x);
   bool GetPersonSpeedY(const char* name, int& y);
@@ -181,6 +183,8 @@ private:
 
     int stepping;
     int next_frame_switch;
+	int stepping_frame_revert;
+	int stepping_frame_revert_count;
 
     IEngine::script script_create;
     IEngine::script script_destroy;

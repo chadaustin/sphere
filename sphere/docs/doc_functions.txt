@@ -436,6 +436,14 @@ log_object.endBlock()
       GetPersonSpeedY(name)
         - gets the speed at which a person moves at
 
+      SetPersonFrameRevert(name, delay)
+	    - sets the delay between when the person last moved and returning to
+          first frame. 0 disables this behaviour.
+
+      GetPersonFrameRevert(name)
+	    - gets the delay between when the person last moved and returning to
+          first frame. 0 disables this behaviour.
+
       SetPersonScaleFactor(name, scale_w, scale_h)
         - rescales the sprite to a certain scale specified by scale_w and scale_h.
           Scaling is determined by floating point numbers like, 1.5 would scale

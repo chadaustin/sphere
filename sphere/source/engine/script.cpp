@@ -2001,6 +2001,33 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(SetPersonFrameRevert, 2)
+  arg_str(name);
+  arg_int(frames);
+
+  if (!This->m_Engine->GetMapEngine()->SetPersonFrameRevert(name, frames)) {
+    This->ReportMapEngineError("SetPersonFrameRevert() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(GetPersonFrameRevert, 1)
+  arg_str(name);
+
+  int frames;
+  if (!This->m_Engine->GetMapEngine()->GetPersonFrameRevert(name, frames)) {
+    This->ReportMapEngineError("GetPersonFrameRevert() failed");
+    return JS_FALSE;
+  }
+
+  return_int(frames);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 begin_func(SetPersonSpeed, 2)
   arg_str(name);
   arg_int(speed);
