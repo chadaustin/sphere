@@ -456,6 +456,21 @@ CMapEngine::ReplaceTilesOnLayer(int layer, int old_tile, int new_tile) {
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::ExecuteTrigger(int location_x, int location_y, int layer)
+{
+  // check to see which trigger we're on
+  int trigger_index = FindTrigger(location_x, location_y, layer);
+
+  if (!ExecuteTriggerScript(trigger_index)) {
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::RenderMap()
 {
   if (m_IsRunning) {
@@ -3031,6 +3046,74 @@ CMapEngine::UpdateFollower(int person_index)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+int
+CMapEngine::FindTrigger(int location_x, int location_y, int layer)
+{
+  sTileset& tileset = m_Map.GetMap().GetTileset();
+  const int tile_width  = tileset.GetTileWidth();
+  const int tile_height = tileset.GetTileHeight();
+
+  // this doesn't seem to use layers, but I'll include the layer parameter just incase
+
+  int trigger_index = -1;
+  for (unsigned i = 0; i < m_Triggers.size(); i++) {
+    int dx = m_Triggers[i].x - location_x;
+    int dy = m_Triggers[i].y - location_y;
+    if (dx < tile_width / 2 && dx >= -tile_width / 2 &&
+        dy < tile_height / 2 && dy >= -tile_height / 2) {
+      trigger_index = i;
+      break;
+    }
+  }
+  return trigger_index;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::IsTriggerAt(int location_x, int location_y, int layer)
+{
+  int trigger_index = FindTrigger(location_x, location_y, layer);
+  if (trigger_index != -1)
+    return true;
+  return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::ExecuteTriggerScript(int trigger_index)
+{
+  if (trigger_index < 0 || trigger_index > m_Triggers.size()) {
+    std::ostringstream os;
+    os << "Invalid trigger index\n";
+    m_ErrorMessage = os.str();
+    return false;
+  }
+
+  // execute the trigger code
+  IEngine::script script = m_Triggers[trigger_index].script;
+  std::string error;
+  if (!ExecuteScript(script, error)) {
+    sTileset& tileset = m_Map.GetMap().GetTileset();
+    const int tile_width  = tileset.GetTileWidth();
+    const int tile_height = tileset.GetTileHeight();
+
+    std::ostringstream os;
+    os << "Could not execute trigger ("
+       << m_Triggers[trigger_index].x / tile_width
+       << ", "
+       << m_Triggers[trigger_index].y / tile_height
+       << ")\n";
+    m_ErrorMessage = os.str() + error;
+    return false;
+  }
+
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::UpdateTriggers()
 {
@@ -3042,51 +3125,28 @@ CMapEngine::UpdateTriggers()
   // convenience
   int location_x = int(m_Persons[m_InputPerson].x);
   int location_y = int(m_Persons[m_InputPerson].y);
-//  int location_l = m_Persons[m_InputPerson].layer;
-
-  sTileset& tileset = m_Map.GetMap().GetTileset();
-  const int tile_width  = tileset.GetTileWidth();
-  const int tile_height = tileset.GetTileHeight();
+  int location_layer = m_Persons[m_InputPerson].layer;
 
   // check to see which trigger we're on
-  int trigger = -1;
-  for (unsigned i = 0; i < m_Triggers.size(); i++) {
-    int dx = m_Triggers[i].x - location_x;
-    int dy = m_Triggers[i].y - location_y;
-    if (dx < tile_width / 2 && dx >= -tile_width / 2 &&
-        dy < tile_height / 2 && dy >= -tile_height / 2) {
-      trigger = i;
-      break;
-    }
-  }
+  int trigger_index = FindTrigger(location_x, location_y, location_layer);
 
   if (m_OnTrigger) {
 
-    if (trigger == -1) {
+    if (trigger_index == -1) {
       m_OnTrigger = false;
     }
 
   } else {
 
-    if (trigger != -1) {
-      
-      // execute the trigger code
-      IEngine::script script = m_Triggers[trigger].script;
-      std::string error;
-      if (!ExecuteScript(script, error)) {
-        std::ostringstream os;
-        os << "Could not execute trigger ("
-           << m_Triggers[trigger].x / tile_width
-           << ", "
-           << m_Triggers[trigger].y / tile_height
-           << ")\n";
-        m_ErrorMessage = os.str() + error;
+    if (trigger_index != -1) {
+
+      if (!ExecuteTriggerScript(trigger_index)) {
         return false;
       }
 
       ResetNextFrame();
-
       m_OnTrigger = true;
+
     }
   }
 

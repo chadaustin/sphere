@@ -1572,6 +1572,32 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(IsTriggerAt, 3)
+  arg_int(location_x);
+  arg_int(location_y);
+  arg_int(layer);
+
+  return_bool(This->m_Engine->GetMapEngine()->IsTriggerAt(location_x, location_y, layer));
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(ExecuteTrigger, 3)
+  arg_int(location_x);
+  arg_int(location_y);
+  arg_int(layer);
+
+  if (!This->m_Engine->GetMapEngine()->ExecuteTrigger(location_x, location_y, layer)) {
+    This->ReportMapEngineError("ExecuteTrigger() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+
+////////////////////////////////////////////////////////////////////////////////
+
 begin_func(RenderMap, 0)
 
   if (!This->m_Engine->GetMapEngine()->RenderMap()) {

@@ -115,6 +115,8 @@ SS_FUNCTION(OpenLog, 1)
     SS_FUNCTION(GetTileWidth, 0)
     SS_FUNCTION(GetTileHeight, 0)
     SS_FUNCTION(ReplaceTilesOnLayer, 3)
+    SS_FUNCTION(IsTriggerAt, 3)
+    SS_FUNCTION(ExecuteTrigger, 3)
 
     // explicit control
     SS_FUNCTION(RenderMap, 0)

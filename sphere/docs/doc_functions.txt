@@ -349,7 +349,12 @@ log_object.endBlock()
 
     ReplaceTilesOnLayer(layer, oldtile, newtile)
       - Replaces all 'oldtile' tiles with 'newtile' on layer 'layer'
-
+      
+    IsTrggerAt(map_x, map_y, layer)
+      - Returns true if there is a trigger at map_x, map_y on layer
+      
+    ExecuteTrigger(map_x, map_y, layer)
+      - ctivates the trigger positioned on map_x, map_y, layer if one exists
 
     RenderMap()
       - Renders the map into the video buffer

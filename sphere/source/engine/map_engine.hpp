@@ -74,6 +74,8 @@ public:
   bool GetTileWidth(int& width);
   bool GetTileHeight(int& height);
   bool ReplaceTilesOnLayer(int layer, int old_tile, int new_tile);
+  bool IsTriggerAt(int location_x, int location_y, int layer);
+  bool ExecuteTrigger(int location_x, int location_y, int layer);
 
   bool RenderMap();
 
@@ -256,6 +258,9 @@ private:
   bool UpdatePersons();
   bool UpdatePerson(int person_index, bool& activated);
   bool UpdateFollower(int person_index);
+
+  int FindTrigger(int location_x, int location_y, int layer);
+  bool ExecuteTriggerScript(int trigger_index);
   bool UpdateTriggers();
   bool UpdateZones();
   bool UpdateColorMasks();
