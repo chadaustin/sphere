@@ -1,6 +1,8 @@
+
 2003.05.04
   - made it so errors are now logged to gamedir/last_error.txt
   - fixes so that engine/sdl sort of compiles
+  - fixed SetTileImage blend-mode bug
 
 2003.05.01
   - added a linux doc for compiling sphere on linux

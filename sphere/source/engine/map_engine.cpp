@@ -615,9 +615,12 @@ CMapEngine::SetTileImage(int tile, IMAGE image) {
   }
 
   RGBA* pixels = LockImage(image);
+  CImage32& tile_image = m_Map.GetMap().GetTileset().GetTile(tile);
+  tile_image.SetBlendMode(CImage32::BlendMode::REPLACE);
+  
   for (int x = 0; x < m_Map.GetMap().GetTileset().GetTileWidth(); x++) {
     for (int y = 0; y < m_Map.GetMap().GetTileset().GetTileHeight(); y++) {
-       m_Map.GetMap().GetTileset().GetTile(tile).SetPixel(x, y, pixels[y * GetImageWidth(image) + x]);
+       tile_image.SetPixel(x, y, pixels[y * GetImageWidth(image) + x]);
     }
   }
   UnlockImage(image);
@@ -3244,10 +3247,10 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
       case COMMAND_MOVE_WEST:      p.x-=p.speed_x; break;
       case COMMAND_DO_SCRIPT:        
         if (!ExecuteScript(c.script.c_str(), error)) {
-	  m_ErrorMessage = "Could not execute queued script\nPerson:" + p.description +
-	    "\nError:" + error;
-	}
-	break;
+    m_ErrorMessage = "Could not execute queued script\nPerson:" + p.description +
+      "\nError:" + error;
+  }
+  break;
     }
 
     // make sure 'stepping' is valid

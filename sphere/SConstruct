@@ -132,6 +132,16 @@ class Compiler:
         elif self.name == 'mingw':
             env.Append(LINKFLAGS = ['-mwindows'])
 
+    def UnixSubsystem(self, env):
+      env.Append(CPPPATH = ['#/source/engine/unix'],
+                 LIBPATH = ['#/source/engine/unix'],
+                 LIBS = ['unix'])
+
+    def SDLSubsystem(self, env):
+      env.Append(CPPPATH = ['#/source/engine/sdl'],
+                 LIBPATH = ['#/source/engine/sdl'],
+                 LIBS = ['sdl'])
+
     def SetupAudiere(self, env):
         env.Append(LIBS = ['audiere'])
 

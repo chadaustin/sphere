@@ -27,9 +27,6 @@ if (COMPILER.is_win32()):
             LIBPATH = ['win32'],
             LIBS = ['win32'])
 
-if md == 'sdl':
-	env.Append(CXXFLAGS = ['/DSPHERE_SDL'])
-
 engine_sources = Split("""
     SpritesetServer.cpp
     benchmark.cpp
@@ -46,6 +43,13 @@ engine_sources = Split("""
     sspriteset.cpp
     swindowstyle.cpp
     """)
+
+if md == 'sdl':
+   #env.Append(CCFLAGS = ['/DSPHERE_SDL'])
+   COMPILER.SDLSubsystem(env)
+
+if md == 'unix':
+   COMPILER.UnixSubsystem(env)
 
 if COMPILER.is_win32():
     engine_sources.append('engine.res')

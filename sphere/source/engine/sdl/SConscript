@@ -2,9 +2,7 @@
 Import('base_env COMPILER')
  
 env = base_env.Copy()
-COMPILER.SetupSDL(env) 
-
-env.Append(CPPPATH = ['#/source/engine/sdl'], LIBPATH = ['#/source/engine/sdl'], LIBS = ['sdl'])
+COMPILER.SetupSDL(env)
 
 env.Library('sdl', Split("""
     sdl_network.cpp
