@@ -1,4 +1,6 @@
 2003.01.09
+  - fix bug where Sphere would assign "north" to person entities that
+    didn't even have a "north" direction.
   - make trigger location detection more reliable by checking one
     extra pixel to the left and one up so people can't slip between
     two adjacent triggers.

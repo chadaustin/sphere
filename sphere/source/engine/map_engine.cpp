@@ -974,7 +974,7 @@ CMapEngine::CreatePerson(const char* name, const char* spriteset, bool destroy_w
   p.width = p.spriteset->GetSpriteset().GetFrameWidth();
   p.height = p.spriteset->GetSpriteset().GetFrameHeight();
 
-  p.direction = "north";
+  p.direction = p.spriteset->GetSpriteset().GetDirectionName(0);
   p.stepping = 0;
   p.frame = p.spriteset->GetSpriteset().GetFrameIndex(p.direction, p.stepping);
   p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.stepping);
@@ -2154,7 +2154,8 @@ CMapEngine::LoadMapPersons()
       p.height = p.spriteset->GetSpriteset().GetFrameHeight();
       p.spriteset->GetSpriteset().GetBase(p.base_x1, p.base_y1, p.base_x2, p.base_y2);
 
-      p.direction = "north"; // whatever direction
+      // whatever direction
+      p.direction = p.spriteset->GetSpriteset().GetDirectionName(0);
       p.stepping = 0;
       p.frame = p.spriteset->GetSpriteset().GetFrameIndex(p.direction, p.stepping);
       p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.stepping);
@@ -3008,7 +3009,7 @@ CMapEngine::UpdateTriggers()
   // convenience
   int location_x = int(m_Persons[m_InputPerson].x);
   int location_y = int(m_Persons[m_InputPerson].y);
-  int location_l = m_Persons[m_InputPerson].layer;
+//  int location_l = m_Persons[m_InputPerson].layer;
 
   sTileset& tileset = m_Map.GetMap().GetTileset();
   const int tile_width  = tileset.GetTileWidth();
