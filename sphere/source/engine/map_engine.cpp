@@ -205,7 +205,7 @@ CMapEngine::Exit()
     return true;
 
   } else {
-
+    // shouldn't this be ExitMapEngine()?
     m_ErrorMessage = "Exit() called while map engine was not running";
     return false;
 
@@ -312,6 +312,26 @@ CMapEngine::GetLayerHeight(int layer, int& height)
   }
 
   height = m_Map.GetMap().GetLayer(layer).GetHeight();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetLayerName(int layer, std::string& name)
+{
+  if (!m_IsRunning) {
+    m_ErrorMessage = "GetLayerName() called while map engine was not running";
+    return false;
+  }
+
+  // make sure layer is valid
+  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
+    m_ErrorMessage = "Invalid layer";
+    return false;
+  }
+
+  name = m_Map.GetMap().GetLayer(layer).GetName();
   return true;
 }
 

@@ -1542,6 +1542,20 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(GetLayerName, 1)
+  arg_int(layer);
+
+  std::string name;
+  if (!This->m_Engine->GetMapEngine()->GetLayerName(layer, name)) {
+    This->ReportMapEngineError("GetLayerName() failed");
+    return JS_FALSE;
+  }
+
+  return_str(name.c_str());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 begin_func(IsLayerVisible, 1)
   arg_int(layer);
 

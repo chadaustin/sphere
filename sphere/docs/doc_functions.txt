@@ -336,6 +336,9 @@ log_object.endBlock()
       - in the following functions, layer 0 is the bottommost layer.
       - layer 1 is the next one up, etc.
 
+    GetLayerName(layer)
+      - returns the name of 'layer'
+
     GetLayerWidth(layer)
       - get width of 'layer'
 
