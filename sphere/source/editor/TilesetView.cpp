@@ -286,6 +286,9 @@ CTilesetView::SetSelectedTile(int tile)
   GetClientRect(&client_rect);
   int blit_width  = m_BlitTile->GetWidth();  
   int num_tiles_x = client_rect.right / blit_width;
+  if (num_tiles_x <= 0)
+    return;
+
   int row = tile / num_tiles_x;
   int maxRow = GetNumRows() - GetPageSize();
   m_TopRow = row > maxRow ? maxRow : row;

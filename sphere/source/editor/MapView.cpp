@@ -312,7 +312,7 @@ CMapView::GetPageSizeX()
 {
   RECT ClientRect;
   GetClientRect(&ClientRect);
-  return ClientRect.right / m_Map->GetTileset().GetTileWidth() / m_ZoomFactor;
+  return ClientRect.right / (m_Map->GetTileset().GetTileWidth() / m_ZoomFactor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -322,7 +322,7 @@ CMapView::GetPageSizeY()
 {
   RECT ClientRect;
   GetClientRect(&ClientRect);
-  return ClientRect.bottom / m_Map->GetTileset().GetTileHeight() / m_ZoomFactor;
+  return ClientRect.bottom / (m_Map->GetTileset().GetTileHeight() / m_ZoomFactor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -14,6 +14,7 @@
 #include "EntityListDialog.hpp"
 #include "../common/rgb.hpp"
 #include "../common/minmax.hpp"
+#include "Editor.hpp"
 #include "resource.h"
 
 
@@ -475,13 +476,21 @@ CMapWindow::OnEditEntities()
 afx_msg void
 CMapWindow::OnChangeTileSize()
 {
+  struct Local {
+    static void ResizeCallback(int tile, int num_tiles) {
+      char string[1024];
+      sprintf (string, "Resizing tile %d of %d... %d%% done...", tile, num_tiles, ((tile * 100) / num_tiles));
+      GetStatusBar()->SetWindowText(string);
+    }
+  };
+
   int tile_width  = m_Map.GetTileset().GetTileWidth();
   int tile_height = m_Map.GetTileset().GetTileHeight();
   CResizeDialog dialog("Resize Tiles", tile_width, tile_height);
   if (dialog.DoModal() == IDOK)
   {
     if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
-      m_Map.SetTileSize(dialog.GetWidth(), dialog.GetHeight());
+      m_Map.SetTileSize(dialog.GetWidth(), dialog.GetHeight(), 0, Local::ResizeCallback);
 
       SetModified(true);
       m_MapView.TilesetChanged();
@@ -496,13 +505,22 @@ CMapWindow::OnChangeTileSize()
 afx_msg void
 CMapWindow::OnRescaleTileset()
 {
+  struct Local {
+    static void RescaleCallback(int tile, int num_tiles) {
+      char string[1024];
+      sprintf (string, "Rescaling tile %d of %d... %d%% done...", tile, num_tiles, ((tile * 100) / num_tiles));
+      GetStatusBar()->SetWindowText(string);
+    }
+  };
+
+  
   int tile_width  = m_Map.GetTileset().GetTileWidth();
   int tile_height = m_Map.GetTileset().GetTileHeight();
 
   CResizeDialog dialog("Rescale Tiles", tile_width, tile_height);
   if (dialog.DoModal() == IDOK) {
     if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
-      m_Map.SetTileSize(dialog.GetWidth(), dialog.GetHeight(), 1);
+      m_Map.SetTileSize(dialog.GetWidth(), dialog.GetHeight(), 1, Local::RescaleCallback);
 
       SetModified(true);
       m_MapView.TilesetChanged();
@@ -517,13 +535,21 @@ CMapWindow::OnRescaleTileset()
 afx_msg void
 CMapWindow::OnResampleTileset()
 {
+  struct Local {
+    static void ResampleCallback(int tile, int num_tiles) {
+      char string[1024];
+      sprintf (string, "Resampling tile %d of %d... %d%% done...", tile, num_tiles, ((tile * 100) / num_tiles));
+      GetStatusBar()->SetWindowText(string);
+    }
+  };
+  
   int tile_width  = m_Map.GetTileset().GetTileWidth();
   int tile_height = m_Map.GetTileset().GetTileHeight();
 
   CResizeDialog dialog("Resample Tiles", tile_width, tile_height);
   if (dialog.DoModal() == IDOK) {
     if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
-      m_Map.SetTileSize(dialog.GetWidth(), dialog.GetHeight(), 2);
+      m_Map.SetTileSize(dialog.GetWidth(), dialog.GetHeight(), 2, Local::ResampleCallback);
 
       SetModified(true);
       m_MapView.TilesetChanged();

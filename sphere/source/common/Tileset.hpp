@@ -33,7 +33,7 @@ public:
 
   int GetTileWidth() const;
   int GetTileHeight() const;
-  void SetTileSize(int w, int h, int method = 0);
+  void SetTileSize(int w, int h, int method = 0, void (*callback)(int tile, int num_tiles) = NULL);
   
   void InsertTiles(int insert_at, int num_tiles);
   void AppendTiles(int num_tiles);

@@ -605,7 +605,7 @@ sTileset::GetTileHeight() const
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-sTileset::SetTileSize(int w, int h, int method)
+sTileset::SetTileSize(int w, int h, int method, void (*callback)(int tile, int num_tiles))
 {
   m_TileWidth  = w;
   m_TileHeight = h;
@@ -613,22 +613,27 @@ sTileset::SetTileSize(int w, int h, int method)
   switch (method) {
     case 0:
       for (unsigned i = 0; i < m_Tiles.size(); i++) {
+        if (callback) callback(i, m_Tiles.size());
         m_Tiles[i].Resize(w, h);
       }
     break;
 
     case 1:
       for (unsigned i = 0; i < m_Tiles.size(); i++) {
+        if (callback) callback(i, m_Tiles.size());
         m_Tiles[i].Rescale(w, h);
       }
     break;
 
     case 2:
       for (unsigned i = 0; i < m_Tiles.size(); i++) {
+        if (callback) callback(i, m_Tiles.size());
         m_Tiles[i].Resample(w, h);
       }
     break;
   }
+
+  if (callback) callback(m_Tiles.size(), m_Tiles.size());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

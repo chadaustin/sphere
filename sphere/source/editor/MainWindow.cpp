@@ -2179,13 +2179,13 @@ CMainWindow::OnProjectConfigureSphere()
 
 void OnPackageFileWritten(const char* filename, int index, int total)
 {
-  char string[255] = {0};
+  char string[MAX_PATH + 1024] = {0};
   if (index == -1) {
-    sprintf (string, "%d...", total);
+    sprintf (string, "Packaging... %80d...", total);
   }
   else {
     int percent = (int)( ((double)index / (double)total) * 100);
-    sprintf (string, "%3d%% Complete", percent);
+    sprintf (string, "Packaging '%s'... %3d%% Complete", filename, percent);
   }
 
   GetStatusBar()->SetWindowText(string);
