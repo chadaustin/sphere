@@ -12,13 +12,13 @@ StretchedBlit(CPaintDC& dc, CDIBSection* blit_tile,
               int current_x, int current_y)
 {
   if (pixel_width <= 0 || pixel_height <= 0
-   || image_width <= 0 || image_height <= 0 || !src_pixels || !ClientRect)
+   || image_width <= 0 || image_height <= 0 || !src_pixels)
     return;
 
   const int totalx = (int)((double)pixel_width * (double)image_width);
   const int totaly = (int)((double)pixel_height * (double)image_height);
-  const int offsetx = (ClientRect->right  - totalx) / 2 - current_x;
-  const int offsety = (ClientRect->bottom - totaly) / 2 - current_y;
+  const int offsetx = ClientRect ? (ClientRect->right  - totalx) / 2 - current_x : current_x;
+  const int offsety = ClientRect ? (ClientRect->bottom - totaly) / 2 - current_y : current_y;
 
   const int dib_width  = blit_tile->GetWidth();
   const int dib_height = blit_tile->GetHeight();

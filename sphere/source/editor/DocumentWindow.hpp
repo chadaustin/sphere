@@ -52,11 +52,13 @@ public:
   virtual BOOL IsToolAvailable(UINT id);
 
 protected:
-  BOOL Create(LPCTSTR class_name);
   BOOL Create(LPCTSTR class_name, DWORD style);
+  BOOL Create(LPCTSTR class_name);
 
+private:
   static const char* GetDefaultWindowClass();
-  
+
+protected:
   void        SetDocumentPath(const char* path);
   const char* GetDocumentPath() const;
   virtual const char* GetDocumentTitle() const;

@@ -1856,9 +1856,17 @@ bool
 CMapEngine::GetPersonList(std::vector<std::string>& list)
 {
   list.resize(m_Persons.size());
+  unsigned int j = 0;
+
   for (unsigned int i = 0; (i < m_Persons.size() && i < list.size()); i++) {
-    list[i] = m_Persons[i].name;
+    if ( !m_Persons[i].name.empty() ) {
+      list[j] = m_Persons[i].name;
+      j++;
+    }
   }
+
+  list.resize(j);
+
   return true;
 }
 

@@ -612,6 +612,30 @@ CScriptWindow::Create()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static void
+GenerateFunctionsList(HWND list, const char* functions_definitions)
+{
+  unsigned int last_match = 0;
+  unsigned int functions_length = strlen(functions_definitions);
+
+  for (unsigned int i = 0; i < functions_length; i++) {
+    if (functions_definitions[i] == ' ') {
+      char buffer[4096] = {0};
+      memcpy(buffer, functions_definitions + last_match, i - last_match);
+      ::SendMessage(list, LB_ADDSTRING, 0, (LPARAM)buffer);
+      last_match = i + 1;
+    }
+  }
+
+  if (1) {
+    char buffer[4096] = {0};
+    memcpy(buffer, functions_definitions + last_match, strlen(functions_definitions) - last_match);
+    ::SendMessage(list, LB_ADDSTRING, 0, (LPARAM)buffer);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 CScriptWindow::CreateList(int type)
 {
@@ -623,22 +647,7 @@ CScriptWindow::CreateList(int type)
   ::SendMessage(m_List, LB_RESETCONTENT, 0, 0);
 
   if (m_ListType == 1) {
-    unsigned int last_match = 0;
-    unsigned int functions_length = strlen(sFunctionDefinitions);
-    for (unsigned int i = 0; i < functions_length; i++) {
-      if (sFunctionDefinitions[i] == ' ') {
-        char buffer[4096] = {0};
-        memcpy(buffer, sFunctionDefinitions + last_match, i - last_match);
-        ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)buffer);
-        last_match = i + 1;
-      }
-    }
-
-    if (1) {
-      char buffer[4096] = {0};
-      memcpy(buffer, sFunctionDefinitions + last_match, strlen(sFunctionDefinitions) - last_match);
-      ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)buffer);
-    }
+    GenerateFunctionsList(m_List, sFunctionDefinitions);
   }
 
   if (m_ListType == 2) {
@@ -728,6 +737,10 @@ CScriptWindow::GetScriptType()
     }
   };
 
+  if (strlen(GetDocumentPath()) == 0) {
+    return SCRIPT_TYPE_UNDETERMINABLE;
+  }
+
   if (Local::extension_compare(GetDocumentPath(), ".js")) {
     return SCRIPT_TYPE_JS;
   }
@@ -739,7 +752,9 @@ CScriptWindow::GetScriptType()
   if (Local::extension_compare(GetDocumentPath(), ".cpp")
    || Local::extension_compare(GetDocumentPath(), ".c")
    || Local::extension_compare(GetDocumentPath(), ".hpp")
-   || Local::extension_compare(GetDocumentPath(), ".h")) {
+   || Local::extension_compare(GetDocumentPath(), ".h")
+   || Local::extension_compare(GetDocumentPath(), ".cxx")
+   || Local::extension_compare(GetDocumentPath(), ".hxx")) {
     return SCRIPT_TYPE_CPP;
   }
 
@@ -747,13 +762,24 @@ CScriptWindow::GetScriptType()
     return SCRIPT_TYPE_JAVA;
   }
 
-  if (strlen(GetDocumentPath()) == 0) {
-    return SCRIPT_TYPE_UNDETERMINABLE;
-  }
-
   if (Local::extension_compare(GetDocumentPath(), ".txt")) {
     return SCRIPT_TYPE_TXT;
   }
+
+  /*
+  if (1) {
+    char line_text[1024] = {0};
+    int line_number = 0;
+    int line_length = ::SendMessage(m_Editor, SCI_LINELENGTH, line_number, 0);
+
+    if (line_length > 0 && line_length < sizeof(line_text)) {
+      ::SendMessage(m_Editor, SCI_GETLINE, line_number, (LRESULT)line_text);
+
+      if (line_text[0] == '#' && line_text[1] == '!')
+        return SCRIPT_TYPE_PERL;
+    }
+  }
+  */
 
   return SCRIPT_TYPE_UNKNOWN;
 }
@@ -768,7 +794,8 @@ CScriptWindow::IsSyntaxHighlightable()
        || type == SCRIPT_TYPE_UNDETERMINABLE
        || type == SCRIPT_TYPE_CPP
        || type == SCRIPT_TYPE_JAVA
-       || type == SCRIPT_TYPE_PY);
+       || type == SCRIPT_TYPE_PY
+       || type == SCRIPT_TYPE_PERL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -818,6 +845,13 @@ CScriptWindow::SetScriptStyles()
   else
   if (GetScriptType() == SCRIPT_TYPE_PY) {
     SendEditor(SCI_SETLEXER, SCLEX_PYTHON);
+    SendEditor(SCI_SETSTYLEBITS, 5);
+    SendEditor(SCI_SETKEYWORDS, 0, (LPARAM)key_words);
+    SendEditor(SCI_SETKEYWORDS, 1, (LPARAM)reserved_words);
+  }
+  else
+  if (GetScriptType() == SCRIPT_TYPE_PERL) {
+    SendEditor(SCI_SETLEXER, SCLEX_PERL);
     SendEditor(SCI_SETSTYLEBITS, 5);
     SendEditor(SCI_SETKEYWORDS, 0, (LPARAM)key_words);
     SendEditor(SCI_SETKEYWORDS, 1, (LPARAM)reserved_words);
@@ -876,6 +910,11 @@ CScriptWindow::SetScriptStyles()
     SendEditor(SCI_SETTABWIDTH, m_TabWidth);
   }
 
+  if (IsSyntaxHighlightable()) {
+    SetStyle(STYLE_BRACELIGHT,  green);
+    SetStyle(STYLE_BRACEBAD,    red);
+  }
+
   if (GetScriptType() == SCRIPT_TYPE_UNDETERMINABLE
    || GetScriptType() == SCRIPT_TYPE_JS
    || GetScriptType() == SCRIPT_TYPE_CPP
@@ -898,9 +937,6 @@ CScriptWindow::SetScriptStyles()
       SetStyle(SCE_C_OPERATOR,    purple);
       SetStyle(SCE_C_IDENTIFIER,  black);
       SetStyle(SCE_C_WORD2,       red);
-
-      SetStyle(STYLE_BRACELIGHT,  green);
-      SetStyle(STYLE_BRACEBAD,    red);
     }
   }
   else
@@ -918,6 +954,44 @@ CScriptWindow::SetScriptStyles()
     //SetStyle(SCE_P_IDENTIFIER, black);
     SetStyle(SCE_P_COMMENTBLOCK, green);
     SetStyle(SCE_P_STRINGEOL, green);
+  }
+  else
+  if (GetScriptType() == SCRIPT_TYPE_PERL)
+  {
+//#define SCE_PL_DEFAULT 0
+//#define SCE_PL_ERROR 1
+    SetStyle(SCE_PL_COMMENTLINE, green);
+//#define SCE_PL_POD 3
+    SetStyle(SCE_PL_NUMBER,      darkred);
+    SetStyle(SCE_PL_WORD,        blue);
+    SetStyle(SCE_PL_STRING,      blue);
+/*
+#define SCE_PL_CHARACTER 7
+#define SCE_PL_PUNCTUATION 8
+#define SCE_PL_PREPROCESSOR 9
+*/
+    SetStyle(SCE_PL_OPERATOR,   purple);
+/*
+#define SCE_PL_IDENTIFIER 11
+#define SCE_PL_SCALAR 12
+#define SCE_PL_ARRAY 13
+#define SCE_PL_HASH 14
+#define SCE_PL_SYMBOLTABLE 15
+#define SCE_PL_REGEX 17
+#define SCE_PL_REGSUBST 18
+#define SCE_PL_LONGQUOTE 19
+#define SCE_PL_BACKTICKS 20
+#define SCE_PL_DATASECTION 21
+#define SCE_PL_HERE_DELIM 22
+#define SCE_PL_HERE_Q 23
+#define SCE_PL_HERE_QQ 24
+#define SCE_PL_HERE_QX 25
+#define SCE_PL_STRING_Q 26
+#define SCE_PL_STRING_QQ 27
+#define SCE_PL_STRING_QX 28
+#define SCE_PL_STRING_QR 29
+#define SCE_PL_STRING_QW 30
+*/
   }
 
   SendEditor(SCI_SETVIEWWS, ((m_ShowWhitespace) ? (SCWS_VISIBLEALWAYS) : (SCWS_INVISIBLE)));
@@ -1024,6 +1098,7 @@ CScriptWindow::LoadScript(const char* filename)
   GetStatusBar()->SetWindowText(status_text);
    
   fclose(file);
+  file = NULL;
 
   SetModified(false);
   SendEditor(SCI_SETSAVEPOINT);
@@ -1439,7 +1514,7 @@ CScriptWindow::OnScriptFind()
       SendEditor(SCI_SETSELECTIONMODE, m_SelectionType);
 
       //m_SearchDialog->Create(true, text, NULL, FR_DOWN, this);
-      m_SearchDialog->Create(true, text, NULL, m_SearchDown, this);
+      m_SearchDialog->Create(true, ((text.GetLength() == 0) ? m_SearchString : text), NULL, m_SearchDown, this);
     }
   }
 }
@@ -1457,7 +1532,7 @@ CScriptWindow::OnScriptReplace()
       CString text = GetSelection();
       SendEditor(SCI_SETSELECTIONMODE, m_SelectionType);
 
-      m_SearchDialog->Create(false, text, NULL, FR_DOWN, this);
+      m_SearchDialog->Create(false, ((text.GetLength() == 0) ? m_SearchString : text), NULL, FR_DOWN, this);
     }
   }
 }
@@ -1833,7 +1908,7 @@ CScriptWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
 
 void
 CScriptWindow::SetLineNumber(int line) {
-  char str[80];
+  char str[120];
   int pos = SendEditor(SCI_GETCURRENTPOS) - SendEditor(SCI_POSITIONFROMLINE, line);
   line += 1;
   sprintf(str, "Line: %d Position: %d", line, pos);
@@ -1989,7 +2064,7 @@ CScriptWindow::OnFindReplace(WPARAM, LPARAM)
 
   if (m_SearchDialog->IsTerminating()) {
     m_SearchDown = m_SearchDialog->SearchDown();
-    //m_SearchString      = m_SearchDialog->GetFindString();   
+    m_SearchString      = m_SearchDialog->GetFindString();
     m_SearchDialog = NULL;
   } else if (m_SearchDialog->FindNext()) {
 

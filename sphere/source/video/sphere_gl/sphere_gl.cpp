@@ -304,10 +304,14 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
   } else {
     // set fullscreen mode
     DEVMODE dm;
-    EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm);
+    memset(&dm, 0, sizeof(dm));
+
+    //EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm);
+
+    dm.dmSize       = sizeof(dm);
     dm.dmFields     = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL;
     dm.dmBitsPerPel = DriverConfig.bpp;
-    dm.dmPelsWidth  = ScreenWidth * SCALE();
+    dm.dmPelsWidth  = ScreenWidth  * SCALE();
     dm.dmPelsHeight = ScreenHeight * SCALE();
 
     WindowStyle   = GetWindowLong(SphereWindow, GWL_STYLE);
@@ -323,6 +327,7 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
 
     if (1) {
       DEVMODE dm;
+      memset(&dm, 0, sizeof(dm));
       EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm);
       if (dm.dmBitsPerPel != DriverConfig.bpp) {
         error_msg = "Unable to set bbp, try a different setting";

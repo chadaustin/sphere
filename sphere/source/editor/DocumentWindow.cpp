@@ -197,7 +197,7 @@ CDocumentWindow::Create(LPCTSTR class_name, DWORD style)
 	BOOL maximized = FALSE;
 	((CMainWindow*)AfxGetMainWnd())->MDIGetActive(&maximized);
   if (maximized) style |= WS_MAXIMIZE;
-
+ 
   BOOL result = CMDIChildWnd::Create(class_name, "", style);
   if (result) {
     UpdateWindowCaption();

@@ -121,9 +121,15 @@ inline uint32 Q_INTERPOLATE(uint32 A, uint32 B, uint32 C, uint32 D)
   return x + y;
 }
 
+#include <stdlib.h>
 
 void _2xSaIBitmap(int bit_depth, word* src, int src_width, int src_height, word* dest, int dest_pitch)
 {
+  if (src_width <= 0 || src_height <= 0) {
+    exit(5);
+    return;
+  }
+
   // calculate color masks
   if (bit_depth == 15)
   {
@@ -159,12 +165,12 @@ void _2xSaIBitmap(int bit_depth, word* src, int src_width, int src_height, word*
   uint32* dP;     // pointer to the pixels we are writing
   uint16* bP;     // pointer to the pixels we are reading
   bP = (uint16*)srcPtr;
-  while (src_height--)
+  while (src_height-- >= 0)
 	{
 	  //bP = (uint16*)srcPtr + src_width;
 	  dP = (uint32*)dstPtr;
 //    int finish = src_width;
-    while (src_width--)
+    while (src_width-- >= 0)
     {
       register uint32 colorA, colorB;
       uint32 colorC = 0, colorD = 0,

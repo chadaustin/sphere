@@ -116,6 +116,7 @@ private:
     SCRIPT_TYPE_JAVA,
     SCRIPT_TYPE_CPP,
     SCRIPT_TYPE_TXT,
+    SCRIPT_TYPE_PERL,
   };
 
   ScriptType GetScriptType();
@@ -149,7 +150,7 @@ private:
 
 private:
   BOOL m_SearchDown;
-  //CString m_SearchString;
+  CString m_SearchString;
 
 private:
   bool m_Created;

@@ -71,6 +71,7 @@ afx_msg LRESULT CMDITabs::OnSizeParent(WPARAM, LPARAM lParam)
       pParams->rect.bottom -= height;
       MoveWindow(pParams->rect.left, pParams->rect.bottom - offset, m_width, m_height, true);
     }
+
     ShowWindow(SW_NORMAL);
   }
   return 0;
@@ -267,6 +268,7 @@ void CMDITabs::OnNcPaint()
     ::MoveToEx(hdc, 2, 1, NULL);
     ::LineTo(hdc, m_width - 2, 1);
   }
+
   ::SelectObject(hdc, old);
   ::DeleteObject(pen);
   ::ReleaseDC(m_hWnd, hdc);
@@ -279,25 +281,28 @@ void CMDITabs::Create(CFrameWnd* pMainFrame, DWORD dwStyle)
   m_bTop = (dwStyle & MT_TOP);
   m_minViews = (dwStyle & MT_HIDEWLT2VIEWS) ? 2 : 1;
 
-  CTabCtrl::Create(WS_CHILD|WS_VISIBLE|(m_bTop?0:TCS_BOTTOM)|TCS_SINGLELINE|TCS_FOCUSNEVER|TCS_FORCEICONLEFT|WS_CLIPSIBLINGS, CRect(0, 0, 0, 0), pMainFrame, 42);
+  CTabCtrl::Create(WS_CHILD |WS_VISIBLE | (m_bTop ? 0 : TCS_BOTTOM) |TCS_SINGLELINE|TCS_FOCUSNEVER|TCS_FORCEICONLEFT|WS_CLIPSIBLINGS, CRect(0, 0, 0, 0), pMainFrame, 42);
   ModifyStyleEx(0, WS_EX_CLIENTEDGE);
   SendMessage(WM_SETFONT, WPARAM(GetStockObject(DEFAULT_GUI_FONT)), 0);
 
-  HWND wnd;
-
-  for (wnd = ::GetTopWindow(*pMainFrame); wnd; wnd = ::GetNextWindow(wnd, GW_HWNDNEXT))
+  for (HWND wnd = ::GetTopWindow(*pMainFrame); wnd; wnd = ::GetNextWindow(wnd, GW_HWNDNEXT))
   {
     char wndClass[32];
-    ::GetClassName(wnd, wndClass, 32);
-    if (strncmp(wndClass, "MDIClient", 32) == 0) break;
+    ::GetClassName(wnd, wndClass, sizeof(wndClass));
+    if (strncmp(wndClass, "MDIClient", sizeof(wndClass)) == 0) {
+      m_mdiClient = wnd;
+      break;
+    }
   }
-  m_mdiClient = wnd;
 
   ASSERT(m_mdiClient); // Ooops, no MDIClient window?
 
   // manipulate Z-order so, that our tabctrl is above the mdi client, but below any status bar
-  ::SetWindowPos(m_hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE);
-  ::SetWindowPos(m_mdiClient, m_hWnd, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE);
+  if (m_hWnd && m_mdiClient) {
+    ::SetWindowPos(m_hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE);
+    ::SetWindowPos(m_mdiClient, m_hWnd, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE);
+  }
+    
   m_bImages = (dwStyle & MT_IMAGES) != 0;
   if (m_bImages)
   {
@@ -335,8 +340,10 @@ void CMDITabs::OnContextMenu(CWnd* pWnd, CPoint point)
 
     HMENU menu = HMENU(::SendMessage(::GetTopWindow(hWnd), WM_GETTABSYSMENU, 0, 0));
     if (menu == 0) menu = ::GetSystemMenu(hWnd, FALSE);
-    UINT cmd = ::TrackPopupMenu(menu, TPM_RETURNCMD|TPM_RIGHTBUTTON|TPM_VCENTERALIGN, point.x, point.y, 0, m_hWnd, NULL);
-    ::SendMessage(hWnd, WM_SYSCOMMAND, cmd, 0);
+    if (menu) {
+      UINT cmd = ::TrackPopupMenu(menu, TPM_RETURNCMD|TPM_RIGHTBUTTON|TPM_VCENTERALIGN, point.x, point.y, 0, m_hWnd, NULL);
+      ::SendMessage(hWnd, WM_SYSCOMMAND, cmd, 0);
+    }
   }
 }
 

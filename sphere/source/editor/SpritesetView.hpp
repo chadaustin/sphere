@@ -37,8 +37,8 @@ public:
 
 private:
   void UpdateMaxSizes();
-  void DrawDirection(HDC dc, int direction, int y);
-  void DrawFrame(HDC dc, int x, int y, int direction, int frame);
+  void DrawDirection(CPaintDC& dc_, int direction, int y);
+  void DrawFrame(CPaintDC& dc_, int x, int y, int direction, int frame);
   void UpdateDrawBitmap(int direction, int frame);
   void UpdateScrollBars();
   void InvalidateFrame(int direction, int frame);

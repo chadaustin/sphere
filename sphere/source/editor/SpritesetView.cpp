@@ -11,6 +11,8 @@
 #include "EditRange.hpp"
 #include "../common/strcmp_ci.hpp"
 
+#include "ImageRender.hpp"
+
 #include "Editor.hpp"
 
 #define LABEL_WIDTH 80
@@ -205,8 +207,10 @@ CSpritesetView::UpdateMaxSizes()
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CSpritesetView::DrawDirection(HDC dc, int direction, int y)
+CSpritesetView::DrawDirection(CPaintDC& dc_, int direction, int y)
 {
+  HDC dc = dc_.m_hDC;
+
   HBRUSH brush = CreateSolidBrush(0xFFFFFF);
   HBRUSH old_brush = (HBRUSH)SelectObject(dc, brush);
   HFONT old_font = (HFONT)SelectObject(dc, GetStockObject(DEFAULT_GUI_FONT));
@@ -241,7 +245,7 @@ CSpritesetView::DrawDirection(HDC dc, int direction, int y)
        && !(!m_DrawBitmap || m_DrawBitmap->GetPixels() == NULL))
       {
         UpdateDrawBitmap(direction, i + m_LeftFrame);
-        DrawFrame(dc, LABEL_WIDTH + i * m_MaxFrameWidth, y, direction, i + m_LeftFrame);
+        DrawFrame(dc_, LABEL_WIDTH + i * m_MaxFrameWidth, y, direction, i + m_LeftFrame);
       }
       else
         FillRect(dc, &c, (HBRUSH)GetStockObject(BLACK_BRUSH));
@@ -252,8 +256,10 @@ CSpritesetView::DrawDirection(HDC dc, int direction, int y)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CSpritesetView::DrawFrame(HDC dc, int x, int y, int direction, int frame)
+CSpritesetView::DrawFrame(CPaintDC& dc_, int x, int y, int direction, int frame)
 {
+  HDC dc = dc_.m_hDC;
+
   if (!m_DrawBitmap || m_DrawBitmap->GetPixels() == NULL) {
     return;
   }
@@ -261,6 +267,15 @@ CSpritesetView::DrawFrame(HDC dc, int x, int y, int direction, int frame)
   int index = m_Spriteset->GetFrameIndex(direction, frame);
   CImage32& sprite = m_Spriteset->GetImage(index);
   BitBlt(dc, x, y, m_MaxFrameWidth, m_MaxFrameHeight, m_DrawBitmap->GetDC(), 0, 0, SRCCOPY);
+
+  /*
+  StretchedBlit(dc_, m_DrawBitmap,
+              (int)m_ZoomFactor.GetZoomFactor(), (int)m_ZoomFactor.GetZoomFactor(),
+              sprite.GetWidth(), sprite.GetHeight(),
+              sprite.GetPixels(), true, NULL,
+              0, 0, m_MaxFrameWidth, m_MaxFrameHeight,
+              x, y);
+  */
 
   if (direction == m_CurrentDirection && frame == m_CurrentFrame)
   {
@@ -643,7 +658,7 @@ CSpritesetView::OnPaint()
   {
     if (m_TopDirection + i < m_Spriteset->GetNumDirections())
     {
-      DrawDirection(dc, m_TopDirection + i, i * m_MaxFrameHeight);
+      DrawDirection(dc_, m_TopDirection + i, i * m_MaxFrameHeight);
     }
     else
     {
