@@ -61,6 +61,8 @@ CSpritesetAnimationPalette::Destroy()
 
   Configuration::Set(KEY_SPRITESET_ANIMATION_VISIBLE, IsWindowVisible() != FALSE);
 
+  KillTimer(ANIMATION_TIMER);
+
   // destroy window
   DestroyWindow();
 }

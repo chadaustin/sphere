@@ -1,6 +1,6 @@
 #include <string.h>
 #include "Tile.hpp"
-#include "Tileset.hpp"
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -9,8 +9,6 @@ sTile::sTile(int width, int height)
 , m_Animated(false)
 , m_NextTile(0)
 , m_Delay(0)
-, m_CurrentShown(0)
-, m_UpdateFrame(0)
 {
   Clear();
 }
@@ -26,8 +24,6 @@ sTile::sTile(const sTile& rhs)
   m_Delay          = rhs.m_Delay;
   m_ObstructionMap = rhs.m_ObstructionMap;
   m_Name           = rhs.m_Name;
-	m_CurrentShown   = rhs.m_CurrentShown;
-	m_UpdateFrame    = rhs.m_UpdateFrame;	
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -42,8 +38,6 @@ sTile::operator=(const sTile& rhs)
   m_Delay          = rhs.m_Delay;
   m_ObstructionMap = rhs.m_ObstructionMap;
   m_Name           = rhs.m_Name;
-	m_CurrentShown   = rhs.m_CurrentShown;
-	m_UpdateFrame    = rhs.m_UpdateFrame;	
 
   return *this;
 }
@@ -81,25 +75,3 @@ sTile::SetName(std::string tile_name)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-void
-sTile::UpdateAnimation(int frame, const sTileset & parent)
-{
-	m_Updated = false;
-
-	const sTile * pShown = &parent.GetTile(m_CurrentShown);
-	while (pShown->IsAnimated() && frame > m_UpdateFrame)
-	{
-		m_Updated = true;
-		m_CurrentShown = pShown->GetNextTile();		
-		pShown = &parent.GetTile(m_CurrentShown);
-		m_UpdateFrame += pShown->GetDelay();
-	}	
-}
-
-void 
-sTile::InitAnimation(int thisTile, int frame)
-{
-	m_CurrentShown = thisTile;
-	m_UpdateFrame  = frame + m_Delay;
-}

@@ -81,7 +81,6 @@ CTilesetView::CTilesetView()
 , m_ZoomFactor(1)
 , m_BlitTile(NULL)
 , m_MenuShown(false)
-, m_ShowGrid(true)
 {
 }
 
@@ -176,15 +175,15 @@ CTilesetView::SetSelectedTile(int tile)
   m_SelectedTile = tile;
   Invalidate();
 
-	//scroll into view
-	RECT client_rect;
-	GetClientRect(&client_rect);
+  //scroll into view
+  RECT client_rect;
+  GetClientRect(&client_rect);
   int blit_width  = m_BlitTile->GetWidth();  
-	int num_tiles_x = client_rect.right / blit_width;
-	int row = tile / num_tiles_x;
-	int maxRow = GetNumRows() - GetPageSize();
-	m_TopRow = row > maxRow ? maxRow : row;
-	UpdateScrollBar();
+  int num_tiles_x = client_rect.right / blit_width;
+  int row = tile / num_tiles_x;
+  int maxRow = GetNumRows() - GetPageSize();
+  m_TopRow = row > maxRow ? maxRow : row;
+  UpdateScrollBar();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -344,32 +343,6 @@ CTilesetView::OnPaint()
         dc.FillRect(&Rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
       }      
     }
-
-		/*if (m_ShowGrid) {
-			int tile_width = m_Tileset->GetTileWidth();
-			int tile_height = m_Tileset->GetTileHeight();
-
-			int width = client_rect.right;
-			int height = client_rect.bottom;
-			int size = 1 * m_ZoomFactor;
-			int offsetx = 0;
-			int offsety = 0;
-
-			HPEN linepen = CreatePen(PS_SOLID, 1, RGB(255, 0, 255));
-			HPEN oldpen = (HPEN)SelectObject(dc, linepen);
-			for (int ix = 0; ix <= width; ++ix) {
-				MoveToEx(dc, offsetx + ix * size * tile_width, offsety, NULL);
-				LineTo  (dc, offsetx + ix * size * tile_width, offsety + height * size * tile_height);
-			}
-	  
-			for (int iy = 0; iy <= height; ++iy) {
-				MoveToEx(dc, offsetx, offsety + iy * size * tile_height, NULL);
-				LineTo  (dc, offsetx + width * size * tile_width, offsety + iy * size * tile_height);
-			}
-			
-			SelectObject(dc, oldpen);
-			DeleteObject(linepen);
-  }*/
 
 }
 

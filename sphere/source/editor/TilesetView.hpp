@@ -84,7 +84,6 @@ private:
   int m_TopRow;
   int m_SelectedTile;
   int m_ZoomFactor;
-	bool m_ShowGrid;
 
   CDIBSection* m_BlitTile;
 

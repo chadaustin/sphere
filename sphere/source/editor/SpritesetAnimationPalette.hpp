@@ -24,7 +24,6 @@ private:
   afx_msg void OnRButtonUp(UINT flags, CPoint point);
 	afx_msg void OnTimer(UINT event);
 
-	
 	void ResetAnimation();
 
 private:

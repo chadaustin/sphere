@@ -706,6 +706,14 @@ SOURCE=.\PaletteWindow.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\SpritesetAnimationPalette.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\SpritesetAnimationPalette.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\SpritesetImagesPalette.cpp
 # End Source File
 # Begin Source File

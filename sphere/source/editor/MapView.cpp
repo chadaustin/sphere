@@ -134,7 +134,7 @@ CMapView::InitAnimations()
 
 	for (int i = 0; i < tileNum; i++)
 	{
-		m_Map->GetTileset().GetTile(i).InitAnimation(i, m_FrameTick);
+	//	m_Map->GetTileset().GetTile(i).InitAnimation(i, m_FrameTick);
 	}
 }
 
@@ -1358,7 +1358,8 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
         tx < layer.GetWidth() &&
         ty < layer.GetHeight())
     {
-      int tile = m_Map->GetTileset().GetTile(layer.GetTile(tx, ty)).GetCurrentShown();
+      //int tile = m_Map->GetTileset().GetTile(layer.GetTile(tx, ty)).GetCurrentShown();
+      int tile = layer.GetTile(tx, ty);
       const RGBA* src = m_Map->GetTileset().GetTile(tile).GetPixels();
       BGRA* dest = (BGRA*)m_BlitTile->GetPixels();
 
@@ -2797,6 +2798,7 @@ CMapView::TP_ToolSelected(int tool)
 afx_msg void
 CMapView::OnTimer(UINT event)
 {
+  /*
 	if (!m_ShowAnimations) return;
 
   //invalidate all visible animated tiles, changing their shown tile
@@ -2857,7 +2859,8 @@ CMapView::OnTimer(UINT event)
 		}
 	}
 
-  m_RedrawWindow = 1;  
+  m_RedrawWindow = 1;
+  */
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -60,6 +60,7 @@ sources = Split("""
     SoundWindow.cpp
     SpriteBaseView.cpp
     SpritePropertiesDialog.cpp
+    SpritesetAnimationPalette.cpp
     SpritesetImagesPalette.cpp
     SpritesetView.cpp
     SpritesetWindow.cpp
@@ -79,6 +80,7 @@ sources = Split("""
     WindowStyleWindow.cpp
     ZoneEditDialog.cpp
 """)
+
 sources.append(env.Object('win32_sphere_config',
                           '../engine/win32/win32_sphere_config.cpp'))
 sources.append(env.RES('editor.res', 'resources/editor.rc'))
