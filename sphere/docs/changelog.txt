@@ -1,3 +1,12 @@
+2003.06.08
+  - Flik added
+    spriteset.filename
+    spriteset.save(filename)
+    RestartGame()
+  - Gau added
+    HashByteArray(byte_array)
+    HashFromFile(filename)
+
 2003.05.14
   - adding drawText/drawZoomedText/drawTextBox surface methods
   - added surface.save(filename)

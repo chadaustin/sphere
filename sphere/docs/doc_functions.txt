@@ -244,7 +244,7 @@ log_object.endBlock()
 
   *** ByteArray object ***
   ByteArrays are pretty much only used for networking (see below for Network 
-  stuff)
+  stuff) or RawFiles (also below)
   
   CreateByteArray(size)
     - returns a ByteArray object of 'size' bytes
@@ -268,7 +268,15 @@ log_object.endBlock()
     - returns a slice of the bytearray starting at start, and ending at end
       or the end of the bytearray if end is omitted.
       If end is a negative number, the end point is started from the end of the bytearray.
-    
+
+    *** MD5 fingerprinting ByteArray objects ***
+    HashByteArray(byte_array)
+      - generates an MD5 fingerprint as a hexadecimal string whose output
+        is the same as the RSA reference implementation of RFC 1321 which
+        means that the unix md5 command will return the same string for the
+        identical input.  The resulting string contains the hexadecimal
+        representation of the MD5 fingerprint for the specified byte
+        array object
 
   *** networking ***
   GetLocalName()
@@ -405,8 +413,7 @@ log_object.endBlock()
 
     SetLayerVisible(layer, visible)
       - shows 'layer' if visible == true, and hides it if visible == false
-
-    IsLayerReflective(layer)
+     IsLayerReflective(layer)
       - returns true if the layer is reflective
 
     SetLayerReflective(layer, reflective)
@@ -466,7 +473,8 @@ log_object.endBlock()
     ExecuteTrigger(map_x, map_y, layer)
       - activates the trigger positioned on map_x, map_y, layer if one exists.
         map_x and map_y are in map (per-pixel) coordinates.
-        (Currently the layer parameter is ignored, although it still must be valid.)
+
+        (Currently the layer parameter is ignored, although it still must be valid.)
 
     AreZonesAt(map_x, map_y, layer)
       - returns true if there are any zones at map_x, map_y on layer
@@ -764,21 +772,19 @@ log_object.endBlock()
   LoadSpriteset(filename)
     - returns a spriteset object from 'filename'. If Sphere is unable to open
       the file, the engine will give an error message and exit.
-
-  spriteset.filename
-    - the filename that the spriteset was loaded with
+   spriteset.filename
+     - the filename that the spriteset was loaded with
+   spriteset.save(filename)
+     - saves the spriteset object to 'filename'
 
-  spriteset.save(filename)
-    - saves the spriteset object to 'filename'
+   spriteset_object.images
+     - array of image objects
 
-  spriteset_object.images
-    - array of image objects
+   spriteset_object.directions
+     - array of spriteset_direction objects
 
-  spriteset_object.directions
-    - array of spriteset_direction objects
-
-  spriteset_object.base
-    - spriteset_base object
+   spriteset_object.base
+     - spriteset_base object
 
   // spriteset_direction objects
   spriteset_direction.name
@@ -899,8 +905,7 @@ log_object.endBlock()
     - draws the window at (x, y) with the width and height of w and h.
       Note that window corners and edges are drawn outside of the width 
       and height of the window.
-
-  windowstyle_object.setColorMask(color)
+   windowstyle_object.setColorMask(color)
     - sets the color mask for a windowstyle (see ApplyColorMask)
 
   windowstyle_object.getColorMask()
@@ -967,7 +972,7 @@ log_object.endBlock()
   
   *** surfaces ***
   CreateSurface(width, height, color)
-    - returns a surface object with width × height, filled with color
+    - returns a surface object with width x height, filled with color
   
   LoadSurface(filename)
     - returns a surface object with an image with the 'filename'
@@ -1053,8 +1058,7 @@ log_object.endBlock()
     - returns a new surface object with the height and width of h and w, with
       part of image at (x,y) from the surface_object with the width w and 
       height h.
-
-  surface_object.drawText(font, x, y, text)
+   surface_object.drawText(font, x, y, text)
     - draws 'text' at x, y with the font onto the surface_object
 
   surface_object.drawZoomedText(font, x, y, scale, text)
@@ -1078,6 +1082,7 @@ log_object.endBlock()
         newcolor.green = gn + (gr * oldcolor.red + gg * oldcolor.green + gb * oldcolor.blue) / 255;
         newcolor.blue  = bn + (br * oldcolor.red + bg * oldcolor.green + bb * oldcolor.blue) / 255;
       (see applyColorFX and applyColorFX4)
+
 
   *** animations ***
   LoadAnimation(filename)
@@ -1173,3 +1178,12 @@ log_object.endBlock()
       
   rawfile_object.close()
     - closes the rawfile object, after this, the rawfile_object cannot be used anymore.
+
+    *** MD5 fingerprinting rawfiles ***
+    HashFromFile(filename)
+      - generates an MD5 of the specified raw file, which, by backtracking
+        with a ../ may refer to any file within the game directory structure.
+        The result is a 32 character string containing the hexadecimal
+        representation of the resulting 128-bit MD5 fingerprint.  Identical
+        files produce the same MD5 hash so it is an effective way to determine
+        if a file has become corrupt or altered
