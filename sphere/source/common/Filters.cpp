@@ -63,16 +63,19 @@ void Translate(int width, int height, RGBA* pixels, int dx, int dy)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void RotateCW(int width, RGBA* pixels)
+void RotateCW(int src_width, int src_height, RGBA* pixels)
 {
-  RGBA* old_pixels = new RGBA[width * width];
-  memcpy(old_pixels, pixels, width * width * sizeof(RGBA));
+  RGBA* old_pixels = new RGBA[src_width * src_height];
+  memcpy(old_pixels, pixels, src_width * src_height * sizeof(RGBA));
 
-  for (int iy = 0; iy < width; iy++) {
-    for (int ix = 0; ix < width; ix++) {
-      int dx = width - iy - 1;
+  int dest_width = src_height;
+  int dest_height = src_width;
+
+  for (int iy = 0; iy < src_height; iy++) {
+    for (int ix = 0; ix < src_width; ix++) {
+      int dx = src_width - iy - 1;
       int dy = ix;
-      pixels[dy * width + dx] = old_pixels[iy * width + ix];
+      pixels[dy * dest_width + dx] = old_pixels[iy * src_width + ix];
     }
   }
 
@@ -81,16 +84,19 @@ void RotateCW(int width, RGBA* pixels)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void RotateCCW(int width, RGBA* pixels)
+void RotateCCW(int src_width, int src_height, RGBA* pixels)
 {
-  RGBA* old_pixels = new RGBA[width * width];
-  memcpy(old_pixels, pixels, width * width * sizeof(RGBA));
+  RGBA* old_pixels = new RGBA[src_width * src_height];
+  memcpy(old_pixels, pixels, src_width * src_height * sizeof(RGBA));
 
-  for (int iy = 0; iy < width; iy++) {
-    for (int ix = 0; ix < width; ix++) {
+  int dest_width = src_height;
+  int dest_height = src_width;
+
+  for (int iy = 0; iy < src_height; iy++) {
+    for (int ix = 0; ix < src_width; ix++) {
       int dx = iy;
-      int dy = width - ix - 1;
-      pixels[dy * width + dx] = old_pixels[iy * width + ix];
+      int dy = src_width - ix - 1;
+      pixels[dy * dest_width + dx] = old_pixels[iy * src_width + ix];
     }
   }
 

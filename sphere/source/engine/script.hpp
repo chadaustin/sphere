@@ -177,6 +177,7 @@ private:
   declare_method(ssSurfaceReplaceColor);
   declare_method(ssSurfaceLine);
   declare_method(ssSurfaceRectangle);
+  declare_method(ssSurfaceTriangle);
   declare_method(ssSurfaceRotate);
   declare_method(ssSurfaceResize);
   declare_method(ssSurfaceRescale);

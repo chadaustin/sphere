@@ -555,6 +555,28 @@ CImageView::InSelection(POINT p)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+int
+CImageView::GetSelectionWidth()
+{
+  if (m_SelectionWidth <= 0 && m_SelectionHeight <= 0)
+    return m_Image.GetWidth();
+  else
+    return m_SelectionWidth;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+int
+CImageView::GetSelectionHeight()
+{
+  if (m_SelectionWidth <= 0 && m_SelectionHeight <= 0)
+    return m_Image.GetHeight();
+  else
+    return m_SelectionHeight;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 void
 CImageView::GetSelectionArea(int& sx, int& sy, int& sw, int& sh) {
   if (m_SelectionWidth <= 0 && m_SelectionHeight <= 0) {
@@ -1292,7 +1314,7 @@ CImageView::OnRButtonUp(UINT flags, CPoint point)
     EnableMenuItem(submenu, ID_IMAGEVIEW_UNDO, MF_BYCOMMAND | MF_GRAYED);
   }
 
-  if (m_Image.GetWidth() != m_Image.GetHeight()) {
+  if (GetSelectionWidth() != GetSelectionHeight()) {
     EnableMenuItem(menu, ID_IMAGEVIEW_ROTATE_CW,  MF_BYCOMMAND | MF_GRAYED);
     EnableMenuItem(menu, ID_IMAGEVIEW_ROTATE_CCW, MF_BYCOMMAND | MF_GRAYED);
   }
@@ -1456,13 +1478,23 @@ CImageView::OnRotateCW()
 {
   int sx, sy, sw, sh;
   GetSelectionArea(sx, sy, sw, sh);
-  if (sw != sh) // can only be used on sqaure selections/images
-    return;
+  //if (sw != sh) // can only be used on sqaure selections/images
+  //  return;
 
   AddUndoState();
   RGBA* pixels = GetSelectionPixels();
-  RotateCW(sw, pixels);
+  RotateCW(sw, sh, pixels);
+
+  std::swap(sw, sh);
+
+  if (m_SelectionWidth > 0 && m_SelectionHeight > 0) {
+    m_SelectionWidth = sw;
+    m_SelectionHeight = sh;
+  }
+
   UpdateSelectionPixels(pixels, sx, sy, sw, sh);
+  if (pixels != m_Image.GetPixels()) delete[] pixels;
+
 
   // things have changed
   Invalidate();
@@ -1476,13 +1508,20 @@ CImageView::OnRotateCCW()
 {
   int sx, sy, sw, sh;
   GetSelectionArea(sx, sy, sw, sh);
-  if (sw != sh) // can only be used on sqaure selections/images
-    return;
 
   AddUndoState();
   RGBA* pixels = GetSelectionPixels();
-  RotateCCW(sw, pixels);
+  RotateCCW(sw, sh, pixels);
+
+  std::swap(sw, sh);
+
+  if (m_SelectionWidth > 0 && m_SelectionHeight > 0) {
+    m_SelectionWidth = sw;
+    m_SelectionHeight = sh;
+  }
+
   UpdateSelectionPixels(pixels, sx, sy, sw, sh);
+  if (pixels != m_Image.GetPixels()) delete[] pixels;
 
   // things have changed
   Invalidate();
@@ -1494,8 +1533,15 @@ CImageView::OnRotateCCW()
 afx_msg void
 CImageView::OnSlideUp()
 {
+  int sx, sy, sw, sh;
+  GetSelectionArea(sx, sy, sw, sh);
+  RGBA* pixels = GetSelectionPixels();
+
   AddUndoState();
-  Translate(m_Image.GetWidth(), m_Image.GetHeight(), m_Image.GetPixels(), 0, -1);
+  Translate(sw, sh, pixels, 0, -1);
+
+  UpdateSelectionPixels(pixels, sx, sy, sw, sh);
+  if (pixels != m_Image.GetPixels()) delete[] pixels;
 
   // things have changed
   Invalidate();
@@ -1507,8 +1553,15 @@ CImageView::OnSlideUp()
 afx_msg void
 CImageView::OnSlideRight()
 {
+  int sx, sy, sw, sh;
+  GetSelectionArea(sx, sy, sw, sh);
+  RGBA* pixels = GetSelectionPixels();
+
   AddUndoState();
-  Translate(m_Image.GetWidth(), m_Image.GetHeight(), m_Image.GetPixels(), 1, 0);
+  Translate(sw, sh, pixels, 1, 0);
+
+  UpdateSelectionPixels(pixels, sx, sy, sw, sh);
+  if (pixels != m_Image.GetPixels()) delete[] pixels;
 
   // things have changed
   Invalidate();
@@ -1520,8 +1573,15 @@ CImageView::OnSlideRight()
 afx_msg void
 CImageView::OnSlideDown()
 {
+  int sx, sy, sw, sh;
+  GetSelectionArea(sx, sy, sw, sh);
+  RGBA* pixels = GetSelectionPixels();
+
   AddUndoState();
-  Translate(m_Image.GetWidth(), m_Image.GetHeight(), m_Image.GetPixels(), 0, 1);
+  Translate(sw, sh, pixels, 0, 1);
+
+  UpdateSelectionPixels(pixels, sx, sy, sw, sh);
+  if (pixels != m_Image.GetPixels()) delete[] pixels;
 
   // things have changed
   Invalidate();
@@ -1533,8 +1593,15 @@ CImageView::OnSlideDown()
 afx_msg void
 CImageView::OnSlideLeft()
 {
+  int sx, sy, sw, sh;
+  GetSelectionArea(sx, sy, sw, sh);
+  RGBA* pixels = GetSelectionPixels();
+
   AddUndoState();
-  Translate(m_Image.GetWidth(), m_Image.GetHeight(), m_Image.GetPixels(), -1, 0);
+  Translate(sw, sh, pixels, -1, 0);
+
+  UpdateSelectionPixels(pixels, sx, sy, sw, sh);
+  if (pixels != m_Image.GetPixels()) delete[] pixels;
 
   // things have changed
   Invalidate();
@@ -1546,13 +1613,21 @@ CImageView::OnSlideLeft()
 afx_msg void
 CImageView::OnSlideOther()
 {
-  CNumberDialog dx("Slide Horizontally", "Value", 0, 0, m_Image.GetWidth()); 
+  CNumberDialog dx("Slide Horizontally", "Value", 0, 0, GetSelectionWidth()); 
   if (dx.DoModal() == IDOK) {
-    CNumberDialog dy("Slide Vertically", "Value", 0, 0, m_Image.GetHeight()); 
+    CNumberDialog dy("Slide Vertically", "Value", 0, 0, GetSelectionHeight()); 
     if (dy.DoModal() == IDOK) {
       if (dx.GetValue() != 0 || dy.GetValue() != 0) {
+
+        int sx, sy, sw, sh;
+        GetSelectionArea(sx, sy, sw, sh);
+        RGBA* pixels = GetSelectionPixels();
+
         AddUndoState();
-        Translate(m_Image.GetWidth(), m_Image.GetHeight(), m_Image.GetPixels(), dx.GetValue(), dy.GetValue());
+        Translate(sw, sh, pixels, dx.GetValue(), dy.GetValue());
+
+        UpdateSelectionPixels(pixels, sx, sy, sw, sh);
+        if (pixels != m_Image.GetPixels()) delete[] pixels;
 
         // things have changed
         Invalidate();
@@ -1685,7 +1760,20 @@ CImageView::OnReplaceRGBA()
 
   AddUndoState();
 
-  m_Image.ReplaceColor(m_Image.GetPixel(p.x, p.y), GetColor());
+  RGBA color = m_Image.GetPixel(p.x, p.y);;
+  int sx, sy, sw, sh;
+  int width = m_Image.GetWidth();
+  RGBA* pImage = m_Image.GetPixels();
+
+  GetSelectionArea(sx, sy, sw, sh);
+
+  for (int dx = sx; dx < (sx + sw); dx++) {
+    for (int dy = sy; dy < (sy + sh); dy++) {
+      if (pImage[dy * width + dx] == color) {
+        pImage[dy * width + dx] = GetColor();
+      }
+    }
+  }
 
   Invalidate();
   m_Handler->IV_ImageChanged();

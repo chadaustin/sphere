@@ -1253,7 +1253,7 @@ void
 wImageView::OnRotateCW(wxCommandEvent &event)
 {
   AddUndoState();
-  RotateCW(m_Image.GetWidth(), m_Image.GetPixels());
+  RotateCW(m_Image.GetWidth(), m_Image.GetHeight(), m_Image.GetPixels());
 
   // things have changed
   Refresh();
@@ -1266,7 +1266,7 @@ void
 wImageView::OnRotateCCW(wxCommandEvent &event)
 {
   AddUndoState();
-  RotateCCW(m_Image.GetWidth(), m_Image.GetPixels());
+  RotateCCW(m_Image.GetWidth(), m_Image.GetHeight(), m_Image.GetPixels());
 
   // things have changed
   Refresh();

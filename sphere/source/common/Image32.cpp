@@ -601,7 +601,7 @@ CImage32::RotateCW()
   if (m_Width != m_Height)
     return;
 
-  ::RotateCW(m_Width, m_Pixels);
+  ::RotateCW(m_Width, m_Height, m_Pixels);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -613,7 +613,7 @@ CImage32::RotateCCW()
   if (m_Width != m_Height)
     return;
 
-  ::RotateCCW(m_Width, m_Pixels);
+  ::RotateCCW(m_Width, m_Height, m_Pixels);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -834,6 +834,23 @@ CImage32::Rectangle(int x1, int y1, int x2, int y2, RGBA color, int cx, int cy, 
     case BLEND:      primitives::Rectangle(m_Pixels, m_Width, x1, y1, w, h, color, clip, blendRGBA); break;
     case RGB_ONLY:   primitives::Rectangle(m_Pixels, m_Width, x1, y1, w, h, color, clip, copyRGB);   break;
     case ALPHA_ONLY: primitives::Rectangle(m_Pixels, m_Width, x1, y1, w, h, color, clip, copyAlpha); break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CImage32::Triangle(int x1, int y1, int x2, int y2, int x3, int y3, RGBA color)
+{
+  int x[] = {x1, x2, x3};
+  int y[] = {y1, y2, y3};
+
+  clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+  switch (m_BlendMode) {
+    case REPLACE:    primitives::Triangle(m_Pixels, m_Width, x, y, color, clip, copyRGBA); break;
+    case BLEND:      primitives::Triangle(m_Pixels, m_Width, x, y, color, clip, blendRGBA); break;
+    case RGB_ONLY:   primitives::Triangle(m_Pixels, m_Width, x, y, color, clip, copyRGB); break;
+    case ALPHA_ONLY: primitives::Triangle(m_Pixels, m_Width, x, y, color, clip, copyAlpha); break;
   }
 }
 

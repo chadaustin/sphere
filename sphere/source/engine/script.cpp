@@ -4308,6 +4308,7 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
     { "flipVertically",   ssSurfaceFlipVertically,   0, 0, 0 },
     { "clone",            ssSurfaceClone,            0, 0, 0 },
     { "cloneSection",     ssSurfaceCloneSection,     4, 0, 0 },
+    { "triangle",         ssSurfaceTriangle,         7, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -4480,6 +4481,20 @@ begin_method(SS_SURFACE, ssSurfaceRectangle, 5)
   arg_color(c);
 
   object->surface->Rectangle(x1, y1, x2, y2, c);
+end_method()
+
+////////////////////////////////////////
+
+begin_method(SS_SURFACE, ssSurfaceTriangle, 7)
+  arg_int(x1);
+  arg_int(y1);
+  arg_int(x2);
+  arg_int(y2);
+  arg_int(x3);
+  arg_int(y3);
+  arg_color(c);
+
+  object->surface->Triangle(x1, y1, x2, y2, x3, y3, c);
 end_method()
 
 ////////////////////////////////////////
