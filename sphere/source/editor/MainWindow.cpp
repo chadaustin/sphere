@@ -977,9 +977,9 @@ CMainWindow::OnFileImportBitmapToRTS()
   if (ResizeDialog.DoModal() != IDOK)
     return;
 
-  bool should_remove_duplicates = false;
+  bool allow_duplicates = true;
   if (MessageBox("Do you want to remove duplicate tiles?", "Remove Duplicates", MB_ICONQUESTION | MB_YESNO) == IDYES) {
-    should_remove_duplicates = true;
+    allow_duplicates = false;
   }
 
   CImage32 image;
@@ -990,7 +990,7 @@ CMainWindow::OnFileImportBitmapToRTS()
   }
 
   sTileset tileset;
-  if (!tileset.BuildFromImage(image, ResizeDialog.GetWidth(), ResizeDialog.GetHeight(), should_remove_duplicates))
+  if (!tileset.BuildFromImage(image, ResizeDialog.GetWidth(), ResizeDialog.GetHeight(), allow_duplicates))
   {
     MessageBox("Can't convert image!");
     return;
