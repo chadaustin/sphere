@@ -36,6 +36,7 @@ private:
   afx_msg void OnSavePointReached(NMHDR* nmhdr, LRESULT* result);
   afx_msg void OnSavePointLeft(NMHDR* nmhdr, LRESULT* result);
   afx_msg void OnPosChanged(NMHDR* nmhdr, LRESULT* result);
+  afx_msg void OnCharAdded(NMHDR* nmhdr, LRESULT* result);
   void SetLineNumber(int line);
 
   afx_msg LRESULT OnFindReplace(WPARAM, LPARAM);

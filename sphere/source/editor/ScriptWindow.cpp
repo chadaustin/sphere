@@ -30,6 +30,7 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_NOTIFY(SCN_SAVEPOINTREACHED, ID_EDIT, OnSavePointReached)
   ON_NOTIFY(SCN_SAVEPOINTLEFT,    ID_EDIT, OnSavePointLeft)
   ON_NOTIFY(SCN_UPDATEUI,         ID_EDIT, OnPosChanged)
+  ON_NOTIFY(SCN_CHARADDED,        ID_EDIT, OnCharAdded)
 
   ON_REGISTERED_MESSAGE(s_FindReplaceMessage, OnFindReplace)
 
@@ -346,6 +347,29 @@ CScriptWindow::OnPosChanged(NMHDR* nmhdr, LRESULT* result) {
   int pos = SendEditor(SCI_GETCURRENTPOS);
   int line = SendEditor(SCI_LINEFROMPOSITION, pos);
   SetLineNumber(line);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
+  SCNotification* notify = (SCNotification*)nmhdr;
+  if (notify->ch == '\n') {
+    int pos = SendEditor(SCI_GETCURRENTPOS);
+    int line = SendEditor(SCI_LINEFROMPOSITION, pos);
+
+    if (line > 0) {
+      char text[1024 * 16];
+      SendEditor(SCI_GETLINE, line - 1, (LRESULT)text);
+      std::string str;
+      int i = 0;
+      while (text[i] == ' ' || text[i] == '\t') {
+        str += text[i++];
+      }
+
+      SendEditor(SCI_REPLACESEL, 0, (LRESULT)str.c_str());
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
