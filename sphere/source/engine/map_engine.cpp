@@ -2311,21 +2311,43 @@ CMapEngine::GetPersonMask(const char* name, RGBA& mask)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::GetPersonData(const char* name, std::vector<struct PersonData>& data)
+CMapEngine::GetPersonData(const char* name, std::vector<struct PersonData>& person_data)
 {
+  struct Local {
+    static void SetDataStr(std::vector<struct PersonData>& person_data, const char* name, const char* value)
+    {
+      bool found = false;
+      for (int i = 0; i < int(person_data.size()); i++) {
+        if (person_data[i].name == name) {
+          person_data[i].value = value;
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        PersonData data;
+        data.name = name;
+        data.value = value;
+        person_data.push_back(data);
+      }
+    }
+
+    static void SetDataInt(std::vector<struct PersonData>& person_data, const char* name, const int value)
+    {
+      std::string str = itos(value);
+      Local::SetDataStr(person_data, name, str.c_str());
+    }
+  };
+
   int person = -1;
   if ( IsInvalidPersonError(name, person) ) {
     return false;
   }
 
   Person& p = m_Persons[person];
-
-  data = m_Persons[person].person_data;
-  for (int i = 0; i < int(data.size()); i++) {
-    if (data[i].name == "num_frames") {
-      data[i].value = itos(p.spriteset->GetSpriteset().GetNumFrames(p.direction));
-    }
-  }
+  person_data = m_Persons[person].person_data;
+  Local::SetDataInt(person_data, "num_frames", p.spriteset->GetSpriteset().GetNumFrames(p.direction));
 
   return true;
 }

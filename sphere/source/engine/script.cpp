@@ -4122,8 +4122,17 @@ begin_func(SetPersonScaleAbsolute, 3)
 
 end_func()
 
-////
+////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - gets a data object assiocated with the person 'name'
+        There are certain default properties/values filled in by the engine, they are:
+        num_frames - the number of frames for the person's current direction
+        Any other properties are free for you to fill with values
+
+        e.g. var data = GetPersonData("Jimmy");
+        var num_frames = data["num_frames"];
+*/
 begin_func(GetPersonData, 1)
   arg_str(name);
 
@@ -4148,7 +4157,8 @@ begin_func(GetPersonData, 1)
   }
 
   for (int i = 0; i < int(data.size()); i++) {
-
+    if (JS_DefineProperty(cx, object, data[i].name.c_str(), STRING_TO_JSVAL(JS_NewStringCopyZ(cx, data[i].value.c_str())), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE) == JS_TRUE) {
+    }
   }
 
   return_object(object);
@@ -4157,6 +4167,13 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+        - sets the 'data' object assiocated with the person 'name'
+        e.g.
+        var data = GetPersonData("Jimmy");
+        data["talked_to_jimmy"] = true;
+        SetPersonData("Jimmy", data);
+*/
 begin_func(SetPersonData, 2)
   arg_str(name);
   arg_object(object);
