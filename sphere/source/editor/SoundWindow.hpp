@@ -7,6 +7,22 @@
 #include "Audio.hpp"
 
 
+class CPlaylist {
+public:
+  CPlaylist();
+  ~CPlaylist();
+
+private:
+  std::vector<std::string> m_Filenames;
+
+public:
+  const char* GetFile(int index) const;
+  int GetNumFiles() const;
+
+  bool AppendFile(const char* file);
+};
+
+
 class CSoundWindow : public CDocumentWindow
 {
 public:
@@ -27,12 +43,17 @@ private:
   afx_msg void OnSoundStop();
   afx_msg void OnSoundRepeat();
 
+  afx_msg void OnNextSound();
+  afx_msg void OnPrevSound();
+
   afx_msg void OnUpdatePlayCommand(CCmdUI* cmdui);
   afx_msg void OnUpdatePauseCommand(CCmdUI* cmdui);
   afx_msg void OnUpdateStopCommand(CCmdUI* cmdui);
   afx_msg void OnUpdateRepeatCommand(CCmdUI* cmdui);
 
   afx_msg BOOL OnNeedText(UINT id, NMHDR* nmhdr, LRESULT* result);
+
+  afx_msg void OnDropFiles(HDROP drop_info);
 
 private:
   CSound  m_Sound;
@@ -52,9 +73,9 @@ private:
 
   bool m_Repeat; 
   bool m_Playing;
-
-  bool m_IsLoaded;
-  std::string m_Filename;
+  
+  CPlaylist m_Playlist;
+  int m_CurrentSound;
 
   DECLARE_MESSAGE_MAP()
 };

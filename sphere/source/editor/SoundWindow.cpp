@@ -4,7 +4,38 @@
 
 
 #include "SoundWindow.hpp"
+#include "Editor.hpp"
 #include "resource.h"
+
+
+CPlaylist::CPlaylist()
+{
+}
+
+CPlaylist::~CPlaylist()
+{
+  m_Filenames.clear();
+}
+
+const char*
+CPlaylist::GetFile(int index) const
+{
+  return m_Filenames[index].c_str();
+}
+
+int
+CPlaylist::GetNumFiles() const
+{
+  return m_Filenames.size();
+}
+
+bool
+CPlaylist::AppendFile(const char* file)
+{
+  int size = int(m_Filenames.size());
+  m_Filenames.push_back(file);
+  return size + 1 == int(m_Filenames.size());
+}
 
 
 const int TIMER_UPDATE_SOUND_WINDOW = 987;
@@ -21,6 +52,7 @@ BEGIN_MESSAGE_MAP(CSoundWindow, CDocumentWindow)
   ON_WM_TIMER()
   ON_WM_VSCROLL()
   ON_WM_HSCROLL()
+  ON_WM_DROPFILES()
 
   ON_COMMAND(ID_SOUND_PLAY,   OnSoundPlay)
   //ON_COMMAND(ID_SOUND_PAUSE,  OnSoundPause)
@@ -42,13 +74,12 @@ END_MESSAGE_MAP()
 CSoundWindow::CSoundWindow(const char* sound)
 : CDocumentWindow(sound, IDR_SOUND, CSize(200, 120))
 {
+  m_CurrentSound = 0;
+
   m_Playing = false;
   m_Repeat = false;
   
   m_PositionDown = false;
-
-  m_IsLoaded = false;
-  m_Filename = sound;
 
   Create(AfxRegisterWndClass(0, NULL, NULL, AfxGetApp()->LoadIcon(IDI_SOUND)));
 
@@ -82,7 +113,7 @@ CSoundWindow::CSoundWindow(const char* sound)
     m_PitchBar.SetLineSize(20);
   }
 
-  LoadSound(sound);
+  m_Playlist.AppendFile(sound);
 
   m_PlayButton.EnableWindow(TRUE);
   m_StopButton.EnableWindow(FALSE);
@@ -91,6 +122,8 @@ CSoundWindow::CSoundWindow(const char* sound)
   RECT Rect;
   GetClientRect(&Rect);
   OnSize(0, Rect.right - Rect.left, Rect.bottom - Rect.top);
+
+  DragAcceptFiles();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -105,7 +138,9 @@ CSoundWindow::~CSoundWindow()
 void
 CSoundWindow::LoadSound(const char* sound)
 {
-  m_IsLoaded = false;
+  char szWindowTitle[MAX_PATH];
+  strcpy(szWindowTitle, strrchr(sound, '\\') + 1);
+  SetCaption(szWindowTitle);
 
   // load the sample
   if (!m_Sound.Load(sound))
@@ -113,12 +148,10 @@ CSoundWindow::LoadSound(const char* sound)
     // if it fails, show a message box and close the window
     char string[MAX_PATH + 1024];
     sprintf (string, "Error: Could not load sound file\n'%s'", sound);
-    MessageBox(string);
+    //MessageBox(string);
+    GetStatusBar()->SetWindowText(string);
     return;
   }
-
-  char szWindowTitle[MAX_PATH];
-  strcpy(szWindowTitle, strrchr(sound, '\\') + 1);
 
   if (m_Sound.IsSeekable()) {
     if (m_PositionBar.m_hWnd == NULL) {
@@ -145,8 +178,6 @@ CSoundWindow::LoadSound(const char* sound)
 
   SetTimer(TIMER_UPDATE_SOUND_WINDOW, 100, NULL);
   OnTimer(TIMER_UPDATE_SOUND_WINDOW);
-
-  m_IsLoaded = true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -202,11 +233,9 @@ CSoundWindow::OnTimer(UINT timerID)
   else
   {
     if (m_Playing && m_Repeat) {
-      m_Sound.Play();
-      if (m_PanBar.m_hWnd != NULL && m_PitchBar.m_hWnd != NULL) {
-        m_Sound.SetPan((float)m_PanBar.GetPos() / 255.0f);
-        m_Sound.SetPitchShift((float)m_PitchBar.GetPos() / 255.0f);
-      }
+
+      if (1) OnNextSound();
+      OnSoundPlay();
     }
     else {
       m_PlayButton.EnableWindow(TRUE);
@@ -270,15 +299,18 @@ CSoundWindow::OnSoundPlay()
   if (m_Sound.IsPlaying())
     return;
 
-  if (!m_IsLoaded)
-    LoadSound(m_Filename.c_str());
+  m_Playing = false;
 
-  m_Sound.Play();
-  m_Playing = true;
+  if (m_CurrentSound >= 0 && m_CurrentSound < m_Playlist.GetNumFiles()) {
+    LoadSound(m_Playlist.GetFile(m_CurrentSound));
 
-  if (m_PanBar.m_hWnd != NULL && m_PitchBar.m_hWnd != NULL) {
-    m_Sound.SetPan((float)m_PanBar.GetPos() / 255.0f);
-    m_Sound.SetPitchShift((float)m_PitchBar.GetPos() / 255.0f);
+    m_Sound.Play();
+    m_Playing = true;
+
+    if (m_PanBar.m_hWnd != NULL && m_PitchBar.m_hWnd != NULL) {
+      m_Sound.SetPan((float)m_PanBar.GetPos() / 255.0f);
+      m_Sound.SetPitchShift((float)m_PitchBar.GetPos() / 255.0f);
+    }
   }
 }
 
@@ -296,6 +328,32 @@ CSoundWindow::OnSoundStop()
 {
   m_Sound.Stop();
   m_Playing = false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSoundWindow::OnNextSound()
+{
+  m_CurrentSound += 1;
+
+  if (m_CurrentSound < 0)
+    m_CurrentSound = m_Playlist.GetNumFiles() - 1;
+  if (m_CurrentSound >= m_Playlist.GetNumFiles())
+    m_CurrentSound = 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSoundWindow::OnPrevSound()
+{
+  m_CurrentSound -= 1;
+
+  if (m_CurrentSound < 0)
+    m_CurrentSound = m_Playlist.GetNumFiles() - 1;
+  if (m_CurrentSound >= m_Playlist.GetNumFiles())
+    m_CurrentSound = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -326,7 +384,7 @@ CSoundWindow::OnUpdatePauseCommand(CCmdUI* cmdui)
 afx_msg void
 CSoundWindow::OnUpdateStopCommand(CCmdUI* cmdui)
 {
-  cmdui->Enable(m_Sound.IsPlaying() && m_IsLoaded);
+  cmdui->Enable(m_Sound.IsPlaying() || m_Playing);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -379,6 +437,25 @@ CSoundWindow::OnNeedText(UINT /*id*/, NMHDR* nmhdr, LRESULT* result)
 
   *result = 0;
   return TRUE;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSoundWindow::OnDropFiles(HDROP drop_info)
+{
+  UINT num_files = DragQueryFile(drop_info, 0xFFFFFFFF, NULL, 0);
+
+  // add all files to the playlist
+  for (unsigned int i = 0; i < num_files; i++) {
+
+    char path[MAX_PATH];
+    DragQueryFile(drop_info, i, path, MAX_PATH);
+
+    m_Playlist.AppendFile(path);
+  }
+
+  DragFinish(drop_info);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

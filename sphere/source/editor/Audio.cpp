@@ -49,6 +49,23 @@ CSound::~CSound()
 bool
 CSound::Load(const char* filename)
 {
+  if (m_Sound) {
+    Stop();
+  }
+
+  if (!s_Device) {
+    InitializeAudio();
+    m_ClosedAudio = false;
+  }
+  else {
+    if (strcmp("null", s_Device.get()->getName()) == 0) {
+      CloseAudio();
+      m_ClosedAudio = true;
+      InitializeAudio();
+      m_ClosedAudio = false;
+    }
+  }
+
   m_Filename = filename;
   m_Sound = audiere::OpenSound(s_Device.get(), filename, true);
 
