@@ -81,6 +81,7 @@ private:
   void OnOK();
 
   afx_msg void OnFilterChanged();
+  afx_msg void OnEditFilter();
 
 private:
   int     m_CurrentFilter;
@@ -91,5 +92,18 @@ private:
 
 ///////////////////////////////////////////////////////////
 
+class CConvolveListEditDialog : public CDialog
+{
+public:
+  CConvolveListEditDialog(FilterInfo* filter_info);
 
+private:
+  FilterInfo* m_FilterInfo;
+  
+private:
+  BOOL OnInitDialog();
+  void OnOK();
+};
+
+///////////////////////////////////////////////////////////
 #endif

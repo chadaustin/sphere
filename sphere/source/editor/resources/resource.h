@@ -91,6 +91,7 @@
 #define IDI_MAPTOOL_MOVEENTITY          229
 #define IDD_CONVOLVE_LIST               230
 #define IDI_IMAGETOOL_FREESELECTION     231
+#define IDD_CONVOLVE_LIST_EDIT          232
 #define IDC_PROJECTNAME                 1000
 #define IDC_GAMETITLE                   1001
 #define IDC_BROWSE                      1003
@@ -164,8 +165,41 @@
 #define IDC_FILTER_LIST                 1142
 #define IDC_FILTER_USE_RED              1149
 #define IDC_FILTER_USE_GREEN            1150
+#define IDC_FILTER_LIST_EDIT_1          1150
 #define IDC_FILTER_USE_BLUE             1151
+#define IDC_FILTER_LIST_EDIT_2          1151
 #define IDC_FILTER_USE_ALPHA            1152
+#define IDC_FILTER_LIST_EDIT_3          1152
+#define IDC_FILTER_LIST_EDIT_4          1153
+#define IDC_FILTER_LIST_EDIT_5          1154
+#define IDC_FILTER_LIST_EDIT_6          1155
+#define IDC_FILTER_LIST_EDIT_7          1156
+#define IDC_FILTER_LIST_EDIT_8          1157
+#define IDC_FILTER_LIST_EDIT_9          1158
+#define IDC_FILTER_LIST_EDIT_10         1159
+#define IDC_FILTER_LIST_EDIT_11         1160
+#define IDC_FILTER_LIST_EDIT_12         1161
+#define IDC_FILTER_LIST_EDIT_13         1162
+#define IDC_FILTER_LIST_EDIT_14         1163
+#define IDC_FILTER_LIST_EDIT_15         1164
+#define IDC_FILTER_CLIP_LOW             1165
+#define IDC_FILTER_CLIP_HIGH            1166
+#define IDC_FILTER_LIST_EDIT_CLAMP      1167
+#define IDC_FILTER_LIST_EDIT            1168
+#define IDC_FILTER_LIST_EDIT_NAME       1169
+#define IDC_FILTER_LIST_EDIT_16         1170
+#define IDC_FILTER_LIST_EDIT_17         1171
+#define IDC_FILTER_LIST_EDIT_18         1172
+#define IDC_FILTER_LIST_EDIT_19         1173
+#define IDC_FILTER_LIST_EDIT_20         1174
+#define IDC_FILTER_LIST_EDIT_21         1175
+#define IDC_FILTER_LIST_EDIT_22         1176
+#define IDC_FILTER_LIST_EDIT_23         1177
+#define IDC_FILTER_LIST_EDIT_24         1178
+#define IDC_FILTER_LIST_EDIT_25         1179
+#define IDC_FILTER_LIST_EDIT_OFFSET     1180
+#define IDC_FILTER_LIST_EDIT_WRAP       1181
+#define IDC_FILTER_LIST_EDIT_DIVISOR    1182
 #define ID_FILE_IMPORT_BITMAPTORSS      12241
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40003
@@ -481,9 +515,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        232
+#define _APS_NEXT_RESOURCE_VALUE        233
 #define _APS_NEXT_COMMAND_VALUE         40658
-#define _APS_NEXT_CONTROL_VALUE         1150
+#define _APS_NEXT_CONTROL_VALUE         1182
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
