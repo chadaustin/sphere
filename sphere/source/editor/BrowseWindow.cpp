@@ -138,14 +138,21 @@ CBrowseWindow::OnTimer(UINT event) {
   //  return;
 
   if (m_FileList.size() > 0) {
-    if (LoadFile(m_FileList[0].c_str())) {
-      UpdateScrollBar();
+    char directory[MAX_PATH] = {0};
+    if ( GetCurrentDirectory(MAX_PATH, directory) != 0) {
 
-      int tile = m_BrowseList.size() - 1;
-      InvalidateTile(tile);
+      if (SetCurrentDirectory(m_Folder.c_str()) != 0) {
 
+        if (LoadFile(m_FileList[0].c_str())) {
+          UpdateScrollBar();
+          int tile = m_BrowseList.size() - 1;
+          InvalidateTile(tile);
+        }
+
+        m_FileList.erase(m_FileList.begin());
+        SetCurrentDirectory(directory);
+      }
     }
-    m_FileList.erase(m_FileList.begin());
   }
 }
 
@@ -153,9 +160,20 @@ CBrowseWindow::OnTimer(UINT event) {
 
 void
 CBrowseWindow::OpenFile(int index) {
-  if (index >= 0 && index < m_BrowseList.size()) {
-    CMainWindow* window = (CMainWindow*) GetMainWindow();
-    window->OpenGameFile(m_BrowseList[index]->filename.c_str());
+
+  char directory[MAX_PATH] = {0};
+  if ( GetCurrentDirectory(MAX_PATH, directory) != 0) {
+
+    if (SetCurrentDirectory(m_Folder.c_str()) != 0) {
+
+      if (index >= 0 && index < m_BrowseList.size()) {
+        CMainWindow* window = (CMainWindow*) GetMainWindow();
+        window->OpenGameFile(m_BrowseList[index]->filename.c_str());
+      }
+
+      SetCurrentDirectory(directory);
+    }
+
   }
 }
 
@@ -597,8 +615,17 @@ afx_msg void
 CBrowseWindow::OnBrowseListRefresh() {
   m_FileList.clear();
   ClearBrowseList();
-  m_FileList = GetFileList(m_Filter.c_str());
-  Invalidate();
+
+  char directory[MAX_PATH] = {0};
+  if ( GetCurrentDirectory(MAX_PATH, directory) != 0) {
+  
+    if ( SetCurrentDirectory(m_Folder.c_str()) != 0 ) {
+      m_FileList = GetFileList(m_Filter.c_str());
+      Invalidate();
+    }
+
+    SetCurrentDirectory(directory);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -613,9 +640,9 @@ CBrowseWindow::OnBrowseSetBrowseSize() {
 
 		if (dialog.GetWidth()  != m_ImageWidth
    	 && dialog.GetHeight() != m_ImageHeight
-  	 && dialog.GetWidth()  >= 0
+  	 && dialog.GetWidth()  >= 1
 		 && dialog.GetWidth()   < 4096
-		 && dialog.GetHeight() >= 0
+		 && dialog.GetHeight() >= 1
 		 && dialog.GetHeight()  < 4096) {
 
 		  m_ImageWidth = dialog.GetWidth();
@@ -627,10 +654,7 @@ CBrowseWindow::OnBrowseSetBrowseSize() {
         32
       );
     
-		  m_FileList.clear();
-      ClearBrowseList();
-      m_FileList = GetFileList(m_Filter.c_str());
-      Invalidate();
+		  OnBrowseListRefresh();
 		}
 
   }

@@ -1172,7 +1172,7 @@ CMapEngine::IsInvalidLayerError(int layer, const char* calling_func)
   }
 
   // make sure layer is valid
-  if (layer < 0 || layer >= int(m_Map.GetMap().GetNumLayers())) {
+  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
     m_ErrorMessage = "Invalid layer index: " + itos(layer);
     return true;
   }
@@ -2843,7 +2843,7 @@ CMapEngine::LoadMapPersons()
       Person p;
       p.description = person_string;
       if (!CreateDefaultPerson(p, person.name.c_str(), person.spriteset.c_str(), true)) {
-        m_ErrorMessage = "Could not load spriteset\nPerson: " + person_string;
+        // m_ErrorMessage = "Could not load spriteset\nPerson: " + person_string;
         goto spriteset_error;
       }
 
