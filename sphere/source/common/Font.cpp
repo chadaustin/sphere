@@ -55,6 +55,9 @@ sFont::Load(const char* filename, IFileSystem& fs)
     return false;
   }
 
+  if (header.num_characters <= 0)
+    return false;
+
   // allocate characters
   m_Characters.resize(header.num_characters);
 
@@ -63,6 +66,11 @@ sFont::Load(const char* filename, IFileSystem& fs)
   {
     CHARACTER_HEADER character_header;
     file->Read(&character_header, sizeof(character_header));
+
+    // is the character size feasible?
+    if (character_header.width < 0 || character_header.width > 1000 || character_header.height < 0 || character_header.height > 1000)
+      return false;
+
     m_Characters[i].Resize(character_header.width, character_header.height);
 
     // version 1 = greyscale
