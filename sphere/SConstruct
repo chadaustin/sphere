@@ -40,7 +40,7 @@ env.Install(os.path.join(install_prefix, 'bin'), engine)
 docs = ['Sphere Tutorial.txt', 'build.txt', 'doc_functions.txt',
 'gpl.txt', 'irc.txt', 'keys.txt', 'lack_of_documentation.txt',
 'legal.txt', 'links.txt', 'network.txt', 'readme.txt',
-'sphere_cvs.txt', 'sphere_rules.txt', 'unix.txt']
+'sphere_cvs.txt', 'unix.txt']
 
 docs = map(lambda n: os.path.join('docs', n), docs)
 env.Install(os.path.join(install_prefix,   'share/sphere/docs'), docs)

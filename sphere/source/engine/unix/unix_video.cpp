@@ -83,7 +83,7 @@ bool SwitchResolution (int x, int y, bool fullscreen = false) {
   if (fullscreen)
 	 screen = SDL_SetVideoMode(x, y, 32, SDL_DOUBLEBUF | SDL_FULLSCREEN);
   else
-    screen = SDL_SetVideoMode(x, y, 32, SDL_DOUBLEBUF);
+    screen = SDL_SetVideoMode(x, y, 32, SDL_DOUBLEBUF | SDL_ANYFORMAT);
   if (screen == NULL)
     return false;
   /* screen = SDL_CreateRGBSurface(0, real_screen->w, real_screen->h, 32, 0, 0, 0, 0);
