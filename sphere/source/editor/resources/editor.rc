@@ -163,7 +163,7 @@ BEGIN
         MENUITEM "&Change Tile Size...",        ID_MAP_CHANGETILESIZE
         MENUITEM "&Rescale Tileset...",         ID_MAP_RESCALETILESET
         MENUITEM "Re&size All Layers...",       ID_MAP_RESIZEALLLAYERS
-        MENUITEM "&Edit Entities",              ID_MAP_EDIT_ENTITIES
+        MENUITEM "&Edit Entities...",           ID_MAP_EDIT_ENTITIES
         MENUITEM SEPARATOR
         MENUITEM "&Export Tileset...",          ID_MAP_EXPORTTILESET
         MENUITEM "&Import Tileset...",          ID_MAP_IMPORTTILESET

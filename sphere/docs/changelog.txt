@@ -1,6 +1,7 @@
 2004.02.02
   - Font preview palette added
   - Added preview to imageview's custom filter dialog
+  - Added Map->Edit Entities to allow you to edit multiple entities at once
 
 2004.01.30
   - You can now select multiple tiles in the tileset palette,
