@@ -4,6 +4,7 @@ import string
 import SCons
 import autocons
 
+###########################################################
 
 def BuildMinGWEnv():
     env = Environment(ENV = os.environ)
@@ -47,6 +48,7 @@ def BuildMinGWEnv():
 
     return env
 
+###########################################################
 
 def BuildVC6Env():
     env = Environment(ENV = os.environ, tools = ['msvc', 'mslib', 'mslink'])
@@ -84,12 +86,14 @@ def BuildVC6Env():
 
     return env
 
+###########################################################
 
 def BuildLinuxEnv():
     env = Environment(ENV = os.environ)
     env['BUILD_DIR'] = "#/build/linux"
     return env
 
+###########################################################
 
 class Compiler:
     def __init__(self, name):
@@ -189,6 +193,8 @@ class Compiler:
                        LIBS = ['stc', 'wxmsw', 'user32', 'gdi32', 'comctl32',
                                'comdlg32', 'ole32', 'shell32', 'uuid',
                                'advapi32', 'ws2_32'])
+        elif self.name == 'vc6':
+            autocons.ParseConfig(env, 'wx-config', ['--cflags', '--libs'])
 
     def SetupZLib(self, env):
         if self.name == 'mingw':
@@ -198,6 +204,7 @@ class Compiler:
             env.Append(LIBS = ['zlib'],
                        CCFLAGS = ['/DWINDOWS', '/DZLIB_DLL'])
 
+###########################################################
 
 env = Environment(ENV = os.environ)
 if env.Detect('cl'):
@@ -210,6 +217,7 @@ else:
     print "Can't determine default compiler!  Defaulting to VC6..."
     default_compiler = 'vc6'
 
+###########################################################
 
 COMPILER = Compiler(ARGUMENTS.get('compiler', default_compiler))
 
