@@ -6,7 +6,7 @@
 #include "ScriptWindow.hpp"
 #include "FileDialogs.hpp"
 #include "NumberDialog.hpp"
-#include "Project.hpp"
+//#include "Project.hpp"
 #include "Scripting.hpp"
 #include "FileSystem.hpp"
 #include "Configuration.hpp"
@@ -61,6 +61,17 @@ CScriptWindow::CScriptWindow(const char* filename)
   if (filename) {
     LoadScript(filename);
   }
+
+  //int HScrollWidth = 640; // scintilla's default scroll width of 2000 is too big
+  /*
+  int num_lines = SendEditor(SCI_GETLINECOUNT);
+  for (int i = 0; i < num_lines; i++) {
+    int linewidth =  SendEditor(SCI_LINELENGTH, i) * 8; // 8 = font size
+    if (linewidth > HScrollWidth)
+      HScrollWidth = linewidth;
+  }
+  */
+  //SendEditor(SCI_SETSCROLLWIDTH, HScrollWidth);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -208,7 +219,7 @@ CScriptWindow::Initialize()
   m_SyntaxHighlighted = Configuration::Get(KEY_SCRIPT_SYNTAX_HIGHLIGHTED);
   m_TabWidth = Configuration::Get(KEY_SCRIPT_TAB_SIZE);
   m_KeyWordStyleIsBold = Configuration::Get(KEY_SCRIPT_KEYWORDS_IN_BOLD);
-  m_ShowLineNumbers = Configuration::Get(KEY_SCRIPT_SHOW_LINE_NUMBERS);
+  m_ShowLineNumbers    = Configuration::Get(KEY_SCRIPT_SHOW_LINE_NUMBERS);
   SetScriptStyles();
 
   SendEditor(SCI_TOGGLEFOLD, (LPARAM)"1");
@@ -431,8 +442,9 @@ CScriptWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
 void
 CScriptWindow::SetLineNumber(int line) {
   char str[80];
+  int pos = SendEditor(SCI_GETCURRENTPOS) - SendEditor(SCI_POSITIONFROMLINE, line);
   line += 1;
-  sprintf(str, "Line: %d", line);
+  sprintf(str, "Line: %d Position: %d", line, pos);
   GetStatusBar()->SetWindowText(str);
 }
 

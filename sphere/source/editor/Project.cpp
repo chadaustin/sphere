@@ -9,6 +9,8 @@
 #include "../common/configfile.hpp"
 #include "../common/types.h"
 
+#include "../wxeditor/system.hpp"
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -284,12 +286,11 @@ CProject::RefreshItems()
 
     for (int j = 0; j < extensions.size(); j++) {
       std::string filter = "*." + extensions[j];
-       std::vector<string::string> file_list = GetFileList(filter.c_str());
+       std::vector<std::string> file_list = GetFileList(filter.c_str());
 
       for (int k = 0; k < file_list.size(); k++)
         AddItem(i, file_list[k].c_str());
 
-      FindClose(h);
     }
 
   }
