@@ -40,7 +40,11 @@ void straight_copy (Uint32& dest, Uint32 src) {
   dest = src;
 }
 
-void blend_copy (Uint32& dest, Uint32 src) {
+void straight_copyRGBA (Uint32& dest, RGBA src) {
+  dest = SDL_MapRGBA(screen->format, src.red, src.green, src.blue, src.alpha);
+}
+
+void blend_alpha (Uint32& dest, Uint32 src) {
   Uint8 sr, sg, sb, sa;
   Uint8 dr, dg, db, da;
 
@@ -56,11 +60,7 @@ void blend_copy (Uint32& dest, Uint32 src) {
   dest = SDL_MapRGBA(screen->format, dr, dg, db, da);
 }
 
-void straight_copyRGBA (Uint32& dest, RGBA src) {
-  dest = SDL_MapRGBA(screen->format, src.red, src.green, src.blue, src.alpha);
-}
-
-void blend_copyRGBA (Uint32& dest, RGBA src) {
+void blend_alphaRGBA (Uint32& dest, RGBA src) {
   Uint8 r, g, b, a;
 
   SDL_GetRGBA(dest, screen->format, &r, &g, &b, &a);
@@ -75,7 +75,7 @@ void blend_copyRGBA (Uint32& dest, RGBA src) {
   dest = SDL_MapRGBA(screen->format, r, g, b, a);
 }
 
-void blend_alpha (Uint32& dest, Uint32 src) {
+void blend_copy (Uint32& dest, Uint32 src) {
   Uint8 sr, sg, sb, sa;
   Uint8 dr, dg, db, da;
 
@@ -87,7 +87,7 @@ void blend_alpha (Uint32& dest, Uint32 src) {
   dest = SDL_MapRGBA(screen->format, dr, dg, db, da);
 }
 
-void blend_alphaRGBA (Uint32& dest, RGBA src) {
+void blend_copyRGBA (Uint32& dest, RGBA src) {
   Uint8 r, g, b, a;
 
   SDL_GetRGBA(dest, screen->format, &r, &g, &b, &a);
