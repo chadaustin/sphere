@@ -89,12 +89,14 @@ SMAP::Load(const char* filename, IFileSystem& fs)
 
   // create the image array
   m_Tiles.resize(m_Map.GetTileset().GetNumTiles());
+  std::fill(m_Tiles.begin(), m_Tiles.end(), IMAGE(0));
   for (int i = 0; i < m_Map.GetTileset().GetNumTiles(); i++) {
     UpdateTile(i);
   }
 
   // create the solid image array
   m_SolidTiles.resize(m_Map.GetTileset().GetNumTiles());
+  std::fill(m_SolidTiles.begin(), m_SolidTiles.end(), IMAGE(0));
   for (int i = 0; i < m_Map.GetTileset().GetNumTiles(); i++) {
     UpdateSolidTile(i);
   }
