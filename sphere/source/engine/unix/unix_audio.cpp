@@ -10,6 +10,7 @@ bool InitAudio()
 {
   s_AudioDevice = audiere::OpenDevice();
   if (!s_AudioDevice) {
+    fprintf(stderr, "Using null device instead...\n");
     s_AudioDevice = audiere::OpenDevice("null");
   }
   return bool(s_AudioDevice);

@@ -1,13 +1,13 @@
 #include "../../common/primitives.hpp"
-#include "../../common/sphere_version.h"
 #include "../sfont.hpp"
 #include "unix_video.h"
 #include "unix_time.h"
 #include "unix_input.h"
+#include "unix_internal.h"
 
 /*! \file unix_video.cpp
-
-  This is a modified version of standard32.cpp */
+  This is a modified version of standard32.cpp
+ */
 
 static void FillImagePixels(IMAGE image, const RGBA* data);
 static void OptimizeBlitRoutine(IMAGE image);
@@ -20,6 +20,7 @@ static void NormalBlit(IMAGE image, int x, int y);
 SDL_Surface* screen;
 SFONT* FPSFont;
 static bool FPSDisplayed;
+static bool fullscreen;
 
 typedef struct _clipper {
   int left, right, bottom, top;
@@ -58,7 +59,7 @@ void SetFPSFont (SFONT* font) {
 
 /*
  \brief toggle display of frames per second
-*/
+ */
 void ToggleFPS () {
   FPSDisplayed = !FPSDisplayed;
 }
@@ -67,17 +68,18 @@ void ToggleFPS () {
 
 /*
  \brief change the title of the game to text
-*/
+ */
 bool SetWindowTitle(const char* text) {
   SDL_WM_SetCaption(text, NULL);
   return true;
 }
 
+
 /*!
   \brief switch the screen resolution
 
-  This is where all the fun begins.  If this is the first time that SwitchResolution
-  is called, SDL is initialized.
+  This is where all the fun begins.
+  If this is the first time that SwitchResolution is called, SDL is initialized.
  */
 bool SwitchResolution (int x, int y, bool fullscreen) {
   static bool initialized = false;
@@ -86,9 +88,8 @@ bool SwitchResolution (int x, int y, bool fullscreen) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
 
-   char caption[80];
-   sprintf(caption, "Sphere %s", SPHERE_VERSION);
-   SDL_WM_SetCaption(caption , NULL);
+    // Clean up on exit, exit on window close and interrupt
+    atexit(SDL_Quit);
 
    InitializeInput();
    initialized = true;
@@ -96,15 +97,16 @@ bool SwitchResolution (int x, int y, bool fullscreen) {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
     if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
-   /* FIXME: the title of the game or something should be set here instead */
-   //SDL_WM_SetCaption(caption, NULL);
   }
+
   if (fullscreen)
-   screen = SDL_SetVideoMode(x, y, 32, SDL_DOUBLEBUF | SDL_FULLSCREEN);
+    screen = SDL_SetVideoMode(x, y, 32, SDL_DOUBLEBUF | SDL_FULLSCREEN);
   else
     screen = SDL_SetVideoMode(x, y, 32, SDL_DOUBLEBUF | SDL_ANYFORMAT);
+
   if (screen == NULL)
     return false;
+
   /* screen = SDL_CreateRGBSurface(0, real_screen->w, real_screen->h, 32, 0, 0, 0, 0);
   SDL_ConvertSurface(screen, real_screen->format, 0); */
   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
@@ -113,6 +115,13 @@ bool SwitchResolution (int x, int y, bool fullscreen) {
   ScreenHeight = screen->h;
   SetClippingRectangle(0, 0, screen->w, screen->h);
   return true;
+}
+
+/*!
+  This changes the resolution but keeps fullscreen mode in tact
+ */
+bool SwitchResolution (int x, int y) {
+  return SwitchResolution(x, y, fullscreen);
 }
 
 int GetScreenWidth() {
@@ -124,10 +133,10 @@ int GetScreenHeight() {
 }
 
 void ToggleFullscreen () {
-  static bool fullscreen = false;
-  printf("Toggling fullscreen...");
-  SwitchResolution(GetScreenWidth(), GetScreenHeight(), fullscreen ? false : true);
-  fullscreen = !fullscreen;
+  // printf("Toggling fullscreen...");
+  if ( SwitchResolution(GetScreenWidth(), GetScreenHeight(), !fullscreen) ) {
+    fullscreen = !fullscreen;
+  }
 }
 
 void FillImagePixels(IMAGE image, const RGBA* pixels) {
@@ -249,10 +258,18 @@ void FlipScreen () {
   static int NumFlips;
   if (NumFlips++ % 8 == 0);
     RefreshInput();
+    
+  if (ShouldTakeScreenshot) {
+    ShouldTakeScreenshot = false;
+    TakeScreenshot();      
+  }
+    
   SDL_Flip(screen);
-  /* SDL_Rect dest = {0, 0, 0, 0};
+  /*
+  SDL_Rect dest = {0, 0, 0, 0};
   SDL_BlitSurface(screen, NULL, real_screen, &dest);
-  SDL_UpdateRect(real_screen, 0, 0, ScreenWidth, ScreenHeight); */
+  SDL_UpdateRect(real_screen, 0, 0, ScreenWidth, ScreenHeight);
+  */
 }
 
 IMAGE CreateImage(int width, int height, const RGBA* pixels) {

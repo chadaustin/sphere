@@ -14,6 +14,7 @@
 #include "time.hpp"
 #include "../common/AnimationFactory.hpp"
 #include "../common/configfile.hpp"
+#include "../common/sphere_version.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,6 +51,21 @@ CGameEngine::Run()
   int game_height = game_information.ReadInt("", "screen_height", 240);
   SwitchResolution(game_width, game_height);
   ClearScreen();
+
+  // set the game title
+  if (true) {
+    char caption[125];
+    const std::string& name = game_information.ReadString("", "name", "");
+
+    if (name.empty()) {
+      sprintf(caption, "Sphere %s", SPHERE_VERSION);
+    }
+    else {
+      sprintf(caption, "%s - Sphere %s", name.c_str(), SPHERE_VERSION);
+    }
+
+    SetWindowTitle(caption);
+  }
 
   CreateSystemObjects();
 

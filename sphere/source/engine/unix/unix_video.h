@@ -17,7 +17,8 @@ typedef struct _IMAGE {
 void SetFPSFont(SFONT* font);
 void ToggleFPS();
 
-bool SwitchResolution(int x, int y, bool fullscreen = false);
+bool SwitchResolution(int x, int y);
+bool SwitchResolution(int x, int y, bool fullscreen);
 void ToggleFullscreen();
 int  GetScreenWidth();
 int  GetScreenHeight();

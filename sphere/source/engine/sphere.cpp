@@ -24,7 +24,6 @@
 #include "../common/DefaultFileSystem.hpp"
 #include "../common/PackageFileSystem.hpp"
 #include "../common/configfile.hpp"
-#include "../common/sphere_version.h"
 
 
 static void RunPackage(IFileSystem& fs);
@@ -198,20 +197,6 @@ void RunGame(const char* game, const char* parameters) {
   while (!games.empty()) {
     GamePair g = games.top();
     games.pop();
-
-    if (true) {
-      char caption[125];
-      Game t = ReadGameInfo(g.first.c_str());
-
-      if (t.name.empty()) {
-        sprintf(caption, "Sphere %s", SPHERE_VERSION);
-      }
-      else {
-        sprintf(caption, "%s - Sphere %s", t.name.c_str(), SPHERE_VERSION);
-      }
-
-      SetWindowTitle(caption);
-    }
 
     std::string result = DoRunGame(g.first.c_str(), g.second.c_str());
     if (!result.empty()) {

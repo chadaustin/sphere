@@ -1,5 +1,6 @@
 #include "unix_input.h"
 #include "unix_video.h"
+#include "unix_internal.h"
 #include <SDL.h>
 #include <deque>
 #include <iostream>
@@ -98,27 +99,24 @@ bool RefreshInput () {
   SDL_Event event;
   int result;
   Uint8 key = 0;
-  Uint8 pressed;
 
   while (result = SDL_PollEvent(&event)) {
     if (event.type == SDL_QUIT)
       exit(0);
-    else if ((event.type == SDL_KEYDOWN) || (event.type == SDL_KEYUP)) {
-      pressed = event.key.keysym.sym;
+    else if ((event.type == SDL_KEYDOWN) || (event.type == SDL_KEYUP))
+    {
+      Uint8 pressed = event.key.keysym.sym;
 
       switch (pressed) {
-        case SDLK_RSHIFT:
-          key = KEY_SHIFT; break;
-        case SDLK_RALT:
-          key = KEY_ALT; break;
-        case SDLK_RCTRL:
-          key = KEY_CTRL; break;
-  case SDLK_F11:
-    printf("F11 Pressed...");
-    ToggleFPS(); break;
-  case SDLK_F12:
-    printf("F12 Pressed...");
-    ToggleFullscreen(); break;
+        case SDLK_SPACE:  key = KEY_SPACE;  break;
+        case SDLK_ESCAPE: key = KEY_ESCAPE; break;
+        case SDLK_RSHIFT: key = KEY_SHIFT;  break;
+        case SDLK_RALT:   key = KEY_ALT;    break;
+        case SDLK_RCTRL:  key = KEY_CTRL;   break;
+        case SDLK_F1:     key = KEY_F1;     break;
+        case SDLK_F11:    key = KEY_F11;    break;
+        case SDLK_F12:    key = KEY_F12;    break;
+        
         default:
           for (int lcv = 0; lcv < total_keys; lcv++) {
             if (pressed == KeyMapping[lcv]) {
@@ -127,27 +125,46 @@ bool RefreshInput () {
             }
           }
       };
+      
       if (key != 0) {
-      if (event.type == SDL_KEYDOWN) {
-       //std::cerr << "down: " << (int)key << std::endl;
+        if (event.type == SDL_KEYDOWN) {
+          //std::cerr << "down: " << (int)key << std::endl;
           keys.push_back(key);
-       key_buffer[key] = true;
-      } else {
-       //std::cerr << "up:   " << (int)key << std::endl;
-       key_buffer[key] = false;
+          key_buffer[key] = true;
+          
+          switch(key) {
+
+            case KEY_F10:
+              ToggleFullscreen();
+            break;
+                                
+            case KEY_F11:
+              ToggleFPS();
+            break;
+
+            case KEY_F12:
+              ShouldTakeScreenshot = true;
+            break;
+
+          };
+          
+        } else {
+          //std::cerr << "up:   " << (int)key << std::endl;
+          key_buffer[key] = false;
+        }
       }
-    }
     }
   }
   return true; /* not sure what to do, but I guess we succeeded! */
 }
 
 bool IsKeyPressed (int key) {
-  /* Uint8* key_state;
-
+  /* 
+  Uint8* key_state;
   SDL_PumpEvents();
   key_state = SDL_GetKeyState(NULL);
-  return key_state[KeyMapping[key]]; */
+  return key_state[KeyMapping[key]];
+  */
   return key_buffer[key];
 }
 
@@ -172,6 +189,11 @@ int GetKey () {
   keys.pop_front();
   return key;
 }
+
+// MOUSE SUPPORT
+
+///////////////////////////////////////////////////////////
+
 
 void SetMousePosition (int x, int y) {
   SDL_WarpMouse(x, y);
