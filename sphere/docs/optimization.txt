@@ -1,0 +1,72 @@
+There are several ways to optimize JS.  As I think of them, I'll add
+them to here.
+
+
+-- Optimizing Sphere --
+
+Only load Sphere objects once as few times as you can.  For example,
+this is sure to be REALLY slow:
+
+for (some loop) {
+  LoadImage("blah.png").blit(10, 10);
+  FlipScreen()
+}
+
+This trivial example is pretty easy to optimize:
+
+image = LoadImage("blah.png")
+for (some loop) {
+  image.blit(10, 10);
+  FlipScreen();
+}
+
+However, let's say you don't want to load EVERY object your game uses
+at load time, making it take forever to load...  You can do something
+called "lazy instantiation".
+
+var gImageList = {}
+function GetImage(filename) {
+  if (!(filename in gImageList)) {
+    gImageList[filename] = LoadImage(filename);    
+  }
+  return gImageList[filename];
+}
+
+var image = GetImage('image.png')  # this actually loads the image
+var image = GetImage('image.png')  # this returns the one already loaded
+
+
+-- Optimizing JS --
+
+If you do something like:
+
+var x = Math.sin(something)
+
+The JS engine has to find the 'Math' object, then find the 'sin'
+object as a member of 'Math' and then call it. You can make it
+slightly faster with:
+
+var sin = Math.sin; // only do this once at the top of your program
+var x = sin(something);
+
+This is a general case of "common subexpression removal". If you find
+yourself typing the same expressions multiple times, try storing
+temporary results in a variable that you can reuse.
+
+
+Also, if you can find a simpler way to represent your mathematical
+equations, do so:
+
+var y = (320 * x) - 2 * (120 * x);
+
+--->
+
+var y = 320 * x - 240 * x;
+
+--->
+
+var y = 80 * x;  // MUCH simpler!
+
+
+Sure, it's a contrived example, but I'm sure you can find some ways to
+algebraicly manipulate your scripts to make them faster.
