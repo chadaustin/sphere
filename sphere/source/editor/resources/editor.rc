@@ -805,7 +805,7 @@ BEGIN
     CONTROL         "Tile Background Image",IDC_TILE_BACKGROUND,"Button",
                     BS_AUTORADIOBUTTON,8,8,89,10
     CONTROL         "Stretch Background",IDC_STRETCH_BACKGROUND,"Button",
-                    BS_AUTORADIOBUTTON | WS_DISABLED,8,20,79,10
+                    BS_AUTORADIOBUTTON,8,20,79,10
     CONTROL         "Gradient Background",IDC_GRADIENT_BACKGROUND,"Button",
                     BS_AUTORADIOBUTTON,8,32,83,10
     CONTROL         "",IDC_UPPER_LEFT,"Static",SS_BLACKFRAME | NOT 

@@ -84,6 +84,10 @@ SWINDOWSTYLE::DrawWindow(int x, int y, int w, int h)
         BlitImage(image, x + ix * width, y + iy * height);
       }
     }
+  } else if (m_WindowStyle.GetBackgroundMode() == sWindowStyle::STRETCHED) {
+    int tx[4] = { x, x + w, x + w, x };
+    int ty[4] = { y, y, y + h, y + h };
+    TransformBlitImage(image, tx, ty);
   } else {
     RGBA colors[4];
     colors[0] = m_WindowStyle.GetBackgroundColor(sWindowStyle::BACKGROUND_UPPER_LEFT);
