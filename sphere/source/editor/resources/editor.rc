@@ -311,6 +311,7 @@ BEGIN
         MENUITEM "&Resize Character...",        ID_FONT_RESIZE
         MENUITEM "Resize &All Characters...",   ID_FONT_RESIZEALL
         MENUITEM "&Simplify...",                ID_FONT_SIMPLIFY
+        MENUITEM "Make Color &Transparent",     ID_FONT_MAKECOLORTRANSPARENT
         MENUITEM SEPARATOR
         MENUITEM "&Generate Gradient...",       ID_FONT_GENERATEGRADIENT
     END

@@ -141,6 +141,8 @@ CScriptWindow::Initialize()
   SendEditor(SCI_SETKEYWORDS, 0, (LPARAM)key_words);
   SendEditor(SCI_SETKEYWORDS, 1, (LPARAM)reserved_words);
 
+  SendEditor(SCI_SETPROPERTY, (WPARAM)"fold", (LPARAM)"1");
+
   SetStyle(STYLE_DEFAULT, black, white, 10, "Verdana");
   SendEditor(SCI_STYLECLEARALL);
 

@@ -26,10 +26,11 @@ BEGIN_MESSAGE_MAP(CFontWindow, CSaveableDocumentWindow)
   ON_WM_SIZE()
   ON_WM_HSCROLL()
 
-  ON_COMMAND(ID_FONT_RESIZE,           OnFontResize)
-  ON_COMMAND(ID_FONT_RESIZEALL,        OnFontResizeAll)
-  ON_COMMAND(ID_FONT_SIMPLIFY,         OnFontSimplify)
-  ON_COMMAND(ID_FONT_GENERATEGRADIENT, OnFontGenerateGradient)
+  ON_COMMAND(ID_FONT_RESIZE,               OnFontResize)
+  ON_COMMAND(ID_FONT_RESIZEALL,            OnFontResizeAll)
+  ON_COMMAND(ID_FONT_SIMPLIFY,             OnFontSimplify)
+  ON_COMMAND(ID_FONT_MAKECOLORTRANSPARENT, OnFontMakeColorTransparent)
+  ON_COMMAND(ID_FONT_GENERATEGRADIENT,     OnFontGenerateGradient)
 
 END_MESSAGE_MAP()
 
@@ -272,6 +273,27 @@ CFontWindow::OnFontSimplify()
     SetModified(true);
     SetImage();
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CFontWindow::OnFontMakeColorTransparent() {
+  RGB color = m_ColorView.GetColor();
+  for (int i = 0; i < m_Font.GetNumCharacters(); ++i) {
+    sFontCharacter& c = m_Font.GetCharacter(i);
+    for (int j = 0; j < c.GetWidth() * c.GetHeight(); ++j) {
+      if (c.GetPixels()[j].red   == color.red &&
+          c.GetPixels()[j].green == color.green &&
+          c.GetPixels()[j].blue  == color.blue)
+      {
+        c.GetPixels()[j].alpha = 0;
+      }
+    }
+  }
+
+  SetModified(true);
+  SetImage();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

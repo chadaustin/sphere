@@ -32,6 +32,7 @@ private:
   afx_msg void OnFontResize();
   afx_msg void OnFontResizeAll();
   afx_msg void OnFontSimplify();
+  afx_msg void OnFontMakeColorTransparent();
   afx_msg void OnFontGenerateGradient();
 
   virtual bool GetSavePath(char* path);
