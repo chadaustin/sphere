@@ -97,7 +97,8 @@ log_object.endBlock()
       the engine is allowed to draw at most.
   
   GetFrameRate()
-    - Returns the current fps (set by SetFrameRate)
+    - Returns the current fps (set by SetFrameRate... note: this is
+      not the same as the map engine frame rate)
   
   GetScreenWidth()
     - returns the width of the engine screen
