@@ -640,19 +640,25 @@ CTilesetView::OnAppendTileset()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-afx_msg void
-CTilesetView::OnZoom1x()
-{
-  m_ZoomFactor = 1;
-
+void
+CTilesetView::OnZoom(int zoom_factor) {
+  m_ZoomFactor = zoom_factor;
   delete m_BlitTile;
   m_BlitTile = new CDIBSection(
     m_Tileset->GetTileWidth()  * m_ZoomFactor,
     m_Tileset->GetTileHeight() * m_ZoomFactor,
     32
   );
-
+  UpdateScrollBar();
   Invalidate();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CTilesetView::OnZoom1x()
+{
+  OnZoom(1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -660,16 +666,7 @@ CTilesetView::OnZoom1x()
 afx_msg void
 CTilesetView::OnZoom2x()
 {
-  m_ZoomFactor = 2;
-
-  delete m_BlitTile;
-  m_BlitTile = new CDIBSection(
-    m_Tileset->GetTileWidth()  * m_ZoomFactor,
-    m_Tileset->GetTileHeight() * m_ZoomFactor,
-    32
-  );
-
-  Invalidate();
+  OnZoom(2);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -677,16 +674,7 @@ CTilesetView::OnZoom2x()
 afx_msg void
 CTilesetView::OnZoom4x()
 {
-  m_ZoomFactor = 4;
-
-  delete m_BlitTile;
-  m_BlitTile = new CDIBSection(
-    m_Tileset->GetTileWidth()  * m_ZoomFactor,
-    m_Tileset->GetTileHeight() * m_ZoomFactor,
-    32
-  );
-
-  Invalidate();
+  OnZoom(4);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -694,16 +682,7 @@ CTilesetView::OnZoom4x()
 afx_msg void
 CTilesetView::OnZoom8x()
 {
-  m_ZoomFactor = 8;
-
-  delete m_BlitTile;
-  m_BlitTile = new CDIBSection(
-    m_Tileset->GetTileWidth()  * m_ZoomFactor,
-    m_Tileset->GetTileHeight() * m_ZoomFactor,
-    32
-  );
-
-  Invalidate();
+  OnZoom(8);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
