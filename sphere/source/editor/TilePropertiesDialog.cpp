@@ -30,8 +30,10 @@ CTilePropertiesDialog::CTilePropertiesDialog(sTileset* tileset, int tile)
   // dialog will modify these items
   // they will be set into tileset when OK is pressed
   m_Tiles = new sTile[m_Tileset->GetNumTiles()];
-  for (int i = 0; i < m_Tileset->GetNumTiles(); i++)
-    m_Tiles[i] = m_Tileset->GetTile(i);
+  if (m_Tiles) {
+    for (int i = 0; i < m_Tileset->GetNumTiles(); i++)
+      m_Tiles[i] = m_Tileset->GetTile(i);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -57,8 +59,10 @@ CTilePropertiesDialog::OnOK()
 {
   if (StoreCurrentTile())
   {
-    for (int i = 0; i < m_Tileset->GetNumTiles(); i++)
-      m_Tileset->GetTile(i) = m_Tiles[i];
+    if (m_Tiles) {
+      for (int i = 0; i < m_Tileset->GetNumTiles(); i++)
+        m_Tileset->GetTile(i) = m_Tiles[i];
+    }
 
     CDialog::OnOK();
   }
@@ -129,6 +133,9 @@ CTilePropertiesDialog::OnPrevTile()
 afx_msg void
 CTilePropertiesDialog::OnEditObstructions()
 {
+  if (!m_Tiles)
+    return;
+
   CTileObstructionDialog dialog(m_Tiles + m_Tile);
   dialog.DoModal();
 }
@@ -138,6 +145,13 @@ CTilePropertiesDialog::OnEditObstructions()
 void
 CTilePropertiesDialog::UpdateDialog()
 {
+  CString title;
+  title.Format("Tile Properties - %d/%d", m_Tile, m_Tileset->GetNumTiles());
+  SetWindowText(title);
+
+  if (!m_Tiles)
+    return;
+
   // put default values in
   sTile& tile = m_Tiles[m_Tile];
 
@@ -163,10 +177,6 @@ CTilePropertiesDialog::UpdateDialog()
     GetDlgItem(IDC_NEXT_TILE)->EnableWindow(FALSE);
     GetDlgItem(IDC_DELAY)->EnableWindow(FALSE);
   }
-
-  CString title;
-  title.Format("Tile Properties - %d/%d", m_Tile, m_Tileset->GetNumTiles());
-  SetWindowText(title);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -174,6 +184,9 @@ CTilePropertiesDialog::UpdateDialog()
 bool
 CTilePropertiesDialog::StoreCurrentTile()
 {
+  if (!m_Tiles)
+    return false;
+
   bool animated = (IsDlgButtonChecked(IDC_ANIMATED) == BST_CHECKED);
 
   int nexttile = GetDlgItemInt(IDC_NEXT_TILE);

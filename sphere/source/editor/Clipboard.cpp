@@ -16,7 +16,9 @@ CClipboard::CClipboard()
 bool
 CClipboard::IsFlatImageOnClipbard()
 {
-  return true;
+  if (IsClipboardFormatAvailable(s_ClipboardFormat))
+    return true;
+  return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -95,7 +97,9 @@ CClipboard::PutFlatImageOntoClipboard(int width, int height, const RGBA* flat_pi
 
 bool
 CClipboard::IsBitmapImageOnClipboard() {
-  return true;
+  if (IsClipboardFormatAvailable(CF_BITMAP))
+    return true;
+  return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -113,7 +117,10 @@ CClipboard::GetBitmapImageFromClipboard(int& width, int& height)
 
   HDC dc = CreateCompatibleDC(NULL);
   HBITMAP oldbitmap = (HBITMAP)SelectObject(dc, bitmap);
+  width  = b.bmWidth;
+  height = b.bmHeight;
 
+  /*
   // work out the possible width
   for (width = 0; width < 4096; width++)
     if (GetPixel(dc, width, 0) == CLR_INVALID)
@@ -123,6 +130,7 @@ CClipboard::GetBitmapImageFromClipboard(int& width, int& height)
   for (height = 0; height < 4096; height++)
     if (GetPixel(dc, 0, height) == CLR_INVALID)
       break;
+  */
 
   if (width <= 0 || height <= 0) {
     return NULL;
@@ -133,7 +141,7 @@ CClipboard::GetBitmapImageFromClipboard(int& width, int& height)
     return NULL;
   }
 
-  for (int iy = 0; iy < height; iy++)
+  for (int iy = 0; iy < height; iy++) {
     for (int ix = 0; ix < width; ix++)
     {
       COLORREF pixel = GetPixel(dc, ix, iy);
@@ -145,6 +153,7 @@ CClipboard::GetBitmapImageFromClipboard(int& width, int& height)
       pixels[iy * width + ix].blue  = GetBValue(pixel);
       pixels[iy * width + ix].alpha = 255;  // there is no alpha so we use a default
     }
+  }
 
   SelectObject(dc, oldbitmap);
   DeleteDC(dc);
@@ -177,6 +186,7 @@ CClipboard::PutBitmapImageOntoClipboard(int width, int height, const RGBA* sourc
   // create the bitmap
   HBITMAP bitmap = CreateBitmap(width, height, 1, 32, pixels);
 	BITMAPINFOHEADER header;
+  memset((void*)&header, 0, sizeof(header));
 	header.biSize = sizeof(header);
 	header.biWidth = width;
 	header.biHeight = height;
