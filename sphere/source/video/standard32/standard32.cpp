@@ -484,20 +484,20 @@ void CloseWindowed()
 
 void FillImagePixels(IMAGE image, RGBA* pixels)
 {
-  int al;
+  //unsigned char al;
   // fill the image pixels
   if (BitsPerPixel == 32)
   {
     image->bgra = new BGRA[image->width * image->height];
     for (int i = 0; i < image->width * image->height; i++)
     {
-//      image->bgra[i].red   = (pixels[i].red   * pixels[i].alpha) / 256;
-//      image->bgra[i].green = (pixels[i].green * pixels[i].alpha) / 256;
-//      image->bgra[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 256;
-      al=pixels[i].alpha;
-      image->bgra[i].red   = alpha_new[pixels[i].red][al];
-      image->bgra[i].green = alpha_new[pixels[i].green][al];
-      image->bgra[i].blue  = alpha_new[pixels[i].blue][al];
+      image->bgra[i].red   = (pixels[i].red   * pixels[i].alpha) / 256;
+      image->bgra[i].green = (pixels[i].green * pixels[i].alpha) / 256;
+      image->bgra[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 256;
+      //al=pixels[i].alpha;
+      //image->bgra[i].red   = alpha_new[pixels[i].red&0xff][al];
+      //image->bgra[i].green = alpha_new[pixels[i].green&0xff][al];
+      //image->bgra[i].blue  = alpha_new[pixels[i].blue&0xff][al];
     }
   }
   else
@@ -505,13 +505,13 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
     image->bgr  = new BGR[image->width * image->height];
     for (int i = 0; i < image->width * image->height; i++)
     {
-//      image->bgr[i].red   = (pixels[i].red   * pixels[i].alpha) / 256;
-//      image->bgr[i].green = (pixels[i].green * pixels[i].alpha) / 256;
-//      image->bgr[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 256;
-      al=pixels[i].alpha;
-      image->bgr[i].red   = alpha_new[pixels[i].red][al];
-      image->bgr[i].green = alpha_new[pixels[i].green][al];
-      image->bgr[i].blue  = alpha_new[pixels[i].blue][al];
+      image->bgr[i].red   = (pixels[i].red   * pixels[i].alpha) / 256;
+      image->bgr[i].green = (pixels[i].green * pixels[i].alpha) / 256;
+      image->bgr[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 256;
+      //al=pixels[i].alpha;
+      //image->bgr[i].red   = alpha_new[pixels[i].red&0xff][al];
+      //image->bgr[i].green = alpha_new[pixels[i].green&0xff][al];
+      //image->bgr[i].blue  = alpha_new[pixels[i].blue&0xff][al];
     }
   }
 
