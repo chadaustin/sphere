@@ -74,6 +74,10 @@ public:
   bool GetTile(int x, int y, int layer, int& tile);
   bool GetTileWidth(int& width);
   bool GetTileHeight(int& height);
+
+  bool GetTileImage(int tile, IMAGE& image);
+  bool SetTileImage(int tile, IMAGE image);
+
   bool ReplaceTilesOnLayer(int layer, int old_tile, int new_tile);
   bool IsTriggerAt(int location_x, int location_y, int layer);
   bool ExecuteTrigger(int location_x, int location_y, int layer);

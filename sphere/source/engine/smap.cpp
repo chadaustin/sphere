@@ -25,6 +25,44 @@ SMAP::~SMAP()
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+SMAP::UpdateTile(int i) {
+
+  if (i < 0 || i >= m_Tiles.size())
+    return false;
+
+  sTile& tile = m_Map.GetTileset().GetTile(i);
+
+  if (m_Tiles[i])
+    DestroyImage(m_Tiles[i]);
+
+  m_Tiles[i] = CreateImage(tile.GetWidth(), tile.GetHeight(), tile.GetPixels());
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+SMAP::UpdateSolidTile(int i) {
+
+  if (i < 0 || i >= m_Tiles.size())
+    return false;
+
+  sTile tile = m_Map.GetTileset().GetTile(i);
+  // make the tile completely opaque
+  for (int j = 0; j < tile.GetWidth() * tile.GetHeight(); j++) {
+    tile.GetPixels()[j].alpha = 0; // why not 255? o_0
+  }
+
+  if (m_SolidTiles[i])
+    DestroyImage(m_SolidTiles[i]);
+
+  m_SolidTiles[i] = CreateImage(tile.GetWidth(), tile.GetHeight(), tile.GetPixels());
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 SMAP::Load(const char* filename, IFileSystem& fs)
 {
   // load map
@@ -52,22 +90,13 @@ SMAP::Load(const char* filename, IFileSystem& fs)
   // create the image array
   m_Tiles.resize(m_Map.GetTileset().GetNumTiles());
   for (int i = 0; i < m_Map.GetTileset().GetNumTiles(); i++) {
-    sTile& tile = m_Map.GetTileset().GetTile(i);
-    m_Tiles[i] = CreateImage(tile.GetWidth(), tile.GetHeight(), tile.GetPixels());
+    UpdateTile(i);
   }
 
   // create the solid image array
   m_SolidTiles.resize(m_Map.GetTileset().GetNumTiles());
   for (int i = 0; i < m_Map.GetTileset().GetNumTiles(); i++) {
-
-    sTile tile = m_Map.GetTileset().GetTile(i);
-    // make the tile completely opaque
-    for (int j = 0; j < tile.GetWidth() * tile.GetHeight(); j++) {
-      tile.GetPixels()[j].alpha = 0;
-    }
-
-    m_SolidTiles[i] = CreateImage(
-        tile.GetWidth(), tile.GetHeight(), tile.GetPixels());
+    UpdateSolidTile(i);
   }
 
   // calculate maximum non-parallax layer dimensions

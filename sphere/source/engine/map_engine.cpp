@@ -477,6 +477,68 @@ CMapEngine::GetTileHeight(int& height)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::GetTileImage(int tile, IMAGE& image) {
+
+  if (!m_IsRunning) {
+    m_ErrorMessage = "GetTileImage() called while map engine was not running";
+    return false;
+  }
+
+  if (tile < 0 || tile > m_Map.GetMap().GetTileset().GetNumTiles()) {
+    m_ErrorMessage = "Tile index does not exist";
+    return false;
+  }
+
+  image = CreateImage(m_Map.GetMap().GetTileset().GetTileWidth(),
+                      m_Map.GetMap().GetTileset().GetTileHeight(),
+                      m_Map.GetMap().GetTileset().GetTile(tile).GetPixels());
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::SetTileImage(int tile, IMAGE image) {
+
+  if (!m_IsRunning) {
+    m_ErrorMessage = "SetTileImage() called while map engine was not running";
+    return false;
+  }
+
+  if (tile < 0 || tile > m_Map.GetMap().GetTileset().GetNumTiles()) {
+    m_ErrorMessage = "Tile index does not exist";
+    return false;
+  }
+  
+  if ( GetImageWidth(image) != m_Map.GetMap().GetTileset().GetTileWidth() ) {
+    m_ErrorMessage = "Image used in SetTileImage call doesn't match the tile width";
+    return false;
+  }
+
+  if ( GetImageHeight(image) != m_Map.GetMap().GetTileset().GetTileHeight() ) {
+    m_ErrorMessage = "Image used in SetTileImage call doesn't match the tile height";
+    return false;
+  }
+
+  RGBA* pixels = LockImage(image);
+  for (int x = 0; x < m_Map.GetMap().GetTileset().GetTileWidth(); x++) {
+    for (int y = 0; y < m_Map.GetMap().GetTileset().GetTileHeight(); y++) {
+       m_Map.GetMap().GetTileset().GetTile(tile).SetPixel(x, y, pixels[y * GetImageWidth(image) + x]);
+    }
+  }
+  UnlockImage(image);
+
+  m_Map.UpdateTile(tile);
+  m_Map.UpdateSolidTile(tile);
+
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::ReplaceTilesOnLayer(int layer, int old_tile, int new_tile) {
   if (!m_IsRunning) {
     m_ErrorMessage = "ReplaceTilesOnLayer() called while map engine was not running";

@@ -25,6 +25,9 @@ public:
   bool Load(const char* filename, IFileSystem& fs);
   void UpdateMap();
 
+  bool UpdateSolidTile(int tile_index);
+  bool UpdateTile(int tile_index);
+
   sMap& GetMap();
 
   void RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, int& offset_y);

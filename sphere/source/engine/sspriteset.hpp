@@ -22,7 +22,7 @@ public:
   bool Load(const char* filename, IFileSystem& fs);
 
   const sSpriteset& GetSpriteset() const;
-
+  
   int GetNumImages() const;
   IMAGE GetImage(int i) const;
   IMAGE GetFlipImage(int i) const;

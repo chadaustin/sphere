@@ -69,12 +69,6 @@ public:
 
   void ReplaceIndexColorWithColor(int index, RGBA old_color, RGBA replacment_color);
 
-  bool IsIgnoringOtherSpritesetObstructions();
-  void ToggleIgnoreOtherSpritesetObstructions();
-
-  bool IsIgnoringTilesetObstructions();
-  void ToggleIgnoreTilesetObstructions();
-
 public:
   enum { NORTH, NORTHEAST, EAST, SOUTHEAST, SOUTH, SOUTHWEST, WEST, NORTHWEST, OTHER };
 

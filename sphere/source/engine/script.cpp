@@ -724,6 +724,22 @@ inline SS_BYTEARRAY* argByteArray(JSContext* cx, jsval arg)
   return array;
 }
 
+inline SS_IMAGE* argImage(JSContext* cx, jsval arg)
+{
+  if (!JSVAL_IS_OBJECT(arg)) {
+    JS_ReportError(cx, "Invalid image object");
+    return NULL;
+  }
+
+  SS_IMAGE* image = (SS_IMAGE*)JS_GetPrivate(cx, JSVAL_TO_OBJECT(arg));
+  if (image == NULL) {
+    JS_ReportError(cx, "Invalid image object");
+    return NULL;
+  }
+
+  return image;
+}
+
 
 #define arg_int(name)        int name           = argInt(cx, argv[arg++]);                                            if (This->m_ShouldExit) return JS_FALSE
 #define arg_str(name)        const char* name   = argStr(cx, argv[arg++]);                                            if (This->m_ShouldExit) return JS_FALSE
@@ -733,7 +749,7 @@ inline SS_BYTEARRAY* argByteArray(JSContext* cx, jsval arg)
 #define arg_surface(name)    CImage32* name     = argSurface(cx, argv[arg++]);     if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
 #define arg_colormatrix(name)CColorMatrix* name = argColorMatrix(cx, argv[arg++]); if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
 #define arg_byte_array(name) SS_BYTEARRAY* name = argByteArray(cx, argv[arg++]);   if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
-
+#define arg_image(name)      SS_IMAGE* name     = argImage(cx, argv[arg++]);       if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
 
 // return values
 
@@ -1649,6 +1665,34 @@ begin_func(GetTileHeight, 0)
   }
 
   return_int(height);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(GetTileImage, 1)
+  arg_int(tile);
+  IMAGE image;
+
+  if (!This->m_Engine->GetMapEngine()->GetTileImage(tile, image)) {
+    This->ReportMapEngineError("GetTileImage() failed");
+    return JS_FALSE; 
+  }
+
+  return_object(CreateImageObject(cx, image , false));
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(SetTileImage, 2)
+
+  arg_int(tile);
+  arg_image(image);
+
+  if (!This->m_Engine->GetMapEngine()->SetTileImage(tile, image->image)) {
+    This->ReportMapEngineError("SetTileImage() failed");
+    return JS_FALSE;    
+  }
+
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
