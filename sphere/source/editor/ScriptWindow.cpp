@@ -479,6 +479,7 @@ CScriptWindow::CScriptWindow(const char* filename, bool create_from_clipboard)
 , m_HighlightCurrentLine(false)
 , m_SelectionType(SC_SEL_STREAM)
 , m_ListType(0)
+, m_ShowList(false)
 , m_CheckSpelling(false)
 , m_SearchDown(FR_DOWN)
 {
@@ -544,7 +545,7 @@ CScriptWindow::Create()
   int sidebar_width = 0;
 
   m_ListType           = Configuration::Get(KEY_SCRIPT_LIST_TYPE);
-  bool show_list       = Configuration::Get(KEY_SCRIPT_SHOW_LIST);
+  m_ShowList = Configuration::Get(KEY_SCRIPT_SHOW_LIST);
 
   if ( !(m_ListType > 0 && m_ListType <= 5) ) { m_ListType = 0; }
   if ( m_ListType != 0) {
@@ -586,7 +587,7 @@ CScriptWindow::Create()
   ::UpdateWindow(m_Editor);
 
   if (::IsWindow(m_List)) {
-    if (show_list) {
+    if (m_ShowList) {
       ::ShowWindow(m_List, SW_SHOW);
     }
     ::UpdateWindow(m_List);
@@ -1080,7 +1081,7 @@ CScriptWindow::OnSize(UINT type, int cx, int cy)
   if (m_Created) {
     int sidebar_width = 0;
 
-    bool list_visible = ::IsWindow(m_List) && Configuration::Get(KEY_SCRIPT_SHOW_LIST);
+    bool list_visible = ::IsWindow(m_List) && m_ShowList;
 
     if ( list_visible ) {
       RECT rect;
@@ -2350,10 +2351,13 @@ afx_msg void
 CScriptWindow::OnOptionsViewList()
 {
   if (::IsWindow(m_List)) {
-    ::ShowWindow(m_List, ::IsWindowVisible(m_List) ? SW_HIDE : SW_SHOW);
+    m_ShowList = !m_ShowList;
+    ::ShowWindow(m_List, m_ShowList ? SW_SHOW : SW_HIDE);
+
     RECT Rect;
     GetClientRect(&Rect);
     OnSize(0, Rect.right /*- Rect.left*/, Rect.bottom /*- Rect.top*/);
+    RememberConfiguration();
   }
 }
 
@@ -2363,7 +2367,7 @@ afx_msg void
 CScriptWindow::OnUpdateOptionsViewList(CCmdUI* cmdui)
 {
   cmdui->Enable(::IsWindow(m_List) ? TRUE : FALSE);
-  cmdui->SetCheck(::IsWindow(m_List) && ::IsWindowVisible(m_List) ? TRUE : FALSE);
+  cmdui->SetCheck(m_ShowList ? TRUE : FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2507,7 +2511,7 @@ CScriptWindow::RememberConfiguration()
   Configuration::Set(KEY_SCRIPT_HIGHLIGHT_CURRENT_LINE, m_HighlightCurrentLine);
   Configuration::Set(KEY_SCRIPT_ALLOW_AUTOCOMPLETE, m_AllowAutoComplete);
   Configuration::Set(KEY_SCRIPT_LIST_TYPE, m_ListType);
-  Configuration::Set(KEY_SCRIPT_SHOW_LIST, ::IsWindow(m_List) && ::IsWindowVisible(m_List) ? true : false);
+  Configuration::Set(KEY_SCRIPT_SHOW_LIST, m_ShowList ? true : false);
   Configuration::Set(KEY_SCRIPT_CHECK_SPELLING, m_CheckSpelling);
 }
 

@@ -1,3 +1,6 @@
+2004.09.02
+  - Added CTRL + G shortcut for Goto Line
+
 2004.08.28
   - Now switching from one window to another window while maximized
     will not show a normal window for a moment before showing

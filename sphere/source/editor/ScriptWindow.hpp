@@ -157,6 +157,7 @@ private:
   HWND m_List;
 
   int m_ListType;
+  bool m_ShowList;
 
   std::string m_Fontface;
   bool m_SyntaxHighlighted;

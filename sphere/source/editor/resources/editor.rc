@@ -310,7 +310,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Find... (CTRL + F)",         ID_SCRIPT_FIND
         MENUITEM "&Replace...",                 ID_SCRIPT_REPLACE
-        MENUITEM "&Goto Line...",               ID_SCRIPT_GOTOLINE
+        MENUITEM "&Goto Line... (CTRL + G)",    ID_SCRIPT_GOTOLINE
         POPUP "Selection Mode"
         BEGIN
             MENUITEM "Normal Selection",            ID_SCRIPT_OPTIONS_SELECTION_STREAM
@@ -2157,6 +2157,7 @@ BEGIN
     "1",            ID_SPRITESET_ZOOM_1X,   VIRTKEY, CONTROL, NOINVERT
     "2",            ID_SPRITESET_ZOOM_2X,   VIRTKEY, CONTROL, NOINVERT
     "F",            ID_SCRIPT_FIND,         VIRTKEY, CONTROL, NOINVERT
+    "G",            ID_SCRIPT_GOTOLINE,     VIRTKEY, CONTROL, NOINVERT
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
     "V",            ID_FILE_PASTE,          VIRTKEY, CONTROL, NOINVERT
     VK_ADD,         ID_FILE_ZOOM_IN,        VIRTKEY, CONTROL, NOINVERT
