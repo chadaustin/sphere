@@ -1342,6 +1342,17 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(GetCurrentMap, 0)
+  std::string map_filename = This->m_Engine->GetMapEngine()->GetCurrentMap();
+  if (map_filename == "") {
+    This->ReportMapEngineError("GetCurrentMap() failed");
+    return JS_FALSE;
+  }
+  return_str(map_filename.c_str());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 begin_func(ExitMapEngine, 0)
   
   if (!This->m_Engine->GetMapEngine()->Exit()) {

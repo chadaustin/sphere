@@ -90,6 +90,7 @@ SS_FUNCTION(OpenLog, 1)
   // map engine
   SS_FUNCTION(MapEngine, 2)
   SS_FUNCTION(ChangeMap, 1)
+  SS_FUNCTION(GetCurrentMap, 1)
   SS_FUNCTION(ExitMapEngine, 0)
   SS_FUNCTION(IsMapEngineRunning, 0)
   SS_FUNCTION(UpdateMapEngine, 0)

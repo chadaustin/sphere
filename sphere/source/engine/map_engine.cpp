@@ -111,6 +111,8 @@ CMapEngine::Execute(const char* filename, int fps)
     return false;
   }
 
+  m_CurrentMap = filename;
+
   if (!Run()) {
     m_IsRunning = false;
     return false;
@@ -160,6 +162,7 @@ CMapEngine::ChangeMap(const char* filename)
     // reset map engine timing
     m_NextFrame = (qword)GetTime() * m_FrameRate;  // update next rendering time
 
+    m_CurrentMap = filename;
     return true;
 
   } else {
@@ -169,6 +172,20 @@ CMapEngine::ChangeMap(const char* filename)
 
   }
 
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+std::string
+CMapEngine::GetCurrentMap()
+{
+  if (!m_IsRunning) {
+    m_ErrorMessage = "GetCurrentMap() called while map engine was not running";
+    return "";
+  }
+  else {
+    return m_CurrentMap;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

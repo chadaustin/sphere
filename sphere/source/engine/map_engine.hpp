@@ -61,6 +61,8 @@ public:
   bool IsRunning();
   bool Update();
 
+  std::string GetCurrentMap();
+
   bool GetNumLayers(int& layers);
   bool GetLayerWidth(int layer, int& width);
   bool GetLayerHeight(int layer, int& height);
@@ -276,6 +278,7 @@ private:
   bool m_IsRunning;
   bool m_ShouldExit;
 
+  std::string m_CurrentMap;
   std::string m_ErrorMessage;
 
   // rendering state
