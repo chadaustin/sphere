@@ -131,6 +131,9 @@ CTilesetView::Create(ITilesetViewHandler* handler, CWnd* parent, sTileset* tiles
 void
 CTilesetView::UpdateObstructionTile(int tile) {
 
+  if (!m_ShowTileObstructions)
+    return;
+
   struct Local {
     struct Color {
       RGBA operator()(int, int) {
