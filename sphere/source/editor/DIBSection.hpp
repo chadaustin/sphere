@@ -8,8 +8,12 @@
 class CDIBSection
 {
 public:
+  CDIBSection();
   CDIBSection(int width, int height, int bpp);
   ~CDIBSection();
+
+  bool Create(int width, int height, int bpp);
+  void Destroy();
 
   HDC   GetDC();
 

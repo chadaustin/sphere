@@ -1,6 +1,6 @@
 #include "TileObstructionView.hpp"
 #include "../common/primitives.hpp"
-
+#include "ImageRender.hpp"
 
 BEGIN_MESSAGE_MAP(CTileObstructionView, CWnd)
 
@@ -38,6 +38,8 @@ CTileObstructionView::Create(CWnd* parent, sTile* tile)
   m_tile = tile;
 
   m_pixels = new RGBA[tile->GetWidth() * tile->GetHeight()];
+
+  m_BlitTile.Create(16, 16, 32);
   
   return CWnd::Create(
     AfxRegisterWndClass(0, LoadCursor(NULL, IDC_ARROW), NULL, NULL),
@@ -69,25 +71,15 @@ CTileObstructionView::OnPaint()
   // draw tile and obstruction lines onto backbuffer tile
   RenderTile();
 
-  // draw the pixels
-  for (int iy = 0; iy < m_tile->GetHeight(); iy++) {
-    for (int ix = 0; ix < m_tile->GetWidth(); ix++) {
-      
-      RGBA color = m_pixels[iy * m_tile->GetWidth() + ix];
+  // calculate size of pixel squares
+  double hsize = (double)rect.right  / (double)m_tile->GetWidth();
+  double vsize = (double)rect.bottom / (double)m_tile->GetHeight();
 
-      // calculate pixel rect
-      RECT pixel_rect;
-      pixel_rect.left   = rect.right  * ix       / m_tile->GetWidth();
-      pixel_rect.top    = rect.bottom * iy       / m_tile->GetHeight();
-      pixel_rect.right  = rect.right  * (ix + 1) / m_tile->GetWidth();
-      pixel_rect.bottom = rect.bottom * (iy + 1) / m_tile->GetHeight();
-      
-      // draw the pixel
-      HBRUSH brush = CreateSolidBrush(RGB(color.red, color.green, color.blue));
-      FillRect(dc, &pixel_rect, brush);
-      DeleteObject(brush);
-    }
-  }
+  StretchedBlit(dc_, &m_BlitTile,
+                hsize, vsize,
+                m_tile->GetWidth(), m_tile->GetHeight(),
+                m_pixels, &rect,
+                0, 0, m_tile->GetWidth(), m_tile->GetHeight());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -6,6 +6,8 @@
 #include "../common/Tile.hpp"
 class sMap;
 
+#include "DIBSection.hpp"
+
 class CTileObstructionView : public CWnd
 {
 public:
@@ -13,6 +15,8 @@ public:
   ~CTileObstructionView();
 
   BOOL Create(CWnd* parent, sTile* tile);
+
+  CDIBSection m_BlitTile;
 
 private:
   afx_msg void OnPaint();

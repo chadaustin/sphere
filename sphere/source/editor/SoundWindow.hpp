@@ -14,6 +14,9 @@ public:
   ~CSoundWindow();
 
 private:
+  void LoadSound(const char* sound);
+
+private:
   afx_msg void OnSize(UINT type, int cx, int cy);
   afx_msg void OnTimer(UINT timerID);
   afx_msg void OnVScroll(UINT code, UINT pos, CScrollBar *scroll_bar);
@@ -49,6 +52,9 @@ private:
 
   bool m_Repeat; 
   bool m_Playing;
+
+  bool m_IsLoaded;
+  std::string m_Filename;
 
   DECLARE_MESSAGE_MAP()
 };

@@ -202,6 +202,14 @@ SOURCE=.\FileTypes.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ImageRender.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ImageRender.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\Keys.cpp
 # End Source File
 # Begin Source File

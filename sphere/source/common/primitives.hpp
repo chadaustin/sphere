@@ -153,8 +153,6 @@ void Line(
   // other lines (diagonal)
   else {
 
-    assert(x2 - x1 != 0);
-
     float slope = float(y2 - y1) / (x2 - x1);
 
     clip_segment(x1, y1, x2, y2, slope,     clipper.left, clipper.right);  // x
@@ -170,10 +168,8 @@ void Line(
       return;
     }
 
-    assert(x2 - x1 != 0);
-
     // recalculate slope (could be inaccurate)
-    slope = float(y2 - y1) / (x2 - x1);
+    slope = float(y2 - y1); if (x2 - x1) slope /= (x2 - x1);
 
     // if line is more horizontal than vertical...
     if (fabs(slope) < 1) {

@@ -300,16 +300,17 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
           int tx[4];
           int ty[4];
 
-          tx[0] = ox;
-          ty[0] = oy;
-          tx[1] = ox + blit_width;
-          ty[1] = oy;
-          tx[2] = ox + blit_width;
-          ty[2] = oy + blit_height;
-          tx[3] = ox;
-          ty[3] = oy + blit_height;
-
           if (m_LayerInfo[i].angle != 0) {
+            tx[0] = ox;
+            ty[0] = oy;
+            tx[1] = ox + blit_width;
+            ty[1] = oy;
+            tx[2] = ox + blit_width;
+            ty[2] = oy + blit_height;
+            tx[3] = ox;
+            ty[3] = oy + blit_height;
+          }
+          else {
             CalculateRotateBlitPoints(tx, ty, ox, oy, blit_width, blit_height, m_LayerInfo[i].angle);
           }
 

@@ -2443,36 +2443,45 @@ CMapEngine::GetPersonMask(const char* name, RGBA& mask)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+class PersonDataUtil {
+public:
+  static int FindDataIndex(std::vector<struct PersonData>& person_data, const char* name)
+  {
+    int index = -1;
+    for (int i = 0; i < int(person_data.size()); i++) {
+      if (person_data[i].name == name) {
+        index = i;
+        break;
+      }
+    }
+
+    return index;
+  }
+
+  static void SetDataStr(std::vector<struct PersonData>& person_data, const char* name, const char* value)
+  {
+    int index = PersonDataUtil::FindDataIndex(person_data, name);
+    if (index != -1) {
+      person_data[index].value = value;
+    }
+    else {
+      PersonData data;
+      data.name = name;
+      data.value = value;
+      person_data.push_back(data);
+    }
+  }
+
+  static void SetDataInt(std::vector<struct PersonData>& person_data, const char* name, const int value)
+  {
+    std::string str = itos(value);
+    PersonDataUtil::SetDataStr(person_data, name, str.c_str());
+  }
+};
+
 bool
 CMapEngine::GetPersonData(const char* name, std::vector<struct PersonData>& person_data)
 {
-  struct Local {
-    static void SetDataStr(std::vector<struct PersonData>& person_data, const char* name, const char* value)
-    {
-      bool found = false;
-      for (int i = 0; i < int(person_data.size()); i++) {
-        if (person_data[i].name == name) {
-          person_data[i].value = value;
-          found = true;
-          break;
-        }
-      }
-
-      if (!found) {
-        PersonData data;
-        data.name = name;
-        data.value = value;
-        person_data.push_back(data);
-      }
-    }
-
-    static void SetDataInt(std::vector<struct PersonData>& person_data, const char* name, const int value)
-    {
-      std::string str = itos(value);
-      Local::SetDataStr(person_data, name, str.c_str());
-    }
-  };
-
   int person = -1;
   if ( IsInvalidPersonError(name, person) ) {
     return false;
@@ -2480,10 +2489,11 @@ CMapEngine::GetPersonData(const char* name, std::vector<struct PersonData>& pers
 
   Person& p = m_Persons[person];
   person_data = m_Persons[person].person_data;
-  Local::SetDataInt(person_data, "num_frames", p.spriteset->GetSpriteset().GetNumFrames(p.direction));
-  Local::SetDataInt(person_data, "num_directions", p.spriteset->GetSpriteset().GetNumDirections());
-  Local::SetDataInt(person_data, "width", p.width);
-  Local::SetDataInt(person_data, "height", p.height);
+
+  PersonDataUtil::SetDataInt(person_data, "num_frames", p.spriteset->GetSpriteset().GetNumFrames(p.direction));
+  PersonDataUtil::SetDataInt(person_data, "num_directions", p.spriteset->GetSpriteset().GetNumDirections());
+  PersonDataUtil::SetDataInt(person_data, "width", p.width);
+  PersonDataUtil::SetDataInt(person_data, "height", p.height);
 
   return true;
 }
@@ -2507,6 +2517,17 @@ CMapEngine::SetPersonData(const char* name, const std::vector<struct PersonData>
 bool
 CMapEngine::GetPersonValue(const char* name, const char* key, std::string& value)
 {
+  std::vector<PersonData> person_data;
+  if ( GetPersonData(name, person_data) == false)
+    return false;
+
+  int index = PersonDataUtil::FindDataIndex(person_data, key);
+  if (index != -1) {
+    value = person_data[index].value;
+  }
+  else {
+    value = "";
+  }
 
   return true;
 }
@@ -2516,6 +2537,14 @@ CMapEngine::GetPersonValue(const char* name, const char* key, std::string& value
 bool
 CMapEngine::SetPersonValue(const char* name, const char* key, const std::string value)
 {
+  std::vector<PersonData> person_data;
+  if ( GetPersonData(name, person_data) == false)
+    return false;
+
+  PersonDataUtil::SetDataStr(person_data, key, value.c_str());
+
+  if ( SetPersonData(name, person_data) == false)
+    return false;
 
   return true;
 }

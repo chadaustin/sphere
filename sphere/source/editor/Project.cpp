@@ -37,7 +37,7 @@ CProject::Create(const char* games_directory, const char* project_name)
   // now create all of the subdirectories
   for (int i = 0; i < NUM_GROUP_TYPES; i++)
   {
-    if (i == GT_TILESETS)
+    if (i == GT_TILESETS || i == GT_PLAYLISTS)
       continue;
 
     std::string directory = project_name;
@@ -129,6 +129,7 @@ CProject::Save() const
   SetCurrentDirectory(m_Directory.c_str());
   
   CConfigFile config;
+  config.Load(m_Filename.c_str());
 
   config.WriteString("", "name", m_GameTitle.c_str());
   config.WriteString("", "author", m_Author.c_str());

@@ -47,23 +47,10 @@ CSoundWindow::CSoundWindow(const char* sound)
   
   m_PositionDown = false;
 
-  // load the sample
-  if (!m_Sound.Load(sound))
-  {
-    // if it fails, show a message box and close the window
-    char string[MAX_PATH + 1024];
-    sprintf (string, "Error: Could not load sound file\n'%s'", sound);
-    MessageBox(string);
-    delete this;
-    return;
-  }
-
-
-  char szWindowTitle[MAX_PATH];
-  strcpy(szWindowTitle, strrchr(sound, '\\') + 1);
+  m_IsLoaded = false;
+  m_Filename = sound;
 
   Create(AfxRegisterWndClass(0, NULL, NULL, AfxGetApp()->LoadIcon(IDI_SOUND)));
-
 
   CFont* pFont = CFont::FromHandle((HFONT)GetStockObject(DEFAULT_GUI_FONT));
   
@@ -95,11 +82,60 @@ CSoundWindow::CSoundWindow(const char* sound)
     m_PitchBar.SetLineSize(20);
   }
 
+  LoadSound(sound);
+
+  m_PlayButton.EnableWindow(TRUE);
+  m_StopButton.EnableWindow(FALSE);
+
+  // make sure the buttons are in the right position
+  RECT Rect;
+  GetClientRect(&Rect);
+  OnSize(0, Rect.right - Rect.left, Rect.bottom - Rect.top);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+CSoundWindow::~CSoundWindow()
+{
+  m_VolumeBarBitmap.DeleteObject();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CSoundWindow::LoadSound(const char* sound)
+{
+  m_IsLoaded = false;
+
+  // load the sample
+  if (!m_Sound.Load(sound))
+  {
+    // if it fails, show a message box and close the window
+    char string[MAX_PATH + 1024];
+    sprintf (string, "Error: Could not load sound file\n'%s'", sound);
+    MessageBox(string);
+    return;
+  }
+
+  char szWindowTitle[MAX_PATH];
+  strcpy(szWindowTitle, strrchr(sound, '\\') + 1);
+
   if (m_Sound.IsSeekable()) {
-    m_PositionBar.Create(WS_CHILD | WS_VISIBLE | TBS_HORZ, CRect(), this, ID_MUSIC_POSITIONBAR);
-    m_PositionBar.SetLineSize(20);
-    m_PositionBar.SetRange(0, m_Sound.GetLength(), true);
-    m_PositionBar.SetPos(0);
+    if (m_PositionBar.m_hWnd == NULL) {
+      m_PositionBar.Create(WS_CHILD | WS_VISIBLE | TBS_HORZ, CRect(), this, ID_MUSIC_POSITIONBAR);
+      m_PositionBar.SetLineSize(20);
+    }
+
+    if (m_PositionBar.m_hWnd) {
+      m_PositionBar.SetRange(0, m_Sound.GetLength(), true);
+      m_PositionBar.SetPos(0);
+      m_PositionBar.ShowWindow(SW_SHOW);
+    }
+  }
+  else {
+    if (m_PositionBar.m_hWnd) {
+      m_PositionBar.ShowWindow(SW_HIDE);
+    }
   }
 
   // make sure the buttons are in the right position
@@ -109,13 +145,8 @@ CSoundWindow::CSoundWindow(const char* sound)
 
   SetTimer(TIMER_UPDATE_SOUND_WINDOW, 100, NULL);
   OnTimer(TIMER_UPDATE_SOUND_WINDOW);
-}
 
-////////////////////////////////////////////////////////////////////////////////
-
-CSoundWindow::~CSoundWindow()
-{
-  m_VolumeBarBitmap.DeleteObject();
+  m_IsLoaded = true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -239,12 +270,15 @@ CSoundWindow::OnSoundPlay()
   if (m_Sound.IsPlaying())
     return;
 
+  if (!m_IsLoaded)
+    LoadSound(m_Filename.c_str());
+
   m_Sound.Play();
   m_Playing = true;
 
   if (m_PanBar.m_hWnd != NULL && m_PitchBar.m_hWnd != NULL) {
-    m_Sound.SetPan(m_PanBar.GetPos() / 255.0f);
-    m_Sound.SetPitchShift(m_PitchBar.GetPos() / 255.0f);
+    m_Sound.SetPan((float)m_PanBar.GetPos() / 255.0f);
+    m_Sound.SetPitchShift((float)m_PitchBar.GetPos() / 255.0f);
   }
 }
 
@@ -292,7 +326,7 @@ CSoundWindow::OnUpdatePauseCommand(CCmdUI* cmdui)
 afx_msg void
 CSoundWindow::OnUpdateStopCommand(CCmdUI* cmdui)
 {
-  cmdui->Enable(m_Sound.IsPlaying());
+  cmdui->Enable(m_Sound.IsPlaying() && m_IsLoaded);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

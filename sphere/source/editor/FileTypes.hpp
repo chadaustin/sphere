@@ -17,6 +17,7 @@ enum
   GT_IMAGES,
   GT_ANIMATIONS,
   GT_TILESETS,
+  GT_PLAYLISTS,
 
   // special codes
   NUM_GROUP_TYPES,

@@ -3,13 +3,39 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
+CDIBSection::CDIBSection()
+{
+  m_iWidth = 0;
+  m_iHeight = 0;
+  m_pPixels = NULL;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 CDIBSection::CDIBSection(int width, int height, int bpp)
 {
-  if (width == 0 || height == 0 || bpp == 0)
+  Create(width, height, bpp);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+CDIBSection::~CDIBSection()
+{
+  Destroy();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CDIBSection::Create(int width, int height, int bpp)
+{
+  Destroy();
+
+  if (width <= 0 || height <= 0 || bpp <= 0)
   {
     m_hDC = NULL;
     m_hBitmap = NULL;
-    return;
+    return false;
   }
 
   // create the DC
@@ -19,7 +45,7 @@ CDIBSection::CDIBSection(int width, int height, int bpp)
     m_hBitmap = NULL;
     m_iWidth = 0;
     m_iHeight = 0;
-    return;
+    return false;
   }
 
   // define bitmap attributes
@@ -40,7 +66,7 @@ CDIBSection::CDIBSection(int width, int height, int bpp)
     m_hDC = NULL;
     m_iWidth = 0;
     m_iHeight = 0;
-    return;
+    return false;
   }
 
   // select the bitmap into the DC
@@ -48,16 +74,26 @@ CDIBSection::CDIBSection(int width, int height, int bpp)
 
   m_iWidth = width;
   m_iHeight = height;
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-CDIBSection::~CDIBSection()
+void
+CDIBSection::Destroy()
 {
   if (m_hDC != NULL)
     ::DeleteDC(m_hDC);
+  m_hDC = NULL;
+
   if (m_hBitmap != NULL)
     ::DeleteObject(m_hBitmap);
+  m_hBitmap = NULL;
+
+  m_iWidth = 0;
+  m_iHeight = 0;
+  m_pPixels = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

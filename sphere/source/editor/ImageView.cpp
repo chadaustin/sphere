@@ -12,6 +12,7 @@
 
 #include "../common/primitives.hpp"
 
+#include "ImageRender.hpp"
 
 #include "NumberDialog.hpp"
 #include "ConvolveListDialog.hpp"
@@ -829,10 +830,26 @@ CImageView::UpdateSelectionPixels(const RGBA* pixels, int sx, int sy, int sw, in
 void
 CImageView::InvalidateSelection(int sx, int sy, int sw, int sh)
 {
-  m_RedrawX = sx;
-  m_RedrawY = sy;
-  m_RedrawWidth = sw;
-  m_RedrawHeight = sh;
+  if (m_RedrawX == 0 && m_RedrawY == 0 && m_RedrawWidth == 0 && m_RedrawHeight == 0) {
+    m_RedrawX = sx;
+    m_RedrawY = sy;
+    m_RedrawWidth = sw;
+    m_RedrawHeight = sh;
+  } else {
+
+    int x1 = m_RedrawX + m_RedrawWidth;
+    int x2 = sx + sw;
+
+    int y1 = m_RedrawY + m_RedrawHeight;
+    int y2 = sy + sh;
+
+    m_RedrawX = std::min(sx, m_RedrawX);
+    m_RedrawY = std::min(sy, m_RedrawY);
+
+    m_RedrawWidth  = std::max(x1, x2) - m_RedrawX;
+    m_RedrawHeight = std::max(y1, y2) - m_RedrawY;
+  }
+
   Invalidate();
 }
 
@@ -1288,99 +1305,10 @@ CImageView::OnPaint()
   if (m_RedrawX + m_RedrawWidth > m_Image.GetWidth()) m_RedrawWidth = m_Image.GetWidth() - m_RedrawX;
   if (m_RedrawY + m_RedrawHeight > m_Image.GetHeight()) m_RedrawHeight = m_Image.GetHeight() - m_RedrawY;
 
-  int num_tiles_x = ((size * width) / dib_width);
-  int num_tiles_y = ((size * height) / dib_height);
 
-  const RGBA color_mask_1 = m_ColorMask1;
-  const RGBA color_mask_2 = m_ColorMask2;
 
-//  if (m_RedrawWidth > 8 || m_RedrawHeight > 8) {
-  for (int ty = 0; ty <= num_tiles_y; ++ty) {
-    for (int tx = 0; tx <= num_tiles_x; ++tx) {
-
-      // clear the DIB
-      memset(m_BlitTile->GetPixels(), 0,  dib_width * dib_height * 4);
-      BGRA* pixels = (BGRA*) m_BlitTile->GetPixels();
-      int current_blit_width = 0;
-      int current_blit_height = 0;
-
-      for (int iy = 0; iy < dib_height; ++iy) {
-        int sy = (iy + (ty * dib_height)) / size;
-        if (!(sy >= m_RedrawY && sy < (m_RedrawY + m_RedrawHeight)))
-          continue;
-
-        for (int ix = 0; ix < dib_width; ++ix) {
-          //for (int l = 0; l < size; ++l)
-          {
-            int sx = (ix + (tx * dib_width)) / size;
-
-            if (!(sx >= m_RedrawX && sx < (m_RedrawX + m_RedrawWidth)))
-              continue;
-
-            if (iy == 0)
-              current_blit_width += 1;
-
-            int counter = (iy * dib_height) + ix;
-
-            RGBA color = pImage[((sy * width) + sx)];
- 
-            if (color.alpha == 255 || !m_ShowAlphaMask) {
-              pixels[counter].red   = color.red;
-              pixels[counter].green = color.green;
-              pixels[counter].blue  = color.blue;
-              pixels[counter].alpha = color.alpha;
-            }
-            else {
-              RGBA Color1 = color_mask_1;
-              RGBA Color2 = color_mask_2;
-
-              Color1.red   = (color.red   * color.alpha + Color1.red   * (256 - color.alpha)) / 256;
-              Color1.green = (color.green * color.alpha + Color1.green * (256 - color.alpha)) / 256;
-              Color1.blue  = (color.blue  * color.alpha + Color1.blue  * (256 - color.alpha)) / 256;
-
-              Color2.red   = (color.red   * color.alpha + Color2.red   * (256 - color.alpha)) / 256;
-              Color2.green = (color.green * color.alpha + Color2.green * (256 - color.alpha)) / 256;
-              Color2.blue  = (color.blue  * color.alpha + Color2.blue  * (256 - color.alpha)) / 256;
-
-              Color1.alpha = Color2.alpha = color.alpha;
-
-              if (sx % 2 == 0) {
-                if (sy % 2 == 0) {
-                  pixels[counter].red = Color2.red;
-                  pixels[counter].green = Color2.green;
-                  pixels[counter].blue = Color2.blue;
-                }
-                else {
-                  pixels[counter].red = Color1.red;
-                  pixels[counter].green = Color1.green;
-                  pixels[counter].blue = Color1.blue;
-                }
-              } else {
-                if (sy % 2 == 0) {
-                  pixels[counter].red = Color1.red;
-                  pixels[counter].green = Color1.green;
-                  pixels[counter].blue = Color1.blue;
-                }
-                else {
-                  pixels[counter].red = Color2.red;
-                  pixels[counter].green = Color2.green;
-                  pixels[counter].blue = Color2.blue;
-                }
-              }
-  
-            }
-          }
-        }      
-        current_blit_height++;
-      }
-
-      if (current_blit_width && current_blit_height) {
-        // render the tile
-        _dc.BitBlt(offsetx + (tx * dib_width), offsety + (ty * dib_height), current_blit_width, current_blit_height,
-                  CDC::FromHandle(m_BlitTile->GetDC()), 0, 0, SRCCOPY);
-      }
-    }
-  }
+  StretchedBlit(_dc, m_BlitTile, size, size, m_Image.GetWidth(), m_Image.GetHeight(),
+                     m_Image.GetPixels(), &ClientRect, m_RedrawX, m_RedrawY, m_RedrawWidth, m_RedrawHeight);
 
 
 /* // this is the old image drawing code
@@ -1528,7 +1456,7 @@ CImageView::OnPaint()
     DeleteObject(white_pen);
   }
 
-  if (true)
+  if (false)
   {
     POINT p = ConvertToPixel(m_CurPoint);
     if (InImage(p)) {

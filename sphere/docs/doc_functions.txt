@@ -756,6 +756,12 @@ log_object.endBlock()
         data["talked_to_jimmy"] = true;
         SetPersonData("Jimmy", data);
 
+      SetPersonValue(name, key, value)
+        - SetPersonValue("Jimmy", "talked_to_jimmy", true); // same as code above
+
+      GetPersonValue(name, key)
+        - GetPersonValue("Jimmy", "num_frames"); // same as previous code above
+
       FollowPerson(name, leader, pixels)
         - makes the sprite 'name' follow 'pixels' pixels behind sprite 'leader'.
         If this function is called like:

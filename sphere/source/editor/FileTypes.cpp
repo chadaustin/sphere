@@ -18,6 +18,7 @@ static const char* Extensions[] = {
   /* images */       "", // "Image Files:png(JPEG Images(jpeg,jpg,jpe),PNG Images(png),PCX Images(pcx),Windows Bitmap Images(bmp),Truevision Targa(tga),Gif(gif))",
   /* animations */   "Animation Files:mng,flic(MNG Animations(mng),FLIC Animations(flic,flc,fli))",
   /* tilesets */     "Tileset Files:rts(Sphere Tileset Files(rts))",
+  /* playlists */    "Playlist Files:m3u(Winamp Playlist Files(m3u))",
   /* packages */     "Package Files:spk(Sphere Package Files(spk))",
 };
 
@@ -32,7 +33,7 @@ CFileTypeLibrary::CFileTypeLibrary()
   const int num_extensions = sizeof(Extensions) / sizeof(*Extensions);
   m_FileTypes.resize(num_extensions);
 
-  for (int i = 0; i < num_extensions; i++) {
+  for (int i = 0; i < int(m_FileTypes.size()); i++) {
     const char* s = Extensions[i];
     FileType& ft = m_FileTypes[i];
 
