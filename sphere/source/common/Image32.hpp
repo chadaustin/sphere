@@ -66,6 +66,9 @@ public:
   void Triangle(int x1, int y1, int x2, int y2, int x3, int y3, RGBA color);
 
   void BlitImage(CImage32& image, int x, int y);
+  void BlitImageMask(CImage32& image, int x, int y, RGBA mask);
+  void TransformBlitImage(CImage32& image, int x[4], int y[4]);
+  void TransformBlitImageMask(CImage32& image, int x[4], int y[4], RGBA mask);
 
 private:
   int   m_Width;

@@ -10,7 +10,6 @@
 #include <string>
 #include "sfont.hpp"
 
-
 ////////////////////////////////////////////////////////////////////////////////
 
 SFONT::SFONT()
@@ -66,7 +65,7 @@ SFONT::Destroy()
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-SFONT::DrawString(int x, int y, const char* text, RGBA mask) const
+SFONT::DrawString(int x, int y, const char* text, RGBA mask, CImage32* surface) const
 {
   int range = m_Font.GetNumCharacters();
 
@@ -75,7 +74,15 @@ SFONT::DrawString(int x, int y, const char* text, RGBA mask) const
     if (c < 0 || c >= range) c = 0;
 
     const sFontCharacter& character = m_Font.GetCharacter(c);
-    BlitImageMask(m_Images[c], x, y, mask);
+    
+    if (surface == NULL) {
+      BlitImageMask(m_Images[c], x, y, mask);
+    }
+    else {
+      CImage32 tmp(character);
+      surface->BlitImageMask(tmp, x, y, mask);
+    }
+
     x += character.GetWidth();
     text++;
   }
@@ -85,16 +92,22 @@ SFONT::DrawString(int x, int y, const char* text, RGBA mask) const
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-SFONT::DrawZoomedString(int x, int y, double scale, const char* text, RGBA mask) const
+SFONT::DrawZoomedString(int x, int y, double scale, const char* text, RGBA mask, CImage32* surface) const
 {
   struct Local
   {
-    static inline void ScaleBlit(IMAGE i, int x, int y, double scale, RGBA mask) {
+    static inline void ScaleBlit(IMAGE i, int x, int y, double scale, RGBA mask, CImage32* lsurface, const CImage32 character) {
       int w = GetImageWidth(i);
       int h = GetImageHeight(i);
       int ax[4] = { x, x + (int)(scale * w), x + (int)(scale * w), x };
       int ay[4] = { y, y, y + (int)(scale * h), y + (int)(scale * h) };
-      TransformBlitImageMask(i, ax, ay, mask);
+      if (lsurface == NULL) {
+        TransformBlitImageMask(i, ax, ay, mask);
+      }
+      else {
+        CImage32 tmp(character);
+        lsurface->TransformBlitImageMask(tmp, ax, ay, mask);
+      }
     }
   };
 
@@ -105,9 +118,10 @@ SFONT::DrawZoomedString(int x, int y, double scale, const char* text, RGBA mask)
     char c = *text;
     if (c < 0 || c >= range) c = 0;
     
-    Local::ScaleBlit(m_Images[c], int(cx), y, scale, mask);
+    const sFontCharacter& character = m_Font.GetCharacter(c);
+    Local::ScaleBlit(m_Images[c], int(cx), y, scale, mask, surface, character);
 
-    cx += scale * m_Font.GetCharacter(c).GetWidth();
+    cx += scale * character.GetWidth();
     text++;
   }
 
@@ -117,7 +131,7 @@ SFONT::DrawZoomedString(int x, int y, double scale, const char* text, RGBA mask)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGBA mask) const
+SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGBA mask, CImage32* surface) const
 {
   const int space_width = GetStringWidth(" ");
   const int tab_width   = GetStringWidth("   ");
@@ -147,9 +161,9 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
         dx = word_width + space_width;
         dy += max_height;
 
-        DrawString(x, y + dy, word.c_str(), mask);
+        DrawString(x, y + dy, word.c_str(), mask, surface);
       } else {
-        DrawString(x + dx, y + dy, word.c_str(), mask);
+        DrawString(x + dx, y + dy, word.c_str(), mask, surface);
         dx += word_width + space_width;
       }
 
@@ -162,9 +176,9 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
         dx = word_width + tab_width;
         dy += max_height;
 
-        DrawString(x, y + dy, word.c_str(), mask);
+        DrawString(x, y + dy, word.c_str(), mask, surface);
       } else {
-        DrawString(x + dx, y + dy, word.c_str(), mask);
+        DrawString(x + dx, y + dy, word.c_str(), mask, surface);
         dx += word_width + tab_width;
       }
 
@@ -173,7 +187,7 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
 
     } else if (*p == '\n') {  // newline time, awww yeah
 
-      DrawString(x + dx, y + dy, word.c_str(), mask);
+      DrawString(x + dx, y + dy, word.c_str(), mask, surface);
       dx = 0;
       dy += max_height;
       word.resize(0);
@@ -185,7 +199,7 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
 
       // if we've gone over the limit and dx = 0, draw the old word and split the new one off
       if (word_width + char_width > w && dx == 0) {
-        DrawString(x + dx, y + dy, word.c_str(), mask);
+        DrawString(x + dx, y + dy, word.c_str(), mask, surface);
         dy += max_height;
         word.resize(0);
         word_width = 0;
@@ -202,7 +216,7 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
     p++;
   }
 
-  DrawString(x + dx, y + dy, word.c_str(), mask);
+  DrawString(x + dx, y + dy, word.c_str(), mask, surface);
 
 
   SetClippingRectangle(old_x, old_y, old_w, old_h);

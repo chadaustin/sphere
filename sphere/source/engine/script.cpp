@@ -779,6 +779,28 @@ inline SS_IMAGE* argImage(JSContext* cx, jsval arg)
   return image;
 }
 
+inline SS_FONT* argFont(JSContext* cx, jsval arg)
+{
+  if (!JSVAL_IS_OBJECT(arg)) {
+    JS_ReportError(cx, "Invalid font object");
+    return NULL;
+  }
+
+  SS_FONT* font = (SS_FONT*)JS_GetPrivate(cx, JSVAL_TO_OBJECT(arg));
+  if (font == NULL) {
+    JS_ReportError(cx, "Invalid font object");
+    return NULL;
+  }
+
+  if (font->magic != SS_FONT_MAGIC) {
+    JS_ReportError(cx, "Invalid font object");
+    return NULL;
+  }
+
+  return font;
+}
+
+
 
 #define arg_int(name)        int name           = argInt(cx, argv[arg++]);                                            if (This->m_ShouldExit) return JS_FALSE
 #define arg_str(name)        const char* name   = argStr(cx, argv[arg++]);                                            if (This->m_ShouldExit) return JS_FALSE
@@ -789,6 +811,7 @@ inline SS_IMAGE* argImage(JSContext* cx, jsval arg)
 #define arg_colormatrix(name)CColorMatrix* name = argColorMatrix(cx, argv[arg++]); if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
 #define arg_byte_array(name) SS_BYTEARRAY* name = argByteArray(cx, argv[arg++]);   if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
 #define arg_image(name)      SS_IMAGE* name     = argImage(cx, argv[arg++]);       if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
+#define arg_font(name)       SS_FONT* name      = argFont(cx, argv[arg++]);        if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
 
 // return values
 
@@ -4415,6 +4438,9 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
     { "clone",            ssSurfaceClone,            0, 0, 0 },
     { "cloneSection",     ssSurfaceCloneSection,     4, 0, 0 },
     { "triangle",         ssSurfaceTriangle,         7, 0, 0 },
+    { "drawText",         ssSurfaceDrawText,         4, 0, 0 },
+    { "drawZoomedText",   ssSurfaceDrawZoomedText,   5, 0, 0 },
+    { "drawTextBox",      ssSurfaceDrawTextBox,      7, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -4694,6 +4720,46 @@ begin_method(SS_SURFACE, ssSurfaceCloneSection, 4)
   }
 
   return_object(CreateSurfaceObject(cx, surface));
+end_method()
+
+///////////////////////////////////////
+
+begin_method(SS_SURFACE, ssSurfaceDrawText, 4)
+  arg_font(font_obj);
+  arg_int(x);
+  arg_int(y);
+  arg_str(text);
+
+  font_obj->font->DrawString(x, y, text, font_obj->mask, object->surface);
+
+end_method()
+
+///////////////////////////////////////
+
+begin_method(SS_SURFACE, ssSurfaceDrawZoomedText, 5)
+  arg_font(font_obj);
+  arg_int(x);
+  arg_int(y);
+  arg_double(scale);
+  arg_str(text);
+
+  font_obj->font->DrawZoomedString(x, y, scale, text, font_obj->mask, object->surface);
+
+end_method()
+
+///////////////////////////////////////
+
+begin_method(SS_SURFACE, ssSurfaceDrawTextBox, 7)
+  arg_font(font_obj);
+  arg_int(x);
+  arg_int(y);
+  arg_int(w);
+  arg_int(h);
+  arg_int(offset);
+  arg_str(text);
+
+  font_obj->font->DrawTextBox(x, y, w, h, offset, text, font_obj->mask, object->surface);
+
 end_method()
 
 ///////////////////////////////////////

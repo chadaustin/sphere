@@ -1019,6 +1019,19 @@ log_object.endBlock()
     - returns a new surface object with the height and width of h and w, with
       part of image at (x,y) from the surface_object with the width w and 
       height h.
+
+  surface_object.drawText(font, x, y, text)
+    - draws 'text' at x, y with the font onto the surface_object
+
+  surface_object.drawZoomedText(font, x, y, scale, text)
+    - draws scaled text (1.0 = normal) with (x,y) as the upper left corner
+      onto the surface_object
+  
+  surface_object.drawTextBox(font, x, y, w, h, offset, text)
+    - draws a word-wrapped text at (x, y) onto the surface_object with the width w and height h.
+      The offset is the number of pixels which the number of pixels from y which 
+      the actual drawing starts at. 
+      See font_object.drawTextBox for more detail.
 
   *** color matrix ***
   CreateColorMatrix(rn, rr, rg, rb,  gn, gr, gg, gb,  bn, br, bg, bb)

@@ -192,6 +192,9 @@ private:
   declare_method(ssSurfaceFlipVertically);
   declare_method(ssSurfaceClone);
   declare_method(ssSurfaceCloneSection);
+  declare_method(ssSurfaceDrawText);
+  declare_method(ssSurfaceDrawZoomedText);
+  declare_method(ssSurfaceDrawTextBox);
 
   // color matrix
   declare_constructor1(CreateColorMatrixObject, CColorMatrix* colormatrix);

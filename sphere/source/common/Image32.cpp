@@ -874,6 +874,8 @@ inline void alphaRenderer(RGBA& dest, RGBA src, RGBA alpha) {
   dest.alpha = src.alpha;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 void
 CImage32::BlitImage(CImage32& image, int x, int y)
 {
@@ -927,6 +929,93 @@ CImage32::BlitImage(CImage32& image, int x, int y)
         alphaRenderer);
       break;
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CImage32::TransformBlitImage(CImage32& image, int x[4], int y[4])
+{
+  clipper clip = {
+    0, 0, m_Width - 1, m_Height - 1
+  };
+
+  switch (m_BlendMode) {
+    case REPLACE:
+      primitives::TexturedQuad(
+        m_Pixels,
+        m_Width,
+        x,
+        y,
+        image.GetPixels(),
+        image.GetPixels(),
+        image.GetWidth(),
+        image.GetHeight(),
+        clip,
+        replaceRenderer
+      );
+    break;
+
+    case BLEND:
+      primitives::TexturedQuad(
+        m_Pixels,
+        m_Width,
+        x,
+        y,
+        image.GetPixels(),
+        image.GetPixels(),
+        image.GetWidth(),
+        image.GetHeight(),
+        clip,
+        blendRenderer
+      );
+    break;
+
+    case RGB_ONLY:
+      primitives::TexturedQuad(
+        m_Pixels,
+        m_Width,
+        x,
+        y,
+        image.GetPixels(),
+        image.GetPixels(),
+        image.GetWidth(),
+        image.GetHeight(),
+        clip,
+        rgbRenderer);
+      break;
+
+    case ALPHA_ONLY:
+      primitives::TexturedQuad(
+        m_Pixels,
+        m_Width,
+        x,
+        y,
+        image.GetPixels(),
+        image.GetPixels(),
+        image.GetWidth(),
+        image.GetHeight(),
+        clip,
+        alphaRenderer);
+    break;
+
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CImage32::BlitImageMask(CImage32& image, int x, int y, RGBA mask)
+{
+  BlitImage(image, x, y);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CImage32::TransformBlitImageMask(CImage32& image, int x[4], int y[4], RGBA mask)
+{
+  TransformBlitImage(image, x, y);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
