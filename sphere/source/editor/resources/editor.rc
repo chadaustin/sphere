@@ -679,6 +679,7 @@ BEGIN
         END
         MENUITEM SEPARATOR
         MENUITEM "View &Grid",                  ID_IMAGEVIEW_VIEWGRID
+        MENUITEM "Show Alpha Mask",             ID_IMAGEVIEW_TOGGLEALPHAMASK
         POPUP "&Blend Mode"
         BEGIN
             MENUITEM "&Blend",                      ID_IMAGEVIEW_BLENDMODE_BLEND

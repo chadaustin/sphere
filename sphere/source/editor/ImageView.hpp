@@ -114,6 +114,7 @@ private:
   afx_msg void OnPasteIntoSelection();
   afx_msg void OnViewGrid();
   afx_msg void OnBlendModeBlend();
+  afx_msg void OnToggleViewAlphaMask();
   afx_msg void OnBlendModeReplace();
   afx_msg void OnBlendModeRGBOnly();
   afx_msg void OnBlendModeAlphaOnly();
@@ -178,6 +179,7 @@ private:
   Image* m_UndoImages;
 
   bool m_ShowGrid;
+  bool m_ShowAlphaMask;
 
   DECLARE_MESSAGE_MAP()
 };

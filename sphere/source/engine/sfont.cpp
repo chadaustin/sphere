@@ -116,7 +116,7 @@ SFONT::DrawZoomedString(int x, int y, double scale, const char* text, RGBA mask,
   int range = m_Font.GetNumCharacters();
 
   while (*text) {
-    char c = *text;
+    unsigned char c = *text;
     if (c < 0 || c >= range) c = 0;
     
     const sFontCharacter& character = m_Font.GetCharacter(c);

@@ -32,6 +32,7 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
   ON_COMMAND(ID_IMAGEVIEW_PASTE_ALPHA,           OnPasteAlpha)
   ON_COMMAND(ID_IMAGEVIEW_PASTE_INTOSELECTION,   OnPasteIntoSelection)
   ON_COMMAND(ID_IMAGEVIEW_VIEWGRID,              OnViewGrid)
+  ON_COMMAND(ID_IMAGEVIEW_TOGGLEALPHAMASK,         OnToggleViewAlphaMask)
   ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_BLEND,       OnBlendModeBlend)
   ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_REPLACE,     OnBlendModeReplace)
   ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_RGBONLY,     OnBlendModeRGBOnly)
@@ -80,6 +81,7 @@ CImageView::CImageView()
 , m_SelectionWidth(0)
 , m_SelectionHeight(0)
 , m_ShowGrid(false)
+, m_ShowAlphaMask(true)
 {
   m_Image.SetBlendMode(CImage32::REPLACE);
   m_ShowGrid = false;
@@ -1088,7 +1090,7 @@ CImageView::OnPaint()
 
             RGBA color = pImage[((sy * width) + sx)];
  
-            if (color.alpha == 255) {
+            if (color.alpha == 255 || !m_ShowAlphaMask) {
               pixels[counter].red = color.red;
               pixels[counter].green = color.green;
               pixels[counter/*iy * 64 + ix*/].blue = color.blue;
@@ -1477,6 +1479,10 @@ CImageView::OnRButtonUp(UINT flags, CPoint point)
     CheckMenuItem(menu, ID_IMAGEVIEW_VIEWGRID, MF_BYCOMMAND | MF_CHECKED);
   }
 
+  if (m_ShowAlphaMask) {
+    CheckMenuItem(menu, ID_IMAGEVIEW_TOGGLEALPHAMASK, MF_BYCOMMAND | MF_CHECKED);
+  }
+
   switch (m_Image.GetBlendMode()) {
     case CImage32::BLEND:      CheckMenuItem(menu, ID_IMAGEVIEW_BLENDMODE_BLEND,     MF_BYCOMMAND | MF_CHECKED); break;
     case CImage32::REPLACE:    CheckMenuItem(menu, ID_IMAGEVIEW_BLENDMODE_REPLACE,   MF_BYCOMMAND | MF_CHECKED); break;
@@ -1586,6 +1592,15 @@ CImageView::OnPasteIntoSelection()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnToggleViewAlphaMask()
+{
+  m_ShowAlphaMask = !m_ShowAlphaMask;
+  Invalidate();
+}
+
+//////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
 CImageView::OnViewGrid()
