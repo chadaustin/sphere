@@ -800,31 +800,37 @@ CImageView::FillMe(int x, int y, RGBA colorToReplace)
   q.push(    Point(x, y));
   m_Image.SetPixel(x, y, m_Color);
 
+  const int max_size = width * height;
+  int current_size = 0;
+
   while (!q.empty()) {
     Point p = q.top();
     q.pop();
 
     // fill up
     if (p.y > sy && IsColorToReplace(m_Image.GetPixel(p.x, p.y - 1), colorToReplace)) {
-      q.push(    Point(p.x, p.y - 1));
+      if (current_size < max_size) q.push(    Point(p.x, p.y - 1));
       m_Image.SetPixel(p.x, p.y - 1, m_Color);
     }
     // fill down
     if (p.y < height - 1 && IsColorToReplace(m_Image.GetPixel(p.x, p.y + 1), colorToReplace)) {
-      q.push(    Point(p.x, p.y + 1));
+      if (current_size < max_size) q.push(    Point(p.x, p.y + 1));
       m_Image.SetPixel(p.x, p.y + 1, m_Color);
     }
     // fill left
     if (p.x > sx && IsColorToReplace(m_Image.GetPixel(p.x - 1, p.y), colorToReplace)) {
-      q.push(    Point(p.x - 1, p.y));
+      if (current_size < max_size) q.push(    Point(p.x - 1, p.y));
       m_Image.SetPixel(p.x - 1, p.y, m_Color);
     }
     // fill right
     if (p.x < width - 1 && IsColorToReplace(m_Image.GetPixel(p.x + 1, p.y), colorToReplace)) {
-      q.push(    Point(p.x + 1, p.y));
+      if (current_size < max_size) q.push(    Point(p.x + 1, p.y));
       m_Image.SetPixel(p.x + 1, p.y, m_Color);
     }
+
+    current_size += 1;
   }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
