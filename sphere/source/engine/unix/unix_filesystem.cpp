@@ -1,5 +1,4 @@
 #include "unix_filesystem.h"
-#include <iostream>
 #include <errno.h>
 
 using std::string;
