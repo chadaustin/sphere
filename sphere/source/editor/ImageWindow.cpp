@@ -83,11 +83,16 @@ CImageWindow::CImageWindow(const char* image, bool create_from_clipboard)
             return;
           }
 
+          CImage32::BlendMode mode = m_Image.GetBlendMode();
+          m_Image.SetBlendMode(CImage32::REPLACE);
+
           for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
               m_Image.SetPixel(x, y, pixels[y * width + x]);
             }
           }
+
+          m_Image.SetBlendMode(mode);
         }
 
         delete[] pixels;
