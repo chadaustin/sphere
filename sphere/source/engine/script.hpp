@@ -21,6 +21,7 @@
 #include "../common/IAnimation.hpp"
 #include "../common/IFileSystem.hpp"
 #include "../common/Image32.hpp"
+#include "../common/ColorMatrix.hpp"
 
 
 // EVIL EVIL export!
@@ -164,6 +165,7 @@ private:
   declare_constructor1(CreateSurfaceObject, CImage32* surface);
   declare_finalizer(ssFinalizeSurface);
   declare_method(ssSurfaceApplyColorFX);
+  declare_method(ssSurfaceApplyColorFX4);
   declare_method(ssSurfaceBlit);
   declare_method(ssSurfaceBlitSurface);
   declare_method(ssSurfaceCreateImage);
@@ -180,6 +182,10 @@ private:
   declare_method(ssSurfaceFlipVertically);
   declare_method(ssSurfaceClone);
   declare_method(ssSurfaceCloneSection);
+
+  // color matrix
+  declare_constructor1(CreateColorMatrixObject, CColorMatrix* colormatrix);
+  declare_finalizer(ssFinalizeColorMatrix);
 
   // animations
   declare_constructor1(CreateAnimationObject, IAnimation* animation);

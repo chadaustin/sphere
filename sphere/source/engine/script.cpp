@@ -38,6 +38,7 @@ const dword SS_FONT_MAGIC        = 0x7f7d79ef;
 const dword SS_WINDOWSTYLE_MAGIC = 0x53f8d469;
 const dword SS_IMAGE_MAGIC       = 0x168875d3;
 const dword SS_SURFACE_MAGIC     = 0x09bbff98;
+const dword SS_COLORMATRIX_MAGIC = 0x18ffbb09; //todo: check how magic numbers decided/created
 const dword SS_ANIMATION_MAGIC   = 0x4c4ba103;
 const dword SS_FILE_MAGIC        = 0x672d369a;
 const dword SS_RAWFILE_MAGIC     = 0x29bcd805;
@@ -96,6 +97,10 @@ END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_SURFACE)
   CImage32* surface;
+END_SS_OBJECT()
+
+BEGIN_SS_OBJECT(SS_COLORMATRIX)
+  CColorMatrix* colormatrix;
 END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_ANIMATION)
@@ -672,6 +677,27 @@ inline CImage32* argSurface(JSContext* cx, jsval arg)
   return surface->surface;
 }
 
+inline CColorMatrix* argColorMatrix(JSContext* cx, jsval arg)
+{
+  if (!JSVAL_IS_OBJECT(arg)) {
+    JS_ReportError(cx, "Invalid colormatrix object");
+    return NULL;
+  }
+
+  SS_COLORMATRIX* colormatrix = (SS_COLORMATRIX*)JS_GetPrivate(cx, JSVAL_TO_OBJECT(arg));
+  if (colormatrix == NULL) {
+    JS_ReportError(cx, "Invalid colormatrix object");
+    return NULL;
+  }
+
+  if (colormatrix->magic != SS_COLORMATRIX_MAGIC) {
+    JS_ReportError(cx, "Invalid colormatrix object");
+    return NULL;
+  }
+
+  return colormatrix->colormatrix;
+}
+
 inline SS_BYTEARRAY* argByteArray(JSContext* cx, jsval arg)
 {
   if (!JSVAL_IS_OBJECT(arg)) {
@@ -694,13 +720,14 @@ inline SS_BYTEARRAY* argByteArray(JSContext* cx, jsval arg)
 }
 
 
-#define arg_int(name)        int name           = argInt(cx, argv[arg++]);                                          if (This->m_ShouldExit) return JS_FALSE
-#define arg_str(name)        const char* name   = argStr(cx, argv[arg++]);                                          if (This->m_ShouldExit) return JS_FALSE
-#define arg_bool(name)       bool name          = argBool(cx, argv[arg++]);                                         if (This->m_ShouldExit) return JS_FALSE
-#define arg_double(name)     double name        = argDouble(cx, argv[arg++]);                                       if (This->m_ShouldExit) return JS_FALSE
-#define arg_color(name)      RGBA name          = argColor(cx, argv[arg++]);                                        if (This->m_ShouldExit) return JS_FALSE
-#define arg_surface(name)    CImage32* name     = argSurface(cx, argv[arg++]);   if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
-#define arg_byte_array(name) SS_BYTEARRAY* name = argByteArray(cx, argv[arg++]); if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
+#define arg_int(name)        int name           = argInt(cx, argv[arg++]);                                            if (This->m_ShouldExit) return JS_FALSE
+#define arg_str(name)        const char* name   = argStr(cx, argv[arg++]);                                            if (This->m_ShouldExit) return JS_FALSE
+#define arg_bool(name)       bool name          = argBool(cx, argv[arg++]);                                           if (This->m_ShouldExit) return JS_FALSE
+#define arg_double(name)     double name        = argDouble(cx, argv[arg++]);                                         if (This->m_ShouldExit) return JS_FALSE
+#define arg_color(name)      RGBA name          = argColor(cx, argv[arg++]);                                          if (This->m_ShouldExit) return JS_FALSE
+#define arg_surface(name)    CImage32* name     = argSurface(cx, argv[arg++]);     if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
+#define arg_colormatrix(name)CColorMatrix* name = argColorMatrix(cx, argv[arg++]); if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
+#define arg_byte_array(name) SS_BYTEARRAY* name = argByteArray(cx, argv[arg++]);   if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
 
 
 // return values
@@ -2535,6 +2562,29 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(CreateColorMatrix, 12)
+  arg_int(rn);
+  arg_int(rr);
+  arg_int(rg);
+  arg_int(rb);
+  arg_int(gn);
+  arg_int(gr);
+  arg_int(gg);
+  arg_int(gb);
+  arg_int(bn);
+  arg_int(br);
+  arg_int(bg);
+  arg_int(bb);
+
+
+  // create surface and grab pixels from the backbuffer
+  CColorMatrix* colormatrix = new CColorMatrix(rn, rr, rg, rb, gn, gr, gg, gb, bn, br, bg, bb);
+
+  return_object(CreateColorMatrixObject(cx, colormatrix));
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 begin_func(LoadAnimation, 1)
   arg_str(filename);
 
@@ -3600,7 +3650,8 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
 
   // assign the methods to the object
   static JSFunctionSpec fs[] = {
-    { "applyColorFX",     ssSurfaceApplyColorFX,     16, 0, 0 },
+    { "applyColorFX",     ssSurfaceApplyColorFX,     5, 0, 0 },
+    { "applyColorFX4",    ssSurfaceApplyColorFX4,    8, 0, 0 },
     { "blit",             ssSurfaceBlit,             2, 0, 0 },
     { "blitSurface",      ssSurfaceBlitSurface,      5, 0, 0 },
     { "createImage",      ssSurfaceCreateImage,      0, 0, 0 },
@@ -3641,25 +3692,29 @@ end_finalizer()
 
 ////////////////////////////////////////
 
-begin_method(SS_SURFACE, ssSurfaceApplyColorFX, 16)
+begin_method(SS_SURFACE, ssSurfaceApplyColorFX, 5)
   arg_int(x);
   arg_int(y);
   arg_int(w);
   arg_int(h);
-  arg_int(rn);
-  arg_int(rr);
-  arg_int(rg);
-  arg_int(rb);
-  arg_int(gn);
-  arg_int(gr);
-  arg_int(gg);
-  arg_int(gb);
-  arg_int(bn);
-  arg_int(br);
-  arg_int(bg);
-  arg_int(bb);
+  arg_colormatrix(cm);
 
-  object->surface->ApplyColorFX(x, y, w, h, rn, rr, rg, rb, gn, gr, gg, gb, bn, br, bg, bb);
+  object->surface->ApplyColorFX(x, y, w, h, *cm);
+end_method()
+
+////////////////////////////////////////
+
+begin_method(SS_SURFACE, ssSurfaceApplyColorFX4, 8)
+  arg_int(x);
+  arg_int(y);
+  arg_int(w);
+  arg_int(h);
+  arg_colormatrix(c1);
+  arg_colormatrix(c2);
+  arg_colormatrix(c3);
+  arg_colormatrix(c4);
+
+  object->surface->ApplyColorFX4(x, y, w, h, *c1, *c2, *c3, *c4);
 end_method()
 
 ////////////////////////////////////////
@@ -3854,6 +3909,54 @@ end_method()
 
 ///////////////////////////////////////
 
+
+///////////////////////////////////////
+// SURFACE OBJECTS ////////////////////
+///////////////////////////////////////
+
+JSObject*
+CScript::CreateColorMatrixObject(JSContext* cx, CColorMatrix* colormatrix)
+{
+  // define surface class
+  static JSClass clasp = {
+    "colormatrix", JSCLASS_HAS_PRIVATE,
+    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+    JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizeColorMatrix,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+  };
+  
+  // create the object
+  JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
+  if (object == NULL) {
+    return NULL;
+  }
+
+  // assign the methods to the object
+  static JSFunctionSpec fs[] = {
+    //{ "set",              ssColorMatrixSet,         12, 0, 0 },
+    { 0, 0, 0, 0, 0 },
+  };
+  JS_DefineFunctions(cx, object, fs);
+
+  // define properties
+  //JS_DefineProperty(cx, object, "width",  INT_TO_JSVAL(surface->GetWidth()),  JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
+  //JS_DefineProperty(cx, object, "height", INT_TO_JSVAL(surface->GetHeight()), JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
+
+  // attach the surface to this object
+  SS_COLORMATRIX* colormatrix_object = new SS_COLORMATRIX;
+  colormatrix_object->colormatrix = colormatrix;
+  JS_SetPrivate(cx, object, colormatrix_object);
+
+  return object;
+}
+
+////////////////////////////////////////
+
+begin_finalizer(SS_COLORMATRIX, ssFinalizeColorMatrix)
+  delete object->colormatrix;
+end_finalizer()
+
+////////////////////////////////////////
 
 
 ///////////////////////////////////////

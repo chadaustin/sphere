@@ -14,6 +14,7 @@
 #include "strcmp_ci.hpp"
 
 
+
 struct CoronaFileAdapter : public corona::File {
   CoronaFileAdapter(IFile* file) {
     m_File = file;
@@ -245,7 +246,7 @@ CImage32::GetBlendMode() const
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CImage32::ApplyColorFX(int x1, int y1, int w, int h, int rn, int rr, int rg, int rb, int gn, int gr, int gg, int gb, int bn, int br, int bg, int bb)
+CImage32::ApplyColorFX(int x1, int y1, int w, int h, CColorMatrix &c)
 {
   int x, y;
   int x2, y2;
@@ -273,14 +274,98 @@ CImage32::ApplyColorFX(int x1, int y1, int w, int h, int rn, int rr, int rg, int
   for(y = y1; y < y2; y++) {
     for(x = x1; x < x2; x++) {
       pixel = m_Pixels[y * m_Width + x];
-      pixeld.red   = std_max(0, std_min(255, rn + (pixel.red * rr + pixel.green * rg + pixel.blue * rb) / 255));
-      pixeld.green = std_max(0, std_min(255, gn + (pixel.red * gr + pixel.green * gg + pixel.blue * gb) / 255));
-      pixeld.blue  = std_max(0, std_min(255, bn + (pixel.red * br + pixel.green * bg + pixel.blue * bb) / 255));
+      pixeld.red   = std_max(0, std_min(255, c.rn + (pixel.red * c.rr + pixel.green * c.rg + pixel.blue * c.rb) / 255));
+      pixeld.green = std_max(0, std_min(255, c.gn + (pixel.red * c.gr + pixel.green * c.gg + pixel.blue * c.gb) / 255));
+      pixeld.blue  = std_max(0, std_min(255, c.bn + (pixel.red * c.br + pixel.green * c.bg + pixel.blue * c.bb) / 255));
       pixeld.alpha = pixel.alpha;
       m_Pixels[y * m_Width + x] = pixeld;
     }
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+void 
+CImage32::ApplyColorFX4(int x1, int y1, int w, int h, CColorMatrix &c1, CColorMatrix &c2, CColorMatrix &c3, CColorMatrix &c4)
+{
+  int x, y;
+  int x0 = x1, y0 = x2;
+  int w0 = w, h0 = h;
+  int x2, y2;
+  RGBA pixel;
+  RGBA pixeld;
+  CColorMatrix c, ca, cb;
+  int i1, i2, i3;
+
+  if(x1 < 0) {
+    w += x1;
+    x1 = 0;
+  }
+  if(y1 < 0) {
+    h += y1;
+    y = 0;
+  }
+  if(x1 + w >= m_Width) {
+    w = m_Width - x1;
+  }
+  if(y1 + h >= m_Height) {
+    h = m_Height - y1;
+  }
+  if(w <= 0 || h <= 0) {
+    return;
+  }
+  x2 = x1 + w;
+  y2 = y1 + h;
+#define INTER(src1, src2, dst, member) dst.member = (src1.member * i1 + src2.member * i2) / i3;
+  for(y = y1; y < y2; y++) {
+    i1 = (y0 + h0 - y);
+    i2 = (y - y0);
+    i3 = h0;
+    INTER(c1, c3, ca, rn) INTER(c2, c4, cb, rn)
+    INTER(c1, c3, ca, rr) INTER(c2, c4, cb, rr)
+    INTER(c1, c3, ca, rg) INTER(c2, c4, cb, rg)
+    INTER(c1, c3, ca, rb) INTER(c2, c4, cb, rb)
+
+    INTER(c1, c3, ca, gn) INTER(c2, c4, cb, gn)
+    INTER(c1, c3, ca, gr) INTER(c2, c4, cb, gr)
+    INTER(c1, c3, ca, gg) INTER(c2, c4, cb, gg)
+    INTER(c1, c3, ca, gb) INTER(c2, c4, cb, gb)
+
+    INTER(c1, c3, ca, bn) INTER(c2, c4, cb, bn)
+    INTER(c1, c3, ca, br) INTER(c2, c4, cb, br)
+    INTER(c1, c3, ca, bg) INTER(c2, c4, cb, bg)
+    INTER(c1, c3, ca, bb) INTER(c2, c4, cb, bb)
+
+    for(x = x1; x < x2; x++) {
+      i1 = (x0 + w0 - x);
+      i2 = (x - x0);
+      i3 = w0;
+      INTER(ca, cb, c, rn)
+      INTER(ca, cb, c, rr)
+      INTER(ca, cb, c, rg)
+      INTER(ca, cb, c, rb)
+
+      INTER(ca, cb, c, gn)
+      INTER(ca, cb, c, gr)
+      INTER(ca, cb, c, gg)
+      INTER(ca, cb, c, gb)
+
+      INTER(ca, cb, c, bn)
+      INTER(ca, cb, c, br)
+      INTER(ca, cb, c, bg)
+      INTER(ca, cb, c, bb)
+
+      pixel = m_Pixels[y * m_Width + x];
+      pixeld.red   = std_max(0, std_min(255, c.rn + (pixel.red * c.rr + pixel.green * c.rg + pixel.blue * c.rb) / 255));
+      pixeld.green = std_max(0, std_min(255, c.gn + (pixel.red * c.gr + pixel.green * c.gg + pixel.blue * c.gb) / 255));
+      pixeld.blue  = std_max(0, std_min(255, c.bn + (pixel.red * c.br + pixel.green * c.bg + pixel.blue * c.bb) / 255));
+      pixeld.alpha = pixel.alpha;
+      m_Pixels[y * m_Width + x] = pixeld;
+    }
+  }
+#undef INTER
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 void

@@ -261,6 +261,9 @@ SS_FUNCTION(OpenLog, 1)
   //surface.clone()
   //surface.cloneSection(x, y, w, h)
 
+  // color matrix
+  SS_FUNCTION(CreateColorMatrix, 12)
+
   // animations
   SS_FUNCTION(LoadAnimation, 1)
   //animation.width

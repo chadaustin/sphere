@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include "../common/rgb.hpp"
 #include "DefaultFileSystem.hpp"
-
+#include "ColorMatrix.hpp"
 
 class CImage32
 {
@@ -33,7 +33,8 @@ public:
   void      SetBlendMode(BlendMode mode);
   BlendMode GetBlendMode() const;
 
-  void ApplyColorFX(int x1, int y1, int w, int h, int rn, int rr, int rg, int rb, int gn, int gr, int gg, int gb, int bn, int br, int bg, int bb);
+  void ApplyColorFX(int x1, int y1, int w, int h, CColorMatrix &c);
+  void ApplyColorFX4(int x1, int y1, int w, int h, CColorMatrix &c1, CColorMatrix &c2, CColorMatrix &c3, CColorMatrix &c4);
 
   void Clear();
   void Resize(int width, int height);
