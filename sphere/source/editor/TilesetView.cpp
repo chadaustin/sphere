@@ -45,17 +45,17 @@ BEGIN_MESSAGE_MAP(CTilesetView, CWnd)
 
 //  ON_COMMAND(ID_TILESETVIEW_ER_ROTATE_CW,             OnEditRangeRotateCW)
 //  ON_COMMAND(ID_TILESETVIEW_ER_ROTATE_CCW,            OnEditRangeRotateCCW)
-//  ON_COMMAND(ID_TILESETVIEW_ER_SLIDE_UP,              OnEditRangeSlideUp)
-//  ON_COMMAND(ID_TILESETVIEW_ER_SLIDE_RIGHT,           OnEditRangeSlideRight)
-//  ON_COMMAND(ID_TILESETVIEW_ER_SLIDE_DOWN,            OnEditRangeSlideDown)
-//  ON_COMMAND(ID_TILESETVIEW_ER_SLIDE_LEFT,            OnEditRangeSlideLeft)
-  ON_COMMAND(ID_TILESETVIEW_ER_SLIDE_OTHER,           OnEditRangeSlideOther)
-  ON_COMMAND(ID_TILESETVIEW_ER_FLIP_HORIZONTALLY,     OnEditRangeFlipHorizontally)
-  ON_COMMAND(ID_TILESETVIEW_ER_FLIP_VERTICALLY,       OnEditRangeFlipVertically)
+  ON_COMMAND(ID_TILESETVIEW_ER_SLIDE_UP,              OnEditRange)
+  ON_COMMAND(ID_TILESETVIEW_ER_SLIDE_RIGHT,           OnEditRange)
+  ON_COMMAND(ID_TILESETVIEW_ER_SLIDE_DOWN,            OnEditRange)
+  ON_COMMAND(ID_TILESETVIEW_ER_SLIDE_LEFT,            OnEditRange)
+  ON_COMMAND(ID_TILESETVIEW_ER_SLIDE_OTHER,           OnEditRange)
+  ON_COMMAND(ID_TILESETVIEW_ER_FLIP_HORIZONTALLY,     OnEditRange)
+  ON_COMMAND(ID_TILESETVIEW_ER_FLIP_VERTICALLY,       OnEditRange)
 //  ON_COMMAND(ID_TILESETVIEW_ER_FILL_RGB,              OnEditRangeFillRGB)
 //  ON_COMMAND(ID_TILESETVIEW_ER_FILL_ALPHA,            OnEditRangeFillAlpha)
 //  ON_COMMAND(ID_TILESETVIEW_ER_FILL_BOTH,             OnEditRangeFillBoth)
-  ON_COMMAND(ID_TILESETVIEW_ER_REPLACE_RGBA,            OnEditRangeReplaceRGBA)
+  ON_COMMAND(ID_TILESETVIEW_ER_REPLACE_RGBA,            OnEditRange)
 //  ON_COMMAND(ID_TILESETVIEW_ER_REPLACE_RGB,           OnEditRangeReplaceRGB)
 //  ON_COMMAND(ID_TILESETVIEW_ER_REPLACE_ALPHA,         OnEditRangeReplaceAlpha)
 //  ON_COMMAND(ID_TILESETVIEW_ER_FLT_BLUR,              OnEditRangeFilterBlur)
@@ -782,7 +782,7 @@ CTilesetView::OnZoom8x()
 
 int
 CTilesetView::GetEditRangeStartIndex() {
-  CNumberDialog dialog("Start frame index", "Value", 0, 0, m_Tileset->GetNumTiles() - 1);
+  CNumberDialog dialog("Start frame index", "Value", m_SelectedTile, 0, m_Tileset->GetNumTiles() - 1);
   if (dialog.DoModal() == IDOK) {
     return dialog.GetValue();
   }
@@ -825,64 +825,76 @@ CTilesetView::GetEditRangeIndexes()
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
-CTilesetView::OnEditRangeFlipHorizontally()
+CTilesetView::OnEditRange()
 {
+  const unsigned int id = GetCurrentMessage()->wParam;
   std::vector<int> frames = GetEditRangeIndexes();
-  for (int i = 0; i < frames.size(); i++) {
-    CImage32& image = m_Tileset->GetTile(frames[i]);
-    image.FlipHorizontal();
-  }
-  m_Handler->TV_TilesetChanged();
-  Invalidate();
-}
+  bool changed = false;
 
-///////////////////////////////////////////////////////////////////////////////
+  if (frames.size() == 0)
+    return;
 
-afx_msg void
-CTilesetView::OnEditRangeFlipVertically()
-{
-  std::vector<int> frames = GetEditRangeIndexes();
-  for (int i = 0; i < frames.size(); i++) {
-    CImage32& image = m_Tileset->GetTile(frames[i]);
-    image.FlipVertical();
-  }
-  m_Handler->TV_TilesetChanged();
-  Invalidate();
-}
+  ////////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
+  if (id == ID_TILESETVIEW_ER_SLIDE_OTHER
+   || id == ID_TILESETVIEW_ER_SLIDE_UP
+   || id == ID_TILESETVIEW_ER_SLIDE_RIGHT
+   || id == ID_TILESETVIEW_ER_SLIDE_DOWN
+   || id == ID_TILESETVIEW_ER_SLIDE_LEFT) {
+    int dx = 0;
+    int dy = 0;
 
-afx_msg void
-CTilesetView::OnEditRangeSlideOther() {
-  std::vector<int> frames = GetEditRangeIndexes();
-  if (frames.size() > 0) {
-    CNumberDialog dx("Slide Horizontally", "Value", 0, -m_Tileset->GetTileWidth(), m_Tileset->GetTileWidth()); 
-    if (dx.DoModal() == IDOK) {
-      CNumberDialog dy("Slide Vertically", "Value", 0, -m_Tileset->GetTileHeight(), m_Tileset->GetTileHeight());
-      if (dy.DoModal() == IDOK) {
-
-        if (dx.GetValue() != 0 || dy.GetValue() != 0) {
-          for (int i = 0; i < frames.size(); i++) {
-            CImage32& image = m_Tileset->GetTile(frames[i]);
-            image.Translate(dx.GetValue(), dy.GetValue());
-          }
+    if (id == ID_TILESETVIEW_ER_SLIDE_OTHER) {
+      CNumberDialog dxd("Slide Horizontally", "Value", 0, -m_Tileset->GetTileWidth(), m_Tileset->GetTileWidth()); 
+      if (dxd.DoModal() == IDOK) {
+        CNumberDialog dyd("Slide Vertically", "Value", 0, -m_Tileset->GetTileHeight(), m_Tileset->GetTileHeight());
+        if (dyd.DoModal() == IDOK) {
+          dx = dxd.GetValue();
+          dy = dyd.GetValue();
         }
-
       }
     }
+
+    switch (id) {
+      case ID_TILESETVIEW_ER_SLIDE_UP:    dy = -1; break;
+      case ID_TILESETVIEW_ER_SLIDE_RIGHT: dx = 1;  break;
+      case ID_TILESETVIEW_ER_SLIDE_DOWN:  dy = 1;  break;
+      case ID_TILESETVIEW_ER_SLIDE_LEFT:  dx = -1; break;
+    }
+
+    if (dx != 0 || dy != 0) {
+      for (int i = 0; i < frames.size(); i++) {
+        CImage32& image = m_Tileset->GetTile(frames[i]);
+        image.Translate(dx, dy);
+      }
+      changed = true;
+    }
+
   }
-  m_Handler->TV_TilesetChanged();
-  Invalidate();
-}
 
-////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////
 
-afx_msg void
-CTilesetView::OnEditRangeReplaceRGBA()
-{
-  std::vector<int> frames = GetEditRangeIndexes();
+  if (id == ID_TILESETVIEW_ER_FLIP_HORIZONTALLY) {
+    for (int i = 0; i < frames.size(); i++) {
+      CImage32& image = m_Tileset->GetTile(frames[i]);
+      image.FlipHorizontal();
+    }
+    changed = true;
+  }
 
-  if (frames.size() > 0) {
+  ////////////////////////////////////////////////////////////////////////////////
+
+  if (id == ID_TILESETVIEW_ER_FLIP_VERTICALLY) {
+    for (int i = 0; i < frames.size(); i++) {
+      CImage32& image = m_Tileset->GetTile(frames[i]);
+      image.FlipVertical();
+    }
+    changed = true;
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
+
+  if (id == ID_TILESETVIEW_ER_REPLACE_RGBA) {
     CFontGradientDialog colorChoiceDialog("Replace Color", "In", "Out");
 
     if (colorChoiceDialog.DoModal() == IDOK) {
@@ -894,10 +906,18 @@ CTilesetView::OnEditRangeReplaceRGBA()
         CImage32& image = m_Tileset->GetTile(i);
         image.ReplaceColor(old_color, replacement_color);
       }
+      
+      changed = true;
     }
   }
-  m_Handler->TV_TilesetChanged();
-  Invalidate();
+
+  ////////////////////////////////////////////////////////////////////////////////
+
+  if (changed) {
+    m_Handler->TV_TilesetChanged();
+    Invalidate();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+

@@ -572,13 +572,13 @@ BEGIN
             POPUP "&Slide"
             BEGIN
                 MENUITEM "&Up",                         ID_TILESETVIEW_ER_SLIDE_UP
-                , GRAYED
+
                 MENUITEM "&Right",                      ID_TILESETVIEW_ER_SLIDE_RIGHT
-                , GRAYED
+
                 MENUITEM "&Down",                       ID_TILESETVIEW_ER_SLIDE_DOWN
-                , GRAYED
+
                 MENUITEM "&Left",                       ID_TILESETVIEW_ER_SLIDE_LEFT
-                , GRAYED
+
                 MENUITEM "&Other...",                   ID_TILESETVIEW_ER_SLIDE_OTHER
 
             END
