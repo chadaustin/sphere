@@ -3375,7 +3375,7 @@ begin_func(GetFileList, 0)
     directory = argStr(cx, argv[0]);
   }
 
-  if (IsValidPath(filename) == false) {
+  if (IsValidPath(directory) == false) {
     JS_ReportError(cx, "Too many ..'s in directory path: '%s'", directory);
     return JS_FALSE;  
   }
@@ -5410,13 +5410,13 @@ begin_method(SS_BYTEARRAY, ssByteArraySlice, 1)
     return JS_FALSE;
   }
 
-  if (end_pos < 0 || end_pos >= object->size) {
+  if (end_pos < 0 || end_pos > object->size) {
     JS_ReportError(cx, "Invalid end position in bytearray.slice call\n%d", end_slice);
     return JS_FALSE;
   }
 
   int size = end_pos - start_slice;
-  if (size < 0 || size >= object->size) {
+  if (size < 0 || size > object->size) {
     JS_ReportError(cx, "Invalid size generated in bytearray.slice call\n%d", size);
     return JS_FALSE;
   }
