@@ -5405,7 +5405,6 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
 begin_finalizer(SS_SPRITESET, ssFinalizeSpriteset)
   // destroy the spriteset
   This->m_Engine->DestroySpriteset(object->spriteset);
-  //object->spriteset->Release();
 end_finalizer()
 
 ////////////////////////////////////////

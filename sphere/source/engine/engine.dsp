@@ -44,7 +44,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /G5 /MD /W3 /GX /O1 /I "../../third-party-msvc/include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "WIN32_LEAN_AND_MEAN" /D "STRICT" /D "XP_PC" /D "JSFILE" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /D "NOMINMAX" /FAs /FR /FD /c
+# ADD CPP /nologo /G5 /MD /W3 /GX /O1 /I "../../third-party-msvc/include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "WIN32_LEAN_AND_MEAN" /D "STRICT" /D "XP_PC" /D "JSFILE" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /D "NOMINMAX" /D "USE_SPRITESET_SERVER" /FAs /FR /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32

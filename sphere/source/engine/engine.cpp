@@ -458,6 +458,9 @@ CGameEngine::LoadSpriteset(const char* filename)
 #ifndef USE_SPRITESET_SERVER
   // load spriteset
   SSPRITESET* ss = new SSPRITESET;
+  if (!ss)
+    return NULL;
+
   if (!ss->Load(path.c_str(), m_FileSystem, std::string(filename))) {
     ss->Release();
     return NULL;
@@ -499,6 +502,9 @@ CGameEngine::LoadFont(const char* filename)
 
   // load font
   SFONT* font = new SFONT;
+  if (!font)
+    return NULL;
+
   if (!font->Load(path.c_str(), m_FileSystem)) {
     delete font;
     return NULL;
@@ -533,6 +539,9 @@ CGameEngine::LoadWindowStyle(const char* filename)
 
   // load window style
   SWINDOWSTYLE* ws = new SWINDOWSTYLE;
+  if (!ws)
+    return NULL;
+
   if (!ws->Load(path.c_str(), m_FileSystem)) {
     delete ws;
     return NULL;
@@ -547,6 +556,7 @@ void
 CGameEngine::DestroyWindowStyle(SWINDOWSTYLE* ws)
 {
   delete ws;
+  ws = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -591,6 +601,8 @@ public:
 private:
   IFile* m_file;
 };
+
+////////////////////////////////////////////////////////////////////////////////
 
 audiere::OutputStream*
 CGameEngine::LoadSound(const char* filename, bool streaming)
@@ -680,6 +692,7 @@ void
 CGameEngine::DestroySurface(CImage32* surface)
 {
   delete surface;
+  surface = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -757,6 +770,9 @@ CGameEngine::OpenFile(const char* filename)
   path += filename;
 
   CConfigFile* file = new CConfigFile;
+  if (!file)
+    return NULL;
+
   file->Load(path.c_str(), m_FileSystem);
 
   // add the file to the opened files map

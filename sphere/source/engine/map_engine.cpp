@@ -2161,7 +2161,6 @@ CMapEngine::SetPersonSpriteset(const char* name, sSpriteset& spriteset)
 
   // release the old spriteset
   m_Engine->DestroySpriteset(m_Persons[person_index].spriteset);
-  //m_Persons[person_index].spriteset->Release();
 
   // create and insert the new spriteset (the constructor calls AddRef)
   m_Persons[person_index].spriteset = new SSPRITESET(spriteset);
@@ -3019,7 +3018,6 @@ CMapEngine::DestroyPersonStructure(Person& p)
 
 
   m_Engine->DestroySpriteset(p.spriteset);
-  //p.spriteset->Release();
 
   if (p.script_create) {
     m_Engine->DestroyScript(p.script_create);

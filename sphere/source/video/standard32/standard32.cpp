@@ -547,6 +547,7 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#if 0
 /**
   Images can often have big blocks of alpha around them (e.g. fonts, spritesets)
   This works out what parts of the image itself can be clipped from the blit
@@ -605,6 +606,7 @@ ClipImage(IMAGE image, int& clip_x, int& clip_y, int& clip_width, int& clip_heig
   }
 
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -645,7 +647,7 @@ void OptimizeBlitRoutine(IMAGE image)
     return;
   }
 
-  ClipImage(image, image->clip_x, image->clip_y, image->clip_width, image->clip_height);
+  // ClipImage(image, image->clip_x, image->clip_y, image->clip_width, image->clip_height);
 
   // sprite blit
   bool is_sprite = true;
@@ -757,6 +759,9 @@ EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 {
   // allocate the image
   IMAGE image = new _IMAGE;
+  if (!image)
+    return NULL;
+
   image->width  = width;
   image->height = height;
 
