@@ -1418,6 +1418,7 @@ sMap::Translate(int dx, int dy)
   bool persons = true;
   bool triggers = true;
   bool zones = true;
+  bool startpoint = true;
 
   for (unsigned j = 0; j < m_Layers.size(); j++) {
     m_Layers[j].Translate(dx, dy);
@@ -1469,13 +1470,31 @@ sMap::Translate(int dx, int dy)
       else if (x >= layer_width) x = x - layer_width;
 
       if (y < 0) y = layer_height + y;
-      else if (y >= layer_height) y = y - height;
+      else if (y >= layer_height) y = y - layer_height;
 
       GetZone(i).x1 = x;
       GetZone(i).y1 = y;
       GetZone(i).x2 = x + width;
       GetZone(i).y2 = y + height;
     }
+  }
+
+  if (startpoint) {
+    int x = GetStartX() + (dx * tile_width);
+    int y = GetStartY() + (dy * tile_height);
+
+    int layer_width =  GetLayer(GetStartLayer()).GetWidth() * tile_width;
+    int layer_height = GetLayer(GetStartLayer()).GetHeight() * tile_height;
+
+    // handle wrap around
+    if (x < 0) x = layer_width + x;
+    else if (x >= layer_width) x = x - layer_width;
+
+    if (y < 0) y = layer_height + y;
+    else if (y >= layer_height) y = y - layer_height;
+
+    SetStartX(x);
+    SetStartY(y);
   }
 }
 
