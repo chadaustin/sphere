@@ -282,8 +282,10 @@ BOOL CALLBACK VideoDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
       if (psn->hdr.code == PSN_APPLY)
       {
         // get the driver
+        char buffer[512];
         int sel = SendDlgItemMessage(window, IDC_DRIVERLIST, LB_GETCURSEL, 0, 0);
-        SendDlgItemMessage(window, IDC_DRIVERLIST, LB_GETTEXT, sel, (LPARAM)Config.videodriver.c_str());
+        SendDlgItemMessage(window, IDC_DRIVERLIST, LB_GETTEXT, sel, (LPARAM)buffer);
+        Config.videodriver = buffer;
 
         return TRUE;
       }
