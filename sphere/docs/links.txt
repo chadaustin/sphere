@@ -1,5 +1,9 @@
 Scripting
-  http://sphere.sourceforge.net/flik/docs/
+  http://sphere.sourceforge.net/
+    Skill: All
+    A great place to go for tutorials and help.
+
+  http://sphere.sourceforge.net/flik/
     Skill: All
     Absolutely great documents which cover some sphere specifics, including networkings. Must read.
 
