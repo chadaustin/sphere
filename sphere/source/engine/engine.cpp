@@ -177,7 +177,7 @@ IEngine::IsScriptEvaluated(const char* filename)
 {
   std::string name(filename);
   bool found = false;
-  for (int i = 0; i < m_EvaluatedScripts.size(); i++) {
+  for (unsigned i = 0; i < m_EvaluatedScripts.size(); i++) {
     if (m_EvaluatedScripts[i] == name) {
       found = true;
       break;
@@ -193,7 +193,7 @@ bool
 IEngine::IsSystemScriptEvaluated(const char* filename)
 {
   bool found = false;
-  for (int i = 0; i < m_EvaluatedSystemScripts.size(); i++) {
+  for (unsigned i = 0; i < m_EvaluatedSystemScripts.size(); i++) {
     if (!strcmp(m_EvaluatedSystemScripts[i].c_str(), filename)) {
       found = true;
       break;
