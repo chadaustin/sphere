@@ -85,6 +85,7 @@ CScriptWindow::CScriptWindow(const char* filename, bool create_from_clipboard)
 
   if (!filename && create_from_clipboard) {
     OnPaste();
+    SendEditor(SCI_SETSEL,  0, 0);
   }
   else
   if (filename) {
@@ -364,6 +365,8 @@ CScriptWindow::LoadScript(const char* filename)
   SendEditor(SCI_SETSAVEPOINT);
 
   SendEditor(SCI_EMPTYUNDOBUFFER);
+
+  SendEditor(SCI_SETSEL,  0, 0);
 
   return true;
 }
