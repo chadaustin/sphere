@@ -32,6 +32,7 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_SCRIPT_OPTIONS_TOGGLE_COLORS, OnOptionsToggleColors)
   ON_COMMAND(ID_SCRIPT_OPTIONS_SET_TAB_SIZE,  OnOptionsSetTabSize)
   ON_COMMAND(ID_SCRIPT_OPTIONS_TOGGLE_LINE_NUMBERS,  OnOptionsToggleLineNumbers)
+  ON_COMMAND(ID_SCRIPT_OPTIONS_SHOW_WHITESPACE, OnOptionsShowWhitespace)
 
   ON_NOTIFY(SCN_SAVEPOINTREACHED, ID_EDIT, OnSavePointReached)
   ON_NOTIFY(SCN_SAVEPOINTLEFT,    ID_EDIT, OnSavePointLeft)
@@ -50,6 +51,7 @@ CScriptWindow::CScriptWindow(const char* filename)
 , m_Created(false)
 , m_SearchDialog(0)
 , m_SyntaxHighlighted(true)
+, m_ShowWhitespace(false)
 {
   SetSaved(filename != NULL);
   SetModified(false);
@@ -207,6 +209,8 @@ CScriptWindow::SetScriptStyles() {
     SetStyle(SCE_C_IDENTIFIER,  black);
     SetStyle(SCE_C_WORD2,       red);
   }
+
+  SendEditor(SCI_SETVIEWWS, (!m_ShowWhitespace ? 0 : 1));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -659,6 +663,15 @@ CScriptWindow::OnOptionsToggleLineNumbers()
   m_ShowLineNumbers = !m_ShowLineNumbers;
   SetScriptStyles();
   RememberConfiguration();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnOptionsShowWhitespace()
+{
+  m_ShowWhitespace = !m_ShowWhitespace;
+  SetScriptStyles();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

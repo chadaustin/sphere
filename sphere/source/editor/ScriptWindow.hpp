@@ -39,6 +39,7 @@ private:
   afx_msg void OnOptionsToggleColors();
   afx_msg void OnOptionsSetTabSize();
   afx_msg void OnOptionsToggleLineNumbers();
+  afx_msg void OnOptionsShowWhitespace();
 
   afx_msg void OnSavePointReached(NMHDR* nmhdr, LRESULT* result);
   afx_msg void OnSavePointLeft(NMHDR* nmhdr, LRESULT* result);
@@ -61,6 +62,7 @@ private:
   bool m_KeyWordStyleIsBold;
   bool m_ShowLineNumbers;
   int m_FontSize;
+  bool m_ShowWhitespace;
 
   CFindReplaceDialog* m_SearchDialog;
 

@@ -264,6 +264,8 @@ BEGIN
 
             MENUITEM "Toggle Line Numbers",         ID_SCRIPT_OPTIONS_TOGGLE_LINE_NUMBERS
 
+            MENUITEM "Toggle Whitespace",           ID_SCRIPT_OPTIONS_SHOW_WHITESPACE
+
         END
     END
 END
