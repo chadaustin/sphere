@@ -1,0 +1,8 @@
+Sphere has anonymous CVS access now.
+
+cvs -d :pserver:anonymous@pyrallis.aegisknight.org:d:/cvsroot login
+Password: guest
+
+cvs -d :pserver:anonymous@pyrallis.aegisknight.org:d:/cvsroot co sphere
+
+Now you have the latest Sphere source.  :)

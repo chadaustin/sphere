@@ -1,0 +1,794 @@
+Sphere function documentation
+
+
+Go here for language specification: http://www.mozilla.org/js/language/
+
+
+Descriptions by Rizen
+Many thanks!
+Edited and updated by Darklich and AegisKnight :)
+
+
+
+*** script functions ***
+EvaluateScript(script)
+  - Reads the script in and uses it as if it were a part of the current script.
+    ex: EvaluateScript("myscript.js");
+
+EvaluateSystemScript(script)
+  - Reads in one of the preset system scripts for use in the current script
+    ex: EvaluateSystemScript("menu.js");
+
+GarbageCollect()
+  - invokes the JavaScript garbage collector
+
+
+*** miscellaneous ***
+
+CreateStringFromCode(code)
+  - creates a single-character string based on the code passed in, i.e. 65 is "A"
+
+
+
+*** engine functions ***
+
+GetVersionString()
+  - Returns the current Sphere version string
+
+GetGameList()
+  - Returns array of game objects
+    - game.name
+    - game.directory
+
+ExecuteGame(directory)
+  - executes the game in sphere/games/<directory>
+
+Exit()
+  - Exits the Sphere engine unconditionally
+
+Abort(message)
+  - Exits the Sphere engine unconditionally, displays the 'message' to the 
+    user
+
+
+*** debugging (the log object) ***
+OpenLog(filename)
+  - opens a log file for use under the filename. If Sphere is unable to open 
+    the file for logging, the engine will give an error message and exit. 
+    If Sphere is successful in opening the file, it will return a log object
+    for use.
+    ex: var myLog = OpenLog("game.log");
+
+log_object.write(text)
+  - writes a string of text under the current block.
+    ex: myLog.write("Starting system...");
+
+log_object.beginBlock(name)
+  - creates a "block" which is indent inside the log with the name as the 
+    title of the block. Any subsequent write commands will go under the newly 
+    created block.
+    ex: myLog.beginBlock("Video Information");
+
+log_object.endBlock()
+  - closes the current log block.
+
+
+
+*** system interfaces ***
+
+  *** video ***
+  FlipScreen()
+    - displays the contents from the video buffer onto the screen. Then the 
+      video buffer is cleared. You *need* to call this to make anything 
+      you've drawn in code to appear on the screen.
+  
+  SetClippingRectangle(x, y, w, h)
+    - Sets a clipping rectangle of width w and height h at (x, y) into the 
+      video buffer. Anything drawn outside the rectangle is not drawn into 
+      the video buffer.
+  
+  ApplyColorMask(color)
+    - fills the whole screen with the color specified. Note that the color
+      passed must have an alpha that is less than 255. Otherwise, it'll 
+      just make the screen solidly that color.
+  
+  SetFrameRate(fps)
+    - allows you to set the maximum frames rendered per second that 
+      the engine is allowed to draw at most.
+  
+  GetFrameRate()
+    - Returns the current fps (set by SetFrameRate)
+  
+  GetScreenWidth()
+    - returns the width of the engine screen
+  
+  GetScreenHeight()
+    - returns the height of the engine screen
+
+
+    *** graphic primitives ***
+    NOTE: Make sure to use FlipScreen() when you're done drawing
+
+    
+    Point(x, y, color)
+      - plots a point onto the video buffer at (x, y) with the color
+    
+    Line(x1, y1, x2, y2, color)
+      - draws a line from (x1, y1) to (x2, y2) with the color
+    
+    GradientLine(x1, y1, x2, y2, color1, color2)
+      - Draws a line from (x1, y1) to (x2, y2) with a color fade from color1 
+        to color2
+    
+    Triangle(x1, y1, x2, y2, x3, y3, c)
+      - Draws a filled triangle with the points (x1, y1), (x2, y2), (x3, y3), 
+        with the color c
+    
+    GradientTriangle(x1, y1, x2, y2, x3, y3, c1, c2, c3)
+      - Draws a gradient triangle with the points (x1, y1), (x2, y2), (x3, y3),
+        with each point (c1 = color of (x1, y1), c2 = color of (x2, y2), c3 = color
+        of (x3, y3)) having a color to genenrate the gradient of the triangle
+    
+    Rectangle(x, y, w, h, c)
+      - Draws a rectangle at (x, y) of width w and height h, filled with color c.
+    
+    GradientRectangle(x, y, w, h, c_ul, c_ur, c_lr, c_ll)
+      - Draws a gradient rectangle at (x,y) with the height h and width w.
+        Each corner of a rectangle (c_ul = color of upper left corner, 
+        c_ur = color of upper right corner, c_lr = color of lower right corner,
+        c_ll = color of lower left corner) accepts a color information to 
+        generate the gradient of the rectangle.
+
+
+  *** input ***
+
+
+    *** keyboard ***
+    AreKeysLeft()
+      - returns true or false depending if the there are keys from the key 
+        input queue.
+    
+    GetKey()
+      - returns the first key in the queue. If there are no keys in the queue,
+        Sphere will wait until there is a key in the queue.
+    
+    IsKeyPressed(key)
+      - checks if the key has been pressed. Returns true if 'key' is pressed....
+
+    GetKeyString(key, shift)
+      - converts the key into a string, KEY_A will become "a", etc.
+      - if shift is true, returns uppercase/special value of key
+      - control keys return ""
+ 
+ 
+    *** mouse ***
+    SetMousePosition(x, y)
+      - Sets the x and y of the mouse cursor
+    
+    GetMouseX()
+    GetMouseY()
+      - returns the location of the mouse cursor within the engine screen
+    
+    IsMouseButtonPressed(button)
+      - returns true if the button is pressed
+        allowed button values are: MOUSE_LEFT, MOUSE_RIGHT, MOUSE_MIDDLE
+
+
+  *** time ***
+  GetTime()
+    - returns the number of milliseconds since some arbitrary time.
+      ex:
+       var start = GetTime();
+       while (GetTime() < start + 1000) {}
+
+
+  *** ByteArray object ***
+  ByteArrays are pretty much only used for networking (see below for Network 
+  stuff)
+  
+  CreateByteArray(size)
+    - returns a ByteArray object of 'size' bytes
+  
+  CreateByteArrayFromString(string)
+    - returns a ByteArray object from string 'string'
+  
+  CreateStringFromByteArray(array)
+    - returns a string from a ByteArray
+
+  bytearray.length
+    - the length of the byte array
+  
+  bytearray_object[index]
+    - returns the allows you to access the index in the array
+
+
+  *** networking ***
+  GetLocalName()
+    - returns a string with the local name of your computer
+  
+  GetLocalAddress()
+    - returns a string with the IP address of your computer
+  
+  OpenAddress(address, port)
+    - attempts to open a connection to the computer specified with 'address' on 'port'
+      returns a socket object
+ 
+  ListenOnPort(port)
+    - listens for connections on port, returns a socket object if successful
+  
+  socket.isConnected()
+    - returns true if the socket is connected
+ 
+  socket.getPendingReadSize()
+    - returns the size of the next array to be read in the socket
+  
+  socket.write(byte_array)
+    - writes a ByteArray object into the socket
+  
+  socket.read(int size) 
+    - reads from the socket, returns a ByteArray object
+
+  
+*** sphere objects ***
+
+
+  *** colors ***
+  CreateColor(r, g, b [, a])
+    - returns a color object with the color r is Red, g is Green, b is Blue,
+      and a is alpha (translucency of the color). 
+      Note + alpha of 0 = transparent, alpha of 255 = opaque
+           + alpha is optional, and defaults to 255 if not specified
+  
+  BlendColors(c1, c2)
+    - returns a color object that is the blended color of color c1 and c2
+  
+  BlendColorsWeighted(c1, c2, c1_weight, c2_weight)
+    - blends two colors together, allowing you to specify the amount of each color
+      ex:
+      BlendColorsWeighted(a, b, 1, 1) // equal amounts (like BlendColors())
+      BlendColorsWeighted(a, b, 1, 2) // 33% a, 66% b
+  
+  color_object.red
+    - the red component of a color object
+  
+  color_object.green
+    - the green component of a color object
+  
+  color_object.blue
+    - the blue component of a color object
+  
+  color_object.alpha
+    - the alpha (translucency) component of a color object
+  
+  + all color components are from 0-255 (unsigned 8-bits each, 4x8bit == 32bit)
+
+
+  *** maps ***
+  LoadMap(filename)
+    - loads the map from 'filename'
+
+  map_object.layers
+    - array of map_layer objects
+
+  map_object.start
+    START POSITION
+    - map_object.start.x
+    - map_object.start.y
+    - map_object.start.layer
+
+  map_object.
+  
+  /* maps */
+  
+  MapEngine(map, fps)
+    - starts the map engine with the map specified and runs at 'fps' frames per second
+  
+  ChangeMap(map)  
+    - changes current map
+  
+  ExitMapEngine()
+    - Exits the map engine
+
+  UpdateMapEngine()
+    - updates map engine (state of entities, color masks, etc.)
+  
+    *** maps ***
+
+    GetNumLayers()
+      - get number of layers on map
+
+    GetLayerWidth(layer)
+      - get width of 'layer'
+
+    GetLayerHeight(layer)
+      - get height of 'layer'
+
+    GetNumTiles()
+      - return number of tiles in map
+
+    SetTile(x, y, layer, tile)
+      - changes tile on map to 'tile'
+
+    GetTile(x, y, layer)
+      - returns tile on map
+
+
+    RenderMap()
+      - Renders the map into the video buffer
+
+    SetColorMask(color, num_frames)
+      - applies a color mask to things drawn by the map engine for 'num_frames' frames
+
+    SetDelayScript(num_frames, script)
+      - in 'num_frames' frames, runs 'script'
+        ex: SetDelayScript(60, "ChangeMap('forest.rmp')");
+        this tells the map engine to change to forest.rmp after 60 frames
+
+   
+    *** input ***
+    BindKey(key, onkeydown, onkeyup)
+      - runs the 'onkeydown' script when the 'key' is pressed down and runs 
+        'onkeyup' when the 'key' is released
+        ex: BindKey(KEY_SPACE, "mode = 'in';", "mode = 'out';");
+            refer to keys.txt for a list of key names
+    
+    UnbindKey(key)
+      - unbinds a bound key
+
+    AttachInput(person_entity)
+      - makes the 'person_entity' respond to the input 
+        (up = KEY_UP, down = KEY_DOWN, left = KEY_LEFT, right = KEY_RIGHT)
+    
+    DetachInput()
+      - releases input from the attached person entity
+    
+    IsInputAttached()
+      - returns true if a person is attached to the input
+    
+    GetInputPerson()
+      - returns a string with the name of the person who currently holds input
+
+    SetUpdateScript(script)
+    // calls 'script' after each frame (don't draw stuff in here!)
+
+    SetRenderScript(script)
+    // calls 'script' after all map layers are rendered
+
+    SetLayerRenderer(layer, script)
+      - calls the rendering 'script' after 'layer' has been rendered. Only one
+        rendering script can be used for each layer of the map
+
+
+    *** camera ***
+    AttachCamera(person_name)
+      - Attaches the camera view to specified person
+    
+    DetachCamera()
+      - Detaches camera so it can be controlled directly
+    
+    IsCameraAttached()
+      - returns true if the camera is attached to a person, false if the
+        camera is floating
+    
+    GetCameraPerson()
+      - returns a string with the name of the person whom the camera 
+        is attached to
+
+    SetCameraX(x)
+    SetCameraY(y)
+      - sets the location of the camera object on the map (the center
+        of the screen if possible)
+    
+    GetCameraX()
+    GetCameraY()
+      - returns the location of the camera object on the map (the center
+        of the screen if possible)
+
+  
+    *** entities ***
+
+
+      *** persons ***
+
+      GetPersonList()
+        - returns an array of strings representing the current person entities
+
+      CreatePerson(name, spriteset, destroy_with_map)
+        - returns a person object with 'name' from 'spriteset'. If Sphere is 
+          unable to open the file, the engine will give an error message and 
+          exit. destroy_with_map is a boolean (true/false value), which the 
+          spriteset is destroyed when the current map is changed if the flag 
+          is set to true.
+      
+      DestroyPerson(name)
+        - destroys the person with the name
+
+      SetPersonX(name, x)
+      SetPersonY(name, y)
+      SetPersonLayer(name, layer)
+        - sets the position of the person on the map
+      
+      SetPersonDirection(name, direction)
+      SetPersonFrame(name, frame)
+        - sets which frame from which direction to display
+      
+      GetPersonX(name)
+      GetPersonY(name)
+      GetPersonLayer(name)
+        - gets the position of the person on the map
+      
+      GetPersonDirection(name)
+      GetPersonFrame(name)
+        - gets the frame and direction that are currently being displayed
+
+      SetPersonScalingFactor(name, scale_w, scale_h)
+        - rescales the sprite to a certain scale specified by scale_w and scale_h.
+          Scaling is determined by floating point numbers like, 1.5 would scale
+          the person to 1.5 times its normal size based on his original sprite
+          size.
+
+      SetPersonScalingAbsolute(name, width, height)
+        - rescales the sprite to width pixels and height pixels.
+
+      GetPersonSpriteset(name)
+        - returns the person's spriteset.
+
+      FollowPerson(name, leader, pixels)
+        - makes the sprite 'name' follow 'pixels' pixels behind sptrite 'leader'
+      
+      SetPersonScript(name, which, script)
+        - sets 'script' as the thing 'name' does in a certain event
+          the five events are
+          SCRIPT_ON_CREATE
+          SCRIPT_ON_DESTROY
+          SCRIPT_ON_ACTIVATE_TOUCH
+          SCRIPT_ON_ACTIVATE_TALK
+          SCRIPT_COMMAND_GENERATOR
+          (SCRIPT_COMMAND_GENERATOR will be called when the command queue for
+           the person runs out (for random movement thingies, etc))
+      
+      CallPersonScript(name, which)
+        - calls a person's script from code
+         'which' constants are the same as for SetPersonScript()
+      
+      GetCurrentPerson()
+        - best when called from inside a PersonScript handler
+          it will return the name of the person for whom the current script 
+          is running
+
+      QueuePersonCommand(name, command, immediate)
+        - adds a command to the person's command queue
+          the commands are:
+          + COMMAND_WAIT
+          + COMMAND_FACE_NORTH
+          + COMMAND_FACE_NORTHEAST
+          + COMMAND_FACE_EAST
+          + COMMAND_FACE_SOUTHEAST
+          + COMMAND_FACE_SOUTH
+          + COMMAND_FACE_SOUTHWEST
+          + COMMAND_FACE_WEST
+          + COMMAND_FACE_NORTHWEST
+          + COMMAND_MOVE_NORTH
+          + COMMAND_MOVE_EAST
+          + COMMAND_MOVE_SOUTH
+          + COMMAND_MOVE_WEST
+          (note: these *might* change in a future release
+          'immediate', if true, will execute the command go right away
+          if false, it will wait until the next frame)
+      
+      ClearPersonCommands(name)
+        - clears the command queue of sprite with the 'name'
+
+      IsPersonObstructed(name, x, y)
+      // returns true if person 'name' would be obstructed at (x, y)
+
+      SetTalkActivationKey(key)
+        - set key used to activate talk scripts
+
+      SetTalkDistance(pixels)
+        - set distance to check for talk script activation
+
+
+  *** spritesets ***
+  LoadSpriteset(filename)
+    - returns a spriteset object from 'filename'. If Sphere is unable to open
+      the file, the engine will give an error message and exit.
+
+  spriteset_object.images
+    - array of image objects
+
+  spriteset_object.directions
+    - array of spriteset_direction objects
+
+
+  // spriteset direction objects
+  spriteset_direction.name
+    - name of direction
+
+  spriteset_direction.frames
+    - array of spriteset_frame objects
+  
+  spriteset_object.getNumDirections()
+    - returns the number of directions that the spriteset has
+  
+  spriteset_object.getNumFrames(direction)
+    - returns the number of frames in a given direction
+  
+  spriteset_object.getFrame(direction, frame)  
+    - returns an image object of a given frame from the direction
+ 
+ 
+  *** sounds ***
+  LoadSound(filename)
+    - returns a sound object from 'filename'. If Sphere is unable to open
+      the file, the engine will give an error message and exit.
+  
+  sound_object.play(repeat)
+    - plays the sound. repeat is a boolean (true/false), that indicates if 
+      the sound should be looped
+  
+  sound_object.stop()
+    - stops playback
+  
+  sound_object.setVolume(volume)
+    - sets the volume for the sound (0-255)
+  
+  sound_object.getVolume()
+    - returns the sound's volume (0-255)
+
+  sound_object.setPan(pan)
+    - sets pan (-255 = left, 255 = right, 0 = center)
+
+  sound_object.getPan()
+    - returns pan
+  
+  sound_object.isPlaying()
+    - returns true if the sound is currently playing
+
+
+  *** fonts ***
+  GetSystemFont()
+    - returns a font object of the font that the engine currently uses.
+  
+  LoadFont(filename)
+    - returns a font object from 'filename'. If Sphere is unable to open 
+      the file, the engine will give an error message and exit.
+  
+  font_object.setColorMask(color)
+    - Sets the colors mask for a font (see ApplyColorMask)
+  
+  font_object.drawText(x, y, text)
+    - draws 'text' at x, y with the font
+
+  font_object.drawZoomedText(x, y, scale, text)
+    - draws scaled text (1.0 = normal) with (x,y) as the upper left corner
+  
+  font_object.drawTextBox(x, y, w, h, offset, text)
+    - draws a word-wrapped text at (x, y) with the width w and height h. The
+      offset is the number of pixels which the number of pixels from y which 
+      the actual drawing starts at.
+  
+  font_object.getHeight()
+    - returns the height of the font, in pixels
+  
+  font_object.getStringWidth(string)
+    - returns the width of a given string, in pixels
+
+
+  *** window styles ***
+  GetSystemWindowStyle()
+    - returns a windowstyle object of the windowstyle that the engine currently
+      uses.
+  
+  LoadWindowStyle(filename)
+    - returns a windowstyle object from 'filename'. If Sphere is unable to open
+      the file, the engine will give an error message and exit.
+  
+  windowstyle_object.drawWindow(x, y, w, h)
+    - draws the window at (x, y) with the width and height of w and h.
+      Note that window corners and edges are drawn outside of the width 
+      and height of the window.
+
+  
+  *** images ***
+  GetSystemArrow()
+    - returns an image object of the System Arrow that the engine currently uses.
+  
+  GetSystemUpArrow()
+    - returns an image object of the System Arrow(up) that the engine currently
+      uses.
+  
+  GetSystemDownArrow()
+    - returns an image object of the System Arrow(down) that the engine 
+      currently uses.
+  
+  LoadImage(filename)
+    - returns an image object from 'filename'. If Sphere is unable to open or 
+      read the image, the engine will give an error message and exit. The 
+      image type that the engine supports are either PCX, BMP, JPG, and PNG.
+  
+  GrabImage(x, y, w, h)
+    - returns an image object from a section of the video buffer 
+      defined by the parameters
+  
+  image_object.blit(x, y)
+    - draws the image onto the video buffer at x,y
+  
+  image_object.blitMask(x, y, mask)
+    - draws the image into the video buffer, except that the color passed
+      as 'mask' tints the image
+  
+  image_object.rotateBlit(x, y, radians)
+    - draws the image into the video buffer, except that the image is rotates 
+      in  anti-clockwise in radians, which have a range of 0-2*pi. 
+      (x,y) is the center of the blit.
+  
+  image_object.zoomBlit(x, y, factor)
+    - draws the image into the video buffer with zooming, with the scaling 
+      depending on factor. Normally a factor of 1 will blit a normal looking
+      image. Between 0 and 1 will shrink the image. Any values greater than 1
+      will stretch the size of the image.
+  
+  image_object.transformBlit(x1, y1, x2, y2, x3, y3, x4, y4)
+    - draws the image into the video buffer with "transformation", where 
+      (x1, y1) is the upper left corner, (x2, y2) the upper right corner, 
+      (x3, y3) is the lower right corner, and (x4, y4) is the lower left 
+      corner.
+
+  image_object.transformBlitMask(x1, y1, x2, y2, x3, y3, x4, y4)
+    - transformBlit + blitMask
+  
+  image_object.width
+    - the width of the image
+  
+  image_object.height
+    - the height of the image
+  
+  
+  *** surfaces ***
+  CreateSurface(width, height, color)
+    - returns a surface object with width × height, filled with color
+  
+  LoadSurface(filename)
+    - returns a surface object with an image with the 'filename'
+  
+  GrabSurface(x, y, w, h)
+   - returns a surface object captured from an area of the video buffer, 
+     at (x, y) with the width w and height h.
+
+  surface_object.width
+  surface_object.height
+    - dimensions
+  
+  surface_object.blit(x, y)
+    - draws the surface to the video buffer at (x,y)
+  
+  surface_object.blitSurface(surface, x, y)
+    - draws the surface into the video buffer at (x,y)
+  
+  surface_object.createImage()
+    - returns an image object from the surface object
+  
+  surface_object.setBlendMode(mode)
+    - pass it with either BLEND or REPLACE
+      REPLACE mode will make the surface erase the pixels needed when doing a 
+              drawing operation (setpixel, line, rectangle...)
+      BLEND will blend the pixels needed when doing a drawing operation
+  
+  surface_object.getPixel(x, y)
+    - returns the color of the pixel at (x,y)
+  
+  surface_object.setPixel(x, y, color)
+    - sets the pixel at (x,y) to 'color'
+  
+  surface_object.setAlpha(alpha)
+    - sets the alpha of the surface
+  
+  surface_object.line(x1, y1, x2, y2, color)
+    - draws a line onto the surface starting from (x1, y1) to (x2, y2) with 
+      the color
+  
+  surface_object.rectangle(x, y, w, h, color)
+    - draws a filled rectangle onto the surface at (x, y) with the width w and 
+      height h with the color
+  
+  surface_object.rotate(radians, resize)
+    - rotates the surface anti-clockwise with the range 0 - 2*pi. The resize 
+      flag is a boolean to tell the engine to resize the surface if needed
+      to accomodate the rotated image.
+  
+  surface_object.resize(w, h)
+    - resizes the surface images. This does not stretch or shrink the image
+      inside the surface.
+  
+  surface_object.rescale(w, h)
+    - stretches or shrinks the surface to the new width w and height h
+  
+  surface_object.flipHorizontally()
+    - flips the surface horizontally
+  
+  surface_object.flipVertically()
+    - flips the surface vertically
+  
+  surface_object.clone()
+    - returns a surface object, which is a copy of this surface object
+  
+  surface_object.cloneSection(x, y, w, h)
+    - returns a new surface object with the height and width of h and w, with
+      part of image at (x,y) from the surface_object with the width w and 
+      height h.
+
+
+  *** animations ***
+  LoadAnimation(filename)
+    - Returns an animation object with the filename. If Sphere is unable to 
+      open the file, the engine will give an error message and exit. Sphere 
+      supports animation formats of .flic, .fli, .flc and .mng
+  
+  animation_object.getWidth()
+    - returns the width of the animation
+  
+  animation_object.getHeight()
+    - returns that height of the animation
+  
+  animation_object.getNumFrames()
+    - returns the number of frames the animation contains
+  
+  animation_object.getDelay()
+    - returns the delay between frames, in milliseconds
+  
+  animation_object.readNextFrame()
+    - readies the next frame for drawing
+  
+  animation_object.drawFrame(x, y)
+    - draws the current frame into the video buffer
+
+
+  *** files ***
+  GetFileList(directory)
+
+    - directory = directory in which to enumerate files, "save" if not specified
+
+    - returns an array of strings, which contains the filenames that resides
+      in the 'directory' directory of the game.
+  
+  OpenFile(filename)
+    - returns a file object with the filename. The file is created/loaded 
+      from the "save" directory of the game. Note that any changes in the keys
+      will not be saved until the file object is destroyed.
+  
+  file_object.read(key, default)
+    - reads a value from the key
+      the value type returned depends on the default value. 
+      + if the default is a number, read will return a number.
+      + if the default is a text or string, read will return a string.
+      + if the default is a boolean, read will return a boolean
+      + if the key is not present in the file, it will return the default value.
+  
+  file_object.write(key, value)
+    - writes a value (string, number, boolean) to the file under the key name
+
+  
+  *** raw files ***
+  OpenRawFile(filename)
+    - opens a file with the filename. The file *must* exist and reside in the
+      "other" directory of the game otherwise Sphere will give an error. 
+      If the file is opened successfully, the function will return a rawfile
+      object.
+  
+  rawfile_object.setPosition(position)
+    - sets the position that the file will be read from
+  
+  rawfile_object.getPosition()
+    - returns the current position which the data is read from
+  
+  rawfile_object.getSize()
+    - returns the number of bytes in the file
+  
+  rawfile_object.read(num_bytes)
+    - reads the number of bytes that is specified by num_bytes. It will create
+      and return an array of data the rawfile object has read. The array of 
+      data are numbers representation of each byte (0-255). Note that if the 
+      number of bytes that will be read, exceeds the filesize from the current 
+      position, it will only return an array of data of that is actually read.
+

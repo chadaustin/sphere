@@ -1,0 +1,154 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_VIDEO_PAGE DIALOG DISCARDABLE  0, 0, 212, 180
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Video"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LISTBOX         IDC_DRIVERLIST,16,20,84,124,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Configure Driver",IDC_CONFIGURE_DRIVER,16,148,84,14
+    LTEXT           "Name",IDC_NAME,108,20,88,8
+    LTEXT           "Author",IDC_AUTHOR,108,32,88,18
+    LTEXT           "Date",IDC_DATE,108,52,88,8
+    LTEXT           "Version",IDC_VERSION,108,65,88,8
+    LTEXT           "Description",IDC_DESCRIPTION,108,79,88,81
+    GROUPBOX        "Drivers",IDC_STATIC,8,4,196,168
+END
+
+IDD_AUDIO_PAGE DIALOG DISCARDABLE  0, 0, 212, 180
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Audio"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LISTBOX         IDC_DRIVERLIST,16,20,84,84,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Configure Driver",IDC_CONFIGURE_DRIVER,16,112,84,14
+    LTEXT           "Name",IDC_NAME,108,20,88,8
+    LTEXT           "Author",IDC_AUTHOR,108,32,88,18
+    LTEXT           "Date",IDC_DATE,108,51,88,8
+    LTEXT           "Version",IDC_VERSION,108,64,88,8
+    LTEXT           "Description",IDC_DESCRIPTION,108,77,88,47
+    GROUPBOX        "Drivers",IDC_STATIC,8,4,196,132
+END
+
+IDD_INPUT_PAGE DIALOG DISCARDABLE  0, 0, 212, 180
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Input"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Use Joystick",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,8,140,56,10
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_VIDEO_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 173
+    END
+
+    IDD_AUDIO_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 173
+    END
+
+    IDD_INPUT_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 173
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN                ICON    DISCARDABLE     "config.ico"
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

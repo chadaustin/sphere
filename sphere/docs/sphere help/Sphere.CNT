@@ -1,0 +1,72 @@
+:Base  Sphere.HLP
+:Title Sphere
+1 About Sphere
+2 Welcome=Topic5
+2 About Sphere=Topic2
+2 About the Authors=Topic3
+2 Legal Information=Topic6
+2 License=Topic4
+2 New In this Version=Topic7
+2 Sphere On EsperNet=Topic8
+1 Using Sphere IDE
+2 Introduction=Topic9
+2 The Interface=Topic10
+2 The Toolbar=Topic13
+2 Menus
+3 The Menus=Topic11
+3 The File Menu=Topic35
+3 The Project Menu=Topic36
+3 The View Menu=Topic37
+3 The Map Menu=Topic41
+3 The Script Menu=Topic42
+3 The Spriteset Menu=Topic43
+3 The Font Menu=Topic44
+3 The Window Style Menu=Topic45
+3 The Image Menu=Topic46
+3 The Windows Menu=Topic38
+3 The Help Menu=Topic39
+2 Windows
+3 The Windows=Topic12
+3 Project Window=Topic48
+3 Map Window=Topic49
+3 Script Window=Topic50
+3 Spriteset Window=Topic51
+3 Font Window=Topic52
+3 Window Style Window=Topic53
+3 Image Window=Topic54
+3 Sound Window=Topic59
+3 The Tool Windows=Topic47
+2 Dialogs
+3 The Dialog=Topic55
+3 New Dialog=Topic56
+3 Open Dialog=Topic57
+3 Save Dialog=Topic58
+2 Shortcut Keys=Topic15
+1 Using Sphere JScript
+2 Starting with JavaScript=Topic28
+2 JS in webpages and JS in Sphere=Topic29
+1 Functions
+2 EvaluateScript(script)=Topic30
+2 EvaluateSystemScript(script)=Topic33
+2 GarbageCollect()=Topic34
+1 Objects
+2 log_object=Topic32
+1 System Scripts
+2 Screen.js=Topic31
+1 Tutorials
+2 A Script Reference=Topic27
+1 Examples
+2 A Basic Game=Topic26
+1 References
+2 Websites=Topic25
+1 Extras
+2 Sphere File Formats
+3 JavaScript=Topic16
+3 SGM=Topic20
+3 RFN=Topic17
+3 RTS=Topic21
+3 RWS=Topic22
+3 RMP=Topic18
+3 RSS=Topic19
+3 SPK=Topic23
+2 Sphere Articles

@@ -1,0 +1,180 @@
+Sphere Audio Driver Specification
+Chad Austin
+2001.05.17
+
+
+Sphere audio drivers are special DLLs in the sphere/system/audio/ directory.
+In order for a DLL to qualify as an audio driver, it must contain every
+function listed in this specification.  Each function uses the standard
+calling convention (__stdcall).
+
+Sphere audio drivers are responsible for mixing audio streams before they are
+sent to the output device.
+
+Audio drivers must support the following stream sample rates:
+
+8000 Hz
+11025
+12000
+16000
+22050
+24000
+32000
+44100
+48000
+
+They can use resampling to internally convert them to another sample rate.
+
+
+== Data types (byte alignment) ===============================================
+
+#define SA_CALL __stdcall
+typedef int (SA_CALL *SA_SAMPLE_SOURCE)(
+  void* opaque,
+  int sample_count,
+  void* samples);
+
+typedef void* SA_STREAM;
+typedef unsigned char bool;
+
+typedef struct
+{
+  const char* name;
+  const char* author;
+  const char* date;
+  const char* version;
+  const char* description;
+} SA_DRIVERINFO;
+
+
+== Functions =================================================================
+
+void SA_GetDriverInfo(SA_DRIVERINFO* driverinfo)
+void SA_ConfigureDriver(HWND parent)
+
+bool SA_OpenDriver(HWND window)
+void SA_CloseDriver(void)
+
+void SA_Update(void)
+
+SA_STREAM SA_OpenStream(
+        int channel_count,
+        int sample_rate,
+        int bits_per_sample,
+        SA_SAMPLE_SOURCE source,
+        void* opaque)
+
+void SA_CloseStream(SA_STREAM stream)
+
+void SA_PlayStream(SA_STREAM stream)
+void SA_StopStream(SA_STREAM stream)
+
+void SA_SetVolume(SA_STREAM stream, int volume)
+void SA_SetPan(SA_STREAM stream, int pan)
+int SA_GetVolume(SA_STREAM stream)
+int SA_GetPan(SA_STREAM stream)
+
+
+------------------------------------------------------------------------------
+
+void SA_GetDriverInfo(DRIVERINFO* driverinfo)
+
+  Retrieves general information about the driver.  Retrieves five informational
+  strings.
+
+  driverinfo - pointer to DRIVERINFO struct that contains driver information
+    after function is called
+
+------------------------------------------------------------------------------
+
+void SA_ConfigureDriver(HWND parent)
+
+  Opens a dialog box which allows user to configure driver.
+
+  parent - handle of parent window
+
+------------------------------------------------------------------------------
+
+bool SA_OpenDriver(HWND window)
+
+  Initializes the audio driver.  You must pass in a valid window handle.
+
+------------------------------------------------------------------------------
+
+void SA_CloseDriver(void)
+
+  Shuts down the driver.
+
+------------------------------------------------------------------------------
+
+void SA_Update(void)
+
+  Asks the driver to update its state and output more data if necessary.
+
+  Must be called at least twenty times a second.
+
+------------------------------------------------------------------------------
+
+SA_STREAM SA_OpenStream(
+        int channel_count,
+        int sample_rate,
+        int bits_per_sample,
+        SA_SAMPLE_SOURCE source,
+        void* opaque)
+
+  Opens an output stream with a given PCM source and format.
+
+  Returns NULL on failure.
+
+  channel_count - number of interleaved channels in audio data
+  sample_rate - number of samples per channel per second
+  bits_per_sample - number of bits per sample
+  source - function that's called when more sample data is necessary
+  opaque - passed directly into the 'source' function
+
+------------------------------------------------------------------------------
+
+void SA_CloseStream(SA_STREAM stream)
+
+  Stops and closes the output stream.
+
+------------------------------------------------------------------------------
+
+void SA_PlayStream(SA_STREAM stream)
+
+  Begins playback of a given stream.
+
+------------------------------------------------------------------------------
+
+void SA_StopStream(SA_STREAM stream)
+
+  Stops playback of a stream.
+
+------------------------------------------------------------------------------
+
+void SA_SetVolume(SA_STREAM stream, int volume)
+
+  0% volume = 0
+  100% volume = 255
+
+------------------------------------------------------------------------------
+
+void SA_SetPan(SA_STREAM stream, int pan)
+
+  left   = -255
+  center = 0
+  right  = 255
+
+------------------------------------------------------------------------------
+
+int SA_GetVolume(SA_STREAM stream)
+
+  returns current volume of stream
+
+------------------------------------------------------------------------------
+
+int SA_GetPan(SA_STREAM stream)
+
+  returns current pan of stream
+
+------------------------------------------------------------------------------

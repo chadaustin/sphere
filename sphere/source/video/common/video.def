@@ -1,0 +1,34 @@
+EXPORTS
+  GetDriverInfo
+  ConfigureDriver
+
+  InitVideoDriver
+  CloseVideoDriver
+
+  FlipScreen
+  SetClippingRectangle
+  GetClippingRectangle
+
+  CreateImage
+  GrabImage
+  DestroyImage
+  BlitImage
+  BlitImageMask
+  TransformBlitImage
+  TransformBlitImageMask
+
+  GetImageWidth
+  GetImageHeight
+  LockImage
+  UnlockImage
+  DirectBlit
+  DirectTransformBlit
+  DirectGrab
+
+  DrawPoint
+  DrawLine
+  DrawGradientLine
+  DrawTriangle
+  DrawGradientTriangle
+  DrawRectangle
+  DrawGradientRectangle

@@ -1,0 +1,13 @@
+game.inf File Definition
+Chad Austin
+5.13.99
+
+
+The game.inf file is a text file in a subdirectory of the Sphere engine.  It
+consists of various keys and values (key=value) that are defined in the list
+below.
+
+KEY                     DESCRIPTION
+---                     -----------
+name                    Name of the game, listed in the Sphere main menu
+script                  Startup script
