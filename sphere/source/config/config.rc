@@ -56,6 +56,31 @@ BEGIN
                     48,47,10
 END
 
+IDD_INPUT_PAGE DIALOG DISCARDABLE  0, 0, 212, 181
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Input"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Player",IDC_STATIC,8,7,196,167
+    LTEXT           "Up Key",IDC_STATIC,39,35,24,8
+    LTEXT           "Left Key",IDC_STATIC,39,69,27,8
+    LTEXT           "Down Key",IDC_STATIC,39,52,34,8
+    LTEXT           "Right Key",IDC_STATIC,39,86,32,8
+    LTEXT           "Note that these settings may be completely ignored by the game itself.",
+                    IDC_STATIC,28,142,143,19
+    LTEXT           "Player Index",IDC_STATIC,38,19,41,11
+    COMBOBOX        IDC_PLAYER_INDEX,83,17,62,76,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_KEYCOMBO_UP,83,34,62,76,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_KEYCOMBO_DOWN,83,51,62,76,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_KEYCOMBO_LEFT,83,68,62,76,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_KEYCOMBO_RIGHT,83,85,62,76,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -79,6 +104,14 @@ BEGIN
         RIGHTMARGIN, 205
         TOPMARGIN, 7
         BOTTOMMARGIN, 173
+    END
+
+    IDD_INPUT_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 174
     END
 END
 #endif    // APSTUDIO_INVOKED

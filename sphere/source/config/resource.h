@@ -17,14 +17,20 @@
 #define IDC_SOUND_AUTODETECT            1054
 #define IDC_SOUND_ON                    1055
 #define IDC_SOUND_OFF                   1056
+#define IDC_PLAYER_INDEX                1067
+#define IDC_KEYCOMBO_TALK               1068
+#define IDC_KEYCOMBO_UP                 1069
+#define IDC_KEYCOMBO_DOWN               1070
+#define IDC_KEYCOMBO_LEFT               1071
+#define IDC_KEYCOMBO_RIGHT              1072
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        108
+#define _APS_NEXT_RESOURCE_VALUE        115
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1057
+#define _APS_NEXT_CONTROL_VALUE         1068
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

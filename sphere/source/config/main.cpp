@@ -74,6 +74,7 @@ bool IsValidDriver(const char* filename);
 
 BOOL CALLBACK VideoDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
 BOOL CALLBACK AudioDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
+BOOL CALLBACK InputDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
 
 bool ConfigureDriver(HWND window, const char* driver);
 bool GetDriverInfo(const char* drivername, INTERNALDRIVERINFO* driverinfo);
@@ -232,7 +233,7 @@ void SaveConfiguration()
 
 void ExecuteDialog()
 {
-  PROPSHEETPAGE Pages[2];
+  PROPSHEETPAGE Pages[3];
 
   // default values
   for (unsigned i = 0; i < sizeof(Pages) / sizeof(*Pages); i++)
@@ -250,6 +251,10 @@ void ExecuteDialog()
   // audio page
   Pages[1].pszTemplate = MAKEINTRESOURCE(IDD_AUDIO_PAGE);
   Pages[1].pfnDlgProc  = AudioDialogProc;
+
+  // audio page
+  Pages[2].pszTemplate = MAKEINTRESOURCE(IDD_INPUT_PAGE);
+  Pages[2].pfnDlgProc  = InputDialogProc;
 
   // create the dialog box
   PROPSHEETHEADER psh;
@@ -408,6 +413,192 @@ BOOL CALLBACK AudioDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
     default:
       return FALSE;
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+BOOL CALLBACK InputDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
+{
+  struct PlayerConfig {
+    char KEY_UP[25];
+    char KEY_DOWN[25];
+    char KEY_LEFT[25];
+    char KEY_RIGHT[25];
+  };
+
+  static struct PlayerConfig PlayerConfigurations[4];
+  static int current_player = 0;
+
+  struct Local {
+
+    static void Init(PlayerConfig configurations[4])
+    {
+      strcpy(configurations[0].KEY_UP,    "KEY_UP");
+      strcpy(configurations[0].KEY_DOWN,  "KEY_DOWN");
+      strcpy(configurations[0].KEY_LEFT,  "KEY_LEFT");
+      strcpy(configurations[0].KEY_RIGHT, "KEY_RIGHT");
+
+      strcpy(configurations[1].KEY_UP,    "KEY_W");
+      strcpy(configurations[1].KEY_DOWN,  "KEY_S");
+      strcpy(configurations[1].KEY_LEFT,  "KEY_A");
+      strcpy(configurations[1].KEY_RIGHT, "KEY_F");
+
+      strcpy(configurations[2].KEY_UP,    "KEY_I");
+      strcpy(configurations[2].KEY_DOWN,  "KEY_K");
+      strcpy(configurations[2].KEY_LEFT,  "KEY_J");
+      strcpy(configurations[2].KEY_RIGHT, "KEY_L");
+
+      strcpy(configurations[3].KEY_UP,    "KEY_8");
+      strcpy(configurations[3].KEY_DOWN,  "KEY_5");
+      strcpy(configurations[3].KEY_LEFT,  "KEY_4");
+      strcpy(configurations[3].KEY_RIGHT, "KEY_6");
+    }
+  
+    static const char* GetUpKey(PlayerConfig configurations[4], int player)
+    {
+      if (player >= 0 && player < 4) {
+        return configurations[player].KEY_UP;
+      }
+
+      return "";
+    }
+
+    static const char* GetDownKey(PlayerConfig configurations[4], int player)
+    {
+      if (player >= 0 && player < 4) {
+        return configurations[player].KEY_DOWN;
+      }
+
+      return "";
+    }
+
+    static const char* GetLeftKey(PlayerConfig configurations[4], int player)
+    {
+      if (player >= 0 && player < 4) {
+        return configurations[player].KEY_LEFT;
+      }
+
+      return "";
+    }
+
+    static const char* GetRightKey(PlayerConfig configurations[4], int player)
+    {
+      if (player >= 0 && player < 4) {
+        return configurations[player].KEY_RIGHT;
+      }
+
+      return "";
+    }
+  };
+
+      const char* keys[] = {
+        " ",
+        "KEY_UP",
+        "KEY_DOWN",
+        "KEY_RIGHT",
+        "KEY_LEFT",
+        "KEY_TILDE",
+        "KEY_0",
+        "KEY_1",
+        "KEY_2",
+        "KEY_3",
+        "KEY_4",
+        "KEY_5",
+        "KEY_6",
+        "KEY_7",
+        "KEY_8",
+        "KEY_9",
+        "KEY_MINUS",
+        "KEY_EQUALS",
+        "KEY_A",
+        "KEY_B",
+        "KEY_C",
+        "KEY_D",
+        "KEY_E",
+        "KEY_F",
+        "KEY_G",
+        "KEY_H",
+        "KEY_I",
+        "KEY_J",
+        "KEY_K",
+        "KEY_L",
+        "KEY_M",
+        "KEY_N",
+        "KEY_O",
+        "KEY_P",
+        "KEY_Q",
+        "KEY_R",
+        "KEY_S",
+        "KEY_T",
+        "KEY_U",
+        "KEY_V",
+        "KEY_W",
+        "KEY_X",
+        "KEY_Y",
+        "KEY_Z",
+        "KEY_SPACE",
+        "KEY_OPENBRACE",
+        "KEY_CLOSEBRACE",
+        "KEY_SEMICOLON",
+        "KEY_APOSTROPHE",
+        "KEY_COMMA",
+        "KEY_PERIOD",
+        "KEY_SLASH",
+        "KEY_BACKSLASH"
+      };
+
+  switch (message)
+  {
+    case WM_INITDIALOG:
+    {
+      Local::Init(PlayerConfigurations);
+
+      // add the players
+      for (unsigned int i = 0; i < 4; i++) {
+        char player_index[100];
+        sprintf (player_index, "%d", (int) i);
+        SendDlgItemMessage(window, IDC_PLAYER_INDEX, CB_ADDSTRING, 0, (LPARAM)player_index);
+        SendDlgItemMessage(window, IDC_PLAYER_INDEX, CB_SETCURSEL, 0, 0 );
+      }
+
+      for (unsigned int i = 0; i < sizeof(keys) / sizeof(*keys); i++) {
+        SendDlgItemMessage(window, IDC_KEYCOMBO_UP,    CB_ADDSTRING, 0, (LPARAM)keys[i]);
+        SendDlgItemMessage(window, IDC_KEYCOMBO_DOWN,  CB_ADDSTRING, 0, (LPARAM)keys[i]);
+        SendDlgItemMessage(window, IDC_KEYCOMBO_LEFT,  CB_ADDSTRING, 0, (LPARAM)keys[i]);
+        SendDlgItemMessage(window, IDC_KEYCOMBO_RIGHT, CB_ADDSTRING, 0, (LPARAM)keys[i]);
+      }
+   
+      SendDlgItemMessage(window, IDC_KEYCOMBO_UP,    CB_SELECTSTRING, 0, (LPARAM)Local::GetUpKey(PlayerConfigurations, 0));
+      SendDlgItemMessage(window, IDC_KEYCOMBO_DOWN,  CB_SELECTSTRING, 0, (LPARAM)Local::GetDownKey(PlayerConfigurations, 0));
+      SendDlgItemMessage(window, IDC_KEYCOMBO_LEFT,  CB_SELECTSTRING, 0, (LPARAM)Local::GetLeftKey(PlayerConfigurations, 0));
+      SendDlgItemMessage(window, IDC_KEYCOMBO_RIGHT, CB_SELECTSTRING, 0, (LPARAM)Local::GetRightKey(PlayerConfigurations, 0));
+
+      SetFocus(GetDlgItem(window, IDC_PLAYER_INDEX));
+      return FALSE;
+    }
+
+    case WM_COMMAND:
+     if (LOWORD(wparam) == IDC_PLAYER_INDEX && HIWORD(wparam) == CBN_SELCHANGE)
+     {
+       strcpy(PlayerConfigurations[current_player].KEY_UP,     keys[SendDlgItemMessage(window, IDC_KEYCOMBO_UP,    CB_GETCURSEL, 0, 0)]);
+       strcpy(PlayerConfigurations[current_player].KEY_DOWN,   keys[SendDlgItemMessage(window, IDC_KEYCOMBO_DOWN,  CB_GETCURSEL, 0, 0)]);
+       strcpy(PlayerConfigurations[current_player].KEY_LEFT,   keys[SendDlgItemMessage(window, IDC_KEYCOMBO_LEFT,  CB_GETCURSEL, 0, 0)]);
+       strcpy(PlayerConfigurations[current_player].KEY_RIGHT,  keys[SendDlgItemMessage(window, IDC_KEYCOMBO_RIGHT, CB_GETCURSEL, 0, 0)]);
+
+       int player = SendDlgItemMessage(window, IDC_PLAYER_INDEX, CB_GETCURSEL, 0, 0);
+       SendDlgItemMessage(window, IDC_KEYCOMBO_UP,    CB_SELECTSTRING, 0, (LPARAM)Local::GetUpKey(PlayerConfigurations, player));
+       SendDlgItemMessage(window, IDC_KEYCOMBO_DOWN,  CB_SELECTSTRING, 0, (LPARAM)Local::GetDownKey(PlayerConfigurations, player));
+       SendDlgItemMessage(window, IDC_KEYCOMBO_LEFT,  CB_SELECTSTRING, 0, (LPARAM)Local::GetLeftKey(PlayerConfigurations, player));
+       SendDlgItemMessage(window, IDC_KEYCOMBO_RIGHT, CB_SELECTSTRING, 0, (LPARAM)Local::GetRightKey(PlayerConfigurations, player));
+       current_player = player;
+     }
+
+     return FALSE;
+    break;
+
+  }
+
+  return FALSE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
