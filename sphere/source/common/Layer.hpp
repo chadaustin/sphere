@@ -70,7 +70,6 @@ private:
 
   bool m_Visible;
   bool m_Reflective;
-  bool m_Repeat;
 
   sObstructionMap m_ObstructionMap;
 

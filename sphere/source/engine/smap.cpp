@@ -229,18 +229,27 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
 
   std::vector<IMAGE>& tiles = (solid ? m_SolidTiles : m_Tiles);
 
+  int num_rows_to_blit = GetScreenWidth() / tile_width + 2;
+  if (!m_Map.IsRepeating() && num_rows_to_blit > layer.GetWidth())
+    num_rows_to_blit = layer.GetWidth();
+
+  int num_cols_to_blit = GetScreenHeight() / tile_height + 2;
+  if (!m_Map.IsRepeating() && num_cols_to_blit > layer.GetHeight())
+    num_cols_to_blit = layer.GetHeight();
+
+
   // !!!! Warning!  Repeated code!  Please fix!
   if (m_LayerAlphas[i] == 255) {
 
     // how many rows/columns to blit
-    int iy = GetScreenHeight() / tile_height + 2;
+    int iy = num_cols_to_blit;
 
     while (iy--) {
 
       int tx = numerator_x / tile_width;
       int ox = -(numerator_x % tile_width);
 
-      int ix = GetScreenWidth() / tile_width + 2;
+      int ix = num_rows_to_blit;
 
       while (ix--) {
 
@@ -263,14 +272,14 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
     RGBA mask = { 255, 255, 255, m_LayerAlphas[i] };
 
     // how many rows/columns to blit
-    int iy = GetScreenHeight() / tile_height + 2;
+    int iy = num_cols_to_blit;
 
     while (iy--) {
 
       int tx = numerator_x / tile_width;
       int ox = -(numerator_x % tile_width);
 
-      int ix = GetScreenWidth() / tile_width + 2;
+      int ix = num_rows_to_blit;
 
       while (ix--) {
 
