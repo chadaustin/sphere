@@ -122,7 +122,7 @@ CEntityListDialog::OnSize(UINT type, int cx, int cy)
     button_height = rect.bottom - rect.top;
   }
 
-  int button_x = 40;
+  int button_x = 20;
   int button_y = cy - (button_height * 3);
 
   if (GetDlgItem(IDC_ENTITY_LISTBOX)) {

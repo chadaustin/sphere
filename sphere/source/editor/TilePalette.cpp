@@ -8,6 +8,7 @@ BEGIN_MESSAGE_MAP(CTilePalette, CPaletteWindow)
   ON_COMMAND(ID_FILE_ZOOM_IN, OnZoomIn)
   ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
   ON_WM_SIZE()
+  ON_WM_SIZING()
 
 END_MESSAGE_MAP()
 
@@ -28,6 +29,10 @@ CTilePalette::CTilePalette(CDocumentWindow* owner, ITilesetViewHandler* handler,
   m_TilesetView.Create(handler, this, tileset);
   m_Created = true;
   
+#if 1
+  ModifyStyle(WS_CAPTION, 0);
+#endif
+
   RECT rect;
   GetClientRect(&rect);
   OnSize(0, rect.right, rect.bottom);
@@ -86,9 +91,40 @@ CTilePalette::GetSelectedTile() const
 afx_msg void
 CTilePalette::OnSize(UINT type, int cx, int cy)
 {
-  if (m_Created)
+  if (m_Created) {
     m_TilesetView.MoveWindow(0, 0, cx, cy);
+  }
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+#if defined(TILESET_PALETTE_DOCKED)
+afx_msg void
+CTilePalette::OnSizing(UINT side, LPRECT rect)
+{
+//  WMSZ_BOTTOM
+//  WMSZ_BOTTOMLEFT
+//  WMSZ_BOTTOMRIGHT
+//  WMSZ_LEFT
+//  WMSZ_RIGHT
+//  WMSZ_TOP
+//  WMSZ_TOPLEFT
+//  WMSZ_TOPRIGHT
+
+  if (side != WMSZ_LEFT) {
+    RECT original;
+    GetWindowRect(&original);
+
+    rect->top = original.top;
+    rect->bottom = original.bottom;
+    rect->left = original.left;
+    rect->right = original.right;
+  }
+
+  CMiniFrameWnd::OnSizing(side, rect);
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 

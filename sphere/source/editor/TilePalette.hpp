@@ -30,6 +30,9 @@ private:
 
 private:
   afx_msg void OnSize(UINT type, int cx, int cy);
+#if defined(TILESET_PALETTE_DOCKED)
+  afx_msg void OnSizing(UINT side, LPRECT rect);
+#endif
 
 private:
   bool         m_Created;

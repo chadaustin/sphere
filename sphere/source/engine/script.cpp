@@ -6739,7 +6739,8 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
     { "applyColorFX",     ssSurfaceApplyColorFX,     5, 0, 0 },
     { "applyColorFX4",    ssSurfaceApplyColorFX4,    8, 0, 0 },
     { "blit",             ssSurfaceBlit,             2, 0, 0 },
-    { "blitSurface",      ssSurfaceBlitSurface,      5, 0, 0 },
+    { "blitSurface",      ssSurfaceBlitSurface,      3, 0, 0 },
+//    { "blitImage",        ssSurfaceBlitImage,        3, 0, 0 },
     { "createImage",      ssSurfaceCreateImage,      0, 0, 0 },
     { "setBlendMode",     ssSurfaceSetBlendMode,     1, 0, 0 },
     { "getPixel",         ssSurfaceGetPixel,         2, 0, 0 },
@@ -6861,6 +6862,45 @@ begin_method(SS_SURFACE, ssSurfaceBlitSurface, 3)
   }
 
 end_method()
+
+////////////////////////////////////////
+
+#if 0
+///**
+    - draws 'image' onto the surface_object at (x, y)
+//*/
+begin_method(SS_SURFACE, ssSurfaceBlitImage, 3)
+
+  arg_image(image_object);
+  arg_int(x);
+  arg_int(y);
+
+  CImage32* surface = NULL;
+
+  int width  = GetImageWidth(image_object->image);
+  int height = GetImageHeight(image_object->image);
+  RGBA* pixels = LockImage(image_object->image);
+
+  if (pixels) {
+    surface = new CImage32(width, height, pixels);
+    if (!surface || surface->GetWidth() != width || surface->GetHeight() != height) {
+      if (surface) { delete surface; surface = NULL; }
+      JS_ReportError(cx, "createSurface() failed!!");
+      return JS_FALSE;
+    }
+  }
+
+  UnlockImage(image_object->image, false);
+
+  if (surface) {
+    object->surface->BlitImage(*surface, x, y);
+  }
+
+  delete surface;
+  surface = NULL;
+
+end_method()
+#endif
 
 ////////////////////////////////////////
 

@@ -337,7 +337,7 @@ CMapWindow::OnSize(UINT uType, int cx, int cy)
     RECT MapViewRect;
     GetMapViewRect(&MapViewRect);
 
-#ifdef TILESET_PALETTE_DOCKED
+#if defined(TILESET_PALETTE_DOCKED)
     if (m_TilePalette && m_TilePalette->IsVisible())
     {
       const int SCROLLBAR_WIDTH  = GetSystemMetrics(SM_CXVSCROLL);
@@ -361,7 +361,7 @@ CMapWindow::OnSize(UINT uType, int cx, int cy)
 
     m_TilesetEditView.MoveWindow(0, TAB_HEIGHT, cx, cy - TAB_HEIGHT);
 
-#ifdef TILESET_PALETTE_DOCKED
+#if defined(TILESET_PALETTE_DOCKED)
     if (m_TilePalette && m_TilePalette->IsVisible())
     {
       const int SCROLLBAR_WIDTH  = GetSystemMetrics(SM_CXVSCROLL);

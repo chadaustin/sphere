@@ -294,7 +294,6 @@ COptionsDialog::Execute()
   Pages[current_page].pfnDlgProc  = FileTypeGeneralDialogProc;
   current_page += 1;
 
-
   // create the dialog box
   PROPSHEETHEADER psh;
   memset(&psh, 0, sizeof(psh));

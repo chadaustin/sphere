@@ -243,6 +243,10 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_MESSAGE(WM_COPYDATA,            OnCopyData)
   ON_COMMAND_RANGE(PALETTE_COMMAND, PALETTE_COMMAND + NUM_PALETTES, OnViewPalette)
 
+
+  ON_WM_CHANGECBCHAIN()
+  ON_WM_DRAWCLIPBOARD()
+
 END_MESSAGE_MAP()
 
 
@@ -252,6 +256,7 @@ CMainWindow::CMainWindow()
 : m_ProjectOpen(false)
 , m_ProjectWindow(NULL)
 , m_ChildMenuResource(-1)
+, m_NextClipboardViewer(NULL)
 {
 }
 
@@ -267,6 +272,7 @@ void CMainWindow::OnUpdateFrameTitle(BOOL bAddToTitle)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/*
 void ShowWPConfig(WINDOWPLACEMENT& wp) 
 { 
   return;
@@ -299,6 +305,7 @@ void ShowWPConfig(WINDOWPLACEMENT& wp)
   wsprintf(buffer, "Window is %s at (%i, %i)", size, X, Y); 
   GetMainWindow()->MessageBox(buffer, "Window Settings", MB_OK);
 } 
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -445,7 +452,50 @@ CMainWindow::Create()
 
   m_DefaultFolder = games_directory;
 
+  m_NextClipboardViewer = SetClipboardViewer();
+
   return TRUE;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnChangeCbChain(HWND remove, HWND after)
+{
+  // If the next window is closing, repair the chain. 
+  if ((HWND) remove == m_NextClipboardViewer) 
+    m_NextClipboardViewer = after; 
+
+  // Otherwise, pass the message to the next link. 
+  else if (m_NextClipboardViewer != NULL) 
+    ::SendMessage(m_NextClipboardViewer, WM_CHANGECBCHAIN, (WPARAM)remove, (LPARAM)after); 
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnDrawClipboard()
+{
+  if (IsClipboardFormatAvailable(CF_TEXT)) {
+    if (OpenClipboard()) {
+      HGLOBAL hglobal = GetClipboardData(CF_TEXT);
+      if (hglobal != NULL) {
+        LPSTR lpstr = (LPSTR) GlobalLock(hglobal); 
+    
+        if (lpstr != NULL) 
+        {
+          m_ClipboardHistory.push_back(lpstr);     
+        }
+
+        GlobalUnlock(hglobal);
+      }
+
+      CloseClipboard();
+    }
+  }
+
+  if (m_NextClipboardViewer != NULL) 
+    ::SendMessage(m_NextClipboardViewer, WM_DRAWCLIPBOARD, 0, 0); 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -929,15 +979,19 @@ CMainWindow::OnClose()
 
   m_MainToolBar.GetWindowPlacement(&wp);
   Configuration::Set(KEY_STANDARDTOOLBAR_PLACEMENT, wp);
-  ShowWPConfig(wp);
+  //ShowWPConfig(wp);
 
   m_ImageToolBar.GetWindowPlacement(&wp);
   Configuration::Set(KEY_IMAGETOOLBAR_PLACEMENT, wp);
-  ShowWPConfig(wp);
+  //ShowWPConfig(wp);
 
   m_MapToolBar.GetWindowPlacement(&wp);
   Configuration::Set(KEY_MAPTOOLBAR_PLACEMENT, wp);
-  ShowWPConfig(wp);
+  //ShowWPConfig(wp);
+
+  ChangeClipboardChain(m_NextClipboardViewer);
+
+  m_ClipboardHistory.clear();
 
   // finally, destroy the window
   DestroyWindow();

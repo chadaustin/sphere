@@ -208,6 +208,14 @@ private:
   void OnLanguageChanged();
 
 private:
+  HWND m_NextClipboardViewer;
+  afx_msg void OnChangeCbChain(HWND remove, HWND after);
+  afx_msg void OnDrawClipboard();
+
+public:
+  std::vector<std::string> m_ClipboardHistory;
+
+private:
   CToolBar   m_MainToolBar;
   CToolBar   m_ImageToolBar;
   CToolBar   m_MapToolBar;

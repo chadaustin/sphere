@@ -49,7 +49,7 @@ private:
   afx_msg void OnRButtonUp(UINT flags, CPoint point);
   afx_msg void OnLButtonUp(UINT flags, CPoint point);
 
-#ifdef TILESET_PALETTE_DOCKED
+#if 1 || defined(TILESET_PALETTE_DOCKED)
   afx_msg void OnSizing(UINT nside, LPRECT lpRect);
 #endif
 

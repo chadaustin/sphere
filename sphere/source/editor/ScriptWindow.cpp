@@ -13,6 +13,8 @@
 #include "Keys.hpp"
 #include "resource.h"
 
+#include "MainWindow.hpp"
+
 #include <afxdlgs.h>
 
 const int ID_EDIT = 900;
@@ -576,7 +578,13 @@ CScriptWindow::CreateList(int type)
   }
 
   if (m_ListType == 4) {
-    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"todo todo...");
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"done sometime today...");
+    CMainWindow* main_window = GetMainWindow();
+    if (main_window) {
+      for (unsigned int i = 0; i < main_window->m_ClipboardHistory.size(); i++) {
+        ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)main_window->m_ClipboardHistory[i].c_str());
+      }
+    }
   }
 }
 
@@ -1575,12 +1583,7 @@ afx_msg void
 CScriptWindow::OnScriptToolsSort()
 {
   int selection_start = SendEditor(SCI_LINEFROMPOSITION, SendEditor(SCI_GETSELECTIONSTART));
-  
-  int selection_end   = SendEditor(SCI_LINEFROMPOSITION, 
-                          SendEditor(SCI_GETLINEENDPOSITION,
-                            SendEditor(SCI_LINEFROMPOSITION, SendEditor(SCI_GETSELECTIONEND))
-                          )
-                        );
+  int selection_end   = SendEditor(SCI_LINEFROMPOSITION, SendEditor(SCI_GETSELECTIONEND));
 
   if (selection_start - selection_end == 0) {
     GetStatusBar()->SetWindowText("Nothing to sort...");
@@ -1589,8 +1592,9 @@ CScriptWindow::OnScriptToolsSort()
 
   bool delete_duplicates = false;
   bool sort_lines = true;
+  bool reverse_lines = false;
 
-  if (!delete_duplicates && !sort_lines) {
+  if (!delete_duplicates && !sort_lines && !reverse_lines) {
     GetStatusBar()->SetWindowText("No reason to sort...");
     return;
   }
@@ -1641,7 +1645,7 @@ CScriptWindow::OnScriptToolsSort()
 
   // remove the old selection
   SendEditor(SCI_SETTARGETSTART, SendEditor(SCI_POSITIONFROMLINE, selection_start));
-  SendEditor(SCI_SETTARGETEND,   SendEditor(SCI_POSITIONFROMLINE, selection_end));
+  SendEditor(SCI_SETTARGETEND,   SendEditor(SCI_POSITIONFROMLINE, selection_end + 1));
   SendEditor(SCI_REPLACETARGET, 0, (LRESULT) "");
 
   std::vector<unsigned int> line_indexes;
@@ -1669,12 +1673,12 @@ CScriptWindow::OnScriptToolsSort()
   if (1) {
     // SendEditor(SCI_ADDTEXT, strlen("after sort...\n"), (LPARAM)"after sort...\n");
     for (unsigned int i = 0; i < lines.size() && i < line_indexes.size(); i++) {
-      unsigned int line_index = sort_lines ? line_indexes[i] : i;
+      unsigned int line_index = sort_lines ? line_indexes[(reverse_lines ? (lines.size() - 1) - i : i)] : (reverse_lines ? (lines.size() - 1) - i : i);
 
       if (lines[line_index]->data) {
 
         if (i > 0 && delete_duplicates) {
-          unsigned int last_index = sort_lines ? line_indexes[i - 1] : i - 1;
+          unsigned int last_index = sort_lines ? line_indexes[(reverse_lines ? (lines.size() - 1) - i : i) - 1] : (reverse_lines ? (lines.size() - 1) - i : i) - 1;
 
           if (lines[line_index]->size == lines[last_index]->size) {
             if (memcmp(lines[line_index]->data,

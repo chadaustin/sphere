@@ -186,6 +186,7 @@ private:
   declare_method(ssSurfaceApplyColorFX4);
   declare_method(ssSurfaceBlit);
   declare_method(ssSurfaceBlitSurface);
+  //declare_method(ssSurfaceBlitImage);
   declare_method(ssSurfaceCreateImage);
   declare_method(ssSurfaceSetBlendMode);
   declare_method(ssSurfaceGetPixel);
