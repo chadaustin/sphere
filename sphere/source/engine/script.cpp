@@ -4105,8 +4105,6 @@ end_finalizer()
 
 ////////////////////////////////////////
 
-// Note: This basically just saves the spriteset as it was when you loaded it
-// Really it needs to find out what changes were made by script and save that
 begin_method(SS_SPRITESET, ssSpritesetSave, 1)
   arg_str(filename);
 
@@ -4129,6 +4127,23 @@ begin_method(SS_SPRITESET, ssSpritesetSave, 1)
     return JS_FALSE;
   }
 
+  jsval base_obstruction_val;
+  if ( !JS_GetProperty(cx, obj, "base", &base_obstruction_val) ) {
+    JS_ReportError(cx, "spriteset.base object property doesn't appear to exist.");
+    return JS_FALSE;
+  }
+
+  jsval x1_val, y1_val, x2_val, y2_val;
+
+  JSObject* base_obstruction_object = JSVAL_TO_OBJECT(base_obstruction_val);
+  if ( !JS_GetProperty(cx, base_obstruction_object, "x1", &x1_val)
+    || !JS_GetProperty(cx, base_obstruction_object, "y1", &y1_val)
+    || !JS_GetProperty(cx, base_obstruction_object, "x2", &x2_val)
+    || !JS_GetProperty(cx, base_obstruction_object, "y2", &y2_val)) {
+      JS_ReportError(cx, "spriteset.base object is invalid.");    
+      return JS_FALSE;
+    }
+
   if (!argArray(cx, images_array)) {
     JS_ReportError(cx, "Invalid spriteset.images array.");
     return JS_FALSE;
@@ -4146,7 +4161,6 @@ begin_method(SS_SPRITESET, ssSpritesetSave, 1)
     JS_ReportError(cx, "Invalid spriteset.images length");
     return JS_FALSE;
   }
-
 
   CImage32* images = new CImage32[num_images];
 
@@ -4203,6 +4217,10 @@ begin_method(SS_SPRITESET, ssSpritesetSave, 1)
     }
   }
 
+  int x1 = argInt(cx, x1_val);
+  int y1 = argInt(cx, y1_val);
+  int x2 = argInt(cx, x2_val);
+  int y2 = argInt(cx, y2_val);
 
   jsval directions_array;
   if ( !JS_GetProperty(cx, obj, "directions", &directions_array) ) {
@@ -4229,6 +4247,8 @@ begin_method(SS_SPRITESET, ssSpritesetSave, 1)
   }
 
   std::vector<std::string> direction_names;
+//  std::vector<int> frame_indexes;
+//  std::vector<int> frame_delays;
 
   for (int i = 0; i < num_directions; i++) {
 
@@ -4269,7 +4289,45 @@ begin_method(SS_SPRITESET, ssSpritesetSave, 1)
     }
 
     for (int j = 0; j < num_frames; j++) {
-      //jsval frame;
+      jsval frame_val;
+
+      if ( !JS_GetElement(cx, frames_array, j, &frame_val) ) {
+        JS_ReportError(cx, "Invalid spriteset.directions[%d].frames[%d] object", i, j);
+        return JS_FALSE;
+      }
+
+      JSObject* frame_object = JSVAL_TO_OBJECT(frame_val);
+
+      jsval frame_index_val;
+      if ( !JS_GetProperty(cx, frame_object, "index", &frame_index_val) ) {
+        JS_ReportError(cx, "spriteset.directions[%d].frames[%d].index property doesn't appear to exist.", i, j);
+        return JS_FALSE;
+      }
+
+      int frame_index = argInt(cx, frame_index_val);
+
+      if (frame_index < 0 || frame_index >= num_images) {
+        JS_ReportError(cx, "spriteset.directions[%d].frames[%d].index is an invalid image index of %d", i, j, frame_index);
+        return JS_FALSE;
+      }
+
+      jsval frame_delay_val = 0;
+      if ( !JS_GetProperty(cx, frame_object, "delay", &frame_delay_val) ) {
+        JS_ReportError(cx, "spriteset.directions[%d].frames[%d].delay property doesn't appear to exist.", i, j);
+        return JS_FALSE;
+      }
+
+//      frame_indexes.push_back(frame_index);
+
+      int frame_delay = argInt(cx, frame_delay_val);
+
+      if (frame_delay < 0) {
+        JS_ReportError(cx, "spriteset.directions[%d].frames[%d].delay has an invalid value", i, j);
+        return JS_FALSE;
+      }
+
+//      frame_delays.push_back(frame_delay);
+
     }
   }
 
@@ -4282,6 +4340,8 @@ begin_method(SS_SPRITESET, ssSpritesetSave, 1)
   for (int i = 0; i < direction_names.size(); i++) {
     s.SetDirectionName(i, direction_names[i].c_str());
   }
+
+  s.SetBase(x1, y1, x2, y2);
    
   bool yay = s.Save(path.c_str());
 
@@ -4291,15 +4351,13 @@ begin_method(SS_SPRITESET, ssSpritesetSave, 1)
 end_method()
 
 ////////////////////////////////////////
-
-
-////////////////////////////////////////
 // SOUND OBJECTS ///////////////////////
 ////////////////////////////////////////
 
 JSObject*
 CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
 {
+
   sound->ref();
 
   // define class
