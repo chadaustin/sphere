@@ -1,4 +1,7 @@
 2003.01.09
+  - when inserting person entities into a map, put them one more pixel
+    up and one more pixel left so they are aligned with tiles.
   - Started changelog.  SourceForge got rid of the mailing
     list archives (rather, they "haven't archived sphere-commits yet".
     They suck.
+  - animate obstructions with tiles

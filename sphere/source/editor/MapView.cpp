@@ -1669,8 +1669,8 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
     NULL);
 
   // convert tile coordinates to pixel coordinates
-  int px = tx * tile_width + tile_width / 2;
-  int py = ty * tile_height + tile_height / 2;
+  int px = tx * tile_width + (tile_width - 1) / 2;
+  int py = ty * tile_height + (tile_height - 1) / 2;
 
   // execute command
   switch (retval)
