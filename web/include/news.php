@@ -29,7 +29,7 @@ class SphereNews {
     else if ($startdate)
       return $DB->query("SELECT * FROM news WHERE date > '$startdate' AND ORDER BY date DESC LIMIT $maxarticles");
     else
-      return $DB->query("SELECT * FROM news AND ORDER BY date DESC LIMIT $maxarticles");
+      return $DB->query("SELECT * FROM news ORDER BY date DESC LIMIT $maxarticles");
   }
 
 }
