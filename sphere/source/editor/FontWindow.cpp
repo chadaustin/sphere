@@ -9,6 +9,8 @@
 
 #include "EditRange.hpp"
 #include "FileDialogs.hpp"
+#include "ListDialog.hpp"
+#include "AdjustBordersDialog.hpp"
 
 #define IDC_FONTSCROLL 900
 
@@ -39,7 +41,7 @@ BEGIN_MESSAGE_MAP(CFontWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_FONT_SIMPLIFY,             OnFontSimplify)
   ON_COMMAND(ID_FONT_MAKECOLORTRANSPARENT, OnFontMakeColorTransparent)
   ON_COMMAND(ID_FONT_GENERATEGRADIENT,     OnFontGenerateGradient)
-
+  ON_COMMAND(ID_FONT_ADJUSTBORDERS,        OnFontAdjustBorders)
   ON_COMMAND(ID_FONT_EXPORTTOIMAGE,      OnFontExportToImage)
 
   ON_COMMAND(ID_FILE_COPY,  OnCopy)
@@ -313,6 +315,86 @@ CFontWindow::OnFontResize()
         if (m_FontPreviewPalette) m_FontPreviewPalette->OnCharacterChanged(-1);
       }
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CFontWindow::OnFontAdjustBorders()
+{
+  bool resize_all = false;
+
+  if (1) {
+    CListDialog list_dialog;
+    list_dialog.SetCaption("Which character do you want to adjust the borders of?");
+    list_dialog.AddItem("This character");
+    list_dialog.AddItem("All characters");
+
+    if (list_dialog.DoModal() != IDOK)
+      return;
+
+    resize_all = (list_dialog.GetSelection() == 1);
+  }
+
+  int max_x = 0;
+  int max_y = 0;
+
+  int min_x = -1;
+  int min_y = -1;
+
+  if (!resize_all) {
+    max_x = m_Font.GetCharacter(m_CurrentCharacter).GetWidth();
+    max_y = m_Font.GetCharacter(m_CurrentCharacter).GetHeight();
+    min_x = 1;
+    min_y = 1;
+  } else {
+    for (int i = 0; i < m_Font.GetNumCharacters(); i++) {
+      sFontCharacter& c = m_Font.GetCharacter(i);
+      if (c.GetWidth() > max_x) {
+        max_x = c.GetWidth();
+      }
+
+      if (min_x == -1 || c.GetWidth() < min_x) {
+        min_x = c.GetWidth();
+      }
+
+      if (c.GetHeight() > max_y) {
+        max_y = c.GetHeight();
+      }
+
+      if (min_y == -1 || c.GetHeight() < min_y) {
+        min_y = c.GetHeight();
+      }   
+    }
+  }
+
+  CAdjustBordersDialog dialog(0, 0, min_x, min_y, 0, 0, 0, 0);
+  if (dialog.DoModal() != IDOK)
+    return;
+
+	bool modified = false;
+
+  if (!resize_all) {
+    sFontCharacter& c = m_Font.GetCharacter(m_CurrentCharacter);
+    int width = c.GetWidth();
+    int height = c.GetHeight();
+    c.AdjustBorders(dialog.GetTopPixels(), dialog.GetRightPixels(), dialog.GetBottomPixels(), dialog.GetLeftPixels());
+    modified |= ( !(width == c.GetWidth() && height == c.GetHeight()) );
+  } else {
+    for (int i = 0; i < m_Font.GetNumCharacters(); i++) {
+    	sFontCharacter& c = m_Font.GetCharacter(i);
+      int width = c.GetWidth();
+      int height = c.GetHeight();
+      c.AdjustBorders(dialog.GetTopPixels(), dialog.GetRightPixels(), dialog.GetBottomPixels(), dialog.GetLeftPixels());
+      modified |= ( !(width == c.GetWidth() && height == c.GetHeight()) );
+    }
+  }
+
+	if (modified) {
+    SetModified(true);
+    SetImage();
+    if (m_FontPreviewPalette) m_FontPreviewPalette->OnCharacterChanged(-1);
   }
 }
 

@@ -14,7 +14,7 @@
 #include "resource.h"
 
 //#include "MainWindow.hpp"
-#include "ScriptSortToolDialog.hpp"
+#include "LineSorterDialog.hpp"
 #include "LineSorter.hpp"
 
 #include <afxdlgs.h>
@@ -388,7 +388,7 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_WORD_WRAP, OnUpdateOptionsWordWrap)
   ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_TOGGLE_AUTOCOMPLETE, OnUpdateOptionsToggleAutoComplete)
 
-  ON_COMMAND(ID_SCRIPT_TOOLS_SORT, OnScriptToolsSort)
+  ON_COMMAND(ID_SCRIPT_TOOLS_SORT, OnScriptLineSorter)
 
   ON_NOTIFY(SCN_SAVEPOINTREACHED, ID_EDIT, OnSavePointReached)
   ON_NOTIFY(SCN_SAVEPOINTLEFT,    ID_EDIT, OnSavePointLeft)
@@ -1544,9 +1544,9 @@ CScriptWindow::SaveDocument(const char* path)
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
-CScriptWindow::OnScriptToolsSort()
+CScriptWindow::OnScriptLineSorter()
 {
-  CScriptSortToolDialog dialog;
+  CLineSorterDialog dialog;
   if (dialog.DoModal() != IDOK) {
     return;
   }

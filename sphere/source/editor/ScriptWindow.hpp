@@ -64,7 +64,7 @@ private:
 
   /////////////////////////////////////
 
-  afx_msg void OnScriptToolsSort();
+  afx_msg void OnScriptLineSorter();
 
   /////////////////////////////////////
 

@@ -1,14 +1,14 @@
-#ifndef SCRIPT_SORT_TOOL_DIALOG_HPP
-#define SCRIPT_SORT_TOOL_DIALOG_HPP
+#ifndef LINE_SORTER_DIALOG_HPP
+#define LINE_SORTER_DIALOG_HPP
 
 #include <afxwin.h>
 
 ///////////////////////////////////////////////////////////
 
-class CScriptSortToolDialog : public CDialog
+class CLineSorterDialog : public CDialog
 {
 public:
-  CScriptSortToolDialog();
+  CLineSorterDialog();
 
   bool ShouldSortLines();
   bool ShouldReverseLines();
@@ -25,7 +25,7 @@ private:
   void UpdateButtons();
 
 private:
-  afx_msg void OnSortOptionChanged();
+  afx_msg void OnOptionChanged();
 
 private:
   BOOL OnInitDialog();

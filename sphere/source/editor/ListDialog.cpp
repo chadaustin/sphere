@@ -46,7 +46,8 @@ void
 CListDialog::SetCaption(const char* caption)
 {
   m_Caption = caption;
-  SetWindowText(m_Caption.c_str());
+  if (::IsWindow(m_hWnd))
+    SetWindowText(m_Caption.c_str());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

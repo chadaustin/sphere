@@ -966,6 +966,14 @@ SOURCE=.\LayerPropertiesDialog.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\LineSorterDialog.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\LineSorterDialog.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ListDialog.cpp
 # End Source File
 # Begin Source File
@@ -1027,14 +1035,6 @@ SOURCE=.\RotateDialog.cpp
 # Begin Source File
 
 SOURCE=.\RotateDialog.hpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ScriptSortToolDialog.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ScriptSortToolDialog.hpp
 # End Source File
 # Begin Source File
 

@@ -44,6 +44,7 @@ private:
   afx_msg void OnFontMakeColorTransparent();
   afx_msg void OnFontGenerateGradient();
   afx_msg void OnFontExportToImage();
+  afx_msg void OnFontAdjustBorders();
 
   afx_msg void OnCopy();
   afx_msg void OnPaste();
