@@ -520,6 +520,7 @@ wTilesetView::OnMouseMove(wxMouseEvent &event)
 
   int tile = (m_TopRow + y) * num_tiles_x + x;
 
+#ifdef WIN32
   if (tile <= m_Tileset->GetNumTiles() -1)
   {
     //CString tilenum;
@@ -529,6 +530,7 @@ wTilesetView::OnMouseMove(wxMouseEvent &event)
   } else {
     SetStatus(wxString(""));
   }
+#endif
 
 }
 

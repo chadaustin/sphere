@@ -377,6 +377,7 @@ wLayerView::OnMouseMove(wxMouseEvent &event)
   }
 
   int layer = event.GetY() / LAYER_BUTTON_HEIGHT;
+#ifdef WIN32
   if (layer >= 0 && layer < m_Map->GetNumLayers()) {
     //CString str;
     //str.Format("Layer '%d'", m_Map->GetNumLayers() - 1 - layer);
@@ -385,6 +386,7 @@ wLayerView::OnMouseMove(wxMouseEvent &event)
     str.Format("Layer '%d'", m_Map->GetNumLayers() - 1 - layer);
     SetStatus(str);
   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

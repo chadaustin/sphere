@@ -1444,6 +1444,8 @@ wMapView::OnMouseMove(wxMouseEvent &event)
 
   int x = point.x / tile_width  + m_CurrentX;
   int y = point.y / tile_height + m_CurrentY;
+
+#ifdef WIN32
   if (x <= GetTotalTilesX() && y <= GetTotalTilesY())
   {
     wxString Position;
@@ -1454,7 +1456,7 @@ wMapView::OnMouseMove(wxMouseEvent &event)
   }
   else
     SetStatus(wxString(""));
-
+#endif
 
   if (m_Clicked) {
     switch (m_CurrentTool) {
