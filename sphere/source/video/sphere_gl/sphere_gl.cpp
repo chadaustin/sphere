@@ -258,173 +258,194 @@ EXPORT(void) CloseVideoDriver();
 
 EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
 {
-    static bool firstcall = true;
+  const char* error_msg = NULL;
+  static bool firstcall = true;
 
-    ScreenWidth = screen_width;
-    ScreenHeight = screen_height;
+  ScreenWidth = screen_width;
+  ScreenHeight = screen_height;
 
-    LoadDriverConfig();
+  LoadDriverConfig();
 
-    SphereWindow = window;
+  SphereWindow = window;
 
-    if (firstcall) {
-      fullscreen = DriverConfig.fullscreen;
-      firstcall = false;
+  int format;
+  PIXELFORMATDESCRIPTOR pfd =
+  { 
+    sizeof(PIXELFORMATDESCRIPTOR),  // size of this pfd
+    1,                              // version number
+    PFD_DRAW_TO_WINDOW |            // support window
+    PFD_SUPPORT_OPENGL |            // support OpenGL
+    PFD_DOUBLEBUFFER,               // double buffered
+    PFD_TYPE_RGBA,                  // RGBA type
+    DriverConfig.bpp,               // color depth
+    0, 0, 0, 0, 0, 0,               // color bits
+    0,                              // alpha buffer
+    0,                              // shift bit
+    0,                              // accumulation buffer
+    0, 0, 0, 0,                     // accum bits
+    0,                              // z-buffer
+    0,                              // stencil buffer
+    0,                              // auxiliary buffer
+    PFD_MAIN_PLANE,                 // main layer
+    0,                              // reserved
+    0, 0, 0                         // layer masks ignored
+  };
+
+
+  if (firstcall) {
+    fullscreen = DriverConfig.fullscreen;
+    firstcall = false;
+  }
+    
+  if (!fullscreen) {
+    const int screenwidth = GetSystemMetrics(SM_CXSCREEN);
+    const int screenheight = GetSystemMetrics(SM_CYSCREEN);
+
+    RECT rect = { 0, 0, ScreenWidth * SCALE(), ScreenHeight * SCALE() };
+    DWORD style = GetWindowLong(SphereWindow, GWL_STYLE);
+    DWORD exstyle = GetWindowLong(SphereWindow, GWL_EXSTYLE);
+    AdjustWindowRectEx(&rect, style, (GetMenu(SphereWindow) ? TRUE : FALSE), exstyle);
+    int winwidth = rect.right - rect.left;
+    int winheight = rect.bottom - rect.top;
+    SetWindowPos(SphereWindow, HWND_TOP,
+      (screenwidth - winwidth) / 2,
+      (screenheight - winheight) / 2,
+       winwidth, winheight, SWP_SHOWWINDOW);
+  } else {
+    // set fullscreen mode
+    DEVMODE dm;
+    EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm);
+    dm.dmFields     = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL;
+    dm.dmBitsPerPel = DriverConfig.bpp;
+    dm.dmPelsWidth  = ScreenWidth * SCALE();
+    dm.dmPelsHeight = ScreenHeight * SCALE();
+
+    WindowStyle   = GetWindowLong(SphereWindow, GWL_STYLE);
+    WindowStyleEx = GetWindowLong(SphereWindow, GWL_EXSTYLE);
+
+    SetWindowLong(SphereWindow, GWL_STYLE, WS_POPUP | WS_CLIPSIBLINGS);
+    SetWindowLong(SphereWindow, GWL_EXSTYLE, 0);
+
+    if (ChangeDisplaySettings(&dm, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL) {
+      error_msg = "Unable to set display mode";
+      goto error;
     }
-    
-    if (!fullscreen) {
 
-        const int screenwidth = GetSystemMetrics(SM_CXSCREEN);
-        const int screenheight = GetSystemMetrics(SM_CYSCREEN);
+    if (1) {
+      DEVMODE dm;
+      EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm);
+      if (dm.dmBitsPerPel != DriverConfig.bpp) {
+        error_msg = "Unable to set bbp, try a different setting";
+        goto error;
+      }
+    }
 
-        RECT rect = { 0, 0, ScreenWidth * SCALE(), ScreenHeight * SCALE() };
-        DWORD style = GetWindowLong(SphereWindow, GWL_STYLE);
-        DWORD exstyle = GetWindowLong(SphereWindow, GWL_EXSTYLE);
-        AdjustWindowRectEx(&rect, style, (GetMenu(SphereWindow) ? TRUE : FALSE), exstyle);
-        int winwidth = rect.right - rect.left;
-        int winheight = rect.bottom - rect.top;
-        SetWindowPos(SphereWindow, HWND_TOP,
-            (screenwidth - winwidth) / 2,
-            (screenheight - winheight) / 2,
-            winwidth, winheight, SWP_SHOWWINDOW);
+
+    // Set up window
+    SetWindowPos(SphereWindow, HWND_TOPMOST, 0, 0, ScreenWidth * SCALE(), ScreenHeight * SCALE(), SWP_SHOWWINDOW);
+  }
     
+  // Get the DC of the window
+  MainDC = GetDC(SphereWindow);
+  if (!MainDC) {
+    MessageBox(SphereWindow, "Error getting window DC.", "Video Error", MB_ICONERROR);
+    return false;
+  }
+
+  // Set the pfd   
+  format = ChoosePixelFormat(MainDC, &pfd);
+  if (!SetPixelFormat(MainDC, format, &pfd)) {
+    error_msg = "Error setting pfd";
+    goto error;
+  }
+
+  // Create Render Context
+  MainRC = wglCreateContext(MainDC);
+  if (!MainRC) {
+    error_msg = "Error creating render context";
+    goto error;
+  }
+
+  // Make context current
+  if (!wglMakeCurrent(MainDC, MainRC)) {
+    error_msg = "Unable to make render context current";
+    goto error;
+  }
+
+  // try to get the swap control extension
+  if (strstr((const char*)glGetString(GL_EXTENSIONS), "WGL_EXT_swap_control")) {
+    wglSwapIntervalEXT    = (BOOL (__stdcall*)(int))wglGetProcAddress("wglSwapIntervalEXT");
+    wglGetSwapIntervalEXT = (int (__stdcall*)())wglGetProcAddress("wglGetSwapIntervalEXT");
+    if (fullscreen && DriverConfig.vsync) {
+      wglSwapIntervalEXT(1);
     } else {
-
-        // set fullscreen mode
-        DEVMODE dm;
-        EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm);
-        dm.dmFields     = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL;
-        dm.dmBitsPerPel = DriverConfig.bpp;
-        dm.dmPelsWidth  = ScreenWidth * SCALE();
-        dm.dmPelsHeight = ScreenHeight * SCALE();
-
-        WindowStyle   = GetWindowLong(SphereWindow, GWL_STYLE);
-        WindowStyleEx = GetWindowLong(SphereWindow, GWL_EXSTYLE);
-
-        SetWindowLong(SphereWindow, GWL_STYLE,
-                      WS_POPUP | WS_CLIPSIBLINGS);
-        SetWindowLong(SphereWindow, GWL_EXSTYLE, 0);
-
-        if (ChangeDisplaySettings(&dm, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL
-          || dm.dmBitsPerPel != DriverConfig.bpp) {
-            MessageBox(SphereWindow, "Unable to set display mode.", "Video Error", MB_ICONERROR);
-            return false;
-        }
-
-        // Set up window
-        SetWindowPos(SphereWindow, HWND_TOPMOST, 0, 0, ScreenWidth * SCALE(), ScreenHeight * SCALE(), SWP_SHOWWINDOW);
+      wglSwapIntervalEXT(0);
     }
-    
-    // Get the DC of the window
-    MainDC = GetDC(SphereWindow);
-    if (!MainDC) {
-        MessageBox(SphereWindow, "Error getting window DC.", "Video Error", MB_ICONERROR);
-        return false;
-    }
+  }
 
-    // Set the pfd
-    PIXELFORMATDESCRIPTOR pfd =
-    { 
-        sizeof(PIXELFORMATDESCRIPTOR),  // size of this pfd
-        1,                              // version number
-        PFD_DRAW_TO_WINDOW |            // support window
-        PFD_SUPPORT_OPENGL |            // support OpenGL
-        PFD_DOUBLEBUFFER,               // double buffered
-        PFD_TYPE_RGBA,                  // RGBA type
-        DriverConfig.bpp,               // color depth
-        0, 0, 0, 0, 0, 0,               // color bits
-        0,                              // alpha buffer
-        0,                              // shift bit
-        0,                              // accumulation buffer
-        0, 0, 0, 0,                     // accum bits
-        0,                              // z-buffer
-        0,                              // stencil buffer
-        0,                              // auxiliary buffer
-        PFD_MAIN_PLANE,                 // main layer
-        0,                              // reserved
-        0, 0, 0                         // layer masks ignored
-    };
-    
-    int format = ChoosePixelFormat(MainDC, &pfd);
-    if (!SetPixelFormat(MainDC, format, &pfd)) {
-        MessageBox(SphereWindow, "Error setting pfd.", "Video Error", MB_ICONERROR);
-        return false;
-    }
+  // view initialization
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluOrtho2D(0.0f, ScreenWidth, ScreenHeight, 0.0f);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  //glTranslatef(0.375, 0.375, 0.0);
 
-    // Create Render Context
-    MainRC = wglCreateContext(MainDC);
-    if (!MainRC) {
-        MessageBox(SphereWindow, "Error creating render context.", "Video Error", MB_ICONERROR);
-        return false;
-    }
+  // render initialization
+  glEnable(GL_SCISSOR_TEST);
+  glScissor(0, 0, ScreenWidth, ScreenHeight);
+  //    glEnable(GL_TEXTURE_2D);
+  glShadeModel(GL_SMOOTH);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glPointSize(FILTER() == GL_LINEAR ? 2.5f : (SCALE() == 1 ? 1.0f : 2.0f));
+  glLineWidth(FILTER() == GL_LINEAR ? 2.5f : (SCALE() == 1 ? 1.0f : 2.0f));
+  if (FILTER() == GL_LINEAR) {
+    glEnable(GL_POINT_SMOOTH);
+  }
 
-    // Make context current
-    if (!wglMakeCurrent(MainDC, MainRC)) {
-        MessageBox(SphereWindow, "Unable to make render context current.", "Video Error", MB_ICONERROR);
-        return false;
-    }
+  // get max texture size
+  glGetIntegerv(GL_MAX_TEXTURE_SIZE, &MaxTexSize);
 
-    // try to get the swap control extension
-    if (strstr((const char*)glGetString(GL_EXTENSIONS), "WGL_EXT_swap_control")) {
-        wglSwapIntervalEXT    = (BOOL (__stdcall*)(int))wglGetProcAddress("wglSwapIntervalEXT");
-        wglGetSwapIntervalEXT = (int (__stdcall*)())wglGetProcAddress("wglGetSwapIntervalEXT");
-        if (fullscreen && DriverConfig.vsync) {
-            wglSwapIntervalEXT(1);
-        } else {
-            wglSwapIntervalEXT(0);
-        }
-    }
+  extern void __stdcall SetClippingRectangle(int, int, int, int);
+  SetClippingRectangle(0, 0, ScreenWidth, ScreenHeight);
 
+  return true;
 
-    // view initialization
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluOrtho2D(0.0f, ScreenWidth, ScreenHeight, 0.0f);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    //glTranslatef(0.375, 0.375, 0.0);
+error:
+  if (fullscreen) {
+    DEVMODE dm;
+    EnumDisplaySettings(NULL, ENUM_REGISTRY_SETTINGS, &dm);
+    dm.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFLAGS | DM_DISPLAYFREQUENCY;
+    ChangeDisplaySettings(&dm, 0);
 
-    // render initialization
-    glEnable(GL_SCISSOR_TEST);
-    glScissor(0, 0, ScreenWidth, ScreenHeight);
-    //    glEnable(GL_TEXTURE_2D);
-    glShadeModel(GL_SMOOTH);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glPointSize(FILTER() == GL_LINEAR ? 2.5f : (SCALE() == 1 ? 1.0f : 2.0f));
-    glLineWidth(FILTER() == GL_LINEAR ? 2.5f : (SCALE() == 1 ? 1.0f : 2.0f));
-    if (FILTER() == GL_LINEAR) {
-        glEnable(GL_POINT_SMOOTH);
-    }
+    SetWindowLong(SphereWindow, GWL_STYLE, WindowStyle);
+    SetWindowLong(SphereWindow, GWL_EXSTYLE, WindowStyleEx);
+  }
 
-    // get max texture size
-    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &MaxTexSize);
-
-    extern void __stdcall SetClippingRectangle(int, int, int, int);
-    SetClippingRectangle(0, 0, ScreenWidth, ScreenHeight);
-
-    return true;
+  MessageBox(SphereWindow, error_msg, "Video Error", MB_ICONERROR);
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 EXPORT(void) CloseVideoDriver()
 {
-    // good bye, OpenGL...
-    wglMakeCurrent(NULL, NULL);
-    ReleaseDC(SphereWindow, MainDC);
-    wglDeleteContext(MainRC);
+  // good bye, OpenGL...
+  wglMakeCurrent(NULL, NULL);
+  ReleaseDC(SphereWindow, MainDC);
+  wglDeleteContext(MainRC);
    
-    // reset screen resolution
-    if (fullscreen) {
-        DEVMODE dm;
-        EnumDisplaySettings(NULL, ENUM_REGISTRY_SETTINGS, &dm);
-        dm.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFLAGS | DM_DISPLAYFREQUENCY;
-        ChangeDisplaySettings(&dm, 0);
+  // reset screen resolution
+  if (fullscreen) {
+    DEVMODE dm;
+    EnumDisplaySettings(NULL, ENUM_REGISTRY_SETTINGS, &dm);
+    dm.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFLAGS | DM_DISPLAYFREQUENCY;
+    ChangeDisplaySettings(&dm, 0);
 
-        SetWindowLong(SphereWindow, GWL_STYLE, WindowStyle);
-        SetWindowLong(SphereWindow, GWL_EXSTYLE, WindowStyleEx);
-    }
+    SetWindowLong(SphereWindow, GWL_STYLE, WindowStyle);
+    SetWindowLong(SphereWindow, GWL_EXSTYLE, WindowStyleEx);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -474,162 +495,171 @@ EXPORT(bool) ToggleFullScreen() {
 
 EXPORT(void) FlipScreen()
 {
-    SwapBuffers(MainDC);
+  SwapBuffers(MainDC);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 EXPORT(void) SetClippingRectangle(int x, int y, int w, int h)
 {
-    glScissor(x * SCALE(), (ScreenHeight - y - h) * SCALE(), w * SCALE(), h * SCALE());
+  glScissor(x * SCALE(), (ScreenHeight - y - h) * SCALE(), w * SCALE(), h * SCALE());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 EXPORT(void) GetClippingRectangle(int* x, int* y, int* w, int* h)
 {
-    GLint cliprect[4];
-    glGetIntegerv(GL_SCISSOR_BOX, cliprect);
-    *x = (cliprect[0]) / SCALE();
-    *y = (cliprect[1] - ScreenHeight * SCALE() + cliprect[3]) / SCALE();
-    *w = (cliprect[2]) / SCALE();
-    *h = (cliprect[3]) / SCALE();
+  GLint cliprect[4];
+  glGetIntegerv(GL_SCISSOR_BOX, cliprect);
+  *x = (cliprect[0]) / SCALE();
+  *y = (cliprect[1] - ScreenHeight * SCALE() + cliprect[3]) / SCALE();
+  *w = (cliprect[2]) / SCALE();
+  *h = (cliprect[3]) / SCALE();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static void CreateTexture(IMAGE image)
+static bool CreateTexture(IMAGE image)
 {
-    // figure out if image needs to be scaled
-    double log2_width  = log10(image->width)  / log10(2);
-    double log2_height = log10(image->height) / log10(2);
-    int new_width = image->width;
-    int new_height = image->height;
+  // figure out if image needs to be scaled
+  double log2_width  = log10(image->width)  / log10(2);
+  double log2_height = log10(image->height) / log10(2);
+  int new_width = image->width;
+  int new_height = image->height;
 
-    // if they're not integers, calculate a good texture width
-    if (log2_width != floor(log2_width)) {
-        new_width = 1 << (int)ceil(log2_width);
+  // if they're not integers, calculate a good texture width
+  if (log2_width != floor(log2_width)) {
+    new_width = 1 << (int)ceil(log2_width);
+  }
+
+  // if they're not integers, calculate a good texture height
+  if (log2_height != floor(log2_height)) {
+    new_height = 1 << (int)ceil(log2_height);
+  }
+    
+  RGBA* new_pixels = image->pixels;
+  if (new_width != image->width || new_height != image->height) {
+
+    // copy the old pixels into the new buffer
+    new_pixels = new RGBA[new_width * new_height];
+    if (!new_pixels)
+      return false;
+
+    for (int i = 0; i < image->height; i++) {
+      memcpy(new_pixels + i * new_width,
+             image->pixels + i * image->width,
+             image->width * sizeof(RGBA));
+    }
+  }
+
+  // now make sure texture is, at max, MaxTexSize by MaxTexSize
+
+  while (new_width > MaxTexSize) {
+    new_width /= 2;
+
+    // allocate a new texture buffer
+    RGBA* old_pixels = new_pixels;
+    new_pixels = new RGBA[new_width * new_height];
+    if (!new_pixels)
+      return false;
+
+    RGBA* p = new_pixels;
+    RGBA* o = old_pixels;
+    for (int iy = 0; iy < new_height; iy++) {
+      for (int ix = 0; ix < new_width; ix++) {
+        p[ix].red   = (o[ix * 2].red   + o[ix * 2 + 1].red)   / 2;
+        p[ix].green = (o[ix * 2].green + o[ix * 2 + 1].green) / 2;
+        p[ix].blue  = (o[ix * 2].blue  + o[ix * 2 + 1].blue)  / 2;
+        p[ix].alpha = (o[ix * 2].alpha + o[ix * 2 + 1].alpha) / 2;
+      }
+      p += new_width;
+      o += new_width * 2;
     }
 
-    // if they're not integers, calculate a good texture height
-    if (log2_height != floor(log2_height)) {
-        new_height = 1 << (int)ceil(log2_height);
+    if (old_pixels != image->pixels) {
+      delete[] old_pixels;
+    }
+  }
+
+  while (new_height > MaxTexSize) {
+    new_height /= 2;
+
+    // allocate a new texture buffer
+    RGBA* old_pixels = new_pixels;
+    new_pixels = new RGBA[new_width * new_height];
+    if (!new_pixels)
+      return false;
+
+    RGBA* p = new_pixels;
+    RGBA* o = old_pixels;
+    for (int ix = 0; ix < new_width; ix++) {
+      for (int iy = 0; iy < new_height; iy++) {
+        p[iy * new_width].red   = (o[(iy * 2) * new_width].red   + o[(iy * 2 + 1) * new_width].red)   / 2;
+        p[iy * new_width].green = (o[(iy * 2) * new_width].green + o[(iy * 2 + 1) * new_width].green) / 2;
+        p[iy * new_width].blue  = (o[(iy * 2) * new_width].blue  + o[(iy * 2 + 1) * new_width].blue)  / 2;
+        p[iy * new_width].alpha = (o[(iy * 2) * new_width].alpha + o[(iy * 2 + 1) * new_width].alpha) / 2;
+      }
+      p++;
+      o++;
     }
     
-    RGBA* new_pixels = image->pixels;
-    if (new_width != image->width || new_height != image->height) {
 
-        // copy the old pixels into the new buffer
-        new_pixels = new RGBA[new_width * new_height];
-        for (int i = 0; i < image->height; i++) {
-            memcpy(new_pixels + i * new_width,
-                image->pixels + i * image->width,
-                image->width * sizeof(RGBA));
-        }
+    if (old_pixels != image->pixels) {
+      delete[] old_pixels;
     }
 
-    // now make sure texture is, at max, MaxTexSize by MaxTexSize
+  }
 
-    while (new_width > MaxTexSize) {
-        new_width /= 2;
+  // minor correction factor
+  float correction_x = (DriverConfig.scale && DriverConfig.bilinear ? 0.5f / (float)new_width  : 0.0f);
+  float correction_y = (DriverConfig.scale && DriverConfig.bilinear ? 0.5f / (float)new_height : 0.0f);
+  image->tex_width  = (GLfloat)image->width  / new_width  - correction_x;
+  image->tex_height = (GLfloat)image->height / new_height - correction_y;
 
-        // allocate a new texture buffer
-        RGBA* old_pixels = new_pixels;
-        new_pixels = new RGBA[new_width * new_height];
+  glGenTextures(1, &image->texture);
+  glBindTexture(GL_TEXTURE_2D, image->texture);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (float)FILTER());
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (float)FILTER());
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, new_width, new_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, new_pixels);
 
-        RGBA* p = new_pixels;
-        RGBA* o = old_pixels;
-        for (int iy = 0; iy < new_height; iy++) {
-            for (int ix = 0; ix < new_width; ix++) {
-                p[ix].red   = (o[ix * 2].red   + o[ix * 2 + 1].red)   / 2;
-                p[ix].green = (o[ix * 2].green + o[ix * 2 + 1].green) / 2;
-                p[ix].blue  = (o[ix * 2].blue  + o[ix * 2 + 1].blue)  / 2;
-                p[ix].alpha = (o[ix * 2].alpha + o[ix * 2 + 1].alpha) / 2;
-            }
-            p += new_width;
-            o += new_width * 2;
-        }
+  if (new_pixels != image->pixels) {
+     delete[] new_pixels;
+  }
 
-        if (old_pixels != image->pixels) {
-            delete[] old_pixels;
-        }
-    }
-
-    while (new_height > MaxTexSize) {
-        new_height /= 2;
-
-        // allocate a new texture buffer
-        RGBA* old_pixels = new_pixels;
-        new_pixels = new RGBA[new_width * new_height];
-
-        RGBA* p = new_pixels;
-        RGBA* o = old_pixels;
-        for (int ix = 0; ix < new_width; ix++) {
-            for (int iy = 0; iy < new_height; iy++) {
-                p[iy * new_width].red   = (o[(iy * 2) * new_width].red   + o[(iy * 2 + 1) * new_width].red)   / 2;
-                p[iy * new_width].green = (o[(iy * 2) * new_width].green + o[(iy * 2 + 1) * new_width].green) / 2;
-                p[iy * new_width].blue  = (o[(iy * 2) * new_width].blue  + o[(iy * 2 + 1) * new_width].blue)  / 2;
-                p[iy * new_width].alpha = (o[(iy * 2) * new_width].alpha + o[(iy * 2 + 1) * new_width].alpha) / 2;
-            }
-            p++;
-            o++;
-        }
-    
-
-        if (old_pixels != image->pixels) {
-            delete[] old_pixels;
-        }
-
-    }
-
-    // minor correction factor
-    float correction_x = (DriverConfig.scale && DriverConfig.bilinear ? 0.5f / (float)new_width  : 0.0f);
-    float correction_y = (DriverConfig.scale && DriverConfig.bilinear ? 0.5f / (float)new_height : 0.0f);
-    image->tex_width  = (GLfloat)image->width  / new_width  - correction_x;
-    image->tex_height = (GLfloat)image->height / new_height - correction_y;
-
-    glGenTextures(1, &image->texture);
-    glBindTexture(GL_TEXTURE_2D, image->texture);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (float)FILTER());
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (float)FILTER());
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, new_width, new_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, new_pixels);
-
-    if (new_pixels != image->pixels) {
-        delete[] new_pixels;
-    }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 static int AnalyzePixels(int width, int height, RGBA* pixels)
 {
-    bool is_empty = true;
-    for (int i = 0; i < width * height; i++) {
-        if (pixels[i].alpha) {
-            is_empty = false;
-            break;
-        }
+  bool is_empty = true;
+  for (int i = 0; i < width * height; i++) {
+    if (pixels[i].alpha) {
+      is_empty = false;
+      break;
     }
-    if (is_empty) {
-        return tagIMAGE::EMPTY;
-    }
+  }
+  if (is_empty) {
+    return tagIMAGE::EMPTY;
+  }
 
-    // no alpha data (tile)
-    bool is_tile = true;
-    for (int i = 0; i < width * height; i++) {
-        if (pixels[i].alpha < 255) {
-            is_tile = false;
-            break;
-        }
+  // no alpha data (tile)
+  bool is_tile = true;
+  for (int i = 0; i < width * height; i++) {
+    if (pixels[i].alpha < 255) {
+      is_tile = false;
+      break;
     }
-    if (is_tile) {
-        return tagIMAGE::TILE;
-    }
+  }
+  if (is_tile) {
+    return tagIMAGE::TILE;
+  }
 
-    // normal image
-    return tagIMAGE::NORMAL;
+  // normal image
+  return tagIMAGE::NORMAL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -637,15 +667,28 @@ static int AnalyzePixels(int width, int height, RGBA* pixels)
 EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 {
     // put default values in image object
-    IMAGE image = new tagIMAGE;
-    image->width = width;
-    image->height = height;
-    image->pixels = new RGBA[width * height];
-    memcpy(image->pixels, pixels, width * height * sizeof(RGBA));
+  IMAGE image = new tagIMAGE;
+  if (!image)
+    return NULL;
 
-    CreateTexture(image);
-    image->special = AnalyzePixels(width, height, pixels);
-    return image;
+  image->width = width;
+  image->height = height;
+  image->pixels = new RGBA[width * height];
+  if (!pixels) {
+    delete image;
+    return NULL;
+  }
+
+  memcpy(image->pixels, pixels, width * height * sizeof(RGBA));
+
+  if (!CreateTexture(image)) {
+    delete image;
+    delete[] image->pixels;
+    return NULL;
+  }
+
+  image->special = AnalyzePixels(width, height, pixels);
+  return image;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -653,6 +696,8 @@ EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
 {
     RGBA* pixels = new RGBA[width * height];
+    if (!pixels)
+      return NULL;
     DirectGrab(x, y, width, height, pixels);
     IMAGE result = CreateImage(width, height, pixels);
     delete[] pixels;
