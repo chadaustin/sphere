@@ -799,7 +799,7 @@ CImageView::Line()
     POINT end = ConvertToPixel(m_CurPoint);
 
     // bounds check
-    if (!InImage(start) || !InImage(end))
+    if (!InImage(start)) // || !InImage(end))
       return;
 
     int sx = GetSelectionLeftX();
@@ -832,7 +832,7 @@ CImageView::Rectangle()
     POINT end = ConvertToPixel(m_CurPoint);
 
     // bounds check
-    if (!InImage(start) || !InImage(end))
+    if (!InImage(start)) // || !InImage(end))
       return;
 
     int sx = GetSelectionLeftX();
