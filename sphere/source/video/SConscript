@@ -10,6 +10,7 @@ def VideoDriver(name, source, resource, libs):
     global env
     drv = env.Copy()
     COMPILER.SetupWin32(drv)
+    COMPILER.Win32Subsystem(drv)
     drv.Append(LIBS = libs)
     if resource:
         if type(source) is not types.ListType:

@@ -8,6 +8,7 @@ COMPILER.SetupJS(env)
 COMPILER.SetupMNG(env)
 COMPILER.SetupWXWindows(env)
 COMPILER.SetupZLib(env)
+COMPILER.Win32Subsystem(env)
 
 editor = env.Program('wxeditor', Split("""
     AlphaView.cpp

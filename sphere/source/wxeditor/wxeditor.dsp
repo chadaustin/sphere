@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "../third-party" /D "NDEBUG" /D for="if (0) ; else for" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D WINVER=0x0400 /D "XP_PC" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /D "__WXMSW__" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "../../third-party-msvc/include" /D "NDEBUG" /D for="if (0) ; else for" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D WINVER=0x0400 /D "XP_PC" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /D "__WXMSW__" /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -54,7 +54,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 wxmsw.lib stc.lib comctl32.lib ws2_32.lib rpcrt4.lib audiere.lib corona.lib js32.lib libmng.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386 /libpath:"../third-party"
+# ADD LINK32 wxmsw.lib stc.lib comctl32.lib ws2_32.lib rpcrt4.lib audiere.lib corona.lib js32.lib libmng.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386 /libpath:"../../third-party-msvc/lib"
 
 !ELSEIF  "$(CFG)" == "wxeditor - Win32 Debug"
 
@@ -69,7 +69,7 @@ LINK32=link.exe
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../third-party" /D "_DEBUG" /D for="if (0) ; else for" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D WINVER=0x0400 /D "XP_PC" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /D "__WXMSW__" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../third-party-msvc/include" /D "_DEBUG" /D for="if (0) ; else for" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D WINVER=0x0400 /D "XP_PC" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /D "__WXMSW__" /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -80,7 +80,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 wxmswd.lib stcd.lib comctl32.lib ws2_32.lib rpcrt4.lib audiere.lib corona.lib js32.lib libmng.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept /libpath:"../third-party"
+# ADD LINK32 wxmswd.lib stcd.lib comctl32.lib ws2_32.lib rpcrt4.lib audiere.lib corona.lib js32.lib libmng.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept /libpath:"../../third-party-msvc/lib"
 
 !ENDIF 
 

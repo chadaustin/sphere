@@ -10,6 +10,7 @@ COMPILER.SetupJS(env)
 COMPILER.SetupMNG(env)
 COMPILER.SetupWin32(env)
 COMPILER.SetupZLib(env)
+COMPILER.Win32Subsystem(env)
 
 env.Prepend(
     RESPATH = [Dir('win32')],

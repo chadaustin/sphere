@@ -3,6 +3,7 @@ Import('base_env BUILD_DIR COMPILER')
 env = base_env.Copy()
 COMPILER.SetupSphereCommon(env)
 COMPILER.SetupWin32(env)
+COMPILER.Win32Subsystem(env)
 
 env.Append(RESPATH = [Dir('.')])
 

@@ -41,7 +41,7 @@ def BuildMinGWEnv():
             LINKFLAGS = ['-g'])
     elif ARGUMENTS.get('opt'):
         env.Append(
-            CCFLAGS = ['-O2'],
+            CCFLAGS = ['-O2', '-s'],
             LINKFLAGS = ['-s'])
 
     return env
@@ -70,11 +70,16 @@ def BuildVC6Env():
         env.Install(os.path.join(env['BUILD_DIR'], 'util'),
                     os.path.join('third-party-msvc/dlls', d))
 
+    sysdlls = Split("MSVCRT.DLL MSVCP60.DLL MFC42.DLL")
+    for d in dlls:
+        env.Install(env['BUILD_DIR'], WhereIs(d))
+
     if ARGUMENTS.get('debug'):
         env.Append(CCFLAGS = ['/GZ', '/Z7'],
                    LINKFLAGS = ['/debug', '/debugtype:both'])
     elif ARGUMENTS.get('opt'):
-        pass
+        env.Append(CCFLAGS = ['/O1', '/GF'],
+                   LINKFLAGS = ['/opt:ref', '/release', '/opt:nowin98'])
 
     return env
 
@@ -95,6 +100,12 @@ class Compiler:
 
     def get_env(self):
         return self.env
+
+    def Win32Subsystem(self, env):
+        if self.name == 'vc6':
+            env.Append(LINKFLAGS = ['/subsystem:windows'])
+        elif self.name == 'mingw':
+            env.Append(LINKFLAGS = ['-mwindows'])            
 
     def SetupAudiere(self, env):
         env.Append(LIBS = ['audiere'])
