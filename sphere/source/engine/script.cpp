@@ -1097,7 +1097,7 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
       return NULL;
     }
 
-    s->SetDirectionName(i, argStr(cx, direction_name));
+    s->SetDirectionName(i, jsval_to_str(cx, direction_name));
 
     jsval frames_array_val;
 
@@ -1171,7 +1171,7 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 
 #define __arg_error_check__(arg_type)                                                                                          \
   if (This->m_ShouldExit) {                                                                                                    \
-    JS_ReportError(cx, "%s - Argument %d, invalid %s...\n\"%s\"", script_name, arg - 1, arg_type, argStr(cx, argv[arg - 1])); \
+    JS_ReportError(cx, "%s - Argument %d, invalid %s...\n\"%s\"", script_name, arg - 1, arg_type, jsval_to_str(cx, argv[arg - 1])); \
     return JS_FALSE;                                                                                                           \
   }                                                                                                                            \
 
@@ -2440,7 +2440,7 @@ end_func()
 /**
       - set width of 'layer'
 */
-begin_func(SetLayerWidth, 1)
+begin_func(SetLayerWidth, 2)
   arg_int(layer);
   arg_int(width);
 
@@ -2457,7 +2457,7 @@ end_func()
 /**
       - set height of 'layer'
 */
-begin_func(SetLayerHeight, 1)
+begin_func(SetLayerHeight, 2)
   arg_int(layer);
   arg_int(height);
 
@@ -4039,7 +4039,7 @@ begin_func(SetPersonIgnoreList, 2)
 
     if (JS_LookupElement(cx, array, i, &val)) {
       if (JSVAL_IS_STRING(val)) {
-        ignore_list[i] = argStr(cx, val);
+        ignore_list[i] = jsval_to_str(cx, val);
       }
     }
   }
@@ -4363,7 +4363,7 @@ ParsePersonData(JSContext* cx, jsval val, std::string& string_value, double& dou
     type = 3;
   }
   else { // anything else is a string
-    string_value = argStr(cx, val);
+    string_value = jsval_to_str(cx, val);
     type = 0;
   }
 
@@ -4380,11 +4380,11 @@ ParsePersonData(JSContext* cx, jsval val, std::string& string_value, double& dou
 */
 begin_func(SetPersonData, 2)
   arg_str(name);
-  arg_object(object);
+  arg_object(data_object);
 
   std::vector<struct PersonData> person_data;
 
-  JSIdArray* ids = JS_Enumerate(cx, object);
+  JSIdArray* ids = JS_Enumerate(cx, data_object);
   if (!ids)
     return JS_FALSE;
 
@@ -4392,9 +4392,9 @@ begin_func(SetPersonData, 2)
     jsval val;
     if (JS_IdToValue(cx, ids[0].vector[i], &val) == JS_TRUE) {
       struct PersonData data;
-      data.name = argStr(cx, val);
+      data.name = jsval_to_str(cx, val);
 
-      if ( JS_GetProperty(cx, object, data.name.c_str(), &val) == JS_TRUE )
+      if ( JS_GetProperty(cx, data_object, data.name.c_str(), &val) == JS_TRUE )
       {
         ParsePersonData(cx, val, data.string_value, data.double_value, data.type);
       }
@@ -4988,7 +4988,7 @@ begin_func(LoadSound, 1)
 #ifdef WIN32
   audiere::MIDIStream* midi    = NULL;
   if ( !sound && IsMidi(filename) ) {
-    midi = This->m_Engine->LoadMIDI(filename); 
+    midi = This->m_Engine->LoadMIDI(filename);
   }
 
   if (!sound && !midi)
@@ -6622,11 +6622,11 @@ end_method()
 */
 begin_method(SS_FONT, ssFontClone, 0)
   SFONT* font = object->font->Clone();
-  if (font) {
-    return_object(CreateFontObject(cx, font, true));
+  if (!font) {
+    return_object(JSVAL_NULL);
   }
   else {
-    return_object(JSVAL_NULL); 
+    return_object(CreateFontObject(cx, font, true));
   }
 end_method()
 
@@ -7378,15 +7378,9 @@ begin_method(SS_SURFACE, ssSurfaceRectangle, 5)
   arg_int(y);
   arg_int(w);
   arg_int(h);
-  /*
-  arg_int(x1);
-  arg_int(y1);
-  arg_int(x2);
-  arg_int(y2);
-  */
+
   arg_color(c);
 
-  //object->surface->Rectangle(x1, y1, x2, y2, c);
   object->surface->Rectangle(x, y, w, h, c);
 end_method()
 
@@ -7460,7 +7454,7 @@ end_method()
     - draws a filled gradient triangle with the points (x1, y1), (x2, y2), (x3, y3),
     @see GradientTriangle
 */
-begin_method(SS_SURFACE, ssSurfaceGradientTriangle, 7)
+begin_method(SS_SURFACE, ssSurfaceGradientTriangle, 9)
   arg_int(x1);
   arg_int(y1);
   arg_int(x2);
@@ -7776,7 +7770,7 @@ begin_method(SS_SURFACE, ssSurfaceSave, 1)
   }
 
   if (argc >= 2) {
-  //  type = argStr(cx, argv[1]);
+  //  type = arg Str(cx, argv[1]);
   }
 
   std::string path = "images/";
@@ -8015,7 +8009,7 @@ begin_method(SS_FILE, ssFileWrite, 2)
     double* d = JSVAL_TO_DOUBLE(argv[1]);
     object->file->WriteDouble("", key, *d);
   } else { // anything else is a string
-    object->file->WriteString("", key, argStr(cx, argv[1]));
+    object->file->WriteString("", key, jsval_to_str(cx, argv[1]));
   }
 end_method()
 
@@ -8035,7 +8029,7 @@ begin_method(SS_FILE, ssFileRead, 2)
     double d = object->file->ReadDouble("", key, *def);
     return_double(d);
   } else { // anything else is a string
-    std::string str = object->file->ReadString("", key, argStr(cx, argv[1]));
+    std::string str = object->file->ReadString("", key, jsval_to_str(cx, argv[1]));
     return_str(str.c_str());
   }
 end_method()
@@ -8346,7 +8340,7 @@ begin_property(SS_BYTEARRAY, ssByteArrayGetProperty)
     *vp = INT_TO_JSVAL(object->array[prop_id]);
   }
   else {
-    const char* prop_id = argStr(cx, id);
+    const char* prop_id = jsval_to_str(cx, id);
 
     if (strcmp(prop_id, "concat") == 0) {
       JSFunction* func = JS_NewFunction(cx, ssByteArrayConcat, 1, 0, NULL, "concat");

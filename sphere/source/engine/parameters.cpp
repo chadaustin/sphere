@@ -17,6 +17,19 @@ inline int argInt(JSContext* cx, jsval arg)
 
 ///////////////////////////////////////////////////////////
 
+inline const char* jsval_to_str(JSContext* cx, jsval arg)
+{
+  JSString* str = JS_ValueToString(cx, arg);
+  if (str) {
+    const char* s = JS_GetStringBytes(str);
+    return (s ? s : "");
+  } else {
+    return "";
+  }
+}
+
+///////////////////////////////////////////////////////////
+
 inline const char* argStr(JSContext* cx, jsval arg)
 {
   JSString* str = JS_ValueToString(cx, arg);
@@ -35,7 +48,7 @@ inline bool argBool(JSContext* cx, jsval arg)
   JSBool b;
 
   if (JSVAL_IS_OBJECT(arg)) {
-    JS_ReportError(cx, "Invalid boolean.");
+    JS_ReportError(cx, "Invalid boolean (parameter is an object)");
     return false;
   }
 
@@ -53,7 +66,7 @@ inline double argDouble(JSContext* cx, jsval arg)
   jsdouble d;
 
   if (JSVAL_IS_OBJECT(arg)) {
-    JS_ReportError(cx, "Invalid double.");
+    JS_ReportError(cx, "Invalid double (parameter is an object)");
     return 0;
   }
 
@@ -75,14 +88,14 @@ inline double argDouble(JSContext* cx, jsval arg)
 inline JSObject* argObject(JSContext* cx, jsval arg)
 {
   if (!JSVAL_IS_OBJECT(arg)) {
-    JS_ReportError(cx, "Invalid object.");
+    JS_ReportError(cx, "Invalid object (parameter is not an object)");
     return NULL;
   }
 
   JSObject* object;
   if (JS_ValueToObject(cx, arg, &object) == JS_FALSE) {
     JS_ReportError(cx, "Invalid object.");
-    return NULL; 
+    return NULL;
   }
 
   return object;
@@ -97,7 +110,7 @@ inline JSObject* argArray(JSContext* cx, jsval arg)
     return NULL;
 
   if (!JS_IsArrayObject(cx, array)) {
-    JS_ReportError(cx, "Invalid array.");
+    JS_ReportError(cx, "Invalid array (parameter is not an array)");
     return NULL;
   }
 

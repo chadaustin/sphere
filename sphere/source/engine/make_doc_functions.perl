@@ -5,7 +5,7 @@ use strict;
 
 die "Usage: $0 <type>\n"
    . "  e.g. $0 txt > doc_functions.txt\n"
-   . "  e.g. $0 html > doc_functions.html\n" unless (@ARGV == 1);
+   . "  e.g. $0 html > doc_functions.html\n\n" . @ARGV . "\n" unless (@ARGV == 1);
 
 die "type must be either txt or html\n" unless ($ARGV[0] eq "txt" || $ARGV[0] eq "html");
 
@@ -21,31 +21,72 @@ sub is_txt {
 
 ###########################################################
 
+sub start_of_line {
+  if (is_html()) {
+    return "<div>";
+  }
+  
+  return "";
+}
+
 sub end_of_line {
   if (is_html()) {
-    return "<br>\n";
+    return "</div>\n";
   }
-  elsif (is_txt()) {
-    return "\n";
-  }
+  
+  return "\n";
 }
 
 ###########################################################
 
+sub html_escape
+{
+  my $unescaped = $_[0];
+  my $escaped = $unescaped;
+
+  $escaped =~ s/</&lt;/g;
+  $escaped =~ s/>/&gt;/g;
+  $escaped =~ s/&/&amp;/g;
+  $escaped =~ s/\\/&quot;/g;
+
+  return $escaped;
+}
+
+###########################################################
+
+
 sub fix_line_endings {
-  my ($line) = @_;
-  my @lines = split(/\n/, $line);
+  my ($original_line) = @_;
 
   if (is_html()) {
-    foreach my $line (@lines) {
-       $line =~ s/^(\s+)//;
-       for (my $i = 0; $i <= length($1); $i++) {
-         $line = "&nbsp;$line";
-       }
-    }
-  }
+    my @lines = split(/\n/, $original_line);
+    $original_line = "";
 
-  return join(&end_of_line(), @lines);
+    my $k = 0;
+    foreach my $current_line (@lines) {
+      $current_line =~ s/^(\s+)(.*)//; # strip spaces
+
+      my $num_spaces = length($1);
+      my $line = $2;
+       
+      $current_line = "";
+       
+      for (my $i = 0; $i <= $num_spaces; $i++) {
+        $current_line .= "&nbsp;";
+      }
+      
+      if ($line =~ /\@see/) {
+        $original_line .= &start_of_line() . $current_line . $line . (is_html() && $k + 1 == @lines ? "<br /><br />" : "") . &end_of_line();      
+      } else {
+        $original_line .= &start_of_line() . $current_line . html_escape($line) . (is_html() && $k + 1 == @lines ? "<br /><br />" : "") . &end_of_line();
+      }
+       
+      $k++;
+    }
+  
+  }
+  
+  return $original_line;
 }
 
 ###########################################################
@@ -64,16 +105,16 @@ sub function_to_string {
     }
   }
 
-  my $line = "";
+  my $line = &start_of_line();
 
   if (is_html()) {
-    $line .= "<span class='function_header'>";
+    #$line .= "<span class='function_header'>";
   }
   
   if (is_html()) {
-    $line = "<span class='type_$return_type'>$return_type</span> ";
+    $line .= "<span class='type_$return_type'>$return_type</span> ";
   } else {
-    $line = "$return_type ";  
+    $line .= "$return_type ";  
   }
   
   if (&is_html()) { $line .= "<a name=\"$func_name\">$func_name</a>"; }
@@ -118,25 +159,14 @@ sub function_to_string {
   }
   $line .= ")";
   
-  if (is_html()) {
-    $line .= "</span>";
+  if ($desc_text eq "") {
+    $line .= (&is_html() ? "<br /><br />" : "");
   }
-  
+
   $line .= &end_of_line();
 
   if ($desc_text ne "") {
-    if (is_html()) {
-      $line .= "<span class='function_desc'>";
-    }
-  
-    $line .= &fix_line_endings($desc_text);
-
-    if (is_html()) {
-      $line .= "</span>";
-    }
-
-    $line .= &end_of_line();
-
+    $line .= &fix_line_endings($desc_text);  
   }
 
   return $line;
@@ -147,19 +177,24 @@ sub function_to_string {
 sub method_to_string {
   my ($func_name, $func_minargs, $desc_text, $return_type, @func_args) = @_;
   my $line = function_to_string($func_name, $func_minargs, $desc_text, $return_type, @func_args);
-  my $end_line = &end_of_line();
-  my @lines = split(/$end_line/, $line);
 
-  my $prefix = "  ";
+  if (0 && is_html()) {
+    my $end_line = &end_of_line();
+    my @lines = split(/$end_line/, $line);
+
+    my $prefix = "  ";
   
-  if (is_html()) {
-    $prefix = "&nbsp;&nbsp;";
-  }
-  foreach my $line (@lines) {
-    $line = $prefix . $line . $end_line;
-  }
+    if (is_html()) {
+      $prefix = "&nbsp;&nbsp;";
+    }
+    foreach my $line (@lines) {
+      $line = $prefix . $line . $end_line;
+    }
   
-  return join("", @lines) . $end_line;
+    $line = join("", @lines) . $end_line;
+  }
+
+  return $line;
 }
 
 ###########################################################
@@ -170,12 +205,12 @@ sub ssobject_name_to_jsobject_name {
   my @ss_names = ("SS_IMAGE", "SS_WINDOWSTYLE", "SS_SURFACE",
                   "SS_FONT", "SS_SOUND", "SS_SPRITESET",
                   "SS_FILE", "SS_LOG", "SS_SOCKET", "SS_ANIMATION",
-                  "SS_RAWFILE", "SS_BYTEARRAY", "SS_MAPENGINE");
+                  "SS_RAWFILE", "SS_BYTEARRAY", "SS_MAPENGINE", "SS_TILESET");
 
   my @js_names = ("image", "windowstyle", "surface",
                   "font", "sound", "spriteset",
                   "file", "log", "socket", "animation",
-                  "rawfile", "bytearray", "mapengine");
+                  "rawfile", "bytearray", "mapengine", "tileset");
 
   for (my $i = 0; ($i <= $#js_names && $i <= $#ss_names); $i++) {
     if ($ss_names[$i] eq $method_object) {
@@ -233,15 +268,17 @@ sub make_docs {
   my $in_comment = 0;
 
   if (is_html()) {
+    print "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n";
+    print "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n";
     print "<html>\n";
     print "<head>\n";
     print "\t<title>sphere function list</title>\n";
-    print "\t<link rel='stylesheet' href='doc_functions.css' type='text/css' title='Default'>\n";
+    print "\t<link rel='stylesheet' href='doc_functions.css' type='text/css' title='Default' />\n";
     print "</head>\n";
-    print "<body>\n";
+    print "<body>\n\n";
   }
 
-  print "This file is automatically generated, do not edit!" . &end_of_line();
+  print &start_of_line() . "This file is automatically generated, do not edit!" . (&is_html() ? "<br />" : "") . &end_of_line();
 
   foreach my $line (@lines) {
 
@@ -249,7 +286,8 @@ sub make_docs {
 
     # // section: section_name //
     if ($line =~ m/\/\/ section: (.*?) \/\//) {
-      print &end_of_line() . "*** $1 ***" . &end_of_line();
+      print "\n";
+      print &start_of_line() . (&is_html() ? "<br />" : "") . "*** $1 ***" . &end_of_line();
     }
 
     if ($in_comment == 0 && $in_func == 0 && $in_method == 0) {
@@ -280,7 +318,6 @@ sub make_docs {
         }
 
       $desc_text .= $temp_line;
-
     }
 
     if ($in_func == 0) {
@@ -354,19 +391,19 @@ sub make_docs {
 
       # arg_colormatrix(name)
       if ($line =~ m/arg_colormatrix\((.*?)\)/) {
-        push (@arg_types, "colormatrix");
+        push (@arg_types, "colormatrix_object");
         push (@args, "$1");
       }
 
       # arg_color(name)
       if ($line =~ m/arg_color\((.*?)\)/) {
-        push (@arg_types, "color");
+        push (@arg_types, "color_object");
         push (@args, "$1");
       }
 
       # arg_image(name)
       if ($line =~ m/arg_image\((.*?)\)/) {
-        push (@arg_types, "image");
+        push (@arg_types, "image_object");
         push (@args, "$1");
       }
 
@@ -384,19 +421,19 @@ sub make_docs {
 
       # arg_byte_array(name)
       if ($line =~ m/arg_byte_array\((.*?)\)/) {
-        push (@arg_types, "byte_array");
+        push (@arg_types, "byte_array_object");
         push (@args, "$1");
       }
 
       # arg_spriteset(name)
       if ($line =~ m/arg_spriteset\((.*?)\)/) {
-        push (@arg_types, "spriteset");
+        push (@arg_types, "spriteset_object");
         push (@args, "$1");
       }
 
       # arg_font(name)
       if ($line =~ m/arg_font\((.*?)\)/) {
-        push (@arg_types, "font");
+        push (@arg_types, "font_object");
         push (@args, "$1");
       }
       
@@ -405,7 +442,7 @@ sub make_docs {
         $return_type = "int";
       }
 
-      # return_object(name)
+      # return_double(name)
       if ($line =~ m/return_double\((.*?)\)/) {
         $return_type = "double";
       }
@@ -423,6 +460,76 @@ sub make_docs {
       # return_object(name)
       if ($line =~ m/return_object\((.*?)\)/) {
         $return_type = "object";
+        
+        # return_object(CreateSocketObject(cx, s));
+        if ($line =~ m/return_object\(CreateSocketObject\(cx, (.*?)\)/) {
+          $return_type = "socket_object";
+        }
+
+        # return_object(CreateLogObject(cx, s));
+        if ($line =~ m/return_object\(CreateLogObject\(cx, (.*?)\)/) {
+          $return_type = "log_object";
+        }
+
+        # return_object(CreateByteArrayObject(cx, s));
+        if ($line =~ m/return_object\(CreateByteArrayObject\(cx, (.*?)\)/) {
+          $return_type = "byte_array_object";
+        }
+        
+        # return_object(CreateColorObject(cx, s));
+        if ($line =~ m/return_object\(CreateColorObject\(cx, (.*?)\)/) {
+          $return_type = "color_object";
+        }
+        
+        # return_object(CreateImageObject(cx, s));
+        if ($line =~ m/return_object\(CreateImageObject\(cx, (.*?)\)/) {
+          $return_type = "image_object";
+        }
+
+        # return_object(CreateSurfaceObject(cx, s));
+        if ($line =~ m/return_object\(CreateSurfaceObject\(cx, (.*?)\)/) {
+          $return_type = "surface_object";
+        }
+        
+        # return_object(CreateSpritesetObject(cx, s));
+        if ($line =~ m/return_object\(CreateSpritesetObject\(cx, (.*?)\)/) {
+          $return_type = "spriteset_object";
+        }
+
+        # return_object(CreateSpritesetBaseObject(cx, s));
+        if ($line =~ m/return_object\(CreateSpritesetBaseObject\(cx, (.*?)\)/) {
+          $return_type = "spriteset_base_object";
+        }
+
+        # return_object(CreateSoundObject(cx, s));
+        if ($line =~ m/return_object\(CreateSoundObject\(cx, (.*?)\)/) {
+          $return_type = "sound_object";
+        }
+        
+        # return_object(CreateFontObject(cx, s));
+        if ($line =~ m/return_object\(CreateFontObject\(cx, (.*?)\)/) {
+          $return_type = "font_object";
+        }
+        
+        # return_object(CreateWindowStyleObject(cx, s));
+        if ($line =~ m/return_object\(CreateWindowStyleObject\(cx, (.*?)\)/) {
+          $return_type = "windowstyle_object";
+        }
+        
+        # return_object(CreateAnimationObject(cx, s));
+        if ($line =~ m/return_object\(CreateAnimationObject\(cx, (.*?)\)/) {
+          $return_type = "animation_object";
+        }
+        
+        # return_object(CreateFileObject(cx, s));
+        if ($line =~ m/return_object\(CreateFileObject\(cx, (.*?)\)/) {
+          $return_type = "file_object";
+        }
+        
+        # return_object(CreateRawFileObject(cx, s));
+        if ($line =~ m/return_object\(CreateRawFileObject\(cx, (.*?)\)/) {
+          $return_type = "rawfile_object";
+        }
       }
 
 
@@ -430,8 +537,7 @@ sub make_docs {
       if ($in_func == 1 && $line =~ m/end_func\(\)/) {
 
         unless ($func_name eq "name") {
-          print &end_of_line();          
-          print function_to_string($func_name, $func_minargs, $desc_text, $return_type, @args, @arg_types);
+          print function_to_string($func_name, $func_minargs, $desc_text, $return_type, @args, @arg_types) . "\n";
         }
 
         $func_name = "";
@@ -441,34 +547,39 @@ sub make_docs {
         $return_type = "void";
         $in_func = 0;
         $desc_text = "";
-
       }
 
       # end_method()
       if ($in_method == 1 && $line =~ m/end_method\(\)/) {
+        
         unless ($method_object eq "Object") {
+
+
+          if ($method_name eq "ssSocketRead") {
+            $return_type = "byte_array_object";
+          }
 
           my $name = &ssobject_name_to_jsobject_name($method_object);
           my $prefix = is_html() ? "&nbsp;&nbsp;" : "  ";
 
           if ($prev_method_object ne $method_object) {
-            print &end_of_line();
-            print uc(&ssobject_name_to_jsobject_name($method_object)) . &end_of_line();
+            print "\n";
+            print &start_of_line() . uc(&ssobject_name_to_jsobject_name($method_object)) . &end_of_line();
             if ($method_object eq "color") {
-              print "$prefix$name.red" . &end_of_line() . &end_of_line();
-              print "$prefix$name.green" . &end_of_line() . &end_of_line();
-              print "$prefix$name.blue" . &end_of_line() . &end_of_line();
-              print "$prefix$name.alpha" . &end_of_line() . &end_of_line();
+              print &start_of_line() . "$prefix$name.red" . &end_of_line();
+              print &start_of_line() . "$prefix$name.green" . &end_of_line();
+              print &start_of_line() . "$prefix$name.blue" . &end_of_line();
+              print &start_of_line() . "$prefix$name.alpha" . &end_of_line();
             }
 
             if ($method_object eq "SS_IMAGE" || $method_object eq "SS_SURFACE" || $method_object eq "SS_ANIMATION") {
-              print "$prefix$name.width" . &end_of_line() . &end_of_line();
-              print "$prefix$name.height" . &end_of_line() . &end_of_line();
+              print &start_of_line() . "$prefix$name.width" . &end_of_line() . "\n";
+              print &start_of_line() . "$prefix$name.height" . &end_of_line() . "\n";
             }
 
             if ($method_object eq "SS_BYTEARRAY") {
-              print "$prefix$name" . "[index]" . &end_of_line() . &end_of_line();
-              print "$prefix$name.length" . &end_of_line() . &end_of_line();
+              print &start_of_line() . "$prefix$name" . "[index]" . &end_of_line() . "\n";
+              print &start_of_line() . "$prefix$name.length" . &end_of_line() . "\n";
             }
           }
 
@@ -482,7 +593,7 @@ sub make_docs {
             }
           }
 
-          print method_to_string(&ssobject_name_to_jsobject_name($method_object) . "." . &ssobject_method_to_jsobject_method($method_name), $method_minargs, $desc_text, $return_type, @args, @arg_types);
+          print method_to_string(&ssobject_name_to_jsobject_name($method_object) . "." . &ssobject_method_to_jsobject_method($method_name), $method_minargs, $desc_text, $return_type, @args, @arg_types) . "\n";
         }
 
         $method_name = "";
@@ -501,7 +612,7 @@ sub make_docs {
   }
 
   if (is_html()) {
-    print "</body></html>";
+    print "\n</body>\n</html>\n";
   }
 }
 
