@@ -29,7 +29,11 @@ Scripting
 
   http://www.pbwizard.com/Articles/class_inheritance.htm
     Skill: Advanced
-    An absolutely wonderfull article on class inheritance, and some of it's Javascript pitfalls and nuances.
+    An absolutely wonderful article on class inheritance, and some of it's Javascript pitfalls and nuances.
+
+  http://www.miislita.com/searchito/javascript-optimization.html
+    Skill: Advanced
+    An article discussing how to optimize JavaScript.
 
 Art
   http://pixeltutorial.cjb.net/
