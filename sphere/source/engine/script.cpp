@@ -580,7 +580,9 @@ CScript::ErrorReporter(JSContext* cx, const char* message, JSErrorReport* report
 {
   CScript* This = (CScript*)JS_GetContextPrivate(cx);
 
-  if (report) {
+  if (!report) {
+    This->m_Error = message;
+  } else {
 
     // build an error
     std::ostringstream os;
@@ -595,22 +597,17 @@ CScript::ErrorReporter(JSContext* cx, const char* message, JSErrorReport* report
       os << report->linebuf << std::endl;
     }
     This->m_Error = os.str();
-
-    //FILE* file = fopen("last_error.txt", "wb+");
-    //if (file != NULL) {
-    //  fwrite(This->m_Error.c_str(), sizeof(char), This->m_Error.length(), file); 
-    //  fclose(file);
-    //}
-
-  } else {
-    
-    This->m_Error = message;
-
   }
 
-  //printf ("%s", This->m_Error.c_str());
-
   This->m_ShouldExit = true;
+
+  //FILE* file = fopen("last_error.txt", "wb+");
+  //if (file != NULL) {
+  //  fwrite(This->m_Error.c_str(), sizeof(char), This->m_Error.length(), file); 
+  //  fclose(file);
+  //}
+
+  printf ("%s", This->m_Error.c_str());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -681,10 +678,11 @@ inline void USED(T /*t*/) { }
 
 #define begin_func(name, minargs)                                                                      \
   JSBool CScript::ss##name(JSContext* cx, JSObject* obj, uintN argc, jsval* argv, jsval* rval) {       \
+    const char* script_name = #name;                                                                   \
     CScript* This = (CScript*)JS_GetContextPrivate(cx);                                                \
     NoGCBlock no_gc__(This);                                                                           \
     if (argc < minargs) {                                                                              \
-      JS_ReportError(cx, "%s called with less than %s parameters", #name, #minargs);                   \
+      JS_ReportError(cx, "%s called with less than %s parameters", script_name, #minargs);             \
       *rval = JSVAL_NULL;                                                                              \
       return JS_FALSE;                                                                                 \
     }                                                                                                  \
@@ -963,43 +961,48 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 {
   JSObject* obj = JSVAL_TO_OBJECT(arg);
 
-  if (!argObject(cx, arg)) {
+  if ( !argObject(cx, arg) ) {
     JS_ReportError(cx, "Invalid object.");
     return NULL;
   }
 
   jsval images_array;
-  if ( !JS_GetProperty(cx, obj, "images", &images_array) ) {
+  if ( JS_GetProperty(cx, obj, "images", &images_array) == JS_FALSE ) {
     JS_ReportError(cx, "spriteset.images array property doesn't appear to exist.");
     return NULL;
   }
 
   jsval base_obstruction_val;
-  if ( !JS_GetProperty(cx, obj, "base", &base_obstruction_val) ) {
+  if ( JS_GetProperty(cx, obj, "base", &base_obstruction_val) == JS_FALSE ) {
     JS_ReportError(cx, "spriteset.base object property doesn't appear to exist.");
     return NULL;
   }
 
   jsval x1_val, y1_val, x2_val, y2_val;
 
-  JSObject* base_obstruction_object = JSVAL_TO_OBJECT(base_obstruction_val);
-  if ( !JS_GetProperty(cx, base_obstruction_object, "x1", &x1_val)
-    || !JS_GetProperty(cx, base_obstruction_object, "y1", &y1_val)
-    || !JS_GetProperty(cx, base_obstruction_object, "x2", &x2_val)
-    || !JS_GetProperty(cx, base_obstruction_object, "y2", &y2_val)) {
-      JS_ReportError(cx, "spriteset.base object is invalid.");    
-      return NULL;
-    }
-
-  if (!argArray(cx, images_array)) {
-    JS_ReportError(cx, "Invalid spriteset.images array.");
+  JSObject* base_obstruction_object = argObject(cx, base_obstruction_val);
+  if (base_obstruction_object == NULL) {
+    JS_ReportError(cx, "spriteset.base object is not a valid object.");
     return NULL;
   }
 
-  jsuint num_images;
-  JSObject* images_object = JSVAL_TO_OBJECT(images_array);
+  if ( JS_GetProperty(cx, base_obstruction_object, "x1", &x1_val) == JS_FALSE
+    || JS_GetProperty(cx, base_obstruction_object, "y1", &y1_val) == JS_FALSE
+    || JS_GetProperty(cx, base_obstruction_object, "x2", &x2_val) == JS_FALSE
+    || JS_GetProperty(cx, base_obstruction_object, "y2", &y2_val) == JS_FALSE ) {
+    JS_ReportError(cx, "spriteset.base object is invalid.");    
+    return NULL;
+  }
 
-  if ( !JS_GetArrayLength(cx, images_object, &num_images) ) {
+  jsuint num_images = 0;
+  JSObject* images_object = argArray(cx, images_array);
+
+  if (images_object == NULL) {
+    JS_ReportError(cx, "Invalid spriteset.images array.");
+    return NULL;
+  }
+ 
+  if ( JS_GetArrayLength(cx, images_object, &num_images) == JS_FALSE ) {
     JS_ReportError(cx, "Invalid spriteset.images array length.");
     return NULL;
   }
@@ -1015,9 +1018,9 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     return NULL;
   }
 
-  for (unsigned i = 0; i < num_images; i++) {
+  for (unsigned int i = 0; i < num_images; i++) {
     jsval image;
-    if ( !JS_GetElement(cx, images_object, i, &image) ) {
+    if ( JS_GetElement(cx, images_object, i, &image) == JS_FALSE ) {
       JS_ReportError(cx, "Invalid image %d", i);
       return NULL;
     } else {
@@ -1046,19 +1049,20 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
       RGBA* pixels = LockImage(ss_image->image);
       if (!pixels) {
         JS_ReportError(cx, "LockImage failed");
+        delete[] images;
         return NULL;
       }
 
-      CImage32 tmp = CImage32(width, height, pixels);
+      images[i] = CImage32(width, height, pixels);
 
       UnlockImage(ss_image->image, false);
 
-      if (tmp.GetWidth() != width || tmp.GetHeight() != height) {
+      if (images[i].GetWidth() != width || images[i].GetHeight() != height) {
         JS_ReportError(cx, "Temporary image allocation failed");
+        delete[] images;
         return NULL;
       }
 
-      images[i] = tmp;
     }
   }
 
@@ -1085,6 +1089,30 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     }
   }
 
+  if (!JSVAL_IS_INT(x1_val)) {
+    JS_ReportError(cx, "spriteset.base.x1 is invalid");
+    delete[] images;
+    return NULL;
+  }
+
+  if (!JSVAL_IS_INT(y1_val)) {
+    JS_ReportError(cx, "spriteset.base.y1 is invalid");
+    delete[] images;
+    return NULL;
+  }
+
+  if (!JSVAL_IS_INT(x2_val)) {
+    JS_ReportError(cx, "spriteset.base.x2 is invalid");
+    delete[] images;
+    return NULL;
+  }
+
+  if (!JSVAL_IS_INT(y2_val)) {
+    JS_ReportError(cx, "spriteset.base.y2 is invalid");
+    delete[] images;
+    return NULL;
+  }
+
   int x1 = argInt(cx, x1_val);
   int y1 = argInt(cx, y1_val);
   int x2 = argInt(cx, x2_val);
@@ -1097,16 +1125,15 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     return NULL;
   }
 
-  if (!argArray(cx, directions_array)) {
+  jsuint num_directions = 0;
+  JSObject* directions_object = argArray(cx, directions_array);
+  if (directions_object == NULL) {
     JS_ReportError(cx, "Invalid spriteset.directions array.");
     delete[] images;
     return NULL;
   }
 
-  jsuint num_directions = 0;
-  JSObject* directions_object = JSVAL_TO_OBJECT(directions_array);
-
-  if ( !JS_GetArrayLength(cx, directions_object, &num_directions) ) {
+  if ( JS_GetArrayLength(cx, directions_object, &num_directions) == JS_FALSE ) {
     JS_ReportError(cx, "Invalid spriteset.directions array length.");
     delete[] images;
     return NULL;
@@ -1133,7 +1160,7 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 
   s->SetBase(x1, y1, x2, y2);
 
-  for (unsigned i = 0; i < num_directions; i++) {
+  for (unsigned int i = 0; i < num_directions; i++) {
 
     jsval direction_object_val;
     if ( !JS_GetElement(cx, directions_object, i, &direction_object_val) ) {
@@ -1144,7 +1171,7 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     JSObject* direction_object = JSVAL_TO_OBJECT(direction_object_val);
     jsval direction_name;
 
-    if ( !JS_GetProperty(cx, direction_object, "name", &direction_name) ) {
+    if ( JS_GetProperty(cx, direction_object, "name", &direction_name) == JS_FALSE ) {
       JS_ReportError(cx, "spriteset.directions[%d].name property doesn't appear to exist.", i);
       return NULL;
     }
@@ -1153,7 +1180,7 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 
     jsval frames_array_val;
 
-    if ( !JS_GetProperty(cx, direction_object, "frames", &frames_array_val) ) {
+    if ( JS_GetProperty(cx, direction_object, "frames", &frames_array_val) == JS_FALSE ) {
       JS_ReportError(cx, "spriteset.directions[%d].frames property doesn't appear to exist.", i);
       return NULL;
     }
@@ -1161,7 +1188,7 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     JSObject* frames_array = JSVAL_TO_OBJECT(frames_array_val);
     jsuint num_frames = 0;
 
-    if ( !JS_GetArrayLength(cx, frames_array, &num_frames) ) {
+    if ( JS_GetArrayLength(cx, frames_array, &num_frames) == JS_FALSE ) {
       JS_ReportError(cx, "Invalid spriteset.directions[%d].frames array length.", i);
       return NULL;
     }
@@ -1174,12 +1201,14 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     for (unsigned j = 0; j < num_frames; j++) {
       jsval frame_val;
 
-      if ( !JS_GetElement(cx, frames_array, j, &frame_val) ) {
+      if ( JS_GetElement(cx, frames_array, j, &frame_val) == JS_FALSE ) {
         JS_ReportError(cx, "Invalid spriteset.directions[%d].frames[%d] object", i, j);
         return NULL;
       }
 
       JSObject* frame_object = JSVAL_TO_OBJECT(frame_val);
+      if (frame_object == NULL)
+        return NULL;
 
       jsval frame_index_val;
       if ( !JS_GetProperty(cx, frame_object, "index", &frame_index_val) ) {
@@ -1218,19 +1247,26 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 
 ///////////////////////////////////////////////////////////
 
-#define arg_int(name)        int name           = argInt(cx, argv[arg++]);                                            if (This->m_ShouldExit) { JS_ReportError(cx, "Argument (%d), invalid integer", arg - 1); return JS_FALSE; }
-#define arg_str(name)        const char* name   = argStr(cx, argv[arg++]);                                            if (This->m_ShouldExit) return JS_FALSE
-#define arg_bool(name)       bool name          = argBool(cx, argv[arg++]);                                           if (This->m_ShouldExit) return JS_FALSE
-#define arg_double(name)     double name        = argDouble(cx, argv[arg++]);                                         if (This->m_ShouldExit) return JS_FALSE
-#define arg_object(name)     JSObject* name     = argObject(cx, argv[arg++]);                                         if (This->m_ShouldExit) return JS_FALSE
-#define arg_array(name)      JSObject* name     = argArray(cx, argv[arg++]);                                          if (This->m_ShouldExit) return JS_FALSE
-#define arg_color(name)      RGBA name          = argColor(cx, argv[arg++]);                                          if (This->m_ShouldExit) return JS_FALSE
-#define arg_surface(name)    CImage32* name     = argSurface(cx, argv[arg++]);     if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
-#define arg_colormatrix(name)CColorMatrix* name = argColorMatrix(cx, argv[arg++]); if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
-#define arg_byte_array(name) SS_BYTEARRAY* name = argByteArray(cx, argv[arg++]);   if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
-#define arg_image(name)      SS_IMAGE* name     = argImage(cx, argv[arg++]);       if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
-#define arg_font(name)       SS_FONT* name      = argFont(cx, argv[arg++]);        if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
-#define arg_spriteset(name)  sSpriteset* name   = argSpriteset(cx, argv[arg++]);   if (name == NULL) return JS_FALSE; if (This->m_ShouldExit) return JS_FALSE
+
+#define __arg_error_check__(arg_type)                                                                                          \
+  if (This->m_ShouldExit) {                                                                                                    \
+    JS_ReportError(cx, "%s - Argument %d, invalid %s...\n\"%s\"", script_name, arg - 1, arg_type, argStr(cx, argv[arg - 1])); \
+    return JS_FALSE;                                                                                                           \
+  }                                                                                                                            \
+
+#define arg_int(name)        int name           = argInt(cx, argv[arg++]);                                            __arg_error_check__("integer")
+#define arg_str(name)        const char* name   = argStr(cx, argv[arg++]);                                            __arg_error_check__("string")
+#define arg_bool(name)       bool name          = argBool(cx, argv[arg++]);                                           __arg_error_check__("boolean")
+#define arg_double(name)     double name        = argDouble(cx, argv[arg++]);                                         __arg_error_check__("double")
+#define arg_object(name)     JSObject* name     = argObject(cx, argv[arg++]);                                         __arg_error_check__("Object")
+#define arg_array(name)      JSObject* name     = argArray(cx, argv[arg++]);                                          __arg_error_check__("Array")
+#define arg_color(name)      RGBA name          = argColor(cx, argv[arg++]);                                          __arg_error_check__("Color")
+#define arg_surface(name)    CImage32* name     = argSurface(cx, argv[arg++]);     if (name == NULL) return JS_FALSE; __arg_error_check__("Surface")
+#define arg_colormatrix(name)CColorMatrix* name = argColorMatrix(cx, argv[arg++]); if (name == NULL) return JS_FALSE; __arg_error_check__("ColorMatrix")
+#define arg_byte_array(name) SS_BYTEARRAY* name = argByteArray(cx, argv[arg++]);   if (name == NULL) return JS_FALSE; __arg_error_check__("ByteArray")
+#define arg_image(name)      SS_IMAGE* name     = argImage(cx, argv[arg++]);       if (name == NULL) return JS_FALSE; __arg_error_check__("Image")
+#define arg_font(name)       SS_FONT* name      = argFont(cx, argv[arg++]);        if (name == NULL) return JS_FALSE; __arg_error_check__("Font")
+#define arg_spriteset(name)  sSpriteset* name   = argSpriteset(cx, argv[arg++]);   if (name == NULL) return JS_FALSE; __arg_error_check__("Spriteset")
 
 // return values
 
@@ -1279,14 +1315,14 @@ begin_func(EvaluateScript, 1)
   // read script
   std::string text;
   if (!This->m_Engine->GetScriptText(name, text)) {
-    JS_ReportError(cx, "EvaluateScript() failed: Could not load script '%s'", name);
+    JS_ReportError(cx, "%s() failed: Could not load script '%s'", script_name, name);
     return JS_FALSE;
   }
 
   // increment the recursion count, checking for overflow
   This->m_RecurseCount++;
   if (This->m_RecurseCount > MAX_RECURSE_COUNT) {
-    JS_ReportError(cx, "EvaluateScript() recursed too deeply");
+    JS_ReportError(cx, "%s() recursed too deeply", script_name);
     return JS_FALSE;
   }
 
@@ -1591,8 +1627,9 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-    - displays the contents from the video buffer onto the screen. Then the 
-      video buffer is cleared. You *need* to call this to make anything 
+    - displays the contents from the video buffer onto the screen.
+      Then the video buffer is cleared.
+      You *need* to call this to make anything
       you've drawn in code to appear on the screen.
 */
 begin_func(FlipScreen, 0)
@@ -1618,8 +1655,7 @@ begin_func(FlipScreen, 0)
       This->m_ShouldRender = true;
       
       // delay!
-      while (GetTime() * This->m_FrameRate < (dword)This->m_IdealTime) {
-      }
+      while (GetTime() * This->m_FrameRate < (dword)This->m_IdealTime) { }
 
     } else {
       This->m_ShouldRender = false;
@@ -1728,11 +1764,21 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-    - Returns the current fps (set by SetFrameRate... note: this is
-      not the same as the map engine frame rate)
+    - Returns the current fps set by SetFrameRate...
+    (note: this is not the same as the map engine frame rate)
 */
 begin_func(GetFrameRate, 0)
-  return_int(This->m_FrameRate);
+  bool calculate = false; 
+  int frame_rate = This->m_FrameRate;
+ 
+  if (argc >= 1) {
+    calculate = argBool(cx, argv[0]);
+    if (calculate) {
+      
+    }
+  }
+
+  return_int(frame_rate);
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1743,7 +1789,7 @@ end_func()
 begin_func(SetMapEngineFrameRate, 1)
   arg_int(fps);
   if (!This->m_Engine->GetMapEngine()->SetMapEngineFrameRate(fps)) {
-    JS_ReportError(cx, "SetMapEngineFrameRate() failed: fps must be greater than zero!");
+    JS_ReportError(cx, "SetMapEngineFrameRate() failed");
     return JS_FALSE;
   }
 end_func()
@@ -4375,6 +4421,11 @@ end_func()
 begin_func(SetPersonSpriteset, 2)
   arg_str(name);
   arg_spriteset(spriteset);
+  if (spriteset->GetFrameHeight() == 0) {
+    JS_ReportError(cx, "Could not find person '%s'", name);
+    return JS_FALSE;
+  }
+
 
   if (!This->m_Engine->GetMapEngine()->SetPersonSpriteset(name, *spriteset)) {
     JS_ReportError(cx, "Could not find person '%s'", name);
@@ -5315,6 +5366,7 @@ end_func()
 
 #define begin_method(Object, name, minargs)                                                            \
   JSBool CScript::name(JSContext* cx, JSObject* obj, uintN argc, jsval* argv, jsval* rval) {           \
+    const char* script_name = #name;                                                                   \
     CScript* This = (CScript*)JS_GetContextPrivate(cx);                                                \
     NoGCBlock no_gc__(This);                                                                           \
     Object* object = (Object*)JS_GetPrivate(cx, obj);                                                  \
@@ -5663,9 +5715,12 @@ CScript::CreateSpritesetBaseObject(JSContext* cx, SSPRITESET* spriteset)
   };
 
   JSObject* base_object = JS_NewObject(cx, &base_clasp, NULL, NULL);
+  if (!base_object)
+    return NULL;
 
   int x1, y1, x2, y2;
   spriteset->GetSpriteset().GetBase(x1, y1, x2, y2);
+
   JS_DefineProperty(cx, base_object, "x1", INT_TO_JSVAL(x1), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
   JS_DefineProperty(cx, base_object, "y1", INT_TO_JSVAL(y1), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
   JS_DefineProperty(cx, base_object, "x2", INT_TO_JSVAL(x2), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
@@ -5697,12 +5752,18 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
   };
 
   JSObject* local_roots = JS_NewArrayObject(cx, 0, 0);
+  if (!local_roots)
+    return NULL;
+
   JS_AddRoot(cx, &local_roots);
 
   
   // CREATE SPRITESET OBJECT
 
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
+  if (!object)
+    return NULL;
+
   jsval object_val = OBJECT_TO_JSVAL(object);
   JS_SetElement(cx, local_roots, 0, &object_val);
 
@@ -5719,11 +5780,17 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
   
   int num_images = spriteset->GetSpriteset().GetNumImages();
   JSObject* image_array = JS_NewArrayObject(cx, 0, 0);
+  if (!image_array)
+    return NULL;
+
   jsval image_val = OBJECT_TO_JSVAL(image_array);
   JS_SetElement(cx, local_roots, 1, &image_val);
 
   for (int i = 0; i < num_images; i++) {
     JSObject* image = CreateImageObject(cx, spriteset->GetImage(i), false);
+    if (!image) {
+      return NULL;
+    }
     
     jsval val = OBJECT_TO_JSVAL(image);
     JS_SetElement(cx, image_array, i, &val);
@@ -5746,11 +5813,17 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
 
   int num_directions = spriteset->GetSpriteset().GetNumDirections();
   JSObject* direction_array = JS_NewArrayObject(cx, 0, 0);
+  if (!direction_array)
+    return NULL;
+
   jsval direction_val = OBJECT_TO_JSVAL(direction_array);
   JS_SetElement(cx, local_roots, 2, &direction_val);
 
   for (int i = 0; i < num_directions; i++) {
     JSObject* direction = JS_NewObject(cx, &direction_clasp, NULL, NULL);
+    if (!direction) {
+      return NULL;
+    }
 
     jsval val = OBJECT_TO_JSVAL(direction);
     JS_SetElement(cx, direction_array, i, &val);
@@ -5768,6 +5841,9 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
     // create the frames array
     int num_frames = spriteset->GetSpriteset().GetNumFrames(i);
     JSObject* frame_array = JS_NewArrayObject(cx, 0, 0);
+    if (!frame_array) {
+      return NULL;
+    }
 
     JS_DefineProperty(
       cx,
@@ -5780,6 +5856,9 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
 
     for (int j = 0; j < num_frames; j++) {
       JSObject* frame_object = JS_NewObject(cx, &frame_clasp, NULL, NULL);
+      if (!frame_object)
+        return NULL;
+
       jsval frame_object_val = OBJECT_TO_JSVAL(frame_object);
       JS_SetElement(cx, frame_array, j, &frame_object_val);
 
@@ -5791,6 +5870,9 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
   // define the base object
 
   JSObject* base_object = CreateSpritesetBaseObject(cx, spriteset);
+  if (!base_object)
+    return NULL;
+
   jsval base_val = OBJECT_TO_JSVAL(base_object);
   JS_SetElement(cx, local_roots, 3, &base_val);
   

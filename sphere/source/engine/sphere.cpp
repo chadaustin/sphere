@@ -141,8 +141,8 @@ void RunPackage(IFileSystem& fs)
 ////////////////////////////////////////////////////////////////////////////////
 
 std::string DoRunGame(const char* game, const char* parameters) {
-  printf("Game: %s\n", game);
-  printf("Parameters: %s\n", parameters);
+  printf("Game: \"%s\"\n", game);
+  printf("Parameters: \"%s\"\n", parameters);
 
   std::string result;
 
@@ -161,7 +161,7 @@ std::string DoRunGame(const char* game, const char* parameters) {
       restarted = engine.Restarted();
       ClearKeyQueue();
       ResetInput();
-    }  while (restarted);
+    } while (restarted);
 
     LeaveDirectory();
   } else {

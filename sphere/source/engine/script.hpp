@@ -291,7 +291,6 @@ private:
   int m_FramesSkipped; // .
   int m_IdealTime;     // .
 
-
   // it needs to access m_Error
   friend class CScriptCode;
   
