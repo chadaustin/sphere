@@ -44,7 +44,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /G5 /MD /W3 /GX /O1 /I "../third-party" /D "NDEBUG" /D "STRIC" /D "_AFXDLL" /D "INCLUDE_DEPRECATED_FEATURES" /D "XP_PC" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "VC_EXTRALEAN" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /FAs /FR /FD /c
+# ADD CPP /nologo /G5 /MD /W3 /GX /O1 /I "../third-party" /D "NDEBUG" /D "STRIC" /D "_AFXDLL" /D "INCLUDE_DEPRECATED_FEATURES" /D "XP_PC" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "VC_EXTRALEAN" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /D "NOMINMAX" /FAs /FR /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -76,7 +76,7 @@ PostBuild_Cmds=install_editor.bat
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /G5 /MDd /W3 /Gm /Gi /GX /ZI /Od /I "../third-party" /D "_DEBUG" /D "STRICT" /D "_AFXDLL" /D "INCLUDE_DEPRECATED_FEATURES" /D "XP_PC" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "VC_EXTRALEAN" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /FAs /FR /FD /GZ /c
+# ADD CPP /nologo /G5 /MDd /W3 /Gm /Gi /GX /ZI /Od /I "../third-party" /D "_DEBUG" /D "STRICT" /D "_AFXDLL" /D "INCLUDE_DEPRECATED_FEATURES" /D "XP_PC" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "VC_EXTRALEAN" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /D "NOMINMAX" /FAs /FR /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -105,7 +105,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /G5 /Zp1 /MTd /W3 /Gm /Gi /GX /ZI /Od /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "VC_EXTRALEAN" /D "STRICT" /FAs /YX /FD /GZ /c
-# ADD CPP /nologo /G5 /MDd /W3 /Gm /Gi /GX /ZI /Od /I "../third-party" /D "_DEBUG" /D "STRIC" /D "_AFXDLL" /D "INCLUDE_DEPRECATED_FEATURES" /D "XP_PC" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "VC_EXTRALEAN" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /FAs /FR /FD /GZ /c
+# ADD CPP /nologo /G5 /MDd /W3 /Gm /Gi /GX /ZI /Od /I "../third-party" /D "_DEBUG" /D "STRIC" /D "_AFXDLL" /D "INCLUDE_DEPRECATED_FEATURES" /D "XP_PC" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "VC_EXTRALEAN" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /D "NOMINMAX" /FAs /FR /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -360,6 +360,18 @@ SOURCE=.\resources\maptool_pasteentity.ico
 # Begin Source File
 
 SOURCE=.\resources\maptool_selecttile.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\resources\maptool_zoneadd.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\resources\maptool_zonedelete.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\resources\maptool_zoneedit.ico
 # End Source File
 # Begin Source File
 
@@ -1015,6 +1027,10 @@ SOURCE=..\common\Map.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\common\minmax.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\common\MNGAnimation.cpp
 # End Source File
 # Begin Source File
@@ -1086,17 +1102,5 @@ SOURCE=..\common\WindowStyle.cpp
 SOURCE=..\common\WindowStyle.hpp
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=.\resources\maptool_zoneadd.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\resources\maptool_zonedelete.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\resources\maptool_zoneedit.ico
-# End Source File
 # End Target
 # End Project
