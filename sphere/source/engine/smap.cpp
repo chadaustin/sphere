@@ -257,20 +257,22 @@ SMAP::MapToScreenX(int /*layer*/, int camera_x, int mx)
   const int cx = GetScreenWidth() / 2;
 
   // calculate camera offsets
-  int offset_x = 0;
+  int offset_x;
 
   // if map is wider than the screen...
   if (tile_width * m_MaxLayerWidth > GetScreenWidth()) {
     if (camera_x < cx) {
-      offset_x = cx - camera_x;
+      offset_x = 0;
     } else if (camera_x > m_MaxLayerWidth * tile_width - cx) {
-      offset_x = m_MaxLayerWidth * tile_width - camera_x - cx;
+      offset_x = m_MaxLayerWidth * tile_width - GetScreenWidth();
+    } else {
+      offset_x = camera_x - cx;
     }
   } else {
-    offset_x = cx - camera_x;
+    offset_x = 0;
   }
   
-  return offset_x + mx;
+  return mx - offset_x;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -282,20 +284,22 @@ SMAP::MapToScreenY(int /*layer*/, int camera_y, int my)
   const int cy = GetScreenHeight() / 2;
 
   // calculate camera offsets
-  int offset_y = 0;
+  int offset_y;
 
   // if map is higher than the screen...
   if (tile_height * m_MaxLayerHeight > GetScreenHeight()) {
     if (camera_y < cy) {
-      offset_y = cy - camera_y;
+      offset_y = 0;
     } else if (camera_y > m_MaxLayerHeight * tile_height - cy) {
-      offset_y = m_MaxLayerHeight * tile_height - camera_y - cy;
+      offset_y = m_MaxLayerHeight * tile_height - GetScreenHeight();
+    } else {
+      offset_y = camera_y - cy;
     }
   } else {
-    offset_y = cy - camera_y;
+    offset_y = 0;
   }
 
-  return offset_y + my;
+  return my - offset_y;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
