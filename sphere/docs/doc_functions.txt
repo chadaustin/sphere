@@ -356,6 +356,11 @@ log_object.endBlock()
     The events are the same from CallMapScript.
     The map engine doesn't have to be on to set a default script.
   
+  CallDefaultMapScript(which)
+    - call the default map script
+    The events are the same from CallMapScript.
+    The map engine doesn't have to be on to call a default script.
+  
     *** maps ***
 
     GetNumLayers()

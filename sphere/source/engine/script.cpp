@@ -1585,6 +1585,18 @@ begin_func(SetDefaultMapScript, 2)
 
 end_func()
 
+//////////////////////////////////////////////////////////////////////////////
+
+begin_func(CallDefaultMapScript, 1)
+  arg_int(which);
+
+  if (!This->m_Engine->GetMapEngine()->CallDefaultMapScript(which)) {
+    This->ReportMapEngineError("CallDefaultMapScript() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
 ////////////////////////////////////////////////////////////////////////////////
 
 begin_func(GetNumLayers, 0)

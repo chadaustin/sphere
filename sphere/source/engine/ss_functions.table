@@ -107,6 +107,7 @@ SS_FUNCTION(OpenLog, 1)
   SS_FUNCTION(UpdateMapEngine, 0)
   SS_FUNCTION(CallMapScript, 1)
   SS_FUNCTION(SetDefaultMapScript, 2)
+  SS_FUNCTION(CallDefaultMapScript, 1)
 
     // maps
     SS_FUNCTION(GetNumLayers, 0)
