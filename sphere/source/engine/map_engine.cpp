@@ -62,9 +62,6 @@ CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
 , m_UpdateScript(NULL)
 , m_RenderScript(NULL)
 
-, m_OnTrigger(false)
-, m_LastTrigger(-1)
-
 , m_TalkActivationKey(KEY_SPACE)
 , m_TalkActivationDistance(8)
 
@@ -1340,15 +1337,7 @@ CMapEngine::IsInvalidLayerError(int layer, const char* calling_func)
 bool
 CMapEngine::AttachInput(const char* name)
 {
-  // make sure the person entity exists
-  m_InputPerson = -1;
-  if ( IsInvalidPersonError(name, m_InputPerson) ) {
-    return false;
-  }
-
-  m_IsInputAttached = true;
-
-  return true;
+  return AttachPlayerInput(name, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1356,6 +1345,10 @@ CMapEngine::AttachInput(const char* name)
 bool
 CMapEngine::DetachInput()
 {
+  if (m_IsInputAttached) {
+    DetachPlayerInput(m_Persons[m_InputPerson].name.c_str());
+  }
+
   m_IsInputAttached = false;
   return true;
 }
@@ -1381,6 +1374,100 @@ CMapEngine::GetInputPerson(std::string& person)
     m_ErrorMessage = "Input not attached!";
     return false;
   }
+}
+
+/////////////////////
+
+bool
+CMapEngine::AttachPlayerInput(const char* name, int player)
+{
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
+    return false;
+  }
+
+  if (player < 0) {
+    m_ErrorMessage = "Player index must be greater than zero";
+    return false;
+  }
+
+  if (player >= 4) {
+    m_ErrorMessage = "Player index must be less than four";
+    return false;
+  }
+
+  m_InputPersons.push_back(person);
+
+  Person& p = m_Persons[person];
+  p.player_index = player;
+
+  if (player == 0) {
+    m_InputPerson = person;
+    m_IsInputAttached = true;
+  }
+
+  switch (player) {
+    case 0:
+      p.key_up    = KEY_UP;
+      p.key_down  = KEY_DOWN;
+      p.key_left  = KEY_LEFT;
+      p.key_right = KEY_RIGHT;
+    break;
+
+    case 1:
+      p.key_up    = KEY_W;
+      p.key_down  = KEY_S;
+      p.key_left  = KEY_A;
+      p.key_right = KEY_D;
+    break;
+
+    case 2:
+      p.key_up    = KEY_I;
+      p.key_down  = KEY_K;
+      p.key_left  = KEY_J;
+      p.key_right = KEY_L;
+    break;
+
+    case 3:
+      p.key_up    = KEY_G;
+      p.key_down  = KEY_V;
+      p.key_left  = KEY_C;
+      p.key_right = KEY_B;
+    break;
+
+    default:
+      p.key_up    = -1;
+      p.key_down  = -1;
+      p.key_left  = -1;
+      p.key_right = -1;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::DetachPlayerInput(const char* name)
+{
+  int person = -1;
+  if ( IsInvalidPersonError(name, person) ) {
+    return false;
+  }
+
+  int player = -1;
+  for (int i = 0; i < int(m_InputPersons.size()); i++) {
+    if (m_InputPersons[i] == person) {
+      player = i;
+      break;
+    }
+  }
+
+  if (player != -1) {
+    m_InputPersons.erase(m_InputPersons.begin() + player);
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1715,6 +1802,15 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
   }
   */
 
+  p.player_index = -1;
+  p.key_up    = -1;
+  p.key_down  = -1;
+  p.key_left  = -1;
+  p.key_right = -1;
+
+  p.on_trigger = false;
+  p.last_trigger = -1;
+
   p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.frame);
   return true;
 }
@@ -1751,6 +1847,15 @@ CMapEngine::DestroyPerson(const char* name)
         m_IsInputAttached = false;
       } else if (m_InputPerson > i) {
         m_InputPerson--;
+      }
+
+      for (int j = 0; j < int(m_InputPersons.size()); j++) {
+        if (m_InputPersons[j] == j) {
+          m_InputPersons.erase(m_InputPersons.begin() + j);
+          j--;
+        } else if (m_InputPersons[j] > i) {
+          m_InputPersons[j]--;
+        }
       }
 
       // detach camera if necessary
@@ -3215,6 +3320,15 @@ CMapEngine::DestroyMapPersons()
         m_InputPerson--;
       }
 
+      for (int j = 0; j < int(m_InputPersons.size()); j++) {
+        if (m_InputPersons[j] == j) {
+          m_InputPersons.erase(m_InputPersons.begin() + j);
+          j--;
+        } else if (m_InputPersons[j] > i) {
+          m_InputPersons[j]--;
+        }
+      }
+
       // detach camera if necessary
       if (i == m_CameraPerson) {
         m_IsCameraAttached = false;
@@ -3538,8 +3652,10 @@ CMapEngine::UpdateWorld(bool input_valid)
   }
 
   if (input_valid) {
-    if (!UpdateTriggers()) {
-      return false;
+    for (int i = 0; i < int(m_InputPersons.size()); i++) {
+      if (!UpdateTriggers(m_InputPersons[i])) {
+        return false;
+      }
     }
   }
 
@@ -3937,18 +4053,22 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     }
   }
 
-  if (m_InputPerson == person_index) {
-    int px = int(fabs(x - p.x));
-    int py = int(fabs(y - p.y));
-    int s;
+  for (int j = 0; j < int(m_InputPersons.size()); j++) {
+    if (j == person_index) {
+      int px = int(fabs(x - p.x));
+      int py = int(fabs(y - p.y));
+      int s;
 
-    if (px > py) s = px;
-    else s = py;
+      if (px > py) s = px;
+      else s = py;
 
-    while (s-- > 0) {
-      if (!UpdateZones()) {
-        return false;
+      while (s-- > 0) {
+        if (!UpdateZones(person_index)) {
+          return false;
+        }
       }
+
+      break;
     }
   }
 
@@ -4148,23 +4268,25 @@ CMapEngine::ExecuteTriggerScript(int trigger_index)
 ///////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::UpdateTriggers()
+CMapEngine::UpdateTriggers(int person_index)
 {
   // can't process triggers if we don't have an input target
-  if (!m_IsInputAttached) {
+  //if (!m_IsInputAttached)
+  if ( m_InputPersons.size() == 0)
+  {
     return true;
   }
 
   // convenience
-  int location_x = int(m_Persons[m_InputPerson].x);
-  int location_y = int(m_Persons[m_InputPerson].y);
-  int location_layer = m_Persons[m_InputPerson].layer;
+  int location_x = int(m_Persons[person_index].x);
+  int location_y = int(m_Persons[person_index].y);
+  int location_layer = m_Persons[person_index].layer;
 
   // check to see which trigger we're on
   int trigger_index = FindTrigger(location_x, location_y, location_layer);
 
   // if we're moving from one trigger to a new one (or off of one)
-  if (m_OnTrigger && trigger_index != m_LastTrigger) {
+  if (m_Persons[person_index].on_trigger && trigger_index != m_Persons[person_index].last_trigger) {
 
     if (trigger_index != -1) {
       if (!ExecuteTriggerScript(trigger_index)) {
@@ -4172,20 +4294,20 @@ CMapEngine::UpdateTriggers()
       }
       ResetNextFrame();
     } else {
-      m_OnTrigger = false;
+      m_Persons[person_index].on_trigger = false;
     }
-    m_LastTrigger = trigger_index;
+    m_Persons[person_index].last_trigger = trigger_index;
 
   // if we're moving on to another trigger
-  } else if (!m_OnTrigger && trigger_index != -1) {
+  } else if (!m_Persons[person_index].on_trigger && trigger_index != -1) {
 
     if (!ExecuteTriggerScript(trigger_index)) {
       return false;
     }
     ResetNextFrame();
 
-    m_OnTrigger = true;
-    m_LastTrigger = trigger_index;
+    m_Persons[person_index].on_trigger = true;
+    m_Persons[person_index].last_trigger = trigger_index;
 
   }
 
@@ -4269,22 +4391,25 @@ CMapEngine::ExecuteZoneScript(int zone_index)
 ///////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::UpdateZones()
+CMapEngine::UpdateZones(int person_index)
 {
-  // can't process triggers if we don't have an input target
-  if (!m_IsInputAttached) {
+  // can't process zones if we don't have an input target
+  //if (!m_IsInputAttached)
+  if (m_InputPersons.size() == 0)
+  {
     return true;
   }
 
-  for (unsigned int i = 0; i < m_Zones.size(); i++) {
-
+  for (unsigned int i = 0; i < m_Zones.size(); i++)
+  {
     // check if the person is inside the zone
-    if (IsPersonInsideZone(m_InputPerson, i)) {
-
+    if (IsPersonInsideZone(person_index, i))
+    {
       std::string current_map = m_CurrentMap;
 
       Zone& z = m_Zones[i];
       z.current_step--;
+
       if (z.current_step < 0) {
         z.current_step = z.reactivate_in_num_steps - 1;
 
@@ -4462,58 +4587,61 @@ CMapEngine::ProcessInput()
   }
 
   // process default input bindings
-  if (m_IsInputAttached && m_Persons[m_InputPerson].commands.size() == 0) {
-    int dx = 0;
-    int dy = 0;
-    bool moved = false;
+  for (int i = 0; i < int(m_InputPersons.size()); i++)
+  {
+    const int person = m_InputPersons[i];
+    // if (m_IsInputAttached && m_Persons[m_InputPerson].commands.size() == 0) {
+    if (m_Persons[person].commands.size() == 0) {
+      int dx = 0;
+      int dy = 0;
+      bool moved = false;
 
-    if (!IsKeyBound(KEY_UP)    && new_keys[KEY_UP])    dy--;
-    if (!IsKeyBound(KEY_RIGHT) && new_keys[KEY_RIGHT]) dx++;
-    if (!IsKeyBound(KEY_DOWN)  && new_keys[KEY_DOWN])  dy++;
-    if (!IsKeyBound(KEY_LEFT)  && new_keys[KEY_LEFT])  dx--;
+      if (!IsKeyBound(m_Persons[person].key_up)    && new_keys[m_Persons[person].key_up])    dy--;
+      if (!IsKeyBound(m_Persons[person].key_right) && new_keys[m_Persons[person].key_right]) dx++;
+      if (!IsKeyBound(m_Persons[person].key_down)  && new_keys[m_Persons[person].key_down])  dy++;
+      if (!IsKeyBound(m_Persons[person].key_left)  && new_keys[m_Persons[person].key_left])  dx--;
 
-    if (GetNumJoysticks() > 0) {
-      dx += __round__(GetJoystickX(0));
-      dy += __round__(GetJoystickY(0));
-    }
-
-    if (dy < 0) { moved = true; m_Persons[m_InputPerson].commands.push_back(Person::Command(COMMAND_MOVE_NORTH, true)); }
-    if (dx > 0) { moved = true; m_Persons[m_InputPerson].commands.push_back(Person::Command(COMMAND_MOVE_EAST,  true)); }
-    if (dy > 0) { moved = true; m_Persons[m_InputPerson].commands.push_back(Person::Command(COMMAND_MOVE_SOUTH, true)); }
-    if (dx < 0) { moved = true; m_Persons[m_InputPerson].commands.push_back(Person::Command(COMMAND_MOVE_WEST,  true)); }
-
-    // set the direction
-    if (moved)
-    {
-      int command = -1;
-      if (dx < 0) {
-        if (dy < 0) {
-          command = COMMAND_FACE_NORTHWEST;
-        } else if (dy > 0) {
-          command = COMMAND_FACE_SOUTHWEST;
-        } else {
-          command = COMMAND_FACE_WEST;
-        }
-      } else if (dx > 0) {
-        if (dy < 0) {
-          command = COMMAND_FACE_NORTHEAST;
-        } else if (dy > 0) {
-          command = COMMAND_FACE_SOUTHEAST;
-        } else {
-          command = COMMAND_FACE_EAST;
-        }
-      } else {
-        if (dy < 0) {
-          command = COMMAND_FACE_NORTH;
-        } else if (dy > 0) {
-          command = COMMAND_FACE_SOUTH;
-        }
+      if (GetNumJoysticks() > 0) {
+        dx += __round__(GetJoystickX(0));
+        dy += __round__(GetJoystickY(0));
       }
 
-      m_Persons[m_InputPerson].commands.push_back(Person::Command(command, false));
+      if (dy < 0) { moved = true; m_Persons[person].commands.push_back(Person::Command(COMMAND_MOVE_NORTH, true)); }
+      if (dx > 0) { moved = true; m_Persons[person].commands.push_back(Person::Command(COMMAND_MOVE_EAST,  true)); }
+      if (dy > 0) { moved = true; m_Persons[person].commands.push_back(Person::Command(COMMAND_MOVE_SOUTH, true)); }
+      if (dx < 0) { moved = true; m_Persons[person].commands.push_back(Person::Command(COMMAND_MOVE_WEST,  true)); }
+
+      // set the direction
+      if (moved)
+      {
+        int command = -1;
+        if (dx < 0) {
+          if (dy < 0) {
+            command = COMMAND_FACE_NORTHWEST;
+          } else if (dy > 0) {
+            command = COMMAND_FACE_SOUTHWEST;
+          } else {
+            command = COMMAND_FACE_WEST;
+          }
+        } else if (dx > 0) {
+          if (dy < 0) {
+            command = COMMAND_FACE_NORTHEAST;
+          } else if (dy > 0) {
+            command = COMMAND_FACE_SOUTHEAST;
+          } else {
+            command = COMMAND_FACE_EAST;
+          }
+        } else {
+          if (dy < 0) {
+            command = COMMAND_FACE_NORTH;
+          } else if (dy > 0) {
+            command = COMMAND_FACE_SOUTH;
+          }
+        }
+    
+        m_Persons[person].commands.push_back(Person::Command(command, false));
+      }
     }
-
-
   }
 
   // process bound joystick buttons

@@ -3322,6 +3322,31 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(AttachPlayerInput, 2)
+  arg_str(name);
+  arg_int(player);
+
+  if (!This->m_Engine->GetMapEngine()->AttachPlayerInput(name, player)) {
+    This->ReportMapEngineError("AttachPlayerInput() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(DetachPlayerInput, 1)
+  arg_str(name);
+
+  if (!This->m_Engine->GetMapEngine()->DetachPlayerInput(name)) {
+    This->ReportMapEngineError("DetachPlayerInput() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 /**
       - calls 'script' after each frame (don't draw stuff in here!)
 */

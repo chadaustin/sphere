@@ -182,6 +182,8 @@ SS_FUNCTION(OpenLog, 1)
     SS_FUNCTION(DetachInput, 0)
     SS_FUNCTION(IsInputAttached, 0)
     SS_FUNCTION(GetInputPerson, 0)
+    SS_FUNCTION(AttachPlayerInput, 2)
+    SS_FUNCTION(DetachPlayerInput, 1)
 
     // frame callback
     SS_FUNCTION(SetUpdateScript, 1)

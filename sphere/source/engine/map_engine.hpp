@@ -151,6 +151,9 @@ public:
   bool IsInputAttached(bool& attached);
   bool GetInputPerson(std::string& person);
 
+  bool AttachPlayerInput(const char* person, int player);
+  bool DetachPlayerInput(const char* person);
+
   bool SetUpdateScript(const char* script);
   bool SetRenderScript(const char* script);
   bool SetLayerRenderer(int layer, const char* script);
@@ -310,6 +313,15 @@ private:
 
     std::vector<std::string> ignored_persons;
     std::vector<PersonData> person_data;
+
+    int player_index;
+    int key_down;
+    int key_up;
+    int key_left;
+    int key_right;
+
+    bool on_trigger;
+    int last_trigger;
   };
 
   struct Trigger {
@@ -356,11 +368,11 @@ private:
   bool UpdateFollower(int person_index);
 
   int FindTrigger(int location_x, int location_y, int layer);
-  bool UpdateTriggers();
+  bool UpdateTriggers(int person_index);
 
   bool IsPointWithinZone(int location_x, int location_y, int location_layer, int zone_index);
   bool IsPersonInsideZone(int person_index, int zone_index);
-  bool UpdateZones();
+  bool UpdateZones(int person_index);
 
   bool UpdateColorMasks();
   bool UpdateDelayScripts();
@@ -415,6 +427,8 @@ private:
   int  m_InputPerson;
   bool m_TouchActivationAllowed;
   bool m_TalkActivationAllowed;
+
+  std::vector<int> m_InputPersons;
 
   // camera person
   bool m_IsCameraAttached;
