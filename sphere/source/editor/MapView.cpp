@@ -59,9 +59,14 @@ CMapView::CMapView()
 , m_RedrawWindow(0)
 , m_RedrawPreviewLine(0)
 
+,  m_MultiTileWidth(1)
+,  m_MultiTileHeight(1)
+
 {
   s_MapAreaClipboardFormat = RegisterClipboardFormat("MapAreaSelection32");
   s_MapEntityClipboardFormat = RegisterClipboardFormat("MapEntitySelection32");
+
+  m_MultiTileData.push_back(m_SelectedTile);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -256,6 +261,21 @@ CMapView::Click(CPoint point)
       }
       break;
     }
+
+    case tool_MultiTile: { // multitile
+      int temp = m_SelectedTile;
+      int index = 0;
+      for (int ix = tx; ix < tx + m_MultiTileWidth; ix++) {
+        for (int iy = ty; iy < ty + m_MultiTileHeight; iy++) {
+          m_SelectedTile = m_MultiTileData[index];
+          map_changed |= SetTile(ix, iy);
+          index++;
+        }
+      }
+      m_SelectedTile = temp;
+      break;
+    }
+
   }
 
   if (map_changed) {
@@ -1197,7 +1217,8 @@ CMapView::OnLButtonDown(UINT flags, CPoint point)
     switch(m_CurrentTool) {
       case tool_1x1Tile:
       case tool_3x3Tile:
-      case tool_5x5Tile: {
+      case tool_5x5Tile:
+      case tool_MultiTile: {
         Click(point); 
       } break;
 
@@ -1439,6 +1460,7 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
     case tool_1x1Tile:
     case tool_3x3Tile:
     case tool_5x5Tile:
+    case tool_MultiTile:
     case tool_SelectTile:
     case tool_Paste:
     case tool_CopyEntity:

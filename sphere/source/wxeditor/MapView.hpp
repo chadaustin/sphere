@@ -94,6 +94,7 @@ public:
     tool_ZoneAdd,
     tool_ZoneEdit,
     tool_ZoneDelete,
+    tool_MultiTile,
   };
 
 private:

@@ -1552,6 +1552,7 @@ wMapView::OnMouseMove(wxMouseEvent &event)
     case tool_1x1Tile:
     case tool_3x3Tile:
     case tool_5x5Tile:
+    case tool_MultiTile:
     case tool_SelectTile:
     case tool_Paste:
     case tool_CopyEntity:
