@@ -17,6 +17,7 @@
 static int s_MapViewID = 2000;
 static int s_MapAreaClipboardFormat;
 static int s_MapEntityClipboardFormat;
+static int s_ClipboardFormat;
 
 
 BEGIN_MESSAGE_MAP(CMapView, CScrollWindow)
@@ -71,6 +72,7 @@ CMapView::CMapView()
   m_SpritesetDrawType    = Configuration::Get(KEY_MAP_SPRITESET_DRAWTYPE);  
   s_MapAreaClipboardFormat = RegisterClipboardFormat("MapAreaSelection32");
   s_MapEntityClipboardFormat = RegisterClipboardFormat("MapEntitySelection32");
+  s_ClipboardFormat = RegisterClipboardFormat("FlatImage32");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -553,13 +555,58 @@ CMapView::LayerAreaCopy()
   GlobalUnlock(memory);
   SetClipboardData(s_MapAreaClipboardFormat, memory);
 
-  // ADD DDB
-  // create a pixel array to initialize the bitmap
+
+
   const int lw = l.GetWidth();
   const int lh = l.GetHeight();
   const int tw = m_Map->GetTileset().GetTileWidth();
   const int th = m_Map->GetTileset().GetTileHeight();
 
+  // ADD FLAT 32
+
+  int sw = width * tw;
+  int sh = height * th;
+
+  // copy the image as a flat 32-bit color image
+  memory = GlobalAlloc(GHND, 8 + sw * sh * 4);
+  ptr = (dword*)GlobalLock(memory);
+
+  *ptr++ = sw;
+  *ptr++ = sh;
+
+  RGBA* flat_pixels = new RGBA[sw * sh];
+  if (flat_pixels == NULL) {
+    CloseClipboard();
+    return;
+  }
+
+  for (int ty = start_y; ty <= end_y; ty++) {
+    for (int tx = start_x; tx <= end_x; tx++) {
+
+      const RGBA* source = m_Map->GetTileset().GetTile(l.GetTile(tx, ty)).GetPixels();
+
+      for (int iy = 0; iy < th; iy++) {
+        for (int ix = 0; ix < tw; ix++) {
+          int counter = (((ty - start_y) * th) + iy) * (tw * width) + (((tx - start_x) * tw) + ix);
+          flat_pixels[counter].red   = source[iy * tw + ix].red;
+          flat_pixels[counter].green = source[iy * tw + ix].green;
+          flat_pixels[counter].blue  = source[iy * tw + ix].blue;
+          flat_pixels[counter].alpha = source[iy * tw + ix].alpha;
+        }
+      }
+    }
+  }
+
+  memcpy(ptr, flat_pixels, sw * sh * sizeof(RGBA));
+  delete[] flat_pixels;
+
+  // put the image on the clipboard
+  GlobalUnlock(memory);
+  SetClipboardData(s_ClipboardFormat, memory);
+
+
+  // ADD DDB
+  // create a pixel array to initialize the bitmap
   BGRA* pixels = new BGRA[width * tw * height * th];
   if (pixels == NULL) {
     CloseClipboard();
@@ -591,6 +638,54 @@ CMapView::LayerAreaCopy()
   delete[] pixels;
 
   CloseClipboard();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+RGBA* // the return value needs to be delete[] 'ed
+CMapView::GetFlatImageFromClipboard(int& width, int& height)
+{
+  if (OpenClipboard() == FALSE)
+    return NULL;
+
+  HGLOBAL memory = (HGLOBAL)GetClipboardData(s_ClipboardFormat);
+  if (memory == NULL) {
+    CloseClipboard();
+    return NULL;
+  }
+
+  // get the height and pixels from the clipboard
+  dword* ptr = (dword*)GlobalLock(memory);
+  if (ptr == NULL) {
+    CloseClipboard();
+    return NULL;
+  }
+
+  width = *ptr++;
+  height = *ptr++;
+
+  if (width <= 0 || height <= 0) {
+    CloseClipboard();
+    return NULL;
+  }
+
+  RGBA* clipboard = (RGBA*)ptr;
+  RGBA* pixels = new RGBA[width * height];
+  if (pixels == NULL) {
+    CloseClipboard();
+    return NULL;
+  }
+
+  for (int y = 0; y < height; y++) {
+    for (int x = 0; x < width; x++) {
+      pixels[y * width + x] = clipboard[y * width + x];
+    }
+  }
+
+  GlobalUnlock(memory);
+  CloseClipboard();
+
+  return pixels;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -671,42 +766,42 @@ void PasteMapUnderPointFunc(sMap* m_Map, const sMap& tMap, int m_SelectedLayer, 
     newTileLoc.push_back(i);
   }
 
-    for (int i = 0; i < tTileset.GetNumTiles(); i++) {
-      bool found = false;
-      sTileset& cTileset = m_Map->GetTileset();
+  for (int i = 0; i < tTileset.GetNumTiles(); i++) {
+    bool found = false;
+    sTileset& cTileset = m_Map->GetTileset();
 
-      for (int j = 0; j < cTileset.GetNumTiles(); j++) {
-        if (memcmp(tTileset.GetTile(i).GetPixels(), cTileset.GetTile(j).GetPixels(), tile_width * tile_height * 4) == 0) {
-          newTileLoc[i] = j;
-          found = true;
-        }
-      }
-
-      if (!found) {
-        // add to the end
-        m_Map->GetTileset().AppendTiles(1);
-        newTileLoc[i] = m_Map->GetTileset().GetNumTiles() - 1;
-        memcpy(m_Map->GetTileset().GetTile(newTileLoc[i]).GetPixels(), tTileset.GetTile(i).GetPixels(), tile_width * tile_height * 4);
+    for (int j = 0; j < cTileset.GetNumTiles(); j++) {
+      if (memcmp(tTileset.GetTile(i).GetPixels(), cTileset.GetTile(j).GetPixels(), tile_width * tile_height * 4) == 0) {
+        newTileLoc[i] = j;
+        found = true;
       }
     }
 
-    if (tMap.GetNumLayers() == 1)
-    {
-      sLayer tLayer = tMap.GetLayer(0);
-
-      // update the map data offsets
-      for (int y = 0; y < tLayer.GetHeight(); y++)
-        for (int x = 0; x < tLayer.GetWidth(); x++)
-          tLayer.SetTile(x, y, newTileLoc[tLayer.GetTile(x, y)]);
-
-      // finally, overwrite the existing map data
-      for (int y=ty; y<m_Map->GetLayer(m_SelectedLayer).GetHeight() && y-ty<tLayer.GetHeight(); y++)
-        for (int x=tx; x<m_Map->GetLayer(m_SelectedLayer).GetWidth() && x-tx<tLayer.GetWidth(); x++)
-          m_Map->GetLayer(m_SelectedLayer).SetTile(x, y, tLayer.GetTile(x-tx, y-ty));
+    if (!found) {
+      // add to the end
+      m_Map->GetTileset().AppendTiles(1);
+      newTileLoc[i] = m_Map->GetTileset().GetNumTiles() - 1;
+      memcpy(m_Map->GetTileset().GetTile(newTileLoc[i]).GetPixels(), tTileset.GetTile(i).GetPixels(), tile_width * tile_height * 4);
     }
+  }
 
-  
+  if (tMap.GetNumLayers() == 1)
+  {
+    sLayer tLayer = tMap.GetLayer(0);
+
+    // update the map data offsets
+    for (int y = 0; y < tLayer.GetHeight(); y++)
+      for (int x = 0; x < tLayer.GetWidth(); x++)
+        tLayer.SetTile(x, y, newTileLoc[tLayer.GetTile(x, y)]);
+
+    // finally, overwrite the existing map data
+    for (int y=ty; y<m_Map->GetLayer(m_SelectedLayer).GetHeight() && y-ty<tLayer.GetHeight(); y++)
+      for (int x=tx; x<m_Map->GetLayer(m_SelectedLayer).GetWidth() && x-tx<tLayer.GetWidth(); x++)
+        m_Map->GetLayer(m_SelectedLayer).SetTile(x, y, tLayer.GetTile(x-tx, y-ty));
+  }
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 void
 CMapView::PasteMapUnderPoint(CPoint point)
@@ -739,6 +834,7 @@ CMapView::PasteMapUnderPoint(CPoint point)
     if (m_Map->GetTileset().GetTileWidth() != tile_width ||
         m_Map->GetTileset().GetTileHeight() != tile_height)
     {
+      CloseClipboard();
       MessageBox("Tile size being pasted does not match tile size in map.\nPaste Aborted.", NULL, MB_OK | MB_ICONEXCLAMATION);
       return;
     }
@@ -782,13 +878,18 @@ CMapView::PasteMapUnderPoint(CPoint point)
     Invalidate();
     m_Handler->MV_MapChanged();
     // m_Handler->MV_TilesetChanged();!!
+
+    CloseClipboard();
   }
   else {
-    CloseClipboard();
 
     int width;
     int height;
-    RGBA* pixels = GetBitmapImageFromClipboard(width, height);
+    RGBA* pixels = GetFlatImageFromClipboard(width, height);
+
+    if (pixels == NULL)
+      pixels = GetBitmapImageFromClipboard(width, height);
+
     if (pixels != NULL)
     {
       CImage32 image(width, height, pixels);
@@ -1232,12 +1333,14 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
 /*          THESE ARE TOO SLOW IN THIS INNER LOOP
             // additional draw rules
             // area fill
-            if (m_CurrentTool == tool_FillRectArea && IsWithinSelectFillArea(tx, ty))
+            if (m_CurrentTool == tool_FillRectArea && IsWithinSelectFillArea(tx, ty)) {
               if (m_Clicked)
               {
                 RGBA p = m_Map->GetTileset().GetTile(m_SelectedTile).GetPixel(k, j);
                 if (p.alpha > 30) Blend4(dest[counter], p, 100);
               }
+            }
+            else
             // area select
             if (m_CurrentTool == tool_CopyArea && IsWithinSelectFillArea(tx, ty))
               if (m_Clicked)
@@ -2076,6 +2179,7 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
       switch (m_CurrentTool) {
         case tool_3x3Tile: num_tiles_x = 3; num_tiles_y = 3; break;
         case tool_5x5Tile: num_tiles_x = 5; num_tiles_y = 5; break;
+        default: num_tiles_x = 1; num_tiles_y = 1;
       }
 
       int old_x = (m_CurrentCursorTileX - m_CurrentX) * tile_width;
@@ -2625,6 +2729,7 @@ CMapView::TP_ToolSelected(int tool)
 {
   // do something
   m_CurrentTool = tool;
+  Invalidate(); // we should just invalidate the tiles needed according to the old/new tools
 }
 
 ////////////////////////////////////////////////////////////////////////////////

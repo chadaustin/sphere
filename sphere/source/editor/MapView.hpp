@@ -71,6 +71,7 @@ private:
 
   int FindSpritesetImageIconsIndex(int person_index, std::string filename);
 
+  RGBA* GetFlatImageFromClipboard(int& width, int& height);
   RGBA* GetBitmapImageFromClipboard(int& width, int& height);
 
 private:
@@ -122,6 +123,7 @@ private:
   RGB m_HighlightColor;
   RGB m_ZoneColor;
   int m_CurrentTool;
+  int m_PreviousTool;
 
   int m_CurrentX;
   int m_CurrentY;

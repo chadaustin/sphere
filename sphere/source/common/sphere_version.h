@@ -4,10 +4,10 @@
 
 // return the Sphere version as a floating point number
 inline double GetSphereVersion() {
-  return 1.104;
+  return 1.105;
 }
 
-#define SPHERE_VERSION "v1.104"
+#define SPHERE_VERSION "v1.105"
 
 
 #endif

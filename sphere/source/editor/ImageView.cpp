@@ -415,8 +415,20 @@ CImageView::GetBitmapImageFromClipboard(int& width, int& height)
   HDC dc = CreateCompatibleDC(NULL);
   HBITMAP oldbitmap = (HBITMAP)SelectObject(dc, bitmap);
 
-  width  = m_Image.GetWidth();
-  height = m_Image.GetHeight();
+  // work out the possible width
+  for (width = 0; width < 4096; width++)
+    if (GetPixel(dc, width, 0) == CLR_INVALID)
+      break;
+
+  // work out the possible height
+  for (height = 0; height < 4096; height++)
+    if (GetPixel(dc, 0, height) == CLR_INVALID)
+      break;
+
+  if (width <= 0 || height <= 0) {
+    CloseClipboard();
+    return NULL;
+  }
 
   RGBA* pixels = new RGBA[width * height];
   if (pixels == NULL) {
@@ -551,7 +563,7 @@ CImageView::Undo()
   m_Image.Resize(img->width, img->height);
 
   // only copy the undo image if the resize has succeeded
-  if (m_Image.GetWidth() == img->width || m_Image.GetHeight() == img->height) {
+  if (m_Image.GetWidth() == img->width && m_Image.GetHeight() == img->height) {
     memcpy(m_Image.GetPixels(), img->pixels, img->width * img->height * sizeof(RGBA));
   }
 
