@@ -11,6 +11,7 @@ typedef DIRECTORYLISTimp* DIRECTORYLIST;
 struct FILELISTimp;
 typedef FILELISTimp* FILELIST;
 
+extern std::string GetSphereDirectory();
 
 extern bool GetDirectory(std::string& directory);
 extern bool MakeDirectory(const char* directory);

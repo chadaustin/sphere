@@ -291,7 +291,7 @@ CGameEngine::GetGameList(std::vector<Game>& games)
 void
 CGameEngine::ExecuteGame(const char* directory)
 {
-  m_NextGame = directory;
+  m_NextGame = GetSphereDirectory() + "/games/" + directory;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -172,7 +172,7 @@ void RunGame(const char* game, const char* parameters) {
     if (!result.empty()) {
       // add the original game back to the stack
       games.push(g);
-      games.push(Game("games/" + result, ""));
+      games.push(Game(result, ""));
     }
   }
 }

@@ -1,3 +1,7 @@
+2003.01.29
+  - make ExecuteGame work no matter where the game calling it is
+    located on the filesystem
+
 2003.01.28
   - added Flik's joysticks.js system script
   - fixed the "person doesn't exist inside of 'on create' script" bug

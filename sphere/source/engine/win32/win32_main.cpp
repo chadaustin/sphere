@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "win32_filesystem.hpp"
 #include "win32_internal.hpp"
 #include "win32_input.hpp"
 #include "../sphere.hpp"
@@ -16,25 +17,10 @@ static HWND SphereWindow;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static void GetSphereDirectory(char sphere_directory[MAX_PATH])
-{
-  GetModuleFileName(GetModuleHandle(NULL), sphere_directory, MAX_PATH);
-  char* last_backslash = strrchr(sphere_directory, '\\');
-  if (last_backslash) {
-    *last_backslash = 0;
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 static void LoadSphereConfiguration(SPHERECONFIG* config)
 {
-  char ConfigPath[MAX_PATH];
-  GetSphereDirectory(ConfigPath); // I think this should be \\bin\\engine.ini
-  strcat(ConfigPath, "\\engine.ini");
-
   // Loads configuration settings
-  LoadSphereConfig(config, ConfigPath);
+  LoadSphereConfig(config, (GetSphereDirectory() + "\\engine.ini").c_str());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -45,9 +31,7 @@ int __cdecl main(int argc, const char** argv)
   srand(time(NULL));
 
   // set current directory to be Sphere directory
-  char sphere_directory[MAX_PATH];
-  GetSphereDirectory(sphere_directory);
-  SetCurrentDirectory(sphere_directory);
+  SetCurrentDirectory(GetSphereDirectory().c_str());
 
   // initialize screenshot directory
   char screenshot_directory[MAX_PATH];
