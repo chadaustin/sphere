@@ -919,12 +919,15 @@ CSpritesetView::OnInsertDirectionFromAnimation()
         break;
       }
 
+      if (animation->IsEndOfAnimation()) {       
+        break;
+      }
+
       RGBA* pixels = new RGBA[animation->GetWidth() * animation->GetHeight()];
       if ( !pixels )
         return;
 
-      if (animation->ReadNextFrame((RGBA*) pixels) == false
-       || animation->IsEndOfAnimation()) {
+      if (animation->ReadNextFrame((RGBA*) pixels) == false) {
         delete[] pixels;
         break;
       }
@@ -1106,16 +1109,16 @@ mng_bool MNG_DECL mng_close_stream (mng_handle mng)
 
 ///////////////////////////////////////////////////////////
 
-void rgba_image_add_filter_byte(const RGBA* pixels, const int width, const int height, unsigned char* filtered)
+void rgba_image_add_filter_byte(const RGBA* pixels, int sx, int sy, int sw, int sh, const int width, const int height, unsigned char* filtered)
 {
-  int x;
-	int y;
   unsigned char* ptr = filtered;
+  int x;
+  int y;
 
-  for (y = 0; y < height; y++) {
-    for (x = 0; x < width; x++)
+  for (y = sy; y < sy + sh; y++) {
+    for (x = sx; x < sx + sw; x++)
     {
-      if (x == 0) {
+      if (x == sx) {
   			*ptr++ = 0;
       }
 
@@ -1127,16 +1130,20 @@ void rgba_image_add_filter_byte(const RGBA* pixels, const int width, const int h
 	}
 }
 
-void rgb_image_add_filter_byte(const RGBA* pixels, const int width, const int height, unsigned char* filtered)
+void rgb_image_add_filter_byte(const RGBA* pixels,
+                               const int sx, const int sy,
+                               const int sw, const int sh,
+                               const int width, const int height,
+                               unsigned char* filtered)
 {
   int x;
 	int y;
   unsigned char* ptr = filtered;
 
-  for (y = 0; y < height; y++) {
-    for (x = 0; x < width; x++)
+  for (y = sy; y < sy + sh; y++) {
+    for (x = sx; x < sx + sw; x++)
     {
-      if (x == 0) {
+      if (x == sx) {
   			*ptr++ = 0;
       }
 
@@ -1147,7 +1154,8 @@ void rgb_image_add_filter_byte(const RGBA* pixels, const int width, const int he
 	}
 }
 
-int findcolorfrompalette(const mng_palette8 palette, int palette_size, int red, int green, int blue) {
+int findcolorfrompalette(const mng_palette8 palette,
+                         int palette_size, int red, int green, int blue) {
   for (int i = 0; i < palette_size; i++) {
     if (palette[i].iRed   == red
      && palette[i].iGreen == green
@@ -1160,8 +1168,10 @@ int findcolorfrompalette(const mng_palette8 palette, int palette_size, int red, 
 
 
 void rgb_palette_image_add_filter_byte(const mng_palette8 palette, int palette_size,
-                                       const RGBA* pixels, const int sx, const int sy, const int sw, const int sh,
-                                       const int width, const int height, unsigned char* filtered)
+                                       const RGBA* pixels,
+                                       const int sx, const int sy, const int sw, const int sh,
+                                       const int width, const int height,
+                                       unsigned char* filtered)
 {
   int x;
 	int y;
@@ -1375,6 +1385,10 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
                           strlen("TIME"), "TIME",
                           strlen(__TIME__), __TIME__);
   if (iRC != 0) return iRC;
+  
+  iRC = mng_putchunk_text(hMNG, strlen("libmng_version"), "libmng_version",
+                                strlen(MNG_VERSION_TEXT), MNG_VERSION_TEXT);
+  if (iRC != 0) return iRC;
 #endif
 
   iRC = mng_set_srgb(hMNG, true);
@@ -1421,35 +1435,30 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
        && images[i - 1].GetHeight() == image.GetHeight()) {
         calc_different_area(images[i - 1].GetPixels(), image.GetPixels(), image.GetWidth(), image.GetHeight(), &x, &y, &w, &h);
 
-        /*
         char string[255];
         sprintf (string, "%d %d %d %d\n", x, y, w, h);
         iRC = mng_putchunk_text(hMNG,
                           strlen("Debug"), "Debug",
                           strlen(string), string);
         if (iRC != 0) return iRC;
-        */
+
+          iRC = mng_putchunk_fram(hMNG,  MNG_FALSE,  MNG_FRAMINGMODE_3,
+                            0,  NULL,  MNG_CHANGEDELAY_NO, MNG_CHANGETIMOUT_NO,
+                            MNG_CHANGECLIPPING_NO, MNG_CHANGESYNCID_NO,
+                            0, 0,  0,  
+                            0,  0, 0, 0,
+                            0, 0);
+          mng_putchunk_move(hMNG, 0, 0, 0, 0, 0);
 
         if (x != 0 || y != 0 || w != image.GetWidth() || h != image.GetHeight()) {
-        
-          iRC = mng_putchunk_fram(hMNG,
-                                  MNG_TRUE,
-                                  MNG_FRAMINGMODE_1,
-                                  0,
-                                  MNG_NULL,
-                                  MNG_CHANGEDELAY_NO,
-                                  MNG_CHANGETIMOUT_NO,
-                                  MNG_CHANGECLIPPING_NEXTSUBFRAME,
-                                  MNG_CHANGESYNCID_NO,
-                                  0,
-                                  0,
-                                  MNG_BOUNDARY_ABSOLUTE,
-                                  x,
-                                  w,
-                                  y,
-                                  h,
-                                  0,
-                                  MNG_NULL);
+          iRC = mng_putchunk_fram(hMNG,  MNG_FALSE,  MNG_FRAMINGMODE_4,
+                            0,  NULL,  MNG_CHANGEDELAY_NO, MNG_CHANGETIMOUT_NO,
+                            MNG_CHANGECLIPPING_NEXTSUBFRAME, MNG_CHANGESYNCID_NO,
+                            0, 0,  0,
+                            x,  x+w, y, y+h,
+                            0, 0);
+          if (iRC != 0) return iRC;
+          iRC = mng_putchunk_move(hMNG, 0, 0, 0, x, y);
           if (iRC != 0) return iRC;
         }
 
@@ -1457,61 +1466,116 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
       }
     }
 
-    /*
-    iRC = mng_putchunk_defi(hMNG,
-                            i,
-                            MNG_DONOTSHOW_VISIBLE,
-                            MNG_CONCRETE,
-                            MNG_TRUE,
-                            0,
-                            0,
-                            MNG_TRUE,
-                            0,
-                            image.GetWidth(),
-                            0,
-                            image.GetHeight());
-    if (iRC != 0) return iRC;
-    */
-
     if (has_alpha) {
-      iRC = mng_putchunk_ihdr (hMNG, image.GetWidth(), image.GetHeight(),
-	  		MNG_BITDEPTH_8, MNG_COLORTYPE_RGBA, MNG_COMPRESSION_DEFLATE,
-		  	MNG_FILTER_NONE, MNG_INTERLACE_NONE);
-      if (iRC != 0) return iRC;
+      if (false && can_use_global_palette) {
+        iRC = mng_putchunk_ihdr (hMNG, w, h,
+					MNG_BITDEPTH_8, MNG_COLORTYPE_INDEXED, MNG_COMPRESSION_DEFLATE,
+					MNG_FILTER_ADAPTIVE, MNG_INTERLACE_NONE);
+        if (iRC != 0) return iRC;
 
-      mng_uint32 filter_len     = (sizeof(RGBA) * image.GetWidth() * image.GetHeight()) + image.GetHeight();
-      mng_uint32 compressed_len = (sizeof(RGBA) * image.GetWidth() * image.GetHeight()) + image.GetHeight();
-  	             compressed_len += compressed_len / 100 + 12 + 8;	// extra 8 for safety
+        mng_uint32 filter_len     = (sizeof(char) * w * h) + h;
+        mng_uint32 compressed_len = (sizeof(char) * w * h) + h;
+    	             compressed_len += compressed_len / 100 + 12 + 8;	// extra 8 for safety
+  
+        unsigned char* buffer = new unsigned char[filter_len];
+        if (buffer == NULL)
+          return MNG_OUTOFMEMORY;
 
-      unsigned char* buffer = new unsigned char[filter_len];
-      if (buffer == NULL)
-        return MNG_OUTOFMEMORY;
+         unsigned char* compressed = new unsigned char[compressed_len];
+         if (compressed == NULL) {
+           delete[] buffer;
+           return MNG_OUTOFMEMORY;
+         }
 
-       unsigned char* compressed = new unsigned char[compressed_len];
-       if (compressed == NULL) {
-         delete[] buffer;
-         return MNG_OUTOFMEMORY;
-       }
+        rgb_palette_image_add_filter_byte(GlobalPalette, GlobalPaletteSize, image.GetPixels(), x, y, w, h, image.GetWidth(), image.GetHeight(), buffer);
 
-      rgba_image_add_filter_byte(image.GetPixels(), image.GetWidth(), image.GetHeight(), buffer);
+        // write empty PLTE to use the global PLTE
+        iRC = mng_putchunk_plte (hMNG, 0, GlobalPalette);
+        if (iRC != 0)
+          return iRC;
 
-      uLong dstLen = compressed_len;
-      uLong srcLen = filter_len;
-      if (compress2(compressed, &dstLen, buffer, srcLen, 9) != Z_OK) {
+        mng_uint8arr alpha_palette;
+        for (int i = 0; i < 2; i++) {
+          alpha_palette[0] = 0;
+          alpha_palette[1] = 255;
+        }
+
+        mng_uint8arr raw_data;
+
+        // write transparency stuff
+        mng_putchunk_trns(hMNG,
+                          MNG_FALSE,
+                          MNG_FALSE,
+                          0,
+                          2, //               mng_uint32       iCount,
+                          alpha_palette, //                           mng_uint8arr     aAlphas,
+                          0, //                            mng_uint16       iGray,
+                          0, //                           mng_uint16       iRed,
+                          0, //                           mng_uint16       iGreen,
+                          0, //                           mng_uint16       iBlue,
+                          0, //                           mng_uint32       iRawlen,
+                          raw_data); //                           mng_uint8arr     aRawdata);
+        if (iRC != 0)
+          return iRC;
+
+        uLong dstLen = compressed_len;
+        uLong srcLen = filter_len;
+        if (compress2(compressed, &dstLen, buffer, srcLen, 9) != Z_OK) {
+          delete[] buffer;
+          delete[] compressed;
+          return MNG_ZLIBERROR;
+        }
+
+        iRC = mng_putchunk_idat(hMNG, dstLen, compressed);
+
         delete[] buffer;
         delete[] compressed;
-        return MNG_ZLIBERROR;
+
+        if (iRC != 0) return iRC;
+
+        iRC = mng_putchunk_iend (hMNG);
+        if (iRC != 0) return iRC;
       }
+      else {
+        iRC = mng_putchunk_ihdr (hMNG, w, h,
+	    		MNG_BITDEPTH_8, MNG_COLORTYPE_RGBA, MNG_COMPRESSION_DEFLATE,
+		    	MNG_FILTER_NONE, MNG_INTERLACE_NONE);
+        if (iRC != 0) return iRC;
 
-      iRC = mng_putchunk_idat(hMNG, dstLen, compressed);
+        mng_uint32 filter_len     = (sizeof(RGBA) * w * h) + h;
+        mng_uint32 compressed_len = (sizeof(RGBA) * w * h) + h;
+  	               compressed_len += compressed_len / 100 + 12 + 8;	// extra 8 for safety
 
-      delete[] buffer;
-      delete[] compressed;
+        unsigned char* buffer = new unsigned char[filter_len];
+        if (buffer == NULL)
+          return MNG_OUTOFMEMORY;
 
-      if (iRC != 0) return iRC;
+         unsigned char* compressed = new unsigned char[compressed_len];
+         if (compressed == NULL) {
+           delete[] buffer;
+           return MNG_OUTOFMEMORY;
+         }
 
-      iRC = mng_putchunk_iend (hMNG);
-      if (iRC != 0) return iRC;  
+        rgba_image_add_filter_byte(image.GetPixels(), x, y, w, h, image.GetWidth(), image.GetHeight(), buffer);
+
+        uLong dstLen = compressed_len;
+        uLong srcLen = filter_len;
+        if (compress2(compressed, &dstLen, buffer, srcLen, 9) != Z_OK) {
+          delete[] buffer;
+          delete[] compressed;
+          return MNG_ZLIBERROR;
+        }
+
+        iRC = mng_putchunk_idat(hMNG, dstLen, compressed);
+
+        delete[] buffer;
+        delete[] compressed;
+
+        if (iRC != 0) return iRC;
+
+        iRC = mng_putchunk_iend (hMNG);
+        if (iRC != 0) return iRC;  
+      }
     }
     else {
       if (can_use_global_palette) {
@@ -1561,13 +1625,13 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
       }
       else 
       {
-        iRC = mng_putchunk_ihdr (hMNG, image.GetWidth(), image.GetHeight(),
+        iRC = mng_putchunk_ihdr (hMNG, w, h,
 	    		MNG_BITDEPTH_8, MNG_COLORTYPE_RGB, MNG_COMPRESSION_DEFLATE,
 		    	MNG_FILTER_NONE, MNG_INTERLACE_NONE);
         if (iRC != 0) return iRC;
 
-        mng_uint32 filter_len     = (sizeof(RGB) * image.GetWidth() * image.GetHeight()) + image.GetHeight();
-        mng_uint32 compressed_len = (sizeof(RGB) * image.GetWidth() * image.GetHeight()) + image.GetHeight();
+        mng_uint32 filter_len     = (sizeof(RGB) * w * h) + h;
+        mng_uint32 compressed_len = (sizeof(RGB) * w * h) + h;
     	             compressed_len += compressed_len / 100 + 12 + 8;	// extra 8 for safety
   
         unsigned char* buffer = new unsigned char[filter_len];
@@ -1580,7 +1644,7 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
            return MNG_OUTOFMEMORY;
          }
 
-        rgb_image_add_filter_byte(image.GetPixels(), image.GetWidth(), image.GetHeight(), buffer);
+        rgb_image_add_filter_byte(image.GetPixels(), x, y, w, h, image.GetWidth(), image.GetHeight(), buffer);
 
         uLong dstLen = compressed_len;
         uLong srcLen = filter_len;
@@ -1599,6 +1663,7 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
 
         iRC = mng_putchunk_iend (hMNG);
         if (iRC != 0) return iRC;
+
       }
     }
   }
@@ -1616,9 +1681,30 @@ SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& im
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "../common/system.hpp"
+
+void LoadImages(const char* filter) {
+  std::vector<CImage32> images;
+  std::vector<std::string> filelist = GetFileList(filter);
+  for (int i = 0; i < filelist.size(); i++) {
+    CImage32 image;
+    const char* filename = filelist[i].c_str();
+    if (image.Load(filename)) {
+      images.push_back(image);
+    }
+  }
+
+  SaveMNGAnimationFromImages("comics.mng", images);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSpritesetView::OnExportDirectionAsAnimation()
 {
+  // SetCurrentDirectory("c:\\windows\\desktop\\8bit");
+  // LoadImages("*");
+
   CAnimationFileDialog dialog(FDM_SAVE, "Export Direction As Animation");
   if (dialog.DoModal() == IDOK) {
 
