@@ -1,21 +1,20 @@
 #include "unix_video.h"
-#include "SDL.h"
 #include <cstring>
 
 SFONT* FPSFont;
-bool FPSDisplayed;
-SDL_Surface* screen;
-SDL_Surface* double_buffer; /* double trouble */
-RGBA global_mask; /* bad, jcore! bad! */
-typedef void (*mask_routine)(Uint32, Uint32&, SDL_Format*);
+static bool FPSDisplayed;
+static SDL_Surface* screen;
+static SDL_Surface* double_buffer; /* double trouble */
+static RGBA global_mask; /* bad, jcore! bad! */
+typedef void (*mask_routine)(Uint32, Uint32&, SDL_PixelFormat*);
 
 template <typename leftT, typename rightT>
-inline MIN (leftT left, rightT right) {
+inline leftT MIN (leftT left, rightT right) {
   left < right ? left : right;
 }
 
 template <typename leftT, typename rightT>
-inline MAX (leftT left, rightT right) {
+inline leftT MAX (leftT left, rightT right) {
   left > right ? left : right;
 }
 
@@ -45,6 +44,7 @@ bool SwitchResolution (int x, int y) {
     if (screen == NULL)
       return false;
     FPSDisplayed = false;
+    initialized = true;
     return true;
   } else {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
@@ -54,6 +54,7 @@ bool SwitchResolution (int x, int y) {
     if (screen == NULL)
       return false;
     FPSDisplayed = false;
+    initialized = true;
     return true;
   }
 }
@@ -141,7 +142,7 @@ IMAGE GrabImage (int x, int y, int width, int height) {
 }
 
 void DestroyImage (IMAGE image) {
-  SDL_FreeSurface(surface);
+  SDL_FreeSurface(image);
 }
 
 void BlitImage (IMAGE image, int x, int y) {
@@ -157,10 +158,11 @@ void StraightBlit (IMAGE image, int x, int y, mask_routine routine) {
   int scanlines;
   int width;
   SDL_Rect clip;
-  Uint32* ipixel, spixel;
+  Uint32* dpixel;
+  Uint32* spixel;
 
   if (SDL_LockSurface(screen) == 0) {
-    clip = SDL_GetClipRect(screen, &clip);
+    SDL_GetClipRect(screen, &clip);
     scanlines = MIN(image->h + y, clip.h) - MAX(y, clip.y);
     width = MIN(image->w + x, clip.w) - MAX(x, clip.x);
     dpixel = static_cast<Uint32*>(screen->pixels) + (MAX(y, clip.y) * screen->w + MAX(x, clip.x));
@@ -169,7 +171,8 @@ void StraightBlit (IMAGE image, int x, int y, mask_routine routine) {
       for (lcv_h = 0; lcv_h < width; lcv_h++) {
         routine(*(spixel + lcv_h), *(dpixel + lcv_h), image->format);
       }
-      pixel += image->width;
+      spixel += image->w;
+      dpixel += screen->w;
     }
   }
 }
@@ -212,7 +215,7 @@ int GetImageHeight (IMAGE image) {
 /* this is where endianess problems start */
 RGBA* LockImage (IMAGE image) {
   SDL_LockSurface(image);
-  return image->pixels;
+  return reinterpret_cast<RGBA*>(image->pixels);
 }
 
 void UnlockImage (IMAGE image) {

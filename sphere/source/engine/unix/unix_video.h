@@ -1,7 +1,8 @@
 #ifndef UNIX_VIDEO_H
 #define UNIX_VIDEO_H
 
-#include "../../common/rga.h"
+#include "../../common/rgb.hpp"
+#include "SDL.h"
 
 class SFONT; /* for drawing FPS */
 typedef SDL_Surface* IMAGE;
