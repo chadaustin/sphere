@@ -5,7 +5,7 @@
 
 
 #include <string>
-
+#include "../common/rgb.hpp"
 
 // template class for starting a POD type with zeroed members
 template<typename T>

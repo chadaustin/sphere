@@ -7,6 +7,10 @@
 #include "../common/minmax.hpp"
 #include "resource.h"
 
+#include "Configuration.hpp"
+#include "Keys.hpp"
+
+
 #include "NumberDialog.hpp"
 
 static int s_ImageViewID = 9000;
@@ -645,6 +649,8 @@ CImageView::GetSelectionPixels() {
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 void
 CImageView::UpdateSelectionPixels(RGBA* pixels, int sx, int sy, int sw, int sh)
 {
@@ -666,40 +672,10 @@ CImageView::UpdateSelectionPixels(RGBA* pixels, int sx, int sy, int sw, int sh)
 void
 CImageView::InvalidateSelection(int sx, int sy, int sw, int sh)
 {
-/*
-  // get client rectangle
-  RECT ClientRect;
-  GetClientRect(&ClientRect);
-
-  int width = m_Image.GetWidth();
-  int height = m_Image.GetHeight();
-
-  // calculate size of pixel squares
-  int hsize = ClientRect.right / width;
-  int vsize = ClientRect.bottom / height;
-  if (hsize < 1)
-    hsize = 1;
-  if (vsize < 1)
-    vsize = 1;
-
-  int totalx = hsize * width;
-  int totaly = vsize * height;
-  int offsetx = (ClientRect.right - totalx) / 2;
-  int offsety = (ClientRect.bottom - totaly) / 2;
-
-  RECT rect = { offsetx+(sx * hsize), offsety+(sy * vsize), offsetx+((sx + sw) * hsize),  offsetx+((sy + sh) * vsize), };
-  if (0) {
-    char string[255];
-    sprintf(string, "%d %d %d %d", rect.left, rect.top, rect.bottom, rect.right);
-    MessageBox(string);
-  }
-  InvalidateRect(&rect);
-*/
   m_RedrawX = sx;
   m_RedrawY = sy;
   m_RedrawWidth = sw;
   m_RedrawHeight = sh;
-
   Invalidate();
 }
 
@@ -715,14 +691,6 @@ CImageView::Click(bool force_draw)
   POINT start = ConvertToPixel(m_LastPoint);
   POINT end = ConvertToPixel(m_CurPoint);
 
-  // bounds check (why are we doing this?)
-//  if (start.x < 0 ||
-//      start.y < 0 ||
-//      start.x >= m_Image.GetWidth() ||
-//      start.y >= m_Image.GetHeight()) {
-//    return;
-//  }
-
   if (!InImage(end) || !InSelection(end)) {
     return;
   }
@@ -732,7 +700,7 @@ CImageView::Click(bool force_draw)
   }
 
   m_Image.SetPixel(end.x, end.y, m_Color);
-  InvalidateSelection(end.x - 1, end.y - 1, 3, 3);
+  InvalidateSelection(end.x, end.y, 1, 1);
   m_Handler->IV_ImageChanged();
 }
 
@@ -756,7 +724,7 @@ CImageView::Fill()
 
   FillMe(startPoint.x, startPoint.y, m_Image.GetPixel(startPoint.x, startPoint.y));
 
-  Invalidate();
+  InvalidateSelection(GetSelectionLeftX(), GetSelectionTopY(), GetSelectionWidth(), GetSelectionHeight());
   m_Handler->IV_ImageChanged();
 }
 
@@ -1088,11 +1056,13 @@ CImageView::OnPaint()
   int dib_width = 64;
   int dib_height = 64;
 
+  // ensure that we redraw dib_width by dib_height squares only
   m_RedrawX -= m_RedrawX % dib_width;
   m_RedrawY -= m_RedrawY % dib_height;
   m_RedrawWidth  += dib_width; m_RedrawWidth  -= m_RedrawWidth  % dib_width;
   m_RedrawHeight += dib_height; m_RedrawHeight -= m_RedrawHeight % dib_height;
 
+  // clamp redraw values within image
   if (m_RedrawX < 0) m_RedrawX = 0;
   if (m_RedrawY < 0) m_RedrawY = 0;
   if (m_RedrawX + m_RedrawWidth > m_Image.GetWidth()) m_RedrawWidth = m_Image.GetWidth() - m_RedrawX;
@@ -1100,6 +1070,9 @@ CImageView::OnPaint()
 
   int num_tiles_x = ((size*width) / dib_width);
   int num_tiles_y = ((size*height) / dib_height);
+
+  RGBA color_mask_1 = CreateRGBA(Configuration::Get(KEY_COLOR_MASK_1_RED), Configuration::Get(KEY_COLOR_MASK_1_GREEN), Configuration::Get(KEY_COLOR_MASK_1_BLUE), 255);
+  RGBA color_mask_2 = CreateRGBA(Configuration::Get(KEY_COLOR_MASK_2_RED), Configuration::Get(KEY_COLOR_MASK_2_GREEN), Configuration::Get(KEY_COLOR_MASK_2_BLUE), 255);
 
   for (int ty = 0; ty <= num_tiles_y; ++ty) {
     for (int tx = 0; tx <= num_tiles_x; ++tx) {
@@ -1125,7 +1098,7 @@ CImageView::OnPaint()
 
             visible = true;
 
-            int counter = (iy * 64) + ix;
+            int counter = (iy * dib_height) + ix;
 
             RGBA color = pImage[((sy * width) + sx)];
  
@@ -1136,9 +1109,8 @@ CImageView::OnPaint()
               pixels[counter].alpha = color.alpha;
             }
             else {
-              // todo, make these colors customizable
-              RGBA Color1 = CreateRGBA(255, 40, 120, 255); // CreateRGBA(255, 255, 255, 255);
-              RGBA Color2 = CreateRGBA(128, 128, 128, 255);
+              RGBA Color1 = color_mask_1;
+              RGBA Color2 = color_mask_2;
 
               Color1.red   = (color.red   * color.alpha + Color1.red   * (256 - color.alpha)) / 256;
               Color1.green = (color.green * color.alpha + Color1.green * (256 - color.alpha)) / 256;
@@ -1186,8 +1158,6 @@ CImageView::OnPaint()
       }
     }
   }
-
-  m_RedrawX = m_RedrawY = m_RedrawWidth = m_RedrawHeight = 0;
 
 /* // this is the old image drawing code
   // draw the image
@@ -1301,18 +1271,23 @@ CImageView::OnPaint()
     DeleteObject(linepen);
   }
 
-  // draw a white rectangle around the image
-  SetRect(&Rect, offsetx - 1, offsety - 1, offsetx + totalx + 1, offsety + totaly + 1);
+  // todo: make the border not redraw itself all the time (it's annoying)
+  if (true) {
+    // draw a white rectangle around the image
+    SetRect(&Rect, offsetx - 1, offsety - 1, offsetx + totalx + 1, offsety + totaly + 1);
 
-  HPEN   white_pen = CreatePen(PS_SOLID, 1, RGB(0xFF, 0xFF, 0xFF));
-  HBRUSH old_brush = (HBRUSH)SelectObject(dc, GetStockObject(NULL_BRUSH));
-  HPEN   old_pen   = (HPEN)  SelectObject(dc, white_pen);
+    HPEN   white_pen = CreatePen(PS_SOLID, 1, RGB(0xFF, 0xFF, 0xFF));
+    HBRUSH old_brush = (HBRUSH)SelectObject(dc, GetStockObject(NULL_BRUSH));
+    HPEN   old_pen   = (HPEN)  SelectObject(dc, white_pen);
 
-  ::Rectangle(dc, Rect.left, Rect.top, Rect.right, Rect.bottom);
+    ::Rectangle(dc, Rect.left, Rect.top, Rect.right, Rect.bottom);
 
-  SelectObject(dc, old_pen);
-  SelectObject(dc, old_brush);
-  DeleteObject(white_pen);
+    SelectObject(dc, old_pen);
+    SelectObject(dc, old_brush);
+    DeleteObject(white_pen);
+  }
+
+  m_RedrawX = m_RedrawY = m_RedrawWidth = m_RedrawHeight = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
