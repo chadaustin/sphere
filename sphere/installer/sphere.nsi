@@ -3,8 +3,8 @@
 
 ; NOTE: this .NSI script is designed for NSIS v1.8+
 
-Name "Sphere 1.0 beta2"
-OutFile "InstallSphere1.0b2.exe"
+Name "Sphere 1.0 beta3"
+OutFile "InstallSphere1.0b3.exe"
 
 ; Some default compiler settings (uncomment and change at will):
 ; SetCompress auto ; (can be off or force)
@@ -33,6 +33,11 @@ CreateDirectory "$SMPROGRAMS\Sphere"
 CreateShortCut "$SMPROGRAMS\Sphere\Run Sphere.lnk" "$INSTDIR\engine.exe"
 CreateShortCut "$SMPROGRAMS\Sphere\Configuration.lnk" "$INSTDIR\config.exe"
 CreateShortCut "$SMPROGRAMS\Sphere\Editor.lnk" "$INSTDIR\editor.exe"
+CreateDirectory "$SMPROGRAMS\Sphere\Documentation"
+CreateShortCut "$SMPROGRAMS\Sphere\Documentation\Sphere Web Site.lnk" "http://sphere.sourceforge.net"
+CreateShortCut "$SMPROGRAMS\Sphere\Documentation\AegisKnight's Site.lnk" "http://aegisknight.org/sphere"
+CreateShortCut "$SMPROGRAMS\Sphere\Documentation\Flik's Tutorial Site.lnk" "http://sphere.sourceforge.net/flik/docs"
+CreateShortCut "$SMPROGRAMS\Sphere\Documentation\Local Documentation.lnk" "$INSTDIR\docs"
 
 ; register file types
 WriteRegStr HKCR ".rfn" "" "SphereFont"
