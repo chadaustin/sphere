@@ -118,8 +118,6 @@ CMapEngine::Execute(const char* filename, int fps)
     return false;
   }
 
-  m_CurrentMap = filename;
-
   if (!Run()) {
     m_IsRunning = false;
     return false;
@@ -169,7 +167,6 @@ CMapEngine::ChangeMap(const char* filename)
     // reset map engine timing
     m_NextFrame = (qword)GetTime() * m_FrameRate;  // update next rendering time
 
-    m_CurrentMap = filename;
     return true;
 
   } else {
@@ -2317,6 +2314,8 @@ CMapEngine::OpenMap(const char* filename)
     m_LayerRenderers[i] = NULL;
   }
 
+  m_CurrentMap = filename;
+
   // execute entry script
   std::string error;
   if (!ExecuteScript(m_Map.GetMap().GetEntryScript(), error)) {
@@ -2331,6 +2330,7 @@ CMapEngine::OpenMap(const char* filename)
     m_Engine->DestroyScript(m_SouthScript);
     m_Engine->DestroyScript(m_WestScript);
 
+    m_CurrentMap = "";
     return false;
   }
   ResetNextFrame();
@@ -2347,6 +2347,7 @@ CMapEngine::CloseMap()
   m_Music = 0;
 
   if (!DestroyMapPersons()) {
+    m_CurrentMap = "";
     return false;
   }
 
@@ -2377,10 +2378,12 @@ CMapEngine::CloseMap()
   std::string error;
   if (!ExecuteScript(m_Map.GetMap().GetExitScript(), error)) {
     m_ErrorMessage = "Exit Script Error:\n" + error;
+    m_CurrentMap = "";
     return false;
   }
   ResetNextFrame();
 
+  m_CurrentMap = "";
   return true;
 }
 
