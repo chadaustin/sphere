@@ -517,9 +517,12 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha, int merge
       cheight = sh;
     }
 
-    for (int iy = 0; iy < cheight; iy++)
+    int max_width = cwidth; if (iWidth < cwidth) max_width = iWidth;
+    int max_height = cheight; if (iHeight < cheight) max_height = iHeight;
+
+    for (int iy = 0; iy < max_height; iy++)
     {
-      for (int ix = 0; ix < cwidth; ix++)
+      for (int ix = 0; ix < max_width; ix++)
       {
         if (red)   iPixels[(iy + yoffset) * iWidth + (ix + xoffset)].red   = cpixels[iy * cwidth + ix].red;
         if (green) iPixels[(iy + yoffset) * iWidth + (ix + xoffset)].green = cpixels[iy * cwidth + ix].green;
