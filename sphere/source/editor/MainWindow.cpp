@@ -30,7 +30,6 @@
 
 // dialogs
 #include "NewProjectDialog.hpp"
-#include "OptionsDialog.hpp"
 #include "GameSettingsDialog.hpp"
 #include "FileDialogs.hpp"
 #include "ResizeDialog.hpp"
@@ -102,7 +101,6 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
 
   ON_COMMAND(ID_FILE_SAVEALL, OnFileSaveAll)
 
-  ON_COMMAND(ID_FILE_OPTIONS, OnFileOptions)
   ON_COMMAND(ID_FILE_EXIT,    OnClose)
 
   // insert
@@ -1269,14 +1267,6 @@ CMainWindow::OnFileSaveAll()
       sdw->Save();
     }
   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-afx_msg void
-CMainWindow::OnFileOptions()
-{
-  COptionsDialog().DoModal();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

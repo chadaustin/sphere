@@ -4,7 +4,6 @@
 //
 #define IDR_MAIN                        101
 #define IDD_NEW_PROJECT                 103
-#define IDD_OPTIONS                     104
 #define IDR_TOOLBAR                     106
 #define IDI_SDE                         108
 #define IDI_PROJECT                     109
@@ -95,21 +94,15 @@
 #define IDC_NAME                        1018
 #define IDC_ANIMATED                    1019
 #define IDC_NEXT_TILE                   1020
-#define IDC_REGISTER_RMP                1021
-#define IDC_REGISTER_RSS                1023
 #define IDC_DELAY                       1033
 #define IDC_MUSIC                       1034
 #define IDC_NEXT                        1035
 #define IDC_PREVIOUS                    1036
-#define IDC_REGISTER_RWS                1038
-#define IDC_REGISTER_RFN                1039
 #define IDC_SCREENWIDTH                 1044
 #define IDC_SCREENHEIGHT                1045
 #define IDC_TILESET_BROWSE              1048
 #define IDC_SPRITESET                   1062
 #define IDC_BROWSE_SPRITESET            1076
-#define IDC_CONFIGURE_AUDIO             1078
-#define IDC_AUDIO_DRIVERS               1079
 #define IDC_TILE_BACKGROUND             1081
 #define IDC_STRETCH_BACKGROUND          1082
 #define IDC_GRADIENT_BACKGROUND         1083
@@ -144,16 +137,12 @@
 #define IDC_STEPS                       1116
 #define IDC_AUTHOR                      1117
 #define IDC_DESCRIPTION                 1118
-#define IDC_CUSTOM1                     1119
 #define ID_FILE_IMPORT_BITMAPTORSS      12241
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40003
 #define ID_FILE_CLOSEPROJECT            40009
-#define ID_FILE_OPTIONS                 40011
 #define ID_PROJECT_INSERT_MAP           40014
-#define ID_HELP_CONTENTS                40016
 #define ID_HELP_SPHERESITE              40016
-#define ID_HELP_TUTORIAL                40017
 #define ID_HELP_FLIKSSITE               40017
 #define ID_PROJECT_INSERT_SPRITESET     40018
 #define ID_PROJECT_INSERT_SCRIPT        40020

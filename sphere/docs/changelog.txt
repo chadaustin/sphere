@@ -1,3 +1,7 @@
+2003.02.07
+  - fixed a stack overflow bug when using the fill tool on large images
+  - removed the options dialog box from the editor
+
 2003.02.05
   - fixed GrabImage crash bug in standard16 and interpolate16
   - fixed: GrabImage in sphere_gl grabbed the wrong pixels (and

@@ -44,7 +44,6 @@ sources = Split("""
     NewMapDialog.cpp
     NewProjectDialog.cpp
     NumberDialog.cpp
-    OptionsDialog.cpp
     Package.cpp
     PaletteView.cpp
     PaletteWindow.cpp
