@@ -2947,6 +2947,11 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
 
     case ID_MAPVIEW_DELETEENTITY:
     {
+      int result = MessageBox("Delete selected entity?", "Delete Entity", MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2);
+      if (result == IDNO) {
+        break;
+      }
+
       for (int ie = 0; ie < m_Map->GetNumEntities(); ie++) {
         sEntity& e = m_Map->GetEntity(ie);
         if (e.x >= tx * tile_width && e.x < tx * tile_width + tile_width &&

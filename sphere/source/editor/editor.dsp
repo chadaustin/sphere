@@ -826,6 +826,14 @@ SOURCE=.\ConvolveListDialog.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\EntityListDialog.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\EntityListDialog.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\EntityPersonDialog.cpp
 # End Source File
 # Begin Source File

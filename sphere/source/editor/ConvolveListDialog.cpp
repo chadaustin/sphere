@@ -415,6 +415,8 @@ CConvolveListDialog::SortFilters()
 BOOL
 CConvolveListDialog::OnInitDialog()
 {
+  UpdateButtons();
+
   LoadFilterList();
   SortFilters();
 
@@ -551,9 +553,22 @@ CConvolveListDialog::OnOK()
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+CConvolveListDialog::UpdateButtons()
+{
+  bool enable = FALSE;
+  if (m_CurrentFilter >= 0 && m_CurrentFilter < m_FilterList.size())
+    enable = TRUE;
+
+  GetDlgItem(IDC_FILTER_LIST_EDIT)->EnableWindow(enable);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
 CConvolveListDialog::OnFilterChanged()
 {
   m_CurrentFilter = SendDlgItemMessage(IDC_FILTER_LIST, LB_GETCURSEL);
+  UpdateButtons();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

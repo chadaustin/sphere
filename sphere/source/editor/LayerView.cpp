@@ -202,7 +202,6 @@ static void DrawLayerButton(HDC dc, RECT rect, const sLayer& layer, bool pushed)
   SetBkMode(dc, TRANSPARENT);
   DrawText(dc, layer.GetName(), strlen(layer.GetName()), &rect, DT_CENTER | DT_VCENTER);
 
-  
   // clean up
   RestoreDC(dc, -1);
   DeleteObject(very_light);

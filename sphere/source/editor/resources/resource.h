@@ -101,6 +101,7 @@
 #define IDI_UNKNOWN                     254
 #define IDR_IRC                         255
 #define IDR_IRCVIEW                     256
+#define IDD_ENTITY_LIST                 257
 #define IDC_PROJECTNAME                 1000
 #define IDC_GAMETITLE                   1001
 #define IDC_BROWSE                      1003
@@ -210,6 +211,9 @@
 #define IDC_FILTER_LIST_EDIT_WRAP       1181
 #define IDC_FILTER_LIST_EDIT_DIVISOR    1182
 #define IDC_PREVIEW_FRAME               1191
+#define IDC_ENTITY_LISTBOX              1192
+#define IDC_ENTITY_DELETE               1195
+#define IDC_ENTITY_EDIT                 1196
 #define ID_FILE_IMPORT_BITMAPTORSS      12241
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40003
@@ -571,6 +575,7 @@
 #define ID_IRCVIEW_CONTROL_OP           40732
 #define ID_IRCVIEW_CONTROL_DEOP         40733
 #define ID_SCRIPT_OPTIONS_WORD_WRAP     40734
+#define ID_MAP_EDIT_ENTITIES            40735
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -578,9 +583,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        257
-#define _APS_NEXT_COMMAND_VALUE         40735
-#define _APS_NEXT_CONTROL_VALUE         1192
+#define _APS_NEXT_RESOURCE_VALUE        258
+#define _APS_NEXT_COMMAND_VALUE         40736
+#define _APS_NEXT_CONTROL_VALUE         1196
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

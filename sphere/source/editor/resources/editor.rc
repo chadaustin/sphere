@@ -163,6 +163,7 @@ BEGIN
         MENUITEM "&Change Tile Size...",        ID_MAP_CHANGETILESIZE
         MENUITEM "&Rescale Tileset...",         ID_MAP_RESCALETILESET
         MENUITEM "Re&size All Layers...",       ID_MAP_RESIZEALLLAYERS
+        MENUITEM "&Edit Entities",              ID_MAP_EDIT_ENTITIES
         MENUITEM SEPARATOR
         MENUITEM "&Export Tileset...",          ID_MAP_EXPORTTILESET
         MENUITEM "&Import Tileset...",          ID_MAP_IMPORTTILESET
@@ -1386,6 +1387,19 @@ BEGIN
     LTEXT           "and",IDC_STATIC,89,122,13,8
 END
 
+IDD_ENTITY_LIST DIALOG DISCARDABLE  0, 0, 233, 183
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Entity List"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,17,160,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,85,160,50,14
+    LISTBOX         IDC_ENTITY_LISTBOX,15,17,204,116,LBS_SORT | 
+                    LBS_MULTIPLESEL | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Delete",IDC_ENTITY_DELETE,84,136,50,14
+    PUSHBUTTON      "Edit",IDC_ENTITY_EDIT,20,135,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1551,6 +1565,14 @@ BEGIN
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 159
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 176
+    END
+
+    IDD_ENTITY_LIST, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 226
         TOPMARGIN, 7
         BOTTOMMARGIN, 176
     END

@@ -11,6 +11,7 @@
 #include "MapPropertiesDialog.hpp"
 #include "NumberDialog.hpp"
 #include "TilePalette.hpp"
+#include "EntityListDialog.hpp"
 #include "../common/rgb.hpp"
 #include "../common/minmax.hpp"
 #include "resource.h"
@@ -35,6 +36,7 @@ BEGIN_MESSAGE_MAP(CMapWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_MAP_EXPORTTILESET,   OnExportTileset)
   ON_COMMAND(ID_MAP_IMPORTTILESET,   OnImportTileset)
   ON_COMMAND(ID_MAP_PRUNETILESET,    OnPruneTileset)
+  ON_COMMAND(ID_MAP_EDIT_ENTITIES,   OnEditEntities)
 
   ON_COMMAND(ID_MAP_SLIDE_UP,        OnMapSlideUp)
   ON_COMMAND(ID_MAP_SLIDE_RIGHT,     OnMapSlideRight)
@@ -368,6 +370,18 @@ CMapWindow::OnMapProperties()
   CMapPropertiesDialog Dialog(&m_Map);
   if (Dialog.DoModal() == IDOK)
     SetModified(true);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMapWindow::OnEditEntities()
+{
+  CEntityListDialog dialog(&m_Map);
+  if (dialog.DoModal() == IDOK) {
+    SetModified(true);
+    Invalidate();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -90,6 +90,8 @@ private:
   void LoadFilterList();
   void SaveFilterList();
 
+  void UpdateButtons();
+
   int m_UseRed, m_UseGreen, m_UseBlue, m_UseAlpha;
 
 private:

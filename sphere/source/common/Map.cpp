@@ -15,6 +15,32 @@
 #include "types.h"
 #include "strcmp_ci.hpp"
 
+////////////////////////////////////////////////////////////////////////////////
+
+void DeleteEntity(sEntity* entity)
+{
+  if (entity == NULL)
+    return;
+
+  switch(entity->GetEntityType())
+  {
+    case sEntity::PERSON: {
+      delete (sPersonEntity*) entity;
+      entity = NULL;
+      break;
+    }
+
+    case sEntity::TRIGGER: {
+      delete (sTriggerEntity*) entity;
+      entity = NULL;
+      break;
+    }
+
+    default:
+      delete entity;
+      entity = NULL;
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -55,20 +81,7 @@ sMap::ClearEntityList()
 {
   for (int i = 0; i < GetNumEntities(); i++)
   {
-    int type = GetEntity(i).GetEntityType();
-
-    if (type == sEntity::PERSON) {
-      delete (sPersonEntity*) m_Entities[i];
-  		m_Entities[i] = NULL;
-    }
-
-    if (type == sEntity::TRIGGER) {
-      delete (sTriggerEntity*) m_Entities[i];
-	  	m_Entities[i] = NULL;
-    }
-
-    delete m_Entities[i];
-	  m_Entities[i] = NULL;
+    ::DeleteEntity(m_Entities[i]);
 	}
 
   m_Entities.clear();
@@ -1390,19 +1403,7 @@ sMap::AddEntity(sEntity* entity)
 void
 sMap::DeleteEntity(int index)
 {
-  int type = GetEntity(index).GetEntityType();
-  if (type == sEntity::PERSON) {
-    delete (sPersonEntity*) m_Entities[index];
-		m_Entities[index] = NULL;
-  }
-
-  if (type == sEntity::TRIGGER) {
-    delete (sTriggerEntity*) m_Entities[index];
-   	m_Entities[index] = NULL;
-  }
-
-  delete m_Entities[index];
-	m_Entities[index] = NULL;
+  ::DeleteEntity(m_Entities[index]);
   m_Entities.erase(m_Entities.begin() + index);
 }
 

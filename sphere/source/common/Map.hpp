@@ -8,6 +8,8 @@
 #include "Entities.hpp"
 class CImage32; // #include "Image32.hpp"
 
+void DeleteEntity(sEntity* entity);
+
 class sMap
 {
 public:
