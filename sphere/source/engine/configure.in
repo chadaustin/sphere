@@ -80,4 +80,10 @@ dnl Checks for library functions.
 
 AC_CHECK_FUNCS(getcwd)
 
+SRCDIR=`pwd`
+AC_SUBST(SRCDIR)
+
+CFLAGS="$CFLAGS -DXP_UNIX"
+CXXFLAGS="$CXXFLAGS -DXP_UNIX"
+
 AC_OUTPUT(Makefile unix/Makefile)

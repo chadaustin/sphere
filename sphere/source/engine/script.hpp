@@ -17,7 +17,7 @@
 #include "swindowstyle.hpp"
 #include "video.hpp"
 #include "network.hpp"
-#include "../common/ConfigFile.hpp"
+#include "../common/configfile.hpp"
 #include "../common/IAnimation.hpp"
 #include "../common/IFileSystem.hpp"
 #include "../common/Image32.hpp"

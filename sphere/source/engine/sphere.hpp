@@ -5,6 +5,7 @@
 #include "video.hpp"
 #include "sfont.hpp"
 #include "swindowstyle.hpp"
+#include <string>
 
 #include "../common/strcmp_ci.hpp"
 

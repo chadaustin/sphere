@@ -8,7 +8,7 @@
 #include "swindowstyle.hpp"
 #include "log.hpp"
 #include "sphere.hpp"
-#include "../common/ConfigFile.hpp"
+#include "../common/configfile.hpp"
 #include "../common/IAnimation.hpp"
 #include "../common/IFileSystem.hpp"
 
