@@ -7,6 +7,7 @@
 #define IDR_TOOLBAR                     106
 #define IDD_FILETYPES_PAGE              106
 #define IDC_IMAGETOOL_COLORPICKER       106
+#define IDD_FILETYPES_GENERAL_PAGE      106
 #define IDI_SDE                         108
 #define IDI_PROJECT                     109
 #define IDR_MAP                         111
@@ -112,6 +113,7 @@
 #define IDC_MAPTOOL_COPYENTITY          266
 #define IDC_MAPTOOL_PASTEENTITY         267
 #define IDD_LIST                        268
+#define IDD_FILETYPES_REGISTER_PAGE     269
 #define IDC_PROJECTNAME                 1000
 #define IDC_GAMETITLE                   1001
 #define IDC_BROWSE                      1003
@@ -248,6 +250,7 @@
 #define IDC_USE_BLUE                    1217
 #define IDC_USE_ALPHA                   1218
 #define IDC_LIST                        1220
+#define IDC_OPENUNKNOWNFILETYPES        1221
 #define ID_FILE_IMPORT_BITMAPTORSS      12241
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40003
@@ -655,9 +658,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        269
+#define _APS_NEXT_RESOURCE_VALUE        270
 #define _APS_NEXT_COMMAND_VALUE         40779
-#define _APS_NEXT_CONTROL_VALUE         1221
+#define _APS_NEXT_CONTROL_VALUE         1222
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

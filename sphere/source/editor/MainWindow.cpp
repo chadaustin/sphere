@@ -558,6 +558,12 @@ CMainWindow::OpenGameFile(const char* filename)
       }
     }
   }
+
+  if (filename && strlen(filename) > 0) {
+    if (Configuration::Get(OPEN_UNKNOWN_FILETYPES_AS_TEXT)) {
+      OpenDocumentWindow(GT_SCRIPTS, filename);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

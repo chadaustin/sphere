@@ -586,6 +586,14 @@ log_object.endBlock()
     GetInputPerson()
       - returns a string with the name of the person who currently holds input
 
+    AttachPlayerInput(person_entity, player_index)
+      - makes the 'person_entity' respond to the input
+        Currenty player_index has to be from zero to four (max four players)
+        Note: AttachInput is equilivent to AttachPlayerInput(person_entity, 0)
+      
+    DetachPlayerInput(person_entity)
+      - releases input from the attached person entity
+
     SetUpdateScript(script)
     // calls 'script' after each frame (don't draw stuff in here!)
 

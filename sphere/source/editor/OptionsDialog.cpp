@@ -5,6 +5,9 @@
 #include "FileTypes.hpp"
 #include "Editor.hpp"
 
+#include "Configuration.hpp"
+#include "Keys.hpp"
+
 #include <afxwin.h>
 #include <afxcmn.h>
 
@@ -133,7 +136,7 @@ void UnregisterFile(const char* ext)
 ///////////////////////////////////////////////////////////
 
 static
-BOOL CALLBACK FileTypeDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
+BOOL CALLBACK FileTypeRegisterDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
   struct Local {
     static void RefreshFileTypes(HWND window, bool first) {
@@ -230,14 +233,46 @@ BOOL CALLBACK FileTypeDialogProc(HWND window, UINT message, WPARAM wparam, LPARA
     default:
       return FALSE;
   }
+
+  return FALSE;
 }
 
+///////////////////////////////////////////////////////////
+
+static
+BOOL CALLBACK FileTypeGeneralDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
+{
+  switch (message)
+  {
+    case WM_INITDIALOG:
+    {
+      CheckDlgButton(window, IDC_OPENUNKNOWNFILETYPES, (Configuration::Get(OPEN_UNKNOWN_FILETYPES_AS_TEXT) ? BST_CHECKED : BST_UNCHECKED));
+      return TRUE;
+    }
+
+    case WM_NOTIFY:
+    {
+      PSHNOTIFY* psn = (PSHNOTIFY*)lparam;
+      if (psn->hdr.code == UINT(PSN_APPLY))
+      {
+        Configuration::Set(OPEN_UNKNOWN_FILETYPES_AS_TEXT, (IsDlgButtonChecked(window, IDC_OPENUNKNOWNFILETYPES) == BST_CHECKED));
+        return TRUE;
+      }
+
+      return FALSE;
+    }
+    
+  }
+
+  return FALSE;
+}
+    
 ///////////////////////////////////////////////////////////
 
 void
 COptionsDialog::Execute()
 {
-  PROPSHEETPAGE Pages[1];
+  PROPSHEETPAGE Pages[2];
   const int num_pages = sizeof(Pages) / sizeof(*Pages);
 
   // default values
@@ -251,10 +286,15 @@ COptionsDialog::Execute()
   
   int current_page = 0;
 
-  Pages[current_page].pszTemplate = MAKEINTRESOURCE(IDD_FILETYPES_PAGE);
-  Pages[current_page].pfnDlgProc  = FileTypeDialogProc;
+  Pages[current_page].pszTemplate = MAKEINTRESOURCE(IDD_FILETYPES_REGISTER_PAGE);
+  Pages[current_page].pfnDlgProc  = FileTypeRegisterDialogProc;
   current_page += 1;
-  
+
+  Pages[current_page].pszTemplate = MAKEINTRESOURCE(IDD_FILETYPES_GENERAL_PAGE);
+  Pages[current_page].pfnDlgProc  = FileTypeGeneralDialogProc;
+  current_page += 1;
+
+
   // create the dialog box
   PROPSHEETHEADER psh;
   memset(&psh, 0, sizeof(psh));

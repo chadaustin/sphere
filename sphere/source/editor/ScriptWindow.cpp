@@ -836,13 +836,24 @@ CScriptWindow::SaveDocument(const char* path)
   if (file == NULL)
     return false;
 
-  CString text;
-  GetEditorText(text);
-  fwrite((const char*)text, 1, text.GetLength(), file);
-  fclose(file);
+  bool saved = false;
 
-  SendEditor(SCI_SETSAVEPOINT);
-  return true;
+  int length = SendEditor(SCI_GETLENGTH);
+  char* str = new char[length + 1];
+  if (str) {
+    str[length] = 0;
+    SendEditor(SCI_GETTEXT, length, (LPARAM)str);
+
+    fwrite(str, 1, length, file);
+    fclose(file);
+
+    delete[] str;
+    saved = true;
+
+    SendEditor(SCI_SETSAVEPOINT);
+  }
+
+  return saved;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
