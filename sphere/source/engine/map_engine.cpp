@@ -19,7 +19,7 @@ static inline void MapEngineLog(const std::string text) {
   firstcall = false;
 
   if (file != NULL) {
-    fwrite(text.c_str(), sizeof(char), text.length(), file);
+    fwrite(std::string(text + "\n").c_str(), sizeof(char), text.length(), file);
     fclose(file);
   }
 
@@ -2190,7 +2190,7 @@ CMapEngine::CallPersonScript(const char* name, int which)
   if (*ps) {
 
     std::string error;
-    if (ExecuteScript(*ps, error)) {
+    if ( !ExecuteScript(*ps, error) ) {
       m_ErrorMessage = "Could not execute person script\n" + error;
       return false;
     }
@@ -2227,7 +2227,7 @@ CMapEngine::QueuePersonCommand(const char* name, int command, bool immediate)
   // make sure command is valid
   if (command < 0 || command >= NUM_COMMANDS) {
     m_ErrorMessage = "Invalid command";
-    return false;    
+    return false;
   }
 
   // find person
