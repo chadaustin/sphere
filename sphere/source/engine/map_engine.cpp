@@ -3784,13 +3784,13 @@ CMapEngine::UpdateEdgeScripts()
 
   if (m_Camera.y < 0) {                                 // north
     
-    if (!CallMapScript(SCRIPT_ON_LEAVE_MAP_SOUTH)) {
+    if (!CallMapScript(SCRIPT_ON_LEAVE_MAP_NORTH)) {
       return false;
     }    
 
   } else if (m_Camera.y > tile_height * layer_height) { // south
 
-    if (!CallMapScript(SCRIPT_ON_LEAVE_MAP_NORTH)) {
+    if (!CallMapScript(SCRIPT_ON_LEAVE_MAP_SOUTH)) {
       return false;
     }
 
