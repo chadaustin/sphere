@@ -5,7 +5,14 @@
 #include "SDL.h"
 
 class SFONT; /* for drawing FPS */
-typedef SDL_Surface* IMAGE;
+typedef struct _IMAGE {
+  int width;
+  int height;
+  BGRA* bgra;
+  byte* alpha;
+  void (*blit_routine)(_IMAGE* image, int x, int y);
+  RGBA* locked_pixels;
+}* IMAGE;
 
 void SetFPSFont(SFONT* font);
 void ToggleFPS();

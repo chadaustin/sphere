@@ -138,9 +138,24 @@ int GetPendingReadSize (NSOCKET socket) {
 }
 
 int SocketRead (NSOCKET socket, void* buffer, int size) {
+  int num_read = 0;
+  int total_read = 0;
+  char* read_ptr = (char*)buffer;
+
   if (!IsConnected(socket))
     return -1;
-  return (read(socket->socket, buffer, size));
+  while (((num_read = read(socket->socket, read_ptr,
+	 size - total_read)) != 0) && (total_read < size)) {
+    if (num_read == -1) {
+	   if (errno == EWOULDBLOCK)
+		  return 0;
+		else
+		  return -1;
+	 }
+	 total_read += num_read;
+	 read_ptr += num_read;
+  }
+  return total_read;
 }
 
 void SocketWrite (NSOCKET socket, void* buffer, int size) {

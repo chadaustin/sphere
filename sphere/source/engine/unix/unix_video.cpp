@@ -1,261 +1,52 @@
-#include "unix_video.h"
-#include "unix_input.h"
-#include "unix_time.h"
 #include "../../common/primitives.hpp"
-#include <cstring>
-#include <assert.h>
 #include "../sfont.hpp"
+#include "unix_video.h"
+#include "unix_time.h"
+#include "unix_input.h"
 
+/*! \file unix_video.cpp
+
+  This is a modified version of standard32.cpp */
+
+static void FillImagePixels(IMAGE image, const RGBA* data);
+static void OptimizeBlitRoutine(IMAGE image);
+
+static void NullBlit(IMAGE image, int x, int y);
+static void TileBlit(IMAGE image, int x, int y);
+static void SpriteBlit(IMAGE image, int x, int y);
+static void NormalBlit(IMAGE image, int x, int y);
+
+SDL_Surface* screen;
 SFONT* FPSFont;
 static bool FPSDisplayed;
-static SDL_Surface* screen;
-static SDL_Surface* double_buffer; /* double trouble */
-static RGBA global_mask; /* bad, jcore! bad! */
-static SDL_PixelFormat* image_format; /* another bad hack */
 
-/* a special clipping rect that the primitives routines can deal with */
-typedef struct _CLIPPER {
-  int left, right, top, bottom;
-} CLIPPER;
+typedef struct _clipper {
+  int left, right, bottom, top;
+} clipper;
 
-static CLIPPER clipping_rectangle; /* convenience for primitives */
+static clipper ClippingRectangle;
 
-inline CLIPPER MakeClipper (SDL_Rect rect) {
-  CLIPPER clipper;
+static int ScreenWidth;
+static int ScreenHeight;
 
-  clipper.left = rect.x;
-  clipper.right = rect.x + rect.w - 1;
-  clipper.top = rect.y;
-  clipper.bottom = rect.y + rect.h - 1;
-
-  return clipper;
-}
-
-template <typename leftT, typename rightT>
-inline leftT MIN (leftT left, rightT right) {
-  left < right ? left : right;
-}
-
-template <typename leftT, typename rightT>
-inline leftT MAX (leftT left, rightT right) {
-  left > right ? left : right;
-}
-
-void straight_copy (Uint32& dest, Uint32 src) {
-  dest = src;
-}
-
-void straight_copyRGBA (Uint32& dest, RGBA src) {
-  dest = SDL_MapRGBA(screen->format, src.red, src.green, src.blue, src.alpha);
-}
-
-void blend_alpha (Uint32& dest, Uint32 src) {
-  Uint8 sr, sg, sb, sa;
-  Uint8 dr, dg, db, da;
-
-  SDL_GetRGBA(src, image_format, &sr, &sg, &sb, &sa);
-  SDL_GetRGBA(dest, screen->format, &dr, &dg, &db, &da);
-  sa = (int)sa * global_mask.alpha / 256;
-  sr = (int)sr * global_mask.red / 256;
-  sg = (int)sg * global_mask.green / 256;
-  sb = (int)sb * global_mask.blue / 256;
-  dr = (dr * (256 - sa) + sr * sa) / 256;
-  dg = (dg * (256 - sa) + sg * sa) / 256;
-  db = (db * (256 - sa) + sb * sa) / 256;
-  dest = SDL_MapRGBA(screen->format, dr, dg, db, da);
-}
-
-void blend_alphaRGBA (Uint32& dest, RGBA src) {
-  Uint8 r, g, b, a;
-
-  SDL_GetRGBA(dest, screen->format, &r, &g, &b, &a);
-  a = src.alpha;
-  a = a * global_mask.alpha / 256;
-  src.red = src.red * global_mask.red / 256;
-  src.green = src.green * global_mask.green / 256;
-  src.blue = src.blue * global_mask.blue / 256;
-  r = (r * (256 - a) + r * a) / 256;
-  g = (g * (256 - a) + g * a) / 256;
-  b = (b * (256 - a) + b * a) / 256;
-  dest = SDL_MapRGBA(screen->format, r, g, b, a);
-}
-
-void blend_copy (Uint32& dest, Uint32 src) {
-  Uint8 sr, sg, sb, sa;
-  Uint8 dr, dg, db, da;
-
-  SDL_GetRGBA(src, image_format, &sr, &sg, &sb, &sa);
-  SDL_GetRGBA(dest, screen->format, &dr, &dg, &db, &da);
-  dr = (sr * sa + dr * (256 - sa)) / 256;
-  dg = (sg * sa + dg * (256 - sa)) / 256;
-  db = (db * sa + db * (256 - sa)) / 256;
-  dest = SDL_MapRGBA(screen->format, dr, dg, db, da);
-}
-
-void blend_copyRGBA (Uint32& dest, RGBA src) {
-  Uint8 r, g, b, a;
-
-  SDL_GetRGBA(dest, screen->format, &r, &g, &b, &a);
-  r = (src.red * src.alpha + r * (256 - src.alpha)) / 256;
-  g = (src.green * src.alpha + g * (256 - src.alpha)) / 256;
-  b = (src.blue * src.alpha + b * (256 - src.alpha)) / 256;
-  dest = SDL_MapRGBA(screen->format, r, g, b, a);
-}
-
-class constant_color {
- public:
-  constant_color (Uint32 color)
-    : m_color(color) { }
-
-  Uint32 operator() (int i, int range) {
-    return m_color;
-  }
-
- private:
-  Uint32 m_color;
-};
-
-class constant_colorRGBA {
- public:
-  constant_colorRGBA (RGBA color) {
-    m_color = color;
-  }
-  RGBA operator() (int i, int range) {
-	  return m_color;
-  }
- private:
-  RGBA m_color;
-};
-
-class gradient_color {
- public:
-  gradient_color (Uint32 color1, Uint32 color2) {
-    SDL_GetRGBA(color1, image_format, &m_r1, &m_g1, &m_b1, &m_a1);
-    SDL_GetRGBA(color2, image_format, &m_r2, &m_g2, &m_b2, &m_a2);
-  }
-
-  Uint32 operator() (int i, int range) {
-    if (range == 0) {
-      return SDL_MapRGBA(screen->format, m_r1, m_g1, m_b1, m_a1);
-    }
-    Uint8 r, g, b, a;
-
-    r = (i * m_r2 + (range - i) * m_r1) / range;
-    g = (i * m_g2 + (range - i) * m_g1) / range;
-    b = (i * m_b2 + (range - i) * m_b1) / range;
-    a = (i * m_a2 + (range - i) * m_a1) / range;
-    return SDL_MapRGBA(screen->format, r, g, b, a);
-  }
-
- private:
-  Uint8 m_r1, m_g1, m_b1, m_a1;
-  Uint8 m_r2, m_g2, m_b2, m_a2;
-};
-
-class gradient_colorRGBA {
- public:
-  gradient_colorRGBA (RGBA color1, RGBA color2)
-    : m_color1(color1), m_color2(color2) { }
-  RGBA operator() (int i, int range) {
-    if (range == 0) {
-      return m_color1;
-    }
-    RGBA color;
-    color.red   = (i * m_color2.red   + (range - i) * m_color1.red)   / range;
-    color.green = (i * m_color2.green + (range - i) * m_color1.green) / range;
-    color.blue  = (i * m_color2.blue  + (range - i) * m_color1.blue)  / range;
-    color.alpha = (i * m_color2.alpha + (range - i) * m_color1.alpha) / range;
-    return color;
-  }
- private:
-  RGBA m_color1;
-  RGBA m_color2;
-};
-
-#if 0 /* old */
-template <typename routineT>
-void StraightBlit (IMAGE image, int x, int y, routineT routine) {
-  int lcv_v, lcv_h;
-  int scanlines;
-  int width;
-  SDL_Rect clip;
-  Uint32* dpixel;
-  Uint32* spixel;
-
-  if (SDL_LockSurface(screen) == 0) {
-    SDL_GetClipRect(screen, &clip);
-    scanlines = MIN(image->h + y, clip.h) - MAX(y, clip.y);
-    width = MIN(image->w + x, clip.w) - MAX(x, clip.x);
-    dpixel = static_cast<Uint32*>(screen->pixels) + (MAX(y, clip.y) * screen->w + MAX(x, clip.x));
-    spixel = static_cast<Uint32*>(image->pixels);
-    for (lcv_v = 0; lcv_v < scanlines; lcv_v++) {
-      for (lcv_h = 0; lcv_h < width; lcv_h++) {
-        routine(*(dpixel + lcv_h), *(spixel + lcv_h));
-      }
-      spixel += image->w;
-      dpixel += screen->w;
-    }
-	 SDL_UnlockSurface(screen);
-  }
-}
-#endif /* old */
-
-template<typename pixelT, typename clipT, typename renderT>
-void unixBlit(
-  pixelT* surface,
-  int pitch,
-  const int x,
-  const int y,
-  pixelT* texture,
-  int tex_width,
-  int tex_height,
-  clipT clipper,
-  renderT renderer)
-{
-  int image_offset_x = 0;
-  int image_offset_y = 0;
-  int image_blit_width = tex_width;
-  int image_blit_height = tex_height;
-
-  if (x < clipper.left) {
-    image_offset_x = (clipper.left - x);
-    image_blit_width -= image_offset_x;
-  }
-
-  if (y < clipper.top) {
-    image_offset_y = (clipper.top - y);
-    image_blit_height -= image_offset_y;
-  }
-  
-  if (x + (int)tex_width - 1 > clipper.right) {
-    image_blit_width -= (x + tex_width - clipper.right - 1);
-  }
-
-  if (y + (int)tex_height - 1 > clipper.bottom) {
-    image_blit_height -= (y + tex_height - clipper.bottom - 1);
-  }
-
-  // heh, funny abbreviations
-  pixelT* dst = surface + (y + image_offset_y) * pitch + image_offset_x + x;
-  pixelT* src = texture +       image_offset_y * tex_width + image_offset_x;
-
-  int dst_inc = pitch - image_blit_width;
-  int src_inc = tex_width - image_blit_width;
-
-  int iy = image_blit_height;
-  while (iy-- > 0) {
-    int ix = image_blit_width;
-    while (ix-- > 0) {
-		renderer(*dst, *src);
-
-      dst++;
-      src++;
-    }
-
-    dst += dst_inc;
-    src += src_inc;
-  }
-}
+#define calculate_clipping_metrics(width, height)   /* EVIL! */      \
+  int image_offset_x = 0;                                            \
+  int image_offset_y = 0;                                            \
+  int image_blit_width = width;                                      \
+  int image_blit_height = height;                                    \
+                                                                     \
+  if (x < ClippingRectangle.left) {                                  \
+    image_offset_x = (ClippingRectangle.left - x);                   \
+    image_blit_width -= image_offset_x;                              \
+  }                                                                  \
+  if (y < ClippingRectangle.top) {                                   \
+    image_offset_y = (ClippingRectangle.top - y);                    \
+    image_blit_height -= image_offset_y;                             \
+  }                                                                  \
+  if (x + (int)width - 1 > ClippingRectangle.right)                  \
+    image_blit_width -= (x + width - ClippingRectangle.right - 1);   \
+  if (y + (int)height - 1 > ClippingRectangle.bottom)                \
+    image_blit_height -= (y + height - ClippingRectangle.bottom - 1)
 
 /* \brief set the fps font
 
@@ -294,7 +85,17 @@ bool SwitchResolution (int x, int y, bool fullscreen) {
   FPSDisplayed = false;
   initialized = true;
   SetClippingRectangle(0, 0, screen->w, screen->h);
+  ScreenWidth = screen->w;
+  ScreenHeight = screen->h;
   return true;
+}
+
+int GetScreenWidth() {
+  return ScreenWidth;
+}
+
+int GetScreenHeight() {
+  return ScreenHeight;
 }
 
 void ToggleFullscreen () {
@@ -304,12 +105,97 @@ void ToggleFullscreen () {
   fullscreen = !fullscreen;
 }
 
-int GetScreenWidth () {
-  return screen->w;
+void FillImagePixels(IMAGE image, const RGBA* pixels) {
+  // fill the image pixels
+  image->bgra = new BGRA[image->width * image->height];
+  for (int i = 0; i < image->width * image->height; i++) {
+    image->bgra[i].red   = (pixels[i].red   * pixels[i].alpha) / 256;
+    image->bgra[i].green = (pixels[i].green * pixels[i].alpha) / 256;
+    image->bgra[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 256;
+  }
+  // fill the alpha array
+  image->alpha = new byte[image->width * image->height];
+  for (int i = 0; i < image->width * image->height; i++)
+    image->alpha[i] = pixels[i].alpha;
 }
 
-int GetScreenHeight () {
-  return screen->h;
+void OptimizeBlitRoutine(IMAGE image) {
+  // null blit
+  bool is_empty = true;
+  for (int i = 0; i < image->width * image->height; i++)
+    if (image->alpha[i] != 0) {
+      is_empty = false;
+      break;
+    }
+  if (is_empty) {
+    image->blit_routine = NullBlit;
+    return;
+  }
+  // tile blit
+  bool is_tile = true;
+  for (int i = 0; i < image->width * image->height; i++)
+    if (image->alpha[i] != 255) {
+      is_tile = false;
+      break;
+    }
+  if (is_tile) {
+    image->blit_routine = TileBlit;
+    return;
+  }
+  // sprite blit
+  bool is_sprite = true;
+  for (int i = 0; i < image->width * image->height; i++)
+    if (image->alpha[i] != 0 && image->alpha[i] != 255) {
+      is_sprite = false;
+      break;
+    }
+  if (is_sprite) {
+    image->blit_routine = SpriteBlit;
+    return;
+  }
+  // normal blit
+  image->blit_routine = NormalBlit;
+}
+
+void SetClippingRectangle(int x, int y, int w, int h) {
+  int x1 = x;
+  int y1 = y;
+  int x2 = x + w - 1;
+  int y2 = y + h - 1;
+
+  // validate x values
+  if (x1 < 0)
+	 x1 = 0;
+  else if (x1 > ScreenWidth - 1)
+	 x1 = ScreenWidth - 1;
+
+  if (x2 < 0)
+	 x2 = 0;
+  else if (x2 > ScreenWidth - 1)
+	 x2 = ScreenWidth - 1;
+
+  // validate y values
+  if (y1 < 0)
+	 y1 = 0;
+  else if (y1 > ScreenHeight - 1)
+	 y1 = ScreenHeight - 1;
+
+  if (y2 < 0)
+	 y2 = 0;
+  else if (y2 > ScreenHeight - 1)
+	 y2 = ScreenHeight - 1;
+
+  ClippingRectangle.left = x1;
+  ClippingRectangle.right = x2;
+  ClippingRectangle.top = y1;
+  ClippingRectangle.bottom = y2;
+}
+
+void GetClippingRectangle(int* x, int* y, int* w, int* h) {
+  *x = ClippingRectangle.left;
+  *y = ClippingRectangle.top;
+  *w = ClippingRectangle.right - ClippingRectangle.left + 1;
+  *h = ClippingRectangle.bottom - ClippingRectangle.top + 1;
 }
 
 void FlipScreen () {
@@ -341,382 +227,397 @@ void FlipScreen () {
   SDL_Flip(screen);
 }
 
-void SetClippingRectangle (int x, int y, int w, int h) {
-  SDL_Rect rect;
+IMAGE CreateImage(int width, int height, const RGBA* pixels) {
+  // allocate the image
+  IMAGE image = new _IMAGE;
+  image->width  = width;
+  image->height = height;
 
-  rect.x = x;
-  rect.y = y;
-  rect.w = w;
-  rect.h = h;
-  SDL_SetClipRect(screen, &rect);
-  clipping_rectangle = MakeClipper(rect);
+  FillImagePixels(image, pixels);
+  OptimizeBlitRoutine(image);
+  return image;
 }
 
-void GetClippingRectangle (int* x, int* y, int* w, int* h) {
-  SDL_Rect rect;
-
-  SDL_GetClipRect(screen, &rect);
-  *x = rect.x;
-  *y = rect.y;
-  *w = rect.w;
-  *h = rect.h;
-}
-
-IMAGE CreateImage (int width, int height, const RGBA* pixels) {
-  SDL_Surface* surface;
-  Uint32 rmask, gmask, bmask, amask;
-
-  #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    rmask = 0xFF000000;
-    gmask = 0x00FF0000;
-    bmask = 0x0000FF00;
-    amask = 0x000000FF;
-  #else
-    rmask = 0x000000FF;
-    gmask = 0x0000FF00;
-    bmask = 0x00FF0000;
-    amask = 0xFF000000;
-  #endif
-
-  surface = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32,
-                                 rmask, gmask, bmask, amask);
-  if (surface == NULL)
+IMAGE GrabImage(int x, int y, int width, int height) {
+  if (x < 0 || y < 0 || x + width > ScreenWidth || y + height > ScreenHeight)
     return NULL;
-  if (SDL_LockSurface(surface) == -1) {
-    SDL_FreeSurface(surface);
-    return NULL;
-  }
-  if (image_format == NULL) {
-	  image_format = new SDL_PixelFormat;
-	  memcpy(image_format, surface->format, sizeof(SDL_PixelFormat));
-  }
-  memcpy(surface->pixels, pixels, 4 * width * height);
-  SDL_UnlockSurface(surface);
-  return surface;
-}
 
-IMAGE GrabImage (int x, int y, int width, int height) {
-  SDL_Surface* surface;
-  SDL_Rect source;
-  SDL_Rect dest;
+  IMAGE image = new _IMAGE;
+  image->width        = width;
+  image->height       = height;
+  image->blit_routine = TileBlit;
 
-  if ((width > GetScreenWidth()) || (height > GetScreenHeight()))
-    return NULL;
-  surface = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32,
-                                 0, 0, 0, 0);
-  if (surface == NULL)
-    return NULL;
-  source.x = x;
-  source.y = y;
-  source.w = width;
-  source.h = height;
-  dest.x = 0;
-  dest.y = 0;
-  if (SDL_BlitSurface(screen, &source, surface, &dest) == -1) {
-    SDL_FreeSurface(surface);
-    return NULL;
-  }
-  return surface;
-}
-
-void DestroyImage (IMAGE image) {
-  SDL_FreeSurface(image);
-}
-
-void BlitImage (IMAGE image, int x, int y) {
-  /* SDL_Rect dest;
-
-  dest.x = x;
-  dest.y = y;
+  if (SDL_LockSurface(screen) != 0)
+	 return NULL;
+  BGRA* Screen = (BGRA*)screen->pixels;
+  image->bgra = new BGRA[width * height];
+  for (int iy = 0; iy < height; iy++)
+    memcpy(image->bgra + iy * width, Screen + (y + iy) * ScreenWidth + x,
+           width * 4);
+  image->alpha = new byte[width * height];
+  memset(image->alpha, 255, width * height);
   SDL_UnlockSurface(screen);
-  SDL_UnlockSurface(image);
-  assert(SDL_BlitSurface(image, NULL, screen, &dest) == 0);
-  assert(dest.w == image->w);
-  assert(dest.h == image->h); */
-  unixBlit((Uint32*)(screen->pixels), screen->w, x, y,
-           (Uint32*)(image->pixels), image->w, image->h,
-			  clipping_rectangle, straight_copy);
+  return image;
 }
 
-void BlitImageMask (IMAGE image, int x, int y, RGBA mask) {
-  global_mask = mask;
-  /* StraightBlit(image, x, y, blend_alpha); */
-  unixBlit((Uint32*)(screen->pixels), screen->w, x, y,
-           (Uint32*)(image->pixels), image->w, image->h,
-			  clipping_rectangle, blend_alpha);
+void DestroyImage(IMAGE image) {
+  delete[] image->bgra;
+  delete[] image->alpha;
+  delete image;
 }
 
-void aBlendRGBA (Uint32& dest, Uint32 src) {
-  Uint8 sr, sg, sb, sa;
-  Uint8 dr, dg, db, da;
-
-  SDL_GetRGBA(src, screen->format, &sr, &sg, &sb, &sa);
-  SDL_GetRGBA(dest, screen->format, &dr, &dg, &db, &da);
-  dest = SDL_MapRGBA(screen->format,
-    (dr * (256 - sa)) / 256 + sr,
-    (dg * (256 - sa)) / 256 + sg,
-    (db * (256 - sa)) / 256 + sb,
-    da
-  );
+void BlitImage(IMAGE image, int x, int y) {
+  // don't draw it if it's off the screen
+  if (x + (int)image->width < ClippingRectangle.left ||
+      y + (int)image->height < ClippingRectangle.top ||
+      x > ClippingRectangle.right ||
+      y > ClippingRectangle.bottom)
+    return;
+  image->blit_routine(image, x, y);
 }
 
-using primitives::bracket;
-/* this is a slightly modified copy of a function in primitives.hpp
-   it was modified so that it could work on surfaces without a separate
-   alpha channel */
-template<typename destT, typename srcT, typename clipT,
-         typename renderT>
-void unixTexturedQuad (destT* surface, int pitch, const int x[4], const int y[4],
-                   srcT* texture, int tex_width, int tex_height,
-                   clipT clipper, renderT renderer) {
-  // find top and bottom points
-  int top = 0;
-  int bottom = 0;
-  for (int i = 1; i < 4; i++) {
-    if (y[i] < y[top]) {
-      top = i;
-    }
-    if (y[i] > y[bottom]) {
-      bottom = i;
-    }
+template<typename pixelT>
+class render_pixel_mask {
+ public:
+  render_pixel_mask(RGBA mask) : m_mask(mask) { }
+  void operator()(pixelT& dst, pixelT src, byte alpha) {
+    // do the masking on the source pixel
+    alpha     = (int)alpha     * m_mask.alpha / 256;
+    src.red   = (int)src.red   * m_mask.red   / 256;
+    src.green = (int)src.green * m_mask.green / 256;
+    src.blue  = (int)src.blue  * m_mask.blue  / 256;
+    // blit to the dest pixel
+    dst.red   = (dst.red   * (256 - alpha) + src.red   * alpha) / 256;
+    dst.green = (dst.green * (256 - alpha) + src.green * alpha) / 256;
+    dst.blue  = (dst.blue  * (256 - alpha) + src.blue  * alpha) / 256;
   }
+ private:
+  RGBA m_mask;
+};
 
-  // perform clipping in the y axis
-  int oldMinY = y[top];
-  int oldMaxY = y[bottom];
-  int minY = bracket<int>(y[top], clipper.top, clipper.bottom);
-  int maxY = bracket<int>(y[bottom], clipper.top, clipper.bottom);
-
-  // precalculate line segment information
-  struct segment {
-    // y1 < y2, always
-    int x1, x2;
-    int y1, y2;
-    int u1, u2;
-    int v1, v2;
-  } segments[4];
-
-  // segment 0 = top
-  // segment 1 = right
-  // segment 2 = bottom
-  // segment 3 = left
-
-  for (int i = 0; i < 4; i++) {
-    segment* s = segments + i;
-
-    int p1 = i;
-    int p2 = (i + 1) & 3;  // x & 3 == x % 4
-
-    s->x1 = x[p1];
-    s->y1 = y[p1];
-    s->u1 = (i == 1 || i == 2 ? tex_width  - 1 : 0);
-    s->v1 = (i == 2 || i == 3 ? tex_height - 1 : 0);
-
-    s->x2 = x[p2];
-    s->y2 = y[p2];
-    s->u2 = (i == 0 || i == 1 ? tex_width  - 1 : 0);
-    s->v2 = (i == 1 || i == 2 ? tex_height - 1 : 0);
-
-    if (y[p1] > y[p2]) {
-      std::swap(s->x1, s->x2);
-      std::swap(s->y1, s->y2);
-      std::swap(s->u1, s->u2);
-      std::swap(s->v1, s->v2);
-    }
+void BlitImageMask(IMAGE image, int x, int y, RGBA mask) {
+  if (SDL_LockSurface(screen) == 0) {
+    primitives::Blit((BGRA*)screen->pixels, ScreenWidth, x, y,
+                     image->bgra, image->alpha, image->width,
+                     image->height, ClippingRectangle,
+                     render_pixel_mask<BGRA>(mask));
+    SDL_UnlockSurface(screen);
   }
+}
 
-  // draw scanlines
-  for (int iy = minY; iy <= maxY; iy++) {
+void aBlendBGRA(struct BGRA& d, struct BGRA s, int a) {
+  // blit to the dest pixel
+  d.red   = (d.red   * (256 - a)) / 256 + s.red;
+  d.green = (d.green * (256 - a)) / 256 + s.green;
+  d.blue  = (d.blue  * (256 - a)) / 256 + s.blue;
+}
 
-    // find minimum and maximum x values
+void TransformBlitImage(IMAGE image, int x[4], int y[4]) {
+  if (SDL_LockSurface(screen) == 0) {
+    primitives::TexturedQuad((BGRA*)screen->pixels, ScreenWidth, x, y,
+                             image->bgra, image->alpha, image->width,
+                             image->height, ClippingRectangle,
+                             aBlendBGRA);
+    SDL_UnlockSurface(screen);
+  }
+}
 
-    // initial boundary values
-    int minX = clipper.right + 1;
-    int maxX = clipper.left - 1;
+void TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask) {
+  if (SDL_LockSurface(screen) == 0) {
+    primitives::TexturedQuad((BGRA*)screen->pixels, ScreenWidth, x, y,
+                             image->bgra, image->alpha, image->width,
+                             image->height, ClippingRectangle,
+                             render_pixel_mask<BGRA>(mask) );
+    SDL_UnlockSurface(screen);
+  }
+}
 
-    // default values in case no 
-    int minU = 0;
-    int minV = 0;
-    int maxU = 0;
-    int maxV = 0;
+void NullBlit(IMAGE image, int x, int y) {
+}
 
-    // intersect iy in each line
-    for (int i = 0; i < 4; i++) {
-      segment* s = segments + i;
+void TileBlit(IMAGE image, int x, int y) {
+  calculate_clipping_metrics(image->width, image->height);
 
-      // if iy is even in the segment and segment's length is not zero
-      if (s->y1 <= iy && iy <= s->y2) {
-        int x = (s->y1 == s->y2 ?
-          s->x1 :
-          s->x1 + (iy - s->y1) * (s->x2 - s->x1) / (s->y2 - s->y1));
-        int u = (s->y1 == s->y2 ?
-          s->u1 :
-          s->u1 + (iy - s->y1) * (s->u2 - s->u1) / (s->y2 - s->y1));
-        int v = (s->y1 == s->y2 ?
-          s->v1 :
-          s->v1 + (iy - s->y1) * (s->v2 - s->v1) / (s->y2 - s->y1));
+  if (SDL_LockSurface(screen) == 0) {
+    BGRA* dest = (BGRA*)screen->pixels + (y + image_offset_y) * ScreenWidth + image_offset_x + x;
+    BGRA* src = (BGRA*)image->bgra + image_offset_y * image->width + image_offset_x;
 
-        // update minimum and maximum x values
-        if (x < minX) {
-          minX = x;
-          minU = u;
-          minV = v;
+    int iy = image_blit_height;
+    while (iy-- > 0) {
+      memcpy(dest, src, image_blit_width * sizeof(BGRA));
+      dest += ScreenWidth;
+      src += image->width;
+    }
+    SDL_UnlockSurface(screen);
+  }
+}
+
+void SpriteBlit(IMAGE image, int x, int y) {
+  calculate_clipping_metrics(image->width, image->height);
+
+  if (SDL_LockSurface(screen) == 0) {
+    BGRA* dest = (BGRA*)screen->pixels + (y + image_offset_y) * ScreenWidth + image_offset_x + x;
+    BGRA* src = (BGRA*)image->bgra + image_offset_y * image->width + image_offset_x;
+    byte* alpha = image->alpha + image_offset_y * image->width + image_offset_x;
+
+    int dest_inc = ScreenWidth - image_blit_width;
+    int src_inc = image->width - image_blit_width;
+
+    int iy = image_blit_height;
+    while (iy-- > 0) {
+      int ix = image_blit_width;
+      while (ix-- > 0) {
+        if (*alpha) {
+          *dest = *src;
         }
-        if (x > maxX) {
-          maxX = x;
-          maxU = u;
-          maxV = v;
+        dest++;
+        src++;
+        alpha++;
+      }
+      dest += dest_inc;
+      src += src_inc;
+      alpha += src_inc;
+    }
+	 SDL_UnlockSurface(screen);
+  }
+}
+
+void NormalBlit(IMAGE image, int x, int y) {
+  calculate_clipping_metrics(image->width, image->height);
+
+  if (SDL_LockSurface(screen) == 0) {
+    BGRA* dest = (BGRA*)screen->pixels + (y + image_offset_y) * ScreenWidth + image_offset_x + x;
+    BGRA* src = (BGRA*)image->bgra + image_offset_y * image->width + image_offset_x;
+    byte* alpha = image->alpha + image_offset_y * image->width + image_offset_x;
+
+    int dest_inc = ScreenWidth - image_blit_width;
+    int src_inc = image->width - image_blit_width;
+
+    int iy = image_blit_height;
+    while (iy-- > 0) {
+      int ix = image_blit_width;
+      while (ix-- > 0) {
+        word a = *alpha;
+        word b = 256 - a;
+
+        dest->red = (dest->red * b) / 256 + src->red;
+        dest->green = (dest->green * b) / 256 + src->green;
+        dest->blue = (dest->blue * b) / 256 + src->blue;
+
+        dest++;
+        src++;
+        alpha++;
+      }
+      dest += dest_inc;
+      src += src_inc;
+      alpha += src_inc;
+    }
+	 SDL_UnlockSurface(screen);
+  }
+}
+
+int GetImageWidth(IMAGE image) {
+  return image->width;
+}
+
+int GetImageHeight(IMAGE image) {
+  return image->height;
+}
+
+RGBA* LockImage(IMAGE image) {
+  image->locked_pixels = new RGBA[image->width * image->height];
+  // rgb
+  for (int i = 0; i < image->width * image->height; i++) {
+    image->locked_pixels[i].red   = (image->bgra[i].red   * 256) / image->alpha[i];
+    image->locked_pixels[i].green = (image->bgra[i].green * 256) / image->alpha[i];
+    image->locked_pixels[i].blue  = (image->bgra[i].blue  * 256) / image->alpha[i];
+  }
+  // alpha
+  for (int i = 0; i < image->width * image->height; i++)
+    image->locked_pixels[i].alpha = image->alpha[i];
+  return image->locked_pixels;
+}
+
+void UnlockImage(IMAGE image) {
+  delete[] image->bgra;
+  delete[] image->alpha;
+  
+  FillImagePixels(image, image->locked_pixels);
+  OptimizeBlitRoutine(image);
+  delete[] image->locked_pixels;
+}
+
+void DirectBlit(int x, int y, int w, int h, RGBA* pixels) {
+  calculate_clipping_metrics(w, h);
+
+  if (SDL_LockSurface(screen) == 0) {
+    for (int iy = image_offset_y; iy < image_offset_y + image_blit_height; iy++)
+      for (int ix = image_offset_x; ix < image_offset_x + image_blit_width; ix++) {
+        BGRA* dest = (BGRA*)screen->pixels + (y + iy) * ScreenWidth + x + ix;
+        RGBA src = pixels[iy * w + ix];
+
+        if (src.alpha == 255) {
+          dest->red = src.red;
+          dest->green = src.green;
+          dest->blue = src.blue;
+        }
+        else if (src.alpha > 0) {
+          dest->red = (dest->red * (256 - src.alpha) + src.red * src.alpha) / 256;
+          dest->green = (dest->green * (256 - src.alpha) + src.green * src.alpha) / 256;
+          dest->blue = (dest->blue * (256 - src.alpha) + src.blue * src.alpha) / 256;
         }
       }
+	 SDL_UnlockSurface(screen);
+  }
+}
+
+inline void BlendRGBAtoBGRA(BGRA& d, RGBA src, RGBA alpha) {
+  Blend3(d, src, alpha.alpha);
+}
+
+void DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels) {
+  if (SDL_LockSurface(screen) == 0) {
+    primitives::TexturedQuad((BGRA*)screen->pixels, ScreenWidth, x, y,
+                             pixels, pixels, w, h, ClippingRectangle,
+                             BlendRGBAtoBGRA);
+    SDL_UnlockSurface(screen);
+  }
+}
+
+void DirectGrab(int x, int y, int w, int h, RGBA* pixels) {
+  if (x < 0 || y < 0 || x + w > ScreenWidth || y + h > ScreenHeight)
+    return;
+  if (SDL_LockSurface(screen) == 0) {
+    BGRA* Screen = (BGRA*)screen->pixels;
+    for (int iy = 0; iy < h; iy++)
+      for (int ix = 0; ix < w; ix++) {
+        pixels[iy * w + ix].red   = Screen[(y + iy) * ScreenWidth + x + ix].red;
+        pixels[iy * w + ix].green = Screen[(y + iy) * ScreenWidth + x + ix].green;
+        pixels[iy * w + ix].blue  = Screen[(y + iy) * ScreenWidth + x + ix].blue;
+        pixels[iy * w + ix].alpha = 255;
     }
+	 SDL_UnlockSurface(screen);
+  }
+}
 
-    // now clip the x extents
-    int oldMinX = minX;
-    int oldMaxX = maxX;
-    minX = bracket<int>(minX, clipper.left, clipper.right);
-    maxX = bracket<int>(maxX, clipper.left, clipper.right);
-   
-    // render the scanline pixels
-    if (minX == maxX) {
-      renderer(surface[iy * pitch + minX], texture[minV * tex_width + minU]);
-    } else {
-      for (int ix = minX; ix <= maxX; ix++) {
-        int iu = minU + (ix - oldMinX) * (maxU - minU) / (oldMaxX - oldMinX);
-        int iv = minV + (ix - oldMinX) * (maxV - minV) / (oldMaxX - oldMinX);
-        renderer(surface[iy * pitch + ix], texture[iv * tex_width + iu]);
-      }
+class constant_color {
+ public:
+  constant_color(RGBA color)
+    : m_color(color) {
+  }
+  RGBA operator()(int i, int range) {
+    return m_color;
+  }
+ private:
+  RGBA m_color;
+};
+
+class gradient_color {
+ public:
+  gradient_color(RGBA color1, RGBA color2)
+    : m_color1(color1), m_color2(color2) {
+  }
+  RGBA operator()(int i, int range) {
+    if (range == 0) {
+      return m_color1;
     }
-  } // end for scanlines
+    RGBA color;
+    color.red   = (i * m_color2.red   + (range - i) * m_color1.red)   / range;
+    color.green = (i * m_color2.green + (range - i) * m_color1.green) / range;
+    color.blue  = (i * m_color2.blue  + (range - i) * m_color1.blue)  / range;
+    color.alpha = (i * m_color2.alpha + (range - i) * m_color1.alpha) / range;
+    return color;
+  }
+ private:
+  RGBA m_color1;
+  RGBA m_color2;
+};
+
+inline void copyBGRA(BGRA& dest, BGRA source) {
+  dest = source;
 }
 
-void TransformBlitImage (IMAGE image, int x[4], int y[4]) {
+inline void blendBGRA(BGRA& dest, RGBA source) {
+  Blend3(dest, source, source.alpha);
+}
+
+void DrawPoint(int x, int y, RGBA color) {
   if (SDL_LockSurface(screen) == 0) {
-    unixTexturedQuad((Uint32*)(screen->pixels), screen->w, x, y,
-                     (Uint32*)(image->pixels), image->w, image->h,
-                     clipping_rectangle, aBlendRGBA);
-    SDL_UnlockSurface(screen);
+    primitives::Point((BGRA*)screen->pixels, ScreenWidth, x, y, color,
+                      ClippingRectangle, blendBGRA);
+	 SDL_UnlockSurface(screen);
   }
 }
 
-void TransformBlitImageMask (IMAGE image, int x[4], int y[4], RGBA mask) {
+void DrawLine(int x[2], int y[2], RGBA color) {
   if (SDL_LockSurface(screen) == 0) {
-    global_mask = mask;
-    unixTexturedQuad((Uint32*)(screen->pixels), screen->w, x, y,
-                     (Uint32*)(image->pixels), image->w, image->h,
-                     clipping_rectangle, blend_alpha);
-    SDL_UnlockSurface(screen);
+    primitives::Line((BGRA*)screen->pixels, ScreenWidth, x[0], y[0],
+                     x[1], y[1], constant_color(color),
+							ClippingRectangle, blendBGRA);
+	 SDL_UnlockSurface(screen);
   }
 }
 
-int GetImageWidth (IMAGE image) {
-  return image->w;
-}
-
-int GetImageHeight (IMAGE image) {
-  return image->h;
-}
-
-RGBA* LockImage (IMAGE image) {
-  SDL_LockSurface(image);
-  return reinterpret_cast<RGBA*>(image->pixels);
-}
-
-void UnlockImage (IMAGE image) {
-  SDL_UnlockSurface(image);
-}
-
-void DirectBlit (int x, int y, int w, int h, RGBA* pixels) {
-  SDL_Surface* temp;
-
-  temp = CreateImage(w, h, pixels);
-  BlitImage(temp, x, y);
-  DestroyImage(temp);
-}
-
-void DirectTransformBlit (int x[4], int y[4], int w, int h, RGBA* pixels) {
-  SDL_Surface* temp;
-
-  temp = CreateImage(w, h, pixels);
-  TransformBlitImage(temp, x, y);
-  DestroyImage(temp);
-}
-
-void DirectGrab (int x, int y, int w, int h, RGBA* pixels) {
-  SDL_Surface* temp;
-
-  temp = GrabImage(x, y, w, h);
-  SDL_LockSurface(temp);
-  memcpy(pixels, temp->pixels, w * h * 4);
-  SDL_UnlockSurface(temp);
-  DestroyImage(temp);
-}
-
-void DrawPoint (int x, int y, RGBA color) {
+void DrawGradientLine(int x[2], int y[2], RGBA colors[2]) {
   if (SDL_LockSurface(screen) == 0) {
-    primitives::Point((Uint32*)(screen->pixels), screen->w, x, y, color,
-                      clipping_rectangle, blend_copyRGBA);
-    SDL_UnlockSurface(screen);
+    primitives::Line((BGRA*)screen->pixels, ScreenWidth, x[0], y[0],
+                     x[1], y[1], gradient_color(colors[0], colors[1]),
+							ClippingRectangle, blendBGRA);
+	 SDL_UnlockSurface(screen);
   }
 }
 
-void DrawLine (int x[2], int y[2], RGBA color) {
+void DrawTriangle(int x[3], int y[3], RGBA color) {
   if (SDL_LockSurface(screen) == 0) {
-    primitives::Line((Uint32*)(screen->pixels), screen->w, x[0], y[0],
-                     x[1], y[1], constant_colorRGBA(color),
-                     clipping_rectangle, blend_copyRGBA);
-    SDL_UnlockSurface(screen);
-  }
-}
-
-void DrawGradientLine (int x[2], int y[2], RGBA color[2]) {
-  if (SDL_LockSurface(screen) == 0) {
-    primitives::Line((Uint32*)(screen->pixels), screen->w, x[0], y[0],
-                     x[1], y[1], gradient_colorRGBA(color[0], color[1]),
-                     clipping_rectangle, blend_copyRGBA);
-    SDL_UnlockSurface(screen);
-  }
-}
-
-void DrawTriangle (int x[3], int y[3], RGBA color) {
-  if (SDL_LockSurface(screen) == 0) {
-    primitives::Triangle((Uint32*)(screen->pixels), screen->w, x, y,
-                          color, clipping_rectangle, blend_copyRGBA);
-    SDL_UnlockSurface(screen);
+    primitives::Triangle((BGRA*)screen->pixels, ScreenWidth, x, y,
+                         color, ClippingRectangle, blendBGRA);
+	 SDL_UnlockSurface(screen);
   }
 }
 
 inline RGBA interpolateRGBA(RGBA a, RGBA b, int i, int range) {
-  if (range == 0)
+  if (range == 0) {
     return a;
+  }
   RGBA result = {
     (a.red   * (range - i) + b.red   * i) / range,
     (a.green * (range - i) + b.green * i) / range,
     (a.blue  * (range - i) + b.blue  * i) / range,
-    (a.alpha * (range - i) + b.alpha * i) / range
+    (a.alpha * (range - i) + b.alpha * i) / range,
   };
   return result;
 }
 
-void DrawGradientTriangle (int x[3], int y[3], RGBA color[3]) {
+void DrawGradientTriangle(int x[3], int y[3], RGBA colors[3]) {
   if (SDL_LockSurface(screen) == 0) {
-    primitives::GradientTriangle((Uint32*)(screen->pixels), screen->w,
-      x, y, color, clipping_rectangle, blend_copyRGBA, interpolateRGBA);
-    SDL_UnlockSurface(screen);
+    primitives::GradientTriangle((BGRA*)screen->pixels, ScreenWidth,
+                                 x, y, colors, ClippingRectangle,
+										   blendBGRA, interpolateRGBA);
+	 SDL_UnlockSurface(screen);
   }
 }
 
-void DrawRectangle (int x, int y, int w, int h, RGBA color) {
+void DrawRectangle(int x, int y, int w, int h, RGBA color) {
   if (SDL_LockSurface(screen) == 0) {
-    primitives::Rectangle((Uint32*)(screen->pixels), screen->w, x, y, w, h,
-                          color, clipping_rectangle, blend_copyRGBA);
-    SDL_UnlockSurface(screen);
+    if (color.alpha == 0) { // no mask
+      return;
+    } else if (color.alpha == 255) { // full mask
+      BGRA bgra = { color.blue, color.green, color.red };
+      primitives::Rectangle((BGRA*)screen->pixels, ScreenWidth, x, y,
+		                      w, h, bgra, ClippingRectangle, copyBGRA);
+    } else {
+      primitives::Rectangle((BGRA*)screen->pixels, ScreenWidth, x, y,
+		                      w, h, color, ClippingRectangle, blendBGRA);
+    }
+	 SDL_UnlockSurface(screen);
   }
 }
 
-void DrawGradientRectangle (int x, int y, int w, int h, RGBA color[4]) {
+void DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4]) {
   if (SDL_LockSurface(screen) == 0) {
-    primitives::GradientRectangle((Uint32*)(screen->pixels), screen->w,
-      x, y, w, h, color, clipping_rectangle, blend_copyRGBA, interpolateRGBA);
-    SDL_UnlockSurface(screen);
+    primitives::GradientRectangle((BGRA*)screen->pixels, ScreenWidth,
+                                  x, y, w, h, colors, ClippingRectangle,
+											 blendBGRA, interpolateRGBA);
+	 SDL_UnlockSurface(screen);
   }
 }
