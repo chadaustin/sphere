@@ -35,8 +35,14 @@ sLayer::sLayer(int width, int height)
 , m_Visible(true)
 , m_Reflective(false)
 {
-  for (int i = 0; i < width * height; i++)
-    m_Tiles[i] = 0;
+  if (!m_Tiles) {
+    m_Width  = 0;
+    m_Height = 0;
+  }
+  else {
+    for (int i = 0; i < width * height; i++)
+      m_Tiles[i] = 0;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -48,7 +54,13 @@ sLayer::sLayer(const sLayer& layer)
   m_Width  = layer.m_Width;
   m_Height = layer.m_Height;
   m_Tiles  = new int[m_Width * m_Height];
-  memcpy(m_Tiles, layer.m_Tiles, m_Width * m_Height * sizeof(int));
+  if (!m_Tiles) {
+    m_Width = 0;
+    m_Height = 0;
+  }
+  else {
+    memcpy(m_Tiles, layer.m_Tiles, m_Width * m_Height * sizeof(int));
+  }
 
   m_HasParallax = layer.m_HasParallax;
   m_XParallax   = layer.m_XParallax;
@@ -85,7 +97,13 @@ sLayer::operator=(const sLayer& layer)
     m_Width  = layer.m_Width;
     m_Height = layer.m_Height;
     m_Tiles  = new int[m_Width * m_Height];
-    memcpy(m_Tiles, layer.m_Tiles, m_Width * m_Height * sizeof(int));
+    if (!m_Tiles) {
+      m_Width = 0;
+      m_Height = 0;
+    }
+    else {
+      memcpy(m_Tiles, layer.m_Tiles, m_Width * m_Height * sizeof(int));
+    }
 
     m_HasParallax = layer.m_HasParallax;
     m_XParallax   = layer.m_XParallax;
@@ -108,6 +126,9 @@ void
 sLayer::Resize(int width, int height)
 {
   int* new_layer = new int[width * height];
+  if (!new_layer)
+    return;
+
   for (int iy = 0; iy < height; iy++)
     for (int ix = 0; ix < width; ix++)
     {
@@ -183,6 +204,9 @@ void
 sLayer::Translate(int width, int height, int* tiles, int dx, int dy)
 {
   int* old_tiles = new int[width * height];
+  if (!old_tiles)
+    return;
+
   memcpy(old_tiles, tiles, width * height * sizeof(int));
 
   for (int iy = 0; iy < height; iy++) {

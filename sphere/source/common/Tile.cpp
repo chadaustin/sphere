@@ -9,6 +9,7 @@ sTile::sTile(int width, int height)
 , m_Animated(false)
 , m_NextTile(0)
 , m_Delay(0)
+, m_Terraform(false)
 {
   Clear();
 }
@@ -24,6 +25,7 @@ sTile::sTile(const sTile& rhs)
   m_Delay          = rhs.m_Delay;
   m_ObstructionMap = rhs.m_ObstructionMap;
   m_Name           = rhs.m_Name;
+  m_Terraform      = rhs.m_Terraform;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -38,6 +40,7 @@ sTile::operator=(const sTile& rhs)
   m_Delay          = rhs.m_Delay;
   m_ObstructionMap = rhs.m_ObstructionMap;
   m_Name           = rhs.m_Name;
+  m_Terraform      = rhs.m_Terraform;
 
   return *this;
 }
