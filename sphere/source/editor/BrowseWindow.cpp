@@ -14,12 +14,16 @@
 
 #include "../wxeditor/system.cpp"
 
+static const int BROWSE_TIMER = 9001;
+
 BEGIN_MESSAGE_MAP(CBrowseWindow, CDocumentWindow)
 
   ON_WM_SIZE()
   ON_WM_KEYDOWN()
   ON_WM_PAINT()
   ON_WM_MOUSEMOVE()
+  ON_WM_TIMER()
+  ON_WM_VSCROLL()
 
   ON_WM_LBUTTONDOWN()
 
@@ -41,16 +45,13 @@ CBrowseWindow::CBrowseWindow(const char* folder, const char* filter)
   m_Folder = folder;
   m_Filter = filter;
 
-  if (!LoadImages(folder, filter)) {
-    delete this;
-    return;
-  }
-
   m_BlitTile = new CDIBSection(
     100 * m_ZoomFactor,
     100 * m_ZoomFactor,
     32
   );
+
+  m_FileList = GetFileList(filter);
 
   Create();
 }
@@ -63,6 +64,8 @@ CBrowseWindow::~CBrowseWindow()
   Destroy();
   if (m_BlitTile)
     delete m_BlitTile;
+  ClearBrowseList();
+  m_FileList.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -71,7 +74,10 @@ void
 CBrowseWindow::Create()
 {
   // create the window
-  CDocumentWindow::Create(AfxRegisterWndClass(0, NULL, NULL, AfxGetApp()->LoadIcon(IDI_BROWSE)));
+  CDocumentWindow::Create(
+    AfxRegisterWndClass(0, AfxGetApp()->LoadCursor(IDI_BROWSE)),
+    WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_OVERLAPPEDWINDOW // window styles
+  );
 
   m_Created = true;  // the window and children are ready!
 
@@ -79,6 +85,8 @@ CBrowseWindow::Create()
   RECT ClientRect;
   GetClientRect(&ClientRect);
   OnSize(0, ClientRect.right - ClientRect.left, ClientRect.bottom - ClientRect.top);
+
+  m_Timer = SetTimer(BROWSE_TIMER, 25, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -86,139 +94,153 @@ CBrowseWindow::Create()
 void
 CBrowseWindow::Destroy()
 {
-  for (int i = 0; i < m_BrowseList.size(); i++)
-    delete m_BrowseList[i];
-  m_BrowseList.clear();
+  //KillTimer(m_Timer);
+  ClearBrowseList();
+  m_FileList.clear();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CBrowseWindow::OnTimer(UINT event) {
+  if (m_FileList.size() > 0) {
+    if (LoadFile(m_FileList[0].c_str())) {
+      UpdateScrollBar();
+      Invalidate();
+    }
+    m_FileList.erase(m_FileList.begin());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CBrowseWindow::LoadImages(const char* szFolder, const char* szFilter)
+CBrowseWindow::LoadFile(const char* filename)
+{
+  bool valid = false;
+
+  CImage32 image;
+  sSpriteset spriteset;
+  sWindowStyle windowstyle;
+  sMap map;
+  sFont font;
+
+  if (image.Load(filename)) {
+    valid = true;
+  }
+  else if (spriteset.Load(filename)) {
+    image = spriteset.GetImage(0);
+    valid = true;
+  }
+  else if (windowstyle.Load(filename)) {
+    CImage32 tl = windowstyle.GetBitmap(sWindowStyle::UPPER_LEFT);
+    CImage32 tm = windowstyle.GetBitmap(sWindowStyle::TOP);
+    CImage32 tr = windowstyle.GetBitmap(sWindowStyle::UPPER_RIGHT);
+    CImage32 ml = windowstyle.GetBitmap(sWindowStyle::LEFT);
+    CImage32 mm = windowstyle.GetBitmap(sWindowStyle::BACKGROUND);
+    CImage32 mr = windowstyle.GetBitmap(sWindowStyle::RIGHT);
+    CImage32 bl = windowstyle.GetBitmap(sWindowStyle::LOWER_LEFT);
+    CImage32 bm = windowstyle.GetBitmap(sWindowStyle::BOTTOM);
+    CImage32 br = windowstyle.GetBitmap(sWindowStyle::LOWER_RIGHT);
+
+    tl.Rescale(100/3, 100/3);
+    tm.Rescale(100/3, 100/3);
+    tr.Rescale(100/3, 100/3);
+    ml.Rescale(100/3, 100/3);
+    mm.Rescale(100/3, 100/3);
+    mr.Rescale(100/3, 100/3);
+    bl.Rescale(100/3, 100/3);
+    bm.Rescale(100/3, 100/3);
+    br.Rescale(100/3, 100/3);
+
+    image.Create(100, 100);
+
+    image.BlitImage(tl, 100/3*0, 100/3*0);
+    image.BlitImage(tm, 100/3*1, 100/3*0);
+    image.BlitImage(tr, 100/3*2, 100/3*0);
+    image.BlitImage(ml, 100/3*0, 100/3*1);
+    image.BlitImage(mm, 100/3*1, 100/3*1);
+    image.BlitImage(mr, 100/3*2, 100/3*1);
+    image.BlitImage(bl, 100/3*0, 100/3*2);
+    image.BlitImage(bm, 100/3*1, 100/3*2);
+    image.BlitImage(br, 100/3*2, 100/3*2);
+
+    valid = true;
+  }
+  else if (map.Load(filename) && map.GetNumLayers() > 0 && map.GetTileset().GetNumTiles() > 0) {
+    int map_width = 0;
+    int map_height = 0;
+  
+    for (int i = 0; i < map.GetNumLayers(); ++i) {
+      map_width  = std::max(map_width, map.GetLayer(i).GetWidth());
+      map_height = std::max(map_height, map.GetLayer(i).GetHeight());
+    }
+
+    map_width  = std::min(100, map_width);
+    map_height = std::min(100, map_height);
+
+    int xstep = 100 / map_width;
+    int ystep = 100 / map_height;
+
+    map.GetTileset().SetTileSize(xstep, ystep, true);
+    image.Create(map_width, map_height);
+
+    for (int layer = 0; layer < map.GetNumLayers(); ++layer) {
+      int layer_width  = map.GetLayer(layer).GetWidth();
+      int layer_height = map.GetLayer(layer).GetHeight();
+
+      for (int y = 0; y < layer_height; y += ystep) {
+        for (int x = 0; x < layer_width; x += xstep) {
+          image.BlitImage(map.GetTileset().GetTile(map.GetLayer(layer).GetTile(x, y)), x, y);
+        }
+      }
+    }
+
+    valid = true;
+  }
+  else if (font.Load(filename)) {
+    image.Create(100, 100);
+
+    int x = 0;
+    int y = 0;
+      
+    const char* string = "test";
+
+    for (int i = 0; i < 4; i++) {
+      image.BlitImage(font.GetCharacter(string[i]), x, y);
+      x += font.GetCharacter(i).GetWidth();
+    }
+
+    valid = true;
+  }
+
+  if (valid) {
+    image.Rescale(100, 100);
+    if (image.GetWidth() != 100 && image.GetHeight() != 100) {
+      valid = false;
+    }
+  }
+
+  if (valid) {
+    CBrowseInfo* b = new CBrowseInfo();
+    if (b) {
+      b->filename = filename;
+      b->image = image;
+      m_BrowseList.push_back(b);
+    }
+  }
+
+  return valid;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CBrowseWindow::ClearBrowseList()
 {
   for (int i = 0; i < m_BrowseList.size(); i++)
     delete m_BrowseList[i];
   m_BrowseList.clear();
-
-  std::vector<std::string> file_list = GetFileList(szFilter);
-
-  for (int i = 0; i < file_list.size(); i++) {
-    bool valid = false;
-
-    CImage32 image;
-    sSpriteset spriteset;
-    sWindowStyle windowstyle;
-    sMap map;
-    sFont font;
-
-    if (image.Load(file_list[i].c_str())) {
-      valid = true;
-    }
-    else if (spriteset.Load(file_list[i].c_str())) {
-      image = spriteset.GetImage(0);
-      valid = true;
-    }
-    else if (windowstyle.Load(file_list[i].c_str())) {
-      CImage32 tl = windowstyle.GetBitmap(sWindowStyle::UPPER_LEFT);
-      CImage32 tm = windowstyle.GetBitmap(sWindowStyle::TOP);
-      CImage32 tr = windowstyle.GetBitmap(sWindowStyle::UPPER_RIGHT);
-      CImage32 ml = windowstyle.GetBitmap(sWindowStyle::LEFT);
-      CImage32 mm = windowstyle.GetBitmap(sWindowStyle::BACKGROUND);
-      CImage32 mr = windowstyle.GetBitmap(sWindowStyle::RIGHT);
-      CImage32 bl = windowstyle.GetBitmap(sWindowStyle::LOWER_LEFT);
-      CImage32 bm = windowstyle.GetBitmap(sWindowStyle::BOTTOM);
-      CImage32 br = windowstyle.GetBitmap(sWindowStyle::LOWER_RIGHT);
-
-      tl.Rescale(100/3, 100/3);
-      tm.Rescale(100/3, 100/3);
-      tr.Rescale(100/3, 100/3);
-      ml.Rescale(100/3, 100/3);
-      mm.Rescale(100/3, 100/3);
-      mr.Rescale(100/3, 100/3);
-      bl.Rescale(100/3, 100/3);
-      bm.Rescale(100/3, 100/3);
-      br.Rescale(100/3, 100/3);
-
-      image.Create(100, 100);
-
-      image.BlitImage(tl, 100/3*0, 100/3*0);
-      image.BlitImage(tm, 100/3*1, 100/3*0);
-      image.BlitImage(tr, 100/3*2, 100/3*0);
-      image.BlitImage(ml, 100/3*0, 100/3*1);
-      image.BlitImage(mm, 100/3*1, 100/3*1);
-      image.BlitImage(mr, 100/3*2, 100/3*1);
-      image.BlitImage(bl, 100/3*0, 100/3*2);
-      image.BlitImage(bm, 100/3*1, 100/3*2);
-      image.BlitImage(br, 100/3*2, 100/3*2);
-
-      valid = true;
-    }
-    else if (map.Load(file_list[i].c_str()) && map.GetNumLayers() > 0 && map.GetTileset().GetNumTiles() > 0) {
-      int map_width = 0;
-      int map_height = 0;
-  
-      for (int i = 0; i < map.GetNumLayers(); ++i) {
-        map_width  = std::max(map_width, map.GetLayer(i).GetWidth());
-        map_height = std::max(map_height, map.GetLayer(i).GetHeight());
-      }
-
-      map_width  = std::min(100, map_width);
-      map_height = std::min(100, map_height);
-
-      int xstep = 100 / map_width;
-      int ystep = 100 / map_height;
-
-      map.GetTileset().SetTileSize(xstep, ystep, true);
-      image.Create(map_width, map_height);
-
-      for (int layer = 0; layer < map.GetNumLayers(); ++layer) {
-        int layer_width  = map.GetLayer(layer).GetWidth();
-        int layer_height = map.GetLayer(layer).GetHeight();
-
-        for (int y = 0; y < layer_height; y += ystep) {
-          for (int x = 0; x < layer_width; x += xstep) {
-            image.BlitImage(map.GetTileset().GetTile(map.GetLayer(layer).GetTile(x, y)), x, y);
-          }
-        }
-      }
-
-      valid = true;
-    }
-    else if (font.Load(file_list[i].c_str())) {
-      image.Create(100, 100);
-
-      int x = 0;
-      int y = 0;
-      
-      const char* string = "test";
-
-      for (int i = 0; i < 4; i++) {
-        image.BlitImage(font.GetCharacter(string[i]), x, y);
-        x += font.GetCharacter(i).GetWidth();
-      }
-
-      valid = true;
-    }
-
-    if (valid) {
-      image.Rescale(100, 100);
-      if (image.GetWidth() != 100 && image.GetHeight() != 100) {
-        valid = false;
-      }
-   }
-
-   if (valid) {
-     CBrowseInfo* b = new CBrowseInfo();
-     if (b) {
-       b->filename = file_list[i];
-       b->image = image;
-       m_BrowseList.push_back(b);
-     }
-   }
-  }
-
-
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -227,6 +249,8 @@ afx_msg void
 CBrowseWindow::OnSize(UINT uType, int cx, int cy)
 {
   CDocumentWindow::OnSize(uType, cx, cy);
+  UpdateScrollBar();
+  Invalidate();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -245,6 +269,8 @@ CBrowseWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
     m_SelectedImage = image;
     Invalidate();
   }
+
+  UpdateScrollBar();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -363,6 +389,7 @@ CBrowseWindow::OnLButtonDown(UINT flags, CPoint point)
   if (tile >= 0 && tile < m_BrowseList.size())
     m_SelectedImage = tile;
 
+  UpdateScrollBar();
   Invalidate();
 }
 
@@ -394,8 +421,88 @@ CBrowseWindow::OnMouseMove(UINT flags, CPoint point)
 ///////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
+CBrowseWindow::OnVScroll(UINT code, UINT pos, CScrollBar* scroll_bar)
+{
+  switch (code)
+  {
+    case SB_LINEDOWN:   m_TopRow++;                break;
+    case SB_LINEUP:     m_TopRow--;                break;
+    case SB_PAGEDOWN:   m_TopRow += GetPageSize(); break;
+    case SB_PAGEUP:     m_TopRow -= GetPageSize(); break;
+    case SB_THUMBTRACK: m_TopRow = (int)pos;       break;
+  }
+
+  UpdateScrollBar();
+  Invalidate();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void
+CBrowseWindow::UpdateScrollBar()
+{
+  int num_rows  = GetNumRows();
+  int page_size = GetPageSize();
+
+  // validate the values
+  if (m_TopRow > num_rows - page_size)
+    m_TopRow = num_rows - page_size;
+  if (m_TopRow < 0)
+    m_TopRow = 0;
+
+  SCROLLINFO si;
+  si.cbSize = sizeof(si);
+  si.fMask  = SIF_ALL;
+  si.nMin   = 0;
+
+  if (page_size - num_rows)
+  {
+    si.nMax   = num_rows - 1;
+    si.nPage  = page_size;
+    si.nPos   = m_TopRow;
+  }
+  else
+  {
+    si.nMax   = 0xFFFF;
+    si.nPage  = 0xFFFE;
+    si.nPos   = 0;
+  }
+
+  SetScrollInfo(SB_VERT, &si);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+int
+CBrowseWindow::GetPageSize()
+{
+  RECT ClientRect;
+  GetClientRect(&ClientRect);
+  return ClientRect.bottom / m_BlitTile->GetHeight();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+CBrowseWindow::GetNumRows()
+{
+  RECT client_rect;
+  GetClientRect(&client_rect);
+  int num_tiles_x = client_rect.right / m_BlitTile->GetWidth();
+
+  if (num_tiles_x == 0)
+    return -1;
+  else
+    return (m_BrowseList.size() + num_tiles_x - 1) / num_tiles_x;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
 CBrowseWindow::OnBrowseListRefresh() {
-  LoadImages(m_Folder.c_str(), m_Filter.c_str());
+  m_FileList.clear();
+  ClearBrowseList();
+  m_FileList = GetFileList(m_Filter.c_str());
   Invalidate();
 }
 

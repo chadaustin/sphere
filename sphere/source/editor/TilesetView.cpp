@@ -10,7 +10,7 @@
 #include "FontGradientDialog.hpp"
 
 
-const int UPDATE_TILEVIEW_TIMER = 200;
+// static const int UPDATE_TILEVIEW_TIMER = 200;
 
 
 static int s_iTilesetViewID = 1000;

@@ -37,16 +37,25 @@ private:
   void Create();
   void Destroy();
 
-  bool LoadImages(const char* folder, const char* filter = NULL);
+	afx_msg void OnTimer(UINT event);
 
   afx_msg void OnSize(UINT type, int cx, int cy);
   afx_msg void OnKeyDown(UINT vk, UINT repeat, UINT flags);
   afx_msg void OnPaint();
   afx_msg void OnLButtonDown(UINT flags, CPoint point);
   afx_msg void OnMouseMove(UINT flags, CPoint point);
+  afx_msg void OnVScroll(UINT code, UINT pos, CScrollBar* scroll_bar);
 
 private:
+  void ClearBrowseList();
+  bool LoadFile(const char* filename);
 
+private:
+  int GetPageSize();
+  int GetNumRows();
+  void UpdateScrollBar();
+
+private:
   afx_msg void OnBrowseListRefresh();
 
 private:
@@ -64,6 +73,10 @@ private:
   //int m_ImageHeight;
 
   std::vector<CBrowseInfo*> m_BrowseList;
+  std::vector<std::string> m_FileList;
+
+private:
+  UINT m_Timer;
 
   DECLARE_MESSAGE_MAP()
 };

@@ -40,6 +40,8 @@ public:
 
 protected:
   BOOL Create(LPCTSTR class_name);
+  BOOL Create(LPCTSTR class_name, DWORD style);
+
   static const char* GetDefaultWindowClass();
   
   void        SetDocumentPath(const char* path);

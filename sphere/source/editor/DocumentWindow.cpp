@@ -119,6 +119,17 @@ CDocumentWindow::Create(LPCTSTR class_name)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+BOOL
+CDocumentWindow::Create(LPCTSTR class_name, DWORD style)
+{
+  BOOL result = CMDIChildWnd::Create(class_name, "", style);
+  UpdateWindowCaption();
+  return result;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
 const char*
 CDocumentWindow::GetDefaultWindowClass()
 {
