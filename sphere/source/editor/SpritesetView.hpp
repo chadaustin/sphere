@@ -64,8 +64,9 @@ private:
   afx_msg void OnFillDelay();
 
   afx_msg void OnInsertDirectionFromImage();
-  afx_msg void OnInsertDirectionFromAnimation();
   afx_msg void OnExportDirectionAsImage();
+  afx_msg void OnInsertDirectionFromAnimation();
+  afx_msg void OnExportDirectionAsAnimation();
 	afx_msg LRESULT OnGetAccelerator(WPARAM wParam, LPARAM lParam);
 
   afx_msg void OnEditRange();

@@ -515,6 +515,8 @@ BEGIN
 
         MENUITEM "&Import From Animation...",   ID_SPRITESETVIEWDIRECTIONS_IMPORT_FROM_ANIMATION
 
+        MENUITEM "&Export As Animation...",     ID_SPRITESETVIEWDIRECTIONS_EXPORT_AS_ANIMATION
+
     END
     POPUP "SpritesetView_Frames"
     BEGIN

@@ -11,12 +11,14 @@
 #include <ctype.h>
 #include <math.h>
 #include <corona.h>
+
 #include "Image32.hpp"
 #include "Filters.hpp"
 #include "packed.hpp"
 #include "primitives.hpp"
 #include "strcmp_ci.hpp"
 #include "minmax.hpp"
+#include "resample.hpp"
 
 unsigned char alpha_old[256][256]={
 #include "alpha_old.table"
@@ -449,78 +451,16 @@ CImage32::Rescale(int width, int height)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static RGBA BlendColorsWeighted(RGBA a, RGBA b, double w1, double w2) {
-  if (w1 < 0) w1 = 0;
-  if (w2 < 0) w2 = 0;
-  
-  if (w1 + w2 == 0) {
-    return CreateRGBA(0, 0, 0, 255);
-  } else {
-    return CreateRGBA(
-      int((a.red   * w1 + b.red   * w2) / (w1 + w2)),
-      int((a.green * w1 + b.green * w2) / (w1 + w2)),
-      int((a.blue  * w1 + b.blue  * w2) / (w1 + w2)),
-      int((a.alpha * w1 + b.alpha * w2) / (w1 + w2))
-    );
-  }
-}
-
-/**
-  This should really be a Bilinear Interpolation Rescale
-*/
 void
 CImage32::Resample(int width, int height, bool weighted)
 {
-  if (width <= 0 || height <= 0)
-    return;
-
-  if (width == m_Width && height == m_Height)
-    return;
-
-  RGBA* NewPixels = new RGBA[width * height];
-  if (NewPixels == NULL)
-    return;
-  
-  double HorzAspectRatio = (double) width / (double) m_Width;
-  double VertAspectRatio = (double) height / (double) m_Height;
-
-  for (int y = 0; y < height; y++) {
-    for (int x = 0; x < width; x++) {
-
-      double x1 = (x + 0.25) / HorzAspectRatio;
-      double y1 = (y + 0.25) / VertAspectRatio;
-
-      double x2 = (x + 0.75) / HorzAspectRatio;
-      double y2 = (y + 0.75) / VertAspectRatio;
-
-      double w1 = weighted ? x2 - x1 : 0.5;
-      double w2 = weighted ? x2 - x1 : 0.5;
-      double w3 = weighted ? y2 - y1 : 0.5;
-      double w4 = weighted ? y2 - y1 : 0.5;
-
-      if ((x1 >= 0) && (x1 < m_Width) && ((y1 >= 0) && (y1 < m_Height))) {
-        if ((x2 >= 0) && (x2 < m_Width) && ((y2 >= 0) && (y2 < m_Height))) {
-          RGBA& color_a = m_Pixels[((int) y1 * m_Width) + (int) x1]; // top left
-          RGBA& color_b = m_Pixels[((int) y2 * m_Width) + (int) x2]; // bottom right
-          RGBA& color_c = m_Pixels[((int) y1 * m_Width) + (int) x2]; // top right
-          RGBA& color_d = m_Pixels[((int) y2 * m_Width) + (int) x1]; // bottom left
-          
-          RGBA top    = BlendColorsWeighted(color_a, color_c, w1, w2);
-          RGBA bottom = BlendColorsWeighted(color_d, color_b, w1, w2);
-
-          NewPixels[(y * width) + x] = BlendColorsWeighted(top, bottom, w3, w4);
-        }
-        else {
-          NewPixels[(y * width) + x] = m_Pixels[((int) y1 * m_Width) + (int) x1];
-        }
-      }
-    }
+  RGBA* NewPixels = resample(m_Pixels, m_Width, m_Height, width, height);
+  if (NewPixels) {
+    m_Width  = width;
+    m_Height = height;
+    delete[] m_Pixels;
+    m_Pixels = NewPixels;
   }
-
-  m_Width  = width;
-  m_Height = height;
-  delete[] m_Pixels;
-  m_Pixels = NewPixels;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

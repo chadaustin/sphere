@@ -32,6 +32,7 @@ BEGIN_MESSAGE_MAP(CSpritesetView, CWnd)
   ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_PROPERTIES, OnDirectionProperties)
   ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_IMPORT_FROM_IMAGE, OnInsertDirectionFromImage)
   ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_IMPORT_FROM_ANIMATION, OnInsertDirectionFromAnimation)
+  ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_EXPORT_AS_ANIMATION, OnExportDirectionAsAnimation)
   ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_EXPORT_AS_IMAGE, OnExportDirectionAsImage)
 
   ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_FILLDELAY,  OnFillDelay)
@@ -945,6 +946,52 @@ CSpritesetView::OnInsertDirectionFromAnimation()
   UpdateScrollBars();
   Invalidate();
   m_Handler->SV_SpritesetModified();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+static mng_retcode
+SaveMNGAnimationFromImages(const char* filename, const std::vector<CImage32>& images)
+{
+  if (!(images.size() >= 1))
+    return -1;
+
+  int frame_width = images[0].GetWidth();
+  int frame_height = images[0].GetHeight();
+
+  for (int i = 0; i < images.size(); i++) {
+    if (frame_width != images[i].GetWidth())
+      return -1;
+    if (frame_height != images[i].GetHeight())
+      return -1;
+  }
+
+  return -1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetView::OnExportDirectionAsAnimation()
+{
+/*
+  CAnimationFileDialog dialog(FDM_SAVE, "Export Direction As Animation");
+  if (dialog.DoModal() == IDOK) {
+
+    std::vector<CImage32> images;
+    for (int i = 0; i < m_Spriteset->GetNumFrames(m_CurrentDirection); i++) {
+      images.push_back(m_Spriteset->GetImage(m_Spriteset->GetFrameIndex(m_CurrentDirection, i)));
+    }
+
+    mng_retcode iRC = SaveMNGAnimationFromImages("c:\\windows\\desktop\\test_output.mng", images);
+    if (iRC == 0) {
+      MessageBox("Exported Animation!", "Export Direction As Animation", MB_OK);
+    }
+    else {
+      MessageBox(mng_get_error_message(iRC), "Error Exporting Direction As Animation", MB_OK);
+    }
+  }
+*/
 }
 
 ///////////////////////////////////////////////////////////////////////////////
