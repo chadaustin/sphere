@@ -97,7 +97,7 @@ if sys.platform == 'cygwin':
         CPPPATH = [Dir('third-party/include')],
         RESPATH = [Dir('third-party/include')],
         LIBPATH = [Dir('third-party/lib')],
-        LINKFLAGS = ['-mno-cygwin'])
+        LINKFLAGS = ['-mno-cygwin', '-s'])
     base_env['BUILDERS']['Resource'] = Builder(
         action = 'windres -O coff --define CYGWIN $_RESINCFLAGS $SOURCE -o $TARGET')
 

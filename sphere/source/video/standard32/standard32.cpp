@@ -1,7 +1,6 @@
 #define DIRECTDRAW_VERSION 0x0300
 #include <windows.h>
 #include <ddraw.h>
-#include <stdio.h>
 #include "../../common/rgb.hpp"
 #include "../../common/primitives.hpp"
 #include "../common/video.hpp"
@@ -99,7 +98,10 @@ EXPORT(void, GetDriverInfo)(DRIVERINFO* driverinfo)
 EXPORT(void, ConfigureDriver)(HWND parent)
 {
   LoadConfiguration();
-  DialogBox(DriverInstance, MAKEINTRESOURCE(IDD_CONFIGURE), parent, ConfigureDialogProc);
+  DialogBox(DriverInstance,
+            MAKEINTRESOURCE(IDD_CONFIGURE),
+            parent,
+            ConfigureDialogProc);
   SaveConfiguration();
 }
 

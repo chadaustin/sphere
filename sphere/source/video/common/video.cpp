@@ -12,7 +12,7 @@ RECT      ClippingRectangle;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved)
+extern "C" BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved)
 {
   DriverInstance = inst;
   return TRUE;
