@@ -2348,6 +2348,9 @@ CMapEngine::GetPersonData(const char* name, std::vector<struct PersonData>& pers
   Person& p = m_Persons[person];
   person_data = m_Persons[person].person_data;
   Local::SetDataInt(person_data, "num_frames", p.spriteset->GetSpriteset().GetNumFrames(p.direction));
+  Local::SetDataInt(person_data, "num_directions", p.spriteset->GetSpriteset().GetNumDirections());
+  Local::SetDataInt(person_data, "width", p.width);
+  Local::SetDataInt(person_data, "height", p.height);
 
   return true;
 }

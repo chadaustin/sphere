@@ -81,6 +81,10 @@ public:
   void Rectangle(int x1, int y1, int x2, int y2, RGBA color, clipper clip);
   void Triangle(int x1, int y1, int x2, int y2, int x3, int y3, RGBA color);
 
+  void GradientLine(int x1, int y1, int x2, int y2, RGBA c[2]);
+  void GradientRectangle(int x, int y, int w, int h, RGBA c[4]);
+  void GradientTriangle(int x1, int y1, int x2, int y2, int x3, int y3, RGBA c[3]);
+
   void BlitImage(CImage32& image, int x, int y);
   void BlitImageMask(CImage32& image, int x, int y, RGBA mask);
   void TransformBlitImage(CImage32& image, int x[4], int y[4]);

@@ -941,10 +941,10 @@ public:
       return m_color1;
     }
     RGBA color;
-    color.red   = (i * m_color2.red   + (range - i) * m_color1.red)   / range;
-    color.green = (i * m_color2.green + (range - i) * m_color1.green) / range;
-    color.blue  = (i * m_color2.blue  + (range - i) * m_color1.blue)  / range;
-    color.alpha = (i * m_color2.alpha + (range - i) * m_color1.alpha) / range;
+    color.red   = (i * m_color1.red   + (range - i) * m_color2.red)   / range;
+    color.green = (i * m_color1.green + (range - i) * m_color2.green) / range;
+    color.blue  = (i * m_color1.blue  + (range - i) * m_color2.blue)  / range;
+    color.alpha = (i * m_color1.alpha + (range - i) * m_color2.alpha) / range;
     return color;
   }
 

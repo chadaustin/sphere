@@ -344,6 +344,9 @@ SS_FUNCTION(OpenLog, 1)
   //surface.replaceColor(oldColor, newColor)
   //surface.line(x1, y1, x2, y2, color)
   //surface.rectangle(x, y, w, h, color)
+  //surface.gradientLine(x1, y1, x2, y2, start_color, end_color)
+  //surface.gradientRectangle(x, y, w, h, tl_clr, tr_clr, lr_clr, ll_clr)
+  //surface.gradientTriangle(x1, y1, x2, y2, x3, y3, c1, c2, c3)
   //surface.rotate(radians, resize)
   //surface.resize(w, h)
   //surface.rescale(w, h)
@@ -369,7 +372,7 @@ SS_FUNCTION(OpenLog, 1)
   // files
   SS_FUNCTION(GetFileList, 0)
   SS_FUNCTION(OpenFile, 1)
-  //file.read(key, default)
+  //file.read(key, default_value)
   //file.write(key, value)
 
   // raw files

@@ -26,8 +26,8 @@ public:
 
   BOOL Create(CDocumentWindow* owner, IMapViewHandler* handler, CWnd* parent, sMap* map);
 
-  void SetZoomFactor(int factor);
-  int  GetZoomFactor();
+  void SetZoomFactor(double factor);
+  double  GetZoomFactor();
 
   void TilesetChanged();
 
@@ -132,7 +132,7 @@ private:
   CDIBSection* m_BlitTile;  // for rendering tiles
   CClipboard* m_Clipboard;
 
-  int m_ZoomFactor;
+  double m_ZoomFactor;
   RGB m_ObstructionColor;
   RGB m_HighlightColor;
   RGB m_ZoneColor;

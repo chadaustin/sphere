@@ -5958,7 +5958,7 @@ CScript::CreateFontObject(JSContext* cx, SFONT* font, bool destroy)
   };
   JS_DefineFunctions(cx, object, fs);
 
-  // attach the sound to this object
+  // attach the font to this object
   SS_FONT* font_object = new SS_FONT;
   font_object->font       = font;
   font_object->destroy_me = destroy;
@@ -6456,6 +6456,9 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
     { "replaceColor",     ssSurfaceReplaceColor,     2, 0, 0 },
     { "line",             ssSurfaceLine,             5, 0, 0 },
     { "rectangle",        ssSurfaceRectangle,        5, 0, 0 },
+    { "gradientLine",     ssSurfaceGradientLine,     6, 0, 0 },
+    { "gradientRectangle", ssSurfaceGradientRectangle, 8, 0, 0 },
+    { "gradientTriangle",  ssSurfaceGradientTriangle,  9, 0, 0 },
     { "rotate",           ssSurfaceRotate,           2, 0, 0 },
     { "resize",           ssSurfaceResize,           2, 0, 0 },
     { "rescale",          ssSurfaceRescale,          2, 0, 0 },
@@ -6710,6 +6713,77 @@ begin_method(SS_SURFACE, ssSurfaceTriangle, 7)
   arg_color(c);
 
   object->surface->Triangle(x1, y1, x2, y2, x3, y3, c);
+end_method()
+
+//////
+
+/**
+    - draws a gradient line onto the surface starting from (x1, y1) to (x2, y2)
+    @see GradientLine
+*/
+begin_method(SS_SURFACE, ssSurfaceGradientLine, 6)
+  arg_int(x1);
+  arg_int(y1);
+  arg_int(x2);
+  arg_int(y2);
+  arg_color(c1);
+  arg_color(c2);
+  
+  RGBA c[2];
+  c[0] = c1;
+  c[1] = c2;
+
+  object->surface->GradientLine(x1, y1, x2, y2, c);
+end_method()
+
+////////////////////////////////////////
+
+/**
+    - draws a filled gradient rectangle onto the surface from (x, y) to (x+w, y+h)
+    @see GradientRectangle
+*/
+begin_method(SS_SURFACE, ssSurfaceGradientRectangle, 8)
+  arg_int(x);
+  arg_int(y);
+  arg_int(w);
+  arg_int(h);
+  arg_color(c1);
+  arg_color(c2);
+  arg_color(c3);
+  arg_color(c4);
+
+  RGBA c[4];
+  c[0] = c1;
+  c[1] = c2;
+  c[2] = c3;
+  c[3] = c4;
+
+  object->surface->GradientRectangle(x, y, w, h, c);
+end_method()
+
+////////////////////////////////////////
+
+/**
+    - draws a filled gradient triangle with the points (x1, y1), (x2, y2), (x3, y3), 
+    @see GradientTriangle
+*/
+begin_method(SS_SURFACE, ssSurfaceGradientTriangle, 7)
+  arg_int(x1);
+  arg_int(y1);
+  arg_int(x2);
+  arg_int(y2);
+  arg_int(x3);
+  arg_int(y3);
+  arg_color(c1);
+  arg_color(c2);
+  arg_color(c3);
+
+  RGBA c[3];
+  c[0] = c1;
+  c[1] = c2;
+  c[2] = c3;
+
+  object->surface->GradientTriangle(x1, y1, x2, y2, x3, y3, c);
 end_method()
 
 ////////////////////////////////////////

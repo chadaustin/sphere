@@ -155,7 +155,7 @@ CMapView::InitAnimations()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-int
+double
 CMapView::GetZoomFactor()
 {
   return m_ZoomFactor;
@@ -164,7 +164,7 @@ CMapView::GetZoomFactor()
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CMapView::SetZoomFactor(int factor)
+CMapView::SetZoomFactor(double factor)
 {
   m_ZoomFactor = factor;
 
@@ -1648,10 +1648,10 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
           }
         }
 
-        for (int k=1; k<m_ZoomFactor; k++)
+        for (int k=1; k<(int)m_ZoomFactor; k++)
         {
-          memcpy(dest + counter, dest + (counter - tile_width * m_ZoomFactor), tile_width * m_ZoomFactor * sizeof(RGBA));
-          counter += tile_width * m_ZoomFactor;
+          memcpy(dest + counter, dest + (counter - tile_width * (int)m_ZoomFactor), tile_width * (int)m_ZoomFactor * sizeof(RGBA));
+          counter += tile_width * (int)m_ZoomFactor;
         }
       }
     }
@@ -1775,8 +1775,8 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
 
               for (int k=1; k<m_ZoomFactor; k++)
               {
-                memcpy(dest + counter, dest + (counter - tile_width * m_ZoomFactor), tile_width * m_ZoomFactor * sizeof(RGBA));
-                counter += tile_width * m_ZoomFactor;
+                memcpy(dest + counter, dest + (counter - tile_width * (int)m_ZoomFactor), tile_width * (int)m_ZoomFactor * sizeof(RGBA));
+                counter += tile_width * (int)m_ZoomFactor;
               }
             }
           } 
@@ -1883,8 +1883,8 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
 
               for (int k=1; k<m_ZoomFactor; k++)
               {
-                memcpy(dest + counter, dest + (counter - tile_width * m_ZoomFactor), tile_width * m_ZoomFactor * sizeof(RGBA));
-                counter += tile_width * m_ZoomFactor;
+                memcpy(dest + counter, dest + (counter - tile_width * (int)m_ZoomFactor), tile_width * (int)m_ZoomFactor * sizeof(RGBA));
+                counter += tile_width * (int)m_ZoomFactor;
               }
             }
           } 
@@ -2895,7 +2895,7 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
     EnableMenuItem(menu, ID_MAPVIEW_INSERTENTITY_TRIGGER, MF_BYCOMMAND | MF_GRAYED);
   }
 
-  switch (GetZoomFactor()) {
+  switch ((int)GetZoomFactor()) {
     case 1: CheckMenuItem(menu, ID_MAPVIEW_ZOOM_1X, MF_BYCOMMAND | MF_CHECKED); break;
     case 2: CheckMenuItem(menu, ID_MAPVIEW_ZOOM_2X, MF_BYCOMMAND | MF_CHECKED); break;
     case 4: CheckMenuItem(menu, ID_MAPVIEW_ZOOM_4X, MF_BYCOMMAND | MF_CHECKED); break;

@@ -820,7 +820,6 @@ CImageView::UpdateSelectionPixels(const RGBA* pixels, int sx, int sy, int sw, in
       }
 
       delete[] selection_points;
-
     }
   }
 }
@@ -2845,7 +2844,6 @@ CImageView::OnFilterNoise()
   InvalidateSelection(sx, sy, sw, sh);
   m_Handler->IV_ImageChanged();
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 

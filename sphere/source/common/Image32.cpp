@@ -904,6 +904,89 @@ CImage32::Triangle(int x1, int y1, int x2, int y2, int x3, int y3, RGBA color)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+class gradient_color
+{
+public:
+  gradient_color(RGBA color1, RGBA color2)
+  : m_color1(color1)
+  , m_color2(color2) {
+  }
+
+  RGBA operator()(int i, int range) {
+    if (range == 0) {
+      return m_color1;
+    }
+    RGBA color;
+    color.red   = (i * m_color1.red   + (range - i) * m_color2.red)   / range;
+    color.green = (i * m_color1.green + (range - i) * m_color2.green) / range;
+    color.blue  = (i * m_color1.blue  + (range - i) * m_color2.blue)  / range;
+    color.alpha = (i * m_color1.alpha + (range - i) * m_color2.alpha) / range;
+    return color;
+  }
+
+private:
+  RGBA m_color1;
+  RGBA m_color2;
+};
+
+inline RGBA interpolateRGBA(RGBA a, RGBA b, int i, int range)
+{
+  if (range == 0) {
+    return a;
+  }
+
+  RGBA result = {
+    (a.red   * (range - i) + b.red   * i) / range,
+    (a.green * (range - i) + b.green * i) / range,
+    (a.blue  * (range - i) + b.blue  * i) / range,
+    (a.alpha * (range - i) + b.alpha * i) / range,
+  };
+
+  return result;
+}
+
+void
+CImage32::GradientLine(int x1, int y1, int x2, int y2, RGBA c[2])
+{
+  clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+  switch (m_BlendMode) {
+    case REPLACE:    primitives::Line((RGBA*)m_Pixels, m_Width, x1, y1, x2, y2, gradient_color(c[0], c[1]), clip, copyRGBA);  break;
+    case BLEND:      primitives::Line((RGBA*)m_Pixels, m_Width, x1, y1, x2, y2, gradient_color(c[0], c[1]), clip, blendRGBA); break;
+    case RGB_ONLY:   primitives::Line((RGBA*)m_Pixels, m_Width, x1, y1, x2, y2, gradient_color(c[0], c[1]), clip, copyRGB);   break;
+    case ALPHA_ONLY: primitives::Line((RGBA*)m_Pixels, m_Width, x1, y1, x2, y2, gradient_color(c[0], c[1]), clip, copyAlpha); break;
+  }
+}
+
+void
+CImage32::GradientRectangle(int x, int y, int w, int h, RGBA c[4])
+{
+  clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+  switch (m_BlendMode) {
+    case REPLACE:    primitives::GradientRectangle((RGBA*)m_Pixels, m_Width, x, y, w, h, c, clip, copyRGBA, interpolateRGBA);  break;
+    case BLEND:      primitives::GradientRectangle((RGBA*)m_Pixels, m_Width, x, y, w, h, c, clip, blendRGBA, interpolateRGBA); break;
+    case RGB_ONLY:   primitives::GradientRectangle((RGBA*)m_Pixels, m_Width, x, y, w, h, c, clip, copyRGB, interpolateRGBA);   break;
+    case ALPHA_ONLY: primitives::GradientRectangle((RGBA*)m_Pixels, m_Width, x, y, w, h, c, clip, copyAlpha, interpolateRGBA); break;
+  }
+}
+
+void
+CImage32::GradientTriangle(int x1, int y1, int x2, int y2, int x3, int y3, RGBA c[3])
+{
+  clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+
+  int x[3] = {x1, x2, x3};
+  int y[3] = {y1, y2, y3};
+
+  switch (m_BlendMode) {
+    case REPLACE:    primitives::GradientTriangle((RGBA*)m_Pixels, m_Width, x, y, c, clip, copyRGBA, interpolateRGBA);  break;
+    case BLEND:      primitives::GradientTriangle((RGBA*)m_Pixels, m_Width, x, y, c, clip, blendRGBA, interpolateRGBA); break;
+    case RGB_ONLY:   primitives::GradientTriangle((RGBA*)m_Pixels, m_Width, x, y, c, clip, copyRGB, interpolateRGBA);   break;
+    case ALPHA_ONLY: primitives::GradientTriangle((RGBA*)m_Pixels, m_Width, x, y, c, clip, copyAlpha, interpolateRGBA); break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 inline void replaceRenderer(RGBA& dest, RGBA src, RGBA alpha) {
   dest = src;
 }

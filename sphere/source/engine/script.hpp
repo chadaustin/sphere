@@ -189,6 +189,9 @@ private:
   declare_method(ssSurfaceLine);
   declare_method(ssSurfaceRectangle);
   declare_method(ssSurfaceTriangle);
+  declare_method(ssSurfaceGradientLine);
+  declare_method(ssSurfaceGradientRectangle);
+  declare_method(ssSurfaceGradientTriangle);
   declare_method(ssSurfaceRotate);
   declare_method(ssSurfaceResize);
   declare_method(ssSurfaceRescale);
