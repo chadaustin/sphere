@@ -1,3 +1,6 @@
+2003.07.05
+  - Added move entity maptool
+
 2003.07.03
   - Don't allow Image->View At Original Size when image is maximized...
   - wxeditor now uses wxNotebook

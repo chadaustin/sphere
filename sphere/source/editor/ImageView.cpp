@@ -349,6 +349,104 @@ CImageView::Copy()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+RGBA*
+CImageView::GetFlatImageFromClipboard(int& width, int& height)
+{
+  if (OpenClipboard() == FALSE)
+    return NULL;
+
+  HGLOBAL memory = (HGLOBAL)GetClipboardData(s_ClipboardFormat);
+  if (memory == NULL) {
+    CloseClipboard();
+    return NULL;
+  }
+
+  // get the height and pixels from the clipboard
+  dword* ptr = (dword*)GlobalLock(memory);
+  if (ptr == NULL) {
+    CloseClipboard();
+    return NULL;
+  }
+
+  width = *ptr++;
+  height = *ptr++;
+
+  if (width <= 0 || height <= 0) {
+    CloseClipboard();
+    return NULL;
+  }
+
+  RGBA* clipboard = (RGBA*)ptr;
+  RGBA* pixels = new RGBA[width * height];
+  if (pixels == NULL) {
+    CloseClipboard();
+    return NULL;
+  }
+
+  for (int y = 0; y < height; y++) {
+    for (int x = 0; x < width; x++) {
+      pixels[y * width + x] = clipboard[y * width + x];
+    }
+  }
+
+  GlobalUnlock(memory);
+  CloseClipboard();
+
+  return pixels;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+RGBA*
+CImageView::GetBitmapImageFromClipboard(int& width, int& height)
+{
+  if (OpenClipboard() == FALSE)
+    return NULL;
+
+  HBITMAP bitmap = (HBITMAP)GetClipboardData(CF_BITMAP);
+  if (bitmap == NULL) {
+    CloseClipboard();
+    return NULL;
+  }
+
+  BITMAP b;
+  GetObject(bitmap, sizeof(b), &b);
+
+  HDC dc = CreateCompatibleDC(NULL);
+  HBITMAP oldbitmap = (HBITMAP)SelectObject(dc, bitmap);
+
+  width  = m_Image.GetWidth();
+  height = m_Image.GetHeight();
+
+  RGBA* pixels = new RGBA[width * height];
+  if (pixels == NULL) {
+    CloseClipboard();
+    return NULL;
+  }
+
+  for (int iy = 0; iy < height; iy++)
+    for (int ix = 0; ix < width; ix++)
+    {
+      COLORREF pixel = GetPixel(dc, ix, iy);
+      if (pixel == CLR_INVALID)
+        pixel = RGB(0, 0, 0);
+
+      pixels[iy * width + ix].red   = GetRValue(pixel);
+      pixels[iy * width + ix].green = GetGValue(pixel);
+      pixels[iy * width + ix].blue  = GetBValue(pixel);
+      pixels[iy * width + ix].alpha = 255;  // there is no alpha so we use a default
+    }
+
+  SelectObject(dc, oldbitmap);
+  DeleteDC(dc);
+
+  CloseClipboard();
+
+  return pixels;  
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 bool
 CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha, int merge_method) {
   if (OpenClipboard() == FALSE)
@@ -362,83 +460,9 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha, int merge
   RGBA* cpixels = NULL;
 
   // see if the flat image is in the clipboard
-  HGLOBAL memory = (HGLOBAL)GetClipboardData(s_ClipboardFormat);
-  if (memory != NULL)
-  {
-    // get the height and pixels from the clipboard
-    dword* ptr = (dword*)GlobalLock(memory);
-    if (ptr == NULL) {
-      CloseClipboard();
-      return false;
-    }
-
-    cwidth = *ptr++;
-    cheight = *ptr++;
-    RGBA* pixels = (RGBA*)ptr;
-
-    if (cwidth <= 0 || cheight <= 0) {
-      CloseClipboard();
-      return false;
-    }
-
-    cpixels = new RGBA[cwidth * cheight];
-    if (cpixels == NULL) {
-      CloseClipboard();
-      return false;
-    }
-
-    for (int y = 0; y < cheight; y++) {
-      for (int x = 0; x < cwidth; x++) {
-        cpixels[y * cwidth + x] = pixels[y * cwidth + x];
-      }
-    }
-
-    GlobalUnlock(memory);
-    CloseClipboard();
-  }
-
-  HBITMAP bitmap = NULL;
-  if (cpixels == NULL) {
-    bitmap = (HBITMAP)GetClipboardData(CF_BITMAP);
-    if (bitmap == NULL)
-      CloseClipboard();
-  }
-
-  // grab a bitmap out of the clipboard
-  if (bitmap != NULL)
-  {
-    BITMAP b;
-    GetObject(bitmap, sizeof(b), &b);
-
-    HDC dc = CreateCompatibleDC(NULL);
-    HBITMAP oldbitmap = (HBITMAP)SelectObject(dc, bitmap);
-    cwidth = iWidth;
-    cheight = iHeight;
-
-    cpixels = new RGBA[cwidth * cheight];
-    if (cpixels == NULL) {
-      CloseClipboard();
-      return false;
-    }
-
-    for (int iy = 0; iy < cheight; iy++)
-      for (int ix = 0; ix < cwidth; ix++)
-      {
-        COLORREF pixel = GetPixel(dc, ix, iy);
-        if (pixel == CLR_INVALID)
-          pixel = RGB(0, 0, 0);
-
-        cpixels[iy * cwidth + ix].red   = GetRValue(pixel);
-        cpixels[iy * cwidth + ix].green = GetGValue(pixel);
-        cpixels[iy * cwidth + ix].blue  = GetBValue(pixel);
-        cpixels[iy * cwidth + ix].alpha = 255;  // there is no alpha so we use a default
-      }
-
-    SelectObject(dc, oldbitmap);
-    DeleteDC(dc);
-
-    CloseClipboard();
-  }
+  cpixels = GetFlatImageFromClipboard(cwidth, cheight);
+  if (cpixels == NULL)
+    cpixels = GetBitmapImageFromClipboard(cwidth, cheight);
 
   if (cpixels != NULL) {
 
@@ -456,6 +480,7 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha, int merge
       int sh = GetSelectionHeight();
       xoffset = sx;
       yoffset = sy;
+
       // rescale cpixels
       CImage32 tmp(cwidth, cheight, cpixels);
       delete[] cpixels;
@@ -464,7 +489,12 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha, int merge
         return false;
 
       tmp.Rescale(sw, sh);
-      RGBA* pixels = tmp.GetPixels();
+      if (tmp.GetWidth() != sw || tmp.GetHeight() != sh) {
+        delete[] cpixels;
+        return false;
+      }
+
+      const RGBA* pixels = tmp.GetPixels();
 
       for (int i = 0; i < sw * sh; i++)
         cpixels[i] = pixels[i];
@@ -477,18 +507,19 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha, int merge
     {
       for (int ix = 0; ix < cwidth; ix++)
       {
-        if (red) iPixels[(iy + yoffset) * iWidth + (ix + xoffset)].red = cpixels[iy * cwidth + ix].red;
+        if (red)   iPixels[(iy + yoffset) * iWidth + (ix + xoffset)].red   = cpixels[iy * cwidth + ix].red;
         if (green) iPixels[(iy + yoffset) * iWidth + (ix + xoffset)].green = cpixels[iy * cwidth + ix].green;
-        if (blue) iPixels[(iy + yoffset) * iWidth + (ix + xoffset)].blue = cpixels[iy * cwidth + ix].blue;
+        if (blue)  iPixels[(iy + yoffset) * iWidth + (ix + xoffset)].blue  = cpixels[iy * cwidth + ix].blue;
         if (alpha) iPixels[(iy + yoffset) * iWidth + (ix + xoffset)].alpha = cpixels[iy * cwidth + ix].alpha;
       }
     }
+
+    delete[] cpixels;
 
     // things have changed
     Invalidate();
     m_Handler->IV_ImageChanged();
 
-    delete[] cpixels;
     return true;
   }
 

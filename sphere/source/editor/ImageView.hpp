@@ -155,6 +155,9 @@ private:
   afx_msg void OnSetColorAlpha();
   afx_msg void OnScaleAlpha();
 
+  RGBA* GetFlatImageFromClipboard(int& width, int& height);
+  RGBA* GetBitmapImageFromClipboard(int& width, int& height);
+
 private:
   IImageViewHandler* m_Handler;
 
