@@ -33,6 +33,7 @@ private:
   void UpdateImageView();
 
   afx_msg void OnSize(UINT type, int cx, int cy);
+  afx_msg void OnKeyDown(UINT vk, UINT repeat, UINT flags);
 
   afx_msg void OnImageResize();
   afx_msg void OnImageRescale();
@@ -40,6 +41,7 @@ private:
   afx_msg void OnImageRotate();
   afx_msg void OnCountColorsUsed();
   afx_msg void OnImageViewOriginalSize();
+  afx_msg void OnUpdateImageViewOriginalSizeCommand(CCmdUI* cmdui);
 
   virtual bool GetSavePath(char* path);
   virtual bool SaveDocument(const char* path);

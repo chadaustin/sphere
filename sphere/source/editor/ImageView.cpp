@@ -1702,30 +1702,35 @@ CImageView::OnLButtonDown(UINT flags, CPoint point)
   m_LastPoint = m_CurPoint;
   m_CurPoint = point;
 
-  if (m_CurrentTool != Tool_Selection
-   && m_CurrentTool != Tool_FreeSelection) {
-    // perform a normal click operation
-    AddUndoState();
+  if (flags & MK_SHIFT) {
+    OnColorPicker();
   }
+  else {
+    if (m_CurrentTool != Tool_Selection
+     && m_CurrentTool != Tool_FreeSelection) {
+      // perform a normal click operation
+      AddUndoState();
+    }
 
-  if (m_CurrentTool == Tool_FreeSelection) {
-    if (!(flags & MK_SHIFT))
-      m_SelectionPoints.clear();
+    if (m_CurrentTool == Tool_FreeSelection) {
+      if (!(flags & MK_SHIFT))
+        m_SelectionPoints.clear();
+    }
+
+    switch (m_CurrentTool) {
+      case Tool_Pencil:    Click(true); break;
+      case Tool_Fill:      Fill();      break;
+      case Tool_Line:      Line();      break;
+      case Tool_Rectangle: Rectangle(); break;
+      case Tool_Circle:    Circle();    break;
+      case Tool_Ellipse:   Ellipse();   break;
+      case Tool_Selection: Selection(); break;
+      case Tool_FreeSelection: Selection(); break;
+    }
+
+    m_MouseDown = true;
+    SetCapture();
   }
-
-  switch (m_CurrentTool) {
-    case Tool_Pencil:    Click(true); break;
-    case Tool_Fill:      Fill();      break;
-    case Tool_Line:      Line();      break;
-    case Tool_Rectangle: Rectangle(); break;
-    case Tool_Circle:    Circle();    break;
-    case Tool_Ellipse:   Ellipse();   break;
-    case Tool_Selection: Selection(); break;
-    case Tool_FreeSelection: Selection(); break;
-  }
-
-  m_MouseDown = true;
-  SetCapture();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1852,6 +1857,18 @@ CImageView::OnMouseMove(UINT flags, CPoint point)
     case Tool_FreeSelection:
       Invalidate();
     break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnKeyDown(UINT vk, UINT repeat, UINT flags)
+{
+  if (vk == VK_APPS) {
+    POINT point;
+    GetCursorPos(&point);
+    OnRButtonUp(flags, point);
   }
 }
 

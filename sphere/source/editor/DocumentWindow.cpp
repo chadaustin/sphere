@@ -223,7 +223,9 @@ CDocumentWindow::GetDefaultWindowClass()
 void
 CDocumentWindow::SetDocumentPath(const char* path)
 {
-  strcpy(m_DocumentPath, path);
+  if (strlen(path) < sizeof(m_DocumentPath)) {
+    strcpy(m_DocumentPath, path);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -250,7 +252,9 @@ CDocumentWindow::GetDocumentTitle() const
 void
 CDocumentWindow::SetCaption(const char* caption)
 {
-  strcpy(m_Caption, caption);
+  if (strlen(caption) < sizeof(m_Caption)) {
+    strcpy(m_Caption, caption);
+  }
   UpdateWindowCaption();
 }
 

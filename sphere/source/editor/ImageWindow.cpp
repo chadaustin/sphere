@@ -16,7 +16,8 @@ IMPLEMENT_DYNAMIC(CImageWindow, CMDIChildWnd)
 
 BEGIN_MESSAGE_MAP(CImageWindow, CSaveableDocumentWindow)
 
-  ON_WM_SIZE()
+  ON_WM_SIZE()  
+  ON_WM_KEYDOWN()
 
   ON_COMMAND(ID_IMAGE_RESIZE,             OnImageResize)
   ON_COMMAND(ID_IMAGE_RESCALE,            OnImageRescale)
@@ -24,6 +25,7 @@ BEGIN_MESSAGE_MAP(CImageWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_IMAGE_ROTATE,             OnImageRotate)
   ON_COMMAND(ID_IMAGE_COUNTCOLORS,        OnCountColorsUsed)
   ON_COMMAND(ID_IMAGE_VIEWATORIGINALSIZE, OnImageViewOriginalSize)
+  ON_UPDATE_COMMAND_UI(ID_IMAGE_VIEWATORIGINALSIZE, OnUpdateImageViewOriginalSizeCommand)
 
 END_MESSAGE_MAP()
 
@@ -124,6 +126,14 @@ CImageWindow::OnSize(UINT type, int cx, int cy)
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
+CImageWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
+{
+  m_ImageView.OnKeyDown(vk, repeat, flags);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
 CImageWindow::OnImageResize()
 {
   CResizeDialog dialog("Resize Image", m_Image.GetWidth(), m_Image.GetHeight());
@@ -213,6 +223,14 @@ CImageWindow::OnImageViewOriginalSize()
   // FIXME: use correct GetSystemMetrics calls.  :)  Better yet, AdjustWindowRect
   CSaveableDocumentWindow::SetWindowPos(&wndTop, 0, 0, m_Image.GetWidth() + 72 + 12, m_Image.GetHeight() + 31, SWP_NOMOVE | SWP_NOOWNERZORDER);
   OnSize(0, m_Image.GetWidth() + 72, m_Image.GetHeight());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageWindow::OnUpdateImageViewOriginalSizeCommand(CCmdUI* cmdui)
+{
+  cmdui->Enable(IsZoomed() ? FALSE : TRUE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

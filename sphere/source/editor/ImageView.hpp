@@ -126,6 +126,10 @@ private:
   afx_msg void OnRButtonUp(UINT flags, CPoint point);
   afx_msg void OnMouseMove(UINT flags, CPoint point);
 
+public:
+  afx_msg void OnKeyDown(UINT vk, UINT repeat, UINT flags);
+
+private:
   afx_msg void OnColorPicker();
   afx_msg void OnUndo();
   afx_msg void OnRedo();
