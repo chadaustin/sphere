@@ -28,26 +28,42 @@ public:
 	CInstanceRepository() :
 		m_Mutex(FALSE, SPHERE_MUTEX_GUID)
 	{		
+    m_Size = 0;
+    m_Created = false;
+
 		m_hFileMapping = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0,
-			MAX_ENTRIES * sizeof(HWND) + sizeof(int), SPHERE_FILE_GUID);
+			(MAX_ENTRIES * sizeof(HWND)) + sizeof(int), SPHERE_FILE_GUID);
 
-		ASSERT(m_hFileMapping);
+    // ASSERT(m_hFileMapping);
+    if (!m_hFileMapping) {
+      return;
+    }
 
-		m_Size = (int*)MapViewOfFile(m_hFileMapping, FILE_MAP_WRITE, 0, 0, sizeof(int)+
-			sizeof(HWND)* MAX_ENTRIES); 
-		m_Instances = (HWND*)(((char*)m_Size)+sizeof(int));
+		m_Size = (int*)MapViewOfFile(m_hFileMapping, FILE_MAP_WRITE, 0, 0,
+                                 sizeof(int) + (sizeof(HWND)* MAX_ENTRIES));
+		m_Instances = (HWND*)(((char*)m_Size) + sizeof(int));
 
-		ASSERT(m_Size != NULL && m_Instances != NULL);
-	}
+		// ASSERT(m_Size != NULL && m_Instances != NULL);
+    if (m_Size == NULL || m_Instances == NULL) {
+      m_Size = NULL;
+      m_Instances = NULL;
+      return;
+    }
+
+    m_Created = true;
+
+  }
 
 	void lock()
 	{
-		m_Mutex.Lock();
+    if (m_Created)
+  		m_Mutex.Lock();
 	}
 
 	void unlock()
 	{
-		m_Mutex.Unlock();
+	  if (m_Created)
+      m_Mutex.Unlock();
 	}
 
 	~CInstanceRepository()
@@ -59,6 +75,8 @@ public:
 	
 	BOOL isEmpty()
 	{
+    if (!m_Size)
+      return TRUE;
 		return *m_Size == 0;
 	}
 
@@ -69,7 +87,10 @@ public:
 
 	BOOL registerInstance(HWND hwnd)
 	{		
-		if (*m_Size == MAX_ENTRIES) return FALSE;
+    if (!m_Size)
+      return FALSE;
+
+    if (*m_Size == MAX_ENTRIES) return FALSE;
 		
 		m_HWND = hwnd;
 		m_Instances[*m_Size] = hwnd;
@@ -79,6 +100,9 @@ public:
 
 	BOOL unregisterInstance()
 	{
+    if (!m_Size)
+      return FALSE;
+
 		for (int i = 0; i < *m_Size; i++)
 		{
 			if (m_Instances[i] == m_HWND)
@@ -103,6 +127,7 @@ private:
 	HANDLE   m_hFileMapping;
 	CMutex	 m_Mutex;
 	HWND     m_HWND;
+  bool     m_Created;
 };
 
 // command-line parsers
@@ -132,8 +157,11 @@ private:
 
 	  if (!CMainWindow::IsProjectFile(parameter))		
 		{
-			ASSERT(m_ForeignMainWindow != INVALID_HANDLE_VALUE);			
-			// delegate it to another instance
+			// ASSERT(m_ForeignMainWindow != INVALID_HANDLE_VALUE);	
+      if (m_ForeignMainWindow == INVALID_HANDLE_VALUE)
+        return;
+
+      // delegate it to another instance
 			COPYDATASTRUCT cds;
 
 			cds.dwData = CD_OPEN_GAME_FILE;
@@ -184,10 +212,13 @@ CEditorApplication::InitInstance()
 {	
 	// look for another instance
 	m_Instances = new CInstanceRepository();
-	m_Instances->lock();
-	if (!m_Instances->isEmpty())
-	{		
-			CEditorPrestartCommandLineInfo cli(m_Instances->getFirstInstanceWnd());
+  
+  if (m_Instances) {
+
+    m_Instances->lock();
+	  if (!m_Instances->isEmpty())
+    {		
+		 	CEditorPrestartCommandLineInfo cli(m_Instances->getFirstInstanceWnd());
       ParseCommandLine(cli);
 
 			if (cli.mayInstanceExit())
@@ -197,7 +228,9 @@ CEditorApplication::InitInstance()
 					m_Instances = NULL;
 					return FALSE;
 			}		
-	}
+    }
+
+  }
 
   // set the configuration directory
   char config_directory[MAX_PATH];
@@ -211,13 +244,19 @@ CEditorApplication::InitInstance()
 
   // create the main window
   CMainWindow* main_window = new CMainWindow();
+  if (!main_window)
+    return FALSE;
+
   main_window->Create();
   m_pMainWnd = main_window;
   g_MainWindow = main_window;
 
-	// register this instance 
-	m_Instances->registerInstance(main_window->m_hWnd);
-	m_Instances->unlock();
+
+  if (m_Instances) {
+    // register this instance 
+	  m_Instances->registerInstance(main_window->m_hWnd);
+    m_Instances->unlock();
+  }
 
   SPHERECONFIG sphere_config;
   LoadSphereConfig(&sphere_config, "engine.ini");

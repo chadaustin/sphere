@@ -346,6 +346,7 @@ CMainWindow::OpenGameFile(const char* filename)
 	if (IsProjectFile(filename))
 	{
 		OpenProject(filename);
+    return;
 	}
 
   for (int i = 0; i < NUM_GROUP_TYPES; i++) {
