@@ -21,6 +21,7 @@ files = ['build-cygwin.txt',
          'keys.txt',
          'legal.txt',
          'links.txt',
+         'linux.txt',
          'network.txt',
          'optimization.txt',
          'packages.txt',
@@ -28,6 +29,7 @@ files = ['build-cygwin.txt',
          'release-howto.txt',
          'sphere_tutorial.txt',
          'unix.txt']
+
 files.extend(map(lambda n: 'technical/' + n,
              ['coding-style.txt',
               'gameinf.txt',
@@ -38,6 +40,7 @@ files.extend(map(lambda n: 'technical/' + n,
               'rws.txt',
               'spk.txt',
               'videodriver.txt']))
+
 files.extend(map(lambda n: 'system_scripts/' + n,
              ['clock.txt',
               'animation.txt',
