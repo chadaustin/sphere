@@ -204,14 +204,18 @@ void Noise(int width, int height, RGBA* pixels)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void NegativeImage(int width, int height, RGBA* pixels) {
+void NegativeImage(int width, int height, bool red, bool green, bool blue, bool alpha, RGBA* pixels) {
   int max = 255;
-  int size = width * height;
 
-  for (int i = 0; i < size; i++) {
-    pixels[i].red   = max - pixels[i].red;
-    pixels[i].green = max - pixels[i].green;
-    pixels[i].blue  = max - pixels[i].blue;
+  for (int i = 0; i < width * height; i++) {
+    if (red)
+      pixels[i].red   = max - pixels[i].red;
+    if (green)
+      pixels[i].green = max - pixels[i].green;
+    if (blue)
+      pixels[i].blue  = max - pixels[i].blue;
+    if (alpha)
+      pixels[i].alpha = max - pixels[i].alpha;
   }
 }
 

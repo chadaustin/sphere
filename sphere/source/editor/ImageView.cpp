@@ -29,7 +29,6 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
   ON_COMMAND(ID_IMAGEVIEW_PASTE,                 OnPaste)
   ON_COMMAND(ID_IMAGEVIEW_PASTE_RGB,             OnPasteRGB)
   ON_COMMAND(ID_IMAGEVIEW_PASTE_ALPHA,           OnPasteAlpha)
-  ON_COMMAND(ID_IMAGEVIEW_BLEND_PASTE,           OnBlendPaste)
   ON_COMMAND(ID_IMAGEVIEW_VIEWGRID,              OnViewGrid)
   ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_BLEND,       OnBlendModeBlend)
   ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_REPLACE,     OnBlendModeReplace)
@@ -51,7 +50,9 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
   ON_COMMAND(ID_IMAGEVIEW_REPLACE_ALPHA,         OnReplaceAlpha)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_BLUR,           OnFilterBlur)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_NOISE,          OnFilterNoise)
-  ON_COMMAND(ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE, OnFilterNegativeImage)
+  ON_COMMAND(ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE_RGB, OnFilterNegativeImageRGB)
+  ON_COMMAND(ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE_ALPHA, OnFilterNegativeImageAlpha)
+  ON_COMMAND(ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE_RGBA, OnFilterNegativeImageRGBA)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_SOLARIZE,       OnFilterSolarize)
   ON_COMMAND(ID_IMAGEVIEW_SETCOLORALPHA,         OnSetColorAlpha)
   ON_COMMAND(ID_IMAGEVIEW_SCALEALPHA,            OnScaleAlpha)
@@ -377,125 +378,6 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha) {
 
   return false;
 }
-
-///////////////////////////////////////////////////////////////////////////////
-
-bool
-CImageView::BlendPasteChannels(bool red, bool green, bool blue, bool alpha)
-{
-  if (OpenClipboard() == FALSE)
-    return false;
-
-  int iWidth = m_Image.GetWidth();
-  int iHeight = m_Image.GetHeight();
-
-  // see if the flat image is in the clipboard
-  HGLOBAL memory = (HGLOBAL)GetClipboardData(s_ClipboardFormat);
-  if (memory != NULL)
-  {
-    // get the height and pixels from the clipboard
-    dword* ptr = (dword*)GlobalLock(memory);
-    if (ptr == NULL) {
-      CloseClipboard();
-      return false;
-    }
-
-    AddUndoState();
-
-    int width = *ptr++;
-    int height = *ptr++;
-    RGBA* pixels = (RGBA*)ptr;
-    RGBA* pImage = m_Image.GetPixels();
-
-    // put them into the current view
-    for (int iy = 0; iy < iHeight; iy++) {
-      for (int ix = 0; ix < iWidth; ix++)
-      {
-        if (ix < width && iy < height) {
-          int pImageIndex = iy * iWidth + ix;
-          int pixelsIndex = iy * width + ix;
-
-          if (red)
-            pImage[pImageIndex].red = pixels[pixelsIndex].red * pImage[pImageIndex].red / 255;
-
-          if (green)
-            pImage[pImageIndex].green = pixels[pixelsIndex].green * pImage[pImageIndex].green / 255;
-
-          if (blue)
-            pImage[pImageIndex].blue = pixels[pixelsIndex].blue * pImage[pImageIndex].blue / 255;
-
-          if (alpha)
-            pImage[pImageIndex].alpha = pixels[pixelsIndex].alpha * pImage[pImageIndex].alpha / 255;
-
-        }
-      }
-    }
-
-    GlobalUnlock(memory);
-    CloseClipboard();
-
-    // things have changed
-    Invalidate();
-    m_Handler->IV_ImageChanged();
-
-    return true;
-  }
-
-  // grab a bitmap out of the clipboard
-  HBITMAP bitmap = (HBITMAP)GetClipboardData(CF_BITMAP);
-  if (bitmap != NULL)
-  {
-    AddUndoState();
-
-    BITMAP b;
-    GetObject(bitmap, sizeof(b), &b);
-
-    HDC dc = CreateCompatibleDC(NULL);
-    HBITMAP oldbitmap = (HBITMAP)SelectObject(dc, bitmap);
-    RGBA* pImage = m_Image.GetPixels();
-
-    for (int iy = 0; iy < iHeight; iy++)
-      for (int ix = 0; ix < iWidth; ix++)
-      {
-        COLORREF pixel = GetPixel(dc, ix, iy);
-        if (pixel == CLR_INVALID)
-          pixel = RGB(0, 0, 0);
-
-        if (red)
-          pImage[iy * iWidth + ix].red   = pImage[iy * iWidth + ix].red * GetRValue(pixel) / 255;
-
-        if (green)
-          pImage[iy * iWidth + ix].green = pImage[iy * iWidth + ix].green * GetGValue(pixel) / 255;
-
-        if (blue)
-          pImage[iy * iWidth + ix].blue  = pImage[iy * iWidth + ix].blue * GetBValue(pixel) / 255;
-
-        // if (alpha) // there is no alpha so we just ignore it
-        //  pImage[iy * iWidth + ix].alpha = 255;
-      }
-
-    SelectObject(dc, oldbitmap);
-    DeleteDC(dc);
-
-    CloseClipboard();
-
-    // things have changed
-    Invalidate();
-    m_Handler->IV_ImageChanged();
-
-    return true;
-  }
-
-  return false;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-  
-bool
-CImageView::BlendPaste() {
-  return BlendPasteChannels(true, true, true, true);
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1240,14 +1122,6 @@ CImageView::OnPasteAlpha()
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
-CImageView::OnBlendPaste()
-{
-  BlendPasteChannels(true, true, true, true);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-afx_msg void
 CImageView::OnViewGrid()
 {
   m_ShowGrid = !m_ShowGrid;
@@ -1529,17 +1403,42 @@ CImageView::OnFilterNoise()
   m_Handler->IV_ImageChanged();
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
-CImageView::OnFilterNegativeImage()
+CImageView::OnFilterNegativeImage(bool red, bool green, bool blue, bool alpha)
 {
   AddUndoState();
 
-  NegativeImage(m_Image.GetWidth(), m_Image.GetHeight(), m_Image.GetPixels());
+  NegativeImage(m_Image.GetWidth(), m_Image.GetHeight(), red, green, blue, alpha, m_Image.GetPixels());
 
   Invalidate();
   m_Handler->IV_ImageChanged();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnFilterNegativeImageRGB()
+{
+  OnFilterNegativeImage(true, true, true, false);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnFilterNegativeImageAlpha()
+{
+  OnFilterNegativeImage(false, false, false, true);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CImageView::OnFilterNegativeImageRGBA()
+{
+  OnFilterNegativeImage(true, true, true, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

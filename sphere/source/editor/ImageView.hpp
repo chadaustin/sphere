@@ -48,9 +48,6 @@ public:
   bool PasteRGB();
   bool PasteAlpha();
 
-  bool BlendPasteChannels(bool red, bool green, bool blue, bool alpha);
-  bool BlendPaste();
-
   bool CanUndo() const;
   void Undo();
 
@@ -93,7 +90,6 @@ private:
   afx_msg void OnPasteRGB();
   afx_msg void OnPasteAlpha();
   afx_msg void OnViewGrid();
-  afx_msg void OnBlendPaste();
   afx_msg void OnBlendModeBlend();
   afx_msg void OnBlendModeReplace();
   afx_msg void OnBlendModeRGBOnly();
@@ -114,7 +110,10 @@ private:
   afx_msg void OnReplaceAlpha();
   afx_msg void OnFilterBlur();
   afx_msg void OnFilterNoise();
-  afx_msg void OnFilterNegativeImage();
+  afx_msg void OnFilterNegativeImage(bool red, bool green, bool blue, bool alpha);
+  afx_msg void OnFilterNegativeImageRGB();
+  afx_msg void OnFilterNegativeImageAlpha();
+  afx_msg void OnFilterNegativeImageRGBA();
   afx_msg void OnFilterSolarize();
   afx_msg void OnSetColorAlpha();
   afx_msg void OnScaleAlpha();

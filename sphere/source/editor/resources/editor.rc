@@ -444,7 +444,6 @@ BEGIN
         MENUITEM "&Paste",                      ID_IMAGEVIEW_PASTE
         MENUITEM "Paste Alpha",                 ID_IMAGEVIEW_PASTE_ALPHA
         MENUITEM "Paste RGB",                   ID_IMAGEVIEW_PASTE_RGB
-        MENUITEM "Blend Paste",                 ID_IMAGEVIEW_BLEND_PASTE
         MENUITEM SEPARATOR
         MENUITEM "View &Grid",                  ID_IMAGEVIEW_VIEWGRID
         POPUP "&Blend Mode"
@@ -485,10 +484,17 @@ BEGIN
         END
         POPUP "Fil&ter"
         BEGIN
+            POPUP "Negative Image"
+            BEGIN
+                MENUITEM "&RGB",                        ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE_RGB
+
+                MENUITEM "&Alpha",                      ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE_ALPHA
+
+                MENUITEM "&Both",                       ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE_RGBA
+
+            END
             MENUITEM "&Blur",                       ID_IMAGEVIEW_FILTER_BLUR
             MENUITEM "&Noise",                      ID_IMAGEVIEW_FILTER_NOISE
-
-            MENUITEM "Ne&gative Image",             ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE
 
             MENUITEM "&Solarize",                   ID_IMAGEVIEW_FILTER_SOLARIZE
 
