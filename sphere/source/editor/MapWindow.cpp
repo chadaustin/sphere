@@ -394,9 +394,12 @@ CMapWindow::OnImportTileset()
     if (tileset.Load(dialog.GetPathName()))
     {
       m_Map.GetTileset() = tileset;
+      m_Map.ValidateTileIndices();
+
       m_MapView.TilesetChanged();
       m_TilesetEditView.TilesetChanged();
       m_TilePalette->TilesetChanged();
+      SetModified(true);
     }
     else
       MessageBox("Error: Could not import tileset");

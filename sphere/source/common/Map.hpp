@@ -43,6 +43,7 @@ public:
   bool BuildFromImage(CImage32& image, int tile_width = 16, int tile_height = 16);
 
   void PruneTileset(std::set<int>* allowed_tiles = NULL);
+  void ValidateTileIndices();
 
   bool Import_VergeMAP(const char* filename, const char* tilesetFilename, IFileSystem& fs = g_DefaultFileSystem);
 

@@ -658,6 +658,22 @@ done:
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+sMap::ValidateTileIndices() {
+  for (int l = 0; l < m_Layers.size(); ++l) {
+    sLayer& layer = m_Layers[l];
+    for (int y = 0; y < layer.GetHeight(); ++y) {
+      for (int x = 0; x < layer.GetWidth(); ++x) {
+        if (layer.GetTile(x, y) >= m_Tileset.GetNumTiles()) {
+          layer.SetTile(x, y, 0);
+        }
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 #define STRUCT_NAME V1MAP_HEADER
 #define STRUCT_BODY                             \
   byte version;                                 \
