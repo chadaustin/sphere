@@ -5,6 +5,7 @@
 #include "Editor.hpp"
 #include "../common/Filters.hpp"
 #include "../common/minmax.hpp"
+#include "translate.hpp"
 #include "resource.h"
 
 #include "Configuration.hpp"

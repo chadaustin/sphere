@@ -262,6 +262,14 @@ SOURCE=.\SwatchServer.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\translate.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\translate.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\engine\win32\win32_sphere_config.cpp
 # End Source File
 # Begin Source File

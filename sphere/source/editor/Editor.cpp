@@ -10,7 +10,7 @@
 #include "../engine/win32/win32_sphere_config.hpp"
 #include "../common/LogWindow.hpp"
 
-#include "../common/configfile.hpp"
+#include "translate.hpp"
 
 #include <afxmt.h>
 
@@ -18,9 +18,6 @@ static CEditorApplication g_Application;
 static CMainWindow* g_MainWindow = NULL;
 
 static std::string s_SphereDirectory;
-
-static std::string s_LanguageName = "English";
-static CConfigFile s_LanguageConfig;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -360,66 +357,3 @@ CMainWindow* GetMainWindow()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const char* GetLanguage() {
-  return s_LanguageName.c_str();
-}
-
-void SetLanguage(const char* language) {
-  s_LanguageName = language;
-
-  if (1) {
-    char directory[MAX_PATH] = {0};
-    GetCurrentDirectory(MAX_PATH, directory);
-    if (SetCurrentDirectory(GetSphereDirectory().c_str()) != 0) {
-      s_LanguageConfig.Load("language.ini");
-      SetCurrentDirectory(directory);
-    }
-  }
-
-  Configuration::Set(KEY_LANGUAGE, language);
-}
-
-const char* TranslateString(const char* string)
-{
-  const char* language = GetLanguage();
-  return s_LanguageConfig.ReadString(language, string, string).c_str();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void TranslateMenu(HMENU menu)
-{
-  int count = GetMenuItemCount(menu);
-  for (int i = 0; i < count; i++) {
-
-    char buffer[1024] = {0};
-    GetMenuString(menu, i, buffer, 1000, MF_BYPOSITION);
-    if (strlen(buffer) > 0) {
-      ModifyMenu(menu, i, MF_BYPOSITION, GetMenuItemID(menu, i), TranslateString(buffer));
-    }
-  }
-
-  for (int i = 0; i < count; i++) {
-    HMENU sub_menu = GetSubMenu(menu, i);
-    if (sub_menu != NULL) {
-      TranslateMenu(sub_menu);
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void TranslateDialog(HWND hWnd)
-{
-  for (int i = 0; i < 10; i++)
-  {
-    char buffer[1024] = {0};
-    GetDlgItemText(hWnd, i, buffer, 1000);
-    if (strlen(buffer) > 0) {
-      SetDlgItemText(hWnd, i, TranslateString(buffer));
-      ::MessageBox(hWnd, buffer, "HELLO", MB_OK);
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////

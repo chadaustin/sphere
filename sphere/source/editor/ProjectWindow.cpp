@@ -13,7 +13,7 @@
 #include "keys.hpp"
 #include "FileTypes.hpp"
 
-#include "Editor.hpp"
+#include "translate.hpp"
 
 #include "../common/system.hpp"
 

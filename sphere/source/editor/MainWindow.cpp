@@ -15,6 +15,7 @@
 #include "Keys.hpp"
 #include "Package.hpp"
 #include "resource.h"
+#include "translate.hpp"
 
 // document windows
 #include "MainWindow.hpp"
@@ -1182,10 +1183,7 @@ afx_msg void
 CMainWindow::OnFileBrowse()
 {
   std::string filter = GenerateSupportedExtensionsFilter();
-
-  char games_directory[MAX_PATH];
-  GetGamesDirectory(games_directory);
-  SetCurrentDirectory(games_directory);
+  SetCurrentDirectory(m_DefaultFolder.c_str());
 
   CFileDialog FileDialog(
     TRUE,
@@ -1242,6 +1240,7 @@ FILE_NEW_HANDLER(Image,       new CImageWindow())
   CMainWindow::OnFileOpen##name()                             \
   {                                                           \
     C##name##FileDialog Dialog(FDM_OPEN | FDM_MULTISELECT);   \
+    SetCurrentDirectory(m_DefaultFolder.c_str());             \
     Dialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();   \
     if (Dialog.DoModal() == IDOK) {                           \
       POSITION pos = Dialog.GetStartPosition();               \

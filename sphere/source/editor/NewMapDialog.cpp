@@ -2,7 +2,7 @@
 #include "Project.hpp"
 #include "FileDialogs.hpp"
 #include "resource.h"
-#include "Editor.hpp"
+#include "translate.hpp"
 
 
 BEGIN_MESSAGE_MAP(CNewMapDialog, CDialog)

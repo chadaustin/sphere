@@ -84,6 +84,7 @@ sources = Split("""
     TilesetSelectionDialog.cpp
     TilesetView.cpp
     ToolPalette.cpp
+    translate.cpp
     VScrollWindow.cpp
     WindowStylePreviewPalette.cpp
     WindowStylePropertiesDialog.cpp

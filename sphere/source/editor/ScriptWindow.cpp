@@ -384,6 +384,8 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_WORD_WRAP, OnUpdateOptionsWordWrap)
   ON_UPDATE_COMMAND_UI(ID_SCRIPT_OPTIONS_TOGGLE_AUTOCOMPLETE, OnUpdateOptionsToggleAutoComplete)
 
+  ON_COMMAND(ID_SCRIPT_TOOLS_SORT, OnScriptToolsSort)
+
   ON_NOTIFY(SCN_SAVEPOINTREACHED, ID_EDIT, OnSavePointReached)
   ON_NOTIFY(SCN_SAVEPOINTLEFT,    ID_EDIT, OnSavePointLeft)
   ON_NOTIFY(SCN_UPDATEUI,         ID_EDIT, OnPosChanged)
@@ -559,6 +561,7 @@ CScriptWindow::CreateList(int type)
 
   if (m_ListType == 2) {
     ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"if (1)\n{\n  // ...\n}\n");
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"if (1)\n{\n  // ...\n}\nelse\n{\n  // ...\n}\n");
     ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"for (var i = 0; i < 10; i++)\n{\n  // ...\n}\n");
     ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"while (1)\n{\n  // ...\n}\n");
     ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"switch (1)\n{\n  case (1):\n    // ...\n  break;\n}\n");
@@ -1525,6 +1528,23 @@ CScriptWindow::SaveDocument(const char* path)
   }
 
   return saved;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+#include <algorithm>
+
+afx_msg void
+CScriptWindow::OnScriptToolsSort()
+{
+  struct Local {
+    static int compare(std::string a, std::string b) {
+      return strcmp((const char*) a.c_str(), (const char*) b.c_str());
+    }
+  };
+
+  std::vector<std::string> lines;
+  std::sort(lines.begin(), lines.end(), Local::compare);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -324,6 +324,10 @@ BEGIN
             MENUITEM "Toggle Word Wrap",            ID_SCRIPT_OPTIONS_WORD_WRAP
 
         END
+        POPUP "&Tools"
+        BEGIN
+            MENUITEM "Sort",                        ID_SCRIPT_TOOLS_SORT
+        END
     END
 END
 

@@ -5,6 +5,7 @@
 
 #include "SoundWindow.hpp"
 #include "Editor.hpp"
+#include "translate.hpp"
 #include "resource.h"
 
 CPlaylist::CPlaylist()

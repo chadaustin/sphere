@@ -37,6 +37,10 @@ private:
   afx_msg void OnScriptReplace();
   afx_msg void OnScriptGotoLine();
 
+  /////////////////////////////////////
+
+  afx_msg void OnUpdateScriptCheckSyntax(CCmdUI* cmdui);
+
   afx_msg void OnOptionsSetScriptFont();
   afx_msg void OnOptionsToggleColors();
   afx_msg void OnOptionsSetTabSize();
@@ -52,13 +56,17 @@ private:
   afx_msg void OnUpdateOptionsSelectionRectangle(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsSelectionLine(CCmdUI* cmdui);
 
-  afx_msg void OnUpdateScriptCheckSyntax(CCmdUI* cmdui);
-
   afx_msg void OnUpdateOptionsToggleLineNumbers(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsToggleColors(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsShowWhitespace(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsWordWrap(CCmdUI* cmdui);
   afx_msg void OnUpdateOptionsToggleAutoComplete(CCmdUI* cmdui);
+
+  /////////////////////////////////////
+
+  afx_msg void OnScriptToolsSort();
+
+  /////////////////////////////////////
 
   afx_msg void OnSavePointReached(NMHDR* nmhdr, LRESULT* result);
   afx_msg void OnSavePointLeft(NMHDR* nmhdr, LRESULT* result);
