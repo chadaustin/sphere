@@ -1,7 +1,6 @@
 #ifndef ENGINE_HPP
 #define ENGINE_HPP
 
-
 // identifier too long
 #ifdef _MSC_VER
 #pragma warning(disable : 4786)

@@ -16,7 +16,6 @@
 #include "../common/configfile.hpp"
 #include "../common/sphere_version.h"
 
-
 ////////////////////////////////////////////////////////////////////////////////
 
 CGameEngine::CGameEngine(IFileSystem& fs,

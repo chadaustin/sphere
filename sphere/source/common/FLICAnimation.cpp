@@ -2,7 +2,6 @@
 #include <memory.h>
 #include "FLICAnimation.hpp"
 
-
 #define STRUCT_NAME SFlicHeader
 #define STRUCT_BODY                             \
   dword size;                                   \
@@ -77,7 +76,7 @@ CFLICAnimation::Load(const char* filename, IFileSystem& fs)
   File->Read(&FlicHeader, sizeof(FlicHeader));
 
   // test the FLIC for validity
-  if (FlicHeader.depth != 8)
+  if (FlicHeader.depth != 8 && FlicHeader.width >= 0 && FlicHeader.height >= 0)
   {
     delete File;
     File = 0;
@@ -223,7 +222,8 @@ CFLICAnimation::ReadFrame()
       case 13: DecodeChunk_BLACK();    break;
       case 15: DecodeChunk_BRUN();     break;
       case 16: DecodeChunk_COPY();     break;
-      default: break; // unknown, ignore
+      default:
+      break; // unknown, ignore
     }
   }
 

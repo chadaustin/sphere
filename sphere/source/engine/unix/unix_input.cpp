@@ -197,7 +197,7 @@ bool IsKeyPressed (int key) {
   return key_state[KeyMapping[key]];
   */
 
-  if (key >= 0 && key < total_keys) {
+  if (key >= 0 && key < MAX_KEY) {
     RefreshInput();
     return key_buffer[key];
   }
@@ -209,7 +209,7 @@ bool IsKeyPressed (int key) {
 
 void GetKeyStates (bool keys[MAX_KEY]) {
 
-  for (int i = 1; i < MAX_KEY; ++i) {
+  for (int i = 0; i < MAX_KEY; ++i) {
     keys[i] = key_buffer[i];
   }
 }
