@@ -1,5 +1,6 @@
 2003.03.08
   - added a selection tool to the image editor
+  - Fill->RGB/Alpha/Both, Replace->RGB/Alpha and Scale Alpha all work within the selection now
 
 2003.03.07
   - added a adjust brightness to the image editor

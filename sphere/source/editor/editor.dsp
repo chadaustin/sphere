@@ -1090,5 +1090,9 @@ SOURCE=..\common\WindowStyle.cpp
 SOURCE=..\common\WindowStyle.hpp
 # End Source File
 # End Group
+# Begin Source File
+
+SOURCE=.\resources\imagetool_selection.ico
+# End Source File
 # End Target
 # End Project
