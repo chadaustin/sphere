@@ -5,21 +5,19 @@ Import('base_env BUILD_DIR')
 env = base_env.Copy()
 env['BUILDERS']['TextFile'] = Builder(action = 'unix2dos < $SOURCE > $TARGET')
 
-files = ['build.txt',
+files = ['build-cygwin.txt',
+         'build-msvc.txt',
          'changelog.txt',
          'doc_functions.txt',
          'gpl.txt',
-         'how-to-build.txt',
          'irc.txt',
          'keys.txt',
-         'lack_of_documentation.txt',
          'legal.txt',
          'links.txt',
          'network.txt',
          'packages.txt',
          'readme.txt',
          'Sphere Tutorial.txt',
-         'sphere_cvs.txt',
          'unix.txt']
 files += map(lambda n: 'technical/' + n,
              ['coding-style.txt',
