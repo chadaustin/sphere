@@ -40,7 +40,6 @@ function main_menu()
 {
   while (AreKeysLeft()){
 	GetKey();
-        RenderM();
   }
   var image = LoadSurface("intro.jpeg");
   var sound = LoadSound("intro.wav");
