@@ -1243,12 +1243,7 @@ CImageView::OnReplaceRGBA()
     return;
   }
 
-  RGBA c = m_Image.GetPixel(p.x, p.y);
-  for (int i = 0; i < m_Image.GetWidth() * m_Image.GetHeight(); ++i) {
-    if (m_Image.GetPixels()[i] == c) {
-      m_Image.GetPixels()[i] = GetColor();
-    }
-  }
+  m_Image.ReplaceColor(m_Image.GetPixel(p.x, p.y), GetColor());
 
   Invalidate();
   m_Handler->IV_ImageChanged();

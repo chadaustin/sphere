@@ -56,6 +56,7 @@ public:
   void SetPixel(int x, int y, RGBA color);
   void SetAlpha(int alpha);
   void SetColorAlpha(RGB color, int alpha);
+  void ReplaceColor(RGBA oldColor, RGBA newColor);
   void Line(int x1, int y1, int x2, int y2, RGBA color);
   void Circle(int x, int y, int r, RGBA color);
   void Rectangle(int x1, int y1, int x2, int y2, RGBA color);

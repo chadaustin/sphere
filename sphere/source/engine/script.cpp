@@ -3702,6 +3702,7 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
     { "getPixel",         ssSurfaceGetPixel,         2, 0, 0 },
     { "setPixel",         ssSurfaceSetPixel,         3, 0, 0 },
     { "setAlpha",         ssSurfaceSetAlpha,         1, 0, 0 },
+    { "replaceColor",     ssSurfaceReplaceColor,     2, 0, 0 },
     { "line",             ssSurfaceLine,             5, 0, 0 },
     { "rectangle",        ssSurfaceRectangle,        5, 0, 0 },
     { "rotate",           ssSurfaceRotate,           2, 0, 0 },
@@ -3856,6 +3857,12 @@ begin_method(SS_SURFACE, ssSurfaceSetAlpha, 1)
 end_method()
 
 ////////////////////////////////////////
+
+begin_method(SS_SURFACE, ssSurfaceReplaceColor, 2)
+  arg_color(oldColor);
+  arg_color(newColor);
+  object->surface->ReplaceColor(oldColor, newColor);
+end_method()
 
 begin_method(SS_SURFACE, ssSurfaceLine, 5)
   arg_int(x1);

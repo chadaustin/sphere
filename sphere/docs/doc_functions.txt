@@ -780,6 +780,9 @@ log_object.endBlock()
   
   surface_object.setAlpha(alpha)
     - sets the alpha of the surface
+
+  surface_object.replaceColor(oldColor, newColor)
+    - replace all pixels of the color oldColor in the surface with newColor
   
   surface_object.line(x1, y1, x2, y2, color)
     - draws a line onto the surface starting from (x1, y1) to (x2, y2) with 

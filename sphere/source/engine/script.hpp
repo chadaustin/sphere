@@ -174,6 +174,7 @@ private:
   declare_method(ssSurfaceGetPixel);
   declare_method(ssSurfaceSetPixel);
   declare_method(ssSurfaceSetAlpha);
+  declare_method(ssSurfaceReplaceColor);
   declare_method(ssSurfaceLine);
   declare_method(ssSurfaceRectangle);
   declare_method(ssSurfaceRotate);

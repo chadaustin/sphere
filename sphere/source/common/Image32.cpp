@@ -628,6 +628,18 @@ CImage32::SetColorAlpha(RGB color, int alpha)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+CImage32::ReplaceColor(RGBA oldColor, RGBA newColor) {
+  for (int i = 0; i < m_Width * m_Height; ++i) {
+    RGBA& p = m_Pixels[i];
+    if (p == oldColor) {
+      p = newColor;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
 CImage32::Line(int x1, int y1, int x2, int y2, RGBA color)
 {
   clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
