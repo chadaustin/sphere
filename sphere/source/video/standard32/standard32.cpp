@@ -77,7 +77,7 @@ static bool InitWindowed();
 static void CloseFullscreen();
 static void CloseWindowed();
 
-static void FillImagePixels(IMAGE image, RGBA* data);
+static bool FillImagePixels(IMAGE image, RGBA* data);
 static void OptimizeBlitRoutine(IMAGE image);
 
 static void NullBlit(IMAGE image, int x, int y);
@@ -503,12 +503,15 @@ void CloseWindowed()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void FillImagePixels(IMAGE image, RGBA* pixels)
+bool FillImagePixels(IMAGE image, RGBA* pixels)
 {
   // fill the image pixels
   if (BitsPerPixel == 32)
   {
     image->bgra = new BGRA[image->width * image->height];
+    if (image->bgra == NULL)
+      return false;
+
     for (int i = 0; i < image->width * image->height; ++i)
     {
 #ifdef USE_ALPHA_TABLE
@@ -525,6 +528,9 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
   else
   {
     image->bgr  = new BGR[image->width * image->height];
+    if (image->bgr == NULL)
+      return false;
+
     for (int i = 0; i < image->width * image->height; ++i)
     {
 #ifdef USE_ALPHA_TABLE
@@ -541,8 +547,13 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
 
   // fill the alpha array
   image->alpha = new byte[image->width * image->height];
+  if (image->alpha == NULL)
+    return false;
+
   for (int i = 0; i < image->width * image->height; i++)
     image->alpha[i] = pixels[i].alpha;
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -755,6 +766,25 @@ EXPORT(void) FlipScreen()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+EXPORT(void) DestroyImage(IMAGE image)
+{
+  if (BitsPerPixel == 32) {
+    delete[] image->bgra;
+    image->bgra = NULL;
+  }
+  else {
+    delete[] image->bgr;
+    image->bgr = NULL;
+  }
+  delete[] image->alpha;
+  image->alpha = NULL;
+
+  delete image;
+  image = NULL;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 {
   // allocate the image
@@ -765,21 +795,13 @@ EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
   image->width  = width;
   image->height = height;
 
-  FillImagePixels(image, pixels);
+  if (!FillImagePixels(image, pixels)) {
+    DestroyImage(image);
+    return NULL;
+  }
+
   OptimizeBlitRoutine(image);
   return image;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-EXPORT(void) DestroyImage(IMAGE image)
-{
-  if (BitsPerPixel == 32)
-    delete[] image->bgra;
-  else
-    delete[] image->bgr;
-  delete[] image->alpha;
-  delete image;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -793,6 +815,9 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
     return NULL;
 
   IMAGE image = new _IMAGE;
+  if (!image)
+    return NULL;
+
   image->width        = width;
   image->height       = height;
   image->blit_routine = TileBlit;
@@ -801,6 +826,10 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
   {
     BGRA* Screen = (BGRA*)ScreenBuffer;
     image->bgra = new BGRA[width * height];
+    if (image->bgra == NULL) {
+      delete image;
+      return NULL;
+    }
     for (int iy = 0; iy < height; iy++)
       memcpy(image->bgra + iy * width,
              Screen + (y + iy) * ScreenWidth + x,
@@ -811,6 +840,11 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
   {
     BGR* Screen = (BGR*)ScreenBuffer;
     image->bgr = new BGR[width * height];
+    if (image->bgr == NULL) {
+      delete image;
+      return NULL;
+    }
+
     for (int iy = 0; iy < height; iy++)
       memcpy(image->bgr + iy * width,
              Screen + (y + iy) * ScreenWidth + x,
@@ -818,6 +852,12 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
   }
 
   image->alpha = new byte[width * height];
+  if (image->alpha == NULL) {
+    if (BitsPerPixel == 32) delete[] image->bgra;
+    if (BitsPerPixel == 24) delete[] image->bgr;
+    delete image;
+    return NULL;
+  }
   memset(image->alpha, 255, width * height);
 
   return image;
