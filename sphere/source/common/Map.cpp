@@ -656,11 +656,21 @@ sMap::PruneTileset(std::set<int>* allowed_tiles)
   for (int it = 0; it < m_Tileset.GetNumTiles(); it++) {
     
     bool in_use = false;
+
+    // check to see if the tile is in an animation
+    if (m_Tileset.GetTile(it).GetDelay() > 0) {
+      for (int k = 0; k < m_Tileset.GetNumTiles(); k++) {
+        if (m_Tileset.GetTile(it).GetNextTile() == k) {
+          in_use = true;
+          goto done;
+        }
+      }
+    }
+
     for (unsigned il = 0; il < m_Layers.size(); il++) {
       for (int iy = 0; iy < m_Layers[il].GetHeight(); iy++) {
         for (int ix = 0; ix < m_Layers[il].GetWidth(); ix++) {
           if (m_Layers[il].GetTile(ix, iy) == it) {
-
             in_use = true;
             goto done;  // break out
           }
@@ -672,6 +682,10 @@ done:
     if (!in_use && (allowed_tiles == NULL || allowed_tiles->count(it))) {
       m_Tileset.DeleteTiles(it, 1);
 
+      // update tile animations
+      for (int k = it; k < m_Tileset.GetNumTiles(); k++)
+        m_Tileset.GetTile(k).SetNextTile(m_Tileset.GetTile(k).GetNextTile() - 1);
+ 
       // now update all of the layers
       for (unsigned il = 0; il < m_Layers.size(); il++) {
         for (int iy = 0; iy < m_Layers[il].GetHeight(); iy++) {
