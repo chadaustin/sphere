@@ -286,9 +286,13 @@ CFLICAnimation::DecodeChunk_SS2()
   {
     word option_word = next_word();
 
+
     // check for 'skip lines' word
     if (option_word & 0xC000)  // upper two bits are 1 1
     {
+      // this current_line += option_word can make SwordSlashagain.flc crash
+      // because num_lines = 32 and option_word = 32774, so:
+      // current_line += option_word > num_lines!
       current_line += abs((sword)option_word);     // absolute value is number of lines to skip
       option_word = next_word();  // read next word
     }

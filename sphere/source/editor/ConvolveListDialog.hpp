@@ -103,6 +103,10 @@ private:
 private:
   BOOL OnInitDialog();
   void OnOK();
+
+  afx_msg void OnClampChanged();
+
+  DECLARE_MESSAGE_MAP()
 };
 
 ///////////////////////////////////////////////////////////

@@ -7,10 +7,29 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
+BEGIN_MESSAGE_MAP(CConvolveListEditDialog, CDialog)
+  ON_COMMAND(IDC_FILTER_LIST_EDIT_CLAMP, OnClampChanged)
+END_MESSAGE_MAP()
+
+////////////////////////////////////////////////////////////////////////////////
+
 CConvolveListEditDialog::CConvolveListEditDialog(FilterInfo* filter_info)
 : CDialog(IDD_CONVOLVE_LIST_EDIT)
 {
   m_FilterInfo = filter_info;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CConvolveListEditDialog::OnClampChanged()
+{
+  int clamp = IsDlgButtonChecked(IDC_FILTER_LIST_EDIT_CLAMP) == BST_CHECKED ? 1 : 0;
+  CEdit* NumberEdit = (CEdit*)GetDlgItem(IDC_FILTER_CLIP_LOW);
+  NumberEdit->EnableWindow(clamp);
+
+  NumberEdit = (CEdit*)GetDlgItem(IDC_FILTER_CLIP_HIGH);
+  NumberEdit->EnableWindow(clamp);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -69,9 +88,15 @@ CConvolveListEditDialog::OnInitDialog()
 
   NumberEdit = (CEdit*)GetDlgItem(IDC_FILTER_CLIP_LOW);
   NumberEdit->SetWindowText("0");
+  if (!m_FilterInfo->clamp) {
+    NumberEdit->EnableWindow(false);
+  }
 
   NumberEdit = (CEdit*)GetDlgItem(IDC_FILTER_CLIP_HIGH);
   NumberEdit->SetWindowText("255");
+  if (!m_FilterInfo->clamp) {
+    NumberEdit->EnableWindow(false);
+  }
 
   NumberEdit = (CEdit*)GetDlgItem(IDC_FILTER_LIST_EDIT_NAME);
   NumberEdit->SetWindowText(m_FilterInfo->name.c_str());
@@ -371,6 +396,7 @@ CConvolveListDialog::SortFilters()
     SendDlgItemMessage(IDC_FILTER_LIST, LB_ADDSTRING, 0, (LPARAM)m_FilterList[i]->name.c_str());
   }
 
+  SendDlgItemMessage(IDC_FILTER_LIST, LB_SETCURSEL, m_CurrentFilter);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -380,8 +406,6 @@ CConvolveListDialog::OnInitDialog()
 {
   LoadFilterList();
   SortFilters();
-
-  SendDlgItemMessage(IDC_FILTER_LIST, LB_SETCURSEL, m_CurrentFilter);
 
   CheckDlgButton(IDC_FILTER_USE_RED,   BST_CHECKED);
   CheckDlgButton(IDC_FILTER_USE_GREEN, BST_CHECKED);
