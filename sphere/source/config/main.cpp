@@ -74,7 +74,6 @@ bool IsValidDriver(const char* filename);
 
 BOOL CALLBACK VideoDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
 BOOL CALLBACK AudioDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
-BOOL CALLBACK InputDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
 
 bool ConfigureDriver(HWND window, const char* driver);
 bool GetDriverInfo(const char* drivername, INTERNALDRIVERINFO* driverinfo);
@@ -177,7 +176,7 @@ void SaveConfiguration()
 
 void ExecuteDialog()
 {
-  PROPSHEETPAGE Pages[3];
+  PROPSHEETPAGE Pages[2];
 
   // default values
   for (unsigned i = 0; i < sizeof(Pages) / sizeof(*Pages); i++)
@@ -195,10 +194,6 @@ void ExecuteDialog()
   // audio page
   Pages[1].pszTemplate = MAKEINTRESOURCE(IDD_AUDIO_PAGE);
   Pages[1].pfnDlgProc  = AudioDialogProc;
-
-  // input page
-  Pages[2].pszTemplate = MAKEINTRESOURCE(IDD_INPUT_PAGE);
-  Pages[2].pfnDlgProc  = InputDialogProc;
 
   // create the dialog box
   PROPSHEETHEADER psh;
@@ -343,24 +338,6 @@ BOOL CALLBACK AudioDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
     }
 
     ////////////////////////////////////////////////////////////////////////////
-
-    default:
-      return FALSE;
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-BOOL CALLBACK InputDialogProc(
-    HWND /*window*/,
-    UINT message,
-    WPARAM /*wparam*/,
-    LPARAM /*lparam*/)
-{
-  switch (message)
-  {
-    case WM_COMMAND:
-      return false;
 
     default:
       return FALSE;

@@ -56,15 +56,6 @@ BEGIN
                     48,47,10
 END
 
-IDD_INPUT_PAGE DIALOG DISCARDABLE  0, 0, 212, 180
-STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
-CAPTION "Input"
-FONT 8, "MS Sans Serif"
-BEGIN
-    CONTROL         "Use Joystick",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,8,140,56,10
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -83,14 +74,6 @@ BEGIN
     END
 
     IDD_AUDIO_PAGE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 205
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 173
-    END
-
-    IDD_INPUT_PAGE, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 205

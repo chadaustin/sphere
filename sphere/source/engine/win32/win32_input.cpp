@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "win32_input.hpp"
 #include "win32_internal.hpp"
+#include "../../common/minmax.hpp"
 
 
 static HWND          SphereWindow = NULL;
@@ -103,32 +104,57 @@ static byte KeyBuffer[MAX_KEY];
 // keyboard key queue (virtual keys also)
 static std::queue<int> KeyQueue;
 
-// joystick variables
-static UINT JoystickID;
-
-static int JoyMinX;
-static int JoyMaxX;
-static int JoyMinY;
-static int JoyMaxY;
-
-static int JoyX;
-static int JoyY;
-
-static bool JoyButton1Pressed;
-static bool JoyButton2Pressed;
-static bool JoyButton3Pressed;
-static bool JoyButton4Pressed;
-
 // mouse
 static int MouseX;
 static int MouseY;
 static bool MouseState[3];
 
+// joystick
+struct Joystick {
+  UINT id;
+  UINT minX;
+  UINT maxX;
+  UINT minY;
+  UINT maxY;
+  UINT numButtons;
+
+  float x;
+  float y;
+  UINT buttons;
+};
+std::vector<Joystick> Joysticks;
 
 
-// These functions rely on the window handler to modify the keybuffer values and mouse state
+
+// These functions rely on the window handler to modify the keybuffer values
+// and mouse state
 
 ////////////////////////////////////////////////////////////////////////////////
+
+void TryJoystick(UINT id) {
+  JOYINFO ji;
+  if (joyGetPos(id, &ji) != JOYERR_NOERROR) {
+    return;
+  }
+
+  JOYCAPS jc;
+  if (joyGetDevCaps(id, &jc, sizeof(jc)) != JOYERR_NOERROR) {
+    return;
+  }
+
+  Joystick j;
+  j.id = id;
+  j.minX = jc.wXmin;
+  j.maxX = jc.wXmax;
+  j.minY = jc.wYmin;
+  j.maxY = jc.wYmax;
+  j.x = 0;
+  j.y = 0;
+  j.buttons = 0;
+  j.numButtons = jc.wNumButtons;
+  Joysticks.push_back(j);
+}
+
 
 bool InitInput(HWND window, SPHERECONFIG* config)
 {
@@ -143,37 +169,13 @@ bool InitInput(HWND window, SPHERECONFIG* config)
   SphereWindow = window;
   Config = config;
 
-  if (Config->joystick)
-  {
-    JOYINFO ji;
-    JOYCAPS jc;
-    int NumJoysticks = joyGetNumDevs();
-
-    // Does joystick driver support any joysticks?
-    if (NumJoysticks == 0)
-    {
-      MessageBox(SphereWindow, "Joystick driver does not support any joysticks.  Disable joystick support in setup.exe", "InitInput()", MB_OK);
-      return false;
-    }
-
-    // Is a joystick plugged in?
-    if (joyGetPos(JOYSTICKID1, &ji) == JOYERR_NOERROR)
-      JoystickID = JOYSTICKID1;
-    else if (joyGetPos(JOYSTICKID2, &ji) == JOYERR_NOERROR)
-      JoystickID = JOYSTICKID2;
-    else
-    {
-      MessageBox(SphereWindow, "No joysticks detected.  Disable joystick support in setup.exe", "InitInput()", MB_OK);
-      return false;
-    }
-
-    // get joystick capabilities
-    joyGetDevCaps(JoystickID, &jc, sizeof(jc));
-    JoyMinX = jc.wXmin;
-    JoyMaxX = jc.wXmax;
-    JoyMinY = jc.wYmin;
-    JoyMaxY = jc.wYmax;
+  // try to initialize joysticks
+  UINT num = std::min(joyGetNumDevs(), 2U);
+  UINT ids[2] = { JOYSTICKID1, JOYSTICKID2 };
+  for (unsigned i = 0; i < num; ++i) {
+    TryJoystick(ids[i]);
   }
+
   return true;
 }
 
@@ -236,26 +238,14 @@ bool RefreshInput()
   // update currently pressed keys
   memcpy(KeyBuffer, CurrentKeyBuffer, MAX_KEY);
 
-  if (Config->joystick)
-  {
-    // get joystick position information
+  for (unsigned i = 0; i < Joysticks.size(); ++i) {
+    Joystick& j = Joysticks[i];
     JOYINFO ji;
-    joyGetPos(JoystickID, &ji);
-    JoyButton1Pressed = (ji.wButtons & JOY_BUTTON1) != 0;
-    JoyButton2Pressed = (ji.wButtons & JOY_BUTTON2) != 0;
-    JoyButton3Pressed = (ji.wButtons & JOY_BUTTON3) != 0;
-    JoyButton4Pressed = (ji.wButtons & JOY_BUTTON4) != 0;
-
-    int joymidx = (JoyMinX + JoyMaxX) / 2;
-    int joymidy = (JoyMinY + JoyMaxY) / 2;
-
-    if      ((int)ji.wXpos < (JoyMinX + 3 * joymidx) / 4) JoyX = -1;
-    else if ((int)ji.wXpos > (JoyMaxX + 3 * joymidx) / 4) JoyX = 1;
-    else JoyX = 0;
-
-    if      ((int)ji.wYpos < (JoyMinY + 3 * joymidy) / 4) JoyY = -1;
-    else if ((int)ji.wYpos > (JoyMaxY + 3 * joymidy) / 4) JoyY = 1;
-    else JoyY = 0;
+    if (joyGetPos(j.id, &ji) == JOYERR_NOERROR) {
+      j.x = float(ji.wXpos - j.minX) / (j.maxX - j.minX) * 2 - 1;
+      j.y = float(ji.wYpos - j.minY) / (j.maxY - j.minY) * 2 - 1;
+      j.buttons = ji.wButtons;
+    }
   }
 
   return true;
@@ -266,17 +256,6 @@ bool RefreshInput()
 bool IsKeyPressed(int key)
 {
   UpdateSystem();
-
-  if (Config->joystick)
-  {
-    switch (key)
-    {
-      case KEY_UP:         if (JoyY < 0) return true; break;
-      case KEY_RIGHT:      if (JoyX > 0) return true; break;
-      case KEY_DOWN:       if (JoyY > 0) return true; break;
-      case KEY_LEFT:       if (JoyX < 0) return true; break;
-    }
-  }
 
   // find the Sphere key code that corresponds with the virtual key
   return (KeyBuffer[key] != 0);
@@ -341,6 +320,57 @@ int GetMouseY()
 bool IsMouseButtonPressed(int button)
 {
   return MouseState[button];
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int GetNumJoysticks()
+{
+  return int(Joysticks.size());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+float GetJoystickX(int joy)
+{
+  if (joy >= 0 && joy < GetNumJoysticks()) {
+    return Joysticks[joy].x;
+  } else {
+    return 0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+float GetJoystickY(int joy)
+{
+  if (joy >= 0 && joy < GetNumJoysticks()) {
+    return Joysticks[joy].y;
+  } else {
+    return 0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int GetNumJoystickButtons(int joy)
+{
+  if (joy >= 0 && joy < GetNumJoysticks()) {
+    return Joysticks[joy].numButtons;
+  } else {
+    return 0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool IsJoystickButtonPressed(int joy, int button)
+{
+  if (joy >= 0 && joy < GetNumJoysticks()) {
+    return (Joysticks[joy].buttons & (1 << button)) != 0;
+  } else {
+    return 0;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

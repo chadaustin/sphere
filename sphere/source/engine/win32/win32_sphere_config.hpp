@@ -19,9 +19,6 @@ struct SPHERECONFIG
 
   // audio
   int sound;
-
-  // input
-  bool joystick;
 };
 
 

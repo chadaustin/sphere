@@ -57,6 +57,14 @@ SS_FUNCTION(OpenLog, 1)
     SS_FUNCTION(GetMouseY, 0)
     SS_FUNCTION(IsMouseButtonPressed, 1)
 
+    // joystick
+    SS_FUNCTION(GetNumJoysticks, 0)
+    SS_FUNCTION(GetJoystickX, 1)
+    SS_FUNCTION(GetJoystickY, 1)
+    SS_FUNCTION(GetNumJoystickButtons, 1)
+    SS_FUNCTION(IsJoystickButtonPressed, 2)
+
+
   // time
   SS_FUNCTION(GetTime, 0)
 

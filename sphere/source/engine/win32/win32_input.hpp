@@ -109,5 +109,12 @@ extern int  GetMouseX();
 extern int  GetMouseY();
 extern bool IsMouseButtonPressed(int button);
 
+// joystick
+extern int GetNumJoysticks();
+extern float GetJoystickX(int joy); // returns value in range [-1, 1]
+extern float GetJoystickY(int joy); // returns value in range [-1, 1]
+extern int GetNumJoystickButtons(int joy);
+extern bool IsJoystickButtonPressed(int joy, int button);
+
 
 #endif

@@ -188,6 +188,22 @@ log_object.endBlock()
         allowed button values are: MOUSE_LEFT, MOUSE_RIGHT, MOUSE_MIDDLE
 
 
+    *** joystick ***
+    GetNumJoysticks()
+      - returns the number of joysticks available on the system
+
+    GetJoystickX(joy)
+    GetJoystickY(joy)
+      - returns the current joystick position in normalized
+        coordinates from -1 to 1 on both axes.
+
+    GetNumJoystickButtons(joy)
+      - returns the number of buttons available on this joystick
+
+    IsJoystickButtonPressed(joy, button)
+      - returns true if the the button on joystick 'joy' is pressed
+
+
   *** time ***
   GetTime()
     - returns the number of milliseconds since some arbitrary time.

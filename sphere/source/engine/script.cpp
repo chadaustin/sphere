@@ -1200,6 +1200,45 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(GetNumJoysticks, 0)
+  return_int(GetNumJoysticks());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(GetJoystickX, 1)
+  arg_int(joy);
+  RefreshInput();
+  return_double(GetJoystickX(joy));
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(GetJoystickY, 1)
+  arg_int(joy);
+  RefreshInput();
+  return_double(GetJoystickY(joy));
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(GetNumJoystickButtons, 1)
+  arg_int(joy);
+  RefreshInput();
+  return_int(GetNumJoystickButtons(joy));
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(IsJoystickButtonPressed, 2)
+  arg_int(joy);
+  arg_int(but);
+  RefreshInput();
+  return_bool(IsJoystickButtonPressed(joy, but));
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 begin_func(GetTime, 0)
   return_int(GetTime());
 end_func()
