@@ -592,7 +592,7 @@ sMap::Create(int width, int height, int layers)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-sMap::BuildFromImage(CImage32& i, int tile_width, int tile_height)
+sMap::BuildFromImage(CImage32& i, int tile_width, int tile_height, bool allow_duplicates)
 {
   int num_tiles_x = (i.GetWidth()  + tile_width - 1)  / tile_width;
   int num_tiles_y = (i.GetHeight() + tile_height - 1) / tile_height;
@@ -600,7 +600,7 @@ sMap::BuildFromImage(CImage32& i, int tile_width, int tile_height)
   CImage32 image = i;
   image.Resize(num_tiles_x * tile_width, num_tiles_y * tile_height);
 
-  if (!m_Tileset.BuildFromImage(image, tile_width, tile_height))
+  if (!m_Tileset.BuildFromImage(image, tile_width, tile_height, allow_duplicates))
     return false;
 
   // clear out the old map

@@ -865,6 +865,11 @@ CMainWindow::OnFileImportImageToMap()
   if (resize_dialog.DoModal() != IDOK)
     return;
 
+  bool allow_duplicates = true;
+  if (MessageBox("Do you want to remove duplicate tiles?", "Remove Duplicates", MB_ICONQUESTION | MB_YESNO) == IDYES) {
+    allow_duplicates = false;
+  }
+
   // load image
   CImage32 image;
   if (image.Load(filename) == false)
@@ -875,7 +880,7 @@ CMainWindow::OnFileImportImageToMap()
 
   // build map from image
   sMap map;
-  if (map.BuildFromImage(image, resize_dialog.GetWidth(), resize_dialog.GetHeight()) == false)
+  if (map.BuildFromImage(image, resize_dialog.GetWidth(), resize_dialog.GetHeight(), allow_duplicates) == false)
   {
     MessageBox("Error: Could not build map from image");
     return;
@@ -972,6 +977,11 @@ CMainWindow::OnFileImportBitmapToRTS()
   if (ResizeDialog.DoModal() != IDOK)
     return;
 
+  bool should_remove_duplicates = false;
+  if (MessageBox("Do you want to remove duplicate tiles?", "Remove Duplicates", MB_ICONQUESTION | MB_YESNO) == IDYES) {
+    should_remove_duplicates = true;
+  }
+
   CImage32 image;
   if (!image.Load(InFileDialog.GetPathName()) )
   {
@@ -980,7 +990,7 @@ CMainWindow::OnFileImportBitmapToRTS()
   }
 
   sTileset tileset;
-  if (!tileset.BuildFromImage(image, ResizeDialog.GetWidth(), ResizeDialog.GetHeight()))
+  if (!tileset.BuildFromImage(image, ResizeDialog.GetWidth(), ResizeDialog.GetHeight(), should_remove_duplicates))
   {
     MessageBox("Can't convert image!");
     return;

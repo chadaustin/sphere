@@ -499,7 +499,7 @@ sTileset::Clear()
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-sTileset::BuildFromImage(CImage32& i, int tile_width, int tile_height)
+sTileset::BuildFromImage(CImage32& i, int tile_width, int tile_height, bool allow_duplicates)
 {
   int num_x_tiles = (i.GetWidth()  + tile_width  - 1) / tile_width;
   int num_y_tiles = (i.GetHeight() + tile_height - 1) / tile_height;
@@ -531,12 +531,15 @@ sTileset::BuildFromImage(CImage32& i, int tile_width, int tile_height)
 
       // if the tile is not in the tileset already, add it
       bool in_tileset = false;
-      for (unsigned i = 0; i < m_Tiles.size(); i++)
-        if (memcmp(tile, m_Tiles[i].GetPixels(), tile_width * tile_height * sizeof(RGBA)) == 0)
-        {
-          in_tileset = true;
-          break;
+      if (!allow_duplicates) {
+        for (unsigned i = 0; i < m_Tiles.size(); i++) {
+          if (memcmp(tile, m_Tiles[i].GetPixels(), tile_width * tile_height * sizeof(RGBA)) == 0)
+          {
+            in_tileset = true;
+            break;
+          }
         }
+      }
 
       if (!in_tileset)
       {

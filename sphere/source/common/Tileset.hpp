@@ -29,7 +29,7 @@ public:
   bool SaveToFile(IFile* file) const;
 
   void Clear();
-  bool BuildFromImage(CImage32& image, int tile_width, int tile_height);
+  bool BuildFromImage(CImage32& image, int tile_width, int tile_height, bool allow_duplicates);
 
   int GetTileWidth() const;
   int GetTileHeight() const;

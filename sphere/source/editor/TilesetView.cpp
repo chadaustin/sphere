@@ -471,21 +471,24 @@ CTilesetView::OnAppendTile()
 afx_msg void
 CTilesetView::OnDeleteTile()
 {
-  // adjust map tile indices around
-  m_Handler->TV_DeletedTiles(m_SelectedTile, 1);
+  // don't allow the tileset to be less than 1 tile
+  if (m_Tileset->GetNumTiles() > 1) {
+    // adjust map tile indices around
+    m_Handler->TV_DeletedTiles(m_SelectedTile, 1);
+ 
+    m_Tileset->DeleteTiles(m_SelectedTile, 1);
 
-  m_Tileset->DeleteTiles(m_SelectedTile, 1);
+    // make sure selected tile is still valid
+    if (m_SelectedTile >= m_Tileset->GetNumTiles()) {
+      m_SelectedTile = m_Tileset->GetNumTiles() - 1;
+      m_Handler->TV_SelectedTileChanged(m_SelectedTile);
+    }
 
-  // make sure selected tile is still valid
-  if (m_SelectedTile >= m_Tileset->GetNumTiles()) {
-    m_SelectedTile = m_Tileset->GetNumTiles() - 1;
-    m_Handler->TV_SelectedTileChanged(m_SelectedTile);
+    m_Handler->TV_TilesetChanged();
+
+    UpdateScrollBar();
+    Invalidate();
   }
-
-  m_Handler->TV_TilesetChanged();
-
-  UpdateScrollBar();
-  Invalidate();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -40,7 +40,7 @@ public:
   bool Save(const char* filename, IFileSystem& fs = g_DefaultFileSystem);
 
   bool Create(int width, int height, int layers = 1);
-  bool BuildFromImage(CImage32& image, int tile_width = 16, int tile_height = 16);
+  bool BuildFromImage(CImage32& image, int tile_width = 16, int tile_height = 16, bool allow_duplicates = false);
 
   void PruneTileset(std::set<int>* allowed_tiles = NULL);
   void ValidateTileIndices();
