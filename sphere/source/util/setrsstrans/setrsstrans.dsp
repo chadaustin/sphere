@@ -107,10 +107,6 @@ SOURCE=.\setrsstrans.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\common\Sprite.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\common\Spriteset.cpp
 # End Source File
 # End Group

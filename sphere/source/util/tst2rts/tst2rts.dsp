@@ -107,6 +107,10 @@ SOURCE=..\..\common\Image32.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\common\ObstructionMap.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\common\Tile.cpp
 # End Source File
 # Begin Source File
