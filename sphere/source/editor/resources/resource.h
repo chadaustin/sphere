@@ -108,6 +108,9 @@
 #define IDD_COLOR_ADJUST                261
 #define IDC_IMAGETOOL_FILL              263
 #define IDC_MAPTOOL_PASTE               264
+#define IDC_MAPTOOL_COPYAREA            265
+#define IDC_MAPTOOL_COPYENTITY          266
+#define IDC_MAPTOOL_PASTEENTITY         267
 #define IDC_PROJECTNAME                 1000
 #define IDC_GAMETITLE                   1001
 #define IDC_BROWSE                      1003
@@ -626,7 +629,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        265
+#define _APS_NEXT_RESOURCE_VALUE        268
 #define _APS_NEXT_COMMAND_VALUE         40761
 #define _APS_NEXT_CONTROL_VALUE         1210
 #define _APS_NEXT_SYMED_VALUE           101
