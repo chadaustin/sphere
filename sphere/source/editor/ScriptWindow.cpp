@@ -14,6 +14,7 @@
 
 
 const int ID_EDIT = 900;
+const UINT s_FindReplaceMessage = ::RegisterWindowMessage(FINDMSGSTRING);
 
 
 BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
@@ -24,10 +25,11 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_SCRIPT_CHECKSYNTAX,      OnScriptCheckSyntax)
   ON_COMMAND(ID_SCRIPT_FIND,             OnScriptFind)
   ON_COMMAND(ID_SCRIPT_REPLACE,          OnScriptReplace)
-  ON_COMMAND(ID_SCRIPT_SETDEFAULTFONT,   OnScriptSetDefaultFont)
-  ON_COMMAND(ID_SCRIPT_SETTABSIZE,       OnScriptSetTabSize)
-  ON_COMMAND(ID_SCRIPT_SHOWCOLORS,       OnScriptShowColors)
-  ON_COMMAND(ID_SCRIPT_ENABLEAUTOINDENT, OnScriptEnableAutoIndent)
+
+  ON_NOTIFY(SCN_SAVEPOINTREACHED, ID_EDIT, OnSavePointReached)
+  ON_NOTIFY(SCN_SAVEPOINTLEFT,    ID_EDIT, OnSavePointLeft)
+
+  ON_REGISTERED_MESSAGE(s_FindReplaceMessage, OnFindReplace)
 
 END_MESSAGE_MAP()
 
@@ -37,6 +39,7 @@ END_MESSAGE_MAP()
 CScriptWindow::CScriptWindow(const char* filename)
 : CSaveableDocumentWindow(filename, IDR_SCRIPT)
 , m_Created(false)
+, m_SearchDialog(0)
 {
   SetSaved(filename != NULL);
   SetModified(false);
@@ -82,7 +85,7 @@ CScriptWindow::Create()
     0, 0,
     100, 100,
     m_hWnd,
-    0,
+    (HMENU)ID_EDIT,
     AfxGetApp()->m_hInstance,
     0);
 
@@ -123,27 +126,36 @@ CScriptWindow::Initialize()
     "debugger implements protected volatile "
     "double import public ";
 
-  static const COLORREF black  = 0x000000;
-  static const COLORREF white  = 0xFFFFFF;
-  static const COLORREF red    = RGB(0xFF, 0, 0);
-  static const COLORREF green  = RGB(0, 0xFF, 0);
-  static const COLORREF blue   = RGB(0, 0, 0xFF);
-  static const COLORREF purple = RGB(0xFF, 0, 0xFF);
-  static const COLORREF yellow = RGB(0xFF, 0xFF, 0);
+  static const COLORREF black   = 0x000000;
+  static const COLORREF white   = 0xFFFFFF;
+  static const COLORREF red     = RGB(0xFF, 0, 0);
+  static const COLORREF green   = RGB(0, 0x80, 0);
+  static const COLORREF blue    = RGB(0, 0, 0xFF);
+  static const COLORREF purple  = RGB(0xFF, 0, 0xFF);
+  static const COLORREF yellow  = RGB(0xFF, 0xFF, 0);
+  static const COLORREF brown   = RGB(0xB5, 0x6F, 0x32);
+  static const COLORREF darkred = RGB(0x80, 0, 0);
 
-  SendEditor(SCI_SETLEXERLANGUAGE, 0, (WPARAM)"javascript");
+  SendEditor(SCI_SETLEXER, SCLEX_CPP);  // JavaScript uses the C++ lexer
   SendEditor(SCI_SETSTYLEBITS, 5);
   SendEditor(SCI_SETKEYWORDS, 0, (LPARAM)key_words);
+  SendEditor(SCI_SETKEYWORDS, 1, (LPARAM)reserved_words);
 
   SetStyle(STYLE_DEFAULT, black, white, 10, "Verdana");
   SendEditor(SCI_STYLECLEARALL);
 
-  SetStyle(SCE_C_DEFAULT, red, white, 10, "Verdana");
-  SetStyle(SCE_C_COMMENT, red);
-  SetStyle(SCE_C_NUMBER, green);
-  SetStyle(SCE_C_STRING, blue);
-  SetStyle(SCE_C_IDENTIFIER, purple);
-  SetStyle(SCE_C_WORD, yellow);
+  SetStyle(SCE_C_DEFAULT, black, white, 10, "Verdana");
+  SetStyle(SCE_C_COMMENT,     green);
+  SetStyle(SCE_C_COMMENTLINE, green);
+  SetStyle(SCE_C_COMMENTDOC,  green);
+  SetStyle(SCE_C_NUMBER,      darkred);
+  SetStyle(SCE_C_WORD,        blue);
+  SendEditor(SCI_STYLESETBOLD, SCE_C_WORD, 1);
+  SetStyle(SCE_C_STRING,      green);
+  SetStyle(SCE_C_CHARACTER,   green);
+  SetStyle(SCE_C_OPERATOR,    purple);
+  SetStyle(SCE_C_IDENTIFIER,  black);
+  SetStyle(SCE_C_WORD2,       red);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -197,6 +209,7 @@ CScriptWindow::LoadScript(const char* filename)
   fclose(file);
 
   SetModified(false);
+  SendEditor(SCI_SETSAVEPOINT);
 
   return true;
 }
@@ -246,7 +259,6 @@ CScriptWindow::OnScriptCheckSyntax()
   CString text;
   GetEditorText(text);
 
-/*
   // verify the script
   sCompileError error;
   if (!VerifyScript(text, error))
@@ -254,11 +266,13 @@ CScriptWindow::OnScriptCheckSyntax()
     // show the error message
     MessageBox(error.m_Message.c_str(), "Check syntax", MB_OK);
     if (error.m_Token.length() > 0)
-      m_Edit.SetSel(error.m_TokenStart, error.m_TokenStart + error.m_Token.length());
+      SendEditor(
+        SCI_SETSEL,
+        error.m_TokenStart,
+        error.m_TokenStart + error.m_Token.length());
   }
   else
     MessageBox("Script is valid");
-*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -266,7 +280,22 @@ CScriptWindow::OnScriptCheckSyntax()
 afx_msg void
 CScriptWindow::OnScriptFind()
 {
-//  m_Edit.ScriptFindWord();
+  MessageBox("broken!");
+  return;
+
+  if (!m_SearchDialog) {
+    int start = SendEditor(SCI_GETSELECTIONSTART);
+    int end   = SendEditor(SCI_GETSELECTIONEND);
+    int length = end - start;
+    char* str = new char[length + 1];
+    str[length] = 0;
+    SendEditor(SCI_GETSELTEXT, 0, (LPARAM)str);
+
+    m_SearchDialog = new CFindReplaceDialog;
+    m_SearchDialog->Create(true, str, NULL, FR_DOWN, this);
+
+    delete[] str;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -274,74 +303,66 @@ CScriptWindow::OnScriptFind()
 afx_msg void
 CScriptWindow::OnScriptReplace()
 {
-//  m_Edit.ScriptFindReplaceWord();
-}
+  MessageBox("broken!");
+  return;
 
-////////////////////////////////////////////////////////////////////////////////
-
-afx_msg void
-CScriptWindow::OnScriptSetDefaultFont()
-{
-/*
-  LOGFONT lf;
-  memset(&lf, 0, sizeof(lf));
-  HDC screen = ::GetDC(NULL);
-  lf.lfHeight = -MulDiv(Configuration::Get(KEY_SCRIPT_FONT_SIZE) / 10, GetDeviceCaps(screen, LOGPIXELSY), 72);
-  ::ReleaseDC(NULL, screen);
-  strcpy(lf.lfFaceName, Configuration::Get(KEY_SCRIPT_FONT_NAME).c_str());
-
-  CFontDialog dialog(&lf, CF_SCREENFONTS | CF_INITTOLOGFONTSTRUCT);
-  if (dialog.DoModal() == IDOK) {
-    
-    // put the dialog options into the configuration
-    int size = dialog.GetSize();
-    Configuration::Set(KEY_SCRIPT_FONT_SIZE, size);
-    
-    CString face = dialog.GetFaceName();
-    const char* face_str = face.GetBuffer(0);
-    Configuration::Set(KEY_SCRIPT_FONT_NAME, face_str);
-    face.ReleaseBuffer();
-
-    // apply the font to the current editor
-    CFont font;
-    font.CreatePointFont(size, face);
-    m_Edit.SetFont(&font);
-    m_Edit.FormatAll();
-    m_Edit.Invalidate();
+  if (!m_SearchDialog == NULL) {
+    m_SearchDialog = new CFindReplaceDialog;
+    m_SearchDialog->Create(false, NULL, NULL, FR_DOWN, this);
   }
-*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
-CScriptWindow::OnScriptSetTabSize()
+CScriptWindow::OnSavePointReached(NMHDR* nmhdr, LRESULT* result)
 {
-/*
-  CNumberDialog dialog("Set Tab Size", "Tab Size", Configuration::Get(KEY_SCRIPT_TAB_SIZE), 1, 16);
-  if (dialog.DoModal() == IDOK) {
-    Configuration::Set(KEY_SCRIPT_TAB_SIZE, dialog.GetValue());
+  SetModified(false);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnSavePointLeft(NMHDR* nmhdr, LRESULT* result)
+{
+  SetModified(true);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg LRESULT
+CScriptWindow::OnFindReplace(WPARAM, LPARAM)
+{
+  CString str;
+  GetEditorText(str);
+
+  if (m_SearchDialog->IsTerminating()) {
+    m_SearchDialog = NULL;
+  } else if (m_SearchDialog->FindNext()) {
+
+    TextToFind ttf;
+    ttf.chrg.cpMin = 0;
+    ttf.chrg.cpMax = str.GetLength();
+    ttf.lpstrText = m_SearchDialog->GetFindString().GetBuffer(0);
+    
+    int options = 0;
+    options |= m_SearchDialog->MatchCase() ? SCFIND_MATCHCASE : 0;
+    options |= m_SearchDialog->MatchWholeWord() ? SCFIND_WHOLEWORD : 0;
+    options |= 
+    SendEditor(SCI_FINDTEXT, options, (LPARAM)&ttf);
+
+    SendEditor(SCI_SETSEL, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
+    
+  } else if (m_SearchDialog->ReplaceCurrent()) {
+    
+  } else if (m_SearchDialog->ReplaceAll()) {
+
   }
-*/
+
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-afx_msg void
-CScriptWindow::OnScriptShowColors()
-{
-//  m_Edit.ScriptShowColors();
-}
-
-////////////////////////////////////////////////////////////////////////////////v
-
-afx_msg void 
-CScriptWindow::OnScriptEnableAutoIndent()
-{
-//  m_Edit.ScriptAutoIndent();
-}
-
-////////////////////////////////////////////////////////////////////////////////v
 
 bool
 CScriptWindow::GetSavePath(char* path)
@@ -367,16 +388,9 @@ CScriptWindow::SaveDocument(const char* path)
   GetEditorText(text);
   fwrite((const char*)text, 1, text.GetLength(), file);
   fclose(file);
+
+  SendEditor(SCI_SETSAVEPOINT);
   return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void
-CScriptWindow::SV_ScriptChanged()
-{
-  if (!IsModified())
-    SetModified(true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

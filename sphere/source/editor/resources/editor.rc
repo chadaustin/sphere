@@ -231,13 +231,8 @@ BEGIN
     BEGIN
         MENUITEM "&Check Syntax...",            ID_SCRIPT_CHECKSYNTAX
         MENUITEM SEPARATOR
-        MENUITEM "&Show Colors",                ID_SCRIPT_SHOWCOLORS
         MENUITEM "&Find...",                    ID_SCRIPT_FIND
         MENUITEM "&Replace...",                 ID_SCRIPT_REPLACE
-        MENUITEM SEPARATOR
-        MENUITEM "Set Default F&ont...",        ID_SCRIPT_SETDEFAULTFONT
-        MENUITEM "Set &Tab Size...",            ID_SCRIPT_SETTABSIZE
-        MENUITEM "&Enable Auto Indent",         ID_SCRIPT_ENABLEAUTOINDENT
     END
 END
 

@@ -31,19 +31,20 @@ private:
   afx_msg void OnScriptCheckSyntax();
   afx_msg void OnScriptFind();
   afx_msg void OnScriptReplace();
-  afx_msg void OnScriptSetDefaultFont();
-  afx_msg void OnScriptSetTabSize();
-  afx_msg void OnScriptShowColors();
-  afx_msg void OnScriptEnableAutoIndent();
+
+  afx_msg void OnSavePointReached(NMHDR* nmhdr, LRESULT* result);
+  afx_msg void OnSavePointLeft(NMHDR* nmhdr, LRESULT* result);
+
+  afx_msg LRESULT OnFindReplace(WPARAM, LPARAM);
 
   virtual bool GetSavePath(char* path);
   virtual bool SaveDocument(const char* path);
 
-  virtual void SV_ScriptChanged();
-
 private:
   bool m_Created;
   HWND m_Editor;
+
+  CFindReplaceDialog* m_SearchDialog;
 
   DECLARE_MESSAGE_MAP()
 };
