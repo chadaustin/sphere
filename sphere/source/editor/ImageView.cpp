@@ -2483,7 +2483,14 @@ CImageView::OnSetColorAlpha()
   AddUndoState();
 
   RGB c = { m_Color.red, m_Color.green, m_Color.blue };
-  m_Image.SetColorAlpha(c, m_Color.alpha);
+  
+  int sx = GetSelectionLeftX();
+  int sy = GetSelectionTopY();
+  int sw = GetSelectionWidth();
+  int sh = GetSelectionHeight();
+
+  // m_Image.SetColorAlpha(c, m_Color.alpha);
+  m_Image.SetColorAlpha(sx, sy, sw, sh, c, m_Color.alpha);
 
   Invalidate();
   m_Handler->IV_ImageChanged();

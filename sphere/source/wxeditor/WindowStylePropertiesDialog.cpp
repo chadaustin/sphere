@@ -21,9 +21,8 @@ wWindowStylePropertiesDialog::wWindowStylePropertiesDialog(wxWindow *parent, sWi
 
     wxString modes[] = {"Tile", "Gradient"};
     mainsizer = new wxBoxSizer(wxHORIZONTAL);
-    mainsizer->Add(m_BackgroundMode = new wxRadioBox(
-          this, -1, "Background Modes", wxDefaultPosition, wxDefaultSize,
-          2, modes));
+    m_BackgroundMode = new wxRadioBox(this, -1, "Background Modes", wxDefaultPosition, wxDefaultSize, 2, modes);
+    mainsizer->Add(m_BackgroundMode);
 
     gridsizer = new wxGridSizer(2);
       subsizer = new wxBoxSizer(wxVERTICAL);

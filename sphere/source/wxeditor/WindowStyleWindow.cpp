@@ -547,7 +547,6 @@ CWindowStyleWindow::DrawEdgeV(CDC& dc, int bitmap, int x, int y, int y2, int w)
 void
 wWindowStyleWindow::OnLButtonDown(wxMouseEvent &event)
 {
-
   wxRect EditRect;
   GetInnerRect(&EditRect);
   wxPoint point = event.GetPosition();

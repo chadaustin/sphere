@@ -687,6 +687,22 @@ CImage32::SetAlpha(int alpha)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+CImage32::SetColorAlpha(int x, int y, int w, int h, RGB color, int alpha)
+{
+  for (int iy = y; iy < (y + h); iy++)
+    for (int ix = x; ix < (x + w); ix++) {
+      RGBA& p = m_Pixels[iy * m_Width + ix];
+      if (p.red == color.red &&
+          p.green == color.green &&
+          p.blue == color.blue) {
+        p.alpha = alpha;
+      }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
 CImage32::SetColorAlpha(RGB color, int alpha)
 {
   for (int i = 0; i < m_Width * m_Height; i++) {
