@@ -193,7 +193,7 @@ class Compiler:
                        LIBS = ['stc', 'wxmsw', 'user32', 'gdi32', 'comctl32',
                                'comdlg32', 'ole32', 'shell32', 'uuid',
                                'advapi32', 'ws2_32'])
-        elif self.name == 'vc6':
+        elif self.name == 'linux':
             autocons.ParseConfig(env, 'wx-config', ['--cflags', '--libs'])
 
     def SetupZLib(self, env):
