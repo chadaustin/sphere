@@ -709,11 +709,30 @@ CScriptWindow::GetScriptType()
     return SCRIPT_TYPE_JS;
   }
 
+  /*
+  if (Local::extension_compare(GetDocumentPath(), ".py")) {
+    return SCRIPT_TYPE_PY;
+  }
+  */
+
+  if (strlen(GetDocumentPath()) == 0) {
+    return SCRIPT_TYPE_UNDETERMINABLE;
+  }
+
   if (Local::extension_compare(GetDocumentPath(), ".txt")) {
     return SCRIPT_TYPE_TXT;
   }
 
   return SCRIPT_TYPE_UNKNOWN;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CScriptWindow::IsSyntaxHighlightable()
+{
+  CScriptWindow::ScriptType type = GetScriptType();
+  return (type == SCRIPT_TYPE_JS || type == SCRIPT_TYPE_UNDETERMINABLE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -750,14 +769,22 @@ CScriptWindow::SetScriptStyles()
   static const COLORREF brown   = RGB(0xB5, 0x6F, 0x32);
   static const COLORREF darkred = RGB(0x80, 0, 0);
 
-  if (GetScriptType() == SCRIPT_TYPE_UNKNOWN
-   || GetScriptType() == SCRIPT_TYPE_JS)
+  if (GetScriptType() == SCRIPT_TYPE_UNDETERMINABLE || GetScriptType() == SCRIPT_TYPE_JS)
   {
     SendEditor(SCI_SETLEXER, SCLEX_CPP);  // JavaScript uses the C++ lexer
     SendEditor(SCI_SETSTYLEBITS, 5);
     SendEditor(SCI_SETKEYWORDS, 0, (LPARAM)key_words);
     SendEditor(SCI_SETKEYWORDS, 1, (LPARAM)reserved_words);
   }
+  /*
+  else
+  if (GetScriptType() == SCRIPT_TYPE_PY) {
+    SendEditor(SCI_SETLEXER, SCLEX_PYTHON);  // JavaScript uses the C++ lexer
+    SendEditor(SCI_SETSTYLEBITS, 5);
+    SendEditor(SCI_SETKEYWORDS, 0, (LPARAM)key_words);
+    SendEditor(SCI_SETKEYWORDS, 1, (LPARAM)reserved_words);
+  }
+  */
   else {
     SendEditor(SCI_SETLEXER, SCLEX_NULL);
   }
@@ -809,7 +836,7 @@ CScriptWindow::SetScriptStyles()
     SendEditor(SCI_SETTABWIDTH, m_TabWidth);
   }
 
-  if (GetScriptType() == SCRIPT_TYPE_UNKNOWN
+  if (GetScriptType() == SCRIPT_TYPE_UNDETERMINABLE
    || GetScriptType() == SCRIPT_TYPE_JS) {
     if (m_SyntaxHighlighted) {
       SetStyle(SCE_C_COMMENT,     green);
@@ -834,6 +861,24 @@ CScriptWindow::SetScriptStyles()
       SetStyle(STYLE_BRACEBAD,    red);
     }
   }
+  /*
+  else
+  if (GetScriptType() == SCRIPT_TYPE_PY)
+  {
+    SetStyle(SCE_P_COMMENTLINE, green);
+    SetStyle(SCE_P_WORD,        blue);
+    SetStyle(SCE_P_STRING,      blue);
+    SetStyle(SCE_P_CHARACTER,   green);
+    SetStyle(SCE_P_TRIPLE, purple);
+    SetStyle(SCE_P_TRIPLEDOUBLE, purple);
+    //SetStyle(SCE_P_CLASSNAME, purple);
+    //SetStyle(SCE_P_DEFNAME, purple);
+    SetStyle(SCE_P_OPERATOR, purple);
+    //SetStyle(SCE_P_IDENTIFIER, black);
+    SetStyle(SCE_P_COMMENTBLOCK, green);
+    SetStyle(SCE_P_STRINGEOL, green);
+  }
+  */
 
   SendEditor(SCI_SETVIEWWS, ((m_ShowWhitespace) ? (SCWS_VISIBLEALWAYS) : (SCWS_INVISIBLE)));
 
@@ -1503,7 +1548,7 @@ CScriptWindow::OnPosChanged(NMHDR* nmhdr, LRESULT* result) {
   SetLineNumber(line);
 
   if (m_SyntaxHighlighted)
-    if (GetScriptType() == SCRIPT_TYPE_UNKNOWN || GetScriptType() == SCRIPT_TYPE_JS)
+    if (IsSyntaxHighlightable())
       UpdateBraceHighlight();
 }
 
@@ -1646,7 +1691,7 @@ CScriptWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
   //if (m_AllowAutoComplete && notify->ch != '\r' && notify->ch != '\n' && notify->ch != ' ')
   if (m_AllowAutoComplete && isalpha(notify->ch))
   {
-    if (GetScriptType() == SCRIPT_TYPE_UNKNOWN || GetScriptType() == SCRIPT_TYPE_JS)
+    if (GetScriptType() == SCRIPT_TYPE_UNDETERMINABLE || GetScriptType() == SCRIPT_TYPE_JS)
     {
       //SendEditor(SCI_SETWORDCHARS, 0, (LPARAM)"_.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
       
@@ -2271,8 +2316,7 @@ CScriptWindow::OnUpdateOptionsSelectionLine(CCmdUI* cmdui)
 afx_msg void
 CScriptWindow::OnUpdateScriptCheckSyntax(CCmdUI* cmdui)
 {
-  if (!(GetScriptType() == SCRIPT_TYPE_UNKNOWN
-    || GetScriptType() == SCRIPT_TYPE_JS)) {
+  if ( !IsSyntaxHighlightable() ) {
     cmdui->Enable(FALSE);
   }
 }
@@ -2291,7 +2335,7 @@ afx_msg void
 CScriptWindow::OnUpdateOptionsToggleColors(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_SyntaxHighlighted ? TRUE : FALSE);
-  if (!(GetScriptType() == SCRIPT_TYPE_UNKNOWN || GetScriptType() == SCRIPT_TYPE_JS)) {
+  if ( !IsSyntaxHighlightable() ) {
     cmdui->Enable(FALSE);
   }
 }

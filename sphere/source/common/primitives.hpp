@@ -646,7 +646,9 @@ void TexturedQuad(
   // find top and bottom points
   int top = 0;
   int bottom = 0;
-  for (int i = 1; i < 4; i++) {
+  int i;
+
+  for (i = 1; i < 4; i++) {
     if (y[i] < y[top]) {
       top = i;
     }
@@ -677,7 +679,7 @@ void TexturedQuad(
   // segment 2 = bottom
   // segment 3 = left
 
-  for (int i = 0; i < 4; i++) {
+  for (i = 0; i < 4; i++) {
     segment* s = segments + i;
 
     int p1 = i;

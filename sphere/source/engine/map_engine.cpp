@@ -251,28 +251,28 @@ CMapEngine::CallMapScript(int which)
     break;
 
     case SCRIPT_ON_LEAVE_MAP_NORTH:
-      if (!ExecuteScript(m_NorthScript, error)) {
+      if (m_NorthScript && !ExecuteScript(m_NorthScript, error)) {
         m_ErrorMessage = "Could not execute north script\n" + error;
         return false;
       }
     break;
 
     case SCRIPT_ON_LEAVE_MAP_EAST:
-      if (!ExecuteScript(m_EastScript, error)) {
+      if (m_EastScript && !ExecuteScript(m_EastScript, error)) {
         m_ErrorMessage = "Could not execute east script\n" + error;
         return false;
       }
     break;
 
     case SCRIPT_ON_LEAVE_MAP_SOUTH:
-      if (!ExecuteScript(m_SouthScript, error)) {
+      if (m_SouthScript && !ExecuteScript(m_SouthScript, error)) {
         m_ErrorMessage = "Could not execute south script\n" + error;
         return false;
       }
     break;
 
     case SCRIPT_ON_LEAVE_MAP_WEST:
-      if (!ExecuteScript(m_WestScript, error)) {
+      if (m_WestScript && !ExecuteScript(m_WestScript, error)) {
         m_ErrorMessage = "Could not execute west script\n" + error;
         return false;
       }
@@ -590,6 +590,11 @@ CMapEngine::SetTile(int x, int y, int layer, int tile)
     return false;
   }
 
+  if (tile < 0 || tile >= m_Map.GetMap().GetTileset().GetNumTiles()) {
+    m_ErrorMessage = "Invalid tile_index: " + itos(tile);
+    return false;
+  }
+
   l.SetTile(x, y, tile);
   return true;
 }
@@ -625,7 +630,7 @@ CMapEngine::GetTileName(int tile_index, std::string& name)
   }
 
   // make sure tile_index is valid
-  if (tile_index < 0 || tile_index > m_Map.GetMap().GetTileset().GetNumTiles()) {
+  if (tile_index < 0 || tile_index >= m_Map.GetMap().GetTileset().GetNumTiles()) {
     m_ErrorMessage = "Invalid tile_index: " + itos(tile_index);
     return false;
   }
@@ -1761,28 +1766,21 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
   p.name = name;
   p.destroy_with_map = destroy_with_map;
 
-  p.spriteset = m_Engine->LoadSpriteset(spriteset_filename);
-  if (p.spriteset == NULL) {
-    m_ErrorMessage = "Could not load spriteset: '" + std::string(spriteset_filename) + "'\nPerson: " + p.description;
-    return false;
-  }
-
-  // put them in the starting position by default
-  if (m_IsRunning) {
-    p.x     = m_Map.GetMap().GetStartX();
-    p.y     = m_Map.GetMap().GetStartY();
-    p.layer = m_Map.GetMap().GetStartLayer();
-  } else {
-    p.x     = 0;
-    p.y     = 0;
-    p.layer = 0;
-  }
-
   p.script_create            = NULL;
   p.script_destroy           = NULL;
   p.script_activate_touch    = NULL;
   p.script_activate_talk     = NULL;
   p.script_command_generator = NULL;
+
+  p.player_index = -1;
+  p.key_up    = -1;
+  p.key_down  = -1;
+  p.key_left  = -1;
+  p.key_right = -1;
+
+  p.on_trigger = false;
+  p.last_trigger = -1;
+
 
   p.leader = -1;
 
@@ -1803,6 +1801,25 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
   p.speed_x = 1;
   p.speed_y = 1;
 
+  p.frame = 0;
+
+  p.spriteset = m_Engine->LoadSpriteset(spriteset_filename);
+  if (p.spriteset == NULL) {
+    m_ErrorMessage = "Could not load spriteset: '" + std::string(spriteset_filename) + "'\nPerson: " + p.description;
+    return false;
+  }
+
+  // put them in the starting position by default
+  if (m_IsRunning) {
+    p.x     = m_Map.GetMap().GetStartX();
+    p.y     = m_Map.GetMap().GetStartY();
+    p.layer = m_Map.GetMap().GetStartLayer();
+  } else {
+    p.x     = 0;
+    p.y     = 0;
+    p.layer = 0;
+  }
+
   p.spriteset->GetSpriteset().GetBase(p.base_x1, p.base_y1, p.base_x2, p.base_y2);
 
   if (p.base_x1 > p.base_x2) std::swap(p.base_x1, p.base_x2);
@@ -1812,24 +1829,17 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
   p.height = p.spriteset->GetSpriteset().GetFrameHeight();
 
   p.direction = p.spriteset->GetSpriteset().GetDirectionName(0);
-  p.frame = 0;
 
   /*
+  char debug_str2[1000] = {0};
+  sprintf (debug_str2, "%s", p.direction.c_str());
+
   if (p.frame < 0 || p.frame >= p.spriteset->GetSpriteset().GetNumFrames(p.direction)) {
     m_ErrorMessage = "Bad frame! Bad! " + itos(p.frame);
     m_ErrorMessage += "...\n" + p.direction;
     return false;
   }
   */
-
-  p.player_index = -1;
-  p.key_up    = -1;
-  p.key_down  = -1;
-  p.key_left  = -1;
-  p.key_right = -1;
-
-  p.on_trigger = false;
-  p.last_trigger = -1;
 
   p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.frame);
   return true;
@@ -3088,10 +3098,10 @@ CMapEngine::OpenMap(const char* filename)
     m_Music = 0;
 
     // destroy edge scripts
-    m_Engine->DestroyScript(m_NorthScript);
-    m_Engine->DestroyScript(m_EastScript);
-    m_Engine->DestroyScript(m_SouthScript);
-    m_Engine->DestroyScript(m_WestScript);
+    if (m_NorthScript) { m_Engine->DestroyScript(m_NorthScript); m_NorthScript = NULL; }
+    if (m_EastScript)  { m_Engine->DestroyScript(m_EastScript);  m_EastScript  = NULL; }
+    if (m_SouthScript) { m_Engine->DestroyScript(m_SouthScript); m_SouthScript = NULL; }
+    if (m_WestScript)  { m_Engine->DestroyScript(m_WestScript);  m_WestScript  = NULL; }
 
     m_CurrentMap = "";
     return false;
@@ -3133,10 +3143,10 @@ CMapEngine::CloseMap()
   m_LayerRenderers.resize(0);
 
   // destroy edge scripts
-  m_Engine->DestroyScript(m_NorthScript);
-  m_Engine->DestroyScript(m_EastScript);
-  m_Engine->DestroyScript(m_SouthScript);
-  m_Engine->DestroyScript(m_WestScript);
+  if (m_NorthScript) { m_Engine->DestroyScript(m_NorthScript); m_NorthScript = NULL; }
+  if (m_EastScript)  { m_Engine->DestroyScript(m_EastScript);  m_EastScript  = NULL; }
+  if (m_SouthScript) { m_Engine->DestroyScript(m_SouthScript); m_SouthScript = NULL; }
+  if (m_WestScript)  { m_Engine->DestroyScript(m_WestScript);  m_WestScript  = NULL; }
 
   // execute exit script
   if (!CallDefaultMapScript(SCRIPT_ON_LEAVE_MAP)
@@ -3252,53 +3262,51 @@ CMapEngine::CompileEdgeScripts()
   std::string error;
 
   // NORTH
-  m_NorthScript = m_Engine->CompileScript(m_Map.GetMap().GetEdgeScript(sMap::NORTH), error);
-  if (m_NorthScript == NULL) {
-
-    m_ErrorMessage = "Could not compile north script\n" + error;
-    return false;
+  if (strlen(m_Map.GetMap().GetEdgeScript(sMap::NORTH)) > 0) {
+    m_NorthScript = m_Engine->CompileScript(m_Map.GetMap().GetEdgeScript(sMap::NORTH), error);
+    if (m_NorthScript == NULL) {
+      m_ErrorMessage = "Could not compile north script\n" + error;
+      return false;
+    }
   }
 
   // EAST
-  m_EastScript = m_Engine->CompileScript(m_Map.GetMap().GetEdgeScript(sMap::EAST), error);
-  if (m_EastScript == NULL) {
+  if (strlen(m_Map.GetMap().GetEdgeScript(sMap::EAST)) > 0) {
+    m_EastScript = m_Engine->CompileScript(m_Map.GetMap().GetEdgeScript(sMap::EAST), error);
+    if (m_EastScript == NULL) {
+  
+      if (m_NorthScript) { m_Engine->DestroyScript(m_NorthScript); m_NorthScript = NULL; }
 
-    m_Engine->DestroyScript(m_NorthScript);
-    m_NorthScript = NULL;
-
-    m_ErrorMessage = "Could not compile east script\n" + error;
-    return false;
+      m_ErrorMessage = "Could not compile east script\n" + error;
+      return false;
+    }
   }
 
   // SOUTH
-  m_SouthScript = m_Engine->CompileScript(m_Map.GetMap().GetEdgeScript(sMap::SOUTH), error);
-  if (m_SouthScript == NULL) {
+  if (strlen(m_Map.GetMap().GetEdgeScript(sMap::SOUTH)) > 0) {
+    m_SouthScript = m_Engine->CompileScript(m_Map.GetMap().GetEdgeScript(sMap::SOUTH), error);
+    if (m_SouthScript == NULL) {
 
-    m_Engine->DestroyScript(m_NorthScript);
-    m_NorthScript = NULL;
+      if (m_NorthScript) { m_Engine->DestroyScript(m_NorthScript); m_NorthScript = NULL; }
+      if (m_EastScript)  { m_Engine->DestroyScript(m_EastScript);  m_EastScript  = NULL; }
 
-    m_Engine->DestroyScript(m_EastScript);
-    m_EastScript = NULL;
-
-    m_ErrorMessage = "Could not compile south script\n" + error;
-    return false;
+      m_ErrorMessage = "Could not compile south script\n" + error;
+      return false;
+    }
   }
 
   // WEST
-  m_WestScript = m_Engine->CompileScript(m_Map.GetMap().GetEdgeScript(sMap::WEST), error);
-  if (m_WestScript == NULL) {
+  if (strlen(m_Map.GetMap().GetEdgeScript(sMap::WEST)) > 0) {
+    m_WestScript = m_Engine->CompileScript(m_Map.GetMap().GetEdgeScript(sMap::WEST), error);
+    if (m_WestScript == NULL) {
 
-    m_Engine->DestroyScript(m_NorthScript);
-    m_NorthScript = NULL;
+      if (m_NorthScript) { m_Engine->DestroyScript(m_NorthScript); m_NorthScript = NULL; }
+      if (m_EastScript)  { m_Engine->DestroyScript(m_EastScript);  m_EastScript  = NULL; }
+      if (m_SouthScript) { m_Engine->DestroyScript(m_SouthScript); m_SouthScript = NULL; }
 
-    m_Engine->DestroyScript(m_EastScript);
-    m_EastScript = NULL;
-
-    m_Engine->DestroyScript(m_SouthScript);
-    m_SouthScript = NULL;
-
-    m_ErrorMessage = "Could not compile west script\n" + error;
-    return false;
+      m_ErrorMessage = "Could not compile west script\n" + error;
+      return false;
+    }
   }
 
   return true;
@@ -3328,7 +3336,7 @@ CMapEngine::LoadMapPersons()
 
       Person p;
       p.description = person_string;
-      if (!CreateDefaultPerson(p, person.name.c_str(), person.spriteset.c_str(), true)) {
+      if ( !CreateDefaultPerson(p, person.name.c_str(), person.spriteset.c_str(), true) ) {
         // m_ErrorMessage = "Could not load spriteset\nPerson: " + person_string;
         goto spriteset_error;
       }
@@ -3338,53 +3346,48 @@ CMapEngine::LoadMapPersons()
       p.layer = person.layer;
 
       // compile script_create
-      p.script_create = m_Engine->CompileScript(person.script_create.c_str(), error);
-      if (p.script_create == NULL) {
-        m_Engine->DestroySpriteset(p.spriteset);
-        m_ErrorMessage = "Could not compile OnCreate script\nPerson:" + person_string + "\n" + error;
-        goto spriteset_error;
+      if (!person.script_create.empty()) {
+        p.script_create = m_Engine->CompileScript(person.script_create.c_str(), error);
+        if (p.script_create == NULL) {
+          m_ErrorMessage = "Could not compile OnCreate script\nPerson:" + person_string + "\n" + error;
+          goto spriteset_error;
+        }
       }
 
       // compile script_destroy
-      p.script_destroy = m_Engine->CompileScript(person.script_destroy.c_str(), error);
-      if (p.script_destroy == NULL) {
-        m_Engine->DestroySpriteset(p.spriteset);
-        m_Engine->DestroyScript(p.script_create);
-        m_ErrorMessage = "Could not compile OnDestroy script\nPerson:" + person_string + "\n" + error;
-        goto spriteset_error;
+      if (!person.script_destroy.empty()) {
+        p.script_destroy = m_Engine->CompileScript(person.script_destroy.c_str(), error);
+        if (p.script_destroy == NULL) {
+          m_ErrorMessage = "Could not compile OnDestroy script\nPerson:" + person_string + "\n" + error;
+          goto spriteset_error;
+        }
       }
 
       // compile script_activate_touch
-      p.script_activate_touch = m_Engine->CompileScript(person.script_activate_touch.c_str(), error);
-      if (p.script_activate_touch == NULL) {
-        m_Engine->DestroySpriteset(p.spriteset);
-        m_Engine->DestroyScript(p.script_create);
-        m_Engine->DestroyScript(p.script_destroy);
-        m_ErrorMessage = "Could not compile OnActivate (touch) script\nPerson:" + person_string + "\n" + error;
-        goto spriteset_error;
+      if (!person.script_activate_touch.empty()) {
+        p.script_activate_touch = m_Engine->CompileScript(person.script_activate_touch.c_str(), error);
+        if (p.script_activate_touch == NULL) {
+          m_ErrorMessage = "Could not compile OnActivate (touch) script\nPerson:" + person_string + "\n" + error;
+          goto spriteset_error;
+        }
       }
 
       // compile script_activate_talk
-      p.script_activate_talk = m_Engine->CompileScript(person.script_activate_talk.c_str(), error);
-      if (p.script_activate_talk == NULL) {
-        m_Engine->DestroySpriteset(p.spriteset);
-        m_Engine->DestroyScript(p.script_create);
-        m_Engine->DestroyScript(p.script_destroy);
-        m_Engine->DestroyScript(p.script_activate_touch);
-        m_ErrorMessage = "Could not compile OnActivate (talk) script\nPerson:" + person_string + "\n" + error;
-        goto spriteset_error;
+      if (!person.script_activate_talk.empty()) {
+        p.script_activate_talk = m_Engine->CompileScript(person.script_activate_talk.c_str(), error);
+        if (p.script_activate_talk == NULL) {
+          m_ErrorMessage = "Could not compile OnActivate (talk) script\nPerson:" + person_string + "\n" + error;
+          goto spriteset_error;
+        }
       }
 
       // compile script_command_generator
-      p.script_command_generator = m_Engine->CompileScript(person.script_generate_commands.c_str(), error);
-      if (p.script_command_generator == NULL) {
-        m_Engine->DestroySpriteset(p.spriteset);
-        m_Engine->DestroyScript(p.script_create);
-        m_Engine->DestroyScript(p.script_destroy);
-        m_Engine->DestroyScript(p.script_activate_touch);
-        m_Engine->DestroyScript(p.script_activate_talk);
-        m_ErrorMessage = "Could not compile OnGenerateCommands script\nPerson:" + person_string + "\n" + error;
-        goto spriteset_error;
+      if (!person.script_generate_commands.empty()) {
+        p.script_command_generator = m_Engine->CompileScript(person.script_generate_commands.c_str(), error);
+        if (p.script_command_generator == NULL) {
+          m_ErrorMessage = "Could not compile OnGenerateCommands script\nPerson:" + person_string + "\n" + error;
+          goto spriteset_error;
+        }
       }
 
       // add it to the list
@@ -3395,15 +3398,11 @@ CMapEngine::LoadMapPersons()
       m_CurrentPerson = p.name;
 
       // execute script_create
-      if (!ExecuteScript(p.script_create, error)) {
-        m_Engine->DestroySpriteset(p.spriteset);
-        m_Engine->DestroyScript(p.script_create);
-        m_Engine->DestroyScript(p.script_destroy);
-        m_Engine->DestroyScript(p.script_activate_touch);
-        m_Engine->DestroyScript(p.script_activate_talk);
-        m_Engine->DestroyScript(p.script_command_generator);
+      if (p.script_create != NULL && !ExecuteScript(p.script_create, error)) {
+
         m_ErrorMessage = "Could not execute OnCreate script\nPerson:" + person_string + "\n" + error;
         m_Persons.erase(m_Persons.end() - 1);
+        
         goto spriteset_error;
       }
 
@@ -3411,6 +3410,13 @@ CMapEngine::LoadMapPersons()
       continue;
 
 spriteset_error:
+      m_Engine->DestroySpriteset(p.spriteset);
+      if (p.script_create)            { m_Engine->DestroyScript(p.script_create);         p.script_create  = NULL;              }
+      if (p.script_destroy)           { m_Engine->DestroyScript(p.script_destroy);        p.script_destroy = NULL;              }
+      if (p.script_activate_touch)    { m_Engine->DestroyScript(p.script_activate_touch); p.script_activate_touch = NULL;       }
+      if (p.script_activate_talk)     { m_Engine->DestroyScript(p.script_activate_talk);  p.script_activate_talk = NULL;        }
+      if (p.script_command_generator) { m_Engine->DestroyScript(p.script_command_generator); p.script_command_generator = NULL; }
+
       DestroyMapPersons();
 
       return false;
@@ -3509,25 +3515,11 @@ CMapEngine::DestroyPersonStructure(Person& p)
 
   m_Engine->DestroySpriteset(p.spriteset);
 
-  if (p.script_create) {
-    m_Engine->DestroyScript(p.script_create);
-  }
-
-  if (p.script_destroy) {
-    m_Engine->DestroyScript(p.script_destroy);
-  }
-
-  if (p.script_activate_touch) {
-    m_Engine->DestroyScript(p.script_activate_touch);
-  }
-
-  if (p.script_activate_talk) {
-    m_Engine->DestroyScript(p.script_activate_talk);
-  }
-
-  if (p.script_command_generator) {
-    m_Engine->DestroyScript(p.script_command_generator);
-  }
+  if (p.script_create)            { m_Engine->DestroyScript(p.script_create);         p.script_create  = NULL;              }
+  if (p.script_destroy)           { m_Engine->DestroyScript(p.script_destroy);        p.script_destroy = NULL;              }
+  if (p.script_activate_touch)    { m_Engine->DestroyScript(p.script_activate_touch); p.script_activate_touch = NULL;       }
+  if (p.script_activate_talk)     { m_Engine->DestroyScript(p.script_activate_talk);  p.script_activate_talk = NULL;        }
+  if (p.script_command_generator) { m_Engine->DestroyScript(p.script_command_generator); p.script_command_generator = NULL; }
 
   return true;
 }
@@ -3816,6 +3808,8 @@ CMapEngine::UpdateWorld(bool input_valid)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#include <assert.h>
+
 bool
 CMapEngine::UpdatePersons()
 {
@@ -3824,13 +3818,24 @@ CMapEngine::UpdatePersons()
   bool anything_activated = false;
 
   // for each person...
-  for (unsigned i = 0; i < m_Persons.size(); i++) {
+  for (int i = 0; i < int(m_Persons.size()); i++)
+  {
+    const int num_persons = int(m_Persons.size());
+    if (i == 3) {
+      i = 3;
+      i = 3;
+    }
+
     bool activated;
     if (!UpdatePerson(i, activated)) {
       return false;
     }
 
     anything_activated |= activated;
+
+    if (i >= num_persons) {
+      break;
+    }
   }
 
   m_TalkActivationAllowed = !anything_activated;
@@ -3843,16 +3848,23 @@ CMapEngine::UpdatePersons()
 bool
 CMapEngine::UpdatePerson(int person_index, bool& activated)
 {
-  Person& p = m_Persons[person_index];
+  Person* p = &m_Persons[person_index];
+
+  /*
+  char debug_str[10000] = {0};
+  for (int l = 0; l < m_Persons.size(); l++) {
+    sprintf (debug_str + strlen(debug_str), "(%d:%s) ", l, m_Persons[l].name.c_str());
+  }
+  */
 
   // if this person has a leader, skip it
-  if (p.leader != -1) {
+  if (p->leader != -1) {
     // revert back to the first frame if reversion has been set and enough updates have passed
-    if(p.stepping_frame_revert > 0) {
-      if(p.stepping_frame_revert_count++ >= p.stepping_frame_revert) {
-        if(p.frame != 0) {
-          p.frame = 0;
-          p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.frame);
+    if(p->stepping_frame_revert > 0) {
+      if(p->stepping_frame_revert_count++ >= p->stepping_frame_revert) {
+        if(p->frame != 0) {
+          p->frame = 0;
+          p->next_frame_switch = p->spriteset->GetSpriteset().GetFrameDelay(p->direction, p->frame);
         }
       }
     }
@@ -3861,8 +3873,8 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
 
   // store current position
-  double x = p.x;
-  double y = p.y;
+  double x = p->x;
+  double y = p->y;
 
   // we haven't called an activation function yet
   bool activation_called = false;
@@ -3870,22 +3882,22 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
   bool processing = true;
   bool force_stop = false;
-  while (processing && !force_stop) {
-
+  while (processing && !force_stop)
+  {
     // if this entity has no commands, execute generator
-    if (p.commands.empty()) {
+    if (p->commands.empty()) {
 
-      if (p.script_command_generator) {
+      if (p->script_command_generator) {
 
         // set current person
         std::string old_person = m_CurrentPerson;
-        m_CurrentPerson = p.name;
+        m_CurrentPerson = p->name;
         std::string person_name = m_CurrentPerson;
 
         std::string error;
-        if (!ExecuteScript(p.script_command_generator, error)) {
+        if (!ExecuteScript(p->script_command_generator, error)) {
           m_ErrorMessage = "Error executing person command generator\nPerson:"
-            + p.description +
+            + p->description +
             "\nError:" + error;
           return false;
         }
@@ -3896,12 +3908,16 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
         }
 
         m_CurrentPerson = old_person;
+
+        // update the person pointer
+        p = &m_Persons[person_index];
       }
 
       // if all of the commands are immediate, force a stop after this command
       force_stop = true;
+
       std::deque<Person::Command>::iterator k;
-      for (k = p.commands.begin(); k != p.commands.end(); k++) {
+      for (k = p->commands.begin(); k != p->commands.end(); k++) {
         if (k->immediate == false) {
           force_stop = false;
           break;
@@ -3909,19 +3925,19 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
       }
 
       // if there are no commands, stop
-      if (p.commands.size() < 1) {
+      if (p->commands.empty()) {
         break;
       }
 
     } // end (if command queue is empty)
-
+   
     // read the top command
-    Person::Command c = p.commands.front();
-    p.commands.pop_front();
+    Person::Command c = p->commands.front();
+    p->commands.pop_front();
 
     // store position in case the obstruction check needs to put it back
-    double old_x = p.x;
-    double old_y = p.y;
+    double old_x = p->x;
+    double old_y = p->y;
 
 
     std::string error;
@@ -3929,25 +3945,25 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     {
       case COMMAND_WAIT: break;
       case COMMAND_ANIMATE: should_animate = true; break;
-      case COMMAND_FACE_NORTH:     p.direction = "north";     break;
-      case COMMAND_FACE_NORTHEAST: p.direction = "northeast"; break;
-      case COMMAND_FACE_EAST:      p.direction = "east";      break;
-      case COMMAND_FACE_SOUTHEAST: p.direction = "southeast"; break;
-      case COMMAND_FACE_SOUTH:     p.direction = "south";     break;
-      case COMMAND_FACE_SOUTHWEST: p.direction = "southwest"; break;
-      case COMMAND_FACE_WEST:      p.direction = "west";      break;
-      case COMMAND_FACE_NORTHWEST: p.direction = "northwest"; break;
-      case COMMAND_MOVE_NORTH:     p.y-=p.speed_y; break;
-      case COMMAND_MOVE_EAST:      p.x+=p.speed_x; break;
-      case COMMAND_MOVE_SOUTH:     p.y+=p.speed_y; break;
-      case COMMAND_MOVE_WEST:      p.x-=p.speed_x; break;
+      case COMMAND_FACE_NORTH:     p->direction = "north";     break;
+      case COMMAND_FACE_NORTHEAST: p->direction = "northeast"; break;
+      case COMMAND_FACE_EAST:      p->direction = "east";      break;
+      case COMMAND_FACE_SOUTHEAST: p->direction = "southeast"; break;
+      case COMMAND_FACE_SOUTH:     p->direction = "south";     break;
+      case COMMAND_FACE_SOUTHWEST: p->direction = "southwest"; break;
+      case COMMAND_FACE_WEST:      p->direction = "west";      break;
+      case COMMAND_FACE_NORTHWEST: p->direction = "northwest"; break;
+      case COMMAND_MOVE_NORTH:     p->y-=p->speed_y; break;
+      case COMMAND_MOVE_EAST:      p->x+=p->speed_x; break;
+      case COMMAND_MOVE_SOUTH:     p->y+=p->speed_y; break;
+      case COMMAND_MOVE_WEST:      p->x-=p->speed_x; break;
       case COMMAND_DO_SCRIPT:
 
-        std::string person_name = p.name;
+        std::string person_name = p->name;
 
         if (!ExecuteScript(c.script.c_str(), error) || !error.empty()) {
           m_ErrorMessage = "Could not execute queued script\nPerson:"
-                         + p.description + "\nError:" + error;
+                         + p->description + "\nError:" + error;
           return false;
         }
 
@@ -3955,6 +3971,8 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
         if (FindPerson(person_name.c_str()) != person_index) {
           return true;
         }
+
+        p = &m_Persons[person_index];
 
       break;
     }
@@ -3964,35 +3982,35 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     if (person_index == m_InputPerson) {
       if (m_Map.GetMap().IsRepeating()) {
 
-        int layer_width =  m_Map.GetMap().GetLayer(p.layer).GetWidth()  * m_Map.GetMap().GetTileset().GetTileWidth();
-        int layer_height = m_Map.GetMap().GetLayer(p.layer).GetHeight() * m_Map.GetMap().GetTileset().GetTileHeight();
+        int layer_width =  m_Map.GetMap().GetLayer(p->layer).GetWidth()  * m_Map.GetMap().GetTileset().GetTileWidth();
+        int layer_height = m_Map.GetMap().GetLayer(p->layer).GetHeight() * m_Map.GetMap().GetTileset().GetTileHeight();
 
-        while (p.x < 0)
-          p.x += layer_width;
+        while (p->x < 0)
+          p->x += layer_width;
 
-        while (p.x >= layer_width)
-          p.x -= layer_width;
+        while (p->x >= layer_width)
+          p->x -= layer_width;
 
-        while (p.y < 0)
-          p.y += layer_height;
+        while (p->y < 0)
+          p->y += layer_height;
 
-        while (p.y >= layer_height)
-          p.y -= layer_height;
+        while (p->y >= layer_height)
+          p->y -= layer_height;
       }
     }
 
     // make sure frame is valid
-    if (p.spriteset->GetSpriteset().GetNumFrames(p.direction))
-      p.frame %= p.spriteset->GetSpriteset().GetNumFrames(p.direction);
+    if (p->spriteset->GetSpriteset().GetNumFrames(p->direction))
+      p->frame %= p->spriteset->GetSpriteset().GetNumFrames(p->direction);
     else
-      p.frame = 0;
+      p->frame = 0;
 
 
     // check for obstructions
     int obs_person;
-    if (IsObstructed(person_index, int(p.x), int(p.y), obs_person)) {
-      p.x = old_x;
-      p.y = old_y;
+    if (IsObstructed(person_index, int(p->x), int(p->y), obs_person)) {
+      p->x = old_x;
+      p->y = old_y;
     }
 
     // CHECK FOR ENTITY ACTIVATION
@@ -4018,7 +4036,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
             if (!ExecuteScript(script, error) || !error.empty()) {
               m_ErrorMessage = "Error executing person activation (touch) script\n"
                 "Person:"
-                + p.description +
+                + p->description +
                 "\nError:" + error;
               return false;
             }
@@ -4030,6 +4048,8 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
             if (FindPerson(person_name.c_str()) != person_index) {
               return true;
             }
+
+            p = &m_Persons[person_index];
           }
         }
 
@@ -4047,17 +4067,16 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     m_TouchActivationAllowed = !activation_called;
   }
 
-
   // if position has changed, update frame index and state of followers
-  if (x != p.x || y != p.y || should_animate) {
-    p.stepping_frame_revert_count = 0;
+  if (x != p->x || y != p->y || should_animate) {
+    p->stepping_frame_revert_count = 0;
 
     // frame index
-    if (--p.next_frame_switch <= 0) {
-      const int num_frames = p.spriteset->GetSpriteset().GetNumFrames(p.direction);
+    if (--p->next_frame_switch <= 0) {
+      const int num_frames = p->spriteset->GetSpriteset().GetNumFrames(p->direction);
       if (num_frames > 0)
-        p.frame = (p.frame + 1) % num_frames;
-      p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.frame);
+        p->frame = (p->frame + 1) % num_frames;
+      p->next_frame_switch = p->spriteset->GetSpriteset().GetFrameDelay(p->direction, p->frame);
     }
 
     // followers
@@ -4071,11 +4090,11 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
   } else {
     // revert back to the first frame if reversion has been set and enough updates have passed
-    if(p.stepping_frame_revert > 0) {
-      if(p.stepping_frame_revert_count++ >= p.stepping_frame_revert) {
-        if(p.frame != 0) {
-          p.frame = 0;
-          p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.frame);
+    if(p->stepping_frame_revert > 0) {
+      if(p->stepping_frame_revert_count++ >= p->stepping_frame_revert) {
+        if(p->frame != 0) {
+          p->frame = 0;
+          p->next_frame_switch = p->spriteset->GetSpriteset().GetFrameDelay(p->direction, p->frame);
         }
       }
     }
@@ -4151,7 +4170,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
               std::string error;
               if (!ExecuteScript(s, error)) {
                 m_ErrorMessage = "Error executing person activation (talk) script\n"
-                  "Person:" + p.description +
+                  "Person:" + p->description +
                   "\nError:" + error;
                 return false;
               }
@@ -4164,6 +4183,8 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
               if (FindPerson(person_name.c_str()) != person_index) {
                 return true;
               }
+
+              p = &m_Persons[person_index];
             }
           }
         }
@@ -4174,8 +4195,8 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
   for (int j = 0; j < int(m_InputPersons.size()); j++) {
     if (j == person_index) {
-      int px = int(fabs(x - p.x));
-      int py = int(fabs(y - p.y));
+      int px = int(fabs(x - p->x));
+      int py = int(fabs(y - p->y));
       int s;
 
       if (px > py) s = px;
@@ -4366,7 +4387,7 @@ CMapEngine::ExecuteTriggerScript(int trigger_index)
   // execute the trigger code
   IEngine::script script = m_Triggers[trigger_index].script;
   std::string error;
-  if (!ExecuteScript(script, error)) {
+  if (script && !ExecuteScript(script, error)) {
     sTileset& tileset = m_Map.GetMap().GetTileset();
     const int tile_width  = tileset.GetTileWidth();
     const int tile_height = tileset.GetTileHeight();
@@ -4483,25 +4504,27 @@ CMapEngine::ExecuteZoneScript(int zone_index)
 
   // execute the zone code
   IEngine::script script = z.script;
-  std::string error;
-  bool execute_script = ExecuteScript(script, error);
+  if (script) {
+    std::string error;
+    bool execute_script = ExecuteScript(script, error);
 
-  m_CurrentZone = -1;
+    m_CurrentZone = -1;
 
-  if (!execute_script) {
-    std::ostringstream os;
-    os << "Could not execute zone ("
-       << z.x1
-       << ", "
-       << z.y1
-       << ") -> ("
-       << z.x2
-       << ", "
-       << z.y2
-       << ")\n";
-    m_ErrorMessage = os.str() + error;
+    if (!execute_script) {
+      std::ostringstream os;
+      os << "Could not execute zone ("
+         << z.x1
+         << ", "
+         << z.y1
+         << ") -> ("
+         << z.x2
+         << ", "
+         << z.y2
+         << ")\n";
+      m_ErrorMessage = os.str() + error;
 
-    return false;
+      return false;
+    }
   }
 
   return true;
@@ -5190,27 +5213,22 @@ CMapEngine::IsObstructed(int person, int x, int y, int& obs_person)
   obs_person = -1;
 
   if (obs_map.TestRectangle(x1, y1, x2, y2)) {
-    obs_person = -1;
     return true;
   }
 
   if (!m_Persons[person].ignoreTileObstructions)
   {
     if (FindObstructingTile(person, x, y) != -1) {
-      obs_person = -1;
       return true;
     }
   }
 
   // don't check other entity obstructions if this spriteset ignores them
-  if(m_Persons[person].ignorePersonObstructions) {
-    obs_person = -1;
-    return false;
+  if(!m_Persons[person].ignorePersonObstructions) {
+    obs_person = FindObstructingPerson(person, x, y);
+    if (obs_person != -1)
+      return true;
   }
-
-  obs_person = FindObstructingPerson(person, x, y);
-  if (obs_person != -1)
-    return true;
 
   return false;
 }

@@ -196,7 +196,7 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
   int blit_width  = tile_width  * m_LayerInfo[i].zoomFactorX;
   int blit_height = tile_height * m_LayerInfo[i].zoomFactorY;
 
-  // m_LayerInfo[i].angle += 0.1;
+  //m_LayerInfo[i].angle = 0;
 
   const int cx = GetScreenWidth()  / 2;
   const int cy = GetScreenHeight() / 2;
@@ -297,28 +297,28 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
         IMAGE image = tiles[m_AnimationMap[layer.GetTile(tx, ty)].current];
 
         if (m_LayerInfo[i].zoomFactorX != 1 || m_LayerInfo[i].zoomFactorY != 1 || m_LayerInfo[i].angle != 0.0) {
-          int tx[4];
-          int ty[4];
+          int __tx__[4];
+          int __ty__[4];
 
-          tx[0] = ox;
-          ty[0] = oy;
-          tx[1] = ox + blit_width;
-          ty[1] = oy;
-          tx[2] = ox + blit_width;
-          ty[2] = oy + blit_height;
-          tx[3] = ox;
-          ty[3] = oy + blit_height;
+          __tx__[0] = ox;
+          __ty__[0] = oy;
+          __tx__[1] = ox + blit_width;
+          __ty__[1] = oy;
+          __tx__[2] = ox + blit_width;
+          __ty__[2] = oy + blit_height;
+          __tx__[3] = ox;
+          __ty__[3] = oy + blit_height;
 
-          if (m_LayerInfo[i].angle != 0){
-						double x1 = (ix - (num_cols_to_blit / 2)) * blit_width;
-						double y1 = (iy - (num_rows_to_blit / 2)) * blit_height;
-						double tempx = (y1 * sin(m_LayerInfo[i].angle)) + (x1 * cos(m_LayerInfo[i].angle)) + cx;
-						double tempy = (y1 * cos(m_LayerInfo[i].angle)) - (x1 * sin(m_LayerInfo[i].angle)) + cy;
-			
-            CalculateRotateBlitPoints(tx, ty, tempx, tempy, blit_width, blit_height, -m_LayerInfo[i].angle);
+          if (m_LayerInfo[i].angle != 0.0) {
+            double x = ((double)ix - (double)((double)(num_rows_to_blit) / (double)2.0)) * (double)blit_width;
+			      double y = ((double)iy - (double)((double)(num_cols_to_blit) / (double)2.0)) * (double)blit_height;
+			      double w = ((double)y * sin(-m_LayerInfo[i].angle)) + ((double)x * cos(-m_LayerInfo[i].angle)) + (double)cx;
+      			double h = ((double)y * cos(-m_LayerInfo[i].angle)) - ((double)x * sin(-m_LayerInfo[i].angle)) + (double)cy;
+
+            CalculateRotateBlitPoints(__tx__, __ty__, w, h, blit_width, blit_height, m_LayerInfo[i].angle);
           }
 
-          TransformBlitImage(image, tx, ty);
+          TransformBlitImage(image, __tx__, __ty__);
           
         } else {
           BlitImage(image, ox, oy);

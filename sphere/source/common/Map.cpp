@@ -260,8 +260,10 @@ sMap::Load(const char* filename, IFileSystem& fs)
   m_Layers.clear();
   m_Layers.resize(header.num_layers);
 
+  int i;
+
   // read the layers
-  for (int i = 0; i < header.num_layers; i++)
+  for (i = 0; i < header.num_layers; i++)
   {
     // read the layer header
     LAYER_HEADER lh;
@@ -342,7 +344,7 @@ sMap::Load(const char* filename, IFileSystem& fs)
   ClearEntityList();
 
   // read entities
-  for (int i = 0; i < header.num_entities; i++)
+  for (i = 0; i < header.num_entities; i++)
   {
     ENTITY_HEADER eh;
     if (file->Read(&eh, sizeof(eh)) != sizeof(eh))
@@ -407,7 +409,7 @@ sMap::Load(const char* filename, IFileSystem& fs)
   m_Zones.clear();
 
   // load the zones
-  for (int i = 0; i < header.num_zones; i++)
+  for (i = 0; i < header.num_zones; i++)
   {
     ZONE_HEADER zh;
     sZone zone;
@@ -525,8 +527,9 @@ sMap::Save(const char* filename, IFileSystem& fs)
   WriteMapString(file, m_EdgeScripts[2].c_str());
   WriteMapString(file, m_EdgeScripts[3].c_str());
 
+  int i;
   // write layers
-  for (unsigned i = 0; i < m_Layers.size(); i++)
+  for (i = 0; i < int(m_Layers.size()); i++)
   {
     const sLayer& layer = m_Layers[i];
     const sObstructionMap& obstructions = layer.GetObstructionMap();
@@ -574,7 +577,7 @@ sMap::Save(const char* filename, IFileSystem& fs)
   } // end for layer
 
   // write entities
-  for (unsigned i = 0; i < m_Entities.size(); i++)
+  for (i = 0; i < int(m_Entities.size()); i++)
   {
     // write the header
     ENTITY_HEADER eh;
@@ -631,7 +634,7 @@ sMap::Save(const char* filename, IFileSystem& fs)
   } // end for entity
 
   // write the zones
-  for (unsigned i = 0; i < m_Zones.size(); i++)
+  for (i = 0; i < int(m_Zones.size()); i++)
   {
     ZONE_HEADER zh;
 
@@ -746,6 +749,8 @@ sMap::PruneTileset(std::set<int>* allowed_tiles)
   // like O(t^2 * l * w * h).  It could easily be O(t * l * w * h) using
   // some dynamic programming.
 
+  unsigned il;
+
   for (int it = 0; it < m_Tileset.GetNumTiles(); it++) {
 
     bool in_use = false;
@@ -760,7 +765,7 @@ sMap::PruneTileset(std::set<int>* allowed_tiles)
       }
     }
 
-    for (unsigned il = 0; il < m_Layers.size(); il++) {
+    for (il = 0; il < m_Layers.size(); il++) {
       for (int iy = 0; iy < m_Layers[il].GetHeight(); iy++) {
         for (int ix = 0; ix < m_Layers[il].GetWidth(); ix++) {
           if (m_Layers[il].GetTile(ix, iy) == it) {
@@ -828,13 +833,14 @@ sMap::SetTileSize(int width, int height, int method, void (*callback)(int tile, 
   if (old_width)  { m_StartX = m_StartX * width  / old_width;  }
   if (old_height) { m_StartY = m_StartY * height / old_height; }
 
-  for (int i = 0; i < GetNumEntities(); ++i) {
+  int i;
+  for (i = 0; i < GetNumEntities(); ++i) {
     sEntity& e = GetEntity(i);
     if (old_width)  { e.x = e.x * width  / old_width;  }
     if (old_height) { e.y = e.y * height / old_height; }
   }
 
-  for (int i = 0; i < GetNumZones(); ++i) {
+  for (i = 0; i < GetNumZones(); ++i) {
     sZone& z = GetZone(i);
     if (old_width)  { z.x1 = z.x1 * width  / old_width;  }
     if (old_height) { z.y1 = z.y1 * height / old_height; }

@@ -38,12 +38,14 @@ sSpriteset::Create(
   int num_frames
 )
 {
+  int i;
+
   m_FrameWidth  = frame_width;
   m_FrameHeight = frame_height;
 
   // initialize the images
   m_Images.resize(num_images);
-  for (int i = 0; i < m_Images.size(); i++) {
+  for (i = 0; i < m_Images.size(); i++) {
     m_Images[i].Resize(frame_width, frame_height);
     if (m_Images[i].GetWidth() != frame_width
      || m_Images[i].GetHeight() != frame_height) {
@@ -53,7 +55,7 @@ sSpriteset::Create(
 
   // initialize the directions
   m_Directions.resize(num_directions);
-  for (int i = 0; i < m_Directions.size(); i++) {
+  for (i = 0; i < m_Directions.size(); i++) {
 
     // initialize the frames
     m_Directions[i].frames.resize(num_frames);
@@ -267,12 +269,12 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
 
   } else if (header.version == 3) {  // VERSION THREE
 
-
     //**// BEGIN VERSION THREE //**//
+    int i;
 
     // read the images
     m_Images.resize(header.num_images);
-    for (int i = 0; i < header.num_images; i++) {
+    for (i = 0; i < header.num_images; i++) {
       m_Images[i].Resize(m_FrameWidth, m_FrameHeight);
       int size = m_FrameWidth * m_FrameHeight * sizeof(RGBA);
       if (file->Read(m_Images[i].GetPixels(), size) != size) {
@@ -282,7 +284,7 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
 
     // read the directions
     m_Directions.resize(header.num_directions);
-    for (int i = 0; i < header.num_directions; i++) {
+    for (i = 0; i < header.num_directions; i++) {
       
       // read number of frames
       word num_frames;
@@ -380,13 +382,14 @@ sSpriteset::Save(const char* filename, IFileSystem& fs) const
   // write header
   file->Write(&header, sizeof(header));
 
+  unsigned i;
   // write the images
-  for (unsigned i = 0; i < m_Images.size(); i++) {
+  for (i = 0; i < m_Images.size(); i++) {
     file->Write(m_Images[i].GetPixels(), m_FrameWidth * m_FrameHeight * 4);
   }
 
   // write all of the directions
-  for (unsigned i = 0; i < m_Directions.size(); i++) {
+  for (i = 0; i < m_Directions.size(); i++) {
 
     // write direction header
     word num_frames = m_Directions[i].frames.size();
@@ -453,15 +456,17 @@ sSpriteset::Import_BMP(
   int numRows = image.GetHeight() / frame_height;
   int numFrames = image.GetWidth() / frame_width;
 
+  int i;
+
   // create image array
   m_Images.resize(numRows * numFrames);
-  for (int i = 0; i < numRows * numFrames; i++) {
+  for (i = 0; i < numRows * numFrames; i++) {
     m_Images[i].Resize(frame_width, frame_height);
   }
 
   // for each row
   m_Directions.resize(numRows);
-  for (int i = 0; i < numRows; i++) {
+  for (i = 0; i < numRows; i++) {
     m_Directions[i].frames.resize(numFrames);
     for (int j = 0; j < numFrames; j++) {
       m_Directions[i].frames[j].delay = 8;

@@ -406,8 +406,9 @@ sTileset::LoadFromFile(IFile* file)
   m_Tiles.clear();
   m_Tiles.resize(header.num_tiles);
 
+  unsigned i;
   // load the tiles
-  for (unsigned i = 0; i < m_Tiles.size(); i++)
+  for (i = 0; i < m_Tiles.size(); i++)
   {
     RGBA* pixels = new RGBA[m_TileWidth * m_TileHeight];
     file->Read(pixels, sizeof(RGBA) * m_TileWidth * m_TileHeight);
@@ -417,7 +418,7 @@ sTileset::LoadFromFile(IFile* file)
   }
 
   // load the tile info blocks
-  for (unsigned i = 0; i < m_Tiles.size(); i++)
+  for (i = 0; i < m_Tiles.size(); i++)
   {
     TILE_INFORMATION_BLOCK tib;
     file->Read(&tib, sizeof(tib));
@@ -477,15 +478,16 @@ sTileset::SaveToFile(IFile* file) const
   if (file->Write(&header, sizeof(header)) != sizeof(header))
     return false;
 
+  unsigned int i;
   // write the tiles
-  for (unsigned int i = 0; i < m_Tiles.size(); i++)
+  for (i = 0; i < m_Tiles.size(); i++)
     if (file->Write(m_Tiles[i].GetPixels(), (sizeof(RGBA) * m_TileWidth * m_TileHeight)) != (sizeof(RGBA) * m_TileWidth * m_TileHeight))
       return false;
 
   // write the tile information blocks
   TILE_INFORMATION_BLOCK tib;
   memset(&tib, 0, sizeof(tib));
-  for (unsigned int i = 0; i < m_Tiles.size(); i++)
+  for (i = 0; i < m_Tiles.size(); i++)
   {
     const sObstructionMap& obs_map = m_Tiles[i].GetObstructionMap();
 
@@ -610,23 +612,25 @@ sTileset::SetTileSize(int w, int h, int method, void (*callback)(int tile, int n
   m_TileWidth  = w;
   m_TileHeight = h;
 
+  unsigned i;
+
   switch (method) {
     case 0:
-      for (unsigned i = 0; i < m_Tiles.size(); i++) {
+      for (i = 0; i < m_Tiles.size(); i++) {
         if (callback) callback(i, m_Tiles.size());
         m_Tiles[i].Resize(w, h);
       }
     break;
 
     case 1:
-      for (unsigned i = 0; i < m_Tiles.size(); i++) {
+      for (i = 0; i < m_Tiles.size(); i++) {
         if (callback) callback(i, m_Tiles.size());
         m_Tiles[i].Rescale(w, h);
       }
     break;
 
     case 2:
-      for (unsigned i = 0; i < m_Tiles.size(); i++) {
+      for (i = 0; i < m_Tiles.size(); i++) {
         if (callback) callback(i, m_Tiles.size());
         m_Tiles[i].Resample(w, h);
       }

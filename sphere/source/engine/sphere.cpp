@@ -24,6 +24,7 @@
 #include "../common/DefaultFileSystem.hpp"
 #include "../common/PackageFileSystem.hpp"
 #include "../common/configfile.hpp"
+#include "../common/sphere_version.h"
 
 
 static void RunPackage(IFileSystem& fs);
@@ -112,6 +113,21 @@ void RunSphere(int argc, const char** argv)
       LeaveDirectory();
       LeaveDirectory();
 
+    }
+    else if (strcmp(argv[i], "-version") == 0) {
+      printf ("sphere engine %s [%s]\n", SPHERE_VERSION, __DATE__);
+      show_menu = false;
+      i = argc;
+    }
+    else if (strcmp(argv[i], "-help") == 0) {
+      printf ("engine.exe -benchmark\n");
+      printf ("engine.exe -game \"game_folder\"\n");
+      printf ("engine.exe -game \"game_folder\" -parameters=\"...\"\n");
+      printf ("engine.exe -package \"game_package.spk\"\n");
+      printf ("engine.exe -version\n");
+      printf ("engine.exe -help\n");
+      show_menu = false;
+      i = argc;
     }
   }
 

@@ -111,12 +111,15 @@ private:
 
 
   enum ScriptType {
+    SCRIPT_TYPE_UNDETERMINABLE,
     SCRIPT_TYPE_UNKNOWN,
     SCRIPT_TYPE_JS,
+    //SCRIPT_TYPE_PY,
     SCRIPT_TYPE_TXT,
   };
 
   ScriptType GetScriptType();
+  bool IsSyntaxHighlightable();
 
 private:
   afx_msg void OnScriptViewInsert();
