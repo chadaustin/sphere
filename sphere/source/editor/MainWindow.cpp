@@ -2748,11 +2748,10 @@ CMainWindow::OnPaste()
 {
   CDocumentWindow* dw = GetCurrentDocumentWindow();
   if (dw != NULL) {
-    dw->SendMessage(ID_IMAGEVIEW_PASTE, 0, 0);
-    MessageBox("MainWindow::Paste");
+    dw->SendMessage(ID_FILE_PASTE, 0, 0);
   }
   else {
-    MessageBox("MainWindow::Paste");
+    //MessageBox("MainWindow::Paste");
   }
 }
 

@@ -45,6 +45,8 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_NOTIFY(SCN_UPDATEUI,         ID_EDIT, OnPosChanged)
   ON_NOTIFY(SCN_CHARADDED,        ID_EDIT, OnCharAdded)
 
+  ON_COMMAND(ID_FILE_PASTE, OnPaste)
+
   ON_REGISTERED_MESSAGE(s_FindReplaceMessage, OnFindReplace)
 
 END_MESSAGE_MAP()
@@ -430,6 +432,14 @@ CScriptWindow::OnSavePointLeft(NMHDR* nmhdr, LRESULT* result)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnPaste()
+{
+  SendEditor(SCI_PASTE);
+}
+
+///////
 
 static
 bool is_brace(char ch) {

@@ -53,6 +53,8 @@ private:
   afx_msg void OnCharAdded(NMHDR* nmhdr, LRESULT* result);
   void SetLineNumber(int line);
 
+  afx_msg void OnPaste();
+
   afx_msg LRESULT OnFindReplace(WPARAM, LPARAM);
 
   virtual bool GetSavePath(char* path);
