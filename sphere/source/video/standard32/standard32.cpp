@@ -9,25 +9,6 @@
 
 /////////////////////////////////////////////////
 
-#include <string>
-using namespace std;
-
-void WriteLog(std::string str) {
-  static bool firstcall = true;
-  FILE* file = fopen("standard32.log", firstcall ? "w+" : "a");
-  if (file) {
-    str += "\n";
-    fwrite(str.c_str(), sizeof(char), str.size(), file);
-    fclose(file);
-  }
-
-  if (firstcall) {
-    firstcall = false;
-  }
-}
-
-/////////////////////////////////////////////////
-
 typedef struct _IMAGE
 {
   int width;
@@ -238,7 +219,6 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
   if (firstcall) {
     fullscreen = Configuration.fullscreen;
     firstcall = false;
-    WriteLog("First call...");
   }
 
   if (fullscreen)
@@ -306,9 +286,11 @@ bool InitFullscreen()
 /**
  * Switches from fullscreen to windowed or vice-versa,
  * updates the fullscreen flag as needed
- * returns whether the engine should be shutdown
+ * returns whether the engine should be *not* shutdown
  */
 EXPORT(bool) ToggleFullScreen() {
+  int x, y, w, h;
+  GetClippingRectangle(&x, &y, &w, &h);
 
   // if we haven't set a screen size, don't close the old driver
   if (ScreenWidth != 0 || ScreenHeight != 0) {
@@ -323,6 +305,7 @@ EXPORT(bool) ToggleFullScreen() {
 
   fullscreen = !fullscreen;
   if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight) == true) {
+    SetClippingRectangle(x, y, w, h);
     return true;
   }
   else {
@@ -330,6 +313,7 @@ EXPORT(bool) ToggleFullScreen() {
     // switching failed, try to revert to what it was
     fullscreen = !fullscreen;
     if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight) == true) {
+    SetClippingRectangle(x, y, w, h);
       return true;
     }
   }

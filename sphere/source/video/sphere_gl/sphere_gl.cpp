@@ -426,26 +426,46 @@ EXPORT(void) CloseVideoDriver()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Switches from fullscreen to windowed or vice-versa,
+ * updates the fullscreen flag as needed
+ * returns whether the engine should *not* be shutdown
+ */
 EXPORT(bool) ToggleFullScreen() {
-  // this causes weird color problems, but works...
-  CloseVideoDriver();
+  return true;
+
+  /*
+  // this causes weird color problems, but vaguely works...
+  int x, y, w, h;
+  extern void __stdcall GetClippingRectangle(int*, int*, int*, int*);
+  extern void __stdcall SetClippingRectangle(int, int, int, int);
+
+  GetClippingRectangle(&x, &y, &w, &h);
+
+  // if we haven't set a screen size, don't close the old driver
+  if (ScreenWidth != 0 || ScreenHeight != 0) {
+    CloseVideoDriver();
+  }
+
   fullscreen = !fullscreen;
 
   // attempt to switch
   if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight)) {
+    SetClippingRectangle(x, y, w, h);
     return true;
   }
   else {
-    CloseVideoDriver();
     fullscreen = !fullscreen;
 
     // attempt to switch back since the switch failed
     if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight)) {
+      SetClippingRectangle(x, y, w, h);
       return true;
     }
   }
 
   return false;
+  */
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -2,7 +2,7 @@ Special keys in the engine:
 
 ALT-F4 = force quit Sphere engine
 F1 = toggle framerate throttle in map engine
-F10 = toggle between fullscreen and window (video driver dependant, currently sphere_gl/unix/linux only)
+F10 = toggle between fullscreen and window (video driver dependant - currently standard32 and unix/linux only)
 F11 = show FPS
 F12 = take screenshot
 
