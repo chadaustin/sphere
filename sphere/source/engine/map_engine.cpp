@@ -3902,7 +3902,7 @@ CMapEngine::UpdateEdgeScripts()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static inline int round(double v) {
+static inline int __round__(double v) {
   return floor(v + 0.5);
 }
 
@@ -3972,8 +3972,8 @@ CMapEngine::ProcessInput()
     if (new_keys[KEY_LEFT])  dx--;
 
     if (GetNumJoysticks() > 0) {
-      dx += round(GetJoystickX(0));
-      dy += round(GetJoystickY(0));
+      dx += __round__(GetJoystickX(0));
+      dy += __round__(GetJoystickY(0));
     }
 
     if (dy < 0) m_Persons[m_InputPerson].commands.push_back(Person::Command(COMMAND_MOVE_NORTH, true));

@@ -103,11 +103,10 @@ bool RefreshInput () {
   SDL_Event event;
   int result;
   int key = 0;
+  
+  int count = 0;
 
-  //SDL_EnableKeyRepeat(1, 100);
-  //SDL_ShowCursor(0);
-
-  while (result = SDL_PollEvent(&event)) {
+  while (result = SDL_PollEvent(&event) && count++ < 4) {
     if (event.type == SDL_QUIT)
       exit(0);
     else if ((event.type == SDL_KEYDOWN) || (event.type == SDL_KEYUP))

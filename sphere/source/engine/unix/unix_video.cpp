@@ -23,9 +23,14 @@ SFONT* FPSFont;
 static bool FPSDisplayed;
 static bool fullscreen;
 
+#if 0 // already defined in Image32
 typedef struct _clipper {
-  int left, right, bottom, top;
+  int left;
+  int top;
+  int right;
+  int bottom;
 } clipper;
+#endif
 
 static clipper ClippingRectangle;
 
@@ -89,7 +94,7 @@ bool SwitchResolution (int x, int y, bool fullscreen, bool update_cliprect) {
   static bool initialized = false;
 
   if (!initialized) {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD | SDL_INIT_JOYSTICK) == -1)
       return false;
 
     // Clean up on exit, exit on window close and interrupt

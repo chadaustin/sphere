@@ -5293,7 +5293,7 @@ end_method()
 
 ///////////////////////////////////////
 
-#define jsuint unsigned long
+typedef uint32 jsuint;
 
 /**
   returns whether the lookup table created is a null lookup table
