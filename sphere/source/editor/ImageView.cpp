@@ -786,7 +786,8 @@ CImageView::Line()
     int sw = GetSelectionWidth();
     int sh = GetSelectionHeight();
 
-    m_Image.Line(start.x, start.y, end.x, end.y, m_Color, sx, sy, (sx + sw), (sy + sh));
+    clipper clip = {sx, sy, (sx + sw) - 1, (sy + sh) - 1};
+    m_Image.Line(start.x, start.y, end.x, end.y, m_Color, clip);
     Invalidate();
     m_Handler->IV_ImageChanged();
   }

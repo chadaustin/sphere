@@ -652,13 +652,6 @@ private:
   RGBA m_color;
 };
 
-struct clipper {
-  int left;
-  int top;
-  int right;
-  int bottom;
-};
-
 void
 CImage32::SetPixel(int x, int y, RGBA color)
 {
@@ -712,12 +705,15 @@ CImage32::ReplaceColor(RGBA oldColor, RGBA newColor) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CImage32::Line(int x1, int y1, int x2, int y2, RGBA color, int cx, int cy, int cwidth, int cheight)
+CImage32::Line(int x1, int y1, int x2, int y2, RGBA color)
 {
-  if (cwidth <= -1) cwidth = m_Width;
-  if (cwidth <= -1) cheight = m_Height;
+  clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+  Line(x1, y1, x2, y2, color, clip);
+}
 
-  clipper clip = { cx, cy, cwidth - 1, cheight - 1 };
+void
+CImage32::Line(int x1, int y1, int x2, int y2, RGBA color, clipper clip)
+{
   switch (m_BlendMode) {
     case REPLACE:    primitives::Line(m_Pixels, m_Width, x1, y1, x2, y2, constant_color(color), clip, copyRGBA);  break;
     case BLEND:      primitives::Line(m_Pixels, m_Width, x1, y1, x2, y2, constant_color(color), clip, blendRGBA); break;
