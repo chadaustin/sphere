@@ -32,6 +32,14 @@ sObstructionMap::GetSegment(int i) const
 
 ////////////////////////////////////////////////////////////////////////////////
 
+sObstructionMap::Segment&
+sObstructionMap::GetSegmentRef(int i)
+{
+  return m_Segments[i];
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 bool
 sObstructionMap::TestRectangle(int x1, int y1, int x2, int y2) const
 {

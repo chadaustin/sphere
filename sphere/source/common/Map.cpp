@@ -1482,6 +1482,7 @@ sMap::Translate(int dx, int dy, int layer_to_translate)
   bool triggers = true;
   bool zones = true;
   bool startpoint = true;
+  bool obstruction_lines = true;
 
   if (layer_to_translate == -1) {
     for (unsigned int j = 0; j < m_Layers.size(); j++) {
@@ -1525,7 +1526,6 @@ sMap::Translate(int dx, int dy, int layer_to_translate)
 
   if (zones) {
     for (int i = 0; i < GetNumZones(); i++) {
-
       int layer = GetZone(i).layer;
       int x = GetZone(i).x1 + (dx * tile_width);
       int y = GetZone(i).y1 + (dy * tile_height);
@@ -1547,6 +1547,29 @@ sMap::Translate(int dx, int dy, int layer_to_translate)
         GetZone(i).y1 = y;
         GetZone(i).x2 = x + width;
         GetZone(i).y2 = y + height;
+      }
+    }
+  }
+
+  // Note: We need to handle wrap around here
+  // (probably split the line into two if needed)
+  if (obstruction_lines) {
+    for (int layer = 0; layer < GetNumLayers(); layer++) {
+      if (layer_to_translate == -1 || layer == layer_to_translate) {
+        sObstructionMap& obs_map = GetLayer(layer).GetObstructionMap();
+
+        int x = (dx * tile_width);
+        int y = (dy * tile_height);
+
+        int num_segments = obs_map.GetNumSegments();
+
+        for (int i = 0; i < num_segments; i++) {
+          sObstructionMap::Segment& s = obs_map.GetSegmentRef(i);
+          s.x1 += x;
+          s.y1 += y;
+          s.x2 += x;
+          s.y2 += y;
+        }
       }
     }
   }

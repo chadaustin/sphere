@@ -21,6 +21,7 @@ public:
   // accessors
   int GetNumSegments() const;
   const Segment& GetSegment(int i) const;
+  Segment& GetSegmentRef(int i);
 
   // test
   bool TestRectangle(int x1, int y1, int x2, int y2) const;
