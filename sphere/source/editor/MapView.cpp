@@ -118,7 +118,8 @@ CMapView::Create(CDocumentWindow* /*owner*/, IMapViewHandler* handler, CWnd* par
 
   // create the window object
   BOOL retval = CWnd::Create(
-    AfxRegisterWndClass(0, LoadCursor(NULL, IDC_ARROW), NULL, NULL),
+    //AfxRegisterWndClass(0, LoadCursor(NULL, IDC_ARROW), NULL, NULL),
+    AfxRegisterWndClass(0, NULL, NULL, NULL),
     "",
     WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL,
     CRect(0, 0, 0, 0),
@@ -2190,6 +2191,8 @@ CMapView::OnLButtonDown(UINT flags, CPoint point)
   int zoom_tile_width  = m_Map->GetTileset().GetTileWidth()  * m_ZoomFactor;
   int zoom_tile_height = m_Map->GetTileset().GetTileHeight() * m_ZoomFactor;
 
+  //UpdateCursor(flags, point); 
+
   // if the shift key is down, select the current tile
   if (flags & MK_SHIFT) {
 
@@ -2396,6 +2399,17 @@ CMapView::GetRedrawRect(int& offset_x, int& offset_y, int& width, int& height)
 void
 CMapView::UpdateCursor(UINT flags, CPoint point)
 {
+  int tile_width  = m_Map->GetTileset().GetTileWidth()  * m_ZoomFactor;
+  int tile_height = m_Map->GetTileset().GetTileHeight() * m_ZoomFactor;
+
+  int x = point.x / tile_width  + m_CurrentX;
+  int y = point.y / tile_height + m_CurrentY;
+  if (!(x >= 0 && y >= 0 && x <= GetTotalTilesX() && y <= GetTotalTilesY()))
+  {
+    SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW)));
+    return;
+  }
+
   if (flags & MK_SHIFT) {
     SetCursor(LoadCursor(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDC_IMAGETOOL_COLORPICKER)));
   }
@@ -2406,8 +2420,20 @@ CMapView::UpdateCursor(UINT flags, CPoint point)
       SetCursor(LoadCursor(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDC_IMAGETOOL_FILL)));
     break;
 
+    case tool_CopyArea:
+      SetCursor(LoadCursor(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDC_MAPTOOL_COPYAREA)));
+    break;
+
     case tool_Paste:
       SetCursor(LoadCursor(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDC_MAPTOOL_PASTE)));
+    break;
+
+    case tool_CopyEntity:
+      SetCursor(LoadCursor(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDC_MAPTOOL_COPYENTITY)));
+    break;
+    
+    case tool_PasteEntity:
+      SetCursor(LoadCursor(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDC_MAPTOOL_PASTEENTITY)));
     break;
 
     default:
@@ -2425,7 +2451,7 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
 
   int x = point.x / tile_width  + m_CurrentX;
   int y = point.y / tile_height + m_CurrentY;
-  if (x <= GetTotalTilesX() && y <= GetTotalTilesY())
+  if (x >= 0 && y >= 0 && x <= GetTotalTilesX() && y <= GetTotalTilesY())
   {
     CString Position;
     int pixel_x = (point.x + tile_width  * m_CurrentX) / m_ZoomFactor;

@@ -334,6 +334,7 @@ CLayerView::OnMouseMove(UINT flags, CPoint point)
     point.y -= m_TopLayer * LAYER_BUTTON_HEIGHT;
     int layer = (m_Map->GetNumLayers() * LAYER_BUTTON_HEIGHT - point.y) / LAYER_BUTTON_HEIGHT;
 
+
     // drag down
     while (m_SelectedLayer > 0 && layer < m_SelectedLayer) {
       m_Map->SwapLayers(m_SelectedLayer, m_SelectedLayer - 1);
@@ -815,6 +816,9 @@ CLayerView::Click(int x, int y, bool left)
 
     y -= m_TopLayer * LAYER_BUTTON_HEIGHT;
     int layer = (m_Map->GetNumLayers() * LAYER_BUTTON_HEIGHT - y) / LAYER_BUTTON_HEIGHT;
+
+    if ( !(layer >= 0 && layer < m_Map->GetNumLayers()) )
+      return;
 
     // if x is less than 20, we clicked on the visibility button
     if (x < 20 && left == true) {

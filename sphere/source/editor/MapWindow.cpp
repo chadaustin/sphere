@@ -104,6 +104,7 @@ CMapWindow::Create()
   m_TilesetEditView.Create(this, this, this, &m_Map.GetTileset());
 
 	m_TilePreviewPalette = new CTilePreviewPalette(this, m_Map.GetTileset().GetTile(0));
+  m_TilePalette = new CTilePalette(this, this, &m_Map.GetTileset());
 
   m_Created = true;  // the window and children are ready!
 
@@ -111,8 +112,6 @@ CMapWindow::Create()
   RECT ClientRect;
   GetClientRect(&ClientRect);
   OnSize(0, ClientRect.right - ClientRect.left, ClientRect.bottom - ClientRect.top);
-
-  m_TilePalette = new CTilePalette(this, this, &m_Map.GetTileset());
 
 #ifdef USE_SIZECBAR
 	LoadPaletteStates();
@@ -291,8 +290,6 @@ CMapWindow::TabChanged(int tab)
     m_LayerView.ShowWindow(SW_HIDE);
     m_TilesetEditView.ShowWindow(SW_SHOW);
   }
-
-  //UpdateToolBars();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -316,6 +313,24 @@ CMapWindow::OnSize(UINT uType, int cx, int cy)
     // move the map view
     RECT MapViewRect;
     GetMapViewRect(&MapViewRect);
+
+//#define TILESET_PALETTE_DOCKED
+#ifdef TILESET_PALETTE_DOCKED
+    if (m_TilePalette && m_TilePalette->IsVisible())
+    {
+      const int SCROLLBAR_WIDTH  = GetSystemMetrics(SM_CXVSCROLL);
+      const int SCROLLBAR_HEIGHT = GetSystemMetrics(SM_CYHSCROLL);
+
+      RECT rect;
+      m_TilePalette->GetWindowRect(&rect);
+      const int tile_palette_width = rect.right - rect.left + SCROLLBAR_WIDTH;
+    
+      MapViewRect.right = MapViewRect.right - tile_palette_width;
+    
+      cx -= tile_palette_width;
+    }
+#endif
+    
     m_MapView.MoveWindow(
       MapViewRect.left,
       MapViewRect.top + TAB_HEIGHT,
@@ -323,6 +338,30 @@ CMapWindow::OnSize(UINT uType, int cx, int cy)
       MapViewRect.bottom - MapViewRect.top - TAB_HEIGHT);
 
     m_TilesetEditView.MoveWindow(0, TAB_HEIGHT, cx, cy - TAB_HEIGHT);
+
+#ifdef TILESET_PALETTE_DOCKED
+    if (m_TilePalette && m_TilePalette->IsVisible())
+    {
+      const int SCROLLBAR_WIDTH  = GetSystemMetrics(SM_CXVSCROLL);
+      const int SCROLLBAR_HEIGHT = GetSystemMetrics(SM_CYHSCROLL);
+
+      RECT rect;
+      m_TilePalette->GetWindowRect(&rect);
+      const int tile_palette_width = rect.right - rect.left + SCROLLBAR_WIDTH;
+
+      cx += tile_palette_width;
+
+      ClientToScreen(&MapViewRect);
+
+      // move the tileset view
+      m_TilePalette->MoveWindow(
+        MapViewRect.right,
+        MapViewRect.top + TAB_HEIGHT,
+        tile_palette_width,
+        MapViewRect.bottom - MapViewRect.top - TAB_HEIGHT);
+    }
+#endif
+  
   }
 
   CSaveableDocumentWindow::OnSize(uType, cx, cy);

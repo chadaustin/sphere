@@ -53,7 +53,7 @@ CPaletteWindow::CPaletteWindow(CDocumentWindow* owner, const char* name, RECT re
   DWORD styles;
 
 #ifndef USE_SIZECBAR
-  styles = WS_THICKFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN;
+  styles = WS_CHILD | WS_THICKFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN;
   if (visible)
     styles |= WS_VISIBLE;
 #else

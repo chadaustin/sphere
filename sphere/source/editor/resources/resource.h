@@ -237,6 +237,7 @@
 #define IDC_EDIT_RED                    1208
 #define IDC_EDIT_GREEN                  1209
 #define IDC_SPIN3                       1210
+#define IDC_BROWSE_MUSIC                1210
 #define IDC_EDIT_BLUE                   1211
 #define IDC_SPIN4                       1212
 #define IDC_EDIT_ALPHA                  1213
@@ -631,7 +632,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        268
 #define _APS_NEXT_COMMAND_VALUE         40761
-#define _APS_NEXT_CONTROL_VALUE         1210
+#define _APS_NEXT_CONTROL_VALUE         1211
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

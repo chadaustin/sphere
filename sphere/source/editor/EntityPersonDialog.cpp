@@ -63,6 +63,10 @@ CEntityPersonDialog::OnInitDialog()
   // add layer names in "layer_index - layer_name" style to dropdown layer list
   for (int i = 0; i < m_Map->GetNumLayers(); i++) {
     std::string layer_info = itos(i) + " - " + m_Map->GetLayer(i).GetName();
+    if (m_Map->GetStartLayer() == i) {
+      layer_info += " - ST";
+    }
+
     SendDlgItemMessage(IDC_LAYER, CB_ADDSTRING, 0, (LPARAM)layer_info.c_str());
     if (i == m_Person.layer)
       SendDlgItemMessage(IDC_LAYER, CB_SETCURSEL, m_Person.layer);

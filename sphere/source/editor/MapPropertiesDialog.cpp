@@ -2,9 +2,12 @@
 #include "Scripting.hpp"
 #include "../common/Map.hpp"
 #include "resource.h"
+#include "FileDialogs.hpp"
 
 
 BEGIN_MESSAGE_MAP(CMapPropertiesDialog, CDialog)
+
+  ON_BN_CLICKED(IDC_BROWSE_MUSIC, OnBrowseBackgroundMusic)
 
   ON_BN_CLICKED(IDC_CHECK_SYNTAX, OnCheckSyntax)
   ON_BN_CLICKED(IDC_ENTRY,        OnClickEntry)
@@ -74,6 +77,17 @@ CMapPropertiesDialog::OnOK()
   m_Map->SetEdgeScript(sMap::WEST,  m_WestScript);
 
   CDialog::OnOK();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMapPropertiesDialog::OnBrowseBackgroundMusic()
+{
+  CSoundFileDialog dialog(FDM_OPEN);
+  if (dialog.DoModal() == IDOK) {
+    SetDlgItemText(IDC_MUSIC, dialog.GetFileName());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

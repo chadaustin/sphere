@@ -382,7 +382,15 @@ SOURCE=.\resources\maptool_5x5.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\resources\maptool_copyarea.cur
+# End Source File
+# Begin Source File
+
 SOURCE=.\resources\maptool_copyarea.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\resources\maptool_copyentity.cur
 # End Source File
 # Begin Source File
 
@@ -414,7 +422,15 @@ SOURCE=.\resources\maptool_obs_segment.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\resources\maptool_paste.cur
+# End Source File
+# Begin Source File
+
 SOURCE=.\resources\maptool_paste.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\resources\maptool_pasteentity.cur
 # End Source File
 # Begin Source File
 

@@ -257,6 +257,8 @@ CScriptWindow::SetScriptStyles()
       SetStyle(SCE_C_COMMENT,     green);
       SetStyle(SCE_C_COMMENTLINE, green);
       SetStyle(SCE_C_COMMENTDOC,  green);
+      SetStyle(SCE_C_COMMENTLINEDOC, green);
+      
       SetStyle(SCE_C_NUMBER,      darkred);
       SetStyle(SCE_C_WORD,        blue);
 
