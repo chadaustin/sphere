@@ -94,6 +94,8 @@ CMapWindow::Create()
   m_LayerView.Create(this, this, &m_Map);
   m_TilesetEditView.Create(this, this, this, &m_Map.GetTileset());
 
+	m_TilePreviewPalette = new CTilePreviewPalette(this, m_Map.GetTileset().GetTile(0));
+
   m_Created = true;  // the window and children are ready!
 
   // move things to their rightful places
@@ -119,6 +121,9 @@ CMapWindow::Destroy()
   m_LayerView.DestroyWindow();
   m_MapView.DestroyWindow();
   m_TilesetEditView.DestroyWindow();
+
+	if (m_TilePreviewPalette)
+		m_TilePreviewPalette->Destroy();
 
   if (m_TilePalette)
     m_TilePalette->Destroy();
@@ -518,6 +523,7 @@ CMapWindow::MV_SelectedTileChanged(int tile)
   m_LayerView.SetSelectedTile(tile);
   m_TilesetEditView.SelectTile(tile);
   m_TilePalette->SelectTile(tile);
+	m_TilePreviewPalette->OnImageChanged(m_Map.GetTileset().GetTile(tile));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -560,6 +566,7 @@ CMapWindow::TEV_SelectedTileChanged(int tile)
   m_LayerView.SetSelectedTile(tile);
   m_TilePalette->SelectTile(tile);
   m_MapView.SelectTile(tile);
+	m_TilePreviewPalette->OnImageChanged(m_Map.GetTileset().GetTile(tile));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -570,6 +577,7 @@ CMapWindow::TEV_TileModified(int tile)
   SetModified(true);
   m_MapView.Invalidate();
   m_TilePalette->TileChanged(tile);
+	m_TilePreviewPalette->OnImageChanged(m_Map.GetTileset().GetTile(tile));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -590,6 +598,7 @@ CMapWindow::TV_SelectedTileChanged(int tile)
   m_LayerView.SetSelectedTile(tile);
   m_MapView.SelectTile(tile);
   m_TilesetEditView.SelectTile(tile);
+	m_TilePreviewPalette->OnImageChanged(m_Map.GetTileset().GetTile(tile));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -600,6 +609,7 @@ CMapWindow::TV_TilesetChanged()
   m_MapView.Invalidate();
   m_MapView.TilesetChanged();
   m_TilesetEditView.TilesetChanged();
+  m_TilePreviewPalette->OnImageChanged(m_Map.GetTileset().GetTile(m_MapView.GetSelectedTile()));
   SetModified(true);
 }
 

@@ -12,6 +12,7 @@
 #include "../common/Map.hpp"
 #include "../common/Tileset.hpp"
 
+#include "TilePreviewPalette.hpp"
 
 class CProject;  // #include "Project.hpp"
 
@@ -87,10 +88,10 @@ private:
   CMapView         m_MapView;
   CLayerView       m_LayerView;
   CTilesetEditView m_TilesetEditView;
-
-  // palettes
+  
+	// palettes
   CTilePalette* m_TilePalette;
-//  CTilePreviewPalette* m_TilePreviewPalette;
+	CTilePreviewPalette* m_TilePreviewPalette;
 
   DECLARE_MESSAGE_MAP()
 };

@@ -72,6 +72,7 @@ sources = Split("""
     TileObstructionDialog.cpp
     TileObstructionView.cpp
     TilePalette.cpp
+    TilePreviewPalette.cpp
     TilePropertiesDialog.cpp
     TilesetEditView.cpp
     TilesetSelectionDialog.cpp

@@ -758,6 +758,14 @@ SOURCE=.\TilePalette.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\TilePreviewPalette.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\TilePreviewPalette.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ToolPalette.cpp
 # End Source File
 # Begin Source File
