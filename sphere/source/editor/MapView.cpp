@@ -2468,10 +2468,10 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
     int pixel_x = (point.x + tile_width  * m_CurrentX) / m_ZoomFactor;
     int pixel_y = (point.y + tile_height * m_CurrentY) / m_ZoomFactor;
     Position.Format("Map tile:(%i,%i) pixel:(%i,%i)", x, y, pixel_x, pixel_y);
-    GetStatusBar()->SetWindowText(Position);
+    GetStatusBar()->SetPaneText(1, Position);
   }
   else
-    GetStatusBar()->SetWindowText("");
+    GetStatusBar()->SetPaneText(1, "");
 
   UpdateCursor(flags, point);
 

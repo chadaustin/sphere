@@ -23,7 +23,6 @@ StretchedBlit(CPaintDC& dc, CDIBSection* blit_tile,
   const int dib_height = blit_tile->GetHeight();
 
   if (0) {
-
     char string[10000];
     sprintf (string, "%d %d %d %d -- ", redraw_x, redraw_y, redraw_width, redraw_height);
 
@@ -49,7 +48,7 @@ StretchedBlit(CPaintDC& dc, CDIBSection* blit_tile,
   if (redraw_y + redraw_height > image_height)
     redraw_height = image_height - redraw_y;
 
-  if (false && redraw_width * redraw_height < 8) {
+  if (redraw_width * redraw_height <= (16 * 16)) {
 
   for (int iy = redraw_y; iy < redraw_y + redraw_height; iy++)
     for (int ix = redraw_x; ix < redraw_x + redraw_width; ix++)

@@ -1,8 +1,16 @@
 #include "ResizeDialog.hpp"
 #include "resource.h"
+#include "Editor.hpp"
 
 #include "../common/str_util.hpp"
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+BEGIN_MESSAGE_MAP(CResizeDialog, CDialog)
+  ON_EN_CHANGE(IDC_WIDTH, OnOptionChanged)
+  ON_EN_CHANGE(IDC_HEIGHT, OnOptionChanged)
+END_MESSAGE_MAP()
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -113,6 +121,33 @@ CResizeDialog::ValidateValues(std::string& error)
   return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CResizeDialog::UpdateButtons()
+{
+  BOOL enabled = TRUE;
+
+  std::string error;
+  if (!ValidateValues(error)) {
+    enabled = FALSE;
+    GetStatusBar()->SetWindowText(error.c_str());
+  } else {
+    GetStatusBar()->SetWindowText("");
+  }
+
+  if (GetDlgItem(IDOK)) {
+    GetDlgItem(IDOK)->EnableWindow(enabled); 
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CResizeDialog::OnOptionChanged()
+{
+  UpdateButtons();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -44,6 +44,15 @@ CColorView::Create(IColorViewHandler* handler, CWnd* parent, RGB color)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+BOOL
+CColorView::Create(IColorViewHandler* handler, CWnd* parent)
+{
+  RGB color = CreateRGB(255, 255, 255);
+  return Create(handler, parent, color);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 CColorView::SetColor(RGB color)
 {
@@ -66,14 +75,15 @@ CColorView::OnPaint()
 {
   CPaintDC dc(this);
   CBrush* brush = new CBrush(RGB(m_Color.red, m_Color.green, m_Color.blue));
+  if (brush) {
+    // fill client rectangle with current color
+    RECT ClientRect;
+    GetClientRect(&ClientRect);
+    dc.FillRect(&ClientRect, brush);
 
-  // fill client rectangle with current color
-  RECT ClientRect;
-  GetClientRect(&ClientRect);
-  dc.FillRect(&ClientRect, brush);
-
-  brush->DeleteObject();
-  delete brush;
+    brush->DeleteObject();
+    delete brush;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1004,6 +1004,10 @@ CScriptWindow::OnScriptViewInsert()
 
           std::string str = "";
 
+          if (process_index == 1) {
+            str += "\n" + indent;
+          }
+
           for (int i = 0; i < strlen(buffer); i++) {
             if (buffer[i] == '\n') {
               str += "\n";
@@ -1014,17 +1018,17 @@ CScriptWindow::OnScriptViewInsert()
             }
           }
 
-          if (process_index == 1) {
-            ::SendMessage(editor, SCI_ADDTEXT, strlen("\n"), (WPARAM)"\n");
+          if (process_index > 0) {
+            str += "\n" + indent;
           }
 
-          ::SendMessage(editor, SCI_ADDTEXT, str.size(), (WPARAM)str.c_str());
           delete[] buffer;
 
-          if (process_index > 0) {
-            ::SendMessage(editor, SCI_ADDTEXT, strlen("\n"), (WPARAM)"\n");
+          if (process_index == 0) {
+            ::SendMessage(editor, SCI_REPLACESEL, 0, (LRESULT)"");
           }
-
+  
+          ::SendMessage(editor, SCI_ADDTEXT, str.size(), (WPARAM)str.c_str());
         }
       }
     }
@@ -1402,7 +1406,7 @@ CScriptWindow::SetLineNumber(int line) {
   int pos = SendEditor(SCI_GETCURRENTPOS) - SendEditor(SCI_POSITIONFROMLINE, line);
   line += 1;
   sprintf(str, "Line: %d Position: %d", line, pos);
-  GetStatusBar()->SetWindowText(str);
+  GetStatusBar()->SetPaneText(1, str);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -37,7 +37,7 @@ BEGIN_MESSAGE_MAP(CFontWindow, CSaveableDocumentWindow)
   ON_WM_HSCROLL()
 
   ON_COMMAND(ID_FONT_RESIZE,               OnFontResize)
-  ON_COMMAND(ID_FONT_RESIZEALL,            OnFontResizeAll)
+  //ON_COMMAND(ID_FONT_RESIZEALL,            OnFontResizeAll)
   ON_COMMAND(ID_FONT_SIMPLIFY,             OnFontSimplify)
   ON_COMMAND(ID_FONT_MAKECOLORTRANSPARENT, OnFontMakeColorTransparent)
   ON_COMMAND(ID_FONT_GENERATEGRADIENT,     OnFontGenerateGradient)
@@ -296,61 +296,49 @@ CFontWindow::OnHScroll(UINT sbcode, UINT pos, CScrollBar* scroll_bar)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-afx_msg void
-CFontWindow::OnFontResize()
+std::vector<int>
+CFontWindow::GetWhichCharacters() const
 {
-  sFontCharacter& c = m_Font.GetCharacter(m_CurrentCharacter);
-  CResizeDialog dialog("Resize Font Character", c.GetWidth(), c.GetHeight());
-	dialog.SetRange(1, 4096, 1, 4096);
+  std::vector<int> character_list;
 
-  if (dialog.DoModal() == IDOK)
-  {
-    if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0
-		 && dialog.GetWidth() <= 4096 && dialog.GetHeight() <= 4096)
-    {
-			if ( !(dialog.GetWidth() == c.GetWidth() && dialog.GetHeight() == c.GetHeight()) ) {
-        c.Resize(dialog.GetWidth(), dialog.GetHeight());
-        SetModified(true);
-        SetImage();
-        if (m_FontPreviewPalette) m_FontPreviewPalette->OnCharacterChanged(-1);
-      }
+  CListDialog dialog;
+  dialog.SetCaption("Which character?");
+  dialog.AddItem("This character");
+  dialog.AddItem("All characters");
+
+  if (dialog.DoModal() != IDOK)
+    return character_list;
+
+  if (dialog.GetSelection() == 0) {
+    character_list.push_back(m_CurrentCharacter);
+  }
+
+  if (dialog.GetSelection() == 1) {
+    for (int i = MIN_CHARACTER; i < MAX_CHARACTER; i++) {
+      character_list.push_back(i);
     }
   }
+
+  return character_list;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-afx_msg void
-CFontWindow::OnFontAdjustBorders()
+void
+CFontWindow::GetFontMinMax(const std::vector<int> character_list, int& min_x, int& min_y, int& max_x, int& max_y) const 
 {
-  bool resize_all = false;
+  min_x = -1;
+  min_y = -1;
+  max_x = 0;
+  max_y = 0;
 
-  if (1) {
-    CListDialog list_dialog;
-    list_dialog.SetCaption("Which character?");
-    list_dialog.AddItem("This character");
-    list_dialog.AddItem("All characters");
+  for (unsigned int i = 0; i < character_list.size(); i++)
+  {
+    int ch = character_list[i];
+    if (ch >= 0 && ch < m_Font.GetNumCharacters())
+    {
+      const sFontCharacter& c = m_Font.GetCharacter(ch);
 
-    if (list_dialog.DoModal() != IDOK)
-      return;
-
-    resize_all = (list_dialog.GetSelection() == 1);
-  }
-
-  int max_x = 0;
-  int max_y = 0;
-
-  int min_x = -1;
-  int min_y = -1;
-
-  if (!resize_all) {
-    max_x = m_Font.GetCharacter(m_CurrentCharacter).GetWidth();
-    max_y = m_Font.GetCharacter(m_CurrentCharacter).GetHeight();
-    min_x = 1;
-    min_y = 1;
-  } else {
-    for (int i = 0; i < m_Font.GetNumCharacters(); i++) {
-      sFontCharacter& c = m_Font.GetCharacter(i);
       if (c.GetWidth() > max_x) {
         max_x = c.GetWidth();
       }
@@ -368,25 +356,38 @@ CFontWindow::OnFontAdjustBorders()
       }   
     }
   }
+}
 
-  CAdjustBordersDialog dialog(0, 0, min_x, min_y, 0, 0, 0, 0);
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CFontWindow::OnFontResize()
+{
+  std::vector<int> character_list = GetWhichCharacters();
+  if (character_list.size() == 0)
+    return;
+
+  int max_x = 0, max_y = 0, min_x = -1, min_y = -1;
+  GetFontMinMax(character_list, min_x, min_y, max_x, max_y);
+
+  CResizeDialog dialog("Resize Font Character(s)", max_x, max_y);
+	dialog.SetRange(1, 4096, 1, 4096);
+  dialog.AllowPercentages(character_list.size() == 1);
+
   if (dialog.DoModal() != IDOK)
     return;
 
 	bool modified = false;
 
-  if (!resize_all) {
-    sFontCharacter& c = m_Font.GetCharacter(m_CurrentCharacter);
-    int width = c.GetWidth();
-    int height = c.GetHeight();
-    c.AdjustBorders(dialog.GetTopPixels(), dialog.GetRightPixels(), dialog.GetBottomPixels(), dialog.GetLeftPixels());
-    modified |= ( !(width == c.GetWidth() && height == c.GetHeight()) );
-  } else {
-    for (int i = 0; i < m_Font.GetNumCharacters(); i++) {
-    	sFontCharacter& c = m_Font.GetCharacter(i);
-      int width = c.GetWidth();
-      int height = c.GetHeight();
-      c.AdjustBorders(dialog.GetTopPixels(), dialog.GetRightPixels(), dialog.GetBottomPixels(), dialog.GetLeftPixels());
+  for (unsigned int i = 0; i < character_list.size(); i++)
+  {
+    int ch = character_list[i];
+    if (ch >= 0 && ch < m_Font.GetNumCharacters())
+    {
+    	sFontCharacter& c = m_Font.GetCharacter(ch);
+      const int width = c.GetWidth();
+      const int height = c.GetHeight();
+      c.Resize(dialog.GetWidth(), dialog.GetHeight());
       modified |= ( !(width == c.GetWidth() && height == c.GetHeight()) );
     }
   }
@@ -401,48 +402,69 @@ CFontWindow::OnFontAdjustBorders()
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
-CFontWindow::OnFontResizeAll()
+CFontWindow::OnFontAdjustBorders()
 {
-  // first, calculate the max character size
-  int max_x = 0;
-  int max_y = 0;
+  std::vector<int> character_list = GetWhichCharacters();
+  if (character_list.size() == 0)
+    return;
 
-  for (int i = 0; i < m_Font.GetNumCharacters(); i++) {
-    sFontCharacter& c = m_Font.GetCharacter(i);
-    if (c.GetWidth() > max_x) {
-      max_x = c.GetWidth();
-    }
-    if (c.GetHeight() > max_y) {
-      max_y = c.GetHeight();
-    }
-  }
+  int max_x = 0, max_y = 0, min_x = -1, min_y = -1;
+  GetFontMinMax(character_list, min_x, min_y, max_x, max_y);
 
-  CResizeDialog dialog("Resize All Font Characters", max_x, max_y);
-	dialog.SetRange(1, 4096, 1, 4096);
-  dialog.AllowPercentages(false);
+  CAdjustBordersDialog dialog(0, 0, min_x, min_y, 0, 0, 0, 0);
+  if (dialog.DoModal() != IDOK)
+    return;
 
-  if (dialog.DoModal() == IDOK) {
+	bool modified = false;
 
-    if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0
-		 && dialog.GetWidth() <= 4096 && dialog.GetHeight() <= 4096)
+  for (unsigned int i = 0; i < character_list.size(); i++)
+  {
+    int ch = character_list[i];
+    if (ch >= 0 && ch < m_Font.GetNumCharacters())
     {
+    	sFontCharacter& c = m_Font.GetCharacter(ch);
+      const int width = c.GetWidth();
+      const int height = c.GetHeight();
+      c.AdjustBorders(dialog.GetTopPixels(), dialog.GetRightPixels(), dialog.GetBottomPixels(), dialog.GetLeftPixels());
+      modified |= ( !(width == c.GetWidth() && height == c.GetHeight()) );
+    }
+  }
 
-			bool modified = false;
+	if (modified) {
+    SetModified(true);
+    SetImage();
+    if (m_FontPreviewPalette) m_FontPreviewPalette->OnCharacterChanged(-1);
+  }
+}
 
-      for (int i = 0; i < m_Font.GetNumCharacters(); i++) {
+////////////////////////////////////////////////////////////////////////////////
 
-				sFontCharacter& c = m_Font.GetCharacter(i);
-				modified |= ( !(dialog.GetWidth() == c.GetWidth() && dialog.GetHeight() == c.GetHeight()) );
-        c.Resize(dialog.GetWidth(), dialog.GetHeight());
-      }
+bool SimplifyImage(CImage32& c)
+{
+  bool modified = false;
+  int j;
 
-			if (modified) {
-        SetModified(true);
-        SetImage();
-        if (m_FontPreviewPalette) m_FontPreviewPalette->OnCharacterChanged(-1);
+  if (!modified) {
+    for (j = 0; j < c.GetWidth() * c.GetHeight(); j++) {
+      if (c.GetPixels()[j].alpha != 0
+       && c.GetPixels()[j].alpha != 255) {
+        modified = true;
+        break;
       }
     }
   }
+
+  if (modified) {
+    for (j = 0; j < c.GetWidth() * c.GetHeight(); j++)
+    {
+      if (c.GetPixels()[j].alpha < 128)
+        c.GetPixels()[j].alpha = 0;
+      else
+        c.GetPixels()[j].alpha = 255;
+    }
+  }
+
+  return modified;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -450,69 +472,79 @@ CFontWindow::OnFontResizeAll()
 afx_msg void
 CFontWindow::OnFontSimplify()
 {
-  if (MessageBox("This will convert the entire font to opaque and transparent.\nIs this okay?", NULL, MB_YESNO) == IDYES)
+  std::vector<int> character_list = GetWhichCharacters();
+  if (character_list.size() == 0)
+    return;
+
+  bool modified = false;
+  
+  for (unsigned int i = 0; i < character_list.size(); i++)
   {
-	  bool modified = false;
-    for (int i = 0; i < m_Font.GetNumCharacters(); i++)
+    int ch = character_list[i];
+    if (ch >= 0 && ch < m_Font.GetNumCharacters())
     {
       sFontCharacter& c = m_Font.GetCharacter(i);
-      int j;
-
-      if (!modified) {
-        for (j = 0; j < c.GetWidth() * c.GetHeight(); j++) {
-          if (c.GetPixels()[j].alpha != 0
-           && c.GetPixels()[j].alpha != 255) {
-            modified = true;
-            break;
-          }
-        }
-      }
-
-      if (modified) {
-        for (j = 0; j < c.GetWidth() * c.GetHeight(); j++)
-        {
-          if (c.GetPixels()[j].alpha < 128)
-            c.GetPixels()[j].alpha = 0;
-          else
-            c.GetPixels()[j].alpha = 255;
-        }
-      }
-    }
-
-    if (modified) {
-      SetModified(true);
-      SetImage();
-
-      if (m_FontPreviewPalette) m_FontPreviewPalette->OnCharacterChanged(-1);
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-afx_msg void
-CFontWindow::OnFontMakeColorTransparent() {
-  RGB color = m_ColorView.GetColor();
-  bool modified = false;
-  for (int i = 0; i < m_Font.GetNumCharacters(); ++i) {
-    sFontCharacter& c = m_Font.GetCharacter(i);
-    for (int j = 0; j < c.GetWidth() * c.GetHeight(); ++j) {
-      if (c.GetPixels()[j].red   == color.red &&
-          c.GetPixels()[j].green == color.green &&
-          c.GetPixels()[j].blue  == color.blue)
-      {
-        if (c.GetPixels()[j].alpha != 0) {
-          c.GetPixels()[j].alpha = 0;
-          modified = true;
-        }
-      }
+      modified |= SimplifyImage(c);
     }
   }
 
   if (modified) {
     SetModified(true);
     SetImage();
-    if (m_FontPreviewPalette) m_FontPreviewPalette->OnCharacterChanged(m_CurrentCharacter);
+
+    if (m_FontPreviewPalette) m_FontPreviewPalette->OnCharacterChanged(-1);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+MakeColorTransparent(CImage32& c, RGB color)
+{
+  bool modified = false;
+
+  for (int j = 0; j < c.GetWidth() * c.GetHeight(); ++j) {
+    if (c.GetPixels()[j].red   == color.red &&
+        c.GetPixels()[j].green == color.green &&
+        c.GetPixels()[j].blue  == color.blue)
+    {
+      if (c.GetPixels()[j].alpha != 0) {
+        c.GetPixels()[j].alpha = 0;
+        modified = true;
+     }
+    }
+  }
+
+  return modified;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CFontWindow::OnFontMakeColorTransparent()
+{
+  std::vector<int> character_list = GetWhichCharacters();
+  if (character_list.size() == 0)
+    return;
+
+  RGB color = m_ColorView.GetColor();
+
+  bool modified = false;
+
+  for (unsigned int i = 0; i < character_list.size(); i++)
+  {
+    int ch = character_list[i];
+    if (ch >= 0 && ch < m_Font.GetNumCharacters())
+    {
+      sFontCharacter& c = m_Font.GetCharacter(i);
+      modified |= MakeColorTransparent(c, color);
+    }
+  }
+
+  if (modified) {
+    SetModified(true);
+    SetImage();
+    if (m_FontPreviewPalette) m_FontPreviewPalette->OnCharacterChanged(-1);
   }
 }
 
@@ -521,14 +553,19 @@ CFontWindow::OnFontMakeColorTransparent() {
 afx_msg void
 CFontWindow::OnFontGenerateGradient()
 {
+  std::vector<int> character_list = GetWhichCharacters();
+  if (character_list.size() == 0)
+    return;
+
   CFontGradientDialog dialog;
   if (dialog.DoModal() == IDOK) {
+
     m_Font.GenerateGradient(dialog.GetTopColor(), dialog.GetBottomColor());
 
     SetModified(true);
     SetImage();
 
-    if (m_FontPreviewPalette) m_FontPreviewPalette->OnCharacterChanged(m_CurrentCharacter);
+    if (m_FontPreviewPalette) m_FontPreviewPalette->OnCharacterChanged(-1);
   }
 }
 

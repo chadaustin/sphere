@@ -9,6 +9,7 @@
 #include "SpritesetImagesPalette.hpp"
 #include "NumberDialog.hpp"
 #include "resource.h"
+#include "Editor.hpp"
 
 #include "Configuration.hpp"
 #include "keys.hpp"
@@ -209,6 +210,7 @@ CSpritesetWindow::Create()
 void
 CSpritesetWindow::TabChanged(int tab)
 {
+  GetStatusBar()->SetWindowText("");
   ShowFramesTab(tab == 0 ? SW_SHOW : SW_HIDE);
   ShowEditTab  (tab == 1 ? SW_SHOW : SW_HIDE);
   ShowBaseTab  (tab == 2 ? SW_SHOW : SW_HIDE);
@@ -616,8 +618,9 @@ CSpritesetWindow::OnUpdateBaseTab(CCmdUI* cmdui)
 afx_msg void
 CSpritesetWindow::OnTabChanged(NMHDR* ns, LRESULT* result)
 {
-  if (ns->idFrom == IDC_TAB)
+  if (ns->idFrom == IDC_TAB) {
     TabChanged(m_TabControl.GetCurSel());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -19,7 +19,8 @@ public:
   CColorView();
   ~CColorView();
 
-  BOOL Create(IColorViewHandler* handler, CWnd* parent, RGB color = CreateRGB(0, 0, 0));
+  BOOL Create(IColorViewHandler* handler, CWnd* parent, RGB color);
+  BOOL Create(IColorViewHandler* handler, CWnd* parent);
 
   void SetColor(RGB color);
   RGB  GetColor() const;

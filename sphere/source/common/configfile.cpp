@@ -20,6 +20,30 @@ CConfigFile::CConfigFile(const char* filename, IFileSystem& fs)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+int
+CConfigFile::GetNumSections() const
+{
+  return (int)m_sections.size();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+const char*
+CConfigFile::GetSectionName(const int index) const
+{
+  int j;
+  std::map<std::string, Section>::const_iterator i;
+
+  for (j = 0, i = m_sections.begin(); i != m_sections.end(); i++, j++) {
+    if (j == index)
+      return i->first.c_str();
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 inline void skip_whitespace(const char*& str)
 {
   while (isspace(*str)) {

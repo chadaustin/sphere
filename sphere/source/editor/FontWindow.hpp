@@ -39,7 +39,7 @@ private:
   afx_msg void OnHScroll(UINT sbcode, UINT pos, CScrollBar* scroll_bar);
 
   afx_msg void OnFontResize();
-  afx_msg void OnFontResizeAll();
+  //afx_msg void OnFontResizeAll();
   afx_msg void OnFontSimplify();
   afx_msg void OnFontMakeColorTransparent();
   afx_msg void OnFontGenerateGradient();
@@ -63,6 +63,10 @@ private:
 
   // edit range
   afx_msg void OnEditRange();
+
+private:
+  std::vector<int> GetWhichCharacters() const;
+  void GetFontMinMax(const std::vector<int> character_list, int& min_x, int& min_y, int& max_x, int& max_y) const;
 
 private:
   sFont m_Font;

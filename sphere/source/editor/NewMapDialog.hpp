@@ -20,7 +20,11 @@ private:
   BOOL OnInitDialog();
   void OnOK();
 
+  void UpdateButtons();
   afx_msg void OnTilesetBrowse();
+  afx_msg void OnOptionChanged();
+
+  bool ValidateValues(std::string& error);
 
 private:
   int         m_MapWidth;

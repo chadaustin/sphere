@@ -3,11 +3,13 @@
 #include "FileDialogs.hpp"
 #include "resource.h"
 #include "translate.hpp"
-
+#include "Editor.hpp"
 
 BEGIN_MESSAGE_MAP(CNewMapDialog, CDialog)
 
   ON_COMMAND(IDC_TILESET_BROWSE, OnTilesetBrowse)
+  ON_EN_CHANGE(IDC_WIDTH, OnOptionChanged)
+  ON_EN_CHANGE(IDC_HEIGHT, OnOptionChanged)
 
 END_MESSAGE_MAP()
 
@@ -79,19 +81,71 @@ CNewMapDialog::OnInitDialog()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void
-CNewMapDialog::OnOK()
+bool
+CNewMapDialog::ValidateValues(std::string& error)
 {
   int width  = GetDlgItemInt(IDC_WIDTH);
   int height = GetDlgItemInt(IDC_HEIGHT);
-  char tileset[MAX_PATH];
-  GetDlgItemText(IDC_TILESET, tileset, MAX_PATH);
 
   if (width < 1 || height < 1)
   {
-    MessageBox("Width and height must be at least 1.");
+    error = "Width and height must be at least 1.";
+    return false;
+  }
+
+  if (width > 4096 || height > 4096)
+  {
+    error = "Width and height must be at most 4096.";
+    return false;
+  }
+
+  m_MapWidth  = width;
+  m_MapHeight = height;
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CNewMapDialog::UpdateButtons()
+{
+  BOOL enabled = TRUE;
+
+  std::string error;
+  if (!ValidateValues(error)) {
+    enabled = FALSE;
+    GetStatusBar()->SetWindowText(error.c_str());
+  } else {
+    GetStatusBar()->SetWindowText("");
+  }
+
+  if (GetDlgItem(IDOK)) {
+    GetDlgItem(IDOK)->EnableWindow(enabled); 
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CNewMapDialog::OnOptionChanged()
+{
+  UpdateButtons();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CNewMapDialog::OnOK()
+{
+  std::string error;
+  if (!ValidateValues(error)) {
+    MessageBox(error.c_str());
     return;
   }
+
+  char tileset[MAX_PATH];
+  GetDlgItemText(IDC_TILESET, tileset, MAX_PATH);
 
   if (strlen(tileset) == 0)
   {
@@ -99,8 +153,6 @@ CNewMapDialog::OnOK()
       return;
   }
 
-  m_MapWidth  = width;
-  m_MapHeight = height;
   m_Tileset   = tileset;
 
   CDialog::OnOK();

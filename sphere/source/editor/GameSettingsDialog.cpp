@@ -83,7 +83,7 @@ CGameSettingsDialog::OnOK()
   // if the project contains any scripts, set it to the one that's selected
   if (m_Project->GetItemCount(GT_SCRIPTS) > 0)
   {
-    char script[1024];
+    char script[MAX_PATH + 1024];
     int cur_sel = SendDlgItemMessage(IDC_SCRIPT, CB_GETCURSEL, 0, 0);
     SendDlgItemMessage(IDC_SCRIPT, CB_GETLBTEXT, cur_sel, (LPARAM)script);
     m_Project->SetGameScript(script);

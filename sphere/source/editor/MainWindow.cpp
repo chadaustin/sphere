@@ -379,6 +379,7 @@ CMainWindow::Create()
   static const UINT indicators[] =
   {
     ID_SEPARATOR,           // status line indicator
+    ID_SEPARATOR,
     ID_INDICATOR_CAPS,
     ID_INDICATOR_NUM,
   };
@@ -388,6 +389,9 @@ CMainWindow::Create()
 
   m_StatusBar.SetIndicators(indicators, sizeof(indicators)/sizeof(UINT));
   m_StatusBar.SetBarStyle(m_StatusBar.GetBarStyle() | CBRS_FLYBY | CBRS_TOOLTIPS);
+
+  m_StatusBar.SetPaneText(0, "");
+  m_StatusBar.SetPaneText(1, "");
 
   SetStatusBar(&m_StatusBar);
 

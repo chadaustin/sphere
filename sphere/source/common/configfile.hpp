@@ -30,6 +30,9 @@ public:
   void WriteDouble(const char* section, const char* key, double f);
   void WriteBool  (const char* section, const char* key, bool b);
 
+  int GetNumSections() const;
+  const char* GetSectionName(const int index) const;
+
 private:
   struct Section {
     std::map<std::string, std::string> entries;

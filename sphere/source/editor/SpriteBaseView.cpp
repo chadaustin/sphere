@@ -74,7 +74,6 @@ void
 CSpriteBaseView::SetSprite(const CImage32* sprite)
 {
   m_Sprite = sprite;
-  UpdateStatusBar();
   Invalidate();
 }
 

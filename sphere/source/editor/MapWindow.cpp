@@ -188,7 +188,10 @@ CMapWindow::LoadMap(const char* szMap, const char* szTileset)
       return false;
 
     // allocate the map
-    m_Map.Create(NewMapDialog.GetMapWidth(), NewMapDialog.GetMapHeight());
+    if (m_Map.Create(NewMapDialog.GetMapWidth(), NewMapDialog.GetMapHeight()) == false) {
+      AfxGetApp()->m_pMainWnd->MessageBox("Error: Could not create map");
+      return false;
+    }
 
     // attempt to load the tileset
     if (strlen(NewMapDialog.GetTileset()) &&
@@ -301,6 +304,8 @@ CMapWindow::GetLayerViewRect(RECT* pRect)
 void
 CMapWindow::TabChanged(int tab)
 {
+  GetStatusBar()->SetWindowText("");
+
   if (tab == 0)
   {
     m_MapView.ShowWindow(SW_SHOW);
@@ -487,6 +492,8 @@ CMapWindow::OnChangeTileSize()
   int tile_width  = m_Map.GetTileset().GetTileWidth();
   int tile_height = m_Map.GetTileset().GetTileHeight();
   CResizeDialog dialog("Resize Tiles", tile_width, tile_height);
+	dialog.SetRange(1, 4906, 1, 4906);
+
   if (dialog.DoModal() == IDOK)
   {
     if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
@@ -518,6 +525,8 @@ CMapWindow::OnRescaleTileset()
   int tile_height = m_Map.GetTileset().GetTileHeight();
 
   CResizeDialog dialog("Rescale Tiles", tile_width, tile_height);
+	dialog.SetRange(1, 4906, 1, 4906);
+
   if (dialog.DoModal() == IDOK) {
     if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
       m_Map.SetTileSize(dialog.GetWidth(), dialog.GetHeight(), 1, Local::RescaleCallback);
@@ -547,6 +556,8 @@ CMapWindow::OnResampleTileset()
   int tile_height = m_Map.GetTileset().GetTileHeight();
 
   CResizeDialog dialog("Resample Tiles", tile_width, tile_height);
+	dialog.SetRange(1, 4906, 1, 4906);
+
   if (dialog.DoModal() == IDOK) {
     if (dialog.GetWidth() > 0 && dialog.GetHeight() > 0) {
       m_Map.SetTileSize(dialog.GetWidth(), dialog.GetHeight(), 2, Local::ResampleCallback);

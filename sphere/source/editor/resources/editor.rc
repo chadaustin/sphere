@@ -340,12 +340,12 @@ BEGIN
     BEGIN
         POPUP "&Change Size"
         BEGIN
+            MENUITEM "Adjust Borders...",           ID_IMAGE_ADJUSTBORDERS
             MENUITEM "&Resize...",                  ID_IMAGE_RESIZE
             MENUITEM "R&escale...",                 ID_IMAGE_RESCALE
             MENUITEM "Re&sample...",                ID_IMAGE_RESAMPLE
         END
         MENUITEM "Rotate...",                   ID_IMAGE_ROTATE
-        MENUITEM "Adjust Borders...",           ID_IMAGE_ADJUSTBORDERS
         MENUITEM "Count Colors Used",           ID_IMAGE_COUNTCOLORS
         MENUITEM SEPARATOR
         MENUITEM "&View at Original Size",      ID_IMAGE_VIEWATORIGINALSIZE
@@ -464,9 +464,11 @@ BEGIN
     BEGIN
         MENUITEM "Export to Image...",          ID_FONT_EXPORTTOIMAGE
         MENUITEM SEPARATOR
-        MENUITEM "&Resize Character...",        ID_FONT_RESIZE
-        MENUITEM "Resize &All Characters...",   ID_FONT_RESIZEALL
-        MENUITEM "&Adjust Borders...",          ID_FONT_ADJUSTBORDERS
+        POPUP "&Change Size..."
+        BEGIN
+            MENUITEM "&Adjust Borders...",          ID_FONT_ADJUSTBORDERS
+            MENUITEM "&Resize Character(s)...",     ID_FONT_RESIZE
+        END
         MENUITEM "&Simplify...",                ID_FONT_SIMPLIFY
         MENUITEM "Make Color &Transparent",     ID_FONT_MAKECOLORTRANSPARENT
         POPUP "&Edit Range"

@@ -88,7 +88,7 @@ END_MESSAGE_MAP()
 ////////////////////////////////////////////////////////////////////////////////
 
 CImageView::CImageView()
-: m_Color(CreateRGBA(0, 0, 0, 255))
+: m_Color(CreateRGBA(255, 255, 255, 255))
 , m_SwatchPalette(NULL)
 //, m_ToolPalette(NULL)
 , m_MouseDown(false)
@@ -1290,21 +1290,22 @@ CImageView::OnPaint()
   int dib_height = 16;
 
 //  if (m_RedrawWidth > 8 || m_RedrawHeight > 8) {
-    // ensure that we redraw dib_width by dib_height squares only
+
+  // ensure that we redraw dib_width by dib_height squares only
+  if (0) {
     m_RedrawWidth += m_RedrawX % dib_width;
     m_RedrawHeight += m_RedrawY % dib_height;
     m_RedrawX -= m_RedrawX % dib_width;
     m_RedrawY -= m_RedrawY % dib_height;
     m_RedrawWidth  += dib_width; m_RedrawWidth  -= m_RedrawWidth  % dib_width;
     m_RedrawHeight += dib_height; m_RedrawHeight -= m_RedrawHeight % dib_height;
-//  }
+  }
 
   // clamp redraw values within image
   if (m_RedrawX < 0) m_RedrawX = 0;
   if (m_RedrawY < 0) m_RedrawY = 0;
   if (m_RedrawX + m_RedrawWidth > m_Image.GetWidth()) m_RedrawWidth = m_Image.GetWidth() - m_RedrawX;
   if (m_RedrawY + m_RedrawHeight > m_Image.GetHeight()) m_RedrawHeight = m_Image.GetHeight() - m_RedrawY;
-
 
 
   StretchedBlit(_dc, m_BlitTile, size, size, m_Image.GetWidth(), m_Image.GetHeight(),
@@ -1826,11 +1827,13 @@ CImageView::OnMouseMove(UINT flags, CPoint point)
 
   POINT current = ConvertToPixel(point);
   if (InImage(current)) {
-    char str[80];
-    sprintf(str, "(%d, %d)", current.x, current.y);
-    GetStatusBar()->SetWindowText(str);
+    char str[1024];
+    RGBA color = m_Image.GetPixel(current.x, current.y);
+    sprintf(str, "x,y=(%d, %d) color=[%d, %d, %d, %d]", current.x, current.y, 
+                  color.red, color.green, color.blue, color.alpha);
+    GetStatusBar()->SetPaneText(1, str);
   } else {
-    GetStatusBar()->SetWindowText("");
+    GetStatusBar()->SetPaneText(1, "");
   }
 
   if (!m_MouseDown)
@@ -2022,7 +2025,7 @@ CImageView::OnTimer(UINT event)
       if (InImage(current)) {
         char str[80];
         sprintf(str, "(%d, %d)", current.x, current.y);
-        GetStatusBar()->SetWindowText(str);
+        GetStatusBar()->SetPaneText(1, str);
       }
 
       if (m_RedrawWidth == 0 && m_RedrawHeight == 0) {
