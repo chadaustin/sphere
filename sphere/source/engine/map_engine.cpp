@@ -4005,7 +4005,7 @@ CMapEngine::UpdateEdgeScripts()
 ////////////////////////////////////////////////////////////////////////////////
 
 static inline int __round__(double v) {
-  return floor(v + 0.5);
+  return (int) floor(v + 0.5);
 }
 
 bool
@@ -4119,12 +4119,15 @@ CMapEngine::ProcessInput()
     int joystick = m_BoundJoysticks[j].m_Joystick;
     if (joystick >= 0 && joystick < GetNumJoysticks())
     {
-      for (int button = 0; button < GetNumJoystickButtons(joystick); ++button)
+      int num_buttons = GetNumJoystickButtons(joystick);
+      m_BoundJoysticks[j].m_Buttons.resize(num_buttons);
+
+      for (int button = 0; button < num_buttons; ++button)
       {
         bool button_pressed = IsJoystickButtonPressed(joystick, button);
         if (button_pressed == true && m_BoundJoysticks[j].m_Buttons[button] == false) {
           m_BoundJoysticks[j].m_Buttons[button] = true;
-          if (m_BoundJoysticks[j].m_BoundButtons.count(button)) {
+          if (m_BoundJoysticks[j].m_BoundButtons.count(button) > 0) {
             if (!ProcessBoundJoystickButtonDown(joystick, button)) {
               return false;
             }
@@ -4133,7 +4136,7 @@ CMapEngine::ProcessInput()
         else if (button_pressed == false && m_BoundJoysticks[j].m_Buttons[button] == true)
         {
           m_BoundJoysticks[j].m_Buttons[button] = false;
-          if (m_BoundJoysticks[j].m_BoundButtons.count(button)) {
+          if (m_BoundJoysticks[j].m_BoundButtons.count(button) > 0) {
             if (!ProcessBoundJoystickButtonUp(joystick, button)) {
               return false;
             }
@@ -4284,6 +4287,17 @@ CMapEngine::DestroyBoundKeys()
   }
 
   m_BoundKeys.clear();
+
+  for (int j = 0; j < m_BoundJoysticks.size(); j++)
+  {
+    std::map<int, KeyScripts>::iterator i;
+    for (i = m_BoundJoysticks[j].m_BoundButtons.begin(); i != m_BoundJoysticks[j].m_BoundButtons.end(); i++) {
+      m_Engine->DestroyScript(i->second.down);
+      m_Engine->DestroyScript(i->second.up);
+    }
+
+    m_BoundJoysticks[j].m_BoundButtons.clear();
+ }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

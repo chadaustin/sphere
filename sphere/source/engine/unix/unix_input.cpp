@@ -137,7 +137,7 @@ bool RefreshInput () {
           for (int lcv = 0; lcv < total_keys; lcv++) {
             if (pressed == KeyMapping[lcv]) {
               key = lcv;
-              //std::cerr << "key: " << (int)key << std::endl;              
+              //std::cerr << "key: "<< (int)key << std::endl;
               break;
             }
           }
@@ -162,9 +162,6 @@ void OnKeyDown(int key) {
   //std::cerr << "down: " << key << std::endl;
   key_queue.push_back(key);
   key_buffer[key] = true;
-
-  if (key == KEY_M)
-    std::cerr << "M down" << std::endl;
           
   switch(key) {
 
@@ -182,12 +179,11 @@ void OnKeyDown(int key) {
   };
 }
 
+///////////////////////////////////////////////////////////
+
 void OnKeyUp(int key) {
   //std::cerr << "up:   " << key << std::endl;
   key_buffer[key] = false;
-
-  if (key == KEY_M)
-    std::cerr << "M up" << std::endl;
 }
 
 ///////////////////////////////////////////////////////////
@@ -280,9 +276,6 @@ bool IsMouseButtonPressed (int button) {
 
 int GetNumJoysticks()
 {
-  if (SDL_NumJoysticks() > 0)
-    std::cerr<< SDL_NumJoysticks() << std::endl;
-
   return SDL_NumJoysticks();
 }
 
@@ -291,7 +284,7 @@ int GetNumJoysticks()
 
 float GetJoystickX(int joy_index)
 {
-  if (joy_index >= 0 && joy_index < SDL_NumJoysticks())
+  if (joy_index < 0 || joy_index >= SDL_NumJoysticks())
     return 0;
 
   SDL_Joystick* joy = SDL_JoystickOpen(joy_index);
@@ -308,7 +301,7 @@ float GetJoystickX(int joy_index)
 
 float GetJoystickY(int joy_index)
 {
-  if (joy_index >= 0 && joy_index < SDL_NumJoysticks())
+  if (joy_index < 0 || joy_index >= SDL_NumJoysticks())
     return 0;
 
   SDL_Joystick* joy = SDL_JoystickOpen(joy_index);
@@ -325,7 +318,7 @@ float GetJoystickY(int joy_index)
 
 int GetNumJoystickButtons(int joy_index)
 {
-  if (joy_index >= 0 && joy_index < SDL_NumJoysticks())
+  if (joy_index < 0 || joy_index >= SDL_NumJoysticks())
     return 0;
 
   SDL_Joystick* joy = SDL_JoystickOpen(joy_index);
@@ -339,7 +332,7 @@ int GetNumJoystickButtons(int joy_index)
 
 bool IsJoystickButtonPressed(int joy_index, int button)
 {
-  if (joy_index >= 0 && joy_index < SDL_NumJoysticks())
+  if (joy_index < 0 || joy_index >= SDL_NumJoysticks())
     return false;
 
   SDL_Joystick* joy = SDL_JoystickOpen(joy_index);

@@ -105,27 +105,32 @@ bool SwitchResolution (int x, int y, bool fullscreen, bool update_cliprect) {
 
     SDL_InitSubSystem(SDL_INIT_JOYSTICK);
 
-    if(SDL_WasInit(SDL_INIT_JOYSTICK)!=0)
+    if (SDL_WasInit(SDL_INIT_JOYSTICK)) {
       printf("Joysticks are initialized.\n");
+      printf("There are %d joysticks attached.\n", SDL_NumJoysticks());
+      for (int i = 0; i < SDL_NumJoysticks(); i++) {
+        printf("Joystick[%d].name = %s\n", i, SDL_JoystickName(i));
+      }
+    }
     else
       printf("Joysticks are not initialized.\n");
 
   } else {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
-    SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
+    //SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
     if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
 
-    SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+    //SDL_InitSubSystem(SDL_INIT_JOYSTICK);
 
     // keep the window title as what it was
     SetWindowTitle(window_title.c_str());
   }
 
   if (fullscreen)
-    screen = SDL_SetVideoMode(x, y, 32, SDL_DOUBLEBUF | SDL_FULLSCREEN);
+    screen = SDL_SetVideoMode(x,y, 32, SDL_DOUBLEBUF | SDL_FULLSCREEN);
   else
-    screen = SDL_SetVideoMode(x, y, 32, SDL_DOUBLEBUF | SDL_ANYFORMAT);
+    screen = SDL_SetVideoMode(x,y, 32, SDL_DOUBLEBUF | SDL_ANYFORMAT);
 
   if (screen == NULL)
     return false;
@@ -248,6 +253,10 @@ void SetClippingRectangle(int x, int y, int w, int h) {
   else if (y2 > ScreenHeight - 1)
    y2 = ScreenHeight - 1;
 
+  SDL_Rect rect;
+  rect.x = x1; rect.y = y1; rect.w = x2 - x1; rect.h = y2 - y1;
+  SDL_SetClipRect(screen, &rect);
+
   ClippingRectangle.left = x1;
   ClippingRectangle.right = x2;
   ClippingRectangle.top = y1;
@@ -285,8 +294,9 @@ void FlipScreen () {
   }
   CurrentFrames++;
   static int NumFlips;
-  if (NumFlips++ % 8 == 0);
+  if (NumFlips++ % 8 == 0) {
     RefreshInput();
+  }
     
   if (ShouldTakeScreenshot) {
     ShouldTakeScreenshot = false;
@@ -678,9 +688,16 @@ void DrawRectangle(int x, int y, int w, int h, RGBA color) {
     if (color.alpha == 0) { // no mask
       return;
     } else if (color.alpha == 255) { // full mask
-      BGRA bgra = { color.blue, color.green, color.red };
-      primitives::Rectangle((BGRA*)screen->pixels, ScreenWidth, x, y,
-                          w, h, bgra, ClippingRectangle, copyBGRA);
+
+//      BGRA bgra = { color.blue, color.green, color.red };
+//      primitives::Rectangle((BGRA*)screen->pixels, ScreenWidth, x, y,
+//                        w, h, bgra, ClippingRectangle, copyBGRA);
+      SDL_Rect rect;
+      rect.x = x; rect.y = y; rect.w = w; rect.h = h;
+      Uint32 sdl_color =
+        SDL_MapRGB(screen->format, color.red, color.green, color.blue);
+      SDL_FillRect(screen, &rect, sdl_color);
+
     } else {
       primitives::Rectangle((BGRA*)screen->pixels, ScreenWidth, x, y,
                           w, h, color, ClippingRectangle, blendBGRA);
