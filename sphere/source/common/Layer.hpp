@@ -7,6 +7,9 @@
 #include "ObstructionMap.hpp"
 
 
+#if defined(unix)
+  #define float32 float
+#endif
 class sLayer
 {
 public:
@@ -134,6 +137,7 @@ sLayer::HasParallax() const
 {
   return m_HasParallax;
 }
+
 
 
 inline float32
