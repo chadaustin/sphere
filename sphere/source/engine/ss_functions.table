@@ -140,6 +140,10 @@ SS_FUNCTION(OpenLog, 1)
     SS_FUNCTION(SetCameraY, 1)
     SS_FUNCTION(GetCameraX, 0)
     SS_FUNCTION(GetCameraY, 0)
+    SS_FUNCTION(MapToScreenX, 2)
+    SS_FUNCTION(MapToScreenY, 2)
+    SS_FUNCTION(ScreenToMapX, 2)
+    SS_FUNCTION(ScreenToMapY, 2)
 
     // entities
 

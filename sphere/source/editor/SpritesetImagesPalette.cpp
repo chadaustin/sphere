@@ -11,10 +11,10 @@ BEGIN_MESSAGE_MAP(CSpritesetImagesPalette, CPaletteWindow)
   ON_WM_LBUTTONDOWN()
   ON_WM_RBUTTONUP()
 
-  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_MOVEBACK,    OnMoveBack)
-  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_MOVEFORWARD, OnMoveForward)
-  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_INSERTIMAGE, OnInsertImage)
-  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_REMOVEIMAGE, OnRemoveImage)
+  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_MOVE_BACK,    OnMoveBack)
+  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_MOVE_FORWARD, OnMoveForward)
+  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_INSERT_IMAGE, OnInsertImage)
+  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGE, OnRemoveImage)
 
 END_MESSAGE_MAP()
 
@@ -194,27 +194,25 @@ CSpritesetImagesPalette::OnRButtonUp(UINT flags, CPoint point)
   // show pop-up menu
   ClientToScreen(&point);
 
-  HMENU menu_ = ::LoadMenu(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_SPRITESET_IMAGES_PALETTE));
-  HMENU menu = GetSubMenu(menu_, 0);
+  HMENU menu = ::LoadMenu(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_SPRITESET_IMAGES_PALETTE));
 
   // disable move back if we're on the first image
   if (m_SelectedImage == 0) {
-    EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_MOVEBACK, MF_BYCOMMAND | MF_GRAYED);
+    ::EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_MOVE_BACK, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
   }
 
   // disable move forward if we're on the last image
   if (m_SelectedImage == m_Spriteset->GetNumImages() - 1) {
-    EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_MOVEFORWARD, MF_BYCOMMAND | MF_GRAYED);
+    ::EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_MOVE_FORWARD, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
   }
 
   // disable remove image if there is only one
   if (m_Spriteset->GetNumImages() == 1) {
-    EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_REMOVEIMAGE, MF_BYCOMMAND | MF_GRAYED);
+    ::EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGE, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
   }
 
-  TrackPopupMenu(menu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, point.x, point.y, 0, m_hWnd, NULL);
-
-  DestroyMenu(menu_);
+  TrackPopupMenu(GetSubMenu(menu, 0), TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, point.x, point.y, 0, m_hWnd, NULL);
+  DestroyMenu(menu);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -222,7 +220,9 @@ CSpritesetImagesPalette::OnRButtonUp(UINT flags, CPoint point)
 afx_msg void
 CSpritesetImagesPalette::OnMoveBack()
 {
-  OnSwap(m_SelectedImage - 1);
+  if (m_SelectedImage > 0) {
+    OnSwap(m_SelectedImage - 1);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -230,7 +230,9 @@ CSpritesetImagesPalette::OnMoveBack()
 afx_msg void
 CSpritesetImagesPalette::OnMoveForward()
 {
-  OnSwap(m_SelectedImage + 1);
+  if (m_SelectedImage < m_Spriteset->GetNumImages() - 1) {
+    OnSwap(m_SelectedImage + 1);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -22,6 +22,10 @@ public:
   sMap& GetMap();
 
   void RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, int& offset_y);
+  int MapToScreenX(int layer, int camera_x, int mx);
+  int MapToScreenY(int layer, int camera_y, int my);
+  int ScreenToMapX(int layer, int camera_x, int sx);
+  int ScreenToMapY(int layer, int camera_y, int sy);
 
   void SetLayerAlpha(int layer, int alpha);
   int  GetLayerAlpha(int layer);

@@ -43,12 +43,12 @@ CRenderSort::DrawObjects()
     int y[4];
     x[0] = o.draw_x;
     y[0] = o.draw_y;
-    x[1] = o.draw_x + o.draw_w;
+    x[1] = o.draw_x + o.draw_w - 1;
     y[1] = o.draw_y;
-    x[2] = o.draw_x + o.draw_w;
-    y[2] = o.draw_y + o.draw_h;
+    x[2] = o.draw_x + o.draw_w - 1;
+    y[2] = o.draw_y + o.draw_h - 1;
     x[3] = o.draw_x;
-    y[3] = o.draw_y + o.draw_h;
+    y[3] = o.draw_y + o.draw_h - 1;
     TransformBlitImage(o.image, x, y);
   }
 

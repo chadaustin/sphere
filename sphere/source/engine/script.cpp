@@ -1741,6 +1741,66 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(MapToScreenX, 2)
+  arg_int(layer);
+  arg_int(mx);
+
+  int sx;
+  if (!This->m_Engine->GetMapEngine()->MapToScreenX(layer, mx, sx)) {
+    This->ReportMapEngineError("MapToScreenX() failed");
+    return JS_FALSE;
+  }
+
+  return_int(sx);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(MapToScreenY, 2)
+  arg_int(layer);
+  arg_int(my);
+
+  int sy;
+  if (!This->m_Engine->GetMapEngine()->MapToScreenY(layer, my, sy)) {
+    This->ReportMapEngineError("MapToScreenY() failed");
+    return JS_FALSE;
+  }
+
+  return_int(sy);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(ScreenToMapX, 2)
+  arg_int(layer);
+  arg_int(sx);
+
+  int mx;
+  if (!This->m_Engine->GetMapEngine()->ScreenToMapX(layer, sx, mx)) {
+    This->ReportMapEngineError("ScreenToMapX() failed");
+    return JS_FALSE;
+  }
+
+  return_int(mx);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(ScreenToMapY, 2)
+  arg_int(layer);
+  arg_int(sy);
+
+  int my;
+  if (!This->m_Engine->GetMapEngine()->ScreenToMapY(layer, sy, my)) {
+    This->ReportMapEngineError("ScreenToMapY() failed");
+    return JS_FALSE;
+  }
+
+  return_int(my);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 begin_func(GetPersonList, 0)
 
   // ask the map engine for the list of names

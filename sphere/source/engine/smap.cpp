@@ -250,6 +250,106 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
 
 ////////////////////////////////////////////////////////////////////////////////
 
+int
+SMAP::MapToScreenX(int /*layer*/, int camera_x, int mx)
+{
+  const int tile_width = m_Map.GetTileset().GetTileWidth();
+  const int cx = GetScreenWidth() / 2;
+
+  // calculate camera offsets
+  int offset_x = 0;
+
+  // if map is wider than the screen...
+  if (tile_width * m_MaxLayerWidth > GetScreenWidth()) {
+    if (camera_x < cx) {
+      offset_x = cx - camera_x;
+    } else if (camera_x > m_MaxLayerWidth * tile_width - cx) {
+      offset_x = m_MaxLayerWidth * tile_width - camera_x - cx;
+    }
+  } else {
+    offset_x = cx - camera_x;
+  }
+  
+  return offset_x + mx;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+SMAP::MapToScreenY(int /*layer*/, int camera_y, int my)
+{
+  const int tile_height = m_Map.GetTileset().GetTileHeight();
+  const int cy = GetScreenHeight() / 2;
+
+  // calculate camera offsets
+  int offset_y = 0;
+
+  // if map is higher than the screen...
+  if (tile_height * m_MaxLayerHeight > GetScreenHeight()) {
+    if (camera_y < cy) {
+      offset_y = cy - camera_y;
+    } else if (camera_y > m_MaxLayerHeight * tile_height - cy) {
+      offset_y = m_MaxLayerHeight * tile_height - camera_y - cy;
+    }
+  } else {
+    offset_y = cy - camera_y;
+  }
+
+  return offset_y + my;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+SMAP::ScreenToMapX(int /*layer*/, int camera_x, int sx)
+{
+  const int tile_width = m_Map.GetTileset().GetTileWidth();
+  const int cx = GetScreenWidth() / 2;
+
+  // calculate camera offsets
+  int offset_x = 0;
+
+  // if map is wider than the screen...
+  if (tile_width * m_MaxLayerWidth > GetScreenWidth()) {
+    if (camera_x < cx) {
+      offset_x = cx - camera_x;
+    } else if (camera_x > m_MaxLayerWidth * tile_width - cx) {
+      offset_x = m_MaxLayerWidth * tile_width - camera_x - cx;
+    }
+  } else {
+    offset_x = cx - camera_x;
+  }
+  
+  return offset_x - sx;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+SMAP::ScreenToMapY(int /*layer*/, int camera_y, int sy)
+{
+  const int tile_height = m_Map.GetTileset().GetTileHeight();
+  const int cy = GetScreenHeight() / 2;
+
+  // calculate camera offsets
+  int offset_y = 0;
+
+  // if map is higher than the screen...
+  if (tile_height * m_MaxLayerHeight > GetScreenHeight()) {
+    if (camera_y < cy) {
+      offset_y = cy - camera_y;
+    } else if (camera_y > m_MaxLayerHeight * tile_height - cy) {
+      offset_y = m_MaxLayerHeight * tile_height - camera_y - cy;
+    }
+  } else {
+    offset_y = cy - camera_y;
+  }
+
+  return offset_y - sy;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 SMAP::SetLayerAlpha(int layer, int alpha)
 {

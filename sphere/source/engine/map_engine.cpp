@@ -795,6 +795,86 @@ CMapEngine::GetCameraY(int& y)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::MapToScreenX(int layer, int mx, int& sx)
+{
+  if (!m_IsRunning) {
+    m_ErrorMessage = "MapToScreenX() called while map engine was not running";
+    return false;
+  }
+
+  // validate layers
+  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
+    m_ErrorMessage = "Invalid layer index";
+    return false;
+  }
+
+  sx = m_Map.MapToScreenX(layer, m_Camera.x, mx);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::MapToScreenY(int layer, int my, int& sy)
+{
+  if (!m_IsRunning) {
+    m_ErrorMessage = "MapToScreenY() called while map engine was not running";
+    return false;
+  }
+
+  // validate layers
+  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
+    m_ErrorMessage = "Invalid layer index";
+    return false;
+  }
+
+  sy = m_Map.MapToScreenY(layer, m_Camera.y, my);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::ScreenToMapX(int layer, int sx, int& mx)
+{
+  if (!m_IsRunning) {
+    m_ErrorMessage = "ScreenToMapX() called while map engine was not running";
+    return false;
+  }
+
+  // validate layers
+  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
+    m_ErrorMessage = "Invalid layer index";
+    return false;
+  }
+
+  mx = m_Map.ScreenToMapX(layer, m_Camera.x, sx);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::ScreenToMapY(int layer, int sy, int& my)
+{
+  if (!m_IsRunning) {
+    m_ErrorMessage = "ScreenToMapY() called while map engine was not running";
+    return false;
+  }
+
+  // validate layers
+  if (layer < 0 || layer >= m_Map.GetMap().GetNumLayers()) {
+    m_ErrorMessage = "Invalid layer index";
+    return false;
+  }
+
+  my = m_Map.ScreenToMapY(layer, m_Camera.y, sy);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::GetPersonList(std::vector<std::string>& list)
 {
   list.resize(m_Persons.size());

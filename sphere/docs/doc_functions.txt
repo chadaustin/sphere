@@ -384,6 +384,14 @@ log_object.endBlock()
       - returns the location of the camera object on the map (the center
         of the screen if possible)
 
+    MapToScreenX(layer, x)
+    MapToScreenY(layer, y)
+      - returns screen coordinates of position on map
+
+    ScreenToCameraX(layer, x)
+    ScreenToCameraY(layer, y)
+      - returns map coordinates of position on screen
+
   
     *** entities ***
 

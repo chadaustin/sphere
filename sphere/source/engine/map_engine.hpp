@@ -104,6 +104,11 @@ public:
   bool GetCameraX(int& x);
   bool GetCameraY(int& y);
 
+  bool MapToScreenX(int layer, int mx, int& sx);
+  bool MapToScreenY(int layer, int my, int& sy);
+  bool ScreenToMapX(int layer, int sx, int& mx);
+  bool ScreenToMapY(int layer, int sx, int& my);
+
   bool GetPersonList(std::vector<std::string>& list);
 
   bool CreatePerson(const char* name, const char* spriteset, bool destroy_with_map);

@@ -1018,6 +1018,7 @@ CImageView::OnRButtonUp(UINT flags, CPoint point)
   }
 
   TrackPopupMenu(submenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, point.x, point.y, 0, m_hWnd, NULL);
+  DestroyMenu(menu);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
