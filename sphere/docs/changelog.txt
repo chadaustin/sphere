@@ -1,3 +1,20 @@
+2003.07.07
+  - Added BindJoystickButton/UnbindJoystickButton
+
+2003.07.06
+  - Made QueuePersonScript actually abort upon errors
+    and not fail if you destroy the person within the script
+
+2003.06.30
+  - spriteset.clone() added.
+  - better filename/path checking
+  
+2003.06.29
+  - extended ASCII characters support in fonts
+
+2003.06.??
+  - SetPersonSpriteset added.
+
 2003.06.17
   - Made the editor's image renderer faster
   - Added surface.applyLookup()

@@ -537,6 +537,13 @@ log_object.endBlock()
     UnbindKey(key)
       - unbinds a bound key
 
+    BindJoystickButton(joystick, button, onbuttondown, onbuttonup)
+      - runs the 'onbuttondown' script when the joystick 'button' is pressed down and runs
+        'onbuttonup' when the joystick 'button' is released
+
+    UnbindJoystickButton(joystick, button)
+      - unbinds a bound joystick button
+
     AttachInput(person_entity)
       - makes the 'person_entity' respond to the input 
         (up = KEY_UP, down = KEY_DOWN, left = KEY_LEFT, right = KEY_RIGHT)
