@@ -7,10 +7,13 @@
 #include "Editor.hpp"
 #include "resource.h"
 
+#include "MainWindow.hpp"
+
 #include "../common/Spriteset.hpp"
 #include "../common/WindowStyle.hpp"
 #include "../common/Map.hpp"
 #include "../common/Font.hpp"
+#include "../common/AnimationFactory.hpp"
 
 #include "../wxeditor/system.cpp"
 
@@ -97,18 +100,55 @@ CBrowseWindow::Destroy()
   //KillTimer(m_Timer);
   ClearBrowseList();
   m_FileList.clear();
+  DestroyWindow();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+CBrowseWindow::InvalidateTile(int tile)
+{
+  RECT client_rect;
+  GetClientRect(&client_rect);
+  int num_tiles_x = client_rect.right / m_BlitTile->GetWidth();
+  if (num_tiles_x != 0) {
+
+    int col = tile % num_tiles_x;
+    int row = tile / num_tiles_x;
+  
+    int x = col * m_BlitTile->GetWidth();
+    int y = (row - m_TopRow) * m_BlitTile->GetHeight();
+
+    RECT rect;
+    SetRect(&rect, x, y, x + m_BlitTile->GetWidth(), y + m_BlitTile->GetHeight());
+    InvalidateRect(&rect);
+  }
+}
+
 afx_msg void
 CBrowseWindow::OnTimer(UINT event) {
+  //if (m_MenuShown)
+  //  return;
+
   if (m_FileList.size() > 0) {
     if (LoadFile(m_FileList[0].c_str())) {
       UpdateScrollBar();
-      Invalidate();
+
+      int tile = m_BrowseList.size() - 1;
+      InvalidateTile(tile);
+
     }
     m_FileList.erase(m_FileList.begin());
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CBrowseWindow::OpenFile(int index) {
+  if (index >= 0 && index < m_BrowseList.size()) {
+    CMainWindow* window = (CMainWindow*) GetMainWindow();
+    window->OpenGameFile(m_BrowseList[index]->filename.c_str());
   }
 }
 
@@ -124,6 +164,8 @@ CBrowseWindow::LoadFile(const char* filename)
   sWindowStyle windowstyle;
   sMap map;
   sFont font;
+  IAnimation* animation;
+  sTileset tileset;
 
   if (image.Load(filename)) {
     valid = true;
@@ -213,6 +255,20 @@ CBrowseWindow::LoadFile(const char* filename)
 
     valid = true;
   }
+  else if ((animation = LoadAnimation(filename)) != NULL) {
+    image.Create(animation->GetWidth(), animation->GetHeight());
+    animation->ReadNextFrame(image.GetPixels());
+    valid = true;
+  }
+  else if (tileset.Load(filename)) {
+    image.Create(100, 100);
+    for (int y = 0; y < 10; y++) {
+      for (int x = 0; x < 10; x++) {
+        image.BlitImage(tileset.GetTile((y * 3 + x) % tileset.GetNumTiles()), x * tileset.GetTileWidth(), y * tileset.GetTileHeight());
+      }
+    }
+    valid = true;
+  }
 
   if (valid) {
     image.Rescale(100, 100);
@@ -269,6 +325,14 @@ CBrowseWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
     m_SelectedImage = image;
     Invalidate();
   }
+
+  //*
+  if (vk == VK_RETURN) {
+    if (m_SelectedImage >= 0 && m_SelectedImage < m_BrowseList.size()) {
+      OpenFile(m_SelectedImage);
+    }
+  }
+  //*/
 
   UpdateScrollBar();
 }
@@ -392,6 +456,14 @@ CBrowseWindow::OnLButtonDown(UINT flags, CPoint point)
   UpdateScrollBar();
   Invalidate();
 }
+
+/*
+afx_msg void
+CBrowseWindow::OnLButtonDblClk(flags, CPoint point)
+{
+
+}
+*/
 
 ///////////////////////////////////////////////////////////////////////////////
 

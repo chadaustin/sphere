@@ -24,5 +24,6 @@ extern std::string g_SphereDirectory;
 extern void        SetStatusBar(CStatusBar* status_bar);
 extern CStatusBar* GetStatusBar();
 
+extern void* GetMainWindow();
 
 #endif

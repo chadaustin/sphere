@@ -9,7 +9,7 @@
 #define BAR_ID_START 5000
 
 //#include "MainWindow.hpp"
-class MainWindow;
+//class MainWindow;
 
 // This technique is used, because the original files should remain unchanged,
 // and though compile conditionally.

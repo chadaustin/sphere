@@ -365,6 +365,7 @@ CMainWindow::OpenDocumentWindow(int grouptype, const char* filename)
     case GT_WINDOWSTYLES: window = new CWindowStyleWindow(filename); break;
     case GT_IMAGES:       window = new CImageWindow(filename);       break;
     case GT_ANIMATIONS:   window = new CAnimationWindow(filename);   break;
+    case GT_TILESETS:     window = new CMapWindow(NULL, filename);   break;
   }
 
   if (window)

@@ -8,7 +8,7 @@
 
 
 static CEditorApplication g_Application;
-
+static CMainWindow* g_MainWindow = NULL;
 
 std::string g_SphereDirectory;
 
@@ -63,6 +63,7 @@ CEditorApplication::InitInstance()
   CMainWindow* main_window = new CMainWindow();
   main_window->Create();
   m_pMainWnd = main_window;
+  g_MainWindow = main_window;
 
   SPHERECONFIG sphere_config;
   LoadSphereConfig(&sphere_config, "engine.ini");
@@ -97,3 +98,8 @@ CStatusBar* GetStatusBar()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+void* GetMainWindow()
+{
+  return g_MainWindow;
+}

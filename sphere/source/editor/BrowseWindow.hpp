@@ -43,17 +43,21 @@ private:
   afx_msg void OnKeyDown(UINT vk, UINT repeat, UINT flags);
   afx_msg void OnPaint();
   afx_msg void OnLButtonDown(UINT flags, CPoint point);
+  afx_msg void OnRButtonDown(UINT flags, CPoint point);
   afx_msg void OnMouseMove(UINT flags, CPoint point);
   afx_msg void OnVScroll(UINT code, UINT pos, CScrollBar* scroll_bar);
 
 private:
   void ClearBrowseList();
   bool LoadFile(const char* filename);
+  void OpenFile(int index);
 
 private:
   int GetPageSize();
   int GetNumRows();
   void UpdateScrollBar();
+
+  void InvalidateTile(int tile);
 
 private:
   afx_msg void OnBrowseListRefresh();
