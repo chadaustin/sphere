@@ -81,7 +81,7 @@ class HtmlGenerator {
     $this->setMenuLink(3, "games", "$SITEROOT/games/");
     $this->setMenuLink(4, "forum", "http://aegisknight.org/forum/list.php?f=4/");
     $this->setMenuLink(5, "links", "$SITEROOT/links.php");
-    $this->setMenuLink(6, "reserved", "");
+    $this->setMenuLink(6, "users", "$SITEROOT/users.php");
     $this->setMenuLink(7, "reserved", "");
     $this->setMenuLink(8, "reserved", "");
     $this->setMenuLink(9, "sourceforge", "http://sourceforge.net/projects/sphere");

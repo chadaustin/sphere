@@ -1,8 +1,24 @@
 <?php
 
+$PERMISSIONS = array(
+  "superuser" => 1,
+  "reporter" => 2,
+  "reviewer" => 4,
+  "moderator" => 8
+);
+
+function getUsers () {
+  global $DB;
+  $result = $DB->query("SELECT username FROM users");
+  if ($result[0] == 0)
+    return array();
+  else
+    return $result[1];
+}
+
 class SphereUser {
   var $errors;
-  
+
   var $username;
   var $password;
   var $email;
@@ -103,6 +119,13 @@ class SphereUser {
     return $this->errors['birthdate'];
   }
 
+  function breakEmail ($address) {
+    if (!preg_match("/(.*)@(.*)/", $address, $matches))
+      return array($address, NULL);
+    else
+      return array($matches[1], $matches[2]);
+  }
+
   function setEmail ($address) {
     if (strlen($address) > 255)
       $this->errors['email'] = "email address must be shorter than 256 characters";
@@ -153,35 +176,25 @@ class SphereUser {
   }
 
   function addPermission ($permission) {
-    switch ($permission) {
-      case "superuser":
-        $this->permissions |= 1;
-        break;
-      case "reporter":
-        $this->permissions |= 2;
-        break;
-      case "reviewer":
-        $this->permissions |= 4;
-        break;
-      case "moderator":
-        $this->permissions |= 8;
-        break;
-    }
+    if (in_array($permission, array_keys($PERMISSIONS)))
+      $this->permissions |= $PERMISSIONS[$permission];
   }
 
   function access ($permission) {
-    if ($this->permissions & 1) /* superusers have access to everything */
-      return TRUE;
-    switch ($permission) {
-      case "reporter":
-        return ($this->permissions & 2);
-      case "reviewer":
-        return ($this->permissions & 4);
-      case "moderator":
-        return ($this->permissions & 8);
-      default:
-        return FALSE;
+    if (in_array($permission, array_keys($PERMISSIONS))) {
+      if ($this->permissions & 1) /* superusers have access to everything */
+        return TRUE;
+      return $this->permissions & $PERMISSIONS[$permission];
     }
+  }
+
+  function listPermissions () {
+    $permissions = array();
+    foreach ($PERMISSIONS as $perm => $bit) {
+      if ($this->permissions & $bit)
+        $permissions[] = $perm;
+    }
+    return $permissions;
   }
 
   function setNotification ($notification) {
@@ -212,6 +225,37 @@ class SphereUser {
   function verify ($pass_word) {
     return ($this->password == $pass_word);
   }
+
+  function output () {
+    $head = "user info for {$this->username}";
+    $body = "<div class=\"left\">";
+    if ($this->firstname or $this->lastname)
+      $body .= "Name: {$this->firstname} {$this->lastname}<br />\n";
+    if ($this->email) {
+      $email = $this->breakEmail($this->email);
+      if ($email[1])
+        $body .= "Email: user {$email[0]} at host {$email[1]}<br />\n";
+      else
+        $body .= "Email: $email<br />\n";
+    }
+    if ($this->birthdate != "0000-00-00")
+      $body .= "Birthdate: {$this->birthdate}<br />\n";
+    if ($this->website)
+      $body .= "Website: <a href=\"{$this->website}\">{$this->website}</a><br />\n";
+    $body .= "Member since: {$this->created}<br />\n";
+    $permissions = $this->listPermissions();
+    if (count($permissions) > 0) {
+      $body .= "Permissions: ";
+      foreach ($permissions as $perm)
+        $body .= "$perm ";
+      $body .= "<br />\n";
+    }
+    $body .= "</div>\n";
+    if ($this->photo)
+      $body .= "<a href=\"{$this->photo}\"><img class=\"right\" src=\"{$this->photo}\" alt=\"mug shot\" width=\"150\" height=\"150\" /></a>\n";
+    return array($head, $body);
+  }
+
 }
 
 ?>
