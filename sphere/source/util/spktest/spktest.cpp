@@ -20,18 +20,15 @@ int main(int argc, char** argv)
     cout << "Checking " << filename << "...  ";
     
 
-    IFile* ifile = fs.Open(filename, IFileSystem::read);
-    if (ifile == NULL) {
+    std::auto_ptr<IFile> ifile(fs.Open(filename, IFileSystem::read));
+    if (!ifile.get()) {
       cout << "File doesn't exist in package!" << endl;
-      exit(0);
+      return 0;
     }
 
     int isize = ifile->Size();
     char* idata = new char[isize];
     ifile->Read(idata, isize);
-
-    ifile->Close();
-
 
     FILE* cfile = fopen(filename, "rb");
     if (cfile == NULL) {

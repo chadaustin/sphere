@@ -38,8 +38,8 @@ ASSERT_STRUCT_SIZE(CHARACTER_HEADER, 32);
 bool
 sFont::Load(const char* filename, IFileSystem& fs)
 {
-  IFile* file = fs.Open(filename, IFileSystem::read);
-  if (file == NULL) {
+  std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::read));
+  if (!file.get()) {
     return false;
   }
 
@@ -49,7 +49,6 @@ sFont::Load(const char* filename, IFileSystem& fs)
   if (memcmp(header.signature, ".rfn", 4) != 0 ||
       (header.version != 1 && header.version != 2))
   {
-    file->Close();
     return false;
   }
 
@@ -83,7 +82,6 @@ sFont::Load(const char* filename, IFileSystem& fs)
       file->Read(m_Characters[i].GetPixels(), sizeof(RGBA) * character_header.width * character_header.height);
   }
 
-  file->Close();
   return true;
 }
 
@@ -92,8 +90,8 @@ sFont::Load(const char* filename, IFileSystem& fs)
 bool
 sFont::Save(const char* filename, IFileSystem& fs) const
 {
-  IFile* file = fs.Open(filename, IFileSystem::write);
-  if (file == NULL)
+  std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::write));
+  if (!file.get())
     return false;
 
   // write header
@@ -115,7 +113,6 @@ sFont::Save(const char* filename, IFileSystem& fs) const
     file->Write(m_Characters[i].GetPixels(), character_header.width * character_header.height * sizeof(RGBA));
   }
 
-  file->Close();
   return true;
 }
 

@@ -10,6 +10,7 @@ struct IFileSystem
   // file open modes
   enum { read = 0x1, write = 0x2 };
 
+  virtual ~IFileSystem() { }
   virtual IFile* Open(const char* filename, int mode) = 0;
 };
 

@@ -271,8 +271,8 @@ bool
 CScript::EvaluateFile(const char* filename, IFileSystem& fs)
 {
   // load the script
-  IFile* file = fs.Open(filename, IFileSystem::read);
-  if (file == NULL) {
+  std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::read));
+  if (!file.get()) {
     m_Error = "Could not load file '";
     m_Error += filename;
     m_Error += "'";
@@ -284,7 +284,6 @@ CScript::EvaluateFile(const char* filename, IFileSystem& fs)
   char* script = new char[size + 1];
   file->Read(script, size);
   script[size] = '\0';
-  file->Close();
 
   // evaluate the read text
   bool result = Evaluate(script, filename);
@@ -3973,7 +3972,7 @@ CScript::CreateRawFileObject(JSContext* cx, IFile* file)
 ////////////////////////////////////////
 
 begin_finalizer(SS_RAWFILE, ssFinalizeRawFile)
-  object->file->Close();
+  delete object->file;
 end_finalizer()
 
 ////////////////////////////////////////

@@ -124,8 +124,8 @@ bool
 sSpriteset::Load(const char* filename, IFileSystem& fs)
 {
   // open file
-  IFile* file = fs.Open(filename, IFileSystem::read);
-  if (file == NULL) {
+  std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::read));
+  if (!file.get()) {
     return false;
   }
 
@@ -136,7 +136,6 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
   // validate header
   if (memcmp(header.signature, ".rss", 4) != 0 ||
       (header.version != 1 && header.version != 2 && header.version != 3)) {
-    file->Close();
     return false;
   }
 
@@ -302,8 +301,6 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
 
   }
 
-
-  file->Close();
   return true;
 } 
 
@@ -313,8 +310,8 @@ bool
 sSpriteset::Save(const char* filename, IFileSystem& fs) const
 {
   // open file
-  IFile* file = fs.Open(filename, IFileSystem::write);
-  if (file == NULL) {
+  std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::write));
+  if (!file.get()) {
     return false;
   }
 
@@ -364,7 +361,6 @@ sSpriteset::Save(const char* filename, IFileSystem& fs) const
     }
   }
   
-  file->Close();
   return true;
 }
 

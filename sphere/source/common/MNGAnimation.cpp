@@ -27,10 +27,8 @@ CMNGAnimation::~CMNGAnimation()
     m_stream = NULL;
   }
 
-  if (m_file) {
-    m_file->Close();
-    m_file = NULL;
-  }
+  delete m_file;
+  m_file = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -59,8 +59,7 @@ CFLICAnimation::~CFLICAnimation()
 {
   delete[] Frame;
   delete[] FrameData;
-  if (File)
-    File->Close();
+  delete File;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -69,7 +68,7 @@ bool
 CFLICAnimation::Load(const char* filename, IFileSystem& fs)
 {
   File = fs.Open(filename, IFileSystem::read);
-  if (File == NULL)
+  if (!File)
     return false;
 
   // read the header
@@ -79,7 +78,8 @@ CFLICAnimation::Load(const char* filename, IFileSystem& fs)
   // test the FLIC for validity
   if (FlicHeader.depth != 8)
   {
-    File->Close();
+    delete File;
+    File = 0;
     return false;
   }
   

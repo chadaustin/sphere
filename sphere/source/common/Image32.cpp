@@ -19,8 +19,14 @@ struct CoronaFileAdapter : public corona::File {
     m_File = file;
   }
 
+  ~CoronaFileAdapter() {
+    // When we upgrade past Corona 0.2.0, close() will go away.
+    close();
+  }
+
   void close() {
-    m_File->Close();
+    delete m_File;
+    m_File = 0;
   }
 
   int read(void* buffer, int size) {
@@ -184,16 +190,13 @@ CImage32::Load(const char* filename, IFileSystem& fs)
 {
   using namespace corona;
 
-  IFile* file = fs.Open(filename, IFileSystem::read);
-  if (!file) {
+  std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::read));
+  if (!file.get()) {
     return false;
   }
 
   std::auto_ptr<Image> img(
-    OpenImage(&CoronaFileAdapter(file), FF_AUTODETECT, PF_R8G8B8A8));
-
-  file->Close();
-
+    OpenImage(&CoronaFileAdapter(file.get()), FF_AUTODETECT, PF_R8G8B8A8));
   if (!img.get()) {
     return false;
   }
@@ -213,17 +216,14 @@ CImage32::Save(const char* filename, IFileSystem& fs) const
 {
   using namespace corona;
 
-  IFile* file = fs.Open(filename, IFileSystem::write);
-  if (!file) {
+  std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::write));
+  if (!file.get()) {
     return false;
   }
 
   std::auto_ptr<Image> img(CreateImage(m_Width, m_Height, PF_R8G8B8A8));
   memcpy(img->getPixels(), m_Pixels, m_Width * m_Height * 4);
-  bool result = SaveImage(&CoronaFileAdapter(file), FF_PNG, img.get());
-
-  file->Close();
-  return result;
+  return SaveImage(&CoronaFileAdapter(file.get()), FF_PNG, img.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

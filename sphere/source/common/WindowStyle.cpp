@@ -1,3 +1,4 @@
+#include <memory>
 #include <string.h>
 #include "WindowStyle.hpp"
 #include "packed.hpp"
@@ -47,8 +48,8 @@ ASSERT_STRUCT_SIZE(WINDOWSTYLE_HEADER, 64)
 bool
 sWindowStyle::Load(const char* filename, IFileSystem& fs)
 {
-  IFile* file = fs.Open(filename, IFileSystem::read);
-  if (file == NULL)
+  std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::read));
+  if (!file.get())
     return false;
 
   // read the header
@@ -69,16 +70,15 @@ sWindowStyle::Load(const char* filename, IFileSystem& fs)
   {
     // free the old bitmaps and read the new ones
     for (int i = 0; i < 9; i++)
-      ReadBitmap(file, m_Bitmaps + i, header.edge_width);
+      ReadBitmap(file.get(), m_Bitmaps + i, header.edge_width);
   }
   else
   {
     // free the old bitmaps and read the new ones
     for (int i = 0; i < 9; i++)
-      ReadBitmap(file, m_Bitmaps + i);
+      ReadBitmap(file.get(), m_Bitmaps + i);
   }
 
-  file->Close();
   return true;
 }
 
@@ -87,8 +87,8 @@ sWindowStyle::Load(const char* filename, IFileSystem& fs)
 bool
 sWindowStyle::Save(const char* filename, IFileSystem& fs) const
 {
-  IFile* file = fs.Open(filename, IFileSystem::write);
-  if (file == NULL)
+  std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::write));
+  if (!file.get())
     return false;
 
   // write header
@@ -102,9 +102,8 @@ sWindowStyle::Save(const char* filename, IFileSystem& fs) const
 
   // write the bitmaps
   for (int i = 0; i < 9; i++)
-    WriteBitmap(file, m_Bitmaps + i);
+    WriteBitmap(file.get(), m_Bitmaps + i);
 
-  file->Close();
   return true;
 }
 

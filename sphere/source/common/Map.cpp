@@ -113,6 +113,11 @@ inline byte ReadMapByte(IFile* file)
   return b;
 }
 
+inline byte ReadMapByte(const std::auto_ptr<IFile>& file)
+{
+  return ReadMapByte(file.get());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 inline word ReadMapWord(IFile* file)
@@ -120,6 +125,11 @@ inline word ReadMapWord(IFile* file)
   word w;
   file->Read(&w, 2);
   return w;
+}
+
+inline word ReadMapWord(const std::auto_ptr<IFile>& file)
+{
+  return ReadMapWord(file.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -136,11 +146,21 @@ inline std::string ReadMapString(IFile* file)
   return s;
 }
 
+inline std::string ReadMapString(const std::auto_ptr<IFile>& file)
+{
+  return ReadMapString(file.get());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 inline void SkipMapBytes(IFile* file, int bytes)
 {
   file->Seek(file->Tell() + bytes);
+}
+
+inline void SkipMapBytes(const std::auto_ptr<IFile>& file, int bytes)
+{
+  SkipMapBytes(file.get(), bytes);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -149,8 +169,8 @@ bool
 sMap::Load(const char* filename, IFileSystem& fs)
 {
   // open the file
-  IFile* file = fs.Open(filename, IFileSystem::read);
-  if (file == NULL) {
+  std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::read));
+  if (!file.get()) {
     return false;
   }
 
@@ -163,7 +183,6 @@ sMap::Load(const char* filename, IFileSystem& fs)
       header.version != 1 ||
       (header.num_strings != 3 && header.num_strings != 5 && header.num_strings != 9))
   {
-    file->Close();
     return false;
   }
 
@@ -332,16 +351,14 @@ sMap::Load(const char* filename, IFileSystem& fs)
   // if no tileset file was specified, it is appended to the map file
   if (tileset_file.length() == 0)
   {
-    if (!m_Tileset.LoadFromFile(file))
+    if (!m_Tileset.LoadFromFile(file.get()))
     {
-      file->Close();
       return false;
     }
   }
   else
     m_Tileset.Clear();
 
-  file->Close();
   return true;
 }
 
@@ -352,11 +369,21 @@ inline void WriteMapByte(IFile* file, byte b)
   file->Write(&b, 1);
 }
 
+inline void WriteMapByte(const std::auto_ptr<IFile>& file, byte b)
+{
+  WriteMapByte(file.get(), b);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 inline void WriteMapWord(IFile* file, word w)
 {
   file->Write(&w, 2);
+}
+
+inline void WriteMapWord(const std::auto_ptr<IFile>& file, word w)
+{
+  WriteMapWord(file.get(), w);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -368,6 +395,11 @@ inline void WriteMapString(IFile* file, const char* string)
   file->Write(string, len);
 }
 
+inline void WriteMapString(const std::auto_ptr<IFile>& file, const char* string)
+{
+  WriteMapString(file.get(), string);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
@@ -377,8 +409,8 @@ sMap::Save(const char* filename, IFileSystem& fs)
   // the start layer should not have parallax
   m_Layers[m_StartLayer].EnableParallax(false);
 
-  IFile* file = fs.Open(filename, IFileSystem::write);
-  if (file == NULL)
+  std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::write));
+  if (!file.get())
     return false;
 
   // write the map header
@@ -526,13 +558,7 @@ sMap::Save(const char* filename, IFileSystem& fs)
   } // end for zones
 
   // save the tileset
-  if (!m_Tileset.SaveToFile(file)) {
-    file->Close();
-    return false;
-  }
-
-  file->Close();
-  return true;
+  return m_Tileset.SaveToFile(file.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -738,8 +764,8 @@ sMap::Import_VergeMAP(const char* filename, const char* tilesetFilename, IFileSy
   m_Layers.clear();
   m_Entities.clear();
 
-  IFile* file = fs.Open(filename, IFileSystem::read);
-  if (file == NULL) 
+  std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::read));
+  if (!file.get()) 
     return false;
 
   // check for v1 maps (ver 4) and v2 maps (ver 5)
@@ -975,7 +1001,6 @@ sMap::Import_VergeMAP(const char* filename, const char* tilesetFilename, IFileSy
       delete mapLayer[i];
   }
 
-  file->Close();
   return success;
 } 
 

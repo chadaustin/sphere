@@ -177,8 +177,8 @@ CGameEngine::GetScriptText(const char* filename, std::string& text)
   path += filename;
 
   // open file
-  IFile* file = m_FileSystem.Open(path.c_str(), IFileSystem::read);
-  if (file == NULL) {
+  std::auto_ptr<IFile> file(m_FileSystem.Open(path.c_str(), IFileSystem::read));
+  if (!file.get()) {
     return false;
   }
 
@@ -191,8 +191,6 @@ CGameEngine::GetScriptText(const char* filename, std::string& text)
   text = script;
   delete[] script;
 
-  // go home
-  file->Close();
   return true;
 }
 
@@ -207,8 +205,9 @@ CGameEngine::GetSystemScript(const char* filename, std::string& text)
   }
 
   // open file
-  IFile* file = g_DefaultFileSystem.Open(filename, IFileSystem::read);
-  if (file == NULL) {
+  std::auto_ptr<IFile> file(g_DefaultFileSystem.Open(filename, IFileSystem::read));
+  if (!file.get()) {
+    LeaveDirectory();
     return false;
   }
 
@@ -222,7 +221,6 @@ CGameEngine::GetSystemScript(const char* filename, std::string& text)
   delete[] script;
 
   // go home
-  file->Close();
   LeaveDirectory();
   return true;
 }
@@ -440,8 +438,7 @@ public:
   }
 
   ~AudiereFile() {
-    m_file->Close();
-    //delete m_file;
+    delete m_file;
   }
 
   int ADR_CALL read(void* buffer, int size) {

@@ -4,7 +4,7 @@
 
 struct IFile
 {
-  virtual void Close() = 0;
+  virtual ~IFile() { }
 
   virtual int  Read(void* bytes, int size) = 0;
   virtual int  Write(const void* bytes, int size) = 0;

@@ -105,14 +105,11 @@ ASSERT_STRUCT_SIZE(TILE_INFORMATION_BLOCK, 32)
 bool
 sTileset::Load(const char* filename, IFileSystem& fs)
 {
-  IFile* file = fs.Open(filename, IFileSystem::read);
-  if (file == NULL)
+  std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::read));
+  if (!file.get())
     return false;
 
-  bool result = LoadFromFile(file);
-
-  file->Close();
-  return result;
+  return LoadFromFile(file.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -160,8 +157,8 @@ sTileset::Import_Image(const char* filename, IFileSystem& fs)
 bool
 sTileset::Import_VSP(const char* filename, IFileSystem& fs)
 {
-  IFile* file = fs.Open(filename, IFileSystem::read);
-  if (file == NULL)
+  std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::read));
+  if (!file.get())
     return false;
 
   word version;
@@ -265,7 +262,6 @@ sTileset::Import_VSP(const char* filename, IFileSystem& fs)
       }
   }
 
-  file->Close();
   return true;
 }
 
@@ -276,8 +272,8 @@ sTileset::Import_TST(const char* filename, IFileSystem& fs)
 {
   // TST file format created by Christoper B. Matthews for the RPG Toolkit Development System
 
-  IFile* file = fs.Open(filename, IFileSystem::read);
-  if (file == NULL)
+  std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::read));
+  if (!file.get())
     return false;
 
   // read header
@@ -292,7 +288,6 @@ sTileset::Import_TST(const char* filename, IFileSystem& fs)
   // only support details 2, 4, 6
   if (version != 20 && (detail == 2 || detail == 4 || detail == 6))
   {
-    file->Close();
     return false;
   }
 
@@ -349,7 +344,6 @@ sTileset::Import_TST(const char* filename, IFileSystem& fs)
     }
   }
 
-  file->Close();
   return true;
 }
 
@@ -359,14 +353,11 @@ bool
 sTileset::Save(const char* filename, IFileSystem& fs) const
 {
   // open the file
-  IFile* file = fs.Open(filename, IFileSystem::write);
-  if (file == NULL)
+  std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::write));
+  if (!file.get())
     return false;
 
-  bool result = SaveToFile(file);
-
-  file->Close();
-  return result;
+  return SaveToFile(file.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

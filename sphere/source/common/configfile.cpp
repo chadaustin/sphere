@@ -54,8 +54,8 @@ CConfigFile::Load(const char* filename, IFileSystem& fs)
   m_sections.erase(m_sections.begin(), m_sections.end());
 
   // open the file
-  IFile* file = fs.Open(filename, IFileSystem::read);
-  if (file == NULL) {
+  std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::read));
+  if (!file.get()) {
     return false;
   }
 
@@ -65,7 +65,7 @@ CConfigFile::Load(const char* filename, IFileSystem& fs)
   while (!eof) {
     // read a line
     std::string line;
-    eof = !read_line(file, line);
+    eof = !read_line(file.get(), line);
     const char* string = line.c_str();
 
     // parse it
@@ -104,7 +104,6 @@ CConfigFile::Load(const char* filename, IFileSystem& fs)
     }
   }
 
-  file->Close();
   return true;
 }
 
@@ -118,8 +117,8 @@ inline void write_string(IFile* file, const std::string& s)
 bool
 CConfigFile::Save(const char* filename, IFileSystem& fs) const
 {
-  IFile* file = fs.Open(filename, IFileSystem::write);
-  if (file == NULL) {
+  std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::write));
+  if (!file.get()) {
     return false;
   }
 
@@ -131,9 +130,9 @@ CConfigFile::Save(const char* filename, IFileSystem& fs) const
       
       std::map<std::string, std::string>::const_iterator j;
       for (j = s.entries.begin(); j != s.entries.end(); j++) {
-        write_string(file, j->first);
+        write_string(file.get(), j->first);
         file->Write("=", 1);
-        write_string(file, j->second);
+        write_string(file.get(), j->second);
         file->Write("\n", 1);
       }
 
@@ -145,15 +144,15 @@ CConfigFile::Save(const char* filename, IFileSystem& fs) const
   for (i = m_sections.begin(); i != m_sections.end(); i++) {
     if (i->first != "") {
       file->Write("[", 1);
-      write_string(file, i->first);
+      write_string(file.get(), i->first);
       file->Write("]\n", 2);
 
       const Section& s = i->second;
       std::map<std::string, std::string>::const_iterator j;
       for (j = s.entries.begin(); j != s.entries.end(); j++) {
-        write_string(file, j->first);
+        write_string(file.get(), j->first);
         file->Write("=", 1);
-        write_string(file, j->second);
+        write_string(file.get(), j->second);
         file->Write("\n", 1);
       }
       
@@ -162,7 +161,6 @@ CConfigFile::Save(const char* filename, IFileSystem& fs) const
     }
   }
 
-  file->Close();
   return true;
 }
 
