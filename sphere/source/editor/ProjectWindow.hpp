@@ -1,16 +1,30 @@
 #ifndef PROJECT_WINDOW_HPP
 #define PROJECT_WINDOW_HPP
 
+#ifndef USE_SIZECBAR
+#ifdef FLOATING_PROJECT_WINDOW
+#undef FLOATING_PROJECT_WINDOW
+#endif
+#endif
+
 
 #include <afxwin.h>
 #include <afxcmn.h>
+
+#ifdef FLOATING_PROJECT_WINDOW
 #include "PaletteWindow.hpp"
+#endif
 
 class CMainWindow; // MainWindow.hpp
 class CProject;    // Project.hpp
 
+#ifdef FLOATING_PROJECT_WINDOW
+#define BaseProjectWindow CPaletteWindow
+#else
+#define BaseProjectWindow CMDIChildWnd
+#endif
 
-class CProjectWindow : public CPaletteWindow
+class CProjectWindow : public BaseProjectWindow
 {
 public:
   CProjectWindow(CMainWindow* main_window, CProject* project);

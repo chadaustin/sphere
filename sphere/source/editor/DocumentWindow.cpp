@@ -365,14 +365,19 @@ CDocumentWindow::OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactiv
     
     if (m_AttachedPalettes.size() > 0)
     {
+#ifdef FLOATING_PROJECT_WINDOW
 			// the project palette should stay visible/invisible
-			CPaletteWindow* pProjectWindow = (CPaletteWindow*)((CMainWindow*)pFrame)->GetProjectWindow();
+      CPaletteWindow* pProjectWindow = (CPaletteWindow*)((CMainWindow*)pFrame)->GetProjectWindow();
 			if (pProjectWindow != NULL)
 			{
 				bool bProjectVisible = pProjectWindow->IsVisible();
 				LoadPaletteStates();
 				pProjectWindow->ShowPalette(bProjectVisible);		
 			}
+#else
+      if (0) {
+      }
+#endif
 			else
 			{
 				LoadPaletteStates();

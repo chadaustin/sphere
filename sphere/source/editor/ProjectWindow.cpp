@@ -31,7 +31,7 @@ const int tiFonts        = 108;
 const int IDI_FILETYPE_BASE = 4;
 
 
-BEGIN_MESSAGE_MAP(CProjectWindow, CPaletteWindow)
+BEGIN_MESSAGE_MAP(CProjectWindow, BaseProjectWindow)
 
   ON_WM_SYSCOMMAND()
   ON_WM_SIZE()
@@ -55,7 +55,9 @@ END_MESSAGE_MAP()
 CProjectWindow::CProjectWindow(CMainWindow* main_window, CProject* project)
 : m_MainWindow(main_window)
 , m_Project(project)
+#ifdef FLOATING_PROJECT_WINDOW
 , CPaletteWindow(NULL, "Project", Configuration::Get(KEY_PROJECT_RECT), true)
+#endif
 {
 }
 
@@ -64,6 +66,17 @@ CProjectWindow::CProjectWindow(CMainWindow* main_window, CProject* project)
 BOOL
 CProjectWindow::Create()
 {
+#ifndef FLOATING_PROJECT_WINDOW
+  char szProjectName[512];
+  sprintf(szProjectName, "Project [%s]", m_Project->GetGameSubDirectory());
+
+  // create the window
+  CMDIChildWnd::Create(
+    AfxRegisterWndClass(CS_NOCLOSE, NULL, NULL, AfxGetApp()->LoadIcon(IDI_PROJECT)),
+    szProjectName,
+    WS_CHILD | WS_VISIBLE | WS_OVERLAPPEDWINDOW);
+#endif
+  
   // create widgets
   m_TreeControl.Create(
     WS_VISIBLE | WS_CHILD | TVS_SHOWSELALWAYS | TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS,
@@ -112,7 +125,11 @@ CProjectWindow::DestroyWindow()
   Configuration::Set(KEY_PROJECT_RECT, rect);
 
   m_TreeControl.DestroyWindow();
+#ifdef FLOATING_PROJECT_WINDOW
   return CPaletteWindow::DestroyWindow();
+#else
+  return CMDIChildWnd::DestroyWindow();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -340,7 +357,11 @@ CProjectWindow::OnSize(UINT type, int cx, int cy)
   if (m_TreeControl.m_hWnd)
     m_TreeControl.MoveWindow(CRect(0, 0, cx, cy), TRUE);
 
+#ifdef FLOATING_PROJECT_WINDOW
   CPaletteWindow::OnSize(type, cx, cy);
+#else
+  CMDIChildWnd::OnSize(type, cx, cy); 
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -404,6 +425,7 @@ CProjectWindow::OnProjectItemOpen()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/*
 bool RecycleFile(const char* filename)
 {
   bool removed = false;
@@ -422,6 +444,7 @@ bool RecycleFile(const char* filename)
 
   return removed;
 }
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -449,7 +472,7 @@ CProjectWindow::OnProjectItemDelete()
     return;
 
   // TODO: Move to recycle bin rather than delete
-  if (!RecycleFile(filename))
+  if (!DeleteFile(filename))
     MessageBox("Error: Could not delete file");
 
   m_Project->RefreshItems();

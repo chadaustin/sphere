@@ -202,7 +202,7 @@ void
 CPaletteWindow::ShowPalette(bool bShow)
 {
 #ifdef USE_SIZECBAR
-	CFrameWnd * parent = (CFrameWnd*)AfxGetApp()->m_pMainWnd;	
+	CFrameWnd* parent = (CFrameWnd*)AfxGetApp()->m_pMainWnd;	
   parent->ShowControlBar(m_pBarParent, bShow, TRUE);	
 #else
 	ShowWindow(bShow ? SW_SHOW : SW_HIDE);
@@ -210,6 +210,7 @@ CPaletteWindow::ShowPalette(bool bShow)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef USE_SIZECBAR
 
 void

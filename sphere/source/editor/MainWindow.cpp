@@ -390,7 +390,7 @@ CMainWindow::CloseProject()
 
     if (m_ProjectWindow)
     {
-#ifdef USE_SIZECBAR
+#ifdef FLOATING_PALETTE_WINDOW
 			m_ProjectWindow->ShowPalette(false);
       m_ProjectWindow->CreateBar(false);
 #endif
@@ -2389,7 +2389,7 @@ CMainWindow::OnUpdateViewProject(CCmdUI* ui)
 	ui->Enable(m_ProjectOpen);
 	if (m_ProjectOpen)
 	{
-#ifdef USE_SIZECBAR
+#ifdef FLOATING_PALETTE_WINDOW
 	ui->SetCheck(m_ProjectWindow->IsVisible() ? 1 : 0);
 #else
 	ui->SetCheck(m_ProjectWindow->IsWindowVisible() ? 1 : 0);
@@ -2437,10 +2437,12 @@ CMainWindow::OnViewMapToolBar()
 afx_msg void
 CMainWindow::OnViewProject()
 {
+#ifdef FLOATING_PALETTE_WINDOW
 #ifdef USE_SIZECBAR
 	m_ProjectWindow->ShowPalette(!m_ProjectWindow->IsVisible());
 #else
 	m_ProjectWindow->ShowPalette(!m_ProjectWindow->IsWindowVisible());
+#endif
 #endif
 }
 
