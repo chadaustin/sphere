@@ -3,7 +3,8 @@
 #endif
 
 #include <wx/wx.h>
-#include <windows.h>
+#include "system.hpp"
+
 #include <set>
 #include <stdio.h>
 #include <string.h>
@@ -221,6 +222,7 @@ wProject::GetGroupDirectory(int grouptype)
 void
 wProject::RefreshItems()
 {
+#ifdef WIN32
   // empty the old lists
   for (int i = 0; i < NUM_GROUP_TYPES; i++)
     m_Groups[i].clear();
@@ -262,6 +264,7 @@ wProject::RefreshItems()
 
   // restore the old directory
   wxSetWorkingDirectory(old_directory);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

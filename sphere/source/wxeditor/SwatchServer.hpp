@@ -25,7 +25,9 @@ private:
   CSwatchServer();
   ~CSwatchServer();
 
+#ifdef WIN32
   static void __cdecl OnExitHandler();
+#endif
 
   std::vector<RGBA> m_Colors;
 

@@ -616,7 +616,11 @@ wWindowStyleWindow::OnLButtonDown(wxMouseEvent &event)
     SelectBitmap(sWindowStyle::RIGHT);
   } else if (point.y >= EditRect.y + EditRect.height) {
     SelectBitmap(sWindowStyle::BOTTOM);
+#ifdef WIN32
   } else if (!m_ImageView->GetRect().Inside(point)) {
+#else
+  } else if (!m_ImageView->GetRect().Inside(point.x, point.y)) {
+#endif
     SelectBitmap(sWindowStyle::BACKGROUND);
   } else {
     event.Skip();

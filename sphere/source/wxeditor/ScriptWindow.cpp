@@ -4,7 +4,11 @@
 
 //#include <Scintilla.h>
 //#include <SciLexer.h>
+
+#ifdef WIN32
 #include <wx/stc/stc.h>
+#endif
+
 #include "Editor.hpp"
 #include "ScriptWindow.hpp"
 #include "FileDialogs.hpp"
@@ -45,6 +49,8 @@ BEGIN_EVENT_TABLE(wScriptWindow, wSaveableDocumentWindow)
   EVT_SET_FOCUS(wScriptWindow::OnSetFocus)
 
   EVT_MENU(wID_SCRIPT_CHECKSYNTAX,  wScriptWindow::OnScriptCheckSyntax)
+
+#ifdef WIN32
   EVT_MENU(wID_SCRIPT_FIND,         wScriptWindow::OnScriptFind)
   EVT_MENU(wID_SCRIPT_REPLACE,      wScriptWindow::OnScriptReplace)
 
@@ -54,6 +60,8 @@ BEGIN_EVENT_TABLE(wScriptWindow, wSaveableDocumentWindow)
   EVT_STC_CHARADDED(wID_SCRIPT_ID,        wScriptWindow::OnCharAdded)
 
   EVT_FIND(-1, wScriptWindow::OnFindReplace)
+#endif
+
 END_EVENT_TABLE()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -61,7 +69,9 @@ END_EVENT_TABLE()
 wScriptWindow::wScriptWindow(const char* filename)
 : wSaveableDocumentWindow(filename, wID_SCRIPT_base /*todo: IDR_SCRIPT*/)
 , m_Created(false)
+#ifdef WIN32
 , m_SearchDialog(0)
+#endif
 {
   SetSaved(filename != NULL);
   SetModified(false);
@@ -112,7 +122,10 @@ wScriptWindow::Create()
     AfxGetApp()->m_hInstance,
     0);
 */
+
+#ifdef WIN32
   m_Editor = new wxStyledTextCtrl(this, wID_SCRIPT_ID);
+#endif
 
   Initialize();
   //::ShowWindow(m_Editor, SW_SHOW);
@@ -151,6 +164,7 @@ wScriptWindow::Initialize()
     "debugger implements protected volatile "
     "double import public ";
 
+#ifdef WIN32
   static const wxColour black   = wxColour(0x00, 0x00, 0x00);
   static const wxColour white   = wxColour(0xff, 0xff, 0xff);
   static const wxColour red     = wxColour(0xff, 0x00, 0x00);
@@ -183,6 +197,7 @@ wScriptWindow::Initialize()
   SetStyle(wxSTC_C_OPERATOR,    purple);
   SetStyle(wxSTC_C_IDENTIFIER,  black);
   SetStyle(wxSTC_C_WORD2,       red);
+#endif
 
   SetLineNumber(0);
 }
@@ -198,6 +213,7 @@ wScriptWindow::SetStyle(
   int size,
   const char* face)
 {
+#ifdef WIN32
   m_Editor->StyleSetForeground(style, fore);
   m_Editor->StyleSetBackground(style, back);
   if (size >= 1) {
@@ -206,6 +222,7 @@ wScriptWindow::SetStyle(
   if (face) {
     m_Editor->StyleSetFaceName(style, face);
   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -230,16 +247,20 @@ wScriptWindow::LoadScript(const char* filename)
   // null-terminate the string
   buffer[file_size] = 0;
 
+#ifdef WIN32
   // put the buffer into the edit control
   m_Editor->SetText(buffer);
   m_Editor->SetSelection(0, 0);
+#endif
 
   // delete the buffer and close the file
   delete[] buffer;
   fclose(file);
 
   SetModified(false);
+#ifdef WIN32
   m_Editor->SetSavePoint();
+#endif
 
   return true;
 }
@@ -249,7 +270,9 @@ wScriptWindow::LoadScript(const char* filename)
 void
 wScriptWindow::GetEditorText(wxString& text)
 {
+#ifdef WIN32
   text = m_Editor->GetText();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -257,7 +280,11 @@ wScriptWindow::GetEditorText(wxString& text)
 wxString
 wScriptWindow::GetSelection()
 {
+#ifdef WIN32
   return m_Editor->GetSelectedText();
+#else
+  return "";
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -266,7 +293,9 @@ void
 wScriptWindow::OnSize(wxSizeEvent &event)
 {
   if (m_Created) {
+#ifdef WIN32
     m_Editor->SetSize(wxRect(wxPoint(0, 0), event.GetSize()));
+#endif
   }
 
   wSaveableDocumentWindow::OnSize(event);
@@ -279,7 +308,9 @@ wScriptWindow::OnSetFocus(wxFocusEvent &event)
 {
   //wSaveableDocumentWindow::OnSetFocus(event);
   if (m_Created) {
+#ifdef WIN32
     m_Editor->SetFocus();
+#endif
   }
 }
 
@@ -288,6 +319,7 @@ wScriptWindow::OnSetFocus(wxFocusEvent &event)
 void
 wScriptWindow::OnScriptCheckSyntax(wxCommandEvent &event)
 {
+#ifdef WIN32
   wxString text;
   GetEditorText(text);
 
@@ -304,19 +336,15 @@ wScriptWindow::OnScriptCheckSyntax(wxCommandEvent &event)
   }
   else
     ::wxMessageBox("Script is valid");
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32
 void
 wScriptWindow::OnScriptFind(wxCommandEvent &event)
 {
-/*
-  if (!m_SearchDialog) {
-    m_SearchDialog = new CFindReplaceDialog;
-    m_SearchDialog->Create(true, GetSelection(), NULL, FR_DOWN, this);
-  }
-*/
   if (!m_SearchDialog) {
     if(!m_SearchData) {
       m_SearchData = new wxFindReplaceData(wxFR_DOWN);
@@ -325,9 +353,11 @@ wScriptWindow::OnScriptFind(wxCommandEvent &event)
     m_SearchDialog = new wxFindReplaceDialog(this, m_SearchData, "Find replace", wxFR_REPLACEDIALOG | wxFR_NOUPDOWN);
   }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32
 void
 wScriptWindow::OnScriptReplace(wxCommandEvent &event)
 {
@@ -339,34 +369,42 @@ wScriptWindow::OnScriptReplace(wxCommandEvent &event)
     m_SearchDialog = new wxFindReplaceDialog(this, m_SearchData, "Find replace", wxFR_REPLACEDIALOG | wxFR_NOUPDOWN);
   }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32
 void
 wScriptWindow::OnSavePointReached(wxStyledTextEvent &event)
 {
   SetModified(false);
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32
 void
 wScriptWindow::OnSavePointLeft(wxStyledTextEvent &event)
 {
   SetModified(true);
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32
 void
 wScriptWindow::OnPosChanged(wxStyledTextEvent &event) {
   int pos = m_Editor->GetCurrentPos();
   int line = m_Editor->LineFromPosition(pos);
   SetLineNumber(line);
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32
 void
 wScriptWindow::OnCharAdded(wxStyledTextEvent &event) {
   if (event.GetKey() == '\n') {
@@ -384,6 +422,7 @@ wScriptWindow::OnCharAdded(wxStyledTextEvent &event) {
     }
   }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -396,6 +435,7 @@ wScriptWindow::SetLineNumber(int line) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32
 void
 wScriptWindow::OnFindReplace(wxFindDialogEvent &event)
 {
@@ -479,6 +519,7 @@ wScriptWindow::OnFindReplace(wxFindDialogEvent &event)
 
   return;
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -507,7 +548,9 @@ wScriptWindow::SaveDocument(const char* path)
   fwrite((const char*)text, 1, text.length(), file);
   fclose(file);
 
+#ifdef WIN32
   m_Editor->SetSavePoint();
+#endif
   return true;
 }
 

@@ -1,11 +1,14 @@
 #ifndef SCRIPT_WINDOW_HPP
 #define SCRIPT_WINDOW_HPP
 
-
 //#include <afxext.h>
 #include <wx/wx.h>
+
+#ifdef WIN32
 #include <wx/fdrepdlg.h>
 #include <wx/stc/stc.h>
+#endif
+
 #include "SaveableDocumentWindow.hpp"
 
 
@@ -34,6 +37,8 @@ private:
   void OnSetFocus(wxFocusEvent &event);
 
   void OnScriptCheckSyntax(wxCommandEvent &event);
+
+#ifdef WIN32
   void OnScriptFind(wxCommandEvent &event);
   void OnScriptReplace(wxCommandEvent &event);
 
@@ -43,6 +48,7 @@ private:
   void OnCharAdded(wxStyledTextEvent &event);
 
   void OnFindReplace(wxFindDialogEvent &event);
+#endif
 
   void SetLineNumber(int line);
 
@@ -51,10 +57,13 @@ private:
 
 private:
   bool m_Created;
+
+#ifdef WIN32
   wxStyledTextCtrl *m_Editor;
 
   wxFindReplaceDialog* m_SearchDialog;
   wxFindReplaceData *m_SearchData;
+#endif // WIN32
 
 private:
 //  DECLARE_CLASS(wScriptWindow)

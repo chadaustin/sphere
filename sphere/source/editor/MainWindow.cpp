@@ -89,7 +89,7 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_FILE_OPEN_WINDOWSTYLE, OnFileOpenWindowStyle)
   ON_COMMAND(ID_FILE_OPEN_IMAGE,       OnFileOpenImage)
   ON_COMMAND(ID_FILE_OPEN_ANIMATION,   OnFileOpenAnimation)
-  ON_COMMAND(ID_FILE_OPEN_TILESET,     OnFileOpenTileset)
+  //ON_COMMAND(ID_FILE_OPEN_TILESET,     OnFileOpenTileset)
 
   // file | import
   ON_COMMAND(ID_FILE_IMPORT_IMAGETOMAPTILESET, OnFileImportImageToMap)
@@ -864,6 +864,7 @@ FILE_OPEN_HANDLER(Animation,   new CAnimationWindow(path))
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/*
 afx_msg void
 CMainWindow::OnFileOpenTileset()
 {
@@ -879,6 +880,7 @@ CMainWindow::OnFileOpenTileset()
     }
   }
 }
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 

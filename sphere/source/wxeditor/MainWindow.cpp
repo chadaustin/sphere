@@ -47,9 +47,7 @@
 #include <libmng.h>
 
 // system
-#include <windows.h>
-
-
+#include "system.hpp"
 
 #include "icons/sph-game.xpm"
 
@@ -311,13 +309,14 @@ wMainWindow::wMainWindow(
 
 
   // create the statusbar
+#ifdef WIN32
   m_StatusBar.Create(this, -1);
   m_StatusBar.SetFieldsCount(1);
 
   SetStatusBar(&m_StatusBar);
 
   ::SetStatusBar(&m_StatusBar);
-
+#endif
 
 }
 
@@ -561,7 +560,7 @@ wMainWindow::AddToDirectory(const char* pathname, const char* sub_directory)
     // ask the user if we can copy it
     char message[1024];
     sprintf(message, "The file must be copied into the game '%s' directory.  Is this okay?", sub_directory);
-    if (::wxMessageBox(message, "Confirm copy", MB_YESNO) == IDNO)
+    if (::wxMessageBox(message, "Confirm copy", wxYES_NO) == wxNO)
       return false;
 
     char szDestination[MAX_PATH];
@@ -611,8 +610,10 @@ wMainWindow::CheckDirectory(const char* filename, const char* sub_directory)
   strcat(szProjectDirectory, sub_directory);
 
   // compare the path with the project directory + szSubDirectory
+#ifdef WIN32
   strlwr(szDirectory);
   strlwr(szProjectDirectory);
+#endif
   return (strcmp(szDirectory, szProjectDirectory) == 0);
 }
 

@@ -13,7 +13,9 @@ CSwatchServer::Instance()
 {
   if (!s_Server) {
     s_Server = new CSwatchServer();
+#ifdef WIN32
     atexit(OnExitHandler);
+#endif
   }
   return s_Server;
 }
@@ -114,11 +116,13 @@ CSwatchServer::~CSwatchServer()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32
 void __cdecl
 CSwatchServer::OnExitHandler()
 {
   delete s_Server;
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 

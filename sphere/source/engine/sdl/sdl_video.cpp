@@ -31,7 +31,7 @@ void ToggleFPS()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool SetWindowTitle(const char* text)
+bool SetWindowTitle(const char* text) {
   return true;
 }
 

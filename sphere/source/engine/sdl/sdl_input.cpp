@@ -136,6 +136,10 @@ bool InitInput()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+bool ResetInput() {
+  return true;
+}
+
 bool CloseInput()
 {
   return true;

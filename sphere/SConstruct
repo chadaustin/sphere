@@ -120,7 +120,7 @@ class Compiler:
         return self.name in ['linux']
         
     def has_wxwindows(self):
-        return self.name in ['mingw', 'vc6']
+        return self.name in ['mingw', 'vc6', 'linux']
 
     def get_env(self):
         return self.env
@@ -204,7 +204,9 @@ class Compiler:
                                'comdlg32', 'ole32', 'shell32', 'uuid',
                                'advapi32', 'ws2_32'])
         elif self.name == 'linux':
-            autocons.ParseConfig(env, 'wx-config', ['--cflags', '--libs'])
+#            autocons.ParseConfig(env, 'wx-config', ['--cflags', '--libs'])
+             autocons.ParseConfig(env, 'wxgtk-2.4-config', ['--cflags', '--libs'])
+
 
     def SetupZLib(self, env):
         if self.name == 'mingw':

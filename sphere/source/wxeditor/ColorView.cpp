@@ -95,7 +95,8 @@ void
 wColorView::OnLButtonDown(wxMouseEvent& event)
 {
   wxColourDialog dialog(this, &m_ColorData);
-  m_ColorData.SetColour(wxColour(m_Color.red, m_Color.green, m_Color.blue));
+  wxColor c = wxColour(m_Color.red, m_Color.green, m_Color.blue);
+  m_ColorData.SetColour(c);
 
   if (dialog.ShowModal() == wxID_OK)
   {

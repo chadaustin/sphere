@@ -26,8 +26,9 @@ CNewMapDialog::CNewMapDialog(int w, int h, const char* tileset)
 : CDialog(IDD_NEW_MAP)
 , m_MapWidth(w)
 , m_MapHeight(h)
-, m_Tileset(tileset)
 {
+  if (tileset != NULL)
+    m_Tileset = tileset;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

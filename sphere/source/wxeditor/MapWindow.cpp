@@ -234,8 +234,12 @@ wMapWindow::LoadMap(const char* szMap)
 void
 wMapWindow::GetMapViewRect(wxRect *Rect)
 {
+#ifdef WIN32
   const int SCROLLBAR_WIDTH  = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X);
   // const int SCROLLBAR_HEIGHT = wxSystemSettings::GetMetric(wxSYS_HSCROLL_Y);
+#else
+  const int SCROLLBAR_WIDTH = 400;
+#endif
 
   wxSize ClientSize = GetClientSize();
 
@@ -247,8 +251,12 @@ wMapWindow::GetMapViewRect(wxRect *Rect)
 void
 wMapWindow::GetLayerViewRect(wxRect* Rect)
 {
+#ifdef WIN32
   const int SCROLLBAR_WIDTH  = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X);
   // const int SCROLLBAR_HEIGHT = wxSystemSettings::GetMetric(wxSYS_HSCROLL_Y);
+#else
+  const int SCROLLBAR_WIDTH = 400;
+#endif
 
   wxSize ClientSize = GetClientSize();
 

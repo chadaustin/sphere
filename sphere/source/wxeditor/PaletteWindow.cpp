@@ -41,7 +41,12 @@ wPaletteWindow::wPaletteWindow(wDocumentWindow* owner, const char* name,
   // !!!!
   // for now, all palettes are shown by default
   // change this in the future
+#ifdef WIN32
   Create(owner, -1, name, pos, size, wxTHICK_FRAME | wxCAPTION /*| wxTINY_CAPTION_HORIZ*/ | wxFRAME_TOOL_WINDOW | wxFRAME_FLOAT_ON_PARENT | wxFRAME_NO_TASKBAR /*| wxSTAY_ON_TOP | wxMINIMIZE_BOX | wxSYSTEM_MENU*/);
+#else
+  Create(owner, -1, name, pos, size,
+         wxTHICK_FRAME | wxCAPTION | wxFRAME_TOOL_WINDOW |  wxFRAME_FLOAT_ON_PARENT);
+#endif
 
   Show();/*todo:fix this*/
 /*todo:
