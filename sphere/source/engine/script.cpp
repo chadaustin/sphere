@@ -6585,7 +6585,9 @@ CScript::CreateImageObject(JSContext* cx, IMAGE image, bool destroy)
     { "blit",              ssImageBlit,              2, 0, 0 },
     { "blitMask",          ssImageBlitMask,          3, 0, 0 },
     { "rotateBlit",        ssImageRotateBlit,        3, 0, 0 },
+    { "rotateBlitMask",    ssImageRotateBlitMask,    4, 0, 0 },
     { "zoomBlit",          ssImageZoomBlit,          3, 0, 0 },
+    { "zoomBlitMask",      ssImageZoomBlitMask,      4, 0, 0 },
     { "transformBlit",     ssImageTransformBlit,     8, 0, 0 },
     { "transformBlitMask", ssImageTransformBlitMask, 9, 0, 0 },
     { "createSurface",     ssImageCreateSurface,     0, 0, 0 },
@@ -6705,6 +6707,31 @@ end_method()
 ///////////////////////////////////////
 
 /**
+    - rotateBlit + mask
+
+*/
+begin_method(SS_IMAGE, ssImageRotateBlitMask, 4)
+  if (This->ShouldRender()) {
+    arg_int(x);
+    arg_int(y);
+    arg_double(radians);
+    arg_color(color);
+
+    int tx[4];
+    int ty[4];
+
+    int w = GetImageWidth(object->image);
+    int h = GetImageHeight(object->image);
+
+    CalculateRotateBlitPoints(tx, ty, x, y, w, h, radians);
+
+    TransformBlitImageMask(object->image, tx, ty, color);
+  }
+end_method()
+
+///////////////////////////////////////
+
+/**
     - draws the image into the video buffer with zooming, with the scaling
       depending on factor. Normally a factor of 1 will blit a normal looking
       image. Between 0 and 1 will shrink the image. Any values greater than 1
@@ -6723,6 +6750,28 @@ begin_method(SS_IMAGE, ssImageZoomBlit, 3)
     int ty[4] = { y, y, y + (int)(h * factor), y + (int)(h * factor) };
 
     TransformBlitImage(object->image, tx, ty);
+  }
+end_method()
+
+///////////////////////////////////////
+
+/**
+    - zoomBlit + mask
+*/
+begin_method(SS_IMAGE, ssImageZoomBlitMask, 4)
+  if (This->ShouldRender()) {
+    arg_int(x);
+    arg_int(y);
+    arg_double(factor);
+    arg_color(color);
+
+    int w = GetImageWidth(object->image);
+    int h = GetImageHeight(object->image);
+
+    int tx[4] = { x, x + (int)(w * factor), x + (int)(w * factor), x };
+    int ty[4] = { y, y, y + (int)(h * factor), y + (int)(h * factor) };
+
+    TransformBlitImageMask(object->image, tx, ty, color);
   }
 end_method()
 
@@ -7105,17 +7154,24 @@ end_method()
 ////////////////////////////////////////
 
 /**
-    - draws a filled rectangle onto the surface from (x1, y1) to (x2, y2)
+    - draws a filled rectangle onto the surface from (x, y) to (x+w, y+h)
       with 'color'
 */
 begin_method(SS_SURFACE, ssSurfaceRectangle, 5)
+  arg_int(x);
+  arg_int(y);
+  arg_int(w);
+  arg_int(h);
+  /*
   arg_int(x1);
   arg_int(y1);
   arg_int(x2);
   arg_int(y2);
+  */
   arg_color(c);
 
-  object->surface->Rectangle(x1, y1, x2, y2, c);
+  //object->surface->Rectangle(x1, y1, x2, y2, c);
+  object->surface->Rectangle(x, y, w, h, c);
 end_method()
 
 ////////////////////////////////////////

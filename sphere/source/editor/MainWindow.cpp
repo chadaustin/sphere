@@ -36,6 +36,10 @@
 
 
 #ifdef USE_IRC
+// Delete irc from the Workspace editor if these includes fail for you
+// (because you don't have my http/irc/dcc code)
+// then remove the USE_IRC from the define list:
+// Project->Settings... C/C++, Preprocessor Definitions.
 #include "../../../http/irc.hpp"
 #include "../../../http/IRCWindow.hpp"
 #endif

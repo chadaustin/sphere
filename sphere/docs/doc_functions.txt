@@ -1064,12 +1064,18 @@ log_object.endBlock()
     - draws the image into the video buffer, except that the image is rotates 
       in  anti-clockwise in radians, which have a range of 0-2*pi. 
       (x,y) is the center of the blit.
+
+  image_object.rotateBlitMask(x, y, radians, color)
+    - rotateBlit + mask
   
   image_object.zoomBlit(x, y, factor)
     - draws the image into the video buffer with zooming, with the scaling 
       depending on factor. Normally a factor of 1 will blit a normal looking
       image. Between 0 and 1 will shrink the image. Any values greater than 1
       will stretch the size of the image.
+
+  image_object.zoomBlitMask(x, y, factor, color)
+    - zoomBlit + mask
   
   image_object.transformBlit(x1, y1, x2, y2, x3, y3, x4, y4)
     - draws the image into the video buffer with "transformation", where 
@@ -1151,8 +1157,8 @@ log_object.endBlock()
     - draws a line onto the surface starting from (x1, y1) to (x2, y2) with 
       the color
   
-  surface_object.rectangle(x1, y1, x2, y2, color)
-    - draws a filled rectangle onto the surface from (x1, y1) to (x2, y2)
+  surface_object.rectangle(x, y, w, h, color)
+    - draws a filled rectangle onto the surface from (x, y) to (x+w, y+h)
       with 'color'
       
   surface_object.triangle(x1, y1, x2, y2, x3, y3, color)

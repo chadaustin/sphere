@@ -44,7 +44,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /G5 /MD /W3 /GX /O1 /I "../../third-party-msvc/include" /D "NDEBUG" /D "STRIC" /D "_AFXDLL" /D "INCLUDE_DEPRECATED_FEATURES" /D "XP_PC" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "VC_EXTRALEAN" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /D "NOMINMAX" /D "TABBED_WINDOW_LIST" /D "USE_IRC" /D "I_SUCK" /D "SCROLLABLE_IMAGE_WINDOW" /FAs /FR /FD /c
+# ADD CPP /nologo /G5 /MD /W3 /GX /O1 /I "../../third-party-msvc/include" /D "NDEBUG" /D "STRIC" /D "_AFXDLL" /D "INCLUDE_DEPRECATED_FEATURES" /D "XP_PC" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "VC_EXTRALEAN" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /D "NOMINMAX" /D "TABBED_WINDOW_LIST" /D "I_SUCK" /FAs /FR /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -1385,7 +1385,43 @@ SOURCE=..\common\write_mng.cpp
 SOURCE=..\common\write_mng.hpp
 # End Source File
 # End Group
-# Begin Group "irc"
+# Begin Group "Scripting"
+
+# PROP Default_Filter ""
+# Begin Group "env"
+
+# PROP Default_Filter ""
+# Begin Group "win32"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\engine\win32\win32_time.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\engine\win32\win32_time.hpp
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=..\engine\time.hpp
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=.\MapScripting.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\MapScripting.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ss_functions.table
+# End Source File
+# End Group
+# Begin Group "irc (#define USE_IRC)"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -1443,42 +1479,6 @@ SOURCE=..\..\..\http\time.cpp
 # Begin Source File
 
 SOURCE=..\..\..\http\time.hpp
-# End Source File
-# End Group
-# Begin Group "Scripting"
-
-# PROP Default_Filter ""
-# Begin Group "env"
-
-# PROP Default_Filter ""
-# Begin Group "win32"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=..\engine\win32\win32_time.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\engine\win32\win32_time.hpp
-# End Source File
-# End Group
-# Begin Source File
-
-SOURCE=..\engine\time.hpp
-# End Source File
-# End Group
-# Begin Source File
-
-SOURCE=.\MapScripting.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\MapScripting.hpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ss_functions.table
 # End Source File
 # End Group
 # End Target

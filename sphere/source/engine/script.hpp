@@ -177,7 +177,9 @@ private:
   declare_method(ssImageBlit);
   declare_method(ssImageBlitMask);
   declare_method(ssImageRotateBlit);
+  declare_method(ssImageRotateBlitMask);
   declare_method(ssImageZoomBlit);
+  declare_method(ssImageZoomBlitMask);
   declare_method(ssImageTransformBlit);
   declare_method(ssImageTransformBlitMask);
   declare_method(ssImageCreateSurface);

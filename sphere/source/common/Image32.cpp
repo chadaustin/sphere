@@ -86,7 +86,7 @@ inline int sgn(int i)
 {
   return (i < 0 ? -1 : (i > 0 ? 1 : 0));
 }
-           
+
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -335,7 +335,7 @@ CImage32::ApplyColorFX(int x1, int y1, int w, int h, const CColorMatrix &c)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void 
+void
 CImage32::ApplyColorFX4(int x1, int y1, int w, int h, const CColorMatrix &c1, const CColorMatrix &c2, const CColorMatrix &c3, const CColorMatrix &c4)
 {
   int i;
@@ -450,7 +450,7 @@ CImage32::Rescale(int width, int height)
   double HorzAspectRatio, VertAspectRatio;
   int x,y;
   double ix, iy;
-  
+
   HorzAspectRatio = (double)width / (double)m_Width;   // (dstWidth / srcWidth) * 100
   VertAspectRatio = (double)height / (double)m_Height; // (dstHeight / srcHeight) * 100
 
@@ -571,7 +571,7 @@ CImage32::Rotate(double radians, bool autoSize)
     double xNOff, yNOff;
 
     // probably the slowest bit in the entire routine...
-    // finds the largest and smallest point and use that. 
+    // finds the largest and smallest point and use that.
     // TopLeft, BotRight, TopRight, BotLeft
     xOff = xNOff = 0;
     yOff = yNOff = 0;
@@ -591,7 +591,7 @@ CImage32::Rotate(double radians, bool autoSize)
     yOff = std::max(yOff, yB); yNOff = std::min(yNOff, yB);
     yOff = std::max(yOff, yC); yNOff = std::min(yNOff, yC);
     yOff = std::max(yOff, yD); yNOff = std::min(yNOff, yD);
-    
+
     xOff = (xOff - xNOff) - m_Width;
     yOff = (yOff - yNOff) - m_Height;
 
@@ -614,7 +614,7 @@ CImage32::Rotate(double radians, bool autoSize)
       // realigns the rotating axis to 0,0 (of a graphical point of view)
       tx = x - (m_Width/2) - xOff;
       ty = y - (m_Height/2) - yOff;
-      
+
       ix = (cosi * tx) - (sine * ty);
       iy = (sine * tx) + (cosi * ty);
 
@@ -907,18 +907,27 @@ CImage32::Ellipse(int cx, int cy, int radx, int rady, RGBA color, int fill, clip
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
+
+/*
 void
 CImage32::Rectangle(int x1, int y1, int x2, int y2, RGBA color)
+*/
+void
+CImage32::Rectangle(int x, int y, int w, int h, RGBA color)
 {
   clipper clip = { 0, 0, m_Width -1, m_Height - 1 };
-  Rectangle(x1, y1, x2, y2, color, clip);
+  Rectangle(x, y, w, h, color, clip);
 }
 
+/*
 void
 CImage32::Rectangle(int x1, int y1, int x2, int y2, RGBA color, clipper clip)
+*/
+void
+CImage32::Rectangle(int x, int y, int w, int h, RGBA color, clipper clip)
 {
   // make sure x1 < x2 and y1 < y2 so we can get good w and h values
+  /*
   if (x1 > x2) {
     std::swap(x1, x2);
   }
@@ -927,13 +936,22 @@ CImage32::Rectangle(int x1, int y1, int x2, int y2, RGBA color, clipper clip)
   }
   int w = x2 - x1 + 1;
   int h = y2 - y1 + 1;
+  */
 
   switch (m_BlendMode) {
+	  /*
     case REPLACE:    primitives::Rectangle(m_Pixels, m_Width, x1, y1, w, h, color, clip, copyRGBA);  break;
     case BLEND:      primitives::Rectangle(m_Pixels, m_Width, x1, y1, w, h, color, clip, blendRGBA); break;
     case RGB_ONLY:   primitives::Rectangle(m_Pixels, m_Width, x1, y1, w, h, color, clip, copyRGB);   break;
     case ALPHA_ONLY: primitives::Rectangle(m_Pixels, m_Width, x1, y1, w, h, color, clip, copyAlpha); break;
     case ADDITIVE:   primitives::Rectangle(m_Pixels, m_Width, x1, y1, w, h, color, clip, additiveRGBA); break;
+      */
+    case REPLACE:    primitives::Rectangle(m_Pixels, m_Width, x, y, w, h, color, clip, copyRGBA);  break;
+    case BLEND:      primitives::Rectangle(m_Pixels, m_Width, x, y, w, h, color, clip, blendRGBA); break;
+    case RGB_ONLY:   primitives::Rectangle(m_Pixels, m_Width, x, y, w, h, color, clip, copyRGB);   break;
+    case ALPHA_ONLY: primitives::Rectangle(m_Pixels, m_Width, x, y, w, h, color, clip, copyAlpha); break;
+    case ADDITIVE:   primitives::Rectangle(m_Pixels, m_Width, x, y, w, h, color, clip, additiveRGBA); break;
+
   }
 }
 
@@ -1124,7 +1142,7 @@ CImage32::BlitImage(CImage32& image, int x, int y)
         clip,
         alphaRenderer);
       break;
-    
+
     case ADDITIVE:
       primitives::Blit(
         m_Pixels, m_Width,
