@@ -101,14 +101,10 @@ wHScrollWindow::OnSize(const wxSizeEvent& event)
 {
   wxSize size = GetClientSize();
   if(m_Scrollbar != NULL) {
-#ifdef WIN32
     m_Scrollbar->SetSize(0,
                           size.y,
                           size.x,
                           wxSystemSettings::GetMetric(wxSYS_HSCROLL_Y));
-#else
-    m_Scrollbar->SetSize(0, size.y, size.x, 400);
-#endif
   }
 }
 
@@ -126,12 +122,8 @@ wxSize
 wHScrollWindow::GetClientSize()
 {
   wxSize size = wxWindow::GetClientSize();
-#ifdef WIN32
   return wxSize(size.x, 
                 size.y - wxSystemSettings::GetMetric(wxSYS_HSCROLL_Y));
-#else
-  return wxSize(size.x, size.y - 400);
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

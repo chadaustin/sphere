@@ -1136,6 +1136,8 @@ wImageView::OnMouseMove(wxMouseEvent &event)
   m_CurPoint = event.GetPosition();
 
   wxPoint current = ConvertToPixel(event.GetPosition());
+
+#ifdef WIN32
   if (InImage(current)) {
     char str[80];
     sprintf(str, "(%d, %d)", current.x, current.y);
@@ -1143,10 +1145,11 @@ wImageView::OnMouseMove(wxMouseEvent &event)
   } else {
     SetStatus(wxString(""));
   }
+#endif
 
   if (!m_MouseDown)
     return;
-  
+
   switch (m_CurrentTool)
   {
     case Tool_Pencil: 

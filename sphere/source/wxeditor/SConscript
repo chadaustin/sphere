@@ -10,7 +10,12 @@ COMPILER.SetupWXWindows(env)
 COMPILER.SetupZLib(env)
 COMPILER.Win32Subsystem(env)
 
-editor = env.Program('wxeditor', Split("""
+if ARGUMENTS.get('debug'):
+   env.Append(
+   CCFLAGS = ['-DDEBUG', '-g'],
+   LINKFLAGS = ['-g'])
+
+wxeditor = env.Program('wxeditor', Split("""
     AlphaView.cpp
     AnimationWindow.cpp
     Audio.cpp
@@ -81,4 +86,4 @@ editor = env.Program('wxeditor', Split("""
 # OptionsDialog
 # StringDialog
 
-env.Install(BUILD_DIR, editor)
+env.Install(BUILD_DIR, wxeditor)

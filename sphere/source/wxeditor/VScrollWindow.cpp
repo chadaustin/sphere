@@ -103,14 +103,10 @@ wVScrollWindow::OnSize(wxSizeEvent &event)
 {
   wxSize size = GetClientSize();
   if(m_Scrollbar != NULL) {
-#ifdef WIN32
     m_Scrollbar->SetSize(size.x,
                           0,
                           wxSystemSettings::GetMetric(wxSYS_VSCROLL_X),
                           size.y);
-#else
-    m_Scrollbar->SetSize(size.x, 0, 400, size.y);
-#endif
   }
 }
 
@@ -128,12 +124,8 @@ wxSize
 wVScrollWindow::GetClientSize()
 {
   wxSize size = wxWindow::GetClientSize();
-#ifdef WIN32
   return wxSize(size.x - wxSystemSettings::GetMetric(wxSYS_VSCROLL_X), 
                 size.y);
-#else
-  return wxSize(size.x - 400, size.y);
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
