@@ -1,4 +1,5 @@
 DEFINE_KEY(KEY_LAST_PROJECT, std::string, "")
+DEFINE_KEY(KEY_PROJECT_RECT,    RECT, zeroed<RECT>())
 
 DEFINE_KEY(KEY_SCRIPT_FONT_SIZE, int,         10)
 DEFINE_KEY(KEY_SCRIPT_FONT_NAME, std::string, "Courier")

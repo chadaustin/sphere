@@ -9,6 +9,9 @@
 #include "../common/types.h"
 #include "resource.h"
 
+#include "Configuration.hpp"
+#include "keys.hpp"
+
 const int TreeID = 9865;
 
 const int tiGameSettings = 100;
@@ -49,7 +52,7 @@ END_MESSAGE_MAP()
 CProjectWindow::CProjectWindow(CMainWindow* main_window, CProject* project)
 : m_MainWindow(main_window)
 , m_Project(project)
-, CPaletteWindow(NULL, "Project", CRect(0,0,200,200), true)
+, CPaletteWindow(NULL, "Project", Configuration::Get(KEY_PROJECT_RECT), true)
 , m_htiMaps(NULL)
 , m_htiSpritesets(NULL)
 , m_htiScripts(NULL)
@@ -126,6 +129,10 @@ CProjectWindow::Create()
 BOOL
 CProjectWindow::DestroyWindow()
 {
+  RECT rect;
+  GetWindowRect(&rect);
+  Configuration::Set(KEY_PROJECT_RECT, rect);
+
   m_TreeControl.DestroyWindow();
   return CPaletteWindow::DestroyWindow();
 }
