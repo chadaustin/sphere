@@ -153,8 +153,12 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
   std::string word;
   int word_width = 0;
 
+  int range = m_Font.GetNumCharacters();
+
   // parse the text into words
   while (*p) {
+
+    if (*p < 0 || *p >= range) { p++; continue; }
 
     if (*p == ' ') {          // if it's a space, draw the word
       
@@ -242,8 +246,11 @@ int
 SFONT::GetStringWidth(const char* string) const
 {
   int width = 0;
+  int range = m_Font.GetNumCharacters();
+
   while (*string)
   {
+    if (*string < 0 || *string >= range) { string++; continue; }
     width += m_Font.GetCharacter(*string).GetWidth();
     string++;
   }
@@ -271,7 +278,11 @@ SFONT::GetStringHeight(const char* string, int width) const
   std::string word;
   int word_width = 0;
 
+  int range = m_Font.GetNumCharacters();
+
   while (*p) {
+
+    if (*p < 0 || *p >= range) { p++; continue; }
 
     if (*p == ' ') {          // if it's a space, draw the word
       
