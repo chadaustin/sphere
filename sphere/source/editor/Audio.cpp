@@ -1,4 +1,5 @@
 #include "Audio.hpp"
+#include "filename_comparer.hpp"
 // #include <assert.h>
 
 static int s_AudioInitCount = 0;
@@ -18,20 +19,9 @@ static audiere::CDDevicePtr s_CDDevice = NULL;
 
 static bool IsMidi(const char* filename)
 {
-  struct Local {
-    static inline bool extension_compare(const char* path, const char* extension) {
-      int path_length = strlen(path);
-      int ext_length  = strlen(extension);
-      return (
-        path_length >= ext_length &&
-        strcmp(path + path_length - ext_length, extension) == 0
-      );
-    }
-  };
-
-  if (Local::extension_compare(filename, ".mid"))  return true;
-  if (Local::extension_compare(filename, ".midi")) return true;
-  if (Local::extension_compare(filename, ".rmi"))  return true;
+  if (extension_compare(filename, ".mid"))  return true;
+  if (extension_compare(filename, ".midi")) return true;
+  if (extension_compare(filename, ".rmi"))  return true;
 
   return false;
 }

@@ -186,11 +186,11 @@ SOURCE=.\EditRange.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\FileSystem.cpp
+SOURCE=.\filename_comparer.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\FileSystem.hpp
+SOURCE=.\filename_comparer.hpp
 # End Source File
 # Begin Source File
 

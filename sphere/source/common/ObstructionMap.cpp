@@ -93,6 +93,37 @@ sObstructionMap::TestSegments(const Segment& s1, const Segment& s2)
   int s1_length_squared = Local::square(s1.x2 - s1.x1) + Local::square(s1.y2 - s1.y1);
   int s2_length_squared = Local::square(s2.x2 - s2.x1) + Local::square(s2.y2 - s2.y1);
   if (s1_length_squared == 0 || s2_length_squared == 0) {
+
+    if ((s1.x1 == s1.x2) && (s1.y1 == s1.y2)) {
+
+      // test horizontal line
+      if (s2.y1 == s2.y2) {
+
+        int cx = s1.x1;
+        int cy = s1.y1;
+        
+        // test (s2.x1 >= s1.x1) && (s2.x2 <= s1.x1)
+        if ( (cx >= Local::min(s2.x1, s2.x2)) && (cx <= Local::max(s2.x1, s2.x2))
+         &&  (cy >= Local::min(s2.y1, s2.y2)) && (cy <= Local::max(s2.y1, s2.y2)) ) {
+          return true;
+        }
+      }
+
+      // test vertical line
+      if (s2.x1 == s2.x2) {
+        // test for pixel within segment
+
+        int cx = s1.x1;
+        int cy = s1.y1;
+
+        // test (s2.x1 >= s1.x1) && (s2.x2 <= s1.x1)
+        if ( (cx >= Local::min(s2.x1, s2.x2)) && (cx <= Local::max(s2.x1, s2.x2))
+         &&  (cy >= Local::min(s2.y1, s2.y2)) && (cy <= Local::max(s2.y1, s2.y2)) ) {
+          return true;
+        }
+      }
+    }
+    
     return false;
   }
 

@@ -398,6 +398,10 @@ sMap::Load(const char* filename, IFileSystem& fs)
 
     } // end switch
 
+    if (eh.layer < 0 || eh.layer >= m_Layers.size()) {
+      eh.layer = 0;
+    }
+
     entity->x = eh.mapx;
     entity->y = eh.mapy;
     entity->layer = eh.layer;
@@ -417,12 +421,16 @@ sMap::Load(const char* filename, IFileSystem& fs)
     if (file->Read(&zh, sizeof(zh)) != sizeof(zh))
 			return false;
 
+    if (zh.layer < 0 || zh.layer >= m_Layers.size()) {
+      zh.layer = 0;
+    }
     if (zh.x1 > zh.x2) {
       std::swap(zh.x1, zh.x2);
     }
     if (zh.y1 > zh.y2) {
       std::swap(zh.y1, zh.y2);
     }
+
     zone.x1 = zh.x1;
     zone.y1 = zh.y1;
     zone.x2 = zh.x2;

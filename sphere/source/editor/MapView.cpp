@@ -1464,12 +1464,21 @@ CMapView::EntityPaste(CPoint point)
 
         // copy the varied-sized text into temporary places
         char* c_ptr = (char*)ptr;
-        memcpy(dialog_text, c_ptr, dialog_size);
-        memcpy(name_text, c_ptr + dialog_size, name_size);
-        memcpy(spriteset_text, c_ptr + dialog_size + name_size, spriteset_size);
-        dialog_text[dialog_size] = 0;
-        name_text[name_size] = 0;
-        spriteset_text[spriteset_size] = 0;
+
+        if (dialog_text) {
+          memcpy(dialog_text, c_ptr, dialog_size);
+          dialog_text[dialog_size] = 0;
+        }
+
+        if (name_text) {
+          memcpy(name_text, c_ptr + dialog_size, name_size);
+          name_text[name_size] = 0;
+        }
+
+        if (spriteset_text) {
+          memcpy(spriteset_text, c_ptr + dialog_size + name_size, spriteset_size);
+          spriteset_text[spriteset_size] = 0;
+        }
 
         // now slot it in
         person.dialogue = dialog_text;
@@ -1479,9 +1488,9 @@ CMapView::EntityPaste(CPoint point)
         // pop the darn thing into the map
         m_Map->AddEntity(new sPersonEntity(person));
 
-        delete[] dialog_text;
-        delete[] name_text;
-        delete[] spriteset_text;
+        delete[] dialog_text;    dialog_text = NULL;
+        delete[] name_text;      name_text = NULL;
+        delete[] spriteset_text; spriteset_text = NULL;
       } break;
 */
 
@@ -1504,7 +1513,7 @@ CMapView::EntityPaste(CPoint point)
         // pop the darn thing into the map
         m_Map->AddEntity(new sTriggerEntity(trigger));
 
-        delete[] function_text;
+        delete[] function_text; function_text = NULL;
       } break;
     }
 

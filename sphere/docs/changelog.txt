@@ -1,3 +1,22 @@
+2005.01.12
+  - Added ~/ and /common/ for things like:
+    LoadImage("~/maps/test.png");
+    or:
+    ChangeMap("/common/Flikky/maps/test.rmp");
+
+2004.12.23
+  - Fixed Line(0, 0, 0, 0, CreateColor(255, 255, 255)); crashes bug.
+
+2004.12.22
+  - Fixed GetPersonData bug.
+  - sound.setVolume(vol) now clamps vol in the range 0 to 255
+
+2004.12.20
+  - A person who has a base obstruction of only one pixel can now be blocked by tiles.
+    (Only draw vertical or horizontal obstruction lines on the tiles...
+     If you draw diagonal lines, Mr. pixel will be able to pass through obstructions...)
+  - Made ping work in the irc client... :)
+
 2004.12.05
   - Binding the talk key now disables talking to people.
 

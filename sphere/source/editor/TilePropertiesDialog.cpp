@@ -40,7 +40,11 @@ CTilePropertiesDialog::CTilePropertiesDialog(sTileset* tileset, int tile)
 
 CTilePropertiesDialog::~CTilePropertiesDialog()
 {
-  delete[] m_Tiles;
+  if (m_Tiles) {
+    delete[] m_Tiles;
+  }
+
+  m_Tiles = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

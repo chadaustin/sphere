@@ -242,7 +242,68 @@ CScriptCode::Execute(bool& should_exit)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static bool IsValidPath(const char* path)
+{
+  int num_double_dots = 0;
+  bool prev_was_dot = false;
 
+  // empty path
+  if (strlen(path) == 0) {
+    return false;
+  }
+
+  for (unsigned int i = 0; i < strlen(path); ++i) {
+    if (path[i] == '.') {
+      if (prev_was_dot) {
+        num_double_dots += 1;
+      }
+      prev_was_dot = true;
+    }
+    else {
+      prev_was_dot = false;
+    }
+  }
+
+  // path is trying to do things like "../../../"
+  if (num_double_dots > 1) {
+    return false;
+  }
+
+  // path starts with ~/ and has no ..'s
+  if (strlen(path) >= 2) {
+    if (path[0] == '~' || path[1] == '/') {
+      if (num_double_dots > 0) {
+        return false;
+      }
+    }
+  }
+
+  // path starts /
+  if (path[0] == '/')
+  {
+    // path starts with /common/ and has no ..'s
+    if (strlen(path) >= strlen("/common/")) {
+      if (memcmp(path, "/common/", strlen("/common/")) == 0) {
+        if (num_double_dots > 0) {
+          return false;
+        }
+
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // path begins with backslash or forwardslash
+  if (path[0] == '/' || path[0] == '\\') {
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 /////////////
 // CScript //
@@ -272,7 +333,7 @@ CScript::CScript(IEngine* engine)
   }
 
   // create context
-  m_Context = JS_NewContext(m_Runtime, 4096);
+  m_Context = JS_NewContext(m_Runtime, 8192);
   if (m_Context == NULL) {
     JS_DestroyRuntime(m_Runtime);
     m_Runtime = NULL;
@@ -645,43 +706,6 @@ CScript::BranchCallback(JSContext* cx, JSScript* script)
   }
 
   return JS_TRUE;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-static bool IsValidPath(const char* path)
-{
-  int num_double_dots = 0;
-  bool prev_was_dot = false;
-
-  // empty path
-  if (strlen(path) == 0) {
-    return false;
-  }
-
-  for (unsigned int i = 0; i < strlen(path); ++i) {
-    if (path[i] == '.') {
-      if (prev_was_dot) {
-        num_double_dots += 1;
-      }
-      prev_was_dot = true;
-    }
-    else {
-      prev_was_dot = false;
-    }
-  }
-
-  // path is trying to do things like "../../../"
-  if (num_double_dots > 1) {
-    return false;
-  }
-
-  // path begins with backslash or forwardslash
-  if (strcmp(path, "/") == 0 || strcmp(path, "\\") == 0) {
-    return false;
-  }
-
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1233,6 +1257,11 @@ end_func()
 begin_func(EvaluateScript, 1)
   arg_str(name);
 
+  if (IsValidPath(name) == false) {
+    JS_ReportError(cx, "Invalid filename: '%s'", name);
+    return JS_FALSE;
+  }
+
   // read script
   std::string text;
   if (!This->m_Engine->GetScriptText(name, text)) {
@@ -1267,6 +1296,16 @@ end_func()
 begin_func(EvaluateSystemScript, 1)
   arg_str(name);
 
+  if (IsValidPath(name) == false) {
+    JS_ReportError(cx, "Invalid filename: '%s'", name);
+    return JS_FALSE;
+  }
+
+  if (name[0] == '/') {
+    JS_ReportError(cx, "Invalid filename: '%s'", name);
+    return JS_FALSE;
+  }
+
   // read script
   std::string text;
   if (!This->m_Engine->GetSystemScript(name, text)) {
@@ -1300,6 +1339,11 @@ end_func()
 */
 begin_func(RequireScript, 1)
   arg_str(name);
+
+  if (IsValidPath(name) == false) {
+    JS_ReportError(cx, "Invalid filename: '%s'", name);
+    return JS_FALSE;
+  }
 
   if (!This->m_Engine->IsScriptEvaluated(name)) {
     // read script
@@ -1336,6 +1380,16 @@ end_func()
 */
 begin_func(RequireSystemScript, 1)
   arg_str(name);
+
+  if (IsValidPath(name) == false) {
+    JS_ReportError(cx, "Invalid filename: '%s'", name);
+    return JS_FALSE;
+  }
+
+  if (name[0] == '/') {
+    JS_ReportError(cx, "Invalid filename: '%s'", name);
+    return JS_FALSE;
+  }
 
   if (!This->m_Engine->IsSystemScriptEvaluated(name)) {
     // read script
@@ -2258,6 +2312,7 @@ end_func()
 
 /**
     - changes current map
+    (This clears any pending delay scripts...)
 */
 begin_func(ChangeMap, 1)
   arg_str(map);
@@ -4302,7 +4357,7 @@ begin_func(GetPersonData, 1)
   static JSClass clasp = {
     "person_data", 0,
     JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
-    JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizeSound,
+    JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
   };
 
   // create object
@@ -4951,6 +5006,11 @@ begin_func(LoadSpriteset, 1)
   // spritesets can take a lot of memory, so do a little GC
   JS_MaybeGC(cx);
 
+  if (IsValidPath(filename) == false) {
+    JS_ReportError(cx, "Invalid filename: '%s'", filename);
+    return JS_FALSE;
+  }
+
   // load spriteset
   SSPRITESET* spriteset = This->m_Engine->LoadSpriteset(filename);
   if (spriteset == NULL) {
@@ -4959,6 +5019,45 @@ begin_func(LoadSpriteset, 1)
   }
 
   JS_MaybeGC(cx);
+
+  return_object(CreateSpritesetObject(cx, spriteset));
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+        - returns a new spriteset.
+*/
+begin_func(CreateSpriteset, 5)
+  arg_int(frame_width);
+  arg_int(frame_height);
+  arg_int(num_images);
+  arg_int(num_directions);
+  arg_int(num_frames);
+
+  if (frame_width < 1 || frame_height < 1) {
+    JS_ReportError(cx, "Frame width and height must be greater than 1 (w=%d, h=%d)", frame_width, frame_height);
+    return JS_FALSE;
+  }
+
+  if (num_images < 1 || num_directions < 1 || num_frames < 1) {
+    JS_ReportError(cx, "Must be atleast one image/direction/frame in a spriteset");
+    return JS_FALSE;
+  }
+
+  sSpriteset s;
+  if (!s.Create(frame_width, frame_height, num_images, num_directions, num_frames)) {
+    return JS_FALSE;
+  }
+
+  s.SetBase(0, 0, frame_width, frame_height);
+
+  SSPRITESET* spriteset = new SSPRITESET(s);
+  if (!spriteset) {
+    return JS_FALSE;
+  }
+
+  spriteset->AddRef();
 
   return_object(CreateSpritesetObject(cx, spriteset));
 end_func()
@@ -4977,6 +5076,11 @@ begin_func(LoadSound, 1)
   bool streaming = true;
   if (argc > 1) {
     streaming = argBool(cx, argv[arg++]);
+  }
+
+  if (IsValidPath(filename) == false) {
+    JS_ReportError(cx, "Invalid filename: '%s'", filename);
+    return JS_FALSE;
   }
 
   // load sound
@@ -5026,6 +5130,11 @@ end_func()
 begin_func(LoadFont, 1)
   arg_str(filename);
 
+  if (IsValidPath(filename) == false) {
+    JS_ReportError(cx, "Invalid filename: '%s'", filename);
+    return JS_FALSE;
+  }
+
   // load font
   SFONT* font = This->m_Engine->LoadFont(filename);
   if (font == NULL) {
@@ -5055,6 +5164,11 @@ end_func()
 */
 begin_func(LoadWindowStyle, 1)
   arg_str(filename);
+
+  if (IsValidPath(filename) == false) {
+    JS_ReportError(cx, "Invalid filename: '%s'", filename);
+    return JS_FALSE;
+  }
 
   // load window style
   SWINDOWSTYLE* windowstyle = This->m_Engine->LoadWindowStyle(filename);
@@ -5104,6 +5218,11 @@ end_func()
 */
 begin_func(LoadImage, 1)
   arg_str(filename);
+
+  if (IsValidPath(filename) == false) {
+    JS_ReportError(cx, "Invalid filename: '%s'", filename);
+    return JS_FALSE;
+  }
 
   // load image
   IMAGE image = This->m_Engine->LoadImage(filename);
@@ -5194,6 +5313,11 @@ end_func()
 */
 begin_func(LoadSurface, 1)
   arg_str(filename);
+
+  if (IsValidPath(filename) == false) {
+    JS_ReportError(cx, "Invalid filename: '%s'", filename);
+    return JS_FALSE;
+  }
 
   // load surface
   CImage32* surface = This->m_Engine->LoadSurface(filename);
@@ -5300,6 +5424,11 @@ end_func()
 */
 begin_func(LoadAnimation, 1)
   arg_str(filename);
+
+  if (IsValidPath(filename) == false) {
+    JS_ReportError(cx, "Invalid filename: '%s'", filename);
+    return JS_FALSE;
+  }
 
   // load animation
   IAnimation* animation = This->m_Engine->LoadAnimation(filename);
@@ -5609,6 +5738,7 @@ CScript::CreateSocketObject(JSContext* cx, NSOCKET socket)
 begin_finalizer(SS_SOCKET, ssFinalizeSocket)
   if (object->socket && object->is_open) {
     CloseSocket(object->socket);
+    object->socket = NULL;
   }
 end_finalizer()
 
@@ -5761,7 +5891,7 @@ CScript::CreateLogObject(JSContext* cx, CLog* log)
 ////////////////////////////////////////
 
 begin_finalizer(SS_LOG, ssFinalizeLog)
-  This->m_Engine->CloseLog(object->log);
+  This->m_Engine->CloseLog(object->log); object->log = NULL;
 end_finalizer()
 
 ////////////////////////////////////////
@@ -6305,7 +6435,14 @@ end_method()
 */
 begin_method(SS_SOUND, ssSoundSetVolume, 1)
   arg_int(volume);
-  if (object->sound) object->sound->setVolume(volume / 255.0f);
+  if (object->sound) {
+    if (volume < 0)
+      volume = 0;
+    if (volume > 255)
+      volume = 255;
+
+    object->sound->setVolume(volume / 255.0f);
+  }
 end_method()
 
 ////////////////////////////////////////
@@ -7141,6 +7278,7 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
 
 begin_finalizer(SS_SURFACE, ssFinalizeSurface)
   delete object->surface;
+  object->surface = NULL;
 end_finalizer()
 
 ////////////////////////////////////////
@@ -7832,7 +7970,10 @@ CScript::CreateColorMatrixObject(JSContext* cx, CColorMatrix* colormatrix)
 ////////////////////////////////////////
 
 begin_finalizer(SS_COLORMATRIX, ssFinalizeColorMatrix)
-  delete object->colormatrix;
+  if (object->colormatrix) {
+    delete object->colormatrix;
+    object->colormatrix = NULL;
+  }
 end_finalizer()
 
 ////////////////////////////////////////
@@ -7895,8 +8036,8 @@ CScript::CreateAnimationObject(JSContext* cx, IAnimation* animation)
 ////////////////////////////////////////
 
 begin_finalizer(SS_ANIMATION, ssFinalizeAnimation)
-  delete object->animation;
-  delete[] object->frame;
+  if (object->animation) { delete object->animation; object->animation = NULL; }
+  if (object->frame) { delete[] object->frame; object->frame = NULL; }
 end_finalizer()
 
 ////////////////////////////////////////
@@ -7993,7 +8134,7 @@ CScript::CreateFileObject(JSContext* cx, CConfigFile* file)
 ////////////////////////////////////////
 
 begin_finalizer(SS_FILE, ssFinalizeFile)
-  This->m_Engine->CloseFile(object->file);
+  This->m_Engine->CloseFile(object->file); object->file = NULL;
 end_finalizer()
 
 ////////////////////////////////////////
@@ -8103,6 +8244,7 @@ CScript::CreateRawFileObject(JSContext* cx, IFile* file, bool writeable)
 begin_finalizer(SS_RAWFILE, ssFinalizeRawFile)
   if (object->file && object->is_open) {
     delete object->file;
+    object->file = NULL;
   }
 end_finalizer()
 
@@ -8252,7 +8394,7 @@ CScript::CreateByteArrayObject(JSContext* cx, int size, const void* data)
 ///////////////////////////////////////
 
 begin_finalizer(SS_BYTEARRAY, ssFinalizeByteArray)
-  delete[] object->array;
+  if (object->array) { delete[] object->array; object->array = NULL; }
 end_finalizer()
 
 ///////////////////////////////////////

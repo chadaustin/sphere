@@ -15,6 +15,7 @@
 
 class CMapEngine;
 
+int pre_process_filename(const char* filename, std::string& path);
 bool IsMidi(const char* filename);
 
 struct IEngine

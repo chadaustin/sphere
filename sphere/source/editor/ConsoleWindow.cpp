@@ -4,7 +4,7 @@
 #include <SciLexer.h>
 #include "ConsoleWindow.hpp"
 #include "Editor.hpp"
-#include "FileSystem.hpp"
+//#include "FileSystem.hpp"
 #include "Configuration.hpp"
 #include "Keys.hpp"
 #include "resource.h"

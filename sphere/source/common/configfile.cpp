@@ -54,9 +54,13 @@ inline void skip_whitespace(const char*& str)
 // returns false if eof
 inline bool read_line(IFile* file, std::string& s)
 {
-  s = "";
-  
   char c;
+  s = "";
+
+  if (!file) {
+    return false;
+  }
+  
   if (file->Read(&c, 1) == 0) {
     return false;
   }
@@ -71,6 +75,8 @@ inline bool read_line(IFile* file, std::string& s)
 
   return !eof;
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 bool
 CConfigFile::Load(const char* filename, IFileSystem& fs)
@@ -143,6 +149,8 @@ inline void write_string(IFile* file, const std::string& s)
   file->Write(s.c_str(), s.length());
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 bool
 CConfigFile::Save(const char* filename, IFileSystem& fs) const
 {
@@ -199,15 +207,18 @@ std::string
 CConfigFile::ReadString(const char* section, const char* key, const char* def)
 {
   if (m_sections[section].entries.find(key) == m_sections[section].entries.end()) {
-    m_sections[section].entries[key] = def;
+    //m_sections[section].entries[key] = def;
+    std::string s = def;
+    return s;
   }
+
   return m_sections[section].entries[key];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 int
-CConfigFile::ReadInt(const char* section, const char* key, int def)
+CConfigFile::ReadInt(const char* section, const char* key, int def) 
 {
   //std::ostringstream defstr;
   //defstr << def;

@@ -102,13 +102,13 @@ CTilesetView::CTilesetView()
   m_StartPoint.x = m_StartPoint.y = 0;
   m_CurPoint.x = m_CurPoint.y = 0;
 
-  double zoom = Configuration::Get(KEY_TILES_ZOOM_FACTOR);
+  int zoom_factor = Configuration::Get(KEY_TILES_ZOOM_FACTOR);
 
-  if (zoom <= 0 || zoom >= 8) {
-    zoom = 1;
+  if (zoom_factor <= 0 || zoom_factor > 8) {
+    zoom_factor = 1;
   }
 
-  m_ZoomFactor.SetZoomFactor(zoom);
+  m_ZoomFactor.SetZoomFactor(zoom_factor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1334,7 +1334,8 @@ CTilesetView::OnZoom(double zoom_factor) {
   UpdateScrollBar();
   Invalidate();
 
-  Configuration::Set(KEY_TILES_ZOOM_FACTOR, m_ZoomFactor.GetZoomFactor());
+  int zoom_factor_i = (int) m_ZoomFactor.GetZoomFactor();
+  Configuration::Set(KEY_TILES_ZOOM_FACTOR, zoom_factor_i);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

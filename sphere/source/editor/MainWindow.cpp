@@ -10,7 +10,6 @@
 // core
 #include "Editor.hpp"
 #include "WindowCommands.hpp"
-#include "FileSystem.hpp"
 #include "Configuration.hpp"
 #include "Keys.hpp"
 #include "Package.hpp"
@@ -33,7 +32,7 @@
 #endif
 #include "ScriptWindow.hpp"
 #include "PaletteWindow.hpp"
-
+#include "filename_comparer.hpp"
 
 #ifdef USE_IRC
 // Delete irc from the Workspace editor if these includes fail for you
@@ -780,7 +779,7 @@ CMainWindow::OpenGameFile(const char* filename)
 
   char proto[100] = "";
 
-  for (int i = 0; i < strlen(filename) && i < sizeof(proto); i++) {
+  for (int i = 0; i < strlen(filename) && i < (sizeof(proto) - strlen("://")); i++) {
     if (strncmp(filename + i, "://", 3) == 0) {
       strncpy(proto, filename, i);
       break;
@@ -803,6 +802,10 @@ CMainWindow::OpenGameFile(const char* filename)
     }
 
     UpdateToolBars();
+
+    std::string f = filename;
+    Configuration::Set(KEY_IRC_ADDRESS, f);
+    printf ("{%s}\n", f.c_str());
   }
 #endif
 }
@@ -1017,63 +1020,64 @@ CMainWindow::UpdateMenu()
   HINSTANCE hInstance = AfxGetApp()->m_hInstance;
   HMENU hNewMenu = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_MAIN));
 
-  do {
-    int menu_count = GetMenuItemCount(hNewMenu);
-    int i = menu_count - 2; // tools menu
+  if (0) {
+    do {
+      int menu_count = GetMenuItemCount(hNewMenu);
+      int i = menu_count - 2; // tools menu
 
-    if (i < 0 || i >= menu_count)
-      break;
+      if (i < 0 || i >= menu_count)
+        break;
 
-    HMENU hCDMenu = CreateMenu();
-    if (!hCDMenu)
-      break;
+      HMENU hCDMenu = CreateMenu();
+      if (!hCDMenu)
+        break;
 
-    HMENU hSubMenu = GetSubMenu(hNewMenu, i);
-    if (!hCDMenu)
-      break;
+      HMENU hSubMenu = GetSubMenu(hNewMenu, i);
+      if (!hCDMenu)
+        break;
 
-    std::vector<std::string> devices;
-    audiere::EnumerateCDDevices(devices);
+      std::vector<std::string> devices;
+      audiere::EnumerateCDDevices(devices);
 
-    for (int j = 0; j < devices.size(); j++) {
-      if (devices[j].size() > 0) {
-        std::string title = "CD Audio " + devices[j];
-        AppendMenu(hCDMenu, 0, CDAUDIO_COMMAND + j, title.c_str());
+      for (int j = 0; j < devices.size(); j++) {
+        if (devices[j].size() > 0) {
+          std::string title = "CD Audio " + devices[j];
+          AppendMenu(hCDMenu, 0, CDAUDIO_COMMAND + j, title.c_str());
+        }
       }
-    }
 
-    if (GetMenuItemCount(hCDMenu) == 0) {
-      AppendMenu(hCDMenu, 0, 0, "...");
-    }
+      if (GetMenuItemCount(hCDMenu) == 0) {
+        AppendMenu(hCDMenu, 0, 0, "...");
+      }
 
-    AppendMenu(hSubMenu, MF_POPUP | MF_STRING, (UINT_PTR) hCDMenu, "CD Player");
-  } while (false);
+      AppendMenu(hSubMenu, MF_POPUP | MF_STRING, (UINT_PTR) hCDMenu, "CD Player");
+    } while (false);
+  }
 
-  if (1) {
+  if (0) {
     int menu_count = GetMenuItemCount(hNewMenu);
-    char buffer[100000];
-    char temp[80];
+    //char buffer[100000];
+    //char temp[80];
 
-    sprintf (buffer, "%d", menu_count);
+    //sprintf (buffer, "%d", menu_count);
     
     for (int i = 0; i < menu_count; i++)
     {
-      char szPopupTitle[80];
+      char szPopupTitle[80] = {0};
       GetMenuString(hNewMenu, i, szPopupTitle, 80, MF_BYPOSITION);
 
-      sprintf (buffer + strlen(buffer), " <%s>", szPopupTitle);
+      //sprintf (buffer + strlen(buffer), " <%s>", szPopupTitle);
 
       HMENU hSubMenu = GetSubMenu(hNewMenu, i);
 
-      GetMenuString(hSubMenu, 0, temp, 80, MF_BYPOSITION);
-      sprintf (buffer + strlen(buffer), " [%s]", temp);
+      //GetMenuString(hSubMenu, 0, temp, 80, MF_BYPOSITION);
+      //sprintf (buffer + strlen(buffer), " [%s]", temp);
 
       TranslateMenu(hSubMenu);
 
-      GetMenuString(hSubMenu, 0, temp, 80, MF_BYPOSITION);
-      sprintf (buffer + strlen(buffer), " [%s]", temp);
-
-      sprintf (buffer + strlen(buffer), " (%d) ", GetMenuItemCount(hSubMenu));
+      //GetMenuString(hSubMenu, 0, temp, 80, MF_BYPOSITION);
+      //sprintf (buffer + strlen(buffer), " [%s]", temp);
+      //sprintf (buffer + strlen(buffer), " (%d) ", GetMenuItemCount(hSubMenu));
 
       RemoveMenu(hNewMenu, i, MF_BYPOSITION);
       InsertMenu(hNewMenu,
@@ -1091,17 +1095,17 @@ CMainWindow::UpdateMenu()
   {
     HMENU hProjectMenu = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_PROJECT));
 
-    char szPopupTitle[80];
+    char szPopupTitle[80] = {0};
     GetMenuString(hProjectMenu, 0, szPopupTitle, 80, MF_BYPOSITION);
 
     HMENU hProjectMenuSubMenu = GetSubMenu(hProjectMenu, 0);
-    TranslateMenu(hProjectMenuSubMenu);
+    //TranslateMenu(hProjectMenuSubMenu);
 
     InsertMenu(hNewMenu,
-               3,
+               iWindowMenu,
                MF_POPUP | MF_BYPOSITION | MF_STRING,
                (UINT_PTR) hProjectMenuSubMenu,
-               TranslateString(szPopupTitle));
+               /*TranslateString(*/szPopupTitle/*)*/);
 
     iWindowMenu++;
   }
@@ -1110,18 +1114,17 @@ CMainWindow::UpdateMenu()
   if (m_ChildMenuResource != -1)
   {
     HMENU hChildMenu = LoadMenu(hInstance, MAKEINTRESOURCE(m_ChildMenuResource));
-
-    char szPopupTitle[80];
+    char szPopupTitle[80] = {0};
     GetMenuString(hChildMenu, 0, szPopupTitle, 80, MF_BYPOSITION);
 
-    HMENU hSubMenu = GetSubMenu(hChildMenu, 0);
-    TranslateMenu(hSubMenu);
+    HMENU hChildMenuSubMenu = GetSubMenu(hChildMenu, 0);
+    //TranslateMenu(hChildMenuSubMenu);
 
     InsertMenu(hNewMenu,
                iWindowMenu,
                MF_POPUP | MF_BYPOSITION | MF_STRING,
-               (UINT_PTR) hSubMenu,
-               TranslateString(szPopupTitle));
+               (UINT_PTR) hChildMenuSubMenu,
+               /*TranslateString(*/szPopupTitle/*)*/);
 
     iWindowMenu++;
   }
@@ -1707,6 +1710,10 @@ CMainWindow::OnFileImportImageToMap()
   {
     MessageBox("Error: Could not build map from image '" + FileDialog.GetFileName() + "'");
     return;
+  }
+
+  if (map.GetNumLayers() > 0) {
+    map.GetLayer(0).SetName(FileDialog.GetFileName());
   }
 
   bool saved = map.Save(OutFileDialog.GetPathName());
@@ -3129,6 +3136,14 @@ afx_msg void
 CMainWindow::OnToolsIRCClient()
 {
   std::string address = Configuration::Get(KEY_IRC_ADDRESS);
+  if (address.length() == 0) {
+    address = "irc://irc.esper.net";
+  }
+  else
+  if (address.find("irc://") != 0) {
+    address = "irc://irc.esper.net";
+  }
+
   OpenGameFile(address.c_str());
 }
 #endif
@@ -3617,18 +3632,6 @@ CMainWindow::OnMapToolChanged()
 afx_msg LRESULT
 CMainWindow::OnInsertProjectFile(WPARAM wparam, LPARAM lparam)
 {
-  // local functions
-  struct Local {
-    static inline bool extension_compare(const char* path, const char* extension) {
-      int path_length = strlen(path);
-      int ext_length  = strlen(extension);
-      return (
-        path_length >= ext_length &&
-        strcmp(path + path_length - ext_length, extension) == 0
-      );
-    }
-  };
-
   const char* path = (const char*)lparam;
 
   // figure out what filetype the file is
@@ -3638,7 +3641,7 @@ CMainWindow::OnInsertProjectFile(WPARAM wparam, LPARAM lparam)
     FTL.GetFileTypeExtensions(i, false, extensions);
 
     for (unsigned int j = 0; j < extensions.size(); j++) {
-      if (Local::extension_compare(path, extensions[j].c_str())) {
+      if (extension_compare(path, extensions[j].c_str())) {
         InsertProjectFile(NULL, i, path);
         return 0;
       }

@@ -8,9 +8,11 @@
 #include "NumberDialog.hpp"
 //#include "Project.hpp"
 #include "Scripting.hpp"
-#include "FileSystem.hpp"
+//#include "FileSystem.hpp"
+#include "../common/system.hpp"
 #include "Configuration.hpp"
 #include "Keys.hpp"
+#include "filename_comparer.hpp"
 #include "resource.h"
 
 //#include "MainWindow.hpp"
@@ -731,43 +733,32 @@ CScriptWindow::CreateList(int type)
 CScriptWindow::ScriptType
 CScriptWindow::GetScriptType()
 {
-  struct Local {
-    static inline bool extension_compare(const char* path, const char* extension) {
-      int path_length = strlen(path);
-      int ext_length  = strlen(extension);
-      return (
-        path_length >= ext_length &&
-        strcmp(path + path_length - ext_length, extension) == 0
-      );
-    }
-  };
-
   if (strlen(GetDocumentPath()) == 0) {
     return SCRIPT_TYPE_UNDETERMINABLE;
   }
 
-  if (Local::extension_compare(GetDocumentPath(), ".js")) {
+  if (extension_compare(GetDocumentPath(), ".js")) {
     return SCRIPT_TYPE_JS;
   }
 
-  if (Local::extension_compare(GetDocumentPath(), ".py")) {
+  if (extension_compare(GetDocumentPath(), ".py")) {
     return SCRIPT_TYPE_PY;
   }
 
-  if (Local::extension_compare(GetDocumentPath(), ".cpp")
-   || Local::extension_compare(GetDocumentPath(), ".c")
-   || Local::extension_compare(GetDocumentPath(), ".hpp")
-   || Local::extension_compare(GetDocumentPath(), ".h")
-   || Local::extension_compare(GetDocumentPath(), ".cxx")
-   || Local::extension_compare(GetDocumentPath(), ".hxx")) {
+  if (extension_compare(GetDocumentPath(), ".cpp")
+   || extension_compare(GetDocumentPath(), ".c")
+   || extension_compare(GetDocumentPath(), ".hpp")
+   || extension_compare(GetDocumentPath(), ".h")
+   || extension_compare(GetDocumentPath(), ".cxx")
+   || extension_compare(GetDocumentPath(), ".hxx")) {
     return SCRIPT_TYPE_CPP;
   }
 
-  if (Local::extension_compare(GetDocumentPath(), ".java")) {
+  if (extension_compare(GetDocumentPath(), ".java")) {
     return SCRIPT_TYPE_JAVA;
   }
 
-  if (Local::extension_compare(GetDocumentPath(), ".txt")) {
+  if (extension_compare(GetDocumentPath(), ".txt")) {
     return SCRIPT_TYPE_TXT;
   }
 
@@ -820,6 +811,7 @@ CScriptWindow::IsIndentationFixable()
 
 static const int MARGIN_LINE_NUMBER_INDEX = 0;
 static const int MARGIN_SCRIPT_FOLD_INDEX = 1;
+static const int MARGIN_UNUSED = 2;
 
 void
 CScriptWindow::SetScriptStyles()
@@ -887,9 +879,9 @@ CScriptWindow::SetScriptStyles()
   // set all margins to zero width
   SendEditor(SCI_SETMARGINWIDTHN, MARGIN_LINE_NUMBER_INDEX, 0);
   SendEditor(SCI_SETMARGINWIDTHN, MARGIN_SCRIPT_FOLD_INDEX, 0);
-  SendEditor(SCI_SETMARGINWIDTHN, 2, 0);
+  SendEditor(SCI_SETMARGINWIDTHN, MARGIN_UNUSED, 0);
 
-  // set all margin types
+  // set margin type for line numbers
   SendEditor(SCI_SETMARGINTYPEN,  MARGIN_LINE_NUMBER_INDEX, SC_MARGIN_NUMBER);
 
   // for code folding
@@ -899,11 +891,15 @@ CScriptWindow::SetScriptStyles()
   SendEditor(SCI_SETPROPERTY, (WPARAM)"fold.comment", (LPARAM)"1");
   SendEditor(SCI_SETPROPERTY, (WPARAM)"fold.preprocessor", (LPARAM)"1");
 
-  SendEditor(SCI_SETMARGINWIDTHN, MARGIN_SCRIPT_FOLD_INDEX, 20);
+  // set margin type and mask and width for folding...
+  SendEditor(SCI_SETMARGINTYPEN, MARGIN_SCRIPT_FOLD_INDEX, SC_MARGIN_SYMBOL);
   SendEditor(SCI_SETMARGINMASKN, MARGIN_SCRIPT_FOLD_INDEX, SC_MASK_FOLDERS);
+  SendEditor(SCI_SETMARGINWIDTHN, MARGIN_SCRIPT_FOLD_INDEX, 20);
 
+  // make the fold margin sensitive to click events
   SendEditor(SCI_SETMARGINSENSITIVEN, MARGIN_SCRIPT_FOLD_INDEX, 1);
 
+  // define some markers for symbols for folding...
   SendEditor(SCI_MARKERDEFINE, SC_MARKNUM_FOLDER, SC_MARK_PLUS);
   SendEditor(SCI_MARKERDEFINE, SC_MARKNUM_FOLDEROPEN, SC_MARK_MINUS);
   SendEditor(SCI_MARKERDEFINE, SC_MARKNUM_FOLDEREND, SC_MARK_EMPTY);

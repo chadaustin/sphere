@@ -10,6 +10,7 @@
 #include "rendersort.hpp"
 #include "time.hpp"
 #include "PlayerConfig.hpp"
+#include "filesystem.hpp"
 
 static const int c_MaxSkipFrames = 10;
 
@@ -3284,13 +3285,26 @@ bool
 CMapEngine::OpenMap(const char* filename)
 {
   // load the map
-  std::string path = "maps/"; path += filename;
+  std::string path = "maps/";
+  int skip = pre_process_filename(filename, path);
+  if (skip != -1) { filename += skip; } else if (skip == -1) {
+    m_ErrorMessage = "Could not load map '";
+    m_ErrorMessage += filename;
+    m_ErrorMessage += "'";   
+    return false;
+  }
+  path += filename;
+
   if (!m_Map.Load(path.c_str(), m_FileSystem)) {
     m_ErrorMessage = "Could not load map '";
     m_ErrorMessage += filename;
     m_ErrorMessage += "'";
+
+    if (skip == strlen("/common/")) { LeaveDirectory(); }
     return false;
   }
+
+  if (skip == strlen("/common/")) { LeaveDirectory(); }
 
   m_CurrentMap = filename;
 
@@ -4898,11 +4912,14 @@ CMapEngine::UpdateZones(int person_index)
         if (!ExecuteZoneScript(i))
           return false;
 
-        ResetNextFrame();
+        // if we took more than a second to run the update script, reset the timer
+        if (qword(GetTime()) * m_FrameRate > m_NextFrame) {
+          ResetNextFrame();
+        }
 
         if (current_map != m_CurrentMap) {
           return true;
-        }      
+        }
       }
     }
   }
@@ -4951,6 +4968,7 @@ CMapEngine::UpdateDelayScripts()
 
       std::string error;
       if (!ExecuteScript(script, error) || !error.empty()) {
+        m_Engine->DestroyScript(script);
         m_ErrorMessage = "Could not execute delay script\n" + error;
         return false;
       }
@@ -5179,6 +5197,11 @@ CMapEngine::ProcessBoundKeyDown(int key)
 {
   KeyScripts& a = m_BoundKeys[key];
 
+  if (m_Engine->IsScriptBeingUsed(a.down)) {
+    m_ErrorMessage = "Key down script already running!";
+    return false;
+  }
+
   std::string error;
   if (!ExecuteScript(a.down, error)) {
     m_ErrorMessage = "Could not execute key down script\n" + error;
@@ -5195,6 +5218,11 @@ bool
 CMapEngine::ProcessBoundKeyUp(int key)
 {
   KeyScripts& a = m_BoundKeys[key];
+
+  if (m_Engine->IsScriptBeingUsed(a.up)) {
+    m_ErrorMessage = "Key up script already running!";
+    return false;
+  }
 
   std::string error;
   if (!ExecuteScript(a.up, error)) {
@@ -5369,10 +5397,10 @@ CMapEngine::FindObstructingTile(int person, int x, int y)
   int bx = (p.base_x1 + p.base_x2) / 2;
   int by = (p.base_y1 + p.base_y2) / 2;
 
-  int x1 = x - bx + std::min(p.base_x1, p.base_x2);
-  int y1 = y - by + std::min(p.base_y1, p.base_y2);
-  int x2 = x - bx + std::max(p.base_x2, p.base_x1);
-  int y2 = y - by + std::max(p.base_y2, p.base_y2);
+  int x1 = (x - bx) + std::min(p.base_x1, p.base_x2);
+  int y1 = (y - by) + std::min(p.base_y1, p.base_y2);
+  int x2 = (x - bx) + std::max(p.base_x2, p.base_x1);
+  int y2 = (y - by) + std::max(p.base_y2, p.base_y2);
 
   // test per-tile obstructions
   int min_x = (x1 < x2 ? x1 : x2);
@@ -5546,8 +5574,8 @@ CMapEngine::IsObstructed(int person, int x, int y, int& obs_person)
     m_Map.GetMap().GetLayer(p.layer).GetObstructionMap();
 
   // test obstruction map
-  int bx = (p.base_x1 + p.base_x2) / 2;
-  int by = (p.base_y1 + p.base_y2) / 2;
+  int bx = (p.base_x1 == p.base_x2) ? 1 : ((p.base_x1 + p.base_x2) / 2);
+  int by = (p.base_y1 == p.base_y2) ? 1 : ((p.base_y1 + p.base_y2) / 2);
 
   int x1 = x - bx + p.base_x1;
   int y1 = y - by + p.base_y1;

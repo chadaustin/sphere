@@ -96,13 +96,16 @@ namespace Configuration {
       std::string hex;
       BYTE* data = (BYTE*)ToRaw(val);
       if (!data) return;
+
       for (int i = 0; i < GetTypeSize<T::type>(T::type()); i++) {
         hex += ToHex(data[i] >> 4);
         hex += ToHex(data[i] & 0x0F);
       }
       delete[] data;
 
-      WritePrivateProfileString("editor", T::keyname, hex.c_str(), ConfigurationFile.c_str());
+      if (WritePrivateProfileString("editor", T::keyname, hex.c_str(), ConfigurationFile.c_str()) == 0) {
+
+      }
     }
     
 
@@ -167,8 +170,12 @@ namespace Configuration {
     template<>
     inline void* ToRaw<std::string>(std::string val)
     {
-        char* str = new char[GetTypeSize<std::string>(std::string())];
-        if (str) strcpy(str, val.c_str());
+        int size = GetTypeSize<std::string>(std::string());
+        char* str = new char[size];
+        if (str) {
+          memset(str, 0, size);
+          strcpy(str, val.c_str());
+        }
         return str;
     }
 

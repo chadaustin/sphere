@@ -37,6 +37,16 @@ CDocumentWindow::CDocumentWindow(const char* document_path, int menu_resource, c
 , m_MinSize(min_size)
 , m_DocumentType(0)
 {
+  /*
+  if (m_MenuResource != IDR_IRC
+   && m_MenuResource != IDR_ANIMATION
+   && m_MenuResource != IDR_BROWSE
+   && m_MenuResource != IDR_SOUND
+   && m_MenuResource != IDR_WINDOWSTYLE) {
+    m_MenuResource = -1;
+  }
+  */
+
   if (document_path) {
     strcpy(m_DocumentPath, document_path);
   } else {
@@ -431,8 +441,7 @@ CDocumentWindow::OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactiv
   else
   {
     // clear the child menu and update the palette menu
-    if (active_window == NULL)
-      pFrame->SendMessage(WM_CLEAR_CHILD_MENU);
+    pFrame->SendMessage(WM_CLEAR_CHILD_MENU);
 
 #ifdef USE_SIZECBAR
     // save the bar state based on the document class

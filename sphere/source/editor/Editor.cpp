@@ -278,15 +278,18 @@ CEditorApplication::InitInstance()
   }
 
   // set the configuration directory
-  char config_directory[MAX_PATH];
-  GetModuleFileName(m_hInstance, config_directory, MAX_PATH);
-  if (strrchr(config_directory, '\\'))
+  char config_directory[MAX_PATH] = {0};
+  GetModuleFileName(m_hInstance, config_directory, MAX_PATH); 
+  if (strrchr(config_directory, '\\')) {
     *strrchr(config_directory, '\\') = 0;
-  Configuration::ConfigurationFile = std::string(config_directory) + "\\editor.ini";
+  }
+
+  std::string editor_config = std::string(config_directory) + "\\editor.ini";
+  std::string engine_config = std::string(config_directory) + "\\engine.ini";
+
+  Configuration::ConfigurationFile = editor_config;
   SetCurrentDirectory(config_directory);
-
   s_SphereDirectory = config_directory;
-
   SetLanguage(Configuration::Get(KEY_LANGUAGE).c_str());
 
   // create the main window
@@ -305,7 +308,7 @@ CEditorApplication::InitInstance()
   }
 
   SPHERECONFIG sphere_config;
-  LoadSphereConfig(&sphere_config, "engine.ini");
+  LoadSphereConfig(&sphere_config, engine_config.c_str());
 
   // parse the command line
   CEditorCommandLineInfo cli(main_window);

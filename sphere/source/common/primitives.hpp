@@ -106,6 +106,10 @@ void Line(
     return;
   }
 
+  if (clipper.right == 0 || clipper.bottom == 0) {
+    return;
+  }
+
   // store original coordinates for correct color interpolation
   int o_x1 = x1;
   int o_x2 = x2;

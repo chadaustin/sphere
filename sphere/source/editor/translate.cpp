@@ -44,8 +44,8 @@ const char* TranslateString(const char* string)
 void TranslateMenu(HMENU menu)
 {
   int count = GetMenuItemCount(menu);
-  for (int i = 0; i < count; i++) {
-
+  for (int i = 0; i < count; i++)
+  {
     char buffer[1024] = {0};
     GetMenuString(menu, i, buffer, 1000, MF_BYPOSITION);
     if (strlen(buffer) > 0) {

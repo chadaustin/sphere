@@ -18,6 +18,32 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
+int pre_process_filename(const char* filename, std::string& path)
+{
+  if (strlen(filename) >= strlen("/common/")) {
+    if (memcmp(filename, "/common/", strlen("/common/")) == 0) {
+      // switch to sphere directory
+      if (!EnterDirectory(GetSphereDirectory().c_str())) {
+        return -1;
+      }
+
+      path = "common/";
+      return strlen("/common/");
+    }
+  }
+
+  if (strlen(filename) >= strlen("~/")) {
+    if (memcmp(filename, "~/", strlen("~/")) == 0) {
+      path = "";
+      return strlen("~/");
+    }
+  }
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 bool IsMidi(const char* filename)
 {
   struct Local {
@@ -73,7 +99,8 @@ CGameEngine::Run()
   // initialize - load game information
   CConfigFile game_information;
   if ( !game_information.Load("game.sgm", m_FileSystem) ) {
-  //  ShowError("Unable to load game.sgm");
+    ShowError("Unable to load game.sgm");
+    return "";
   }
 
   int game_width  = game_information.ReadInt("", "screen_width",  320);
@@ -306,22 +333,32 @@ CGameEngine::GetScriptText(const char* filename, std::string& text)
 {
   // calculate path
   std::string path = "scripts/";
+  int skip = pre_process_filename(filename, path);
+  if (skip != -1) { filename += skip; } else if (skip == -1) { return false; }
   path += filename;
 
   // open file
   std::auto_ptr<IFile> file(m_FileSystem.Open(path.c_str(), IFileSystem::read));
   if (!file.get()) {
+    if (skip == strlen("/common/")) { LeaveDirectory(); }
     return false;
   }
 
   // read script
   int size = file->Size();
   char* script = new char[size + 1];
+  if (script == NULL) {
+    if (skip == strlen("/common/")) { LeaveDirectory(); }
+    return false;
+  }
+
   file->Read(script, size);
   script[size] = 0;
 
   text = script;
   delete[] script;
+
+  if (skip == strlen("/common/")) { LeaveDirectory(); }
 
   return true;
 }
@@ -409,12 +446,9 @@ CGameEngine::CompileScript(const char* script, std::string& error)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <assert.h>
-
 bool
 CGameEngine::IsScriptBeingUsed(script s)
 {
-  assert(s);
   CScriptCode* so = (CScriptCode*)s;
   return so->IsBeingUsed();
 }
@@ -425,6 +459,9 @@ bool
 CGameEngine::ExecuteScript(script s, bool& should_exit, std::string& error)
 {
   CScriptCode* so = (CScriptCode*)s;
+  if (!so) {
+    return false;
+  }
 
   // evaluating the script might invalidate the script object
   so->AddRef();
@@ -484,8 +521,12 @@ CGameEngine::OpenLog(const char* filename)
 void
 CGameEngine::CloseLog(CLog* log)
 {
-  log->Close();
-  delete log;
+  if (log) {
+    log->Close();
+    delete log;
+  }
+
+  log = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -494,22 +535,31 @@ SSPRITESET*
 CGameEngine::LoadSpriteset(const char* filename)
 {
   std::string path = "spritesets/";
+  int skip = pre_process_filename(filename, path);
+  if (skip != -1) { filename += skip; } else if (skip == -1) { return NULL; }
   path += filename;
 
 #ifndef USE_SPRITESET_SERVER
   // load spriteset
   SSPRITESET* ss = new SSPRITESET;
-  if (!ss)
+  if (!ss) {
+    if (skip == strlen("/common/")) { LeaveDirectory(); }
     return NULL;
+  }
 
   if (!ss->Load(path.c_str(), m_FileSystem, std::string(filename))) {
+    if (skip == strlen("/common/")) { LeaveDirectory(); }
     ss->Release();
     return NULL;
   }
 
+  if (skip == strlen("/common/")) { LeaveDirectory(); }
+
   return ss;
 #else
-  return m_SpritesetServer.Load(path.c_str(), m_FileSystem);
+  SSPRITESET* ss = m_SpritesetServer.Load(path.c_str(), m_FileSystem);
+  if (skip == strlen("/common/")) { LeaveDirectory(); }
+  return ss;
 #endif
 }
 
@@ -518,11 +568,13 @@ CGameEngine::LoadSpriteset(const char* filename)
 void
 CGameEngine::DestroySpriteset(SSPRITESET* spriteset)
 {
+  if (spriteset) {
 #ifndef USE_SPRITESET_SERVER
-  spriteset->Release();
+    spriteset->Release();
 #else
-  m_SpritesetServer.Free(spriteset);
+    m_SpritesetServer.Free(spriteset);
 #endif
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -539,17 +591,24 @@ SFONT*
 CGameEngine::LoadFont(const char* filename)
 {
   std::string path = "fonts/";
+  int skip = pre_process_filename(filename, path);
+  if (skip != -1) { filename += skip; } else if (skip == -1) { return NULL; }
   path += filename;
 
   // load font
   SFONT* font = new SFONT;
-  if (!font)
+  if (!font) {
+    if (skip == strlen("/common/")) { LeaveDirectory(); }
     return NULL;
+  }
 
   if (!font->Load(path.c_str(), m_FileSystem)) {
+    if (skip == strlen("/common/")) { LeaveDirectory(); }
     delete font;
     return NULL;
   }
+
+  if (skip == strlen("/common/")) { LeaveDirectory(); }
 
   return font;
 }
@@ -559,7 +618,11 @@ CGameEngine::LoadFont(const char* filename)
 void
 CGameEngine::DestroyFont(SFONT* font)
 {
-  delete font;
+  if (font) {
+    delete font;
+  }
+
+  font = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -576,17 +639,24 @@ SWINDOWSTYLE*
 CGameEngine::LoadWindowStyle(const char* filename)
 {
   std::string path = "windowstyles/";
+  int skip = pre_process_filename(filename, path);
+  if (skip != -1) { filename += skip; } else if (skip == -1) { return NULL; }
   path += filename;
 
   // load window style
   SWINDOWSTYLE* ws = new SWINDOWSTYLE;
-  if (!ws)
+  if (!ws) {
+    if (skip == strlen("/common/")) { LeaveDirectory(); }
     return NULL;
+  }
 
   if (!ws->Load(path.c_str(), m_FileSystem)) {
+    if (skip == strlen("/common/")) { LeaveDirectory(); }
     delete ws;
     return NULL;
   }
+
+  if (skip == strlen("/common/")) { LeaveDirectory(); }
 
   return ws;
 }
@@ -596,7 +666,10 @@ CGameEngine::LoadWindowStyle(const char* filename)
 void
 CGameEngine::DestroyWindowStyle(SWINDOWSTYLE* ws)
 {
-  delete ws;
+  if (ws) {
+    delete ws;
+  }
+
   ws = NULL;
 }
 
@@ -720,14 +793,19 @@ IMAGE
 CGameEngine::LoadImage(const char* filename)
 {
   std::string path = "images/";
+  int skip = pre_process_filename(filename, path);
+  if (skip != -1) { filename += skip; } else if (skip == -1) { return NULL; }
   path += filename;
 
   // load the image
   CImage32 image;
   if (!image.Load(path.c_str(), m_FileSystem)) {
+    if (skip == strlen("/common/")) { LeaveDirectory(); }
     return NULL;
   }
 
+  if (skip == strlen("/common/")) { LeaveDirectory(); }
+ 
   return CreateImage(image.GetWidth(), image.GetHeight(), image.GetPixels());
 }
 
@@ -745,15 +823,19 @@ CImage32*
 CGameEngine::LoadSurface(const char* filename)
 {
   std::string path = "images/";
+  int skip = pre_process_filename(filename, path);
+  if (skip != -1) { filename += skip; } else if (skip == -1) { return NULL; }
   path += filename;
 
   // load image
   CImage32* image = new CImage32;
   if (!image || !image->Load(path.c_str(), m_FileSystem)) {
+    if (skip == strlen("/common/")) { LeaveDirectory(); }
     delete image;
     return NULL;
   }
 
+  if (skip == strlen("/common/")) { LeaveDirectory(); }
   return image;
 }
 
@@ -762,7 +844,10 @@ CGameEngine::LoadSurface(const char* filename)
 void
 CGameEngine::DestroySurface(CImage32* surface)
 {
-  delete surface;
+  if (surface) {
+    delete surface;
+  }
+
   surface = NULL;
 }
 
@@ -772,9 +857,15 @@ IAnimation*
 CGameEngine::LoadAnimation(const char* filename)
 {
   std::string path = "animations/";
+  int skip = pre_process_filename(filename, path);
+  if (skip != -1) { filename += skip; } else if (skip == -1) { return NULL; }
   path += filename;
 
-  return ::LoadAnimation(path.c_str(), m_FileSystem);
+  IAnimation* anim = ::LoadAnimation(path.c_str(), m_FileSystem);
+
+  if (skip == strlen("/common/")) { LeaveDirectory(); }
+  
+  return anim;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -851,6 +942,7 @@ CGameEngine::OpenFile(const char* filename)
   fi.filename = filename;
   fi.refcount = 1;
   m_OpenFiles[file] = fi;
+
   return file;
 }
 

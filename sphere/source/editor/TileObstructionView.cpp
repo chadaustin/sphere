@@ -27,7 +27,12 @@ CTileObstructionView::CTileObstructionView()
 
 CTileObstructionView::~CTileObstructionView()
 {
-  delete[] m_pixels;
+  if (m_pixels) {
+    delete[] m_pixels;
+  }
+
+  m_pixels = NULL;
+  m_tile = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -35,9 +40,18 @@ CTileObstructionView::~CTileObstructionView()
 BOOL
 CTileObstructionView::Create(CWnd* parent, sTile* tile)
 {
+  if (m_pixels) {
+    delete[] m_pixels;
+    m_pixels = NULL;
+  }
+
   m_tile = tile;
 
-  m_pixels = new RGBA[tile->GetWidth() * tile->GetHeight()];
+  if (tile != NULL) {
+    if (tile->GetWidth() > 0 && tile->GetHeight() > 0) {
+      m_pixels = new RGBA[tile->GetWidth() * tile->GetHeight()];
+    }
+  }
 
   m_BlitTile.Create(16, 16, 32);
   
@@ -63,7 +77,7 @@ CTileObstructionView::OnPaint()
   RECT rect;
   GetClientRect(&rect);
 
-  if (!m_pixels) {
+  if (!m_pixels || !m_tile) {
     FillRect(dc, &rect, (HBRUSH)GetStockObject(BLACK_BRUSH));
     return;
   }
@@ -108,12 +122,15 @@ CTileObstructionView::OnLButtonUp(UINT flags, CPoint point)
 {
   CPoint end_point = WindowToTile(point);
 
-  m_tile->GetObstructionMap().AddSegment(
-    m_start_point.x,
-    m_start_point.y,
-    end_point.x,
-    end_point.y
-  );
+  if (m_tile != NULL) {
+
+    m_tile->GetObstructionMap().AddSegment(
+      m_start_point.x,
+      m_start_point.y,
+      end_point.x,
+      end_point.y
+    );
+  }
 
   m_mouse_down = false;
   ReleaseCapture();
@@ -136,7 +153,10 @@ afx_msg void
 CTileObstructionView::OnRButtonDown(UINT flags, CPoint point)
 {
   point = WindowToTile(point);
-  m_tile->GetObstructionMap().RemoveSegmentByPoint(point.x, point.y);
+  if (m_tile != NULL) {
+    m_tile->GetObstructionMap().RemoveSegmentByPoint(point.x, point.y);
+  }
+
   Invalidate();
 }
 
@@ -145,7 +165,7 @@ CTileObstructionView::OnRButtonDown(UINT flags, CPoint point)
 void
 CTileObstructionView::RenderTile()
 {
-  if (!m_pixels)
+  if (!m_pixels || !m_tile)
     return;
 
   struct Local {
@@ -172,9 +192,12 @@ CTileObstructionView::RenderTile()
   Local::Color c;
   RECT clipper = { 0, 0, m_tile->GetWidth() - 1, m_tile->GetHeight() - 1 };
   sObstructionMap& obs_map = m_tile->GetObstructionMap();
+
   for (int i = 0; i < obs_map.GetNumSegments(); i++) {
     
     const sObstructionMap::Segment& s = obs_map.GetSegment(i);
+
+    //(x1 = 0, s2 = 2, y1 = 0, y2 = 1)
 
     primitives::Line(
       m_pixels,
@@ -188,6 +211,16 @@ CTileObstructionView::RenderTile()
       Local::CopyRGBA
     );
   }
+
+  /*
+  for (int y = 0; y < m_tile->GetHeight(); y++) {
+    for (int x = 0; x < m_tile->GetWidth(); x++) {
+      if (obs_map.TestRectangle(x, y, x, y)) {
+        primitives::Point(m_pixels, m_tile->GetWidth(), x, y, CreateRGBA(0, 255, 0, 255), clipper, Local::CopyRGBA);
+      }
+    }
+  }
+  */
 
   // draw current line
   if (m_mouse_down) {

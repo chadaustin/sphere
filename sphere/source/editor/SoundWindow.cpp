@@ -6,6 +6,7 @@
 #include "SoundWindow.hpp"
 #include "Editor.hpp"
 #include "translate.hpp"
+#include "filename_comparer.hpp"
 #include "Configuration.hpp"
 #include "Keys.hpp"
 #include "resource.h"
@@ -673,24 +674,13 @@ CSoundWindow::OnDropFiles(HDROP drop_info)
 
   UINT num_files = DragQueryFile(drop_info, 0xFFFFFFFF, NULL, 0);
 
-  struct Local {
-    static inline bool extension_compare(const char* path, const char* extension) {
-      int path_length = strlen(path);
-      int ext_length  = strlen(extension);
-      return (
-        path_length >= ext_length &&
-        strcmp(path + path_length - ext_length, extension) == 0
-      );
-    }
-  };
-
   // add all files to the playlist
   for (unsigned int i = 0; i < num_files; i++) {
 
     char path[MAX_PATH + 1] = {0};
     if (DragQueryFile(drop_info, i, path, MAX_PATH) != 0) {
 
-      if (Local::extension_compare(path, ".m3u"))
+      if (extension_compare(path, ".m3u"))
         m_Playlist.LoadFromFile(path);
       else
         m_Playlist.AppendFile(path);

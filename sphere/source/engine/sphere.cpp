@@ -91,7 +91,7 @@ void RunSphere(int argc, const char** argv)
         RunGame(argv[i + 1], parameters);
         LeaveDirectory();
       } else {
-        QuitMessage("could not enter 'games' directory");
+        QuitMessage("Could not enter 'games' directory");
         return;
       }
       show_menu = false;
@@ -157,8 +157,14 @@ void RunSphere(int argc, const char** argv)
   // start the game specified on the command line
   if (show_menu) {
     if (s_GameList.size() == 1) {
-      std::string directory = "games/" + s_GameList[0].directory;
-      RunGame(directory.c_str(), "");
+      // run the game
+      if (EnterDirectory("games")) {
+        RunGame(s_GameList[0].directory.c_str(), "");
+        LeaveDirectory();
+      } else {
+        QuitMessage("Could not enter 'games' directory");
+        return;
+      }
     }
     else {
       RunGame("startup", "");

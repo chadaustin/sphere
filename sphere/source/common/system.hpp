@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <string>
+#include <list>
 
 #ifndef MAX_PATH
 #define MAX_PATH 255
@@ -29,5 +30,12 @@ std::string GetFileTitle(const char* filename);
 std::string GetFilePath(const char* filename);
 bool IsDirectory(const char* filename);
 bool IsFile(const char* filename);
+
+///
+
+extern bool PathExists(const char* pathname);
+extern bool FileExists(const char* filename);
+extern unsigned long  FileSize(const char* filename);
+extern bool EnumerateFiles(const char* filter, const char* directory, const char* directory_prefix, std::list<std::string>& files);
 
 #endif // SYSTEM_HPP
