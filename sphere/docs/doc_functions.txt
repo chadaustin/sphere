@@ -624,6 +624,9 @@ log_object.endBlock()
       GetPersonSpriteset(name)
         - returns the person's spriteset.
 
+      GetPersonBase(name)
+        - returns the person's base obstruction object.
+
       SetPersonMask(name, color)
         - sets a color multiplier to use when drawing sprites.  if the color is
           RGBA:(255, 0, 0, 255), only the red elements of the sprite are drawn.

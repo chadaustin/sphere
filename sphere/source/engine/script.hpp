@@ -121,6 +121,9 @@ private:
   declare_constructor1(CreateSpritesetObject, SSPRITESET* spriteset);
   declare_finalizer(ssFinalizeSpriteset);
 
+  // spriteset base
+  declare_constructor1(CreateSpritesetBaseObject, SSPRITESET* spriteset);
+
   // sounds
   declare_constructor1(CreateSoundObject, audiere::OutputStream* sound);
   declare_finalizer(ssFinalizeSound);

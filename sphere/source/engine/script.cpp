@@ -2770,6 +2770,20 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+begin_func(GetPersonBase, 1)
+  arg_str(name);
+
+  SSPRITESET* spriteset = This->m_Engine->GetMapEngine()->GetPersonSpriteset(name);
+  if (spriteset == NULL) {
+    JS_ReportError(cx, "Could not find person '%s'", name);
+    return JS_FALSE;
+  }
+
+  return_object(CreateSpritesetBaseObject(cx, spriteset));
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
 begin_func(SetPersonMask, 2)
   arg_str(name);
   arg_color(mask);
@@ -3587,6 +3601,27 @@ end_property()
 ////////////////////////////////////////
 
 JSObject*
+CScript::CreateSpritesetBaseObject(JSContext* cx, SSPRITESET* spriteset)
+{
+  static JSClass base_clasp = {
+    "base", 0,
+    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+    JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
+  };
+
+  JSObject* base_object = JS_NewObject(cx, &base_clasp, NULL, NULL);
+
+  int x1, y1, x2, y2;
+  spriteset->GetSpriteset().GetBase(x1, y1, x2, y2);
+  JS_DefineProperty(cx, base_object, "x1", INT_TO_JSVAL(x1), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+  JS_DefineProperty(cx, base_object, "y1", INT_TO_JSVAL(y1), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+  JS_DefineProperty(cx, base_object, "x2", INT_TO_JSVAL(x2), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+  JS_DefineProperty(cx, base_object, "y2", INT_TO_JSVAL(y2), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+  return base_object;
+}
+
+JSObject*
 CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
 {
   // define class
@@ -3607,13 +3642,6 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
     JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
     JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
   };
-
-  static JSClass base_clasp = {
-    "base", 0,
-    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
-    JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
-  };
-
 
   JSObject* local_roots = JS_NewArrayObject(cx, 0, 0);
   JS_AddRoot(cx, &local_roots);
@@ -3700,20 +3728,11 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
     }
   }
 
+  // define the base object
 
-  // DEFINE BASE OBJECT
-
-  JSObject* base_object = JS_NewObject(cx, &base_clasp, NULL, NULL);
+  JSObject* base_object = CreateSpritesetBaseObject(cx, spriteset);
   jsval base_val = OBJECT_TO_JSVAL(base_object);
   JS_SetElement(cx, local_roots, 3, &base_val);
-
-  int x1, y1, x2, y2;
-  spriteset->GetSpriteset().GetBase(x1, y1, x2, y2);
-  JS_DefineProperty(cx, base_object, "x1", INT_TO_JSVAL(x1), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
-  JS_DefineProperty(cx, base_object, "y1", INT_TO_JSVAL(y1), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
-  JS_DefineProperty(cx, base_object, "x2", INT_TO_JSVAL(x2), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
-  JS_DefineProperty(cx, base_object, "y2", INT_TO_JSVAL(y2), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
-
   
   // define the properties for this object
   JS_DefineProperty(
