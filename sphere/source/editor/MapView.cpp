@@ -1674,10 +1674,10 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
     int offset_y;
     GetRedrawRect(offset_x, offset_y, width, height);
 
-    if (tx >= m_CurrentCursorTileX - (offset_x/tile_width) && 
-        ty >= m_CurrentCursorTileY - (offset_y/tile_height) &&
-        tx < m_CurrentCursorTileX + (width/tile_width) - (offset_x/tile_width) &&
-        ty < m_CurrentCursorTileY + (height/tile_height) - (offset_x/tile_width) &&
+    if (tx >= m_CurrentCursorTileX - (offset_x/(tile_width*m_ZoomFactor)) && 
+        ty >= m_CurrentCursorTileY - (offset_y/(tile_height*m_ZoomFactor)) &&
+        tx < m_CurrentCursorTileX + (width/(tile_width*m_ZoomFactor)) - (offset_x/(tile_width*m_ZoomFactor)) &&
+        ty < m_CurrentCursorTileY + (height/(tile_height*m_ZoomFactor)) - (offset_x/(tile_width*m_ZoomFactor)) &&
         tx <= GetTotalTilesX() &&
         ty <= GetTotalTilesY())
       {
