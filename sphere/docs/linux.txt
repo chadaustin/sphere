@@ -95,6 +95,13 @@ rpm -i scons-0.13-1.noarch.rpm
 
 If all goes well, you now should be able to move onto installing sphere.
 
+Getting the source
+
+Using your favorite CVS client, download the sphere module from CVS.
+Instructions are at <https://sourceforge.net/cvs/?group_id=1551>.
+
+Once you've done that, goto the directory and run SCons
+
 cd sphere
 scons
 

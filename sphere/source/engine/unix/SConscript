@@ -8,7 +8,6 @@ env.Library('unix', Split("""
     unix_audio.cpp
     unix_filesystem.cpp
     unix_input.cpp
-    unix_main.cpp
     unix_network.cpp
     unix_screenshot.cpp
     unix_system.cpp

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../../third-party/NL.h" // HawkNL
+#include <NL.h> // HawkNL avialable at: http://www.hawksoft.com/hawknl/
 #include "sdl_network.hpp"
 
 
