@@ -56,6 +56,16 @@ CSpritesetWindow::CSpritesetWindow(const char* filename)
       MessageBox("Could not load spriteset.\nCreating empty spriteset.");
     }
     m_Spriteset.Create(16, 32, 1, 8, 1);
+
+    m_Spriteset.SetDirectionName(0, "north");
+    m_Spriteset.SetDirectionName(1, "northeast");
+    m_Spriteset.SetDirectionName(2, "east");
+    m_Spriteset.SetDirectionName(3, "southeast");
+    m_Spriteset.SetDirectionName(4, "south");
+    m_Spriteset.SetDirectionName(5, "southwest");
+    m_Spriteset.SetDirectionName(6, "west");
+    m_Spriteset.SetDirectionName(7, "northwest");
+
     SetSaved(false);
   }
 
