@@ -40,3 +40,4 @@ extern int      SA_GetPosition(SA_SOUND sound);
 extern int      SA_IsPlaying(SA_SOUND sound);
 
 #endif
+

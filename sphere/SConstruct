@@ -161,7 +161,11 @@ class Compiler:
             env.Append(LIBS = ['mng', 'jpeg', 'z'])
 
     def SetupSDL(self, env):
+        env.Append(CPPPATH = ['#/source/engine/unix'],
+                   LIBPATH = ['#/source/engine/unix'],
+                   LIBS = ['unix'])
         autocons.ParseConfig(env, 'sdl-config', ['--cflags', '--libs'])
+        
 
     def SetupSphereCommon(self, env):
         env.Append(CPPPATH = ['#/source/common'],

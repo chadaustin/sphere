@@ -1,4 +1,5 @@
 #include "../../common/primitives.hpp"
+#include "../../common/sphere_version.h"
 #include "../sfont.hpp"
 #include "unix_video.h"
 #include "unix_time.h"
@@ -49,28 +50,35 @@ static int ScreenHeight;
     image_blit_height -= (y + height - ClippingRectangle.bottom - 1)
 
 /* \brief set the fps font
-
-  This font will be used to the display the frames per second counter on the screen */
+  This font will be used to the display the frames per second counter on the screen
+ */
 void SetFPSFont (SFONT* font) {
   FPSFont = font;
 }
 
-/* \brief toggle display of frames per second */
+/*
+ \brief toggle display of frames per second
+*/
 void ToggleFPS () {
   FPSDisplayed = !FPSDisplayed;
 }
 
-/*! \brief switch the screen resolution
+/*!
+  \brief switch the screen resolution
 
   This is where all the fun begins.  If this is the first time that SwitchResolution
-  is called, SDL is initialized. */
+  is called, SDL is initialized.
+ */
 bool SwitchResolution (int x, int y, bool fullscreen) {
   static bool initialized = false;
+
+  char caption[80];
+  sprintf(caption, "Sphere %s", SPHERE_VERSION);
 
   if (!initialized) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
-   SDL_WM_SetCaption("Sphere 0.97" , NULL);
+   SDL_WM_SetCaption(caption , NULL);
    InitializeInput();
    initialized = true;
   } else {
@@ -78,7 +86,7 @@ bool SwitchResolution (int x, int y, bool fullscreen) {
     if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
    /* FIXME: the title of the game or something should be set here instead */
-   SDL_WM_SetCaption("Sphere 0.97", NULL);
+   SDL_WM_SetCaption(caption, NULL);
   }
   if (fullscreen)
    screen = SDL_SetVideoMode(x, y, 32, SDL_DOUBLEBUF | SDL_FULLSCREEN);

@@ -7,8 +7,13 @@ COMPILER.SetupSphereCommon(env)
 COMPILER.SetupCorona(env)
 COMPILER.SetupZLib(env)
 
-utils = ['alphamerge', 'chr2rss', 'image2map', 'image2rss', 'rss2image',
-         'setrsstrans', 'spktest', 'tst2rts', 'vmap2rmp', 'vsp2rts']
+# spktest is win32 only
+if COMPILER.is_win32():
+    utils = ['alphamerge', 'chr2rss', 'image2map', 'image2rss', 'rss2image',
+             'setrsstrans', 'spktest', 'tst2rts', 'vmap2rmp', 'vsp2rts']
+else:
+    utils = ['alphamerge', 'chr2rss', 'image2map', 'image2rss', 'rss2image',
+             'setrsstrans', 'tst2rts', 'vmap2rmp', 'vsp2rts']
 
 for u in utils:
     program = env.Program(os.path.join(u, u), os.path.join(u, u + '.cpp'))

@@ -1,6 +1,6 @@
 #include "unix_input.h"
 #include "unix_video.h"
-#include "SDL.h"
+#include <SDL.h>
 #include <deque>
 #include <iostream>
 
