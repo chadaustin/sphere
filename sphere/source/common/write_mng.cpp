@@ -485,6 +485,10 @@ mng_retcode mng_putpngimage(mng_handle hMNG, const RGBA* pixels, const int width
   // If the number of colors could be MNG_BITDEPTH_1, MNG_BITDEPTH_2 or MNG_BITDEPTH_4
   // we could probably fit more colors per pixel, but I only support MNG_BITDEPTH_8 for now
 
+  if (has_alpha) {
+    pixel_size = sizeof(RGBA);
+  }
+
   /*
   unsigned long num_colors = CountColorsUsed(pixels, width, height, x, y, w, h);
   mng_int8 bit_depth = MNG_BITDEPTH_8;

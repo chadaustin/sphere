@@ -812,6 +812,8 @@ CMapEngine::ExecuteZones(int location_x, int location_y, int layer) {
   if ( IsInvalidLayerError(layer, "ExecuteZones()") )
     return false;
 
+  std::string current_map = m_CurrentMap;
+
   bool found = false;
   for (int i = 0; i < m_Map.GetMap().GetNumZones(); i++) {
     if (IsPointWithinZone(location_x, location_y, layer, i)) {
@@ -821,6 +823,9 @@ CMapEngine::ExecuteZones(int location_x, int location_y, int layer) {
       if ( !ExecuteZoneScript(i) ) {
         return false;
       }
+
+      if (current_map != m_CurrentMap)
+        return true;
     }
   }
 
@@ -3146,8 +3151,9 @@ CMapEngine::DestroyTriggers()
 bool
 CMapEngine::LoadZones()
 {
-  for (int i = 0; i < m_Map.GetMap().GetNumZones(); i++) {
-    sMap::sZone& zone = m_Map.GetMap().GetZone(i);
+  for (int i = 0; i < m_Map.GetMap().GetNumZones(); i++)
+  {
+    sMap::sZone zone = m_Map.GetMap().GetZone(i);
     std::string error;
     Zone z;
 
@@ -3162,9 +3168,7 @@ CMapEngine::LoadZones()
     z.script = m_Engine->CompileScript(zone.script.c_str(), error);
     if (z.script == NULL) {
       // destroy scripts that have been created so far
-      for (unsigned j = 0; j < m_Zones.size(); j++) {
-        m_Engine->DestroyScript(m_Zones[i].script);
-      }
+      DestroyZones();
 
       // build error message and return
       std::ostringstream os;
@@ -3194,6 +3198,7 @@ CMapEngine::DestroyZones()
 {
   for (unsigned i = 0; i < m_Zones.size(); i++) {
     m_Engine->DestroyScript(m_Zones[i].script);
+    m_Zones[i].script = NULL;
   }
   m_Zones.clear();
 }
@@ -4068,6 +4073,8 @@ CMapEngine::UpdateZones()
     // check if the person is inside the zone
     if (IsPersonInsideZone(m_InputPerson, i)) {
 
+      std::string current_map = m_CurrentMap;
+
       Zone& z = m_Zones[i];
       z.current_step--;
       if (z.current_step < 0) {
@@ -4075,6 +4082,10 @@ CMapEngine::UpdateZones()
 
         if (!ExecuteZoneScript(i))
           return false;
+
+        if (current_map != m_CurrentMap) {
+          return false;
+        }
 
         ResetNextFrame();
       }
