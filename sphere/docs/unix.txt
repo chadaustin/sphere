@@ -16,22 +16,21 @@ be available until Audiere has been ported to UNIX also.
 Instructions on building Sphere from source:
 
   1. Enter the top-level directory
-**2. ./configure --with-data spheredatadirectory (i.e. /usr/local/games/sphere)
+**2. ./configure --with-data=spheredatadirectory (i.e. /usr/local/games/sphere)
   3. gmake (usually just make on most systems)
-  optional: put a game in the games directory you specified during configure and run
-            ./source/engine/sphere
   4. gmake install to install sphere
-  5. gmake install-data to install necessary data files
+  5. gmake install-data to install necessary data files (only if you specified
+     a data directory)
   6. drop more games in the games directory and enjoy!
 
 * The creator of Sphere (Chad Austin) assumes that Sphere will not run correctly
 on big-endian machines.  From looking at the code I would have to agree.  If you
 manage to run sphere on a big-endian machine, please tell us!
 
-** If you choose not to specify a data directory it will default to $datadir/sphere
-for your system (usually $prefix/share/sphere).  You can override the default data
-directory by setting the environment variable SPHERE_DATA_DIR or by using the
-option --data=directory from the commandline.  You may specify --enable-debug if
-you want debugging symbols (and consequently a massive binary).
+** If you choose not to specify a data directory it will default to the current
+directory.  You can override the default data directory by setting the environment
+variable SPHERE_DATA_DIR or by using the option -d directory from the commandline.
+You may specify --enable-debug if you want debugging symbols (and consequently a
+massive binary).
 
   Chris Forno                                  (jcore@geekmeet.org) 
