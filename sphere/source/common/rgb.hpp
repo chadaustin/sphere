@@ -70,9 +70,9 @@ inline bool operator==(const BGRA& c1, const BGRA& c2) {
 template<typename destT>
 void PremultiplyAlpha(destT& d, int alpha) {
 #ifndef USE_ALPHA_TABLE
-  d.red   = d.red   * alpha / 256;
-  d.green = d.green * alpha / 256;
-  d.blue  = d.blue  * alpha / 256;
+  d.red   = d.red   * alpha / 255;
+  d.green = d.green * alpha / 255;
+  d.blue  = d.blue  * alpha / 255;
 #else
   d.red   = alpha_new[alpha][d.red];
   d.green = alpha_new[alpha][d.green];
@@ -85,9 +85,9 @@ void PremultiplyAlpha(destT& d, int alpha) {
 template<typename destT, typename srcT>
 void Blend3(destT& d, srcT s, int alpha) {
 #ifndef USE_ALPHA_TABLE
-  d.red   = (s.red   * alpha + d.red   * (255 - alpha)) / 256;
-  d.green = (s.green * alpha + d.green * (255 - alpha)) / 256;
-  d.blue  = (s.blue  * alpha + d.blue  * (255 - alpha)) / 256;
+  d.red   = (s.red   * alpha + d.red   * (255 - alpha)) / 255;
+  d.green = (s.green * alpha + d.green * (255 - alpha)) / 255;
+  d.blue  = (s.blue  * alpha + d.blue  * (255 - alpha)) / 255;
 #else
   d.red   = alpha_new[alpha][s.red]   + alpha_old[alpha][d.red];
   d.green = alpha_new[alpha][s.green] + alpha_old[alpha][d.green];
@@ -99,10 +99,10 @@ void Blend3(destT& d, srcT s, int alpha) {
 template<typename destT, typename srcT>
 void Blend4(destT& d, srcT s, int alpha) {
 #ifndef USE_ALPHA_TABLE
-  d.red   = (s.red   * alpha + d.red   * (255 - alpha)) / 256;
-  d.green = (s.green * alpha + d.green * (255 - alpha)) / 256;
-  d.blue  = (s.blue  * alpha + d.blue  * (255 - alpha)) / 256;
-  d.alpha = (s.alpha * alpha + d.alpha * (255 - alpha)) / 256;
+  d.red   = (s.red   * alpha + d.red   * (255 - alpha)) / 255;
+  d.green = (s.green * alpha + d.green * (255 - alpha)) / 255;
+  d.blue  = (s.blue  * alpha + d.blue  * (255 - alpha)) / 255;
+  d.alpha = (s.alpha * alpha + d.alpha * (255 - alpha)) / 255;
 #else
   d.red   =  alpha_new[alpha][s.red]   + alpha_old[alpha][d.red];
   d.green =  alpha_new[alpha][s.green] + alpha_old[alpha][d.green];
@@ -116,9 +116,9 @@ void Blend4(destT& d, srcT s, int alpha) {
 template<typename destT, typename srcT>
 void BlendPA(destT& d, srcT s, int alpha) {
 #ifndef USE_ALPHA_TABLE
-  d.red   = s.red   + d.red   * (255 - alpha) / 256;
-  d.green = s.green + d.green * (255 - alpha) / 256;
-  d.blue  = s.blue  + d.blue  * (255 - alpha) / 256;
+  d.red   = s.red   + d.red   * (255 - alpha) / 255;
+  d.green = s.green + d.green * (255 - alpha) / 255;
+  d.blue  = s.blue  + d.blue  * (255 - alpha) / 255;
 #else
   d.red   = s.red   + alpha_old[alpha][d.red];
   d.green = s.green + alpha_old[alpha][d.green];
