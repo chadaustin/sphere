@@ -285,10 +285,10 @@ sScripting::__VerifyScript__(const char* script, sCompileError& error)
           }
         }
       }
-    }
 
-    JS_DestroyScript(cx, compiled_script);
-    compiled_script = NULL;
+      JS_DestroyScript(cx, compiled_script);
+      compiled_script = NULL;
+    }
   }
   else {
     jsval val;

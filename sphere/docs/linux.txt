@@ -137,6 +137,16 @@ Getting the source
 Using your favorite CVS client, download the sphere module from CVS.
 Instructions are at <https://sourceforge.net/cvs/?group_id=1551>.
 
+  They should be either:
+  
+  cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/sphere login  
+  cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/sphere co sphere
+  
+  Or:
+  
+  export CVS_RSH=ssh
+  cvs -z3 -d:ext:developername@cvs.sourceforge.net:/cvsroot/sphere co sphere
+
 Once you've done that, goto into the top level sphere directory and run scons
 
 cd sphere
@@ -149,6 +159,9 @@ scons: Reading SConscript files ...
 Using compiler: linux
 Found sdl-config: /usr/bin/sdl-config
 Using subsystem:  unix
+
+Not that if it doesn't say "Using compiler: linux"
+you'll have to use "scons compiler=linux" rather than just "scons"
 
 
 Hopefully, if all goes well, you'll be able to open the engine.
