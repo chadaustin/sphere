@@ -75,15 +75,12 @@ fi
 
 AC_CHECK_LIB(z, zlibVersion,,
    AC_MSG_ERROR(could not find the z library))
-AC_CHECK_LIB(png, png_access_version_number,,
-   AC_MSG_ERROR(could not find the png library))
-AC_CHECK_LIB(jpeg, jpeg_start_compress,,
-   AC_MSG_ERROR(could not find the jpeg library))
 AC_CHECK_LIB(mng, mng_initialize,,
    AC_MSG_ERROR(could not find the mng library))
 AC_CHECK_LIB(js, JS_PushArguments,,
    AC_MSG_ERROR(could not find the js library))
-
+AC_CHECK_LIB(corona, CorConvertImage,,
+   AC_MSG_ERROR(could not find the corona library))
 dnl Checks for header files.
 
 AC_HEADER_STDC

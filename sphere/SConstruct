@@ -17,7 +17,7 @@ use_audiere = ARGUMENTS.get('audio', '1')
 ## print "Sphere will install to " + os.path.join(install_prefix, 'bin')
 ## print "Sphere data will install to " + os.path.join(install_prefix, 'share/sphere')
 
-libraries = ['z','jpeg','png','js','SDL','mng']
+libraries = ['z','corona','js','SDL','mng']
 compile_flags = '-DXP_UNIX -DVERSION=' + version
 compile_flags += ' -DDATADIR=' + install_prefix + '/share/sphere '
 compile_flags += os.popen('sdl-config --cflags').read().strip()
