@@ -55,14 +55,9 @@ CEditorApplication::InitInstance()
   if (strrchr(config_directory, '\\'))
     *strrchr(config_directory, '\\') = 0;
   Configuration::ConfigurationFile = std::string(config_directory) + "\\editor.ini";
+  SetCurrentDirectory(config_directory);
 
-  // get the startup directory
-  // THE STUB WILL TAKE CARE OF STARTING THE EXECUTABLE IN THE RIGHT WORKING DIR
-  char directory[MAX_PATH];
-  GetCurrentDirectory(MAX_PATH, directory);
-
-  g_SphereDirectory = directory;
-  SetCurrentDirectory(directory);
+  g_SphereDirectory = config_directory;
 
   // create the main window
   CMainWindow* main_window = new CMainWindow();

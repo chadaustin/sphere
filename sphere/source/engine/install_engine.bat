@@ -1,6 +1,5 @@
 @echo off
 cd ..\..
-if not exist bin mkdir bin
-copy source\engine\output\Release\engine.exe bin
+copy source\engine\output\Release\engine.exe .
 echo Installing engine.exe
 

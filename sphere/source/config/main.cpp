@@ -89,6 +89,16 @@ vector<string> VideoDriverList;
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int)
 {
+  // get base Sphere path
+  char sphere_path[MAX_PATH];
+  GetModuleFileName(instance, sphere_path, MAX_PATH);
+  char* last_backslash = strrchr(sphere_path, '\\');
+  if (last_backslash) {
+    *last_backslash = 0;
+  }
+  SetCurrentDirectory(sphere_path);
+
+
   MainInstance = instance;
 
   BuildDriverList();

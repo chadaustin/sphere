@@ -1,6 +1,5 @@
 @echo off
 cd ..\..
-if not exist bin mkdir bin
-copy source\editor\output\Release\editor.exe bin
+copy source\editor\output\Release\editor.exe .
 echo Installing editor.exe
 

@@ -48,7 +48,7 @@ int __cdecl main(int argc, const char** argv)
   // set current directory to be Sphere directory
   char sphere_directory[MAX_PATH];
   GetSphereDirectory(sphere_directory);
-//  SetCurrentDirectory(sphere_directory);   // THE STUB WILL TAKE CARE OF THIS NOW
+  SetCurrentDirectory(sphere_directory);
 
   // initialize screenshot directory
   char screenshot_directory[MAX_PATH];
