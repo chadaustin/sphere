@@ -24,10 +24,10 @@ struct IEngine
   typedef void* script;
 
   // methods
-  virtual bool IsScriptEvaluated(const char* filename);
-  virtual bool IsSystemScriptEvaluated(const char* filename);
-  virtual void AddEvaluatedScript(const char* filename);
-  virtual void AddEvaluatedSystemScript(const char* filename);
+  virtual bool IsScriptEvaluated(const char* filename) = 0;
+  virtual bool IsSystemScriptEvaluated(const char* filename) = 0;
+  virtual void AddEvaluatedScript(const char* filename) = 0;
+  virtual void AddEvaluatedSystemScript(const char* filename) = 0;
   
   virtual bool GetScriptText(const char* filename, std::string& text) = 0;
   virtual bool GetSystemScript(const char* filename, std::string& text) = 0;
@@ -74,8 +74,6 @@ struct IEngine
 
   virtual IFile* OpenRawFile(const char* filename, bool writeable) = 0;
 
-  std::vector<std::string> m_EvaluatedScripts;
-  std::vector<std::string> m_EvaluatedSystemScripts;
 };
 
 

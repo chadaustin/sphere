@@ -101,7 +101,7 @@ CScriptWindow::Create()
 
   Initialize();
   ::ShowWindow(m_Editor, SW_SHOW);
-  //::UpdateWindow(m_Editor);
+  ::UpdateWindow(m_Editor);
 
   m_Created = true;
 

@@ -173,40 +173,37 @@ CGameEngine::DestroySystemObjects()
 ///////////////////////////////////////////////////////////////////////////////
 
 bool
-IEngine::IsScriptEvaluated(const char* filename)
+CGameEngine::IsScriptEvaluated(const char* filename)
 {
   std::string name(filename);
-  bool found = false;
   for (unsigned i = 0; i < m_EvaluatedScripts.size(); i++) {
     if (m_EvaluatedScripts[i] == name) {
-      found = true;
-      break;
+      return true;
     }
   }
 
-  return found;
+  return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 bool
-IEngine::IsSystemScriptEvaluated(const char* filename)
+CGameEngine::IsSystemScriptEvaluated(const char* filename)
 {
-  bool found = false;
+  std::string name(filename);
   for (unsigned i = 0; i < m_EvaluatedSystemScripts.size(); i++) {
-    if (!strcmp(m_EvaluatedSystemScripts[i].c_str(), filename)) {
-      found = true;
-      break;
+    if (m_EvaluatedSystemScripts[i] == name) {
+      return true;
     }
   }
 
-  return found;
+  return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-IEngine::AddEvaluatedScript(const char* filename)
+CGameEngine::AddEvaluatedScript(const char* filename)
 {
   if (!IsScriptEvaluated(filename)) {
     m_EvaluatedScripts.push_back(std::string(filename));
@@ -216,7 +213,7 @@ IEngine::AddEvaluatedScript(const char* filename)
 ///////////////////////////////////////////////////////////////////////////////
   
 void
-IEngine::AddEvaluatedSystemScript(const char* filename)
+CGameEngine::AddEvaluatedSystemScript(const char* filename)
 {
   if (!IsSystemScriptEvaluated(filename)) {
     m_EvaluatedSystemScripts.push_back(std::string(filename));

@@ -231,6 +231,7 @@ CMapEngine::SetMapEngineFrameRate(int fps) {
   if (fps <= 0) {
     m_ShouldExit = true;
     m_ErrorMessage = "fps must be greater than zero!";
+    return false;
   }
 
   m_FrameRate = fps;

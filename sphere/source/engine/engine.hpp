@@ -37,6 +37,10 @@ private:
   void DestroySystemObjects();
 
   // IEngine implementation
+  virtual bool IsScriptEvaluated(const char* filename);
+  virtual bool IsSystemScriptEvaluated(const char* filename);
+  virtual void AddEvaluatedScript(const char* filename);
+  virtual void AddEvaluatedSystemScript(const char* filename);
 
   virtual bool GetScriptText(const char* filename, std::string& text);
   virtual bool GetSystemScript(const char* filename, std::string& text);
@@ -110,6 +114,9 @@ private:
 
   // opened file list
   std::map<CConfigFile*, SFileInfo> m_OpenFiles;
+
+  std::vector<std::string> m_EvaluatedScripts;
+  std::vector<std::string> m_EvaluatedSystemScripts;
 
   CMapEngine* m_MapEngine;
 };

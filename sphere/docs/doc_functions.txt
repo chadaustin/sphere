@@ -607,6 +607,18 @@ log_object.endBlock()
       // returns "" if name isn't obstructed by person at x, y,
        - returns the name of the person if name is obstructed at x, y
 
+      IgnorePersonObstructions(person, ignore)
+       - Sets whether 'person' should ignore other spriteset bases
+
+      IsIgnoringPersonObstructions(person)
+       - Returns true if 'person' is ignoring person obstructions, else false
+       
+      IgnoreTileObstructions(person, ignore)
+       - Sets whether 'person' should ignore tile obstructions
+
+      IsIgnoringTileObstructions(person)
+       - Returns true if 'person' is ignoring tile obstructions, else false
+
       SetTalkActivationKey(key)
         - set key used to activate talk scripts
 

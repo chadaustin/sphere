@@ -76,11 +76,13 @@ DefaultFileSystem::Open(const char* filename, int mode)
     *p++ = '+';
   }
   else {
-    if (mode & IFileSystem::write)
+    if (mode & IFileSystem::write) {
       *p++ = 'w';
-  else
-    if (mode & IFileSystem::read)
+    }
+    else
+    if (mode & IFileSystem::read) {
       *p++ = 'r';
+    }
     *p++ = 'b';  // binary
   }
 
