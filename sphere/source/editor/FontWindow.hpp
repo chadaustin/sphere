@@ -43,6 +43,7 @@ private:
   afx_msg void OnFontSimplify();
   afx_msg void OnFontMakeColorTransparent();
   afx_msg void OnFontGenerateGradient();
+  afx_msg void OnFontExportToImage();
 
   virtual bool GetSavePath(char* path);
   virtual bool SaveDocument(const char* path);

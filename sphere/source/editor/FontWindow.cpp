@@ -8,6 +8,7 @@
 #include "../common/minmax.hpp"
 
 #include "EditRange.hpp"
+#include "FileDialogs.hpp"
 
 #define IDC_FONTSCROLL 900
 
@@ -38,6 +39,8 @@ BEGIN_MESSAGE_MAP(CFontWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_FONT_SIMPLIFY,             OnFontSimplify)
   ON_COMMAND(ID_FONT_MAKECOLORTRANSPARENT, OnFontMakeColorTransparent)
   ON_COMMAND(ID_FONT_GENERATEGRADIENT,     OnFontGenerateGradient)
+
+  ON_COMMAND(ID_FONT_EXPORTTOIMAGE,      OnFontExportToImage)
 
 //  ON_COMMAND(ID_FONT_ER_ROTATE_CW,             OnEditRangeRotateCW)
 //  ON_COMMAND(ID_FONT_ER_ROTATE_CCW,            OnEditRangeRotateCCW)
@@ -419,6 +422,53 @@ CFontWindow::OnFontGenerateGradient()
 
     SetModified(true);
     SetImage();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CFontWindow::OnFontExportToImage()
+{
+  CImageFileDialog FileDialog(FDM_SAVE);
+  if (FileDialog.DoModal() != IDOK)
+    return;
+
+  int font_width = 0;
+  int font_height = 0;
+
+  for (int i = 0; i < m_Font.GetNumCharacters(); i++) {
+    if (font_width < m_Font.GetCharacter(i).GetWidth())
+      font_width = m_Font.GetCharacter(i).GetWidth();
+    if (font_height < m_Font.GetCharacter(i).GetHeight())
+      font_height = m_Font.GetCharacter(i).GetHeight();
+  }
+
+  if (!(font_width > 0 && font_height > 0))
+    return;
+
+  CImage32 image;
+  if (!image.Create(font_width * 16 + 16 + 1, font_height * 16 + 16 + 1))
+    return;
+
+  image.Rectangle(0, 0, image.GetWidth(), image.GetHeight(), CreateRGBA(255, 0, 0, 255));
+  image.SetBlendMode(CImage32::REPLACE);
+
+  int i = 0;
+
+  for (int fy = 0; fy < 16; fy++) {
+    for (int fx = 0; fx < 16; fx++) {
+      CImage32 c = m_Font.GetCharacter(i);
+      image.BlitImage(c, (fx + 1) + font_width * fx, (fy + 1) + font_height * fy);
+      i += 1;
+    }
+  }
+
+  if (!image.Save(FileDialog.GetPathName())) {
+    MessageBox("Could not save image");
+  }
+  else {
+    MessageBox("Exported font!");
   }
 }
 
