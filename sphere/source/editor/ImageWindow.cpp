@@ -78,7 +78,7 @@ CImageWindow::UpdateImageView()
   m_ImageView.SetImage(
     m_Image.GetWidth(),
     m_Image.GetHeight(),
-    m_Image.GetPixels());
+    m_Image.GetPixels(), false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

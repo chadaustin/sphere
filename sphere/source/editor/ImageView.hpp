@@ -31,7 +31,7 @@ public:
 
   BOOL Create(CDocumentWindow* owner, IImageViewHandler* handler, CWnd* parent_window);
 
-  bool        SetImage(int width, int height, const RGBA* pixels);
+  bool        SetImage(int width, int height, const RGBA* pixels, bool reset_undo_states);
   int         GetWidth() const;
   int         GetHeight() const;
   RGBA*       GetPixels();

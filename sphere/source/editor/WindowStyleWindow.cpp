@@ -182,7 +182,7 @@ void
 CWindowStyleWindow::SetBitmap()
 {
   CImage32& b = m_WindowStyle.GetBitmap(m_SelectedBitmap);
-  m_ImageView.SetImage(b.GetWidth(), b.GetHeight(), b.GetPixels());
+  m_ImageView.SetImage(b.GetWidth(), b.GetHeight(), b.GetPixels(), true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

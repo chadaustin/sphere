@@ -140,9 +140,11 @@ CImageView::Create(CDocumentWindow* owner, IImageViewHandler* handler, CWnd* par
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CImageView::SetImage(int width, int height, const RGBA* pixels)
+CImageView::SetImage(int width, int height, const RGBA* pixels, bool reset_undo_states)
 {
-//  ResetUndoStates();
+  if (reset_undo_states) {
+    ResetUndoStates();
+  }
 
   m_Image.Resize(width, height);
   memcpy(m_Image.GetPixels(), pixels, width * height * sizeof(RGBA));

@@ -197,7 +197,7 @@ CSpritesetWindow::UpdateImageView()
 {  
   int index = m_Spriteset.GetFrameIndex(m_CurrentDirection, m_CurrentFrame);
   CImage32& sprite = m_Spriteset.GetImage(index);
-  m_ImageView.SetImage(sprite.GetWidth(), sprite.GetHeight(), sprite.GetPixels());
+  m_ImageView.SetImage(sprite.GetWidth(), sprite.GetHeight(), sprite.GetPixels(), true);
   m_SpriteBaseView.SetSprite(&sprite);
 }
 
@@ -550,9 +550,7 @@ CSpritesetWindow::SIP_IndexChanged(int index)
   int old_index = m_Spriteset.GetFrameIndex(m_CurrentDirection, m_CurrentFrame);
   if (old_index != index) {
 
-    // only change the spritesets frame index if we're on the Frames Tab
-    if (m_TabControl.GetCurFocus() == 0)
-      m_Spriteset.SetFrameIndex(m_CurrentDirection, m_CurrentFrame, index);
+    m_Spriteset.SetFrameIndex(m_CurrentDirection, m_CurrentFrame, index);
 
     UpdateImageView();
     SetModified(true);

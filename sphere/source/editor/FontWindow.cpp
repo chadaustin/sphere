@@ -138,7 +138,7 @@ void
 CFontWindow::SetImage()
 {
   sFontCharacter& c = m_Font.GetCharacter(m_CurrentCharacter);
-  m_ImageView.SetImage(c.GetWidth(), c.GetHeight(), c.GetPixels());
+  m_ImageView.SetImage(c.GetWidth(), c.GetHeight(), c.GetPixels(), true);
   m_ScrollBar.SetScrollPos(m_CurrentCharacter);
 }
 

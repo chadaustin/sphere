@@ -123,7 +123,7 @@ void
 CTilesetEditView::UpdateImageView()
 {
   sTile& tile = m_Tileset->GetTile(m_CurrentTile);
-  m_ImageView.SetImage(tile.GetWidth(), tile.GetHeight(), tile.GetPixels());
+  m_ImageView.SetImage(tile.GetWidth(), tile.GetHeight(), tile.GetPixels(), true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
