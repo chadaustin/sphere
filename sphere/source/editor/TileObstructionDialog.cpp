@@ -1,6 +1,9 @@
 #include "TileObstructionDialog.hpp"
 #include "resource.h"
-
+#include <stdio.h>
+#if 0
+#include "FileDialogs.hpp"
+#endif
 
 BEGIN_MESSAGE_MAP(CTileObstructionDialog, CDialog)
 
@@ -19,6 +22,17 @@ BEGIN_MESSAGE_MAP(CTileObstructionDialog, CDialog)
   ON_COMMAND(ID_OBSTRUCTIONPRESETS_RIGHTHALF,   OnPresetRightHalf)
   ON_COMMAND(ID_OBSTRUCTIONPRESETS_TOPHALF,     OnPresetTopHalf)
   ON_COMMAND(ID_OBSTRUCTIONPRESETS_BOTTOMHALF,  OnPresetBottomHalf)
+
+  ON_COMMAND(ID_OBSTRUCTIONPRESETS_CUSTOM1,  OnPresetCustom)
+  ON_COMMAND(ID_OBSTRUCTIONPRESETS_CUSTOM2,  OnPresetCustom)
+  ON_COMMAND(ID_OBSTRUCTIONPRESETS_CUSTOM3,  OnPresetCustom)
+  ON_COMMAND(ID_OBSTRUCTIONPRESETS_CUSTOM4,  OnPresetCustom)
+  ON_COMMAND(ID_OBSTRUCTIONPRESETS_CUSTOM5,  OnPresetCustom)
+  ON_COMMAND(ID_OBSTRUCTIONPRESETS_CUSTOM6,  OnPresetCustom)
+  ON_COMMAND(ID_OBSTRUCTIONPRESETS_CUSTOM7,  OnPresetCustom)
+  ON_COMMAND(ID_OBSTRUCTIONPRESETS_CUSTOM8,  OnPresetCustom)
+
+  ON_COMMAND(ID_OBSTRUCTIONPRESETS_SAVE,        OnFileSave)
 
 END_MESSAGE_MAP()
 
@@ -104,6 +118,55 @@ CTileObstructionDialog::OnPresets()
     m_hWnd,
     NULL
   );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CTileObstructionDialog::OnFileSave()
+{
+#if 0
+  CFileDialog Dialog(
+    FALSE, "tobs", NULL,
+    OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
+    "C sourc file (*.ctobs)|*.ctobs|" \
+    "All Files (*.*)|*.*||");
+
+  if (Dialog.DoModal() != IDOK) {
+    return;
+  }
+
+  FILE* file = fopen(Dialog.GetFileName(), "wb+");
+  if (file) {
+    fprintf(file, "afx_msg void\n");
+    fprintf(file, "CTileObstructionDialog::OnPreset%s()\n", Dialog.GetFileTitle());
+    fprintf(file, "{\n");
+    fprintf(file, "  int w = m_tile->GetWidth()  - 1;\n");
+    fprintf(file, "  int h = m_tile->GetHeight() - 1;\n\n");
+    fprintf(file, "  sObstructionMap s;\n");
+
+    for (int i = 0; i < m_edit_tile.GetObstructionMap().GetNumSegments(); i++) {
+      const sObstructionMap::Segment& seg = m_edit_tile.GetObstructionMap().GetSegment(i);
+      const int w = m_tile->GetWidth() - 1;
+      const int h = m_tile->GetHeight() - 1;
+      char strings[4][50];
+
+      sprintf(strings[0], "%d*w/%d", seg.x1, w);
+      sprintf(strings[1], "%d*w/%d", seg.x2, w);
+      sprintf(strings[2], "%d*h/%d", seg.y1, h);
+      sprintf(strings[3], "%d*h/%d", seg.y2, h);
+
+      fprintf(file, "  s.AddSegment(%s, %s, %s, %s);\n", strings[0], strings[1], strings[2], strings[3]);
+    }
+
+    fprintf(file, "  m_edit_tile.GetObstructionMap() = s;\n");
+    fprintf(file, "  m_obstruction_view.Invalidate();\n");
+    fprintf(file, "}\n");
+
+    fclose(file);
+
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -275,6 +338,51 @@ CTileObstructionDialog::OnPresetRightHalf()
   m_edit_tile.GetObstructionMap() = s;
 
   m_obstruction_view.Invalidate();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CTileObstructionDialog::OnPresetCustom()
+{
+  int w = m_tile->GetWidth()  - 1;
+  int h = m_tile->GetHeight() - 1;
+
+  sObstructionMap s;
+
+  const unsigned int id = GetCurrentMessage()->wParam;
+
+  switch (id) {
+
+    case (ID_OBSTRUCTIONPRESETS_CUSTOM1):
+    break;
+
+    case (ID_OBSTRUCTIONPRESETS_CUSTOM2):
+    break;
+
+    case (ID_OBSTRUCTIONPRESETS_CUSTOM3):
+    break;
+
+    case (ID_OBSTRUCTIONPRESETS_CUSTOM4):
+    break;
+
+    case (ID_OBSTRUCTIONPRESETS_CUSTOM5):
+    break;
+
+    case (ID_OBSTRUCTIONPRESETS_CUSTOM6):
+    break;
+
+    case (ID_OBSTRUCTIONPRESETS_CUSTOM7):
+    break;
+
+    case (ID_OBSTRUCTIONPRESETS_CUSTOM8):
+    break;
+
+  }
+
+  m_edit_tile.GetObstructionMap() = s;
+  m_obstruction_view.Invalidate();
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////

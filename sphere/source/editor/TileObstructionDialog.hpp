@@ -29,6 +29,9 @@ private:
   afx_msg void OnPresetBottomHalf();
   afx_msg void OnPresetLeftHalf();
   afx_msg void OnPresetRightHalf();
+  afx_msg void OnPresetCustom();
+
+  afx_msg void OnFileSave();
 
 private:
   sTile* m_tile;

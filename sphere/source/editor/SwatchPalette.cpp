@@ -337,20 +337,20 @@ CSwatchPalette::OnFileSave()
     FALSE, "sswatch", NULL,
     OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
     "Sphere Swatch Files (*.sswatch)|*.sswatch|" \
-    "C source file (*.c)|*.c|" \
+    "C source file (*.cswatch)|*.cswatch|" \
     "All Files (*.*)|*.*||");
 
   if (Dialog.DoModal() != IDOK) {
     return;
   }
 
-  if (Dialog.GetFileExt() == "c") {
+  if (Dialog.GetFileExt() == "cswatch") {
 
     FILE* file = fopen(Dialog.GetPathName(), "wb+");
     if (file == NULL)
       return;
 
-    fprintf(file, "RGB palette[%d] =\n{\n", swatch->GetNumColors());
+    fprintf(file, "RGB %s_palette[%d] =\n{\n", Dialog.GetFileTitle(), swatch->GetNumColors());
 
     for (int i = 0; i < swatch->GetNumColors(); i++)
     {
