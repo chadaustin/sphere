@@ -88,10 +88,57 @@ CDocumentWindow::DetachPalette(CPaletteWindow* palette)
 void 
 CDocumentWindow::LoadPaletteStates()
 {
-   // load the bar state based on the document class
-   CFrameWnd * pFrame = (CFrameWnd*)AfxGetApp()->m_pMainWnd;
-   pFrame->LoadBarState(GetRuntimeClass()->m_lpszClassName);
-   CSizingControlBar::GlobalLoadState(pFrame, GetRuntimeClass()->m_lpszClassName);  
+  // load the bar state based on the document class
+	CDockState state; 
+	CFrameWnd * pFrame = (CFrameWnd*)AfxGetApp()->m_pMainWnd;
+
+	state.LoadState(GetRuntimeClass()->m_lpszClassName);
+
+	// take care of bars not avaible at the moment (e.g. project window)
+	// or not available anymore
+	// HINT: Bars removed here lose their states and next time opened remain 
+	//			 at the default positions
+
+	for (int i = 0; i < state.m_arrBarInfo.GetSize(); i++)
+  {
+		CControlBarInfo* pInfo = (CControlBarInfo*)state.m_arrBarInfo[i];
+		ASSERT(pInfo != NULL);
+    
+		int nDockedCount = pInfo->m_arrBarID.GetSize();
+    if (nDockedCount > 0)
+		{
+			// dockbar
+      for (int j = 0; j < nDockedCount; j++)
+      {
+				UINT nID = (UINT) pInfo->m_arrBarID[j];
+        if (nID == 0) continue; // row separator
+        if (nID > 0xFFFF)
+					nID &= 0xFFFF; // placeholder - get the ID
+				
+				if (pFrame->GetControlBar(nID) == NULL)
+				{
+					// bar is not present
+					pInfo->m_arrBarID.RemoveAt(j);						
+					nDockedCount--;
+					j--;
+				}
+      }
+		}
+        
+    if (!pInfo->m_bFloating) // floating dockbars can be created later
+		{
+			if (pFrame->GetControlBar(pInfo->m_nBarID) == NULL)
+			{
+				// bar is not present
+				state.m_arrBarInfo.RemoveAt(i);
+				i--;
+			}
+		}
+  }
+
+	pFrame->SetDockState(state);
+
+  CSizingControlBar::GlobalLoadState(pFrame, GetRuntimeClass()->m_lpszClassName);  
 }
 #endif
 

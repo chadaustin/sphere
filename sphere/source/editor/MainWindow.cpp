@@ -300,7 +300,11 @@ CMainWindow::CloseProject()
 
     if (m_ProjectWindow)
     {
-      m_ProjectWindow->DestroyWindow();
+#ifdef USE_SIZECBAR
+			m_ProjectWindow->ShowPalette(false);
+      m_ProjectWindow->CreateBar(false);
+#endif
+			m_ProjectWindow->DestroyWindow();
       m_ProjectWindow = NULL;
     }
 
