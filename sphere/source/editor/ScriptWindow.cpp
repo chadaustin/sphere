@@ -155,11 +155,23 @@ CScriptWindow::SetScriptStyles() {
   SetStyle(STYLE_DEFAULT, black, white, m_FontSize, m_Fontface.c_str());
   SendEditor(SCI_STYLECLEARALL);
 
-  SendEditor(SCI_SETMARGINWIDTHN, 1, 0); // assume no margin
+  // set all margins to zero width
+  SendEditor(SCI_SETMARGINWIDTHN, 0, 0);
+  SendEditor(SCI_SETMARGINWIDTHN, 1, 0);
+  SendEditor(SCI_SETMARGINWIDTHN, 2, 0);
 
-  if (m_ShowLineNumbers) {
-    SendEditor(SCI_SETMARGINTYPEN, 1, 1); // first margin is line numbers
-    SendEditor(SCI_SETMARGINWIDTHN, 1, 20); // we just need to resize it to see it
+  // set all margin types
+  SendEditor(SCI_SETMARGINTYPEN,  0, SC_MARGIN_NUMBER);
+  SendEditor(SCI_SETMARGINWIDTHN, 1, SC_MARGIN_SYMBOL);
+  SendEditor(SCI_SETMARGINWIDTHN, 2, SC_MARGIN_SYMBOL);
+
+  // for code folding
+  //SendEditor(SCI_SETMARGINTYPEN, 1, SC_MARGIN_SYMBOL);
+  //SendEditor(SCI_SETMARGINMASKN, 1, SC_MASK_FOLDERS);
+  //SendEditor(SCI_SETMARGINWIDTHN, 1, 20);
+
+  if (m_ShowLineNumbers) {  // resize the line number margin so we can see it
+    SendEditor(SCI_SETMARGINWIDTHN, 0, 30);
   }
 
   SetStyle(SCE_C_DEFAULT, black, white, m_FontSize, m_Fontface.c_str());
@@ -418,6 +430,7 @@ CScriptWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
 void
 CScriptWindow::SetLineNumber(int line) {
   char str[80];
+  line += 1;
   sprintf(str, "Line: %d", line);
   GetStatusBar()->SetWindowText(str);
 }
