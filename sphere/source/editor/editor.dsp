@@ -1202,11 +1202,11 @@ SOURCE=..\common\Font.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\code\image_proc\image\hsi.cpp
+SOURCE=..\common\hsi.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\code\image_proc\image\hsi.hpp
+SOURCE=..\common\hsi.hpp
 # End Source File
 # Begin Source File
 

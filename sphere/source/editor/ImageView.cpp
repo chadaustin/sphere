@@ -10,6 +10,7 @@
 
 #include "Configuration.hpp"
 #include "Keys.hpp"
+#include "../common/hsi.hpp"
 
 #include "../common/primitives.hpp"
 
@@ -2882,8 +2883,6 @@ CImageView::OnFilterGrayscale()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "../../../code/image_proc/image/hsi.hpp"
-
 afx_msg void
 CImageView::OnFilterSaturate()
 {
@@ -2899,7 +2898,6 @@ CImageView::OnFilterSaturate()
 
   for (int dx = sx; dx < (sx + sw); ++dx) {
     for (int dy = sy; dy < (sy + sh); ++dy) {
-/*
       double r = pImage[dy * width + dx].red   / 255.0;
       double g = pImage[dy * width + dx].green / 255.0;
       double b = pImage[dy * width + dx].blue  / 255.0;
@@ -2911,7 +2909,6 @@ CImageView::OnFilterSaturate()
       pImage[dy * width + dx].red   = r * 255;
       pImage[dy * width + dx].green = g * 255;
       pImage[dy * width + dx].blue  = b * 255;
-*/
     }
   }
 
