@@ -177,7 +177,11 @@ log_object.endBlock()
         Sphere will wait until there is a key in the queue.
     
     IsKeyPressed(key)
-      - checks if the key has been pressed. Returns true if 'key' is pressed....
+      - checks if the key has been pressed. Returns true if 'key' is
+    pressed....
+
+    IsAnyKeyPressed()
+      - checks if any key is pressed at the time.
 
     GetKeyString(key, shift)
       - converts the key into a string, KEY_A will become "a", etc.
@@ -626,9 +630,11 @@ log_object.endBlock()
        - Returns true if 'person' is ignoring tile obstructions, else false
 
       SetTalkActivationKey(key)
+      GetTalkActivationKey()
         - set key used to activate talk scripts
 
       SetTalkDistance(pixels)
+      GetTalkDistance()
         - set distance to check for talk script activation
 
 
