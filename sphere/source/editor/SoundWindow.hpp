@@ -20,6 +20,7 @@ private:
 
   afx_msg void OnSoundPlay();
   afx_msg void OnSoundStop();
+  afx_msg void OnSoundRepeat();
 
 private:
   CSound  m_Sound;
@@ -30,6 +31,9 @@ private:
   CStatic m_VolumeBarGraphic;
   CBitmap m_VolumeBarBitmap;
   CStatic m_Blank;
+
+  bool m_Repeat; 
+  bool m_Playing;
 
   DECLARE_MESSAGE_MAP()
 };

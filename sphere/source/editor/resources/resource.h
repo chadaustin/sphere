@@ -545,6 +545,7 @@
 #define ID_FONT_ER_REPLACE_ALPHA        40703
 #define ID_FONT_ER_SETCOLORALPHA        40704
 #define ID_FONT_ER_SCALEALPHA           40705
+#define ID_SOUND_REPEAT                 40706
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -553,7 +554,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        239
-#define _APS_NEXT_COMMAND_VALUE         40706
+#define _APS_NEXT_COMMAND_VALUE         40707
 #define _APS_NEXT_CONTROL_VALUE         1182
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

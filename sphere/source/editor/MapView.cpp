@@ -2703,6 +2703,8 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
      break;
 
   }
+
+  DestroyMenu(_menu);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

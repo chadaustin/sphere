@@ -19,6 +19,7 @@ BEGIN_MESSAGE_MAP(CSoundWindow, CDocumentWindow)
 
   ON_COMMAND(ID_SOUND_PLAY, OnSoundPlay)
   ON_COMMAND(ID_SOUND_STOP, OnSoundStop)
+  ON_COMMAND(ID_SOUND_REPEAT, OnSoundRepeat)
 
 END_MESSAGE_MAP()
 
@@ -28,6 +29,9 @@ END_MESSAGE_MAP()
 CSoundWindow::CSoundWindow(const char* sound)
 : CDocumentWindow(sound, IDR_SOUND, CSize(200, 120))
 {
+  m_Playing = false;
+  m_Repeat = false;
+  
   // load the sample
   if (!m_Sound.Load(sound))
   {
@@ -112,8 +116,14 @@ CSoundWindow::OnTimer(UINT timerID)
   }
   else
   {
-    m_PlayButton.EnableWindow(TRUE);
-    m_StopButton.EnableWindow(FALSE);
+    if (m_Playing && m_Repeat) {
+      m_Sound.Play();
+    }
+    else {
+      m_PlayButton.EnableWindow(TRUE);
+      m_StopButton.EnableWindow(FALSE);
+      m_Playing = false;
+    }
   }
 }
 
@@ -136,6 +146,7 @@ CSoundWindow::OnSoundPlay()
     return;
 
   m_Sound.Play();
+  m_Playing = true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -144,6 +155,15 @@ afx_msg void
 CSoundWindow::OnSoundStop()
 {
   m_Sound.Stop();
+  m_Playing = false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSoundWindow::OnSoundRepeat()
+{
+  m_Repeat = !m_Repeat;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

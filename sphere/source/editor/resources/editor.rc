@@ -236,6 +236,7 @@ BEGIN
     BEGIN
         MENUITEM "&Play",                       ID_SOUND_PLAY
         MENUITEM "&Stop",                       ID_SOUND_STOP
+        MENUITEM "&Repeat",                     ID_SOUND_REPEAT
     END
 END
 
