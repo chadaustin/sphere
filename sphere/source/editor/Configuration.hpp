@@ -127,7 +127,6 @@ namespace Configuration {
     inline int GetTypeSize<std::string>(std::string /*s = std::string()*/) { return 4096; } // only supports up to 4096-1 characters
     inline int GetTypeSize<WINDOWPLACEMENT>(WINDOWPLACEMENT /*wp = WINDOWPLACEMENT()*/) { return sizeof(WINDOWPLACEMENT); }
     inline int GetTypeSize<RECT>(RECT /*w = RECT()*/) { return sizeof(RECT); }
-
     
     // *** ToRaw() ***
 
@@ -188,7 +187,6 @@ namespace Configuration {
       if (b) memcpy(b, &r, sizeof(RECT));
       return b;
     }
-
 
     // *** FromRaw() ***
 

@@ -79,9 +79,7 @@ private:
   virtual void TV_InsertedTiles(int at, int numtiles);
   virtual void TV_DeletedTiles(int at, int numtiles);
   virtual void TV_SwapTiles(std::vector<int> tiles_a, std::vector<int> tiles_b);
-#if 1
   virtual void TV_TilesetSelectionChanged(int width, int height, unsigned int* tiles);
-#endif
   virtual void SP_ColorSelected(RGBA color);
 
 private:

@@ -37,14 +37,12 @@ public:
 
   void UpdateScrollBars();
 
-#if 1
   void SetTileSelection(int width, int height, unsigned int* tiles);
 
 private:
   int m_MultiTileWidth;
   int m_MultiTileHeight;
   unsigned int* m_MultiTileData;
-#endif
 
 private:
   int GetPageSizeX();
@@ -181,7 +179,7 @@ private:
     SDT_MINI_IMAGE,
     SDT_IMAGE,
   };
-  int m_SpritesetDrawType;
+  unsigned char m_SpritesetDrawType;
 
   class SpritesetImageIcon {
     public:

@@ -15,9 +15,7 @@ public:
   virtual void TV_InsertedTiles(int at, int numtiles) = 0;
   virtual void TV_DeletedTiles(int at, int numtiles) = 0;
   virtual void TV_SwapTiles(std::vector<int> list_a, std::vector<int> list_b) = 0;
-#if 1
   virtual void TV_TilesetSelectionChanged(int width, int height, unsigned int* tiles) = 0;
-#endif
 };
 
 
@@ -46,6 +44,7 @@ private:
   afx_msg void OnLButtonDown(UINT flags, CPoint point);
   afx_msg void OnMouseMove(UINT flags, CPoint point);
   afx_msg void OnRButtonUp(UINT flags, CPoint point);
+  afx_msg void OnLButtonUp(UINT flags, CPoint point);
 
   afx_msg void OnInsertTile();
   afx_msg void OnAppendTile();
@@ -92,14 +91,12 @@ private:
   void UpdateObstructionTiles();
   void UpdateObstructionTile(int tile);
 
-#if 1
-  CPoint m_StartPoint;
-  CPoint m_CurPoint;
-
+private:
+  unsigned int* m_TileSelection;
   bool m_MouseDown;
   bool m_UsingMultiTileSelection;
-
-  afx_msg void OnLButtonUp(UINT flags, CPoint point);
+  CPoint m_StartPoint;
+  CPoint m_CurPoint;
 
 public:
   int GetTileSelectionLeftX();
@@ -109,9 +106,7 @@ public:
   int GetTileSelectionWidth();
   int GetTileSelectionHeight();
 
-  unsigned int* m_TileSelection;
   unsigned int* GetTileSelection();
-#endif
 
   DECLARE_MESSAGE_MAP()
 };

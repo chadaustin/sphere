@@ -15,8 +15,8 @@ static CMainWindow* g_MainWindow = NULL;
 std::string g_SphereDirectory;
 
 static CStatusBar* s_StatusBar = NULL;
-
 static CLogWindow* s_LogWindow = NULL;
+
 
 // the repository of all registred instances
 // beware of the mutex!
@@ -247,12 +247,7 @@ CEditorApplication::InitInstance()
   /*
   s_LogWindow = new CLogWindow(m_hInstance, "Sphere Log");
   if (s_LogWindow) {
-    //s_LogWindow->AddString("Sphere Opened!");
-    char string[255];
-    for (int i = 0; i < 1000; i++) {
-      sprintf (string, "String %d", i);
-      //s_LogWindow->AddString(string);
-    }
+    s_LogWindow->AddString("Sphere Opened!");
   }
   */
 

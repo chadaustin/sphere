@@ -295,12 +295,12 @@ CMainWindow::Create()
   SetStatusBar(&m_StatusBar);
 
   // enable docking
-  EnableDocking(CBRS_ALIGN_ANY);		
+  EnableDocking(CBRS_ALIGN_ANY);
 
   DockControlBar(&m_ToolBar,      AFX_IDW_DOCKBAR_TOP);
   DockControlBar(&m_ImageToolBar, AFX_IDW_DOCKBAR_TOP);
-  DockControlBar(&m_MapToolBar,   AFX_IDW_DOCKBAR_TOP);
- 
+  DockControlBar(&m_MapToolBar, AFX_IDW_DOCKBAR_TOP);
+
 #ifndef USE_SIZECBAR
   // load the command bar state
   // this is commented out because it's causing crashes for me
@@ -715,6 +715,8 @@ CMainWindow::OnDropFiles(HDROP hDropInfo)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+#include <assert.h>
 
 afx_msg void
 CMainWindow::OnClose()

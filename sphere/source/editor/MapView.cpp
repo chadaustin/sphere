@@ -68,11 +68,9 @@ CMapView::CMapView()
 , m_PreviewLineOn(0)
 , m_RedrawWindow(0)
 , m_RedrawPreviewLine(0)
-#if 1
 , m_MultiTileWidth(0)
 , m_MultiTileHeight(0)
 , m_MultiTileData(NULL)
-#endif
 {
   m_SpritesetDrawType = Configuration::Get(KEY_MAP_SPRITESET_DRAWTYPE);  
   m_ZoomFactor        = Configuration::Get(KEY_MAP_ZOOM_FACTOR);
@@ -600,7 +598,6 @@ CMapView::Click(CPoint point)
   // change the tile
   bool map_changed = false;
 
-#if 1
   if (m_MultiTileWidth && m_MultiTileHeight && m_MultiTileData) {
     int old_tile = m_SelectedTile;
     int num_times_x = 1;
@@ -624,7 +621,6 @@ CMapView::Click(CPoint point)
     m_SelectedTile = old_tile;
   }
   else
-#endif
   switch (m_CurrentTool) {
     case tool_1x1Tile: { // 1x1
       map_changed = SetTile(tx, ty);

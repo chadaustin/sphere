@@ -31,10 +31,7 @@ BEGIN_MESSAGE_MAP(CTilesetView, CWnd)
   ON_WM_LBUTTONDOWN()
   ON_WM_MOUSEMOVE()
   ON_WM_RBUTTONUP()
-
-#if 1
   ON_WM_LBUTTONUP()
-#endif
 
   ON_COMMAND(ID_TILESETVIEW_INSERTTILE,    OnInsertTile)
   ON_COMMAND(ID_TILESETVIEW_APPENDTILE,    OnAppendTile)
@@ -96,12 +93,13 @@ CTilesetView::CTilesetView()
 , m_BlitTile(NULL)
 , m_ShowTileObstructions(false)
 , m_MenuShown(false)
-#if 1
 , m_MouseDown(false)
 , m_UsingMultiTileSelection(false)
 , m_TileSelection(NULL)
-#endif
 {
+  m_StartPoint.x = m_StartPoint.y = 0;
+  m_CurPoint.x = m_CurPoint.y = 0;
+
   m_ZoomFactor        = Configuration::Get(KEY_TILES_ZOOM_FACTOR);
 
   if (m_ZoomFactor <= 0 || m_ZoomFactor >= 8) {
@@ -114,9 +112,7 @@ CTilesetView::CTilesetView()
 CTilesetView::~CTilesetView()
 {
   delete m_BlitTile;
-#if 1
   delete m_TileSelection;
-#endif
   DestroyWindow();
 }
 
@@ -244,12 +240,10 @@ CTilesetView::TilesetChanged()
     m_SelectedTile = m_Tileset->GetNumTiles() - 1;
   }
 
-#if 1
   if (m_UsingMultiTileSelection) {
     m_UsingMultiTileSelection = false;
     m_Handler->TV_TilesetSelectionChanged(GetTileSelectionWidth(), GetTileSelectionHeight(), GetTileSelection());
   }
-#endif
 
   // resize blit tile if we must
   delete m_BlitTile;
@@ -270,12 +264,10 @@ CTilesetView::TilesetChanged()
 void
 CTilesetView::SetSelectedTile(int tile)
 {
-#if 1
   if (m_UsingMultiTileSelection) {
     m_UsingMultiTileSelection = false;
     m_Handler->TV_TilesetSelectionChanged(GetTileSelectionWidth(), GetTileSelectionHeight(), GetTileSelection());
   }
-#endif
 
   m_SelectedTile = tile;
   Invalidate();
@@ -370,9 +362,11 @@ CTilesetView::GetNumRows()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#if 1
 int
-CTilesetView::GetTileSelectionLeftX() {
+CTilesetView::GetTileSelectionLeftX()
+{
+  if (!m_UsingMultiTileSelection) return 0;
+
   CPoint start = m_StartPoint;
   CPoint end = m_CurPoint;
 
@@ -409,7 +403,10 @@ CTilesetView::GetTileSelectionLeftX() {
 ////////////////////////////////////////////////////////////////////////////////
 
 int
-CTilesetView::GetTileSelectionRightX() {
+CTilesetView::GetTileSelectionRightX()
+{
+  if (!m_UsingMultiTileSelection) return 0;
+
   CPoint start = m_StartPoint;
   CPoint end = m_CurPoint;
 
@@ -447,6 +444,8 @@ CTilesetView::GetTileSelectionRightX() {
 
 int
 CTilesetView::GetTileSelectionTopY() {
+  if (!m_UsingMultiTileSelection) return 0;
+
   CPoint start = m_StartPoint;
   CPoint end = m_CurPoint;
 
@@ -483,7 +482,10 @@ CTilesetView::GetTileSelectionTopY() {
 ////////////////////////////////////////////////////////////////////////////////
 
 int
-CTilesetView::GetTileSelectionLowerY() {
+CTilesetView::GetTileSelectionLowerY()
+{
+  if (!m_UsingMultiTileSelection) return 0;
+
   CPoint start = m_StartPoint;
   CPoint end = m_CurPoint;
 
@@ -542,6 +544,7 @@ CTilesetView::GetTileSelection()
 {
   if (m_TileSelection)
     delete m_TileSelection;
+
   m_TileSelection = NULL;
 
   if (!m_UsingMultiTileSelection)
@@ -576,7 +579,6 @@ CTilesetView::GetTileSelection()
 
   return m_TileSelection;
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -596,12 +598,10 @@ CTilesetView::OnPaint()
   int blit_width  = m_BlitTile->GetWidth();
   int blit_height = m_BlitTile->GetHeight();
 
-#if 1
   int tileselection_left_x  = GetTileSelectionLeftX();
   int tileselection_right_x = GetTileSelectionRightX();
   int tileselection_top_y   = GetTileSelectionTopY();
   int tileselection_lower_y = GetTileSelectionLowerY();
-#endif
 
   for (int iy = 0; iy < client_rect.bottom / blit_height + 1; iy++)
     for (int ix = 0; ix < client_rect.right / blit_width + 1; ix++)
@@ -722,13 +722,11 @@ CTilesetView::OnSize(UINT type, int cx, int cy)
     }
   }
 
-#if 1
   static int last_cx = -1;
   if (last_cx != cx) {
     m_UsingMultiTileSelection = false;
     last_cx = cx;
   }
-#endif
 
   // reflect the changes
   UpdateScrollBar();
@@ -802,7 +800,6 @@ CTilesetView::OnLButtonDown(UINT flags, CPoint point)
 
   SelectTileAtPoint(point);
 
-#if 1
   if (GetCapture() == NULL) {
     m_StartPoint = point; m_StartPoint.y += (m_TopRow * m_BlitTile->GetHeight());
     m_CurPoint   = point; m_CurPoint.y   += (m_TopRow * m_BlitTile->GetHeight());
@@ -811,12 +808,10 @@ CTilesetView::OnLButtonDown(UINT flags, CPoint point)
     m_UsingMultiTileSelection = true;
     SetCapture();
   }
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#if 1
 afx_msg void
 CTilesetView::OnLButtonUp(UINT flags, CPoint point)
 {
@@ -826,7 +821,6 @@ CTilesetView::OnLButtonUp(UINT flags, CPoint point)
 
   m_Handler->TV_TilesetSelectionChanged(GetTileSelectionWidth(), GetTileSelectionHeight(), GetTileSelection());
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -836,7 +830,6 @@ CTilesetView::OnMouseMove(UINT flags, CPoint point)
   if (!m_BlitTile || m_BlitTile->GetPixels() == NULL)
     return;
 
-#if 1
   if (m_UsingMultiTileSelection) {
     if (m_MouseDown) {
       m_CurPoint = point; m_CurPoint.y += (m_TopRow * m_BlitTile->GetHeight());
@@ -856,7 +849,7 @@ CTilesetView::OnMouseMove(UINT flags, CPoint point)
       return;
     }
   }
-#endif
+
   {
     RECT client_rect;
     GetClientRect(&client_rect);
@@ -916,7 +909,6 @@ CTilesetView::OnRButtonUp(UINT flags, CPoint point)
     CheckMenuItem(menu, ID_TILESETVIEW_VIEW_OBSTRUCTIONS, MF_BYCOMMAND | MF_CHECKED);
   }
 
-#if 1
   // these menu items don't really make sense when you have a region of tiles selected
   if (GetTileSelectionWidth() * GetTileSelectionHeight() > 1)
   {
@@ -962,7 +954,6 @@ CTilesetView::OnRButtonUp(UINT flags, CPoint point)
     EnableMenuItem(menu, ID_TILESETVIEW_ER_SETCOLORALPHA, MF_BYCOMMAND | MF_GRAYED);
     EnableMenuItem(menu, ID_TILESETVIEW_ER_SCALEALPHA,    MF_BYCOMMAND | MF_GRAYED);
   }
-#endif
 
   m_MenuShown = true;
   TrackPopupMenu(menu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, point.x, point.y, 0, m_hWnd, NULL);
@@ -1241,12 +1232,11 @@ CTilesetView::OnViewTileObstructions()
 void
 CTilesetView::OnZoom(int zoom_factor) {
 
-#if 1
+
   if (m_UsingMultiTileSelection) {
     m_UsingMultiTileSelection = false;
     m_Handler->TV_TilesetSelectionChanged(GetTileSelectionWidth(), GetTileSelectionHeight(), GetTileSelection());
   }
-#endif
 
   m_ZoomFactor = zoom_factor;
   delete m_BlitTile;
