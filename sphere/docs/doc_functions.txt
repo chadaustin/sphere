@@ -372,6 +372,12 @@ log_object.endBlock()
     GetTileHeight()
       - returns height in pixels of tiles on current map
 
+    GetTileImage(tile_index)
+      - returns the image of the tile 'tile_index'
+      
+    SetTileImage(tile_index, image_object)
+      - sets the tile 'tile_index' to the image 'image_object'
+
     ReplaceTilesOnLayer(layer, oldtile, newtile)
       - Replaces all 'oldtile' tiles with 'newtile' on layer 'layer'
       
