@@ -71,7 +71,15 @@ CSpritesetWindow::CSpritesetWindow(const char* filename)
   SetModified(false);
 
   // load spriteset
-  bool create_new_spriteset = (filename == NULL || m_Spriteset.Load(filename) == false);
+  bool create_new_spriteset = false;
+  if (filename == NULL) {
+    create_new_spriteset = true;
+  }
+  else {
+    if (m_Spriteset.Load(filename) == false) {
+      create_new_spriteset = true;
+    }
+  }
 
   // valid spriteset image indexes
   if (m_Spriteset.GetNumImages() > 0) {
@@ -107,7 +115,9 @@ CSpritesetWindow::CSpritesetWindow(const char* filename)
   // create default spriteset
   if (create_new_spriteset) {
     if (filename) {
-      MessageBox("Could not load spriteset.\nCreating empty spriteset.");
+      char string[MAX_PATH + 1024];
+      sprintf (string, "Could not load spriteset: '%s'\nCreating empty spriteset.", filename);
+      MessageBox(string);
     }
 
     m_Spriteset.Create(16, 32, 1, 8, 1);
