@@ -58,7 +58,7 @@ private:
   afx_msg void OnAppendTileset();
 
   void SelectTileAtPoint(CPoint point);
-
+  
   void OnZoom(int zoom_factor);
   afx_msg void OnZoom1x();
   afx_msg void OnZoom2x();

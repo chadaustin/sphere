@@ -763,6 +763,9 @@ CTilesetView::SelectTileAtPoint(CPoint point)
   if (!m_BlitTile || m_BlitTile->GetPixels() == NULL)
     return;
 
+  if (m_MenuShown)
+    return;
+
   RECT client_rect;
   GetClientRect(&client_rect);
   int num_tiles_x = client_rect.right / m_BlitTile->GetWidth();
@@ -817,7 +820,7 @@ CTilesetView::OnLButtonDown(UINT flags, CPoint point)
 afx_msg void
 CTilesetView::OnLButtonUp(UINT flags, CPoint point)
 {
-  m_CurPoint = point;
+  m_CurPoint = point; m_CurPoint.y += (m_TopRow * m_BlitTile->GetHeight());
   m_MouseDown = false;
   ReleaseCapture();
 
