@@ -1097,7 +1097,8 @@ CImageView::OnPaint()
               pixels[counter].alpha = color.alpha;
             }
             else {
-              RGBA Color1 = CreateRGBA(255, 40, 120, 255);
+              // todo, make these colors customizable
+              RGBA Color1 = CreateRGBA(255, 255, 255, 255); //CreateRGBA(255, 40, 120, 255);
               RGBA Color2 = CreateRGBA(128, 128, 128, 255);
 
               Color1.red   = (color.red   * color.alpha + Color1.red   * (256 - color.alpha)) / 256;
