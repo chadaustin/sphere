@@ -34,11 +34,15 @@ std::stack<std::string> DirectoryStack;
 std::string GetSphereDirectory()
 {
   char dir[MAX_PATH];
+#if 1
   GetModuleFileName(GetModuleHandle(0), dir, MAX_PATH);
   char* last_backslash = strrchr(dir, '\\');
   if (last_backslash) {
     *last_backslash = 0;
   }
+#else
+  strcpy(dir, "c:\\sphere");
+#endif
   return dir;
 }
 

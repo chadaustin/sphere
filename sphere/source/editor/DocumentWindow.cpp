@@ -42,7 +42,7 @@ CDocumentWindow::CDocumentWindow(const char* document_path, int menu_resource, c
   } else {
     strcpy(m_DocumentPath, "");
   }
-  strcpy(m_Caption, GetDocumentTitle());	
+  strcpy(m_Caption, GetDocumentTitle());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -187,12 +187,16 @@ CDocumentWindow::Create(LPCTSTR class_name, DWORD style)
 {
 	BOOL maximized = FALSE;
 	((CMainWindow*)AfxGetMainWnd())->MDIGetActive(&maximized);
-
   if (maximized) style |= WS_MAXIMIZE;
 
   BOOL result = CMDIChildWnd::Create(class_name, "", style);
+  if (result) {
+    UpdateWindowCaption();
+    RECT client_rect;
+    GetClientRect(&client_rect);
+    OnSize(0, client_rect.right, client_rect.bottom);
+  }
 
-  UpdateWindowCaption();
   return result;
 }
 

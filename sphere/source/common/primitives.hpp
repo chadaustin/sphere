@@ -219,6 +219,7 @@ T maximum(T a, T b) {
   return (a > b ? a : b);
 }
 
+///////////////////////////////////////////////////////////
 
 template<typename destT, typename sourceT, typename clipT, typename renderT>
 void Triangle(
@@ -277,12 +278,12 @@ void Triangle(
     // render all scanlines
     int min_y = maximum<int>(clipper.top, top_y);
     int max_y = minimum<int>(clipper.bottom, mid_y);
-    for (int iy = min_y; iy < max_y; iy++) {
+    for (int iy = min_y; iy <= max_y; iy++) {
 
       // calculate edges of scanline
-      int right_round = max_y - min_y - 1;
+      const int right_round = max_y - min_y - 1;
       int left_x  = top_x + (mid_x1 - top_x) * (iy - min_y) / (max_y - min_y);
-      int right_x = top_x + ((mid_x2 - top_x) * (iy - min_y) + right_round) / (max_y - min_y);
+      int right_x = top_x + ((mid_x2 - top_x) * (iy - min_y) + right_round) / (max_y - min_y) - 1;
 
       // clip edges of scanline
       left_x = maximum<int>(left_x, clipper.left);
@@ -322,13 +323,13 @@ void Triangle(
     // render all scanlines
     int min_y = maximum<int>(clipper.top, mid_y);
     int max_y = minimum<int>(clipper.bottom, bottom_y);
-    for (int iy = min_y; iy < max_y; iy++) {
+    for (int iy = min_y; iy <= max_y; iy++) {
 
       // calculate edges of scanline
       // calculate edges of scanline
-      int right_round = max_y - min_y - 1;
+      const int right_round = max_y - min_y - 1;
       int left_x  = bottom_x + (mid_x1 - bottom_x) * (max_y - iy) / (max_y - min_y);
-      int right_x = bottom_x + ((mid_x2 - bottom_x) * (max_y - iy) + right_round) / (max_y - min_y);
+      int right_x = bottom_x + ((mid_x2 - bottom_x) * (max_y - iy) + right_round) / (max_y - min_y) - 1;
 
       // clip edges of scanline
       left_x = maximum<int>(left_x, clipper.left);
@@ -342,6 +343,7 @@ void Triangle(
   }
 }
 
+///////////////////////////////////////////////////////////
 
 template<typename destT, typename sourceT, typename clipT, typename renderT, typename interpolateT>
 void GradientTriangle(
@@ -416,12 +418,12 @@ void GradientTriangle(
     // render all scanlines
     int min_y = maximum<int>(clipper.top, top_y);
     int max_y = minimum<int>(clipper.bottom, mid_y);
-    for (int iy = min_y; iy < max_y; iy++) {
+    for (int iy = min_y; iy <= max_y; iy++) {
 
       // calculate edges of scanline
-      int right_round = max_y - min_y - 1;
+      const int right_round = max_y - min_y - 1;
       int left_x  = top_x + (mid_x1 - top_x) * (iy - min_y) / (max_y - min_y);
-      int right_x = top_x + ((mid_x2 - top_x) * (iy - min_y) + right_round) / (max_y - min_y);
+      int right_x = top_x + ((mid_x2 - top_x) * (iy - min_y) + right_round) / (max_y - min_y) - 1;
 
       int o_lx = left_x; // store originals for correct color interpolation
       int o_rx = right_x;
@@ -476,12 +478,12 @@ void GradientTriangle(
     // render all scanlines
     int min_y = maximum<int>(clipper.top, mid_y);
     int max_y = minimum<int>(clipper.bottom, bottom_y);
-    for (int iy = min_y; iy < max_y; iy++) {
+    for (int iy = min_y; iy <= max_y; iy++) {
 
       // calculate edges of scanline
-      int right_round = max_y - min_y - 1;
+      const int right_round = max_y - min_y - 1;
       int left_x  = bottom_x + (mid_x1 - bottom_x) * (max_y - iy) / (max_y - min_y);
-      int right_x = bottom_x + ((mid_x2 - bottom_x) * (max_y - iy) + right_round) / (max_y - min_y);
+      int right_x = bottom_x + ((mid_x2 - bottom_x) * (max_y - iy) + right_round) / (max_y - min_y) - 1;
 
       int o_lx = left_x; // store originals for correct color interpolation
       int o_rx = right_x;

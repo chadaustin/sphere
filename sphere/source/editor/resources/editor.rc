@@ -855,6 +855,8 @@ BEGIN
 
             MENUITEM "&Grayscale",                  ID_IMAGEVIEW_FILTER_GRAYSCALE
 
+            MENUITEM "&Saturate",                   ID_IMAGEVIEW_FILTER_SATURATE
+
             MENUITEM "&Custom Filter...",           ID_IMAGEVIEW_FILTER_CUSTOM
 
         END

@@ -63,6 +63,7 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_NOISE,          OnFilterNoise)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_CUSTOM,         OnFilterCustom)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_GRAYSCALE,      OnFilterGrayscale)
+  ON_COMMAND(ID_IMAGEVIEW_FILTER_SATURATE,       OnFilterSaturate)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_ADJUST_BRIGHTNESS, OnFilterAdjustBrightness)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_ADJUST_GAMMA, OnFilterAdjustGamma)
   ON_COMMAND(ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE_RGB, OnFilterNegativeImageRGB)
@@ -2249,6 +2250,45 @@ CImageView::OnFilterGrayscale()
     for (int dy = sy; dy < (sy + sh); ++dy) {
       int c = pImage[dy * width + dx].red + pImage[dy * width + dx].green + pImage[dy * width + dx].blue;
       pImage[dy * width + dx].red = pImage[dy * width + dx].green = pImage[dy * width + dx].blue = c / 3;
+    }
+  }
+
+  Invalidate();
+  m_Handler->IV_ImageChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+//#include "../../../code/image_proc/image/hsi.hpp"
+
+afx_msg void
+CImageView::OnFilterSaturate()
+{
+  AddUndoState();
+
+  int sx = GetSelectionLeftX();
+  int sy = GetSelectionTopY();
+  int sw = GetSelectionWidth();
+  int sh = GetSelectionHeight();
+
+  int width = m_Image.GetWidth();
+  RGBA* pImage = m_Image.GetPixels();
+
+  for (int dx = sx; dx < (sx + sw); ++dx) {
+    for (int dy = sy; dy < (sy + sh); ++dy) {
+/*
+      double r = pImage[dy * width + dx].red   / 255.0;
+      double g = pImage[dy * width + dx].green / 255.0;
+      double b = pImage[dy * width + dx].blue  / 255.0;
+      double h, s, i;
+      RGBtoHSI(r, g, b, &h, &s, &i);
+      s = 0;
+      HSItoRGB(h, s, i, &r, &g, &b);
+
+      pImage[dy * width + dx].red   = r * 255;
+      pImage[dy * width + dx].green = g * 255;
+      pImage[dy * width + dx].blue  = b * 255;
+*/
     }
   }
 
