@@ -161,19 +161,12 @@ CBrowseWindow::OnTimer(UINT event) {
 void
 CBrowseWindow::OpenFile(unsigned int index) {
 
-  char directory[MAX_PATH] = {0};
-  if ( GetCurrentDirectory(MAX_PATH, directory) != 0) {
-
-    if (SetCurrentDirectory(m_Folder.c_str()) != 0) {
-
-      if (index >= 0 && index < m_BrowseList.size()) {
-        CMainWindow* window = (CMainWindow*) GetMainWindow();
-        window->OpenGameFile(m_BrowseList[index]->filename.c_str());
-      }
-
-      SetCurrentDirectory(directory);
-    }
-
+  if (index >= 0 && index < m_BrowseList.size())
+  {
+    std::string path = m_Folder.c_str();
+    path += "\\";
+    path += m_BrowseList[index]->filename;
+    ((CMainWindow*) GetMainWindow())->OpenGameFile(path.c_str());
   }
 }
 

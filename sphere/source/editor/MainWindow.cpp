@@ -357,7 +357,12 @@ CMainWindow::Create()
 
   UpdateWindow();
   UpdateMenu();
-  
+ 
+  char games_directory[MAX_PATH];
+  GetGamesDirectory(games_directory);
+
+  m_DefaultFolder = games_directory;
+
   return TRUE;
 }
 
@@ -847,14 +852,25 @@ std::string GenerateSupportedExtensionsFilter() {
   return filter;
 }
 
+static
+std::string GetFolderFromPathName(CString thePath)
+{
+  int p = thePath.ReverseFind('\\'); 
+  std::string folder = thePath;
+  if (p != -1) { 
+    thePath.Delete(p, thePath.GetLength() - p);
+    folder = thePath;
+  }
+
+  return folder;
+}
+
 afx_msg void
 CMainWindow::OnFileOpen()
 {
   std::string filter = GenerateSupportedExtensionsFilter();
+  SetCurrentDirectory(m_DefaultFolder.c_str());
 
-  char games_directory[MAX_PATH];
-  GetGamesDirectory(games_directory);
-  SetCurrentDirectory(games_directory);
   CFileDialog FileDialog(
     TRUE,
     "",
@@ -863,13 +879,19 @@ CMainWindow::OnFileOpen()
     filter.c_str());
 
   // set current directory on Win98/2000
-  FileDialog.m_ofn.lpstrInitialDir = games_directory;
+  FileDialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
 
   // execute the dialog
   if (FileDialog.DoModal() == IDOK)
   {
     POSITION pos = FileDialog.GetStartPosition();
-
+    if (pos != NULL)
+    {
+      CString thePath = FileDialog.GetNextPathName(pos);
+      m_DefaultFolder = GetFolderFromPathName(thePath);
+    }
+    pos = FileDialog.GetStartPosition();
+    
     while (pos != NULL)
     {
       CString thePath = FileDialog.GetNextPathName(pos);
@@ -880,6 +902,8 @@ CMainWindow::OnFileOpen()
         OpenGameFile(thePath);
     }
   }
+
+  
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -978,9 +1002,12 @@ CMainWindow::OnFileBrowse()
     filter.c_str());
 
   // set current directory on Win98/2000
-  FileDialog.m_ofn.lpstrInitialDir = games_directory;
+  FileDialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
 
-  if (FileDialog.DoModal() == IDOK) {
+  if (FileDialog.DoModal() == IDOK)
+  {
+    m_DefaultFolder = GetFolderFromPathName(FileDialog.GetPathName());
+
     char szDirectory[MAX_PATH];
     std::string t = FileDialog.GetPathName();
     strcpy(szDirectory, t.c_str());
@@ -1022,8 +1049,14 @@ FILE_NEW_HANDLER(Image,       new CImageWindow())
   CMainWindow::OnFileOpen##name()                             \
   {                                                           \
     C##name##FileDialog Dialog(FDM_OPEN | FDM_MULTISELECT);   \
+    Dialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();   \
     if (Dialog.DoModal() == IDOK) {                           \
       POSITION pos = Dialog.GetStartPosition();               \
+      if (pos != NULL) {                                      \
+        CString thePath = Dialog.GetNextPathName(pos);        \
+        m_DefaultFolder = GetFolderFromPathName(thePath);     \
+      }                                                       \
+      pos = Dialog.GetStartPosition();                        \
       while (pos != NULL) {                                   \
         CString path_ = Dialog.GetNextPathName(pos);          \
         const char* path = path_;                             \
@@ -1054,10 +1087,20 @@ afx_msg void
 CMainWindow::OnFileOpenTileset()
 {
   CTilesetFileDialog Dialog(FDM_OPEN);
+  // set current directory on Win98/2000
+  Dialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
 
   if (Dialog.DoModal() == IDOK)
   {
     POSITION pos = Dialog.GetStartPosition();
+
+    if (pos != NULL)
+    {
+      CString thePath = Dialog.GetNextPathName(pos);
+      m_DefaultFolder = GetFolderFromPathName(thePath);
+    }
+    pos = Dialog.GetStartPosition();
+
     while (pos != NULL) {
       CString path_ = Dialog.GetNextPathName(pos);
       const char* path = path_;

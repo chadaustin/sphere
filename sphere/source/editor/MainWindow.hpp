@@ -207,6 +207,8 @@ private:
 
   CProjectWindow* m_ProjectWindow;
 
+  std::string m_DefaultFolder; // file dialogs folder
+
   // manage pointers to document windows so we can enumerate and send messages to them
   std::vector<CDocumentWindow*> m_DocumentWindows;
 
