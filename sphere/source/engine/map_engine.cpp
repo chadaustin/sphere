@@ -144,6 +144,10 @@ CMapEngine::ChangeMap(const char* filename)
       return false;
     }
 
+    // clear all entity queues
+    for (int i = 0; i < m_Persons.size(); ++i) {
+      m_Persons[i].commands.clear();
+    }
 
     // open new one
     if (!OpenMap(filename)) {
@@ -3014,10 +3018,10 @@ CMapEngine::ProcessInput()
     int dx = 0;
     int dy = 0;
 
-    if (m_Keys[KEY_UP])    dy--; 
-    if (m_Keys[KEY_RIGHT]) dx++;
-    if (m_Keys[KEY_DOWN])  dy++;
-    if (m_Keys[KEY_LEFT])  dx--;
+    if (new_keys[KEY_UP])    dy--; 
+    if (new_keys[KEY_RIGHT]) dx++;
+    if (new_keys[KEY_DOWN])  dy++;
+    if (new_keys[KEY_LEFT])  dx--;
 
     if (dy < 0) m_Persons[m_InputPerson].commands.push_back(Person::Command(COMMAND_MOVE_NORTH, true));
     if (dx > 0) m_Persons[m_InputPerson].commands.push_back(Person::Command(COMMAND_MOVE_EAST,  true));
