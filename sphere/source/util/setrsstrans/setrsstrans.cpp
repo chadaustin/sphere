@@ -78,7 +78,8 @@ int main(int argc, char** argv)
     // modify the spriteset
     for (int i = 0; i < spriteset.GetNumDirections(); i++) {
         for (int j = 0; j < spriteset.GetNumFrames(i); j++) {
-            sSprite& frame = spriteset.GetFrame(i, j);
+            //sSprite& frame = spriteset.GetFrame(i, j);
+            CImage32& frame = spriteset.GetImage(spriteset.GetFrameIndex(spriteset.GetDirectionName(i),j));
 
             RGBA* c = frame.GetPixels();
             for (int k = 0; k < frame.GetWidth() * frame.GetHeight(); k++) {
