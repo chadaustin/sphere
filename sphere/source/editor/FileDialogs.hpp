@@ -40,7 +40,6 @@ enum EFileDialogMode {
 
 #undef MAKE_FILETYPE
 
-
 template<typename filetype>
 class CSphereFileDialog : public CFileDialog
 {

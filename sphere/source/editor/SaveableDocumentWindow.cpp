@@ -184,7 +184,7 @@ CSaveableDocumentWindow::OnFileSaveAs()
     else
     {
       char message[1024];
-      sprintf(message, "Error: Could not save document '%s'", GetDocumentPath());
+      sprintf(message, "Error: Could not save document '%s'", document_path);
       MessageBox(message);
     }
   }

@@ -25,6 +25,7 @@ unsigned char alpha_new[256][256]={
 #include "alpha_new.table"
 };
 
+/*
 struct CoronaFileAdapter : public corona::DLLImplementation<corona::File> {
   CoronaFileAdapter(IFile* file) {
     m_File = file;
@@ -57,6 +58,7 @@ struct CoronaFileAdapter : public corona::DLLImplementation<corona::File> {
 private:
   IFile* m_File;
 };
+*/
 
 
 // INLINE HELPER FUNCTIONS
@@ -191,14 +193,16 @@ CImage32::Load(const char* filename, IFileSystem& fs)
 {
   using namespace corona;
 
+  /*
   std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::read));
   if (!file.get()) {
     return false;
   }
+  */
 
-  CoronaFileAdapter cfa(file.get());
+  //CoronaFileAdapter cfa(file.get());
   std::auto_ptr<Image> img(
-    OpenImage(&cfa, FF_AUTODETECT, PF_R8G8B8A8));
+    OpenImage(/*&cfa*/ filename, FF_AUTODETECT, PF_R8G8B8A8));
   if (!img.get()) {
     return false;
   }
@@ -208,6 +212,7 @@ CImage32::Load(const char* filename, IFileSystem& fs)
   m_Height = img->getHeight();
   m_Pixels = new RGBA[m_Width * m_Height];
   memcpy(m_Pixels, img->getPixels(), m_Width * m_Height * 4);
+
   return true;
 }
 
@@ -218,15 +223,20 @@ CImage32::Save(const char* filename, IFileSystem& fs) const
 {
   using namespace corona;
 
-  std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::write));
-  if (!file.get()) {
-    return false;
-  }
+  //std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::write));
+  //if (!file.get()) {
+  //  return false;
+  //}
 
   std::auto_ptr<Image> img(CreateImage(m_Width, m_Height, PF_R8G8B8A8));
+  if (!img.get()) {
+    return false;
+  }
   memcpy(img->getPixels(), m_Pixels, m_Width * m_Height * 4);
-  CoronaFileAdapter cfa(file.get());
-  return SaveImage(&cfa, FF_PNG, img.get());
+
+  //CoronaFileAdapter cfa(file.get());
+  //return SaveImage(&cfa, FF_AUTODETECT, img.get());
+  return SaveImage(filename, FF_AUTODETECT, img.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
