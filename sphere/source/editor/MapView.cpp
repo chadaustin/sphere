@@ -65,7 +65,6 @@ CMapView::CMapView()
 {
   s_MapAreaClipboardFormat = RegisterClipboardFormat("MapAreaSelection32");
   s_MapEntityClipboardFormat = RegisterClipboardFormat("MapEntitySelection32");
-  m_ShowGrid = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -910,7 +909,7 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
                const sObstructionMap::Segment& s = obs_map.GetSegment(i);
 
                  primitives::Line(
-                   m_pixels,
+                   (RGBA*) dest,
                    m_tile.GetWidth(),
                    s.x1,
                    s.y1,
@@ -1926,14 +1925,14 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
       m_ShowGrid = !m_ShowGrid;
       m_RedrawWindow = 1;
       Invalidate();
-      m_Handler->MV_MapChanged();
+      //m_Handler->MV_MapChanged();
       break;
 
     case ID_MAPVIEW_VIEWTILEOBSTRUCTIONS:
       m_ShowTileObstructions = !m_ShowTileObstructions;
       m_RedrawWindow = 1;
       Invalidate();
-      m_Handler->MV_MapChanged();
+      //m_Handler->MV_MapChanged();
       break;
 
   }
