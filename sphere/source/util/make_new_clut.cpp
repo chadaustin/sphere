@@ -5,7 +5,7 @@
 //  make_new_clut.exe >../common/alpha_new.table
 //
 //  To apply target alpha use:
-//  destination.chan=alpha_new[target_value.chan][target_alpha];
+//  destination.chan=alpha_new[target_alpha][target_value.chan];
 //
 #include <stdio.h>
 

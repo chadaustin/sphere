@@ -5,7 +5,7 @@
 //  make_old_clut.exe >../common/alpha_old.table
 //
 //  To apply previous alpha use:
-//  cur_value.chan=alpha_old[cur_value.chan][target_alpha];
+//  cur_value.chan=alpha_old[target_alpha][cur_value.chan];
 //
 #include <stdio.h>
 

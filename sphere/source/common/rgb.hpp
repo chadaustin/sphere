@@ -76,9 +76,9 @@ void PremultiplyAlpha(destT& d, int alpha) {
   d.green = d.green * alpha / 256;
   d.blue  = d.blue  * alpha / 256;
 #else
-  d.red   = alpha_new[d.red][alpha];
-  d.green = alpha_new[d.green][alpha];
-  d.blue  = alpha_new[d.blue][alpha];
+  d.red   = alpha_new[alpha][d.red];
+  d.green = alpha_new[alpha][d.green];
+  d.blue  = alpha_new[alpha][d.blue];
 #endif
 }
 
@@ -91,9 +91,9 @@ void Blend3(destT& d, srcT s, int alpha) {
   d.green = (s.green * alpha + d.green * (256 - alpha)) / 256;
   d.blue  = (s.blue  * alpha + d.blue  * (256 - alpha)) / 256;
 #else
-  d.red   = alpha_new[s.red][alpha]   + alpha_old[d.red][alpha];
-  d.green = alpha_new[s.green][alpha] + alpha_old[d.green][alpha];
-  d.blue  = alpha_new[s.blue][alpha]  + alpha_old[d.blue][alpha];
+  d.red   = alpha_new[alpha][s.red]   + alpha_old[alpha][d.red];
+  d.green = alpha_new[alpha][s.green] + alpha_old[alpha][d.green];
+  d.blue  = alpha_new[alpha][s.blue]  + alpha_old[alpha][d.blue];
 #endif
 }
 
@@ -106,10 +106,10 @@ void Blend4(destT& d, srcT s, int alpha) {
   d.blue  = (s.blue  * alpha + d.blue  * (256 - alpha)) / 256;
   d.alpha = (s.alpha * alpha + d.alpha * (256 - alpha)) / 256;
 #else
-  d.red   =  alpha_new[s.red][alpha]   + alpha_old[d.red][alpha];
-  d.green =  alpha_new[s.green][alpha] + alpha_old[d.green][alpha];
-  d.blue  =  alpha_new[s.blue][alpha]  + alpha_old[d.blue][alpha];
-  d.alpha  = alpha_new[s.alpha][alpha] + alpha_old[d.alpha][alpha];
+  d.red   =  alpha_new[alpha][s.red]   + alpha_old[alpha][d.red];
+  d.green =  alpha_new[alpha][s.green] + alpha_old[alpha][d.green];
+  d.blue  =  alpha_new[alpha][s.blue]  + alpha_old[alpha][d.blue];
+  d.alpha  = alpha_new[alpha][s.alpha] + alpha_old[alpha][d.alpha];
 #endif
 }
 
@@ -122,9 +122,9 @@ void BlendPA(destT& d, srcT s, int alpha) {
   d.green = s.green + d.green * (256 - alpha) / 256;
   d.blue  = s.blue  + d.blue  * (256 - alpha) / 256;
 #else
-  d.red   = s.red   + alpha_old[d.red][alpha];
-  d.green = s.green + alpha_old[d.green][alpha];
-  d.blue  = s.blue  + alpha_old[d.blue][alpha];
+  d.red   = s.red   + alpha_old[alpha][d.red];
+  d.green = s.green + alpha_old[alpha][d.green];
+  d.blue  = s.blue  + alpha_old[alpha][d.blue];
 #endif
 }
 

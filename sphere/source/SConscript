@@ -1,18 +1,13 @@
 Import('COMPILER')
 
-engine_only = ARGUMENTS.get('engine_only', 0)
+SConscript(dirs = ['common', 'engine', 'util'])
 
-if (engine_only):
-  SConscript(dirs = ['common', 'engine']);
-else:
-  SConscript(dirs = ['common', 'engine', 'util'])
+if COMPILER.is_win32():
+    SConscript(dirs = ['config', 'video'])
 
-  if COMPILER.is_win32():
-      SConscript(dirs = ['config', 'video'])
+if COMPILER.has_mfc():
+    SConscript(dirs = ['editor'])
 
-  if COMPILER.has_mfc():
-      SConscript(dirs = ['editor'])
-
-  if COMPILER.has_wxwindows():
-      SConscript(dirs = ['wxeditor'])
+if COMPILER.has_wxwindows():
+    SConscript(dirs = ['wxeditor'])
  
