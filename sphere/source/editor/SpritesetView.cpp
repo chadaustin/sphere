@@ -2,6 +2,7 @@
 #include "ResizeDialog.hpp"
 #include "SpritePropertiesDialog.hpp"
 #include "StringDialog.hpp"
+#include "FileDialogs.hpp"
 #include "resource.h"
 
 
@@ -25,6 +26,7 @@ BEGIN_MESSAGE_MAP(CSpritesetView, CWnd)
   ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_DELETE,     OnDeleteDirection)
   ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_APPEND,     OnAppendDirection)
   ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_PROPERTIES, OnDirectionProperties)
+  ON_COMMAND(ID_SPRITESETVIEWDIRECTIONS_EXPORT_AS_IMAGE, OnExportDirectionAsImage)
 
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_INSERT,     OnInsertFrame)
   ON_COMMAND(ID_SPRITESETVIEWFRAMES_DELETE,     OnDeleteFrame)
@@ -767,3 +769,47 @@ CSpritesetView::OnReplaceColorWithColor()
     }
   }
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetView::OnExportDirectionAsImage()
+{
+  // get file name to export to
+  CImageFileDialog dialog(FDM_SAVE, "Export Direction As Image");
+  if (dialog.DoModal() == IDOK) {
+    int image_width = 0;
+    int image_height = 0;
+
+    for (int i = 0; i < m_Spriteset->GetNumFrames(m_CurrentDirection); i++) {
+      int height = m_Spriteset->GetImage(m_Spriteset->GetFrameIndex(m_CurrentDirection, i)).GetHeight();
+      image_height = image_height > height ? image_height : height;
+
+      image_width  += m_Spriteset->GetImage(m_Spriteset->GetFrameIndex(m_CurrentDirection, i)).GetWidth();
+    }
+
+    if (image_width <= 0 || image_height <= 0) {
+      MessageBox("Nothing to export!", "Export Direction As Image", MB_OK);
+      return;
+    }
+
+    CImage32 image(image_width, image_height);
+
+    int x = 0;
+    int y = 0;
+
+    for (int i = 0; i < m_Spriteset->GetNumFrames(m_CurrentDirection); ++i) {
+      CImage32& frame = m_Spriteset->GetImage(m_Spriteset->GetFrameIndex(m_CurrentDirection, i));
+      image.BlitImage(frame, x, y);
+      x += frame.GetWidth();
+    }
+
+    if( !image.Save(dialog.GetPathName()) ) {
+      MessageBox("Could not save image", "Export Direction As Image", MB_OK);
+    } else {
+      MessageBox("Exported direction!", "Export Direction As Image", MB_OK);
+    }
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
