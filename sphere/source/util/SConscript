@@ -17,3 +17,5 @@ utils = ['alphamerge', 'chr2rss', 'image2map', 'image2rss', 'rss2image',
 for u in utils:
     program = env.Program(os.path.join(u, u), os.path.join(u, u + '.cpp'))
     env.Install(os.path.join(BUILD_DIR, 'util'), program)
+
+SConscript(dirs = ['ohrrpgce'])

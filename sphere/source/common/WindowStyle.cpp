@@ -106,11 +106,14 @@ sWindowStyle::Save(const char* filename, IFileSystem& fs) const
   header.background_mode = m_BackgroundMode;
   memcpy(header.corner_colors, m_BackgroundCorners, sizeof(RGBA) * 4);
   memcpy(header.edge_offsets, m_EdgeOffsets, sizeof(byte) * 4);
-  file->Write(&header, sizeof(header));
+
+  if (file->Write(&header, sizeof(header)) != sizeof(header))
+		return false;
 
   // write the bitmaps
   for (int i = 0; i < 9; i++)
-    WriteBitmap(file.get(), m_Bitmaps + i);
+    if (!WriteBitmap(file.get(), m_Bitmaps + i))
+			return false;
 
   return true;
 }
@@ -166,14 +169,18 @@ sWindowStyle::Import(const char* filename, RGBA transColor, IFileSystem& fs)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void
+bool
 sWindowStyle::WriteBitmap(IFile* file, const CImage32* bitmap)
 {
   word w = bitmap->GetWidth();
   word h = bitmap->GetHeight();
-  file->Write(&w, 2);
-  file->Write(&h, 2);
-  file->Write(bitmap->GetPixels(), sizeof(RGBA) * w * h);
+  if (file->Write(&w, 2) != 2)
+		return false;
+  if (file->Write(&h, 2) != 2)
+		return false;
+  if (file->Write(bitmap->GetPixels(), sizeof(RGBA) * w * h) != sizeof(RGBA) * w * h)
+		return false;
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

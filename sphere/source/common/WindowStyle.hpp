@@ -65,7 +65,7 @@ public:
   RGBA GetBackgroundColor(int corner) const;
 
 private:
-  static void WriteBitmap(IFile* file, const CImage32* bitmap);
+  static bool WriteBitmap(IFile* file, const CImage32* bitmap);
   static void ReadBitmap(IFile* file, CImage32* bitmap);
   static void ReadBitmap(IFile* file, CImage32* bitmap, int edge_width);
 

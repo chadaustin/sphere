@@ -9,7 +9,7 @@
 #include "PaletteView.hpp"
 #include "ColorView.hpp"
 #include "AlphaView.hpp"
-
+#include "WindowStylePreviewPalette.hpp"
 
 class CProject;  // #include "Project.hpp"
 
@@ -108,6 +108,8 @@ private:
   CAlphaView   m_AlphaView;
 
   CPen* m_HighlightPen;
+
+	CWindowStylePreviewPalette* m_WindowStylePreviewPalette;
 
   DECLARE_MESSAGE_MAP()
 };

@@ -107,7 +107,10 @@ CWindowStyleWindow::CWindowStyleWindow(const char* window_style)
   m_PaletteView.Create(this, this);
   m_ColorView.Create(this, this);
   m_AlphaView.Create(this, this);
-  SetBitmap();
+
+	m_WindowStylePreviewPalette = new CWindowStylePreviewPalette(this, &m_WindowStyle);
+  
+	SetBitmap();
 
   // we're done creating the windows, so make sure everything is in the right place
   m_Created = true;
@@ -128,6 +131,9 @@ CWindowStyleWindow::~CWindowStyleWindow()
 {
   for (int i = 0; i < 9; i++)
     delete m_DIBs[i];
+
+  if (m_WindowStylePreviewPalette)
+		m_WindowStylePreviewPalette->Destroy();
 
   m_HighlightPen->DeleteObject();
   delete m_HighlightPen;

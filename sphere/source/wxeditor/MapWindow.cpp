@@ -201,9 +201,11 @@ wMapWindow::LoadMap(const char* szMap)
 
     for (int il = 0; il < m_Map.GetNumLayers(); il++)
       for (int iy = 0; iy < m_Map.GetLayer(il).GetHeight(); iy++)
-        for (int ix = 0; ix < m_Map.GetLayer(il).GetWidth(); ix++)
-          if (m_Map.GetLayer(il).GetTile(ix, iy) >= m_Map.GetTileset().GetNumTiles())
+        for (int ix = 0; ix < m_Map.GetLayer(il).GetWidth(); ix++) {
+          int tile = m_Map.GetLayer(il).GetTile(ix, iy);
+          if (tile < 0 || tile >= m_Map.GetTileset().GetNumTiles())
             out_of_range = true;
+        }
 
     if (out_of_range)
     {
@@ -212,9 +214,11 @@ wMapWindow::LoadMap(const char* szMap)
 
       for (int il = 0; il < m_Map.GetNumLayers(); il++)
         for (int iy = 0; iy < m_Map.GetLayer(il).GetHeight(); iy++)
-          for (int ix = 0; ix < m_Map.GetLayer(il).GetWidth(); ix++)
-            if (m_Map.GetLayer(il).GetTile(ix, iy) >= m_Map.GetTileset().GetNumTiles())
+          for (int ix = 0; ix < m_Map.GetLayer(il).GetWidth(); ix++) {
+            int tile = m_Map.GetLayer(il).GetTile(ix, iy);
+            if (tile < 0 || tile >= m_Map.GetTileset().GetNumTiles())
               m_Map.GetLayer(il).SetTile(ix, iy, 0);
+          }
     }
 
   } while (out_of_range);

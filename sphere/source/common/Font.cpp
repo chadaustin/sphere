@@ -17,11 +17,11 @@ sFont::sFont(int num_characters, int width, int height)
 bool
 sFont::Create(int num_characters, int width, int height)
 {
-	m_Characters.resize(num_characters);
-	for (int i = 0; i < num_characters; i++)
-		m_Characters[i].Resize(width, height);
+  m_Characters.resize(num_characters);
+  for (int i = 0; i < num_characters; i++)
+    m_Characters[i].Resize(width, height);
 
-	return true;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -80,11 +80,11 @@ sFont::Load(const char* filename, IFileSystem& fs)
   {
     CHARACTER_HEADER character_header;
     if (file->Read(&character_header, sizeof(character_header)) != sizeof(character_header))
-			return false;
+      return false;
 
     // is the character size feasible?
-    if (character_header.width  < 0 || character_header.width  > 4096
-		 || character_header.height < 0 || character_header.height > 4096)
+    if (character_header.width  > 4096
+     || character_header.height > 4096)
       return false;
 
     m_Characters[i].Resize(character_header.width, character_header.height);
@@ -134,7 +134,7 @@ sFont::Save(const char* filename, IFileSystem& fs) const
   header.version = 2;
   header.num_characters = m_Characters.size();
   if (file->Write(&header, sizeof(header)) != sizeof(header))
-		return false;
+    return false;
 
   // write characters
   for (unsigned i = 0; i < m_Characters.size(); i++)
@@ -144,10 +144,10 @@ sFont::Save(const char* filename, IFileSystem& fs) const
     character_header.width  = m_Characters[i].GetWidth();
     character_header.height = m_Characters[i].GetHeight();
     if (file->Write(&character_header, sizeof(character_header)) != sizeof(character_header))
-			return false;
+      return false;
 
     if (file->Write(m_Characters[i].GetPixels(), character_header.width * character_header.height * sizeof(RGBA)) != character_header.width * character_header.height * sizeof(RGBA))
-			return false;
+      return false;
   }
 
   return true;
