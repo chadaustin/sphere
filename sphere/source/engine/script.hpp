@@ -150,15 +150,6 @@ private:
   declare_constructor2(CreateWindowStyleObject, SWINDOWSTYLE* ws, bool destroy);
   declare_finalizer(ssFinalizeWindowStyle);
   declare_method(ssWindowStyleDrawWindow);
-  declare_method(ssWindowStyleDrawBackground);
-  declare_method(ssWindowStyleDrawUpperLeftCorner);
-  declare_method(ssWindowStyleDrawUpperRightCorner);
-  declare_method(ssWindowStyleDrawLowerLeftCorner);
-  declare_method(ssWindowStyleDrawLowerRightCorner);
-  declare_method(ssWindowStyleDrawTopEdge);
-  declare_method(ssWindowStyleDrawBottomEdge);
-  declare_method(ssWindowStyleDrawLeftEdge);
-  declare_method(ssWindowStyleDrawRightEdge);
 
   // images
   declare_constructor2(CreateImageObject, IMAGE image, bool destroy);
