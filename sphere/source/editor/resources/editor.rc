@@ -414,9 +414,13 @@ BEGIN
         MENUITEM "&Copy",                       ID_SPRITESETVIEWFRAMES_COPY
         MENUITEM "&Paste",                      ID_SPRITESETVIEWFRAMES_PASTE
         MENUITEM SEPARATOR
-        MENUITEM "Pr&operties...",              ID_SPRITESETVIEWFRAMES_PROPERTIES
+        POPUP "&Edit Range"
+        BEGIN
+            MENUITEM "&Replace Color With Color...", 
+                                                    ID_SPRITESETVIEWFRAMES_REPLACE_COLOR_WITH_COLOR
 
-        MENUITEM "&Replace Color With Color",   ID_SPRITESETVIEWFRAMES_REPLACE_COLOR_WITH_COLOR
+        END
+        MENUITEM "Pr&operties...",              ID_SPRITESETVIEWFRAMES_PROPERTIES
 
     END
 END
@@ -436,8 +440,11 @@ BEGIN
         MENUITEM "Insert Tile&set...",          ID_TILESETVIEW_INSERTTILESET
         MENUITEM "Append Ti&leset...",          ID_TILESETVIEW_APPENDTILESET
         MENUITEM SEPARATOR
-        MENUITEM "Replace Color with Color",    ID_TILESETVIEW_REPLACE_COLOR_WITH_COLOR
+        POPUP "&Edit Range"
+        BEGIN
+            MENUITEM "Replace Color With Color...", ID_TILESETVIEW_REPLACE_COLOR_WITH_COLOR
 
+        END
         POPUP "&Zoom"
         BEGIN
             MENUITEM "&1x",                         ID_TILESETVIEW_ZOOM_1X
