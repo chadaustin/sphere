@@ -272,6 +272,7 @@ CScriptWindow::OnSize(UINT type, int cx, int cy)
 afx_msg void
 CScriptWindow::OnSetFocus(CWnd* old)
 {
+  CSaveableDocumentWindow::OnSetFocus(old);
   if (m_Created) {
     ::SetFocus(m_Editor);
   }
@@ -430,7 +431,7 @@ CScriptWindow::OnFindReplace(WPARAM, LPARAM)
       SendEditor(SCI_REPLACESEL, 0, (LPARAM)(const char*)replace_string);
 
       // now try to find the next one
-      ++ttf.chrg.cpMin;
+      ttf.chrg.cpMin += strlen(replace_string);
       if (SendEditor(SCI_FINDTEXT, options, (LPARAM)&ttf) == -1) {
         m_SearchDialog->MessageBox("No more matches!");
       } else {
@@ -473,7 +474,7 @@ CScriptWindow::OnFindReplace(WPARAM, LPARAM)
       SendEditor(SCI_REPLACESEL, 0, (LPARAM)(const char*)replace_string);
 
       // now try to find the next one
-      ++ttf.chrg.cpMin;
+      ttf.chrg.cpMin += strlen(replace_string);
       if (SendEditor(SCI_FINDTEXT, options, (LPARAM)&ttf) != -1) {
         SendEditor(SCI_SETSEL, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
       }
