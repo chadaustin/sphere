@@ -37,6 +37,9 @@ CProject::Create(const char* games_directory, const char* project_name)
   // now create all of the subdirectories
   for (int i = 0; i < NUM_GROUP_TYPES; i++)
   {
+    if (i == GT_TILESETS)
+      continue;
+
     std::string directory = project_name;
     directory += "/";
     directory += GetGroupDirectory(i);
@@ -256,6 +259,7 @@ CProject::GetGroupDirectory(int grouptype)
     case GT_WINDOWSTYLES: return "windowstyles";
     case GT_IMAGES:       return "images";
     case GT_ANIMATIONS:   return "animations";
+    case GT_TILESETS:     return "tilesets";
     default:              return NULL;
   }
 }

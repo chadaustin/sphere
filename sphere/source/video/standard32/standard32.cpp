@@ -335,7 +335,7 @@ EXPORT(bool) ToggleFullScreen() {
     // switching failed, try to revert to what it was
     fullscreen = !fullscreen;
     if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight) == true) {
-    SetClippingRectangle(x, y, w, h);
+      SetClippingRectangle(x, y, w, h);
       return true;
     }
   }

@@ -150,6 +150,29 @@ void BuildDriverList()
   SetCurrentDirectory(old_directory);
 
 #if 1
+  struct Local
+  {
+    static void ValidateDriver(vector<string>& video_driver_list,
+                               const char* folder_name, const char* build_type)
+    {
+      std::string filename = folder_name;
+      filename += "/";
+      filename += build_type;
+      filename += "/";
+      filename += folder_name;
+      filename += ".dll";
+
+      FILE* f = fopen(filename.c_str(), "rb");
+      if (!f) return;
+      fclose(f);
+
+      if (IsValidDriver(filename.c_str())) {
+        filename = "../../../windows/desktop/sphere/source/video/" + filename;
+        video_driver_list.push_back(filename);
+      }
+    }
+  };
+  
   if (SetCurrentDirectory("C:\\WINDOWS\\Desktop\\sphere\\source\\video") == 0)
     return;
 
@@ -157,34 +180,12 @@ void BuildDriverList()
   if (handle != INVALID_HANDLE_VALUE)
   {
     do {
-
-      if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-        std::string filename;
-
-        filename = ffd.cFileName;
-        filename += "/";
-        filename += "release";
-        filename += "/";
-        filename += ffd.cFileName;
-        filename += ".dll";
-
-        if (IsValidDriver(filename.c_str())) {
-          filename = "../../../windows/desktop/sphere/source/video/" + filename;
-          VideoDriverList.push_back(filename);
-        }
-
-        filename = "";
-        filename += ffd.cFileName;
-        filename += "/";
-        filename += "debug";
-        filename += "/";
-        filename += ffd.cFileName;
-        filename += ".dll";
-
-        if (IsValidDriver(filename.c_str())) {
-          filename = "../../../windows/desktop/sphere/source/video/" + filename;
-          VideoDriverList.push_back(filename);
-        }      
+      if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+        && ffd.cFileName != "." && ffd.cFileName != ".."
+        && ffd.cFileName != "CVS") {
+        Local::ValidateDriver(VideoDriverList, ffd.cFileName, "debug");
+        Local::ValidateDriver(VideoDriverList, ffd.cFileName, "profile");
+        Local::ValidateDriver(VideoDriverList, ffd.cFileName, "release");
       }
     } while (FindNextFile(handle, &ffd));
 
@@ -403,6 +404,57 @@ BOOL CALLBACK AudioDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static FILE* s_Log = NULL;
+
+void WriteLog(const char* text) {
+
+  static bool firstcall = true;
+  if (firstcall) {
+    s_Log = fopen("drivers.log", "wb+");
+    firstcall = false;
+
+    if (s_Log) {
+      fprintf(s_Log, "Driver Log File\n");
+    }
+  }
+  else {
+    s_Log = fopen("drivers.log", "a");
+  }
+
+  if (s_Log) {
+    fwrite(text, sizeof(char), strlen(text), s_Log);
+  }
+
+  if (s_Log) {
+    fclose(s_Log);
+    s_Log = NULL;
+  }
+}
+
+void WriteError(DWORD error_code)
+{
+  LPVOID lpMsgBuf;
+  if (!FormatMessage( 
+    FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+    FORMAT_MESSAGE_FROM_SYSTEM | 
+    FORMAT_MESSAGE_IGNORE_INSERTS,
+    NULL,
+    error_code,
+    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+    (LPTSTR) &lpMsgBuf,
+    0,
+    NULL ))
+  {
+    return;
+  }
+
+  char string[1024] = {0};
+  sprintf(string, "Error: %d - %s\n", error_code, (LPCTSTR)lpMsgBuf);
+  WriteLog(string);
+
+  LocalFree(lpMsgBuf);
+}
+
 bool IsValidDriver(const char* filename)
 {
   const char** functions = video_functions;
@@ -410,12 +462,25 @@ bool IsValidDriver(const char* filename)
 
   HINSTANCE module = LoadLibrary(filename);
   if (module == NULL) {
+
+    char string[MAX_PATH + 256] = {0};
+    sprintf (string, "Cannot load library: '%s'\n", filename);
+    WriteLog(string);
+    WriteError(GetLastError());
+
     return false;
   }
 
   for (int i = 0; i < size; i++) {
     if (GetProcAddress(module, functions[i]) == NULL) {
+      DWORD error_code = GetLastError();
       FreeLibrary(module);
+
+      char string[MAX_PATH + 256] = {0};
+      sprintf (string, "Cannot load function address: '%s' '%s'", functions[i], filename);
+      WriteLog(string);
+      WriteError(error_code);
+
       return false;
     }
   }
