@@ -19,10 +19,12 @@ static audiere::MIDIDevicePtr s_MidiDevice = NULL;
 
 bool InitAudio(HWND window, SPHERECONFIG* config)
 {
+  const char* audiodriver = config->audiodriver.c_str();
+
   switch (config->sound) {
     case SOUND_AUTODETECT:
-      s_AudioDevice = audiere::OpenDevice("winmm");
-      if (!s_AudioDevice) {
+      s_AudioDevice = audiere::OpenDevice(audiodriver);
+      if (!s_AudioDevice.get()) {
         s_AudioDevice = audiere::OpenDevice("null");
       }
 
@@ -32,19 +34,19 @@ bool InitAudio(HWND window, SPHERECONFIG* config)
         s_MidiDevice = audiere::OpenMIDIDevice("null");
       }
 
-      return bool(s_AudioDevice && s_MidiDevice);
+      return bool(s_AudioDevice.get() && s_MidiDevice.get());
 #else
-      return bool(s_AudioDevice);
+      return bool(s_AudioDevice.get());
 #endif
 
     case SOUND_ON:
-      s_AudioDevice = audiere::OpenDevice("winmm");
+      s_AudioDevice = audiere::OpenDevice(audiodriver);
 #ifdef WIN32
       s_MidiDevice  = audiere::OpenMIDIDevice("");
 
-      return bool(s_AudioDevice && s_MidiDevice);
+      return bool(s_AudioDevice.get() && s_MidiDevice.get());
 #else
-      return bool(s_AudioDevice);
+      return bool(s_AudioDevice.get());
 #endif
 
     case SOUND_OFF:
@@ -52,9 +54,9 @@ bool InitAudio(HWND window, SPHERECONFIG* config)
 #ifdef WIN32
       s_MidiDevice  = audiere::OpenMIDIDevice("null");
 
-      return bool(s_AudioDevice && s_MidiDevice);
+      return bool(s_AudioDevice.get() && s_MidiDevice.get());
 #else
-      return bool(s_AudioDevice);
+      return bool(s_AudioDevice.get());
 #endif
 
     default:

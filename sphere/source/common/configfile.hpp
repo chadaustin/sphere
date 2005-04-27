@@ -33,6 +33,10 @@ public:
   int GetNumSections() const;
   const char* GetSectionName(const int index) const;
 
+  int GetNumKeys(const int section) const;
+  std::string GetKey(const int section, const int index) const;
+  std::string GetValue(const int section, const int index) const;
+
 private:
   struct Section {
     std::map<std::string, std::string> entries;

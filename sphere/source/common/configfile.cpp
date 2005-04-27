@@ -44,6 +44,66 @@ CConfigFile::GetSectionName(const int index) const
 
 ////////////////////////////////////////////////////////////////////////////////
 
+int
+CConfigFile::GetNumKeys(const int section) const
+{
+  if (section == -1)
+  {
+    int num_keys = 0;
+    std::map<std::string, Section>::const_iterator i;
+
+    for (i = m_sections.begin(); i != m_sections.end(); i++) {
+      const Section& s = i->second;
+      std::map<std::string, std::string>::const_iterator j;
+      for (j = s.entries.begin(); j != s.entries.end(); j++) {
+        num_keys += 1;
+      }
+    }
+
+    return num_keys;
+  }
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+std::string
+CConfigFile::GetKey(const int section, const int index) const
+{
+  if (section == -1)
+  {
+    int num_keys = 0;
+    std::map<std::string, Section>::const_iterator i;
+
+    for (i = m_sections.begin(); i != m_sections.end(); i++) {
+      const Section& s = i->second;
+      std::map<std::string, std::string>::const_iterator j;
+      for (j = s.entries.begin(); j != s.entries.end(); j++) {
+        if (num_keys == index) {
+          return j->first.c_str();
+        }
+
+        num_keys += 1;
+      }
+    }
+
+    return "";
+  }
+
+  return "";
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+std::string
+CConfigFile::GetValue(const int section, const int index) const
+{
+  return "";
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 inline void skip_whitespace(const char*& str)
 {
   while (isspace(*str)) {

@@ -1281,6 +1281,12 @@ log_object.endBlock()
   file_object.write(key, value)
     - writes a value (string, number, boolean) to the file under the key name
 
+  file_object.getNumKeys()
+    - returns the number of keys in the file
+
+  file_object.getKey(index)
+    - returns a string of the key at 'index'
+
   file_object.flush()
     - writes the file to disk immediately...  this way you don't have
       to wait for it to save when the file object is garbage collected

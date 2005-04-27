@@ -8,6 +8,7 @@
 
 
 const char* DEFAULT_VIDEODRIVER = "standard32.dll";
+const char* DEFAULT_SOUNDDRIVER = "winmm";
 
 static
 void InitializePlayerConfig(PLAYERCONFIG* config, int player_index)
@@ -63,6 +64,8 @@ bool LoadSphereConfig(SPHERECONFIG* config, const char* filename)
   file.Load(filename);
   config->videodriver = file.ReadString("Video", "Driver",     DEFAULT_VIDEODRIVER);
   config->sound       = file.ReadInt   ("Audio", "Preference", SOUND_AUTODETECT);
+  config->midi        = 0; //file.ReadInt   ("Audio", "Preference", SOUND_AUTODETECT);
+  config->audiodriver = file.ReadString("Audio", "Driver",     DEFAULT_SOUNDDRIVER);
   
   // load video capture settings
   config->video_capture_mode      = file.ReadInt("VideoCapture", "Mode",      VIDEO_CAPTURE_SCREENSHOT_ONLY);
@@ -128,6 +131,7 @@ bool SaveSphereConfig(SPHERECONFIG* config, const char* filename)
   CConfigFile file;
   file.WriteString("Video", "Driver",     config->videodriver.c_str());
   file.WriteInt   ("Audio", "Preference", config->sound);
+  file.WriteString("Audio", "Driver",     config->audiodriver.c_str());
 
   file.WriteInt  ("VideoCapture", "Mode", config->video_capture_mode);
   file.WriteInt  ("VideoCapture", "Timer", config->video_capture_timer);

@@ -1424,61 +1424,65 @@ SOURCE=.\ss_functions.table
 # Begin Group "irc"
 
 # PROP Default_Filter ""
+# Begin Group "common"
+
+# PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\..\..\http\src\dcc.cpp
+SOURCE=..\..\..\http\src\common\socket.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\src\dcc.hpp
+SOURCE=..\..\..\http\src\common\socket.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\src\DCCWindow.cpp
+SOURCE=..\..\..\http\src\common\thread.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\src\DCCWindow.hpp
+SOURCE=..\..\..\http\src\common\thread.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\src\irc.cpp
+SOURCE=..\..\..\http\src\common\time.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\src\irc.hpp
+SOURCE=..\..\..\http\src\common\time.hpp
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=..\..\..\http\src\irc\dcc.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\src\IRCWindow.cpp
+SOURCE=..\..\..\http\src\irc\dcc.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\src\IRCWindow.hpp
+SOURCE=..\..\..\http\src\irc\DCCWindow.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\src\socket.cpp
+SOURCE=..\..\..\http\src\irc\DCCWindow.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\src\socket.hpp
+SOURCE=..\..\..\http\src\irc\irc.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\src\thread.cpp
+SOURCE=..\..\..\http\src\irc\irc.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\src\thread.hpp
+SOURCE=..\..\..\http\src\irc\IRCWindow.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\http\src\time.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\http\src\time.hpp
+SOURCE=..\..\..\http\src\irc\IRCWindow.hpp
 # End Source File
 # End Group
 # End Target

@@ -39,8 +39,8 @@
 // (because you don't have my http/irc/dcc code)
 // then remove the USE_IRC from the define list:
 // Project->Settings... C/C++, Preprocessor Definitions.
-#include "../../../http/src/irc.hpp"
-#include "../../../http/src/IRCWindow.hpp"
+#include "../../../http/src/irc/irc.hpp"
+#include "../../../http/src/irc/IRCWindow.hpp"
 #endif
 
 // dialogs
@@ -1054,7 +1054,7 @@ CMainWindow::UpdateMenu()
     } while (false);
   }
 
-  if (0) {
+  if (1) {
     int menu_count = GetMenuItemCount(hNewMenu);
     //char buffer[100000];
     //char temp[80];
@@ -1105,7 +1105,7 @@ CMainWindow::UpdateMenu()
                iWindowMenu,
                MF_POPUP | MF_BYPOSITION | MF_STRING,
                (UINT_PTR) hProjectMenuSubMenu,
-               /*TranslateString(*/szPopupTitle/*)*/);
+               TranslateString(szPopupTitle));
 
     iWindowMenu++;
   }
@@ -1124,7 +1124,7 @@ CMainWindow::UpdateMenu()
                iWindowMenu,
                MF_POPUP | MF_BYPOSITION | MF_STRING,
                (UINT_PTR) hChildMenuSubMenu,
-               /*TranslateString(*/szPopupTitle/*)*/);
+               TranslateString(szPopupTitle));
 
     iWindowMenu++;
   }

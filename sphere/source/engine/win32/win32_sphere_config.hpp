@@ -6,9 +6,9 @@
 
 
 enum {
-  SOUND_AUTODETECT,
-  SOUND_ON,
-  SOUND_OFF,
+  SOUND_AUTODETECT = 0,
+  SOUND_ON = 1,
+  SOUND_OFF = 2,
 };
 
 enum {
@@ -37,6 +37,7 @@ struct SPHERECONFIG
   // audio
   int sound;
   bool midi;
+  std::string audiodriver;
 
   // network
   bool allow_networking;

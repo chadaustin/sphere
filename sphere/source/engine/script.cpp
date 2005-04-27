@@ -8116,6 +8116,8 @@ CScript::CreateFileObject(JSContext* cx, CConfigFile* file)
     { "read",  ssFileRead,  2, 0, 0 },
     { "flush", ssFileFlush, 0, 0, 0 },
     { "close", ssFileClose, 0, 0, 0 },
+    { "getNumKeys", ssFileGetNumKeys, 0, 0, 0 },
+    { "getKey", ssFileGetKey, 1, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -8173,6 +8175,27 @@ begin_method(SS_FILE, ssFileRead, 2)
     std::string str = object->file->ReadString("", key, jsval_to_str(cx, argv[1]));
     return_str(str.c_str());
   }
+end_method()
+
+////////////////////////////////////////
+
+begin_method(SS_FILE, ssFileGetNumKeys, 0)
+  int i = object->file->GetNumKeys(-1);
+  return_int(i);
+end_method()
+
+////////////////////////////////////////
+
+begin_method(SS_FILE, ssFileGetKey, 1)
+  arg_int(index);
+ 
+  if (index < 0) {
+    JS_ReportError(cx, "Index must be greater than zero... %d", index);
+    return JS_FALSE;
+  }
+
+  std::string str = object->file->GetKey(-1, index);
+  return_str(str.c_str());
 end_method()
 
 ///////////////////////////////////////

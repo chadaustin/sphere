@@ -398,6 +398,8 @@ SS_FUNCTION(OpenLog, 1)
   SS_FUNCTION(OpenFile, 1)
   //file.read(key, default_value)
   //file.write(key, value)
+  //file.getNumKeys(section)
+  //file.getKey(section, index)
 
   // raw files
   SS_FUNCTION(OpenRawFile, 1)

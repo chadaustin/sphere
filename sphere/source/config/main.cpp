@@ -381,7 +381,11 @@ BOOL CALLBACK AudioDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
   {
     case WM_INITDIALOG:
     {
-      SetFocus(GetDlgItem(window, IDC_DRIVERLIST));
+      // add the drivers
+      SendDlgItemMessage(window, IDC_SOUND_DRIVER, CB_ADDSTRING, 0, (LPARAM)"directsound");
+      SendDlgItemMessage(window, IDC_SOUND_DRIVER, CB_ADDSTRING, 0, (LPARAM)"winmm");
+
+      SendDlgItemMessage(window, IDC_SOUND_DRIVER, CB_SETCURSEL, 0, 0);
 
       switch (Config.sound) {
         case SOUND_ON:         CheckDlgButton(window, IDC_SOUND_ON,         BST_CHECKED); break;
@@ -407,6 +411,14 @@ BOOL CALLBACK AudioDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
         } else {
           Config.sound = SOUND_AUTODETECT;
         }
+
+        if (SendDlgItemMessage(window, IDC_SOUND_DRIVER,    CB_GETCURSEL, 0, 0) == 0) {
+          Config.audiodriver = "directsound";
+        }
+        if (SendDlgItemMessage(window, IDC_SOUND_DRIVER,    CB_GETCURSEL, 0, 0) == 1) {
+          Config.audiodriver = "winmm";
+        }
+
         return TRUE;
       }
 

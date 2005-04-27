@@ -36,6 +36,13 @@ void SetLanguage(const char* language) {
 const char* TranslateString(const char* string)
 {
   const char* language = GetLanguage();
+  if (language == NULL || strlen(language) == 0) {
+    return string;
+  }
+  if (strcmp(language, "English") == 0) {
+    return string;
+  }
+
   return s_LanguageConfig.ReadString(language, string, string).c_str();
 }
 
@@ -43,6 +50,14 @@ const char* TranslateString(const char* string)
 
 void TranslateMenu(HMENU menu)
 {
+  const char* language = GetLanguage();
+  if (language == NULL || strlen(language) == 0) {
+    return;
+  }
+  if (strcmp(language, "English") == 0) {
+    return;
+  }
+
   int count = GetMenuItemCount(menu);
   for (int i = 0; i < count; i++)
   {
@@ -65,6 +80,14 @@ void TranslateMenu(HMENU menu)
 
 void TranslateDialog(HWND hWnd)
 {
+  const char* language = GetLanguage();
+  if (language == NULL || strlen(language) == 0) {
+    return;
+  }
+  if (strcmp(language, "English") == 0) {
+    return;
+  }
+
   for (int i = 0; i < 10; i++)
   {
     char buffer[1024] = {0};

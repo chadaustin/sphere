@@ -243,6 +243,8 @@ private:
   declare_method(ssFileWrite);
   declare_method(ssFileFlush);
   declare_method(ssFileClose);
+  declare_method(ssFileGetNumKeys);
+  declare_method(ssFileGetKey);
 
   // raw files
   declare_constructor2(CreateRawFileObject, IFile* file, bool writeable);

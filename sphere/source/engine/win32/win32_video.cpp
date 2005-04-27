@@ -41,14 +41,14 @@ void  (__stdcall * DrawRectangle)(int x, int y, int w, int h, RGBA color);
 void  (__stdcall * DrawGradientRectangle)(int x, int y, int w, int h, RGBA color[4]);
 
 
-static HWND      SphereWindow;
-static HINSTANCE GraphicsDriver;
+static HWND      SphereWindow = NULL;
+static HINSTANCE GraphicsDriver = NULL;
 
-static int ScreenWidth;
-static int ScreenHeight;
+static int ScreenWidth = 0;
+static int ScreenHeight = 0;
 
-static SFONT* FPSFont;
-static bool   FPSDisplayed;
+static SFONT* FPSFont = NULL;
+static bool   FPSDisplayed = true;
 
 static int VideoCaptureMode = VIDEO_CAPTURE_SCREENSHOT_ONLY;
 static int VideoCaptureTimer = 1000;
@@ -260,19 +260,20 @@ int GetScreenHeight()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static RGBA fps_color;
+
 void FlipScreen()
 {
   static bool FirstCall = true;
-  static int LastUpdate;
-  static int FPS;
-  static int CurrentFrames;
+  static int LastUpdate = 0;
+  static int FPS = 0;
+  static int CurrentFrames = 0;
 
   // initialize variables
   if (FirstCall) {
     LastUpdate = GetTime();
     FPS = 0;
     CurrentFrames = 0;
-    
     FirstCall = false;
   }
 
