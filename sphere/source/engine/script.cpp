@@ -5855,7 +5855,7 @@ end_method()
 JSObject*
 CScript::CreateLogObject(JSContext* cx, CLog* log)
 {
-  // define image class
+  // define log class
   static JSClass clasp = {
     "log", JSCLASS_HAS_PRIVATE,
     JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,

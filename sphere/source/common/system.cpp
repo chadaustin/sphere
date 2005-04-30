@@ -11,6 +11,7 @@
 #include <vector>
 #include <string>
 #include <list>
+#include <stdio.h>
 
 #ifndef WIN32
 #include <glob.h>
@@ -151,19 +152,11 @@ bool IsFile(const char* filename) {
   return false;
 }
 
-///////////////////////////////////////////////////////////
-
-#pragma warning(disable : 4786)  // identifier too long
-
-
-#include <windows.h>
-#include <stdio.h>
-//#include "FileSystem.hpp"
-
 ////////////////////////////////////////////////////////////////////////////////
 
 bool PathExists(const char* szPath)
 {
+#ifdef WIN32
   char szOldDirectory[MAX_PATH];
   GetCurrentDirectory(MAX_PATH, szOldDirectory);
 
@@ -171,12 +164,16 @@ bool PathExists(const char* szPath)
 
   SetCurrentDirectory(szOldDirectory);
   return (bRetVal ? true : false);
+#else
+  return false;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 bool FileExists(const char* szFile)
 {
+#ifdef WIN32
   HANDLE hFile = CreateFile(
     szFile,
     0,
@@ -190,6 +187,9 @@ bool FileExists(const char* szFile)
 
   CloseHandle(hFile);
   return true;
+#else
+  return false;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -209,6 +209,7 @@ unsigned long FileSize(const char* filename)
 
 bool EnumerateFiles(const char* filter, const char* directory, const char* directory_prefix, std::list<std::string>& files)
 {
+#ifdef WIN32
   // store current directory
   char old_directory[MAX_PATH];
   GetCurrentDirectory(MAX_PATH, old_directory);
@@ -259,6 +260,9 @@ bool EnumerateFiles(const char* filter, const char* directory, const char* direc
   // restore directory
   SetCurrentDirectory(old_directory);
   return true;
+#else
+  return false;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
