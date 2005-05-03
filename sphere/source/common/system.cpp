@@ -188,7 +188,12 @@ bool FileExists(const char* szFile)
   CloseHandle(hFile);
   return true;
 #else
-  return false;
+  FILE* file = fopen(szFile, "rb");
+  if (file == NULL)
+    return false;
+  fclose(file);
+  file = NULL;
+  return true;
 #endif
 }
 

@@ -193,14 +193,6 @@ SOURCE=.\FileDialogs.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\FileSystem.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\FileSystem.hpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\FileTypes.cpp
 # End Source File
 # Begin Source File

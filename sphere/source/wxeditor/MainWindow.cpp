@@ -9,7 +9,6 @@
 // core
 #include "Editor.hpp"
 #include "WindowCommands.hpp"
-#include "FileSystem.hpp"
 #include "Configuration.hpp"
 #include "Keys.hpp"
 #include "Package.hpp"
@@ -1593,7 +1592,7 @@ wMainWindow::OnProjectPackageGame(wxCommandEvent &event)
 
   // go into game directory and add all files
   std::list<std::string> files;
-  EnumerateFiles("*.*", "", files);
+  EnumerateFiles("*.*", "", "", files);
 
   CPackage package;
   std::list<std::string>::iterator i;

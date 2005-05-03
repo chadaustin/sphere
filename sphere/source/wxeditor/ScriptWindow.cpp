@@ -15,7 +15,7 @@
 //#include "NumberDialog.hpp"
 #include "Project.hpp"
 #include "Scripting.hpp"
-#include "FileSystem.hpp"
+#include "../common/system.hpp"
 #include "Configuration.hpp"
 #include "Keys.hpp"
 //#include "resource.h"
