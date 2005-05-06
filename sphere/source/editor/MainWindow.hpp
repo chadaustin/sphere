@@ -35,6 +35,7 @@ public:
 
 #ifdef I_SUCK
   void CreateProject(const char* projectname, const char* gametitle);
+  void __OpenProject__(const char* pathname);
   void OpenProject(const char* filename);
   void CloseProject();
 #endif

@@ -16,6 +16,8 @@ CGameSettingsDialog::CGameSettingsDialog(CProject* project)
 BOOL
 CGameSettingsDialog::OnInitDialog()
 {
+  SetDlgItemText(IDC_GAMEPATH, m_Project->GetDirectory());
+
   // set game title
   GetDlgItem(IDC_GAMETITLE)->SetFocus();
   SetDlgItemText(IDC_GAMETITLE, m_Project->GetGameTitle());

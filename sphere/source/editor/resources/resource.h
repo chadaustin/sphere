@@ -278,6 +278,7 @@
 #define IDC_USE_COMMON_TEXT_FILETYPES   1241
 #define IDC_GENERATE_NAME               1242
 #define IDC_ZONE_ID                     1243
+#define IDC_GAMEPATH                    1244
 #define ID_FILE_IMPORT_BITMAPTORSS      12241
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40003
@@ -729,7 +730,6 @@
 #define ID_SCRIPT_TOOLS_TO_LOWER_CASE   40839
 #define ID_SCRIPT_TOOLS_TO_UPPER_CASE   40840
 #define ID_SCRIPT_TOOLS_FIXINDENTATION  40841
-//#define WM_REFRESH_PROJECT              40842
 #define ID_REFRESH_PROJECT              40842
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
@@ -740,7 +740,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        282
 #define _APS_NEXT_COMMAND_VALUE         40843
-#define _APS_NEXT_CONTROL_VALUE         1244
+#define _APS_NEXT_CONTROL_VALUE         1245
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

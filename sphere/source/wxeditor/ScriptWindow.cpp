@@ -6,6 +6,7 @@
 //#include <SciLexer.h>
 
 #ifdef WIN32
+#include <wx/wx.h>
 #include <wx/stc/stc.h>
 #endif
 

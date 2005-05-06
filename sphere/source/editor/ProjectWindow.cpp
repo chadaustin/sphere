@@ -561,11 +561,12 @@ CProjectWindow::__OnDoubleClick__(bool allow_expand)
 #endif
 
     default: {
-      if (allow_expand) {
-        if (IsTreeItemFolder(m_TreeControl, item)) {
+      if (IsTreeItemFolder(m_TreeControl, item)) {
+        if (allow_expand) {
           m_TreeControl.Expand(item, TVE_TOGGLE);
-          return;
         }
+  
+        return;
       }
 
       // check to see if user clicked on an item in a folder

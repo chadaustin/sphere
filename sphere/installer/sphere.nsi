@@ -2,6 +2,7 @@
 ; by 64.113.75.203 on Jan 21 03 @ 23:23
 
 ; NOTE: this .NSI script is designed for NSIS v1.8+
+; URL: http://nsis.sourceforge.net/
 
 Name "Sphere 1.1"
 !define SphereDir "sphere-1.1"
@@ -37,6 +38,7 @@ CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Configuration.lnk" "$INSTDIR\c
 CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Editor.lnk" "$INSTDIR\editor.exe"
 CreateDirectory "$SMPROGRAMS\${SphereStartMenuDir}\Documentation"
 CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Documentation\Sphere Web Site.lnk" "http://sphere.sourceforge.net"
+CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Documentation\SphereDev.lnk" "http://www.spheredev.net/forums"
 CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Documentation\AegisKnight's Site.lnk" "http://aegisknight.org/sphere"
 CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Documentation\Flik's Tutorial Site.lnk" "http://sphere.sourceforge.net/flik/docs"
 CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Documentation\Local Documentation.lnk" "$INSTDIR\docs"

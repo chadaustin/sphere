@@ -671,6 +671,11 @@ void
 CMainWindow::OpenProject(const char* filename)
 {
   CloseProject();
+
+  if (!IsProjectFile(filename))
+  {
+    return;
+  }
   
   if (m_Project.Open(filename) == false)
   {
@@ -681,6 +686,7 @@ CMainWindow::OpenProject(const char* filename)
   }
 
   Configuration::Set(KEY_LAST_PROJECT, filename);
+  //printf ("Set last project: '%s'\n", filename);
 
   m_ProjectOpen = true;
   m_ProjectWindow = new CProjectWindow(this, &m_Project);
@@ -1448,6 +1454,33 @@ CMainWindow::OnFileNewFile()
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifdef I_SUCK
+void
+CMainWindow::__OpenProject__(const char* pathname)
+{
+  std::string filename = pathname;
+              filename += "\\";
+              filename += "game.sgm";
+
+  if ( FileExists(filename.c_str()) )
+  {
+    OpenProject(filename.c_str());
+  }
+  else
+  {
+    std::string msg = "No game.sgm found in directory.\n";
+                msg += "Open "; msg += filename; msg += " anyway?";
+
+    if (MessageBox(msg.c_str(), "Sphere", MB_OKCANCEL) == IDOK)
+    {
+      OpenProject(filename.c_str());
+    }
+  }
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+
+#ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileOpenProject()
 {
@@ -1465,7 +1498,14 @@ CMainWindow::OnFileOpenProject()
   FileDialog.m_ofn.lpstrInitialDir = games_directory;
 
   if (FileDialog.DoModal() == IDOK) {
-    OpenProject(FileDialog.GetPathName());
+    std::string pathname = FileDialog.GetPathName();
+    std::string folder = pathname;
+
+    if (folder.rfind('\\') != std::string::npos) {
+      folder[folder.rfind('\\')] = 0;
+    }
+    
+    __OpenProject__(folder.c_str());
   }
 }
 #endif
@@ -1486,8 +1526,15 @@ CMainWindow::OnFileCloseProject()
 afx_msg void
 CMainWindow::OnFileOpenLastProject()
 {
-  if (Configuration::Get(KEY_LAST_PROJECT).length() != 0) {
-    OpenProject(Configuration::Get(KEY_LAST_PROJECT).c_str());
+  if (Configuration::Get(KEY_LAST_PROJECT).length() != 0)
+  {
+    std::string folder = Configuration::Get(KEY_LAST_PROJECT);
+
+    if (folder.rfind('\\') != std::string::npos) {
+      folder[folder.rfind('\\')] = 0;
+    }
+
+    __OpenProject__(folder.c_str());
   }
 }
 #endif
@@ -2704,6 +2751,14 @@ CMainWindow::OnProjectRefresh()
 afx_msg void
 CMainWindow::OnProjectRunSphere()
 {
+  if (true) {
+    const char* script = m_Project.GetGameScript();
+    if (script == NULL || strlen(script) == NULL) {
+      MessageBox("No game script set.\nChoose one in Game Settings...");
+      return;
+    }
+  }
+
   char szCommandLine[MAX_PATH + 128];
   strcpy(szCommandLine, GetSphereDirectory().c_str());
   strcat(szCommandLine, "\\engine.exe -game ");
@@ -2853,6 +2908,14 @@ void OnPackageFileWritten(const char* filename, int index, int total)
 afx_msg void
 CMainWindow::OnProjectPackageGame()
 {
+  if (true) {
+    const char* script = m_Project.GetGameScript();
+    if (script == NULL || strlen(script) == NULL) {
+      MessageBox("No game script set.\nChoose one in Game Settings...");
+      return;
+    }
+  }
+
   struct Local {
     static bool IsGameFileType(const char* filename)
     { 
@@ -2903,6 +2966,8 @@ CMainWindow::OnProjectPackageGame()
 
   CPackage package;
   std::list<std::string>::iterator i;
+  int j = 0;
+
   for (i = files.begin(); i != files.end(); i++) {
     package.AddFile(i->c_str());
   }
@@ -2921,13 +2986,33 @@ CMainWindow::OnProjectPackageGame()
     return;
   }
 
-  for (int j = int(files.size()) - 1; j >= 0; j--) {
+  for (j = int(files.size()) - 1; j >= 0; j--) {
     if (checklist.IsChecked(j) == false) {
       package.RemoveFile(j);
     }
   }
+  
+  j = 0;
+
+  std::string game_script = "scripts/";
+              game_script += m_Project.GetGameScript();
+
+  for (i = files.begin(); i != files.end(); i++, j++) {
+    if (checklist.IsChecked(j) == false) {
+      if ( strcmp_ci(i->c_str(), "game.sgm") == 0 ) {       
+        MessageBox("You must include game.sgm in the package", "Package Game", MB_OK | MB_ICONERROR);
+        return;
+      }
+
+      if ( strcmp_ci(i->c_str(), game_script.c_str()) == 0 ) {       
+        MessageBox("You must include the game script in the package", "Package Game", MB_OK | MB_ICONERROR);
+        return;
+      }
+    }
+  }
 
   if (package.GetNumFiles() == 0) {
+    MessageBox("You must include atleast one file in the package", "Package Game", MB_OK | MB_ICONERROR);
     return;
   }
 
