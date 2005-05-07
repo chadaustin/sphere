@@ -272,6 +272,7 @@ public:
   std::vector<std::string> m_ClipboardHistory;
 
   const char* GetDefaultFolder() const;
+  std::string GetDefaultFolder(int type) const;
 
 private:
   CToolBar   m_MainToolBar;

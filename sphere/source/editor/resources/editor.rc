@@ -2382,10 +2382,12 @@ BEGIN
     ID_SCRIPT_OPTIONS_SHOW_WORD_FLAGS 
                             "Change whether visual flags are displayed for wrapped lines"
     ID_TOOLS_IMAGES_TO_MNG  "Convert a set of images to a mng file"
+    ID_TOOLS_JS_CONSOLE     "Open a javascript console"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
+    ID_TOOLS_IRC_CLIENT     "Open an irc client"
     ID_FILE_NEW_FILE        "Create a new file"
     ID_IMAGE_CROP           "Crop the image to the current selection"
 END

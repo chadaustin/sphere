@@ -1,3 +1,14 @@
+YYYY.MM.DD
+
+2005.05.07
+  - File-Save now defaults into <project_directory>/<file type>/ if a project is open.
+
+2005.05.06
+  - File->Open->Project now looks for game.sgm even if you select a different file...
+  - Project->Run Game will now show a message box if you have no game script set.
+  - Project->Package Game now mandates that game.sgm and the game script
+    must be included in the package you create. 
+
 2005.01.12
   - Added ~/ and /common/ for things like:
     LoadImage("~/maps/test.png");

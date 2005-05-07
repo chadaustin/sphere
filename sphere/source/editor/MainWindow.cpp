@@ -635,6 +635,61 @@ CMainWindow::GetDefaultFolder() const
 
 ////////////////////////////////////////////////////////////////////////////////
 
+std::string
+CMainWindow::GetDefaultFolder(int type) const
+{
+  if (m_ProjectOpen)
+  {
+    std::string directory = m_Project.GetDirectory();
+
+    if (type == WA_MAP)
+    {
+      directory += "\\"; directory += "maps";
+    }
+
+    if (type == WA_IMAGE)
+    {
+      directory += "\\"; directory += "images";
+    }
+    
+    if (type == WA_SCRIPT)
+    {
+      directory += "\\"; directory += "scripts";
+    }
+
+    if (type == WA_SPRITESET)
+    {
+      directory += "\\"; directory += "spritesets";
+    }
+
+    if (type == WA_SOUND)
+    {
+      directory += "\\"; directory += "sounds";
+    }
+
+    if (type == WA_WINDOWSTYLE)
+    {
+      directory += "\\"; directory += "windowstyles";
+    }
+
+    if (type == WA_ANIMATION)
+    {
+      directory += "\\"; directory += "animations";
+    }
+
+    if (type == WA_FONT)
+    {
+      directory += "\\"; directory += "fonts";
+    }
+
+    return directory;
+  }
+
+  return m_DefaultFolder;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 void
 CMainWindow::CreateProject(const char* projectname, const char* gametitle)

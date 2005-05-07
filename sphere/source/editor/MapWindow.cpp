@@ -749,7 +749,14 @@ CMapWindow::OnUpdateTilesTab(CCmdUI* cmdui)
 bool
 CMapWindow::GetSavePath(char* path)
 {
+  std::string directory = GetMainWindow()->GetDefaultFolder(m_DocumentType);
+  SetCurrentDirectory(directory.c_str());
+
   CMapFileDialog Dialog(FDM_SAVE);
+
+  // set current directory on Win98/2000
+  Dialog.m_ofn.lpstrInitialDir = directory.c_str();
+
   if (Dialog.DoModal() != IDOK)
     return false;
 

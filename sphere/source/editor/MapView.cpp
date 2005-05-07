@@ -1,5 +1,6 @@
 #pragma warning(disable : 4786)
 
+#include "DocumentWindow.hpp"
 #include "MapView.hpp"
 #include "Editor.hpp"
 #include "EntityPersonDialog.hpp"
@@ -7,8 +8,8 @@
 #include "ZoneEditDialog.hpp"
 #include "../common/primitives.hpp"
 #include "../common/minmax.hpp"
-#include "resource.h"
 #include "../common/spriteset.hpp"
+#include "resource.h"
 
 #include "Configuration.hpp"
 #include "Keys.hpp"
@@ -3059,7 +3060,11 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
       person.y = py;
       person.layer = m_SelectedLayer;
 
+      std::string directory = GetMainWindow()->GetDefaultFolder(WA_SPRITESET);
+      SetCurrentDirectory(directory.c_str());
+
       CEntityPersonDialog dialog(person, m_Map);
+
       if (dialog.DoModal() == IDOK)
       {
         // insert it into the map

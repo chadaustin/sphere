@@ -5,8 +5,9 @@
 #include "ResizeDialog.hpp"
 #include "FileDialogs.hpp"
 #include "WindowStylePropertiesDialog.hpp"
-#include "resource.h"
+#include "Editor.hpp"
 #include "../common/minmax.hpp"
+#include "resource.h"
 
 
 const int ID_ALPHASLIDER = 7001;
@@ -919,7 +920,14 @@ CWindowStyleWindow::OnUpdateZoom8x(CCmdUI* cmdui)
 bool
 CWindowStyleWindow::GetSavePath(char* path)
 {
+  std::string directory = GetMainWindow()->GetDefaultFolder(m_DocumentType);
+  SetCurrentDirectory(directory.c_str());
+
   CWindowStyleFileDialog Dialog(FDM_SAVE);
+
+  // set current directory on Win98/2000
+  Dialog.m_ofn.lpstrInitialDir = directory.c_str();
+
   if (Dialog.DoModal() != IDOK)
     return false;
 

@@ -4,10 +4,10 @@
 ; NOTE: this .NSI script is designed for NSIS v1.8+
 ; URL: http://nsis.sourceforge.net/
 
-Name "Sphere 1.1"
-!define SphereDir "sphere-1.1"
-!define SphereStartMenuDir "Sphere 1.1"
-OutFile "InstallSphere1.1.exe"
+Name "Sphere 1.2"
+!define SphereDir "sphere-1.2"
+!define SphereStartMenuDir "Sphere 1.2"
+OutFile "InstallSphere1.2.exe"
 
 ; Some default compiler settings (uncomment and change at will):
 ; SetCompress auto ; (can be off or force)
@@ -22,14 +22,19 @@ LicenseData "docs\gpl.txt"
 
 InstallDir "$PROGRAMFILES\Sphere"
 InstallDirRegKey HKEY_LOCAL_MACHINE "SOFTWARE\aegisknight.org\Sphere" ""
-DirShow show ; (make this hide to not let the user change it)
 DirText "Select the directory in which Sphere should be installed:"
 
 Section "" ; (default section)
 SetOutPath "$INSTDIR"
 
 ; add files / whatever that need to be installed here.
-File /r *.dll *.exe docs games startup system util
+File /r *.dll
+File /r *.exe
+File /r docs
+;File /r games
+File /r startup
+File /r system
+;File /r util
 
 ; set up start menu
 CreateDirectory "$SMPROGRAMS\${SphereStartMenuDir}"

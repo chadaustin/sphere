@@ -5,6 +5,7 @@
 #include "FileDialogs.hpp"
 #include "RotateDialog.hpp"
 #include "AdjustBordersDialog.hpp"
+#include "Editor.hpp"
 #include "resource.h"
 
 #include "../common/Filters.hpp"
@@ -372,7 +373,14 @@ CImageWindow::OnUpdateImageViewOriginalSizeCommand(CCmdUI* cmdui)
 bool
 CImageWindow::GetSavePath(char* path)
 {
+  std::string directory = GetMainWindow()->GetDefaultFolder(m_DocumentType);
+  SetCurrentDirectory(directory.c_str());
+
   CImageFileDialog Dialog(FDM_SAVE);
+
+  // set current directory on Win98/2000
+  Dialog.m_ofn.lpstrInitialDir = directory.c_str();
+
   if (Dialog.DoModal() != IDOK)
     return false;
 
