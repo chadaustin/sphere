@@ -1335,3 +1335,48 @@ log_object.endBlock()
         representation of the resulting 128-bit MD5 fingerprint.  Identical
         files produce the same MD5 hash so it is an effective way to determine
         if a file has become corrupt or altered
+
+*** 3d Functions ***
+*** All 3d functions (currently) require sphere_gl to be used as the video driver ***
+SwitchProjectMode(integer)
+  - Sets the drawing mode to 2d if integer is 0, 3d if 1.  All 3d drawing
+    must be done while in 3d mode, and likewise for 2d.  When done drawing
+    in 3d, the mode must be set back to 2d.
+  
+PRenderMap()
+  - Renders the map as a 3d image.  
+
+image_object.transform3DBlit(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4)
+  - Blits the image to the coordinates given.  Point 1 is the upper left
+    corner of the image, 2 is the upper right, 3 is the lower right,
+    and 4 is the bottom left
+
+image_object.triangle3DBlit(sx1,sy1,x1,y1,z1,sx2,sy2,x2,y2,z2,sx3,sy3,x3,y3,z3)
+  - Blits the triangle (sx1, sy1) (sx2, sy2) (sx3, sy3) part of the image, given
+    in terms of the image size, to the 3 points (x1,y1,z1) (x2,y2,z2) (x3,y3,z3) 
+    respectively.
+
+Set3DCameraPosition(x,y,z)
+  - Sets the 3d camera to the point (x,y,z).
+
+Set3DCameraAngles(x_angle, y_angle, z_angle)
+  - Sets the 3d camera angles to x_angle, y_angle, and z_angle, with respect
+    to the corresponding x,y, and z axis.  Input is given in terms of degrees.
+
+Get3DCameraX()
+  - Returns the cameras current x position.
+
+Get3DCameraY()
+  - Returns the cameras current y position.
+
+Get3DCameraZ()
+  - Returns the cameras current z position.
+
+Get3DCameraAngleX()
+  - Returns the cameras current x angle.
+
+Get3DCameraAngleY()
+  - Returns the cameras current y angle.
+
+Get3DCameraAngleZ()
+  - Returns the cameras current z angle.

@@ -350,6 +350,8 @@ SS_FUNCTION(OpenLog, 1)
   //image.zoomBlitMask(x, y, factor, color)
   //image.transformBlit(x1, y1, x2, y2, x3, y3, x4, y4)
   //image.createSurface()
+  //image.transform3DBlit(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4)
+  //image.triangle3DBlit(sx1, sy1, sx2, sy2, sx3, sy3, x1, y1, z1, x2, y2, z2, x3, y3, z3)
   //image.width
   //image.height
   
@@ -411,3 +413,19 @@ SS_FUNCTION(OpenLog, 1)
   
   // generate an MD5 hash
   SS_FUNCTION(HashFromFile, 1)
+
+#ifdef _3D_FUNCTIONS 
+  // Additional 3d functions
+  SS_FUNCTION(SwitchProjectMode, 1)
+  SS_FUNCTION(Set3DCameraPosition, 3)
+  SS_FUNCTION(Set3DCameraAngles, 3)
+  SS_FUNCTION(Get3DCameraX, 0)
+  SS_FUNCTION(Get3DCameraY, 0)
+  SS_FUNCTION(Get3DCameraZ, 0)
+  SS_FUNCTION(Get3DCameraAngleX, 0)
+  SS_FUNCTION(Get3DCameraAngleY, 0)
+  SS_FUNCTION(Get3DCameraAngleZ, 0)
+
+  // Perspective Map Renderer
+  SS_FUNCTION(PRenderMap, 0)
+#endif

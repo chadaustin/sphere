@@ -105,10 +105,12 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_FILE_LANGUAGE_DUTCH,  OnFileLanguageDutch)
   ON_COMMAND(ID_FILE_LANGUAGE_GERMAN,  OnFileLanguageGerman)
   ON_COMMAND(ID_FILE_LANGUAGE_ITALIAN, OnFileLanguageItalian)
+  ON_COMMAND(ID_FILE_LANGUAGE_BULGARIAN, OnFileLanguageBulgarian)
   ON_UPDATE_COMMAND_UI(ID_FILE_LANGUAGE_ENGLISH, OnUpdateFileLanguageEnglish)
   ON_UPDATE_COMMAND_UI(ID_FILE_LANGUAGE_DUTCH, OnUpdateFileLanguageDutch)
   ON_UPDATE_COMMAND_UI(ID_FILE_LANGUAGE_GERMAN,  OnUpdateFileLanguageGerman)
   ON_UPDATE_COMMAND_UI(ID_FILE_LANGUAGE_ITALIAN, OnUpdateFileLanguageItalian)
+  ON_UPDATE_COMMAND_UI(ID_FILE_LANGUAGE_BULGARIAN, OnUpdateFileLanguageBulgarian)
 
 #ifdef I_SUCK
   // project
@@ -1422,6 +1424,13 @@ CMainWindow::OnFileLanguageEnglish()
 }
 
 afx_msg void
+CMainWindow::OnFileLanguageBulgarian()
+{
+  SetLanguage("Bulgarian");
+  OnLanguageChanged();
+}
+
+afx_msg void
 CMainWindow::OnFileLanguageDutch()
 {
   SetLanguage("Dutch");
@@ -1446,6 +1455,12 @@ afx_msg void
 CMainWindow::OnUpdateFileLanguageEnglish(CCmdUI* cmdui)
 {
   cmdui->SetCheck( (strcmp(GetLanguage(), "English") == 0 ) ? TRUE : FALSE );
+}
+
+afx_msg void
+CMainWindow::OnUpdateFileLanguageBulgarian(CCmdUI* cmdui)
+{
+  cmdui->SetCheck( (strcmp(GetLanguage(), "Bulgarian") == 0 ) ? TRUE : FALSE );
 }
 
 afx_msg void

@@ -907,7 +907,8 @@ CImage32::Ellipse(int cx, int cy, int radx, int rady, RGBA color, int fill, clip
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
+
+
 /*
 void
 CImage32::Rectangle(int x1, int y1, int x2, int y2, RGBA color)

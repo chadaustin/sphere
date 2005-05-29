@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SPHERE_GL_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /G5 /Gr /Zp1 /MD /W3 /GX /O2 /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SPHERE_GL_EXPORTS" /D "WIN32_LEAN_AND_MEAN" /D "STRICT" /D for="if (0) ; else for" /FAs /YX /FD /c
+# ADD CPP /nologo /G5 /Gr /Zp1 /MD /W3 /GX /O2 /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SPHERE_GL_EXPORTS" /D "WIN32_LEAN_AND_MEAN" /D "STRICT" /D for="if (0) ; else for" /D "_3D_FUNCTIONS" /FAs /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -74,7 +74,7 @@ PostBuild_Cmds=..\install_video.bat sphere_gl
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SPHERE_GL_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /Gr /Zp1 /MDd /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SPHERE_GL_EXPORTS" /D "WIN32_LEAN_AND_MEAN" /D "STRICT" /D for="if (0) ; else for" /FAs /YX /FD /GZ /c
+# ADD CPP /nologo /Gr /Zp1 /MDd /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SPHERE_GL_EXPORTS" /D "WIN32_LEAN_AND_MEAN" /D "STRICT" /D for="if (0) ; else for" /D "_3D_FUNCTIONS" /FAs /YX /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"

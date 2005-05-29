@@ -89,29 +89,32 @@ static void NormalBlit(IMAGE image, int x, int y);
 
 
 static CONFIGURATION Configuration;
-static int           BitsPerPixel;
+static int           BitsPerPixel = 0;
 
-static HWND  SphereWindow;
-static byte* ScreenBuffer;
+static HWND  SphereWindow = NULL;
+static byte* ScreenBuffer = NULL;
 
-static LONG OldWindowStyle;
-static LONG OldWindowStyleEx;
+static LONG OldWindowStyle   = 0;
+static LONG OldWindowStyleEx = 0;
 
 // windowed output
-static HDC     RenderDC;
-static HBITMAP RenderBitmap;
+static HDC     RenderDC = NULL;
+static HBITMAP RenderBitmap = NULL;
 
 // fullscreen output
-static LPDIRECTDRAW dd;
-static LPDIRECTDRAWSURFACE ddPrimary;
-static LPDIRECTDRAWSURFACE ddSecondary;
+static LPDIRECTDRAW dd = NULL;
+static LPDIRECTDRAWSURFACE ddPrimary   = NULL;
+static LPDIRECTDRAWSURFACE ddSecondary = NULL;
 
-static bool fullscreen;
+static bool s_fullscreen = false;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
 {
+  if (driverinfo == NULL)
+    return;
+
   driverinfo->name        = "Standard 32-bit Color";
   driverinfo->author      = "Chad Austin et al.";
   driverinfo->date        = __DATE__;
@@ -241,11 +244,11 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
 
   static bool firstcall = true;
   if (firstcall) {
-    fullscreen = Configuration.fullscreen;
+    s_fullscreen = Configuration.fullscreen;
     firstcall = false;
   }
 
-  if (fullscreen)
+  if (s_fullscreen)
     return InitFullscreen();
   else
     return InitWindowed();
@@ -278,6 +281,7 @@ bool InitFullscreen()
   if (ddrval != DD_OK)
   {
     dd->Release();
+    dd = NULL;
     MessageBox(SphereWindow, "SetCooperativeLevel() failed", "standard32", MB_OK);
     return false;
   }
@@ -287,6 +291,7 @@ bool InitFullscreen()
   if (retval == false)
   {
     dd->Release();
+    dd = NULL;
     MessageBox(SphereWindow, "SetDisplayMode() failed", "standard32", MB_OK);
     return false;
   }
@@ -296,6 +301,7 @@ bool InitFullscreen()
   if (retval == false)
   {
     dd->Release();
+    dd = NULL;
     MessageBox(SphereWindow, "CreateSurfaces() failed", "standard32", MB_OK);
     return false;
   }
@@ -317,10 +323,10 @@ EXPORT(bool) ToggleFullScreen() {
   int x, y, w, h;
   GetClippingRectangle(&x, &y, &w, &h);
 
-  // if we haven't set a screen size, don't close the old driver
+  // if we have a screen size, close the old driver
   if (ScreenWidth != 0 || ScreenHeight != 0) {
 
-    if (fullscreen) {
+    if (s_fullscreen) {
       CloseFullscreen();
     }
     else {
@@ -328,7 +334,7 @@ EXPORT(bool) ToggleFullScreen() {
     }
   }
 
-  fullscreen = !fullscreen;
+  s_fullscreen = !s_fullscreen;
   if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight) == true) {
     SetClippingRectangle(x, y, w, h);
     return true;
@@ -336,7 +342,7 @@ EXPORT(bool) ToggleFullScreen() {
   else {
 
     // switching failed, try to revert to what it was
-    fullscreen = !fullscreen;
+    s_fullscreen = !s_fullscreen;
     if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight) == true) {
       SetClippingRectangle(x, y, w, h);
       return true;
@@ -355,24 +361,41 @@ bool SetDisplayMode()
   switch (Configuration.bit_depth)
   {
     case BD_AUTODETECT:
-      ddrval = dd->SetDisplayMode(ScreenWidth, ScreenHeight, 32);
-      BitsPerPixel = 32;
-      if (ddrval != DD_OK)
+
+      if (BitsPerPixel == 0 || BitsPerPixel == 32)
+      {
+        ddrval = dd->SetDisplayMode(ScreenWidth, ScreenHeight, 32);
+        if (ddrval == DD_OK) {
+          BitsPerPixel = 32;
+          return true;
+        }
+      }
+
+      if (BitsPerPixel == 0 || BitsPerPixel == 24)
       {
         ddrval = dd->SetDisplayMode(ScreenWidth, ScreenHeight, 24);
-        BitsPerPixel = 24;
+        if (ddrval == DD_OK) {
+          BitsPerPixel = 24;
+          return true;
+        }
       }
-      return ddrval == DD_OK;
+
+      return false;
 
     case BD_32:
       ddrval = dd->SetDisplayMode(ScreenWidth, ScreenHeight, 32);
-      BitsPerPixel = 32;
-      return ddrval == DD_OK;
+      if (ddrval == DD_OK) {
+        BitsPerPixel = 32;
+        return true;
+      }
+      return false;
 
     case BD_24:
       ddrval = dd->SetDisplayMode(ScreenWidth, ScreenHeight, 24);
-      BitsPerPixel = 24;
-      return ddrval == DD_OK;
+      if (ddrval == DD_OK) {
+        return true;
+      }
+      return false;
 
     default:
       return false;
@@ -429,8 +452,10 @@ bool CreateSurfaces()
 
 bool InitWindowed()
 {
-  // calculate bits per pixel
-  BitsPerPixel = (Configuration.bit_depth == BD_32 ? 32 : 24);
+  if (BitsPerPixel == 0) {
+    // calculate bits per pixel
+    BitsPerPixel = (Configuration.bit_depth == BD_32 ? 32 : 24);
+  }
 
   // create the render DC
   RenderDC = CreateCompatibleDC(NULL);
@@ -464,7 +489,7 @@ bool InitWindowed()
 
 EXPORT(void) CloseVideoDriver()
 {
-  if (fullscreen)
+  if (s_fullscreen)
     CloseFullscreen();
   else
     CloseWindowed();
@@ -478,16 +503,24 @@ void CloseFullscreen()
   SetWindowLong(SphereWindow, GWL_EXSTYLE, OldWindowStyleEx);
 
   ShowCursor(TRUE);
-  delete[] ScreenBuffer;
-  dd->Release();
+
+  if (ScreenBuffer != NULL) {
+    delete[] ScreenBuffer;
+    ScreenBuffer = NULL;
+  }
+
+  if (dd != NULL) {
+    dd->Release();
+    dd = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void CloseWindowed()
 {
-  DeleteDC(RenderDC);
-  DeleteObject(RenderBitmap);
+  DeleteDC(RenderDC); RenderDC = NULL;
+  DeleteObject(RenderBitmap); RenderBitmap = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -674,7 +707,7 @@ void OptimizeBlitRoutine(IMAGE image)
 
 EXPORT(void) FlipScreen()
 {
-  if (fullscreen)
+  if (s_fullscreen)
   {
     LPDIRECTDRAWSURFACE surface;
     if (Configuration.vsync)
@@ -806,8 +839,9 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
     return NULL;
 
   IMAGE image = new _IMAGE;
-  if (!image)
+  if (!image) {
     return NULL;
+  }
 
   image->width        = width;
   image->height       = height;
@@ -819,6 +853,7 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
     image->bgra = new BGRA[width * height];
     if (image->bgra == NULL) {
       delete image;
+      image = NULL;
       return NULL;
     }
     for (int iy = 0; iy < height; iy++)
@@ -833,6 +868,7 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
     image->bgr = new BGR[width * height];
     if (image->bgr == NULL) {
       delete image;
+      image = NULL;
       return NULL;
     }
 
@@ -844,9 +880,10 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
 
   image->alpha = new byte[width * height];
   if (image->alpha == NULL) {
-    if (BitsPerPixel == 32) delete[] image->bgra;
-    if (BitsPerPixel == 24) delete[] image->bgr;
+    if (BitsPerPixel == 32) { delete[] image->bgra; image->bgra = NULL; }
+    if (BitsPerPixel == 24) { delete[] image->bgr;  image->bgr = NULL;  }
     delete image;
+    image = NULL;
     return NULL;
   }
   memset(image->alpha, 255, width * height);
@@ -1408,11 +1445,18 @@ EXPORT(RGBA*) LockImage(IMAGE image)
 EXPORT(void) UnlockImage(IMAGE image, bool pixels_changed)
 {
   if (pixels_changed) {
-    if (BitsPerPixel == 32)
+    if (BitsPerPixel == 32) {
       delete[] image->bgra;
+      image->bgra = NULL;
+    }
     else
+    {
       delete[] image->bgr;
+      image->bgr = NULL;
+    }
+
     delete[] image->alpha;
+    image->alpha = NULL;
 
     FillImagePixels(image, image->locked_pixels);
     OptimizeBlitRoutine(image);

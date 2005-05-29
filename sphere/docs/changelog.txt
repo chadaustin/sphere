@@ -1,5 +1,11 @@
 YYYY.MM.DD
 
+2005.05.22
+  - Added 3d support to sphere_gl.dll and 3d map blitting.
+
+2005.05.08
+  - Fix the F10-and-autodetect-bug
+
 2005.05.07
   - File-Save now defaults into <project_directory>/<file type>/ if a project is open.
 

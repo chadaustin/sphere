@@ -89,6 +89,23 @@ static DWORD WindowStyleEx; // }
 static HDC   MainDC;
 static HGLRC MainRC;
 
+////////////////////////////////////////////////////////////////////////////////
+
+#ifdef _3D_FUNCTIONS
+//3d Sphere variables
+
+//3d Camera variables
+static GLfloat	g_camera_angle_x;
+static GLfloat	g_camera_angle_y;
+static GLfloat	g_camera_angle_z;
+
+static GLfloat	g_camera_x;
+static GLfloat	g_camera_y;
+static GLfloat	g_camera_z;
+
+//varible to keep track of 2d/3d mode
+static int g_projectiveMode = 0;
+#endif // _3D_FUNCTIONS
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -182,7 +199,7 @@ BOOL CALLBACK ConfigureDriverDialogProc(HWND window, UINT message, WPARAM wparam
         case 32:
           CheckDlgButton(window, IDC_BPP_32, BST_CHECKED);
         break;
-                
+
         default:
           CheckDlgButton(window, IDC_BPP_16, BST_CHECKED);
         break;
@@ -202,7 +219,7 @@ BOOL CALLBACK ConfigureDriverDialogProc(HWND window, UINT message, WPARAM wparam
       }
 
       UpdateButtonStates(window);
-            
+
       return TRUE;
     }
 
@@ -272,7 +289,7 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
 
   int format;
   PIXELFORMATDESCRIPTOR pfd =
-  { 
+  {
     sizeof(PIXELFORMATDESCRIPTOR),  // size of this pfd
     1,                              // version number
     PFD_DRAW_TO_WINDOW |            // support window
@@ -293,12 +310,16 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
     0, 0, 0                         // layer masks ignored
   };
 
+#ifdef _3D_FUNCTIONS
+  //Set the fog color (will be initalized later)
+  GLfloat fogColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+#endif // _3D_FUNCTIONS
 
   if (firstcall) {
     fullscreen = DriverConfig.fullscreen;
     firstcall = false;
   }
-    
+
   if (!fullscreen) {
     CenterWindow(SphereWindow, ScreenWidth * SCALE(), ScreenHeight * SCALE());
   } else {
@@ -339,7 +360,7 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
     // Set up window
     SetWindowPos(SphereWindow, HWND_TOPMOST, 0, 0, ScreenWidth * SCALE(), ScreenHeight * SCALE(), SWP_SHOWWINDOW);
   }
-    
+
   // Get the DC of the window
   MainDC = GetDC(SphereWindow);
   if (!MainDC) {
@@ -347,7 +368,7 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
     return false;
   }
 
-  // Set the pfd   
+  // Set the pfd
   format = ChoosePixelFormat(MainDC, &pfd);
   if (!SetPixelFormat(MainDC, format, &pfd)) {
     error_msg = "Error setting pfd";
@@ -378,6 +399,60 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
     }
   }
 
+#ifdef _3D_FUNCTIONS
+  // perspective view initialization
+  glMatrixMode(GL_PROJECTION);
+  gluPerspective(45.0f,(GLfloat) ScreenWidth/(GLfloat) ScreenHeight,0.1f,20.0f);
+  g_projectiveMode = 0;
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  // now load up the normal 2d view
+  glMatrixMode(GL_PROJECTION);
+  glPushMatrix();
+  glLoadIdentity();
+  gluOrtho2D(0.0f, ScreenWidth, ScreenHeight, 0.0f);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  // render initialization
+  glEnable(GL_SCISSOR_TEST);
+  glScissor(0, 0, ScreenWidth, ScreenHeight);
+
+  // enable texture mapping
+  glEnable(GL_TEXTURE_2D);
+
+  // for smoother shading
+  glShadeModel(GL_SMOOTH);
+
+  // color the screen black after flipping
+  glClearColor(0.0f, 0.0f, 0.0f, 0.001f);
+  glClearColor(0.0f,0.0f,0.0f,1.0f);
+
+  // Now to set up the fog
+  glFogi(GL_FOG_MODE, GL_LINEAR);
+  glFogfv(GL_FOG_COLOR, fogColor);    // fog color
+  glFogf(GL_FOG_DENSITY, 0.045f);	  // fog density
+  glHint(GL_FOG_HINT, GL_DONT_CARE);  // fog hint
+  glFogf(GL_FOG_START, 15.0f);		  // fog start depth
+  glFogf(GL_FOG_END, 20.0f);		  // fog end depth
+  glEnable(GL_FOG);	                  // enable the fog
+
+  glClearDepth(1.0f);
+  glDepthFunc(GL_LEQUAL);
+
+  // add in perspective correction
+  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
+  //reset the camera rotation and position variables
+  g_camera_x=0;
+  g_camera_y=0;
+  g_camera_z=0;
+
+  g_camera_angle_x=0;
+  g_camera_angle_y=0;
+  g_camera_angle_z=0;
+#else
   // view initialization
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -394,6 +469,9 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
   glScissor(0, 0, ScreenWidth, ScreenHeight);
   //    glEnable(GL_TEXTURE_2D);
   glShadeModel(GL_SMOOTH);
+#endif // _3D_FUNCTIONS
+
+  //blending initialization
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glPointSize(FILTER() == GL_LINEAR ? 2.5f : (SCALE() == 1 ? 1.0f : 2.0f));
@@ -433,7 +511,7 @@ EXPORT(void) CloseVideoDriver()
   wglMakeCurrent(NULL, NULL);
   ReleaseDC(SphereWindow, MainDC);
   wglDeleteContext(MainRC);
-   
+
   // reset screen resolution
   if (fullscreen) {
     DEVMODE dm;
@@ -496,7 +574,27 @@ EXPORT(void) FlipScreen()
   SwapBuffers(MainDC);
   //extern void __stdcall DrawRectangle(int x, int y, int w, int h, RGBA mask);
   //DrawRectangle(0, 0, 320, 240, CreateRGBA(0, 0, 0, 255));
+
+#ifdef _3D_FUNCTIONS
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  if (g_camera_angle_x > 360)
+    g_camera_angle_x=g_camera_angle_x-360;
+  else if (g_camera_angle_x < 0)
+	g_camera_angle_x=g_camera_angle_x+360;
+
+  if (g_camera_angle_y > 360)
+    g_camera_angle_y=g_camera_angle_y-360;
+  else if (g_camera_angle_y < 0)
+	g_camera_angle_y=g_camera_angle_y+360;
+
+  if (g_camera_angle_z > 360)
+    g_camera_angle_z=g_camera_angle_z-360;
+  else if (g_camera_angle_z < 0)
+	g_camera_angle_z=g_camera_angle_z+360;
+#else
   glClear(GL_COLOR_BUFFER_BIT);
+#endif // _3D_FUNCTIONS
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -537,7 +635,7 @@ static bool CreateTexture(IMAGE image)
   if (log2_height != floor(log2_height)) {
     new_height = 1 << (int)ceil(log2_height);
   }
-    
+
   RGBA* new_pixels = image->pixels;
   if (new_width != image->width || new_height != image->height) {
 
@@ -603,7 +701,7 @@ static bool CreateTexture(IMAGE image)
       p++;
       o++;
     }
-    
+
 
     if (old_pixels != image->pixels) {
       delete[] old_pixels;
@@ -752,8 +850,8 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
 
     glTexCoord2f(0, 0);
     glVertex2i(x, y);
- 
-    glTexCoord2f(image->tex_width, 0); 
+
+    glTexCoord2f(image->tex_width, 0);
     glVertex2i(x + image->width, y);
 
     glTexCoord2f(image->tex_width, image->tex_height);
@@ -779,31 +877,31 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
 
   int cx = (x[0] + x[1] + x[2] + x[3]) / 4;
   int cy = (y[0] + y[1] + y[2] + y[3]) / 4;
-    
+
   glColor4f(1, 1, 1, 1);
   glBegin(GL_TRIANGLE_FAN);
 
       // center
     glTexCoord2f(image->tex_width / 2, image->tex_height / 2);
     glVertex2i(cx, cy);
- 
+
     glTexCoord2f(0, 0);
     glVertex2i(x[0], y[0]);
- 
+
     glTexCoord2f(image->tex_width, 0);
     glVertex2i(x[1], y[1]);
- 
+
     glTexCoord2f(image->tex_width, image->tex_height);
     glVertex2i(x[2], y[2]);
- 
+
     glTexCoord2f(0, image->tex_height);
     glVertex2i(x[3], y[3]);
 
     glTexCoord2f(0, 0);
     glVertex2i(x[0], y[0]);
-  
-  glEnd(); 
-  
+
+  glEnd();
+
   glDisable(GL_TEXTURE_2D);
 }
 
@@ -820,23 +918,23 @@ EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
 
   int cx = (x[0] + x[1] + x[2] + x[3]) / 4;
   int cy = (y[0] + y[1] + y[2] + y[3]) / 4;
-   
+
   glColor4ub(mask.red, mask.green, mask.blue, mask.alpha);
   glBegin(GL_TRIANGLE_FAN);
 
     // center
     glTexCoord2f(image->tex_width / 2, image->tex_height / 2);
     glVertex2i(cx, cy);
- 
+
     glTexCoord2f(0, 0);
     glVertex2i(x[0], y[0]);
- 
+
     glTexCoord2f(image->tex_width, 0);
     glVertex2i(x[1], y[1]);
- 
+
     glTexCoord2f(image->tex_width, image->tex_height);
     glVertex2i(x[2], y[2]);
- 
+
     glTexCoord2f(0, image->tex_height);
     glVertex2i(x[3], y[3]);
 
@@ -844,7 +942,7 @@ EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
     glVertex2i(x[0], y[0]);
 
   glEnd();
-    
+
   glDisable(GL_TEXTURE_2D);
 }
 
@@ -911,7 +1009,7 @@ EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
   }
 
   if (SCALE() == 2) {
-      
+
     // manually scale the framebuffer down
     RGBA* new_pixels = new RGBA[4 * w * h];
     if (!new_pixels)
@@ -1047,3 +1145,179 @@ EXPORT(void) DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+#ifdef _3D_FUNCTIONS
+//3d Sphere Functions:
+EXPORT(void) SwitchProjectiveMode(int project)
+{
+  if (project == 0 && project != g_projectiveMode)//switch to the 2d mode
+  {
+    glMatrixMode(GL_PROJECTION);
+    glDisable(GL_DEPTH_TEST);
+    glPushMatrix();
+	glLoadIdentity();
+    gluOrtho2D(0.0f, ScreenWidth, ScreenHeight, 0.0f);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    g_projectiveMode = project;
+    glClearDepth(1.0f);
+//    glTranslatef(0.0f, 0.0f, -5.0f);
+
+  }
+  else if (project == 1 && project != g_projectiveMode)//switch to the perspective mode
+  {
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glEnable(GL_DEPTH_TEST);
+	//gluPerspective(45.0f,(GLfloat)ScreenWidth/(GLfloat)ScreenHeight,0.1f,100.0f);
+    glMatrixMode(GL_MODELVIEW);
+
+    glLoadIdentity();
+    glRotatef(g_camera_angle_x,1.0f,0.0f,0.0f);	// rotate about x Axis
+    glRotatef(g_camera_angle_y,0.0f,1.0f,0.0f);	// rotate On The y Axis
+    glRotatef(g_camera_angle_z,0.0f,0.0f,1.0f);	// rotate On The z Axis
+    glTranslatef(-g_camera_x, -g_camera_y, -g_camera_z);
+
+    g_projectiveMode = project;
+  }
+
+}
+
+/////////////////////////////////////////////////////////////
+
+EXPORT(void) Transform3DBlitImage(IMAGE image, double x[4], double y[4], double z[4])
+{
+  extern void __stdcall SwitchProjectiveMode(int project);
+
+  if (image->special == tagIMAGE::EMPTY) {
+    return;
+  }
+
+//  SwitchProjectiveMode(1);
+
+  glMatrixMode(GL_MODELVIEW);
+
+
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, image->texture);
+
+  glColor4f(1, 1, 1, 1);
+  glBegin(GL_QUADS);
+
+    glTexCoord2f(0, 0);
+    glVertex3f(x[0], y[0], z[0]);
+
+    glTexCoord2f(image->tex_width, 0);
+    glVertex3f(x[1], y[1], z[1]);
+
+    glTexCoord2f(image->tex_width, image->tex_height);
+    glVertex3f(x[2], y[2], z[2]);
+
+    glTexCoord2f(0, image->tex_height);
+    glVertex3f(x[3], y[3], z[3]);
+
+  glEnd();
+
+  glDisable(GL_TEXTURE_2D);
+
+//  SwitchProjectiveMode(0);
+}
+/////////////////////////////////////////////////////////////
+
+EXPORT(void) Triangle3DBlitImage(IMAGE image, int sx[3], int sy[3], double x[3], double y[3], double z[3])
+{
+  extern void __stdcall SwitchProjectiveMode(int project);
+
+  if (image->special == tagIMAGE::EMPTY) {
+    return;
+  }
+
+//  SwitchProjectiveMode(1);
+
+  glMatrixMode(GL_MODELVIEW);
+
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, image->texture);
+
+  glColor4f(1, 1, 1, 1);
+  glBegin(GL_TRIANGLES);
+  glNormal3f( 0.0f, 0.0f, 1.0f);
+
+	glTexCoord2f(sx[0]*(image->tex_width/image->width), sy[0]*(image->tex_height/image->height));
+    glVertex3f(x[0], y[0], z[0]);
+
+    glTexCoord2f(sx[1]*(image->tex_width/image->width), sy[1]*(image->tex_height/image->height));//46.0/64.0, 0);
+    glVertex3f(x[1], y[1], z[1]);
+
+    glTexCoord2f(sx[2]*(image->tex_width/image->width), sy[2]*(image->tex_height/image->height));//0, 60.0/64.0);
+    glVertex3f(x[2], y[2], z[2]);
+
+	glEnd();
+
+  glDisable(GL_TEXTURE_2D);
+
+ // SwitchProjectiveMode(0);
+}
+
+/////////////////////////////////////////////////////////////
+
+EXPORT(void) Set3DCameraPositionDr(double x, double y, double z)
+{
+  g_camera_x = (GLfloat) x;
+  g_camera_y = (GLfloat) y;
+  g_camera_z = (GLfloat) z;
+}
+
+/////////////////////////////////////////////////////////////
+
+EXPORT(void) Set3DCameraAnglesDr(double x_angle, double y_angle, double z_angle)
+{
+  g_camera_angle_x = (GLfloat) x_angle;
+  g_camera_angle_y = (GLfloat) y_angle;
+  g_camera_angle_z = (GLfloat) z_angle;
+}
+
+/////////////////////////////////////////////////////////////
+
+EXPORT(double) Get3DCameraXDr()
+{
+  return g_camera_x;
+}
+
+/////////////////////////////////////////////////////////////
+
+EXPORT(double) Get3DCameraYDr()
+{
+  return g_camera_y;
+}
+
+/////////////////////////////////////////////////////////////
+
+EXPORT(double) Get3DCameraZDr()
+{
+  return g_camera_z;
+}
+
+/////////////////////////////////////////////////////////////
+
+EXPORT(double) Get3DCameraAngleXDr()
+{
+  return g_camera_angle_x;
+}
+
+/////////////////////////////////////////////////////////////
+
+EXPORT(double) Get3DCameraAngleYDr()
+{
+  return g_camera_angle_y;
+}
+
+/////////////////////////////////////////////////////////////
+
+EXPORT(double) Get3DCameraAngleZDr()
+{
+  return g_camera_angle_z;
+}
+
+/////////////////////////////////////////////////////////////
+#endif // _3D_FUNCTIONS

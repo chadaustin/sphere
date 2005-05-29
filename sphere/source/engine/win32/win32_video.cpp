@@ -40,6 +40,21 @@ void  (__stdcall * DrawGradientTriangle)(int x[3], int y[3], RGBA color[3]);
 void  (__stdcall * DrawRectangle)(int x, int y, int w, int h, RGBA color);
 void  (__stdcall * DrawGradientRectangle)(int x, int y, int w, int h, RGBA color[4]);
 
+#ifdef _3D_FUNCTIONS
+//Opengl specific functions
+void  (__stdcall * Transform3DBlitImage)(IMAGE image, double x[4], double y[4], double z[4]);
+void  (__stdcall * Triangle3DBlitImage)(IMAGE image, int sx[3], int sy[3], double x[3], double y[3], double z[3]);
+
+void  (__stdcall * SwitchProjectiveMode)(int project);
+void  (__stdcall * Set3DCameraPositionDr)(double x, double y, double z);
+void  (__stdcall * Set3DCameraAnglesDr)(double x_angle, double y_angle, double z_angle);
+double  (__stdcall * Get3DCameraXDr)();
+double  (__stdcall * Get3DCameraYDr)();
+double  (__stdcall * Get3DCameraZDr)();
+double  (__stdcall * Get3DCameraAngleXDr)();
+double  (__stdcall * Get3DCameraAngleYDr)();
+double  (__stdcall * Get3DCameraAngleZDr)();
+#endif
 
 static HWND      SphereWindow = NULL;
 static HINSTANCE GraphicsDriver = NULL;
@@ -76,7 +91,7 @@ bool InitVideo(HWND window, SPHERECONFIG* config)
   // Loads driver
   std::string graphics_driver =  "system/video/" + config->videodriver;
   GraphicsDriver = LoadLibrary(graphics_driver.c_str());
-  
+
   if (GraphicsDriver == NULL) {
     std::string error = "LoadLibrary() failed: '" + graphics_driver + "'";
     puts(error.c_str());
@@ -111,6 +126,23 @@ bool InitVideo(HWND window, SPHERECONFIG* config)
   assign(DrawRectangle,          GetProcAddress(GraphicsDriver, "DrawRectangle"));
   assign(DrawGradientRectangle,  GetProcAddress(GraphicsDriver, "DrawGradientRectangle"));
 
+#ifdef _3D_FUNCTIONS
+  assign(Transform3DBlitImage,   GetProcAddress(GraphicsDriver, "Transform3DBlitImage"));
+  assign(Triangle3DBlitImage,    GetProcAddress(GraphicsDriver, "Triangle3DBlitImage"));
+
+  assign(Set3DCameraAnglesDr,    GetProcAddress(GraphicsDriver, "Set3DCameraAnglesDr"));
+  assign(SwitchProjectiveMode,   GetProcAddress(GraphicsDriver, "SwitchProjectiveMode"));
+  assign(Set3DCameraPositionDr,  GetProcAddress(GraphicsDriver, "Set3DCameraPositionDr"));
+  assign(Set3DCameraAnglesDr,    GetProcAddress(GraphicsDriver, "Set3DCameraAnglesDr"));
+
+  assign(Get3DCameraXDr,         GetProcAddress(GraphicsDriver, "Get3DCameraXDr"));
+  assign(Get3DCameraYDr,         GetProcAddress(GraphicsDriver, "Get3DCameraYDr"));
+  assign(Get3DCameraZDr,         GetProcAddress(GraphicsDriver, "Get3DCameraZDr"));
+  assign(Get3DCameraAngleXDr,    GetProcAddress(GraphicsDriver, "Get3DCameraAngleXDr"));
+  assign(Get3DCameraAngleYDr,    GetProcAddress(GraphicsDriver, "Get3DCameraAngleYDr"));
+  assign(Get3DCameraAngleZDr,    GetProcAddress(GraphicsDriver, "Get3DCameraAngleZDr"));
+#endif // _3D_FUNCTIONS
+
   if (!_FlipScreen ||
       !SetClippingRectangle ||
       !GetClippingRectangle ||
@@ -140,6 +172,28 @@ bool InitVideo(HWND window, SPHERECONFIG* config)
     FreeLibrary(GraphicsDriver);
     return false;
   }
+
+#ifdef _3D_FUNCTIONS
+  if (config->videodriver == "sphere_gl.dll")
+  {
+    if (!Transform3DBlitImage ||
+        !Triangle3DBlitImage ||
+        !SwitchProjectiveMode ||
+        !Set3DCameraPositionDr ||
+        !Set3DCameraAnglesDr ||
+        !Get3DCameraXDr ||
+        !Get3DCameraYDr ||
+        !Get3DCameraZDr ||
+        !Get3DCameraAngleXDr ||
+        !Get3DCameraAngleYDr ||
+        !Get3DCameraAngleZDr)
+    {
+      puts("Couldn't get all entry points for 3d functions");
+      FreeLibrary(GraphicsDriver);
+      return false;
+    }
+  }
+#endif // _3D_FUNCTIONS
 
   return true;
 }

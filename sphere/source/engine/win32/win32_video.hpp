@@ -47,4 +47,21 @@ extern void  (__stdcall * DrawGradientRectangle)(int x, int y, int w, int h, RGB
 
 extern bool SetWindowTitle(const char* text);
 
+#ifdef _3D_FUNCTIONS
+//OpenGL 3d specific functions
+extern void  (__stdcall * Transform3DBlitImage)(IMAGE image, double x[4], double y[4], double z[4]);
+extern void  (__stdcall * Triangle3DBlitImage)(IMAGE image, int sx[3], int sy[3], double x[3], double y[3], double z[3]);
+
+extern void  (__stdcall * SwitchProjectiveMode)(int project);
+
+extern void  (__stdcall * Set3DCameraPositionDr)(double x, double y, double z);
+extern void  (__stdcall * Set3DCameraAnglesDr)(double x_angle, double y_angle, double z_angle);
+extern double  (__stdcall * Get3DCameraXDr)();
+extern double  (__stdcall * Get3DCameraYDr)();
+extern double  (__stdcall * Get3DCameraZDr)();
+extern double  (__stdcall * Get3DCameraAngleXDr)();
+extern double  (__stdcall * Get3DCameraAngleYDr)();
+extern double  (__stdcall * Get3DCameraAngleZDr)();
+#endif // _3D_FUNCTIONS
+
 #endif

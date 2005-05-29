@@ -83,7 +83,7 @@ private:
   static JSBool BranchCallback(JSContext* cx, JSScript* script);
 
   // global functions
-  
+
   #define SS_FUNCTION(name, numargs) static JSBool ss##name(JSContext* cx, JSObject* obj, uintN argc, jsval* argv, jsval* rval);
   #include "ss_functions.table"
   #undef SS_FUNCTION
@@ -132,7 +132,7 @@ private:
   declare_constructor1(CreateSpritesetBaseObject, SSPRITESET* spriteset);
 
   // sounds
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   declare_constructor2(CreateSoundObject, audiere::OutputStream* sound, audiere::MIDIStream* midi);
 #else
   declare_constructor1(CreateSoundObject, audiere::OutputStream* sound);
@@ -272,12 +272,18 @@ private:
   declare_constructor1(CreateTilesetObject, const sTileset& tileset);
   declare_method(ssTilesetAppendTiles);
   declare_method(ssTilesetSave);
-  
+
+#ifdef _3D_FUNCTIONS
+  //3d functions
+  declare_method(ssImageTransform3DBlit);
+  declare_method(ssImageTriangle3DBlit);
+#endif // _3D_FUNCTIONS
+
   #undef declare_property
   #undef declare_method
   #undef declare_finalizer
 
-  
+
 private:
   // should we draw graphics?
   bool ShouldRender() {
@@ -307,7 +313,7 @@ private:
 
   // it needs to access m_Error
   friend class CScriptCode;
-  
+
   // it needs to access m_GCEnabled
   friend class NoGCBlock;
 };

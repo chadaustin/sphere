@@ -31,6 +31,11 @@ public:
   sMap& GetMap();
   const sMap& GetMap() const;
 
+#ifdef _3D_FUNCTIONS
+  // Perspective Map Renderer
+  void PRenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, int& offset_y);
+#endif // _3D_FUNCTIONS
+
   void RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, int& offset_y);
   int MapToScreenX(int layer, int camera_x, int mx);
   int MapToScreenY(int layer, int camera_y, int my);

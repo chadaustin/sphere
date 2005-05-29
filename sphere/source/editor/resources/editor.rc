@@ -122,6 +122,8 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "&Language"
         BEGIN
+            MENUITEM "Bulgarian",                   ID_FILE_LANGUAGE_BULGARIAN
+
             MENUITEM "Dutch",                       ID_FILE_LANGUAGE_DUTCH
             MENUITEM "English",                     ID_FILE_LANGUAGE_ENGLISH
             MENUITEM "German",                      ID_FILE_LANGUAGE_GERMAN

@@ -49,7 +49,7 @@ CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
 , m_ThrottleFPS(true)
 
 , m_Music(NULL)
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
 , m_Midi(NULL)
 #endif
 
@@ -153,7 +153,7 @@ CMapEngine::Execute(const char* filename, int fps)
   m_LastTrigger = -1;
   m_ErrorMessage = "";
   m_Music = 0;
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   m_Midi = 0;
 #endif
 
@@ -816,7 +816,7 @@ CMapEngine::SetTileImage(int tile, IMAGE image)
        tile_image.SetPixel(x, y, pixels[y * GetImageWidth(image) + x]);
     }
   }
-  
+
   UnlockImage(image, false);
   tile_image.SetBlendMode(blend_mode);
 
@@ -841,7 +841,7 @@ CMapEngine::GetTileSurface(int tile, CImage32* surface)
     return false;
   }
 
-  *surface = m_Map.GetMap().GetTileset().GetTile(tile);  
+  *surface = m_Map.GetMap().GetTileset().GetTile(tile);
   return true;
 }
 
@@ -1212,6 +1212,96 @@ CMapEngine::RenderMap()
     return false;
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+#ifdef _3D_FUNCTIONS
+bool
+CMapEngine::PRenderMap()
+{
+  if (m_IsRunning) {
+    return PRender();
+  } else {
+    m_ErrorMessage = "PRenderMap() called while map engine was not running";
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::PRender()
+{
+//  const int cx = GetScreenWidth()  / 2;
+//  const int cy = GetScreenHeight() / 2;
+
+  // for doing camera correction (with sprites and doodads and whatnot)
+  int offset_x;
+  int offset_y;
+
+  // render all layers
+  for (int i = 0; i < m_Map.GetMap().GetNumLayers(); i++) {
+
+    // IF REFLECTIVE
+    if (m_Map.GetMap().GetLayer(i).IsReflective()) {
+
+      // solid render
+      m_Map.PRenderLayer(i, true, m_Camera.x, m_Camera.y, offset_x, offset_y);
+
+      // render upside-down sprites
+      if (!RenderEntities(i, true, offset_x, offset_y)) {
+        return false;
+      }
+
+      // do normal render
+      m_Map.PRenderLayer(i, false, m_Camera.x, m_Camera.y, offset_x, offset_y);
+
+      // draw person entities
+      if (!RenderEntities(i, false, offset_x, offset_y)) {
+        return false;
+      }
+
+    } else {  // IF NOT REFLECTIVE
+
+      m_Map.PRenderLayer(i, false, m_Camera.x, m_Camera.y, offset_x, offset_y);
+
+      // draw person entities
+      if (!RenderEntities(i, false, offset_x, offset_y)) {
+        return false;
+      }
+
+    } // end if reflective
+
+
+    // execute layer renderer
+    if (m_LayerRenderers[i]) {
+      std::string error;
+      if (!ExecuteScript(m_LayerRenderers[i], error)) {
+        m_ErrorMessage = "Could not execute layer renderer " + itos(i) + "\n" + error;
+        return false;
+      }
+    }
+
+  } // end for all layers
+
+  if (!(m_CurrentColorMask.red == 255 && m_CurrentColorMask.green == 255 && m_CurrentColorMask.blue && m_CurrentColorMask.alpha == 255))
+    ApplyColorMask(m_CurrentColorMask);
+
+  // render script
+  if (m_RenderScript && !m_Engine->IsScriptBeingUsed(m_RenderScript)) {
+    std::string error;
+    //m_RenderScriptRunning = true;
+    if (!ExecuteScript(m_RenderScript, error)) {
+      m_ErrorMessage = "Could not execute render script\n" + error;
+      //m_RenderScriptRunning = false;
+      return false;
+    }
+    //m_RenderScriptRunning = false;
+  }
+
+  return true;
+}
+#endif // _3D_FUNCTIONS
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3026,7 +3116,7 @@ CMapEngine::CallPersonScript(const char* name, int which)
       // set the current person
       const std::string old_person = m_CurrentPerson;
       m_CurrentPerson = m_Persons[person].name;
-     
+
       if ( !ExecuteScript(*ps, error) ) {
         m_ErrorMessage = "Could not execute person " + list[which] + " script\n" + error;
         //m_Persons[person].person_scripts_running[which] = false;
@@ -3087,7 +3177,7 @@ CMapEngine::CallDefaultPersonScript(const char* name, int which)
       // set the current person
       const std::string old_person = m_CurrentPerson;
       m_CurrentPerson = m_Persons[person].name;
-     
+
       if ( !ExecuteScript(*ps, error) ) {
         m_ErrorMessage = "Could not execute default person " + list[which] + " script\n" + error;
         //m_Persons[person].person_scripts_running[which] = false;
@@ -3290,7 +3380,7 @@ CMapEngine::OpenMap(const char* filename)
   if (skip != -1) { filename += skip; } else if (skip == -1) {
     m_ErrorMessage = "Could not load map '";
     m_ErrorMessage += filename;
-    m_ErrorMessage += "'";   
+    m_ErrorMessage += "'";
     return false;
   }
   path += filename;
@@ -3340,7 +3430,7 @@ CMapEngine::OpenMap(const char* filename)
   // load the background music (if there is any)
   std::string music = m_Map.GetMap().GetMusicFile();
   if (music.length()) {
-    
+
     if (music.rfind(".m3u") == music.size() - 4) {
       if (m_Playlist.LoadFromFile(music.c_str()) == false) {
         m_ErrorMessage = "Could not load playlist '" + music + "'";
@@ -3351,7 +3441,7 @@ CMapEngine::OpenMap(const char* filename)
         if ( !IsMidi(m_Playlist.GetFile(0)) ) {
           m_Music = m_Engine->LoadSound(m_Playlist.GetFile(0), false);
         }
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
         if ( IsMidi(m_Playlist.GetFile(0)) ) {
           m_Midi = m_Engine->LoadMIDI(m_Playlist.GetFile(0));
         }
@@ -3364,7 +3454,7 @@ CMapEngine::OpenMap(const char* filename)
         m_Music = m_Engine->LoadSound(music.c_str(), true);
       }
 
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
         if ( IsMidi(music.c_str()) ) {
           m_Midi = m_Engine->LoadMIDI(music.c_str());
         }
@@ -3385,7 +3475,7 @@ CMapEngine::OpenMap(const char* filename)
     m_Music->setRepeat(true);
     m_Music->play();
   }
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   if (m_Midi) {
     m_Midi->setRepeat(true);
     m_Midi->play();
@@ -3410,7 +3500,7 @@ CMapEngine::OpenMap(const char* filename)
     // stop background music
     m_Music = 0;
 
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
     m_Midi = 0;
 #endif
 
@@ -3434,7 +3524,7 @@ CMapEngine::CloseMap()
   m_Playlist.Clear();
   m_Music = 0;
 
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   m_Midi = 0;
 #endif
 
@@ -3718,8 +3808,8 @@ CMapEngine::LoadMapPersons()
 
       // execute default script_create
       if (m_default_person_scripts[SCRIPT_ON_CREATE] != NULL) {
-        if (!m_Engine->IsScriptBeingUsed(m_default_person_scripts[SCRIPT_ON_CREATE])) {        
-          
+        if (!m_Engine->IsScriptBeingUsed(m_default_person_scripts[SCRIPT_ON_CREATE])) {
+
           const std::string person_name = m_CurrentPerson;
 
           if (!ExecuteScript(m_default_person_scripts[SCRIPT_ON_CREATE], error)) {
@@ -3741,7 +3831,7 @@ CMapEngine::LoadMapPersons()
 
         m_ErrorMessage = "Could not execute OnCreate script\nPerson:" + person_string + "\n" + error;
         m_Persons.erase(m_Persons.end() - 1);
-        
+
         goto spriteset_error;
       }
 
@@ -4273,7 +4363,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
       }
 
     } // end (if command queue is empty)
-   
+
     // read the top command
     Person::Command c = p->commands.front();
     p->commands.pop_front();
@@ -4457,7 +4547,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
   // test if talk activation script should be called
   if (m_InputPerson == person_index) {
     // if the activation key is pressed
-    if ( (m_Keys[m_TalkActivationKey] && !IsKeyBound(m_TalkActivationKey)) 
+    if ( (m_Keys[m_TalkActivationKey] && !IsKeyBound(m_TalkActivationKey))
      || (GetNumJoysticks() > 0 && IsJoystickButtonPressed(0, m_JoystickTalkButton)) && !IsJoystickButtonBound(0, m_JoystickTalkButton)) {
 
       int talk_x = int(m_Persons[m_InputPerson].x);
@@ -5142,7 +5232,7 @@ CMapEngine::ProcessInput()
             command = COMMAND_FACE_SOUTH;
           }
         }
-    
+
         m_Persons[person].commands.push_back(Person::Command(command, false));
       }
     }

@@ -194,6 +194,13 @@ void Delay(int ms)
 void
 CGameEngine::ShowError(const char* message)
 {
+#ifdef _3D_FUNCTIONS
+  //If we're still in 3d mode when the error happened, go back to 2d mode
+  if (SwitchProjectiveMode != NULL) {
+    SwitchProjectiveMode(0);
+  }
+#endif // _3D_FUNCTIONS
+
   RGBA white = CreateRGBA(255, 255, 255, 255);
 
   SetClippingRectangle(0, 0, GetScreenWidth(), GetScreenHeight());
@@ -317,7 +324,7 @@ CGameEngine::AddEvaluatedScript(const char* filename)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-  
+
 void
 CGameEngine::AddEvaluatedSystemScript(const char* filename)
 {
@@ -417,7 +424,7 @@ CGameEngine::ExecuteGame(const char* directory)
 
 void
 CGameEngine::RestartGame()
-{  
+{
   m_RestartGame = true;
 }
 
@@ -735,7 +742,7 @@ CGameEngine::LoadSound(const char* filename, bool streaming)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
 audiere::MIDIStream*
 CGameEngine::LoadMIDI(const char* filename)
 {
@@ -805,7 +812,7 @@ CGameEngine::LoadImage(const char* filename)
   }
 
   if (skip == strlen("/common/")) { LeaveDirectory(); }
- 
+
   return CreateImage(image.GetWidth(), image.GetHeight(), image.GetPixels());
 }
 
@@ -864,7 +871,7 @@ CGameEngine::LoadAnimation(const char* filename)
   IAnimation* anim = ::LoadAnimation(path.c_str(), m_FileSystem);
 
   if (skip == strlen("/common/")) { LeaveDirectory(); }
-  
+
   return anim;
 }
 
@@ -962,7 +969,7 @@ CGameEngine::FlushFile(CConfigFile* file)
       i->first->Save(path.c_str(), m_FileSystem);
       break;
     }
-  }  
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

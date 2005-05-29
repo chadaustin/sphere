@@ -79,7 +79,7 @@ private:
   virtual void DestroyWindowStyle(SWINDOWSTYLE* ws);
 
   virtual audiere::OutputStream* LoadSound(const char* filename, bool streaming);
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   virtual audiere::MIDIStream* LoadMIDI(const char* filename);
 #endif
 

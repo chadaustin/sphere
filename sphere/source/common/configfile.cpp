@@ -267,9 +267,9 @@ std::string
 CConfigFile::ReadString(const char* section, const char* key, const char* def)
 {
   if (m_sections[section].entries.find(key) == m_sections[section].entries.end()) {
-    //m_sections[section].entries[key] = def;
-    std::string s = def;
-    return s;
+    m_sections[section].entries[key] = def;
+    //std::string s = def;
+    //return s;
   }
 
   return m_sections[section].entries[key];

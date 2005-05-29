@@ -30,7 +30,22 @@
 const int MAX_RECURSE_COUNT = 256;
 const int MAX_FRAME_SKIP    = 20;
 
+///////////////////////////////////////////////////////////
 
+#ifdef _3D_FUNCTIONS
+//These are used as temp variables for image drawing coordinates
+int g4_1[4];
+int g4_2[4];
+int g4_3[4];
+int g4_4[4];
+
+int g2_1[2];
+int g2_2[2];
+int g2_3[2];
+int g2_4[2];
+#endif // _3D_FUNCTIONS
+
+///////////////////////////////////////////////////////////
 
 const dword SS_SOCKET_MAGIC      = 0x70274be2;
 const dword SS_LOG_MAGIC         = 0x435262c9;
@@ -82,7 +97,7 @@ END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_SOUND)
   audiere::OutputStream* sound;
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   audiere::MIDIStream* midi;
 #endif
 END_SS_OBJECT()
@@ -5089,7 +5104,7 @@ begin_func(LoadSound, 1)
     sound = This->m_Engine->LoadSound(filename, streaming);
   }
 
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   audiere::MIDIStream* midi    = NULL;
   if ( !sound && IsMidi(filename) ) {
     midi = This->m_Engine->LoadMIDI(filename);
@@ -5105,7 +5120,7 @@ begin_func(LoadSound, 1)
     return JS_FALSE;
   }
 
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   return_object(CreateSoundObject(cx, sound, midi));
 #else
   return_object(CreateSoundObject(cx, sound));
@@ -6302,14 +6317,14 @@ end_method()
 ////////////////////////////////////////
 
 JSObject*
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
 CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound, audiere::MIDIStream* midi)
 #else
 CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
 #endif
 {
   if (sound) sound->ref();
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   if (midi)  midi->ref();
 #endif
 
@@ -6324,7 +6339,7 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
   if (object == NULL) {
     if (sound) { sound->unref(); sound = NULL; }
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
     if (midi)  { midi->unref(); midi = NULL; }
 #endif
     return NULL;
@@ -6355,14 +6370,14 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
   SS_SOUND* sound_object = new SS_SOUND;
   if (!sound_object) {
     if (sound) { sound->unref(); sound = NULL; }
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
     if (midi)  { midi->unref(); midi = NULL; }
 #endif
     return NULL;
   }
 
   sound_object->sound = sound;
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   sound_object->midi = midi;
 #endif
 
@@ -6375,7 +6390,7 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
 
 begin_finalizer(SS_SOUND, ssFinalizeSound)
   if (object->sound) { object->sound->unref(); object->sound = NULL; }
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   if (object->midi) { object->midi->unref(); object->midi = NULL; }
 #endif
 end_finalizer()
@@ -6393,7 +6408,7 @@ begin_method(SS_SOUND, ssSoundPlay, 1)
     object->sound->setRepeat(repeat);
     object->sound->play();
   }
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   if (object->midi) {
     object->midi->setRepeat(repeat);
     object->midi->play();
@@ -6408,7 +6423,7 @@ end_method()
 */
 begin_method(SS_SOUND, ssSoundPause, 0)
   if (object->sound) object->sound->stop();
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   if (object->midi) object->midi->stop();
 #endif
 end_method()
@@ -6423,7 +6438,7 @@ begin_method(SS_SOUND, ssSoundStop, 0)
     object->sound->stop();
     object->sound->reset();
   }
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   if (object->midi) object->midi->stop();
 #endif
 end_method()
@@ -6504,7 +6519,7 @@ end_method()
 */
 begin_method(SS_SOUND, ssSoundIsPlaying, 0)
   if (object->sound) return_bool(object->sound->isPlaying());
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   else
   if (object->midi) return_bool(object->midi->isPlaying());
 #endif
@@ -6519,7 +6534,7 @@ end_method()
 */
 begin_method(SS_SOUND, ssSoundIsSeekable, 0)
   if (object->sound) return_bool(object->sound->isSeekable());
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   else
   if (object->midi) return_bool(true);
 #endif
@@ -6535,7 +6550,7 @@ end_method()
 */
 begin_method(SS_SOUND, ssSoundGetPosition, 0)
   if (object->sound) return_int(object->sound->getPosition());
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   else
   if (object->midi)  return_int(object->midi->getPosition());
 #endif
@@ -6551,7 +6566,7 @@ end_method()
 begin_method(SS_SOUND, ssSoundSetPosition, 1)
   arg_int(pos);
   if (object->sound) object->sound->setPosition(pos);
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   if (object->midi)  object->midi->setPosition(pos);
 #endif
 end_method()
@@ -6563,7 +6578,7 @@ end_method()
 */
 begin_method(SS_SOUND, ssSoundGetLength, 0)
   if (object->sound) return_int(object->sound->getLength());
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   else
   if (object->midi)  return_int(object->midi->getLength());
 #endif
@@ -6576,7 +6591,7 @@ end_method()
     - creates a copy of the sound object (currently doesn't really work)
 */
 begin_method(SS_SOUND, ssSoundClone, 0)
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   return_object(CreateSoundObject(cx, object->sound, object->midi));
 #else
   return_object(CreateSoundObject(cx, object->sound));
@@ -6944,6 +6959,12 @@ CScript::CreateImageObject(JSContext* cx, IMAGE image, bool destroy)
     { "transformBlit",     ssImageTransformBlit,     8, 0, 0 },
     { "transformBlitMask", ssImageTransformBlitMask, 9, 0, 0 },
     { "createSurface",     ssImageCreateSurface,     0, 0, 0 },
+
+#ifdef _3D_FUNCTIONS
+    { "transform3DBlit",   ssImageTransform3DBlit,  11, 0, 0 },
+    { "triangle3DBlit",    ssImageTriangle3DBlit,   15, 0, 0 },
+#endif // _3D_FUNCTIONS
+
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -8188,7 +8209,7 @@ end_method()
 
 begin_method(SS_FILE, ssFileGetKey, 1)
   arg_int(index);
- 
+
   if (index < 0) {
     JS_ReportError(cx, "Index must be greater than zero... %d", index);
     return JS_FALSE;
@@ -8708,3 +8729,209 @@ begin_method(SS_TILESET, ssTilesetSave, 1)
 end_method()
 
 ////////////////////////////////////////////////////////////////////////////////
+
+#ifdef _3D_FUNCTIONS
+////////////////////////////////////////////////////////////////////////////////
+// Related 3d functions
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(SwitchProjectMode, 1)
+  arg_int(pro);
+
+  if (SwitchProjectiveMode == NULL)
+  {
+    JS_ReportError(cx, "SwitchProjectMode() requires different video driver.");
+    return NULL;
+  }
+
+	SwitchProjectiveMode(pro);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_method(SS_IMAGE, ssImageTransform3DBlit, 12)
+
+  if (Transform3DBlitImage == NULL)
+  {
+    JS_ReportError(cx, "image.transform3DBlit() requires different video driver.");
+    return NULL;
+  }
+
+  if (This->ShouldRender()) {
+    arg_double(x1);
+    arg_double(y1);
+    arg_double(z1);
+    arg_double(x2);
+    arg_double(y2);
+    arg_double(z2);
+    arg_double(x3);
+    arg_double(y3);
+    arg_double(z3);
+    arg_double(x4);
+    arg_double(y4);
+    arg_double(z4);
+
+    double x[4] = { x1, x2, x3, x4 };
+    double y[4] = { y1, y2, y3, y4 };
+    double z[4] = { z1, z2, z3, z4 };
+    Transform3DBlitImage(object->image, x, y, z);
+  }
+end_method()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_method(SS_IMAGE, ssImageTriangle3DBlit, 15)
+
+  if (Triangle3DBlitImage == NULL)
+  {
+    JS_ReportError(cx, "image.triangle3DBlit() requires different video driver.");
+    return NULL;
+  }
+
+  if (This->ShouldRender()) {
+
+	arg_int(sx1);
+    arg_int(sy1);
+	arg_double(x1);
+    arg_double(y1);
+    arg_double(z1);
+	arg_int(sx2);
+    arg_int(sy2);
+    arg_double(x2);
+    arg_double(y2);
+    arg_double(z2);
+	arg_int(sx3);
+    arg_int(sy3);
+    arg_double(x3);
+    arg_double(y3);
+    arg_double(z3);
+
+    int sx[3] = { sx1, sx2, sx3};
+    int sy[3] = { sy1, sy2, sy3};
+
+    double x[3] = { x1, x2, x3};
+    double y[3] = { y1, y2, y3};
+    double z[3] = { z1, z2, z3};
+    Triangle3DBlitImage(object->image, sx, sy, x, y, z);
+  }
+end_method()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(Set3DCameraAngles, 3)
+  arg_double(xang);
+  arg_double(yang);
+  arg_double(zang);
+
+  if (Set3DCameraAnglesDr == NULL)
+  {
+    JS_ReportError(cx, "Set3DCameraAngles() requires different video driver.");
+    return NULL;
+  }
+
+  Set3DCameraAnglesDr(xang, yang, zang);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(Set3DCameraPosition, 3)
+  arg_double(camx);
+  arg_double(camy);
+  arg_double(camz);
+
+  if (Set3DCameraPositionDr == NULL)
+  {
+    JS_ReportError(cx, "Set3DCameraPosition() requires different video driver.");
+    return NULL;
+  }
+
+  Set3DCameraPositionDr(camx,camy,camz);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(Get3DCameraX, 0)
+  if (Get3DCameraXDr == NULL)
+  {
+    JS_ReportError(cx, "Get3DCameraX() requires different video driver.");
+    return NULL;
+  }
+
+  return_double(Get3DCameraXDr());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(Get3DCameraY, 0)
+  if (Get3DCameraYDr == NULL)
+  {
+    JS_ReportError(cx, "Get3DCameraY() requires different video driver.");
+    return NULL;
+  }
+
+  return_double(Get3DCameraYDr());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(Get3DCameraZ, 0)
+  if (Get3DCameraZDr == NULL)
+  {
+    JS_ReportError(cx, "Get3DCameraZ() requires different video driver.");
+    return NULL;
+  }
+  return_double(Get3DCameraZDr());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(Get3DCameraAngleX, 0)
+  if (Get3DCameraAngleXDr == NULL)
+  {
+    JS_ReportError(cx, "Get3DCameraAngleX() requires different video driver.");
+    return NULL;
+  }
+
+  return_double(Get3DCameraAngleXDr());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(Get3DCameraAngleY, 0)
+  if (Get3DCameraAngleYDr == NULL)
+  {
+    JS_ReportError(cx, "Get3DCameraAngleY() requires different video driver.");
+    return NULL;
+  }
+  return_double(Get3DCameraAngleYDr());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(Get3DCameraAngleZ, 0)
+  if (Get3DCameraAngleZDr == NULL)
+  {
+    JS_ReportError(cx, "Get3DCameraAngleZ() requires different video driver.");
+    return NULL;
+  }
+  return_double(Get3DCameraAngleZDr());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+begin_func(PRenderMap, 0)
+  if (Transform3DBlitImage == NULL)
+  {
+    JS_ReportError(cx, "PRenderMap() requires different video driver.");
+    return NULL;
+  }
+
+  if (!This->m_Engine->GetMapEngine()->PRenderMap()) {
+    This->ReportMapEngineError("PRenderMap() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+#endif // _3D_FUNCTIONS

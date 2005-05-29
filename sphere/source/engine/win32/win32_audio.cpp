@@ -11,7 +11,7 @@
 
 
 static audiere::AudioDevicePtr s_AudioDevice = NULL;
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
 static audiere::MIDIDevicePtr s_MidiDevice = NULL;
 #endif
 
@@ -28,7 +28,7 @@ bool InitAudio(HWND window, SPHERECONFIG* config)
         s_AudioDevice = audiere::OpenDevice("null");
       }
 
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
       s_MidiDevice = audiere::OpenMIDIDevice("");
       if (!s_MidiDevice) {
         s_MidiDevice = audiere::OpenMIDIDevice("null");
@@ -41,7 +41,7 @@ bool InitAudio(HWND window, SPHERECONFIG* config)
 
     case SOUND_ON:
       s_AudioDevice = audiere::OpenDevice(audiodriver);
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
       s_MidiDevice  = audiere::OpenMIDIDevice("");
 
       return bool(s_AudioDevice.get() && s_MidiDevice.get());
@@ -51,7 +51,7 @@ bool InitAudio(HWND window, SPHERECONFIG* config)
 
     case SOUND_OFF:
       s_AudioDevice = audiere::OpenDevice("null");
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
       s_MidiDevice  = audiere::OpenMIDIDevice("null");
 
       return bool(s_AudioDevice.get() && s_MidiDevice.get());
@@ -69,7 +69,7 @@ bool InitAudio(HWND window, SPHERECONFIG* config)
 void CloseAudio()
 {
   s_AudioDevice = 0;
-#if WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   s_MidiDevice = 0;
 #endif
 }
@@ -90,7 +90,7 @@ audiere::OutputStream* SA_OpenSound(audiere::File* file, bool streaming)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
 audiere::MIDIStream* SA_OpenMIDI(const char* filename)
 {
   if (!s_MidiDevice.get())

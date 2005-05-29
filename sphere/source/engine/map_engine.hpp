@@ -40,7 +40,7 @@ public:
     COMMAND_MOVE_EAST,
     COMMAND_MOVE_SOUTH,
     COMMAND_MOVE_WEST,
-	  
+
     COMMAND_DO_SCRIPT,
 
 
@@ -143,6 +143,10 @@ public:
   bool GetZoneLayer(int zone, int& layer);
   bool SetZoneLayer(int zone, int layer);
 
+#ifdef _3D_FUNCTIONS
+  bool PRenderMap();
+#endif // _3D_FUNCTIONS
+
   bool RenderMap();
 
   bool SetColorMask(RGBA color, int num_frames);
@@ -224,13 +228,13 @@ public:
 
   bool IsPersonVisible(const char* person_name, bool& visible);
   bool SetPersonVisible(const char* person_name, bool visible);
-  
+
   bool GetPersonData(const char* name, std::vector<struct PersonData>& data);
   bool SetPersonData(const char* name, const std::vector<struct PersonData> data);
 
   bool GetPersonValue(const char* name, const char* key, std::string& string_value, double& double_value, int& type);
   bool SetPersonValue(const char* name, const char* key, const std::string string_value, double double_value, int type);
-  
+
   SSPRITESET* GetPersonSpriteset(const char* name);
   bool SetPersonSpriteset(const char* name, sSpriteset& spriteset);
 
@@ -348,7 +352,7 @@ private:
 
     bool on_trigger;
     int last_trigger;
-    
+
     bool is_visible;
   };
 
@@ -389,7 +393,11 @@ private:
   void DestroyTriggers();
   bool LoadZones();
   void DestroyZones();
-  
+
+#ifdef _3D_FUNCTIONS
+  bool PRender();
+#endif // _3D_FUNCTIONS
+
   bool Render();
   bool RenderEntities(int layer, bool flipped, int offset_x, int offset_y);
   bool UpdateWorld(bool input_valid);
@@ -444,7 +452,7 @@ private:
 
   SMAP       m_Map;
   audiere::OutputStreamPtr m_Music;
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_MIDI)
   audiere::MIDIStreamPtr m_Midi;
 #endif
   CPlaylist m_Playlist;
@@ -485,7 +493,7 @@ private:
 
   // default map scripts
   IEngine::script m_DefaultMapScripts[NUM_MAP_SCRIPTS];
-  
+
   // default person scripts
   IEngine::script m_default_person_scripts[NUM_PERSON_SCRIPTS];
 
