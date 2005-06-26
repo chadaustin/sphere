@@ -241,8 +241,14 @@ static void UpdateTreeStructure(CTreeCtrl& m_TreeControl, HTREEITEM root) {
 
     for (unsigned int j = 0; j < filelist.size(); j++)
     {
+      // don't show thumbs.db files
       if (strcmp_ci(filelist[j].c_str(), "thumbs.db") == 0)
         continue;
+
+      // don't show .pyc files
+      if (filelist[j].rfind(".pyc") == filelist[j].size() - 4) {
+        continue;
+      }
 
       int image_index = IDI_FILETYPE_BASE - 1; // Unknown icon type
       std::string filename = filelist[j];

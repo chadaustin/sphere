@@ -842,6 +842,12 @@ CScriptWindow::SetScriptStyles()
     "debugger implements protected volatile "
     "double import public ";
 
+  static const char key_words_python[] =
+    "and as assert break class continue def del elif else "
+    "except exec finally for from global if import in "
+    "is lambda None not or pass print raise return try while ";
+    // "as" and "None" are kind of reversed words, but not keywords
+
   static const COLORREF black   = 0x000000;
   static const COLORREF white   = 0xFFFFFF;
   static const COLORREF red     = RGB(0xFF, 0, 0);
@@ -866,8 +872,8 @@ CScriptWindow::SetScriptStyles()
   if (GetScriptType() == SCRIPT_TYPE_PY) {
     SendEditor(SCI_SETLEXER, SCLEX_PYTHON);
     SendEditor(SCI_SETSTYLEBITS, 5);
-    SendEditor(SCI_SETKEYWORDS, 0, (LPARAM)key_words);
-    SendEditor(SCI_SETKEYWORDS, 1, (LPARAM)reserved_words);
+    SendEditor(SCI_SETKEYWORDS, 0, (LPARAM)key_words_python);
+    //SendEditor(SCI_SETKEYWORDS, 1, (LPARAM)reserved_words_python);
   }
   else
   if (GetScriptType() == SCRIPT_TYPE_PERL) {
