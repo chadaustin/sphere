@@ -797,6 +797,16 @@ CScriptWindow::IsSyntaxHighlightable()
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CScriptWindow::IsSyntaxCheckable()
+{
+  CScriptWindow::ScriptType type = GetScriptType();
+  return (type == SCRIPT_TYPE_JS
+       || type == SCRIPT_TYPE_UNDETERMINABLE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CScriptWindow::IsIndentationFixable()
 {
   CScriptWindow::ScriptType type = GetScriptType();
@@ -2963,8 +2973,10 @@ CScriptWindow::OnUpdateOptionsSelectionLine(CCmdUI* cmdui)
 afx_msg void
 CScriptWindow::OnUpdateScriptCheckSyntax(CCmdUI* cmdui)
 {
-  if ( !IsSyntaxHighlightable() ) {
+  if ( !IsSyntaxCheckable() ) {
     cmdui->Enable(FALSE);
+  } else {
+    cmdui->Enable(TRUE);
   }
 }
 

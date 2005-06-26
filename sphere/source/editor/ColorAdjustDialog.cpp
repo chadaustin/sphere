@@ -89,7 +89,7 @@ CColorAdjustDialog::OnInitDialog()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "../../../code/image_proc/image/hsi.hpp"
+//#include "../../../code/image_proc/image/hsi.hpp"
 
 bool
 CColorAdjustDialog::DrawPreview(CPaintDC& dc, RECT* rect)
@@ -132,9 +132,10 @@ CColorAdjustDialog::DrawPreview(CPaintDC& dc, RECT* rect)
   int use_blue  = ShouldUseBlueChannel();
   int use_alpha = ShouldUseAlphaChannel();
 
-  int method = 1;
+  int method = 0;
 
-  if (method == 0) {
+  if (method == 0)
+  {
 
     for (int iy = 0; iy < current_height; iy++) {
       for (int ix = 0; ix < current_width; ix++) {
@@ -146,7 +147,9 @@ CColorAdjustDialog::DrawPreview(CPaintDC& dc, RECT* rect)
     } 
 
   }
-  else {
+  /*
+  else
+  {
     double h_value = ((double)red_value   / (double)255.0) * ((double)2.0 * 3.14);
     double s_value = ((double)green_value / (double)255.0);
     double i_value = ((double)blue_value  / (double)255.0);
@@ -172,6 +175,7 @@ CColorAdjustDialog::DrawPreview(CPaintDC& dc, RECT* rect)
       }
     } 
   }
+  */
 
   /////////////////////////////////////////////////////////
 

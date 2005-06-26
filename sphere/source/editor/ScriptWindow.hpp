@@ -134,6 +134,7 @@ private:
 
   ScriptType GetScriptType();
   bool IsSyntaxHighlightable();
+  bool IsSyntaxCheckable();
   bool IsIndentationFixable();
 
 private:

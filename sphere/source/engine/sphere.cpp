@@ -249,6 +249,11 @@ Game ReadGameInfo(const char* directory) {
 ///////////////////////////////////////////////////////////////////////////////
 
 void RunGame(const char* game, const char* parameters) {
+
+  if (SwitchProjectiveMode != NULL) {
+	SwitchProjectiveMode(0);
+  }
+
   // first = game directory, second = parameters
   typedef std::pair<std::string, std::string> GamePair;
   std::stack<GamePair> games;
