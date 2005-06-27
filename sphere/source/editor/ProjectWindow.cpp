@@ -16,6 +16,7 @@
 #include "translate.hpp"
 
 #include "../common/system.hpp"
+#include "../common/strcmp_ci.hpp"
 
 static const int TreeID = 9865;
 
@@ -205,8 +206,6 @@ static std::string GetTreeItemPathName(CTreeCtrl& m_TreeControl, HTREEITEM item)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "../common/strcmp_ci.hpp"
-
 static void UpdateTreeStructure(CTreeCtrl& m_TreeControl, HTREEITEM root);
 
 static void UpdateTreeStructure(CTreeCtrl& m_TreeControl, HTREEITEM root) {
@@ -246,7 +245,12 @@ static void UpdateTreeStructure(CTreeCtrl& m_TreeControl, HTREEITEM root) {
         continue;
 
       // don't show .pyc files
-      if (filelist[j].rfind(".pyc") == filelist[j].size() - 4) {
+      if (filelist[j].size() >= 4 && filelist[j].rfind(".pyc") == filelist[j].size() - 4) {
+        continue;
+      }
+
+      // don't show .class files
+      if (filelist[j].size() >= 6 && filelist[j].rfind(".class") == filelist[j].size() - 6) {
         continue;
       }
 

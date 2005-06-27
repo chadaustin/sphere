@@ -1,7 +1,8 @@
 #include "GameSettingsDialog.hpp"
 #include "Project.hpp"
 #include "resource.h"
-
+#include "../common/strcmp_ci.hpp"
+#include "filename_comparer.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -27,17 +28,40 @@ CGameSettingsDialog::OnInitDialog()
   SetDlgItemText(IDC_AUTHOR, m_Project->GetAuthor());
   SetDlgItemText(IDC_DESCRIPTION, m_Project->GetDescription());
 
+  int found_script = 0;
+
   // fill script list
   if (m_Project->GetItemCount(GT_SCRIPTS) > 0)
   {
     // add the scripts from the project
     for (int i = 0; i < m_Project->GetItemCount(GT_SCRIPTS); i++)
-      SendDlgItemMessage(IDC_SCRIPT, CB_ADDSTRING, 0, (LPARAM)m_Project->GetItem(GT_SCRIPTS, i));
+    {
+      const char* script = m_Project->GetItem(GT_SCRIPTS, i);
+
+      if (script != NULL && strlen(script) > 0)
+      {
+        // don't show thumbs.db files
+        if (strcmp_ci(script, "thumbs.db") == 0) {
+          continue;
+        }
+
+        // don't show java/ini/htt files
+        if (extension_compare(script, ".java")
+         || extension_compare(script, ".ini")
+         || extension_compare(script, ".htt")) {
+          continue;
+        }
+
+        SendDlgItemMessage(IDC_SCRIPT, CB_ADDSTRING, 0, (LPARAM)script);
+        found_script = 1;
+      }
+    }
 
     const char* game_script = m_Project->GetGameScript();
     SendDlgItemMessage(IDC_SCRIPT, CB_SELECTSTRING, -1, (LPARAM)game_script);
   }
-  else
+
+  if (!found_script)
   {
     SendDlgItemMessage(IDC_SCRIPT, CB_ADDSTRING, 0, (LPARAM)"(none)");
     SendDlgItemMessage(IDC_SCRIPT, CB_SETCURSEL, 0, 0);

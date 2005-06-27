@@ -1123,6 +1123,8 @@ BEGIN
         BEGIN
             MENUITEM "Data Packets",                ID_DEBUG_DATA_PACKETS
             MENUITEM "Unknown Text",                ID_DEBUG_UNKNOWN_TEXT
+            MENUITEM "Server Ping Messages",        ID_DEBUG_SERVER_PING_MESSSAGES
+
         END
         MENUITEM "&Find...",                    ID_SCRIPT_FIND
         MENUITEM "&Auto Reconnect",             ID_IRC_AUTO_RECONNECT
@@ -1172,15 +1174,16 @@ BEGIN
         MENUITEM "&Delete",                     ID_SCRIPTVIEW_DELETE
         POPUP "&View"
         BEGIN
-            MENUITEM "Sphere Functions",            ID_SCRIPTVIEW_SPHEREFUNCTIONS
+            MENUITEM "Sphere/Javascript Functions", ID_SCRIPTVIEW_SPHERE_JS_FUNCTIONS
 
-            MENUITEM "Control Structures",          ID_SCRIPTVIEW_CONTROLSTRUCTURES
+            MENUITEM "Sphere/Javascript Control Structures", 
+                                                    ID_SCRIPTVIEW_SPHERE_JS_CONTROLSTRUCTURES
 
-            MENUITEM "Current Script Functions",    ID_SCRIPTVIEW_CURRENTSCRIPTFUNCTIONS
+            MENUITEM "Current Script &Functions",   ID_SCRIPTVIEW_CURRENTSCRIPTFUNCTIONS
 
-            MENUITEM "Clipboard History",           ID_SCRIPTVIEW_CLIPBOARDHISTORY
+            MENUITEM "Clipboard &History",          ID_SCRIPTVIEW_CLIPBOARDHISTORY
 
-            MENUITEM "Control Characters",          ID_SCRIPTVIEW_CONTROL_CHARACTERS
+            MENUITEM "&Control Characters",         ID_SCRIPTVIEW_CONTROL_CHARACTERS
 
         END
         MENUITEM "&Refresh",                    ID_SCRIPTVIEW_REFRESH

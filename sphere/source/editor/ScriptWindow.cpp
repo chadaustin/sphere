@@ -457,17 +457,17 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_UPDATE_COMMAND_UI(ID_SCRIPTVIEW_INSERT, OnUpdateScriptViewInsert)
   ON_UPDATE_COMMAND_UI(ID_SCRIPTVIEW_DELETE, OnUpdateScriptViewDelete)
 
-  ON_COMMAND(ID_SCRIPTVIEW_SPHEREFUNCTIONS,  OnScriptViewSphereFunctions)
-  ON_COMMAND(ID_SCRIPTVIEW_CONTROLSTRUCTURES,  OnScriptViewControlStructures)
   ON_COMMAND(ID_SCRIPTVIEW_CURRENTSCRIPTFUNCTIONS, OnScriptViewCurrentScriptFunctions)
   ON_COMMAND(ID_SCRIPTVIEW_CLIPBOARDHISTORY, OnScriptViewClipboardHistory)
   ON_COMMAND(ID_SCRIPTVIEW_CONTROL_CHARACTERS, OnScriptViewControlCharacters)
   ON_UPDATE_COMMAND_UI(ID_SCRIPTVIEW_CONTROL_CHARACTERS, OnUpdateScriptViewControlCharacters)
-  ON_UPDATE_COMMAND_UI(ID_SCRIPTVIEW_SPHEREFUNCTIONS,  OnUpdateScriptViewSphereFunctions)
-  ON_UPDATE_COMMAND_UI(ID_SCRIPTVIEW_CONTROLSTRUCTURES,  OnUpdateScriptViewControlStructures)
   ON_UPDATE_COMMAND_UI(ID_SCRIPTVIEW_CURRENTSCRIPTFUNCTIONS, OnUpdateScriptViewCurrentScriptFunctions)
   ON_UPDATE_COMMAND_UI(ID_SCRIPTVIEW_CLIPBOARDHISTORY, OnUpdateScriptViewClipboardHistory)
-  ON_UPDATE_COMMAND_UI(ID_SCRIPTVIEW_CONTROL_CHARACTERS, OnUpdateScriptViewControlCharacters)
+
+  ON_COMMAND(ID_SCRIPTVIEW_SPHERE_JS_FUNCTIONS,  OnScriptViewSphereJsFunctions)
+  ON_COMMAND(ID_SCRIPTVIEW_SPHERE_JS_CONTROLSTRUCTURES,  OnScriptViewSphereJsControlStructures)
+  ON_UPDATE_COMMAND_UI(ID_SCRIPTVIEW_SPHERE_JS_FUNCTIONS,  OnUpdateScriptViewSphereJsFunctions)
+  ON_UPDATE_COMMAND_UI(ID_SCRIPTVIEW_SPHERE_JS_CONTROLSTRUCTURES,  OnUpdateScriptViewSphereJsControlStructures)
 
 END_MESSAGE_MAP()
 
@@ -485,7 +485,7 @@ CScriptWindow::CScriptWindow(const char* filename, bool create_from_clipboard)
 , m_AllowAutoComplete(false)
 , m_HighlightCurrentLine(false)
 , m_SelectionType(SC_SEL_STREAM)
-, m_ListType(0)
+, m_ListType(SPHERE_JS_FUNCTIONS)
 , m_ShowList(false)
 , m_CheckSpelling(false)
 , m_SearchDown(FR_DOWN)
@@ -551,11 +551,11 @@ CScriptWindow::Create()
   int cy = Rect.bottom - Rect.top;
   int sidebar_width = 0;
 
-  m_ListType           = Configuration::Get(KEY_SCRIPT_LIST_TYPE);
+  m_ListType = Configuration::Get(KEY_SCRIPT_LIST_TYPE);
   m_ShowList = Configuration::Get(KEY_SCRIPT_SHOW_LIST);
 
-  if ( !(m_ListType > 0 && m_ListType <= 5) ) { m_ListType = 0; }
-  if ( m_ListType != 0) {
+  if ( !(m_ListType > 0 && m_ListType < MAX_LIST_TYPE) ) { m_ListType = SPHERE_JS_FUNCTIONS; }
+  if ( (m_ListType >= 0 && m_ListType < MAX_LIST_TYPE) ) {
     sidebar_width = 120;
   }
 
@@ -653,24 +653,11 @@ CScriptWindow::CreateList(int type)
 
   ::SendMessage(m_List, LB_RESETCONTENT, 0, 0);
 
-  if (m_ListType == 1) {
-    GenerateFunctionsList(m_List, sFunctionDefinitions);
-  }
-
-  if (m_ListType == 2) {
-    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"if (1)\n{\n  // ...\n}\n");
-    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"if (1)\n{\n  // ...\n}\nelse\n{\n  // ...\n}\n");
-    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"for (var i = 0; i < 10; i++)\n{\n  // ...\n}\n");
-    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"while (1)\n{\n  // ...\n}\n");
-    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"switch (1)\n{\n  case (1):\n    // ...\n  break;\n}\n");
-    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"function func_name()\n{\n  // ...\n}\n");
-  }
-
-  if (m_ListType == 3) {
+  if (m_ListType == CURRENT_SCRIPT_FUNCTIONS) {
     ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"todo todo...");
   }
 
-  if (m_ListType == 4) {
+  if (m_ListType == CLIPBOARD_HISTORY) {
     CMainWindow* main_window = GetMainWindow();
     if (main_window) {
       for (unsigned int i = 0; i < main_window->m_ClipboardHistory.size(); i++) {
@@ -679,7 +666,7 @@ CScriptWindow::CreateList(int type)
     }
   }
 
-  if (m_ListType == 5) {
+  if (m_ListType == CONTROL_CHARACTERS) {
 
     const struct {
       const char* name;
@@ -726,6 +713,22 @@ CScriptWindow::CreateList(int type)
       ::SendMessage(m_List, LB_SETITEMDATA, i, (LPARAM)control_characters[i].code);
     }
   }
+
+  if (m_ListType == SPHERE_JS_FUNCTIONS) {
+    GenerateFunctionsList(m_List, sFunctionDefinitions);
+  }
+
+  if (m_ListType == SPHERE_JS_CONTROL_STRUCTURES) {
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"if (1)\n{\n  // ...\n}\n");
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"if (1)\n{\n  // ...\n}\nelse\n{\n  // ...\n}\n");
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"for (var i = 0; i < 10; i++)\n{\n  // ...\n}\n");
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"while (1)\n{\n  // ...\n}\n");
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"switch (1)\n{\n  case (1):\n    // ...\n  break;\n}\n");
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"function func_name()\n{\n  // ...\n}\n");
+  }
+
+  // todo: listtype 6 sphere+python functions
+  // todo: listype 7 python control structures
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1411,27 +1414,9 @@ CScriptWindow::OnUpdateScriptViewDelete(CCmdUI* cmdui)
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
-CScriptWindow::OnScriptViewSphereFunctions()
-{
-  CreateList(1);
-  RememberConfiguration();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-afx_msg void
-CScriptWindow::OnScriptViewControlStructures()
-{
-  CreateList(2);
-  RememberConfiguration();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-afx_msg void
 CScriptWindow::OnScriptViewCurrentScriptFunctions()
 {
-  CreateList(3);
+  CreateList(CURRENT_SCRIPT_FUNCTIONS);
   RememberConfiguration();
 }
 
@@ -1440,7 +1425,7 @@ CScriptWindow::OnScriptViewCurrentScriptFunctions()
 afx_msg void
 CScriptWindow::OnScriptViewClipboardHistory()
 {
-  CreateList(4);
+  CreateList(CLIPBOARD_HISTORY);
   RememberConfiguration();
 }
 
@@ -1449,24 +1434,42 @@ CScriptWindow::OnScriptViewClipboardHistory()
 afx_msg void
 CScriptWindow::OnScriptViewControlCharacters()
 {
-  CreateList(5);
+  CreateList(CONTROL_CHARACTERS);
   RememberConfiguration();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
-CScriptWindow::OnUpdateScriptViewSphereFunctions(CCmdUI* cmdui)
+CScriptWindow::OnScriptViewSphereJsFunctions()
 {
-  cmdui->SetCheck(m_ListType == 1 ? TRUE : FALSE);
+  CreateList(SPHERE_JS_FUNCTIONS);
+  RememberConfiguration();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
-CScriptWindow::OnUpdateScriptViewControlStructures(CCmdUI* cmdui)
+CScriptWindow::OnScriptViewSphereJsControlStructures()
 {
-  cmdui->SetCheck(m_ListType == 2 ? TRUE : FALSE);
+  CreateList(SPHERE_JS_CONTROL_STRUCTURES);
+  RememberConfiguration();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnUpdateScriptViewSphereJsFunctions(CCmdUI* cmdui)
+{
+  cmdui->SetCheck(m_ListType == SPHERE_JS_FUNCTIONS ? TRUE : FALSE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnUpdateScriptViewSphereJsControlStructures(CCmdUI* cmdui)
+{
+  cmdui->SetCheck(m_ListType == SPHERE_JS_CONTROL_STRUCTURES ? TRUE : FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1474,7 +1477,7 @@ CScriptWindow::OnUpdateScriptViewControlStructures(CCmdUI* cmdui)
 afx_msg void
 CScriptWindow::OnUpdateScriptViewCurrentScriptFunctions(CCmdUI* cmdui)
 {
-  cmdui->SetCheck(m_ListType == 3 ? TRUE : FALSE);
+  cmdui->SetCheck(m_ListType == CURRENT_SCRIPT_FUNCTIONS ? TRUE : FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1482,7 +1485,7 @@ CScriptWindow::OnUpdateScriptViewCurrentScriptFunctions(CCmdUI* cmdui)
 afx_msg void
 CScriptWindow::OnUpdateScriptViewClipboardHistory(CCmdUI* cmdui)
 {
-  cmdui->SetCheck(m_ListType == 4 ? TRUE : FALSE);
+  cmdui->SetCheck(m_ListType == CLIPBOARD_HISTORY ? TRUE : FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1490,7 +1493,7 @@ CScriptWindow::OnUpdateScriptViewClipboardHistory(CCmdUI* cmdui)
 afx_msg void
 CScriptWindow::OnUpdateScriptViewControlCharacters(CCmdUI* cmdui)
 {
-  cmdui->SetCheck(m_ListType == 5 ? TRUE : FALSE);
+  cmdui->SetCheck(m_ListType == CONTROL_CHARACTERS ? TRUE : FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

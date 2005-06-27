@@ -144,13 +144,13 @@ private:
   afx_msg void OnUpdateScriptViewInsert(CCmdUI* cmdui);
   afx_msg void OnUpdateScriptViewDelete(CCmdUI* cmdui);
 
-  afx_msg void OnScriptViewSphereFunctions();
-  afx_msg void OnScriptViewControlStructures();
+  afx_msg void OnScriptViewSphereJsFunctions();
+  afx_msg void OnScriptViewSphereJsControlStructures();
   afx_msg void OnScriptViewCurrentScriptFunctions();
   afx_msg void OnScriptViewClipboardHistory();
   afx_msg void OnScriptViewControlCharacters();
-  afx_msg void OnUpdateScriptViewSphereFunctions(CCmdUI* cmdui);
-  afx_msg void OnUpdateScriptViewControlStructures(CCmdUI* cmdui);
+  afx_msg void OnUpdateScriptViewSphereJsFunctions(CCmdUI* cmdui);
+  afx_msg void OnUpdateScriptViewSphereJsControlStructures(CCmdUI* cmdui);
   afx_msg void OnUpdateScriptViewCurrentScriptFunctions(CCmdUI* cmdui);
   afx_msg void OnUpdateScriptViewClipboardHistory(CCmdUI* cmdui);
   afx_msg void OnUpdateScriptViewControlCharacters(CCmdUI* cmdui);
@@ -172,6 +172,17 @@ private:
   HWND m_Editor;
   HWND m_List;
 
+public:
+  enum ListType {
+    CURRENT_SCRIPT_FUNCTIONS = 0,
+    CLIPBOARD_HISTORY,
+    CONTROL_CHARACTERS,
+    SPHERE_JS_FUNCTIONS,
+    SPHERE_JS_CONTROL_STRUCTURES,
+    MAX_LIST_TYPE,
+  };
+
+private:
   int m_ListType;
   bool m_ShowList;
 
