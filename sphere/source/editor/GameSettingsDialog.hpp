@@ -19,6 +19,7 @@ private:
 
 private:
   CProject* m_Project;
+  int m_FoundScript;
 };
 
 

@@ -2831,7 +2831,16 @@ CMainWindow::OnProjectRunSphere()
 
   char szCommandLine[MAX_PATH + 128];
   strcpy(szCommandLine, GetSphereDirectory().c_str());
-  strcat(szCommandLine, "\\engine.exe -game ");
+  strcat(szCommandLine, "\\engine.exe");
+  
+  if ( !FileExists(szCommandLine) ) {
+    std::string error = "Could not run Sphere because engine.exe doesn't exist...\n";
+    error += szCommandLine;
+    MessageBox(error.c_str());
+    return;
+  }
+
+  strcat(szCommandLine, " -game ");
   strcat(szCommandLine, "\"");
   strcat(szCommandLine, m_Project.GetDirectory());
   strcat(szCommandLine, "\"");
@@ -2900,6 +2909,13 @@ CMainWindow::OnProjectConfigureSphere()
   char szCommandLine[MAX_PATH + 80];
   strcpy(szCommandLine, sphere_directory);
   strcat(szCommandLine, "\\config.exe");
+
+  if ( !FileExists(szCommandLine) ) {
+    std::string error = "Could not configure Sphere because config.exe doesn't exist...\n";
+    error += szCommandLine;
+    MessageBox(error.c_str());
+    return;
+  }
 
   STARTUPINFO si;
   memset(&si, 0, sizeof(si));
@@ -3364,7 +3380,7 @@ afx_msg void
 CMainWindow::OnHelpLocalDocumentation()
 {
   std::string docdir = GetSphereDirectory() + "\\docs";
-  if ((int)ShellExecute(m_hWnd, "open", docdir.c_str(), 0, 0, SW_SHOW) <= 32) {
+  if ((int)ShellExecute(NULL, "open", docdir.c_str(), 0, 0, SW_SHOW) <= 32) {
     MessageBox("Could not open documentation directory.", "Local Documentation");
   }
 }

@@ -1,5 +1,14 @@
 YYYY.MM.DD
 
+2005.07.26
+  - Made Line() more accurate.
+  - Added Tileset->View->Grid
+  - Made the file dialog in browse for background music / tilesets
+    on map properties dialog start in the sounds/maps folder.
+  - Made deleting zones that are inside of other zones better by deleting based
+    on zone area rather than the order the zones were placed on the map.
+    (i.e. smallest zone gets removed...)
+
 2005.05.22
   - Added 3d support to sphere_gl.dll and 3d map blitting.
 

@@ -44,9 +44,9 @@ sub html_escape
   my $unescaped = $_[0];
   my $escaped = $unescaped;
 
+  $escaped =~ s/&/&amp;/g;
   $escaped =~ s/</&lt;/g;
   $escaped =~ s/>/&gt;/g;
-  $escaped =~ s/&/&amp;/g;
   $escaped =~ s/\\/&quot;/g;
 
   return $escaped;
@@ -96,6 +96,8 @@ sub function_to_string {
   my @func_args = ();
   my @func_arg_types = ();
 
+  my $prefix = is_html() ? "&nbsp;&nbsp;" : "  ";
+
   for (my $i = 0; $i < @func_arg_info; $i++) {
     if ($i < @func_arg_info / 2) {
       push (@func_args, $func_arg_info[$i]);
@@ -112,9 +114,9 @@ sub function_to_string {
   }
   
   if (is_html()) {
-    $line .= "<span class='type_$return_type'>$return_type</span> ";
+    $line .= "$prefix<span class='type_$return_type'>$return_type</span> ";
   } else {
-    $line .= "$return_type ";  
+    $line .= "$prefix$return_type ";  
   }
   
   if (&is_html()) { $line .= "<a name=\"$func_name\">$func_name</a>"; }
@@ -182,11 +184,8 @@ sub method_to_string {
     my $end_line = &end_of_line();
     my @lines = split(/$end_line/, $line);
 
-    my $prefix = "  ";
-  
-    if (is_html()) {
-      $prefix = "&nbsp;&nbsp;";
-    }
+    my $prefix = is_html() ? "&nbsp;&nbsp;" : "  ";
+    
     foreach my $line (@lines) {
       $line = $prefix . $line . $end_line;
     }
@@ -227,7 +226,7 @@ sub ssobject_name_to_jsobject_name {
 sub ssobject_method_to_jsobject_method {
   my ($method_name) = @_;
   
-  my @list = qw(ssSocket ssLog ssSpriteset ssSound ssFont ssWindowStyle ssImage ssSurface ssAnimation ssFile ssByteArray ssRawFile ssMapEngine);
+  my @list = qw(ssSocket ssLog ssSpriteset ssSound ssFont ssWindowStyle ssImage ssSurface ssAnimation ssFile ssByteArray ssRawFile ssMapEngine ssTileset);
 
   for (my $i = 0; $i <= $#list; $i++) {
     my $str = $list[$i];
@@ -552,9 +551,8 @@ sub make_docs {
       # end_method()
       if ($in_method == 1 && $line =~ m/end_method\(\)/) {
         
-        unless ($method_object eq "Object") {
-
-
+        unless ($method_object eq "Object")
+        {
           if ($method_name eq "ssSocketRead") {
             $return_type = "byte_array_object";
           }
@@ -565,6 +563,7 @@ sub make_docs {
           if ($prev_method_object ne $method_object) {
             print "\n";
             print &start_of_line() . uc(&ssobject_name_to_jsobject_name($method_object)) . &end_of_line();
+            
             if ($method_object eq "color") {
               print &start_of_line() . "$prefix$name.red" . &end_of_line();
               print &start_of_line() . "$prefix$name.green" . &end_of_line();
@@ -605,7 +604,6 @@ sub make_docs {
         $return_type = "void";
         $in_method = 0;
         $desc_text = "";
-
       }
     }
 

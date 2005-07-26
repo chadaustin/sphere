@@ -1,8 +1,10 @@
+#include "Editor.hpp"
+#include "DocumentWindow.hpp"
 #include "EntityPersonDialog.hpp"
 #include "FileDialogs.hpp"
 #include "Scripting.hpp"
-#include "resource.h"
 #include "../common/Map.hpp"
+#include "resource.h"
 
 BEGIN_MESSAGE_MAP(CEntityPersonDialog, CDialog)
 
@@ -110,10 +112,17 @@ CEntityPersonDialog::OnOK()
 void
 CEntityPersonDialog::OnBrowseSpriteset()
 {
+  char old_directory[MAX_PATH] = {0};
+  GetCurrentDirectory(MAX_PATH, old_directory);
+  std::string directory = GetMainWindow()->GetDefaultFolder(WA_SPRITESET);
+  SetCurrentDirectory(directory.c_str());
+
   CSpritesetFileDialog dialog(FDM_OPEN);
   if (dialog.DoModal() == IDOK) {
     SetDlgItemText(IDC_SPRITESET, dialog.GetFileName());
   }
+
+  SetCurrentDirectory(old_directory);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

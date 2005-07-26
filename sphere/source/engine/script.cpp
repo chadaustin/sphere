@@ -1779,7 +1779,7 @@ end_func()
 begin_func(SetMapEngineFrameRate, 1)
   arg_int(fps);
   if (!This->m_Engine->GetMapEngine()->SetMapEngineFrameRate(fps)) {
-    JS_ReportError(cx, "SetMapEngineFrameRate() failed");
+    This->ReportMapEngineError("SetMapEngineFrameRate() failed");
     return JS_FALSE;
   }
 end_func()
@@ -1790,6 +1790,12 @@ end_func()
     - Returns the current map engine frames per second rate set by either MapEngine(map, fps) or SetMapEngineFrameRate(fps)
 */
 begin_func(GetMapEngineFrameRate, 0)
+  int fps = This->m_Engine->GetMapEngine()->GetMapEngineFrameRate();
+  if (fps == 0) {
+    This->ReportMapEngineError("GetMapEngineFrameRate() failed");
+    return JS_FALSE;
+  }
+
   return_int(This->m_Engine->GetMapEngine()->GetMapEngineFrameRate());
 end_func()
 

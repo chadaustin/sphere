@@ -241,7 +241,15 @@ static void UpdateTreeStructure(CTreeCtrl& m_TreeControl, HTREEITEM root) {
     for (unsigned int j = 0; j < filelist.size(); j++)
     {
       // don't show thumbs.db files
-      if (strcmp_ci(filelist[j].c_str(), "thumbs.db") == 0)
+      if (filelist[j].size() >= strlen("thumbs.db") && strcmp_ci(filelist[j].c_str(), "thumbs.db") == 0)
+        continue;
+
+      // don't show folder.htt files
+      if (filelist[j].size() >= strlen("folder.htt") && strcmp_ci(filelist[j].c_str(), "folder.htt") == 0)
+        continue;
+
+      // don't show desktop.ini files
+      if (filelist[j].size() >= strlen("desktop.ini") && strcmp_ci(filelist[j].c_str(), "desktop.ini") == 0)
         continue;
 
       // don't show .pyc files

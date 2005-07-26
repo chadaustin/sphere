@@ -3060,9 +3060,6 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
       person.y = py;
       person.layer = m_SelectedLayer;
 
-      std::string directory = GetMainWindow()->GetDefaultFolder(WA_SPRITESET);
-      SetCurrentDirectory(directory.c_str());
-
       CEntityPersonDialog dialog(person, m_Map);
 
       if (dialog.DoModal() == IDOK)

@@ -101,6 +101,8 @@ void Line(
   clipT clipper,
   renderT renderer)
 {
+  assert(clipper.right <= pitch - 1);
+
   // if line is completely off screen, don't draw it
   if (is_clipped(x1, y1, x2, y2, clipper)) {
     return;
@@ -119,8 +121,8 @@ void Line(
   // vertical (simplified clipping)
   if (x1 == x2) {
 
-    y1 = bracket<int>(y1, clipper.top, clipper.bottom - 1);
-    y2 = bracket<int>(y2, clipper.top, clipper.bottom - 1);
+    y1 = bracket<int>(y1, clipper.top, clipper.bottom /* - 1 */);
+    y2 = bracket<int>(y2, clipper.top, clipper.bottom /* - 1 */);
 
     // draw the line
     if (y1 < y2) {
@@ -138,8 +140,8 @@ void Line(
   // horizontal (simplified clipping)
   else if (y1 == y2) {
 
-    x1 = bracket<int>(x1, clipper.left, clipper.right - 1);
-    x2 = bracket<int>(x2, clipper.left, clipper.right - 1);
+    x1 = bracket<int>(x1, clipper.left, clipper.right /* - 1 */);
+    x2 = bracket<int>(x2, clipper.left, clipper.right /* - 1 */);
 
     // draw the line
     if (x1 < x2) {
@@ -181,13 +183,13 @@ void Line(
       if (x1 < x2) {
         float cy = (float) y1;
         for (int ix = x1; ix <= x2; ix++) {
-          renderer(surface[((int)cy * pitch) + ix], getcolor(o_x2 - ix, o_x2 - o_x1));
+          renderer(surface[((int)(cy + 0.5) * pitch) + ix], getcolor(o_x2 - ix, o_x2 - o_x1));
           cy += slope;
         }
       } else {
         float cy = (float) y1;
         for (int ix = x1; ix >= x2; ix--) {
-          renderer(surface[((int)cy * pitch) + ix], getcolor(ix - o_x2, o_x1 - o_x2));
+          renderer(surface[((int)(cy + 0.5) * pitch) + ix], getcolor(ix - o_x2, o_x1 - o_x2));
           cy -= slope;
         }
       }
@@ -199,13 +201,13 @@ void Line(
       if (y1 < y2) {
         float cx = (float) x1;
         for (int iy = y1; iy <= y2; iy++) {
-          renderer(surface[(iy * pitch) + (int)cx], getcolor(o_y1 - iy, o_y2 - o_y1));
+          renderer(surface[(iy * pitch) + (int)(cx + 0.5)], getcolor(o_y1 - iy, o_y2 - o_y1));
           cx += slope_delta;
         }
       } else {
         float cx = (float) x1;
         for (int iy = y1; iy >= y2; iy--) {
-          renderer(surface[(iy * pitch) + (int)cx], getcolor(iy - o_y2, o_y1 - o_y2));
+          renderer(surface[(iy * pitch) + (int)(cx + 0.5)], getcolor(iy - o_y2, o_y1 - o_y2));
           cx -= slope_delta;
         }
       }

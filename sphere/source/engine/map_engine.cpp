@@ -46,6 +46,7 @@ CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
 , m_IsRunning(false)
 , m_ShouldExit(false)
 
+, m_FrameRate(0)
 , m_ThrottleFPS(true)
 
 , m_Music(NULL)
@@ -422,6 +423,12 @@ CMapEngine::SetMapEngineFrameRate(int fps) {
 
 int
 CMapEngine::GetMapEngineFrameRate() {
+
+  if (!m_IsRunning) {
+    m_ErrorMessage = "GetMapEngineFrameRate() called while map engine was not running";
+    return 0;
+  }
+
   return m_FrameRate;
 }
 
@@ -3624,7 +3631,9 @@ CMapEngine::Run()
     }
 
   } // end map engine loop
+
   m_ShouldExit = false;
+  m_FrameRate = 0;
 
   return true;
 }

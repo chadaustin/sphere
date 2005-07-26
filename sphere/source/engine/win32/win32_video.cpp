@@ -63,7 +63,7 @@ static int ScreenWidth = 0;
 static int ScreenHeight = 0;
 
 static SFONT* FPSFont = NULL;
-static bool   FPSDisplayed = true;
+static bool   FPSDisplayed = false;
 
 static int VideoCaptureMode = VIDEO_CAPTURE_SCREENSHOT_ONLY;
 static int VideoCaptureTimer = 1000;

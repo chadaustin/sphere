@@ -493,7 +493,7 @@ CMapWindow::OnCommand(WPARAM wparam, LPARAM lparam)
 afx_msg void
 CMapWindow::OnMapProperties()
 {
-  CMapPropertiesDialog Dialog(&m_Map);
+  CMapPropertiesDialog Dialog(&m_Map, GetDocumentPath());
   if (Dialog.DoModal() == IDOK)
     SetModified(true);
 }

@@ -28,7 +28,7 @@ CGameSettingsDialog::OnInitDialog()
   SetDlgItemText(IDC_AUTHOR, m_Project->GetAuthor());
   SetDlgItemText(IDC_DESCRIPTION, m_Project->GetDescription());
 
-  int found_script = 0;
+  m_FoundScript = 0;
 
   // fill script list
   if (m_Project->GetItemCount(GT_SCRIPTS) > 0)
@@ -41,19 +41,27 @@ CGameSettingsDialog::OnInitDialog()
       if (script != NULL && strlen(script) > 0)
       {
         // don't show thumbs.db files
-        if (strcmp_ci(script, "thumbs.db") == 0) {
+        if (strlen(script) >= strlen("thumbs.db") && strcmp_ci(script, "thumbs.db") == 0) {
           continue;
         }
 
-        // don't show java/ini/htt files
-        if (extension_compare(script, ".java")
-         || extension_compare(script, ".ini")
-         || extension_compare(script, ".htt")) {
+        // don't show desktop.ini files
+        if (strlen(script) >= strlen("desktop.ini") && strcmp_ci(script, "desktop.ini") == 0) {
+          continue;
+        }
+
+        // don't show folder.htt files
+        if (strlen(script) >= strlen("folder.htt") && strcmp_ci(script, "folder.htt") == 0) {
+          continue;
+        }
+
+        // don't show java files
+        if (extension_compare(script, ".java")) {
           continue;
         }
 
         SendDlgItemMessage(IDC_SCRIPT, CB_ADDSTRING, 0, (LPARAM)script);
-        found_script = 1;
+        m_FoundScript = 1;
       }
     }
 
@@ -61,7 +69,7 @@ CGameSettingsDialog::OnInitDialog()
     SendDlgItemMessage(IDC_SCRIPT, CB_SELECTSTRING, -1, (LPARAM)game_script);
   }
 
-  if (!found_script)
+  if (!m_FoundScript)
   {
     SendDlgItemMessage(IDC_SCRIPT, CB_ADDSTRING, 0, (LPARAM)"(none)");
     SendDlgItemMessage(IDC_SCRIPT, CB_SETCURSEL, 0, 0);
@@ -107,12 +115,16 @@ CGameSettingsDialog::OnOK()
   m_Project->SetDescription(description);
   
   // if the project contains any scripts, set it to the one that's selected
-  if (m_Project->GetItemCount(GT_SCRIPTS) > 0)
+  if (m_FoundScript && m_Project->GetItemCount(GT_SCRIPTS) > 0)
   {
     char script[MAX_PATH + 1024];
     int cur_sel = SendDlgItemMessage(IDC_SCRIPT, CB_GETCURSEL, 0, 0);
     SendDlgItemMessage(IDC_SCRIPT, CB_GETLBTEXT, cur_sel, (LPARAM)script);
     m_Project->SetGameScript(script);
+  }
+  else
+  {
+    m_Project->SetGameScript("");
   }
 
   m_Project->SetScreenWidth(screen_width);

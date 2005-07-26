@@ -138,6 +138,7 @@
 #define IDC_TILENAME                    1034
 #define IDC_NEXT                        1035
 #define IDC_PREVIOUS                    1036
+#define IDC_MAPPATH                     1036
 #define IDC_SCREENWIDTH                 1044
 #define IDC_SCREENHEIGHT                1045
 #define IDC_TILESET_BROWSE              1048

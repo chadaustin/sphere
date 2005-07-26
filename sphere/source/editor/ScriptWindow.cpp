@@ -554,7 +554,7 @@ CScriptWindow::Create()
   m_ListType = Configuration::Get(KEY_SCRIPT_LIST_TYPE);
   m_ShowList = Configuration::Get(KEY_SCRIPT_SHOW_LIST);
 
-  if ( !(m_ListType > 0 && m_ListType < MAX_LIST_TYPE) ) { m_ListType = SPHERE_JS_FUNCTIONS; }
+  if ( !(m_ListType >= 0 && m_ListType < MAX_LIST_TYPE) ) { m_ListType = SPHERE_JS_FUNCTIONS; }
   if ( (m_ListType >= 0 && m_ListType < MAX_LIST_TYPE) ) {
     sidebar_width = 120;
   }
@@ -718,7 +718,8 @@ CScriptWindow::CreateList(int type)
     GenerateFunctionsList(m_List, sFunctionDefinitions);
   }
 
-  if (m_ListType == SPHERE_JS_CONTROL_STRUCTURES) {
+  if (m_ListType == SPHERE_JS_CONTROL_STRUCTURES)
+  {
     ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"if (1)\n{\n  // ...\n}\n");
     ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"if (1)\n{\n  // ...\n}\nelse\n{\n  // ...\n}\n");
     ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"for (var i = 0; i < 10; i++)\n{\n  // ...\n}\n");
@@ -727,8 +728,26 @@ CScriptWindow::CreateList(int type)
     ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"function func_name()\n{\n  // ...\n}\n");
   }
 
-  // todo: listtype 6 sphere+python functions
-  // todo: listype 7 python control structures
+  /*
+  // todo: sphere+python functions
+  if (m_ListType == SPHERE_PYTHON_FUNCTIONS)
+  {
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"sphere.video.FlipScreen()");
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"sphere.input.IsKeyPressed(key)");
+  }
+  */
+
+  /*
+  // todo: sphere+python control structures
+  if (m_ListType == SPHERE_PYTHON_CONTROL_STRUCTURES)
+  {
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"if (1):\n  pass\n");
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"if (1):\n  pass\nelse:\n  pass\n");
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"for i in range(0, 10):\n  pass\n");
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"while (1):\n  pass\n");
+    ::SendMessage(m_List, LB_ADDSTRING, 0, (LPARAM)"def func_name():\n  pass\n");
+  }
+  */
 }
 
 ////////////////////////////////////////////////////////////////////////////////

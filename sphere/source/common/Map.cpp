@@ -1517,14 +1517,34 @@ sMap::DeleteZone(int index)
 int
 sMap::FindZone(int x, int y, int layer)
 {
+  int best_zone_index = -1;
+  int best_zone_area = 0;
+
   for (unsigned int i = 0; i < m_Zones.size(); i++)
+  {
     if (x >= m_Zones[i].x1 &&
         y >= m_Zones[i].y1 &&
         x <= m_Zones[i].x2 &&
         y <= m_Zones[i].y2 &&
         m_Zones[i].layer == layer)
-      return i;
-  return -1;
+    {
+      int zone_area = (m_Zones[i].x2 - m_Zones[i].x1) * (m_Zones[i].y2 - m_Zones[i].y1);
+
+      if (best_zone_index == -1)
+      {
+        best_zone_area = zone_area;
+        best_zone_index = i;
+      }
+      else
+      if (zone_area < best_zone_area)
+      {
+          best_zone_area = zone_area;
+          best_zone_index = i;
+      }
+    }
+  }
+
+  return best_zone_index;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

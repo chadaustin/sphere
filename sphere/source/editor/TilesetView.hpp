@@ -76,6 +76,7 @@ private:
   afx_msg void OnMoveBack();
   afx_msg void OnMoveForward();
 
+  afx_msg void OnViewTileGrid();
   afx_msg void OnViewTileObstructions();
 
   afx_msg void OnEditRange();
@@ -94,6 +95,7 @@ private:
   bool m_MenuShown;
   void OnSwap(int new_index);
 
+  bool m_ShowTileGrid;
   bool m_ShowTileObstructions;
   std::vector<sTile> m_TileObstructions;
 

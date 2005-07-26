@@ -476,6 +476,11 @@ CLayerView::OnDeleteLayer()
 afx_msg void
 CLayerView::OnDuplicateLayer()
 {
+  int result = MessageBox("Make a duplicate layer?", "Duplicate Layer", MB_YESNOCANCEL | MB_ICONQUESTION | MB_DEFBUTTON3);
+  if (result != IDYES) {
+    return;
+  }
+
   m_Map->DuplicateLayer(m_SelectedLayer);
 
   UpdateScrollBar();

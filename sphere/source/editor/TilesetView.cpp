@@ -54,6 +54,7 @@ BEGIN_MESSAGE_MAP(CTilesetView, CWnd)
   ON_COMMAND(ID_TILESETVIEW_MOVE_BACK,    OnMoveBack)
   ON_COMMAND(ID_TILESETVIEW_MOVE_FORWARD, OnMoveForward)
 
+  ON_COMMAND(ID_TILESETVIEW_VIEWGRID, OnViewTileGrid)
   ON_COMMAND(ID_TILESETVIEW_VIEW_OBSTRUCTIONS, OnViewTileObstructions)
 
 //  ON_COMMAND(ID_TILESETVIEW_ER_ROTATE_CW,             OnEditRangeRotateCW)
@@ -94,6 +95,7 @@ CTilesetView::CTilesetView()
 , m_SelectedTile(0)
 , m_BlitTile(NULL)
 , m_ShowTileObstructions(false)
+, m_ShowTileGrid(false)
 , m_MenuShown(false)
 , m_MouseDown(false)
 , m_UsingMultiTileSelection(false)
@@ -649,6 +651,8 @@ CTilesetView::OnPaint()
     multi_tiles_selected = true;
   }
 
+  bool show_grid = m_ShowTileGrid;
+
   for (int iy = 0; iy < client_rect.bottom / blit_height + 1; iy++)
     for (int ix = 0; ix < client_rect.right / blit_width + 1; ix++)
     {
@@ -707,25 +711,39 @@ CTilesetView::OnPaint()
         dc.BitBlt(Rect.left, Rect.top, Rect.right - Rect.left, Rect.bottom - Rect.top, tile, 0, 0, SRCCOPY);
 
         // if the tile is selected, draw a pink rectangle around it
-        bool draw_border = false;
+        bool is_selected = false;
 
         if (multi_tiles_selected) {
           if (ix >= tileselection_left_x
            && ix <= tileselection_right_x
            && (iy + m_TopRow) >= tileselection_top_y
            && (iy + m_TopRow) <= tileselection_lower_y) {
-            draw_border = true;
+            is_selected = true;
           }
         }
         else if (it == m_SelectedTile) {
-          draw_border = true;
+          is_selected = true;
         }
 
-        if (draw_border)
-        {
+        if (is_selected) {
           HBRUSH newbrush = (HBRUSH)GetStockObject(NULL_BRUSH);
           CBrush* oldbrush = dc.SelectObject(CBrush::FromHandle(newbrush));
           HPEN newpen = (HPEN)CreatePen(PS_SOLID, 1, RGB(0xFF, 0x00, 0xFF));
+          CPen* oldpen = dc.SelectObject(CPen::FromHandle(newpen));
+
+          dc.Rectangle(&Rect);
+
+          dc.SelectObject(oldbrush);
+          DeleteObject(newbrush);
+          dc.SelectObject(oldpen);
+          DeleteObject(newpen);
+        }
+        else
+        if (show_grid)
+        {
+          HBRUSH newbrush = (HBRUSH)GetStockObject(NULL_BRUSH);
+          CBrush* oldbrush = dc.SelectObject(CBrush::FromHandle(newbrush));
+          HPEN newpen = (HPEN)CreatePen(PS_SOLID, 1, RGB(0x00, 0xFF, 0xFF));
           CPen* oldpen = dc.SelectObject(CPen::FromHandle(newpen));
 
           dc.Rectangle(&Rect);
@@ -1300,6 +1318,15 @@ CTilesetView::OnMoveForward()
   if (m_SelectedTile < m_Tileset->GetNumTiles()) {
     OnSwap(m_SelectedTile + 1);
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CTilesetView::OnViewTileGrid()
+{
+  m_ShowTileGrid = !m_ShowTileGrid;
+  Invalidate();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

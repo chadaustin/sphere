@@ -1,13 +1,15 @@
+#include "Editor.hpp"
+#include "DocumentWindow.hpp"
 #include "MapPropertiesDialog.hpp"
 #include "Scripting.hpp"
 #include "../common/Map.hpp"
-#include "resource.h"
 #include "FileDialogs.hpp"
-
+#include "resource.h"
 
 BEGIN_MESSAGE_MAP(CMapPropertiesDialog, CDialog)
 
   ON_BN_CLICKED(IDC_BROWSE_MUSIC, OnBrowseBackgroundMusic)
+  ON_BN_CLICKED(IDC_BROWSE_TILESET, OnBrowseTileset)
 
   ON_BN_CLICKED(IDC_CHECK_SYNTAX, OnCheckSyntax)
   ON_BN_CLICKED(IDC_ENTRY,        OnClickEntry)
@@ -22,10 +24,11 @@ END_MESSAGE_MAP()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-CMapPropertiesDialog::CMapPropertiesDialog(sMap* map)
+CMapPropertiesDialog::CMapPropertiesDialog(sMap* map, const char* document_path)
 : CDialog(IDD_MAP_PROPERTIES)
 , m_Map(map)
 , m_CurrentScript(ENTRY)
+, m_DocumentPath(document_path)
 {
   m_EntryScript = m_Map->GetEntryScript();
   m_ExitScript  = m_Map->GetExitScript();
@@ -40,6 +43,12 @@ CMapPropertiesDialog::CMapPropertiesDialog(sMap* map)
 BOOL
 CMapPropertiesDialog::OnInitDialog()
 {
+  if (m_DocumentPath) {
+    SetDlgItemText(IDC_MAPPATH, m_DocumentPath);
+  } else {
+    SetDlgItemText(IDC_MAPPATH, "");
+  }
+
   // set music file
   SetDlgItemText(IDC_MUSIC,   m_Map->GetMusicFile());
   SetDlgItemText(IDC_TILESET, m_Map->GetTilesetFile());
@@ -86,10 +95,17 @@ CMapPropertiesDialog::OnOK()
 afx_msg void
 CMapPropertiesDialog::OnBrowseBackgroundMusic()
 {
+  char old_directory[MAX_PATH] = {0};
+  GetCurrentDirectory(MAX_PATH, old_directory);
+  std::string directory = GetMainWindow()->GetDefaultFolder(WA_SOUND);
+  SetCurrentDirectory(directory.c_str());
+
   CSoundFileDialog dialog(FDM_OPEN);
   if (dialog.DoModal() == IDOK) {
     SetDlgItemText(IDC_MUSIC, dialog.GetFileName());
   }
+
+  SetCurrentDirectory(old_directory);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -97,10 +113,17 @@ CMapPropertiesDialog::OnBrowseBackgroundMusic()
 afx_msg void
 CMapPropertiesDialog::OnBrowseTileset()
 {
+  char old_directory[MAX_PATH] = {0};
+  GetCurrentDirectory(MAX_PATH, old_directory);
+  std::string directory = GetMainWindow()->GetDefaultFolder(WA_MAP);
+  SetCurrentDirectory(directory.c_str());
+
   CTilesetFileDialog dialog(FDM_OPEN);
   if (dialog.DoModal() == IDOK) {
     SetDlgItemText(IDC_TILESET, dialog.GetFileName());
   }
+
+  SetCurrentDirectory(old_directory);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

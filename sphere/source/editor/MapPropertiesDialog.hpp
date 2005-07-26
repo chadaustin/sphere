@@ -12,7 +12,7 @@ class sMap;     // #include "../sphere/common/Map.hpp"
 class CMapPropertiesDialog : public CDialog
 {
 public:
-  CMapPropertiesDialog(sMap* map);
+  CMapPropertiesDialog(sMap* map, const char* document_path);
 
 private:
   enum {
@@ -44,6 +44,7 @@ private:
 
 private:
   sMap* m_Map;
+  const char* m_DocumentPath;
 
   int m_CurrentScript;
 
