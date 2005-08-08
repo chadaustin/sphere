@@ -47,6 +47,8 @@ BEGIN_MESSAGE_MAP(CFontWindow, CSaveableDocumentWindow)
 
   ON_COMMAND(ID_FILE_COPY,  OnCopy)
   ON_COMMAND(ID_FILE_PASTE, OnPaste)
+  ON_COMMAND(ID_FILE_UNDO,  OnUndo)
+  ON_COMMAND(ID_FILE_REDO,  OnRedo)
   ON_COMMAND(ID_FILE_ZOOM_IN, OnZoomIn)
   ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
 
@@ -773,6 +775,22 @@ afx_msg void
 CFontWindow::OnPaste()
 {
   m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_PASTE, 0), 0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CFontWindow::OnUndo()
+{
+  m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_UNDO, 0), 0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CFontWindow::OnRedo()
+{
+  m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_REDO, 0), 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

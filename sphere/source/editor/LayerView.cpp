@@ -696,7 +696,6 @@ CLayerView::OnExportAllVisibleLayers()
 afx_msg void
 CLayerView::OnFlattenVisibleLayers()
 {
-  //sTileset& tileset = m_Map->GetTileset();
   std::vector<sLayer> layers;
 
   // get a list of the visible layers
@@ -708,108 +707,108 @@ CLayerView::OnFlattenVisibleLayers()
 
   if (!(layers.size() >= 1)) {
     MessageBox("No layers are visible!", "No layers are visible", MB_OK);
+    return;
   }
   else 
   if (layers.size() == 1) {
     return;
   }
-  else {
 
-    int width = 0;
-    int height = 0;
-
-    // find the size of the image we're going to create
-    for (int i = 0; i < int(layers.size()); i++) {
-      if (layers[i].GetWidth() > width) {
-        width = layers[i].GetWidth();
-      }
-      if (layers[i].GetHeight() > height) {
-        height = layers[i].GetHeight();
-      }
-    }
-
-    if (width <= 0 || height <= 0)
-      return;
-
-    sLayer new_layer;
-    new_layer.SetName("flattened_layer");
-    new_layer.Resize(width, height);
-
-    sTileset& tileset = m_Map->GetTileset();
-    sTile new_tile(tileset.GetTileWidth(), tileset.GetTileHeight());
-
-    std::vector<int> blended_tile_indexes;
-
-    for (int y = 0; y < height; ++y) {
-      for (int x = 0; x < width; ++x) {
-
-        new_tile.Clear();
-        blended_tile_indexes.clear();
-
-        for (unsigned int i = 0; i < layers.size(); ++i) {
-
-          if (y < layers[i].GetHeight() && x < layers[i].GetWidth()) {
-            sTile& tile = tileset.GetTile(layers[i].GetTile(x, y));
-
-            bool is_empty = true;
-            for (int iy = 0; iy < tile.GetHeight(); ++iy) {
-              for (int ix = 0; ix < tile.GetWidth(); ++ix) {
-                if (tile.GetPixel(ix, iy).alpha != 0) {
-                  is_empty = false;
-                  break;
-                }
-              }
-            }
-
-            if (is_empty == false) {
-              blended_tile_indexes.push_back(layers[i].GetTile(x, y));
-              BlendImage(new_tile.GetWidth(), new_tile.GetHeight(), tile.GetWidth(), tile.GetHeight(), new_tile.GetPixels(), tile.GetPixels());
-            }
-
-          }
-        }
-
-        if (blended_tile_indexes.size() == 1) {
-          new_layer.SetTile(x, y, blended_tile_indexes[0]);
-        }
-        else {
-          int tile_index = -1;
-
-          // make the tile fully opaque
-          new_tile.SetAlpha(255);
-
-          // see if the new_tile already exists within the tileset
-          for (int i = 0; i < tileset.GetNumTiles(); ++i) {
-            if (tileset.GetTile(i) == new_tile) {
-              tile_index = i;
-              break;
-            }
-          }
-
-          if (tile_index == -1) {
-            tile_index = tileset.GetNumTiles();
-            tileset.AppendTiles(1);
-            tileset.GetTile(tile_index) = new_tile;
-          }
-
-          new_layer.SetTile(x, y, tile_index);                 
-        }
-        
-
-      }
-    }
-
-    // turn the layers that were visible off
-    for (unsigned int i = 0; i < layers.size(); i++) {
-      m_Map->GetLayer(i).SetVisible(false);
-    }
-
-    m_Map->AppendLayer(new_layer);
-    
-    Invalidate();
-    m_Handler->LV_MapChanged();
+  int result = MessageBox("Flatten all visible layers?", "Flatten Layers", MB_YESNOCANCEL | MB_ICONQUESTION | MB_DEFBUTTON3);
+  if (result != IDYES) {
+    return;
   }
 
+  int width = 0;
+  int height = 0;
+
+  // find the size of the image we're going to create
+  for (int i = 0; i < int(layers.size()); i++) {
+    if (layers[i].GetWidth() > width) {
+      width = layers[i].GetWidth();
+    }
+    if (layers[i].GetHeight() > height) {
+      height = layers[i].GetHeight();
+    }
+  }
+
+  if (width <= 0 || height <= 0)
+    return;
+
+  sLayer new_layer;
+  new_layer.SetName("flattened_layer");
+  new_layer.Resize(width, height);
+
+  sTileset& tileset = m_Map->GetTileset();
+  sTile new_tile(tileset.GetTileWidth(), tileset.GetTileHeight());
+
+  std::vector<int> blended_tile_indexes;
+
+  for (int y = 0; y < height; ++y)
+  {
+    for (int x = 0; x < width; ++x) {
+      new_tile.Clear();
+      blended_tile_indexes.clear();
+
+      for (unsigned int i = 0; i < layers.size(); ++i) {
+        if (y < layers[i].GetHeight() && x < layers[i].GetWidth()) {
+          sTile& tile = tileset.GetTile(layers[i].GetTile(x, y));
+
+          bool is_empty = true;
+          for (int iy = 0; iy < tile.GetHeight(); ++iy) {
+            for (int ix = 0; ix < tile.GetWidth(); ++ix) {
+              if (tile.GetPixel(ix, iy).alpha != 0) {
+                is_empty = false;
+                break;
+              }
+            }
+          }
+
+          if (is_empty == false) {
+            blended_tile_indexes.push_back(layers[i].GetTile(x, y));
+            BlendImage(new_tile.GetWidth(), new_tile.GetHeight(), tile.GetWidth(), tile.GetHeight(), new_tile.GetPixels(), tile.GetPixels());
+          }
+
+        }
+      }
+
+      if (blended_tile_indexes.size() == 1) {
+        new_layer.SetTile(x, y, blended_tile_indexes[0]);
+      }
+      else {
+        int tile_index = -1;
+
+        // make the tile fully opaque
+        new_tile.SetAlpha(255);
+
+        // see if the new_tile already exists within the tileset
+        for (int i = 0; i < tileset.GetNumTiles(); ++i) {
+          if (tileset.GetTile(i) == new_tile) {
+            tile_index = i;
+            break;
+          }
+        } 
+        
+        if (tile_index == -1) {
+          tile_index = tileset.GetNumTiles();
+          tileset.AppendTiles(1);
+          tileset.GetTile(tile_index) = new_tile;
+        }
+
+        new_layer.SetTile(x, y, tile_index);                 
+      }
+    }
+  }
+
+  // turn the layers that were visible off
+  for (unsigned int i = 0; i < layers.size(); i++) {
+    m_Map->GetLayer(i).SetVisible(false);
+  }
+
+  m_Map->AppendLayer(new_layer);
+    
+  Invalidate();
+  m_Handler->LV_MapChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -952,10 +951,17 @@ CLayerView::OnLayerSlideLeft() {
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
-CLayerView::OnLayerSlideOther() {
-  CNumberDialog dx("Slide Horizontally", "Value", 0, -m_Map->GetLayer(m_SelectedLayer).GetWidth(), m_Map->GetLayer(m_SelectedLayer).GetWidth()); 
+CLayerView::OnLayerSlideOther()
+{
+  char horizontal_title[1024] = {0};
+  char vertical_title[1024] = {0};
+
+  sprintf (horizontal_title, "Slide Horizontally [%d - %d]", -m_Map->GetLayer(m_SelectedLayer).GetWidth(), m_Map->GetLayer(m_SelectedLayer).GetWidth());
+  sprintf (vertical_title,   "Slide Vertically [%d - %d]", -m_Map->GetLayer(m_SelectedLayer).GetHeight(), m_Map->GetLayer(m_SelectedLayer).GetHeight());
+
+  CNumberDialog dx(horizontal_title, "Value", 0, -m_Map->GetLayer(m_SelectedLayer).GetWidth(), m_Map->GetLayer(m_SelectedLayer).GetWidth()); 
   if (dx.DoModal() == IDOK) {
-    CNumberDialog dy("Slide Vertically", "Value", 0, -m_Map->GetLayer(m_SelectedLayer).GetHeight(), m_Map->GetLayer(m_SelectedLayer).GetHeight()); 
+    CNumberDialog dy(vertical_title, "Value", 0, -m_Map->GetLayer(m_SelectedLayer).GetHeight(), m_Map->GetLayer(m_SelectedLayer).GetHeight()); 
     if (dy.DoModal() == IDOK) {
       if (dx.GetValue() != 0 || dy.GetValue() != 0) {
         m_Map->Translate(dx.GetValue(), dy.GetValue(), m_SelectedLayer);

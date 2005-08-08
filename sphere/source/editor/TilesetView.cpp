@@ -53,6 +53,7 @@ BEGIN_MESSAGE_MAP(CTilesetView, CWnd)
 
   ON_COMMAND(ID_TILESETVIEW_MOVE_BACK,    OnMoveBack)
   ON_COMMAND(ID_TILESETVIEW_MOVE_FORWARD, OnMoveForward)
+  ON_COMMAND(ID_TILESETVIEW_MOVE_OTHER,   OnMoveOther)
 
   ON_COMMAND(ID_TILESETVIEW_VIEWGRID, OnViewTileGrid)
   ON_COMMAND(ID_TILESETVIEW_VIEW_OBSTRUCTIONS, OnViewTileObstructions)
@@ -974,11 +975,14 @@ CTilesetView::OnRButtonUp(UINT flags, CPoint point)
     CheckMenuItem(menu, ID_TILESETVIEW_ZOOM_8X, MF_BYCOMMAND | MF_CHECKED);
   }
 
-  if (m_Tileset->GetNumTiles() == 1 || m_SelectedTile == 0) {
+  if ( !(m_Tileset->GetNumTiles() > 1) || m_SelectedTile == 0) {
     EnableMenuItem(menu, ID_TILESETVIEW_MOVE_BACK, MF_BYCOMMAND | MF_GRAYED);
   }
-  if (m_Tileset->GetNumTiles() == 1 || m_SelectedTile == m_Tileset->GetNumTiles() - 1) {
+  if ( !(m_Tileset->GetNumTiles() > 1) || m_SelectedTile == m_Tileset->GetNumTiles() - 1) {
     EnableMenuItem(menu, ID_TILESETVIEW_MOVE_FORWARD, MF_BYCOMMAND | MF_GRAYED);
+  }
+  if ( !(m_Tileset->GetNumTiles() > 1) ) {
+    EnableMenuItem(menu, ID_TILESETVIEW_MOVE_OTHER, MF_BYCOMMAND | MF_GRAYED);
   }
 
   if (m_ShowTileObstructions) {
@@ -1317,6 +1321,109 @@ CTilesetView::OnMoveForward()
 {
   if (m_SelectedTile < m_Tileset->GetNumTiles()) {
     OnSwap(m_SelectedTile + 1);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CTilesetView::OnMoveOther()
+{
+  int min_value = -m_SelectedTile;
+  int max_value = (m_Tileset->GetNumTiles() - 1) - m_SelectedTile;
+
+  char title[1024] = {0};
+  sprintf (title, "Move Tiles [%d - %d]", min_value, max_value);
+
+  CNumberDialog dx(title, "Value", 0, min_value, max_value); 
+  if (dx.DoModal() == IDOK) {
+    int value = dx.GetValue();
+    if (value != 0) {
+
+      const int current   = m_SelectedTile;
+      const int new_index = m_SelectedTile + value;
+
+      std::vector<int> list_a;
+      std::vector<int> list_b;
+
+      if (value < 0)
+      {
+        // swap the tiles
+        for (int i = 0; i < abs(value); i++)
+        {
+          int one = current - i;
+          int two = current - i - 1;
+
+          {
+            std::swap(
+              m_Tileset->GetTile(one),
+              m_Tileset->GetTile(two)
+            );
+          }
+        }
+
+        // swap the indices...
+        for (int i = 0; i <= abs(value); i++)
+        {
+          int one = new_index + i;
+          int two = new_index + i + 1;
+
+          if (one == current) {
+            list_a.push_back(one);
+            list_b.push_back(new_index);           
+          }
+          else
+          {
+            list_a.push_back(one);
+            list_b.push_back(two);
+          }
+        }
+      }
+      else
+      if (value > 0)
+      {
+        // swap the tiles
+        for (int i = 0; i < abs(value); i++)
+        {
+          int one = current + i;
+          int two = current + i + 1;
+
+          {
+            std::swap(
+              m_Tileset->GetTile(one),
+              m_Tileset->GetTile(two)
+            );
+          }
+        }
+
+        // swap the indices...
+        for (int i = 0; i <= abs(value); i++)
+        {
+          int one = new_index - i;
+          int two = new_index - i - 1;
+
+          if (one == current) {
+            list_a.push_back(one);
+            list_b.push_back(new_index);           
+          }
+          else
+          {
+            list_a.push_back(one);
+            list_b.push_back(two);
+          }
+        }
+      }
+
+      // swap the tile indexes
+      m_Handler->TV_SwapTiles(list_a, list_b);
+
+      m_SelectedTile = new_index;
+
+      m_Handler->TV_SelectedTileChanged(m_SelectedTile);
+      m_Handler->TV_TilesetChanged();
+      UpdateObstructionTiles();
+      Invalidate();
+    }
   }
 }
 

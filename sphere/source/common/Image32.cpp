@@ -916,7 +916,7 @@ CImage32::Rectangle(int x1, int y1, int x2, int y2, RGBA color)
 void
 CImage32::Rectangle(int x, int y, int w, int h, RGBA color)
 {
-  clipper clip = { 0, 0, m_Width -1, m_Height - 1 };
+  clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
   Rectangle(x, y, w, h, color, clip);
 }
 

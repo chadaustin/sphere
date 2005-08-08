@@ -447,6 +447,8 @@ BEGIN_MESSAGE_MAP(CScriptWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
   ON_COMMAND(ID_FILE_COPY,  OnCopy)
   ON_COMMAND(ID_FILE_PASTE, OnPaste)
+  ON_COMMAND(ID_FILE_UNDO,  OnUndo)
+  ON_COMMAND(ID_FILE_REDO,  OnRedo)
 
   ON_REGISTERED_MESSAGE(s_FindReplaceMessage, OnFindReplace)
 
@@ -1419,7 +1421,7 @@ CScriptWindow::OnScriptViewRefresh()
 afx_msg void
 CScriptWindow::OnUpdateScriptViewInsert(CCmdUI* cmdui)
 {
-  cmdui->Enable((ListBoxUtil::GetNumSelected(m_List) > 0 && ListBoxUtil::GetNumSelected(m_List) < 10) ? TRUE : FALSE);
+  cmdui->Enable((ListBoxUtil::GetNumSelected(m_List) > 0 && ListBoxUtil::GetNumSelected(m_List) < 15) ? TRUE : FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1647,6 +1649,9 @@ CScriptWindow::IsToolAvailable(UINT id)
     case ID_FILE_PASTE:
       if (SendEditor(SCI_CANPASTE) != 0 || IsClipboardFormatAvailable(CF_HDROP)) available = TRUE;
     break;
+
+    case ID_FILE_UNDO: if (SendEditor(SCI_CANUNDO)) available = TRUE; break;
+    case ID_FILE_REDO: if (SendEditor(SCI_CANREDO)) available = TRUE; break;
   }
 
   return available;
@@ -1695,6 +1700,22 @@ CScriptWindow::OnPaste()
       CloseClipboard();
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnUndo()
+{
+  SendEditor(SCI_UNDO);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CScriptWindow::OnRedo()
+{
+  SendEditor(SCI_REDO);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

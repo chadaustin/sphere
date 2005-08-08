@@ -236,9 +236,16 @@ EditRange::OnEditRange(const std::string type, unsigned int id, const bool allow
     int dy = 0;
 
     if (id == ID_SPRITESETVIEWFRAMES_ER_SLIDE_OTHER) {
-      CNumberDialog dxd("Slide Horizontally", "Value", 0, -frame_width, frame_width); 
+
+      char horizontal_title[1024] = {0};
+      char vertical_title[1024] = {0};
+
+      sprintf (horizontal_title, "Slide Horizontally [%d - %d]", -frame_width, frame_width);
+      sprintf (vertical_title,   "Slide Vertically [%d - %d]", -frame_height, frame_height);
+
+      CNumberDialog dxd(horizontal_title, "Value", 0, -frame_width, frame_width); 
       if (dxd.DoModal() == IDOK) {
-        CNumberDialog dyd("Slide Vertically", "Value", 0, -frame_height, frame_height);
+        CNumberDialog dyd(vertical_title, "Value", 0, -frame_height, frame_height);
         if (dyd.DoModal() == IDOK) {
           dx = dxd.GetValue();
           dy = dyd.GetValue();

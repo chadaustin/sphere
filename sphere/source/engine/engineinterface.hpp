@@ -41,7 +41,7 @@ struct IEngine
 
   virtual void GetGameList(std::vector<Game>& games) = 0;
   virtual void ExecuteGame(const char* directory) = 0;
-  virtual void RestartGame() = 0;
+  virtual void RestartGame() = 0; // tell the engine to stop the game and set the restart flag...
 
   virtual CMapEngine* GetMapEngine() = 0;
 

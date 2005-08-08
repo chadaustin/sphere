@@ -75,6 +75,7 @@ private:
 
   afx_msg void OnMoveBack();
   afx_msg void OnMoveForward();
+  afx_msg void OnMoveOther();
 
   afx_msg void OnViewTileGrid();
   afx_msg void OnViewTileObstructions();

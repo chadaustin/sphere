@@ -403,11 +403,17 @@ CEntityListDialog::OnMoveEntities()
       OnMoveEntities(0, 0, layer);
     }
     else {
-      CNumberDialog dxd("Slide Horizontally", "Value", 0, -width, width); 
+      char horizontal_title[1024] = {0};
+      char vertical_title[1024] = {0};
+
+      sprintf (horizontal_title, "Slide Horizontally [%d - %d]", -width, width);
+      sprintf (vertical_title,   "Slide Vertically [%d - %d]", -height, height);
+
+      CNumberDialog dxd(horizontal_title, "Value", 0, -width, width); 
       if (dxd.DoModal() == IDOK)
       {
         dx = dxd.GetValue();
-        CNumberDialog dyd("Slide Vertically", "Value", 0, -height, height); 
+        CNumberDialog dyd(vertical_title, "Value", 0, -height, height); 
         if (dyd.DoModal() == IDOK)
         {
           dy = dyd.GetValue();

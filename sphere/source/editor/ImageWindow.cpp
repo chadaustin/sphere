@@ -37,6 +37,8 @@ BEGIN_MESSAGE_MAP(CImageWindow, CSaveableDocumentWindow)
 
   ON_COMMAND(ID_FILE_COPY,  OnCopy)
   ON_COMMAND(ID_FILE_PASTE, OnPaste)
+  ON_COMMAND(ID_FILE_UNDO,  OnUndo)
+  ON_COMMAND(ID_FILE_REDO,  OnRedo)
 
 END_MESSAGE_MAP()
 
@@ -107,10 +109,8 @@ CImageWindow::CImageWindow(const char* image, bool create_from_clipboard)
 
         delete[] pixels;
         pixels = NULL;
-
       }
     }
-
   }
 
   // create the window
@@ -135,6 +135,23 @@ CImageWindow::CImageWindow(const char* image, bool create_from_clipboard)
 #ifdef USE_SIZECBAR
 	 LoadPaletteStates();
 #endif
+
+  ////////
+  /*
+  if (1) {
+    // test case: line drawn (in terms of slope) is different because of clipping...
+
+    RGBA color_a = CreateRGBA(255, 0, 0, 255);
+    RGBA color_b = CreateRGBA(0, 255, 0, 255);
+
+    clipper clip_a = {0, 0, m_Image.GetWidth() - 1, m_Image.GetHeight() - 1};
+    clipper clip_b = {2, 2, (2 + 12) - 1, (2 + 12) - 1};
+
+    m_Image.Line(14, 3, 1, 14, color_a, clip_a);
+    m_Image.Line(14, 3, 1, 14, color_b, clip_b);
+  }
+  */
+  ////////
 
   // make sure everything is in the right position
   RECT ClientRect;
@@ -480,6 +497,24 @@ void
 CImageWindow::OnPaste() {
   if (m_Created) {
     m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_PASTE, 0), 0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CImageWindow::OnUndo() {
+  if (m_Created) {
+    m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_UNDO, 0), 0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+CImageWindow::OnRedo() {
+  if (m_Created) {
+    m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_REDO, 0), 0);
   }
 }
 

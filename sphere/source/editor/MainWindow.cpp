@@ -93,9 +93,13 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
   ON_COMMAND(ID_FILE_COPY,     OnCopy)
   ON_COMMAND(ID_FILE_PASTE,    OnPaste)
+  ON_COMMAND(ID_FILE_UNDO,    OnUndo)
+  ON_COMMAND(ID_FILE_REDO,    OnRedo)
 
   ON_UPDATE_COMMAND_UI(ID_FILE_COPY,  OnUpdateCopy)
   ON_UPDATE_COMMAND_UI(ID_FILE_PASTE, OnUpdatePaste)
+  ON_UPDATE_COMMAND_UI(ID_FILE_UNDO,  OnUpdateUndo)
+  ON_UPDATE_COMMAND_UI(ID_FILE_REDO, OnUpdateRedo)
 
   // generic file open
   ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
@@ -4151,6 +4155,56 @@ CMainWindow::OnUpdatePaste(CCmdUI* cmdui)
       enable = TRUE;
     }
 #endif
+  }
+
+  cmdui->Enable(enable);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnUndo()
+{
+  CDocumentWindow* dw = GetCurrentDocumentWindow();
+  if (dw != NULL) {
+    dw->SendMessage(ID_FILE_UNDO, 0, 0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnUpdateUndo(CCmdUI* cmdui)
+{
+  BOOL enable = FALSE;
+  CDocumentWindow* dw = GetCurrentDocumentWindow();
+  if (dw) {
+    enable = dw->IsToolAvailable(ID_FILE_UNDO);
+  }
+
+  cmdui->Enable(enable);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnRedo()
+{
+  CDocumentWindow* dw = GetCurrentDocumentWindow();
+  if (dw != NULL) {
+    dw->SendMessage(ID_FILE_REDO, 0, 0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnUpdateRedo(CCmdUI* cmdui)
+{
+  BOOL enable = FALSE;
+  CDocumentWindow* dw = GetCurrentDocumentWindow();
+  if (dw) {
+    enable = dw->IsToolAvailable(ID_FILE_REDO);
   }
 
   cmdui->Enable(enable);

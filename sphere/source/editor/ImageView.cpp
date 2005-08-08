@@ -1223,7 +1223,7 @@ CImageView::Rectangle()
 
     int x = std::min(start.x, end.x);
     int y = std::min(start.y, end.y);
-    int width = std::max(start.x, end.x) - x;
+    int width  = std::max(start.x, end.x) - x;
     int height = std::max(start.y, end.y) - y;
 
     m_Image.Rectangle(x, y, width, height, m_Colors[m_CurrentTool], clip);
@@ -1708,8 +1708,6 @@ CImageView::PaintLine(CImage32& pImage)
   if (!InImage(start))
     return;
 
-  ClipPointToWithinImage(&end);
-
   pImage.Line(start.x, start.y, end.x, end.y, m_Colors[m_CurrentTool]);
 }
 
@@ -1729,11 +1727,11 @@ CImageView::PaintRectangle(CImage32& pImage)
   if (!InImage(start))
     return;
 
-  ClipPointToWithinImage(&end);
+  //ClipPointToWithinImage(&end);
 
   int x = std::min(start.x, end.x);
   int y = std::min(start.y, end.y);
-  int width = std::max(start.x, end.x) - x;
+  int width  = std::max(start.x, end.x) - x;
   int height = std::max(start.y, end.y) - y;
 
   pImage.Rectangle(x, y, width, height, m_Colors[m_CurrentTool]);
@@ -2609,9 +2607,15 @@ CImageView::OnSlideLeft()
 afx_msg void
 CImageView::OnSlideOther()
 {
-  CNumberDialog dx("Slide Horizontally", "Value", 0, -GetSelectionWidth(), GetSelectionWidth()); 
+  char horizontal_title[1024] = {0};
+  char vertical_title[1024] = {0};
+
+  sprintf (horizontal_title, "Slide Horizontally [%d - %d]", -GetSelectionWidth(), GetSelectionWidth());
+  sprintf (vertical_title,   "Slide Vertically [%d - %d]", -GetSelectionHeight(), GetSelectionHeight());
+
+  CNumberDialog dx(horizontal_title, "Value", 0, -GetSelectionWidth(), GetSelectionWidth()); 
   if (dx.DoModal() == IDOK) {
-    CNumberDialog dy("Slide Vertically", "Value", 0, -GetSelectionHeight(), GetSelectionHeight()); 
+    CNumberDialog dy(vertical_title, "Value", 0, -GetSelectionHeight(), GetSelectionHeight()); 
     if (dy.DoModal() == IDOK) {
       if (dx.GetValue() != 0 || dy.GetValue() != 0) {
 
@@ -3350,6 +3354,9 @@ CImageView::IsToolAvailable(UINT id)
 
     case ID_FILE_COPY:  available = TRUE; break;
     case ID_FILE_PASTE: if (IsClipboardFormatAvailable(CF_BITMAP)) available = TRUE; break;
+
+    case ID_FILE_UNDO: if (CanUndo()) available = TRUE; break;
+    case ID_FILE_REDO: if (CanRedo()) available = TRUE; break;
   }
 
   return available;

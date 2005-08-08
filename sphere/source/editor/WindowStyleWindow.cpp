@@ -54,6 +54,8 @@ BEGIN_MESSAGE_MAP(CWindowStyleWindow, CSaveableDocumentWindow)
 
   ON_COMMAND(ID_FILE_COPY,  OnCopy)
   ON_COMMAND(ID_FILE_PASTE, OnPaste)
+  ON_COMMAND(ID_FILE_UNDO,  OnUndo)
+  ON_COMMAND(ID_FILE_REDO,  OnRedo)
 
   ON_COMMAND(ID_WINDOWSTYLE_PROPERTIES, OnProperties)
 
@@ -798,6 +800,22 @@ afx_msg void
 CWindowStyleWindow::OnPaste()
 {
   m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_PASTE, 0), 0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CWindowStyleWindow::OnUndo()
+{
+  m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_UNDO, 0), 0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CWindowStyleWindow::OnRedo()
+{
+  m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_REDO, 0), 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

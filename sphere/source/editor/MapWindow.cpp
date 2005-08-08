@@ -1040,9 +1040,15 @@ CMapWindow::OnMapSlideOther()
       height = m_Map.GetLayer(i).GetHeight();
   }
 
-  CNumberDialog dx("Slide Horizontally", "Value", 0, -width, width); 
+  char horizontal_title[1024] = {0};
+  char vertical_title[1024] = {0};
+
+  sprintf (horizontal_title, "Slide Horizontally [%d - %d]", -width, width);
+  sprintf (vertical_title,   "Slide Vertically [%d - %d]", -height, height);
+
+  CNumberDialog dx(horizontal_title, "Value", 0, -width, width); 
   if (dx.DoModal() == IDOK) {
-    CNumberDialog dy("Slide Vertically", "Value", 0, -height, height); 
+    CNumberDialog dy(vertical_title, "Value", 0, -height, height); 
     if (dy.DoModal() == IDOK) {
       if (dx.GetValue() != 0 || dy.GetValue() != 0) {
         m_Map.Translate(dx.GetValue(), dy.GetValue());

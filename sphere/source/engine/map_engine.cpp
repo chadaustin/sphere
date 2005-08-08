@@ -4561,6 +4561,10 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
       int talk_x = int(m_Persons[m_InputPerson].x);
       int talk_y = int(m_Persons[m_InputPerson].y);
+
+      int obs_person = FindTalkingPerson(person_index, talk_x, talk_y);
+      
+      /*
       int tad = m_TalkActivationDistance;
 
       // god this is slow...
@@ -4601,10 +4605,15 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
         talk_y -= tad;
 
       }
+      */
 
+      /*
       // if a person obstructs that spot, call his activation script
+      // if we found a person to talk to, call his activation script
       int obs_person;
-      if (IsObstructed(person_index, talk_x, talk_y, obs_person)) {
+      if (IsObstructed(person_index, talk_x, talk_y, obs_person))
+      */
+      {
         if (obs_person != -1) {
 
           activated = true;
@@ -5543,22 +5552,95 @@ CMapEngine::FindObstructingTile(int person, int x, int y)
 ///////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::GetObstructingPerson(const char* name, int x, int y, std::string& result)
+CMapEngine::GetObstructingPerson(const char* person_name, int x, int y, std::string& result)
 {
   // find person
-  int person = -1;
+  int person_index = -1;
   int found = -1;
-  if ( IsInvalidPersonError(name, person) ) {
+  if ( IsInvalidPersonError(person_name, person_index) ) {
     result = "";
     return false;
   }
 
-  found = FindObstructingPerson(person, x, y);
+  found = FindObstructingPerson(person_index, x, y);
   if (found != -1) {
     result = m_Persons[found].name;
   }
 
   return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetTalkingPerson(const char* person_name, int talk_x, int talk_y, std::string& result)
+{
+  // find person
+  int person_index = -1;
+  int found = -1;
+  if ( IsInvalidPersonError(person_name, person_index) ) {
+    result = "";
+    return false;
+  }
+
+  found = FindTalkingPerson(person_index, talk_x, talk_y);
+  if (found != -1) {
+    result = m_Persons[found].name;
+  }
+
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+int
+CMapEngine::FindTalkingPerson(int person_index, int talk_x, int talk_y)
+{
+  int tad = m_TalkActivationDistance;
+
+  // god this is slow...
+  if (m_Persons[person_index].direction == "north") {
+
+    talk_y -= tad;
+
+  } else if (m_Persons[person_index].direction == "northeast") {
+
+    talk_x += tad;
+    talk_y -= tad;
+
+  } else if (m_Persons[person_index].direction == "east") {
+
+    talk_x += tad;
+
+  } else if (m_Persons[person_index].direction == "southeast") {
+
+    talk_x += tad;
+    talk_y += tad;
+
+  } else if (m_Persons[person_index].direction == "south") {
+
+    talk_y += tad;
+
+  } else if (m_Persons[person_index].direction == "southwest") {
+
+    talk_x -= tad;
+    talk_y += tad;
+
+  } else if (m_Persons[person_index].direction == "west") {
+
+    talk_x -= tad;
+
+  } else if (m_Persons[person_index].direction == "northwest") {
+
+    talk_x -= tad;
+    talk_y -= tad;
+
+  }
+
+  // does a person obstructs that spot
+  int obs_person;
+  IsObstructed(person_index, talk_x, talk_y, obs_person);
+  return obs_person;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

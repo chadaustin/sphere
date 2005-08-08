@@ -134,6 +134,8 @@ BEGIN
     END
     POPUP "&Edit"
     BEGIN
+        MENUITEM "&Undo (CTRL + Z)",            ID_FILE_UNDO
+        MENUITEM "&Redo (CTRL + Y)",            ID_FILE_REDO
         MENUITEM "&Copy (CTRL + C)",            ID_FILE_COPY
         MENUITEM "&Paste (CTRL + V)",           ID_FILE_PASTE
     END
@@ -789,6 +791,8 @@ BEGIN
         BEGIN
             MENUITEM "&Back",                       ID_TILESETVIEW_MOVE_BACK
             MENUITEM "&Forward",                    ID_TILESETVIEW_MOVE_FORWARD
+
+            MENUITEM "&Other...",                   ID_TILESETVIEW_MOVE_OTHER
 
         END
         POPUP "&View"

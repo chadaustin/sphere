@@ -55,6 +55,8 @@ BEGIN_MESSAGE_MAP(CSpritesetWindow, CSaveableDocumentWindow)
 
   ON_COMMAND(ID_FILE_COPY,  OnCopy)
   ON_COMMAND(ID_FILE_PASTE, OnPaste)
+  ON_COMMAND(ID_FILE_UNDO,  OnUndo)
+  ON_COMMAND(ID_FILE_REDO,  OnRedo)
 
   ON_COMMAND(ID_SPRITESET_TAB_FRAMES,   OnFramesTab)
   ON_COMMAND(ID_SPRITESET_TAB_EDIT, OnEditTab)
@@ -396,6 +398,38 @@ CSpritesetWindow::OnPaste()
     else
     if (m_TabControl.GetCurSel() == 1) {
       m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_PASTE, 0), 0);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetWindow::OnUndo()
+{
+  if (GetFocus() == this) {
+    if (m_TabControl.GetCurSel() == 0) {
+      //m_SpritesetView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_SPRITESETVIEWFRAMES_UNDO, 0), 0);
+    }
+    else
+    if (m_TabControl.GetCurSel() == 1) {
+      m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_UNDO, 0), 0);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CSpritesetWindow::OnRedo()
+{
+  if (GetFocus() == this) {
+    if (m_TabControl.GetCurSel() == 0) {
+      //m_SpritesetView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_SPRITESETVIEWFRAMES_REDO, 0), 0);
+    }
+    else
+    if (m_TabControl.GetCurSel() == 1) {
+      m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_REDO, 0), 0);
     }
   }
 }
@@ -818,27 +852,7 @@ CSpritesetWindow::SIP_SpritesetModified()
 void
 CSpritesetWindow::OnToolChanged(UINT id, int tool_index)
 {
-  switch (id)
-  {
-    case ID_FILE_COPY:
-      if (m_Created) {
-        if (m_TabControl.GetCurSel() == 0) {
-          m_SpritesetView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_SPRITESETVIEWFRAMES_COPY, 0), 0);
-        }
-      }
-    break;
-
-    case ID_FILE_PASTE:
-      if (m_Created) {
-        if (m_TabControl.GetCurSel() == 0) {
-          m_SpritesetView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_SPRITESETVIEWFRAMES_PASTE, 0), 0);
-        }
-      }
-    break;
-
-    default:
-      m_ImageView.OnToolChanged(id, tool_index);
-  }
+  m_ImageView.OnToolChanged(id, tool_index);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -856,6 +870,8 @@ CSpritesetWindow::IsToolAvailable(UINT id) {
             available = TRUE;
         }
         break;
+        case ID_FILE_UNDO: available = FALSE; break;
+        case ID_FILE_REDO: available = FALSE; break;
       }
     }
     else if (m_TabControl.GetCurSel() ==  1) {

@@ -69,6 +69,8 @@ private:
 
   afx_msg void OnCopy();
   afx_msg void OnPaste();
+  afx_msg void OnUndo();
+  afx_msg void OnRedo();
 
   //afx_msg void OnUpdateZoomIn(CCmdUI* cmdui);
   //afx_msg void OnUpdateZoomOut(CCmdUI* cmdui);

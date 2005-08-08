@@ -1,5 +1,9 @@
 YYYY.MM.DD
 
+2005.08.08
+  - RequireScript/RequireSystemScript now work with RestartGame()
+  - Added Tileset->Move->Other...
+
 2005.07.26
   - Made Line() more accurate.
   - Added Tileset->View->Grid

@@ -761,6 +761,10 @@ log_object.endBlock()
         - gets a data object assiocated with the person 'name'
         There are certain default properties/values filled in by the engine, they are:
         num_frames - the number of frames for the person's current direction
+        num_directions - the number of directions for the person
+        width - the width of the spriteset's current frame
+        height - the height of the spriteset's current frame
+        leader - the person that this person is following, or "" if no-one...
         Any other properties are free for you to fill with values
 
         e.g. var data = GetPersonData("Jimmy");

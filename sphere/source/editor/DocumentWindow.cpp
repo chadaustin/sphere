@@ -52,6 +52,7 @@ CDocumentWindow::CDocumentWindow(const char* document_path, int menu_resource, c
   } else {
     strcpy(m_DocumentPath, "");
   }
+
   strcpy(m_Caption, GetDocumentTitle());
 }
 

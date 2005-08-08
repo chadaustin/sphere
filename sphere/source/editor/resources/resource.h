@@ -736,6 +736,9 @@
 #define ID_REFRESH_PROJECT              40842
 #define ID_FILE_LANGUAGE_BULGARIAN      40843
 #define ID_DEBUG_SERVER_PING_MESSSAGES  40844
+#define ID_FILE_UNDO                    40845
+#define ID_TILESETVIEW_MOVE_OTHER       40847
+#define ID_FILE_REDO                    40849
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
 
 // Next default values for new objects
@@ -744,7 +747,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        282
-#define _APS_NEXT_COMMAND_VALUE         40845
+#define _APS_NEXT_COMMAND_VALUE         40850
 #define _APS_NEXT_CONTROL_VALUE         1245
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

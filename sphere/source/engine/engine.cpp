@@ -114,7 +114,7 @@ CGameEngine::Run()
 
   // set the game title
   if (true) {
-    char caption[125];
+    char caption[125] = {0};
     const std::string& name = game_information.ReadString("", "name", "");
 
     if (name.empty()) {
@@ -134,19 +134,20 @@ CGameEngine::Run()
   // load the game script
   std::string script = game_information.ReadString("", "script", "");
 
-  if (script == "") {
-
+  if (script == "")
+  {
     ShowError("No game script set.  Choose one from the editor.");
-
-  } else {
-
+  }
+  else
+  {
     std::string script_path = "scripts/" + script;
-    if (!m_Script->EvaluateFile(script_path.c_str(), m_FileSystem)) {
-
+    if (!m_Script->EvaluateFile(script_path.c_str(), m_FileSystem))
+    {
       ShowError(m_Script->GetError());
-
-    } else {
-
+    }
+    else
+    if ( !Restarted() ) // check to see if the game was restarted before calling game...
+    {
       // execute the game
       std::string code = "game(";
 
@@ -179,6 +180,10 @@ CGameEngine::Run()
   delete m_Script;
   m_Script = 0;
 
+  // clear the list of scripts evaluated...
+  m_EvaluatedSystemScripts.clear();
+  m_EvaluatedScripts.clear();
+
   return m_NextGame;
 }
 
@@ -190,6 +195,8 @@ void Delay(int ms)
   while (GetTime() < end) {
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 void
 CGameEngine::ShowError(const char* message)
@@ -239,6 +246,8 @@ CGameEngine::ShowError(const char* message)
 inline static IMAGE CreateImage32(const CImage32& i) {
   return CreateImage(i.GetWidth(), i.GetHeight(), i.GetPixels());
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 void
 CGameEngine::CreateSystemObjects()

@@ -262,6 +262,8 @@ public:
   bool GetObstructingTile(const char* name, int x, int y, int& result);
   bool GetObstructingPerson(const char* name, int x, int y, std::string& result);
 
+  bool GetTalkingPerson(const char* name, int x, int y, std::string& result);
+  
 
   bool SetTalkActivationKey(int key);
   bool SetTalkActivationButton(int button);
@@ -434,6 +436,7 @@ private:
   bool IsObstructed(int person, int x, int y, int& obs_person);
   int FindObstructingTile(int person, int x, int y);
   int FindObstructingPerson(int person, int x, int y);
+  int FindTalkingPerson(int person_index, int talk_x, int talk_y);
 
 private:
   // core map engine stuff

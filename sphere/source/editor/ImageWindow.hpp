@@ -59,6 +59,8 @@ private:
 
   void OnCopy();
   void OnPaste();
+  void OnUndo();
+  void OnRedo();
 
 private:
   bool       m_Created;
