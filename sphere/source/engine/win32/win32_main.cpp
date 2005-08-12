@@ -28,9 +28,12 @@ static void LoadSphereConfiguration(SPHERECONFIG* config)
 
 int KeyStringToKeyCode(char* key_string)
 {
-  if (strlen(key_string) >= strlen("KEY_X")) {
-    if (strlen(key_string) == strlen("KEY_X")) {
-      switch (key_string[strlen("KEY_")]) {
+  if (strlen(key_string) == strlen("KEY_X"))
+  {
+    if (memcmp(key_string, "KEY_", strlen("KEY_")) == 0)
+    {
+      switch (key_string[strlen("KEY_")])
+      {
         case 'A': return KEY_A;
         case 'B': return KEY_B;
         case 'C': return KEY_C;
@@ -67,30 +70,51 @@ int KeyStringToKeyCode(char* key_string)
         case '7': return KEY_7;
         case '8': return KEY_8;
         case '9': return KEY_9;
+        default:
+          return -1;
       }
-
-      return -1;
     }
-
-    if (strcmp(key_string, "KEY_UP")  == 0) return KEY_UP;
-    if (strcmp(key_string, "KEY_DOWN")  == 0) return KEY_DOWN;
-    if (strcmp(key_string, "KEY_LEFT")  == 0) return KEY_LEFT;
-    if (strcmp(key_string, "KEY_RIGHT")  == 0) return KEY_RIGHT;
-
-    if (strcmp(key_string, "KEY_TILDE")  == 0) return KEY_TILDE;
-    if (strcmp(key_string, "KEY_MINUS")  == 0) return KEY_MINUS;
-    if (strcmp(key_string, "KEY_EQUALS") == 0) return KEY_EQUALS;
-    if (strcmp(key_string, "KEY_SPACE")  == 0) return KEY_SPACE;
-    if (strcmp(key_string, "KEY_OPENBRACE")  == 0) return KEY_OPENBRACE;
-    if (strcmp(key_string, "KEY_CLOSEBRACE") == 0) return KEY_CLOSEBRACE;
-    if (strcmp(key_string, "KEY_SEMICOLON")  == 0) return KEY_SEMICOLON;
-    if (strcmp(key_string, "KEY_COMMA")  == 0) return KEY_COMMA;
-    if (strcmp(key_string, "KEY_APOSTROPHE") == 0) return KEY_APOSTROPHE;
-    if (strcmp(key_string, "KEY_PERIOD") == 0) return KEY_PERIOD;
-    if (strcmp(key_string, "KEY_SLASH")  == 0) return KEY_SLASH;
-    if (strcmp(key_string, "KEY_BACKSLASH") == 0) return KEY_BACKSLASH;
-
   }
+
+  if (strlen(key_string) == strlen("KEY_NUM_X"))
+  {
+    if (memcmp(key_string, "KEY_NUM_", strlen("KEY_NUM_")) == 0)
+    {
+      switch (key_string[strlen("KEY_NUM_")])
+      {
+        case '0': return KEY_NUM_0;
+        case '1': return KEY_NUM_1;
+        case '2': return KEY_NUM_2;
+        case '3': return KEY_NUM_3;
+        case '4': return KEY_NUM_4;
+        case '5': return KEY_NUM_5;
+        case '6': return KEY_NUM_6;
+        case '7': return KEY_NUM_7;
+        case '8': return KEY_NUM_8;
+        case '9': return KEY_NUM_9;
+        default:
+          return -1;
+      }
+    }
+  }
+
+  if (strcmp(key_string, "KEY_UP")  == 0) return KEY_UP;
+  if (strcmp(key_string, "KEY_DOWN")  == 0) return KEY_DOWN;
+  if (strcmp(key_string, "KEY_LEFT")  == 0) return KEY_LEFT;
+  if (strcmp(key_string, "KEY_RIGHT")  == 0) return KEY_RIGHT;
+
+  if (strcmp(key_string, "KEY_TILDE")  == 0) return KEY_TILDE;
+  if (strcmp(key_string, "KEY_MINUS")  == 0) return KEY_MINUS;
+  if (strcmp(key_string, "KEY_EQUALS") == 0) return KEY_EQUALS;
+  if (strcmp(key_string, "KEY_SPACE")  == 0) return KEY_SPACE;
+  if (strcmp(key_string, "KEY_OPENBRACE")  == 0) return KEY_OPENBRACE;
+  if (strcmp(key_string, "KEY_CLOSEBRACE") == 0) return KEY_CLOSEBRACE;
+  if (strcmp(key_string, "KEY_SEMICOLON")  == 0) return KEY_SEMICOLON;
+  if (strcmp(key_string, "KEY_COMMA")  == 0) return KEY_COMMA;
+  if (strcmp(key_string, "KEY_APOSTROPHE") == 0) return KEY_APOSTROPHE;
+  if (strcmp(key_string, "KEY_PERIOD") == 0) return KEY_PERIOD;
+  if (strcmp(key_string, "KEY_SLASH")  == 0) return KEY_SLASH;
+  if (strcmp(key_string, "KEY_BACKSLASH") == 0) return KEY_BACKSLASH;
 
   return -1;
 }

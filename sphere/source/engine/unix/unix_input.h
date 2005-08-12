@@ -84,6 +84,17 @@
 #define KEY_DOWN       76
 #define KEY_LEFT       77
 
+#define KEY_NUM_0       78
+#define KEY_NUM_1       79
+#define KEY_NUM_2       80
+#define KEY_NUM_3       81
+#define KEY_NUM_4       82
+#define KEY_NUM_5       83
+#define KEY_NUM_6       84
+#define KEY_NUM_7       85
+#define KEY_NUM_8       86
+#define KEY_NUM_9       87
+
 #define MOUSE_LEFT     0
 #define MOUSE_MIDDLE   1
 #define MOUSE_RIGHT    2

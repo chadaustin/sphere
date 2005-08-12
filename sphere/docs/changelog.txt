@@ -1,5 +1,8 @@
 YYYY.MM.DD
 
+2005.08.12
+  - Added support for numpad keys... KEY_NUM_0 to KEY_NUM_9
+
 2005.08.08
   - RequireScript/RequireSystemScript now work with RestartGame()
   - Added Tileset->Move->Other...

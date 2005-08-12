@@ -7,7 +7,7 @@
 
 static std::deque<Uint8> key_queue;
 
-const int total_keys = 78;
+const int total_keys = 88;
 static Uint8 KeyMapping[total_keys] = {
   0,
   SDLK_ESCAPE,
@@ -86,7 +86,17 @@ static Uint8 KeyMapping[total_keys] = {
   SDLK_UP,
   SDLK_RIGHT,
   SDLK_DOWN,
-  SDLK_LEFT
+  SDLK_LEFT,
+  SDLK_KP0,
+  SDLK_KP1,
+  SDLK_KP2,
+  SDLK_KP3,
+  SDLK_KP4,
+  SDLK_KP5,
+  SDLK_KP6,
+  SDLK_KP7,
+  SDLK_KP8,
+  SDLK_KP9
 };
 
 static bool KeyBuffer[MAX_KEY];
@@ -229,7 +239,8 @@ void GetKeyStates (bool keys[MAX_KEY]) {
   UpdateSystem();
   for (int i = 0; i < MAX_KEY; ++i) {
     keys[i] = KeyBuffer[i];
-  }
+  }
+
 }
 
 ///////////////////////////////////////////////////////////

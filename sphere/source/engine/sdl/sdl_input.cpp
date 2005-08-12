@@ -128,6 +128,17 @@ bool InitInput()
   VirtualKeys[SDLK_LEFT]         = KEY_LEFT;
   VirtualKeys[SDLK_KP4]          = KEY_LEFT;
 
+	VirtualKeys[SDLK_KP0]    	     = KEY_NUM_0;
+	VirtualKeys[SDLK_KP1]    	     = KEY_NUM_1;
+	VirtualKeys[SDLK_KP2]    	     = KEY_NUM_2;
+	VirtualKeys[SDLK_KP3]    	     = KEY_NUM_3;
+	VirtualKeys[SDLK_KP4]    	     = KEY_NUM_4;
+	VirtualKeys[SDLK_KP5]    	     = KEY_NUM_5;
+	VirtualKeys[SDLK_KP6]    	     = KEY_NUM_6;
+	VirtualKeys[SDLK_KP7]    	     = KEY_NUM_7;
+	VirtualKeys[SDLK_KP8]    	     = KEY_NUM_8;
+	VirtualKeys[SDLK_KP9]    	     = KEY_NUM_9;
+
   MouseButton[0] = MouseButton[1] = MouseButton[2] = false;
   SDL_ShowCursor(0);
 

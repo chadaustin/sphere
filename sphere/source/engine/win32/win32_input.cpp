@@ -92,6 +92,16 @@ int SphereToWindows[MAX_KEY] =
   VK_RIGHT,
   VK_DOWN,
   VK_LEFT,
+  VK_NUMPAD0,
+  VK_NUMPAD1,
+  VK_NUMPAD2,
+  VK_NUMPAD3,
+  VK_NUMPAD4,
+  VK_NUMPAD5,
+  VK_NUMPAD6,
+  VK_NUMPAD7,
+  VK_NUMPAD8,
+  VK_NUMPAD9
 };
 
 int WindowsToSphere[MAX_KEY]; // build dynamically
@@ -166,6 +176,9 @@ bool InitInput(HWND window, SPHERECONFIG* config)
     }
   }
 
+  printf ("MAX_KEY = %d\n", MAX_KEY);
+  printf ("(numpad) up = %d\n", WindowsToSphere[104]);
+
   SphereWindow = window;
   Config = config;
 
@@ -194,12 +207,66 @@ bool CloseInput(void)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const char* GetKeyName(const int virtual_key)
+{
+  struct KEY {
+    const char* name;
+    int virtual_key;
+  } keys[] = {
+    
+    "(key) escape", 27,
+    "(key) numlock", 144,
+
+    "(numpad) 0", 96,
+    "(numpad) 1", 97,
+    "(numpad) 2", 98,
+    "(numpad) 3", 99,
+    "(numpad) 4", 100,
+    "(numpad) 5", 101,
+    "(numpad) 6", 102,
+    "(numpad) 7", 103,
+    "(numpad) 8", 104,
+    "(numpad) 9", 105,
+
+    "(arrow) left", 37,
+    "(arrow) up", 38,
+    "(arrow) right", 39,
+    "(arrow) down", 40,
+    
+    "(number) 0", 48,
+    "(number) 1", 49,
+    "(number) 2", 50,
+    "(number) 3", 51,
+    "(number) 4", 52,
+    "(number) 5", 53,
+    "(number) 6", 54,
+    "(number) 7", 55,
+    "(number) 8", 56,
+    "(number) 9", 57,
+  };
+  const int num_keys = sizeof(keys) / sizeof(*keys);
+
+  const char* key_name = "unknown";
+  for (int i = 0; i < num_keys; i++) {
+    if (virtual_key == keys[i].virtual_key) {
+      key_name = keys[i].name;
+      break;
+    }
+  }
+
+  return key_name;
+}
+
 void OnKeyDown(int virtual_key)
 {
   if (virtual_key >= 0 && virtual_key < MAX_KEY) {
     int key = WindowsToSphere[virtual_key];
     CurrentKeyBuffer[key] = 1;
     KeyQueue.push(key);
+    printf ("%s [%d][%d] pressed\n", GetKeyName(virtual_key), virtual_key, key);
+  }
+  else {
+    printf ("[%d] pressed\n", virtual_key);
   }
 }
 
@@ -210,6 +277,10 @@ void OnKeyUp(int virtual_key)
   if (virtual_key >= 0 && virtual_key < MAX_KEY) {
     int key = WindowsToSphere[virtual_key];
     CurrentKeyBuffer[key] = 0;
+    printf ("%s [%d][%d] released\n\n", GetKeyName(virtual_key), virtual_key, key);
+  }
+  else {
+    printf ("[%d] released\n", virtual_key);
   }
 }
 

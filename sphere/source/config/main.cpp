@@ -589,7 +589,17 @@ BOOL CALLBACK InputDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
         "KEY_COMMA",
         "KEY_PERIOD",
         "KEY_SLASH",
-        "KEY_BACKSLASH"
+        "KEY_BACKSLASH",
+        "KEY_NUM_0",
+        "KEY_NUM_1",
+        "KEY_NUM_2",
+        "KEY_NUM_3",
+        "KEY_NUM_4",
+        "KEY_NUM_5",
+        "KEY_NUM_6",
+        "KEY_NUM_7",
+        "KEY_NUM_8",
+        "KEY_NUM_9"
       };
 
   switch (message)
