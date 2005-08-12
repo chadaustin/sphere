@@ -35,10 +35,82 @@ wxwidgets (formally wxwindows)  -  http://www.wxwidgets.org/
 
 -----------------------------------------------------------
 
+Gentoo Linux:
+The following section is for gentoo linux users,
+mainly how to install libraries using portage...
+
+-----------------------------------------------------------
+
+Gentoo users can install SDL, libpng, libmng and scons using portage...
+(They can also optionally install zlib, libjpeg, and libvorbis using portage aswell...)
+(Note that gentoo users still have to follow the "Everyone else" section for SpiderMonkey, audiere and corona...)
+
+Before you merge these, you should make sure you have the
+following USE flags set (just to make sure) in your make.conf:
+ogg vorbis mp3 mng png jpeg sdl
+
+Then run the following commands:
+
+For SDL:    emerge libsdl
+For libpng: emerge libpng
+For libmng: emerge libmng
+For scons:  emerge scons
+
+And optionally:
+
+For zlib:      emerge zlib
+For libjpeg:   emerge libjpeg
+For libvorbis: emerge libvorbis
+
+Also, when it comes to running the engine, if you use the aRts sound server,
+you can use the aRts dsp wrapper as follows to route the dsp output to aRts:
+artsdsp -m ./engine
+
+-----------------------------------------------------------
+
+Everyone else:
+The following install commands are based on using rpm on mandrake linux.
+(But should work on suse linux and redhat linux...)
+
+-----------------------------------------------------------
+
 To install SDL:
 You need the SDL development library RPM, and so you do something like:
 
 rpm -i libSDL1.2-devel-1.2.5-5mdk
+
+-----------------------------------------------------------
+
+To install libmng:
+You download the libmng.rpm file, and so you do something like:
+
+rpm -i libmng1-devel-1.0.3-2mdk
+
+-----------------------------------------------------------
+
+To install SCons:
+You'll need the scons RPM, and then you can do something like:
+
+rpm -i scons-0.13-1.noarch.rpm
+
+If you prefer using the tar.gz version, installing it looks like:
+
+gunzip scons-0.13-1.tar.gz
+tar -xf scons-0.13-1.tar
+cd scons-0.13-1
+python setup.py install
+
+-----------------------------------------------------------
+
+To install SpiderMonkey:
+You download the SpiderMonkey.tar.gz file, and you do something like:
+
+gunzip SpiderMonkey-1.5.0.tar.gz
+tar -xf SpiderMonkey-1.5.0.tar
+cd SpiderMonkey-1.5.0
+./configure
+make
+make install
 
 -----------------------------------------------------------
 
@@ -97,39 +169,6 @@ ldconfig
 
 -----------------------------------------------------------
 
-To install SpiderMonkey:
-You download the SpiderMonkey.tar.gz file, and you do something like:
-
-gunzip SpiderMonkey-1.5.0.tar.gz
-tar -xf SpiderMonkey-1.5.0.tar
-cd SpiderMonkey-1.5.0
-./configure
-make
-make install
-
------------------------------------------------------------
-
-To install libmng:
-You download the libmng.rpm file, and so you do something like:
-
-rpm -i libmng1-devel-1.0.3-2mdk
-
------------------------------------------------------------
-
-To install SCons:
-You'll need the scons RPM, and then you can do something like:
-
-rpm -i scons-0.13-1.noarch.rpm
-
-If you prefer using the tar.gz version, installing it looks like:
-
-gunzip scons-0.13-1.tar.gz
-tar -xf scons-0.13-1.tar
-cd scons-0.13-1
-python setup.py install
-
------------------------------------------------------------
-
 If all goes well, you now should be able to move onto installing sphere.
 
 Getting the source
@@ -170,6 +209,7 @@ cd sphere
 cd build
 cd linux
 ./engine
+
 
 
 If you feel I missed something out, please let me know.

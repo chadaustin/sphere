@@ -249,10 +249,12 @@ Game ReadGameInfo(const char* directory) {
 ///////////////////////////////////////////////////////////////////////////////
 
 void RunGame(const char* game, const char* parameters) {
-
+
+#ifdef _3D_FUNCTIONS
   if (SwitchProjectiveMode != NULL) {
 	SwitchProjectiveMode(0);
   }
+#endif
 
   // first = game directory, second = parameters
   typedef std::pair<std::string, std::string> GamePair;

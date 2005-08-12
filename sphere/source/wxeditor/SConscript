@@ -28,7 +28,6 @@ wxeditor = env.Program('wxeditor', Split("""
     Editor.cpp
     EntityPersonDialog.cpp
     EntityTriggerDialog.cpp
-    FileSystem.cpp
     FileTypes.cpp
     FontGradientDialog.cpp
     FontWindow.cpp
