@@ -1988,11 +1988,13 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
   p.on_trigger = false;
   p.last_trigger = -1;
 
-
   p.leader = -1;
 
   p.speed_x = 1;
   p.speed_y = 1;
+
+  p.scale_x = 1;
+  p.scale_y = 1;
 
   p.stepping_frame_revert = 0;
   p.stepping_frame_revert_count = 0;
@@ -2665,6 +2667,9 @@ CMapEngine::SetPersonScaleFactor(const char* name, double scale_w, double scale_
   if (p.base_y1 < 0 && p.height > 1 && base_y1 != 0) p.base_y1 = 1;
   if (p.base_y2 < 0 && p.height > 1 && base_y2 != 0) p.base_y2 = 1;
 */
+
+  p.scale_x = scale_w;
+  p.scale_y = scale_h;
 
   return true;
 }
@@ -4161,6 +4166,9 @@ CMapEngine::RenderEntities(int layer, bool flipped, int offset_x, int offset_y)
 {
   CRenderSort rs;
 
+  double zoom_factor_x = m_Map.GetLayerScaleFactorX(layer);
+  double zoom_factor_y = m_Map.GetLayerScaleFactorY(layer);
+
   // add non-map-specific person entities
   for (unsigned i = 0; i < m_Persons.size(); i++) {
     if (m_Persons[i].layer == layer && m_Persons[i].is_visible) {
@@ -4176,9 +4184,13 @@ CMapEngine::RenderEntities(int layer, bool flipped, int offset_x, int offset_y)
       // calculate distance from upper-left corner of image to center of base
       int base_x = (p.base_x1 + p.base_x2) / 2;
       int base_y = (p.base_y1 + p.base_y2) / 2;
+      //int base_x = (((double)p.base_x1 * p.scale_x) + ((double)p.base_x2 * p.scale_x)) / 2;
+      //int base_y = (((double)p.base_y1 * p.scale_y) + ((double)p.base_y2 * p.scale_y)) / 2;
 
-      int draw_x = int(p.x - base_x - m_Camera.x - offset_x + GetScreenWidth()  / 2);
-      int draw_y = int(p.y - base_y - m_Camera.y - offset_y + GetScreenHeight() / 2);
+      //int draw_x = int((zoom_factor_x * p.x) - base_x - m_Camera.x - offset_x + (GetScreenWidth()  / 2));
+      //int draw_y = int((zoom_factor_y * p.y) - base_y - m_Camera.y - offset_y + (GetScreenHeight() / 2));
+      int draw_x = int(p.x - base_x - m_Camera.x - offset_x + (GetScreenWidth()  / 2));
+      int draw_y = int(p.y - base_y - m_Camera.y - offset_y + (GetScreenHeight() / 2));
       int sort_y = int(p.y);
 
       if (flipped) {

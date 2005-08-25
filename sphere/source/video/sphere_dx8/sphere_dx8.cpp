@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "../../common/rgb.hpp"
+#include "../common/win32x.hpp"
 #include "resource.h"
 
 
@@ -227,20 +228,7 @@ bool EXPORT InitVideoDriver(HWND window, int screen_width, int screen_height)
       return false;
     }
 
-    // resize the window to the given width and height
-    RECT rect;
-    GetClientRect(window, &rect);
-    rect.right  = rect.left + screen_width;
-    rect.bottom = rect.top  + screen_height;
-    AdjustWindowRectEx(
-      &rect,
-      GetWindowLong(window, GWL_STYLE),
-      (GetMenu(window) ? TRUE : FALSE),
-      GetWindowLong(window, GWL_EXSTYLE)
-    );
-
-    OffsetRect(&rect, (rect.left < 0) ? -rect.left : 0, (rect.top < 0) ? -rect.top : 0);
-    SetWindowPos(window, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, NULL);
+    CenterWindow(window, screen_width, screen_height);
   }
 
   display_mode.Width  = screen_width;

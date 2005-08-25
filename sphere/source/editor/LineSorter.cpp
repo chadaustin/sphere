@@ -65,10 +65,16 @@ private:
 
 public:
   bool m_ignore_case;
+  bool m_compare_numeric;
+  int m_start_tab;
+  int m_start_character;
 
 public:
   ScintillaLineComparer(const std::vector<ScintillaLine*>& lines) : m_lines(lines) {
     m_ignore_case = false;
+    m_compare_numeric = false;
+    m_start_tab = 0;
+    m_start_character = 0;
   }
 
   bool operator()(const int a, const int b) const
@@ -89,26 +95,135 @@ public:
       return false;
     } 
 
-    if (m_ignore_case) {
-      for (int i = 0; i < m_lines[a]->size && i < m_lines[b]->size; i++) {
-        int x = m_lines[a]->data[i];
-        int y = m_lines[b]->data[i];
-        if (isalpha(x) && isalpha(y)) {
+    int start_position_a = 0;
+    int start_position_b = 0;
+   
+    if (m_start_tab > 0)
+    {
+      int tab_num_a = 0;
+      int tab_pos_a = 0;
+      int tab_num_b = 0;
+      int tab_pos_b = 0;
+
+      for (int i = 0; i < m_lines[a]->size; i++) {
+        if (m_lines[a]->data[i] == '\t') {
+          tab_num_a += 1;
+          tab_pos_a = i;
+          if (tab_num_a == m_start_tab) {
+            break;
+          }
+        }
+      }
+
+      for (int i = 0; i < m_lines[b]->size; i++) {
+        if (m_lines[b]->data[i] == '\t') {
+          tab_num_b += 1;
+          tab_pos_b = i;
+          if (tab_num_b == m_start_tab) {
+            break;
+          }
+        }
+      }
+
+      if (tab_num_a != tab_num_b) {
+        return false;
+      }
+
+      if (tab_pos_a + m_start_character >= m_lines[a]->size) {
+        return false;
+      }
+      if (tab_pos_b + m_start_character >= m_lines[b]->size) {
+        return false;
+      }
+
+      start_position_a = (tab_pos_a + 1) + m_start_character; // plus 1 for the tab
+      start_position_b = (tab_pos_b + 1) + m_start_character; // plus 1 for the tab
+    }
+    
+    if (m_compare_numeric)
+    {
+      int x_value = 0;
+      int y_value = 0;
+
+      for (int i = 0; (i < m_lines[a]->size - start_position_a); i++)
+      {
+        int x = m_lines[a]->data[start_position_a + i];
+
+        if (isdigit(x))
+        {
+          for (int j = i; (j < m_lines[a]->size - start_position_a); j++)
+          {
+            x = m_lines[a]->data[start_position_a + j];
+            if (isdigit(x))
+            {
+              x_value *= 10;
+              x_value += (x - 0x30);
+            }
+            else
+            {
+              break;
+            }
+          }
+
+          break;
+        }
+      }
+
+      for (int i = 0; (i < m_lines[b]->size - start_position_b); i++)
+      {
+        int y = m_lines[b]->data[start_position_b + i];
+
+        if (isdigit(y))
+        { 
+          for (int j = i; (j < m_lines[b]->size - start_position_b); j++)
+          {
+            y = m_lines[b]->data[start_position_b + j];
+            if (isdigit(y))
+            {
+              y_value *= 10;
+              y_value += (y - 0x30);
+            }
+            else
+            {
+              break;
+            }
+          }
+
+          break;
+        }
+      }
+
+      printf ("%d and %d\n", x_value, y_value);
+      return (x_value < y_value) ? true : false;
+    }
+
+    if (m_ignore_case)
+    {
+      for (int i = 0; (i < m_lines[a]->size - start_position_a) && (i < m_lines[b]->size - start_position_b); i++)
+      {
+        int x = m_lines[a]->data[start_position_a + i];
+        int y = m_lines[b]->data[start_position_b + i];
+        
+        if (isalpha(x) && isalpha(y))
+        {
           if (tolower(x) != tolower(y)) {
             return (tolower(x) < tolower(y)) ? true : false;
           }
         }
-        else {
+        else
+        {
           if (x != y) {
-          return (x < y) ? true : false;
+            return (x < y) ? true : false;
           }
         }
       }
     }
-    else {
-      for (int i = 0; i < m_lines[a]->size && i < m_lines[b]->size; i++) {
-        int x = m_lines[a]->data[i];
-        int y = m_lines[b]->data[i];
+    else
+    {
+      for (int i = 0; (i < m_lines[a]->size - start_position_a) && (i < m_lines[b]->size - start_position_b); i++) {
+        int x = m_lines[a]->data[start_position_a + i];
+        int y = m_lines[b]->data[start_position_b + i];
+
         if (x != y) {
           return (x < y) ? true : false;
         }
@@ -127,6 +242,9 @@ CLineSorter::CLineSorter()
   sort_lines = true;
   reverse_lines = false;
   ignore_case = false;
+  compare_numeric = false;
+  start_character = 0;
+  start_tab = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -254,25 +372,8 @@ CLineSorter::Sort()
     }
   }
 
-  SetStatusText("Sorting lines...");
-
   if (0) {
     printf("Before sorting\n");
-    std::vector<int>::iterator it;
-    int i = 0;
-    for (it = line_indexes.begin(); it != line_indexes.end(); it++)
-    {
-      printf("line_indexes[%d] = %d\n", i, (*it));
-       i++;
-    }
-  }
-
-  ScintillaLineComparer line_comparer(m_Lines);
-  line_comparer.m_ignore_case = ignore_case;
-  std::stable_sort(line_indexes.begin(), line_indexes.end(), line_comparer);
-
-  if (1) {
-    printf("After sorting\n");
     std::vector<int>::iterator it;
     int i = 0;
     for (it = line_indexes.begin(); it != line_indexes.end(); it++)
@@ -282,7 +383,27 @@ CLineSorter::Sort()
     }
   }
 
+  SetStatusText("Sorting lines...");
+
+  ScintillaLineComparer line_comparer(m_Lines);
+  line_comparer.m_ignore_case = ignore_case;
+  line_comparer.m_compare_numeric = compare_numeric;
+  line_comparer.m_start_character = start_character;
+  line_comparer.m_start_tab = start_tab;
+  std::stable_sort(line_indexes.begin(), line_indexes.end(), line_comparer);
+
   SetStatusText("Lines sorted...");
+
+  if (0) {
+    printf("After sorting\n");
+    std::vector<int>::iterator it;
+    int i = 0;
+    for (it = line_indexes.begin(); it != line_indexes.end(); it++)
+    {
+      printf("line_indexes[%d] = %d\n", i, (*it));
+      i++;
+    }
+  }
 
   if (1) {
     int max_lines = m_Lines.size() - 1;

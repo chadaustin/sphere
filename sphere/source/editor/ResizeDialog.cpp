@@ -1,9 +1,7 @@
 #include "ResizeDialog.hpp"
-#include "resource.h"
 #include "Editor.hpp"
-
 #include "../common/str_util.hpp"
-
+#include "resource.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 

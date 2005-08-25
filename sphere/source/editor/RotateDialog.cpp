@@ -83,3 +83,4 @@ CRotateDialog::GetValue()
 {
   return m_Value;
 }
+

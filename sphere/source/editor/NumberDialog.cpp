@@ -1,6 +1,6 @@
 #include "NumberDialog.hpp"
-#include "resource.h"
 #include "../common/str_util.hpp"
+#include "resource.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -72,7 +72,7 @@ CNumberDialog::OnInitDialog()
   else {
     sprintf(number, "%d", (int) m_Value);
   }
-  m_NumberEdit->SetWindowText(number);
+  SetDlgItemText(IDC_NUMBER, number);
 
   m_NumberEdit->SetSel(0, -1);
 
@@ -87,7 +87,7 @@ afx_msg void
 CNumberDialog::OnOK()
 {
   CString text;
-  m_NumberEdit->GetWindowText(text);
+  GetDlgItemText(IDC_NUMBER, text);
   double value = atof(text);
 
   bool percentage, floating;

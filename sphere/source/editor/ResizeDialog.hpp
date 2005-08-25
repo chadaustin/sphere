@@ -33,8 +33,11 @@ private:
 
   bool m_AllowPercentages;
 
+private:
   bool ValidateValues(std::string& error);
   void UpdateButtons();
+
+private:
   afx_msg void OnOptionChanged();
 
 private:

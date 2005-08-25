@@ -33,6 +33,7 @@ BEGIN_EVENT_TABLE(wDocumentWindow, wxMDIChildFrame)
 //  ON_UPDATE_COMMAND_UI(ID_FILE_SAVECOPYAS, OnUpdateSaveableCommand)
   EVT_CLOSE(wDocumentWindow::OnClose)
   EVT_SET_FOCUS(wDocumentWindow::OnGetFocus)
+  EVT_ACTIVATE(wDocumentWindow::OnGetFocus)
 END_EVENT_TABLE()
 
 ////////////////////////////////////////////////////////////////////////////////

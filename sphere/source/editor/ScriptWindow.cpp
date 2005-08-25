@@ -2423,6 +2423,10 @@ CScriptWindow::OnScriptLineSorter()
   line_sorter.sort_lines        = dialog.ShouldSortLines();
   line_sorter.reverse_lines     = dialog.ShouldReverseLines();
   line_sorter.ignore_case       = dialog.ShouldIgnoreCase();
+  line_sorter.compare_numeric   = dialog.ShouldCompareNumeric();
+
+  line_sorter.start_character   = dialog.GetStartCharacter();
+  line_sorter.start_tab   = dialog.GetStartTab();
 
   line_sorter.Sort();
 }

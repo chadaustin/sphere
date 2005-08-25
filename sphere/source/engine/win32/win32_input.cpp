@@ -176,9 +176,6 @@ bool InitInput(HWND window, SPHERECONFIG* config)
     }
   }
 
-  printf ("MAX_KEY = %d\n", MAX_KEY);
-  printf ("(numpad) up = %d\n", WindowsToSphere[104]);
-
   SphereWindow = window;
   Config = config;
 
@@ -207,6 +204,7 @@ bool CloseInput(void)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/*
 const char* GetKeyName(const int virtual_key)
 {
   struct KEY {
@@ -256,6 +254,9 @@ const char* GetKeyName(const int virtual_key)
 
   return key_name;
 }
+*/
+
+////////////////////////////////////////////////////////////////////////////////
 
 void OnKeyDown(int virtual_key)
 {
@@ -263,10 +264,7 @@ void OnKeyDown(int virtual_key)
     int key = WindowsToSphere[virtual_key];
     CurrentKeyBuffer[key] = 1;
     KeyQueue.push(key);
-    printf ("%s [%d][%d] pressed\n", GetKeyName(virtual_key), virtual_key, key);
-  }
-  else {
-    printf ("[%d] pressed\n", virtual_key);
+    //printf ("%s [%d][%d] pressed\n", GetKeyName(virtual_key), virtual_key, key);
   }
 }
 
@@ -277,10 +275,7 @@ void OnKeyUp(int virtual_key)
   if (virtual_key >= 0 && virtual_key < MAX_KEY) {
     int key = WindowsToSphere[virtual_key];
     CurrentKeyBuffer[key] = 0;
-    printf ("%s [%d][%d] released\n\n", GetKeyName(virtual_key), virtual_key, key);
-  }
-  else {
-    printf ("[%d] released\n", virtual_key);
+    //printf ("%s [%d][%d] released\n\n", GetKeyName(virtual_key), virtual_key, key);
   }
 }
 

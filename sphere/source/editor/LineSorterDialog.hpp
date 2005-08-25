@@ -14,12 +14,18 @@ public:
   bool ShouldReverseLines();
   bool ShouldRemoveDuplicateLines();
   bool ShouldIgnoreCase();
+  bool ShouldCompareNumeric();
+  int GetStartCharacter();
+  int GetStartTab();
 
 private:
   bool m_SortLines;
   bool m_ReverseLines;
   bool m_RemoveDuplicateLines;
   bool m_IgnoreCase;
+  bool m_CompareNumeric;
+  int m_StartCharacter;
+  int m_StartTab;
 
 private:
   void UpdateButtons();
@@ -31,6 +37,7 @@ private:
   BOOL OnInitDialog();
   void OnOK();
 
+private:
   DECLARE_MESSAGE_MAP()
 };
 

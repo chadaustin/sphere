@@ -270,6 +270,7 @@
 #define IDC_TOP                         1228
 #define IDC_LINESORT_IGNORECASE         1228
 #define IDC_RIGHT                       1229
+#define IDC_LINESORT_COMPARE_NUMERIC    1229
 #define IDC_BOTTOM                      1230
 #define IDC_LEFT                        1231
 #define IDC_TITLEBAR                    1234
@@ -280,6 +281,8 @@
 #define IDC_GENERATE_NAME               1242
 #define IDC_ZONE_ID                     1243
 #define IDC_GAMEPATH                    1244
+#define IDC_LINESORT_START_CHARACTER    1245
+#define IDC_LINESORT_START_TAB          1246
 #define ID_FILE_IMPORT_BITMAPTORSS      12241
 #define ID_HELP_ABOUT                   40001
 #define ID_FILE_EXIT                    40003
@@ -748,7 +751,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        282
 #define _APS_NEXT_COMMAND_VALUE         40850
-#define _APS_NEXT_CONTROL_VALUE         1245
+#define _APS_NEXT_CONTROL_VALUE         1246
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -311,6 +311,9 @@ private:
     double speed_x;
     double speed_y;
 
+    double scale_x;
+    double scale_y;
+
     std::string direction;
     int frame;
 

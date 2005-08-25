@@ -25,6 +25,9 @@ public:
   bool sort_lines;
   bool reverse_lines;
   bool ignore_case;
+  bool compare_numeric;
+  int start_character;
+  int start_tab;
 
 private:
   LRESULT SendEditor(UINT msg, WPARAM wparam = 0, LPARAM lparam = 0);
