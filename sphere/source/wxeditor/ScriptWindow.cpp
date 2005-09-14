@@ -235,9 +235,10 @@ wScriptWindow::LoadScript(const char* filename)
 {
 #ifdef WIN32
   // get the file size
-  int file_size = FileSize(GetDocumentPath());
-  if (file_size == -1)
+  unsigned long file_size = FileSize(GetDocumentPath());
+  if (file_size == 0) {
     return false;
+  }
 
   // open the file
   FILE* file = fopen(filename, "rb");

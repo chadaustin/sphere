@@ -544,6 +544,10 @@ SOURCE=..\common\Spriteset.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\common\strcmp_ci.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\common\strcmp_ci.hpp
 # End Source File
 # Begin Source File

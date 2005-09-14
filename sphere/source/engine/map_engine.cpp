@@ -306,6 +306,11 @@ CMapEngine::CallMapScript(int which)
     break;
   }
 
+  // if we took more than a second to run the edge script, reset the timer
+  if (qword(GetTime()) * m_FrameRate > m_NextFrame) {
+    ResetNextFrame();
+  }
+
   return true;
 }
 
@@ -3114,7 +3119,9 @@ CMapEngine::CallPersonScript(const char* name, int which)
     bool running = m_Engine->IsScriptBeingUsed(*ps);
 
     if (which == SCRIPT_ON_ACTIVATE_TOUCH || which == SCRIPT_ON_ACTIVATE_TALK)
+    {
       reset_time = true;
+    }
 
     std::string list[5] = {"OnCreate", "OnDestroy", "OnActivate (touch)", "OnActivate (talk)", "OnCommandGenerator"};
 
@@ -3138,7 +3145,8 @@ CMapEngine::CallPersonScript(const char* name, int which)
 
       m_CurrentPerson = old_person;
 
-      if (reset_time) {
+        // if we took more than a second to run the person script, reset the timer
+      if (reset_time || qword(GetTime()) * m_FrameRate > m_NextFrame) {
         ResetNextFrame();
       }
 
@@ -3199,7 +3207,7 @@ CMapEngine::CallDefaultPersonScript(const char* name, int which)
 
       m_CurrentPerson = old_person;
 
-      if (reset_time) {
+      if (reset_time || qword(GetTime()) * m_FrameRate > m_NextFrame) {
         ResetNextFrame();
       }
 
@@ -5001,6 +5009,11 @@ CMapEngine::ExecuteZoneScript(int zone_index)
     }
   }
 
+  // if we took more than a second to run the zone script, reset the timer
+  if (qword(GetTime()) * m_FrameRate > m_NextFrame) {
+    ResetNextFrame();
+  }
+
   return true;
 }
 
@@ -5031,11 +5044,6 @@ CMapEngine::UpdateZones(int person_index)
 
         if (!ExecuteZoneScript(i))
           return false;
-
-        // if we took more than a second to run the update script, reset the timer
-        if (qword(GetTime()) * m_FrameRate > m_NextFrame) {
-          ResetNextFrame();
-        }
 
         if (current_map != m_CurrentMap) {
           return true;
@@ -5094,6 +5102,11 @@ CMapEngine::UpdateDelayScripts()
       }
 
       m_Engine->DestroyScript(script);
+
+      // if we took more than a second to run the delay script, reset the timer
+      if (qword(GetTime()) * m_FrameRate > m_NextFrame) {
+        ResetNextFrame();
+      }
     }
   }
 

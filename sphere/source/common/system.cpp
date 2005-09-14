@@ -203,7 +203,7 @@ unsigned long FileSize(const char* filename)
 {
   FILE* file = fopen(filename, "rb");
   if (file == NULL)
-    return -1;
+    return 0;
   fseek(file, 0, SEEK_END);
   unsigned long size = ftell(file);
   fclose(file);

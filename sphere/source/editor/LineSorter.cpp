@@ -129,17 +129,29 @@ public:
         return false;
       }
 
-      if (tab_pos_a + m_start_character >= m_lines[a]->size) {
+      if ((tab_pos_a + 1) >= m_lines[a]->size) {
         return false;
       }
-      if (tab_pos_b + m_start_character >= m_lines[b]->size) {
+      if ((tab_pos_b + 1) >= m_lines[b]->size) {
         return false;
       }
 
-      start_position_a = (tab_pos_a + 1) + m_start_character; // plus 1 for the tab
-      start_position_b = (tab_pos_b + 1) + m_start_character; // plus 1 for the tab
+      start_position_a = (tab_pos_a + 1); // plus 1 for the tab
+      start_position_b = (tab_pos_b + 1); // plus 1 for the tab
     }
     
+    if (m_start_character > 0) {
+      if (start_position_a + m_start_character >= m_lines[a]->size) {
+        return false;
+      }
+      if (start_position_b + m_start_character >= m_lines[b]->size) {
+        return false;
+      }
+
+      start_position_a += m_start_character;
+      start_position_b += m_start_character;
+    }
+
     if (m_compare_numeric)
     {
       int x_value = 0;
