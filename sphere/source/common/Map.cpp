@@ -82,7 +82,7 @@ sMap::ClearEntityList()
   for (int i = 0; i < GetNumEntities(); i++)
   {
     ::DeleteEntity(m_Entities[i]);
-	}
+  }
 
   m_Entities.clear();
 }
@@ -220,8 +220,9 @@ sMap::Load(const char* filename, IFileSystem& fs)
 
   // read the header
   MAP_HEADER header;
-  if (file->Read(&header, sizeof(header)) != sizeof(header))
-		return false;
+  if (file->Read(&header, sizeof(header)) != sizeof(header)) {
+    return false;
+  }
 
   // make sure it's valid
   if (memcmp(header.signature, ".rmp", 4) != 0 ||
@@ -268,12 +269,12 @@ sMap::Load(const char* filename, IFileSystem& fs)
     // read the layer header
     LAYER_HEADER lh;
     if (file->Read(&lh, sizeof(lh)) != sizeof(lh))
-			return false;
+      return false;
 
-		if (lh.width  <= 0 || lh.width  > 4096
-		 || lh.height <= 0 || lh.height > 4096) {
-		   return false;
-		}
+    if (lh.width  <= 0 || lh.width  > 4096
+     || lh.height <= 0 || lh.height > 4096) {
+       return false;
+    }
 
     // read the layer name
     std::string name = ReadMapString(file);
@@ -282,7 +283,7 @@ sMap::Load(const char* filename, IFileSystem& fs)
     m_Layers[i].SetName(name.c_str());
     m_Layers[i].Resize(lh.width, lh.height);
     if (m_Layers[i].GetWidth() != lh.width || m_Layers[i].GetHeight() != lh.height)
-			return false;
+      return false;
 
     m_Layers[i].SetXParallax(lh.parallax_x);
     m_Layers[i].SetYParallax(lh.parallax_y);
@@ -292,30 +293,30 @@ sMap::Load(const char* filename, IFileSystem& fs)
     m_Layers[i].EnableParallax((lh.flags & 2) != 0);
     m_Layers[i].SetReflective(lh.reflective != 0);
 
-		// allocate space for the layer data
-		word* layer_info = new word[lh.width * lh.height];
-		if (!layer_info)
-			return false;
+    // allocate space for the layer data
+    word* layer_info = new word[lh.width * lh.height];
+    if (!layer_info)
+      return false;
 
-		// read the layer data
-		int layer_data_size = sizeof(word) * (lh.width * lh.height);
-		if (file->Read(layer_info, layer_data_size) != layer_data_size) {
-			delete[] layer_info;
-			layer_info = NULL;
-			return false;
-		}
+    // read the layer data
+    int layer_data_size = sizeof(word) * (lh.width * lh.height);
+    if (file->Read(layer_info, layer_data_size) != layer_data_size) {
+      delete[] layer_info;
+      layer_info = NULL;
+      return false;
+    }
 
-		// set the layer data
-		word* tile = layer_info;
+    // set the layer data
+    word* tile = layer_info;
     for (int iy = 0; iy < lh.height; iy++) {
       for (int ix = 0; ix < lh.width; ix++) {
         m_Layers[i].SetTile(ix, iy, *tile++);
       }
     }
 
-		delete[] layer_info;
+    delete[] layer_info;
 
-		/*
+    /*
     // read the layer data
     for (int iy = 0; iy < lh.height; iy++) {
       for (int ix = 0; ix < lh.width; ix++) {
@@ -324,7 +325,7 @@ sMap::Load(const char* filename, IFileSystem& fs)
         m_Layers[i].SetTile(ix, iy, tile);
       }
     }
-		*/
+    */
 
     // load the obstruction map
 
@@ -348,7 +349,7 @@ sMap::Load(const char* filename, IFileSystem& fs)
   {
     ENTITY_HEADER eh;
     if (file->Read(&eh, sizeof(eh)) != sizeof(eh))
-			return false;
+      return false;
 
     sEntity* entity;
     switch (eh.type)
@@ -419,16 +420,28 @@ sMap::Load(const char* filename, IFileSystem& fs)
     sZone zone;
 
     if (file->Read(&zh, sizeof(zh)) != sizeof(zh))
-			return false;
+      return false;
 
     if (zh.layer < 0 || zh.layer >= m_Layers.size()) {
       zh.layer = 0;
     }
     if (zh.x1 > zh.x2) {
+#if 1
+      word temp = zh.x1;
+      zh.x1 = zh.x2;
+      zh.x2 = temp;
+#else
       std::swap(zh.x1, zh.x2);
+#endif
     }
     if (zh.y1 > zh.y2) {
+#if 1
+      word temp = zh.y1;
+      zh.y1 = zh.y2;
+      zh.y2 = temp;
+#else
       std::swap(zh.y1, zh.y2);
+#endif
     }
 
     zone.x1 = zh.x1;
@@ -697,7 +710,7 @@ sMap::Save(const char* filename, IFileSystem& fs)
   }
 
   return true;
-} 
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 

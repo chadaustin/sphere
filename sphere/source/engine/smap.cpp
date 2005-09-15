@@ -193,8 +193,8 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
 
   const int tile_width = m_Map.GetTileset().GetTileWidth();
   const int tile_height = m_Map.GetTileset().GetTileHeight();
-  int blit_width  = tile_width  * m_LayerInfo[i].zoomFactorX;
-  int blit_height = tile_height * m_LayerInfo[i].zoomFactorY;
+  int blit_width  = (int)(tile_width  * m_LayerInfo[i].zoomFactorX);
+  int blit_height = (int)(tile_height * m_LayerInfo[i].zoomFactorY);
 
   //m_LayerInfo[i].angle = 3.14;
 

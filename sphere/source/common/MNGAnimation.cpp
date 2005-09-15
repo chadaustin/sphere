@@ -147,7 +147,13 @@ CMNGAnimation::ReadNextFrame(BGRA* frame_buffer)
 
   // switch red and blue
   for (int i = 0; i < m_width * m_height; i++) {
+#if 1
+	byte temp = frame_buffer[i].red;
+	frame_buffer[i].red = frame_buffer[i].blue;
+	frame_buffer[i].blue = temp;
+#else
     std::swap(frame_buffer[i].red, frame_buffer[i].blue);
+#endif
   }
 
   return true;

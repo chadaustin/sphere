@@ -46,8 +46,8 @@ CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
 , m_IsRunning(false)
 , m_ShouldExit(false)
 
-, m_FrameRate(0)
 , m_ThrottleFPS(true)
+, m_FrameRate(0)
 
 , m_Music(NULL)
 #if defined(WIN32) && defined(USE_MIDI)
@@ -4583,7 +4583,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
       int talk_y = int(m_Persons[m_InputPerson].y);
 
       int obs_person = FindTalkingPerson(person_index, talk_x, talk_y);
-      
+
       /*
       int tad = m_TalkActivationDistance;
 

@@ -2,7 +2,7 @@
 
   #include "sdl/sdl_time.hpp"
 
-#elif defined(_WIN32)
+#elif defined(WIN32)
 
   #include "win32/win32_time.hpp"
 

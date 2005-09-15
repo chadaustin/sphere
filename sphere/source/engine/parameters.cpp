@@ -1,4 +1,6 @@
-inline int argInt(JSContext* cx, jsval arg)
+#include "parameters.hpp"
+
+int argInt(JSContext* cx, jsval arg)
 {
   int32 i;
 
@@ -17,7 +19,7 @@ inline int argInt(JSContext* cx, jsval arg)
 
 ///////////////////////////////////////////////////////////
 
-inline const char* jsval_to_str(JSContext* cx, jsval arg)
+const char* jsval_to_str(JSContext* cx, jsval arg)
 {
   JSString* str = JS_ValueToString(cx, arg);
   if (str) {
@@ -30,7 +32,7 @@ inline const char* jsval_to_str(JSContext* cx, jsval arg)
 
 ///////////////////////////////////////////////////////////
 
-inline const char* argStr(JSContext* cx, jsval arg)
+const char* argStr(JSContext* cx, jsval arg)
 {
   JSString* str = JS_ValueToString(cx, arg);
   if (str) {
@@ -43,7 +45,7 @@ inline const char* argStr(JSContext* cx, jsval arg)
 
 ///////////////////////////////////////////////////////////
 
-inline bool argBool(JSContext* cx, jsval arg)
+bool argBool(JSContext* cx, jsval arg)
 {
   JSBool b;
 
@@ -61,7 +63,7 @@ inline bool argBool(JSContext* cx, jsval arg)
 
 ///////////////////////////////////////////////////////////
 
-inline double argDouble(JSContext* cx, jsval arg)
+double argDouble(JSContext* cx, jsval arg)
 {
   jsdouble d;
 
@@ -85,7 +87,7 @@ inline double argDouble(JSContext* cx, jsval arg)
 
 ///////////////////////////////////////////////////////////
 
-inline JSObject* argObject(JSContext* cx, jsval arg)
+JSObject* argObject(JSContext* cx, jsval arg)
 {
   if (!JSVAL_IS_OBJECT(arg)) {
     JS_ReportError(cx, "Invalid object (parameter is not an object)");
@@ -103,7 +105,7 @@ inline JSObject* argObject(JSContext* cx, jsval arg)
 
 ///////////////////////////////////////////////////////////
 
-inline JSObject* argArray(JSContext* cx, jsval arg)
+JSObject* argArray(JSContext* cx, jsval arg)
 {
   JSObject* array = argObject(cx, arg);
   if (array == NULL)

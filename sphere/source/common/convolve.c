@@ -1,3 +1,43 @@
+#ifndef CONVOLUTION_PIXEL_TYPE
+#error CONVOLUTION_PIXEL_TYPE must be defined...
+#endif
+
+#ifndef CONVOLUTION_PIXEL_SIZE
+#error CONVOLUTION_PIXEL_SIZE must be defined...
+#endif
+
+#ifndef CONVOLUTION_PIXEL_CHANNEL_1
+#error CONVOLUTION_PIXEL_CHANNEL_1 must be defined...
+#endif
+
+#ifndef CONVOLUTION_PIXEL_CHANNEL_2
+#error CONVOLUTION_PIXEL_CHANNEL_2 must be defined...
+#endif
+
+#ifndef CONVOLUTION_PIXEL_CHANNEL_3
+#error CONVOLUTION_PIXEL_CHANNEL_3 must be defined...
+#endif
+
+#ifndef CONVOLUTION_PIXEL_CHANNEL_4
+#error CONVOLUTION_PIXEL_CHANNEL_4 must be defined...
+#endif
+
+#ifndef CONVOLUTION_CURRENT_PIXEL_CHANNEL_1
+#error CONVOLUTION_CURRENT_PIXEL_CHANNEL_1 must be defined...
+#endif
+
+#ifndef CONVOLUTION_CURRENT_PIXEL_CHANNEL_2
+#error CONVOLUTION_CURRENT_PIXEL_CHANNEL_2 must be defined...
+#endif
+
+#ifndef CONVOLUTION_CURRENT_PIXEL_CHANNEL_3
+#error CONVOLUTION_CURRENT_PIXEL_CHANNEL_3 must be defined...
+#endif
+
+#ifndef CONVOLUTION_CURRENT_PIXEL_CHANNEL_4
+#error CONVOLUTION_CURRENT_PIXEL_CHANNEL_4 must be defined...
+#endif
+
 void
 CONVOLUTION_NAME(int x, int y, int w, int h, int width, int height,
                  CONVOLUTION_PIXEL_TYPE* pixels, int mask_width, int mask_height,

@@ -188,20 +188,22 @@ public:
       if (idx>=total) idx-=total;
       return data[idx*width];
     }
-    
+
     X* getLine(unsigned int idx) {
+#if 0
       if (idx>=size) throw StringError("Index into ClumpBuffer out of range");
+#endif
       idx=idx+head;
       if (idx>=total) idx-=total;
       return &(data[idx*width]);
     }
-    
+
     void flush() {
       size=0;
       head=0;
       tail=0;
     }
-    
+
     void apply(ClumpBuffer<double>& vals, X* dest) {
       static double den;
       static int i,j;
@@ -232,7 +234,7 @@ public:
         }
       }
     }
-    
+
     void apply_avg(ClumpBuffer<double>& vals, X* dest) {
       static double den;
       static SmartRGBA sum;
@@ -265,47 +267,47 @@ public:
         }
       }
     }
-    
+
     ~ClumpBuffer() {
       delete[] data;
     }
-    
+
     X& top_slot() const {
 #if 0
       if (size==0) throw StringError("ClumpBuffer is empty");
 #endif
       return data[head*width];
     }
-    
+
     X* top_line() const {
 #if 0
       if (size==0) throw StringError("ClumpBuffer is empty");
 #endif
       return &(data[head*width]);
     }
-    
+
     X& btm_slot() const {
 #if 0
       if (size==0) throw StringError("ClumpBuffer is empty");
 #endif
       return data[tail*width];
     }
-    
+
     X* btm_line() const {
 #if 0
       if (size==0) throw StringError("ClumpBuffer is empty");
 #endif
       return &(data[tail*width]);
     }
-    
+
     unsigned int slotCount() {
       return total;
     }
-    
+
     unsigned int length() {
       return size;
     }
-    
+
     X& pull_slot() {
 #if 0
       if (size==0) throw StringError("ClumpBuffer is empty");
@@ -313,19 +315,21 @@ public:
       X& temp=data[head*width];
       ++head;
       if (head==total) head=0;
-      --size;   
+      --size;
       return temp;
     }
-    
+
     X* pull_line() {
+#if 0
       if (size==0) throw StringError("ClumpBuffer is empty");
+#endif
       X* temp=&(data[head*width]);
       ++head;
       if (head==total) head=0;
-      --size;   
+      --size;
       return temp;
     }
-    
+
     X& next_slot() {
 #if 0
       if (size==total) throw StringError("ClumpBuffer is full");
@@ -336,7 +340,7 @@ public:
       ++size;
       return temp;
     }
-    
+
     X* next_line() {
 #if 0
       if (size==total) throw StringError("ClumpBuffer is full");
@@ -347,7 +351,7 @@ public:
       ++size;
       return temp;
     }
-    
+
     std::ostream& dumpLine(std::ostream& os, unsigned int idx) {
 #if 0
       if (idx>=size) throw StringError("Index into ClumpBuffer out of range");
@@ -362,7 +366,7 @@ public:
       os << std::endl;
       return os;
     }
-    
+
     std::ostream& dump(std::ostream &os) {
       os << "("
         << "data=" << data << ", "
@@ -454,7 +458,7 @@ RGBA *resample(const RGBA *src, int src_w, int src_h, int dest_w, int dest_h) {
   int clump_head_y=0;
   int clump_tail_x=0;
   int clump_tail_y=0;
-  
+
   curpos_y=-clump_y_size;
   for (dest_y=0; dest_y<dest_h; ++dest_y) {
     // shift new lines the clump buffer for Y
@@ -536,7 +540,7 @@ RGBA *resample(const RGBA *src, int src_w, int src_h, int dest_w, int dest_h) {
                 clump_xbuf.apply_avg(clump_xfracbuf, &(next_line[dest_x]));
               }
             break;
-            
+
             case rs_copy:
               next_line[dest_x]=clump_xbuf.btm_slot();
             break;
@@ -595,7 +599,7 @@ RGBA *resample(const RGBA *src, int src_w, int src_h, int dest_w, int dest_h) {
           clump_ybuf.apply_avg(clump_yfracbuf, &(dest[dest_y*dest_w]));
         }
       break;
-      
+
       case rs_copy:
         for (int i=0; i<dest_w; ++i)
           dest[dest_y*dest_w+i]=*(clump_ybuf.btm_line()+i);
@@ -609,7 +613,7 @@ RGBA *resample(const RGBA *src, int src_w, int src_h, int dest_w, int dest_h) {
   // flush line buffers
   clump_ybuf.flush();
   clump_yfracbuf.flush();
-  
+
   return dest;
 }
 

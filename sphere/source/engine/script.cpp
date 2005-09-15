@@ -30,6 +30,9 @@
 const int MAX_RECURSE_COUNT = 256;
 const int MAX_FRAME_SKIP    = 20;
 
+// parameter grabbing
+#include "parameters.hpp"
+
 ///////////////////////////////////////////////////////////
 
 #ifdef _3D_FUNCTIONS
@@ -414,6 +417,10 @@ CScript::EvaluateFile(const char* filename, IFileSystem& fs)
   // read file
   int size = file->Size();
   char* script = new char[size + 1];
+  if (!script) {
+	return false;
+  }
+
   file->Read(script, size);
   script[size] = '\0';
 
@@ -758,10 +765,6 @@ inline void USED(T /*t*/) { }
 #define end_func()  \
     return (This->m_ShouldExit ? JS_FALSE : JS_TRUE); \
   }
-
-
-// parameter grabbing
-#include "parameters.cpp"
 
 ///////////////////////////////////////////////////////////
 
@@ -4400,7 +4403,7 @@ begin_func(GetPersonData, 1)
   // create object
   JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
   if (object == NULL) {
-    return NULL;
+    return_object(JSVAL_NULL);
   }
 
   for (int i = 0; i < int(data.size()); i++) {
@@ -8644,7 +8647,9 @@ begin_func(GetMapEngine, 0)
 
   SS_MAPENGINE* mapengine_object = new SS_MAPENGINE;
   if (!mapengine_object)
-    return NULL;
+  {
+    return_object(JSVAL_NULL);
+  }
 
   mapengine_object->__value__ = 1;
   JS_SetPrivate(cx, object, mapengine_object);

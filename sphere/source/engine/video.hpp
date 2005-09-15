@@ -2,7 +2,7 @@
 
   #include "sdl/sdl_video.hpp"
 
-#elif defined(_WIN32)
+#elif defined(WIN32)
 
   #include "win32/win32_video.hpp"
 

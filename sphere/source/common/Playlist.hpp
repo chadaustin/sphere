@@ -1,10 +1,11 @@
 #ifndef PLAYLIST_HPP
 #define PLAYLIST_HPP
 
+#ifdef _MSC_VER
+#pragma warning(disable : 4786)
+#endif
 
-#pragma warning(disable: 4786)
-
-#include "../common/DefaultFileSystem.hpp" 
+#include "../common/DefaultFileSystem.hpp"
 
 #include <string>
 #include <vector>

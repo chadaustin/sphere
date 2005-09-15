@@ -2,7 +2,7 @@
 
   #include "sdl/sdl_network.hpp"
 
-#elif _WIN32
+#elif defined(WIN32)
 
   #include "win32/win32_network.hpp"
 

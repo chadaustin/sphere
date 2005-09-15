@@ -1,7 +1,6 @@
 #ifndef VM_INTERFACE_HPP
 #define VM_INTERFACE_HPP
 
-
 #include "audio.hpp"
 #include "sfont.hpp"
 #include "sspriteset.hpp"
@@ -30,7 +29,7 @@ struct IEngine
   virtual bool IsSystemScriptEvaluated(const char* filename) = 0;
   virtual void AddEvaluatedScript(const char* filename) = 0;
   virtual void AddEvaluatedSystemScript(const char* filename) = 0;
-  
+
   virtual bool GetScriptText(const char* filename, std::string& text) = 0;
   virtual bool GetSystemScript(const char* filename, std::string& text) = 0;
 
