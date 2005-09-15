@@ -2,21 +2,28 @@
 #define DEBUG_HPP
 
 #include <string>
-
 #include "../common/LogDispatcher.hpp"
 
-class LogBlock__
+void InitializeLog();
+
+class LogBlock
 {
 public:
-  LogBlock__(const char* name);
-  ~LogBlock__();
+  LogBlock(const char* name);
+  ~LogBlock();
 
 private:
   std::string m_Name;
-  static int NumTabs;
+  static int s_NumTabs;
 };
 
+extern CLogDispatcher __DebugLog__;
 
-extern void InitializeLog();
+// logs the entry and exit of a block of code, indenting any log strings in the body
+#define LOG_BLOCK(name) LogBlock log_block(name);
+
+// logs one line
+#define LOG(x) { for (int i = 0; i < LogBlock::s_NumTabs; i++) __DebugLog__ << "    "; __DebugLog__ << x; }
+
 
 #endif

@@ -2,10 +2,10 @@
 #define __LOGNULL_HPP
 
 
-#include "Log.hpp"
+#include "LogEvent.hpp"
 
 
-class CLogNull : public CLog
+class CLogNull : public CLogEvent
 {
 private:
   virtual void WriteString(const char* string);

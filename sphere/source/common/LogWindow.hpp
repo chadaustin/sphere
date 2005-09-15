@@ -3,14 +3,14 @@
 
 
 #include <windows.h>
-#include "Log.hpp"
+#include "LogEvent.hpp"
 
 
 #define MAX_STRINGS       500
 #define MAX_STRING_LENGTH 1024
 
 
-class CLogWindow : public CLog
+class CLogWindow : public CLogEvent
 {
 public:
   CLogWindow(HINSTANCE instance, const char* caption);

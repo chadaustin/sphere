@@ -2,22 +2,22 @@
 #define __LOGDISPATCHER_HPP
 
 
-#include "Log.hpp"
+#include "LogEvent.hpp"
 
 
-class CLogDispatcher : public CLog
+class CLogDispatcher : public CLogEvent
 {
 public:
   CLogDispatcher();
   ~CLogDispatcher();
 
-  void AddLog(CLog* log, bool auto_delete = true); 
+  void AddLog(CLogEvent* log, bool auto_delete = true); 
 
 private:
   struct SLogNode
   {
     SLogNode* next;
-    CLog*     log;
+    CLogEvent*     log;
     bool      auto_delete;
   };
 

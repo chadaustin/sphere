@@ -3,10 +3,10 @@
 
 
 #include <stdio.h>
-#include "Log.hpp"
+#include "LogEvent.hpp"
 
 
-class CLogFile : public CLog
+class CLogFile : public CLogEvent
 {
 public:
   CLogFile(const char* filename);

@@ -1242,19 +1242,19 @@ SOURCE=..\common\Layer.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\common\Log.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\common\Log.hpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\common\LogDispatcher.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\common\LogDispatcher.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\LogEvent.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\LogEvent.hpp
 # End Source File
 # Begin Source File
 

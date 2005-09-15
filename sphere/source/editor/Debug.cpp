@@ -1,36 +1,29 @@
 #include "Debug.hpp"
 
-int LogBlock__::NumTabs;
+int LogBlock::s_NumTabs = 0;
+CLogDispatcher __DebugLog__;
 
-CLogDispatcher DebugLog__;
-extern CLogDispatcher DebugLog__;
+////////////////////////////////////////////////////////////////////////////////
 
-// logs the entry and exit of a block of code, indenting any log strings in the body
-#define LOG_BLOCK(name) LogBlock__ log__block__(name);
+LogBlock::LogBlock(const char* name)
+{
+  m_Name = name;
 
-// logs one line
-#define LOG(x) { for (int i = 0; i < LogBlock__::NumTabs; i++) DebugLog__ << "    "; DebugLog__ << x; }
+  LOG('+' << m_Name.c_str() << '\n')
+  s_NumTabs++;
+}
 
-
-  LogBlock__(const char* name)
-  {
-    m_Name = name;
-
-    LOG('+' << m_Name.c_str() << '\n')
-    NumTabs++;
-  }
-
-  ~LogBlock__()
-  {
-    NumTabs--;
-    LOG('-' << m_Name.c_str() << '\n')
-  }
+LogBlock::~LogBlock()
+{
+  s_NumTabs--;
+  LOG('-' << m_Name.c_str() << '\n')
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void InitializeLog()
 {
-  // DebugLog__.AddLog(new CLogFile("sde.log"));
+  // __DebugLog__.AddLog(new CLogFile("sde.log"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

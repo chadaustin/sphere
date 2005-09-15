@@ -95,8 +95,8 @@ bool
 SFONT::GetCharacterImage(int index, IMAGE& image)
 {
   int range = m_Font.GetNumCharacters();
-  if ((int)index < 0 || (int)index >= range) {
-//    m_ErrorMessage = "Character index does not exist";
+  if (index < 0 || index >= range) {
+    // m_ErrorMessage = "Character index does not exist";
     return false;
   }
 
@@ -114,8 +114,8 @@ bool
 SFONT::SetCharacterImage(int index, IMAGE image)
 {
   int range = m_Font.GetNumCharacters();
-  if ((int)index < 0 || (int)index >= range) {
-//    m_ErrorMessage = "Character index does not exist";
+  if (index < 0 || index >= range) {
+    // m_ErrorMessage = "Character index does not exist";
     return false;
   }
 
@@ -141,7 +141,7 @@ SFONT::SetCharacterImage(int index, IMAGE image)
     }
   }
   c.SetBlendMode(blend_mode);
-  
+
   UnlockImage(image, false);
 
   if (m_Images[index]) {
@@ -169,11 +169,11 @@ SFONT::DrawString(int x, int y, const char* text, RGBA mask, CImage32* surface) 
   int range = m_Font.GetNumCharacters();
 
   while (*text) {
-    unsigned char ch = (unsigned char) *text;
-    if ((int)ch < 0 || (int)ch >= range) { text++; continue; }
+    int ch = (int) *text;
+    if (ch < 0 || ch >= range) { text++; continue; }
 
     const sFontCharacter& character = m_Font.GetCharacter(ch);
-    
+
     if (surface == NULL) {
       BlitImageMask(m_Images[ch], x, y, mask);
     }
@@ -185,7 +185,7 @@ SFONT::DrawString(int x, int y, const char* text, RGBA mask, CImage32* surface) 
     x += character.GetWidth();
     text++;
   }
-  return true; 
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -214,11 +214,11 @@ SFONT::DrawZoomedString(int x, int y, double scale, const char* text, RGBA mask,
   int range = m_Font.GetNumCharacters();
 
   while (*text) {
-    unsigned char ch = (unsigned char) *text;
-    if ((int)ch < 0 || (int)ch >= range) { text++; continue; }
-    
+    int ch = (int) *text;
+    if (ch < 0 || ch >= range) { text++; continue; }
+
     const sFontCharacter& character = m_Font.GetCharacter(ch);
-    Local::ScaleBlit(m_Images[ch], int(cx), y, scale, mask, surface, character);
+    Local::ScaleBlit(m_Images[ch], (int)cx, y, scale, mask, surface, character);
 
     cx += scale * character.GetWidth();
     text++;
@@ -256,11 +256,11 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
   // parse the text into words
   while (*p) {
 
-    unsigned char ch = (unsigned char) *p;
-    if ((int)ch < 0 || (int)ch >= range) { p++; continue; }
+    int ch = (int) *p;
+    if (ch < 0 || ch >= range) { p++; continue; }
 
     if (ch == ' ') {          // if it's a space, draw the word
-      
+
       if (dx + word_width + space_width > w) {
         dx = word_width + space_width;
         dy += max_height;
@@ -337,8 +337,8 @@ SFONT::GetStringWidth(const char* string) const
 
   while (*string)
   {
-    unsigned char ch = (unsigned char) *string;
-    if ((int)ch < 0 || (int)ch >= range) { string++; continue; }
+    int ch = (int) *string;
+    if (ch < 0 || ch >= range) { string++; continue; }
 
     width += m_Font.GetCharacter(ch).GetWidth();
     string++;
@@ -371,11 +371,11 @@ SFONT::GetStringHeight(const char* string, int width) const
 
   while (*p) {
 
-    unsigned char ch = (unsigned char) *p;
-    if ((int)ch < 0 || (int)ch >= range) { p++; continue; }
+    int ch = (int) *p;
+    if (ch < 0 || ch >= range) { p++; continue; }
 
     if (ch == ' ') {          // if it's a space, draw the word
-      
+
       if (dx + word_width + space_width > width) {
         dx = word_width + space_width;
         dy += max_height;
@@ -439,8 +439,9 @@ SFONT::Initialize()
 {
   m_MaxHeight = 0;
 
-  if ( !(m_Font.GetNumCharacters() > 0) )
+  if ( !(m_Font.GetNumCharacters() > 0) ) {
     return false;
+  }
 
   m_Images = new IMAGE[m_Font.GetNumCharacters()];
   if (m_Images == NULL)
@@ -468,8 +469,12 @@ SFONT::Initialize()
   }
 
   for (int i = 0; i < m_Font.GetNumCharacters(); i++)
+  {
     if (m_Font.GetCharacter(i).GetHeight() > m_MaxHeight)
+    {
       m_MaxHeight = m_Font.GetCharacter(i).GetHeight();
+    }
+  }
 
   return true;
 }

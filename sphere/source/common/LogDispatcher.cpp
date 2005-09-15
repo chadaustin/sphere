@@ -31,7 +31,7 @@ CLogDispatcher::~CLogDispatcher()
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CLogDispatcher::AddLog(CLog* log, bool auto_delete)
+CLogDispatcher::AddLog(CLogEvent* log, bool auto_delete)
 {
   SLogNode* p = new SLogNode;
   if (!p)

@@ -1,10 +1,10 @@
 #include <stdio.h>
-#include "Log.hpp"
+#include "LogEvent.hpp"
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
-CLog& operator<<(CLog& log, const char* string)
+CLogEvent& operator<<(CLogEvent& log, const char* string)
 {
   log.WriteString(string);
   return log;
@@ -12,7 +12,7 @@ CLog& operator<<(CLog& log, const char* string)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-CLog& operator<<(CLog& log, char character)
+CLogEvent& operator<<(CLogEvent& log, char character)
 {
   char string[2] = { character, 0 };
   log.WriteString(string);
@@ -21,7 +21,7 @@ CLog& operator<<(CLog& log, char character)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-CLog& operator<<(CLog& log, int integer)
+CLogEvent& operator<<(CLogEvent& log, int integer)
 {
   char string[20];
   sprintf(string, "%d", integer);
