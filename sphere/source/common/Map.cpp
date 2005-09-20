@@ -2,10 +2,10 @@
 #pragma warning(disable : 4786)
 #endif
 
-
 #include <string>
 #include <memory>
 #include <stdlib.h>
+#include <assert.h>
 #include "Map.hpp"
 #include "Layer.hpp"
 #include "Entities.hpp"

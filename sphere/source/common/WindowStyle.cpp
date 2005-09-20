@@ -1,6 +1,7 @@
 #include <memory>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 #include "WindowStyle.hpp"
 #include "packed.hpp"
 
@@ -45,7 +46,7 @@ sWindowStyle::Create(int width, int height)
   byte background_mode;                                 \
   RGBA corner_colors[4];                                \
   byte edge_offsets[4];                                 \
-  byte reserved[36];  
+  byte reserved[36];
 #include "packed_struct.h"
 
 ASSERT_STRUCT_SIZE(WINDOWSTYLE_HEADER, 64)
@@ -159,7 +160,7 @@ sWindowStyle::Import(const char* filename, RGBA transColor, IFileSystem& fs)
            image.GetPixels() + (i*image.GetWidth()) + offX,  \
            winWidth*sizeof(RGBA));                           \
 }
-               
+
   CopyEdge(0,          0,           winHeight,   m_Bitmaps[0]);
   CopyEdge(winWidth,   0,           winHeight,   m_Bitmaps[1]);
   CopyEdge(winWidth*2, 0,           winHeight,   m_Bitmaps[2]);

@@ -1,6 +1,7 @@
 #include <memory>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 #include "Font.hpp"
 #include "packed.hpp"
 

@@ -1,4 +1,5 @@
 #include <string.h>
+#include <assert.h>
 #include "Spriteset.hpp"
 #include "packed.hpp"
 #include "strcmp_ci.hpp"
@@ -189,7 +190,7 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
 
     // for each direction
     for (int i = 0; i < 8; i++) {
-      
+
       m_Directions[i].name = direction_names[i];
       m_Directions[i].frames.resize(8);
 
@@ -202,7 +203,7 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
         // read the image
         CImage32& image = m_Images[i * 8 + j];
         image.Resize(m_FrameWidth, m_FrameHeight);
-				
+
 				int size = m_FrameWidth * m_FrameHeight * sizeof(RGBA);
         if (file->Read(image.GetPixels(), size) != size)
 					return false;
@@ -224,7 +225,7 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
       // read the direction header
       DIRECTION_HEADER_2 direction_header;
       if (file->Read(&direction_header, sizeof(direction_header)) != sizeof(direction_header)) {
-			  return false;	
+			  return false;
 			}
 
       // set name
@@ -285,7 +286,7 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
     // read the directions
     m_Directions.resize(header.num_directions);
     for (i = 0; i < header.num_directions; i++) {
-      
+
       // read number of frames
       word num_frames;
       if (file->Read(&num_frames, 2) != 2) {
@@ -305,7 +306,7 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
 
       if (name_length <= 0)
         return false;
-      
+
       // read the name
       char* name = new char[name_length];
 			if (!name)
@@ -323,7 +324,7 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
       // read frames
       m_Directions[i].frames.resize(num_frames);
       for (int j = 0; j < num_frames; j++) {
-        
+
         // read frame header
         word index;
         word delay;
@@ -349,7 +350,7 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
   }
 
   return true;
-} 
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -411,7 +412,7 @@ sSpriteset::Save(const char* filename, IFileSystem& fs) const
       file->Write(empty6, 4);
     }
   }
-  
+
   return true;
 }
 
@@ -437,7 +438,7 @@ sSpriteset::Import_BMP(
   RGBA* pixels = image.GetPixels();
   int num_pixels = image.GetWidth() * image.GetHeight();
   while (num_pixels--) {
-    
+
     if (pixels->red   == old_color.red   &&
         pixels->green == old_color.green &&
         pixels->blue  == old_color.blue  &&
@@ -539,7 +540,7 @@ sSpriteset::Export_PNG_Compact_Vertical(const char* filename)
   int maxRowFrames = 0;
   int ImgWidth;
   int ImgHeight;
-  
+
   maxRowFrames = m_Images.size();
   ImgWidth = m_FrameWidth + 2;
   ImgHeight = (m_FrameHeight * maxRowFrames) + (maxRowFrames + 1);
@@ -553,7 +554,7 @@ sSpriteset::Export_PNG_Compact_Vertical(const char* filename)
   // drop all the frames into the image
   for (int row=0; row<maxRowFrames; row++)
     for (int line=0; line<m_FrameHeight; line++)
-      // copy offset to: 
+      // copy offset to:
       // x: 1
       // y: ((current row * frame height + 1) * image width) + (current row * image width) + (current line * image width)
       memcpy(image.GetPixels() +
@@ -577,7 +578,7 @@ sSpriteset::Export_PNG_Compact_Horizontal(const char* filename)
   int maxColFrames = 0;
   int ImgWidth;
   int ImgHeight;
-  
+
   maxColFrames = m_Images.size();
   ImgWidth = (m_FrameWidth * maxColFrames) + (maxColFrames + 1);
   ImgHeight = m_FrameHeight + 2;
@@ -591,7 +592,7 @@ sSpriteset::Export_PNG_Compact_Horizontal(const char* filename)
   // drop all the frames into the image
   for (int col=0; col<maxColFrames; col++)
     for (int line=0; line<m_FrameHeight; line++)
-      // copy offset to: 
+      // copy offset to:
       // x: (current col * frame width) + (current col * padding) + 1
       // y: ((current line + 1) * image width)
       memcpy(image.GetPixels() +
@@ -1168,7 +1169,7 @@ sSpriteset::Import_CHR2V2(FILE* file, RGB palette[256])
       byte run = getc(file);
       value = getc(file);
       count+=2;
-      
+
       for (int j=0; j<run; j++) {
         frames[i].red   = palette[value].red   * 4;
         frames[i].green = palette[value].green * 4;
@@ -1182,7 +1183,7 @@ sSpriteset::Import_CHR2V2(FILE* file, RGB palette[256])
   // whack all of it into actual "frames" now
   for (int framecount=0; framecount<header.num_frames; framecount++) {
     memset(frame.GetPixels(), 0, m_FrameWidth * m_FrameHeight * 4);
-    memcpy(frame.GetPixels(), 
+    memcpy(frame.GetPixels(),
       frames + (m_FrameWidth * m_FrameHeight * framecount),
       m_FrameWidth * m_FrameHeight * 4);
 
@@ -1195,7 +1196,7 @@ sSpriteset::Import_CHR2V2(FILE* file, RGB palette[256])
   std::vector<int> walk_index[4];
 
   // maybe discard the idle frames?
-  for (count=0; count<4; count++) { 
+  for (count=0; count<4; count++) {
     fread(&i, 1, sizeof(dword), file);
     walk_type[count].push_back(1);
     walk_index[count].push_back(i);
@@ -1246,8 +1247,8 @@ sSpriteset::Import_CHR2V2(FILE* file, RGB palette[256])
 
     switch(count)
     {
-      case 1: 
-      case 2: 
+      case 1:
+      case 2:
       case 3:
         di = 1;
         break;
@@ -1266,7 +1267,7 @@ sSpriteset::Import_CHR2V2(FILE* file, RGB palette[256])
       Frame frame_index;
       frame_index.index = -1;
       frame_index.delay = 0;
-      
+
       if (walk_type[di][i] == 1)
         frame_index.index = walk_index[di][i];
 
@@ -1279,7 +1280,7 @@ sSpriteset::Import_CHR2V2(FILE* file, RGB palette[256])
     }
 
     m_Directions.push_back(direction);
-  }  
+  }
 
   // free everything used
   delete[] frames;
@@ -1290,7 +1291,7 @@ sSpriteset::Import_CHR2V2(FILE* file, RGB palette[256])
   fread(&header, sizeof(header), 1, file);
 
    // because we want to get the extra frames in the set, so I'm building
-  // a table, and then parsing it. This is so that I'm marking down the 
+  // a table, and then parsing it. This is so that I'm marking down the
   // frames that's used, and the unused shall be in a seperate direction.
   // Finally we then do something about it.
   bool* frameUsed;
@@ -1304,7 +1305,7 @@ sSpriteset::Import_CHR2V2(FILE* file, RGB palette[256])
   int   walkcodeNumArg[4];
   int frameCount[5];
   int i,j,k,l;
-  
+
   if (header.version != 2)
   return false;
 
@@ -1318,12 +1319,12 @@ sSpriteset::Import_CHR2V2(FILE* file, RGB palette[256])
   memset(frameUsed, 0, header.num_frames);
   frames = new RGBA[header.num_frames * header.width * header.height];
   j=0;
-    
+
   fread(&dataLength, 1, 4, file);
   for (i=0; i<dataLength; i++)
   {
     byte value = getc(file);
-    
+
     if (value<255)
     {
       frames[j].red = palette[value].red * 4;
@@ -1387,7 +1388,7 @@ sSpriteset::Import_CHR2V2(FILE* file, RGB palette[256])
           l++;
           j++;
         }
-        
+
         token[l] = 0;
 
         tempwalkcodeType = new int[k + 1];
@@ -1433,8 +1434,8 @@ sSpriteset::Import_CHR2V2(FILE* file, RGB palette[256])
   {
     switch(i)
     {
-      case EAST: 
-      case SOUTHEAST: 
+      case EAST:
+      case SOUTHEAST:
       case NORTHEAST:
         l = 0;
         break;
@@ -1605,8 +1606,8 @@ sSpriteset::Import_CHR2V4(FILE* file, RGB palette[256])
 
     switch(count)
     {
-      case 1: 
-      case 2: 
+      case 1:
+      case 2:
       case 3:
         di = 1;
         break;
@@ -1625,7 +1626,7 @@ sSpriteset::Import_CHR2V4(FILE* file, RGB palette[256])
       Frame frame_index;
       frame_index.index = -1;
       frame_index.delay = 0;
-      
+
       if (walk_type[di][i] == 1)
         frame_index.index = walk_index[di][i];
 
@@ -1645,7 +1646,7 @@ sSpriteset::Import_CHR2V4(FILE* file, RGB palette[256])
   dword file_size;
   int run_mask = 0xFF00;
   int get_run  = 0x00FF;
-  
+
   image = new RGBA[m_FrameWidth * m_FrameHeight * header.num_frames];
   fread(&file_size, 1, sizeof(dword), file);
   i = 0;
@@ -1675,12 +1676,12 @@ sSpriteset::Import_CHR2V4(FILE* file, RGB palette[256])
       i++;
     }
   }
-  
+
   // whack all of it into actual "frames" now
   CImage32 frame(m_FrameWidth, m_FrameHeight);
   for (int framecount=0; framecount<header.num_frames; framecount++) {
     memset(frame.GetPixels(), 0, m_FrameWidth * m_FrameHeight * 4);
-    memcpy(frame.GetPixels(), 
+    memcpy(frame.GetPixels(),
       image + (m_FrameWidth * m_FrameHeight * framecount),
       m_FrameWidth * m_FrameHeight * 4);
 

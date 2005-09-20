@@ -677,11 +677,11 @@ SOURCE=..\common\Layer.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\common\Log.cpp
+SOURCE=..\common\LogDispatcher.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\common\LogDispatcher.cpp
+SOURCE=..\common\LogEvent.cpp
 # End Source File
 # Begin Source File
 

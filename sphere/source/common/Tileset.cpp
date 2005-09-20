@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include "Tileset.hpp"
 #include "Image32.hpp"
 #include "packed.hpp"
@@ -431,7 +432,7 @@ sTileset::LoadFromFile(IFile* file)
     m_Tiles[i].SetName(ReadTileString(file, tib.name_length));
 
     if (header.has_obstructions) {
-    
+
       // skip old obstruction data if it exists
       if (tib.block_type == 1) {
 
@@ -439,9 +440,9 @@ sTileset::LoadFromFile(IFile* file)
 
       } else if (tib.block_type == 2) {
 
-        // read per-tile obstruction segments  
+        // read per-tile obstruction segments
         for (int j = 0; j < tib.num_segments; j++) {
-          
+
           word coordinates[4];
           file->Read(coordinates, 4 * sizeof(word));
 
@@ -647,7 +648,7 @@ sTileset::SetTileSize(int w, int h, int method, void (*callback)(int tile, int n
 
 void
 sTileset::InsertTiles(int insert_at, int num_tiles)
-{	
+{
 	// resize the tile array
   m_Tiles.insert(m_Tiles.begin() + insert_at, num_tiles, sTile(m_TileWidth, m_TileHeight));
 }
