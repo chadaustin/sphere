@@ -78,6 +78,7 @@ CPlaylist::LoadFromFile(const char* filename, IFileSystem& fs)
   // open the file
   std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::read));
   if (!file.get()) {
+    printf("Could not open playlist file: %s\n", filename);
     return false;
   }
 
@@ -88,8 +89,10 @@ CPlaylist::LoadFromFile(const char* filename, IFileSystem& fs)
     if (read_line(file.get(), str) == false)
       done = true;
 
-    if (str[0] != '#' && str.size() > 0) {
-      AppendFile(str.c_str());
+    if (str.size() > 0) {
+      if (str[0] != '#') {
+        AppendFile(str.c_str());
+      }
     }
   }
 

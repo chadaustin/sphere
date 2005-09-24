@@ -215,6 +215,7 @@ sMap::Load(const char* filename, IFileSystem& fs)
   // open the file
   std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::read));
   if (!file.get()) {
+    printf("Could not open map file: %s\n", filename);
     return false;
   }
 
@@ -229,6 +230,7 @@ sMap::Load(const char* filename, IFileSystem& fs)
       header.version != 1 ||
       (header.num_strings != 3 && header.num_strings != 5 && header.num_strings != 9))
   {
+    printf("Invalid signature in map header...\n");
     return false;
   }
 

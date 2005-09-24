@@ -219,6 +219,7 @@ CImage32::Load(const char* filename, IFileSystem& fs)
 
   std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::read));
   if (!file.get()) {
+    printf("Could not open image file: %s\n", filename);
     return false;
   }
 

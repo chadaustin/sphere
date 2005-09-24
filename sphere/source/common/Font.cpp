@@ -63,23 +63,28 @@ sFont::Load(const char* filename, IFileSystem& fs)
 
   // read and check header
   FONT_HEADER header;
-  if (file->Read(&header, sizeof(header)) != sizeof(header))
-		return false;
+  if (file->Read(&header, sizeof(header)) != sizeof(header)) {
+    return false;
+  }
 
   if (memcmp(header.signature, ".rfn", 4) != 0 ||
       (header.version != 1 && header.version != 2))
   {
-    printf("Invalid font header");
+    printf("Invalid signature in font header...\n");
     return false;
   }
 
   if (header.num_characters <= 0)
+  {
+    printf ("Invalid number of characters in font header... [%d]\n", header.num_characters);
     return false;
+  }
 
   // allocate characters
   m_Characters.resize(header.num_characters);
-	if (m_Characters.size() != header.num_characters)
-		return false;
+  if (m_Characters.size() != header.num_characters) {
+    return false;
+  }
 
   // read them
   for (unsigned int i = 0; i < m_Characters.size(); i++)
@@ -90,13 +95,17 @@ sFont::Load(const char* filename, IFileSystem& fs)
 
     // is the character size feasible?
     if (character_header.width  > 4096
-     || character_header.height > 4096)
+     || character_header.height > 4096) {
+      printf ("Character %d is too big.... [%d x %d]\n", i, character_header.width, character_header.height);
       return false;
+    }
 
     m_Characters[i].Resize(character_header.width, character_header.height);
-		if (m_Characters[i].GetWidth()  != character_header.width
-		 || m_Characters[i].GetHeight() != character_header.height)
-		   return false;
+	if (m_Characters[i].GetWidth()  != character_header.width
+	 || m_Characters[i].GetHeight() != character_header.height)
+	{
+ 	  return false;
+    }
 
     // version 1 = greyscale
     if (header.version == 1)

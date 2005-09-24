@@ -31,6 +31,7 @@ CMNGAnimation::Load(const char* filename, IFileSystem& fs)
   // open the file
   m_file = fs.Open(filename, IFileSystem::read);
   if (m_file == NULL) {
+    printf("Could not open animation file: %s\n", filename);
     return false;
   }
 

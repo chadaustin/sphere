@@ -58,18 +58,22 @@ sWindowStyle::Load(const char* filename, IFileSystem& fs)
 {
   std::auto_ptr<IFile> file(fs.Open(filename, IFileSystem::read));
   if (!file.get()) {
+    printf("Could not open windowstyle file: %s\n", filename);
     return false;
   }
 
   // read the header
   WINDOWSTYLE_HEADER header;
   if (file->Read(&header, sizeof(header)) != sizeof(header))
-		return false;
+  {
+    return false;
+  }
 
   // check the header
   if (memcmp(header.signature, ".rws", 4) != 0 ||
       (header.version != 1 && header.version != 2))
   {
+    printf("Invalid signature in windowstyle header...\n");
     return false;
   }
 

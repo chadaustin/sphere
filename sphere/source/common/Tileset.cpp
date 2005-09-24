@@ -389,15 +389,34 @@ sTileset::Save(const char* filename, IFileSystem& fs) const
 bool
 sTileset::LoadFromFile(IFile* file)
 {
+  unsigned int i;
+  RGBA* pixels;
+
   // load the header
   TILESET_HEADER header;
-  file->Read(&header, sizeof(header));
+  if (file->Read(&header, sizeof(header)) != sizeof(header))
+  {
+    return false;
+  }
 
   // check the header
   if (memcmp(header.signature, ".rts", 4) != 0 ||
       header.version != 1 ||
       header.tile_bpp != 32)
   {
+    printf("Invalid signature in tileset header...\n");
+    return false;
+  }
+
+  if (header.num_tiles <= 0)
+  {
+    printf ("Invalid number of tiles tileset header... [%d]\n", header.num_tiles);
+    return false;
+  }
+
+  if (header.tile_width <= 0 || header.tile_height <= 0)
+  {
+    printf ("Invalid tile size in tileset header... [%d x %d]\n", header.tile_width, header.tile_height);
     return false;
   }
 
@@ -408,22 +427,46 @@ sTileset::LoadFromFile(IFile* file)
   m_Tiles.clear();
   m_Tiles.resize(header.num_tiles);
 
-  unsigned i;
+  if (m_Tiles.size() != header.num_tiles)
+  {
+    return false;
+  }
+
+  pixels = new RGBA[m_TileWidth * m_TileHeight];
+  if (!pixels) {
+    return false;
+  }
+
   // load the tiles
   for (i = 0; i < m_Tiles.size(); i++)
   {
-    RGBA* pixels = new RGBA[m_TileWidth * m_TileHeight];
-    file->Read(pixels, sizeof(RGBA) * m_TileWidth * m_TileHeight);
+    if (file->Read(pixels, sizeof(RGBA) * m_TileWidth * m_TileHeight) != sizeof(RGBA) * m_TileWidth * m_TileHeight) {
+      delete[] pixels;
+      pixels = NULL;
+      return false;
+    }
+
     m_Tiles[i].Resize(m_TileWidth, m_TileHeight);
+    if (m_Tiles[i].GetWidth() != m_TileWidth && m_Tiles[i].GetHeight() != m_TileHeight) {
+      delete[] pixels;
+      pixels = NULL;
+      return false;
+    }
+
     memcpy(m_Tiles[i].GetPixels(), pixels, m_TileWidth * m_TileHeight * sizeof(RGBA));
-    delete[] pixels;
   }
+
+  delete[] pixels;
+  pixels = NULL;
 
   // load the tile info blocks
   for (i = 0; i < m_Tiles.size(); i++)
   {
     TILE_INFORMATION_BLOCK tib;
-    file->Read(&tib, sizeof(tib));
+    if (file->Read(&tib, sizeof(tib)) != sizeof(tib))
+    {
+      return false;
+    }
 
     m_Tiles[i].SetAnimated(tib.animated ? true : false);
     m_Tiles[i].SetNextTile(tib.nexttile);

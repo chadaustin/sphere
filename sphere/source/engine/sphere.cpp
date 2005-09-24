@@ -210,7 +210,10 @@ std::string DoRunGame(const char* game, const char* parameters) {
 
     LeaveDirectory();
   } else {
-    QuitMessage(game);
+    std::string message = "Could not open game...\n'";
+                message += game;
+                message += "'";
+    QuitMessage(message.c_str());
     return "";
   }
 
@@ -249,7 +252,8 @@ Game ReadGameInfo(const char* directory) {
 ///////////////////////////////////////////////////////////////////////////////
 
 void RunGame(const char* game, const char* parameters) {
-
+
+
 #ifdef _3D_FUNCTIONS
   if (SwitchProjectiveMode != NULL) {
 	SwitchProjectiveMode(0);

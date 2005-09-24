@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
 #include "FLICAnimation.hpp"
@@ -68,8 +69,10 @@ bool
 CFLICAnimation::Load(const char* filename, IFileSystem& fs)
 {
   File = fs.Open(filename, IFileSystem::read);
-  if (!File)
+  if (!File) {
+    printf("Could not open animation file: %s\n", filename);
     return false;
+  }
 
   // read the header
   SFlicHeader FlicHeader;

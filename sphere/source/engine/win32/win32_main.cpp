@@ -135,6 +135,7 @@ int __cdecl main(int argc, const char** argv)
   strcat(screenshot_directory, "\\screenshots");
   SetScreenshotDirectory(screenshot_directory);
 
+#ifndef SPHERE_CONSOLE
   // load it from a file
   SPHERECONFIG Config;
   LoadSphereConfiguration(&Config);
@@ -249,6 +250,10 @@ int __cdecl main(int argc, const char** argv)
   CloseAudio();
   CloseVideo();
   DestroyWindow(SphereWindow);
+#else
+  printf ("Weee!\n");
+#endif
+
   return 0;
 }
 
