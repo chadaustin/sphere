@@ -148,13 +148,18 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
   }
 
   // validate header
-  if (memcmp(header.signature, ".rss", 4) != 0 ||
-      (header.version != 1 && header.version != 2 && header.version != 3)) {
+  if (memcmp(header.signature, ".rss", 4) != 0) {
     printf("Invalid signature in spriteset header...\n");
     return false;
   }
 
-  if (header.frame_width <= 0 || header.frame_height <= 0)
+  if (header.version != 1 && header.version != 2 && header.version != 3) {
+    printf("Invalid version in spriteset header... [%d]\n", header.version);
+    return false;
+  }
+
+  if (header.frame_width <= 0  || header.frame_width > 4096
+   || header.frame_height <= 0 || header.frame_height > 4096)
   {
     printf ("Invalid frame size in spriteset header... [%d x %d]\n", header.frame_width, header.frame_height);
     return false;
@@ -211,9 +216,11 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
         CImage32& image = m_Images[i * 8 + j];
         image.Resize(m_FrameWidth, m_FrameHeight);
 
-				int size = m_FrameWidth * m_FrameHeight * sizeof(RGBA);
+		int size = m_FrameWidth * m_FrameHeight * sizeof(RGBA);
         if (file->Read(image.GetPixels(), size) != size)
-					return false;
+        {
+		  return false;
+        }
       }
     }
 

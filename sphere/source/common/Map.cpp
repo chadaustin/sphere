@@ -226,11 +226,19 @@ sMap::Load(const char* filename, IFileSystem& fs)
   }
 
   // make sure it's valid
-  if (memcmp(header.signature, ".rmp", 4) != 0 ||
-      header.version != 1 ||
-      (header.num_strings != 3 && header.num_strings != 5 && header.num_strings != 9))
-  {
+  if (memcmp(header.signature, ".rmp", 4) != 0) {
     printf("Invalid signature in map header...\n");
+    return false;
+  }
+
+  if (header.version != 1) {
+    printf("Invalid version in map header... [%d]\n", header.version);
+    return false;
+  }
+
+  if (header.num_strings != 3 && header.num_strings != 5 && header.num_strings != 9)
+  {
+    printf("Invalid num_strings in map header... [%d]\n", header.version);
     return false;
   }
 
@@ -317,6 +325,7 @@ sMap::Load(const char* filename, IFileSystem& fs)
     }
 
     delete[] layer_info;
+    layer_info = NULL;
 
     /*
     // read the layer data

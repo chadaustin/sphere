@@ -2451,7 +2451,7 @@ BEGIN
             VALUE "Comments", "-\0"
             VALUE "CompanyName", "-\0"
             VALUE "FileDescription", "Sphere Development Environment\0"
-            VALUE "FileVersion", "1.1098\0"
+            VALUE "FileVersion", "1.11\0"
             VALUE "InternalName", "editor\0"
             VALUE "LegalCopyright", "-\0"
             VALUE "LegalTrademarks", "\0"

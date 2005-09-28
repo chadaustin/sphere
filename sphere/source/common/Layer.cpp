@@ -79,6 +79,7 @@ sLayer::sLayer(const sLayer& layer)
 sLayer::~sLayer()
 {
   delete[] m_Tiles;
+  m_Tiles = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

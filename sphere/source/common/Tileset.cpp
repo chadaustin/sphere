@@ -400,11 +400,19 @@ sTileset::LoadFromFile(IFile* file)
   }
 
   // check the header
-  if (memcmp(header.signature, ".rts", 4) != 0 ||
-      header.version != 1 ||
-      header.tile_bpp != 32)
+  if (memcmp(header.signature, ".rts", 4) != 0)
   {
     printf("Invalid signature in tileset header...\n");
+    return false;
+  }
+
+  if (header.version != 1) {
+    printf("Invalid version in tileset header... [%d]\n", header.version);
+    return false;
+  }
+
+  if (header.tile_bpp != 32) {
+    printf("Invalid tile_bpp in tileset header... [%d]\n", header.tile_bpp);
     return false;
   }
 
@@ -414,7 +422,8 @@ sTileset::LoadFromFile(IFile* file)
     return false;
   }
 
-  if (header.tile_width <= 0 || header.tile_height <= 0)
+  if (header.tile_width <= 0  || header.tile_width > 4096
+   || header.tile_height <= 0 || header.tile_height > 4096)
   {
     printf ("Invalid tile size in tileset header... [%d x %d]\n", header.tile_width, header.tile_height);
     return false;
@@ -521,6 +530,7 @@ sTileset::SaveToFile(IFile* file) const
   header.tile_bpp    = 32;
   header.compression = 0;
   header.has_obstructions = 1;
+
   if (file->Write(&header, sizeof(header)) != sizeof(header))
     return false;
 
