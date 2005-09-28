@@ -182,7 +182,7 @@ bool InitInput(HWND window, SPHERECONFIG* config)
   // try to initialize joysticks
   UINT num = std::min(joyGetNumDevs(), 2U);
   UINT ids[2] = { JOYSTICKID1, JOYSTICKID2 };
-  for (unsigned i = 0; i < num; ++i) {
+  for (unsigned int i = 0; i < num; ++i) {
     TryJoystick(ids[i]);
   }
 
@@ -310,7 +310,7 @@ bool RefreshInput()
   // update currently pressed keys
   memcpy(KeyBuffer, CurrentKeyBuffer, MAX_KEY);
 
-  for (unsigned i = 0; i < Joysticks.size(); ++i) {
+  for (unsigned int i = 0; i < Joysticks.size(); ++i) {
     Joystick& j = Joysticks[i];
     JOYINFO ji;
     if (joyGetPos(j.id, &ji) == JOYERR_NOERROR) {

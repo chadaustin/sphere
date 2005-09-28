@@ -332,6 +332,7 @@ SS_FUNCTION(OpenLog, 1)
   // window styles
   SS_FUNCTION(GetSystemWindowStyle, 0)
   SS_FUNCTION(LoadWindowStyle, 1)
+  //windowstyle.save
   //windowstyle.drawWindow(x, y, w, h)
   //windowstyle.setColorMask(color)
   //windowstyle.getColorMask()

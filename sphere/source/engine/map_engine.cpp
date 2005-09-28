@@ -3557,13 +3557,13 @@ CMapEngine::CloseMap()
   DestroyZones();
 
   // destroy any remaining delay scripts
-  for (unsigned i = 0; i < m_DelayScripts.size(); i++) {
+  for (unsigned int i = 0; i < m_DelayScripts.size(); i++) {
     m_Engine->DestroyScript(m_DelayScripts[i].script);
   }
   m_DelayScripts.clear();
 
   // destroy layer scripts
-  for (unsigned i = 0; i < m_LayerRenderers.size(); i++) {
+  for (unsigned int i = 0; i < m_LayerRenderers.size(); i++) {
     if (m_LayerRenderers[i]) {
       m_Engine->DestroyScript(m_LayerRenderers[i]);
     }
@@ -4001,7 +4001,7 @@ CMapEngine::LoadTriggers()
 
       if (t.script == NULL) {
         // destroy scripts that have been created so far
-        for (unsigned j = 0; j < m_Triggers.size(); j++) {
+        for (unsigned int j = 0; j < m_Triggers.size(); j++) {
           m_Engine->DestroyScript(m_Triggers[i].script);
         }
 
@@ -4029,7 +4029,7 @@ void
 CMapEngine::DestroyTriggers()
 {
   // destroy trigger scripts
-  for (unsigned i = 0; i < m_Triggers.size(); i++) {
+  for (unsigned int i = 0; i < m_Triggers.size(); i++) {
     m_Engine->DestroyScript(m_Triggers[i].script);
   }
   m_Triggers.clear();
@@ -4085,7 +4085,7 @@ CMapEngine::LoadZones()
 void
 CMapEngine::DestroyZones()
 {
-  for (unsigned i = 0; i < m_Zones.size(); i++) {
+  for (unsigned int i = 0; i < m_Zones.size(); i++) {
     m_Engine->DestroyScript(m_Zones[i].script);
     m_Zones[i].script = NULL;
   }
@@ -4178,7 +4178,7 @@ CMapEngine::RenderEntities(int layer, bool flipped, int offset_x, int offset_y)
   double zoom_factor_y = m_Map.GetLayerScaleFactorY(layer);
 
   // add non-map-specific person entities
-  for (unsigned i = 0; i < m_Persons.size(); i++) {
+  for (unsigned int i = 0; i < m_Persons.size(); i++) {
     if (m_Persons[i].layer == layer && m_Persons[i].is_visible) {
 
       Person& p = m_Persons[i];
@@ -4756,7 +4756,7 @@ CMapEngine::FindTrigger(int location_x, int location_y, int layer)
   // this doesn't seem to use layers, but I'll include the layer parameter just incase
 
   int trigger_index = -1;
-  for (unsigned i = 0; i < m_Triggers.size(); i++) {
+  for (unsigned int i = 0; i < m_Triggers.size(); i++) {
     int dx = m_Triggers[i].x - location_x;
     int dy = m_Triggers[i].y - location_y;
 
@@ -5085,7 +5085,7 @@ bool
 CMapEngine::UpdateDelayScripts()
 {
   // update delay scripts
-  for (unsigned i = 0; i < m_DelayScripts.size(); i++) {
+  for (unsigned int i = 0; i < m_DelayScripts.size(); i++) {
     if (--m_DelayScripts[i].frames_left < 0) {
 
       IEngine::script script = m_DelayScripts[i].script;

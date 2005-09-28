@@ -56,7 +56,7 @@ wToolPalette::Destroy()
 //  for (int i = 0; i < m_Buttons.size(); i++) {
 //    delete m_Buttons[i];
 //  }
-  for (unsigned i = 0; i < m_Bitmaps.size(); i++) {
+  for (unsigned int i = 0; i < m_Bitmaps.size(); i++) {
     delete m_Bitmaps[i];
   }
 
@@ -169,7 +169,7 @@ wToolPalette::OnPaint(wxPaintEvent &event)
   int ix = 0; // current x
   int iy = 0; // current y
 
-  for (unsigned i = 0; i < m_Bitmaps.size(); i++) {
+  for (unsigned int i = 0; i < m_Bitmaps.size(); i++) {
     int x = ix * TOOL_WIDTH;
     int y = iy * TOOL_HEIGHT;
     wxRect rect(x, y, TOOL_WIDTH, TOOL_HEIGHT);

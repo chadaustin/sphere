@@ -659,7 +659,7 @@ CScript::InitializeSphereConstants()
 
 
   // define the constants
-  for (unsigned i = 0; i < sizeof(constants) / sizeof(*constants); i++) {
+  for (unsigned int i = 0; i < sizeof(constants) / sizeof(*constants); i++) {
     JS_DefineProperty(
       m_Context,
       m_Global,
@@ -1043,7 +1043,7 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
   int frame_width = 0;
   int frame_height = 0;
 
-  for (unsigned i = 0; i < num_images; i++) {
+  for (unsigned int i = 0; i < num_images; i++) {
 
     if (i == 0) {
       frame_width  = images[i].GetWidth();
@@ -1127,7 +1127,7 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
   }
 
   s->Create(frame_width, frame_height, num_images, num_directions, 0);
-  for (unsigned i = 0; i < num_images; i++) {
+  for (unsigned int i = 0; i < num_images; i++) {
     s->GetImage(i) = images[i];
   }
   delete[] images;
@@ -1172,7 +1172,7 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
       return NULL;
     }
 
-    for (unsigned j = 0; j < num_frames; j++) {
+    for (unsigned int j = 0; j < num_frames; j++) {
       jsval frame_val;
 
       if ( JS_GetElement(cx, frames_array, j, &frame_val) == JS_FALSE ) {
@@ -3796,7 +3796,7 @@ begin_func(GetPersonList, 0)
 
   // create an array of JS strings with which to initialize the array
   jsval* valarray = new jsval[names.size()];
-  for (unsigned i = 0; i < names.size(); i++) {
+  for (unsigned int i = 0; i < names.size(); i++) {
     valarray[i] = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, names[i].c_str()));
   }
 
@@ -4089,7 +4089,7 @@ begin_func(GetPersonIgnoreList, 1)
 
   // create an array of JS strings with which to initialize the array
   jsval* valarray = new jsval[ignore_list.size()];
-  for (unsigned i = 0; i < ignore_list.size(); i++) {
+  for (unsigned int i = 0; i < ignore_list.size(); i++) {
     valarray[i] = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, ignore_list[i].c_str()));
   }
 
@@ -5508,7 +5508,7 @@ begin_func(GetFileList, 0)
 
   // convert it to an array of jsvals
   jsval* js_vs = new jsval[vs.size()];
-  for (unsigned i = 0; i < vs.size(); i++) {
+  for (unsigned int i = 0; i < vs.size(); i++) {
     js_vs[i] = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, vs[i].c_str()));
   }
 
@@ -6886,6 +6886,7 @@ CScript::CreateWindowStyleObject(JSContext* cx, SWINDOWSTYLE* ws, bool destroy)
     { "drawWindow", ssWindowStyleDrawWindow, 4, 0, 0 },
     { "setColorMask", ssWindowStyleSetColorMask, 1, 0, 0 },
     { "getColorMask", ssWindowStyleGetColorMask, 0, 0, 0 },
+    { "save", ssWindowStyleSave, 1, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
   JS_DefineFunctions(cx, object, fs);
@@ -6948,6 +6949,17 @@ end_method()
 */
 begin_method(SS_WINDOWSTYLE, ssWindowStyleGetColorMask, 0)
   return_object(CreateColorObject(cx, object->mask));
+end_method()
+
+
+///////////////////////////////////////
+
+/**
+    - save the windowstyle object (this just returns false...)
+*/
+begin_method(SS_WINDOWSTYLE, ssWindowStyleSave, 1)
+  arg_str(filename);
+  return_bool(false);
 end_method()
 
 ///////////////////////////////////////

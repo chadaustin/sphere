@@ -260,7 +260,7 @@ wProject::RefreshItems()
     std::vector<std::string> extensions;
     FTL.GetFileTypeExtensions(i, extensions);
 
-    for (unsigned j = 0; j < extensions.size(); j++) {
+    for (unsigned int j = 0; j < extensions.size(); j++) {
       std::string filter = "*." + extensions[j];
 
       std::vector<std::string> file_list = GetFileList(filter.c_str());
@@ -310,7 +310,7 @@ wProject::AddItem(int grouptype, const char* filename)
   Group& group = m_Groups[grouptype];
 
   // make sure it's not in the group already
-  for (unsigned i = 0; i < group.size(); i++)
+  for (unsigned int i = 0; i < group.size(); i++)
     if (filename == group[i])
       return;
 

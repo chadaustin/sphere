@@ -320,7 +320,7 @@ sTileset::Import_TST(const char* filename, IFileSystem& fs)
   m_Tiles.resize(numtiles);
 
   // read them from file
-  for (unsigned i = 0; i < m_Tiles.size(); i++)
+  for (unsigned int i = 0; i < m_Tiles.size(); i++)
   {
     sTile& tile = m_Tiles[i];
     switch (detail)
@@ -614,7 +614,7 @@ sTileset::BuildFromImage(CImage32& i, int tile_width, int tile_height, bool allo
       // if the tile is not in the tileset already, add it
       bool in_tileset = false;
       if (!allow_duplicates) {
-        for (unsigned i = 0; i < m_Tiles.size(); i++) {
+        for (unsigned int i = 0; i < m_Tiles.size(); i++) {
           if (memcmp(tile, m_Tiles[i].GetPixels(), tile_width * tile_height * sizeof(RGBA)) == 0)
           {
             in_tileset = true;
@@ -659,7 +659,7 @@ sTileset::SetTileSize(int w, int h, int method, void (*callback)(int tile, int n
   m_TileWidth  = w;
   m_TileHeight = h;
 
-  unsigned i;
+  unsigned int i;
 
   switch (method) {
     case 0:

@@ -386,7 +386,7 @@ COptionsDialog::Execute()
   const int num_pages = sizeof(Pages) / sizeof(*Pages);
 
   // default values
-  for (unsigned i = 0; i < num_pages; i++)
+  for (unsigned int i = 0; i < num_pages; i++)
   {
     Pages[i].dwSize    = sizeof(Pages[i]);
     Pages[i].dwFlags   = PSP_DEFAULT;

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <assert.h>
 #include "Font.hpp"
+#include "endian.hpp"
 #include "packed.hpp"
 
 
@@ -67,10 +68,18 @@ sFont::Load(const char* filename, IFileSystem& fs)
     return false;
   }
 
-  if (memcmp(header.signature, ".rfn", 4) != 0 ||
-      (header.version != 1 && header.version != 2))
+  header.version = ltom_w(header.version);
+  header.num_characters = ltom_w(header.num_characters);
+
+  if (memcmp(header.signature, ".rfn", 4) != 0)
   {
     printf("Invalid signature in font header...\n");
+    return false;
+  }
+
+  if (header.version != 1 && header.version != 2)
+  {
+    printf("Invalid version in font header... [%d]\n", header.version);
     return false;
   }
 
@@ -91,7 +100,12 @@ sFont::Load(const char* filename, IFileSystem& fs)
   {
     CHARACTER_HEADER character_header;
     if (file->Read(&character_header, sizeof(character_header)) != sizeof(character_header))
+    {
       return false;
+    }
+
+    character_header.width = ltom_w(character_header.width);
+    character_header.height = ltom_w(character_header.height);
 
     // is the character size feasible?
     if (character_header.width  > 4096
@@ -110,14 +124,17 @@ sFont::Load(const char* filename, IFileSystem& fs)
     // version 1 = greyscale
     if (header.version == 1)
     {
-      byte* buffer = new byte[character_header.width * character_header.height];
+      int size = character_header.width * character_header.height;
+      byte* buffer = new byte[size];
       if (!buffer)
         return false;
 
-      if (file->Read(buffer, character_header.width * character_header.height) != character_header.width * character_header.height)
-				return false;
+      if (file->Read(buffer, size) != size)
+      {
+        return false;
+      }
 
-      for (int j = 0; j < character_header.width * character_header.height; j++)
+      for (int j = 0; j < size; j++)
       {
         m_Characters[i].GetPixels()[j].red   = 255;
         m_Characters[i].GetPixels()[j].green = 255;
@@ -128,10 +145,13 @@ sFont::Load(const char* filename, IFileSystem& fs)
       delete[] buffer;
     }
     else { // version 2 (RGBA)
-      if (file->Read(m_Characters[i].GetPixels(), sizeof(RGBA) * character_header.width * character_header.height) != sizeof(RGBA) * character_header.width * character_header.height)
-				return false;
+      int size = sizeof(RGBA) * character_header.width * character_header.height;
+      if (file->Read(m_Characters[i].GetPixels(), size) != size)
+      {
+        return false;
+      }
     }
-	}
+  }
 
   return true;
 }
@@ -149,23 +169,32 @@ sFont::Save(const char* filename, IFileSystem& fs) const
   FONT_HEADER header;
   memset(&header, 0, sizeof(header));
   memcpy(header.signature, ".rfn", 4);
-  header.version = 2;
-  header.num_characters = m_Characters.size();
+  header.version = mtol_w(2);
+  header.num_characters = mtol_w(m_Characters.size());
+
   if (file->Write(&header, sizeof(header)) != sizeof(header))
+  {
     return false;
+  }
 
   // write characters
   for (unsigned int i = 0; i < m_Characters.size(); i++)
   {
     CHARACTER_HEADER character_header;
     memset(&character_header, 0, sizeof(character_header));
-    character_header.width  = m_Characters[i].GetWidth();
-    character_header.height = m_Characters[i].GetHeight();
-    if (file->Write(&character_header, sizeof(character_header)) != sizeof(character_header))
-      return false;
+    character_header.width  = mtol_w(m_Characters[i].GetWidth());
+    character_header.height = mtol_w(m_Characters[i].GetHeight());
 
-    if (file->Write(m_Characters[i].GetPixels(), character_header.width * character_header.height * sizeof(RGBA)) != character_header.width * character_header.height * sizeof(RGBA))
+    if (file->Write(&character_header, sizeof(character_header)) != sizeof(character_header))
+    {
       return false;
+    }
+
+    int size = m_Characters[i].GetWidth() * m_Characters[i].GetHeight() * sizeof(RGBA);
+    if (file->Write(m_Characters[i].GetPixels(), size) != size)
+    {
+      return false;
+    }
   }
 
   return true;

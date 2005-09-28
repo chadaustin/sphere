@@ -331,7 +331,7 @@ sMap::Load(const char* filename, IFileSystem& fs)
 
     // load the obstruction map
 
-    for (unsigned j = 0; j < lh.num_segments; j++) {
+    for (unsigned int j = 0; j < lh.num_segments; j++) {
 
       dword x1; file->Read(&x1, sizeof(dword));
       dword y1; file->Read(&y1, sizeof(dword));

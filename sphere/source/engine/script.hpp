@@ -176,6 +176,7 @@ private:
   declare_method(ssWindowStyleDrawWindow);
   declare_method(ssWindowStyleSetColorMask);
   declare_method(ssWindowStyleGetColorMask);
+  declare_method(ssWindowStyleSave);
 
   // images
   declare_constructor2(CreateImageObject, IMAGE image, bool destroy);

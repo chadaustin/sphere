@@ -59,7 +59,7 @@ CLog::Send(const char* text)
   if (m_file) {
     SendNoNewLine(GetTime());
     SendNoNewLine(" -- ");
-    for (unsigned i = 0; i < m_Blocks.size(); i++) {
+    for (unsigned int i = 0; i < m_Blocks.size(); i++) {
       SendNoNewLine("  ");
     }
     SendNoNewLine(text);
@@ -80,7 +80,7 @@ CLog::BeginBlock(const char* name)
   if (m_file) {
     SendNoNewLine(GetTime());
     SendNoNewLine(" -- ");
-    for (unsigned i = 0; i < m_Blocks.size() - 1; i++)
+    for (unsigned int i = 0; i < m_Blocks.size() - 1; i++)
       SendNoNewLine("  ");
     SendNoNewLine("+");
     SendNoNewLine(name);
@@ -98,7 +98,7 @@ CLog::EndBlock()
   {
     SendNoNewLine(GetTime());
     SendNoNewLine(" -- ");
-    for (unsigned i = 0; i < m_Blocks.size() - 1; i++)
+    for (unsigned int i = 0; i < m_Blocks.size() - 1; i++)
       SendNoNewLine("  ");
     SendNoNewLine("-");
     SendNoNewLine(m_Blocks.top().c_str());

@@ -15,10 +15,10 @@ SMAP::SMAP()
 
 SMAP::~SMAP()
 {
-  for (unsigned i = 0; i < m_Tiles.size(); i++) {
+  for (unsigned int i = 0; i < m_Tiles.size(); i++) {
     DestroyImage(m_Tiles[i]);
   }
-  for (unsigned i = 0; i < m_SolidTiles.size(); i++) {
+  for (unsigned int i = 0; i < m_SolidTiles.size(); i++) {
     DestroyImage(m_SolidTiles[i]);
   }
 
@@ -100,10 +100,10 @@ SMAP::Load(const char* filename, IFileSystem& fs)
 
   InitializeAnimation();
 
-  for (unsigned i = 0; i < m_Tiles.size(); i++) {
+  for (unsigned int i = 0; i < m_Tiles.size(); i++) {
     DestroyImage(m_Tiles[i]);
   }
-  for (unsigned i = 0; i < m_SolidTiles.size(); i++) {
+  for (unsigned int i = 0; i < m_SolidTiles.size(); i++) {
     DestroyImage(m_SolidTiles[i]);
   }
 

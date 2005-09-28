@@ -3,6 +3,7 @@
 #include <string.h>
 #include <assert.h>
 #include "WindowStyle.hpp"
+#include "endian.hpp"
 #include "packed.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -69,11 +70,18 @@ sWindowStyle::Load(const char* filename, IFileSystem& fs)
     return false;
   }
 
+  header.version = ltom_w(header.version);
+
   // check the header
-  if (memcmp(header.signature, ".rws", 4) != 0 ||
-      (header.version != 1 && header.version != 2))
+  if (memcmp(header.signature, ".rws", 4) != 0)
   {
     printf("Invalid signature in windowstyle header...\n");
+    return false;
+  }
+
+  if (header.version != 1 && header.version != 2)
+  {
+    printf("Invalid version in windowstyle header... [%d]\n", header.version);
     return false;
   }
 
@@ -110,18 +118,24 @@ sWindowStyle::Save(const char* filename, IFileSystem& fs) const
   WINDOWSTYLE_HEADER header;
   memset(&header, 0, sizeof(header));
   memcpy(header.signature, ".rws", 4);
-  header.version = 2;
+  header.version = mtol_w(2);
   header.background_mode = m_BackgroundMode;
   memcpy(header.corner_colors, m_BackgroundCorners, sizeof(RGBA) * 4);
   memcpy(header.edge_offsets, m_EdgeOffsets, sizeof(byte) * 4);
 
   if (file->Write(&header, sizeof(header)) != sizeof(header))
-		return false;
+  {
+	return false;
+  }
 
   // write the bitmaps
   for (int i = 0; i < 9; i++)
+  {
     if (!WriteBitmap(file.get(), m_Bitmaps + i))
-			return false;
+    {
+	  return false;
+    }
+  }
 
   return true;
 }
@@ -185,15 +199,20 @@ sWindowStyle::Import(const char* filename, RGBA transColor, IFileSystem& fs)
 bool
 sWindowStyle::WriteBitmap(IFile* file, const CImage32* bitmap)
 {
-  word w = bitmap->GetWidth();
-  word h = bitmap->GetHeight();
-  if (file->Write(&w, 2) != 2)
-		return false;
-  if (file->Write(&h, 2) != 2)
-		return false;
-  if (file->Write(bitmap->GetPixels(), sizeof(RGBA) * w * h) != sizeof(RGBA) * w * h)
-		return false;
-	return true;
+  word w = mtol_w(bitmap->GetWidth());
+  word h = mtol_w(bitmap->GetHeight());
+
+  if (file->Write(&w, 2) != 2) {
+	return false;
+  }
+  if (file->Write(&h, 2) != 2) {
+    return false;
+  }
+  if (file->Write(bitmap->GetPixels(), sizeof(RGBA) * w * h) != sizeof(RGBA) * w * h) {
+    return false;
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -204,7 +223,20 @@ sWindowStyle::ReadBitmap(IFile* file, CImage32* bitmap)
   word w, h;
   file->Read(&w, 2);
   file->Read(&h, 2);
+
+  w = ltom_w(w);
+  h = ltom_w(h);
+
+  if (w < 0 || w > 4096) {
+    return false;
+  }
+
+  if (h < 0 || h > 4096) {
+    return false;
+  }
+
   bitmap->Resize(w, h);
+
   if (bitmap->GetWidth() != w || bitmap->GetHeight() != h)
     return false;
 
@@ -219,13 +251,21 @@ sWindowStyle::ReadBitmap(IFile* file, CImage32* bitmap)
 bool
 sWindowStyle::ReadBitmap(IFile* file, CImage32* bitmap, int edge_width)
 {
+  if (edge_width < 0 || edge_width > 4096) {
+    return false;
+  }
+
   bitmap->Resize(edge_width, edge_width);
   if (bitmap->GetWidth() != edge_width || bitmap->GetHeight() != edge_width)
+  {
     return false;
+  }
 
-  if (file->Read(bitmap->GetPixels(), sizeof(RGBA) * edge_width * edge_width)
-     != sizeof(RGBA) * edge_width * edge_width)
-     return false;
+  int size = sizeof(RGBA) * edge_width * edge_width;
+  if (file->Read(bitmap->GetPixels(), size) != size)
+  {
+    return false;
+  }
 
   return true;
 }

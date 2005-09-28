@@ -338,7 +338,7 @@ void
 wMainWindow::CloseNotice(wDocumentWindow *doc)
 {
   // remove window from list
-  for (unsigned i = 0; i < m_DocumentWindows.size(); i++) {
+  for (unsigned int i = 0; i < m_DocumentWindows.size(); i++) {
     if (m_DocumentWindows[i] == doc)
     {
       m_DocumentWindows.erase(m_DocumentWindows.begin() + i);
@@ -388,7 +388,7 @@ void
 wMainWindow::OpenDocumentWindow(int grouptype, const char* filename)
 {
   // if a document window has the same filename, just give it focus
-  for (unsigned i = 0; i < m_DocumentWindows.size(); i++) {
+  for (unsigned int i = 0; i < m_DocumentWindows.size(); i++) {
     if (strcmp(m_DocumentWindows[i]->GetFilename(), filename) == 0) {
       m_DocumentWindows[i]->SetFocus();
       return;
@@ -800,7 +800,7 @@ void
 wMainWindow::OnClose(wxCloseEvent &event)
 {
   // ask if the child windows should be destroyed
-  for (unsigned i = 0; i < m_DocumentWindows.size(); i++)
+  for (unsigned int i = 0; i < m_DocumentWindows.size(); i++)
   {
     if (m_DocumentWindows[i]->Close()) {
       //m_DocumentWindows[i]->DestroyWindow();
@@ -837,10 +837,10 @@ wMainWindow::OnFileOpen(wxCommandEvent &event)
 {
   // generate list of all supported extensions
   std::set<std::string> extensions;
-  for (unsigned i = 0; i < NUM_GROUP_TYPES; i++) {
+  for (unsigned int i = 0; i < NUM_GROUP_TYPES; i++) {
     std::vector<std::string> e;
     FTL.GetFileTypeExtensions(i, e);
-    for (unsigned j = 0; j < e.size(); j++) {
+    for (unsigned int j = 0; j < e.size(); j++) {
       extensions.insert(e[j]);
     }
   }
@@ -863,7 +863,7 @@ wMainWindow::OnFileOpen(wxCommandEvent &event)
     FTL.GetFileTypeExtensions(i, e);
 
     std::string type_filter;
-    for (unsigned j = 0; j < e.size(); j++) {
+    for (unsigned int j = 0; j < e.size(); j++) {
       if (j != 0) {
         type_filter += ";";
       }
@@ -890,7 +890,7 @@ wMainWindow::OnFileOpen(wxCommandEvent &event)
   {
     wxArrayString filelist;
     FileDialog.GetPaths(filelist);
-    for(unsigned i = 0; i < filelist.GetCount(); i++)
+    for(unsigned int i = 0; i < filelist.GetCount(); i++)
     {
       wxString thePath = filelist[i];
 
@@ -998,7 +998,7 @@ FILE_NEW_HANDLER(Image,       new wImageWindow())
     if (Dialog.ShowModal() == wxID_OK) {                            \
       wxArrayString filelist;                                       \
       Dialog.GetPaths(filelist);                                    \
-      for(unsigned i = 0; i < filelist.GetCount(); i++)             \
+      for(unsigned int i = 0; i < filelist.GetCount(); i++)         \
       {                                                             \
         wxString path_ = filelist[i];                               \
         const char* path = path_;                                   \
@@ -1445,7 +1445,7 @@ wMainWindow::OnFileImportWindowsFont(wxCommandEvent &event)
 void
 wMainWindow::OnFileSaveAll(wxCommandEvent &event)
 {
-  for (unsigned i = 0; i < m_DocumentWindows.size(); i++) {
+  for (unsigned int i = 0; i < m_DocumentWindows.size(); i++) {
     wDocumentWindow* dw = m_DocumentWindows[i];
     if (dw->IsSaveable()) {
       wSaveableDocumentWindow* sdw = (wSaveableDocumentWindow*)dw;
@@ -1622,7 +1622,7 @@ wMainWindow::OnProjectPackageGame(wxCommandEvent &event)
 void
 wMainWindow::OnWindowCloseAll(wxCommandEvent &event)
 {
-  for (unsigned i = 0; i < m_DocumentWindows.size(); i++) {
+  for (unsigned int i = 0; i < m_DocumentWindows.size(); i++) {
     wDocumentWindow* dw = m_DocumentWindows[i];
     if (dw->Close() == false) {
       break;

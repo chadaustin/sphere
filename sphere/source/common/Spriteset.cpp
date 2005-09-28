@@ -121,7 +121,7 @@ void bracket(d& dest, s min, s max) {
 
 template<typename T>
 int Find(std::vector<T>& vs, const T& t) {
-  for (unsigned i = 0; i < vs.size(); i++) {
+  for (unsigned int i = 0; i < vs.size(); i++) {
     if (vs[i] == t) {
       return i;
     }
@@ -395,7 +395,7 @@ sSpriteset::Save(const char* filename, IFileSystem& fs) const
   // write header
   file->Write(&header, sizeof(header));
 
-  unsigned i;
+  unsigned int i;
   // write the images
   for (i = 0; i < m_Images.size(); i++) {
     file->Write(m_Images[i].GetPixels(), m_FrameWidth * m_FrameHeight * 4);
@@ -416,7 +416,7 @@ sSpriteset::Save(const char* filename, IFileSystem& fs) const
     file->Write(m_Directions[i].name.c_str(), name_length);
 
     // write frames
-    for (unsigned j = 0; j < m_Directions[i].frames.size(); j++) {
+    for (unsigned int j = 0; j < m_Directions[i].frames.size(); j++) {
       word index = m_Directions[i].frames[j].index;
       word delay = m_Directions[i].frames[j].delay;
       file->Write(&index, 2);
@@ -708,7 +708,7 @@ sSpriteset::GetFrameHeight() const
 void
 sSpriteset::ResizeFrames(int width, int height)
 {
-  for (unsigned i = 0; i < m_Images.size(); i++) {
+  for (unsigned int i = 0; i < m_Images.size(); i++) {
     m_Images[i].Resize(width, height);
   }
 
@@ -721,7 +721,7 @@ sSpriteset::ResizeFrames(int width, int height)
 void
 sSpriteset::RescaleFrames(int width, int height)
 {
-  for (unsigned i = 0; i < m_Images.size(); i++) {
+  for (unsigned int i = 0; i < m_Images.size(); i++) {
     m_Images[i].Rescale(width, height);
   }
 
@@ -734,7 +734,7 @@ sSpriteset::RescaleFrames(int width, int height)
 void
 sSpriteset::ResampleFrames(int width, int height)
 {
-  for (unsigned i = 0; i < m_Images.size(); i++) {
+  for (unsigned int i = 0; i < m_Images.size(); i++) {
     m_Images[i].Resample(width, height);
   }
 
@@ -862,7 +862,7 @@ sSpriteset::GetNumFrames(std::string direction) const
   // prevent the engine from going dinky if it don't find the name ;)
   int d = 0;
 
-  for (unsigned i = 0; i < m_Directions.size(); i++) {
+  for (unsigned int i = 0; i < m_Directions.size(); i++) {
     if (strcmp_ci(direction.c_str(), m_Directions[i].name.c_str()) == 0)
     {
       d = i;
@@ -883,7 +883,7 @@ sSpriteset::GetFrameIndex(std::string direction, int frame) const
   // prevent the engine from going dinky if it don't find the name ;)
   int d = 0;
 
-  for (unsigned i = 0; i < m_Directions.size(); i++)
+  for (unsigned int i = 0; i < m_Directions.size(); i++)
     if (strcmp_ci(direction.c_str(), m_Directions[i].name.c_str()) == 0)
     {
       d = i;
@@ -903,7 +903,7 @@ sSpriteset::GetFrameDelay(std::string direction, int frame) const
   // prevent the engine from going dinky if it don't find the name ;)
   int d = 0;
 
-  for (unsigned i = 0; i < m_Directions.size(); i++)
+  for (unsigned int i = 0; i < m_Directions.size(); i++)
     if (strcmp_ci(direction.c_str(), m_Directions[i].name.c_str()) == 0)
     {
       d = i;
@@ -952,7 +952,7 @@ sSpriteset::GetDirectionNum(std::string direction) const
   // tell engine to shove itself with a broomstick if it can't find it.
   int d = -1;
 
-  for (unsigned i = 0; i < m_Directions.size(); i++)
+  for (unsigned int i = 0; i < m_Directions.size(); i++)
     if (strcmp_ci(direction.c_str(), m_Directions[i].name.c_str()) == 0)
     {
       d = i;

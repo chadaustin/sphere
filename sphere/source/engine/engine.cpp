@@ -298,7 +298,7 @@ bool
 CGameEngine::IsScriptEvaluated(const char* filename)
 {
   std::string name(filename);
-  for (unsigned i = 0; i < m_EvaluatedScripts.size(); i++) {
+  for (unsigned int i = 0; i < m_EvaluatedScripts.size(); i++) {
     if (m_EvaluatedScripts[i] == name) {
       return true;
     }
@@ -313,7 +313,7 @@ bool
 CGameEngine::IsSystemScriptEvaluated(const char* filename)
 {
   std::string name(filename);
-  for (unsigned i = 0; i < m_EvaluatedSystemScripts.size(); i++) {
+  for (unsigned int i = 0; i < m_EvaluatedSystemScripts.size(); i++) {
     if (m_EvaluatedSystemScripts[i] == name) {
       return true;
     }

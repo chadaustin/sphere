@@ -39,7 +39,7 @@ CPackageFileSystem::CPackageFileSystem(const char* filename, bool load_from_file
   fseek(m_file, header.index_offset, SEEK_SET);
 
   m_directory.resize(header.num_files);
-  for (unsigned i = 0; i < m_directory.size(); i++) {
+  for (unsigned int i = 0; i < m_directory.size(); i++) {
     // read entry
     SPK_ENTRY entry;
     if (fread(&entry, 1, sizeof(entry), m_file) != sizeof(entry)) {
@@ -102,7 +102,7 @@ CPackageFileSystem::Open(const char* filename, int mode)
   //if (debug_file) fprintf (debug_file, "filename: '%s'\n", filename);
 
   /*
-  for (unsigned i = 0; i < m_directory.size(); i++) {
+  for (unsigned int i = 0; i < m_directory.size(); i++) {
     if (path_compare(filename, m_directory[i].name.c_str())) {
       if (debug_file) fprintf (debug_file, "found filename: '%s'\n", filename);
     }
@@ -121,7 +121,7 @@ CPackageFileSystem::Open(const char* filename, int mode)
     }
 
     // now look in package
-    for (unsigned i = 0; i < m_directory.size(); i++) {
+    for (unsigned int i = 0; i < m_directory.size(); i++) {
       if (path_compare(filename, m_directory[i].name.c_str())) {
         return new CPackageFile(
           m_file,

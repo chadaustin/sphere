@@ -237,7 +237,7 @@ void ExecuteDialog()
   PROPSHEETPAGE Pages[4];
 
   // default values
-  for (unsigned i = 0; i < sizeof(Pages) / sizeof(*Pages); i++)
+  for (unsigned int i = 0; i < sizeof(Pages) / sizeof(*Pages); i++)
   {
     Pages[i].dwSize    = sizeof(Pages[i]);
     Pages[i].dwFlags   = PSP_DEFAULT;
@@ -286,7 +286,7 @@ BOOL CALLBACK VideoDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
     case WM_INITDIALOG:
     {
       // add the drivers
-      for (unsigned i = 0; i < VideoDriverList.size(); i++)
+      for (unsigned int i = 0; i < VideoDriverList.size(); i++)
         SendDlgItemMessage(window, IDC_DRIVERLIST, LB_ADDSTRING, 0, (LPARAM)VideoDriverList[i].c_str());
 
       // select the driver in the list box

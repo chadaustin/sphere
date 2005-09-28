@@ -315,7 +315,7 @@ void FillLUTs()
 {
   // square root look-up table
   short sqr_root[3 * 256 * 256];
-  for (unsigned i = 0; i < sizeof(sqr_root) / sizeof(*sqr_root); i++) {
+  for (unsigned int i = 0; i < sizeof(sqr_root) / sizeof(*sqr_root); i++) {
     sqr_root[i] = (short)sqrt(i);
   }
 

@@ -60,7 +60,7 @@ wDocumentWindow::~wDocumentWindow()
   //AfxGetApp()->m_pMainWnd->PostMessage(WM_DW_CLOSING, 0, (LPARAM)this);
   GetMainWindow()->CloseNotice(this);
   GetMainWindow()->ClearChildMenu();
-  for (unsigned i = 0; i < m_AttachedPalettes.size(); i++) {
+  for (unsigned int i = 0; i < m_AttachedPalettes.size(); i++) {
     m_AttachedPalettes[i]->Destroy();
   }
 }
@@ -94,7 +94,7 @@ wDocumentWindow::AttachPalette(wPaletteWindow* palette)
 void
 wDocumentWindow::DetachPalette(wPaletteWindow* palette)
 {
-  for (unsigned i = 0; i < m_AttachedPalettes.size(); i++) {
+  for (unsigned int i = 0; i < m_AttachedPalettes.size(); i++) {
     if (m_AttachedPalettes[i] == palette) {
       m_AttachedPalettes.erase(m_AttachedPalettes.begin() + i);
       return;
