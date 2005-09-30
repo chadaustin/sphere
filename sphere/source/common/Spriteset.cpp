@@ -4,7 +4,7 @@
 #include "packed.hpp"
 #include "strcmp_ci.hpp"
 #include "minmax.hpp"
-
+#include "endian.hpp"
 
 const int DEFAULT_DELAY = 8;
 
@@ -147,6 +147,16 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
     return false;
   }
 
+  header.version = ltom_w(header.version);
+  header.num_images   = ltom_w(header.num_images);
+  header.frame_width  = ltom_w(header.frame_width);
+  header.frame_height = ltom_w(header.frame_height);
+  header.num_directions = ltom_w(header.num_directions);
+  header.base_x1 = ltom_w(header.base_x1);
+  header.base_y1 = ltom_w(header.base_y1);
+  header.base_x2 = ltom_w(header.base_x2);
+  header.base_y2 = ltom_w(header.base_y2);
+
   // validate header
   if (memcmp(header.signature, ".rss", 4) != 0) {
     printf("Invalid signature in spriteset header...\n");
@@ -243,6 +253,8 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
 		return false;
 	  }
 
+      direction_header.num_frames = ltom_w(direction_header.num_frames);
+
       // set name
       if (i < 8) {
         m_Directions[i].name = direction_names[i];
@@ -261,6 +273,10 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
         if (file->Read(&frame_header, sizeof(frame_header)) != sizeof(frame_header)) {
 		  return false;
         }
+
+        frame_header.width  = ltom_w(frame_header.width);
+        frame_header.height = ltom_w(frame_header.height);
+        frame_header.delay  = ltom_w(frame_header.delay);
 
         // some backwards compatibility hacking
         if (m_FrameWidth == 0 || m_FrameHeight == 0) {
@@ -310,6 +326,8 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
         return false;
       }
 
+      num_frames = ltom_w(num_frames);
+
       if (num_frames <= 0)
         return false;
 
@@ -320,6 +338,8 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
       if (file->Read(&name_length, 2) != 2) {
         return false;
       }
+
+      name_length = ltom_w(name_length);
 
       if (name_length <= 0)
         return false;
@@ -349,9 +369,14 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
         word delay;
         byte reserved[4];
         int read = 0;
+
         read += file->Read(&index,   2);
         read += file->Read(&delay,   2);
         read += file->Read(reserved, 4);
+
+        index = ltom_w(index);
+        delay = ltom_w(delay);
+
         if (read != 8) {
           return false;
         }
@@ -386,15 +411,15 @@ sSpriteset::Save(const char* filename, IFileSystem& fs) const
   SPRITESET_HEADER header;
   memset(&header, 0, sizeof(header));
   memcpy(header.signature, ".rss", 4);
-  header.version        = 3;
-  header.num_images     = m_Images.size();
-  header.frame_width    = m_FrameWidth;
-  header.frame_height   = m_FrameHeight;
-  header.num_directions = m_Directions.size();
-  header.base_x1        = m_BaseX1;
-  header.base_y1        = m_BaseY1;
-  header.base_x2        = m_BaseX2;
-  header.base_y2        = m_BaseY2;
+  header.version        = mtol_w(3);
+  header.num_images     = mtol_w(m_Images.size());
+  header.frame_width    = mtol_w(m_FrameWidth);
+  header.frame_height   = mtol_w(m_FrameHeight);
+  header.num_directions = mtol_w(m_Directions.size());
+  header.base_x1        = mtol_w(m_BaseX1);
+  header.base_y1        = mtol_w(m_BaseY1);
+  header.base_x2        = mtol_w(m_BaseX2);
+  header.base_y2        = mtol_w(m_BaseY2);
 
   if (header.base_x1 > header.base_x2) { int temp = header.base_x1; header.base_x1 = header.base_x2; header.base_x2 = temp; }
   if (header.base_y1 > header.base_y2) { int temp = header.base_y1; header.base_y1 = header.base_y2; header.base_y2 = temp; }
@@ -412,20 +437,20 @@ sSpriteset::Save(const char* filename, IFileSystem& fs) const
   for (i = 0; i < m_Directions.size(); i++) {
 
     // write direction header
-    word num_frames = m_Directions[i].frames.size();
+    word num_frames = mtol_w(m_Directions[i].frames.size());
     byte empty6[] = { 0, 0, 0, 0, 0, 0 };
     file->Write(&num_frames, 2);
     file->Write(empty6, 6);
 
     // write direction name
-    word name_length = m_Directions[i].name.length() + 1;
+    word name_length = mtol_w(m_Directions[i].name.length() + 1);
     file->Write(&name_length, 2);
     file->Write(m_Directions[i].name.c_str(), name_length);
 
     // write frames
     for (unsigned int j = 0; j < m_Directions[i].frames.size(); j++) {
-      word index = m_Directions[i].frames[j].index;
-      word delay = m_Directions[i].frames[j].delay;
+      word index = mtol_w(m_Directions[i].frames[j].index);
+      word delay = mtol_w(m_Directions[i].frames[j].delay);
       file->Write(&index, 2);
       file->Write(&delay, 2);
       file->Write(empty6, 4);
