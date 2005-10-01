@@ -11,6 +11,7 @@
 #include "Entities.hpp"
 #include "Tileset.hpp"
 #include "Image32.hpp"
+#include "endian.hpp"
 #include "packed.hpp"
 #include "types.h"
 #include "strcmp_ci.hpp"
@@ -168,6 +169,7 @@ inline word ReadMapWord(IFile* file)
 {
   word w;
   file->Read(&w, 2);
+  w = ltom_w(w);
   return w;
 }
 
@@ -182,6 +184,8 @@ inline std::string ReadMapString(IFile* file)
 {
   std::string s;
   word length = ReadMapWord(file);
+  length = ltom_w(length);
+
   for (int i = 0; i < length; i++) {
     char c;
     file->Read(&c, 1);
@@ -224,6 +228,13 @@ sMap::Load(const char* filename, IFileSystem& fs)
   if (file->Read(&header, sizeof(header)) != sizeof(header)) {
     return false;
   }
+
+  header.version = ltom_w(header.version);
+  header.num_entities = ltom_w(header.num_entities);
+  header.startx = ltom_w(header.startx);
+  header.starty = ltom_w(header.starty);
+  header.num_strings = ltom_w(header.num_strings);
+  header.num_zones = ltom_w(header.num_zones);
 
   // make sure it's valid
   if (memcmp(header.signature, ".rmp", 4) != 0) {
@@ -281,6 +292,17 @@ sMap::Load(const char* filename, IFileSystem& fs)
     if (file->Read(&lh, sizeof(lh)) != sizeof(lh))
       return false;
 
+    lh.width = ltom_w(lh.width);
+    lh.height = ltom_w(lh.height);
+    lh.flags = ltom_w(lh.flags);
+    /*
+    float32 lh.parallax_x = ...;
+    float32 lh.parallax_y = ...;
+    float32 lh.scrolling_x = ...;
+    float32 lh.scrolling_y = ...;
+    */
+    lh.num_segments = ltom_d(lh.num_segments);
+
     if (lh.width  <= 0 || lh.width  > 4096
      || lh.height <= 0 || lh.height > 4096) {
        return false;
@@ -320,7 +342,7 @@ sMap::Load(const char* filename, IFileSystem& fs)
     word* tile = layer_info;
     for (int iy = 0; iy < lh.height; iy++) {
       for (int ix = 0; ix < lh.width; ix++) {
-        m_Layers[i].SetTile(ix, iy, *tile++);
+        m_Layers[i].SetTile(ix, iy, ltom_w(*tile++));
       }
     }
 
@@ -333,6 +355,7 @@ sMap::Load(const char* filename, IFileSystem& fs)
       for (int ix = 0; ix < lh.width; ix++) {
         word tile;
         file->Read(&tile, sizeof(tile));
+        tile = ltom_w(tile);
         m_Layers[i].SetTile(ix, iy, tile);
       }
     }
@@ -342,10 +365,10 @@ sMap::Load(const char* filename, IFileSystem& fs)
 
     for (unsigned int j = 0; j < lh.num_segments; j++) {
 
-      dword x1; file->Read(&x1, sizeof(dword));
-      dword y1; file->Read(&y1, sizeof(dword));
-      dword x2; file->Read(&x2, sizeof(dword));
-      dword y2; file->Read(&y2, sizeof(dword));
+      dword x1; file->Read(&x1, sizeof(dword)); x1 = ltom_d(x1);
+      dword y1; file->Read(&y1, sizeof(dword)); y1 = ltom_d(y1);
+      dword x2; file->Read(&x2, sizeof(dword)); x2 = ltom_d(x2);
+      dword y2; file->Read(&y2, sizeof(dword)); y2 = ltom_d(y2);
 
       m_Layers[i].GetObstructionMap().AddSegment(x1, y1, x2, y2);
     }
@@ -362,6 +385,11 @@ sMap::Load(const char* filename, IFileSystem& fs)
     if (file->Read(&eh, sizeof(eh)) != sizeof(eh))
       return false;
 
+    eh.mapx = ltom_w(eh.mapx);
+    eh.mapy = ltom_w(eh.mapy);
+    eh.layer = ltom_w(eh.layer);
+    eh.type = ltom_w(eh.type);
+
     sEntity* entity;
     switch (eh.type)
     {
@@ -377,6 +405,7 @@ sMap::Load(const char* filename, IFileSystem& fs)
         ((sPersonEntity*)entity)->spriteset = ReadMapString(file);
 
         word num_strings = ReadMapWord(file);
+        num_strings = ltom_w(num_strings);
 
         // strings
         if (num_strings >= 1) ((sPersonEntity*)entity)->script_create            = ReadMapString(file);
@@ -432,6 +461,13 @@ sMap::Load(const char* filename, IFileSystem& fs)
 
     if (file->Read(&zh, sizeof(zh)) != sizeof(zh))
       return false;
+
+    zh.x1 = ltom_w(zh.x1);
+    zh.y1 = ltom_w(zh.y1);
+    zh.x2 = ltom_w(zh.x2);
+    zh.y2 = ltom_w(zh.y2);
+    zh.layer = ltom_w(zh.layer);
+    zh.reactivate_in_num_steps = ltom_w(zh.reactivate_in_num_steps);
 
     if (zh.layer < 0 || zh.layer >= m_Layers.size()) {
       zh.layer = 0;
@@ -528,6 +564,7 @@ inline void WriteMapByte(const std::auto_ptr<IFile>& file, byte b)
 
 inline void WriteMapWord(IFile* file, word w)
 {
+  w = mtol_w(w);
   file->Write(&w, 2);
 }
 
@@ -567,16 +604,17 @@ sMap::Save(const char* filename, IFileSystem& fs)
   MAP_HEADER header;
   memset(&header, 0, sizeof(header));
   memcpy(header.signature, ".rmp", 4);
-  header.version        = 1;
+  header.version        = mtol_w(1);
   header.num_layers     = m_Layers.size();
-  header.num_entities   = m_Entities.size();
-  header.startx         = m_StartX;
-  header.starty         = m_StartY;
+  header.num_entities   = mtol_w(m_Entities.size());
+  header.startx         = mtol_w(m_StartX);
+  header.starty         = mtol_w(m_StartY);
   header.startlayer     = m_StartLayer;
   header.startdirection = m_StartDirection;
   header.repeating      = m_Repeating;
-  header.num_strings    = 9;
-  header.num_zones      = m_Zones.size();
+  header.num_strings    = mtol_w(9);
+  header.num_zones      = mtol_w(m_Zones.size());
+
   if (file->Write(&header, sizeof(header)) != sizeof(header))
     return false;
 
@@ -610,6 +648,18 @@ sMap::Save(const char* filename, IFileSystem& fs)
     lh.scrolling_y  = m_Layers[i].GetYScrolling();
     lh.num_segments = obstructions.GetNumSegments();
     lh.reflective   = (m_Layers[i].IsReflective() ? 1 : 0);
+
+    lh.width = mtol_w(lh.width);
+    lh.height = mtol_w(lh.height);
+    lh.flags = mtol_w(lh.flags);
+/*
+  float32 parallax_x = ...;
+  float32 parallax_y = ...;
+  float32 scrolling_x = ...;
+  float32 scrolling_y = ...;
+*/
+    lh.num_segments = mtol_d(lh.num_segments);
+
     if (file->Write(&lh, sizeof(lh)) != sizeof(lh))
       return false;
 
@@ -621,6 +671,7 @@ sMap::Save(const char* filename, IFileSystem& fs)
       for (int ix = 0; ix < m_Layers[i].GetWidth(); ix++)
       {
         word w = m_Layers[i].GetTile(ix, iy);
+        w = mtol_w(w);
         file->Write(&w, 2);
       }
 
@@ -628,10 +679,10 @@ sMap::Save(const char* filename, IFileSystem& fs)
     for (int i = 0; i < obstructions.GetNumSegments(); i++) {
       const sObstructionMap::Segment& s = obstructions.GetSegment(i);
 
-      dword x1 = s.x1;
-      dword y1 = s.y1;
-      dword x2 = s.x2;
-      dword y2 = s.y2;
+      dword x1 = s.x1; x1 = mtol_d(x1);
+      dword y1 = s.y1; y1 = mtol_d(y1);
+      dword x2 = s.x2; x2 = mtol_d(x2);
+      dword y2 = s.y2; y2 = mtol_d(y2);
 
       file->Write(&x1, sizeof(dword));
       file->Write(&y1, sizeof(dword));
@@ -647,15 +698,20 @@ sMap::Save(const char* filename, IFileSystem& fs)
     // write the header
     ENTITY_HEADER eh;
     memset(&eh, 0, sizeof(eh));
-    eh.mapx  = m_Entities[i]->x;
-    eh.mapy  = m_Entities[i]->y;
-    eh.layer = m_Entities[i]->layer;
+    eh.mapx  = mtol_w(m_Entities[i]->x);
+    eh.mapy  = mtol_w(m_Entities[i]->y);
+    eh.layer = mtol_w(m_Entities[i]->layer);
+
     switch (m_Entities[i]->GetEntityType())
     {
       case sEntity::PERSON:  eh.type = 1; break;
       case sEntity::TRIGGER: eh.type = 2; break;
-      default: break; // prevent a gcc warning (unhandled enum)
+      default:
+        eh.type = 0;
+      break; // prevent a gcc warning (unhandled enum)
     }
+
+    eh.type = mtol_w(eh.type);
     file->Write(&eh, sizeof(eh));
 
     // write the entity data
@@ -704,12 +760,12 @@ sMap::Save(const char* filename, IFileSystem& fs)
     ZONE_HEADER zh;
 
     memset(&zh, 0, sizeof(zh));
-    zh.x1 = m_Zones[i].x1;
-    zh.y1 = m_Zones[i].y1;
-    zh.x2 = m_Zones[i].x2;
-    zh.y2 = m_Zones[i].y2;
-    zh.layer = m_Zones[i].layer;
-    zh.reactivate_in_num_steps = m_Zones[i].reactivate_in_num_steps;
+    zh.x1 = m_Zones[i].x1; zh.x1 = mtol_w(zh.x1);
+    zh.y1 = m_Zones[i].y1; zh.y1 = mtol_w(zh.y1);
+    zh.x2 = m_Zones[i].x2; zh.x2 = mtol_w(zh.x2);
+    zh.y2 = m_Zones[i].y2; zh.y2 = mtol_w(zh.y2);
+    zh.layer = mtol_w(m_Zones[i].layer);
+    zh.reactivate_in_num_steps = mtol_w(m_Zones[i].reactivate_in_num_steps);
 
     file->Write(&zh, sizeof(zh));
     WriteMapString(file, m_Zones[i].script.c_str());
@@ -921,6 +977,8 @@ sMap::SetTileSize(int width, int height, int method, void (*callback)(int tile, 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+// todo: fix endian issues for v1/v2 formats...
 
 #define STRUCT_NAME V1MAP_HEADER
 #define STRUCT_BODY                             \
@@ -1730,7 +1788,7 @@ sMap::Translate(int dx, int dy, int layer_to_translate)
       }
     }
   }
-
+ 
   // Note: We need to handle wrap around here
   // (probably split the line into two if needed)
   if (obstruction_lines) {

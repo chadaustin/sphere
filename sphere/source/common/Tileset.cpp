@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "Tileset.hpp"
 #include "Image32.hpp"
+#include "endian.hpp"
 #include "packed.hpp"
 #include "common_palettes.hpp"
 
@@ -193,6 +194,9 @@ sTileset::Import_VSP(const char* filename, IFileSystem& fs)
   file->Read(palette,   3 * 256);
   file->Read(&numtiles, 2);
 
+  version = ltom_w(version);
+  numtiles = ltom_w(numtiles);
+
   m_Tiles.clear();
   m_Tiles.resize(numtiles);
 
@@ -233,6 +237,8 @@ sTileset::Import_VSP(const char* filename, IFileSystem& fs)
     // for that wierd thing aen never told me in the vsp code
     dword dw;
     file->Read(&dw, 4);
+
+    dw = ltom_w(dw);
 
     // create a temporary buffer while setting up the decoding stuff...
     byte* buffer = (byte*)malloc(numtiles * 256);
@@ -308,9 +314,18 @@ sTileset::Import_TST(const char* filename, IFileSystem& fs)
   file->Read(&numtiles, 2);
   file->Read(&detail,   2);
 
+  version = ltom_w(version);
+  numtiles = ltom_w(numtiles);
+  detail = ltom_w(detail);
+
   // check header for errors
   // only support details 2, 4, 6
-  if (version != 20 && (detail == 2 || detail == 4 || detail == 6))
+  if (version != 20)
+  {
+    return false;
+  }
+
+  if (detail == 2 || detail == 4 || detail == 6)
   {
     return false;
   }
@@ -399,6 +414,12 @@ sTileset::LoadFromFile(IFile* file)
     return false;
   }
 
+  header.version = ltom_w(header.version);
+  header.num_tiles = ltom_w(header.num_tiles);
+  header.tile_width  = ltom_w(header.tile_width);
+  header.tile_height = ltom_w(header.tile_height);
+  header.tile_bpp = ltom_w(header.tile_bpp);
+
   // check the header
   if (memcmp(header.signature, ".rts", 4) != 0)
   {
@@ -477,6 +498,11 @@ sTileset::LoadFromFile(IFile* file)
       return false;
     }
 
+    tib.nexttile = ltom_w(tib.nexttile);
+    tib.delay = ltom_w(tib.delay);
+    tib.num_segments = ltom_w(tib.num_segments);
+    tib.name_length = ltom_w(tib.name_length);
+
     m_Tiles[i].SetAnimated(tib.animated ? true : false);
     m_Tiles[i].SetNextTile(tib.nexttile);
 	m_Tiles[i].SetTerraformable(tib.terraformed ? true : false);
@@ -497,6 +523,11 @@ sTileset::LoadFromFile(IFile* file)
 
           word coordinates[4];
           file->Read(coordinates, 4 * sizeof(word));
+
+          coordinates[0] = ltom_w(coordinates[0]);
+          coordinates[1] = ltom_w(coordinates[1]);
+          coordinates[2] = ltom_w(coordinates[2]);
+          coordinates[3] = ltom_w(coordinates[3]);
 
           m_Tiles[i].GetObstructionMap().AddSegment(
             coordinates[0], // x1
@@ -523,11 +554,11 @@ sTileset::SaveToFile(IFile* file) const
   TILESET_HEADER header;
   memset(&header, 0, sizeof(header));
   memcpy(header.signature, ".rts", 4);
-  header.version = 1;
-  header.num_tiles   = m_Tiles.size();
-  header.tile_width  = m_TileWidth;
-  header.tile_height = m_TileHeight;
-  header.tile_bpp    = 32;
+  header.version = mtol_w(1);
+  header.num_tiles   = mtol_w(m_Tiles.size());
+  header.tile_width  = mtol_w(m_TileWidth);
+  header.tile_height = mtol_w(m_TileHeight);
+  header.tile_bpp    = mtol_w(32);
   header.compression = 0;
   header.has_obstructions = 1;
 
@@ -548,12 +579,12 @@ sTileset::SaveToFile(IFile* file) const
     const sObstructionMap& obs_map = m_Tiles[i].GetObstructionMap();
 
     tib.animated     = m_Tiles[i].IsAnimated();
-    tib.nexttile     = m_Tiles[i].GetNextTile();
-    tib.delay        = m_Tiles[i].GetDelay();
-	tib.terraformed  = m_Tiles[i].IsTerraformable();
+    tib.nexttile     = mtol_w(m_Tiles[i].GetNextTile());
+    tib.delay        = mtol_w(m_Tiles[i].GetDelay());
     tib.block_type   = 2;
-    tib.num_segments = obs_map.GetNumSegments();
-    tib.name_length  = strlen(m_Tiles[i].GetName().c_str());
+    tib.num_segments = mtol_w(obs_map.GetNumSegments());
+    tib.name_length  = mtol_w(strlen(m_Tiles[i].GetName().c_str()));
+	tib.terraformed  = m_Tiles[i].IsTerraformable();
 
     if (file->Write(&tib, sizeof(tib)) != sizeof(tib))
       return false;
@@ -571,6 +602,11 @@ sTileset::SaveToFile(IFile* file) const
         obs_map.GetSegment(j).x2,
         obs_map.GetSegment(j).y2
       };
+
+      coordinates[0] = mtol_w(coordinates[0]);
+      coordinates[1] = mtol_w(coordinates[1]);
+      coordinates[2] = mtol_w(coordinates[2]);
+      coordinates[3] = mtol_w(coordinates[3]);
 
       if (file->Write(coordinates, (4 * sizeof(word))) != (4 * sizeof(word)))
         return false;
@@ -598,6 +634,11 @@ sTileset::BuildFromImage(CImage32& i, int tile_width, int tile_height, bool allo
 
   CImage32 image = i;
   image.Resize(tile_width * num_x_tiles, tile_height * num_y_tiles);
+
+  if (image.GetWidth() != tile_width * num_x_tiles || image.GetHeight() != tile_height * num_y_tiles)
+  {
+    return false;
+  }
 
   // clear out the old tiles
   m_Tiles.clear();
