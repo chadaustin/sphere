@@ -57,11 +57,7 @@ CClipboard::GetFlatImageFromClipboard(int& width, int& height)
     return NULL;
   }
 
-  for (int y = 0; y < height; y++) {
-    for (int x = 0; x < width; x++) {
-      pixels[y * width + x] = clipboard[y * width + x];
-    }
-  }
+  memcpy(pixels, clipboard, width * height * sizeof(RGBA));
 
   GlobalUnlock(memory);
 
@@ -190,30 +186,31 @@ CClipboard::PutBitmapImageOntoClipboard(int width, int height, const RGBA* sourc
 
   // create the bitmap
   HBITMAP bitmap = CreateBitmap(width, height, 1, 32, pixels);
-	BITMAPINFOHEADER header;
+  BITMAPINFOHEADER header;
   memset((void*)&header, 0, sizeof(header));
-	header.biSize = sizeof(header);
-	header.biWidth = width;
-	header.biHeight = height;
-	header.biPlanes = 1;
-	header.biBitCount = 32;
-	header.biCompression = BI_RGB;
-	header.biSizeImage = 0;
-	header.biXPelsPerMeter = 0;
-	header.biYPelsPerMeter = 0;
-	header.biClrUsed = 0;
-	header.biClrImportant = 0;
+  header.biSize = sizeof(header);
+  header.biWidth = width;
+  header.biHeight = height;
+  header.biPlanes = 1;
+  header.biBitCount = 32;
+  header.biCompression = BI_RGB;
+  header.biSizeImage = 0;
+  header.biXPelsPerMeter = 0;
+  header.biYPelsPerMeter = 0;
+  header.biClrUsed = 0;
+  header.biClrImportant = 0;
 
-	HGLOBAL hDIB = GlobalAlloc(GHND, sizeof(header) + width * height * 4);
+  HGLOBAL hDIB = GlobalAlloc(GHND, sizeof(header) + width * height * 4);
   char* dibPtr = (char*)GlobalLock(hDIB);
   if (dibPtr == NULL) {
     CloseClipboard();
     delete[] pixels;
     return false;
   }
-	memcpy(dibPtr, &header, sizeof(header));
-	memcpy(dibPtr+sizeof(header), pixels, width * height * 4);
-	GlobalUnlock(hDIB);
+  
+  memcpy(dibPtr, &header, sizeof(header));
+  memcpy(dibPtr+sizeof(header), pixels, width * height * 4);
+  GlobalUnlock(hDIB);
 
   // put the bitmap in the clipboard
   SetClipboardData(CF_DIB, hDIB);

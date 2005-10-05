@@ -110,6 +110,11 @@ SOURCE=..\common\video.def
 # End Source File
 # Begin Source File
 
+SOURCE=..\common\video_with_3d.def
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
 SOURCE=..\common\win32x.cpp
 # End Source File
 # End Group

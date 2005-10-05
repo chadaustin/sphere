@@ -34,15 +34,3 @@ EXPORTS
   DrawGradientTriangle
   DrawRectangle
   DrawGradientRectangle
-
-  Transform3DBlitImage
-  Triangle3DBlitImage
-  SwitchProjectiveMode
-  Set3DCameraPositionDr
-  Set3DCameraAnglesDr
-  Get3DCameraXDr
-  Get3DCameraYDr
-  Get3DCameraZDr
-  Get3DCameraAngleXDr
-  Get3DCameraAngleYDr
-  Get3DCameraAngleZDr

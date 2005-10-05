@@ -285,13 +285,19 @@ void Triangle(
     }
 
     // render all scanlines
-    int min_y = maximum<int>(clipper.top, top_y);
-    int max_y = minimum<int>(clipper.bottom, mid_y);
+    int min_y = top_y;
+    int max_y = mid_y;
+
+    int __min_y__ = maximum<int>(clipper.top, top_y);
+    int __max_y__ = minimum<int>(clipper.bottom, mid_y);
 
     if (min_y == max_y)
       return;
 
-    for (int iy = min_y; iy <= max_y; iy++) {
+    if (__min_y__ == __max_y__)
+      return;
+
+    for (int iy = __min_y__; iy <= __max_y__; iy++) {
 
       // calculate edges of scanline
       const int right_round = max_y - min_y - 1;
@@ -334,13 +340,19 @@ void Triangle(
     int bottom_y = sorted_y[2];
 
     // render all scanlines
-    int min_y = maximum<int>(clipper.top, mid_y);
-    int max_y = minimum<int>(clipper.bottom, bottom_y);
+    int min_y = mid_y;
+    int max_y = bottom_y;
+
+    int __min_y__ = maximum<int>(clipper.top, mid_y);
+    int __max_y__ = minimum<int>(clipper.bottom, bottom_y);
 
     if (min_y == max_y)
       return;
 
-    for (int iy = min_y; iy <= max_y; iy++) {
+    if (__min_y__ == __max_y__)
+      return;
+
+    for (int iy = __min_y__; iy <= __max_y__; iy++) {
 
       // calculate edges of scanline
       // calculate edges of scanline
@@ -433,9 +445,19 @@ void GradientTriangle(
     }
 
     // render all scanlines
-    int min_y = maximum<int>(clipper.top, top_y);
-    int max_y = minimum<int>(clipper.bottom, mid_y);
-    for (int iy = min_y; iy <= max_y; iy++) {
+    int min_y = top_y;
+    int max_y = mid_y;
+
+    int __min_y__ = maximum<int>(clipper.top, top_y);
+    int __max_y__ = minimum<int>(clipper.bottom, mid_y);
+
+    if (min_y == max_y)
+      return;
+
+    if (__min_y__ == __max_y__)
+      return;
+
+    for (int iy = __min_y__; iy <= __max_y__; iy++) {
 
       // calculate edges of scanline
       const int right_round = max_y - min_y - 1;
@@ -493,9 +515,19 @@ void GradientTriangle(
     sourceT bottom_c = sorted_c[2];
 
     // render all scanlines
-    int min_y = maximum<int>(clipper.top, mid_y);
-    int max_y = minimum<int>(clipper.bottom, bottom_y);
-    for (int iy = min_y; iy <= max_y; iy++) {
+    int min_y = mid_y;
+    int max_y = bottom_y;
+
+    int __min_y__ = maximum<int>(clipper.top, mid_y);
+    int __max_y__ = minimum<int>(clipper.bottom, bottom_y);
+
+    if (min_y == max_y)
+      return;
+
+    if (__min_y__ == __max_y__)
+      return;
+
+    for (int iy = __min_y__; iy <= __max_y__; iy++) {
 
       // calculate edges of scanline
       const int right_round = max_y - min_y - 1;
