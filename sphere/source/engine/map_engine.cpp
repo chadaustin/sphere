@@ -1209,6 +1209,26 @@ CMapEngine::SetZoneLayer(int zone, int layer)
     return false;
 
   m_Map.GetMap().GetZone(zone).layer = layer;
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetNumObstructionSegments(int layer, int& num_segments)
+{
+  if (!m_IsRunning) {
+    m_ErrorMessage = "GetNumObstructionSegments() called while map engine was not running";
+    return false;
+  }
+
+  if ( IsInvalidLayerError(layer, "SetZoneLayer()") )
+    return false;
+
+  sObstructionMap& obs_map = m_Map.GetMap().GetLayer(layer).GetObstructionMap();
+  num_segments = obs_map.GetNumSegments();
+
   return true;
 }
 

@@ -1257,12 +1257,11 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-
-// section: script functions //
+// section: version functions //
 
 /**
-  - Returns the current version of Sphere as a floating point number
-    (e.g. 1.0 or 1.1)
+    - Returns the current version of Sphere as a floating point number
+      (e.g. 1.0 or 1.1)
 */
 begin_func(GetVersion, 0)
   return_double(GetSphereVersion());
@@ -1271,7 +1270,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-  - Returns the current Sphere version string
+    - Returns the current Sphere version string
 */
 begin_func(GetVersionString, 0)
   return_str(SPHERE_VERSION);
@@ -1279,9 +1278,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// section: script functions //
+
 /**
-  - Reads the script in and uses it as if it were a part of the current script.
-    ex: EvaluateScript("myscript.js");
+    - Reads the script in and uses it as if it were a part of the current script.
+      ex: EvaluateScript("myscript.js");
 */
 begin_func(EvaluateScript, 1)
   arg_str(name);
@@ -1319,8 +1320,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-  - Reads in one of the preset system scripts for use in the current script
-    ex: EvaluateSystemScript("menu.js");
+    - Reads in one of the preset system scripts for use in the current script
+      ex: EvaluateSystemScript("menu.js");
 */
 begin_func(EvaluateSystemScript, 1)
   arg_str(name);
@@ -1362,9 +1363,9 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-  - Reads the script in and uses it as if it were a part of the current script.
-    But only if the script has not already been evaluated.
-    ex: RequireScript("myscript.js");
+    - Reads the script in and uses it as if it were a part of the current script.
+      But only if the script has not already been evaluated.
+      ex: RequireScript("myscript.js");
 */
 begin_func(RequireScript, 1)
   arg_str(name);
@@ -1403,9 +1404,9 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-  - Reads in one of the preset system scripts for use in the current script.
-    But only if the script has not already been evaluated.
-    ex: RequireSystemScript("menu.js");
+    - Reads in one of the preset system scripts for use in the current script.
+      But only if the script has not already been evaluated.
+      ex: RequireSystemScript("menu.js");
 */
 begin_func(RequireSystemScript, 1)
   arg_str(name);
@@ -1449,7 +1450,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-  - invokes the JavaScript garbage collector
+    - invokes the JavaScript garbage collector
 */
 begin_func(GarbageCollect, 0)
   JS_GC(cx);
@@ -1457,11 +1458,12 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-
 // section: misc functions //
 
 /**
-  - creates a single-character string based on the code passed in, i.e. 65 is "A"
+    - creates a single-character string based on the code passed in, i.e. 65 is "A"
+      Do not use this function, use String.fromCharCode(code) instead...
+      e.g. String.fromCharCode(65) == "A"
 */
 begin_func(CreateStringFromCode, 1)
   arg_int(code);
@@ -1472,12 +1474,14 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// section: engine functions //
+
 /**
-  - Returns array of game objects
-    - game.name          Name of game
-    - game.directory     Directory (project name) where game is stored
-    - game.author        Who wrote it?
-    - game.description   Bite-sized summary of game.
+    - Returns array of game objects
+      - game.name          Name of game
+      - game.directory     Directory (project name) where game is stored
+      - game.author        Who wrote it?
+      - game.description   Bite-sized summary of game.
 */
 begin_func(GetGameList, 0)
 
@@ -1537,11 +1541,11 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-  - executes the game in sphere/games/<directory>.  This function
-    actually exits the first game and loads the one in 'directory'.
-    When the second game returns, the original is loaded again.
-    (Note that this is unlike Sphere 0.97, which returned directly
-    from ExecuteGame when the other game finished.)
+    - executes the game in sphere/games/<directory>.  This function
+      actually exits the first game and loads the one in 'directory'.
+      When the second game returns, the original is loaded again.
+      (Note that this is unlike Sphere 0.97, which returned directly
+      from ExecuteGame when the other game finished.)
 */
 begin_func(ExecuteGame, 1)
   arg_str(directory);
@@ -1554,7 +1558,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-  - Exits the Sphere engine unconditionally
+    - Exits the Sphere engine unconditionally
 */
 begin_func(Exit, 0)
   This->m_ShouldExit = true;
@@ -1570,8 +1574,12 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-  - Exits the Sphere engine unconditionally, displays the 'message' to the
-    user
+    - Exits the Sphere engine unconditionally,
+      displays the 'message' to the user
+      If you end the message with a newline it wont display the file/line
+      where the Abort occured.
+      e.g. Abort("Mistake here")
+      vs. Abort("Game over!\n");
 */
 begin_func(Abort, 1)
   arg_str(message);
@@ -1588,7 +1596,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-  - restarts the current game
+    - restarts the current game
 */
 begin_func(RestartGame, 0)
   This->m_Engine->RestartGame();
@@ -1603,32 +1611,7 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/**
-  - opens a log file for use under the filename. If Sphere is unable to open
-    the file for logging, the engine will give an error message and exit.
-    If Sphere is successful in opening the file, it will return a log object
-    for use.
-    ex: var myLog = OpenLog("game.log");
-*/
-begin_func(OpenLog, 1)
-  arg_str(filename);
-
-  if (IsValidPath(filename) == false) {
-    JS_ReportError(cx, "Invalid filename: '%s'", filename);
-    return JS_FALSE;
-  }
-
-  CLog* log = This->m_Engine->OpenLog(filename);
-
-  if (log == NULL) {
-    JS_ReportError(cx, "OpenLog() failed: Could not open file '%s'", filename);
-    return JS_FALSE;
-  }
-
-  return_object(CreateLogObject(cx, log));
-end_func()
-
-////////////////////////////////////////////////////////////////////////////////
+// section: graphics functions //
 
 /**
     - displays the contents from the video buffer onto the screen.
@@ -1690,13 +1673,13 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-     - Returns a rectangle object representing the clipping rectangle.
-       i.e.
-       var clip = GetClippingRectangle();
-           clip.x
-           clip.y
-           clip.width
-           clip.height
+    - Returns a rectangle object representing the clipping rectangle.
+      i.e.
+      var clip = GetClippingRectangle();
+          clip.x
+          clip.y
+          clip.width
+          clip.height
 */
 begin_func(GetClippingRectangle, 0)
 
@@ -1834,7 +1817,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - plots a point onto the video buffer at (x, y) with the color
+    - plots a point onto the video buffer at (x, y) with the color
 */
 begin_func(Point, 3)
   if (This->ShouldRender()) {
@@ -1849,7 +1832,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - draws a line from (x1, y1) to (x2, y2) with the color
+    - draws a line from (x1, y1) to (x2, y2) with the color
 */
 begin_func(Line, 5)
   if (This->ShouldRender()) {
@@ -1868,8 +1851,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - Draws a line from (x1, y1) to (x2, y2) with a color fade from color1
-        to color2
+    - Draws a line from (x1, y1) to (x2, y2) with a color fade from color1
+      to color2
 */
 begin_func(GradientLine, 6)
   if (This->ShouldRender()) {
@@ -1892,8 +1875,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - Draws a filled triangle with the points (x1, y1), (x2, y2), (x3, y3),
-        with the color c
+    - Draws a filled triangle with the points (x1, y1), (x2, y2), (x3, y3),
+      with the color c
 */
 begin_func(Triangle, 7)
   if (This->ShouldRender()) {
@@ -1914,9 +1897,9 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - Draws a gradient triangle with the points (x1, y1), (x2, y2), (x3, y3),
-        with each point (c1 = color of (x1, y1), c2 = color of (x2, y2), c3 = color
-        of (x3, y3)) having a color to generate the gradient of the triangle
+    - Draws a gradient triangle with the points (x1, y1), (x2, y2), (x3, y3),
+      with each point (c1 = color of (x1, y1), c2 = color of (x2, y2), c3 = color
+      of (x3, y3)) having a color to generate the gradient of the triangle
 */
 begin_func(GradientTriangle, 9)
   if (This->ShouldRender()) {
@@ -1943,7 +1926,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - Draws a rectangle at (x, y) of width w and height h, filled with color c.
+    - Draws a rectangle at (x, y) of width w and height h, filled with color c.
 */
 begin_func(Rectangle, 5)
   if (This->ShouldRender()) {
@@ -1960,11 +1943,11 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - Draws a gradient rectangle at (x,y) with the height h and width w.
-        Each corner of a rectangle (c_ul = color of upper left corner,
-        c_ur = color of upper right corner, c_lr = color of lower right corner,
-        c_ll = color of lower left corner) accepts a color information to
-        generate the gradient of the rectangle.
+    - Draws a gradient rectangle at (x,y) with the height h and width w.
+      Each corner of a rectangle (c_ul = color of upper left corner,
+      c_ur = color of upper right corner, c_lr = color of lower right corner,
+      c_ll = color of lower left corner) accepts a color information to
+      generate the gradient of the rectangle.
 */
 begin_func(GradientRectangle, 8)
   if (This->ShouldRender()) {
@@ -1991,8 +1974,8 @@ end_func()
 // section: input //
 
 /**
-      - returns true or false depending if the there are keys from the key
-        input queue.
+    - returns true or false depending if the there are keys from the key
+      input queue.
 */
 begin_func(AreKeysLeft, 0)
   return_bool(AreKeysLeft());
@@ -2001,8 +1984,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns the first key in the queue. If there are no keys in the queue,
-        Sphere will wait until there is a key in the queue.
+    - returns the first key in the queue. If there are no keys in the queue,
+      Sphere will wait until there is a key in the queue.
 */
 begin_func(GetKey, 0)
   return_int(GetKey());
@@ -2011,8 +1994,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - checks if the key has been pressed. Returns true if 'key' is
-    pressed....
+    - checks if the key has been pressed.
+      Returns true if 'key' is pressed....
 */
 begin_func(IsKeyPressed, 1)
   arg_int(key);
@@ -2023,7 +2006,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - checks if any key is pressed at the time.
+    - checks if any key is pressed at the time.
 */
 begin_func(IsAnyKeyPressed, 0)
   RefreshInput();
@@ -2033,9 +2016,9 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - converts the key into a string, KEY_A will become "a", etc.
-      - if shift is true, returns uppercase/special value of key
-      - control keys return ""
+    - converts the key into a string, KEY_A will become "a", etc.
+    - if shift is true, returns uppercase/special value of key
+    - control keys return ""
 */
 begin_func(GetKeyString, 2)
   arg_int(key);
@@ -2046,7 +2029,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - Sets the x and y of the mouse cursor
+    - Sets the x and y of the mouse cursor
 */
 begin_func(SetMousePosition, 2)
   arg_int(x);
@@ -2057,7 +2040,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns the x location of the mouse cursor within the engine screen
+    - returns the x location of the mouse cursor within the engine screen
 */
 begin_func(GetMouseX, 0)
   return_int(GetMouseX());
@@ -2066,7 +2049,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns the y location of the mouse cursor within the engine screen
+    - returns the y location of the mouse cursor within the engine screen
 */
 begin_func(GetMouseY, 0)
   return_int(GetMouseY());
@@ -2075,8 +2058,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns true if the button is pressed
-        allowed button values are: MOUSE_LEFT, MOUSE_RIGHT, MOUSE_MIDDLE
+    - returns true if the button is pressed
+      allowed button values are: MOUSE_LEFT, MOUSE_RIGHT, MOUSE_MIDDLE
 */
 begin_func(IsMouseButtonPressed, 1)
   arg_int(button);
@@ -2092,7 +2075,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns the number of joysticks available on the system
+    - returns the number of joysticks available on the system
 */
 begin_func(GetNumJoysticks, 0)
   return_int(GetNumJoysticks());
@@ -2101,8 +2084,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns the current x joystick position in normalized
-        coordinates from -1 to 1 on the horizontal axis.
+    - returns the current x joystick position in normalized
+      coordinates from -1 to 1 on the horizontal axis.
 */
 begin_func(GetJoystickX, 1)
   arg_int(joy);
@@ -2113,8 +2096,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns the current y joystick position in normalized
-        coordinates from -1 to 1 on the vertical axis.
+    - returns the current y joystick position in normalized
+      coordinates from -1 to 1 on the vertical axis.
 */
 begin_func(GetJoystickY, 1)
   arg_int(joy);
@@ -2125,7 +2108,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns the number of buttons available on this joystick
+    - returns the number of buttons available on this joystick
 */
 begin_func(GetNumJoystickButtons, 1)
   arg_int(joy);
@@ -2136,7 +2119,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns true if the button on joystick 'joy' is pressed
+    - returns true if the button on joystick 'joy' is pressed
 */
 begin_func(IsJoystickButtonPressed, 2)
   arg_int(joy);
@@ -2454,12 +2437,60 @@ begin_func(SetDefaultMapScript, 2)
 
 end_func()
 
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+    - Renders the map into the video buffer
+*/
+begin_func(RenderMap, 0)
+
+  if ( !This->m_Engine->GetMapEngine()->RenderMap() ) {
+    This->ReportMapEngineError("RenderMap() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+    - applies a color mask to things drawn by the map engine for 'num_frames' frames
+*/
+begin_func(SetColorMask, 2)
+  arg_color(color);
+  arg_int(num_frames);
+
+  if (!This->m_Engine->GetMapEngine()->SetColorMask(color, num_frames)) {
+    This->ReportMapEngineError("SetColorMask() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+    - in 'num_frames' frames, runs 'script'
+      ex: SetDelayScript(60, "ChangeMap('forest.rmp')");
+      this tells the map engine to change to forest.rmp after 60 frames
+*/
+begin_func(SetDelayScript, 2)
+  arg_int(num_frames);
+  arg_str(script);
+
+  if (!This->m_Engine->GetMapEngine()->SetDelayScript(num_frames, script)) {
+    This->ReportMapEngineError("SetDelayScript() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
 //////////////////////////////////////////////////////////////////////////////
 
 /**
     - call the default map script
-    The events are the same from CallMapScript.
-    The map engine doesn't have to be on to call a default script.
+      The events are the same from CallMapScript.
+      The map engine doesn't have to be on to call a default script.
 */
 begin_func(CallDefaultMapScript, 1)
   arg_int(which);
@@ -2476,9 +2507,9 @@ end_func()
 // section: layers //
 
 /**
-      - get number of layers on map
-      - in the following functions, layer 0 is the bottommost layer.
-      - layer 1 is the next one up, etc.
+    - get number of layers on map
+    - in the following functions, layer 0 is the bottommost layer.
+    - layer 1 is the next one up, etc.
 */
 begin_func(GetNumLayers, 0)
 
@@ -2494,7 +2525,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - get width of 'layer'
+    - get width of 'layer'
 */
 begin_func(GetLayerWidth, 1)
   arg_int(layer);
@@ -2511,7 +2542,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - get height of 'layer'
+    - get height of 'layer'
 */
 begin_func(GetLayerHeight, 1)
   arg_int(layer);
@@ -2528,7 +2559,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - set width of 'layer'
+    - set width of 'layer'
 */
 begin_func(SetLayerWidth, 2)
   arg_int(layer);
@@ -2545,7 +2576,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - set height of 'layer'
+    - set height of 'layer'
 */
 begin_func(SetLayerHeight, 2)
   arg_int(layer);
@@ -2561,7 +2592,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns the name of 'layer'
+    - returns the name of 'layer'
 */
 begin_func(GetLayerName, 1)
   arg_int(layer);
@@ -2578,7 +2609,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns true if the layer is visible
+    - returns true if the layer is visible
 */
 begin_func(IsLayerVisible, 1)
   arg_int(layer);
@@ -2595,7 +2626,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - shows 'layer' if visible == true, and hides it if visible == false
+    - shows 'layer' if visible == true, and hides it if visible == false
       e.g. SetLayerVisible(0, !IsLayerVisisble(0)); will toggle layer zero's visibility
 */
 begin_func(SetLayerVisible, 2)
@@ -2612,7 +2643,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns true if the layer is reflective
+    - returns true if the layer is reflective
 */
 begin_func(IsLayerReflective, 1)
   arg_int(layer);
@@ -2629,7 +2660,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - sets whether layer should be reflective
+    - sets whether layer should be reflective
 */
 begin_func(SetLayerReflective, 2)
   arg_int(layer);
@@ -2645,9 +2676,9 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - Sets the x zoom/scale factor for the layer 'layer_index' to 'factor_x'
-        e.g. SetLayerScaleFactor(0, 0.5) will make the layer zoom out to half the normal size
-        @see SetPersonScaleFactor
+    - Sets the x zoom/scale factor for the layer 'layer_index' to 'factor_x'
+      e.g. SetLayerScaleFactor(0, 0.5) will make the layer zoom out to half the normal size
+    @see SetPersonScaleFactor
 */
 begin_func(SetLayerScaleFactorX, 2)
   arg_int(layer_index);
@@ -2663,9 +2694,9 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - Sets the y zoom/scale factor for the layer 'layer_index' to 'factor_y'
-        e.g. SetLayerScaleFactor(0, 2) will make the layer zoom in to twice the normal size
-        @see SetPersonScaleFactor
+    - Sets the y zoom/scale factor for the layer 'layer_index' to 'factor_y'
+      e.g. SetLayerScaleFactor(0, 2) will make the layer zoom in to twice the normal size
+    @see SetPersonScaleFactor
 */
 begin_func(SetLayerScaleFactorY, 2)
   arg_int(layer_index);
@@ -2681,10 +2712,10 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - Gets the angle (in radians) for the layer 'layer_index'
-        e.g. var angle = GetLayerAngle(0) will get the angle for the first layer
-        An angle of 0.0 is not rotated at all.
-        @see SetLayerAngle
+    - Gets the angle (in radians) for the layer 'layer_index'
+      e.g. var angle = GetLayerAngle(0) will get the angle for the first layer
+      An angle of 0.0 is not rotated at all.
+    @see SetLayerAngle
 */
 begin_func(GetLayerAngle, 1)
   arg_int(layer_index);
@@ -2701,9 +2732,9 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - Sets the angle (in radians) for the layer 'layer_index' to 'angle'
-        e.g. SetLayerAngle(0, Math.PI) will make the layer rotate slightly
-        @see GetLayerAngle
+    - Sets the angle (in radians) for the layer 'layer_index' to 'angle'
+      e.g. SetLayerAngle(0, Math.PI) will make the layer rotate slightly
+    @see GetLayerAngle
 */
 begin_func(SetLayerAngle, 2)
   arg_int(layer_index);
@@ -2721,7 +2752,7 @@ end_func()
 // section: tiles //
 
 /**
-      - return number of tiles in map
+    - return number of tiles in map
 */
 begin_func(GetNumTiles, 0)
 
@@ -2737,7 +2768,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - changes tile on map to 'tile'
+    - changes tile on map to 'tile'
 */
 begin_func(SetTile, 4)
   arg_int(x);
@@ -2755,7 +2786,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns tile on map
+    - returns tile on map
 */
 begin_func(GetTile, 3)
   arg_int(x);
@@ -2774,7 +2805,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns the name of the tile 'tile_index'
+    - returns the name of the tile 'tile_index'
 */
 begin_func(GetTileName, 1)
   arg_int(tile_index);
@@ -2791,7 +2822,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns width in pixels of tiles on current map
+    - returns width in pixels of tiles on current map
 */
 begin_func(GetTileWidth, 0)
 
@@ -2807,7 +2838,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns height in pixels of tiles on current map
+    - returns height in pixels of tiles on current map
 */
 begin_func(GetTileHeight, 0)
 
@@ -2823,7 +2854,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns the image of the tile 'tile_index'
+    - returns the image of the tile 'tile_index'
 */
 begin_func(GetTileImage, 1)
   arg_int(tile);
@@ -2840,7 +2871,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - sets the tile 'tile_index' to the image 'image_object'
+    - sets the tile 'tile_index' to the image 'image_object'
 */
 begin_func(SetTileImage, 2)
 
@@ -2857,7 +2888,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns the surface of the tile 'tile_index'
+    - returns the surface of the tile 'tile_index'
 */
 begin_func(GetTileSurface, 1)
 
@@ -2892,7 +2923,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - sets the tile 'tile_index' to the surface 'surface_object'
+    - sets the tile 'tile_index' to the surface 'surface_object'
 */
 begin_func(SetTileSurface, 2)
 
@@ -2909,8 +2940,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - gets the animation delay of the tile 'tile'
-        If it returns 0, the tile is not animated
+    - gets the animation delay of the tile 'tile'
+      If it returns 0, the tile is not animated
 */
 begin_func(GetTileDelay, 1)
 
@@ -2923,14 +2954,13 @@ begin_func(GetTileDelay, 1)
   }
 
   return_int(delay);
-
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - sets the animation delay of the tile 'tile' to 'delay'
-        A delay of 0 is considered not animated
+    - sets the animation delay of the tile 'tile' to 'delay'
+      A delay of 0 is considered not animated
 */
 begin_func(SetTileDelay, 2)
 
@@ -2947,8 +2977,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - gets the next tile in the animation sequence of 'tile'
-        Note that if the return value is 'tile' the tile is not animated.
+    - gets the next tile in the animation sequence of 'tile'
+      Note that if the return value is 'tile' the tile is not animated.
 */
 begin_func(GetNextAnimatedTile, 1)
   arg_int(tile);
@@ -2964,8 +2994,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - sets the next tile in the animation sequence of 'tile' to 'new_tile'
-        SetNextAnimatedTile(tile, tile) turns off the tile animation for 'tile'
+    - sets the next tile in the animation sequence of 'tile' to 'new_tile'
+      SetNextAnimatedTile(tile, tile) turns off the tile animation for 'tile'
 */
 begin_func(SetNextAnimatedTile, 2)
   arg_int(current_tile);
@@ -2981,7 +3011,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - Replaces all 'oldtile' tiles with 'newtile' on layer 'layer'
+    - Replaces all 'oldtile' tiles with 'newtile' on layer 'layer'
 */
 begin_func(ReplaceTilesOnLayer, 3)
   arg_int(layer);
@@ -3000,9 +3030,9 @@ end_func()
 // section: triggers //
 
 /**
-      - Returns true if there is a trigger at map_x, map_y on layer.  map_x
-        and map_y are in map (per-pixel) coordinates.
-        (Currently the layer parameter is ignored, although it still must be valid.)
+    - Returns true if there is a trigger at map_x, map_y on layer.  map_x
+      and map_y are in map (per-pixel) coordinates.
+      (Currently the layer parameter is ignored, although it still must be valid.)
 */
 begin_func(IsTriggerAt, 3)
   arg_int(location_x);
@@ -3020,8 +3050,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - activates the trigger positioned on map_x, map_y, layer if one exists.
-        map_x and map_y are in map (per-pixel) coordinates.
+    - activates the trigger positioned on map_x, map_y, layer if one exists.
+      map_x and map_y are in map (per-pixel) coordinates.
 */
 begin_func(ExecuteTrigger, 3)
   arg_int(location_x);
@@ -3039,7 +3069,7 @@ end_func()
 
 #if 0
 /**
-      - returns the x value of the trigger in map (per-pixel) coordinates
+    - returns the x value of the trigger in map (per-pixel) coordinates
 */
 begin_func(GetTriggerX, 1)
   arg_int(trigger_index);
@@ -3051,13 +3081,12 @@ begin_func(GetTriggerX, 1)
   }
 
   return_int(x);
-
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns the x value of the trigger in map (per-pixel) coordinates
+    - returns the x value of the trigger in map (per-pixel) coordinates
 */
 begin_func(GetTriggerY, 1)
   arg_int(trigger_index);
@@ -3069,13 +3098,12 @@ begin_func(GetTriggerY, 1)
   }
 
   return_int(y);
-
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns the amount of zones that there is
+    - returns the amount of zones that there is
 */
 begin_func(GetNumTriggers, 0)
   int triggers = 0;
@@ -3083,15 +3111,16 @@ begin_func(GetNumTriggers, 0)
     This->ReportMapEngineError("GetNumTriggers() failed");
     return JS_FALSE;
   }
+
   return_int(triggers);
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - best when called from inside a trigger script
-          it will return the index of the trigger for which the current script
-          is running
+    - best when called from inside a trigger script
+      it will return the index of the trigger for which the current script
+      is running
 */
 begin_func(GetCurrentTrigger, 0)
   int trigger = 0;
@@ -3099,6 +3128,7 @@ begin_func(GetCurrentTrigger, 0)
     This->ReportMapEngineError("GetCurrentTrigger() failed");
     return JS_FALSE;
   }
+
   return_int(trigger);
 end_func()
 
@@ -3109,8 +3139,8 @@ end_func()
 // section: zones //
 
 /**
-      - returns true if there are any zones at map_x, map_y on layer
-        (Currently the layer parameter is ignored, although it still must be valid.)
+    - returns true if there are any zones at map_x, map_y on layer
+      (Currently the layer parameter is ignored, although it still must be valid.)
 */
 begin_func(AreZonesAt, 3)
   arg_int(location_x);
@@ -3121,15 +3151,16 @@ begin_func(AreZonesAt, 3)
     This->ReportMapEngineError("AreZonesAt() failed");
     return JS_FALSE;
   }
+
   return_bool(found);
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - executes all the zones that map_x, map_y, layer is within
-        map_x and map_y are in map (per-pixel) coordinates.
-        (Currently the layer parameter is ignored, although it still must be valid.)
+    - executes all the zones that map_x, map_y, layer is within
+      map_x and map_y are in map (per-pixel) coordinates.
+      (Currently the layer parameter is ignored, although it still must be valid.)
 */
 begin_func(ExecuteZones, 3)
   arg_int(location_x);
@@ -3146,7 +3177,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - executes the script for the zone 'zone'
+    - executes the script for the zone 'zone'
 */
 begin_func(ExecuteZoneScript, 1)
   arg_int(zone);
@@ -3161,7 +3192,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns the amount of zones that there is
+    - returns the amount of zones that there is
 */
 begin_func(GetNumZones, 0)
   int zones = 0;
@@ -3169,15 +3200,16 @@ begin_func(GetNumZones, 0)
     This->ReportMapEngineError("GetNumZones() failed");
     return JS_FALSE;
   }
+
   return_int(zones);
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - best when called from inside a ZoneScript handler
-          it will return the index of the zone for which the current script
-          is running
+    - best when called from inside a ZoneScript handler
+      it will return the index of the zone for which the current script
+      is running
 */
 begin_func(GetCurrentZone, 0)
   int zone = 0;
@@ -3191,7 +3223,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - gets the x value of zone 'zone'
+    - gets the x value of zone 'zone'
 */
 begin_func(GetZoneX, 1)
   arg_int(zone);
@@ -3208,7 +3240,7 @@ end_func()
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
-      - gets the y value of zone 'zone'
+    - gets the y value of zone 'zone'
 */
 begin_func(GetZoneY, 1)
   arg_int(zone);
@@ -3225,7 +3257,7 @@ end_func()
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
-      - gets the width value of zone 'zone'
+    - gets the width value of zone 'zone'
 */
 begin_func(GetZoneWidth, 1)
   arg_int(zone);
@@ -3242,7 +3274,7 @@ end_func()
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
-      - gets the height value of zone 'zone'
+    - gets the height value of zone 'zone'
 */
 begin_func(GetZoneHeight, 1)
   arg_int(zone);
@@ -3259,7 +3291,7 @@ end_func()
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
-      - gets the layer value of zone 'zone'
+    - gets the layer value of zone 'zone'
 */
 begin_func(GetZoneLayer, 1)
   arg_int(zone);
@@ -3276,7 +3308,7 @@ end_func()
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
-      - sets the layer value of zone 'zone'
+    - sets the layer value of zone 'zone'
 */
 begin_func(SetZoneLayer, 2)
   arg_int(zone);
@@ -3290,50 +3322,21 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/**
-      - Renders the map into the video buffer
-*/
-begin_func(RenderMap, 0)
+// section: obstruction segments functions //
 
-  if ( !This->m_Engine->GetMapEngine()->RenderMap() ) {
-    This->ReportMapEngineError("RenderMap() failed");
+/**
+    - Returns the number of obstruction segments on the map...
+*/
+begin_func(GetNumObstructionSegments, 0)
+  arg_int(layer);
+  int num_segments = 0;
+
+  if ( !This->m_Engine->GetMapEngine()->GetNumObstructionSegments(layer, num_segments) ) {
+    This->ReportMapEngineError("GetNumObstructionSegments() failed");
     return JS_FALSE;
   }
 
-end_func()
-
-////////////////////////////////////////////////////////////////////////////////
-
-/**
-      - applies a color mask to things drawn by the map engine for 'num_frames' frames
-*/
-begin_func(SetColorMask, 2)
-  arg_color(color);
-  arg_int(num_frames);
-
-  if (!This->m_Engine->GetMapEngine()->SetColorMask(color, num_frames)) {
-    This->ReportMapEngineError("SetColorMask() failed");
-    return JS_FALSE;
-  }
-
-end_func()
-
-////////////////////////////////////////////////////////////////////////////////
-
-/**
-      - in 'num_frames' frames, runs 'script'
-        ex: SetDelayScript(60, "ChangeMap('forest.rmp')");
-        this tells the map engine to change to forest.rmp after 60 frames
-*/
-begin_func(SetDelayScript, 2)
-  arg_int(num_frames);
-  arg_str(script);
-
-  if (!This->m_Engine->GetMapEngine()->SetDelayScript(num_frames, script)) {
-    This->ReportMapEngineError("SetDelayScript() failed");
-    return JS_FALSE;
-  }
-
+  return_int(num_segments);
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3342,10 +3345,11 @@ end_func()
 
 /**
     BindKey(key, onkeydown, onkeyup)
-      - runs the 'onkeydown' script when the 'key' is pressed down and runs
-        'onkeyup' when the 'key' is released
-        ex: BindKey(KEY_SPACE, "mode = 'in';", "mode = 'out';");
-            refer to keys.txt for a list of key names
+    - runs the 'onkeydown' script when the 'key' is pressed down and runs
+      'onkeyup' when the 'key' is released
+      ex: BindKey(KEY_SPACE, "mode = 'in';", "mode = 'out';");
+      ex: BindKey(KEY_CTRL, "OnKeyPressed(KEY_CTRL)", "OnKeyReleased(KEY_CTRL)");
+      refer to keys.txt for a list of key names
 */
 begin_func(BindKey, 3)
   arg_int(key);
@@ -3362,7 +3366,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - unbinds a bound key
+    - unbinds a bound key
 */
 begin_func(UnbindKey, 1)
   arg_int(key);
@@ -3377,8 +3381,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - runs the 'on_down' script when the joystick 'button' is pressed down and runs
-        'on_up' when the joystick button is released
+    - runs the 'on_down' script when the joystick 'button' is pressed down and runs
+      'on_up' when the joystick button is released
 */
 begin_func(BindJoystickButton, 4)
   arg_int(joystick);
@@ -3397,7 +3401,7 @@ end_func()
 
 /**
     UnbindJoystickButton(joystick, button)
-      - unbinds a bound joystick button
+    - unbinds a bound joystick button
 */
 begin_func(UnbindJoystickButton, 2)
   arg_int(joystick);
@@ -3413,8 +3417,9 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - makes the 'person_entity' respond to the input
-        (up = KEY_UP, down = KEY_DOWN, left = KEY_LEFT, right = KEY_RIGHT)
+    - makes the 'person_entity' respond to the input
+      (up = KEY_UP, down = KEY_DOWN, left = KEY_LEFT, right = KEY_RIGHT)
+    @see AttachPlayerInput
 */
 begin_func(AttachInput, 1)
   arg_str(person);
@@ -3429,7 +3434,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - releases input from the attached person entity
+    - releases input from the attached person entity
+    @see DetachPlayerInput
 */
 begin_func(DetachInput, 0)
 
@@ -3443,7 +3449,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns true if a person is attached to the input
+    - returns true if a person is attached to the input
+    @see IsPlayerInputAttached
 */
 begin_func(IsInputAttached, 0)
 
@@ -3459,7 +3466,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns a string with the name of the person who currently holds input
+    - returns a string with the name of the person who currently holds input
 */
 begin_func(GetInputPerson, 0)
 
@@ -3474,11 +3481,20 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - makes the 'person_entity' respond to the input
+      Keys vary based on player_index
+      player zero  = (up = KEY_UP, down = KEY_DOWN, left = KEY_LEFT, right = KEY_RIGHT)
+      player one   = (up = KEY_UP, down = KEY_DOWN, left = KEY_LEFT, right = KEY_RIGHT)
+      player two   = (up = KEY_UP, down = KEY_DOWN, left = KEY_LEFT, right = KEY_RIGHT)
+      player three = (up = KEY_UP, down = KEY_DOWN, left = KEY_LEFT, right = KEY_RIGHT)
+    @see AttachPlayerInput
+*/
 begin_func(AttachPlayerInput, 2)
   arg_str(name);
-  arg_int(player);
+  arg_int(player_index);
 
-  if (!This->m_Engine->GetMapEngine()->AttachPlayerInput(name, player)) {
+  if (!This->m_Engine->GetMapEngine()->AttachPlayerInput(name, player_index)) {
     This->ReportMapEngineError("AttachPlayerInput() failed");
     return JS_FALSE;
   }
@@ -3487,6 +3503,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - releases input from the attached player entity
+*/
 begin_func(DetachPlayerInput, 1)
   arg_str(name);
 
@@ -3500,7 +3519,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - calls 'script' after each frame (don't draw stuff in here!)
+    - calls 'script' after each frame (don't draw stuff in here!)
 */
 begin_func(SetUpdateScript, 1)
   arg_str(script);
@@ -3515,7 +3534,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - calls 'script' after all map layers are rendered
+    - calls 'script' after all map layers are rendered
 */
 begin_func(SetRenderScript, 1)
   arg_str(script);
@@ -3530,7 +3549,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - calls the rendering 'script' after 'layer' has been rendered.
+    - calls the rendering 'script' after 'layer' has been rendered.
       Only one rendering script can be used for each layer of the map
 */
 begin_func(SetLayerRenderer, 2)
@@ -3547,7 +3566,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - set the mask of 'layer' to 'mask'
+    - set the mask of 'layer' to 'mask'
       e.g. SetLayerMask(0, CreateColor(255, 0, 0, 128)); will make the layer semi red
 */
 begin_func(SetLayerMask, 2)
@@ -3564,7 +3583,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - get the mask currently being used by 'layer'
+    - get the mask currently being used by 'layer'
 */
 begin_func(GetLayerMask, 1)
   arg_int(layer);
@@ -3580,8 +3599,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// section: camera functions //
+
 /**
-      - Attaches the camera view to specified person
+    - Attaches the camera view to specified person
 */
 begin_func(AttachCamera, 1)
   arg_str(person);
@@ -3596,7 +3617,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - Detaches camera so it can be controlled directly
+    - Detaches camera so it can be controlled directly
 */
 begin_func(DetachCamera, 0)
 
@@ -3610,8 +3631,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns true if the camera is attached to a person, false if the
-        camera is floating
+    - returns true if the camera is attached to a person, false if the
+      camera is floating
 */
 begin_func(IsCameraAttached, 0)
 
@@ -3627,8 +3648,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns a string with the name of the person whom the camera
-        is attached to
+    - returns a string with the name of the person whom the camera
+      is attached to
 */
 begin_func(GetCameraPerson, 0)
 
@@ -3644,7 +3665,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - sets the x location of the camera object on the map
+    - sets the x location of the camera object on the map
       (the center of the screen if possible)
 */
 begin_func(SetCameraX, 1)
@@ -3660,7 +3681,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - sets the y location of the camera object on the map
+    - sets the y location of the camera object on the map
       (the center of the screen if possible)
 */
 begin_func(SetCameraY, 1)
@@ -3676,7 +3697,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns the x location of the camera object on the map
+    - returns the x location of the camera object on the map
       (the center of the screen if possible)
 */
 begin_func(GetCameraX, 0)
@@ -3693,7 +3714,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns the y location of the camera object on the map
+    - returns the y location of the camera object on the map
       (the center of the screen if possible)
 */
 begin_func(GetCameraY, 0)
@@ -3710,7 +3731,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns screen coordinates of position on map
+    - returns screen coordinates of position on map
 */
 begin_func(MapToScreenX, 2)
   arg_int(layer);
@@ -3728,7 +3749,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns screen coordinates of position on map
+    - returns screen coordinates of position on map
 */
 begin_func(MapToScreenY, 2)
   arg_int(layer);
@@ -3746,7 +3767,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns map coordinates of position on screen
+    - returns map coordinates of position on screen
 */
 begin_func(ScreenToMapX, 2)
   arg_int(layer);
@@ -3764,7 +3785,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - returns map coordinates of position on screen
+    - returns map coordinates of position on screen
 */
 begin_func(ScreenToMapY, 2)
   arg_int(layer);
@@ -3781,9 +3802,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// section: person functions //
+
 /**
-        - returns an array of strings representing the current person entities
-        (unnamed persons will not be in this list)
+    - returns an array of strings representing the current person entities
+      (unnamed persons will not be in this list)
 */
 begin_func(GetPersonList, 0)
 
@@ -3816,11 +3839,11 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - returns a person object with 'name' from 'spriteset'. If Sphere is
-          unable to open the file, the engine will give an error message and
-          exit. destroy_with_map is a boolean (true/false value), which the
-          spriteset is destroyed when the current map is changed if the flag
-          is set to true.
+    - returns a person object with 'name' from 'spriteset'. If Sphere is
+      unable to open the file, the engine will give an error message and
+      exit. destroy_with_map is a boolean (true/false value), which the
+      spriteset is destroyed when the current map is changed if the flag
+      is set to true.
 */
 begin_func(CreatePerson, 3)
   arg_str(name);
@@ -3839,7 +3862,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - destroys the person with the name
+    - destroys the person with the name
 */
 begin_func(DestroyPerson, 1)
   arg_str(name);
@@ -3856,7 +3879,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - sets the x position of the person on the map
+    - sets the x position of the person on the map
 */
 begin_func(SetPersonX, 2)
   arg_str(name);
@@ -3872,7 +3895,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - sets the y position of the person on the map
+    - sets the y position of the person on the map
 */
 begin_func(SetPersonY, 2)
   arg_str(name);
@@ -3888,7 +3911,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - sets the position of the person with floating point accuracy
+    - sets the position of the person with floating point accuracy
 */
 begin_func(SetPersonXYFloat, 3)
   arg_str(name);
@@ -3905,7 +3928,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - sets the position of the person on the map
+    - sets the position of the person on the map
 */
 begin_func(SetPersonLayer, 2)
   arg_str(name);
@@ -3921,9 +3944,9 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - gets the position of the person on the map
-          The position is based on the middle of the spriteset's base
-          rectangle.
+    - gets the position of the person on the map
+      The position is based on the middle of the spriteset's base
+      rectangle.
 */
 begin_func(GetPersonX, 1)
   arg_str(name);
@@ -3940,9 +3963,9 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - gets the position of the person on the map
-          The position is based on the middle of the spriteset's base
-          rectangle.
+    - gets the position of the person on the map
+      The position is based on the middle of the spriteset's base
+      rectangle.
 */
 begin_func(GetPersonY, 1)
   arg_str(name);
@@ -3959,9 +3982,9 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - gets the position of the person on the map
-          The position is based on the middle of the spriteset's base
-          rectangle.
+    - gets the position of the person on the map
+      The position is based on the middle of the spriteset's base
+      rectangle.
 */
 begin_func(GetPersonXFloat, 1)
   arg_str(name);
@@ -3978,9 +4001,9 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - gets the position of the person on the map
-          The position is based on the middle of the spriteset's base
-          rectangle.
+    - gets the position of the person on the map
+      The position is based on the middle of the spriteset's base
+      rectangle.
 */
 begin_func(GetPersonYFloat, 1)
   arg_str(name);
@@ -3997,7 +4020,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - gets the position of the person on the map
+    - gets the position of the person on the map
 */
 begin_func(GetPersonLayer, 1)
   arg_str(name);
@@ -4014,7 +4037,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-       - Sets whether 'person' should ignore other spriteset bases
+    - Sets whether 'person' should ignore other spriteset bases
 */
 begin_func(IgnorePersonObstructions, 2)
   arg_str(name);
@@ -4029,7 +4052,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-       - Returns true if 'person' is ignoring person obstructions, else false
+    - Returns true if 'person' is ignoring person obstructions, else false
 */
 begin_func(IsIgnoringPersonObstructions, 1)
   arg_str(name);
@@ -4045,7 +4068,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-       - Sets whether 'person' should ignore tile obstructions
+    - Sets whether 'person' should ignore tile obstructions
 */
 begin_func(IgnoreTileObstructions, 2)
   arg_str(name);
@@ -4060,7 +4083,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-       - Returns true if 'person' is ignoring tile obstructions, else false
+    - Returns true if 'person' is ignoring tile obstructions, else false
 */
 begin_func(IsIgnoringTileObstructions, 1)
   arg_str(name);
@@ -4076,7 +4099,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-       - Returns a list of people that 'name' is ignoring
+    - Returns a list of people that 'name' is ignoring
 */
 begin_func(GetPersonIgnoreList, 1)
   arg_str(name);
@@ -4109,9 +4132,9 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-       - Tells 'name' to ignore everyone in list
-       e.g. SetPersonIgnoreList("White-Bomberman", ["bomb", "powerup"]);
-       Tells White-Bomberman to not be obstructed by bombs or powerups
+    - Tells 'name' to ignore everyone in list
+      e.g. SetPersonIgnoreList("White-Bomberman", ["bomb", "powerup"]);
+      Tells White-Bomberman to not be obstructed by bombs or powerups
 */
 begin_func(SetPersonIgnoreList, 2)
   arg_str(name);
@@ -4144,10 +4167,10 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - makes the sprite 'name' follow 'pixels' pixels behind sprite 'leader'.
-        If this function is called like:
-        FollowPerson(name, "", 0),
-        the person will detach from anyone it is following.
+    - makes the sprite 'name' follow 'pixels' pixels behind sprite 'leader'.
+      If this function is called like:
+      FollowPerson(name, "", 0),
+      the person will detach from anyone it is following.
 */
 begin_func(FollowPerson, 3)
   arg_str(person);
@@ -4164,7 +4187,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - sets which direction to show
+    - sets which direction to show
 */
 begin_func(SetPersonDirection, 2)
   arg_str(name);
@@ -4180,7 +4203,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - gets which direction is being shown
+    - gets which direction is being shown
 */
 begin_func(GetPersonDirection, 1)
   arg_str(name);
@@ -4197,7 +4220,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - sets which frame to show
+    - sets which frame to show
 */
 begin_func(SetPersonFrame, 2)
   arg_str(name);
@@ -4213,7 +4236,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - gets which frame is being shown
+    - gets which frame is being shown
 */
 begin_func(GetPersonFrame, 1)
   arg_str(name);
@@ -4230,8 +4253,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - sets the delay between when the person last moved and returning to
-          first frame. 0 disables this behaviour.
+    - sets the delay between when the person last moved and returning to
+      first frame. 0 disables this behaviour.
 */
 begin_func(SetPersonFrameRevert, 2)
   arg_str(name);
@@ -4247,8 +4270,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - gets the delay between when the person last moved and returning to
-          first frame. 0 disables this behaviour.
+    - gets the delay between when the person last moved and returning to
+      first frame. 0 disables this behaviour.
 */
 begin_func(GetPersonFrameRevert, 1)
   arg_str(name);
@@ -4265,7 +4288,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - sets the speed at which a person moves at
+    - sets the speed at which a person moves at
 */
 begin_func(SetPersonSpeed, 2)
   arg_str(name);
@@ -4281,7 +4304,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - sets the speed at which a person moves at
+    - sets the speed at which a person moves at
 */
 begin_func(SetPersonSpeedXY, 3)
   arg_str(name);
@@ -4298,7 +4321,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - gets the speed at which a person moves at
+    - gets the speed at which a person moves at
 */
 begin_func(GetPersonSpeedX, 1)
   arg_str(name);
@@ -4315,7 +4338,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - gets the speed at which a person moves at
+    - gets the speed at which a person moves at
 */
 begin_func(GetPersonSpeedY, 1)
   arg_str(name);
@@ -4332,10 +4355,10 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - rescales the sprite to a certain scale specified by scale_w and scale_h.
-          Scaling is determined by floating point numbers like, 1.5 would scale
-          the person to 1.5 times its normal size based on his original sprite
-          size.
+    - rescales the sprite to a certain scale specified by scale_w and scale_h.
+      Scaling is determined by floating point numbers like, 1.5 would scale
+      the person to 1.5 times its normal size based on his original sprite
+      size.
 */
 begin_func(SetPersonScaleFactor, 3)
   arg_str(name);
@@ -4353,7 +4376,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - rescales the sprite to width pixels and height pixels.
+    - rescales the sprite to width pixels and height pixels.
 */
 begin_func(SetPersonScaleAbsolute, 3)
   arg_str(name);
@@ -4370,18 +4393,18 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - gets a data object assiocated with the person 'name'
-        There are certain default properties/values filled in by the engine, they are:
-        num_frames - the number of frames for the person's current direction
-        num_directions - the number of directions for the person
-        width - the width of the spriteset's current frame
-        height - the height of the spriteset's current frame
-        leader - the person that this person is following, or "" if no-one...
+    - gets a data object assiocated with the person 'name'
+      There are certain default properties/values filled in by the engine, they are:
+      num_frames - the number of frames for the person's current direction
+      num_directions - the number of directions for the person
+      width - the width of the spriteset's current frame
+      height - the height of the spriteset's current frame
+      leader - the person that this person is following, or "" if no-one...
 
-        Any other properties are free for you to fill with values
+      Any other properties are free for you to fill with values
 
-        e.g. var data = GetPersonData("Jimmy");
-        var num_frames = data["num_frames"];
+      e.g. var data = GetPersonData("Jimmy");
+      var num_frames = data["num_frames"];
 */
 begin_func(GetPersonData, 1)
   arg_str(name);
@@ -4467,11 +4490,11 @@ ParsePersonData(JSContext* cx, jsval val, std::string& string_value, double& dou
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - sets the 'data' object assiocated with the person 'name'
-        e.g.
-        var data = GetPersonData("Jimmy");
-        data["talked_to_jimmy"] = true;
-        SetPersonData("Jimmy", data);
+    - sets the 'data' object assiocated with the person 'name'
+      e.g.
+      var data = GetPersonData("Jimmy");
+      data["talked_to_jimmy"] = true;
+      SetPersonData("Jimmy", data);
 */
 begin_func(SetPersonData, 2)
   arg_str(name);
@@ -4527,6 +4550,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - get a person value...
+*/
 begin_func(GetPersonValue, 2)
   arg_str(name);
   arg_str(key);
@@ -4559,6 +4585,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - set a person value...
+*/
 begin_func(SetPersonValue, 3)
   arg_str(name);
   arg_str(key);
@@ -4579,7 +4608,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - returns the person's spriteset.
+    - returns the person's spriteset.
 */
 begin_func(GetPersonSpriteset, 1)
   arg_str(name);
@@ -4598,8 +4627,8 @@ end_func()
 /////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - set's the person's spriteset to spriteset
-        e.g. SetPersonSpriteset("Jimmy", LoadSpriteset("jimmy.running.rss"));
+    - set's the person's spriteset to spriteset
+      e.g. SetPersonSpriteset("Jimmy", LoadSpriteset("jimmy.running.rss"));
 */
 begin_func(SetPersonSpriteset, 2)
   arg_str(name);
@@ -4627,7 +4656,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - returns the person's base obstruction object.
+    - returns the person's base obstruction object.
 */
 begin_func(GetPersonBase, 1)
   arg_str(name);
@@ -4645,7 +4674,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - returns the person's angle that is used
+    - returns the person's angle that is used
 */
 begin_func(GetPersonAngle, 1)
   arg_str(name);
@@ -4662,11 +4691,10 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - sets the angle which the person should be drawn at
-        Note:
-          Zero is no rotation, and angles are in radians.
-          It does not rotate the spritesets obstruction base.
-
+    - sets the angle which the person should be drawn at
+      Note:
+        Zero is no rotation, and angles are in radians.
+        It does not rotate the spritesets obstruction base.
 */
 begin_func(SetPersonAngle, 2)
   arg_str(name);
@@ -4682,10 +4710,10 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - sets a color multiplier to use when drawing sprites.  if the color is
-          RGBA:(255, 0, 0, 255), only the red elements of the sprite are drawn.
-          If the color is RGBA:(255, 255, 255, 128), the sprite is drawn at
-          half transparency.
+    - sets a color multiplier to use when drawing sprites.  if the color is
+      RGBA:(255, 0, 0, 255), only the red elements of the sprite are drawn.
+      If the color is RGBA:(255, 255, 255, 128), the sprite is drawn at
+      half transparency.
 */
 begin_func(SetPersonMask, 2)
   arg_str(name);
@@ -4701,7 +4729,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - returns the person's current mask
+    - returns the person's current mask
 */
 begin_func(GetPersonMask, 1)
   arg_str(name);
@@ -4718,7 +4746,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - returns the person's visible status
+    - returns the person's visible status
 */
 begin_func(IsPersonVisible, 1)
   arg_str(name);
@@ -4735,8 +4763,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - sets the person's visible status, true = visible, false = not visible
-        e.g. SetPersonVisible(GetCurrentPerson(), !IsPersonVisible(GetCurrentPerson()));
+    - sets the person's visible status, true = visible, false = not visible
+      e.g. SetPersonVisible(GetCurrentPerson(), !IsPersonVisible(GetCurrentPerson()));
 */
 begin_func(SetPersonVisible, 2)
   arg_str(name);
@@ -4752,15 +4780,15 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - sets 'script' as the thing 'name' does in a certain event
-          the five events are
-          SCRIPT_ON_CREATE
-          SCRIPT_ON_DESTROY
-          SCRIPT_ON_ACTIVATE_TOUCH
-          SCRIPT_ON_ACTIVATE_TALK
-          SCRIPT_COMMAND_GENERATOR
-          (SCRIPT_COMMAND_GENERATOR will be called when the command queue for
-           the person runs out (for random movement thingies, etc))
+    - sets 'script' as the thing 'name' does in a certain event
+      the five events are
+      SCRIPT_ON_CREATE
+      SCRIPT_ON_DESTROY
+      SCRIPT_ON_ACTIVATE_TOUCH
+      SCRIPT_ON_ACTIVATE_TALK
+      SCRIPT_COMMAND_GENERATOR
+      (SCRIPT_COMMAND_GENERATOR will be called when the command queue for
+       the person runs out (for random movement thingies, etc))
 */
 begin_func(SetPersonScript, 3)
   arg_str(name);
@@ -4777,8 +4805,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - sets 'script' as the thing that everyone does in a certain event
-          the five events are see above
+    - sets 'script' as the thing that everyone does in a certain event
+      the five events are see above
 */
 begin_func(SetDefaultPersonScript, 2)
   arg_int(which);
@@ -4794,8 +4822,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - calls a person's script from code
-         'which' constants are the same as for SetPersonScript()
+    - calls a person's script from code
+      'which' constants are the same as for SetPersonScript()
 */
 begin_func(CallPersonScript, 2)
   arg_str(name);
@@ -4811,9 +4839,9 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - best when called from inside a PersonScript handler
-          it will return the name of the person for whom the current script
-          is running
+    - best when called from inside a PersonScript handler
+      it will return the name of the person for whom the current script
+      is running
 */
 begin_func(GetCurrentPerson, 0)
 
@@ -4829,24 +4857,24 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - adds a command to the person's command queue
-          the commands are:
-            COMMAND_WAIT
-            COMMAND_FACE_NORTH
-            COMMAND_FACE_NORTHEAST
-            COMMAND_FACE_EAST
-            COMMAND_FACE_SOUTHEAST
-            COMMAND_FACE_SOUTH
-            COMMAND_FACE_SOUTHWEST
-            COMMAND_FACE_WEST
-            COMMAND_FACE_NORTHWEST
-            COMMAND_MOVE_NORTH
-            COMMAND_MOVE_EAST
-            COMMAND_MOVE_SOUTH
-            COMMAND_MOVE_WEST
-          (note: these *might* change in a future release
-          'immediate', if true, will execute the command go right away
-          if false, it will wait until the next frame)
+    - adds a command to the person's command queue
+      the commands are:
+      COMMAND_WAIT
+      COMMAND_FACE_NORTH
+      COMMAND_FACE_NORTHEAST
+      COMMAND_FACE_EAST
+      COMMAND_FACE_SOUTHEAST
+      COMMAND_FACE_SOUTH
+      COMMAND_FACE_SOUTHWEST
+      COMMAND_FACE_WEST
+      COMMAND_FACE_NORTHWEST
+      COMMAND_MOVE_NORTH
+      COMMAND_MOVE_EAST
+      COMMAND_MOVE_SOUTH
+      COMMAND_MOVE_WEST
+      (note: these *might* change in a future release
+       'immediate', if true, will execute the command go right away
+       if false, it will wait until the next frame)
 */
 begin_func(QueuePersonCommand, 3)
   arg_str(name);
@@ -4863,7 +4891,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - adds a script command to the person's queue
+    - adds a script command to the person's queue
 */
 begin_func(QueuePersonScript, 3)
   arg_str(name);
@@ -4880,7 +4908,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - clears the command queue of sprite with the 'name'
+    - clears the command queue of sprite with the 'name'
 */
 begin_func(ClearPersonCommands, 1)
   arg_str(name);
@@ -4895,7 +4923,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - returns true if the person 'name' has an empty command queue
+    - returns true if the person 'name' has an empty command queue
 */
 begin_func(IsCommandQueueEmpty, 1)
   arg_str(name);
@@ -4912,8 +4940,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-       - returns -1 if name isn't obstructed by a tile at x, y,
-       - returns the tile index of the tile if name is obstructed at x, y
+    - returns -1 if name isn't obstructed by a tile at x, y,
+    - returns the tile index of the tile if name is obstructed at x, y
 */
 begin_func(GetObstructingTile, 3)
   arg_str(name);
@@ -4932,8 +4960,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-       - returns "" if name isn't obstructed by person at x, y,
-       - returns the name of the person if name is obstructed at x, y
+    - returns "" if name isn't obstructed by person at x, y,
+    - returns the name of the person if name is obstructed at x, y
 */
 begin_func(GetObstructingPerson, 3)
   arg_str(name);
@@ -4952,7 +4980,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-       - returns true if person 'name' would be obstructed at (x, y)
+    - returns true if person 'name' would be obstructed at (x, y)
 */
 begin_func(IsPersonObstructed, 3)
   arg_str(name);
@@ -4971,7 +4999,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - set key used to activate talk scripts
+    - set key used to activate talk scripts
 */
 begin_func(SetTalkActivationKey, 1)
   arg_int(key);
@@ -4986,7 +5014,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - get key used to activate talk scripts
+    - get key used to activate talk scripts
 */
 begin_func(GetTalkActivationKey, 0)
   return_int(This->m_Engine->GetMapEngine()->GetTalkActivationKey());
@@ -4994,12 +5022,18 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - get button used to activate talk scripts
+*/
 begin_func(GetTalkActivationButton, 0)
   return_int(This->m_Engine->GetMapEngine()->GetTalkActivationButton());
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - set button used to activate talk scripts
+*/
 begin_func(SetTalkActivationButton, 1)
   arg_int(button);
 
@@ -5013,7 +5047,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - set distance to check for talk script activation
+    - set distance to check for talk script activation
 */
 begin_func(SetTalkDistance, 1)
   arg_int(pixels);
@@ -5028,7 +5062,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - get distance to check for talk script activation
+    - get distance to check for talk script activation
 */
 begin_func(GetTalkDistance, 0)
   return_int(This->m_Engine->GetMapEngine()->GetTalkDistance());
@@ -5066,7 +5100,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-        - returns a new spriteset.
+    - returns a new spriteset.
 */
 begin_func(CreateSpriteset, 5)
   arg_int(frame_width);
@@ -5372,9 +5406,9 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-   - returns a surface object captured from an area of the video buffer,
-     at (x, y) with the width w and height h.
-  @see GrabImage
+    - returns a surface object captured from an area of the video buffer,
+      at (x, y) with the width w and height h.
+    @see GrabImage
 */
 begin_func(GrabSurface, 4)
   arg_int(x);
@@ -5427,7 +5461,7 @@ end_func()
 
 /**
     - Creates a colormatrix that is used to transform the colors
-    contained in a pixel with the following formula:
+      contained in a pixel with the following formula:
         newcolor.red   = rn + (rr * oldcolor.red + rg * oldcolor.green + rb * oldcolor.blue) / 255;
         newcolor.green = gn + (gr * oldcolor.red + gg * oldcolor.green + gb * oldcolor.blue) / 255;
         newcolor.blue  = bn + (br * oldcolor.red + bg * oldcolor.green + bb * oldcolor.blue) / 255;
@@ -5451,6 +5485,9 @@ begin_func(CreateColorMatrix, 12)
 
   // create surface and grab pixels from the backbuffer
   CColorMatrix* colormatrix = new CColorMatrix(rn, rr, rg, rb, gn, gr, gg, gb, bn, br, bg, bb);
+  if (colormatrix == NULL) {
+    return JS_FALSE;
+  }
 
   return_object(CreateColorMatrixObject(cx, colormatrix));
 end_func()
@@ -5508,12 +5545,15 @@ begin_func(GetFileList, 0)
 
   // convert it to an array of jsvals
   jsval* js_vs = new jsval[vs.size()];
+  if (!js_vs) { 
+    return JS_FALSE;
+  }
+
   for (unsigned int i = 0; i < vs.size(); i++) {
     js_vs[i] = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, vs[i].c_str()));
   }
 
   return_object(JS_NewArrayObject(cx, vs.size(), js_vs));
-
   delete[] js_vs;
 
 end_func()
@@ -5580,12 +5620,87 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - generates an MD5 of the specified raw file, which, by backtracking
-        with a ../ may refer to any file within the game directory structure.
-        The result is a 32 character string containing the hexadecimal
-        representation of the resulting 128-bit MD5 fingerprint.  Identical
-        files produce the same MD5 hash so it is an effective way to determine
-        if a file has become corrupt or altered
+    - opens a log file for use under the filename. If Sphere is unable to open
+      the file for logging, the engine will give an error message and exit.
+      If Sphere is successful in opening the file, it will return a log object
+      for use.
+      ex: var myLog = OpenLog("game.log");
+*/
+begin_func(OpenLog, 1)
+  arg_str(filename);
+
+  if (IsValidPath(filename) == false) {
+    JS_ReportError(cx, "Invalid filename: '%s'", filename);
+    return JS_FALSE;
+  }
+
+  CLog* log = This->m_Engine->OpenLog(filename);
+
+  if (log == NULL) {
+    JS_ReportError(cx, "OpenLog() failed: Could not open file '%s'", filename);
+    return JS_FALSE;
+  }
+
+  return_object(CreateLogObject(cx, log));
+end_func()
+
+///////////////////////////////////////////////////////////
+
+/**
+    - Gets the currently open mapengine object...
+*/
+begin_func(GetMapEngine, 0)
+
+  if ( !This->m_Engine->GetMapEngine()->IsRunning() ) {
+    This->ReportMapEngineError("GetMapEngine() failed");
+    return JS_FALSE;
+  }
+
+  static JSClass clasp = {
+    "map", JSCLASS_HAS_PRIVATE,
+    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+    JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
+  };
+
+  // create the object
+  JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
+  if (object == NULL) {
+    return JS_FALSE;
+  }
+
+  // assign methods to the object
+  static JSFunctionSpec fs[] = {
+    { "save",        ssMapEngineSave,        0, 0, 0 },
+    { "appendLayer", ssMapEngineLayerAppend, 1, 0, 0 },
+    { 0, 0, 0, 0, 0 },
+  };
+  JS_DefineFunctions(cx, object, fs);
+
+  SS_MAPENGINE* mapengine_object = new SS_MAPENGINE;
+  if (!mapengine_object)
+  {
+    return_object(JSVAL_NULL);
+  }
+
+  mapengine_object->__value__ = 1;
+  JS_SetPrivate(cx, object, mapengine_object);
+
+  JS_DefineProperty(cx, object, "tileset",
+    OBJECT_TO_JSVAL(CreateTilesetObject(cx, This->m_Engine->GetMapEngine()->GetMap().GetMap().GetTileset())),
+    JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
+
+  return_object(object);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+    - generates an MD5 of the specified raw file, which, by backtracking
+      with a ../ may refer to any file within the game directory structure.
+      The result is a 32 character string containing the hexadecimal
+      representation of the resulting 128-bit MD5 fingerprint.  Identical
+      files produce the same MD5 hash so it is an effective way to determine
+      if a file has become corrupt or altered
 */
 begin_func(HashFromFile, 1)
   arg_str(filename);
@@ -5639,12 +5754,12 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
-      - generates an MD5 fingerprint as a hexadecimal string whose output
-        is the same as the RSA reference implementation of RFC 1321 which
-        means that the unix md5 command will return the same string for the
-        identical input.  The resulting string contains the hexadecimal
-        representation of the MD5 fingerprint for the specified byte
-        array object
+    - generates an MD5 fingerprint as a hexadecimal string whose output
+      is the same as the RSA reference implementation of RFC 1321 which
+      means that the unix md5 command will return the same string for the
+      identical input.  The resulting string contains the hexadecimal
+      representation of the MD5 fingerprint for the specified byte
+      array object
 */
 begin_func(HashByteArray, 1)
   arg_byte_array(array);
@@ -5937,8 +6052,8 @@ end_finalizer()
 ////////////////////////////////////////
 
 /**
-  - writes a string of text under the current block.
-    ex: myLog.write("Starting system...");
+    - writes a string of text under the current block.
+      ex: myLog.write("Starting system...");
 */
 begin_method(SS_LOG, ssLogWrite, 1)
   arg_str(text);
@@ -5948,10 +6063,10 @@ end_method()
 ////////////////////////////////////////
 
 /**
-  - creates a "block" which is indent inside the log with the name as the
-    title of the block. Any subsequent write commands will go under the newly
-    created block.
-    ex: myLog.beginBlock("Video Information");
+    - creates a "block" which is indent inside the log with the name as the
+      title of the block. Any subsequent write commands will go under the newly
+      created block.
+      ex: myLog.beginBlock("Video Information");
 */
 begin_method(SS_LOG, ssLogBeginBlock, 1)
   arg_str(name);
@@ -5961,7 +6076,7 @@ end_method();
 ////////////////////////////////////////
 
 /**
-  - closes the current log block.
+    - closes the current log block.
 */
 begin_method(SS_LOG, ssLogEndBlock, 0)
   object->log->EndBlock();
@@ -6283,7 +6398,7 @@ end_finalizer()
 ////////////////////////////////////////
 
 /**
-     - saves the spriteset object to 'filename'
+    - saves the spriteset object to 'filename'
 */
 begin_method(SS_SPRITESET, ssSpritesetSave, 1)
   arg_str(filename);
@@ -6314,7 +6429,7 @@ end_method()
 ////////////////////////////////////////
 
 /**
-     - returns a copy of the spriteset object
+    - returns a copy of the spriteset object
 */
 begin_method(SS_SPRITESET, ssSpritesetClone, 0)
 
@@ -8628,51 +8743,6 @@ CScript::CreateTilesetObject(JSContext* cx, const sTileset& tileset)
   return object;
 }
 
-///////////////////////////////////////////////////////////
-
-begin_func(GetMapEngine, 0)
-
-  if ( !This->m_Engine->GetMapEngine()->IsRunning() ) {
-    This->ReportMapEngineError("GetMapEngine() failed");
-    return JS_FALSE;
-  }
-
-  static JSClass clasp = {
-    "map", JSCLASS_HAS_PRIVATE,
-    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
-    JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
-  };
-
-  // create the object
-  JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
-  if (object == NULL) {
-    return JS_FALSE;
-  }
-
-  // assign methods to the object
-  static JSFunctionSpec fs[] = {
-    { "save",        ssMapEngineSave,        0, 0, 0 },
-    { "appendLayer", ssMapEngineLayerAppend, 1, 0, 0 },
-    { 0, 0, 0, 0, 0 },
-  };
-  JS_DefineFunctions(cx, object, fs);
-
-  SS_MAPENGINE* mapengine_object = new SS_MAPENGINE;
-  if (!mapengine_object)
-  {
-    return_object(JSVAL_NULL);
-  }
-
-  mapengine_object->__value__ = 1;
-  JS_SetPrivate(cx, object, mapengine_object);
-
-  JS_DefineProperty(cx, object, "tileset",
-    OBJECT_TO_JSVAL(CreateTilesetObject(cx, This->m_Engine->GetMapEngine()->GetMap().GetMap().GetTileset())),
-    JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
-
-  return_object(object);
-end_func()
-
 ////////////////////////////////////////////////////////////////////////////////
 
 begin_method(SS_MAPENGINE, ssMapEngineSave, 1)
@@ -8771,9 +8841,12 @@ end_method()
 
 #ifdef _3D_FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////
-// Related 3d functions
-////////////////////////////////////////////////////////////////////////////////
 
+// section: 3d functions //
+
+/**
+    - switches from 2d mode to 3d mode, or vice versa...
+*/
 begin_func(SwitchProjectMode, 1)
   arg_int(pro);
 
@@ -8788,6 +8861,153 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - set x,y,z camera angles...
+*/
+begin_func(Set3DCameraAngles, 3)
+  arg_double(xang);
+  arg_double(yang);
+  arg_double(zang);
+
+  if (Set3DCameraAnglesDr == NULL)
+  {
+    JS_ReportError(cx, "Set3DCameraAngles() requires different video driver.");
+    return NULL;
+  }
+
+  Set3DCameraAnglesDr(xang, yang, zang);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+    - set x,y,z camera positions...
+*/
+begin_func(Set3DCameraPosition, 3)
+  arg_double(camx);
+  arg_double(camy);
+  arg_double(camz);
+
+  if (Set3DCameraPositionDr == NULL)
+  {
+    JS_ReportError(cx, "Set3DCameraPosition() requires different video driver.");
+    return NULL;
+  }
+
+  Set3DCameraPositionDr(camx,camy,camz);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+    - get camera x position
+*/
+begin_func(Get3DCameraX, 0)
+  if (Get3DCameraXDr == NULL)
+  {
+    JS_ReportError(cx, "Get3DCameraX() requires different video driver.");
+    return NULL;
+  }
+
+  return_double(Get3DCameraXDr());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+    - get camera y position
+*/
+begin_func(Get3DCameraY, 0)
+  if (Get3DCameraYDr == NULL)
+  {
+    JS_ReportError(cx, "Get3DCameraY() requires different video driver.");
+    return NULL;
+  }
+
+  return_double(Get3DCameraYDr());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+    - get camera z position
+*/
+begin_func(Get3DCameraZ, 0)
+  if (Get3DCameraZDr == NULL)
+  {
+    JS_ReportError(cx, "Get3DCameraZ() requires different video driver.");
+    return NULL;
+  }
+  return_double(Get3DCameraZDr());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+    - get camera x angle
+*/
+begin_func(Get3DCameraAngleX, 0)
+  if (Get3DCameraAngleXDr == NULL)
+  {
+    JS_ReportError(cx, "Get3DCameraAngleX() requires different video driver.");
+    return NULL;
+  }
+
+  return_double(Get3DCameraAngleXDr());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+    - get camera y angle
+*/
+begin_func(Get3DCameraAngleY, 0)
+  if (Get3DCameraAngleYDr == NULL)
+  {
+    JS_ReportError(cx, "Get3DCameraAngleY() requires different video driver.");
+    return NULL;
+  }
+  return_double(Get3DCameraAngleYDr());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+    - get camera z angle
+*/
+begin_func(Get3DCameraAngleZ, 0)
+  if (Get3DCameraAngleZDr == NULL)
+  {
+    JS_ReportError(cx, "Get3DCameraAngleZ() requires different video driver.");
+    return NULL;
+  }
+  return_double(Get3DCameraAngleZDr());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+    - render the map in a perspective mode...
+*/
+begin_func(PRenderMap, 0)
+  if (Transform3DBlitImage == NULL)
+  {
+    JS_ReportError(cx, "PRenderMap() requires different video driver.");
+    return NULL;
+  }
+
+  if (!This->m_Engine->GetMapEngine()->PRenderMap()) {
+    This->ReportMapEngineError("PRenderMap() failed");
+    return JS_FALSE;
+  }
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+    - transformblit the image in 3d...
+*/
 begin_method(SS_IMAGE, ssImageTransform3DBlit, 12)
 
   if (Transform3DBlitImage == NULL)
@@ -8819,6 +9039,9 @@ end_method()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    - transformblit the image to a triangle in 3d...
+*/
 begin_method(SS_IMAGE, ssImageTriangle3DBlit, 15)
 
   if (Triangle3DBlitImage == NULL)
@@ -8854,123 +9077,6 @@ begin_method(SS_IMAGE, ssImageTriangle3DBlit, 15)
     Triangle3DBlitImage(object->image, sx, sy, x, y, z);
   }
 end_method()
-
-////////////////////////////////////////////////////////////////////////////////
-
-begin_func(Set3DCameraAngles, 3)
-  arg_double(xang);
-  arg_double(yang);
-  arg_double(zang);
-
-  if (Set3DCameraAnglesDr == NULL)
-  {
-    JS_ReportError(cx, "Set3DCameraAngles() requires different video driver.");
-    return NULL;
-  }
-
-  Set3DCameraAnglesDr(xang, yang, zang);
-end_func()
-
-////////////////////////////////////////////////////////////////////////////////
-
-begin_func(Set3DCameraPosition, 3)
-  arg_double(camx);
-  arg_double(camy);
-  arg_double(camz);
-
-  if (Set3DCameraPositionDr == NULL)
-  {
-    JS_ReportError(cx, "Set3DCameraPosition() requires different video driver.");
-    return NULL;
-  }
-
-  Set3DCameraPositionDr(camx,camy,camz);
-end_func()
-
-////////////////////////////////////////////////////////////////////////////////
-
-begin_func(Get3DCameraX, 0)
-  if (Get3DCameraXDr == NULL)
-  {
-    JS_ReportError(cx, "Get3DCameraX() requires different video driver.");
-    return NULL;
-  }
-
-  return_double(Get3DCameraXDr());
-end_func()
-
-////////////////////////////////////////////////////////////////////////////////
-
-begin_func(Get3DCameraY, 0)
-  if (Get3DCameraYDr == NULL)
-  {
-    JS_ReportError(cx, "Get3DCameraY() requires different video driver.");
-    return NULL;
-  }
-
-  return_double(Get3DCameraYDr());
-end_func()
-
-////////////////////////////////////////////////////////////////////////////////
-
-begin_func(Get3DCameraZ, 0)
-  if (Get3DCameraZDr == NULL)
-  {
-    JS_ReportError(cx, "Get3DCameraZ() requires different video driver.");
-    return NULL;
-  }
-  return_double(Get3DCameraZDr());
-end_func()
-
-////////////////////////////////////////////////////////////////////////////////
-
-begin_func(Get3DCameraAngleX, 0)
-  if (Get3DCameraAngleXDr == NULL)
-  {
-    JS_ReportError(cx, "Get3DCameraAngleX() requires different video driver.");
-    return NULL;
-  }
-
-  return_double(Get3DCameraAngleXDr());
-end_func()
-
-////////////////////////////////////////////////////////////////////////////////
-
-begin_func(Get3DCameraAngleY, 0)
-  if (Get3DCameraAngleYDr == NULL)
-  {
-    JS_ReportError(cx, "Get3DCameraAngleY() requires different video driver.");
-    return NULL;
-  }
-  return_double(Get3DCameraAngleYDr());
-end_func()
-
-////////////////////////////////////////////////////////////////////////////////
-
-begin_func(Get3DCameraAngleZ, 0)
-  if (Get3DCameraAngleZDr == NULL)
-  {
-    JS_ReportError(cx, "Get3DCameraAngleZ() requires different video driver.");
-    return NULL;
-  }
-  return_double(Get3DCameraAngleZDr());
-end_func()
-
-////////////////////////////////////////////////////////////////////////////////
-
-begin_func(PRenderMap, 0)
-  if (Transform3DBlitImage == NULL)
-  {
-    JS_ReportError(cx, "PRenderMap() requires different video driver.");
-    return NULL;
-  }
-
-  if (!This->m_Engine->GetMapEngine()->PRenderMap()) {
-    This->ReportMapEngineError("PRenderMap() failed");
-    return JS_FALSE;
-  }
-
-end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif // _3D_FUNCTIONS

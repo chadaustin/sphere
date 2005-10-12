@@ -143,6 +143,8 @@ public:
   bool GetZoneLayer(int zone, int& layer);
   bool SetZoneLayer(int zone, int layer);
 
+  bool GetNumObstructionSegments(int layer, int& num_segments);
+
 #ifdef _3D_FUNCTIONS
   bool PRenderMap();
 #endif // _3D_FUNCTIONS

@@ -5,7 +5,7 @@ use strict;
 
 die "Usage: $0 <type>\n"
    . "  e.g. $0 txt > doc_functions.txt\n"
-   . "  e.g. $0 html > doc_functions.html\n\n" . @ARGV . "\n" unless (@ARGV == 1);
+   . "  e.g. $0 html > doc_functions.html\n" unless (@ARGV == 1);
 
 die "type must be either txt or html\n" unless ($ARGV[0] eq "txt" || $ARGV[0] eq "html");
 
@@ -282,6 +282,23 @@ sub make_docs {
   foreach my $line (@lines) {
 
     my $no_desc_text = 0;
+    
+    if ( $line =~ m/^( +)-/) {
+      my $space = $1;
+      
+      if ( !$line =~ m/^( +)- game/) {
+        if ( length($space) != 4) {
+          print "-num_spaces = " . length($space) . "\n";
+        }      
+      }
+    }
+
+    if ( $line =~ m/^( +)@/) {
+      my $space = $1;
+      if ( length($space) != 4) {
+        print "\@num_spaces = " . length($space) . "\n";
+      }
+    }
 
     # // section: section_name //
     if ($line =~ m/\/\/ section: (.*?) \/\//) {
@@ -403,6 +420,12 @@ sub make_docs {
       # arg_image(name)
       if ($line =~ m/arg_image\((.*?)\)/) {
         push (@arg_types, "image_object");
+        push (@args, "$1");
+      }
+
+      # arg_surface(name)
+      if ($line =~ m/arg_surface\((.*?)\)/) {
+        push (@arg_types, "surface_object");
         push (@args, "$1");
       }
 

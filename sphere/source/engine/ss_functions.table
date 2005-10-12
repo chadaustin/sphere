@@ -118,7 +118,7 @@ SS_FUNCTION(OpenLog, 1)
   // map_engine.tileset.appendTiles(num_tiles)
   // map_engine.appendLayer(tile_index)
 
-    // maps
+    // layers
     SS_FUNCTION(GetNumLayers, 0)
     SS_FUNCTION(GetLayerWidth, 1)
     SS_FUNCTION(GetLayerHeight, 1)
@@ -133,6 +133,8 @@ SS_FUNCTION(OpenLog, 1)
     SS_FUNCTION(SetLayerScaleFactorY, 2)
     SS_FUNCTION(SetLayerAngle, 2)
     SS_FUNCTION(GetLayerAngle, 1)
+
+    // tiles
     SS_FUNCTION(GetNumTiles, 0)
     SS_FUNCTION(SetTile, 4)
     SS_FUNCTION(GetTile, 3)
@@ -148,11 +150,8 @@ SS_FUNCTION(OpenLog, 1)
     SS_FUNCTION(GetNextAnimatedTile, 1)
     SS_FUNCTION(SetNextAnimatedTile, 2)
     SS_FUNCTION(ReplaceTilesOnLayer, 3)
-    SS_FUNCTION(IsTriggerAt, 3)
-    SS_FUNCTION(ExecuteTrigger, 3)
-    SS_FUNCTION(AreZonesAt, 3)
-    SS_FUNCTION(ExecuteZones, 3)
-    SS_FUNCTION(ExecuteZoneScript, 1)
+
+    // zones
     SS_FUNCTION(GetZoneX, 1)
     SS_FUNCTION(GetZoneY, 1)
     SS_FUNCTION(GetZoneWidth, 1)
@@ -161,10 +160,20 @@ SS_FUNCTION(OpenLog, 1)
     SS_FUNCTION(SetZoneLayer, 2)
     SS_FUNCTION(GetNumZones, 0)
     SS_FUNCTION(GetCurrentZone, 0)
-	//SS_FUNCTION(GetCurrentTrigger, 0)
+    SS_FUNCTION(AreZonesAt, 3)
+    SS_FUNCTION(ExecuteZones, 3)
+    SS_FUNCTION(ExecuteZoneScript, 1)
+	
+    // triggers
+    //SS_FUNCTION(GetCurrentTrigger, 0)
 	//SS_FUNCTION(GetTriggerX, 1)
 	//SS_FUNCTION(GetTriggerY, 1)
 	//SS_FUNCTION(GetNumTriggers, 0)
+    SS_FUNCTION(IsTriggerAt, 3)
+    SS_FUNCTION(ExecuteTrigger, 3)
+
+    // obstruction segments
+	SS_FUNCTION(GetNumObstructionSegments, 0)
 
     SS_FUNCTION(SetMapEngineFrameRate, 1)
     SS_FUNCTION(GetMapEngineFrameRate, 0)
