@@ -19,18 +19,20 @@ bool GetLocalName (char* name, int size) {
 }
 
 bool GetLocalAddress (char* name, int size) {
-  struct hostent* host;
+  struct hostent* host = NULL;
   char hostname [256]; /* more than we really need */
-  char* address;
+  char* address = NULL;
 
   if(!GetLocalName(hostname, 256))
     return false;
   host = gethostbyname(hostname);
   if (!host)
     return false;
+
   address = inet_ntoa(*(struct in_addr*)host->h_addr);
   if (strlen(address) > size) { /* name is too small to copy address into */
     free(host);
+    host = NULL;
     return false;
   }
   strcpy(name, address);
@@ -38,14 +40,19 @@ bool GetLocalAddress (char* name, int size) {
 }
 
 NSOCKET OpenAddress (const char* name, int port) {
-  struct hostent* host;
+  struct hostent* host = NULL;
   struct sockaddr_in server;
   NSOCKET sock = new NSOCKETimp;
   int err;
 
+  if (sock == NULL) {
+    return NULL;
+  }
+
   sock->is_connected = false;
   sock->is_listening = false;
   sock->socket = socket(AF_INET, SOCK_STREAM, 0);
+
   if (sock->socket < 0) {
     delete sock;
     return NULL;
@@ -69,10 +76,14 @@ NSOCKET ListenOnPort (int port) {
   struct sockaddr_in address;
   NSOCKET sock = new NSOCKETimp;
 
+  if (sock == NULL) {
+    return NULL;
+  }
+
   std::cerr << "attempting to listen on port" << port << std::endl;
   sock->socket = socket(PF_INET, SOCK_STREAM, 0);
   if (sock->socket < 0) {
-	 std::cerr << "failed to create a socket" << std::endl;
+	std::cerr << "failed to create a socket" << std::endl;
     delete sock;
     return NULL;
   }

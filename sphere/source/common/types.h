@@ -45,7 +45,7 @@ typedef signed   long    slong;
 // typedef  signed char    int8;
 typedef          short   int16;
 typedef          long    int32;
-typedef          __int64 int64;
+//typedef          __int64 int64;
 
 typedef signed   int     sint;
 typedef signed   char    sint8;
@@ -87,7 +87,7 @@ typedef signed   long    slong;
 // typedef  signed char    int8;
 typedef          short     int16;
 typedef          long      int32;
-typedef          long long int64;
+//typedef          long long int64;
 
 typedef signed   int     sint;
 typedef signed   char    sint8;
@@ -128,7 +128,8 @@ typedef signed   long    slong;
 // typedef  signed char    int8;
 typedef          short     int16;
 // typed long int32;
-typedef          long long int64;
+
+//typedef          long long int64;
 
 typedef signed   int     sint;
 typedef signed   char    sint8;

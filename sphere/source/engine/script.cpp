@@ -26,12 +26,11 @@
 #include "../common/md5global.h"
 #include "../common/md5.h"
 
+// parameter grabbing
+#include "parameters.hpp"
 
 const int MAX_RECURSE_COUNT = 256;
 const int MAX_FRAME_SKIP    = 20;
-
-// parameter grabbing
-#include "parameters.hpp"
 
 ///////////////////////////////////////////////////////////
 
@@ -5545,7 +5544,7 @@ begin_func(GetFileList, 0)
 
   // convert it to an array of jsvals
   jsval* js_vs = new jsval[vs.size()];
-  if (!js_vs) { 
+  if (!js_vs) {
     return JS_FALSE;
   }
 
@@ -5893,8 +5892,8 @@ CScript::CreateSocketObject(JSContext* cx, NSOCKET socket)
 begin_finalizer(SS_SOCKET, ssFinalizeSocket)
   if (object->socket && object->is_open) {
     CloseSocket(object->socket);
-    object->socket = NULL;
   }
+  object->socket = NULL;
 end_finalizer()
 
 ////////////////////////////////////////
@@ -6034,8 +6033,9 @@ CScript::CreateLogObject(JSContext* cx, CLog* log)
 
   // attach the log to this object
   SS_LOG* log_object = new SS_LOG;
-  if (!log_object)
+  if (!log_object) {
     return NULL;
+  }
 
   log_object->log = log;
   JS_SetPrivate(cx, object, log_object);
@@ -6046,7 +6046,8 @@ CScript::CreateLogObject(JSContext* cx, CLog* log)
 ////////////////////////////////////////
 
 begin_finalizer(SS_LOG, ssFinalizeLog)
-  This->m_Engine->CloseLog(object->log); object->log = NULL;
+  This->m_Engine->CloseLog(object->log);
+  object->log = NULL;
 end_finalizer()
 
 ////////////////////////////////////////
@@ -6508,10 +6509,17 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
 
   // attach the sound to this object
   SS_SOUND* sound_object = new SS_SOUND;
-  if (!sound_object) {
-    if (sound) { sound->unref(); sound = NULL; }
+  if (!sound_object)
+  {
+    if (sound) {
+	  sound->unref();
+	  sound = NULL;
+	}
 #if defined(WIN32) && defined(USE_MIDI)
-    if (midi)  { midi->unref(); midi = NULL; }
+    if (midi)  {
+	  midi->unref();
+	  midi = NULL;
+	}
 #endif
     return NULL;
   }
@@ -6529,9 +6537,15 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
 ////////////////////////////////////////
 
 begin_finalizer(SS_SOUND, ssFinalizeSound)
-  if (object->sound) { object->sound->unref(); object->sound = NULL; }
+  if (object->sound) {
+    object->sound->unref();
+  }
+  object->sound = NULL;
 #if defined(WIN32) && defined(USE_MIDI)
-  if (object->midi) { object->midi->unref(); object->midi = NULL; }
+  if (object->midi) {
+    object->midi->unref();
+  }
+  object->midi = NULL;
 #endif
 end_finalizer()
 
@@ -6562,9 +6576,15 @@ end_method()
     - pauses playback. call play() again to resume playback.
 */
 begin_method(SS_SOUND, ssSoundPause, 0)
-  if (object->sound) object->sound->stop();
+  if (object->sound)
+  {
+    object->sound->stop();
+  }
 #if defined(WIN32) && defined(USE_MIDI)
-  if (object->midi) object->midi->stop();
+  if (object->midi)
+  {
+    object->midi->stop();
+  }
 #endif
 end_method()
 
@@ -6579,7 +6599,10 @@ begin_method(SS_SOUND, ssSoundStop, 0)
     object->sound->reset();
   }
 #if defined(WIN32) && defined(USE_MIDI)
-  if (object->midi) object->midi->stop();
+  if (object->midi)
+  {
+    object->midi->stop();
+  }
 #endif
 end_method()
 
@@ -6638,7 +6661,10 @@ end_method()
 */
 begin_method(SS_SOUND, ssSoundSetPitch, 1)
   arg_double(pitch);
-  if (object->sound) object->sound->setPitchShift(pitch);
+  if (object->sound)
+  {
+    object->sound->setPitchShift(pitch);
+  }
 end_method()
 
 ////////////////////////////////////////
@@ -6647,8 +6673,13 @@ end_method()
     - returns the current pitch
 */
 begin_method(SS_SOUND, ssSoundGetPitch, 0)
-  if (object->sound) return_double(object->sound->getPitchShift());
-  else return_double(1.0);
+  if (object->sound)
+  {
+    return_double(object->sound->getPitchShift());
+  }
+  else {
+    return_double(1.0);
+  }
 end_method()
 
 
@@ -6658,12 +6689,18 @@ end_method()
     - returns true if the sound is currently playing
 */
 begin_method(SS_SOUND, ssSoundIsPlaying, 0)
-  if (object->sound) return_bool(object->sound->isPlaying());
+  if (object->sound) {
+    return_bool(object->sound->isPlaying());
+  }
 #if defined(WIN32) && defined(USE_MIDI)
   else
-  if (object->midi) return_bool(object->midi->isPlaying());
+  if (object->midi) {
+    return_bool(object->midi->isPlaying());
+  }
 #endif
-  else return_bool(false);
+  else {
+   return_bool(false);
+  }
 end_method()
 
 ////////////////////////////////////////
@@ -6673,13 +6710,18 @@ end_method()
       Not all sound types are seekable, Ogg is.
 */
 begin_method(SS_SOUND, ssSoundIsSeekable, 0)
-  if (object->sound) return_bool(object->sound->isSeekable());
+  if (object->sound) {
+    return_bool(object->sound->isSeekable());
+  }
 #if defined(WIN32) && defined(USE_MIDI)
   else
-  if (object->midi) return_bool(true);
+  if (object->midi) {
+    return_bool(true);
+  }
 #endif
-  else
-  return_bool(false);
+  else {
+    return_bool(false);
+  }
 end_method()
 
 ////////////////////////////////////////
@@ -6689,12 +6731,18 @@ end_method()
       returns zero if the sound isn't seekable
 */
 begin_method(SS_SOUND, ssSoundGetPosition, 0)
-  if (object->sound) return_int(object->sound->getPosition());
+  if (object->sound) {
+    return_int(object->sound->getPosition());
+  }
 #if defined(WIN32) && defined(USE_MIDI)
   else
-  if (object->midi)  return_int(object->midi->getPosition());
+  if (object->midi) {
+    return_int(object->midi->getPosition());
+  }
 #endif
-  else return_int(0);
+  else {
+    return_int(0);
+  }
 end_method()
 
 ////////////////////////////////////////
@@ -6705,9 +6753,13 @@ end_method()
 */
 begin_method(SS_SOUND, ssSoundSetPosition, 1)
   arg_int(pos);
-  if (object->sound) object->sound->setPosition(pos);
+  if (object->sound) {
+    object->sound->setPosition(pos);
+  }
 #if defined(WIN32) && defined(USE_MIDI)
-  if (object->midi)  object->midi->setPosition(pos);
+  if (object->midi) {
+    object->midi->setPosition(pos);
+  }
 #endif
 end_method()
 
@@ -6717,12 +6769,18 @@ end_method()
     - gets the length of the sound
 */
 begin_method(SS_SOUND, ssSoundGetLength, 0)
-  if (object->sound) return_int(object->sound->getLength());
+  if (object->sound) {
+    return_int(object->sound->getLength());
+  }
 #if defined(WIN32) && defined(USE_MIDI)
   else
-  if (object->midi)  return_int(object->midi->getLength());
+  if (object->midi) {
+    return_int(object->midi->getLength());
+  }
 #endif
-  else return_int(0);
+  else {
+    return_int(0);
+  }
 end_method()
 
 ////////////////////////////////////////
@@ -6782,8 +6840,9 @@ CScript::CreateFontObject(JSContext* cx, SFONT* font, bool destroy)
 
   // attach the font to this object
   SS_FONT* font_object = new SS_FONT;
-  if (!font_object)
+  if (!font_object) {
     return NULL;
+  }
 
   font_object->font       = font;
   font_object->destroy_me = destroy;
@@ -6797,8 +6856,12 @@ CScript::CreateFontObject(JSContext* cx, SFONT* font, bool destroy)
 
 begin_finalizer(SS_FONT, ssFinalizeFont)
   if (object->destroy_me) {
-    delete object->font;
+    if (object->font) {
+      delete object->font;
+    }
   }
+
+  object->font = NULL;
 end_finalizer()
 
 ///////////////////////////////////////
@@ -7001,6 +7064,7 @@ CScript::CreateWindowStyleObject(JSContext* cx, SWINDOWSTYLE* ws, bool destroy)
     { "drawWindow", ssWindowStyleDrawWindow, 4, 0, 0 },
     { "setColorMask", ssWindowStyleSetColorMask, 1, 0, 0 },
     { "getColorMask", ssWindowStyleGetColorMask, 0, 0, 0 },
+    { "clone", ssWindowStyleClone, 0, 0, 0 },
     { "save", ssWindowStyleSave, 1, 0, 0 },
     { 0, 0, 0, 0, 0 },
   };
@@ -7008,8 +7072,9 @@ CScript::CreateWindowStyleObject(JSContext* cx, SWINDOWSTYLE* ws, bool destroy)
 
   // attach the window style to this object
   SS_WINDOWSTYLE* ws_object = new SS_WINDOWSTYLE;
-  if (!ws_object)
+  if (!ws_object) {
     return NULL;
+  }
 
   ws_object->windowstyle = ws;
   ws_object->destroy_me  = destroy;
@@ -7023,8 +7088,11 @@ CScript::CreateWindowStyleObject(JSContext* cx, SWINDOWSTYLE* ws, bool destroy)
 
 begin_finalizer(SS_WINDOWSTYLE, ssFinalizeWindowStyle)
   if (object->destroy_me) {
-    delete object->windowstyle;
+    if (object->windowstyle) {
+      delete object->windowstyle;
+    }
   }
+  object->windowstyle = NULL;
 end_finalizer()
 
 ///////////////////////////////////////
@@ -7079,6 +7147,15 @@ end_method()
 
 ///////////////////////////////////////
 
+/**
+    - save the windowstyle object (this just returns false...)
+*/
+begin_method(SS_WINDOWSTYLE, ssWindowStyleClone, 0)
+  return_object(JSVAL_NULL);
+end_method()
+
+///////////////////////////////////////
+
 ///////////////////////////////////////
 // IMAGE OBJECTS //////////////////////
 ///////////////////////////////////////
@@ -7111,6 +7188,7 @@ CScript::CreateImageObject(JSContext* cx, IMAGE image, bool destroy)
     { "transformBlit",     ssImageTransformBlit,     8, 0, 0 },
     { "transformBlitMask", ssImageTransformBlitMask, 9, 0, 0 },
     { "createSurface",     ssImageCreateSurface,     0, 0, 0 },
+    { "clone",             ssImageClone,             0, 0, 0 },
 
 #ifdef _3D_FUNCTIONS
     { "transform3DBlit",   ssImageTransform3DBlit,  11, 0, 0 },
@@ -7143,6 +7221,7 @@ begin_finalizer(SS_IMAGE, ssFinalizeImage)
   if (object->destroy_me) {
     DestroyImage(object->image);
   }
+  object->image = NULL;
 end_finalizer()
 
 ///////////////////////////////////////
@@ -7372,6 +7451,15 @@ begin_method(SS_IMAGE, ssImageCreateSurface, 0)
   return_object(CreateSurfaceObject(cx, surface));
 end_method()
 
+////////////////////////////////////////
+
+/**
+    - returns a image object, which is a copy of this image object
+*/
+begin_method(SS_IMAGE, ssImageClone, 0)
+  return_object(JSVAL_NULL);
+end_method()
+
 ///////////////////////////////////////
 
 
@@ -7450,7 +7538,9 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
 ////////////////////////////////////////
 
 begin_finalizer(SS_SURFACE, ssFinalizeSurface)
-  delete object->surface;
+  if (object->surface) {
+    delete object->surface;
+  }
   object->surface = NULL;
 end_finalizer()
 
@@ -7877,7 +7967,11 @@ end_method()
 begin_method(SS_SURFACE, ssSurfaceClone, 0)
   // create the surface
   CImage32* surface = new CImage32(*object->surface);
-  return_object(CreateSurfaceObject(cx, surface));
+  if (surface) {
+    return_object(CreateSurfaceObject(cx, surface));
+  } else {
+    return_object(JSVAL_NULL);
+  }
 end_method()
 
 ///////////////////////////////////////
@@ -8145,8 +8239,8 @@ CScript::CreateColorMatrixObject(JSContext* cx, CColorMatrix* colormatrix)
 begin_finalizer(SS_COLORMATRIX, ssFinalizeColorMatrix)
   if (object->colormatrix) {
     delete object->colormatrix;
-    object->colormatrix = NULL;
   }
+  object->colormatrix = NULL;
 end_finalizer()
 
 ////////////////////////////////////////
@@ -8209,8 +8303,14 @@ CScript::CreateAnimationObject(JSContext* cx, IAnimation* animation)
 ////////////////////////////////////////
 
 begin_finalizer(SS_ANIMATION, ssFinalizeAnimation)
-  if (object->animation) { delete object->animation; object->animation = NULL; }
-  if (object->frame) { delete[] object->frame; object->frame = NULL; }
+  if (object->animation) {
+    delete object->animation;
+  }
+  object->animation = NULL;
+  if (object->frame) {
+    delete[] object->frame;
+  }
+  object->frame = NULL;
 end_finalizer()
 
 ////////////////////////////////////////
@@ -8309,7 +8409,8 @@ CScript::CreateFileObject(JSContext* cx, CConfigFile* file)
 ////////////////////////////////////////
 
 begin_finalizer(SS_FILE, ssFinalizeFile)
-  This->m_Engine->CloseFile(object->file); object->file = NULL;
+  This->m_Engine->CloseFile(object->file);
+  object->file = NULL;
 end_finalizer()
 
 ////////////////////////////////////////
@@ -8440,8 +8541,8 @@ CScript::CreateRawFileObject(JSContext* cx, IFile* file, bool writeable)
 begin_finalizer(SS_RAWFILE, ssFinalizeRawFile)
   if (object->file && object->is_open) {
     delete object->file;
-    object->file = NULL;
   }
+  object->file = NULL;
 end_finalizer()
 
 ////////////////////////////////////////
@@ -8590,7 +8691,10 @@ CScript::CreateByteArrayObject(JSContext* cx, int size, const void* data)
 ///////////////////////////////////////
 
 begin_finalizer(SS_BYTEARRAY, ssFinalizeByteArray)
-  if (object->array) { delete[] object->array; object->array = NULL; }
+  if (object->array) {
+    delete[] object->array;
+  }
+  object->array = NULL;
 end_finalizer()
 
 ///////////////////////////////////////

@@ -177,6 +177,7 @@ private:
   declare_method(ssWindowStyleSetColorMask);
   declare_method(ssWindowStyleGetColorMask);
   declare_method(ssWindowStyleSave);
+  declare_method(ssWindowStyleClone);
 
   // images
   declare_constructor2(CreateImageObject, IMAGE image, bool destroy);
@@ -190,6 +191,7 @@ private:
   declare_method(ssImageTransformBlit);
   declare_method(ssImageTransformBlitMask);
   declare_method(ssImageCreateSurface);
+  declare_method(ssImageClone);
 
   // surfaces
   declare_constructor1(CreateSurfaceObject, CImage32* surface);

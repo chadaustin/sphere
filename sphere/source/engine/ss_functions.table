@@ -345,6 +345,7 @@ SS_FUNCTION(OpenLog, 1)
   //windowstyle.drawWindow(x, y, w, h)
   //windowstyle.setColorMask(color)
   //windowstyle.getColorMask()
+  //windowstyle.clone()
 
   // images
   SS_FUNCTION(GetSystemArrow, 0)
