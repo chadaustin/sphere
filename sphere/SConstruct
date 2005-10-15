@@ -234,6 +234,8 @@ elif sys.platform == 'cygwin':
     default_compiler = 'mingw'
 elif string.find(sys.platform, 'linux') != -1:
     default_compiler = 'linux'
+elif string.find(sys.platform, 'freebsd') != -1:
+    default_compiler = 'linux'
 else:
     print "Can't determine default compiler!  Defaulting to VC6..."
     default_compiler = 'vc6'
