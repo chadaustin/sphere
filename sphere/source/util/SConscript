@@ -3,6 +3,8 @@
 
 
 import os
+import sys
+import string
 
 Import('base_env BUILD_DIR COMPILER')
 
@@ -10,6 +12,10 @@ env = base_env.Copy()
 COMPILER.SetupSphereCommon(env)
 COMPILER.SetupCorona(env)
 COMPILER.SetupZLib(env)
+
+if (string.find(sys.platform, 'freebsd') != -1):
+  env.Append(CPPPATH = ['/usr/local/include'],
+             LIBPATH = ['/usr/local/lib'])
 
 utils = ['alphamerge', 'chr2rss', 'image2map', 'image2rss', 'rss2image',
          'setrsstrans', 'spktest', 'tst2rts', 'vmap2rmp', 'vsp2rts']
