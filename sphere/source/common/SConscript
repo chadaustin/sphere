@@ -16,7 +16,7 @@ env.Library('common', Split("""
     Font.cpp
     Image32.cpp
     Layer.cpp
-    Log.cpp
+    LogEvent.cpp
     LogDispatcher.cpp
     LogFile.cpp
     LogNull.cpp
