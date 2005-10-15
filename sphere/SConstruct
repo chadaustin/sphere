@@ -96,6 +96,15 @@ def BuildLinuxEnv():
     env = Environment(ENV = os.environ)
     env['BUILD_DIR'] = "#/build/linux"
 
+    if ARGUMENTS.get('debug'):
+        env.Append(
+            CCFLAGS = ['-DDEBUG', '-g'],
+            LINKFLAGS = ['-g'])
+    elif ARGUMENTS.get('opt'):
+        env.Append(
+            CCFLAGS = ['-O2', '-s'],
+            LINKFLAGS = ['-s'])
+
     # no write_mng support for linux
     env.Append(CXXFLAGS = ['-DNO_WRITE_MNG'])
 
