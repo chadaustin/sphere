@@ -28,6 +28,7 @@ env.Library('common', Split("""
     Playlist.cpp
     Spriteset.cpp
     str_util.cpp
+    strcmp_ci.cpp
     system.cpp
     Tile.cpp
     Tileset.cpp
