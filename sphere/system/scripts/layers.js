@@ -6,7 +6,7 @@ var gLayerTileDetails = new Array();
 */ 
 function GetTileIndex(name) { 
   var index = -1; 
-  for (var i = 0; i < GetNumLayers(); i++) { 
+  for (var i = 0; i < GetNumTiles(); i++) { 
     if (GetTileName(i) == name) { 
       index = i; 
       break; 
