@@ -2,10 +2,7 @@
 #include "Configuration.hpp"
 #include "Keys.hpp"
 #include "resource.h"
-
-
 ////////////////////////////////////////////////////////////////////////////////
-
 CImageToolPalette::CImageToolPalette(CDocumentWindow* owner, IToolPaletteHandler* handler)
 : CToolPalette(owner, handler, "Image Tools",
   Configuration::Get(KEY_IMAGE_TOOLS_RECT),
@@ -20,9 +17,7 @@ CImageToolPalette::CImageToolPalette(CDocumentWindow* owner, IToolPaletteHandler
   AddTool(IDI_IMAGETOOL_SELECTION, "Selection");
   AddTool(IDI_IMAGETOOL_FREESELECTION, "Free Selection");
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CImageToolPalette::Destroy()
 {
@@ -32,8 +27,6 @@ CImageToolPalette::Destroy()
   Configuration::Set(KEY_IMAGE_TOOLS_RECT, rect);
   // FIXME: IsWindowVisible() always returns FALSE here
   // Configuration::Set(KEY_IMAGE_TOOLS_VISIBLE, IsWindowVisible() != FALSE);
-
   CToolPalette::Destroy();
 }
-
 ////////////////////////////////////////////////////////////////////////////////

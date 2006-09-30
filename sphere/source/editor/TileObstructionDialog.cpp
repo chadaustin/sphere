@@ -6,9 +6,7 @@
 #endif
 
 BEGIN_MESSAGE_MAP(CTileObstructionDialog, CDialog)
-
   ON_WM_SIZE()
-
   ON_COMMAND(IDC_PRESETS, OnPresets)
   
   ON_COMMAND(ID_OBSTRUCTIONPRESETS_UNBLOCKED,  OnPresetUnblocked)
@@ -40,10 +38,7 @@ BEGIN_MESSAGE_MAP(CTileObstructionDialog, CDialog)
 #endif
 
 END_MESSAGE_MAP()
-
-
 ////////////////////////////////////////////////////////////////////////////////
-
 CTileObstructionDialog::CTileObstructionDialog(sTileset* tileset, sTile* tiles, int tile_index)
 : CDialog(IDD_TILE_OBSTRUCTION_DIALOG)
 , m_tileset(tileset)
@@ -59,7 +54,6 @@ CTileObstructionDialog::CTileObstructionDialog(sTileset* tileset, sTile* tiles, 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 BOOL
 CTileObstructionDialog::OnInitDialog()
 {
@@ -76,7 +70,6 @@ CTileObstructionDialog::OnInitDialog()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CTileObstructionDialog::OnOK()
 {
@@ -89,7 +82,6 @@ CTileObstructionDialog::OnOK()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTileObstructionDialog::OnSize(UINT type, int cx, int cy)
 {
@@ -123,7 +115,6 @@ CTileObstructionDialog::OnSize(UINT type, int cx, int cy)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTileObstructionDialog::OnPresets()
 {
@@ -148,12 +139,11 @@ CTileObstructionDialog::OnPresets()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 bool
 CTileObstructionDialog::StoreTile()
 {
   if (m_current_tile >= 0 && m_current_tile < m_tileset->GetNumTiles()
-   && m_current_tile < m_obstruction_maps.size())
+   && m_current_tile < (int) m_obstruction_maps.size())
   {
     m_tiles[m_current_tile] = m_edit_tile;
     m_obstruction_maps[m_current_tile] = m_edit_tile.GetObstructionMap();
@@ -164,7 +154,6 @@ CTileObstructionDialog::StoreTile()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTileObstructionDialog::OnNext() {
   if (StoreTile()) {
@@ -178,7 +167,6 @@ CTileObstructionDialog::OnNext() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTileObstructionDialog::OnPrevious() {
   if (StoreTile()) {
@@ -192,7 +180,6 @@ CTileObstructionDialog::OnPrevious() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTileObstructionDialog::OnFileSave()
 {
@@ -235,13 +222,11 @@ CTileObstructionDialog::OnFileSave()
     fprintf(file, "}\n");
 
     fclose(file);
-
   }
 #endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTileObstructionDialog::OnPresetUnblocked()
 {
@@ -252,7 +237,6 @@ CTileObstructionDialog::OnPresetUnblocked()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTileObstructionDialog::OnPresetBlocked()
 {
@@ -270,7 +254,6 @@ CTileObstructionDialog::OnPresetBlocked()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTileObstructionDialog::OnPresetUpperRight()
 {
@@ -287,7 +270,6 @@ CTileObstructionDialog::OnPresetUpperRight()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTileObstructionDialog::OnPresetLowerRight()
 {
@@ -304,7 +286,6 @@ CTileObstructionDialog::OnPresetLowerRight()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTileObstructionDialog::OnPresetLowerLeft()
 {
@@ -321,7 +302,6 @@ CTileObstructionDialog::OnPresetLowerLeft()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTileObstructionDialog::OnPresetUpperLeft()
 {
@@ -338,7 +318,6 @@ CTileObstructionDialog::OnPresetUpperLeft()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTileObstructionDialog::OnPresetTopHalf()
 {
@@ -356,7 +335,6 @@ CTileObstructionDialog::OnPresetTopHalf()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTileObstructionDialog::OnPresetBottomHalf()
 {
@@ -375,7 +353,6 @@ CTileObstructionDialog::OnPresetBottomHalf()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTileObstructionDialog::OnPresetLeftHalf()
 {
@@ -393,7 +370,6 @@ CTileObstructionDialog::OnPresetLeftHalf()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTileObstructionDialog::OnPresetRightHalf()
 {
@@ -412,7 +388,6 @@ CTileObstructionDialog::OnPresetRightHalf()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTileObstructionDialog::OnPresetCustom()
 {
@@ -420,11 +395,8 @@ CTileObstructionDialog::OnPresetCustom()
   int h = m_edit_tile.GetHeight() - 1;
 
   sObstructionMap s;
-
   const unsigned int id = GetCurrentMessage()->wParam;
-
   switch (id) {
-
     case (ID_OBSTRUCTIONPRESETS_CUSTOM1):
   s.AddSegment(0*w/15, 0*h/15, 3*w/15, 0*h/15);
   s.AddSegment(3*w/15, 0*h/15, 3*w/15, 15*h/15);
@@ -494,10 +466,8 @@ CTileObstructionDialog::OnPresetCustom()
     break;
 
   }
-
   m_edit_tile.GetObstructionMap() = s;
   m_obstruction_view.Invalidate();
 
 }
-
 ////////////////////////////////////////////////////////////////////////////////

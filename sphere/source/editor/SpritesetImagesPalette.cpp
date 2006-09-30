@@ -5,16 +5,13 @@
 #include "NumberDialog.hpp"
 
 BEGIN_MESSAGE_MAP(CSpritesetImagesPalette, CPaletteWindow)
-
   ON_WM_PAINT()
   ON_WM_SIZE()
   ON_WM_VSCROLL()
   ON_WM_LBUTTONDOWN()
   ON_WM_RBUTTONUP()
-
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_MOVE_BACK,    OnMoveBack)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_MOVE_FORWARD, OnMoveForward)
-
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_INSERT_IMAGE, OnInsertImage)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_APPEND_IMAGE, OnAppendImage)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGE, OnRemoveImage)
@@ -25,17 +22,13 @@ BEGIN_MESSAGE_MAP(CSpritesetImagesPalette, CPaletteWindow)
   
   ON_COMMAND(ID_FILE_ZOOM_IN,  OnZoomIn)
   ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
-
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_ZOOM_1X, OnZoom1X)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_ZOOM_2X, OnZoom2X)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_ZOOM_4X, OnZoom4X)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_ZOOM_8X, OnZoom8X)
-
 END_MESSAGE_MAP()
 
-
 ////////////////////////////////////////////////////////////////////////////////
-
 CSpritesetImagesPalette::CSpritesetImagesPalette(CDocumentWindow* owner, ISpritesetImagesPaletteHandler* handler, sSpriteset* spriteset)
 : CPaletteWindow(owner, "Spriteset Images",
   Configuration::Get(KEY_SPRITESET_IMAGES_RECT),
@@ -50,9 +43,7 @@ CSpritesetImagesPalette::CSpritesetImagesPalette(CDocumentWindow* owner, ISprite
   OnZoom(1);
   UpdateScrollBar();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CSpritesetImagesPalette::Destroy()
 {
@@ -64,47 +55,37 @@ CSpritesetImagesPalette::Destroy()
   Configuration::Set(KEY_SPRITESET_IMAGES_RECT, rect);
   // FIXME: IsWindowVisible() always returns FALSE here
   //Configuration::Set(KEY_SPRITESET_IMAGES_VISIBLE, IsWindowVisible() != FALSE);
-
   // destroy window
   DestroyWindow();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSpritesetImagesPalette::SetCurrentImage(int image)
 {
   m_SelectedImage = image;
   Invalidate();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSpritesetImagesPalette::SpritesetResized()
 {
   OnZoom(m_ZoomFactor.GetZoomFactor());
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSpritesetImagesPalette::OnSize(UINT type, int cx, int cy)
 {
   UpdateScrollBar();
   Invalidate();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSpritesetImagesPalette::OnPaint()
 {
   CPaintDC dc(this);
-
   RECT client_rect;
-  GetClientRect(&client_rect);
 
+  GetClientRect(&client_rect);
   if (!m_BlitImage || m_BlitImage->GetPixels() == NULL) {
     FillRect(dc, &client_rect, (HBRUSH)GetStockObject(BLACK_BRUSH));
     return;
@@ -112,7 +93,6 @@ CSpritesetImagesPalette::OnPaint()
 
   int blit_width  = m_BlitImage->GetWidth();
   int blit_height = m_BlitImage->GetHeight();
-
   for (int iy = 0; iy < client_rect.bottom / blit_height + 1; iy++)
     for (int ix = 0; ix < client_rect.right / blit_width + 1; ix++)
     {
@@ -126,7 +106,6 @@ CSpritesetImagesPalette::OnPaint()
         continue;
       
       int num_tiles_x = client_rect.right / blit_width;
-
       int it = (iy + m_TopRow) * (client_rect.right / blit_width) + ix;
       if (ix < num_tiles_x && it < m_Spriteset->GetNumImages())
       {
@@ -143,22 +122,20 @@ CSpritesetImagesPalette::OnPaint()
                 CreateBGRA(255, 255, 255, 255) :
                 CreateBGRA(255, 192, 192, 255));
           }
-
         // draw the tile into it
         RGBA* tilepixels = m_Spriteset->GetImage(it).GetPixels();
         for (int iy = 0; iy < blit_height; iy++)
           for (int ix = 0; ix < blit_width; ix++)
           {
-            int ty = iy / m_ZoomFactor.GetZoomFactor();
-            int tx = ix / m_ZoomFactor.GetZoomFactor();
+            int ty = (int) (iy / m_ZoomFactor.GetZoomFactor());
+            int tx = (int) (ix / m_ZoomFactor.GetZoomFactor());
             int t = ty * m_Spriteset->GetFrameWidth() + tx;
             
             int d = iy * blit_width + ix;
-
             // this here would crash if the spriteset has been resized
             // and the spriteset images pallete hasn't been informed of the resize
             if (tx >= 0 && tx < m_Spriteset->GetFrameWidth()
-             && ty >= 0 && ty < m_Spriteset->GetFrameHeight()) {
+                && ty >= 0 && ty < m_Spriteset->GetFrameHeight()) {
               int alpha = tilepixels[t].alpha;
               pixels[d].red   = (tilepixels[t].red   * alpha + pixels[d].red   * (255 - alpha)) / 256;
               pixels[d].green = (tilepixels[t].green * alpha + pixels[d].green * (255 - alpha)) / 256;
@@ -177,55 +154,41 @@ CSpritesetImagesPalette::OnPaint()
           CBrush* oldbrush = dc.SelectObject(CBrush::FromHandle(newbrush));
           HPEN newpen = (HPEN)CreatePen(PS_SOLID, 1, RGB(0xFF, 0x00, 0xFF));
           CPen* oldpen = dc.SelectObject(CPen::FromHandle(newpen));
-
           dc.Rectangle(&Rect);
-
           dc.SelectObject(oldbrush);
           DeleteObject(newbrush);
           dc.SelectObject(oldpen);
           DeleteObject(newpen);
         }
-
       }
-      else
-      {
-        // draw black rectangle
+      else // draw black rectangle
         dc.FillRect(&Rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
-      }
-      
     }
-
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSpritesetImagesPalette::OnLButtonDown(UINT flags, CPoint point)
 {
   RECT client_rect;
   GetClientRect(&client_rect);
-  int num_images_x = client_rect.right / m_BlitImage->GetWidth();
 
+  int num_images_x = client_rect.right / m_BlitImage->GetWidth();
   int col = point.x / m_BlitImage->GetWidth();
   int row = point.y / m_BlitImage->GetHeight();
 
   // don't let user select tile off the right edge (and go to the next row)
-  if (col >= num_images_x) {
+  if (col >= num_images_x)
     return;
-  }
-
+  
   int image = (m_TopRow + row) * num_images_x + col;
   if (image >= 0 && image < m_Spriteset->GetNumImages())
     m_SelectedImage = image;
-
   Invalidate();
 
   // the selected tile changed, so tell the parent window
   m_Handler->SIP_IndexChanged(m_SelectedImage);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSpritesetImagesPalette::OnRButtonUp(UINT flags, CPoint point)
 {
@@ -234,30 +197,25 @@ CSpritesetImagesPalette::OnRButtonUp(UINT flags, CPoint point)
 
   // show pop-up menu
   ClientToScreen(&point);
-
   HMENU menu_ = ::LoadMenu(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_SPRITESET_IMAGES_PALETTE));
   HMENU menu = GetSubMenu(menu_, 0);
-
-  if (m_ZoomFactor.GetZoomFactor() == 1) {
+  if (m_ZoomFactor.GetZoomFactor() == 1)
     CheckMenuItem(menu, ID_SPRITESETIMAGESPALETTE_ZOOM_1X, MF_BYCOMMAND | MF_CHECKED);
-  } else if (m_ZoomFactor.GetZoomFactor() == 2) {
+  else if (m_ZoomFactor.GetZoomFactor() == 2)
     CheckMenuItem(menu, ID_SPRITESETIMAGESPALETTE_ZOOM_2X, MF_BYCOMMAND | MF_CHECKED);
-  } else if (m_ZoomFactor.GetZoomFactor() == 4) {
+  else if (m_ZoomFactor.GetZoomFactor() == 4)
     CheckMenuItem(menu, ID_SPRITESETIMAGESPALETTE_ZOOM_4X, MF_BYCOMMAND | MF_CHECKED);
-  } else if (m_ZoomFactor.GetZoomFactor() == 8) {
+  else if (m_ZoomFactor.GetZoomFactor() == 8)
     CheckMenuItem(menu, ID_SPRITESETIMAGESPALETTE_ZOOM_8X, MF_BYCOMMAND | MF_CHECKED);
-  }
 
   // disable move back if we're on the first image
-  if (!(m_Spriteset->GetNumImages() > 1) || m_SelectedImage == 0) {
+  if (!(m_Spriteset->GetNumImages() > 1) || m_SelectedImage == 0)
     EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_MOVE_BACK, MF_BYCOMMAND | MF_GRAYED);
-  }
-
+  
   // disable move forward if we're on the last image
-  if ( !(m_Spriteset->GetNumImages() > 1) || m_SelectedImage == m_Spriteset->GetNumImages() - 1) {
+  if ( !(m_Spriteset->GetNumImages() > 1) || m_SelectedImage == m_Spriteset->GetNumImages() - 1)
     EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_MOVE_FORWARD, MF_BYCOMMAND | MF_GRAYED);
-  }
-
+  
   // disable remove image if there is only one
   if (m_Spriteset->GetNumImages() <= 1) {
     EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGE,  MF_BYCOMMAND | MF_GRAYED);
@@ -267,9 +225,7 @@ CSpritesetImagesPalette::OnRButtonUp(UINT flags, CPoint point)
   TrackPopupMenu(menu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, point.x, point.y, 0, m_hWnd, NULL);
   DestroyMenu(menu_);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSpritesetImagesPalette::OnVScroll(UINT code, UINT pos, CScrollBar* scroll_bar)
 {
@@ -281,13 +237,10 @@ CSpritesetImagesPalette::OnVScroll(UINT code, UINT pos, CScrollBar* scroll_bar)
     case SB_PAGEUP:     m_TopRow -= GetPageSize(); break;
     case SB_THUMBTRACK: m_TopRow = (int)pos;       break;
   }
-
   UpdateScrollBar();
   Invalidate();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CSpritesetImagesPalette::UpdateScrollBar()
 {
@@ -304,7 +257,6 @@ CSpritesetImagesPalette::UpdateScrollBar()
   si.cbSize = sizeof(si);
   si.fMask  = SIF_ALL;
   si.nMin   = 0;
-
   if (page_size - num_rows)
   {
     si.nMax   = num_rows - 1;
@@ -320,9 +272,7 @@ CSpritesetImagesPalette::UpdateScrollBar()
 
   SetScrollInfo(SB_VERT, &si);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 int
 CSpritesetImagesPalette::GetPageSize()
 {
@@ -331,12 +281,9 @@ CSpritesetImagesPalette::GetPageSize()
 
   if (!m_BlitImage || m_BlitImage->GetHeight() == 0)
     return -1;
-
   return ClientRect.bottom / m_BlitImage->GetHeight();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 int
 CSpritesetImagesPalette::GetNumRows()
 {
@@ -345,59 +292,44 @@ CSpritesetImagesPalette::GetNumRows()
   
   if (!m_BlitImage || m_BlitImage->GetWidth() == 0)
     return -1;
-
   int num_tiles_x = client_rect.right / m_BlitImage->GetWidth();
-
   if (num_tiles_x == 0)
     return -1;
   else
     return (m_Spriteset->GetNumImages() + num_tiles_x - 1) / num_tiles_x;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSpritesetImagesPalette::OnMoveBack()
 {
-  if (m_SelectedImage > 0) {
+  if (m_SelectedImage > 0)
     OnSwap(m_SelectedImage - 1);
-  }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSpritesetImagesPalette::OnMoveForward()
 {
-  if (m_SelectedImage < m_Spriteset->GetNumImages() - 1) {
+  if (m_SelectedImage < m_Spriteset->GetNumImages() - 1)
     OnSwap(m_SelectedImage + 1);
-  }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSpritesetImagesPalette::OnInsertImage()
 {
   m_Spriteset->InsertImage(m_SelectedImage);
-
   // update indices in the spriteset
-  for (int i = 0; i < m_Spriteset->GetNumDirections(); i++) {
+  for (int i = 0; i < m_Spriteset->GetNumDirections(); i++)
     for (int j = 0; j < m_Spriteset->GetNumFrames(i); j++) {
       int k = m_Spriteset->GetFrameIndex(i, j);
-      if (k >= m_SelectedImage) {
+      if (k >= m_SelectedImage)
         m_Spriteset->SetFrameIndex(i, j, k + 1);
-      }
     }
-  }
-
+  
   m_SelectedImage++;
   m_Handler->SIP_SpritesetModified();
   Invalidate();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSpritesetImagesPalette::OnAppendImage()
 {
@@ -405,9 +337,7 @@ CSpritesetImagesPalette::OnAppendImage()
   m_Handler->SIP_SpritesetModified();
   Invalidate();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CSpritesetImagesPalette::OnRemoveImage()
 {
@@ -415,63 +345,48 @@ CSpritesetImagesPalette::OnRemoveImage()
   if (m_SelectedImage < 0 ||
       m_SelectedImage >= m_Spriteset->GetNumImages() ||
       m_Spriteset->GetNumImages() <= 1)
-  {
     return;
-  }
-
+  
   // update indices in the spriteset
-  for (int i = 0; i < m_Spriteset->GetNumDirections(); i++) {
+  for (int i = 0; i < m_Spriteset->GetNumDirections(); i++)
     for (int j = 0; j < m_Spriteset->GetNumFrames(i); j++) {
       int k = m_Spriteset->GetFrameIndex(i, j);
-      if (k == m_SelectedImage) {
+      if (k == m_SelectedImage)
         m_Spriteset->SetFrameIndex(i, j, 0);
-      } else if (k >= m_SelectedImage) {
+      else if (k >= m_SelectedImage)
         m_Spriteset->SetFrameIndex(i, j, k - 1);
-      }
     }
-  }
-
+  
   m_Spriteset->DeleteImage(m_SelectedImage);
-
-  if (m_SelectedImage >= m_Spriteset->GetNumImages()) {
+  if (m_SelectedImage >= m_Spriteset->GetNumImages())
     m_SelectedImage--;
-  }
+  
   m_Handler->SIP_SpritesetModified();
   m_Handler->SIP_IndexChanged(m_SelectedImage);
   Invalidate();
 }
-
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CSpritesetImagesPalette::OnInsertImages() {
   CNumberDialog dialog("Insert Images (unimplemented)", "Number of Images", 1, 1, 4096);
   if (dialog.DoModal() == IDOK)
   {
-
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CSpritesetImagesPalette::OnAppendImages() {
   CNumberDialog dialog("Append Images", "Number of Images", 1, 1, 4096);
   if (dialog.DoModal() == IDOK)
   {
     int num_images = dialog.GetValue();
-    for (int i = 0; i < num_images; i++) {
+    for (int i = 0; i < num_images; i++)
       m_Spriteset->InsertImage(m_Spriteset->GetNumImages());
-    }
-
     m_Handler->SIP_SpritesetModified();
     Invalidate();
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CSpritesetImagesPalette::OnRemoveImages()
 {
@@ -482,24 +397,18 @@ CSpritesetImagesPalette::OnRemoveImages()
   if (dialog.DoModal() == IDOK)
   {
     int num_images = dialog.GetValue();
-    while (num_images-- >= 0) {
+    while (num_images-- >= 0)
       OnRemoveImage();
-    }
-
     // make sure selected tile is still valid
-    if (m_SelectedImage >= m_Spriteset->GetNumImages()) {
+    if (m_SelectedImage >= m_Spriteset->GetNumImages())
       m_SelectedImage = m_Spriteset->GetNumImages() - 1;
-    }
-
     m_Handler->SIP_SpritesetModified();
     m_Handler->SIP_IndexChanged(m_SelectedImage);
     UpdateScrollBar();
     Invalidate();   
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CSpritesetImagesPalette::OnSwap(int new_index)
 {
@@ -510,49 +419,38 @@ CSpritesetImagesPalette::OnSwap(int new_index)
   int two = current;
 
   // go through the spriteset and changes the indices
-  for (int i = 0; i < m_Spriteset->GetNumDirections(); i++) {
-    for (int j = 0; j < m_Spriteset->GetNumFrames(i); j++) {
-      if (m_Spriteset->GetFrameIndex(i, j) == one) {
+  for (int i = 0; i < m_Spriteset->GetNumDirections(); i++)
+    for (int j = 0; j < m_Spriteset->GetNumFrames(i); j++)
+      if (m_Spriteset->GetFrameIndex(i, j) == one)
         m_Spriteset->SetFrameIndex(i, j, two);
-      } else if (m_Spriteset->GetFrameIndex(i, j) == two) {
+      else if (m_Spriteset->GetFrameIndex(i, j) == two)
         m_Spriteset->SetFrameIndex(i, j, one);
-      }
-    }
-  }
-
+  
   // swap the images
   std::swap(
     m_Spriteset->GetImage(one),
     m_Spriteset->GetImage(two)
   );
   m_SelectedImage = new_index;
-
   m_Handler->SIP_IndexChanged(m_SelectedImage);
   m_Handler->SIP_SpritesetModified();
   Invalidate();
 }
-
 ///////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSpritesetImagesPalette::OnZoom(double zoom) {
   m_ZoomFactor.SetZoomFactor(zoom);
-
   if (m_BlitImage != NULL)
     delete m_BlitImage;
-
   m_BlitImage = new CDIBSection(
-    m_Spriteset->GetFrameWidth() * m_ZoomFactor.GetZoomFactor(),
-    m_Spriteset->GetFrameHeight() * m_ZoomFactor.GetZoomFactor(),
+    (int) (m_Spriteset->GetFrameWidth() * m_ZoomFactor.GetZoomFactor()),
+    (int) (m_Spriteset->GetFrameHeight() * m_ZoomFactor.GetZoomFactor()),
     32
   );
-
   UpdateScrollBar();
   Invalidate();
 }
-
 ///////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSpritesetImagesPalette::OnZoomIn()
 {
@@ -566,9 +464,7 @@ CSpritesetImagesPalette::OnZoomIn()
   m_ZoomFactor.ZoomIn();
   OnZoom(m_ZoomFactor.GetZoomFactor());
 }
-
 ///////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSpritesetImagesPalette::OnZoomOut()
 {
@@ -582,33 +478,24 @@ CSpritesetImagesPalette::OnZoomOut()
   m_ZoomFactor.ZoomOut();
   OnZoom(m_ZoomFactor.GetZoomFactor());
 }
-
 ///////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSpritesetImagesPalette::OnZoom1X() {
   OnZoom(1);
 }
-
 ///////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSpritesetImagesPalette::OnZoom2X() {
   OnZoom(2);
 }
-
 ///////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSpritesetImagesPalette::OnZoom4X() {
   OnZoom(4);
 }
-
 ///////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSpritesetImagesPalette::OnZoom8X() {
   OnZoom(8);
 }
-
 ///////////////////////////////////////////////////////////////////////////////

@@ -3,11 +3,8 @@
 // 7.26.1999
 
 // Some of these conflict with JS.
-
-
 #ifndef TYPES_H
 #define TYPES_H
-
 
 // boolean (VC++'s bool is 1 byte)
 #ifndef __cplusplus
@@ -15,7 +12,6 @@
 #define true  1
 #define false 0
 #endif
-
 
 // sized types
 typedef unsigned char    byte;
@@ -31,7 +27,6 @@ typedef signed   long    sdword;
 typedef unsigned long    udword;
 
 #ifdef _MSC_VER
-
 typedef unsigned __int64 qword;
 typedef signed   __int64 sqword;
 typedef unsigned __int64 uqword;
@@ -72,8 +67,6 @@ typedef          float   float32;
 typedef          double  float64;
 
 #elif defined(CYGWIN)
-
-
 typedef          long long qword;
 typedef signed   long long sqword;
 typedef unsigned long long uqword;
@@ -114,7 +107,6 @@ typedef          float   float32;
 typedef          double  float64;
 
 #else
-
 typedef          long long qword;
 typedef signed   long long sqword;
 typedef unsigned long long uqword;
@@ -130,7 +122,6 @@ typedef          short     int16;
 // typed long int32;
 
 //typedef          long long int64;
-
 typedef signed   int     sint;
 typedef signed   char    sint8;
 typedef signed   short   sint16;
@@ -156,7 +147,4 @@ typedef          float   float32;
 typedef          double  float64;
 
 #endif
-
-
-
 #endif /* TYPES_H__ */

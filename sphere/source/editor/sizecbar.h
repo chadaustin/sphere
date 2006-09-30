@@ -36,7 +36,6 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
-
 #if defined(_SCB_MINIFRAME_CAPTION) && !defined(_SCB_REPLACE_MINIFRAME)
     #error "_SCB_MINIFRAME_CAPTION requires _SCB_REPLACE_MINIFRAME"
 #endif
@@ -181,7 +180,6 @@ protected:
     afx_msg LRESULT OnSetText(WPARAM wParam, LPARAM lParam);
 
     DECLARE_MESSAGE_MAP()
-
 #ifdef _SCB_REPLACE_MINIFRAME
     friend class CSCBMiniDockFrameWnd;
 #endif //_SCB_REPLACE_MINIFRAME
@@ -236,4 +234,3 @@ public:
 #endif //_SCB_REPLACE_MINIFRAME
 
 #endif // !defined(__SIZECBAR_H__)
-

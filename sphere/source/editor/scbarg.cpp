@@ -30,7 +30,6 @@
 //
 
 //CHANGED: Not using #include "stdafx.h"
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -41,7 +40,6 @@ static char THIS_FILE[] = __FILE__;
 // CSizingControlBarG
 
 IMPLEMENT_DYNAMIC(CSizingControlBarG, baseCSizingControlBarG);
-
 CSizingControlBarG::CSizingControlBarG()
 {
     m_cyGripper = 12;
@@ -85,7 +83,6 @@ void CSizingControlBarG::NcCalcClient(LPRECT pRc, UINT nDockBarID)
         return;
 
     CRect rc(pRc); // the client rect as calculated by the base class
-
     BOOL bHorz = (nDockBarID == AFX_IDW_DOCKBAR_TOP) ||
                  (nDockBarID == AFX_IDW_DOCKBAR_BOTTOM);
 
@@ -102,7 +99,6 @@ void CSizingControlBarG::NcCalcClient(LPRECT pRc, UINT nDockBarID)
         ptOrgBtn = CPoint(rc.right - 12, rc.top - 13);
 
     m_biHide.Move(ptOrgBtn - rcBar.TopLeft());
-
     *pRc = rc;
 }
 
@@ -135,7 +131,6 @@ void CSizingControlBarG::NcPaintGripper(CDC* pDC, CRect rcClient)
         ::GetSysColor(COLOR_BTNSHADOW));
 
     gripper.OffsetRect(bHorz ? 3 : 0, bHorz ? 0 : 3);
-
     pDC->Draw3dRect(gripper, ::GetSysColor(COLOR_BTNHIGHLIGHT),
         ::GetSysColor(COLOR_BTNSHADOW));
 
@@ -172,7 +167,6 @@ void CSizingControlBarG::OnUpdateCmdUI(CFrameWnd* pTarget,
         return;
 
     BOOL bNeedPaint = FALSE;
-
     CPoint pt;
     ::GetCursorPos(&pt);
     BOOL bHit = (OnNcHitTest(pt) == HTCLOSE);
@@ -222,7 +216,6 @@ void CSCBButton::Paint(CDC* pDC)
     CFont* oldfont = pDC->SelectObject(&font);
 
     pDC->TextOut(ptOrg.x + 2, ptOrg.y + 2, CString(_T("r"))); // x-like
-
     pDC->SelectObject(oldfont);
     pDC->SetBkMode(nPrevBkMode);
     pDC->SetTextColor(clrOldTextColor);

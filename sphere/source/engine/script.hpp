@@ -1,15 +1,13 @@
 #ifndef SCRIPT_HPP
 #define SCRIPT_HPP
 
-
 // identifier too long
 #ifdef _MSC_VER
 #pragma warning(disable : 4786)
 #endif
 
-
 #include <string>
-#include <jsapi.h>
+#include <smjs/jsapi.h>
 #include "audio.hpp"
 #include "engineinterface.hpp"
 #include "sfont.hpp"
@@ -25,14 +23,10 @@
 #include "../common/Map.hpp"
 #include "../common/Layer.hpp"
 
-
 // EVIL EVIL export!
 struct SS_SPRITESET;
 
-
 class CScript; // forward declaration for CScriptCode
-
-
 // encapsulates a snippet of code
 // (already compiled in JS)
 class CScriptCode
@@ -58,7 +52,6 @@ private:
   friend class CScript;
 };
 
-
 class CScript
 {
 public:
@@ -83,14 +76,11 @@ private:
   static JSBool BranchCallback(JSContext* cx, JSScript* script);
 
   // global functions
-
   #define SS_FUNCTION(name, numargs) static JSBool ss##name(JSContext* cx, JSObject* obj, uintN argc, jsval* argv, jsval* rval);
   #include "ss_functions.table"
   #undef SS_FUNCTION
 
-
   // objects
-
   #define declare_constructor1(name, param1)                 \
     static JSObject* name(JSContext* cx, param1);
   #define declare_constructor2(name, param1, param2)         \
@@ -98,7 +88,6 @@ private:
   #define declare_finalizer(name) static void name(JSContext* cx, JSObject* obj)
   #define declare_method(name)    static JSBool name(JSContext* cx, JSObject* obj, uintN argc, jsval* argv, jsval* rval)
   #define declare_property(name)  static JSBool name(JSContext* cx, JSObject* obj, jsval id, jsval* vp)
-
 
   // sockets
   declare_constructor1(CreateSocketObject, NSOCKET socket);
@@ -286,7 +275,6 @@ private:
   #undef declare_method
   #undef declare_finalizer
 
-
 private:
   // should we draw graphics?
   bool ShouldRender() {
@@ -294,7 +282,6 @@ private:
   }
 
   IEngine* m_Engine;
-
   JSRuntime* m_Runtime;
   JSContext* m_Context;
   JSObject*  m_Global;
@@ -304,7 +291,6 @@ private:
 
   bool m_GCEnabled;
   int m_GCCount;
-
 
   // used in native functions
   int m_RecurseCount;  // for RunScript()
@@ -320,6 +306,5 @@ private:
   // it needs to access m_GCEnabled
   friend class NoGCBlock;
 };
-
 
 #endif

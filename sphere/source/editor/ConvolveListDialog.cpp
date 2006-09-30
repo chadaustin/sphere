@@ -4,17 +4,13 @@
 //#include <fstream>
 
 #include "../common/str_util.hpp"
-
 ////////////////////////////////////////////////////////////////////////////////
-
 // BEGIN CONVOLVE LIST EDIT DIALOG //
-
 BEGIN_MESSAGE_MAP(CConvolveListEditDialog, CDialog)
   ON_COMMAND(IDC_FILTER_LIST_EDIT_CLAMP, OnClampChanged)
 END_MESSAGE_MAP()
 
 ////////////////////////////////////////////////////////////////////////////////
-
 CConvolveListEditDialog::CConvolveListEditDialog(FilterInfo* filter_info)
 : CDialog(IDD_CONVOLVE_LIST_EDIT)
 {
@@ -22,7 +18,6 @@ CConvolveListEditDialog::CConvolveListEditDialog(FilterInfo* filter_info)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CConvolveListEditDialog::OnClampChanged()
 {
@@ -35,7 +30,6 @@ CConvolveListEditDialog::OnClampChanged()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 BOOL
 CConvolveListEditDialog::OnInitDialog()
 {
@@ -89,7 +83,6 @@ CConvolveListEditDialog::OnInitDialog()
   CheckDlgButton(IDC_FILTER_LIST_EDIT_WRAP,    m_FilterInfo->wrap  ? BST_CHECKED : BST_UNCHECKED);
 
   char string[80];
-
   NumberEdit = (CEdit*)GetDlgItem(IDC_FILTER_CLIP_LOW);
   sprintf(string, "%d", m_FilterInfo->clamp_low);
   NumberEdit->SetWindowText(string);
@@ -119,7 +112,6 @@ CConvolveListEditDialog::OnInitDialog()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CConvolveListEditDialog::OnOK()
 {
@@ -156,7 +148,6 @@ CConvolveListEditDialog::OnOK()
       NumberEdit->GetWindowText(string);
 
       mask[y * 5 + x] = atof(string);
-
       if (IsInvalidNumber(string, number_is_floating_point, number_is_percentage) || number_is_percentage) {
         MessageBox("Invalid number format.");
         delete[] mask;
@@ -182,7 +173,6 @@ CConvolveListEditDialog::OnOK()
     case 5: offsety = 0; break;
   }
 
-
   // fill in filter mask values
   for (int y = 0; y < m_FilterInfo->mask_height; y++) {
     for (int x = 0; x < m_FilterInfo->mask_width; x++) {
@@ -191,7 +181,6 @@ CConvolveListEditDialog::OnOK()
   }
 
   delete[] mask;
-
   m_FilterInfo->wrap  =  IsDlgButtonChecked(IDC_FILTER_LIST_EDIT_WRAP)  == BST_CHECKED ? 1 : 0;
   m_FilterInfo->clamp =  IsDlgButtonChecked(IDC_FILTER_LIST_EDIT_CLAMP) == BST_CHECKED ? 1 : 0;
 
@@ -225,7 +214,6 @@ CConvolveListEditDialog::OnOK()
   }
 
   m_FilterInfo->offset = atoi(offset_text);
-
   CString divisor_text;
   NumberEdit = (CEdit*)GetDlgItem(IDC_FILTER_LIST_EDIT_DIVISOR);
   NumberEdit->GetWindowText(divisor_text);
@@ -245,9 +233,7 @@ CConvolveListEditDialog::OnOK()
 }
 
 // END CONVOLVE LIST EDIT DIALOG //
-
 ////////////////////////////////////////////////////////////////////////////////
-
 BEGIN_MESSAGE_MAP(CConvolveListDialog, CDialog)
   ON_CBN_SELCHANGE(IDC_FILTER_LIST, OnFilterChanged)
   ON_COMMAND(IDC_FILTER_LIST_EDIT, OnEditFilter)
@@ -259,7 +245,6 @@ BEGIN_MESSAGE_MAP(CConvolveListDialog, CDialog)
 END_MESSAGE_MAP()
 
 ////////////////////////////////////////////////////////////////////////////////
-
 CConvolveListDialog::CConvolveListDialog(const int width, const int height, const RGBA* pixels)
 : CDialog(IDD_CONVOLVE_LIST)
 , m_CurrentFilter(-1)
@@ -273,7 +258,6 @@ CConvolveListDialog::CConvolveListDialog(const int width, const int height, cons
 #include "../common/convolve.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
-
 bool
 CConvolveListDialog::DrawPreview(CPaintDC& dc, RECT* rect)
 {
@@ -287,7 +271,6 @@ CConvolveListDialog::DrawPreview(CPaintDC& dc, RECT* rect)
   }
 
   /////////////////////////////////////////////////////////
-
   const int width  = blit_tile->GetWidth();
   const int height = blit_tile->GetHeight();
   int current_width  = m_Width;
@@ -298,7 +281,6 @@ CConvolveListDialog::DrawPreview(CPaintDC& dc, RECT* rect)
     current_height = height;
 
   RGBA* pixels = (RGBA*) blit_tile->GetPixels();
-
   for (int iy = 0; iy < current_height; iy++) {
     for (int ix = 0; ix < current_width; ix++) {
       pixels[iy * width + ix].red   = m_Pixels[iy * m_Width + ix].red;
@@ -318,7 +300,6 @@ CConvolveListDialog::DrawPreview(CPaintDC& dc, RECT* rect)
   }
 
   /////////////////////////////////////////////////////////
-
   const double* double_mask = GetMask();
   int mask_width = GetMaskWidth();
   int mask_height = GetMaskHeight();
@@ -330,7 +311,7 @@ CConvolveListDialog::DrawPreview(CPaintDC& dc, RECT* rect)
   }
 
   int offset  = GetOffset();
-  int divisor = GetDivisor();
+  int divisor = (int) GetDivisor();
   int clamp   = ShouldClamp();
   int clamp_low  = GetClampLow();
   int clamp_high = GetClampHigh();
@@ -352,14 +333,12 @@ CConvolveListDialog::DrawPreview(CPaintDC& dc, RECT* rect)
   
   dc.BitBlt(rect->left, rect->top, current_width, current_height, CDC::FromHandle(blit_tile->GetDC()), 0, 0, SRCCOPY);
   
-  if (1) {
-    rect->left += current_width;
-    dc.FillRect(rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
-    rect->left -= current_width;
-    rect->top += current_height;
-    dc.FillRect(rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
-    rect->top -= current_height;
-  }
+  rect->left += current_width;
+  dc.FillRect(rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+  rect->left -= current_width;
+  rect->top += current_height;
+  dc.FillRect(rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
+  rect->top -= current_height;
 
   delete blit_tile;
   blit_tile = NULL;
@@ -368,25 +347,22 @@ CConvolveListDialog::DrawPreview(CPaintDC& dc, RECT* rect)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CConvolveListDialog::OnPaint()
 {
-	CPaintDC dc(this);
+  CPaintDC dc(this);
 
   RECT rect;
   GetDlgItem(IDC_PREVIEW_FRAME)->GetWindowRect(&rect);
   ScreenToClient(&rect);
 
-  if (DrawPreview(dc, &rect) == false) {
+  if (DrawPreview(dc, &rect) == false)
     FillRect(dc, &rect, (HBRUSH)GetStockObject(BLACK_BRUSH));
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 CConvolveListDialog::~CConvolveListDialog() {
-  for (int i = 0; i < m_FilterList.size(); i++) {
+  for (unsigned int i = 0; i < m_FilterList.size(); i++) {
     delete m_FilterList[i];
     m_FilterList[i] = NULL;
   }
@@ -394,7 +370,6 @@ CConvolveListDialog::~CConvolveListDialog() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CConvolveListDialog::LoadFilterList() {
 /*
@@ -427,7 +402,6 @@ CConvolveListDialog::LoadFilterList() {
         file >> flt->name;
 
         m_FilterList.push_back(flt);
-
         file >> flt->name; // chomp the endline character
       }
      }
@@ -478,7 +452,6 @@ CConvolveListDialog::LoadFilterList() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CConvolveListDialog::SaveFilterList() {
 /*
@@ -506,7 +479,6 @@ CConvolveListDialog::SaveFilterList() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 int FilterCompare(const void* x, const void* y) {
   FilterInfo* a = (FilterInfo*) x;
   FilterInfo* b = (FilterInfo*) y;
@@ -514,27 +486,22 @@ int FilterCompare(const void* x, const void* y) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CConvolveListDialog::SortFilters()
 {
   // delete all the list items
-  for (int i = m_FilterList.size() - 1; i >= 0; i--) {
+  for (int i = m_FilterList.size() - 1; i >= 0; i--)
     SendDlgItemMessage(IDC_FILTER_LIST, LB_DELETESTRING, i, 0);
-  }
 
   std::sort(m_FilterList.begin(), m_FilterList.end(), FilterCompare);
-
   // add them again
-  for (unsigned int i = 0; i < m_FilterList.size(); i++) {
+  for (unsigned int i = 0; i < m_FilterList.size(); i++)
     SendDlgItemMessage(IDC_FILTER_LIST, LB_ADDSTRING, 0, (LPARAM)m_FilterList[i]->name.c_str());
-  }
 
   SendDlgItemMessage(IDC_FILTER_LIST, LB_SETCURSEL, m_CurrentFilter);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 BOOL
 CConvolveListDialog::OnInitDialog()
 {
@@ -553,7 +520,6 @@ CConvolveListDialog::OnInitDialog()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 const double*
 CConvolveListDialog::GetMask()
 {
@@ -561,7 +527,6 @@ CConvolveListDialog::GetMask()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 int
 CConvolveListDialog::GetMaskWidth()
 {
@@ -575,7 +540,6 @@ CConvolveListDialog::GetMaskHeight()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 int
 CConvolveListDialog::GetOffset()
 {
@@ -583,7 +547,6 @@ CConvolveListDialog::GetOffset()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 double
 CConvolveListDialog::GetDivisor()
 {
@@ -591,7 +554,6 @@ CConvolveListDialog::GetDivisor()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 int
 CConvolveListDialog::ShouldClamp()
 {
@@ -611,7 +573,6 @@ CConvolveListDialog::GetClampHigh()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 int
 CConvolveListDialog::ShouldWrap()
 {
@@ -619,7 +580,6 @@ CConvolveListDialog::ShouldWrap()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 int
 CConvolveListDialog::ShouldUseRedChannel()
 {
@@ -627,7 +587,6 @@ CConvolveListDialog::ShouldUseRedChannel()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 int
 CConvolveListDialog::ShouldUseGreenChannel()
 {
@@ -649,7 +608,6 @@ CConvolveListDialog::ShouldUseAlphaChannel()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 const char*
 CConvolveListDialog::GetConvolveType()
 {
@@ -657,13 +615,11 @@ CConvolveListDialog::GetConvolveType()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CConvolveListDialog::OnOK()
 {
-  if (m_CurrentFilter < 0 || m_CurrentFilter >= m_FilterList.size()) {
+  if (m_CurrentFilter < 0 || ((unsigned int) m_CurrentFilter) >= m_FilterList.size())
     CDialog::OnCancel();
-  }
   else {
     SaveFilterList();
     CDialog::OnOK();
@@ -671,19 +627,17 @@ CConvolveListDialog::OnOK()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CConvolveListDialog::UpdateButtons()
 {
   bool enable = FALSE;
-  if (m_CurrentFilter >= 0 && m_CurrentFilter < m_FilterList.size())
+  if (m_CurrentFilter >= 0 && ((unsigned int) m_CurrentFilter) < m_FilterList.size())
     enable = TRUE;
 
   GetDlgItem(IDC_FILTER_LIST_EDIT)->EnableWindow(enable);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CConvolveListDialog::OnFilterChanged()
 {
@@ -691,14 +645,13 @@ CConvolveListDialog::OnFilterChanged()
   if (filter != m_CurrentFilter) {
     m_CurrentFilter = filter;
     UpdateButtons();
-    if (m_CurrentFilter >= 0 && m_CurrentFilter < m_FilterList.size()) {
+    if (m_CurrentFilter >= 0 && ((unsigned int) m_CurrentFilter) < m_FilterList.size()) {
       Invalidate(FALSE);
     }
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CConvolveListDialog::OnChannelChanged()
 {
@@ -706,17 +659,16 @@ CConvolveListDialog::OnChannelChanged()
   m_UseGreen =  IsDlgButtonChecked(IDC_USE_GREEN)  == BST_CHECKED ? 1 : 0;
   m_UseBlue  =  IsDlgButtonChecked(IDC_USE_BLUE) == BST_CHECKED ? 1 : 0;
   m_UseAlpha =  IsDlgButtonChecked(IDC_USE_ALPHA) == BST_CHECKED ? 1 : 0;
-  if (m_CurrentFilter >= 0 && m_CurrentFilter < m_FilterList.size()) {
+  if (m_CurrentFilter >= 0 && ((unsigned int) m_CurrentFilter) < m_FilterList.size()) {
     Invalidate(FALSE);
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CConvolveListDialog::OnEditFilter()
 {
-  if (m_CurrentFilter >= 0 && m_CurrentFilter < m_FilterList.size()) {
+  if (m_CurrentFilter >= 0 && ((unsigned int) m_CurrentFilter) < m_FilterList.size()) {
     CConvolveListEditDialog dialog(m_FilterList[m_CurrentFilter]);
     if (dialog.DoModal() == IDOK) {
       SortFilters();
@@ -726,4 +678,3 @@ CConvolveListDialog::OnEditFilter()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-

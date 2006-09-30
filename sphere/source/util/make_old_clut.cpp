@@ -9,14 +9,17 @@
 //
 #include <stdio.h>
 
-int main() {
-  for (int a = 0; a < 256; ++a) {
-    printf("{");
-    for (int v = 0; v < 256; ++v) {
-      printf("0x%02x,",  v * (255 - a) / 255);
+int main()
+{
+    for (int a = 0; a < 256; ++a)
+    {
+        printf("{");
+        for (int v = 0; v < 256; ++v)
+        {
+            printf("0x%02x,",  v * (255 - a) / 255);
+        }
+        printf("},\n");
     }
-    printf("},\n");
-  }
 
-  return 0;
+    return 0;
 }

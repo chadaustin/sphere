@@ -2,27 +2,19 @@
 #include "Configuration.hpp"
 #include "Keys.hpp"
 
-
 const int TOOL_WIDTH  = 24;
 const int TOOL_HEIGHT = 24;
 const int BUTTON_BASE = 256;
 const int MAX_BUTTONS = 256;
 
-
 BEGIN_MESSAGE_MAP(CToolPalette, CPaletteWindow)
-
   ON_WM_SIZE()
   ON_WM_PAINT()
 
   ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnNeedText)
-
   ON_COMMAND_RANGE(BUTTON_BASE, BUTTON_BASE + MAX_BUTTONS - 1, OnToolSelected)
-
 END_MESSAGE_MAP()
-
-
 ////////////////////////////////////////////////////////////////////////////////
-
 CToolPalette::CToolPalette(CDocumentWindow* owner, IToolPaletteHandler* handler, const char* name, RECT rect, bool visible)
 : CPaletteWindow(owner, name, rect, visible)
 , m_Handler(handler)
@@ -32,20 +24,17 @@ CToolPalette::CToolPalette(CDocumentWindow* owner, IToolPaletteHandler* handler,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CToolPalette::Destroy()
 {
   // destroy buttons
-  for (int i = 0; i < m_Buttons.size(); i++) {
+  for (unsigned int i = 0; i < m_Buttons.size(); i++)
     delete m_Buttons[i];
-  }
 
   DestroyWindow();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CToolPalette::AddTool(int icon_id, const char* label)
 {
@@ -55,12 +44,10 @@ CToolPalette::AddTool(int icon_id, const char* label)
     CRect(0, 0, 0, 0), this, BUTTON_BASE + m_Buttons.size());
   button->SetIcon(AfxGetApp()->LoadIcon(MAKEINTRESOURCE(icon_id)));
 
-  if (m_CurrentTool == m_Buttons.size()) {
+  if (m_CurrentTool == m_Buttons.size())
     button->SetCheck(BST_CHECKED);
-  }
 
   CRect rect(0, 0, 0, 0);
-
   m_Buttons.push_back(button);
   m_Labels.push_back(label);
 
@@ -71,7 +58,6 @@ CToolPalette::AddTool(int icon_id, const char* label)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CToolPalette::OnSize(UINT type, int cx, int cy)
 {
@@ -80,7 +66,7 @@ CToolPalette::OnSize(UINT type, int cx, int cy)
   int ix = 0; // current x
   int iy = 0; // current y
 
-  for (int i = 0; i < m_Buttons.size(); i++) {
+  for (unsigned int i = 0; i < m_Buttons.size(); i++) {
     int x = ix * TOOL_WIDTH;
     int y = iy * TOOL_HEIGHT;
     m_Buttons[i]->MoveWindow(x, y, TOOL_WIDTH, TOOL_HEIGHT, FALSE);
@@ -96,7 +82,6 @@ CToolPalette::OnSize(UINT type, int cx, int cy)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CToolPalette::OnPaint()
 {
@@ -108,28 +93,24 @@ CToolPalette::OnPaint()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg BOOL
 CToolPalette::OnNeedText(UINT /*id*/, NMHDR* hdr, LRESULT* result)
 {
   TOOLTIPTEXT* ttt = (TOOLTIPTEXT*)hdr;
   UINT id = hdr->idFrom;
-  if (ttt->uFlags & TTF_IDISHWND) {
+  if (ttt->uFlags & TTF_IDISHWND)
     id = ::GetDlgCtrlID((HWND)id);
-  }
 
-  if (id >= BUTTON_BASE && id < BUTTON_BASE + m_Labels.size()) {
+  if (id >= BUTTON_BASE && id < BUTTON_BASE + m_Labels.size())
     ttt->lpszText = const_cast<char*>(m_Labels[id - BUTTON_BASE].c_str());
-  } else {
+  else
     ttt->lpszText = "";
-  }
 
   *result = 0;
   return TRUE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CToolPalette::OnToolSelected(UINT id)
 {

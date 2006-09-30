@@ -44,7 +44,7 @@
 
 // libraries
 // libraries are down here because of symbol conflicts with other headers
-#include <jsapi.h>
+#include <smjs/jsapi.h>
 #include <zlib.h>
 #include <libmng.h>
 

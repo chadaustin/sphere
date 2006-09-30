@@ -1,306 +1,307 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "swindowstyle.hpp"
 
-
 ////////////////////////////////////////////////////////////////////////////////
-
 SWINDOWSTYLE::SWINDOWSTYLE()
 {
-  for (int i = 0; i < 9; i++)
-    m_Images[i] = NULL;
+    for (int i = 0; i < 9; i++)
+        m_Images[i] = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 SWINDOWSTYLE::~SWINDOWSTYLE()
 {
-  Destroy();
+    Destroy();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 bool
 SWINDOWSTYLE::Load(const char* filename, IFileSystem& fs)
 {
-  Destroy();
+    Destroy();
 
-  // load the file
-  if (m_WindowStyle.Load(filename, fs) == false)
-    return false;
+    // load the file
+    if (m_WindowStyle.Load(filename, fs) == false)
+        return false;
 
-  Initialize();
-
-  return true;
+    Initialize();
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 bool
 SWINDOWSTYLE::CreateFromWindowStyle(const sWindowStyle& ws)
 {
-  Destroy();
-  m_WindowStyle = ws;
-  Initialize();
-  return true;
+    Destroy();
+    m_WindowStyle = ws;
+    Initialize();
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 SWINDOWSTYLE::Destroy()
 {
-  for (int i = 0; i < 9; i++) {
-    if (m_Images[i]) {
-      DestroyImage(m_Images[i]);
-      m_Images[i] = NULL;
+    for (int i = 0; i < 9; i++)
+    {
+        if (m_Images[i])
+        {
+            DestroyImage(m_Images[i]);
+            m_Images[i] = NULL;
+        }
     }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 int
-SWINDOWSTYLE::GetBackgroundMode() const {
-  return m_WindowStyle.GetBackgroundMode();
+SWINDOWSTYLE::GetBackgroundMode() const
+{
+    return m_WindowStyle.GetBackgroundMode();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 bool
 SWINDOWSTYLE::DrawBackground(int x, int y, int w, int h, int background_mode, const RGBA& mask, bool is_masked) const
 {
-  IMAGE image = m_Images[8];
+    IMAGE image = m_Images[8];
 
-  x -= m_WindowStyle.GetEdgeOffset(sWindowStyle::EDGE_LEFT);
-  y -= m_WindowStyle.GetEdgeOffset(sWindowStyle::EDGE_TOP);
-  w += m_WindowStyle.GetEdgeOffset(sWindowStyle::EDGE_LEFT) + m_WindowStyle.GetEdgeOffset(sWindowStyle::EDGE_RIGHT);
-  h += m_WindowStyle.GetEdgeOffset(sWindowStyle::EDGE_TOP)  + m_WindowStyle.GetEdgeOffset(sWindowStyle::EDGE_BOTTOM);
+    x -= m_WindowStyle.GetEdgeOffset(sWindowStyle::EDGE_LEFT);
+    y -= m_WindowStyle.GetEdgeOffset(sWindowStyle::EDGE_TOP);
+    w += m_WindowStyle.GetEdgeOffset(sWindowStyle::EDGE_LEFT) + m_WindowStyle.GetEdgeOffset(sWindowStyle::EDGE_RIGHT);
+    h += m_WindowStyle.GetEdgeOffset(sWindowStyle::EDGE_TOP)  + m_WindowStyle.GetEdgeOffset(sWindowStyle::EDGE_BOTTOM);
 
-  if ((background_mode == sWindowStyle::TILED) || (background_mode == sWindowStyle::TILED_GRADIENT)) {
-    int ox, oy, ow, oh;
-    int width = GetImageWidth(image);
-    int height = GetImageHeight(image);
-    GetClippingRectangle(&ox, &oy, &ow, &oh);
-    SetClippingRectangle(x, y, w, h);
+    if ((background_mode == sWindowStyle::TILED) || (background_mode == sWindowStyle::TILED_GRADIENT))
+    {
+        int ox, oy, ow, oh;
+        int width = GetImageWidth(image);
+        int height = GetImageHeight(image);
+        GetClippingRectangle(&ox, &oy, &ow, &oh);
+        SetClippingRectangle(x, y, w, h);
 
-    if ( !is_masked ) {
-      for (int ix = 0; ix < w / width + 1; ix++) {
-        for (int iy = 0; iy < h / height + 1; iy++) {
-          BlitImage(image, x + ix * width, y + iy * height);
+        if ( !is_masked )
+        {
+            for (int ix = 0; ix < w / width + 1; ix++)
+            {
+                for (int iy = 0; iy < h / height + 1; iy++)
+                {
+                    BlitImage(image, x + ix * width, y + iy * height);
+                }
+            }
         }
-      }
-    }
-    else {
-      for (int ix = 0; ix < w / width + 1; ix++) {
-        for (int iy = 0; iy < h / height + 1; iy++) {
-          BlitImageMask(image, x + ix * width, y + iy * height, mask);
+        else
+        {
+            for (int ix = 0; ix < w / width + 1; ix++)
+            {
+                for (int iy = 0; iy < h / height + 1; iy++)
+                {
+                    BlitImageMask(image, x + ix * width, y + iy * height, mask);
+                }
+            }
         }
-      }
+
+        SetClippingRectangle(ox, oy, ow, oh);
+    }
+    else if ((background_mode == sWindowStyle::STRETCHED) || (background_mode == sWindowStyle::STRETCHED_GRADIENT))
+    {
+        int tx[4] = { x, x + w, x + w, x };
+        int ty[4] = { y, y, y + h, y + h };
+        if ( !is_masked )
+        {
+            TransformBlitImage(image, tx, ty);
+        }
+        else
+        {
+            TransformBlitImageMask(image, tx, ty, mask);
+        }
     }
 
-    SetClippingRectangle(ox, oy, ow, oh);
-  } else if ((background_mode == sWindowStyle::STRETCHED) || (background_mode == sWindowStyle::STRETCHED_GRADIENT)) {
-    int tx[4] = { x, x + w, x + w, x };
-    int ty[4] = { y, y, y + h, y + h };
-    if ( !is_masked ) {
-      TransformBlitImage(image, tx, ty);
-    }
-    else {
-      TransformBlitImageMask(image, tx, ty, mask);
-    }
-  }
+    if ((background_mode == sWindowStyle::GRADIENT) || (background_mode == sWindowStyle::STRETCHED_GRADIENT) || (background_mode == sWindowStyle::TILED_GRADIENT))
+    {
+        RGBA colors[4];
+        colors[0] = m_WindowStyle.GetBackgroundColor(sWindowStyle::BACKGROUND_UPPER_LEFT);
+        colors[1] = m_WindowStyle.GetBackgroundColor(sWindowStyle::BACKGROUND_UPPER_RIGHT);
+        colors[2] = m_WindowStyle.GetBackgroundColor(sWindowStyle::BACKGROUND_LOWER_RIGHT);
+        colors[3] = m_WindowStyle.GetBackgroundColor(sWindowStyle::BACKGROUND_LOWER_LEFT);
 
-  if ((background_mode == sWindowStyle::GRADIENT) || (background_mode == sWindowStyle::STRETCHED_GRADIENT) || (background_mode == sWindowStyle::TILED_GRADIENT)) {
-    RGBA colors[4];
-    colors[0] = m_WindowStyle.GetBackgroundColor(sWindowStyle::BACKGROUND_UPPER_LEFT);
-    colors[1] = m_WindowStyle.GetBackgroundColor(sWindowStyle::BACKGROUND_UPPER_RIGHT);
-    colors[2] = m_WindowStyle.GetBackgroundColor(sWindowStyle::BACKGROUND_LOWER_RIGHT);
-    colors[3] = m_WindowStyle.GetBackgroundColor(sWindowStyle::BACKGROUND_LOWER_LEFT);
+        if ( is_masked )
+        {
+            Blend4(colors[0], mask, mask.alpha);
+            Blend4(colors[1], mask, mask.alpha);
+            Blend4(colors[2], mask, mask.alpha);
+            Blend4(colors[3], mask, mask.alpha);
+        }
 
-    if ( is_masked ) {
-      Blend4(colors[0], mask, mask.alpha);
-      Blend4(colors[1], mask, mask.alpha);
-      Blend4(colors[2], mask, mask.alpha);
-      Blend4(colors[3], mask, mask.alpha);
+        DrawGradientRectangle(x, y, w, h, colors);
     }
 
-    DrawGradientRectangle(x, y, w, h, colors);
-  }
-
-  return true;
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 bool
 SWINDOWSTYLE::DrawCorner(int index, int x, int y, const RGBA& mask, bool is_masked) const
 {
-  if (index < 0 || index >= 9)
-    return false;
-  if ( !is_masked ) {
-    BlitImage(m_Images[index], x, y);
-  }
-  else {
-    BlitImageMask(m_Images[index], x, y, mask);
-  }
-  return true;
+    if (index < 0 || index >= 9)
+        return false;
+    if ( !is_masked )
+    {
+        BlitImage(m_Images[index], x, y);
+    }
+    else
+    {
+        BlitImageMask(m_Images[index], x, y, mask);
+    }
+    return true;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
-
 bool
 SWINDOWSTYLE::DrawUpperLeftCorner(int x, int y, const RGBA& mask, bool is_masked) const
 {
-  return DrawCorner(0, x, y, mask, is_masked);
+    return DrawCorner(0, x, y, mask, is_masked);
 }
 
 bool
 SWINDOWSTYLE::DrawUpperRightCorner(int x, int y, const RGBA& mask, bool is_masked) const
 {
-  return DrawCorner(2, x, y, mask, is_masked);
+    return DrawCorner(2, x, y, mask, is_masked);
 }
 
 bool
 SWINDOWSTYLE::DrawLowerRightCorner(int x, int y, const RGBA& mask, bool is_masked) const
 {
-  return DrawCorner(4, x, y, mask, is_masked);
+    return DrawCorner(4, x, y, mask, is_masked);
 }
 
 bool
 SWINDOWSTYLE::DrawLowerLeftCorner(int x, int y, const RGBA& mask, bool is_masked) const
 {
-  return DrawCorner(6, x, y, mask, is_masked);
+    return DrawCorner(6, x, y, mask, is_masked);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 bool
 SWINDOWSTYLE::DrawHorizontalEdge(int index, int x, int y, int w, int h, const RGBA& mask, bool is_masked) const
 {
-  if (index < 0 || index >= 9)
-    return false;
+    if (index < 0 || index >= 9)
+        return false;
 
-  IMAGE image = m_Images[index];
-  int width = GetImageWidth(image);
-  int height = GetImageHeight(image);
+    IMAGE image = m_Images[index];
+    int width = GetImageWidth(image);
+    int height = GetImageHeight(image);
 
-  int ox, oy, ow, oh;
-  GetClippingRectangle(&ox, &oy, &ow, &oh);
+    int ox, oy, ow, oh;
+    GetClippingRectangle(&ox, &oy, &ow, &oh);
 
-  SetClippingRectangle(x, y, width, h);
+    SetClippingRectangle(x, y, width, h);
+    if ( !is_masked )
+    {
+        for (int i = 0; i < h / height + 1; i++)
+            BlitImage(image, x, y + i * height);
+    }
+    else
+    {
+        for (int i = 0; i < h / height + 1; i++)
+            BlitImageMask(image, x, y + i * height, mask);
+    }
 
-  if ( !is_masked ) {
-    for (int i = 0; i < h / height + 1; i++)
-      BlitImage(image, x, y + i * height);
-  }
-  else {
-    for (int i = 0; i < h / height + 1; i++)
-      BlitImageMask(image, x, y + i * height, mask);
-  }
-
-  SetClippingRectangle(ox, oy, ow, oh);
-  return true;
+    SetClippingRectangle(ox, oy, ow, oh);
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
 bool
 SWINDOWSTYLE::DrawVerticalEdge(int index, int x, int y, int w, int h, const RGBA& mask, bool is_masked) const
 {
-  if (index < 0 || index >= 9)
-    return false;
+    if (index < 0 || index >= 9)
+        return false;
 
-  IMAGE image = m_Images[index]; 
-  int width = GetImageWidth(image);
-  int height = GetImageHeight(image);
+    IMAGE image = m_Images[index];
+    int width = GetImageWidth(image);
+    int height = GetImageHeight(image);
 
-  int ox, oy, ow, oh;
-  GetClippingRectangle(&ox, &oy, &ow, &oh);
+    int ox, oy, ow, oh;
+    GetClippingRectangle(&ox, &oy, &ow, &oh);
 
-  SetClippingRectangle(x, y, w, height);
+    SetClippingRectangle(x, y, w, height);
+    if ( !is_masked )
+    {
+        for (int i = 0; i < w / width + 1; i++)
+            BlitImage(image, x + i * width, y);
+    }
+    else
+    {
+        for (int i = 0; i < w / width + 1; i++)
+            BlitImageMask(image, x + i * width, y, mask);
+    }
 
-  if ( !is_masked ) {
-    for (int i = 0; i < w / width + 1; i++)
-      BlitImage(image, x + i * width, y); 
-  }
-  else {
-   for (int i = 0; i < w / width + 1; i++)
-      BlitImageMask(image, x + i * width, y, mask);
-  }
-
-
-  SetClippingRectangle(ox, oy, ow, oh);
-  return true;
+    SetClippingRectangle(ox, oy, ow, oh);
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
 bool
 SWINDOWSTYLE::DrawTopEdge(int x, int y, int w, int h, const RGBA& mask, bool is_masked) const
 {
-  return DrawVerticalEdge(1, x, y, w, h, mask, is_masked);
+    return DrawVerticalEdge(1, x, y, w, h, mask, is_masked);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
 bool
 SWINDOWSTYLE::DrawBottomEdge(int x, int y, int w, int h, const RGBA& mask, bool is_masked) const
 {
-  return DrawVerticalEdge(5, x, y, w, h, mask, is_masked);
+    return DrawVerticalEdge(5, x, y, w, h, mask, is_masked);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 bool
 SWINDOWSTYLE::DrawLeftEdge(int x, int y, int w, int h, const RGBA& mask, bool is_masked) const
 {
-  return DrawHorizontalEdge(7, x, y, w, h, mask, is_masked);
+    return DrawHorizontalEdge(7, x, y, w, h, mask, is_masked);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 bool
 SWINDOWSTYLE::DrawRightEdge(int x, int y, int w, int h, const RGBA& mask, bool is_masked) const
 {
-  return DrawHorizontalEdge(3, x, y, w, h, mask, is_masked);
+    return DrawHorizontalEdge(3, x, y, w, h, mask, is_masked);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 bool
 SWINDOWSTYLE::DrawWindow(int x, int y, int w, int h, const RGBA& mask, bool is_masked) const
 {
-  //---- Draw middle ----//
-  DrawBackground(x, y, w, h, m_WindowStyle.GetBackgroundMode(), mask, is_masked);
-  
-  //---- Draw edges ----//
-  DrawTopEdge(x, (y - GetImageHeight(m_Images[1])), w, h, mask, is_masked);
-  DrawBottomEdge(x, (y + h), w, h, mask, is_masked);
-  DrawLeftEdge((x - GetImageWidth(m_Images[7])), y, w, h, mask, is_masked);
-  DrawRightEdge((x + w), y, w, h, mask, is_masked);
+    //---- Draw middle ----//
+    DrawBackground(x, y, w, h, m_WindowStyle.GetBackgroundMode(), mask, is_masked);
 
-  //---- Draw corners ----//
-  DrawUpperLeftCorner (x - GetImageWidth(m_Images[0]), y - GetImageHeight(m_Images[0]), mask, is_masked);
-  DrawUpperRightCorner(x + w, y - GetImageHeight(m_Images[2]), mask, is_masked);
-  DrawLowerRightCorner(x + w, y + h, mask, is_masked);
-  DrawLowerLeftCorner (x - GetImageWidth(m_Images[6]), y + h, mask, is_masked);
+    //---- Draw edges ----//
+    DrawTopEdge(x, (y - GetImageHeight(m_Images[1])), w, h, mask, is_masked);
+    DrawBottomEdge(x, (y + h), w, h, mask, is_masked);
+    DrawLeftEdge((x - GetImageWidth(m_Images[7])), y, w, h, mask, is_masked);
+    DrawRightEdge((x + w), y, w, h, mask, is_masked);
 
-  return true;
+    //---- Draw corners ----//
+    DrawUpperLeftCorner (x - GetImageWidth(m_Images[0]), y - GetImageHeight(m_Images[0]), mask, is_masked);
+    DrawUpperRightCorner(x + w, y - GetImageHeight(m_Images[2]), mask, is_masked);
+    DrawLowerRightCorner(x + w, y + h, mask, is_masked);
+    DrawLowerLeftCorner (x - GetImageWidth(m_Images[6]), y + h, mask, is_masked);
+
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 SWINDOWSTYLE::Initialize()
 {
-  // convert the file data into usable images
-  for (int i = 0; i < 9; i++) {
-    CImage32& image = m_WindowStyle.GetBitmap(i);
-    m_Images[i] = CreateImage(image.GetWidth(), image.GetHeight(), image.GetPixels());
-  }
+    // convert the file data into usable images
+    for (int i = 0; i < 9; i++)
+    {
+        CImage32& image = m_WindowStyle.GetBitmap(i);
+        m_Images[i] = CreateImage(image.GetWidth(), image.GetHeight(), image.GetPixels());
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

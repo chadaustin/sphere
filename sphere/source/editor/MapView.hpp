@@ -1,7 +1,5 @@
 #ifndef MAP_VIEW_HPP
 #define MAP_VIEW_HPP
-
-
 #include "ScrollWindow.hpp"
 #include <afxext.h>
 #include "../common/Map.hpp"
@@ -11,7 +9,6 @@
 #include "Clipboard.hpp"
 
 #include "MapScripting.hpp"
-
 class IMapViewHandler
 {
 public:
@@ -19,26 +16,19 @@ public:
   virtual void MV_SelectedTileChanged(int tile) = 0;
 };
 
-
 class CMapView : public CScrollWindow, public IToolPaletteHandler
 {
 public:
   CMapView();
   ~CMapView();
-
   BOOL Create(CDocumentWindow* owner, IMapViewHandler* handler, CWnd* parent, sMap* map);
-
   void SetZoomFactor(double factor);
   double  GetZoomFactor();
-
   void TilesetChanged();
-
   int GetSelectedTile();
   void SelectTile(int tile);
   void SelectLayer(int layer);
-
   void UpdateScrollBars();
-
   void SetTileSelection(int width, int height, unsigned int* tiles);
 
 private:
@@ -80,9 +70,7 @@ private:
   void UpdateObstructionTiles();
 
 	//void InitAnimations();
-
   int FindSpritesetImageIconsIndex(int person_index, std::string filename);
-
 private:
   afx_msg void OnDestroy();
   afx_msg void OnPaint();
@@ -98,7 +86,6 @@ private:
   virtual void TP_ToolSelected(int tool, int tool_index);
 
   void UpdateCursor(UINT flags, CPoint point);
-
 public:
   void OnToolChanged(UINT id, int tool_index);
   BOOL IsToolAvailable(UINT id);
@@ -226,7 +213,7 @@ public:
       return false;
     }
 
-    sx = mx - ((m_CurrentX * m_Map->GetTileset().GetTileWidth()) * m_ZoomFactor);
+    sx = (int) (mx - ((m_CurrentX * m_Map->GetTileset().GetTileWidth()) * m_ZoomFactor));
     return true;
   }
 
@@ -235,7 +222,7 @@ public:
       return false;
     }
 
-    sy = my - ((m_CurrentY * m_Map->GetTileset().GetTileHeight()) * m_ZoomFactor);
+    sy = (int) (my - ((m_CurrentY * m_Map->GetTileset().GetTileHeight()) * m_ZoomFactor));
     return true;
   }
 
@@ -244,7 +231,7 @@ public:
       return false;
     }
 
-    mx = sx + ((m_CurrentX * m_Map->GetTileset().GetTileWidth()) * m_ZoomFactor);
+    mx = (int) (sx + ((m_CurrentX * m_Map->GetTileset().GetTileWidth()) * m_ZoomFactor));
     return true;
   }
 
@@ -253,7 +240,7 @@ public:
       return false;
     }
 
-    my = sy + ((m_CurrentY * m_Map->GetTileset().GetTileHeight()) * m_ZoomFactor);
+    my = (int) (sy + ((m_CurrentY * m_Map->GetTileset().GetTileHeight()) * m_ZoomFactor));
     return true;
   }
 
@@ -280,9 +267,7 @@ private:
   IMapViewHandler* m_Handler;
 
   //CMapToolPalette* m_ToolPalette;
-
   sMap* m_Map;
-
   CDIBSection* m_BlitTile;  // for rendering tiles
   CClipboard* m_Clipboard;
 
@@ -304,7 +289,6 @@ private:
   int m_StartY;
 
   int m_MoveIndex; // index of the object we are moving currently
-
   int m_PreviewX;
   int m_PreviewY;
   int m_PreviewOldX;
@@ -319,7 +303,6 @@ private:
   int m_SelectedLayer;
 
   bool m_Clicked;
-
   int m_ViewGridType;
   bool m_ShowTileObstructions;
   std::vector<sTile> m_TileObstructions; // when View->Tile Obstructions is on, we render these
@@ -329,7 +312,6 @@ private:
 	//int  m_FrameTick;
 
   void GetRedrawRect(int& offset_x, int& offset_y, int& width, int& height);
-
   enum SpritesetDrawTypes {
     SDT_ICON,
     SDT_MINI_IMAGE,
@@ -353,10 +335,7 @@ private:
   };
 
   std::vector<SpritesetImageIcon> m_SpritesetImageIcons;
-
-
   DECLARE_MESSAGE_MAP()
 };
-
 
 #endif

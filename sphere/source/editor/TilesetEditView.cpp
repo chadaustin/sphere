@@ -1,42 +1,27 @@
 // identifier too long
 #pragma warning(disable : 4786)
-
-
 #include "TilesetEditView.hpp"
 #include "TilePropertiesDialog.hpp"
 #include "NumberDialog.hpp"
 #include "FileDialogs.hpp"
 #include "resource.h"
-
-
 #define ID_TILESET_INSERTTILES      705
 #define ID_TILESET_APPENDTILES      706
 #define ID_TILESET_DELETETILE       707
 #define ID_TILESET_REPLACEWITHIMAGE 708
 #define ID_TILESET_INSERTIMAGE      709
 #define ID_TILESET_APPENDIMAGE      710
-
-
 BEGIN_MESSAGE_MAP(CTilesetEditView, CHScrollWindow)
-
   ON_WM_SIZE()
-
   ON_COMMAND(ID_TILESET_INSERTTILES, OnTilesetInsertTiles)
   ON_COMMAND(ID_TILESET_APPENDTILES, OnTilesetAppendTiles)
-
   ON_COMMAND(ID_TILESET_DELETETILE, OnTilesetDeleteTile)
-
   ON_COMMAND(ID_TILESET_REPLACEWITHIMAGE, OnTilesetReplaceWithImage)
   ON_COMMAND(ID_TILESET_INSERTIMAGE,      OnTilesetInsertImage)
   ON_COMMAND(ID_TILESET_APPENDIMAGE,      OnTilesetAppendImage)
-
   ON_COMMAND(ID_IMAGEVIEW_PASTE, OnPaste)
-
 END_MESSAGE_MAP()
-
-
 ////////////////////////////////////////////////////////////////////////////////
-
 CTilesetEditView::CTilesetEditView()
 : m_Handler(NULL)
 , m_Tileset(NULL)
@@ -47,18 +32,14 @@ CTilesetEditView::CTilesetEditView()
 , m_MultiTileData(NULL) // m_MultiTileData is not ours to free
 {
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 CTilesetEditView::~CTilesetEditView()
 {
   if (m_Created) {
     DestroyWindow();
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 BOOL
 CTilesetEditView::Create(CWnd* parent, CDocumentWindow* owner, ITilesetEditViewHandler* handler, sTileset* tileset)
 {
@@ -69,30 +50,23 @@ CTilesetEditView::Create(CWnd* parent, CDocumentWindow* owner, ITilesetEditViewH
     CRect(0, 0, 0, 0),
     parent,
     1000);
-
   m_Handler = handler;
   m_Tileset = tileset;
-
   // create the views
   m_ImageView.Create(owner, this, this);
   m_PaletteView.Create(this, this);
   m_ColorView.SetNumColors(2);
   m_ColorView.Create(this, this);
   m_AlphaView.Create(this, this);
-
   m_Created = true;
-
   // put everything in the right place
   RECT rect;
   GetClientRect(&rect);
   OnSize(0, rect.right, rect.bottom);
-
   UpdateImageView();
   return TRUE;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CTilesetEditView::TilesetChanged()
 {
@@ -100,9 +74,7 @@ CTilesetEditView::TilesetChanged()
   UpdateScrollBar();
   Invalidate(); 
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CTilesetEditView::SelectTile(int tile)
 {
@@ -110,9 +82,7 @@ CTilesetEditView::SelectTile(int tile)
   UpdateImageView();
   UpdateScrollBar();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CTilesetEditView::SetTileSelection(int width, int height, unsigned int* tiles)
 {
@@ -126,34 +96,27 @@ CTilesetEditView::SetTileSelection(int width, int height, unsigned int* tiles)
     m_MultiTileHeight = 0;
     m_MultiTileData   = NULL;
   }
-
   UpdateImageView();
   UpdateScrollBar();
   Invalidate();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CTilesetEditView::SP_ColorSelected(RGBA color)
 {
   byte alpha = color.alpha;
   RGB  rgb   = { color.red, color.green, color.blue };
-
   m_ImageView.SetColor(0, color);
   m_ColorView.SetColor(0, rgb);
   m_AlphaView.SetAlpha(alpha);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CTilesetEditView::UpdateImageView()
 {
   if (m_MultiTileWidth > 0 && m_MultiTileHeight > 0 && m_MultiTileData != NULL) {
     CImage32 image;
     image.SetBlendMode(CImage32::REPLACE);
-
     if (image.Create(m_MultiTileWidth * m_Tileset->GetTileWidth(), m_MultiTileHeight * m_Tileset->GetTileHeight())) {
       for (int y = 0; y < m_MultiTileHeight; y++) {
         for (int x = 0; x < m_MultiTileWidth; x++) {
@@ -163,7 +126,6 @@ CTilesetEditView::UpdateImageView()
           image.BlitImage(tile, x * m_Tileset->GetTileWidth(), y * m_Tileset->GetTileHeight());
         }
       }
-
       m_ImageView.SetImage(image.GetWidth(), image.GetHeight(), image.GetPixels(), true);
       return;
     }
@@ -172,18 +134,14 @@ CTilesetEditView::UpdateImageView()
   sTile& tile = m_Tileset->GetTile(m_CurrentTile);
   m_ImageView.SetImage(tile.GetWidth(), tile.GetHeight(), tile.GetPixels(), true);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CTilesetEditView::UpdateScrollBar()
 {
   SetHScrollPosition(m_CurrentTile);
   SetHScrollRange(m_Tileset->GetNumTiles(), 1);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CTilesetEditView::OnHScrollChanged(int x)
 {
@@ -192,36 +150,28 @@ CTilesetEditView::OnHScrollChanged(int x)
   UpdateScrollBar();
   m_Handler->TEV_SelectedTileChanged(x);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 static inline void twMoveControl(CWnd& control, int x, int y, int w, int h)
 {
   control.MoveWindow(x, y, w, h, FALSE);
   control.Invalidate();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTilesetEditView::OnSize(UINT type, int cx, int cy)
 {
   const int PaletteWidth = 60;
   const int AlphaWidth = 32;
-
   if (m_Created) {
     
     twMoveControl(m_ImageView, 0, 0, cx - PaletteWidth - AlphaWidth, cy);
     twMoveControl(m_PaletteView, cx - PaletteWidth - AlphaWidth, 0, PaletteWidth, cy - PaletteWidth);
     twMoveControl(m_ColorView, cx - PaletteWidth - AlphaWidth, cy - PaletteWidth, PaletteWidth, PaletteWidth);
     twMoveControl(m_AlphaView, cx - AlphaWidth, 0, AlphaWidth, cy);
-
     UpdateScrollBar();
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTilesetEditView::OnTilesetInsertTiles()
 {
@@ -235,9 +185,7 @@ CTilesetEditView::OnTilesetInsertTiles()
     m_Handler->TEV_TilesetModified();
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTilesetEditView::OnTilesetAppendTiles()
 {
@@ -250,9 +198,7 @@ CTilesetEditView::OnTilesetAppendTiles()
     m_Handler->TEV_TilesetModified();
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTilesetEditView::OnUpdateTilesetDeleteTile(CCmdUI* cmdui)
 {
@@ -261,32 +207,25 @@ CTilesetEditView::OnUpdateTilesetDeleteTile(CCmdUI* cmdui)
   else
     cmdui->Enable(FALSE);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTilesetEditView::OnTilesetDeleteTile()
 {
   m_Tileset->DeleteTiles(m_CurrentTile, 1);
   if (m_CurrentTile >= m_Tileset->GetNumTiles())
     m_CurrentTile--;
-
   m_Handler->TEV_TilesetModified();
   UpdateScrollBar();
   UpdateImageView();
-
   m_Handler->TEV_SelectedTileChanged(m_CurrentTile);
   m_Handler->TEV_TilesetModified();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTilesetEditView::OnTilesetReplaceWithImage()
 {
   if (MessageBox("Are you sure?", NULL, MB_YESNO) == IDNO)
     return;
-
   CImageFileDialog FileDialog(FDM_OPEN);
   if (FileDialog.DoModal() == IDOK)
   {
@@ -295,16 +234,12 @@ CTilesetEditView::OnTilesetReplaceWithImage()
       MessageBox("Error: Could not import image");
       return;
     }
-
     m_Handler->TEV_TilesetModified();
     UpdateScrollBar();
-
     UpdateImageView();
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTilesetEditView::OnTilesetInsertImage()
 {
@@ -316,17 +251,13 @@ CTilesetEditView::OnTilesetInsertImage()
       MessageBox("Error: Could not insert image");
       return;
     }
-
     m_Handler->TEV_TilesetModified();
     UpdateScrollBar();
     UpdateImageView();
-
     m_Handler->TEV_TilesetModified();
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTilesetEditView::OnTilesetAppendImage()
 {
@@ -338,17 +269,13 @@ CTilesetEditView::OnTilesetAppendImage()
       MessageBox("Error: Could not append image");
       return;
     }
-
     m_Handler->TEV_TilesetModified();
     UpdateScrollBar();
     UpdateImageView();
-
     m_Handler->TEV_TilesetModified();
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CTilesetEditView::IV_ImageChanged()
 {
@@ -357,35 +284,28 @@ CTilesetEditView::IV_ImageChanged()
     const int tile_height = m_Tileset->GetTileHeight();
     const int image_width = m_ImageView.GetWidth();
     const int image_height = m_ImageView.GetHeight();
-
     for (int ty = 0; ty < m_MultiTileHeight; ty++) {
       for (int tx = 0; tx < m_MultiTileWidth; tx++) {
         const unsigned int tile = m_MultiTileData[(ty * m_MultiTileWidth) + tx];
-
         for (int iy = 0; iy < tile_height; iy++) {
           for (int ix = 0; ix < tile_width; ix++)
           {
             m_Tileset->GetTile(tile).SetPixel(ix, iy, m_ImageView.GetPixels()[((ty * tile_height) + iy) * image_width + ((tx * tile_width) + ix)]);
           }
         }
-
         m_Handler->TEV_TileModified(tile);
       }
     }
     return;
   }
-
   // store the old data
   memcpy(
     m_Tileset->GetTile(m_CurrentTile).GetPixels(),
     m_ImageView.GetPixels(),
     m_Tileset->GetTileWidth() * m_Tileset->GetTileHeight() * sizeof(RGBA));
-
   m_Handler->TEV_TileModified(m_CurrentTile);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CTilesetEditView::IV_ColorChanged(RGBA color)
 {
@@ -394,9 +314,7 @@ CTilesetEditView::IV_ColorChanged(RGBA color)
   m_ColorView.SetColor(0, rgb);
   m_AlphaView.SetAlpha(rgba.alpha);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CTilesetEditView::PV_ColorChanged(int index, RGB color)
 {
@@ -405,9 +323,7 @@ CTilesetEditView::PV_ColorChanged(int index, RGB color)
   RGBA c = { color.red, color.green, color.blue, alpha };
   m_ImageView.SetColor(index, c);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CTilesetEditView::CV_ColorChanged(int index, RGB color)
 {
@@ -415,9 +331,7 @@ CTilesetEditView::CV_ColorChanged(int index, RGB color)
   RGBA rgba = { color.red, color.green, color.blue, alpha };
   m_ImageView.SetColor(index, rgba);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CTilesetEditView::AV_AlphaChanged(byte alpha)
 {
@@ -425,49 +339,38 @@ CTilesetEditView::AV_AlphaChanged(byte alpha)
   rgba.alpha = alpha;
   m_ImageView.SetColor(0, rgba);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CTilesetEditView::OnPaste()
 {
   m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_PASTE, 0), 0);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTilesetEditView::OnKeyDown(UINT vk, UINT repeat, UINT flags)
 {
   m_ImageView.OnKeyDown(vk, repeat, flags);
 }
-
 afx_msg void
 CTilesetEditView::OnKeyUp(UINT vk, UINT repeat, UINT flags)
 {
   m_ImageView.OnKeyUp(vk, repeat, flags);
 }
-
 afx_msg void
 CTilesetEditView::OnTimer(UINT event)
 {
   m_ImageView.OnTimer(event);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CTilesetEditView::OnToolChanged(UINT id, int tool_index)
 {
   m_ImageView.OnToolChanged(id, tool_index);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 BOOL
 CTilesetEditView::IsToolAvailable(UINT id)
 {
   return m_ImageView.IsToolAvailable(id);
 }
-
 ////////////////////////////////////////////////////////////////////////////////

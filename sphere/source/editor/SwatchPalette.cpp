@@ -1,5 +1,4 @@
 #pragma warning(disable : 4786)
-
 #include <vector>
 #include "SwatchPalette.hpp"
 #include "Configuration.hpp"
@@ -11,10 +10,7 @@
 #include "Editor.hpp"
 
 #define SWATCH_TILE_SIZE 10
-
-
 BEGIN_MESSAGE_MAP(CSwatchPalette, CPaletteWindow)
-
   ON_WM_SIZE()
   ON_WM_PAINT()
   ON_WM_VSCROLL()
@@ -35,10 +31,7 @@ BEGIN_MESSAGE_MAP(CSwatchPalette, CPaletteWindow)
   ON_COMMAND(ID_SWATCHPALETTE_DELETE,       OnDeleteColor)
 
 END_MESSAGE_MAP()
-
-
 ////////////////////////////////////////////////////////////////////////////////
-
 CSwatchPalette::CSwatchPalette(CDocumentWindow* owner, ISwatchPaletteHandler* handler)
 : CPaletteWindow(owner, "Swatch",
   Configuration::Get(KEY_SWATCH_RECT),
@@ -46,7 +39,6 @@ CSwatchPalette::CSwatchPalette(CDocumentWindow* owner, ISwatchPaletteHandler* ha
 , m_Handler(handler)
 
 , m_Color(CreateRGBA(0, 0, 0, 255))
-
 , m_TopRow(0)
 , m_SelectedColor(0)
 , m_RightClickColor(0)
@@ -60,7 +52,6 @@ CSwatchPalette::CSwatchPalette(CDocumentWindow* owner, ISwatchPaletteHandler* ha
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CSwatchPalette::Destroy()
 {
@@ -77,7 +68,6 @@ CSwatchPalette::Destroy()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CSwatchPalette::SetColor(RGBA color)
 {
@@ -85,7 +75,6 @@ CSwatchPalette::SetColor(RGBA color)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSwatchPalette::OnSize(UINT type, int cx, int cy)
 {
@@ -111,7 +100,6 @@ CSwatchPalette::OnSize(UINT type, int cx, int cy)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSwatchPalette::OnPaint()
 {
@@ -122,7 +110,6 @@ CSwatchPalette::OnPaint()
   RECT rect;
 
   GetClientRect(&rect);
-
   if (!swatch) {
     // draw black rectangle
     dc.FillRect(&rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
@@ -185,7 +172,6 @@ CSwatchPalette::OnPaint()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSwatchPalette::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
@@ -215,7 +201,6 @@ CSwatchPalette::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSwatchPalette::OnLButtonDown(UINT nFlags, CPoint point)
 {
@@ -265,7 +250,6 @@ CSwatchPalette::OnLButtonDown(UINT nFlags, CPoint point)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSwatchPalette::OnRButtonDown(UINT nFlags, CPoint point)
 {
@@ -282,7 +266,6 @@ CSwatchPalette::OnRButtonDown(UINT nFlags, CPoint point)
   }
 
   m_RightClickColor = ic;
-
   // popup menu
   HMENU menu = LoadMenu(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_SWATCHPALETTE));
   HMENU submenu = GetSubMenu(menu, 0);
@@ -293,7 +276,6 @@ CSwatchPalette::OnRButtonDown(UINT nFlags, CPoint point)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSwatchPalette::OnFileLoad()
 {
@@ -346,7 +328,6 @@ CSwatchPalette::OnFileLoad()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSwatchPalette::OnFileSave()
 {
@@ -367,13 +348,11 @@ CSwatchPalette::OnFileSave()
   }
 
   if (Dialog.GetFileExt() == "cswatch") {
-
     FILE* file = fopen(Dialog.GetPathName(), "wb+");
     if (file == NULL)
       return;
 
     fprintf(file, "RGB %s_palette[%d] =\n{\n", Dialog.GetFileTitle(), swatch->GetNumColors());
-
     for (int i = 0; i < swatch->GetNumColors(); i++)
     {
       RGBA rgba = swatch->GetColor(i);
@@ -406,7 +385,6 @@ CSwatchPalette::OnFileSave()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSwatchPalette::OnDefaultDOS()
 {
@@ -430,7 +408,6 @@ CSwatchPalette::OnDefaultDOS()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSwatchPalette::OnDefaultVERGE()
 {
@@ -454,7 +431,6 @@ CSwatchPalette::OnDefaultVERGE()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSwatchPalette::OnDefaultPlasma()
 {
@@ -478,7 +454,6 @@ CSwatchPalette::OnDefaultPlasma()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSwatchPalette::OnDefaultRGB332()
 {
@@ -502,7 +477,6 @@ CSwatchPalette::OnDefaultRGB332()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSwatchPalette::OnDefaultVisibone2()
 {
@@ -526,7 +500,6 @@ CSwatchPalette::OnDefaultVisibone2()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSwatchPalette::OnInsertColorBefore()
 {
@@ -534,13 +507,11 @@ CSwatchPalette::OnInsertColorBefore()
   if (!swatch) return;
 
   swatch->InsertColor(m_RightClickColor, m_Color);
-
   UpdateScrollBar();
   Invalidate();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSwatchPalette::OnInsertColorAfter()
 {
@@ -548,13 +519,11 @@ CSwatchPalette::OnInsertColorAfter()
   if (!swatch) return;
 
   swatch->InsertColor(m_RightClickColor + 1, m_Color);
-
   UpdateScrollBar();
   Invalidate();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSwatchPalette::OnReplaceColor()
 {
@@ -570,7 +539,6 @@ CSwatchPalette::OnReplaceColor()
  }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CSwatchPalette::OnDeleteColor()
 {
@@ -590,7 +558,6 @@ CSwatchPalette::OnDeleteColor()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CSwatchPalette::UpdateScrollBar()
 {
@@ -625,7 +592,6 @@ CSwatchPalette::UpdateScrollBar()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 int
 CSwatchPalette::GetPageSize()
 {
@@ -635,7 +601,6 @@ CSwatchPalette::GetPageSize()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 int
 CSwatchPalette::GetNumRows()
 {

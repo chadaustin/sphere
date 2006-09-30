@@ -1,6 +1,5 @@
 #pragma warning(disable : 4786)  // identifier too long
 
-
 #include "ProjectWindow.hpp"
 #include "MainWindow.hpp"
 #include "Project.hpp"
@@ -14,12 +13,10 @@
 #include "FileTypes.hpp"
 
 #include "translate.hpp"
-
 #include "../common/system.hpp"
 #include "../common/strcmp_ci.hpp"
 
 static const int TreeID = 9865;
-
 static const int tiGameSettings = 100;
 static const int tiMaps         = 101;
 static const int tiSpritesets   = 102;
@@ -30,9 +27,7 @@ static const int tiAnimations   = 106;
 static const int tiWindowStyles = 107;
 static const int tiFonts        = 108;
 
-
 static const int IDI_FILETYPE_BASE = 4;
-
 
 BEGIN_MESSAGE_MAP(CProjectWindow, BaseProjectWindow)
 
@@ -52,7 +47,6 @@ BEGIN_MESSAGE_MAP(CProjectWindow, BaseProjectWindow)
   ON_NOTIFY(NM_RCLICK,   TreeID, OnRightClick)
 
 END_MESSAGE_MAP()
-
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -76,17 +70,17 @@ CProjectWindow::Create()
 
   // create the window
   CMDIChildWnd::Create(
-    AfxRegisterWndClass(CS_NOCLOSE, NULL, NULL, AfxGetApp()->LoadIcon(IDI_PROJECT)),
-    szProjectName,
-    WS_CHILD | WS_VISIBLE | WS_OVERLAPPEDWINDOW);
+      AfxRegisterWndClass(CS_NOCLOSE, NULL, NULL, AfxGetApp()->LoadIcon(IDI_PROJECT)),
+      szProjectName,
+      WS_CHILD | WS_VISIBLE | WS_OVERLAPPEDWINDOW);
 #endif
   
   // create widgets
   m_TreeControl.Create(
-    WS_VISIBLE | WS_CHILD | TVS_SHOWSELALWAYS | TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_DISABLEDRAGDROP,
-    CRect(0, 0, 0, 0),
-    this,
-    TreeID);
+      WS_VISIBLE | WS_CHILD | TVS_SHOWSELALWAYS | TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_DISABLEDRAGDROP,
+      CRect(0, 0, 0, 0),
+      this,
+      TreeID);
   //m_TreeControl.SetFocus();
 
   HIMAGELIST image_list = ImageList_Create(16, 16, ILC_COLOR8 | ILC_MASK, 3, 1);
@@ -114,9 +108,7 @@ CProjectWindow::Create()
   OnSize(0, rect.right, rect.bottom);
 
   Update();
-
   DragAcceptFiles();
-
   return TRUE;
 }
 
@@ -148,9 +140,8 @@ static int GetFolderType(CTreeCtrl& m_TreeControl, const HTREEITEM item)
   // these lines are commented out so that the
   // non-root subfolders do not have the right click menu
   //do {
-    if (parent) {
+    if (parent)
       folder = m_TreeControl.GetItemText(parent);
-    }
   //  parent = m_TreeControl.GetParentItem(parent);
   //} while (parent != NULL);
 
@@ -215,7 +206,7 @@ static void UpdateTreeStructure(CTreeCtrl& m_TreeControl, HTREEITEM root) {
   std::vector<std::string> folderlist = GetFolderList("*");
   for (unsigned int i = 0; i < folderlist.size(); i++) {
     if (!strcmp(folderlist[i].c_str(), ".")
-     || !strcmp(folderlist[i].c_str(), "..")) {
+        || !strcmp(folderlist[i].c_str(), "..")) {
       continue;
     }
 
@@ -268,7 +259,7 @@ static void UpdateTreeStructure(CTreeCtrl& m_TreeControl, HTREEITEM root) {
         std::vector<std::string> extensions;
         FTL.GetFileTypeExtensions(file_type, false, extensions);
 
-        for (int i = 0; i < extensions.size(); i++) {
+        for (unsigned int i = 0; i < extensions.size(); i++) {
           if (filename.rfind(extensions[i]) == filename.size() - extensions[i].size()) {
             image_index = IDI_FILETYPE_BASE + file_type;
             file_type = FTL.GetNumFileTypes();
@@ -286,7 +277,6 @@ static void UpdateTreeStructure(CTreeCtrl& m_TreeControl, HTREEITEM root) {
     }
 
     filelist.clear();
-
     if (GetFolderList("*").size() > 0)
       UpdateTreeStructure(m_TreeControl, item);
 
@@ -323,9 +313,8 @@ CProjectWindow::Update()
 
   char last_directory[MAX_PATH] = {0};
   GetCurrentDirectory(MAX_PATH, last_directory);
-  if (SetCurrentDirectory(m_Project->GetDirectory()) != 0) {
+  if (SetCurrentDirectory(m_Project->GetDirectory()) != 0)
     UpdateTreeStructure(m_TreeControl, NULL);
-  }
   SetCurrentDirectory(last_directory);
 
   m_TreeControl.InsertItem(
@@ -365,16 +354,13 @@ CProjectWindow::Update()
 afx_msg void
 CProjectWindow::OnSysCommand(UINT id, LPARAM param)
 {
-  if (id == SC_CLOSE)
-	{
+  if (id == SC_CLOSE) {
     if (!IsZoomed()) {
-  		// do not close it damnit!
-	  	// and oh, Ctrl-F4 calls close MDI window, if ya don't know.
-		  ShowWindow(SW_HIDE);
+      // do not close it damnit!
+      // and oh, Ctrl-F4 calls close MDI window, if ya don't know.
+      ShowWindow(SW_HIDE);
     }
-	}
-	else
-	{
+	} else {
     CWnd::OnSysCommand(id, param);
 	}
 }
@@ -399,9 +385,8 @@ CProjectWindow::OnSize(UINT type, int cx, int cy)
 afx_msg void
 CProjectWindow::OnSetFocus(CWnd* old_window)
 {
-  if (old_window != NULL && old_window->m_hWnd == m_hWnd && m_TreeControl.m_hWnd) {
+  if (old_window != NULL && old_window->m_hWnd == m_hWnd && m_TreeControl.m_hWnd)
     m_TreeControl.SetFocus();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -416,7 +401,6 @@ CProjectWindow::OnDropFiles(HDROP drop_info)
 
   // add all files to the project
   for (unsigned int i = 0; i < num_files; i++) {
-
     char path[MAX_PATH];
     DragQueryFile(drop_info, i, path, MAX_PATH);
 
@@ -455,6 +439,7 @@ afx_msg void
 CProjectWindow::OnProjectGroupNew()
 {
   HTREEITEM item = m_TreeControl.GetSelectedItem();
+
   if (!IsTreeItemFolder(m_TreeControl, item))
     return;
 
@@ -486,7 +471,6 @@ bool RecycleFile(const char* filename)
   char directory[MAX_PATH];
 
   SetCurrentDirectory("c:\recycled");
-
   if (GetCurrentDirectory(MAX_PATH, directory)
     && true) {
     removed = !MoveFile(filename, "removed.png");
@@ -502,11 +486,11 @@ bool RecycleFile(const char* filename)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-
 afx_msg void
 CProjectWindow::OnProjectItemDelete()
 {
   HTREEITEM item = m_TreeControl.GetSelectedItem();
+
   if (item == NULL)
     return;
 
@@ -520,8 +504,8 @@ CProjectWindow::OnProjectItemDelete()
   strcat(filename, GetTreeItemPathName(m_TreeControl, item).c_str());
 
   std::string message = "This will permanently delete the file: \n\""
-                      + std::string(filename)
-                      + "\"\nAre you sure you want to continue?";
+      + std::string(filename)
+      + "\"\nAre you sure you want to continue?";
   if (MessageBox(message.c_str(), "Delete Project Item", MB_YESNO) == IDNO)
     return;
 
@@ -558,7 +542,6 @@ CProjectWindow::OnKeyDown(NMHDR* notify, LRESULT* result)
       *result = 0;
     break;
   }
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -567,6 +550,7 @@ void
 CProjectWindow::__OnDoubleClick__(bool allow_expand)
 {
   HTREEITEM item = m_TreeControl.GetSelectedItem();
+
   if (item == NULL) return;
 
   switch (m_TreeControl.GetItemData(item))
@@ -580,10 +564,8 @@ CProjectWindow::__OnDoubleClick__(bool allow_expand)
 
     default: {
       if (IsTreeItemFolder(m_TreeControl, item)) {
-        if (allow_expand) {
+        if (allow_expand)
           m_TreeControl.Expand(item, TVE_TOGGLE);
-        }
-  
         return;
       }
 
@@ -597,7 +579,6 @@ CProjectWindow::__OnDoubleClick__(bool allow_expand)
       strcat(szFilename, GetTreeItemPathName(m_TreeControl, item).c_str());
 
       if (m_MainWindow) m_MainWindow->OpenGameFile(szFilename);
-
       break;
     }
   }
@@ -659,13 +640,11 @@ CProjectWindow::__OnRightClick__()
     CMenu menu;
     menu.LoadMenu(IDR_PROJECTITEM);
 
-    if (1) {
-      int image = 0, selected = 0;
-      m_TreeControl.GetItemImage(item, image, selected);
-      if (image == IDI_FILETYPE_BASE - 1 && selected == IDI_FILETYPE_BASE - 1) {
-        // this should work !! but doesn't
-        menu.EnableMenuItem(ID_PROJECTITEM_OPEN, MF_BYCOMMAND | MF_DISABLED);
-      }
+    int image = 0, selected = 0;
+    m_TreeControl.GetItemImage(item, image, selected);
+    if (image == IDI_FILETYPE_BASE - 1 && selected == IDI_FILETYPE_BASE - 1) {
+      // this should work !! but doesn't
+      menu.EnableMenuItem(ID_PROJECTITEM_OPEN, MF_BYCOMMAND | MF_DISABLED);
     }
 
     // get the mouse coordinates

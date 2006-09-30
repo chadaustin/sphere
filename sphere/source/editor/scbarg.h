@@ -96,7 +96,6 @@ protected:
     int     m_cyGripper;
 
     CSCBButton m_biHide;
-
 // Generated message map functions
 protected:
     //{{AFX_MSG(CSizingControlBarG)
@@ -108,4 +107,3 @@ protected:
 };
 
 #endif // !defined(__SCBARG_H__)
-

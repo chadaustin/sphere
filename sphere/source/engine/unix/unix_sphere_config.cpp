@@ -31,7 +31,7 @@ void InitializePlayerConfig(PLAYERCONFIG* config, int player_index)
       config->key_up_str = "KEY_W";
       config->key_down_str = "KEY_S";
       config->key_left_str = "KEY_A";
-      config->key_right_str = "KEY_F";
+      config->key_right_str = "KEY_D";
       config->keyboard_input_allowed = true;
       config->joypad_input_allowed = true;
     break;
@@ -46,10 +46,10 @@ void InitializePlayerConfig(PLAYERCONFIG* config, int player_index)
     break;
 
     case 3:
-      config->key_up_str = "KEY_8";
-      config->key_down_str = "KEY_5";
-      config->key_left_str = "KEY_4";
-      config->key_right_str = "KEY_6";
+      config->key_up_str = "KEY_NUM_8";
+      config->key_down_str = "KEY_NUM_2";
+      config->key_left_str = "KEY_NUM_4";
+      config->key_right_str = "KEY_NUM_6";
       config->keyboard_input_allowed = true;
       config->joypad_input_allowed = true;
     break;

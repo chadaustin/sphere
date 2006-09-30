@@ -1,5 +1,4 @@
 #include <string.h>
-
 bool extension_compare(const char* path, const char* extension)
 {
   int path_length = strlen(path);
@@ -9,7 +8,6 @@ bool extension_compare(const char* path, const char* extension)
    strcmp(path + path_length - ext_length, extension) == 0
   );
 }
-
 bool pathname_compare(const char* path, const char* folder)
 {
   int path_length = strlen(path);

@@ -4,7 +4,6 @@
 #include "resource.h"
 
 BEGIN_MESSAGE_MAP(CWindowStylePreviewPalette, CPaletteWindow)
-
   ON_WM_PAINT()   
   ON_WM_RBUTTONUP()
 
@@ -12,10 +11,7 @@ BEGIN_MESSAGE_MAP(CWindowStylePreviewPalette, CPaletteWindow)
   ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
 
 END_MESSAGE_MAP()
-
-
 ////////////////////////////////////////////////////////////////////////////////
-
 CWindowStylePreviewPalette::CWindowStylePreviewPalette(CDocumentWindow* owner, sWindowStyle* windowstyle)
 : CPaletteWindow(owner, "WindowStyle Preview",
   Configuration::Get(KEY_WINDOWSTYLE_PREVIEW_RECT),
@@ -27,7 +23,6 @@ CWindowStylePreviewPalette::CWindowStylePreviewPalette(CDocumentWindow* owner, s
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CWindowStylePreviewPalette::OnWindowStyleChanged()
 {
@@ -35,7 +30,6 @@ CWindowStylePreviewPalette::OnWindowStyleChanged()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CWindowStylePreviewPalette::Destroy()
 {
@@ -53,7 +47,6 @@ CWindowStylePreviewPalette::Destroy()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStylePreviewPalette::DrawBitmap(CPaintDC& dc, int bitmap, int x, int y, int mode)
 {
@@ -75,7 +68,7 @@ CWindowStylePreviewPalette::DrawBitmap(CPaintDC& dc, int bitmap, int x, int y, i
   const CImage32& m_Image = m_WindowStyle->GetBitmap(bitmap);
   
   // make a checkerboard
-//  for (int iy = 0; iy < m_Image.GetHeight(); iy++)
+//  for (int iy = 0; iy < m_Image.GetHeight(); iy++
 //    for (int ix = 0; ix < m_Image.GetWidth(); ix++)
   for (int iy = 0; iy < blit_height; iy++)
     for (int ix = 0; ix < blit_width; ix++)  
@@ -91,8 +84,8 @@ CWindowStylePreviewPalette::DrawBitmap(CPaintDC& dc, int bitmap, int x, int y, i
   for (int iy = 0; iy < blit_height; iy++) {
     for (int ix = 0; ix < blit_width; ix++)
     {
-      int ty = iy / m_ZoomFactor.GetZoomFactor();
-      int tx = ix / m_ZoomFactor.GetZoomFactor();
+      int ty = (int) (iy / m_ZoomFactor.GetZoomFactor());
+      int tx = (int) (ix / m_ZoomFactor.GetZoomFactor());
 
       // this here would crash if the tileset has been resized
       // and the spriteset animation palette hasn't been informed of the resize
@@ -112,16 +105,14 @@ CWindowStylePreviewPalette::DrawBitmap(CPaintDC& dc, int bitmap, int x, int y, i
       
    // blit the frame
    CDC* tile = CDC::FromHandle(m_BlitImage->GetDC());
-   dc.BitBlt(ClientRect.left + x * m_ZoomFactor.GetZoomFactor(),
-			       ClientRect.top  + y * m_ZoomFactor.GetZoomFactor(),
-             m_Image.GetWidth()  * m_ZoomFactor.GetZoomFactor(),
-	  	 	 	   m_Image.GetHeight() * m_ZoomFactor.GetZoomFactor(),
+   dc.BitBlt((int) (ClientRect.left + x * m_ZoomFactor.GetZoomFactor()),
+			       (int) (ClientRect.top  + y * m_ZoomFactor.GetZoomFactor()),
+             (int) (m_Image.GetWidth()  * m_ZoomFactor.GetZoomFactor()),
+	  	 	 	   (int) (m_Image.GetHeight() * m_ZoomFactor.GetZoomFactor()),
              tile, 0, 0, SRCCOPY);
 
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStylePreviewPalette::DrawBackground(CPaintDC& dc, int bitmap, int x, int y)
 {
@@ -129,7 +120,6 @@ CWindowStylePreviewPalette::DrawBackground(CPaintDC& dc, int bitmap, int x, int 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStylePreviewPalette::DrawCorner(CPaintDC& dc, int bitmap, int x, int y)
 {
@@ -137,7 +127,6 @@ CWindowStylePreviewPalette::DrawCorner(CPaintDC& dc, int bitmap, int x, int y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStylePreviewPalette::DrawEdge(CPaintDC& dc, int bitmap, int x, int y)
 {
@@ -145,7 +134,6 @@ CWindowStylePreviewPalette::DrawEdge(CPaintDC& dc, int bitmap, int x, int y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStylePreviewPalette::OnPaint()
 {
@@ -205,15 +193,12 @@ CWindowStylePreviewPalette::OnPaint()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStylePreviewPalette::OnRButtonUp(UINT flags, CPoint point)
 {
 
 }
-
 ///////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStylePreviewPalette::OnZoom(double zoom) {
   m_ZoomFactor.SetZoomFactor(zoom);
@@ -232,8 +217,8 @@ CWindowStylePreviewPalette::OnZoom(double zoom) {
 	}
 
   if (width > 0 && height > 0) {
-    width *= m_ZoomFactor.GetZoomFactor();
-    height *= m_ZoomFactor.GetZoomFactor();
+    width = (int) (width * m_ZoomFactor.GetZoomFactor());
+    height = (int) (height * m_ZoomFactor.GetZoomFactor());
     m_BlitImage = new CDIBSection(width, height, 32);
   }
 
@@ -241,7 +226,6 @@ CWindowStylePreviewPalette::OnZoom(double zoom) {
 }
 
 //////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStylePreviewPalette::OnZoomIn()
 {
@@ -250,7 +234,6 @@ CWindowStylePreviewPalette::OnZoomIn()
 }
 
 //////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStylePreviewPalette::OnZoomOut()
 {

@@ -3,9 +3,7 @@
 #include "Keys.hpp"
 #include "resource.h"
 
-
 ////////////////////////////////////////////////////////////////////////////////
-
 CMapToolPalette::CMapToolPalette(CDocumentWindow* owner, IToolPaletteHandler* handler)
 : CToolPalette(owner, handler, "Map Tools",
   Configuration::Get(KEY_MAP_TOOLS_RECT),
@@ -32,7 +30,6 @@ CMapToolPalette::CMapToolPalette(CDocumentWindow* owner, IToolPaletteHandler* ha
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CMapToolPalette::Destroy()
 {

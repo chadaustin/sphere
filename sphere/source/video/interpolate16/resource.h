@@ -10,9 +10,8 @@
 #define IDC_TVMODE                      1005
 #define IDC_FULLSCREEN                  1006
 #define IDC_VSYNC                       1007
-
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        102

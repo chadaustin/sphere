@@ -1,13 +1,7 @@
 #ifndef WIN32_INPUT_HPP
 #define WIN32_INPUT_HPP
-
-
 #include "../../common/types.h"
-
-
 #define MAX_KEY 256
-
-
 // key defines
 #define KEY_ESCAPE     1
 #define KEY_F1         2
@@ -86,7 +80,6 @@
 #define KEY_RIGHT      75
 #define KEY_DOWN       76
 #define KEY_LEFT       77
-
 #define KEY_NUM_0       78
 #define KEY_NUM_1       79
 #define KEY_NUM_2       80
@@ -97,36 +90,28 @@
 #define KEY_NUM_7       85
 #define KEY_NUM_8       86
 #define KEY_NUM_9       87
-
 #define MOUSE_LEFT     0
 #define MOUSE_MIDDLE   1
 #define MOUSE_RIGHT    2
-
-
-// general  
+// general
 extern bool RefreshInput();
 extern bool ResetInput();
 
 // keyboard
 extern bool IsKeyPressed(int key);
 extern void GetKeyStates(bool keys[MAX_KEY]);
-
 // keyboard key queue
 extern bool AreKeysLeft();
 extern int  GetKey();
-
 // mouse
 extern void SetMousePosition(int x, int y);
 extern int  GetMouseX();
 extern int  GetMouseY();
 extern bool IsMouseButtonPressed(int button);
-
 // joystick
 extern int GetNumJoysticks();
 extern float GetJoystickX(int joy); // returns value in range [-1, 1]
 extern float GetJoystickY(int joy); // returns value in range [-1, 1]
 extern int GetNumJoystickButtons(int joy);
 extern bool IsJoystickButtonPressed(int joy, int button);
-
-
 #endif

@@ -1,5 +1,4 @@
 #pragma warning(disable : 4786)
-
 #include <vector>
 #include <string>
 #include <string.h>
@@ -25,12 +24,8 @@ static const char* Extensions[] = {
   /* packages */     "Package Files:spk(Sphere Package Files(spk))",
 };
 
-
 CFileTypeLibrary FTL;
-
-
 ////////////////////////////////////////////////////////////////////////////////
-
 CFileTypeLibrary::CFileTypeLibrary()
 {
   const int num_extensions = sizeof(Extensions) / sizeof(*Extensions);
@@ -86,14 +81,12 @@ CFileTypeLibrary::CFileTypeLibrary()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 int
 CFileTypeLibrary::GetNumFileTypes() {
   return m_FileTypes.size();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 const char*
 CFileTypeLibrary::GetFileTypeLabel(int file_type, bool save)
 {
@@ -109,7 +102,6 @@ CFileTypeLibrary::GetFileTypeLabel(int file_type, bool save)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CFileTypeLibrary::GetFileTypeExtensions(int file_type, bool save, std::vector<std::string>& extensions)
 {
@@ -135,15 +127,14 @@ CFileTypeLibrary::GetFileTypeExtensions(int file_type, bool save, std::vector<st
   }
   else if ((file_type == GT_ANIMATIONS && save)
     || (file_type == GT_SCRIPTS && !Configuration::Get(USE_COMMON_TEXT_FILETYPES))) {
-    for (int i = 0; i < 1 && i < m_FileTypes[file_type].sub_types.size(); i++) {
-      for (int j = 0; j < 1 && j < m_FileTypes[file_type].sub_types[i].extensions.size(); j++) {
+    for (unsigned int i = 0; i < 1 && i < m_FileTypes[file_type].sub_types.size(); i++) {
+      for (unsigned int j = 0; j < 1 && j < m_FileTypes[file_type].sub_types[i].extensions.size(); j++) {
         extensions.push_back(m_FileTypes[file_type].sub_types[i].extensions[j]);
       }
     }
-  }
-  else {
-    for (int i = 0; i < m_FileTypes[file_type].sub_types.size(); i++) {
-      for (int j = 0; j < m_FileTypes[file_type].sub_types[i].extensions.size(); j++) {
+  } else {
+    for (unsigned int i = 0; i < m_FileTypes[file_type].sub_types.size(); i++) {
+      for (unsigned int j = 0; j < m_FileTypes[file_type].sub_types[i].extensions.size(); j++) {
         extensions.push_back(m_FileTypes[file_type].sub_types[i].extensions[j]);
       }
     }
@@ -151,7 +142,6 @@ CFileTypeLibrary::GetFileTypeExtensions(int file_type, bool save, std::vector<st
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 const char*
 CFileTypeLibrary::GetDefaultExtension(int file_type, bool save)
 {
@@ -169,7 +159,6 @@ CFileTypeLibrary::GetDefaultExtension(int file_type, bool save)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 int
 CFileTypeLibrary::GetNumSubTypes(int file_type, bool save)
 {
@@ -201,7 +190,6 @@ CFileTypeLibrary::GetNumSubTypes(int file_type, bool save)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 const char* GetImageSubTypeLabel(const char* ext) {
   if (strcmp(ext, "png") == 0)
     return "PNG Images";
@@ -248,7 +236,6 @@ const char* GetSoundSubTypeLabel(const char* ext) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 const char*
 CFileTypeLibrary::GetSubTypeLabel(int file_type, int sub_type, bool save)
 {
@@ -282,7 +269,6 @@ CFileTypeLibrary::GetSubTypeLabel(int file_type, int sub_type, bool save)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CFileTypeLibrary::GetSubTypeExtensions(int file_type, int sub_type, bool save, std::vector<std::string>& extensions)
 {

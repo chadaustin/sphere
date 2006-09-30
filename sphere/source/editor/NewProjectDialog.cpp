@@ -40,27 +40,20 @@ CNewProjectDialog::ValidateValues(std::string& error)
 {
   GetDlgItemText(IDC_PROJECTNAME, m_szProjectName, sizeof(m_szProjectName));
   GetDlgItemText(IDC_GAMETITLE,   m_szGameTitle,   sizeof(m_szGameTitle));
-
-  if (strlen(m_szProjectName) == 0)
-  {
-    error = "Please enter a project name";
+  if (strlen(m_szProjectName) == 0) {
+    error = "Please enter a project folder name";
     return false;
   }
-
   for (unsigned int i = 0; i < strlen(m_szProjectName); i++) {
-    if (m_szProjectName[i] != '_' && !isalpha(m_szProjectName[i]) && !isdigit(m_szProjectName[i]))
-    {
-      error = "Project name must contain only A-Z, 0-9 or _";
+    if (m_szProjectName[i] != '_' && !isalpha(m_szProjectName[i]) && !isdigit(m_szProjectName[i])) {
+      error = "Project folder name must contain only A-Z, 0-9 or _";
       return false;
     }
   }
-
-  if (strlen(m_szGameTitle) == 0)
-  {
+  if (strlen(m_szGameTitle) == 0) {
     error = "Please enter a game title";
     return false;
   }
-
   return true;
 }
 
@@ -74,7 +67,6 @@ CNewProjectDialog::OnOK()
     MessageBox(error.c_str(), "New Project");
     return;
   }
-
   CDialog::OnOK();
 }
 
@@ -84,9 +76,7 @@ afx_msg BOOL
 CNewProjectDialog::OnInitDialog()
 {
   CDialog::OnInitDialog();
-
   GetDlgItem(IDC_PROJECTNAME)->SetFocus();
-
   return FALSE;
 }
 

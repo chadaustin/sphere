@@ -7,9 +7,11 @@
 
 static std::deque<Uint8> key_queue;
 
+// Tung: Use SDLKey, Brian.
 const int total_keys = 88;
-static Uint8 KeyMapping[total_keys] = {
-  0,
+//static Uint8 KeyMapping[total_keys] = {
+static SDLKey KeyMapping[total_keys] = {
+  (SDLKey) 0,
   SDLK_ESCAPE,
   SDLK_F1,
   SDLK_F2,
@@ -137,17 +139,19 @@ void UpdateSystem()
       exit(0);
     else if ((event.type == SDL_KEYDOWN) || (event.type == SDL_KEYUP))
     {
-      Uint8 pressed = event.key.keysym.sym;
+      // Tung: Use SDLKey, Brian.
+      //Uint8 pressed = event.key.keysym.sym;
+      SDLKey pressed = event.key.keysym.sym;
       int key = 0;
 
       switch (pressed) {
         case SDLK_SPACE:  key = KEY_SPACE;  break;
         case SDLK_ESCAPE: key = KEY_ESCAPE; break;
-        case SDLK_LSHIFT: key = KEY_SHIFT;  break;
+        case SDLK_LSHIFT:	// Tung: Redundant?
         case SDLK_RSHIFT: key = KEY_SHIFT;  break;
-        case SDLK_LALT:   key = KEY_ALT;    break;
+        case SDLK_LALT:
         case SDLK_RALT:   key = KEY_ALT;    break;
-        case SDLK_LCTRL:  key = KEY_CTRL;   break;
+        case SDLK_LCTRL:
         case SDLK_RCTRL:  key = KEY_CTRL;   break;
         case SDLK_F1:     key = KEY_F1;     break;
         case SDLK_F2:     key = KEY_F2;     break;
@@ -163,10 +167,11 @@ void UpdateSystem()
         case SDLK_F12:    key = KEY_F12;    break;
                                                                                 
         default:
-          for (int lcv = 1; lcv < total_keys; lcv++) {
+          //std::cerr << "code: " << (SDLKey)pressed << std::endl;
+          for (int lcv = 1; lcv < total_keys && key == 0; lcv++) {
             if (pressed == KeyMapping[lcv]) {
               key = lcv;
-              //std::cerr << "key: "<< (int)key << std::endl;
+              //std::cerr << "key: "<< (int)key << "|" << (SDLKey)SDLK_LCTRL << std::endl;
               break;
             }
           }
@@ -223,7 +228,7 @@ bool IsKeyPressed (int key) {
   key_state = SDL_GetKeyState(NULL);
   return key_state[KeyMapping[key]];
   */
-
+  
   if (key >= 0 && key < MAX_KEY) {
     UpdateSystem();
     return KeyBuffer[key];

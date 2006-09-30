@@ -3,23 +3,23 @@ import os
 Import('base_env BUILD_DIR')
 
 files = [
+    'readme.txt',
     'game.sgm',
-    'Icons.txt',
-    'images/big_particle.png',
-    'images/Default.png',
-    'images/mouse.png',
-    'images/particle.png',
-    'images/small_particle.png',
-    'images/sphere2.png',
+    'images/sphereicon.png',
+    'images/bg_320_240.png',
+    'images/bgi_320_240.png',
+    'images/bg_640_480.png',
+    'images/bgi_640_480.png',
     'scripts/main.js',
-    'scripts/Icon.js',
-    'scripts/Normal.js',
-    'scripts/Particle.js',
-    'scripts/ParticleDefine.js',
-    'scripts/Quick.js',
-    'sounds/intro.mp3',
-    'windowstyles/window.rws',
-    'windowstyles/swindow.rws']
+    'scripts/bounceoutimage.js',
+    'scripts/fadeout.js',
+    'scripts/gamelist.js',
+    'scripts/globalcursor.js',
+    'scripts/moveimage.js',
+    'scripts/movetext.js',
+    'scripts/phaseintext.js',
+    'scripts/textwrap.js',
+    'scripts/tickerbar.js' ]
 
 for f in files:
     base_env.Install(

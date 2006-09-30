@@ -2,16 +2,12 @@
 #include "Editor.hpp"
 #include "../common/str_util.hpp"
 #include "resource.h"
-
 ////////////////////////////////////////////////////////////////////////////////
-
 BEGIN_MESSAGE_MAP(CResizeDialog, CDialog)
   ON_EN_CHANGE(IDC_WIDTH, OnOptionChanged)
   ON_EN_CHANGE(IDC_HEIGHT, OnOptionChanged)
 END_MESSAGE_MAP()
-
 ////////////////////////////////////////////////////////////////////////////////
-
 CResizeDialog::CResizeDialog(const char* caption, int default_width, int default_height)
 : CDialog(IDD_RESIZE)
 , m_Caption(caption)
@@ -24,9 +20,7 @@ CResizeDialog::CResizeDialog(const char* caption, int default_width, int default
 , m_AllowPercentages(true)
 {
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CResizeDialog::SetRange(int min_width, int max_width, int min_height, int max_height)
 {
@@ -35,33 +29,25 @@ CResizeDialog::SetRange(int min_width, int max_width, int min_height, int max_he
   m_MinHeight = min_height;
   m_MaxHeight = max_height;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CResizeDialog::AllowPercentages(bool allow)
 {
   m_AllowPercentages = allow;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 int
 CResizeDialog::GetWidth() const
 {
   return m_Width;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 int
 CResizeDialog::GetHeight() const
 {
   return m_Height;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 BOOL
 CResizeDialog::OnInitDialog()
 {
@@ -73,9 +59,7 @@ CResizeDialog::OnInitDialog()
  
   return FALSE;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 bool
 CResizeDialog::ValidateValues(std::string& error)
 {
@@ -87,7 +71,6 @@ CResizeDialog::ValidateValues(std::string& error)
   bool width_percentage = false;
   bool height_percentage = false;
   bool floating = false;
-
   if (IsInvalidNumber(width_text, floating, width_percentage) || floating
    || IsInvalidNumber(height_text, floating, height_percentage) || floating
    || (!m_AllowPercentages && width_percentage)
@@ -95,11 +78,9 @@ CResizeDialog::ValidateValues(std::string& error)
     error = "Invalid number format";
     return false;
   }
-
   // convert to percentages
   if (width_percentage) w = (w * m_Width) / 100 ;
   if (height_percentage) h = (h * m_Height) / 100;
-
   if (w < m_MinWidth || w > m_MaxWidth ||
       h < m_MinHeight || h > m_MaxHeight)
   {
@@ -112,20 +93,15 @@ CResizeDialog::ValidateValues(std::string& error)
     error = message;
     return false;
   }
-
   m_Width  = w;
   m_Height = h;
-
   return true;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CResizeDialog::UpdateButtons()
 {
   BOOL enabled = TRUE;
-
   std::string error;
   if (!ValidateValues(error)) {
     enabled = FALSE;
@@ -133,22 +109,17 @@ CResizeDialog::UpdateButtons()
   } else {
     GetStatusBar()->SetWindowText("");
   }
-
   if (GetDlgItem(IDOK)) {
     GetDlgItem(IDOK)->EnableWindow(enabled); 
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CResizeDialog::OnOptionChanged()
 {
   UpdateButtons();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CResizeDialog::OnOK()
 {
@@ -157,8 +128,6 @@ CResizeDialog::OnOK()
     MessageBox(error.c_str(), m_Caption.c_str());
     return;
   }
-
   CDialog::OnOK();
 }
-
 ////////////////////////////////////////////////////////////////////////////////

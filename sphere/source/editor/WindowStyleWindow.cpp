@@ -1,6 +1,4 @@
 #pragma warning(disable : 4786)
-
-
 #include "WindowStyleWindow.hpp"
 #include "ResizeDialog.hpp"
 #include "FileDialogs.hpp"
@@ -8,28 +6,20 @@
 #include "Editor.hpp"
 #include "../common/minmax.hpp"
 #include "resource.h"
-
-
 const int ID_ALPHASLIDER = 7001;
 const int ID_ALPHASTATIC = 7002;
-
 static const int WINDOWSTYLE_TIMER = 9001;
-
 #ifdef USE_SIZECBAR
 IMPLEMENT_DYNAMIC(CWindowStyleWindow, CMDIChildWnd)
 #endif
-
 BEGIN_MESSAGE_MAP(CWindowStyleWindow, CSaveableDocumentWindow)
-
   ON_WM_LBUTTONDOWN()
   ON_WM_SIZE()
   ON_WM_VSCROLL()
   ON_WM_PAINT()
-
   ON_WM_KEYDOWN()
   ON_WM_KEYUP()
   ON_WM_TIMER()
-
   ON_COMMAND(ID_WINDOWSTYLE_EDIT_UPPERLEFT,  OnEditUpperLeft)
   ON_COMMAND(ID_WINDOWSTYLE_EDIT_TOP,        OnEditTop)
   ON_COMMAND(ID_WINDOWSTYLE_EDIT_UPPERRIGHT, OnEditUpperRight)
@@ -39,26 +29,20 @@ BEGIN_MESSAGE_MAP(CWindowStyleWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_WINDOWSTYLE_EDIT_LOWERLEFT,  OnEditLowerLeft)
   ON_COMMAND(ID_WINDOWSTYLE_EDIT_LEFT,       OnEditLeft)
   ON_COMMAND(ID_WINDOWSTYLE_EDIT_BACKGROUND, OnEditBackground)
-
   ON_COMMAND(ID_WINDOWSTYLE_RESIZESECTION,    OnResizeSection)
   ON_COMMAND(ID_WINDOWSTYLE_RESCALESECTION,   OnRescaleSection)
   ON_COMMAND(ID_WINDOWSTYLE_RESAMPLESECTION,  OnResampleSection)
-
   ON_COMMAND(ID_WINDOWSTYLE_ZOOM_1X, OnZoom1x)
   ON_COMMAND(ID_WINDOWSTYLE_ZOOM_2X, OnZoom2x)
   ON_COMMAND(ID_WINDOWSTYLE_ZOOM_4X, OnZoom4x)
   ON_COMMAND(ID_WINDOWSTYLE_ZOOM_8X, OnZoom8x)
-
   ON_COMMAND(ID_FILE_ZOOM_IN, OnZoomIn)
   ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
-
   ON_COMMAND(ID_FILE_COPY,  OnCopy)
   ON_COMMAND(ID_FILE_PASTE, OnPaste)
   ON_COMMAND(ID_FILE_UNDO,  OnUndo)
   ON_COMMAND(ID_FILE_REDO,  OnRedo)
-
   ON_COMMAND(ID_WINDOWSTYLE_PROPERTIES, OnProperties)
-
   ON_UPDATE_COMMAND_UI(ID_WINDOWSTYLE_EDIT_UPPERLEFT,  OnUpdateEditUpperLeft)
   ON_UPDATE_COMMAND_UI(ID_WINDOWSTYLE_EDIT_TOP,        OnUpdateEditTop)
   ON_UPDATE_COMMAND_UI(ID_WINDOWSTYLE_EDIT_UPPERRIGHT, OnUpdateEditUpperRight)
@@ -68,17 +52,12 @@ BEGIN_MESSAGE_MAP(CWindowStyleWindow, CSaveableDocumentWindow)
   ON_UPDATE_COMMAND_UI(ID_WINDOWSTYLE_EDIT_LOWERLEFT,  OnUpdateEditLowerLeft)
   ON_UPDATE_COMMAND_UI(ID_WINDOWSTYLE_EDIT_LEFT,       OnUpdateEditLeft)
   ON_UPDATE_COMMAND_UI(ID_WINDOWSTYLE_EDIT_BACKGROUND, OnUpdateEditBackground)
-
   ON_UPDATE_COMMAND_UI(ID_WINDOWSTYLE_ZOOM_1X, OnUpdateZoom1x)
   ON_UPDATE_COMMAND_UI(ID_WINDOWSTYLE_ZOOM_2X, OnUpdateZoom2x)
   ON_UPDATE_COMMAND_UI(ID_WINDOWSTYLE_ZOOM_4X, OnUpdateZoom4x)
   ON_UPDATE_COMMAND_UI(ID_WINDOWSTYLE_ZOOM_8X, OnUpdateZoom8x)
-
 END_MESSAGE_MAP()
-
-
 ////////////////////////////////////////////////////////////////////////////////
-
 CWindowStyleWindow::CWindowStyleWindow(const char* window_style)
 : CSaveableDocumentWindow(window_style, IDR_WINDOWSTYLE, CSize(200, 150))
 , m_Created(false)
@@ -87,13 +66,10 @@ CWindowStyleWindow::CWindowStyleWindow(const char* window_style)
 , m_HighlightPen(new CPen(PS_SOLID, 1, 0xFF00FF))
 {
   m_DocumentType = WA_WINDOWSTYLE;
-
   // allocate DIB sections and empty them
   for (int i = 0; i < 9; i++)
     m_DIBs[i] = NULL;
-
   if (window_style) {
-
     // load the window style
     if (m_WindowStyle.Load(window_style) == false)
     {
@@ -103,71 +79,53 @@ CWindowStyleWindow::CWindowStyleWindow(const char* window_style)
       m_WindowStyle.Create(16, 16);
     }
     UpdateDIBSections();
-
     SetSaved(true);
     SetModified(false);
-
   } else {
-
     m_WindowStyle.Create(16, 16);
     UpdateDIBSections();
-
     SetSaved(false);
     SetModified(false);
   }
-
   // create the window and child widgets
   Create(AfxRegisterWndClass(0, ::LoadCursor(NULL, IDC_ARROW), NULL, AfxGetApp()->LoadIcon(IDI_WINDOWSTYLE)));
-
   m_ImageView.Create(this, this, this);
   m_PaletteView.Create(this, this);
   m_ColorView.SetNumColors(2);
   m_ColorView.Create(this, this);
   m_AlphaView.Create(this, this);
-
 	m_WindowStylePreviewPalette = new CWindowStylePreviewPalette(this, &m_WindowStyle);
   
 	SetBitmap();
-
   // we're done creating the windows, so make sure everything is in the right place
   m_Created = true;
-
   RECT ClientRect;
   GetClientRect(&ClientRect);
   OnSize(0, ClientRect.right, ClientRect.bottom);
-
   // make sure the various views start with matching values
   m_ColorView.SetColor(0, CreateRGB(255, 255, 255));
   m_ColorView.SetColor(1, CreateRGB(0, 0, 0));
   m_ImageView.SetColor(0, CreateRGBA(255, 255, 255, 255));
   m_ImageView.SetColor(0, CreateRGBA(0, 0, 0, 255));
   m_AlphaView.SetAlpha(255);
-
 #ifdef USE_SIZECBAR
 	LoadPaletteStates();
 #endif
-
  
   m_Timer = SetTimer(WINDOWSTYLE_TIMER, 100, NULL);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 CWindowStyleWindow::~CWindowStyleWindow()
 {
   for (int i = 0; i < 9; i++)
     delete m_DIBs[i];
-
   if (m_WindowStylePreviewPalette)
 		m_WindowStylePreviewPalette->Destroy();
-
   if (m_HighlightPen) m_HighlightPen->DeleteObject();
   delete m_HighlightPen;
   m_HighlightPen = NULL;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CWindowStyleWindow::UpdateDIBSection(int bitmap)
 {
@@ -179,7 +137,6 @@ CWindowStyleWindow::UpdateDIBSection(int bitmap)
   
   if (!m_DIBs[bitmap] || m_DIBs[bitmap]->GetPixels() == NULL)
     return;
-
   // fill the DIB with data
   BGRA* dest  = (BGRA*)m_DIBs[bitmap]->GetPixels();
   CImage32& b = m_WindowStyle.GetBitmap(bitmap);
@@ -196,7 +153,6 @@ CWindowStyleWindow::UpdateDIBSection(int bitmap)
         rgba.red   = rgba.alpha * rgba.red   / 256,
         0,
       };
-
       // fill the square with it
       for (int dy = 0; dy < m_ZoomFactor; dy++)
         for (int dx = 0; dx < m_ZoomFactor; dx++)
@@ -205,44 +161,34 @@ CWindowStyleWindow::UpdateDIBSection(int bitmap)
         }
     }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CWindowStyleWindow::UpdateDIBSections()
 {
   for (int i = 0; i < 9; i++)
     UpdateDIBSection(i);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CWindowStyleWindow::SetBitmap()
 {
   CImage32& b = m_WindowStyle.GetBitmap(m_SelectedBitmap);
   m_ImageView.SetImage(b.GetWidth(), b.GetHeight(), b.GetPixels(), true);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CWindowStyleWindow::SetZoomFactor(int factor)
 {
   m_ZoomFactor = factor;
-
   // resize the DIBs
   UpdateDIBSections();
   Invalidate();
-
   // move everything to its correct place
   RECT Rect;
   GetClientRect(&Rect);
   OnSize(0, Rect.right, Rect.bottom);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CWindowStyleWindow::SelectBitmap(int bitmap)
 {
@@ -252,26 +198,20 @@ CWindowStyleWindow::SelectBitmap(int bitmap)
     Invalidate();
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 static void BlackRect(CDC& dc, int x, int y, int w, int h)
 {
   RECT Rect = { x, y, x + w, y + h };
   dc.FillRect(&Rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CWindowStyleWindow::DrawCorner(CDC& dc, int bitmap, int x, int y, int w, int h)
 {
   CDIBSection* dib = m_DIBs[bitmap];
-
   if (!dib || dib->GetPixels() == NULL) {
     return;
   }
-
   // calculate correct corner offsets so the the images are flush with the image editor
   int offsetx = 0;
   int offsety = 0;
@@ -281,23 +221,19 @@ CWindowStyleWindow::DrawCorner(CDC& dc, int bitmap, int x, int y, int w, int h)
       offsetx = w - dib->GetWidth();
       offsety = h - dib->GetHeight();
       break;
-
     case sWindowStyle::UPPER_RIGHT:
       offsetx = 0;
       offsety = h - dib->GetHeight();
       break;
-
     case sWindowStyle::LOWER_LEFT:
       offsetx = w - dib->GetWidth();
       offsety = 0;
       break;
-
     case sWindowStyle::LOWER_RIGHT:
       offsetx = 0;
       offsety = 0;
       break;
   }
-
   // create a clipping region for the DIB and select it in
   CRgn region;
   region.CreateRectRgn(
@@ -306,24 +242,19 @@ CWindowStyleWindow::DrawCorner(CDC& dc, int bitmap, int x, int y, int w, int h)
     offsetx + x + dib->GetWidth(),
     offsety + y + dib->GetHeight());
   dc.SelectClipRgn(&region);
-
   // draw the DIB
   dc.BitBlt(
     x + offsetx, y + offsety, dib->GetWidth(), dib->GetHeight(),
     CDC::FromHandle(dib->GetDC()),
     0, 0, SRCCOPY);
-
   // select the region opposite of the previous one
   dc.SelectClipRgn(NULL);
   dc.SelectClipRgn(&region, RGN_XOR);
-
   // fill the rest of the area with black
   BlackRect(dc, x, y, w, h);
-
   // remove the clipping region
   dc.SelectClipRgn(NULL);
   region.DeleteObject();
-
   // if it's the selected bitmap, put a pink rectangle around it
   if (m_HighlightPen && bitmap == m_SelectedBitmap)
   {
@@ -334,18 +265,14 @@ CWindowStyleWindow::DrawCorner(CDC& dc, int bitmap, int x, int y, int w, int h)
     dc.RestoreDC(-1);
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CWindowStyleWindow::DrawEdgeH(CDC& dc, int bitmap, int x, int y, int x2, int h)
 {
   CDIBSection* dib = m_DIBs[bitmap];
-
   if (!dib || dib->GetPixels() == NULL) {
     return;
   }
-
   // calculate correct edge offsets so the the images are flush with the image editor
   int offsety = 0;
   switch (bitmap)
@@ -353,12 +280,10 @@ CWindowStyleWindow::DrawEdgeH(CDC& dc, int bitmap, int x, int y, int x2, int h)
     case sWindowStyle::TOP:
       offsety = h - dib->GetHeight();
       break;
-
     case sWindowStyle::BOTTOM:
       offsety = 0;
       break;
   }
-
   // create a clipping region for the DIBs
   CRgn region;
   region.CreateRectRgn(
@@ -367,7 +292,6 @@ CWindowStyleWindow::DrawEdgeH(CDC& dc, int bitmap, int x, int y, int x2, int h)
     x2,
     offsety + y + dib->GetHeight());
   dc.SelectClipRgn(&region);
-
   // draw the edge
   int x1 = x;
   while (x1 < x2)
@@ -378,18 +302,14 @@ CWindowStyleWindow::DrawEdgeH(CDC& dc, int bitmap, int x, int y, int x2, int h)
       0, 0, SRCCOPY);
     x1 += dib->GetWidth();
   }
-
   // select the clipping region opposite of the previous one
   dc.SelectClipRgn(NULL);
   dc.SelectClipRgn(&region, RGN_XOR);
-
   // fill rest of area with black
   BlackRect(dc, x, y, x2 - x, h);
-
   // reset the clipping rectangle
   dc.SelectClipRgn(NULL);
   region.DeleteObject();
-
   // if bitmap is selected, draw pink selection square
   if (m_HighlightPen && bitmap == m_SelectedBitmap)
   {
@@ -400,18 +320,14 @@ CWindowStyleWindow::DrawEdgeH(CDC& dc, int bitmap, int x, int y, int x2, int h)
     dc.RestoreDC(-1);
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CWindowStyleWindow::DrawEdgeV(CDC& dc, int bitmap, int x, int y, int y2, int w)
 {
   CDIBSection* dib = m_DIBs[bitmap];
-
   if (!dib || dib->GetPixels() == NULL) {
     return;
   }
-
   // calculate correct edge offsets so the the images are flush with the image editor
   int offsetx = 0;
   switch (bitmap)
@@ -419,17 +335,14 @@ CWindowStyleWindow::DrawEdgeV(CDC& dc, int bitmap, int x, int y, int y2, int w)
     case sWindowStyle::LEFT:
       offsetx = w - dib->GetWidth();
       break;
-
     case sWindowStyle::RIGHT:
       offsetx = 0;
       break;
   }
-
   // create a clipping region for the DIBs
   CRgn region;
   region.CreateRectRgn(offsetx + x, y, offsetx + x + dib->GetWidth(), y2);
   dc.SelectClipRgn(&region);
-
   // draw the edge
   int y1 = y;
   while (y1 < y2)
@@ -440,18 +353,14 @@ CWindowStyleWindow::DrawEdgeV(CDC& dc, int bitmap, int x, int y, int y2, int w)
       0, 0, SRCCOPY);
     y1 += dib->GetHeight();
   }
-
   // select the clipping region opposite of the previous one
   dc.SelectClipRgn(NULL);
   dc.SelectClipRgn(&region, RGN_XOR);
-
   // fill the area with black
   BlackRect(dc, x, y, w, y2 - y);
-
   // reset the clipping rectangle
   dc.SelectClipRgn(NULL);
   region.DeleteObject();
-
   // if bitmap is selected, draw pink selection square
   if (m_HighlightPen && bitmap == m_SelectedBitmap)
   {
@@ -462,15 +371,12 @@ CWindowStyleWindow::DrawEdgeV(CDC& dc, int bitmap, int x, int y, int y2, int w)
     dc.RestoreDC(-1);
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnLButtonDown(UINT flags, CPoint point)
 {
   RECT EditRect;
   GetEditRect(&EditRect);
-
   if (point.x < EditRect.left &&
       point.y < EditRect.top)
     SelectBitmap(sWindowStyle::UPPER_LEFT);
@@ -492,29 +398,23 @@ CWindowStyleWindow::OnLButtonDown(UINT flags, CPoint point)
   else if (point.y >= EditRect.bottom)
     SelectBitmap(sWindowStyle::BOTTOM);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
 {
   m_ImageView.OnKeyDown(vk, repeat, flags);
 }
-
 afx_msg void
 CWindowStyleWindow::OnKeyUp(UINT vk, UINT repeat, UINT flags)
 {
   m_ImageView.OnKeyUp(vk, repeat, flags);
 }
-
 afx_msg void
 CWindowStyleWindow::OnTimer(UINT event)
 {
   m_ImageView.OnTimer(event);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnSize(UINT type, int cx, int cy)
 {
@@ -523,27 +423,20 @@ CWindowStyleWindow::OnSize(UINT type, int cx, int cy)
     RECT EditRect;
     GetEditRect(&EditRect);
     m_ImageView.MoveWindow(&EditRect);
-
     m_PaletteView.MoveWindow(cx - 60 - 32, 0, 60, cy - 60);
     m_ColorView.MoveWindow(cx - 60 - 32, cy - 60, 60, 60);
     m_AlphaView.MoveWindow(cx - 32, 0, 32, cy);
-
     Invalidate();
   }
-
   CSaveableDocumentWindow::OnSize(type, cx, cy);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnPaint()
 {
   CPaintDC dc(this);
-
   RECT EditRect;
   GetEditRect(&EditRect);
-
   // corners
   DrawCorner(dc, sWindowStyle::UPPER_LEFT,  0, 0,
     GetBorderWidth_Left(),
@@ -557,88 +450,67 @@ CWindowStyleWindow::OnPaint()
   DrawCorner(dc, sWindowStyle::LOWER_RIGHT, EditRect.right, EditRect.bottom, 
     GetBorderWidth_Right(),
     GetBorderWidth_Bottom());
-
   // edges
   DrawEdgeH(dc, sWindowStyle::TOP,    EditRect.left, 0, EditRect.right, GetBorderWidth_Top());
   DrawEdgeH(dc, sWindowStyle::BOTTOM, EditRect.left, EditRect.bottom, EditRect.right, GetBorderWidth_Bottom());
   DrawEdgeV(dc, sWindowStyle::LEFT,   0, EditRect.top, EditRect.bottom, GetBorderWidth_Left());
   DrawEdgeV(dc, sWindowStyle::RIGHT,  EditRect.right, EditRect.top, EditRect.bottom, GetBorderWidth_Right());
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnEditUpperLeft()
 {
   SelectBitmap(sWindowStyle::UPPER_LEFT);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnEditTop()
 {
   SelectBitmap(sWindowStyle::TOP);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void 
 CWindowStyleWindow::OnEditUpperRight()
 {
   SelectBitmap(sWindowStyle::UPPER_RIGHT);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void 
 CWindowStyleWindow::OnEditRight()
 {
   SelectBitmap(sWindowStyle::RIGHT);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void 
 CWindowStyleWindow::OnEditLowerRight()
 {
   SelectBitmap(sWindowStyle::LOWER_RIGHT);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void 
 CWindowStyleWindow::OnEditBottom()
 {
   SelectBitmap(sWindowStyle::BOTTOM);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void 
 CWindowStyleWindow::OnEditLowerLeft()
 {
   SelectBitmap(sWindowStyle::LOWER_LEFT);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void 
 CWindowStyleWindow::OnEditLeft()
 {
   SelectBitmap(sWindowStyle::LEFT);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void 
 CWindowStyleWindow::OnEditBackground()
 {
   SelectBitmap(sWindowStyle::BACKGROUND);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CWindowStyleWindow::ResizeSection(int width, int height, int method)
 {
@@ -648,25 +520,19 @@ CWindowStyleWindow::ResizeSection(int width, int height, int method)
     case 1: bitmap.Rescale(width, height);  break;
     case 2: bitmap.Resample(width, height); break;
   }
-
   SetModified(true);
-
   // update the window
   SetBitmap();
   UpdateDIBSections();
   Invalidate();
-
   // resize the window
   RECT Rect;
   GetClientRect(&Rect);
   OnSize(0, Rect.right, Rect.bottom);
-
   if (m_WindowStylePreviewPalette)
     m_WindowStylePreviewPalette->OnWindowStyleChanged();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnResizeSection()
 {
@@ -678,9 +544,7 @@ CWindowStyleWindow::OnResizeSection()
     ResizeSection(Dialog.GetWidth(), Dialog.GetHeight(), 0);
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnRescaleSection()
 {
@@ -692,9 +556,7 @@ CWindowStyleWindow::OnRescaleSection()
     ResizeSection(Dialog.GetWidth(), Dialog.GetHeight(), 1);
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnResampleSection()
 {
@@ -706,47 +568,35 @@ CWindowStyleWindow::OnResampleSection()
     ResizeSection(Dialog.GetWidth(), Dialog.GetHeight(), 2);
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnZoom1x()
 {
   SetZoomFactor(1);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnZoom2x()
 {
   SetZoomFactor(2);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnZoom4x()
 {
   SetZoomFactor(4);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnZoom8x()
 {
   SetZoomFactor(8);
 }
-
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnZoomIn()
 {
   bool focus_found = false;
-
   if (GetFocus() != this) {
     if ((m_WindowStylePreviewPalette != NULL) && (GetFocus() == m_WindowStylePreviewPalette)) {
       m_WindowStylePreviewPalette->SendMessage(WM_COMMAND, MAKEWPARAM(ID_FILE_ZOOM_IN, 0), 0);
@@ -762,14 +612,11 @@ CWindowStyleWindow::OnZoomIn()
     }
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnZoomOut()
 {
   bool focus_found = false;
-
   if (GetFocus() != this) {
     if ((m_WindowStylePreviewPalette != NULL) && (GetFocus() == m_WindowStylePreviewPalette)) {
       m_WindowStylePreviewPalette->SendMessage(WM_COMMAND, MAKEWPARAM(ID_FILE_ZOOM_OUT, 0), 0);
@@ -785,41 +632,31 @@ CWindowStyleWindow::OnZoomOut()
     }
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnCopy()
 {
   m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_COPY, 0), 0);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnPaste()
 {
   m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_PASTE, 0), 0);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnUndo()
 {
   m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_UNDO, 0), 0);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnRedo()
 {
   m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_REDO, 0), 0);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnProperties()
 {
@@ -828,141 +665,105 @@ CWindowStyleWindow::OnProperties()
     SetModified(true);
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnUpdateEditUpperLeft(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_SelectedBitmap == sWindowStyle::UPPER_LEFT);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnUpdateEditTop(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_SelectedBitmap == sWindowStyle::TOP);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnUpdateEditUpperRight(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_SelectedBitmap == sWindowStyle::UPPER_RIGHT);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnUpdateEditRight(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_SelectedBitmap == sWindowStyle::RIGHT);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnUpdateEditLowerRight(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_SelectedBitmap == sWindowStyle::LOWER_RIGHT);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnUpdateEditBottom(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_SelectedBitmap == sWindowStyle::BOTTOM);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnUpdateEditLowerLeft(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_SelectedBitmap == sWindowStyle::LOWER_LEFT);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnUpdateEditLeft(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_SelectedBitmap == sWindowStyle::LEFT);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnUpdateEditBackground(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_SelectedBitmap == sWindowStyle::BACKGROUND);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnUpdateZoom1x(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_ZoomFactor == 1);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnUpdateZoom2x(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_ZoomFactor == 2);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnUpdateZoom4x(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_ZoomFactor == 4);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CWindowStyleWindow::OnUpdateZoom8x(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_ZoomFactor == 8);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 bool
 CWindowStyleWindow::GetSavePath(char* path)
 {
   std::string directory = GetMainWindow()->GetDefaultFolder(m_DocumentType);
   SetCurrentDirectory(directory.c_str());
-
   CWindowStyleFileDialog Dialog(FDM_SAVE);
-
   // set current directory on Win98/2000
   Dialog.m_ofn.lpstrInitialDir = directory.c_str();
-
   if (Dialog.DoModal() != IDOK)
     return false;
-
   strcpy(path, Dialog.GetPathName());
   return true;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 bool
 CWindowStyleWindow::SaveDocument(const char* path)
 {
   return m_WindowStyle.Save(path);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CWindowStyleWindow::IV_ImageChanged()
 {
@@ -971,18 +772,13 @@ CWindowStyleWindow::IV_ImageChanged()
     bitmap.GetPixels(),
     m_ImageView.GetPixels(),
     bitmap.GetWidth() * bitmap.GetHeight() * sizeof(RGBA));
-
   UpdateDIBSection(m_SelectedBitmap);
   Invalidate();
-
   if (m_WindowStylePreviewPalette)
     m_WindowStylePreviewPalette->OnWindowStyleChanged();
-
   SetModified(true);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CWindowStyleWindow::IV_ColorChanged(RGBA color)
 {
@@ -990,9 +786,7 @@ CWindowStyleWindow::IV_ColorChanged(RGBA color)
   m_ColorView.SetColor(0, rgb);
   m_AlphaView.SetAlpha(color.alpha);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CWindowStyleWindow::PV_ColorChanged(int index, RGB color)
 {
@@ -1000,18 +794,14 @@ CWindowStyleWindow::PV_ColorChanged(int index, RGB color)
   m_ImageView.SetColor(index, rgba);
   m_ColorView.SetColor(index, color);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CWindowStyleWindow::CV_ColorChanged(int index, RGB color)
 {
   RGBA rgba = { color.red, color.green, color.blue, m_AlphaView.GetAlpha() };
   m_ImageView.SetColor(index, rgba);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CWindowStyleWindow::AV_AlphaChanged(byte alpha)
 {
@@ -1019,9 +809,7 @@ CWindowStyleWindow::AV_AlphaChanged(byte alpha)
   rgba.alpha = alpha;
   m_ImageView.SetColor(0, rgba);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 int
 CWindowStyleWindow::GetBorderWidth_Left() const
 {
@@ -1030,9 +818,7 @@ CWindowStyleWindow::GetBorderWidth_Left() const
   int w3 = m_WindowStyle.GetBitmap(sWindowStyle::LOWER_LEFT).GetWidth();
   return std::max(w1, std::max(w2, w3)) * m_ZoomFactor;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 int
 CWindowStyleWindow::GetBorderWidth_Top() const
 {
@@ -1041,9 +827,7 @@ CWindowStyleWindow::GetBorderWidth_Top() const
   int h3 = m_WindowStyle.GetBitmap(sWindowStyle::UPPER_RIGHT).GetHeight();
   return std::max(h1, std::max(h2, h3)) * m_ZoomFactor;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 int
 CWindowStyleWindow::GetBorderWidth_Right() const
 {
@@ -1052,9 +836,7 @@ CWindowStyleWindow::GetBorderWidth_Right() const
   int w3 = m_WindowStyle.GetBitmap(sWindowStyle::LOWER_RIGHT).GetWidth();
   return std::max(w1, std::max(w2, w3)) * m_ZoomFactor;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 int
 CWindowStyleWindow::GetBorderWidth_Bottom() const
 {
@@ -1063,9 +845,7 @@ CWindowStyleWindow::GetBorderWidth_Bottom() const
   int h3 = m_WindowStyle.GetBitmap(sWindowStyle::LOWER_RIGHT).GetHeight();
   return std::max(h1, std::max(h2, h3)) * m_ZoomFactor;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CWindowStyleWindow::GetEditRect(RECT* rect)
 {
@@ -1076,21 +856,17 @@ CWindowStyleWindow::GetEditRect(RECT* rect)
   rect->right  = ClientRect.right  - GetBorderWidth_Right() - 60 - 32;
   rect->bottom = ClientRect.bottom - GetBorderWidth_Bottom();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
  
 void
 CWindowStyleWindow::OnToolChanged(UINT id, int tool_index) {
   m_ImageView.OnToolChanged(id, tool_index);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 BOOL
 CWindowStyleWindow::IsToolAvailable(UINT id) {
   BOOL available = FALSE;
   available = m_ImageView.IsToolAvailable(id);
   return available;
 }
-
 ////////////////////////////////////////////////////////////////////////////////

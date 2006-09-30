@@ -1,5 +1,4 @@
 #pragma warning(disable : 4786)
-
 #include <Scintilla.h>
 #include <SciLexer.h>
 #include "ConsoleWindow.hpp"
@@ -10,56 +9,39 @@
 #include "resource.h"
 #include "FileDialogs.hpp"
 #include "StringDialog.hpp"
-
 #include <afxdlgs.h>
-
 #include "Scripting.hpp"
-
 static const int ID_EDIT = 900;
 static const int IRC_TIMER = 9001;
-
 static const UINT s_FindReplaceMessage = ::RegisterWindowMessage(FINDMSGSTRING);
-
 BEGIN_MESSAGE_MAP(CConsoleWindow, CDocumentWindow)
-
   ON_WM_SIZE()
   ON_WM_SETFOCUS()
   ON_WM_CONTEXTMENU()
-
   ON_NOTIFY(SCN_UPDATEUI,         ID_EDIT, OnPosChanged)
   ON_NOTIFY(SCN_CHARADDED,        ID_EDIT, OnCharAdded)
-
   ON_COMMAND(ID_FILE_COPY,  OnCopy)
   ON_COMMAND(ID_FILE_PASTE, OnPaste)
-
 END_MESSAGE_MAP()
-
 ////////////////////////////////////////////////////////////////////////////////
-
 static CConsoleWindow* s_ConsoleWindow = NULL;
-
 CConsoleWindow::CConsoleWindow()
 : CDocumentWindow("Javascript Console", -1, CSize(400, 100))
 , m_Created(false)
 , m_script_running(false)
 {
   s_ConsoleWindow = this;
-
   if (!Create()) {
     return;
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 CConsoleWindow::~CConsoleWindow()
 {
   m_Scripter.Destroy();
   s_ConsoleWindow = NULL;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 bool
 CConsoleWindow::Create()
 {
@@ -76,19 +58,14 @@ CConsoleWindow::Create()
       return false;
     }
   }
-
   // create the child window
   CDocumentWindow::Create(
     AfxRegisterWndClass(0, LoadCursor(NULL, IDC_ARROW), NULL, AfxGetApp()->LoadIcon(IDI_SCRIPT)));
-
   int bar = 35;
-
   RECT Rect;
   GetClientRect(&Rect);
-
   int __cx__ = Rect.right - Rect.left;
   int __cy__ = Rect.bottom - Rect.top;
-
   // creates the script view
   __m_Editor__ = ::CreateWindow(
     "Scintilla",
@@ -100,7 +77,6 @@ CConsoleWindow::Create()
     (HMENU)ID_EDIT,
     AfxGetApp()->m_hInstance,
     0);
-
   __m_InputBar__ = ::CreateWindow(
     "Scintilla",
     "Source",
@@ -111,39 +87,26 @@ CConsoleWindow::Create()
     (HMENU)ID_EDIT,
     AfxGetApp()->m_hInstance,
     0);
-
   Initialize();
-
   ::ShowWindow(__m_Editor__, SW_SHOW);
   ::UpdateWindow(__m_Editor__);
-
   ::ShowWindow(__m_InputBar__, SW_SHOW);
   ::UpdateWindow(__m_InputBar__);
-
-
   m_Created = true;
-
   // update the size of the view
   OnSize(0, Rect.right - Rect.left, Rect.bottom - Rect.top);
-
   SendEditor(SCI_SETUNDOCOLLECTION, 0);
   SendEditor(SCI_EMPTYUNDOBUFFER);
   SendEditor(SCI_SETREADONLY, 1);
-
   // give the view focus
   ::SetFocus(__m_InputBar__);
-
 ///////////
-
   m_Scripter.Create();
-
 /////////
  
   return true;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CConsoleWindow::SetScriptStyles()
 {
@@ -158,22 +121,18 @@ CConsoleWindow::SetScriptStyles()
   static const COLORREF orange  = RGB(0xFF, 128, 0);
   static const COLORREF green = RGB(0, 0x80, 0x32);
   static const COLORREF darkgreen = RGB(0, 0x80, 0);
-
   // set default style
   SendEditor(SCI_STYLESETFORE, STYLE_DEFAULT, black);
   SendEditor(SCI_STYLESETBACK, STYLE_DEFAULT, white);
   SendEditor(SCI_STYLECLEARALL);
-
   // set all margins to zero width
   SendEditor(SCI_SETMARGINWIDTHN, 0, 0);
   SendEditor(SCI_SETMARGINWIDTHN, 1, 0);
   SendEditor(SCI_SETMARGINWIDTHN, 2, 0);
-
   // set all margin types
   SendEditor(SCI_SETMARGINTYPEN,  0, SC_MARGIN_NUMBER);
   SendEditor(SCI_SETMARGINWIDTHN, 1, SC_MARGIN_SYMBOL);
   SendEditor(SCI_SETMARGINWIDTHN, 2, SC_MARGIN_SYMBOL);
-
   // set wrap modes
   if (1) {
     SendEditor(SCI_SETWRAPMODE, SC_WRAP_WORD);
@@ -182,18 +141,14 @@ CConsoleWindow::SetScriptStyles()
     SendInputBar(SCI_SETWRAPMODE, SC_WRAP_WORD);
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CConsoleWindow::Initialize()
 {
   m_Fontface = Configuration::Get(KEY_SCRIPT_FONT_NAME);
   SetScriptStyles();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CConsoleWindow::SetStyle(
   int style,
@@ -211,9 +166,7 @@ CConsoleWindow::SetStyle(
     SendEditor(SCI_STYLESETFONT, style, (LPARAM)face);
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CConsoleWindow::GetEditorText(CString& text)
 {
@@ -226,9 +179,7 @@ CConsoleWindow::GetEditorText(CString& text)
     delete[] str;
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 CString
 CConsoleWindow::GetSelection()
 {
@@ -246,12 +197,9 @@ CConsoleWindow::GetSelection()
     delete[] str;
     return result;
   }
-
   return "";
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CConsoleWindow::OnSize(UINT type, int cx, int cy)
 {
@@ -260,12 +208,9 @@ CConsoleWindow::OnSize(UINT type, int cx, int cy)
     ::MoveWindow(__m_Editor__,    0,        0,        cx, cy - bar, TRUE);
     ::MoveWindow(__m_InputBar__,  0,        cy - bar, cx, bar,      TRUE);
   }
-
   CDocumentWindow::OnSize(type, cx, cy);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CConsoleWindow::OnSetFocus(CWnd* old)
 {
@@ -274,9 +219,7 @@ CConsoleWindow::OnSetFocus(CWnd* old)
     ::SetFocus(__m_InputBar__);
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CConsoleWindow::OnPosChanged(NMHDR* nmhdr, LRESULT* result) {
   /*
@@ -286,26 +229,19 @@ CConsoleWindow::OnPosChanged(NMHDR* nmhdr, LRESULT* result) {
   SetLineNumber(line);
   */
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CConsoleWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
-
   SCNotification* notify = (SCNotification*)nmhdr;
   if (nmhdr->hwndFrom == __m_InputBar__) {
     if (!m_script_running && notify->ch == '\n') {
-
       int line = 0;
       int len = SendInputBar(SCI_LINELENGTH, (WPARAM) line);
-
       if (len >= 0 && len < 512) {
         char buffer[512] = {0};
         int offset = 0;
-
         if (len > 0) {
           len = SendInputBar(SCI_GETLINE, (LPARAM) line, (WPARAM) buffer);
-
           if (len >= 2) {
             if (buffer[len + offset - 2] == '\r' || buffer[len + offset - 2] == '\n') {
               buffer[len + offset - 2] = '\0';
@@ -319,13 +255,11 @@ CConsoleWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
             }
           }
         }
-
         SendInputBar(SCI_SETTARGETSTART, SendInputBar(SCI_POSITIONFROMLINE, 0));
         SendInputBar(SCI_SETTARGETEND,   SendInputBar(SCI_POSITIONFROMLINE, 1));
         SendInputBar(SCI_REPLACETARGET, 0, (WPARAM)"");
         SendInputBar(SCI_GOTOPOS, SendInputBar(SCI_GETTEXTLENGTH));
         SendInputBar(SCI_EMPTYUNDOBUFFER);
-
         if (strlen(buffer) >= 1) {
           EvaluateString(buffer);
         }
@@ -333,9 +267,7 @@ CConsoleWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
     }
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CConsoleWindow::OnCopy()
 {
@@ -347,9 +279,7 @@ CConsoleWindow::OnCopy()
     SendInputBar(SCI_COPY);
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CConsoleWindow::OnPaste()
 {
@@ -361,14 +291,10 @@ CConsoleWindow::OnPaste()
     SendInputBar(SCI_PASTE);
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CConsoleWindow::OnToolChanged(UINT id, int tool_index) {
-
 }
-
 BOOL
 CConsoleWindow::IsToolAvailable(UINT id)
 {
@@ -393,23 +319,17 @@ CConsoleWindow::IsToolAvailable(UINT id)
       }
     break;
   }
-
   return available;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 DWORD WINAPI
 CConsoleWindow::ThreadRoutine(LPVOID parameter)
 {
   if (!s_ConsoleWindow)
     return 0;
-
   if (!s_ConsoleWindow->m_Scripter.rt || !s_ConsoleWindow->m_Scripter.cx || !s_ConsoleWindow->m_Scripter.global)
     return 0;
-
   sCompileError error; error.m_TokenLine = -1;
-
   bool show_message = true;
   if (strlen(s_ConsoleWindow->m_Scripter.m_Script) > strlen("var ")
     && memcmp(s_ConsoleWindow->m_Scripter.m_Script, "var ", strlen("var ")) == 0) {
@@ -417,52 +337,39 @@ CConsoleWindow::ThreadRoutine(LPVOID parameter)
   }
  
   bool has_error = !s_ConsoleWindow->m_Scripter.__VerifyScript__(NULL, error);
-
   if (!error.m_Message.empty()) {
     // "var x;" shouldn't print 'undefined'...
     if (!show_message && error.m_Message != "undefined")
       show_message = true;
   }
-
   if (s_ConsoleWindow && IsWindow(s_ConsoleWindow->m_hWnd)) {
     s_ConsoleWindow->SetCaption("Javascript Console");
   }
-
   if (show_message) {
     if (s_ConsoleWindow) {
       s_ConsoleWindow->AddString(error.m_Message.c_str());
     }
   }
-
   if (s_ConsoleWindow) {
     s_ConsoleWindow->m_script_running = false;
   }
-
   return 0;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CConsoleWindow::EvaluateString(const char* string)
 {
   if (m_script_running)
     return;
-
   m_script_running = true;
-
   SetCaption("Javascript Console [running]");
-
   if (!m_Scripter.SetScript(string)) {
     m_script_running = false;
     return;
   }
-
   DWORD thread_id;
   if (CreateThread(NULL, 0, ThreadRoutine, (LPVOID) NULL, 0, &thread_id) == NULL) {
     m_script_running = false;
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-

@@ -63,8 +63,21 @@ int KeyStringToKeyCode(const char* key_string)
         case '8': return KEY_8;
         case '9': return KEY_9;
       }
-
       return -1;
+    }
+
+    if (strlen(key_string) == strlen("KEY_NUM_X"))
+    {
+      if (strcmp(key_string, "KEY_NUM_0") == 0) return KEY_NUM_0;
+      if (strcmp(key_string, "KEY_NUM_1") == 0) return KEY_NUM_1;
+      if (strcmp(key_string, "KEY_NUM_2") == 0) return KEY_NUM_2;
+      if (strcmp(key_string, "KEY_NUM_3") == 0) return KEY_NUM_3;
+      if (strcmp(key_string, "KEY_NUM_4") == 0) return KEY_NUM_4;
+      if (strcmp(key_string, "KEY_NUM_5") == 0) return KEY_NUM_5;
+      if (strcmp(key_string, "KEY_NUM_6") == 0) return KEY_NUM_6;
+      if (strcmp(key_string, "KEY_NUM_7") == 0) return KEY_NUM_7;
+      if (strcmp(key_string, "KEY_NUM_8") == 0) return KEY_NUM_8;
+      if (strcmp(key_string, "KEY_NUM_9") == 0) return KEY_NUM_9;
     }
 
     if (strcmp(key_string, "KEY_UP")  == 0) return KEY_UP;
@@ -84,7 +97,6 @@ int KeyStringToKeyCode(const char* key_string)
     if (strcmp(key_string, "KEY_PERIOD") == 0) return KEY_PERIOD;
     if (strcmp(key_string, "KEY_SLASH")  == 0) return KEY_SLASH;
     if (strcmp(key_string, "KEY_BACKSLASH") == 0) return KEY_BACKSLASH;
-
   }
 
   return -1;

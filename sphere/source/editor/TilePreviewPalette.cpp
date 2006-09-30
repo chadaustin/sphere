@@ -4,15 +4,11 @@
 #include "resource.h"
 
 BEGIN_MESSAGE_MAP(CTilePreviewPalette, CPaletteWindow)
-
   ON_WM_PAINT()   
   ON_WM_RBUTTONUP()
 
 END_MESSAGE_MAP()
-
-
 ////////////////////////////////////////////////////////////////////////////////
-
 CTilePreviewPalette::CTilePreviewPalette(CDocumentWindow* owner, CImage32 image)
 : CPaletteWindow(owner, "Tile Preview",
   Configuration::Get(KEY_TILE_PREVIEW_RECT),
@@ -24,7 +20,6 @@ CTilePreviewPalette::CTilePreviewPalette(CDocumentWindow* owner, CImage32 image)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CTilePreviewPalette::OnImageChanged(CImage32 image)
 {
@@ -43,7 +38,6 @@ CTilePreviewPalette::OnImageChanged(CImage32 image)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CTilePreviewPalette::Destroy()
 {
@@ -61,7 +55,6 @@ CTilePreviewPalette::Destroy()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTilePreviewPalette::OnPaint()
 {
@@ -81,28 +74,25 @@ CTilePreviewPalette::OnPaint()
   int blit_height = m_BlitImage->GetHeight();
 
   // draw black rectangle around tile
-  if (1) {
-    RECT rect = ClientRect;
-    rect.left += (blit_width * 3);
-    dc.FillRect(&rect, CBrush::FromHandle((HBRUSH)GetStockObject(WHITE_BRUSH)));
-    rect.left -= (blit_width * 3);
-    rect.top += (blit_height * 3);
-    dc.FillRect(&rect, CBrush::FromHandle((HBRUSH)GetStockObject(WHITE_BRUSH)));
-    rect.top -= (blit_height * 3);
-  }
+  RECT rect = ClientRect;
+  rect.left += (blit_width * 3);
+  dc.FillRect(&rect, CBrush::FromHandle((HBRUSH)GetStockObject(WHITE_BRUSH)));
+  rect.left -= (blit_width * 3);
+  rect.top += (blit_height * 3);
+  dc.FillRect(&rect, CBrush::FromHandle((HBRUSH)GetStockObject(WHITE_BRUSH)));
+  rect.top -= (blit_height * 3);
 
-	for (int ty = 0; ty < 3; ty++)
+  for (int ty = 0; ty < 3; ty++)
   {
    	for (int tx = 0; tx < 3; tx++)
     {
-		  // draw the frame
-		  // fill the DIB section
+      // draw the frame
+      // fill the DIB section
       BGRA* pixels = (BGRA*)m_BlitImage->GetPixels();
       
       // make a checkerboard
       for (int iy = 0; iy < blit_height; iy++) {
-        for (int ix = 0; ix < blit_width; ix++)
-        {
+        for (int ix = 0; ix < blit_width; ix++) {
           pixels[iy * blit_width + ix] = 
             ((ix / 8 + iy / 8) % 2 ?
               CreateBGRA(255, 255, 255, 255) :
@@ -114,12 +104,12 @@ CTilePreviewPalette::OnPaint()
       int frame_width  = m_Image.GetWidth()  < blit_width  ? m_Image.GetWidth()  : blit_width;
       int frame_height = m_Image.GetHeight() < blit_height ? m_Image.GetHeight() : blit_height;
 
-		  const RGBA* source = m_Image.GetPixels();
+      const RGBA* source = m_Image.GetPixels();
       for (int iy = 0; iy < frame_height; iy++) {
         for (int ix = 0; ix < frame_width; ix++)
         {
-          int ty = iy / m_ZoomFactor.GetZoomFactor();
-          int tx = ix / m_ZoomFactor.GetZoomFactor();
+          int ty = (int) (iy / m_ZoomFactor.GetZoomFactor());
+          int tx = (int) (ix / m_ZoomFactor.GetZoomFactor());
    
           int t = (ty * m_Image.GetWidth()) + tx;    
           int d = (iy * blit_width) + ix;
@@ -133,17 +123,16 @@ CTilePreviewPalette::OnPaint()
       
       // blit the frame
       CDC* tile = CDC::FromHandle(m_BlitImage->GetDC());
-      dc.BitBlt(ClientRect.left + (tx * m_Image.GetWidth())  * m_ZoomFactor.GetZoomFactor(),
-			          ClientRect.top  + (ty * m_Image.GetHeight()) * m_ZoomFactor.GetZoomFactor(),
+      dc.BitBlt((int) (ClientRect.left + (tx * m_Image.GetWidth())  * m_ZoomFactor.GetZoomFactor()),
+                (int) (ClientRect.top  + (ty * m_Image.GetHeight()) * m_ZoomFactor.GetZoomFactor()),
                 blit_width,
-						  	blit_height,
+                blit_height,
                 tile, 0, 0, SRCCOPY);
     }
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTilePreviewPalette::OnRButtonUp(UINT flags, CPoint point)
 {
@@ -160,7 +149,6 @@ CTilePreviewPalette::OnRButtonUp(UINT flags, CPoint point)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CTilePreviewPalette::OnZoom(double zoom) {
   m_ZoomFactor.SetZoomFactor(zoom);
@@ -168,18 +156,17 @@ CTilePreviewPalette::OnZoom(double zoom) {
   if (m_BlitImage != NULL)
     delete m_BlitImage;
 
-	int width  = m_Image.GetWidth() * m_ZoomFactor.GetZoomFactor();
-	int height = m_Image.GetHeight() * m_ZoomFactor.GetZoomFactor(); 
+  int width  = (int) (m_Image.GetWidth() * m_ZoomFactor.GetZoomFactor());
+  int height = (int) (m_Image.GetHeight() * m_ZoomFactor.GetZoomFactor()); 
 
   m_BlitImage = new CDIBSection(width, height, 32);
-
-	RECT rect;
-	rect.left = 0;
-	rect.top  = 0;
-	rect.right = width;
-	rect.bottom = height;
-	/*AdjustWindowRect(&rect, GetStyle(), FALSE);
-	SetWindowPos(NULL, 0, 0, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER);*/
+  RECT rect;
+  rect.left = 0;
+  rect.top  = 0;
+  rect.right = width;
+  rect.bottom = height;
+  /*AdjustWindowRect(&rect, GetStyle(), FALSE);
+  SetWindowPos(NULL, 0, 0, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER);*/
 
   Invalidate();
 }

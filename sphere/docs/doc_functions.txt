@@ -1,8 +1,10 @@
 Sphere function documentation
+--------
+
+This document is to be superceded by development/api.txt.
 
 
 Go here for language specification: http://www.mozilla.org/js/language/
-
 
 Descriptions by Rizen
 Many thanks!

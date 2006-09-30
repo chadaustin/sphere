@@ -4,13 +4,9 @@
 #include "../common/str_util.hpp"
 
 BEGIN_MESSAGE_MAP(CZoneEditDialog, CDialog)
-
   ON_BN_CLICKED(IDC_CHECK_SYNTAX, OnCheckSyntax)
-
 END_MESSAGE_MAP()
-
 ////////////////////////////////////////////////////////////////////////////////
-
 static inline std::string itos(int i)
 {
   char s[20];
@@ -19,7 +15,6 @@ static inline std::string itos(int i)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 CZoneEditDialog::CZoneEditDialog(sMap::sZone& zone, int zone_id, sMap* map)
 : CDialog(IDD_ZONE_EDIT)
 , m_Zone(zone)
@@ -29,7 +24,6 @@ CZoneEditDialog::CZoneEditDialog(sMap::sZone& zone, int zone_id, sMap* map)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 BOOL
 CZoneEditDialog::OnInitDialog()
 {
@@ -45,9 +39,7 @@ CZoneEditDialog::OnInitDialog()
   }
 
   char string[1024];
-
   SetDlgItemInt(IDC_ZONE_ID, m_ZoneIndex, FALSE);
-
   sprintf (string, "%d", m_Zone.x1);
   SetDlgItemText(IDC_ZONE_X, string);
 
@@ -64,7 +56,6 @@ CZoneEditDialog::OnInitDialog()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CZoneEditDialog::OnOK()
 {
@@ -75,11 +66,8 @@ CZoneEditDialog::OnOK()
   
   m_Zone.layer = SendDlgItemMessage(IDC_LAYER, CB_GETCURSEL);
 
-
   bool floating_point, percentage;
-
   int x, y, w, h;
-
   CString string;
   GetDlgItemText(IDC_ZONE_X, string);
 
@@ -92,7 +80,6 @@ CZoneEditDialog::OnOK()
   if (x < 0) { MessageBox("Invalid zone x"); return; }
 
   GetDlgItemText(IDC_ZONE_Y, string);
-
   if (IsInvalidNumber(string, floating_point, percentage) || floating_point || percentage) {
     MessageBox("Invalid number format"); return;
   }
@@ -101,7 +88,6 @@ CZoneEditDialog::OnOK()
   if (y < 0) { MessageBox("Invalid zone y"); return; }
 
   GetDlgItemText(IDC_ZONE_WIDTH, string);
-
   if (IsInvalidNumber(string, floating_point, percentage) || floating_point || percentage) {
     MessageBox("Invalid number format");
     return;
@@ -111,7 +97,6 @@ CZoneEditDialog::OnOK()
   if (w <= 0) { MessageBox("Invalid zone width"); return; }
 
   GetDlgItemText(IDC_ZONE_HEIGHT, string);
-
   if (IsInvalidNumber(string, floating_point, percentage) || floating_point || percentage) {
     MessageBox("Invalid number format"); return;
   }
@@ -128,7 +113,6 @@ CZoneEditDialog::OnOK()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CZoneEditDialog::OnCheckSyntax()
 {

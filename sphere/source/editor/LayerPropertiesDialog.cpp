@@ -2,31 +2,25 @@
 #include "resource.h"
 #include "../common/Map.hpp"
 
-
 const int MIN_RANGE = -160;
 const int MAX_RANGE = 160;
 const int PAGE_SIZE = 10;
 
-
 BEGIN_MESSAGE_MAP(CLayerPropertiesDialog, CDialog)
-
   ON_BN_CLICKED(IDC_HAS_PARALLAX, OnEnableParallax)
   ON_WM_HSCROLL()
   
 END_MESSAGE_MAP()
 
-
 static inline int FloatToScrollValue(float32 f) {
-  return (f + 0.05) * 10; // sadly, there is roundoff error
+  return (int) ((f + 0.05) * 10); // sadly, there is roundoff error
 }
 
 static inline float32 ScrollValueToFloat(int value) {
   return (float32)value / 10;
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
-
 CLayerPropertiesDialog::CLayerPropertiesDialog(sLayer& layer, bool parallax_allowed)
 : CDialog(IDD_LAYER_PROPERTIES)
 , m_Layer(layer)
@@ -35,7 +29,6 @@ CLayerPropertiesDialog::CLayerPropertiesDialog(sLayer& layer, bool parallax_allo
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 BOOL
 CLayerPropertiesDialog::OnInitDialog()
 {
@@ -79,7 +72,6 @@ CLayerPropertiesDialog::OnInitDialog()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CLayerPropertiesDialog::OnOK()
 {
@@ -91,32 +83,26 @@ CLayerPropertiesDialog::OnOK()
   int height = GetDlgItemInt(IDC_HEIGHT);
 
   if (width < 1 || width > 4096 ||
-      height < 1 || height > 4096
-  ) {
+      height < 1 || height > 4096) {
     MessageBox("width and height must be between 1 and 4096");
     return;
   }
 
   m_Layer.Resize(width, height);
-
   m_Layer.SetReflective(IsDlgButtonChecked(IDC_REFLECTIVE) == BST_CHECKED);
-
   // close the dialog
   CDialog::OnOK();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CLayerPropertiesDialog::OnEnableParallax()
 {
   m_Layer.EnableParallax(!m_Layer.HasParallax());
-
   UpdateParallaxEnabled();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CLayerPropertiesDialog::OnHScroll(UINT code, UINT pos, CScrollBar* sb)
 {
@@ -137,7 +123,6 @@ CLayerPropertiesDialog::OnHScroll(UINT code, UINT pos, CScrollBar* sb)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CLayerPropertiesDialog::UpdateParallaxEnabled()
 {
@@ -150,7 +135,6 @@ CLayerPropertiesDialog::UpdateParallaxEnabled()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CLayerPropertiesDialog::UpdateLabels()
 {

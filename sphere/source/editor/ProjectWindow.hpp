@@ -7,7 +7,6 @@
 #endif
 #endif
 
-
 #include <afxwin.h>
 #include <afxcmn.h>
 
@@ -33,7 +32,6 @@ public:
   BOOL DestroyWindow();
 
   void Update();
-
 private:
   afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
   afx_msg void OnSize(UINT type, int cx, int cy);
@@ -54,15 +52,12 @@ private:
   void __OnDoubleClick__(bool allow_expand);
 
   void SelectItemAtCursor();
-
 private:
   CMainWindow* m_MainWindow;
   CProject*    m_Project;
 
   CTreeCtrl m_TreeControl;
-
   DECLARE_MESSAGE_MAP()
 };
-
 
 #endif

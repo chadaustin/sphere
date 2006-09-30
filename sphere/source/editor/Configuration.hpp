@@ -18,25 +18,19 @@
 // If you want to store a new value in the configuration database, do this:
 // Configuration::Set(KEY_MY_DATA, true);
 
-
 #ifndef CONFIGURATION_HPP
 #define CONFIGURATION_HPP
-
 
 #include <windows.h>
 #include <string>
 
-
 // begin namespace
-
 // I had to put these in a non-class namespace so VC++ would accept these template functions...
 // I can't be a good programmer and put this in an object in case there needs to be more than one configuration.  ;_;
 // Down with VC++!  Long live gcc!
 namespace Configuration {
-
-
-    extern std::string ConfigurationFile;
-
+    
+	extern std::string ConfigurationFile;
 
     inline unsigned FromHex(char c) {
       if (c >= 'A' && c <= 'F') {
@@ -54,11 +48,10 @@ namespace Configuration {
       return 0;
     }
 
-
     // Retrieves a configuration setting
     // Usage:  var = Configuration::Get(KEY);
     template<typename T>
-    T::type Get(T /*key*/)
+    typename T::type Get(T /*key*/)
     {
       char str[8193];
       GetPrivateProfileString("editor", T::keyname, "", str, 8193, ConfigurationFile.c_str());
@@ -87,11 +80,10 @@ namespace Configuration {
       return (i >= 10 ? (char)('A' + i - 10) : (char)('0' + i));
     }
 
-
     // Sets a configuration setting
     // Usage:  Configuration::Set(KEY, value);
     template<typename T>
-    void Set(T /*key*/, T::type val)
+    void Set(T /*key*/, typename T::type val)
     {
       std::string hex;
       BYTE* data = (BYTE*)ToRaw(val);
@@ -104,37 +96,30 @@ namespace Configuration {
       delete[] data;
 
       if (WritePrivateProfileString("editor", T::keyname, hex.c_str(), ConfigurationFile.c_str()) == 0) {
-
       }
     }
     
 
-
     // WARNING! These functions/variables should not be used outside of this namespace
-
-
     // if I have a default implementation and a specialized implementation, the default implementation is never called
     // therefore, there are specialized implementations for everything...
     // Down with VC++!  Long live gcc!
 
     // *** GetTypeSize() ***
-
-    template<typename T> GetTypeSize(T t);
-
+    template<typename T> int GetTypeSize(T t);
     // GRAH, how many of these template problems will I find in one day?
     // these functions now have a worthless parameter like FromRaw does
-    inline int GetTypeSize<bool>(bool /*b = bool()*/) { return sizeof(bool); }
-    inline int GetTypeSize<unsigned char>(unsigned char /*uc = unsigned char()*/) { return sizeof(unsigned char); }
-    inline int GetTypeSize<int>(int /*i = int()*/) { return sizeof(int); }
-    inline int GetTypeSize<double>(double /*d = double()*/) { return sizeof(double); }
-    inline int GetTypeSize<std::string>(std::string /*s = std::string()*/) { return 4096; } // only supports up to 4096-1 characters
-    inline int GetTypeSize<WINDOWPLACEMENT>(WINDOWPLACEMENT /*wp = WINDOWPLACEMENT()*/) { return sizeof(WINDOWPLACEMENT); }
-    inline int GetTypeSize<RECT>(RECT /*w = RECT()*/) { return sizeof(RECT); }
+    template<> inline int GetTypeSize<bool>(bool /*b = bool()*/) { return sizeof(bool); }
+    template<> inline int GetTypeSize<unsigned char>(unsigned char /*uc = unsigned char()*/) { return sizeof(unsigned char); }
+    template<> inline int GetTypeSize<int>(int /*i = int()*/) { return sizeof(int); }
+    template<> inline int GetTypeSize<double>(double /*d = double()*/) { return sizeof(double); }
+	template<> inline int GetTypeSize<std::string>(std::string /*s = std::string()*/) { return 4096; } // only supports up to 4096-1 characters
+    template<> inline int GetTypeSize<WINDOWPLACEMENT>(WINDOWPLACEMENT /*wp = WINDOWPLACEMENT()*/) { return sizeof(WINDOWPLACEMENT); }
+    template<> inline int GetTypeSize<RECT>(RECT /*w = RECT()*/) { return sizeof(RECT); }
     
     // *** ToRaw() ***
 
     template<typename T> void* ToRaw(T val);
-
     template<>
     inline void* ToRaw<bool>(bool val)
     {
@@ -170,9 +155,11 @@ namespace Configuration {
     template<>
     inline void* ToRaw<std::string>(std::string val)
     {
+
         int size = GetTypeSize<std::string>(std::string());
         char* str = new char[size];
         if (str) {
+
           memset(str, 0, size);
           strcpy(str, val.c_str());
         }
@@ -196,9 +183,7 @@ namespace Configuration {
     }
 
     // *** FromRaw() ***
-
     template<typename T> T FromRaw(void* raw, T t = T());
-
     // due to yet *another* bug in VC++, I added an extra parameter to these functions so they can be looked up properly
     // Down with VC++!  Long live gcc!
 
@@ -258,6 +243,4 @@ namespace Configuration {
 }
 
 // end namespace
-
-
 #endif

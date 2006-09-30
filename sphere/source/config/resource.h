@@ -28,9 +28,8 @@
 #define IDC_KEYCOMBO_DOWN               1070
 #define IDC_KEYCOMBO_LEFT               1071
 #define IDC_KEYCOMBO_RIGHT              1072
-
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        116

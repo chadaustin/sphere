@@ -1,27 +1,18 @@
 #ifndef FILE_DIALOGS_HPP
 #define FILE_DIALOGS_HPP
-
-
 // identifier too long
 #pragma warning(disable : 4786)
-
-
 #include <string>
 #include <afxdlgs.h>
 #include "FileTypes.hpp"
-
-
 enum EFileDialogMode {
   FDM_OPEN        = 0x01,
   FDM_SAVE        = 0x02,
   FDM_MAYNOTEXIST = 0x04,
   FDM_MULTISELECT = 0x08,
 };
-
-
 // fix VC++ internal compiler error  ;_;
 // can't just pass integers into the template class
-
 #define MAKE_FILETYPE(type, i)  \
   struct type {                 \
     enum { ft = i };            \
@@ -39,7 +30,6 @@ enum EFileDialogMode {
   MAKE_FILETYPE(FDT_PACKAGES,     GT_PACKAGES)
 
 #undef MAKE_FILETYPE
-
 template<typename filetype>
 class CSphereFileDialog : public CFileDialog
 {
@@ -51,6 +41,7 @@ public:
       NULL,
       OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | 
         (mode & FDM_OPEN && !(mode & FDM_MAYNOTEXIST) ? OFN_FILEMUSTEXIST : 0) |
+
         (mode & FDM_MULTISELECT ? OFN_ALLOWMULTISELECT : 0),
       GenerateFilter(mode),
       NULL
@@ -60,22 +51,18 @@ public:
       m_ofn.lpstrTitle = title;
     }
   }
-
   ~CSphereFileDialog()
   {
     delete[] m_filter;
   }
-
   virtual int DoModal()
   {
     // set the current directory to be the initial one
     char path[MAX_PATH];
     GetCurrentDirectory(MAX_PATH, path);
     m_ofn.lpstrInitialDir = path;
-
     return CFileDialog::DoModal();
   }
-
 private:
   const char* GenerateFilter(int mode)
   {
@@ -88,24 +75,19 @@ private:
         filter += GenerateSubTypeFilter(mode, i);
       }
     }
-
     filter += "All Files (*.*)|*.*||";
     
     m_filter = new char[filter.length() + 1];
     if (m_filter == NULL)
       return NULL;
-
     strcpy(m_filter, filter.c_str());
     return m_filter;
   }
-
-
   static std::string GenerateOverallFilter(int mode)
   {
     // get all extensions
     std::vector<std::string> extensions;
     FTL.GetFileTypeExtensions(filetype::ft, (mode & FDM_SAVE ? true : false), extensions);
-
     // make a semicolon-separated string
     std::string filters;
     for (unsigned int i = 0; i < extensions.size(); i++) {
@@ -114,14 +96,11 @@ private:
         filters += ";";
       }
     }
-
     std::string filter = FTL.GetFileTypeLabel(filetype::ft, (mode & FDM_SAVE ? true : false));
     filter += " (" + filters + ")";
     filter += "|" + filters + "|";
     return filter;
   }
-
-
   static std::string GenerateSubTypeFilter(int mode, int sub_type)
   {
     // get all extensions
@@ -129,7 +108,6 @@ private:
     FTL.GetSubTypeExtensions(filetype::ft, sub_type, (mode & FDM_SAVE ? true : false), extensions);
     if (extensions.size() == 0)
       return "";
-
     // make a semicolon-separated string
     std::string filters;
     for (unsigned int i = 0; i < extensions.size(); i++) {
@@ -138,19 +116,14 @@ private:
         filters += ";";
       }
     }
-
     std::string filter = FTL.GetSubTypeLabel(filetype::ft, sub_type, (mode & FDM_SAVE ? true : false));
     filter += " (" + filters + ")";
     filter += "|" + filters + "|";
-
     return filter;
   }
-
 private:
   char* m_filter;
 };
-
-
 #define DEFINE_FILE_DIALOG(name, filetype) \
 typedef CSphereFileDialog<filetype> name;
 
@@ -166,6 +139,4 @@ typedef CSphereFileDialog<filetype> name;
   DEFINE_FILE_DIALOG(CPackageFileDialog,     FDT_PACKAGES)
 
 #undef DEFINE_FILE_DIALOG
-
-
 #endif

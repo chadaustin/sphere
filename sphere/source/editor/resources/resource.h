@@ -499,7 +499,7 @@
 #define ID_SCRIPT_OPTIONS_TOGGLE_LINE_NUMBERS 40551
 #define ID_HELP_LOCALDOCUMENTATION      40552
 #define ID_HELP_AEGISKNIGHTSSITE        40553
-#define ID_HELP_SPHEREFAQ               40554
+#define ID_HELP_SPHERICALWIKI           40554
 #define ID_IMAGE_RESAMPLE               40555
 #define ID_IMAGEVIEW_SLIDE_OTHER        40556
 #define ID_MAP_SLIDE_OTHER              40557
@@ -743,6 +743,8 @@
 #define ID_TILESETVIEW_MOVE_OTHER       40847
 #define ID_FILE_REDO                    40849
 #define ID_FILE_IMPORT_BITMAPTORWS      50505
+#define ID_HELP_LOCAL_TUTORIAL          40851
+#define ID_HELP_GETTINGSTARTED          40852
 
 // Next default values for new objects
 // 
@@ -755,3 +757,4 @@
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
+

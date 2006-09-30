@@ -3,21 +3,15 @@
 #include "Editor.hpp"
 #include "Configuration.hpp"
 #include "Keys.hpp"
-
 static std::string s_LanguageName = "English";
 static CConfigFile s_LanguageConfig;
-
 ////////////////////////////////////////////////////////////////////////////////
-
 const char* GetLanguage() {
   return s_LanguageName.c_str();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void SetLanguage(const char* language) {
   s_LanguageName = language;
-
   if (1) {
     char directory[MAX_PATH] = {0};
     GetCurrentDirectory(MAX_PATH, directory);
@@ -27,12 +21,9 @@ void SetLanguage(const char* language) {
       SetCurrentDirectory(directory);
     }
   }
-
   Configuration::Set(KEY_LANGUAGE, language);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 const char* TranslateString(const char* string)
 {
   const char* language = GetLanguage();
@@ -42,12 +33,9 @@ const char* TranslateString(const char* string)
   if (strcmp(language, "English") == 0) {
     return string;
   }
-
   return s_LanguageConfig.ReadString(language, string, string).c_str();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void TranslateMenu(HMENU menu)
 {
   const char* language = GetLanguage();
@@ -57,7 +45,6 @@ void TranslateMenu(HMENU menu)
   if (strcmp(language, "English") == 0) {
     return;
   }
-
   int count = GetMenuItemCount(menu);
   for (int i = 0; i < count; i++)
   {
@@ -67,7 +54,6 @@ void TranslateMenu(HMENU menu)
       ModifyMenu(menu, i, MF_BYPOSITION, GetMenuItemID(menu, i), TranslateString(buffer));
     }
   }
-
   for (int i = 0; i < count; i++) {
     HMENU sub_menu = GetSubMenu(menu, i);
     if (sub_menu != NULL) {
@@ -75,9 +61,7 @@ void TranslateMenu(HMENU menu)
     }
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void TranslateDialog(HWND hWnd)
 {
   const char* language = GetLanguage();
@@ -87,7 +71,6 @@ void TranslateDialog(HWND hWnd)
   if (strcmp(language, "English") == 0) {
     return;
   }
-
   for (int i = 0; i < 10; i++)
   {
     char buffer[1024] = {0};
@@ -97,5 +80,4 @@ void TranslateDialog(HWND hWnd)
     }
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////

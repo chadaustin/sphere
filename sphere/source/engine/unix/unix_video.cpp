@@ -103,64 +103,74 @@ bool SetWindowTitle(const char* text) {
 
   This is where all the fun begins.
   If this is the first time that SwitchResolution is called, SDL is initialized.
+  
+  Tung: Renamed fullscreen to fullscr. Referential integrity is fun!
  */
-bool SwitchResolution (int x, int y, bool fullscreen, bool update_cliprect, int scalex) {
+bool SwitchResolution (int x, int y, bool fullscr, bool update_cliprect, int scalex) {
   static bool initialized = false;
   int driverflags;
-
-  // The true width and height for scaling
-  int tx, ty;
-
+  int tx, ty; // The true width and height for scaling
   SPHERECONFIG config;
+
   LoadSphereConfig(&config, (GetSphereDirectory() + "/engine.ini").c_str());
 
   // Isn't this passed as an argument yet then try reading it fuzzy from config file
-  if(config.scaling == "")
-	scalex = NORMAL;
-  if(config.scaling == "scale2x")
-	scalex = SCALE2;
-  else if(config.scaling == "scale3x")
-	scalex = SCALE3;
+  if (config.scaling == "")
+	 scalex = NORMAL;
+  if (config.scaling == "scale2x")
+	 scalex = SCALE2;
+  else if (config.scaling == "scale3x")
+	 scalex = SCALE3;
   else
-	scalex = NORMAL;
+	 scalex = NORMAL;
 
   bool filtering = config.filter;
   bool showcurs  = config.showcursor;
 
-  // Override.
-  fullscreen = config.fullscreen;
+  // Supported "drivers": sdl16 (16-bit) and sdl32 (32-bit)
+  int drvdepth;
+  if (config.videodriver == "sdl16")
+    drvdepth = 16;
+  else if (config.videodriver == "sdl32")
+    drvdepth = 32;
+  else
+    drvdepth = 32;
 
   // Do some pre-initialisation
-  switch(scalex)
+  switch (scalex)
   {
-   default:
-    break;
-   case SCALE2:
-    tx = x * 2;
-    ty = y * 2;
-    break;
-   case SCALE3:
-    tx = x * 3;
-    ty = y * 3;
-    break;
+    case SCALE2:
+      tx = x * 2;
+      ty = y * 2;
+      break;
+    case SCALE3:
+      tx = x * 3;
+      ty = y * 3;
+      break;
+    default:
+      break;
   }
 
   // Set the global variable
   scaling = scalex;
 
   // We 'need' a custom buffer so we can filter.
-  if(scaling == 0 && filtering)
+  //if(scaling == 0 && filtering)
+  if (scaling == 0)
   {
-   scaling = SCALE1;
-   // Enable creation of custom software plane double buffering for filtering (evil)
-   scalex = 1;
-   tx = x;
-   ty = y;
+    scaling = SCALE1;
+    // Enable creation of custom software plane double buffering for filtering (evil)
+    scalex = 1;
+    tx = x;
+    ty = y;
   }
 
   if (!initialized) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
+
+    // Tung: Load fullscreen preference from file.
+    fullscr = fullscreen = config.fullscreen;
 
     // Clean up on exit, exit on window close and interrupt
     atexit(SDL_Quit);
@@ -169,62 +179,48 @@ bool SwitchResolution (int x, int y, bool fullscreen, bool update_cliprect, int 
     initialized = true;
 
     SDL_InitSubSystem(SDL_INIT_JOYSTICK);
-
-    if (1) {
-      if (SDL_WasInit(SDL_INIT_JOYSTICK)) {
-        printf("Joysticks are initialized.\n");
-        printf("There are %d joysticks attached.\n", SDL_NumJoysticks());
-        for (int i = 0; i < SDL_NumJoysticks(); i++) {
-          printf("Joystick[%d].name = %s\n", i, SDL_JoystickName(i));
-        }
-      }
-      else {
-        printf("Joysticks are not initialized.\n");
+    
+    // Tung: Redundant if (1) removed.
+    if (SDL_WasInit(SDL_INIT_JOYSTICK)) {
+      printf("Joysticks are initialized.\n");
+      printf("There are %d joysticks attached.\n", SDL_NumJoysticks());
+      for (int i = 0; i < SDL_NumJoysticks(); i++) {
+        printf("Joystick[%d].name = %s\n", i, SDL_JoystickName(i));
       }
     }
-
+    else {
+      printf("Joysticks are not initialized.\n");
+    }
   } else {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
-
     if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
-
+    
     // keep the window title as what it was
     SetWindowTitle(GetWindowTitle().c_str());
   }
-  if (scalex)
-  {
-   if (fullscreen)
-   {
-     scalen = SDL_SetVideoMode(tx,ty, 32, SDL_SWSURFACE | SDL_FULLSCREEN | SDL_DOUBLEBUF);
-     if(filtering)
-      screen = SDL_CreateRGBSurface(SDL_HWSURFACE , x, y, 32, config.r, config.g, config.b, config.a);
-     else
-      screen = SDL_CreateRGBSurface(SDL_HWSURFACE , x, y, 32, 0, 0, 0, 0);
-   }
-   else
-   {
-     scalen = SDL_SetVideoMode(tx,ty, 32, SDL_SWSURFACE | SDL_ANYFORMAT | SDL_DOUBLEBUF);
-     if(filtering)
-      screen = SDL_CreateRGBSurface(SDL_HWSURFACE , x, y, 32, config.r, config.g, config.b, config.a);
-     else
-      screen = SDL_CreateRGBSurface(SDL_HWSURFACE , x, y, 32, 0, 0, 0, 0);
-   }
-   if (scalen == NULL)
-    return false;
-   if (screen == NULL)
-    return false;
-
-  }
+  
+  /*if (scalex) {*/
+  if (fullscr)
+    //scalen = SDL_SetVideoMode(tx, ty, drvdepth, SDL_SWSURFACE | SDL_FULLSCREEN | SDL_DOUBLEBUF);
+    scalen = SDL_SetVideoMode(tx, ty, drvdepth, SDL_SWSURFACE | SDL_FULLSCREEN);
   else
-  {
-   if (fullscreen)
-     screen = SDL_SetVideoMode(x,y, 32, SDL_DOUBLEBUF | SDL_FULLSCREEN);
-   else
-     screen = SDL_SetVideoMode(x,y, 32, SDL_DOUBLEBUF | SDL_ANYFORMAT);
-   if (screen == NULL)
+    //scalen = SDL_SetVideoMode(tx, ty, drvdepth, SDL_SWSURFACE | SDL_ANYFORMAT | SDL_DOUBLEBUF);
+    scalen = SDL_SetVideoMode(tx, ty, drvdepth, SDL_SWSURFACE);
+  if (filtering)
+    screen = SDL_CreateRGBSurface(SDL_HWSURFACE, x, y, 32, config.r, config.g, config.b, config.a);
+  else
+    screen = SDL_CreateRGBSurface(SDL_HWSURFACE, x, y, 32, 0, 0, 0, 0);
+  if (scalen == NULL || screen == NULL)
     return false;
-  }
+  /*} else {
+    if (fullscr)
+      screen = SDL_SetVideoMode(x,y, 32, SDL_DOUBLEBUF | SDL_FULLSCREEN);
+    else
+      screen = SDL_SetVideoMode(x,y, 32, SDL_DOUBLEBUF | SDL_ANYFORMAT);
+    if (screen == NULL)
+      return false;
+  }*/
 
   SDL_ShowCursor(showcurs);
 
@@ -360,6 +356,79 @@ void GetClippingRectangle(int* x, int* y, int* w, int* h) {
   *h = ClippingRectangle.bottom - ClippingRectangle.top + 1;
 }
 
+/* \brief	Tung: Blits a surface to another surface, scaled.
+ * 			For FlipScreen().
+ * 
+ * \param	src	The source surface.
+ * \param	dest	The destination surface.
+ * \param	sc		Scale factor.
+ */
+void BlitScaleSurface (SDL_Surface *src, SDL_Surface *dest, int sc) {
+	SDL_LockSurface(src);
+	SDL_LockSurface(dest);
+	
+	// Tung: Most of this is for 32- to 16-bit conversion optimisation.
+	int i, j, k, dpos, spos;
+	int h, w, sw;
+	Uint16 *d16;
+	Uint32 *s32, *d32;
+	SDL_PixelFormat *sf, *df;
+	Uint32 srm, sgm, sbm, sam, drm, dgm, dbm, dam;
+	Uint8 srs, sgs, sbs, sas, drs, dgs, dbs, das;
+	Uint8 srl, sgl, sbl, sal, drl, dgl, dbl, dal;
+	Uint32 spixel;
+	Uint16 dpixel;
+	
+	s32 = (Uint32 *) src->pixels;
+	sw = src->w;
+	switch (dest->format->BitsPerPixel)
+	{
+		case 16:
+			d16 = (Uint16 *) dest->pixels;
+			sf = src->format; df = dest->format;
+			srm = sf->Rmask; sgm = sf->Gmask; sbm = sf->Bmask; sam = sf->Amask;
+			drm = df->Rmask; dgm = df->Gmask; dbm = df->Bmask; dam = df->Amask;
+			srs = sf->Rshift; sgs = sf->Gshift; sbs = sf->Bshift; sas = sf->Ashift;
+			drs = df->Rshift; dgs = df->Gshift; dbs = df->Bshift; das = df->Ashift;
+			srl = sf->Rloss; sgl = sf->Gloss; sbl = sf->Bloss; sal = sf->Aloss;
+			drl = df->Rloss; dgl = df->Gloss; dbl = df->Bloss; dal = df->Aloss;
+			for (j = 0, h = dest->h, w = dest->w; j < h; ++j)
+				for (i = 0; i < w; )
+				{
+					// Tung: Ugh, translation from 32-bit to 16-bit
+					dpos = j * w + i;
+					dpixel = 0; // = d16[dpos];
+					spixel = s32[j / sc * sw + i / sc];
+					
+					dpixel |= ((((spixel & srm) >> srs) << srl) >> drl) << drs;
+					dpixel |= ((((spixel & sgm) >> sgs) << sgl) >> dgl) << dgs;
+					dpixel |= ((((spixel & sbm) >> sbs) << sbl) >> dbl) << dbs;
+					dpixel |= ((((spixel & sam) >> sas) << sal) >> dal) << das;
+					
+					for (k = 0; k < sc; ++k, ++i)
+						d16[dpos + k] = dpixel;
+				}
+			break;
+		
+		case 32:
+			d32 = (Uint32 *) dest->pixels;
+			for (j = 0, h = dest->h, w = dest->w; j < h; ++j)
+			{
+				for (i = 0; i < w; )
+				{
+					dpos = j * w + i;
+					spos = j / sc * sw + i / sc;
+					for (k = 0; k < sc; ++k, ++i)
+						d32[dpos + k] = s32[spos];
+				}
+			}
+			break;
+	}
+	
+	SDL_UnlockSurface(dest);
+	SDL_UnlockSurface(src);
+}
+
 void FlipScreen () {
   static bool initialized = false;
   static int LastUpdate;
@@ -367,10 +436,10 @@ void FlipScreen () {
   static int CurrentFrames;
 
   if (!initialized) {
-   LastUpdate = GetTime();
-   FPS = 0;
-   CurrentFrames = 0;
-   initialized = true;
+    LastUpdate = GetTime();
+    FPS = 0;
+    CurrentFrames = 0;
+    initialized = true;
   }
   if (FPSFont && FPSDisplayed) {
     if (GetTime() > LastUpdate + 1000) {
@@ -394,30 +463,25 @@ void FlipScreen () {
   }
 
   // Are we scaling?
-  if(scaling)
+  /*if (scaling)
+  {*/
+  switch (scaling)
   {
-   static int x;
-   static int y;
-   // Optimise this by hand later
-   switch(scaling)
-   {
-    case SCALE1:
-   	SDL_BlitSurface(screen, NULL, scalen, NULL);
-	break;
     case SCALE2:
-    	// Todo
-
-        break;
+      BlitScaleSurface(screen, scalen, 2);
+      break;
     case SCALE3:
-
-    	break;
-   }
-   SDL_Flip(scalen);
+    	BlitScaleSurface(screen, scalen, 3);
+      break;
+    case SCALE1:
+    default:
+      SDL_BlitSurface(screen, NULL, scalen, NULL);
+	   break;
   }
+  SDL_Flip(scalen);
+  /*}
   else
-  {
-   SDL_Flip(screen);
-  }
+    SDL_Flip(screen);*/
 }
 
 IMAGE CreateImage(int width, int height, const RGBA* pixels) {

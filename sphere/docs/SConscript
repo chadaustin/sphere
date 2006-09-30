@@ -12,48 +12,74 @@ else:
 
 # files that should be converted from unix format to DOS format as part
 # of the build
-files = ['build-cygwin.txt',
-         'build-msvc.txt',
-         'changelog.txt',
+files = ['changelog.txt',
          'doc_functions.txt',
          'gpl.txt',
-         'irc.txt',
-         'keys.txt',
+         'index.txt',
          'legal.txt',
-         'links.txt',
-         'linux.txt',
-         'network.txt',
-         'optimization.txt',
-         'packages.txt',
          'readme.txt',
-         'release-howto.txt',
-         'sphere_tutorial.txt',
-         'unix.txt']
+         'sphere_tutorial.txt']
+
+files.extend(map(lambda n: 'build/' + n,
+             ['aaulia_changelog.txt',
+              'aaulia_readme.txt', 
+              'build-cygwin.txt', 
+              'build-linux.txt', 
+              'build-linux-old.txt', 
+              'build-msvc.txt', 
+              'build-unix.txt', 
+              'index.txt', 
+              'release-howto.txt']))
+
+files.extend(map(lambda n: 'development/' + n,
+             ['api.txt',
+              'ide_keyboard_shortcuts.txt',
+              'index.txt',
+              'keys.txt',
+              'network.txt',
+              'optimization.txt',
+              'tutorial.txt']))
+
+files.extend(map(lambda n: 'internal/' + n,
+             ['coding-style.txt',
+              'game.sgm.txt',
+              'font.rfn.txt',
+              'map.rmp.txt',
+              'spriteset.rss.txt',
+              'tileset.rts.txt',
+              'windowstyle.rws.txt',
+              'package.spk.txt',
+              'videodriver-specs.txt']))
 
 files.extend(map(lambda n: 'technical/' + n,
-             ['coding-style.txt',
-              'gameinf.txt',
-              'rfn.txt',
-              'rmp.txt',
-              'rss.txt',
-              'rts.txt',
-              'rws.txt',
-              'spk.txt',
-              'videodriver.txt']))
+             ['readme.txt']))
 
 files.extend(map(lambda n: 'system_scripts/' + n,
-             ['clock.txt',
-              'animation.txt',
+             ['animation.txt',
               'audio.txt',
               'circles.txt',
+              'clock.txt',
               'convert.txt',
               'fademessage.txt',
+              'index.txt',
               'intro.txt',
               'layers.txt',
               'map_animation.txt',
               'menu.txt',
               'timer.txt',
               'wintro.txt']))
+
+files.extend(map(lambda n: 'online/' + n,
+             ['index.txt',
+              'irc.txt',
+              'links.txt']))
+
+files.extend(map(lambda n: 'running/' + n,
+             ['index.txt',
+              'keyboard_shortcuts.txt',
+              'linux_config.txt',
+              'packages.txt',
+              'wine.txt']))
 
 # files that should be installed without unix->dos translation
 binfiles = map(lambda n: 'contributed/' + n,

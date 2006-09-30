@@ -1,5 +1,46 @@
 YYYY.MM.DD
 
+2006.09.03
+  - Online help links updated and improved, plus link to local
+    tutorial added.
+  - More redundant directories cleaned up from source tree.
+  - All warnings officially cleaned up in MSVC 8.0! Yay!
+  - Linux SDL scaled rendering slightly optimised.
+  - Linux config options now documented.
+  - Sphere 1.12 officially released.
+  - Fixed bug: extra forward slash added to game directories returned
+    by GetGameList() under Linux.
+
+2006.08.27
+  - docs/ directory reorganised. Compile/build instructions now in
+    docs/build/, and have been updated.
+
+2006.08.26
+  - Sphere source now compiles out of the box on Windows without
+    hacking. Changes yet to be reflected on Sourceforge. Thanks rjt
+    and auulia/L_O_J!
+
+2006.08.19
+  - Support for 16-bit SDL video output.
+  - Linux: Added [Video] Driver sdl16 and sdl32 colour depth options.
+  - Optimised SDL scalers.
+  - Adapted default player key config to US104-Key keyboards.
+  - Changed startup game to tunginobi's competition entry.
+  - MSVC++ project file updated to version 8.0 (2005 Express Edition).
+
+2006.08.18
+  - Sphere source now compiles out of the box on Linux without
+    hacking. Changes yet to be reflected on Sourceforge. (tunginobi)
+  - Updated source to reflect new location of SpiderMonkey JS headers.
+    You can now use the most recent SpiderMonkey dev libs! :)
+  - Fixed keyboard input bugs under Linux.
+  - Implemented scale2x and scale3x [Video] Render options for Linux.
+  - F10 to switch screen res in Linux finally toggles like it should.
+  - Games obtained from GetGameList() under Linux now no longer have
+    trailing forward slash, to conform with Windows version.
+  - wxEditor removed from MSVC++ workspace (was a steaming pile
+    anyway).
+
 2005.08.12
   - Added support for numpad keys... KEY_NUM_0 to KEY_NUM_9
 

@@ -1,29 +1,19 @@
 #include "ScrollWindow.hpp"
-
-
 BEGIN_MESSAGE_MAP(CScrollWindow, CWnd)
-
   ON_WM_HSCROLL()
   ON_WM_VSCROLL()
-
 END_MESSAGE_MAP()
-
-
 ////////////////////////////////////////////////////////////////////////////////
-
 CScrollWindow::CScrollWindow()
 : m_XRange(0)
 , m_XPageSize(0)
 , m_XPosition(0)
-
 , m_YRange(0)
 , m_YPageSize(0)
 , m_YPosition(0)
 {
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CScrollWindow::SetHScrollPosition(int position)
 {
@@ -33,18 +23,14 @@ CScrollWindow::SetHScrollPosition(int position)
   } else if (m_XPosition > m_XRange - m_XPageSize) {
     m_XPosition = m_XRange - m_XPageSize;
   }
-
   SetHScrollInfo();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CScrollWindow::SetHScrollRange(int range, int page_size)
 {
   m_XRange    = range;
   m_XPageSize = page_size;
-
   // make sure position is optimized
   if (m_XPosition > 0) {
     if (m_XPosition > m_XRange - m_XPageSize) {
@@ -55,12 +41,9 @@ CScrollWindow::SetHScrollRange(int range, int page_size)
       OnHScrollChanged(m_XPosition);
     }
   }
-
   SetHScrollInfo();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CScrollWindow::SetVScrollPosition(int position)
 {
@@ -70,18 +53,14 @@ CScrollWindow::SetVScrollPosition(int position)
   } else if (m_YPosition > m_YRange - m_YPageSize) {
     m_YPosition = m_YRange - m_YPageSize;
   }
-
   SetVScrollInfo();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CScrollWindow::SetVScrollRange(int range, int page_size)
 {
   m_YRange    = range;
   m_YPageSize = page_size;
-
   // make sure position is optimized
   if (m_YPosition > 0) {
     if (m_YPosition > m_YRange - m_YPageSize) {
@@ -92,12 +71,9 @@ CScrollWindow::SetVScrollRange(int range, int page_size)
       OnVScrollChanged(m_YPosition);
     }
   }
-
   SetVScrollInfo();
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CScrollWindow::OnHScroll(UINT code, UINT pos, CScrollBar* scroll_bar)
 {
@@ -111,21 +87,16 @@ CScrollWindow::OnHScroll(UINT code, UINT pos, CScrollBar* scroll_bar)
     case SB_THUMBPOSITION: m_XPosition = pos;          break;
     case SB_THUMBTRACK:    m_XPosition = pos;          break;
   }
-
   if (m_XPosition > m_XRange - m_XPageSize) {
     m_XPosition = m_XRange - m_XPageSize;
   }
-
   if (m_XPosition < 0) {
     m_XPosition = 0;
   }
-
   SetHScrollRange(m_XRange, m_XPageSize);
   OnHScrollChanged(m_XPosition);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CScrollWindow::OnVScroll(UINT code, UINT pos, CScrollBar* scroll_bar)
 {
@@ -139,28 +110,22 @@ CScrollWindow::OnVScroll(UINT code, UINT pos, CScrollBar* scroll_bar)
     case SB_THUMBPOSITION: m_YPosition = pos;          break;
     case SB_THUMBTRACK:    m_YPosition = pos;          break;
   }
-
   if (m_YPosition > m_YRange - m_YPageSize) {
     m_YPosition = m_YRange - m_YPageSize;
   }
-
   if (m_YPosition < 0) {
     m_YPosition = 0;
   }
-
   SetVScrollRange(m_YRange, m_YPageSize);
   OnVScrollChanged(m_YPosition);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CScrollWindow::SetHScrollInfo()
 {
   SCROLLINFO si;
   si.cbSize = sizeof(si);
   si.fMask  = SIF_ALL;
-
   // set the scrollbar info
   if (m_XRange > m_XPageSize) {
     si.nMin  = 0;
@@ -176,16 +141,13 @@ CScrollWindow::SetHScrollInfo()
     SetScrollInfo(SB_HORZ, &si);
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-
 void
 CScrollWindow::SetVScrollInfo()
 {
   SCROLLINFO si;
   si.cbSize = sizeof(si);
   si.fMask  = SIF_ALL;
-
   // set the scrollbar info
   if (m_YRange > m_YPageSize) {
     si.nMin  = 0;
@@ -201,5 +163,4 @@ CScrollWindow::SetVScrollInfo()
     SetScrollInfo(SB_VERT, &si);
   }
 }
-
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,1 +1,1 @@
-These icons created by Darklich
+These icons created by Darklich
