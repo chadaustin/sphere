@@ -19,7 +19,6 @@ function LineCircle( radius, color )
   
   for ( i = 0; i <= 360; i+=1 )
   {
-  
     oldcoordX = newcoordX;
     oldcoordY = newcoordY;
     
@@ -27,14 +26,13 @@ function LineCircle( radius, color )
     newcoordY = ( radius + round( radius * sin( i * rdnfactor ) ) );
     
     circlepic.line(
-										oldcoordX,
-										oldcoordY,
-										newcoordX,
-										newcoordY,
-										color
-										);
-  
-		//circlepic.setPixel( ( radius + round( radius * cos( i * rdnfactor ) ) ), ( radius + round( radius * sin( i * rdnfactor ) ) ), color );
+        oldcoordX,
+        oldcoordY,
+        newcoordX,
+        newcoordY,
+        color
+        );
+    //circlepic.setPixel( ( radius + round( radius * cos( i * rdnfactor ) ) ), ( radius + round( radius * sin( i * rdnfactor ) ) ), color );
   }
   return circlepic.createImage();
 }
@@ -49,7 +47,7 @@ function GradientCircle( radius, color1, color2 )
   var r, r2, g, g2, b, b2, a, a2;
   var r_r, g_g, b_b, a_a;
   
-  var buffer =  CreateSurface(  ( radius * 2 ) , ( radius * 2 ), CreateColor(0,0,0,0) );
+  var buffer =  CreateSurface( ( radius * 2 ), ( radius * 2 ), CreateColor(0, 0, 0, 0) );
   
   r = color1.red;
   r2 = color2.red;
@@ -69,30 +67,25 @@ function GradientCircle( radius, color1, color2 )
   
   for ( rd = radius; rd > 0; rd-- )
   {
-    
     color = CreateColor( r + ( r_r * rd ), g + ( g_g * rd ), b + ( b_b * rd ), a + ( a_a * rd ) );
     
     for ( ang = 0; ang <= 270; ang++ )
     {
-      
       buffer.line(
-									( round( buffer.width / 2 ) + round( rd * cos( ang * rdnfactor ) ) ),
-									( round( buffer.height / 2 ) + round( rd * sin( ang * rdnfactor ) ) ),
-									( round( buffer.width / 2 ) + round( rd * cos( ang * rdnfactor ) ) ),
-									( round( buffer.height / 2 ) - round( rd * sin( ang * rdnfactor ) ) ),
-									color
-									);
-			buffer.line(
-									( round( buffer.width / 2 ) + round( rd * cos( ang * rdnfactor ) ) ),
-									( round( buffer.height / 2 ) + round( rd * sin( ang * rdnfactor ) ) ),
-									( round( buffer.width / 2 ) - round( rd * cos( ang * rdnfactor ) ) ),
-									( round( buffer.height / 2 ) + round( rd * sin( ang * rdnfactor ) ) ),
-									color
-									);
-      
-    }
-    
+          ( round( buffer.width / 2 ) + round( rd * cos( ang * rdnfactor ) ) ),
+          ( round( buffer.height / 2 ) + round( rd * sin( ang * rdnfactor ) ) ),
+          ( round( buffer.width / 2 ) + round( rd * cos( ang * rdnfactor ) ) ),
+          ( round( buffer.height / 2 ) - round( rd * sin( ang * rdnfactor ) ) ),
+          color
+          );
+      buffer.line(
+          ( round( buffer.width / 2 ) + round( rd * cos( ang * rdnfactor ) ) ),
+          ( round( buffer.height / 2 ) + round( rd * sin( ang * rdnfactor ) ) ),
+          ( round( buffer.width / 2 ) - round( rd * cos( ang * rdnfactor ) ) ),
+          ( round( buffer.height / 2 ) + round( rd * sin( ang * rdnfactor ) ) ),
+          color
+          ); 
+    } 
   }
-  
   return buffer.createImage();
 }
