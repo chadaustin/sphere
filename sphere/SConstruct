@@ -175,7 +175,7 @@ class Compiler:
         if self.name in ['vc6', 'mingw']:
             env.Append(CCFLAGS = ['-DXP_PC'], LIBS = ['js32'])
         elif self.name == 'linux':
-            env.Append(CCFLAGS = ['-DXP_UNIX'], LIBS = ['js'])
+            env.Append(CCFLAGS = ['-DXP_UNIX'], LIBS = ['smjs'])
 
     def SetupMFC(self, env):
         assert self.has_mfc(), "MFC not supported in this compiler"
