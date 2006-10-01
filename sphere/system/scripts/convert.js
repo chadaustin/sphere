@@ -11,9 +11,7 @@ function ScreenY(mapy)
 function TopX()
 {
   if (ScreenX(GetCameraX()) >= GetScreenWidth() / 2)
-  {
-    return - (ScreenX(GetCameraX()) - GetCameraX());
-  }
+    return GetCameraX() - ScreenX(GetCameraX());
   else
     return 0;
 }
@@ -21,19 +19,18 @@ function TopX()
 function TopY()
 {
   if (ScreenY(GetCameraY()) >= GetScreenHeight() / 2)
-  {
-    return - (ScreenY(GetCameraY()) - GetCameraY());
-  }
+    return GetCameraY() - ScreenY(GetCameraY());
   else
-    return 0;
-}
+    return 0;}
 
 function MapX(screenx)
 {
-  return TopX() + MapToScreenX(0, screenx);
+//  return TopX() + MapToScreenX(0, screenx);
+  return ScreenToMapX(0, screenx);
 }
 
 function MapY(screeny)
 {
-  return TopY() + MapToScreenY(0, screeny);
+//  return TopY() + MapToScreenY(0, screeny);
+  return ScreenToMapY(0, screeny);
 }
