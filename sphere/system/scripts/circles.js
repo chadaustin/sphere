@@ -1,91 +1,198 @@
-//circles.js by Eric Duvic (geno023@cox.net)
+/**
+ * circles.js
+ * 
+ * Inspired by the same system script by Eric Duvic.
+ * 
+ * API:
+ * LineCircle(radius, color[, antialias])
+ * Circle(radius, color[, antialias])
+ * GradientCircle(radius, color1, color2[, antialias])
+ * 
+ * @author	Tung Nguyen
+ */
 
-//all functions return an image that can possibly be stored in another variable for later use
-//used to return surfaces until i found out its much much faster to blit an image than a surface
-//Special thanks goes out to flik(for almost everything :D), malis(for various algorithms :D), and beaker(for his info on how to speed things up)
-
-var rdnfactor = ( Math.PI /180);
-var sin = Math.sin;
-var cos = Math.cos;
-var round = Math.round;
-
-function LineCircle( radius, color )
+/**
+ * Traces the outline of a circle into a new image.
+ * 
+ * @param	radius	The radius of the circle.
+ * @param	color	Sphere Color object used to colour line.
+ * @param	antialias	If true, circle will be antialiased.
+ * @return	Sphere Image object containing the circle.
+ */
+function LineCircle(radius, color, antialias)
 {
-  var circlepic = CreateSurface( ( ( radius * 2 ) + 1 ), ( ( radius * 2 ) + 1 ), CreateColor(0,0,0,0) );
-  
-  var newcoordX = ( radius + round( radius * cos( 0 * rdnfactor ) ) );
-  var newcoordY = ( radius + round( radius * sin( 0 * rdnfactor ) ) );
-  var oldcoordX, oldcoordY;
-  
-  for ( i = 0; i <= 360; i+=1 )
-  {
-    oldcoordX = newcoordX;
-    oldcoordY = newcoordY;
-    
-    newcoordX = ( radius + round( radius * cos( i * rdnfactor ) ) );
-    newcoordY = ( radius + round( radius * sin( i * rdnfactor ) ) );
-    
-    circlepic.line(
-        oldcoordX,
-        oldcoordY,
-        newcoordX,
-        newcoordY,
-        color
-        );
-    //circlepic.setPixel( ( radius + round( radius * cos( i * rdnfactor ) ) ), ( radius + round( radius * sin( i * rdnfactor ) ) ), color );
-  }
-  return circlepic.createImage();
+	if (radius <= 0 || !color)
+		throw "LineCircle(): invalid parameter(s).";
+	
+	var pi = Math.PI;
+	var sin = Math.sin;
+	var cos = Math.cos;
+	var sqrt = Math.sqrt;
+	var abs = Math.abs;
+	
+	var w = radius * 2;
+	var h = w;
+	var s = CreateSurface(w, h, CreateColor(0, 0, 0, 0));
+	var c = CreateColor(color.red, color.green, color.blue, color.alpha);
+	var r = Math.max(radius - 0.5, 0);
+	
+	if (antialias)
+	{
+		// Smooth antialias for "one-pixel" width
+		var pi_1_2 = pi / 2;
+		s.setBlendMode(REPLACE);
+		for (var y = 0; y < radius; ++y)
+		{
+			for (var x = 0; x < radius; ++x)
+			{
+				var dist = sqrt(x * x + y * y);
+				if (dist > radius - 2 && dist < radius)
+				{
+					c.alpha = color.alpha * sin(sin((1 - abs(dist - radius + 1)) * pi_1_2) * pi_1_2);
+					s.setPixel(x + r, y + r, c);	// Bottom-right
+					s.setPixel(r - x, y + r, c);	// Bottom-left
+					s.setPixel(r - x, r - y, c);	// Top-left
+					s.setPixel(x + r, r - y, c);	// Top-right
+				}
+			}
+		}
+	}
+	else
+	{
+		// Quick rough outline circle
+		var pi_2 = pi * 2;
+		var step = pi_2 / (Math.min(360, pi_2 * radius));
+		for (var pt = 0, pt2 = step; pt < pi_2; pt += step, pt2 += step)
+		{
+			s.line(
+					r + r * sin(pt),
+					r + r * cos(pt),
+					r + r * sin(pt2),
+					r + r * cos(pt2),
+					color);
+		}
+	}
+	
+	return s.createImage();
 }
 
-function Circle( radius, color )
+/**
+ * Draws a filled circle into a new image.
+ * 
+ * @param	radius	The radius of the circle.
+ * @param	color	The color to fill the circle with.
+ * @param	antialias	If true, antialiasing will smooth the edges.
+ * @return	Sphere Image object containing the circle.
+ */
+function Circle(radius, color, antialias)
 {
-  return GradientCircle( radius, color, color );
+	if (radius <= 0 || !color)
+		throw "Circle(): invalid parameter(s).";
+	
+	var pi_1_2 = Math.PI / 2;
+	var sin = Math.sin;
+	var asin = Math.asin;
+	var cos = Math.cos;
+	var sqrt = Math.sqrt;
+	var abs = Math.abs;
+	
+	var w = radius * 2;
+	var h = w;
+	var s = CreateSurface(w, h, CreateColor(0, 0, 0, 0));
+	var c = CreateColor(color.red, color.green, color.blue, color.alpha);
+	var r = Math.max(radius - 0.5, 0);
+	
+	if (antialias)
+	{
+		// Scan quadrant
+		s.setBlendMode(REPLACE);
+		for (var y = 0; y < radius; ++y)
+		{
+			for (var x = 0; x < radius; ++x)
+			{
+				var dist = sqrt(x * x + y * y);
+				if (dist < radius)
+				{
+					if (dist > radius - 1)
+						c.alpha = color.alpha * sin(sin((radius - dist) * pi_1_2) * pi_1_2);
+					else
+						c.alpha = color.alpha;
+					s.setPixel(x + r, y + r, c);	// Bottom-right
+					s.setPixel(r - x, y + r, c);	// Bottom-left
+					s.setPixel(r - x, r - y, c);	// Top-left
+					s.setPixel(x + r, r - y, c);	// Top-right
+				}
+			}
+		}
+	}
+	else
+	{
+		// Scanline for each pixel row of circle
+		for (var y = 0; y < radius; ++y)
+		{
+			var lw = r * cos(asin(1 - y / r));
+			s.line(r - lw, y, r + lw, y, c);
+			s.line(r - lw, h - y - 1, r + lw, h - y - 1, c);
+		}
+	}
+	
+	return s.createImage();
 }
 
-function GradientCircle( radius, color1, color2 )
+/**
+ * Draws a radially-gradient colored circle.
+ * The fade is sinusoidal, not linear.
+ * 
+ * @param	radius	The radius of the circle.
+ * @param	color1	The internal color.
+ * @param	color2	The external color.
+ * @param	antialias	If true, antialiasing will smooth the edges.
+ * @return	Sphere Image object containing the circle.
+ */
+function GradientCircle(radius, color1, color2, antialias)
 {
-  var r, r2, g, g2, b, b2, a, a2;
-  var r_r, g_g, b_b, a_a;
-  
-  var buffer =  CreateSurface( ( radius * 2 ), ( radius * 2 ), CreateColor(0, 0, 0, 0) );
-  
-  r = color1.red;
-  r2 = color2.red;
-  g = color1.green;
-  g2 = color2.green;
-  b = color1.blue;
-  b2 = color2.blue;
-  a = color1.alpha;
-  a2 = color2.alpha;
-  
-  r_r = (r2 - r) / radius;
-  g_g = (g2 - g) / radius;
-  b_b = (b2 - b) / radius;
-  a_a = (a2 - a) / radius;
-  
-  buffer.setBlendMode( REPLACE );
-  
-  for ( rd = radius; rd > 0; rd-- )
-  {
-    color = CreateColor( r + ( r_r * rd ), g + ( g_g * rd ), b + ( b_b * rd ), a + ( a_a * rd ) );
-    
-    for ( ang = 0; ang <= 270; ang++ )
-    {
-      buffer.line(
-          ( round( buffer.width / 2 ) + round( rd * cos( ang * rdnfactor ) ) ),
-          ( round( buffer.height / 2 ) + round( rd * sin( ang * rdnfactor ) ) ),
-          ( round( buffer.width / 2 ) + round( rd * cos( ang * rdnfactor ) ) ),
-          ( round( buffer.height / 2 ) - round( rd * sin( ang * rdnfactor ) ) ),
-          color
-          );
-      buffer.line(
-          ( round( buffer.width / 2 ) + round( rd * cos( ang * rdnfactor ) ) ),
-          ( round( buffer.height / 2 ) + round( rd * sin( ang * rdnfactor ) ) ),
-          ( round( buffer.width / 2 ) - round( rd * cos( ang * rdnfactor ) ) ),
-          ( round( buffer.height / 2 ) + round( rd * sin( ang * rdnfactor ) ) ),
-          color
-          ); 
-    } 
-  }
-  return buffer.createImage();
+	if (radius <= 0 || !color1 || !color2)
+		throw "Circle(): invalid parameter(s).";
+	
+	var pi_1_2 = Math.PI / 2;
+	var sin = Math.sin;
+	var sqrt = Math.sqrt;
+	
+	var w = radius * 2;
+	var h = w;
+	var s = CreateSurface(w, h, CreateColor(0, 0, 0, 0));
+	var c = CreateColor(0, 0, 0, 0);
+	var r = Math.max(radius - 0.5, 0);
+	
+	var rd = color2.red - color1.red;
+	var gd = color2.green - color1.green;
+	var bd = color2.blue - color1.blue;
+	var ad = color2.alpha - color1.alpha;
+	
+	// Quadrant scan
+	s.setBlendMode(REPLACE);
+	for (var y = 0; y < radius; ++y)
+	{
+		for (var x = 0; x < radius; ++x)
+		{
+			var dist = sqrt(x * x + y * y);
+			if (dist < radius)
+			{
+				var factor = sin((1 - dist / radius) * pi_1_2)
+				c.red = color2.red - rd * factor;
+				c.green = color2.green - gd * factor;
+				c.blue = color2.blue - bd * factor;
+				c.alpha = color2.alpha - ad * factor;
+				if (antialias && dist > radius - 1)
+					c.alpha *= radius - dist;
+				
+				s.setPixel(x + r, y + r, c);	// Bottom-right
+				s.setPixel(r - x, y + r, c);	// Bottom-left
+				s.setPixel(r - x, r - y, c);	// Top-left
+				s.setPixel(x + r, r - y, c);	// Top-right
+			}
+		}
+	}
+	
+	return s.createImage();
 }
