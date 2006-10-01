@@ -3,6 +3,7 @@
 
 
 function TraceRectangle(x, y, w, h, c) {
+  --w; --h;
   Line(x, y, x+w, y, c);
   Line(x, y, x, y+h, c);
   Line(x+w, y, x+w, y+h, c);
@@ -10,8 +11,8 @@ function TraceRectangle(x, y, w, h, c) {
 }
 
 function TracePoly(x, y, c) {
-  for (i = 1;i<x.length;i++) {
-    Line(x[i-1],y[i-1],x[i],y[i], c);
-  }
-  Line(x[x.length-1],y[y.length-1],x[0],y[0],c);
+  for (i = 1; i<x.length; i++)
+    Line(x[i - 1], y[i - 1], x[i], y[i], c);
+  Line(x[x.length - 1], y[y.length - 1], x[0], y[0], c);
 }
+
