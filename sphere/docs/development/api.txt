@@ -671,7 +671,7 @@ log_object.endBlock()
         - returns an array of strings representing the current person entities
 
       CreatePerson(name, spriteset, destroy_with_map)
-        - returns a person object with 'name' from 'spriteset'. If Sphere is 
+        - makes a person object with 'name' from 'spriteset'. If Sphere is 
           unable to open the file, the engine will give an error message and 
           exit. destroy_with_map is a boolean (true/false value), which the 
           spriteset is destroyed when the current map is changed if the flag 
