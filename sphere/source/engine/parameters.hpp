@@ -1,8 +1,7 @@
 #ifndef PARAMETERS_HPP
 #define PARAMETERS_HPP
 
-#include <string>
-#include <smjs/jsapi.h>
+#include <jsapi.h>
 
 int argInt(JSContext* cx, jsval arg);
 const char* jsval_to_str(JSContext* cx, jsval arg);

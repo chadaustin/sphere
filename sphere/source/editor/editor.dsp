@@ -105,7 +105,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /G5 /Zp1 /MTd /W3 /Gm /Gi /GX /ZI /Od /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "VC_EXTRALEAN" /D "STRICT" /FAs /YX /FD /GZ /c
-# ADD CPP /nologo /G5 /MDd /W3 /Gm /Gi /GX /ZI /Od /I "../../third-party-msvc/include" /D "_DEBUG" /D "STRIC" /D "_AFXDLL" /D "INCLUDE_DEPRECATED_FEATURES" /D "XP_PC" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "VC_EXTRALEAN" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /D "NOMINMAX" /D "USE_IRC" /D "TABBED_WINDOW_LIST" /D "I_SUCK" /FAs /FR /FD /GZ /c
+# ADD CPP /nologo /G5 /MDd /W3 /Gm /Gi /GX /ZI /Od /I "../../third-party-msvc/include" /D "_DEBUG" /D "STRIC" /D "_AFXDLL" /D "INCLUDE_DEPRECATED_FEATURES" /D "XP_PC" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "VC_EXTRALEAN" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /D "NOMINMAX" /D "TABBED_WINDOW_LIST" /D "I_SUCK" /FAs /FR /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -1170,6 +1170,14 @@ SOURCE=..\common\endian.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\common\ends_with.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\ends_with.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\common\Entities.cpp
 # End Source File
 # Begin Source File
@@ -1423,70 +1431,6 @@ SOURCE=.\MapScripting.hpp
 # Begin Source File
 
 SOURCE=.\ss_functions.table
-# End Source File
-# End Group
-# Begin Group "irc"
-
-# PROP Default_Filter ""
-# Begin Group "common"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=..\..\..\http\src\common\socket.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\http\src\common\socket.hpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\http\src\common\thread.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\http\src\common\thread.hpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\http\src\common\time.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\http\src\common\time.hpp
-# End Source File
-# End Group
-# Begin Source File
-
-SOURCE=..\..\..\http\src\irc\dcc.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\http\src\irc\dcc.hpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\http\src\irc\DCCWindow.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\http\src\irc\DCCWindow.hpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\http\src\irc\irc.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\http\src\irc\irc.hpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\http\src\irc\IRCWindow.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\http\src\irc\IRCWindow.hpp
 # End Source File
 # End Group
 # End Target

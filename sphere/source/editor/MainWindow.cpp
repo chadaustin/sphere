@@ -58,6 +58,7 @@
 // common
 #include "../common/sphere_version.h"
 #include "../common/strcmp_ci.hpp"
+#include "../common/ends_with.hpp"
 #include "../common/system.hpp"
 #ifdef I_SUCK
 #include "../common/Map.hpp"
@@ -840,8 +841,15 @@ CMainWindow::CheckDirectory(const char* filename, const char* sub_directory)
   strcat(szProjectDirectory, "\\");
   strcat(szProjectDirectory, sub_directory);
   // compare the path with the project directory + szSubDirectory
+
+#if 1
+  strlwr(szDirectory);
+  strlwr(szProjectDirectory);
+#else
   _strlwr_s(szDirectory, MAX_PATH);
   _strlwr_s(szProjectDirectory, MAX_PATH);
+#endif
+
   return (strcmp(szDirectory, szProjectDirectory) == 0);
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -2363,9 +2371,12 @@ CMainWindow::OnProjectRunSphere()
   strcat(szCommandLine, "\"");
   strcat(szCommandLine, m_Project.GetDirectory());
   strcat(szCommandLine, "\"");
-  if (true) {
+
+  if (true)
+  {
     char filename[MAX_PATH];
     memset(filename, 0, MAX_PATH);
+
     // find the currently open map
     CDocumentWindow* dw = GetCurrentDocumentWindow();
     if (dw) {
@@ -2374,18 +2385,21 @@ CMainWindow::OnProjectRunSphere()
         strcpy(filename, document_filename);
         char* ptr = strrchr(filename, '\\');
         if (ptr != NULL)
+        {
           strcpy(filename, ptr + 1);
+        }
       }
     }
-    _strlwr_s(filename, MAX_PATH);
-    std::string __filename__(filename); // make the extension lowercase
-    if (__filename__.rfind(".rmp") == __filename__.size() - 4) {
+
+    if (ends_with_ci(filename, ".rmp"))
+    {
       strcat(szCommandLine, " -parameters ");
       strcat(szCommandLine, "\"'");
       strcat(szCommandLine, filename);   
       strcat(szCommandLine, "'\"");
     }
   }
+
   STARTUPINFO si;
   memset(&si, 0, sizeof(si));
   si.cb = sizeof(si);
@@ -2404,6 +2418,7 @@ CMainWindow::OnProjectRunSphere()
     sphere_directory,      // lpCurrentDirectory
     &si,                   // lpStartupInfo
     &pi);                  // lpProcessInformation
+
   if (retval == FALSE)
     MessageBox("Error: Could not execute Sphere engine");
 }
@@ -2498,13 +2513,13 @@ CMainWindow::OnProjectPackageGame()
   struct Local {
     static bool IsGameFileType(const char* filename)
     { 
-      if (strcmp_ci(filename + strlen(filename) - 3, "ini") == 0) {
+      if (ends_with_ci(filename, ".ini")) { // if (strcmp_ci(filename + strlen(filename) - 3, "ini") == 0) {
         return true;
       }
-      if (strcmp_ci(filename + strlen(filename) - 3, "dat") == 0) {
+      if (ends_with_ci(filename, ".dat")) { // if (strcmp_ci(filename + strlen(filename) - 3, "dat") == 0) {
         return true;
       }
-      if (strcmp_ci(filename + strlen(filename) - 3, "sgm") == 0) {
+      if (ends_with_ci(filename, ".sgm")) { // if (strcmp_ci(filename + strlen(filename) - 3, "sgm") == 0) {
         return true;
       }
       for (int i = 0; i < NUM_GROUP_TYPES; i++)
@@ -2514,7 +2529,7 @@ CMainWindow::OnProjectPackageGame()
     
         for (unsigned int k = 0; k < extensions.size(); k++) {
           std::string ext = "." + extensions[k];
-          if (strcmp_ci(filename + strlen(filename) - ext.length(), ext.c_str()) == 0) {
+          if (ends_with_ci(filename, ext.c_str())) { // if (strcmp_ci(filename + strlen(filename) - ext.length(), ext.c_str()) == 0) {
             return true;
           }
         }
@@ -2664,7 +2679,7 @@ CMainWindow::OnToolsImagesToMNG()
     
       for (unsigned int k = 0; k < extensions.size(); k++) {
         std::string ext = "." + extensions[k];
-        if (strcmp_ci(filename + strlen(filename) - ext.length(), ext.c_str()) == 0) {
+        if (ends_with_ci(filename, ext.c_str())) { //if (strcmp_ci(filename + strlen(filename) - ext.length(), ext.c_str()) == 0) {
           return true;
         }
       }
@@ -2711,6 +2726,7 @@ CMainWindow::OnToolsImagesToMNG()
     bool is_fli = strcmp_ci(dialog.GetFileExt(), "flic") == 0
                || strcmp_ci(dialog.GetFileExt(), "flc")  == 0
                || strcmp_ci(dialog.GetFileExt(), "fli")  == 0;
+
     if (is_mng) {
       SetCurrentDirectory(m_DefaultFolder.c_str());
       mng_retcode iRC = TestAnimationCode(filelist, dialog.GetPathName());
@@ -2727,7 +2743,9 @@ CMainWindow::OnToolsImagesToMNG()
   }
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnToolsJSConsole()
