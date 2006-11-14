@@ -481,71 +481,72 @@ BOOL CALLBACK NetworkDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM
         return FALSE;
     }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 BOOL CALLBACK InputDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
-    static int current_player = 0;
-    struct Local
-    {
-
-        static const char* GetUpKey(struct SPHERECONFIG* config, int player)
-        {
+  static int current_player = 0;
+  struct Local
+  {
+      static const char* GetUpKey(struct SPHERECONFIG* config, int player)
+      {
             if (player >= 0 && player < 4)
             {
 
                 return config->player_configurations[player].key_up_str;
             }
             return "";
-        }
-        static const char* GetDownKey(struct SPHERECONFIG* config, int player)
-        {
+      }
+      static const char* GetDownKey(struct SPHERECONFIG* config, int player)
+      {
             if (player >= 0 && player < 4)
             {
 
                 return config->player_configurations[player].key_down_str;
             }
             return "";
-        }
-        static const char* GetLeftKey(struct SPHERECONFIG* config, int player)
-        {
+      }
+      static const char* GetLeftKey(struct SPHERECONFIG* config, int player)
+      {
             if (player >= 0 && player < 4)
             {
 
                 return config->player_configurations[player].key_left_str;
             }
             return "";
-        }
-        static const char* GetRightKey(struct SPHERECONFIG* config, int player)
-        {
+      }
+      static const char* GetRightKey(struct SPHERECONFIG* config, int player)
+      {
             if (player >= 0 && player < 4)
             {
 
                 return config->player_configurations[player].key_right_str;
             }
             return "";
-        }
-        static bool IsKeyboardInputAllowed(struct SPHERECONFIG* config, int player)
-        {
+      }
+      static bool IsKeyboardInputAllowed(struct SPHERECONFIG* config, int player)
+      {
             if (player >= 0 && player < 4)
             {
 
                 return config->player_configurations[player].keyboard_input_allowed;
             }
             return false;
-        }
-        static bool IsJoypadInputAllowed(struct SPHERECONFIG* config, int player)
-        {
+      }
+      static bool IsJoypadInputAllowed(struct SPHERECONFIG* config, int player)
+      {
             if (player >= 0 && player < 4)
             {
 
                 return config->player_configurations[player].joypad_input_allowed;
             }
             return false;
-        }
-    };
-    const char* keys[] =
-        {
-
+      }
+  };
+    
+  const char* keys[] =
+  {
             " ",
             "KEY_UP",
             "KEY_DOWN",
@@ -609,13 +610,16 @@ BOOL CALLBACK InputDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
             "KEY_NUM_7",
             "KEY_NUM_8",
             "KEY_NUM_9"
-        };
-    switch (message)
-    {
+  };
+
+  switch (message)
+  {
     case WM_INITDIALOG:
     {
+        unsigned int i;
+
         // add the players
-        for (unsigned int i = 0; i < 4; i++)
+        for (i = 0; i < 4; i++)
         {
 
             char player_index[100] = {0};
@@ -623,7 +627,8 @@ BOOL CALLBACK InputDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
             SendDlgItemMessage(window, IDC_PLAYER_INDEX, CB_ADDSTRING, 0, (LPARAM)player_index);
         }
         SendDlgItemMessage(window, IDC_PLAYER_INDEX, CB_SETCURSEL, 0, 0);
-        for (unsigned int i = 0; i < sizeof(keys) / sizeof(*keys); i++)
+
+        for (i = 0; i < sizeof(keys) / sizeof(*keys); i++)
         {
 
             SendDlgItemMessage(window, IDC_KEYCOMBO_UP,    CB_ADDSTRING, 0, (LPARAM)keys[i]);
@@ -631,6 +636,7 @@ BOOL CALLBACK InputDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
             SendDlgItemMessage(window, IDC_KEYCOMBO_LEFT,  CB_ADDSTRING, 0, (LPARAM)keys[i]);
             SendDlgItemMessage(window, IDC_KEYCOMBO_RIGHT, CB_ADDSTRING, 0, (LPARAM)keys[i]);
         }
+
         if (1)
         {
 
@@ -642,9 +648,11 @@ BOOL CALLBACK InputDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
             CheckDlgButton(window, IDC_KEYBOARD_INPUT, (Config.player_configurations[player].keyboard_input_allowed ? BST_CHECKED : BST_UNCHECKED));
             CheckDlgButton(window, IDC_JOYPAD_INPUT,   (Config.player_configurations[player].joypad_input_allowed   ? BST_CHECKED : BST_UNCHECKED));
         }
+
         SetFocus(GetDlgItem(window, IDC_PLAYER_INDEX));
         return FALSE;
     }
+
     case WM_NOTIFY:
     {
         PSHNOTIFY* psn = (PSHNOTIFY*)lparam;
@@ -661,6 +669,7 @@ BOOL CALLBACK InputDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
         return FALSE;
     }
     break;
+
     case WM_COMMAND:
     {
         if (LOWORD(wparam) == IDC_PLAYER_INDEX && HIWORD(wparam) == CBN_SELCHANGE)
@@ -683,8 +692,9 @@ BOOL CALLBACK InputDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
         return FALSE;
     }
     break;
-    }
-    return FALSE;
+  }
+  
+  return FALSE;
 }
 ////////////////////////////////////////////////////////////////////////////////
 static FILE* s_Log = NULL;
