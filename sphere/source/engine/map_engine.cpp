@@ -76,17 +76,18 @@ CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
         , m_JoystickTalkButton(2)
         , m_JoystickCancelButton(0)
 {
+    int i;
     m_Camera.x     = 0;
     m_Camera.y     = 0;
     m_Camera.layer = 0;
 
     memset(&m_Keys, 0, sizeof(bool) * MAX_KEY);
-    for (int i = 0; i < NUM_MAP_SCRIPTS; i++)
+    for (i = 0; i < NUM_MAP_SCRIPTS; i++)
     {
         m_DefaultMapScripts[i] = NULL;
 
     }
-    for (int i = 0; i < NUM_PERSON_SCRIPTS; i++)
+    for (i = 0; i < NUM_PERSON_SCRIPTS; i++)
     {
 
         m_default_person_scripts[i] = NULL;
@@ -2083,6 +2084,7 @@ CMapEngine::DestroyPerson(const char* name)
     {
         if (m_Persons[i].name == name)
         {
+            int j;
 
             // detach camera if necessary
             if (i == m_CameraPerson)
@@ -2105,7 +2107,7 @@ CMapEngine::DestroyPerson(const char* name)
                 m_InputPerson--;
             }
 
-            for (int j = 0; j < int(m_InputPersons.size()); j++)
+            for (j = 0; j < int(m_InputPersons.size()); j++)
             {
 
                 if (m_InputPersons[j] == i)
@@ -2122,7 +2124,7 @@ CMapEngine::DestroyPerson(const char* name)
                 }
             }
             // update all leader indices
-            for (int j = 0; j < int(m_Persons.size()); j++)
+            for (j = 0; j < int(m_Persons.size()); j++)
             {
                 if (i != j)
                 {
@@ -3399,6 +3401,8 @@ CMapEngine::GetTalkDistance()
 bool
 CMapEngine::OpenMap(const char* filename)
 {
+    unsigned int i;
+
     // load the map
     std::string path = "maps/";
 
@@ -3438,7 +3442,7 @@ CMapEngine::OpenMap(const char* filename)
     m_CurrentMap = filename;
     // if a person entity is here, it's not map-specific
     // so put it in the starting position!
-    for (unsigned int i = 0; i < m_Persons.size(); i++)
+    for (i = 0; i < m_Persons.size(); i++)
     {
         m_Persons[i].x     = m_Map.GetMap().GetStartX();
         m_Persons[i].y     = m_Map.GetMap().GetStartY();
@@ -3458,7 +3462,7 @@ CMapEngine::OpenMap(const char* filename)
     }
 
     // reset all the layer angles
-    for (unsigned int i = 0; i < m_Map.GetMap().GetNumLayers(); i++)
+    for (i = 0; i < m_Map.GetMap().GetNumLayers(); i++)
     {
         m_Map.SetLayerAngle(i, 0.0);
     }
@@ -3562,7 +3566,7 @@ CMapEngine::OpenMap(const char* filename)
 
     // initialize the layer script array
     m_LayerRenderers.resize(m_Map.GetMap().GetNumLayers());
-    for (unsigned int i = 0; i < m_LayerRenderers.size(); i++)
+    for (i = 0; i < m_LayerRenderers.size(); i++)
     {
         m_LayerRenderers[i] = NULL;
     }
@@ -3593,6 +3597,8 @@ CMapEngine::OpenMap(const char* filename)
 bool
 CMapEngine::CloseMap()
 {
+    unsigned int i;
+
     // stop background music
 
     m_Playlist.Clear();
@@ -3611,14 +3617,14 @@ CMapEngine::CloseMap()
     DestroyZones();
 
     // destroy any remaining delay scripts
-    for (unsigned int i = 0; i < m_DelayScripts.size(); i++)
+    for (i = 0; i < m_DelayScripts.size(); i++)
     {
         m_Engine->DestroyScript(m_DelayScripts[i].script);
     }
     m_DelayScripts.clear();
 
     // destroy layer scripts
-    for (unsigned int i = 0; i < m_LayerRenderers.size(); i++)
+    for (i = 0; i < m_LayerRenderers.size(); i++)
     {
         if (m_LayerRenderers[i])
         {
@@ -3993,6 +3999,7 @@ CMapEngine::DestroyMapPersons()
 
         if (m_Persons[i].destroy_with_map)
         {
+            int j;
 
             // detach camera if necessary
             if (i == m_CameraPerson)
@@ -4005,6 +4012,7 @@ CMapEngine::DestroyMapPersons()
 
                 m_CameraPerson--;
             }
+
             // detach input if necessary
             if (i == m_InputPerson)
             {
@@ -4016,7 +4024,8 @@ CMapEngine::DestroyMapPersons()
 
                 m_InputPerson--;
             }
-            for (int j = 0; j < int(m_InputPersons.size()); j++)
+
+            for (j = 0; j < int(m_InputPersons.size()); j++)
             {
 
                 if (m_InputPersons[j] == i)
@@ -4033,7 +4042,7 @@ CMapEngine::DestroyMapPersons()
                 }
             }
             // update all leader indices
-            for (int j = 0; j < int(m_Persons.size()); j++)
+            for (j = 0; j < int(m_Persons.size()); j++)
             {
                 if (i != j)
                 {
@@ -4920,6 +4929,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 bool
 CMapEngine::UpdateFollower(int person_index)
 {
+    int i;
     Person& p = m_Persons[person_index];
 
     p.x         = p.follow_state_queue[0].x;
@@ -4932,7 +4942,7 @@ CMapEngine::UpdateFollower(int person_index)
     p.stepping_frame_revert_count = 0;
 
     // update the follow state
-    for (int i = 0; i < (int)p.follow_state_queue.size() - 1; i++)
+    for (i = 0; i < (int)p.follow_state_queue.size() - 1; i++)
     {
         p.follow_state_queue[i] = p.follow_state_queue[i + 1];
     }
@@ -4946,14 +4956,13 @@ CMapEngine::UpdateFollower(int person_index)
     // frame index
     if (--p.next_frame_switch <= 0)
     {
-
         const int num_frames = p.spriteset->GetSpriteset().GetNumFrames(p.direction);
         p.frame = (p.frame + 1) % num_frames;
         p.next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.frame);
     }
 
     // now update any followers of this one
-    for (int i = 0; i < int(m_Persons.size()); i++)
+    for (i = 0; i < int(m_Persons.size()); i++)
     {
         if (i != person_index)
         {
@@ -5396,6 +5405,8 @@ static inline int __round__(double v)
 bool
 CMapEngine::ProcessInput()
 {
+    int i;
+
     GetKeyStates(m_Keys);
     RefreshInput();
     bool new_keys[MAX_KEY];
@@ -5408,7 +5419,7 @@ CMapEngine::ProcessInput()
     }
 
     // check to see if key state has changed
-    for (int i = 0; i < MAX_KEY; i++)
+    for (i = 0; i < MAX_KEY; i++)
     {
 
         if (new_keys[i] != m_Keys[i])
@@ -5460,7 +5471,7 @@ CMapEngine::ProcessInput()
     }
 
     // process default input bindings
-    for (int i = 0; i < int(m_InputPersons.size()); i++)
+    for (i = 0; i < int(m_InputPersons.size()); i++)
     {
         const int person = m_InputPersons[i];
         // if (m_IsInputAttached && m_Persons[m_InputPerson].commands.size() == 0) {

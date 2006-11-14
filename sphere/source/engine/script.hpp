@@ -7,7 +7,7 @@
 #endif
 
 #include <string>
-#include <smjs/jsapi.h>
+#include <jsapi.h>
 #include "audio.hpp"
 #include "engineinterface.hpp"
 #include "sfont.hpp"

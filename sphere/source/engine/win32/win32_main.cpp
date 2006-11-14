@@ -346,7 +346,7 @@ int __cdecl main(int argc, const char** argv)
     DestroyWindow(SphereWindow);
 
 #else
-    printf ("Weee!\n");
+    printf ("Sphere-Console> Weee!\n");
 #endif
     return 0;
 }

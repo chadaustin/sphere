@@ -1009,7 +1009,9 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
         return NULL;
     }
 
-    for (unsigned int i = 0; i < num_images; i++)
+    unsigned int i;
+
+    for (i = 0; i < num_images; i++)
     {
         jsval image;
         if ( JS_GetElement(cx, images_object, i, &image) == JS_FALSE )
@@ -1067,7 +1069,7 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     int frame_width = 0;
     int frame_height = 0;
 
-    for (unsigned int i = 0; i < num_images; i++)
+    for (i = 0; i < num_images; i++)
     {
 
         if (i == 0)
@@ -1165,14 +1167,14 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     }
 
     s->Create(frame_width, frame_height, num_images, num_directions, 0);
-    for (unsigned int i = 0; i < num_images; i++)
+    for (i = 0; i < num_images; i++)
     {
         s->GetImage(i) = images[i];
     }
     delete[] images;
 
     s->SetBase(x1, y1, x2, y2);
-    for (unsigned int i = 0; i < num_directions; i++)
+    for (i = 0; i < num_directions; i++)
     {
 
         jsval direction_object_val;
@@ -6239,7 +6241,9 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
     jsval image_val = OBJECT_TO_JSVAL(image_array);
     JS_SetElement(cx, local_roots, 1, &image_val);
 
-    for (int i = 0; i < num_images; i++)
+    int i;
+
+    for (i = 0; i < num_images; i++)
     {
         JSObject* image = CreateImageObject(cx, spriteset->GetImage(i), false);
 
@@ -6273,7 +6277,7 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
     jsval direction_val = OBJECT_TO_JSVAL(direction_array);
     JS_SetElement(cx, local_roots, 2, &direction_val);
 
-    for (int i = 0; i < num_directions; i++)
+    for (i = 0; i < num_directions; i++)
     {
         JSObject* direction = JS_NewObject(cx, &direction_clasp, NULL, NULL);
 
@@ -8028,10 +8032,11 @@ typedef uint32 jsuint;
 bool GetLookUpTable(JSContext* cx, JSObject* array, unsigned char lookup[256])
 
 {
+    unsigned int i;
     jsuint length;
 
     // initialize the lookup to a null-lookup
-    for (int i = 0; i < 256; i++)
+    for (i = 0; i < 256; i++)
     {
         lookup[i] = i;
     }
@@ -8044,7 +8049,7 @@ bool GetLookUpTable(JSContext* cx, JSObject* array, unsigned char lookup[256])
         length = 256;
 
     bool is_null_lookup = true;
-    for (unsigned int i = 0; i < length; i++)
+    for (i = 0; i < length; i++)
     {
         jsval val;
         int32 value;

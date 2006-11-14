@@ -10,12 +10,14 @@ SMAP::SMAP()
 ////////////////////////////////////////////////////////////////////////////////
 SMAP::~SMAP()
 {
-    for (unsigned int i = 0; i < m_Tiles.size(); i++)
+    unsigned int i;
+
+    for (i = 0; i < m_Tiles.size(); i++)
     {
 
         DestroyImage(m_Tiles[i]);
     }
-    for (unsigned int i = 0; i < m_SolidTiles.size(); i++)
+    for (i = 0; i < m_SolidTiles.size(); i++)
     {
 
         DestroyImage(m_SolidTiles[i]);
@@ -65,6 +67,8 @@ SMAP::UpdateSolidTile(int i)
 bool
 SMAP::Load(const char* filename, IFileSystem& fs)
 {
+    unsigned int i;
+
     // load map
     if (m_Map.Load(filename, fs) == false)
         return false;
@@ -78,7 +82,7 @@ SMAP::Load(const char* filename, IFileSystem& fs)
 
         return false;
     }
-    for (unsigned int i = 0; i < m_LayerInfo.size(); i++)
+    for (i = 0; i < m_LayerInfo.size(); i++)
     {
 
         m_LayerInfo[i].time = 0;
@@ -88,12 +92,12 @@ SMAP::Load(const char* filename, IFileSystem& fs)
         m_LayerInfo[i].mask = CreateRGBA(255, 255, 255, 255);
     }
     InitializeAnimation();
-    for (unsigned int i = 0; i < m_Tiles.size(); i++)
+    for (i = 0; i < m_Tiles.size(); i++)
     {
 
         DestroyImage(m_Tiles[i]);
     }
-    for (unsigned int i = 0; i < m_SolidTiles.size(); i++)
+    for (i = 0; i < m_SolidTiles.size(); i++)
     {
 
         DestroyImage(m_SolidTiles[i]);
@@ -106,28 +110,26 @@ SMAP::Load(const char* filename, IFileSystem& fs)
         return false;
     }
     std::fill(m_Tiles.begin(), m_Tiles.end(), IMAGE(0));
-    for (int i = 0; i < m_Map.GetTileset().GetNumTiles(); i++)
+    for (i = 0; i < m_Map.GetTileset().GetNumTiles(); i++)
     {
-
         UpdateTile(i);
     }
+
     // create the solid image array
     m_SolidTiles.resize(m_Map.GetTileset().GetNumTiles());
     if (m_SolidTiles.size() != m_Map.GetTileset().GetNumTiles())
     {
-
         return false;
     }
     std::fill(m_SolidTiles.begin(), m_SolidTiles.end(), IMAGE(0));
-    for (int i = 0; i < m_Map.GetTileset().GetNumTiles(); i++)
+    for (i = 0; i < m_Map.GetTileset().GetNumTiles(); i++)
     {
-
         UpdateSolidTile(i);
     }
     // calculate maximum non-parallax layer dimensions
     m_MaxLayerWidth = 0;
     m_MaxLayerHeight = 0;
-    for (int i = 0; i < m_Map.GetNumLayers(); i++)
+    for (i = 0; i < m_Map.GetNumLayers(); i++)
     {
         const sLayer& layer = m_Map.GetLayer(i);
         if (layer.HasParallax() == false)
@@ -151,15 +153,16 @@ SMAP::Load(const char* filename, IFileSystem& fs)
 void
 SMAP::UpdateMap()
 {
-    // update layer times for autoscrolling
-    for (unsigned int i = 0; i < m_LayerInfo.size(); i++)
-    {
+    unsigned int i;
 
+    // update layer times for autoscrolling
+    for (i = 0; i < m_LayerInfo.size(); i++)
+    {
         m_LayerInfo[i].time++;
     }
     // update animations
     sTileset& tileset = m_Map.GetTileset();
-    for (int i = 0; i < tileset.GetNumTiles(); i++)
+    for (i = 0; i < tileset.GetNumTiles(); i++)
     {
 
         sTile& tile = tileset.GetTile(i);

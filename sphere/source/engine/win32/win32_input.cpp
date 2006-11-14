@@ -164,8 +164,10 @@ void TryJoystick(UINT id)
 
 bool InitInput(HWND window, SPHERECONFIG* config)
 {
+    unsigned int i;
+
     // build mapping from Windows to Sphere keys
-    for (int i = 0; i < MAX_KEY; ++i)
+    for (i = 0; i < MAX_KEY; ++i)
     {
         int k = SphereToWindows[i];
         if (k >= 0 && k < MAX_KEY)
@@ -180,7 +182,7 @@ bool InitInput(HWND window, SPHERECONFIG* config)
     // try to initialize joysticks
     UINT num = std::min(joyGetNumDevs(), 2U);
     UINT ids[2] = { JOYSTICKID1, JOYSTICKID2 };
-    for (unsigned int i = 0; i < num; ++i)
+    for (i = 0; i < num; ++i)
     {
         TryJoystick(ids[i]);
     }

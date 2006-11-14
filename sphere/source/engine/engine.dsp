@@ -106,7 +106,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /G5 /Zp1 /MDd /W3 /GX /ZI /Od /I "../../../js" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "WIN32_LEAN_AND_MEAN" /D "STRICT" /D "XP_PC" /D "JSFILE" /FAs /YX /FD /GZ /c
-# ADD CPP /nologo /G5 /MDd /W3 /GX /ZI /Od /I "../../third-party-msvc/include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "WIN32_LEAN_AND_MEAN" /D "STRICT" /D "XP_PC" /D "JSFILE" /D for="if (0) ; else for" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /D "NOMINMAX" /D "USE_MIDI" /D "USE_SPRITESET_SERVER" /D "_3D_FUNCTIONS" /FAs /FR /FD /GZ /c
+# ADD CPP /nologo /G5 /MDd /W3 /GX /ZI /Od /I "../../third-party-msvc/include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "WIN32_LEAN_AND_MEAN" /D "STRICT" /D "XP_PC" /D "JSFILE" /D "ZLIB_DLL" /D "MNG_USE_DLL" /D "MNG_SKIP_LCMS" /D "MNG_SKIP_IJG6B" /D "NOMINMAX" /D "USE_MIDI" /D "USE_SPRITESET_SERVER" /D "_3D_FUNCTIONS" /FAs /FR /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"

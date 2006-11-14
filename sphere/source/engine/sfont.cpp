@@ -480,11 +480,11 @@ SFONT::GetStringHeight(const char* string, int width) const
 bool
 SFONT::Initialize()
 {
-
+    int i;
     m_MaxHeight = 0;
+
     if ( !(m_Font.GetNumCharacters() > 0) )
     {
-
         return false;
     }
 
@@ -492,7 +492,7 @@ SFONT::Initialize()
     if (m_Images == NULL)
         return false;
 
-    for (int i = 0; i < m_Font.GetNumCharacters(); i++)
+    for (i = 0; i < m_Font.GetNumCharacters(); i++)
     {
         sFontCharacter& c = m_Font.GetCharacter(i);
         m_Images[i] = CreateImage(c.GetWidth(), c.GetHeight(), c.GetPixels());
@@ -513,7 +513,7 @@ SFONT::Initialize()
         }
 
     }
-    for (int i = 0; i < m_Font.GetNumCharacters(); i++)
+    for (i = 0; i < m_Font.GetNumCharacters(); i++)
     {
 
         if (m_Font.GetCharacter(i).GetHeight() > m_MaxHeight)
