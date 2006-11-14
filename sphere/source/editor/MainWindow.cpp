@@ -693,15 +693,20 @@ CMainWindow::IsProjectFile(const char* filename)
 		strcmp(filename + filename_length - game_sgm_length, game_sgm) == 0;    
 }
 ////////////////////////////////////////////////////////////////////////////////
+
 const char*
 CMainWindow::GetProjectDirectory() const
 {
   return !m_ProjectOpen ? "" : m_Project.GetDirectory();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CMainWindow::OpenGameFile(const char* filename)
 {
+  unsigned int i;
+
   if (!filename || strlen(filename) == 0)
     return;
 #ifdef I_SUCK
@@ -711,7 +716,7 @@ CMainWindow::OpenGameFile(const char* filename)
     return;
 	}
 #endif
-  for (int i = 0; i < NUM_GROUP_TYPES; i++) {
+  for (i = 0; i < NUM_GROUP_TYPES; i++) {
     std::vector<std::string> extensions;
     FTL.GetFileTypeExtensions(i, false, extensions);
     
@@ -724,7 +729,7 @@ CMainWindow::OpenGameFile(const char* filename)
     }
   }
   char proto[100] = "";
-  for (unsigned int i = 0; i < strlen(filename) && i < (sizeof(proto) - strlen("://")); i++) {
+  for (i = 0; i < strlen(filename) && i < (sizeof(proto) - strlen("://")); i++) {
     if (strncmp(filename + i, "://", 3) == 0) {
       strncpy(proto, filename, i);
       break;
@@ -749,7 +754,9 @@ CMainWindow::OpenGameFile(const char* filename)
   }
 #endif
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CMainWindow::OpenDocumentWindow(int grouptype, const char* filename)
 {
@@ -1095,10 +1102,14 @@ CMainWindow::OnClose()
   DestroyWindow();
 }
 ////////////////////////////////////////////////////////////////////////////////
-std::string GenerateSupportedExtensionsFilter() {
+
+std::string GenerateSupportedExtensionsFilter()
+{
+  int i;
+
   // generate list of all supported extensions
   std::set<std::string> extensions;
-  for (int i = 0; i < NUM_GROUP_TYPES; i++) {
+  for (i = 0; i < NUM_GROUP_TYPES; i++) {
     std::vector<std::string> e;
     FTL.GetFileTypeExtensions(i, false, e);
     for (unsigned int j = 0; j < e.size(); j++) {
@@ -1118,7 +1129,7 @@ std::string GenerateSupportedExtensionsFilter() {
   std::string filter;
   filter += "All Sphere Files|game.sgm" + all_filter + "|";
   filter += "Project File (game.sgm)|game.sgm|";
-  for (int i = 0; i < NUM_GROUP_TYPES; i++) {
+  for (i = 0; i < NUM_GROUP_TYPES; i++) {
     std::vector<std::string> e;
     FTL.GetFileTypeExtensions(i, false, e);
     std::string type_filter;
@@ -1134,7 +1145,9 @@ std::string GenerateSupportedExtensionsFilter() {
   filter += "All Files (*.*)|*.*||";
   return filter;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 static
 std::string GetFolderFromPathName(CString thePath)
 {
@@ -1685,7 +1698,10 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
     sSpriteset sprite;
     // there are eight spritesets per chipset, 4 rows, 2 columns
     for (int sy = 0; sy < 2; sy++) {
-      for (int sx = 0; sx < 4; sx++) { 
+      for (int sx = 0; sx < 4; sx++) {
+
+        int d;
+ 
         // create the spriteset
         sprite.Create(frame_width, frame_height, num_images, num_directions, num_frames + 1);
         sprite.SetDirectionName(0, "north");
@@ -1693,7 +1709,7 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
         sprite.SetDirectionName(2, "south");
         sprite.SetDirectionName(3, "west");
   
-        for (int d = 0; d < num_directions; d++) {
+        for (d = 0; d < num_directions; d++) {
           for (int f = 0; f < num_frames; f++) {
             CImage32& frame = sprite.GetImage(d * num_frames + f);
             int offset_x = (sx * frame_width * num_frames) + f * frame_width;
@@ -1706,7 +1722,7 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
             frame.ReplaceColor(color1, color2);
           }
         }
-        for (int d = 0; d < num_directions; d++) {
+        for (d = 0; d < num_directions; d++) {
           sprite.SetFrameIndex(d, 0, d * num_frames +  1);
           sprite.SetFrameIndex(d, 1, d * num_frames +  0);
           sprite.SetFrameIndex(d, 2, d * num_frames +  1);
@@ -1718,6 +1734,8 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
         sprite.InsertDirection(5);
         sprite.InsertDirection(7);
         if (sprite.GetNumDirections() == 8) {
+          int j;
+
           sprite.SetDirectionName(1, "northeast");
           sprite.SetDirectionName(3, "southeast");
           sprite.SetDirectionName(5, "southwest");
@@ -1726,7 +1744,7 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
                                       "east", "southeast",
                                       "west", "southwest",
                                       "west", "northwest"};
-          for (int j = 0; j < num_directions; j++) {
+          for (j = 0; j < num_directions; j++) {
             const int d1 = sprite.GetDirectionNum(directions[(j * 2) + 0]);
             const int d2 = sprite.GetDirectionNum(directions[(j * 2) + 1]);
             const int __num_frames__= sprite.GetNumFrames(d1) - 1;
@@ -1735,7 +1753,7 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
                 sprite.InsertFrame(d2, f);
             }
           }
-          for (int j = 0; j < num_directions; j++) {
+          for (j = 0; j < num_directions; j++) {
             const int d1 = sprite.GetDirectionNum(directions[(j * 2) + 0]);
             const int d2 = sprite.GetDirectionNum(directions[(j * 2) + 1]);
             const int __num_frames__= sprite.GetNumFrames(d2);

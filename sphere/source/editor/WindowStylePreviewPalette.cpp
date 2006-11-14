@@ -50,8 +50,8 @@ CWindowStylePreviewPalette::Destroy()
 afx_msg void
 CWindowStylePreviewPalette::DrawBitmap(CPaintDC& dc, int bitmap, int x, int y, int mode)
 {
-	RECT ClientRect;
-	GetClientRect(&ClientRect);
+  RECT ClientRect;
+  GetClientRect(&ClientRect);
 
   if (!m_BlitImage || m_BlitImage->GetPixels() == NULL) {
     dc.FillRect(&ClientRect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
@@ -62,15 +62,16 @@ CWindowStylePreviewPalette::DrawBitmap(CPaintDC& dc, int bitmap, int x, int y, i
   int blit_height = m_BlitImage->GetHeight();
 
   // draw the frame
-	// fill the DIB section
+  // fill the DIB section
   BGRA* pixels = (BGRA*)m_BlitImage->GetPixels();
-
   const CImage32& m_Image = m_WindowStyle->GetBitmap(bitmap);
   
+  int iy;
+
   // make a checkerboard
 //  for (int iy = 0; iy < m_Image.GetHeight(); iy++
 //    for (int ix = 0; ix < m_Image.GetWidth(); ix++)
-  for (int iy = 0; iy < blit_height; iy++)
+  for (iy = 0; iy < blit_height; iy++)
     for (int ix = 0; ix < blit_width; ix++)  
     {
       pixels[iy * blit_width + ix] = 
@@ -81,7 +82,7 @@ CWindowStylePreviewPalette::DrawBitmap(CPaintDC& dc, int bitmap, int x, int y, i
 
   // draw the frame into it
 	const RGBA* source = m_Image.GetPixels();
-  for (int iy = 0; iy < blit_height; iy++) {
+  for (iy = 0; iy < blit_height; iy++) {
     for (int ix = 0; ix < blit_width; ix++)
     {
       int ty = (int) (iy / m_ZoomFactor.GetZoomFactor());

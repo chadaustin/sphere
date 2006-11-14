@@ -521,12 +521,14 @@ CTilesetView::OnPaint()
       int it = (iy + m_TopRow) * (client_rect.right / blit_width) + ix;
       if (ix < num_tiles_x && it < m_Tileset->GetNumTiles())
       {
+        int py;
+
         // draw the tile
         // fill the DIB section
         BGRA* pixels = (BGRA*)m_BlitTile->GetPixels();
         
         // make a checkerboard
-        for (int py = 0; py < blit_height; py++)
+        for (py = 0; py < blit_height; py++)
           for (int px = 0; px < blit_width; px++)
           {
             pixels[py * blit_width + px] = 
@@ -540,7 +542,7 @@ CTilesetView::OnPaint()
         if (m_ShowTileObstructions && it >= 0 && it < int(m_TileObstructions.size()))
           tilepixels = m_TileObstructions[it].GetPixels();
         
-        for (int py = 0; py < blit_height; py++)
+        for (py = 0; py < blit_height; py++)
           for (int px = 0; px < blit_width; px++)
           {
             int ty = (int) (py / m_ZoomFactor.GetZoomFactor());
@@ -1068,8 +1070,10 @@ CTilesetView::OnMoveOther()
       std::vector<int> list_b;
       if (value < 0)
       {
+        int i;
+
         // swap the tiles
-        for (int i = 0; i < abs(value); i++)
+        for (i = 0; i < abs(value); i++)
         {
           int one = current - i;
           int two = current - i - 1;
@@ -1081,7 +1085,7 @@ CTilesetView::OnMoveOther()
           }
         }
         // swap the indices...
-        for (int i = 0; i <= abs(value); i++)
+        for (i = 0; i <= abs(value); i++)
         {
           int one = new_index + i;
           int two = new_index + i + 1;
@@ -1099,8 +1103,10 @@ CTilesetView::OnMoveOther()
       else
       if (value > 0)
       {
+        int i;
+
         // swap the tiles
-        for (int i = 0; i < abs(value); i++)
+        for (i = 0; i < abs(value); i++)
         {
           int one = current + i;
           int two = current + i + 1;
@@ -1112,7 +1118,7 @@ CTilesetView::OnMoveOther()
           }
         }
         // swap the indices...
-        for (int i = 0; i <= abs(value); i++)
+        for (i = 0; i <= abs(value); i++)
         {
           int one = new_index - i;
           int two = new_index - i - 1;

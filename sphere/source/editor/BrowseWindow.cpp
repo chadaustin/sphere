@@ -327,6 +327,7 @@ CBrowseWindow::OnPaint()
   }
   int blit_width  = m_BlitTile->GetWidth();
   int blit_height = m_BlitTile->GetHeight();
+
   for (int iy = 0; iy < client_rect.bottom / blit_height + 1; iy++)
     for (int ix = 0; ix < client_rect.right / blit_width + 1; ix++)
     {
@@ -361,23 +362,26 @@ CBrowseWindow::OnPaint()
         int tile_width  = m_BrowseList[it]->GetWidth()  < blit_width  ? m_BrowseList[it]->GetWidth()  : blit_width;
         int tile_height = m_BrowseList[it]->GetHeight() < blit_height ? m_BrowseList[it]->GetHeight() : blit_height;
         const RGBA* tilepixels = m_BrowseList[it]->GetPixels();
-        for (int iy = 0; iy < tile_height; iy++)
-          for (int ix = 0; ix < tile_width; ix++)
+        int tiy;
+
+        for (tiy = 0; tiy < tile_height; tiy++)
+          for (int tix = 0; tix < tile_width; tix++)
           {
-            int ty = (int) (iy / m_ZoomFactor.GetZoomFactor());
-            int tx = (int) (ix / m_ZoomFactor.GetZoomFactor());
+            int ty = (int) (tiy / m_ZoomFactor.GetZoomFactor());
+            int tx = (int) (tix / m_ZoomFactor.GetZoomFactor());
             int t = ty * m_BrowseList[it]->GetWidth() + tx;
             
-            int d = iy * blit_width + ix;
+            int d = tiy * blit_width + tix;
             int alpha = tilepixels[t].alpha;
             pixels[d].red   = (tilepixels[t].red   * alpha + pixels[d].red   * (255 - alpha)) / 256;
             pixels[d].green = (tilepixels[t].green * alpha + pixels[d].green * (255 - alpha)) / 256;
             pixels[d].blue  = (tilepixels[t].blue  * alpha + pixels[d].blue  * (255 - alpha)) / 256;
           }
-        for (int iy = m_BrowseList[it]->GetHeight(); iy < blit_height; iy++)
-          for (int ix = m_BrowseList[it]->GetWidth(); ix < blit_width; ix++)
+
+        for (tiy  = m_BrowseList[it]->GetHeight(); tiy < blit_height; tiy++)
+          for (int tix = m_BrowseList[it]->GetWidth(); tix < blit_width; tix++)
           {
-            int d = iy * blit_width + ix;
+            int d = tiy * blit_width + tix;
             pixels[d].red = 0;
             pixels[d].green = 0;
             pixels[d].blue = 0;

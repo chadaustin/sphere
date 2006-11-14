@@ -139,8 +139,10 @@ CConvolveListEditDialog::OnOK()
   bool number_is_floating_point;
   bool number_is_percentage;
 
+  int y;
+
   // fill mask with values from dialog
-  for (int y = 0; y < 5; y++) {
+  for (y = 0; y < 5; y++) {
     for (int x = 0; x < 5; x++) {
       CString string;
 
@@ -174,13 +176,15 @@ CConvolveListEditDialog::OnOK()
   }
 
   // fill in filter mask values
-  for (int y = 0; y < m_FilterInfo->mask_height; y++) {
+  for (y = 0; y < m_FilterInfo->mask_height; y++) {
     for (int x = 0; x < m_FilterInfo->mask_width; x++) {
       m_FilterInfo->mask[y * m_FilterInfo->mask_width + x] = mask[(y + offsety) * 5 + (x + offsetx)];
     }
   }
 
   delete[] mask;
+  mask = NULL;
+
   m_FilterInfo->wrap  =  IsDlgButtonChecked(IDC_FILTER_LIST_EDIT_WRAP)  == BST_CHECKED ? 1 : 0;
   m_FilterInfo->clamp =  IsDlgButtonChecked(IDC_FILTER_LIST_EDIT_CLAMP) == BST_CHECKED ? 1 : 0;
 
@@ -280,8 +284,10 @@ CConvolveListDialog::DrawPreview(CPaintDC& dc, RECT* rect)
   if (current_height > height)
     current_height = height;
 
+  int iy;
+
   RGBA* pixels = (RGBA*) blit_tile->GetPixels();
-  for (int iy = 0; iy < current_height; iy++) {
+  for (iy = 0; iy < current_height; iy++) {
     for (int ix = 0; ix < current_width; ix++) {
       pixels[iy * width + ix].red   = m_Pixels[iy * m_Width + ix].red;
       pixels[iy * width + ix].green = m_Pixels[iy * m_Width + ix].green;
@@ -290,7 +296,7 @@ CConvolveListDialog::DrawPreview(CPaintDC& dc, RECT* rect)
     }
   }
 
-  for (int iy = current_height; iy < height; iy++) {
+  for (iy = current_height; iy < height; iy++) {
     for (int ix = current_width; ix < width; ix++) {
       pixels[iy * width + ix].red   = 0;
       pixels[iy * width + ix].green = 0;
@@ -490,10 +496,11 @@ void
 CConvolveListDialog::SortFilters()
 {
   // delete all the list items
-  for (int i = m_FilterList.size() - 1; i >= 0; i--)
-    SendDlgItemMessage(IDC_FILTER_LIST, LB_DELETESTRING, i, 0);
+  for (int k = m_FilterList.size() - 1; k >= 0; k--) // k must be an signed integer because of the k >= 0...
+    SendDlgItemMessage(IDC_FILTER_LIST, LB_DELETESTRING, k, 0);
 
   std::sort(m_FilterList.begin(), m_FilterList.end(), FilterCompare);
+
   // add them again
   for (unsigned int i = 0; i < m_FilterList.size(); i++)
     SendDlgItemMessage(IDC_FILTER_LIST, LB_ADDSTRING, 0, (LPARAM)m_FilterList[i]->name.c_str());

@@ -63,7 +63,9 @@ CFontPreviewPalette::Destroy()
   // destroy window
   DestroyWindow();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CFontPreviewPalette::OnSize(UINT type, int cx, int cy)
 {
@@ -71,7 +73,9 @@ CFontPreviewPalette::OnSize(UINT type, int cx, int cy)
   m_RedrawAll = true;
   Invalidate();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CFontPreviewPalette::OnPaint()
 {
@@ -93,19 +97,23 @@ CFontPreviewPalette::OnPaint()
   const int blit_height = m_BlitImage->GetHeight();
   int offset_x = 0;
   const char* text = m_Text.c_str();
-	for (int i = 0; i < int(strlen(text)); i++)
+
+  for (int i = 0; i < int(strlen(text)); i++)
   {
     if ((int)text[i] < 0 || (int)text[i] >= m_Font->GetNumCharacters())
       continue;
+
     const CImage32& image = m_Font->GetCharacter(text[i]);
    	if (redraw_all || (int)text[i] == redraw_character)
     {
-		  // draw the frame
-		  // fill the DIB section
-      BGRA* pixels = (BGRA*)m_BlitImage->GetPixels();
-      
+      int iy;
+
+	  // draw the frame
+	  // fill the DIB section
+      BGRA* pixels = (BGRA*)m_BlitImage->GetPixels();    
+
       // make a checkerboard
-      for (int iy = 0; iy < blit_height; iy++)
+      for (iy = 0; iy < blit_height; iy++)
         for (int ix = 0; ix < blit_width; ix++)
         {
           pixels[iy * blit_width + ix] = 
@@ -115,7 +123,7 @@ CFontPreviewPalette::OnPaint()
         }
       // draw the frame into it
 		  const RGBA* source = image.GetPixels();
-      for (int iy = 0; iy < blit_height; iy++) {
+      for (iy = 0; iy < blit_height; iy++) {
         for (int ix = 0; ix < blit_width; ix++)
         {
           int ty = (int) (iy / m_ZoomFactor.GetZoomFactor());

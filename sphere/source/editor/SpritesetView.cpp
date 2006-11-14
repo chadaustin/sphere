@@ -1195,7 +1195,9 @@ CSpritesetView::OnExportDirectionAsImage()
   if (dialog.DoModal() == IDOK) {
     int image_width = 0;
     int image_height = 0;
-    for (int i = 0; i < m_Spriteset->GetNumFrames(m_CurrentDirection); i++) {
+    int i;
+
+    for (i = 0; i < m_Spriteset->GetNumFrames(m_CurrentDirection); i++) {
       int height = m_Spriteset->GetImage(m_Spriteset->GetFrameIndex(m_CurrentDirection, i)).GetHeight();
       image_height = image_height > height ? image_height : height;
       image_width  += m_Spriteset->GetImage(m_Spriteset->GetFrameIndex(m_CurrentDirection, i)).GetWidth();
@@ -1208,7 +1210,7 @@ CSpritesetView::OnExportDirectionAsImage()
     image.SetBlendMode(CImage32::REPLACE); // Formerly CImage32::BlendMode::REPLACE
     int x = 0;
     int y = 0;
-    for (int i = 0; i < m_Spriteset->GetNumFrames(m_CurrentDirection); ++i) {
+    for (i = 0; i < m_Spriteset->GetNumFrames(m_CurrentDirection); ++i) {
       CImage32& frame = m_Spriteset->GetImage(m_Spriteset->GetFrameIndex(m_CurrentDirection, i));
       image.BlitImage(frame, x, y);
       x += frame.GetWidth();

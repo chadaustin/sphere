@@ -57,14 +57,17 @@ afx_msg void
 CSpritesetAnimationPalette::OnPaint()
 {
   CPaintDC dc(this);
-	RECT ClientRect;
-	GetClientRect(&ClientRect);
+  RECT ClientRect;
+  GetClientRect(&ClientRect);
+  
   if (!m_BlitImage || m_BlitImage->GetPixels() == NULL) {
     dc.FillRect(&ClientRect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
     return;
   }
+
   int blit_width  = m_BlitImage->GetWidth();
   int blit_height = m_BlitImage->GetHeight();
+
   // draw black rectangle around image
   if (1) {
     RECT rect = ClientRect;
@@ -75,14 +78,17 @@ CSpritesetAnimationPalette::OnPaint()
     dc.FillRect(&rect, CBrush::FromHandle((HBRUSH)GetStockObject(BLACK_BRUSH)));
     rect.top -= blit_height;
   }
-	if (m_SelectedDirection >= 0 && m_SelectedDirection < m_Spriteset->GetNumDirections())
-	{
-		// draw the frame
-		// fill the DIB section
+
+  if (m_SelectedDirection >= 0 && m_SelectedDirection < m_Spriteset->GetNumDirections())
+  {
+	// draw the frame
+	// fill the DIB section
     BGRA* pixels = (BGRA*)m_BlitImage->GetPixels();
       
+    int iy;
+
     // make a checkerboard
-    for (int iy = 0; iy < blit_height; iy++)
+    for (iy = 0; iy < blit_height; iy++)
       for (int ix = 0; ix < blit_width; ix++)
       {
         pixels[iy * blit_width + ix] = 
@@ -91,9 +97,9 @@ CSpritesetAnimationPalette::OnPaint()
             CreateBGRA(255, 192, 192, 255));
       }
     // draw the frame into it
-		int frame_index =  m_Spriteset->GetFrameIndex(m_SelectedDirection, m_CurrentFrame);
+	int frame_index =  m_Spriteset->GetFrameIndex(m_SelectedDirection, m_CurrentFrame);
     RGBA* source = m_Spriteset->GetImage(frame_index).GetPixels();
-    for (int iy = 0; iy < blit_height; iy++) {
+    for (iy = 0; iy < blit_height; iy++) {
       for (int ix = 0; ix < blit_width; ix++)
       {
         int ty = (int)(iy / m_ZoomFactor.GetZoomFactor());

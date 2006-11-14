@@ -61,8 +61,11 @@ public:
     m_start_tab = 0;
     m_start_character = 0;
   }
+
   bool operator()(const int a, const int b) const
   {
+    unsigned int i;
+
     if (a < 0) {
       return false;
     }
@@ -85,7 +88,8 @@ public:
       int tab_pos_a = 0;
       int tab_num_b = 0;
       int tab_pos_b = 0;
-      for (unsigned int i = 0; i < m_lines[a]->size; i++) {
+
+      for (i = 0; i < m_lines[a]->size; i++) {
         if (m_lines[a]->data[i] == '\t') {
           tab_num_a += 1;
           tab_pos_a = i;
@@ -94,7 +98,7 @@ public:
           }
         }
       }
-      for (unsigned int i = 0; i < m_lines[b]->size; i++) {
+      for (i = 0; i < m_lines[b]->size; i++) {
         if (m_lines[b]->data[i] == '\t') {
           tab_num_b += 1;
           tab_pos_b = i;
@@ -151,7 +155,7 @@ public:
           break;
         }
       }
-      for (unsigned int i = 0; (i < m_lines[b]->size - start_position_b); i++)
+      for (i = 0; (i < m_lines[b]->size - start_position_b); i++)
       {
         int y = m_lines[b]->data[start_position_b + i];
         if (isdigit(y))
@@ -177,7 +181,7 @@ public:
     }
     if (m_ignore_case)
     {
-      for (unsigned int i = 0; (i < m_lines[a]->size - start_position_a) && (i < m_lines[b]->size - start_position_b); i++)
+      for (i = 0; (i < m_lines[a]->size - start_position_a) && (i < m_lines[b]->size - start_position_b); i++)
       {
         int x = m_lines[a]->data[start_position_a + i];
         int y = m_lines[b]->data[start_position_b + i];
@@ -198,7 +202,7 @@ public:
     }
     else
     {
-      for (unsigned int i = 0; (i < m_lines[a]->size - start_position_a) && (i < m_lines[b]->size - start_position_b); i++) {
+      for (i = 0; (i < m_lines[a]->size - start_position_a) && (i < m_lines[b]->size - start_position_b); i++) {
         int x = m_lines[a]->data[start_position_a + i];
         int y = m_lines[b]->data[start_position_b + i];
         if (x != y) {
@@ -209,7 +213,9 @@ public:
     return false;
   }
 };
+
 ///////////////////////////////////////////////////////////////////////////////
+
 CLineSorter::CLineSorter()
 {
   delete_duplicates = false;
@@ -220,12 +226,16 @@ CLineSorter::CLineSorter()
   start_character = 0;
   start_tab = 0;
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 CLineSorter::~CLineSorter()
 {
   DestroyLines();
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 void
 CLineSorter::DestroyLines()
 {
@@ -240,18 +250,23 @@ CLineSorter::DestroyLines()
   }
   m_Lines.clear();
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 LRESULT
 CLineSorter::SendEditor(UINT msg, WPARAM wparam, LPARAM lparam) {
   return ::SendMessage(m_Editor, msg, wparam, lparam);
 }
+
 ///////////////////////////////////////////////////////////////////////////////
 void
 CLineSorter::SetStatusText(const char* string)
 {
   GetStatusBar()->SetWindowText(string);
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 void
 CLineSorter::Sort()
 {
@@ -353,7 +368,8 @@ CLineSorter::Sort()
     int last_index = 0;
     int line_index;
     // SendEditor(SCI_ADDTEXT, strlen("after sort...\n"), (LPARAM)"after sort...\n");
-    for (/*unsigned*/ int i = 0; (unsigned int) i < m_Lines.size() && (unsigned int) i < line_indexes.size(); i++, last_index = line_index) {
+
+    for (i = 0; i < m_Lines.size() && i < line_indexes.size(); i++, last_index = line_index) {
       line_index = (reverse_lines ? max_lines - i : i);
       if (sort_lines) {
         line_index = line_indexes[line_index];
@@ -378,4 +394,5 @@ CLineSorter::Sort()
   DestroyLines();
   SetStatusText("");
 }
+
 ///////////////////////////////////////////////////////////////////////////////

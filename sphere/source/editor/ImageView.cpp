@@ -848,8 +848,11 @@ CImageView::UpdateSelectionPixels(const RGBA* pixels, int sx, int sy, int sw, in
           q.x - m_SelectionX, q.y - m_SelectionY,
           c, clip, Local::CopyBool);
     }
+
+    int dy;
+
     // fill in gaps between lines
-    for (int dy = 0; dy < selection_height; dy++) {
+    for (dy = 0; dy < selection_height; dy++) {
       int last_on = -1;
       for (int dx = 0; dx < selection_width; dx++) {
         int index = dy * selection_width + dx;
@@ -865,7 +868,7 @@ CImageView::UpdateSelectionPixels(const RGBA* pixels, int sx, int sy, int sw, in
       }
     }
     // update image
-    for (int dy = sy; dy < (sy + sh); dy++) {
+    for (dy = sy; dy < (sy + sh); dy++) {
       for (int dx = sx; dx < (sx + sw); dx++) {
         int selection_index = (dy - sy) * selection_width + (dx - sx);
         int pixel_index = (dy - sy) * sw + (dx - sx);
@@ -1577,19 +1580,23 @@ CImageView::UpdateSelection()
     } else {
       m_SelectionPoints.push_back(end);
     }
+
     // work out SX, SY, SW, SH
     if (m_SelectionPoints.size() > 0) {
+      unsigned int i;
+
       m_SelectionX = m_SelectionPoints[0].x;
       m_SelectionY = m_SelectionPoints[0].y;
       m_SelectionWidth = 0;
       m_SelectionHeight = 0;
-      for (unsigned int i = 0; i < m_SelectionPoints.size(); i++) {
+
+      for (i = 0; i < m_SelectionPoints.size(); i++) {
         if (m_SelectionPoints[i].x < m_SelectionX)
           m_SelectionX = m_SelectionPoints[i].x; 
         if (m_SelectionPoints[i].y < m_SelectionY)
           m_SelectionY = m_SelectionPoints[i].y; 
       }
-      for (unsigned int i = 0; i < m_SelectionPoints.size(); i++) {
+      for (i = 0; i < m_SelectionPoints.size(); i++) {
         if(m_SelectionPoints[i].x - m_SelectionX > m_SelectionWidth)
           m_SelectionWidth = m_SelectionPoints[i].x - m_SelectionX;
         if(m_SelectionPoints[i].y - m_SelectionY > m_SelectionHeight)

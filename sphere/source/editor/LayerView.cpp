@@ -485,8 +485,10 @@ static bool ExportAllVisibleLayersAsImage(const char* filename, sTileset& tilese
   int tile_height = tileset.GetTileHeight();
   int dest_image_width = 0;
   int dest_image_height = 0;
+  unsigned int i;
+
   // find the size of the image we're going to create
-  for (unsigned int i = 0; i < layers.size(); i++) {
+  for (i = 0; i < layers.size(); i++) {
     if (layers[i].GetWidth() * tile_width > dest_image_width) {
       dest_image_width = layers[i].GetWidth() * tile_width;
     }
@@ -506,7 +508,7 @@ static bool ExportAllVisibleLayersAsImage(const char* filename, sTileset& tilese
   else // nothing to export
     return false;
   // we already have the first layer, now we do the rest
-  for (int i = 1; i < int(layers.size()); i++) {
+  for (i = 1; i < layers.size(); i++) {
     int image_width  = layers[i].GetWidth()  * tile_width;
     int image_height = layers[i].GetHeight() * tile_height;
     CImage32 src_image(image_width, image_height);
@@ -557,9 +559,11 @@ CLayerView::OnExportAllVisibleLayers()
 afx_msg void
 CLayerView::OnFlattenVisibleLayers()
 {
+  unsigned int i;
+
   std::vector<sLayer> layers;
   // get a list of the visible layers
-  for (int i = 0; i < m_Map->GetNumLayers(); i++) {
+  for (i = 0; i < m_Map->GetNumLayers(); i++) {
     if (m_Map->GetLayer(i).IsVisible()) {
       layers.push_back(m_Map->GetLayer(i));
     }
@@ -579,7 +583,7 @@ CLayerView::OnFlattenVisibleLayers()
   int width = 0;
   int height = 0;
   // find the size of the image we're going to create
-  for (int i = 0; i < int(layers.size()); i++) {
+  for (i = 0; i < layers.size(); i++) {
     if (layers[i].GetWidth() > width) {
       width = layers[i].GetWidth();
     }
@@ -643,7 +647,7 @@ CLayerView::OnFlattenVisibleLayers()
     }
   }
   // turn the layers that were visible off
-  for (unsigned int i = 0; i < layers.size(); i++) {
+  for (i = 0; i < layers.size(); i++) {
     m_Map->GetLayer(i).SetVisible(false);
   }
   m_Map->AppendLayer(new_layer);

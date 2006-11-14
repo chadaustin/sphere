@@ -90,8 +90,10 @@ CTilePreviewPalette::OnPaint()
       // fill the DIB section
       BGRA* pixels = (BGRA*)m_BlitImage->GetPixels();
       
+      int iy;
+
       // make a checkerboard
-      for (int iy = 0; iy < blit_height; iy++) {
+      for (iy = 0; iy < blit_height; iy++) {
         for (int ix = 0; ix < blit_width; ix++) {
           pixels[iy * blit_width + ix] = 
             ((ix / 8 + iy / 8) % 2 ?
@@ -105,7 +107,7 @@ CTilePreviewPalette::OnPaint()
       int frame_height = m_Image.GetHeight() < blit_height ? m_Image.GetHeight() : blit_height;
 
       const RGBA* source = m_Image.GetPixels();
-      for (int iy = 0; iy < frame_height; iy++) {
+      for (iy = 0; iy < frame_height; iy++) {
         for (int ix = 0; ix < frame_width; ix++)
         {
           int ty = (int) (iy / m_ZoomFactor.GetZoomFactor());

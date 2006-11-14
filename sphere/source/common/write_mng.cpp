@@ -418,6 +418,9 @@ mng_bool image_to_palette(mng_palette8 palette, int* palette_size,
 ///////////////////////////////////////////////////////////
 void calc_different_area(const RGBA* one, const RGBA* two, const int width, const int height, int* x, int* y, int* w, int* h)
 {
+    int px;
+    int py;
+
     int done;
     *x = 0;
     *y = 0;
@@ -425,9 +428,9 @@ void calc_different_area(const RGBA* one, const RGBA* two, const int width, cons
     *h = height;
 
     done = 0;
-    for (int py = 0; !done && py < height; py++)
+    for (py = 0; !done && py < height; py++)
     {
-        for (int px = 0; px < width; px++)
+        for (px = 0; px < width; px++)
         {
             const RGBA* p1 = &one[py * width + px];
             const RGBA* p2 = &two[py * width + px];
@@ -446,9 +449,9 @@ void calc_different_area(const RGBA* one, const RGBA* two, const int width, cons
     }
 
     done = 0;
-    for (int px = 0; !done && px < width; px++)
+    for (px = 0; !done && px < width; px++)
     {
-        for (int py = 0; py < height; py++)
+        for (py = 0; py < height; py++)
         {
             const RGBA* p1 = &one[py * width + px];
             const RGBA* p2 = &two[py * width + px];
@@ -470,9 +473,9 @@ void calc_different_area(const RGBA* one, const RGBA* two, const int width, cons
     *h = height - *y;
 
     done = 0;
-    for (int px = width - 1; !done && px > *x; px--)
+    for (px = width - 1; !done && px > *x; px--)
     {
-        for (int py = height - 1; py > *y; py--)
+        for (py = height - 1; py > *y; py--)
         {
             const RGBA* p1 = &one[py * width + px];
             const RGBA* p2 = &two[py * width + px];
@@ -491,9 +494,9 @@ void calc_different_area(const RGBA* one, const RGBA* two, const int width, cons
     }
 
     done = 0;
-    for (int py = height - 1; !done && py > *y; py--)
+    for (py = height - 1; !done && py > *y; py--)
     {
-        for (int px = width - 1; px > *x; px--)
+        for (px = width - 1; px > *x; px--)
         {
             const RGBA* p1 = &one[py * width + px];
             const RGBA* p2 = &two[py * width + px];

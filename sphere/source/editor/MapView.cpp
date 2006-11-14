@@ -726,7 +726,10 @@ CMapView::LayerAreaCopy()
   sLayer newLayer;
   pLayer.Resize(width, height);
   newLayer.Resize(width, height);
-  for (int y=start_y; y<=end_y; y++)
+
+  int y;  
+
+  for (y=start_y; y<=end_y; y++)
     for (int x=start_x; x<=end_x; x++)
       pLayer.SetTile(x-start_x, y-start_y, l.GetTile(x, y));
   // fun time, calculate the tiles needed
@@ -734,7 +737,8 @@ CMapView::LayerAreaCopy()
   sTileset newTileset;
   newTileset.SetTileSize(t.GetTileWidth(), t.GetTileHeight());
   std::vector<int> usedTiles;
-  for (int y=0; y<height; y++)
+  
+  for (y=0; y<height; y++)
     for (int x=0; x<width; x++)
     {
       int tileOffset = -1;
@@ -775,7 +779,7 @@ CMapView::LayerAreaCopy()
   // copy the map data into memory
   *ptr++ = newLayer.GetWidth();        //width
   *ptr++ = newLayer.GetHeight();       //height
-  for (int y = 0; y < height; y++) {
+  for (y = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
       *ptr++ = newLayer.GetTile(x, y);
     }
@@ -823,7 +827,10 @@ CMapView::LayerAreaCopy()
     CloseClipboard();
     return;
   }
-  for (int ty = start_y; ty <= end_y; ty++) {
+  
+  int ty;
+
+  for (ty = start_y; ty <= end_y; ty++) {
     for (int tx = start_x; tx <= end_x; tx++) {
       const RGBA* source = m_Map->GetTileset().GetTile(l.GetTile(tx, ty)).GetPixels();
       for (int iy = 0; iy < th; iy++) {
@@ -849,7 +856,8 @@ CMapView::LayerAreaCopy()
     CloseClipboard();
     return;
   }
-  for (int ty = start_y; ty <= end_y; ty++) {
+
+  for (ty = start_y; ty <= end_y; ty++) {
     for (int tx = start_x; tx <= end_x; tx++) {
       const RGBA* source = m_Map->GetTileset().GetTile(l.GetTile(tx, ty)).GetPixels();
       for (int iy = 0; iy < th; iy++) {
@@ -904,11 +912,13 @@ void PasteMapUnderPointFunc(sMap* m_Map, const sMap& tMap, int m_SelectedLayer, 
   const int tile_width = tTileset.GetTileWidth();
   const int tile_height = tTileset.GetTileHeight();
 
+  int i;
+
   // relocate all the tiles, add the tiles to the actual tileset if needed
-  for (int i = 0; i < tTileset.GetNumTiles(); i++)
+  for (i = 0; i < tTileset.GetNumTiles(); i++)
     newTileLoc.push_back(i);
 
-  for (int i = 0; i < tTileset.GetNumTiles(); i++) {
+  for (i = 0; i < tTileset.GetNumTiles(); i++) {
     bool found = false;
     sTileset& cTileset = m_Map->GetTileset();
     for (int j = 0; j < cTileset.GetNumTiles(); j++) {
@@ -926,13 +936,16 @@ void PasteMapUnderPointFunc(sMap* m_Map, const sMap& tMap, int m_SelectedLayer, 
   }
   if (tMap.GetNumLayers() == 1)
   {
+    int y;
     sLayer tLayer = tMap.GetLayer(0);
+
     // update the map data offsets
-    for (int y = 0; y < tLayer.GetHeight(); y++)
+    for (y = 0; y < tLayer.GetHeight(); y++)
       for (int x = 0; x < tLayer.GetWidth(); x++)
         tLayer.SetTile(x, y, newTileLoc[tLayer.GetTile(x, y)]);
+
     // finally, overwrite the existing map data
-    for (int y=ty; y<m_Map->GetLayer(m_SelectedLayer).GetHeight() && y-ty<tLayer.GetHeight(); y++)
+    for (y=ty; y<m_Map->GetLayer(m_SelectedLayer).GetHeight() && y-ty<tLayer.GetHeight(); y++)
       for (int x=tx; x<m_Map->GetLayer(m_SelectedLayer).GetWidth() && x-tx<tLayer.GetWidth(); x++)
         m_Map->GetLayer(m_SelectedLayer).SetTile(x, y, tLayer.GetTile(x-tx, y-ty));
   }
@@ -1427,7 +1440,9 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
       int counter = 0;
       for (int j=0; j<tile_height; j++)
       {
-        for (int k=0; k<tile_width; k++)
+        int k;
+
+        for (k=0; k<tile_width; k++)
         {
           for (int l=0; l<m_ZoomFactor; l++)
           {
@@ -1455,7 +1470,8 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
             counter++;
           }
         }
-        for (int k=1; k<(int)m_ZoomFactor; k++)
+
+        for (k=1; k<(int)m_ZoomFactor; k++)
         {
           memcpy(dest + counter, dest + (counter - tile_width * (int)m_ZoomFactor), tile_width * (int)m_ZoomFactor * sizeof(RGBA));
           counter += tile_width * (int)m_ZoomFactor;
@@ -1547,7 +1563,9 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
             int counter = 0;
             for (int j=0; j<tile_height; j++)
             {
-              for (int k=0; k<tile_width; k++)
+              int k;
+
+              for (k=0; k<tile_width; k++)
                 for (int l=0; l<m_ZoomFactor; l++)
                 {
                   RGBA s = src[j * sprite_width + k];
@@ -1557,7 +1575,7 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
                   dest[counter].blue  = (alpha * s.blue  + (255 - alpha) * dest[counter].blue)  / 256;
                   counter++;
                 }
-              for (int k=1; k<m_ZoomFactor; k++)
+              for (k=1; k<m_ZoomFactor; k++)
               {
                 memcpy(dest + counter, dest + (counter - tile_width * (int)m_ZoomFactor), tile_width * (int)m_ZoomFactor * sizeof(RGBA));
                 counter += tile_width * (int)m_ZoomFactor;
@@ -1635,7 +1653,8 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
             int counter = 0;
             for (int j=0; j<tile_height; j++)
             {
-              for (int k=0; k<tile_width; k++)
+              int k;
+              for (k=0; k<tile_width; k++)
                 for (int l=0; l<m_ZoomFactor; l++)
                 {
                   RGBA s = src[(j + offset_y) * sprite_width + (k + offset_x)];
@@ -1645,7 +1664,7 @@ CMapView::DrawTile(CDC& dc, const RECT& rect, int tx, int ty)
                   dest[counter].blue  = (alpha * s.blue  + (255 - alpha) * dest[counter].blue)  / 256;
                   counter++;
                 }
-              for (int k=1; k<m_ZoomFactor; k++)
+              for (k=1; k<m_ZoomFactor; k++)
               {
                 memcpy(dest + counter, dest + (counter - tile_width * (int)m_ZoomFactor), tile_width * (int)m_ZoomFactor * sizeof(RGBA));
                 counter += tile_width * (int)m_ZoomFactor;

@@ -109,29 +109,33 @@ CSpritesetImagesPalette::OnPaint()
       int it = (iy + m_TopRow) * (client_rect.right / blit_width) + ix;
       if (ix < num_tiles_x && it < m_Spriteset->GetNumImages())
       {
+        int tiy;
+
         // draw the tile
         // fill the DIB section
         BGRA* pixels = (BGRA*)m_BlitImage->GetPixels();
         
         // make a checkerboard
-        for (int iy = 0; iy < blit_height; iy++)
-          for (int ix = 0; ix < blit_width; ix++)
+        for (tiy = 0; tiy < blit_height; tiy++)
+          for (int tix = 0; tix < blit_width; tix++)
           {
-            pixels[iy * blit_width + ix] = 
-              ((ix / 8 + iy / 8) % 2 ?
+            pixels[tiy * blit_width + tix] = 
+              ((tix / 8 + tiy / 8) % 2 ?
                 CreateBGRA(255, 255, 255, 255) :
                 CreateBGRA(255, 192, 192, 255));
           }
+
         // draw the tile into it
         RGBA* tilepixels = m_Spriteset->GetImage(it).GetPixels();
-        for (int iy = 0; iy < blit_height; iy++)
-          for (int ix = 0; ix < blit_width; ix++)
+
+        for (tiy = 0; tiy < blit_height; tiy++)
+          for (int tix = 0; tix < blit_width; tix++)
           {
-            int ty = (int) (iy / m_ZoomFactor.GetZoomFactor());
-            int tx = (int) (ix / m_ZoomFactor.GetZoomFactor());
+            int ty = (int) (tiy / m_ZoomFactor.GetZoomFactor());
+            int tx = (int) (tix / m_ZoomFactor.GetZoomFactor());
             int t = ty * m_Spriteset->GetFrameWidth() + tx;
             
-            int d = iy * blit_width + ix;
+            int d = tiy * blit_width + tix;
             // this here would crash if the spriteset has been resized
             // and the spriteset images pallete hasn't been informed of the resize
             if (tx >= 0 && tx < m_Spriteset->GetFrameWidth()

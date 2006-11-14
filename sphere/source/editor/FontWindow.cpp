@@ -463,7 +463,9 @@ CFontWindow::OnFontGenerateGradient()
     if (m_FontPreviewPalette) m_FontPreviewPalette->OnCharacterChanged(-1);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CFontWindow::OnFontExportToImage()
 {
@@ -472,27 +474,35 @@ CFontWindow::OnFontExportToImage()
     return;
   int font_width = 0;
   int font_height = 0;
-  for (int i = 0; i < m_Font.GetNumCharacters(); i++) {
+  int i;
+
+  for (i = 0; i < m_Font.GetNumCharacters(); i++) {
     if (font_width < m_Font.GetCharacter(i).GetWidth())
       font_width = m_Font.GetCharacter(i).GetWidth();
     if (font_height < m_Font.GetCharacter(i).GetHeight())
       font_height = m_Font.GetCharacter(i).GetHeight();
   }
+
   if (!(font_width > 0 && font_height > 0))
     return;
+
   int border_size = 0;
   if (MessageBox("Use a 1 pixel border?", "Font", MB_ICONQUESTION | MB_YESNO) == IDYES) {
     border_size = 1;
   }
+
   int num_characters_per_row = 16;
   int num_characters_per_col = 16;
+
   CImage32 image;
   if (!image.Create(font_width * num_characters_per_row + ((num_characters_per_row + 1) * border_size),
                     font_height * num_characters_per_col + ((num_characters_per_col + 1) * border_size)))
     return;
+
   image.Rectangle(0, 0, image.GetWidth(), image.GetHeight(), CreateRGBA(255, 0, 0, 255));
   image.SetBlendMode(CImage32::REPLACE);
-  int i = 0;
+  
+  i = 0;
   for (int fy = 0; fy < num_characters_per_col; fy++)
   {
     for (int fx = 0; fx < num_characters_per_row; fx++)
@@ -505,6 +515,7 @@ CFontWindow::OnFontExportToImage()
       i += 1;
     }
   }
+
   if (!image.Save(FileDialog.GetPathName())) {
     MessageBox("Could not save image");
   }
@@ -512,7 +523,9 @@ CFontWindow::OnFontExportToImage()
     MessageBox("Exported font!");
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CFontWindow::GetSavePath(char* path)
 {
