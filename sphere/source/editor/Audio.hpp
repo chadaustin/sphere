@@ -4,6 +4,9 @@
 #pragma warning(disable : 4786)
 #endif
 #include <audiere.h>
+
+////////////////////////////////////////////////////////////////////////////////
+
 class CSound
 {
 public:
@@ -21,6 +24,7 @@ public:
   int GetLength();
   void SetPitchShift(double pitch);
   void SetPan(double pan);
+
 private:
   audiere::OutputStreamPtr m_Sound;
   audiere::MIDIStreamPtr   m_Midi;
@@ -31,4 +35,7 @@ private:
   void __GetDevice__();
   void __GetSound__(const char* filename);
 };
+
+////////////////////////////////////////////////////////////////////////////////
+
 #endif

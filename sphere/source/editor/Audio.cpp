@@ -1,16 +1,24 @@
 #include "Audio.hpp"
 #include "filename_comparer.hpp"
-// #include <assert.h>
+
+////////////////////////////////////////////////////////////////////////////////
+
 static int s_AudioInitCount = 0;
 static audiere::AudioDevicePtr s_AudioDevice = NULL;
 static int s_MidiInitCount  = 0;
 static audiere::MIDIDevicePtr  s_MidiDevice  = NULL;
+
+////////////////////////////////////////////////////////////////////////////////
+
 #define CD_AUDIO
+
 #ifdef CD_AUDIO
 static int s_CDInitCount  = 0;
 static audiere::CDDevicePtr s_CDDevice = NULL;
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 static bool IsMidi(const char* filename)
 {
   if (extension_compare(filename, ".mid"))  return true;
@@ -18,7 +26,9 @@ static bool IsMidi(const char* filename)
   if (extension_compare(filename, ".rmi"))  return true;
   return false;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 static void InitializeAudio()
 {
   if (s_AudioInitCount++ == 0) {
@@ -31,7 +41,9 @@ static void InitializeAudio()
     const char* device_name = s_AudioDevice.get()->getName();
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 static void InitializeMidi()
 {
   if (s_MidiInitCount++ == 0) {
@@ -44,7 +56,9 @@ static void InitializeMidi()
     const char* device_name = s_MidiDevice.get()->getName();
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef CD_AUDIO
 static void InitializeCD(const char* device)
 {
@@ -59,21 +73,27 @@ static void InitializeCD(const char* device)
   }
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 static void CloseAudio()
 {
   if (--s_AudioInitCount == 0) {
     s_AudioDevice = 0;
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 static void CloseMidi()
 {
   if (--s_MidiInitCount == 0) {
     s_MidiDevice = 0;
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef CD_AUDIO
 static void CloseCD()
 {
@@ -82,7 +102,9 @@ static void CloseCD()
   }
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 CSound::CSound()
 : m_Sound(NULL)
 , m_Midi(NULL)
@@ -95,7 +117,9 @@ CSound::CSound()
   InitializeAudio(); m_ClosedAudio = false;
   InitializeMidi();  m_ClosedMidi  = false;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 CSound::~CSound()
 {
   if (!m_ClosedAudio) {
@@ -113,7 +137,9 @@ CSound::~CSound()
   }
 #endif
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CSound::__GetDevice__()
 {
@@ -148,7 +174,9 @@ CSound::__GetDevice__()
     }
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CSound::__GetSound__(const char* filename)
 {
@@ -166,7 +194,9 @@ CSound::__GetSound__(const char* filename)
     m_Midi = s_MidiDevice.get()->openStream(filename);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 static bool get_cda_details(const std::string filename, std::string& device, int& track_number)
 {
   const char* cda = "cda://";
@@ -188,14 +218,18 @@ static bool get_cda_details(const std::string filename, std::string& device, int
   }
   return false;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 static bool is_cda(const std::string filename)
 {
   std::string device = "";
   int track_number = 0;
   return get_cda_details(filename, device, track_number);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CSound::Load(const char* filename)
 {
@@ -212,7 +246,9 @@ CSound::Load(const char* filename)
   }
   return bool(m_Sound || m_Midi);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CSound::Play()
 {
@@ -246,7 +282,9 @@ CSound::Play()
   }
   return (m_Sound || m_Midi);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CSound::Stop()
 {
@@ -277,14 +315,18 @@ CSound::Stop()
     m_ClosedMidi = true;
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 int
 CSound::GetVolume()
 {
   if (m_Sound) return (int) (m_Sound->getVolume() * 255);
   return 0;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CSound::SetVolume(int Volume)
 {
@@ -292,7 +334,9 @@ CSound::SetVolume(int Volume)
     m_Sound->setVolume(Volume / 255.0f);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CSound::IsPlaying() const
 {
@@ -303,36 +347,54 @@ CSound::IsPlaying() const
 #endif
   return false;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CSound::IsSeekable()  {
   if (m_Sound) return m_Sound->isSeekable();
   if (m_Midi)  return true;
   return false;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 CSound::SetPosition(int pos) {
   if (m_Sound) m_Sound->setPosition(pos);
   if (m_Midi)  m_Midi->setPosition(pos);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 int
 CSound::GetPosition() {
   if (m_Sound) return m_Sound->getPosition();
   if (m_Midi)  return m_Midi->getPosition();
   return 0;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 int
 CSound::GetLength() {
   if (m_Sound) return m_Sound->getLength();
   if (m_Midi)  return m_Midi->getLength();
   return 0;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 CSound::SetPitchShift(double pitch) {
   if (m_Sound) m_Sound->setPitchShift((float) pitch);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 CSound::SetPan(double pan) {
   if (m_Sound) m_Sound->setPan((float) pan);
 }
+
 ////////////////////////////////////////////////////////////////////////////////

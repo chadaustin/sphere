@@ -41,7 +41,10 @@ CTilePreviewPalette::OnImageChanged(CImage32 image)
 void
 CTilePreviewPalette::Destroy()
 {
-  delete m_BlitImage;
+  if (m_BlitImage) {
+    delete m_BlitImage;
+    m_BlitImage = NULL;
+  }
 
   // save state
   RECT rect;
@@ -60,8 +63,8 @@ CTilePreviewPalette::OnPaint()
 {
   CPaintDC dc(this);
 
-	RECT ClientRect;
-	GetClientRect(&ClientRect);
+  RECT ClientRect;
+  GetClientRect(&ClientRect);
 
   if (!m_BlitImage || m_BlitImage->GetPixels() == NULL
     || m_Image.GetWidth() == 0 || m_Image.GetHeight() == 0 || m_Image.GetPixels() == NULL) {
@@ -156,7 +159,10 @@ CTilePreviewPalette::OnZoom(double zoom) {
   m_ZoomFactor.SetZoomFactor(zoom);
 
   if (m_BlitImage != NULL)
+  {
     delete m_BlitImage;
+    m_BlitImage = NULL;
+  } 
 
   int width  = (int) (m_Image.GetWidth() * m_ZoomFactor.GetZoomFactor());
   int height = (int) (m_Image.GetHeight() * m_ZoomFactor.GetZoomFactor()); 

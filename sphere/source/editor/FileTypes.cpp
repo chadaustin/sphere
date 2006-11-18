@@ -25,7 +25,9 @@ static const char* Extensions[] = {
 };
 
 CFileTypeLibrary FTL;
+
 ////////////////////////////////////////////////////////////////////////////////
+
 CFileTypeLibrary::CFileTypeLibrary()
 {
   const int num_extensions = sizeof(Extensions) / sizeof(*Extensions);
@@ -81,12 +83,14 @@ CFileTypeLibrary::CFileTypeLibrary()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 int
 CFileTypeLibrary::GetNumFileTypes() {
   return m_FileTypes.size();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 const char*
 CFileTypeLibrary::GetFileTypeLabel(int file_type, bool save)
 {
@@ -102,6 +106,7 @@ CFileTypeLibrary::GetFileTypeLabel(int file_type, bool save)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CFileTypeLibrary::GetFileTypeExtensions(int file_type, bool save, std::vector<std::string>& extensions)
 {
@@ -142,6 +147,7 @@ CFileTypeLibrary::GetFileTypeExtensions(int file_type, bool save, std::vector<st
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 const char*
 CFileTypeLibrary::GetDefaultExtension(int file_type, bool save)
 {
@@ -159,6 +165,7 @@ CFileTypeLibrary::GetDefaultExtension(int file_type, bool save)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 int
 CFileTypeLibrary::GetNumSubTypes(int file_type, bool save)
 {
@@ -190,6 +197,7 @@ CFileTypeLibrary::GetNumSubTypes(int file_type, bool save)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 const char* GetImageSubTypeLabel(const char* ext) {
   if (strcmp(ext, "png") == 0)
     return "PNG Images";
@@ -212,6 +220,8 @@ const char* GetImageSubTypeLabel(const char* ext) {
 
   return "Unknown Image";
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 const char* GetSoundSubTypeLabel(const char* ext) {
   if (strcmp(ext, "mp3") == 0 || strcmp(ext, "mp2") == 0)
@@ -236,6 +246,7 @@ const char* GetSoundSubTypeLabel(const char* ext) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 const char*
 CFileTypeLibrary::GetSubTypeLabel(int file_type, int sub_type, bool save)
 {
@@ -269,6 +280,7 @@ CFileTypeLibrary::GetSubTypeLabel(int file_type, int sub_type, bool save)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CFileTypeLibrary::GetSubTypeExtensions(int file_type, int sub_type, bool save, std::vector<std::string>& extensions)
 {

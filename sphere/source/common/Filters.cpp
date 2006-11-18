@@ -4,6 +4,7 @@
 #include <math.h>
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void FlipHorizontally(int width, int height, RGBA* pixels)
 {
     for (int y = 0; y < height; y++)
@@ -19,6 +20,7 @@ void FlipHorizontally(int width, int height, RGBA* pixels)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void FlipVertically(int width, int height, RGBA* pixels)
 {
     for (int x = 0; x < width; x++)
@@ -33,6 +35,7 @@ void FlipVertically(int width, int height, RGBA* pixels)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void Translate(int width, int height, RGBA* pixels, int dx, int dy)
 {
     RGBA* old_pixels = new RGBA[width * height];
@@ -71,6 +74,7 @@ void Translate(int width, int height, RGBA* pixels, int dx, int dy)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool RotateCW(int src_width, int src_height, RGBA* pixels)
 {
     RGBA* old_pixels = new RGBA[src_width * src_height];
@@ -93,6 +97,7 @@ bool RotateCW(int src_width, int src_height, RGBA* pixels)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool RotateCCW(int src_width, int src_height, RGBA* pixels)
 {
     RGBA* old_pixels = new RGBA[src_width * src_height];
@@ -115,6 +120,7 @@ bool RotateCCW(int src_width, int src_height, RGBA* pixels)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 inline RGBA BlurPixel(int width, int height, RGBA* pixels, int x, int y)
 {
     if (x < 0)
@@ -137,6 +143,8 @@ inline RGBA BlurPixel(int width, int height, RGBA* pixels, int x, int y)
 
     return pixels[y * width + x];
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 void Blur(int width, int height, RGBA* pixels, int mask_width, int mask_height)
 {
@@ -222,6 +230,7 @@ void Blur(int width, int height, RGBA* pixels, int mask_width, int mask_height)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void Noise(int width, int height, RGBA* pixels)
 {
     for (int i = 0; i < width * height; i++)
@@ -242,6 +251,7 @@ void Noise(int width, int height, RGBA* pixels)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void GenerateNegativeImageLookup(unsigned char lookup[256])
 {
     for (int i = 0; i < 256; i++)
@@ -249,6 +259,8 @@ void GenerateNegativeImageLookup(unsigned char lookup[256])
         lookup[i] = 255 - i;
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 void NegativeImage(int width, int height, bool red, bool green, bool blue, bool alpha, RGBA* pixels)
 {
@@ -265,6 +277,7 @@ void NegativeImage(int width, int height, bool red, bool green, bool blue, bool 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void GenerateSolarizeLookup(unsigned char lookup[256], int value)
 {
     for (int j = 0; j < 256; ++j)
@@ -273,6 +286,9 @@ void GenerateSolarizeLookup(unsigned char lookup[256], int value)
     }
 
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 void Solarize(int width, int height, int value, RGBA* pixels)
 {
     unsigned char lookup[256];
@@ -287,6 +303,7 @@ void Solarize(int width, int height, int value, RGBA* pixels)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void BlendImage(int dest_width, int dest_height, int src_width, int src_height, RGBA* dest_pixels, RGBA* src_pixels)
 {
     for (int dx = 0; dx < dest_width; dx++)
@@ -306,6 +323,7 @@ void BlendImage(int dest_width, int dest_height, int src_width, int src_height, 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void GenerateAdjustBrightnessLookup(unsigned char lookup[256], int value)
 {
     for (int i = 0; i < 256; ++i)
@@ -317,6 +335,9 @@ void GenerateAdjustBrightnessLookup(unsigned char lookup[256], int value)
     }
 
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 void AdjustBrightness(int width, int height, RGBA* pixels, int dred, int dgreen, int dblue, int dalpha)
 {
     unsigned char rlookup[256];
@@ -342,6 +363,7 @@ void AdjustBrightness(int width, int height, RGBA* pixels, int dred, int dgreen,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void GenerateGammaLookup(unsigned char lookup[256], double gamma)
 {
 
@@ -360,6 +382,8 @@ void GenerateGammaLookup(unsigned char lookup[256], double gamma)
         }
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 void AdjustGamma(int width, int height, RGBA* pixels, double dred, double dgreen, double dblue, double dalpha)
 {
@@ -386,6 +410,7 @@ void AdjustGamma(int width, int height, RGBA* pixels, double dred, double dgreen
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 unsigned long CountColorsUsed(const RGBA* pixels, const int width, const int height,
                               const int x, const int y, const int w, const int h)
 {

@@ -7,13 +7,16 @@
 #include "endian.hpp"
 
 #include "packed.hpp"
+
 ////////////////////////////////////////////////////////////////////////////////
+
 sFont::sFont(int num_characters, int width, int height)
 {
     Create(num_characters, width, height);
-
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 sFont::Create(int num_characters, int width, int height)
 {
@@ -31,7 +34,9 @@ sFont::Create(int num_characters, int width, int height)
     }
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #define STRUCT_NAME FONT_HEADER
 #define STRUCT_BODY                             \
   byte signature[4];                            \
@@ -51,6 +56,7 @@ ASSERT_STRUCT_SIZE(FONT_HEADER, 256)
 ASSERT_STRUCT_SIZE(CHARACTER_HEADER, 32);
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 sFont::Load(const char* filename, IFileSystem& fs)
 {
@@ -165,6 +171,7 @@ sFont::Load(const char* filename, IFileSystem& fs)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 sFont::Save(const char* filename, IFileSystem& fs) const
 {
@@ -209,6 +216,7 @@ sFont::Save(const char* filename, IFileSystem& fs) const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 GenerateGradient(CImage32& c, int max_alpha, RGBA top, RGBA bottom)
 {
@@ -228,7 +236,9 @@ GenerateGradient(CImage32& c, int max_alpha, RGBA top, RGBA bottom)
         }
     }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 sFont::GenerateGradient(RGBA top, RGBA bottom)
 {
@@ -256,6 +266,7 @@ sFont::GenerateGradient(RGBA top, RGBA bottom)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 sFont::ImportVergeTemplate(
     const char* filename,
@@ -320,6 +331,7 @@ sFont::ImportVergeTemplate(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 sFont::SetNumCharacters(int num_characters)
 {

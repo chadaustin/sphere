@@ -16,6 +16,8 @@
 
 static const int BROWSE_TIMER = 9001;
 
+////////////////////////////////////////////////////////////////////////////////
+
 BEGIN_MESSAGE_MAP(CBrowseWindow, CDocumentWindow)
   ON_WM_SIZE()
   ON_WM_KEYDOWN()
@@ -54,7 +56,9 @@ CBrowseWindow::CBrowseWindow(const char* folder, const char* filter)
   m_FileList = GetFileList(filter);
   Create();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 CBrowseWindow::~CBrowseWindow()
 {
   // destroy all the child windows
@@ -66,7 +70,9 @@ CBrowseWindow::~CBrowseWindow()
   ClearBrowseList();
   m_FileList.clear();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CBrowseWindow::Create()
 {
@@ -82,7 +88,9 @@ CBrowseWindow::Create()
   OnSize(0, ClientRect.right - ClientRect.left, ClientRect.bottom - ClientRect.top);
   m_Timer = SetTimer(BROWSE_TIMER, 25, NULL);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CBrowseWindow::Destroy()
 {
@@ -91,7 +99,9 @@ CBrowseWindow::Destroy()
   m_FileList.clear();
   DestroyWindow();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CBrowseWindow::InvalidateTile(int tile)
 {
@@ -109,7 +119,9 @@ CBrowseWindow::InvalidateTile(int tile)
     InvalidateRect(&rect);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CBrowseWindow::OnTimer(UINT event) {
   //if (m_MenuShown)
@@ -129,7 +141,9 @@ CBrowseWindow::OnTimer(UINT event) {
     }
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CBrowseWindow::OpenFile(unsigned int index) {
   if (index >= 0 && index < m_BrowseList.size())
@@ -140,7 +154,9 @@ CBrowseWindow::OpenFile(unsigned int index) {
     ((CMainWindow*) GetMainWindow())->OpenGameFile(path.c_str());
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CBrowseWindow::LoadFile(const char* filename)
 {
@@ -261,7 +277,9 @@ CBrowseWindow::LoadFile(const char* filename)
   }
   return valid;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CBrowseWindow::ClearBrowseList()
 {
@@ -271,7 +289,9 @@ CBrowseWindow::ClearBrowseList()
   }
   m_BrowseList.clear();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CBrowseWindow::OnSize(UINT uType, int cx, int cy)
 {
@@ -279,7 +299,9 @@ CBrowseWindow::OnSize(UINT uType, int cx, int cy)
   UpdateScrollBar();
   Invalidate();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CBrowseWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
 {
@@ -313,7 +335,9 @@ CBrowseWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
   }
   UpdateScrollBar();
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CBrowseWindow::OnPaint()
 {
@@ -411,7 +435,9 @@ CBrowseWindow::OnPaint()
       }      
     }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CBrowseWindow::OnLButtonDown(UINT flags, CPoint point)
 {
@@ -432,13 +458,18 @@ CBrowseWindow::OnLButtonDown(UINT flags, CPoint point)
   UpdateScrollBar();
   Invalidate();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 /*
 afx_msg void
 CBrowseWindow::OnLButtonDblClk(flags, CPoint point)
 {
 }
 */
+
 ///////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CBrowseWindow::OnMouseMove(UINT flags, CPoint point)
 {
@@ -457,7 +488,9 @@ CBrowseWindow::OnMouseMove(UINT flags, CPoint point)
   else
     GetStatusBar()->SetWindowText("");
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CBrowseWindow::OnVScroll(UINT code, UINT pos, CScrollBar* scroll_bar)
 {
@@ -472,7 +505,9 @@ CBrowseWindow::OnVScroll(UINT code, UINT pos, CScrollBar* scroll_bar)
   UpdateScrollBar();
   Invalidate();
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 void
 CBrowseWindow::UpdateScrollBar()
 {
@@ -501,7 +536,9 @@ CBrowseWindow::UpdateScrollBar()
   }
   SetScrollInfo(SB_VERT, &si);
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 int
 CBrowseWindow::GetPageSize()
 {
@@ -509,7 +546,9 @@ CBrowseWindow::GetPageSize()
   GetClientRect(&ClientRect);
   return ClientRect.bottom / m_BlitTile->GetHeight();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 int
 CBrowseWindow::GetNumRows()
 {
@@ -521,7 +560,9 @@ CBrowseWindow::GetNumRows()
   else
     return (m_BrowseList.size() + num_tiles_x - 1) / num_tiles_x;
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CBrowseWindow::OnZoomIn()
 {
@@ -529,7 +570,9 @@ CBrowseWindow::OnZoomIn()
   OnZoom(m_ZoomFactor.GetZoomFactor());
   Invalidate();
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CBrowseWindow::OnZoomOut()
 {
@@ -537,7 +580,9 @@ CBrowseWindow::OnZoomOut()
   OnZoom(m_ZoomFactor.GetZoomFactor());
   Invalidate(); 
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 void
 CBrowseWindow::OnZoom(double zoom_factor)
 {
@@ -548,7 +593,9 @@ CBrowseWindow::OnZoom(double zoom_factor)
     32
   );
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CBrowseWindow::OnBrowseListRefresh() {
   m_FileList.clear();
@@ -563,7 +610,9 @@ CBrowseWindow::OnBrowseListRefresh() {
     SetCurrentDirectory(directory);
   }
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CBrowseWindow::OnBrowseSetBrowseSize() {
 	CResizeDialog dialog("Resize Browse Image Size", m_ImageWidth, m_ImageHeight);
@@ -583,17 +632,22 @@ CBrowseWindow::OnBrowseSetBrowseSize() {
 		}
   }
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CBrowseWindow::OnBrowseResizeThumbs()
 {
   m_Resize = !m_Resize;
   OnBrowseListRefresh();
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CBrowseWindow::OnUpdateBrowseResizeThumbs(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_Resize ? TRUE : FALSE);
 }
+
 ///////////////////////////////////////////////////////////////////////////////

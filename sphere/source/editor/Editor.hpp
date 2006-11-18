@@ -4,6 +4,9 @@
 #include <afxwin.h>
 #include <afxext.h>
 #include "MainWindow.hpp"
+
+////////////////////////////////////////////////////////////////////////////////
+
 class CInstanceRepository;
 class CEditorApplication : public CWinApp
 {
@@ -12,8 +15,11 @@ public:
 private:
   BOOL InitInstance();
   int  ExitInstance();	
-	CInstanceRepository* m_Instances;
+  CInstanceRepository* m_Instances;
 };
+
+////////////////////////////////////////////////////////////////////////////////
+
 extern std::string GetSphereDirectory();
 extern void        SetStatusBar(CStatusBar* status_bar);
 extern CStatusBar* GetStatusBar();

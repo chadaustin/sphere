@@ -1,12 +1,16 @@
 #include "Clipboard.hpp"
 #include <windows.h>
 static unsigned int s_ClipboardFormat;
+
 ///////////////////////////////////////////////////////////////////////////////
+
 CClipboard::CClipboard()
 {
   s_ClipboardFormat = RegisterClipboardFormat("FlatImage32");
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 bool
 CClipboard::IsFlatImageOnClipbard()
 {
@@ -14,7 +18,9 @@ CClipboard::IsFlatImageOnClipbard()
     return true;
   return false;
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 RGBA*
 CClipboard::GetFlatImageFromClipboard(int& width, int& height)
 {
@@ -47,7 +53,9 @@ CClipboard::GetFlatImageFromClipboard(int& width, int& height)
   GlobalUnlock(memory);
   return pixels;
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 bool
 CClipboard::PutFlatImageOntoClipboard(int width, int height, const RGBA* flat_pixels)
 {
@@ -71,14 +79,18 @@ CClipboard::PutFlatImageOntoClipboard(int width, int height, const RGBA* flat_pi
   SetClipboardData(s_ClipboardFormat, memory);
   return true;
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 bool
 CClipboard::IsBitmapImageOnClipboard() {
   if (IsClipboardFormatAvailable(CF_BITMAP))
     return true;
   return false;
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 RGBA*
 CClipboard::GetBitmapImageFromClipboard(int& width, int& height)
 {
@@ -124,7 +136,9 @@ CClipboard::GetBitmapImageFromClipboard(int& width, int& height)
   DeleteDC(dc);
   return pixels;
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 bool
 CClipboard::PutBitmapImageOntoClipboard(int width, int height, const RGBA* source)
 {
@@ -174,4 +188,5 @@ CClipboard::PutBitmapImageOntoClipboard(int width, int height, const RGBA* sourc
 	delete[] pixels;
   return true;
 }
+
 ///////////////////////////////////////////////////////////////////////////////

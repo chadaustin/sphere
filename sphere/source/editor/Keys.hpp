@@ -3,6 +3,7 @@
 #define KEYS_HPP
 
 #include <string>
+
 // template class for starting a POD type with zeroed members
 template<typename T>
 class zeroed

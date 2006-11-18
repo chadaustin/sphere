@@ -54,6 +54,8 @@
 #endif
 #include "FileDialogs.hpp"
 #include "StringDialog.hpp"
+#include "OptionsDialog.hpp"
+#include "CheckListDialog.hpp"
 
 // common
 #include "../common/sphere_version.h"
@@ -73,6 +75,8 @@
 #include <audiere.h>
 #include <corona.h>
 #endif
+
+#include <assert.h>
 
 // base for palette menu items
 const int PALETTE_COMMAND = 17133;
@@ -302,7 +306,9 @@ CMainWindow::CMainWindow()
 {
   m_NewFileType = GT_SCRIPTS;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef TABBED_WINDOW_LIST
 void CMainWindow::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
@@ -310,7 +316,9 @@ void CMainWindow::OnUpdateFrameTitle(BOOL bAddToTitle)
   m_wndMDITabs.Update(); // sync the mditabctrl with all views
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 /*
 void ShowWPConfig(WINDOWPLACEMENT& wp) 
 { 
@@ -344,7 +352,9 @@ void ShowWPConfig(WINDOWPLACEMENT& wp)
   GetMainWindow()->MessageBox(buffer, "Window Settings", MB_OK);
 } 
 */
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CMainWindow::DockControlBarLeftOf(CToolBar* Bar, CToolBar* LeftOf)
 {
@@ -364,12 +374,16 @@ CMainWindow::DockControlBarLeftOf(CToolBar* Bar, CToolBar* LeftOf)
 	
 	DockControlBar(Bar,n,&rect);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 const char*
 CMainWindow::GetDefaultWindowText() {
   return "Sphere " SPHERE_VERSION " Development Environment";
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 BOOL
 CMainWindow::Create()
 {
@@ -487,7 +501,9 @@ CMainWindow::Create()
   m_NextClipboardViewer = SetClipboardViewer();
   return TRUE;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnChangeCbChain(HWND remove, HWND after)
 {
@@ -498,7 +514,9 @@ CMainWindow::OnChangeCbChain(HWND remove, HWND after)
   else if (m_NextClipboardViewer != NULL) 
     ::SendMessage(m_NextClipboardViewer, WM_CHANGECBCHAIN, (WPARAM)remove, (LPARAM)after); 
 }
+
 /////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnDrawClipboard()
 {
@@ -520,7 +538,9 @@ CMainWindow::OnDrawClipboard()
   if (m_NextClipboardViewer != NULL) 
     ::SendMessage(m_NextClipboardViewer, WM_DRAWCLIPBOARD, 0, 0); 
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 /*
 afx_msg void
 CMainWindow::OnNMRclick(NMHDR *pNMHDR, LRESULT *pResult)
@@ -549,13 +569,17 @@ CMainWindow::OnNMRclick(NMHDR *pNMHDR, LRESULT *pResult)
   }
 }
 */
+
 ////////////////////////////////////////////////////////////////////////////////
+
 const char*
 CMainWindow::GetDefaultFolder() const
 {
   return m_DefaultFolder.c_str();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 std::string
 CMainWindow::GetDefaultFolder(int type) const
 {
@@ -599,7 +623,9 @@ CMainWindow::GetDefaultFolder(int type) const
   }
   return m_DefaultFolder;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 void
 CMainWindow::CreateProject(const char* projectname, const char* gametitle)
@@ -624,7 +650,9 @@ CMainWindow::CreateProject(const char* projectname, const char* gametitle)
   UpdateMenu();
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 void
 CMainWindow::OpenProject(const char* filename)
@@ -652,7 +680,9 @@ CMainWindow::OpenProject(const char* filename)
   UpdateMenu();
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 void
 CMainWindow::CloseProject()
@@ -673,7 +703,9 @@ CMainWindow::CloseProject()
   }
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 void
 CMainWindow::OpenGameSettings()
@@ -681,7 +713,9 @@ CMainWindow::OpenGameSettings()
   CGameSettingsDialog(&m_Project).DoModal();
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 BOOL
 CMainWindow::IsProjectFile(const char* filename)
 {
@@ -692,6 +726,7 @@ CMainWindow::IsProjectFile(const char* filename)
   return filename_length > game_sgm_length && 
 		strcmp(filename + filename_length - game_sgm_length, game_sgm) == 0;    
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 
 const char*
@@ -709,14 +744,17 @@ CMainWindow::OpenGameFile(const char* filename)
 
   if (!filename || strlen(filename) == 0)
     return;
+
 #ifdef I_SUCK
-	if (IsProjectFile(filename))
-	{
-		OpenProject(filename);
+  if (IsProjectFile(filename))
+  {
+    OpenProject(filename);
     return;
-	}
+  }
 #endif
-  for (i = 0; i < NUM_GROUP_TYPES; i++) {
+
+  for (i = 0; i < NUM_GROUP_TYPES; i++)
+  {
     std::vector<std::string> extensions;
     FTL.GetFileTypeExtensions(i, false, extensions);
     
@@ -728,6 +766,7 @@ CMainWindow::OpenGameFile(const char* filename)
       }
     }
   }
+
   char proto[100] = "";
   for (i = 0; i < strlen(filename) && i < (sizeof(proto) - strlen("://")); i++) {
     if (strncmp(filename + i, "://", 3) == 0) {
@@ -735,6 +774,7 @@ CMainWindow::OpenGameFile(const char* filename)
       break;
     }
   }
+
   if (strcmp(proto, "") == 0) {
     if (Configuration::Get(OPEN_UNKNOWN_FILETYPES_AS_TEXT)) {
       OpenDocumentWindow(GT_SCRIPTS, filename);
@@ -772,6 +812,7 @@ CMainWindow::OpenDocumentWindow(int grouptype, const char* filename)
       }
     }
   }
+
   // actually open the window now
   CDocumentWindow* window = NULL;
   switch (grouptype)
@@ -791,12 +832,16 @@ CMainWindow::OpenDocumentWindow(int grouptype, const char* filename)
     case GT_PLAYLISTS:    window = new CSoundWindow(filename);       break;
 #endif
   }
+
   if (window != NULL) {
     m_DocumentWindows.push_back(window);
   }
+
   UpdateToolBars();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMainWindow::AddToDirectory(const char* pathname, const char* sub_directory)
 {
@@ -833,7 +878,9 @@ CMainWindow::AddToDirectory(const char* pathname, const char* sub_directory)
   }
   return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMainWindow::CheckDirectory(const char* filename, const char* sub_directory)
 {
@@ -859,7 +906,9 @@ CMainWindow::CheckDirectory(const char* filename, const char* sub_directory)
 
   return (strcmp(szDirectory, szProjectDirectory) == 0);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CMainWindow::InsertProjectFile(CFileDialog* file_dialog, int grouptype, const char* predefined_path)
 {
@@ -918,7 +967,9 @@ CMainWindow::InsertProjectFile(CFileDialog* file_dialog, int grouptype, const ch
     AddToDirectory(sPathName, CProject::GetGroupDirectory(grouptype));
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CMainWindow::GetGamesDirectory(char games_directory[MAX_PATH])
 {
@@ -927,6 +978,7 @@ CMainWindow::GetGamesDirectory(char games_directory[MAX_PATH])
     strcat(games_directory, "\\");
   strcat(games_directory, "games");
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 afx_msg void
 CMainWindow::UpdateMenu()
@@ -1029,7 +1081,9 @@ CMainWindow::UpdateMenu()
   MDISetMenu(pNewMenu, pNewMenu->GetSubMenu(iWindowMenu))->DestroyMenu();
   DrawMenuBar();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnDropFiles(HDROP hDropInfo)
 {
@@ -1056,8 +1110,9 @@ CMainWindow::OnDropFiles(HDROP hDropInfo)
   
   DragFinish(hDropInfo);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
-#include <assert.h>
+
 afx_msg void
 CMainWindow::OnClose()
 {
@@ -1101,6 +1156,7 @@ CMainWindow::OnClose()
   // finally, destroy the window
   DestroyWindow();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 
 std::string GenerateSupportedExtensionsFilter()
@@ -1159,7 +1215,9 @@ std::string GetFolderFromPathName(CString thePath)
   }
   return folder;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnFileOpen()
 {
@@ -1197,76 +1255,111 @@ CMainWindow::OnFileOpen()
   }
   
 }
+
 ////////////////////////////////////////////////////////////////////////////////
-#include "OptionsDialog.hpp"
+
 afx_msg void
 CMainWindow::OnFileOptions()
 {
   COptionsDialog dialog;
   dialog.Execute();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CMainWindow::OnLanguageChanged()
 { 
   UpdateMenu();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnFileLanguageEnglish()
 {
   SetLanguage("English");
   OnLanguageChanged();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnFileLanguageBulgarian()
 {
   SetLanguage("Bulgarian");
   OnLanguageChanged();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnFileLanguageDutch()
 {
   SetLanguage("Dutch");
   OnLanguageChanged();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnFileLanguageGerman()
 {
   SetLanguage("German");
   OnLanguageChanged();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnFileLanguageItalian()
 {
   SetLanguage("Italian");
   OnLanguageChanged();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnUpdateFileLanguageEnglish(CCmdUI* cmdui)
 {
   cmdui->SetCheck( (strcmp(GetLanguage(), "English") == 0 ) ? TRUE : FALSE );
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnUpdateFileLanguageBulgarian(CCmdUI* cmdui)
 {
   cmdui->SetCheck( (strcmp(GetLanguage(), "Bulgarian") == 0 ) ? TRUE : FALSE );
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnUpdateFileLanguageDutch(CCmdUI* cmdui)
 {
   cmdui->SetCheck( (strcmp(GetLanguage(), "Dutch") == 0 ) ? TRUE : FALSE );
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnUpdateFileLanguageGerman(CCmdUI* cmdui)
 {
   cmdui->SetCheck( (strcmp(GetLanguage(), "German") == 0 ) ? TRUE : FALSE );
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnUpdateFileLanguageItalian(CCmdUI* cmdui)
 {
   cmdui->SetCheck( (strcmp(GetLanguage(), "Italian") == 0 ) ? TRUE : FALSE );
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileNewProject()
@@ -1286,7 +1379,9 @@ CMainWindow::OnFileNewProject()
     Configuration::Set(KEY_LAST_PROJECT, path_name);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnFileNewFile()
 {
@@ -1298,7 +1393,9 @@ CMainWindow::OnFileNewFile()
   }
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 void
 CMainWindow::__OpenProject__(const char* pathname)
@@ -1321,7 +1418,9 @@ CMainWindow::__OpenProject__(const char* pathname)
   }
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileOpenProject()
@@ -1347,7 +1446,9 @@ CMainWindow::OnFileOpenProject()
   }
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileCloseProject()
@@ -1355,7 +1456,9 @@ CMainWindow::OnFileCloseProject()
   CloseProject();
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileOpenLastProject()
@@ -1370,13 +1473,17 @@ CMainWindow::OnFileOpenLastProject()
   }
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnFileClose()
 {
   
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileBrowse()
@@ -1405,7 +1512,9 @@ CMainWindow::OnFileBrowse()
   }
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #define FILE_NEW_HANDLER(name, construct)    \
   afx_msg void                               \
   CMainWindow::OnFileNew##name()             \
@@ -1428,7 +1537,9 @@ FILE_NEW_HANDLER(WindowStyle, new CWindowStyleWindow())
 FILE_NEW_HANDLER(Image,       new CImageWindow())
 #endif
 #undef FILE_NEW_HANDLER
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #define FILE_OPEN_HANDLER(name, construct)                    \
   afx_msg void                                                \
   CMainWindow::OnFileOpen##name()                             \
@@ -1468,7 +1579,9 @@ FILE_OPEN_HANDLER(Image,       new CImageWindow(path))
 FILE_OPEN_HANDLER(Animation,   new CAnimationWindow(path))
 #endif
 #undef FILE_OPEN_HANDLER
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileOpenTileset()
@@ -1497,7 +1610,9 @@ CMainWindow::OnFileOpenTileset()
   }
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 static void GetFilePathWithoutExtension(std::string& thepath)
 {
   int pos = thepath.rfind(".");
@@ -1506,7 +1621,9 @@ static void GetFilePathWithoutExtension(std::string& thepath)
   }
   thepath = thepath.substr(0, pos);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportImageToMap()
@@ -1569,7 +1686,9 @@ CMainWindow::OnFileImportImageToMap()
   }
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportBitmapToRWS()
@@ -1608,7 +1727,9 @@ CMainWindow::OnFileImportBitmapToRWS()
   MessageBox("Import Successful!\nWindowStyle saved as '" + OutFileDialog.GetPathName() + "'");
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportBitmapToRSS()
@@ -1651,7 +1772,9 @@ CMainWindow::OnFileImportBitmapToRSS()
   MessageBox("Import Successful!\nSpriteset saved as '" + OutFileDialog.GetPathName() + "'");
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportRM2KCharsetToRSS()
@@ -1778,7 +1901,9 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
   MessageBox("Charsets Converted!");
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportRM2KChipsetToRTS()
@@ -1893,7 +2018,9 @@ CMainWindow::OnFileImportRM2KChipsetToRTS()
   }
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportBitmapToRTS()
@@ -1941,7 +2068,9 @@ CMainWindow::OnFileImportBitmapToRTS()
   MessageBox("Image Converted!\nTileset saved as '" + OutFileDialog.GetPathName() + "'");
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportImageToFont()
@@ -2046,7 +2175,9 @@ CMainWindow::OnFileImportImageToFont()
   MessageBox("Image Converted!\nFont saved as '" + OutFileDialog.GetPathName() + "'");
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportVergeFontTemplate()
@@ -2081,7 +2212,9 @@ CMainWindow::OnFileImportVergeFontTemplate()
   MessageBox("Font imported successfully!", "Import VERGE font template");
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportVergeMap()
@@ -2124,7 +2257,9 @@ CMainWindow::OnFileImportVergeMap()
   }
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportVergeSpriteset()
@@ -2165,7 +2300,9 @@ CMainWindow::OnFileImportVergeSpriteset()
   }
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportMergeRGBA()
@@ -2215,7 +2352,9 @@ CMainWindow::OnFileImportMergeRGBA()
   MessageBox("Image merged successfully\nImage saved as '" + out_dialog.GetPathName() + "'");
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 static bool WindowsFontToSphereFont(LOGFONT lf, COLORREF color, sFont* sphere_font)
 {
@@ -2271,7 +2410,9 @@ static bool WindowsFontToSphereFont(LOGFONT lf, COLORREF color, sFont* sphere_fo
   return true;
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnFileImportWindowsFont()
@@ -2303,7 +2444,9 @@ CMainWindow::OnFileImportWindowsFont()
   }
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnFileSaveAll()
 {
@@ -2315,7 +2458,9 @@ CMainWindow::OnFileSaveAll()
     }
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 #define PROJECT_INSERT_HANDLER(type, group_type)                        \
 afx_msg void                                                            \
@@ -2350,9 +2495,10 @@ PROJECT_INSERT_HANDLER(Font,        GT_FONTS)
 PROJECT_INSERT_HANDLER(WindowStyle, GT_WINDOWSTYLES)
 PROJECT_INSERT_HANDLER(Image,       GT_IMAGES)
 PROJECT_INSERT_HANDLER(Animation,   GT_ANIMATIONS)
-
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnProjectRefresh()
@@ -2364,6 +2510,7 @@ CMainWindow::OnProjectRefresh()
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnProjectRunSphere()
@@ -2441,7 +2588,9 @@ CMainWindow::OnProjectRunSphere()
     MessageBox("Error: Could not execute Sphere engine");
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnProjectConfigureSphere()
@@ -2476,7 +2625,9 @@ CMainWindow::OnProjectConfigureSphere()
     MessageBox("Error: Could not configure Sphere");
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnProjectGameSettings()
@@ -2484,7 +2635,9 @@ CMainWindow::OnProjectGameSettings()
   OpenGameSettings();
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnProjectOpenDirectory()
@@ -2494,9 +2647,9 @@ CMainWindow::OnProjectOpenDirectory()
   }
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
-#include "CheckListDialog.hpp"
-////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 void OnPackageFileWritten(const char* filename, int index, int total)
 {
@@ -2516,7 +2669,9 @@ void OnPackageFileWritten(const char* filename, int index, int total)
   GetStatusBar()->SetWindowText(string);
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnProjectPackageGame()
@@ -2626,7 +2781,9 @@ CMainWindow::OnProjectPackageGame()
   SetCurrentDirectory(old_directory);
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnWindowCloseAll()
 {
@@ -2638,7 +2795,9 @@ CMainWindow::OnWindowCloseAll()
     dw->DestroyWindow();
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 #include "../common/write_mng.hpp"
 mng_bool MNG_DECL GetNextImageFromFileList(int index, CImage32& image, void* data) {
@@ -2648,9 +2807,11 @@ mng_bool MNG_DECL GetNextImageFromFileList(int index, CImage32& image, void* dat
     return MNG_FALSE;
   return image.Load((*filelist)[index].c_str()) ? MNG_TRUE : MNG_TRUE;
 }
+
 mng_uint32 MNG_DECL GetDelayFromImageFileList(int index, void* data) {
   return 10 * 1000;
 }
+
 static mng_bool MNG_DECL ContinueProcessing(int index, int total)
 {
   mng_bool ret = MNG_TRUE;
@@ -2681,10 +2842,14 @@ static mng_bool MNG_DECL ContinueProcessing(int index, int total)
   */
   return ret;
 }
+
 mng_retcode TestAnimationCode(std::vector<std::string> filelist, const char* filename) {
   return SaveMNGAnimationFromImages(filename, GetNextImageFromFileList, GetDelayFromImageFileList, ContinueProcessing, (void*) &filelist);
 }
 #endif
+
+////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnToolsImagesToMNG()
@@ -2776,7 +2941,9 @@ CMainWindow::OnToolsJSConsole()
   }
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 #ifdef USE_IRC
 afx_msg void
@@ -2794,7 +2961,9 @@ CMainWindow::OnToolsIRCClient()
 }
 #endif
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void OpenURL(const std::string& url, const std::string& label)
 {
   if ((int)ShellExecute(NULL, "open", url.c_str(), 0, 0, SW_SHOW) <= 32) {
@@ -2805,6 +2974,9 @@ void OpenURL(const std::string& url, const std::string& label)
       MB_OK);
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 void PromptURL(const std::string& url, const std::string& label)
 {
   CStringDialog dialog(label.c_str(), url.c_str());
@@ -2812,38 +2984,57 @@ void PromptURL(const std::string& url, const std::string& label)
     OpenURL(url, label);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnHelpSphereSite()
 {
   PromptURL("http://sphere.sourceforge.net/", "Open Sphere Website");
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnHelpSphericalSite()
 {
   PromptURL("http://www.spheredev.org/forums/", "Open Spherical Forums");
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnHelpSphericalWiki()
 {
   PromptURL("http://www.spheredev.org/", "Open Spherical Wiki (Spheriki)");
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnHelpGettingStarted()
 {
   PromptURL("http://www.spheredev.org/wiki/Getting_started", "Open Getting Started Guide");
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnHelpFliksSite()
 {
   PromptURL("http://sphere.sourceforge.net/flik/docs", "Open Flikky's Tutorial Site");
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnHelpAegisKnightsSite()
 {
   PromptURL("http://aegisknight.org/sphere", "Open AegisKnight's Site");
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnHelpLocalDocumentation()
 {
@@ -2851,28 +3042,36 @@ CMainWindow::OnHelpLocalDocumentation()
   if ((int)ShellExecute(NULL, "open", docdir.c_str(), 0, 0, SW_SHOW) <= 32)
     MessageBox("Could not open documentation directory.", "Local Documentation");
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnHelpLocalDocFunctions()
 {
   std::string filestr = GetSphereDirectory() + "\\docs\\development\\api.txt";
   OpenDocumentWindow(GT_SCRIPTS, filestr.c_str());
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnHelpLocalChangelog()
 {
   std::string filestr = GetSphereDirectory() + "\\docs\\changelog.txt";
   OpenDocumentWindow(GT_SCRIPTS, filestr.c_str());
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnHelpLocalTutorial()
 {
   std::string filestr = GetSphereDirectory() + "\\docs\\development\\tutorial.txt";
   OpenDocumentWindow(GT_SCRIPTS, filestr.c_str());
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 class CAboutDialog : public CDialog
 {
 public:
@@ -2885,7 +3084,9 @@ private:
 private:
   DECLARE_MESSAGE_MAP()
 };
+
 ////////////////////////////////////////////////////////////////////////////////
+
 BEGIN_MESSAGE_MAP(CAboutDialog, CDialog)
 END_MESSAGE_MAP()
 CAboutDialog::CAboutDialog(std::string text)
@@ -2903,7 +3104,9 @@ CAboutDialog::OnInitDialog()
   SetDlgItemText(IDC_ABOUT_TEXT, m_text.c_str());
   return FALSE;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnHelpAbout()
 {
@@ -2938,7 +3141,9 @@ CMainWindow::OnHelpAbout()
   CAboutDialog dialog(message);
   dialog.DoModal();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg BOOL
 CMainWindow::OnNeedText(UINT /*id*/, NMHDR* nmhdr, LRESULT* result)
 {
@@ -2990,7 +3195,9 @@ CMainWindow::OnNeedText(UINT /*id*/, NMHDR* nmhdr, LRESULT* result)
   *result = 0;
   return TRUE;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnUpdateOpenLastProject(CCmdUI* cmdui)
 {
@@ -3000,19 +3207,25 @@ CMainWindow::OnUpdateOpenLastProject(CCmdUI* cmdui)
     cmdui->Enable(TRUE);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnUpdateProjectCommand(CCmdUI* cmdui)
 {
   cmdui->Enable(m_ProjectOpen ? TRUE : FALSE);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnUpdateFileCloseCommand(CCmdUI* cmdui)
 {
   cmdui->Enable(FALSE);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnUpdateSaveCommand(CCmdUI* cmdui)
 {
@@ -3027,7 +3240,9 @@ CMainWindow::OnUpdateSaveCommand(CCmdUI* cmdui)
       cmdui->Enable(FALSE);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnUpdateSaveAllCommand(CCmdUI* cmdui)
 {
@@ -3045,25 +3260,33 @@ CMainWindow::OnUpdateSaveAllCommand(CCmdUI* cmdui)
   }
   cmdui->Enable(can_save);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnUpdateWindowCloseAll(CCmdUI* cmdui)
 {
   cmdui->Enable(m_DocumentWindows.size() > 0);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 int
 CMainWindow::GetNumImageToolsAllowed() const
 {
   return m_NumImageToolsAllowed;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg UINT
 CMainWindow::GetImageTool(int index)
 {
   return m_SelectedImageTools[index];
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg UINT
 CMainWindow::GetMapTool(int index)
 {
@@ -3082,7 +3305,9 @@ CMainWindow::GetMapTool(int index)
   }
   return tool;
 }
+
 //////////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::UpdateToolBars(WPARAM, LPARAM)
 {
@@ -3101,7 +3326,9 @@ CMainWindow::UpdateToolBars(WPARAM, LPARAM)
     }
   }
 }
+
 //////////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnUpdateImageCommand(CCmdUI* cmdui)
 {
@@ -3122,7 +3349,9 @@ CMainWindow::OnUpdateImageCommand(CCmdUI* cmdui)
   }
   cmdui->Enable(enable);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnImageToolChanged()
 {
@@ -3142,7 +3371,9 @@ CMainWindow::OnImageToolChanged()
   
   UpdateToolBars();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnUpdateMapCommand(CCmdUI* cmdui, UINT tool_id)
 {
@@ -3158,7 +3389,9 @@ CMainWindow::OnUpdateMapCommand(CCmdUI* cmdui, UINT tool_id)
   }
   cmdui->Enable(enable);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #define MAKE_UPDATE_MAP_COMMAND(tool_id)                 \
 afx_msg void                                             \
 CMainWindow::OnUpdateMapCommand_##tool_id(CCmdUI* cmdui) \
@@ -3185,9 +3418,10 @@ MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZONEEDIT)
 MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZONEMOVE)
 MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZONEDELETE)
 MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_SCRIPT)
-
 #undef MAKE_UPDATE_MAP_COMMAND
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnMapToolChanged()
 {
@@ -3207,7 +3441,9 @@ CMainWindow::OnMapToolChanged()
   ctrl.CheckButton(id, TRUE);
   UpdateToolBars();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg LRESULT
 CMainWindow::OnInsertProjectFile(WPARAM wparam, LPARAM lparam)
@@ -3227,7 +3463,9 @@ CMainWindow::OnInsertProjectFile(WPARAM wparam, LPARAM lparam)
   return 0;
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg LRESULT
 CMainWindow::OnRefreshProject(WPARAM /*wparam*/, LPARAM /*lparam*/)
@@ -3239,7 +3477,9 @@ CMainWindow::OnRefreshProject(WPARAM /*wparam*/, LPARAM /*lparam*/)
   return 0;
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg LRESULT
 CMainWindow::OnCopyData(WPARAM wparam, LPARAM lparam)
 { 
@@ -3251,7 +3491,9 @@ CMainWindow::OnCopyData(WPARAM wparam, LPARAM lparam)
 	}
   return 0;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg LRESULT
 CMainWindow::OnDocumentWindowClosing(WPARAM wparam, LPARAM lparam)
 {
@@ -3268,7 +3510,9 @@ CMainWindow::OnDocumentWindowClosing(WPARAM wparam, LPARAM lparam)
   }
   return 0;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg LRESULT
 CMainWindow::OnSetChildMenu(WPARAM wparam, LPARAM lparam)
 {
@@ -3276,7 +3520,9 @@ CMainWindow::OnSetChildMenu(WPARAM wparam, LPARAM lparam)
   UpdateMenu();
   return 0;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg LRESULT
 CMainWindow::OnClearChildMenu(WPARAM wparam, LPARAM lparam)
 {
@@ -3284,7 +3530,9 @@ CMainWindow::OnClearChildMenu(WPARAM wparam, LPARAM lparam)
   UpdateMenu();
   return 0;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CMainWindow::OnUpdatePaletteMenu(CCmdUI* cmdui)
 {
@@ -3327,13 +3575,17 @@ CMainWindow::OnUpdatePaletteMenu(CCmdUI* cmdui)
   }
   return;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnViewPalette(UINT id)
 {
   ViewPalette(id - PALETTE_COMMAND);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void 
 CMainWindow::ViewPalette(int paletteNum)
 {
@@ -3352,13 +3604,17 @@ CMainWindow::ViewPalette(int paletteNum)
     }
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnCDAudio(UINT id)
 {
   CDAudio(id - CDAUDIO_COMMAND);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void 
 CMainWindow::CDAudio(int cdNum)
 {
@@ -3375,7 +3631,9 @@ CMainWindow::CDAudio(int cdNum)
     }
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnUpdateViewProject(CCmdUI* cmdui)
@@ -3395,7 +3653,9 @@ CMainWindow::OnUpdateViewProject(CCmdUI* cmdui)
 	}
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 #ifdef I_SUCK
 afx_msg void
 CMainWindow::OnViewProject()
@@ -3409,7 +3669,9 @@ CMainWindow::OnViewProject()
 #endif
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnZoomIn()
 {
@@ -3421,7 +3683,9 @@ CMainWindow::OnZoomIn()
     //MessageBox("MainWindow::ZoomIn");
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnZoomOut()
 {
@@ -3433,7 +3697,9 @@ CMainWindow::OnZoomOut()
     //MessageBox("MainWindow::ZoomOut");
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnPaste()
 {
@@ -3458,7 +3724,9 @@ CMainWindow::OnPaste()
     }
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnCopy()
 {
@@ -3467,7 +3735,9 @@ CMainWindow::OnCopy()
     dw->SendMessage(ID_FILE_COPY, 0, 0);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnUpdateCopy(CCmdUI* cmdui)
 {
@@ -3478,7 +3748,9 @@ CMainWindow::OnUpdateCopy(CCmdUI* cmdui)
   }
   cmdui->Enable(enable);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnUpdatePaste(CCmdUI* cmdui)
 {
@@ -3500,7 +3772,9 @@ CMainWindow::OnUpdatePaste(CCmdUI* cmdui)
   }
   cmdui->Enable(enable);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnUndo()
 {
@@ -3509,7 +3783,9 @@ CMainWindow::OnUndo()
     dw->SendMessage(ID_FILE_UNDO, 0, 0);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnUpdateUndo(CCmdUI* cmdui)
 {
@@ -3520,7 +3796,9 @@ CMainWindow::OnUpdateUndo(CCmdUI* cmdui)
   }
   cmdui->Enable(enable);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnRedo()
 {
@@ -3529,7 +3807,9 @@ CMainWindow::OnRedo()
     dw->SendMessage(ID_FILE_REDO, 0, 0);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CMainWindow::OnUpdateRedo(CCmdUI* cmdui)
 {
@@ -3540,4 +3820,5 @@ CMainWindow::OnUpdateRedo(CCmdUI* cmdui)
   }
   cmdui->Enable(enable);
 }
+
 ////////////////////////////////////////////////////////////////////////////////

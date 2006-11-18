@@ -1,4 +1,5 @@
 #pragma warning(disable : 4786)
+
 #include <Scintilla.h>
 #include <SciLexer.h>
 #include "ConsoleWindow.hpp"
@@ -11,9 +12,15 @@
 #include "StringDialog.hpp"
 #include <afxdlgs.h>
 #include "Scripting.hpp"
+
+////////////////////////////////////////////////////////////////////////////////
+
 static const int ID_EDIT = 900;
 static const int IRC_TIMER = 9001;
 static const UINT s_FindReplaceMessage = ::RegisterWindowMessage(FINDMSGSTRING);
+
+////////////////////////////////////////////////////////////////////////////////
+
 BEGIN_MESSAGE_MAP(CConsoleWindow, CDocumentWindow)
   ON_WM_SIZE()
   ON_WM_SETFOCUS()
@@ -23,7 +30,9 @@ BEGIN_MESSAGE_MAP(CConsoleWindow, CDocumentWindow)
   ON_COMMAND(ID_FILE_COPY,  OnCopy)
   ON_COMMAND(ID_FILE_PASTE, OnPaste)
 END_MESSAGE_MAP()
+
 ////////////////////////////////////////////////////////////////////////////////
+
 static CConsoleWindow* s_ConsoleWindow = NULL;
 CConsoleWindow::CConsoleWindow()
 : CDocumentWindow("Javascript Console", -1, CSize(400, 100))
@@ -35,13 +44,17 @@ CConsoleWindow::CConsoleWindow()
     return;
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 CConsoleWindow::~CConsoleWindow()
 {
   m_Scripter.Destroy();
   s_ConsoleWindow = NULL;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CConsoleWindow::Create()
 {
@@ -106,7 +119,9 @@ CConsoleWindow::Create()
  
   return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CConsoleWindow::SetScriptStyles()
 {
@@ -141,14 +156,18 @@ CConsoleWindow::SetScriptStyles()
     SendInputBar(SCI_SETWRAPMODE, SC_WRAP_WORD);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CConsoleWindow::Initialize()
 {
   m_Fontface = Configuration::Get(KEY_SCRIPT_FONT_NAME);
   SetScriptStyles();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CConsoleWindow::SetStyle(
   int style,
@@ -166,7 +185,9 @@ CConsoleWindow::SetStyle(
     SendEditor(SCI_STYLESETFONT, style, (LPARAM)face);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CConsoleWindow::GetEditorText(CString& text)
 {
@@ -179,7 +200,9 @@ CConsoleWindow::GetEditorText(CString& text)
     delete[] str;
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 CString
 CConsoleWindow::GetSelection()
 {
@@ -199,7 +222,9 @@ CConsoleWindow::GetSelection()
   }
   return "";
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CConsoleWindow::OnSize(UINT type, int cx, int cy)
 {
@@ -210,7 +235,9 @@ CConsoleWindow::OnSize(UINT type, int cx, int cy)
   }
   CDocumentWindow::OnSize(type, cx, cy);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CConsoleWindow::OnSetFocus(CWnd* old)
 {
@@ -219,7 +246,9 @@ CConsoleWindow::OnSetFocus(CWnd* old)
     ::SetFocus(__m_InputBar__);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CConsoleWindow::OnPosChanged(NMHDR* nmhdr, LRESULT* result) {
   /*
@@ -229,7 +258,9 @@ CConsoleWindow::OnPosChanged(NMHDR* nmhdr, LRESULT* result) {
   SetLineNumber(line);
   */
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CConsoleWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
   SCNotification* notify = (SCNotification*)nmhdr;
@@ -267,7 +298,9 @@ CConsoleWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
     }
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CConsoleWindow::OnCopy()
 {
@@ -279,7 +312,9 @@ CConsoleWindow::OnCopy()
     SendInputBar(SCI_COPY);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CConsoleWindow::OnPaste()
 {
@@ -291,10 +326,15 @@ CConsoleWindow::OnPaste()
     SendInputBar(SCI_PASTE);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CConsoleWindow::OnToolChanged(UINT id, int tool_index) {
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 BOOL
 CConsoleWindow::IsToolAvailable(UINT id)
 {
@@ -321,7 +361,9 @@ CConsoleWindow::IsToolAvailable(UINT id)
   }
   return available;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 DWORD WINAPI
 CConsoleWindow::ThreadRoutine(LPVOID parameter)
 {
@@ -355,7 +397,9 @@ CConsoleWindow::ThreadRoutine(LPVOID parameter)
   }
   return 0;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CConsoleWindow::EvaluateString(const char* string)
 {
@@ -372,4 +416,5 @@ CConsoleWindow::EvaluateString(const char* string)
     m_script_running = false;
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////

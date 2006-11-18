@@ -274,6 +274,8 @@ CLineSorter::Sort()
   const int selection_end = SendEditor(SCI_GETSELECTIONEND);
   int start_line = SendEditor(SCI_LINEFROMPOSITION, selection_start);
   int end_line   = SendEditor(SCI_LINEFROMPOSITION, selection_end);
+  int i;
+
   if (start_line - end_line == 0) {
     SetStatusText("No lines selected...");
     return;
@@ -322,13 +324,13 @@ CLineSorter::Sort()
   SendEditor(SCI_SETTARGETSTART, SendEditor(SCI_POSITIONFROMLINE, start_line));
   SendEditor(SCI_SETTARGETEND,   SendEditor(SCI_POSITIONFROMLINE, end_line + 1));
   SendEditor(SCI_REPLACETARGET, 0, (LRESULT) "");
-  std::vector</*unsigned*/ int> line_indexes;
-  for (/*unsigned*/ int i = 0; (unsigned int) i < m_Lines.size(); i++) {
+  std::vector<int> line_indexes;
+  for (i = 0; (unsigned int) i < m_Lines.size(); i++) {
     line_indexes.push_back(i);
   }
   /*
     SendEditor(SCI_ADDTEXT, strlen("Before sort...\n"), (LRESULT)"Before sort...\n");
-    for (//unsigned// int i = 0; i < m_Lines.size() && i < line_indexes.size(); i++) {
+    for (i = 0; i < m_Lines.size() && i < line_indexes.size(); i++) {
       //unsigned// int line_index = line_indexes[i];
       if (m_Lines[line_index]->data) {
         SendEditor(SCI_ADDTEXT, m_Lines[line_index]->size, (LRESULT)m_Lines[line_index]->data);

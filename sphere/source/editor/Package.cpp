@@ -5,13 +5,17 @@
 #include "Package.hpp"
 #include "../common/spk.hpp"
 const int BLOCK_SIZE = 4096;
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CPackage::AddFile(const char* filename)
 {
   m_files.push_back(filename);  
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CPackage::RemoveFile(int index)
 {
@@ -20,13 +24,17 @@ CPackage::RemoveFile(int index)
     iter++;
   m_files.erase(iter);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 int
 CPackage::GetNumFiles() const
 {
   return int(m_files.size());
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 // this struct needs external linkage
 struct index_entry {
   std::string name;
@@ -34,6 +42,9 @@ struct index_entry {
   dword file_size;
   dword compressed_size;
 };
+
+////////////////////////////////////////////////////////////////////////////////
+
 bool 
 CPackage::Write(const char* filename, PackageFileWritten file_written)
 {
@@ -158,7 +169,9 @@ CPackage::Write(const char* filename, PackageFileWritten file_written)
   
   return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 /*
 bool
 CPackage::Write(const char* filename)
