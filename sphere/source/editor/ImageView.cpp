@@ -16,10 +16,14 @@
 #include "ConvolveListDialog.hpp"
 #include "ColorAdjustDialog.hpp"
 
+////////////////////////////////////////////////////////////////////////////////
+
 static int s_ImageViewID = 9000;
 
 //static UINT s_ClipboardFormat;
 //#define SCROLLABLE_IMAGE_WINDOW 1
+
+////////////////////////////////////////////////////////////////////////////////
 
 #ifdef SCROLLABLE_IMAGE_WINDOW
 BEGIN_MESSAGE_MAP(CImageView, CScrollWindow)
@@ -128,7 +132,9 @@ CImageView::CImageView()
   m_ColorMask2 = CreateRGBA(Configuration::Get(KEY_COLOR_MASK_2_RED), Configuration::Get(KEY_COLOR_MASK_2_GREEN), Configuration::Get(KEY_COLOR_MASK_2_BLUE), 255);
   key_up = key_down = key_left = key_right = false;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 CImageView::~CImageView()
 {
   // destroy the blit DIB
@@ -964,6 +970,8 @@ struct Point {
   int y;
 };
 
+////////////////////////////////////////////////////////////////////////////////
+
 bool
 CImageView::IsColorToReplace(RGBA pixel, RGBA colorToReplace) {
   bool r = false;
@@ -975,6 +983,8 @@ CImageView::IsColorToReplace(RGBA pixel, RGBA colorToReplace) {
   }
   return r;
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 void
 CImageView::FillMe(int x, int y, RGBA colorToReplace)
@@ -1937,6 +1947,7 @@ CImageView::OnTimer(UINT event)
   int offsetx = (ClientRect.right - totalx) / 2;
   int offsety = (ClientRect.bottom - totaly) / 2;
   bool cursor_moved = false;
+
   if (key_left) {
     POINT temp = m_CurPoint;
     temp.x -= temp.x % size;
@@ -1947,6 +1958,7 @@ CImageView::OnTimer(UINT event)
       cursor_moved = true;
     }
   }
+
   if (key_right) {
     POINT temp = m_CurPoint;
     temp.x -= temp.x % size;
@@ -1957,6 +1969,7 @@ CImageView::OnTimer(UINT event)
       cursor_moved = true;
     }
   }
+
   if (key_up) {
     POINT temp = m_CurPoint;
     temp.x -= temp.x % size;
@@ -1967,6 +1980,7 @@ CImageView::OnTimer(UINT event)
       cursor_moved = true;
     }
   }
+
   if (key_down) {
     POINT temp = m_CurPoint;
     temp.x -= temp.x % size;
@@ -1977,6 +1991,7 @@ CImageView::OnTimer(UINT event)
       cursor_moved = true;
     }
   }
+
   if (!m_MouseDown[0]) {
     if (cursor_moved) {
       POINT current = ConvertToPixel(m_CurPoint);
@@ -2042,6 +2057,7 @@ CImageView::OnCopy()
 {
   Copy();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
@@ -2872,6 +2888,7 @@ CImageView::OnToolChanged(UINT id, int tool_index)
   }
   TP_ToolSelected(m_SelectedTools[tool_index], tool_index);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
  
 BOOL

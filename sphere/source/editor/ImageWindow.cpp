@@ -7,11 +7,20 @@
 #include "Editor.hpp"
 #include "resource.h"
 #include "../common/Filters.hpp"
+
+////////////////////////////////////////////////////////////////////////////////
+
 #define ID_ALPHASLIDER 900
 static const int IMAGE_TIMER = 9001;
+
+////////////////////////////////////////////////////////////////////////////////
+
 #ifdef USE_SIZECBAR
 IMPLEMENT_DYNAMIC(CImageWindow, CMDIChildWnd)
 #endif
+
+////////////////////////////////////////////////////////////////////////////////
+
 BEGIN_MESSAGE_MAP(CImageWindow, CSaveableDocumentWindow)
   ON_WM_SIZE()  
   ON_WM_KEYDOWN()
@@ -31,7 +40,9 @@ BEGIN_MESSAGE_MAP(CImageWindow, CSaveableDocumentWindow)
   ON_COMMAND(ID_FILE_UNDO,  OnUndo)
   ON_COMMAND(ID_FILE_REDO,  OnRedo)
 END_MESSAGE_MAP()
+
 ////////////////////////////////////////////////////////////////////////////////
+
 CImageWindow::CImageWindow(const char* image, bool create_from_clipboard)
 : CSaveableDocumentWindow(image, IDR_IMAGE)
 , m_Created(false)
@@ -39,6 +50,7 @@ CImageWindow::CImageWindow(const char* image, bool create_from_clipboard)
   m_DocumentType = WA_IMAGE;
   SetSaved(image != NULL);
   SetModified(false);
+
   if (image) {
     if (!m_Image.Load(image)) {
       char string[MAX_PATH + 1024];
@@ -53,6 +65,7 @@ CImageWindow::CImageWindow(const char* image, bool create_from_clipboard)
       delete this;
       return;
     }
+
     if (create_from_clipboard && m_ImageView.m_Clipboard != NULL) {
       if (AfxGetApp()->m_pMainWnd->OpenClipboard() != FALSE) {
         int width = 0, height = 0;
@@ -86,25 +99,37 @@ CImageWindow::CImageWindow(const char* image, bool create_from_clipboard)
       }
     }
   }
+
+  // ensure we never have zero by zero images...
+  if (m_Image.GetWidth() == 0 || m_Image.GetHeight() == 0) {
+    AfxGetApp()->m_pMainWnd->MessageBox("Error: Image is zero sized");
+    delete this;
+    return;
+  }
+
   // create the window
   if (Create(AfxRegisterWndClass(0, NULL, (HBRUSH)(COLOR_WINDOW + 1), AfxGetApp()->LoadIcon(IDI_IMAGE))) == FALSE)
   {
     AfxGetApp()->m_pMainWnd->MessageBox("Error: Could not create window");
     return;
   }
+
   if (m_ImageView.Create(this, this, this) == FALSE) {
     AfxGetApp()->m_pMainWnd->MessageBox("Error: Could not create imageview");
     return;
   }
+
   m_PaletteView.Create(this, this);
   m_ColorView.SetNumColors(2);
   m_ColorView.Create(this, this);
   m_AlphaView.Create(this, this);
   m_Created = true;
+
 #ifdef USE_SIZECBAR
 	 LoadPaletteStates();
 #endif
   ////////
+#if 1
   /*
   if (1) {
     // test case: line drawn (in terms of slope) is different because of clipping...
@@ -116,6 +141,7 @@ CImageWindow::CImageWindow(const char* image, bool create_from_clipboard)
     m_Image.Line(14, 3, 1, 14, color_b, clip_b);
   }
   */
+#endif
   ////////
   // make sure everything is in the right position
   RECT ClientRect;
@@ -124,7 +150,9 @@ CImageWindow::CImageWindow(const char* image, bool create_from_clipboard)
   UpdateImageView();
   m_Timer = SetTimer(IMAGE_TIMER, 100, NULL);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 CImageWindow::~CImageWindow()
 {
   m_ImageView.DestroyWindow();
@@ -132,7 +160,9 @@ CImageWindow::~CImageWindow()
   m_ColorView.DestroyWindow();
   m_AlphaView.DestroyWindow();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CImageWindow::UpdateImageView()
 {
@@ -141,7 +171,9 @@ CImageWindow::UpdateImageView()
     m_Image.GetHeight(),
     m_Image.GetPixels(), false);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CImageWindow::OnSize(UINT type, int cx, int cy)
 {
@@ -167,25 +199,33 @@ CImageWindow::OnSize(UINT type, int cx, int cy)
   }
   CSaveableDocumentWindow::OnSize(type, cx, cy);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CImageWindow::OnKeyDown(UINT vk, UINT repeat, UINT flags)
 {
   m_ImageView.OnKeyDown(vk, repeat, flags);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CImageWindow::OnKeyUp(UINT vk, UINT repeat, UINT flags)
 {
   m_ImageView.OnKeyUp(vk, repeat, flags);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CImageWindow::OnTimer(UINT event)
 {
   m_ImageView.OnTimer(event);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CImageWindow::OnImageResize()
 {
@@ -202,7 +242,9 @@ CImageWindow::OnImageResize()
     }
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CImageWindow::OnImageRescale()
 {
@@ -219,7 +261,9 @@ CImageWindow::OnImageRescale()
     }
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CImageWindow::OnImageResample()
 {
@@ -236,7 +280,9 @@ CImageWindow::OnImageResample()
     }
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CImageWindow::OnImageRotate()
 {
@@ -249,7 +295,9 @@ CImageWindow::OnImageRotate()
     m_ImageView.AfterImageChanged();
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CImageWindow::OnImageAdjustBorders()
 {
@@ -264,7 +312,9 @@ CImageWindow::OnImageAdjustBorders()
     m_ImageView.AfterImageChanged();
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CImageWindow::OnImageCrop()
 {
@@ -280,7 +330,9 @@ CImageWindow::OnImageCrop()
     m_ImageView.AfterImageChanged();
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CImageWindow::OnCountColorsUsed()
 {
@@ -290,7 +342,9 @@ CImageWindow::OnCountColorsUsed()
   sprintf (string, "%u", num_colors);
   MessageBox(string, "Num Colors Used");
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CImageWindow::OnImageViewOriginalSize()
 {
@@ -300,13 +354,17 @@ CImageWindow::OnImageViewOriginalSize()
   CSaveableDocumentWindow::SetWindowPos(&wndTop, 0, 0, m_Image.GetWidth() + 72 + 12, m_Image.GetHeight() + 31, SWP_NOMOVE | SWP_NOOWNERZORDER);
   OnSize(0, m_Image.GetWidth() + 72, m_Image.GetHeight());
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CImageWindow::OnUpdateImageViewOriginalSizeCommand(CCmdUI* cmdui)
 {
   cmdui->Enable(IsZoomed() ? FALSE : TRUE);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CImageWindow::GetSavePath(char* path)
 {
@@ -320,13 +378,17 @@ CImageWindow::GetSavePath(char* path)
   strcpy(path, Dialog.GetPathName());
   return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CImageWindow::SaveDocument(const char* path)
 {
   return m_Image.Save(path);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CImageWindow::IV_ImageChanged()
 {
@@ -334,7 +396,9 @@ CImageWindow::IV_ImageChanged()
   memcpy(m_Image.GetPixels(), m_ImageView.GetPixels(), m_Image.GetWidth() * m_Image.GetHeight() * sizeof(RGBA));
   SetModified(true);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CImageWindow::IV_ColorChanged(RGBA color)
 {
@@ -342,7 +406,9 @@ CImageWindow::IV_ColorChanged(RGBA color)
   m_ColorView.SetColor(0, rgb);
   m_AlphaView.SetAlpha(color.alpha);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CImageWindow::PV_ColorChanged(int index, RGB rgb)
 {
@@ -350,14 +416,18 @@ CImageWindow::PV_ColorChanged(int index, RGB rgb)
   RGBA rgba = { rgb.red, rgb.green, rgb.blue, m_ImageView.GetColor().alpha };
   m_ImageView.SetColor(index, rgba);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CImageWindow::CV_ColorChanged(int index, RGB color)
 {
   RGBA rgba = { color.red, color.green, color.blue, m_ImageView.GetColor().alpha };
   m_ImageView.SetColor(index, rgba);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CImageWindow::AV_AlphaChanged(byte alpha)
 {
@@ -365,6 +435,7 @@ CImageWindow::AV_AlphaChanged(byte alpha)
   rgba.alpha = alpha;
   m_ImageView.SetColor(0, rgba);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
  
 void
@@ -373,7 +444,9 @@ CImageWindow::OnToolChanged(UINT id, int tool_index) {
     m_ImageView.OnToolChanged(id, tool_index);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 BOOL
 CImageWindow::IsToolAvailable(UINT id) {
   BOOL available = FALSE;
@@ -382,32 +455,41 @@ CImageWindow::IsToolAvailable(UINT id) {
   }
   return available;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CImageWindow::OnCopy() {
   if (m_Created) {
     m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_COPY, 0), 0);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CImageWindow::OnPaste() {
   if (m_Created) {
     m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_PASTE, 0), 0);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CImageWindow::OnUndo() {
   if (m_Created) {
     m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_UNDO, 0), 0);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CImageWindow::OnRedo() {
   if (m_Created) {
     m_ImageView.SendMessage(WM_COMMAND, MAKEWPARAM(ID_IMAGEVIEW_REDO, 0), 0);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
