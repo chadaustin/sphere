@@ -5,14 +5,21 @@
 
 #include <sstream>
 #include <math.h>
+#include <assert.h>
 #include "map_engine.hpp"
 #include "render.hpp"
 #include "rendersort.hpp"
 #include "time.hpp"
 #include "PlayerConfig.hpp"
-
 #include "filesystem.hpp"
+#include "../common/minmax.hpp"
+
+////////////////////////////////////////////////////////////////////////////////
+
 static const int c_MaxSkipFrames = 10;
+
+////////////////////////////////////////////////////////////////////////////////
+
 /*
 static inline void MapEngineLog(const std::string text) {
   static bool firstcall = true;
@@ -28,6 +35,9 @@ static inline void MapEngineLog(const std::string text) {
 }
 
 */
+
+////////////////////////////////////////////////////////////////////////////////
+
 static inline std::string itos(int i)
 {
     char s[20];
@@ -36,6 +46,7 @@ static inline std::string itos(int i)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
         : m_Engine(engine)
         , m_FileSystem(fs)
@@ -426,6 +437,7 @@ CMapEngine::Exit()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::IsRunning()
 {
@@ -433,6 +445,7 @@ CMapEngine::IsRunning()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetMapEngineFrameRate(int fps)
 {
@@ -450,10 +463,12 @@ CMapEngine::SetMapEngineFrameRate(int fps)
     }
 
     m_FrameRate = fps;
+    ResetNextFrame();
     return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 int
 CMapEngine::GetMapEngineFrameRate()
 {
@@ -468,6 +483,7 @@ CMapEngine::GetMapEngineFrameRate()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::Update()
 {
@@ -486,6 +502,7 @@ CMapEngine::Update()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetNumLayers(int& layers)
 {
@@ -500,6 +517,7 @@ CMapEngine::GetNumLayers(int& layers)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetLayerWidth(int layer, int& width)
 {
@@ -511,6 +529,7 @@ CMapEngine::GetLayerWidth(int layer, int& width)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetLayerHeight(int layer, int& height)
 {
@@ -522,6 +541,7 @@ CMapEngine::GetLayerHeight(int layer, int& height)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetLayerName(int layer, std::string& name)
 {
@@ -533,6 +553,7 @@ CMapEngine::GetLayerName(int layer, std::string& name)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::IsLayerVisible(int layer, bool& visible)
 {
@@ -544,6 +565,7 @@ CMapEngine::IsLayerVisible(int layer, bool& visible)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetLayerVisible(int layer, bool visible)
 {
@@ -555,6 +577,7 @@ CMapEngine::SetLayerVisible(int layer, bool visible)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::IsLayerReflective(int layer, bool& reflective)
 {
@@ -566,6 +589,7 @@ CMapEngine::IsLayerReflective(int layer, bool& reflective)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetLayerReflective(int layer, bool reflective)
 {
@@ -577,6 +601,7 @@ CMapEngine::SetLayerReflective(int layer, bool reflective)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetLayerWidth(int layer_index, int width)
 {
@@ -598,7 +623,9 @@ CMapEngine::SetLayerWidth(int layer_index, int width)
     }
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetLayerHeight(int layer_index, int height)
 {
@@ -620,7 +647,9 @@ CMapEngine::SetLayerHeight(int layer_index, int height)
     }
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetLayerScaleFactorX(int layer_index, double factor_x)
 {
@@ -635,7 +664,9 @@ CMapEngine::SetLayerScaleFactorX(int layer_index, double factor_x)
     m_Map.SetLayerScaleFactorX(layer_index, factor_x);
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetLayerScaleFactorY(int layer_index, double factor_y)
 {
@@ -650,7 +681,9 @@ CMapEngine::SetLayerScaleFactorY(int layer_index, double factor_y)
     m_Map.SetLayerScaleFactorY(layer_index, factor_y);
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetLayerAngle(int layer_index, double& angle)
 {
@@ -659,7 +692,9 @@ CMapEngine::GetLayerAngle(int layer_index, double& angle)
     angle = m_Map.GetLayerAngle(layer_index);
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetLayerAngle(int layer_index, double angle)
 {
@@ -668,7 +703,9 @@ CMapEngine::SetLayerAngle(int layer_index, double angle)
     m_Map.SetLayerAngle(layer_index, angle);
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetNumTiles(int& tiles)
 {
@@ -683,6 +720,7 @@ CMapEngine::GetNumTiles(int& tiles)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetTile(int x, int y, int layer, int tile)
 {
@@ -707,7 +745,8 @@ CMapEngine::SetTile(int x, int y, int layer, int tile)
     return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetTile(int x, int y, int layer, int& tile)
 {
@@ -727,6 +766,7 @@ CMapEngine::GetTile(int x, int y, int layer, int& tile)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetTileName(int tile_index, std::string& name)
 {
@@ -746,7 +786,9 @@ CMapEngine::GetTileName(int tile_index, std::string& name)
     name = m_Map.GetMap().GetTileset().GetTile(tile_index).GetName();
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetTileWidth(int& width)
 {
@@ -761,6 +803,7 @@ CMapEngine::GetTileWidth(int& width)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetTileHeight(int& height)
 {
@@ -775,6 +818,7 @@ CMapEngine::GetTileHeight(int& height)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetTileImage(int tile, IMAGE& image)
 {
@@ -799,9 +843,9 @@ CMapEngine::GetTileImage(int tile, IMAGE& image)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetTileImage(int tile, IMAGE image)
-
 {
     if (!m_IsRunning)
     {
@@ -855,6 +899,7 @@ CMapEngine::SetTileImage(int tile, IMAGE image)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetTileSurface(int tile, CImage32* surface)
 {
@@ -873,7 +918,9 @@ CMapEngine::GetTileSurface(int tile, CImage32* surface)
     *surface = m_Map.GetMap().GetTileset().GetTile(tile);
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetTileSurface(int tile, const CImage32* surface)
 {
@@ -924,7 +971,9 @@ CMapEngine::SetTileSurface(int tile, const CImage32* surface)
     m_Map.UpdateSolidTile(tile);
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetTileDelay(int tile, int& delay)
 {
@@ -945,6 +994,7 @@ CMapEngine::GetTileDelay(int tile, int& delay)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetTileDelay(int tile, int delay)
 {
@@ -971,6 +1021,7 @@ CMapEngine::SetTileDelay(int tile, int delay)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetNextAnimatedTile(int& tile)
 {
@@ -987,6 +1038,7 @@ CMapEngine::GetNextAnimatedTile(int& tile)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetNextAnimatedTile(int current_tile, int next_tile)
 {
@@ -1007,6 +1059,7 @@ CMapEngine::SetNextAnimatedTile(int current_tile, int next_tile)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::ReplaceTilesOnLayer(int layer, int old_tile, int new_tile)
 {
@@ -1032,6 +1085,7 @@ CMapEngine::ReplaceTilesOnLayer(int layer, int old_tile, int new_tile)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::ExecuteTrigger(int location_x, int location_y, int layer)
 {
@@ -1041,6 +1095,7 @@ CMapEngine::ExecuteTrigger(int location_x, int location_y, int layer)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::AreZonesAt(int location_x, int location_y, int layer, bool& found)
 {
@@ -1061,6 +1116,7 @@ CMapEngine::AreZonesAt(int location_x, int location_y, int layer, bool& found)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::ExecuteZones(int location_x, int location_y, int layer)
 {
@@ -1099,6 +1155,7 @@ CMapEngine::ExecuteZones(int location_x, int location_y, int layer)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetNumZones(int& zones)
 {
@@ -1113,6 +1170,7 @@ CMapEngine::GetNumZones(int& zones)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetCurrentZone(int& zone)
 {
@@ -1127,6 +1185,7 @@ CMapEngine::GetCurrentZone(int& zone)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetZoneX(int zone, int& x)
 {
@@ -1147,6 +1206,7 @@ CMapEngine::GetZoneX(int zone, int& x)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetZoneY(int zone, int& y)
 {
@@ -1167,6 +1227,7 @@ CMapEngine::GetZoneY(int zone, int& y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetZoneWidth(int zone, int& width)
 {
@@ -1187,6 +1248,7 @@ CMapEngine::GetZoneWidth(int zone, int& width)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetZoneHeight(int zone, int& height)
 {
@@ -1207,6 +1269,7 @@ CMapEngine::GetZoneHeight(int zone, int& height)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetZoneLayer(int zone, int& layer)
 {
@@ -1226,6 +1289,7 @@ CMapEngine::GetZoneLayer(int zone, int& layer)
     return true;
 }
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetZoneLayer(int zone, int layer)
 {
@@ -1247,9 +1311,9 @@ CMapEngine::SetZoneLayer(int zone, int layer)
     return true;
 }
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetNumObstructionSegments(int layer, int& num_segments)
-
 {
     if (!m_IsRunning)
     {
@@ -1264,6 +1328,7 @@ CMapEngine::GetNumObstructionSegments(int layer, int& num_segments)
     return true;
 }
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::RenderMap()
 {
@@ -1280,6 +1345,7 @@ CMapEngine::RenderMap()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetColorMask(RGBA color, int num_frames)
 {
@@ -1304,6 +1370,7 @@ CMapEngine::SetColorMask(RGBA color, int num_frames)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetDelayScript(int num_frames, const char* script)
 {
@@ -1334,12 +1401,15 @@ CMapEngine::SetDelayScript(int num_frames, const char* script)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 inline bool
 CMapEngine::IsKeyBound(int key)
 {
     return (m_BoundKeys.count(key) > 0);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::BindKey(int key, const char* on_key_down, const char* on_key_up)
 {
@@ -1373,6 +1443,7 @@ CMapEngine::BindKey(int key, const char* on_key_down, const char* on_key_up)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::UnbindKey(int key)
 {
@@ -1395,6 +1466,7 @@ CMapEngine::UnbindKey(int key)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::IsJoystickButtonBound(int joystick, int button)
 {
@@ -1416,7 +1488,9 @@ CMapEngine::IsJoystickButtonBound(int joystick, int button)
     }
     return (m_BoundJoysticks[bound_joystick_index].m_BoundButtons.count(button) > 0);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::BindJoystickButton(int joystick, int button, const char* on_key_down, const char* on_key_up)
 {
@@ -1477,7 +1551,9 @@ CMapEngine::BindJoystickButton(int joystick, int button, const char* on_key_down
     m_BoundJoysticks[bound_joystick_index].m_BoundButtons[button] = ks;
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::UnbindJoystickButton(int joystick, int button)
 {
@@ -1514,7 +1590,9 @@ CMapEngine::UnbindJoystickButton(int joystick, int button)
     }
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::IsInvalidPersonError(const char* person_name, int& person_index)
 {
@@ -1530,6 +1608,7 @@ CMapEngine::IsInvalidPersonError(const char* person_name, int& person_index)
 }
 
 /////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::IsInvalidLayerError(int layer, const char* calling_func)
 {
@@ -1550,6 +1629,7 @@ CMapEngine::IsInvalidLayerError(int layer, const char* calling_func)
 }
 
 /////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::AttachInput(const char* name)
 {
@@ -1558,13 +1638,12 @@ CMapEngine::AttachInput(const char* name)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::DetachInput()
 {
-
     if (m_IsInputAttached)
     {
-
         DetachPlayerInput(m_Persons[m_InputPerson].name.c_str());
     }
     m_InputPerson = -1;
@@ -1573,6 +1652,7 @@ CMapEngine::DetachInput()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::IsInputAttached(bool& attached)
 {
@@ -1581,6 +1661,7 @@ CMapEngine::IsInputAttached(bool& attached)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetInputPerson(std::string& person)
 {
@@ -1596,7 +1677,8 @@ CMapEngine::GetInputPerson(std::string& person)
     }
 }
 
-/////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::AttachPlayerInput(const char* name, int player)
 {
@@ -1667,7 +1749,9 @@ CMapEngine::AttachPlayerInput(const char* name, int player)
     }
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::DetachPlayerInput(const char* name)
 {
@@ -1698,7 +1782,9 @@ CMapEngine::DetachPlayerInput(const char* name)
     }
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetUpdateScript(const char* script)
 {
@@ -1723,6 +1809,7 @@ CMapEngine::SetUpdateScript(const char* script)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetRenderScript(const char* script)
 {
@@ -1747,6 +1834,7 @@ CMapEngine::SetRenderScript(const char* script)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetLayerRenderer(int layer, const char* script)
 {
@@ -1774,6 +1862,7 @@ CMapEngine::SetLayerRenderer(int layer, const char* script)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetLayerMask(int layer, RGBA mask)
 {
@@ -1785,6 +1874,7 @@ CMapEngine::SetLayerMask(int layer, RGBA mask)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetLayerMask(int layer, RGBA& mask)
 {
@@ -1796,6 +1886,7 @@ CMapEngine::GetLayerMask(int layer, RGBA& mask)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::AttachCamera(const char* name)
 {
@@ -1811,6 +1902,7 @@ CMapEngine::AttachCamera(const char* name)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::DetachCamera()
 {
@@ -1819,6 +1911,7 @@ CMapEngine::DetachCamera()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::IsCameraAttached(bool& attached)
 {
@@ -1827,6 +1920,7 @@ CMapEngine::IsCameraAttached(bool& attached)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetCameraPerson(std::string& person)
 {
@@ -1843,6 +1937,7 @@ CMapEngine::GetCameraPerson(std::string& person)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetCameraX(int x)
 {
@@ -1857,6 +1952,7 @@ CMapEngine::SetCameraX(int x)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetCameraY(int y)
 {
@@ -1871,6 +1967,7 @@ CMapEngine::SetCameraY(int y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetCameraX(int& x)
 {
@@ -1885,6 +1982,7 @@ CMapEngine::GetCameraX(int& x)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetCameraY(int& y)
 {
@@ -1899,6 +1997,7 @@ CMapEngine::GetCameraY(int& y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::MapToScreenX(int layer, int mx, int& sx)
 {
@@ -1909,6 +2008,7 @@ CMapEngine::MapToScreenX(int layer, int mx, int& sx)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::MapToScreenY(int layer, int my, int& sy)
 {
@@ -1920,6 +2020,7 @@ CMapEngine::MapToScreenY(int layer, int my, int& sy)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::ScreenToMapX(int layer, int sx, int& mx)
 {
@@ -1931,6 +2032,7 @@ CMapEngine::ScreenToMapX(int layer, int sx, int& mx)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::ScreenToMapY(int layer, int sy, int& my)
 {
@@ -1942,6 +2044,7 @@ CMapEngine::ScreenToMapY(int layer, int sy, int& my)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetPersonList(std::vector<std::string>& list)
 {
@@ -1963,6 +2066,7 @@ CMapEngine::GetPersonList(std::vector<std::string>& list)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* spriteset_filename, bool destroy_with_map)
 {
@@ -2039,6 +2143,7 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::CreatePerson(const char* name, const char* spriteset_filename, bool destroy_with_map)
 {
@@ -2076,6 +2181,7 @@ CMapEngine::CreatePerson(const char* name, const char* spriteset_filename, bool 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::DestroyPerson(const char* name)
 {
@@ -2160,6 +2266,7 @@ CMapEngine::DestroyPerson(const char* name)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetPersonX(const char* name, int x)
 {
@@ -2182,6 +2289,7 @@ CMapEngine::SetPersonX(const char* name, int x)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetPersonY(const char* name, int y)
 {
@@ -2204,6 +2312,7 @@ CMapEngine::SetPersonY(const char* name, int y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetPersonXYFloat(const char* name, double x, double y)
 {
@@ -2227,6 +2336,7 @@ CMapEngine::SetPersonXYFloat(const char* name, double x, double y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetPersonLayer(const char* name, int layer)
 {
@@ -2252,6 +2362,7 @@ CMapEngine::SetPersonLayer(const char* name, int layer)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetPersonDirection(const char* name, const char* direction)
 {
@@ -2282,6 +2393,7 @@ CMapEngine::SetPersonDirection(const char* name, const char* direction)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetPersonFrame(const char* name, int frame)
 {
@@ -2313,6 +2425,7 @@ CMapEngine::SetPersonFrame(const char* name, int frame)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetPersonX(const char* name, int& x)
 {
@@ -2327,6 +2440,7 @@ CMapEngine::GetPersonX(const char* name, int& x)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetPersonY(const char* name, int& y)
 {
@@ -2341,6 +2455,7 @@ CMapEngine::GetPersonY(const char* name, int& y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetPersonXFloat(const char* name, double& x)
 {
@@ -2355,6 +2470,7 @@ CMapEngine::GetPersonXFloat(const char* name, double& x)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetPersonYFloat(const char* name, double& y)
 {
@@ -2369,6 +2485,7 @@ CMapEngine::GetPersonYFloat(const char* name, double& y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetPersonLayer(const char* name, int& layer)
 {
@@ -2383,6 +2500,7 @@ CMapEngine::GetPersonLayer(const char* name, int& layer)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetPersonDirection(const char* name, std::string& direction)
 {
@@ -2398,6 +2516,7 @@ CMapEngine::GetPersonDirection(const char* name, std::string& direction)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::IsPersonVisible(const char* person_name, bool& visible)
 {
@@ -2411,6 +2530,7 @@ CMapEngine::IsPersonVisible(const char* person_name, bool& visible)
     return true;
 }
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetPersonVisible(const char* person_name, bool visible)
 {
@@ -2423,7 +2543,9 @@ CMapEngine::SetPersonVisible(const char* person_name, bool visible)
     m_Persons[person].is_visible = visible;
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::IgnorePersonObstructions(const char* name, bool ignoring)
 {
@@ -2438,6 +2560,7 @@ CMapEngine::IgnorePersonObstructions(const char* name, bool ignoring)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::IsIgnoringPersonObstructions(const char* name, bool& ignoring)
 {
@@ -2453,6 +2576,7 @@ CMapEngine::IsIgnoringPersonObstructions(const char* name, bool& ignoring)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::IgnoreTileObstructions(const char* name, bool ignoring)
 {
@@ -2467,6 +2591,7 @@ CMapEngine::IgnoreTileObstructions(const char* name, bool ignoring)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::IsIgnoringTileObstructions(const char* name, bool& ignoring)
 {
@@ -2482,6 +2607,7 @@ CMapEngine::IsIgnoringTileObstructions(const char* name, bool& ignoring)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetPersonIgnoreList(const char* name, std::vector<std::string> ignore_list)
 {
@@ -2494,7 +2620,9 @@ CMapEngine::SetPersonIgnoreList(const char* name, std::vector<std::string> ignor
     m_Persons[person].ignored_persons = ignore_list;
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetPersonIgnoreList(const char* name, std::vector<std::string>& ignore_list)
 {
@@ -2507,7 +2635,9 @@ CMapEngine::GetPersonIgnoreList(const char* name, std::vector<std::string>& igno
     ignore_list = m_Persons[person].ignored_persons;
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetPersonFrame(const char* name, int& frame)
 {
@@ -2522,6 +2652,7 @@ CMapEngine::GetPersonFrame(const char* name, int& frame)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetPersonFrameRevert(const char* name, int i)
 {
@@ -2537,6 +2668,7 @@ CMapEngine::SetPersonFrameRevert(const char* name, int i)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetPersonFrameRevert(const char* name, int& i)
 {
@@ -2552,6 +2684,7 @@ CMapEngine::GetPersonFrameRevert(const char* name, int& i)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetPersonSpeedXY(const char* name, double x, double y)
 {
@@ -2575,6 +2708,7 @@ CMapEngine::SetPersonSpeedXY(const char* name, double x, double y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetPersonSpeedX(const char* name, double& x)
 {
@@ -2589,6 +2723,7 @@ CMapEngine::GetPersonSpeedX(const char* name, double& x)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetPersonSpeedY(const char* name, double& y)
 {
@@ -2603,6 +2738,7 @@ CMapEngine::GetPersonSpeedY(const char* name, double& y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetPersonScaleAbsolute(const char* name, int width, int height)
 {
@@ -2627,6 +2763,7 @@ CMapEngine::SetPersonScaleAbsolute(const char* name, int width, int height)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetPersonScaleFactor(const char* name, double scale_w, double scale_h)
 {
@@ -2676,6 +2813,7 @@ CMapEngine::SetPersonScaleFactor(const char* name, double scale_w, double scale_
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetPersonAngle(const char* name, double& angle)
 {
@@ -2690,6 +2828,7 @@ CMapEngine::GetPersonAngle(const char* name, double& angle)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetPersonAngle(const char* name, double angle)
 {
@@ -2705,6 +2844,7 @@ CMapEngine::SetPersonAngle(const char* name, double angle)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetPersonMask(const char* name, RGBA mask)
 {
@@ -2719,6 +2859,7 @@ CMapEngine::SetPersonMask(const char* name, RGBA mask)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetPersonMask(const char* name, RGBA& mask)
 {
@@ -2733,9 +2874,9 @@ CMapEngine::GetPersonMask(const char* name, RGBA& mask)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 class PersonDataUtil
 {
-
 public:
     static int FindDataIndex(std::vector<struct PersonData>& person_data, const char* name)
     {
@@ -2807,6 +2948,9 @@ public:
         PersonDataUtil::SetDataNumber(person_data, name, (double)value, 3);
     }
 };
+
+////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetPersonData(const char* name, std::vector<struct PersonData>& person_data)
 {
@@ -2825,7 +2969,9 @@ CMapEngine::GetPersonData(const char* name, std::vector<struct PersonData>& pers
     PersonDataUtil::SetDataString(person_data, "leader", p.leader == -1 ? "" : m_Persons[p.leader].name.c_str());
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetPersonData(const char* name, const std::vector<struct PersonData> data)
 {
@@ -2838,7 +2984,9 @@ CMapEngine::SetPersonData(const char* name, const std::vector<struct PersonData>
     m_Persons[person].person_data = data;
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetPersonValue(const char* name, const char* key, std::string& string_value, double& double_value, int& type)
 {
@@ -2862,7 +3010,9 @@ CMapEngine::GetPersonValue(const char* name, const char* key, std::string& strin
     }
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetPersonValue(const char* name, const char* key, const std::string value, const double double_value, int type)
 {
@@ -2885,7 +3035,9 @@ CMapEngine::SetPersonValue(const char* name, const char* key, const std::string 
         return false;
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 SSPRITESET*
 CMapEngine::GetPersonSpriteset(const char* name)
 {
@@ -2899,6 +3051,7 @@ CMapEngine::GetPersonSpriteset(const char* name)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetPersonSpriteset(const char* name, sSpriteset& spriteset)
 {
@@ -2955,6 +3108,7 @@ CMapEngine::SetPersonSpriteset(const char* name, sSpriteset& spriteset)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::FollowPerson(const char* follower, const char* leader, int pixels)
 {
@@ -3030,6 +3184,7 @@ CMapEngine::FollowPerson(const char* follower, const char* leader, int pixels)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetPersonScript(const char* name, int which, const char* script)
 {
@@ -3070,6 +3225,7 @@ CMapEngine::SetPersonScript(const char* name, int which, const char* script)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetDefaultPersonScript(int which, const char* script)
 {
@@ -3100,7 +3256,9 @@ CMapEngine::SetDefaultPersonScript(int which, const char* script)
     *ps = s;
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::CallPersonScript(const char* name, int which)
 {
@@ -3169,6 +3327,7 @@ CMapEngine::CallPersonScript(const char* name, int which)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::CallDefaultPersonScript(const char* name, int which)
 {
@@ -3229,7 +3388,9 @@ CMapEngine::CallDefaultPersonScript(const char* name, int which)
     }
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetCurrentPerson(std::string& person)
 {
@@ -3244,6 +3405,7 @@ CMapEngine::GetCurrentPerson(std::string& person)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::QueuePersonCommand(const char* name, int command, bool immediate)
 {
@@ -3273,6 +3435,7 @@ CMapEngine::QueuePersonCommand(const char* name, int command, bool immediate)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::QueuePersonScript(const char* name, const char* script, bool immediate)
 {
@@ -3302,6 +3465,7 @@ CMapEngine::QueuePersonScript(const char* name, const char* script, bool immedia
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::ClearPersonCommands(const char* name)
 {
@@ -3324,6 +3488,7 @@ CMapEngine::ClearPersonCommands(const char* name)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::IsCommandQueueEmpty(const char* name, bool& empty)
 {
@@ -3339,6 +3504,7 @@ CMapEngine::IsCommandQueueEmpty(const char* name, bool& empty)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::IsPersonObstructed(const char* name, int x, int y, bool& result)
 {
@@ -3355,6 +3521,7 @@ CMapEngine::IsPersonObstructed(const char* name, int x, int y, bool& result)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetTalkActivationKey(int key)
 {
@@ -3363,6 +3530,7 @@ CMapEngine::SetTalkActivationKey(int key)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 int
 CMapEngine::GetTalkActivationKey()
 {
@@ -3370,19 +3538,24 @@ CMapEngine::GetTalkActivationKey()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetTalkActivationButton(int button)
 {
     m_JoystickTalkButton = button;
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 int
 CMapEngine::GetTalkActivationButton()
 {
     return m_JoystickTalkButton;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SetTalkDistance(int pixels)
 {
@@ -3391,6 +3564,7 @@ CMapEngine::SetTalkDistance(int pixels)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 int
 CMapEngine::GetTalkDistance()
 {
@@ -3398,6 +3572,7 @@ CMapEngine::GetTalkDistance()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::OpenMap(const char* filename)
 {
@@ -3594,6 +3769,7 @@ CMapEngine::OpenMap(const char* filename)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::CloseMap()
 {
@@ -3649,6 +3825,7 @@ CMapEngine::CloseMap()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::Run()
 {
@@ -3718,6 +3895,7 @@ CMapEngine::Run()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::ExecuteScript(IEngine::script script, std::string& error)
 {
@@ -3734,6 +3912,7 @@ CMapEngine::ExecuteScript(IEngine::script script, std::string& error)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::ExecuteScript(const char* script, std::string& error)
 {
@@ -3749,6 +3928,7 @@ CMapEngine::ExecuteScript(const char* script, std::string& error)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::CompileEdgeScripts()
 {
@@ -3812,6 +3992,7 @@ CMapEngine::CompileEdgeScripts()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CMapEngine::DestroyEdgeScripts()
 {
@@ -3841,6 +4022,7 @@ CMapEngine::DestroyEdgeScripts()
 
 }
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::LoadMapPersons()
 {
@@ -3990,6 +4172,7 @@ spriteset_error:
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::DestroyMapPersons()
 {
@@ -4077,6 +4260,7 @@ CMapEngine::DestroyMapPersons()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CMapEngine::DestroyPersonScripts(Person& p)
 {
@@ -4091,7 +4275,9 @@ CMapEngine::DestroyPersonScripts(Person& p)
         }
     }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::DestroyPersonStructure(Person& p)
 {
@@ -4121,6 +4307,7 @@ CMapEngine::DestroyPersonStructure(Person& p)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::LoadTriggers()
 {
@@ -4168,6 +4355,7 @@ CMapEngine::LoadTriggers()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CMapEngine::DestroyTriggers()
 {
@@ -4180,6 +4368,7 @@ CMapEngine::DestroyTriggers()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::LoadZones()
 {
@@ -4227,6 +4416,7 @@ CMapEngine::LoadZones()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CMapEngine::DestroyZones()
 {
@@ -4240,6 +4430,7 @@ CMapEngine::DestroyZones()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::Render()
 {
@@ -4323,6 +4514,7 @@ CMapEngine::Render()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::RenderEntities(int layer, bool flipped, int offset_x, int offset_y)
 {
@@ -4371,6 +4563,7 @@ CMapEngine::RenderEntities(int layer, bool flipped, int offset_x, int offset_y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::UpdateWorld(bool input_valid)
 {
@@ -4446,7 +4639,7 @@ CMapEngine::UpdateWorld(bool input_valid)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-#include <assert.h>
+
 bool
 CMapEngine::UpdatePersons()
 {
@@ -4475,6 +4668,7 @@ CMapEngine::UpdatePersons()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::UpdatePerson(int person_index, bool& activated)
 {
@@ -4926,6 +5120,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::UpdateFollower(int person_index)
 {
@@ -4977,6 +5172,7 @@ CMapEngine::UpdateFollower(int person_index)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 int
 CMapEngine::FindTrigger(int location_x, int location_y, int layer)
 {
@@ -5003,6 +5199,7 @@ CMapEngine::FindTrigger(int location_x, int location_y, int layer)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
 /*
 bool
 CMapEngine::GetNumTriggers(int& triggers)
@@ -5059,7 +5256,9 @@ CMapEngine::GetTriggerY(int trigger, int& y) {
   return true;
 }
 */
+
 ///////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::IsTriggerAt(int location_x, int location_y, int layer, bool& found)
 {
@@ -5073,6 +5272,7 @@ CMapEngine::IsTriggerAt(int location_x, int location_y, int layer, bool& found)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::ExecuteTriggerScript(int trigger_index)
 {
@@ -5105,6 +5305,7 @@ CMapEngine::ExecuteTriggerScript(int trigger_index)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::UpdateTriggers(int person_index)
 {
@@ -5161,6 +5362,7 @@ CMapEngine::UpdateTriggers(int person_index)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::IsPointWithinZone(int location_x, int location_y, int location_layer, int zone_index)
 {
@@ -5174,6 +5376,8 @@ CMapEngine::IsPointWithinZone(int location_x, int location_y, int location_layer
             location_y < z.y2 &&
             location_layer == z.layer);
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 bool
 CMapEngine::IsPersonInsideZone(int person_index, int zone_index)
@@ -5190,6 +5394,7 @@ CMapEngine::IsPersonInsideZone(int person_index, int zone_index)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::ExecuteZoneScript(int zone_index)
 {
@@ -5245,6 +5450,7 @@ CMapEngine::ExecuteZoneScript(int zone_index)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::UpdateZones(int person_index)
 {
@@ -5284,6 +5490,7 @@ CMapEngine::UpdateZones(int person_index)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::UpdateColorMasks()
 {
@@ -5307,6 +5514,7 @@ CMapEngine::UpdateColorMasks()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::UpdateDelayScripts()
 {
@@ -5344,6 +5552,7 @@ CMapEngine::UpdateDelayScripts()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::UpdateEdgeScripts()
 {
@@ -5397,11 +5606,14 @@ CMapEngine::UpdateEdgeScripts()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 static inline int __round__(double v)
 {
-
     return (int) floor(v + 0.5);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::ProcessInput()
 {
@@ -5626,6 +5838,7 @@ CMapEngine::ProcessInput()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::ProcessBoundKeyDown(int key)
 {
@@ -5649,6 +5862,7 @@ CMapEngine::ProcessBoundKeyDown(int key)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::ProcessBoundKeyUp(int key)
 {
@@ -5672,6 +5886,7 @@ CMapEngine::ProcessBoundKeyUp(int key)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CMapEngine::ProcessUnboundKeyDown(int key)
 {
@@ -5694,11 +5909,13 @@ CMapEngine::ProcessUnboundKeyDown(int key)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CMapEngine::ProcessUnboundKeyUp(int key)
 {}
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::ProcessBoundJoystickButtonDown(int joystick, int button)
 {
@@ -5728,7 +5945,9 @@ CMapEngine::ProcessBoundJoystickButtonDown(int joystick, int button)
     ResetNextFrame();
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::ProcessBoundJoystickButtonUp(int joystick, int button)
 {
@@ -5758,7 +5977,9 @@ CMapEngine::ProcessBoundJoystickButtonUp(int joystick, int button)
     ResetNextFrame();
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CMapEngine::DestroyBoundKeys()
 {
@@ -5784,6 +6005,7 @@ CMapEngine::DestroyBoundKeys()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CMapEngine::ResetNextFrame()
 {
@@ -5791,6 +6013,7 @@ CMapEngine::ResetNextFrame()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 int
 CMapEngine::FindPerson(const char* name)
 {
@@ -5806,6 +6029,7 @@ CMapEngine::FindPerson(const char* name)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetObstructingTile(const char* name, int x, int y, int& result)
 {
@@ -5822,11 +6046,10 @@ CMapEngine::GetObstructingTile(const char* name, int x, int y, int& result)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-#include "../common/minmax.hpp"
+
 int
 CMapEngine::FindObstructingTile(int person, int x, int y)
 {
-
     const Person& p = m_Persons[person];
     const sLayer& layer = m_Map.GetMap().GetLayer(p.layer);
     const int tile_width  = m_Map.GetMap().GetTileset().GetTileWidth();
@@ -5882,6 +6105,7 @@ CMapEngine::FindObstructingTile(int person, int x, int y)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetObstructingPerson(const char* person_name, int x, int y, std::string& result)
 {
@@ -5904,6 +6128,7 @@ CMapEngine::GetObstructingPerson(const char* person_name, int x, int y, std::str
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::GetTalkingPerson(const char* person_name, int talk_x, int talk_y, std::string& result)
 {
@@ -5924,7 +6149,9 @@ CMapEngine::GetTalkingPerson(const char* person_name, int talk_x, int talk_y, st
     }
     return true;
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 int
 CMapEngine::FindTalkingPerson(int person_index, int talk_x, int talk_y)
 {
@@ -5979,7 +6206,9 @@ CMapEngine::FindTalkingPerson(int person_index, int talk_x, int talk_y)
     IsObstructed(person_index, talk_x, talk_y, obs_person);
     return obs_person;
 }
+
 ///////////////////////////////////////////////////////////////////////////////
+
 int
 CMapEngine::FindObstructingPerson(int person, int x, int y)
 {
@@ -6086,6 +6315,7 @@ dont_skip:
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::IsObstructed(int person, int x, int y, int& obs_person)
 {
@@ -6129,6 +6359,7 @@ CMapEngine::IsObstructed(int person, int x, int y, int& obs_person)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CMapEngine::SaveMap(const char* filename)
 {

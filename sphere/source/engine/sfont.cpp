@@ -11,6 +11,7 @@
 #include "../common/minmax.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
+
 SFONT::SFONT()
 {
     m_Images = NULL;
@@ -18,12 +19,14 @@ SFONT::SFONT()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 SFONT::~SFONT()
 {
     Destroy();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 SFONT::Load(const char* filename, IFileSystem& fs)
 {
@@ -38,6 +41,7 @@ SFONT::Load(const char* filename, IFileSystem& fs)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 SFONT::CreateFromFont(const sFont& font)
 {
@@ -48,6 +52,7 @@ SFONT::CreateFromFont(const sFont& font)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 SFONT::Destroy()
 {
@@ -70,6 +75,7 @@ SFONT::Destroy()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 SFONT*
 SFONT::Clone()
 {
@@ -81,13 +87,17 @@ SFONT::Clone()
     }
     return font;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 SFONT::Save(const char* filename)
 {
     return m_Font.Save(filename);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 SFONT::GetCharacterImage(int index, IMAGE& image)
 {
@@ -104,17 +114,19 @@ SFONT::GetCharacterImage(int index, IMAGE& image)
         return false;
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 SFONT::SetCharacterImage(int index, IMAGE image)
 {
     int range = m_Font.GetNumCharacters();
     if (index < 0 || index >= range)
     {
-
         // m_ErrorMessage = "Character index does not exist";
         return false;
     }
+
     RGBA* pixels = LockImage(image);
     if (!pixels)
     {
@@ -122,6 +134,7 @@ SFONT::SetCharacterImage(int index, IMAGE image)
         // m_ErrorMessage = "LockImage failed!!";
         return false;
     }
+
     sFontCharacter& c = m_Font.GetCharacter(index);
     c.Resize(GetImageWidth(image), GetImageHeight(image));
     if (c.GetWidth() != GetImageWidth(image) || c.GetHeight() != GetImageHeight(image))
@@ -130,6 +143,7 @@ SFONT::SetCharacterImage(int index, IMAGE image)
         // m_ErrorMessage = "Resize failed!";
         return false;
     }
+
     CImage32::BlendMode blend_mode = c.GetBlendMode();
     c.SetBlendMode(CImage32::REPLACE);
     for (int x = 0; x < c.GetWidth(); x++)
@@ -141,26 +155,33 @@ SFONT::SetCharacterImage(int index, IMAGE image)
             c.SetPixel(x, y, pixels[y * GetImageWidth(image) + x]);
         }
     }
+
     c.SetBlendMode(blend_mode);
     UnlockImage(image, false);
+
     if (m_Images[index])
     {
 
         DestroyImage(m_Images[index]);
     }
+
     m_Images[index] = CreateImage(c.GetWidth(), c.GetHeight(), c.GetPixels());
+
     if (!m_Images[index])
     {
-
         // m_ErrorMessage = CreateImage failed!
         return false;
     }
+
     for (int i = 0; i < m_Font.GetNumCharacters(); i++)
         if (m_Font.GetCharacter(i).GetHeight() > m_MaxHeight)
             m_MaxHeight = m_Font.GetCharacter(i).GetHeight();
+
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 SFONT::DrawString(int x, int y, const char* text, RGBA mask, CImage32* surface) const
 {
@@ -168,7 +189,7 @@ SFONT::DrawString(int x, int y, const char* text, RGBA mask, CImage32* surface) 
 
     while (*text)
     {
-        int ch = (int) *text;
+        int ch = (unsigned char) *text;
         if (ch < 0 || ch >= range)
         {
             text++;
@@ -189,10 +210,12 @@ SFONT::DrawString(int x, int y, const char* text, RGBA mask, CImage32* surface) 
         x += character.GetWidth();
         text++;
     }
+
     return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 SFONT::DrawZoomedString(int x, int y, double scale, const char* text, RGBA mask, CImage32* surface) const
 {
@@ -221,7 +244,7 @@ SFONT::DrawZoomedString(int x, int y, double scale, const char* text, RGBA mask,
 
     while (*text)
     {
-        int ch = (int) *text;
+        int ch = (unsigned char) *text;
 
         if (ch < 0 || ch >= range)
         {
@@ -240,6 +263,7 @@ SFONT::DrawZoomedString(int x, int y, double scale, const char* text, RGBA mask,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGBA mask, CImage32* surface) const
 {
@@ -264,8 +288,7 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
     // parse the text into words
     while (*p)
     {
-
-        int ch = (int) *p;
+        int ch = (unsigned char) *p;
         if (ch < 0 || ch >= range)
         {
             p++;
@@ -353,6 +376,7 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 int
 SFONT::GetStringWidth(const char* string) const
 {
@@ -361,7 +385,7 @@ SFONT::GetStringWidth(const char* string) const
 
     while (*string)
     {
-        int ch = (int) *string;
+        int ch = (unsigned char) *string;
 
         if (ch < 0 || ch >= range)
         {
@@ -376,14 +400,15 @@ SFONT::GetStringWidth(const char* string) const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 int
 SFONT::GetStringHeight(const char* string, int width) const
 {
     // no point doing massive loops if the user only wants
     // just the overall height of a non-wordwrapped string
     if (width == 0)
-
         return GetMaxHeight();
+
     const int space_width = GetStringWidth(" ");
     const int tab_width   = GetStringWidth("   ");
     const int max_height = GetMaxHeight();
@@ -397,8 +422,7 @@ SFONT::GetStringHeight(const char* string, int width) const
     int range = m_Font.GetNumCharacters();
     while (*p)
     {
-
-        int ch = (int) *p;
+        int ch = (unsigned char) *p;
         if (ch < 0 || ch >= range)
         {
             p++;
@@ -477,6 +501,7 @@ SFONT::GetStringHeight(const char* string, int width) const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 SFONT::Initialize()
 {
@@ -513,6 +538,7 @@ SFONT::Initialize()
         }
 
     }
+
     for (i = 0; i < m_Font.GetNumCharacters(); i++)
     {
 

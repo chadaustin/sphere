@@ -984,6 +984,7 @@ CScriptWindow::SetStyle(
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg bool
 CScriptWindow::LoadScript(const char* filename)
 {
@@ -1016,6 +1017,7 @@ CScriptWindow::LoadScript(const char* filename)
   char status_text[1024] = {0};
   sprintf (status_text, "%d%%...", (int)(((double)total_read / (double)file_size) * 100));
   GetStatusBar()->SetWindowText(status_text);
+
   while (!feof(file)) {
     char buffer[4096] = {0};
     int read_size = fread(buffer, sizeof(char), 4096, file);
@@ -1026,17 +1028,20 @@ CScriptWindow::LoadScript(const char* filename)
     sprintf (status_text, "%d%%...", (int)(((double)total_read / (double)file_size) * 100));
     GetStatusBar()->SetWindowText(status_text);
   }
+
   sprintf (status_text, "%d%%...", (int)(((double)total_read / (double)file_size) * 100));
   GetStatusBar()->SetWindowText(status_text);
    
   fclose(file);
   file = NULL;
+
   SetModified(false);
   SendEditor(SCI_SETSAVEPOINT);
   SendEditor(SCI_EMPTYUNDOBUFFER);
   SendEditor(SCI_SETSEL,  0, 0);
   return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 void
 CScriptWindow::GetEditorText(CString& text)

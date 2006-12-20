@@ -15,6 +15,7 @@
 #include "NumberDialog.hpp"
 #include "ConvolveListDialog.hpp"
 #include "ColorAdjustDialog.hpp"
+#include "../common/convolve.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -373,6 +374,10 @@ CImageView::GetColor(int index) const
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/*
+ * Called before an image modification takes place...
+ * Called from outside imageview...
+ */
 void
 CImageView::BeforeImageChanged()
 {
@@ -381,6 +386,10 @@ CImageView::BeforeImageChanged()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/*
+ * Called after an image modification takes place...
+ * Called from outside imageview...
+ */
 void
 CImageView::AfterImageChanged()
 { // if the image dimensions change, the selection area needs to change too
@@ -436,37 +445,26 @@ CImageView::Copy()
 {
   if (!m_Clipboard) 
     return false;
+
   if (OpenClipboard() == FALSE)
     return false;
 
   int width = m_Image.GetWidth();
   int height = m_Image.GetHeight();
+
   // clear the previous contents of the clipboard
   EmptyClipboard();
-  int sx = GetSelectionLeftX();
-  int sy = GetSelectionTopY();
+
   int sw = GetSelectionWidth();
   int sh = GetSelectionHeight();
-  const RGBA* source = m_Image.GetPixels();
-  RGBA* flat_pixels = new RGBA[sw * sh];
-  if (flat_pixels == NULL) {
-    CloseClipboard();
-    return false;
-  }
-  for (int iy = sy; iy < (sy + sh); iy++) {
-    for (int ix = sx; ix < (sx + sw); ix++)
-    {
-      flat_pixels[(iy - sy) * (sw) + ix - sx].red   = source[iy * width + ix].red;
-      flat_pixels[(iy - sy) * (sw) + ix - sx].green = source[iy * width + ix].green;
-      flat_pixels[(iy - sy) * (sw) + ix - sx].blue  = source[iy * width + ix].blue;
-      flat_pixels[(iy - sy) * (sw) + ix - sx].alpha = source[iy * width + ix].alpha;
-    }
-  }
-  m_Clipboard->PutFlatImageOntoClipboard(sw, sh, flat_pixels);
-  m_Clipboard->PutBitmapImageOntoClipboard(sw, sh, flat_pixels);
-  
-  delete[] flat_pixels;
-  flat_pixels = NULL;
+
+  RGBA* pixels = GetSelectionPixels();
+
+  m_Clipboard->PutFlatImageOntoClipboard(sw, sh, pixels);
+  m_Clipboard->PutBitmapImageOntoClipboard(sw, sh, pixels);
+
+  FreeSelectionPixels(pixels); 
+
   CloseClipboard();
   return true;
 }
@@ -474,9 +472,11 @@ CImageView::Copy()
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha, int merge_method) {
+CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha, int merge_method)
+{
   if (!m_Clipboard) 
     return false;
+
   if (OpenClipboard() == FALSE)
     return false;
 
@@ -485,12 +485,17 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha, int merge
   int cwidth = 0;
   int cheight = 0;
   RGBA* cpixels = NULL;
+
   // see if the flat image is in the clipboard
   cpixels = m_Clipboard->GetFlatImageFromClipboard(cwidth, cheight);
+
   if (cpixels == NULL)
     cpixels = m_Clipboard->GetBitmapImageFromClipboard(cwidth, cheight);
+
   CloseClipboard();
-  if (cpixels != NULL) {
+
+  if (cpixels != NULL)
+  {
     AddUndoState();
     // and now we merge the clipboard image with the current image
     RGBA* iPixels = GetSelectionPixels();
@@ -500,24 +505,31 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha, int merge
     int sh = GetSelectionHeight();
     int xoffset = 0;
     int yoffset = 0;
-    if (merge_method == Merge_IntoSelection) {
+
+    if (merge_method == Merge_IntoSelection)
+    {
       xoffset = sx;
       yoffset = sy;
+
       // rescale cpixels
-      if (sw != cwidth || sh != cheight) {
+      if (sw != cwidth || sh != cheight)
+      {
         CImage32 tmp(cwidth, cheight, cpixels);
         delete[] cpixels;
         cpixels = NULL;
         if (tmp.GetWidth() != cwidth || tmp.GetHeight() != cheight || tmp.GetPixels() == NULL)
           return false;
+
         cpixels = new RGBA[sw * sh];
         if (cpixels == NULL)
           return false;
+
         tmp.Rescale(sw, sh);
         if (tmp.GetWidth() != sw || tmp.GetHeight() != sh || tmp.GetPixels() == NULL) {
           delete[] cpixels;
           return false;
         }
+
         const RGBA* temp_pixels = tmp.GetPixels();
         for (int i = 0; i < sw * sh; i++)
           cpixels[i] = temp_pixels[i];
@@ -525,8 +537,10 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha, int merge
         cheight = sh;
       }
     }
+
     int max_width  = cwidth;  if (sw < cwidth)  max_width  = sw;
     int max_height = cheight; if (sh < cheight) max_height = sh;
+
     for (int iy = 0; iy < max_height; iy++)
     {
       for (int ix = 0; ix < max_width; ix++)
@@ -541,6 +555,8 @@ CImageView::PasteChannels(bool red, bool green, bool blue, bool alpha, int merge
       }
     }
     delete[] cpixels;
+    cpixels = NULL;
+
     // things have changed
     Invalidate();
     m_Handler->IV_ImageChanged();
@@ -695,9 +711,11 @@ CImageView::ConvertToPixel(POINT point)
   POINT retPoint;
   retPoint.x = point.x;
   retPoint.y = point.y;
+
   // get client rectangle
   RECT ClientRect;
   GetClientRect(&ClientRect);
+
   // calculate size of pixel squares
   int width = m_Image.GetWidth();
   int height = m_Image.GetHeight();
@@ -819,19 +837,27 @@ CImageView::UpdateSelectionPixels(const RGBA* pixels, int sx, int sy, int sw, in
 {
   RGBA* image = m_Image.GetPixels();
   int iWidth = m_Image.GetWidth();
+
   // if pixels point to image updating it wont do anything so don't bother
   if (pixels == image)
     return;
-  if (m_SelectionType == ST_Rectangle) {
+
+  if (m_SelectionType == ST_Rectangle)
+  {
     for (int dy = sy; dy < (sy + sh); dy++)
       for (int dx = sx; dx < (sx + sw); dx++)
         image[dy * iWidth + dx] = pixels[(dy - sy) * sw + (dx - sx)];
-  } else if (m_SelectionType == ST_Free) {
+  }
+  else
+  if (m_SelectionType == ST_Free)
+  {
     int selection_width = m_SelectionWidth + 1;
     int selection_height = m_SelectionHeight + 1;
+
     bool* selection_points = new bool[selection_width * selection_height];
     if (selection_points == NULL)
       return;
+
     memset(selection_points, false, (selection_width * selection_height) * sizeof(bool));
     struct Local {
       struct Color {
@@ -843,6 +869,7 @@ CImageView::UpdateSelectionPixels(const RGBA* pixels, int sx, int sy, int sw, in
         dest = src;
       }
     };
+
     // draw true/false lines onto selection_points buffer
     for (unsigned int i = 1; i < m_SelectionPoints.size(); i++) {
       Local::Color c;
@@ -873,6 +900,7 @@ CImageView::UpdateSelectionPixels(const RGBA* pixels, int sx, int sy, int sw, in
         }
       }
     }
+
     // update image
     for (dy = sy; dy < (sy + sh); dy++) {
       for (int dx = sx; dx < (sx + sw); dx++) {
@@ -882,6 +910,7 @@ CImageView::UpdateSelectionPixels(const RGBA* pixels, int sx, int sy, int sw, in
           image[dy * iWidth + dx] = pixels[pixel_index];
       }
     }
+
     delete[] selection_points;
     selection_points = NULL;
   }
@@ -893,11 +922,13 @@ void
 CImageView::InvalidateSelection(int sx, int sy, int sw, int sh)
 {
   if (m_RedrawX == 0 && m_RedrawY == 0 && m_RedrawWidth == 0 && m_RedrawHeight == 0) {
+    // assume a complete redraw is needed...
     m_RedrawX = sx;
     m_RedrawY = sy;
     m_RedrawWidth = sw;
     m_RedrawHeight = sh;
   } else {
+    // only a partial redraw is needed...
     int x1 = m_RedrawX + m_RedrawWidth;
     int x2 = sx + sw;
     int y1 = m_RedrawY + m_RedrawHeight;
@@ -917,18 +948,23 @@ CImageView::Click(bool force_draw)
 {
   if (m_Image.GetPixels() == NULL || m_Image.GetWidth() == 0 || m_Image.GetHeight() == 0)
     return;
+
   // convert pixel coordinates to image coordinates
   POINT start = ConvertToPixel(m_LastPoint);
   POINT end = ConvertToPixel(m_CurPoint);
+
   if (!InImage(end) || !InSelection(end)) {
     return;
   }
+
   if (!force_draw && start.x == end.x && start.y == end.y) {
     return;
   }
+
   RGBA old_pixel = m_Image.GetPixel(end.x, end.y);
   m_Image.SetPixel(end.x, end.y, m_Colors[m_CurrentTool]);
   RGBA new_pixel = m_Image.GetPixel(end.x, end.y);
+
   // has the image actually changed?
   if (old_pixel.red   != new_pixel.red
    || old_pixel.green != new_pixel.green
@@ -936,6 +972,7 @@ CImageView::Click(bool force_draw)
    || old_pixel.alpha != new_pixel.alpha) {
     m_Handler->IV_ImageChanged();
   }
+
   InvalidateSelection(end.x, end.y, 1, 1);
 }
 
@@ -949,11 +986,14 @@ CImageView::Fill()
 
   // convert pixel coordinates to image coordinates
   POINT startPoint = ConvertToPixel(m_CurPoint);
+
   // bounds check
   if (!InImage(startPoint) || !InSelection(startPoint))
     return;
+
   if (IsColorToReplace(m_Image.GetPixel(startPoint.x, startPoint.y), m_Colors[m_CurrentTool]))
     return;
+
   FillMe(startPoint.x, startPoint.y, m_Image.GetPixel(startPoint.x, startPoint.y));
   InvalidateSelection(GetSelectionLeftX(), GetSelectionTopY(), GetSelectionWidth(), GetSelectionHeight());
   m_Handler->IV_ImageChanged();
@@ -996,7 +1036,7 @@ CImageView::FillMe(int x, int y, RGBA colorToReplace)
   const int width  = sx + sw;
   const int height = sy + sh;
   std::stack<Point> q;
-  q.push(    Point(x, y));
+  q.push(Point(x, y));
   m_Image.SetPixel(x, y, m_Colors[m_CurrentTool]);
   const int max_size = width * height;
   int current_size = 0;
@@ -1040,15 +1080,19 @@ CImageView::Line()
     // convert pixel coordinates to image coordinates
     POINT start = ConvertToPixel(m_StartPoint);
     POINT end = ConvertToPixel(m_CurPoint);
+
     // bounds check
     if (!InImage(start)) // || !InImage(end))
       return;
+
     int sx = GetSelectionLeftX();
     int sy = GetSelectionTopY();
     int sw = GetSelectionWidth();
     int sh = GetSelectionHeight();
+
     clipper clip = {sx, sy, (sx + sw) - 1, (sy + sh) - 1};
     m_Image.Line(start.x, start.y, end.x, end.y, m_Colors[m_CurrentTool], clip);
+
     Invalidate();
     m_Handler->IV_ImageChanged();
   }
@@ -1067,9 +1111,11 @@ CImageView::Rectangle()
     // convert pixel coordinates to image coordinates
     POINT start = ConvertToPixel(m_StartPoint);
     POINT end = ConvertToPixel(m_CurPoint);
+
     // bounds check
     if (!InImage(start)) // || !InImage(end))
       return;
+
     int sx = GetSelectionLeftX();
     int sy = GetSelectionTopY();
     int sw = GetSelectionWidth();
@@ -1079,7 +1125,9 @@ CImageView::Rectangle()
     int y = std::min(start.y, end.y);
     int width  = std::max(start.x, end.x) - x;
     int height = std::max(start.y, end.y) - y;
+
     m_Image.Rectangle(x, y, width, height, m_Colors[m_CurrentTool], clip);
+
     Invalidate();
     m_Handler->IV_ImageChanged();
   }
@@ -1094,6 +1142,7 @@ CImageView::Selection()
     m_StartPoint = m_CurPoint;
   else
     UpdateSelection();
+
   Invalidate();
 }
 
@@ -1156,10 +1205,13 @@ CImageView::GetColor(RGBA* color, int x, int y)
 {
   // convert pixel coordinates to image coordinates
   POINT point = ConvertToPixel(m_CurPoint);
+
   // bounds check
   if (!InImage(point))
     return;
+
   RGBA* pImage = m_Image.GetPixels();
+
   // now that we have image coordinates, we can update the image
   if (memcmp(pImage + point.y * m_Image.GetWidth() + point.x, &m_Colors[m_CurrentTool], sizeof(RGBA)) != 0)
     m_Colors[m_CurrentTool] = pImage[point.y * m_Image.GetWidth() + point.x];
@@ -1171,16 +1223,21 @@ void
 CImageView::AddUndoState()
 {
   ResetRedoStates();
+
   Image* new_images = new Image[m_NumUndoImages + 1];
-  if (new_images) {
+  if (new_images)
+  {
     for (int i = 0; i < m_NumUndoImages; i++)
       new_images[i] = m_UndoImages[i];
+
     const int width = m_Image.GetWidth();
     const int height = m_Image.GetHeight();
     new_images[m_NumUndoImages].width = width;
     new_images[m_NumUndoImages].height = height;
     new_images[m_NumUndoImages].pixels = new RGBA[width * height];
-    if (new_images[m_NumUndoImages].pixels) {
+
+    if (new_images[m_NumUndoImages].pixels)
+    {
       memcpy(new_images[m_NumUndoImages].pixels, m_Image.GetPixels(), width * height * sizeof(RGBA));
       m_NumUndoImages++;
       delete[] m_UndoImages;
@@ -1225,7 +1282,21 @@ CImageView::OnPaint()
   CPaintDC _dc(this);
   HDC dc = _dc.m_hDC;
   CImage32 drawImage(m_Image);
+
   const int current_tool = m_CurrentTool;
+
+  int width = m_Image.GetWidth();
+  int height = m_Image.GetHeight();
+  const RGBA* drawPixels = m_Image.GetPixels();
+
+  if (width == 0 || height == 0 || drawPixels == NULL || !m_BlitTile || m_BlitTile->GetPixels() == NULL)
+  {
+    RECT ClientRect;
+    GetClientRect(&ClientRect);
+    FillRect(dc, &ClientRect, (HBRUSH)GetStockObject(BLACK_BRUSH));
+    return;
+  }
+
   m_CurrentTool = 0;
   switch(m_SelectedTools[m_CurrentTool])
   {
@@ -1238,6 +1309,7 @@ CImageView::OnPaint()
     case Tool_Selection: UpdateSelection(); break;
     case Tool_FreeSelection: UpdateSelection(); break;
   }
+
   m_CurrentTool = 1;
   switch(m_SelectedTools[m_CurrentTool])
   {
@@ -1250,26 +1322,20 @@ CImageView::OnPaint()
     case Tool_Selection: UpdateSelection(); break;
     case Tool_FreeSelection: UpdateSelection(); break;
   }
+
   m_CurrentTool = current_tool;
-  int width = drawImage.GetWidth();
-  int height = drawImage.GetHeight();
-  const RGBA* pImage = drawImage.GetPixels();
-  if (width == 0 || height == 0 || pImage == NULL || !m_BlitTile || m_BlitTile->GetPixels() == NULL)
-  {
-    RECT ClientRect;
-    GetClientRect(&ClientRect);
-    FillRect(dc, &ClientRect, (HBRUSH)GetStockObject(BLACK_BRUSH));
-    return;
-  }
+
   // get client rectangle
   RECT ClientRect;
   GetClientRect(&ClientRect);
+
   // calculate size of pixel squares
   const int hsize = ClientRect.right / width;
   const int vsize = ClientRect.bottom / height;
   int size = std::min(hsize, vsize);
   if (size < 1)
     size = 1;
+
   const int totalx = size * width;
   const int totaly = size * height;
 #ifdef SCROLLABLE_IMAGE_WINDOW
@@ -1279,6 +1345,7 @@ CImageView::OnPaint()
   const int offsetx = (ClientRect.right - totalx)  / 2;
   const int offsety = (ClientRect.bottom - totaly) / 2;
 #endif
+
   // draw black rectangles in the empty parts
   HBRUSH black_brush = (HBRUSH)GetStockObject(BLACK_BRUSH);
   RECT Rect;
@@ -1289,6 +1356,7 @@ CImageView::OnPaint()
   const int SCROLLBAR_WIDTH  = 0;
   const int SCROLLBAR_HEIGHT = 0;
 #endif
+
   // top
   SetRect(&Rect, 0, 0, ClientRect.right, offsety - 1);
   FillRect(dc, &Rect, black_brush);
@@ -1301,6 +1369,7 @@ CImageView::OnPaint()
   // right
   SetRect(&Rect, offsetx + totalx + 1, offsety - 1, ClientRect.right + SCROLLBAR_WIDTH, offsety + totaly + 1);
   FillRect(dc, &Rect, black_brush);
+
   // assume a complete redraw
   if (m_RedrawWidth == 0 && m_RedrawHeight == 0) {
     m_RedrawX = 0;
@@ -1308,10 +1377,12 @@ CImageView::OnPaint()
     m_RedrawWidth = width;
     m_RedrawHeight = height;
   }
+
   int dib_width = 16;
   int dib_height = 16;
 //  if (m_RedrawWidth > 8 || m_RedrawHeight > 8) {
   // ensure that we redraw dib_width by dib_height squares only
+
   if (0) {
     m_RedrawWidth += m_RedrawX % dib_width;
     m_RedrawHeight += m_RedrawY % dib_height;
@@ -1320,14 +1391,17 @@ CImageView::OnPaint()
     m_RedrawWidth  += dib_width; m_RedrawWidth  -= m_RedrawWidth  % dib_width;
     m_RedrawHeight += dib_height; m_RedrawHeight -= m_RedrawHeight % dib_height;
   }
+
   // clamp redraw values within image
   if (m_RedrawX < 0) m_RedrawX = 0;
   if (m_RedrawY < 0) m_RedrawY = 0;
   if (m_RedrawX + m_RedrawWidth > m_Image.GetWidth()) m_RedrawWidth = m_Image.GetWidth() - m_RedrawX;
   if (m_RedrawY + m_RedrawHeight > m_Image.GetHeight()) m_RedrawHeight = m_Image.GetHeight() - m_RedrawY;
+
   StretchedBlit(_dc, m_BlitTile, size, size, m_Image.GetWidth(), m_Image.GetHeight(),
-    drawImage.GetPixels(),  m_ShowAlphaMask, &ClientRect,
+    drawPixels,  m_ShowAlphaMask, &ClientRect,
     m_RedrawX, m_RedrawY, m_RedrawWidth, m_RedrawHeight,
+
 #ifdef SCROLLABLE_IMAGE_WINDOW
     m_CurrentX, m_CurrentY);
 #else
@@ -1338,7 +1412,7 @@ CImageView::OnPaint()
   for (int ix = 0; ix < width; ix++)
     for (int iy = 0; iy < height; iy++)
     {
-      RGBA color = pImage[iy * width + ix];
+      RGBA color = drawPixels[iy * width + ix];
       if (color.alpha == 255) // opaque
       {
         HBRUSH brush = CreateSolidBrush(RGB(color.red, color.green, color.blue));
@@ -1478,6 +1552,7 @@ CImageView::PaintLine(CImage32& pImage)
   // bounds check
   if (!InImage(start))
     return;
+
   pImage.Line(start.x, start.y, end.x, end.y, m_Colors[m_CurrentTool]);
 }
 
@@ -1495,11 +1570,13 @@ CImageView::PaintRectangle(CImage32& pImage)
   // bounds check
   if (!InImage(start))
     return;
+  
   //ClipPointToWithinImage(&end);
   int x = std::min(start.x, end.x);
   int y = std::min(start.y, end.y);
   int width  = std::max(start.x, end.x) - x;
   int height = std::max(start.y, end.y) - y;
+  
   pImage.Rectangle(x, y, width, height, m_Colors[m_CurrentTool]);
 }
 
@@ -1514,9 +1591,11 @@ CImageView::PaintCircle(CImage32& pImage)
   // convert pixel coordinates to image coordinates
   POINT start = ConvertToPixel(m_StartPoint);
   POINT end = ConvertToPixel(m_CurPoint);
+
   // bounds check
   if (!InImage(start) || !InImage(end))
     return;
+
   if (abs(start.x - end.x) > abs(start.y - end.y))
     pImage.Circle(start.x, start.y, abs(start.x - end.x), m_Colors[m_CurrentTool]);
   else
@@ -1530,19 +1609,23 @@ CImageView::PaintEllipse(CImage32& pImage)
 {
   if (!m_MouseDown[m_CurrentTool])
     return;
+
   // convert pixel coordinates to image coordinates
   POINT start = ConvertToPixel(m_StartPoint);
   POINT end = ConvertToPixel(m_CurPoint);
+
   // bounds check
   if (!InImage(start) || !InImage(end))
     return;
+
   pImage.Ellipse(start.x, start.y, abs(start.x - end.x), abs(start.y - end.y), m_Colors[m_CurrentTool]);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-CImageView::ClipPointToWithinImage(POINT* point) {
+CImageView::ClipPointToWithinImage(POINT* point)
+{
   if (point->x < 0) point->x = 0;
   if (point->y < 0) point->y = 0;
   if (point->x > m_Image.GetWidth())  point->x = m_Image.GetWidth();
@@ -1560,19 +1643,26 @@ CImageView::UpdateSelection()
   // convert pixel coordinates to image coordinates
   POINT start = ConvertToPixel(m_StartPoint);
   POINT end = ConvertToPixel(m_CurPoint);
+
   // bounds check
   if (!InImage(start))
     return;
-  if (m_SelectionType == ST_Rectangle) {
+
+  if (m_SelectionType == ST_Rectangle)
+  {
     ClipPointToWithinImage(&end);
     m_SelectionX = std::min(start.x, end.x);
     m_SelectionY = std::min(start.y, end.y);
     m_SelectionWidth  = std::max(start.x, end.x) - m_SelectionX;
     m_SelectionHeight = std::max(start.y, end.y) - m_SelectionY;  
-  } else if (m_SelectionType == ST_Free) {
+  }
+  else if (m_SelectionType == ST_Free)
+  {
     if (!InImage(end))
       return;
-    if (m_SelectionPoints.size() > 0) {
+
+    if (m_SelectionPoints.size() > 0)
+    {
       POINT last = m_SelectionPoints[m_SelectionPoints.size() - 1];
       int rise = end.y - last.y;
       int run = end.x - last.x;
@@ -1587,12 +1677,15 @@ CImageView::UpdateSelection()
       b.x = end.x; b.y = end.y;
       m_SelectionPoints.push_back(a);
       m_SelectionPoints.push_back(b);
-    } else {
+    }
+    else
+    {
       m_SelectionPoints.push_back(end);
     }
 
     // work out SX, SY, SW, SH
-    if (m_SelectionPoints.size() > 0) {
+    if (m_SelectionPoints.size() > 0)
+    {
       unsigned int i;
 
       m_SelectionX = m_SelectionPoints[0].x;
@@ -1606,6 +1699,7 @@ CImageView::UpdateSelection()
         if (m_SelectionPoints[i].y < m_SelectionY)
           m_SelectionY = m_SelectionPoints[i].y; 
       }
+
       for (i = 0; i < m_SelectionPoints.size(); i++) {
         if(m_SelectionPoints[i].x - m_SelectionX > m_SelectionWidth)
           m_SelectionWidth = m_SelectionPoints[i].x - m_SelectionX;
@@ -1637,7 +1731,9 @@ CImageView::OnMouseClick(int index, UINT flags, CPoint point)
 {
   m_LastPoint = m_CurPoint;
   m_CurPoint = point;
-  if (m_MouseDown[index]) {
+
+  if (m_MouseDown[index])
+  {
     switch (m_SelectedTools[index]) {
       case Tool_Pencil:    break;
       case Tool_Fill:      break;
@@ -1648,19 +1744,30 @@ CImageView::OnMouseClick(int index, UINT flags, CPoint point)
       case Tool_Selection: Selection(); break;
       case Tool_FreeSelection: Selection(); break;
     }
-  } else {
-    if (flags & MK_SHIFT) {
+  }
+  else
+  {
+    if (flags & MK_SHIFT)
+    {
       OnColorPicker();
-    } else {
+    }
+    else
+    {
       if (m_SelectedTools[index] != Tool_Selection
-       && m_SelectedTools[index] != Tool_FreeSelection) {
+       && m_SelectedTools[index] != Tool_FreeSelection)
+      {
         // perform a normal click operation
         AddUndoState();
       }
-      if (m_SelectedTools[index] == Tool_FreeSelection) {
+
+      if (m_SelectedTools[index] == Tool_FreeSelection)
+      {
         if (!(flags & MK_SHIFT))
+        {
           m_SelectionPoints.clear();
+        }
       }
+
       switch (m_SelectedTools[index]) {
         case Tool_Pencil:    Click(true); break;
         case Tool_Fill:      Fill();      break;
@@ -1680,9 +1787,12 @@ CImageView::OnMouseClick(int index, UINT flags, CPoint point)
 afx_msg void
 CImageView::OnLButtonDown(UINT flags, CPoint point)
 {
-  if (flags & MK_SHIFT) {
+  if (flags & MK_SHIFT)
+  {
     OnMouseClick(0, flags, point);
-  } else {
+  }
+  else
+  {
     m_CurrentTool = 0;
     OnMouseClick(0, flags, point);
     m_MouseDown[0] = true;
@@ -1711,9 +1821,12 @@ CImageView::OnRButtonDown(UINT flags, CPoint point)
   if ( !(GetMainWindow()->GetNumImageToolsAllowed() > 1) )
     return;
 
-  if (flags & MK_SHIFT) {
+  if (flags & MK_SHIFT)
+  {
     OnMouseClick(1, flags, point);
-  } else {
+  }
+  else
+  {
     m_CurrentTool = 1;
     OnMouseClick(1, flags, point);
     m_MouseDown[1] = true;
@@ -1726,41 +1839,52 @@ CImageView::OnRButtonDown(UINT flags, CPoint point)
 afx_msg void
 CImageView::OnRButtonUp(UINT flags, CPoint point)
 {
-  if ( GetMainWindow()->GetNumImageToolsAllowed() > 1) {
+  if ( GetMainWindow()->GetNumImageToolsAllowed() > 1)
+  {
     if (!m_MouseDown[1])
       return;
+
     OnMouseClick(1, flags, point);
     m_MouseDown[1] = false;
     ReleaseCapture();
     return;
   }
+
   // make sure we clicked in the image
-  if (!InImage(ConvertToPixel(point))) {
+  if (!InImage(ConvertToPixel(point)))
+  {
     return;
   }
+
   // show the image view menu
   HMENU menu = LoadMenu(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_IMAGEVIEW));
   HMENU submenu = GetSubMenu(menu, 0);
   TranslateMenu(menu);
   m_CurPoint = point;
   ClientToScreen(&point);
+
   // disable menu items if they aren't available
   if (m_NumUndoImages == 0) {
     EnableMenuItem(submenu, ID_IMAGEVIEW_UNDO, MF_BYCOMMAND | MF_GRAYED);
   }
+
   if (m_NumRedoImages == 0) {
     EnableMenuItem(submenu, ID_IMAGEVIEW_REDO, MF_BYCOMMAND | MF_GRAYED);
   }
+
   if (GetSelectionWidth() != GetSelectionHeight()) {
     EnableMenuItem(menu, ID_IMAGEVIEW_ROTATE_CW,  MF_BYCOMMAND | MF_GRAYED);
     EnableMenuItem(menu, ID_IMAGEVIEW_ROTATE_CCW, MF_BYCOMMAND | MF_GRAYED);
   }
+
   if (m_ShowGrid) {
     CheckMenuItem(menu, ID_IMAGEVIEW_VIEWGRID, MF_BYCOMMAND | MF_CHECKED);
   }
+
   if (m_ShowAlphaMask) {
     CheckMenuItem(menu, ID_IMAGEVIEW_TOGGLEALPHAMASK, MF_BYCOMMAND | MF_CHECKED);
   }
+
   bool image_on_clipboard = false;
   if (m_Clipboard) {
     if (OpenClipboard()) {
@@ -1768,18 +1892,21 @@ CImageView::OnRButtonUp(UINT flags, CPoint point)
       CloseClipboard();
     }
   }
+
   if (!image_on_clipboard) {
     EnableMenuItem(menu, ID_IMAGEVIEW_PASTE,               MF_BYCOMMAND | MF_GRAYED);
     EnableMenuItem(menu, ID_IMAGEVIEW_PASTE_RGB,           MF_BYCOMMAND | MF_GRAYED);
     EnableMenuItem(menu, ID_IMAGEVIEW_PASTE_ALPHA,         MF_BYCOMMAND | MF_GRAYED);
     EnableMenuItem(menu, ID_IMAGEVIEW_PASTE_INTOSELECTION, MF_BYCOMMAND | MF_GRAYED);
   }
+
   switch (m_Image.GetBlendMode()) {
     case CImage32::BLEND:      CheckMenuItem(menu, ID_IMAGEVIEW_BLENDMODE_BLEND,     MF_BYCOMMAND | MF_CHECKED); break;
     case CImage32::REPLACE:    CheckMenuItem(menu, ID_IMAGEVIEW_BLENDMODE_REPLACE,   MF_BYCOMMAND | MF_CHECKED); break;
     case CImage32::RGB_ONLY:   CheckMenuItem(menu, ID_IMAGEVIEW_BLENDMODE_RGBONLY,   MF_BYCOMMAND | MF_CHECKED); break;
     case CImage32::ALPHA_ONLY: CheckMenuItem(menu, ID_IMAGEVIEW_BLENDMODE_ALPHAONLY, MF_BYCOMMAND | MF_CHECKED); break;
   }
+
   TrackPopupMenu(submenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, point.x, point.y, 0, m_hWnd, NULL);
   DestroyMenu(menu);
 }
@@ -1815,7 +1942,9 @@ CImageView::OnMouseMove(UINT flags, CPoint point)
   m_CurPoint = point;
   UpdateCursor(flags, point);
   POINT current = ConvertToPixel(point);
-  if (InImage(current)) {
+
+  if (InImage(current))
+  {
     char str[1024];
     RGBA color = m_Image.GetPixel(current.x, current.y);
     sprintf(str, "x,y=(%d, %d) color=[%d, %d, %d, %d] (%d %d %d)", current.x, current.y, 
@@ -1824,8 +1953,10 @@ CImageView::OnMouseMove(UINT flags, CPoint point)
   } else {
     GetStatusBar()->SetPaneText(1, "");
   }
+
   const int current_tool = m_CurrentTool;
-  for (int i = 0; i < 2; i++) {
+  for (int i = 0; i < 2; i++)
+  {
     m_CurrentTool = i;
     if (m_MouseDown[m_CurrentTool])
     {
@@ -1862,14 +1993,17 @@ CImageView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 afx_msg void
 CImageView::OnKeyDown(UINT vk, UINT nRepCnt, UINT nFlags)
 {
-  if (vk == VK_APPS) {
+  if (vk == VK_APPS)
+  {
     POINT point = m_CurPoint;
     ClientToScreen(&point);
     OnRButtonUp(nFlags, point);
     return;
   }
+
   RECT ClientRect;
   GetClientRect(&ClientRect);
+
   // calculate size of pixel squares
   int width = m_Image.GetWidth();
   int height = m_Image.GetHeight();
@@ -1878,20 +2012,27 @@ CImageView::OnKeyDown(UINT vk, UINT nRepCnt, UINT nFlags)
   int size = std::min(hsize, vsize);
   if (size < 1)
     size = 1;
+
   if (vk == VK_LEFT) {
     key_left = true;
   }
+
   if (vk == VK_RIGHT) {
     key_right = true;
   }
+
   if (vk == VK_UP) {
     key_up = true;
   }
+
   if (vk == VK_DOWN) {
     key_down = true;
   }
-  if (vk == VK_SPACE) {
-    if (!m_MouseDown[0]) {
+
+  if (vk == VK_SPACE)
+  {
+    if (!m_MouseDown[0])
+    {
       OnMouseClick(0, nFlags, m_CurPoint);
       m_MouseDown[0] = true;
     }
@@ -1903,25 +2044,34 @@ CImageView::OnKeyDown(UINT vk, UINT nRepCnt, UINT nFlags)
 afx_msg void
 CImageView::OnKeyUp(UINT vk, UINT nRepCnt, UINT nFlags)
 {
-  if (vk == VK_SPACE) {
-    if (nFlags & MK_SHIFT) {
+  if (vk == VK_SPACE)
+  {
+    if (nFlags & MK_SHIFT)
+    {
       OnMouseClick(0, nFlags, m_CurPoint);
-    } else {
-      if (m_MouseDown[0]) {
+    }
+    else
+    {
+      if (m_MouseDown[0])
+      {
         OnMouseClick(0, nFlags, m_CurPoint);
         m_MouseDown[0] = false;
       }
     }
   }
+
   if (vk == VK_LEFT) {
     key_left = false;
   }
+
   if (vk == VK_RIGHT) {
     key_right = false;
   }
+
   if (vk == VK_UP) {
     key_up = false;
   }
+
   if (vk == VK_DOWN) {
     key_down = false;
   }
@@ -1934,6 +2084,7 @@ CImageView::OnTimer(UINT event)
 {
   RECT ClientRect;
   GetClientRect(&ClientRect);
+
   // calculate size of pixel squares
   int width = m_Image.GetWidth();
   int height = m_Image.GetHeight();
@@ -1946,6 +2097,7 @@ CImageView::OnTimer(UINT event)
   int totaly = size * height;
   int offsetx = (ClientRect.right - totalx) / 2;
   int offsety = (ClientRect.bottom - totaly) / 2;
+
   bool cursor_moved = false;
 
   if (key_left) {
@@ -2157,22 +2309,27 @@ CImageView::OnRotateCW()
   int sy = GetSelectionTopY();
   int sw = GetSelectionWidth();
   int sh = GetSelectionHeight();
+  RGBA* pixels = GetSelectionPixels();
+
   //if (sw != sh) // can only be used on sqaure selections/images
   //  return;
+
   AddUndoState();
-  RGBA* pixels = GetSelectionPixels();
+
   if (RotateCW(sw, sh, pixels)) {
     std::swap(sw, sh);
     if (m_SelectionWidth > 0 && m_SelectionHeight > 0) {
       m_SelectionWidth = sw;
       m_SelectionHeight = sh;
     }
-    UpdateSelectionPixels(pixels, sx, sy, sw, sh);
-    FreeSelectionPixels(pixels);
-    // things have changed
-    Invalidate();
-    m_Handler->IV_ImageChanged();
   }
+
+  UpdateSelectionPixels(pixels, sx, sy, sw, sh);
+  FreeSelectionPixels(pixels);
+
+  // things have changed
+  Invalidate();
+  m_Handler->IV_ImageChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2184,20 +2341,25 @@ CImageView::OnRotateCCW()
   int sy = GetSelectionTopY();
   int sw = GetSelectionWidth();
   int sh = GetSelectionHeight();
-  AddUndoState();
   RGBA* pixels = GetSelectionPixels();
-  if (RotateCCW(sw, sh, pixels)) {
+
+  AddUndoState();
+
+  if (RotateCCW(sw, sh, pixels))
+  {
     std::swap(sw, sh);
     if (m_SelectionWidth > 0 && m_SelectionHeight > 0) {
       m_SelectionWidth = sw;
       m_SelectionHeight = sh;
     }
-    UpdateSelectionPixels(pixels, sx, sy, sw, sh);
-    FreeSelectionPixels(pixels);
-    // things have changed
-    Invalidate();
-    m_Handler->IV_ImageChanged();
   }
+
+  UpdateSelectionPixels(pixels, sx, sy, sw, sh);
+  FreeSelectionPixels(pixels);
+
+  // things have changed
+  Invalidate();
+  m_Handler->IV_ImageChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2210,10 +2372,14 @@ CImageView::OnSlideUp()
   int sw = GetSelectionWidth();
   int sh = GetSelectionHeight();
   RGBA* pixels = GetSelectionPixels();
+
   AddUndoState();
+
   Translate(sw, sh, pixels, 0, -1);
   UpdateSelectionPixels(pixels, sx, sy, sw, sh);
+
   FreeSelectionPixels(pixels);
+
   // things have changed
   Invalidate();
   m_Handler->IV_ImageChanged();
@@ -2229,10 +2395,13 @@ CImageView::OnSlideRight()
   int sw = GetSelectionWidth();
   int sh = GetSelectionHeight();
   RGBA* pixels = GetSelectionPixels();
+
   AddUndoState();
+
   Translate(sw, sh, pixels, 1, 0);
   UpdateSelectionPixels(pixels, sx, sy, sw, sh);
   FreeSelectionPixels(pixels);
+
   // things have changed
   Invalidate();
   m_Handler->IV_ImageChanged();
@@ -2248,10 +2417,13 @@ CImageView::OnSlideDown()
   int sw = GetSelectionWidth();
   int sh = GetSelectionHeight();
   RGBA* pixels = GetSelectionPixels();
+
   AddUndoState();
+
   Translate(sw, sh, pixels, 0, 1);
   UpdateSelectionPixels(pixels, sx, sy, sw, sh);
   FreeSelectionPixels(pixels);
+
   // things have changed
   Invalidate();
   m_Handler->IV_ImageChanged();
@@ -2267,10 +2439,13 @@ CImageView::OnSlideLeft()
   int sw = GetSelectionWidth();
   int sh = GetSelectionHeight();
   RGBA* pixels = GetSelectionPixels();
+
   AddUndoState();
+
   Translate(sw, sh, pixels, -1, 0);
   UpdateSelectionPixels(pixels, sx, sy, sw, sh);
   FreeSelectionPixels(pixels);
+
   // things have changed
   Invalidate();
   m_Handler->IV_ImageChanged();
@@ -2286,19 +2461,26 @@ CImageView::OnSlideOther()
   sprintf (horizontal_title, "Slide Horizontally [%d - %d]", -GetSelectionWidth(), GetSelectionWidth());
   sprintf (vertical_title,   "Slide Vertically [%d - %d]", -GetSelectionHeight(), GetSelectionHeight());
   CNumberDialog dx(horizontal_title, "Value", 0, -GetSelectionWidth(), GetSelectionWidth()); 
-  if (dx.DoModal() == IDOK) {
+
+  if (dx.DoModal() == IDOK)
+  {
     CNumberDialog dy(vertical_title, "Value", 0, -GetSelectionHeight(), GetSelectionHeight()); 
-    if (dy.DoModal() == IDOK) {
-      if (dx.GetValue() != 0 || dy.GetValue() != 0) {
+    if (dy.DoModal() == IDOK)
+    {
+      if (dx.GetValue() != 0 || dy.GetValue() != 0)
+      {
         int sx = GetSelectionLeftX();
         int sy = GetSelectionTopY();
         int sw = GetSelectionWidth();
         int sh = GetSelectionHeight();
         RGBA* pixels = GetSelectionPixels();
+
         AddUndoState();
+
         Translate(sw, sh, pixels, dx.GetValue(), dy.GetValue());
         UpdateSelectionPixels(pixels, sx, sy, sw, sh);
         FreeSelectionPixels(pixels);
+
         // things have changed
         Invalidate();
         m_Handler->IV_ImageChanged();
@@ -2317,10 +2499,13 @@ CImageView::OnFlipHorizontally()
   int sw = GetSelectionWidth();
   int sh = GetSelectionHeight();
   RGBA* pixels = GetSelectionPixels();
+
   AddUndoState();
+
   FlipHorizontally(sw, sh, pixels);
   UpdateSelectionPixels(pixels, sx, sy, sw, sh);
   FreeSelectionPixels(pixels);
+
   // things have changed
   Invalidate();
   m_Handler->IV_ImageChanged();
@@ -2336,10 +2521,13 @@ CImageView::OnFlipVertically()
   int sw = GetSelectionWidth();
   int sh = GetSelectionHeight();
   RGBA* pixels = GetSelectionPixels();
+
   AddUndoState();
+
   FlipVertically(sw, sh, pixels);
   UpdateSelectionPixels(pixels, sx, sy, sw, sh);
   FreeSelectionPixels(pixels);
+
   // things have changed
   Invalidate();
   m_Handler->IV_ImageChanged();
@@ -2350,13 +2538,15 @@ CImageView::OnFlipVertically()
 afx_msg void
 CImageView::OnFillRGB()
 {
-  AddUndoState();
   int sx = GetSelectionLeftX();
   int sy = GetSelectionTopY();
   int sw = GetSelectionWidth();
   int sh = GetSelectionHeight();
   int width = m_Image.GetWidth();
   RGBA* pImage = m_Image.GetPixels();
+
+  AddUndoState();
+
   for (int dx = sx; dx < (sx + sw); dx++) {
     for (int dy = sy; dy < sy + sh; dy++) {
       pImage[dy * width + dx].red   = m_Colors[m_CurrentTool].red;
@@ -2609,7 +2799,6 @@ CImageView::OnFilterColorAdjuster()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-#include "../common/convolve.hpp"
 
 afx_msg void
 CImageView::OnFilterCustom()
@@ -2832,9 +3021,11 @@ CImageView::OnSetColorAlpha()
   int sy = GetSelectionTopY();
   int sw = GetSelectionWidth();
   int sh = GetSelectionHeight();
+  
   // m_Image.SetColorAlpha(c, m_Color.alpha);
   m_Image.SetColorAlpha(sx, sy, sw, sh, c, m_Colors[m_CurrentTool].alpha);
-  Invalidate();
+  
+  InvalidateSelection(sx, sy, sw, sh);
   m_Handler->IV_ImageChanged();
 }
 
@@ -2850,6 +3041,7 @@ CImageView::OnScaleAlpha()
   int sy = GetSelectionTopY();
   int sw = GetSelectionWidth();
   int sh = GetSelectionHeight();
+
   for (int dx = sx; dx < (sx + sw); dx++)
     for (int dy = sy; dy < (sy + sh); dy++)
       pixels[dy * width + dx].alpha = (int) pixels[dy * width + dx].alpha * m_Colors[m_CurrentTool].alpha / 255;
