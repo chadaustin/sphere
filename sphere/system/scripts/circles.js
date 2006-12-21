@@ -21,8 +21,10 @@
  */
 function LineCircle(radius, color, antialias)
 {
-	if (radius <= 0 || !color)
+	if (radius < 0 || !color)
 		throw "LineCircle(): invalid parameter(s).";
+	else if (radius == 0)
+		return CreateSurface(1, 1, CreateColor(0, 0, 0, 0)).createImage();
 	
 	var pi = Math.PI;
 	var sin = Math.sin;
@@ -86,8 +88,10 @@ function LineCircle(radius, color, antialias)
  */
 function Circle(radius, color, antialias)
 {
-	if (radius <= 0 || !color)
+	if (radius < 0 || !color)
 		throw "Circle(): invalid parameter(s).";
+	else if (radius == 0)
+		return CreateSurface(1, 1, CreateColor(0, 0, 0, 0)).createImage();
 	
 	var pi_1_2 = Math.PI / 2;
 	var sin = Math.sin;
@@ -151,8 +155,10 @@ function Circle(radius, color, antialias)
  */
 function GradientCircle(radius, color1, color2, antialias)
 {
-	if (radius <= 0 || !color1 || !color2)
+	if (radius < 0 || !color1 || !color2)
 		throw "Circle(): invalid parameter(s).";
+	else if (radius == 0)
+		return CreateSurface(1, 1, CreateColor(0, 0, 0, 0)).createImage();
 	
 	var pi_1_2 = Math.PI / 2;
 	var sin = Math.sin;
