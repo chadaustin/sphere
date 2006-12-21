@@ -1,5 +1,11 @@
 YYYY.MM.DD
 
+2006.12.21
+  - Fixed: switching between very high and average frame rates using
+    SetMapEngineFrameRate() and SetFrameRate() caused engine lock-up.
+  - circles.js fixed to not throw exceptions for 0 radius arguments.
+  - Sphere 1.13 released.
+
 2006.09.03
   - Online help links updated and improved, plus link to local
     tutorial added.
