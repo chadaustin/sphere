@@ -8,12 +8,17 @@
 #include "Configuration.hpp"
 #include "Keys.hpp"
 #include "resource.h"
+
 ////////////////////////////////////////////////////////////////////////////////
+
 const int TIMER_UPDATE_SOUND_WINDOW = 987;
 const int ID_MUSIC_VOLUMEBAR   = 40102;
 const int ID_MUSIC_POSITIONBAR = 40103;
 const int ID_MUSIC_PANBAR = 40104;
 const int ID_MUSIC_PITCHBAR = 40105;
+
+////////////////////////////////////////////////////////////////////////////////
+
 BEGIN_MESSAGE_MAP(CSoundWindow, CDocumentWindow)
   
   ON_WM_SIZE()
@@ -39,7 +44,9 @@ BEGIN_MESSAGE_MAP(CSoundWindow, CDocumentWindow)
   ON_COMMAND(ID_SOUND_RANDOM_ORDER, OnRandomOrder)
   ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnNeedText)
 END_MESSAGE_MAP()
+
 ////////////////////////////////////////////////////////////////////////////////
+
 CSoundWindow::CSoundWindow(const char* sound)
 : CDocumentWindow(sound, IDR_SOUND, CSize(200, 120))
 {
@@ -114,12 +121,16 @@ CSoundWindow::CSoundWindow(const char* sound)
   SetTimer(TIMER_UPDATE_SOUND_WINDOW, 100, NULL);
   OnTimer(TIMER_UPDATE_SOUND_WINDOW);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 CSoundWindow::~CSoundWindow()
 {
   m_VolumeBarBitmap.DeleteObject();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CSoundWindow::LoadSound(const char* sound)
 {
@@ -153,7 +164,9 @@ CSoundWindow::LoadSound(const char* sound)
   GetClientRect(&Rect);
   OnSize(0, Rect.right - Rect.left, Rect.bottom - Rect.top);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSoundWindow::OnSize(UINT type, int cx, int cy)
 {
@@ -180,7 +193,9 @@ CSoundWindow::OnSize(UINT type, int cx, int cy)
   }
   CDocumentWindow::OnSize(type, cx, cy);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSoundWindow::OnTimer(UINT timerID)
 {
@@ -222,7 +237,9 @@ CSoundWindow::OnTimer(UINT timerID)
     }
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSoundWindow::OnVScroll(UINT code, UINT pos, CScrollBar *scroll_bar)
 {
@@ -238,7 +255,9 @@ CSoundWindow::OnVScroll(UINT code, UINT pos, CScrollBar *scroll_bar)
     m_Sound.SetPan(GetPan() / 255.0f);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSoundWindow::OnHScroll(UINT code, UINT pos, CScrollBar *scroll_bar)
 {
@@ -253,28 +272,41 @@ CSoundWindow::OnHScroll(UINT code, UINT pos, CScrollBar *scroll_bar)
     }
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 int
 CSoundWindow::GetPan() {
   if (m_PanBar.m_hWnd != NULL)
     return m_PanBar.GetPos();
   return 0;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 float
 CSoundWindow::GetPitchShift() {
   if (m_PitchBar.m_hWnd != NULL)
-    return (float)m_PitchBar.GetPos() / 255.0f;
+  {
+    float pitch = (float)m_PitchBar.GetPos() / 255.0f;
+    if (pitch < 0.1f)
+      pitch = 0.1f;
+    return  pitch;
+  }
   return 1.0;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 int
 CSoundWindow::GetVolume() {
   if (m_VolumeBar.m_hWnd != NULL)
     return (255 - m_VolumeBar.GetPos());
   return 255;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSoundWindow::OnSoundPlay()
 {
@@ -299,19 +331,25 @@ CSoundWindow::OnSoundPlay()
     } 
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSoundWindow::OnSoundPause()
 {
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSoundWindow::OnSoundStop()
 {
   m_Sound.Stop();
   m_Playing = false;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CSoundWindow::AdvanceSound(bool forward, bool allow_repeating)
 {
@@ -336,7 +374,9 @@ CSoundWindow::AdvanceSound(bool forward, bool allow_repeating)
   }
   return m_CurrentSound != original_sound;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CSoundWindow::PlaySound()
 {
@@ -351,19 +391,25 @@ CSoundWindow::PlaySound()
   }
   return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CSoundWindow::NextSound()
 {
   return AdvanceSound(true, m_Repeat);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CSoundWindow::PrevSound()
 {
   return AdvanceSound(false, m_Repeat);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSoundWindow::OnSoundNext()
 {
@@ -376,7 +422,9 @@ CSoundWindow::OnSoundNext()
     UpdateCaption();
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSoundWindow::OnSoundPrev()
 {
@@ -389,37 +437,49 @@ CSoundWindow::OnSoundPrev()
     UpdateCaption();
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSoundWindow::OnSoundRepeat()
 {
   m_Repeat = !m_Repeat;
   Configuration::Set(KEY_SOUND_REPEAT, m_Repeat);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSoundWindow::OnUpdatePlayCommand(CCmdUI* cmdui)
 {
   cmdui->Enable(!m_Sound.IsPlaying());
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSoundWindow::OnUpdatePauseCommand(CCmdUI* cmdui)
 {
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSoundWindow::OnUpdateStopCommand(CCmdUI* cmdui)
 {
   cmdui->Enable(m_Sound.IsPlaying() || m_Playing);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSoundWindow::OnUpdateRepeatCommand(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_Repeat);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSoundWindow::OnUpdateNextCommand(CCmdUI* cmdui)
 {
@@ -434,7 +494,9 @@ CSoundWindow::OnUpdateNextCommand(CCmdUI* cmdui)
   }
   cmdui->Enable(enabled);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSoundWindow::OnUpdatePrevCommand(CCmdUI* cmdui)
 {
@@ -449,13 +511,16 @@ CSoundWindow::OnUpdatePrevCommand(CCmdUI* cmdui)
   }
   cmdui->Enable(enabled);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSoundWindow::OnAutoAdvance()
 {
   m_AutoAdvance = !m_AutoAdvance;
   Configuration::Set(KEY_SOUND_AUTOADVANCE, m_AutoAdvance);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
   
 afx_msg void
@@ -463,13 +528,16 @@ CSoundWindow::OnUpdateAutoAdvanceCommand(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_AutoAdvance ? TRUE : FALSE);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSoundWindow::OnRandomOrder()
 {
   m_RandomOrder = !m_RandomOrder;
   Configuration::Set(KEY_SOUND_RANDOMORDER, m_RandomOrder);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
   
 afx_msg void
@@ -477,7 +545,9 @@ CSoundWindow::OnUpdateRandomOrderCommand(CCmdUI* cmdui)
 {
   cmdui->SetCheck(m_RandomOrder ? TRUE : FALSE);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg BOOL
 CSoundWindow::OnNeedText(UINT /*id*/, NMHDR* nmhdr, LRESULT* result)
 {
@@ -513,7 +583,9 @@ CSoundWindow::OnNeedText(UINT /*id*/, NMHDR* nmhdr, LRESULT* result)
   *result = 0;
   return TRUE;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CSoundWindow::UpdateCaption()
 {
@@ -534,7 +606,9 @@ CSoundWindow::UpdateCaption()
     SetCaption("...");
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 afx_msg void
 CSoundWindow::OnDropFiles(HDROP drop_info)
 {
@@ -554,4 +628,5 @@ CSoundWindow::OnDropFiles(HDROP drop_info)
   DragFinish(drop_info);
   UpdateCaption();
 }
+
 ////////////////////////////////////////////////////////////////////////////////

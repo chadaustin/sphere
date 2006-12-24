@@ -1399,7 +1399,7 @@ CImageView::OnPaint()
   if (m_RedrawY + m_RedrawHeight > m_Image.GetHeight()) m_RedrawHeight = m_Image.GetHeight() - m_RedrawY;
 
   StretchedBlit(_dc, m_BlitTile, size, size, m_Image.GetWidth(), m_Image.GetHeight(),
-    drawPixels,  m_ShowAlphaMask, &ClientRect,
+    drawImage.GetPixels(),  m_ShowAlphaMask, &ClientRect,
     m_RedrawX, m_RedrawY, m_RedrawWidth, m_RedrawHeight,
 
 #ifdef SCROLLABLE_IMAGE_WINDOW

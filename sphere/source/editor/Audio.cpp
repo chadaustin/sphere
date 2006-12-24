@@ -387,6 +387,8 @@ CSound::GetLength() {
 
 void
 CSound::SetPitchShift(double pitch) {
+  if (pitch < 0.1)
+    pitch = 0.1;
   if (m_Sound) m_Sound->setPitchShift((float) pitch);
 }
 
