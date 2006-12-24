@@ -5,7 +5,8 @@
 #include <deque>
 #include <iostream>
 
-static std::deque<Uint8> key_queue;
+//static std::deque<Uint8> key_queue;
+static std::deque<SDLKey> key_queue;
 
 // Tung: Use SDLKey, Brian.
 const int total_keys = 88;
@@ -193,7 +194,7 @@ void UpdateSystem()
 
 void OnKeyDown(int key) {
   //std::cerr << "down: " << key << std::endl;
-  key_queue.push_back(key);
+  key_queue.push_back((SDLKey) key);
   CurrentKeyBuffer[key] = true;
           
   switch(key) {
@@ -265,7 +266,7 @@ int GetKey () {
     UpdateSystem();
   }
 
-  key = key_queue.front();
+  key = (int) key_queue.front();
   key_queue.pop_front();
   return key;
 }
