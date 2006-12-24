@@ -4349,8 +4349,15 @@ CMapEngine::RenderEntities(int layer, bool flipped, int offset_x, int offset_y)
 {
     CRenderSort rs;
 
+    const int tile_width = m_Map.GetMap().GetTileset().GetTileWidth();
+    const int tile_height = m_Map.GetMap().GetTileset().GetTileHeight();
+    
+    // Note: zooming is ignored below. Should it be ignored here too?
     double zoom_factor_x = m_Map.GetLayerScaleFactorX(layer);
     double zoom_factor_y = m_Map.GetLayerScaleFactorY(layer);
+    int layer_pixel_width = int(m_Map.GetMap().GetLayer(layer).GetWidth() * tile_width * zoom_factor_x);
+    int layer_pixel_height = int(m_Map.GetMap().GetLayer(layer).GetHeight() * tile_height * zoom_factor_y);
+    
     // add non-map-specific person entities
     for (unsigned int i = 0; i < m_Persons.size(); i++)
     {
@@ -4366,7 +4373,6 @@ CMapEngine::RenderEntities(int layer, bool flipped, int offset_x, int offset_y)
 
             // calculate distance from upper-left corner of image to center of base
             int base_x = (p.base_x1 + p.base_x2) / 2;
-
             int base_y = (p.base_y1 + p.base_y2) / 2;
             //int base_x = (((double)p.base_x1 * p.scale_x) + ((double)p.base_x2 * p.scale_x)) / 2;
             //int base_y = (((double)p.base_y1 * p.scale_y) + ((double)p.base_y2 * p.scale_y)) / 2;
@@ -4374,15 +4380,35 @@ CMapEngine::RenderEntities(int layer, bool flipped, int offset_x, int offset_y)
             //int draw_x = int((zoom_factor_x * p.x) - base_x - m_Camera.x - offset_x + (GetScreenWidth()  / 2));
             //int draw_y = int((zoom_factor_y * p.y) - base_y - m_Camera.y - offset_y + (GetScreenHeight() / 2));
             int draw_x = int(p.x - base_x - m_Camera.x - offset_x + (GetScreenWidth()  / 2));
-
             int draw_y = int(p.y - base_y - m_Camera.y - offset_y + (GetScreenHeight() / 2));
-            int sort_y = int(p.y);
+            
             if (flipped)
-            {
                 draw_y += base_y;
-            }
 
-            rs.AddObject(draw_x, draw_y, sort_y, p.width, p.height, p.is_angled, p.angle, image, p.mask);
+            // Render person multiple times for repeating maps
+            if (m_Map.GetMap().IsRepeating())
+            {
+                while (draw_x + ss.GetFrameWidth() > 0)
+                    draw_x -= layer_pixel_width;
+                draw_x += layer_pixel_width;
+		int start_draw_x = draw_x;
+		
+		while (draw_y + ss.GetFrameHeight() > 0)
+		    draw_y -= layer_pixel_height;
+		draw_y += layer_pixel_height;
+		
+		for (; draw_y < GetScreenHeight() + ss.GetFrameHeight(); draw_y += layer_pixel_height)
+		{
+		    int sort_y = int(draw_y);
+		    for (draw_x = start_draw_x; draw_x < GetScreenWidth() + ss.GetFrameWidth(); draw_x += layer_pixel_width)
+			rs.AddObject(draw_x, draw_y, sort_y, p.width, p.height, p.is_angled, p.angle, image, p.mask);
+		}
+            }
+            else
+            {
+                int sort_y = int(p.y);
+                rs.AddObject(draw_x, draw_y, sort_y, p.width, p.height, p.is_angled, p.angle, image, p.mask);
+            }
         }
     }
 
