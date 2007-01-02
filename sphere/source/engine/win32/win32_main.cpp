@@ -12,9 +12,12 @@
 
 #include "../../common/sphere_version.h"
 #include "resource.h"
+
 LRESULT CALLBACK SphereWindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM lparam);
 static HWND SphereWindow = NULL;
+
 ////////////////////////////////////////////////////////////////////////////////
+
 static void LoadSphereConfiguration(SPHERECONFIG* config)
 {
     // Loads configuration settings
@@ -22,6 +25,7 @@ static void LoadSphereConfiguration(SPHERECONFIG* config)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 int KeyStringToKeyCode(char* key_string)
 {
     if (strlen(key_string) == strlen("KEY_X"))
@@ -32,112 +36,76 @@ int KeyStringToKeyCode(char* key_string)
             {
             case 'A':
                 return KEY_A;
-
             case 'B':
                 return KEY_B;
-
             case 'C':
                 return KEY_C;
-
             case 'D':
                 return KEY_D;
-
             case 'E':
                 return KEY_E;
-
             case 'F':
                 return KEY_F;
-
             case 'G':
                 return KEY_G;
-
             case 'H':
                 return KEY_H;
-
             case 'I':
                 return KEY_I;
-
             case 'J':
                 return KEY_J;
-
             case 'K':
                 return KEY_K;
-
             case 'L':
                 return KEY_L;
-
             case 'M':
                 return KEY_M;
-
             case 'N':
                 return KEY_N;
-
             case 'O':
                 return KEY_O;
-
             case 'P':
                 return KEY_P;
-
             case 'Q':
                 return KEY_Q;
-
             case 'R':
                 return KEY_R;
-
             case 'S':
                 return KEY_S;
-
             case 'T':
                 return KEY_T;
-
             case 'U':
                 return KEY_U;
-
             case 'V':
                 return KEY_V;
-
             case 'W':
                 return KEY_W;
-
             case 'X':
                 return KEY_X;
-
             case 'Y':
                 return KEY_Y;
-
             case 'Z':
                 return KEY_Z;
-
             case '0':
                 return KEY_0;
-
             case '1':
                 return KEY_1;
-
             case '2':
                 return KEY_2;
-
             case '3':
                 return KEY_3;
-
             case '4':
                 return KEY_4;
-
             case '5':
                 return KEY_5;
-
             case '6':
                 return KEY_6;
-
             case '7':
                 return KEY_7;
-
             case '8':
                 return KEY_8;
-
             case '9':
                 return KEY_9;
-
             default:
                 return -1;
             }
@@ -151,34 +119,24 @@ int KeyStringToKeyCode(char* key_string)
             {
             case '0':
                 return KEY_NUM_0;
-
             case '1':
                 return KEY_NUM_1;
-
             case '2':
                 return KEY_NUM_2;
-
             case '3':
                 return KEY_NUM_3;
-
             case '4':
                 return KEY_NUM_4;
-
             case '5':
                 return KEY_NUM_5;
-
             case '6':
                 return KEY_NUM_6;
-
             case '7':
                 return KEY_NUM_7;
-
             case '8':
                 return KEY_NUM_8;
-
             case '9':
                 return KEY_NUM_9;
-
             default:
                 return -1;
             }
@@ -202,6 +160,7 @@ int KeyStringToKeyCode(char* key_string)
     if (strcmp(key_string, "KEY_BACKSLASH") == 0) return KEY_BACKSLASH;
     return -1;
 }
+
 int __cdecl main(int argc, const char** argv)
 {
     // seed the random number generator
@@ -224,7 +183,6 @@ int __cdecl main(int argc, const char** argv)
 
     if (Config.videodriver.length() == 0)
     {
-
         // tell user
         MessageBox(NULL, "Sphere configuration not found.\n"
                    "Sphere will now run config.exe", "Sphere", MB_OK);
@@ -243,9 +201,7 @@ int __cdecl main(int argc, const char** argv)
         }
 
         while (WaitForSingleObject(pi.hProcess, 100) != WAIT_OBJECT_0)
-        {
             ;
-        }
 
         LoadSphereConfiguration(&Config);
         if (Config.videodriver.length() == 0)
@@ -257,7 +213,6 @@ int __cdecl main(int argc, const char** argv)
 
     for (int i = 0; i < 4; i++)
     {
-
         SetPlayerConfig(i,
                         KeyStringToKeyCode(Config.player_configurations[i].key_up_str),
                         KeyStringToKeyCode(Config.player_configurations[i].key_down_str),
@@ -266,6 +221,7 @@ int __cdecl main(int argc, const char** argv)
                         Config.player_configurations[i].keyboard_input_allowed,
                         Config.player_configurations[i].joypad_input_allowed);
     }
+    
     // register the window class
     WNDCLASS wc;
     memset(&wc, 0, sizeof(wc));
@@ -287,9 +243,9 @@ int __cdecl main(int argc, const char** argv)
                        WS_CAPTION | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_SYSMENU,
                        CW_USEDEFAULT, 0, CW_USEDEFAULT, 0,
                        NULL,
-
                        NULL,//LoadMenu(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_FILE)),
                        GetModuleHandle(NULL), NULL);
+    
     if (SphereWindow == NULL)
     {
         MessageBox(NULL, "Error: Could not create the window", "Sphere", MB_OK);
@@ -348,10 +304,12 @@ int __cdecl main(int argc, const char** argv)
 #else
     printf ("Sphere-Console> Weee!\n");
 #endif
+    
     return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void Shutdown(HWND window)
 {
     CloseNetworkSystem();
@@ -363,6 +321,7 @@ void Shutdown(HWND window)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 LRESULT CALLBACK SphereWindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg)
@@ -406,6 +365,7 @@ LRESULT CALLBACK SphereWindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM l
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    
     case WM_SYSKEYUP:
     case WM_KEYUP:
     {
@@ -417,6 +377,7 @@ LRESULT CALLBACK SphereWindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM l
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    
     case WM_MOUSEMOVE:
     {
         SetCursor(NULL);
@@ -429,23 +390,15 @@ LRESULT CALLBACK SphereWindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM l
         //y_scale = (rect.bottom - rect.top) / GetScreenHeight();
         int x = ((int)(short)LOWORD(lparam)); // / x_scale;
         if (x < 0)
-        {
             x = 0;
-        }
         else if (x > GetScreenWidth() - 1)
-        {
             x = GetScreenWidth() - 1;
-        }
 
         int y = ((int)(short)HIWORD(lparam)); // / y_scale;
         if (y < 0)
-        {
             y = 0;
-        }
         else if (y > GetScreenHeight() - 1)
-        {
             y = GetScreenHeight() - 1;
-        }
 
         OnMouseMove(x, y);
         return 0;
@@ -494,6 +447,7 @@ LRESULT CALLBACK SphereWindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM l
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    
     case WM_PAINT:
     {  // handle the paint message, just don't do anything
         PAINTSTRUCT ps;
@@ -503,6 +457,7 @@ LRESULT CALLBACK SphereWindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM l
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    
     default:
     {
         return DefWindowProc(window, msg, wparam, lparam);
@@ -511,6 +466,7 @@ LRESULT CALLBACK SphereWindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM l
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void QuitMessage(const char* message)
 {
     CloseNetworkSystem();
@@ -524,6 +480,7 @@ void QuitMessage(const char* message)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void UpdateSystem()
 {
     MSG msg;

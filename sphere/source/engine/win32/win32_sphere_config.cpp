@@ -11,9 +11,9 @@ const char* DEFAULT_SOUNDDRIVER = "winmm";
 static void InitializePlayerConfig(PLAYERCONFIG* config, int player_index)
 {
     if (!config) return;
+    
     switch (player_index)
     {
-
     case 0:
         strcpy(config->key_up_str,    "KEY_UP");
         strcpy(config->key_down_str,  "KEY_DOWN");
@@ -26,7 +26,7 @@ static void InitializePlayerConfig(PLAYERCONFIG* config, int player_index)
         strcpy(config->key_up_str,"KEY_W");
         strcpy(config->key_down_str,  "KEY_S");
         strcpy(config->key_left_str,  "KEY_A");
-        strcpy(config->key_right_str, "KEY_F");
+        strcpy(config->key_right_str, "KEY_D");
         config->keyboard_input_allowed = true;
         config->joypad_input_allowed = true;
         break;
@@ -48,15 +48,17 @@ static void InitializePlayerConfig(PLAYERCONFIG* config, int player_index)
         break;
     }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool LoadSphereConfig(SPHERECONFIG* config, const char* filename)
 {
-
     if (!config) return false;
+    
     CConfigFile file;
     file.Load(filename);
+    
     config->videodriver = file.ReadString("Video", "Driver",     DEFAULT_VIDEODRIVER);
-
     config->sound       = file.ReadInt   ("Audio", "Preference", SOUND_AUTODETECT);
     config->midi        = 0; //file.ReadInt   ("Audio", "Preference", SOUND_AUTODETECT);
     config->audiodriver = file.ReadString("Audio", "Driver",     DEFAULT_SOUNDDRIVER);
@@ -68,22 +70,22 @@ bool LoadSphereConfig(SPHERECONFIG* config, const char* filename)
     // validate video capture config settings
     if (config->video_capture_framerate <= 0)
         config->video_capture_framerate = 1;
+    
     if (config->video_capture_mode != VIDEO_CAPTURE_SCREENSHOT_ONLY
             && config->video_capture_mode != VIDEO_CAPTURE_UNTIL_OUTOFTIME
             && config->video_capture_mode != VIDEO_CAPTURE_UNTIL_F12_KEYED)
     {
-
         config->video_capture_mode = VIDEO_CAPTURE_SCREENSHOT_ONLY;
     }
+    
     if (config->video_capture_timer <= 0)
     {
-
         config->video_capture_timer = 1000;
     }
     config->allow_networking = file.ReadBool("Network", "Allowed", true);
+    
     for (int i = 0; i < 4; i++)
     {
-
         InitializePlayerConfig(&config->player_configurations[i], i);
         char section[100];
         sprintf (section, "Input player %d", i);
@@ -103,27 +105,30 @@ bool LoadSphereConfig(SPHERECONFIG* config, const char* filename)
         if (key_right.length() > 0 && key_right.length() < sizeof(config->player_configurations[i].key_right_str))
             strcpy(config->player_configurations[i].key_right_str, key_right.c_str());
     }
+    
     SaveSphereConfig(config, filename);
+    
     return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 bool SaveSphereConfig(SPHERECONFIG* config, const char* filename)
 {
-
     if (!config) return false;
+    
     CConfigFile file;
+    
     file.WriteString("Video", "Driver",     config->videodriver.c_str());
-
     file.WriteInt   ("Audio", "Preference", config->sound);
     file.WriteString("Audio", "Driver",     config->audiodriver.c_str());
     file.WriteInt  ("VideoCapture", "Mode", config->video_capture_mode);
     file.WriteInt  ("VideoCapture", "Timer", config->video_capture_timer);
     file.WriteInt  ("VideoCapture", "FrameRate", config->video_capture_framerate);
     file.WriteBool ("Network", "Allowed", config->allow_networking);
+    
     for (int i = 0; i < 4; i++)
     {
-
         char section[100];
         sprintf (section, "Input player %d", i);
         file.WriteString(section, "KEY_UP",    config->player_configurations[i].key_up_str);
@@ -133,7 +138,9 @@ bool SaveSphereConfig(SPHERECONFIG* config, const char* filename)
         file.WriteBool(section, "KeyboardInputAllowed", config->player_configurations[i].keyboard_input_allowed);
         file.WriteBool(section, "JoypadInputAllowed",   config->player_configurations[i].joypad_input_allowed);
     }
+    
     file.Save(filename);
+    
     return true;
 }
 

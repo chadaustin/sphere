@@ -45,7 +45,6 @@ void RunSphere(int argc, const char** argv)
     {
         static inline bool extension_compare(const char* path, const char* extension)
         {
-
             int path_length = strlen(path);
             int ext_length  = strlen(extension);
             return (
@@ -115,7 +114,6 @@ void RunSphere(int argc, const char** argv)
         }
         else if (strcmp(argv[i], "-help") == 0)
         {
-
             printf ("engine.exe -benchmark\n");
             printf ("engine.exe -game \"game_folder\"\n");
             printf ("engine.exe -game \"game_folder\" -parameters=\"...\"\n");
@@ -126,48 +124,45 @@ void RunSphere(int argc, const char** argv)
             i = argc;
         }
         else
+        {
             if (i == 1 && Local::extension_compare(argv[i], ".spk"))
-            {
-
                 package_name_index = i;
-            }
+        }
     }
+    
     if (package_name_index != -1)
     {
-
         const char* package_name = argv[package_name_index];
         if (strrchr(package_name, '/'))
-        {
-
             package_name = strrchr(package_name, '/') + 1;
-        }
         else if (strrchr(package_name, '\\'))
-        {
-
             package_name = strrchr(package_name, '\\') + 1;
-        }
+	
         // open the package
         CPackageFileSystem fs(argv[package_name_index]);
         if (fs.GetNumFiles() == 0)
         {
-
             std::ostringstream os;
             os << "Could not open package '" << argv[package_name_index] << "'";
             QuitMessage(os.str().c_str());
             return;
         }
+	
         // make sure "packages" directory exists
         MakeDirectory("packages");
         EnterDirectory("packages");
+	
         // now make a directory based on the name of the package
         MakeDirectory(package_name);
         EnterDirectory(package_name);
+	
         // run the game
         RunPackage(fs);
         show_menu = false;
         LeaveDirectory();
         LeaveDirectory();
     }
+    
     // start the game specified on the command line
     if (show_menu)
     {
@@ -195,6 +190,7 @@ void RunSphere(int argc, const char** argv)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void RunPackage(IFileSystem& fs)
 {
     CGameEngine(fs, s_SystemObjects, s_GameList, s_ScriptDirectory.c_str(), "").Run();
@@ -202,7 +198,9 @@ void RunPackage(IFileSystem& fs)
     ResetInput();
 
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 std::string DoRunGame(const char* game, const char* parameters)
 {
     printf("Game: \"%s\"\n", game);
