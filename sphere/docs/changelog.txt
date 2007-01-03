@@ -1,5 +1,9 @@
 YYYY.MM.DD
 
+2007.01.04
+  - Player 1's default controls are now WASD instead of WASF.
+  - named_parameters.js system script added.
+
 2006.12.21
   - Fixed: switching between very high and average frame rates using
     SetMapEngineFrameRate() and SetFrameRate() caused engine lock-up.
