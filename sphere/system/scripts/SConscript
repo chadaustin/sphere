@@ -19,6 +19,7 @@ base_env.Install(os.path.join(BUILD_DIR, 'system/scripts'), Split("""
     map_animation.js
     math.js
     menu.js
+    named_parameters.js
     old_spriteset.js
     oldsphere.js
     playlist.js
