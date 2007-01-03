@@ -91,8 +91,8 @@ Function.prototype.setParameters = function (in_params, required_template, optio
 	}
 	for (var o in optional_template)
 	{
-		if (typeof required_template[r] != "object"
-				&& (typeof required_template[r]).indexOf("[object") != 0)
+		if (typeof required_template[o] != "object"
+				&& (typeof required_template[o]).indexOf("[object") != 0)
 		{
 			data[o] = optional_template[o];
 		}
