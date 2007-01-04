@@ -66,6 +66,7 @@ files.extend(map(lambda n: 'system_scripts/' + n,
               'layers.txt',
               'map_animation.txt',
               'menu.txt',
+              'named_parameters.txt',
               'timer.txt',
               'wintro.txt']))
 
