@@ -24,4 +24,5 @@ for u in utils:
     program = env.Program(os.path.join(u, u), os.path.join(u, u + '.cpp'))
     env.Install(os.path.join(BUILD_DIR, 'util'), program)
 
-SConscript(dirs = ['ohrrpgce'])
+# Directory and utility no longer exist.
+#SConscript(dirs = ['ohrrpgce'])
