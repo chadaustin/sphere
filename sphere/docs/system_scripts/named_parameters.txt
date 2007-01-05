@@ -5,303 +5,56 @@ by its name, rather than having to remember the positions of
 each one? Or changing the parameters of a function without
 having to overhaul all of your code to make it work again?
 
-named_parameters.js aims to make it easy and flexible to do
-this.
+named_parameters.js aims to make it easy to do this.
 
 This system uses JS's object literal syntax a lot, so brush
 up on that at the Mozilla's JS docs if you aren't already
 familiar with it. JSON familiarity is fine too.
 
 
-== API ==
-
-=== Functions ===
-
-Object Function.setParameters(params, template, strict)
-
-* ''params'' - Object, parameters that were passed into
-  the function.
-* ''template'' - Object, template object to check the
-  parameters against, and define defaults.
-* ''strict'' - boolean, flag to do strict parameter
-  checking. True to activate, false to disable.
-* ''Object'' is returned, containing the combined data
-  members of the default template object and the given
-  parameters.
-
-Use this with a template at the start of every function
-where you want named parameters. Throws:
-
-* MissingArgumentException - when params is missing
-  something in the required section of a template.
-* IllegalArgumentException - when a member of params doesn't
-  match up to the corresponding member in the template.
-
-Neither exception is thrown when ''strict'' is '''false'''.
-
-=== Exceptions ===
-
-==== MissingArgumentException ====
-
-This exception indicates that a function called using named
-parameters is missing a required argument.
-
-==== IllegalArgumentException ====
-
-This exception is thrown when the types of a named parameter
-passed into a function via a call don't match the template.
-
-
 == Usage ==
 
-First include the system script as so:
+Start with the function, with a single object parameter.
 
-  RequireSystemScript("named_parameters.js");
-
-Then for each function you want to use named parameters, you
-define a ''template'', containing required parameters,
-optional parameters, and their default values.
-
-  var template =
+  function drawText(param)
   {
-    "req!": {
-      ace: 10,
-      abe: 20
-    }, "opt!": {
-      fix: "bleh",
-      fox: 45.3
-    }
-  };
-
-The key words are "req!" and "opt!" members. Each of those
-are subobjects. "req!" holds members required to be in the
-parameters, "opt!" holds members that may be in parameters,
-but don't have to be.
-
-Using [] for optional stuff, the function signature of the
-above template looks like this:
-
-  functionName(ace=10, abe=20[, fix="bleh"][, fox=45.3])
-
-Now just perform the check against the parameter object
-passed to your function at the beginning:
-
-  function myFunction (params)
-  {
-    // INSERT template stuff from above here
-    var data = Function.setParameters(params, template, true);
-    // Your code here
   }
 
-And you can now use the data object to get any parameter
-data you need:
+Make a default set of parameter values for your function.
 
-  if (data.abe == 20)
-    // Do something!
-
-Finally, call the function itself, something like this:
-
-  myFunction({ace: 12, abe: 14});
-  myFunction({ace: 5, abe: 11, fix: "heh"});
-  myFunction({abe: 6, ace: 100, fox: 20.2});
-  myFunction({fox: 10.5, fix: "bah", ace: 1, abe: 2});
-
-Note the use of the object literal syntax again. That's it!
-
-== Speed versus safety ==
-
-JS function calls have a high overhead. The usual strict
-checking performed by this script can exacerbate that
-problem. Luckily, the overhead can be minimised using the
-''strict'' parameter of Function.setParameters().
-
-Use a global variable, or something similar to control the
-''strict'' parameter as shown:
-
-  var DEBUG = true;
-  
-  function whatever(params)
+  function drawText(param)
   {
-    var template = ...;
-    var data = Function.setParameters(params, template, DEBUG);
-    // ...
+    var data = {text: "", title: "", position: {x:2, y:2}};
   }
 
-Now you can set DEBUG to '''true''' to raise exceptions to
-show coding errors during development and testing, and use
-'''false''' to make it faster for releases.
+Merge in the parameters. What happens is that any members
+of the param object will be transfered to the data object.
 
-== Nested objects ==
-
-This is all fine for simple atomic parameters, but what
-about object parameters? Well, the parameters passed into
-Function.setParameters() is checked against a template.
-The template takes this form:
-
+  function drawText(param)
   {
-    "req!": {/* required stuff */},
-    "opt!": {/* optional stuff */}
+    var data = {text: "", title: "", position: {x:2, y:2}};
+    data.merge(param);
   }
 
-This is an object literal with two members named "req!" and
-"opt!".
+Now you can use the stuff in the data where you would use
+normal parameters.
 
-Atomic values work out just fine. Even arrays are good:
-
+  function drawText(param)
   {
-    "req!": {a: 1, b: "haha"},
-    "opt!": {c: 2, d: [3, 4, 5]}
+    var data = {text: "", title: "", position: {x:2, y:2}};
+    data.merge(param);
+    
+    myFont.drawText(
+        data.position.x,
+        data.position.y,
+        data.text);
+    myFont.drawText(
+        data.position.x + 4,
+        data.position.y - myFont.getHeight(),
+        data.title);
   }
 
-Well it turns out that templates within templates are just
-fine too!
-
-  {
-    "req!": {
-      a: 1,
-      b: "haha",
-      obj:
-      {
-        "req!": {/* required stuff for obj */},
-        "opt!": {/* optional stuff for obj */}
-      }
-    }, "opt!": {
-      c: 2,
-      d: [3, 4, 5]
-    }
-  }
-
-Don't fret about whitespace, it's ignored by JS. Note that
-"obj" looks just like the template, except it has a name,
-just like the other parameters.
-
-Let's take a look at a more complex example.
-
-  var template = 
-  {
-    "req!": {
-      text: "",
-      position:
-      {
-        "req!": {
-        }, "opt!": {
-          x: 8,
-          y: 8,
-          width: 224,
-          height: 32
-        }
-      }
-    }, "opt!": {
-      title: "",
-      color:
-      {
-        "req!": {
-          red: 255,
-          green: 255,
-          blue: 255
-        }, "opt!": {
-          alpha: 255
-        }
-      }
-    }
-  };
-
-What does this function describe?
-
-* template has text, position as required parameters, and
-  title and color as optional parameters.
-* position has x, y, width, height as optional parameters.
-* color has red, green, blue as required parameters, and
-  alpha as an optional parameter.
-
-So it looks like (with defaults omitted for clarity):
-
-  drawText(
-      text,
-      position={[x][,y][,width][,height]}
-      [, title]
-      [, color={red,green,blue[,alpha]}])
-
-And you can call it in a number of ways:
-
-  drawText({text: "*BOOM*", position: {}});
-  drawText({text: "Hey!", title: "Bob", position: {}});
-  drawText({text: "What happen?", position: {y: 100}});
-  drawText({
-      text: "*BLAM*",
-      position: {x: 0, y: 0, width: 320, height: 240}});
-  drawText({
-      text: "Oh no...",
-      position: {},
-      color: {red: 128, green: 128, blue: 128}});
-  drawText({
-      text: "Am I going to died?!",
-      position: {},
-      color: {red: 255, green: 255, blue: 255, alpha: 128}});
-  drawText({
-      text: "Hey I remembered name!!! Goodo!",
-      position: {},
-      color: {red: 255, green: 255, blue: 255, alpha: 128},
-      title: "Max"});
-
-The complete function for the above looks like this:
-
-  function drawText(params)
-  {
-    var template = 
-    {
-      "req!": {
-        text: "",
-        position:
-        {
-          "req!": {
-          }, "opt!": {
-            x: 8,
-            y: 8,
-            width: 224,
-            height: 32
-          }
-        }
-      }, "opt!": {
-        title: "",
-        color:
-        {
-          "req!": {
-            red: 255,
-            green: 255,
-            blue: 255
-          }, "opt!": {
-            alpha: 255
-          }
-        }
-      }
-    };
-    var data = Function.setParameters(params, template, true);
-    return objectToString(data);
-  }
-  
-  function objectToString(obj, indent)
-  {
-    var str = "";
-    if (!indent)
-      indent = 0;
-    for (var p in obj)
-    {
-      for (var i = 0; i < indent; ++i)
-        str += "  ";
-      if (typeof obj[p] === "object")
-        str += p + ": {\n"
-            + objectToString(obj[p])
-            + "}\n";
-      else
-        str += p + ": " + obj[p].toString() + "\n";
-    }
-    return str;
-  }
-
-ObjectToString() is a helper function that displays objects
-and any subobjects, so you can call drawText() and observe
-parameter values.
-
+For optional parameters, I recommend putting in a null.
+Happy coding!
 
 -- tunginobi
