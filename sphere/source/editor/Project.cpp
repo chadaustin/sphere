@@ -8,7 +8,9 @@
 #include "../common/types.h"
 #include "../common/system.hpp"
 //#include "FileSystem.hpp"
+
 ////////////////////////////////////////////////////////////////////////////////
+
 CProject::CProject()
 : m_ScreenWidth(320)
 , m_ScreenHeight(240)
@@ -16,7 +18,9 @@ CProject::CProject()
   m_GameTitle   = "Untitled";
   m_Author      = "Unknown";
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CProject::Create(const char* games_directory, const char* project_name)
 {
@@ -59,7 +63,9 @@ CProject::Create(const char* games_directory, const char* project_name)
   RefreshItems();
   return Save();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CProject::Open(const char* filename)
 {
@@ -94,7 +100,9 @@ CProject::Open(const char* filename)
   RefreshItems();
   return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CProject::Save() const
 {
@@ -112,13 +120,17 @@ CProject::Save() const
   config.Save(m_Filename.c_str());
   return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 const char*
 CProject::GetDirectory() const
 {
   return m_Directory.c_str();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 const char*
 CProject::GetGameSubDirectory() const
 {
@@ -127,79 +139,105 @@ CProject::GetGameSubDirectory() const
   else
     return "";
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 const char*
 CProject::GetGameTitle() const
 {
   return m_GameTitle.c_str();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 const char*
 CProject::GetAuthor() const
 {
   return m_Author.c_str();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 const char*
 CProject::GetDescription() const
 {
   return m_Description.c_str();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 const char*
 CProject::GetGameScript() const
 {
   return m_GameScript.c_str();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 int
 CProject::GetScreenWidth() const
 {
   return m_ScreenWidth;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 int
 CProject::GetScreenHeight() const
 {
   return m_ScreenHeight;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CProject::SetGameTitle(const char* game_title)
 {
   m_GameTitle = game_title;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CProject::SetAuthor(const char* author)
 {
   m_Author = author;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CProject::SetDescription(const char* description)
 {
   m_Description = description;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CProject::SetGameScript(const char* game_script)
 {
   m_GameScript = game_script;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CProject::SetScreenWidth(int width)
 {
   m_ScreenWidth = width;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CProject::SetScreenHeight(int height)
 {
   m_ScreenHeight = height;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 const char*
 CProject::GetGroupDirectory(int grouptype)
 {
@@ -217,7 +255,9 @@ CProject::GetGroupDirectory(int grouptype)
     default:              return NULL;
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 static bool UpdateItems(std::vector<CProject::Group>& m_Groups);
 static void UpdateGroupItems(std::vector<CProject::Group>& m_Groups)
 {
@@ -245,6 +285,9 @@ static void UpdateGroupItems(std::vector<CProject::Group>& m_Groups)
     SetCurrentDirectory(directory);
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 CProject::RefreshItems()
 {
@@ -269,7 +312,9 @@ CProject::RefreshItems()
   // restore the old directory
   SetCurrentDirectory(old_directory);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 int
 CProject::GetItemCount(const char* groupname) const {
   for (unsigned int i = 0; i < m_Groups.size(); i++) {
@@ -278,19 +323,27 @@ CProject::GetItemCount(const char* groupname) const {
   }
   return 0;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 int
 CProject::GetItemCount(int group_type) const
 {
   const char* groupname = GetGroupDirectory(group_type);
   return GetItemCount(groupname);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 const char*
 CProject::GetItem(int group_type, int index) const
 {
   const char* groupname = GetGroupDirectory(group_type);
   return groupname == NULL ? 0 : GetItem(groupname, index);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 const char*
 CProject::GetItem(const char* groupname, int index) const {
   for (unsigned int i = 0; i < m_Groups.size(); i++) {
@@ -299,7 +352,9 @@ CProject::GetItem(const char* groupname, int index) const {
   }
   return NULL;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 bool
 CProject::HasItem(const char* groupname, const char* item) const
 {
@@ -313,12 +368,17 @@ CProject::HasItem(const char* groupname, const char* item) const
   }
   return false;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
 bool
 CProject::HasItem(int group_type, const char* item) const
 {
   return HasItem(GetGroupDirectory(group_type), item);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
+
 void
 CProject::Destroy()
 {
@@ -330,4 +390,5 @@ CProject::Destroy()
   m_ScreenHeight = 0;
   m_Groups.clear();
 }
+
 ////////////////////////////////////////////////////////////////////////////////

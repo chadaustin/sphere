@@ -2776,7 +2776,7 @@ CMapEngine::GetPersonMask(const char* name, RGBA& mask)
 class PersonDataUtil
 {
 public:
-    static int FindDataIndex(std::vector<struct PersonData>& person_data, const char* name)
+    static int FindDataIndex(const std::vector<struct PersonData>& person_data, const char* name)
     {
         int index = -1;
         for (int i = 0; i < int(person_data.size()); i++)
@@ -2851,6 +2851,7 @@ CMapEngine::GetPersonData(const char* name, std::vector<struct PersonData>& pers
     {
         return false;
     }
+
     Person& p = m_Persons[person];
     person_data = m_Persons[person].person_data;
     PersonDataUtil::SetDataInt(person_data, "num_frames", p.spriteset->GetSpriteset().GetNumFrames(p.direction));
@@ -2858,20 +2859,29 @@ CMapEngine::GetPersonData(const char* name, std::vector<struct PersonData>& pers
     PersonDataUtil::SetDataInt(person_data, "width", p.width);
     PersonDataUtil::SetDataInt(person_data, "height", p.height);
     PersonDataUtil::SetDataString(person_data, "leader", p.leader == -1 ? "" : m_Persons[p.leader].name.c_str());
+    PersonDataUtil::SetDataBool(person_data, "destroy_with_map", p.destroy_with_map);
+
     return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::SetPersonData(const char* name, const std::vector<struct PersonData> data)
+CMapEngine::SetPersonData(const char* name, const std::vector<struct PersonData> person_data)
 {
     int person = -1;
     if ( IsInvalidPersonError(name, person) )
     {
         return false;
     }
-    m_Persons[person].person_data = data;
+
+    int index = PersonDataUtil::FindDataIndex(person_data, "destroy_with_map");
+    if (index != -1) {
+      m_Persons[person].destroy_with_map = ((int)person_data[index].double_value == 1) ? true : false;
+    }
+
+    m_Persons[person].person_data = person_data;
+
     return true;
 }
 
@@ -2883,6 +2893,7 @@ CMapEngine::GetPersonValue(const char* name, const char* key, std::string& strin
     std::vector<PersonData> person_data;
     if ( GetPersonData(name, person_data) == false)
         return false;
+
     int index = PersonDataUtil::FindDataIndex(person_data, key);
     if (index != -1)
     {
@@ -2896,6 +2907,7 @@ CMapEngine::GetPersonValue(const char* name, const char* key, std::string& strin
         double_value = 0;
         type = -1;
     }
+
     return true;
 }
 
@@ -2907,19 +2919,22 @@ CMapEngine::SetPersonValue(const char* name, const char* key, const std::string 
     std::vector<PersonData> person_data;
     if ( GetPersonData(name, person_data) == false)
         return false;
+
     switch (type)
     {
-    case 0:
+      case 0:
         PersonDataUtil::SetDataString(person_data, key, value.c_str());
-        break;
-    case 1:
-    case 2:
-    case 3:
+      break;
+      case 1:
+      case 2:
+      case 3:
         PersonDataUtil::SetDataNumber(person_data, key, double_value, type);
-        break;
+      break;
     }
+
     if ( SetPersonData(name, person_data) == false)
-        return false;
+      return false;
+
     return true;
 }
 
@@ -2985,7 +3000,7 @@ CMapEngine::SetPersonSpriteset(const char* name, sSpriteset& spriteset)
     spriteset.GetBase(m_Persons[person_index].base_x1, m_Persons[person_index].base_y1, m_Persons[person_index].base_x2, m_Persons[person_index].base_y2);
     if (m_Persons[person_index].base_x1 > m_Persons[person_index].base_x2) std::swap(m_Persons[person_index].base_x1, m_Persons[person_index].base_x2);
     if (m_Persons[person_index].base_y1 > m_Persons[person_index].base_y2) std::swap(m_Persons[person_index].base_y1, m_Persons[person_index].base_y2);
-    
+
     return true;
 }
 
@@ -4351,13 +4366,13 @@ CMapEngine::RenderEntities(int layer, bool flipped, int offset_x, int offset_y)
 
     const int tile_width = m_Map.GetMap().GetTileset().GetTileWidth();
     const int tile_height = m_Map.GetMap().GetTileset().GetTileHeight();
-    
+
     // Note: zooming is ignored below. Should it be ignored here too?
     double zoom_factor_x = m_Map.GetLayerScaleFactorX(layer);
     double zoom_factor_y = m_Map.GetLayerScaleFactorY(layer);
     int layer_pixel_width = int(m_Map.GetMap().GetLayer(layer).GetWidth() * tile_width * zoom_factor_x);
     int layer_pixel_height = int(m_Map.GetMap().GetLayer(layer).GetHeight() * tile_height * zoom_factor_y);
-    
+
     // add non-map-specific person entities
     for (unsigned int i = 0; i < m_Persons.size(); i++)
     {
@@ -4381,7 +4396,7 @@ CMapEngine::RenderEntities(int layer, bool flipped, int offset_x, int offset_y)
             //int draw_y = int((zoom_factor_y * p.y) - base_y - m_Camera.y - offset_y + (GetScreenHeight() / 2));
             int draw_x = int(p.x - base_x - m_Camera.x - offset_x + (GetScreenWidth()  / 2));
             int draw_y = int(p.y - base_y - m_Camera.y - offset_y + (GetScreenHeight() / 2));
-            
+
             if (flipped)
                 draw_y += base_y;
 
@@ -4392,11 +4407,11 @@ CMapEngine::RenderEntities(int layer, bool flipped, int offset_x, int offset_y)
                     draw_x -= layer_pixel_width;
                 draw_x += layer_pixel_width;
 		int start_draw_x = draw_x;
-		
+
 		while (draw_y + ss.GetFrameHeight() > 0)
 		    draw_y -= layer_pixel_height;
 		draw_y += layer_pixel_height;
-		
+
 		for (; draw_y < GetScreenHeight() + ss.GetFrameHeight(); draw_y += layer_pixel_height)
 		{
 		    int sort_y = int(draw_y);
@@ -4498,7 +4513,7 @@ CMapEngine::UpdatePersons()
 {
     // if any of the persons are activated, disable talk activation
     bool anything_activated = false;
-    
+
     // for each person...
     for (int i = 0; i < int(m_Persons.size()); i++)
     {
@@ -4560,7 +4575,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     bool should_animate    = false;
     bool processing = true;
     bool force_stop = false;
-    
+
     while (processing && !force_stop)
     {
         // if this entity has no commands, execute generator
@@ -4611,7 +4626,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
                 break;
             }
         } // end (if command queue is empty)
-	
+
         // read the top command
         Person::Command c = p->commands.front();
         p->commands.pop_front();
