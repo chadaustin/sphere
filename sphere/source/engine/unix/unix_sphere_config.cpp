@@ -78,11 +78,24 @@ bool LoadSphereConfig(SPHERECONFIG* config, const char* filename)
 
   for(int x = 0; x < 4; x++) {
     std::string current("Player");
+    std::string key_up_str;
+    std::string key_down_str;
+    std::string key_left_str;
+    std::string key_right_str;
+    
     current += identify[x];
-    config->player_configurations[x].key_up_str = file.ReadString(current.c_str(), "KeyUp", "");
-    config->player_configurations[x].key_down_str = file.ReadString(current.c_str(), "KeyDown", "");
-    config->player_configurations[x].key_left_str = file.ReadString(current.c_str(), "KeyLeft", "");
-    config->player_configurations[x].key_right_str = file.ReadString(current.c_str(), "KeyRight", "");
+    
+    // Set default configuration to be overridden.
+    InitializePlayerConfig(&config->player_configurations[x], x);
+    
+    if ((key_up_str = file.ReadString(current.c_str(), "KeyUp", "")) != "")
+        config->player_configurations[x].key_up_str = key_up_str;
+    if ((key_down_str = file.ReadString(current.c_str(), "KeyDown", "")) != "")
+        config->player_configurations[x].key_down_str = key_down_str;
+    if ((key_left_str = file.ReadString(current.c_str(), "KeyLeft", "")) != "")
+        config->player_configurations[x].key_left_str = key_left_str;
+    if ((key_right_str = file.ReadString(current.c_str(), "KeyRight", "")) != "")
+        config->player_configurations[x].key_right_str = key_right_str;
     config->player_configurations[x].keyboard_input_allowed = file.ReadInt(current.c_str(), "KeyboardAllowed", 1);
     config->player_configurations[x].joypad_input_allowed = file.ReadInt(current.c_str(), "JoypadAllowed", 1);
   }

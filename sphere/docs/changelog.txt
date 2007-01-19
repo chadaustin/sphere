@@ -1,7 +1,11 @@
 YYYY.MM.DD
 
+2007.01.19
+  - Linux engine will now create a sensible default engine.ini if
+    one is not found. In particular, player keys are preconfigured.
+
 2007.01.04
-  - Player 1's default controls are now WASD instead of WASF.
+  - Player 2's default controls are now WASD instead of WASF.
   - named_parameters.js system script added.
 
 2006.12.21
