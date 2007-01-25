@@ -38,7 +38,7 @@ function Menu()
 		sphereimg.blit(0,0)
 		x = GetMouseX()
 		y = GetMouseY()
-		ProcParticles()		RenderParticles()
+		ProcParticles()		RenderParticles()
 		RenderIcons(alpha)
 		RenderText()
 		font.drawText(0,0,"Left/right arrow to navigate")
@@ -161,4 +161,4 @@ function LoadIconImgs()
 		}
 	    return img
     }
-}
+}

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="interpolate16"
 	ProjectGUID="{6E2AFF42-B5C7-422F-BDC5-42402BA1F736}"
 	>
@@ -178,7 +178,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="ddraw.lib"
 				OutputFile="../../../sphere/system/video/$(ProjectName)d.dll"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="../../../third-party-msvc/lib/"
 				ModuleDefinitionFile="..\common\video.def"

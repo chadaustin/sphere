@@ -29,7 +29,7 @@ extern void OnMouseUp(int button);
 // network
 extern bool InitNetworkSystem();
 extern bool CloseNetworkSystem();
-*/
+*/
 // screenshot
 extern bool ShouldTakeScreenshot;
 extern void SetScreenshotDirectory(const char* directory);

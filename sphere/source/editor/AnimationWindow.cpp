@@ -44,7 +44,10 @@ CAnimationWindow::~CAnimationWindow()
 afx_msg void
 CAnimationWindow::OnDestroy()
 {
+#ifndef _DEBUG
+  // TODO: Doesn't work in Debug mode, fix this.
   KillTimer(m_Timer);
+#endif
 }
 ////////////////////////////////////////////////////////////////////////////////
 afx_msg void
@@ -84,7 +87,10 @@ CAnimationWindow::OnTimer(UINT event)
   int new_delay = m_Animation->GetDelay();
   if (m_Delay != new_delay) {
     m_Delay = new_delay;
+#ifndef _DEBUG
+  // TODO: Doesn't work in Debug mode, fix this.
     KillTimer(m_Timer);
+#endif
     m_Timer = SetTimer(ANIMATION_TIMER, m_Delay, NULL);
   }
   Invalidate();
@@ -94,14 +100,20 @@ afx_msg void
 CAnimationWindow::OnPlay()
 {
   m_Delay = m_Animation->GetDelay();
+#ifndef _DEBUG
+  // TODO: Doesn't work in Debug mode, fix this.
   KillTimer(m_Timer);
+#endif
   m_Timer = SetTimer(ANIMATION_TIMER, m_Delay, NULL);
 }
 ////////////////////////////////////////////////////////////////////////////////
 afx_msg void
 CAnimationWindow::OnStop()
 {
+#ifndef _DEBUG
+  // TODO: Doesn't work in Debug mode, fix this.
   KillTimer(m_Timer);
+#endif
   m_Delay = 0;
 }
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="standard8"
 	ProjectGUID="{F45F9AE6-DF56-47EE-9B7B-0B9C09020818}"
 	>
@@ -171,7 +171,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="ddraw.lib"
 				OutputFile="../../../sphere/system/video/$(ProjectName)d.dll"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile="..\common\video.def"
 				GenerateDebugInformation="true"

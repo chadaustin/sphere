@@ -134,7 +134,7 @@ public:
     {
       int x_value = 0;
       int y_value = 0;
-      for (unsigned int i = 0; (i < m_lines[a]->size - start_position_a); i++)
+      for (i = 0; (i < m_lines[a]->size - start_position_a); i++)
       {
         int x = m_lines[a]->data[start_position_a + i];
         if (isdigit(x))
@@ -371,7 +371,7 @@ CLineSorter::Sort()
     int line_index;
     // SendEditor(SCI_ADDTEXT, strlen("after sort...\n"), (LPARAM)"after sort...\n");
 
-    for (i = 0; i < m_Lines.size() && i < line_indexes.size(); i++, last_index = line_index) {
+    for (i = 0; (unsigned int)i < m_Lines.size() && (unsigned int)i < line_indexes.size(); i++, last_index = line_index) {
       line_index = (reverse_lines ? max_lines - i : i);
       if (sort_lines) {
         line_index = line_indexes[line_index];

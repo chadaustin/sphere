@@ -896,7 +896,7 @@ CMainWindow::CheckDirectory(const char* filename, const char* sub_directory)
   strcat(szProjectDirectory, sub_directory);
   // compare the path with the project directory + szSubDirectory
 
-#if 1
+#if 0
   strlwr(szDirectory);
   strlwr(szProjectDirectory);
 #else

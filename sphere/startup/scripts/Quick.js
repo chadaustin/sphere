@@ -3,7 +3,7 @@ function QuickMenu()
     SetFrameRate(0);
     
 	sphereimg.blit(0,0)
-	ProcParticles()	RenderParticles()
+	ProcParticles()	RenderParticles()
 	font.drawText(0,0,version)
 	screen = GrabImage(0, 0, GetScreenWidth(), GetScreenHeight())
 	

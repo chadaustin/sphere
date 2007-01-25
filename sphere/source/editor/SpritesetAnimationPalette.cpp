@@ -48,7 +48,10 @@ CSpritesetAnimationPalette::Destroy()
   Configuration::Set(KEY_SPRITESET_ANIMATION_RECT, rect);
   // FIXME: IsWindowVisible() always returns FALSE here
   // Configuration::Set(KEY_SPRITESET_ANIMATION_VISIBLE, IsWindowVisible() != FALSE);
+#ifndef _DEBUG
+  // TODO: Doesn't work in Debug mode, fix this.
   KillTimer(ANIMATION_TIMER);
+#endif
   // destroy window
   DestroyWindow();
 }

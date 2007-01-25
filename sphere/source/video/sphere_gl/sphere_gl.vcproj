@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="sphere_gl"
 	ProjectGUID="{BEA646E3-6772-4078-A2D2-F89980600D66}"
 	>
@@ -175,7 +175,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="opengl32.lib winmm.lib glu32.lib"
 				OutputFile="../../../sphere/system/video/$(ProjectName)d.dll"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile="..\common\video.def"
 				GenerateDebugInformation="true"

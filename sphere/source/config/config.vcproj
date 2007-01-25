@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="config"
 	ProjectGUID="{43F320E8-592E-464B-BCCB-359221B980CC}"
 	RootNamespace="config"
@@ -76,7 +76,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib"
 				OutputFile="../../sphere/$(ProjectName)d.exe"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="../../third-party-msvc/lib"
 				GenerateDebugInformation="true"

@@ -21,7 +21,7 @@ function TopY()
   if (ScreenY(GetCameraY()) >= GetScreenHeight() / 2)
     return GetCameraY() - ScreenY(GetCameraY());
   else
-    return 0;}
+    return 0;}
 
 function MapX(screenx)
 {

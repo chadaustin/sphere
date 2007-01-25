@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="standard16"
 	ProjectGUID="{AEE9B6D7-16FA-47CA-B0A7-4FB23E455429}"
 	>
@@ -180,7 +180,7 @@
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="ddraw.lib"
 				OutputFile="../../../sphere/system/video/$(ProjectName)d.dll"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="../../../third-party-msvc/lib"
 				ModuleDefinitionFile="..\common\video.def"

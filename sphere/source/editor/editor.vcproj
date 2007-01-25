@@ -113,7 +113,6 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description=""
 				CommandLine=""
 			/>
 		</Configuration>
@@ -153,7 +152,7 @@
 				AdditionalOptions="/wd4430"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;../../third-party-msvc/include&quot;;&quot;../../third-party-msvc/include/smjs/&quot;"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;_DEBUG;STRICT;INCLUDE_DEPRECATED_FEATURES;XP_WIN;WIN32;_WINDOWS;VC_EXTRALEAN;ZLIB_DLL;MNG_USE_DLL;MNG_SKIP_LCMS;MNG_SKIP_IJG6B;NOMINMAX"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;_DEBUG;STRICT;INCLUDE_DEPRECATED_FEATURES;XP_WIN;WIN32;_WINDOWS;VC_EXTRALEAN;ZLIB_DLL;MNG_USE_DLL;MNG_SKIP_LCMS;MNG_SKIP_IJG6B;NOMINMAX;I_SUCK"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -404,6 +403,14 @@
 			</File>
 			<File
 				RelativePath="EditRange.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\common\ends_with.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\common\ends_with.hpp"
 				>
 			</File>
 			<File
@@ -3950,10 +3957,6 @@
 			</File>
 			<File
 				RelativePath="..\common\Image32.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\common\Interface.hpp"
 				>
 			</File>
 			<File

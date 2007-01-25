@@ -146,6 +146,7 @@
 				ProgramDataBaseFileName=".\Debug/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
+				DebugInformationFormat="4"
 				CompileAs="0"
 			/>
 			<Tool
@@ -163,7 +164,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="corona.lib"
 				OutputFile="../../../sphere/$(ProjectName)d.exe"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="../../../third-party-msvc/lib"
 				GenerateDebugInformation="true"
@@ -398,15 +399,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\common\rgb.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\common\rgb.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\common\Sprite.hpp"
 				>
 			</File>
 			<File

@@ -563,7 +563,7 @@ CLayerView::OnFlattenVisibleLayers()
 
   std::vector<sLayer> layers;
   // get a list of the visible layers
-  for (i = 0; i < m_Map->GetNumLayers(); i++) {
+  for (i = 0; i < (unsigned int)m_Map->GetNumLayers(); i++) {
     if (m_Map->GetLayer(i).IsVisible()) {
       layers.push_back(m_Map->GetLayer(i));
     }
