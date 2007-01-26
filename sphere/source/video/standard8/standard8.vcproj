@@ -144,6 +144,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="../../../third-party-msvc/include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;_DEBUG;WIN32;_WINDOWS;_USRDLL;STANDARD8_EXPORTS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -173,6 +174,7 @@
 				OutputFile="../../../sphere/system/video/$(ProjectName)d.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="../../../third-party-msvc/lib/"
 				ModuleDefinitionFile="..\common\video.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\output/debug/standard8.pdb"
