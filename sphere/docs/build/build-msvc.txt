@@ -57,12 +57,10 @@ Add the following under VC++ Directories > Include
 <path to your Platform SDK>\Include
 <path to your Platform SDK>\Include\mfc
 <path to your Platform SDK>\Include\atl
-<path to 3rd-party stuff>\include
 
 Add the following under VC++ Directories > Libraries
 
 <path to your Platform SDK>\Lib
-<path to 3rd-party stuff>\lib
 
 
 Getting the Source Code
@@ -99,24 +97,23 @@ Preparing Sphere for running
 You'll find your freshly-compiled version of Sphere in
 <base dir>\Sphere, along with the editor and configuration utility.
 
-Copy the contents of third-party-msvc\dll directly to
-<base dir>\Sphere directory, so that the DLLs are in the same place
-as the executables.
+Copy the DLLs from third-party-msvc\dll directly to
+<base dir>\Sphere directory, so they're in the same place
+as the EXE files.
 
-You may have to track down "msvcr71.dll" from within your system
-(use Windows Explorer's search capability), and copy it to the same
-place as where you put the other DLLs as well.
+Create a blank <base dir>\Sphere\games directory.
 
 If a <base dir>\Sphere\startup directory does not exist, copy it from
 <base dir>\startup.
 
 If there is no <base dir>\Sphere\system, or it is empty, copy that
-too from <base dir>\system. Be sure NOT to overwrite
-<base dir>\Sphere\system\video, otherwise half of your compilation
-efforts will be for naught!
+too from <base dir>\system.
 
-For the sake of building a release, you may want to include the docs\
-directory too, from <base dir>\docs.
+Include the docs\ directory too, from <base dir>\docs.
+
+You may have to track down "msvcr71.dll" from within your system
+(use Windows Explorer's search capability), and copy it to the same
+place as where you put the other DLLs as well.
 
 
 Running Sphere
@@ -124,7 +121,10 @@ Running Sphere
 
 Go into <base dir>\Sphere and double-click engine.exe for the Sphere
 engine, editor.exe for the IDE, or config.exe for the configuration
-utility. Yay!
+utility.
+
+If they complain about missing DLLs, you probably forgot to copy in
+the DLLs from third-party-msvc\dll to the EXE folder.
 
 
 Getting help
