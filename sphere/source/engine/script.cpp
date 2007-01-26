@@ -6682,7 +6682,7 @@ arg_double(pitch);
 if (object->sound)
 
 {
-    object->sound->setPitchShift(pitch);
+    object->sound->setPitchShift((float)pitch);
 }
 end_method()
 

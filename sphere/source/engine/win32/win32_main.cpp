@@ -164,7 +164,7 @@ int KeyStringToKeyCode(char* key_string)
 int __cdecl main(int argc, const char** argv)
 {
     // seed the random number generator
-    srand(time(NULL));
+    srand((unsigned int)time(NULL));
 
     //printf ("SphereDirectory=%s\n", GetSphereDirectory().c_str());
     // set current directory to be Sphere directory

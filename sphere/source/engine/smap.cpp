@@ -105,7 +105,7 @@ SMAP::Load(const char* filename, IFileSystem& fs)
         return false;
     
     std::fill(m_Tiles.begin(), m_Tiles.end(), IMAGE(0));
-    for (i = 0; i < m_Map.GetTileset().GetNumTiles(); i++)
+    for (i = 0; i < (unsigned int)m_Map.GetTileset().GetNumTiles(); i++)
         UpdateTile(i);
 
     // create the solid image array
@@ -114,13 +114,13 @@ SMAP::Load(const char* filename, IFileSystem& fs)
         return false;
     
     std::fill(m_SolidTiles.begin(), m_SolidTiles.end(), IMAGE(0));
-    for (i = 0; i < m_Map.GetTileset().GetNumTiles(); i++)
+    for (i = 0; i < (unsigned int)m_Map.GetTileset().GetNumTiles(); i++)
         UpdateSolidTile(i);
     
     // calculate maximum non-parallax layer dimensions
     m_MaxLayerWidth = 0;
     m_MaxLayerHeight = 0;
-    for (i = 0; i < m_Map.GetNumLayers(); i++)
+    for (i = 0; i < (unsigned int)m_Map.GetNumLayers(); i++)
     {
         const sLayer& layer = m_Map.GetLayer(i);
         if (layer.HasParallax() == false)
@@ -147,7 +147,7 @@ SMAP::UpdateMap()
     
     // update animations
     sTileset& tileset = m_Map.GetTileset();
-    for (i = 0; i < tileset.GetNumTiles(); i++)
+    for (i = 0; i < (unsigned int)tileset.GetNumTiles(); i++)
     {
         sTile& tile = tileset.GetTile(i);
         if (tile.IsAnimated())
@@ -501,7 +501,7 @@ SMAP::InitializeAnimation()
 {
     sTileset& tileset = m_Map.GetTileset();
     m_AnimationMap.resize(tileset.GetNumTiles());
-    for (unsigned int i = 0; (i < tileset.GetNumTiles() && i < m_AnimationMap.size()); i++)
+    for (unsigned int i = 0; (i < (unsigned int)tileset.GetNumTiles() && i < m_AnimationMap.size()); i++)
     {
 
         m_AnimationMap[i].current = i;

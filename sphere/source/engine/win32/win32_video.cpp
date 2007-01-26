@@ -284,7 +284,7 @@ void FlipScreen()
         if (VideoCaptureMode == VIDEO_CAPTURE_UNTIL_OUTOFTIME)
         {
 
-            if (VideoCaptureTimerStart + VideoCaptureTimer < GetTime())
+            if ((unsigned int)(VideoCaptureTimerStart + VideoCaptureTimer) < GetTime())
             {
 
                 ShouldTakeScreenshot = false;

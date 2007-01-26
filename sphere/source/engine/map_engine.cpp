@@ -3519,7 +3519,7 @@ CMapEngine::OpenMap(const char* filename)
     }
 
     // reset all the layer angles
-    for (i = 0; i < m_Map.GetMap().GetNumLayers(); i++)
+    for (i = 0; i < (unsigned int)m_Map.GetMap().GetNumLayers(); i++)
     {
         m_Map.SetLayerAngle(i, 0.0);
     }
