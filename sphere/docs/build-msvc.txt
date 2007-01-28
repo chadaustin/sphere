@@ -3,6 +3,8 @@ Chad Austin (aegis@aegisknight.org)
 2003.01.22 (Version 1.0)
 
 
+This is old. See build/build-msvc.txt for the latest instructions.
+
 
 Requirements
 --

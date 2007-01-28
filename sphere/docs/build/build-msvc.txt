@@ -75,8 +75,9 @@ Getting Third-party Headers, Libraries, and DLLs
 
 Sphere depends on a lot of external code.  You can download them all
 individually, or get prebuilt libraries and headers for VC on the
-SourceForge downloads page
-(https://sourceforge.net/project/showfiles.php?group_id=1551).
+community website, Spheriki:
+
+ http://www.spheredev.org/files/third-party-msvc.zip
 
 After you have all of the headers and libraries, put them in
 SPHERE_ROOT/third-party-msvc.  The third-party-msvc directory should

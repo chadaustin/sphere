@@ -4,10 +4,10 @@
 ; NOTE: this .NSI script is designed for NSIS v1.8+
 ; URL: http://nsis.sourceforge.net/
 
-Name "Sphere 1.2"
-!define SphereDir "sphere-1.2"
-!define SphereStartMenuDir "Sphere 1.2"
-OutFile "InstallSphere1.2.exe"
+Name "Sphere 1.13"
+!define SphereDir "sphere-1.13"
+!define SphereStartMenuDir "Sphere 1.13"
+OutFile "InstallSphere1.13.exe"
 
 ; Some default compiler settings (uncomment and change at will):
 ; SetCompress auto ; (can be off or force)
@@ -42,8 +42,8 @@ CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Run Sphere.lnk" "$INSTDIR\engi
 CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Configuration.lnk" "$INSTDIR\config.exe"
 CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Editor.lnk" "$INSTDIR\editor.exe"
 CreateDirectory "$SMPROGRAMS\${SphereStartMenuDir}\Documentation"
-CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Documentation\Sphere Web Site.lnk" "http://sphere.sourceforge.net"
-CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Documentation\SphereDev.lnk" "http://www.spheredev.net/forums"
+CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Documentation\Sphere Web Site.lnk" "http://sphere.sourceforge.org"
+CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Documentation\SphereDev.lnk" "http://www.spheredev.org/smforums/"
 CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Documentation\AegisKnight's Site.lnk" "http://aegisknight.org/sphere"
 CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Documentation\Flik's Tutorial Site.lnk" "http://sphere.sourceforge.net/flik/docs"
 CreateShortCut "$SMPROGRAMS\${SphereStartMenuDir}\Documentation\Local Documentation.lnk" "$INSTDIR\docs"
