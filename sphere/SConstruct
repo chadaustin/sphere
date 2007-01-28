@@ -177,6 +177,7 @@ class Compiler:
         elif self.name == 'linux':
             env.Append(CCFLAGS = ['-DXP_UNIX'], LIBS = ['smjs'])
             env.Append( CPPPATH = [Dir('/usr/include/smjs')] )
+            env.Append( CPPPATH = [Dir('/usr/include/js')] )
 
     def SetupMFC(self, env):
         assert self.has_mfc(), "MFC not supported in this compiler"

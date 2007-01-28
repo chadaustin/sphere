@@ -14,7 +14,7 @@ public:
 
   wxSize GetClientSize();
 
-  void wScrollWindow::ScrollArea(int x, int y, wxRect rect = wxRect(wxPoint(0, 0), wxSize(-1, -1)));
+  void ScrollArea(int x, int y, wxRect rect = wxRect(wxPoint(0, 0), wxSize(-1, -1)));
 
 protected:
   void SetHScrollPosition(int position);

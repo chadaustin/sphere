@@ -19,7 +19,7 @@ class wPaletteWindow;  // #include "PaletteWindow.hpp"
 class wDocumentWindow : public wxMDIChildFrame
 {
 public:
-  wDocumentWindow::wDocumentWindow(const char* document_path, int menu_resource, const wxSize& min_size = wxSize(0, 0));
+  wDocumentWindow(const char* document_path, int menu_resource, const wxSize& min_size = wxSize(0, 0));
   ~wDocumentWindow();
 
   virtual bool Close();

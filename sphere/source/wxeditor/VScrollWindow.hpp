@@ -14,7 +14,7 @@ public:
 
   wxSize GetClientSize();
 
-  void wVScrollWindow::ScrollArea(int x, int y);
+  void ScrollArea(int x, int y);
 
 protected:
   void SetVScrollPosition(int position);

@@ -66,7 +66,7 @@ private:
   void OnClose(wxCloseEvent &event);
 
   void OnFileOpen(wxCommandEvent &event);
-  void wMainWindow::OnFileClose(wxCommandEvent &event);
+  void OnFileClose(wxCommandEvent &event);
 
   void OnFileNewProject(wxCommandEvent &event);
   void OnFileOpenProject(wxCommandEvent &event);
