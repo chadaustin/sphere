@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <smjs/jsapi.h>
+#include <jsapi.h>
 #include "Scripting.hpp"
 
 
