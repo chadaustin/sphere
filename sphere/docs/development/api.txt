@@ -170,13 +170,30 @@ log_object.endBlock()
     Point(x, y, color)
       - plots a point onto the video buffer at (x, y) with the color
     
+    PointSeries(array, color)
+      - Plots a series of points colored with color onto the video buffer
+        with array filled with point2d objects
+    
     Line(x1, y1, x2, y2, color)
       - draws a line from (x1, y1) to (x2, y2) with the color
     
     GradientLine(x1, y1, x2, y2, color1, color2)
       - Draws a line from (x1, y1) to (x2, y2) with a color fade from color1 
         to color2
-    
+
+    LineSeries(array, color [, type])
+      - Draws a series of lines colored with color onto the video buffer
+        with array filled with point2d objects.
+        type: 0 = line segments, 1 = one long line, 2 = line loop
+        
+    BezierCurve(color, step, Ax, Ay, Bx, By, Cx, Cy [, Dx] [, Dy])
+      - Draws a Bezier curve colored with color onto the video buffer
+        with step being a floating point number in the range 0 < step <= 1.0
+        and the points (Ax, Ay: coordinates of the endpoint A),
+        (Bx, By: coordinates of A's control point B)
+        (Cx, Cy: coordinates of the endpoint C)
+        (Dx, Dy: optional, coordinates of C's control point D - if omitted, B is also C's control point)
+
     Triangle(x1, y1, x2, y2, x3, y3, c)
       - Draws a filled triangle with the points (x1, y1), (x2, y2), (x3, y3), 
         with the color c
@@ -185,7 +202,16 @@ log_object.endBlock()
       - Draws a gradient triangle with the points (x1, y1), (x2, y2), (x3, y3),
         with each point (c1 = color of (x1, y1), c2 = color of (x2, y2), c3 = color
         of (x3, y3)) having a color to generate the gradient of the triangle
-    
+
+    Polygon(array, color [, invert])
+      - Draws a filled polygon colored with color onto the video buffer
+        with array filled with point2d objects
+        and invert determining if the points outside of the polygon should be drawn instead
+        
+    OutlinedRectangle(x, y, width, height, color [, size])
+      - Draws an outlined rectangle at (x, y) of w width and h height colored with color
+        and with size determining the thickness onto the video buffer
+
     Rectangle(x, y, w, h, c)
       - Draws a rectangle at (x, y) of width w and height h, filled with color c.
     
@@ -195,6 +221,45 @@ log_object.endBlock()
         c_ur = color of upper right corner, c_lr = color of lower right corner,
         c_ll = color of lower left corner) accepts a color information to 
         generate the gradient of the rectangle.
+
+    OutlinedEllipse(x, y, rx, ry, c)
+      - Draws an outlined ellipse at (x, y) with rx being the horizontal radius 
+        and ry the vertical radius onto the video buffer with the color c
+
+    FilledEllipse(x, y, rx, ry, c)
+      - Draws a filled ellipse at (x, y) with rx being the horizontal radius 
+        and ry the vertical radius onto the video buffer with the color c
+
+    OutlinedCircle(x, y, radius, color [, antialias])
+      - Draws an outlined circle at (x, y) colored with color onto the video buffer
+        if antialias is true, the circle will be antialiased
+
+    FilledCircle(x, y, radius, color [, antialias])
+      - Draws a filled circle at (x, y) colored with color onto the video buffer
+        if antialias is true, the circle will be antialiased
+
+    GradientCircle(x, y, radius, color1, color2 [, antialias])
+      - Draws a gradient circle at (x, y) onto the video buffer
+        colored with a fading color from color1 to color2
+        if antialias is true, the circle will be antialiased
+
+    OutlinedComplex(rx, ry, rw, rh, cx, cy, cr, color [, antialias])
+      - Draws a filled rectangle at (rx, ry) with rw width and rh height colored with color 
+        with a circle with the radius cr cut out at (cx, cy) onto the video buffer
+
+    FilledComplex(rx, ry, rw, rh, cx, cy, cr, ca, cf, fill_empty, color1, color2)
+      - Draws a filled rectangle at (rx, ry) with rw width and rh height colored with color1 
+        with a circle with the radius cr and the color color2 drawn onto it
+        @ca: fraction's direction angle in radians
+        @cf: half of the fraction's angle in radians, if <=0 or >= PI, a full circle is drawn
+        @fill_empty: if true (1), the empty part of the circle will be filled with color1
+
+    GradientComplex(rx, ry, rw, rh, cx, cy, cr, ca, cf, fill_empty, color1, color2, color3)
+      - Draws a filled rectangle at (rx, ry) with rw width and rh height colored with color1 
+        with a circle with the radius cr and the color fading from color2 to color3 drawn onto it
+        @ca: fraction's direction angle in radians
+        @cf: half of the fraction's angle in radians, if <=0 or >= PI, a full circle is drawn
+        @fill_empty: if true (1), the empty part of the circle will be filled with color1
 
 
   *** input ***
@@ -333,6 +398,11 @@ log_object.endBlock()
 
   
 *** sphere objects ***
+
+
+  *** points ***
+  CreatePoint2D(x, y)
+    - returns a point2d object with the coordinates (x, y)
 
 
   *** colors ***

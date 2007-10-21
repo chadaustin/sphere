@@ -108,7 +108,7 @@ bool FlipScreen()
     LastUpdate = GetTime();
     FPS = 0;
     CurrentFrames = 0;
-    
+
     FirstCall = false;
   }
 
@@ -403,7 +403,7 @@ void TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask) {
 
 void DirectBlit(int x, int y, int w, int h, RGBA* pixels)
 {
-  
+
   int result = SDL_LockSurface(s_FrameBuffer);
   if (result == -1)
     return;
@@ -421,7 +421,7 @@ void DirectBlit(int x, int y, int w, int h, RGBA* pixels)
       int tx, ty;
       tx = i + rect.left;
       ty = j + rect.top;
-      
+
       if (ty <= rect.bottom)
         if (tx <= rect.right)
           //dest[ty * s_FrameBuffer->w + tx] = pixels[j * h + i];
@@ -429,7 +429,7 @@ void DirectBlit(int x, int y, int w, int h, RGBA* pixels)
     }
 
   SDL_UnlockSurface(s_FrameBuffer);
-  
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -485,7 +485,28 @@ void DrawPoint(int x, int y, RGBA color)
   primitives::Point((BGRA*)s_FrameBuffer->pixels,
     s_FrameBuffer->w,
     x, y,
-    color, 
+    color,
+    rect,
+    blendBGRA);
+
+  SDL_UnlockSurface(s_FrameBuffer);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void DrawPointSeries(VECTOR_INT** points, int length, RGBA color)
+{
+  int result = SDL_LockSurface(s_FrameBuffer);
+  if (result == -1)
+    return;
+  int c_x, c_y, c_w, c_h;
+  GetClippingRectangle(&c_x, &c_y, &c_w, &c_h);
+  RECT rect = { c_x, c_y, c_x + c_w - 1, c_y + c_h - 1 };
+
+  primitives::PointSeries((BGRA*)s_FrameBuffer->pixels,
+    s_FrameBuffer->w,
+    points, length,
+    color,
     rect,
     blendBGRA);
 
@@ -512,7 +533,7 @@ void DrawLine(int x[2], int y[2], RGBA color)
     rect,
     blendBGRA);
 
-  SDL_UnlockSurface(s_FrameBuffer);  
+  SDL_UnlockSurface(s_FrameBuffer);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -530,7 +551,50 @@ void DrawGradientLine(int x[2], int y[2], RGBA color[2])
     s_FrameBuffer->w,
     x[0], y[0],
     x[1], y[1],
-    gradient_color(color[0], color[1]), 
+    gradient_color(color[0], color[1]),
+    rect,
+    blendBGRA);
+
+  SDL_UnlockSurface(s_FrameBuffer);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void DrawLineSeries(VECTOR_INT** points, int length, RGBA color, int type)
+{
+  int result = SDL_LockSurface(s_FrameBuffer);
+  if (result == -1)
+    return;
+  int c_x, c_y, c_w, c_h;
+  GetClippingRectangle(&c_x, &c_y, &c_w, &c_h);
+  RECT rect = { c_x, c_y, c_x + c_w - 1, c_y + c_h - 1 };
+
+  primitives::LineSeries((BGRA*)s_FrameBuffer->pixels,
+    s_FrameBuffer->w,
+    points, length,
+    color, type,
+    rect,
+    blendBGRA);
+
+  SDL_UnlockSurface(s_FrameBuffer);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void DrawBezierCurve(int x[4], int y[4], double step, RGBA color, int cubic)
+{
+  int result = SDL_LockSurface(s_FrameBuffer);
+  if (result == -1)
+    return;
+
+  int c_x, c_y, c_w, c_h;
+  GetClippingRectangle(&c_x, &c_y, &c_w, &c_h);
+  RECT rect = { c_x, c_y, c_x + c_w - 1, c_y + c_h - 1 };
+
+  primitives::BezierCurve((BGRA*)s_FrameBuffer->pixels,
+    s_FrameBuffer->w,
+    x, y, step,
+    color, cubic,
     rect,
     blendBGRA);
 
@@ -551,7 +615,7 @@ void DrawTriangle(int x[3], int y[3], RGBA color)
   primitives::Triangle((BGRA*)s_FrameBuffer->pixels,
     s_FrameBuffer->w,
     x, y,
-    color, 
+    color,
     rect,
     blendBGRA);
 
@@ -572,10 +636,52 @@ void DrawGradientTriangle(int x[3], int y[3], RGBA color[3])
   primitives::GradientTriangle((BGRA*)s_FrameBuffer->pixels,
     s_FrameBuffer->w,
     x, y,
-    color, 
+    color,
     rect,
     blendBGRA,
     interpolateRGBA);
+
+  SDL_UnlockSurface(s_FrameBuffer);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void DrawPolygon(VECTOR_INT** points, int length, int invert, RGBA color)
+{
+  int result = SDL_LockSurface(s_FrameBuffer);
+  if (result == -1)
+    return;
+  int c_x, c_y, c_w, c_h;
+  GetClippingRectangle(&c_x, &c_y, &c_w, &c_h);
+  RECT rect = { c_x, c_y, c_x + c_w - 1, c_y + c_h - 1 };
+
+  primitives::Polygon((BGRA*)s_FrameBuffer->pixels,
+    s_FrameBuffer->w,
+    points, length, invert,
+    color,
+    rect,
+    blendBGRA);
+
+  SDL_UnlockSurface(s_FrameBuffer);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void DrawOutlinedRectangle(int x, int y, int w, int h, int size, RGBA color)
+{
+  int result = SDL_LockSurface(s_FrameBuffer);
+  if (result == -1)
+    return;
+  int c_x, c_y, c_w, c_h;
+  GetClippingRectangle(&c_x, &c_y, &c_w, &c_h);
+  RECT rect = { c_x, c_y, c_x + c_w - 1, c_y + c_h - 1 };
+
+  primitives::OutlinedRectangle((BGRA*)s_FrameBuffer->pixels,
+    s_FrameBuffer->w,
+    x, y, w, h, size,
+    color,
+    rect,
+    blendBGRA);
 
   SDL_UnlockSurface(s_FrameBuffer);
 }
@@ -594,7 +700,7 @@ void DrawRectangle(int x, int y, int w, int h, RGBA color)
   primitives::Rectangle((BGRA*)s_FrameBuffer->pixels,
     s_FrameBuffer->w,
     x, y, w, h,
-    color, 
+    color,
     rect,
     blendBGRA);
 
@@ -615,10 +721,185 @@ void DrawGradientRectangle(int x, int y, int w, int h, RGBA color[4])
   primitives::GradientRectangle((BGRA*)s_FrameBuffer->pixels,
     s_FrameBuffer->w,
     x, y, w, h,
-    color, 
+    color,
     rect,
     blendBGRA,
     interpolateRGBA);
+
+  SDL_UnlockSurface(s_FrameBuffer);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void DrawOutlinedComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, RGBA color, int antialias)
+{
+  int result = SDL_LockSurface(s_FrameBuffer);
+  if (result == -1)
+    return;
+  int c_x, c_y, c_w, c_h;
+  GetClippingRectangle(&c_x, &c_y, &c_w, &c_h);
+  RECT rect = { c_x, c_y, c_x + c_w - 1, c_y + c_h - 1 };
+
+  primitives::OutlinedComplex((BGRA*)s_FrameBuffer->pixels,
+    s_FrameBuffer->w,
+    r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r,
+    color,
+    antialias,
+    rect,
+    blendBGRA,
+    interpolateRGBA);
+
+  SDL_UnlockSurface(s_FrameBuffer);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void DrawFilledComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, float angle, float frac_size, int fill_empty, RGBA colors[2])
+{
+  int result = SDL_LockSurface(s_FrameBuffer);
+  if (result == -1)
+    return;
+  int c_x, c_y, c_w, c_h;
+  GetClippingRectangle(&c_x, &c_y, &c_w, &c_h);
+  RECT rect = { c_x, c_y, c_x + c_w - 1, c_y + c_h - 1 };
+
+  primitives::FilledComplex((BGRA*)s_FrameBuffer->pixels,
+    s_FrameBuffer->w,
+    r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty,
+    colors,
+    rect,
+    blendBGRA,
+    interpolateRGBA);
+
+  SDL_UnlockSurface(s_FrameBuffer);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void DrawGradientComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, float angle, float frac_size, int fill_empty, RGBA colors[3])
+{
+  int result = SDL_LockSurface(s_FrameBuffer);
+  if (result == -1)
+    return;
+  int c_x, c_y, c_w, c_h;
+  GetClippingRectangle(&c_x, &c_y, &c_w, &c_h);
+  RECT rect = { c_x, c_y, c_x + c_w - 1, c_y + c_h - 1 };
+
+  primitives::GradientComplex((BGRA*)s_FrameBuffer->pixels,
+    s_FrameBuffer->w,
+    r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty,
+    colors,
+    rect,
+    blendBGRA,
+    interpolateRGBA);
+
+  SDL_UnlockSurface(s_FrameBuffer);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void DrawOutlinedEllipse(int x, int y, int rx, int ry, RGBA color)
+{
+  int result = SDL_LockSurface(s_FrameBuffer);
+  if (result == -1)
+    return;
+  int c_x, c_y, c_w, c_h;
+  GetClippingRectangle(&c_x, &c_y, &c_w, &c_h);
+  RECT rect = { c_x, c_y, c_x + c_w - 1, c_y + c_h - 1 };
+
+  primitives::OutlinedEllipse((BGRA*)s_FrameBuffer->pixels,
+    s_FrameBuffer->w,
+    x, y, rx, ry,
+    color,
+    rect,
+    blendBGRA);
+
+  SDL_UnlockSurface(s_FrameBuffer);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void DrawFilledEllipse(int x, int y, int rx, int ry, RGBA color)
+{
+  int result = SDL_LockSurface(s_FrameBuffer);
+  if (result == -1)
+    return;
+  int c_x, c_y, c_w, c_h;
+  GetClippingRectangle(&c_x, &c_y, &c_w, &c_h);
+  RECT rect = { c_x, c_y, c_x + c_w - 1, c_y + c_h - 1 };
+
+  primitives::FilledEllipse((BGRA*)s_FrameBuffer->pixels,
+    s_FrameBuffer->w,
+    x, y, rx, ry,
+    color,
+    rect,
+    blendBGRA);
+
+  SDL_UnlockSurface(s_FrameBuffer);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void DrawOutlinedCircle(int x, int y, int r, RGBA color, int antialias)
+{
+  int result = SDL_LockSurface(s_FrameBuffer);
+  if (result == -1)
+    return;
+  int c_x, c_y, c_w, c_h;
+  GetClippingRectangle(&c_x, &c_y, &c_w, &c_h);
+  RECT rect = { c_x, c_y, c_x + c_w - 1, c_y + c_h - 1 };
+
+  primitives::OutlinedCircle((BGRA*)s_FrameBuffer->pixels,
+    s_FrameBuffer->w,
+    x, y, r,
+    color,
+    antialias,
+    rect,
+    blendBGRA);
+
+  SDL_UnlockSurface(s_FrameBuffer);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void DrawFilledCircle(int x, int y, int r, RGBA color, int antialias)
+{
+  int result = SDL_LockSurface(s_FrameBuffer);
+  if (result == -1)
+    return;
+  int c_x, c_y, c_w, c_h;
+  GetClippingRectangle(&c_x, &c_y, &c_w, &c_h);
+  RECT rect = { c_x, c_y, c_x + c_w - 1, c_y + c_h - 1 };
+
+  primitives::FilledCircle((BGRA*)s_FrameBuffer->pixels,
+    s_FrameBuffer->w,
+    x, y, r,
+    color,
+    antialias,
+    rect,
+    blendBGRA);
+
+  SDL_UnlockSurface(s_FrameBuffer);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void DrawGradientCircle(int x, int y, int r, RGBA color[2], int antialias)
+{
+  int result = SDL_LockSurface(s_FrameBuffer);
+  if (result == -1)
+    return;
+  int c_x, c_y, c_w, c_h;
+  GetClippingRectangle(&c_x, &c_y, &c_w, &c_h);
+  RECT rect = { c_x, c_y, c_x + c_w - 1, c_y + c_h - 1 };
+
+  primitives::GradientCircle((BGRA*)s_FrameBuffer->pixels,
+    s_FrameBuffer->w,
+    x, y, r,
+    color,
+    antialias,
+    rect,
+    blendBGRA);
 
   SDL_UnlockSurface(s_FrameBuffer);
 }

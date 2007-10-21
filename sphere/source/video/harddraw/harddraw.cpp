@@ -1525,6 +1525,20 @@ EXPORT(void) DrawPoint(int x, int y, RGBA color)
     }
     ddSecondary->Unlock(NULL);
 }
+EXPORT(void) DrawPointSeries(VECTOR_INT** points, int length, RGBA color)
+{
+
+    DDSURFACEDESC ddsd;
+    if ( GetLockedSurface(&ddsd) == false)
+        return;
+    if (BitsPerPixel == 32)
+    {
+
+        BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+        primitives::PointSeries((BGRA*)screen_buffer, ScreenWidth, points, length, color, ClippingRectangle, blendBGRA);
+    }
+    ddSecondary->Unlock(NULL);
+}
 EXPORT(void) DrawLine(int x[2], int y[2], RGBA color)
 {
 
@@ -1553,6 +1567,34 @@ EXPORT(void) DrawGradientLine(int x[2], int y[2], RGBA colors[2])
     }
     ddSecondary->Unlock(NULL);
 }
+EXPORT(void) DrawLineSeries(VECTOR_INT** points, int length, RGBA color, int type)
+{
+
+    DDSURFACEDESC ddsd;
+    if ( GetLockedSurface(&ddsd) == false)
+        return;
+    if (BitsPerPixel == 32)
+    {
+
+        BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+        primitives::LineSeries((BGRA*)screen_buffer, ScreenWidth, points, length, color, type, ClippingRectangle, blendBGRA);
+    }
+    ddSecondary->Unlock(NULL);
+}
+EXPORT(void) DrawBezierCurve(int x[4], int y[4], double step, RGBA color, int cubic)
+{
+
+    DDSURFACEDESC ddsd;
+    if ( GetLockedSurface(&ddsd) == false)
+        return;
+    if (BitsPerPixel == 32)
+    {
+
+        BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+        primitives::BezierCurve((BGRA*)screen_buffer, ScreenWidth, x, y, step, color, cubic, ClippingRectangle, blendBGRA);
+    }
+    ddSecondary->Unlock(NULL);
+}
 EXPORT(void) DrawTriangle(int x[3], int y[3], RGBA color)
 {
 
@@ -1578,6 +1620,51 @@ EXPORT(void) DrawGradientTriangle(int x[3], int y[3], RGBA colors[3])
 
         BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
         primitives::GradientTriangle((BGRA*)screen_buffer, ScreenWidth, x, y, colors, ClippingRectangle, blendBGRA, interpolateRGBA);
+    }
+    ddSecondary->Unlock(NULL);
+}
+EXPORT(void) DrawPolygon(VECTOR_INT** points, int length, int invert, RGBA color)
+{
+
+    DDSURFACEDESC ddsd;
+    if ( GetLockedSurface(&ddsd) == false)
+        return;
+    if (BitsPerPixel == 32)
+    {
+
+        BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+        primitives::Polygon((BGRA*)screen_buffer, ScreenWidth, points, length, invert, color, ClippingRectangle, blendBGRA);
+    }
+    ddSecondary->Unlock(NULL);
+}
+EXPORT(void) DrawOutlinedRectangle(int x, int y, int w, int h, int size, RGBA color)
+{
+
+    if (color.alpha == 0)
+    {          // no mask
+
+        return;
+    }
+    else
+    {
+
+        void* screen_buffer = NULL;
+        // lock backbuffer
+        DDSURFACEDESC ddsd;
+        if ( GetLockedSurface(&ddsd) == false)
+            return;
+        switch (BitsPerPixel)
+        {
+
+        case 32:
+            screen_buffer = (BGRA*)ddsd.lpSurface;
+            primitives::OutlinedRectangle((BGRA*)screen_buffer, ScreenWidth, x, y, w, h, size, color, ClippingRectangle, (color.alpha == 255 ? copyBGRA : blendBGRA));
+            break;
+        case 16:
+            screen_buffer = (word*)ddsd.lpSurface;
+            primitives::OutlinedRectangle((word*)screen_buffer, ScreenWidth, x, y, w, h, size, color, ClippingRectangle, (color.alpha == 255 ? copyBGRA565 : blendBGRA565));
+            break;
+        }
     }
     ddSecondary->Unlock(NULL);
 }
@@ -1624,6 +1711,126 @@ EXPORT(void) DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
 
         BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
         primitives::GradientRectangle((BGRA*)screen_buffer, ScreenWidth, x, y, w, h, colors, ClippingRectangle, blendBGRA, interpolateRGBA);
+    }
+    ddSecondary->Unlock(NULL);
+}
+EXPORT(void) DrawOutlinedComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, RGBA color, int antialias)
+{
+
+    // lock backbuffer
+    DDSURFACEDESC ddsd;
+    if ( GetLockedSurface(&ddsd) == false)
+        return;
+    if (BitsPerPixel == 32)
+    {
+
+        BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+        primitives::OutlinedComplex((BGRA*)screen_buffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, color, antialias, ClippingRectangle, blendBGRA);
+    }
+    ddSecondary->Unlock(NULL);
+}
+EXPORT(void) DrawFilledComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, float angle, float frac_size, int fill_empty, RGBA colors[2])
+{
+
+    // lock backbuffer
+    DDSURFACEDESC ddsd;
+    if ( GetLockedSurface(&ddsd) == false)
+        return;
+    if (BitsPerPixel == 32)
+    {
+
+        BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+        primitives::FilledComplex((BGRA*)screen_buffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blendBGRA);
+    }
+    ddSecondary->Unlock(NULL);
+}
+EXPORT(void) DrawGradientComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, float angle, float frac_size, int fill_empty, RGBA colors[3])
+{
+
+    // lock backbuffer
+    DDSURFACEDESC ddsd;
+    if ( GetLockedSurface(&ddsd) == false)
+        return;
+    if (BitsPerPixel == 32)
+    {
+
+        BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+        primitives::GradientComplex((BGRA*)screen_buffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blendBGRA);
+    }
+    ddSecondary->Unlock(NULL);
+}
+EXPORT(void) DrawOutlinedEllipse(int x, int y, int rx, int ry, RGBA color)
+{
+
+    // lock backbuffer
+    DDSURFACEDESC ddsd;
+    if ( GetLockedSurface(&ddsd) == false)
+        return;
+    if (BitsPerPixel == 32)
+    {
+
+        BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+        primitives::OutlinedEllipse((BGRA*)screen_buffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blendBGRA);
+    }
+    ddSecondary->Unlock(NULL);
+}
+EXPORT(void) DrawFilledEllipse(int x, int y, int rx, int ry, RGBA color)
+{
+
+    // lock backbuffer
+    DDSURFACEDESC ddsd;
+    if ( GetLockedSurface(&ddsd) == false)
+        return;
+    if (BitsPerPixel == 32)
+    {
+
+        BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+        primitives::FilledEllipse((BGRA*)screen_buffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blendBGRA);
+    }
+    ddSecondary->Unlock(NULL);
+}
+EXPORT(void) DrawOutlinedCircle(int x, int y, int r, RGBA color, int antialias)
+{
+
+    // lock backbuffer
+    DDSURFACEDESC ddsd;
+    if ( GetLockedSurface(&ddsd) == false)
+        return;
+    if (BitsPerPixel == 32)
+    {
+
+        BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+        primitives::OutlinedCircle((BGRA*)screen_buffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blendBGRA);
+    }
+    ddSecondary->Unlock(NULL);
+}
+EXPORT(void) DrawFilledCircle(int x, int y, int r, RGBA color, int antialias)
+{
+
+    // lock backbuffer
+    DDSURFACEDESC ddsd;
+    if ( GetLockedSurface(&ddsd) == false)
+        return;
+    if (BitsPerPixel == 32)
+    {
+
+        BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+        primitives::FilledCircle((BGRA*)screen_buffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blendBGRA);
+    }
+    ddSecondary->Unlock(NULL);
+}
+EXPORT(void) DrawGradientCircle(int x, int y, int r, RGBA colors[2], int antialias)
+{
+
+    // lock backbuffer
+    DDSURFACEDESC ddsd;
+    if ( GetLockedSurface(&ddsd) == false)
+        return;
+    if (BitsPerPixel == 32)
+    {
+
+        BGRA* screen_buffer = (BGRA*)ddsd.lpSurface;
+        primitives::GradientCircle((BGRA*)screen_buffer, ScreenWidth, x, y, r, colors, antialias, ClippingRectangle, blendBGRA);
     }
     ddSecondary->Unlock(NULL);
 }

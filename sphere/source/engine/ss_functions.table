@@ -39,12 +39,25 @@ SS_FUNCTION(OpenLog, 1)
 
     // primitives
     SS_FUNCTION(Point, 3)
+    SS_FUNCTION(PointSeries, 2)
     SS_FUNCTION(Line, 5)
     SS_FUNCTION(GradientLine, 6)
+    SS_FUNCTION(LineSeries, 2)
+    SS_FUNCTION(BezierCurve, 8)
     SS_FUNCTION(Triangle, 7)
     SS_FUNCTION(GradientTriangle, 9)
+    SS_FUNCTION(Polygon, 2)
+    SS_FUNCTION(OutlinedRectangle, 5)
     SS_FUNCTION(Rectangle, 5)
     SS_FUNCTION(GradientRectangle, 8)
+    SS_FUNCTION(OutlinedComplex, 9)
+    SS_FUNCTION(FilledComplex, 12)
+    SS_FUNCTION(GradientComplex, 13)
+    SS_FUNCTION(OutlinedEllipse, 5)
+    SS_FUNCTION(FilledEllipse, 5)
+    SS_FUNCTION(OutlinedCircle, 4)
+    SS_FUNCTION(FilledCircle, 4)
+    SS_FUNCTION(GradientCircle, 5)
 
   // input
 
@@ -92,6 +105,11 @@ SS_FUNCTION(OpenLog, 1)
   SS_FUNCTION(HashByteArray, 1)
   // array.length
   // array[index]
+
+  // points
+  SS_FUNCTION(CreatePoint2D, 2)
+  //point2d.x
+  //point2d.y
 
   // colors
   SS_FUNCTION(CreateColor, 3)

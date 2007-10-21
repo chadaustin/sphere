@@ -990,6 +990,11 @@ EXPORT(void) DrawPoint(int x, int y, RGBA color)
     primitives::Point(ScreenBuffer, ScreenWidth, x, y, color, ClippingRectangle, blendRGBA);
 }
 ////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawPointSeries(VECTOR_INT** points, int length, RGBA color)
+{
+    primitives::PointSeries(ScreenBuffer, ScreenWidth, points, length, color, ClippingRectangle, blendRGBA);
+}
+////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawLine(int x[2], int y[2], RGBA color)
 {
     primitives::Line(ScreenBuffer, ScreenWidth, x[0], y[0], x[1], y[1], constant_color(color), ClippingRectangle, blendRGBA);
@@ -998,6 +1003,16 @@ EXPORT(void) DrawLine(int x[2], int y[2], RGBA color)
 EXPORT(void) DrawGradientLine(int x[2], int y[2], RGBA colors[2])
 {
     primitives::Line(ScreenBuffer, ScreenWidth, x[0], y[0], x[1], y[1], gradient_color(colors[0], colors[1]), ClippingRectangle, blendRGBA);
+}
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawLineSeries(VECTOR_INT** points, int length, RGBA color, int type)
+{
+    primitives::LineSeries(ScreenBuffer, ScreenWidth, points, length, color, type, ClippingRectangle, blendRGBA);
+}
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawBezierCurve(int x[4], int y[4], double step, RGBA color, int cubic)
+{
+    primitives::BezierCurve(ScreenBuffer, ScreenWidth, x, y, step, color, cubic, ClippingRectangle, blendRGBA);
 }
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawTriangle(int x[3], int y[3], RGBA color)
@@ -1025,6 +1040,31 @@ EXPORT(void) DrawGradientTriangle(int x[3], int y[3], RGBA colors[3])
     primitives::GradientTriangle(ScreenBuffer, ScreenWidth, x, y, colors, ClippingRectangle, blendRGBA, interpolateRGBA);
 }
 ////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawPolygon(VECTOR_INT** points, int length, int invert, RGBA color)
+{
+    primitives::Polygon(ScreenBuffer, ScreenWidth, points, length, invert, color, ClippingRectangle, blendRGBA);
+}
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawOutlinedRectangle(int x, int y, int w, int h, int size, RGBA color)
+{
+    if (color.alpha == 0)
+    {          // no mask
+
+        return;
+    }
+    else if (color.alpha == 255)
+    { // full mask
+
+        byte b = Pack(color);
+        primitives::OutlinedRectangle(ScreenBuffer, ScreenWidth, x, y, w, h, size, b, ClippingRectangle, copyByte);
+    }
+    else
+    {
+
+        primitives::OutlinedRectangle(ScreenBuffer, ScreenWidth, x, y, w, h, size, color, ClippingRectangle, blendRGBA);
+    }
+}
+////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color)
 {
     if (color.alpha == 0)
@@ -1048,5 +1088,45 @@ EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color)
 EXPORT(void) DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
 {
     primitives::GradientRectangle(ScreenBuffer, ScreenWidth, x, y, w, h, colors, ClippingRectangle, blendRGBA, interpolateRGBA);
+}
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawOutlinedComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, RGBA color, int antialias)
+{
+    primitives::OutlinedComplex(ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, color, antialias, ClippingRectangle, blendRGBA);
+}
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawFilledComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, float angle, float frac_size, int fill_empty, RGBA colors[2])
+{
+    primitives::FilledComplex(ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blendRGBA);
+}
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawGradientComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, float angle, float frac_size, int fill_empty, RGBA colors[3])
+{
+    primitives::GradientComplex(ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blendRGBA);
+}
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawOutlinedEllipse(int x, int y, int rx, int ry, RGBA color)
+{
+    primitives::OutlinedEllipse(ScreenBuffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blendRGBA);
+}
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawFilledEllipse(int x, int y, int rx, int ry, RGBA color)
+{
+    primitives::FilledEllipse(ScreenBuffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blendRGBA);
+}
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawOutlinedCircle(int x, int y, int r, RGBA color, int antialias)
+{
+    primitives::OutlinedCircle(ScreenBuffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blendRGBA);
+}
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawFilledCircle(int x, int y, int r, RGBA color, int antialias)
+{
+    primitives::FilledCircle(ScreenBuffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blendRGBA);
+}
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawGradientCircle(int x, int y, int r, RGBA colors[2], int antialias)
+{
+    primitives::GradientCircle(ScreenBuffer, ScreenWidth, x, y, r, colors, antialias, ClippingRectangle, blendRGBA);
 }
 ////////////////////////////////////////////////////////////////////////////////

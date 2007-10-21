@@ -28,12 +28,25 @@ void  (__stdcall * DirectBlit)(int x, int y, int w, int h, RGBA* pixels);
 void  (__stdcall * DirectTransformBlit)(int x[4], int y[4], int w, int h, RGBA* pixels);
 void  (__stdcall * DirectGrab)(int x, int y, int w, int h, RGBA* pixels);
 void  (__stdcall * DrawPoint)(int x, int y, RGBA color);
+void  (__stdcall * DrawPointSeries)(VECTOR_INT** points, int length, RGBA color);
 void  (__stdcall * DrawLine)(int x[2], int y[2], RGBA color);
 void  (__stdcall * DrawGradientLine)(int x[2], int y[2], RGBA color[2]);
+void  (__stdcall * DrawLineSeries)(VECTOR_INT** points, int length, RGBA color, int type);
+void  (__stdcall * DrawBezierCurve)(int x[4], int y[4], double step, RGBA color, int cubic);
 void  (__stdcall * DrawTriangle)(int x[3], int y[3], RGBA color);
 void  (__stdcall * DrawGradientTriangle)(int x[3], int y[3], RGBA color[3]);
+void  (__stdcall * DrawPolygon)(VECTOR_INT** points, int length, int invert, RGBA color);
+void  (__stdcall * DrawOutlinedRectangle)(int x, int y, int w, int h, int size, RGBA color);
 void  (__stdcall * DrawRectangle)(int x, int y, int w, int h, RGBA color);
 void  (__stdcall * DrawGradientRectangle)(int x, int y, int w, int h, RGBA color[4]);
+void  (__stdcall * DrawOutlinedComplex)(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, RGBA color, int antialias);
+void  (__stdcall * DrawFilledComplex)(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, float angle, float frac_size, int fill_empty, RGBA colors[2]);
+void  (__stdcall * DrawGradientComplex)(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, float angle, float frac_size, int fill_empty, RGBA colors[3]);
+void  (__stdcall * DrawOutlinedEllipse)(int x, int y, int rx, int ry, RGBA color);
+void  (__stdcall * DrawFilledEllipse)(int x, int y, int rx, int ry, RGBA color);
+void  (__stdcall * DrawOutlinedCircle)(int x, int y, int r, RGBA color, int antialias);
+void  (__stdcall * DrawFilledCircle)(int x, int y, int r, RGBA color, int antialias);
+void  (__stdcall * DrawGradientCircle)(int x, int y, int r, RGBA color[2], int antialias);
 static HWND      SphereWindow = NULL;
 static HINSTANCE GraphicsDriver = NULL;
 static int ScreenWidth = 0;
@@ -87,12 +100,25 @@ bool InitVideo(HWND window, SPHERECONFIG* config)
     assign(DirectTransformBlit,    GetProcAddress(GraphicsDriver, "DirectTransformBlit"));
     assign(DirectGrab,             GetProcAddress(GraphicsDriver, "DirectGrab"));
     assign(DrawPoint,              GetProcAddress(GraphicsDriver, "DrawPoint"));
+    assign(DrawPointSeries,        GetProcAddress(GraphicsDriver, "DrawPointSeries"));
     assign(DrawLine,               GetProcAddress(GraphicsDriver, "DrawLine"));
     assign(DrawGradientLine,       GetProcAddress(GraphicsDriver, "DrawGradientLine"));
+    assign(DrawLineSeries,         GetProcAddress(GraphicsDriver, "DrawLineSeries"));
+    assign(DrawBezierCurve,        GetProcAddress(GraphicsDriver, "DrawBezierCurve"));
     assign(DrawTriangle,           GetProcAddress(GraphicsDriver, "DrawTriangle"));
     assign(DrawGradientTriangle,   GetProcAddress(GraphicsDriver, "DrawGradientTriangle"));
+    assign(DrawPolygon,            GetProcAddress(GraphicsDriver, "DrawPolygon"));
+    assign(DrawOutlinedRectangle,  GetProcAddress(GraphicsDriver, "DrawOutlinedRectangle"));
     assign(DrawRectangle,          GetProcAddress(GraphicsDriver, "DrawRectangle"));
     assign(DrawGradientRectangle,  GetProcAddress(GraphicsDriver, "DrawGradientRectangle"));
+    assign(DrawOutlinedComplex,    GetProcAddress(GraphicsDriver, "DrawOutlinedComplex"));
+    assign(DrawFilledComplex,      GetProcAddress(GraphicsDriver, "DrawFilledComplex"));
+    assign(DrawGradientComplex,    GetProcAddress(GraphicsDriver, "DrawGradientComplex"));
+    assign(DrawOutlinedEllipse,    GetProcAddress(GraphicsDriver, "DrawOutlinedEllipse"));
+    assign(DrawFilledEllipse,      GetProcAddress(GraphicsDriver, "DrawFilledEllipse"));
+    assign(DrawOutlinedCircle,     GetProcAddress(GraphicsDriver, "DrawOutlinedCircle"));
+    assign(DrawFilledCircle,       GetProcAddress(GraphicsDriver, "DrawFilledCircle"));
+    assign(DrawGradientCircle,     GetProcAddress(GraphicsDriver, "DrawGradientCircle"));
     if (!_FlipScreen ||
             !SetClippingRectangle ||
             !GetClippingRectangle ||
@@ -111,12 +137,25 @@ bool InitVideo(HWND window, SPHERECONFIG* config)
             !DirectTransformBlit ||
             !DirectGrab ||
             !DrawPoint ||
+            !DrawPointSeries ||
             !DrawLine ||
             !DrawGradientLine ||
+            !DrawLineSeries ||
+            !DrawBezierCurve ||
             !DrawTriangle ||
             !DrawGradientTriangle ||
+            !DrawPolygon ||
+            !DrawOutlinedRectangle ||
             !DrawRectangle ||
-            !DrawGradientRectangle)
+            !DrawGradientRectangle ||
+            !DrawOutlinedComplex ||
+            !DrawFilledComplex ||
+            !DrawGradientComplex ||
+            !DrawOutlinedEllipse ||
+            !DrawFilledEllipse ||
+            !DrawOutlinedCircle ||
+            !DrawFilledCircle ||
+            !DrawGradientCircle)
     {
         puts("Couldn't get all entry points");
         FreeLibrary(GraphicsDriver);

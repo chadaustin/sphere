@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "../../common/rgb.hpp"
+#include "../../common/ParticleStructs.hpp"
 #include "../common/win32x.hpp"
 #include "resource.h"
 
@@ -38,7 +39,7 @@ typedef struct IMAGE_STRUCT
 #define COLOR_VERTEX_FORMAT (D3DFVF_XYZRHW | D3DFVF_DIFFUSE)
 struct COLOR_VERTEX
 {
-	FLOAT x, y, z, rhw;
+    FLOAT x, y, z, rhw;
     DWORD color;
 };
 
@@ -582,6 +583,27 @@ void EXPORT DrawPoint(int x, int y, RGBA color)
     s_Direct3DDevice->DrawPrimitiveUP(D3DPT_POINTLIST, 1, &vertex, sizeof(vertex));
 }
 ////////////////////////////////////////////////////////////////////////////////
+void EXPORT DrawPointSeries(VECTOR_INT** points, int length, RGBA color)
+{
+    if (color.alpha == 0)
+    {
+        return;
+    }
+    D3DCOLOR c = D3DCOLOR_RGBA(color.red, color.green, color.blue, color.alpha);
+    COLOR_VERTEX* vertex = new COLOR_VERTEX[length];
+    for (int i = 0; i < length; ++i)
+    {
+        vertex[i].x     = (float)points[i]->x;
+        vertex[i].y     = (float)points[i]->y;
+        vertex[i].z     = 0.0f;
+        vertex[i].rhw   = 1.0f;
+        vertex[i].color = c;
+    }
+    s_Direct3DDevice->SetVertexShader(COLOR_VERTEX_FORMAT);
+    s_Direct3DDevice->DrawPrimitiveUP(D3DPT_POINTLIST, length, vertex, sizeof(*vertex));
+    delete [] vertex;
+}
+////////////////////////////////////////////////////////////////////////////////
 void EXPORT DrawLine(int x[2], int y[2], RGBA color)
 {
     D3DCOLOR c = D3DCOLOR_RGBA(color.red, color.green, color.blue, color.alpha);
@@ -603,6 +625,107 @@ void EXPORT DrawGradientLine(int x[2], int y[2], RGBA colors[2])
                             };
     s_Direct3DDevice->SetVertexShader(COLOR_VERTEX_FORMAT);
     s_Direct3DDevice->DrawPrimitiveUP(D3DPT_LINELIST, 1, vertex, sizeof(*vertex));
+}
+////////////////////////////////////////////////////////////////////////////////
+void EXPORT DrawLineSeries(VECTOR_INT** points, int length, RGBA color, int type)
+{
+    if (color.alpha == 0)
+    {
+        return;
+    }
+    D3DCOLOR c = D3DCOLOR_RGBA(color.red, color.green, color.blue, color.alpha);
+    COLOR_VERTEX* vertex = new COLOR_VERTEX[length+1];
+    int i;
+    for (i = 0; i < length; ++i)
+    {
+        vertex[i].x     = (float)points[i]->x;
+        vertex[i].y     = (float)points[i]->y;
+        vertex[i].z     = 0.0f;
+        vertex[i].rhw   = 1.0f;
+        vertex[i].color = c;
+    }
+    s_Direct3DDevice->SetVertexShader(COLOR_VERTEX_FORMAT);
+    if (type == 0)
+    {
+        s_Direct3DDevice->DrawPrimitiveUP(D3DPT_LINELIST, length-1, vertex, sizeof(*vertex));
+    }
+    else if (type == 1)
+    {
+        s_Direct3DDevice->DrawPrimitiveUP(D3DPT_LINESTRIP, length-1, vertex, sizeof(*vertex));
+    }
+    else
+    {
+        vertex[i].x     = (float)points[0]->x;
+        vertex[i].y     = (float)points[0]->y;
+        vertex[i].z     = 0.0f;
+        vertex[i].rhw   = 1.0f;
+        vertex[i].color = c;
+        s_Direct3DDevice->DrawPrimitiveUP(D3DPT_LINESTRIP, length, vertex, sizeof(*vertex));
+    }
+    delete [] vertex;
+}
+////////////////////////////////////////////////////////////////////////////////
+void EXPORT DrawBezierCurve(int x[4], int y[4], double step, RGBA color, int cubic)
+{
+    if (color.alpha == 0)
+    {
+        return;
+    }
+    D3DCOLOR c = D3DCOLOR_RGBA(color.red, color.green, color.blue, color.alpha);
+    COLOR_VERTEX* vertex = new COLOR_VERTEX[abs(x[2] - x[0]) * abs(y[2] - y[0])];
+
+    // make sure step is in a valid range
+    if (step <= 0)
+    {
+        step = 0.001;
+    }
+    else if (step > 1.0)
+    {
+        step = 1.0;
+    }
+    // draw the Bezier curve
+    int count = 0, new_x, new_y, old_x, old_y;
+    double b;
+    for (double a = 1.0; a >= 0; a -= step)
+    {
+        b = 1.0 - a;
+        if (cubic)
+        {               // calculate the cubic Bezier curve
+            new_x = (int)(x[0]*a*a*a + x[1]*3*a*a*b + x[3]*3*a*b*b + x[2]*b*b*b);
+            new_y = (int)(y[0]*a*a*a + y[1]*3*a*a*b + y[3]*3*a*b*b + y[2]*b*b*b);
+        }
+        else
+        {               // calculate the quadratic Bezier curve
+            new_x = (int)(x[0]*a*a + x[1]*2*a*b + x[2]*b*b);
+            new_y = (int)(y[0]*a*a + y[1]*2*a*b + y[2]*b*b);
+        }
+        if (a != 1.0)
+        {
+            if (new_x != old_x || new_y != old_y)
+            {
+                vertex[count].x     = (float)new_x;
+                vertex[count].y     = (float)new_y;
+                vertex[count].z     = 0.0f;
+                vertex[count].rhw   = 1.0f;
+                vertex[count].color = c;
+                count++;
+            }
+        }
+        else
+        {
+            vertex[count].x     = (float)new_x;
+            vertex[count].y     = (float)new_y;
+            vertex[count].z     = 0.0f;
+            vertex[count].rhw   = 1.0f;
+            vertex[count].color = c;
+            count++;
+        }
+        old_x = new_x;
+        old_y = new_y;
+    }
+    s_Direct3DDevice->SetVertexShader(COLOR_VERTEX_FORMAT);
+    s_Direct3DDevice->DrawPrimitiveUP(D3DPT_POINTLIST, count, vertex, sizeof(*vertex));
+    delete [] vertex;
 }
 ////////////////////////////////////////////////////////////////////////////////
 void EXPORT DrawTriangle(int x[3], int y[3], RGBA color)
@@ -629,6 +752,130 @@ void EXPORT DrawGradientTriangle(int x[3], int y[3], RGBA colors[3])
                             };
     s_Direct3DDevice->SetVertexShader(COLOR_VERTEX_FORMAT);
     s_Direct3DDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 1, vertex, sizeof(*vertex));
+}
+////////////////////////////////////////////////////////////////////////////////
+void EXPORT DrawPolygon(VECTOR_INT** points, int length, int invert, RGBA color)
+{
+    if (color.alpha == 0)
+    {
+        return;
+    }
+    // find polygon's bounds
+    int i, bound_x1 = points[0]->x, bound_x2 = points[0]->x, bound_y1 = points[0]->y, bound_y2 = points[0]->y;
+    for (i = 1; i < length; i++)
+    {
+        if (points[i]->x > bound_x2) bound_x2 = points[i]->x;
+        if (points[i]->x < bound_x1) bound_x1 = points[i]->x;
+        if (points[i]->y > bound_y2) bound_y2 = points[i]->y;
+        if (points[i]->y < bound_y1) bound_y1 = points[i]->y;
+    }
+    D3DCOLOR c = D3DCOLOR_RGBA(color.red, color.green, color.blue, color.alpha);
+    COLOR_VERTEX* vertex = new COLOR_VERTEX[(bound_x2 - bound_x1) * (bound_y2 - bound_y1)];
+
+    // draw the polygon with the crossing number algorithm
+    int count = 0, point_in, c_x, c_y, j;
+    for (c_y = bound_y1; c_y <= bound_y2; c_y++)
+    {
+        for (c_x = bound_x1; c_x <= bound_x2; c_x++)
+        {
+            point_in = 0;
+            j = length-1;
+            for (i = 0; i < length; i++)
+            {
+                if (points[i]->y <= c_y && points[j]->y > c_y ||
+                    points[j]->y <= c_y && points[i]->y > c_y)
+                {
+                    if (points[i]->x >= c_x && points[j]->x >= c_x)
+                    {
+                        point_in = !point_in;
+                    }
+                    else if ((float)(points[i]->x) +
+                            ((float)(c_y - points[i]->y) /
+                             (float)(points[j]->y - points[i]->y)) *
+                             (float)(points[j]->x - points[i]->x) > c_x)
+                    {
+                        point_in = !point_in;
+                    }
+                }
+                j = i;
+            }
+            if (invert)
+            {
+                point_in = !point_in;
+            }
+            if (point_in)
+            {
+                vertex[count].x     = (float)c_x;
+                vertex[count].y     = (float)c_y;
+                vertex[count].z     = 0.0f;
+                vertex[count].rhw   = 1.0f;
+                vertex[count].color = c;
+                count++;
+            }
+        }
+    }
+    s_Direct3DDevice->SetVertexShader(COLOR_VERTEX_FORMAT);
+    s_Direct3DDevice->DrawPrimitiveUP(D3DPT_POINTLIST, count, vertex, sizeof(*vertex));
+    delete [] vertex;
+}
+////////////////////////////////////////////////////////////////////////////////
+void EXPORT DrawOutlinedRectangle(int x, int y, int w, int h, int size, RGBA color)
+{
+    if (color.alpha == 0 || size <= 0 || h / 2 < 1)
+    {
+        return;
+    }
+    // make sure size is in a valid range
+    if (size > h / 2)
+    {
+        size = h / 2;
+    }
+    D3DCOLOR c = D3DCOLOR_RGBA(color.red, color.green, color.blue, color.alpha);
+    COLOR_VERTEX* vertex = new COLOR_VERTEX[w*h];
+    int ix, iy, tx, ty, count = 0;
+
+    for (iy = y; iy < y + size; iy++)
+    {
+        for (ix = x; ix < x+w; ix++)
+        {
+            vertex[count].x     = (float)ix;
+            vertex[count].y     = (float)iy;
+            vertex[count].z     = 0.0f;
+            vertex[count].rhw   = 1.0f;
+            vertex[count].color = c;
+            count++;
+            ty = y + h - 1 - (iy - y);
+            vertex[count].x     = (float)ix;
+            vertex[count].y     = (float)ty;
+            vertex[count].z     = 0.0f;
+            vertex[count].rhw   = 1.0f;
+            vertex[count].color = c;
+            count++;
+        }
+    }
+    ty = y + h - size;
+    for (iy = y + size; iy < ty; iy++)
+    {
+        for (ix = x; ix < x + size; ix++)
+        {
+            vertex[count].x     = (float)ix;
+            vertex[count].y     = (float)iy;
+            vertex[count].z     = 0.0f;
+            vertex[count].rhw   = 1.0f;
+            vertex[count].color = c;
+            count++;
+            tx = x + w - 1 - (ix - x);
+            vertex[count].x     = (float)tx;
+            vertex[count].y     = (float)iy;
+            vertex[count].z     = 0.0f;
+            vertex[count].rhw   = 1.0f;
+            vertex[count].color = c;
+            count++;
+        }
+    }
+    s_Direct3DDevice->SetVertexShader(COLOR_VERTEX_FORMAT);
+    s_Direct3DDevice->DrawPrimitiveUP(D3DPT_POINTLIST, count, vertex, sizeof(*vertex));
+    delete [] vertex;
 }
 ////////////////////////////////////////////////////////////////////////////////
 void EXPORT DrawRectangle(int x, int y, int w, int h, RGBA color)
@@ -658,5 +905,805 @@ void EXPORT DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
                             };
     s_Direct3DDevice->SetVertexShader(COLOR_VERTEX_FORMAT);
     s_Direct3DDevice->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, vertex, sizeof(*vertex));
+}
+////////////////////////////////////////////////////////////////////////////////
+void EXPORT DrawOutlinedComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, RGBA color, int antialias)
+{
+    D3DCOLOR c = D3DCOLOR_RGBA(color.red, color.green, color.blue, color.alpha);
+    COLOR_VERTEX* vertex = new COLOR_VERTEX[r_w*r_h];
+    int x, y, dist, ca = color.alpha, crr = circ_r * circ_r, count = 0;
+    float fdist, fcr = (float)(circ_r), fca = (float)(ca);
+
+    for (y = r_y; y < r_y + r_h; y++)
+    {
+        for (x = r_x; x < r_x + r_w; x++)
+        {
+            dist = abs(circ_x-x)*abs(circ_x-x) + abs(circ_y-y)*abs(circ_y-y);
+            if (dist >= crr)
+            {
+                vertex[count].x     = (float)x;
+                vertex[count].y     = (float)y;
+                vertex[count].z     = 0.0f;
+                vertex[count].rhw   = 1.0f;
+                vertex[count].color = c;
+                count++;
+            }
+            else if (antialias)
+            {
+                fdist = fcr - sqrt((float)(dist));
+                if (fdist < 1)
+                {
+                    vertex[count].x     = (float)x;
+                    vertex[count].y     = (float)y;
+                    vertex[count].z     = 0.0f;
+                    vertex[count].rhw   = 1.0f;
+                    vertex[count].color = D3DCOLOR_RGBA(color.red,
+                                                        color.green,
+                                                        color.blue,
+                                                        (byte)(fca * (1.0 - fdist)));
+                    count++;
+                }
+            }
+        }
+    }
+    s_Direct3DDevice->SetVertexShader(COLOR_VERTEX_FORMAT);
+    s_Direct3DDevice->DrawPrimitiveUP(D3DPT_POINTLIST, count, vertex, sizeof(*vertex));
+    delete [] vertex;
+}
+////////////////////////////////////////////////////////////////////////////////
+void EXPORT DrawFilledComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, float angle, float frac_size, int fill_empty, RGBA colors[2])
+{
+    D3DCOLOR c0 = D3DCOLOR_RGBA(colors[0].red, colors[0].green, colors[0].blue, colors[0].alpha);
+    D3DCOLOR c1 = D3DCOLOR_RGBA(colors[1].red, colors[1].green, colors[1].blue, colors[1].alpha);
+    COLOR_VERTEX* vertex = new COLOR_VERTEX[r_w*r_h];
+    int x, y, dist, crr = circ_r * circ_r, count = 0;
+    float fang_p;
+    const float PI = (float)(3.1415927);
+
+    // make sure frac_size is in a valid range
+    if (frac_size < 0 || frac_size >= PI)
+    {
+        frac_size = 0;
+    }
+
+    for (y = r_y; y < r_y + r_h; y++)
+    {
+        for (x = r_x; x < r_x + r_w; x++)
+        {
+            // check if point is outside of the circle
+            dist = abs(x-circ_x)*abs(x-circ_x) + abs(y-circ_y)*abs(y-circ_y);
+            if (dist >= crr)
+            {
+                vertex[count].x     = (float)x;
+                vertex[count].y     = (float)y;
+                vertex[count].z     = 0.0f;
+                vertex[count].rhw   = 1.0f;
+                vertex[count].color = c0;
+                count++;
+            }
+            else
+            {
+                if (frac_size != 0)
+                {
+                    // check if point is located in fraction
+                    fang_p = atan2(float(y-circ_y), float(x-circ_x));
+                    if (fang_p < 0)
+                    {
+                        fang_p = PI + (PI + fang_p);
+                    }
+                    fang_p = fabs(angle - fang_p);
+                    if (fang_p >= PI)
+                    {
+                        fang_p = 2*PI - fang_p;
+                    }
+                    if (fang_p <= frac_size)
+                    {
+                        // it is, so draw the point with circle's color
+                        vertex[count].x     = (float)x;
+                        vertex[count].y     = (float)y;
+                        vertex[count].z     = 0.0f;
+                        vertex[count].rhw   = 1.0f;
+                        vertex[count].color = c1;
+                        count++;
+                    }
+                    else if (fill_empty)
+                    {
+                        // it is not, so draw the point with rectangle's color
+                        vertex[count].x     = (float)x;
+                        vertex[count].y     = (float)y;
+                        vertex[count].z     = 0.0f;
+                        vertex[count].rhw   = 1.0f;
+                        vertex[count].color = c0;
+                        count++;
+                    }
+                }
+                else
+                {
+                    vertex[count].x     = (float)x;
+                    vertex[count].y     = (float)y;
+                    vertex[count].z     = 0.0f;
+                    vertex[count].rhw   = 1.0f;
+                    vertex[count].color = c1;
+                    count++;
+                }
+            }
+        }
+    }
+    s_Direct3DDevice->SetVertexShader(COLOR_VERTEX_FORMAT);
+    s_Direct3DDevice->DrawPrimitiveUP(D3DPT_POINTLIST, count, vertex, sizeof(*vertex));
+    delete [] vertex;
+}
+////////////////////////////////////////////////////////////////////////////////
+void EXPORT DrawGradientComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, float angle, float frac_size, int fill_empty, RGBA colors[3])
+{
+    D3DCOLOR c0 = D3DCOLOR_RGBA(colors[0].red, colors[0].green, colors[0].blue, colors[0].alpha);
+    COLOR_VERTEX* vertex = new COLOR_VERTEX[r_w*r_h];
+    int x, y, dist, crr = circ_r * circ_r, count = 0;
+    float fdr = (float)(colors[2].red - colors[1].red);
+    float fdg = (float)(colors[2].green - colors[1].green);
+    float fdb = (float)(colors[2].blue - colors[1].blue);
+    float fda = (float)(colors[2].alpha - colors[1].alpha);
+    float fang_p, factor, fdist, fr = (float)(circ_r);
+    const float PI = (float)(3.1415927), PI_H = PI / 2;
+
+    // make sure frac_size is in a valid range
+    if (frac_size < 0 || frac_size >= PI)
+    {
+        frac_size = 0;
+    }
+
+    for (y = r_y; y < r_y + r_h; y++)
+    {
+        for (x = r_x; x < r_x + r_w; x++)
+        {
+            // check if point is outside of the circle
+            dist = abs(x-circ_x)*abs(x-circ_x) + abs(y-circ_y)*abs(y-circ_y);
+            if (dist >= crr)
+            {
+                vertex[count].x     = (float)x;
+                vertex[count].y     = (float)y;
+                vertex[count].z     = 0.0f;
+                vertex[count].rhw   = 1.0f;
+                vertex[count].color = c0;
+                count++;
+            }
+            else
+            {
+                if (frac_size != 0)
+                {
+                    // check if point is located in fraction
+                    fang_p = atan2(float(y-circ_y), float(x-circ_x));
+                    if (fang_p < 0)
+                    {
+                        fang_p = PI + (PI + fang_p);
+                    }
+                    fang_p = abs(angle - fang_p);
+                    if (fang_p >= PI)
+                    {
+                        fang_p = 2*PI - fang_p;
+                    }
+                    if (fang_p <= frac_size)
+                    {
+                        // it is, so draw the point with circle's color
+                        fdist = sqrt((float)(dist));
+                        factor = sin((float(1) - fdist / fr) * PI_H);
+
+                        vertex[count].x     = (float)x;
+                        vertex[count].y     = (float)y;
+                        vertex[count].z     = 0.0f;
+                        vertex[count].rhw   = 1.0f;
+                        vertex[count].color = D3DCOLOR_RGBA((byte)(colors[2].red - fdr * factor),
+                                                            (byte)(colors[2].green - fdg * factor),
+                                                            (byte)(colors[2].blue - fdb * factor),
+                                                            (byte)(colors[2].alpha - fda * factor));
+                        count++;
+                    }
+                    else if (fill_empty)
+                    {
+                        // it is not, so draw the point with rectangle's color
+                        vertex[count].x     = (float)x;
+                        vertex[count].y     = (float)y;
+                        vertex[count].z     = 0.0f;
+                        vertex[count].rhw   = 1.0f;
+                        vertex[count].color = c0;
+                        count++;
+                    }
+                }
+                else
+                {
+                    fdist = sqrt((float)(dist));
+                    factor = sin((float(1) - fdist / fr) * PI_H);
+
+                    vertex[count].x     = (float)x;
+                    vertex[count].y     = (float)y;
+                    vertex[count].z     = 0.0f;
+                    vertex[count].rhw   = 1.0f;
+                    vertex[count].color = D3DCOLOR_RGBA((byte)(colors[2].red - fdr * factor),
+                                                        (byte)(colors[2].green - fdg * factor),
+                                                        (byte)(colors[2].blue - fdb * factor),
+                                                        (byte)(colors[2].alpha - fda * factor));
+                    count++;
+                }
+            }
+        }
+    }
+    s_Direct3DDevice->SetVertexShader(COLOR_VERTEX_FORMAT);
+    s_Direct3DDevice->DrawPrimitiveUP(D3DPT_POINTLIST, count, vertex, sizeof(*vertex));
+    delete [] vertex;
+}
+////////////////////////////////////////////////////////////////////////////////
+void EXPORT DrawOutlinedEllipse(int xc, int yc, int rx, int ry, RGBA color)
+{
+    if (color.alpha == 0)
+    {
+        return;
+    }
+
+    D3DCOLOR c = D3DCOLOR_RGBA(color.red, color.green, color.blue, color.alpha);
+    COLOR_VERTEX* vertex = new COLOR_VERTEX[(rx*2)*(ry*2)];
+    int xcm1 = xc - 1;
+    int ycm1 = yc - 1;
+    int count = 0;
+
+    // draw ellipse with bresenham's ellipse algorithm
+    int x = rx;
+    int y = 0;
+    int tworx2 = 2 * rx * rx;
+    int twory2 = 2 * ry * ry;
+    int xchange = ry * ry * (1 - 2 * rx);
+    int ychange = rx * rx;
+    int error = 0;
+    int xstop = twory2 * rx;
+    int ystop = 0;
+
+    // draw first set of points
+    while (xstop >= ystop)
+    {
+        vertex[count].x     = (float)(xc + x);
+        vertex[count].y     = (float)(yc + y);
+        vertex[count].z     = 0.0f;
+        vertex[count].rhw   = 1.0f;
+        vertex[count].color = c;
+        count++;
+        vertex[count].x     = (float)(xcm1 - x);
+        vertex[count].y     = (float)(yc + y);
+        vertex[count].z     = 0.0f;
+        vertex[count].rhw   = 1.0f;
+        vertex[count].color = c;
+        count++;
+        vertex[count].x     = (float)(xcm1 - x);
+        vertex[count].y     = (float)(ycm1 - y);
+        vertex[count].z     = 0.0f;
+        vertex[count].rhw   = 1.0f;
+        vertex[count].color = c;
+        count++;
+        vertex[count].x     = (float)(xc + x);
+        vertex[count].y     = (float)(ycm1 - y);
+        vertex[count].z     = 0.0f;
+        vertex[count].rhw   = 1.0f;
+        vertex[count].color = c;
+        count++;
+
+        y++;
+        ystop   += tworx2;
+        error   += ychange;
+        ychange += tworx2;
+        if (2 * error + xchange > 0)
+        {
+            x--;
+            xstop -= twory2;
+            error += xchange;
+            xchange += twory2;
+        }
+    }
+
+    x = 0;
+    y = ry;
+    xchange = ry * ry;
+    ychange = rx * rx * (1 - 2 * ry);
+    error = 0;
+    xstop = 0;
+    ystop = tworx2 * ry;
+
+    // draw second set of points
+    while (xstop <= ystop)
+    {
+        vertex[count].x     = (float)(xc + x);
+        vertex[count].y     = (float)(yc + y);
+        vertex[count].z     = 0.0f;
+        vertex[count].rhw   = 1.0f;
+        vertex[count].color = c;
+        count++;
+        vertex[count].x     = (float)(xcm1 - x);
+        vertex[count].y     = (float)(yc + y);
+        vertex[count].z     = 0.0f;
+        vertex[count].rhw   = 1.0f;
+        vertex[count].color = c;
+        count++;
+        vertex[count].x     = (float)(xcm1 - x);
+        vertex[count].y     = (float)(ycm1 - y);
+        vertex[count].z     = 0.0f;
+        vertex[count].rhw   = 1.0f;
+        vertex[count].color = c;
+        count++;
+        vertex[count].x     = (float)(xc + x);
+        vertex[count].y     = (float)(ycm1 - y);
+        vertex[count].z     = 0.0f;
+        vertex[count].rhw   = 1.0f;
+        vertex[count].color = c;
+        count++;
+
+        x++;
+        xstop   += twory2;
+        error   += xchange;
+        xchange += twory2;
+        if (2 * error + ychange > 0)
+        {
+            y--;
+            ystop -= tworx2;
+            error += ychange;
+            ychange += tworx2;
+        }
+    }
+    s_Direct3DDevice->SetVertexShader(COLOR_VERTEX_FORMAT);
+    s_Direct3DDevice->DrawPrimitiveUP(D3DPT_POINTLIST, count, vertex, sizeof(*vertex));
+    delete [] vertex;
+}
+////////////////////////////////////////////////////////////////////////////////
+void EXPORT DrawFilledEllipse(int xc, int yc, int rx, int ry, RGBA color)
+{
+    if (color.alpha == 0)
+    {
+        return;
+    }
+
+    D3DCOLOR c = D3DCOLOR_RGBA(color.red, color.green, color.blue, color.alpha);
+    COLOR_VERTEX* vertex = new COLOR_VERTEX[(rx*2)*(ry*2)];
+
+    int xcm1 = xc - 1;
+    int ycm1 = yc - 1;
+    int count = 0;
+
+    // draw ellipse with bresenham's ellipse algorithm
+    int x = rx;
+    int y = 0;
+    int tworx2 = 2 * rx * rx;
+    int twory2 = 2 * ry * ry;
+    int xchange = ry * ry * (1 - 2 * rx);
+    int ychange = rx * rx;
+    int error = 0;
+    int xstop = twory2 * rx;
+    int ystop = 0;
+
+    // first set of points
+    while (xstop >= ystop)
+    {
+        vertex[count].x     = (float)(xcm1 - x);
+        vertex[count].y     = (float)(ycm1 - y);
+        vertex[count].z     = 0.0f;
+        vertex[count].rhw   = 1.0f;
+        vertex[count].color = c;
+        count++;
+        vertex[count].x     = (float)(xc + x);
+        vertex[count].y     = (float)(ycm1 - y);
+        vertex[count].z     = 0.0f;
+        vertex[count].rhw   = 1.0f;
+        vertex[count].color = c;
+        count++;
+        vertex[count].x     = (float)(xcm1 - x);
+        vertex[count].y     = (float)(yc + y);
+        vertex[count].z     = 0.0f;
+        vertex[count].rhw   = 1.0f;
+        vertex[count].color = c;
+        count++;
+        vertex[count].x     = (float)(xc + x);
+        vertex[count].y     = (float)(yc + y);
+        vertex[count].z     = 0.0f;
+        vertex[count].rhw   = 1.0f;
+        vertex[count].color = c;
+        count++;
+
+        y++;
+        ystop   += tworx2;
+        error   += ychange;
+        ychange += tworx2;
+        if (2 * error + xchange > 0)
+        {
+            x--;
+            xstop -= twory2;
+            error += xchange;
+            xchange += twory2;
+        }
+    }
+
+    x = 0;
+    y = ry;
+    xchange = ry * ry;
+    ychange = rx * rx * (1 - 2 * ry);
+    error = 0;
+    xstop = 0;
+    ystop = tworx2 * ry;
+
+    // second set of points
+    while (xstop <= ystop)
+    {
+        x++;
+        xstop   += twory2;
+        error   += xchange;
+        xchange += twory2;
+        if (2 * error + ychange > 0)
+        {
+            vertex[count].x     = (float)(xcm1 - x);
+            vertex[count].y     = (float)(ycm1 - y);
+            vertex[count].z     = 0.0f;
+            vertex[count].rhw   = 1.0f;
+            vertex[count].color = c;
+            count++;
+            vertex[count].x     = (float)(xc + x);
+            vertex[count].y     = (float)(ycm1 - y);
+            vertex[count].z     = 0.0f;
+            vertex[count].rhw   = 1.0f;
+            vertex[count].color = c;
+            count++;
+            vertex[count].x     = (float)(xcm1 - x);
+            vertex[count].y     = (float)(yc + y);
+            vertex[count].z     = 0.0f;
+            vertex[count].rhw   = 1.0f;
+            vertex[count].color = c;
+            count++;
+            vertex[count].x     = (float)(xc + x);
+            vertex[count].y     = (float)(yc + y);
+            vertex[count].z     = 0.0f;
+            vertex[count].rhw   = 1.0f;
+            vertex[count].color = c;
+            count++;
+
+            y--;
+            ystop -= tworx2;
+            error += ychange;
+            ychange += tworx2;
+        }
+    }
+    s_Direct3DDevice->SetVertexShader(COLOR_VERTEX_FORMAT);
+    s_Direct3DDevice->DrawPrimitiveUP(D3DPT_LINELIST, count, vertex, sizeof(*vertex));
+    delete [] vertex;
+}
+////////////////////////////////////////////////////////////////////////////////
+void EXPORT DrawOutlinedCircle(int x, int y, int r, RGBA color, int antialias)
+{
+    if (color.alpha == 0)
+    {
+        return;
+    }
+
+    D3DCOLOR c = D3DCOLOR_RGBA(color.red, color.green, color.blue, color.alpha);
+    D3DCOLOR tc;
+
+    COLOR_VERTEX* vertex = new COLOR_VERTEX[4*r*r];
+    int count = 0, ix = 1, iy = r, dist, n, rr = r*r, rr_m2 = (r-2)*(r-2), ca = color.alpha;
+    float fr = (float)(r), fca = (float)(ca);
+    const float PI_H = (float)(3.1415927 / 2.0);
+
+    while (ix <= iy)
+    {
+        if (antialias == 1)
+        {
+            n = iy + 1;
+            while (--n >= ix)
+            {
+                dist = ix*ix + n*n;
+                if (dist > rr) dist = rr;
+                if (dist > rr_m2)
+                {
+                    tc = D3DCOLOR_RGBA(color.red,
+                                       color.green,
+                                       color.blue,
+                                       (byte)(fca * sin(sin((1.0 - fabs(sqrt((float)(dist)) - fr + 1.0)) * PI_H) * PI_H)));
+
+                    vertex[count].x     = (float)(x-1+ix);
+                    vertex[count].y     = (float)(y-n);
+                    vertex[count].z     = 0.0f;
+                    vertex[count].rhw   = 1.0f;
+                    vertex[count].color = tc;
+                    count++;
+                    vertex[count].x     = (float)(x-ix);
+                    vertex[count].y     = (float)(y-n);
+                    vertex[count].z     = 0.0f;
+                    vertex[count].rhw   = 1.0f;
+                    vertex[count].color = tc;
+                    count++;
+                    vertex[count].x     = (float)(x-1+ix);
+                    vertex[count].y     = (float)(y-1+n);
+                    vertex[count].z     = 0.0f;
+                    vertex[count].rhw   = 1.0f;
+                    vertex[count].color = tc;
+                    count++;
+                    vertex[count].x     = (float)(x-ix);
+                    vertex[count].y     = (float)(y-1+n);
+                    vertex[count].z     = 0.0f;
+                    vertex[count].rhw   = 1.0f;
+                    vertex[count].color = tc;
+                    count++;
+                    if (ix != n)
+                    {
+                        vertex[count].x     = (float)(x-1+n);
+                        vertex[count].y     = (float)(y-ix);
+                        vertex[count].z     = 0.0f;
+                        vertex[count].rhw   = 1.0f;
+                        vertex[count].color = tc;
+                        count++;
+                        vertex[count].x     = (float)(x-n);
+                        vertex[count].y     = (float)(y-ix);
+                        vertex[count].z     = 0.0f;
+                        vertex[count].rhw   = 1.0f;
+                        vertex[count].color = tc;
+                        count++;
+                        vertex[count].x     = (float)(x-1+n);
+                        vertex[count].y     = (float)(y-1+ix);
+                        vertex[count].z     = 0.0f;
+                        vertex[count].rhw   = 1.0f;
+                        vertex[count].color = tc;
+                        count++;
+                        vertex[count].x     = (float)(x-n);
+                        vertex[count].y     = (float)(y-1+ix);
+                        vertex[count].z     = 0.0f;
+                        vertex[count].rhw   = 1.0f;
+                        vertex[count].color = tc;
+                        count++;
+                    }
+                }
+            }
+        }
+        else
+        {
+            vertex[count].x     = (float)(x-1+ix);
+            vertex[count].y     = (float)(y-iy);
+            vertex[count].z     = 0.0f;
+            vertex[count].rhw   = 1.0f;
+            vertex[count].color = c;
+            count++;
+            vertex[count].x     = (float)(x-ix);
+            vertex[count].y     = (float)(y-iy);
+            vertex[count].z     = 0.0f;
+            vertex[count].rhw   = 1.0f;
+            vertex[count].color = c;
+            count++;
+            vertex[count].x     = (float)(x-1+ix);
+            vertex[count].y     = (float)(y-1+iy);
+            vertex[count].z     = 0.0f;
+            vertex[count].rhw   = 1.0f;
+            vertex[count].color = c;
+            count++;
+            vertex[count].x     = (float)(x-ix);
+            vertex[count].y     = (float)(y-1+iy);
+            vertex[count].z     = 0.0f;
+            vertex[count].rhw   = 1.0f;
+            vertex[count].color = c;
+            count++;
+            if (ix != iy)
+            {
+                vertex[count].x     = (float)(x-1+iy);
+                vertex[count].y     = (float)(y-ix);
+                vertex[count].z     = 0.0f;
+                vertex[count].rhw   = 1.0f;
+                vertex[count].color = c;
+                count++;
+                vertex[count].x     = (float)(x-iy);
+                vertex[count].y     = (float)(y-ix);
+                vertex[count].z     = 0.0f;
+                vertex[count].rhw   = 1.0f;
+                vertex[count].color = c;
+                count++;
+                vertex[count].x     = (float)(x-1+iy);
+                vertex[count].y     = (float)(y-1+ix);
+                vertex[count].z     = 0.0f;
+                vertex[count].rhw   = 1.0f;
+                vertex[count].color = c;
+                count++;
+                vertex[count].x     = (float)(x-iy);
+                vertex[count].y     = (float)(y-1+ix);
+                vertex[count].z     = 0.0f;
+                vertex[count].rhw   = 1.0f;
+                vertex[count].color = c;
+                count++;
+            }
+        }
+        ix++;
+        if (abs(ix*ix + iy*iy - rr) > abs(ix*ix + (iy-1)*(iy-1) - rr)) iy--;
+    }
+    s_Direct3DDevice->SetVertexShader(COLOR_VERTEX_FORMAT);
+    s_Direct3DDevice->DrawPrimitiveUP(D3DPT_POINTLIST, count, vertex, sizeof(*vertex));
+    delete [] vertex;
+}
+////////////////////////////////////////////////////////////////////////////////
+void EXPORT DrawFilledCircle(int x, int y, int r, RGBA color, int antialias)
+{
+    if (color.alpha == 0)
+    {
+        return;
+    }
+
+    D3DCOLOR tc;
+    COLOR_VERTEX* vertex = new COLOR_VERTEX[(r*2)*(r*2)];
+    int count = 0, ix = 1, iy = r, dist, n, rr = r*r, rr_m1 = (r-1)*(r-1), ca = color.alpha;
+    float fr = (float)(r), fca = (float)(ca);
+
+    while (ix <= iy)
+    {
+        n = iy + 1;
+        while (--n >= ix)
+        {
+            if (antialias)
+            {
+                dist = ix*ix + n*n;
+                if (dist > rr) dist = rr;
+                if (dist > rr_m1) {color.alpha = (byte)(fca * (fr - sqrt(float(dist))));}
+                else {color.alpha = ca;};
+            }
+            else {color.alpha = ca;};
+            tc = D3DCOLOR_RGBA(color.red,
+                               color.green,
+                               color.blue,
+                               color.alpha);
+            vertex[count].x     = (float)(x-1+ix);
+            vertex[count].y     = (float)(y-n);
+            vertex[count].z     = 0.0f;
+            vertex[count].rhw   = 1.0f;
+            vertex[count].color = tc;
+            count++;
+            vertex[count].x     = (float)(x-ix);
+            vertex[count].y     = (float)(y-n);
+            vertex[count].z     = 0.0f;
+            vertex[count].rhw   = 1.0f;
+            vertex[count].color = tc;
+            count++;
+            vertex[count].x     = (float)(x-1+ix);
+            vertex[count].y     = (float)(y-1+n);
+            vertex[count].z     = 0.0f;
+            vertex[count].rhw   = 1.0f;
+            vertex[count].color = tc;
+            count++;
+            vertex[count].x     = (float)(x-ix);
+            vertex[count].y     = (float)(y-1+n);
+            vertex[count].z     = 0.0f;
+            vertex[count].rhw   = 1.0f;
+            vertex[count].color = tc;
+            count++;
+            if (ix != n)
+            {
+                vertex[count].x     = (float)(x-1+n);
+                vertex[count].y     = (float)(y-ix);
+                vertex[count].z     = 0.0f;
+                vertex[count].rhw   = 1.0f;
+                vertex[count].color = tc;
+                count++;
+                vertex[count].x     = (float)(x-n);
+                vertex[count].y     = (float)(y-ix);
+                vertex[count].z     = 0.0f;
+                vertex[count].rhw   = 1.0f;
+                vertex[count].color = tc;
+                count++;
+                vertex[count].x     = (float)(x-1+n);
+                vertex[count].y     = (float)(y-1+ix);
+                vertex[count].z     = 0.0f;
+                vertex[count].rhw   = 1.0f;
+                vertex[count].color = tc;
+                count++;
+                vertex[count].x     = (float)(x-n);
+                vertex[count].y     = (float)(y-1+ix);
+                vertex[count].z     = 0.0f;
+                vertex[count].rhw   = 1.0f;
+                vertex[count].color = tc;
+                count++;
+            }
+        }
+        ix++;
+        if (abs(ix*ix + iy*iy - rr) > abs(ix*ix + (iy-1)*(iy-1) - rr)) iy--;
+    }
+    s_Direct3DDevice->SetVertexShader(COLOR_VERTEX_FORMAT);
+    s_Direct3DDevice->DrawPrimitiveUP(D3DPT_POINTLIST, count, vertex, sizeof(*vertex));
+    delete [] vertex;
+}
+////////////////////////////////////////////////////////////////////////////////
+void EXPORT DrawGradientCircle(int x, int y, int r, RGBA colors[2], int antialias)
+{
+    if (colors[0].alpha == 0 && colors[1].alpha == 0)
+    {
+        return;
+    }
+
+    D3DCOLOR tc;
+    COLOR_VERTEX* vertex = new COLOR_VERTEX[(r*2)*(r*2)];
+    int count = 0, ix = 1, iy = r, n;
+    float fdr = (float)(colors[1].red - colors[0].red);
+    float fdg = (float)(colors[1].green - colors[0].green);
+    float fdb = (float)(colors[1].blue - colors[0].blue);
+    float fda = (float)(colors[1].alpha - colors[0].alpha);
+    float dist, factor, fr = (float)(r);
+    const float PI_H = (float)(3.1415927 / 2.0), RR = (float)(r*r);
+
+    while (ix <= iy)
+    {
+        n = iy + 1;
+        while (--n >= ix)
+        {
+            dist = sqrt((float)(ix*ix + n*n));
+            if (dist > r) dist = fr;
+            factor = sin((float(1) - dist / fr) * PI_H);
+            colors[0].red   = (byte)(colors[1].red - fdr * factor);
+            colors[0].green = (byte)(colors[1].green - fdg * factor);
+            colors[0].blue  = (byte)(colors[1].blue - fdb * factor);
+            colors[0].alpha = (byte)(colors[1].alpha - fda * factor);
+
+            if (antialias)
+            {
+                if (dist > r - 1)
+                {
+                    colors[0].alpha = (byte)((float)(colors[0].alpha) * (fr - dist));
+                }
+            }
+            tc = D3DCOLOR_RGBA(colors[0].red,
+                               colors[0].green,
+                               colors[0].blue,
+                               colors[0].alpha);
+
+            vertex[count].x     = (float)(x-1+ix);
+            vertex[count].y     = (float)(y-n);
+            vertex[count].z     = 0.0f;
+            vertex[count].rhw   = 1.0f;
+            vertex[count].color = tc;
+            count++;
+            vertex[count].x     = (float)(x-ix);
+            vertex[count].y     = (float)(y-n);
+            vertex[count].z     = 0.0f;
+            vertex[count].rhw   = 1.0f;
+            vertex[count].color = tc;
+            count++;
+            vertex[count].x     = (float)(x-1+ix);
+            vertex[count].y     = (float)(y-1+n);
+            vertex[count].z     = 0.0f;
+            vertex[count].rhw   = 1.0f;
+            vertex[count].color = tc;
+            count++;
+            vertex[count].x     = (float)(x-ix);
+            vertex[count].y     = (float)(y-1+n);
+            vertex[count].z     = 0.0f;
+            vertex[count].rhw   = 1.0f;
+            vertex[count].color = tc;
+            count++;
+            if (ix != n)
+            {
+                vertex[count].x     = (float)(x-1+n);
+                vertex[count].y     = (float)(y-ix);
+                vertex[count].z     = 0.0f;
+                vertex[count].rhw   = 1.0f;
+                vertex[count].color = tc;
+                count++;
+                vertex[count].x     = (float)(x-n);
+                vertex[count].y     = (float)(y-ix);
+                vertex[count].z     = 0.0f;
+                vertex[count].rhw   = 1.0f;
+                vertex[count].color = tc;
+                count++;
+                vertex[count].x     = (float)(x-1+n);
+                vertex[count].y     = (float)(y-1+ix);
+                vertex[count].z     = 0.0f;
+                vertex[count].rhw   = 1.0f;
+                vertex[count].color = tc;
+                count++;
+                vertex[count].x     = (float)(x-n);
+                vertex[count].y     = (float)(y-1+ix);
+                vertex[count].z     = 0.0f;
+                vertex[count].rhw   = 1.0f;
+                vertex[count].color = tc;
+                count++;
+            }
+        }
+        ix++;
+        if (abs(ix*ix + iy*iy - RR) > abs(ix*ix + (iy-1)*(iy-1) - RR)) iy--;
+    }
+    s_Direct3DDevice->SetVertexShader(COLOR_VERTEX_FORMAT);
+    s_Direct3DDevice->DrawPrimitiveUP(D3DPT_POINTLIST, count, vertex, sizeof(*vertex));
+    delete [] vertex;
 }
 ////////////////////////////////////////////////////////////////////////////////

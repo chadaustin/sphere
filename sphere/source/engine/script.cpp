@@ -48,6 +48,7 @@ const dword SS_RAWFILE_MAGIC     = 0x29bcd805;
 const dword SS_BYTEARRAY_MAGIC   = 0x2295027f;
 const dword SS_MAPENGINE_MAGIC   = 0x42424401;
 const dword SS_TILESET_MAGIC     = 0x43434402;
+const dword SS_POINT2D_MAGIC     = 0x44444444;
 
 struct SS_OBJECT
 {
@@ -139,6 +140,11 @@ END_SS_OBJECT()
 BEGIN_SS_OBJECT(SS_TILESET)
 int __value__;
 END_SS_OBJECT()
+
+BEGIN_SS_OBJECT(SS_POINT2D)
+VECTOR_INT point;
+END_SS_OBJECT()
+
 class NoGCBlock
 {
 public:
@@ -758,6 +764,33 @@ inline void USED(T /*t*/)
 #define end_func()  \
     return (This->m_ShouldExit ? JS_FALSE : JS_TRUE); \
   }
+
+///////////////////////////////////////////////////////////
+inline VECTOR_INT* argPoint2D(JSContext* cx, jsval arg)
+{
+    if (JSVAL_IS_VOID(arg))
+    {
+        JS_ReportError(cx, "Invalid point2d object (empty array element)");
+        return NULL;
+    }
+    if (JS_IsArrayObject(cx, JSVAL_TO_OBJECT(arg)))
+    {
+        JS_ReportError(cx, "Invalid point2d object (array element is array)");
+        return NULL;
+    }
+    SS_POINT2D* point = (SS_POINT2D*)JS_GetPrivate(cx, JSVAL_TO_OBJECT(arg));
+    if (point == NULL)
+    {
+        JS_ReportError(cx, "Invalid point2d object (no privates)");
+        return NULL;
+    }
+    if (point->magic != SS_POINT2D_MAGIC)
+    {
+        JS_ReportError(cx, "Invalid point2d object (wrong magic)");
+        return NULL;
+    }
+    return &point->point;
+}
 
 ///////////////////////////////////////////////////////////
 inline RGBA argColor(JSContext* cx, jsval arg)
@@ -1881,6 +1914,48 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
+    - plots a series of points onto the video buffer with the color
+*/
+begin_func(PointSeries, 2)
+if (This->ShouldRender())
+{
+    arg_array(a);
+    arg_color(c);
+
+    jsval v;
+    jsuint length;
+    jsval* vp = &v;
+    jsuint* lengthp = &length;
+    JS_GetArrayLength(cx, a, lengthp);
+    if (length < 1)
+    {
+        JS_ReportError(cx, "PointSeries - Insufficient points given");
+        return NULL;
+    }
+
+    VECTOR_INT** points = new VECTOR_INT*[length];
+    for (int i = 0; i < length; i++)
+    {
+        if (JS_GetElement(cx, a, i, vp) == JS_FALSE)
+        {
+            JS_ReportError(cx, "PointSeries - Invalid array element");
+            return NULL;
+        }
+        points[i] = argPoint2D(cx, v);
+        if (points[i] == 0)
+        {
+            delete [] points;
+            return NULL;
+        }
+    }
+
+    DrawPointSeries(points, length, c);
+    delete [] points;
+}
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
     - draws a line from (x1, y1) to (x2, y2) with the color
 */
 begin_func(Line, 5)
@@ -1919,6 +1994,101 @@ if (This->ShouldRender())
     c[0] = c1;
     c[1] = c2;
     DrawGradientLine(x, y, c);
+}
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - Draws a series of lines with the color
+    - type = 0: line list
+    - type = 1: line strip
+    - type = 2: line loop
+*/
+begin_func(LineSeries, 2)
+if (This->ShouldRender())
+{
+    arg_array(a);
+    arg_color(c);
+    int type = 0;
+    if (argc >= 3)
+    {
+        type = argInt(cx, argv[2]);
+        if (type < 0)
+        {
+            type = 0;
+        }
+        else if (type > 2)
+        {
+            type = 2;
+        }
+    }
+    jsval v;
+    jsuint length;
+    jsval* vp = &v;
+    jsuint* lengthp = &length;
+    JS_GetArrayLength(cx, a, lengthp);
+    if (length < 2)
+    {
+        JS_ReportError(cx, "LineSeries - Insufficient points given");
+        return NULL;
+    }
+    if (type == 0 && length % 2)
+    {
+        length--;
+    }
+    if (type == 2 && length < 3)
+    {
+        type = 0;
+    }
+
+    VECTOR_INT** points = new VECTOR_INT*[length];
+    for (int i = 0; i < length; i++)
+    {
+        if (JS_GetElement(cx, a, i, vp) == JS_FALSE)
+        {
+            JS_ReportError(cx, "LineSeries - Invalid array element");
+            return NULL;
+        }
+        points[i] = argPoint2D(cx, v);
+        if (points[i] == 0)
+        {
+            delete [] points;
+            return NULL;
+        }
+    }
+
+    DrawLineSeries(points, length, c, type);
+    delete [] points;
+}
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - draws a Bezier curve from A(x1, y1) to C(x3, y3) with B(x2, y2) and D(x4, y4) as control points
+*/
+begin_func(BezierCurve, 8)
+if (This->ShouldRender())
+{
+    arg_color(c);
+    arg_double(step);
+    arg_int(x1);
+    arg_int(y1);
+    arg_int(x2);
+    arg_int(y2);
+    arg_int(x3);
+    arg_int(y3);
+    int x4 = 0;
+    int y4 = 0;
+    int cubic = 0;
+    if (argc >= 10)
+    {
+        x4 = argInt(cx, argv[8]);
+        y4 = argInt(cx, argv[9]);
+        cubic = 1;
+    }
+    int x[4] = { x1, x2, x3, x4 };
+    int y[4] = { y1, y2, y3, y4 };
+    DrawBezierCurve(x, y, step, c, cubic);
 }
 end_func()
 
@@ -1975,6 +2145,89 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
+    - Draws a filled polygon with the color
+    - if invert = 1, points outside of the polygon are drawn instead
+*/
+begin_func(Polygon, 2)
+if (This->ShouldRender())
+{
+    arg_array(a);
+    arg_color(c);
+    int invert = 0;
+    if (argc >= 3)
+    {
+        invert = argInt(cx, argv[2]);
+        if (invert != 0 && invert != 1)
+        {
+            invert = 0;
+        }
+    }
+    jsval v;
+    jsuint length;
+    jsval* vp = &v;
+    jsuint* lengthp = &length;
+    JS_GetArrayLength(cx, a, lengthp);
+    if (length < 3)
+    {
+        JS_ReportError(cx, "Polygon - Insufficient points given");
+        return NULL;
+    }
+
+    VECTOR_INT** points = new VECTOR_INT*[length];
+    for (int i = 0; i < length; i++)
+    {
+        if (JS_GetElement(cx, a, i, vp) == JS_FALSE)
+        {
+            JS_ReportError(cx, "Polygon - Invalid array element");
+            return NULL;
+        }
+        points[i] = argPoint2D(cx, v);
+        if (points[i] == 0)
+        {
+            delete [] points;
+            return NULL;
+        }
+    }
+
+    DrawPolygon(points, length, invert, c);
+    delete [] points;
+}
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - Draws an outlined rectangle at (x, y) of width w and height h and size size, filled with color c.
+*/
+begin_func(OutlinedRectangle, 5)
+if (This->ShouldRender())
+{
+    arg_int(x);
+    arg_int(y);
+    arg_int(w);
+    arg_int(h);
+    arg_color(c);
+    int size = 1;
+    if (argc >= 6)
+    {
+        size = argInt(cx, argv[5]);
+        if (size < 0)
+        {
+            size = 1;
+        }
+    }
+    if (size > h / 2)
+    {
+        DrawRectangle(x, y, w, h, c);
+    }
+    else
+    {
+        DrawOutlinedRectangle(x, y, w, h, size, c);
+    }
+}
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
     - Draws a rectangle at (x, y) of width w and height h, filled with color c.
 */
 begin_func(Rectangle, 5)
@@ -2016,6 +2269,213 @@ if (This->ShouldRender())
     c[2] = c3;
     c[3] = c4;
     DrawGradientRectangle(x, y, w, h, c);
+}
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - Draws an outlined ellipse at (x, y) with radius rx and ry
+*/
+begin_func(OutlinedEllipse, 5)
+if (This->ShouldRender())
+{
+    arg_int(x);
+    arg_int(y);
+    arg_int(rx);
+    arg_int(ry);
+    arg_color(c);
+    if (rx > 0 && ry > 0)
+    {
+        DrawOutlinedEllipse(x, y, rx, ry, c);
+    }
+}
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - Draws a filled ellipse at (x, y) with radius rx and ry
+*/
+begin_func(FilledEllipse, 5)
+if (This->ShouldRender())
+{
+    arg_int(x);
+    arg_int(y);
+    arg_int(rx);
+    arg_int(ry);
+    arg_color(c);
+    if (rx > 0 && ry > 0)
+    {
+        DrawFilledEllipse(x, y, rx, ry, c);
+    }
+}
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - Draws a filled rectangle at (r_x, r_y) with width r_w and height r_h and a circle cut out
+    of it at (circ_x, circ_y) with a radius of circ_r.
+*/
+begin_func(OutlinedComplex, 8)
+if (This->ShouldRender())
+{
+    arg_int(r_x);
+    arg_int(r_y);
+    arg_int(r_w);
+    arg_int(r_h);
+    arg_int(circ_x);
+    arg_int(circ_y);
+    arg_int(circ_r);
+    arg_color(color);
+
+    int antialias = 0;
+    if (argc >= 9)
+    {
+        antialias = argInt(cx, argv[8]);
+    }
+    DrawOutlinedComplex(r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, color, antialias);
+}
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - Draws a filled rectangle at (r_x, r_y) with width r_w and height r_h and a circle
+    at (circ_x, circ_y) with a radius of circ_r (fractioned, if defined)
+*/
+begin_func(FilledComplex, 12)
+if (This->ShouldRender())
+{
+    arg_int(r_x);
+    arg_int(r_y);
+    arg_int(r_w);
+    arg_int(r_h);
+    arg_int(circ_x);
+    arg_int(circ_y);
+    arg_int(circ_r);
+    arg_double(angle);
+    arg_double(frac_size);
+    arg_int(fill_empty);
+    arg_color(color1);
+    arg_color(color2);
+
+    float fangle = (float)(angle);
+    float ffrac_size = (float)(frac_size);
+
+    RGBA c[2];
+    c[0] = color1;
+    c[1] = color2;
+
+    DrawFilledComplex(r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, fangle, ffrac_size, fill_empty, c);
+}
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - Draws a filled rectangle at (r_x, r_y) with width r_w and height r_h and a gradient circle
+    at (circ_x, circ_y) with a radius of circ_r (fractioned, if defined)
+*/
+begin_func(GradientComplex, 13)
+if (This->ShouldRender())
+{
+    arg_int(r_x);
+    arg_int(r_y);
+    arg_int(r_w);
+    arg_int(r_h);
+    arg_int(circ_x);
+    arg_int(circ_y);
+    arg_int(circ_r);
+    arg_double(angle);
+    arg_double(frac_size);
+    arg_int(fill_empty);
+    arg_color(color1);
+    arg_color(color2);
+    arg_color(color3);
+
+    float fangle = (float)(angle);
+    float ffrac_size = (float)(frac_size);
+
+    RGBA c[2];
+    c[0] = color1;
+    c[1] = color2;
+    c[2] = color3;
+
+    DrawGradientComplex(r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, fangle, ffrac_size, fill_empty, c);
+}
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - Draws an outlined circle at (x, y) with radius r, filled with color c.
+*/
+begin_func(OutlinedCircle, 4)
+if (This->ShouldRender())
+{
+    arg_int(x);
+    arg_int(y);
+    arg_int(r);
+    arg_color(c);
+
+    int antialias = 0;
+    if (argc >= 5)
+    {
+        antialias = argInt(cx, argv[4]);
+    }
+    if (r > 0)
+    {
+        DrawOutlinedCircle(x, y, r, c, antialias);
+    }
+}
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - Draws a filled circle at (x, y) with radius r, filled with color c.
+*/
+begin_func(FilledCircle, 4)
+if (This->ShouldRender())
+{
+    arg_int(x);
+    arg_int(y);
+    arg_int(r);
+    arg_color(c);
+
+    int antialias = 0;
+    if (argc >= 5)
+    {
+        antialias = argInt(cx, argv[4]);
+    }
+    if (r > 0)
+    {
+        DrawFilledCircle(x, y, r, c, antialias);
+    }
+}
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - Draws a gradient circle at (x, y) with radius r, filled with internal color c1 and external color c2.
+*/
+begin_func(GradientCircle, 5)
+if (This->ShouldRender())
+{
+    arg_int(x);
+    arg_int(y);
+    arg_int(r);
+    arg_color(c1);
+    arg_color(c2);
+
+    int antialias = 0;
+    if (argc >= 6)
+    {
+        antialias = argInt(cx, argv[5]);
+    }
+
+    RGBA c[2];
+    c[0] = c1;
+    c[1] = c2;
+    if (r > 0)
+    {
+        DrawGradientCircle(x, y, r, c, antialias);
+    }
 }
 end_func()
 
@@ -2263,6 +2723,24 @@ end_func()
 begin_func(CreateStringFromByteArray, 1)
 arg_byte_array(array);
 return_str_n((char*)array->array, array->size);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+// section: points //
+/**
+    - returns a point2d object with the properties x and y.
+*/
+
+begin_func(CreatePoint2D, 2)
+arg_int(x);
+arg_int(y);
+
+VECTOR_INT point;
+
+point.x = x;
+point.y = y;
+
+return_object(CreatePoint2DObject(cx, point));
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -6063,6 +6541,83 @@ end_method();
 begin_method(SS_LOG, ssLogEndBlock, 0)
 object->log->EndBlock();
 end_method()
+
+////////////////////////////////////////
+////////////////////////////////////////
+// POINT OBJECTS ////////////////////
+////////////////////////////////////////
+
+JSObject*
+CScript::CreatePoint2DObject(JSContext* cx, VECTOR_INT point)
+{
+    // define point2d class
+    static JSClass clasp =
+            {
+                "point2d", JSCLASS_HAS_PRIVATE,
+                JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+                JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizePoint2D,
+            };
+
+    // create the point2d object
+    JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
+    if (object == NULL)
+    {
+        return NULL;
+    }
+
+    // assign point2d properties
+    static JSPropertySpec ps[] =
+        {
+            { "x",      0, JSPROP_PERMANENT, ssPoint2DGetProperty, ssPoint2DSetProperty },
+            { "y",      1, JSPROP_PERMANENT, ssPoint2DGetProperty, ssPoint2DSetProperty },
+            { 0, 0, 0, 0, 0 },
+        };
+    JS_DefineProperties(cx, object, ps);
+
+    // attach the point2d to this object
+    SS_POINT2D* point2d_obj = new SS_POINT2D;
+    if (!point2d_obj)
+        return NULL;
+    point2d_obj->point = point;
+    JS_SetPrivate(cx, object, point2d_obj);
+
+    return object;
+}
+
+////////////////////////////////////////
+begin_finalizer(SS_POINT2D, ssFinalizePoint2D)
+end_finalizer()
+
+////////////////////////////////////////
+begin_property(SS_POINT2D, ssPoint2DGetProperty)
+int prop_id = argInt(cx, id);
+switch (prop_id)
+{
+case 0:
+    *vp = INT_TO_JSVAL(object->point.x);
+    break;
+case 1:
+    *vp = INT_TO_JSVAL(object->point.y);
+    break;
+default:
+    *vp = JSVAL_NULL;
+    break;
+}
+end_property()
+
+////////////////////////////////////////
+begin_property(SS_POINT2D, ssPoint2DSetProperty)
+int prop_id = argInt(cx, id);
+switch (prop_id)
+{
+case 0:
+    object->point.x   = argInt(cx, *vp);
+    break;
+case 1:
+    object->point.y = argInt(cx, *vp);
+    break;
+}
+end_property()
 
 ////////////////////////////////////////
 ////////////////////////////////////////

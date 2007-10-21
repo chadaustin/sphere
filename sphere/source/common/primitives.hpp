@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <math.h>
+#include "ParticleStructs.hpp"
 
 namespace primitives
 {
@@ -21,6 +22,28 @@ namespace primitives
                 y >= clipper.top  && y <= clipper.bottom)
         {
             renderer(surface[y * pitch + x], color);
+        }
+    }
+
+    template<typename destT, typename srcT, typename clipT, typename renderT>
+    void PointSeries(
+        destT* surface,
+        int pitch,
+        VECTOR_INT** points,
+        int length,
+        srcT color,
+        clipT clipper,
+        renderT renderer)
+    {
+        for (int i = 0; i < length; i++)
+        {
+            if (points[i]->x >= clipper.left &&
+                points[i]->x <= clipper.right &&
+                points[i]->y >= clipper.top  &&
+                points[i]->y <= clipper.bottom)
+            {
+                renderer(surface[points[i]->y * pitch + points[i]->x], color);
+            }
         }
     }
 
@@ -249,6 +272,217 @@ namespace primitives
         }
 
     }
+
+    template<typename destT, typename sourceT, typename clipT, typename renderT>
+    void LineSeries(
+        destT* surface,
+        int pitch,
+        VECTOR_INT** points,
+        int length,
+        sourceT color,
+        int type,
+        clipT clipper,
+        renderT renderer)
+    {
+        // find the line series' bounds
+        int i, bound_x1 = points[0]->x, bound_x2 = points[0]->x, bound_y1 = points[0]->y, bound_y2 = points[0]->y;
+        for (i = 1; i < length; i++)
+        {
+            if (points[i]->x > bound_x2) bound_x2 = points[i]->x;
+            if (points[i]->x < bound_x1) bound_x1 = points[i]->x;
+            if (points[i]->y > bound_y2) bound_y2 = points[i]->y;
+            if (points[i]->y < bound_y1) bound_y1 = points[i]->y;
+        }
+        // if line series is completely out, don't bother with it
+        if (bound_x2 <= clipper.left ||
+            bound_y2 <= clipper.top  ||
+            bound_x1 > clipper.right ||
+            bound_y1 > clipper.bottom)
+        {
+            return;
+        }
+        // draw the line series with bresenham's line algorithm
+        int old_x, old_y, dx, dy, inc_x, inc_y, dist_big, dist_small, eps, n, ident;
+        switch (type)
+        {
+            case 2:
+                old_x = points[length-1]->x;
+                old_y = points[length-1]->y;
+                i = 0;
+                break;
+            default:
+                old_x = points[0]->x;
+                old_y = points[0]->y;
+                i = 1;
+                break;
+        }
+        while (i < length)
+        {
+            dx = points[i]->x - old_x;
+            dy = points[i]->y - old_y;
+            if (dx < 0)
+            {
+                inc_x = -1;
+                dx = -dx;
+            }
+            else
+            {
+                inc_x = 1;
+            }
+            if (dy < 0)
+            {
+                inc_y = -1;
+                dy = -dy;
+            }
+            else
+            {
+                inc_y = 1;
+            }
+            if (dx >= dy)
+            {
+                dist_big = dx;
+                dist_small = dy;
+                ident = 0;
+            }
+            else
+            {
+                dist_big = dy;
+                dist_small = dx;
+                ident = 1;
+            }
+            eps = dist_big / 2;
+            for (n = 0; n < dist_big; n++)
+            {
+                if (old_x >= clipper.left &&
+                    old_x <= clipper.right &&
+                    old_y >= clipper.top  &&
+                    old_y <= clipper.bottom)
+                {
+                    renderer(surface[old_y * pitch + old_x], color);
+                }
+                if (ident == 0)
+                {
+                    old_x += inc_x;
+                }
+                else
+                {
+                    old_y += inc_y;
+                }
+                eps -= dist_small;
+                if (eps < 0)
+                {
+                    if (ident == 0)
+                    {
+                        old_y += inc_y;
+                    }
+                    else
+                    {
+                        old_x += inc_x;
+                    }
+                    eps += dist_big;
+                }
+            }
+            switch (type)
+            {
+                case 0:
+                    i += 2;
+                    if (i < length)
+                    {
+                        old_x = points[i-1]->x;
+                        old_y = points[i-1]->y;
+                    }
+                    break;
+                default:
+                    old_x = points[i]->x;
+                    old_y = points[i]->y;
+                    i++;
+                    break;
+            }
+        }
+    }
+
+    template<typename destT, typename sourceT, typename clipT, typename renderT>
+    void BezierCurve(
+        destT* surface,
+        int pitch,
+        int x[4],
+        int y[4],
+        double step,
+        sourceT color,
+        int cubic,
+        clipT clipper,
+        renderT renderer)
+    {
+        // find Bezier curve's bounds
+        int i, bound = (cubic ? 4 : 3), bound_x1 = x[0], bound_x2 = x[0], bound_y1 = y[0], bound_y2 = y[0];
+        for (i = 1; i < bound; i++)
+        {
+            if (x[i] > bound_x2) bound_x2 = x[i];
+            if (x[i] < bound_x1) bound_x1 = x[i];
+            if (y[i] > bound_y2) bound_y2 = y[i];
+            if (y[i] < bound_y1) bound_y1 = y[i];
+        }
+        // if Bezier curve is completely out, don't bother with it
+        if (bound_x2 <= clipper.left ||
+            bound_y2 <= clipper.top  ||
+            bound_x1 > clipper.right ||
+            bound_y1 > clipper.bottom)
+        {
+            return;
+        }
+        // make sure step is in a valid range
+        if (step <= 0)
+        {
+            step = 0.001;
+        }
+        else if (step > 1.0)
+        {
+            step = 1.0;
+        }
+        // draw the Bezier curve
+        int new_x, new_y, old_x, old_y;
+        double b;
+        for (double a = 1.0; a >= 0; a -= step)
+        {
+            b = 1.0 - a;
+            if (cubic)
+            {               // calculate the cubic Bezier curve
+                new_x = (int)(x[0]*a*a*a + x[1]*3*a*a*b + x[3]*3*a*b*b + x[2]*b*b*b);
+                new_y = (int)(y[0]*a*a*a + y[1]*3*a*a*b + y[3]*3*a*b*b + y[2]*b*b*b);
+            }
+            else
+            {               // calculate the quadratic Bezier curve
+                new_x = (int)(x[0]*a*a + x[1]*2*a*b + x[2]*b*b);
+                new_y = (int)(y[0]*a*a + y[1]*2*a*b + y[2]*b*b);
+            }
+            if (a != 1.0)
+            {
+                if (new_x != old_x || new_y != old_y)
+                {
+                    if (new_x >= clipper.left &&
+                        new_x <= clipper.right &&
+                        new_y >= clipper.top  &&
+                        new_y <= clipper.bottom)
+                    {
+                        renderer(surface[new_y * pitch + new_x], color);
+                    }
+                }
+            }
+            else
+            {
+                if (new_x >= clipper.left &&
+                    new_x <= clipper.right &&
+                    new_y >= clipper.top  &&
+                    new_y <= clipper.bottom)
+                {
+                    renderer(surface[new_y * pitch + new_x], color);
+                }
+            }
+            old_x = new_x;
+            old_y = new_y;
+        }
+    }
+
     template<typename T>
     T minimum(T a, T b)
     {
@@ -617,6 +851,134 @@ namespace primitives
     }
 
     template<typename destT, typename sourceT, typename clipT, typename renderT>
+    void Polygon(
+        destT* surface,
+        int pitch,
+        VECTOR_INT** points,
+        int length,
+        int invert,
+        sourceT color,
+        clipT clipper,
+        renderT renderer)
+    {
+        // find polygon's bounds
+        int i, bound_x1 = points[0]->x, bound_x2 = points[0]->x, bound_y1 = points[0]->y, bound_y2 = points[0]->y;
+        for (i = 1; i < length; i++)
+        {
+            if (points[i]->x > bound_x2) bound_x2 = points[i]->x;
+            if (points[i]->x < bound_x1) bound_x1 = points[i]->x;
+            if (points[i]->y > bound_y2) bound_y2 = points[i]->y;
+            if (points[i]->y < bound_y1) bound_y1 = points[i]->y;
+        }
+        // if polygon is completely out, don't bother with it
+        if (bound_x2 <= clipper.left ||
+            bound_y2 <= clipper.top  ||
+            bound_x1 > clipper.right ||
+            bound_y1 > clipper.bottom)
+        {
+            return;
+        }
+        // draw the polygon with the crossing number algorithm
+        int point_in, c_x, c_y, j;
+        for (c_y = bound_y1; c_y <= bound_y2; c_y++)
+        {
+            for (c_x = bound_x1; c_x <= bound_x2; c_x++)
+            {
+                point_in = 0;
+                j = length-1;
+                for (i = 0; i < length; i++)
+                {
+                    if (points[i]->y <= c_y && points[j]->y > c_y ||
+                        points[j]->y <= c_y && points[i]->y > c_y)
+                    {
+                        if (points[i]->x >= c_x && points[j]->x >= c_x)
+                        {
+                            point_in = !point_in;
+                        }
+                        else if ((float)(points[i]->x) +
+                                ((float)(c_y - points[i]->y) /
+                                 (float)(points[j]->y - points[i]->y)) *
+                                 (float)(points[j]->x - points[i]->x) > c_x)
+                        {
+                            point_in = !point_in;
+                        }
+                    }
+                    j = i;
+                }
+                if (invert)
+                {
+                    point_in = !point_in;
+                }
+                if (point_in)
+                {
+                    if (c_x >= clipper.left &&
+                        c_x <= clipper.right &&
+                        c_y >= clipper.top  &&
+                        c_y <= clipper.bottom)
+                    {
+                        renderer(surface[c_y * pitch + c_x], color);
+                    }
+                }
+            }
+        }
+    }
+
+    template<typename destT, typename sourceT, typename clipT, typename renderT>
+    void OutlinedRectangle(
+        destT* surface,
+        int pitch,
+        int x,
+        int y,
+        int w,
+        int h,
+        int size,
+        sourceT color,
+        clipT clipper,
+        renderT renderer)
+    {
+        // if rectangle is completely out, don't bother with it
+        if (x + w <= clipper.left ||
+            y + h <= clipper.top ||
+            x > clipper.right ||
+            y > clipper.bottom)
+        {
+            return;
+        }
+        int tx, ty, iy, ix;
+        for (iy = y; iy < y + size; iy++)
+        {
+            for (ix = x; ix < x + w; ix++)
+            {
+                if (ix >= clipper.left &&
+                    ix <= clipper.right &&
+                    iy >= clipper.top &&
+                    iy <= clipper.bottom) {renderer(surface[iy * pitch + ix], color);};
+                ty = y + h - 1 - (iy - y);
+                if (ix >= clipper.left &&
+                    ix <= clipper.right &&
+                    ty >= clipper.top &&
+                    ty <= clipper.bottom) {renderer(surface[ty * pitch + ix], color);};
+            }
+        }
+        ty = y + h - size;
+        for (iy = y + size; iy < ty; iy++)
+        {
+            for (ix = x; ix < x + size; ix++)
+            {
+                if (ix >= clipper.left &&
+                    ix <= clipper.right &&
+                    iy >= clipper.top &&
+                    iy <= clipper.bottom) {renderer(surface[iy * pitch + ix], color);};
+                tx = x + w - 1 - (ix - x);
+                if (tx >= clipper.left &&
+                    tx <= clipper.right &&
+                    iy >= clipper.top &&
+                    iy <= clipper.bottom) {renderer(surface[iy * pitch + tx], color);};
+            }
+        }
+    }
+
+    template<typename destT, typename sourceT, typename clipT, typename renderT>
     void Rectangle(
         destT* surface,
         int pitch,
@@ -739,6 +1101,876 @@ namespace primitives
             {
                 renderer(surface[iy * pitch + ix], interpolator(left, right, ix - o_x, o_w));
             }
+        }
+    }
+
+    template<typename destT, typename sourceT, typename clipT, typename renderT>
+    void OutlinedComplex(
+        destT* surface,
+        int pitch,
+        int r_x,
+        int r_y,
+        int r_w,
+        int r_h,
+        int circ_x,
+        int circ_y,
+        int circ_r,
+        sourceT color,
+        int antialias,
+        clipT clipper,
+        renderT renderer)
+    {
+        // if combi is completely out, don't bother with it
+        if (r_x + r_w <= clipper.left ||
+            r_y + r_h <= clipper.top ||
+            r_x > clipper.right ||
+            r_y > clipper.bottom)
+        {
+            return;
+        }
+        int x, y, dist, ca = color.alpha, crr = circ_r * circ_r;
+        float fdist, fcr = (float)(circ_r), fca = (float)(ca);
+
+        for (y = r_y; y < r_y + r_h; y++)
+        {
+            if (y >= clipper.top &&
+                y <= clipper.bottom)
+            {
+                for (x = r_x; x < r_x + r_w; x++)
+                {
+                    if (x >= clipper.left &&
+                        x <= clipper.right)
+                    {
+                        dist = (circ_x-x)*(circ_x-x) + (circ_y-y)*(circ_y-y);
+                        if (dist >= crr)
+                        {
+                            color.alpha = ca;
+                            renderer(surface[y * pitch + x], color);
+                        }
+                        else if (antialias)
+                        {
+                            fdist = fcr - sqrt((float)(dist));
+                            if (fdist < 1)
+                            {
+                                color.alpha = (byte)(fca * (1.0 - fdist));
+                                renderer(surface[y * pitch + x], color);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    template<typename destT, typename sourceT, typename clipT, typename renderT>
+    void FilledComplex(
+        destT* surface,
+        int pitch,
+        int r_x,
+        int r_y,
+        int r_w,
+        int r_h,
+        int circ_x,
+        int circ_y,
+        int circ_r,
+        float angle,
+        float frac_size,
+        int fill_empty,
+        sourceT colors[2],
+        clipT clipper,
+        renderT renderer)
+    {
+        // if combi is completely out, don't bother with it
+        if (r_x + r_w <= clipper.left ||
+            r_y + r_h <= clipper.top ||
+            r_x > clipper.right ||
+            r_y > clipper.bottom)
+        {
+            return;
+        }
+        int x, y, dist, crr = circ_r * circ_r;
+        float fang_p;
+        const float PI = (float)(3.1415927);
+
+        // make sure frac_size is in a valid range
+        if (frac_size < 0 || frac_size >= PI)
+        {
+            frac_size = 0;
+        }
+
+        for (y = r_y; y < r_y + r_h; y++)
+        {
+            if (y >= clipper.top &&
+                y <= clipper.bottom)
+            {
+                for (x = r_x; x < r_x + r_w; x++)
+                {
+                    if (x >= clipper.left &&
+                        x <= clipper.right)
+                    {
+                        // check if point is outside of the circle
+                        dist = (x-circ_x)*(x-circ_x) + (y-circ_y)*(y-circ_y);
+                        if (dist >= crr)
+                        {
+                            renderer(surface[y * pitch + x], colors[0]);
+                        }
+                        else
+                        {
+                            if (frac_size != 0)
+                            {
+                                // check if point is located in fraction
+                                fang_p = atan2(float(y-circ_y), float(x-circ_x));
+                                if (fang_p < 0)
+                                {
+                                    fang_p = PI + (PI + fang_p);
+                                }
+                                fang_p = fabs(angle - fang_p);
+                                if (fang_p >= PI)
+                                {
+                                    fang_p = 2*PI - fang_p;
+                                }
+                                if (fang_p <= frac_size)
+                                {
+                                    // it is, so draw the point with circle's color
+                                    renderer(surface[y * pitch + x], colors[1]);
+                                }
+                                else if (fill_empty)
+                                {
+                                    // it is not, so draw the point with rectangle's color
+                                    renderer(surface[y * pitch + x], colors[0]);
+                                }
+                            }
+                            else
+                            {
+                                renderer(surface[y * pitch + x], colors[1]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    template<typename destT, typename sourceT, typename clipT, typename renderT>
+    void GradientComplex(
+        destT* surface,
+        int pitch,
+        int r_x,
+        int r_y,
+        int r_w,
+        int r_h,
+        int circ_x,
+        int circ_y,
+        int circ_r,
+        float angle,
+        float frac_size,
+        int fill_empty,
+        sourceT colors[3],
+        clipT clipper,
+        renderT renderer)
+    {
+        // if combi is completely out, don't bother with it
+        if (r_x + r_w <= clipper.left ||
+            r_y + r_h <= clipper.top ||
+            r_x > clipper.right ||
+            r_y > clipper.bottom)
+        {
+            return;
+        }
+        int x, y, dist, crr = circ_r * circ_r;
+        float fdr = (float)(colors[2].red - colors[1].red);
+        float fdg = (float)(colors[2].green - colors[1].green);
+        float fdb = (float)(colors[2].blue - colors[1].blue);
+        float fda = (float)(colors[2].alpha - colors[1].alpha);
+        float fang_p, factor, fdist, fr = (float)(circ_r);
+        const float PI = (float)(3.1415927), PI_H = PI / 2;
+
+        // make sure frac_size is in a valid range
+        if (frac_size < 0 || frac_size >= PI)
+        {
+            frac_size = 0;
+        }
+
+        for (y = r_y; y < r_y + r_h; y++)
+        {
+            if (y >= clipper.top &&
+                y <= clipper.bottom)
+            {
+                for (x = r_x; x < r_x + r_w; x++)
+                {
+                    if (x >= clipper.left &&
+                        x <= clipper.right)
+                    {
+                        // check if point is outside of the circle
+                        dist = (x-circ_x)*(x-circ_x) + (y-circ_y)*(y-circ_y);
+                        if (dist >= crr)
+                        {
+                            renderer(surface[y * pitch + x], colors[0]);
+                        }
+                        else
+                        {
+                            if (frac_size != 0)
+                            {
+                                // check if point is located in fraction
+                                fang_p = atan2(float(y-circ_y), float(x-circ_x));
+                                if (fang_p < 0)
+                                {
+                                    fang_p = PI + (PI + fang_p);
+                                }
+                                fang_p = abs(angle - fang_p);
+                                if (fang_p >= PI)
+                                {
+                                    fang_p = 2*PI - fang_p;
+                                }
+                                if (fang_p <= frac_size)
+                                {
+                                    // it is, so draw the point with circle's color
+                                    fdist = sqrt((float)(dist));
+                                    factor = sin((float(1) - fdist / fr) * PI_H);
+
+                                    colors[1].red   = (byte)(colors[2].red - fdr   * factor);
+                                    colors[1].green = (byte)(colors[2].green - fdg * factor);
+                                    colors[1].blue  = (byte)(colors[2].blue - fdb  * factor);
+                                    colors[1].alpha = (byte)(colors[2].alpha - fda * factor);
+
+                                    renderer(surface[y * pitch + x], colors[1]);
+                                }
+                                else if (fill_empty)
+                                {
+                                    // it is not, so draw the point with rectangle's color
+                                    renderer(surface[y * pitch + x], colors[0]);
+                                }
+                            }
+                            else
+                            {
+                                fdist = sqrt((float)(dist));
+                                factor = sin((float(1) - fdist / fr) * PI_H);
+
+                                colors[1].red   = (byte)(colors[2].red - fdr   * factor);
+                                colors[1].green = (byte)(colors[2].green - fdg * factor);
+                                colors[1].blue  = (byte)(colors[2].blue - fdb  * factor);
+                                colors[1].alpha = (byte)(colors[2].alpha - fda * factor);
+
+                                renderer(surface[y * pitch + x], colors[1]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    template<typename destT, typename sourceT, typename clipT, typename renderT>
+    void OutlinedEllipse(
+        destT* surface,
+        int pitch,
+        int xc,
+        int yc,
+        int rx,
+        int ry,
+        sourceT color,
+        clipT clipper,
+        renderT renderer)
+    {
+        // if ellipse is completely out, don't bother with it
+        if (xc + rx <= clipper.left ||
+            yc + ry <= clipper.top  ||
+            xc - rx > clipper.right ||
+            yc - ry > clipper.bottom)
+        {
+            return;
+        }
+        int xcm1 = xc - 1;
+        int ycm1 = yc - 1;
+
+        // draw ellipse with bresenham's ellipse algorithm
+        int x = rx;
+        int y = 0;
+        int tworx2 = 2 * rx * rx;
+        int twory2 = 2 * ry * ry;
+        int xchange = ry * ry * (1 - 2 * rx);
+        int ychange = rx * rx;
+        int error = 0;
+        int xstop = twory2 * rx;
+        int ystop = 0;
+
+        // draw first set of points
+        while (xstop >= ystop)
+        {
+            if (xc + x   >= clipper.left &&
+                xc + x   <= clipper.right &&
+                yc + y   >= clipper.top &&
+                yc + y   <= clipper.bottom)
+            {
+                renderer(surface[(yc + y) * pitch + (xc + x)], color);
+            }
+            if (xcm1 - x >= clipper.left &&
+                xcm1 - x <= clipper.right &&
+                yc + y   >= clipper.top &&
+                yc + y   <= clipper.bottom)
+            {
+                renderer(surface[(yc + y) * pitch + (xcm1 - x)], color);
+            }
+            if (xcm1 - x >= clipper.left &&
+                xcm1 - x <= clipper.right &&
+                ycm1 - y >= clipper.top &&
+                ycm1 - y <= clipper.bottom)
+            {
+                renderer(surface[(ycm1 - y) * pitch + (xcm1 - x)], color);
+            }
+            if (xc + x   >= clipper.left &&
+                xc + x   <= clipper.right &&
+                ycm1 - y >= clipper.top &&
+                ycm1 - y <= clipper.bottom)
+            {
+                renderer(surface[(ycm1 - y) * pitch + (xc + x)], color);
+            }
+            y++;
+            ystop   += tworx2;
+            error   += ychange;
+            ychange += tworx2;
+            if (2 * error + xchange > 0)
+            {
+                x--;
+                xstop -= twory2;
+                error += xchange;
+                xchange += twory2;
+            }
+        }
+
+        x = 0;
+        y = ry;
+        xchange = ry * ry;
+        ychange = rx * rx * (1 - 2 * ry);
+        error = 0;
+        xstop = 0;
+        ystop = tworx2 * ry;
+
+        // draw second set of points
+        while (xstop <= ystop)
+        {
+            if (xc + x   >= clipper.left &&
+                xc + x   <= clipper.right &&
+                yc + y   >= clipper.top &&
+                yc + y   <= clipper.bottom)
+            {
+                renderer(surface[(yc + y) * pitch + (xc + x)], color);
+            }
+            if (xcm1 - x >= clipper.left &&
+                xcm1 - x <= clipper.right &&
+                yc + y   >= clipper.top &&
+                yc + y   <= clipper.bottom)
+            {
+                renderer(surface[(yc + y) * pitch + (xcm1 - x)], color);
+            }
+            if (xcm1 - x >= clipper.left &&
+                xcm1 - x <= clipper.right &&
+                ycm1 - y >= clipper.top &&
+                ycm1 - y <= clipper.bottom)
+            {
+                renderer(surface[(ycm1 - y) * pitch + (xcm1 - x)], color);
+            }
+            if (xc + x   >= clipper.left &&
+                xc + x   <= clipper.right &&
+                ycm1 - y >= clipper.top &&
+                ycm1 - y <= clipper.bottom)
+            {
+                renderer(surface[(ycm1 - y) * pitch + (xc + x)], color);
+            }
+            x++;
+            xstop   += twory2;
+            error   += xchange;
+            xchange += twory2;
+            if (2 * error + ychange > 0)
+            {
+                y--;
+                ystop -= tworx2;
+                error += ychange;
+                ychange += tworx2;
+            }
+        }
+    }
+
+    template<typename destT, typename sourceT, typename clipT, typename renderT>
+    void FilledEllipse(
+        destT* surface,
+        int pitch,
+        int xc,
+        int yc,
+        int rx,
+        int ry,
+        sourceT color,
+        clipT clipper,
+        renderT renderer)
+    {
+        // if ellipse is completely out, don't bother with it
+        if (xc + rx <= clipper.left ||
+            yc + ry <= clipper.top  ||
+            xc - rx > clipper.right ||
+            yc - ry > clipper.bottom)
+        {
+            return;
+        }
+        int xcm1 = xc - 1;
+        int ycm1 = yc - 1;
+
+        // draw ellipse with bresenham's ellipse algorithm
+        int x = rx;
+        int y = 0;
+        int tworx2 = 2 * rx * rx;
+        int twory2 = 2 * ry * ry;
+        int xchange = ry * ry * (1 - 2 * rx);
+        int ychange = rx * rx;
+        int error = 0;
+        int xstop = twory2 * rx;
+        int ystop = 0;
+
+        // first set of points
+        while (xstop >= ystop)
+        {
+            for (int i = 0; i <= x; ++i)
+            {
+                if (xc + i   >= clipper.left &&
+                    xc + i   <= clipper.right &&
+                    yc + y   >= clipper.top &&
+                    yc + y   <= clipper.bottom)
+                {
+                    renderer(surface[(yc + y) * pitch + (xc + i)], color);
+                }
+                if (xcm1 - i >= clipper.left &&
+                    xcm1 - i <= clipper.right &&
+                    yc + y   >= clipper.top &&
+                    yc + y   <= clipper.bottom)
+                {
+                    renderer(surface[(yc + y) * pitch + (xcm1 - i)], color);
+                }
+                if (xcm1 - i >= clipper.left &&
+                    xcm1 - i <= clipper.right &&
+                    ycm1 - y >= clipper.top &&
+                    ycm1 - y <= clipper.bottom)
+                {
+                    renderer(surface[(ycm1 - y) * pitch + (xcm1 - i)], color);
+                }
+                if (xc + i   >= clipper.left &&
+                    xc + i   <= clipper.right &&
+                    ycm1 - y >= clipper.top &&
+                    ycm1 - y <= clipper.bottom)
+                {
+                    renderer(surface[(ycm1 - y) * pitch + (xc + i)], color);
+                }
+            }
+            y++;
+            ystop   += tworx2;
+            error   += ychange;
+            ychange += tworx2;
+            if (2 * error + xchange > 0)
+            {
+                x--;
+                xstop -= twory2;
+                error += xchange;
+                xchange += twory2;
+            }
+        }
+
+        x = 0;
+        y = ry;
+        xchange = ry * ry;
+        ychange = rx * rx * (1 - 2 * ry);
+        error = 0;
+        xstop = 0;
+        ystop = tworx2 * ry;
+
+        // second set of points
+        while (xstop <= ystop)
+        {
+            x++;
+            xstop   += twory2;
+            error   += xchange;
+            xchange += twory2;
+            if (2 * error + ychange > 0)
+            {
+                for (int i = 0; i <= x; ++i)
+                {
+                    if (xc + i   >= clipper.left &&
+                        xc + i   <= clipper.right &&
+                        yc + y   >= clipper.top &&
+                        yc + y   <= clipper.bottom)
+                    {
+                        renderer(surface[(yc + y) * pitch + (xc + i)], color);
+                    }
+                    if (xcm1 - i >= clipper.left &&
+                        xcm1 - i <= clipper.right &&
+                        yc + y   >= clipper.top &&
+                        yc + y   <= clipper.bottom)
+                    {
+                        renderer(surface[(yc + y) * pitch + (xcm1 - i)], color);
+                    }
+                    if (xcm1 - i >= clipper.left &&
+                        xcm1 - i <= clipper.right &&
+                        ycm1 - y >= clipper.top &&
+                        ycm1 - y <= clipper.bottom)
+                    {
+                        renderer(surface[(ycm1 - y) * pitch + (xcm1 - i)], color);
+                    }
+                    if (xc + i   >= clipper.left &&
+                        xc + i   <= clipper.right &&
+                        ycm1 - y >= clipper.top &&
+                        ycm1 - y <= clipper.bottom)
+                    {
+                        renderer(surface[(ycm1 - y) * pitch + (xc + i)], color);
+                    }
+                }
+                y--;
+                ystop -= tworx2;
+                error += ychange;
+                ychange += tworx2;
+            }
+        }
+    }
+
+    template<typename destT, typename sourceT, typename clipT, typename renderT>
+    void OutlinedCircle(
+        destT* surface,
+        int pitch,
+        int x,
+        int y,
+        int r,
+        sourceT color,
+        int antialias,
+        clipT clipper,
+        renderT renderer)
+    {
+        // if circle is completely out, don't bother with it
+        if (x + r <= clipper.left ||
+                y + r <= clipper.top ||
+                x - r > clipper.right ||
+                y - r > clipper.bottom)
+        {
+            return;
+        }
+        int ix = 1, iy = r, dist, n, rr = r*r, rr_m2 = (r-2)*(r-2), ca = color.alpha, tx, ty;
+        float fr = (float)(r), fca = (float)(ca);
+        const float PI_H = (float)(3.1415927 / 2.0);
+        while (ix <= iy)
+        {
+            if (antialias == 1)
+            {
+                n = iy + 1;
+                while (--n >= ix)
+                {
+                    dist = ix*ix + n*n;
+                    if (dist > rr) dist = rr;
+                    if (dist > rr_m2)
+                    {
+                        color.alpha = (byte)(fca * sin(sin((1.0 - fabs(sqrt((float)(dist)) - fr + 1.0)) * PI_H) * PI_H));
+
+                        tx = x - 1 + ix;
+                        ty = y - n;
+                        if (tx >= clipper.left &&
+                            tx <= clipper.right &&
+                            ty >= clipper.top &&
+                            ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                        tx = x - ix;
+                        ty = y - n;
+                        if (tx >= clipper.left &&
+                            tx <= clipper.right &&
+                            ty >= clipper.top &&
+                            ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                        tx = x - 1 + ix;
+                        ty = y - 1 + n;
+                        if (tx >= clipper.left &&
+                            tx <= clipper.right &&
+                            ty >= clipper.top &&
+                            ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                        tx = x - ix;
+                        ty = y - 1 + n;
+                        if (tx >= clipper.left &&
+                            tx <= clipper.right &&
+                            ty >= clipper.top &&
+                            ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                        if (ix != n)
+                        {
+                            tx = x - 1 + n;
+                            ty = y - ix;
+                            if (tx >= clipper.left &&
+                                tx <= clipper.right &&
+                                ty >= clipper.top &&
+                                ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                            tx = x - n;
+                            ty = y - ix;
+                            if (tx >= clipper.left &&
+                                tx <= clipper.right &&
+                                ty >= clipper.top &&
+                                ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                            tx = x - 1 + n;
+                            ty = y - 1 + ix;
+                            if (tx >= clipper.left &&
+                                tx <= clipper.right &&
+                                ty >= clipper.top &&
+                                ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                            tx = x - n;
+                            ty = y - 1 + ix;
+                            if (tx >= clipper.left &&
+                                tx <= clipper.right &&
+                                ty >= clipper.top &&
+                                ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                        }
+                    }
+                }
+            }
+            else
+            {
+                tx = x - 1 + ix;
+                ty = y - iy;
+                if (tx >= clipper.left &&
+                    tx <= clipper.right &&
+                    ty >= clipper.top &&
+                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                tx = x - ix;
+                ty = y - iy;
+                if (tx >= clipper.left &&
+                    tx <= clipper.right &&
+                    ty >= clipper.top &&
+                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                tx = x - 1 + ix;
+                ty = y - 1 + iy;
+                if (tx >= clipper.left &&
+                    tx <= clipper.right &&
+                    ty >= clipper.top &&
+                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                tx = x - ix;
+                ty = y - 1 + iy;
+                if (tx >= clipper.left &&
+                    tx <= clipper.right &&
+                    ty >= clipper.top &&
+                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                if (ix != iy)
+                {
+                    tx = x - 1 + iy;
+                    ty = y - ix;
+                    if (tx >= clipper.left &&
+                        tx <= clipper.right &&
+                        ty >= clipper.top &&
+                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                    tx = x - iy;
+                    ty = y - ix;
+                    if (tx >= clipper.left &&
+                        tx <= clipper.right &&
+                        ty >= clipper.top &&
+                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                    tx = x - 1 + iy;
+                    ty = y - 1 + ix;
+                    if (tx >= clipper.left &&
+                        tx <= clipper.right &&
+                        ty >= clipper.top &&
+                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                    tx = x - iy;
+                    ty = y - 1 + ix;
+                    if (tx >= clipper.left &&
+                        tx <= clipper.right &&
+                        ty >= clipper.top &&
+                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                }
+            }
+            ix++;
+            if (abs(ix*ix + iy*iy - rr) > abs(ix*ix + (iy-1)*(iy-1) - rr)) iy--;
+        }
+    }
+
+    template<typename destT, typename sourceT, typename clipT, typename renderT>
+    void FilledCircle(
+        destT* surface,
+        int pitch,
+        int x,
+        int y,
+        int r,
+        sourceT color,
+        int antialias,
+        clipT clipper,
+        renderT renderer)
+    {
+        // if circle is completely out, don't bother with it
+        if (x + r <= clipper.left ||
+                y + r <= clipper.top ||
+                x - r > clipper.right ||
+                y - r > clipper.bottom)
+        {
+            return;
+        }
+        int ix = 1, iy = r, dist, n, rr = r*r, rr_m1 = (r-1)*(r-1), ca = color.alpha, tx, ty;
+        float fr = (float)(r), fca = (float)(ca);
+
+        while (ix <= iy)
+        {
+            n = iy + 1;
+            while (--n >= ix)
+            {
+                if (antialias)
+                {
+                    dist = ix*ix + n*n;
+                    if (dist > rr) dist = rr;
+                    if (dist > rr_m1) {color.alpha = (byte)(fca * (fr - sqrt(float(dist))));}
+                    else {color.alpha = ca;};
+                }
+                else {color.alpha = ca;};
+                tx = x - 1 + ix;
+                ty = y - n;
+                if (tx >= clipper.left &&
+                    tx <= clipper.right &&
+                    ty >= clipper.top &&
+                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                tx = x - ix;
+                ty = y - n;
+                if (tx >= clipper.left &&
+                    tx <= clipper.right &&
+                    ty >= clipper.top &&
+                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                tx = x - 1 + ix;
+                ty = y - 1 + n;
+                if (tx >= clipper.left &&
+                    tx <= clipper.right &&
+                    ty >= clipper.top &&
+                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                tx = x - ix;
+                ty = y - 1 + n;
+                if (tx >= clipper.left &&
+                    tx <= clipper.right &&
+                    ty >= clipper.top &&
+                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                if (ix != n)
+                {
+                    tx = x - 1 + n;
+                    ty = y - ix;
+                    if (tx >= clipper.left &&
+                        tx <= clipper.right &&
+                        ty >= clipper.top &&
+                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                    tx = x - n;
+                    ty = y - ix;
+                    if (tx >= clipper.left &&
+                        tx <= clipper.right &&
+                        ty >= clipper.top &&
+                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                    tx = x - 1 + n;
+                    ty = y - 1 + ix;
+                    if (tx >= clipper.left &&
+                        tx <= clipper.right &&
+                        ty >= clipper.top &&
+                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                    tx = x - n;
+                    ty = y - 1 + ix;
+                    if (tx >= clipper.left &&
+                        tx <= clipper.right &&
+                        ty >= clipper.top &&
+                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                }
+            }
+            ix++;
+            if (abs(ix*ix + iy*iy - rr) > abs(ix*ix + (iy-1)*(iy-1) - rr)) iy--;
+        }
+    }
+
+    template<typename destT, typename sourceT, typename clipT, typename renderT>
+    void GradientCircle(
+        destT* surface,
+        int pitch,
+        int x,
+        int y,
+        int r,
+        sourceT colors[2],
+        int antialias,
+        clipT clipper,
+        renderT renderer)
+    {
+        // if circle is completely out, don't bother with it
+        if (x + r <= clipper.left ||
+                y + r <= clipper.top ||
+                x - r > clipper.right ||
+                y - r > clipper.bottom)
+        {
+            return;
+        }
+        int ix = 1, iy = r, n, tx, ty;
+        float fdr = (float)(colors[1].red - colors[0].red);
+        float fdg = (float)(colors[1].green - colors[0].green);
+        float fdb = (float)(colors[1].blue - colors[0].blue);
+        float fda = (float)(colors[1].alpha - colors[0].alpha);
+        float dist, factor, fr = (float)(r);
+        const float PI_H = (float)(3.1415927 / 2.0), RR = (float)(r*r);
+        while (ix <= iy)
+        {
+            n = iy + 1;
+            while (--n >= ix)
+            {
+                dist = sqrt((float)(ix*ix + n*n));
+                if (dist > r) dist = fr;
+                factor = sin((float(1) - dist / fr) * PI_H);
+                colors[0].red   = (byte)(colors[1].red - fdr * factor);
+                colors[0].green = (byte)(colors[1].green - fdg * factor);
+                colors[0].blue  = (byte)(colors[1].blue - fdb * factor);
+                colors[0].alpha = (byte)(colors[1].alpha - fda * factor);
+
+                if (antialias)
+                {
+                    if (dist > r - 1)
+                    {
+                        colors[0].alpha = (byte)((float)(colors[0].alpha) * (fr - dist));
+                    }
+                }
+                tx = x - 1 + ix;
+                ty = y - n;
+                if (tx >= clipper.left &&
+                    tx <= clipper.right &&
+                    ty >= clipper.top &&
+                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], colors[0]);};
+                tx = x - ix;
+                ty = y - n;
+                if (tx >= clipper.left &&
+                    tx <= clipper.right &&
+                    ty >= clipper.top &&
+                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], colors[0]);};
+                tx = x - 1 + ix;
+                ty = y - 1 + n;
+                if (tx >= clipper.left &&
+                    tx <= clipper.right &&
+                    ty >= clipper.top &&
+                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], colors[0]);};
+                tx = x - ix;
+                ty = y - 1 + n;
+                if (tx >= clipper.left &&
+                    tx <= clipper.right &&
+                    ty >= clipper.top &&
+                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], colors[0]);};
+                if (ix != n)
+                {
+                    tx = x - 1 + n;
+                    ty = y - ix;
+                    if (tx >= clipper.left &&
+                        tx <= clipper.right &&
+                        ty >= clipper.top &&
+                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], colors[0]);};
+                    tx = x - n;
+                    ty = y - ix;
+                    if (tx >= clipper.left &&
+                        tx <= clipper.right &&
+                        ty >= clipper.top &&
+                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], colors[0]);};
+                    tx = x - 1 + n;
+                    ty = y - 1 + ix;
+                    if (tx >= clipper.left &&
+                        tx <= clipper.right &&
+                        ty >= clipper.top &&
+                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], colors[0]);};
+                    tx = x - n;
+                    ty = y - 1 + ix;
+                    if (tx >= clipper.left &&
+                        tx <= clipper.right &&
+                        ty >= clipper.top &&
+                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], colors[0]);};
+                }
+            }
+            ix++;
+            if (abs(ix*ix + iy*iy - RR) > abs(ix*ix + (iy-1)*(iy-1) - RR)) iy--;
         }
     }
 

@@ -1758,6 +1758,19 @@ EXPORT(void) DrawPoint(int x, int y, RGBA color)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawPointSeries(VECTOR_INT** points, int length, RGBA color)
+{
+    if (BitsPerPixel == 32)
+    {
+        primitives::PointSeries((BGRA*)ScreenBuffer, ScreenWidth, points, length, color, ClippingRectangle, blendBGRA);
+    }
+    else
+    {
+        primitives::PointSeries((BGR*)ScreenBuffer, ScreenWidth, points, length, color, ClippingRectangle, blendBGR);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawLine(int x[2], int y[2], RGBA color)
 {
     if (BitsPerPixel == 32)
@@ -1780,6 +1793,57 @@ EXPORT(void) DrawGradientLine(int x[2], int y[2], RGBA colors[2])
     else
     {
         primitives::Line((BGR*)ScreenBuffer, ScreenWidth, x[0], y[0], x[1], y[1], gradient_color(colors[0], colors[1]), ClippingRectangle, blendBGR);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawLineSeries(VECTOR_INT** points, int length, RGBA color, int type)
+{
+    if (color.alpha == 0)
+    {          // no mask
+
+        return;
+    }
+    else if (color.alpha == 255)
+    { // full mask
+
+        if (BitsPerPixel == 32)
+        {
+            BGRA bgra = { color.blue, color.green, color.red };
+            primitives::LineSeries((BGRA*)ScreenBuffer, ScreenWidth, points, length, bgra, type, ClippingRectangle, copyBGRA);
+        }
+        else
+        {
+            BGR bgr = { color.blue, color.green, color.red };
+            primitives::LineSeries((BGR*)ScreenBuffer, ScreenWidth, points, length, bgr, type, ClippingRectangle, copyBGR);
+        }
+
+    }
+    else
+    {
+
+        if (BitsPerPixel == 32)
+        {
+            primitives::LineSeries((BGRA*)ScreenBuffer, ScreenWidth, points, length, color, type, ClippingRectangle, blendBGRA);
+        }
+        else
+        {
+            primitives::LineSeries((BGR*)ScreenBuffer, ScreenWidth, points, length, color, type, ClippingRectangle, blendBGR);
+        }
+
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawBezierCurve(int x[4], int y[4], double step, RGBA color, int cubic)
+{
+    if (BitsPerPixel == 32)
+    {
+        primitives::BezierCurve((BGRA*)ScreenBuffer, ScreenWidth, x, y, step, color, cubic, ClippingRectangle, blendBGRA);
+    }
+    else
+    {
+        primitives::BezierCurve((BGR*)ScreenBuffer, ScreenWidth, x, y, step, color, cubic, ClippingRectangle, blendBGR);
     }
 }
 
@@ -1822,6 +1886,82 @@ EXPORT(void) DrawGradientTriangle(int x[3], int y[3], RGBA colors[3])
     else
     {
         primitives::GradientTriangle((BGR*)ScreenBuffer, ScreenWidth, x, y, colors, ClippingRectangle, blendBGR, interpolateRGBA);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawPolygon(VECTOR_INT** points, int length, int invert, RGBA color)
+{
+    if (color.alpha == 0)
+    {          // no mask
+
+        return;
+    }
+    else if (color.alpha == 255)
+    { // full mask
+
+        if (BitsPerPixel == 32)
+        {
+            BGRA bgra = { color.blue, color.green, color.red };
+            primitives::Polygon((BGRA*)ScreenBuffer, ScreenWidth, points, length, invert, bgra, ClippingRectangle, copyBGRA);
+        }
+        else
+        {
+            BGR bgr = { color.blue, color.green, color.red };
+            primitives::Polygon((BGR*)ScreenBuffer, ScreenWidth, points, length, invert, bgr, ClippingRectangle, copyBGR);
+        }
+
+    }
+    else
+    {
+
+        if (BitsPerPixel == 32)
+        {
+            primitives::Polygon((BGRA*)ScreenBuffer, ScreenWidth, points, length, invert, color, ClippingRectangle, blendBGRA);
+        }
+        else
+        {
+            primitives::Polygon((BGR*)ScreenBuffer, ScreenWidth, points, length, invert, color, ClippingRectangle, blendBGR);
+        }
+
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawOutlinedRectangle(int x, int y, int w, int h, int size, RGBA color)
+{
+    if (color.alpha == 0)
+    {          // no mask
+
+        return;
+    }
+    else if (color.alpha == 255)
+    { // full mask
+
+        if (BitsPerPixel == 32)
+        {
+            BGRA bgra = { color.blue, color.green, color.red };
+            primitives::OutlinedRectangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, w, h, size, bgra, ClippingRectangle, copyBGRA);
+        }
+        else
+        {
+            BGR bgr = { color.blue, color.green, color.red };
+            primitives::OutlinedRectangle((BGR*)ScreenBuffer, ScreenWidth, x, y, w, h, size, bgr, ClippingRectangle, copyBGR);
+        }
+
+    }
+    else
+    {
+
+        if (BitsPerPixel == 32)
+        {
+            primitives::OutlinedRectangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, w, h, size, color, ClippingRectangle, blendBGRA);
+        }
+        else
+        {
+            primitives::OutlinedRectangle((BGR*)ScreenBuffer, ScreenWidth, x, y, w, h, size, color, ClippingRectangle, blendBGR);
+        }
+
     }
 }
 
@@ -1873,6 +2013,174 @@ EXPORT(void) DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
     else
     {
         primitives::GradientRectangle((BGR*)ScreenBuffer, ScreenWidth, x, y, w, h, colors, ClippingRectangle, blendBGR, interpolateRGBA);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawOutlinedComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, RGBA color, int antialias)
+{
+    if (color.alpha == 0)
+    {          // no mask
+
+        return;
+    }
+    else
+    {
+        if (BitsPerPixel == 32)
+        {
+            primitives::OutlinedComplex((BGRA*)ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, color, antialias, ClippingRectangle, blendBGRA);
+        }
+        else
+        {
+            primitives::OutlinedComplex((BGR*)ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, color, antialias, ClippingRectangle, blendBGR);
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawFilledComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, float angle, float frac_size, int fill_empty, RGBA colors[2])
+{
+    if (colors[0].alpha == 0 && colors[1].alpha == 0)
+    {          // no mask
+
+        return;
+    }
+    else
+    {
+        if (BitsPerPixel == 32)
+        {
+            primitives::FilledComplex((BGRA*)ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blendBGRA);
+        }
+        else
+        {
+            primitives::FilledComplex((BGR*)ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r,  angle, frac_size, fill_empty, colors, ClippingRectangle, blendBGR);
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawGradientComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, float angle, float frac_size, int fill_empty, RGBA colors[3])
+{
+    if (colors[0].alpha == 0 && colors[1].alpha == 0 && colors[2].alpha == 0)
+    {          // no mask
+
+        return;
+    }
+    else
+    {
+        if (BitsPerPixel == 32)
+        {
+            primitives::GradientComplex((BGRA*)ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blendBGRA);
+        }
+        else
+        {
+            primitives::GradientComplex((BGR*)ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r,  angle, frac_size, fill_empty, colors, ClippingRectangle, blendBGR);
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawOutlinedEllipse(int x, int y, int rx, int ry, RGBA color)
+{
+    if (color.alpha == 0)
+    {          // no mask
+
+        return;
+    }
+    else
+    {
+        if (BitsPerPixel == 32)
+        {
+            primitives::OutlinedEllipse((BGRA*)ScreenBuffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blendBGRA);
+        }
+        else
+        {
+            primitives::OutlinedEllipse((BGR*)ScreenBuffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blendBGR);
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawFilledEllipse(int x, int y, int rx, int ry, RGBA color)
+{
+    if (color.alpha == 0)
+    {          // no mask
+
+        return;
+    }
+    else
+    {
+        if (BitsPerPixel == 32)
+        {
+            primitives::FilledEllipse((BGRA*)ScreenBuffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blendBGRA);
+        }
+        else
+        {
+            primitives::FilledEllipse((BGR*)ScreenBuffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blendBGR);
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawOutlinedCircle(int x, int y, int r, RGBA color, int antialias)
+{
+    if (color.alpha == 0)
+    {          // no mask
+
+        return;
+    }
+    else
+    {
+        if (BitsPerPixel == 32)
+        {
+            primitives::OutlinedCircle((BGRA*)ScreenBuffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blendBGRA);
+        }
+        else
+        {
+            primitives::OutlinedCircle((BGR*)ScreenBuffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blendBGR);
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawFilledCircle(int x, int y, int r, RGBA color, int antialias)
+{
+    if (color.alpha == 0)
+    {          // no mask
+
+        return;
+    }
+    else
+    {
+        if (BitsPerPixel == 32)
+        {
+            primitives::FilledCircle((BGRA*)ScreenBuffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blendBGRA);
+        }
+        else
+        {
+            primitives::FilledCircle((BGR*)ScreenBuffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blendBGR);
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) DrawGradientCircle(int x, int y, int r, RGBA colors[2], int antialias)
+{
+    if (colors[0].alpha == 0 && colors[1].alpha == 0)
+    {          // no mask
+
+        return;
+    }
+    else
+    {
+        if (BitsPerPixel == 32)
+        {
+            primitives::GradientCircle((BGRA*)ScreenBuffer, ScreenWidth, x, y, r, colors, antialias, ClippingRectangle, blendBGRA);
+        }
+        else
+        {
+            primitives::GradientCircle((BGR*)ScreenBuffer, ScreenWidth, x, y, r, colors, antialias, ClippingRectangle, blendBGR);
+        }
     }
 }
 
