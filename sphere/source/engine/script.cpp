@@ -527,6 +527,11 @@ CScript::InitializeSphereConstants()
                       { "REPLACE", CImage32::REPLACE },
                       { "BLEND",   CImage32::BLEND   },
 
+                      // primitive constants
+                      { "LINE_MULTIPLE", 0 },
+                      { "LINE_STRIP", 1 },
+                      { "LINE_LOOP", 2 },
+
                       // keyboard constants
 #define KEY_CONSTANT(name) { #name, name },
                       KEY_CONSTANT(KEY_ESCAPE)
@@ -1929,8 +1934,8 @@ if (This->ShouldRender())
     JS_GetArrayLength(cx, a, lengthp);
     if (length < 1)
     {
-        JS_ReportError(cx, "PointSeries - Insufficient points given");
-        return NULL;
+        JS_ReportError(cx, "PointSeries() failed: Not enough points in array");
+        return JS_FALSE;
     }
 
     VECTOR_INT** points = new VECTOR_INT*[length];
@@ -1938,14 +1943,14 @@ if (This->ShouldRender())
     {
         if (JS_GetElement(cx, a, i, vp) == JS_FALSE)
         {
-            JS_ReportError(cx, "PointSeries - Invalid array element");
-            return NULL;
+            JS_ReportError(cx, "PointSeries() failed: Invalid point at array index %d", i);
+            return JS_FALSE;
         }
         points[i] = argPoint2D(cx, v);
         if (points[i] == 0)
         {
             delete [] points;
-            return NULL;
+            return JS_FALSE;
         }
     }
 
@@ -2000,9 +2005,9 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 /**
     - Draws a series of lines with the color
-    - type = 0: line list
-    - type = 1: line strip
-    - type = 2: line loop
+    - type = 0 = LINE_MULTIPLE: line list
+    - type = 1 = LINE_STRIP: line strip
+    - type = 2 = LINE_LOOP: line loop
 */
 begin_func(LineSeries, 2)
 if (This->ShouldRender())
@@ -2029,8 +2034,8 @@ if (This->ShouldRender())
     JS_GetArrayLength(cx, a, lengthp);
     if (length < 2)
     {
-        JS_ReportError(cx, "LineSeries - Insufficient points given");
-        return NULL;
+        JS_ReportError(cx, "LineSeries() failed: Not enough points in array");
+        return JS_FALSE;
     }
     if (type == 0 && length % 2)
     {
@@ -2046,14 +2051,14 @@ if (This->ShouldRender())
     {
         if (JS_GetElement(cx, a, i, vp) == JS_FALSE)
         {
-            JS_ReportError(cx, "LineSeries - Invalid array element");
-            return NULL;
+            JS_ReportError(cx, "LineSeries() failed: Invalid point at array index %d", i);
+            return JS_FALSE;
         }
         points[i] = argPoint2D(cx, v);
         if (points[i] == 0)
         {
             delete [] points;
-            return NULL;
+            return JS_FALSE;
         }
     }
 
@@ -2169,8 +2174,8 @@ if (This->ShouldRender())
     JS_GetArrayLength(cx, a, lengthp);
     if (length < 3)
     {
-        JS_ReportError(cx, "Polygon - Insufficient points given");
-        return NULL;
+        JS_ReportError(cx, "Polygon() failed: Not enough points in array");
+        return JS_FALSE;
     }
 
     VECTOR_INT** points = new VECTOR_INT*[length];
@@ -2178,14 +2183,14 @@ if (This->ShouldRender())
     {
         if (JS_GetElement(cx, a, i, vp) == JS_FALSE)
         {
-            JS_ReportError(cx, "Polygon - Invalid array element");
-            return NULL;
+            JS_ReportError(cx, "Polygon() failed: Invalid point at array element %d", i);
+            return JS_FALSE;
         }
         points[i] = argPoint2D(cx, v);
         if (points[i] == 0)
         {
             delete [] points;
-            return NULL;
+            return JS_FALSE;
         }
     }
 

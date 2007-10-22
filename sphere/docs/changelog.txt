@@ -1,5 +1,12 @@
 YYYY.MM.DD
 
+2007.10.22
+  - Applied Kyuu's primitives patch, adding: CreatePoint2D,
+    PointSeries(), LineSeries(), BezierCurve(), Polygon(),
+    OutlinedRectangle(), OutlinedEllipse(), FilledEllipse(),
+    OutlinedCircle(), FilledCircle(), GradientCircle(),
+    OutlinedComplex(), FilledComplex(), GradientComplex().
+
 2007.01.19
   - Linux engine will now create a sensible default engine.ini if
     one is not found. In particular, player keys are preconfigured.

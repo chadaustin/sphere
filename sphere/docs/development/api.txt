@@ -165,7 +165,9 @@ log_object.endBlock()
 
     *** graphic primitives ***
     NOTE: Make sure to use FlipScreen() when you're done drawing
-
+    
+    CreatePoint2D(x, y)
+      - Creates a new Point2D object for PointSeries, LineSeries, and Polygon.
     
     Point(x, y, color)
       - plots a point onto the video buffer at (x, y) with the color
@@ -183,16 +185,17 @@ log_object.endBlock()
 
     LineSeries(array, color [, type])
       - Draws a series of lines colored with color onto the video buffer
-        with array filled with point2d objects.
-        type: 0 = line segments, 1 = one long line, 2 = line loop
+        with array filled with Point2D objects.
+        type is one of:
+          LINE_MULTIPLE - Every two points draws a line.
+          LINE_STRIP - One long line is drawn.
+          LINE_LOOP - Like LINE_STRIP but a line connects the end and start.
         
-    BezierCurve(color, step, Ax, Ay, Bx, By, Cx, Cy [, Dx] [, Dy])
-      - Draws a Bezier curve colored with color onto the video buffer
-        with step being a floating point number in the range 0 < step <= 1.0
-        and the points (Ax, Ay: coordinates of the endpoint A),
-        (Bx, By: coordinates of A's control point B)
-        (Cx, Cy: coordinates of the endpoint C)
-        (Dx, Dy: optional, coordinates of C's control point D - if omitted, B is also C's control point)
+    BezierCurve(color, step, Ax, Ay, Bx, By, Cx, Cy [, Dx, Dy])
+      - Draws a series of points along a Bezier curve from A to C, controlled
+        by B (A's control point) and D (optional, C's control point), with
+        the color. step (0, 1] controls how many points are plotted
+        (smaller step == more points).
 
     Triangle(x1, y1, x2, y2, x3, y3, c)
       - Draws a filled triangle with the points (x1, y1), (x2, y2), (x3, y3), 
@@ -204,13 +207,13 @@ log_object.endBlock()
         of (x3, y3)) having a color to generate the gradient of the triangle
 
     Polygon(array, color [, invert])
-      - Draws a filled polygon colored with color onto the video buffer
-        with array filled with point2d objects
-        and invert determining if the points outside of the polygon should be drawn instead
+      - Draws a color-filled polygon using the array of Point2D objects.
+        If invert is true, all points in the bounding box of the polygon, but
+        not in the polygon will be colored.
         
     OutlinedRectangle(x, y, width, height, color [, size])
-      - Draws an outlined rectangle at (x, y) of w width and h height colored with color
-        and with size determining the thickness onto the video buffer
+      - Draws the outline of a rectangle at (x, y) with width * height
+        dimensions with the color. size determines the line thickness.
 
     Rectangle(x, y, w, h, c)
       - Draws a rectangle at (x, y) of width w and height h, filled with color c.
@@ -231,35 +234,38 @@ log_object.endBlock()
         and ry the vertical radius onto the video buffer with the color c
 
     OutlinedCircle(x, y, radius, color [, antialias])
-      - Draws an outlined circle at (x, y) colored with color onto the video buffer
-        if antialias is true, the circle will be antialiased
+      - Draws an outlined circle at (x, y) colored with color onto the
+        video buffer. If antialias is true, the circle edge will be
+        antialiased.
 
     FilledCircle(x, y, radius, color [, antialias])
-      - Draws a filled circle at (x, y) colored with color onto the video buffer
-        if antialias is true, the circle will be antialiased
+      - Draws a filled circle at (x, y) colored with color onto the
+        video buffer. If antialias is true, the circle edge will be
+        antialiased.
 
     GradientCircle(x, y, radius, color1, color2 [, antialias])
       - Draws a gradient circle at (x, y) onto the video buffer
-        colored with a fading color from color1 to color2
-        if antialias is true, the circle will be antialiased
+        colored with a gradient from color1 (center) to color2 (edge).
+        If antialias is true, the circle edge will be antialiased.
 
     OutlinedComplex(rx, ry, rw, rh, cx, cy, cr, color [, antialias])
-      - Draws a filled rectangle at (rx, ry) with rw width and rh height colored with color 
-        with a circle with the radius cr cut out at (cx, cy) onto the video buffer
+      - Draws a filled rectangle at (rx, ry) with rw width and rh height
+        colored with color, with a circle with the radius cr cut out
+        at (cx, cy) onto the video buffer.
 
     FilledComplex(rx, ry, rw, rh, cx, cy, cr, ca, cf, fill_empty, color1, color2)
-      - Draws a filled rectangle at (rx, ry) with rw width and rh height colored with color1 
-        with a circle with the radius cr and the color color2 drawn onto it
-        @ca: fraction's direction angle in radians
-        @cf: half of the fraction's angle in radians, if <=0 or >= PI, a full circle is drawn
-        @fill_empty: if true (1), the empty part of the circle will be filled with color1
+      - Draws a filled rectangle at (rx, ry) with rw width and rh height
+        colored with 'color1', with a circle with the radius cr and the
+        color 'color2' drawn onto it.
+        Part of the circle can be filled in by specifying the
+        angular offset 'ca' and angular size (doubled, full circle == PI) 'cf'.
+        If fill_empty is true, any part of the rectangle not filled by the arc
+        will be filled with 'color1' instead of being left transparent.
 
     GradientComplex(rx, ry, rw, rh, cx, cy, cr, ca, cf, fill_empty, color1, color2, color3)
-      - Draws a filled rectangle at (rx, ry) with rw width and rh height colored with color1 
-        with a circle with the radius cr and the color fading from color2 to color3 drawn onto it
-        @ca: fraction's direction angle in radians
-        @cf: half of the fraction's angle in radians, if <=0 or >= PI, a full circle is drawn
-        @fill_empty: if true (1), the empty part of the circle will be filled with color1
+      - Similar to FilledComplex, but fills the circle/arc with a gradient
+        from color2 (center) to color3 (edge). All other arguments
+        are identical.
 
 
   *** input ***
