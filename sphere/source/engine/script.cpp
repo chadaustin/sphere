@@ -5961,6 +5961,48 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
+    - directory = directory in which to enumerate directories,
+      current game's directory if not specified
+
+    - returns an array of strings, which contains the directory names that resides
+      in the 'directory' directory of the game.
+*/
+begin_func(GetDirectoryList, 0)
+
+const char* directory = "./";
+if (argc > 0)
+{
+    directory = argStr(cx, argv[0]);
+}
+
+if (IsValidPath(directory) == false)
+{
+    JS_ReportError(cx, "Invalid directory: '%s'", directory);
+    return JS_FALSE;
+}
+
+// get the list of directories
+std::vector<std::string> directories;
+This->m_Engine->GetDirectoryList(directory, directories);
+
+// convert it to an array of jsvals
+jsval* js_vs = new jsval[directories.size()];
+if (!js_vs)
+{
+    return JS_FALSE;
+}
+for (unsigned int i = 0; i < directories.size(); i++)
+{
+    js_vs[i] = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, directories[i].c_str()));
+}
+
+return_object(JS_NewArrayObject(cx, directories.size(), js_vs));
+delete[] js_vs;
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
     - directory = directory in which to enumerate files, "save" if not specified
 
     - returns an array of strings, which contains the filenames that resides

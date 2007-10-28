@@ -69,6 +69,7 @@ struct IEngine
     virtual void DestroySurface(CImage32* surface) = 0;
 
     virtual IAnimation* LoadAnimation(const char* filename) = 0;
+    virtual void GetDirectoryList(const char* directory, std::vector<std::string>& directories) = 0;
     virtual void GetFileList(const char* directory, std::vector<std::string>& vs) = 0;
     virtual CConfigFile* OpenFile(const char* filename) = 0;
     virtual void FlushFile(CConfigFile* file) = 0;

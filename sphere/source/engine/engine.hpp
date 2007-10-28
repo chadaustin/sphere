@@ -85,6 +85,7 @@ private:
     virtual void DestroySurface(CImage32* surface);
 
     virtual IAnimation* LoadAnimation(const char* filename);
+    virtual void GetDirectoryList(const char* directory, std::vector<std::string>& directories);
     virtual void GetFileList(const char* directory, std::vector<std::string>& vs);
     virtual CConfigFile* OpenFile(const char* filename);
     virtual void FlushFile(CConfigFile* file);

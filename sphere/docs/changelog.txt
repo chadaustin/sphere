@@ -1,5 +1,10 @@
 YYYY.MM.DD
 
+2007.10.28
+  - Applied Kyuu's GetDirectoryList() patch, adding said function
+    to the Sphere API. Works like GetFileList(), but lists
+    directories also.
+
 2007.10.22
   - Applied Kyuu's primitives patch, adding: CreatePoint2D,
     PointSeries(), LineSeries(), BezierCurve(), Polygon(),

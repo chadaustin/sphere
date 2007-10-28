@@ -1012,6 +1012,32 @@ CGameEngine::LoadAnimation(const char* filename)
 
 ////////////////////////////////////////////////////////////////////////////////
 void
+CGameEngine::GetDirectoryList(const char* directory, std::vector<std::string>& directories)
+{
+    if (!EnterDirectory(directory))
+    {
+        return;
+    }
+
+    // add directories
+    DIRECTORYLIST dl = BeginDirectoryList("*");
+
+    while (!DirectoryListDone(dl))
+    {
+        char dr[520];
+        GetNextDirectory(dl, dr);
+        directories.push_back(dr);
+
+    }
+    EndDirectoryList(dl);
+    // alphabetize the menu
+    std::sort(directories.begin(), directories.end());
+
+    LeaveDirectory();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void
 CGameEngine::GetFileList(const char* directory, std::vector<std::string>& vs)
 {
     // enter the save directory

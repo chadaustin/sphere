@@ -1346,6 +1346,14 @@ log_object.endBlock()
     - draws the current frame into the video buffer with a specified
       zoom scale
 
+  *** directories ***
+  GetDirectoryList(directory)
+
+    - directory = directory in which to enumerate directories, 
+      the current game's directory if not specified
+
+    - returns an array of strings, which contains the directory names that 
+      resides in the 'directory' directory of the game.
 
   *** files ***
   GetFileList(directory)
