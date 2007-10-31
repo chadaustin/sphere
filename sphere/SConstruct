@@ -175,9 +175,16 @@ class Compiler:
         if self.name in ['vc6', 'mingw']:
             env.Append(CCFLAGS = ['-DXP_PC'], LIBS = ['js32'])
         elif self.name == 'linux':
-            env.Append(CCFLAGS = ['-DXP_UNIX'], LIBS = ['smjs'])
-            env.Append( CPPPATH = [Dir('/usr/include/smjs')] )
-            env.Append( CPPPATH = [Dir('/usr/include/js')] )
+            env.Append(CCFLAGS = ['-DXP_UNIX'])
+            if os.path.exists('/usr/include/smjs'):
+                env.Append(LIBS = ['smjs'])
+                env.Append(CPPPATH = [Dir('/usr/include/smjs')])
+            elif os.path.exists('/usr/include/js'):
+                env.Append(LIBS = ['js'])
+                env.Append(CPPPATH = [Dir('/usr/include/js')])
+            elif os.path.exists('/usr/include/mozjs'):
+                env.Append(LIBS = ['mozjs'])
+                env.Append(CPPPATH = [Dir('/usr/include/mozjs')])
 
     def SetupMFC(self, env):
         assert self.has_mfc(), "MFC not supported in this compiler"
