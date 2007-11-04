@@ -340,7 +340,7 @@ CScript::CScript(IEngine* engine)
         , m_IdealTime(0)
 {
     // create runtime
-    m_Runtime = JS_NewRuntime(256 * 1024);
+    m_Runtime = JS_NewRuntime(1024 * 1024);
     if (m_Runtime == NULL)
     {
         return;

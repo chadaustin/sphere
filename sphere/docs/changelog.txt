@@ -4,6 +4,7 @@ YYYY.MM.DD
   - Person obstruction checking now checks for persons before
     obstructions, so FindObstructingPerson() will now detect
     persons within obstructions.
+  - Increased JavaScript runtime memory from 256KB to 1MB.
 
 2007.10.28
   - Applied Kyuu's GetDirectoryList() patch, adding said function
