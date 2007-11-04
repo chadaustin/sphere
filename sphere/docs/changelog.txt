@@ -1,5 +1,10 @@
 YYYY.MM.DD
 
+2007.11.04
+  - Person obstruction checking now checks for persons before
+    obstructions, so FindObstructingPerson() will now detect
+    persons within obstructions.
+
 2007.10.28
   - Applied Kyuu's GetDirectoryList() patch, adding said function
     to the Sphere API. Works like GetFileList(), but lists

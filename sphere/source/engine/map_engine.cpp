@@ -6100,7 +6100,7 @@ CMapEngine::IsObstructed(int person, int x, int y, int& obs_person)
     const Person& p = m_Persons[person];
     const sObstructionMap& obs_map =
 
-        m_Map.GetMap().GetLayer(p.layer).GetObstructionMap();
+    m_Map.GetMap().GetLayer(p.layer).GetObstructionMap();
     // test obstruction map
     int bx = (p.base_x1 == p.base_x2) ? 1 : ((p.base_x1 + p.base_x2) / 2);
     int by = (p.base_y1 == p.base_y2) ? 1 : ((p.base_y1 + p.base_y2) / 2);
@@ -6116,6 +6116,14 @@ CMapEngine::IsObstructed(int person, int x, int y, int& obs_person)
         return true;
     }
 
+    // don't check other entity obstructions if this spriteset ignores them
+    if (!m_Persons[person].ignorePersonObstructions)
+    {
+        obs_person = FindObstructingPerson(person, x, y);
+        if (obs_person != -1)
+            return true;
+    }
+
     if (!m_Persons[person].ignoreTileObstructions)
     {
         if (FindObstructingTile(person, x, y) != -1)
@@ -6124,13 +6132,6 @@ CMapEngine::IsObstructed(int person, int x, int y, int& obs_person)
         }
     }
 
-    // don't check other entity obstructions if this spriteset ignores them
-    if (!m_Persons[person].ignorePersonObstructions)
-    {
-        obs_person = FindObstructingPerson(person, x, y);
-        if (obs_person != -1)
-            return true;
-    }
     return false;
 }
 
