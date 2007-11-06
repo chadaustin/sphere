@@ -157,6 +157,7 @@ private:
   declare_method(ssFontDrawText);
   declare_method(ssFontDrawZoomedText);
   declare_method(ssFontDrawTextBox);
+  declare_method(ssFontWordWrapString);
   declare_method(ssFontGetHeight);
   declare_method(ssFontGetStringWidth);
   declare_method(ssFontGetStringHeight);

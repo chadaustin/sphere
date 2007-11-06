@@ -1,5 +1,8 @@
 YYYY.MM.DD
 
+2007.11.06
+  - Added wordWrapString(string, width) method to Font object.
+
 2007.11.04
   - Person obstruction checking now checks for persons before
     obstructions, so FindObstructingPerson() will now detect

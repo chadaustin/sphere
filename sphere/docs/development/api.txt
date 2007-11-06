@@ -1096,6 +1096,10 @@ log_object.endBlock()
   
      For example: font_object.drawTextBox(16, 16, 200, 200, 0, "Line One\nLine Two");
   
+  font_object.wordWrapString(string, width)
+    - splits a string into an array of lines as if it were wrapped using
+      font_object.drawTextBox().
+  
   font_object.getHeight()
     - returns the height of the font, in pixels
   

@@ -277,10 +277,39 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
     SetClippingRectangle(std::max(x, old_x), std::max(y, old_y), std::min(w, old_w), std::min(h, old_h));
 
     y += offset;
+    // delta y from starting position
+    int dy = 0;
+
+    // Word-wrap and draw strings.
+    std::vector<std::string> lines = WordWrapString(text, w);
+    for (std::vector<std::string>::const_iterator ci = lines.begin(); ci != lines.end(); ++ci)
+    {
+        DrawString(x, y + dy, ci->c_str(), mask, surface);
+        dy += max_height;
+    }
+
+    //DrawString(x + dx, y + dy, word.c_str(), mask, surface);
+    SetClippingRectangle(old_x, old_y, old_w, old_h);
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+std::vector<std::string>
+SFONT::WordWrapString(const char* string, int width) const
+{
+    const int space_width = GetStringWidth(" ");
+    const int tab_width   = GetStringWidth("   ");
+    const int max_height  = GetMaxHeight();
+
+    const char* p = string;
+
     // delta x and y from starting position
     int dx = 0;
     int dy = 0;
 
+    std::vector<std::string> words;
+    words.push_back("");
     std::string word;
     int word_width = 0;
 
@@ -298,16 +327,18 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
         if (ch == ' ')
         {          // if it's a space, draw the word
 
-            if (dx + word_width + space_width > w)
+            if (dx + word_width + space_width > width)
             {
+                // Word goes on a new line.
                 dx = word_width + space_width;
                 dy += max_height;
 
-                DrawString(x, y + dy, word.c_str(), mask, surface);
+                words.push_back(word + " ");
             }
             else
             {
-                DrawString(x + dx, y + dy, word.c_str(), mask, surface);
+                // Word is tacked on to the last line.
+                words.back() += word + " ";
                 dx += word_width + space_width;
             }
 
@@ -318,16 +349,18 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
         else if (ch == '\t')
         {  // if it's a tab, draw the word
 
-            if (dx + word_width + tab_width > w)
+            if (dx + word_width + tab_width > width)
             {
+                // Word goes on a new line.
                 dx = word_width + tab_width;
                 dy += max_height;
 
-                DrawString(x, y + dy, word.c_str(), mask, surface);
+                words.push_back(word + "   ");
             }
             else
             {
-                DrawString(x + dx, y + dy, word.c_str(), mask, surface);
+                // Word is tacked on to the last line.
+                words.back() += word + "   ";
                 dx += word_width + tab_width;
             }
 
@@ -338,9 +371,10 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
         else if (ch == '\n')
         {  // newline time, awww yeah
 
-            DrawString(x + dx, y + dy, word.c_str(), mask, surface);
+            words.back() += word;
             dx = 0;
             dy += max_height;
+            words.push_back("");
             word.resize(0);
             word_width = 0;
 
@@ -349,18 +383,23 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
         {
 
             int char_width = m_Font.GetCharacter(ch).GetWidth();
-            // if we've gone over the limit and dx = 0, draw the old word and split the new one off
-            if (word_width + char_width > w && dx == 0)
+            // if we've gone over the limit and dx = 0,
+            // draw the old word and split the new one off
+            if (word_width + char_width > width && dx == 0)
             {
-                DrawString(x + dx, y + dy, word.c_str(), mask, surface);
+                // Split word if it's too wide for one line.
+                words.back() += word;
                 dy += max_height;
+                words.push_back("");
                 word.resize(0);
                 word_width = 0;
             }
-            else if (dx + word_width + char_width > w)
+            else if (dx + word_width + char_width > width)
             {
+                // Just start a new line.
                 dx = 0;
                 dy += max_height;
+                words.push_back("");
             }
 
             word += ch;
@@ -370,9 +409,8 @@ SFONT::DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGB
         p++;
     }
 
-    DrawString(x + dx, y + dy, word.c_str(), mask, surface);
-    SetClippingRectangle(old_x, old_y, old_w, old_h);
-    return true;
+    words.back() += word;
+    return words;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

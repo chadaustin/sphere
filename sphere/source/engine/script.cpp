@@ -7462,21 +7462,19 @@ CScript::CreateFontObject(JSContext* cx, SFONT* font, bool destroy)
     // assign methods to the object
     static JSFunctionSpec fs[] =
         {
-            { "setColorMask",    ssFontSetColorMask,    1, 0, 0
-            },
-            { "getColorMask",    ssFontGetColorMask,    0, 0, 0 },
-            { "drawText",        ssFontDrawText,        3, 0, 0 },
-            { "drawZoomedText",  ssFontDrawZoomedText,  4, 0, 0 },
-            { "drawTextBox",     ssFontDrawTextBox,     6, 0, 0 },
-            { "getHeight",       ssFontGetHeight,       0, 0, 0 },
-            { "getStringWidth",  ssFontGetStringWidth,  1, 0, 0 },
-            { "getStringHeight", ssFontGetStringHeight, 2, 0, 0 },
-            { "clone",           ssFontClone,           0, 0, 0 },
-
-            { "save",            ssFontSave,            0, 0, 0 },
-            { "getCharacterImage", ssFontGetCharacterImage,    1, 0, 0 },
-            { "setCharacterImage", ssFontSetCharacterImage,    2, 0, 0 },
-
+            { "setColorMask",      ssFontSetColorMask,      1, 0, 0 },
+            { "getColorMask",      ssFontGetColorMask,      0, 0, 0 },
+            { "drawText",          ssFontDrawText,          3, 0, 0 },
+            { "drawZoomedText",    ssFontDrawZoomedText,    4, 0, 0 },
+            { "drawTextBox",       ssFontDrawTextBox,       6, 0, 0 },
+            { "wordWrapString",    ssFontWordWrapString,    2, 0, 0 },
+            { "getHeight",         ssFontGetHeight,         0, 0, 0 },
+            { "getStringWidth",    ssFontGetStringWidth,    1, 0, 0 },
+            { "getStringHeight",   ssFontGetStringHeight,   2, 0, 0 },
+            { "clone",             ssFontClone,             0, 0, 0 },
+            { "save",              ssFontSave,              0, 0, 0 },
+            { "getCharacterImage", ssFontGetCharacterImage, 1, 0, 0 },
+            { "setCharacterImage", ssFontSetCharacterImage, 2, 0, 0 },
             { 0, 0, 0, 0, 0 },
         };
     JS_DefineFunctions(cx, object, fs);
@@ -7583,6 +7581,33 @@ if (This->ShouldRender())
     arg_str(text);
     object->font->DrawTextBox(x, y, w, h, offset, text, object->mask);
 }
+end_method()
+
+///////////////////////////////////////
+/**
+    - Splits a string into an array of lines as if it were wrapped using
+      font_object.drawTextBox().
+*/
+begin_method(SS_FONT, ssFontWordWrapString, 2)
+arg_str(string);
+arg_int(width);
+
+// Split the string into lines.
+std::vector<std::string> lines = object->font->WordWrapString(string, width);
+
+// Build array of strings.
+int array_size = lines.size();
+jsval* array = new jsval[array_size];
+for (int i = 0; i < array_size; ++i)
+{
+    array[i] = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, lines[i].c_str()));
+}
+
+// Convert array to JavaScript Array object.
+JSObject* line_array_object = JS_NewArrayObject(cx, array_size, array);
+delete[] array;
+return_object(line_array_object);
+
 end_method()
 
 ///////////////////////////////////////

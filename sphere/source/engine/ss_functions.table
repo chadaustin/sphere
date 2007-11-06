@@ -355,6 +355,7 @@ SS_FUNCTION(OpenLog, 1)
   //font.drawTextBox(x, y, w, h, offset, text)
   //font.getHeight()
   //font.getStringWidth(string)
+  //font.wordWrapString(string, width)
 
   // window styles
   SS_FUNCTION(GetSystemWindowStyle, 0)

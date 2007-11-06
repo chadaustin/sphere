@@ -24,6 +24,8 @@ public:
     bool DrawZoomedString(int x, int y, double scale, const char* text, RGBA mask, CImage32* surface = NULL) const;
     bool DrawTextBox(int x, int y, int w, int h, int offset, const char* text, RGBA mask, CImage32* surface = NULL) const;
 
+    std::vector<std::string> WordWrapString(const char* string, int width) const;
+
     inline int GetMaxHeight() const
     {
         return m_MaxHeight;
