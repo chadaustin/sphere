@@ -8,6 +8,17 @@
 
 namespace primitives
 {
+    template<typename clipT>
+    bool is_inside_clipper(int x, int y, clipT clipper)
+    {
+        return (
+                   (x >= clipper.left)  &&
+                   (x <= clipper.right) &&
+                   (y >= clipper.top)   &&
+                   (y <= clipper.bottom)
+               );
+    }
+
     template<typename destT, typename srcT, typename clipT, typename renderT>
     void Point(
         destT* surface,
@@ -284,40 +295,31 @@ namespace primitives
         clipT clipper,
         renderT renderer)
     {
-        // find the line series' bounds
-        int i, bound_x1 = points[0]->x, bound_x2 = points[0]->x, bound_y1 = points[0]->y, bound_y2 = points[0]->y;
-        for (i = 1; i < length; i++)
+        int old_x, old_y, dx, dy, inc_x, inc_y, dist_big, dist_small, eps, i, n, ident;
+
+        // if type == LINE_LOOP, start with the last point
+        if (type == 2)
         {
-            if (points[i]->x > bound_x2) bound_x2 = points[i]->x;
-            if (points[i]->x < bound_x1) bound_x1 = points[i]->x;
-            if (points[i]->y > bound_y2) bound_y2 = points[i]->y;
-            if (points[i]->y < bound_y1) bound_y1 = points[i]->y;
+            old_x = points[length-1]->x;
+            old_y = points[length-1]->y;
+            i = 0;
         }
-        // if line series is completely out, don't bother with it
-        if (bound_x2 <= clipper.left ||
-            bound_y2 <= clipper.top  ||
-            bound_x1 > clipper.right ||
-            bound_y1 > clipper.bottom)
+        else
         {
-            return;
+            old_x = points[0]->x;
+            old_y = points[0]->y;
+            i = 1;
         }
+
         // draw the line series with bresenham's line algorithm
-        int old_x, old_y, dx, dy, inc_x, inc_y, dist_big, dist_small, eps, n, ident;
-        switch (type)
-        {
-            case 2:
-                old_x = points[length-1]->x;
-                old_y = points[length-1]->y;
-                i = 0;
-                break;
-            default:
-                old_x = points[0]->x;
-                old_y = points[0]->y;
-                i = 1;
-                break;
-        }
         while (i < length)
         {
+            // if line is off the screen, skip it
+            if (is_clipped(old_x, old_y, points[i]->x, points[i]->y, clipper))
+            {
+                goto skip_line;
+            }
+
             dx = points[i]->x - old_x;
             dy = points[i]->y - old_y;
             if (dx < 0)
@@ -351,15 +353,14 @@ namespace primitives
                 ident = 1;
             }
             eps = dist_big / 2;
+
             for (n = 0; n < dist_big; n++)
             {
-                if (old_x >= clipper.left &&
-                    old_x <= clipper.right &&
-                    old_y >= clipper.top  &&
-                    old_y <= clipper.bottom)
+                if (is_inside_clipper(old_x, old_y, clipper))
                 {
                     renderer(surface[old_y * pitch + old_x], color);
                 }
+
                 if (ident == 0)
                 {
                     old_x += inc_x;
@@ -382,21 +383,25 @@ namespace primitives
                     eps += dist_big;
                 }
             }
-            switch (type)
+
+            // label used to skip lines which are off the screen
+            skip_line:
+
+            // if type == LINE_LIST, take two new points
+            if (type == 0)
             {
-                case 0:
-                    i += 2;
-                    if (i < length)
-                    {
-                        old_x = points[i-1]->x;
-                        old_y = points[i-1]->y;
-                    }
-                    break;
-                default:
-                    old_x = points[i]->x;
-                    old_y = points[i]->y;
-                    i++;
-                    break;
+                i += 2;
+                if (i < length)
+                {
+                    old_x = points[i-1]->x;
+                    old_y = points[i-1]->y;
+                }
+            }
+            else
+            {
+                old_x = points[i]->x;
+                old_y = points[i]->y;
+                i++;
             }
         }
     }
@@ -422,14 +427,12 @@ namespace primitives
             if (y[i] > bound_y2) bound_y2 = y[i];
             if (y[i] < bound_y1) bound_y1 = y[i];
         }
-        // if Bezier curve is completely out, don't bother with it
-        if (bound_x2 <= clipper.left ||
-            bound_y2 <= clipper.top  ||
-            bound_x1 > clipper.right ||
-            bound_y1 > clipper.bottom)
+        // with the found bounds: check if Bezier curve is completely off the screen
+        if (is_clipped(bound_x1, bound_y1, bound_x2, bound_y2, clipper))
         {
             return;
         }
+
         // make sure step is in a valid range
         if (step <= 0)
         {
@@ -439,9 +442,11 @@ namespace primitives
         {
             step = 1.0;
         }
-        // draw the Bezier curve
-        int new_x, new_y, old_x, old_y;
+
+        int new_x, new_y, old_x = -1, old_y = -1;
         double b;
+
+        // draw the Bezier curve
         for (double a = 1.0; a >= 0; a -= step)
         {
             b = 1.0 - a;
@@ -455,29 +460,16 @@ namespace primitives
                 new_x = (int)(x[0]*a*a + x[1]*2*a*b + x[2]*b*b);
                 new_y = (int)(y[0]*a*a + y[1]*2*a*b + y[2]*b*b);
             }
-            if (a != 1.0)
+
+            // draw only if new_coor != old_coor to ensure that no point is drawn multiple times
+            if (new_x != old_x || new_y != old_y)
             {
-                if (new_x != old_x || new_y != old_y)
-                {
-                    if (new_x >= clipper.left &&
-                        new_x <= clipper.right &&
-                        new_y >= clipper.top  &&
-                        new_y <= clipper.bottom)
-                    {
-                        renderer(surface[new_y * pitch + new_x], color);
-                    }
-                }
-            }
-            else
-            {
-                if (new_x >= clipper.left &&
-                    new_x <= clipper.right &&
-                    new_y >= clipper.top  &&
-                    new_y <= clipper.bottom)
+                if (is_inside_clipper(new_x, new_y, clipper))
                 {
                     renderer(surface[new_y * pitch + new_x], color);
                 }
             }
+
             old_x = new_x;
             old_y = new_y;
         }
@@ -871,21 +863,23 @@ namespace primitives
             if (points[i]->y < bound_y1) bound_y1 = points[i]->y;
         }
         // if polygon is completely out, don't bother with it
-        if (bound_x2 <= clipper.left ||
-            bound_y2 <= clipper.top  ||
-            bound_x1 > clipper.right ||
-            bound_y1 > clipper.bottom)
+        if (is_clipped(bound_x1, bound_y1, bound_x2, bound_y2, clipper))
         {
             return;
         }
-        // draw the polygon with the crossing number algorithm
+
         int point_in, c_x, c_y, j;
+
+        // draw the polygon with the crossing number algorithm
         for (c_y = bound_y1; c_y <= bound_y2; c_y++)
         {
+
             for (c_x = bound_x1; c_x <= bound_x2; c_x++)
             {
                 point_in = 0;
-                j = length-1;
+                j = length - 1;
+
+                // check appropriate edges for their crossing number, if it's odd, then point is inside
                 for (i = 0; i < length; i++)
                 {
                     if (points[i]->y <= c_y && points[j]->y > c_y ||
@@ -905,16 +899,16 @@ namespace primitives
                     }
                     j = i;
                 }
+
+                // do inversion before drawing if invert is true
                 if (invert)
                 {
                     point_in = !point_in;
                 }
+
                 if (point_in)
                 {
-                    if (c_x >= clipper.left &&
-                        c_x <= clipper.right &&
-                        c_y >= clipper.top  &&
-                        c_y <= clipper.bottom)
+                    if (is_inside_clipper(c_x, c_y, clipper))
                     {
                         renderer(surface[c_y * pitch + c_x], color);
                     }
@@ -937,68 +931,48 @@ namespace primitives
         renderT renderer)
     {
         // if rectangle is completely out, don't bother with it
-        if (x + w <= clipper.left ||
-            y + h <= clipper.top ||
-            x > clipper.right ||
-            y > clipper.bottom)
+        if (is_clipped(x, y, x + w - 1, y + h - 1, clipper))
         {
             return;
         }
+
         int tx, ty, iy, ix;
+
+        // Note: outlined rectangle is splitted into 4 subrectangles (each 2 are symmetrical)
+        // draw the top and bottom rectangles
         for (iy = y; iy < y + size; iy++)
         {
             for (ix = x; ix < x + w; ix++)
             {
-                if (ix >= clipper.left &&
-                    ix <= clipper.right &&
-                    iy >= clipper.top &&
-                    iy <= clipper.bottom) {renderer(surface[iy * pitch + ix], color);};
+                if (is_inside_clipper(ix, iy, clipper)) renderer(surface[iy * pitch + ix], color);
+
+                // reflect point vertically
                 ty = y + h - 1 - (iy - y);
-                if (ix >= clipper.left &&
-                    ix <= clipper.right &&
-                    ty >= clipper.top &&
-                    ty <= clipper.bottom) {renderer(surface[ty * pitch + ix], color);};
+
+                if (is_inside_clipper(ix, ty, clipper)) renderer(surface[ty * pitch + ix], color);
             }
         }
+
         ty = y + h - size;
+
+        // draw the left and right rectangles
         for (iy = y + size; iy < ty; iy++)
         {
             for (ix = x; ix < x + size; ix++)
             {
-                if (ix >= clipper.left &&
-                    ix <= clipper.right &&
-                    iy >= clipper.top &&
-                    iy <= clipper.bottom) {renderer(surface[iy * pitch + ix], color);};
+                if (is_inside_clipper(ix, iy, clipper)) renderer(surface[iy * pitch + ix], color);
+
+                // reflect point horizontally
                 tx = x + w - 1 - (ix - x);
-                if (tx >= clipper.left &&
-                    tx <= clipper.right &&
-                    iy >= clipper.top &&
-                    iy <= clipper.bottom) {renderer(surface[iy * pitch + tx], color);};
+
+                if (is_inside_clipper(tx, iy, clipper)) renderer(surface[iy * pitch + tx], color);
             }
         }
     }
 
-    template<typename destT, typename sourceT, typename clipT, typename renderT>
-    void Rectangle(
-        destT* surface,
-        int pitch,
-        int x,
-        int y,
-        int w,
-        int h,
-        sourceT color,
-        clipT clipper,
-        renderT renderer)
+    template<typename clipT>
+    void clip_solid_rect(int& x, int& y, int& w, int& h, clipT clipper)
     {
-        // if rectangle is completely out, don't bother with it
-        if (x + w <= clipper.left ||
-                y + h <= clipper.top ||
-                x > clipper.right ||
-                y > clipper.bottom)
-        {
-            return;
-        }
-
         // clip left
         if (x < clipper.left)
         {
@@ -1024,7 +998,30 @@ namespace primitives
         {
             h -= (y + h - clipper.bottom - 1);
         }
+    }
 
+    template<typename destT, typename sourceT, typename clipT, typename renderT>
+    void Rectangle(
+        destT* surface,
+        int pitch,
+        int x,
+        int y,
+        int w,
+        int h,
+        sourceT color,
+        clipT clipper,
+        renderT renderer)
+    {
+        // if rectangle is completely out, don't bother with it
+        if (is_clipped(x, y, x + w - 1, y + h - 1, clipper))
+        {
+            return;
+        }
+
+        // clip parts which are off the screen
+        clip_solid_rect(x, y, w, h, clipper);
+
+        // render the rectangle
         for (int iy = y; iy < y + h; iy++)
         {
             for (int ix = x; ix < x + w; ix++)
@@ -1048,10 +1045,7 @@ namespace primitives
         interpolateT interpolator)
     {
         // if rectangle is completely out, don't bother with it
-        if (x + w <= clipper.left ||
-                y + h <= clipper.top ||
-                x > clipper.right ||
-                y > clipper.bottom)
+        if (is_clipped(x, y, x + w - 1, y + h - 1, clipper))
         {
             return;
         }
@@ -1062,33 +1056,10 @@ namespace primitives
         int o_w = w;
         int o_h = h;
 
-        // clip left
-        if (x < clipper.left)
-        {
-            w -= (clipper.left - x);
-            x += (clipper.left - x);
-        }
+        // clip parts which are off the screen
+        clip_solid_rect(x, y, w, h, clipper);
 
-        // clip top
-        if (y < clipper.top)
-        {
-            h -= (clipper.top - y);
-            y += (clipper.top - y);
-        }
-
-        // clip right
-        if (x + w > clipper.right + 1)
-        {
-            w -= (x + w - clipper.right - 1);
-        }
-
-        // clip bottom
-        if (y + h > clipper.bottom + 1)
-        {
-            h -= (y + h - clipper.bottom - 1);
-        }
-
-        // render the triangle
+        // render the rectangle
         for (int iy = y; iy < y + h; iy++)
         {
 
@@ -1120,42 +1091,42 @@ namespace primitives
         clipT clipper,
         renderT renderer)
     {
-        // if combi is completely out, don't bother with it
-        if (r_x + r_w <= clipper.left ||
-            r_y + r_h <= clipper.top ||
-            r_x > clipper.right ||
-            r_y > clipper.bottom)
+        // if complex is completely out, don't bother with it
+        if (is_clipped(r_x, r_y, r_x + r_w - 1, r_y + r_h - 1, clipper))
         {
             return;
         }
+
+        // clip parts which are off the screen
+        clip_solid_rect(r_x, r_y, r_w, r_h, clipper);
+
         int x, y, dist, ca = color.alpha, crr = circ_r * circ_r;
         float fdist, fcr = (float)(circ_r), fca = (float)(ca);
 
+        // draw the complex
         for (y = r_y; y < r_y + r_h; y++)
         {
-            if (y >= clipper.top &&
-                y <= clipper.bottom)
+
+            // draw scanline
+            for (x = r_x; x < r_x + r_w; x++)
             {
-                for (x = r_x; x < r_x + r_w; x++)
+                dist = (circ_x-x) * (circ_x-x) + (circ_y-y) * (circ_y-y);
+
+                // point is outside the circle
+                if (dist >= crr)
                 {
-                    if (x >= clipper.left &&
-                        x <= clipper.right)
+                    color.alpha = ca;
+                    renderer(surface[y * pitch + x], color);
+                }
+
+                // point is inside the circle
+                else if (antialias)
+                {
+                    fdist = fcr - sqrt((float)(dist));
+                    if (fdist < 1)
                     {
-                        dist = (circ_x-x)*(circ_x-x) + (circ_y-y)*(circ_y-y);
-                        if (dist >= crr)
-                        {
-                            color.alpha = ca;
-                            renderer(surface[y * pitch + x], color);
-                        }
-                        else if (antialias)
-                        {
-                            fdist = fcr - sqrt((float)(dist));
-                            if (fdist < 1)
-                            {
-                                color.alpha = (byte)(fca * (1.0 - fdist));
-                                renderer(surface[y * pitch + x], color);
-                            }
-                        }
+                        color.alpha = (byte)(fca * (1.0 - fdist));
+                        renderer(surface[y * pitch + x], color);
                     }
                 }
             }
@@ -1180,72 +1151,67 @@ namespace primitives
         clipT clipper,
         renderT renderer)
     {
-        // if combi is completely out, don't bother with it
-        if (r_x + r_w <= clipper.left ||
-            r_y + r_h <= clipper.top ||
-            r_x > clipper.right ||
-            r_y > clipper.bottom)
+        // if complex is completely out, don't bother with it
+        if (is_clipped(r_x, r_y, r_x + r_w - 1, r_y + r_h - 1, clipper))
         {
             return;
         }
+
+        // clip parts which are off the screen
+        clip_solid_rect(r_x, r_y, r_w, r_h, clipper);
+
         int x, y, dist, crr = circ_r * circ_r;
-        float fang_p;
+        float fang_p, frac_half;
         const float PI = (float)(3.1415927);
 
-        // make sure frac_size is in a valid range
-        if (frac_size < 0 || frac_size >= PI)
+        // set fraction's half size
+        frac_half = frac_size / 2;
+        if (frac_half < 0 || frac_half >= PI)
         {
-            frac_size = 0;
+            frac_half = 0;
         }
 
+        // draw the complex
         for (y = r_y; y < r_y + r_h; y++)
         {
-            if (y >= clipper.top &&
-                y <= clipper.bottom)
+
+            // draw scanline
+            for (x = r_x; x < r_x + r_w; x++)
             {
-                for (x = r_x; x < r_x + r_w; x++)
+                dist = (x-circ_x) * (x-circ_x) + (y-circ_y) * (y-circ_y);
+
+                // point is outside of the circle
+                if (dist >= crr)
                 {
-                    if (x >= clipper.left &&
-                        x <= clipper.right)
+                    renderer(surface[y * pitch + x], colors[0]);
+                }
+
+                // point is inside a fractioned circle
+                else if (frac_half != 0)
+                {
+                    // check if point is located in fraction
+                    fang_p = atan2(float(y-circ_y), float(x-circ_x));
+                    if (fang_p < 0)
                     {
-                        // check if point is outside of the circle
-                        dist = (x-circ_x)*(x-circ_x) + (y-circ_y)*(y-circ_y);
-                        if (dist >= crr)
-                        {
-                            renderer(surface[y * pitch + x], colors[0]);
-                        }
-                        else
-                        {
-                            if (frac_size != 0)
-                            {
-                                // check if point is located in fraction
-                                fang_p = atan2(float(y-circ_y), float(x-circ_x));
-                                if (fang_p < 0)
-                                {
-                                    fang_p = PI + (PI + fang_p);
-                                }
-                                fang_p = fabs(angle - fang_p);
-                                if (fang_p >= PI)
-                                {
-                                    fang_p = 2*PI - fang_p;
-                                }
-                                if (fang_p <= frac_size)
-                                {
-                                    // it is, so draw the point with circle's color
-                                    renderer(surface[y * pitch + x], colors[1]);
-                                }
-                                else if (fill_empty)
-                                {
-                                    // it is not, so draw the point with rectangle's color
-                                    renderer(surface[y * pitch + x], colors[0]);
-                                }
-                            }
-                            else
-                            {
-                                renderer(surface[y * pitch + x], colors[1]);
-                            }
-                        }
+                        fang_p = PI + (PI + fang_p);
                     }
+                    fang_p = fabs(angle - fang_p);
+                    if (fang_p >= PI)
+                    {
+                        fang_p = 2*PI - fang_p;
+                    }
+
+                    // it is, so draw the point with circle's color
+                    if (fang_p <= frac_half) renderer(surface[y * pitch + x], colors[1]);
+
+                    // it is not, so draw the point with rectangle's color if fill_empty == true
+                    else if (fill_empty) renderer(surface[y * pitch + x], colors[0]);
+                }
+
+                // point is inside a full circle
+                else
+                {
+                    renderer(surface[y * pitch + x], colors[1]);
                 }
             }
         }
@@ -1269,92 +1235,94 @@ namespace primitives
         clipT clipper,
         renderT renderer)
     {
-        // if combi is completely out, don't bother with it
-        if (r_x + r_w <= clipper.left ||
-            r_y + r_h <= clipper.top ||
-            r_x > clipper.right ||
-            r_y > clipper.bottom)
+        // if complex is completely out, don't bother with it
+        if (is_clipped(r_x, r_y, r_x + r_w - 1, r_y + r_h - 1, clipper))
         {
             return;
         }
+
+        // clip parts which are off the screen
+        clip_solid_rect(r_x, r_y, r_w, r_h, clipper);
+
         int x, y, dist, crr = circ_r * circ_r;
-        float fdr = (float)(colors[2].red - colors[1].red);
+
+        // channel differences
+        float fdr = (float)(colors[2].red   - colors[1].red);
         float fdg = (float)(colors[2].green - colors[1].green);
-        float fdb = (float)(colors[2].blue - colors[1].blue);
+        float fdb = (float)(colors[2].blue  - colors[1].blue);
         float fda = (float)(colors[2].alpha - colors[1].alpha);
-        float fang_p, factor, fdist, fr = (float)(circ_r);
+
+        float fang_p, frac_half, factor, fdist, fr = (float)(circ_r);
         const float PI = (float)(3.1415927), PI_H = PI / 2;
 
-        // make sure frac_size is in a valid range
-        if (frac_size < 0 || frac_size >= PI)
+        // set fraction's half size
+        frac_half = frac_size / 2;
+        if (frac_half < 0 || frac_half >= PI)
         {
-            frac_size = 0;
+            frac_half = 0;
         }
 
+        // draw the complex
         for (y = r_y; y < r_y + r_h; y++)
         {
-            if (y >= clipper.top &&
-                y <= clipper.bottom)
+
+            // draw scanline
+            for (x = r_x; x < r_x + r_w; x++)
             {
-                for (x = r_x; x < r_x + r_w; x++)
+                dist = (x-circ_x)*(x-circ_x) + (y-circ_y)*(y-circ_y);
+
+                // point is outside of the circle
+                if (dist >= crr)
                 {
-                    if (x >= clipper.left &&
-                        x <= clipper.right)
+                    renderer(surface[y * pitch + x], colors[0]);
+                }
+
+                // point is inside a fractioned circle
+                else if (frac_half != 0)
+                {
+                    // check if point is located in fraction
+                    fang_p = atan2(float(y-circ_y), float(x-circ_x));
+                    if (fang_p < 0)
                     {
-                        // check if point is outside of the circle
-                        dist = (x-circ_x)*(x-circ_x) + (y-circ_y)*(y-circ_y);
-                        if (dist >= crr)
-                        {
-                            renderer(surface[y * pitch + x], colors[0]);
-                        }
-                        else
-                        {
-                            if (frac_size != 0)
-                            {
-                                // check if point is located in fraction
-                                fang_p = atan2(float(y-circ_y), float(x-circ_x));
-                                if (fang_p < 0)
-                                {
-                                    fang_p = PI + (PI + fang_p);
-                                }
-                                fang_p = abs(angle - fang_p);
-                                if (fang_p >= PI)
-                                {
-                                    fang_p = 2*PI - fang_p;
-                                }
-                                if (fang_p <= frac_size)
-                                {
-                                    // it is, so draw the point with circle's color
-                                    fdist = sqrt((float)(dist));
-                                    factor = sin((float(1) - fdist / fr) * PI_H);
-
-                                    colors[1].red   = (byte)(colors[2].red - fdr   * factor);
-                                    colors[1].green = (byte)(colors[2].green - fdg * factor);
-                                    colors[1].blue  = (byte)(colors[2].blue - fdb  * factor);
-                                    colors[1].alpha = (byte)(colors[2].alpha - fda * factor);
-
-                                    renderer(surface[y * pitch + x], colors[1]);
-                                }
-                                else if (fill_empty)
-                                {
-                                    // it is not, so draw the point with rectangle's color
-                                    renderer(surface[y * pitch + x], colors[0]);
-                                }
-                            }
-                            else
-                            {
-                                fdist = sqrt((float)(dist));
-                                factor = sin((float(1) - fdist / fr) * PI_H);
-
-                                colors[1].red   = (byte)(colors[2].red - fdr   * factor);
-                                colors[1].green = (byte)(colors[2].green - fdg * factor);
-                                colors[1].blue  = (byte)(colors[2].blue - fdb  * factor);
-                                colors[1].alpha = (byte)(colors[2].alpha - fda * factor);
-
-                                renderer(surface[y * pitch + x], colors[1]);
-                            }
-                        }
+                        fang_p = PI + (PI + fang_p);
                     }
+                    fang_p = abs(angle - fang_p);
+                    if (fang_p >= PI)
+                    {
+                        fang_p = 2*PI - fang_p;
+                    }
+
+                    // it is, so draw the point with circle's color
+                    if (fang_p <= frac_half)
+                    {
+
+                        fdist = sqrt((float)(dist));
+                        factor = sin((float(1) - fdist / fr) * PI_H);
+
+                        colors[1].red   = (byte)(colors[2].red   - fdr * factor);
+                        colors[1].green = (byte)(colors[2].green - fdg * factor);
+                        colors[1].blue  = (byte)(colors[2].blue  - fdb * factor);
+                        colors[1].alpha = (byte)(colors[2].alpha - fda * factor);
+
+                        renderer(surface[y * pitch + x], colors[1]);
+                    }
+
+                    // it is not, so draw the point with rectangle's color if fill_empty == true
+                    else if (fill_empty) renderer(surface[y * pitch + x], colors[0]);
+                }
+
+                // point is inside a full circle
+                else
+                {
+                    fdist = sqrt((float)(dist));
+                    factor = sin((float(1) - fdist / fr) * PI_H);
+
+                    colors[1].red   = (byte)(colors[2].red   - fdr * factor);
+                    colors[1].green = (byte)(colors[2].green - fdg * factor);
+                    colors[1].blue  = (byte)(colors[2].blue  - fdb * factor);
+                    colors[1].alpha = (byte)(colors[2].alpha - fda * factor);
+
+                    renderer(surface[y * pitch + x], colors[1]);
                 }
             }
         }
@@ -1373,17 +1341,11 @@ namespace primitives
         renderT renderer)
     {
         // if ellipse is completely out, don't bother with it
-        if (xc + rx <= clipper.left ||
-            yc + ry <= clipper.top  ||
-            xc - rx > clipper.right ||
-            yc - ry > clipper.bottom)
+        if (is_clipped(xc - rx, yc - ry, xc + rx - 1, yc + ry - 1, clipper))
         {
             return;
         }
-        int xcm1 = xc - 1;
-        int ycm1 = yc - 1;
 
-        // draw ellipse with bresenham's ellipse algorithm
         int x = rx;
         int y = 0;
         int tworx2 = 2 * rx * rx;
@@ -1397,34 +1359,18 @@ namespace primitives
         // draw first set of points
         while (xstop >= ystop)
         {
-            if (xc + x   >= clipper.left &&
-                xc + x   <= clipper.right &&
-                yc + y   >= clipper.top &&
-                yc + y   <= clipper.bottom)
-            {
+            if (is_inside_clipper(xc + x, yc + y, clipper))
                 renderer(surface[(yc + y) * pitch + (xc + x)], color);
-            }
-            if (xcm1 - x >= clipper.left &&
-                xcm1 - x <= clipper.right &&
-                yc + y   >= clipper.top &&
-                yc + y   <= clipper.bottom)
-            {
-                renderer(surface[(yc + y) * pitch + (xcm1 - x)], color);
-            }
-            if (xcm1 - x >= clipper.left &&
-                xcm1 - x <= clipper.right &&
-                ycm1 - y >= clipper.top &&
-                ycm1 - y <= clipper.bottom)
-            {
-                renderer(surface[(ycm1 - y) * pitch + (xcm1 - x)], color);
-            }
-            if (xc + x   >= clipper.left &&
-                xc + x   <= clipper.right &&
-                ycm1 - y >= clipper.top &&
-                ycm1 - y <= clipper.bottom)
-            {
-                renderer(surface[(ycm1 - y) * pitch + (xc + x)], color);
-            }
+
+            if (is_inside_clipper(xc - x - 1, yc + y, clipper))
+                renderer(surface[(yc + y) * pitch + (xc - x - 1)], color);
+
+            if (is_inside_clipper(xc - x - 1, yc - y - 1, clipper))
+                renderer(surface[(yc - y - 1) * pitch + (xc - x - 1)], color);
+
+            if (is_inside_clipper(xc + x, yc - y - 1, clipper))
+                renderer(surface[(yc - y - 1) * pitch + (xc + x)], color);
+
             y++;
             ystop   += tworx2;
             error   += ychange;
@@ -1449,38 +1395,23 @@ namespace primitives
         // draw second set of points
         while (xstop <= ystop)
         {
-            if (xc + x   >= clipper.left &&
-                xc + x   <= clipper.right &&
-                yc + y   >= clipper.top &&
-                yc + y   <= clipper.bottom)
-            {
+            if (is_inside_clipper(xc + x, yc + y, clipper))
                 renderer(surface[(yc + y) * pitch + (xc + x)], color);
-            }
-            if (xcm1 - x >= clipper.left &&
-                xcm1 - x <= clipper.right &&
-                yc + y   >= clipper.top &&
-                yc + y   <= clipper.bottom)
-            {
-                renderer(surface[(yc + y) * pitch + (xcm1 - x)], color);
-            }
-            if (xcm1 - x >= clipper.left &&
-                xcm1 - x <= clipper.right &&
-                ycm1 - y >= clipper.top &&
-                ycm1 - y <= clipper.bottom)
-            {
-                renderer(surface[(ycm1 - y) * pitch + (xcm1 - x)], color);
-            }
-            if (xc + x   >= clipper.left &&
-                xc + x   <= clipper.right &&
-                ycm1 - y >= clipper.top &&
-                ycm1 - y <= clipper.bottom)
-            {
-                renderer(surface[(ycm1 - y) * pitch + (xc + x)], color);
-            }
+
+            if (is_inside_clipper(xc - x - 1, yc + y, clipper))
+                renderer(surface[(yc + y) * pitch + (xc - x - 1)], color);
+
+            if (is_inside_clipper(xc - x - 1, yc - y - 1, clipper))
+                renderer(surface[(yc - y - 1) * pitch + (xc - x - 1)], color);
+
+            if (is_inside_clipper(xc + x, yc - y - 1, clipper))
+                renderer(surface[(yc - y - 1) * pitch + (xc + x)], color);
+
             x++;
             xstop   += twory2;
             error   += xchange;
             xchange += twory2;
+
             if (2 * error + ychange > 0)
             {
                 y--;
@@ -1504,17 +1435,11 @@ namespace primitives
         renderT renderer)
     {
         // if ellipse is completely out, don't bother with it
-        if (xc + rx <= clipper.left ||
-            yc + ry <= clipper.top  ||
-            xc - rx > clipper.right ||
-            yc - ry > clipper.bottom)
+        if (is_clipped(xc - rx, yc - ry, xc + rx - 1, yc + ry - 1, clipper))
         {
             return;
         }
-        int xcm1 = xc - 1;
-        int ycm1 = yc - 1;
 
-        // draw ellipse with bresenham's ellipse algorithm
         int x = rx;
         int y = 0;
         int tworx2 = 2 * rx * rx;
@@ -1525,44 +1450,31 @@ namespace primitives
         int xstop = twory2 * rx;
         int ystop = 0;
 
-        // first set of points
+        // draw first set of points
         while (xstop >= ystop)
         {
+
+            // draw scanline
             for (int i = 0; i <= x; ++i)
             {
-                if (xc + i   >= clipper.left &&
-                    xc + i   <= clipper.right &&
-                    yc + y   >= clipper.top &&
-                    yc + y   <= clipper.bottom)
-                {
+                if (is_inside_clipper(xc + i, yc + y, clipper))
                     renderer(surface[(yc + y) * pitch + (xc + i)], color);
-                }
-                if (xcm1 - i >= clipper.left &&
-                    xcm1 - i <= clipper.right &&
-                    yc + y   >= clipper.top &&
-                    yc + y   <= clipper.bottom)
-                {
-                    renderer(surface[(yc + y) * pitch + (xcm1 - i)], color);
-                }
-                if (xcm1 - i >= clipper.left &&
-                    xcm1 - i <= clipper.right &&
-                    ycm1 - y >= clipper.top &&
-                    ycm1 - y <= clipper.bottom)
-                {
-                    renderer(surface[(ycm1 - y) * pitch + (xcm1 - i)], color);
-                }
-                if (xc + i   >= clipper.left &&
-                    xc + i   <= clipper.right &&
-                    ycm1 - y >= clipper.top &&
-                    ycm1 - y <= clipper.bottom)
-                {
-                    renderer(surface[(ycm1 - y) * pitch + (xc + i)], color);
-                }
+
+                if (is_inside_clipper(xc - i - 1, yc + y, clipper))
+                    renderer(surface[(yc + y) * pitch + (xc - i - 1)], color);
+
+                if (is_inside_clipper(xc - i - 1, yc - y - 1, clipper))
+                    renderer(surface[(yc - y - 1) * pitch + (xc - i - 1)], color);
+
+                if (is_inside_clipper(xc + i, yc - y - 1, clipper))
+                    renderer(surface[(yc - y - 1) * pitch + (xc + i)], color);
             }
+
             y++;
             ystop   += tworx2;
             error   += ychange;
             ychange += tworx2;
+
             if (2 * error + xchange > 0)
             {
                 x--;
@@ -1580,46 +1492,33 @@ namespace primitives
         xstop = 0;
         ystop = tworx2 * ry;
 
-        // second set of points
+        // draw second set of points
         while (xstop <= ystop)
         {
             x++;
             xstop   += twory2;
             error   += xchange;
             xchange += twory2;
+
             if (2 * error + ychange > 0)
             {
+
+                // draw scanline
                 for (int i = 0; i <= x; ++i)
                 {
-                    if (xc + i   >= clipper.left &&
-                        xc + i   <= clipper.right &&
-                        yc + y   >= clipper.top &&
-                        yc + y   <= clipper.bottom)
-                    {
+                    if (is_inside_clipper(xc + i, yc + y, clipper))
                         renderer(surface[(yc + y) * pitch + (xc + i)], color);
-                    }
-                    if (xcm1 - i >= clipper.left &&
-                        xcm1 - i <= clipper.right &&
-                        yc + y   >= clipper.top &&
-                        yc + y   <= clipper.bottom)
-                    {
-                        renderer(surface[(yc + y) * pitch + (xcm1 - i)], color);
-                    }
-                    if (xcm1 - i >= clipper.left &&
-                        xcm1 - i <= clipper.right &&
-                        ycm1 - y >= clipper.top &&
-                        ycm1 - y <= clipper.bottom)
-                    {
-                        renderer(surface[(ycm1 - y) * pitch + (xcm1 - i)], color);
-                    }
-                    if (xc + i   >= clipper.left &&
-                        xc + i   <= clipper.right &&
-                        ycm1 - y >= clipper.top &&
-                        ycm1 - y <= clipper.bottom)
-                    {
-                        renderer(surface[(ycm1 - y) * pitch + (xc + i)], color);
-                    }
+
+                    if (is_inside_clipper(xc - i - 1, yc + y, clipper))
+                        renderer(surface[(yc + y) * pitch + (xc - i - 1)], color);
+
+                    if (is_inside_clipper(xc - i - 1, yc - y - 1, clipper))
+                        renderer(surface[(yc - y - 1) * pitch + (xc - i - 1)], color);
+
+                    if (is_inside_clipper(xc + i, yc - y - 1, clipper))
+                        renderer(surface[(yc - y - 1) * pitch + (xc + i)], color);
                 }
+
                 y--;
                 ystop -= tworx2;
                 error += ychange;
@@ -1641,19 +1540,21 @@ namespace primitives
         renderT renderer)
     {
         // if circle is completely out, don't bother with it
-        if (x + r <= clipper.left ||
-                y + r <= clipper.top ||
-                x - r > clipper.right ||
-                y - r > clipper.bottom)
+        if (is_clipped(x - r, y - r, x + r - 1, y + r - 1, clipper))
         {
             return;
         }
-        int ix = 1, iy = r, dist, n, rr = r*r, rr_m2 = (r-2)*(r-2), ca = color.alpha, tx, ty;
+
+        int ix = 1, iy = r, dist, n, rr = r*r, rr_m2 = (r-2)*(r-2), ca = color.alpha;
         float fr = (float)(r), fca = (float)(ca);
         const float PI_H = (float)(3.1415927 / 2.0);
+
+        // draw outlined circle
         while (ix <= iy)
         {
-            if (antialias == 1)
+
+            // draw antialiased outline (goes through all points in an octant)
+            if (antialias)
             {
                 n = iy + 1;
                 while (--n >= ix)
@@ -1662,117 +1563,76 @@ namespace primitives
                     if (dist > rr) dist = rr;
                     if (dist > rr_m2)
                     {
+                        // antialias
                         color.alpha = (byte)(fca * sin(sin((1.0 - fabs(sqrt((float)(dist)) - fr + 1.0)) * PI_H) * PI_H));
 
-                        tx = x - 1 + ix;
-                        ty = y - n;
-                        if (tx >= clipper.left &&
-                            tx <= clipper.right &&
-                            ty >= clipper.top &&
-                            ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
-                        tx = x - ix;
-                        ty = y - n;
-                        if (tx >= clipper.left &&
-                            tx <= clipper.right &&
-                            ty >= clipper.top &&
-                            ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
-                        tx = x - 1 + ix;
-                        ty = y - 1 + n;
-                        if (tx >= clipper.left &&
-                            tx <= clipper.right &&
-                            ty >= clipper.top &&
-                            ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
-                        tx = x - ix;
-                        ty = y - 1 + n;
-                        if (tx >= clipper.left &&
-                            tx <= clipper.right &&
-                            ty >= clipper.top &&
-                            ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                        // draw the point and reflect it seven times
+                        if (is_inside_clipper(x + ix - 1, y - n, clipper))
+                            renderer(surface[(y - n) * pitch + (x + ix - 1)], color);
+
+                        if (is_inside_clipper(x - ix, y - n, clipper))
+                            renderer(surface[(y - n) * pitch + (x - ix)], color);
+
+                        if (is_inside_clipper(x + ix - 1, y + n - 1, clipper))
+                            renderer(surface[(y + n - 1) * pitch + (x + ix - 1)], color);
+
+                        if (is_inside_clipper(x - ix, y + n - 1, clipper))
+                            renderer(surface[(y + n - 1) * pitch + (x - ix)], color);
+
                         if (ix != n)
                         {
-                            tx = x - 1 + n;
-                            ty = y - ix;
-                            if (tx >= clipper.left &&
-                                tx <= clipper.right &&
-                                ty >= clipper.top &&
-                                ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
-                            tx = x - n;
-                            ty = y - ix;
-                            if (tx >= clipper.left &&
-                                tx <= clipper.right &&
-                                ty >= clipper.top &&
-                                ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
-                            tx = x - 1 + n;
-                            ty = y - 1 + ix;
-                            if (tx >= clipper.left &&
-                                tx <= clipper.right &&
-                                ty >= clipper.top &&
-                                ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
-                            tx = x - n;
-                            ty = y - 1 + ix;
-                            if (tx >= clipper.left &&
-                                tx <= clipper.right &&
-                                ty >= clipper.top &&
-                                ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                            if (is_inside_clipper(x + n - 1, y - ix, clipper))
+                                renderer(surface[(y - ix) * pitch + (x + n - 1)], color);
+
+                            if (is_inside_clipper(x - n, y - ix, clipper))
+                                renderer(surface[(y - ix) * pitch + (x - n)], color);
+
+                            if (is_inside_clipper(x + n - 1, y + ix - 1, clipper))
+                                renderer(surface[(y + ix - 1) * pitch + (x + n - 1)], color);
+
+                            if (is_inside_clipper(x - n, y + ix - 1, clipper))
+                                renderer(surface[(y + ix - 1) * pitch + (x - n)], color);
                         }
                     }
                 }
             }
+
+            // draw simple outline (goes only through points on the outline)
             else
             {
-                tx = x - 1 + ix;
-                ty = y - iy;
-                if (tx >= clipper.left &&
-                    tx <= clipper.right &&
-                    ty >= clipper.top &&
-                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
-                tx = x - ix;
-                ty = y - iy;
-                if (tx >= clipper.left &&
-                    tx <= clipper.right &&
-                    ty >= clipper.top &&
-                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
-                tx = x - 1 + ix;
-                ty = y - 1 + iy;
-                if (tx >= clipper.left &&
-                    tx <= clipper.right &&
-                    ty >= clipper.top &&
-                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
-                tx = x - ix;
-                ty = y - 1 + iy;
-                if (tx >= clipper.left &&
-                    tx <= clipper.right &&
-                    ty >= clipper.top &&
-                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                // draw the point and reflect it seven times
+                if (is_inside_clipper(x + ix - 1, y - iy, clipper))
+                    renderer(surface[(y - iy) * pitch + (x + ix - 1)], color);
+
+                if (is_inside_clipper(x - ix, y - iy, clipper))
+                    renderer(surface[(y - iy) * pitch + (x - ix)], color);
+
+                if (is_inside_clipper(x + ix - 1, y + iy - 1, clipper))
+                    renderer(surface[(y + iy - 1) * pitch + (x + ix - 1)], color);
+
+                if (is_inside_clipper(x - ix, y + iy - 1, clipper))
+                    renderer(surface[(y + iy - 1) * pitch + (x - ix)], color);
+
                 if (ix != iy)
                 {
-                    tx = x - 1 + iy;
-                    ty = y - ix;
-                    if (tx >= clipper.left &&
-                        tx <= clipper.right &&
-                        ty >= clipper.top &&
-                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
-                    tx = x - iy;
-                    ty = y - ix;
-                    if (tx >= clipper.left &&
-                        tx <= clipper.right &&
-                        ty >= clipper.top &&
-                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
-                    tx = x - 1 + iy;
-                    ty = y - 1 + ix;
-                    if (tx >= clipper.left &&
-                        tx <= clipper.right &&
-                        ty >= clipper.top &&
-                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
-                    tx = x - iy;
-                    ty = y - 1 + ix;
-                    if (tx >= clipper.left &&
-                        tx <= clipper.right &&
-                        ty >= clipper.top &&
-                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                    if (is_inside_clipper(x + iy - 1, y - ix, clipper))
+                        renderer(surface[(y - ix) * pitch + (x + iy - 1)], color);
+
+                    if (is_inside_clipper(x - iy, y - ix, clipper))
+                        renderer(surface[(y - ix) * pitch + (x - iy)], color);
+
+                    if (is_inside_clipper(x + iy - 1, y + ix - 1, clipper))
+                        renderer(surface[(y + ix - 1) * pitch + (x + iy - 1)], color);
+
+                    if (is_inside_clipper(x - iy, y + ix - 1, clipper))
+                        renderer(surface[(y + ix - 1) * pitch + (x - iy)], color);
                 }
             }
+
+            // go always rightwards
             ix++;
+
+            // but check whether to go down
             if (abs(ix*ix + iy*iy - rr) > abs(ix*ix + (iy-1)*(iy-1) - rr)) iy--;
         }
     }
@@ -1790,82 +1650,64 @@ namespace primitives
         renderT renderer)
     {
         // if circle is completely out, don't bother with it
-        if (x + r <= clipper.left ||
-                y + r <= clipper.top ||
-                x - r > clipper.right ||
-                y - r > clipper.bottom)
+        if (is_clipped(x - r, y - r, x + r - 1, y + r - 1, clipper))
         {
             return;
         }
-        int ix = 1, iy = r, dist, n, rr = r*r, rr_m1 = (r-1)*(r-1), ca = color.alpha, tx, ty;
+
+        int ix = 1, iy = r, dist, n, rr = r*r, rr_m1 = (r-1)*(r-1), ca = color.alpha;
         float fr = (float)(r), fca = (float)(ca);
 
+        // draw filled circle (goes through all points in an octant)
         while (ix <= iy)
         {
+
             n = iy + 1;
             while (--n >= ix)
             {
+                // antialias
                 if (antialias)
                 {
                     dist = ix*ix + n*n;
                     if (dist > rr) dist = rr;
-                    if (dist > rr_m1) {color.alpha = (byte)(fca * (fr - sqrt(float(dist))));}
-                    else {color.alpha = ca;};
+                    if (dist > rr_m1) color.alpha = (byte)(fca * (fr - sqrt(float(dist))));
+                    else color.alpha = ca;
                 }
-                else {color.alpha = ca;};
-                tx = x - 1 + ix;
-                ty = y - n;
-                if (tx >= clipper.left &&
-                    tx <= clipper.right &&
-                    ty >= clipper.top &&
-                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
-                tx = x - ix;
-                ty = y - n;
-                if (tx >= clipper.left &&
-                    tx <= clipper.right &&
-                    ty >= clipper.top &&
-                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
-                tx = x - 1 + ix;
-                ty = y - 1 + n;
-                if (tx >= clipper.left &&
-                    tx <= clipper.right &&
-                    ty >= clipper.top &&
-                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
-                tx = x - ix;
-                ty = y - 1 + n;
-                if (tx >= clipper.left &&
-                    tx <= clipper.right &&
-                    ty >= clipper.top &&
-                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                else color.alpha = ca;
+
+                // draw the point and reflect it seven times
+                if (is_inside_clipper(x + ix - 1, y - n, clipper))
+                    renderer(surface[(y - n) * pitch + (x + ix - 1)], color);
+
+                if (is_inside_clipper(x - ix, y - n, clipper))
+                    renderer(surface[(y - n) * pitch + (x - ix)], color);
+
+                if (is_inside_clipper(x + ix - 1, y + n - 1, clipper))
+                    renderer(surface[(y + n - 1) * pitch + (x + ix - 1)], color);
+
+                if (is_inside_clipper(x - ix, y + n - 1, clipper))
+                    renderer(surface[(y + n - 1) * pitch + (x - ix)], color);
+
                 if (ix != n)
                 {
-                    tx = x - 1 + n;
-                    ty = y - ix;
-                    if (tx >= clipper.left &&
-                        tx <= clipper.right &&
-                        ty >= clipper.top &&
-                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
-                    tx = x - n;
-                    ty = y - ix;
-                    if (tx >= clipper.left &&
-                        tx <= clipper.right &&
-                        ty >= clipper.top &&
-                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
-                    tx = x - 1 + n;
-                    ty = y - 1 + ix;
-                    if (tx >= clipper.left &&
-                        tx <= clipper.right &&
-                        ty >= clipper.top &&
-                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
-                    tx = x - n;
-                    ty = y - 1 + ix;
-                    if (tx >= clipper.left &&
-                        tx <= clipper.right &&
-                        ty >= clipper.top &&
-                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], color);};
+                    if (is_inside_clipper(x + n - 1, y - ix, clipper))
+                        renderer(surface[(y - ix) * pitch + (x + n - 1)], color);
+
+                    if (is_inside_clipper(x - n, y - ix, clipper))
+                        renderer(surface[(y - ix) * pitch + (x - n)], color);
+
+                    if (is_inside_clipper(x + n - 1, y + ix - 1, clipper))
+                        renderer(surface[(y + ix - 1) * pitch + (x + n - 1)], color);
+
+                    if (is_inside_clipper(x - n, y + ix - 1, clipper))
+                        renderer(surface[(y + ix - 1) * pitch + (x - n)], color);
                 }
             }
+
+            // go always rightwards
             ix++;
+
+            // but check whether to go down
             if (abs(ix*ix + iy*iy - rr) > abs(ix*ix + (iy-1)*(iy-1) - rr)) iy--;
         }
     }
@@ -1883,93 +1725,78 @@ namespace primitives
         renderT renderer)
     {
         // if circle is completely out, don't bother with it
-        if (x + r <= clipper.left ||
-                y + r <= clipper.top ||
-                x - r > clipper.right ||
-                y - r > clipper.bottom)
+        if (is_clipped(x - r, y - r, x + r - 1, y + r - 1, clipper))
         {
             return;
         }
-        int ix = 1, iy = r, n, tx, ty;
-        float fdr = (float)(colors[1].red - colors[0].red);
+
+        int ix = 1, iy = r, n;
+
+        // channel differences
+        float fdr = (float)(colors[1].red   - colors[0].red);
         float fdg = (float)(colors[1].green - colors[0].green);
-        float fdb = (float)(colors[1].blue - colors[0].blue);
+        float fdb = (float)(colors[1].blue  - colors[0].blue);
         float fda = (float)(colors[1].alpha - colors[0].alpha);
+
         float dist, factor, fr = (float)(r);
         const float PI_H = (float)(3.1415927 / 2.0), RR = (float)(r*r);
+
+        // draw gradient circle (goes through all points in an octant)
         while (ix <= iy)
         {
+
             n = iy + 1;
             while (--n >= ix)
             {
                 dist = sqrt((float)(ix*ix + n*n));
                 if (dist > r) dist = fr;
+
+                // set correct color
                 factor = sin((float(1) - dist / fr) * PI_H);
-                colors[0].red   = (byte)(colors[1].red - fdr * factor);
+                colors[0].red   = (byte)(colors[1].red   - fdr * factor);
                 colors[0].green = (byte)(colors[1].green - fdg * factor);
-                colors[0].blue  = (byte)(colors[1].blue - fdb * factor);
+                colors[0].blue  = (byte)(colors[1].blue  - fdb * factor);
                 colors[0].alpha = (byte)(colors[1].alpha - fda * factor);
 
-                if (antialias)
+                // antialias
+                if (antialias && dist > r - 1)
                 {
-                    if (dist > r - 1)
-                    {
-                        colors[0].alpha = (byte)((float)(colors[0].alpha) * (fr - dist));
-                    }
+                    colors[0].alpha = (byte)((float)(colors[0].alpha) * (fr - dist));
                 }
-                tx = x - 1 + ix;
-                ty = y - n;
-                if (tx >= clipper.left &&
-                    tx <= clipper.right &&
-                    ty >= clipper.top &&
-                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], colors[0]);};
-                tx = x - ix;
-                ty = y - n;
-                if (tx >= clipper.left &&
-                    tx <= clipper.right &&
-                    ty >= clipper.top &&
-                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], colors[0]);};
-                tx = x - 1 + ix;
-                ty = y - 1 + n;
-                if (tx >= clipper.left &&
-                    tx <= clipper.right &&
-                    ty >= clipper.top &&
-                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], colors[0]);};
-                tx = x - ix;
-                ty = y - 1 + n;
-                if (tx >= clipper.left &&
-                    tx <= clipper.right &&
-                    ty >= clipper.top &&
-                    ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], colors[0]);};
+
+                // draw the point and reflect it seven times
+                if (is_inside_clipper(x + ix - 1, y - n, clipper))
+                    renderer(surface[(y - n) * pitch + (x + ix - 1)], colors[0]);
+
+                if (is_inside_clipper(x - ix, y - n, clipper))
+                    renderer(surface[(y - n) * pitch + (x - ix)], colors[0]);
+
+                if (is_inside_clipper(x + ix - 1, y + n - 1, clipper))
+                    renderer(surface[(y + n - 1) * pitch + (x + ix - 1)], colors[0]);
+
+                if (is_inside_clipper(x - ix, y + n - 1, clipper))
+                    renderer(surface[(y + n - 1) * pitch + (x - ix)], colors[0]);
+
                 if (ix != n)
                 {
-                    tx = x - 1 + n;
-                    ty = y - ix;
-                    if (tx >= clipper.left &&
-                        tx <= clipper.right &&
-                        ty >= clipper.top &&
-                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], colors[0]);};
-                    tx = x - n;
-                    ty = y - ix;
-                    if (tx >= clipper.left &&
-                        tx <= clipper.right &&
-                        ty >= clipper.top &&
-                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], colors[0]);};
-                    tx = x - 1 + n;
-                    ty = y - 1 + ix;
-                    if (tx >= clipper.left &&
-                        tx <= clipper.right &&
-                        ty >= clipper.top &&
-                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], colors[0]);};
-                    tx = x - n;
-                    ty = y - 1 + ix;
-                    if (tx >= clipper.left &&
-                        tx <= clipper.right &&
-                        ty >= clipper.top &&
-                        ty <= clipper.bottom) {renderer(surface[(ty) * pitch + (tx)], colors[0]);};
+                    if (is_inside_clipper(x + n - 1, y - ix, clipper))
+                        renderer(surface[(y - ix) * pitch + (x + n - 1)], colors[0]);
+
+                    if (is_inside_clipper(x - n, y - ix, clipper))
+                        renderer(surface[(y - ix) * pitch + (x - n)], colors[0]);
+
+                    if (is_inside_clipper(x + n - 1, y + ix - 1, clipper))
+                        renderer(surface[(y + ix - 1) * pitch + (x + n - 1)], colors[0]);
+
+                    if (is_inside_clipper(x - n, y + ix - 1, clipper))
+                        renderer(surface[(y + ix - 1) * pitch + (x - n)], colors[0]);
                 }
             }
+
+            // go always rightwards
             ix++;
+
+            // but check whether to go down
             if (abs(ix*ix + iy*iy - RR) > abs(ix*ix + (iy-1)*(iy-1) - RR)) iy--;
         }
     }

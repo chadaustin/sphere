@@ -106,11 +106,6 @@ SS_FUNCTION(OpenLog, 1)
   // array.length
   // array[index]
 
-  // points
-  SS_FUNCTION(CreatePoint2D, 2)
-  //point2d.x
-  //point2d.y
-
   // colors
   SS_FUNCTION(CreateColor, 3)
   SS_FUNCTION(BlendColors, 2)
@@ -181,17 +176,17 @@ SS_FUNCTION(OpenLog, 1)
     SS_FUNCTION(AreZonesAt, 3)
     SS_FUNCTION(ExecuteZones, 3)
     SS_FUNCTION(ExecuteZoneScript, 1)
-	
+    
     // triggers
     //SS_FUNCTION(GetCurrentTrigger, 0)
-	//SS_FUNCTION(GetTriggerX, 1)
-	//SS_FUNCTION(GetTriggerY, 1)
-	//SS_FUNCTION(GetNumTriggers, 0)
+    //SS_FUNCTION(GetTriggerX, 1)
+    //SS_FUNCTION(GetTriggerY, 1)
+    //SS_FUNCTION(GetNumTriggers, 0)
     SS_FUNCTION(IsTriggerAt, 3)
     SS_FUNCTION(ExecuteTrigger, 3)
 
     // obstruction segments
-	SS_FUNCTION(GetNumObstructionSegments, 0)
+    SS_FUNCTION(GetNumObstructionSegments, 0)
 
     SS_FUNCTION(SetMapEngineFrameRate, 1)
     SS_FUNCTION(GetMapEngineFrameRate, 0)

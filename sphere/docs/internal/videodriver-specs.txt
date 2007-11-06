@@ -64,12 +64,25 @@ void  DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels)
 void  DirectGrab(int x, int y, int w, int h, RGBA* pixels)
 
 void DrawPoint(int x, int y, RGBA color)
+void DrawPointSeries(VECTOR_INT** points, int length, RGBA color)
 void DrawLine(int x[2], int y[2], RGBA color)
 void DrawGradientLine(int x[2], int y[2], RGBA colors[2])
+void DrawLineSeries(VECTOR_INT** points, int length, RGBA color, int type)
+void DrawBezierCurve(int x[4], int y[4], double step, RGBA color, int cubic)
 void DrawTriangle(int x[3], int y[3], RGBA color)
 void DrawGradientTriangle(int x[3], int y[3], RGBA colors[3])
+void DrawPolygon(VECTOR_INT** points, int length, int invert, RGBA color)
+void DrawOutlinedRectangle(int x, int y, int w, int h, int size, RGBA color)
 void DrawRectangle(int x, int y, int w, int h, RGBA color)
 void DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
+void DrawOutlinedComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, RGBA color, int antialias)
+void DrawFilledComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, float angle, float frac_size, int fill_empty, RGBA colors[2])
+void DrawGradientComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, float angle, float frac_size, int fill_empty, RGBA colors[3])
+void DrawOutlinedEllipse(int x, int y, int rx, int ry, RGBA color)
+void DrawFilledEllipse(int x, int y, int rx, int ry, RGBA color)
+void DrawOutlinedCircle(int x, int y, int r, RGBA color, int antialias)
+void DrawFilledCircle(int x, int y, int r, RGBA color, int antialias)
+void DrawGradientCircle(int x, int y, int r, RGBA colors[2], int antialias)
 
 
 ------------------------------------------------------------------------------
@@ -292,6 +305,12 @@ void DrawPoint(int x, int y, RGBA color)
 
 ------------------------------------------------------------------------------
 
+void DrawPointSeries(VECTOR_INT** points, int length, RGBA color)
+
+  Draws a series of points directly to the backbuffer
+
+------------------------------------------------------------------------------
+
 void DrawLine(int x1, int y1, int x2, int y2, RGBA color)
 
   Draws a line directly to the backbuffer.
@@ -304,11 +323,35 @@ void DrawGradientLine(int x1, int y1, int x2, int y2, RGBA colors[2])
 
 ------------------------------------------------------------------------------
 
+void DrawLineSeries(VECTOR_INT** points, int length, RGBA color, int type)
+
+  Draws a series of lines directly to the backbuffer
+
+------------------------------------------------------------------------------
+
+void DrawBezierCurve(int x[4], int y[4], double step, RGBA color, int cubic)
+
+  Draws a Bezier curve directly to the backbuffer
+
+------------------------------------------------------------------------------
+
 void DrawTriangle(int x[3], int y[3], RGBA color)
 
 ------------------------------------------------------------------------------
 
 void DrawGradientTriangle(int x[3], int y[3], RGBA colors[3])
+
+------------------------------------------------------------------------------
+
+void DrawPolygon(VECTOR_INT** points, int length, int invert, RGBA color)
+
+  Draws a polygon directly to the backbuffer
+
+------------------------------------------------------------------------------
+
+void DrawOutlinedRectangle(int x, int y, int w, int h, int size, RGBA color)
+
+  Draws an outlined rectangle directly to the backbuffer
 
 ------------------------------------------------------------------------------
 
@@ -319,5 +362,53 @@ void DrawRectangle(int x, int y, int w, int h, RGBA color)
 void DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
 
   colors - upper left, upper right, lower right, lower left
+
+------------------------------------------------------------------------------
+
+void DrawOutlinedComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, RGBA color, int antialias)
+
+  Draws a solid rectangle with a circle cut out directly to the backbuffer
+
+------------------------------------------------------------------------------
+
+void DrawFilledComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, float angle, float frac_size, int fill_empty, RGBA colors[2])
+
+  Draws a solid rectangle with a (fractioned) circle on it directly to the backbuffer
+
+------------------------------------------------------------------------------
+
+void DrawGradientComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, float angle, float frac_size, int fill_empty, RGBA colors[3])
+
+  Draws a solid rectangle with a (fractioned) circle on it directly to the backbuffer
+
+------------------------------------------------------------------------------
+
+void DrawOutlinedEllipse(int x, int y, int rx, int ry, RGBA color)
+
+  Draws an outlined ellipse directly to the backbuffer
+
+------------------------------------------------------------------------------
+
+void DrawFilledEllipse(int x, int y, int rx, int ry, RGBA color)
+
+  Draws a filled ellipse directly to the backbuffer
+
+------------------------------------------------------------------------------
+
+void DrawOutlinedCircle(int x, int y, int r, RGBA color, int antialias)
+
+  Draws an outlined circle directly to the backbuffer
+
+------------------------------------------------------------------------------
+
+void DrawFilledCircle(int x, int y, int r, RGBA color, int antialias)
+
+  Draws a filled circle directly to the backbuffer
+
+------------------------------------------------------------------------------
+
+void DrawGradientCircle(int x, int y, int r, RGBA colors[2], int antialias)
+
+  Draws a gradient circle directly to the backbuffer
 
 ------------------------------------------------------------------------------

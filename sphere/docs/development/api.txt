@@ -166,15 +166,12 @@ log_object.endBlock()
     *** graphic primitives ***
     NOTE: Make sure to use FlipScreen() when you're done drawing
     
-    CreatePoint2D(x, y)
-      - Creates a new Point2D object for PointSeries, LineSeries, and Polygon.
-    
     Point(x, y, color)
       - plots a point onto the video buffer at (x, y) with the color
     
     PointSeries(array, color)
       - Plots a series of points colored with color onto the video buffer
-        with array filled with point2d objects
+        with array filled with objects (each object must have a 'x' and 'y' property).
     
     Line(x1, y1, x2, y2, color)
       - draws a line from (x1, y1) to (x2, y2) with the color
@@ -185,7 +182,7 @@ log_object.endBlock()
 
     LineSeries(array, color [, type])
       - Draws a series of lines colored with color onto the video buffer
-        with array filled with Point2D objects.
+        with array filled with objects (each object must have a 'x' and 'y' property).
         type is one of:
           LINE_MULTIPLE - Every two points draws a line.
           LINE_STRIP - One long line is drawn.
@@ -207,7 +204,8 @@ log_object.endBlock()
         of (x3, y3)) having a color to generate the gradient of the triangle
 
     Polygon(array, color [, invert])
-      - Draws a color-filled polygon using the array of Point2D objects.
+      - Draws a color-filled polygon using the array of objects 
+        (each object must have a 'x' and 'y' property).
         If invert is true, all points in the bounding box of the polygon, but
         not in the polygon will be colored.
         
@@ -258,7 +256,7 @@ log_object.endBlock()
         colored with 'color1', with a circle with the radius cr and the
         color 'color2' drawn onto it.
         Part of the circle can be filled in by specifying the
-        angular offset 'ca' and angular size (doubled, full circle == PI) 'cf'.
+        angular offset 'ca' and angular size 'cf'.
         If fill_empty is true, any part of the rectangle not filled by the arc
         will be filled with 'color1' instead of being left transparent.
 
@@ -784,18 +782,18 @@ log_object.endBlock()
 
       SetPersonSpeed(name, speed)
       SetPersonSpeedXY(name, speed_x, speed_y)
-	- sets the speed at which a person moves at
-	
+        - sets the speed at which a person moves at
+
       GetPersonSpeedX(name)
       GetPersonSpeedY(name)
         - gets the speed at which a person moves at
 
       SetPersonFrameRevert(name, delay)
-	    - sets the delay between when the person last moved and returning to
+        - sets the delay between when the person last moved and returning to
           first frame. The delay is in frames. 0 disables this behaviour.
 
       GetPersonFrameRevert(name)
-	    - gets the delay between when the person last moved and returning to
+        - gets the delay between when the person last moved and returning to
           first frame.  The delay is in frames. 0 disables this behaviour.
 
       SetPersonScaleFactor(name, scale_w, scale_h)
@@ -1220,12 +1218,12 @@ log_object.endBlock()
     e.g. var invert_lookup = [255, 254, 253, 252, 251, ..., 4, 3, 2, 1, 0];
   
   surface_object.applyColorFX(x, y, w, h,  colormatrix)
-	- Apply the colormatrix to the pixels contained in x, y, w, h
-	  (see CreateColorMatrix)
+    - Apply the colormatrix to the pixels contained in x, y, w, h
+      (see CreateColorMatrix)
 
   surface_object.applyColorFX4(x, y, w, h,  cm_upperleft, cm_upperright, cm_lowerleft, cm_lowerright)
     - Apply 4 color matrixes. Each corner has a seperate color matrix.
-	  (see CreateColorMatrix)
+      (see CreateColorMatrix)
 
   surface_object.blit(x, y)
     - draws the surface to the video buffer at (x,y)
@@ -1313,7 +1311,7 @@ log_object.endBlock()
   *** color matrix ***
   CreateColorMatrix(rn, rr, rg, rb,  gn, gr, gg, gb,  bn, br, bg, bb)
     - Creates a colormatrix that is used to transform the colors 
-	  contained in a pixel with the following formula:
+      contained in a pixel with the following formula:
         newcolor.red   = rn + (rr * oldcolor.red + rg * oldcolor.green + rb * oldcolor.blue) / 255;
         newcolor.green = gn + (gr * oldcolor.red + gg * oldcolor.green + gb * oldcolor.blue) / 255;
         newcolor.blue  = bn + (br * oldcolor.red + bg * oldcolor.green + bb * oldcolor.blue) / 255;

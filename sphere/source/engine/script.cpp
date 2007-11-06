@@ -48,7 +48,6 @@ const dword SS_RAWFILE_MAGIC     = 0x29bcd805;
 const dword SS_BYTEARRAY_MAGIC   = 0x2295027f;
 const dword SS_MAPENGINE_MAGIC   = 0x42424401;
 const dword SS_TILESET_MAGIC     = 0x43434402;
-const dword SS_POINT2D_MAGIC     = 0x44444444;
 
 struct SS_OBJECT
 {
@@ -139,10 +138,6 @@ END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_TILESET)
 int __value__;
-END_SS_OBJECT()
-
-BEGIN_SS_OBJECT(SS_POINT2D)
-VECTOR_INT point;
 END_SS_OBJECT()
 
 class NoGCBlock
@@ -769,33 +764,6 @@ inline void USED(T /*t*/)
 #define end_func()  \
     return (This->m_ShouldExit ? JS_FALSE : JS_TRUE); \
   }
-
-///////////////////////////////////////////////////////////
-inline VECTOR_INT* argPoint2D(JSContext* cx, jsval arg)
-{
-    if (JSVAL_IS_VOID(arg))
-    {
-        JS_ReportError(cx, "Invalid point2d object (empty array element)");
-        return NULL;
-    }
-    if (JS_IsArrayObject(cx, JSVAL_TO_OBJECT(arg)))
-    {
-        JS_ReportError(cx, "Invalid point2d object (array element is array)");
-        return NULL;
-    }
-    SS_POINT2D* point = (SS_POINT2D*)JS_GetPrivate(cx, JSVAL_TO_OBJECT(arg));
-    if (point == NULL)
-    {
-        JS_ReportError(cx, "Invalid point2d object (no privates)");
-        return NULL;
-    }
-    if (point->magic != SS_POINT2D_MAGIC)
-    {
-        JS_ReportError(cx, "Invalid point2d object (wrong magic)");
-        return NULL;
-    }
-    return &point->point;
-}
 
 ///////////////////////////////////////////////////////////
 inline RGBA argColor(JSContext* cx, jsval arg)
@@ -1903,6 +1871,45 @@ return_int(GetScreenHeight());
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
+inline VECTOR_INT* getObjCoordinates(JSContext* cx, jsval arg)
+{
+
+    if (!JSVAL_IS_OBJECT(arg))
+    {
+        return NULL;
+    }
+
+    JSObject* object;
+
+    if (JS_ValueToObject(cx, arg, &object) == JS_FALSE)
+    {
+        return NULL;
+    }
+
+    VECTOR_INT* point = new VECTOR_INT;
+
+    // get the x-coordinate
+    JS_LookupProperty(cx, object, "x", &arg);
+    if (arg == JSVAL_VOID)
+    {
+        delete point;
+        return NULL;
+    }
+    point->x = argInt(cx, arg);
+
+    // get the y-coordinate
+    JS_LookupProperty(cx, object, "y", &arg);
+    if (arg == JSVAL_VOID)
+    {
+        delete point;
+        return NULL;
+    }
+    point->y = argInt(cx, arg);
+
+    return point;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /**
     - plots a point onto the video buffer at (x, y) with the color
 */
@@ -1924,14 +1931,15 @@ end_func()
 begin_func(PointSeries, 2)
 if (This->ShouldRender())
 {
-    arg_array(a);
+    arg_array(arr);
     arg_color(c);
 
-    jsval v;
-    jsuint length;
+    jsval  v;
     jsval* vp = &v;
-    jsuint* lengthp = &length;
-    JS_GetArrayLength(cx, a, lengthp);
+    jsuint length;
+
+    JS_GetArrayLength(cx, arr, &length);
+
     if (length < 1)
     {
         JS_ReportError(cx, "PointSeries() failed: Not enough points in array");
@@ -1939,16 +1947,16 @@ if (This->ShouldRender())
     }
 
     VECTOR_INT** points = new VECTOR_INT*[length];
+
     for (int i = 0; i < length; i++)
     {
-        if (JS_GetElement(cx, a, i, vp) == JS_FALSE)
+        JS_GetElement(cx, arr, i, vp);
+
+        points[i] = getObjCoordinates(cx, v);
+
+        if (points[i] == NULL)
         {
-            JS_ReportError(cx, "PointSeries() failed: Invalid point at array index %d", i);
-            return JS_FALSE;
-        }
-        points[i] = argPoint2D(cx, v);
-        if (points[i] == 0)
-        {
+            JS_ReportError(cx, "PointSeries() failed: Invalid object at array index %d", i);
             delete [] points;
             return JS_FALSE;
         }
@@ -2012,8 +2020,9 @@ end_func()
 begin_func(LineSeries, 2)
 if (This->ShouldRender())
 {
-    arg_array(a);
+    arg_array(arr);
     arg_color(c);
+
     int type = 0;
     if (argc >= 3)
     {
@@ -2027,11 +2036,13 @@ if (This->ShouldRender())
             type = 2;
         }
     }
-    jsval v;
-    jsuint length;
+
+    jsval  v;
     jsval* vp = &v;
-    jsuint* lengthp = &length;
-    JS_GetArrayLength(cx, a, lengthp);
+    jsuint length;
+
+    JS_GetArrayLength(cx, arr, &length);
+
     if (length < 2)
     {
         JS_ReportError(cx, "LineSeries() failed: Not enough points in array");
@@ -2047,16 +2058,16 @@ if (This->ShouldRender())
     }
 
     VECTOR_INT** points = new VECTOR_INT*[length];
+
     for (int i = 0; i < length; i++)
     {
-        if (JS_GetElement(cx, a, i, vp) == JS_FALSE)
+        JS_GetElement(cx, arr, i, vp);
+
+        points[i] = getObjCoordinates(cx, v);
+
+        if (points[i] == NULL)
         {
-            JS_ReportError(cx, "LineSeries() failed: Invalid point at array index %d", i);
-            return JS_FALSE;
-        }
-        points[i] = argPoint2D(cx, v);
-        if (points[i] == 0)
-        {
+            JS_ReportError(cx, "LineSeries() failed: Invalid object at array index %d", i);
             delete [] points;
             return JS_FALSE;
         }
@@ -2156,8 +2167,9 @@ end_func()
 begin_func(Polygon, 2)
 if (This->ShouldRender())
 {
-    arg_array(a);
+    arg_array(arr);
     arg_color(c);
+
     int invert = 0;
     if (argc >= 3)
     {
@@ -2167,11 +2179,13 @@ if (This->ShouldRender())
             invert = 0;
         }
     }
-    jsval v;
-    jsuint length;
+
+    jsval  v;
     jsval* vp = &v;
-    jsuint* lengthp = &length;
-    JS_GetArrayLength(cx, a, lengthp);
+    jsuint length;
+
+    JS_GetArrayLength(cx, arr, &length);
+
     if (length < 3)
     {
         JS_ReportError(cx, "Polygon() failed: Not enough points in array");
@@ -2179,16 +2193,16 @@ if (This->ShouldRender())
     }
 
     VECTOR_INT** points = new VECTOR_INT*[length];
+
     for (int i = 0; i < length; i++)
     {
-        if (JS_GetElement(cx, a, i, vp) == JS_FALSE)
+        JS_GetElement(cx, arr, i, vp);
+
+        points[i] = getObjCoordinates(cx, v);
+
+        if (points[i] == NULL)
         {
-            JS_ReportError(cx, "Polygon() failed: Invalid point at array element %d", i);
-            return JS_FALSE;
-        }
-        points[i] = argPoint2D(cx, v);
-        if (points[i] == 0)
-        {
+            JS_ReportError(cx, "Polygon() failed: Invalid object at array index %d", i);
             delete [] points;
             return JS_FALSE;
         }
@@ -2728,24 +2742,6 @@ end_func()
 begin_func(CreateStringFromByteArray, 1)
 arg_byte_array(array);
 return_str_n((char*)array->array, array->size);
-end_func()
-
-////////////////////////////////////////////////////////////////////////////////
-// section: points //
-/**
-    - returns a point2d object with the properties x and y.
-*/
-
-begin_func(CreatePoint2D, 2)
-arg_int(x);
-arg_int(y);
-
-VECTOR_INT point;
-
-point.x = x;
-point.y = y;
-
-return_object(CreatePoint2DObject(cx, point));
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -6588,83 +6584,6 @@ end_method();
 begin_method(SS_LOG, ssLogEndBlock, 0)
 object->log->EndBlock();
 end_method()
-
-////////////////////////////////////////
-////////////////////////////////////////
-// POINT OBJECTS ////////////////////
-////////////////////////////////////////
-
-JSObject*
-CScript::CreatePoint2DObject(JSContext* cx, VECTOR_INT point)
-{
-    // define point2d class
-    static JSClass clasp =
-            {
-                "point2d", JSCLASS_HAS_PRIVATE,
-                JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
-                JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizePoint2D,
-            };
-
-    // create the point2d object
-    JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
-    if (object == NULL)
-    {
-        return NULL;
-    }
-
-    // assign point2d properties
-    static JSPropertySpec ps[] =
-        {
-            { "x",      0, JSPROP_PERMANENT, ssPoint2DGetProperty, ssPoint2DSetProperty },
-            { "y",      1, JSPROP_PERMANENT, ssPoint2DGetProperty, ssPoint2DSetProperty },
-            { 0, 0, 0, 0, 0 },
-        };
-    JS_DefineProperties(cx, object, ps);
-
-    // attach the point2d to this object
-    SS_POINT2D* point2d_obj = new SS_POINT2D;
-    if (!point2d_obj)
-        return NULL;
-    point2d_obj->point = point;
-    JS_SetPrivate(cx, object, point2d_obj);
-
-    return object;
-}
-
-////////////////////////////////////////
-begin_finalizer(SS_POINT2D, ssFinalizePoint2D)
-end_finalizer()
-
-////////////////////////////////////////
-begin_property(SS_POINT2D, ssPoint2DGetProperty)
-int prop_id = argInt(cx, id);
-switch (prop_id)
-{
-case 0:
-    *vp = INT_TO_JSVAL(object->point.x);
-    break;
-case 1:
-    *vp = INT_TO_JSVAL(object->point.y);
-    break;
-default:
-    *vp = JSVAL_NULL;
-    break;
-}
-end_property()
-
-////////////////////////////////////////
-begin_property(SS_POINT2D, ssPoint2DSetProperty)
-int prop_id = argInt(cx, id);
-switch (prop_id)
-{
-case 0:
-    object->point.x   = argInt(cx, *vp);
-    break;
-case 1:
-    object->point.y = argInt(cx, *vp);
-    break;
-}
-end_property()
 
 ////////////////////////////////////////
 ////////////////////////////////////////

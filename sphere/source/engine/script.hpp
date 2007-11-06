@@ -105,12 +105,6 @@ private:
   declare_method(ssLogBeginBlock);
   declare_method(ssLogEndBlock);
 
-  // point2d
-  declare_constructor1(CreatePoint2DObject, VECTOR_INT point);
-  declare_finalizer(ssFinalizePoint2D);
-  declare_property(ssPoint2DGetProperty);
-  declare_property(ssPoint2DSetProperty);
-
   // colors
   declare_constructor1(CreateColorObject, RGBA color);
   declare_finalizer(ssFinalizeColor);
