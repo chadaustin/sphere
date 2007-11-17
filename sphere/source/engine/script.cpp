@@ -518,9 +518,16 @@ CScript::InitializeSphereConstants()
     }
     constants[] = {
 
-                      // surface - setBlendMode constants
-                      { "REPLACE", CImage32::REPLACE },
-                      { "BLEND",   CImage32::BLEND   },
+                      // blend mode constants
+                      { "BLEND",         CImage32::BLEND },
+                      { "REPLACE",       CImage32::REPLACE },
+                      { "RGB_ONLY",      CImage32::RGB_ONLY },
+                      { "ALPHA_ONLY",    CImage32::ALPHA_ONLY },
+                      { "ADD",           CImage32::ADD },
+                      { "SUBTRACT",      CImage32::SUBTRACT },
+                      { "MULTIPLY",      CImage32::MULTIPLY },
+                      { "AVERAGE",       CImage32::AVERAGE },
+                      { "INVERT",        CImage32::INVERT },
 
                       // primitive constants
                       { "LINE_MULTIPLE", 0 },
@@ -8062,12 +8069,19 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
     // assign the methods to the object
     static JSFunctionSpec fs[] =
         {
-            { "applyColorFX",     ssSurfaceApplyColorFX,     5, 0, 0
-            },
+            { "applyColorFX",     ssSurfaceApplyColorFX,     5, 0, 0 },
             { "applyColorFX4",    ssSurfaceApplyColorFX4,    8, 0, 0 },
             { "blit",             ssSurfaceBlit,             2, 0, 0 },
+
             { "blitSurface",      ssSurfaceBlitSurface,      3, 0, 0 },
-        //    { "blitImage",        ssSurfaceBlitImage,        3, 0, 0 },
+            { "blitMaskSurface",  ssSurfaceBlitMaskSurface,  4, 0, 0 },
+            { "rotateBlitSurface",        ssSurfaceRotateBlitSurface,         4, 0, 0 },
+            { "rotateBlitMaskSurface",    ssSurfaceRotateBlitMaskSurface,     5, 0, 0 },
+            { "zoomBlitSurface",          ssSurfaceZoomBlitSurface,           4, 0, 0 },
+            { "zoomBlitMaskSurface",      ssSurfaceZoomBlitMaskSurface,       5, 0, 0 },
+            { "transformBlitSurface",     ssSurfaceTransformBlitSurface,      9, 0, 0 },
+            { "transformBlitMaskSurface", ssSurfaceTransformBlitMaskSurface, 10, 0, 0 },
+        //  { "blitImage",        ssSurfaceBlitImage,        3, 0, 0 },
 
             { "createImage",      ssSurfaceCreateImage,      0, 0, 0 },
             { "setBlendMode",     ssSurfaceSetBlendMode,     1, 0, 0 },
@@ -8075,12 +8089,23 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
             { "setPixel",         ssSurfaceSetPixel,         3, 0, 0 },
             { "setAlpha",         ssSurfaceSetAlpha,         1, 0, 0 },
             { "replaceColor",     ssSurfaceReplaceColor,     2, 0, 0 },
-            { "line",             ssSurfaceLine,             5, 0, 0 },
-            { "rectangle",        ssSurfaceRectangle,        5, 0, 0 },
 
-            { "gradientLine",     ssSurfaceGradientLine,     6, 0, 0 },
+            { "pointSeries",       ssSurfacePointSeries,       2, 0, 0 },
+            { "line",              ssSurfaceLine,              5, 0, 0 },
+            { "gradientLine",      ssSurfaceGradientLine,      6, 0, 0 },
+            { "lineSeries",        ssSurfaceLineSeries,        2, 0, 0 },
+            { "bezierCurve",       ssSurfaceBezierCurve,       8, 0, 0 },
+            { "outlinedRectangle", ssSurfaceOutlinedRectangle, 5, 0, 0 },
+            { "rectangle",         ssSurfaceRectangle,         5, 0, 0 },
             { "gradientRectangle", ssSurfaceGradientRectangle, 8, 0, 0 },
+            { "triangle",          ssSurfaceTriangle,          7, 0, 0 },
             { "gradientTriangle",  ssSurfaceGradientTriangle,  9, 0, 0 },
+            { "polygon",           ssSurfacePolygon,           2, 0, 0 },
+            { "outlinedEllipse",   ssSurfaceOutlinedEllipse,   5, 0, 0 },
+            { "filledEllipse",     ssSurfaceFilledEllipse,     5, 0, 0 },
+            { "outlinedCircle",    ssSurfaceOutlinedCircle,    4, 0, 0 },
+            { "filledCircle",      ssSurfaceFilledCircle,      4, 0, 0 },
+            { "gradientCircle",    ssSurfaceGradientCircle,    5, 0, 0 },
 
             { "rotate",           ssSurfaceRotate,           2, 0, 0 },
             { "resize",           ssSurfaceResize,           2, 0, 0 },
@@ -8089,7 +8114,7 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
             { "flipVertically",   ssSurfaceFlipVertically,   0, 0, 0 },
             { "clone",            ssSurfaceClone,            0, 0, 0 },
             { "cloneSection",     ssSurfaceCloneSection,     4, 0, 0 },
-            { "triangle",         ssSurfaceTriangle,         7, 0, 0 },
+
             { "drawText",         ssSurfaceDrawText,         4, 0, 0 },
             { "drawZoomedText",   ssSurfaceDrawZoomedText,   5, 0, 0 },
             { "drawTextBox",      ssSurfaceDrawTextBox,      7, 0, 0 },
@@ -8194,6 +8219,242 @@ if (surface)
 }
 
 end_method()
+
+////////////////////////////////////////
+inline int getMaskBlendMode(int bmode)
+{
+    switch (bmode)
+    {
+        case CImage32::BLEND:      return CImage32::BLEND;      break;
+        case CImage32::REPLACE:    return CImage32::REPLACE;    break;
+        case CImage32::RGB_ONLY:   return CImage32::RGB_ONLY;   break;
+        case CImage32::ALPHA_ONLY: return CImage32::ALPHA_ONLY; break;
+        case CImage32::ADD:        return CImage32::ADD;        break;
+        case CImage32::SUBTRACT:   return CImage32::SUBTRACT;   break;
+        case CImage32::MULTIPLY:   return CImage32::MULTIPLY;   break;
+        case CImage32::AVERAGE:    return CImage32::AVERAGE;    break;
+        case CImage32::INVERT:     return CImage32::INVERT;     break;
+        default:                   return CImage32::MULTIPLY;   break;
+    }
+}
+
+////////////////////////////////////////
+/**
+    - draws 'surface' onto the surface_object at (x, y), except that the color passed
+      as 'mask' tints 'surface'
+*/
+begin_method(SS_SURFACE, ssSurfaceBlitMaskSurface, 4)
+
+arg_surface(surface);
+arg_int(x);
+arg_int(y);
+arg_color(mask);
+
+int mask_bmode = CImage32::MULTIPLY;
+if (argc >= 5)
+{
+    mask_bmode = getMaskBlendMode(argInt(cx, argv[4]));
+}
+
+if (surface)
+{
+    object->surface->BlitImageMask(*surface, x, y, mask, mask_bmode);
+}
+
+end_method()
+
+////////////////////////////////////////
+/**
+    - draws 'surface' onto the surface_object at (x, y), except that 'surface' is rotated
+      anti-clockwise in radians, with -2*PI <= angle <= 2*PI
+*/
+begin_method(SS_SURFACE, ssSurfaceRotateBlitSurface, 4)
+
+arg_surface(surface);
+arg_int(x);
+arg_int(y);
+arg_double(angle);
+
+if (surface)
+{
+    if (angle == 0)
+    {
+        object->surface->BlitImage(*surface, x, y);
+    }
+    else
+    {
+        int w = surface->GetWidth();
+        int h = surface->GetHeight();
+        int tx[4];
+        int ty[4];
+
+        CalculateRotateBlitPoints(tx, ty, x, y, w, h, angle);
+
+        object->surface->TransformBlitImage(*surface, tx, ty);
+    }
+}
+
+end_method()
+
+////////////////////////////////////////
+/**
+    - rotateBlitSurface + blitMaskSurface
+*/
+begin_method(SS_SURFACE, ssSurfaceRotateBlitMaskSurface, 5)
+
+arg_surface(surface);
+arg_int(x);
+arg_int(y);
+arg_double(angle);
+arg_color(mask);
+
+int mask_bmode = CImage32::MULTIPLY;
+if (argc >= 6)
+{
+    mask_bmode = getMaskBlendMode(argInt(cx, argv[5]));
+}
+
+if (surface)
+{
+    if (angle == 0)
+    {
+        object->surface->BlitImageMask(*surface, x, y, mask, mask_bmode);
+    }
+    else
+    {
+        int w = surface->GetWidth();
+        int h = surface->GetHeight();
+        int tx[4];
+        int ty[4];
+
+        CalculateRotateBlitPoints(tx, ty, x, y, w, h, angle);
+
+        object->surface->TransformBlitImageMask(*surface, tx, ty, mask, mask_bmode);
+    }
+}
+
+end_method()
+
+////////////////////////////////////////
+/**
+    - draws 'surface' onto the surface_object at (x, y) with zooming, with the scaling
+      depending on factor. Normally a factor of 1 will draw a normal looking
+      'surface' and between 0 and 1 will shrink it. Any values greater than 1
+      will stretch it's size.
+*/
+begin_method(SS_SURFACE, ssSurfaceZoomBlitSurface, 4)
+
+arg_surface(surface);
+arg_int(x);
+arg_int(y);
+arg_double(factor);
+
+if (surface)
+{
+    int w = surface->GetWidth();
+    int h = surface->GetHeight();
+
+    int tx[4] = { x, x + (int)(w * factor), x + (int)(w * factor), x };
+    int ty[4] = { y, y, y + (int)(h * factor), y + (int)(h * factor) };
+
+    object->surface->TransformBlitImage(*surface, tx, ty);
+}
+
+end_method()
+
+////////////////////////////////////////
+/**
+    - zoomBlitSurface + blitMaskSurface
+*/
+begin_method(SS_SURFACE, ssSurfaceZoomBlitMaskSurface, 5)
+
+arg_surface(surface);
+arg_int(x);
+arg_int(y);
+arg_double(factor);
+arg_color(mask);
+
+int mask_bmode = CImage32::MULTIPLY;
+if (argc >= 6)
+{
+    mask_bmode = getMaskBlendMode(argInt(cx, argv[5]));
+}
+
+if (surface)
+{
+    int w = surface->GetWidth();
+    int h = surface->GetHeight();
+
+    int tx[4] = { x, x + (int)(w * factor), x + (int)(w * factor), x };
+    int ty[4] = { y, y, y + (int)(h * factor), y + (int)(h * factor) };
+
+    object->surface->TransformBlitImageMask(*surface, tx, ty, mask, mask_bmode);
+}
+
+end_method()
+
+////////////////////////////////////////
+/**
+    - draws 'surface' onto the surface_object with "transformation", where
+      (x1, y1) is the upper left corner, (x2, y2) the upper right corner,
+      (x3, y3) is the lower right corner, and (x4, y4) is the lower left
+      corner.
+*/
+begin_method(SS_SURFACE, ssSurfaceTransformBlitSurface, 9)
+
+arg_surface(surface);
+arg_int(x1);
+arg_int(y1);
+arg_int(x2);
+arg_int(y2);
+arg_int(x3);
+arg_int(y3);
+arg_int(x4);
+arg_int(y4);
+
+int x[4] = { x1, x2, x3, x4 };
+int y[4] = { y1, y2, y3, y4 };
+
+if (surface)
+{
+    object->surface->TransformBlitImage(*surface, x, y);
+}
+
+end_method()
+
+////////////////////////////////////////
+/**
+    - transformBlitSurface + blitMaskSurface
+*/
+begin_method(SS_SURFACE, ssSurfaceTransformBlitMaskSurface, 10)
+
+arg_surface(surface);
+arg_int(x1);
+arg_int(y1);
+arg_int(x2);
+arg_int(y2);
+arg_int(x3);
+arg_int(y3);
+arg_int(x4);
+arg_int(y4);
+arg_color(mask);
+
+int mask_bmode = CImage32::MULTIPLY;
+if (argc >= 11)
+{
+    mask_bmode = getMaskBlendMode(argInt(cx, argv[10]));
+}
+
+int x[4] = { x1, x2, x3, x4 };
+int y[4] = { y1, y2, y3, y4 };
+
+if (surface)
+{
+    object->surface->TransformBlitImageMask(*surface, x, y, mask, mask_bmode);
+}
+
+end_method()
+
 ////////////////////////////////////////
 #if 0
 ///**
@@ -8257,14 +8518,51 @@ end_method()
 
 ////////////////////////////////////////
 /**
-    - pass it with either BLEND or REPLACE
-      REPLACE mode will make the surface erase the pixels needed when doing a
-              drawing operation (setpixel, line, rectangle...)
-      BLEND will blend the pixels needed when doing a drawing operation
+    - pass it one of the following constants:
+    	- BLEND:		DestColor = (DestColor * (255 - SrcAlpha) / 255) + ((SrcColor * SrcAlpha) / 255)
+    	- ADD:			DestColor = DestColor + ((SrcColor * SrcAlpha) / 255)
+    	- SUBTRACT:		DestColor = DestColor - ((SrcColor * SrcAlpha) / 255)
+    	- MULTIPLY:		DestColor = DestColor * ((SrcColor * SrcAlpha) / 255) / 255
+    	- AVERAGE:		DestColor = DestColor + ((SrcColor * SrcAlpha) / 255) / 2
+    	- INVERT:		DestColor = DestColor * (255 - ((SrcColor * SrcAlpha) / 255)) / 255
+    	- REPLACE:		DestColor = SrcColor
+    	- RGB_ONLY:		DestRGB   = SrcRGB
+    	- ALPHA_ONLY:	DestAlpha = SrcAlpha
 */
 begin_method(SS_SURFACE, ssSurfaceSetBlendMode, 1)
 arg_int(mode);
-object->surface->SetBlendMode(mode == CImage32::REPLACE ? CImage32::REPLACE : CImage32::BLEND);
+
+switch (mode)
+{
+    case 0:
+        object->surface->SetBlendMode(CImage32::BLEND);
+        break;
+    case 1:
+        object->surface->SetBlendMode(CImage32::REPLACE);
+        break;
+    case 2:
+        object->surface->SetBlendMode(CImage32::RGB_ONLY);
+        break;
+    case 3:
+        object->surface->SetBlendMode(CImage32::ALPHA_ONLY);
+        break;
+    case 4:
+        object->surface->SetBlendMode(CImage32::ADD);
+        break;
+    case 5:
+        object->surface->SetBlendMode(CImage32::SUBTRACT);
+        break;
+    case 6:
+        object->surface->SetBlendMode(CImage32::MULTIPLY);
+        break;
+    case 7:
+        object->surface->SetBlendMode(CImage32::AVERAGE);
+        break;
+    case 8:
+        object->surface->SetBlendMode(CImage32::INVERT);
+        break;
+}
+
 end_method()
 
 ////////////////////////////////////////
@@ -8329,6 +8627,49 @@ end_method()
 
 ////////////////////////////////////////
 /**
+    - draws a series of points onto the surface
+    @see PointSeries
+*/
+begin_method(SS_SURFACE, ssSurfacePointSeries, 2)
+
+arg_array(arr);
+arg_color(c);
+
+jsval  v;
+jsval* vp = &v;
+jsuint length;
+
+JS_GetArrayLength(cx, arr, &length);
+
+if (length < 1)
+{
+	JS_ReportError(cx, "pointSeries() failed: Not enough points in array");
+	return JS_FALSE;
+}
+
+VECTOR_INT** points = new VECTOR_INT*[length];
+
+for (int i = 0; i < length; i++)
+{
+	JS_GetElement(cx, arr, i, vp);
+
+	points[i] = getObjCoordinates(cx, v);
+
+	if (points[i] == NULL)
+	{
+		JS_ReportError(cx, "pointSeries() failed: Invalid object at array index %d", i);
+		delete [] points;
+		return JS_FALSE;
+	}
+}
+
+object->surface->PointSeries(points, length, c);
+delete [] points;
+
+end_method()
+
+////////////////////////////////////////
+/**
     - draws a line onto the surface starting from (x1, y1) to (x2, y2) with
       the color
 */
@@ -8340,6 +8681,147 @@ arg_int(y2);
 arg_color(c);
 
 object->surface->Line(x1, y1, x2, y2, c);
+end_method()
+
+//////
+/**
+    - draws a gradient line onto the surface starting from (x1, y1) to (x2, y2)
+    @see GradientLine
+*/
+begin_method(SS_SURFACE, ssSurfaceGradientLine, 6)
+arg_int(x1);
+arg_int(y1);
+arg_int(x2);
+arg_int(y2);
+arg_color(c1);
+arg_color(c2);
+RGBA c[2];
+c[0] = c1;
+c[1] = c2;
+object->surface->GradientLine(x1, y1, x2, y2, c);
+end_method()
+
+////////////////////////////////////////
+/**
+    - draws a series of lines onto the surface
+    @see LineSeries
+*/
+begin_method(SS_SURFACE, ssSurfaceLineSeries, 2)
+
+arg_array(arr);
+arg_color(c);
+
+int type = 0;
+if (argc >= 3)
+{
+    type = argInt(cx, argv[2]);
+    if (type < 0)
+    {
+        type = 0;
+    }
+    else if (type > 2)
+    {
+        type = 2;
+    }
+}
+
+jsval  v;
+jsval* vp = &v;
+jsuint length;
+
+JS_GetArrayLength(cx, arr, &length);
+
+if (length < 2)
+{
+	JS_ReportError(cx, "lineSeries() failed: Not enough points in array");
+	return JS_FALSE;
+}
+if (type == 0 && length % 2)
+{
+	length--;
+}
+if (type == 2 && length < 3)
+{
+	type = 0;
+}
+
+VECTOR_INT** points = new VECTOR_INT*[length];
+
+for (int i = 0; i < length; i++)
+{
+	JS_GetElement(cx, arr, i, vp);
+
+	points[i] = getObjCoordinates(cx, v);
+
+	if (points[i] == NULL)
+	{
+		JS_ReportError(cx, "lineSeries() failed: Invalid object at array index %d", i);
+		delete [] points;
+		return JS_FALSE;
+	}
+}
+
+object->surface->LineSeries(points, length, c, type);
+delete [] points;
+
+end_method()
+
+////////////////////////////////////////
+/**
+    - draws a Bezier Curve onto the surface
+    @see BezierCurve
+*/
+begin_method(SS_SURFACE, ssSurfaceBezierCurve, 8)
+arg_color(c);
+arg_double(step);
+arg_int(x1);
+arg_int(y1);
+arg_int(x2);
+arg_int(y2);
+arg_int(x3);
+arg_int(y3);
+int x4 = 0;
+int y4 = 0;
+int cubic = 0;
+if (argc >= 10)
+{
+    x4 = argInt(cx, argv[8]);
+    y4 = argInt(cx, argv[9]);
+    cubic = 1;
+}
+int x[4] = { x1, x2, x3, x4 };
+int y[4] = { y1, y2, y3, y4 };
+object->surface->BezierCurve(x, y, step, c, cubic);
+end_method()
+
+////////////////////////////////////////
+/**
+    - draws an outlined rectangle onto the surface
+    @see OutlinedRectangle
+*/
+begin_method(SS_SURFACE, ssSurfaceOutlinedRectangle, 5)
+arg_int(x);
+arg_int(y);
+arg_int(w);
+arg_int(h);
+arg_color(c);
+int size = 1;
+if (argc >= 6)
+{
+    size = argInt(cx, argv[5]);
+    if (size < 0)
+    {
+        size = 1;
+    }
+}
+if (size > h / 2)
+{
+    object->surface->Rectangle(x, y, w, h, c);
+}
+else
+{
+    object->surface->OutlinedRectangle(x, y, w, h, size, c);
+}
 end_method()
 
 ////////////////////////////////////////
@@ -8373,23 +8855,6 @@ arg_color(c);
 object->surface->Triangle(x1, y1, x2, y2, x3, y3, c);
 end_method()
 
-//////
-/**
-    - draws a gradient line onto the surface starting from (x1, y1) to (x2, y2)
-    @see GradientLine
-*/
-begin_method(SS_SURFACE, ssSurfaceGradientLine, 6)
-arg_int(x1);
-arg_int(y1);
-arg_int(x2);
-arg_int(y2);
-arg_color(c1);
-arg_color(c2);
-RGBA c[2];
-c[0] = c1;
-c[1] = c2;
-object->surface->GradientLine(x1, y1, x2, y2, c);
-end_method()
 ////////////////////////////////////////
 /**
     - draws a filled gradient rectangle onto the surface from (x, y) to (x+w, y+h)
@@ -8411,6 +8876,7 @@ c[2] = c3;
 c[3] = c4;
 object->surface->GradientRectangle(x, y, w, h, c);
 end_method()
+
 ////////////////////////////////////////
 /**
     - draws a filled gradient triangle with the points (x1, y1), (x2, y2), (x3, y3),
@@ -8432,6 +8898,164 @@ c[1] = c2;
 c[2] = c3;
 object->surface->GradientTriangle(x1, y1, x2, y2, x3, y3, c);
 end_method()
+
+////////////////////////////////////////
+/**
+    - draws a filled polygon onto the surface
+    @see Polygon
+*/
+begin_method(SS_SURFACE, ssSurfacePolygon, 2)
+
+arg_array(arr);
+arg_color(c);
+
+int invert = 0;
+if (argc >= 3)
+{
+	invert = argInt(cx, argv[2]);
+	if (invert != 0 && invert != 1)
+	{
+		invert = 0;
+	}
+}
+
+jsval  v;
+jsval* vp = &v;
+jsuint length;
+
+JS_GetArrayLength(cx, arr, &length);
+
+if (length < 3)
+{
+	JS_ReportError(cx, "Polygon() failed: Not enough points in array");
+	return JS_FALSE;
+}
+
+VECTOR_INT** points = new VECTOR_INT*[length];
+
+for (int i = 0; i < length; i++)
+{
+	JS_GetElement(cx, arr, i, vp);
+
+	points[i] = getObjCoordinates(cx, v);
+
+	if (points[i] == NULL)
+	{
+		JS_ReportError(cx, "Polygon() failed: Invalid object at array index %d", i);
+		delete [] points;
+		return JS_FALSE;
+	}
+}
+
+object->surface->Polygon(points, length, invert, c);
+delete [] points;
+
+end_method()
+
+////////////////////////////////////////
+/**
+    - draws an outlined ellipse onto the surface
+    @see OutlinedEllipse
+*/
+begin_method(SS_SURFACE, ssSurfaceOutlinedEllipse, 5)
+arg_int(x);
+arg_int(y);
+arg_int(rx);
+arg_int(ry);
+arg_color(c);
+if (rx > 0 && ry > 0)
+{
+    object->surface->OutlinedEllipse(x, y, rx, ry, c);
+}
+end_method()
+
+////////////////////////////////////////
+/**
+    - draws a filled ellipse onto the surface
+    @see FilledEllipse
+*/
+begin_method(SS_SURFACE, ssSurfaceFilledEllipse, 5)
+arg_int(x);
+arg_int(y);
+arg_int(rx);
+arg_int(ry);
+arg_color(c);
+if (rx > 0 && ry > 0)
+{
+    object->surface->FilledEllipse(x, y, rx, ry, c);
+}
+end_method()
+
+////////////////////////////////////////
+/**
+    - draws an outlined circle onto the surface
+    @see OutlinedCircle
+*/
+begin_method(SS_SURFACE, ssSurfaceOutlinedCircle, 4)
+arg_int(x);
+arg_int(y);
+arg_int(r);
+arg_color(c);
+
+int antialias = 0;
+if (argc >= 5)
+{
+    antialias = argInt(cx, argv[4]);
+}
+if (r > 0)
+{
+    object->surface->OutlinedCircle(x, y, r, c, antialias);
+}
+end_method()
+
+////////////////////////////////////////
+/**
+    - draws a filled circle onto the surface
+    @see FilledCircle
+*/
+begin_method(SS_SURFACE, ssSurfaceFilledCircle, 4)
+arg_int(x);
+arg_int(y);
+arg_int(r);
+arg_color(c);
+
+int antialias = 0;
+if (argc >= 5)
+{
+    antialias = argInt(cx, argv[4]);
+}
+if (r > 0)
+{
+    object->surface->FilledCircle(x, y, r, c, antialias);
+}
+end_method()
+
+////////////////////////////////////////
+/**
+    - draws a gradient circle onto the surface
+    @see GradientCircle
+*/
+begin_method(SS_SURFACE, ssSurfaceGradientCircle, 5)
+arg_int(x);
+arg_int(y);
+arg_int(r);
+arg_color(c1);
+arg_color(c2);
+
+int antialias = 0;
+if (argc >= 6)
+{
+    antialias = argInt(cx, argv[5]);
+}
+RGBA c[2];
+c[0] = c1;
+c[1] = c2;
+if (r > 0)
+{
+    object->surface->GradientCircle(x, y, r, c, antialias);
+}
+end_method()
+
 ////////////////////////////////////////
 /**
     - rotates the surface anti-clockwise with the range 0 - 2*pi. The resize
@@ -8450,6 +9074,7 @@ if (autosize)
     JS_DefineProperty(cx, obj, "height", INT_TO_JSVAL(object->surface->GetHeight()), JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
 }
 
+return_object(obj);
 end_method()
 ////////////////////////////////////////
 /**
@@ -8466,11 +9091,15 @@ if (w < 0 || h < 0)
     return JS_FALSE;
 }
 
-object->surface->Resize(w, h);
-// redefine width and height properties
-JS_DefineProperty(cx, obj, "width",  INT_TO_JSVAL(object->surface->GetWidth()),  JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
-JS_DefineProperty(cx, obj, "height", INT_TO_JSVAL(object->surface->GetHeight()), JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
+if (w != object->surface->GetWidth() || h != object->surface->GetHeight())
+{
+	object->surface->Resize(w, h);
+	// redefine width and height properties
+	JS_DefineProperty(cx, obj, "width",  INT_TO_JSVAL(object->surface->GetWidth()),  JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
+	JS_DefineProperty(cx, obj, "height", INT_TO_JSVAL(object->surface->GetHeight()), JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
+}
 
+return_object(obj);
 end_method()
 ////////////////////////////////////////
 /**
@@ -8486,12 +9115,17 @@ if (w < 0 || h < 0)
     return JS_FALSE;
 }
 
-object->surface->Rescale(w, h);
-// redefine width and height properties
-JS_DefineProperty(cx, obj, "width",  INT_TO_JSVAL(object->surface->GetWidth()),  JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
-JS_DefineProperty(cx, obj, "height", INT_TO_JSVAL(object->surface->GetHeight()), JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
+if (w != object->surface->GetWidth() || h != object->surface->GetHeight())
+{
+    object->surface->Rescale(w, h);
+    // redefine width and height properties
+    JS_DefineProperty(cx, obj, "width",  INT_TO_JSVAL(object->surface->GetWidth()),  JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
+    JS_DefineProperty(cx, obj, "height", INT_TO_JSVAL(object->surface->GetHeight()), JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
+}
 
+return_object(obj);
 end_method();
+
 ////////////////////////////////////////
 /**
     - flips the surface horizontally

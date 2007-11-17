@@ -111,6 +111,29 @@ log_object.endBlock()
   - closes the current log block.
 
 
+*** blend modes ***
+
+blitting images to the backbuffer or drawing onto surfaces
+  - BLEND:      DestColor = (DestColor * (255 - SrcAlpha) + SrcColor * SrcAlpha) / 255
+  - ADD:        DestColor = DestColor + ((SrcColor * SrcAlpha) / 255)
+  - SUBTRACT:   DestColor = DestColor - ((SrcColor * SrcAlpha) / 255)
+  - MULTIPLY:   DestColor = DestColor * ((SrcColor * SrcAlpha) / 255) / 255
+  - AVERAGE:    DestColor = DestColor + ((SrcColor * SrcAlpha) / 255) / 2
+  - INVERT:     DestColor = DestColor * (255 - ((SrcColor * SrcAlpha) / 255)) / 255
+
+masking
+  - BLEND:      DestColor = (DestColor * (255 - MaskAlpha) + MaskColor * MaskAlpha) / 255
+  - ADD:        DestColor = DestColor + MaskColor
+  - SUBTRACT:   DestColor = DestColor - MaskColor
+  - MULTIPLY:   DestColor = DestColor * MaskColor / 255
+  - AVERAGE:    DestColor = (DestColor + MaskColor) / 2
+  - INVERT:     DestColor = DestColor * (255 - MaskColor) / 255
+
+drawing onto surfaces or masking
+  - REPLACE:    DestColor = SrcColor
+  - RGB_ONLY:   DestRGB   = SrcRGB
+  - ALPHA_ONLY: DestAlpha = SrcAlpha
+
 
 *** system interfaces ***
 
@@ -402,11 +425,6 @@ log_object.endBlock()
 
   
 *** sphere objects ***
-
-
-  *** points ***
-  CreatePoint2D(x, y)
-    - returns a point2d object with the coordinates (x, y)
 
 
   *** colors ***
@@ -1230,15 +1248,42 @@ log_object.endBlock()
   
   surface_object.blitSurface(surface, x, y)
     - draws 'surface' onto 'surface_object' at (x,y)
-  
+
+  surface_object.blitMaskSurface(surface, x, y, mask [, mask_blend_mode])
+    - draws 'surface' onto the surface_object at (x, y), except that the color passed
+      as 'mask' tints 'surface'
+      optionally you can pass one of the blend modes for masking as mask_blend_mode
+
+  surface_object.rotateBlitSurface(surface, x, y, angle)
+    - draws 'surface' onto the surface_object at (x, y), except that 'surface' is rotated
+      anti-clockwise in radians, with -2*PI <= angle <= 2*PI
+
+  surface_object.rotateBlitMaskSurface(surface, x, y, angle, mask [, mask_blend_mode])
+    - rotateBlitSurface + blitMaskSurface
+
+  surface_object.zoomBlitSurface(surface, x, y, factor)
+    - draws 'surface' onto the surface_object at (x, y) with zooming, with the scaling
+      depending on factor. Normally a factor of 1 will draw a normal looking
+      'surface' and between 0 and 1 will shrink it. Any values greater than 1
+      will stretch it's size.
+
+  surface_object.zoomBlitMaskSurface(surface, x, y, factor, mask [, mask_blend_mode])
+    - zoomBlitSurface + blitMaskSurface
+
+  surface_object.transformBlitSurface(surface, x1, y1, x2, y2, x3, y3, x4, y4)
+    - draws 'surface' onto the surface_object with "transformation", where
+      (x1, y1) is the upper left corner, (x2, y2) the upper right corner,
+      (x3, y3) is the lower right corner, and (x4, y4) is the lower left
+      corner.
+
+  surface_object.transformBlitMaskSurface(surface, x1, y1, x2, y2, x3, y3, x4, y4, mask [, mask_blend_mode])
+    - transformBlitSurface + blitMaskSurface
+
   surface_object.createImage()
     - returns an image object from the surface object
   
   surface_object.setBlendMode(mode)
-    - pass it with either BLEND or REPLACE
-      REPLACE mode will make the surface erase the pixels needed when doing a 
-              drawing operation (setpixel, line, rectangle...)
-      BLEND will blend the pixels needed when doing a drawing operation
+    - sets the blend mode for drawings onto surface_object
   
   surface_object.getPixel(x, y)
     - returns the color of the pixel at (x,y)
@@ -1252,29 +1297,93 @@ log_object.endBlock()
   surface_object.replaceColor(oldColor, newColor)
     - replace all pixels of the color oldColor in the surface with newColor
   
+  surface_object.pointSeries(array, color)
+    - plots a series of points colored with color onto the surface
+      with array filled with objects (each object must have a 'x' and 'y' property)
+
   surface_object.line(x1, y1, x2, y2, color)
     - draws a line onto the surface starting from (x1, y1) to (x2, y2) with 
       the color
-  
+
+  surface_object.gradientLine(x1, y1, x2, y2, color1, color2)
+    - draws a line onto the surface starting from (x1, y1) to (x2, y2) with 
+      a color fade from color1 to color2
+
+  surface_object.lineSeries(array, color [, type])
+    - draws a series of lines colored with color onto the surface
+      with array filled with objects (each object must have a 'x' and 'y' property)
+
+  surface_object.bezierCurve(color, step, Ax, Ay, Bx, By, Cx, Cy [, Dx] [, Dy])
+    - Draws a Bezier curve colored with color onto the surface
+      with step being a floating point number in the range 0 < step <= 1.0
+      and the points (Ax, Ay: coordinates of the endpoint A),
+      (Bx, By: coordinates of A's control point B)
+      (Cx, Cy: coordinates of the endpoint C)
+      (Dx, Dy: optional, coordinates of C's control point D - if omitted, B is also C's control point)
+
+  surface_object.outlinedRectangle(x, y, width, height, color [, size])
+    - draws an outlined rectangle at (x, y) of w width and h height colored with color
+      and with size determining the thickness onto the surface
+
   surface_object.rectangle(x, y, w, h, color)
     - draws a filled rectangle onto the surface from (x, y) to (x+w, y+h)
       with 'color'
-      
+
+  surface_object.gradientRectangle(x, y, w, h, c_ul, c_ur, c_lr, c_ll)
+    - Draws a gradient rectangle onto the surface at (x,y) with the height h and width w.
+      Each corner of a rectangle (c_ul = color of upper left corner, 
+      c_ur = color of upper right corner, c_lr = color of lower right corner,
+      c_ll = color of lower left corner) accepts a color information to 
+      generate the gradient of the rectangle.
+
   surface_object.triangle(x1, y1, x2, y2, x3, y3, color)
     - draws a filled triangle with the points (x1, y1), (x2, y2), (x3, y3), 
       with 'color'
+
+  surface_object.gradientTriangle(x1, y1, x2, y2, x3, y3, c1, c2, c3)
+    - Draws a gradient triangle onto the surface with the points (x1, y1), (x2, y2), (x3, y3),
+      with each point (c1 = color of (x1, y1), c2 = color of (x2, y2), c3 = color
+      of (x3, y3)) having a color to generate the gradient of the triangle
+
+  surface_object.polygon(array, color [, invert])
+    - draws a filled polygon colored with color onto the surface
+      with array filled with objects (each object must have a 'x' and 'y' property)
+      If invert is true, all points in the bounding box of the polygon, but
+      not in the polygon will be colored.
+
+  surface_object.outlinedEllipse(x, y, rx, ry, c)
+    - Draws an outlined ellipse at (x, y) with rx being the horizontal radius 
+      and ry the vertical radius onto the surface with the color c
+
+  surface_object.filledEllipse(x, y, rx, ry, c)
+    - Draws a filled ellipse at (x, y) with rx being the horizontal radius 
+      and ry the vertical radius onto the surface with the color c
+
+  surface_object.outlinedCircle(x, y, radius, color [, antialias])
+    - Draws an outlined circle at (x, y) colored with color onto the surface
+      if antialias is true, the circle will be antialiased
+
+  surface_object.filledCircle(x, y, radius, color [, antialias])
+    - Draws a filled circle at (x, y) colored with color onto the surface
+      if antialias is true, the circle will be antialiased
+
+  surface_object.gradientCircle(x, y, radius, color1, color2 [, antialias])
+    - Draws a gradient circle at (x, y) onto the surface
+      colored with a fading color from color1 to color2
+      if antialias is true, the circle will be antialiased
   
   surface_object.rotate(radians, resize)
     - rotates the surface anti-clockwise with the range 0 - 2*pi. The resize 
       flag is a boolean to tell the engine to resize the surface if needed
-      to accomodate the rotated image.
+      to accomodate the rotated image. Returns the original object.
   
   surface_object.resize(w, h)
     - resizes the surface images. This does not stretch or shrink the image
-      inside the surface.
+      inside the surface. Returns the original object.
   
   surface_object.rescale(w, h)
     - stretches or shrinks the surface to the new width w and height h
+      Returns the original object.
   
   surface_object.flipHorizontally()
     - flips the surface horizontally

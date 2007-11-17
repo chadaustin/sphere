@@ -680,7 +680,7 @@ wImageView::Circle()
       r = abs(start.y - end.y);
     }
 
-    m_Image.Circle(start.x, start.y, r, m_Color);
+    m_Image.OutlinedCircle(start.x, start.y, r, m_Color, false);
     RefreshPixels(start.x - r, start.y - r, start.x + r, start.y + r);
     m_Handler->IV_ImageChanged();
   }
@@ -973,9 +973,9 @@ wImageView::PaintCircle(CImage32& pImage)
     return;
 
   if (abs(start.x - end.x) > abs(start.y - end.y))
-    pImage.Circle(start.x, start.y, abs(start.x - end.x), m_Color);
+    pImage.OutlinedCircle(start.x, start.y, abs(start.x - end.x), m_Color, false);
   else
-    pImage.Circle(start.x, start.y, abs(start.y - end.y), m_Color);
+    pImage.OutlinedCircle(start.x, start.y, abs(start.y - end.y), m_Color, false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

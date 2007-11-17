@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include "../common/rgb.hpp"
+#include "../common/VectorStructs.hpp"
 #include "DefaultFileSystem.hpp"
 #include "ColorMatrix.hpp"
 
@@ -18,12 +19,15 @@ class CImage32
 {
 public:
     enum BlendMode {
+        BLEND = 0,
         REPLACE,
-        BLEND,
         RGB_ONLY,
         ALPHA_ONLY,
-        ADDITIVE,
-        SUBTRACTIVE,
+        ADD,
+        SUBTRACT,
+        MULTIPLY,
+        AVERAGE,
+        INVERT,
     };
 
 public:
@@ -73,24 +77,30 @@ public:
     void SetColorAlpha(int x, int y, int w, int h, RGB color, int alpha);
     void ReplaceColor(RGBA oldColor, RGBA newColor);
 
+    void PointSeries(VECTOR_INT** points, int length, RGBA color);
     void Line(int x1, int y1, int x2, int y2, RGBA color);
     void Line(int x1, int y1, int x2, int y2, RGBA color, clipper clip);
-
-    void Circle(int x, int y, int r, RGBA color);
-    void Ellipse(int cx, int cy, int radx, int rady, RGBA clr, int fill = false);
-    void Ellipse(int cx, int cy, int radx, int rady, RGBA clr, int fill, clipper clip);
+    void LineSeries(VECTOR_INT** points, int length, RGBA color, int type);
+    void BezierCurve(int x[4], int y[4], double step, RGBA color, int cubic);
+    void OutlinedRectangle(int x, int y, int w, int h, int size, RGBA color);
     void Rectangle(int x1, int y1, int x2, int y2, RGBA color);
     void Rectangle(int x1, int y1, int x2, int y2, RGBA color, clipper clip);
     void Triangle(int x1, int y1, int x2, int y2, int x3, int y3, RGBA color);
+    void Polygon(VECTOR_INT** points, int length, int invert, RGBA color);
+    void OutlinedEllipse(int x, int y, int rx, int ry, RGBA color);
+    void FilledEllipse(  int x, int y, int rx, int ry, RGBA color);
+    void OutlinedCircle(int x, int y, int radius, RGBA color, int antialias);
+    void FilledCircle(  int x, int y, int radius, RGBA color, int antialias);
+    void GradientCircle(int x, int y, int radius, RGBA c[2],  int antialias);
 
     void GradientLine(int x1, int y1, int x2, int y2, RGBA c[2]);
     void GradientRectangle(int x, int y, int w, int h, RGBA c[4]);
     void GradientTriangle(int x1, int y1, int x2, int y2, int x3, int y3, RGBA c[3]);
 
     void BlitImage(CImage32& image, int x, int y);
-    void BlitImageMask(CImage32& image, int x, int y, RGBA mask);
+    void BlitImageMask(CImage32& image, int x, int y, RGBA mask, int mask_bmode = 6);
     void TransformBlitImage(CImage32& image, int x[4], int y[4]);
-    void TransformBlitImageMask(CImage32& image, int x[4], int y[4], RGBA mask);
+    void TransformBlitImageMask(CImage32& image, int x[4], int y[4], RGBA mask, int mask_bmode = 6);
 
 private:
     int   m_Width;

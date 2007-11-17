@@ -717,9 +717,37 @@ inline void copyAlpha(RGBA& dest, RGBA src)
 
 inline void additiveRGBA(RGBA& dest, RGBA src)
 {
-    dest.red   = std::max(0, std::min(255, (dest.red   + (((int)src.red   * (int)src.alpha) / 255))));
-    dest.green = std::max(0, std::min(255, (dest.green + (((int)src.green * (int)src.alpha) / 255))));
-    dest.blue  = std::max(0, std::min(255, (dest.blue  + (((int)src.blue  * (int)src.alpha) / 255))));
+    dest.red   = std::min(255, (dest.red   + (((int)src.red   * (int)src.alpha) / 255)));
+    dest.green = std::min(255, (dest.green + (((int)src.green * (int)src.alpha) / 255)));
+    dest.blue  = std::min(255, (dest.blue  + (((int)src.blue  * (int)src.alpha) / 255)));
+}
+
+inline void subtractiveRGBA(RGBA& dest, RGBA src)
+{
+    dest.red   = std::max(0, (dest.red   - (((int)src.red   * (int)src.alpha) / 255)));
+    dest.green = std::max(0, (dest.green - (((int)src.green * (int)src.alpha) / 255)));
+    dest.blue  = std::max(0, (dest.blue  - (((int)src.blue  * (int)src.alpha) / 255)));
+}
+
+inline void multiplicativeRGBA(RGBA& dest, RGBA src)
+{
+    dest.red   = (dest.red   * (((int)src.red   * (int)src.alpha) / 255)) / 255;
+    dest.green = (dest.green * (((int)src.green * (int)src.alpha) / 255)) / 255;
+    dest.blue  = (dest.blue  * (((int)src.blue  * (int)src.alpha) / 255)) / 255;
+}
+
+inline void averageRGBA(RGBA& dest, RGBA src)
+{
+    dest.red   = (dest.red   + (((int)src.red   * (int)src.alpha) / 255)) / 2;
+    dest.green = (dest.green + (((int)src.green * (int)src.alpha) / 255)) / 2;
+    dest.blue  = (dest.blue  + (((int)src.blue  * (int)src.alpha) / 255)) / 2;
+}
+
+inline void invertRGBA(RGBA& dest, RGBA src)
+{
+    dest.red   = (dest.red   * (255 - (((int)src.red   * (int)src.alpha) / 255))) / 255;
+    dest.green = (dest.green * (255 - (((int)src.green * (int)src.alpha) / 255))) / 255;
+    dest.blue  = (dest.blue  * (255 - (((int)src.blue  * (int)src.alpha) / 255))) / 255;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -753,8 +781,20 @@ CImage32::SetPixel(int x, int y, RGBA color, clipper clip)
     case ALPHA_ONLY:
         primitives::Point(m_Pixels, m_Width, x, y, color, clip, copyAlpha);
         break;
-    case ADDITIVE:
+    case ADD:
         primitives::Point(m_Pixels, m_Width, x, y, color, clip, additiveRGBA);
+        break;
+    case SUBTRACT:
+        primitives::Point(m_Pixels, m_Width, x, y, color, clip, subtractiveRGBA);
+        break;
+    case MULTIPLY:
+        primitives::Point(m_Pixels, m_Width, x, y, color, clip, multiplicativeRGBA);
+        break;
+    case AVERAGE:
+        primitives::Point(m_Pixels, m_Width, x, y, color, clip, averageRGBA);
+        break;
+    case INVERT:
+        primitives::Point(m_Pixels, m_Width, x, y, color, clip, invertRGBA);
         break;
     }
 }
@@ -842,6 +882,44 @@ CImage32::ApplyLookup(int x, int y, int w, int h, unsigned char rlut[256], unsig
 
 ////////////////////////////////////////////////////////////////////////////////
 void
+CImage32::PointSeries(VECTOR_INT** points, int length, RGBA color)
+{
+    clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+
+    switch (m_BlendMode)
+    {
+    case REPLACE:
+        primitives::PointSeries(m_Pixels, m_Width, points, length, color, clip, copyRGBA);
+        break;
+    case BLEND:
+        primitives::PointSeries(m_Pixels, m_Width, points, length, color, clip, blendRGBA);
+        break;
+    case RGB_ONLY:
+        primitives::PointSeries(m_Pixels, m_Width, points, length, color, clip, copyRGB);
+        break;
+    case ALPHA_ONLY:
+        primitives::PointSeries(m_Pixels, m_Width, points, length, color, clip, copyAlpha);
+        break;
+    case ADD:
+        primitives::PointSeries(m_Pixels, m_Width, points, length, color, clip, additiveRGBA);
+        break;
+    case SUBTRACT:
+        primitives::PointSeries(m_Pixels, m_Width, points, length, color, clip, subtractiveRGBA);
+        break;
+    case MULTIPLY:
+        primitives::PointSeries(m_Pixels, m_Width, points, length, color, clip, multiplicativeRGBA);
+        break;
+    case AVERAGE:
+        primitives::PointSeries(m_Pixels, m_Width, points, length, color, clip, averageRGBA);
+        break;
+    case INVERT:
+        primitives::PointSeries(m_Pixels, m_Width, points, length, color, clip, invertRGBA);
+        break;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void
 CImage32::Line(int x1, int y1, int x2, int y2, RGBA color)
 {
     clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
@@ -865,110 +943,139 @@ CImage32::Line(int x1, int y1, int x2, int y2, RGBA color, clipper clip)
     case ALPHA_ONLY:
         primitives::Line(m_Pixels, m_Width, x1, y1, x2, y2, constant_color(color), clip, copyAlpha);
         break;
-    case ADDITIVE:
+    case ADD:
         primitives::Line(m_Pixels, m_Width, x1, y1, x2, y2, constant_color(color), clip, additiveRGBA);
+        break;
+    case SUBTRACT:
+        primitives::Line(m_Pixels, m_Width, x1, y1, x2, y2, constant_color(color), clip, subtractiveRGBA);
+        break;
+    case MULTIPLY:
+        primitives::Line(m_Pixels, m_Width, x1, y1, x2, y2, constant_color(color), clip, multiplicativeRGBA);
+        break;
+    case AVERAGE:
+        primitives::Line(m_Pixels, m_Width, x1, y1, x2, y2, constant_color(color), clip, averageRGBA);
+        break;
+    case INVERT:
+        primitives::Line(m_Pixels, m_Width, x1, y1, x2, y2, constant_color(color), clip, invertRGBA);
         break;
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void
-CImage32::Circle(int x, int y, int r, RGBA color)
+CImage32::LineSeries(VECTOR_INT** points, int length, RGBA color, int type)
 {
-    // use C segments to draw the circle
-    const int C = 20;
+    clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
 
-    const double pi_2 = (double)acos((double)-1) * 2;
-    for (int i = 0; i < C; i++)
+    switch (m_BlendMode)
     {
-        int j = (i + 1) % C;
-        int x1 = int(x + r * sin(pi_2 * i / C));
-        int y1 = int(y + r * cos(pi_2 * i / C));
-        int x2 = int(x + r * sin(pi_2 * j / C));
-        int y2 = int(y + r * cos(pi_2 * j / C));
-        Line(x1, y1, x2, y2, color);
+    case REPLACE:
+        primitives::LineSeries(m_Pixels, m_Width, points, length, color, type, clip, copyRGBA);
+        break;
+    case BLEND:
+        primitives::LineSeries(m_Pixels, m_Width, points, length, color, type, clip, blendRGBA);
+        break;
+    case RGB_ONLY:
+        primitives::LineSeries(m_Pixels, m_Width, points, length, color, type, clip, copyRGB);
+        break;
+    case ALPHA_ONLY:
+        primitives::LineSeries(m_Pixels, m_Width, points, length, color, type, clip, copyAlpha);
+        break;
+    case ADD:
+        primitives::LineSeries(m_Pixels, m_Width, points, length, color, type, clip, additiveRGBA);
+        break;
+    case SUBTRACT:
+        primitives::LineSeries(m_Pixels, m_Width, points, length, color, type, clip, subtractiveRGBA);
+        break;
+    case MULTIPLY:
+        primitives::LineSeries(m_Pixels, m_Width, points, length, color, type, clip, multiplicativeRGBA);
+        break;
+    case AVERAGE:
+        primitives::LineSeries(m_Pixels, m_Width, points, length, color, type, clip, averageRGBA);
+        break;
+    case INVERT:
+        primitives::LineSeries(m_Pixels, m_Width, points, length, color, type, clip, invertRGBA);
+        break;
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void
-CImage32::Ellipse(int cx, int cy, int radx, int rady, RGBA color, int fill)
+CImage32::BezierCurve(int x[4], int y[4], double step, RGBA color, int cubic)
 {
-    clipper clip = {0, 0, m_Width - 1, m_Height - 1};
-    Ellipse(cx, cy, radx, rady, color, fill, clip);
-}
+    clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
 
-void
-CImage32::Ellipse(int cx, int cy, int radx, int rady, RGBA color, int fill, clipper clip)
-{
-    int mx1, my1, mx2, my2;
-    int aq, bq;
-    int dx, dy;
-    int r, rx, ry;
-    int x;
-
-    if (fill)
+    switch (m_BlendMode)
     {
-        Line(cx - radx, cy, cx + radx, cy, color, clip);
-    }
-    else
-    {
-        SetPixel(cx + radx, cy, color, clip);
-        SetPixel(cx - radx, cy, color, clip);
-    }
-
-    mx1 = cx - radx;
-    my1 = cy;
-    mx2 = cx + radx;
-    my2 = cy;
-
-    aq = radx * radx;
-    bq = rady * rady;
-    dx = aq<<1;
-    dy = bq<<1;
-    r = radx * bq;
-    rx = r<<1;
-    ry = 0;
-    x = radx;
-
-    while (x > 0)
-    {
-        if (r > 0)
-        {
-            my1++;
-            my2--;
-            ry += dx;
-            r -= ry;
-        }
-        if (r <= 0)
-        {
-            x--;
-            mx1++;
-            mx2--;
-            rx-=dy;
-            r+=rx;
-        }
-
-        if (fill)
-        {
-            Line(mx1, my1, mx2, my1, color, clip);
-            Line(mx1, my2, mx2, my2, color, clip);
-        }
-        else
-        {
-            SetPixel(mx1, my1, color, clip);
-            SetPixel(mx2, my1, color, clip);
-            SetPixel(mx1, my2, color, clip);
-            SetPixel(mx2, my2, color, clip);
-        }
+    case REPLACE:
+        primitives::BezierCurve(m_Pixels, m_Width, x, y, step, color, cubic, clip, copyRGBA);
+        break;
+    case BLEND:
+        primitives::BezierCurve(m_Pixels, m_Width, x, y, step, color, cubic, clip, blendRGBA);
+        break;
+    case RGB_ONLY:
+        primitives::BezierCurve(m_Pixels, m_Width, x, y, step, color, cubic, clip, copyRGB);
+        break;
+    case ALPHA_ONLY:
+        primitives::BezierCurve(m_Pixels, m_Width, x, y, step, color, cubic, clip, copyAlpha);
+        break;
+    case ADD:
+        primitives::BezierCurve(m_Pixels, m_Width, x, y, step, color, cubic, clip, additiveRGBA);
+        break;
+    case SUBTRACT:
+        primitives::BezierCurve(m_Pixels, m_Width, x, y, step, color, cubic, clip, subtractiveRGBA);
+        break;
+    case MULTIPLY:
+        primitives::BezierCurve(m_Pixels, m_Width, x, y, step, color, cubic, clip, multiplicativeRGBA);
+        break;
+    case AVERAGE:
+        primitives::BezierCurve(m_Pixels, m_Width, x, y, step, color, cubic, clip, averageRGBA);
+        break;
+    case INVERT:
+        primitives::BezierCurve(m_Pixels, m_Width, x, y, step, color, cubic, clip, invertRGBA);
+        break;
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/*
 void
-CImage32::Rectangle(int x1, int y1, int x2, int y2, RGBA color)
-*/
+CImage32::OutlinedRectangle(int x, int y, int w, int h, int size, RGBA color)
+{
+    clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+
+    switch (m_BlendMode)
+    {
+    case REPLACE:
+        primitives::OutlinedRectangle(m_Pixels, m_Width, x, y, w, h, size, color, clip, copyRGBA);
+        break;
+    case BLEND:
+        primitives::OutlinedRectangle(m_Pixels, m_Width, x, y, w, h, size, color, clip, blendRGBA);
+        break;
+    case RGB_ONLY:
+        primitives::OutlinedRectangle(m_Pixels, m_Width, x, y, w, h, size, color, clip, copyRGB);
+        break;
+    case ALPHA_ONLY:
+        primitives::OutlinedRectangle(m_Pixels, m_Width, x, y, w, h, size, color, clip, copyAlpha);
+        break;
+    case ADD:
+        primitives::OutlinedRectangle(m_Pixels, m_Width, x, y, w, h, size, color, clip, additiveRGBA);
+        break;
+    case SUBTRACT:
+        primitives::OutlinedRectangle(m_Pixels, m_Width, x, y, w, h, size, color, clip, subtractiveRGBA);
+        break;
+    case MULTIPLY:
+        primitives::OutlinedRectangle(m_Pixels, m_Width, x, y, w, h, size, color, clip, multiplicativeRGBA);
+        break;
+    case AVERAGE:
+        primitives::OutlinedRectangle(m_Pixels, m_Width, x, y, w, h, size, color, clip, averageRGBA);
+        break;
+    case INVERT:
+        primitives::OutlinedRectangle(m_Pixels, m_Width, x, y, w, h, size, color, clip, invertRGBA);
+        break;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 void
 CImage32::Rectangle(int x, int y, int w, int h, RGBA color)
 {
@@ -976,34 +1083,12 @@ CImage32::Rectangle(int x, int y, int w, int h, RGBA color)
     Rectangle(x, y, w, h, color, clip);
 }
 
-/*
-void
-CImage32::Rectangle(int x1, int y1, int x2, int y2, RGBA color, clipper clip)
-*/
 void
 CImage32::Rectangle(int x, int y, int w, int h, RGBA color, clipper clip)
 {
-    // make sure x1 < x2 and y1 < y2 so we can get good w and h values
-    /*
-    if (x1 > x2) {
-    std::swap(x1, x2);
-    }
-    if (y1 > y2) {
-    std::swap(y1, y2);
-    }
-    int w = x2 - x1 + 1;
-    int h = y2 - y1 + 1;
-    */
 
     switch (m_BlendMode)
     {
-        /*
-        case REPLACE:    primitives::Rectangle(m_Pixels, m_Width, x1, y1, w, h, color, clip, copyRGBA);  break;
-        case BLEND:      primitives::Rectangle(m_Pixels, m_Width, x1, y1, w, h, color, clip, blendRGBA); break;
-        case RGB_ONLY:   primitives::Rectangle(m_Pixels, m_Width, x1, y1, w, h, color, clip, copyRGB);   break;
-        case ALPHA_ONLY: primitives::Rectangle(m_Pixels, m_Width, x1, y1, w, h, color, clip, copyAlpha); break;
-        case ADDITIVE:   primitives::Rectangle(m_Pixels, m_Width, x1, y1, w, h, color, clip, additiveRGBA); break;
-        */
     case REPLACE:
         primitives::Rectangle(m_Pixels, m_Width, x, y, w, h, color, clip, copyRGBA);
         break;
@@ -1016,10 +1101,21 @@ CImage32::Rectangle(int x, int y, int w, int h, RGBA color, clipper clip)
     case ALPHA_ONLY:
         primitives::Rectangle(m_Pixels, m_Width, x, y, w, h, color, clip, copyAlpha);
         break;
-    case ADDITIVE:
+    case ADD:
         primitives::Rectangle(m_Pixels, m_Width, x, y, w, h, color, clip, additiveRGBA);
         break;
-
+    case SUBTRACT:
+        primitives::Rectangle(m_Pixels, m_Width, x, y, w, h, color, clip, subtractiveRGBA);
+        break;
+    case MULTIPLY:
+        primitives::Rectangle(m_Pixels, m_Width, x, y, w, h, color, clip, multiplicativeRGBA);
+        break;
+    case AVERAGE:
+        primitives::Rectangle(m_Pixels, m_Width, x, y, w, h, color, clip, averageRGBA);
+        break;
+    case INVERT:
+        primitives::Rectangle(m_Pixels, m_Width, x, y, w, h, color, clip, invertRGBA);
+        break;
     }
 }
 
@@ -1045,8 +1141,248 @@ CImage32::Triangle(int x1, int y1, int x2, int y2, int x3, int y3, RGBA color)
     case ALPHA_ONLY:
         primitives::Triangle(m_Pixels, m_Width, x, y, color, clip, copyAlpha);
         break;
-    case ADDITIVE:
+    case ADD:
         primitives::Triangle(m_Pixels, m_Width, x, y, color, clip, additiveRGBA);
+        break;
+    case SUBTRACT:
+        primitives::Triangle(m_Pixels, m_Width, x, y, color, clip, subtractiveRGBA);
+        break;
+    case MULTIPLY:
+        primitives::Triangle(m_Pixels, m_Width, x, y, color, clip, multiplicativeRGBA);
+        break;
+    case AVERAGE:
+        primitives::Triangle(m_Pixels, m_Width, x, y, color, clip, averageRGBA);
+        break;
+    case INVERT:
+        primitives::Triangle(m_Pixels, m_Width, x, y, color, clip, invertRGBA);
+        break;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void
+CImage32::Polygon(VECTOR_INT** points, int length, int invert, RGBA color)
+{
+    clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+
+    switch (m_BlendMode)
+    {
+    case REPLACE:
+        primitives::Polygon(m_Pixels, m_Width, points, length, invert, color, clip, copyRGBA);
+        break;
+    case BLEND:
+        primitives::Polygon(m_Pixels, m_Width, points, length, invert, color, clip, blendRGBA);
+        break;
+    case RGB_ONLY:
+        primitives::Polygon(m_Pixels, m_Width, points, length, invert, color, clip, copyRGB);
+        break;
+    case ALPHA_ONLY:
+        primitives::Polygon(m_Pixels, m_Width, points, length, invert, color, clip, copyAlpha);
+        break;
+    case ADD:
+        primitives::Polygon(m_Pixels, m_Width, points, length, invert, color, clip, additiveRGBA);
+        break;
+    case SUBTRACT:
+        primitives::Polygon(m_Pixels, m_Width, points, length, invert, color, clip, subtractiveRGBA);
+        break;
+    case MULTIPLY:
+        primitives::Polygon(m_Pixels, m_Width, points, length, invert, color, clip, multiplicativeRGBA);
+        break;
+    case AVERAGE:
+        primitives::Polygon(m_Pixels, m_Width, points, length, invert, color, clip, averageRGBA);
+        break;
+    case INVERT:
+        primitives::Polygon(m_Pixels, m_Width, points, length, invert, color, clip, invertRGBA);
+        break;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void
+CImage32::OutlinedEllipse(int x, int y, int rx, int ry, RGBA color)
+{
+    clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+
+    switch (m_BlendMode)
+    {
+    case REPLACE:
+        primitives::OutlinedEllipse(m_Pixels, m_Width, x, y, rx, ry, color, clip, copyRGBA);
+        break;
+    case BLEND:
+        primitives::OutlinedEllipse(m_Pixels, m_Width, x, y, rx, ry, color, clip, blendRGBA);
+        break;
+    case RGB_ONLY:
+        primitives::OutlinedEllipse(m_Pixels, m_Width, x, y, rx, ry, color, clip, copyRGB);
+        break;
+    case ALPHA_ONLY:
+        primitives::OutlinedEllipse(m_Pixels, m_Width, x, y, rx, ry, color, clip, copyAlpha);
+        break;
+    case ADD:
+        primitives::OutlinedEllipse(m_Pixels, m_Width, x, y, rx, ry, color, clip, additiveRGBA);
+        break;
+    case SUBTRACT:
+        primitives::OutlinedEllipse(m_Pixels, m_Width, x, y, rx, ry, color, clip, subtractiveRGBA);
+        break;
+    case MULTIPLY:
+        primitives::OutlinedEllipse(m_Pixels, m_Width, x, y, rx, ry, color, clip, multiplicativeRGBA);
+        break;
+    case AVERAGE:
+        primitives::OutlinedEllipse(m_Pixels, m_Width, x, y, rx, ry, color, clip, averageRGBA);
+        break;
+    case INVERT:
+        primitives::OutlinedEllipse(m_Pixels, m_Width, x, y, rx, ry, color, clip, invertRGBA);
+        break;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void
+CImage32::FilledEllipse(int x, int y, int rx, int ry, RGBA color)
+{
+    clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+
+    switch (m_BlendMode)
+    {
+    case REPLACE:
+        primitives::FilledEllipse(m_Pixels, m_Width, x, y, rx, ry, color, clip, copyRGBA);
+        break;
+    case BLEND:
+        primitives::FilledEllipse(m_Pixels, m_Width, x, y, rx, ry, color, clip, blendRGBA);
+        break;
+    case RGB_ONLY:
+        primitives::FilledEllipse(m_Pixels, m_Width, x, y, rx, ry, color, clip, copyRGB);
+        break;
+    case ALPHA_ONLY:
+        primitives::FilledEllipse(m_Pixels, m_Width, x, y, rx, ry, color, clip, copyAlpha);
+        break;
+    case ADD:
+        primitives::FilledEllipse(m_Pixels, m_Width, x, y, rx, ry, color, clip, additiveRGBA);
+        break;
+    case SUBTRACT:
+        primitives::FilledEllipse(m_Pixels, m_Width, x, y, rx, ry, color, clip, subtractiveRGBA);
+        break;
+    case MULTIPLY:
+        primitives::FilledEllipse(m_Pixels, m_Width, x, y, rx, ry, color, clip, multiplicativeRGBA);
+        break;
+    case AVERAGE:
+        primitives::FilledEllipse(m_Pixels, m_Width, x, y, rx, ry, color, clip, averageRGBA);
+        break;
+    case INVERT:
+        primitives::FilledEllipse(m_Pixels, m_Width, x, y, rx, ry, color, clip, invertRGBA);
+        break;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void
+CImage32::OutlinedCircle(int x, int y, int radius, RGBA color, int antialias)
+{
+    clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+
+    switch (m_BlendMode)
+    {
+    case REPLACE:
+        primitives::OutlinedCircle(m_Pixels, m_Width, x, y, radius, color, antialias, clip, copyRGBA);
+        break;
+    case BLEND:
+        primitives::OutlinedCircle(m_Pixels, m_Width, x, y, radius, color, antialias, clip, blendRGBA);
+        break;
+    case RGB_ONLY:
+        primitives::OutlinedCircle(m_Pixels, m_Width, x, y, radius, color, antialias, clip, copyRGB);
+        break;
+    case ALPHA_ONLY:
+        primitives::OutlinedCircle(m_Pixels, m_Width, x, y, radius, color, antialias, clip, copyAlpha);
+        break;
+    case ADD:
+        primitives::OutlinedCircle(m_Pixels, m_Width, x, y, radius, color, antialias, clip, additiveRGBA);
+        break;
+    case SUBTRACT:
+        primitives::OutlinedCircle(m_Pixels, m_Width, x, y, radius, color, antialias, clip, subtractiveRGBA);
+        break;
+    case MULTIPLY:
+        primitives::OutlinedCircle(m_Pixels, m_Width, x, y, radius, color, antialias, clip, multiplicativeRGBA);
+        break;
+    case AVERAGE:
+        primitives::OutlinedCircle(m_Pixels, m_Width, x, y, radius, color, antialias, clip, averageRGBA);
+        break;
+    case INVERT:
+        primitives::OutlinedCircle(m_Pixels, m_Width, x, y, radius, color, antialias, clip, invertRGBA);
+        break;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void
+CImage32::FilledCircle(int x, int y, int radius, RGBA color, int antialias)
+{
+    clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+
+    switch (m_BlendMode)
+    {
+    case REPLACE:
+        primitives::FilledCircle(m_Pixels, m_Width, x, y, radius, color, antialias, clip, copyRGBA);
+        break;
+    case BLEND:
+        primitives::FilledCircle(m_Pixels, m_Width, x, y, radius, color, antialias, clip, blendRGBA);
+        break;
+    case RGB_ONLY:
+        primitives::FilledCircle(m_Pixels, m_Width, x, y, radius, color, antialias, clip, copyRGB);
+        break;
+    case ALPHA_ONLY:
+        primitives::FilledCircle(m_Pixels, m_Width, x, y, radius, color, antialias, clip, copyAlpha);
+        break;
+    case ADD:
+        primitives::FilledCircle(m_Pixels, m_Width, x, y, radius, color, antialias, clip, additiveRGBA);
+        break;
+    case SUBTRACT:
+        primitives::FilledCircle(m_Pixels, m_Width, x, y, radius, color, antialias, clip, subtractiveRGBA);
+        break;
+    case MULTIPLY:
+        primitives::FilledCircle(m_Pixels, m_Width, x, y, radius, color, antialias, clip, multiplicativeRGBA);
+        break;
+    case AVERAGE:
+        primitives::FilledCircle(m_Pixels, m_Width, x, y, radius, color, antialias, clip, averageRGBA);
+        break;
+    case INVERT:
+        primitives::FilledCircle(m_Pixels, m_Width, x, y, radius, color, antialias, clip, invertRGBA);
+        break;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void
+CImage32::GradientCircle(int x, int y, int radius, RGBA c[2], int antialias)
+{
+    clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+
+    switch (m_BlendMode)
+    {
+    case REPLACE:
+        primitives::GradientCircle(m_Pixels, m_Width, x, y, radius, c, antialias, clip, copyRGBA);
+        break;
+    case BLEND:
+        primitives::GradientCircle(m_Pixels, m_Width, x, y, radius, c, antialias, clip, blendRGBA);
+        break;
+    case RGB_ONLY:
+        primitives::GradientCircle(m_Pixels, m_Width, x, y, radius, c, antialias, clip, copyRGB);
+        break;
+    case ALPHA_ONLY:
+        primitives::GradientCircle(m_Pixels, m_Width, x, y, radius, c, antialias, clip, copyAlpha);
+        break;
+    case ADD:
+        primitives::GradientCircle(m_Pixels, m_Width, x, y, radius, c, antialias, clip, additiveRGBA);
+        break;
+    case SUBTRACT:
+        primitives::GradientCircle(m_Pixels, m_Width, x, y, radius, c, antialias, clip, subtractiveRGBA);
+        break;
+    case MULTIPLY:
+        primitives::GradientCircle(m_Pixels, m_Width, x, y, radius, c, antialias, clip, multiplicativeRGBA);
+        break;
+    case AVERAGE:
+        primitives::GradientCircle(m_Pixels, m_Width, x, y, radius, c, antialias, clip, averageRGBA);
+        break;
+    case INVERT:
+        primitives::GradientCircle(m_Pixels, m_Width, x, y, radius, c, antialias, clip, invertRGBA);
         break;
     }
 }
@@ -1114,8 +1450,20 @@ CImage32::GradientLine(int x1, int y1, int x2, int y2, RGBA c[2])
     case ALPHA_ONLY:
         primitives::Line((RGBA*)m_Pixels, m_Width, x1, y1, x2, y2, gradient_color(c[0], c[1]), clip, copyAlpha);
         break;
-    case ADDITIVE:
+    case ADD:
         primitives::Line((RGBA*)m_Pixels, m_Width, x1, y1, x2, y2, gradient_color(c[0], c[1]), clip, additiveRGBA);
+        break;
+    case SUBTRACT:
+        primitives::Line((RGBA*)m_Pixels, m_Width, x1, y1, x2, y2, gradient_color(c[0], c[1]), clip, subtractiveRGBA);
+        break;
+    case MULTIPLY:
+        primitives::Line((RGBA*)m_Pixels, m_Width, x1, y1, x2, y2, gradient_color(c[0], c[1]), clip, multiplicativeRGBA);
+        break;
+    case AVERAGE:
+        primitives::Line((RGBA*)m_Pixels, m_Width, x1, y1, x2, y2, gradient_color(c[0], c[1]), clip, averageRGBA);
+        break;
+    case INVERT:
+        primitives::Line((RGBA*)m_Pixels, m_Width, x1, y1, x2, y2, gradient_color(c[0], c[1]), clip, invertRGBA);
         break;
     }
 }
@@ -1138,8 +1486,20 @@ CImage32::GradientRectangle(int x, int y, int w, int h, RGBA c[4])
     case ALPHA_ONLY:
         primitives::GradientRectangle((RGBA*)m_Pixels, m_Width, x, y, w, h, c, clip, copyAlpha, interpolateRGBA);
         break;
-    case ADDITIVE:
+    case ADD:
         primitives::GradientRectangle((RGBA*)m_Pixels, m_Width, x, y, w, h, c, clip, additiveRGBA, interpolateRGBA);
+        break;
+    case SUBTRACT:
+        primitives::GradientRectangle((RGBA*)m_Pixels, m_Width, x, y, w, h, c, clip, subtractiveRGBA, interpolateRGBA);
+        break;
+    case MULTIPLY:
+        primitives::GradientRectangle((RGBA*)m_Pixels, m_Width, x, y, w, h, c, clip, multiplicativeRGBA, interpolateRGBA);
+        break;
+    case AVERAGE:
+        primitives::GradientRectangle((RGBA*)m_Pixels, m_Width, x, y, w, h, c, clip, averageRGBA, interpolateRGBA);
+        break;
+    case INVERT:
+        primitives::GradientRectangle((RGBA*)m_Pixels, m_Width, x, y, w, h, c, clip, invertRGBA, interpolateRGBA);
         break;
     }
 }
@@ -1166,8 +1526,20 @@ CImage32::GradientTriangle(int x1, int y1, int x2, int y2, int x3, int y3, RGBA 
     case ALPHA_ONLY:
         primitives::GradientTriangle((RGBA*)m_Pixels, m_Width, x, y, c, clip, copyAlpha, interpolateRGBA);
         break;
-    case ADDITIVE:
+    case ADD:
         primitives::GradientTriangle((RGBA*)m_Pixels, m_Width, x, y, c, clip, additiveRGBA, interpolateRGBA);
+        break;
+    case SUBTRACT:
+        primitives::GradientTriangle((RGBA*)m_Pixels, m_Width, x, y, c, clip, subtractiveRGBA, interpolateRGBA);
+        break;
+    case MULTIPLY:
+        primitives::GradientTriangle((RGBA*)m_Pixels, m_Width, x, y, c, clip, multiplicativeRGBA, interpolateRGBA);
+        break;
+    case AVERAGE:
+        primitives::GradientTriangle((RGBA*)m_Pixels, m_Width, x, y, c, clip, averageRGBA, interpolateRGBA);
+        break;
+    case INVERT:
+        primitives::GradientTriangle((RGBA*)m_Pixels, m_Width, x, y, c, clip, invertRGBA, interpolateRGBA);
         break;
     }
 }
@@ -1197,9 +1569,37 @@ inline void alphaRenderer(RGBA& dest, RGBA src, RGBA alpha)
 
 inline void additiveRenderer(RGBA& dest, RGBA src, RGBA alpha)
 {
-    dest.red   = std::max(0, std::min(255, (dest.red   + ((src.red   * alpha.alpha) / 255))));
-    dest.green = std::max(0, std::min(255, (dest.green + ((src.green * alpha.alpha) / 255))));
-    dest.blue  = std::max(0, std::min(255, (dest.blue  + ((src.blue  * alpha.alpha) / 255))));
+    dest.red   = std::min(255, (dest.red   + ((src.red   * alpha.alpha) / 255)));
+    dest.green = std::min(255, (dest.green + ((src.green * alpha.alpha) / 255)));
+    dest.blue  = std::min(255, (dest.blue  + ((src.blue  * alpha.alpha) / 255)));
+}
+
+inline void subtractiveRenderer(RGBA& dest, RGBA src, RGBA alpha)
+{
+    dest.red   = std::max(0, (dest.red   - ((src.red   * alpha.alpha) / 255)));
+    dest.green = std::max(0, (dest.green - ((src.green * alpha.alpha) / 255)));
+    dest.blue  = std::max(0, (dest.blue  - ((src.blue  * alpha.alpha) / 255)));
+}
+
+inline void multiplicativeRenderer(RGBA& dest, RGBA src, RGBA alpha)
+{
+    dest.red   = (dest.red   * ((src.red   * alpha.alpha) / 255)) / 255;
+    dest.green = (dest.green * ((src.green * alpha.alpha) / 255)) / 255;
+    dest.blue  = (dest.blue  * ((src.blue  * alpha.alpha) / 255)) / 255;
+}
+
+inline void averageRenderer(RGBA& dest, RGBA src, RGBA alpha)
+{
+    dest.red   = (dest.red   + ((src.red   * alpha.alpha) / 255)) / 2;
+    dest.green = (dest.green + ((src.green * alpha.alpha) / 255)) / 2;
+    dest.blue  = (dest.blue  + ((src.blue  * alpha.alpha) / 255)) / 2;
+}
+
+inline void invertRenderer(RGBA& dest, RGBA src, RGBA alpha)
+{
+    dest.red   = (dest.red   * (255 - ((src.red   * alpha.alpha) / 255))) / 255;
+    dest.green = (dest.green * (255 - ((src.green * alpha.alpha) / 255))) / 255;
+    dest.blue  = (dest.blue  * (255 - ((src.blue  * alpha.alpha) / 255))) / 255;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1260,7 +1660,7 @@ CImage32::BlitImage(CImage32& image, int x, int y)
             alphaRenderer);
         break;
 
-    case ADDITIVE:
+    case ADD:
         primitives::Blit(
             m_Pixels, m_Width,
             x, y,
@@ -1270,6 +1670,54 @@ CImage32::BlitImage(CImage32& image, int x, int y)
             image.GetHeight(),
             clip,
             additiveRenderer);
+        break;
+
+    case SUBTRACT:
+        primitives::Blit(
+            m_Pixels, m_Width,
+            x, y,
+            image.GetPixels(),
+            image.GetPixels(),
+            image.GetWidth(),
+            image.GetHeight(),
+            clip,
+            subtractiveRenderer);
+        break;
+
+    case MULTIPLY:
+        primitives::Blit(
+            m_Pixels, m_Width,
+            x, y,
+            image.GetPixels(),
+            image.GetPixels(),
+            image.GetWidth(),
+            image.GetHeight(),
+            clip,
+            multiplicativeRenderer);
+        break;
+
+    case AVERAGE:
+        primitives::Blit(
+            m_Pixels, m_Width,
+            x, y,
+            image.GetPixels(),
+            image.GetPixels(),
+            image.GetWidth(),
+            image.GetHeight(),
+            clip,
+            averageRenderer);
+        break;
+
+    case INVERT:
+        primitives::Blit(
+            m_Pixels, m_Width,
+            x, y,
+            image.GetPixels(),
+            image.GetPixels(),
+            image.GetWidth(),
+            image.GetHeight(),
+            clip,
+            invertRenderer);
         break;
     }
 }
@@ -1342,7 +1790,7 @@ CImage32::TransformBlitImage(CImage32& image, int x[4], int y[4])
             alphaRenderer);
         break;
 
-    case ADDITIVE:
+    case ADD:
         primitives::TexturedQuad(
             m_Pixels,
             m_Width,
@@ -1356,6 +1804,61 @@ CImage32::TransformBlitImage(CImage32& image, int x[4], int y[4])
             additiveRenderer);
         break;
 
+    case SUBTRACT:
+        primitives::TexturedQuad(
+            m_Pixels,
+            m_Width,
+            x,
+            y,
+            image.GetPixels(),
+            image.GetPixels(),
+            image.GetWidth(),
+            image.GetHeight(),
+            clip,
+            subtractiveRenderer);
+        break;
+
+    case MULTIPLY:
+        primitives::TexturedQuad(
+            m_Pixels,
+            m_Width,
+            x,
+            y,
+            image.GetPixels(),
+            image.GetPixels(),
+            image.GetWidth(),
+            image.GetHeight(),
+            clip,
+            multiplicativeRenderer);
+        break;
+
+    case AVERAGE:
+        primitives::TexturedQuad(
+            m_Pixels,
+            m_Width,
+            x,
+            y,
+            image.GetPixels(),
+            image.GetPixels(),
+            image.GetWidth(),
+            image.GetHeight(),
+            clip,
+            averageRenderer);
+        break;
+
+    case INVERT:
+        primitives::TexturedQuad(
+            m_Pixels,
+            m_Width,
+            x,
+            y,
+            image.GetPixels(),
+            image.GetPixels(),
+            image.GetWidth(),
+            image.GetHeight(),
+            clip,
+            invertRenderer);
+        break;
     }
 }
 
@@ -1363,170 +1866,158 @@ CImage32::TransformBlitImage(CImage32& image, int x[4], int y[4])
 ///////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////
-
-template<typename pixelT>
-class blendRenderer_render_pixel_mask
+inline void replaceMasker(RGBA& src, byte& alpha, RGBA mask)
 {
-public:
-    blendRenderer_render_pixel_mask(RGBA mask) : m_mask(mask)
-    { }
-    void operator()(pixelT& dst, pixelT src, pixelT __alpha__)
-    {
-        byte alpha = __alpha__.alpha;
+    alpha     = mask.alpha;
+    src.red   = mask.red;
+    src.green = mask.green;
+    src.blue  = mask.blue;
+}
 
-        // do the masking on the source pixel
-#ifdef USE_ALPHA_TABLE
-        alpha     = alpha_new[m_mask.alpha][alpha];
-        src.red   = alpha_new[m_mask.red][src.red];
-        src.green = alpha_new[m_mask.green][src.green];
-        src.blue  = alpha_new[m_mask.blue][src.blue];
-#else
-        alpha     = (int)alpha     * m_mask.alpha / 255;
-        src.red   = (int)src.red   * m_mask.red   / 255;
-        src.green = (int)src.green * m_mask.green / 255;
-        src.blue  = (int)src.blue  * m_mask.blue  / 255;
-#endif
+inline void blendMasker(RGBA& src, byte& alpha, RGBA mask)
+{
+    alpha     = (src.alpha * (255 - mask.alpha) + mask.alpha * mask.alpha) / 255;
+    src.red   = (src.red   * (255 - mask.alpha) + mask.red   * mask.alpha) / 255;
+    src.green = (src.green * (255 - mask.alpha) + mask.green * mask.alpha) / 255;
+    src.blue  = (src.blue  * (255 - mask.alpha) + mask.blue  * mask.alpha) / 255;
+}
 
-        // blit to the dest pixel
-        __alpha__.alpha = alpha;
-        blendRenderer(dst, src, __alpha__);
-    }
+inline void rgbMasker(RGBA& src, RGBA mask)
+{
+    src.red   = mask.red;
+    src.green = mask.green;
+    src.blue  = mask.blue;
+}
 
-private:
-    RGBA m_mask;
-};
+inline void alphaMasker(byte& alpha, RGBA mask)
+{
+    alpha = mask.alpha;
+}
+
+inline void additiveMasker(RGBA& src, byte& alpha, RGBA mask)
+{
+    alpha     = std::min(255, alpha     + mask.alpha);
+    src.red   = std::min(255, src.red   + mask.red  );
+    src.green = std::min(255, src.green + mask.green);
+    src.blue  = std::min(255, src.blue  + mask.blue );
+}
+
+inline void subtractiveMasker(RGBA& src, byte& alpha, RGBA mask)
+{
+    alpha     = std::max(0, alpha     - mask.alpha);
+    src.red   = std::max(0, src.red   - mask.red  );
+    src.green = std::max(0, src.green - mask.green);
+    src.blue  = std::max(0, src.blue  - mask.blue );
+}
+
+inline void multiplicativeMasker(RGBA& src, byte& alpha, RGBA mask)
+{
+    alpha     = alpha     * mask.alpha / 255;
+    src.red   = src.red   * mask.red   / 255;
+    src.green = src.green * mask.green / 255;
+    src.blue  = src.blue  * mask.blue  / 255;
+}
+
+inline void averageMasker(RGBA& src, byte& alpha, RGBA mask)
+{
+    src.red   = (src.red   + mask.red  ) / 2;
+    src.green = (src.green + mask.green) / 2;
+    src.blue  = (src.blue  + mask.blue ) / 2;
+}
+
+inline void invertMasker(RGBA& src, byte& alpha, RGBA mask)
+{
+    alpha     = alpha     * (255 - mask.alpha) / 255;
+    src.red   = src.red   * (255 - mask.red  ) / 255;
+    src.green = src.green * (255 - mask.green) / 255;
+    src.blue  = src.blue  * (255 - mask.blue ) / 255;
+}
 
 ///////////////////////////////////////////////////////////
 template<typename pixelT>
-class replaceRenderer_render_pixel_mask
+class render_pixel_mask
 {
 public:
-    replaceRenderer_render_pixel_mask(RGBA mask) : m_mask(mask)
-    { }
+    render_pixel_mask(pixelT mask, int bmode, int mask_bmode) : m_mask(mask),
+                                                                m_bmode(bmode),
+                                                                m_mask_bmode(mask_bmode) { };
     void operator()(pixelT& dst, pixelT src, pixelT __alpha__)
     {
         byte alpha = __alpha__.alpha;
 
         // do the masking on the source pixel
-#ifdef USE_ALPHA_TABLE
-        alpha     = alpha_new[m_mask.alpha][alpha];
-        src.red   = alpha_new[m_mask.red][src.red];
-        src.green = alpha_new[m_mask.green][src.green];
-        src.blue  = alpha_new[m_mask.blue][src.blue];
-#else
-        alpha     = (int)alpha     * m_mask.alpha / 255;
-        src.red   = (int)src.red   * m_mask.red   / 255;
-        src.green = (int)src.green * m_mask.green / 255;
-        src.blue  = (int)src.blue  * m_mask.blue  / 255;
-#endif
+        switch (m_mask_bmode)
+        {
+            case CImage32::BLEND:
+                blendMasker(src, alpha, m_mask);
+                break;
+            case CImage32::REPLACE:
+                replaceMasker(src, alpha, m_mask);
+                break;
+            case CImage32::RGB_ONLY:
+                rgbMasker(src, m_mask);
+                break;
+            case CImage32::ALPHA_ONLY:
+                alphaMasker(alpha, m_mask);
+                break;
+            case CImage32::ADD:
+                additiveMasker(src, alpha, m_mask);
+                break;
+            case CImage32::SUBTRACT:
+                subtractiveMasker(src, alpha, m_mask);
+                break;
+            case CImage32::MULTIPLY:
+                multiplicativeMasker(src, alpha, m_mask);
+                break;
+            case CImage32::AVERAGE:
+                averageMasker(src, alpha, m_mask);
+                break;
+            case CImage32::INVERT:
+                invertMasker(src, alpha, m_mask);
+                break;
+        }
+
+        __alpha__.alpha = alpha;
 
         // blit to the dest pixel
-        __alpha__.alpha = alpha;
-        replaceRenderer(dst, src, __alpha__);
+        switch (m_bmode)
+        {
+            case CImage32::BLEND:
+                blendRenderer(dst, src, __alpha__);
+                break;
+            case CImage32::REPLACE:
+                replaceRenderer(dst, src, __alpha__);
+                break;
+            case CImage32::RGB_ONLY:
+                rgbRenderer(dst, src, __alpha__);
+                break;
+            case CImage32::ALPHA_ONLY:
+                alphaRenderer(dst, src, __alpha__);
+                break;
+            case CImage32::ADD:
+                additiveRenderer(dst, src, __alpha__);
+                break;
+            case CImage32::SUBTRACT:
+                subtractiveRenderer(dst, src, __alpha__);
+                break;
+            case CImage32::MULTIPLY:
+                multiplicativeRenderer(dst, src, __alpha__);
+                break;
+            case CImage32::AVERAGE:
+                averageRenderer(dst, src, __alpha__);
+                break;
+            case CImage32::INVERT:
+                invertRenderer(dst, src, __alpha__);
+                break;
+        }
     }
 
 private:
+    int m_bmode;
+    int m_mask_bmode;
     RGBA m_mask;
 };
 
-///////////////////////////////////////////////////////////
-template<typename pixelT>
-class rgbRenderer_render_pixel_mask
-{
-public:
-    rgbRenderer_render_pixel_mask(RGBA mask) : m_mask(mask)
-    { }
-    void operator()(pixelT& dst, pixelT src, pixelT __alpha__)
-    {
-        byte alpha = __alpha__.alpha;
-
-        // do the masking on the source pixel
-#ifdef USE_ALPHA_TABLE
-        alpha     = alpha_new[m_mask.alpha][alpha];
-        src.red   = alpha_new[m_mask.red][src.red];
-        src.green = alpha_new[m_mask.green][src.green];
-        src.blue  = alpha_new[m_mask.blue][src.blue];
-#else
-        alpha     = (int)alpha     * m_mask.alpha / 256;
-        src.red   = (int)src.red   * m_mask.red   / 256;
-        src.green = (int)src.green * m_mask.green / 256;
-        src.blue  = (int)src.blue  * m_mask.blue  / 256;
-#endif
-
-        // blit to the dest pixel
-        __alpha__.alpha = alpha;
-        rgbRenderer(dst, src, __alpha__);
-    }
-
-private:
-    RGBA m_mask;
-};
-
-///////////////////////////////////////////////////////////
-template<typename pixelT>
-class alphaRenderer_render_pixel_mask
-{
-public:
-    alphaRenderer_render_pixel_mask(RGBA mask) : m_mask(mask)
-    { }
-    void operator()(pixelT& dst, pixelT src, pixelT __alpha__)
-    {
-        byte alpha = __alpha__.alpha;
-
-        // do the masking on the source pixel
-#ifdef USE_ALPHA_TABLE
-        alpha     = alpha_new[m_mask.alpha][alpha];
-        src.red   = alpha_new[m_mask.red][src.red];
-        src.green = alpha_new[m_mask.green][src.green];
-        src.blue  = alpha_new[m_mask.blue][src.blue];
-#else
-        alpha     = (int)alpha     * m_mask.alpha / 255;
-        src.red   = (int)src.red   * m_mask.red   / 255;
-        src.green = (int)src.green * m_mask.green / 255;
-        src.blue  = (int)src.blue  * m_mask.blue  / 255;
-#endif
-
-        // blit to the dest pixel
-        __alpha__.alpha = alpha;
-        alphaRenderer(dst, src, __alpha__);
-    }
-
-private:
-    RGBA m_mask;
-};
-
-///////////////////////////////////////////////////////////
-template<typename pixelT>
-class additiveRenderer_render_pixel_mask
-{
-public:
-    additiveRenderer_render_pixel_mask(RGBA mask) : m_mask(mask)
-    { }
-    void operator()(pixelT& dst, pixelT src, pixelT __alpha__)
-    {
-        byte alpha = __alpha__.alpha;
-
-        // do the masking on the source pixel
-#ifdef USE_ALPHA_TABLE
-        alpha     = alpha_new[m_mask.alpha][alpha];
-        src.red   = alpha_new[m_mask.red][src.red];
-        src.green = alpha_new[m_mask.green][src.green];
-        src.blue  = alpha_new[m_mask.blue][src.blue];
-#else
-        alpha     = (int)alpha     * m_mask.alpha / 255;
-        src.red   = (int)src.red   * m_mask.red   / 255;
-        src.green = (int)src.green * m_mask.green / 255;
-        src.blue  = (int)src.blue  * m_mask.blue  / 255;
-#endif
-
-        // blit to the dest pixel
-        __alpha__.alpha = alpha;
-        additiveRenderer(dst, src, __alpha__);
-    }
-
-private:
-    RGBA m_mask;
-};
 
 ///////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////
@@ -1534,7 +2025,7 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 void
-CImage32::BlitImageMask(CImage32& image, int x, int y, RGBA mask)
+CImage32::BlitImageMask(CImage32& image, int x, int y, RGBA mask, int mask_bmode)
 {
     if (mask.red == 255 && mask.green == 255 && mask.blue == 255 && mask.alpha == 255)
     {
@@ -1559,7 +2050,7 @@ CImage32::BlitImageMask(CImage32& image, int x, int y, RGBA mask)
             image.GetWidth(),
             image.GetHeight(),
             clip,
-            replaceRenderer_render_pixel_mask<RGBA>(mask)
+            render_pixel_mask<RGBA>(mask, REPLACE, mask_bmode)
         );
         break;
 
@@ -1574,7 +2065,7 @@ CImage32::BlitImageMask(CImage32& image, int x, int y, RGBA mask)
             image.GetWidth(),
             image.GetHeight(),
             clip,
-            blendRenderer_render_pixel_mask<RGBA>(mask)
+            render_pixel_mask<RGBA>(mask, BLEND, mask_bmode)
         );
         break;
 
@@ -1589,7 +2080,7 @@ CImage32::BlitImageMask(CImage32& image, int x, int y, RGBA mask)
             image.GetWidth(),
             image.GetHeight(),
             clip,
-            rgbRenderer_render_pixel_mask<RGBA>(mask)
+            render_pixel_mask<RGBA>(mask, RGB_ONLY, mask_bmode)
         );
         break;
 
@@ -1604,11 +2095,11 @@ CImage32::BlitImageMask(CImage32& image, int x, int y, RGBA mask)
             image.GetWidth(),
             image.GetHeight(),
             clip,
-            alphaRenderer_render_pixel_mask<RGBA>(mask)
+            render_pixel_mask<RGBA>(mask, ALPHA_ONLY, mask_bmode)
         );
         break;
 
-    case ADDITIVE:
+    case ADD:
         primitives::Blit(
             m_Pixels,
             m_Width,
@@ -1619,7 +2110,67 @@ CImage32::BlitImageMask(CImage32& image, int x, int y, RGBA mask)
             image.GetWidth(),
             image.GetHeight(),
             clip,
-            additiveRenderer_render_pixel_mask<RGBA>(mask)
+            render_pixel_mask<RGBA>(mask, ADD, mask_bmode)
+        );
+        break;
+
+    case SUBTRACT:
+        primitives::Blit(
+            m_Pixels,
+            m_Width,
+            x,
+            y,
+            image.GetPixels(),
+            image.GetPixels(),
+            image.GetWidth(),
+            image.GetHeight(),
+            clip,
+            render_pixel_mask<RGBA>(mask, SUBTRACT, mask_bmode)
+        );
+        break;
+
+    case MULTIPLY:
+        primitives::Blit(
+            m_Pixels,
+            m_Width,
+            x,
+            y,
+            image.GetPixels(),
+            image.GetPixels(),
+            image.GetWidth(),
+            image.GetHeight(),
+            clip,
+            render_pixel_mask<RGBA>(mask, MULTIPLY, mask_bmode)
+        );
+        break;
+
+    case AVERAGE:
+        primitives::Blit(
+            m_Pixels,
+            m_Width,
+            x,
+            y,
+            image.GetPixels(),
+            image.GetPixels(),
+            image.GetWidth(),
+            image.GetHeight(),
+            clip,
+            render_pixel_mask<RGBA>(mask, AVERAGE, mask_bmode)
+        );
+        break;
+
+    case INVERT:
+        primitives::Blit(
+            m_Pixels,
+            m_Width,
+            x,
+            y,
+            image.GetPixels(),
+            image.GetPixels(),
+            image.GetWidth(),
+            image.GetHeight(),
+            clip,
+            render_pixel_mask<RGBA>(mask, INVERT, mask_bmode)
         );
         break;
     }
@@ -1627,7 +2178,7 @@ CImage32::BlitImageMask(CImage32& image, int x, int y, RGBA mask)
 
 ////////////////////////////////////////////////////////////////////////////////
 void
-CImage32::TransformBlitImageMask(CImage32& image, int x[4], int y[4], RGBA mask)
+CImage32::TransformBlitImageMask(CImage32& image, int x[4], int y[4], RGBA mask, int mask_bmode)
 {
     clipper clip = {
                        0, 0, m_Width - 1, m_Height - 1
@@ -1646,7 +2197,7 @@ CImage32::TransformBlitImageMask(CImage32& image, int x[4], int y[4], RGBA mask)
             image.GetWidth(),
             image.GetHeight(),
             clip,
-            replaceRenderer_render_pixel_mask<RGBA>(mask)
+            render_pixel_mask<RGBA>(mask, REPLACE, mask_bmode)
         );
         break;
 
@@ -1661,7 +2212,7 @@ CImage32::TransformBlitImageMask(CImage32& image, int x[4], int y[4], RGBA mask)
             image.GetWidth(),
             image.GetHeight(),
             clip,
-            blendRenderer_render_pixel_mask<RGBA>(mask)
+            render_pixel_mask<RGBA>(mask, BLEND, mask_bmode)
         );
         break;
 
@@ -1676,7 +2227,7 @@ CImage32::TransformBlitImageMask(CImage32& image, int x[4], int y[4], RGBA mask)
             image.GetWidth(),
             image.GetHeight(),
             clip,
-            rgbRenderer_render_pixel_mask<RGBA>(mask)
+            render_pixel_mask<RGBA>(mask, RGB_ONLY, mask_bmode)
         );
         break;
 
@@ -1691,11 +2242,11 @@ CImage32::TransformBlitImageMask(CImage32& image, int x[4], int y[4], RGBA mask)
             image.GetWidth(),
             image.GetHeight(),
             clip,
-            alphaRenderer_render_pixel_mask<RGBA>(mask)
+            render_pixel_mask<RGBA>(mask, ALPHA_ONLY, mask_bmode)
         );
         break;
 
-    case ADDITIVE:
+    case ADD:
         primitives::TexturedQuad(
             m_Pixels,
             m_Width,
@@ -1706,7 +2257,67 @@ CImage32::TransformBlitImageMask(CImage32& image, int x[4], int y[4], RGBA mask)
             image.GetWidth(),
             image.GetHeight(),
             clip,
-            additiveRenderer_render_pixel_mask<RGBA>(mask)
+            render_pixel_mask<RGBA>(mask, ADD, mask_bmode)
+        );
+        break;
+
+    case SUBTRACT:
+        primitives::TexturedQuad(
+            m_Pixels,
+            m_Width,
+            x,
+            y,
+            image.GetPixels(),
+            image.GetPixels(),
+            image.GetWidth(),
+            image.GetHeight(),
+            clip,
+            render_pixel_mask<RGBA>(mask, SUBTRACT, mask_bmode)
+        );
+        break;
+
+    case MULTIPLY:
+        primitives::TexturedQuad(
+            m_Pixels,
+            m_Width,
+            x,
+            y,
+            image.GetPixels(),
+            image.GetPixels(),
+            image.GetWidth(),
+            image.GetHeight(),
+            clip,
+            render_pixel_mask<RGBA>(mask, MULTIPLY, mask_bmode)
+        );
+        break;
+
+    case AVERAGE:
+        primitives::TexturedQuad(
+            m_Pixels,
+            m_Width,
+            x,
+            y,
+            image.GetPixels(),
+            image.GetPixels(),
+            image.GetWidth(),
+            image.GetHeight(),
+            clip,
+            render_pixel_mask<RGBA>(mask, AVERAGE, mask_bmode)
+        );
+        break;
+
+    case INVERT:
+        primitives::TexturedQuad(
+            m_Pixels,
+            m_Width,
+            x,
+            y,
+            image.GetPixels(),
+            image.GetPixels(),
+            image.GetWidth(),
+            image.GetHeight(),
+            clip,
+            render_pixel_mask<RGBA>(mask, INVERT, mask_bmode)
         );
         break;
     }

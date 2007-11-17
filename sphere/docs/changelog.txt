@@ -1,5 +1,14 @@
 YYYY.MM.DD
 
+2007.11.17
+  - Added missing documentation for Surface.gradientLine(),
+    Surface.gradientRectangle() and Surface.gradientTriangle().
+  - Made Kyuu's new primitive methods available to surfaces.
+  - The following now return the surface, so they can be chained:
+    Surface.resize(), Surface.rescale(), Surface.rotate().
+  - Added new blend modes for Surface.setBlendMode():
+    RGB_ONLY, ALPHA_ONLY, ADD, SUBTRACT, MULTIPLY, AVERAGE, INVERT.
+
 2007.11.06
   - Added wordWrapString(string, width) method to Font object.
 
