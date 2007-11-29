@@ -1163,9 +1163,9 @@ CImageView::Circle()
     if (!InImage(start) || !InImage(end))
       return;
     if (abs(start.x - end.x) > abs(start.y - end.y))
-      m_Image.Circle(start.x, start.y, abs(start.x - end.x), m_Colors[m_CurrentTool]);
+      m_Image.OutlinedCircle(start.x, start.y, abs(start.x - end.x), m_Colors[m_CurrentTool], 0);
     else
-      m_Image.Circle(start.x, start.y, abs(start.y - end.y), m_Colors[m_CurrentTool]);
+      m_Image.OutlinedCircle(start.x, start.y, abs(start.y - end.y), m_Colors[m_CurrentTool], 0);
     Invalidate();
     m_Handler->IV_ImageChanged();
   }
@@ -1192,7 +1192,7 @@ CImageView::Ellipse()
     int sw = GetSelectionWidth();
     int sh = GetSelectionHeight();
     clipper clip = { sx, sy, (sx + sw) - 1, (sy + sh) - 1 };
-    m_Image.Ellipse(start.x, start.y, abs(start.x - end.x), abs(start.y - end.y), m_Colors[m_CurrentTool],  0, clip);
+    m_Image.OutlinedEllipse(start.x, start.y, abs(start.x - end.x), abs(start.y - end.y), m_Colors[m_CurrentTool]);
     Invalidate();
     m_Handler->IV_ImageChanged();
   }
@@ -1597,9 +1597,9 @@ CImageView::PaintCircle(CImage32& pImage)
     return;
 
   if (abs(start.x - end.x) > abs(start.y - end.y))
-    pImage.Circle(start.x, start.y, abs(start.x - end.x), m_Colors[m_CurrentTool]);
+    pImage.OutlinedCircle(start.x, start.y, abs(start.x - end.x), m_Colors[m_CurrentTool], 0);
   else
-    pImage.Circle(start.x, start.y, abs(start.y - end.y), m_Colors[m_CurrentTool]);
+    pImage.OutlinedCircle(start.x, start.y, abs(start.y - end.y), m_Colors[m_CurrentTool], 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1618,7 +1618,7 @@ CImageView::PaintEllipse(CImage32& pImage)
   if (!InImage(start) || !InImage(end))
     return;
 
-  pImage.Ellipse(start.x, start.y, abs(start.x - end.x), abs(start.y - end.y), m_Colors[m_CurrentTool]);
+  pImage.OutlinedEllipse(start.x, start.y, abs(start.x - end.x), abs(start.y - end.y), m_Colors[m_CurrentTool]);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2297,7 +2297,7 @@ CImageView::OnBlendModeAlphaOnly()
 afx_msg void
 CImageView::OnBlendModeAdditive()
 {
-  m_Image.SetBlendMode(CImage32::ADDITIVE);
+  m_Image.SetBlendMode(CImage32::ADD);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
