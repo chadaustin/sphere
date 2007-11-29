@@ -1,5 +1,10 @@
 YYYY.MM.DD
 
+2007.11.29
+  - Fixed script editor Replace All bug, where a replace string
+    containing an occurrence of the search string would be
+    replaced multiple times.
+
 2007.11.17
   - Added missing documentation for Surface.gradientLine(),
     Surface.gradientRectangle() and Surface.gradientTriangle().

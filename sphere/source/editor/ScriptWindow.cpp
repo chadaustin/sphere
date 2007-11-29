@@ -1918,7 +1918,7 @@ CScriptWindow::OnFindReplace(WPARAM, LPARAM)
       // actually do the string replacing
       SendEditor(SCI_REPLACESEL, 0, (LPARAM)(const char*)replace_string);
       // now try to find the next one
-      ttf.chrg.cpMin += strlen(replace_string);
+      ttf.chrg.cpMin += strlen(replace_string) + 1;
       if (SendEditor(SCI_FINDTEXT, options, (LPARAM)&ttf) != -1) {
         SendEditor(SCI_SETSEL, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
       }
