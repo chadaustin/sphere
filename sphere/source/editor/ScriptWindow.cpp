@@ -1835,96 +1835,88 @@ CScriptWindow::SpellCheck(const int start_line_number, const int num_lines_to_ch
 afx_msg LRESULT
 CScriptWindow::OnFindReplace(WPARAM, LPARAM)
 {
-  CString str;
-  GetEditorText(str);
-  if (m_SearchDialog->IsTerminating()) {
-    m_SearchDown = m_SearchDialog->SearchDown();
-    m_SearchString      = m_SearchDialog->GetFindString();
+  CString find_string(m_SearchDialog->GetFindString());
+  CString replace_string(m_SearchDialog->GetReplaceString());
+  
+  BOOL search_down = m_SearchDialog->SearchDown();
+  
+  TextToFind ttf;
+  ttf.lpstrText  = find_string.GetBuffer(0);
+  ttf.chrg.cpMax = SendEditor(SCI_GETLENGTH);
+  
+  int flags = 0;
+  flags |= m_SearchDialog->MatchCase()      ? SCFIND_MATCHCASE : 0;
+  flags |= m_SearchDialog->MatchWholeWord() ? SCFIND_WHOLEWORD : 0;
+
+  if (m_SearchDialog->IsTerminating())
+  {
+    m_SearchDown   = m_SearchDialog->SearchDown();
+    m_SearchString = m_SearchDialog->GetFindString();
     m_SearchDialog = NULL;
-  } else if (m_SearchDialog->FindNext()) {
-    TextToFind ttf;
+  } 
+  
+  else if (m_SearchDialog->FindNext()) 
+  {
     ttf.chrg.cpMin = SendEditor(SCI_GETSELECTIONSTART) + 1;
-    ttf.chrg.cpMax = str.GetLength();
-    CString find_string(m_SearchDialog->GetFindString());
-    ttf.lpstrText = find_string.GetBuffer(0);
     
-    int options = 0;
-    options |= m_SearchDialog->MatchCase()      ? SCFIND_MATCHCASE : 0;
-    options |= m_SearchDialog->MatchWholeWord() ? SCFIND_WHOLEWORD : 0;
-    BOOL search_down = m_SearchDialog->SearchDown();
-    if (!search_down) {
-      ttf.chrg.cpMin = ttf.chrg.cpMin - 2; // selection_start - 1
-      ttf.chrg.cpMax = 0;
+    if (!search_down) 
+    {
+      ttf.chrg.cpMin -= 2;
+      ttf.chrg.cpMax  = 0;
     }
-    if (SendEditor(SCI_FINDTEXT, options, (LPARAM)&ttf) == -1) {
-      //m_SearchDialog->MessageBox("No more matches!");
+    
+    if (SendEditor(SCI_FINDTEXT, flags, (LPARAM)&ttf) == -1) 
+    {
       GetStatusBar()->SetWindowText("No more matches!");
-    } else {
+    } 
+    else 
+    {
       SendEditor(SCI_SETSEL, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
       GetStatusBar()->SetWindowText("");
     }
+  } 
+  
+  else if (m_SearchDialog->ReplaceCurrent()) 
+  {
+    ttf.chrg.cpMin = SendEditor(SCI_GETSELECTIONSTART);
+    ttf.chrg.cpMax = SendEditor(SCI_GETSELECTIONEND);
     
-  } else if (m_SearchDialog->ReplaceCurrent()) {
-    // get currently selected text
-    CString selection(GetSelection());
-    CString find_string(m_SearchDialog->GetFindString());
-    // build the data structure we need to find the next text
-    // before we replace the string
-    TextToFind ttf;
-    ttf.chrg.cpMin = SendEditor(SCI_GETSELECTIONSTART);
-    ttf.chrg.cpMax = str.GetLength();
-    ttf.lpstrText = find_string.GetBuffer(0);
-    int options = 0;  // ?
-    // if the selection is what we want to replace, then do so
-    CString replace_string(m_SearchDialog->GetReplaceString());
-    if (selection == find_string) {
-      // actually do the string replacing
+    if (SendEditor(SCI_FINDTEXT, flags, (LPARAM)&ttf) != -1)
+    {
+      SendEditor(SCI_SETSEL, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
       SendEditor(SCI_REPLACESEL, 0, (LPARAM)(const char*)replace_string);
-      // now try to find the next one
-      ttf.chrg.cpMin += strlen(replace_string);
-      if (SendEditor(SCI_FINDTEXT, options, (LPARAM)&ttf) == -1) {
-        //m_SearchDialog->MessageBox("No more matches!");
-        GetStatusBar()->SetWindowText("No more matches!");
-      } else {
-        SendEditor(SCI_SETSEL, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
-        GetStatusBar()->SetWindowText("");
-      }
-    } else {
-      if (SendEditor(SCI_FINDTEXT, options, (LPARAM)&ttf) == -1) {
-        m_SearchDialog->MessageBox("No matches!");
-      } else {
-        SendEditor(SCI_SETSEL, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
-      }
-    }
-  } else if (m_SearchDialog->ReplaceAll()) {
-    // get currently selected text
-    CString selection(GetSelection());
-    CString find_string(m_SearchDialog->GetFindString());
-    CString replace_string(m_SearchDialog->GetReplaceString());
-    // build the data structure we need to find the next text
-    // before we replace the string
-    TextToFind ttf;
-    ttf.chrg.cpMin = SendEditor(SCI_GETSELECTIONSTART);
-    ttf.chrg.cpMax = str.GetLength();
-    ttf.lpstrText = find_string.GetBuffer(0);
-    int options = 0;  // ?
-    if (selection != find_string) {
-      if (SendEditor(SCI_FINDTEXT, options, (LPARAM)&ttf) != -1) {
-        SendEditor(SCI_SETSEL, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
-      }
-    }
-    // if the selection is what we want to replace, then do so
-    while (GetSelection() == find_string) {
-      // actually do the string replacing
-      SendEditor(SCI_REPLACESEL, 0, (LPARAM)(const char*)replace_string);
-      // now try to find the next one
-      ttf.chrg.cpMin += strlen(replace_string) + 1;
-      if (SendEditor(SCI_FINDTEXT, options, (LPARAM)&ttf) != -1) {
-        SendEditor(SCI_SETSEL, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
-      }
     }
     
+    ttf.chrg.cpMin = SendEditor(SCI_GETSELECTIONEND);
+    ttf.chrg.cpMax = SendEditor(SCI_GETLENGTH);
+    
+    if (SendEditor(SCI_FINDTEXT, flags, (LPARAM)&ttf) == -1)
+    {
+      GetStatusBar()->SetWindowText("No more matches!");
+    }
+    else
+    {
+      SendEditor(SCI_SETSEL, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
+      GetStatusBar()->SetWindowText("");
+    }
+  } 
+  
+  else if (m_SearchDialog->ReplaceAll()) 
+  {
+    ttf.chrg.cpMin = 0;
+
+    while (SendEditor(SCI_FINDTEXT, flags, (LPARAM)&ttf) != -1) 
+    {
+      SendEditor(SCI_SETTARGETSTART, ttf.chrgText.cpMin);
+      SendEditor(SCI_SETTARGETEND, ttf.chrgText.cpMax);
+      
+      SendEditor(SCI_REPLACETARGET, strlen(replace_string), (LPARAM)(const char*)replace_string);
+      
+      ttf.chrg.cpMin = SendEditor(SCI_GETTARGETEND);
+      ttf.chrg.cpMax = SendEditor(SCI_GETLENGTH);
+    }
   }
+  
   return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////
