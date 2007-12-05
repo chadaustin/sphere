@@ -40,6 +40,10 @@ CProject::Create(const char* games_directory, const char* project_name)
     directory += GetGroupDirectory(i);
     CreateDirectory(directory.c_str(), NULL);
   }
+  // create an 'other' subdirectory too
+  std::string directory = project_name;
+  directory += "/other";
+  CreateDirectory(directory.c_str(), NULL);
   
   // wait to see if SetCurrentDirectory() fails
   if (SetCurrentDirectory(project_name) == FALSE)

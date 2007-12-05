@@ -43,6 +43,10 @@ wProject::Create(const char* games_directory, const char* project_name)
     directory += GetGroupDirectory(i);
     if (!wxPathExists(directory.c_str())) wxMkdir(directory.c_str(), 0755);
   }
+  // create an 'other' subdirectory too
+  std::string directory = project_name;
+  directory += "/other";
+  if (!wxPathExists(directory.c_str())) wxMkdir(directory.c_str(), 0755);
   
   // wait to see if wxSetWorkingDirectory() fails
   if (!wxSetWorkingDirectory(project_name))
