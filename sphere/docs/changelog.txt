@@ -1,5 +1,9 @@
 YYYY.MM.DD
 
+2007.12.05
+  - Made map background music continue between maps if the file
+    path is the same.
+
 2007.12.02
   - Fixed script editor Replace All bug, where a replace string
     containing an occurrence of the search string would be

@@ -448,6 +448,7 @@ private:
     qword m_NextFrame;
 
     SMAP       m_Map;
+    std::string m_LastMusicPath;
     audiere::OutputStreamPtr m_Music;
 #if defined(WIN32) && defined(USE_MIDI)
     audiere::MIDIStreamPtr m_Midi;

@@ -19,24 +19,6 @@ static const int c_MaxSkipFrames = 10;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/*
-static inline void MapEngineLog(const std::string text) {
-  static bool firstcall = true;
-  FILE* file = fopen("mapengine.log", ((firstcall) ? ("w+") : ("a")));
-  firstcall = false;
-
-  if (file != NULL) {
-    fwrite(std::string(text + "\n").c_str(), sizeof(char), text.length(), file);
-    fclose(file);
-  }
-
-  fprintf(stderr, "%s\n", text.c_str());
-}
-
-*/
-
-////////////////////////////////////////////////////////////////////////////////
-
 static inline std::string itos(int i)
 {
     char s[20];
@@ -64,8 +46,6 @@ CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
         , m_TouchActivationAllowed(true)
         , m_TalkActivationAllowed(true)
 
-//, m_IsTouching(false)
-//, m_IsTalking(false)
         , m_IsCameraAttached(false)
         , m_CameraPerson(-1)
 
@@ -75,10 +55,8 @@ CMapEngine::CMapEngine(IEngine* engine, IFileSystem& fs)
         , m_WestScript(NULL)
         , m_UpdateScript(NULL)
 
-//, m_UpdateScriptRunning(false)
         , m_RenderScript(NULL)
 
-//, m_RenderScriptRunning(false)
         , m_TalkActivationKey(KEY_SPACE)
         , m_TalkActivationDistance(8)
 
@@ -106,6 +84,13 @@ CMapEngine::~CMapEngine()
 {
     DestroyBoundKeys();
 
+    // Stop any background music
+    m_Playlist.Clear();
+    m_Music = 0;
+#if defined(WIN32) && defined(USE_MIDI)
+    m_Midi = 0;
+#endif
+
     // destroy update script
     if (m_UpdateScript)
     {
@@ -127,8 +112,6 @@ CMapEngine::~CMapEngine()
         {
             m_Engine->DestroyScript(m_DefaultMapScripts[i]);
             m_DefaultMapScripts[i] = NULL;
-
-            //m_DefaultMapScriptRunnings[i] = false;
         }
     }
 
@@ -165,7 +148,6 @@ CMapEngine::Execute(const char* filename, int fps)
     m_ErrorMessage = "";
     m_Music = 0;
 #if defined(WIN32) && defined(USE_MIDI)
-
     m_Midi = 0;
 #endif
     m_NumFrames = 0;
@@ -358,15 +340,11 @@ CMapEngine::CallDefaultMapScript(int which)
     {
         std::string error;
 
-        //m_DefaultMapScriptRunnings[which] = true;
         if (!ExecuteScript(m_DefaultMapScripts[which], error))
         {
-            //m_DefaultMapScriptRunnings[which] = false;
             m_ErrorMessage = "Could not execute default " + list[which] + " map script\n" + error;
             return false;
         }
-
-        //m_DefaultMapScriptRunnings[which] = false;
     }
     return true;
 }
@@ -3546,7 +3524,8 @@ CMapEngine::OpenMap(const char* filename)
 
     // load the background music (if there is any)
     std::string music = m_Map.GetMap().GetMusicFile();
-    if (music.length())
+    // Don't reload already-loaded music.
+    if (music.length() && music != m_LastMusicPath)
     {
         if (music.rfind(".m3u") == music.size() - 4)
         {
@@ -3592,20 +3571,27 @@ CMapEngine::OpenMap(const char* filename)
         }
     }
 
-    // start background music
-    if (m_Music)
+    // Prevent restarting of already-playing music.
+    if (music != m_LastMusicPath)
     {
-        m_Music->setRepeat(true);
-        m_Music->play();
-    }
+        m_LastMusicPath = music;
+
+        // start background music
+        if (m_Music)
+        {
+            m_Music->setRepeat(true);
+            m_Music->play();
+        }
 
 #if defined(WIN32) && defined(USE_MIDI)
-    if (m_Midi)
-    {
-        m_Midi->setRepeat(true);
-        m_Midi->play();
-    }
+        if (m_Midi)
+        {
+            m_Midi->setRepeat(true);
+            m_Midi->play();
+        }
 #endif
+    }
+
     // initialize camera
     m_Camera.x     = m_Map.GetMap().GetStartX();
     m_Camera.y     = m_Map.GetMap().GetStartY();
@@ -3646,14 +3632,6 @@ CMapEngine::CloseMap()
 {
     unsigned int i;
 
-    // stop background music
-
-    m_Playlist.Clear();
-    m_Music = 0;
-
-#if defined(WIN32) && defined(USE_MIDI)
-    m_Midi = 0;
-#endif
     if (!DestroyMapPersons())
     {
         m_CurrentMap = "";
@@ -4343,16 +4321,13 @@ CMapEngine::Render()
     {
         std::string error;
 
-        //m_RenderScriptRunning = true;
         if (!ExecuteScript(m_RenderScript, error))
         {
             m_ErrorMessage = "Could not execute render script\n" + error;
-            //m_RenderScriptRunning = false;
 
             return false;
         }
 
-        //m_RenderScriptRunning = false;
     }
     return true;
 }
@@ -4486,16 +4461,13 @@ CMapEngine::UpdateWorld(bool input_valid)
     {
         std::string error;
 
-        //m_UpdateScriptRunning = true;
         if (!ExecuteScript(m_UpdateScript, error))
         {
             m_ErrorMessage = "Could not execute update script\n" + error;
-            //m_UpdateScriptRunning = false;
 
             return false;
         }
 
-        //m_UpdateScriptRunning = false;
         // if we took more than a second to run the update script, reset the timer
         if (qword(GetTime()) * m_FrameRate > m_NextFrame)
         {
@@ -4761,19 +4733,16 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
                         const std::string person_name = m_Persons[person_index].name;
                         std::string error;
-                        //m_IsTouching = true;
                         if (!ExecuteScript(script, error) || !error.empty())
                         {
                             m_ErrorMessage = "Error executing person activation (touch) script\n"
                                              "Person:"
                                              + p->description +
                                              "\nError:" + error;
-                            //m_IsTouching = false;
 
                             return false;
                         }
 
-                        //m_IsTouching = false;
                         m_CurrentPerson = old_person;
                         ResetNextFrame();
 
@@ -4903,18 +4872,15 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
                             const std::string person_name = m_Persons[person_index].name;
                             std::string error;
-                            //m_IsTalking = true;
                             if (!ExecuteScript(s, error))
                             {
                                 m_ErrorMessage = "Error executing person activation (talk) script\n"
                                                  "Person:" + p->description +
                                                  "\nError:" + error;
 
-                                //m_IsTalking = false;
                                 return false;
                             }
 
-                            //m_IsTalking = false;
                             m_CurrentPerson = old_person;
                             ResetNextFrame();
 
