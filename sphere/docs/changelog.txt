@@ -4,6 +4,7 @@ YYYY.MM.DD
   - Switched mismatched map fill and fill rectangle toolbar icons.
   - Map editor now detects when fill and fill rectangle change the
     map, prompting the user to save before closing.
+  - Fixed F5 so that it refreshes the project window like it should.
 
 2007.12.05
   - Made map background music continue between maps if the file
