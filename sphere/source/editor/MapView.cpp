@@ -1092,6 +1092,7 @@ CMapView::FillRectArea()
     for (int x=0; x<width && x+start_x<m_Map->GetLayer(m_SelectedLayer).GetWidth(); x++)
       m_Map->GetLayer(m_SelectedLayer).SetTile(x+start_x, y+start_y, m_SelectedTile);
   m_RedrawWindow = 1;
+  m_Handler->MV_MapChanged();
   Invalidate();
 }
 
@@ -1158,6 +1159,7 @@ CMapView::FillArea()
     return;
   FillMe(start_x, start_y, m_SelectedLayer, m_Map->GetLayer(m_SelectedLayer).GetTile(start_x, start_y));
   m_RedrawWindow = 1;
+  m_Handler->MV_MapChanged();
   Invalidate();
 }
 

@@ -1,5 +1,10 @@
 YYYY.MM.DD
 
+2007.12.06
+  - Switched mismatched map fill and fill rectangle toolbar icons.
+  - Map editor now detects when fill and fill rectangle change the
+    map, prompting the user to save before closing.
+
 2007.12.05
   - Made map background music continue between maps if the file
     path is the same.
@@ -13,6 +18,8 @@ YYYY.MM.DD
   - Added missing documentation for Surface.gradientLine(),
     Surface.gradientRectangle() and Surface.gradientTriangle().
   - Made Kyuu's new primitive methods available to surfaces.
+  - Added Image's transformation and masking blit functions available
+    to the Surface object.
   - The following now return the surface, so they can be chained:
     Surface.resize(), Surface.rescale(), Surface.rotate().
   - Added new blend modes for Surface.setBlendMode():
