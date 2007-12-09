@@ -1,5 +1,10 @@
 YYYY.MM.DD
 
+2007.12.09
+  - Image editor no longer crashes when attempting to draw circles
+    and ellipses.
+  - Drawing circles and ellipses is now affected by the selection.
+
 2007.12.06
   - Switched mismatched map fill and fill rectangle toolbar icons.
   - Map editor now detects when fill and fill rectangle change the

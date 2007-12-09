@@ -88,8 +88,10 @@ public:
     void Triangle(int x1, int y1, int x2, int y2, int x3, int y3, RGBA color);
     void Polygon(VECTOR_INT** points, int length, int invert, RGBA color);
     void OutlinedEllipse(int x, int y, int rx, int ry, RGBA color);
+    void OutlinedEllipse(int x, int y, int rx, int ry, RGBA color, clipper clip);
     void FilledEllipse(  int x, int y, int rx, int ry, RGBA color);
     void OutlinedCircle(int x, int y, int radius, RGBA color, int antialias);
+    void OutlinedCircle(int x, int y, int radius, RGBA color, int antialias, clipper clip);
     void FilledCircle(  int x, int y, int radius, RGBA color, int antialias);
     void GradientCircle(int x, int y, int radius, RGBA c[2],  int antialias);
 

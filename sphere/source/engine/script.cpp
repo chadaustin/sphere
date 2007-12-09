@@ -2310,10 +2310,8 @@ if (This->ShouldRender())
     arg_int(rx);
     arg_int(ry);
     arg_color(c);
-    if (rx > 0 && ry > 0)
-    {
-        DrawOutlinedEllipse(x, y, rx, ry, c);
-    }
+    
+    DrawOutlinedEllipse(x, y, rx, ry, c);
 }
 end_func()
 
@@ -2329,10 +2327,8 @@ if (This->ShouldRender())
     arg_int(rx);
     arg_int(ry);
     arg_color(c);
-    if (rx > 0 && ry > 0)
-    {
-        DrawFilledEllipse(x, y, rx, ry, c);
-    }
+    
+    DrawFilledEllipse(x, y, rx, ry, c);
 }
 end_func()
 
@@ -2445,10 +2441,8 @@ if (This->ShouldRender())
     {
         antialias = argInt(cx, argv[4]);
     }
-    if (r > 0)
-    {
-        DrawOutlinedCircle(x, y, r, c, antialias);
-    }
+    
+    DrawOutlinedCircle(x, y, r, c, antialias);
 }
 end_func()
 
@@ -2469,10 +2463,8 @@ if (This->ShouldRender())
     {
         antialias = argInt(cx, argv[4]);
     }
-    if (r > 0)
-    {
-        DrawFilledCircle(x, y, r, c, antialias);
-    }
+    
+    DrawFilledCircle(x, y, r, c, antialias);
 }
 end_func()
 
@@ -2498,10 +2490,8 @@ if (This->ShouldRender())
     RGBA c[2];
     c[0] = c1;
     c[1] = c2;
-    if (r > 0)
-    {
-        DrawGradientCircle(x, y, r, c, antialias);
-    }
+    
+    DrawGradientCircle(x, y, r, c, antialias);
 }
 end_func()
 
@@ -8963,10 +8953,8 @@ arg_int(y);
 arg_int(rx);
 arg_int(ry);
 arg_color(c);
-if (rx > 0 && ry > 0)
-{
-    object->surface->OutlinedEllipse(x, y, rx, ry, c);
-}
+
+object->surface->OutlinedEllipse(x, y, rx, ry, c);
 end_method()
 
 ////////////////////////////////////////
@@ -8980,10 +8968,8 @@ arg_int(y);
 arg_int(rx);
 arg_int(ry);
 arg_color(c);
-if (rx > 0 && ry > 0)
-{
-    object->surface->FilledEllipse(x, y, rx, ry, c);
-}
+
+object->surface->FilledEllipse(x, y, rx, ry, c);
 end_method()
 
 ////////////////////////////////////////
@@ -9002,10 +8988,8 @@ if (argc >= 5)
 {
     antialias = argInt(cx, argv[4]);
 }
-if (r > 0)
-{
-    object->surface->OutlinedCircle(x, y, r, c, antialias);
-}
+
+object->surface->OutlinedCircle(x, y, r, c, antialias);
 end_method()
 
 ////////////////////////////////////////
@@ -9024,10 +9008,8 @@ if (argc >= 5)
 {
     antialias = argInt(cx, argv[4]);
 }
-if (r > 0)
-{
-    object->surface->FilledCircle(x, y, r, c, antialias);
-}
+
+object->surface->FilledCircle(x, y, r, c, antialias);
 end_method()
 
 ////////////////////////////////////////
@@ -9050,10 +9032,8 @@ if (argc >= 6)
 RGBA c[2];
 c[0] = c1;
 c[1] = c2;
-if (r > 0)
-{
-    object->surface->GradientCircle(x, y, r, c, antialias);
-}
+
+object->surface->GradientCircle(x, y, r, c, antialias);
 end_method()
 
 ////////////////////////////////////////

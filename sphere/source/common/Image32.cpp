@@ -1202,7 +1202,12 @@ void
 CImage32::OutlinedEllipse(int x, int y, int rx, int ry, RGBA color)
 {
     clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+    OutlinedEllipse(x, y, rx, ry, color, clip);
+}
 
+void
+CImage32::OutlinedEllipse(int x, int y, int rx, int ry, RGBA color, clipper clip)
+{
     switch (m_BlendMode)
     {
     case REPLACE:
@@ -1278,7 +1283,12 @@ void
 CImage32::OutlinedCircle(int x, int y, int radius, RGBA color, int antialias)
 {
     clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+    OutlinedCircle(x, y, radius, color, antialias, clip);
+}
 
+void
+CImage32::OutlinedCircle(int x, int y, int radius, RGBA color, int antialias, clipper clip)
+{
     switch (m_BlendMode)
     {
     case REPLACE:

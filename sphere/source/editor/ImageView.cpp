@@ -1089,10 +1089,9 @@ CImageView::Line()
     int sy = GetSelectionTopY();
     int sw = GetSelectionWidth();
     int sh = GetSelectionHeight();
-
     clipper clip = {sx, sy, (sx + sw) - 1, (sy + sh) - 1};
+    
     m_Image.Line(start.x, start.y, end.x, end.y, m_Colors[m_CurrentTool], clip);
-
     Invalidate();
     m_Handler->IV_ImageChanged();
   }
@@ -1121,6 +1120,7 @@ CImageView::Rectangle()
     int sw = GetSelectionWidth();
     int sh = GetSelectionHeight();
     clipper clip = { sx, sy, (sx + sw) - 1, (sy + sh) - 1 };
+    
     int x = std::min(start.x, end.x);
     int y = std::min(start.y, end.y);
     int width  = std::max(start.x, end.x) - x;
@@ -1151,21 +1151,31 @@ CImageView::Selection()
 void
 CImageView::Circle()
 {
-  if (!m_MouseDown[m_CurrentTool]) {
+  if (!m_MouseDown[m_CurrentTool]) 
+  {
     m_StartPoint = m_CurPoint;
     Invalidate();
     m_Handler->IV_ImageChanged();
-  } else {
+  } 
+  else 
+  {
     // convert pixel coordinates to image coordinates
     POINT start = ConvertToPixel(m_StartPoint);
     POINT end = ConvertToPixel(m_CurPoint);
     // bounds check
     if (!InImage(start) || !InImage(end))
       return;
+      
+    int sx = GetSelectionLeftX();
+    int sy = GetSelectionTopY();
+    int sw = GetSelectionWidth();
+    int sh = GetSelectionHeight();
+    clipper clip = { sx, sy, (sx + sw) - 1, (sy + sh) - 1 };
+      
     if (abs(start.x - end.x) > abs(start.y - end.y))
-      m_Image.OutlinedCircle(start.x, start.y, abs(start.x - end.x), m_Colors[m_CurrentTool], 0);
+      m_Image.OutlinedCircle(start.x, start.y, abs(start.x - end.x), m_Colors[m_CurrentTool], 0, clip);
     else
-      m_Image.OutlinedCircle(start.x, start.y, abs(start.y - end.y), m_Colors[m_CurrentTool], 0);
+      m_Image.OutlinedCircle(start.x, start.y, abs(start.y - end.y), m_Colors[m_CurrentTool], 0, clip);
     Invalidate();
     m_Handler->IV_ImageChanged();
   }
@@ -1176,23 +1186,29 @@ CImageView::Circle()
 void
 CImageView::Ellipse()
 {
-  if (!m_MouseDown[m_CurrentTool]) {
+  if (!m_MouseDown[m_CurrentTool]) 
+  {
     m_StartPoint = m_CurPoint;
     Invalidate();
     m_Handler->IV_ImageChanged();
-  } else {
+  } 
+  else 
+  {
     // convert pixel coordinates to image coordinates
     POINT start = ConvertToPixel(m_StartPoint);
     POINT end = ConvertToPixel(m_CurPoint);
+    
     // bounds check
     if (!InImage(start) || !InImage(end))
       return;
+      
     int sx = GetSelectionLeftX();
     int sy = GetSelectionTopY();
     int sw = GetSelectionWidth();
     int sh = GetSelectionHeight();
     clipper clip = { sx, sy, (sx + sw) - 1, (sy + sh) - 1 };
-    m_Image.OutlinedEllipse(start.x, start.y, abs(start.x - end.x), abs(start.y - end.y), m_Colors[m_CurrentTool]);
+    
+    m_Image.OutlinedEllipse(start.x, start.y, abs(start.x - end.x), abs(start.y - end.y), m_Colors[m_CurrentTool], clip);
     Invalidate();
     m_Handler->IV_ImageChanged();
   }

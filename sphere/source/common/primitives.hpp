@@ -1340,6 +1340,8 @@ namespace primitives
         clipT clipper,
         renderT renderer)
     {
+        if (rx <= 0 || ry <= 0) return;
+        
         // if ellipse is completely out, don't bother with it
         if (is_clipped(xc - rx, yc - ry, xc + rx - 1, yc + ry - 1, clipper))
         {
@@ -1434,6 +1436,8 @@ namespace primitives
         clipT clipper,
         renderT renderer)
     {
+        if (rx <= 0 || ry <= 0) return;
+        
         // if ellipse is completely out, don't bother with it
         if (is_clipped(xc - rx, yc - ry, xc + rx - 1, yc + ry - 1, clipper))
         {
@@ -1539,6 +1543,8 @@ namespace primitives
         clipT clipper,
         renderT renderer)
     {
+        if (r <= 0) return;
+        
         // if circle is completely out, don't bother with it
         if (is_clipped(x - r, y - r, x + r - 1, y + r - 1, clipper))
         {
@@ -1649,6 +1655,8 @@ namespace primitives
         clipT clipper,
         renderT renderer)
     {
+        if (r <= 0) return;
+        
         // if circle is completely out, don't bother with it
         if (is_clipped(x - r, y - r, x + r - 1, y + r - 1, clipper))
         {
@@ -1724,6 +1732,8 @@ namespace primitives
         clipT clipper,
         renderT renderer)
     {
+        if (r <= 0) return;
+        
         // if circle is completely out, don't bother with it
         if (is_clipped(x - r, y - r, x + r - 1, y + r - 1, clipper))
         {
