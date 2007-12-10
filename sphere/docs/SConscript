@@ -16,8 +16,7 @@ files = ['changelog.txt',
          'gpl.txt',
          'index.txt',
          'legal.txt',
-         'readme.txt',
-         'sphere_tutorial.txt']
+         'readme.txt']
 
 files.extend(map(lambda n: 'build/' + n,
              ['aaulia_changelog.txt',
@@ -49,9 +48,6 @@ files.extend(map(lambda n: 'internal/' + n,
               'windowstyle.rws.txt',
               'package.spk.txt',
               'videodriver-specs.txt']))
-
-files.extend(map(lambda n: 'technical/' + n,
-             ['readme.txt']))
 
 files.extend(map(lambda n: 'system_scripts/' + n,
              ['animation.txt',

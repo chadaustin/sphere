@@ -1,6 +1,0 @@
-How to get to #sphere
-
-Get XChat at http://www.xchat.org/
-Connect to server irc.esper.net, port 5555.
-Join channel #sphere.
-Say hello.  :)

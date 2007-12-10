@@ -1,10 +1,10 @@
-Sphere v1.12
+Sphere v1.13
 --------
 
 Chad Austin
 Brian Robb
 Spherical (http://www.spheredev.org/)
-2006.08.27
+2007.12.10
 
 
 Sphere is a 2D RPG creation system designed to facilitate creation of games
@@ -15,6 +15,7 @@ files contained within them.
 
 
 == Minimum system requirements ==
+
 * Pentium 200 MHz
 * 64 MB of RAM
 * Video card with 2MB VRAM
@@ -25,7 +26,9 @@ files contained within them.
 * DirectX 8 for fullscreen video drivers
 * OpenGL-accelerated video card for hardware acceleration (sphere_gl)
 
+
 == Features ==
+
 * unlimited map layers
 * parallax and automatic layer scrolling
 * flexible video driver subsystem
@@ -38,7 +41,9 @@ files contained within them.
 * keyboard, mouse, and joystick support
 * portable, cross-platform game development
 
+
 == Included video drivers ==
+
 * standard32.dll     - 32-bit color (default)
 * standard16.dll     - 16-bit color (faster on 16-bit desktops)
 * standard8.dll      - 8-bit color (fast, but ugly)
@@ -51,7 +56,9 @@ files contained within them.
 * sphere_gl.dll      - hardware acceleration using OpenGL (can be VERY fast)
 * sphere_dx8.dll     - experimental DirectX 8.0 graphics driver
 
+
 == Known Issues ==
+
 * sphere_dx8.dll has some major issues. Avoid using it if possible.
 * sphere_gl.dll has some problems with drawing and capturing primitives. This
   can cause some graphical glitches. It performs very poorly when games create
@@ -59,12 +66,16 @@ files contained within them.
 * See the project page on SourceForge for bug reports and feature
   requests.  http://sourceforge.net/projects/sphere
 
+
 == Executable listing for Windows ==
+
 * engine.exe    - Sphere engine
 * editor.exe    - Sphere editor (a.k.a. the IDE)
 * config.exe    - Sphere configuration utility
 
+
 == Binaries listing for Linux ==
+
 * engine   - Sphere engine
 * wxeditor - wxWidgets-based editor (poor quality)
 
@@ -75,6 +86,7 @@ Use your favourite text editor.
 == Credits ==
 
 === Code ===
+
 * Chad Austin (AegisKnight)
 * Theo Reed (rizen)
 * Brandon Mechtley (malis)
@@ -85,6 +97,7 @@ Use your favourite text editor.
 * Tung Nguyen (tunginobi)
 
 === Startup Game ===
+
 * Tung Nguyen (tunginobi)
 
 Please send all suggestions and bug reports to:

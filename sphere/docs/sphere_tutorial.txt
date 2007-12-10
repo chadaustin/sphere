@@ -1,3 +1,0 @@
-This document has been moved to development/tutorial.txt.
-It seems old, but everything in it still applies.
- -- tunginobi (2006.08.27)
