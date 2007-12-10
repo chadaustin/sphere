@@ -1128,6 +1128,13 @@ drawing onto surfaces or masking
   font_object.clone()
     - returns a copy of 'font_object'
 
+  font_object.getCharacterImage(code)
+    - returns the image in the font_object of the character based on
+      the code, e.g. 65 is 'A'
+
+  font_object.setCharacterImage(code, image)
+    - sets the character image in the font_object based on the code
+
   *** window styles ***
   GetSystemWindowStyle()
     - returns a windowstyle object of the windowstyle that the engine currently
