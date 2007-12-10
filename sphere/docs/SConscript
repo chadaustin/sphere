@@ -13,7 +13,6 @@ else:
 # files that should be converted from unix format to DOS format as part
 # of the build
 files = ['changelog.txt',
-         'doc_functions.txt',
          'gpl.txt',
          'index.txt',
          'legal.txt',

@@ -1,5 +1,10 @@
 YYYY.MM.DD
 
+2007.12.10
+  - Script editor autocomplete updated to include missing functions
+    and key code constants.
+  - Removed doc_functions.txt, made obsolete by development/api.txt.
+
 2007.12.09
   - Image editor no longer crashes when attempting to draw circles
     and ellipses.
