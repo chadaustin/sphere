@@ -1,5 +1,9 @@
 YYYY.MM.DD
 
+2007.12.11
+  - Script editor replace hot-key changed from Ctrl+R to Ctrl+H
+    to match the same binding in other applications.
+
 2007.12.10
   - Script editor autocomplete updated to include missing functions
     and key code constants.
