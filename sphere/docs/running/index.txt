@@ -4,6 +4,9 @@ All documentation directories have this file. It describes the
 contents of all files in the same directory so that they can be
 seen from a bird's-eye view.
 
+* command_line.txt - Running Sphere from the the command line,
+  including info on options.
+
 * index.txt - This file.
 
 * keyboard_shortcuts.txt - A list of keyboard keys that can be

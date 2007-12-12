@@ -7,9 +7,6 @@ seen from a bird's-eye view.
 * changelog.txt - List of changes to the Sphere project in reverse
   chronological order.
 
-* doc_functions.txt - Deprecated in favour of development/api.txt.
-  List of Sphere functions added to its implementation of JavaScript.
-
 * gpl.txt - GNU General Public License for Sphere.
 
 * index.txt - This file.
@@ -17,7 +14,3 @@ seen from a bird's-eye view.
 * legal.txt - Specific license info about Sphere, oldish.
 
 * readme.txt - Essential briefing about Sphere.
-
-* sphere_tutorial.txt - Deprecated in favour of
-  development/tutorial.txt. A quick, basic tutorial on how to use the
-  Sphere IDE to make games.
