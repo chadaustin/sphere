@@ -1,7 +1,9 @@
 #include <windows.h>
 #include <mmsystem.h>
 #include <queue>
+#include <vector>
 #include <stdlib.h>
+#include <iostream>
 #include "win32_input.hpp"
 #include "win32_internal.hpp"
 #include "../../common/minmax.hpp"
@@ -68,6 +70,9 @@ int SphereToWindows[MAX_KEY] =
         0x0059,  // y
         0x005A,  // z
         VK_SHIFT,
+        VK_CAPITAL, // caps lock
+        VK_NUMLOCK, // num lock
+        VK_SCROLL,  // scroll lock
         VK_CONTROL,
         VK_MENU,
         VK_SPACE,
@@ -106,9 +111,13 @@ int WindowsToSphere[MAX_KEY]; // build dynamically
 // keyboard state tables (accessed with virtual keys)
 static byte CurrentKeyBuffer[MAX_KEY];
 static byte KeyBuffer[MAX_KEY];
+static byte ModKeyStates[3];
 
 // keyboard key queue (virtual keys also)
 static std::queue<int> KeyQueue;
+
+// queue for mouse wheel events
+static std::queue<int> MouseWheelQueue;
 
 // mouse
 static int MouseX;
@@ -123,10 +132,14 @@ struct Joystick
     UINT maxX;
     UINT minY;
     UINT maxY;
+    UINT minZ;
+    UINT maxZ;
+    UINT minR;
+    UINT maxR;
+    UINT numAxes;
     UINT numButtons;
 
-    float x;
-    float y;
+    float axes[4];
     UINT buttons;
 };
 std::vector<Joystick> Joysticks;
@@ -137,33 +150,47 @@ std::vector<Joystick> Joysticks;
 ////////////////////////////////////////////////////////////////////////////////
 void TryJoystick(UINT id)
 {
-    JOYINFO ji;
-    if (joyGetPos(id, &ji) != JOYERR_NOERROR)
+
+    JOYINFOEX jinfo_ex;
+    jinfo_ex.dwSize  = sizeof(jinfo_ex);
+    jinfo_ex.dwFlags = JOY_RETURNBUTTONS | JOY_RETURNX | JOY_RETURNY | JOY_RETURNZ | JOY_RETURNR;
+    
+    if (joyGetPosEx(id, &jinfo_ex) != JOYERR_NOERROR)
     {
         return;
     }
-
-    JOYCAPS jc;
-    if (joyGetDevCaps(id, &jc, sizeof(jc)) != JOYERR_NOERROR)
+    
+    JOYCAPS jcaps;
+    if (joyGetDevCaps(id, &jcaps, sizeof(jcaps)) != JOYERR_NOERROR)
     {
         return;
     }
-
+    
     Joystick j;
-    j.id = id;
-    j.minX = jc.wXmin;
-    j.maxX = jc.wXmax;
-    j.minY = jc.wYmin;
-    j.maxY = jc.wYmax;
-    j.x = 0;
-    j.y = 0;
-    j.buttons = 0;
-    j.numButtons = jc.wNumButtons;
+    
+    j.id         = id;
+    j.minX       = jcaps.wXmin;
+    j.maxX       = jcaps.wXmax;
+    j.minY       = jcaps.wYmin;
+    j.maxY       = jcaps.wYmax;
+    j.minZ       = jcaps.wZmin;
+    j.maxZ       = jcaps.wZmax;
+    j.minR       = jcaps.wRmin;
+    j.maxR       = jcaps.wRmax;
+    j.axes[0]    = 0;
+    j.axes[1]    = 0;
+    j.axes[2]    = 0;
+    j.axes[3]    = 0;
+    j.buttons    = 0;
+    j.numButtons = jcaps.wNumButtons;
+    j.numAxes    = jcaps.wNumAxes;
+    
     Joysticks.push_back(j);
 }
 
 bool InitInput(HWND window, SPHERECONFIG* config)
 {
+
     unsigned int i;
 
     // build mapping from Windows to Sphere keys
@@ -175,18 +202,18 @@ bool InitInput(HWND window, SPHERECONFIG* config)
             WindowsToSphere[k] = i;
         }
     }
-
+    
     SphereWindow = window;
     Config = config;
 
-    // try to initialize joysticks
-    UINT num = std::min(joyGetNumDevs(), 2U);
-    UINT ids[2] = { JOYSTICKID1, JOYSTICKID2 };
+    // try to initialize joysticks (only the plugged in and valid ones will be initialized)
+    UINT num = joyGetNumDevs();
+
     for (i = 0; i < num; ++i)
     {
-        TryJoystick(ids[i]);
+        TryJoystick(i);
     }
-
+    
     return true;
 }
 
@@ -203,62 +230,14 @@ bool CloseInput(void)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/*
-const char* GetKeyName(const int virtual_key)
-{
-  struct KEY {
-    const char* name;
-    int virtual_key;
-  } keys[] = {
-    "(key) escape", 27,
-    "(key) numlock", 144,
-    "(numpad) 0", 96,
-    "(numpad) 1", 97,
-    "(numpad) 2", 98,
-    "(numpad) 3", 99,
-    "(numpad) 4", 100,
-    "(numpad) 5", 101,
-    "(numpad) 6", 102,
-    "(numpad) 7", 103,
-    "(numpad) 8", 104,
-    "(numpad) 9", 105,
-    "(arrow) left", 37,
-    "(arrow) up", 38,
-    "(arrow) right", 39,
-    "(arrow) down", 40,
-    "(number) 0", 48,
-    "(number) 1", 49,
-    "(number) 2", 50,
-    "(number) 3", 51,
-    "(number) 4", 52,
-    "(number) 5", 53,
-    "(number) 6", 54,
-    "(number) 7", 55,
-    "(number) 8", 56,
-    "(number) 9", 57,
-  };
-  const int num_keys = sizeof(keys) / sizeof(*keys);
-  const char* key_name = "unknown";
-  for (int i = 0; i < num_keys; i++) {
-    if (virtual_key == keys[i].virtual_key) {
-      key_name = keys[i].name;
-      break;
-    }
-  }
-  return key_name;
-}
-*/
-////////////////////////////////////////////////////////////////////////////////
 void OnKeyDown(int virtual_key)
 {
-
     if (virtual_key >= 0 && virtual_key < MAX_KEY)
     {
         int key = WindowsToSphere[virtual_key];
         CurrentKeyBuffer[key] = 1;
+        
         KeyQueue.push(key);
-        //printf ("%s [%d][%d] pressed\n", GetKeyName(virtual_key), virtual_key, key);
-
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -268,8 +247,6 @@ void OnKeyUp(int virtual_key)
     {
         int key = WindowsToSphere[virtual_key];
         CurrentKeyBuffer[key] = 0;
-        //printf ("%s [%d][%d] released\n\n", GetKeyName(virtual_key), virtual_key, key);
-
     }
 }
 
@@ -293,22 +270,42 @@ void OnMouseUp(int button)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void OnMouseWheel(int dist)
+{
+    if (dist > 0)
+        MouseWheelQueue.push(MOUSE_WHEEL_UP);
+    else if (dist < 0)
+        MouseWheelQueue.push(MOUSE_WHEEL_DOWN);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 bool RefreshInput()
 {
     UpdateSystem();
 
+    // update modifier keys
+    ModKeyStates[MODKEY_CAPSLOCK]   = GetKeyState(VK_CAPITAL) & 0xFFFF;
+    ModKeyStates[MODKEY_NUMLOCK]    = GetKeyState(VK_NUMLOCK) & 0xFFFF;
+    ModKeyStates[MODKEY_SCROLLOCK]  = GetKeyState(VK_SCROLL)  & 0xFFFF;
+
     // update currently pressed keys
     memcpy(KeyBuffer, CurrentKeyBuffer, MAX_KEY);
-
+    
+    // update joysticks
     for (unsigned int i = 0; i < Joysticks.size(); ++i)
     {
-        Joystick& j = Joysticks[i];
-        JOYINFO ji;
-        if (joyGetPos(j.id, &ji) == JOYERR_NOERROR)
+        Joystick &j = Joysticks[i];
+        JOYINFOEX jinfo_ex;
+        jinfo_ex.dwSize  = sizeof(jinfo_ex);
+        jinfo_ex.dwFlags = JOY_RETURNBUTTONS | JOY_RETURNX | JOY_RETURNY | JOY_RETURNZ | JOY_RETURNR;
+        
+        if (joyGetPosEx(j.id, &jinfo_ex) == JOYERR_NOERROR)
         {
-            j.x = float(ji.wXpos - j.minX) / (j.maxX - j.minX) * 2 - 1;
-            j.y = float(ji.wYpos - j.minY) / (j.maxY - j.minY) * 2 - 1;
-            j.buttons = ji.wButtons;
+            j.axes[JOYSTICK_AXIS_X] = float(jinfo_ex.dwXpos - j.minX) / (j.maxX - j.minX) * 2 - 1;
+            j.axes[JOYSTICK_AXIS_Y] = float(jinfo_ex.dwYpos - j.minY) / (j.maxY - j.minY) * 2 - 1;
+            j.axes[JOYSTICK_AXIS_Z] = float(jinfo_ex.dwZpos - j.minZ) / (j.maxZ - j.minZ) * 2 - 1;
+            j.axes[JOYSTICK_AXIS_R] = float(jinfo_ex.dwRpos - j.minR) / (j.maxR - j.minR) * 2 - 1;
+            j.buttons = jinfo_ex.dwButtons;
         }
     }
 
@@ -316,10 +313,15 @@ bool RefreshInput()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+bool GetToggleState(int key)
+{
+    // find the Sphere key code that corresponds with the virtual key
+    return (ModKeyStates[key] != 0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 bool IsKeyPressed(int key)
 {
-    UpdateSystem();
-
     // find the Sphere key code that corresponds with the virtual key
     return (KeyBuffer[key] != 0);
 }
@@ -353,6 +355,10 @@ int GetKey()
     return key;
 }
 
+
+
+// MOUSE
+
 ////////////////////////////////////////////////////////////////////////////////
 void SetMousePosition(int x, int y)
 {
@@ -380,17 +386,41 @@ bool IsMouseButtonPressed(int button)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+int GetMouseWheelEvent()
+{
+    UpdateSystem();
+    while (MouseWheelQueue.empty() == true)
+        UpdateSystem();
+    
+    int mw_event = MouseWheelQueue.front();
+    MouseWheelQueue.pop();
+    
+    return mw_event;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+int GetNumMouseWheelEvents()
+{
+    UpdateSystem();
+    return MouseWheelQueue.size();
+}
+
+
+
+// JOYSTICKS
+
+////////////////////////////////////////////////////////////////////////////////
 int GetNumJoysticks()
 {
     return int(Joysticks.size());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-float GetJoystickX(int joy)
+float GetJoystickAxis(int joy, int axis)
 {
-    if (joy >= 0 && joy < GetNumJoysticks())
+    if (joy >= 0 && joy < GetNumJoysticks() && axis >= 0 && axis < 4)
     {
-        return Joysticks[joy].x;
+        return Joysticks[joy].axes[axis];
     }
     else
     {
@@ -399,11 +429,11 @@ float GetJoystickX(int joy)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-float GetJoystickY(int joy)
+int GetNumJoystickAxes(int joy)
 {
     if (joy >= 0 && joy < GetNumJoysticks())
     {
-        return Joysticks[joy].y;
+        return Joysticks[joy].numAxes;
     }
     else
     {

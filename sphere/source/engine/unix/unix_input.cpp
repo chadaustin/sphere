@@ -2,127 +2,155 @@
 #include "unix_video.h"
 #include "unix_internal.h"
 #include <SDL.h>
-#include <deque>
-#include <iostream>
+#include <queue>
+#include <map>
 
-//static std::deque<Uint8> key_queue;
-static std::deque<SDLKey> key_queue;
+// map container for virtual keys
+std::map<SDLKey, int> VirtualKeys;
 
-// Tung: Use SDLKey, Brian.
-const int total_keys = 88;
-//static Uint8 KeyMapping[total_keys] = {
-static SDLKey KeyMapping[total_keys] = {
-  (SDLKey) 0,
-  SDLK_ESCAPE,
-  SDLK_F1,
-  SDLK_F2,
-  SDLK_F3,
-  SDLK_F4,
-  SDLK_F5,
-  SDLK_F6,
-  SDLK_F7,
-  SDLK_F8,
-  SDLK_F9,
-  SDLK_F10,
-  SDLK_F11,
-  SDLK_F12,
-  SDLK_BACKQUOTE,
-  SDLK_0,
-  SDLK_1,
-  SDLK_2,
-  SDLK_3,
-  SDLK_4,
-  SDLK_5,
-  SDLK_6,
-  SDLK_7,
-  SDLK_8,
-  SDLK_9,
-  SDLK_MINUS,
-  SDLK_EQUALS,
-  SDLK_BACKSPACE,
-  SDLK_TAB,
-  SDLK_a,
-  SDLK_b,
-  SDLK_c,
-  SDLK_d,
-  SDLK_e,
-  SDLK_f,
-  SDLK_g,
-  SDLK_h,
-  SDLK_i,
-  SDLK_j,
-  SDLK_k,
-  SDLK_l,
-  SDLK_m,
-  SDLK_n,
-  SDLK_o,
-  SDLK_p,
-  SDLK_q,
-  SDLK_r,
-  SDLK_s,
-  SDLK_t,
-  SDLK_u,
-  SDLK_v,
-  SDLK_w,
-  SDLK_x,
-  SDLK_y,
-  SDLK_z,
-  SDLK_LSHIFT,
-  SDLK_LCTRL,
-  SDLK_LALT,
-  SDLK_SPACE,
-  SDLK_LEFTBRACKET,
-  SDLK_RIGHTBRACKET,
-  SDLK_SEMICOLON,
-  SDLK_QUOTE,
-  SDLK_COMMA,
-  SDLK_PERIOD,
-  SDLK_SLASH,
-  SDLK_BACKSLASH,
-  SDLK_RETURN,
-  SDLK_INSERT,
-  SDLK_DELETE,
-  SDLK_HOME,
-  SDLK_END,
-  SDLK_PAGEUP,
-  SDLK_PAGEDOWN,
-  SDLK_UP,
-  SDLK_RIGHT,
-  SDLK_DOWN,
-  SDLK_LEFT,
-  SDLK_KP0,
-  SDLK_KP1,
-  SDLK_KP2,
-  SDLK_KP3,
-  SDLK_KP4,
-  SDLK_KP5,
-  SDLK_KP6,
-  SDLK_KP7,
-  SDLK_KP8,
-  SDLK_KP9
-};
+// keyboard key queue
+static std::queue<int> KeyQueue;
 
+// keyboard state tables
 static bool KeyBuffer[MAX_KEY];
 static bool CurrentKeyBuffer[MAX_KEY];
+static bool ModKeyStates[2];
+
+// queue for mouse wheel events
+static std::queue<int> MouseWheelQueue;
+
+// mouse globals
+int MouseX, MouseY;
+bool MouseButton[3];
 
 ///////////////////////////////////////////////////////////
 
-void InitializeInput() {
+void InitializeInput()
+{
   memset(KeyBuffer, false, sizeof(bool) * MAX_KEY);
   memset(CurrentKeyBuffer, false, sizeof(bool) * MAX_KEY);
+  
+  // initialize the virtual key map
+  VirtualKeys[SDLK_ESCAPE]       = KEY_ESCAPE;
+  VirtualKeys[SDLK_F1]           = KEY_F1;
+  VirtualKeys[SDLK_F2]           = KEY_F2;
+  VirtualKeys[SDLK_F3]           = KEY_F3;
+  VirtualKeys[SDLK_F4]           = KEY_F4;
+  VirtualKeys[SDLK_F5]           = KEY_F5;
+  VirtualKeys[SDLK_F6]           = KEY_F6;
+  VirtualKeys[SDLK_F7]           = KEY_F7;
+  VirtualKeys[SDLK_F8]           = KEY_F8;
+  VirtualKeys[SDLK_F9]           = KEY_F9;
+  VirtualKeys[SDLK_F10]          = KEY_F10;
+  VirtualKeys[SDLK_F11]          = KEY_F11;
+  VirtualKeys[SDLK_F12]          = KEY_F12;
+  VirtualKeys[SDLK_BACKQUOTE]    = KEY_TILDE;
+  VirtualKeys[SDLK_0]            = KEY_0;
+  VirtualKeys[SDLK_1]            = KEY_1;
+  VirtualKeys[SDLK_2]            = KEY_2;
+  VirtualKeys[SDLK_3]            = KEY_3;
+  VirtualKeys[SDLK_4]            = KEY_4;
+  VirtualKeys[SDLK_5]            = KEY_5;
+  VirtualKeys[SDLK_6]            = KEY_6;
+  VirtualKeys[SDLK_7]            = KEY_7;
+  VirtualKeys[SDLK_8]            = KEY_8;
+  VirtualKeys[SDLK_9]            = KEY_9;
+  VirtualKeys[SDLK_MINUS]        = KEY_MINUS;
+  VirtualKeys[SDLK_KP_MINUS]     = KEY_MINUS;
+  VirtualKeys[SDLK_EQUALS]       = KEY_EQUALS;
+  VirtualKeys[SDLK_KP_EQUALS]    = KEY_EQUALS;
+  VirtualKeys[SDLK_BACKSPACE]    = KEY_BACKSPACE;
+  VirtualKeys[SDLK_TAB]          = KEY_TAB;
+  VirtualKeys[SDLK_a]            = KEY_A;
+  VirtualKeys[SDLK_b]            = KEY_B;
+  VirtualKeys[SDLK_c]            = KEY_C;
+  VirtualKeys[SDLK_d]            = KEY_D;
+  VirtualKeys[SDLK_e]            = KEY_E;
+  VirtualKeys[SDLK_f]            = KEY_F;
+  VirtualKeys[SDLK_g]            = KEY_G;
+  VirtualKeys[SDLK_h]            = KEY_H;
+  VirtualKeys[SDLK_i]            = KEY_I;
+  VirtualKeys[SDLK_j]            = KEY_J;
+  VirtualKeys[SDLK_k]            = KEY_K;
+  VirtualKeys[SDLK_l]            = KEY_L;
+  VirtualKeys[SDLK_m]            = KEY_M;
+  VirtualKeys[SDLK_n]            = KEY_N;
+  VirtualKeys[SDLK_o]            = KEY_O;
+  VirtualKeys[SDLK_p]            = KEY_P;
+  VirtualKeys[SDLK_q]            = KEY_Q;
+  VirtualKeys[SDLK_r]            = KEY_R;
+  VirtualKeys[SDLK_s]            = KEY_S;
+  VirtualKeys[SDLK_t]            = KEY_T;
+  VirtualKeys[SDLK_u]            = KEY_U;
+  VirtualKeys[SDLK_v]            = KEY_V;
+  VirtualKeys[SDLK_w]            = KEY_W;
+  VirtualKeys[SDLK_x]            = KEY_X;
+  VirtualKeys[SDLK_y]            = KEY_Y;
+  VirtualKeys[SDLK_z]            = KEY_Z;
+  VirtualKeys[SDLK_LSHIFT]       = KEY_SHIFT;
+  VirtualKeys[SDLK_RSHIFT]       = KEY_SHIFT;
+  VirtualKeys[SDLK_CAPSLOCK]     = KEY_CAPSLOCK;
+  VirtualKeys[SDLK_NUMLOCK]      = KEY_NUMLOCK;
+  VirtualKeys[SDLK_SCROLLOCK]    = KEY_SCROLLOCK;
+  VirtualKeys[SDLK_LCTRL]        = KEY_CTRL;
+  VirtualKeys[SDLK_RCTRL]        = KEY_CTRL;
+  VirtualKeys[SDLK_LALT]         = KEY_ALT;
+  VirtualKeys[SDLK_RALT]         = KEY_ALT;
+  VirtualKeys[SDLK_SPACE]        = KEY_SPACE;
+  VirtualKeys[SDLK_LEFTBRACKET]  = KEY_OPENBRACE;
+  VirtualKeys[SDLK_RIGHTBRACKET] = KEY_CLOSEBRACE;
+  VirtualKeys[SDLK_SEMICOLON]    = KEY_SEMICOLON;
+  VirtualKeys[SDLK_QUOTE]        = KEY_APOSTROPHE;
+  VirtualKeys[SDLK_COMMA]        = KEY_COMMA;
+  VirtualKeys[SDLK_PERIOD]       = KEY_PERIOD;
+  VirtualKeys[SDLK_SLASH]        = KEY_SLASH;
+  VirtualKeys[SDLK_KP_DIVIDE]    = KEY_SLASH;
+  VirtualKeys[SDLK_BACKSLASH]    = KEY_BACKSLASH;
+  VirtualKeys[SDLK_RETURN]       = KEY_ENTER;
+  VirtualKeys[SDLK_KP_ENTER]     = KEY_ENTER;
+  VirtualKeys[SDLK_INSERT]       = KEY_INSERT;
+  VirtualKeys[SDLK_DELETE]       = KEY_DELETE;
+  VirtualKeys[SDLK_HOME]         = KEY_HOME;
+  VirtualKeys[SDLK_END]          = KEY_END;
+  VirtualKeys[SDLK_PAGEUP]       = KEY_PAGEUP;
+  VirtualKeys[SDLK_PAGEDOWN]     = KEY_PAGEDOWN;
+  VirtualKeys[SDLK_UP]           = KEY_UP;
+  VirtualKeys[SDLK_RIGHT]        = KEY_RIGHT;
+  VirtualKeys[SDLK_DOWN]         = KEY_DOWN;
+  VirtualKeys[SDLK_LEFT]         = KEY_LEFT;
+  VirtualKeys[SDLK_KP0]          = KEY_NUM_0;
+  VirtualKeys[SDLK_KP1]          = KEY_NUM_1;
+  VirtualKeys[SDLK_KP2]          = KEY_NUM_2;
+  VirtualKeys[SDLK_KP3]          = KEY_NUM_3;
+  VirtualKeys[SDLK_KP4]          = KEY_NUM_4;
+  VirtualKeys[SDLK_KP5]          = KEY_NUM_5;
+  VirtualKeys[SDLK_KP6]          = KEY_NUM_6;
+  VirtualKeys[SDLK_KP7]          = KEY_NUM_7;
+  VirtualKeys[SDLK_KP8]          = KEY_NUM_8;
+  VirtualKeys[SDLK_KP9]          = KEY_NUM_9;
+  
+  // initialize mouse buttons
+  MouseButton[MOUSE_LEFT]   = false;
+  MouseButton[MOUSE_MIDDLE] = false;
+  MouseButton[MOUSE_RIGHT]  = false;
+  
+  // initialize modifier states
+  ModKeyStates[MODKEY_CAPSLOCK]  = false;
+  ModKeyStates[MODKEY_NUMLOCK]   = false;
+  ModKeyStates[MODKEY_SCROLLOCK] = false;
 }
 
 ///////////////////////////////////////////////////////////
 
-bool RefreshInput ()
-{
+bool RefreshInput()
+{  
   // update currently pressed keys
   memcpy(KeyBuffer, CurrentKeyBuffer, sizeof(bool) * MAX_KEY);
 }
 
 ///////////////////////////////////////////////////////////
 
-bool ResetInput ()
+bool ResetInput()
 {
   memset(KeyBuffer, false, sizeof(bool) * MAX_KEY);
   memset(CurrentKeyBuffer, false, sizeof(bool) * MAX_KEY);
@@ -134,71 +162,103 @@ bool ResetInput ()
 void UpdateSystem()
 {
   SDL_Event event;
-  
-  while (SDL_PollEvent(&event)) {
-    if (event.type == SDL_QUIT)
-      exit(0);
-    else if ((event.type == SDL_KEYDOWN) || (event.type == SDL_KEYUP))
-    {
-      // Tung: Use SDLKey, Brian.
-      //Uint8 pressed = event.key.keysym.sym;
-      SDLKey pressed = event.key.keysym.sym;
-      int key = 0;
+  std::map<SDLKey, int>::iterator it;
 
-      switch (pressed) {
-        case SDLK_SPACE:  key = KEY_SPACE;  break;
-        case SDLK_ESCAPE: key = KEY_ESCAPE; break;
-        case SDLK_LSHIFT:	// Tung: Redundant?
-        case SDLK_RSHIFT: key = KEY_SHIFT;  break;
-        case SDLK_LALT:
-        case SDLK_RALT:   key = KEY_ALT;    break;
-        case SDLK_LCTRL:
-        case SDLK_RCTRL:  key = KEY_CTRL;   break;
-        case SDLK_F1:     key = KEY_F1;     break;
-        case SDLK_F2:     key = KEY_F2;     break;
-        case SDLK_F3:     key = KEY_F3;     break;
-        case SDLK_F4:     key = KEY_F4;     break;
-        case SDLK_F5:     key = KEY_F5;     break;
-        case SDLK_F6:     key = KEY_F6;     break;
-        case SDLK_F7:     key = KEY_F7;     break;
-        case SDLK_F8:     key = KEY_F8;     break;
-        case SDLK_F9:     key = KEY_F9;     break;
-        case SDLK_F10:    key = KEY_F10;    break;
-        case SDLK_F11:    key = KEY_F11;    break;
-        case SDLK_F12:    key = KEY_F12;    break;
-                                                                                
-        default:
-          //std::cerr << "code: " << (SDLKey)pressed << std::endl;
-          for (int lcv = 1; lcv < total_keys && key == 0; lcv++) {
-            if (pressed == KeyMapping[lcv]) {
-              key = lcv;
-              //std::cerr << "key: "<< (int)key << "|" << (SDLKey)SDLK_LCTRL << std::endl;
-              break;
-            }
-          }
-      };
-      
-      if (key != 0) {
-        if (event.type == SDL_KEYDOWN) {
-          OnKeyDown(key);
-        } else {
-          OnKeyUp(key);
-        }
-      }
+  while (SDL_PollEvent(&event)) {
+    switch (event.type) {
+      case SDL_QUIT:
+        exit(0);
+        break;
+        
+        ////////////////////////////////////////////////////////////////////////////
+            
+      case SDL_KEYDOWN:
+        it = VirtualKeys.find(event.key.keysym.sym);
+        if (it != VirtualKeys.end())
+          OnKeyDown(it->second);
+        break;
+            
+        ////////////////////////////////////////////////////////////////////////////
+            
+      case SDL_KEYUP:
+        it = VirtualKeys.find(event.key.keysym.sym);
+        if (it != VirtualKeys.end())
+          OnKeyUp(it->second);
+        break;
+            
+        ////////////////////////////////////////////////////////////////////////////
+            
+      case SDL_MOUSEMOTION:
+        OnMouseMove(event.motion.x, event.motion.y);
+        break;
+            
+        ////////////////////////////////////////////////////////////////////////////
+            
+      case SDL_MOUSEBUTTONDOWN:
+        OnMouseDown(event.button.button);
+        break;
+            
+        ////////////////////////////////////////////////////////////////////////////
+            
+      case SDL_MOUSEBUTTONUP:
+        OnMouseUp(event.button.button);
+        break;
     }
   }
+}
 
+////////////////////////////////////////////////////////////////////////////////
+
+void OnMouseMove(int x, int y)
+{
+  MouseX = x;
+  MouseY = y;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void OnMouseDown(int button)
+{
+  switch(button)
+  {
+    case SDL_BUTTON_LEFT:      MouseButton[MOUSE_LEFT]   = true;       break;
+    case SDL_BUTTON_MIDDLE:    MouseButton[MOUSE_MIDDLE] = true;       break;
+    case SDL_BUTTON_RIGHT:     MouseButton[MOUSE_RIGHT]  = true;       break;
+    case SDL_BUTTON_WHEELUP:   MouseWheelQueue.push(MOUSE_WHEEL_UP);   break;
+    case SDL_BUTTON_WHEELDOWN: MouseWheelQueue.push(MOUSE_WHEEL_DOWN); break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void OnMouseUp(int button)
+{
+  switch(button)
+  {
+    case SDL_BUTTON_LEFT:      MouseButton[MOUSE_LEFT]   = false; break;
+    case SDL_BUTTON_MIDDLE:    MouseButton[MOUSE_MIDDLE] = false; break;
+    case SDL_BUTTON_RIGHT:     MouseButton[MOUSE_RIGHT]  = false; break;
+  }
 }
 
 ///////////////////////////////////////////////////////////
 
-void OnKeyDown(int key) {
-  //std::cerr << "down: " << key << std::endl;
-  key_queue.push_back((SDLKey) key);
+void OnKeyDown(int key)
+{
+  KeyQueue.push(key);
   CurrentKeyBuffer[key] = true;
+  
+  // update modifier states
+  if (key == KEY_CAPSLOCK)
+    ModKeyStates[MODKEY_CAPSLOCK]  = !ModKeyStates[MODKEY_CAPSLOCK];
+    
+  else if (key == KEY_NUMLOCK)
+    ModKeyStates[MODKEY_NUMLOCK]   = !ModKeyStates[MODKEY_NUMLOCK];
+    
+  else if (key == KEY_SCROLLOCK)
+    ModKeyStates[MODKEY_SCROLLOCK] = !ModKeyStates[MODKEY_SCROLLOCK];
           
   switch(key) {
-
     case KEY_F10:
       ToggleFullscreen();
     break;
@@ -210,26 +270,27 @@ void OnKeyDown(int key) {
     case KEY_F12:
       ShouldTakeScreenshot = true;
     break;
-  };
+  }
 }
 
 ///////////////////////////////////////////////////////////
 
-void OnKeyUp(int key) {
-  //std::cerr << "up:   " << key << std::endl;
+void OnKeyUp(int key)
+{
   CurrentKeyBuffer[key] = false;
 }
 
 ///////////////////////////////////////////////////////////
 
-bool IsKeyPressed (int key) {
-  /* 
-  Uint8* key_state;
-  SDL_PumpEvents();
-  key_state = SDL_GetKeyState(NULL);
-  return key_state[KeyMapping[key]];
-  */
-  
+bool GetToggleState(int key)
+{
+  return ModKeyStates[key];
+}
+
+///////////////////////////////////////////////////////////
+
+bool IsKeyPressed(int key)
+{
   if (key >= 0 && key < MAX_KEY) {
     UpdateSystem();
     return KeyBuffer[key];
@@ -240,70 +301,86 @@ bool IsKeyPressed (int key) {
 
 ///////////////////////////////////////////////////////////
 
-void GetKeyStates (bool keys[MAX_KEY]) {
-
+void GetKeyStates(bool keys[MAX_KEY]) {
   UpdateSystem();
   for (int i = 0; i < MAX_KEY; ++i) {
     keys[i] = KeyBuffer[i];
   }
-
 }
 
 ///////////////////////////////////////////////////////////
 
-bool AreKeysLeft () {
+bool AreKeysLeft() {
   UpdateSystem();
-  return !key_queue.empty();
+  return !KeyQueue.empty();
 }
 
 ///////////////////////////////////////////////////////////
 
-int GetKey () {
-  int key;
-
+int GetKey() 
+{
   UpdateSystem();
-  while (key_queue.empty()) {
+  while (KeyQueue.empty() == true)
     UpdateSystem();
-  }
 
-  key = (int) key_queue.front();
-  key_queue.pop_front();
+  int key = KeyQueue.front();
+  KeyQueue.pop();
+    
   return key;
 }
 
 // MOUSE SUPPORT
 
-///////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
+int GetMouseX()
+{
+  return MouseX;
+}
 
-void SetMousePosition (int x, int y) {
+////////////////////////////////////////////////////////////////////////////////
+
+int GetMouseY()
+{
+  return MouseY;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool IsMouseButtonPressed(int button)
+{
+  return MouseButton[button];
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void SetMousePosition(int x, int y)
+{
   SDL_WarpMouse(x, y);
 }
 
-int GetMouseX () {
-  int x, dummy;
+////////////////////////////////////////////////////////////////////////////////
 
-  SDL_PumpEvents();
-  SDL_GetMouseState(&x, &dummy);
-  return x;
+int GetMouseWheelEvent()
+{
+  UpdateSystem();
+  while (MouseWheelQueue.empty() == true)
+    UpdateSystem();
+  
+  int mw_event = MouseWheelQueue.front();
+  MouseWheelQueue.pop();
+  
+  return mw_event;
 }
 
-int GetMouseY () {
-  int y, dummy;
+////////////////////////////////////////////////////////////////////////////////
 
-  SDL_PumpEvents();
-  SDL_GetMouseState(&dummy, &y);
-  return y;
+int GetNumMouseWheelEvents()
+{
+  UpdateSystem();
+  return MouseWheelQueue.size();
 }
 
-bool IsMouseButtonPressed (int button) {
-  int dummy;
-
-  SDL_PumpEvents();
-  if (SDL_GetMouseState(&dummy, &dummy) & SDL_BUTTON(button + 1))
-    return true;
-  return false;
-}
 
 
 // JOYSTICK SUPPORT
@@ -317,8 +394,7 @@ int GetNumJoysticks()
 
 ///////////////////////////////////////////////////////////
 
-
-float GetJoystickX(int joy_index)
+int GetNumJoystickAxes(int joy_index)
 {
   if (joy_index < 0 || joy_index >= SDL_NumJoysticks())
     return 0;
@@ -327,24 +403,21 @@ float GetJoystickX(int joy_index)
   if (joy == NULL)
     return 0;
 
-  Sint16 value = SDL_JoystickGetAxis(joy, 0);
-
-  // GetAxis returns between -32768 to 32768 so we map that onto -1.0 to 1.0
-  return ((float) value / (float) 32768.0);
+  return SDL_JoystickNumAxes(joy);
 }
 
 ///////////////////////////////////////////////////////////
 
-float GetJoystickY(int joy_index)
+float GetJoystickAxis(int joy_index, int axis)
 {
-  if (joy_index < 0 || joy_index >= SDL_NumJoysticks())
+  if (joy_index < 0 || joy_index >= SDL_NumJoysticks() || axis < 0 || axis > 3)
     return 0;
 
   SDL_Joystick* joy = SDL_JoystickOpen(joy_index);
   if (joy == NULL)
     return 0;
 
-  Sint16 value = SDL_JoystickGetAxis(joy, 1);
+  Sint16 value = SDL_JoystickGetAxis(joy, axis);
 
   // GetAxis returns between -32768 to 32768 so we map that onto -1.0 to 1.0
   return ((float) value / (float) 32768.0);

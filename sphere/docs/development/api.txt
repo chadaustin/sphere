@@ -308,6 +308,13 @@ drawing onto surfaces or masking
     IsAnyKeyPressed()
       - checks if any key is pressed at the time.
 
+    GetToggleState(key)
+      - checks if Caps Lock, Num Lock or Scroll Lock are active.
+        Allowed key values are:
+          KEY_CAPSLOCK
+          KEY_NUMLOCK
+          KEY_SCROLLOCK (note: only two Ls)
+
     GetKeyString(key, shift)
       - converts the key into a string, KEY_A will become "a", etc.
       - if shift is true, returns uppercase/special value of key
@@ -326,15 +333,29 @@ drawing onto surfaces or masking
       - returns true if the button is pressed
         allowed button values are: MOUSE_LEFT, MOUSE_RIGHT, MOUSE_MIDDLE
 
+    GetMouseWheelEvent()
+      - returns a single mouse wheel event
+        possible values are: MOUSE_WHEEL_UP, MOUSE_WHEEL_DOWN
+
+    GetNumMouseWheelEvents()
+      - returns the length of the mouse wheel event queue
+
 
     *** joystick ***
     GetNumJoysticks()
       - returns the number of joysticks available on the system
 
-    GetJoystickX(joy)
-    GetJoystickY(joy)
-      - returns the current joystick position in normalized
-        coordinates from -1 to 1 on both axes.
+    GetJoystickAxis(joy, axis)
+      - returns the current joystick axis position in normalized
+        coordinates fro -1 to 1
+        Allowed axis values:
+          JOYSTICK_AXIS_X
+          JOYSTICK_AXIS_Y
+          JOYSTICK_AXIS_Z
+          JOYSTICK_AXIS_R (rotation)
+
+    GetNumJoystickAxes(joy)
+      - returns the number of available axes on the given joystick
 
     GetNumJoystickButtons(joy)
       - returns the number of buttons available on this joystick

@@ -289,8 +289,8 @@ function UpdatePersonJoysticks()
     if (!gPersonJoysticks[i].destroy && gPersonJoysticks[i].joystick >= 0 && gPersonJoysticks[i].joystick < GetNumJoysticks())
     {
 
-      var dx = GetJoystickX(gPersonJoysticks[i].joystick);
-      var dy = GetJoystickY(gPersonJoysticks[i].joystick);
+      var dx = GetJoystickAxis(gPersonJoysticks[i].joystick, JOYSTICK_AXIS_X);
+      var dy = GetJoystickAxis(gPersonJoysticks[i].joystick, JOYSTICK_AXIS_Y);
 
       dx = Math.round(dx * 10) / 10;
       dy = Math.round(dy * 10) / 10;

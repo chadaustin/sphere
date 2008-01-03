@@ -5481,8 +5481,8 @@ CMapEngine::ProcessInput()
             {
                 if (m_Persons[person].player_index >= 0 && m_Persons[person].player_index < GetNumJoysticks())
                 {
-                    dx += __round__(GetJoystickX(m_Persons[person].player_index));
-                    dy += __round__(GetJoystickY(m_Persons[person].player_index));
+                    dx += __round__(GetJoystickAxis(m_Persons[person].player_index, JOYSTICK_AXIS_X));
+                    dy += __round__(GetJoystickAxis(m_Persons[person].player_index, JOYSTICK_AXIS_Y));
                 }
 
             }

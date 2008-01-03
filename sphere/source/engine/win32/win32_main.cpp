@@ -1,4 +1,15 @@
 
+// defines used to allow later windows features, such as the WM_MOUSEWHEEL constant
+#ifndef WINVER        
+#define WINVER 0x0501  
+#endif
+#ifndef _WIN32_WINNT     
+#define _WIN32_WINNT 0x0501
+#endif                       
+#ifndef _WIN32_WINDOWS       
+#define _WIN32_WINDOWS 0x0501 
+#endif
+
 #include <windows.h>
 #include <mmsystem.h>
 #include <stdio.h>
@@ -443,6 +454,12 @@ LRESULT CALLBACK SphereWindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM l
     {
         OnMouseUp(MOUSE_RIGHT);
         ReleaseCapture();
+        return 0;
+    }
+
+    case WM_MOUSEWHEEL:
+    {
+        OnMouseWheel(GET_WHEEL_DELTA_WPARAM(wparam));
         return 0;
     }
 

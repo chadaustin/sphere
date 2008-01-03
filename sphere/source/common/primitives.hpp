@@ -1286,7 +1286,7 @@ namespace primitives
                     {
                         fang_p = PI + (PI + fang_p);
                     }
-                    fang_p = abs(angle - fang_p);
+                    fang_p = fabs(angle - fang_p);
                     if (fang_p >= PI)
                     {
                         fang_p = 2*PI - fang_p;
@@ -1807,7 +1807,7 @@ namespace primitives
             ix++;
 
             // but check whether to go down
-            if (abs(ix*ix + iy*iy - RR) > abs(ix*ix + (iy-1)*(iy-1) - RR)) iy--;
+            if (fabs(ix*ix + iy*iy - RR) > fabs(ix*ix + (iy-1)*(iy-1) - RR)) iy--;
         }
     }
 

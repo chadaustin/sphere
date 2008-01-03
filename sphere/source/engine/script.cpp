@@ -591,6 +591,9 @@ CScript::InitializeSphereConstants()
                       KEY_CONSTANT(KEY_Y)
                       KEY_CONSTANT(KEY_Z)
                       KEY_CONSTANT(KEY_SHIFT)
+                      KEY_CONSTANT(KEY_CAPSLOCK)
+                      KEY_CONSTANT(KEY_NUMLOCK)
+                      KEY_CONSTANT(KEY_SCROLLOCK)
                       KEY_CONSTANT(KEY_CTRL)
                       KEY_CONSTANT(KEY_ALT)
                       KEY_CONSTANT(KEY_SPACE)
@@ -627,6 +630,12 @@ CScript::InitializeSphereConstants()
                       KEY_CONSTANT(MOUSE_LEFT)
                       KEY_CONSTANT(MOUSE_MIDDLE)
                       KEY_CONSTANT(MOUSE_RIGHT)
+                      KEY_CONSTANT(MOUSE_WHEEL_UP)
+                      KEY_CONSTANT(MOUSE_WHEEL_DOWN)
+                      KEY_CONSTANT(JOYSTICK_AXIS_X)
+                      KEY_CONSTANT(JOYSTICK_AXIS_Y)                      
+                      KEY_CONSTANT(JOYSTICK_AXIS_Z)
+                      KEY_CONSTANT(JOYSTICK_AXIS_R)                      
 #undef KEY_CONSTANT
 
 #define MAP_ENGINE_CONSTANT(c) { #c, CMapEngine:: c },
@@ -2516,6 +2525,30 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
+    - returns the toggle state of a toggle key
+*/
+begin_func(GetToggleState, 1)
+arg_int(key);
+
+switch (key)
+{
+    case KEY_CAPSLOCK:  key = MODKEY_CAPSLOCK;  break;
+    case KEY_NUMLOCK:   key = MODKEY_NUMLOCK;   break;
+    case KEY_SCROLLOCK: key = MODKEY_SCROLLOCK; break;
+    default:            key = MODKEY_NONE;      break;
+}
+
+RefreshInput();
+
+if (key != MODKEY_NONE)
+    return_bool(GetToggleState(key));
+else
+    return_bool(false);
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
     - checks if the key has been pressed.
 
       Returns true if 'key' is pressed....
@@ -2592,6 +2625,22 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
+    - returns the first key in the queue for mouse wheel events
+*/
+begin_func(GetMouseWheelEvent, 0)
+return_int(GetMouseWheelEvent());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - returns the size of the queue for mouse wheel events
+*/
+begin_func(GetNumMouseWheelEvents, 0)
+return_int(GetNumMouseWheelEvents());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
     - returns the number of joysticks available on the system
 */
 begin_func(GetNumJoysticks, 0)
@@ -2600,24 +2649,23 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-    - returns the current x joystick position in normalized
-      coordinates from -1 to 1 on the horizontal axis.
+    - returns the number of axes available on this joystick
 */
-begin_func(GetJoystickX, 1)
+begin_func(GetNumJoystickAxes, 1)
 arg_int(joy);
-RefreshInput();
-return_double(GetJoystickX(joy));
+return_int(GetNumJoystickAxes(joy));
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-    - returns the current y joystick position in normalized
-      coordinates from -1 to 1 on the vertical axis.
+    - returns the current position of the 'axis' axis of the joystick 'joy' 
+      in normalized coordinates from -1 to 1
 */
-begin_func(GetJoystickY, 1)
+begin_func(GetJoystickAxis, 2)
 arg_int(joy);
+arg_int(axis);
 RefreshInput();
-return_double(GetJoystickY(joy));
+return_double(GetJoystickAxis(joy, axis));
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////

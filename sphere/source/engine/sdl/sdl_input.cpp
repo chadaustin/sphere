@@ -14,9 +14,13 @@ std::map<int, int> VirtualKeys;
 // keyboard state tables (accessed with virtual keys)
 static byte CurrentKeyBuffer[256];
 static byte KeyBuffer[256];
+static byte ModKeyStates[3];
 
 // keyboard key queue (virtual keys also)
 std::queue<int> KeyQueue;
+
+// queue for mouse wheel events
+std::queue<int> MouseWheelQueue;
 
 int MouseX, MouseY;
 bool MouseButton[3];
@@ -93,6 +97,9 @@ bool InitInput()
   VirtualKeys[SDLK_z]            = KEY_Z;
   VirtualKeys[SDLK_LSHIFT]       = KEY_SHIFT;
   VirtualKeys[SDLK_RSHIFT]       = KEY_SHIFT;
+  VirtualKeys[SDLK_CAPSLOCK]     = KEY_CAPSLOCK;
+  VirtualKeys[SDLK_NUMLOCK]      = KEY_NUMLOCK;
+  VirtualKeys[SDLK_SCROLLOCK]    = KEY_SCROLLOCK;
   VirtualKeys[SDLK_LCTRL]        = KEY_CTRL;
   VirtualKeys[SDLK_RCTRL]        = KEY_CTRL;
   VirtualKeys[SDLK_LALT]         = KEY_ALT;
@@ -112,34 +119,34 @@ bool InitInput()
   VirtualKeys[SDLK_INSERT]       = KEY_INSERT;
   VirtualKeys[SDLK_DELETE]       = KEY_DELETE;
   VirtualKeys[SDLK_HOME]         = KEY_HOME;
-  VirtualKeys[SDLK_KP7]          = KEY_HOME;
   VirtualKeys[SDLK_END]          = KEY_END;
-  VirtualKeys[SDLK_KP1]          = KEY_END;
   VirtualKeys[SDLK_PAGEUP]       = KEY_PAGEUP;
-  VirtualKeys[SDLK_KP9]          = KEY_PAGEUP;
   VirtualKeys[SDLK_PAGEDOWN]     = KEY_PAGEDOWN;
-  VirtualKeys[SDLK_KP3]          = KEY_PAGEDOWN;
   VirtualKeys[SDLK_UP]           = KEY_UP;
-  VirtualKeys[SDLK_KP8]          = KEY_UP;
   VirtualKeys[SDLK_RIGHT]        = KEY_RIGHT;
-  VirtualKeys[SDLK_KP6]          = KEY_RIGHT;
   VirtualKeys[SDLK_DOWN]         = KEY_DOWN;
-  VirtualKeys[SDLK_KP2]          = KEY_DOWN;
   VirtualKeys[SDLK_LEFT]         = KEY_LEFT;
-  VirtualKeys[SDLK_KP4]          = KEY_LEFT;
-
-	VirtualKeys[SDLK_KP0]    	     = KEY_NUM_0;
-	VirtualKeys[SDLK_KP1]    	     = KEY_NUM_1;
-	VirtualKeys[SDLK_KP2]    	     = KEY_NUM_2;
-	VirtualKeys[SDLK_KP3]    	     = KEY_NUM_3;
-	VirtualKeys[SDLK_KP4]    	     = KEY_NUM_4;
-	VirtualKeys[SDLK_KP5]    	     = KEY_NUM_5;
-	VirtualKeys[SDLK_KP6]    	     = KEY_NUM_6;
-	VirtualKeys[SDLK_KP7]    	     = KEY_NUM_7;
-	VirtualKeys[SDLK_KP8]    	     = KEY_NUM_8;
-	VirtualKeys[SDLK_KP9]    	     = KEY_NUM_9;
-
-  MouseButton[0] = MouseButton[1] = MouseButton[2] = false;
+  VirtualKeys[SDLK_KP0]    	     = KEY_NUM_0;
+  VirtualKeys[SDLK_KP1]    	     = KEY_NUM_1;
+  VirtualKeys[SDLK_KP2]    	     = KEY_NUM_2;
+  VirtualKeys[SDLK_KP3]    	     = KEY_NUM_3;
+  VirtualKeys[SDLK_KP4]    	     = KEY_NUM_4;
+  VirtualKeys[SDLK_KP5]    	     = KEY_NUM_5;
+  VirtualKeys[SDLK_KP6]    	     = KEY_NUM_6;
+  VirtualKeys[SDLK_KP7]    	     = KEY_NUM_7;
+  VirtualKeys[SDLK_KP8]    	     = KEY_NUM_8;
+  VirtualKeys[SDLK_KP9]    	     = KEY_NUM_9;
+  
+  // initialize mouse buttons
+  MouseButton[MOUSE_LEFT]   = false;
+  MouseButton[MOUSE_MIDDLE] = false;
+  MouseButton[MOUSE_RIGHT]  = false;
+  
+  // initialize modifier states
+  ModKeyStates[MODKEY_CAPSLOCK]  = false;
+  ModKeyStates[MODKEY_NUMLOCK]   = false;
+  ModKeyStates[MODKEY_SCROLLOCK] = false;
+  
   SDL_ShowCursor(0);
 
   return true;
@@ -147,7 +154,8 @@ bool InitInput()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool ResetInput() {
+bool ResetInput()
+{
   return true;
 }
 
@@ -165,6 +173,16 @@ void OnKeyDown(int virtual_key)
 
   // add the key to the key queue
   KeyQueue.push(key);
+  
+  // update modifier states
+  if (key == KEY_CAPSLOCK)
+    ModKeyStates[MODKEY_CAPSLOCK]  = !ModKeyStates[MODKEY_CAPSLOCK];
+    
+  else if (key == KEY_NUMLOCK)
+    ModKeyStates[MODKEY_NUMLOCK]   = !ModKeyStates[MODKEY_NUMLOCK];
+    
+  else if (key == KEY_SCROLLOCK)
+    ModKeyStates[MODKEY_SCROLLOCK] = !ModKeyStates[MODKEY_SCROLLOCK];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -173,6 +191,13 @@ void OnKeyUp(int virtual_key)
 {
   int key = VirtualKeys[virtual_key];
   CurrentKeyBuffer[key] = 0;
+}
+
+///////////////////////////////////////////////////////////
+
+bool GetToggleState(int key)
+{
+  return ModKeyStates[key];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -189,9 +214,11 @@ void OnMouseDown(int button)
 {
   switch(button)
   {
-    case SDL_BUTTON_LEFT:   MouseButton[MOUSE_LEFT] = true; break;
-    case SDL_BUTTON_MIDDLE: MouseButton[MOUSE_MIDDLE] = true; break;
-    case SDL_BUTTON_RIGHT:  MouseButton[MOUSE_RIGHT] = true; break;
+    case SDL_BUTTON_LEFT:      MouseButton[MOUSE_LEFT]   = true; break;
+    case SDL_BUTTON_MIDDLE:    MouseButton[MOUSE_MIDDLE] = true; break;
+    case SDL_BUTTON_RIGHT:     MouseButton[MOUSE_RIGHT]  = true; break;
+    case SDL_BUTTON_WHEELUP:   MouseWheelQueue.push(MOUSE_WHEEL_UP);
+    case SDL_BUTTON_WHEELDOWN: MouseWheelQueue.push(MOUSE_WHEEL_DOWN);
   }
 }
 
@@ -201,9 +228,9 @@ void OnMouseUp(int button)
 {
   switch(button)
   {
-    case SDL_BUTTON_LEFT:   MouseButton[MOUSE_LEFT] = false; break;
-    case SDL_BUTTON_MIDDLE: MouseButton[MOUSE_MIDDLE] = false; break;
-    case SDL_BUTTON_RIGHT:  MouseButton[MOUSE_RIGHT] = false; break;
+    case SDL_BUTTON_LEFT:      MouseButton[MOUSE_LEFT]   = false; break;
+    case SDL_BUTTON_MIDDLE:    MouseButton[MOUSE_MIDDLE] = false; break;
+    case SDL_BUTTON_RIGHT:     MouseButton[MOUSE_RIGHT]  = false; break;
   }
 }
 
@@ -211,8 +238,7 @@ void OnMouseUp(int button)
 
 bool RefreshInput()
 {
-  //UpdateSystem();
-
+  // update currently pressed keys
   memcpy(KeyBuffer, CurrentKeyBuffer, 256);
   return true;
 }
@@ -289,25 +315,93 @@ void SetMousePosition(int x, int y)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-int GetNumJoysticks() {
-  return 0;
-}
-
-float GetJoystickX(int joy) { // returns value in range [-1, 1]
-  return 0;
-}
-
-float GetJoystickY(int joy) { // returns value in range [-1, 1]
-  return 0;
-}
-
-int GetNumJoystickButtons(int joy) {
-  return 0;
-}
-
-bool IsJoystickButtonPressed(int joy, int button) {
-  return false;
+int GetMouseWheelEvent()
+{
+    UpdateSystem();
+    while (MouseWheelQueue.empty() == true)
+        UpdateSystem();
+    
+    int mw_event = MouseWheelQueue.front();
+    MouseWheelQueue.pop();
+    
+    return mw_event;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
+int GetNumMouseWheelEvents()
+{
+    UpdateSystem();
+    return MouseWheelQueue.size();
+}
+
+///////////////////////////////////////////////////////////
+
+int GetNumJoysticks()
+{
+  return SDL_NumJoysticks();
+}
+
+///////////////////////////////////////////////////////////
+
+int GetNumJoystickAxes(int joy_index)
+{
+  if (joy_index < 0 || joy_index >= SDL_NumJoysticks())
+    return 0;
+
+  SDL_Joystick* joy = SDL_JoystickOpen(joy_index);
+  if (joy == NULL)
+    return 0;
+
+  return SDL_JoystickNumAxes(joy);
+}
+
+///////////////////////////////////////////////////////////
+
+float GetJoystickAxis(int joy_index, int axis)
+{
+  if (joy_index < 0 || joy_index >= SDL_NumJoysticks() || axis < 0 || axis > 3)
+    return 0;
+
+  SDL_Joystick* joy = SDL_JoystickOpen(joy_index);
+  if (joy == NULL)
+    return 0;
+
+  Sint16 value = SDL_JoystickGetAxis(joy, axis);
+
+  // GetAxis returns between -32768 to 32768 so we map that onto -1.0 to 1.0
+  return ((float) value / (float) 32768.0);
+}
+
+///////////////////////////////////////////////////////////
+
+int GetNumJoystickButtons(int joy_index)
+{
+  if (joy_index < 0 || joy_index >= SDL_NumJoysticks())
+    return 0;
+
+  SDL_Joystick* joy = SDL_JoystickOpen(joy_index);
+  if (joy == NULL)
+    return 0;
+
+  return SDL_JoystickNumButtons(joy);
+}
+
+///////////////////////////////////////////////////////////
+
+bool IsJoystickButtonPressed(int joy_index, int button)
+{
+  if (joy_index < 0 || joy_index >= SDL_NumJoysticks())
+    return false;
+
+  SDL_Joystick* joy = SDL_JoystickOpen(joy_index);
+  if (joy == NULL)
+    return false;
+
+  if (button < 0 || button >= SDL_JoystickNumButtons(joy))
+    return false;
+
+  return (SDL_JoystickGetButton(joy, button) == 1);
+}
+
+///////////////////////////////////////////////////////////

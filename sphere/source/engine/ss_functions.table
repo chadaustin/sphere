@@ -64,7 +64,8 @@ SS_FUNCTION(OpenLog, 1)
     // keyboard
     SS_FUNCTION(AreKeysLeft, 0)
     SS_FUNCTION(GetKey, 0)
-    SS_FUNCTION(IsKeyPressed, 0)
+    SS_FUNCTION(GetToggleState, 1)
+    SS_FUNCTION(IsKeyPressed, 1)
     SS_FUNCTION(IsAnyKeyPressed, 0)
     SS_FUNCTION(GetKeyString, 2)
 
@@ -73,11 +74,13 @@ SS_FUNCTION(OpenLog, 1)
     SS_FUNCTION(GetMouseX, 0)
     SS_FUNCTION(GetMouseY, 0)
     SS_FUNCTION(IsMouseButtonPressed, 1)
+    SS_FUNCTION(GetMouseWheelEvent, 0)
+    SS_FUNCTION(GetNumMouseWheelEvents, 0)
 
     // joystick
     SS_FUNCTION(GetNumJoysticks, 0)
-    SS_FUNCTION(GetJoystickX, 1)
-    SS_FUNCTION(GetJoystickY, 1)
+    SS_FUNCTION(GetNumJoystickAxes, 1)
+    SS_FUNCTION(GetJoystickAxis, 2)
     SS_FUNCTION(GetNumJoystickButtons, 1)
     SS_FUNCTION(IsJoystickButtonPressed, 2)
 

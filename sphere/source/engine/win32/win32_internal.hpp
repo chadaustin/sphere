@@ -19,6 +19,7 @@ extern void OnKeyUp(int virtual_key);
 extern void OnMouseMove(int x, int y);
 extern void OnMouseDown(int button);
 extern void OnMouseUp(int button);
+extern void OnMouseWheel(int dist);
 // network
 extern bool InitNetworkSystem();
 extern bool CloseNetworkSystem();
