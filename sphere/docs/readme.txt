@@ -1,10 +1,10 @@
-Sphere v1.13
+Sphere v1.4
 --------
 
 Chad Austin
 Brian Robb
 Spherical (http://www.spheredev.org/)
-2007.12.10
+2008.01.08
 
 
 Sphere is a 2D RPG creation system designed to facilitate creation of games
@@ -63,8 +63,8 @@ files contained within them.
 * sphere_gl.dll has some problems with drawing and capturing primitives. This
   can cause some graphical glitches. It performs very poorly when games create
   and use many surfaces.
-* See the project page on SourceForge for bug reports and feature
-  requests.  http://sourceforge.net/projects/sphere
+* Visit the Spherical forums for bug reports and feature requests.
+  http://www.spheredev.org/smforums/
 
 
 == Executable listing for Windows ==
@@ -101,6 +101,6 @@ Use your favourite text editor.
 * Tung Nguyen (tunginobi)
 
 Please send all suggestions and bug reports to:
-http://www.spheredev.org/forums/
+http://www.spheredev.org/smforums/
 OR
 the Sourceforge bug reports page.

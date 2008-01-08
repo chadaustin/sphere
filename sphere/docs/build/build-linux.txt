@@ -2,7 +2,14 @@ Building Sphere in Linux (g++)
 --------
 
 Spherical (http://www.spheredev.org/)
-2006.08.27 (Version 1.12)
+2008.01.08 (Version 1.4)
+
+
+= NB: UBUNTU USERS =
+
+A step-by-step, easy-to-follow guide is available at Spheriki:
+
+ http://www.spheredev.org/wiki/Compiling_Sphere
 
 
 = Requirements =

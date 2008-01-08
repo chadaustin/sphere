@@ -4,10 +4,10 @@
 ; NOTE: this .NSI script is designed for NSIS v1.8+
 ; URL: http://nsis.sourceforge.net/
 
-Name "Sphere 1.13"
-!define SphereDir "sphere-1.13"
-!define SphereStartMenuDir "Sphere 1.13"
-OutFile "InstallSphere1.13.exe"
+Name "Sphere 1.4"
+!define SphereDir "sphere-1.4"
+!define SphereStartMenuDir "Sphere 1.4"
+OutFile "InstallSphere1.4.exe"
 
 ; Some default compiler settings (uncomment and change at will):
 ; SetCompress auto ; (can be off or force)
