@@ -289,6 +289,7 @@ int GetKey()
 
 int GetMouseX()
 {
+  UpdateSystem();
   return MouseX;
 }
 
@@ -296,6 +297,7 @@ int GetMouseX()
 
 int GetMouseY()
 {
+  UpdateSystem();
   return MouseY;
 }
 

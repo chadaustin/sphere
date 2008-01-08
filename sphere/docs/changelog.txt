@@ -1,5 +1,8 @@
 YYYY.MM.DD
 
+2008.01.08
+  - GetMouseX/Y() in a loop without other input polling no longer lags.
+
 2008.01.03
   - Applied Kyuu's input patch; removing GetJoystickX(), GetJoystickY();
     adding GetToggleState(), GetJoystickAxis(), GetNumJoystickAxes(),
