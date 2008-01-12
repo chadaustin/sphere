@@ -1,6 +1,8 @@
 #pragma warning(disable : 4786)
 
 #include <stack>
+#include <algorithm>
+
 #include "ImageView.hpp"
 #include "Editor.hpp"
 #include "../common/Filters.hpp"
@@ -51,11 +53,17 @@ BEGIN_MESSAGE_MAP(CImageView, CWnd)
   ON_COMMAND(ID_IMAGEVIEW_PASTE_INTOSELECTION,   OnPasteIntoSelection)
   ON_COMMAND(ID_IMAGEVIEW_VIEWGRID,              OnViewGrid)
   ON_COMMAND(ID_IMAGEVIEW_TOGGLEALPHAMASK,       OnToggleViewAlphaMask)
-  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_BLEND,       OnBlendModeBlend)
-  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_REPLACE,     OnBlendModeReplace)
-  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_RGBONLY,     OnBlendModeRGBOnly)
-  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_ALPHAONLY,   OnBlendModeAlphaOnly)
-  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_ADDITIVE,    OnBlendModeAdditive)
+  
+  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_BLEND,          OnBlendModeBlend)
+  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_REPLACE,        OnBlendModeReplace)
+  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_RGBONLY,        OnBlendModeRGBOnly)
+  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_ALPHAONLY,      OnBlendModeAlphaOnly)
+  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_ADDITIVE,       OnBlendModeAdditive)
+  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_SUBTRACTIVE,    OnBlendModeSubtractive)
+  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_MULTIPLICATIVE, OnBlendModeMultiplicative)
+  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_AVERAGE,        OnBlendModeAverage)
+  ON_COMMAND(ID_IMAGEVIEW_BLENDMODE_INVERT,         OnBlendModeInvert)
+  
   ON_COMMAND(ID_IMAGEVIEW_ROTATE_CW,             OnRotateCW)
   ON_COMMAND(ID_IMAGEVIEW_ROTATE_CCW,            OnRotateCCW)
   ON_COMMAND(ID_IMAGEVIEW_SLIDE_UP,              OnSlideUp)
@@ -696,9 +704,11 @@ CImageView::TP_ToolSelected(int tool, int tool_index)
 {
   // do something with the tool
   m_SelectedTools[tool_index] = tool;
-  switch (m_SelectedTools[tool_index]) {
-    case Tool_Selection: m_SelectionType = ST_Rectangle; break;
-    case Tool_FreeSelection: m_SelectionType = ST_Free; break;
+  
+  switch (m_SelectedTools[tool_index]) 
+  {
+    case Tool_Selection:     m_SelectionType = ST_Rectangle; break;
+    case Tool_FreeSelection: m_SelectionType = ST_Free;      break;
   }
 }
 
@@ -1072,18 +1082,21 @@ CImageView::FillMe(int x, int y, RGBA colorToReplace)
 void
 CImageView::Line()
 {
-  if (!m_MouseDown[m_CurrentTool]) {
+  if (!m_MouseDown[m_CurrentTool]) 
+  {
     m_StartPoint = m_CurPoint;
     Invalidate();
-    m_Handler->IV_ImageChanged();
-  } else {
+  } 
+  else 
+  {
     // convert pixel coordinates to image coordinates
     POINT start = ConvertToPixel(m_StartPoint);
     POINT end = ConvertToPixel(m_CurPoint);
 
-    // bounds check
-    if (!InImage(start)) // || !InImage(end))
-      return;
+    int max_x = std::max(start.x, end.x);
+    int max_y = std::max(start.y, end.y);
+    int min_x = std::min(start.x, end.x);
+    int min_y = std::min(start.y, end.y);
 
     int sx = GetSelectionLeftX();
     int sy = GetSelectionTopY();
@@ -1091,7 +1104,17 @@ CImageView::Line()
     int sh = GetSelectionHeight();
     clipper clip = {sx, sy, (sx + sw) - 1, (sy + sh) - 1};
     
+    if (min_x                   >= sx + sw ||
+        min_x + (max_x - min_x) <  sx      ||
+        min_y                   >= sy + sh ||
+        min_y + (max_y - min_y) <  sy)
+    {
+      Invalidate();
+      return;
+    }
+    
     m_Image.Line(start.x, start.y, end.x, end.y, m_Colors[m_CurrentTool], clip);
+    
     Invalidate();
     m_Handler->IV_ImageChanged();
   }
@@ -1102,18 +1125,24 @@ CImageView::Line()
 void
 CImageView::Rectangle()
 {
-  if (!m_MouseDown[m_CurrentTool]) {
+  if (!m_MouseDown[m_CurrentTool]) 
+  {
     m_StartPoint = m_CurPoint;
     Invalidate();
-    m_Handler->IV_ImageChanged();
-  } else {
+  } 
+  else 
+  {
     // convert pixel coordinates to image coordinates
     POINT start = ConvertToPixel(m_StartPoint);
     POINT end = ConvertToPixel(m_CurPoint);
 
-    // bounds check
-    if (!InImage(start)) // || !InImage(end))
-      return;
+    int width  = abs(end.x - start.x) + 1;
+    int height = abs(end.y - start.y) + 1;
+
+    if (start.x > end.x)
+      std::swap(start.x, end.x);
+    if (start.y > end.y)
+      std::swap(start.y, end.y);
 
     int sx = GetSelectionLeftX();
     int sy = GetSelectionTopY();
@@ -1121,12 +1150,19 @@ CImageView::Rectangle()
     int sh = GetSelectionHeight();
     clipper clip = { sx, sy, (sx + sw) - 1, (sy + sh) - 1 };
     
-    int x = std::min(start.x, end.x);
-    int y = std::min(start.y, end.y);
-    int width  = std::max(start.x, end.x) - x;
-    int height = std::max(start.y, end.y) - y;
-
-    m_Image.Rectangle(x, y, width, height, m_Colors[m_CurrentTool], clip);
+    if (start.x              >= sx + sw ||
+        start.x + width  - 1 <  sx      ||
+        start.y              >= sy + sh ||
+        start.y + height - 1 <  sy)
+    {
+      Invalidate();
+      return;
+    }
+    
+    if (GetMainWindow()->IsImageFillShapeToolChecked())
+      m_Image.Rectangle(start.x, start.y, width, height, m_Colors[m_CurrentTool], clip);
+    else
+      m_Image.OutlinedRectangle(start.x, start.y, width, height, 1, m_Colors[m_CurrentTool], clip);
 
     Invalidate();
     m_Handler->IV_ImageChanged();
@@ -1155,27 +1191,51 @@ CImageView::Circle()
   {
     m_StartPoint = m_CurPoint;
     Invalidate();
-    m_Handler->IV_ImageChanged();
   } 
   else 
   {
     // convert pixel coordinates to image coordinates
     POINT start = ConvertToPixel(m_StartPoint);
     POINT end = ConvertToPixel(m_CurPoint);
-    // bounds check
-    if (!InImage(start) || !InImage(end))
-      return;
-      
+    
+    int radius;
+    int antialias;
+    
+    if (abs(start.x - end.x) > abs(start.y - end.y))
+      radius = abs(start.x - end.x) + 1;
+    else
+      radius = abs(start.y - end.y) + 1;
+    
+    if (GetMainWindow()->IsImageAntialiasToolChecked())
+      antialias = 1;
+    else
+      antialias = 0;
+    
+    if (start.x > end.x)
+      end.x = start.x + radius - 1;
+    if (start.y > end.y)
+      end.y = start.y + radius - 1;
+    
     int sx = GetSelectionLeftX();
     int sy = GetSelectionTopY();
     int sw = GetSelectionWidth();
     int sh = GetSelectionHeight();
     clipper clip = { sx, sy, (sx + sw) - 1, (sy + sh) - 1 };
-      
-    if (abs(start.x - end.x) > abs(start.y - end.y))
-      m_Image.OutlinedCircle(start.x, start.y, abs(start.x - end.x), m_Colors[m_CurrentTool], 0, clip);
+    
+    if (start.x - radius     >= sx + sw ||
+        start.x + radius - 1 <  sx      ||
+        start.y - radius     >= sy + sh ||
+        start.y + radius - 1 <  sy)
+    {
+      Invalidate();
+      return;
+    }
+    
+    if (GetMainWindow()->IsImageFillShapeToolChecked())
+      m_Image.FilledCircle(start.x,   start.y, radius, m_Colors[m_CurrentTool], antialias, clip);
     else
-      m_Image.OutlinedCircle(start.x, start.y, abs(start.y - end.y), m_Colors[m_CurrentTool], 0, clip);
+      m_Image.OutlinedCircle(start.x, start.y, radius, m_Colors[m_CurrentTool], antialias, clip);
+      
     Invalidate();
     m_Handler->IV_ImageChanged();
   }
@@ -1190,17 +1250,20 @@ CImageView::Ellipse()
   {
     m_StartPoint = m_CurPoint;
     Invalidate();
-    m_Handler->IV_ImageChanged();
   } 
   else 
   {
     // convert pixel coordinates to image coordinates
     POINT start = ConvertToPixel(m_StartPoint);
-    POINT end = ConvertToPixel(m_CurPoint);
+    POINT end   = ConvertToPixel(m_CurPoint);
     
-    // bounds check
-    if (!InImage(start) || !InImage(end))
-      return;
+    int rx = abs(end.x - start.x) + 1;
+    int ry = abs(end.y - start.y) + 1;
+    
+    if (start.x > end.x)
+      end.x = start.x + rx - 1;
+    if (start.y > end.y)
+      end.y = start.y + ry - 1;
       
     int sx = GetSelectionLeftX();
     int sy = GetSelectionTopY();
@@ -1208,7 +1271,20 @@ CImageView::Ellipse()
     int sh = GetSelectionHeight();
     clipper clip = { sx, sy, (sx + sw) - 1, (sy + sh) - 1 };
     
-    m_Image.OutlinedEllipse(start.x, start.y, abs(start.x - end.x), abs(start.y - end.y), m_Colors[m_CurrentTool], clip);
+    if (start.x - rx     >= sx + sw ||
+        start.x + rx - 1 <  sx      ||
+        start.y - ry     >= sy + sh ||
+        start.y + ry - 1 <  sy)
+    {
+      Invalidate();
+      return;
+    }
+    
+    if (GetMainWindow()->IsImageFillShapeToolChecked())
+      m_Image.FilledEllipse(start.x,   start.y, rx, ry, m_Colors[m_CurrentTool], clip);
+    else
+      m_Image.OutlinedEllipse(start.x, start.y, rx, ry, m_Colors[m_CurrentTool], clip);
+    
     Invalidate();
     m_Handler->IV_ImageChanged();
   }
@@ -1316,27 +1392,27 @@ CImageView::OnPaint()
   m_CurrentTool = 0;
   switch(m_SelectedTools[m_CurrentTool])
   {
-    case Tool_Pencil:    break;
-    case Tool_Fill:      break;
-    case Tool_Line:      PaintLine(drawImage); break;
-    case Tool_Rectangle: PaintRectangle(drawImage); break;
-    case Tool_Circle:    PaintCircle(drawImage); break;
-    case Tool_Ellipse:   PaintEllipse(drawImage); break;
-    case Tool_Selection: UpdateSelection(); break;
-    case Tool_FreeSelection: UpdateSelection(); break;
+    case Tool_Pencil:        break;
+    case Tool_Fill:          break;
+    case Tool_Line:          PaintLine(drawImage);      break;
+    case Tool_Rectangle:     PaintRectangle(drawImage); break;
+    case Tool_Circle:        PaintCircle(drawImage);    break;
+    case Tool_Ellipse:       PaintEllipse(drawImage);   break;
+    case Tool_Selection:     UpdateSelection();         break;
+    case Tool_FreeSelection: UpdateSelection();         break;
   }
 
   m_CurrentTool = 1;
   switch(m_SelectedTools[m_CurrentTool])
   {
-    case Tool_Pencil:    break;
-    case Tool_Fill:      break;
-    case Tool_Line:      PaintLine(drawImage); break;
-    case Tool_Rectangle: PaintRectangle(drawImage); break;
-    case Tool_Circle:    PaintCircle(drawImage); break;
-    case Tool_Ellipse:   PaintEllipse(drawImage); break;
-    case Tool_Selection: UpdateSelection(); break;
-    case Tool_FreeSelection: UpdateSelection(); break;
+    case Tool_Pencil:        break;
+    case Tool_Fill:          break;
+    case Tool_Line:          PaintLine(drawImage);      break;
+    case Tool_Rectangle:     PaintRectangle(drawImage); break;
+    case Tool_Circle:        PaintCircle(drawImage);    break;
+    case Tool_Ellipse:       PaintEllipse(drawImage);   break;
+    case Tool_Selection:     UpdateSelection();         break;
+    case Tool_FreeSelection: UpdateSelection();         break;
   }
 
   m_CurrentTool = current_tool;
@@ -1565,9 +1641,6 @@ CImageView::PaintLine(CImage32& pImage)
   // convert pixel coordinates to image coordinates
   POINT start = ConvertToPixel(m_StartPoint);
   POINT end = ConvertToPixel(m_CurPoint);
-  // bounds check
-  if (!InImage(start))
-    return;
 
   pImage.Line(start.x, start.y, end.x, end.y, m_Colors[m_CurrentTool]);
 }
@@ -1583,17 +1656,16 @@ CImageView::PaintRectangle(CImage32& pImage)
   // convert pixel coordinates to image coordinates
   POINT start = ConvertToPixel(m_StartPoint);
   POINT end = ConvertToPixel(m_CurPoint);
-  // bounds check
-  if (!InImage(start))
-    return;
+
+  int x      = std::min(start.x, end.x);
+  int y      = std::min(start.y, end.y);
+  int width  = abs(end.x - start.x) + 1;
+  int height = abs(end.y - start.y) + 1;
   
-  //ClipPointToWithinImage(&end);
-  int x = std::min(start.x, end.x);
-  int y = std::min(start.y, end.y);
-  int width  = std::max(start.x, end.x) - x;
-  int height = std::max(start.y, end.y) - y;
-  
-  pImage.Rectangle(x, y, width, height, m_Colors[m_CurrentTool]);
+  if (GetMainWindow()->IsImageFillShapeToolChecked())
+    pImage.Rectangle(x, y, width, height, m_Colors[m_CurrentTool]);
+  else
+    pImage.OutlinedRectangle(x, y, width, height, 1, m_Colors[m_CurrentTool]);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1607,15 +1679,25 @@ CImageView::PaintCircle(CImage32& pImage)
   // convert pixel coordinates to image coordinates
   POINT start = ConvertToPixel(m_StartPoint);
   POINT end = ConvertToPixel(m_CurPoint);
-
-  // bounds check
-  if (!InImage(start) || !InImage(end))
-    return;
-
+  
+  int radius;
+  int antialias;
+  
   if (abs(start.x - end.x) > abs(start.y - end.y))
-    pImage.OutlinedCircle(start.x, start.y, abs(start.x - end.x), m_Colors[m_CurrentTool], 0);
+    radius = abs(start.x - end.x) + 1;
   else
-    pImage.OutlinedCircle(start.x, start.y, abs(start.y - end.y), m_Colors[m_CurrentTool], 0);
+    radius = abs(start.y - end.y) + 1;
+    
+  if (GetMainWindow()->IsImageAntialiasToolChecked())
+    antialias = 1;
+  else
+    antialias = 0;
+    
+  if (GetMainWindow()->IsImageFillShapeToolChecked())
+    pImage.FilledCircle(start.x,   start.y, radius, m_Colors[m_CurrentTool], antialias);
+  else
+    pImage.OutlinedCircle(start.x, start.y, radius, m_Colors[m_CurrentTool], antialias);
+    
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1628,13 +1710,12 @@ CImageView::PaintEllipse(CImage32& pImage)
 
   // convert pixel coordinates to image coordinates
   POINT start = ConvertToPixel(m_StartPoint);
-  POINT end = ConvertToPixel(m_CurPoint);
-
-  // bounds check
-  if (!InImage(start) || !InImage(end))
-    return;
-
-  pImage.OutlinedEllipse(start.x, start.y, abs(start.x - end.x), abs(start.y - end.y), m_Colors[m_CurrentTool]);
+  POINT end   = ConvertToPixel(m_CurPoint);
+  
+  if (GetMainWindow()->IsImageFillShapeToolChecked())
+    pImage.FilledEllipse(start.x,   start.y, abs(start.x - end.x) + 1, abs(start.y - end.y) + 1, m_Colors[m_CurrentTool]);
+  else
+    pImage.OutlinedEllipse(start.x, start.y, abs(start.x - end.x) + 1, abs(start.y - end.y) + 1, m_Colors[m_CurrentTool]);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1917,10 +1998,15 @@ CImageView::OnRButtonUp(UINT flags, CPoint point)
   }
 
   switch (m_Image.GetBlendMode()) {
-    case CImage32::BLEND:      CheckMenuItem(menu, ID_IMAGEVIEW_BLENDMODE_BLEND,     MF_BYCOMMAND | MF_CHECKED); break;
-    case CImage32::REPLACE:    CheckMenuItem(menu, ID_IMAGEVIEW_BLENDMODE_REPLACE,   MF_BYCOMMAND | MF_CHECKED); break;
-    case CImage32::RGB_ONLY:   CheckMenuItem(menu, ID_IMAGEVIEW_BLENDMODE_RGBONLY,   MF_BYCOMMAND | MF_CHECKED); break;
-    case CImage32::ALPHA_ONLY: CheckMenuItem(menu, ID_IMAGEVIEW_BLENDMODE_ALPHAONLY, MF_BYCOMMAND | MF_CHECKED); break;
+    case CImage32::BLEND:      CheckMenuItem(menu, ID_IMAGEVIEW_BLENDMODE_BLEND,          MF_BYCOMMAND | MF_CHECKED); break;
+    case CImage32::REPLACE:    CheckMenuItem(menu, ID_IMAGEVIEW_BLENDMODE_REPLACE,        MF_BYCOMMAND | MF_CHECKED); break;
+    case CImage32::RGB_ONLY:   CheckMenuItem(menu, ID_IMAGEVIEW_BLENDMODE_RGBONLY,        MF_BYCOMMAND | MF_CHECKED); break;
+    case CImage32::ALPHA_ONLY: CheckMenuItem(menu, ID_IMAGEVIEW_BLENDMODE_ALPHAONLY,      MF_BYCOMMAND | MF_CHECKED); break;
+    case CImage32::ADD:        CheckMenuItem(menu, ID_IMAGEVIEW_BLENDMODE_ADDITIVE,       MF_BYCOMMAND | MF_CHECKED); break;
+    case CImage32::SUBTRACT:   CheckMenuItem(menu, ID_IMAGEVIEW_BLENDMODE_SUBTRACTIVE,    MF_BYCOMMAND | MF_CHECKED); break;
+    case CImage32::MULTIPLY:   CheckMenuItem(menu, ID_IMAGEVIEW_BLENDMODE_MULTIPLICATIVE, MF_BYCOMMAND | MF_CHECKED); break;
+    case CImage32::AVERAGE:    CheckMenuItem(menu, ID_IMAGEVIEW_BLENDMODE_AVERAGE,        MF_BYCOMMAND | MF_CHECKED); break;
+    case CImage32::INVERT:     CheckMenuItem(menu, ID_IMAGEVIEW_BLENDMODE_INVERT,         MF_BYCOMMAND | MF_CHECKED); break;
   }
 
   TrackPopupMenu(submenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, point.x, point.y, 0, m_hWnd, NULL);
@@ -1954,8 +2040,15 @@ CImageView::UpdateCursor(UINT flags, CPoint point)
 afx_msg void
 CImageView::OnMouseMove(UINT flags, CPoint point)
 {
+  if (flags & MK_CONTROL)
+  {
+    m_StartPoint.x += point.x - m_CurPoint.x;
+    m_StartPoint.y += point.y - m_CurPoint.y;
+  }
+
   m_LastPoint = m_CurPoint;
-  m_CurPoint = point;
+  m_CurPoint  = point;
+  
   UpdateCursor(flags, point);
   POINT current = ConvertToPixel(point);
 
@@ -2284,15 +2377,11 @@ CImageView::OnBlendModeBlend()
   m_Image.SetBlendMode(CImage32::BLEND);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CImageView::OnBlendModeReplace()
 {
   m_Image.SetBlendMode(CImage32::REPLACE);
 }
-
-////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
 CImageView::OnBlendModeRGBOnly()
@@ -2300,20 +2389,40 @@ CImageView::OnBlendModeRGBOnly()
   m_Image.SetBlendMode(CImage32::RGB_ONLY);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CImageView::OnBlendModeAlphaOnly()
 {
   m_Image.SetBlendMode(CImage32::ALPHA_ONLY);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 afx_msg void
 CImageView::OnBlendModeAdditive()
 {
   m_Image.SetBlendMode(CImage32::ADD);
+}
+
+afx_msg void
+CImageView::OnBlendModeSubtractive()
+{
+  m_Image.SetBlendMode(CImage32::SUBTRACT);
+}
+
+afx_msg void
+CImageView::OnBlendModeMultiplicative()
+{
+  m_Image.SetBlendMode(CImage32::MULTIPLY);
+}
+
+afx_msg void
+CImageView::OnBlendModeAverage()
+{
+  m_Image.SetBlendMode(CImage32::AVERAGE);
+}
+
+afx_msg void
+CImageView::OnBlendModeInvert()
+{
+  m_Image.SetBlendMode(CImage32::INVERT);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3085,14 +3194,14 @@ afx_msg void
 CImageView::OnToolChanged(UINT id, int tool_index)
 {
   switch (id) {
-    case IDI_IMAGETOOL_PENCIL:        m_SelectedTools[tool_index] = Tool_Pencil; break;
-    case IDI_IMAGETOOL_LINE:          m_SelectedTools[tool_index] = Tool_Line; break;
-    case IDI_IMAGETOOL_RECTANGLE:     m_SelectedTools[tool_index] = Tool_Rectangle; break;
-    case IDI_IMAGETOOL_CIRCLE:        m_SelectedTools[tool_index] = Tool_Circle; break;
-    case IDI_IMAGETOOL_ELLIPSE:       m_SelectedTools[tool_index] = Tool_Ellipse; break;
-    case IDI_IMAGETOOL_FILL:          m_SelectedTools[tool_index] = Tool_Fill; break;
-    case IDI_IMAGETOOL_SELECTION:     m_SelectedTools[tool_index] = Tool_Selection; break;
-    case IDI_IMAGETOOL_FREESELECTION: m_SelectedTools[tool_index] = Tool_FreeSelection; break;
+    case IDI_IMAGETOOL_PENCIL:        m_SelectedTools[tool_index] = Tool_Pencil;         break;
+    case IDI_IMAGETOOL_LINE:          m_SelectedTools[tool_index] = Tool_Line;           break;
+    case IDI_IMAGETOOL_RECTANGLE:     m_SelectedTools[tool_index] = Tool_Rectangle;      break;
+    case IDI_IMAGETOOL_CIRCLE:        m_SelectedTools[tool_index] = Tool_Circle;         break;
+    case IDI_IMAGETOOL_ELLIPSE:       m_SelectedTools[tool_index] = Tool_Ellipse;        break;
+    case IDI_IMAGETOOL_FILL:          m_SelectedTools[tool_index] = Tool_Fill;           break;
+    case IDI_IMAGETOOL_SELECTION:     m_SelectedTools[tool_index] = Tool_Selection;      break;
+    case IDI_IMAGETOOL_FREESELECTION: m_SelectedTools[tool_index] = Tool_FreeSelection;  break;
   }
   TP_ToolSelected(m_SelectedTools[tool_index], tool_index);
 }
@@ -3109,6 +3218,8 @@ CImageView::IsToolAvailable(UINT id)
     case IDI_IMAGETOOL_RECTANGLE:     available = TRUE; break;
     case IDI_IMAGETOOL_CIRCLE:        available = TRUE; break;
     case IDI_IMAGETOOL_ELLIPSE:       available = TRUE; break;
+    case IDI_IMAGETOOL_FILL_SHAPE:    available = TRUE; break;
+    case IDI_IMAGETOOL_ANTIALIAS:     available = TRUE; break;
     case IDI_IMAGETOOL_FILL:          available = TRUE; break;
     case IDI_IMAGETOOL_SELECTION:     available = TRUE; break;
     case IDI_IMAGETOOL_FREESELECTION: available = TRUE; break;

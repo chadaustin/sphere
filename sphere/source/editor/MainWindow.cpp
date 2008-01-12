@@ -194,81 +194,93 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   ON_COMMAND(ID_TOOLS_IRC_CLIENT, OnToolsIRCClient)
 #endif
 #endif
-  ON_COMMAND(ID_HELP_SPHERESITE,         OnHelpSphereSite)
-  ON_COMMAND(ID_HELP_SPHERICALSITE,      OnHelpSphericalSite)
-  ON_COMMAND(ID_HELP_SPHERICALWIKI,      OnHelpSphericalWiki)
-  ON_COMMAND(ID_HELP_GETTINGSTARTED,     OnHelpGettingStarted)
-  ON_COMMAND(ID_HELP_FLIKSSITE,          OnHelpFliksSite)
-  ON_COMMAND(ID_HELP_AEGISKNIGHTSSITE,   OnHelpAegisKnightsSite)
-  ON_COMMAND(ID_HELP_LOCALDOCUMENTATION, OnHelpLocalDocumentation)
+  ON_COMMAND(ID_HELP_SPHERESITE,          OnHelpSphereSite)
+  ON_COMMAND(ID_HELP_SPHERICALSITE,       OnHelpSphericalSite)
+  ON_COMMAND(ID_HELP_SPHERICALWIKI,       OnHelpSphericalWiki)
+  ON_COMMAND(ID_HELP_GETTINGSTARTED,      OnHelpGettingStarted)
+  ON_COMMAND(ID_HELP_FLIKSSITE,           OnHelpFliksSite)
+  ON_COMMAND(ID_HELP_AEGISKNIGHTSSITE,    OnHelpAegisKnightsSite)
+  ON_COMMAND(ID_HELP_LOCALDOCUMENTATION,  OnHelpLocalDocumentation)
   ON_COMMAND(ID_HELP_LOCAL_DOC_FUNCTIONS, OnHelpLocalDocFunctions)
-  ON_COMMAND(ID_HELP_LOCAL_TUTORIAL,     OnHelpLocalTutorial)
-  ON_COMMAND(ID_HELP_LOCAL_CHANGELOG,    OnHelpLocalChangelog)
-  ON_COMMAND(ID_HELP_ABOUT,              OnHelpAbout)
+  ON_COMMAND(ID_HELP_LOCAL_TUTORIAL,      OnHelpLocalTutorial)
+  ON_COMMAND(ID_HELP_LOCAL_CHANGELOG,     OnHelpLocalChangelog)
+  ON_COMMAND(ID_HELP_ABOUT,               OnHelpAbout)
   ON_NOTIFY_EX(TTN_NEEDTEXT, 0, OnNeedText)
 #ifdef I_SUCK
   ON_UPDATE_COMMAND_UI(ID_FILE_OPENLASTPROJECT, OnUpdateOpenLastProject)
-  ON_UPDATE_COMMAND_UI(ID_FILE_CLOSEPROJECT, OnUpdateProjectCommand)
+  ON_UPDATE_COMMAND_UI(ID_FILE_CLOSEPROJECT,    OnUpdateProjectCommand)
 #endif
   ON_UPDATE_COMMAND_UI(ID_FILE_CLOSE,       OnUpdateFileCloseCommand)
-  ON_UPDATE_COMMAND_UI(ID_FILE_SAVE,       OnUpdateSaveCommand)
-  ON_UPDATE_COMMAND_UI(ID_FILE_SAVEAS,     OnUpdateSaveCommand)
-  ON_UPDATE_COMMAND_UI(ID_FILE_SAVECOPYAS, OnUpdateSaveCommand)
-  ON_UPDATE_COMMAND_UI(ID_FILE_SAVEALL,    OnUpdateSaveAllCommand)
-  ON_UPDATE_COMMAND_UI(IDI_IMAGETOOL_PENCIL,    OnUpdateImageCommand)
-  ON_UPDATE_COMMAND_UI(IDI_IMAGETOOL_LINE,      OnUpdateImageCommand)
-  ON_UPDATE_COMMAND_UI(IDI_IMAGETOOL_RECTANGLE, OnUpdateImageCommand)
-  ON_UPDATE_COMMAND_UI(IDI_IMAGETOOL_CIRCLE,    OnUpdateImageCommand)
-  ON_UPDATE_COMMAND_UI(IDI_IMAGETOOL_ELLIPSE,   OnUpdateImageCommand)
-  ON_UPDATE_COMMAND_UI(IDI_IMAGETOOL_FILL,      OnUpdateImageCommand)
-  ON_UPDATE_COMMAND_UI(IDI_IMAGETOOL_SELECTION, OnUpdateImageCommand)
+  ON_UPDATE_COMMAND_UI(ID_FILE_SAVE,        OnUpdateSaveCommand)
+  ON_UPDATE_COMMAND_UI(ID_FILE_SAVEAS,      OnUpdateSaveCommand)
+  ON_UPDATE_COMMAND_UI(ID_FILE_SAVECOPYAS,  OnUpdateSaveCommand)
+  ON_UPDATE_COMMAND_UI(ID_FILE_SAVEALL,     OnUpdateSaveAllCommand)
+  ON_UPDATE_COMMAND_UI(IDI_IMAGETOOL_PENCIL,        OnUpdateImageCommand)
+  ON_UPDATE_COMMAND_UI(IDI_IMAGETOOL_LINE,          OnUpdateImageCommand)
+  ON_UPDATE_COMMAND_UI(IDI_IMAGETOOL_RECTANGLE,     OnUpdateImageCommand)
+  ON_UPDATE_COMMAND_UI(IDI_IMAGETOOL_CIRCLE,        OnUpdateImageCommand)
+  ON_UPDATE_COMMAND_UI(IDI_IMAGETOOL_ELLIPSE,       OnUpdateImageCommand)
+  ON_UPDATE_COMMAND_UI(IDI_IMAGETOOL_FILL_SHAPE,    OnUpdateImageCommand)
+  ON_UPDATE_COMMAND_UI(IDI_IMAGETOOL_ANTIALIAS,     OnUpdateImageCommand)
+  ON_UPDATE_COMMAND_UI(IDI_IMAGETOOL_FILL,          OnUpdateImageCommand)
+  ON_UPDATE_COMMAND_UI(IDI_IMAGETOOL_SELECTION,     OnUpdateImageCommand)
   ON_UPDATE_COMMAND_UI(IDI_IMAGETOOL_FREESELECTION, OnUpdateImageCommand)
-  ON_COMMAND(IDI_IMAGETOOL_PENCIL,    OnImageToolChanged)
-  ON_COMMAND(IDI_IMAGETOOL_LINE,      OnImageToolChanged)
-  ON_COMMAND(IDI_IMAGETOOL_RECTANGLE, OnImageToolChanged)
-  ON_COMMAND(IDI_IMAGETOOL_CIRCLE,    OnImageToolChanged)
-  ON_COMMAND(IDI_IMAGETOOL_ELLIPSE,   OnImageToolChanged)
-  ON_COMMAND(IDI_IMAGETOOL_FILL,      OnImageToolChanged)
-  ON_COMMAND(IDI_IMAGETOOL_SELECTION, OnImageToolChanged)
+  ON_COMMAND(IDI_IMAGETOOL_PENCIL,        OnImageToolChanged)
+  ON_COMMAND(IDI_IMAGETOOL_LINE,          OnImageToolChanged)
+  ON_COMMAND(IDI_IMAGETOOL_RECTANGLE,     OnImageToolChanged)
+  ON_COMMAND(IDI_IMAGETOOL_CIRCLE,        OnImageToolChanged)
+  ON_COMMAND(IDI_IMAGETOOL_ELLIPSE,       OnImageToolChanged)
+  ON_COMMAND(IDI_IMAGETOOL_FILL_SHAPE,    OnImageFillOutToolChanged)
+  ON_COMMAND(IDI_IMAGETOOL_ANTIALIAS,     OnImageAntialiasToolChanged)
+  ON_COMMAND(IDI_IMAGETOOL_FILL,          OnImageToolChanged)
+  ON_COMMAND(IDI_IMAGETOOL_SELECTION,     OnImageToolChanged)
   ON_COMMAND(IDI_IMAGETOOL_FREESELECTION, OnImageToolChanged)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_1X1,    OnUpdateMapCommand_IDI_MAPTOOL_1X1)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_3X3,    OnUpdateMapCommand_IDI_MAPTOOL_3X3)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_5X5,    OnUpdateMapCommand_IDI_MAPTOOL_5X5)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZOOM_1X,      OnUpdateMapCommand_IDI_MAPTOOL_ZOOM_1X)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZOOM_2X,      OnUpdateMapCommand_IDI_MAPTOOL_ZOOM_2X)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZOOM_4X,      OnUpdateMapCommand_IDI_MAPTOOL_ZOOM_4X)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZOOM_8X,      OnUpdateMapCommand_IDI_MAPTOOL_ZOOM_8X)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_GRID_TILE,    OnUpdateMapCommand_IDI_MAPTOOL_GRID_TILE)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_1X1,          OnUpdateMapCommand_IDI_MAPTOOL_1X1)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_3X3,          OnUpdateMapCommand_IDI_MAPTOOL_3X3)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_5X5,          OnUpdateMapCommand_IDI_MAPTOOL_5X5)
   ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_SELECTTILE,   OnUpdateMapCommand_IDI_MAPTOOL_SELECTTILE)
   ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_FILLRECTAREA, OnUpdateMapCommand_IDI_MAPTOOL_FILLRECTAREA)
   ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_FILLAREA,     OnUpdateMapCommand_IDI_MAPTOOL_FILLAREA)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_FILL_LAYER,   OnUpdateMapCommand_IDI_MAPTOOL_FILL_LAYER)
   ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_COPYAREA,     OnUpdateMapCommand_IDI_MAPTOOL_COPYAREA)
   ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_PASTE,        OnUpdateMapCommand_IDI_MAPTOOL_PASTE)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_COPYENTITY,   OnUpdateMapCommand_IDI_MAPTOOL_COPYENTITY)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_PASTEENTITY,  OnUpdateMapCommand_IDI_MAPTOOL_PASTEENTITY)
   ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_MOVEENTITY,   OnUpdateMapCommand_IDI_MAPTOOL_MOVEENTITY)
   ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_OBS_SEGMENT,  OnUpdateMapCommand_IDI_MAPTOOL_OBS_SEGMENT)
   ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_OBS_DELETE,   OnUpdateMapCommand_IDI_MAPTOOL_OBS_DELETE)
   ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_OBS_MOVE_PT,  OnUpdateMapCommand_IDI_MAPTOOL_OBS_MOVE_PT)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZONEADD,    OnUpdateMapCommand_IDI_MAPTOOL_ZONEADD)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZONEEDIT,   OnUpdateMapCommand_IDI_MAPTOOL_ZONEEDIT)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZONEMOVE,   OnUpdateMapCommand_IDI_MAPTOOL_ZONEMOVE)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZONEDELETE, OnUpdateMapCommand_IDI_MAPTOOL_ZONEDELETE)
-  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_SCRIPT, OnUpdateMapCommand_IDI_MAPTOOL_SCRIPT)
-  ON_COMMAND(IDI_MAPTOOL_1X1,    OnMapToolChanged)
-  ON_COMMAND(IDI_MAPTOOL_3X3,    OnMapToolChanged)
-  ON_COMMAND(IDI_MAPTOOL_5X5,    OnMapToolChanged)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZONEADD,      OnUpdateMapCommand_IDI_MAPTOOL_ZONEADD)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZONEEDIT,     OnUpdateMapCommand_IDI_MAPTOOL_ZONEEDIT)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZONEMOVE,     OnUpdateMapCommand_IDI_MAPTOOL_ZONEMOVE)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_ZONEDELETE,   OnUpdateMapCommand_IDI_MAPTOOL_ZONEDELETE)
+  ON_UPDATE_COMMAND_UI(IDI_MAPTOOL_SCRIPT,       OnUpdateMapCommand_IDI_MAPTOOL_SCRIPT)
+  ON_COMMAND(IDI_MAPTOOL_GRID_TILE,     OnMapGridToolChanged)
+  ON_COMMAND(IDI_MAPTOOL_ZOOM_2X,       OnMapZoomToolChanged)
+  ON_COMMAND(IDI_MAPTOOL_ZOOM_4X,       OnMapZoomToolChanged)
+  ON_COMMAND(IDI_MAPTOOL_ZOOM_8X,       OnMapZoomToolChanged)
+  ON_COMMAND(IDI_MAPTOOL_ZOOM_1X,       OnMapZoomToolChanged)
+  ON_COMMAND(IDI_MAPTOOL_1X1,           OnMapToolChanged)
+  ON_COMMAND(IDI_MAPTOOL_3X3,           OnMapToolChanged)
+  ON_COMMAND(IDI_MAPTOOL_5X5,           OnMapToolChanged)
   ON_COMMAND(IDI_MAPTOOL_SELECTTILE,    OnMapToolChanged)
-  ON_COMMAND(IDI_MAPTOOL_FILLRECTAREA,    OnMapToolChanged)
-  ON_COMMAND(IDI_MAPTOOL_FILLAREA,    OnMapToolChanged)
-  ON_COMMAND(IDI_MAPTOOL_COPYAREA,    OnMapToolChanged)
-  ON_COMMAND(IDI_MAPTOOL_PASTE,    OnMapToolChanged)
-  ON_COMMAND(IDI_MAPTOOL_COPYENTITY,    OnMapToolChanged)
-  ON_COMMAND(IDI_MAPTOOL_PASTEENTITY,    OnMapToolChanged)
+  ON_COMMAND(IDI_MAPTOOL_FILLRECTAREA,  OnMapToolChanged)
+  ON_COMMAND(IDI_MAPTOOL_FILLAREA,      OnMapToolChanged)
+  ON_COMMAND(IDI_MAPTOOL_FILL_LAYER,    OnMapToolChanged)
+  ON_COMMAND(IDI_MAPTOOL_COPYAREA,      OnMapToolChanged)
+  ON_COMMAND(IDI_MAPTOOL_PASTE,         OnMapToolChanged)
   ON_COMMAND(IDI_MAPTOOL_MOVEENTITY,    OnMapToolChanged)
-  ON_COMMAND(IDI_MAPTOOL_OBS_SEGMENT,    OnMapToolChanged)
+  ON_COMMAND(IDI_MAPTOOL_OBS_SEGMENT,   OnMapToolChanged)
   ON_COMMAND(IDI_MAPTOOL_OBS_DELETE,    OnMapToolChanged)
-  ON_COMMAND(IDI_MAPTOOL_OBS_MOVE_PT,    OnMapToolChanged)
-  ON_COMMAND(IDI_MAPTOOL_ZONEADD,    OnMapToolChanged)
-  ON_COMMAND(IDI_MAPTOOL_ZONEEDIT,    OnMapToolChanged)
-  ON_COMMAND(IDI_MAPTOOL_ZONEMOVE,    OnMapToolChanged)
+  ON_COMMAND(IDI_MAPTOOL_OBS_MOVE_PT,   OnMapToolChanged)
+  ON_COMMAND(IDI_MAPTOOL_ZONEADD,       OnMapToolChanged)
+  ON_COMMAND(IDI_MAPTOOL_ZONEEDIT,      OnMapToolChanged)
+  ON_COMMAND(IDI_MAPTOOL_ZONEMOVE,      OnMapToolChanged)
   ON_COMMAND(IDI_MAPTOOL_ZONEDELETE,    OnMapToolChanged)
-  ON_COMMAND(IDI_MAPTOOL_SCRIPT,    OnMapToolChanged)
+  ON_COMMAND(IDI_MAPTOOL_SCRIPT,        OnMapToolChanged)
   ON_UPDATE_COMMAND_UI(ID_PROJECT_RUNSPHERE, OnUpdateProjectCommand)
   ON_UPDATE_COMMAND_UI(ID_WINDOW_CLOSEALL,   OnUpdateWindowCloseAll)
   ON_UPDATE_COMMAND_UI(ID_VIEW_PALETTES,     OnUpdatePaletteMenu)
@@ -394,6 +406,7 @@ CMainWindow::Create()
     if (title.length() == 0)
       title = GetDefaultWindowText();
   }
+  
   // create the window
   CMDIFrameWnd::Create(
     AfxRegisterWndClass(0, NULL, NULL, LoadIcon(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDI_SDE))),
@@ -403,6 +416,7 @@ CMainWindow::Create()
     NULL,
     MAKEINTRESOURCE(IDR_MAIN));
   LoadAccelTable(MAKEINTRESOURCE(IDR_ACCELERATOR));
+  
   // create the toolbar
   if (m_MainToolBar.CreateEx(
     this,
@@ -412,6 +426,7 @@ CMainWindow::Create()
     m_MainToolBar.LoadToolBar(IDR_TOOLBAR);
     m_MainToolBar.EnableDocking(CBRS_ALIGN_ANY);
   }
+  
   // create the toolbar
   m_ImageToolBar.CreateEx(
     this,
@@ -422,6 +437,7 @@ CMainWindow::Create()
   m_ImageToolBar.EnableDocking(CBRS_ALIGN_ANY);
   m_ImageToolBar.GetToolBarCtrl().CheckButton(IDI_IMAGETOOL_PENCIL, TRUE);
   m_SelectedImageTools[0] = m_SelectedImageTools[1] = IDI_IMAGETOOL_PENCIL;
+  
   // create the toolbar
   m_MapToolBar.CreateEx(
     this,
@@ -430,7 +446,9 @@ CMainWindow::Create()
   m_MapToolBar.SetWindowText("Map");
   m_MapToolBar.LoadToolBar(IDR_MAPTOOLBAR);
   m_MapToolBar.EnableDocking(CBRS_ALIGN_ANY);
+  m_MapToolBar.GetToolBarCtrl().CheckButton(IDI_MAPTOOL_ZOOM_1X, TRUE);
   m_MapToolBar.GetToolBarCtrl().CheckButton(IDI_MAPTOOL_1X1, TRUE);
+  
   // status bar indicators
   static const UINT indicators[] =
   {
@@ -440,6 +458,7 @@ CMainWindow::Create()
     ID_INDICATOR_NUM,
     ID_INDICATOR_SCRL,
   };
+  
   // create the statusbar
   m_StatusBar.Create(this);
   m_StatusBar.SetIndicators(indicators, sizeof(indicators)/sizeof(UINT));
@@ -447,6 +466,7 @@ CMainWindow::Create()
   m_StatusBar.SetPaneText(0, "");
   m_StatusBar.SetPaneText(1, "");
   SetStatusBar(&m_StatusBar);
+  
   // enable docking
   EnableDocking(CBRS_ALIGN_ANY);
   DockControlBar(&m_MainToolBar,  AFX_IDW_DOCKBAR_TOP);
@@ -551,9 +571,14 @@ CMainWindow::OnNMRclick(NMHDR *pNMHDR, LRESULT *pResult)
   
   GetCursorPos(&point);
   ::ScreenToClient(m_ImageToolBar.GetToolBarCtrl().m_hWnd, &point);
-  const UINT tools[] = {IDI_IMAGETOOL_PENCIL, IDI_IMAGETOOL_LINE, IDI_IMAGETOOL_RECTANGLE,
-                  IDI_IMAGETOOL_CIRCLE, IDI_IMAGETOOL_ELLIPSE, IDI_IMAGETOOL_FILL,
-                  IDI_IMAGETOOL_SELECTION, IDI_IMAGETOOL_FREESELECTION};
+  const UINT tools[] = {IDI_IMAGETOOL_PENCIL, 
+                        IDI_IMAGETOOL_LINE, 
+                        IDI_IMAGETOOL_RECTANGLE,
+                        IDI_IMAGETOOL_CIRCLE, 
+                        IDI_IMAGETOOL_ELLIPSE, 
+                        IDI_IMAGETOOL_FILL,
+                        IDI_IMAGETOOL_SELECTION, 
+                        IDI_IMAGETOOL_FREESELECTION};
   const int num_tools = sizeof(tools) / sizeof(*tools);
   int index = m_ImageToolBar.GetToolBarCtrl().HitTest(&point);
   if (index >= 0 && index < num_tools) {
@@ -3154,7 +3179,8 @@ CMainWindow::OnNeedText(UINT /*id*/, NMHDR* nmhdr, LRESULT* result)
   }
   switch (id) {
     case ID_FILE_NEW_PROJECT:
-      if (m_NewFileType >= 0 && m_NewFileType < NUM_GROUP_TYPES) {
+      if (m_NewFileType >= 0 && m_NewFileType < NUM_GROUP_TYPES) 
+      {
         if (m_NewFileType == GT_SCRIPTS)
           ttt->lpszText =  "New Script File";
         else
@@ -3162,35 +3188,42 @@ CMainWindow::OnNeedText(UINT /*id*/, NMHDR* nmhdr, LRESULT* result)
       }
       else 
         ttt->lpszText = "New Sphere Project";
-    break;
-    case ID_PROJECT_RUNSPHERE: ttt->lpszText = "Run Sphere";         break;
-    case IDI_IMAGETOOL_LINE:          ttt->lpszText = "Line";      break;
-    case IDI_IMAGETOOL_RECTANGLE:     ttt->lpszText = "Rectangle"; break;
-    case IDI_IMAGETOOL_CIRCLE:        ttt->lpszText = "Circle";    break;
-    case IDI_IMAGETOOL_ELLIPSE:       ttt->lpszText = "Ellipse";   break;
-    case IDI_IMAGETOOL_FILL:          ttt->lpszText = "Fill";      break;
-    case IDI_IMAGETOOL_SELECTION:     ttt->lpszText = "Selection"; break;
-    case IDI_IMAGETOOL_FREESELECTION: ttt->lpszText = "Free Selection"; break;
-    case IDI_MAPTOOL_1X1:         ttt->lpszText = "1x1"; break;
-    case IDI_MAPTOOL_3X3:         ttt->lpszText = "3x3"; break;
-    case IDI_MAPTOOL_5X5:         ttt->lpszText = "5x5"; break;
-    case IDI_MAPTOOL_SELECTTILE:  ttt->lpszText = "Select Tile"; break;
-    case IDI_MAPTOOL_FILLRECTAREA: ttt->lpszText = "Fill (Rectanglar) Area"; break;
-    case IDI_MAPTOOL_FILLAREA:    ttt->lpszText = "Fill Area";    break;
-    case IDI_MAPTOOL_COPYAREA:    ttt->lpszText = "Copy Area";    break;
-    case IDI_MAPTOOL_PASTE:       ttt->lpszText = "Paste Area";   break;
-    case IDI_MAPTOOL_COPYENTITY:  ttt->lpszText = "Copy Entity";  break;
-    case IDI_MAPTOOL_PASTEENTITY: ttt->lpszText = "Paste Entity"; break;
-    case IDI_MAPTOOL_MOVEENTITY:  ttt->lpszText = "Move Entity";  break;
-    case IDI_MAPTOOL_OBS_SEGMENT: ttt->lpszText = "Obstruction Segment";            break;
-    case IDI_MAPTOOL_OBS_DELETE:  ttt->lpszText = "Delete Obstruction Segment";     break;
-    case IDI_MAPTOOL_OBS_MOVE_PT: ttt->lpszText = "Move Obstruction Segment Point"; break;
-    case IDI_MAPTOOL_ZONEADD:     ttt->lpszText = "Add a Zone";    break;
-    case IDI_MAPTOOL_ZONEEDIT:    ttt->lpszText = "Edit a Zone";   break;
-    case IDI_MAPTOOL_ZONEMOVE:    ttt->lpszText = "Move a Zone";   break;
-    case IDI_MAPTOOL_ZONEDELETE:  ttt->lpszText = "Delete a Zone"; break;
-    case IDI_MAPTOOL_SCRIPT:      ttt->lpszText = "Execute a script"; break;
-    default:                   ttt->lpszText = ""; break;
+      break;
+    case ID_PROJECT_RUNSPHERE:        ttt->lpszText = "Run Sphere";                     break;
+    case IDI_IMAGETOOL_PENCIL:        ttt->lpszText = "Pencil";                         break;
+    case IDI_IMAGETOOL_LINE:          ttt->lpszText = "Line";                           break;
+    case IDI_IMAGETOOL_RECTANGLE:     ttt->lpszText = "Rectangle";                      break;
+    case IDI_IMAGETOOL_CIRCLE:        ttt->lpszText = "Circle";                         break;
+    case IDI_IMAGETOOL_ELLIPSE:       ttt->lpszText = "Ellipse";                        break;
+    case IDI_IMAGETOOL_FILL_SHAPE:    ttt->lpszText = "Fill Shape";                     break;
+    case IDI_IMAGETOOL_ANTIALIAS:     ttt->lpszText = "Antialias Shape";                break;
+    case IDI_IMAGETOOL_FILL:          ttt->lpszText = "Fill Area";                      break;
+    case IDI_IMAGETOOL_SELECTION:     ttt->lpszText = "Rectangular Selection";          break;
+    case IDI_IMAGETOOL_FREESELECTION: ttt->lpszText = "Free Selection";                 break;
+    case IDI_MAPTOOL_ZOOM_1X:         ttt->lpszText = "Map Zoom 1x";                    break;
+    case IDI_MAPTOOL_ZOOM_2X:         ttt->lpszText = "Map Zoom 2x";                    break;
+    case IDI_MAPTOOL_ZOOM_4X:         ttt->lpszText = "Map Zoom 4x";                    break;
+    case IDI_MAPTOOL_ZOOM_8X:         ttt->lpszText = "Map Zoom 8x";                    break;
+    case IDI_MAPTOOL_GRID_TILE:       ttt->lpszText = "Show Tile Grid";                 break;
+    case IDI_MAPTOOL_1X1:             ttt->lpszText = "Pencil Tool (1x1)";              break;
+    case IDI_MAPTOOL_3X3:             ttt->lpszText = "Pencil Tool (3x3)";              break;
+    case IDI_MAPTOOL_5X5:             ttt->lpszText = "Pencil Tool (5x5)";              break;
+    case IDI_MAPTOOL_SELECTTILE:      ttt->lpszText = "Select Tile";                    break;
+    case IDI_MAPTOOL_FILLRECTAREA:    ttt->lpszText = "Fill Rectangular Area";          break;
+    case IDI_MAPTOOL_FILLAREA:        ttt->lpszText = "Fill Area";                      break;
+    case IDI_MAPTOOL_FILL_LAYER:      ttt->lpszText = "Fill Layer";                     break;
+    case IDI_MAPTOOL_COPYAREA:        ttt->lpszText = "Copy Area";                      break;
+    case IDI_MAPTOOL_PASTE:           ttt->lpszText = "Paste Area";                     break;
+    case IDI_MAPTOOL_MOVEENTITY:      ttt->lpszText = "Move Entity";                    break;
+    case IDI_MAPTOOL_OBS_SEGMENT:     ttt->lpszText = "Obstruction Segment";            break;
+    case IDI_MAPTOOL_OBS_DELETE:      ttt->lpszText = "Delete Obstruction Segment";     break;
+    case IDI_MAPTOOL_OBS_MOVE_PT:     ttt->lpszText = "Move Obstruction Segment Point"; break;
+    case IDI_MAPTOOL_ZONEADD:         ttt->lpszText = "Add a Zone";                     break;
+    case IDI_MAPTOOL_ZONEEDIT:        ttt->lpszText = "Edit a Zone";                    break;
+    case IDI_MAPTOOL_ZONEMOVE:        ttt->lpszText = "Move a Zone";                    break;
+    case IDI_MAPTOOL_ZONEDELETE:      ttt->lpszText = "Delete a Zone";                  break;
+    case IDI_MAPTOOL_SCRIPT:          ttt->lpszText = "Execute a script";               break;
+    default:                          ttt->lpszText = "";                               break;
   }
   *result = 0;
   return TRUE;
@@ -3280,6 +3313,22 @@ CMainWindow::GetNumImageToolsAllowed() const
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg UINT
+CMainWindow::IsImageFillShapeToolChecked()
+{
+  return m_ImageToolBar.GetToolBarCtrl().IsButtonChecked(IDI_IMAGETOOL_FILL_SHAPE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg UINT
+CMainWindow::IsImageAntialiasToolChecked()
+{
+  return m_ImageToolBar.GetToolBarCtrl().IsButtonChecked(IDI_IMAGETOOL_ANTIALIAS);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg UINT
 CMainWindow::GetImageTool(int index)
 {
   return m_SelectedImageTools[index];
@@ -3288,14 +3337,64 @@ CMainWindow::GetImageTool(int index)
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg UINT
+CMainWindow::IsMapGridToolChecked()
+{
+  return m_MapToolBar.GetToolBarCtrl().IsButtonChecked(IDI_MAPTOOL_GRID_TILE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg UINT
+CMainWindow::GetMapGridTool(int index)
+{
+  return IDI_MAPTOOL_GRID_TILE;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg UINT
+CMainWindow::GetMapZoomTool(int index)
+{
+  UINT tools[] = {IDI_MAPTOOL_ZOOM_1X, 
+                  IDI_MAPTOOL_ZOOM_2X, 
+                  IDI_MAPTOOL_ZOOM_4X,
+                  IDI_MAPTOOL_ZOOM_8X};
+                  
+  int num_tools = sizeof(tools) / sizeof(*tools);
+  UINT tool = IDI_MAPTOOL_ZOOM_1X;
+  
+  for (int i = 0; i < num_tools; i++) {
+    if (m_MapToolBar.GetToolBarCtrl().IsButtonChecked(tools[i]) == TRUE) {
+      tool = tools[i];
+    }
+  }
+  
+  return tool;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg UINT
 CMainWindow::GetMapTool(int index)
 {
-  UINT tools[] = {IDI_MAPTOOL_1X1, IDI_MAPTOOL_3X3, IDI_MAPTOOL_5X5, IDI_MAPTOOL_SELECTTILE,
-                  IDI_MAPTOOL_FILLRECTAREA, IDI_MAPTOOL_FILLAREA, IDI_MAPTOOL_COPYAREA,
-                  IDI_MAPTOOL_PASTE, IDI_MAPTOOL_COPYENTITY, IDI_MAPTOOL_PASTEENTITY,
-                  IDI_MAPTOOL_MOVEENTITY, IDI_MAPTOOL_OBS_SEGMENT, IDI_MAPTOOL_OBS_DELETE,
-                  IDI_MAPTOOL_OBS_MOVE_PT, IDI_MAPTOOL_ZONEADD, IDI_MAPTOOL_ZONEEDIT,
-                  IDI_MAPTOOL_ZONEMOVE, IDI_MAPTOOL_ZONEDELETE, IDI_MAPTOOL_SCRIPT};
+  UINT tools[] = {IDI_MAPTOOL_1X1, 
+                  IDI_MAPTOOL_3X3, 
+                  IDI_MAPTOOL_5X5, 
+                  IDI_MAPTOOL_SELECTTILE,
+                  IDI_MAPTOOL_FILLRECTAREA, 
+                  IDI_MAPTOOL_FILLAREA,
+                  IDI_MAPTOOL_FILL_LAYER, 
+                  IDI_MAPTOOL_COPYAREA,
+                  IDI_MAPTOOL_PASTE,
+                  IDI_MAPTOOL_MOVEENTITY, 
+                  IDI_MAPTOOL_OBS_SEGMENT, 
+                  IDI_MAPTOOL_OBS_DELETE,
+                  IDI_MAPTOOL_OBS_MOVE_PT, 
+                  IDI_MAPTOOL_ZONEADD, 
+                  IDI_MAPTOOL_ZONEEDIT,
+                  IDI_MAPTOOL_ZONEMOVE, 
+                  IDI_MAPTOOL_ZONEDELETE, 
+                  IDI_MAPTOOL_SCRIPT};
   int num_tools = sizeof(tools) / sizeof(*tools);
   UINT tool = IDI_MAPTOOL_1X1;
   for (int i = 0; i < num_tools; i++) {
@@ -3318,10 +3417,14 @@ CMainWindow::UpdateToolBars(WPARAM, LPARAM)
     if (userdata & WA_DOCUMENT_WINDOW) {
       CDocumentWindow* dw = GetCurrentDocumentWindow();
       if (dw) {
-        dw->OnToolChanged(GetImageTool(0), 0);
-        dw->OnToolChanged(GetMapTool(0), 0);
-        dw->OnToolChanged(GetImageTool(1), 1);
-        dw->OnToolChanged(GetMapTool(1), 1);
+        dw->OnToolChanged(GetImageTool(0),   0);
+        dw->OnToolChanged(GetMapTool(0),     0);
+        dw->OnToolChanged(GetMapZoomTool(0), 0);
+        dw->OnToolChanged(GetMapGridTool(0), 0);
+        dw->OnToolChanged(GetImageTool(1),   1);
+        dw->OnToolChanged(GetMapTool(1),     1);
+        dw->OnToolChanged(GetMapZoomTool(1), 1);
+        dw->OnToolChanged(GetMapGridTool(1), 1);
       }
     }
   }
@@ -3353,21 +3456,55 @@ CMainWindow::OnUpdateImageCommand(CCmdUI* cmdui)
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
+CMainWindow::OnImageFillOutToolChanged()
+{
+  
+  const unsigned int id = GetCurrentMessage()->wParam;
+  
+  CToolBarCtrl& ctrl = m_ImageToolBar.GetToolBarCtrl(); 
+  ctrl.CheckButton(id, !ctrl.IsButtonChecked(id));
+  
+  UpdateToolBars();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnImageAntialiasToolChanged()
+{
+  
+  const unsigned int id = GetCurrentMessage()->wParam;
+  
+  CToolBarCtrl& ctrl = m_ImageToolBar.GetToolBarCtrl(); 
+  ctrl.CheckButton(id, !ctrl.IsButtonChecked(id));
+  
+  UpdateToolBars();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
 CMainWindow::OnImageToolChanged()
 {
   const unsigned int id = GetCurrentMessage()->wParam;
-  const UINT tools[] = {IDI_IMAGETOOL_PENCIL, IDI_IMAGETOOL_LINE, IDI_IMAGETOOL_RECTANGLE,
-                  IDI_IMAGETOOL_CIRCLE, IDI_IMAGETOOL_ELLIPSE, IDI_IMAGETOOL_FILL,
-                  IDI_IMAGETOOL_SELECTION, IDI_IMAGETOOL_FREESELECTION};
+  const UINT tools[] = {IDI_IMAGETOOL_PENCIL, 
+                        IDI_IMAGETOOL_LINE, 
+                        IDI_IMAGETOOL_RECTANGLE,
+                        IDI_IMAGETOOL_CIRCLE, 
+                        IDI_IMAGETOOL_ELLIPSE, 
+                        IDI_IMAGETOOL_FILL,
+                        IDI_IMAGETOOL_SELECTION, 
+                        IDI_IMAGETOOL_FREESELECTION};
+                        
   const int num_tools = sizeof(tools) / sizeof(*tools);
   CToolBarCtrl& ctrl = m_ImageToolBar.GetToolBarCtrl();
   m_SelectedImageTools[0] = id;
-  if (m_NumImageToolsAllowed == 1) {
+  
+  if (m_NumImageToolsAllowed == 1) 
     m_SelectedImageTools[1] = id;
-  }
-  for (int i = 0; i < num_tools; i++) {
+
+  for (int i = 0; i < num_tools; i++) 
     ctrl.CheckButton(tools[i], (m_SelectedImageTools[0] == tools[i] || m_SelectedImageTools[1] == tools[i]) ? TRUE : FALSE);
-  }
   
   UpdateToolBars();
 }
@@ -3399,16 +3536,20 @@ CMainWindow::OnUpdateMapCommand_##tool_id(CCmdUI* cmdui) \
   OnUpdateMapCommand(cmdui, tool_id);                    \
 }
 
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZOOM_1X)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZOOM_2X)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZOOM_4X)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZOOM_8X)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_GRID_TILE)
 MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_1X1)
 MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_3X3)
 MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_5X5)
 MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_SELECTTILE)
 MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_FILLRECTAREA)
 MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_FILLAREA)
+MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_FILL_LAYER)
 MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_COPYAREA)
 MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_PASTE)
-MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_COPYENTITY)
-MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_PASTEENTITY)
 MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_MOVEENTITY)
 MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_OBS_SEGMENT)
 MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_OBS_DELETE)
@@ -3423,21 +3564,70 @@ MAKE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_SCRIPT)
 ////////////////////////////////////////////////////////////////////////////////
 
 afx_msg void
+CMainWindow::OnMapGridToolChanged()
+{
+
+  const unsigned int id = GetCurrentMessage()->wParam;
+  CToolBarCtrl& ctrl = m_MapToolBar.GetToolBarCtrl(); 
+  
+  ctrl.CheckButton(id, !ctrl.IsButtonChecked(id));
+  UpdateToolBars();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
+CMainWindow::OnMapZoomToolChanged()
+{
+
+  const unsigned int id = GetCurrentMessage()->wParam;
+  const UINT tools[] = {IDI_MAPTOOL_ZOOM_1X, 
+                        IDI_MAPTOOL_ZOOM_2X, 
+                        IDI_MAPTOOL_ZOOM_4X, 
+                        IDI_MAPTOOL_ZOOM_8X};
+                        
+  int num_tools = sizeof(tools) / sizeof(*tools);
+  CToolBarCtrl& ctrl = m_MapToolBar.GetToolBarCtrl();
+  
+  for (int i = 0; i < num_tools; i++) 
+    ctrl.CheckButton(tools[i], FALSE);
+
+  ctrl.CheckButton(id, TRUE);
+  UpdateToolBars();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+afx_msg void
 CMainWindow::OnMapToolChanged()
 {
 
   const unsigned int id = GetCurrentMessage()->wParam;
-  const UINT tools[] = {IDI_MAPTOOL_1X1, IDI_MAPTOOL_3X3, IDI_MAPTOOL_5X5, IDI_MAPTOOL_SELECTTILE,
-                     IDI_MAPTOOL_FILLRECTAREA, IDI_MAPTOOL_FILLAREA, IDI_MAPTOOL_COPYAREA,
-                     IDI_MAPTOOL_PASTE, IDI_MAPTOOL_COPYENTITY, IDI_MAPTOOL_PASTEENTITY,
-                     IDI_MAPTOOL_MOVEENTITY, IDI_MAPTOOL_OBS_SEGMENT, IDI_MAPTOOL_OBS_DELETE,
-                     IDI_MAPTOOL_OBS_MOVE_PT, IDI_MAPTOOL_ZONEADD, IDI_MAPTOOL_ZONEEDIT,
-                     IDI_MAPTOOL_ZONEMOVE, IDI_MAPTOOL_ZONEDELETE, IDI_MAPTOOL_SCRIPT};
+  const UINT tools[] = {IDI_MAPTOOL_1X1, 
+                        IDI_MAPTOOL_3X3, 
+                        IDI_MAPTOOL_5X5, 
+                        IDI_MAPTOOL_SELECTTILE,
+                        IDI_MAPTOOL_FILLRECTAREA, 
+                        IDI_MAPTOOL_FILLAREA, 
+                        IDI_MAPTOOL_FILL_LAYER,
+                        IDI_MAPTOOL_COPYAREA,
+                        IDI_MAPTOOL_PASTE, 
+                        IDI_MAPTOOL_MOVEENTITY, 
+                        IDI_MAPTOOL_OBS_SEGMENT, 
+                        IDI_MAPTOOL_OBS_DELETE,
+                        IDI_MAPTOOL_OBS_MOVE_PT, 
+                        IDI_MAPTOOL_ZONEADD, 
+                        IDI_MAPTOOL_ZONEEDIT,
+                        IDI_MAPTOOL_ZONEMOVE, 
+                        IDI_MAPTOOL_ZONEDELETE, 
+                        IDI_MAPTOOL_SCRIPT};
+                        
   int num_tools = sizeof(tools) / sizeof(*tools);
-  CToolBarCtrl& ctrl = m_MapToolBar.GetToolBarCtrl();  
-  for (int i = 0; i < num_tools; i++) {
+  CToolBarCtrl& ctrl = m_MapToolBar.GetToolBarCtrl();
+  
+  for (int i = 0; i < num_tools; i++) 
     ctrl.CheckButton(tools[i], FALSE);
-  }
+
   ctrl.CheckButton(id, TRUE);
   UpdateToolBars();
 }

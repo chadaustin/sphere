@@ -1,5 +1,22 @@
 YYYY.MM.DD
 
+2008.01.12
+  - New blend modes added to the image editor.
+  - Drawing can now begin/occur/end outside the image region.
+  - Holding CTRL in the image editor changes the starting point of
+    drawing.
+  - Replaced map and image editor toolbar icons and tooltips with
+    clearer ones.
+  - Entities can now be copied and pasted. The toolbar buttons for
+    these have been moved into the map menu.
+  - Hovering the mouse over a person shows its name/layer/spriteset
+    in the status bar, showing current layer otherwise.
+  - Moved map editor zooming from the context menu to toolbar buttons.
+  - Map editor grid function covers the full map rather than just
+    the bottom layer.
+  - Added the fill layer button to the map toolbar and removed the
+    "Fill" menu item from the map menu.
+
 2008.01.08
   - GetMouseX/Y() in a loop without other input polling no longer lags.
 

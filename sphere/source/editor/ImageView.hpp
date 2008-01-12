@@ -71,7 +71,17 @@ public:
   void Redo();
   bool CanRedo() const;
 private:
-  enum Tool { Tool_Pencil, Tool_Line, Tool_Rectangle, Tool_Circle, Tool_Ellipse, Tool_Fill, Tool_Selection, Tool_FreeSelection };
+  enum Tool 
+  { 
+    Tool_Pencil, 
+    Tool_Line, 
+    Tool_Rectangle, 
+    Tool_Circle, 
+    Tool_Ellipse, 
+    Tool_Fill, 
+    Tool_Selection, 
+    Tool_FreeSelection 
+  };
 private:
   virtual void SP_ColorSelected(RGBA color);
   virtual void TP_ToolSelected(int tool, int tool_index);
@@ -133,12 +143,18 @@ private:
   afx_msg void OnPasteAlpha();
   afx_msg void OnPasteIntoSelection();
   afx_msg void OnViewGrid();
-  afx_msg void OnBlendModeBlend();
   afx_msg void OnToggleViewAlphaMask();
+  
+  afx_msg void OnBlendModeBlend();
   afx_msg void OnBlendModeReplace();
   afx_msg void OnBlendModeRGBOnly();
   afx_msg void OnBlendModeAlphaOnly();
   afx_msg void OnBlendModeAdditive();
+  afx_msg void OnBlendModeSubtractive();
+  afx_msg void OnBlendModeMultiplicative();
+  afx_msg void OnBlendModeAverage();
+  afx_msg void OnBlendModeInvert();
+  
   afx_msg void OnRotateCW();
   afx_msg void OnRotateCCW();
   afx_msg void OnSlideUp();

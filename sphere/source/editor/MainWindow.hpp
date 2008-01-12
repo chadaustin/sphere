@@ -166,6 +166,8 @@ private:
 #endif
   afx_msg void OnUpdateFileCloseCommand(CCmdUI* cmdui);
   afx_msg void OnUpdateImageCommand(CCmdUI* cmdui);
+  afx_msg void OnImageFillOutToolChanged();
+  afx_msg void OnImageAntialiasToolChanged();
   afx_msg void OnImageToolChanged();
   afx_msg void OnUpdateMapCommand(CCmdUI* cmdui, UINT id);
   afx_msg void OnZoomIn();
@@ -181,16 +183,20 @@ private:
   afx_msg void UpdateToolBars(WPARAM wparam = 0, LPARAM lparam = 0);
   void DockControlBarLeftOf(CToolBar* Bar, CToolBar* LeftOf);
 #define DEFINE_UPDATE_MAP_COMMAND(tool_id) afx_msg void OnUpdateMapCommand_##tool_id(CCmdUI* cmdui);
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZOOM_1X)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZOOM_2X)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZOOM_4X)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZOOM_8X)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_GRID_TILE)
 DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_1X1)
 DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_3X3)
 DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_5X5)
 DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_SELECTTILE)
 DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_FILLRECTAREA)
 DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_FILLAREA)
+DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_FILL_LAYER)
 DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_COPYAREA)
 DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_PASTE)
-DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_COPYENTITY)
-DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_PASTEENTITY)
 DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_MOVEENTITY)
 DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_OBS_SEGMENT)
 DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_OBS_DELETE)
@@ -201,12 +207,19 @@ DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZONEMOVE)
 DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_ZONEDELETE)
 DEFINE_UPDATE_MAP_COMMAND(IDI_MAPTOOL_SCRIPT)
 #undef DEFINE_UPDATE_MAP_COMMAND
+  afx_msg void OnMapGridToolChanged();
+  afx_msg void OnMapZoomToolChanged();
   afx_msg void OnMapToolChanged();
 private:
   int m_NumImageToolsAllowed;
   int m_SelectedImageTools[2];
 public:
+  afx_msg UINT IsMapGridToolChecked();
+  afx_msg UINT IsImageFillShapeToolChecked();
+  afx_msg UINT IsImageAntialiasToolChecked();
   afx_msg UINT GetImageTool(int index);
+  afx_msg UINT GetMapGridTool(int index);
+  afx_msg UINT GetMapZoomTool(int index);
   afx_msg UINT GetMapTool(int index);
   int GetNumImageToolsAllowed() const;
 private:

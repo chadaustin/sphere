@@ -1042,7 +1042,12 @@ void
 CImage32::OutlinedRectangle(int x, int y, int w, int h, int size, RGBA color)
 {
     clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+    OutlinedRectangle(x, y, w, h, size, color, clip);
+}
 
+void
+CImage32::OutlinedRectangle(int x, int y, int w, int h, int size, RGBA color, clipper clip)
+{
     switch (m_BlendMode)
     {
     case REPLACE:
@@ -1245,7 +1250,12 @@ void
 CImage32::FilledEllipse(int x, int y, int rx, int ry, RGBA color)
 {
     clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+    FilledEllipse(x, y, rx, ry, color, clip);
+}
 
+void
+CImage32::FilledEllipse(int x, int y, int rx, int ry, RGBA color, clipper clip)
+{
     switch (m_BlendMode)
     {
     case REPLACE:
@@ -1326,7 +1336,12 @@ void
 CImage32::FilledCircle(int x, int y, int radius, RGBA color, int antialias)
 {
     clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+    FilledCircle(x, y, radius, color, antialias, clip);
+}
 
+void
+CImage32::FilledCircle(int x, int y, int radius, RGBA color, int antialias, clipper clip)
+{
     switch (m_BlendMode)
     {
     case REPLACE:

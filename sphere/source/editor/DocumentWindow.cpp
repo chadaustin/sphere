@@ -322,10 +322,14 @@ CDocumentWindow::OnMDIActivate(BOOL activate, CWnd* active_window, CWnd* inactiv
     //OnToolCommand( ((CMainWindow*)pFrame)->GetImageTool() );
     //OnToolCommand( ((CMainWindow*)pFrame)->GetMapTool() );
     // pFrame->SendMessage(WM_UPDATE_TOOLBARS);
-    OnToolChanged( ((CMainWindow*)pFrame)->GetImageTool(0), 0);
-    OnToolChanged( ((CMainWindow*)pFrame)->GetMapTool(0),   0);
-    OnToolChanged( ((CMainWindow*)pFrame)->GetImageTool(1), 1);
-    OnToolChanged( ((CMainWindow*)pFrame)->GetMapTool(1),   1);
+    OnToolChanged( ((CMainWindow*)pFrame)->GetImageTool(0),   0);
+    OnToolChanged( ((CMainWindow*)pFrame)->GetMapTool(0),     0);
+    OnToolChanged( ((CMainWindow*)pFrame)->GetMapZoomTool(0), 0);
+    OnToolChanged( ((CMainWindow*)pFrame)->GetMapGridTool(0), 0);
+    OnToolChanged( ((CMainWindow*)pFrame)->GetImageTool(1),   1);
+    OnToolChanged( ((CMainWindow*)pFrame)->GetMapTool(1),     1);
+    OnToolChanged( ((CMainWindow*)pFrame)->GetMapZoomTool(1), 1);
+    OnToolChanged( ((CMainWindow*)pFrame)->GetMapGridTool(1), 1);
 #ifdef USE_SIZECBAR
     // have to create the bars 
     for (int i = 0; i < int(m_AttachedPalettes.size()); i++) {

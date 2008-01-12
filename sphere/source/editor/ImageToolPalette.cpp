@@ -8,13 +8,15 @@ CImageToolPalette::CImageToolPalette(CDocumentWindow* owner, IToolPaletteHandler
   Configuration::Get(KEY_IMAGE_TOOLS_RECT),
   Configuration::Get(KEY_IMAGE_TOOLS_VISIBLE))
 {
-  AddTool(IDI_IMAGETOOL_PENCIL,    "Pencil");
-  AddTool(IDI_IMAGETOOL_LINE,      "Line");
-  AddTool(IDI_IMAGETOOL_RECTANGLE, "Rectangle");
-  AddTool(IDI_IMAGETOOL_CIRCLE,    "Circle");
-  AddTool(IDI_IMAGETOOL_ELLIPSE,   "Ellipse");
-  AddTool(IDI_IMAGETOOL_FILL,      "Fill");
-  AddTool(IDI_IMAGETOOL_SELECTION, "Selection");
+  AddTool(IDI_IMAGETOOL_PENCIL,        "Pencil");
+  AddTool(IDI_IMAGETOOL_LINE,          "Line");
+  AddTool(IDI_IMAGETOOL_RECTANGLE,     "Rectangle");
+  AddTool(IDI_IMAGETOOL_CIRCLE,        "Circle");
+  AddTool(IDI_IMAGETOOL_ELLIPSE,       "Ellipse");
+  AddTool(IDI_IMAGETOOL_FILL_SHAPE,    "Fill Shape");
+  AddTool(IDI_IMAGETOOL_ANTIALIAS,     "Antialias Shape");
+  AddTool(IDI_IMAGETOOL_FILL,          "Fill Area");
+  AddTool(IDI_IMAGETOOL_SELECTION,     "Rectangular Selection");
   AddTool(IDI_IMAGETOOL_FREESELECTION, "Free Selection");
 }
 ////////////////////////////////////////////////////////////////////////////////

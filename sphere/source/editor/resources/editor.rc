@@ -387,12 +387,6 @@ BEGIN
         MENUITEM "&Set Entry Point",            ID_MAPVIEW_SETENTRYPOINT
         POPUP "&View"
         BEGIN
-            POPUP "&Grid"
-            BEGIN
-                MENUITEM "&Grid None",                  ID_MAPVIEW_VIEWGRIDNONE
-                MENUITEM "&Grid Tile",                  ID_MAPVIEW_VIEWGRIDTILE
-                MENUITEM "&Grid Screen",                ID_MAPVIEW_VIEWGRIDSCREEN
-            END
             MENUITEM "Tile &Animations",            ID_MAPVIEW_VIEWANIMATIONS
             , GRAYED
             MENUITEM "&Tile Obstructions",          ID_MAPVIEW_VIEWTILEOBSTRUCTIONS
@@ -405,24 +399,18 @@ BEGIN
             END
         END
         MENUITEM SEPARATOR
-        MENUITEM "&Fill",                       ID_MAPVIEW_FILL
-        MENUITEM SEPARATOR
-        POPUP "&Insert Entity"
+        MENUITEM "&Cut Entity"                         ID_MAPVIEW_CUTENTITY
+        MENUITEM "C&opy Entity"                        ID_MAPVIEW_COPYENTITY
+        MENUITEM "&Paste Entity"                       ID_MAPVIEW_PASTEENTITY
+        POPUP "&New Entity"
         BEGIN
             MENUITEM "&Person...",                  ID_MAPVIEW_INSERTENTITY_PERSON
             MENUITEM "&Trigger...",                 ID_MAPVIEW_INSERTENTITY_TRIGGER
         END
         MENUITEM "&Delete Entity",              ID_MAPVIEW_DELETEENTITY
         MENUITEM "&Edit Entity...",             ID_MAPVIEW_EDITENTITY
-        MENUITEM "Edit Z&one...",               ID_MAPVIEW_ZONEEDIT
         MENUITEM SEPARATOR
-        POPUP "&Zoom"
-        BEGIN
-            MENUITEM "&1x",                         ID_MAPVIEW_ZOOM_1X
-            MENUITEM "&2x",                         ID_MAPVIEW_ZOOM_2X
-            MENUITEM "&4x",                         ID_MAPVIEW_ZOOM_4X
-            MENUITEM "&8x",                         ID_MAPVIEW_ZOOM_8X
-        END
+        MENUITEM "Edit Z&one...",               ID_MAPVIEW_ZONEEDIT
     END
 END
 IDR_FONT MENU DISCARDABLE 
@@ -769,9 +757,13 @@ BEGIN
         BEGIN
             MENUITEM "&Blend",                      ID_IMAGEVIEW_BLENDMODE_BLEND
             MENUITEM "&Replace",                    ID_IMAGEVIEW_BLENDMODE_REPLACE
-            MENUITEM "&RGB Only",                   ID_IMAGEVIEW_BLENDMODE_RGBONLY
+            MENUITEM "R&GB Only",                   ID_IMAGEVIEW_BLENDMODE_RGBONLY
             MENUITEM "&Alpha Only",                 ID_IMAGEVIEW_BLENDMODE_ALPHAONLY
-            MENUITEM "Additive",                    ID_IMAGEVIEW_BLENDMODE_ADDITIVE
+            MENUITEM "A&dd",                        ID_IMAGEVIEW_BLENDMODE_ADDITIVE
+            MENUITEM "&Subtract",                   ID_IMAGEVIEW_BLENDMODE_SUBTRACTIVE
+            MENUITEM "&Multiply",                   ID_IMAGEVIEW_BLENDMODE_MULTIPLICATIVE
+            MENUITEM "A&verage",                    ID_IMAGEVIEW_BLENDMODE_AVERAGE
+            MENUITEM "&Invert",                     ID_IMAGEVIEW_BLENDMODE_INVERT
         END
         POPUP "Rotate"
         BEGIN
@@ -1772,23 +1764,29 @@ BEGIN
     BUTTON      IDI_IMAGETOOL_RECTANGLE
     BUTTON      IDI_IMAGETOOL_CIRCLE
     BUTTON      IDI_IMAGETOOL_ELLIPSE
+    BUTTON      IDI_IMAGETOOL_FILL_SHAPE
+    BUTTON      IDI_IMAGETOOL_ANTIALIAS
     BUTTON      IDI_IMAGETOOL_FILL
     BUTTON      IDI_IMAGETOOL_SELECTION
     BUTTON      IDI_IMAGETOOL_FREESELECTION
 END
 IDR_MAPTOOLBAR TOOLBAR DISCARDABLE  16, 16
 BEGIN
-    BUTTON      193
+    BUTTON      IDI_MAPTOOL_ZOOM_1X
+    BUTTON      IDI_MAPTOOL_ZOOM_2X
+    BUTTON      IDI_MAPTOOL_ZOOM_4X
+    BUTTON      IDI_MAPTOOL_ZOOM_8X
+    BUTTON      IDI_MAPTOOL_GRID_TILE
+    BUTTON      IDI_MAPTOOL_MOVEENTITY
+    BUTTON      IDI_MAPTOOL_1X1
     BUTTON      IDI_MAPTOOL_3X3
     BUTTON      IDI_MAPTOOL_5X5
     BUTTON      IDI_MAPTOOL_SELECTTILE
-    BUTTON      IDI_MAPTOOL_FILLRECTAREA
     BUTTON      IDI_MAPTOOL_FILLAREA
+    BUTTON      IDI_MAPTOOL_FILLRECTAREA
+    BUTTON      IDI_MAPTOOL_FILL_LAYER
     BUTTON      IDI_MAPTOOL_COPYAREA
     BUTTON      IDI_MAPTOOL_PASTE
-    BUTTON      IDI_MAPTOOL_COPYENTITY
-    BUTTON      IDI_MAPTOOL_PASTEENTITY
-    BUTTON      IDI_MAPTOOL_MOVEENTITY
     BUTTON      IDI_MAPTOOL_OBS_SEGMENT
     BUTTON      IDI_MAPTOOL_OBS_DELETE
     BUTTON      IDI_MAPTOOL_OBS_MOVE_PT
@@ -1840,8 +1838,6 @@ IDI_MAPTOOL_COPYAREA    ICON    DISCARDABLE     "maptool_copyarea.ico"
 IDI_MAPTOOL_PASTE       ICON    DISCARDABLE     "maptool_paste.ico"
 IDI_MAPTOOL_SELECTTILE  ICON    DISCARDABLE     "maptool_selecttile.ico"
 IDI_MAPTOOL_FILLAREA    ICON    DISCARDABLE     "maptool_fillarea.ico"
-IDI_MAPTOOL_COPYENTITY  ICON    DISCARDABLE     "maptool_copyentity.ico"
-IDI_MAPTOOL_PASTEENTITY ICON    DISCARDABLE     "maptool_pasteentity.ico"
 IDI_MAPTOOL_OBS_SEGMENT ICON    DISCARDABLE     "maptool_obs_segment.ico"
 IDI_MAPTOOL_OBS_DELETE  ICON    DISCARDABLE     "maptool_obs_delete.ico"
 IDI_LAYER_INVISIBLE     ICON    DISCARDABLE     "layer_invisible.ico"
@@ -1904,8 +1900,6 @@ IDC_IMAGETOOL_COLORPICKER CURSOR  DISCARDABLE     "imagetool_colorpicker.cur"
 IDC_IMAGETOOL_FILL      CURSOR  DISCARDABLE     "imagetool_fill.cur"
 IDC_MAPTOOL_PASTE       CURSOR  DISCARDABLE     "maptool_paste.cur"
 IDC_MAPTOOL_COPYAREA    CURSOR  DISCARDABLE     "maptool_copyarea.cur"
-IDC_MAPTOOL_COPYENTITY  CURSOR  DISCARDABLE     "maptool_copyentity.cur"
-IDC_MAPTOOL_PASTEENTITY CURSOR  DISCARDABLE     "maptool_pasteentity.cur"
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table

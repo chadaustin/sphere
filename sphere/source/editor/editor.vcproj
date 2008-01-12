@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="8,00"
 	Name="editor"
 	ProjectGUID="{573B5C55-2720-470A-94A0-E7356C2E71BE}"
 	RootNamespace="editor"

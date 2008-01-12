@@ -83,6 +83,7 @@ public:
     void LineSeries(VECTOR_INT** points, int length, RGBA color, int type);
     void BezierCurve(int x[4], int y[4], double step, RGBA color, int cubic);
     void OutlinedRectangle(int x, int y, int w, int h, int size, RGBA color);
+    void OutlinedRectangle(int x, int y, int w, int h, int size, RGBA color, clipper clip);
     void Rectangle(int x1, int y1, int x2, int y2, RGBA color);
     void Rectangle(int x1, int y1, int x2, int y2, RGBA color, clipper clip);
     void Triangle(int x1, int y1, int x2, int y2, int x3, int y3, RGBA color);
@@ -90,9 +91,11 @@ public:
     void OutlinedEllipse(int x, int y, int rx, int ry, RGBA color);
     void OutlinedEllipse(int x, int y, int rx, int ry, RGBA color, clipper clip);
     void FilledEllipse(  int x, int y, int rx, int ry, RGBA color);
+    void FilledEllipse(  int x, int y, int rx, int ry, RGBA color, clipper clip);
     void OutlinedCircle(int x, int y, int radius, RGBA color, int antialias);
     void OutlinedCircle(int x, int y, int radius, RGBA color, int antialias, clipper clip);
     void FilledCircle(  int x, int y, int radius, RGBA color, int antialias);
+    void FilledCircle(  int x, int y, int radius, RGBA color, int antialias, clipper clip);
     void GradientCircle(int x, int y, int radius, RGBA c[2],  int antialias);
 
     void GradientLine(int x1, int y1, int x2, int y2, RGBA c[2]);
