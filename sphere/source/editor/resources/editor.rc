@@ -1,45 +1,57 @@
 //Microsoft Developer Studio generated resource script.
 //
 #include "resource.h"
+
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include "afxres.h"
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
+
 /////////////////////////////////////////////////////////////////////////////
 // English (U.S.) resources
+
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
 #endif //_WIN32
+
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
 //
 // TEXTINCLUDE
 //
+
 1 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
     "resource.h\0"
 END
+
 2 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "\0"
 END
+
 3 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
     "\r\n"
     "\0"
 END
+
 #endif    // APSTUDIO_INVOKED
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
 //
+
 IDR_MAIN MENU DISCARDABLE 
 BEGIN
     POPUP "&File"
@@ -72,20 +84,31 @@ BEGIN
         POPUP "&Import"
         BEGIN
             MENUITEM "Image to &Map...",            ID_FILE_IMPORT_IMAGETOMAPTILESET
+
             MENUITEM "Image to &Tileset...",        ID_FILE_IMPORT_BITMAPTORTS
+
             MENUITEM "Image to &Spriteset...",      ID_FILE_IMPORT_BITMAPTORSS
+
             MENUITEM "Image to &Font...",           ID_FILE_IMPORT_IMAGETOFONT
+
             MENUITEM "Image to &Window Style...",   ID_FILE_IMPORT_BITMAPTORWS
+
             MENUITEM "&Verge Font Template...",     ID_FILE_IMPORT_VERGEFONTTEMPLATE
+
             MENUITEM "V&erge Map...",               ID_FILE_IMPORT_VERGEMAP
             MENUITEM "Verge S&priteset...",         ID_FILE_IMPORT_VERGESPRITESET
+
             MENUITEM "Merge RGB image and &Alpha Image...", 
                                                     ID_FILE_IMPORT_MERGE_RGBA
+
             MENUITEM "W&indows Font to Sphere Font...", 
                                                     ID_FILE_IMPORT_WINDOWSFONT
+
             MENUITEM "RM2K Charset to Spritesets...", 
                                                     ID_FILE_IMPORT_RM2KCHARSETTORSS
+
             MENUITEM "RM2K Chipset to Tileset...",  ID_FILE_IMPORT_RM2KCHIPSETTORTS
+
         END
         MENUITEM "&Close (CTRL + F4)",          ID_FILE_CLOSE
         MENUITEM "&Browse",                     ID_FILE_BROWSE
@@ -100,6 +123,7 @@ BEGIN
         POPUP "&Language"
         BEGIN
             MENUITEM "Bulgarian",                   ID_FILE_LANGUAGE_BULGARIAN
+
             MENUITEM "Dutch",                       ID_FILE_LANGUAGE_DUTCH
             MENUITEM "English",                     ID_FILE_LANGUAGE_ENGLISH
             MENUITEM "German",                      ID_FILE_LANGUAGE_GERMAN
@@ -160,6 +184,7 @@ BEGIN
         MENUITEM "&About...",                   ID_HELP_ABOUT
     END
 END
+
 IDR_MAP MENU DISCARDABLE 
 BEGIN
     POPUP "&Map"
@@ -193,6 +218,7 @@ BEGIN
         END
     END
 END
+
 IDR_SPRITESET MENU DISCARDABLE 
 BEGIN
     POPUP "&Spriteset"
@@ -223,6 +249,7 @@ BEGIN
         END
     END
 END
+
 IDR_PROJECT MENU DISCARDABLE 
 BEGIN
     POPUP "&Project"
@@ -231,12 +258,15 @@ BEGIN
         BEGIN
             MENUITEM "&Map...",                     ID_PROJECT_INSERT_MAP
             MENUITEM "&Spriteset...",               ID_PROJECT_INSERT_SPRITESET
+
             MENUITEM "S&cript...",                  ID_PROJECT_INSERT_SCRIPT
             MENUITEM "S&ound...",                   ID_PROJECT_INSERT_SOUND
             MENUITEM "&Font...",                    ID_PROJECT_INSERT_FONT
             MENUITEM "&Window Style...",            ID_PROJECT_INSERT_WINDOWSTYLE
+
             MENUITEM "&Image...",                   ID_PROJECT_INSERT_IMAGE
             MENUITEM "&Animation...",               ID_PROJECT_INSERT_ANIMATION
+
         END
         MENUITEM "R&efresh (F5)",               ID_PROJECT_REFRESH
         MENUITEM "&Open Directory",             ID_PROJECT_OPENDIRECTORY
@@ -246,6 +276,7 @@ BEGIN
         MENUITEM "&Run Game (CTRL + F5)",       ID_PROJECT_RUNSPHERE
     END
 END
+
 IDR_PROJECTITEM MENU DISCARDABLE 
 BEGIN
     POPUP "Project &Item"
@@ -254,6 +285,7 @@ BEGIN
         MENUITEM "&Delete",                     ID_PROJECTITEM_DELETE
     END
 END
+
 IDR_SOUND MENU DISCARDABLE 
 BEGIN
     POPUP "&Sound"
@@ -268,6 +300,7 @@ BEGIN
         MENUITEM "&Auto Advance",               ID_SOUND_AUTO_ADVANCE
     END
 END
+
 IDR_PROJECTGROUP MENU DISCARDABLE 
 BEGIN
     POPUP "Project &Group"
@@ -276,6 +309,7 @@ BEGIN
         MENUITEM "&Insert...",                  ID_PROJECTGROUP_INSERT
     END
 END
+
 IDR_SCRIPT MENU DISCARDABLE 
 BEGIN
     POPUP "&Script"
@@ -288,36 +322,55 @@ BEGIN
         POPUP "Selection Mode"
         BEGIN
             MENUITEM "Normal Selection",            ID_SCRIPT_OPTIONS_SELECTION_STREAM
+
             MENUITEM "Rectangle Selection",         ID_SCRIPT_OPTIONS_SELECTION_RECTANGLE
+
             MENUITEM "Line Selection",              ID_SCRIPT_OPTIONS_SELECTION_LINE
+
         END
         POPUP "&Options"
         BEGIN
             MENUITEM "Change Font",                 ID_SCRIPT_OPTIONS_SET_FONT
+
             MENUITEM "Change Tab Size",             ID_SCRIPT_OPTIONS_SET_TAB_SIZE
+
             MENUITEM "Toggle Colors",               ID_SCRIPT_OPTIONS_TOGGLE_COLORS
+
             MENUITEM "Toggle Line Numbers",         ID_SCRIPT_OPTIONS_TOGGLE_LINE_NUMBERS
+
             MENUITEM "Toggle Whitespace",           ID_SCRIPT_OPTIONS_SHOW_WHITESPACE
+
             MENUITEM "Allow Auto Complete",         ID_SCRIPT_OPTIONS_TOGGLE_AUTOCOMPLETE
+
             MENUITEM "Toggle Word Wrap",            ID_SCRIPT_OPTIONS_WORD_WRAP
+
             MENUITEM "Show Wrap Flags",             ID_SCRIPT_OPTIONS_SHOW_WORD_FLAGS
+
             MENUITEM "Highlight Current Line",      ID_SCRIPT_OPTIONS_HIGHLIGHT_CURRENT_LINE
+
             MENUITEM "Check &Spelling",             ID_SCRIPT_OPTIONS_CHECK_SPELLING
+
             MENUITEM "Set Language",                ID_SCRIPT_OPTIONS_SET_SPELLING_LANGUAGE
+
             MENUITEM "&View List",                  ID_SCRIPT_OPTIONS_VIEW_LIST
+
         END
         POPUP "&Tools"
         BEGIN
             POPUP "&Change Case"
             BEGIN
                 MENUITEM "To Lowercase",                ID_SCRIPT_TOOLS_TO_LOWER_CASE
+
                 MENUITEM "To Uppercase",                ID_SCRIPT_TOOLS_TO_UPPER_CASE
+
             END
             MENUITEM "&Sort...",                    ID_SCRIPT_TOOLS_SORT
             MENUITEM "Fix &Indentation...",         ID_SCRIPT_TOOLS_FIXINDENTATION
+
         END
     END
 END
+
 IDR_IMAGE MENU DISCARDABLE 
 BEGIN
     POPUP "&Image"
@@ -336,22 +389,27 @@ BEGIN
         MENUITEM "&View at Original Size",      ID_IMAGE_VIEWATORIGINALSIZE
     END
 END
+
 IDR_LAYERVIEW MENU DISCARDABLE 
 BEGIN
     POPUP "&LayerView"
     BEGIN
         MENUITEM "&Insert Layer",               ID_LAYERVIEW_INSERTLAYER
         MENUITEM "I&nsert Layer from Image...", ID_LAYERVIEW_INSERTLAYERFROMIMAGE
+
         MENUITEM "&Delete Layer",               ID_LAYERVIEW_DELETELAYER
         MENUITEM "Du&plicate Layer",            ID_LAYERVIEW_DUPLICATELAYER
         MENUITEM SEPARATOR
         POPUP "&Export"
         BEGIN
             MENUITEM "&Export as Image...",         ID_LAYERVIEW_EXPORTASIMAGE
+
             MENUITEM "&Export all visible layers as Image...", 
                                                     ID_LAYERVIEW_EXPORT_ALL_VISIBLE_LAYERS_AS_IMAGE
+
         END
         MENUITEM "&Flatten all visible layers", ID_LAYERVIEW_FLATTEN_VISIBLE_LAYERS
+
         MENUITEM SEPARATOR
         POPUP "&Slide"
         BEGIN
@@ -367,9 +425,11 @@ BEGIN
             MENUITEM "&Down",                       ID_LAYERVIEW_MOVE_DOWN
         END
         MENUITEM "Toggle Lock Layers",          ID_LAYERVIEW_TOGGLE_LOCK_LAYERS_IN_PLACE
+
         MENUITEM "&Properties...",              ID_LAYERVIEW_PROPERTIES
     END
 END
+
 IDR_ANIMATION MENU DISCARDABLE 
 BEGIN
     POPUP "&Animation"
@@ -378,6 +438,7 @@ BEGIN
         MENUITEM "&Stop",                       ID_ANIMATION_STOP
     END
 END
+
 IDR_MAPVIEW MENU DISCARDABLE 
 BEGIN
     POPUP "&MapView"
@@ -390,22 +451,28 @@ BEGIN
             MENUITEM "Tile &Animations",            ID_MAPVIEW_VIEWANIMATIONS
             , GRAYED
             MENUITEM "&Tile Obstructions",          ID_MAPVIEW_VIEWTILEOBSTRUCTIONS
+
             MENUITEM SEPARATOR
             POPUP "&Persons As"
             BEGIN
                 MENUITEM "&Icons",                      ID_MAPVIEW_VIEWPERSONS_ICON
+
                 MENUITEM "&Mini images",                ID_MAPVIEW_VIEWPERSONS_MINIIMAGE
+
                 MENUITEM "Image",                       ID_MAPVIEW_VIEWPERSONS_IMAGE
+
             END
         END
         MENUITEM SEPARATOR
-        MENUITEM "&Cut Entity"                         ID_MAPVIEW_CUTENTITY
-        MENUITEM "C&opy Entity"                        ID_MAPVIEW_COPYENTITY
-        MENUITEM "&Paste Entity"                       ID_MAPVIEW_PASTEENTITY
+        MENUITEM "&Cut Entity",                 ID_MAPVIEW_CUTENTITY
+        MENUITEM "C&opy Entity",                ID_MAPVIEW_COPYENTITY
+        MENUITEM "&Paste Entity",               ID_MAPVIEW_PASTEENTITY
         POPUP "&New Entity"
         BEGIN
             MENUITEM "&Person...",                  ID_MAPVIEW_INSERTENTITY_PERSON
+
             MENUITEM "&Trigger...",                 ID_MAPVIEW_INSERTENTITY_TRIGGER
+
         END
         MENUITEM "&Delete Entity",              ID_MAPVIEW_DELETEENTITY
         MENUITEM "&Edit Entity...",             ID_MAPVIEW_EDITENTITY
@@ -413,6 +480,7 @@ BEGIN
         MENUITEM "Edit Z&one...",               ID_MAPVIEW_ZONEEDIT
     END
 END
+
 IDR_FONT MENU DISCARDABLE 
 BEGIN
     POPUP "&Font"
@@ -432,24 +500,32 @@ BEGIN
             BEGIN
                 MENUITEM "&Clockwise",                  ID_FONT_ER_ROTATE_CW
                 MENUITEM "C&ounterclockwise",           ID_FONT_ER_ROTATE_CCW
+
             END
             POPUP "&Slide"
             BEGIN
                 MENUITEM "&Up",                         ID_FONT_ER_SLIDE_UP
                 MENUITEM "&Right",                      ID_FONT_ER_SLIDE_RIGHT
+
                 MENUITEM "&Down",                       ID_FONT_ER_SLIDE_DOWN
+
                 MENUITEM "&Left",                       ID_FONT_ER_SLIDE_LEFT
+
                 MENUITEM "&Other...",                   ID_FONT_ER_SLIDE_OTHER
+
             END
             POPUP "&Flip"
             BEGIN
                 MENUITEM "&Horizontally",               ID_FONT_ER_FLIP_HORIZONTALLY
+
                 MENUITEM "&Vertically",                 ID_FONT_ER_FLIP_VERTICALLY
+
             END
             POPUP "F&ill", GRAYED
             BEGIN
                 MENUITEM "&RGB",                        ID_FONT_ER_FILL_RGB
                 MENUITEM "&Alpha",                      ID_FONT_ER_FILL_ALPHA
+
                 MENUITEM "&Both",                       ID_FONT_ER_FILL_BOTH
             END
             POPUP "Fil&ter", GRAYED
@@ -457,18 +533,25 @@ BEGIN
                 POPUP "Negative Image"
                 BEGIN
                     MENUITEM "&RGB",                        ID_FONT_ER_FLT_NEGATIVE_IMAGE_RGB
+
                     MENUITEM "&Alpha",                      ID_FONT_ER_FLT_NEGATIVE_IMAGE_ALPHA
+
                     MENUITEM "&Both",                       ID_FONT_ER_FLT_NEGATIVE_IMAGE_RGBA
+
                 END
                 MENUITEM "&Blur",                       ID_FONT_ER_FLT_BLUR
                 MENUITEM "&Noise",                      ID_FONT_ER_FLT_NOISE
                 MENUITEM "&Solarize",                   ID_FONT_ER_FLT_SOLARIZE
+
                 MENUITEM "&Adjust Brightness",          ID_FONT_ER_FLT_ADJUST_BRIGHTNESS
+
                 MENUITEM "Adjust &Gamma",               ID_FONT_ER_FLT_ADJUST_GAMMA
+
             END
             POPUP "&Replace"
             BEGIN
                 MENUITEM "&RGBA",                       ID_FONT_ER_REPLACE_RGBA
+
                 MENUITEM "R&GB",                        ID_FONT_ER_REPLACE_RGB
                 , GRAYED
                 MENUITEM "&Alpha",                      ID_FONT_ER_REPLACE_ALPHA
@@ -483,6 +566,7 @@ BEGIN
         MENUITEM "&Generate Gradient...",       ID_FONT_GENERATEGRADIENT
     END
 END
+
 IDR_WINDOWSTYLE MENU DISCARDABLE 
 BEGIN
     POPUP "Window &Style"
@@ -490,14 +574,21 @@ BEGIN
         POPUP "&Edit"
         BEGIN
             MENUITEM "Background",                  ID_WINDOWSTYLE_EDIT_BACKGROUND
+
             MENUITEM "Upper Left",                  ID_WINDOWSTYLE_EDIT_UPPERLEFT
+
             MENUITEM "Top",                         ID_WINDOWSTYLE_EDIT_TOP
             MENUITEM "Upper Right",                 ID_WINDOWSTYLE_EDIT_UPPERRIGHT
+
             MENUITEM "Left",                        ID_WINDOWSTYLE_EDIT_LEFT
             MENUITEM "Right",                       ID_WINDOWSTYLE_EDIT_RIGHT
+
             MENUITEM "Lower Left",                  ID_WINDOWSTYLE_EDIT_LOWERLEFT
+
             MENUITEM "Bottom",                      ID_WINDOWSTYLE_EDIT_BOTTOM
+
             MENUITEM "Lower Right",                 ID_WINDOWSTYLE_EDIT_LOWERRIGHT
+
         END
         POPUP "&Zoom"
         BEGIN
@@ -509,100 +600,144 @@ BEGIN
         POPUP "&Change Size"
         BEGIN
             MENUITEM "&Resize Section...",          ID_WINDOWSTYLE_RESIZESECTION
+
             MENUITEM "Rescale Section...",          ID_WINDOWSTYLE_RESCALESECTION
+
             MENUITEM "Resample Section...",         ID_WINDOWSTYLE_RESAMPLESECTION
+
         END
         MENUITEM SEPARATOR
         MENUITEM "&Properties...",              ID_WINDOWSTYLE_PROPERTIES
     END
 END
+
 IDR_SPRITESETVIEW MENU DISCARDABLE 
 BEGIN
     POPUP "SpritesetView_Directions"
     BEGIN
         MENUITEM "Insert",                      ID_SPRITESETVIEWDIRECTIONS_INSERT
+
         MENUITEM "&Delete",                     ID_SPRITESETVIEWDIRECTIONS_DELETE
+
         MENUITEM "&Append",                     ID_SPRITESETVIEWDIRECTIONS_APPEND
+
         MENUITEM SEPARATOR
         POPUP "Insert Copy"
         BEGIN
             MENUITEM "Flip Horizontally",           ID_SPRITESETVIEWDIRECTIONS_INSERTCOPY_FLIPHORIZONTALLY
+
             MENUITEM "Flip Vertically",             ID_SPRITESETVIEWDIRECTIONS_INSERTCOPY_FLIPVERTICALLY
+
         END
         MENUITEM SEPARATOR
         POPUP "Import"
         BEGIN
             MENUITEM "Import From Image...",        ID_SPRITESETVIEWDIRECTIONS_IMPORT_FROM_IMAGE
+
             MENUITEM "&Import From Animation...",   ID_SPRITESETVIEWDIRECTIONS_IMPORT_FROM_ANIMATION
+
         END
         POPUP "Export"
         BEGIN
             MENUITEM "&Export As Image...",         ID_SPRITESETVIEWDIRECTIONS_EXPORT_AS_IMAGE
+
             MENUITEM "&Export As Animation...",     ID_SPRITESETVIEWDIRECTIONS_EXPORT_AS_ANIMATION
+
         END
         MENUITEM SEPARATOR
         MENUITEM "&Fill Delay...",              ID_SPRITESETVIEWDIRECTIONS_FILLDELAY
+
         MENUITEM "&Properties...",              ID_SPRITESETVIEWDIRECTIONS_PROPERTIES
+
     END
     POPUP "SpritesetView_Frames"
     BEGIN
         MENUITEM "&Insert",                     ID_SPRITESETVIEWFRAMES_INSERT
+
         MENUITEM "&Delete",                     ID_SPRITESETVIEWFRAMES_DELETE
+
         MENUITEM "&Append",                     ID_SPRITESETVIEWFRAMES_APPEND
+
         MENUITEM SEPARATOR
         MENUITEM "Insert Frames...",            ID_SPRITESETVIEWFRAMES_INSERTFRAMES
+
         MENUITEM "Append Frames...",            ID_SPRITESETVIEWFRAMES_APPENDFRAMES
+
         MENUITEM "Delete Frames...",            ID_SPRITESETVIEWFRAMES_REMOVEFRAMES
+
         MENUITEM SEPARATOR
         MENUITEM "&Copy (CTRL + C)",            ID_SPRITESETVIEWFRAMES_COPY
         MENUITEM "&Paste (CTRL + V)",           ID_SPRITESETVIEWFRAMES_PASTE
         MENUITEM SEPARATOR
         MENUITEM "Import from Image...",        ID_SPRITESETVIEWFRAMES_IMPORT_FROM_IMAGE
+
         MENUITEM "Export to Image...",          ID_SPRITESETVIEWFRAMES_EXPORT_TO_IMAGE
+
         MENUITEM SEPARATOR
         POPUP "&Edit Range"
         BEGIN
             POPUP "Rotate", GRAYED
             BEGIN
                 MENUITEM "&Clockwise",                  ID_SPRITESETVIEWFRAMES_ER_ROTATE_CW
+
                 MENUITEM "C&ounterclockwise",           ID_SPRITESETVIEWFRAMES_ER_ROTATE_CCW
+
             END
             POPUP "&Slide"
             BEGIN
                 MENUITEM "&Up",                         ID_SPRITESETVIEWFRAMES_ER_SLIDE_UP
+
                 MENUITEM "&Right",                      ID_SPRITESETVIEWFRAMES_ER_SLIDE_RIGHT
+
                 MENUITEM "&Down",                       ID_SPRITESETVIEWFRAMES_ER_SLIDE_DOWN
+
                 MENUITEM "&Left",                       ID_SPRITESETVIEWFRAMES_ER_SLIDE_LEFT
+
                 MENUITEM "&Other...",                   ID_SPRITESETVIEWFRAMES_ER_SLIDE_OTHER
+
             END
             POPUP "&Flip"
             BEGIN
                 MENUITEM "&Horizontally",               ID_SPRITESETVIEWFRAMES_ER_FLIP_HORIZONTALLY
+
                 MENUITEM "&Vertically",                 ID_SPRITESETVIEWFRAMES_ER_FLIP_VERTICALLY
+
             END
             POPUP "F&ill", GRAYED
             BEGIN
                 MENUITEM "&RGB",                        ID_SPRITESETVIEWFRAMES_ER_FILL_RGB
+
                 MENUITEM "&Alpha",                      ID_SPRITESETVIEWFRAMES_ER_FILL_ALPHA
+
                 MENUITEM "&Both",                       ID_SPRITESETVIEWFRAMES_ER_FILL_BOTH
+
             END
             POPUP "Fil&ter", GRAYED
             BEGIN
                 POPUP "Negative Image"
                 BEGIN
                     MENUITEM "&RGB",                        ID_SPRITESETVIEWFRAMES_ER_FLT_NEGATIVE_IMAGE_RGB
+
                     MENUITEM "&Alpha",                      ID_SPRITESETVIEWFRAMES_ER_FLT_NEGATIVE_IMAGE_ALPHA
+
                     MENUITEM "&Both",                       ID_SPRITESETVIEWFRAMES_ER_FLT_NEGATIVE_IMAGE_RGBA
+
                 END
                 MENUITEM "&Blur",                       ID_SPRITESETVIEWFRAMES_ER_FLT_BLUR
+
                 MENUITEM "&Noise",                      ID_SPRITESETVIEWFRAMES_ER_FLT_NOISE
+
                 MENUITEM "&Solarize",                   ID_SPRITESETVIEWFRAMES_ER_FLT_SOLARIZE
+
                 MENUITEM "&Adjust Brightness",          ID_SPRITESETVIEWFRAMES_ER_FLT_ADJUST_BRIGHTNESS
+
                 MENUITEM "Adjust &Gamma",               ID_SPRITESETVIEWFRAMES_ER_FLT_ADJUST_GAMMA
+
             END
             POPUP "&Replace"
             BEGIN
                 MENUITEM "&RGBA",                       ID_SPRITESETVIEWFRAMES_ER_REPLACE_RGBA
+
                 MENUITEM "R&GB",                        ID_SPRITESETVIEWFRAMES_ER_REPLACE_RGB
                 , GRAYED
                 MENUITEM "&Alpha",                      ID_SPRITESETVIEWFRAMES_ER_REPLACE_ALPHA
@@ -614,8 +749,10 @@ BEGIN
             , GRAYED
         END
         MENUITEM "Pr&operties...",              ID_SPRITESETVIEWFRAMES_PROPERTIES
+
     END
 END
+
 IDR_TILESETVIEW MENU DISCARDABLE 
 BEGIN
     POPUP "TilesetView"
@@ -642,12 +779,15 @@ BEGIN
         BEGIN
             MENUITEM "&Back",                       ID_TILESETVIEW_MOVE_BACK
             MENUITEM "&Forward",                    ID_TILESETVIEW_MOVE_FORWARD
+
             MENUITEM "&Other...",                   ID_TILESETVIEW_MOVE_OTHER
+
         END
         POPUP "&View"
         BEGIN
             MENUITEM "&Grid",                       ID_TILESETVIEW_VIEWGRID
             MENUITEM "&Tile Obstructions",          ID_TILESETVIEW_VIEW_OBSTRUCTIONS
+
         END
         MENUITEM SEPARATOR
         POPUP "&Edit Range"
@@ -655,44 +795,65 @@ BEGIN
             POPUP "Rotate", GRAYED
             BEGIN
                 MENUITEM "&Clockwise",                  ID_TILESETVIEW_ER_ROTATE_CW
+
                 MENUITEM "C&ounterclockwise",           ID_TILESETVIEW_ER_ROTATE_CCW
+
             END
             POPUP "&Slide"
             BEGIN
                 MENUITEM "&Up",                         ID_TILESETVIEW_ER_SLIDE_UP
+
                 MENUITEM "&Right",                      ID_TILESETVIEW_ER_SLIDE_RIGHT
+
                 MENUITEM "&Down",                       ID_TILESETVIEW_ER_SLIDE_DOWN
+
                 MENUITEM "&Left",                       ID_TILESETVIEW_ER_SLIDE_LEFT
+
                 MENUITEM "&Other...",                   ID_TILESETVIEW_ER_SLIDE_OTHER
+
             END
             POPUP "&Flip"
             BEGIN
                 MENUITEM "&Horizontally",               ID_TILESETVIEW_ER_FLIP_HORIZONTALLY
+
                 MENUITEM "&Vertically",                 ID_TILESETVIEW_ER_FLIP_VERTICALLY
+
             END
             POPUP "F&ill", GRAYED
             BEGIN
                 MENUITEM "&RGB",                        ID_TILESETVIEW_ER_FILL_RGB
+
                 MENUITEM "&Alpha",                      ID_TILESETVIEW_ER_FILL_ALPHA
+
                 MENUITEM "&Both",                       ID_TILESETVIEW_ER_FILL_BOTH
+
             END
             POPUP "Fil&ter", GRAYED
             BEGIN
                 POPUP "Negative Image"
                 BEGIN
                     MENUITEM "&RGB",                        ID_TILESETVIEW_ER_FLT_NEGATIVE_IMAGE_RGB
+
                     MENUITEM "&Alpha",                      ID_TILESETVIEW_ER_FLT_NEGATIVE_IMAGE_ALPHA
+
                     MENUITEM "&Both",                       ID_TILESETVIEW_ER_FLT_NEGATIVE_IMAGE_RGBA
+
                 END
                 MENUITEM "&Blur",                       ID_TILESETVIEW_ER_FLT_BLUR
+
                 MENUITEM "&Noise",                      ID_TILESETVIEW_ER_FLT_NOISE
+
                 MENUITEM "&Solarize",                   ID_TILESETVIEW_ER_FLT_SOLARIZE
+
                 MENUITEM "&Adjust Brightness",          ID_TILESETVIEW_ER_FLT_ADJUST_BRIGHTNESS
+
                 MENUITEM "Adjust &Gamma",               ID_TILESETVIEW_ER_FLT_ADJUST_GAMMA
+
             END
             POPUP "&Replace"
             BEGIN
                 MENUITEM "&RGBA",                       ID_TILESETVIEW_ER_REPLACE_RGBA
+
                 MENUITEM "R&GB",                        ID_TILESETVIEW_ER_REPLACE_RGB
                 , GRAYED
                 MENUITEM "&Alpha",                      ID_TILESETVIEW_ER_REPLACE_ALPHA
@@ -706,6 +867,7 @@ BEGIN
         MENUITEM "&Properties...",              ID_TILESETVIEW_PROPERTIES
     END
 END
+
 IDR_OBSTRUCTION_PRESETS MENU DISCARDABLE 
 BEGIN
     POPUP "Obstruction Presets"
@@ -713,26 +875,45 @@ BEGIN
         POPUP "&Custom"
         BEGIN
             MENUITEM "Vertical Quarter Split",      ID_OBSTRUCTIONPRESETS_CUSTOM1
+
             MENUITEM "Horizontal Quarter Split",    ID_OBSTRUCTIONPRESETS_CUSTOM2
+
             MENUITEM "Vertical Eight Split",        ID_OBSTRUCTIONPRESETS_CUSTOM3
+
             MENUITEM "Horizontal Eight Split",      ID_OBSTRUCTIONPRESETS_CUSTOM4
+
             MENUITEM "Upper Left Corner",           ID_OBSTRUCTIONPRESETS_CUSTOM5
+
             MENUITEM "Upper Right Corner",          ID_OBSTRUCTIONPRESETS_CUSTOM6
+
             MENUITEM "Lower Left Corner",           ID_OBSTRUCTIONPRESETS_CUSTOM7
+
             MENUITEM "Lower Right Corner",          ID_OBSTRUCTIONPRESETS_CUSTOM8
+
         END
         MENUITEM "&Unblocked",                  ID_OBSTRUCTIONPRESETS_UNBLOCKED
+
         MENUITEM "&Blocked",                    ID_OBSTRUCTIONPRESETS_BLOCKED
+
         MENUITEM "Upper Right",                 ID_OBSTRUCTIONPRESETS_UPPERRIGHT
+
         MENUITEM "Lower Right",                 ID_OBSTRUCTIONPRESETS_LOWERRIGHT
+
         MENUITEM "Lower Left",                  ID_OBSTRUCTIONPRESETS_LOWERLEFT
+
         MENUITEM "Upper Left",                  ID_OBSTRUCTIONPRESETS_UPPERLEFT
+
         MENUITEM "Left Half",                   ID_OBSTRUCTIONPRESETS_LEFTHALF
+
         MENUITEM "Right Half",                  ID_OBSTRUCTIONPRESETS_RIGHTHALF
+
         MENUITEM "Top Half",                    ID_OBSTRUCTIONPRESETS_TOPHALF
+
         MENUITEM "Bottom Half",                 ID_OBSTRUCTIONPRESETS_BOTTOMHALF
+
     END
 END
+
 IDR_IMAGEVIEW MENU DISCARDABLE 
 BEGIN
     POPUP "Image View"
@@ -747,8 +928,10 @@ BEGIN
         BEGIN
             MENUITEM "Paste (CTRL + V)",            ID_IMAGEVIEW_PASTE
             MENUITEM "Paste RGB",                   ID_IMAGEVIEW_PASTE_INTO_SELECTION
+
             MENUITEM "Paste Alpha",                 ID_IMAGEVIEW_PASTE_ALPHA
             MENUITEM "Into Selection",              ID_IMAGEVIEW_PASTE_INTOSELECTION
+
         END
         MENUITEM SEPARATOR
         MENUITEM "View &Grid",                  ID_IMAGEVIEW_VIEWGRID
@@ -756,14 +939,23 @@ BEGIN
         POPUP "&Blend Mode"
         BEGIN
             MENUITEM "&Blend",                      ID_IMAGEVIEW_BLENDMODE_BLEND
+
             MENUITEM "&Replace",                    ID_IMAGEVIEW_BLENDMODE_REPLACE
+
             MENUITEM "R&GB Only",                   ID_IMAGEVIEW_BLENDMODE_RGBONLY
+
             MENUITEM "&Alpha Only",                 ID_IMAGEVIEW_BLENDMODE_ALPHAONLY
+
             MENUITEM "A&dd",                        ID_IMAGEVIEW_BLENDMODE_ADDITIVE
+
             MENUITEM "&Subtract",                   ID_IMAGEVIEW_BLENDMODE_SUBTRACTIVE
+
             MENUITEM "&Multiply",                   ID_IMAGEVIEW_BLENDMODE_MULTIPLICATIVE
+
             MENUITEM "A&verage",                    ID_IMAGEVIEW_BLENDMODE_AVERAGE
+
             MENUITEM "&Invert",                     ID_IMAGEVIEW_BLENDMODE_INVERT
+
         END
         POPUP "Rotate"
         BEGIN
@@ -781,7 +973,9 @@ BEGIN
         POPUP "&Flip"
         BEGIN
             MENUITEM "&Horizontally",               ID_IMAGEVIEW_FLIP_HORIZONTALLY
+
             MENUITEM "&Vertically",                 ID_IMAGEVIEW_FLIP_VERTICALLY
+
         END
         POPUP "F&ill"
         BEGIN
@@ -794,30 +988,44 @@ BEGIN
             POPUP "Negative Image"
             BEGIN
                 MENUITEM "&RGB",                        ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE_RGB
+
                 MENUITEM "&Alpha",                      ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE_ALPHA
+
                 MENUITEM "&Both",                       ID_IMAGEVIEW_FILTER_NEGATIVE_IMAGE_RGBA
+
             END
             MENUITEM "&Blur",                       ID_IMAGEVIEW_FILTER_BLUR
             MENUITEM "&Noise",                      ID_IMAGEVIEW_FILTER_NOISE
+
             MENUITEM "&Solarize",                   ID_IMAGEVIEW_FILTER_SOLARIZE
+
             MENUITEM "&Adjust Brightness",          ID_IMAGEVIEW_FILTER_ADJUST_BRIGHTNESS
+
             MENUITEM "Adjust &Gamma",               ID_IMAGEVIEW_FILTER_ADJUST_GAMMA
+
             MENUITEM "&Grayscale",                  ID_IMAGEVIEW_FILTER_GRAYSCALE
+
             MENUITEM "&Saturate",                   ID_IMAGEVIEW_FILTER_SATURATE
+
             MENUITEM "&Color Adjuster...",          ID_IMAGEVIEW_FILTER_COLORADJUSTER
+
             MENUITEM "&Custom Filter...",           ID_IMAGEVIEW_FILTER_CUSTOM
+
         END
         POPUP "&Replace"
         BEGIN
             MENUITEM "&RGBA",                       ID_IMAGEVIEW_REPLACE_RGBA
+
             MENUITEM "R&GB",                        ID_IMAGEVIEW_REPLACE_RGB
             MENUITEM "&Alpha",                      ID_IMAGEVIEW_REPLACE_ALPHA
+
         END
         MENUITEM SEPARATOR
         MENUITEM "Set Color &Alpha",            ID_IMAGEVIEW_SETCOLORALPHA
         MENUITEM "Scal&e Alpha",                ID_IMAGEVIEW_SCALEALPHA
     END
 END
+
 IDR_SWATCHPALETTE MENU DISCARDABLE 
 BEGIN
     POPUP "Swatch Palette"
@@ -825,50 +1033,69 @@ BEGIN
         POPUP "&File"
         BEGIN
             MENUITEM "&Load...",                    ID_SWATCHPALETTE_FILE_LOAD
+
             MENUITEM "&Save...",                    ID_SWATCHPALETTE_FILE_SAVE
+
         END
         POPUP "&Default"
         BEGIN
             MENUITEM "&DOS",                        ID_SWATCHPALETTE_DEFAULT_DOS
+
             MENUITEM "&VERGE",                      ID_SWATCHPALETTE_DEFAULT_VERGE
+
             MENUITEM "&PLASMA",                     ID_SWATCHPALETTE_DEFAULT_PLASMA
+
             MENUITEM "&RGB332",                     ID_SWATCHPALETTE_DEFAULT_RGB332
+
             MENUITEM "&VISIBONE2",                  ID_SWATCHPALETTE_DEFAULT_VISIBONE2
+
         END
         MENUITEM SEPARATOR
         MENUITEM "&Insert Color Before",        ID_SWATCHPALETTE_INSERTBEFORE
+
         MENUITEM "Insert Color &After",         ID_SWATCHPALETTE_INSERTAFTER
         MENUITEM "&Replace",                    ID_SWATCHPALETTE_REPLACE
         MENUITEM "Delete",                      ID_SWATCHPALETTE_DELETE
     END
 END
+
 IDR_SPRITESET_IMAGES_PALETTE MENU DISCARDABLE 
 BEGIN
     POPUP "Spriteset Images Palette"
     BEGIN
         MENUITEM "&Insert Image",               ID_SPRITESETIMAGESPALETTE_INSERT_IMAGE
+
         MENUITEM "&Append Image",               ID_SPRITESETIMAGESPALETTE_APPEND_IMAGE
+
         MENUITEM "&Delete Image",               ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGE
+
         MENUITEM SEPARATOR
         MENUITEM "I&nsert Images...",           ID_SPRITESETIMAGESPALETTE_INSERT_IMAGES
+
         MENUITEM "Append &Images...",           ID_SPRITESETIMAGESPALETTE_APPEND_IMAGES
+
         MENUITEM "D&elete Images...",           ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGES
+
         MENUITEM SEPARATOR
         POPUP "&Zoom", GRAYED
         BEGIN
             MENUITEM "&2x",                         ID_SPRITESETIMAGESPALETTE_ZOOM_2X
-            MENUITEM "&4x",                         ID_SPRITESETIMAGESPALETTE_ZOOM_4X
-            MENUITEM "&8x",                         ID_SPRITESETIMAGESPALETTE_ZOOM_8X
-        END
-        
-		POPUP "&Move"
-        BEGIN
 
+            MENUITEM "&4x",                         ID_SPRITESETIMAGESPALETTE_ZOOM_4X
+
+            MENUITEM "&8x",                         ID_SPRITESETIMAGESPALETTE_ZOOM_8X
+
+        END
+        POPUP "&Move"
+        BEGIN
             MENUITEM "&Back",                       ID_SPRITESETIMAGESPALETTE_MOVE_BACK
+
             MENUITEM "&Forward",                    ID_SPRITESETIMAGESPALETTE_MOVE_FORWARD
+
         END
     END
 END
+
 IDR_BROWSE MENU DISCARDABLE 
 BEGIN
     POPUP "&Browse"
@@ -878,6 +1105,7 @@ BEGIN
         MENUITEM "&Set Size",                   ID_BROWSE_SETSIZE
     END
 END
+
 IDR_IRC MENU DISCARDABLE 
 BEGIN
     POPUP "&IRC"
@@ -893,12 +1121,14 @@ BEGIN
             MENUITEM "Data Packets",                ID_DEBUG_DATA_PACKETS
             MENUITEM "Unknown Text",                ID_DEBUG_UNKNOWN_TEXT
             MENUITEM "Server Ping Messages",        ID_DEBUG_SERVER_PING_MESSSAGES
+
         END
         MENUITEM "&Find...",                    ID_SCRIPT_FIND
         MENUITEM "&Auto Reconnect",             ID_IRC_AUTO_RECONNECT
         MENUITEM "Show Timestamps",             ID_IRC_SHOW_TIMESTAMPS
     END
 END
+
 IDR_IRCVIEW MENU DISCARDABLE 
 BEGIN
     POPUP "IRC View"
@@ -924,6 +1154,7 @@ BEGIN
         MENUITEM "Clear",                       ID_IRCVIEW_CLEAR
     END
 END
+
 IDR_FONT_PREVIEW MENU DISCARDABLE 
 BEGIN
     POPUP "&Font Preview"
@@ -931,6 +1162,7 @@ BEGIN
         MENUITEM "Set &Text",                   ID_FONT_PREVIEW_SET_TEXT
     END
 END
+
 IDR_SCRIPTVIEW MENU DISCARDABLE 
 BEGIN
     POPUP "Script View"
@@ -940,15 +1172,21 @@ BEGIN
         POPUP "&View"
         BEGIN
             MENUITEM "Sphere/Javascript Functions", ID_SCRIPTVIEW_SPHERE_JS_FUNCTIONS
+
             MENUITEM "Sphere/Javascript Control Structures", 
                                                     ID_SCRIPTVIEW_SPHERE_JS_CONTROLSTRUCTURES
+
             MENUITEM "Current Script &Functions",   ID_SCRIPTVIEW_CURRENTSCRIPTFUNCTIONS
+
             MENUITEM "Clipboard &History",          ID_SCRIPTVIEW_CLIPBOARDHISTORY
+
             MENUITEM "&Control Characters",         ID_SCRIPTVIEW_CONTROL_CHARACTERS
+
         END
         MENUITEM "&Refresh",                    ID_SCRIPTVIEW_REFRESH
     END
 END
+
 IDR_CD_AUDIO MENU DISCARDABLE 
 BEGIN
     POPUP "CD Player"
@@ -957,10 +1195,13 @@ BEGIN
         MENUITEM "CD Audio E:",                 ID_CDPLAYER_CDAUDIO_E
     END
 END
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
+
 IDD_NEW_PROJECT DIALOG DISCARDABLE  0, 0, 200, 60
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "New Project"
@@ -973,6 +1214,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,34,42,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,116,42,50,14
 END
+
 IDD_GAME_SETTINGS DIALOG DISCARDABLE  0, 0, 200, 233
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Game Settings"
@@ -998,6 +1240,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,112,212,50,14
     EDITTEXT        IDC_GAMEPATH,59,7,134,12,ES_AUTOHSCROLL | ES_READONLY
 END
+
 IDD_NUMBER DIALOG DISCARDABLE  0, 0, 186, 41
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Number"
@@ -1008,6 +1251,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,130,4,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,130,22,50,14
 END
+
 IDD_NEW_MAP DIALOG DISCARDABLE  0, 0, 204, 74
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "New Map"
@@ -1023,6 +1267,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,150,4,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,150,20,50,14
 END
+
 IDD_LAYER_PROPERTIES DIALOG DISCARDABLE  0, 0, 186, 233
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Layer Properties"
@@ -1061,6 +1306,7 @@ BEGIN
     CONTROL         "Reflective",IDC_REFLECTIVE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,59,48,10
 END
+
 IDD_TILE_PROPERTIES DIALOG DISCARDABLE  0, 0, 186, 86
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Tile Properties"
@@ -1081,6 +1327,7 @@ BEGIN
     EDITTEXT        IDC_TILENAME,40,45,39,12,ES_AUTOHSCROLL
     LTEXT           "Name",IDC_STATIC,4,44,20,8
 END
+
 IDD_TILESET_SELECTION DIALOG DISCARDABLE  0, 0, 229, 58
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Select Tileset"
@@ -1093,6 +1340,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,172,4,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,172,24,50,14
 END
+
 IDD_MAP_PROPERTIES DIALOG DISCARDABLE  0, 0, 236, 226
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Map Properties"
@@ -1123,6 +1371,7 @@ BEGIN
     PUSHBUTTON      "...",IDC_BROWSE_TILESET,217,48,12,12
     EDITTEXT        IDC_MAPPATH,71,14,143,12,ES_AUTOHSCROLL | ES_READONLY
 END
+
 IDD_RESIZE DIALOG DISCARDABLE  0, 0, 186, 53
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Tile size"
@@ -1135,6 +1384,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
 END
+
 IDD_SPRITE_PROPERTIES DIALOG DISCARDABLE  0, 0, 186, 57
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Sprite Properties"
@@ -1147,6 +1397,7 @@ BEGIN
     PUSHBUTTON      "&Next >",IDC_NEXT,67,28,50,14
     PUSHBUTTON      "< &Prev",IDC_PREVIOUS,14,28,50,14
 END
+
 IDD_ENTITY_PERSON DIALOG DISCARDABLE  0, 0, 175, 191
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Person"
@@ -1170,6 +1421,7 @@ BEGIN
                     WS_TABSTOP
     PUSHBUTTON      "Generate",IDC_GENERATE_NAME,124,7,31,13
 END
+
 IDD_ENTITY_TRIGGER DIALOG DISCARDABLE  0, 0, 186, 111
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Trigger"
@@ -1185,6 +1437,7 @@ BEGIN
     COMBOBOX        IDC_LAYER,99,7,80,72,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
 END
+
 IDD_WINDOW_STYLE_PROPERTIES DIALOG DISCARDABLE  0, 0, 199, 236
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Window Style Properties"
@@ -1226,6 +1479,7 @@ BEGIN
                     IDC_STRETCHED_GRADIENT_BACKGROUND,"Button",
                     BS_AUTORADIOBUTTON,7,52,116,10
 END
+
 IDD_FONT_GRADIENT DIALOG DISCARDABLE  0, 0, 128, 113
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Font Gradient"
@@ -1240,6 +1494,7 @@ BEGIN
     CONTROL         "",IDC_TOP_COLOR,"Static",SS_BLACKFRAME | NOT WS_VISIBLE,
                     60,8,56,32
 END
+
 IDD_TILE_OBSTRUCTION_DIALOG DIALOG DISCARDABLE  0, 0, 228, 150
 STYLE WS_POPUP | WS_CAPTION | WS_THICKFRAME
 CAPTION "Tile Obstructions"
@@ -1251,6 +1506,7 @@ BEGIN
     PUSHBUTTON      "&Next",IDC_NEXT,171,81,50,14
     PUSHBUTTON      "&Prev",IDC_PREVIOUS,171,98,50,14
 END
+
 IDD_STRING DIALOG DISCARDABLE  0, 0, 186, 45
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "String Dialog"
@@ -1260,6 +1516,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
 END
+
 IDD_ZONE_EDIT DIALOG DISCARDABLE  0, 0, 177, 193
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Zone"
@@ -1287,6 +1544,7 @@ BEGIN
     LTEXT           "ID:",IDC_STATIC,6,3,10,8
     EDITTEXT        IDC_ZONE_ID,27,1,40,12,ES_AUTOHSCROLL | ES_READONLY
 END
+
 IDD_ROTATE DIALOG DISCARDABLE  0, 0, 186, 95
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Rotate"
@@ -1301,6 +1559,7 @@ BEGIN
     EDITTEXT        IDC_ROTATEVALUE,64,47,56,14,ES_AUTOHSCROLL
     LTEXT           "Rotate Text",IDC_ROTATETEXT,17,72,120,16
 END
+
 IDD_CONVOLVE_LIST DIALOG DISCARDABLE  0, 0, 164, 188
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Custom Filter"
@@ -1323,6 +1582,7 @@ BEGIN
                     WS_VISIBLE,87,122,52,27
     LTEXT           "Preview",IDC_STATIC,87,111,40,7
 END
+
 IDD_CONVOLVE_LIST_EDIT DIALOG DISCARDABLE  0, 0, 166, 183
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Custom Filter"
@@ -1371,6 +1631,7 @@ BEGIN
     LTEXT           "Between",IDC_STATIC,14,122,29,8
     LTEXT           "and",IDC_STATIC,89,122,13,8
 END
+
 IDD_ENTITY_LIST DIALOG DISCARDABLE  0, 0, 281, 190
 STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Entity List"
@@ -1387,6 +1648,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,7,169,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,64,169,50,14
 END
+
 IDD_FILETYPES_GENERAL_PAGE DIALOG DISCARDABLE  0, 0, 210, 154
 STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "General File Types"
@@ -1399,6 +1661,7 @@ BEGIN
                     IDC_USE_COMMON_TEXT_FILETYPES,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,23,33,136,13
 END
+
 IDD_COLOR_ADJUST DIALOG DISCARDABLE  0, 0, 164, 188
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Color Adjust"
@@ -1434,6 +1697,7 @@ BEGIN
     LTEXT           "Blue",IDC_STATIC,19,63,15,8
     LTEXT           "Alpha",IDC_STATIC,19,79,19,8
 END
+
 IDD_LIST DIALOG DISCARDABLE  0, 0, 163, 66
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "List Dialog"
@@ -1444,6 +1708,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,23,44,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,91,45,50,14
 END
+
 IDD_FILETYPES_REGISTER_PAGE DIALOG DISCARDABLE  0, 0, 210, 154
 STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Register File Types"
@@ -1458,6 +1723,7 @@ BEGIN
     PUSHBUTTON      "Restore Defaults",IDC_FILETYPES_RESTORE_DEFAULTS,128,64,
                     63,15
 END
+
 IDD_LINE_SORTER DIALOG DISCARDABLE  0, 0, 182, 127
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Line Sorter"
@@ -1480,6 +1746,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,125,7,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,125,24,50,14
 END
+
 IDD_ADJUST_BORDER DIALOG DISCARDABLE  0, 0, 179, 183
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Adjust Borders"
@@ -1496,6 +1763,7 @@ BEGIN
     LTEXT           "Left",IDC_STATIC,23,149,13,8
     LTEXT           "Right",IDC_STATIC,23,95,18,8
 END
+
 IDD_CHECKLIST DIALOG DISCARDABLE  0, 0, 196, 196
 STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Check List Dialog"
@@ -1504,6 +1772,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,25,175,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,91,175,50,14
 END
+
 IDD_TITLEBAR_PAGE DIALOG DISCARDABLE  0, 0, 210, 154
 STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Titlebar"
@@ -1516,6 +1785,7 @@ BEGIN
     CONTROL         "Custom text",IDC_CUSTOM_TEXT,"Button",
                     BS_AUTORADIOBUTTON,21,65,173,11
 END
+
 IDD_ABOUT DIALOG DISCARDABLE  0, 0, 223, 190
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About"
@@ -1525,10 +1795,13 @@ BEGIN
     EDITTEXT        IDC_ABOUT_TEXT,17,11,190,150,ES_MULTILINE | ES_READONLY | 
                     NOT WS_BORDER
 END
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // DESIGNINFO
 //
+
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO MOVEABLE PURE 
 BEGIN
@@ -1539,6 +1812,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 53
     END
+
     IDD_GAME_SETTINGS, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1546,6 +1820,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 226
     END
+
     IDD_NUMBER, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1553,6 +1828,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 34
     END
+
     IDD_NEW_MAP, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1560,6 +1836,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 67
     END
+
     IDD_LAYER_PROPERTIES, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1567,6 +1844,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 226
     END
+
     IDD_TILE_PROPERTIES, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1574,6 +1852,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 79
     END
+
     IDD_TILESET_SELECTION, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1581,6 +1860,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 51
     END
+
     IDD_MAP_PROPERTIES, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1588,6 +1868,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 219
     END
+
     IDD_RESIZE, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1595,6 +1876,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 46
     END
+
     IDD_SPRITE_PROPERTIES, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1602,6 +1884,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 50
     END
+
     IDD_ENTITY_PERSON, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1609,6 +1892,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 184
     END
+
     IDD_ENTITY_TRIGGER, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1616,6 +1900,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 104
     END
+
     IDD_WINDOW_STYLE_PROPERTIES, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1623,6 +1908,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 229
     END
+
     IDD_FONT_GRADIENT, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1630,6 +1916,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 106
     END
+
     IDD_TILE_OBSTRUCTION_DIALOG, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1637,6 +1924,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 143
     END
+
     IDD_STRING, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1644,6 +1932,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 38
     END
+
     IDD_ZONE_EDIT, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1651,6 +1940,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 186
     END
+
     IDD_ROTATE, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1658,6 +1948,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 88
     END
+
     IDD_CONVOLVE_LIST, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1665,6 +1956,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 181
     END
+
     IDD_CONVOLVE_LIST_EDIT, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1672,6 +1964,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 176
     END
+
     IDD_ENTITY_LIST, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1679,6 +1972,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 183
     END
+
     IDD_FILETYPES_GENERAL_PAGE, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1686,6 +1980,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 147
     END
+
     IDD_COLOR_ADJUST, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1693,6 +1988,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 181
     END
+
     IDD_LIST, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1700,6 +1996,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 59
     END
+
     IDD_FILETYPES_REGISTER_PAGE, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1707,6 +2004,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 147
     END
+
     IDD_LINE_SORTER, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1714,6 +2012,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 120
     END
+
     IDD_ADJUST_BORDER, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1721,6 +2020,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 176
     END
+
     IDD_CHECKLIST, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1728,6 +2028,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 189
     END
+
     IDD_TITLEBAR_PAGE, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1735,6 +2036,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 147
     END
+
     IDD_ABOUT, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1744,10 +2046,13 @@ BEGIN
     END
 END
 #endif    // APSTUDIO_INVOKED
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Toolbar
 //
+
 IDR_TOOLBAR TOOLBAR MOVEABLE PURE  16, 16
 BEGIN
     BUTTON      ID_FILE_NEW_FILE
@@ -1757,6 +2062,7 @@ BEGIN
     SEPARATOR
     BUTTON      ID_PROJECT_RUNSPHERE
 END
+
 IDR_IMAGETOOLBAR TOOLBAR DISCARDABLE  16, 16
 BEGIN
     BUTTON      IDI_IMAGETOOL_PENCIL
@@ -1770,6 +2076,7 @@ BEGIN
     BUTTON      IDI_IMAGETOOL_SELECTION
     BUTTON      IDI_IMAGETOOL_FREESELECTION
 END
+
 IDR_MAPTOOLBAR TOOLBAR DISCARDABLE  16, 16
 BEGIN
     BUTTON      IDI_MAPTOOL_ZOOM_1X
@@ -1796,18 +2103,23 @@ BEGIN
     BUTTON      IDI_MAPTOOL_ZONEDELETE
     BUTTON      IDI_MAPTOOL_SCRIPT
 END
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
 //
+
 IDR_TOOLBAR             BITMAP  MOVEABLE PURE   "toolbar.bmp"
 IDB_VOLUMEBAR           BITMAP  MOVEABLE PURE   "volumebar.bmp"
 IDR_IMAGETOOLBAR        BITMAP  DISCARDABLE     "image_toolbar.bmp"
 IDR_MAPTOOLBAR          BITMAP  DISCARDABLE     "map_toolbar.bmp"
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Icon
 //
+
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_SDE                 ICON    DISCARDABLE     "sde.ico"
@@ -1855,11 +2167,12 @@ IDI_BROWSE              ICON    DISCARDABLE     "browse.ico"
 IDI_MAPTOOL_FILLRECTAREA ICON    DISCARDABLE     "maptool_fillrect.ico"
 IDI_UNKNOWN             ICON    DISCARDABLE     "unknown.ico"
 IDI_ENTITY_PERSON       ICON    DISCARDABLE     "entity_person.ico"
-//IDI_ENTITY_PERSON_OLD   ICON    DISCARDABLE     "entity_person_old.ico"
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Accelerator
 //
+
 IDR_ACCELERATOR ACCELERATORS MOVEABLE PURE 
 BEGIN
     "1",            ID_SPRITESET_ZOOM_1X,   VIRTKEY, CONTROL, NOINVERT
@@ -1875,6 +2188,7 @@ BEGIN
     VK_F7,          ID_SCRIPT_CHECKSYNTAX,  VIRTKEY, NOINVERT
     VK_SUBTRACT,    ID_FILE_ZOOM_OUT,       VIRTKEY, CONTROL, NOINVERT
 END
+
 IDR_IMAGEVIEW ACCELERATORS MOVEABLE PURE 
 BEGIN
     "C",            ID_IMAGEVIEW_COPY,      VIRTKEY, CONTROL, NOINVERT
@@ -1887,123 +2201,38 @@ BEGIN
     "Y",            ID_IMAGEVIEW_REDO,      VIRTKEY, CONTROL, NOINVERT
     "Z",            ID_IMAGEVIEW_UNDO,      VIRTKEY, CONTROL, NOINVERT
 END
+
 IDR_SPRITESETVIEW ACCELERATORS MOVEABLE PURE 
 BEGIN
     "C",            ID_SPRITESETVIEWFRAMES_COPY, VIRTKEY, CONTROL, NOINVERT
     "V",            ID_SPRITESETVIEWFRAMES_PASTE, VIRTKEY, CONTROL, NOINVERT
 END
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
 //
+
 IDC_IMAGETOOL_COLORPICKER CURSOR  DISCARDABLE     "imagetool_colorpicker.cur"
 IDC_IMAGETOOL_FILL      CURSOR  DISCARDABLE     "imagetool_fill.cur"
 IDC_MAPTOOL_PASTE       CURSOR  DISCARDABLE     "maptool_paste.cur"
 IDC_MAPTOOL_COPYAREA    CURSOR  DISCARDABLE     "maptool_copyarea.cur"
-/////////////////////////////////////////////////////////////////////////////
-//
-// String Table
-//
-STRINGTABLE DISCARDABLE 
-BEGIN
-    ID_FILE_BROWSE          "Close current file"
-    ID_FILE_CLOSEPROJECT    "Close the current game project"
-    ID_FILE_COPY            "Copy the current selection to the clipboard"
-    ID_FILE_EXIT            "Exit the editor"
-    ID_FILE_IMPORT_BITMAPTORSS       "Import a spriteset from an image"
-    ID_FILE_IMPORT_BITMAPTORTS       "Import a tileset from an image"
-    ID_FILE_IMPORT_BITMAPTORWS       "Import a window style from an image"
-    ID_FILE_IMPORT_IMAGETOFONT       "Import a font from an image"
-    ID_FILE_IMPORT_IMAGETOMAPTILESET "Import a map from an image"
-    ID_FILE_IMPORT_MERGE_RGBA        "Combine a RGB image and an alpha image"
-    ID_FILE_IMPORT_RM2KCHARSETTORSS  "Import spritesets from a RM2K charset"
-    ID_FILE_IMPORT_RM2KCHIPSETTORTS  "Import a tileset from a RM2K chipset"
-    ID_FILE_IMPORT_VERGEFONTTEMPLATE "Import a font from a Verge font template"
-    ID_FILE_IMPORT_VERGEMAP          "Import a map from a Verge map"
-    ID_FILE_IMPORT_VERGESPRITESET    "Import a spriteset from a Verge spriteset"
-    ID_FILE_IMPORT_WINDOWSFONT       "Import a font from a Windows font"
-    ID_FILE_NEW_FILE        "Create a new file"
-    ID_FILE_NEW_FONT        "Create a new font"
-    ID_FILE_NEW_IMAGE       "Create a new image"
-    ID_FILE_NEW_MAP         "Create a new map"
-    ID_FILE_NEW_PROJECT     "Create a new game project"
-    ID_FILE_NEW_SCRIPT      "Create a new script"
-    ID_FILE_NEW_SPRITESET   "Create a new spriteset"
-    ID_FILE_NEW_WINDOWSTYLE "Create a new window style"
-    ID_FILE_OPENLASTPROJECT  "Open the last game project"
-    ID_FILE_OPEN_ANIMATION   "Open an animation"
-    ID_FILE_OPEN_FONT        "Open a font"
-    ID_FILE_OPEN_IMAGE       "Open an image"
-    ID_FILE_OPEN_MAP         "Open a map"
-    ID_FILE_OPEN_PROJECT     "Open a game project"
-    ID_FILE_OPEN_SCRIPT      "Open a script"
-    ID_FILE_OPEN_SOUND       "Open a sound"
-    ID_FILE_OPEN_SPRITESET   "Open a spriteset"
-    ID_FILE_OPEN_TILESET     "Open a tileset"
-    ID_FILE_OPEN_WINDOWSTYLE "Open a window style"
-    ID_FILE_OPTIONS         "Configure editor options"
-    ID_FILE_PASTE           "Paste the contents of the clipboard"
-    ID_FILE_SAVEALL         "Save all active documents"
-    ID_FILE_SAVEAS          "Save the active document as..."
-    ID_FILE_SAVECOPYAS      "Save a copy of active document"
-    ID_HELP_ABOUT               "Display general info about the editor"
-    ID_HELP_AEGISKNIGHTSSITE    "Visit AegisKnight's Sphere page"
-    ID_HELP_FLIKSSITE           "Visit Flikky's Sphere docs site"
-    ID_HELP_GETTINGSTARTED      "A guide to starting off with Sphere"
-    ID_HELP_LOCALDOCUMENTATION  "Open the local documentation folder"
-    ID_HELP_LOCAL_CHANGELOG     "Show the changelog"
-    ID_HELP_LOCAL_DOC_FUNCTIONS "Open Sphere JavaScript API (functions list)"
-    ID_HELP_LOCAL_TUTORIAL      "Learn how to use Sphere, step by step"
-    ID_HELP_SPHERESITE          "Visit http://sphere.sourceforge.net/"
-    ID_HELP_SPHERICALSITE       "Ask questions and discuss Sphere on the Spherical forums"
-    ID_HELP_SPHERICALWIKI       "Visit the Spherical Wiki (Spheriki)"
-    ID_IMAGE_CROP                         "Crop the image to the current selection"
-    ID_SCRIPT_CHECKSYNTAX                 "Check the syntax of this document"
-    ID_SCRIPT_FIND                        "Find text within this document"
-    ID_SCRIPT_GOTOLINE                    "Goto a line within this document"
-    ID_SCRIPT_OPTIONS_SELECTION_LINE      "Set line selection mode"
-    ID_SCRIPT_OPTIONS_SELECTION_RECTANGLE "Set rectangle selection mode"
-    ID_SCRIPT_OPTIONS_SELECTION_STREAM    "Set normal selection mode"
-    ID_SCRIPT_OPTIONS_SET_FONT            "Change the font used to display the document"
-    ID_SCRIPT_OPTIONS_SET_TAB_SIZE        "Change the tab size"
-    ID_SCRIPT_OPTIONS_SHOW_WHITESPACE     "Show or hide visible whitespace characters"
-    ID_SCRIPT_OPTIONS_SHOW_WORD_FLAGS     "Change whether visual flags are displayed for wrapped lines"
-    ID_SCRIPT_OPTIONS_TOGGLE_COLORS       "Show or hide syntax highlighting"
-    ID_SCRIPT_OPTIONS_TOGGLE_LINE_NUMBERS "Show or hide the line numbers column"
-    ID_SCRIPT_OPTIONS_WORD_WRAP           "Change whether long lines are wrapped"
-    ID_SCRIPT_REPLACE                     "Replace text within this document"
-    ID_SOUND_PLAYLIST_REMOVE_BROKEN_FILES
-                            "Remove broken files from playlist"
-    ID_TOOLS_IMAGES_TO_MNG  "Convert a set of images to a mng file"
-    ID_TOOLS_IRC_CLIENT     "Open an IRC client"
-    ID_TOOLS_JS_CONSOLE     "Open the JavaScript console"
-    ID_VIEW_PROJECT         "Show or hide the project window"
-    ID_VIEW_STATUS_BAR      "Show or hide the statusbar"
-    ID_VIEW_TOOLBAR         "Show or hide the main toolbar"
-    ID_WINDOW_CLOSEALL      "Convert a set of images to MNG"
-END
-#endif    // English (U.S.) resources
-/////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////
-// English (U.K.) resources
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
-#ifdef _WIN32
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
-#pragma code_page(1252)
-#endif //_WIN32
+
 #ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
 //
+
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,1,0,98
- PRODUCTVERSION 1,0,0,0
+ FILEVERSION 1,4,0,0
+ PRODUCTVERSION 1,4,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
- FILEFLAGS 0x29L
+ FILEFLAGS 0x9L
 #else
- FILEFLAGS 0x28L
+ FILEFLAGS 0x8L
 #endif
  FILEOS 0x40004L
  FILETYPE 0x1L
@@ -2011,34 +2240,238 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "080904b0"
+        BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "-\0"
-            VALUE "CompanyName", "-\0"
+            VALUE "Comments", "The integrated development environment for the Sphere RPG Engine.\0"
+            VALUE "CompanyName", "The Sphere Group\0"
             VALUE "FileDescription", "Sphere Development Environment\0"
-            VALUE "FileVersion", "1.4\0"
+            VALUE "FileVersion", "1, 4, 0, 0\0"
             VALUE "InternalName", "editor\0"
-            VALUE "LegalCopyright", "-\0"
+            VALUE "LegalCopyright", "\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "editor.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Sphere Editor\0"
-            VALUE "ProductVersion", "-\0"
-            VALUE "SpecialBuild", "-\0"
+            VALUE "ProductVersion", "1, 4, 0, 0\0"
+            VALUE "SpecialBuild", "\0"
         END
     END
     BLOCK "VarFileInfo"
     BEGIN
-        VALUE "Translation", 0x809, 1200
+        VALUE "Translation", 0x409, 1200
     END
 END
+
 #endif    // !_MAC
-#endif    // English (U.K.) resources
+
+
 /////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_BROWSE          "Close current file"
+    ID_VIEW_PROJECT         "Show or hide the project window"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_HELP_ABOUT           "Display general info about the editor"
+    ID_FILE_EXIT            "Exit the editor"
+    ID_FILE_CLOSEPROJECT    "Close the current game project"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_HELP_LOCAL_DOC_FUNCTIONS "Open Sphere JavaScript API (functions list)"
+    ID_SCRIPT_OPTIONS_SELECTION_RECTANGLE "Set rectangle selection mode"
+    ID_SCRIPT_OPTIONS_SELECTION_STREAM "Set normal selection mode"
+    ID_SCRIPT_OPTIONS_SELECTION_LINE "Set line selection mode"
+    ID_FILE_COPY            "Copy the current selection to the clipboard"
+    ID_SCRIPT_GOTOLINE      "Goto a line within this document"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_IMPORT_BITMAPTORSS "Import a spriteset from an image"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_SCRIPT_CHECKSYNTAX   "Check the syntax of this document"
+    ID_FILE_IMPORT_BITMAPTORTS "Import a tileset from an image"
+    ID_FILE_IMPORT_VERGEFONTTEMPLATE 
+                            "Import a font from a Verge font template"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_IMPORT_BITMAPTORWS "Import a window style from an image"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_IMPORT_VERGEMAP "Import a map from a Verge map"
+    ID_FILE_IMPORT_VERGESPRITESET "Import a spriteset from a Verge spriteset"
+    ID_FILE_IMPORT_IMAGETOFONT "Import a font from an image"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_IMPORT_IMAGETOMAPTILESET "Import a map from an image"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_IMPORT_MERGE_RGBA "Combine a RGB image and an alpha image"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_IMPORT_RM2KCHARSETTORSS "Import spritesets from a RM2K charset"
+    ID_FILE_IMPORT_RM2KCHIPSETTORTS "Import a tileset from a RM2K chipset"
+    ID_FILE_OPEN_TILESET    "Open a tileset"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_IMPORT_WINDOWSFONT "Import a font from a Windows font"
+    ID_FILE_OPENLASTPROJECT "Open the last game project"
+    ID_FILE_SAVEALL         "Save all active documents"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_TOOLS_IRC_CLIENT     "Open an IRC client"
+    ID_FILE_NEW_FILE        "Create a new file"
+    ID_IMAGE_CROP           "Crop the image to the current selection"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_NEW_WINDOWSTYLE "Create a new window style"
+    ID_FILE_NEW_FONT        "Create a new font"
+    ID_FILE_OPEN_WINDOWSTYLE "Open a window style"
+    ID_FILE_OPEN_FONT       "Open a font"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_NEW_MAP         "Create a new map"
+    ID_FILE_NEW_SPRITESET   "Create a new spriteset"
+    ID_FILE_NEW_SCRIPT      "Create a new script"
+    ID_FILE_NEW_IMAGE       "Create a new image"
+    ID_FILE_OPEN_PROJECT    "Open a game project"
+    ID_FILE_OPEN_MAP        "Open a map"
+    ID_FILE_OPEN_SPRITESET  "Open a spriteset"
+    ID_FILE_OPEN_SCRIPT     "Open a script"
+    ID_FILE_OPEN_IMAGE      "Open an image"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_HELP_SPHERESITE      "Visit http://sphere.sourceforge.net/"
+    ID_HELP_FLIKSSITE       "Visit Flikky's Sphere docs site"
+    ID_FILE_NEW_PROJECT     "Create a new game project"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_OPEN_ANIMATION  "Open an animation"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_OPEN_SOUND      "Open a sound"
+    ID_FILE_SAVEAS          "Save the active document as..."
+    ID_FILE_SAVECOPYAS      "Save a copy of active document"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_OPTIONS         "Configure editor options"
+    ID_FILE_PASTE           "Paste the contents of the clipboard"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_SCRIPT_OPTIONS_SET_FONT "Change the font used to display the document"
+    ID_SCRIPT_OPTIONS_TOGGLE_COLORS "Show or hide syntax highlighting"
+    ID_SCRIPT_OPTIONS_SET_TAB_SIZE "Change the tab size"
+    ID_SCRIPT_OPTIONS_TOGGLE_LINE_NUMBERS 
+                            "Show or hide the line numbers column"
+    ID_HELP_LOCALDOCUMENTATION "Open the local documentation folder"
+    ID_HELP_AEGISKNIGHTSSITE "Visit AegisKnight's Sphere page"
+    ID_HELP_SPHERICALWIKI   "Visit the Spherical Wiki (Spheriki)"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_HELP_LOCAL_TUTORIAL  "Learn how to use Sphere, step by step"
+    ID_HELP_GETTINGSTARTED  "A guide to starting off with Sphere"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_HELP_LOCAL_CHANGELOG "Show the changelog"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_SOUND_PLAYLIST_REMOVE_BROKEN_FILES "Remove broken files from playlist"
+    ID_HELP_SPHERICALSITE   "Ask questions and discuss Sphere on the Spherical forums"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_SCRIPT_FIND          "Find text within this document"
+    ID_SCRIPT_REPLACE       "Replace text within this document"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_SCRIPT_OPTIONS_SHOW_WHITESPACE 
+                            "Show or hide visible whitespace characters"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_SCRIPT_OPTIONS_SHOW_WORD_FLAGS 
+                            "Change whether visual flags are displayed for wrapped lines"
+    ID_TOOLS_IMAGES_TO_MNG  "Convert a set of images to a mng file"
+    ID_TOOLS_JS_CONSOLE     "Open the JavaScript console"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_SCRIPT_OPTIONS_WORD_WRAP "Change whether long lines are wrapped"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_VIEW_TOOLBAR         "Show or hide the main toolbar"
+    ID_VIEW_STATUS_BAR      "Show or hide the statusbar"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_WINDOW_CLOSEALL      "Convert a set of images to MNG"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
 #ifndef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
+
+
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+

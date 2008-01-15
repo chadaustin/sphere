@@ -40,7 +40,7 @@ RSC=rc.exe
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "output/release"
 # PROP Intermediate_Dir "output/release"
-# PROP Ignore_Export_Lib 1
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "INTERPOLATE32_EXPORTS" /YX /FD /c
 # ADD CPP /nologo /Gr /Zp1 /MD /W3 /O2 /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "INTERPOLATE32_EXPORTS" /D for="if (0) ; else for" /FAs /YX /FD /c

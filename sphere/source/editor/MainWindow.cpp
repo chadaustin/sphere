@@ -921,7 +921,7 @@ CMainWindow::CheckDirectory(const char* filename, const char* sub_directory)
   strcat(szProjectDirectory, sub_directory);
   // compare the path with the project directory + szSubDirectory
 
-#if 0
+#if (defined(_MSC_VER)&&_MSC_VER==1200)
   strlwr(szDirectory);
   strlwr(szProjectDirectory);
 #else
@@ -3144,7 +3144,10 @@ CMainWindow::OnHelpAbout()
     "Additional code by:\r\n"
     "Jacky Chong (Darklich)\r\n"
     "Brian Robb (Flik)\r\n"
+    "Tung Nguyen (Tunginobi)\r\n"
+    "Anatoli Steinmark (Kyuu)\r\n"
     "Icons by DRosen and Khadgar\r\n"
+    "Special thanks to Alex Rosario (NeoLogiX)\r\n"
     "\r\n"
     "Build Date: " __DATE__ "\r\n"
     "Build Time: " __TIME__ "\r\n"
