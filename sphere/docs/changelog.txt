@@ -1,5 +1,8 @@
 YYYY.MM.DD
 
+2008.01.19
+  - Sphere 1.4 released.
+
 2008.01.12
   - New blend modes added to the image editor.
   - Drawing can now begin/occur/end outside the image region.
