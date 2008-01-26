@@ -1,4 +1,4 @@
 
 cd ..\..
-copy source\engine\output\profile\engine.exe .
+copy source\engine\output\release\engine.exe .
 echo Installing engine.exe

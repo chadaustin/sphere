@@ -187,8 +187,8 @@ IDI_MAIN                ICON    DISCARDABLE     "config.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,4,0,0
- PRODUCTVERSION 1,4,0,0
+ FILEVERSION 1,4,0,1
+ PRODUCTVERSION 1,4,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -206,14 +206,14 @@ BEGIN
             VALUE "Comments", "The configurator for the Sphere RPG Engine.\0"
             VALUE "CompanyName", "The Sphere Group\0"
             VALUE "FileDescription", "Sphere Config\0"
-            VALUE "FileVersion", "1.4\0"
+            VALUE "FileVersion", "1, 4, 0, 1\0"
             VALUE "InternalName", "config\0"
             VALUE "LegalCopyright", "\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "config.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "config\0"
-            VALUE "ProductVersion", "1, 4, 0, 0\0"
+            VALUE "ProductVersion", "1, 4, 0, 1\0"
             VALUE "SpecialBuild", "\0"
         END
     END
