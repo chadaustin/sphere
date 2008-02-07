@@ -538,13 +538,12 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
         for (int i = 0; i < image->width * image->height; i++)
         {
             pixel = pixels[i];
-            if (pixel.alpha < ALPHA_TRANSPARENCY_HIGH)
-            {
-                // premultiply
-                pixel.red   = (pixel.red   * pixel.alpha) / 255;
-                pixel.green = (pixel.green * pixel.alpha) / 255;
-                pixel.blue  = (pixel.blue  * pixel.alpha) / 255;
-            }
+
+            // premultiply
+            pixel.red   = (pixel.red   * pixel.alpha) / 255;
+            pixel.green = (pixel.green * pixel.alpha) / 255;
+            pixel.blue  = (pixel.blue  * pixel.alpha) / 255;
+
             image->rgb[i] = PackPixel565(pixel);
         }
     }
@@ -553,13 +552,12 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
         for (int i = 0; i < image->width * image->height; i++)
         {
             pixel = pixels[i];
-            if (pixel.alpha < ALPHA_TRANSPARENCY_HIGH)
-            {
-                // premultiply
-                pixel.red   = (pixel.red   * pixel.alpha) / 255;
-                pixel.green = (pixel.green * pixel.alpha) / 255;
-                pixel.blue  = (pixel.blue  * pixel.alpha) / 255;
-            }
+
+            // premultiply
+            pixel.red   = (pixel.red   * pixel.alpha) / 255;
+            pixel.green = (pixel.green * pixel.alpha) / 255;
+            pixel.blue  = (pixel.blue  * pixel.alpha) / 255;
+
             image->rgb[i] = PackPixel555(pixel);
         }
     }
@@ -866,36 +864,30 @@ void SpriteBlit(IMAGE image, int x, int y)
 {
     calculate_clipping_metrics(image->width, image->height);
 
-    word* dest  = (word*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-    word* src   = (word*)image->rgb   +       image_offset_y * image->width + image_offset_x;
-    byte* alpha = image->alpha        +       image_offset_y * image->width + image_offset_x;
+    word* dst   = (word*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
+    word* src   = (word*)image->rgb   +      image_offset_y  * image->width + image_offset_x;
+    byte* alpha = image->alpha        +      image_offset_y  * image->width + image_offset_x;
 
-    int dest_inc = ScreenWidth  - image_blit_width;
-    int src_inc  = image->width - image_blit_width;
-
-    word* maskArray[2];
+    int dst_inc = ScreenWidth  - image_blit_width;
+    int src_inc = image->width - image_blit_width;
 
     int iy = image_blit_height;
+    int ix;
     while (iy-- > 0)
     {
-        int ix = image_blit_width;
+        ix = image_blit_width;
         while (ix-- > 0)
         {
+            if (*alpha)
+                *dst = *src;
 
-            // use a pointer array to remove the if
-
-            maskArray[0] = dest;
-            maskArray[1] = src;
-
-            *dest = *(maskArray[*alpha >= ALPHA_TRANSPARENCY_HIGH]);
-
-            dest++;
-            src++;
-            alpha++;
+            ++dst;
+            ++src;
+            ++alpha;
         }
 
-        dest += dest_inc;
-        src += src_inc;
+        dst   += dst_inc;
+        src   += src_inc;
         alpha += src_inc;
     }
 }
@@ -905,104 +897,66 @@ void SpriteBlit(IMAGE image, int x, int y)
 void NormalBlit(IMAGE image, int x, int y)
 {
     calculate_clipping_metrics(image->width, image->height);
-
+    
     byte a;
+    word result;
+    
+    word* dst   = (word*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
+    word* src   = (word*)image->rgb   +      image_offset_y  * image->width + image_offset_x;
+    byte* alpha = image->alpha        +      image_offset_y  * image->width + image_offset_x;
 
+    int dst_inc = ScreenWidth  - image_blit_width;
+    int src_inc = image->width - image_blit_width;
+    int iy = image_blit_height;
+    int ix;
+    
     if (PixelFormat == RGB565)
     {
-        word* dest  = (word*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-        word* src   = (word*)image->rgb   +       image_offset_y * image->width + image_offset_x;
-        byte* alpha = image->alpha        +       image_offset_y * image->width + image_offset_x;
-
-        int dest_inc = ScreenWidth  - image_blit_width;
-        int src_inc  = image->width - image_blit_width;
-
-        int iy = image_blit_height;
         while (iy-- > 0)
         {
-            int ix = image_blit_width;
+            ix = image_blit_width;
             while (ix-- > 0)
             {
-
-                a = *alpha;
-
-                if (a >= ALPHA_TRANSPARENCY_HIGH)
-                {
-
-                    *dest = *src;
-
-                }
-                else if (a > ALPHA_TRANSPARENCY_LOW)
-                {
-                    RGBA out = UnpackPixel565(*dest);
-                    RGBA in  = UnpackPixel565(*src);
-                    a = InvertAlpha(a);
-                    out.red   = (in.red)   + (out.red   * a / 255);
-                    out.green = (in.green) + (out.green * a / 255);
-                    out.blue  = (in.blue)  + (out.blue  * a / 255);
-                    *dest = PackPixel565(out);
-
-                }
-
-                dest++;
-                src++;
-                alpha++;
+                a = 255 - *alpha;
+                
+                result  =  ((dst[0] & 0x001F) * a >> 8) + (src[0] & 0x001F);
+                result |= (((dst[0] & 0x07E0) * a >> 8) + (src[0] & 0x07E0)) & 0x07E0;
+                result |= (((dst[0] & 0xF800) * a >> 8) + (src[0] & 0xF800)) & 0xF800;
+                
+                dst[0] = result;
+                ++dst;
+                ++src;
+                ++alpha;
             }
-
-            dest += dest_inc;
-            src += src_inc;
+            
+            dst   += dst_inc;
+            src   += src_inc;
             alpha += src_inc;
         }
-
     }
     else
     {
-
-        word* dest  = (word*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-        word* src   = (word*)image->rgb   +       image_offset_y * image->width + image_offset_x;
-        byte* alpha = image->alpha        +       image_offset_y * image->width + image_offset_x;
-
-        int dest_inc = ScreenWidth  - image_blit_width;
-        int src_inc  = image->width - image_blit_width;
-
-        int iy = image_blit_height;
         while (iy-- > 0)
         {
-            int ix = image_blit_width;
+            ix = image_blit_width;
             while (ix-- > 0)
             {
-
-                a = *alpha;
-
-                if (a >= ALPHA_TRANSPARENCY_HIGH)
-                {
-
-                    *dest = *src;
-
-                }
-                else if (a > ALPHA_TRANSPARENCY_LOW)
-                {
-
-                    RGBA out = UnpackPixel555(*dest);
-                    RGBA in  = UnpackPixel555(*src);
-                    a = InvertAlpha(a);
-                    out.red   = (in.red)   + (out.red   * a / 255);
-                    out.green = (in.green) + (out.green * a / 255);
-                    out.blue  = (in.blue)  + (out.blue  * a / 255);
-                    *dest = PackPixel555(out);
-
-                }
-
-                dest++;
-                src++;
-                alpha++;
+                a = 255 - *alpha;
+                
+                result  =  ((dst[0] & 0x001F) * a >> 8) + (src[0] & 0x001F);
+                result |= (((dst[0] & 0x03E0) * a >> 8) + (src[0] & 0x03E0)) & 0x03E0;
+                result |= (((dst[0] & 0x7C00) * a >> 8) + (src[0] & 0x7C00)) & 0x7C00;
+                
+                dst[0] = result;
+                ++dst;
+                ++src;
+                ++alpha;
             }
-
-            dest += dest_inc;
-            src += src_inc;
+            
+            dst   += dst_inc;
+            src   += src_inc;
             alpha += src_inc;
         }
-
     }
 }
 

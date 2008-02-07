@@ -74,7 +74,6 @@ byte AlphaLUTs[ALPHA_LEVELS][256][256];
 // optimized blender with LUTs!
 inline byte blend(byte dst, byte src, int alpha)
 {
-
     return AlphaLUTs[alpha / (256 / ALPHA_LEVELS)][dst][src];
 }
 // 24 -> 8
@@ -818,27 +817,64 @@ void TileBlit(IMAGE image, int x, int y)
 void SpriteBlit(IMAGE image, int x, int y)
 {
     calculate_clipping_metrics(image->width, image->height);
-    for (int iy = image_offset_y; iy < image_offset_y + image_blit_height; iy++)
-        for (int ix = image_offset_x; ix < image_offset_x + image_blit_width; ix++)
-            if (image->alpha[iy * image->width + ix])
-                ScreenBuffer[(y + iy) * ScreenWidth + (x + ix)] =
-                    image->pixels[iy * image->width + ix];
+    
+    byte* dst   = (byte*)ScreenBuffer  + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
+    byte* src   = (byte*)image->pixels +      image_offset_y  * image->width + image_offset_x;
+    byte* alpha = image->alpha         +      image_offset_y  * image->width + image_offset_x;
+    
+    int dst_inc = ScreenWidth  - image_blit_width;
+    int src_inc = image->width - image_blit_width;
+    int iy = image_blit_height;
+    int ix;
+
+    while (iy-- > 0)
+    {
+        ix = image_blit_width;
+        while (ix-- > 0)
+        {
+            if (*alpha)
+                *dst = *src;
+            
+            ++dst;
+            ++src;
+            ++alpha;
+        }
+
+        dst   += dst_inc;
+        src   += src_inc;
+        alpha += src_inc;
+    }
 }
 ////////////////////////////////////////////////////////////////////////////////
 void NormalBlit(IMAGE image, int x, int y)
 {
     calculate_clipping_metrics(image->width, image->height);
-    for (int iy = image_offset_y; iy < image_offset_y + image_blit_height; iy++)
-        for (int ix = image_offset_x; ix < image_offset_x + image_blit_width; ix++)
+    
+    byte* dst   = (byte*)ScreenBuffer  + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
+    byte* src   = (byte*)image->pixels +      image_offset_y  * image->width + image_offset_x;
+    byte* alpha = image->alpha         +      image_offset_y  * image->width + image_offset_x;
+    
+    int dst_inc = ScreenWidth  - image_blit_width;
+    int src_inc = image->width - image_blit_width;
+    int iy = image_blit_height;
+    int ix;
+
+    while (iy-- > 0)
+    {
+        ix = image_blit_width;
+        while (ix-- > 0)
         {
-            byte* dest  = ScreenBuffer + (y + iy) * ScreenWidth + x + ix;
-            byte  src   = image->pixels[iy * image->width + ix];
-            byte  alpha = image->alpha[iy * image->width + ix];
-            if (alpha == 255)
-                *dest = src;
-            else if (alpha > 0)
-                *dest = blend(*dest, src, alpha);
+            *dst = blend(*dst, *src, *alpha);
+            
+            ++dst;
+            ++src;
+            ++alpha;
         }
+
+        dst   += dst_inc;
+        src   += src_inc;
+        alpha += src_inc;
+    }
 }
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(int) GetImageWidth(IMAGE image)

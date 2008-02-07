@@ -1,4 +1,0 @@
-Import('VideoDriver')
-
-VideoDriver('greyscale', 'greyscale.cpp', 'greyscale',
-            ['gdi32', 'ddraw', 'vidcommon', 'comdlg32'])

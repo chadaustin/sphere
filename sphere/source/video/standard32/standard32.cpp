@@ -531,9 +531,9 @@ bool FillImagePixels(IMAGE image, RGBA* pixels)
             image->bgra[i].green = alpha_new[pixels[i].alpha][pixels[i].green];
             image->bgra[i].blue  = alpha_new[pixels[i].alpha][pixels[i].blue ];
 #else
-            image->bgra[i].red   = (pixels[i].red   * pixels[i].alpha) / 256;
-            image->bgra[i].green = (pixels[i].green * pixels[i].alpha) / 256;
-            image->bgra[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 256;
+            image->bgra[i].red   = (pixels[i].red   * pixels[i].alpha) / 255;
+            image->bgra[i].green = (pixels[i].green * pixels[i].alpha) / 255;
+            image->bgra[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 255;
 #endif
         }
     }
@@ -550,9 +550,9 @@ bool FillImagePixels(IMAGE image, RGBA* pixels)
             image->bgr[i].green = alpha_new[pixels[i].alpha][pixels[i].green];
             image->bgr[i].blue  = alpha_new[pixels[i].alpha][pixels[i].blue ];
 #else
-            image->bgr[i].red   = (pixels[i].red   * pixels[i].alpha) / 256;
-            image->bgr[i].green = (pixels[i].green * pixels[i].alpha) / 256;
-            image->bgr[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 256;
+            image->bgr[i].red   = (pixels[i].red   * pixels[i].alpha) / 255;
+            image->bgr[i].green = (pixels[i].green * pixels[i].alpha) / 255;
+            image->bgr[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 255;
 #endif
         }
     }
@@ -1219,12 +1219,12 @@ void SpriteBlit(IMAGE image, int x, int y)
     if (BitsPerPixel == 32)
     {
 
-        BGRA* dest  = (BGRA*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-        BGRA* src   = (BGRA*)image->bgra  +       image_offset_y * image->width + image_offset_x;
-        byte* alpha = image->alpha        +       image_offset_y * image->width + image_offset_x;
+        BGRA* dst   = (BGRA*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
+        BGRA* src   = (BGRA*)image->bgra  +      image_offset_y  * image->width + image_offset_x;
+        byte* alpha = image->alpha        +      image_offset_y  * image->width + image_offset_x;
 
-        int dest_inc = ScreenWidth  - image_blit_width;
-        int src_inc  = image->width - image_blit_width;
+        int dst_inc = ScreenWidth  - image_blit_width;
+        int src_inc = image->width - image_blit_width;
 
         int iy = image_blit_height;
         while (iy-- > 0)
@@ -1232,32 +1232,28 @@ void SpriteBlit(IMAGE image, int x, int y)
             int ix = image_blit_width;
             while (ix-- > 0)
             {
+                if (alpha*)
+                    dst* = src*;
 
-                if (*alpha)
-                {
-                    *dest = *src;
-                }
-
-                ++dest;
+                ++dst;
                 ++src;
                 ++alpha;
             }
 
-            dest += dest_inc;
-            src += src_inc;
+            dst   += dst_inc;
+            src   += src_inc;
             alpha += src_inc;
         }
-
     }
     else
     {
 
-        BGR*  dest  = (BGR*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
+        BGR*  dst   = (BGR*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
         BGR*  src   = (BGR*)image->bgra  +       image_offset_y * image->width + image_offset_x;
         byte* alpha = image->alpha       +       image_offset_y * image->width + image_offset_x;
 
-        int dest_inc = ScreenWidth  - image_blit_width;
-        int src_inc  = image->width - image_blit_width;
+        int dst_inc = ScreenWidth  - image_blit_width;
+        int src_inc = image->width - image_blit_width;
 
         int iy = image_blit_height;
         while (iy-- > 0)
@@ -1267,20 +1263,17 @@ void SpriteBlit(IMAGE image, int x, int y)
             {
 
                 if (*alpha)
-                {
-                    *dest = *src;
-                }
+                    *dst = *src;
 
-                ++dest;
+                ++dst;
                 ++src;
                 ++alpha;
             }
 
-            dest += dest_inc;
-            src += src_inc;
+            dst   += dst_inc;
+            src   += src_inc;
             alpha += src_inc;
         }
-
     }
 }
 
@@ -1293,127 +1286,15 @@ void NormalBlit(IMAGE image, int x, int y)
 #else
     calculate_clipping_metrics(image->width, image->height);
 #endif
+
     if (BitsPerPixel == 32)
     {
+        BGRA* dst  = (BGRA*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
+        BGRA* src  = (BGRA*)image->bgra  +      image_offset_y  * image->width + image_offset_x;
+        byte* alpha = image->alpha       +      image_offset_y  * image->width + image_offset_x;
 
-        /*/
-            BGRA* dest  = (BGRA*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-            BGRA* src   = (BGRA*)image->bgra  +       image_offset_y * image->width + image_offset_x;
-            byte* alpha = image->alpha        +       image_offset_y * image->width + image_offset_x;
-
-            int dest_inc = ScreenWidth  - image_blit_width;
-            int src_inc  = image->width - image_blit_width;
-
-            int iy = image_blit_height;
-            word a;   // do stack alloc outside inner loops
-            while (iy-- > 0) {
-              int ix = image_blit_width;
-              while (ix-- > 0) {
-
-        //        word a = *alpha;
-        //        word b = 256 - a;
-        //
-        //        dest->red   = (dest->red   * b) / 256 + src->red;
-        //        dest->green = (dest->green * b) / 256 + src->green;
-        //        dest->blue  = (dest->blue  * b) / 256 + src->blue;
-
-                dest->red   = alpha_old[a][dest->red]   + src->red;
-                dest->green = alpha_old[a][dest->green] + src->green;
-                dest->blue  = alpha_old[a][dest->blue]  + src->blue;
-
-                ++dest;
-                ++src;
-                ++alpha;
-              }
-
-              dest  += dest_inc;
-              src   += src_inc;
-              alpha += src_inc;
-            }
-        /*/
-        dword* dest = (dword*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-        dword* src  = (dword*)image->bgra  +       image_offset_y * image->width + image_offset_x;
-        byte* alpha = image->alpha         +       image_offset_y * image->width + image_offset_x;
-
-        int dest_inc = ScreenWidth  - image_blit_width;
-        int src_inc  = image->width - image_blit_width;
-
-        int iy = image_blit_height;
-        dword d;
-        dword s;
-        byte a;
-        while (iy-- > 0)
-        {
-            int ix = image_blit_width;
-            while (ix-- > 0)
-            {
-
-                a = *alpha;
-#ifndef USE_ALPHA_TABLE
-                word b = 256 - a;
-#endif
-
-                d = *dest;
-                s = *src;
-
-                dword result;
-#ifdef USE_ALPHA_TABLE
-                result = alpha_old[a][d & 0xFF] + (s & 0xFF);
-#else
-                result = ((d & 0xFF) * b >> 8) + (s & 0xFF);
-#endif
-
-                d >>= 8;
-                s >>= 8;
-
-#ifdef USE_ALPHA_TABLE
-                result |= (alpha_old[a][d & 0xFF] + (s & 0xFF)) << 8;
-#else
-                result |= ((d & 0xFF) * b + ((s & 0xFF) << 8)) & 0xFF00;
-#endif
-
-                d >>= 8;
-                s >>= 8;
-
-#ifdef USE_ALPHA_TABLE
-                result |= (alpha_old[a][d & 0xFF] + (s & 0xFF)) << 16;
-#else
-                result |= (((d & 0xFF) * b + ((s & 0xFF) << 8)) & 0xFF00) << 8;
-#endif
-
-                d >>= 8;
-                s >>= 8;
-
-#ifdef USE_ALPHA_TABLE
-                result |= (alpha_old[a][d & 0xFF] + (s & 0xFF)) << 24;
-#else
-                result |= (((d & 0xFF) * b + ((s & 0xFF) << 8)) & 0xFF00) << 16;
-#endif
-
-                *dest = result;
-                ++dest;
-                ++src;
-                ++alpha;
-            }
-
-            dest  += dest_inc;
-            src   += src_inc;
-            alpha += src_inc;
-        }
-//*/
-
-    }
-    else
-    {
-        BGR*  dest  = (BGR*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-        BGR*  src   = (BGR*)image->bgr   +       image_offset_y * image->width + image_offset_x;
-        byte* alpha = image->alpha       +       image_offset_y * image->width + image_offset_x;
-#ifdef USE_ALPHA_TABLE
-        byte al;
-#endif
-
-        int dest_inc = ScreenWidth  - image_blit_width;
-        int src_inc  = image->width - image_blit_width;
+        int dst_inc = ScreenWidth  - image_blit_width;
+        int src_inc = image->width - image_blit_width;
 
         int iy = image_blit_height;
         int ix;
@@ -1422,24 +1303,46 @@ void NormalBlit(IMAGE image, int x, int y)
             ix = image_blit_width;
             while (ix-- > 0)
             {
+                dst->red   = ((dst->red   * (255 - *alpha)) >> 8) + src->red;
+                dst->green = ((dst->green * (255 - *alpha)) >> 8) + src->green;
+                dst->blue  = ((dst->blue  * (255 - *alpha)) >> 8) + src->blue;
 
-#ifdef USE_ALPHA_TABLE
-                al=*alpha;
-                dest->red   = alpha_old[al][dest->red]   + src->red;
-                dest->green = alpha_old[al][dest->green] + src->green;
-                dest->blue  = alpha_old[al][dest->blue]  + src->blue;
-#else
-                dest->red   = (dest->red   * (256 - *alpha)) / 256 + src->red;
-                dest->green = (dest->green * (256 - *alpha)) / 256 + src->green;
-                dest->blue  = (dest->blue  * (256 - *alpha)) / 256 + src->blue;
-#endif
-
-                ++dest;
+                ++dst;
                 ++src;
                 ++alpha;
             }
 
-            dest  += dest_inc;
+            dst   += dst_inc;
+            src   += src_inc;
+            alpha += src_inc;
+        }
+    }
+    else
+    {
+        BGR*  dst   = (BGR*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
+        BGR*  src   = (BGR*)image->bgr   +      image_offset_y  * image->width + image_offset_x;
+        byte* alpha = image->alpha       +      image_offset_y  * image->width + image_offset_x;
+
+        int dst_inc = ScreenWidth  - image_blit_width;
+        int src_inc = image->width - image_blit_width;
+
+        int iy = image_blit_height;
+        int ix;
+        while (iy-- > 0)
+        {
+            ix = image_blit_width;
+            while (ix-- > 0)
+            {
+                dst->red   = ((dst->red   * (255 - *alpha)) >> 8) + src->red;
+                dst->green = ((dst->green * (255 - *alpha)) >> 8) + src->green;
+                dst->blue  = ((dst->blue  * (255 - *alpha)) >> 8) + src->blue;
+
+                ++dst;
+                ++src;
+                ++alpha;
+            }
+
+            dst   += dst_inc;
             src   += src_inc;
             alpha += src_inc;
         }

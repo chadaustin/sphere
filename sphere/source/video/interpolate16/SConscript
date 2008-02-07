@@ -1,7 +1,0 @@
-Import('VideoDriver')
-
-VideoDriver(
-    'interpolate16',
-    ['interpolate16.cpp', '2xSaIWin.cpp'],
-    'interpolate16',
-    ['gdi32', 'ddraw', 'vidcommon'])

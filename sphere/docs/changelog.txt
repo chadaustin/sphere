@@ -1,5 +1,11 @@
 YYYY.MM.DD
 
+2008.02.07
+  - Added video drivers scale16, scale32 to replace interpolate*.
+  - Optimized video drivers standard8, standard16, standard32.
+  - Removed video drivers harddraw, sphere_dx8, greyscale,
+    interpolate16, interpolate32.
+
 2008.01.19
   - Sphere 1.4 released.
 
