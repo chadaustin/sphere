@@ -147,7 +147,7 @@ EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
     driverinfo->name        = "OpenGL";
     driverinfo->author      = "Jamie Gennis, Kisai, Chad Austin";
     driverinfo->date        = __DATE__;
-    driverinfo->version     = "0.60";
+    driverinfo->version     = "v0.7";
     driverinfo->description = "OpenGL Sphere Video Driver";
 }
 

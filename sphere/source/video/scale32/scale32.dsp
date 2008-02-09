@@ -101,14 +101,6 @@ SOURCE=.\scale32.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\2xSaI.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\hq2x.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\common\video.cpp
 # End Source File
 # Begin Source File

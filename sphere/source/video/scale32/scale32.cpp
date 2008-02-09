@@ -45,11 +45,13 @@ enum BIT_DEPTH
 
 enum SCALE_ALGORITHM
 {
-    I_DSCALE2X = 0,
-    I_SCALE2X  = 1,
-    I_EAGLE2X  = 2,
-    I_2XSAI    = 3,
-    I_HQ2X     = 4,
+    I_DIRECT_SCALE = 0,
+    I_SCALE2X      = 1,
+    I_EAGLE        = 2,
+    I_HQ2X         = 3,
+    I_2XSAI        = 4,
+    I_SUPER_2XSAI  = 5,
+    I_SUPER_EAGLE  = 6,
 };
 
 struct CONFIGURATION
@@ -69,7 +71,7 @@ static bool CreateSurfaces();
 static bool InitWindowed();
 static void CloseFullscreen();
 static void CloseWindowed();
-static void Interpolate(void* dest, int pitch);
+static void Interpolate(void* dest);
 static void FillImagePixels(IMAGE image, RGBA* data);
 static void OptimizeBlitRoutine(IMAGE image);
 static void NullBlit(IMAGE image, int x, int y);
@@ -116,7 +118,7 @@ void LoadConfiguration()
 {
     char config_file_name[MAX_PATH];
     GetDriverConfigFile(config_file_name);
-    
+
     // load the fields from the file
     int bit_depth            =  GetPrivateProfileInt("scale32", "BitDepth",     0, config_file_name);
     Configuration.bit_depth  = (bit_depth == 32 ? BD_32 : (bit_depth == 24 ? BD_24 : BD_AUTODETECT));
@@ -130,7 +132,7 @@ void SaveConfiguration()
 {
     char config_file_name[MAX_PATH];
     GetDriverConfigFile(config_file_name);
-    
+
     // save the fields to the file
     int bit_depth = (Configuration.bit_depth == BD_32 ? 32 : (Configuration.bit_depth == BD_24 ? 24 : 0));
     WritePrivateProfileInt("scale32", "BitDepth",   bit_depth,                 config_file_name);
@@ -145,7 +147,7 @@ BOOL CALLBACK ConfigureDialogProc(HWND window, UINT message, WPARAM wparam, LPAR
     switch (message)
     {
     case WM_INITDIALOG:
-    
+
         // set the bit depth radio buttons
         if (Configuration.bit_depth == BD_AUTODETECT)
             SendDlgItemMessage(window, IDC_BITDEPTH_AUTODETECT, BM_SETCHECK, BST_CHECKED, 0);
@@ -153,44 +155,52 @@ BOOL CALLBACK ConfigureDialogProc(HWND window, UINT message, WPARAM wparam, LPAR
             SendDlgItemMessage(window, IDC_BITDEPTH_32, BM_SETCHECK, BST_CHECKED, 0);
         else if (Configuration.bit_depth == BD_24)
             SendDlgItemMessage(window, IDC_BITDEPTH_24, BM_SETCHECK, BST_CHECKED, 0);
-        
+
         // set the check boxes
         CheckDlgButton(window, IDC_FULLSCREEN, Configuration.fullscreen ? BST_CHECKED : BST_UNCHECKED);
         CheckDlgButton(window, IDC_VSYNC,      Configuration.vsync      ? BST_CHECKED : BST_UNCHECKED);
-        
+
         // set the scaling algorithm
         switch (Configuration.algorithm)
         {
-            case I_DSCALE2X:
-                CheckDlgButton(window, IDC_DSCALE2X,   BST_CHECKED);
+            case I_DIRECT_SCALE:
+                CheckDlgButton(window, IDC_DIRECT_SCALE, BST_CHECKED);
                 break;
 
             case I_SCALE2X:
-                CheckDlgButton(window, IDC_SCALE2X,    BST_CHECKED);
+                CheckDlgButton(window, IDC_SCALE2X,      BST_CHECKED);
                 break;
 
-            case I_EAGLE2X:
-                CheckDlgButton(window, IDC_EAGLE2X,    BST_CHECKED);
-                break;
-
-            case I_2XSAI:
-                CheckDlgButton(window, IDC_2XSAI,      BST_CHECKED);
+            case I_EAGLE:
+                CheckDlgButton(window, IDC_EAGLE,        BST_CHECKED);
                 break;
 
             case I_HQ2X:
-                CheckDlgButton(window, IDC_HQ2X,       BST_CHECKED);
+                CheckDlgButton(window, IDC_HQ2X,         BST_CHECKED);
+                break;
+
+            case I_2XSAI:
+                CheckDlgButton(window, IDC_2XSAI,        BST_CHECKED);
+                break;
+
+            case I_SUPER_2XSAI:
+                CheckDlgButton(window, IDC_SUPER_2XSAI,  BST_CHECKED);
+                break;
+
+            case I_SUPER_EAGLE:
+                CheckDlgButton(window, IDC_SUPER_EAGLE,  BST_CHECKED);
                 break;
 
         }
-        
+
         // update the check states
         SendMessage(window, WM_COMMAND, MAKEWPARAM(IDC_FULLSCREEN, BN_PUSHED), 0);
         return TRUE;
-        
+
         ////////////////////////////////////////////////////////////////////////////
-        
+
     case WM_COMMAND:
-    
+
         switch (LOWORD(wparam))
         {
             case IDOK:
@@ -205,20 +215,26 @@ BOOL CALLBACK ConfigureDialogProc(HWND window, UINT message, WPARAM wparam, LPAR
                 Configuration.fullscreen = (IsDlgButtonChecked(window, IDC_FULLSCREEN) != FALSE);
                 Configuration.vsync      = (IsDlgButtonChecked(window, IDC_VSYNC)      != FALSE);
 
-                if (IsDlgButtonChecked(window, IDC_DSCALE2X) == BST_CHECKED)
-                    Configuration.algorithm = I_DSCALE2X;
+                if (IsDlgButtonChecked(window, IDC_DIRECT_SCALE) == BST_CHECKED)
+                    Configuration.algorithm =    I_DIRECT_SCALE;
 
-                if (IsDlgButtonChecked(window, IDC_SCALE2X)  == BST_CHECKED)
-                    Configuration.algorithm = I_SCALE2X;
+                if (IsDlgButtonChecked(window, IDC_SCALE2X)      == BST_CHECKED)
+                    Configuration.algorithm =    I_SCALE2X;
 
-                if (IsDlgButtonChecked(window, IDC_EAGLE2X)  == BST_CHECKED)
-                    Configuration.algorithm = I_EAGLE2X;
+                if (IsDlgButtonChecked(window, IDC_EAGLE)        == BST_CHECKED)
+                    Configuration.algorithm =    I_EAGLE;
 
-                if (IsDlgButtonChecked(window, IDC_2XSAI)    == BST_CHECKED)
-                    Configuration.algorithm = I_2XSAI;
+                if (IsDlgButtonChecked(window, IDC_HQ2X)         == BST_CHECKED)
+                    Configuration.algorithm =    I_HQ2X;
 
-                if (IsDlgButtonChecked(window, IDC_HQ2X)     == BST_CHECKED)
-                    Configuration.algorithm = I_HQ2X;
+                if (IsDlgButtonChecked(window, IDC_2XSAI)        == BST_CHECKED)
+                    Configuration.algorithm =    I_2XSAI;
+
+                if (IsDlgButtonChecked(window, IDC_SUPER_2XSAI)  == BST_CHECKED)
+                    Configuration.algorithm =    I_SUPER_2XSAI;
+
+                if (IsDlgButtonChecked(window, IDC_SUPER_EAGLE)  == BST_CHECKED)
+                    Configuration.algorithm =    I_SUPER_EAGLE;
 
                 EndDialog(window, 1);
                 return TRUE;
@@ -241,9 +257,9 @@ BOOL CALLBACK ConfigureDialogProc(HWND window, UINT message, WPARAM wparam, LPAR
                 return TRUE;
         }
         return FALSE;
-        
+
         ////////////////////////////////////////////////////////////////////////////
-        
+
     default:
         return FALSE;
     }
@@ -255,24 +271,24 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
     SphereWindow = window;
     ScreenWidth  = screen_width;
     ScreenHeight = screen_height;
-    
+
     // set default clipping rectangle
     SetClippingRectangle(0, 0, screen_width, screen_height);
-    
+
     LoadConfiguration();
     bool retval;
-    
+
     if (Configuration.fullscreen)
         retval = InitFullscreen();
     else
         retval = InitWindowed();
-        
+
     if (!retval)
         return false;
-    
+
     // allocate a blitting buffer
     ScreenBuffer = new byte[ScreenWidth * ScreenHeight * (BitsPerPixel / 8)];
-    
+
     return true;
 }
 
@@ -281,13 +297,13 @@ bool InitFullscreen()
 {
     HRESULT ddrval;
     bool    retval;
-    
+
     // store old window styles
     OldWindowStyle = GetWindowLong(SphereWindow, GWL_STYLE);
     OldWindowStyleEx = GetWindowLong(SphereWindow, GWL_EXSTYLE);
     SetWindowLong(SphereWindow, GWL_STYLE, WS_POPUP);
     SetWindowLong(SphereWindow, GWL_EXSTYLE, 0);
-    
+
     // create DirectDraw object
     ddrval = DirectDrawCreate(NULL, &dd, NULL);
     if (ddrval != DD_OK)
@@ -295,7 +311,7 @@ bool InitFullscreen()
         MessageBox(SphereWindow, "DirectDrawCreate() failed", "interpolate32", MB_OK);
         return false;
     }
-    
+
     // set application behavior
     ddrval = dd->SetCooperativeLevel(SphereWindow, DDSCL_EXCLUSIVE | DDSCL_FULLSCREEN);
     if (ddrval != DD_OK)
@@ -304,7 +320,7 @@ bool InitFullscreen()
         MessageBox(SphereWindow, "SetCooperativeLevel() failed", "interpolate32", MB_OK);
         return false;
     }
-    
+
     // set display mode
     retval = SetDisplayMode();
     if (retval == false)
@@ -313,7 +329,7 @@ bool InitFullscreen()
         MessageBox(SphereWindow, "SetDisplayMode() failed", "interpolate32", MB_OK);
         return false;
     }
-    
+
     // create surfaces
     retval = CreateSurfaces();
     if (retval == false)
@@ -322,9 +338,9 @@ bool InitFullscreen()
         MessageBox(SphereWindow, "CreateSurfaces() failed", "interpolate32", MB_OK);
         return false;
     }
-    
+
     ShowCursor(FALSE);
-    
+
     return true;
 }
 
@@ -341,32 +357,32 @@ bool SetDisplayMode()
     switch (Configuration.bit_depth)
     {
         case BD_AUTODETECT:
-        
+
             ddrval = dd->SetDisplayMode(ScreenWidth * 2, ScreenHeight * 2, 32);
             BitsPerPixel = 32;
-            
+
             if (ddrval != DD_OK)
             {
                 ddrval = dd->SetDisplayMode(ScreenWidth * 2, ScreenHeight * 2, 24);
                 BitsPerPixel = 24;
             }
             return ddrval == DD_OK;
-            
+
         case BD_32:
-        
+
             ddrval = dd->SetDisplayMode(ScreenWidth * 2, ScreenHeight * 2, 32);
             BitsPerPixel = 32;
             return ddrval == DD_OK;
-            
+
         case BD_24:
-        
+
             ddrval = dd->SetDisplayMode(ScreenWidth * 2, ScreenHeight * 2, 24);
             BitsPerPixel = 24;
             return ddrval == DD_OK;
-            
+
         default:
             return false;
-            
+
     }
 }
 
@@ -387,13 +403,13 @@ bool CreateSurfaces()
         ddsd.dwFlags        = DDSD_CAPS;
         ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
     }
-    
+
     // create the primary surface
     HRESULT ddrval = dd->CreateSurface(&ddsd, &ddPrimary, NULL);
-    
+
     if (ddrval != DD_OK)
         return false;
-        
+
     if (Configuration.vsync)
     {
         ddsd.ddsCaps.dwCaps = DDSCAPS_BACKBUFFER;
@@ -404,7 +420,7 @@ bool CreateSurfaces()
             return false;
         }
     }
-    
+
     return true;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -412,13 +428,13 @@ bool InitWindowed()
 {
     // calculate bits per pixel
     BitsPerPixel = (Configuration.bit_depth == BD_32 ? 32 : 24);
-    
+
     // create the render DC
     RenderDC = CreateCompatibleDC(NULL);
-    
+
     if (RenderDC == NULL)
         return false;
-    
+
     // define/create the render DIB section
     BITMAPINFO bmi;
     memset(&bmi, 0, sizeof(bmi));
@@ -436,24 +452,24 @@ bool InitWindowed()
         return false;
     }
     SelectObject(RenderDC, RenderBitmap);
-    
+
     // center the window
     RECT WindowRect = { 0, 0, ScreenWidth * 2, ScreenHeight * 2 };
     AdjustWindowRectEx(&WindowRect,
                        GetWindowLong(SphereWindow, GWL_STYLE),
                        (GetMenu(SphereWindow) ? TRUE : FALSE),
                        GetWindowLong(SphereWindow, GWL_EXSTYLE));
-        
+
     int window_width  = WindowRect.right  - WindowRect.left;
     int window_height = WindowRect.bottom - WindowRect.top;
-    
+
     MoveWindow(SphereWindow,
                (GetSystemMetrics(SM_CXSCREEN) - window_width) / 2,
                (GetSystemMetrics(SM_CYSCREEN) - window_height) / 2,
                window_width,
                window_height,
                TRUE);
-    
+
     return true;
 }
 
@@ -493,12 +509,12 @@ EXPORT(void) FlipScreen()
             surface = ddSecondary;
         else
             surface = ddPrimary;
-        
+
         // lock the surface
         DDSURFACEDESC ddsd;
         ddsd.dwSize = sizeof(ddsd);
         HRESULT ddrval = surface->Lock(NULL, &ddsd, DDLOCK_WAIT, NULL);
-        
+
         // if the surface was lost, restore it
         if (ddrval == DDERR_SURFACELOST)
         {
@@ -513,10 +529,9 @@ EXPORT(void) FlipScreen()
                 return;
             }
         }
-        
-        int bytes_per_pixel = BitsPerPixel / 8;
-        Interpolate(ddsd.lpSurface, ddsd.lPitch / bytes_per_pixel);
-        
+
+        Interpolate(ddsd.lpSurface);
+
         // unlock the surface and do the flip!
         surface->Unlock(NULL);
         if (Configuration.vsync)
@@ -524,8 +539,8 @@ EXPORT(void) FlipScreen()
     }
     else
     {
-        Interpolate(RenderBuffer, ScreenWidth * 2);
-        
+        Interpolate(RenderBuffer);
+
         // blit the render buffer to the window
         HDC dc = GetDC(SphereWindow);
         BitBlt(dc, 0, 0, ScreenWidth * 2, ScreenHeight * 2, RenderDC, 0, 0, SRCCOPY);
@@ -535,36 +550,36 @@ EXPORT(void) FlipScreen()
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename T>
-void DirectScale2x(T* dst, T* src, int src_width, int src_height)
+void DirectScale(T* dst, T* src, int src_width, int src_height)
 {
     /*
     +--+
     |E |
     +--+
-    
+
     +--+--+
     |E0|E1|
     +--+--+
     |E2|E3|
     +--+--+
-    
+
     E: src[0]
-    
+
     E0: dst0[0]
     E2: dst1[0]
     */
-    
+
     int dst_pitch = src_width * 2;
     T* dst0 = dst;
     T* dst1 = dst + dst_pitch;
-    
+
     int iy = src_height;
     int ix;
-    
+
     while (iy--)
     {
         ix = src_width;
-        
+
         while (ix--)
         {
             dst0[0] = src[0];
@@ -576,7 +591,7 @@ void DirectScale2x(T* dst, T* src, int src_width, int src_height)
             dst0 += 2;
             dst1 += 2;
         }
-        
+
         dst0 += dst_pitch;
         dst1 += dst_pitch;
     }
@@ -594,33 +609,33 @@ void Scale2x(T* dst, T* src, int src_width, int src_height)
     +--+--+--+
     |G |H |I |
     +--+--+--+
-    
+
     +--+--+
     |E0|E1|
     +--+--+
     |E2|E3|
     +--+--+
-    
+
     B: src0[0]
     E: src1[0]
     H: src2[0]
-    
+
     E0: dst0[0]
     E2: dst1[0]
     */
-    
+
     int src_pitch = src_width;
     int dst_pitch = src_width * 2;
-    
+
     T* dst0 = dst;
     T* dst1 = dst + dst_pitch;
     T* src0;
     T* src1 = src;
     T* src2;
-    
+
     int iy = src_height;
     int ix;
-    
+
     // left and right columns
     while (iy--)
     {
@@ -628,29 +643,29 @@ void Scale2x(T* dst, T* src, int src_width, int src_height)
         dst1[0] = src1[0];
         dst0[1] = src1[0];
         dst1[1] = src1[0];
-                        
+
         src1 += src_pitch - 1;
         dst0 += dst_pitch - 2;
         dst1 += dst_pitch - 2;
-        
+
         dst0[0] = src1[0];
         dst1[0] = src1[0];
         dst0[1] = src1[0];
         dst1[1] = src1[0];
-        
+
         src1 += 1;
         dst0 += dst_pitch + 2;
         dst1 += dst_pitch + 2;
     }
-    
+
     dst0 = dst + 2;
     dst1 = dst + 2 + dst_pitch;
     src1 = src + 1;
-    
+
     int src_helper = src_pitch * (src_height - 1);
     int dst_helper = src_helper * 4;
     ix = src_pitch - 2;
-    
+
     // top and bottom rows
     while (ix--)
     {
@@ -658,37 +673,37 @@ void Scale2x(T* dst, T* src, int src_width, int src_height)
         dst1[0] = src1[0];
         dst0[1] = src1[0];
         dst1[1] = src1[0];
-        
+
         src1 += src_helper;
         dst0 += dst_helper;
         dst1 += dst_helper;
-        
+
         dst0[0] = src1[0];
         dst1[0] = src1[0];
         dst0[1] = src1[0];
         dst1[1] = src1[0];
-        
+
         src1 -= src_helper - 1;
         dst0 -= dst_helper - 2;
         dst1 -= dst_helper - 2;
     }
-    
+
     dst0 = dst + 2 + dst_pitch * 2;
     dst1 = dst + 2 + dst_pitch * 3;
     src0 = src + 1;
     src1 = src + 1 + src_pitch;
     src2 = src + 1 + src_pitch * 2;
-    
+
     iy = src_height - 2;
-    
+
     // middle
     while (iy--)
     {
         ix = src_pitch - 2;
-        
+
         while (ix--)
         {
-            if (src0[0] != src2[0] && src1[-1] != src1[1]) 
+            if (src0[0] != src2[0] && src1[-1] != src1[1])
             {
                 dst0[0] = src1[-1] == src0[0] ? src1[-1] : src1[0];
                 dst0[1] = src0[0]  == src1[1] ? src1[1]  : src1[0];
@@ -709,7 +724,7 @@ void Scale2x(T* dst, T* src, int src_width, int src_height)
             dst0 += 2;
             dst1 += 2;
         }
-        
+
         src0 += 2;
         src1 += 2;
         src2 += 2;
@@ -720,7 +735,7 @@ void Scale2x(T* dst, T* src, int src_width, int src_height)
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename T>
-void Eagle2x(T* dst, T* src, int src_width, int src_height)
+void Eagle(T* dst, T* src, int src_width, int src_height)
 {
     /*
     +--+--+--+
@@ -730,33 +745,33 @@ void Eagle2x(T* dst, T* src, int src_width, int src_height)
     +--+--+--+
     |G |H |I |
     +--+--+--+
-    
+
     +--+--+
     |E0|E1|
     +--+--+
     |E2|E3|
     +--+--+
-    
+
     B: src0[0]
     E: src1[0]
     H: src2[0]
-    
+
     E0: dst0[0]
     E2: dst1[0]
     */
-    
+
     int src_pitch = src_width;
     int dst_pitch = src_width * 2;
-    
+
     T* dst0 = dst;
     T* dst1 = dst + dst_pitch;
     T* src0;
     T* src1 = src;
     T* src2;
-    
+
     int iy = src_height;
     int ix;
-    
+
     // left and right columns
     while (iy--)
     {
@@ -764,29 +779,29 @@ void Eagle2x(T* dst, T* src, int src_width, int src_height)
         dst1[0] = src1[0];
         dst0[1] = src1[0];
         dst1[1] = src1[0];
-                        
+
         src1 += src_pitch - 1;
         dst0 += dst_pitch - 2;
         dst1 += dst_pitch - 2;
-        
+
         dst0[0] = src1[0];
         dst1[0] = src1[0];
         dst0[1] = src1[0];
         dst1[1] = src1[0];
-        
+
         src1 += 1;
         dst0 += dst_pitch + 2;
         dst1 += dst_pitch + 2;
     }
-    
+
     dst0 = dst + 2;
     dst1 = dst + 2 + dst_pitch;
     src1 = src + 1;
-    
+
     int src_helper = src_pitch * (src_height - 1);
     int dst_helper = src_helper * 4;
     ix = src_pitch - 2;
-    
+
     // top and bottom rows
     while (ix--)
     {
@@ -794,64 +809,64 @@ void Eagle2x(T* dst, T* src, int src_width, int src_height)
         dst1[0] = src1[0];
         dst0[1] = src1[0];
         dst1[1] = src1[0];
-        
+
         src1 += src_helper;
         dst0 += dst_helper;
         dst1 += dst_helper;
-        
+
         dst0[0] = src1[0];
         dst1[0] = src1[0];
         dst0[1] = src1[0];
         dst1[1] = src1[0];
-        
+
         src1 -= src_helper - 1;
         dst0 -= dst_helper - 2;
         dst1 -= dst_helper - 2;
     }
-    
+
     dst0 = dst + 2 + dst_pitch * 2;
     dst1 = dst + 2 + dst_pitch * 3;
     src0 = src + 1;
     src1 = src + 1 + src_pitch;
     src2 = src + 1 + src_pitch * 2;
-    
+
     iy = src_height - 2;
-    
+
     // middle
     while (iy--)
     {
         ix = src_pitch - 2;
-        
+
         while (ix--)
         {
-            
+
             if (src0[0] == src0[-1] && src0[-1] == src1[-1])
                 dst0[0] = src1[-1];
             else
                 dst0[0] = src1[0];
-            
+
             if (src0[0] == src0[1] && src0[1] == src1[1])
                 dst0[1] = src1[1];
             else
                 dst0[1] = src1[0];
-            
+
             if (src2[0] == src2[-1] && src2[-1] == src1[-1])
                 dst1[0] = src1[-1];
             else
                 dst1[0] = src1[0];
-            
+
             if (src2[0] == src2[1] && src2[1] == src1[1])
                 dst1[1] = src1[1];
             else
                 dst1[1] = src1[0];
-            
+
             ++src0;
             ++src1;
             ++src2;
             dst0 += 2;
             dst1 += 2;
         }
-        
+
         src0 += 2;
         src1 += 2;
         src2 += 2;
@@ -861,30 +876,38 @@ void Eagle2x(T* dst, T* src, int src_width, int src_height)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void Interpolate(void* dst, int pitch)
+void Interpolate(void* dst)
 {
     if (BitsPerPixel == 32)
     {
         switch (Configuration.algorithm)
         {
-            case I_DSCALE2X:
-                DirectScale2x((dword*)dst, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+            case I_DIRECT_SCALE:
+                DirectScale((dword*)dst, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
                 break;
 
             case I_SCALE2X:
                 Scale2x((dword*)dst, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
                 break;
 
-            case I_EAGLE2X:
-                Eagle2x((dword*)dst, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
-                break;
-
-            case I_2XSAI:
-                _2xSaI_32((dword*)dst, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+            case I_EAGLE:
+                Eagle((dword*)dst, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
                 break;
 
             case I_HQ2X:
-                hq2x_32((dword*)dst, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                hq2x((dword*)dst, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_2XSAI:
+                _2xSaI((dword*)dst, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_SUPER_2XSAI:
+                Super2xSaI((dword*)dst, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_SUPER_EAGLE:
+                SuperEagle((dword*)dst, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
                 break;
 
         }
@@ -893,24 +916,32 @@ void Interpolate(void* dst, int pitch)
     {
         switch (Configuration.algorithm)
         {
-            case I_DSCALE2X:
-                DirectScale2x((BGR*)dst, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
+            case I_DIRECT_SCALE:
+                DirectScale((BGR*)dst, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
                 break;
 
             case I_SCALE2X:
                 Scale2x((BGR*)dst, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
                 break;
 
-            case I_EAGLE2X:
-                Eagle2x((BGR*)dst, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
-                break;
-
-            case I_2XSAI:
-                _2xSaI_24((BGR*)dst, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
+            case I_EAGLE:
+                Eagle((BGR*)dst, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
                 break;
 
             case I_HQ2X:
-                hq2x_24((BGR*)dst, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                hq2x((BGR*)dst, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_2XSAI:
+                _2xSaI((BGR*)dst, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_SUPER_2XSAI:
+                Super2xSaI((BGR*)dst, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_SUPER_EAGLE:
+                SuperEagle((BGR*)dst, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
                 break;
 
         }
@@ -988,7 +1019,7 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
             image->bgr[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 255;
         }
     }
-    
+
     // fill the alpha array
     image->alpha = new byte[image->width * image->height];
     for (int i = 0; i < image->width * image->height; i++)
@@ -1011,7 +1042,7 @@ void OptimizeBlitRoutine(IMAGE image)
         image->blit_routine = NullBlit;
         return;
     }
-    
+
     // tile blit
     bool is_tile = true;
     for (int i = 0; i < image->width * image->height; i++)
@@ -1025,7 +1056,7 @@ void OptimizeBlitRoutine(IMAGE image)
         image->blit_routine = TileBlit;
         return;
     }
-    
+
     // sprite blit
     bool is_sprite = true;
     for (int i = 0; i < image->width * image->height; i++)
@@ -1305,7 +1336,7 @@ void SpriteBlit(IMAGE image, int x, int y)
 void NormalBlit(IMAGE image, int x, int y)
 {
     calculate_clipping_metrics(image->width, image->height);
-    
+
     if (BitsPerPixel == 32)
     {
         BGRA* dst  = (BGRA*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;

@@ -133,7 +133,7 @@ EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
     driverinfo->name   = "Standard 16-bit Color";
     driverinfo->author = "Chad Austin";
     driverinfo->date   = __DATE__;
-    driverinfo->version = "1.00";
+    driverinfo->version = "v1.1";
     driverinfo->description = "15/16-bit color output in both windowed and fullscreen modes";
 }
 
@@ -897,10 +897,10 @@ void SpriteBlit(IMAGE image, int x, int y)
 void NormalBlit(IMAGE image, int x, int y)
 {
     calculate_clipping_metrics(image->width, image->height);
-    
+
     byte a;
     word result;
-    
+
     word* dst   = (word*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
     word* src   = (word*)image->rgb   +      image_offset_y  * image->width + image_offset_x;
     byte* alpha = image->alpha        +      image_offset_y  * image->width + image_offset_x;
@@ -909,7 +909,7 @@ void NormalBlit(IMAGE image, int x, int y)
     int src_inc = image->width - image_blit_width;
     int iy = image_blit_height;
     int ix;
-    
+
     if (PixelFormat == RGB565)
     {
         while (iy-- > 0)
@@ -918,17 +918,17 @@ void NormalBlit(IMAGE image, int x, int y)
             while (ix-- > 0)
             {
                 a = 255 - *alpha;
-                
+
                 result  =  ((dst[0] & 0x001F) * a >> 8) + (src[0] & 0x001F);
                 result |= (((dst[0] & 0x07E0) * a >> 8) + (src[0] & 0x07E0)) & 0x07E0;
                 result |= (((dst[0] & 0xF800) * a >> 8) + (src[0] & 0xF800)) & 0xF800;
-                
+
                 dst[0] = result;
                 ++dst;
                 ++src;
                 ++alpha;
             }
-            
+
             dst   += dst_inc;
             src   += src_inc;
             alpha += src_inc;
@@ -942,17 +942,17 @@ void NormalBlit(IMAGE image, int x, int y)
             while (ix-- > 0)
             {
                 a = 255 - *alpha;
-                
+
                 result  =  ((dst[0] & 0x001F) * a >> 8) + (src[0] & 0x001F);
                 result |= (((dst[0] & 0x03E0) * a >> 8) + (src[0] & 0x03E0)) & 0x03E0;
                 result |= (((dst[0] & 0x7C00) * a >> 8) + (src[0] & 0x7C00)) & 0x7C00;
-                
+
                 dst[0] = result;
                 ++dst;
                 ++src;
                 ++alpha;
             }
-            
+
             dst   += dst_inc;
             src   += src_inc;
             alpha += src_inc;

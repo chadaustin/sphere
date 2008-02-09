@@ -31,11 +31,13 @@ typedef struct _IMAGE
 
 enum SCALE_ALGORITHM
 {
-    I_DSCALE2X = 0,
-    I_SCALE2X  = 1,
-    I_EAGLE2X  = 2,
-    I_2XSAI    = 3,
-    I_HQ2X     = 4,
+    I_DIRECT_SCALE = 0,
+    I_SCALE2X      = 1,
+    I_EAGLE        = 2,
+    I_HQ2X         = 3,
+    I_2XSAI        = 4,
+    I_SUPER_2XSAI  = 5,
+    I_SUPER_EAGLE  = 6,
 };
 
 struct CONFIGURATION
@@ -55,7 +57,7 @@ static bool CreateSurfaces();
 static bool InitWindowed();
 static void CloseFullscreen();
 static void CloseWindowed();
-static void Interpolate(word* dest, int pitch);
+static void Interpolate(word* dest);
 static void FillImagePixels(IMAGE image, RGBA* pixels);
 static void OptimizeBlitRoutine(IMAGE image);
 static void NullBlit(IMAGE image, int x, int y);
@@ -100,7 +102,7 @@ inline RGBA UnpackPixel555(word pixel)
 static CONFIGURATION Configuration;
 static enum
 {
-    RGB565, 
+    RGB565,
     RGB555,
 }
 PixelFormat;
@@ -164,82 +166,97 @@ BOOL CALLBACK ConfigureDialogProc(HWND window, UINT message, WPARAM wparam, LPAR
     switch (message)
     {
     case WM_INITDIALOG:
-    
+
         // set check boxes
         SendDlgItemMessage(window, IDC_FULLSCREEN,       BM_SETCHECK, (Configuration.fullscreen        ? BST_CHECKED : BST_UNCHECKED), 0);
         SendDlgItemMessage(window, IDC_VSYNC,            BM_SETCHECK, (Configuration.vsync             ? BST_CHECKED : BST_UNCHECKED), 0);
 
         switch (Configuration.algorithm)
         {
-            case I_DSCALE2X:
-                CheckDlgButton(window, IDC_DSCALE2X,   BST_CHECKED);
+            case I_DIRECT_SCALE:
+                CheckDlgButton(window, IDC_DIRECT_SCALE,  BST_CHECKED);
                 break;
 
             case I_SCALE2X:
-                CheckDlgButton(window, IDC_SCALE2X,    BST_CHECKED);
+                CheckDlgButton(window, IDC_SCALE2X,       BST_CHECKED);
                 break;
 
-            case I_EAGLE2X:
-                CheckDlgButton(window, IDC_EAGLE2X,    BST_CHECKED);
-                break;
-
-            case I_2XSAI:
-                CheckDlgButton(window, IDC_2XSAI,      BST_CHECKED);
+            case I_EAGLE:
+                CheckDlgButton(window, IDC_EAGLE,         BST_CHECKED);
                 break;
 
             case I_HQ2X:
-                CheckDlgButton(window, IDC_HQ2X,       BST_CHECKED);
+                CheckDlgButton(window, IDC_HQ2X,          BST_CHECKED);
+                break;
+
+            case I_2XSAI:
+                CheckDlgButton(window, IDC_2XSAI,         BST_CHECKED);
+                break;
+
+            case I_SUPER_2XSAI:
+                CheckDlgButton(window, IDC_SUPER_2XSAI,   BST_CHECKED);
+                break;
+
+            case I_SUPER_EAGLE:
+                CheckDlgButton(window, IDC_SUPER_EAGLE,   BST_CHECKED);
                 break;
 
         }
-        
+
         // update the check states
         SendMessage(window, WM_COMMAND, MAKEWPARAM(IDC_FULLSCREEN, BN_PUSHED), 0);
         return TRUE;
-        
+
         ////////////////////////////////////////////////////////////////////////////
-        
+
     case WM_COMMAND:
-    
+
         switch (LOWORD(wparam))
         {
             case IDOK:
-            
+
                 Configuration.fullscreen = (IsDlgButtonChecked(window, IDC_FULLSCREEN) != FALSE);
                 Configuration.vsync      = (IsDlgButtonChecked(window, IDC_VSYNC)      != FALSE);
-                
-                if (IsDlgButtonChecked(window, IDC_DSCALE2X) == BST_CHECKED)
-                    Configuration.algorithm = I_DSCALE2X;
 
-                if (IsDlgButtonChecked(window, IDC_SCALE2X)  == BST_CHECKED)
-                    Configuration.algorithm = I_SCALE2X;
+                if (IsDlgButtonChecked(window, IDC_DIRECT_SCALE) == BST_CHECKED)
+                    Configuration.algorithm =    I_DIRECT_SCALE;
 
-                if (IsDlgButtonChecked(window, IDC_EAGLE2X)  == BST_CHECKED)
-                    Configuration.algorithm = I_EAGLE2X;
+                if (IsDlgButtonChecked(window, IDC_SCALE2X)      == BST_CHECKED)
+                    Configuration.algorithm =    I_SCALE2X;
 
-                if (IsDlgButtonChecked(window, IDC_2XSAI)    == BST_CHECKED)
-                    Configuration.algorithm = I_2XSAI;
+                if (IsDlgButtonChecked(window, IDC_EAGLE)        == BST_CHECKED)
+                    Configuration.algorithm =    I_EAGLE;
 
-                if (IsDlgButtonChecked(window, IDC_HQ2X)     == BST_CHECKED)
-                    Configuration.algorithm = I_HQ2X;
+                if (IsDlgButtonChecked(window, IDC_HQ2X)         == BST_CHECKED)
+                    Configuration.algorithm =    I_HQ2X;
+
+                if (IsDlgButtonChecked(window, IDC_2XSAI)        == BST_CHECKED)
+                    Configuration.algorithm =    I_2XSAI;
+
+                if (IsDlgButtonChecked(window, IDC_SUPER_2XSAI)  == BST_CHECKED)
+                    Configuration.algorithm =    I_SUPER_2XSAI;
+
+                if (IsDlgButtonChecked(window, IDC_SUPER_EAGLE)  == BST_CHECKED)
+                    Configuration.algorithm =    I_SUPER_EAGLE;
+
 
                 EndDialog(window, 1);
                 return TRUE;
-                
+
             case IDCANCEL:
-            
+
                 EndDialog(window, 0);
                 return TRUE;
-                
+
             case IDC_FULLSCREEN:
-            
+
                 EnableWindow(GetDlgItem(window, IDC_VSYNC), IsDlgButtonChecked(window, IDC_FULLSCREEN));
                 return TRUE;
         }
         return FALSE;
-        
+
         ////////////////////////////////////////////////////////////////////////////
-        
+
     default:
         return FALSE;
     }
@@ -251,26 +268,26 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
     SphereWindow = window;
     ScreenWidth  = screen_width;
     ScreenHeight = screen_height;
-    
+
     // set default clipping rectangle
     SetClippingRectangle(0, 0, screen_width, screen_height);
-    
+
     LoadConfiguration();
     bool retval;
-    
+
     if (Configuration.fullscreen)
         retval = InitFullscreen();
     else
         retval = InitWindowed();
-    
+
     if (!retval)
         return false;
-    
+
     ScreenBuffer = new word[ScreenWidth * ScreenHeight];
-    
+
     if (!ScreenBuffer)
         return false;
-    
+
     return true;
 }
 
@@ -279,13 +296,13 @@ bool InitFullscreen()
 {
     HRESULT ddrval;
     bool    retval;
-    
+
     // store old window styles
     OldWindowStyle = GetWindowLong(SphereWindow, GWL_STYLE);
     OldWindowStyleEx = GetWindowLong(SphereWindow, GWL_EXSTYLE);
     SetWindowLong(SphereWindow, GWL_STYLE, WS_POPUP);
     SetWindowLong(SphereWindow, GWL_EXSTYLE, 0);
-    
+
     // create DirectDraw object
     ddrval = DirectDrawCreate(NULL, &dd, NULL);
     if (ddrval != DD_OK)
@@ -293,7 +310,7 @@ bool InitFullscreen()
         MessageBox(SphereWindow, "DirectDrawCreate() failed", "scale16", MB_OK);
         return false;
     }
-    
+
     // set application behavior
     ddrval = dd->SetCooperativeLevel(SphereWindow, DDSCL_EXCLUSIVE | DDSCL_FULLSCREEN);
     if (ddrval != DD_OK)
@@ -320,9 +337,9 @@ bool InitFullscreen()
         MessageBox(SphereWindow, "CreateSurfaces() failed", "scale16", MB_OK);
         return false;
     }
-    
+
     ShowCursor(FALSE);
-    
+
     return true;
 }
 
@@ -336,10 +353,10 @@ EXPORT(bool) ToggleFullScreen()
 bool SetDisplayMode()
 {
     HRESULT ddrval = dd->SetDisplayMode(ScreenWidth  * 2, ScreenHeight * 2, 16);
-    
+
     if (ddrval != DD_OK)
         return false;
-    
+
     return true;
 }
 
@@ -360,14 +377,14 @@ bool CreateSurfaces()
         ddsd.dwFlags        = DDSD_CAPS;
         ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
     }
-    
-    
+
+
     // create the primary surface
     HRESULT ddrval = dd->CreateSurface(&ddsd, &ddPrimary, NULL);
-    
+
     if (ddrval != DD_OK)
         return false;
-        
+
     if (Configuration.vsync)
     {
         ddsd.ddsCaps.dwCaps = DDSCAPS_BACKBUFFER;
@@ -378,7 +395,7 @@ bool CreateSurfaces()
             return false;
         }
     }
-    
+
     // determine bits per pixel
     DDPIXELFORMAT ddpf;
     ddpf.dwSize = sizeof(ddpf);
@@ -389,7 +406,7 @@ bool CreateSurfaces()
         dd->Release();
         return false;
     }
-    
+
     // 5:6:5 -- F800 07E0 001F
     // 5:5:5 -- 7C00 03E0 001F
     if (ddpf.dwRBitMask == 0xF800)
@@ -405,7 +422,7 @@ bool CreateSurfaces()
         dd->Release();
         return false;
     }
-    
+
     return true;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -413,10 +430,10 @@ bool InitWindowed()
 {
     // create the render DC
     RenderDC = CreateCompatibleDC(NULL);
-    
+
     if (RenderDC == NULL)
         return false;
-    
+
     // define/create the DIB section
     BITMAPINFO bmi;
     memset(&bmi, 0, sizeof(bmi));
@@ -434,27 +451,27 @@ bool InitWindowed()
         return false;
     }
     SelectObject(RenderDC, RenderBitmap);
-    
+
     // center the window
     RECT WindowRect = { 0, 0, ScreenWidth * 2, ScreenHeight * 2 };
     AdjustWindowRectEx(&WindowRect,
                        GetWindowLong(SphereWindow, GWL_STYLE),
                        (GetMenu(SphereWindow) ? TRUE : FALSE),
                        GetWindowLong(SphereWindow, GWL_EXSTYLE));
-                       
+
     int window_width  = WindowRect.right  - WindowRect.left;
     int window_height = WindowRect.bottom - WindowRect.top;
-    
-    MoveWindow(SphereWindow, 
+
+    MoveWindow(SphereWindow,
                (GetSystemMetrics(SM_CXSCREEN) - window_width)  / 2,
                (GetSystemMetrics(SM_CYSCREEN) - window_height) / 2,
                window_width,
                window_height,
                TRUE);
-    
+
     // we know that 16-bit color DIBs are always 5:5:5
     PixelFormat = RGB555;
-    
+
     return true;
 }
 
@@ -462,7 +479,7 @@ bool InitWindowed()
 EXPORT(void) CloseVideoDriver()
 {
     delete[] ScreenBuffer;
-    
+
     if (Configuration.fullscreen)
         CloseFullscreen();
     else
@@ -491,25 +508,25 @@ EXPORT(void) FlipScreen()
     if (Configuration.fullscreen)
     {
         LPDIRECTDRAWSURFACE surface;
-        
+
         if (Configuration.vsync)
             surface = ddSecondary;
         else
             surface = ddPrimary;
-        
+
         // lock the surface
         DDSURFACEDESC ddsd;
         ddsd.dwSize = sizeof(ddsd);
         HRESULT ddrval = surface->Lock(NULL, &ddsd, DDLOCK_WAIT, NULL);
-        
+
         // if the surface was lost, restore it
         if (ddrval == DDERR_SURFACELOST)
         {
             surface->Restore();
-            
+
             if (surface == ddSecondary)
                 ddPrimary->Restore();
-            
+
             // attempt to lock again
             ddrval = surface->Lock(NULL, &ddsd, DDLOCK_WAIT, NULL);
             if (ddrval != DD_OK)
@@ -518,9 +535,9 @@ EXPORT(void) FlipScreen()
                 return;
             }
         }
-        
-        Interpolate((word*)ddsd.lpSurface, ddsd.lPitch / 2);
-        
+
+        Interpolate((word*)ddsd.lpSurface);
+
         // unlock the surface and do the flip!
         surface->Unlock(NULL);
         if (Configuration.vsync)
@@ -528,8 +545,9 @@ EXPORT(void) FlipScreen()
     }
     else
     {
-        Interpolate(RenderBuffer, ScreenWidth * 2);
-        
+
+        Interpolate(RenderBuffer);
+
         // blit the render buffer to the window
         HDC dc = GetDC(SphereWindow);
         BitBlt(dc, 0, 0, ScreenWidth  * 2, ScreenHeight * 2, RenderDC, 0, 0, SRCCOPY);
@@ -539,36 +557,36 @@ EXPORT(void) FlipScreen()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void DirectScale2x(word* dst, word* src, int src_width, int src_height)
+void DirectScale(word* dst, word* src, int src_width, int src_height)
 {
     /*
     +--+
     |E |
     +--+
-    
+
     +--+--+
     |E0|E1|
     +--+--+
     |E2|E3|
     +--+--+
-    
+
     E: src[0]
-    
+
     E0: dst0[0]
     E2: dst1[0]
     */
-    
+
     int dst_pitch = src_width * 2;
     word* dst0 = dst;
     word* dst1 = dst + dst_pitch;
-    
+
     int iy = src_height;
     int ix;
-    
+
     while (iy--)
     {
         ix = src_width;
-        
+
         while (ix--)
         {
             dst0[0] = src[0];
@@ -580,7 +598,7 @@ void DirectScale2x(word* dst, word* src, int src_width, int src_height)
             dst0 += 2;
             dst1 += 2;
         }
-        
+
         dst0 += dst_pitch;
         dst1 += dst_pitch;
     }
@@ -597,33 +615,33 @@ void Scale2x(word* dst, word* src, int src_width, int src_height)
     +--+--+--+
     |G |H |I |
     +--+--+--+
-    
+
     +--+--+
     |E0|E1|
     +--+--+
     |E2|E3|
     +--+--+
-    
+
     B: src0[0]
     E: src1[0]
     H: src2[0]
-    
+
     E0: dst0[0]
     E2: dst1[0]
     */
-    
+
     int src_pitch = src_width;
     int dst_pitch = src_width * 2;
-    
+
     word* dst0 = dst;
     word* dst1 = dst + dst_pitch;
     word* src0;
     word* src1 = src;
     word* src2;
-    
+
     int iy = src_height;
     int ix;
-    
+
     // left and right columns
     while (iy--)
     {
@@ -631,29 +649,29 @@ void Scale2x(word* dst, word* src, int src_width, int src_height)
         dst1[0] = src1[0];
         dst0[1] = src1[0];
         dst1[1] = src1[0];
-                        
+
         src1 += src_pitch - 1;
         dst0 += dst_pitch - 2;
         dst1 += dst_pitch - 2;
-        
+
         dst0[0] = src1[0];
         dst1[0] = src1[0];
         dst0[1] = src1[0];
         dst1[1] = src1[0];
-        
+
         src1 += 1;
         dst0 += dst_pitch + 2;
         dst1 += dst_pitch + 2;
     }
-    
+
     dst0 = dst + 2;
     dst1 = dst + 2 + dst_pitch;
     src1 = src + 1;
-    
+
     int src_helper = src_pitch * (src_height - 1);
     int dst_helper = src_helper * 4;
     ix = src_pitch - 2;
-    
+
     // top and bottom rows
     while (ix--)
     {
@@ -661,37 +679,37 @@ void Scale2x(word* dst, word* src, int src_width, int src_height)
         dst1[0] = src1[0];
         dst0[1] = src1[0];
         dst1[1] = src1[0];
-        
+
         src1 += src_helper;
         dst0 += dst_helper;
         dst1 += dst_helper;
-        
+
         dst0[0] = src1[0];
         dst1[0] = src1[0];
         dst0[1] = src1[0];
         dst1[1] = src1[0];
-        
+
         src1 -= src_helper - 1;
         dst0 -= dst_helper - 2;
         dst1 -= dst_helper - 2;
     }
-    
+
     dst0 = dst + 2 + dst_pitch * 2;
     dst1 = dst + 2 + dst_pitch * 3;
     src0 = src + 1;
     src1 = src + 1 + src_pitch;
     src2 = src + 1 + src_pitch * 2;
-    
+
     iy = src_height - 2;
-    
+
     // middle
     while (iy--)
     {
         ix = src_pitch - 2;
-        
+
         while (ix--)
         {
-            if (src0[0] != src2[0] && src1[-1] != src1[1]) 
+            if (src0[0] != src2[0] && src1[-1] != src1[1])
             {
                 dst0[0] = src1[-1] == src0[0] ? src1[-1] : src1[0];
                 dst0[1] = src0[0]  == src1[1] ? src1[1]  : src1[0];
@@ -712,7 +730,7 @@ void Scale2x(word* dst, word* src, int src_width, int src_height)
             dst0 += 2;
             dst1 += 2;
         }
-        
+
         src0 += 2;
         src1 += 2;
         src2 += 2;
@@ -722,20 +740,20 @@ void Scale2x(word* dst, word* src, int src_width, int src_height)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void Eagle2x(word* dst, word* src, int src_width, int src_height)
+void Eagle(word* dst, word* src, int src_width, int src_height)
 {
     int src_pitch = src_width;
     int dst_pitch = src_width * 2;
-    
+
     word* dst0 = dst;
     word* dst1 = dst + dst_pitch;
     word* src0;
     word* src1 = src;
     word* src2;
-    
+
     int iy = src_height;
     int ix;
-    
+
     // left and right columns
     while (iy--)
     {
@@ -743,29 +761,29 @@ void Eagle2x(word* dst, word* src, int src_width, int src_height)
         dst1[0] = src1[0];
         dst0[1] = src1[0];
         dst1[1] = src1[0];
-                        
+
         src1 += src_pitch - 1;
         dst0 += dst_pitch - 2;
         dst1 += dst_pitch - 2;
-        
+
         dst0[0] = src1[0];
         dst1[0] = src1[0];
         dst0[1] = src1[0];
         dst1[1] = src1[0];
-        
+
         src1 += 1;
         dst0 += dst_pitch + 2;
         dst1 += dst_pitch + 2;
     }
-    
+
     dst0 = dst + 2;
     dst1 = dst + 2 + dst_pitch;
     src1 = src + 1;
-    
+
     int src_helper = src_pitch * (src_height - 1);
     int dst_helper = src_helper * 4;
     ix = src_pitch - 2;
-    
+
     // top and bottom rows
     while (ix--)
     {
@@ -773,64 +791,64 @@ void Eagle2x(word* dst, word* src, int src_width, int src_height)
         dst1[0] = src1[0];
         dst0[1] = src1[0];
         dst1[1] = src1[0];
-        
+
         src1 += src_helper;
         dst0 += dst_helper;
         dst1 += dst_helper;
-        
+
         dst0[0] = src1[0];
         dst1[0] = src1[0];
         dst0[1] = src1[0];
         dst1[1] = src1[0];
-        
+
         src1 -= src_helper - 1;
         dst0 -= dst_helper - 2;
         dst1 -= dst_helper - 2;
     }
-    
+
     dst0 = dst + 2 + dst_pitch * 2;
     dst1 = dst + 2 + dst_pitch * 3;
     src0 = src + 1;
     src1 = src + 1 + src_pitch;
     src2 = src + 1 + src_pitch * 2;
-    
+
     iy = src_height - 2;
-    
+
     // middle
     while (iy--)
     {
         ix = src_pitch - 2;
-        
+
         while (ix--)
         {
-            
+
             if (src0[0] == src0[-1] && src0[-1] == src1[-1])
                 dst0[0] = src1[-1];
             else
                 dst0[0] = src1[0];
-            
+
             if (src0[0] == src0[1] && src0[1] == src1[1])
                 dst0[1] = src1[1];
             else
                 dst0[1] = src1[0];
-            
+
             if (src2[0] == src2[-1] && src2[-1] == src1[-1])
                 dst1[0] = src1[-1];
             else
                 dst1[0] = src1[0];
-            
+
             if (src2[0] == src2[1] && src2[1] == src1[1])
                 dst1[1] = src1[1];
             else
                 dst1[1] = src1[0];
-            
+
             ++src0;
             ++src1;
             ++src2;
             dst0 += 2;
             dst1 += 2;
         }
-        
+
         src0 += 2;
         src1 += 2;
         src2 += 2;
@@ -840,30 +858,38 @@ void Eagle2x(word* dst, word* src, int src_width, int src_height)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void Interpolate(word* dst, int pitch)
+void Interpolate(word* dst)
 {
     if (PixelFormat == RGB565)
     {
         switch (Configuration.algorithm)
         {
-            case I_DSCALE2X:
-                DirectScale2x(dst, ScreenBuffer, ScreenWidth, ScreenHeight);
+            case I_DIRECT_SCALE:
+                DirectScale(dst, ScreenBuffer, ScreenWidth, ScreenHeight);
                 break;
 
             case I_SCALE2X:
                 Scale2x(dst, ScreenBuffer, ScreenWidth, ScreenHeight);
                 break;
 
-            case I_EAGLE2X:
-                Eagle2x(dst, ScreenBuffer, ScreenWidth, ScreenHeight);
+            case I_EAGLE:
+                Eagle(dst, ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_HQ2X:
+                hq2x(dst, ScreenBuffer, ScreenWidth, ScreenHeight, 16);
                 break;
 
             case I_2XSAI:
                 _2xSaI(dst, ScreenBuffer, ScreenWidth, ScreenHeight, 16);
                 break;
 
-            case I_HQ2X:
-                hq2x(dst, ScreenBuffer, ScreenWidth, ScreenHeight, 16);
+            case I_SUPER_2XSAI:
+                Super2xSaI(dst, ScreenBuffer, ScreenWidth, ScreenHeight, 16);
+                break;
+
+            case I_SUPER_EAGLE:
+                SuperEagle(dst, ScreenBuffer, ScreenWidth, ScreenHeight, 16);
                 break;
 
         }
@@ -872,24 +898,32 @@ void Interpolate(word* dst, int pitch)
     {
         switch (Configuration.algorithm)
         {
-            case I_DSCALE2X:
-                DirectScale2x(dst, ScreenBuffer, ScreenWidth, ScreenHeight);
+            case I_DIRECT_SCALE:
+                DirectScale(dst, ScreenBuffer, ScreenWidth, ScreenHeight);
                 break;
 
             case I_SCALE2X:
                 Scale2x(dst, ScreenBuffer, ScreenWidth, ScreenHeight);
                 break;
 
-            case I_EAGLE2X:
-                Eagle2x(dst, ScreenBuffer, ScreenWidth, ScreenHeight);
+            case I_EAGLE:
+                Eagle(dst, ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_HQ2X:
+                hq2x(dst, ScreenBuffer, ScreenWidth, ScreenHeight, 15);
                 break;
 
             case I_2XSAI:
                 _2xSaI(dst, ScreenBuffer, ScreenWidth, ScreenHeight, 15);
                 break;
 
-            case I_HQ2X:
-                hq2x(dst, ScreenBuffer, ScreenWidth, ScreenHeight, 15);
+            case I_SUPER_2XSAI:
+                Super2xSaI(dst, ScreenBuffer, ScreenWidth, ScreenHeight, 15);
+                break;
+
+            case I_SUPER_EAGLE:
+                SuperEagle(dst, ScreenBuffer, ScreenWidth, ScreenHeight, 15);
                 break;
 
         }
@@ -912,14 +946,14 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
 {
     // rgb
     RGBA pixel;
-    
+
     image->rgb = new word[image->width * image->height];
     if (PixelFormat == RGB565)
     {
         for (int i = 0; i < image->width * image->height; i++)
         {
             pixel = pixels[i];
-            
+
             // premultiply
             pixel.red   = (pixel.red   * pixel.alpha) / 255;
             pixel.green = (pixel.green * pixel.alpha) / 255;
@@ -1209,7 +1243,7 @@ void TileBlit(IMAGE image, int x, int y)
 void SpriteBlit(IMAGE image, int x, int y)
 {
     calculate_clipping_metrics(image->width, image->height);
-    
+
     word* dst   = (word*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
     word* src   = (word*)image->rgb   +      image_offset_y  * image->width + image_offset_x;
     byte* alpha = image->alpha        +      image_offset_y  * image->width + image_offset_x;
@@ -1242,10 +1276,10 @@ void SpriteBlit(IMAGE image, int x, int y)
 void NormalBlit(IMAGE image, int x, int y)
 {
     calculate_clipping_metrics(image->width, image->height);
-    
+
     byte a;
     word result;
-    
+
     word* dst   = (word*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
     word* src   = (word*)image->rgb   +      image_offset_y  * image->width + image_offset_x;
     byte* alpha = image->alpha        +      image_offset_y  * image->width + image_offset_x;
@@ -1254,7 +1288,7 @@ void NormalBlit(IMAGE image, int x, int y)
     int src_inc = image->width - image_blit_width;
     int iy = image_blit_height;
     int ix;
-    
+
     if (PixelFormat == RGB565)
     {
         while (iy-- > 0)
@@ -1263,17 +1297,17 @@ void NormalBlit(IMAGE image, int x, int y)
             while (ix-- > 0)
             {
                 a = 255 - *alpha;
-                
+
                 result  =  ((dst[0] & 0x001F) * a >> 8) + (src[0] & 0x001F);
                 result |= (((dst[0] & 0x07E0) * a >> 8) + (src[0] & 0x07E0)) & 0x07E0;
                 result |= (((dst[0] & 0xF800) * a >> 8) + (src[0] & 0xF800)) & 0xF800;
-                
+
                 dst[0] = result;
                 ++dst;
                 ++src;
                 ++alpha;
             }
-            
+
             dst   += dst_inc;
             src   += src_inc;
             alpha += src_inc;
@@ -1287,17 +1321,17 @@ void NormalBlit(IMAGE image, int x, int y)
             while (ix-- > 0)
             {
                 a = 255 - *alpha;
-                
+
                 result  =  ((dst[0] & 0x001F) * a >> 8) + (src[0] & 0x001F);
                 result |= (((dst[0] & 0x03E0) * a >> 8) + (src[0] & 0x03E0)) & 0x03E0;
                 result |= (((dst[0] & 0x7C00) * a >> 8) + (src[0] & 0x7C00)) & 0x7C00;
-                
+
                 dst[0] = result;
                 ++dst;
                 ++src;
                 ++alpha;
             }
-            
+
             dst   += dst_inc;
             src   += src_inc;
             alpha += src_inc;

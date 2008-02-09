@@ -101,7 +101,7 @@ EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
     driverinfo->name        = "Standard 8-bit Color";
     driverinfo->author      = "Chad Austin";
     driverinfo->date        = __DATE__;
-    driverinfo->version     = "1.00";
+    driverinfo->version     = "v1.1";
     driverinfo->description = "8-bit palettized color in both windowed and fullscreen modes";
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -817,11 +817,11 @@ void TileBlit(IMAGE image, int x, int y)
 void SpriteBlit(IMAGE image, int x, int y)
 {
     calculate_clipping_metrics(image->width, image->height);
-    
+
     byte* dst   = (byte*)ScreenBuffer  + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
     byte* src   = (byte*)image->pixels +      image_offset_y  * image->width + image_offset_x;
     byte* alpha = image->alpha         +      image_offset_y  * image->width + image_offset_x;
-    
+
     int dst_inc = ScreenWidth  - image_blit_width;
     int src_inc = image->width - image_blit_width;
     int iy = image_blit_height;
@@ -834,7 +834,7 @@ void SpriteBlit(IMAGE image, int x, int y)
         {
             if (*alpha)
                 *dst = *src;
-            
+
             ++dst;
             ++src;
             ++alpha;
@@ -849,11 +849,11 @@ void SpriteBlit(IMAGE image, int x, int y)
 void NormalBlit(IMAGE image, int x, int y)
 {
     calculate_clipping_metrics(image->width, image->height);
-    
+
     byte* dst   = (byte*)ScreenBuffer  + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
     byte* src   = (byte*)image->pixels +      image_offset_y  * image->width + image_offset_x;
     byte* alpha = image->alpha         +      image_offset_y  * image->width + image_offset_x;
-    
+
     int dst_inc = ScreenWidth  - image_blit_width;
     int src_inc = image->width - image_blit_width;
     int iy = image_blit_height;
@@ -865,7 +865,7 @@ void NormalBlit(IMAGE image, int x, int y)
         while (ix-- > 0)
         {
             *dst = blend(*dst, *src, *alpha);
-            
+
             ++dst;
             ++src;
             ++alpha;

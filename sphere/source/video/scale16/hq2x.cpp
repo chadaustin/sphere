@@ -1,22 +1,8 @@
 /*--------------------------------------------------------------------------*
  * hq2x filter                                                              *
- * Copyright (C) 2003 MaxSt ( maxst@hiend3d.com )                           *
+ * Copyright (c) 2003 Maxim Stepin aka MaxSt ( maxst@hiend3d.com )          *
  *--------------------------------------------------------------------------*
- * This program is free software; you can redistribute it and/or            *
- * modify it under the terms of the GNU Lesser General Public               *
- * License as published by the Free Software Foundation; either             *
- * version 2.1 of the License, or (at your option) any later version.       *
- *                                                                          *
- * This program is distributed in the hope that it will be useful,          *
- * but WITHOUT ANY WARRANTY; without even the implied warranty of           *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU         *
- * Lesser General Public License for more details.                          *
- *                                                                          *
- * You should have received a copy of the GNU Lesser General Public         *
- * License along with this program; if not, write to the Free Software      *
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
- *--------------------------------------------------------------------------*/
-/* Rewritten by Anatoli Steinmark on 02.02.2008                             */
+/* Rewritten by Anatoli Steinmark on 9. February 2008                       */
 /* for use in the Sphere RPG Engine.                                        */
 /*--------------------------------------------------------------------------*/
 
@@ -171,7 +157,7 @@ inline bool Diff(word a, word b)
   int R = abs((a & R_MASK) - (b & R_MASK)) >> R_SHIFT;
   int G = abs((a & G_MASK) - (b & G_MASK)) >> G_SHIFT;
   int B = abs((a & B_MASK) - (b & B_MASK)) << 3;
-  
+
   return ( ( (( R +   G + B) >> 2) > 0x30 ) ||
            ( (( R -   B)     >> 2) > 0x07 ) ||
            ( ((-R + 2*G - B) >> 3) > 0x06 ) );
@@ -187,21 +173,21 @@ void hq2x(word* dst, word* src, int src_width, int src_height, int bpp)
     +--+--+--+
     |G |H |I |
     +--+--+--+
-    
+
     +--+--+
     |E0|E1|
     +--+--+
     |E2|E3|
     +--+--+
-    
+
     B: src0[0]
     E: src1[0]
     H: src2[0]
-    
+
     E0: dst0[0]
     E2: dst1[0]
     */
-    
+
     if (bpp == 16)
     {
         R_SHIFT     =    R_SHIFT_565;
@@ -236,7 +222,7 @@ void hq2x(word* dst, word* src, int src_width, int src_height, int bpp)
         D3_RB_MASK  = D3_RB_MASK_555;
         D4_RB_MASK  = D4_RB_MASK_555;
     }
-  
+
     int src_pitch = src_width;
     int dst_pitch = src_width * 2;
 
@@ -259,7 +245,7 @@ void hq2x(word* dst, word* src, int src_width, int src_height, int bpp)
     while (ix--)
     {
         pattern = 0;
-        
+
         if (src0[-1] != src1[0]) if (Diff(src0[-1], src1[0])) pattern |= 0x01;
         if (src0[0]  != src1[0]) if (Diff(src0[0], src1[0]))  pattern |= 0x02;
         if (src0[1]  != src1[0]) if (Diff(src0[1], src1[0]))  pattern |= 0x04;
@@ -268,7 +254,7 @@ void hq2x(word* dst, word* src, int src_width, int src_height, int bpp)
         if (src2[-1] != src1[0]) if (Diff(src2[-1], src1[0])) pattern |= 0x20;
         if (src2[0]  != src1[0]) if (Diff(src2[0], src1[0]))  pattern |= 0x40;
         if (src2[1]  != src1[0]) if (Diff(src2[1], src1[0]))  pattern |= 0x80;
-        
+
       switch (pattern)
       {
         case 0:
@@ -2911,14 +2897,14 @@ void hq2x(word* dst, word* src, int src_width, int src_height, int bpp)
           break;
         }
       }
-      
+
       ++src0;
       ++src1;
       ++src2;
       dst0 += 2;
       dst1 += 2;
     }
-    
+
     src0 += 2;
     src1 += 2;
     src2 += 2;

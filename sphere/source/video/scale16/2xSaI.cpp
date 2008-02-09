@@ -11,254 +11,247 @@
  * If you need more information, have any comments or suggestions,     *
  * you can e-mail me. My e-mail: derek-liauw@usa.net.                  *
  *---------------------------------------------------------------------*/
-/* Rewritten by Anatoli Steinmark on 02.02.2008                        */
+/* Rewritten by Anatoli Steinmark on 9. February 2008                  */
 /* for use in the Sphere RPG Engine.                                   */
 /*---------------------------------------------------------------------*/
-/* 2xSaI, version 0.50                                                 */
-/*---------------------------------------------------------------------*/
 
-#include <stdlib.h>
 #include "2xSaI.h"
 
-#define     GREEN_MASK_565  (0x07E007E0)
-#define NOT_GREEN_MASK_565  (~GREEN_MASK_565)
-#define     COLOR_MASK_565  (0xF7DEF7DE)
-#define   Q_COLOR_MASK_565  (0xE79CE79C)
 
-#define     GREEN_MASK_555  (0x03E003E0)
-#define NOT_GREEN_MASK_555  (~GREEN_MASK_555)
-#define     COLOR_MASK_555  (0x7BDE7BDE)
-#define   Q_COLOR_MASK_555  (0x739C739C)
+static dword colorMask;
+static dword lowPixelMask;
+static dword qcolorMask;
+static dword qlowpixelMask;
 
-dword       GREEN_MASK;
-dword   NOT_GREEN_MASK;
-dword       COLOR_MASK;
-dword   NOT_COLOR_MASK;
-dword     Q_COLOR_MASK;
-dword NOT_Q_COLOR_MASK;
 
+inline int GetResult(dword A, dword B, dword C, dword D)
+{
+ int x = 0;
+ int y = 0;
+ int r = 0;
+ if (A == C) x+=1; else if (B == C) y+=1;
+ if (A == D) x+=1; else if (B == D) y+=1;
+ if (x <= 1) r+=1;
+ if (y <= 1) r-=1;
+ return r;
+}
 
 inline dword INTERPOLATE(dword A, dword B)
 {
     if (A !=B)
     {
-        return ( ((A & COLOR_MASK) >> 1) +
-                 ((B & COLOR_MASK) >> 1) +
-                 (A & B & NOT_COLOR_MASK) );
+       return ( ((A & colorMask) >> 1) +
+                ((B & colorMask) >> 1) +
+                 (A & B & lowPixelMask) );
     }
-    else
-        return A;
+    else return A;
 }
 
 inline dword Q_INTERPOLATE(dword A, dword B, dword C, dword D)
 {
-    dword x = ((A & Q_COLOR_MASK) >> 2) +
-              ((B & Q_COLOR_MASK) >> 2) +
-              ((C & Q_COLOR_MASK) >> 2) +
-              ((D & Q_COLOR_MASK) >> 2);
-               
-    dword y = (A & NOT_Q_COLOR_MASK) +
-              (B & NOT_Q_COLOR_MASK) +
-              (C & NOT_Q_COLOR_MASK) +
-              (D & NOT_Q_COLOR_MASK);
-                        
-    y = (y >> 2) & NOT_Q_COLOR_MASK;
-    
-    return x + y;
+        register dword x = ((A & qcolorMask) >> 2) +
+                           ((B & qcolorMask) >> 2) +
+                           ((C & qcolorMask) >> 2) +
+                           ((D & qcolorMask) >> 2);
+
+        register dword y = (A & qlowpixelMask) +
+                           (B & qlowpixelMask) +
+                           (C & qlowpixelMask) +
+                           (D & qlowpixelMask);
+
+        y = (y >> 2) & qlowpixelMask;
+
+        return x + y;
 }
 
-inline int GetResult1(dword A, dword B, dword C, dword D, dword E)
+
+
+
+void SuperEagle(word* dst, word* src, int src_width, int src_height, int bpp)
 {
-    int x = 0;
-    int y = 0;
-    int r = 0;
-    
-    if      (A == C) x++;
-    else if (B == C) y++;
-
-    if      (A == D) x++;
-    else if (B == D) y++;
-
-    if (x <= 1) r++;
-    if (y <= 1) r--;
-        
-    return r;
-}
-
-inline int GetResult2(dword A, dword B, dword C, dword D, dword E)
-{
-    int x = 0;
-    int y = 0;
-    int r = 0;
-    
-    if      (A == C) x++;
-    else if (B == C) y++;
-
-    if      (A == D) x++;
-    else if (B == D) y++;
-
-    if (x <= 1) r--;
-    if (y <= 1) r++;
-    
-    return r;
-}
-
-void _2xSaI(word* dst, word* src, int src_width, int src_height, int bpp)
-{
-    
-    /*
-    +--+--+--+--+
-    |I |E |F |J |
-    +--+--+--+--+
-    |G |A |B |K |
-    +--+--+--+--+
-    |H |C |D |L |
-    +--+--+--+--+
-    |M |N |O |P |
-    +--+--+--+--+
-    
-    +--+--+
-    |A0|A1|
-    +--+--+
-    |A2|A3|
-    +--+--+
-    
-    E: src0[0]
-    A: src1[0]
-    C: src2[0]
-    N: src3[0]
-    
-    A0: dst0[0]
-    A2: dst1[0]
-    */
-    
-    if (bpp == 15)
+    if (bpp == 16)
     {
-            GREEN_MASK   =  GREEN_MASK_555;
-        NOT_GREEN_MASK   = ~GREEN_MASK;
-            COLOR_MASK   =  COLOR_MASK_555;
-        NOT_COLOR_MASK   = ~COLOR_MASK;
-            Q_COLOR_MASK =  Q_COLOR_MASK_555;
-        NOT_Q_COLOR_MASK = ~Q_COLOR_MASK_555;
+            colorMask     = 0xF7DEF7DE; // 1111011111011110 1111011111011110
+            lowPixelMask  = 0x08210821; // 0000100000100001 0000100000100001
+            qcolorMask    = 0xE79CE79C; // 1110011110011100 1110011110011100
+            qlowpixelMask = 0x18631863; // 0001100001100011 0001100001100011
     }
-    else if (bpp == 16)
+    else if (bpp == 15)
     {
-            GREEN_MASK   =  GREEN_MASK_565;
-        NOT_GREEN_MASK   = ~GREEN_MASK;
-            COLOR_MASK   =  COLOR_MASK_565;
-        NOT_COLOR_MASK   = ~COLOR_MASK;
-            Q_COLOR_MASK =  Q_COLOR_MASK_565;
-        NOT_Q_COLOR_MASK = ~Q_COLOR_MASK_565;
+            colorMask     = 0x7BDE7BDE; // 0111101111011110 0111101111011110
+            lowPixelMask  = 0x04210421; // 0000010000100001 0000010000100001
+            qcolorMask    = 0x739C739C; // 0111001110011100 0111001110011100
+            qlowpixelMask = 0x0C630C63; // 0000110001100011 0000110001100011
     }
-    
+
+
     int src_pitch = src_width;
     int dst_pitch = src_width * 2;
-            
-    dword product;
-    dword product1;
-    dword product2;
-    
+
+    dword product1a;
+    dword product1b;
+    dword product2a;
+    dword product2b;
+
+    dword color4;
+    dword color5;
+    dword color6;
+    dword color1;
+    dword color2;
+    dword color3;
+
+    dword colorA1;
+    dword colorA2;
+    dword colorB1;
+    dword colorB2;
+    dword colorS1;
+    dword colorS2;
+
     word*  src0 = src + 1 - src_pitch;
     word*  src1 = src + 1 + src_pitch;
     word*  src2 = src + 1 + src_pitch * 2;
     word*  src3 = src + 1 + src_pitch * 3;
+
     dword* dst0 = (dword*)(dst + 2 + dst_pitch * 2);
     dword* dst1 = (dword*)(dst + 2 + dst_pitch * 3);
-    
+
     int iy = src_height - 2;
-    int ix;
-    
-    // middle
+    int ix, r;
+
     while (iy--)
     {
         ix = src_width - 2;
-        
+
         while (ix--)
         {
-            if (src1[0] == src2[1] && src1[1] != src2[0])
+
+            //      B1 B2
+            //   4  5  6  S2
+            //   1  2  3  S1
+            //      A1 A2
+
+            colorB1 = src0[0];
+            colorB2 = src0[1];
+
+            color4  = src1[-1];
+            color5  = src1[0];
+            color6  = src1[1];
+
+            color1  = src2[-1];
+            color2  = src2[0];
+            color3  = src2[1];
+
+            if (ix)
             {
-                if ( (src1[0] == src0[0] && src1[1] == src2[2]) ||
-                     (src1[0] == src2[0] && src1[0] == src0[1] && src1[1] != src0[0] && src1[1] == src0[2]) )
-                    product = src1[0];
-                else
-                    product = INTERPOLATE(src1[0], src1[1]);
-
-                if ( (src1[0] == src1[-1] && src2[0] == src3[1]) ||
-                     (src1[0] == src1[1]  && src1[0] == src2[-1] && src1[-1] != src2[0] && src2[0] == src3[-1]) )
-                    product1 = src1[0];
-                else
-                    product1 = INTERPOLATE(src1[0], src2[0]);
-
-                product2 = src1[0];
+                colorS2 = src1[2];
+                colorS1 = src2[2];
             }
-            
-            else if (src1[1] == src2[0] && src1[0] != src2[1])
-            {
-                if ( (src1[1] == src0[1] && src1[0] == src2[-1]) ||
-                     (src1[1] == src0[0] && src1[1] == src2[1] && src1[0] != src0[1] && src1[0] == src0[-1]) )
-                    product = src1[1];
-                else
-                    product = INTERPOLATE(src1[0], src1[1]);
-
-                if ( (src2[0] == src2[-1] && src1[0] == src0[1]) ||
-                     (src2[0] == src1[-1] && src2[0] == src2[1] && src1[0] != src2[-1] && src1[0] == src0[-1]) )
-                    product1 = src2[0];
-                else
-                    product1 = INTERPOLATE(src1[0], src2[0]);
-
-                product2 = src1[1];
-            }
-            
-            else if (src1[0] == src2[1] && src1[1] == src2[0])
-            {
-                if (src1[0] == src1[1])
-                {
-                    product  = src1[0];
-                    product1 = src1[0];
-                    product2 = src1[0];
-                }
-                else
-                {
-                    int r = 0;
-                    product1 = INTERPOLATE(src1[0], src2[0]);
-                    product  = INTERPOLATE(src1[0], src1[1]);
-                    
-                    r += GetResult1(src1[0], src1[1], src1[-1], src0[0], src0[-1]);
-                    r += GetResult2(src1[1], src1[0], src1[2],  src0[1], src0[2]);
-                    r += GetResult2(src1[1], src1[0], src2[-1], src3[0], src3[-1]);
-                    r += GetResult1(src1[0], src1[1], src2[2],  src3[1], src3[2]);
-                    
-                    if (r > 0)
-                        product2 = src1[0];
-                    else if (r < 0)
-                        product2 = src1[1];
-                    else
-                        product2 = Q_INTERPOLATE(src1[0], src1[1], src2[0], src2[1]);
-                }
-            }
-            
             else
             {
-                product2 = Q_INTERPOLATE(src1[0], src1[1], src2[0], src2[1]);
-                
-                if (src1[0] == src2[0] && src1[0] == src0[1] && src1[1] != src0[0] && src1[1] == src0[2])
-                    product = src1[0];
-                else if (src1[1] == src0[0] && src1[1] == src2[1] && src1[0] != src0[1] && src1[0] == src0[-1])
-                    product = src1[1];
-                else
-                    product = INTERPOLATE(src1[0], src1[1]);
-
-                if (src1[0] == src1[1] && src1[0] == src2[-1] && src1[-1] != src2[0] && src2[0] == src3[-1])
-                    product1 = src1[0];
-                else if (src2[0] == src1[-1] && src2[0] == src2[1] && src1[0] != src2[-1] && src1[0] == src0[-1])
-                    product1 = src2[0];
-                else
-                    product1 = INTERPOLATE(src1[0], src2[0]);
+                colorS2 = src1[1];
+                colorS1 = src2[1];
             }
-            
-            dst0[0] = src1[0]  | (product  << 16);
-            dst1[0] = product1 | (product2 << 16);
-            
+
+            if (iy)
+            {
+                colorA1 = src3[0];
+                colorA2 = src3[1];
+            }
+            else
+            {
+                colorA1 = src2[0];
+                colorA2 = src2[1];
+            }
+
+            if (color2 == color6 && color5 != color3)
+            {
+               product1b = product2a = color2;
+
+               if ((color1 == color2) ||
+                   (color6 == colorB2))
+               {
+                   product1a = INTERPOLATE (color2, color5);
+                   product1a = INTERPOLATE (color2, product1a);
+               }
+               else
+               {
+                  product1a = INTERPOLATE (color5, color6);
+               }
+
+               if ((color6 == colorS2) || (color2 == colorA1))
+               {
+                   product2b = INTERPOLATE (color2, color3);
+                   product2b = INTERPOLATE (color2, product2b);
+               }
+               else
+               {
+                  product2b = INTERPOLATE (color2, color3);
+               }
+            }
+            else if (color5 == color3 && color2 != color6)
+            {
+               product2b = product1a = color5;
+
+               if ((colorB1 == color5) || (color3 == colorS1))
+               {
+                   product1b = INTERPOLATE (color5, color6);
+                   product1b = INTERPOLATE (color5, product1b);
+               }
+               else
+               {
+                  product1b = INTERPOLATE (color5, color6);
+               }
+
+               if ((color3 == colorA2) || (color4 == color5))
+               {
+                   product2a = INTERPOLATE (color5, color2);
+                   product2a = INTERPOLATE (color5, product2a);
+               }
+               else
+               {
+                  product2a = INTERPOLATE (color2, color3);
+               }
+
+            }
+            else if (color5 == color3 && color2 == color6)
+            {
+               r = 0;
+               r += GetResult (color6, color5, color1,  colorA1);
+               r += GetResult (color6, color5, color4,  colorB1);
+               r += GetResult (color6, color5, colorA2, colorS1);
+               r += GetResult (color6, color5, colorB2, colorS2);
+
+               if (r > 0)
+               {
+                  product1b = product2a = color2;
+                  product1a = product2b = INTERPOLATE (color5, color6);
+               }
+               else if (r < 0)
+               {
+                  product2b = product1a = color5;
+                  product1b = product2a = INTERPOLATE (color5, color6);
+               }
+               else
+               {
+                  product2b = product1a = color5;
+                  product1b = product2a = color2;
+               }
+            }
+            else
+            {
+              product2b = product1a = INTERPOLATE (color2, color6);
+              product2b = Q_INTERPOLATE (color3, color3, color3, product2b);
+              product1a = Q_INTERPOLATE (color5, color5, color5, product1a);
+
+              product2a = product1b = INTERPOLATE (color5, color3);
+              product2a = Q_INTERPOLATE (color2, color2, color2, product2a);
+              product1b = Q_INTERPOLATE (color6, color6, color6, product1b);
+            }
+
+
+            dst0[0] = product1a | (product1b << 16);
+            dst1[0] = product2a | (product2b << 16);
+
             ++src0;
             ++src1;
             ++src2;
@@ -266,12 +259,471 @@ void _2xSaI(word* dst, word* src, int src_width, int src_height, int bpp)
             ++dst0;
             ++dst1;
         }
-        
+
         src0 += 2;
         src1 += 2;
         src2 += 2;
         src3 += 2;
+
         dst0 += src_width + 2;
         dst1 += src_width + 2;
     }
 }
+
+
+
+void Super2xSaI(word* dst, word* src, int src_width, int src_height, int bpp)
+{
+
+    if (bpp == 16)
+    {
+            colorMask     = 0xF7DEF7DE; // 1111011111011110 1111011111011110
+            lowPixelMask  = 0x08210821; // 0000100000100001 0000100000100001
+            qcolorMask    = 0xE79CE79C; // 1110011110011100 1110011110011100
+            qlowpixelMask = 0x18631863; // 0001100001100011 0001100001100011
+    }
+    else if (bpp == 15)
+    {
+            colorMask     = 0x7BDE7BDE; // 0111101111011110 0111101111011110
+            lowPixelMask  = 0x04210421; // 0000010000100001 0000010000100001
+            qcolorMask    = 0x739C739C; // 0111001110011100 0111001110011100
+            qlowpixelMask = 0x0C630C63; // 0000110001100011 0000110001100011
+    }
+
+
+    int src_pitch = src_width;
+    int dst_pitch = src_width * 2;
+
+    dword product1a;
+    dword product1b;
+    dword product2a;
+    dword product2b;
+
+    dword color4;
+    dword color5;
+    dword color6;
+    dword color1;
+    dword color2;
+    dword color3;
+
+    dword colorA0;
+    dword colorA1;
+    dword colorA2;
+    dword colorA3;
+    dword colorB0;
+    dword colorB1;
+    dword colorB2;
+    dword colorB3;
+    dword colorS1;
+    dword colorS2;
+
+    word*  src0 = src + 1 - src_pitch;
+    word*  src1 = src + 1 + src_pitch;
+    word*  src2 = src + 1 + src_pitch * 2;
+    word*  src3 = src + 1 + src_pitch * 3;
+
+    dword* dst0 = (dword*)(dst + 2 + dst_pitch * 2);
+    dword* dst1 = (dword*)(dst + 2 + dst_pitch * 3);
+
+    int iy = src_height - 2;
+    int ix, r;
+
+    while (iy--)
+    {
+        ix = src_width - 2;
+
+        while (ix--)
+        {
+
+            //   B0 B1 B2 B3
+            //   4  5  6  S2
+            //   1  2  3  S1
+            //   A0 A1 A2 A3
+
+            colorB0 = src0[-1];
+            colorB1 = src0[0];
+            colorB2 = src0[1];
+
+            color4  = src1[-1];
+            color5  = src1[0];
+            color6  = src1[1];
+
+            color1  = src2[-1];
+            color2  = src2[0];
+            color3  = src2[1];
+
+            if (ix && iy)
+                colorA3 = src3[2];
+            else if (!ix && iy)
+                colorA3 = src3[1];
+            else
+                colorA3 = src2[1];
+
+            if (ix)
+            {
+                colorB3 = src0[2];
+                colorS2 = src1[2];
+                colorS1 = src2[2];
+            }
+            else
+            {
+                colorB3 = src0[1];
+                colorS2 = src1[1];
+                colorS1 = src2[1];
+            }
+
+            if (iy)
+            {
+                colorA0 = src3[-1];
+                colorA1 = src3[0];
+                colorA2 = src3[1];
+            }
+            else
+            {
+                colorA0 = src2[-1];
+                colorA1 = src2[0];
+                colorA2 = src2[1];
+            }
+
+            if (color2 == color6 && color5 != color3)
+            {
+               product2b = product1b = color2;
+            }
+            else if (color5 == color3 && color2 != color6)
+            {
+               product2b = product1b = color5;
+            }
+            else if (color5 == color3 && color2 == color6)
+            {
+               r = 0;
+               r += GetResult (color6, color5, color1, colorA1);
+               r += GetResult (color6, color5, color4, colorB1);
+               r += GetResult (color6, color5, colorA2, colorS1);
+               r += GetResult (color6, color5, colorB2, colorS2);
+
+               if (r > 0)
+                  product2b = product1b = color6;
+               else if (r < 0)
+                  product2b = product1b = color5;
+               else
+               {
+                  product2b = product1b = INTERPOLATE (color5, color6);
+               }
+
+            }
+            else
+            {
+
+               if (color6 == color3 && color3 == colorA1 && color2 != colorA2 && color3 != colorA0)
+                  product2b = Q_INTERPOLATE (color3, color3, color3, color2);
+               else if (color5 == color2 && color2 == colorA2 && colorA1 != color3 && color2 != colorA3)
+                  product2b = Q_INTERPOLATE (color2, color2, color2, color3);
+               else
+                  product2b = INTERPOLATE (color2, color3);
+
+               if (color6 == color3 && color6 == colorB1 && color5 != colorB2 && color6 != colorB0)
+                  product1b = Q_INTERPOLATE (color6, color6, color6, color5);
+               else if (color5 == color2 && color5 == colorB2 && colorB1 != color6 && color5 != colorB3)
+                  product1b = Q_INTERPOLATE (color6, color5, color5, color5);
+               else
+                  product1b = INTERPOLATE (color5, color6);
+            }
+
+            if (color5 == color3 && color2 != color6 && color4 == color5 && color5 != colorA2)
+               product2a = INTERPOLATE (color2, color5);
+            else if (color5 == color1 && color6 == color5 && color4 != color2 && color5 != colorA0)
+               product2a = INTERPOLATE(color2, color5);
+            else
+               product2a = color2;
+
+            if (color2 == color6 && color5 != color3 && color1 == color2 && color2 != colorB2)
+               product1a = INTERPOLATE (color2, color5);
+            else if (color4 == color2 && color3 == color2 && color1 != color5 && color2 != colorB0)
+               product1a = INTERPOLATE(color2, color5);
+            else
+               product1a = color5;
+
+
+            dst0[0] = product1a | (product1b << 16);
+            dst1[0] = product2a | (product2b << 16);
+
+            ++src0;
+            ++src1;
+            ++src2;
+            ++src3;
+            ++dst0;
+            ++dst1;
+        }
+
+        src0 += 2;
+        src1 += 2;
+        src2 += 2;
+        src3 += 2;
+
+        dst0 += src_width + 2;
+        dst1 += src_width + 2;
+    }
+}
+
+
+
+inline int GetResult1(dword A, dword B, dword C, dword D)
+{
+ int x = 0;
+ int y = 0;
+ int r = 0;
+ if (A == C) x+=1; else if (B == C) y+=1;
+ if (A == D) x+=1; else if (B == D) y+=1;
+ if (x <= 1) r+=1;
+ if (y <= 1) r-=1;
+ return r;
+}
+
+inline int GetResult2(dword A, dword B, dword C, dword D)
+{
+ int x = 0;
+ int y = 0;
+ int r = 0;
+ if (A == C) x+=1; else if (B == C) y+=1;
+ if (A == D) x+=1; else if (B == D) y+=1;
+ if (x <= 1) r-=1;
+ if (y <= 1) r+=1;
+ return r;
+}
+
+
+
+void _2xSaI(word* dst, word* src, int src_width, int src_height, int bpp)
+{
+    if (bpp == 16)
+    {
+            colorMask     = 0xF7DEF7DE; // 1111011111011110 1111011111011110
+            lowPixelMask  = 0x08210821; // 0000100000100001 0000100000100001
+            qcolorMask    = 0xE79CE79C; // 1110011110011100 1110011110011100
+            qlowpixelMask = 0x18631863; // 0001100001100011 0001100001100011
+    }
+    else if (bpp == 15)
+    {
+            colorMask     = 0x7BDE7BDE; // 0111101111011110 0111101111011110
+            lowPixelMask  = 0x04210421; // 0000010000100001 0000010000100001
+            qcolorMask    = 0x739C739C; // 0111001110011100 0111001110011100
+            qlowpixelMask = 0x0C630C63; // 0000110001100011 0000110001100011
+    }
+
+
+    int src_pitch = src_width;
+    int dst_pitch = src_width * 2;
+
+    dword product0;
+    dword product1;
+    dword product2;
+
+    dword colorI;
+    dword colorE;
+    dword colorF;
+    dword colorJ;
+
+    dword colorG;
+    dword colorA;
+    dword colorB;
+    dword colorK;
+
+    dword colorH;
+    dword colorC;
+    dword colorD;
+    dword colorL;
+
+    dword colorM;
+    dword colorN;
+    dword colorO;
+
+    word*  src0 = src + 1 - src_pitch;
+    word*  src1 = src + 1 + src_pitch;
+    word*  src2 = src + 1 + src_pitch * 2;
+    word*  src3 = src + 1 + src_pitch * 3;
+
+    dword* dst0 = (dword*)(dst + 2 + dst_pitch * 2);
+    dword* dst1 = (dword*)(dst + 2 + dst_pitch * 3);
+
+    int iy = src_height - 2;
+    int ix, r;
+
+    while (iy--)
+    {
+        ix = src_width - 2;
+
+        while (ix--)
+        {
+
+            //   I E F J
+            //   G A B K
+            //   H C D L
+            //   M N O
+
+            colorI = src0[-1];
+            colorE = src0[0];
+            colorF = src0[1];
+
+            colorG  = src1[-1];
+            colorA  = src1[0];
+            colorB  = src1[1];
+
+            colorH  = src2[-1];
+            colorC  = src2[0];
+            colorD  = src2[1];
+
+            if (ix)
+            {
+                colorJ = src0[2];
+                colorK = src1[2];
+                colorL = src2[2];
+            }
+            else
+            {
+                colorJ = src0[1];
+                colorK = src1[1];
+                colorL = src2[1];
+            }
+
+            if (iy)
+            {
+                colorM = src3[-1];
+                colorN = src3[0];
+                colorO = src3[1];
+            }
+            else
+            {
+                colorM = src2[-1];
+                colorN = src2[0];
+                colorO = src2[1];
+            }
+
+            if ((colorA == colorD) && (colorB != colorC))
+            {
+               if ( ((colorA == colorE) && (colorB == colorL)) ||
+                    ((colorA == colorC) && (colorA == colorF) && (colorB != colorE) && (colorB == colorJ)) )
+               {
+                  product0 = colorA;
+               }
+               else
+               {
+                  product0 = INTERPOLATE(colorA, colorB);
+               }
+
+               if (((colorA == colorG) && (colorC == colorO)) ||
+                   ((colorA == colorB) && (colorA == colorH) && (colorG != colorC) && (colorC == colorM)) )
+               {
+                  product1 = colorA;
+               }
+               else
+               {
+                  product1 = INTERPOLATE(colorA, colorC);
+               }
+               product2 = colorA;
+            }
+            else if ((colorB == colorC) && (colorA != colorD))
+            {
+               if (((colorB == colorF) && (colorA == colorH)) ||
+                   ((colorB == colorE) && (colorB == colorD) && (colorA != colorF) && (colorA == colorI)) )
+               {
+                  product0 = colorB;
+               }
+               else
+               {
+                  product0 = INTERPOLATE(colorA, colorB);
+               }
+
+               if (((colorC == colorH) && (colorA == colorF)) ||
+                   ((colorC == colorG) && (colorC == colorD) && (colorA != colorH) && (colorA == colorI)) )
+               {
+                  product1 = colorC;
+               }
+               else
+               {
+                  product1 = INTERPOLATE(colorA, colorC);
+               }
+               product2 = colorB;
+            }
+            else if ((colorA == colorD) && (colorB == colorC))
+            {
+               if (colorA == colorB)
+               {
+                  product0 = colorA;
+                  product1 = colorA;
+                  product2 = colorA;
+               }
+               else
+               {
+                  r = 0;
+                  product1 = INTERPOLATE(colorA, colorC);
+                  product0 = INTERPOLATE(colorA, colorB);
+
+                  r += GetResult1 (colorA, colorB, colorG, colorE);
+                  r += GetResult2 (colorB, colorA, colorK, colorF);
+                  r += GetResult2 (colorB, colorA, colorH, colorN);
+                  r += GetResult1 (colorA, colorB, colorL, colorO);
+
+                  if (r > 0)
+                      product2 = colorA;
+                  else if (r < 0)
+                      product2 = colorB;
+                  else
+                  {
+                      product2 = Q_INTERPOLATE(colorA, colorB, colorC, colorD);
+                  }
+               }
+            }
+            else
+            {
+               product2 = Q_INTERPOLATE(colorA, colorB, colorC, colorD);
+
+               if ((colorA == colorC) && (colorA == colorF) && (colorB != colorE) && (colorB == colorJ))
+               {
+                  product0 = colorA;
+               }
+               else if ((colorB == colorE) && (colorB == colorD) && (colorA != colorF) && (colorA == colorI))
+               {
+                  product0 = colorB;
+               }
+               else
+               {
+                  product0 = INTERPOLATE(colorA, colorB);
+               }
+
+               if ((colorA == colorB) && (colorA == colorH) && (colorG != colorC) && (colorC == colorM))
+               {
+                  product1 = colorA;
+               }
+               else if ((colorC == colorG) && (colorC == colorD) && (colorA != colorH) && (colorA == colorI))
+               {
+                  product1 = colorC;
+               }
+               else
+               {
+                  product1 = INTERPOLATE(colorA, colorC);
+               }
+            }
+
+            dst0[0] = colorA   | (product0 << 16);
+            dst1[0] = product1 | (product2 << 16);
+
+            ++src0;
+            ++src1;
+            ++src2;
+            ++src3;
+            ++dst0;
+            ++dst1;
+        }
+
+        src0 += 2;
+        src1 += 2;
+        src2 += 2;
+        src3 += 2;
+
+        dst0 += src_width + 2;
+        dst1 += src_width + 2;
+    }
+}
+
+
+

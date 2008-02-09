@@ -3,13 +3,15 @@
 // Used by scale16.rc
 //
 #define IDD_CONFIGURE                   101
-#define IDC_DSCALE2X                    1001
+#define IDC_DIRECT_SCALE                1001
 #define IDC_SCALE2X                     1002
-#define IDC_EAGLE2X                     1003
-#define IDC_2XSAI                       1004
-#define IDC_HQ2X                        1005
-#define IDC_FULLSCREEN                  1006
-#define IDC_VSYNC                       1007
+#define IDC_EAGLE                       1003
+#define IDC_HQ2X                        1004
+#define IDC_2XSAI                       1005
+#define IDC_SUPER_2XSAI                 1006
+#define IDC_SUPER_EAGLE                 1007
+#define IDC_FULLSCREEN                  1008
+#define IDC_VSYNC                       1009
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED

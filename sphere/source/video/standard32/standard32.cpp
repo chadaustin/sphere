@@ -107,7 +107,7 @@ EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
     driverinfo->name        = "Standard 32-bit Color";
     driverinfo->author      = "Chad Austin et al.";
     driverinfo->date        = __DATE__;
-    driverinfo->version     = "1.00";
+    driverinfo->version     = "v1.1";
     driverinfo->description = "24/32-bit color output in both windowed and fullscreen modes";
 
 }
@@ -1232,8 +1232,8 @@ void SpriteBlit(IMAGE image, int x, int y)
             int ix = image_blit_width;
             while (ix-- > 0)
             {
-                if (alpha*)
-                    dst* = src*;
+                if (*alpha)
+                    *dst = *src;
 
                 ++dst;
                 ++src;
