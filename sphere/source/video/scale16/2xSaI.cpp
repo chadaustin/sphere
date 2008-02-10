@@ -107,7 +107,7 @@ void SuperEagle(word* dst, word* src, int src_width, int src_height, int bpp)
     dword colorS1;
     dword colorS2;
 
-    word*  src0 = src + 1 - src_pitch;
+    word*  src0 = src + 1;
     word*  src1 = src + 1 + src_pitch;
     word*  src2 = src + 1 + src_pitch * 2;
     word*  src3 = src + 1 + src_pitch * 3;
@@ -317,7 +317,7 @@ void Super2xSaI(word* dst, word* src, int src_width, int src_height, int bpp)
     dword colorS1;
     dword colorS2;
 
-    word*  src0 = src + 1 - src_pitch;
+    word*  src0 = src + 1;
     word*  src1 = src + 1 + src_pitch;
     word*  src2 = src + 1 + src_pitch * 2;
     word*  src3 = src + 1 + src_pitch * 3;
@@ -537,7 +537,7 @@ void _2xSaI(word* dst, word* src, int src_width, int src_height, int bpp)
     dword colorN;
     dword colorO;
 
-    word*  src0 = src + 1 - src_pitch;
+    word*  src0 = src + 1;
     word*  src1 = src + 1 + src_pitch;
     word*  src2 = src + 1 + src_pitch * 2;
     word*  src3 = src + 1 + src_pitch * 3;

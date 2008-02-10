@@ -223,14 +223,6 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath=".\2xSaI.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\hq2x.cpp"
-				>
-			</File>
-			<File
 				RelativePath="scale32.cpp"
 				>
 				<FileConfiguration

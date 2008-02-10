@@ -124,7 +124,7 @@ void SuperEagle(T* dst, T* src, int src_width, int src_height)
     T colorS1;
     T colorS2;
 
-    T* src0 = src + 1 - src_pitch;
+    T* src0 = src + 1;
     T* src1 = src + 1 + src_pitch;
     T* src2 = src + 1 + src_pitch * 2;
     T* src3 = src + 1 + src_pitch * 3;
@@ -319,10 +319,10 @@ void Super2xSaI(T* dst, T* src, int src_width, int src_height)
     T colorS1;
     T colorS2;
 
-    T*  src0 = src + 1 - src_pitch;
-    T*  src1 = src + 1 + src_pitch;
-    T*  src2 = src + 1 + src_pitch * 2;
-    T*  src3 = src + 1 + src_pitch * 3;
+    T* src0 = src + 1;
+    T* src1 = src + 1 + src_pitch;
+    T* src2 = src + 1 + src_pitch * 2;
+    T* src3 = src + 1 + src_pitch * 3;
 
     T* dst0 = dst + 2 + dst_pitch * 2;
     T* dst1 = dst + 2 + dst_pitch * 3;
@@ -525,10 +525,10 @@ void _2xSaI(T* dst, T* src, int src_width, int src_height)
     T colorN;
     T colorO;
 
-    T*  src0 = src + 1 - src_pitch;
-    T*  src1 = src + 1 + src_pitch;
-    T*  src2 = src + 1 + src_pitch * 2;
-    T*  src3 = src + 1 + src_pitch * 3;
+    T* src0 = src + 1;
+    T* src1 = src + 1 + src_pitch;
+    T* src2 = src + 1 + src_pitch * 2;
+    T* src3 = src + 1 + src_pitch * 3;
 
     T* dst0 = dst + 2 + dst_pitch * 2;
     T* dst1 = dst + 2 + dst_pitch * 3;

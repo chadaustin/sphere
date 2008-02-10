@@ -1277,7 +1277,7 @@ void NormalBlit(IMAGE image, int x, int y)
 {
     calculate_clipping_metrics(image->width, image->height);
 
-    byte a;
+    int a;
     word result;
 
     word* dst   = (word*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;

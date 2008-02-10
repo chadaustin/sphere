@@ -1287,6 +1287,8 @@ void NormalBlit(IMAGE image, int x, int y)
     calculate_clipping_metrics(image->width, image->height);
 #endif
 
+    int a;
+
     if (BitsPerPixel == 32)
     {
         BGRA* dst  = (BGRA*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
@@ -1303,9 +1305,11 @@ void NormalBlit(IMAGE image, int x, int y)
             ix = image_blit_width;
             while (ix-- > 0)
             {
-                dst->red   = ((dst->red   * (255 - *alpha)) >> 8) + src->red;
-                dst->green = ((dst->green * (255 - *alpha)) >> 8) + src->green;
-                dst->blue  = ((dst->blue  * (255 - *alpha)) >> 8) + src->blue;
+                a = 255 - *alpha;
+
+                dst->red   = ((dst->red   * a) >> 8) + src->red;
+                dst->green = ((dst->green * a) >> 8) + src->green;
+                dst->blue  = ((dst->blue  * a) >> 8) + src->blue;
 
                 ++dst;
                 ++src;
@@ -1333,9 +1337,11 @@ void NormalBlit(IMAGE image, int x, int y)
             ix = image_blit_width;
             while (ix-- > 0)
             {
-                dst->red   = ((dst->red   * (255 - *alpha)) >> 8) + src->red;
-                dst->green = ((dst->green * (255 - *alpha)) >> 8) + src->green;
-                dst->blue  = ((dst->blue  * (255 - *alpha)) >> 8) + src->blue;
+                a = 255 - *alpha;
+
+                dst->red   = ((dst->red   * a) >> 8) + src->red;
+                dst->green = ((dst->green * a) >> 8) + src->green;
+                dst->blue  = ((dst->blue  * a) >> 8) + src->blue;
 
                 ++dst;
                 ++src;
