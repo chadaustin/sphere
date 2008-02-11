@@ -13,19 +13,18 @@
 #include "../common/win32x.hpp"
 #include "resource.h"
 
-// these masks are used to calculate averages of 15-bit and 16-bit color pixels
-#define MASK565 0xF7DE  // 11110 111110 11110
-#define MASK555 0x7BDE  // 0 11110 11110 11110
-
 // DATA TYPES //
 typedef struct _IMAGE
 {
     int width;
     int height;
+
     word* rgb;
     byte* alpha;
+
     void (*blit_routine)(_IMAGE* image, int x, int y);
-    RGBA* locked_pixels;
+
+    RGBA* original;
 }
 * IMAGE;
 
@@ -934,20 +933,42 @@ void Interpolate(word* dst)
 EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 {
     IMAGE image = new _IMAGE;
-    image->width  = width;
-    image->height = height;
-    FillImagePixels(image, pixels);
-    OptimizeBlitRoutine(image);
+
+    if (image)
+    {
+        image->width  = width;
+        image->height = height;
+
+        FillImagePixels(image, pixels);
+        OptimizeBlitRoutine(image);
+    }
+
     return image;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void FillImagePixels(IMAGE image, RGBA* pixels)
 {
-    // rgb
-    RGBA pixel;
+    int pixels_total = image->width * image->height;
 
-    image->rgb = new word[image->width * image->height];
+    // fill the original data
+    if (pixels != image->original)
+    {
+        image->original = new RGBA[pixels_total];
+
+        if (!image->original)
+            return;
+
+        memcpy(image->original, pixels, pixels_total * sizeof(RGBA));
+    }
+
+    // fill the premultiplied data
+    RGBA pixel;
+    image->rgb = new word[pixels_total];
+
+    if (!image->rgb)
+        return;
+
     if (PixelFormat == RGB565)
     {
         for (int i = 0; i < image->width * image->height; i++)
@@ -976,55 +997,74 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
             image->rgb[i] = PackPixel555(pixel);
         }
     }
+
     // alpha
-    image->alpha = new byte[image->width * image->height];
-    for (int i = 0; i < image->width * image->height; i++)
+    image->alpha = new byte[pixels_total];
+
+    if (!image->alpha)
+        return;
+
+    for (int i = 0; i < pixels_total; i++)
         image->alpha[i] = pixels[i].alpha;
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void OptimizeBlitRoutine(IMAGE image)
 {
+    int pixels_total = image->width * image->height;
+
     // null blit
     bool is_empty = true;
-    for (int i = 0; i < image->width * image->height; i++)
-        if (image->alpha[i] != 0)
+    for (int i = 0; i < pixels_total; i++)
+    {
+        if (image->alpha[i])
         {
             is_empty = false;
             break;
         }
+    }
+
     if (is_empty)
     {
         image->blit_routine = NullBlit;
         return;
     }
+
     // tile blit
     bool is_tile = true;
-    for (int i = 0; i < image->width * image->height; i++)
-        if (image->alpha[i] != 255)
+    for (int i = 0; i < pixels_total; i++)
+    {
+        if (image->alpha[i] < 255)
         {
             is_tile = false;
             break;
         }
+    }
+
     if (is_tile)
     {
         image->blit_routine = TileBlit;
         return;
     }
+
     // sprite blit
     bool is_sprite = true;
-    for (int i = 0; i < image->width * image->height; i++)
-        if (image->alpha[i] != 0 &&
-                image->alpha[i] != 255)
+    for (int i = 0; i < pixels_total; i++)
+    {
+        if (image->alpha[i] > 0 && image->alpha[i] < 255)
         {
             is_sprite = false;
             break;
         }
+    }
+
     if (is_sprite)
     {
         image->blit_routine = SpriteBlit;
         return;
     }
+
     // normal blit
     image->blit_routine = NormalBlit;
 }
@@ -1033,41 +1073,43 @@ void OptimizeBlitRoutine(IMAGE image)
 EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
 {
     if (x < 0 ||
-            y < 0 ||
-            x + width > ScreenWidth ||
-            y + height > ScreenHeight)
+        y < 0 ||
+        x + width  > ScreenWidth ||
+        y + height > ScreenHeight)
         return NULL;
-    IMAGE image = new _IMAGE;
-    if (!image)
-        return NULL;
+
+    int pixels_total = width * height;
+
+    IMAGE image         = new _IMAGE;
     image->width        = width;
     image->height       = height;
     image->blit_routine = TileBlit;
-    image->rgb = new word[width * height];
-    if (!image->rgb)
-    {
+    image->rgb          = new word[pixels_total];
+    image->alpha        = new byte[pixels_total];
+    image->original     = new RGBA[pixels_total];
 
-        delete image;
-        image = NULL;
-        return NULL;
-    }
-    image->alpha = new byte[width * height];
-    if (!image->rgb)
-    {
-
-        delete[] image->rgb;
-        delete image;
-        image = NULL;
-        return NULL;
-    }
     for (int iy = 0; iy < height; iy++)
-    {
+        memcpy(image->rgb + iy * width, ScreenBuffer + (y + iy) * ScreenWidth + x, width * 2);
 
-        memcpy(image->rgb + (iy * width),
-               ScreenBuffer + ((y + iy) * ScreenWidth) + x,
-               width * sizeof(word));
+    memset(image->alpha, 255, pixels_total);
+
+    if (PixelFormat == RGB565)
+    {
+        for (int i = 0; i < pixels_total; ++i)
+        {
+            image->original[i]       = UnpackPixel565(image->rgb[i]);
+            image->original[i].alpha = 255;
+        }
     }
-    memset(image->alpha, 255, width * height);
+    else
+    {
+        for (int i = 0; i < pixels_total; ++i)
+        {
+            image->original[i]       = UnpackPixel555(image->rgb[i]);
+            image->original[i].alpha = 255;
+        }
+    }
+
     return image;
 }
 
@@ -1076,6 +1118,7 @@ EXPORT(void) DestroyImage(IMAGE image)
 {
     delete[] image->rgb;
     delete[] image->alpha;
+    delete[] image->original;
     delete image;
 }
 
@@ -1083,11 +1126,12 @@ EXPORT(void) DestroyImage(IMAGE image)
 EXPORT(void) BlitImage(IMAGE image, int x, int y)
 {
     // don't draw it if it's off the screen
-    if (x + (int)image->width < ClippingRectangle.left ||
-            y + (int)image->height < ClippingRectangle.top ||
-            x > ClippingRectangle.right ||
-            y > ClippingRectangle.bottom)
+    if (x + image->width  < ClippingRectangle.left  ||
+        y + image->height < ClippingRectangle.top   ||
+        x                 > ClippingRectangle.right ||
+        y                 > ClippingRectangle.bottom)
         return;
+
     image->blit_routine(image, x, y);
 }
 
@@ -1296,7 +1340,7 @@ void NormalBlit(IMAGE image, int x, int y)
             ix = image_blit_width;
             while (ix-- > 0)
             {
-                a = 255 - *alpha;
+                a = 256 - *alpha;
 
                 result  =  ((dst[0] & 0x001F) * a >> 8) + (src[0] & 0x001F);
                 result |= (((dst[0] & 0x07E0) * a >> 8) + (src[0] & 0x07E0)) & 0x07E0;
@@ -1320,7 +1364,7 @@ void NormalBlit(IMAGE image, int x, int y)
             ix = image_blit_width;
             while (ix-- > 0)
             {
-                a = 255 - *alpha;
+                a = 256 - *alpha;
 
                 result  =  ((dst[0] & 0x001F) * a >> 8) + (src[0] & 0x001F);
                 result |= (((dst[0] & 0x03E0) * a >> 8) + (src[0] & 0x03E0)) & 0x03E0;
@@ -1354,24 +1398,7 @@ EXPORT(int) GetImageHeight(IMAGE image)
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(RGBA*) LockImage(IMAGE image)
 {
-    image->locked_pixels = new RGBA[image->width * image->height];
-    // rgb
-    if (PixelFormat == RGB565)
-    {
-        // 5:6:5
-        for (int i = 0; i < image->width * image->height; i++)
-            image->locked_pixels[i] = UnpackPixel565(image->rgb[i]);
-    }
-    else
-    {
-        // 5:5:5
-        for (int i = 0; i < image->width * image->height; i++)
-            image->locked_pixels[i] = UnpackPixel555(image->rgb[i]);
-    }
-    // alpha
-    for (int i = 0; i < image->width * image->height; i++)
-        image->locked_pixels[i].alpha = image->alpha[i];
-    return image->locked_pixels;
+    return image->original;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1379,16 +1406,12 @@ EXPORT(void) UnlockImage(IMAGE image, bool pixels_changed)
 {
     if (pixels_changed)
     {
-
         delete[] image->rgb;
         delete[] image->alpha;
-        image->rgb = NULL;
-        image->alpha = NULL;
-        FillImagePixels(image, image->locked_pixels);
+
+        FillImagePixels(image, image->original);
         OptimizeBlitRoutine(image);
     }
-    delete[] image->locked_pixels;
-    image->locked_pixels = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
