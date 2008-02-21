@@ -113,26 +113,16 @@ log_object.endBlock()
 
 *** blend modes ***
 
-blitting images to the backbuffer or drawing onto surfaces
+drawing onto surfaces
+  - REPLACE:    DestColor = SrcColor
+  - RGB_ONLY:   DestRGB   = SrcRGB
+  - ALPHA_ONLY: DestAlpha = SrcAlpha
   - BLEND:      DestColor = (DestColor * (255 - SrcAlpha) + SrcColor * SrcAlpha) / 255
   - ADD:        DestColor = DestColor + ((SrcColor * SrcAlpha) / 255)
   - SUBTRACT:   DestColor = DestColor - ((SrcColor * SrcAlpha) / 255)
   - MULTIPLY:   DestColor = DestColor * ((SrcColor * SrcAlpha) / 255) / 255
   - AVERAGE:    DestColor = DestColor + ((SrcColor * SrcAlpha) / 255) / 2
   - INVERT:     DestColor = DestColor * (255 - ((SrcColor * SrcAlpha) / 255)) / 255
-
-masking
-  - BLEND:      DestColor = (DestColor * (255 - MaskAlpha) + MaskColor * MaskAlpha) / 255
-  - ADD:        DestColor = DestColor + MaskColor
-  - SUBTRACT:   DestColor = DestColor - MaskColor
-  - MULTIPLY:   DestColor = DestColor * MaskColor / 255
-  - AVERAGE:    DestColor = (DestColor + MaskColor) / 2
-  - INVERT:     DestColor = DestColor * (255 - MaskColor) / 255
-
-drawing onto surfaces or masking
-  - REPLACE:    DestColor = SrcColor
-  - RGB_ONLY:   DestRGB   = SrcRGB
-  - ALPHA_ONLY: DestAlpha = SrcAlpha
 
 
 *** system interfaces ***
@@ -342,6 +332,12 @@ drawing onto surfaces or masking
 
 
     *** joystick ***
+    GetTalkActivationButton()
+      - returns the joystick button used to activate talk scripts
+
+    SetTalkActivationButton()
+      - sets the joystick button used to activate talk scripts
+    
     GetNumJoysticks()
       - returns the number of joysticks available on the system
 
@@ -362,7 +358,6 @@ drawing onto surfaces or masking
 
     IsJoystickButtonPressed(joy, button)
       - returns true if the button on joystick 'joy' is pressed
-
 
   *** time ***
   GetTime()
@@ -1100,6 +1095,9 @@ drawing onto surfaces or masking
 
   sound_object.getLength()
     - gets the length of the sound
+    
+  sound_object.clone()
+    - returns a copy of the sound object
 
   *** fonts ***
   GetSystemFont()
