@@ -190,12 +190,16 @@ public:
 
     bool SetPersonX(const char* name, int x);
     bool SetPersonY(const char* name, int y);
+    bool SetPersonOffsetX(const char* name, int offx);
+    bool SetPersonOffsetY(const char* name, int offy);
     bool SetPersonXYFloat(const char* name, double x, double y);
     bool SetPersonLayer(const char* name, int layer);
     bool SetPersonDirection(const char* name, const char* direction);
     bool SetPersonFrame(const char* name, int frame);
     bool GetPersonX(const char* name, int& x);
     bool GetPersonY(const char* name, int& y);
+    bool GetPersonOffsetX(const char* name, int& x);
+    bool GetPersonOffsetY(const char* name, int& y);
     bool GetPersonXFloat(const char* name, double& x);
     bool GetPersonYFloat(const char* name, double& y);
     bool GetPersonLayer(const char* name, int& layer);
@@ -292,6 +296,10 @@ private:
 
         double x;
         double y;
+
+        int offset_x;
+        int offset_y;
+
         int layer;
         int width;
         int height;

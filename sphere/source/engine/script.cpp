@@ -633,9 +633,9 @@ CScript::InitializeSphereConstants()
                       KEY_CONSTANT(MOUSE_WHEEL_UP)
                       KEY_CONSTANT(MOUSE_WHEEL_DOWN)
                       KEY_CONSTANT(JOYSTICK_AXIS_X)
-                      KEY_CONSTANT(JOYSTICK_AXIS_Y)                      
+                      KEY_CONSTANT(JOYSTICK_AXIS_Y)
                       KEY_CONSTANT(JOYSTICK_AXIS_Z)
-                      KEY_CONSTANT(JOYSTICK_AXIS_R)                      
+                      KEY_CONSTANT(JOYSTICK_AXIS_R)
 #undef KEY_CONSTANT
 
 #define MAP_ENGINE_CONSTANT(c) { #c, CMapEngine:: c },
@@ -2319,7 +2319,7 @@ if (This->ShouldRender())
     arg_int(rx);
     arg_int(ry);
     arg_color(c);
-    
+
     DrawOutlinedEllipse(x, y, rx, ry, c);
 }
 end_func()
@@ -2336,7 +2336,7 @@ if (This->ShouldRender())
     arg_int(rx);
     arg_int(ry);
     arg_color(c);
-    
+
     DrawFilledEllipse(x, y, rx, ry, c);
 }
 end_func()
@@ -2450,7 +2450,7 @@ if (This->ShouldRender())
     {
         antialias = argInt(cx, argv[4]);
     }
-    
+
     DrawOutlinedCircle(x, y, r, c, antialias);
 }
 end_func()
@@ -2472,7 +2472,7 @@ if (This->ShouldRender())
     {
         antialias = argInt(cx, argv[4]);
     }
-    
+
     DrawFilledCircle(x, y, r, c, antialias);
 }
 end_func()
@@ -2499,7 +2499,7 @@ if (This->ShouldRender())
     RGBA c[2];
     c[0] = c1;
     c[1] = c2;
-    
+
     DrawGradientCircle(x, y, r, c, antialias);
 }
 end_func()
@@ -2658,7 +2658,7 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-    - returns the current position of the 'axis' axis of the joystick 'joy' 
+    - returns the current position of the 'axis' axis of the joystick 'joy'
       in normalized coordinates from -1 to 1
 */
 begin_func(GetJoystickAxis, 2)
@@ -4413,6 +4413,39 @@ if (!This->m_Engine->GetMapEngine()->SetPersonY(name, y))
 }
 
 end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - sets the horizontal offset of the person on the map
+*/
+begin_func(SetPersonOffsetX, 2)
+arg_str(name);
+arg_int(offx);
+
+if (!This->m_Engine->GetMapEngine()->SetPersonOffsetX(name, offx))
+{
+    This->ReportMapEngineError("SetPersonOffsetX() failed");
+    return JS_FALSE;
+}
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - sets the vertical offset of the person on the map
+*/
+begin_func(SetPersonOffsetY, 2)
+arg_str(name);
+arg_int(offy);
+
+if (!This->m_Engine->GetMapEngine()->SetPersonOffsetY(name, offy))
+{
+    This->ReportMapEngineError("SetPersonOffsetY() failed");
+    return JS_FALSE;
+}
+
+end_func()
+
 ////////////////////////////////////////////////////////////////////////////////
 /**
     - sets the position of the person with floating point accuracy
@@ -4476,6 +4509,44 @@ int y;
 if (!This->m_Engine->GetMapEngine()->GetPersonY(name, y))
 {
     This->ReportMapEngineError("GetPersonY() failed");
+    return JS_FALSE;
+}
+
+return_int(y);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - gets the position of the person on the map
+      The position is based on the middle of the spriteset's base
+      rectangle.
+*/
+begin_func(GetPersonOffsetX, 1)
+arg_str(name);
+
+int x;
+if (!This->m_Engine->GetMapEngine()->GetPersonOffsetX(name, x))
+{
+    This->ReportMapEngineError("GetPersonOffsetX() failed");
+    return JS_FALSE;
+}
+
+return_int(x);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - gets the position of the person on the map
+      The position is based on the middle of the spriteset's base
+      rectangle.
+*/
+begin_func(GetPersonOffsetY, 1)
+arg_str(name);
+
+int y;
+if (!This->m_Engine->GetMapEngine()->GetPersonOffsetY(name, y))
+{
+    This->ReportMapEngineError("GetPersonOffsetY() failed");
     return JS_FALSE;
 }
 

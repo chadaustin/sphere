@@ -1,5 +1,14 @@
 YYYY.MM.DD
 
+2008.02.22
+  - Added missing documentation for Sound.clone(),
+    GetTalkActivationButton() and SetTalkActivationButton().
+  - Fixed the Move Entity code in the editor.
+  - Changed Talk Activation code to accept all directions
+    which include a needed substring like "north".
+  - Added GetPersonOffsetX(name), SetPersonOffsetX(name, x), 
+    GetPersonOffsetY(name) and SetPersonOffsetY(name, y).
+
 2008.02.07
   - Added video drivers scale16, scale32 to replace interpolate*.
   - Optimized video drivers standard8, standard16, standard32.

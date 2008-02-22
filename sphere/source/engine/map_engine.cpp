@@ -1980,6 +1980,8 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
     p.on_trigger = false;
     p.last_trigger = -1;
     p.leader = -1;
+    p.offset_x = 0;
+    p.offset_y = 0;
     p.speed_x = 1;
     p.speed_y = 1;
     p.scale_x = 1;
@@ -1991,8 +1993,6 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
     p.ignorePersonObstructions = false;
     p.ignoreTileObstructions = false;
     p.mask = CreateRGBA(255, 255, 255, 255);
-    p.speed_x = 1;
-    p.speed_y = 1;
     p.frame = 0;
     p.spriteset = m_Engine->LoadSpriteset(spriteset_filename);
     if (p.spriteset == NULL)
@@ -2195,6 +2195,36 @@ CMapEngine::SetPersonY(const char* name, int y)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::SetPersonOffsetX(const char* name, int offx)
+{
+    // find person
+    int person = -1;
+    if ( IsInvalidPersonError(name, person) )
+        return false;
+
+    m_Persons[person].offset_x = offx;
+
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::SetPersonOffsetY(const char* name, int offy)
+{
+    // find person
+    int person = -1;
+    if ( IsInvalidPersonError(name, person) )
+        return false;
+
+    m_Persons[person].offset_y = offy;
+
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::SetPersonXYFloat(const char* name, double x, double y)
 {
     // find person
@@ -2332,6 +2362,36 @@ CMapEngine::GetPersonY(const char* name, int& y)
     }
 
     y = int(m_Persons[person].y);
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetPersonOffsetX(const char* name, int& x)
+{
+    int person = -1;
+    if ( IsInvalidPersonError(name, person) )
+    {
+        return false;
+    }
+
+    x = m_Persons[person].offset_x;
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetPersonOffsetY(const char* name, int& y)
+{
+    int person = -1;
+    if ( IsInvalidPersonError(name, person) )
+    {
+        return false;
+    }
+
+    y = m_Persons[person].offset_y;
     return true;
 }
 
@@ -4369,8 +4429,8 @@ CMapEngine::RenderEntities(int layer, bool flipped, int offset_x, int offset_y)
 
             //int draw_x = int((zoom_factor_x * p.x) - base_x - m_Camera.x - offset_x + (GetScreenWidth()  / 2));
             //int draw_y = int((zoom_factor_y * p.y) - base_y - m_Camera.y - offset_y + (GetScreenHeight() / 2));
-            int draw_x = int(p.x - base_x - m_Camera.x - offset_x + (GetScreenWidth()  / 2));
-            int draw_y = int(p.y - base_y - m_Camera.y - offset_y + (GetScreenHeight() / 2));
+            int draw_x = int(p.offset_x + p.x - base_x - m_Camera.x - offset_x + (GetScreenWidth()  / 2));
+            int draw_y = int(p.offset_y + p.y - base_y - m_Camera.y - offset_y + (GetScreenHeight() / 2));
 
             if (flipped)
                 draw_y += base_y;
@@ -5913,38 +5973,38 @@ CMapEngine::FindTalkingPerson(int person_index, int talk_x, int talk_y)
 {
     int tad = m_TalkActivationDistance;
     // god this is slow...
-    if (m_Persons[person_index].direction == "north")
+    if (strstr(m_Persons[person_index].direction.c_str(), "north"))
     {
         talk_y -= tad;
     }
-    else if (m_Persons[person_index].direction == "northeast")
+    else if (strstr(m_Persons[person_index].direction.c_str(), "northeast"))
     {
         talk_x += tad;
         talk_y -= tad;
     }
-    else if (m_Persons[person_index].direction == "east")
+    else if (strstr(m_Persons[person_index].direction.c_str(), "east"))
     {
         talk_x += tad;
     }
-    else if (m_Persons[person_index].direction == "southeast")
+    else if (strstr(m_Persons[person_index].direction.c_str(), "southeast"))
     {
         talk_x += tad;
         talk_y += tad;
     }
-    else if (m_Persons[person_index].direction == "south")
+    else if (strstr(m_Persons[person_index].direction.c_str(), "south"))
     {
         talk_y += tad;
     }
-    else if (m_Persons[person_index].direction == "southwest")
+    else if (strstr(m_Persons[person_index].direction.c_str(), "southwest"))
     {
         talk_x -= tad;
         talk_y += tad;
     }
-    else if (m_Persons[person_index].direction == "west")
+    else if (strstr(m_Persons[person_index].direction.c_str(), "west"))
     {
         talk_x -= tad;
     }
-    else if (m_Persons[person_index].direction == "northwest")
+    else if (strstr(m_Persons[person_index].direction.c_str(), "northwest"))
     {
         talk_x -= tad;
         talk_y -= tad;

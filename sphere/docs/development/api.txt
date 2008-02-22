@@ -790,6 +790,11 @@ drawing onto surfaces
 
       SetPersonX(name, x)
       SetPersonY(name, y)
+      
+      SetPersonOffsetX(name, x)
+      SetPersonOffsetY(name, y)
+        - sets the horizontal/vertical offset to use for blitting frames
+        
       SetPersonLayer(name, layer)
         - sets the position of the person on the map
       SetPersonXYFloat(name, x, y)
@@ -801,6 +806,11 @@ drawing onto surfaces
       
       GetPersonX(name)
       GetPersonY(name)
+      
+      GetPersonOffsetX(name)
+      GetPersonOffsetY(name)
+        - gets the horizontal/vertical offset used for blitting frames
+      
       GetPersonLayer(name)
         - Gets the position of the person on the map.
           The position is based on the middle of the spriteset's base
