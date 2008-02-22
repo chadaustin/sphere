@@ -123,7 +123,7 @@ bool IsConnected (NSOCKET socket) {
   if (socket->is_connected)
     return true;
   if (socket->is_listening) {
-    connection = accept(socket->socket, (struct sockaddr*)&client, &size);
+    connection = accept(socket->socket, (struct sockaddr*)&client, (socklen_t*)&size);
 	 std::cerr << "accepted a connection" << std::endl;
     if (connection >= 0) {
       close(socket->socket);
