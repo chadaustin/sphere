@@ -101,6 +101,18 @@ SOURCE=.\standard16.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\2xSaI.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\hq2x.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\scale.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\common\video.cpp
 # End Source File
 # Begin Source File
@@ -115,6 +127,18 @@ SOURCE=..\common\win32x.cpp
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=.\2xSaI.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\hq2x.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\scale.h
+# End Source File
 # Begin Source File
 
 SOURCE=..\..\common\begin_packed_struct.h

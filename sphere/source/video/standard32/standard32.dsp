@@ -123,6 +123,18 @@ SOURCE=..\common\win32x.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\2xSaI.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\hq2x.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\scale.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\common\primitives.hpp
 # End Source File
 # Begin Source File
