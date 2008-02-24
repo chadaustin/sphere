@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="8,00"
 	Name="standard16"
 	ProjectGUID="{AEE9B6D7-16FA-47CA-B0A7-4FB23E455429}"
 	>
@@ -223,6 +223,18 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
+				RelativePath=".\2xSaI.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\hq2x.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\scale.cpp"
+				>
+			</File>
+			<File
 				RelativePath="standard16.cpp"
 				>
 				<FileConfiguration
@@ -301,11 +313,23 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
+				RelativePath=".\2xSaI.h"
+				>
+			</File>
+			<File
+				RelativePath=".\hq2x.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\common\primitives.hpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\common\rgb.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\scale.h"
 				>
 			</File>
 			<File

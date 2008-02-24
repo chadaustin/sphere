@@ -2,12 +2,16 @@
 #include <windows.h>
 #include <ddraw.h>
 #include <stdio.h>
+
+#include "2xSaI.h"
+#include "hq2x.h"
+#include "scale.h"
+
 #include "../../common/rgb.hpp"
 #include "../../common/primitives.hpp"
 #include "../common/win32x.hpp"
 #include "../common/video.hpp"
 #include "resource.h"
-
 
 
 typedef struct _IMAGE
@@ -21,14 +25,29 @@ typedef struct _IMAGE
     void (*blit_routine)(_IMAGE* image, int x, int y);
 
     RGBA* original;
-}
-* IMAGE;
 
+    int pixel_format;
+
+} *IMAGE;
+
+enum SCALE_ALGORITHM
+{
+    I_DIRECT_SCALE = 0,
+    I_SCALE2X      = 1,
+    I_EAGLE        = 2,
+    I_HQ2X         = 3,
+    I_2XSAI        = 4,
+    I_SUPER_2XSAI  = 5,
+    I_SUPER_EAGLE  = 6,
+};
 
 struct CONFIGURATION
 {
     bool fullscreen;
     bool vsync;
+
+    bool scale;
+    int  algorithm;
 };
 
 // FUNCTION PROTOTYPES //
@@ -44,6 +63,8 @@ static bool InitWindowed();
 
 static void CloseFullscreen();
 static void CloseWindowed();
+
+static void Scale(word* dst, int dst_pitch);
 
 static void FillImagePixels(IMAGE image, RGBA* pixels);
 static void OptimizeBlitRoutine(IMAGE image);
@@ -101,11 +122,13 @@ inline RGBA UnpackPixel555(word pixel)
 // GLOBAL VARIABLES
 
 static CONFIGURATION Configuration;
+
 static enum
 {
-    RGB565, RGB555
-}
-PixelFormat;
+    RGB565,
+    RGB555,
+
+} PixelFormat;
 
 static HWND  SphereWindow;
 static word* ScreenBuffer;
@@ -121,13 +144,18 @@ static LPDIRECTDRAWSURFACE ddSecondary;
 // windowed output
 static HDC     RenderDC;
 static HBITMAP RenderBitmap;
+static word*   RenderBuffer;
+
+static bool s_fullscreen = false;
+static int  scale_factor = 1;
+static bool firstcall    = true;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
 {
     driverinfo->name   = "Standard 16-bit Color";
-    driverinfo->author = "Chad Austin";
+    driverinfo->author = "Chad Austin\nAnatoli Steinmark";
     driverinfo->date   = __DATE__;
     driverinfo->version = "v1.1";
     driverinfo->description = "15/16-bit color output in both windowed and fullscreen modes";
@@ -149,8 +177,12 @@ void LoadConfiguration()
     char config_file_name[MAX_PATH];
     GetDriverConfigFile(config_file_name);
 
-    Configuration.fullscreen        = (GetPrivateProfileInt("standard16", "Fullscreen",       1, config_file_name) != 0);
-    Configuration.vsync             = (GetPrivateProfileInt("standard16", "VSync",            1, config_file_name) != 0);
+    // load the fields from the file
+    Configuration.fullscreen = GetPrivateProfileInt("standard16", "Fullscreen", 1, config_file_name) != 0;
+    Configuration.vsync      = GetPrivateProfileInt("standard16", "VSync",      1, config_file_name) != 0;
+
+    Configuration.scale      = GetPrivateProfileInt("standard16", "Scale",      1, config_file_name) != 0;
+    Configuration.algorithm  = GetPrivateProfileInt("standard16", "Algorithm",  0, config_file_name);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -160,8 +192,12 @@ void SaveConfiguration()
     char config_file_name[MAX_PATH];
     GetDriverConfigFile(config_file_name);
 
-    WritePrivateProfileInt("standard16", "Fullscreen",       Configuration.fullscreen,        config_file_name);
-    WritePrivateProfileInt("standard16", "VSync",            Configuration.vsync,             config_file_name);
+    // save the fields to the file
+    WritePrivateProfileInt("standard16", "Fullscreen", Configuration.fullscreen, config_file_name);
+    WritePrivateProfileInt("standard16", "VSync",      Configuration.vsync,      config_file_name);
+
+    WritePrivateProfileInt("standard16", "Scale",      Configuration.scale,      config_file_name);
+    WritePrivateProfileInt("standard16", "Algorithm",  Configuration.algorithm,  config_file_name);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -171,34 +207,105 @@ BOOL CALLBACK ConfigureDialogProc(HWND window, UINT message, WPARAM wparam, LPAR
     switch (message)
     {
     case WM_INITDIALOG:
-        // set check boxes
-        SendDlgItemMessage(window, IDC_FULLSCREEN,       BM_SETCHECK, (Configuration.fullscreen        ? BST_CHECKED : BST_UNCHECKED), 0);
-        SendDlgItemMessage(window, IDC_VSYNC,            BM_SETCHECK, (Configuration.vsync             ? BST_CHECKED : BST_UNCHECKED), 0);
+
+        // set the check boxes
+        CheckDlgButton(window, IDC_FULLSCREEN, Configuration.fullscreen ? BST_CHECKED : BST_UNCHECKED);
+        CheckDlgButton(window, IDC_VSYNC,      Configuration.vsync      ? BST_CHECKED : BST_UNCHECKED);
+        CheckDlgButton(window, IDC_SCALE,      Configuration.scale      ? BST_CHECKED : BST_UNCHECKED);
+
+        // set the scaling algorithm
+        switch (Configuration.algorithm)
+        {
+            case I_DIRECT_SCALE:
+                CheckDlgButton(window, IDC_DIRECT_SCALE, BST_CHECKED);
+                break;
+
+            case I_SCALE2X:
+                CheckDlgButton(window, IDC_SCALE2X,      BST_CHECKED);
+                break;
+
+            case I_EAGLE:
+                CheckDlgButton(window, IDC_EAGLE,        BST_CHECKED);
+                break;
+
+            case I_HQ2X:
+                CheckDlgButton(window, IDC_HQ2X,         BST_CHECKED);
+                break;
+
+            case I_2XSAI:
+                CheckDlgButton(window, IDC_2XSAI,        BST_CHECKED);
+                break;
+
+            case I_SUPER_2XSAI:
+                CheckDlgButton(window, IDC_SUPER_2XSAI,  BST_CHECKED);
+                break;
+
+            case I_SUPER_EAGLE:
+                CheckDlgButton(window, IDC_SUPER_EAGLE,  BST_CHECKED);
+                break;
+
+        }
 
         // update the check states
         SendMessage(window, WM_COMMAND, MAKEWPARAM(IDC_FULLSCREEN, BN_PUSHED), 0);
-
+        SendMessage(window, WM_COMMAND, MAKEWPARAM(IDC_SCALE, BN_PUSHED), 0);
         return TRUE;
 
         ////////////////////////////////////////////////////////////////////////////
 
     case WM_COMMAND:
+
         switch (LOWORD(wparam))
         {
-        case IDOK:
-            Configuration.fullscreen        = (IsDlgButtonChecked(window, IDC_FULLSCREEN) != FALSE);
-            Configuration.vsync             = (IsDlgButtonChecked(window, IDC_VSYNC) != FALSE);
+            case IDOK:
 
-            EndDialog(window, 1);
-            return TRUE;
+                Configuration.fullscreen = (IsDlgButtonChecked(window, IDC_FULLSCREEN) != FALSE);
+                Configuration.vsync      = (IsDlgButtonChecked(window, IDC_VSYNC)      != FALSE);
+                Configuration.scale      = (IsDlgButtonChecked(window, IDC_SCALE)      != FALSE);
 
-        case IDCANCEL:
-            EndDialog(window, 0);
-            return TRUE;
+                if (IsDlgButtonChecked(window, IDC_DIRECT_SCALE) == BST_CHECKED)
+                    Configuration.algorithm =    I_DIRECT_SCALE;
 
-        case IDC_FULLSCREEN:
-            EnableWindow(GetDlgItem(window, IDC_VSYNC), IsDlgButtonChecked(window, IDC_FULLSCREEN));
-            return TRUE;
+                if (IsDlgButtonChecked(window, IDC_SCALE2X)      == BST_CHECKED)
+                    Configuration.algorithm =    I_SCALE2X;
+
+                if (IsDlgButtonChecked(window, IDC_EAGLE)        == BST_CHECKED)
+                    Configuration.algorithm =    I_EAGLE;
+
+                if (IsDlgButtonChecked(window, IDC_HQ2X)         == BST_CHECKED)
+                    Configuration.algorithm =    I_HQ2X;
+
+                if (IsDlgButtonChecked(window, IDC_2XSAI)        == BST_CHECKED)
+                    Configuration.algorithm =    I_2XSAI;
+
+                if (IsDlgButtonChecked(window, IDC_SUPER_2XSAI)  == BST_CHECKED)
+                    Configuration.algorithm =    I_SUPER_2XSAI;
+
+                if (IsDlgButtonChecked(window, IDC_SUPER_EAGLE)  == BST_CHECKED)
+                    Configuration.algorithm =    I_SUPER_EAGLE;
+
+                EndDialog(window, 1);
+                return TRUE;
+
+            case IDCANCEL:
+
+                EndDialog(window, 0);
+                return TRUE;
+
+            case IDC_SCALE:
+
+                EnableWindow(GetDlgItem(window, IDC_DIRECT_SCALE), IsDlgButtonChecked(window, IDC_SCALE));
+                EnableWindow(GetDlgItem(window, IDC_SCALE2X),      IsDlgButtonChecked(window, IDC_SCALE));
+                EnableWindow(GetDlgItem(window, IDC_EAGLE),        IsDlgButtonChecked(window, IDC_SCALE));
+                EnableWindow(GetDlgItem(window, IDC_HQ2X),         IsDlgButtonChecked(window, IDC_SCALE));
+                EnableWindow(GetDlgItem(window, IDC_2XSAI),        IsDlgButtonChecked(window, IDC_SCALE));
+                EnableWindow(GetDlgItem(window, IDC_SUPER_2XSAI),  IsDlgButtonChecked(window, IDC_SCALE));
+                EnableWindow(GetDlgItem(window, IDC_SUPER_EAGLE),  IsDlgButtonChecked(window, IDC_SCALE));
+
+            case IDC_FULLSCREEN:
+
+                EnableWindow(GetDlgItem(window, IDC_VSYNC), IsDlgButtonChecked(window, IDC_FULLSCREEN));
+                return TRUE;
         }
         return FALSE;
 
@@ -217,11 +324,16 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
     ScreenWidth  = screen_width;
     ScreenHeight = screen_height;
 
-    // set default clipping rectangle
-    SetClippingRectangle(0, 0, screen_width, screen_height);
+    if (firstcall)
+    {
+        SetClippingRectangle(0, 0, screen_width, screen_height);
+        LoadConfiguration();
+        s_fullscreen = Configuration.fullscreen;
+        scale_factor = Configuration.scale ? 2 : 1;
+        firstcall = false;
+    }
 
-    LoadConfiguration();
-    if (Configuration.fullscreen)
+    if (s_fullscreen)
         return InitFullscreen();
     else
         return InitWindowed();
@@ -237,7 +349,7 @@ bool InitFullscreen()
     bool    retval;
 
     // store old window styles
-    OldWindowStyle = GetWindowLong(SphereWindow, GWL_STYLE);
+    OldWindowStyle   = GetWindowLong(SphereWindow, GWL_STYLE);
     OldWindowStyleEx = GetWindowLong(SphereWindow, GWL_EXSTYLE);
 
     SetWindowLong(SphereWindow, GWL_STYLE, WS_POPUP);
@@ -278,9 +390,17 @@ bool InitFullscreen()
         return false;
     }
 
+    // allocate a blitting buffer
     ScreenBuffer = new word[ScreenWidth * ScreenHeight];
 
+    if (ScreenBuffer == NULL)
+        return false;
+
     ShowCursor(FALSE);
+
+    SetWindowPos(SphereWindow, HWND_TOPMOST, 0, 0,
+                 ScreenWidth * scale_factor, ScreenHeight * scale_factor,
+                 SWP_SHOWWINDOW);
 
     return true;
 }
@@ -289,14 +409,51 @@ bool InitFullscreen()
 
 EXPORT(bool) ToggleFullScreen()
 {
-    return true;
+    int x, y, w, h;
+    GetClippingRectangle(&x, &y, &w, &h);
+
+    // if we have a screen size, close the old driver
+    if (ScreenWidth != 0 || ScreenHeight != 0)
+    {
+
+        if (s_fullscreen)
+        {
+            CloseFullscreen();
+        }
+        else
+        {
+            CloseWindowed();
+        }
+    }
+
+    s_fullscreen = !s_fullscreen;
+
+    if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight) == true)
+    {
+        SetClippingRectangle(x, y, w, h);
+        return true;
+    }
+    else
+    {
+
+        // switching failed, try to revert to what it was
+        s_fullscreen = !s_fullscreen;
+        if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight) == true)
+        {
+            SetClippingRectangle(x, y, w, h);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 bool SetDisplayMode()
 {
-    HRESULT ddrval = dd->SetDisplayMode(ScreenWidth, ScreenHeight, 16);
+    HRESULT ddrval = dd->SetDisplayMode(ScreenWidth * scale_factor, ScreenHeight * scale_factor, 16);
+
     if (ddrval != DD_OK)
         return false;
 
@@ -325,6 +482,7 @@ bool CreateSurfaces()
 
     // create the primary surface
     HRESULT ddrval = dd->CreateSurface(&ddsd, &ddPrimary, NULL);
+
     if (ddrval != DD_OK)
         return false;
 
@@ -354,9 +512,13 @@ bool CreateSurfaces()
     // 5:5:5 -- 7C00 03E0 001F
 
     if (ddpf.dwRBitMask == 0xF800)
+    {
         PixelFormat = RGB565;
+    }
     else if (ddpf.dwRBitMask == 0x7C00)
+    {
         PixelFormat = RGB555;
+    }
     else
     {
         dd->Release();
@@ -380,12 +542,14 @@ bool InitWindowed()
     memset(&bmi, 0, sizeof(bmi));
     BITMAPINFOHEADER& bmih = bmi.bmiHeader;
     bmih.biSize        = sizeof(bmih);
-    bmih.biWidth       = ScreenWidth;
-    bmih.biHeight      = -ScreenHeight;
+    bmih.biWidth       =  ScreenWidth  * scale_factor;
+    bmih.biHeight      = -ScreenHeight * scale_factor;
     bmih.biPlanes      = 1;
     bmih.biBitCount    = 16;
     bmih.biCompression = BI_RGB;
-    RenderBitmap = CreateDIBSection(RenderDC, &bmi, DIB_RGB_COLORS, (void**)&ScreenBuffer, NULL, 0);
+
+    RenderBitmap = CreateDIBSection(RenderDC, &bmi, DIB_RGB_COLORS, (void**)&RenderBuffer, NULL, 0);
+
     if (RenderBitmap == NULL)
     {
         DeleteDC(RenderDC);
@@ -394,10 +558,16 @@ bool InitWindowed()
 
     SelectObject(RenderDC, RenderBitmap);
 
-    CenterWindow(SphereWindow, ScreenWidth, ScreenHeight);
+    CenterWindow(SphereWindow, ScreenWidth * scale_factor, ScreenHeight * scale_factor);
 
     // we know that 16-bit color DIBs are always 5:5:5
     PixelFormat = RGB555;
+
+    // allocate a blitting buffer
+    ScreenBuffer = new word[ScreenWidth * ScreenHeight];
+
+    if (ScreenBuffer == NULL)
+        return false;
 
     return true;
 }
@@ -406,7 +576,7 @@ bool InitWindowed()
 
 EXPORT(void) CloseVideoDriver()
 {
-    if (Configuration.fullscreen)
+    if (s_fullscreen)
         CloseFullscreen();
     else
         CloseWindowed();
@@ -420,8 +590,9 @@ void CloseFullscreen()
     SetWindowLong(SphereWindow, GWL_EXSTYLE, OldWindowStyleEx);
 
     ShowCursor(TRUE);
-    delete[] ScreenBuffer;
     dd->Release();
+    delete[] ScreenBuffer;
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -430,13 +601,15 @@ void CloseWindowed()
 {
     DeleteDC(RenderDC);
     DeleteObject(RenderBitmap);
+    delete[] ScreenBuffer;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 EXPORT(void) FlipScreen()
 {
-    if (Configuration.fullscreen)
+
+    if (s_fullscreen)
     {
         LPDIRECTDRAWSURFACE surface;
         if (Configuration.vsync)
@@ -465,8 +638,21 @@ EXPORT(void) FlipScreen()
             }
         }
 
-        for (int i = 0; i < ScreenHeight; i++)
-            memcpy((byte*)ddsd.lpSurface + i * ddsd.lPitch, ScreenBuffer + i * ScreenWidth, ScreenWidth * 2);
+        if (Configuration.scale)
+        {
+            Scale((word*)ddsd.lpSurface, ddsd.lPitch / 2);
+        }
+        else
+        {
+            word* dst = (word*)ddsd.lpSurface;
+            word* src = ScreenBuffer;
+            for (int i = 0; i < ScreenHeight; i++)
+            {
+                memcpy(dst, src, ScreenWidth * 2);
+                dst += ddsd.lPitch / 2;
+                src += ScreenWidth;
+            }
+        }
 
         // unlock the surface and do the flip!
         surface->Unlock(NULL);
@@ -475,23 +661,90 @@ EXPORT(void) FlipScreen()
     }
     else
     {
-        // if odd width...
-        if (ScreenWidth % 2 == 1)
-        {
-            // make sure the lines begin on dword boundaries
-            for (int i = ScreenHeight - 1; i >= 0; i--)
-            {
-                memmove(
-                    ScreenBuffer + i * (ScreenWidth + 1),
-                    ScreenBuffer + i * ScreenWidth,
-                    ScreenWidth * 2);
-            }
-        }
+
+        if (Configuration.scale)
+            Scale(RenderBuffer, ScreenWidth * 2);
+        else
+            memcpy((byte*)RenderBuffer, (byte*)ScreenBuffer, ScreenWidth * ScreenHeight * 2);
 
         // blit the render buffer to the window
         HDC dc = GetDC(SphereWindow);
-        BitBlt(dc, 0, 0, ScreenWidth, ScreenHeight, RenderDC, 0, 0, SRCCOPY);
+        BitBlt(dc, 0, 0, ScreenWidth * scale_factor, ScreenHeight * scale_factor, RenderDC, 0, 0, SRCCOPY);
         ReleaseDC(SphereWindow, dc);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void Scale(word* dst, int dst_pitch)
+{
+    if (PixelFormat == RGB565)
+    {
+        switch (Configuration.algorithm)
+        {
+            case I_DIRECT_SCALE:
+                DirectScale(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_SCALE2X:
+                Scale2x(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_EAGLE:
+                Eagle(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_HQ2X:
+                hq2x(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight, 16);
+                break;
+
+            case I_2XSAI:
+                _2xSaI(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight, 16);
+                break;
+
+            case I_SUPER_2XSAI:
+                Super2xSaI(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight, 16);
+                break;
+
+            case I_SUPER_EAGLE:
+                SuperEagle(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight, 16);
+                break;
+
+        }
+    }
+    else
+    {
+        switch (Configuration.algorithm)
+        {
+            case I_DIRECT_SCALE:
+                DirectScale(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_SCALE2X:
+                Scale2x(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_EAGLE:
+                Eagle(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_HQ2X:
+                hq2x(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight, 15);
+                break;
+
+            case I_2XSAI:
+                _2xSaI(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight, 15);
+                break;
+
+            case I_SUPER_2XSAI:
+                Super2xSaI(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight, 15);
+                break;
+
+            case I_SUPER_EAGLE:
+                SuperEagle(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight, 15);
+                break;
+
+        }
     }
 }
 
@@ -505,6 +758,7 @@ EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
     {
         image->width  = width;
         image->height = height;
+        image->pixel_format = PixelFormat;
 
         FillImagePixels(image, pixels);
         OptimizeBlitRoutine(image);
@@ -654,6 +908,7 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
     image->width        = width;
     image->height       = height;
     image->blit_routine = TileBlit;
+    image->pixel_format = PixelFormat;
     image->rgb          = new word[pixels_total];
     image->alpha        = new byte[pixels_total];
     image->original     = new RGBA[pixels_total];
@@ -697,6 +952,13 @@ EXPORT(void) DestroyImage(IMAGE image)
 
 EXPORT(void) BlitImage(IMAGE image, int x, int y)
 {
+    // if toggled from/to fullscreen, convert the image to the new pixel format first
+    if (image->pixel_format != PixelFormat)
+    {
+        image->pixel_format = PixelFormat;
+        FillImagePixels(image, image->original);
+    }
+
     // don't draw it if it's off the screen
     if (x + image->width  < ClippingRectangle.left  ||
         y + image->height < ClippingRectangle.top   ||
@@ -769,6 +1031,13 @@ private:
 
 EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
 {
+    // if toggled from/to fullscreen, convert the image to the new pixel format first
+    if (image->pixel_format != PixelFormat)
+    {
+        image->pixel_format = PixelFormat;
+        FillImagePixels(image, image->original);
+    }
+
     if (PixelFormat == RGB565)
     {
 
@@ -829,6 +1098,14 @@ inline void renderpixel555(word& d, const word& s, int a)
 
 EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
 {
+    // if toggled from/to fullscreen, convert the image to the new pixel format first
+    if (image->pixel_format != PixelFormat)
+    {
+        image->pixel_format = PixelFormat;
+        FillImagePixels(image, image->original);
+    }
+
+    // fallback onto BlitImage if possible
     if (x[0] == x[3] && x[1] == x[2] && y[0] == y[1] && y[2] == y[3])
     {
         int dw = x[2] - x[0] + 1;
@@ -854,6 +1131,13 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
 
 EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
 {
+    // if toggled from/to fullscreen, convert the image to the new pixel format first
+    if (image->pixel_format != PixelFormat)
+    {
+        image->pixel_format = PixelFormat;
+        FillImagePixels(image, image->original);
+    }
+
     if (PixelFormat == RGB565)
     {
         primitives::TexturedQuad(ScreenBuffer, ScreenWidth, x, y, image->rgb, image->alpha, image->width, image->height, ClippingRectangle, render_pixel_mask_565(mask));

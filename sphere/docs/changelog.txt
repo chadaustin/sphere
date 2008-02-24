@@ -1,5 +1,10 @@
 YYYY.MM.DD
 
+2008.02.24
+  - Merged video drivers scale16/32 with standard16/32.
+  - For standard16 its now possible to toggle from/to fullscreen.
+  - Removed video drivers scale16/32.
+
 2008.02.22
   - Added missing documentation for Sound.clone(),
     GetTalkActivationButton() and SetTalkActivationButton().

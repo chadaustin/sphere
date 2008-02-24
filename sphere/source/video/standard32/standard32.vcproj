@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="8,00"
 	Name="standard32"
 	ProjectGUID="{12202B71-E540-411F-83A5-51F5BC4B8DCB}"
 	>
@@ -301,11 +301,23 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
+				RelativePath=".\2xSaI.h"
+				>
+			</File>
+			<File
+				RelativePath=".\hq2x.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\common\primitives.hpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\common\rgb.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\scale.h"
 				>
 			</File>
 			<File
@@ -322,7 +334,7 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
-				RelativePath="standard.rc"
+				RelativePath=".\standard32.rc"
 				>
 			</File>
 		</Filter>

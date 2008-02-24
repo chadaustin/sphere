@@ -2,6 +2,10 @@
 #include <windows.h>
 #include <ddraw.h>
 
+#include "2xSaI.h"
+#include "hq2x.h"
+#include "scale.h"
+
 #include "../../common/rgb.hpp"
 #include "../../common/primitives.hpp"
 #include "../common/video.hpp"
@@ -20,6 +24,7 @@ unsigned char alpha_old[256][256]={
 #include "../../common/alpha_old.table"
                                   };
 #endif
+
 /////////////////////////////////////////////////
 typedef struct _IMAGE
 {
@@ -31,7 +36,9 @@ typedef struct _IMAGE
         BGRA* bgra;
         BGR*  bgr;
     };
+
     byte* alpha;
+    RGBA* original;
 
     void (*blit_routine)(_IMAGE* image, int x, int y);
 
@@ -42,9 +49,7 @@ typedef struct _IMAGE
     int clip_height;
 #endif
 
-    RGBA* original;
-}
-* IMAGE;
+} *IMAGE;
 
 enum BIT_DEPTH
 {
@@ -53,12 +58,26 @@ enum BIT_DEPTH
     BD_24,
 };
 
+enum SCALE_ALGORITHM
+{
+    I_DIRECT_SCALE = 0,
+    I_SCALE2X      = 1,
+    I_EAGLE        = 2,
+    I_HQ2X         = 3,
+    I_2XSAI        = 4,
+    I_SUPER_2XSAI  = 5,
+    I_SUPER_EAGLE  = 6,
+};
+
 struct CONFIGURATION
 {
     BIT_DEPTH bit_depth;
 
     bool fullscreen;
     bool vsync;
+
+    bool scale;
+    int  algorithm;
 };
 
 static void LoadConfiguration();
@@ -72,6 +91,8 @@ static bool InitWindowed();
 
 static void CloseFullscreen();
 static void CloseWindowed();
+
+static void Scale(void* dst, int dst_pitch);
 
 static bool FillImagePixels(IMAGE image, RGBA* data);
 static void OptimizeBlitRoutine(IMAGE image);
@@ -93,6 +114,7 @@ static LONG OldWindowStyleEx = 0;
 // windowed output
 static HDC     RenderDC = NULL;
 static HBITMAP RenderBitmap = NULL;
+static void*   RenderBuffer;
 
 // fullscreen output
 static LPDIRECTDRAW dd = NULL;
@@ -100,6 +122,9 @@ static LPDIRECTDRAWSURFACE ddPrimary   = NULL;
 static LPDIRECTDRAWSURFACE ddSecondary = NULL;
 
 static bool s_fullscreen = false;
+static int  scale_factor = 1;
+static bool firstcall    = true;
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
 {
@@ -107,20 +132,18 @@ EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
     if (driverinfo == NULL)
         return;
     driverinfo->name        = "Standard 32-bit Color";
-    driverinfo->author      = "Chad Austin et al.";
+    driverinfo->author      = "Chad Austin\nAnatoli Steinmark";
     driverinfo->date        = __DATE__;
     driverinfo->version     = "v1.1";
     driverinfo->description = "24/32-bit color output in both windowed and fullscreen modes";
 
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) ConfigureDriver(HWND parent)
 {
     LoadConfiguration();
-    DialogBox(DriverInstance,
-              MAKEINTRESOURCE(IDD_CONFIGURE),
-              parent,
-              ConfigureDialogProc);
+    DialogBox(DriverInstance, MAKEINTRESOURCE(IDD_CONFIGURE), parent, ConfigureDialogProc);
     SaveConfiguration();
 }
 
@@ -131,11 +154,14 @@ void LoadConfiguration()
     GetDriverConfigFile(config_file_name);
 
     // load the fields from the file
-    int bit_depth = GetPrivateProfileInt("standard32", "BitDepth", 0, config_file_name);
-    Configuration.bit_depth = (bit_depth == 32 ? BD_32 : (bit_depth == 24 ? BD_24 : BD_AUTODETECT));
+    int bit_depth            = GetPrivateProfileInt("standard32", "BitDepth", 0, config_file_name);
+    Configuration.bit_depth  = (bit_depth == 32 ? BD_32 : (bit_depth == 24 ? BD_24 : BD_AUTODETECT));
 
     Configuration.fullscreen = GetPrivateProfileInt("standard32", "Fullscreen", 1, config_file_name) != 0;
     Configuration.vsync      = GetPrivateProfileInt("standard32", "VSync",      1, config_file_name) != 0;
+
+    Configuration.scale      = GetPrivateProfileInt("standard32", "Scale",      1, config_file_name) != 0;
+    Configuration.algorithm  = GetPrivateProfileInt("standard32", "Algorithm",  0, config_file_name);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -147,8 +173,12 @@ void SaveConfiguration()
     // save the fields to the file
     int bit_depth = (Configuration.bit_depth == BD_32 ? 32 : (Configuration.bit_depth == BD_24 ? 24 : 0));
     WritePrivateProfileInt("standard32", "BitDepth",   bit_depth,                config_file_name);
+
     WritePrivateProfileInt("standard32", "Fullscreen", Configuration.fullscreen, config_file_name);
     WritePrivateProfileInt("standard32", "VSync",      Configuration.vsync,      config_file_name);
+
+    WritePrivateProfileInt("standard32", "Scale",      Configuration.scale,      config_file_name);
+    WritePrivateProfileInt("standard32", "Algorithm",  Configuration.algorithm,  config_file_name);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -157,6 +187,7 @@ BOOL CALLBACK ConfigureDialogProc(HWND window, UINT message, WPARAM wparam, LPAR
     switch (message)
     {
     case WM_INITDIALOG:
+
         // set the bit depth radio buttons
         if (Configuration.bit_depth == BD_AUTODETECT)
             SendDlgItemMessage(window, IDC_BITDEPTH_AUTODETECT, BM_SETCHECK, BST_CHECKED, 0);
@@ -168,46 +199,120 @@ BOOL CALLBACK ConfigureDialogProc(HWND window, UINT message, WPARAM wparam, LPAR
         // set the check boxes
         CheckDlgButton(window, IDC_FULLSCREEN, Configuration.fullscreen ? BST_CHECKED : BST_UNCHECKED);
         CheckDlgButton(window, IDC_VSYNC,      Configuration.vsync      ? BST_CHECKED : BST_UNCHECKED);
+        CheckDlgButton(window, IDC_SCALE,      Configuration.scale      ? BST_CHECKED : BST_UNCHECKED);
+
+        // set the scaling algorithm
+        switch (Configuration.algorithm)
+        {
+            case I_DIRECT_SCALE:
+                CheckDlgButton(window, IDC_DIRECT_SCALE, BST_CHECKED);
+                break;
+
+            case I_SCALE2X:
+                CheckDlgButton(window, IDC_SCALE2X,      BST_CHECKED);
+                break;
+
+            case I_EAGLE:
+                CheckDlgButton(window, IDC_EAGLE,        BST_CHECKED);
+                break;
+
+            case I_HQ2X:
+                CheckDlgButton(window, IDC_HQ2X,         BST_CHECKED);
+                break;
+
+            case I_2XSAI:
+                CheckDlgButton(window, IDC_2XSAI,        BST_CHECKED);
+                break;
+
+            case I_SUPER_2XSAI:
+                CheckDlgButton(window, IDC_SUPER_2XSAI,  BST_CHECKED);
+                break;
+
+            case I_SUPER_EAGLE:
+                CheckDlgButton(window, IDC_SUPER_EAGLE,  BST_CHECKED);
+                break;
+
+        }
 
         // update the check states
         SendMessage(window, WM_COMMAND, MAKEWPARAM(IDC_FULLSCREEN, BN_PUSHED), 0);
-
+        SendMessage(window, WM_COMMAND, MAKEWPARAM(IDC_SCALE, BN_PUSHED), 0);
         return TRUE;
+
         ////////////////////////////////////////////////////////////////////////////
+
     case WM_COMMAND:
+
         switch (LOWORD(wparam))
         {
-        case IDOK:
-            if (IsDlgButtonChecked(window, IDC_BITDEPTH_32))
-                Configuration.bit_depth = BD_32;
-            else if (IsDlgButtonChecked(window, IDC_BITDEPTH_24))
-                Configuration.bit_depth = BD_24;
-            else
-                Configuration.bit_depth = BD_AUTODETECT;
+            case IDOK:
 
-            Configuration.fullscreen = (IsDlgButtonChecked(window, IDC_FULLSCREEN) != FALSE);
-            Configuration.vsync      = (IsDlgButtonChecked(window, IDC_VSYNC)      != FALSE);
+                if (IsDlgButtonChecked(window, IDC_BITDEPTH_32))
+                    Configuration.bit_depth = BD_32;
+                else if (IsDlgButtonChecked(window, IDC_BITDEPTH_24))
+                    Configuration.bit_depth = BD_24;
+                else
+                    Configuration.bit_depth = BD_AUTODETECT;
 
-            EndDialog(window, 1);
-            return TRUE;
+                Configuration.fullscreen = (IsDlgButtonChecked(window, IDC_FULLSCREEN) != FALSE);
+                Configuration.vsync      = (IsDlgButtonChecked(window, IDC_VSYNC)      != FALSE);
+                Configuration.scale      = (IsDlgButtonChecked(window, IDC_SCALE)      != FALSE);
 
-        case IDCANCEL:
-            EndDialog(window, 0);
-            return TRUE;
+                if (IsDlgButtonChecked(window, IDC_DIRECT_SCALE) == BST_CHECKED)
+                    Configuration.algorithm =    I_DIRECT_SCALE;
 
-        case IDC_FULLSCREEN:
-            EnableWindow(GetDlgItem(window, IDC_VSYNC), IsDlgButtonChecked(window, IDC_FULLSCREEN));
-            EnableWindow(GetDlgItem(window, IDC_BITDEPTH_AUTODETECT), IsDlgButtonChecked(window, IDC_FULLSCREEN));
-            if (IsDlgButtonChecked(window, IDC_BITDEPTH_AUTODETECT) && !IsDlgButtonChecked(window, IDC_FULLSCREEN))
-            {
-                CheckDlgButton(window, IDC_BITDEPTH_AUTODETECT, BST_UNCHECKED);
-                CheckDlgButton(window, IDC_BITDEPTH_32,         BST_CHECKED);
-            }
-            return TRUE;
+                if (IsDlgButtonChecked(window, IDC_SCALE2X)      == BST_CHECKED)
+                    Configuration.algorithm =    I_SCALE2X;
+
+                if (IsDlgButtonChecked(window, IDC_EAGLE)        == BST_CHECKED)
+                    Configuration.algorithm =    I_EAGLE;
+
+                if (IsDlgButtonChecked(window, IDC_HQ2X)         == BST_CHECKED)
+                    Configuration.algorithm =    I_HQ2X;
+
+                if (IsDlgButtonChecked(window, IDC_2XSAI)        == BST_CHECKED)
+                    Configuration.algorithm =    I_2XSAI;
+
+                if (IsDlgButtonChecked(window, IDC_SUPER_2XSAI)  == BST_CHECKED)
+                    Configuration.algorithm =    I_SUPER_2XSAI;
+
+                if (IsDlgButtonChecked(window, IDC_SUPER_EAGLE)  == BST_CHECKED)
+                    Configuration.algorithm =    I_SUPER_EAGLE;
+
+                EndDialog(window, 1);
+                return TRUE;
+
+            case IDCANCEL:
+
+                EndDialog(window, 0);
+                return TRUE;
+
+            case IDC_SCALE:
+
+                EnableWindow(GetDlgItem(window, IDC_DIRECT_SCALE), IsDlgButtonChecked(window, IDC_SCALE));
+                EnableWindow(GetDlgItem(window, IDC_SCALE2X),      IsDlgButtonChecked(window, IDC_SCALE));
+                EnableWindow(GetDlgItem(window, IDC_EAGLE),        IsDlgButtonChecked(window, IDC_SCALE));
+                EnableWindow(GetDlgItem(window, IDC_HQ2X),         IsDlgButtonChecked(window, IDC_SCALE));
+                EnableWindow(GetDlgItem(window, IDC_2XSAI),        IsDlgButtonChecked(window, IDC_SCALE));
+                EnableWindow(GetDlgItem(window, IDC_SUPER_2XSAI),  IsDlgButtonChecked(window, IDC_SCALE));
+                EnableWindow(GetDlgItem(window, IDC_SUPER_EAGLE),  IsDlgButtonChecked(window, IDC_SCALE));
+
+            case IDC_FULLSCREEN:
+
+                EnableWindow(GetDlgItem(window, IDC_VSYNC), IsDlgButtonChecked(window, IDC_FULLSCREEN));
+                EnableWindow(GetDlgItem(window, IDC_BITDEPTH_AUTODETECT), IsDlgButtonChecked(window, IDC_FULLSCREEN));
+
+                if (IsDlgButtonChecked(window, IDC_BITDEPTH_AUTODETECT) && !IsDlgButtonChecked(window, IDC_FULLSCREEN))
+                {
+                    CheckDlgButton(window, IDC_BITDEPTH_AUTODETECT, BST_UNCHECKED);
+                    CheckDlgButton(window, IDC_BITDEPTH_32,         BST_CHECKED);
+                }
+                return TRUE;
         }
         return FALSE;
 
         ////////////////////////////////////////////////////////////////////////////
+
     default:
         return FALSE;
     }
@@ -220,14 +325,12 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
     ScreenWidth  = screen_width;
     ScreenHeight = screen_height;
 
-    // set default clipping rectangle
-    SetClippingRectangle(0, 0, screen_width, screen_height);
-
-    LoadConfiguration();
-    static bool firstcall = true;
     if (firstcall)
     {
+        SetClippingRectangle(0, 0, screen_width, screen_height);
+        LoadConfiguration();
         s_fullscreen = Configuration.fullscreen;
+        scale_factor = Configuration.scale ? 2 : 1;
         firstcall = false;
     }
 
@@ -263,8 +366,6 @@ bool InitFullscreen()
     if (ddrval != DD_OK)
     {
         dd->Release();
-
-        dd = NULL;
         MessageBox(SphereWindow, "SetCooperativeLevel() failed", "standard32", MB_OK);
         return false;
     }
@@ -274,8 +375,6 @@ bool InitFullscreen()
     if (retval == false)
     {
         dd->Release();
-        dd = NULL;
-
         MessageBox(SphereWindow, "SetDisplayMode() failed", "standard32", MB_OK);
         return false;
     }
@@ -285,14 +384,22 @@ bool InitFullscreen()
     if (retval == false)
     {
         dd->Release();
-        dd = NULL;
-
         MessageBox(SphereWindow, "CreateSurfaces() failed", "standard32", MB_OK);
         return false;
     }
 
+    // allocate a blitting buffer
+    ScreenBuffer = new byte[ScreenWidth * ScreenHeight * (BitsPerPixel / 8)];
+
+    if (ScreenBuffer == NULL)
+        return false;
+
     ShowCursor(FALSE);
-    SetWindowPos(SphereWindow, HWND_TOPMOST, 0, 0, ScreenWidth, ScreenHeight, SWP_SHOWWINDOW);
+
+    SetWindowPos(SphereWindow, HWND_TOPMOST, 0, 0,
+                 ScreenWidth * scale_factor, ScreenHeight * scale_factor,
+                 SWP_SHOWWINDOW);
+
     return true;
 }
 
@@ -322,6 +429,7 @@ EXPORT(bool) ToggleFullScreen()
     }
 
     s_fullscreen = !s_fullscreen;
+
     if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight) == true)
     {
         SetClippingRectangle(x, y, w, h);
@@ -350,48 +458,52 @@ bool SetDisplayMode()
     switch (Configuration.bit_depth)
     {
 
-    case BD_AUTODETECT:
-        if (BitsPerPixel == 0 || BitsPerPixel == 32)
-        {
-            ddrval = dd->SetDisplayMode(ScreenWidth, ScreenHeight, 32);
+        case BD_AUTODETECT:
+
+            if (BitsPerPixel == 0 || BitsPerPixel == 32)
+            {
+                ddrval = dd->SetDisplayMode(ScreenWidth * scale_factor, ScreenHeight * scale_factor, 32);
+                if (ddrval == DD_OK)
+                {
+                    BitsPerPixel = 32;
+                    return true;
+                }
+            }
+            if (BitsPerPixel == 0 || BitsPerPixel == 24)
+            {
+                ddrval = dd->SetDisplayMode(ScreenWidth * scale_factor, ScreenHeight * scale_factor, 24);
+                if (ddrval == DD_OK)
+                {
+                    BitsPerPixel = 24;
+                    return true;
+                }
+            }
+            return false;
+
+        case BD_32:
+
+            ddrval = dd->SetDisplayMode(ScreenWidth * scale_factor, ScreenHeight * scale_factor, 32);
             if (ddrval == DD_OK)
             {
 
                 BitsPerPixel = 32;
                 return true;
             }
-        }
-        if (BitsPerPixel == 0 || BitsPerPixel == 24)
-        {
-            ddrval = dd->SetDisplayMode(ScreenWidth, ScreenHeight, 24);
+            return false;
+
+        case BD_24:
+
+            ddrval = dd->SetDisplayMode(ScreenWidth * scale_factor, ScreenHeight * scale_factor, 24);
+
             if (ddrval == DD_OK)
             {
-
-                BitsPerPixel = 24;
                 return true;
+
             }
-        }
-        return false;
-    case BD_32:
-        ddrval = dd->SetDisplayMode(ScreenWidth, ScreenHeight, 32);
-        if (ddrval == DD_OK)
-        {
+            return false;
 
-            BitsPerPixel = 32;
-            return true;
-        }
-        return false;
-    case BD_24:
-        ddrval = dd->SetDisplayMode(ScreenWidth, ScreenHeight, 24);
-
-        if (ddrval == DD_OK)
-        {
-            return true;
-
-        }
-        return false;
-    default:
-        return false;
+        default:
+            return false;
     }
 
     return false;
@@ -418,6 +530,7 @@ bool CreateSurfaces()
 
     // create the primary surface
     HRESULT ddrval = dd->CreateSurface(&ddsd, &ddPrimary, NULL);
+
     if (ddrval != DD_OK)
         return false;
 
@@ -432,25 +545,20 @@ bool CreateSurfaces()
         }
     }
 
-    // allocate a blitting buffer
-    ScreenBuffer = new byte[ScreenWidth * ScreenHeight * (BitsPerPixel / 8)];
-
-    if (ScreenBuffer == NULL)
-        return false;
     return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 bool InitWindowed()
 {
-    if (BitsPerPixel == 0)
-    {
-        // calculate bits per pixel
 
-        BitsPerPixel = (Configuration.bit_depth == BD_32 ? 32 : 24);
-    }
+    // calculate bits per pixel
+    if (BitsPerPixel != 32 && BitsPerPixel != 24)
+        BitsPerPixel = 32;
+
     // create the render DC
     RenderDC = CreateCompatibleDC(NULL);
+
     if (RenderDC == NULL)
         return false;
 
@@ -459,12 +567,12 @@ bool InitWindowed()
     memset(&bmi, 0, sizeof(bmi));
     BITMAPINFOHEADER& bmih = bmi.bmiHeader;
     bmih.biSize        = sizeof(bmih);
-    bmih.biWidth       = ScreenWidth;
-    bmih.biHeight      = -ScreenHeight;
+    bmih.biWidth       =  ScreenWidth  * scale_factor;
+    bmih.biHeight      = -ScreenHeight * scale_factor;
     bmih.biPlanes      = 1;
     bmih.biBitCount    = BitsPerPixel;
     bmih.biCompression = BI_RGB;
-    RenderBitmap = CreateDIBSection(RenderDC, &bmi, DIB_RGB_COLORS, (void**)&ScreenBuffer, NULL, 0);
+    RenderBitmap = CreateDIBSection(RenderDC, &bmi, DIB_RGB_COLORS, (void**)&RenderBuffer, NULL, 0);
     if (RenderBitmap == NULL)
     {
         DeleteDC(RenderDC);
@@ -472,7 +580,13 @@ bool InitWindowed()
     }
 
     SelectObject(RenderDC, RenderBitmap);
-    CenterWindow(SphereWindow, ScreenWidth, ScreenHeight);
+    CenterWindow(SphereWindow, ScreenWidth * scale_factor, ScreenHeight * scale_factor);
+
+    // allocate a blitting buffer
+    ScreenBuffer = new byte[ScreenWidth * ScreenHeight * (BitsPerPixel / 8)];
+
+    if (ScreenBuffer == NULL)
+        return false;
 
     return true;
 }
@@ -514,6 +628,168 @@ void CloseWindowed()
     RenderDC = NULL;
     DeleteObject(RenderBitmap);
     RenderBitmap = NULL;
+
+    if (ScreenBuffer != NULL)
+    {
+
+        delete[] ScreenBuffer;
+        ScreenBuffer = NULL;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) FlipScreen()
+{
+
+    if (s_fullscreen)
+    {
+        LPDIRECTDRAWSURFACE surface;
+        if (Configuration.vsync)
+            surface = ddSecondary;
+        else
+            surface = ddPrimary;
+
+        // lock the surface
+        DDSURFACEDESC ddsd;
+        ddsd.dwSize = sizeof(ddsd);
+        HRESULT ddrval = surface->Lock(NULL, &ddsd, DDLOCK_WAIT, NULL);
+
+        // if the surface was lost, restore it
+        if (ddrval == DDERR_SURFACELOST)
+        {
+            surface->Restore();
+            if (surface == ddSecondary)
+                ddPrimary->Restore();
+
+            // attempt to lock again
+            ddrval = surface->Lock(NULL, &ddsd, DDLOCK_WAIT, NULL);
+            if (ddrval != DD_OK)
+            {
+                Sleep(100);
+                return;
+            }
+        }
+
+        if (Configuration.scale)
+        {
+            Scale(ddsd.lpSurface, ddsd.lPitch / (BitsPerPixel / 8));
+        }
+        else if (BitsPerPixel == 32)
+        {
+            BGRA* dst = (BGRA*)ddsd.lpSurface;
+            BGRA* src = (BGRA*)ScreenBuffer;
+            for (int i = 0; i < ScreenHeight; i++)
+            {
+                memcpy(dst, src, ScreenWidth * 4);
+                dst += ddsd.lPitch / 4;
+                src += ScreenWidth;
+            }
+        }
+        else
+        {
+            BGR* dst = (BGR*)ddsd.lpSurface;
+            BGR* src = (BGR*)ScreenBuffer;
+            for (int i = 0; i < ScreenHeight; i++)
+            {
+                memcpy(dst, src, ScreenWidth * 3);
+                dst += ddsd.lPitch / 3;
+                src += ScreenWidth;
+            }
+        }
+
+        // unlock the surface and do the flip!
+        surface->Unlock(NULL);
+        if (Configuration.vsync)
+            ddPrimary->Flip(NULL, DDFLIP_WAIT);
+    }
+    else
+    {
+
+        if (Configuration.scale)
+            Scale(RenderBuffer, ScreenWidth * 2);
+        else if (BitsPerPixel == 32)
+            memcpy((byte*)RenderBuffer, (byte*)ScreenBuffer, ScreenWidth * ScreenHeight * 4);
+        else
+            memcpy((byte*)RenderBuffer, (byte*)ScreenBuffer, ScreenWidth * ScreenHeight * 3);
+
+        // blit the render buffer to the window
+        HDC dc = GetDC(SphereWindow);
+        BitBlt(dc, 0, 0, ScreenWidth * scale_factor, ScreenHeight * scale_factor, RenderDC, 0, 0, SRCCOPY);
+        ReleaseDC(SphereWindow, dc);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void Scale(void* dst, int dst_pitch)
+{
+    if (BitsPerPixel == 32)
+    {
+        switch (Configuration.algorithm)
+        {
+            case I_DIRECT_SCALE:
+                DirectScale((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_SCALE2X:
+                Scale2x((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_EAGLE:
+                Eagle((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_HQ2X:
+                hq2x((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_2XSAI:
+                _2xSaI((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_SUPER_2XSAI:
+                Super2xSaI((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_SUPER_EAGLE:
+                SuperEagle((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+        }
+    }
+    else if (BitsPerPixel == 24)
+    {
+        switch (Configuration.algorithm)
+        {
+            case I_DIRECT_SCALE:
+                DirectScale((BGR*)dst, dst_pitch, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_SCALE2X:
+                Scale2x((BGR*)dst, dst_pitch, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_EAGLE:
+                Eagle((BGR*)dst, dst_pitch, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_HQ2X:
+                hq2x((BGR*)dst, dst_pitch, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_2XSAI:
+                _2xSaI((BGR*)dst, dst_pitch, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_SUPER_2XSAI:
+                Super2xSaI((BGR*)dst, dst_pitch, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+            case I_SUPER_EAGLE:
+                SuperEagle((BGR*)dst, dst_pitch, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
+                break;
+
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -573,6 +849,7 @@ bool FillImagePixels(IMAGE image, RGBA* pixels)
 
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 #if USE_CLIP_IMAGE
 /**
@@ -742,90 +1019,6 @@ void OptimizeBlitRoutine(IMAGE image)
 
     // normal blit
     image->blit_routine = NormalBlit;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-EXPORT(void) FlipScreen()
-{
-    if (s_fullscreen)
-    {
-        LPDIRECTDRAWSURFACE surface;
-        if (Configuration.vsync)
-            surface = ddSecondary;
-        else
-            surface = ddPrimary;
-
-        // lock the surface
-        DDSURFACEDESC ddsd;
-        ddsd.dwSize = sizeof(ddsd);
-        HRESULT ddrval = surface->Lock(NULL, &ddsd, DDLOCK_WAIT, NULL);
-
-        // if the surface was lost, restore it
-        if (ddrval == DDERR_SURFACELOST)
-        {
-            surface->Restore();
-            if (surface == ddSecondary)
-                ddPrimary->Restore();
-
-            // attempt to lock again
-            ddrval = surface->Lock(NULL, &ddsd, DDLOCK_WAIT, NULL);
-            if (ddrval != DD_OK)
-            {
-                Sleep(100);
-                return;
-            }
-        }
-
-        // render backbuffer to the screen
-        if (BitsPerPixel == 32)
-        {
-            BGRA* dst = (BGRA*)ddsd.lpSurface;
-            BGRA* src = (BGRA*)ScreenBuffer;
-            for (int i = 0; i < ScreenHeight; i++)
-            {
-                memcpy(dst, src, ScreenWidth * 4);
-                dst += ddsd.lPitch / 4;
-                src += ScreenWidth;
-            }
-        }
-        else
-        {
-            BGR* dst = (BGR*)ddsd.lpSurface;
-            BGR* src = (BGR*)ScreenBuffer;
-            for (int i = 0; i < ScreenHeight; i++)
-            {
-                memcpy(dst, src, ScreenWidth * 3);
-                dst += ddsd.lPitch / 3;
-                src += ScreenWidth;
-            }
-        }
-
-        // unlock the surface and do the flip!
-        surface->Unlock(NULL);
-        if (Configuration.vsync)
-            ddPrimary->Flip(NULL, DDFLIP_WAIT);
-    }
-    else
-    {
-        // make sure the lines are on dword boundaries
-        if (BitsPerPixel == 24)
-        {
-            int pitch = (ScreenWidth * 3 + 3) / 4 * 4;
-            byte* dst = (byte*)ScreenBuffer;
-            BGR*  src = (BGR*)ScreenBuffer;
-            for (int i = ScreenHeight - 1; i >= 0; i--)
-            {
-                memmove(dst + i * pitch,
-                        src + i * ScreenWidth,
-                        ScreenWidth * 3);
-            }
-        }
-
-        // blit the render buffer to the window
-        HDC dc = GetDC(SphereWindow);
-        BitBlt(dc, 0, 0, ScreenWidth, ScreenHeight, RenderDC, 0, 0, SRCCOPY);
-        ReleaseDC(SphereWindow, dc);
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
