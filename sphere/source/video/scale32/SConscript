@@ -1,6 +1,0 @@
-Import('VideoDriver')
-
-VideoDriver('scale32',
-            ['scale32.cpp'],
-            'scale32',
-            ['gdi32', 'ddraw', 'vidcommon'])

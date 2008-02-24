@@ -34,10 +34,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vsp2rts", "source\util\vsp2
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "editor", "source\editor\editor.vcproj", "{573B5C55-2720-470A-94A0-E7356C2E71BE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "scale16", "source\video\scale16\scale16.vcproj", "{6E2AFF42-B5C7-422F-BDC5-42402BA1F736}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "scale32", "source\video\scale32\scale32.vcproj", "{CE1B8505-D0E1-4C4C-9B3D-F13600257704}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -112,14 +108,6 @@ Global
 		{573B5C55-2720-470A-94A0-E7356C2E71BE}.Debug|Win32.Build.0 = Debug|Win32
 		{573B5C55-2720-470A-94A0-E7356C2E71BE}.Release|Win32.ActiveCfg = Release|Win32
 		{573B5C55-2720-470A-94A0-E7356C2E71BE}.Release|Win32.Build.0 = Release|Win32
-		{6E2AFF42-B5C7-422F-BDC5-42402BA1F736}.Debug|Win32.ActiveCfg = Debug|Win32
-		{6E2AFF42-B5C7-422F-BDC5-42402BA1F736}.Debug|Win32.Build.0 = Debug|Win32
-		{6E2AFF42-B5C7-422F-BDC5-42402BA1F736}.Release|Win32.ActiveCfg = Release|Win32
-		{6E2AFF42-B5C7-422F-BDC5-42402BA1F736}.Release|Win32.Build.0 = Release|Win32
-		{CE1B8505-D0E1-4C4C-9B3D-F13600257704}.Debug|Win32.ActiveCfg = Debug|Win32
-		{CE1B8505-D0E1-4C4C-9B3D-F13600257704}.Debug|Win32.Build.0 = Debug|Win32
-		{CE1B8505-D0E1-4C4C-9B3D-F13600257704}.Release|Win32.ActiveCfg = Release|Win32
-		{CE1B8505-D0E1-4C4C-9B3D-F13600257704}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
