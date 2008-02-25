@@ -1,5 +1,13 @@
 YYYY.MM.DD
 
+2008.02.25
+  - Entities/Zones will now remain on their original layers 
+    after inserting a new layer.
+  - All Entities/Zones on a layer will now be deleted if the layer
+    has been deleted, but the entry point will go down to the base layer.
+  - Placing the mouse cursor on the entry point will now show it's layer
+    in the status bar.
+
 2008.02.24
   - Merged video drivers scale16/32 with standard16/32.
   - For standard16 its now possible to toggle from/to fullscreen.

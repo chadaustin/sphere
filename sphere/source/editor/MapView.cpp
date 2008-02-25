@@ -2361,6 +2361,7 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
   int x = point.x / tile_width  + m_CurrentX;
   int y = point.y / tile_height + m_CurrentY;
 
+
   // display information on the entity/layer under the mouse cursor
   CString wtext;
   int entity_ind = 0;
@@ -2374,6 +2375,7 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
       break;
     }
   }
+  // its a person
   if (ftype == sEntity::PERSON)
   {
     sPersonEntity &person = (sPersonEntity&)m_Map->GetEntity(entity_ind);
@@ -2383,6 +2385,7 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
                  person.layer,
                  person.spriteset.c_str());
   }
+  // its a trigger
   else if (ftype == sEntity::TRIGGER)
   {
     sTriggerEntity &trigger = (sTriggerEntity&)m_Map->GetEntity(entity_ind);
@@ -2390,6 +2393,15 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
                  m_Map->GetLayer(trigger.layer).GetName(),
                  trigger.layer);
   }
+  // its the entry point
+  else if (m_Map->GetStartX() / m_Map->GetTileset().GetTileWidth() == x &&
+           m_Map->GetStartY() / m_Map->GetTileset().GetTileWidth() == y)
+  {
+    wtext.Format("Start Point on layer '%s' (%d)",
+                 m_Map->GetLayer(m_Map->GetStartLayer()).GetName(),
+                 m_Map->GetStartLayer());
+  }
+  // nothing, so display the layer information
   else
   {
     wtext.Format("Layer '%s' (%d)",
@@ -2397,6 +2409,7 @@ CMapView::OnMouseMove(UINT flags, CPoint point)
                  m_SelectedLayer);
   }
   GetStatusBar()->SetWindowText(wtext);
+
 
   // display coordinate information in the pane bar
   if (x >= 0 && y >= 0 && x <= GetTotalTilesX() && y <= GetTotalTilesY())

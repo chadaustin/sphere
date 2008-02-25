@@ -1477,6 +1477,21 @@ sMap::InsertLayer(int where, const sLayer& layer)
 {
     // resize the layer array
     m_Layers.insert(m_Layers.begin() + where, layer);
+
+    // adjust entry point
+    if (m_StartLayer >= where)
+        m_StartLayer += 1;
+
+    // adjust entities
+    for (unsigned int i = 0; i < m_Entities.size(); i++)
+        if (m_Entities[i]->layer >= where)
+            m_Entities[i]->layer += 1;
+
+    // adjust zones
+    for (unsigned int i = 0; i < m_Zones.size(); i++)
+        if (m_Zones[i].layer >= where)
+            m_Zones[i].layer += 1;
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1575,6 +1590,41 @@ sMap::DeleteLayer(int where, bool delete_tiles)
         // now prune tiles in set
         PruneTileset(&tiles);
     }
+
+
+    // adjust entry point
+    if (m_StartLayer > where)
+        m_StartLayer -= 1;
+    else if (m_StartLayer == where)
+        m_StartLayer = 0;
+
+    // adjust entities
+    for (unsigned int i = 0; i < m_Entities.size(); i++)
+    {
+        if (m_Entities[i]->layer > where)
+        {
+            m_Entities[i]->layer -= 1;
+        }
+        else if (m_Entities[i]->layer == where)
+        {
+            DeleteEntity(i);
+            i = -1;
+        }
+    }
+
+    // adjust zones
+    for (unsigned int i = 0; i < m_Zones.size(); i++)
+    {
+        if (m_Zones[i].layer > where)
+        {
+            m_Zones[i].layer -= 1;
+        }
+        else if (m_Zones[i].layer == where)
+        {
+            DeleteZone(i);
+            i = -1;
+        }
+    }
 }
 ////////////////////////////////////////////////////////////////////////////////
 void
@@ -1591,19 +1641,23 @@ sMap::SwapLayers(int layer1, int layer2)
     }
 
     std::swap(m_Layers[layer1], m_Layers[layer2]);
+
+    // swap entities
     for (unsigned int i = 0; i < m_Entities.size(); i++)
     {
-
         if (m_Entities[i]->layer == layer1)
-        {
-
             m_Entities[i]->layer = layer2;
-        }
         else if (m_Entities[i]->layer == layer2)
-        {
-
             m_Entities[i]->layer = layer1;
-        }
+    }
+
+    // swap zones
+    for (unsigned int i = 0; i < m_Zones.size(); i++)
+    {
+        if (m_Zones[i].layer == layer1)
+            m_Zones[i].layer = layer2;
+        else if (m_Zones[i].layer == layer2)
+            m_Zones[i].layer = layer1;
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
