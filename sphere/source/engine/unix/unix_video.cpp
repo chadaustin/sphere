@@ -103,8 +103,6 @@ bool SetWindowTitle(const char* text) {
 
   This is where all the fun begins.
   If this is the first time that SwitchResolution is called, SDL is initialized.
-
-  Tung: Renamed fullscreen to fullscr. Referential integrity is fun!
  */
 bool SwitchResolution (int x, int y, bool fullscr, bool update_cliprect, int scalex) {
   static bool initialized = false;
@@ -165,11 +163,14 @@ bool SwitchResolution (int x, int y, bool fullscr, bool update_cliprect, int sca
     ty = y;
   }
 
+  // Center the window on the display
+  putenv("SDL_VIDEO_CENTERED=1");
+
   if (!initialized) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) == -1)
       return false;
 
-    // Tung: Load fullscreen preference from file.
+    // Load fullscreen preference from file.
     fullscr = fullscreen = config.fullscreen;
 
     // Clean up on exit, exit on window close and interrupt
@@ -180,7 +181,6 @@ bool SwitchResolution (int x, int y, bool fullscr, bool update_cliprect, int sca
 
     SDL_InitSubSystem(SDL_INIT_JOYSTICK);
 
-    // Tung: Redundant if (1) removed.
     if (SDL_WasInit(SDL_INIT_JOYSTICK)) {
       printf("Joysticks are initialized.\n");
       printf("There are %d joysticks attached.\n", SDL_NumJoysticks());
@@ -200,12 +200,9 @@ bool SwitchResolution (int x, int y, bool fullscr, bool update_cliprect, int sca
     SetWindowTitle(GetWindowTitle().c_str());
   }
 
-  /*if (scalex) {*/
   if (fullscr)
-    //scalen = SDL_SetVideoMode(tx, ty, drvdepth, SDL_SWSURFACE | SDL_FULLSCREEN | SDL_DOUBLEBUF);
     scalen = SDL_SetVideoMode(tx, ty, drvdepth, SDL_SWSURFACE | SDL_FULLSCREEN);
   else
-    //scalen = SDL_SetVideoMode(tx, ty, drvdepth, SDL_SWSURFACE | SDL_ANYFORMAT | SDL_DOUBLEBUF);
     scalen = SDL_SetVideoMode(tx, ty, drvdepth, SDL_SWSURFACE);
   if (filtering)
     screen = SDL_CreateRGBSurface(SDL_HWSURFACE, x, y, 32, config.r, config.g, config.b, config.a);
@@ -213,14 +210,6 @@ bool SwitchResolution (int x, int y, bool fullscr, bool update_cliprect, int sca
     screen = SDL_CreateRGBSurface(SDL_HWSURFACE, x, y, 32, 0, 0, 0, 0);
   if (scalen == NULL || screen == NULL)
     return false;
-  /*} else {
-    if (fullscr)
-      screen = SDL_SetVideoMode(x,y, 32, SDL_DOUBLEBUF | SDL_FULLSCREEN);
-    else
-      screen = SDL_SetVideoMode(x,y, 32, SDL_DOUBLEBUF | SDL_ANYFORMAT);
-    if (screen == NULL)
-      return false;
-  }*/
 
   SDL_ShowCursor(showcurs);
 

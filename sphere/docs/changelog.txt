@@ -1,5 +1,9 @@
 YYYY.MM.DD
 
+2008.02.26
+  - Non-fullscreen Linux Sphere engine window will now start at the
+    center of the desktop.
+
 2008.02.25
   - Entities/Zones will now remain on their original layers 
     after inserting a new layer.

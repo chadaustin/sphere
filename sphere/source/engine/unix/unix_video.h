@@ -6,6 +6,7 @@
 #include "unix_sphere_config.h"
 #include "unix_filesystem.h"
 #include <SDL.h>
+#include <SDL_getenv.h>
 
 #include <iostream>
 
