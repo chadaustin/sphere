@@ -5467,7 +5467,7 @@ CMapEngine::ProcessInput()
 {
     int i;
 
-    GetKeyStates(m_Keys);
+
     RefreshInput();
     bool new_keys[MAX_KEY];
     GetKeyStates(new_keys);
@@ -5518,6 +5518,10 @@ CMapEngine::ProcessInput()
         }
     }
 
+    // save the current key buffer until the next call to ProcessInput
+    GetKeyStates(m_Keys);
+
+
     // process default input bindings
     for (i = 0; i < int(m_InputPersons.size()); i++)
     {
@@ -5529,20 +5533,28 @@ CMapEngine::ProcessInput()
             int dy = 0;
 
             bool moved = false;
+            bool is_left_bound  = IsKeyBound(m_Persons[person].key_left);
+            bool is_right_bound = IsKeyBound(m_Persons[person].key_right);
+            bool is_up_bound    = IsKeyBound(m_Persons[person].key_up);
+            bool is_down_bound  = IsKeyBound(m_Persons[person].key_down);
+
             if (m_Persons[person].keyboard_input_allowed)
             {
-                if (!IsKeyBound(m_Persons[person].key_up)    && new_keys[m_Persons[person].key_up])    dy--;
-                if (!IsKeyBound(m_Persons[person].key_right) && new_keys[m_Persons[person].key_right]) dx++;
-                if (!IsKeyBound(m_Persons[person].key_down)  && new_keys[m_Persons[person].key_down])  dy++;
-                if (!IsKeyBound(m_Persons[person].key_left)  && new_keys[m_Persons[person].key_left])  dx--;
+                if (!is_up_bound    && new_keys[m_Persons[person].key_up])    dy--;
+                if (!is_right_bound && new_keys[m_Persons[person].key_right]) dx++;
+                if (!is_down_bound  && new_keys[m_Persons[person].key_down])  dy++;
+                if (!is_left_bound  && new_keys[m_Persons[person].key_left])  dx--;
 
             }
             if (m_Persons[person].joypad_input_allowed)
             {
                 if (m_Persons[person].player_index >= 0 && m_Persons[person].player_index < GetNumJoysticks())
                 {
-                    dx += __round__(GetJoystickAxis(m_Persons[person].player_index, JOYSTICK_AXIS_X));
-                    dy += __round__(GetJoystickAxis(m_Persons[person].player_index, JOYSTICK_AXIS_Y));
+                    if (!is_left_bound && !is_right_bound)
+                        dx += __round__(GetJoystickAxis(m_Persons[person].player_index, JOYSTICK_AXIS_X));
+
+                    if (!is_up_bound && !is_down_bound)
+                        dy += __round__(GetJoystickAxis(m_Persons[person].player_index, JOYSTICK_AXIS_Y));
                 }
 
             }

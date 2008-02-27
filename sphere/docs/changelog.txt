@@ -1,5 +1,14 @@
 YYYY.MM.DD
 
+2008.02.27
+  - The audio driver combobox in Config.exe will now initialize
+    with the current audio driver selected, instead of always
+    "directsound".
+  - Fixed the bug, where bounded keys didn't work, if e.g. a function
+    like IsKeyPressed() was called within an update script.
+  - The standard movement will now also be disabled for joysticks
+    if the appropriate key has been bound within a script.
+
 2008.02.26
   - Non-fullscreen Linux Sphere engine window will now start at the
     center of the desktop.

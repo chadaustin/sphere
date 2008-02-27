@@ -375,9 +375,10 @@ BOOL CALLBACK AudioDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
     {
         // add the drivers
 
-        SendDlgItemMessage(window, IDC_SOUND_DRIVER, CB_ADDSTRING, 0, (LPARAM)"directsound");
-        SendDlgItemMessage(window, IDC_SOUND_DRIVER, CB_ADDSTRING, 0, (LPARAM)"winmm");
-        SendDlgItemMessage(window, IDC_SOUND_DRIVER, CB_SETCURSEL, 0, 0);
+        SendDlgItemMessage(window, IDC_SOUND_DRIVER, CB_ADDSTRING,    0, (LPARAM)"directsound");
+        SendDlgItemMessage(window, IDC_SOUND_DRIVER, CB_ADDSTRING,    0, (LPARAM)"winmm");
+        SendDlgItemMessage(window, IDC_SOUND_DRIVER, CB_SELECTSTRING, 0, (LPARAM)Config.audiodriver.c_str());
+
         switch (Config.sound)
         {
 
@@ -544,7 +545,7 @@ BOOL CALLBACK InputDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
             return false;
       }
   };
-    
+
   const char* keys[] =
   {
             " ",
@@ -693,7 +694,7 @@ BOOL CALLBACK InputDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM l
     }
     break;
   }
-  
+
   return FALSE;
 }
 ////////////////////////////////////////////////////////////////////////////////
