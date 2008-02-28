@@ -6055,20 +6055,15 @@ CMapEngine::FindObstructingPerson(int person, int x, int y)
     {
         // don't check current person
         if (i == person)
-        {
             continue;
-        }
 
         // if people aren't on the same layer, skip
         if (m_Persons[i].layer != m_Persons[person].layer)
-        {
             continue;
-        }
 
         // if the person is ignoring person obstructions, don't check it
-        //if (m_Persons[i].ignorePersonObstructions) {
-        //  continue;
-        //}
+        if (m_Persons[i].ignorePersonObstructions)
+            continue;
 
         // if this entity is a follower of the current entity, don't check it
         int j = m_Persons[i].leader;

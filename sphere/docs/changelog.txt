@@ -1,5 +1,9 @@
 YYYY.MM.DD
 
+2008.02.28
+  - Fixed the bug where entities, who were ignoring entity obstructions
+    did obstruct other entities.
+
 2008.02.27
   - The audio driver combobox in Config.exe will now initialize
     with the current audio driver selected, instead of always
