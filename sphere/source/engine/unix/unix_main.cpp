@@ -139,7 +139,7 @@ int main(int argc, const char* argv[]) {
         strcpy(unix_data_dir, optarg);
     }
     chdir(unix_data_dir);
-    srand((unsigned)GetTime);
+    srand((unsigned)GetTime());
 
     if (!InitAudio(&config)) {
         printf("Sound could not be initialized...\n");
