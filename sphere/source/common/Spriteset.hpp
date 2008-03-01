@@ -29,6 +29,9 @@ public:
     bool Export_PNG_Compact_Vertical(const char* filename);
     bool Export_PNG_Compact_Horizontal(const char* filename);
     bool Export_PNG(const char* filename);
+    bool Export_Palette_Horizontal(const char* filename);
+    bool Export_Palette_Vertical(const char* filename);
+    bool Export_Palette_Fixed(int wide, const char* filename);
 
     int             GetNumImages() const;
     CImage32&       GetImage(int i);

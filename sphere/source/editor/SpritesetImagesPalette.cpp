@@ -3,6 +3,8 @@
 #include "Keys.hpp"
 #include "resource.h"
 #include "NumberDialog.hpp"
+#include "FileDialogs.hpp"
+
 
 BEGIN_MESSAGE_MAP(CSpritesetImagesPalette, CPaletteWindow)
   ON_WM_PAINT()
@@ -15,11 +17,21 @@ BEGIN_MESSAGE_MAP(CSpritesetImagesPalette, CPaletteWindow)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_INSERT_IMAGE, OnInsertImage)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_APPEND_IMAGE, OnAppendImage)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGE, OnRemoveImage)
-  
+
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_INSERT_IMAGES, OnInsertImages)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_APPEND_IMAGES, OnAppendImages)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGES, OnRemoveImages)
-  
+
+  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_REPLACE_FROM_IMAGE_HORIZONTAL, OnReplacePaletteFromImageHorizontal)
+  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_REPLACE_FROM_IMAGE_VERTICAL,   OnReplacePaletteFromImageVertical)
+  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_REPLACE_FROM_IMAGE_FIXED,      OnReplacePaletteFromImageFixed)
+  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_EXPORT_TO_IMAGE_HORIZONTAL,    OnExportPaletteToImageHorizontal)
+  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_EXPORT_TO_IMAGE_VERTICAL,      OnExportPaletteToImageVertical)
+  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_EXPORT_TO_IMAGE_FIXED,         OnExportPaletteToImageFixed)
+  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_REPLACE_FROM_IMAGE_SINGLE,     OnReplaceFromImageSingle)
+  ON_COMMAND(ID_SPRITESETIMAGESPALETTE_EXPORT_TO_IMAGE_SINGLE,        OnExportToImageSingle)
+
+
   ON_COMMAND(ID_FILE_ZOOM_IN,  OnZoomIn)
   ON_COMMAND(ID_FILE_ZOOM_OUT, OnZoomOut)
   ON_COMMAND(ID_SPRITESETIMAGESPALETTE_ZOOM_1X, OnZoom1X)
@@ -104,7 +116,7 @@ CSpritesetImagesPalette::OnPaint()
       };
       if (dc.RectVisible(&Rect) == FALSE)
         continue;
-      
+
       int num_tiles_x = client_rect.right / blit_width;
       int it = (iy + m_TopRow) * (client_rect.right / blit_width) + ix;
       if (ix < num_tiles_x && it < m_Spriteset->GetNumImages())
@@ -114,12 +126,12 @@ CSpritesetImagesPalette::OnPaint()
         // draw the tile
         // fill the DIB section
         BGRA* pixels = (BGRA*)m_BlitImage->GetPixels();
-        
+
         // make a checkerboard
         for (tiy = 0; tiy < blit_height; tiy++)
           for (int tix = 0; tix < blit_width; tix++)
           {
-            pixels[tiy * blit_width + tix] = 
+            pixels[tiy * blit_width + tix] =
               ((tix / 8 + tiy / 8) % 2 ?
                 CreateBGRA(255, 255, 255, 255) :
                 CreateBGRA(255, 192, 192, 255));
@@ -134,7 +146,7 @@ CSpritesetImagesPalette::OnPaint()
             int ty = (int) (tiy / m_ZoomFactor.GetZoomFactor());
             int tx = (int) (tix / m_ZoomFactor.GetZoomFactor());
             int t = ty * m_Spriteset->GetFrameWidth() + tx;
-            
+
             int d = tiy * blit_width + tix;
             // this here would crash if the spriteset has been resized
             // and the spriteset images pallete hasn't been informed of the resize
@@ -146,7 +158,7 @@ CSpritesetImagesPalette::OnPaint()
               pixels[d].blue  = (tilepixels[t].blue  * alpha + pixels[d].blue  * (255 - alpha)) / 256;
             }
           }
-        
+
         // blit the tile
         CDC* tile = CDC::FromHandle(m_BlitImage->GetDC());
         dc.BitBlt(Rect.left, Rect.top, Rect.right - Rect.left, Rect.bottom - Rect.top, tile, 0, 0, SRCCOPY);
@@ -183,14 +195,16 @@ CSpritesetImagesPalette::OnLButtonDown(UINT flags, CPoint point)
   // don't let user select tile off the right edge (and go to the next row)
   if (col >= num_images_x)
     return;
-  
+
   int image = (m_TopRow + row) * num_images_x + col;
-  if (image >= 0 && image < m_Spriteset->GetNumImages())
-    m_SelectedImage = image;
-  Invalidate();
+  if (image == m_SelectedImage || image < 0 || image >= m_Spriteset->GetNumImages())
+    return;
+
+  m_SelectedImage = image;
 
   // the selected tile changed, so tell the parent window
   m_Handler->SIP_IndexChanged(m_SelectedImage);
+  Invalidate();
 }
 ////////////////////////////////////////////////////////////////////////////////
 afx_msg void
@@ -215,11 +229,11 @@ CSpritesetImagesPalette::OnRButtonUp(UINT flags, CPoint point)
   // disable move back if we're on the first image
   if (!(m_Spriteset->GetNumImages() > 1) || m_SelectedImage == 0)
     EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_MOVE_BACK, MF_BYCOMMAND | MF_GRAYED);
-  
+
   // disable move forward if we're on the last image
   if ( !(m_Spriteset->GetNumImages() > 1) || m_SelectedImage == m_Spriteset->GetNumImages() - 1)
     EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_MOVE_FORWARD, MF_BYCOMMAND | MF_GRAYED);
-  
+
   // disable remove image if there is only one
   if (m_Spriteset->GetNumImages() <= 1) {
     EnableMenuItem(menu, ID_SPRITESETIMAGESPALETTE_REMOVE_IMAGE,  MF_BYCOMMAND | MF_GRAYED);
@@ -293,7 +307,7 @@ CSpritesetImagesPalette::GetNumRows()
 {
   RECT client_rect;
   GetClientRect(&client_rect);
-  
+
   if (!m_BlitImage || m_BlitImage->GetWidth() == 0)
     return -1;
   int num_tiles_x = client_rect.right / m_BlitImage->GetWidth();
@@ -328,7 +342,7 @@ CSpritesetImagesPalette::OnInsertImage()
       if (k >= m_SelectedImage)
         m_Spriteset->SetFrameIndex(i, j, k + 1);
     }
-  
+
   m_SelectedImage++;
   m_Handler->SIP_SpritesetModified();
   Invalidate();
@@ -350,7 +364,7 @@ CSpritesetImagesPalette::OnRemoveImage()
       m_SelectedImage >= m_Spriteset->GetNumImages() ||
       m_Spriteset->GetNumImages() <= 1)
     return;
-  
+
   // update indices in the spriteset
   for (int i = 0; i < m_Spriteset->GetNumDirections(); i++)
     for (int j = 0; j < m_Spriteset->GetNumFrames(i); j++) {
@@ -360,11 +374,11 @@ CSpritesetImagesPalette::OnRemoveImage()
       else if (k >= m_SelectedImage)
         m_Spriteset->SetFrameIndex(i, j, k - 1);
     }
-  
+
   m_Spriteset->DeleteImage(m_SelectedImage);
   if (m_SelectedImage >= m_Spriteset->GetNumImages())
     m_SelectedImage--;
-  
+
   m_Handler->SIP_SpritesetModified();
   m_Handler->SIP_IndexChanged(m_SelectedImage);
   Invalidate();
@@ -409,15 +423,304 @@ CSpritesetImagesPalette::OnRemoveImages()
     m_Handler->SIP_SpritesetModified();
     m_Handler->SIP_IndexChanged(m_SelectedImage);
     UpdateScrollBar();
-    Invalidate();   
+    Invalidate();
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void
+CSpritesetImagesPalette::OnReplacePaletteFromImageHorizontal()
+{
+    // get the filename
+    CImageFileDialog dialog(FDM_OPEN, "Replace Palette from Image");
+
+    if (dialog.DoModal() != IDOK)
+      return;
+
+    CString path = dialog.GetPathName();
+    CImage32 image;
+
+    if (!image.Load(path))
+    {
+        MessageBox("Error loading image.\n'" + path + "'", "Replace Palette from Image");
+        return;
+    }
+
+    int frame_width  = m_Spriteset->GetFrameWidth();
+    int frame_height = m_Spriteset->GetFrameHeight();
+
+    if (image.GetHeight() < frame_height || image.GetWidth() < frame_width)
+    {
+        MessageBox("Invalid image dimensions", "Replace Palette from Image");
+        return;
+    }
+
+    int num = (image.GetWidth() - (image.GetWidth() % frame_width)) / frame_width;
+    if (num < m_Spriteset->GetNumImages())
+    {
+        MessageBox("Not enough frames in image", "Replace Palette from Image");
+        return;
+    }
+
+    // copy the new data over to the palette images
+    int x = 0;
+
+    for (int i = 0; i < m_Spriteset->GetNumImages(); i++)
+    {
+        CImage32& frame = m_Spriteset->GetImage(i);
+
+        for (int iy = 0; iy < frame_height; iy++)
+        {
+            memcpy(frame.GetPixels() + iy * frame_width,
+                   image.GetPixels() + iy * image.GetWidth() + x,
+                   frame_width * sizeof(RGBA));
+        }
+
+        x += frame_width;
+    }
+
+    m_Handler->SIP_SpritesetModified();
+    Invalidate();
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void
+CSpritesetImagesPalette::OnReplacePaletteFromImageVertical()
+{
+    // get the filename
+    CImageFileDialog dialog(FDM_OPEN, "Replace Palette from Image");
+
+    if (dialog.DoModal() != IDOK)
+      return;
+
+    CString path = dialog.GetPathName();
+    CImage32 image;
+
+    if (!image.Load(path))
+    {
+        MessageBox("Error loading image.\n'" + path + "'", "Replace Palette from Image");
+        return;
+    }
+
+    int frame_width  = m_Spriteset->GetFrameWidth();
+    int frame_height = m_Spriteset->GetFrameHeight();
+
+    if (image.GetHeight() < frame_height || image.GetWidth() < frame_width)
+    {
+        MessageBox("Invalid image dimensions", "Replace Palette from Image");
+        return;
+    }
+
+    int num = (image.GetHeight() - (image.GetHeight() % frame_height)) / frame_height;
+    if (num < m_Spriteset->GetNumImages())
+    {
+        MessageBox("Not enough frames in image", "Replace Palette from Image");
+        return;
+    }
+
+    // copy the new data over to the palette images
+    int y = 0;
+
+    for (int i = 0; i < m_Spriteset->GetNumImages(); i++)
+    {
+        CImage32& frame = m_Spriteset->GetImage(i);
+
+        for (int iy = 0; iy < frame_height; iy++)
+        {
+            memcpy(frame.GetPixels() + iy * frame_width,
+                   image.GetPixels() + (iy + y) * image.GetWidth(),
+                   frame_width * sizeof(RGBA));
+        }
+
+        y += frame_height;
+    }
+
+    m_Handler->SIP_SpritesetModified();
+    Invalidate();
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void
+CSpritesetImagesPalette::OnReplacePaletteFromImageFixed()
+{
+    // get the width in frames
+    CNumberDialog number("Replace Palette from Image", "Width in frames", 3, 1, 256);
+
+    if (number.DoModal() != IDOK)
+      return;
+
+    // get the filename
+    CImageFileDialog dialog(FDM_OPEN, "Replace Palette from Image");
+
+    if (dialog.DoModal() != IDOK)
+      return;
+
+    CString path = dialog.GetPathName();
+    CImage32 image;
+
+    if (!image.Load(path))
+    {
+        MessageBox("Error loading image.\n'" + path + "'", "Replace Palette from Image");
+        return;
+    }
+
+    int frame_width  = m_Spriteset->GetFrameWidth();
+    int frame_height = m_Spriteset->GetFrameHeight();
+
+    if (image.GetWidth()  < number.GetValue() * frame_width || image.GetHeight() < frame_height)
+    {
+        MessageBox("Invalid image dimensions", "Replace Palette from Image");
+        return;
+    }
+
+    int rows = (image.GetHeight() - (image.GetHeight() % frame_height)) / frame_height;
+    if (rows * number.GetValue() < m_Spriteset->GetNumImages())
+    {
+        MessageBox("Not enough frames in image", "Replace Palette from Image");
+        return;
+    }
+
+    // copy the new data over to the palette images
+    int x = 0;
+    int y = 0;
+
+    for (int i = 0; i < m_Spriteset->GetNumImages(); i++)
+    {
+        CImage32& frame = m_Spriteset->GetImage(i);
+
+        for (int iy = 0; iy < frame_height; iy++)
+        {
+            memcpy(frame.GetPixels() + iy * frame_width,
+                   image.GetPixels() + (iy + y) * image.GetWidth() + x,
+                   frame_width * sizeof(RGBA));
+        }
+
+        x += frame_width;
+
+        if (x >= number.GetValue() * frame_width)
+        {
+            x = 0;
+            y += frame_height;
+        }
+    }
+
+    m_Handler->SIP_SpritesetModified();
+    Invalidate();
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void
+CSpritesetImagesPalette::OnReplaceFromImageSingle()
+{
+    // get the filename
+    CImageFileDialog dialog(FDM_OPEN, "Replace from Image");
+
+    if (dialog.DoModal() != IDOK)
+      return;
+
+    CString path = dialog.GetPathName();
+    CImage32 image;
+
+    if (!image.Load(path))
+    {
+        MessageBox("Error loading image.\n'" + path + "'", "Replace from Image");
+        return;
+    }
+
+    int frame_width  = m_Spriteset->GetFrameWidth();
+    int frame_height = m_Spriteset->GetFrameHeight();
+
+    if (image.GetWidth() < frame_width || image.GetHeight() < frame_height)
+    {
+        MessageBox("Invalid image dimensions", "Replace from Image");
+        return;
+    }
+
+    // copy the new data over to the palette images
+    CImage32 &frame = m_Spriteset->GetImage(m_SelectedImage);
+
+    for (int iy = 0; iy < frame_height; iy++)
+    {
+        memcpy(frame.GetPixels() + iy * frame_width,
+               image.GetPixels() + iy * image.GetWidth(),
+               frame_width * sizeof(RGBA));
+    }
+
+    m_Handler->SIP_SpritesetModified();
+    Invalidate();
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void
+CSpritesetImagesPalette::OnExportPaletteToImageHorizontal()
+{
+  CImageFileDialog dialog(FDM_SAVE, "Export Palette to Image");
+
+  if (dialog.DoModal() == IDOK)
+  {
+    if (!m_Spriteset->Export_Palette_Horizontal(dialog.GetPathName()))
+      MessageBox("Error writing image", "Export Palette to Image");
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void
+CSpritesetImagesPalette::OnExportPaletteToImageVertical()
+{
+  CImageFileDialog dialog(FDM_SAVE, "Export Palette to Image");
+
+  if (dialog.DoModal() == IDOK)
+  {
+    if (!m_Spriteset->Export_Palette_Vertical(dialog.GetPathName()))
+      MessageBox("Error writing image", "Export Palette to Image");
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void
+CSpritesetImagesPalette::OnExportPaletteToImageFixed()
+{
+  CNumberDialog number("Export Palette to Image", "Width in frames", 3, 1, 256);
+
+  if (number.DoModal() != IDOK)
+    return;
+
+  CImageFileDialog file(FDM_SAVE, "Export Palette to Image");
+
+  if (file.DoModal() != IDOK)
+    return;
+
+  if (!m_Spriteset->Export_Palette_Fixed(number.GetValue(), file.GetPathName()))
+    MessageBox("Error writing image", "Export Palette to Image");
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void
+CSpritesetImagesPalette::OnExportToImageSingle()
+{
+  CImageFileDialog dialog(FDM_SAVE, "Export to Image");
+
+  if (dialog.DoModal() != IDOK)
+    return;
+
+  CImage32 &image = m_Spriteset->GetImage(m_SelectedImage);
+
+  if (!image.Save(dialog.GetPathName()))
+    MessageBox("Error writing image", "Export to Image");
+
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 void
 CSpritesetImagesPalette::OnSwap(int new_index)
 {
   int current = m_SelectedImage;
-  
+
   // convenience
   int one = new_index;
   int two = current;
@@ -429,7 +732,7 @@ CSpritesetImagesPalette::OnSwap(int new_index)
         m_Spriteset->SetFrameIndex(i, j, two);
       else if (m_Spriteset->GetFrameIndex(i, j) == two)
         m_Spriteset->SetFrameIndex(i, j, one);
-  
+
   // swap the images
   std::swap(
     m_Spriteset->GetImage(one),

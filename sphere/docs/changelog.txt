@@ -1,5 +1,13 @@
 YYYY.MM.DD
 
+2008.03.01
+  - Added the possibility to export/replace spriteset images 
+    palette to/from image in the spriteset editor.
+  - Exporting the spriteset itself will now use the REPLACE 
+    blend mode, which ensures a 1:1 copy.
+  - Clicking on a already selected frame image in the spriteset
+    images palette won't make the spriteset dirty anymore.
+
 2008.02.28
   - Fixed the bug where entities, who were ignoring entity obstructions
     did obstruct other entities.

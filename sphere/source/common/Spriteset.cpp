@@ -284,7 +284,7 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
     {  // VERSION THREE
         //**// BEGIN VERSION THREE //**//
         int i;
-		
+
 		// read the images
         m_Images.resize(header.num_images);
         for (i = 0; i < header.num_images; i++)
@@ -303,7 +303,7 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
             word num_frames;
             if (file->Read(&num_frames, 2) != 2)
                 return false;
-			
+
 			num_frames = ltom_w(num_frames);
             if (num_frames <= 0)
                 return false;
@@ -550,6 +550,7 @@ bool
 sSpriteset::Export_PNG_Compact_Vertical(const char* filename)
 {
     CImage32 image;
+    image.SetBlendMode(CImage32::REPLACE);
 
     // calculate the number of rows
     int maxRowFrames = 0;
@@ -586,6 +587,7 @@ bool
 sSpriteset::Export_PNG_Compact_Horizontal(const char* filename)
 {
     CImage32 image;
+    image.SetBlendMode(CImage32::REPLACE);
 
     // calculate the number of rows
     int maxColFrames = 0;
@@ -632,6 +634,8 @@ sSpriteset::Export_PNG(const char* filename)
     int ImgHeight = m_FrameHeight * maxRowFrames;
 
     CImage32 image(ImgWidth, ImgHeight);
+    image.SetBlendMode(CImage32::REPLACE);
+
     // drop all the frames into the image
     for (unsigned row = 0; row < maxRowFrames; ++row)
     {
@@ -640,6 +644,77 @@ sSpriteset::Export_PNG(const char* filename)
         {
             CImage32& frame = m_Images[m_Directions[row].frames[col].index];
             image.BlitImage(frame, col * m_FrameWidth, row * m_FrameHeight);
+        }
+    }
+
+    return image.Save(filename);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool
+sSpriteset::Export_Palette_Horizontal(const char* filename)
+{
+    int width  = m_FrameWidth * m_Images.size();
+    int height = m_FrameHeight;
+
+    CImage32 image(width, height);
+    image.SetBlendMode(CImage32::REPLACE);
+
+    for (unsigned int i = 0; i < m_Images.size(); i++)
+    {
+        CImage32& frame = m_Images[i];
+        image.BlitImage(frame, i * m_FrameWidth, 0);
+    }
+
+    return image.Save(filename);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool
+sSpriteset::Export_Palette_Vertical(const char* filename)
+{
+    int width  = m_FrameWidth;
+    int height = m_FrameHeight * m_Images.size();
+
+    CImage32 image(width, height);
+    image.SetBlendMode(CImage32::REPLACE);
+
+    for (unsigned int i = 0; i < m_Images.size(); i++)
+    {
+        CImage32& frame = m_Images[i];
+        image.BlitImage(frame, 0, i * m_FrameHeight);
+    }
+
+    return image.Save(filename);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool
+sSpriteset::Export_Palette_Fixed(int wide, const char* filename)
+{
+    int max    = m_Images.size();
+    int rows   = (max - (max % wide)) / wide + (max % wide == 0 ? 0 : 1);
+
+    int width  = m_FrameWidth  * wide;
+    int height = m_FrameHeight * rows;
+
+    CImage32 image(width, height);
+    image.SetBlendMode(CImage32::REPLACE);
+
+    int x = 0;
+    int y = 0;
+
+    for (unsigned int i = 0; i < m_Images.size(); i++)
+    {
+        CImage32& frame = m_Images[i];
+        image.BlitImage(frame, x, y);
+
+        x += m_FrameWidth;
+
+        if (x >= wide * m_FrameWidth)
+        {
+            x = 0;
+            y += m_FrameHeight;
         }
     }
 
