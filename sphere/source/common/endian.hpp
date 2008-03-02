@@ -9,12 +9,13 @@
 //   d = dword
 #ifndef ENDIAN_HPP
 #define ENDIAN_HPP
+
 #include "types.h"
-#define LITTLE_ENDIAN 0
-#define BIG_ENDIAN    1
-#define ENDIANNESS LITTLE_ENDIAN
-//#define ENDIANNESS BIG_ENDIAN
-#if ENDIANNESS == LITTLE_ENDIAN
+#define SPHERE_LITTLE_ENDIAN 0
+#define SPHERE_BIG_ENDIAN    1
+#define ENDIANNESS SPHERE_LITTLE_ENDIAN
+
+#if ENDIANNESS == SPHERE_LITTLE_ENDIAN
 inline word ltom_w(word in)
 {
 
@@ -61,7 +62,7 @@ inline dword mtob_d(dword in)
            (in & 0x0000FF00 << 8)  +
            (in & 0x000000FF << 24);
 }
-#elif ENDIANNESS == BIG_ENDIAN
+#elif ENDIANNESS == SPHERE_BIG_ENDIAN
 inline word ltom_w(word in)
 {
 
@@ -111,4 +112,5 @@ inline dword mtob_d(dword in)
 #else
 #error unknown endianness
 #endif
+
 #endif
