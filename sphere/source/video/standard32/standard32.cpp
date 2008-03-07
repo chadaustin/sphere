@@ -1102,7 +1102,13 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
         for (int iy = 0; iy < height; iy++)
             memcpy(image->bgra + iy * width, Screen + (y + iy) * ScreenWidth + x, width * 4);
 
-        memcpy(image->original, image->bgra, pixels_total * sizeof(RGBA));
+        for (int i = 0; i < pixels_total; ++i)
+        {
+            image->original[i].red   = image->bgra[i].red;
+            image->original[i].green = image->bgra[i].green;
+            image->original[i].blue  = image->bgra[i].blue;
+            image->original[i].alpha = 255;
+        }
 
     }
     else
@@ -1726,10 +1732,10 @@ EXPORT(void) DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels)
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
 {
-    if (x < 0 ||
-            y < 0 ||
-            x + w > ScreenWidth ||
-            y + h > ScreenHeight)
+    if (x     < 0 ||
+        y     < 0 ||
+        x + w > ScreenWidth ||
+        y + h > ScreenHeight)
         return;
 
     if (BitsPerPixel == 32)

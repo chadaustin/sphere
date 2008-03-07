@@ -757,12 +757,35 @@ static inline float sphere_y_to_opengl_y(int y)
 
     return (float) y + 0.5f;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) BlitImage(IMAGE image, int x, int y)
 {
 
-    extern void __stdcall BlitImageMask(IMAGE image, int x, int y, RGBA mask);
-    BlitImageMask(image, x, y, CreateRGBA(255, 255, 255, 255));
+    if (image->special == tagIMAGE::EMPTY)
+        return;
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, image->texture);
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+    glBegin(GL_QUADS);
+
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex2i(x, y);
+
+    glTexCoord2f(image->tex_width, 0.0f);
+    glVertex2i(x + image->width, y);
+
+    glTexCoord2f(image->tex_width, image->tex_height);
+    glVertex2i(x + image->width, y + image->height);
+
+    glTexCoord2f(0.0f, image->tex_height);
+    glVertex2i(x, y + image->height);
+
+    glEnd();
+
+    glDisable(GL_TEXTURE_2D);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -770,28 +793,28 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
 {
 
     if (image->special == tagIMAGE::EMPTY)
-    {
         return;
-    }
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, image->texture);
-
     glColor4ub(mask.red, mask.green, mask.blue, mask.alpha);
+
     glBegin(GL_QUADS);
 
-    glTexCoord2f(0, 0);
+    glTexCoord2f(0.0f, 0.0f);
     glVertex2i(x, y);
 
-    glTexCoord2f(image->tex_width, 0);
+    glTexCoord2f(image->tex_width, 0.0f);
     glVertex2i(x + image->width, y);
+
     glTexCoord2f(image->tex_width, image->tex_height);
     glVertex2i(x + image->width, y + image->height);
 
-    glTexCoord2f(0, image->tex_height);
+    glTexCoord2f(0.0f, image->tex_height);
     glVertex2i(x, y + image->height);
 
     glEnd();
+
     glDisable(GL_TEXTURE_2D);
 }
 
@@ -800,65 +823,57 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
 {
 
     if (image->special == tagIMAGE::EMPTY)
-    {
         return;
-    }
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, image->texture);
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-    int cx = (x[0] + x[1] + x[2] + x[3]) / 4;
-    int cy = (y[0] + y[1] + y[2] + y[3]) / 4;
-    glColor4f(1, 1, 1, 1);
-    glBegin(GL_TRIANGLE_FAN);
+    glBegin(GL_POLYGON);
 
-    // center
-    glTexCoord2f(image->tex_width / 2, image->tex_height / 2);
-    glVertex2i(cx, cy);
-    glTexCoord2f(0, 0);
+    glTexCoord2f(0.0f, 0.0f);
     glVertex2i(x[0], y[0]);
-    glTexCoord2f(image->tex_width, 0);
-    glVertex2i(x[1], y[1]);
+
+    glTexCoord2f(image->tex_width, 0.0f);
+    glVertex2i(x[1] + 1, y[1]);
+
     glTexCoord2f(image->tex_width, image->tex_height);
-    glVertex2i(x[2], y[2]);
-    glTexCoord2f(0, image->tex_height);
-    glVertex2i(x[3], y[3]);
-    glTexCoord2f(0, 0);
-    glVertex2i(x[0], y[0]);
+    glVertex2i(x[2] + 1, y[2] + 1);
+
+    glTexCoord2f(0.0f, image->tex_height);
+    glVertex2i(x[3], y[3] + 1);
+
     glEnd();
+
     glDisable(GL_TEXTURE_2D);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
 {
     if (image->special == tagIMAGE::EMPTY)
-    {
         return;
-    }
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, image->texture);
-
-    int cx = (x[0] + x[1] + x[2] + x[3]) / 4;
-    int cy = (y[0] + y[1] + y[2] + y[3]) / 4;
-
     glColor4ub(mask.red, mask.green, mask.blue, mask.alpha);
-    glBegin(GL_TRIANGLE_FAN);
 
-    // center
-    glTexCoord2f(image->tex_width / 2, image->tex_height / 2);
-    glVertex2i(cx, cy);
-    glTexCoord2f(0, 0);
+    glBegin(GL_POLYGON);
+
+    glTexCoord2f(0.0f, 0.0f);
     glVertex2i(x[0], y[0]);
-    glTexCoord2f(image->tex_width, 0);
-    glVertex2i(x[1], y[1]);
+
+    glTexCoord2f(image->tex_width, 0.0f);
+    glVertex2i(x[1] + 1, y[1]);
+
     glTexCoord2f(image->tex_width, image->tex_height);
-    glVertex2i(x[2], y[2]);
-    glTexCoord2f(0, image->tex_height);
-    glVertex2i(x[3], y[3]);
-    glTexCoord2f(0, 0);
-    glVertex2i(x[0], y[0]);
+    glVertex2i(x[2] + 1, y[2] + 1);
+
+    glTexCoord2f(0.0f, image->tex_height);
+    glVertex2i(x[3], y[3] + 1);
+
     glEnd();
+
     glDisable(GL_TEXTURE_2D);
 }
 
