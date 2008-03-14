@@ -31,13 +31,13 @@ BOOL
 CEntityPersonDialog::OnInitDialog()
 {
   // initialize controls
-  
+
   SendDlgItemMessage(IDC_SCRIPT_TYPE, CB_ADDSTRING, 0, (LPARAM)"On Create");
   SendDlgItemMessage(IDC_SCRIPT_TYPE, CB_ADDSTRING, 0, (LPARAM)"On Destroy");
   SendDlgItemMessage(IDC_SCRIPT_TYPE, CB_ADDSTRING, 0, (LPARAM)"On Activate (Touch)");
   SendDlgItemMessage(IDC_SCRIPT_TYPE, CB_ADDSTRING, 0, (LPARAM)"On Activate (Talk)");
   SendDlgItemMessage(IDC_SCRIPT_TYPE, CB_ADDSTRING, 0, (LPARAM)"On Generate Commands");
-  
+
   m_CurrentScript = 0;
   m_Scripts[0] = m_Person.script_create.c_str();
   m_Scripts[1] = m_Person.script_destroy.c_str();
@@ -91,8 +91,19 @@ CEntityPersonDialog::OnBrowseSpriteset()
   std::string directory = GetMainWindow()->GetDefaultFolder(WA_SPRITESET);
   SetCurrentDirectory(directory.c_str());
   CSpritesetFileDialog dialog(FDM_OPEN);
-  if (dialog.DoModal() == IDOK) {
-    SetDlgItemText(IDC_SPRITESET, dialog.GetFileName());
+
+  if (dialog.DoModal() == IDOK)
+  {
+    std::string full_path = LPCTSTR(dialog.GetPathName());
+    std::string term("spritesets");
+    size_t pos = full_path.rfind(term);
+
+    if (pos != std::string::npos)
+    {
+      CString path = full_path.substr(pos + 11).c_str();
+      SetDlgItemText(IDC_SPRITESET, path);
+    }
+
   }
   SetCurrentDirectory(old_directory);
 }
@@ -125,68 +136,50 @@ CEntityPersonDialog::OnGenerateName()
 {
   CString str;
   GetDlgItemText(IDC_SPRITESET, str);
+
   std::string filename = str;
+
   str.MakeLower();
   std::string lower_filename = str;
+
   GetDlgItemText(IDC_NAME, str);
   std::string current_name = str;
+
+  CString temp;
+
   if (filename.size() > 0 && lower_filename.size() > 0)
   {
     if (lower_filename.rfind(".rss") == lower_filename.size() - 4)
     {
-      char gen_name[MAX_PATH + 80] = {0};
-      memcpy(gen_name, filename.c_str(), filename.size() - 4);
-      gen_name[filename.size() - 4] = '_';
-      bool current_name_valid = false;
-      bool is_unique = false;
-      if (current_name.size() > strlen(gen_name)) {
-        if (memcmp(current_name.c_str(), gen_name, strlen(gen_name)) == 0) {
-          int id = 1;
-          if (sscanf(current_name.c_str() + strlen(gen_name), "%d$", &id) == 1) {
-            current_name_valid = true;
-            is_unique = true;
-          }
-        }
-      }
-      if (current_name_valid) {
+      std::string new_name = filename.substr(0, filename.size() - 4);
+      int new_id = 0;
+      bool done = false;
+
+      while (!done)
+      {
+        new_id++;
+        temp.Format("%s_%d", new_name.c_str(), new_id);
         bool found = false;
-        for (int i = 0; i < m_Map->GetNumEntities(); i++) {
+        int num_found = 0;
+
+        for (int i = 0; i < m_Map->GetNumEntities(); i++)
+        {
           sEntity& e = m_Map->GetEntity(i);
-          if (e.GetEntityType() == sEntity::PERSON) {
+
+          if (e.GetEntityType() == sEntity::PERSON)
+          {
             sPersonEntity& p = (sPersonEntity&)e;
-            if (p.name == current_name) {
-              if (found) {
-                is_unique = false;
-                break;
-              }
-              found = true;
-            }
+
+            if (p.name.compare(temp) == 0)
+              num_found++;
           }
         }
+
+        if ((num_found == 1 && current_name.compare(temp) == 0) || num_found == 0)
+          done = true;
       }
-      if (!is_unique) {
-        int unique_id = 1;
-        for (int i = 0; i < m_Map->GetNumEntities(); i++) {
-          sEntity& e = m_Map->GetEntity(i);
-          if (e.GetEntityType() == sEntity::PERSON) {
-            sPersonEntity& p = (sPersonEntity&)e;
-            if (p.name.size() > strlen(gen_name)) {
-              if (memcmp(p.name.c_str(), gen_name, strlen(gen_name)) == 0) {
-                int id = unique_id;
- 
-                if (sscanf(p.name.c_str() + strlen(gen_name), "%d$", &id) == 1) {
-                  if (id >= unique_id) {
-                    unique_id = id + 1;
-                  }
-                }
-              }
-            }
-          }
-        }
-        sprintf (gen_name + strlen(gen_name), "%d", unique_id);
-        str = gen_name;
-        SetDlgItemText(IDC_NAME, str);
-      }
+
+      SetDlgItemText(IDC_NAME, temp);
     }
   }
 }

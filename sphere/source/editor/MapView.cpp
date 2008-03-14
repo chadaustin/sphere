@@ -1194,14 +1194,6 @@ CMapView::EntityCopy(CPoint point)
   if (entity_num == -1)
     return;
 
-  if (OpenClipboard() == FALSE)
-  {
-    MessageBox("Cannot Open Clipboard!", NULL, MB_OK | MB_ICONERROR);
-    return;
-  }
-
-  EmptyClipboard();
-
   switch(m_Map->GetEntity(entity_num).GetEntityType())
   {
 
@@ -1209,64 +1201,9 @@ CMapView::EntityCopy(CPoint point)
       {
         sPersonEntity &person = (sPersonEntity&)m_Map->GetEntity(entity_num);
 
-        int size_name                     = strlen(person.name.c_str());
-        int size_spriteset                = strlen(person.spriteset.c_str());
-        int size_script_create            = strlen(person.script_create.c_str());
-        int size_script_destroy           = strlen(person.script_destroy.c_str());
-        int size_script_activate_touch    = strlen(person.script_activate_touch.c_str());
-        int size_script_activate_talk     = strlen(person.script_activate_talk.c_str());
-        int size_script_generate_commands = strlen(person.script_generate_commands.c_str());
+        GetMainWindow()->m_EntityClipboardType   = sEntity::PERSON;
+        GetMainWindow()->m_EntityClipboardPerson = person;
 
-        // calculate memory needed
-        int mem_needed = 0;
-        mem_needed += size_name;
-        mem_needed += size_spriteset;
-        mem_needed += size_script_create;
-        mem_needed += size_script_destroy;
-        mem_needed += size_script_activate_touch;
-        mem_needed += size_script_activate_talk;
-        mem_needed += size_script_generate_commands;
-
-        HGLOBAL memory = GlobalAlloc(GMEM_MOVEABLE, mem_needed);
-
-        if (memory != NULL)
-        {
-          dword* ptr = (dword*)GlobalLock(memory);
-
-          *ptr++ = sEntity::PERSON;
-          *ptr++ = size_name;
-          *ptr++ = size_spriteset;
-          *ptr++ = size_script_create;
-          *ptr++ = size_script_destroy;
-          *ptr++ = size_script_activate_touch;
-          *ptr++ = size_script_activate_talk;
-          *ptr++ = size_script_generate_commands;
-
-          char* c_ptr = (char*)ptr;
-
-          memcpy(c_ptr, person.name.c_str(), size_name);
-          c_ptr += size_name;
-
-          memcpy(c_ptr, person.spriteset.c_str(), size_spriteset);
-          c_ptr += size_spriteset;
-
-          memcpy(c_ptr, person.script_create.c_str(), size_script_create);
-          c_ptr += size_script_create;
-
-          memcpy(c_ptr, person.script_destroy.c_str(), size_script_destroy);
-          c_ptr += size_script_destroy;
-
-          memcpy(c_ptr, person.script_activate_touch.c_str(), size_script_activate_touch);
-          c_ptr += size_script_activate_touch;
-
-          memcpy(c_ptr, person.script_activate_talk.c_str(), size_script_activate_talk);
-          c_ptr += size_script_activate_talk;
-
-          memcpy(c_ptr, person.script_generate_commands.c_str(), size_script_generate_commands);
-
-          GlobalUnlock(memory);
-          SetClipboardData(s_MapEntityClipboardFormat, memory);
-        }
       }
       break;
 
@@ -1275,35 +1212,57 @@ CMapView::EntityCopy(CPoint point)
     case sEntity::TRIGGER:
       {
         sTriggerEntity& trigger = (sTriggerEntity&)m_Map->GetEntity(entity_num);
-        int function_size = strlen(trigger.script.c_str());
 
-        // calculate memory needed
-        int mem_needed = 0;
-        mem_needed += 4; // entity type
-        mem_needed += 4; // function length
-        mem_needed += function_size; // function
+        GetMainWindow()->m_EntityClipboardType    = sEntity::TRIGGER;
+        GetMainWindow()->m_EntityClipboardTrigger = trigger;
 
-        // allocate memory and go!
-        HGLOBAL memory = GlobalAlloc(GHND, mem_needed);
-
-        if (memory != NULL)
-        {
-          dword* ptr = (dword*)GlobalLock(memory);
-
-          *ptr++ = sEntity::TRIGGER;
-          *ptr++ = function_size;
-
-          char* c_ptr = (char*)ptr;
-
-          memcpy(c_ptr, trigger.script.c_str(), function_size);
-
-          GlobalUnlock(memory);
-          SetClipboardData(s_MapEntityClipboardFormat, memory);
-        }
       }
       break;
+
   }
-  CloseClipboard();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+std::string
+CMapView::GenerateUniquePersonName(std::string current_name, std::string filename)
+{
+  std::string new_name;
+  CString temp;
+
+  if (filename.size() < 5)
+    return new_name;
+
+  new_name = filename.substr(0, filename.size() - 4);
+  int new_id = 0;
+  bool done = false;
+
+  while (!done)
+  {
+    new_id++;
+    temp.Format("%s_%d", new_name.c_str(), new_id);
+    bool found = false;
+    int num_found = 0;
+
+    for (int i = 0; i < m_Map->GetNumEntities(); i++)
+    {
+      sEntity& e = m_Map->GetEntity(i);
+
+      if (e.GetEntityType() == sEntity::PERSON)
+      {
+        sPersonEntity& p = (sPersonEntity&)e;
+
+        if (p.name.compare(temp) == 0)
+          num_found++;
+      }
+    }
+
+    if (num_found == 0)
+      done = true;
+  }
+
+  new_name = temp;
+
+  return new_name;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1315,12 +1274,6 @@ CMapView::EntityPaste(CPoint point)
   int tile_height = m_Map->GetTileset().GetTileHeight();
   int tx = m_CurrentX + (int)(point.x / tile_width  / m_ZoomFactor);
   int ty = m_CurrentY + (int)(point.y / tile_height / m_ZoomFactor);
-
-  if (OpenClipboard() == FALSE)
-  {
-    MessageBox("Unable to open the clipboard!");
-    return;
-  }
 
   // check if there's an entity already
   for (int i = 0; i < m_Map->GetNumEntities(); i++)
@@ -1337,153 +1290,56 @@ CMapView::EntityPaste(CPoint point)
                  m_SelectedLayer);
 
       if (MessageBox(msg, "Paste Entity", MB_YESNO) == IDNO)
-      {
-        CloseClipboard();
         return;
-      }
 
       break;
     }
   }
 
-  HGLOBAL memory = (HGLOBAL)GetClipboardData(s_MapEntityClipboardFormat);
-
-  if (memory != NULL)
+  switch (GetMainWindow()->m_EntityClipboardType)
   {
-    dword* ptr = (dword*)GlobalLock(memory);
 
-    switch (*ptr++)
-    {
+    case sEntity::PERSON:
+      {
+        sPersonEntity person;
 
-      case sEntity::PERSON:
-        {
-          sPersonEntity person;
+        person = GetMainWindow()->m_EntityClipboardPerson;
 
-          // fill out the local info into the person
-          person.x     = tx * m_Map->GetTileset().GetTileWidth();
-          person.y     = ty * m_Map->GetTileset().GetTileHeight();
-          person.layer = m_SelectedLayer;
+        // fill out the local info into the person
+        person.x     = tx * m_Map->GetTileset().GetTileWidth();
+        person.y     = ty * m_Map->GetTileset().GetTileHeight();
+        person.layer = m_SelectedLayer;
 
-          int size_name                     = *ptr++;
-          int size_spriteset                = *ptr++;
-          int size_script_create            = *ptr++;
-          int size_script_destroy           = *ptr++;
-          int size_script_activate_touch    = *ptr++;
-          int size_script_activate_talk     = *ptr++;
-          int size_script_generate_commands = *ptr++;
 
-          char* text_name                     = new char[size_name                     + 1];
-          char* text_spriteset                = new char[size_spriteset                + 1];
-          char* text_script_create            = new char[size_script_create            + 1];
-          char* text_script_destroy           = new char[size_script_destroy           + 1];
-          char* text_script_activate_touch    = new char[size_script_activate_touch    + 1];
-          char* text_script_activate_talk     = new char[size_script_activate_talk     + 1];
-          char* text_script_generate_commands = new char[size_script_generate_commands + 1];
+        // make sure the new person have a unique name
+        person.name = GenerateUniquePersonName(person.name, person.spriteset);
 
-          char* c_ptr = (char*)ptr;
+        // pop the darn thing into the map
+        m_Map->AddEntity(new sPersonEntity(person));
 
-          if (text_name)
-          {
-            memcpy(text_name, c_ptr, size_name);
-            text_name[size_name] = 0;
-            person.name = text_name;
-          }
-          c_ptr += size_name;
+      }
+      break;
 
-          if (text_spriteset)
-          {
-            memcpy(text_spriteset, c_ptr, size_spriteset);
-            text_spriteset[size_spriteset] = 0;
-            person.spriteset = text_spriteset;
-          }
-          c_ptr += size_spriteset;
+    //////////////////////////////////////////////////////////
 
-          if (text_script_create)
-          {
-            memcpy(text_script_create, c_ptr, size_script_create);
-            text_script_create[size_script_create] = 0;
-            person.script_create = text_script_create;
-          }
-          c_ptr += size_script_create;
+    case sEntity::TRIGGER:
+      {
+        sTriggerEntity trigger;
 
-          if (text_script_destroy)
-          {
-            memcpy(text_script_destroy, c_ptr, size_script_destroy);
-            text_script_destroy[size_script_destroy] = 0;
-            person.script_destroy = text_script_destroy;
-          }
-          c_ptr += size_script_destroy;
+        trigger = GetMainWindow()->m_EntityClipboardTrigger;
 
-          if (text_script_activate_touch)
-          {
-            memcpy(text_script_activate_touch, c_ptr, size_script_activate_touch);
-            text_script_activate_touch[size_script_activate_touch] = 0;
-            person.script_activate_touch = text_script_activate_touch;
-          }
-          c_ptr += size_script_activate_touch;
+        trigger.x = tx * m_Map->GetTileset().GetTileWidth();
+        trigger.y = ty * m_Map->GetTileset().GetTileHeight();
+        trigger.layer = m_SelectedLayer;
 
-          if (text_script_activate_talk)
-          {
-            memcpy(text_script_activate_talk, c_ptr, size_script_activate_talk);
-            text_script_activate_talk[size_script_activate_talk] = 0;
-            person.script_activate_talk = text_script_activate_talk;
-          }
-          c_ptr += size_script_activate_talk;
+        // pop the darn thing into the map
+        m_Map->AddEntity(new sTriggerEntity(trigger));
 
-          if (text_script_generate_commands)
-          {
-            memcpy(text_script_generate_commands, c_ptr, size_script_generate_commands);
-            text_script_generate_commands[size_script_generate_commands] = 0;
-            person.script_generate_commands = text_script_generate_commands;
-          }
-
-          // pop the darn thing into the map
-          m_Map->AddEntity(new sPersonEntity(person));
-
-          delete[] text_name;                     text_name                     = NULL;
-          delete[] text_spriteset;                text_spriteset                = NULL;
-          delete[] text_script_create;            text_script_create            = NULL;
-          delete[] text_script_destroy;           text_script_destroy           = NULL;
-          delete[] text_script_activate_touch;    text_script_activate_touch    = NULL;
-          delete[] text_script_activate_talk;     text_script_activate_talk     = NULL;
-          delete[] text_script_generate_commands; text_script_generate_commands = NULL;
-        }
-        break;
-
-      //////////////////////////////////////////////////////////
-
-      case sEntity::TRIGGER:
-        {
-          sTriggerEntity trigger;
-          trigger.x = tx * m_Map->GetTileset().GetTileWidth();
-          trigger.y = ty * m_Map->GetTileset().GetTileHeight();
-          trigger.layer = m_SelectedLayer;
-
-          int function_size = *ptr++;
-          char* function_text = new char[function_size + 1];
-          char* c_ptr = (char*)ptr;
-
-          if (function_text)
-          {
-            memcpy(function_text, c_ptr, function_size);
-            function_text[function_size] = 0;
-            trigger.script = function_text;
-          }
-
-          // pop the darn thing into the map
-          m_Map->AddEntity(new sTriggerEntity(trigger));
-
-          delete[] function_text;
-          function_text = NULL;
-        }
-        break;
-    }
-
-    GlobalUnlock(memory);
-    m_Handler->MV_MapChanged();
+      }
+      break;
   }
 
-  CloseClipboard();
+  m_Handler->MV_MapChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2828,12 +2684,8 @@ CMapView::OnRButtonUp(UINT flags, CPoint point)
     }
   }
 
-  if (OpenClipboard() != FALSE)
-  {
-    if (!IsClipboardFormatAvailable(s_MapEntityClipboardFormat))
+  if (GetMainWindow()->m_EntityClipboardType == sEntity::NONE)
       EnableMenuItem(menu, ID_MAPVIEW_PASTEENTITY, MF_BYCOMMAND | MF_GRAYED);
-    CloseClipboard();
-  }
 
   if (entity_id == -1)
   {

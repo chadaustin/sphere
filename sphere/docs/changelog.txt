@@ -1,5 +1,15 @@
 YYYY.MM.DD
 
+2008.03.14
+  - Fixed editor bug, where a tile image kept being unchanged 
+    after drawing on it, if "show tile obstructions" was active.
+  - The person edit dialog in the editor will now keep the
+    subdirectory in the filename for the spriteset.
+  - Entity copy&pasting code uses now a built-in entity clipboard,
+    instead of the Windows clipboard (no crashes related to this anymore).
+  - Pasting a person from the clipboard will now generate a unique
+    name for it, based on the spriteset and on the existing persons names.
+
 2008.03.01
   - Added the possibility to export/replace spriteset images 
     palette to/from image in the spriteset editor.

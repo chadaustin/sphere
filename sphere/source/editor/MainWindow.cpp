@@ -291,15 +291,15 @@ BEGIN_MESSAGE_MAP(CMainWindow, CMDIFrameWnd)
   // project window message
 #ifdef I_SUCK
   ON_MESSAGE(WM_INSERT_PROJECT_FILE, OnInsertProjectFile)
-  ON_MESSAGE(WM_REFRESH_PROJECT,     OnRefreshProject)	
+  ON_MESSAGE(WM_REFRESH_PROJECT,     OnRefreshProject)
 #endif
   // document window messages
   ON_MESSAGE(WM_DW_CLOSING,          OnDocumentWindowClosing)
   ON_MESSAGE(WM_SET_CHILD_MENU,      OnSetChildMenu)
-  ON_MESSAGE(WM_CLEAR_CHILD_MENU,    OnClearChildMenu)  
+  ON_MESSAGE(WM_CLEAR_CHILD_MENU,    OnClearChildMenu)
   ON_MESSAGE(WM_COPYDATA,            OnCopyData)
   ON_COMMAND_RANGE(PALETTE_COMMAND, PALETTE_COMMAND + NUM_PALETTES, OnViewPalette)
-  
+
   ON_COMMAND_RANGE(CDAUDIO_COMMAND, CDAUDIO_COMMAND + NUM_CDAUDIOS, OnCDAudio)
   ON_WM_CHANGECBCHAIN()
   ON_WM_DRAWCLIPBOARD()
@@ -313,6 +313,7 @@ CMainWindow::CMainWindow()
 , m_ProjectWindow(NULL)
 , m_ChildMenuResource(-1)
 , m_NextClipboardViewer(NULL)
+, m_EntityClipboardType(sEntity::NONE)
 , m_NumImageToolsAllowed(1)
 , m_NewFileType(-1)
 {
@@ -332,37 +333,37 @@ void CMainWindow::OnUpdateFrameTitle(BOOL bAddToTitle)
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
-void ShowWPConfig(WINDOWPLACEMENT& wp) 
-{ 
+void ShowWPConfig(WINDOWPLACEMENT& wp)
+{
   return;
-  char buffer[200]; 
-  char size[10]; 
+  char buffer[200];
+  char size[10];
   int X, Y;
-  if(wp.showCmd == SW_MAXIMIZE) 
-  { 
-    wsprintf(size, "Maximized"); 
-    X = wp.ptMaxPosition.x; 
-    Y = wp.ptMaxPosition.y; 
-  } 
-  else 
+  if(wp.showCmd == SW_MAXIMIZE)
   {
-    if(wp.showCmd == SW_MINIMIZE) 
+    wsprintf(size, "Maximized");
+    X = wp.ptMaxPosition.x;
+    Y = wp.ptMaxPosition.y;
+  }
+  else
+  {
+    if(wp.showCmd == SW_MINIMIZE)
     {
-      wsprintf(size, "Minimized"); 
-      X = wp.ptMinPosition.x; 
-      Y = wp.ptMinPosition.y; 
-    } 
-    else 
+      wsprintf(size, "Minimized");
+      X = wp.ptMinPosition.x;
+      Y = wp.ptMinPosition.y;
+    }
+    else
     {
-      wsprintf(size, "Normal"); 
-      X = wp.rcNormalPosition.left; 
-      Y = wp.rcNormalPosition.top; 
-    } 
-  } 
-  
-  wsprintf(buffer, "Window is %s at (%i, %i)", size, X, Y); 
+      wsprintf(size, "Normal");
+      X = wp.rcNormalPosition.left;
+      Y = wp.rcNormalPosition.top;
+    }
+  }
+
+  wsprintf(buffer, "Window is %s at (%i, %i)", size, X, Y);
   GetMainWindow()->MessageBox(buffer, "Window Settings", MB_OK);
-} 
+}
 */
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -374,7 +375,7 @@ CMainWindow::DockControlBarLeftOf(CToolBar* Bar, CToolBar* LeftOf)
 	DWORD dw;
 	UINT n;
   RecalcLayout(TRUE);
-	
+
 	LeftOf->GetWindowRect(&rect);
 	rect.OffsetRect(1,0);
 	dw=LeftOf->GetBarStyle();
@@ -383,7 +384,7 @@ CMainWindow::DockControlBarLeftOf(CToolBar* Bar, CToolBar* LeftOf)
 	if (n == 0 && dw & CBRS_ALIGN_BOTTOM) n = AFX_IDW_DOCKBAR_BOTTOM;
 	if (n == 0 && dw & CBRS_ALIGN_LEFT)   n = AFX_IDW_DOCKBAR_LEFT;
 	if (n == 0 && dw & CBRS_ALIGN_RIGHT)  n = AFX_IDW_DOCKBAR_RIGHT;
-	
+
 	DockControlBar(Bar,n,&rect);
 }
 
@@ -406,7 +407,7 @@ CMainWindow::Create()
     if (title.length() == 0)
       title = GetDefaultWindowText();
   }
-  
+
   // create the window
   CMDIFrameWnd::Create(
     AfxRegisterWndClass(0, NULL, NULL, LoadIcon(AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDI_SDE))),
@@ -416,7 +417,7 @@ CMainWindow::Create()
     NULL,
     MAKEINTRESOURCE(IDR_MAIN));
   LoadAccelTable(MAKEINTRESOURCE(IDR_ACCELERATOR));
-  
+
   // create the toolbar
   if (m_MainToolBar.CreateEx(
     this,
@@ -426,7 +427,7 @@ CMainWindow::Create()
     m_MainToolBar.LoadToolBar(IDR_TOOLBAR);
     m_MainToolBar.EnableDocking(CBRS_ALIGN_ANY);
   }
-  
+
   // create the toolbar
   m_ImageToolBar.CreateEx(
     this,
@@ -437,7 +438,7 @@ CMainWindow::Create()
   m_ImageToolBar.EnableDocking(CBRS_ALIGN_ANY);
   m_ImageToolBar.GetToolBarCtrl().CheckButton(IDI_IMAGETOOL_PENCIL, TRUE);
   m_SelectedImageTools[0] = m_SelectedImageTools[1] = IDI_IMAGETOOL_PENCIL;
-  
+
   // create the toolbar
   m_MapToolBar.CreateEx(
     this,
@@ -448,7 +449,7 @@ CMainWindow::Create()
   m_MapToolBar.EnableDocking(CBRS_ALIGN_ANY);
   m_MapToolBar.GetToolBarCtrl().CheckButton(IDI_MAPTOOL_ZOOM_1X, TRUE);
   m_MapToolBar.GetToolBarCtrl().CheckButton(IDI_MAPTOOL_1X1, TRUE);
-  
+
   // status bar indicators
   static const UINT indicators[] =
   {
@@ -458,7 +459,7 @@ CMainWindow::Create()
     ID_INDICATOR_NUM,
     ID_INDICATOR_SCRL,
   };
-  
+
   // create the statusbar
   m_StatusBar.Create(this);
   m_StatusBar.SetIndicators(indicators, sizeof(indicators)/sizeof(UINT));
@@ -466,7 +467,7 @@ CMainWindow::Create()
   m_StatusBar.SetPaneText(0, "");
   m_StatusBar.SetPaneText(1, "");
   SetStatusBar(&m_StatusBar);
-  
+
   // enable docking
   EnableDocking(CBRS_ALIGN_ANY);
   DockControlBar(&m_MainToolBar,  AFX_IDW_DOCKBAR_TOP);
@@ -513,7 +514,7 @@ CMainWindow::Create()
   */
   UpdateWindow();
   UpdateMenu();
- 
+
   char games_directory[MAX_PATH];
   GetGamesDirectory(games_directory);
   m_DefaultFolder = games_directory;
@@ -527,12 +528,12 @@ CMainWindow::Create()
 afx_msg void
 CMainWindow::OnChangeCbChain(HWND remove, HWND after)
 {
-  // If the next window is closing, repair the chain. 
-  if ((HWND) remove == m_NextClipboardViewer) 
-    m_NextClipboardViewer = after; 
-  // Otherwise, pass the message to the next link. 
-  else if (m_NextClipboardViewer != NULL) 
-    ::SendMessage(m_NextClipboardViewer, WM_CHANGECBCHAIN, (WPARAM)remove, (LPARAM)after); 
+  // If the next window is closing, repair the chain.
+  if ((HWND) remove == m_NextClipboardViewer)
+    m_NextClipboardViewer = after;
+  // Otherwise, pass the message to the next link.
+  else if (m_NextClipboardViewer != NULL)
+    ::SendMessage(m_NextClipboardViewer, WM_CHANGECBCHAIN, (WPARAM)remove, (LPARAM)after);
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -544,19 +545,19 @@ CMainWindow::OnDrawClipboard()
     if (OpenClipboard()) {
       HGLOBAL hglobal = GetClipboardData(CF_TEXT);
       if (hglobal != NULL) {
-        LPSTR lpstr = (LPSTR) GlobalLock(hglobal); 
-    
-        if (lpstr != NULL) 
+        LPSTR lpstr = (LPSTR) GlobalLock(hglobal);
+
+        if (lpstr != NULL)
         {
-          m_ClipboardHistory.push_back(lpstr);     
+          m_ClipboardHistory.push_back(lpstr);
         }
         GlobalUnlock(hglobal);
       }
       CloseClipboard();
     }
   }
-  if (m_NextClipboardViewer != NULL) 
-    ::SendMessage(m_NextClipboardViewer, WM_DRAWCLIPBOARD, 0, 0); 
+  if (m_NextClipboardViewer != NULL)
+    ::SendMessage(m_NextClipboardViewer, WM_DRAWCLIPBOARD, 0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -568,16 +569,16 @@ CMainWindow::OnNMRclick(NMHDR *pNMHDR, LRESULT *pResult)
   if ( !(m_NumImageToolsAllowed > 1) )
     return;
   POINT point;
-  
+
   GetCursorPos(&point);
   ::ScreenToClient(m_ImageToolBar.GetToolBarCtrl().m_hWnd, &point);
-  const UINT tools[] = {IDI_IMAGETOOL_PENCIL, 
-                        IDI_IMAGETOOL_LINE, 
+  const UINT tools[] = {IDI_IMAGETOOL_PENCIL,
+                        IDI_IMAGETOOL_LINE,
                         IDI_IMAGETOOL_RECTANGLE,
-                        IDI_IMAGETOOL_CIRCLE, 
-                        IDI_IMAGETOOL_ELLIPSE, 
+                        IDI_IMAGETOOL_CIRCLE,
+                        IDI_IMAGETOOL_ELLIPSE,
                         IDI_IMAGETOOL_FILL,
-                        IDI_IMAGETOOL_SELECTION, 
+                        IDI_IMAGETOOL_SELECTION,
                         IDI_IMAGETOOL_FREESELECTION};
   const int num_tools = sizeof(tools) / sizeof(*tools);
   int index = m_ImageToolBar.GetToolBarCtrl().HitTest(&point);
@@ -619,7 +620,7 @@ CMainWindow::GetDefaultFolder(int type) const
     {
       directory += "\\"; directory += "images";
     }
-    
+
     if (type == WA_SCRIPT)
     {
       directory += "\\"; directory += "scripts";
@@ -660,7 +661,7 @@ CMainWindow::CreateProject(const char* projectname, const char* gametitle)
   GetGamesDirectory(games_directory);
   // this may fail, but we don't care
   CreateDirectory(games_directory, NULL);
-  
+
   if (!m_Project.Create(games_directory, projectname))
   {
     MessageBox("Error: Could not create project");
@@ -687,7 +688,7 @@ CMainWindow::OpenProject(const char* filename)
   {
     return;
   }
-  
+
   if (m_Project.Open(filename) == false)
   {
     char message[MAX_PATH + 100];
@@ -748,8 +749,8 @@ CMainWindow::IsProjectFile(const char* filename)
   static const char* game_sgm = "game.sgm";
   int filename_length = strlen(filename);
   int game_sgm_length = strlen(game_sgm);
-  return filename_length > game_sgm_length && 
-		strcmp(filename + filename_length - game_sgm_length, game_sgm) == 0;    
+  return filename_length > game_sgm_length &&
+		strcmp(filename + filename_length - game_sgm_length, game_sgm) == 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -782,11 +783,11 @@ CMainWindow::OpenGameFile(const char* filename)
   {
     std::vector<std::string> extensions;
     FTL.GetFileTypeExtensions(i, false, extensions);
-    
+
     for (unsigned int k = 0; k < extensions.size(); k++) {
       std::string ext = "." + extensions[k];
       if (strcmp_ci(filename + strlen(filename) - ext.length(), ext.c_str()) == 0) {
-        OpenDocumentWindow(i, filename);       
+        OpenDocumentWindow(i, filename);
         return;
       }
     }
@@ -1044,12 +1045,12 @@ CMainWindow::UpdateMenu()
       AppendMenu(hSubMenu, MF_POPUP | MF_STRING, (UINT_PTR) hCDMenu, "CD Player");
     } while (false);
   }
-  
+
   int menu_count = GetMenuItemCount(hNewMenu);
   //char buffer[100000];
   //char temp[80];
   //sprintf (buffer, "%d", menu_count);
-  
+
   for (int i = 0; i < menu_count; i++)
   {
     char szPopupTitle[80] = {0};
@@ -1067,10 +1068,10 @@ CMainWindow::UpdateMenu()
         i,
         MF_POPUP | MF_BYPOSITION | MF_STRING,
         (UINT_PTR) hSubMenu,
-        (szPopupTitle));    
+        (szPopupTitle));
   }
   //MessageBox(buffer);
-  
+
   // if a project is open, add the project menu
   if (m_ProjectOpen)
   {
@@ -1132,7 +1133,7 @@ CMainWindow::OnDropFiles(HDROP hDropInfo)
     OpenGameFile(lpFilename);
     delete[] lpFilename;
   }
-  
+
   DragFinish(hDropInfo);
 }
 
@@ -1232,9 +1233,9 @@ std::string GenerateSupportedExtensionsFilter()
 static
 std::string GetFolderFromPathName(CString thePath)
 {
-  int p = thePath.ReverseFind('\\'); 
+  int p = thePath.ReverseFind('\\');
   std::string folder = thePath;
-  if (p != -1) { 
+  if (p != -1) {
     thePath.Delete(p, thePath.GetLength() - p);
     folder = thePath;
   }
@@ -1266,7 +1267,7 @@ CMainWindow::OnFileOpen()
       m_DefaultFolder = GetFolderFromPathName(thePath);
     }
     pos = FileDialog.GetStartPosition();
-    
+
     while (pos != NULL)
     {
       CString thePath = FileDialog.GetNextPathName(pos);
@@ -1278,7 +1279,7 @@ CMainWindow::OnFileOpen()
         OpenGameFile(thePath);
     }
   }
-  
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1294,7 +1295,7 @@ CMainWindow::OnFileOptions()
 
 void
 CMainWindow::OnLanguageChanged()
-{ 
+{
   UpdateMenu();
 }
 
@@ -1390,7 +1391,7 @@ afx_msg void
 CMainWindow::OnFileNewProject()
 {
   CNewProjectDialog newprojectdialog(this);
-    
+
   if (newprojectdialog.DoModal() == IDOK)
   {
     char projectname[32];
@@ -1412,7 +1413,7 @@ CMainWindow::OnFileNewFile()
 {
   if (m_NewFileType >= 0 && m_NewFileType < NUM_GROUP_TYPES) {
     OpenDocumentWindow(m_NewFileType, NULL);
-  } 
+  }
   else {
     OnFileNewProject();
   }
@@ -1466,7 +1467,7 @@ CMainWindow::OnFileOpenProject()
     if (folder.rfind('\\') != std::string::npos) {
       folder[folder.rfind('\\')] = 0;
     }
-    
+
     __OpenProject__(folder.c_str());
   }
 }
@@ -1504,7 +1505,7 @@ CMainWindow::OnFileOpenLastProject()
 afx_msg void
 CMainWindow::OnFileClose()
 {
-  
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1655,7 +1656,7 @@ CMainWindow::OnFileImportImageToMap()
 {
   // get name of image
   CImageFileDialog FileDialog(FDM_OPEN);
-  
+
   FileDialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
   SetCurrentDirectory(m_DefaultFolder.c_str());
   if (FileDialog.DoModal() != IDOK)
@@ -1719,7 +1720,7 @@ afx_msg void
 CMainWindow::OnFileImportBitmapToRWS()
 {
   CImageFileDialog InFileDialog(FDM_OPEN);
-  
+
   InFileDialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
   SetCurrentDirectory(m_DefaultFolder.c_str());
   if (InFileDialog.DoModal() == IDCANCEL)
@@ -1783,7 +1784,7 @@ CMainWindow::OnFileImportBitmapToRSS()
   if (transparent_color_dialog.DoModal() != IDOK)
     return;
   sSpriteset sprite;
-  if (sprite.Import_BMP(InFileDialog.GetPathName(), ResizeDialog.GetWidth(), ResizeDialog.GetHeight(), 
+  if (sprite.Import_BMP(InFileDialog.GetPathName(), ResizeDialog.GetWidth(), ResizeDialog.GetHeight(),
       transparent_color_dialog.GetTopColor(), transparent_color_dialog.GetBottomColor()) == false)
   {
     MessageBox("Cannot Import file '" + InFileDialog.GetPathName() + "'", "Error");
@@ -1814,7 +1815,7 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
   bool ask_for_color_once = true;
   bool always_ask_for_color = false;
   POSITION pos = InFileDialog.GetStartPosition();
-  
+
   while (pos != NULL)
   {
     CString path_name = InFileDialog.GetNextPathName(pos);
@@ -1849,14 +1850,14 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
       for (int sx = 0; sx < 4; sx++) {
 
         int d;
- 
+
         // create the spriteset
         sprite.Create(frame_width, frame_height, num_images, num_directions, num_frames + 1);
         sprite.SetDirectionName(0, "north");
         sprite.SetDirectionName(1, "east");
         sprite.SetDirectionName(2, "south");
         sprite.SetDirectionName(3, "west");
-  
+
         for (d = 0; d < num_directions; d++) {
           for (int f = 0; f < num_frames; f++) {
             CImage32& frame = sprite.GetImage(d * num_frames + f);
@@ -1911,11 +1912,11 @@ CMainWindow::OnFileImportRM2KCharsetToRSS()
           }
           // I'm assuming that the base is the bottom part of the frame
           sprite.SetBase(0, frame_height/2, frame_width, frame_height);
-    
+
           char filename[MAX_PATH] = {0};
           sprintf(filename, "%s.%d.rss", title_name.c_str(), sy * 4 + sx);
           if (!sprite.Save(filename))
-          { 
+          {
             MessageBox("Can't save spriteset!");
             return;
           }
@@ -2033,13 +2034,13 @@ CMainWindow::OnFileImportRM2KChipsetToRTS()
     char filename[MAX_PATH];
     sprintf (filename, "%s.rts", title_name.c_str());
     if (!tileset.Save(filename))
-    { 
+    {
       MessageBox("Can't save tileset!");
       return;
     }
     char message[MAX_PATH + 1024] = {0};
     sprintf (message, "Chipset Converted!\nTileset saved as '%s'", filename);
-    MessageBox(message); 
+    MessageBox(message);
   }
 }
 #endif
@@ -2101,7 +2102,7 @@ afx_msg void
 CMainWindow::OnFileImportImageToFont()
 {
   CImageFileDialog InFileDialog(FDM_OPEN);
-  
+
   InFileDialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
   SetCurrentDirectory(m_DefaultFolder.c_str());
   if (InFileDialog.DoModal() != IDOK)
@@ -2346,7 +2347,7 @@ CMainWindow::OnFileImportMergeRGBA()
   }
   CImage32 rgb;
   CImage32 alpha;
-  
+
   if (!rgb.Load(rgb_dialog.GetPathName())) {
     MessageBox("Can't load image '" + rgb_dialog.GetFileName() + "'");
     return;
@@ -2389,7 +2390,7 @@ static bool WindowsFontToSphereFont(LOGFONT lf, COLORREF color, sFont* sphere_fo
   HFONT old_font = (HFONT)SelectObject(dc, font);
   if (!sphere_font->Create(256))
     return false;
-  
+
   for (int i = 0; i < 256; i++) {
     char c = (char)i;
     SIZE size;
@@ -2409,7 +2410,7 @@ static bool WindowsFontToSphereFont(LOGFONT lf, COLORREF color, sFont* sphere_fo
     // put it into the font
     int width = size.cx + 1;
     sphere_font->GetCharacter(i).Resize(width, size.cy);
-    
+
     if (sphere_font->GetCharacter(i).GetWidth() != width
      || sphere_font->GetCharacter(i).GetHeight() != size.cy) {
       delete dib;
@@ -2550,7 +2551,7 @@ CMainWindow::OnProjectRunSphere()
   char szCommandLine[MAX_PATH + 128];
   strcpy(szCommandLine, GetSphereDirectory().c_str());
   strcat(szCommandLine, "\\engine.exe");
-  
+
   if ( !FileExists(szCommandLine) ) {
     std::string error = "Could not run Sphere because engine.exe doesn't exist...\n";
     error += szCommandLine;
@@ -2585,7 +2586,7 @@ CMainWindow::OnProjectRunSphere()
     {
       strcat(szCommandLine, " -parameters ");
       strcat(szCommandLine, "\"'");
-      strcat(szCommandLine, filename);   
+      strcat(szCommandLine, filename);
       strcat(szCommandLine, "'\"");
     }
   }
@@ -2594,7 +2595,7 @@ CMainWindow::OnProjectRunSphere()
   memset(&si, 0, sizeof(si));
   si.cb = sizeof(si);
   PROCESS_INFORMATION pi;
-  
+
   char sphere_directory[MAX_PATH];
   strcpy(sphere_directory, GetSphereDirectory().c_str());
   BOOL retval = CreateProcess(
@@ -2710,7 +2711,7 @@ CMainWindow::OnProjectPackageGame()
   }
   struct Local {
     static bool IsGameFileType(const char* filename)
-    { 
+    {
       if (ends_with_ci(filename, ".ini")) { // if (strcmp_ci(filename + strlen(filename) - 3, "ini") == 0) {
         return true;
       }
@@ -2724,7 +2725,7 @@ CMainWindow::OnProjectPackageGame()
       {
         std::vector<std::string> extensions;
         FTL.GetFileTypeExtensions(i, false, extensions);
-    
+
         for (unsigned int k = 0; k < extensions.size(); k++) {
           std::string ext = "." + extensions[k];
           if (ends_with_ci(filename, ext.c_str())) { // if (strcmp_ci(filename + strlen(filename) - ext.length(), ext.c_str()) == 0) {
@@ -2770,17 +2771,17 @@ CMainWindow::OnProjectPackageGame()
       package.RemoveFile(j);
     }
   }
-  
+
   j = 0;
   std::string game_script = "scripts/";
               game_script += m_Project.GetGameScript();
   for (i = files.begin(); i != files.end(); i++, j++) {
     if (checklist.IsChecked(j) == false) {
-      if ( strcmp_ci(i->c_str(), "game.sgm") == 0 ) {       
+      if ( strcmp_ci(i->c_str(), "game.sgm") == 0 ) {
         MessageBox("You must include game.sgm in the package", "Package Game", MB_OK | MB_ICONERROR);
         return;
       }
-      if ( strcmp_ci(i->c_str(), game_script.c_str()) == 0 ) {       
+      if ( strcmp_ci(i->c_str(), game_script.c_str()) == 0 ) {
         MessageBox("You must include the game script in the package", "Package Game", MB_OK | MB_ICONERROR);
         return;
       }
@@ -2881,10 +2882,10 @@ CMainWindow::OnToolsImagesToMNG()
 {
   struct Local {
     static bool IsGameFileType(const char* filename)
-    { 
+    {
       std::vector<std::string> extensions;
       FTL.GetFileTypeExtensions(GT_IMAGES, false, extensions);
-    
+
       for (unsigned int k = 0; k < extensions.size(); k++) {
         std::string ext = "." + extensions[k];
         if (ends_with_ci(filename, ext.c_str())) { //if (strcmp_ci(filename + strlen(filename) - ext.length(), ext.c_str()) == 0) {
@@ -2896,7 +2897,7 @@ CMainWindow::OnToolsImagesToMNG()
   };
   // get name of image
   CImageFileDialog FileDialog(FDM_OPEN);
-  
+
   FileDialog.m_ofn.lpstrInitialDir = m_DefaultFolder.c_str();
   SetCurrentDirectory(m_DefaultFolder.c_str());
   if (FileDialog.DoModal() != IDOK)
@@ -3182,14 +3183,14 @@ CMainWindow::OnNeedText(UINT /*id*/, NMHDR* nmhdr, LRESULT* result)
   }
   switch (id) {
     case ID_FILE_NEW_PROJECT:
-      if (m_NewFileType >= 0 && m_NewFileType < NUM_GROUP_TYPES) 
+      if (m_NewFileType >= 0 && m_NewFileType < NUM_GROUP_TYPES)
       {
         if (m_NewFileType == GT_SCRIPTS)
           ttt->lpszText =  "New Script File";
         else
           ttt->lpszText =  "New Sphere File";
       }
-      else 
+      else
         ttt->lpszText = "New Sphere Project";
       break;
     case ID_PROJECT_RUNSPHERE:        ttt->lpszText = "Run Sphere";                     break;
@@ -3358,20 +3359,20 @@ CMainWindow::GetMapGridTool(int index)
 afx_msg UINT
 CMainWindow::GetMapZoomTool(int index)
 {
-  UINT tools[] = {IDI_MAPTOOL_ZOOM_1X, 
-                  IDI_MAPTOOL_ZOOM_2X, 
+  UINT tools[] = {IDI_MAPTOOL_ZOOM_1X,
+                  IDI_MAPTOOL_ZOOM_2X,
                   IDI_MAPTOOL_ZOOM_4X,
                   IDI_MAPTOOL_ZOOM_8X};
-                  
+
   int num_tools = sizeof(tools) / sizeof(*tools);
   UINT tool = IDI_MAPTOOL_ZOOM_1X;
-  
+
   for (int i = 0; i < num_tools; i++) {
     if (m_MapToolBar.GetToolBarCtrl().IsButtonChecked(tools[i]) == TRUE) {
       tool = tools[i];
     }
   }
-  
+
   return tool;
 }
 
@@ -3380,23 +3381,23 @@ CMainWindow::GetMapZoomTool(int index)
 afx_msg UINT
 CMainWindow::GetMapTool(int index)
 {
-  UINT tools[] = {IDI_MAPTOOL_1X1, 
-                  IDI_MAPTOOL_3X3, 
-                  IDI_MAPTOOL_5X5, 
+  UINT tools[] = {IDI_MAPTOOL_1X1,
+                  IDI_MAPTOOL_3X3,
+                  IDI_MAPTOOL_5X5,
                   IDI_MAPTOOL_SELECTTILE,
-                  IDI_MAPTOOL_FILLRECTAREA, 
+                  IDI_MAPTOOL_FILLRECTAREA,
                   IDI_MAPTOOL_FILLAREA,
-                  IDI_MAPTOOL_FILL_LAYER, 
+                  IDI_MAPTOOL_FILL_LAYER,
                   IDI_MAPTOOL_COPYAREA,
                   IDI_MAPTOOL_PASTE,
-                  IDI_MAPTOOL_MOVEENTITY, 
-                  IDI_MAPTOOL_OBS_SEGMENT, 
+                  IDI_MAPTOOL_MOVEENTITY,
+                  IDI_MAPTOOL_OBS_SEGMENT,
                   IDI_MAPTOOL_OBS_DELETE,
-                  IDI_MAPTOOL_OBS_MOVE_PT, 
-                  IDI_MAPTOOL_ZONEADD, 
+                  IDI_MAPTOOL_OBS_MOVE_PT,
+                  IDI_MAPTOOL_ZONEADD,
                   IDI_MAPTOOL_ZONEEDIT,
-                  IDI_MAPTOOL_ZONEMOVE, 
-                  IDI_MAPTOOL_ZONEDELETE, 
+                  IDI_MAPTOOL_ZONEMOVE,
+                  IDI_MAPTOOL_ZONEDELETE,
                   IDI_MAPTOOL_SCRIPT};
   int num_tools = sizeof(tools) / sizeof(*tools);
   UINT tool = IDI_MAPTOOL_1X1;
@@ -3461,12 +3462,12 @@ CMainWindow::OnUpdateImageCommand(CCmdUI* cmdui)
 afx_msg void
 CMainWindow::OnImageFillOutToolChanged()
 {
-  
+
   const unsigned int id = GetCurrentMessage()->wParam;
-  
-  CToolBarCtrl& ctrl = m_ImageToolBar.GetToolBarCtrl(); 
+
+  CToolBarCtrl& ctrl = m_ImageToolBar.GetToolBarCtrl();
   ctrl.CheckButton(id, !ctrl.IsButtonChecked(id));
-  
+
   UpdateToolBars();
 }
 
@@ -3475,12 +3476,12 @@ CMainWindow::OnImageFillOutToolChanged()
 afx_msg void
 CMainWindow::OnImageAntialiasToolChanged()
 {
-  
+
   const unsigned int id = GetCurrentMessage()->wParam;
-  
-  CToolBarCtrl& ctrl = m_ImageToolBar.GetToolBarCtrl(); 
+
+  CToolBarCtrl& ctrl = m_ImageToolBar.GetToolBarCtrl();
   ctrl.CheckButton(id, !ctrl.IsButtonChecked(id));
-  
+
   UpdateToolBars();
 }
 
@@ -3490,25 +3491,25 @@ afx_msg void
 CMainWindow::OnImageToolChanged()
 {
   const unsigned int id = GetCurrentMessage()->wParam;
-  const UINT tools[] = {IDI_IMAGETOOL_PENCIL, 
-                        IDI_IMAGETOOL_LINE, 
+  const UINT tools[] = {IDI_IMAGETOOL_PENCIL,
+                        IDI_IMAGETOOL_LINE,
                         IDI_IMAGETOOL_RECTANGLE,
-                        IDI_IMAGETOOL_CIRCLE, 
-                        IDI_IMAGETOOL_ELLIPSE, 
+                        IDI_IMAGETOOL_CIRCLE,
+                        IDI_IMAGETOOL_ELLIPSE,
                         IDI_IMAGETOOL_FILL,
-                        IDI_IMAGETOOL_SELECTION, 
+                        IDI_IMAGETOOL_SELECTION,
                         IDI_IMAGETOOL_FREESELECTION};
-                        
+
   const int num_tools = sizeof(tools) / sizeof(*tools);
   CToolBarCtrl& ctrl = m_ImageToolBar.GetToolBarCtrl();
   m_SelectedImageTools[0] = id;
-  
-  if (m_NumImageToolsAllowed == 1) 
+
+  if (m_NumImageToolsAllowed == 1)
     m_SelectedImageTools[1] = id;
 
-  for (int i = 0; i < num_tools; i++) 
+  for (int i = 0; i < num_tools; i++)
     ctrl.CheckButton(tools[i], (m_SelectedImageTools[0] == tools[i] || m_SelectedImageTools[1] == tools[i]) ? TRUE : FALSE);
-  
+
   UpdateToolBars();
 }
 
@@ -3571,8 +3572,8 @@ CMainWindow::OnMapGridToolChanged()
 {
 
   const unsigned int id = GetCurrentMessage()->wParam;
-  CToolBarCtrl& ctrl = m_MapToolBar.GetToolBarCtrl(); 
-  
+  CToolBarCtrl& ctrl = m_MapToolBar.GetToolBarCtrl();
+
   ctrl.CheckButton(id, !ctrl.IsButtonChecked(id));
   UpdateToolBars();
 }
@@ -3584,15 +3585,15 @@ CMainWindow::OnMapZoomToolChanged()
 {
 
   const unsigned int id = GetCurrentMessage()->wParam;
-  const UINT tools[] = {IDI_MAPTOOL_ZOOM_1X, 
-                        IDI_MAPTOOL_ZOOM_2X, 
-                        IDI_MAPTOOL_ZOOM_4X, 
+  const UINT tools[] = {IDI_MAPTOOL_ZOOM_1X,
+                        IDI_MAPTOOL_ZOOM_2X,
+                        IDI_MAPTOOL_ZOOM_4X,
                         IDI_MAPTOOL_ZOOM_8X};
-                        
+
   int num_tools = sizeof(tools) / sizeof(*tools);
   CToolBarCtrl& ctrl = m_MapToolBar.GetToolBarCtrl();
-  
-  for (int i = 0; i < num_tools; i++) 
+
+  for (int i = 0; i < num_tools; i++)
     ctrl.CheckButton(tools[i], FALSE);
 
   ctrl.CheckButton(id, TRUE);
@@ -3606,29 +3607,29 @@ CMainWindow::OnMapToolChanged()
 {
 
   const unsigned int id = GetCurrentMessage()->wParam;
-  const UINT tools[] = {IDI_MAPTOOL_1X1, 
-                        IDI_MAPTOOL_3X3, 
-                        IDI_MAPTOOL_5X5, 
+  const UINT tools[] = {IDI_MAPTOOL_1X1,
+                        IDI_MAPTOOL_3X3,
+                        IDI_MAPTOOL_5X5,
                         IDI_MAPTOOL_SELECTTILE,
-                        IDI_MAPTOOL_FILLRECTAREA, 
-                        IDI_MAPTOOL_FILLAREA, 
+                        IDI_MAPTOOL_FILLRECTAREA,
+                        IDI_MAPTOOL_FILLAREA,
                         IDI_MAPTOOL_FILL_LAYER,
                         IDI_MAPTOOL_COPYAREA,
-                        IDI_MAPTOOL_PASTE, 
-                        IDI_MAPTOOL_MOVEENTITY, 
-                        IDI_MAPTOOL_OBS_SEGMENT, 
+                        IDI_MAPTOOL_PASTE,
+                        IDI_MAPTOOL_MOVEENTITY,
+                        IDI_MAPTOOL_OBS_SEGMENT,
                         IDI_MAPTOOL_OBS_DELETE,
-                        IDI_MAPTOOL_OBS_MOVE_PT, 
-                        IDI_MAPTOOL_ZONEADD, 
+                        IDI_MAPTOOL_OBS_MOVE_PT,
+                        IDI_MAPTOOL_ZONEADD,
                         IDI_MAPTOOL_ZONEEDIT,
-                        IDI_MAPTOOL_ZONEMOVE, 
-                        IDI_MAPTOOL_ZONEDELETE, 
+                        IDI_MAPTOOL_ZONEMOVE,
+                        IDI_MAPTOOL_ZONEDELETE,
                         IDI_MAPTOOL_SCRIPT};
-                        
+
   int num_tools = sizeof(tools) / sizeof(*tools);
   CToolBarCtrl& ctrl = m_MapToolBar.GetToolBarCtrl();
-  
-  for (int i = 0; i < num_tools; i++) 
+
+  for (int i = 0; i < num_tools; i++)
     ctrl.CheckButton(tools[i], FALSE);
 
   ctrl.CheckButton(id, TRUE);
@@ -3675,12 +3676,12 @@ CMainWindow::OnRefreshProject(WPARAM /*wparam*/, LPARAM /*lparam*/)
 
 afx_msg LRESULT
 CMainWindow::OnCopyData(WPARAM wparam, LPARAM lparam)
-{ 
+{
 	PCOPYDATASTRUCT pcds = (PCOPYDATASTRUCT) lparam;
 	if (pcds->dwData == CD_OPEN_GAME_FILE)
 	{
 		const char* path = (const char*)pcds->lpData;
-		OpenGameFile(path);			
+		OpenGameFile(path);
 	}
   return 0;
 }
@@ -3730,7 +3731,7 @@ void
 CMainWindow::OnUpdatePaletteMenu(CCmdUI* cmdui)
 {
 	if (cmdui->m_pSubMenu == NULL) return;
-	// remove the old palette menu	
+	// remove the old palette menu
 	while(cmdui->m_pSubMenu->GetMenuItemCount() > 0)
 	{
 		cmdui->m_pSubMenu->RemoveMenu(0, MF_BYPOSITION);
@@ -3779,7 +3780,7 @@ CMainWindow::OnViewPalette(UINT id)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void 
+void
 CMainWindow::ViewPalette(int paletteNum)
 {
   // toggle the visibility of the palette
@@ -3808,7 +3809,7 @@ CMainWindow::OnCDAudio(UINT id)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void 
+void
 CMainWindow::CDAudio(int cdNum)
 {
   std::vector<std::string> devices;

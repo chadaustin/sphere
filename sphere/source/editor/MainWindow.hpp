@@ -7,6 +7,8 @@
 #include "Project.hpp"
 #include "SwatchServer.hpp"
 #include "resource.h"
+#include "../common/Entities.hpp"
+
 #ifdef TABBED_WINDOW_LIST
 #include "MDITabs.h"
 #endif
@@ -36,8 +38,8 @@ public:
 #endif
   void OpenGameFile(const char* filename);
   void OpenDocumentWindow(int grouptype, const char* filename);
-	
-	void ViewPalette(int paletteNum);	
+
+	void ViewPalette(int paletteNum);
 #ifdef I_SUCK
 	CProjectWindow* GetProjectWindow() {return m_ProjectWindow;}
 #endif
@@ -53,7 +55,7 @@ private:
 #ifdef I_SUCK
   afx_msg void OnFileBrowse();
 #endif
-  
+
   afx_msg void OnFileClose();
   afx_msg void OnFileOpen();
 #ifdef I_SUCK
@@ -153,7 +155,7 @@ private:
   afx_msg void OnHelpLocalChangelog();
   afx_msg void OnHelpLocalTutorial();
   afx_msg void OnHelpAbout();
-	
+
   afx_msg BOOL OnNeedText(UINT id, NMHDR* nmhdr, LRESULT* result);
   afx_msg void OnUpdateOpenLastProject(CCmdUI* cmdui);
   afx_msg void OnUpdateProjectCommand(CCmdUI* cmdui);
@@ -238,10 +240,17 @@ private:
   HWND m_NextClipboardViewer;
   afx_msg void OnChangeCbChain(HWND remove, HWND after);
   afx_msg void OnDrawClipboard();
+
 public:
   std::vector<std::string> m_ClipboardHistory;
   const char* GetDefaultFolder() const;
   std::string GetDefaultFolder(int type) const;
+
+  // entity clipboard
+  int            m_EntityClipboardType;
+  sPersonEntity  m_EntityClipboardPerson;
+  sTriggerEntity m_EntityClipboardTrigger;
+
 private:
   CToolBar   m_MainToolBar;
   CToolBar   m_ImageToolBar;
@@ -249,7 +258,7 @@ private:
   CStatusBar m_StatusBar;
 #ifdef TABBED_WINDOW_LIST
 public:
-  virtual void OnUpdateFrameTitle(BOOL bAddToTitle); 
+  virtual void OnUpdateFrameTitle(BOOL bAddToTitle);
 private:
   CMDITabs m_wndMDITabs;
 #endif

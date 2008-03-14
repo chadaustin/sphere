@@ -306,13 +306,13 @@ CMapWindow::OnSize(UINT uType, int cx, int cy)
       RECT rect;
       m_TilePalette->GetWindowRect(&rect);
       const int tile_palette_width = rect.right - rect.left + SCROLLBAR_WIDTH;
-    
+
       MapViewRect.right = MapViewRect.right - tile_palette_width;
-    
+
       cx -= tile_palette_width;
     }
 #endif
-    
+
     m_MapView.MoveWindow(
       MapViewRect.left,
       MapViewRect.top + TAB_HEIGHT,
@@ -337,7 +337,7 @@ CMapWindow::OnSize(UINT uType, int cx, int cy)
         MapViewRect.bottom - MapViewRect.top - TAB_HEIGHT);
     }
 #endif
-  
+
   }
   CSaveableDocumentWindow::OnSize(uType, cx, cy);
 }
@@ -477,7 +477,7 @@ CMapWindow::OnResampleTileset()
       GetStatusBar()->SetWindowText(string);
     }
   };
-  
+
   int tile_width  = m_Map.GetTileset().GetTileWidth();
   int tile_height = m_Map.GetTileset().GetTileHeight();
   CResizeDialog dialog("Resample Tiles", tile_width, tile_height);
@@ -665,9 +665,10 @@ void
 CMapWindow::TEV_TileModified(int tile)
 {
   SetModified(true);
-  m_MapView.Invalidate();
   if (m_TilePalette) m_TilePalette->TileChanged(tile);
-	if (m_TilePreviewPalette) m_TilePreviewPalette->OnImageChanged(m_Map.GetTileset().GetTile(tile));
+  if (m_TilePreviewPalette) m_TilePreviewPalette->OnImageChanged(m_Map.GetTileset().GetTile(tile));
+  m_MapView.TilesetChanged();
+  m_MapView.Invalidate();
 }
 ////////////////////////////////////////////////////////////////////////////////
 void
@@ -705,7 +706,7 @@ CMapWindow::TV_InsertedTiles(int at, int numtiles)
     sLayer& layer = m_Map.GetLayer(l);
     for (int x = 0; x < layer.GetWidth(); x++) {
       for (int y = 0; y < layer.GetHeight(); y++) {
-        
+
         if (layer.GetTile(x, y) >= at) {
           layer.SetTile(x, y, layer.GetTile(x, y) + numtiles);
         }
@@ -738,7 +739,7 @@ CMapWindow::TV_DeletedTiles(int at, int numtiles)
     sLayer& layer = m_Map.GetLayer(l);
     for (int x = 0; x < layer.GetWidth(); x++) {
       for (int y = 0; y < layer.GetHeight(); y++) {
-        
+
         // if it was deleted, set it 0
         if (layer.GetTile(x, y) >= at &&
             layer.GetTile(x, y) < at + numtiles) {
@@ -789,7 +790,7 @@ CMapWindow::TV_TilesetSelectionChanged(int width, int height, unsigned int* tile
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
-void 
+void
 CMapWindow::SP_ColorSelected(RGBA color)
 {
   m_TilesetEditView.SP_ColorSelected(color);
@@ -829,7 +830,7 @@ CMapWindow::OnMapSlideOther()
   // find out the biggest width and height of layers
   int width = 0;
   int height = 0;
-  
+
   for (int i = 0; i < m_Map.GetNumLayers(); i++) {
     if (m_Map.GetLayer(i).GetWidth() > width)
       width = m_Map.GetLayer(i).GetWidth();
@@ -840,9 +841,9 @@ CMapWindow::OnMapSlideOther()
   char vertical_title[1024] = {0};
   sprintf (horizontal_title, "Slide Horizontally [%d - %d]", -width, width);
   sprintf (vertical_title,   "Slide Vertically [%d - %d]", -height, height);
-  CNumberDialog dx(horizontal_title, "Value", 0, -width, width); 
+  CNumberDialog dx(horizontal_title, "Value", 0, -width, width);
   if (dx.DoModal() == IDOK) {
-    CNumberDialog dy(vertical_title, "Value", 0, -height, height); 
+    CNumberDialog dy(vertical_title, "Value", 0, -height, height);
     if (dy.DoModal() == IDOK) {
       if (dx.GetValue() != 0 || dy.GetValue() != 0) {
         m_Map.Translate(dx.GetValue(), dy.GetValue());

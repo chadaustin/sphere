@@ -44,7 +44,7 @@ private:
 
   int RoundX(int x);
   int RoundY(int y);
-  
+
   void Click(CPoint point);
   bool __SetTile__(int tx, int ty, int layer_index, int new_tile);
   bool SetTile(int tx, int ty);
@@ -58,6 +58,7 @@ private:
   void FillArea();
   void EntityCopy(CPoint point);
   void EntityPaste(CPoint point);
+  std::string GenerateUniquePersonName(std::string current_name, std::string filename);
 
   bool IsWithinSelectFillArea(int x, int y);
   void DrawTile(CDC& dc, const RECT& rect, int tx, int ty);
