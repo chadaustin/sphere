@@ -8,6 +8,9 @@ class CEntityTriggerDialog : public CDialog
 public:
   CEntityTriggerDialog(sTriggerEntity& trigger, sMap* map);
 private:
+  afx_msg void OnSize(UINT type, int cx, int cy);
+  afx_msg void OnSizing(UINT side, LPRECT rect);
+private:
   BOOL OnInitDialog();
   void OnOK();
   afx_msg void OnCheckSyntax();

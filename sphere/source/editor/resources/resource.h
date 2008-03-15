@@ -163,12 +163,6 @@
 #define IDC_CHECK_SYNTAX                1096
 #define IDC_HORIZONTAL_SCROLLING_VALUE  1097
 #define IDC_VERTICAL_SCROLLING_VALUE    1098
-#define IDC_ENTRY                       1101
-#define IDC_EXIT                        1102
-#define IDC_NORTH                       1103
-#define IDC_EAST                        1104
-#define IDC_SOUTH                       1105
-#define IDC_WEST                        1106
 #define IDC_SCRIPT_TYPE                 1110
 #define IDC_REFLECTIVE                  1111
 #define IDC_LAYER                       1111
@@ -233,7 +227,7 @@
 #define IDC_ENTITY_DELETE_ENTITIES      1195
 #define IDC_ENTITY_EDIT_ENTITY          1196
 #define IDC_ENTITY_MOVE_ENTITIES        1197
-#define IDC_ENTITY_NEW_ENTITY           1198
+#define IDC_ENTITY_RENAME_ENTITIES      1198
 #define IDC_FILETYPE_LIST               1199
 #define IDC_FILETYPES_REGISTER_TYPES    1200
 #define IDC_FILETYPES_UNREGISTER_TYPES  1201

@@ -8,6 +8,9 @@ class CEntityPersonDialog : public CDialog
 public:
   CEntityPersonDialog(sPersonEntity& person, sMap* map);
 private:
+  afx_msg void OnSize(UINT type, int cx, int cy);
+  afx_msg void OnSizing(UINT side, LPRECT rect);
+private:
   BOOL OnInitDialog();
   void OnOK();
   afx_msg void OnBrowseSpriteset();
@@ -19,7 +22,7 @@ private:
 private:
   sPersonEntity& m_Person;
   sMap* m_Map;
-  
+
   int     m_CurrentScript;
   CString m_Scripts[5];
   DECLARE_MESSAGE_MAP()

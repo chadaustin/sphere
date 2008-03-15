@@ -7,21 +7,25 @@
 #include "NumberDialog.hpp"
 #include "ListDialog.hpp"
 #include "MoveLayerDialog.hpp"
+#include "StringDialog.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 sEntity* CloneEntity(const sEntity& entity)
 {
   sEntity* clone = NULL;
 
-  switch (entity.GetEntityType()) {
-    case sEntity::TRIGGER: {
+  switch (entity.GetEntityType())
+  {
+    case sEntity::TRIGGER:
+    {
       clone = new sTriggerEntity;
       if (clone)
         ((sTriggerEntity*)clone)->script = ((sTriggerEntity&)entity).script;
       break;
     }
 
-    case sEntity::PERSON: {
+    case sEntity::PERSON:
+    {
       clone = new sPersonEntity;
       if (clone) {
         ((sPersonEntity*)clone)->name = ((sPersonEntity&)entity).name;
@@ -39,7 +43,8 @@ sEntity* CloneEntity(const sEntity& entity)
       clone = NULL;
   }
 
-  if (clone) {
+  if (clone)
+  {
     clone->x = entity.x;
     clone->y = entity.y;
     clone->layer = entity.layer;
@@ -50,15 +55,20 @@ sEntity* CloneEntity(const sEntity& entity)
 
 ////////////////////////////////////////////////////////////////////////////////
 BEGIN_MESSAGE_MAP(CEntityListDialog, CDialog)
+
   ON_COMMAND(IDC_ENTITY_EDIT_ENTITY,     OnEditEntity)
+  ON_COMMAND(IDC_ENTITY_RENAME_ENTITIES, OnRenameEntities)
   ON_COMMAND(IDC_ENTITY_MOVE_ENTITIES,   OnMoveEntities)
   ON_COMMAND(IDC_ENTITY_DELETE_ENTITIES, OnDeleteEntities)
+
   ON_CBN_SELCHANGE(IDC_ENTITY_LISTBOX,   OnEntityChanged)
+  ON_CBN_DBLCLK(IDC_ENTITY_LISTBOX,      OnEditEntity)
 
   ON_WM_SIZE()
   ON_WM_SIZING()
 
 END_MESSAGE_MAP()
+
 ////////////////////////////////////////////////////////////////////////////////
 CEntityListDialog::CEntityListDialog(sMap* map)
 : CDialog(IDD_ENTITY_LIST)
@@ -72,7 +82,7 @@ CEntityListDialog::~CEntityListDialog()
   unsigned int i;
   for (i = 0; i < m_Entities.size(); i++)
     DeleteEntity(m_Entities[i]);
-  
+
   m_Entities.clear();
 }
 
@@ -83,8 +93,8 @@ CEntityListDialog::OnSizing(UINT side, LPRECT rect)
   if (!rect)
     return;
 
-  if (rect->right - rect->left < 400)
-    rect->right = rect->left + 400;
+  if (rect->right - rect->left < 480)
+    rect->right = rect->left + 480;
   if (rect->bottom - rect->top < 200)
     rect->bottom = rect->top + 200;
 
@@ -95,57 +105,9 @@ CEntityListDialog::OnSizing(UINT side, LPRECT rect)
 afx_msg void
 CEntityListDialog::OnSize(UINT type, int cx, int cy)
 {
-  int button_width = 80;
-  int button_height = 25;
-  int button_width_space = 10;
-  int button_height_space = 5;
 
-  if (GetDlgItem(IDC_ENTITY_NEW_ENTITY)) {
-    RECT rect;
-    GetDlgItem(IDC_ENTITY_NEW_ENTITY)->GetWindowRect(&rect);
-    button_width  = rect.right - rect.left;
-    button_height = rect.bottom - rect.top;
-  }
-
-  int button_x = 20;
-  int button_y = cy - (button_height * 3);
-
-  if (GetDlgItem(IDC_ENTITY_LISTBOX)) {
-    int listbox_height = cy - (button_height * 3) - button_height;
-    GetDlgItem(IDC_ENTITY_LISTBOX)->MoveWindow(20, 20, cx - 40, listbox_height, TRUE);
-  }
-
-  button_y += button_height_space;
-  int x;
-  if (GetDlgItem(IDC_ENTITY_NEW_ENTITY)) {
-    x = button_x + (0 * button_width) + (0 * button_width_space);
-    GetDlgItem(IDC_ENTITY_NEW_ENTITY)->MoveWindow(x, button_y, button_width, button_height, TRUE);
-  }
- 
-  if (GetDlgItem(IDC_ENTITY_EDIT_ENTITY)) {
-    x = button_x + (1 * button_width) + (1 * button_width_space);
-    GetDlgItem(IDC_ENTITY_EDIT_ENTITY)->MoveWindow(x, button_y, button_width, button_height, TRUE);
-  }
-  
-  if (GetDlgItem(IDC_ENTITY_MOVE_ENTITIES)) {
-    x = button_x + (2 * button_width) + (2 * button_width_space);
-    GetDlgItem(IDC_ENTITY_MOVE_ENTITIES)->MoveWindow(x, button_y, button_width, button_height, TRUE);
-  }
-
-  if (GetDlgItem(IDC_ENTITY_DELETE_ENTITIES)) {
-    x = button_x + (3 * button_width) + (3 * button_width_space);
-    GetDlgItem(IDC_ENTITY_DELETE_ENTITIES)->MoveWindow(x, button_y, button_width, button_height, TRUE);
-  }
-
-  button_y += button_height + button_height_space;
-  if (GetDlgItem(IDOK)) {
-    x = button_x + (0 * button_width) + (0 * button_width_space);
-    GetDlgItem(IDOK)->MoveWindow(x, button_y, button_width, button_height, TRUE);
-  }
-  if (GetDlgItem(IDCANCEL)) {
-    x = button_x + (1 * button_width) + (1 * button_width_space);
-    GetDlgItem(IDCANCEL)->MoveWindow(x, button_y, button_width, button_height, TRUE);
-  }
+  if (GetDlgItem(IDC_ENTITY_LISTBOX))
+    GetDlgItem(IDC_ENTITY_LISTBOX)->MoveWindow(15, 47, cx - 30, cy - 58, TRUE);
 
   CDialog::OnSize(type, cx, cy);
 }
@@ -205,16 +167,18 @@ CEntityListDialog::UpdateEntityDetails(char string[2048], int entity_index, sMap
 BOOL
 CEntityListDialog::OnInitDialog()
 {
-  unsigned int i;
   m_Entities.resize(m_Map->GetNumEntities());
-  for (i = 0; i < m_Entities.size(); i++)
+
+  for (unsigned int i = 0; i < m_Entities.size(); i++)
   {
     const sEntity& entity = m_Map->GetEntity(i);
     m_Entities[i] = CloneEntity(entity);
   }
 
   UpdateButtons();
-  for (i = 0; i < (unsigned int) m_Map->GetNumEntities(); i++) {
+
+  for (int i = 0; i < m_Map->GetNumEntities(); i++)
+  {
     char string[2048];
     UpdateEntityDetails(string, i, m_Map);
     SendDlgItemMessage(IDC_ENTITY_LISTBOX, LB_ADDSTRING, 0, (LPARAM)string);
@@ -233,7 +197,8 @@ CEntityListDialog::OnOK()
 
   for (i = 0; i < int(m_Entities.size()); i++)
   {
-    if (m_Entities[i]) {
+    if (m_Entities[i])
+    {
       m_Map->AddEntity(m_Entities[i]);
       m_Entities[i] = NULL; // m_Map owns m_Entities[i] now
     }
@@ -254,18 +219,19 @@ void
 CEntityListDialog::UpdateButtons()
 {
   BOOL enable_edit = FALSE;
-  BOOL enable_move_and_delete = FALSE;
+  BOOL enable_rename_move_delete = FALSE;
 
   int num_selected = SendDlgItemMessage(IDC_ENTITY_LISTBOX, LB_GETSELCOUNT);
   if (num_selected == 1)
     enable_edit = TRUE;
 
   if (num_selected >= 1)
-    enable_move_and_delete = TRUE;
+    enable_rename_move_delete = TRUE;
 
   GetDlgItem(IDC_ENTITY_EDIT_ENTITY)->EnableWindow(enable_edit);
-  GetDlgItem(IDC_ENTITY_DELETE_ENTITIES)->EnableWindow(enable_move_and_delete);
-  GetDlgItem(IDC_ENTITY_MOVE_ENTITIES)->EnableWindow(enable_move_and_delete);
+  GetDlgItem(IDC_ENTITY_RENAME_ENTITIES)->EnableWindow(enable_rename_move_delete);
+  GetDlgItem(IDC_ENTITY_MOVE_ENTITIES)->EnableWindow(enable_rename_move_delete);
+  GetDlgItem(IDC_ENTITY_DELETE_ENTITIES)->EnableWindow(enable_rename_move_delete);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -273,13 +239,10 @@ std::vector<int>
 CEntityListDialog::GetSelectedEntities()
 {
   std::vector<int> list;
-  unsigned int i;
 
-  for (i = 0; ((int) i) < SendDlgItemMessage(IDC_ENTITY_LISTBOX, LB_GETCOUNT, 0, 0); i++) {
-    int selected = SendDlgItemMessage(IDC_ENTITY_LISTBOX, LB_GETSEL, (WPARAM) i, 0);
-    if (selected > 0)
+  for (int i = 0; i < SendDlgItemMessage(IDC_ENTITY_LISTBOX, LB_GETCOUNT, 0, 0); i++)
+    if (SendDlgItemMessage(IDC_ENTITY_LISTBOX, LB_GETSEL, (WPARAM) i, 0) > 0)
       list.push_back(i);
-  }
 
   return list;
 }
@@ -350,7 +313,7 @@ CEntityListDialog::OnMoveEntities()
   // find out the biggest width and height of layers
   int width = 0;
   int height = 0;
-  
+
   for (int i = 0; i < m_Map->GetNumLayers(); i++) {
     if (m_Map->GetLayer(i).GetWidth() > width)
       width = m_Map->GetLayer(i).GetWidth();
@@ -360,7 +323,7 @@ CEntityListDialog::OnMoveEntities()
 
   int dx;
   int dy;
-  
+
   if (layer_dialog.DoModal() == IDOK) {
     if (layer_dialog.LayerChanged()) {
       int layer = layer_dialog.GetLayer();
@@ -372,11 +335,11 @@ CEntityListDialog::OnMoveEntities()
       sprintf (horizontal_title, "Slide Horizontally [%d - %d]", -width, width);
       sprintf (vertical_title,   "Slide Vertically [%d - %d]", -height, height);
 
-      CNumberDialog dxd(horizontal_title, "Value", 0, -width, width); 
+      CNumberDialog dxd(horizontal_title, "Value", 0, -width, width);
       if (dxd.DoModal() == IDOK)
       {
         dx = dxd.GetValue();
-        CNumberDialog dyd(vertical_title, "Value", 0, -height, height); 
+        CNumberDialog dyd(vertical_title, "Value", 0, -height, height);
         if (dyd.DoModal() == IDOK)
         {
           dy = dyd.GetValue();
@@ -392,16 +355,93 @@ void
 CEntityListDialog::OnDeleteEntities()
 {
   std::vector<int> list = GetSelectedEntities();
-  if (list.size() > 0) {
-    int result = MessageBox("Delete selected entities?", "Entity List", MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2);
+
+  if (list.size() > 0)
+  {
+    int result = MessageBox("Delete selected entities?", "Entity List",
+                            MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2);
+
     if (result == IDNO)
       return;
 
-    for (int i = int(list.size() - 1); i >= 0; i--) {
-      if (list[i] >= 0 && ((unsigned int) list[i]) < m_Entities.size()) {
+    for (int i = list.size() - 1; i >= 0; i--)
+    {
+      if (list[i] >= 0 && list[i] < (int)m_Entities.size())
+      {
         DeleteEntity(m_Entities[list[i]]);
         m_Entities.erase(m_Entities.begin() + list[i]);
-        SendDlgItemMessage(IDC_ENTITY_LISTBOX, LB_DELETESTRING, (WPARAM) i, 0);
+        SendDlgItemMessage(IDC_ENTITY_LISTBOX, LB_DELETESTRING, (WPARAM) list[i], 0);
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+std::string
+CEntityListDialog::GenerateUniquePersonName(std::string current_name, std::string new_name)
+{
+  CString temp;
+
+  int new_id = 0;
+  bool done = false;
+
+  while (!done)
+  {
+    new_id++;
+    temp.Format("%s_%d", new_name.c_str(), new_id);
+    bool found = false;
+    int num_found = 0;
+
+    for (unsigned int i = 0; i < m_Entities.size(); i++)
+    {
+      sEntity* e = m_Entities[i];
+
+      if (e->GetEntityType() == sEntity::PERSON)
+      {
+        sPersonEntity* p = (sPersonEntity*)e;
+
+        if (p->name.compare(temp) == 0)
+          num_found++;
+      }
+    }
+
+    if ((num_found == 1 && current_name.compare(temp) == 0) || num_found == 0)
+      done = true;
+  }
+
+  new_name = temp;
+
+  return new_name;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void
+CEntityListDialog::OnRenameEntities()
+{
+  std::vector<int> list = GetSelectedEntities();
+
+  if (list.size() > 0)
+  {
+    std::string new_name;
+    CStringDialog dialog("New Person Name", "");
+
+    if (dialog.DoModal() != IDOK)
+      return;
+
+    for (unsigned int i = 0; i < list.size(); i++)
+    {
+
+      if (m_Entities[list[i]]->GetEntityType() == sEntity::PERSON)
+      {
+        sPersonEntity* p = (sPersonEntity*)m_Entities[list[i]];
+        new_name = GenerateUniquePersonName(p->name, dialog.GetValue());
+        p->name  = new_name;
+
+        char string[2048];
+        UpdateEntityDetails(string, list[i], m_Map);
+        SendDlgItemMessage(IDC_ENTITY_LISTBOX, LB_DELETESTRING, list[i], 0);
+        SendDlgItemMessage(IDC_ENTITY_LISTBOX, LB_INSERTSTRING, list[i], (LPARAM)string);
+
       }
     }
   }

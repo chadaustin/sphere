@@ -8,6 +8,9 @@ class CMapPropertiesDialog : public CDialog
 public:
   CMapPropertiesDialog(sMap* map, const char* document_path);
 private:
+  afx_msg void OnSize(UINT type, int cx, int cy);
+  afx_msg void OnSizing(UINT side, LPRECT rect);
+private:
   enum {
     ENTRY,
     EXIT,
@@ -22,12 +25,7 @@ private:
   afx_msg void OnBrowseBackgroundMusic();
   afx_msg void OnBrowseTileset();
   afx_msg void OnCheckSyntax();
-  afx_msg void OnClickEntry();
-  afx_msg void OnClickExit();
-  afx_msg void OnClickNorth();
-  afx_msg void OnClickEast();
-  afx_msg void OnClickSouth();
-  afx_msg void OnClickWest();
+  afx_msg void OnScriptChanged();
   void StoreCurrentScript();
   void LoadNewScript();
 private:

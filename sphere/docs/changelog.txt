@@ -1,5 +1,10 @@
 YYYY.MM.DD
 
+2008.03.15
+  - Lots of changes to editor's person, trigger, entity list
+    and map properties dialogs, including bugfixes, rearranging
+    controls, changing the dialogs to be resizeable, etc.
+
 2008.03.14
   - Fixed editor bug, where a tile image kept being unchanged 
     after drawing on it, if "show tile obstructions" was active.

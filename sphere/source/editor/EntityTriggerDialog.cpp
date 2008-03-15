@@ -2,9 +2,15 @@
 #include "Scripting.hpp"
 #include "resource.h"
 #include "../common/Map.hpp"
+
 BEGIN_MESSAGE_MAP(CEntityTriggerDialog, CDialog)
   ON_BN_CLICKED(IDC_CHECK_SYNTAX, OnCheckSyntax)
+
+  ON_WM_SIZE()
+  ON_WM_SIZING()
+
 END_MESSAGE_MAP()
+
 ////////////////////////////////////////////////////////////////////////////////
 static inline std::string itos(int i)
 {
@@ -12,6 +18,7 @@ static inline std::string itos(int i)
   sprintf(s, "%d", i);
   return s;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 CEntityTriggerDialog::CEntityTriggerDialog(sTriggerEntity& trigger, sMap* map)
 : CDialog(IDD_ENTITY_TRIGGER)
@@ -19,6 +26,33 @@ CEntityTriggerDialog::CEntityTriggerDialog(sTriggerEntity& trigger, sMap* map)
 , m_Map(map)
 {
 }
+
+////////////////////////////////////////////////////////////////////////////////
+afx_msg void
+CEntityTriggerDialog::OnSizing(UINT side, LPRECT rect)
+{
+  if (!rect)
+    return;
+
+  if (rect->right - rect->left < 400)
+    rect->right = rect->left + 400;
+  if (rect->bottom - rect->top < 250)
+    rect->bottom = rect->top + 250;
+
+  CDialog::OnSizing(side, rect);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+afx_msg void
+CEntityTriggerDialog::OnSize(UINT type, int cx, int cy)
+{
+
+  if (GetDlgItem(IDC_SCRIPT))
+    GetDlgItem(IDC_SCRIPT)->MoveWindow(11, 70, cx - 24, cy - 81, TRUE);
+
+  CDialog::OnSize(type, cx, cy);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 BOOL
 CEntityTriggerDialog::OnInitDialog()
@@ -34,7 +68,7 @@ CEntityTriggerDialog::OnInitDialog()
     if (i == m_Trigger.layer)
       SendDlgItemMessage(IDC_LAYER, CB_SETCURSEL, m_Trigger.layer);
   }
-  
+
   return TRUE;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -44,7 +78,7 @@ CEntityTriggerDialog::OnOK()
   CString script;
   GetDlgItemText(IDC_SCRIPT, script);
   m_Trigger.script = script;
-  
+
   m_Trigger.layer = SendDlgItemMessage(IDC_LAYER, CB_GETCURSEL);
   CDialog::OnOK();
 }

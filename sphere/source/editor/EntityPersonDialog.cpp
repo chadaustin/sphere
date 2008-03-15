@@ -5,12 +5,19 @@
 #include "Scripting.hpp"
 #include "../common/Map.hpp"
 #include "resource.h"
+
 BEGIN_MESSAGE_MAP(CEntityPersonDialog, CDialog)
-  ON_COMMAND(IDC_BROWSE_SPRITESET, OnBrowseSpriteset)
-  ON_COMMAND(IDC_CHECK_SYNTAX,     OnCheckSyntax)
-  ON_COMMAND(IDC_GENERATE_NAME,    OnGenerateName)
+
+  ON_COMMAND(IDC_BROWSE_SPRITESET,  OnBrowseSpriteset)
+  ON_COMMAND(IDC_CHECK_SYNTAX,      OnCheckSyntax)
+  ON_COMMAND(IDC_GENERATE_NAME,     OnGenerateName)
   ON_CBN_SELCHANGE(IDC_SCRIPT_TYPE, OnScriptChanged)
+
+  ON_WM_SIZE()
+  ON_WM_SIZING()
+
 END_MESSAGE_MAP()
+
 ////////////////////////////////////////////////////////////////////////////////
 static inline std::string itos(int i)
 {
@@ -26,12 +33,38 @@ CEntityPersonDialog::CEntityPersonDialog(sPersonEntity& person, sMap* map)
 , m_Map(map)
 {
 }
+
+////////////////////////////////////////////////////////////////////////////////
+afx_msg void
+CEntityPersonDialog::OnSizing(UINT side, LPRECT rect)
+{
+  if (!rect)
+    return;
+
+  if (rect->right - rect->left < 430)
+    rect->right = rect->left + 430;
+  if (rect->bottom - rect->top < 330)
+    rect->bottom = rect->top + 330;
+
+  CDialog::OnSizing(side, rect);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+afx_msg void
+CEntityPersonDialog::OnSize(UINT type, int cx, int cy)
+{
+
+  if (GetDlgItem(IDC_SCRIPT))
+    GetDlgItem(IDC_SCRIPT)->MoveWindow(15, 145, cx - 36, cy - 160, TRUE);
+
+  CDialog::OnSize(type, cx, cy);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 BOOL
 CEntityPersonDialog::OnInitDialog()
 {
   // initialize controls
-
   SendDlgItemMessage(IDC_SCRIPT_TYPE, CB_ADDSTRING, 0, (LPARAM)"On Create");
   SendDlgItemMessage(IDC_SCRIPT_TYPE, CB_ADDSTRING, 0, (LPARAM)"On Destroy");
   SendDlgItemMessage(IDC_SCRIPT_TYPE, CB_ADDSTRING, 0, (LPARAM)"On Activate (Touch)");
@@ -44,23 +77,30 @@ CEntityPersonDialog::OnInitDialog()
   m_Scripts[2] = m_Person.script_activate_touch.c_str();
   m_Scripts[3] = m_Person.script_activate_talk.c_str();
   m_Scripts[4] = m_Person.script_generate_commands.c_str();
+
   // put in the initial values
   SetDlgItemText(IDC_NAME,      m_Person.name.c_str());
   SetDlgItemText(IDC_SPRITESET, m_Person.spriteset.c_str());
   SendDlgItemMessage(IDC_SCRIPT_TYPE, CB_SETCURSEL, 0);
   SetScript();
+
   // add layer names in "layer_index - layer_name" style to dropdown layer list
-  for (int i = 0; i < m_Map->GetNumLayers(); i++) {
+  for (int i = 0; i < m_Map->GetNumLayers(); i++)
+  {
     std::string layer_info = itos(i) + " - " + m_Map->GetLayer(i).GetName();
-    if (m_Map->GetStartLayer() == i) {
+
+    if (m_Map->GetStartLayer() == i)
       layer_info += " - ST";
-    }
+
     SendDlgItemMessage(IDC_LAYER, CB_ADDSTRING, 0, (LPARAM)layer_info.c_str());
+
     if (i == m_Person.layer)
       SendDlgItemMessage(IDC_LAYER, CB_SETCURSEL, m_Person.layer);
   }
+
   // give spriteset edit box focus
   GetDlgItem(IDC_NAME)->SetFocus();
+
   return FALSE;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -80,6 +120,7 @@ CEntityPersonDialog::OnOK()
   m_Person.script_activate_talk     = m_Scripts[3];
   m_Person.script_generate_commands = m_Scripts[4];
   m_Person.layer = SendDlgItemMessage(IDC_LAYER, CB_GETCURSEL);
+
   CDialog::OnOK();
 }
 ////////////////////////////////////////////////////////////////////////////////
