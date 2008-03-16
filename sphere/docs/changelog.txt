@@ -1,5 +1,10 @@
 YYYY.MM.DD
 
+2008.03.16
+  - Fixed a bug in the video drivers standard16 and standard32,
+    which caused the engine to crash if e.g. spritesets were 
+    changed frequently.
+
 2008.03.15
   - Lots of changes to editor's person, trigger, entity list
     and map properties dialogs, including bugfixes, rearranging

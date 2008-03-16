@@ -95,6 +95,7 @@ static void CloseWindowed();
 static void Scale(void* dst, int dst_pitch);
 
 static bool FillImagePixels(IMAGE image, RGBA* data);
+static bool RefillImagePixels(IMAGE image);
 static void OptimizeBlitRoutine(IMAGE image);
 
 static void NullBlit(IMAGE image, int x, int y);
@@ -793,20 +794,66 @@ void Scale(void* dst, int dst_pitch)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+bool RefillImagePixels(IMAGE image)
+{
+    int pixels_total = image->width * image->height;
+
+    RGBA* pixels = image->original;
+
+    // fill the image pixels
+    if (BitsPerPixel == 32)
+    {
+        image->bgra = new BGRA[pixels_total];
+
+        if (image->bgra == NULL)
+            return false;
+
+        for (int i = 0; i < pixels_total; ++i)
+        {
+            image->bgra[i].red   = (pixels[i].red   * pixels[i].alpha) / 255;
+            image->bgra[i].green = (pixels[i].green * pixels[i].alpha) / 255;
+            image->bgra[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 255;
+        }
+    }
+    else
+    {
+        image->bgr  = new BGR[pixels_total];
+
+        if (image->bgr == NULL)
+            return false;
+
+        for (int i = 0; i < pixels_total; ++i)
+        {
+            image->bgr[i].red   = (pixels[i].red   * pixels[i].alpha) / 255;
+            image->bgr[i].green = (pixels[i].green * pixels[i].alpha) / 255;
+            image->bgr[i].blue  = (pixels[i].blue  * pixels[i].alpha) / 255;
+        }
+    }
+
+    // fill the alpha array
+    image->alpha = new byte[pixels_total];
+
+    if (image->alpha == NULL)
+        return false;
+
+    for (int i = 0; i < pixels_total; i++)
+        image->alpha[i] = pixels[i].alpha;
+
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 bool FillImagePixels(IMAGE image, RGBA* pixels)
 {
     int pixels_total = image->width * image->height;
 
     // fill the original data
-    if (pixels != image->original)
-    {
-        image->original = new RGBA[pixels_total];
+    image->original = new RGBA[pixels_total];
 
-        if (!image->original)
-            return false;
+    if (!image->original)
+        return false;
 
-        memcpy(image->original, pixels, pixels_total * sizeof(RGBA));
-    }
+    memcpy(image->original, pixels, pixels_total * sizeof(RGBA));
 
     // fill the image pixels
     if (BitsPerPixel == 32)
@@ -1616,7 +1663,7 @@ EXPORT(void) UnlockImage(IMAGE image, bool pixels_changed)
 
         delete[] image->alpha;
 
-        FillImagePixels(image, image->original);
+        RefillImagePixels(image);
         OptimizeBlitRoutine(image);
     }
 }

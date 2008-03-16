@@ -67,6 +67,7 @@ static void CloseWindowed();
 static void Scale(word* dst, int dst_pitch);
 
 static void FillImagePixels(IMAGE image, RGBA* pixels);
+static void RefillImagePixels(IMAGE image);
 static void OptimizeBlitRoutine(IMAGE image);
 
 static void NullBlit(IMAGE image, int x, int y);
@@ -769,20 +770,72 @@ EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void RefillImagePixels(IMAGE image)
+{
+    int pixels_total = image->width * image->height;
+
+    RGBA* pixels = image->original;
+
+    // fill the premultiplied data
+    RGBA pixel;
+    image->rgb = new word[pixels_total];
+
+    if (!image->rgb)
+        return;
+
+    if (PixelFormat == RGB565)
+    {
+        for (int i = 0; i < pixels_total; i++)
+        {
+            pixel = pixels[i];
+
+            // premultiply
+            pixel.red   = (pixel.red   * pixel.alpha) / 255;
+            pixel.green = (pixel.green * pixel.alpha) / 255;
+            pixel.blue  = (pixel.blue  * pixel.alpha) / 255;
+
+            image->rgb[i] = PackPixel565(pixel);
+        }
+    }
+    else
+    {
+        for (int i = 0; i < pixels_total; i++)
+        {
+            pixel = pixels[i];
+
+            // premultiply
+            pixel.red   = (pixel.red   * pixel.alpha) / 255;
+            pixel.green = (pixel.green * pixel.alpha) / 255;
+            pixel.blue  = (pixel.blue  * pixel.alpha) / 255;
+
+            image->rgb[i] = PackPixel555(pixel);
+        }
+    }
+
+    // alpha
+    image->alpha = new byte[pixels_total];
+
+    if (!image->alpha)
+        return;
+
+    for (int i = 0; i < pixels_total; i++)
+        image->alpha[i] = pixels[i].alpha;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void FillImagePixels(IMAGE image, RGBA* pixels)
 {
     int pixels_total = image->width * image->height;
 
     // fill the original data
-    if (pixels != image->original)
-    {
-        image->original = new RGBA[pixels_total];
+    image->original = new RGBA[pixels_total];
 
-        if (!image->original)
-            return;
+    if (!image->original)
+        return;
 
-        memcpy(image->original, pixels, pixels_total * sizeof(RGBA));
-    }
+    memcpy(image->original, pixels, pixels_total * sizeof(RGBA));
 
     // fill the premultiplied data
     RGBA pixel;
