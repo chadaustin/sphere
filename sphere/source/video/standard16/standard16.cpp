@@ -149,7 +149,6 @@ static word*   RenderBuffer;
 
 static bool s_fullscreen = false;
 static int  scale_factor = 1;
-static bool firstcall    = true;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -325,9 +324,12 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
     ScreenWidth  = screen_width;
     ScreenHeight = screen_height;
 
+    SetClippingRectangle(0, 0, screen_width, screen_height);
+
+    static bool firstcall = true;
+
     if (firstcall)
     {
-        SetClippingRectangle(0, 0, screen_width, screen_height);
         LoadConfiguration();
         s_fullscreen = Configuration.fullscreen;
         scale_factor = Configuration.scale ? 2 : 1;

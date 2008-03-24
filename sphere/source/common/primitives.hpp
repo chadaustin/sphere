@@ -9,7 +9,7 @@
 namespace primitives
 {
     template<typename clipT>
-    bool is_inside_clipper(int x, int y, clipT clipper)
+    inline bool is_inside_clipper(int x, int y, clipT clipper)
     {
         return (
                    (x >= clipper.left)  &&
@@ -295,7 +295,7 @@ namespace primitives
         clipT clipper,
         renderT renderer)
     {
-        int old_x, old_y, dx, dy, inc_x, inc_y, dist_big, dist_small, eps, i, n, ident;
+        int old_x, old_y, dx, dy, inc_x, inc_y, dist_big, dist_small, eps, i, n, N, ident;
 
         // if type == LINE_LOOP, start with the last point
         if (type == 2)
@@ -322,6 +322,7 @@ namespace primitives
 
             dx = points[i]->x - old_x;
             dy = points[i]->y - old_y;
+
             if (dx < 0)
             {
                 inc_x = -1;
@@ -331,6 +332,7 @@ namespace primitives
             {
                 inc_x = 1;
             }
+
             if (dy < 0)
             {
                 inc_y = -1;
@@ -340,6 +342,7 @@ namespace primitives
             {
                 inc_y = 1;
             }
+
             if (dx >= dy)
             {
                 dist_big = dx;
@@ -354,7 +357,14 @@ namespace primitives
             }
             eps = dist_big / 2;
 
-            for (n = 0; n < dist_big; n++)
+            // if type == LINE_MULTIPLE, draw a full line
+            if (type == 0)
+                N = dist_big + 1;
+            else
+                N = dist_big;
+
+            // draw the line
+            for (n = 0; n < N; n++)
             {
                 if (is_inside_clipper(old_x, old_y, clipper))
                 {
@@ -387,7 +397,7 @@ namespace primitives
             // label used to skip lines which are off the screen
             skip_line:
 
-            // if type == LINE_LIST, take two new points
+            // if type == LINE_MULTIPLE, take two new points
             if (type == 0)
             {
                 i += 2;
@@ -1341,7 +1351,7 @@ namespace primitives
         renderT renderer)
     {
         if (rx <= 0 || ry <= 0) return;
-        
+
         // if ellipse is completely out, don't bother with it
         if (is_clipped(xc - rx, yc - ry, xc + rx - 1, yc + ry - 1, clipper))
         {
@@ -1437,7 +1447,7 @@ namespace primitives
         renderT renderer)
     {
         if (rx <= 0 || ry <= 0) return;
-        
+
         // if ellipse is completely out, don't bother with it
         if (is_clipped(xc - rx, yc - ry, xc + rx - 1, yc + ry - 1, clipper))
         {
@@ -1544,7 +1554,7 @@ namespace primitives
         renderT renderer)
     {
         if (r <= 0) return;
-        
+
         // if circle is completely out, don't bother with it
         if (is_clipped(x - r, y - r, x + r - 1, y + r - 1, clipper))
         {
@@ -1656,7 +1666,7 @@ namespace primitives
         renderT renderer)
     {
         if (r <= 0) return;
-        
+
         // if circle is completely out, don't bother with it
         if (is_clipped(x - r, y - r, x + r - 1, y + r - 1, clipper))
         {
@@ -1733,7 +1743,7 @@ namespace primitives
         renderT renderer)
     {
         if (r <= 0) return;
-        
+
         // if circle is completely out, don't bother with it
         if (is_clipped(x - r, y - r, x + r - 1, y + r - 1, clipper))
         {

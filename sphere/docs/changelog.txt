@@ -1,5 +1,15 @@
 YYYY.MM.DD
 
+2008.03.24
+  - Fixed the tiled-screen issue in the sphere_gl video driver,
+    which occured with the "Bilinear Filtering" option on,
+    and added proper viewport initialization.
+  - For sphere_gl and standard8 it's now possible to toggle
+    from/to fullscreen as well.
+  - Fixed a bug in the standard16 and standard32 video drivers,
+    where the clipping rectangle was not initialized properly
+    after executing a game with a different resolution.
+
 2008.03.16
   - Fixed a bug in the video drivers standard16 and standard32,
     which caused the engine to crash if e.g. spritesets were 

@@ -10,7 +10,13 @@
 #include "resource.h"
 
 #define EXPORT(ret) extern "C" ret __stdcall
-static bool fullscreen;
+
+#ifndef CDS_FULLSCREEN    // CDS_FULLSCREEN is not defined by some compilers
+#define CDS_FULLSCREEN 4
+#endif
+
+#define GL_CLAMP_TO_EDGE 0x812F
+
 
 typedef struct tagIMAGE
 {
@@ -23,6 +29,8 @@ typedef struct tagIMAGE
     GLfloat tex_width;
     GLfloat tex_height;
     int     special;  // optimization flags
+
+    int toggle_counter;
 }
 * IMAGE;
 
@@ -84,6 +92,9 @@ static DRIVERCONFIG DriverConfig;
 static HINSTANCE DriverInstance;
 static int ScreenWidth;
 static int ScreenHeight;
+
+static bool fullscreen;
+static int toggle_counter; // needed to recreate textures after switching to/from fullscreen
 
 static GLint MaxTexSize; // width or height
 static HWND  SphereWindow;
@@ -266,41 +277,45 @@ EXPORT(void) CloseVideoDriver();
 EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
 {
 
-    const char* error_msg = NULL;
-    static bool firstcall = true;
-    ScreenWidth = screen_width;
+    SphereWindow = window;
+    ScreenWidth  = screen_width;
     ScreenHeight = screen_height;
 
-    LoadDriverConfig();
-    SphereWindow = window;
-    int format;
-    PIXELFORMATDESCRIPTOR pfd =
-        {
-            sizeof(PIXELFORMATDESCRIPTOR),  // size of this pfd
-            1,                              // version number
-            PFD_DRAW_TO_WINDOW |            // support window
-            PFD_SUPPORT_OPENGL |            // support OpenGL
-            PFD_DOUBLEBUFFER,               // double buffered
-            PFD_TYPE_RGBA,                  // RGBA type
-            DriverConfig.bpp,               // color depth
-            0, 0, 0, 0, 0, 0,               // color bits
-            0,                              // alpha buffer
-            0,                              // shift bit
-            0,                              // accumulation buffer
-            0, 0, 0, 0,                     // accum bits
-            0,                              // z-buffer
-            0,                              // stencil buffer
-            0,                              // auxiliary buffer
-            PFD_MAIN_PLANE,                 // main layer
-            0,                              // reserved
-            0, 0, 0                         // layer masks ignored
-        };
+    const char* error_msg = NULL;
+
+    static bool firstcall = true;
+
     if (firstcall)
     {
-
+        LoadDriverConfig();
         fullscreen = DriverConfig.fullscreen;
-        firstcall = false;
+        firstcall  = false;
+        toggle_counter = 0;
     }
+
+    int PixelFormat;
+    PIXELFORMATDESCRIPTOR pfd =
+    {
+        sizeof(PIXELFORMATDESCRIPTOR),  // size of this pfd
+        1,                              // version number
+        PFD_DRAW_TO_WINDOW |            // support window
+        PFD_SUPPORT_OPENGL |            // support OpenGL
+        PFD_DOUBLEBUFFER,               // double buffered
+        PFD_TYPE_RGBA,                  // RGBA type
+        DriverConfig.bpp,               // color depth
+        0, 0, 0, 0, 0, 0,               // color bits
+        0,                              // alpha buffer
+        0,                              // shift bit
+        0,                              // accumulation buffer
+        0, 0, 0, 0,                     // accum bits
+        0,                              // z-buffer
+        0,                              // stencil buffer
+        0,                              // auxiliary buffer
+        PFD_MAIN_PLANE,                 // main layer
+        0,                              // reserved
+        0, 0, 0                         // layer masks ignored
+    };
+
     if (!fullscreen)
     {
 
@@ -310,9 +325,8 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
     {
         // set fullscreen mode
         DEVMODE dm;
-
         memset(&dm, 0, sizeof(dm));
-        //EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm);
+
         dm.dmSize       = sizeof(dm);
         dm.dmFields     = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL;
         dm.dmBitsPerPel = DriverConfig.bpp;
@@ -327,8 +341,7 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
 
         if (ChangeDisplaySettings(&dm, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
         {
-            error_msg = "Unable to set display mode";
-
+            error_msg = "Unable to set fullscreen mode";
             goto error;
         }
 
@@ -341,10 +354,11 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
             if (dm.dmBitsPerPel != DriverConfig.bpp)
             {
 
-                error_msg = "Unable to set bbp, try a different setting";
+                error_msg = "Unable to set bits per pixel, try a different setting";
                 goto error;
             }
         }
+
         // Set up window
         SetWindowPos(SphereWindow, HWND_TOPMOST, 0, 0, ScreenWidth * SCALE(), ScreenHeight * SCALE(), SWP_SHOWWINDOW);
     }
@@ -353,17 +367,17 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
     MainDC = GetDC(SphereWindow);
     if (!MainDC)
     {
-        MessageBox(SphereWindow, "Error getting window DC.", "Video Error", MB_ICONERROR);
 
+        MessageBox(SphereWindow, "Error getting window DC.", "Video Error", MB_ICONERROR);
         return false;
     }
 
     // Set the pfd
-    format = ChoosePixelFormat(MainDC, &pfd);
-    if (!SetPixelFormat(MainDC, format, &pfd))
+    PixelFormat = ChoosePixelFormat(MainDC, &pfd);
+    if (!SetPixelFormat(MainDC, PixelFormat, &pfd))
     {
 
-        error_msg = "Error setting pfd";
+        error_msg = "Error setting the pixel format";
         goto error;
     }
 
@@ -400,67 +414,81 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
     }
 
     // view initialization
+    glViewport(0, 0, ScreenWidth * SCALE(), ScreenHeight * SCALE());
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluOrtho2D(0.0f, ScreenWidth, ScreenHeight, 0.0f);
+    gluOrtho2D(0.0f, (float)ScreenWidth, (float)ScreenHeight, 0.0f);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    //glTranslatef(0.375, 0.375, 0.0);
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClearDepth(1.0);
+
     // render initialization
     glEnable(GL_SCISSOR_TEST);
     glScissor(0, 0, ScreenWidth, ScreenHeight);
-    //    glEnable(GL_TEXTURE_2D);
     glShadeModel(GL_SMOOTH);
+
+    extern void __stdcall SetClippingRectangle(int, int, int, int);
+    SetClippingRectangle(0, 0, ScreenWidth, ScreenHeight);
 
     //blending initialization
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     glPointSize(FILTER() == GL_LINEAR ? 2.5f : (SCALE() == 1 ? 1.0f : 2.0f));
     glLineWidth(FILTER() == GL_LINEAR ? 2.5f : (SCALE() == 1 ? 1.0f : 2.0f));
-    if (FILTER() == GL_LINEAR)
-    {
 
+    if (FILTER() == GL_LINEAR)
         glEnable(GL_POINT_SMOOTH);
-    }
+
     // get max texture size
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &MaxTexSize);
-    extern void __stdcall SetClippingRectangle(int, int, int, int);
-    SetClippingRectangle(0, 0, ScreenWidth, ScreenHeight);
 
     return true;
+
 error:
+
     if (fullscreen)
     {
 
-        DEVMODE dm;
-        EnumDisplaySettings(NULL, ENUM_REGISTRY_SETTINGS, &dm);
-        dm.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFLAGS | DM_DISPLAYFREQUENCY;
-        ChangeDisplaySettings(&dm, 0);
+        ChangeDisplaySettings(NULL, 0);
         SetWindowLong(SphereWindow, GWL_STYLE, WindowStyle);
         SetWindowLong(SphereWindow, GWL_EXSTYLE, WindowStyleEx);
     }
+
     MessageBox(SphereWindow, error_msg, "Video Error", MB_ICONERROR);
+
     return false;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) CloseVideoDriver()
 {
-    // good bye, OpenGL...
-    wglMakeCurrent(NULL, NULL);
-    ReleaseDC(SphereWindow, MainDC);
-    wglDeleteContext(MainRC);
+
+    if (SphereWindow != 0)
+    {
+        if (MainDC != 0)
+        {
+            wglMakeCurrent (MainDC, 0);
+
+            if (MainRC != 0)
+            {
+                wglDeleteContext (MainRC);
+                MainRC = 0;
+
+            }
+
+            ReleaseDC (SphereWindow, MainDC);
+            MainDC = 0;
+        }
+    }
 
     // reset screen resolution
     if (fullscreen)
     {
-        DEVMODE dm;
-        EnumDisplaySettings(NULL, ENUM_REGISTRY_SETTINGS, &dm);
-        dm.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFLAGS | DM_DISPLAYFREQUENCY;
-        ChangeDisplaySettings(&dm, 0);
 
+        ChangeDisplaySettings(NULL, 0);
         SetWindowLong(SphereWindow, GWL_STYLE, WindowStyle);
         SetWindowLong(SphereWindow, GWL_EXSTYLE, WindowStyleEx);
     }
@@ -475,43 +503,49 @@ EXPORT(void) CloseVideoDriver()
 EXPORT(bool) ToggleFullScreen()
 {
 
-    return true;
-    /*
-      // this causes weird color problems, but vaguely works...
-      int x, y, w, h;
-      extern void __stdcall GetClippingRectangle(int*, int*, int*, int*);
-      extern void __stdcall SetClippingRectangle(int, int, int, int);
-      GetClippingRectangle(&x, &y, &w, &h);
-      // if we haven't set a screen size, don't close the old driver
-      if (ScreenWidth != 0 || ScreenHeight != 0) {
+    extern void __stdcall GetClippingRectangle(int*, int*, int*, int*);
+    extern void __stdcall SetClippingRectangle(int, int, int, int);
+
+    // increase the toggle counter to state that textures need to be recreated
+    toggle_counter++;
+
+    int x, y, w, h;
+    GetClippingRectangle(&x, &y, &w, &h);
+
+    // if we haven't set a screen size, don't close the old driver
+    if (ScreenWidth != 0 || ScreenHeight != 0)
         CloseVideoDriver();
-      }
-      fullscreen = !fullscreen;
-      // attempt to switch
-      if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight)) {
+
+    fullscreen = !fullscreen;
+
+    // attempt to switch
+    if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight))
+    {
         SetClippingRectangle(x, y, w, h);
         return true;
-      }
-      else {
+    }
+    else
+    {
         fullscreen = !fullscreen;
+
         // attempt to switch back since the switch failed
-        if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight)) {
-          SetClippingRectangle(x, y, w, h);
-          return true;
+        if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight))
+        {
+            SetClippingRectangle(x, y, w, h);
+            return true;
         }
-      }
-      return false;
-    */
+    }
+
+    return false;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) FlipScreen()
 {
     SwapBuffers(MainDC);
-
-    //extern void __stdcall DrawRectangle(int x, int y, int w, int h, RGBA mask);
-    //DrawRectangle(0, 0, 320, 240, CreateRGBA(0, 0, 0, 255));
     glClear(GL_COLOR_BUFFER_BIT);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) SetClippingRectangle(int x, int y, int w, int h)
 {
@@ -638,8 +672,8 @@ static bool CreateTexture(IMAGE image)
 
     glGenTextures(1, &image->texture);
     glBindTexture(GL_TEXTURE_2D, image->texture);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (float)FILTER());
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (float)FILTER());
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, new_width, new_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, new_pixels);
@@ -648,6 +682,8 @@ static bool CreateTexture(IMAGE image)
     {
         delete[] new_pixels;
     }
+
+    image->toggle_counter = toggle_counter;
 
     return true;
 }
@@ -747,12 +783,13 @@ EXPORT(void) DestroyImage(IMAGE image)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-static inline float sphere_x_to_opengl_x(int x)
+////////////////////////////////////////////////////////////////////////////////
+inline float sphere_x_to_opengl_x(int x)
 {
 
     return (float) x + 0.5f;
 }
-static inline float sphere_y_to_opengl_y(int y)
+inline float sphere_y_to_opengl_y(int y)
 {
 
     return (float) y + 0.5f;
@@ -761,6 +798,9 @@ static inline float sphere_y_to_opengl_y(int y)
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) BlitImage(IMAGE image, int x, int y)
 {
+
+    if (image->toggle_counter != toggle_counter)
+        CreateTexture(image);
 
     if (image->special == tagIMAGE::EMPTY)
         return;
@@ -792,6 +832,9 @@ EXPORT(void) BlitImage(IMAGE image, int x, int y)
 EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
 {
 
+    if (image->toggle_counter != toggle_counter)
+        CreateTexture(image);
+
     if (image->special == tagIMAGE::EMPTY)
         return;
 
@@ -822,6 +865,9 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
 EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
 {
 
+    if (image->toggle_counter != toggle_counter)
+        CreateTexture(image);
+
     if (image->special == tagIMAGE::EMPTY)
         return;
 
@@ -851,6 +897,10 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
 {
+
+    if (image->toggle_counter != toggle_counter)
+        CreateTexture(image);
+
     if (image->special == tagIMAGE::EMPTY)
         return;
 
@@ -1018,11 +1068,11 @@ EXPORT(void) DrawPointSeries(VECTOR_INT** points, int length, RGBA color)
 EXPORT(void) DrawLine(int x[2], int y[2], RGBA color)
 {
     glBegin(GL_LINES);
-    //glColor4ubv((GLubyte*)&color);
 
     glColor4ub(color.red, color.green, color.blue, color.alpha);
     glVertex2f(sphere_x_to_opengl_x(x[0]), sphere_y_to_opengl_y(y[0]));
     glVertex2f(sphere_x_to_opengl_x(x[1]), sphere_y_to_opengl_y(y[1]));
+
     glEnd();
 }
 
@@ -1030,14 +1080,13 @@ EXPORT(void) DrawLine(int x[2], int y[2], RGBA color)
 EXPORT(void) DrawGradientLine(int x[2], int y[2], RGBA colors[2])
 {
     glBegin(GL_LINES);
-    //glColor4ubv((GLubyte*)(colors + 0));
 
     glColor4ub(colors[0].red, colors[0].green, colors[0].blue, colors[0].alpha);
     glVertex2f(sphere_x_to_opengl_x(x[0]), sphere_y_to_opengl_y(y[0]));
-    //glColor4ubv((GLubyte*)(colors + 1));
 
     glColor4ub(colors[1].red, colors[1].green, colors[1].blue, colors[1].alpha);
     glVertex2f(sphere_x_to_opengl_x(x[1]), sphere_y_to_opengl_y(y[1]));
+
     glEnd();
 }
 
@@ -1247,7 +1296,6 @@ EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color)
         return;
     }
 
-    glTranslatef(-0.5f, -0.5f, 0.0f);
     glBegin(GL_QUADS);
     glColor4ubv((GLubyte*)&color);
     glVertex2f(sphere_x_to_opengl_x(x),     sphere_y_to_opengl_y(y));
@@ -1256,13 +1304,11 @@ EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color)
     glVertex2f(sphere_x_to_opengl_x(x + w), sphere_y_to_opengl_y(y + h));
     glVertex2f(sphere_x_to_opengl_x(x),     sphere_y_to_opengl_y(y + h));
     glEnd();
-    glTranslatef(0.5f, 0.5f, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
 {
-    glTranslatef(-0.5f, -0.5f, 0.0f);
     glBegin(GL_QUADS);
     glColor4ubv((GLubyte*)(colors + 0));
     glVertex2f(sphere_x_to_opengl_x(x),     sphere_y_to_opengl_y(y));
@@ -1273,7 +1319,6 @@ EXPORT(void) DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
     glColor4ubv((GLubyte*)(colors + 3));
     glVertex2f(sphere_x_to_opengl_x(x),     sphere_y_to_opengl_y(y + h));
     glEnd();
-    glTranslatef(0.5f, 0.5f, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

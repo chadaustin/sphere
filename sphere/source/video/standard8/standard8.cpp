@@ -54,28 +54,36 @@ static HWND  SphereWindow;
 static byte* ScreenBuffer;
 static LONG OldWindowStyle;
 static LONG OldWindowStyleEx;
+
 // windowed mode
 static HDC     RenderDC;
 static HBITMAP RenderBitmap;
+
 // fullscreen mode
 static LPDIRECTDRAW        dd;
 static LPDIRECTDRAWPALETTE ddPalette;
 static LPDIRECTDRAWSURFACE ddPrimary;
 static LPDIRECTDRAWSURFACE ddSecondary;
+
 const int DOWNCAST_BITS   = 5;
 const int DOWNCAST_SHIFT  = 8 - DOWNCAST_BITS;
 const int DOWNCAST_COLORS = 1 << DOWNCAST_BITS;
+
 RGB  Palette[256];
 byte ReductionTable[DOWNCAST_COLORS * DOWNCAST_COLORS * DOWNCAST_COLORS];
+
 // alpha tables
 const int ALPHA_LEVELS = 8;
+
 // result(alphalevel, dst, src)
 byte AlphaLUTs[ALPHA_LEVELS][256][256];
+
 // optimized blender with LUTs!
 inline byte blend(byte dst, byte src, int alpha)
 {
     return AlphaLUTs[alpha / (256 / ALPHA_LEVELS)][dst][src];
 }
+
 // 24 -> 8
 inline byte Pack(RGBA c)
 {
@@ -181,21 +189,31 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
     SphereWindow = window;
     ScreenWidth  = screen_width;
     ScreenHeight = screen_height;
-    // set default clipping rectangle
+
     SetClippingRectangle(0, 0, screen_width, screen_height);
-    LoadConfiguration();
+
+    static bool firstcall = true;
+
+    if (firstcall)
+    {
+        LoadConfiguration();
+        firstcall = false;
+    }
+
     if (!LoadPalette())
     {
-
         MessageBox(window, "Error: Could not load palette", "standard8", MB_OK);
         return false;
     }
+
     // fill the look-up tables
     FillLUTs();
+
     if (Configuration.fullscreen)
         return InitFullscreen();
     else
         return InitWindowed();
+
 }
 ////////////////////////////////////////////////////////////////////////////////
 bool LoadPalette()
@@ -435,7 +453,44 @@ bool InitFullscreen()
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(bool) ToggleFullScreen()
 {
-    return true;
+    int x, y, w, h;
+    GetClippingRectangle(&x, &y, &w, &h);
+
+    // if we have a screen size, close the old driver
+    if (ScreenWidth != 0 || ScreenHeight != 0)
+    {
+
+        if (Configuration.fullscreen)
+        {
+            CloseFullscreen();
+        }
+        else
+        {
+            CloseWindowed();
+        }
+    }
+
+    Configuration.fullscreen = !Configuration.fullscreen;
+
+    if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight) == true)
+    {
+        SetClippingRectangle(x, y, w, h);
+        return true;
+    }
+    else
+    {
+
+        // switching failed, try to revert to what it was
+        Configuration.fullscreen = !Configuration.fullscreen;
+
+        if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight) == true)
+        {
+            SetClippingRectangle(x, y, w, h);
+            return true;
+        }
+    }
+
+    return false;
 }
 ////////////////////////////////////////////////////////////////////////////////
 bool CreateSurfaces()
