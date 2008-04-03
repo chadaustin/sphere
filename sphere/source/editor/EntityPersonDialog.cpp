@@ -142,6 +142,7 @@ CEntityPersonDialog::OnBrowseSpriteset()
     if (pos != std::string::npos)
     {
       CString path = full_path.substr(pos + 11).c_str();
+      path.Replace('\\', '/');
       SetDlgItemText(IDC_SPRITESET, path);
     }
 

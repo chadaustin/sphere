@@ -144,6 +144,7 @@ CMapPropertiesDialog::OnBrowseBackgroundMusic()
     if (pos != std::string::npos)
     {
       CString path = full_path.substr(pos + 7).c_str();
+      path.Replace('\\', '/');
       SetDlgItemText(IDC_MUSIC, path);
     }
 
@@ -160,21 +161,9 @@ CMapPropertiesDialog::OnBrowseTileset()
   std::string directory = GetMainWindow()->GetDefaultFolder(WA_MAP);
   SetCurrentDirectory(directory.c_str());
   CTilesetFileDialog dialog(FDM_OPEN);
-
-  if (dialog.DoModal() == IDOK)
-  {
-    std::string full_path = LPCTSTR(dialog.GetPathName());
-    std::string term("maps");
-    size_t pos = full_path.rfind(term);
-
-    if (pos != std::string::npos)
-    {
-      CString path = full_path.substr(pos + 5).c_str();
-      SetDlgItemText(IDC_TILESET, path);
-    }
-
+  if (dialog.DoModal() == IDOK) {
+    SetDlgItemText(IDC_TILESET, dialog.GetFileName());
   }
-
   SetCurrentDirectory(old_directory);
 }
 ////////////////////////////////////////////////////////////////////////////////
