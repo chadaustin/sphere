@@ -3501,8 +3501,9 @@ CMapEngine::OpenMap(const char* filename)
 
     // load the map
     std::string path = "maps/";
+    bool need_leave = false;
+    int skip = pre_process_filename(filename, path, need_leave);
 
-    int skip = pre_process_filename(filename, path);
     if (skip != -1)
     {
         filename += skip;
@@ -3512,29 +3513,29 @@ CMapEngine::OpenMap(const char* filename)
         m_ErrorMessage = "Could not load map '";
         m_ErrorMessage += filename;
         m_ErrorMessage += "'";
+
         return false;
     }
+
     path += filename;
+
     if (!m_Map.Load(path.c_str(), m_FileSystem))
     {
         m_ErrorMessage = "Could not load map '";
         m_ErrorMessage += filename;
         m_ErrorMessage += "'";
 
-        if (skip == strlen("/common/"))
-        {
+        if (need_leave)
             LeaveDirectory();
-        }
 
         return false;
     }
 
-    if (skip == strlen("/common/"))
-    {
+    if (need_leave)
         LeaveDirectory();
-    }
 
     m_CurrentMap = filename;
+
     // if a person entity is here, it's not map-specific
     // so put it in the starting position!
     for (i = 0; i < m_Persons.size(); i++)

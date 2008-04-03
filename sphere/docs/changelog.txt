@@ -1,5 +1,11 @@
 YYYY.MM.DD
 
+2008.04.03
+  - Added CreateDirectory(), RemoveDirectory, RemoveFile()
+    and Rename().
+  - It is now possible for OpenFile() and OpenRawFile()
+    to access /common.
+
 2008.03.24
   - Fixed the tiled-screen issue in the sphere_gl video driver,
     which occured with the "Bilinear Filtering" option on,

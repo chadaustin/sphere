@@ -236,55 +236,47 @@ CScriptCode::Execute(bool& should_exit)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-static bool IsValidPath(const char* path)
+static bool IsValidPath(const char* path, bool no_double_dots = false)
 {
     int num_double_dots = 0;
     bool prev_was_dot = false;
+
     // empty path
     if (strlen(path) == 0)
-    {
-
         return false;
-    }
+
     for (unsigned int i = 0; i < strlen(path); ++i)
     {
 
         if (path[i] == '.')
         {
-
             if (prev_was_dot)
-            {
-
                 num_double_dots += 1;
-            }
+
             prev_was_dot = true;
         }
         else
         {
-
             prev_was_dot = false;
         }
     }
-    // path is trying to do things like "../../../"
-    if (num_double_dots > 1)
-    {
 
+    // path is trying to do things like "../../"
+    if (no_double_dots && num_double_dots > 0)
         return false;
-    }
+    else if (num_double_dots > 1)
+        return false;
+
     // path starts with ~/ and has no ..'s
     if (strlen(path) >= 2)
     {
-
         if (path[0] == '~' || path[1] == '/')
         {
-
             if (num_double_dots > 0)
-            {
-
                 return false;
-            }
         }
     }
+
     // path starts /
     if (path[0] == '/')
     {
@@ -294,25 +286,23 @@ static bool IsValidPath(const char* path)
 
             if (memcmp(path, "/common/", strlen("/common/")) == 0)
             {
-
                 if (num_double_dots > 0)
-                {
-
                     return false;
-                }
+
                 return true;
             }
         }
-        return false;
-    }
-    // path begins with backslash or forwardslash
-    if (path[0] == '/' || path[0] == '\\')
-    {
 
         return false;
     }
+
+    // path begins with backslash or forwardslash
+    if (path[0] == '/' || path[0] == '\\')
+        return false;
+
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 /////////////
 // CScript //
@@ -6057,7 +6047,7 @@ arg_str(filename);
 if (IsValidPath(filename) == false)
 {
 
-    JS_ReportError(cx, "Invalid filename: '%s'", filename);
+    JS_ReportError(cx, "Invalid path: '%s'", filename);
     return JS_FALSE;
 }
 // load animation
@@ -6073,6 +6063,84 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
+    - rename or move a file or directory
+*/
+begin_func(Rename, 2)
+
+arg_str(old_path);
+arg_str(new_path);
+
+if (IsValidPath(old_path, true) == false)
+{
+    JS_ReportError(cx, "Invalid path: '%s'", old_path);
+    return JS_FALSE;
+}
+if (IsValidPath(new_path, true) == false)
+{
+    JS_ReportError(cx, "Invalid path: '%s'", new_path);
+    return JS_FALSE;
+}
+
+return_bool(This->m_Engine->Rename(old_path, new_path));
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - create a new directory
+*/
+begin_func(CreateDirectory, 1)
+
+arg_str(directory);
+
+if (IsValidPath(directory, true) == false)
+{
+    JS_ReportError(cx, "Invalid path: '%s'", directory);
+    return JS_FALSE;
+}
+
+return_bool(This->m_Engine->CreateDirectory(directory));
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - remove the specified directory
+*/
+begin_func(RemoveDirectory, 1)
+
+arg_str(directory);
+
+if (IsValidPath(directory, true) == false)
+{
+    JS_ReportError(cx, "Invalid path: '%s'", directory);
+    return JS_FALSE;
+}
+
+return_bool(This->m_Engine->RemoveDirectory(directory));
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - remove the specified file
+*/
+begin_func(RemoveFile, 1)
+
+arg_str(filename);
+
+if (IsValidPath(filename, true) == false)
+{
+    JS_ReportError(cx, "Invalid path: '%s'", filename);
+    return JS_FALSE;
+}
+
+return_bool(This->m_Engine->RemoveFile(filename));
+
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
     - directory = directory in which to enumerate directories,
       current game's directory if not specified
 
@@ -6081,7 +6149,7 @@ end_func()
 */
 begin_func(GetDirectoryList, 0)
 
-const char* directory = "./";
+const char* directory = "~/";
 if (argc > 0)
 {
     directory = argStr(cx, argv[0]);
@@ -6089,7 +6157,7 @@ if (argc > 0)
 
 if (IsValidPath(directory) == false)
 {
-    JS_ReportError(cx, "Invalid directory: '%s'", directory);
+    JS_ReportError(cx, "Invalid path: '%s'", directory);
     return JS_FALSE;
 }
 
@@ -6130,7 +6198,7 @@ if (argc > 0)
 
 if (IsValidPath(directory) == false)
 {
-    JS_ReportError(cx, "Invalid directory: '%s'", directory);
+    JS_ReportError(cx, "Invalid path: '%s'", directory);
     return JS_FALSE;
 }
 
@@ -6166,7 +6234,7 @@ arg_str(filename);
 
 if (IsValidPath(filename) == false)
 {
-    JS_ReportError(cx, "Invalid filename: '%s'", filename);
+    JS_ReportError(cx, "Invalid path: '%s'", filename);
     return JS_FALSE;
 }
 
@@ -6196,7 +6264,7 @@ arg_str(filename);
 
 if (IsValidPath(filename) == false)
 {
-    JS_ReportError(cx, "Invalid filename: '%s'", filename);
+    JS_ReportError(cx, "Invalid path: '%s'", filename);
     return JS_FALSE;
 }
 
@@ -6230,7 +6298,7 @@ arg_str(filename);
 if (IsValidPath(filename) == false)
 {
 
-    JS_ReportError(cx, "Invalid filename: '%s'", filename);
+    JS_ReportError(cx, "Invalid path: '%s'", filename);
     return JS_FALSE;
 }
 CLog* log = This->m_Engine->OpenLog(filename);
@@ -6304,7 +6372,7 @@ arg_str(filename);
 
 if (IsValidPath(filename) == false)
 {
-    JS_ReportError(cx, "Invalid filename: '%s'", filename);
+    JS_ReportError(cx, "Invalid path: '%s'", filename);
     return JS_FALSE;
 }
 
@@ -7039,7 +7107,7 @@ arg_str(filename);
 
 if (IsValidPath(filename) == false)
 {
-    JS_ReportError(cx, "Invalid filename: '%s'", filename);
+    JS_ReportError(cx, "Invalid path: '%s'", filename);
     return JS_FALSE;
 }
 
@@ -7699,7 +7767,7 @@ bool saved = false;
 if (IsValidPath(filename) == false)
 {
 
-    JS_ReportError(cx, "Invalid filename: '%s'", filename);
+    JS_ReportError(cx, "Invalid path: '%s'", filename);
     return JS_FALSE;
 }
 std::string path = "fonts/";
@@ -9457,7 +9525,7 @@ bool saved = false;
 
 if (IsValidPath(filename) == false)
 {
-    JS_ReportError(cx, "Invalid filename: '%s'", filename);
+    JS_ReportError(cx, "Invalid path: '%s'", filename);
     return JS_FALSE;
 }
 
@@ -10182,7 +10250,7 @@ std::string path = "maps/" + std::string(filename);
 
 if (IsValidPath(path.c_str()) == false)
 {
-    JS_ReportError(cx, "Invalid filename: '%s'", filename);
+    JS_ReportError(cx, "Invalid path: '%s'", filename);
     return JS_FALSE;
 }
 
@@ -10257,7 +10325,7 @@ std::string path = "maps/" + std::string(filename);
 if (IsValidPath(path.c_str()) == false)
 {
 
-    JS_ReportError(cx, "Invalid filename: '%s'", filename);
+    JS_ReportError(cx, "Invalid path: '%s'", filename);
     return JS_FALSE;
 }
 if ( !This->m_Engine->GetMapEngine()->IsRunning() )

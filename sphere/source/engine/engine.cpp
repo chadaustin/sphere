@@ -17,7 +17,7 @@
 #include "../common/sphere_version.h"
 
 ////////////////////////////////////////////////////////////////////////////////
-int pre_process_filename(const char* filename, std::string& path)
+int pre_process_filename(const char* filename, std::string& path, bool &need_leave)
 {
     if (strlen(filename) >= strlen("/common/"))
     {
@@ -25,10 +25,11 @@ int pre_process_filename(const char* filename, std::string& path)
         {
             // switch to sphere directory
             if (!EnterDirectory(GetSphereDirectory().c_str()))
-            {
                 return -1;
-            }
+
             path = "common/";
+            need_leave = true;
+
             return strlen("/common/");
         }
     }
@@ -350,7 +351,8 @@ CGameEngine::GetScriptText(const char* filename, std::string& text)
 {
     // calculate path
     std::string path = "scripts/";
-    int skip = pre_process_filename(filename, path);
+    bool need_leave = false;
+    int skip = pre_process_filename(filename, path, need_leave);
 
     if (skip != -1)
     {
@@ -362,14 +364,14 @@ CGameEngine::GetScriptText(const char* filename, std::string& text)
     }
 
     path += filename;
+
     // open file
     std::auto_ptr<IFile> file(m_FileSystem.Open(path.c_str(), IFileSystem::read));
+
     if (!file.get())
     {
-        if (skip == strlen("/common/"))
-        {
+        if (need_leave)
             LeaveDirectory();
-        }
 
         return false;
     }
@@ -380,22 +382,19 @@ CGameEngine::GetScriptText(const char* filename, std::string& text)
 
     if (script == NULL)
     {
-
-        if (skip == strlen("/common/"))
-        {
+        if (need_leave)
             LeaveDirectory();
-        }
 
         return false;
     }
+
     file->Read(script, size);
     script[size] = 0;
     text = script;
     delete[] script;
-    if (skip == strlen("/common/"))
-    {
+
+    if (need_leave)
         LeaveDirectory();
-    }
 
     return true;
 }
@@ -569,7 +568,8 @@ SSPRITESET*
 CGameEngine::LoadSpriteset(const char* filename)
 {
     std::string path = "spritesets/";
-    int skip = pre_process_filename(filename, path);
+    bool need_leave = false;
+    int skip = pre_process_filename(filename, path, need_leave);
 
     if (skip != -1)
     {
@@ -587,38 +587,30 @@ CGameEngine::LoadSpriteset(const char* filename)
 
     if (!ss)
     {
-
-        if (skip == strlen("/common/"))
-        {
+        if (need_leave)
             LeaveDirectory();
-        }
 
         return NULL;
     }
     if (!ss->Load(path.c_str(), m_FileSystem, std::string(filename)))
     {
-        if (skip == strlen("/common/"))
-        {
+        if (need_leave)
             LeaveDirectory();
-        }
 
         ss->Release();
         return NULL;
     }
 
-    if (skip == strlen("/common/"))
-    {
+    if (need_leave)
         LeaveDirectory();
-    }
 
     return ss;
 #else
 
     SSPRITESET* ss = m_SpritesetServer.Load(path.c_str(), m_FileSystem);
-    if (skip == strlen("/common/"))
-    {
+
+    if (need_leave)
         LeaveDirectory();
-    }
 
     return ss;
 #endif
@@ -651,7 +643,8 @@ SFONT*
 CGameEngine::LoadFont(const char* filename)
 {
     std::string path = "fonts/";
-    int skip = pre_process_filename(filename, path);
+    bool need_leave = false;
+    int skip = pre_process_filename(filename, path, need_leave);
 
     if (skip != -1)
     {
@@ -668,29 +661,22 @@ CGameEngine::LoadFont(const char* filename)
 
     if (!font)
     {
-
-        if (skip == strlen("/common/"))
-        {
+        if (need_leave)
             LeaveDirectory();
-        }
 
         return NULL;
     }
     if (!font->Load(path.c_str(), m_FileSystem))
     {
-        if (skip == strlen("/common/"))
-        {
+        if (need_leave)
             LeaveDirectory();
-        }
 
         delete font;
         return NULL;
     }
 
-    if (skip == strlen("/common/"))
-    {
+    if (need_leave)
         LeaveDirectory();
-    }
 
     return font;
 }
@@ -720,7 +706,8 @@ SWINDOWSTYLE*
 CGameEngine::LoadWindowStyle(const char* filename)
 {
     std::string path = "windowstyles/";
-    int skip = pre_process_filename(filename, path);
+    bool need_leave = false;
+    int skip = pre_process_filename(filename, path, need_leave);
 
     if (skip != -1)
     {
@@ -737,29 +724,22 @@ CGameEngine::LoadWindowStyle(const char* filename)
 
     if (!ws)
     {
-
-        if (skip == strlen("/common/"))
-        {
+        if (need_leave)
             LeaveDirectory();
-        }
 
         return NULL;
     }
     if (!ws->Load(path.c_str(), m_FileSystem))
     {
-        if (skip == strlen("/common/"))
-        {
+        if (need_leave)
             LeaveDirectory();
-        }
 
         delete ws;
         return NULL;
     }
 
-    if (skip == strlen("/common/"))
-    {
+    if (need_leave)
         LeaveDirectory();
-    }
 
     return ws;
 }
@@ -895,7 +875,9 @@ CGameEngine::LoadImage(const char* filename)
 {
 
     std::string path = "images/";
-    int skip = pre_process_filename(filename, path);
+    bool need_leave = false;
+    int skip = pre_process_filename(filename, path, need_leave);
+
     if (skip != -1)
     {
         filename += skip;
@@ -906,22 +888,19 @@ CGameEngine::LoadImage(const char* filename)
     }
 
     path += filename;
+
     // load the image
     CImage32 image;
     if (!image.Load(path.c_str(), m_FileSystem))
     {
-        if (skip == strlen("/common/"))
-        {
+        if (need_leave)
             LeaveDirectory();
-        }
 
         return NULL;
     }
 
-    if (skip == strlen("/common/"))
-    {
+    if (need_leave)
         LeaveDirectory();
-    }
 
     return CreateImage(image.GetWidth(), image.GetHeight(), image.GetPixels());
 }
@@ -938,7 +917,8 @@ CImage32*
 CGameEngine::LoadSurface(const char* filename)
 {
     std::string path = "images/";
-    int skip = pre_process_filename(filename, path);
+    bool need_leave = false;
+    int skip = pre_process_filename(filename, path, need_leave);
 
     if (skip != -1)
     {
@@ -955,19 +935,16 @@ CGameEngine::LoadSurface(const char* filename)
 
     if (!image || !image->Load(path.c_str(), m_FileSystem))
     {
-        if (skip == strlen("/common/"))
-        {
+        if (need_leave)
             LeaveDirectory();
-        }
 
         delete image;
         return NULL;
     }
 
-    if (skip == strlen("/common/"))
-    {
+    if (need_leave)
         LeaveDirectory();
-    }
+
     return image;
 }
 
@@ -989,7 +966,8 @@ IAnimation*
 CGameEngine::LoadAnimation(const char* filename)
 {
     std::string path = "animations/";
-    int skip = pre_process_filename(filename, path);
+    bool need_leave = false;
+    int skip = pre_process_filename(filename, path, need_leave);
 
     if (skip != -1)
     {
@@ -1002,10 +980,9 @@ CGameEngine::LoadAnimation(const char* filename)
 
     path += filename;
     IAnimation* anim = ::LoadAnimation(path.c_str(), m_FileSystem);
-    if (skip == strlen("/common/"))
-    {
+
+    if (need_leave)
         LeaveDirectory();
-    }
 
     return anim;
 }
@@ -1014,9 +991,33 @@ CGameEngine::LoadAnimation(const char* filename)
 void
 CGameEngine::GetDirectoryList(const char* directory, std::vector<std::string>& directories)
 {
-    if (!EnterDirectory(directory))
+    std::string path;
+    bool need_leave = false;
+    int skip = pre_process_filename(directory, path, need_leave);
+
+    if (skip != -1)
+    {
+        directory += skip;
+    }
+    else if (skip == -1)
     {
         return;
+    }
+
+    path += directory;
+
+    bool _need_leave = false;
+    if (path.size() > 0)
+    {
+        if (!EnterDirectory(path.c_str()))
+        {
+            if (need_leave)
+                LeaveDirectory();
+
+            return;
+        }
+
+        _need_leave = true;
     }
 
     // add directories
@@ -1029,26 +1030,56 @@ CGameEngine::GetDirectoryList(const char* directory, std::vector<std::string>& d
         directories.push_back(dr);
 
     }
+
     EndDirectoryList(dl);
+
     // alphabetize the menu
     std::sort(directories.begin(), directories.end());
 
-    LeaveDirectory();
+    if (_need_leave)
+        LeaveDirectory();
+
+    if (need_leave)
+        LeaveDirectory();
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void
 CGameEngine::GetFileList(const char* directory, std::vector<std::string>& vs)
 {
-    // enter the save directory
-    //MakeDirectory(directory);
-    if (!EnterDirectory(directory))
+    std::string path;
+    bool need_leave = false;
+    int skip = pre_process_filename(directory, path, need_leave);
+
+    if (skip != -1)
+    {
+        directory += skip;
+    }
+    else if (skip == -1)
     {
         return;
     }
 
+    path += directory;
+
+    bool _need_leave = false;
+    if (path.size() > 0)
+    {
+        if (!EnterDirectory(path.c_str()))
+        {
+            if (need_leave)
+                LeaveDirectory();
+
+            return;
+        }
+
+        _need_leave = true;
+    }
+
     // now list directory contents
     FILELIST fl = BeginFileList("*");
+
     if (fl != NULL)
     {
         while (!FileListDone(fl))
@@ -1061,30 +1092,34 @@ CGameEngine::GetFileList(const char* directory, std::vector<std::string>& vs)
         EndFileList(fl);
     }
 
-    LeaveDirectory();
+    if (_need_leave)
+        LeaveDirectory();
+
+    if (need_leave)
+        LeaveDirectory();
+
     // if we're listing the save game directory files...
     if (strcmp(directory, "save") == 0)
     {
+
         // add currently open files too
         std::map<CConfigFile*, SFileInfo>::iterator i;
+
         for (i = m_OpenFiles.begin(); i != m_OpenFiles.end(); i++)
         {
             std::string filename = i->second.filename;
 
             // only insert the filename if it's not in the list
             std::vector<std::string>::iterator i = std::find(vs.begin(), vs.end(), filename);
+
             if (i == vs.end())
-            {
                 vs.push_back(filename);
-            }
             else
-            {
                 *i = filename;
-            }
         }
     }
-
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 CConfigFile*
 CGameEngine::OpenFile(const char* filename)
@@ -1104,17 +1139,40 @@ CGameEngine::OpenFile(const char* filename)
     MakeDirectory("save");
 
     std::string path = "save/";
+    bool need_leave = false;
+    int skip = pre_process_filename(filename, path, need_leave);
+
+    if (skip != -1)
+    {
+        filename += skip;
+    }
+    else if (skip == -1)
+    {
+        return NULL;
+    }
+
     path += filename;
 
     CConfigFile* file = new CConfigFile;
+
     if (!file)
+    {
+        if (need_leave)
+            LeaveDirectory();
+
         return NULL;
+    }
+
     file->Load(path.c_str(), m_FileSystem);
+
     // add the file to the opened files map
     SFileInfo fi;
-    fi.filename = filename;
+    fi.filename = filename -= skip;
     fi.refcount = 1;
     m_OpenFiles[file] = fi;
+
+    if (need_leave)
+        LeaveDirectory();
 
     return file;
 }
@@ -1125,15 +1183,34 @@ CGameEngine::FlushFile(CConfigFile* file)
 {
     // find where the file is in the map
     std::map<CConfigFile*, SFileInfo>::iterator i;
+
     for (i = m_OpenFiles.begin(); i != m_OpenFiles.end(); i++)
     {
         if (i->first == file)
         {
-            // save it
-            std::string path = "save/";
-            path += i->second.filename;
+            const char* filename = i->second.filename.c_str();
 
+            std::string path = "saves/";
+            bool need_leave = false;
+            int skip = pre_process_filename(filename, path, need_leave);
+
+            if (skip != -1)
+            {
+                filename += skip;
+            }
+            else if (skip == -1)
+            {
+                return;
+            }
+
+            path += filename;
+
+            // save it
             i->first->Save(path.c_str(), m_FileSystem);
+
+            if (need_leave)
+                LeaveDirectory();
+
             break;
         }
     }
@@ -1151,14 +1228,31 @@ CGameEngine::CloseFile(CConfigFile* file)
         {
             if (--(i->second.refcount) == 0)
             {
+                const char* filename = i->second.filename.c_str();
+
+                std::string path = "saves/";
+                bool need_leave = false;
+                int skip = pre_process_filename(filename, path, need_leave);
+
+                if (skip != -1)
+                {
+                    filename += skip;
+                }
+                else if (skip == -1)
+                {
+                    return;
+                }
+
+                path += filename;
 
                 // save and destroy it
-                std::string path = "save/";
-                path += i->second.filename;
-
                 i->first->Save(path.c_str(), m_FileSystem);
                 delete i->first;
                 m_OpenFiles.erase(i);
+
+                if (need_leave)
+                    LeaveDirectory();
+
                 break;
             }
         }
@@ -1171,13 +1265,169 @@ CGameEngine::OpenRawFile(const char* filename, bool writeable)
 {
     int mode = (writeable ? IFileSystem::write : IFileSystem::read);
 
+    // if we want to write to the file, make sure other directory exists
     if (writeable)
         MakeDirectory("other");
 
     std::string path = "other/";
+    bool need_leave = false;
+    int skip = pre_process_filename(filename, path, need_leave);
+
+    if (skip != -1)
+    {
+        filename += skip;
+    }
+    else if (skip == -1)
+    {
+        return NULL;
+    }
+
     path += filename;
 
-    return m_FileSystem.Open(path.c_str(), mode);
+    IFile* raw_file = m_FileSystem.Open(path.c_str(), mode);
+
+    if (need_leave)
+        LeaveDirectory();
+
+    return raw_file;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool
+CGameEngine::Rename(const char* old_path, const char* new_path)
+{
+    // get the current working directory for further use
+    std::string cwd;
+    GetDirectory(cwd);
+
+    // process old_path normally
+    std::string op;
+    bool need_leave = false;
+    int skip = pre_process_filename(old_path, op, need_leave);
+
+    if (skip != -1)
+    {
+        old_path += skip;
+    }
+    else if (skip == -1)
+    {
+        return false;
+    }
+
+    op += old_path;
+
+    // process new_path without entering a directory
+    std::string np;
+    bool np_is_common = false;
+
+    if (strlen(new_path) >= strlen("/common/"))
+    {
+        if (memcmp(new_path, "/common/", strlen("/common/")) == 0)
+            np_is_common = true;
+    }
+
+    if (!np_is_common && strlen(new_path) >= strlen("~/"))
+    {
+        if (memcmp(new_path, "~/", strlen("~/")) == 0)
+            new_path += strlen("~/");
+    }
+
+    if (np_is_common)
+        np = GetSphereDirectory() + new_path;
+    else
+        np = cwd + "/" + new_path;
+
+    // rename
+    bool ret = _Rename(op.c_str(), np.c_str());
+
+    if (need_leave)
+        LeaveDirectory();
+
+    return ret;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool
+CGameEngine::CreateDirectory(const char* directory)
+{
+    // calculate path
+    std::string path;
+    bool need_leave = false;
+    int skip = pre_process_filename(directory, path, need_leave);
+
+    if (skip != -1)
+    {
+        directory += skip;
+    }
+    else if (skip == -1)
+    {
+        return false;
+    }
+
+    path += directory;
+
+    bool ret = MakeDirectory(path.c_str());
+
+    if (need_leave)
+        LeaveDirectory();
+
+    return ret;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool
+CGameEngine::RemoveDirectory(const char* directory)
+{
+    // calculate path
+    std::string path;
+    bool need_leave = false;
+    int skip = pre_process_filename(directory, path, need_leave);
+
+    if (skip != -1)
+    {
+        directory += skip;
+    }
+    else if (skip == -1)
+    {
+        return false;
+    }
+
+    path += directory;
+
+    bool ret = _RemoveDirectory(path.c_str());
+
+    if (need_leave)
+        LeaveDirectory();
+
+    return ret;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool
+CGameEngine::RemoveFile(const char* filename)
+{
+    // calculate path
+    std::string path;
+    bool need_leave = false;
+    int skip = pre_process_filename(filename, path, need_leave);
+
+    if (skip != -1)
+    {
+        filename += skip;
+    }
+    else if (skip == -1)
+    {
+        return false;
+    }
+
+    path += filename;
+
+    bool ret = _RemoveFile(path.c_str());
+
+    if (need_leave)
+        LeaveDirectory();
+
+    return ret;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

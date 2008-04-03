@@ -447,9 +447,13 @@ SS_FUNCTION(OpenLog, 1)
   //animation.drawZoomedFrame(x, y, scale)
 
   // directories
+  SS_FUNCTION(Rename, 2)
   SS_FUNCTION(GetDirectoryList, 0)
+  SS_FUNCTION(CreateDirectory, 1)
+  SS_FUNCTION(RemoveDirectory, 1)
 
   // files
+  SS_FUNCTION(RemoveFile, 1)
   SS_FUNCTION(GetFileList, 0)
   SS_FUNCTION(OpenFile, 1)
   //file.read(key, default_value)

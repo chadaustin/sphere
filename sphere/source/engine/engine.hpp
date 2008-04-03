@@ -15,7 +15,8 @@
 #ifdef USE_SPRITESET_SERVER
 #include "spritesetserver.hpp"
 #endif
-int pre_process_filename(const char* filename, std::string& path);
+
+int pre_process_filename(const char* filename, std::string &path, bool &need_leave);
 bool IsMidi(const char* filename);
 class CGameEngine : private IEngine
 {
@@ -85,13 +86,20 @@ private:
     virtual void DestroySurface(CImage32* surface);
 
     virtual IAnimation* LoadAnimation(const char* filename);
+
     virtual void GetDirectoryList(const char* directory, std::vector<std::string>& directories);
     virtual void GetFileList(const char* directory, std::vector<std::string>& vs);
+
     virtual CConfigFile* OpenFile(const char* filename);
     virtual void FlushFile(CConfigFile* file);
     virtual void CloseFile(CConfigFile* file);
-
     virtual IFile* OpenRawFile(const char* filename, bool writeable);
+
+    virtual bool CreateDirectory(const char* directory);
+    virtual bool RemoveDirectory(const char* directory);
+    virtual bool RemoveFile(const char* filename);
+    virtual bool Rename(const char* old_path, const char* new_path);
+
 private:
     struct SFileInfo
     {

@@ -12,7 +12,7 @@
 #include "../common/IFileSystem.hpp"
 
 class CMapEngine;
-int pre_process_filename(const char* filename, std::string& path);
+int pre_process_filename(const char* filename, std::string &path, bool &need_leave);
 bool IsMidi(const char* filename);
 struct IEngine
 {
@@ -69,12 +69,19 @@ struct IEngine
     virtual void DestroySurface(CImage32* surface) = 0;
 
     virtual IAnimation* LoadAnimation(const char* filename) = 0;
+
     virtual void GetDirectoryList(const char* directory, std::vector<std::string>& directories) = 0;
     virtual void GetFileList(const char* directory, std::vector<std::string>& vs) = 0;
+
     virtual CConfigFile* OpenFile(const char* filename) = 0;
     virtual void FlushFile(CConfigFile* file) = 0;
     virtual void CloseFile(CConfigFile* file) = 0;
-
     virtual IFile* OpenRawFile(const char* filename, bool writeable) = 0;
+
+    virtual bool CreateDirectory(const char* directory) = 0;
+    virtual bool RemoveDirectory(const char* directory) = 0;
+    virtual bool RemoveFile(const char* filename) = 0;
+    virtual bool Rename(const char* old_path, const char* new_path) = 0;
+
 };
 #endif

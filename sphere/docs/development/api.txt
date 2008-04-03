@@ -1494,6 +1494,15 @@ drawing onto surfaces
       zoom scale
 
   *** directories ***
+  Rename(old, new)
+    - renames or moves a file or directory and returns a boolean
+  
+  CreateDirectory(directory)
+    - creates a new directory and returns a boolean
+  
+  RemoveDirectory(directory)
+    - removes the directory 'directory' and returns a boolean
+  
   GetDirectoryList(directory)
 
     - directory = directory in which to enumerate directories, 
@@ -1503,6 +1512,9 @@ drawing onto surfaces
       resides in the 'directory' directory of the game.
 
   *** files ***
+  RemoveFile(filename)
+    - removes the file 'filename' and returns a boolean
+    
   GetFileList(directory)
 
     - directory = directory in which to enumerate files, "save" if not specified
