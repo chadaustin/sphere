@@ -1,6 +1,10 @@
 #ifndef INTERNAL_H
 #define INTERNAL_H
 
+// video
+extern bool InitVideo(SPHERECONFIG* config);
+extern void CloseVideo();
+
 // screenshot
 extern bool ShouldTakeScreenshot;
 extern void SetScreenshotDirectory(const char* directory);

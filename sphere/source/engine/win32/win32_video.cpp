@@ -1,6 +1,7 @@
 
 #include <windows.h>
 #include <stdio.h>
+
 #include "win32_video.hpp"
 #include "win32_time.hpp"
 #include "win32_internal.hpp"
@@ -11,8 +12,9 @@ static void CloseVDriver();
 
 // this function should not be exposed
 static void (__stdcall * _FlipScreen)();
-void (__stdcall * SetClippingRectangle)(int x, int y, int w, int h);
-void (__stdcall * GetClippingRectangle)(int* x, int* y, int* w, int* h);
+
+void  (__stdcall * SetClippingRectangle)(int x, int y, int w, int h);
+void  (__stdcall * GetClippingRectangle)(int* x, int* y, int* w, int* h);
 IMAGE (__stdcall * CreateImage)(int width, int height, const RGBA* data);
 IMAGE (__stdcall * GrabImage)(int x, int y, int width, int height);
 void  (__stdcall * DestroyImage)(IMAGE image);
@@ -47,17 +49,23 @@ void  (__stdcall * DrawFilledEllipse)(int x, int y, int rx, int ry, RGBA color);
 void  (__stdcall * DrawOutlinedCircle)(int x, int y, int r, RGBA color, int antialias);
 void  (__stdcall * DrawFilledCircle)(int x, int y, int r, RGBA color, int antialias);
 void  (__stdcall * DrawGradientCircle)(int x, int y, int r, RGBA color[2], int antialias);
-static HWND      SphereWindow = NULL;
+
+static HWND      SphereWindow   = NULL;
 static HINSTANCE GraphicsDriver = NULL;
-static int ScreenWidth = 0;
+
+static int ScreenWidth  = 0;
 static int ScreenHeight = 0;
+
 static SFONT* FPSFont = NULL;
+static RGBA   fps_color;
 static bool   FPSDisplayed = false;
+
 static int VideoCaptureMode = VIDEO_CAPTURE_SCREENSHOT_ONLY;
 static int VideoCaptureTimer = 1000;
 static int VideoCaptureFrameRate = 20;
 static int VideoCaptureFrameStart = 0;
 static int VideoCaptureTimerStart = 0;
+
 ////////////////////////////////////////////////////////////////////////////////
 // helps eliminate warnings
 template<typename T, typename U>
@@ -65,22 +73,25 @@ void assign(T& dest, U src)
 {
     dest = (T&)src;
 }
+
 bool InitVideo(HWND window, SPHERECONFIG* config)
 {
-    SphereWindow = window;
-    VideoCaptureMode  = config->video_capture_mode;
-    VideoCaptureTimer = config->video_capture_timer;
+    SphereWindow          = window;
+    VideoCaptureMode      = config->video_capture_mode;
+    VideoCaptureTimer     = config->video_capture_timer;
     VideoCaptureFrameRate = config->video_capture_framerate;
+
     // Loads driver
     std::string graphics_driver =  "system/video/" + config->videodriver;
     GraphicsDriver = LoadLibrary(graphics_driver.c_str());
+
     if (GraphicsDriver == NULL)
     {
-
         std::string error = "LoadLibrary() failed: '" + graphics_driver + "'";
         puts(error.c_str());
         return false;
     }
+
     // Gets addresses of all of the graphics functions
     assign(_FlipScreen,            GetProcAddress(GraphicsDriver, "FlipScreen"));
     assign(SetClippingRectangle,   GetProcAddress(GraphicsDriver, "SetClippingRectangle"));
@@ -119,50 +130,54 @@ bool InitVideo(HWND window, SPHERECONFIG* config)
     assign(DrawOutlinedCircle,     GetProcAddress(GraphicsDriver, "DrawOutlinedCircle"));
     assign(DrawFilledCircle,       GetProcAddress(GraphicsDriver, "DrawFilledCircle"));
     assign(DrawGradientCircle,     GetProcAddress(GraphicsDriver, "DrawGradientCircle"));
+
+    // ensure that we got all entry points
     if (!_FlipScreen ||
-            !SetClippingRectangle ||
-            !GetClippingRectangle ||
-            !CreateImage ||
-            !GrabImage ||
-            !DestroyImage ||
-            !BlitImage ||
-            !BlitImageMask ||
-            !TransformBlitImage ||
-            !TransformBlitImageMask ||
-            !GetImageWidth ||
-            !GetImageHeight ||
-            !LockImage ||
-            !UnlockImage ||
-            !DirectBlit ||
-            !DirectTransformBlit ||
-            !DirectGrab ||
-            !DrawPoint ||
-            !DrawPointSeries ||
-            !DrawLine ||
-            !DrawGradientLine ||
-            !DrawLineSeries ||
-            !DrawBezierCurve ||
-            !DrawTriangle ||
-            !DrawGradientTriangle ||
-            !DrawPolygon ||
-            !DrawOutlinedRectangle ||
-            !DrawRectangle ||
-            !DrawGradientRectangle ||
-            !DrawOutlinedComplex ||
-            !DrawFilledComplex ||
-            !DrawGradientComplex ||
-            !DrawOutlinedEllipse ||
-            !DrawFilledEllipse ||
-            !DrawOutlinedCircle ||
-            !DrawFilledCircle ||
-            !DrawGradientCircle)
+        !SetClippingRectangle ||
+        !GetClippingRectangle ||
+        !CreateImage ||
+        !GrabImage ||
+        !DestroyImage ||
+        !BlitImage ||
+        !BlitImageMask ||
+        !TransformBlitImage ||
+        !TransformBlitImageMask ||
+        !GetImageWidth ||
+        !GetImageHeight ||
+        !LockImage ||
+        !UnlockImage ||
+        !DirectBlit ||
+        !DirectTransformBlit ||
+        !DirectGrab ||
+        !DrawPoint ||
+        !DrawPointSeries ||
+        !DrawLine ||
+        !DrawGradientLine ||
+        !DrawLineSeries ||
+        !DrawBezierCurve ||
+        !DrawTriangle ||
+        !DrawGradientTriangle ||
+        !DrawPolygon ||
+        !DrawOutlinedRectangle ||
+        !DrawRectangle ||
+        !DrawGradientRectangle ||
+        !DrawOutlinedComplex ||
+        !DrawFilledComplex ||
+        !DrawGradientComplex ||
+        !DrawOutlinedEllipse ||
+        !DrawFilledEllipse ||
+        !DrawOutlinedCircle ||
+        !DrawFilledCircle ||
+        !DrawGradientCircle)
     {
         puts("Couldn't get all entry points");
         FreeLibrary(GraphicsDriver);
         return false;
     }
+
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 void CloseVideo()
 {
@@ -172,114 +187,119 @@ void CloseVideo()
         FreeLibrary(GraphicsDriver);
     }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 void SetFPSFont(SFONT* font)
 {
     FPSFont = font;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 void ToggleFPS()
 {
     FPSDisplayed = !FPSDisplayed;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 bool SetWindowTitle(const char* text)
 {
 
     return (SetWindowText(SphereWindow, text) == TRUE);
 }
-////////////////////////////////////////////////////////////////////////////////
-bool InitVDriver(int x, int y)
-{
-    bool (__stdcall * InitVideoDriver)(HWND window, int screen_width, int screen_height);
-    ScreenWidth = x;
-    ScreenHeight = y;
-    // Gets address of driver init func
-    InitVideoDriver = (bool (__stdcall *)(HWND, int, int))GetProcAddress(GraphicsDriver, "InitVideoDriver");
-    if (InitVideoDriver == NULL)
-    {
 
+////////////////////////////////////////////////////////////////////////////////
+bool InitVDriver(int w, int h)
+{
+    bool (__stdcall * init_video_driver)(HWND window, int screen_width, int screen_height);
+
+    ScreenWidth  = w;
+    ScreenHeight = h;
+
+    // Gets address of driver init func
+    init_video_driver = (bool (__stdcall *)(HWND, int, int))GetProcAddress(GraphicsDriver, "InitVideoDriver");
+
+    if (init_video_driver == NULL)
         return false;
-    }
-    return InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight);
+
+    return init_video_driver(SphereWindow, ScreenWidth, ScreenHeight);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 void CloseVDriver()
 {
-    void (__stdcall * CloseVideoDriver)();
-    // Gets address of
-    CloseVideoDriver = (void (__stdcall *)())GetProcAddress(GraphicsDriver, "CloseVideoDriver");
-    if (CloseVideoDriver == NULL)
-    {
+    void (__stdcall * close_video_driver)();
 
-        FreeLibrary(GraphicsDriver);
+    // Gets address of
+    close_video_driver = (void (__stdcall *)())GetProcAddress(GraphicsDriver, "CloseVideoDriver");
+
+    if (close_video_driver == NULL)
         return;
-    }
-    CloseVideoDriver();
+
+    close_video_driver();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 bool ToggleFullScreen()
 {
     bool (__stdcall * toggle_fullscreen)();
-    // Gets address of
-    toggle_fullscreen = (bool (__stdcall *)())GetProcAddress(GraphicsDriver, "ToggleFullScreen");
-    if (toggle_fullscreen == NULL)
-    {
 
-        return true;
-    }
+    toggle_fullscreen = (bool (__stdcall *)())GetProcAddress(GraphicsDriver, "ToggleFullScreen");
+
+    if (toggle_fullscreen == NULL)
+        return false;
+
     return toggle_fullscreen();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 bool SwitchResolution(int x, int y)
 {
     if (x == ScreenWidth && y == ScreenHeight)
-    {
-
         return true;
-    }
+
     // if we haven't set a screen size, don't close the old driver
     if (ScreenWidth != 0 || ScreenHeight != 0)
-    {
-
         CloseVDriver();
-    }
+
     if (!InitVDriver(x, y))
     {
-
         FreeLibrary(GraphicsDriver);
         QuitMessage("Could not switch resolutions.  Try configuring\n"
                     "Sphere to run in a window (non-fullscreen.)");
     }
+
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 int GetScreenWidth()
 {
     return ScreenWidth;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 int GetScreenHeight()
 {
     return ScreenHeight;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
-static RGBA fps_color;
 void FlipScreen()
 {
-    static bool FirstCall = true;
-    static int LastUpdate = 0;
-    static int FPS = 0;
+    static bool FirstCall    = true;
+    static int LastUpdate    = 0;
+    static int FPS           = 0;
     static int CurrentFrames = 0;
+
     // initialize variables
     if (FirstCall)
     {
-
         LastUpdate = GetTime();
         FPS = 0;
         CurrentFrames = 0;
         FirstCall = false;
     }
+
     // display FPS
     if (FPSFont && FPSDisplayed)
     {
@@ -296,10 +316,13 @@ void FlipScreen()
         sprintf(fps, "FPS: %d", FPS);
         FPSFont->DrawString(0, 0, fps, CreateRGBA(255, 255, 255, 255));
     }
+
     CurrentFrames++;
     static int NumFlips;
+
     if (NumFlips++ % 8 == 0)
         UpdateSystem();
+
     if (ShouldTakeScreenshot)
     {
 
@@ -308,18 +331,21 @@ void FlipScreen()
 
             VideoCaptureTimerStart = GetTime();
         }
+
         if (VideoCaptureMode == VIDEO_CAPTURE_SCREENSHOT_ONLY
                 || VideoCaptureFrameStart++ % VideoCaptureFrameRate == 0)
         {
 
             TakeScreenshot();
         }
-        if ( !(VideoCaptureMode == VIDEO_CAPTURE_UNTIL_F12_KEYED
-                || VideoCaptureMode == VIDEO_CAPTURE_UNTIL_OUTOFTIME ))
+
+        if ( !(VideoCaptureMode == VIDEO_CAPTURE_UNTIL_F12_KEYED ||
+               VideoCaptureMode == VIDEO_CAPTURE_UNTIL_OUTOFTIME ))
         {
 
             ShouldTakeScreenshot = false;
         }
+
         if (VideoCaptureMode == VIDEO_CAPTURE_UNTIL_OUTOFTIME)
         {
 
@@ -329,6 +355,7 @@ void FlipScreen()
                 ShouldTakeScreenshot = false;
             }
         }
+
         if (!ShouldTakeScreenshot)
         {
 
@@ -336,6 +363,8 @@ void FlipScreen()
             VideoCaptureFrameStart = 0;
         }
     }
+
     _FlipScreen();
 }
+
 ////////////////////////////////////////////////////////////////////////////////

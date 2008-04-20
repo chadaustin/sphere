@@ -1,8 +1,11 @@
 #include "unix_time.h"
 #include "../sphere.hpp"
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <cstring>
+
+#include "unix_internal.h"
 #include "unix_filesystem.h"
 #include "unix_audio.h"
 #include "unix_input.h"
@@ -112,14 +115,16 @@ static void LoadSphereConfiguration(SPHERECONFIG* config)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-int main(int argc, const char* argv[]) {
+int main(int argc, const char* argv[])
+{
     SetSphereDirectory();
 
     // load the configuration settings, then save it for future reference
     SPHERECONFIG config;
     LoadSphereConfiguration(&config);
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++)
+    {
       SetPlayerConfig(i,
         KeyStringToKeyCode(config.player_configurations[i].key_up_str.c_str()),
         KeyStringToKeyCode(config.player_configurations[i].key_down_str.c_str()),
@@ -133,19 +138,34 @@ int main(int argc, const char* argv[]) {
 
     original_directory = getcwd(NULL, 0);
     char* env_data_dir = getenv("SPHERE_DATA_DIR");
+
     if (env_data_dir != NULL)
         strcpy(unix_data_dir, env_data_dir);
-    if (getopt(argc, const_cast<char**>(argv), "d:") == 'd') {
+
+    if (getopt(argc, const_cast<char**>(argv), "d:") == 'd')
         strcpy(unix_data_dir, optarg);
-    }
+
     chdir(unix_data_dir);
     srand((unsigned)GetTime());
 
-    if (!InitAudio(&config)) {
+    // initialize video subsystem
+    if (InitVideo(&config) == false)
+    {
+        printf("Fatal error: video subsystem could not be initialized...\n");
+        return 0;
+    }
+
+    // initialize input
+    InitializeInput();
+
+    // initialize audio
+    if (!InitAudio(&config))
+    {
         printf("Sound could not be initialized...\n");
     }
 
     RunSphere(argc, argv);
+    CloseVideo();
     CloseAudio();
 }
 

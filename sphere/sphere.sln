@@ -16,15 +16,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rss2image", "source\util\rs
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "setrsstrans", "source\util\setrsstrans\setrsstrans.vcproj", "{6F50D92B-0175-4F8C-9370-B5E3D9D78024}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sphere_gl", "source\video\sphere_gl\sphere_gl.vcproj", "{BEA646E3-6772-4078-A2D2-F89980600D66}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spktest", "source\util\spktest\spktest.vcproj", "{45900890-D1D3-4CFE-9B71-18C263647B13}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "standard16", "source\video\standard16\standard16.vcproj", "{AEE9B6D7-16FA-47CA-B0A7-4FB23E455429}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "standard32", "source\video\standard32\standard32.vcproj", "{12202B71-E540-411F-83A5-51F5BC4B8DCB}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "standard8", "source\video\standard8\standard8.vcproj", "{F45F9AE6-DF56-47EE-9B7B-0B9C09020818}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tst2rts", "source\util\tst2rts\tst2rts.vcproj", "{2F747D7C-504D-435C-BC44-F413882CCFAF}"
 EndProject
@@ -33,6 +25,14 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vsp2rts", "source\util\vsp2rts\vsp2rts.vcproj", "{8AF005A4-EFEE-4CA9-A563-5225565CD7FA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "editor", "source\editor\editor.vcproj", "{573B5C55-2720-470A-94A0-E7356C2E71BE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sphere_gl", "source\video_win32\sphere_gl\sphere_gl.vcproj", "{BEA646E3-6772-4078-A2D2-F89980600D66}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "standard8", "source\video_win32\standard8\standard8.vcproj", "{F45F9AE6-DF56-47EE-9B7B-0B9C09020818}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "standard16", "source\video_win32\standard16\standard16.vcproj", "{AEE9B6D7-16FA-47CA-B0A7-4FB23E455429}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "standard32", "source\video_win32\standard32\standard32.vcproj", "{12202B71-E540-411F-83A5-51F5BC4B8DCB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -72,26 +72,10 @@ Global
 		{6F50D92B-0175-4F8C-9370-B5E3D9D78024}.Debug|Win32.Build.0 = Debug|Win32
 		{6F50D92B-0175-4F8C-9370-B5E3D9D78024}.Release|Win32.ActiveCfg = Release|Win32
 		{6F50D92B-0175-4F8C-9370-B5E3D9D78024}.Release|Win32.Build.0 = Release|Win32
-		{BEA646E3-6772-4078-A2D2-F89980600D66}.Debug|Win32.ActiveCfg = Debug|Win32
-		{BEA646E3-6772-4078-A2D2-F89980600D66}.Debug|Win32.Build.0 = Debug|Win32
-		{BEA646E3-6772-4078-A2D2-F89980600D66}.Release|Win32.ActiveCfg = Release|Win32
-		{BEA646E3-6772-4078-A2D2-F89980600D66}.Release|Win32.Build.0 = Release|Win32
 		{45900890-D1D3-4CFE-9B71-18C263647B13}.Debug|Win32.ActiveCfg = Debug|Win32
 		{45900890-D1D3-4CFE-9B71-18C263647B13}.Debug|Win32.Build.0 = Debug|Win32
 		{45900890-D1D3-4CFE-9B71-18C263647B13}.Release|Win32.ActiveCfg = Release|Win32
 		{45900890-D1D3-4CFE-9B71-18C263647B13}.Release|Win32.Build.0 = Release|Win32
-		{AEE9B6D7-16FA-47CA-B0A7-4FB23E455429}.Debug|Win32.ActiveCfg = Debug|Win32
-		{AEE9B6D7-16FA-47CA-B0A7-4FB23E455429}.Debug|Win32.Build.0 = Debug|Win32
-		{AEE9B6D7-16FA-47CA-B0A7-4FB23E455429}.Release|Win32.ActiveCfg = Release|Win32
-		{AEE9B6D7-16FA-47CA-B0A7-4FB23E455429}.Release|Win32.Build.0 = Release|Win32
-		{12202B71-E540-411F-83A5-51F5BC4B8DCB}.Debug|Win32.ActiveCfg = Debug|Win32
-		{12202B71-E540-411F-83A5-51F5BC4B8DCB}.Debug|Win32.Build.0 = Debug|Win32
-		{12202B71-E540-411F-83A5-51F5BC4B8DCB}.Release|Win32.ActiveCfg = Release|Win32
-		{12202B71-E540-411F-83A5-51F5BC4B8DCB}.Release|Win32.Build.0 = Release|Win32
-		{F45F9AE6-DF56-47EE-9B7B-0B9C09020818}.Debug|Win32.ActiveCfg = Debug|Win32
-		{F45F9AE6-DF56-47EE-9B7B-0B9C09020818}.Debug|Win32.Build.0 = Debug|Win32
-		{F45F9AE6-DF56-47EE-9B7B-0B9C09020818}.Release|Win32.ActiveCfg = Release|Win32
-		{F45F9AE6-DF56-47EE-9B7B-0B9C09020818}.Release|Win32.Build.0 = Release|Win32
 		{2F747D7C-504D-435C-BC44-F413882CCFAF}.Debug|Win32.ActiveCfg = Debug|Win32
 		{2F747D7C-504D-435C-BC44-F413882CCFAF}.Debug|Win32.Build.0 = Debug|Win32
 		{2F747D7C-504D-435C-BC44-F413882CCFAF}.Release|Win32.ActiveCfg = Release|Win32
@@ -108,6 +92,22 @@ Global
 		{573B5C55-2720-470A-94A0-E7356C2E71BE}.Debug|Win32.Build.0 = Debug|Win32
 		{573B5C55-2720-470A-94A0-E7356C2E71BE}.Release|Win32.ActiveCfg = Release|Win32
 		{573B5C55-2720-470A-94A0-E7356C2E71BE}.Release|Win32.Build.0 = Release|Win32
+		{BEA646E3-6772-4078-A2D2-F89980600D66}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BEA646E3-6772-4078-A2D2-F89980600D66}.Debug|Win32.Build.0 = Debug|Win32
+		{BEA646E3-6772-4078-A2D2-F89980600D66}.Release|Win32.ActiveCfg = Release|Win32
+		{BEA646E3-6772-4078-A2D2-F89980600D66}.Release|Win32.Build.0 = Release|Win32
+		{F45F9AE6-DF56-47EE-9B7B-0B9C09020818}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F45F9AE6-DF56-47EE-9B7B-0B9C09020818}.Debug|Win32.Build.0 = Debug|Win32
+		{F45F9AE6-DF56-47EE-9B7B-0B9C09020818}.Release|Win32.ActiveCfg = Release|Win32
+		{F45F9AE6-DF56-47EE-9B7B-0B9C09020818}.Release|Win32.Build.0 = Release|Win32
+		{AEE9B6D7-16FA-47CA-B0A7-4FB23E455429}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AEE9B6D7-16FA-47CA-B0A7-4FB23E455429}.Debug|Win32.Build.0 = Debug|Win32
+		{AEE9B6D7-16FA-47CA-B0A7-4FB23E455429}.Release|Win32.ActiveCfg = Release|Win32
+		{AEE9B6D7-16FA-47CA-B0A7-4FB23E455429}.Release|Win32.Build.0 = Release|Win32
+		{12202B71-E540-411F-83A5-51F5BC4B8DCB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{12202B71-E540-411F-83A5-51F5BC4B8DCB}.Debug|Win32.Build.0 = Debug|Win32
+		{12202B71-E540-411F-83A5-51F5BC4B8DCB}.Release|Win32.ActiveCfg = Release|Win32
+		{12202B71-E540-411F-83A5-51F5BC4B8DCB}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

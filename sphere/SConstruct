@@ -130,6 +130,9 @@ class Compiler:
 
     def is_win32(self):
         return self.name in ['mingw', 'vc6']
+        
+    def is_unix(self):
+        return self.name in ['linux']
     
     def has_mfc(self):
         return self.name in ['vc6']
@@ -279,7 +282,7 @@ if compile_mode != "":
 base_env = COMPILER.get_env()
 
 # common options
-base_env.Append(CXXFLAGS = ['-DUSE_ALPHA_TABLE'])
+# base_env.Append(CXXFLAGS = ['-DUSE_ALPHA_TABLE'])
 
 BUILD_DIR = base_env['BUILD_DIR']
 Default(BUILD_DIR)

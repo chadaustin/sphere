@@ -5,13 +5,15 @@
 #include <string>
 
 
-enum {
+enum
+{
   SOUND_AUTODETECT,
   SOUND_ON,
   SOUND_OFF,
 };
 
-struct PLAYERCONFIG {
+struct PLAYERCONFIG
+{
   std::string key_up_str;
   std::string key_down_str;
   std::string key_left_str;
@@ -24,19 +26,17 @@ struct SPHERECONFIG
 {
   // video
   std::string videodriver;
-  std::string scaling;
-  int fullscreen;
-  int showcursor;
+  int         bitdepth;
+  bool        fullscreen;
+  bool        vsync;
+  bool        scale;
+  int         filter;
 
   // audio
   int sound;
 
   // network
   bool allow_networking;
-
-  // filter
-  int r, g, b, a;
-  int filter;
 
   // input
   PLAYERCONFIG player_configurations[4];

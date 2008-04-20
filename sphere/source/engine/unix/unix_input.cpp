@@ -29,7 +29,7 @@ void InitializeInput()
 {
   memset(KeyBuffer, false, sizeof(bool) * MAX_KEY);
   memset(CurrentKeyBuffer, false, sizeof(bool) * MAX_KEY);
-  
+
   // initialize the virtual key map
   VirtualKeys[SDLK_ESCAPE]       = KEY_ESCAPE;
   VirtualKeys[SDLK_F1]           = KEY_F1;
@@ -128,12 +128,12 @@ void InitializeInput()
   VirtualKeys[SDLK_KP7]          = KEY_NUM_7;
   VirtualKeys[SDLK_KP8]          = KEY_NUM_8;
   VirtualKeys[SDLK_KP9]          = KEY_NUM_9;
-  
+
   // initialize mouse buttons
   MouseButton[MOUSE_LEFT]   = false;
   MouseButton[MOUSE_MIDDLE] = false;
   MouseButton[MOUSE_RIGHT]  = false;
-  
+
   // initialize modifier states
   ModKeyStates[MODKEY_CAPSLOCK]  = false;
   ModKeyStates[MODKEY_NUMLOCK]   = false;
@@ -143,7 +143,7 @@ void InitializeInput()
 ///////////////////////////////////////////////////////////
 
 bool RefreshInput()
-{  
+{
   // update currently pressed keys
   memcpy(KeyBuffer, CurrentKeyBuffer, sizeof(bool) * MAX_KEY);
 }
@@ -169,37 +169,37 @@ void UpdateSystem()
       case SDL_QUIT:
         exit(0);
         break;
-        
+
         ////////////////////////////////////////////////////////////////////////////
-            
+
       case SDL_KEYDOWN:
         it = VirtualKeys.find(event.key.keysym.sym);
         if (it != VirtualKeys.end())
           OnKeyDown(it->second);
         break;
-            
+
         ////////////////////////////////////////////////////////////////////////////
-            
+
       case SDL_KEYUP:
         it = VirtualKeys.find(event.key.keysym.sym);
         if (it != VirtualKeys.end())
           OnKeyUp(it->second);
         break;
-            
+
         ////////////////////////////////////////////////////////////////////////////
-            
+
       case SDL_MOUSEMOTION:
         OnMouseMove(event.motion.x, event.motion.y);
         break;
-            
+
         ////////////////////////////////////////////////////////////////////////////
-            
+
       case SDL_MOUSEBUTTONDOWN:
         OnMouseDown(event.button.button);
         break;
-            
+
         ////////////////////////////////////////////////////////////////////////////
-            
+
       case SDL_MOUSEBUTTONUP:
         OnMouseUp(event.button.button);
         break;
@@ -247,22 +247,22 @@ void OnKeyDown(int key)
 {
   KeyQueue.push(key);
   CurrentKeyBuffer[key] = true;
-  
+
   // update modifier states
   if (key == KEY_CAPSLOCK)
     ModKeyStates[MODKEY_CAPSLOCK]  = !ModKeyStates[MODKEY_CAPSLOCK];
-    
+
   else if (key == KEY_NUMLOCK)
     ModKeyStates[MODKEY_NUMLOCK]   = !ModKeyStates[MODKEY_NUMLOCK];
-    
+
   else if (key == KEY_SCROLLOCK)
     ModKeyStates[MODKEY_SCROLLOCK] = !ModKeyStates[MODKEY_SCROLLOCK];
-          
+
   switch(key) {
     case KEY_F10:
-      ToggleFullscreen();
+      ToggleFullScreen();
     break;
-                                
+
     case KEY_F11:
       ToggleFPS();
     break;
@@ -295,7 +295,7 @@ bool IsKeyPressed(int key)
     UpdateSystem();
     return KeyBuffer[key];
   }
-  
+
   return false;
 }
 
@@ -317,7 +317,7 @@ bool AreKeysLeft() {
 
 ///////////////////////////////////////////////////////////
 
-int GetKey() 
+int GetKey()
 {
   UpdateSystem();
   while (KeyQueue.empty() == true)
@@ -325,7 +325,7 @@ int GetKey()
 
   int key = KeyQueue.front();
   KeyQueue.pop();
-    
+
   return key;
 }
 
@@ -368,10 +368,10 @@ int GetMouseWheelEvent()
   UpdateSystem();
   while (MouseWheelQueue.empty() == true)
     UpdateSystem();
-  
+
   int mw_event = MouseWheelQueue.front();
   MouseWheelQueue.pop();
-  
+
   return mw_event;
 }
 

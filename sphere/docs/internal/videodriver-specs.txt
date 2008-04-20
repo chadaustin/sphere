@@ -43,6 +43,7 @@ void  ConfigureDriver(HWND parent)
 
 bool  InitVideoDriver(HWND window, int screen_width, int screen_height)
 void  CloseVideoDriver(void)
+bool  ToggleFullscreen(void)
 
 void  FlipScreen(void)
 void  SetClippingRectangle(int x, int y, int w, int h)
@@ -122,6 +123,12 @@ void CloseVideoDriver(void)
 
   Shuts down the driver.  No other functions except InitVideoDriver() may be
   called after it.
+
+------------------------------------------------------------------------------
+
+bool ToggleFullscreen(void)
+
+  Toggles fullscreen by closing the video driver and initializing with the new mode.
 
 ------------------------------------------------------------------------------
 

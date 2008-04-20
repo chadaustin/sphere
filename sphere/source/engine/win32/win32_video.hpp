@@ -1,18 +1,21 @@
 #ifndef WIN32_VIDEO_H
 #define WIN32_VIDEO_H
+
 #include "../../common/rgb.hpp"
 #include "../../common/ParticleStructs.hpp"
 
 class SFONT; // for drawing FPS
 typedef struct IMAGEimp* IMAGE;
+
 extern void SetFPSFont(SFONT* font);
 extern bool SwitchResolution(int x, int y);
 extern int  GetScreenWidth();
 extern int  GetScreenHeight();
 extern bool ToggleFullScreen();
 extern void FlipScreen();
-extern void (__stdcall * SetClippingRectangle)(int x, int y, int w, int h);
-extern void (__stdcall * GetClippingRectangle)(int* x, int* y, int* w, int* h);
+
+extern void  (__stdcall * SetClippingRectangle)(int x, int y, int w, int h);
+extern void  (__stdcall * GetClippingRectangle)(int* x, int* y, int* w, int* h);
 extern IMAGE (__stdcall * CreateImage)(int width, int height, const RGBA* pixels);
 extern IMAGE (__stdcall * GrabImage)(int x, int y, int width, int height);
 extern void  (__stdcall * DestroyImage)(IMAGE image);
@@ -47,5 +50,8 @@ extern void  (__stdcall * DrawFilledEllipse)(int x, int y, int rx, int ry, RGBA 
 extern void  (__stdcall * DrawOutlinedCircle)(int x, int y, int r, RGBA color, int antialias);
 extern void  (__stdcall * DrawFilledCircle)(int x, int y, int r, RGBA color, int antialias);
 extern void  (__stdcall * DrawGradientCircle)(int x, int y, int r, RGBA color[2], int antialias);
+
 extern bool SetWindowTitle(const char* text);
+
+
 #endif

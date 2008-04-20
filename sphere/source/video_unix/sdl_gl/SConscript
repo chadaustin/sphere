@@ -1,0 +1,7 @@
+Import('base_env COMPILER VideoDriver')
+
+env = base_env.Copy()
+
+COMPILER.SetupSDL(env)
+
+VideoDriver('sdl_gl', ['sdl_gl.cpp'], ['GLU'])
