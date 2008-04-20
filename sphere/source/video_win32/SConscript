@@ -1,0 +1,31 @@
+import os
+import types
+
+Import('base_env BUILD_DIR COMPILER')
+
+env = base_env.Copy()
+env.Append(LIBPATH = Dir('common'))
+
+def VideoDriver(name, source, resource, libs):
+    global env
+    drv = env.Copy()
+    COMPILER.SetupWin32(drv)
+    COMPILER.Win32Subsystem(drv)
+    drv.Append(LIBS = libs)
+    if resource:
+        if type(source) is not types.ListType:
+            source = [source]
+        source.append(drv.RES(resource + '.res', resource + '.rc'))
+        source.append('../common/video.def')
+    drv.SharedLibrary(name, source)
+    drv.Install(os.path.join(BUILD_DIR, 'system/video'), name + '.dll')
+
+
+Export('VideoDriver')
+
+SConscript(dirs = [
+    'common',
+    'sphere_gl',
+    'standard8',
+    'standard16',
+    'standard32'])

@@ -1,0 +1,9 @@
+Import('VideoDriver base_env')
+
+obj = base_env.SharedObject(
+    'common_palettes',
+    '#/source/common/common_palettes.cpp')
+VideoDriver('standard8',
+            ['standard8.cpp', obj],
+            'standard8',
+            ['gdi32', 'ddraw', 'vidcommon'])

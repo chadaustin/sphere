@@ -1,0 +1,4 @@
+Import('VideoDriver')
+
+VideoDriver('standard16', 'standard16.cpp', 'standard16',
+            ['gdi32', 'ddraw', 'vidcommon'])
