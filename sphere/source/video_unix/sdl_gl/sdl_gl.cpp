@@ -54,6 +54,9 @@ struct DRIVER_CONFIG
 
 
 // function prototypes
+bool InitVideo(int w, int h);
+EXPORT(bool) InitVideo(int w, int h, DRIVER_CONFIG conf);
+
 EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels);
 
 
