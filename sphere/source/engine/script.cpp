@@ -1954,7 +1954,7 @@ if (This->ShouldRender())
 
     VECTOR_INT** points = new VECTOR_INT*[length];
 
-    for (int i = 0; i < length; i++)
+    for (unsigned int i = 0; i < length; i++)
     {
         JS_GetElement(cx, arr, i, vp);
 
@@ -2065,7 +2065,7 @@ if (This->ShouldRender())
 
     VECTOR_INT** points = new VECTOR_INT*[length];
 
-    for (int i = 0; i < length; i++)
+    for (unsigned int i = 0; i < length; i++)
     {
         JS_GetElement(cx, arr, i, vp);
 
@@ -2200,7 +2200,7 @@ if (This->ShouldRender())
 
     VECTOR_INT** points = new VECTOR_INT*[length];
 
-    for (int i = 0; i < length; i++)
+    for (unsigned int i = 0; i < length; i++)
     {
         JS_GetElement(cx, arr, i, vp);
 
@@ -8826,7 +8826,7 @@ if (length < 1)
 
 VECTOR_INT** points = new VECTOR_INT*[length];
 
-for (int i = 0; i < length; i++)
+for (unsigned int i = 0; i < length; i++)
 {
 	JS_GetElement(cx, arr, i, vp);
 
@@ -8924,7 +8924,7 @@ if (type == 2 && length < 3)
 
 VECTOR_INT** points = new VECTOR_INT*[length];
 
-for (int i = 0; i < length; i++)
+for (unsigned int i = 0; i < length; i++)
 {
 	JS_GetElement(cx, arr, i, vp);
 
@@ -9110,7 +9110,7 @@ if (length < 3)
 
 VECTOR_INT** points = new VECTOR_INT*[length];
 
-for (int i = 0; i < length; i++)
+for (unsigned int i = 0; i < length; i++)
 {
 	JS_GetElement(cx, arr, i, vp);
 
