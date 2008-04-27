@@ -1,10 +1,10 @@
 #include <dlfcn.h>
 #include <string>
 
-#include "unix_video.h"
-#include "unix_input.h"
-#include "unix_time.h"
-#include "unix_internal.h"
+#include "mac_video.h"
+#include "mac_input.h"
+#include "mac_time.h"
+#include "mac_internal.h"
 #include "../sfont.hpp"
 
 struct DRIVER_CONFIG

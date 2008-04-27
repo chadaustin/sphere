@@ -2,9 +2,9 @@
 #include <queue>
 #include <map>
 
-#include "unix_input.h"
-#include "unix_video.h"
-#include "unix_internal.h"
+#include "mac_input.h"
+#include "mac_video.h"
+#include "mac_internal.h"
 
 // map container for virtual keys
 std::map<SDLKey, int> VirtualKeys;

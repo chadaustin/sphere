@@ -3,8 +3,8 @@
 
 #include "../../common/rgb.hpp"
 #include "../../common/ParticleStructs.hpp"
-#include "unix_sphere_config.h"
-#include "unix_filesystem.h"
+#include "mac_sphere_config.h"
+#include "mac_filesystem.h"
 
 
 #define STDCALL __attribute__((stdcall))
