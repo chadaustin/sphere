@@ -1,0 +1,47 @@
+#include "mac_audio.h"
+
+static audiere::AudioDevicePtr s_AudioDevice;
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool InitAudio(SPHERECONFIG* config)
+{
+    switch (config->sound)
+    {
+        case SOUND_AUTODETECT: // fall through
+        case SOUND_ON:         s_AudioDevice = audiere::OpenDevice();       break;
+        case SOUND_OFF:        s_AudioDevice = audiere::OpenDevice("null"); break;
+    }
+
+    if (!s_AudioDevice)
+    {
+        s_AudioDevice = audiere::OpenDevice("null");
+        std::cout << "Error opening sound device, is it busy perhaps?" << std::endl;
+    }
+
+    return bool(s_AudioDevice);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void CloseAudio()
+{
+    s_AudioDevice = 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+audiere::AudioDevice* SA_GetAudioDevice()
+{
+    return s_AudioDevice.get();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+audiere::OutputStream* SA_OpenSound(audiere::File* file, bool streaming)
+{
+    return audiere::OpenSound(s_AudioDevice.get(), file, streaming);
+}
+
+////////////////////////////////////////////////////////////////////////////////

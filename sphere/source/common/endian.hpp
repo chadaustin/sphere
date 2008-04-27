@@ -1,3 +1,16 @@
+#ifndef ENDIAN_HPP
+#define ENDIAN_HPP
+
+#include "types.h"
+
+#define LITTLE_ENDIAN 0
+#define BIG_ENDIAN    1
+
+#ifndef ENDIANNESS             // if not specified, assume little endian
+#define ENDIANNESS LITTLE_ENDIAN
+#endif
+
+
 // the functions are named as following:
 //   <initial format> to <result format> _ <data size>
 // where format can be one of:
@@ -7,15 +20,10 @@
 // and data size can be:
 //   w = word
 //   d = dword
-#ifndef ENDIAN_HPP
-#define ENDIAN_HPP
 
-#include "types.h"
-#define SPHERE_LITTLE_ENDIAN 0
-#define SPHERE_BIG_ENDIAN    1
-#define ENDIANNESS SPHERE_LITTLE_ENDIAN
 
-#if ENDIANNESS == SPHERE_LITTLE_ENDIAN
+#if ENDIANNESS == LITTLE_ENDIAN
+
 inline word ltom_w(word in)
 {
 
@@ -62,17 +70,19 @@ inline dword mtob_d(dword in)
            (in & 0x0000FF00 << 8)  +
            (in & 0x000000FF << 24);
 }
-#elif ENDIANNESS == SPHERE_BIG_ENDIAN
+
+#elif ENDIANNESS == BIG_ENDIAN
+
 inline word ltom_w(word in)
 {
-
-    return (in & 0xFF00 >> 8) + (in & 0x00FF << 8);
+  return ((in >>8) | (in << 8));
 }
+
 inline word mtol_w(word in)
 {
-
-    return (in & 0xFF00 >> 8) + (in & 0x00FF << 8);
+  return ((in >>8) | (in << 8));
 }
+
 inline word btom_w(word in)
 {
 
@@ -85,19 +95,17 @@ inline word mtob_w(word in)
 }
 inline dword ltom_d(dword in)
 {
-
-    return (in & 0xFF000000 >> 24) +
-           (in & 0x00FF0000 >> 8)  +
-           (in & 0x0000FF00 << 8)  +
-           (in & 0x000000FF << 24);
+    return ((in >> 24) |
+            ((in & 0x00FF0000) >> 8)  |
+            ((in & 0x0000FF00) << 8)  |
+            ((in & 0x000000FF) << 24));
 }
 inline dword mtol_d(dword in)
 {
-
-    return (in & 0xFF000000 >> 24) +
-           (in & 0x00FF0000 >> 8)  +
-           (in & 0x0000FF00 << 8)  +
-           (in & 0x000000FF << 24);
+    return ((in >> 24) |
+            ((in & 0x00FF0000) >> 8)  |
+            ((in & 0x0000FF00) << 8)  |
+            ((in & 0x000000FF) << 24));
 }
 inline dword btom_d(dword in)
 {
@@ -109,6 +117,7 @@ inline dword mtob_d(dword in)
 
     return in;
 }
+
 #else
 #error unknown endianness
 #endif

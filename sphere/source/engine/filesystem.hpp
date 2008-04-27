@@ -1,4 +1,6 @@
-#ifdef WIN32
+#if   defined(MAC)
+#include "mac/mac_filesystem.hpp"
+#elif defined(WIN32)
 #include "win32/win32_filesystem.hpp"
 #elif defined(unix)
 #include "unix/unix_filesystem.h"

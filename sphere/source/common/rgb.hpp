@@ -8,33 +8,48 @@ extern unsigned char alpha_new[256][256];
 #endif
 
 #define STRUCT_NAME RGB
-#define STRUCT_BODY \
+#define STRUCT_BODY   \
     byte red;         \
     byte green;       \
     byte blue;
 #include "packed_struct.h"
 
+#define STRUCT_NAME RGBA
+#define STRUCT_BODY   \
+    byte red;         \
+    byte green;       \
+    byte blue;        \
+    byte alpha;
+#include "packed_struct.h"
+
 #define STRUCT_NAME BGR
-#define STRUCT_BODY \
+#if ENDIANNESS == LITTLE_ENDIAN
+#define STRUCT_BODY   \
     byte blue;        \
     byte green;       \
     byte red;
-#include "packed_struct.h"
-
-#define STRUCT_NAME RGBA
-#define STRUCT_BODY \
+#else
+#define STRUCT_BODY   \
     byte red;         \
     byte green;       \
-    byte blue;        \
-    byte alpha;
+    byte blue;
+#endif
 #include "packed_struct.h"
 
 #define STRUCT_NAME BGRA
-#define STRUCT_BODY \
+#if ENDIANNESS == LITTLE_ENDIAN
+#define STRUCT_BODY   \
     byte blue;        \
     byte green;       \
     byte red;         \
     byte alpha;
+#else
+#define STRUCT_BODY   \
+    byte alpha;       \
+    byte red;         \
+    byte green;       \
+    byte blue;
+#endif
 #include "packed_struct.h"
 
 inline bool operator==(const RGB& c1, const RGB& c2)

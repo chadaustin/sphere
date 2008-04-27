@@ -174,7 +174,6 @@ inline std::string ReadMapString(IFile* file)
     std::string s;
     word length = ReadMapWord(file);
 
-    length = ltom_w(length);
     for (int i = 0; i < length; i++)
     {
         char c;

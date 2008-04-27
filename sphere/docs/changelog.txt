@@ -1,9 +1,12 @@
 YYYY.MM.DD
 
+2008.04.27
+  - Added the Mac subsystem based on the Unix subsystem.
+
 2008.04.20
   - Improved the surface blitting algorithm in the software
     based video drivers. It is now much faster to blit surfaces.
-  - Removed the built-in video driver from the unix implementation
+  - Removed the built-in video driver from the unix subsystem
     and added sdl32 and sdl_gl as stand-alone video drivers.
 
 2008.04.03

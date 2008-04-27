@@ -1,5 +1,7 @@
-#if defined(SPHERE_SDL)
+#if   defined(SPHERE_SDL)
 #include "sdl/sdl_input.hpp"
+#if   defined(MAC)
+#include "mac/mac_input.hpp"
 #elif defined(WIN32)
 #include "win32/win32_input.hpp"
 #elif defined(unix)
