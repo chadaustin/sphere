@@ -1,6 +1,6 @@
 #if   defined(SPHERE_SDL)
 #include "sdl/sdl_time.hpp"
-#if   defined(MAC)
+#elif defined(MAC)
 #include "mac/mac_time.hpp"
 #elif defined(WIN32)
 #include "win32/win32_time.hpp"

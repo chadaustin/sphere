@@ -1,6 +1,6 @@
 #if   defined(SPHERE_SDL)
 #include "sdl/sdl_audio.hpp"
-#if   defined(MAC)
+#elif defined(MAC)
 #include "mac/mac_audio.hpp"
 #elif defined(WIN32)
 #include "win32/win32_audio.hpp"
