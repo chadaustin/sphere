@@ -15,81 +15,46 @@
 #include "../../common/rgb.hpp"
 
 
-#if ENDIANNESS == LITTLE_ENDIAN
-#define R_SHIFT     16
-#define G_SHIFT     8
-#define B_SHIFT     0
-#define R__MASK     0x00FF0000     //          00000000 11111111 00000000 00000000
-#define G__MASK     0x0000FF00     //          00000000 00000000 11111111 00000000
-#define B__MASK     0x000000FF     //          00000000 00000000 00000000 11111111
-#define BR_MASK     0x00FF00FF     //          00000000 11111111 00000000 11111111
-#define G__1_MASK   0x0001FE00     //          00000000 00000001 11111110 00000000
-#define G__2_MASK   0x0003FC00     //          00000000 00000011 11111100 00000000
-#define G__3_MASK   0x0007F800     //          00000000 00000111 11111000 00000000
-#define G__4_MASK   0x000FF000     //          00000000 00001111 11110000 00000000
-#define BR_1_MASK   0x01FE01FE     //          00000001 11111110 00000001 11111110
-#define BR_2_MASK   0x03FC03FC     //          00000011 11111100 00000011 11111100
-#define BR_3_MASK   0x07F807F8     //          00000111 11111000 00000111 11111000
-#define BR_4_MASK   0x0FF00FF0     //          00001111 11110000 00001111 11110000
-#else
-#define R_SHIFT     8
-#define G_SHIFT     16
-#define B_SHIFT     24
-#define R__MASK     0x0000FF00     //          00000000 00000000 11111111 00000000
-#define G__MASK     0x00FF0000     //          00000000 11111111 00000000 00000000
-#define B__MASK     0xFF000000     //          11111111 00000000 00000000 00000000
-#define BR_MASK     0xFF00FF00     //          11111111 00000000 11111111 00000000
-#define G__1_MASK   0x01FE0000     //          00000001 11111110 00000000 00000000
-#define G__2_MASK   0x03FC0000     //          00000011 11111100 00000000 00000000
-#define G__3_MASK   0x07F80000     //          00000111 11111000 00000000 00000000
-#define G__4_MASK   0x0FF00000     //          00001111 11110000 00000000 00000000
-#define BR_1_MASK   0x01FE01FE00   // 00000001 11111110 00000001 11111110 00000000
-#define BR_2_MASK   0x03FC03FC00   // 00000011 11111100 00000011 11111100 00000000
-#define BR_3_MASK   0x07F807F800   // 00000111 11111000 00000111 11111000 00000000
-#define BR_4_MASK   0x0FF00FF000   // 00001111 11110000 00001111 11110000 00000000
-#endif
-
-
 inline void Interp1(Uint32* pc, Uint32 c1, Uint32 c2)
 {
-  *pc = ((((c1 & G__MASK)*3 + (c2 & G__MASK) ) & G__2_MASK)  +
-         (((c1 & BR_MASK)*3 + (c2 & BR_MASK) ) & BR_2_MASK)) >> 2;
+  *pc = ((((c1 & 0x00FF00)*3 + (c2 & 0x00FF00) ) & 0x0003FC00)  +
+         (((c1 & 0xFF00FF)*3 + (c2 & 0xFF00FF) ) & 0x03FC03FC)) >> 2;
 }
 
 inline void Interp2(Uint32* pc, Uint32 c1, Uint32 c2, Uint32 c3)
 {
-  *pc = ((((c1 & G__MASK)*2 + (c2 & G__MASK) + (c3 & G__MASK) ) & G__2_MASK)  +
-         (((c1 & BR_MASK)*2 + (c2 & BR_MASK) + (c3 & BR_MASK) ) & BR_2_MASK)) >> 2;
+  *pc = ((((c1 & 0x00FF00)*2 + (c2 & 0x00FF00) + (c3 & 0x00FF00) ) & 0x0003FC00)  +
+         (((c1 & 0xFF00FF)*2 + (c2 & 0xFF00FF) + (c3 & 0xFF00FF) ) & 0x03FC03FC)) >> 2;
 }
 
 inline void Interp5(Uint32* pc, Uint32 c1, Uint32 c2)
 {
-  *pc = ((((c1 & G__MASK) + (c2 & G__MASK) ) & G__1_MASK)  +
-         (((c1 & BR_MASK) + (c2 & BR_MASK) ) & BR_1_MASK)) >> 1;
+  *pc = ((((c1 & 0x00FF00) + (c2 & 0x00FF00) ) & 0x0001FE00)  +
+         (((c1 & 0xFF00FF) + (c2 & 0xFF00FF) ) & 0x01FE01FE)) >> 1;
 }
 
 inline void Interp6(Uint32* pc, Uint32 c1, Uint32 c2, Uint32 c3)
 {
-  *pc = ((((c1 & G__MASK)*5 + (c2 & G__MASK)*2 + (c3 & G__MASK) ) & G__3_MASK) +
-         (((c1 & BR_MASK)*5 + (c2 & BR_MASK)*2 + (c3 & BR_MASK) ) & BR_3_MASK)) >> 3;
+  *pc = ((((c1 & 0x00FF00)*5 + (c2 & 0x00FF00)*2 + (c3 & 0x00FF00) ) & 0x0007F800) +
+         (((c1 & 0xFF00FF)*5 + (c2 & 0xFF00FF)*2 + (c3 & 0xFF00FF) ) & 0x07F807F8)) >> 3;
 }
 
 inline void Interp7(Uint32* pc, Uint32 c1, Uint32 c2, Uint32 c3)
 {
-  *pc = ((((c1 & G__MASK)*6 + (c2 & G__MASK) + (c3 & G__MASK) ) & G__3_MASK) +
-         (((c1 & BR_MASK)*6 + (c2 & BR_MASK) + (c3 & BR_MASK) ) & BR_3_MASK)) >> 3;
+  *pc = ((((c1 & 0x00FF00)*6 + (c2 & 0x00FF00) + (c3 & 0x00FF00) ) & 0x0007F800) +
+         (((c1 & 0xFF00FF)*6 + (c2 & 0xFF00FF) + (c3 & 0xFF00FF) ) & 0x07F807F8)) >> 3;
 }
 
 inline void Interp9(Uint32* pc, Uint32 c1, Uint32 c2, Uint32 c3)
 {
-  *pc = ((((c1 & G__MASK)*2 + ((c2 & G__MASK) + (c3 & G__MASK))*3 ) & G__3_MASK) +
-         (((c1 & BR_MASK)*2 + ((c2 & BR_MASK) + (c3 & BR_MASK))*3 ) & BR_3_MASK)) >> 3;
+  *pc = ((((c1 & 0x00FF00)*2 + ((c2 & 0x00FF00) + (c3 & 0x00FF00))*3 ) & 0x0007F800) +
+         (((c1 & 0xFF00FF)*2 + ((c2 & 0xFF00FF) + (c3 & 0xFF00FF))*3 ) & 0x07F807F8)) >> 3;
 }
 
 inline void Interp10(Uint32* pc, Uint32 c1, Uint32 c2, Uint32 c3)
 {
-  *pc = ((((c1 & G__MASK)*14 + (c2 & G__MASK) + (c3 & G__MASK) ) & G__4_MASK) +
-         (((c1 & BR_MASK)*14 + (c2 & BR_MASK) + (c3 & BR_MASK) ) & BR_4_MASK)) >> 4;
+  *pc = ((((c1 & 0x00FF00)*14 + (c2 & 0x00FF00) + (c3 & 0x00FF00) ) & 0x000FF000) +
+         (((c1 & 0xFF00FF)*14 + (c2 & 0xFF00FF) + (c3 & 0xFF00FF) ) & 0x0FF00FF0)) >> 4;
 }
 
 #define PIXEL00_0     dst0[0] = src1[0];
@@ -143,9 +108,9 @@ inline void Interp10(Uint32* pc, Uint32 c1, Uint32 c2, Uint32 c3)
 
 inline bool Diff(Uint32 a, Uint32 b)
 {
-  int R = abs((a & R__MASK) - (b & R__MASK)) >> R_SHIFT;
-  int G = abs((a & G__MASK) - (b & G__MASK)) >> G_SHIFT;
-  int B = abs((a & B__MASK) - (b & B__MASK)) >> B_SHIFT;
+  int R = abs((a & 0xFF0000) - (b & 0xFF0000)) >> 16;
+  int G = abs((a & 0x00FF00) - (b & 0x00FF00)) >> 8;
+  int B = abs((a & 0x0000FF) - (b & 0x0000FF));
 
   return ( ( (( R +   G + B) >> 2) > 0x30 ) ||
            ( (( R -   B)     >> 2) > 0x07 ) ||
@@ -191,13 +156,13 @@ void hq2x(T* dst, int dst_pitch, T* src, int src_width, int src_height)
         pattern = 0;
 
         if (src0[-1] != src1[0]) if (Diff(src0[-1], src1[0])) pattern |= 0x01;
-        if (src0[0]  != src1[0]) if (Diff(src0[0],  src1[0])) pattern |= 0x02;
-        if (src0[1]  != src1[0]) if (Diff(src0[1],  src1[0])) pattern |= 0x04;
+        if (src0[0]  != src1[0]) if (Diff(src0[0], src1[0]))  pattern |= 0x02;
+        if (src0[1]  != src1[0]) if (Diff(src0[1], src1[0]))  pattern |= 0x04;
         if (src1[-1] != src1[0]) if (Diff(src1[-1], src1[0])) pattern |= 0x08;
-        if (src1[1]  != src1[0]) if (Diff(src1[1],  src1[0])) pattern |= 0x10;
+        if (src1[1]  != src1[0]) if (Diff(src1[1], src1[0]))  pattern |= 0x10;
         if (src2[-1] != src1[0]) if (Diff(src2[-1], src1[0])) pattern |= 0x20;
-        if (src2[0]  != src1[0]) if (Diff(src2[0],  src1[0])) pattern |= 0x40;
-        if (src2[1]  != src1[0]) if (Diff(src2[1],  src1[0])) pattern |= 0x80;
+        if (src2[0]  != src1[0]) if (Diff(src2[0], src1[0]))  pattern |= 0x40;
+        if (src2[1]  != src1[0]) if (Diff(src2[1], src1[0]))  pattern |= 0x80;
 
       switch (pattern)
       {
