@@ -1,15 +1,15 @@
-#include "mac_time.h"
-#include "../sphere.hpp"
-
+#include <SDL.h>
 #include <stdlib.h>
 #include <string>
 
+#include "mac_time.h"
 #include "mac_internal.h"
 #include "mac_filesystem.h"
 #include "mac_audio.h"
 #include "mac_input.h"
 #include "mac_sphere_config.h"
 #include "../PlayerConfig.hpp"
+#include "../sphere.hpp"
 
 #ifndef DATADIR
 #define DATADIR "."
@@ -114,7 +114,8 @@ static void LoadSphereConfiguration(SPHERECONFIG* config)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-int main(int argc, const char* argv[])
+extern "C"
+int main(int argc, char* argv[])
 {
     SetSphereDirectory();
 

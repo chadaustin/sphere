@@ -2,7 +2,7 @@
 
 #include "mac_time.h"
 
-Uint32 GetTime ()
+dword GetTime ()
 {
     return SDL_GetTicks();
 }

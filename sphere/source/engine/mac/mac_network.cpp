@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <NL.h> // HawkNL avialable at: http://www.hawksoft.com/hawknl/
 
-#include "mac_network.hpp"
+#include "mac_network.h"
 
 static bool s_NetworkInitialized = false;
 

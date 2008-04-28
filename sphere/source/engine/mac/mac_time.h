@@ -3,6 +3,6 @@
 
 #include "../../common/types.h"
 
-Uint32 GetTime();
+dword GetTime();
 
 #endif
