@@ -1,5 +1,5 @@
 #if   defined(MAC)
-#include "mac/mac_filesystem.hpp"
+#include "mac/mac_filesystem.h"
 #elif defined(WIN32)
 #include "win32/win32_filesystem.hpp"
 #elif defined(unix)

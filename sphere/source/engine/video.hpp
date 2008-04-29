@@ -1,7 +1,7 @@
 #if   defined(SPHERE_SDL)
 #include "sdl/sdl_video.hpp"
 #elif defined(MAC)
-#include "mac/mac_video.hpp"
+#include "mac/mac_video.h"
 #elif defined(WIN32)
 #include "win32/win32_video.hpp"
 #elif defined(unix)

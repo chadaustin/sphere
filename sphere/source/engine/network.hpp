@@ -1,7 +1,7 @@
 #if   defined(SPHERE_SDL)
 #include "sdl/sdl_network.hpp"
 #elif defined(MAC)
-#include "mac/mac_network.hpp"
+#include "mac/mac_network.h"
 #elif defined(WIN32)
 #include "win32/win32_network.hpp"
 #elif defined(unix)

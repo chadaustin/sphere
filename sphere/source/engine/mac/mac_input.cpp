@@ -26,7 +26,7 @@ bool MouseButton[3];
 
 ///////////////////////////////////////////////////////////
 
-void InitializeInput()
+void InitInput()
 {
     memset(KeyBuffer, false, sizeof(bool) * MAX_KEY);
     memset(CurrentKeyBuffer, false, sizeof(bool) * MAX_KEY);
@@ -145,7 +145,7 @@ void InitializeInput()
 
 bool RefreshInput()
 {
-    // update currently pressed keys
+    UpdateSystem();
     memcpy(KeyBuffer, CurrentKeyBuffer, sizeof(bool) * MAX_KEY);
 }
 
@@ -153,8 +153,6 @@ bool RefreshInput()
 
 bool ResetInput()
 {
-    memset(KeyBuffer, false, sizeof(bool) * MAX_KEY);
-    memset(CurrentKeyBuffer, false, sizeof(bool) * MAX_KEY);
     return true;
 }
 
@@ -170,6 +168,9 @@ void UpdateSystem()
         switch (event.type)
         {
             case SDL_QUIT:
+                // the most important message if you *ever* want to quit ;)
+                CloseVideo();
+                CloseAudio();
                 exit(0);
                 break;
 
@@ -177,16 +178,20 @@ void UpdateSystem()
 
             case SDL_KEYDOWN:
                 it = VirtualKeys.find(event.key.keysym.sym);
+
                 if (it != VirtualKeys.end())
-                OnKeyDown(it->second);
+                    OnKeyDown(it->second);
+
                 break;
 
             ////////////////////////////////////////////////////////////////////////////
 
             case SDL_KEYUP:
                 it = VirtualKeys.find(event.key.keysym.sym);
+
                 if (it != VirtualKeys.end())
-                OnKeyUp(it->second);
+                    OnKeyUp(it->second);
+
                 break;
 
             ////////////////////////////////////////////////////////////////////////////
@@ -297,10 +302,7 @@ bool GetToggleState(int key)
 bool IsKeyPressed(int key)
 {
     if (key >= 0 && key < MAX_KEY)
-    {
-        UpdateSystem();
         return KeyBuffer[key];
-    }
 
     return false;
 }
@@ -309,8 +311,6 @@ bool IsKeyPressed(int key)
 
 void GetKeyStates(bool keys[MAX_KEY])
 {
-    UpdateSystem();
-
     for (int i = 0; i < MAX_KEY; ++i)
         keys[i] = KeyBuffer[i];
 
@@ -320,7 +320,6 @@ void GetKeyStates(bool keys[MAX_KEY])
 
 bool AreKeysLeft()
 {
-    UpdateSystem();
     return !KeyQueue.empty();
 }
 
@@ -328,8 +327,6 @@ bool AreKeysLeft()
 
 int GetKey()
 {
-    UpdateSystem();
-
     while (KeyQueue.empty() == true)
         UpdateSystem();
 
@@ -345,7 +342,6 @@ int GetKey()
 
 int GetMouseX()
 {
-    UpdateSystem();
     return MouseX;
 }
 
@@ -353,7 +349,6 @@ int GetMouseX()
 
 int GetMouseY()
 {
-    UpdateSystem();
     return MouseY;
 }
 
@@ -375,8 +370,6 @@ void SetMousePosition(int x, int y)
 
 int GetMouseWheelEvent()
 {
-    UpdateSystem();
-
     while (MouseWheelQueue.empty() == true)
         UpdateSystem();
 
@@ -390,7 +383,6 @@ int GetMouseWheelEvent()
 
 int GetNumMouseWheelEvents()
 {
-    UpdateSystem();
     return MouseWheelQueue.size();
 }
 

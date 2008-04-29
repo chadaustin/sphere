@@ -1,4 +1,5 @@
 #include <SDL.h>
+#include <iostream>
 #include <stdlib.h>
 #include <string>
 
@@ -151,7 +152,7 @@ int main(int argc, char* argv[])
     }
 
     // initialize input
-    InitializeInput();
+    InitInput();
 
     // initialize audio
     if (!InitAudio(&config))
@@ -162,6 +163,17 @@ int main(int argc, char* argv[])
     RunSphere(argc, argv);
     CloseVideo();
     CloseAudio();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void QuitMessage (const char* message)
+{
+    CloseVideo();
+    CloseAudio();
+
+    std::cerr << message << std::endl;
+    exit(1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

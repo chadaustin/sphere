@@ -5,6 +5,9 @@
 extern bool InitVideo(SPHERECONFIG* config);
 extern void CloseVideo();
 
+// input
+extern void  InitInput();
+
 // screenshot
 extern bool ShouldTakeScreenshot;
 extern void SetScreenshotDirectory(const char* directory);

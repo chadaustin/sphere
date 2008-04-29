@@ -113,33 +113,32 @@
 #define JOYSTICK_AXIS_Z     2
 #define JOYSTICK_AXIS_R     3
 
-void  InitializeInput();
-bool  ResetInput();
-void  OnKeyDown(int key);
-void  OnKeyUp(int key);
-bool  RefreshInput();
-void  UpdateSystem();
+// general
+extern bool  RefreshInput();
+extern bool  ResetInput();
 
 // keyboard
-bool  GetToggleState(int key);
-bool  IsKeyPressed(int key);
-void  GetKeyStates(bool keys[MAX_KEY]);
-bool  AreKeysLeft();
-int   GetKey();
+extern bool  GetToggleState(int key);
+extern bool  IsKeyPressed(int key);
+extern void  GetKeyStates(bool keys[MAX_KEY]);
+
+// keyboard key queue
+extern bool  AreKeysLeft();
+extern int   GetKey();
 
 // mouse
-void  SetMousePosition(int x, int y);
-int   GetMouseX();
-int   GetMouseY();
-bool  IsMouseButtonPressed(int button);
-int   GetMouseWheelEvent();
-int   GetNumMouseWheelEvents();
+extern int   GetMouseX();
+extern int   GetMouseY();
+extern bool  IsMouseButtonPressed(int button);
+extern void  SetMousePosition(int x, int y);
+extern int   GetMouseWheelEvent();
+extern int   GetNumMouseWheelEvents();
 
 // joystick
-int   GetNumJoysticks();
-int   GetNumJoystickAxes(int joy);
-float GetJoystickAxis(int joy, int axis); // returns value in range [-1, 1]
-int   GetNumJoystickButtons(int joy);
-bool  IsJoystickButtonPressed(int joy, int button);
+extern int   GetNumJoysticks();
+extern int   GetNumJoystickAxes(int joy);
+extern float GetJoystickAxis(int joy, int axis); // returns value in range [-1, 1]
+extern int   GetNumJoystickButtons(int joy);
+extern bool  IsJoystickButtonPressed(int joy, int button);
 
 #endif
