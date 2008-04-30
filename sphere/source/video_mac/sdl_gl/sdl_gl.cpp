@@ -130,14 +130,20 @@ EXPORT(bool) InitVideo(int w, int h, DRIVER_CONFIG conf)
     if (firstcall)
     {
 
-        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD | SDL_INIT_JOYSTICK) == -1)
+        // initialize SDL
+        // Note: SDL_INIT_EVENTTHREAD is currently not supported on Mac OS X
+        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) == -1)
         {
             fprintf(stderr, "Could not initialize video:\n%s\n", SDL_GetError());
             return false;
         }
 
+        SDL_ShowCursor(false);
+        SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+
         fullscreen = Config.fullscreen;
         firstcall  = false;
+
     }
     else
     {
@@ -203,16 +209,12 @@ EXPORT(bool) InitVideo(int w, int h, DRIVER_CONFIG conf)
     // get max texture size
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &MaxTexSize);
 
-    SDL_ShowCursor(false);
-    SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
-
     return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) CloseVideo()
 {
-    SDL_Quit();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

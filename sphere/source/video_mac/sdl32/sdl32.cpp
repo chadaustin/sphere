@@ -201,17 +201,34 @@ EXPORT(bool) InitVideo(int w, int h, DRIVER_CONFIG conf)
         if (!ScreenBuffer)
             return false;
 
-        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD | SDL_INIT_JOYSTICK) == -1)
+        // initialize SDL
+        // Note: SDL_INIT_EVENTTHREAD is currently not supported on Mac OS X
+        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) == -1)
         {
             fprintf(stderr, "Could not initialize video:\n%s\n", SDL_GetError());
             return false;
         }
 
+        SDL_ShowCursor(false);
+        SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+
         fullscreen = Config.fullscreen;
         firstcall  = false;
+
     }
     else
     {
+        // reinitialize the screen buffer, because the new resolution can differ
+        delete [] ScreenBuffer;
+        ScreenBuffer = new BGRA[ScreenWidth * ScreenHeight];
+
+        if (!ScreenBuffer)
+        {
+            SDL_Quit();
+            return false;
+        }
+
+        // reinitialize the SDL video subsystem
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
         if (SDL_InitSubSystem(SDL_INIT_VIDEO) == -1)
@@ -241,9 +258,6 @@ EXPORT(bool) InitVideo(int w, int h, DRIVER_CONFIG conf)
         return false;
     }
 
-    SDL_ShowCursor(false);
-    SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
-
     SetClippingRectangle(0, 0, SDLScreen->w, SDLScreen->h);
 
     return true;
@@ -255,7 +269,6 @@ EXPORT(void) CloseVideo()
     if (ScreenBuffer)
         delete [] ScreenBuffer;
 
-    SDL_Quit();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -7,7 +7,7 @@
 #include <glob.h>
 #include <stack>
 #include <string>
-#include <stdio>
+#include <stdio.h>
 #include <list>
 
 struct DIRECTORYLISTimp

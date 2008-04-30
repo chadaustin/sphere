@@ -151,6 +151,9 @@ int main(int argc, char* argv[])
         return 0;
     }
 
+    // close video on interrupt
+    atexit(CloseVideo);
+
     // initialize input
     InitInput();
 

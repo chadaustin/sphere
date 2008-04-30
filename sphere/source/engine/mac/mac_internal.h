@@ -1,12 +1,17 @@
 #ifndef MAC_INTERNAL_H
 #define MAC_INTERNAL_H
 
+#include "mac_sphere_config.h"
+#include "../system.hpp"
+
 // video
 extern bool InitVideo(SPHERECONFIG* config);
 extern void CloseVideo();
 
 // input
-extern void  InitInput();
+extern void InitInput();
+extern void OnKeyDown(int key);
+extern void OnKeyUp(int key);
 
 // screenshot
 extern bool ShouldTakeScreenshot;

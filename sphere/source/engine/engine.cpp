@@ -1190,7 +1190,7 @@ CGameEngine::FlushFile(CConfigFile* file)
         {
             const char* filename = i->second.filename.c_str();
 
-            std::string path = "saves/";
+            std::string path = "save/";
             bool need_leave = false;
             int skip = pre_process_filename(filename, path, need_leave);
 
@@ -1230,7 +1230,7 @@ CGameEngine::CloseFile(CConfigFile* file)
             {
                 const char* filename = i->second.filename.c_str();
 
-                std::string path = "saves/";
+                std::string path = "save/";
                 bool need_leave = false;
                 int skip = pre_process_filename(filename, path, need_leave);
 
