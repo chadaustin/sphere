@@ -144,6 +144,7 @@ EXPORT(bool) InitVideo(int w, int h, DRIVER_CONFIG conf)
         fullscreen = Config.fullscreen;
         firstcall  = false;
 
+        atexit(SDL_Quit);
     }
     else
     {
