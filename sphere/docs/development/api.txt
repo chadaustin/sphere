@@ -788,13 +788,23 @@ drawing onto surfaces
       DestroyPerson(name)
         - destroys the person with the name
 
+      GetPersonOffsetX(name)
+        - gets the horizontal offset used for blitting frames
+      SetPersonOffsetX(name, x)
+        - sets the horizontal offset to use for blitting frames
+          e.g. setting it to 10 would result in the person blitted always 10 pixels
+          to the right, while the person's x-position would remain unchanged.
+
+      GetPersonOffsetY(name)
+        - gets the vertical offset used for blitting frames
+      SetPersonOffsetY(name, y)
+        - sets the vertical offset to use for blitting frames
+          e.g. setting it to 10 would result in the person blitted always 10 pixels 
+          to the bottom, while the person's y-position would remain unchanged.
+        
       SetPersonX(name, x)
       SetPersonY(name, y)
-      
-      SetPersonOffsetX(name, x)
-      SetPersonOffsetY(name, y)
-        - sets the horizontal/vertical offset to use for blitting frames
-        
+              
       SetPersonLayer(name, layer)
         - sets the position of the person on the map
       SetPersonXYFloat(name, x, y)
@@ -806,11 +816,7 @@ drawing onto surfaces
       
       GetPersonX(name)
       GetPersonY(name)
-      
-      GetPersonOffsetX(name)
-      GetPersonOffsetY(name)
-        - gets the horizontal/vertical offset used for blitting frames
-      
+            
       GetPersonLayer(name)
         - Gets the position of the person on the map.
           The position is based on the middle of the spriteset's base

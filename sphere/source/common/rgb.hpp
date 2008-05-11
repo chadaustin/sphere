@@ -2,6 +2,9 @@
 #define RGB_HPP
 
 #include "types.h"
+#include "endian.hpp"
+
+
 #ifdef USE_ALPHA_TABLE
 extern unsigned char alpha_old[256][256];
 extern unsigned char alpha_new[256][256];

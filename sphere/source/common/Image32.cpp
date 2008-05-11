@@ -717,37 +717,39 @@ inline void copyAlpha(RGBA& dest, RGBA src)
 
 inline void additiveRGBA(RGBA& dest, RGBA src)
 {
-    dest.red   = std::min(255, (dest.red   + (((int)src.red   * (int)src.alpha) / 255)));
-    dest.green = std::min(255, (dest.green + (((int)src.green * (int)src.alpha) / 255)));
-    dest.blue  = std::min(255, (dest.blue  + (((int)src.blue  * (int)src.alpha) / 255)));
+    dest.red   = std::min(255, dest.red   + src.red);
+    dest.green = std::min(255, dest.green + src.green);
+    dest.blue  = std::min(255, dest.blue  + src.blue);
+    dest.alpha = std::min(255, dest.alpha + src.alpha);
 }
 
 inline void subtractiveRGBA(RGBA& dest, RGBA src)
 {
-    dest.red   = std::max(0, (dest.red   - (((int)src.red   * (int)src.alpha) / 255)));
-    dest.green = std::max(0, (dest.green - (((int)src.green * (int)src.alpha) / 255)));
-    dest.blue  = std::max(0, (dest.blue  - (((int)src.blue  * (int)src.alpha) / 255)));
+    dest.red   = std::max(0, dest.red   - src.red);
+    dest.green = std::max(0, dest.green - src.green);
+    dest.blue  = std::max(0, dest.blue  - src.blue);
+    dest.alpha = std::max(0, dest.alpha - src.alpha);
 }
 
 inline void multiplicativeRGBA(RGBA& dest, RGBA src)
 {
-    dest.red   = (dest.red   * (((int)src.red   * (int)src.alpha) / 255)) / 255;
-    dest.green = (dest.green * (((int)src.green * (int)src.alpha) / 255)) / 255;
-    dest.blue  = (dest.blue  * (((int)src.blue  * (int)src.alpha) / 255)) / 255;
+    dest.red   = (dest.red   * src.red)   / 255;
+    dest.green = (dest.green * src.green) / 255;
+    dest.blue  = (dest.blue  * src.blue)  / 255;
 }
 
 inline void averageRGBA(RGBA& dest, RGBA src)
 {
-    dest.red   = (dest.red   + (((int)src.red   * (int)src.alpha) / 255)) / 2;
-    dest.green = (dest.green + (((int)src.green * (int)src.alpha) / 255)) / 2;
-    dest.blue  = (dest.blue  + (((int)src.blue  * (int)src.alpha) / 255)) / 2;
+    dest.red   = (dest.red   + src.red)   / 2;
+    dest.green = (dest.green + src.green) / 2;
+    dest.blue  = (dest.blue  + src.blue)  / 2;
 }
 
 inline void invertRGBA(RGBA& dest, RGBA src)
 {
-    dest.red   = (dest.red   * (255 - (((int)src.red   * (int)src.alpha) / 255))) / 255;
-    dest.green = (dest.green * (255 - (((int)src.green * (int)src.alpha) / 255))) / 255;
-    dest.blue  = (dest.blue  * (255 - (((int)src.blue  * (int)src.alpha) / 255))) / 255;
+    dest.red   = (dest.red   * (255 - src.red))   / 255;
+    dest.green = (dest.green * (255 - src.green)) / 255;
+    dest.blue  = (dest.blue  * (255 - src.blue))  / 255;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

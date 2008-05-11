@@ -154,6 +154,7 @@ inline byte ReadMapByte(const std::auto_ptr<IFile>& file)
 {
     return ReadMapByte(file.get());
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 inline word ReadMapWord(IFile* file)
 {
@@ -168,6 +169,37 @@ inline word ReadMapWord(const std::auto_ptr<IFile>& file)
 {
     return ReadMapWord(file.get());
 }
+
+////////////////////////////////////////////////////////////////////////////////
+inline dword ReadMapDWord(IFile* file)
+{
+    dword d;
+    file->Read(&d, 4);
+    d = ltom_d(d);
+
+    return d;
+}
+
+inline word ReadMapDWord(const std::auto_ptr<IFile>& file)
+{
+    return ReadMapDWord(file.get());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+inline float32 ReadMapFloat32(IFile* file)
+{
+    char temp[4];
+
+    file->Read(&temp, 4);
+
+    return ltom_f((char*)&temp);
+}
+
+inline float32 ReadMapFloat32(const std::auto_ptr<IFile>& file)
+{
+    return ReadMapFloat32(file.get());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 inline std::string ReadMapString(IFile* file)
 {
@@ -197,6 +229,7 @@ inline void SkipMapBytes(const std::auto_ptr<IFile>& file, int bytes)
 {
     SkipMapBytes(file.get(), bytes);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 bool
 sMap::Load(const char* filename, IFileSystem& fs)
@@ -282,25 +315,29 @@ sMap::Load(const char* filename, IFileSystem& fs)
     {
         // read the layer header
         LAYER_HEADER lh;
-        if (file->Read(&lh, sizeof(lh)) != sizeof(lh))
 
-            return false;
-        lh.width = ltom_w(lh.width);
-        lh.height = ltom_w(lh.height);
-        lh.flags = ltom_w(lh.flags);
-        /*
-        float32 lh.parallax_x = ...;
-        float32 lh.parallax_y = ...;
-        float32 lh.scrolling_x = ...;
-        float32 lh.scrolling_y = ...;
-        */
-        lh.num_segments = ltom_d(lh.num_segments);
-        if (lh.width  <= 0 || lh.width  > 4096
-                || lh.height <= 0 || lh.height > 4096)
+        lh.width        = ReadMapWord(file);
+        lh.height       = ReadMapWord(file);
+        lh.flags        = ReadMapWord(file);
+
+        lh.parallax_x   = ReadMapFloat32(file);
+        lh.parallax_y   = ReadMapFloat32(file);
+        lh.scrolling_x  = ReadMapFloat32(file);
+        lh.scrolling_y  = ReadMapFloat32(file);
+
+        lh.num_segments = ReadMapDWord(file);
+        lh.reflective   = ReadMapByte(file);
+
+        SkipMapBytes(file, 3); // reserved
+
+        if (lh.width  <= 0    ||
+            lh.width  >  4096 ||
+            lh.height <= 0    ||
+            lh.height >  4096)
         {
-
             return false;
         }
+
         // read the layer name
         std::string name = ReadMapString(file);
 
@@ -569,6 +606,7 @@ inline void WriteMapByte(const std::auto_ptr<IFile>& file, byte b)
 {
     WriteMapByte(file.get(), b);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 inline void WriteMapWord(IFile* file, word w)
 {
@@ -581,6 +619,35 @@ inline void WriteMapWord(const std::auto_ptr<IFile>& file, word w)
 {
     WriteMapWord(file.get(), w);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+inline void WriteMapDWord(IFile* file, dword d)
+{
+
+    d = mtol_d(d);
+    file->Write(&d, 4);
+}
+
+inline void WriteMapDWord(const std::auto_ptr<IFile>& file, dword d)
+{
+    WriteMapDWord(file.get(), d);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+inline void WriteMapFloat32(IFile* file, float32 f)
+{
+    char temp[4];
+
+    mtol_f((char*)&temp, f);
+
+    file->Write(&temp, 4);
+}
+
+inline void WriteMapFloat32(const std::auto_ptr<IFile>& file, float32 f)
+{
+    WriteMapFloat32(file.get(), f);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 inline void WriteMapString(IFile* file, const char* string)
 {
@@ -594,6 +661,7 @@ inline void WriteMapString(const std::auto_ptr<IFile>& file, const char* string)
 {
     WriteMapString(file.get(), string);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 bool
 sMap::Save(const char* filename, IFileSystem& fs)
@@ -645,6 +713,7 @@ sMap::Save(const char* filename, IFileSystem& fs)
         // write the header
         LAYER_HEADER lh;
         memset(&lh, 0, sizeof(lh));
+
         lh.width        = m_Layers[i].GetWidth();
         lh.height       = m_Layers[i].GetHeight();
         lh.flags        = (m_Layers[i].IsVisible() ? 0 : 1) | (m_Layers[i].HasParallax() ? 2 : 0);
@@ -655,18 +724,21 @@ sMap::Save(const char* filename, IFileSystem& fs)
         lh.num_segments = obstructions.GetNumSegments();
         lh.reflective   = (m_Layers[i].IsReflective() ? 1 : 0);
 
-        lh.width = mtol_w(lh.width);
-        lh.height = mtol_w(lh.height);
-        lh.flags = mtol_w(lh.flags);
-        /*
-          float32 parallax_x = ...;
-          float32 parallax_y = ...;
-          float32 scrolling_x = ...;
-          float32 scrolling_y = ...;
-        */
-        lh.num_segments = mtol_d(lh.num_segments);
-        if (file->Write(&lh, sizeof(lh)) != sizeof(lh))
-            return false;
+        WriteMapWord(file, lh.width);
+        WriteMapWord(file, lh.height);
+        WriteMapWord(file, lh.flags);
+
+        WriteMapFloat32(file, lh.parallax_x);
+        WriteMapFloat32(file, lh.parallax_y);
+        WriteMapFloat32(file, lh.scrolling_x);
+        WriteMapFloat32(file, lh.scrolling_y);
+
+        WriteMapDWord(file, lh.num_segments);
+        WriteMapByte(file,  lh.reflective);
+
+        SkipMapBytes(file, 3); // reserved
+
+
         // write the layer name
         WriteMapString(file, m_Layers[i].GetName());
 
