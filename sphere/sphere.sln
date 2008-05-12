@@ -1,5 +1,5 @@
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual C++ Express 2005
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "alphamerge", "source\util\alphamerge\alphamerge.vcproj", "{011C4D2E-8860-43CD-ACFF-023625416F20}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "chr2rss", "source\util\chr2rss\chr2rss.vcproj", "{61DCA4EA-3280-47AB-9DAE-623C04BC0AC7}"

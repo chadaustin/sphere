@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="9,00"
 	Name="standard32"
 	ProjectGUID="{12202B71-E540-411F-83A5-51F5BC4B8DCB}"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -85,6 +86,8 @@
 				ModuleDefinitionFile="..\common\video.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\output/debug/standard32.pdb"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				ImportLibrary=".\output/debug/standard32.lib"
 				TargetMachine="1"
 			/>
@@ -105,9 +108,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -185,7 +185,9 @@
 				AdditionalLibraryDirectories="../../../third-party-msvc/lib/"
 				ModuleDefinitionFile="..\common\video.def"
 				ProgramDatabaseFile=".\output/release/standard32.pdb"
-				OptimizeForWindows98="1"
+				OptimizeForWindows98="0"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				ImportLibrary=".\output/release/standard32.lib"
 				TargetMachine="1"
 			/>
@@ -206,9 +208,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
