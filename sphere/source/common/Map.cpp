@@ -180,7 +180,7 @@ inline dword ReadMapDWord(IFile* file)
     return d;
 }
 
-inline word ReadMapDWord(const std::auto_ptr<IFile>& file)
+inline dword ReadMapDWord(const std::auto_ptr<IFile>& file)
 {
     return ReadMapDWord(file.get());
 }
