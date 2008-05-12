@@ -6,92 +6,6 @@ import autocons
 
 ###########################################################
 
-def BuildMinGWEnv():
-    env = Environment(ENV = os.environ)
-    env['BUILD_DIR']   = '#/build/mingw'
-
-    env['SHLIBPREFIX'] = ''
-    env['SHLIBSUFFIX'] = '.dll'
-    env['SHCCFLAGS']   = ['$CCFLAGS']
-    env['SHCXXFLAGS']  = ['$CXXFLAGS']
-    env['LINKFLAGS']   = ['-mno-cygwin']
-    env['SHLINKFLAGS'] = [
-        '-shared', '-Wl,--enable-stdcall-fixup', '$LINKFLAGS']
-    env['BUILDERS']['RES'] = Builder(
-        action = 'windres -O coff --define CYGWIN $_RESINCFLAGS $SOURCE -o $TARGET')
-    env['_RESINCFLAGS'] = '${_concat("--include-dir ", CPPPATH, "", __env__, RDirs)}'
-
-    env.Append(
-        CCFLAGS = ['-DWIN32', '-D_WIN32', '-DCYGWIN',
-                   '-mno-cygwin', '-Wall', '-Wno-non-virtual-dtor'],
-        CPPPATH = [Dir('third-party-mingw/include')],
-        LIBPATH = [Dir('third-party-mingw/lib'),
-                   Dir('third-party-mingw/dlls')])
-
-    # install third-party DLLs into build directory
-    dlls = Split("audiere.dll corona.dll js32.dll libmng.dll zlib.dll")
-    for d in dlls:
-        env.Install(env['BUILD_DIR'],
-                    os.path.join('third-party-mingw/dlls', d))
-        env.Install(os.path.join(env['BUILD_DIR'], 'util'),
-                    os.path.join('third-party-mingw/dlls', d))
-
-    if ARGUMENTS.get('debug'):
-        env.Append(
-            CCFLAGS = ['-DDEBUG', '-g'],
-            LINKFLAGS = ['-g'])
-    elif ARGUMENTS.get('opt'):
-        env.Append(
-            CCFLAGS = ['-O2', '-s'],
-            LINKFLAGS = ['-s'])
-            
-    # no write_mng support for mingw
-    env.Append(CXXFLAGS = ['-DNO_WRITE_MNG'])
-
-    return env
-
-###########################################################
-
-def BuildVC6Env():
-    env = Environment(ENV = os.environ,
-                      MSVS_VERSION = '6.0',
-                      tools = ['msvc', 'mslib', 'mslink'])
-    env['BUILD_DIR'] = '#/build/vc6'
-    env['LIBPREFIX'] = ''
-    env['LIBSUFFIX'] = '.lib'
-    env['SHLIBPREFIX'] = ''
-    env['SHLIBSUFFIX'] = '.dll'
-    env.Append(CXXFLAGS = ['/GX', '/MD', '/W3',
-                           '/Dfor=if (0) ; else for',
-                           '/DWIN32',
-                           '/D_WIN32',
-                           '/DNOMINMAX'],
-               CPPPATH = [Dir('third-party-msvc/include')],
-               LIBPATH = [Dir('third-party-msvc/lib')])
-
-    dlls = Split("""audiere.dll Scintilla.dll SciLexer.dll corona.dll js32.dll
-                    libmng.dll zlib.dll""")
-    for d in dlls:
-        env.Install(env['BUILD_DIR'],
-                    os.path.join('third-party-msvc/dlls', d))
-        env.Install(os.path.join(env['BUILD_DIR'], 'util'),
-                    os.path.join('third-party-msvc/dlls', d))
-
-    sysdlls = Split("MSVCRT.DLL MSVCP60.DLL MFC42.DLL")
-    for d in sysdlls:
-        env.Install(env['BUILD_DIR'], WhereIs(d))
-
-    if ARGUMENTS.get('debug'):
-        env.Append(CCFLAGS = ['/GZ', '/Z7'],
-                   LINKFLAGS = ['/debug', '/debugtype:both'])
-    elif ARGUMENTS.get('opt'):
-        env.Append(CCFLAGS = ['/O1', '/GF'],
-                   LINKFLAGS = ['/opt:ref', '/release'])
-
-    return env
-
-###########################################################
-
 def BuildLinuxEnv():
     env = Environment(ENV = os.environ)
     env['BUILD_DIR'] = "#/build/linux"
@@ -114,53 +28,30 @@ def BuildLinuxEnv():
 
 class Compiler:
     def __init__(self, name):
-        if not name in ['vc6', 'mingw', 'linux']:
+        if not name in ['linux']:
             raise ValueError, "Invalid compiler specified"
 
         self.name = name
-        if name == 'vc6':
-            self.env = BuildVC6Env()
-        elif name == 'mingw':
-            self.env = BuildMinGWEnv()
-        elif name == 'linux':
+        
+        if name == 'linux':
             self.env = BuildLinuxEnv()
 
     def __str__(self):
         return self.name
 
-    def is_win32(self):
-        return self.name in ['mingw', 'vc6']
-        
     def is_unix(self):
         return self.name in ['linux']
     
-    def has_mfc(self):
-        return self.name in ['vc6']
-
     def needs_sdl(self):
         return self.name in ['linux']
         
-    def has_wxwindows(self):
-        return self.name in ['mingw', 'vc6', 'linux']
-
     def get_env(self):
         return self.env
-
-    def Win32Subsystem(self, env):
-        if self.name == 'vc6':
-            env.Append(LINKFLAGS = ['/subsystem:windows'])
-        elif self.name == 'mingw':
-            env.Append(LINKFLAGS = ['-mwindows'])
 
     def UnixSubsystem(self, env):
       env.Append(CPPPATH = ['#/source/engine/unix'],
                  LIBPATH = ['#/source/engine/unix'],
                  LIBS = ['unix'])
-
-    def SDLSubsystem(self, env):
-      env.Append(CPPPATH = ['#/source/engine/sdl'],
-                 LIBPATH = ['#/source/engine/sdl'],
-                 LIBS = ['sdl'])
 
     def SetupAudiere(self, env):
         env.Append(LIBS = ['audiere'])
@@ -171,13 +62,8 @@ class Compiler:
     def SetupHTMLHelp(self, env):
         env.Append(LIBS = ['htmlhelp'])
 
-    def SetupGL(self, env):
-        env.Append(LIBS = ['glu32', 'opengl32'])
-
     def SetupJS(self, env):
-        if self.name in ['vc6', 'mingw']:
-            env.Append(CCFLAGS = ['-DXP_PC'], LIBS = ['js32'])
-        elif self.name == 'linux':
+        if self.name == 'linux':
             env.Append(CCFLAGS = ['-DXP_UNIX'])
             if os.path.exists('/usr/include/smjs'):
                 env.Append(LIBS = ['smjs'])
@@ -189,21 +75,8 @@ class Compiler:
                 env.Append(LIBS = ['mozjs'])
                 env.Append(CPPPATH = [Dir('/usr/include/mozjs')])
 
-    def SetupMFC(self, env):
-        assert self.has_mfc(), "MFC not supported in this compiler"
-        env.Append(CCFLAGS = ['/D_AFXDLL'],
-                   LINKFLAGS = ['/subsystem:windows'],
-                   LIBS = ['mfc42'])
-
     def SetupMNG(self, env):
-        if self.name == 'mingw':
-            env.Append(LIBS = ['mng'],
-            CCFLAGS = ['-DMNG_NO_CMS', '-DMNG_SUPPORT_LC', '-DMNG_DLL'])
-        elif self.name == 'vc6':
-            env.Append(LIBS = ['libmng'],
-            CCFLAGS = ['/DMNG_USE_DLL', '/DMNG_SKIP_LCMS', '/DMNG_SKIP_IJG6B'])
-
-        elif self.name == 'linux':
+        if self.name == 'linux':
             env.Append(LIBS = ['mng', 'jpeg', 'z'])
 
     def SetupSDL(self, env):
@@ -216,50 +89,16 @@ class Compiler:
                    LIBPATH = ['#/source/common'],
                    LIBS = ['common'])
 
-    def SetupWin32(self, env):
-        if COMPILER.is_win32():
-            env.Append(LIBS = ['user32', 'gdi32', 'comctl32'])
-
-    def SetupWXWindows(self, env):
-        if self.name == 'mingw':
-            env.Append(
-                CCFLAGS = ['-D__GNUWIN32__', '-D__WXMSW__', '-D__WIN32__',
-                           '-D__WIN95__', '-DSTRICT', '-DWIN32_LEAN_AND_MEAN'],
-                LIBS = ['stc', 'wxmsw', 'gdi32', 'comctl32', 'comdlg32',
-                        'ole32', 'uuid', 'ws2_32'])
-        elif self.name == 'vc6':
-            env.Append(CCFLAGS = ['/D__WXMSW__', '/D__WIN32__', '/D__WIN95__',
-                                  '/DSTRICT', '/DWIN32_LEAN_AND_MEAN'],
-                       LIBS = ['stc', 'wxmsw', 'user32', 'gdi32', 'comctl32',
-                               'comdlg32', 'ole32', 'shell32', 'uuid',
-                               'advapi32', 'ws2_32'])
-        elif self.name == 'linux':
-#            autocons.ParseConfig(env, 'wx-config', ['--cflags', '--libs'])
-             autocons.ParseConfig(env, 'wxgtk-2.4-config', ['--cflags', '--libs'])
-
-
-    def SetupZLib(self, env):
-        if self.name == 'mingw':
-            env.Append(LIBS = ['z'],
-                       CCFLAGS = ['-DWINDOWS', '-DZLIB_DLL'])
-        elif self.name == 'vc6':
-            env.Append(LIBS = ['zlib'],
-                       CCFLAGS = ['/DWINDOWS', '/DZLIB_DLL'])
-
 ###########################################################
 
 env = Environment(ENV = os.environ)
-if env.Detect('cl'):
-    default_compiler = 'vc6'
-elif sys.platform == 'cygwin':
-    default_compiler = 'mingw'
-elif string.find(sys.platform, 'linux') != -1:
+if string.find(sys.platform, 'linux') != -1:
     default_compiler = 'linux'
 elif string.find(sys.platform, 'freebsd') != -1:
     default_compiler = 'linux'
 else:
-    print "Can't determine default compiler!  Defaulting to VC6..."
-    default_compiler = 'vc6'
+    print "Can't determine default compiler!  Defaulting to Linux..."
+    default_compiler = 'linux'
 
 ###########################################################
 

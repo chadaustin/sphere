@@ -11,8 +11,3 @@ Make sure the version numbers are correct in:
  installer/sphere.nsi
 
 Yes, version info is stored in two different files. Bleh.
-Then run:
-
- ./make-installer.sh
-
-Tada! A complete Sphere installation for Windows.

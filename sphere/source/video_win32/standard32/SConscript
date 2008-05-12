@@ -1,4 +1,0 @@
-Import('VideoDriver')
-
-VideoDriver('standard32', 'standard32.cpp', 'standard',
-            ['gdi32', 'ddraw', 'vidcommon'])

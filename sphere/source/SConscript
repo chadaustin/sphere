@@ -4,13 +4,4 @@ SConscript(dirs = ['common', 'engine', 'util'])
 
 if COMPILER.is_unix():
     SConscript(dirs = ['video_unix'])
-
-if COMPILER.is_win32():
-    SConscript(dirs = ['config', 'video_win32'])
-
-if COMPILER.has_mfc():
-    SConscript(dirs = ['editor'])
-
-if COMPILER.has_wxwindows():
-    SConscript(dirs = ['wxeditor'])
  

@@ -11,7 +11,6 @@ Import('base_env BUILD_DIR COMPILER')
 env = base_env.Copy()
 COMPILER.SetupSphereCommon(env)
 COMPILER.SetupCorona(env)
-COMPILER.SetupZLib(env)
 
 if (string.find(sys.platform, 'freebsd') != -1):
   env.Append(CPPPATH = ['/usr/local/include'],
@@ -24,5 +23,3 @@ for u in utils:
     program = env.Program(os.path.join(u, u), os.path.join(u, u + '.cpp'))
     env.Install(os.path.join(BUILD_DIR, 'util'), program)
 
-# Directory and utility no longer exist.
-#SConscript(dirs = ['ohrrpgce'])
