@@ -3,13 +3,13 @@
 
 #include "types.h"
 
-#define LITTLE_ENDIAN 0
-#define BIG_ENDIAN    1
+#define SPHERE_LITTLE_ENDIAN 0
+#define SPHERE_BIG_ENDIAN    1
 
 #if defined(MAC) && defined(__BIG_ENDIAN__)
-#define ENDIANNESS BIG_ENDIAN
+#define SPHERE_BYTEORDER SPHERE_BIG_ENDIAN
 #else
-#define ENDIANNESS LITTLE_ENDIAN
+#define SPHERE_BYTEORDER SPHERE_LITTLE_ENDIAN
 #endif
 
 // the functions are named as following:
@@ -24,7 +24,7 @@
 //   f = float32
 
 
-#if ENDIANNESS == LITTLE_ENDIAN
+#if SPHERE_BYTEORDER == SPHERE_LITTLE_ENDIAN
 
 inline word ltom_w(word in)
 {
@@ -97,7 +97,7 @@ inline void mtol_f(char* out, float32 in)
 }
 
 
-#elif ENDIANNESS == BIG_ENDIAN
+#elif SPHERE_BYTEORDER == SPHERE_BIG_ENDIAN
 
 inline word ltom_w(word in)
 {
@@ -170,7 +170,7 @@ inline void mtol_f(char* out, float32 in)
 }
 
 #else
-#error unknown endianness
+#error unknown byteorder
 #endif
 
 #endif

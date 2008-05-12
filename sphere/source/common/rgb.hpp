@@ -26,7 +26,7 @@ extern unsigned char alpha_new[256][256];
 #include "packed_struct.h"
 
 #define STRUCT_NAME BGR
-#if ENDIANNESS == LITTLE_ENDIAN
+#if SPHERE_BYTEORDER == SPHERE_LITTLE_ENDIAN
 #define STRUCT_BODY   \
     byte blue;        \
     byte green;       \
@@ -40,7 +40,7 @@ extern unsigned char alpha_new[256][256];
 #include "packed_struct.h"
 
 #define STRUCT_NAME BGRA
-#if ENDIANNESS == LITTLE_ENDIAN
+#if SPHERE_BYTEORDER == SPHERE_LITTLE_ENDIAN
 #define STRUCT_BODY   \
     byte blue;        \
     byte green;       \
