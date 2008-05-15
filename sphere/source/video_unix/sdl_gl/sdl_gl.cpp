@@ -1,7 +1,6 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_getenv.h>
 #include <GL/gl.h>
-#include <GL/glu.h>
 #include <math.h>
 #include <string>
 
@@ -12,8 +11,7 @@
 
 #define GL_CLAMP_TO_EDGE 0x812F
 
-#define SCALE()  (Config.scale ? 2    : 1)
-#define SCALEF() (Config.scale ? 2.0f : 1.0f)
+#define SCALE()  (Config.scale ? 2 : 1)
 #define FILTER() (SCALE() == 1 ? GL_NEAREST : (Config.filter != 0 ? GL_LINEAR : GL_NEAREST))
 
 
@@ -54,10 +52,10 @@ struct DRIVER_CONFIG
 
 
 // function prototypes
-bool InitVideo(int w, int h);
-EXPORT(bool) InitVideo(int w, int h, DRIVER_CONFIG conf);
+static bool   InitVideo(int w, int h);
+EXPORT(bool)  InitVideo(int w, int h, DRIVER_CONFIG conf);
 
-EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels);
+EXPORT(void)  DirectGrab(int x, int y, int w, int h, RGBA* pixels);
 
 
 // globals
@@ -102,7 +100,7 @@ EXPORT(bool) SetWindowTitle(const char* text)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool InitVideo(int w, int h)
+static bool InitVideo(int w, int h)
 {
     return InitVideo(w, h, Config);
 }
@@ -125,19 +123,23 @@ EXPORT(bool) InitVideo(int w, int h, DRIVER_CONFIG conf)
     static bool firstcall = true;
 
     // Center the window on the display
-    putenv("SDL_VIDEO_CENTERED=1");
+    SDL_putenv("SDL_VIDEO_CENTERED=1");
 
     if (firstcall)
     {
 
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD | SDL_INIT_JOYSTICK) == -1)
         {
-            fprintf(stderr, "Could not initialize video:\n%s\n", SDL_GetError());
+            fprintf(stderr, "Could not initialize SDL:\n%s\n", SDL_GetError());
             return false;
         }
 
+        SDL_ShowCursor(false);
+        SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+
         fullscreen = Config.fullscreen;
         firstcall  = false;
+
     }
     else
     {
@@ -175,15 +177,23 @@ EXPORT(bool) InitVideo(int w, int h, DRIVER_CONFIG conf)
     }
 
     // view initialization
-    glViewport(0, 0, s_width, s_height);
+    glViewport(0, 0, ScreenWidth * SCALE(), ScreenHeight * SCALE());
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluOrtho2D(0.0f, (float)ScreenWidth, (float)ScreenHeight, 0.0f);
+    glOrtho(0, ScreenWidth, ScreenHeight, 0, -1, 1);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+    glTranslatef(0.375, 0.375, 0.0);
 
+    // we don't need the depth buffer
+    glDisable(GL_DEPTH_TEST);
+
+    // enable back face culling, since we never see the back faces
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
+    // set the clear color
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClearDepth(1.0);
 
     // render initialization
     glEnable(GL_SCISSOR_TEST);
@@ -194,17 +204,28 @@ EXPORT(bool) InitVideo(int w, int h, DRIVER_CONFIG conf)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glPointSize(FILTER() == GL_LINEAR ? 2.5f : (SCALE() == 1 ? 1.0f : 2.0f));
-    glLineWidth(FILTER() == GL_LINEAR ? 2.5f : (SCALE() == 1 ? 1.0f : 2.0f));
+    glPointSize(FILTER() == GL_LINEAR ? 2.0f : (SCALE() == 1 ? 1.0f : 2.0f));
+    glLineWidth(FILTER() == GL_LINEAR ? 2.0f : (SCALE() == 1 ? 1.0f : 2.0f));
 
     if (FILTER() == GL_LINEAR)
+    {
+        glHint(GL_POINT_SMOOTH_HINT,   GL_NICEST);
+        glHint(GL_LINE_SMOOTH_HINT,    GL_NICEST);
+        glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+
         glEnable(GL_POINT_SMOOTH);
+        glEnable(GL_LINE_SMOOTH);
+        glEnable(GL_POLYGON_SMOOTH);
+    }
+    else
+    {
+        glDisable(GL_POINT_SMOOTH);
+        glDisable(GL_LINE_SMOOTH);
+        glDisable(GL_POLYGON_SMOOTH);
+    }
 
     // get max texture size
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &MaxTexSize);
-
-    SDL_ShowCursor(false);
-    SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 
     return true;
 }
@@ -213,6 +234,7 @@ EXPORT(bool) InitVideo(int w, int h, DRIVER_CONFIG conf)
 EXPORT(void) CloseVideo()
 {
     SDL_Quit();
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -469,17 +491,6 @@ EXPORT(void) DestroyImage(IMAGE image)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-inline float sphere_x_to_opengl_x(int x)
-{
-    return (float) x + 0.5f;
-}
-
-inline float sphere_y_to_opengl_y(int y)
-{
-    return (float) y + 0.5f;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) BlitImage(IMAGE image, int x, int y)
 {
 
@@ -498,14 +509,14 @@ EXPORT(void) BlitImage(IMAGE image, int x, int y)
     glTexCoord2f(0.0f, 0.0f);
     glVertex2i(x, y);
 
-    glTexCoord2f(image->tex_width, 0.0f);
-    glVertex2i(x + image->width, y);
+    glTexCoord2f(0.0f, image->tex_height);
+    glVertex2i(x, y + image->height);
 
     glTexCoord2f(image->tex_width, image->tex_height);
     glVertex2i(x + image->width, y + image->height);
 
-    glTexCoord2f(0.0f, image->tex_height);
-    glVertex2i(x, y + image->height);
+    glTexCoord2f(image->tex_width, 0.0f);
+    glVertex2i(x + image->width, y);
 
     glEnd();
 
@@ -531,14 +542,14 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
     glTexCoord2f(0.0f, 0.0f);
     glVertex2i(x, y);
 
-    glTexCoord2f(image->tex_width, 0.0f);
-    glVertex2i(x + image->width, y);
+    glTexCoord2f(0.0f, image->tex_height);
+    glVertex2i(x, y + image->height);
 
     glTexCoord2f(image->tex_width, image->tex_height);
     glVertex2i(x + image->width, y + image->height);
 
-    glTexCoord2f(0.0f, image->tex_height);
-    glVertex2i(x, y + image->height);
+    glTexCoord2f(image->tex_width, 0.0f);
+    glVertex2i(x + image->width, y);
 
     glEnd();
 
@@ -564,14 +575,14 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
     glTexCoord2f(0.0f, 0.0f);
     glVertex2i(x[0], y[0]);
 
-    glTexCoord2f(image->tex_width, 0.0f);
-    glVertex2i(x[1] + 1, y[1]);
+    glTexCoord2f(0.0f, image->tex_height);
+    glVertex2i(x[3], y[3] + 1);
 
     glTexCoord2f(image->tex_width, image->tex_height);
     glVertex2i(x[2] + 1, y[2] + 1);
 
-    glTexCoord2f(0.0f, image->tex_height);
-    glVertex2i(x[3], y[3] + 1);
+    glTexCoord2f(image->tex_width, 0.0f);
+    glVertex2i(x[1] + 1, y[1]);
 
     glEnd();
 
@@ -597,14 +608,14 @@ EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
     glTexCoord2f(0.0f, 0.0f);
     glVertex2i(x[0], y[0]);
 
-    glTexCoord2f(image->tex_width, 0.0f);
-    glVertex2i(x[1] + 1, y[1]);
+    glTexCoord2f(0.0f, image->tex_height);
+    glVertex2i(x[3], y[3] + 1);
 
     glTexCoord2f(image->tex_width, image->tex_height);
     glVertex2i(x[2] + 1, y[2] + 1);
 
-    glTexCoord2f(0.0f, image->tex_height);
-    glVertex2i(x[3], y[3] + 1);
+    glTexCoord2f(image->tex_width, 0.0f);
+    glVertex2i(x[1] + 1, y[1]);
 
     glEnd();
 
@@ -729,8 +740,10 @@ EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
 EXPORT(void) DrawPoint(int x, int y, RGBA color)
 {
     glBegin(GL_POINTS);
+
     glColor4ubv((GLubyte*)&color);
-    glVertex2f(sphere_x_to_opengl_x(x), sphere_y_to_opengl_y(y));
+    glVertex2i(x, y);
+
     glEnd();
 }
 
@@ -738,27 +751,27 @@ EXPORT(void) DrawPoint(int x, int y, RGBA color)
 EXPORT(void) DrawPointSeries(VECTOR_INT** points, int length, RGBA color)
 {
     if (color.alpha == 0)
-    {
         return;
-    }
-    glBegin(GL_POINTS);
+
     glColor4ubv((GLubyte*)&color);
 
+    glBegin(GL_POINTS);
+
     for (int i = 0; i < length; ++i)
-    {
-        glVertex2f(sphere_x_to_opengl_x(points[i]->x), sphere_y_to_opengl_y(points[i]->y));
-    }
+        glVertex2i(points[i]->x, points[i]->y);
+
     glEnd();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawLine(int x[2], int y[2], RGBA color)
 {
+    glColor4ub(color.red, color.green, color.blue, color.alpha);
+
     glBegin(GL_LINES);
 
-    glColor4ub(color.red, color.green, color.blue, color.alpha);
-    glVertex2f(sphere_x_to_opengl_x(x[0]), sphere_y_to_opengl_y(y[0]));
-    glVertex2f(sphere_x_to_opengl_x(x[1]), sphere_y_to_opengl_y(y[1]));
+    glVertex2i(x[0], y[0]);
+    glVertex2i(x[1], y[1]);
 
     glEnd();
 }
@@ -768,11 +781,11 @@ EXPORT(void) DrawGradientLine(int x[2], int y[2], RGBA colors[2])
 {
     glBegin(GL_LINES);
 
-    glColor4ub(colors[0].red, colors[0].green, colors[0].blue, colors[0].alpha);
-    glVertex2f(sphere_x_to_opengl_x(x[0]), sphere_y_to_opengl_y(y[0]));
+    glColor4ubv((GLubyte*)(colors + 0));
+    glVertex2i(x[0], y[0]);
 
-    glColor4ub(colors[1].red, colors[1].green, colors[1].blue, colors[1].alpha);
-    glVertex2f(sphere_x_to_opengl_x(x[1]), sphere_y_to_opengl_y(y[1]));
+    glColor4ubv((GLubyte*)(colors + 1));
+    glVertex2i(x[1], y[1]);
 
     glEnd();
 }
@@ -781,26 +794,20 @@ EXPORT(void) DrawGradientLine(int x[2], int y[2], RGBA colors[2])
 EXPORT(void) DrawLineSeries(VECTOR_INT** points, int length, RGBA color, int type)
 {
     if (color.alpha == 0)
-    {
         return;
-    }
-    if (type == 0)
-    {
-        glBegin(GL_LINES);
-    }
-    else if (type == 1)
-    {
-        glBegin(GL_LINE_STRIP);
-    }
-    else
-    {
-        glBegin(GL_LINE_LOOP);
-    }
+
     glColor4ubv((GLubyte*)&color);
+
+    if (type == 0)
+        glBegin(GL_LINES);
+    else if (type == 1)
+        glBegin(GL_LINE_STRIP);
+    else
+        glBegin(GL_LINE_LOOP);
+
     for (int i = 0; i < length; ++i)
-    {
-        glVertex2f(sphere_x_to_opengl_x(points[i]->x), sphere_y_to_opengl_y(points[i]->y));
-    }
+        glVertex2i(points[i]->x, points[i]->y);
+
     glEnd();
 }
 
@@ -808,24 +815,21 @@ EXPORT(void) DrawLineSeries(VECTOR_INT** points, int length, RGBA color, int typ
 EXPORT(void) DrawBezierCurve(int x[4], int y[4], double step, RGBA color, int cubic)
 {
     if (color.alpha == 0)
-    {
         return;
-    }
-    glBegin(GL_POINTS);
-    glColor4ubv((GLubyte*)&color);
 
     // make sure step is in a valid range
     if (step <= 0)
-    {
         step = 0.001;
-    }
     else if (step > 1.0)
-    {
         step = 1.0;
-    }
-    // draw the Bezier curve
+
     int new_x, new_y, old_x, old_y;
     double b;
+
+    glColor4ubv((GLubyte*)&color);
+
+    glBegin(GL_POINTS);
+
     for (double a = 1.0; a >= 0; a -= step)
     {
         b = 1.0 - a;
@@ -842,28 +846,31 @@ EXPORT(void) DrawBezierCurve(int x[4], int y[4], double step, RGBA color, int cu
         if (a != 1.0)
         {
             if (new_x != old_x || new_y != old_y)
-            {
-                glVertex2f(sphere_x_to_opengl_x(new_x), sphere_y_to_opengl_y(new_y));
-            }
+                glVertex2i(new_x, new_y);
+
         }
         else
         {
-            glVertex2f(sphere_x_to_opengl_x(new_x), sphere_y_to_opengl_y(new_y));
+            glVertex2i(new_x, new_y);
         }
         old_x = new_x;
         old_y = new_y;
     }
+
     glEnd();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawTriangle(int x[3], int y[3], RGBA color)
 {
-    glBegin(GL_TRIANGLES);
     glColor4ubv((GLubyte*)&color);
-    glVertex2f(sphere_x_to_opengl_x(x[0]), sphere_y_to_opengl_y(y[0]));
-    glVertex2f(sphere_x_to_opengl_x(x[1]), sphere_y_to_opengl_y(y[1]));
-    glVertex2f(sphere_x_to_opengl_x(x[2]), sphere_y_to_opengl_y(y[2]));
+
+    glBegin(GL_TRIANGLES);
+
+    glVertex2i(x[0], y[0]);
+    glVertex2i(x[2], y[2]);
+    glVertex2i(x[1], y[1]);
+
     glEnd();
 }
 
@@ -871,12 +878,16 @@ EXPORT(void) DrawTriangle(int x[3], int y[3], RGBA color)
 EXPORT(void) DrawGradientTriangle(int x[3], int y[3], RGBA colors[3])
 {
     glBegin(GL_TRIANGLES);
+
     glColor4ubv((GLubyte*)(colors + 0));
-    glVertex2f(sphere_x_to_opengl_x(x[0]), sphere_y_to_opengl_y(y[0]));
-    glColor4ubv((GLubyte*)(colors + 1));
-    glVertex2f(sphere_x_to_opengl_x(x[1]), sphere_y_to_opengl_y(y[1]));
+    glVertex2i(x[0], y[0]);
+
     glColor4ubv((GLubyte*)(colors + 2));
-    glVertex2f(sphere_x_to_opengl_x(x[2]), sphere_y_to_opengl_y(y[2]));
+    glVertex2i(x[2], y[2]);
+
+    glColor4ubv((GLubyte*)(colors + 1));
+    glVertex2i(x[1], y[1]);
+
     glEnd();
 }
 
@@ -884,11 +895,7 @@ EXPORT(void) DrawGradientTriangle(int x[3], int y[3], RGBA colors[3])
 EXPORT(void) DrawPolygon(VECTOR_INT** points, int length, int invert, RGBA color)
 {
     if (color.alpha == 0)
-    {
         return;
-    }
-    glBegin(GL_POINTS);
-    glColor4ubv((GLubyte*)&color);
 
     // find polygon's bounds
     int i, bound_x1 = points[0]->x, bound_x2 = points[0]->x, bound_y1 = points[0]->y, bound_y2 = points[0]->y;
@@ -900,6 +907,10 @@ EXPORT(void) DrawPolygon(VECTOR_INT** points, int length, int invert, RGBA color
         if (points[i]->y < bound_y1) bound_y1 = points[i]->y;
     }
 
+    glColor4ubv((GLubyte*)&color);
+
+    glBegin(GL_POINTS);
+
     // draw the polygon with the crossing number algorithm
     int point_in, c_x, c_y, j;
     for (c_y = bound_y1; c_y <= bound_y2; c_y++)
@@ -908,6 +919,7 @@ EXPORT(void) DrawPolygon(VECTOR_INT** points, int length, int invert, RGBA color
         {
             point_in = 0;
             j = length-1;
+
             for (i = 0; i < length; i++)
             {
                 if (points[i]->y <= c_y && points[j]->y > c_y ||
@@ -927,16 +939,15 @@ EXPORT(void) DrawPolygon(VECTOR_INT** points, int length, int invert, RGBA color
                 }
                 j = i;
             }
+
             if (invert)
-            {
                 point_in = !point_in;
-            }
+
             if (point_in)
-            {
-                glVertex2f(sphere_x_to_opengl_x(c_x), sphere_y_to_opengl_y(c_y));
-            }
+                glVertex2i(c_x, c_y);
         }
     }
+
     glEnd();
 }
 
@@ -944,52 +955,57 @@ EXPORT(void) DrawPolygon(VECTOR_INT** points, int length, int invert, RGBA color
 EXPORT(void) DrawOutlinedRectangle(int x, int y, int w, int h, int size, RGBA color)
 {
     if (color.alpha == 0 || size <= 0 || h / 2 < 1)
-    {
         return;
-    }
+
     // make sure size is in a valid range
     if (size > h / 2)
-    {
         size = h / 2;
-    }
+
     int iy, ty;
-    glBegin(GL_LINES);
+
     glColor4ubv((GLubyte*)&color);
+
+    glBegin(GL_LINES);
+
     for (iy = y; iy < y + size; iy++)
     {
-        glVertex2f(sphere_x_to_opengl_x(x), sphere_y_to_opengl_y(iy));
-        glVertex2f(sphere_x_to_opengl_x(x + w), sphere_y_to_opengl_y(iy));
+        glVertex2i(x,     iy);
+        glVertex2i(x + w, iy);
+
         ty = y + h - 1 - (iy - y);
-        glVertex2f(sphere_x_to_opengl_x(x), sphere_y_to_opengl_y(ty));
-        glVertex2f(sphere_x_to_opengl_x(x + w), sphere_y_to_opengl_y(ty));
+
+        glVertex2i(x,     ty);
+        glVertex2i(x + w, ty);
     }
+
     ty = y + h - size;
+
     for (iy = y + size; iy < ty; iy++)
     {
-        glVertex2f(sphere_x_to_opengl_x(x), sphere_y_to_opengl_y(iy));
-        glVertex2f(sphere_x_to_opengl_x(x + size), sphere_y_to_opengl_y(iy));
-        glVertex2f(sphere_x_to_opengl_x(x + w - size), sphere_y_to_opengl_y(iy));
-        glVertex2f(sphere_x_to_opengl_x(x + w), sphere_y_to_opengl_y(iy));
+        glVertex2i(x,            iy);
+        glVertex2i(x + size,     iy);
+        glVertex2i(x + w - size, iy);
+        glVertex2i(x + w,        iy);
     }
+
     glEnd();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color)
 {
-
     if (color.alpha == 0)
-    {
         return;
-    }
+
+    glColor4ubv((GLubyte*)&color);
 
     glBegin(GL_QUADS);
-    glColor4ubv((GLubyte*)&color);
-    glVertex2f(sphere_x_to_opengl_x(x),     sphere_y_to_opengl_y(y));
 
-    glVertex2f(sphere_x_to_opengl_x(x + w), sphere_y_to_opengl_y(y));
-    glVertex2f(sphere_x_to_opengl_x(x + w), sphere_y_to_opengl_y(y + h));
-    glVertex2f(sphere_x_to_opengl_x(x),     sphere_y_to_opengl_y(y + h));
+    glVertex2i(x,     y);
+    glVertex2i(x,     y + h);
+    glVertex2i(x + w, y + h);
+    glVertex2i(x + w, y);
+
     glEnd();
 }
 
@@ -997,14 +1013,19 @@ EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color)
 EXPORT(void) DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
 {
     glBegin(GL_QUADS);
+
     glColor4ubv((GLubyte*)(colors + 0));
-    glVertex2f(sphere_x_to_opengl_x(x),     sphere_y_to_opengl_y(y));
-    glColor4ubv((GLubyte*)(colors + 1));
-    glVertex2f(sphere_x_to_opengl_x(x + w), sphere_y_to_opengl_y(y));
-    glColor4ubv((GLubyte*)(colors + 2));
-    glVertex2f(sphere_x_to_opengl_x(x + w), sphere_y_to_opengl_y(y + h));
+    glVertex2i(x, y);
+
     glColor4ubv((GLubyte*)(colors + 3));
-    glVertex2f(sphere_x_to_opengl_x(x),     sphere_y_to_opengl_y(y + h));
+    glVertex2i(x, y + h);
+
+    glColor4ubv((GLubyte*)(colors + 2));
+    glVertex2i(x + w, y + h);
+
+    glColor4ubv((GLubyte*)(colors + 1));
+    glVertex2i(x + w, y);
+
     glEnd();
 }
 
@@ -1015,6 +1036,7 @@ EXPORT(void) DrawOutlinedComplex(int r_x, int r_y, int r_w, int r_h, int circ_x,
     float fdist, fcr = (float)(circ_r), fca = (float)(ca);
 
     glBegin(GL_POINTS);
+
     for (y = r_y; y < r_y + r_h; y++)
     {
         for (x = r_x; x < r_x + r_w; x++)
@@ -1024,7 +1046,7 @@ EXPORT(void) DrawOutlinedComplex(int r_x, int r_y, int r_w, int r_h, int circ_x,
             {
                 color.alpha = ca;
                 glColor4ub(color.red, color.green, color.blue, color.alpha);
-                glVertex2f(sphere_x_to_opengl_x(x), sphere_y_to_opengl_y(y));
+                glVertex2i(x, y);
             }
             else if (antialias)
             {
@@ -1033,11 +1055,12 @@ EXPORT(void) DrawOutlinedComplex(int r_x, int r_y, int r_w, int r_h, int circ_x,
                 {
                     color.alpha = (byte)(fca * (1.0 - fdist));
                     glColor4ub(color.red, color.green, color.blue, color.alpha);
-                    glVertex2f(sphere_x_to_opengl_x(x), sphere_y_to_opengl_y(y));
+                    glVertex2i(x, y);
                 }
             }
         }
     }
+
     glEnd();
 }
 
@@ -1050,21 +1073,21 @@ EXPORT(void) DrawFilledComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, i
 
     // make sure frac_size is in a valid range
     if (frac_size < 0 || frac_size >= PI)
-    {
         frac_size = 0;
-    }
 
     glBegin(GL_POINTS);
+
     for (y = r_y; y < r_y + r_h; y++)
     {
         for (x = r_x; x < r_x + r_w; x++)
         {
             // check if point is outside of the circle
             dist = abs(x-circ_x)*abs(x-circ_x) + abs(y-circ_y)*abs(y-circ_y);
+
             if (dist >= crr)
             {
-                glColor4ub(colors[0].red, colors[0].green, colors[0].blue, colors[0].alpha);
-                glVertex2f(sphere_x_to_opengl_x(x), sphere_y_to_opengl_y(y));
+                glColor4ubv((GLubyte*)(colors + 0));
+                glVertex2i(x, y);
             }
             else
             {
@@ -1072,36 +1095,37 @@ EXPORT(void) DrawFilledComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, i
                 {
                     // check if point is located in fraction
                     fang_p = atan2(float(y-circ_y), float(x-circ_x));
+
                     if (fang_p < 0)
-                    {
                         fang_p = PI + (PI + fang_p);
-                    }
+
                     fang_p = fabs(angle - fang_p);
+
                     if (fang_p >= PI)
-                    {
                         fang_p = 2*PI - fang_p;
-                    }
+
                     if (fang_p <= frac_size)
                     {
                         // it is, so draw the point with circle's color
-                        glColor4ub(colors[1].red, colors[1].green, colors[1].blue, colors[1].alpha);
-                        glVertex2f(sphere_x_to_opengl_x(x), sphere_y_to_opengl_y(y));
+                        glColor4ubv((GLubyte*)(colors + 1));
+                        glVertex2i(x, y);
                     }
                     else if (fill_empty)
                     {
                         // it is not, so draw the point with rectangle's color
-                        glColor4ub(colors[0].red, colors[0].green, colors[0].blue, colors[0].alpha);
-                        glVertex2f(sphere_x_to_opengl_x(x), sphere_y_to_opengl_y(y));
+                        glColor4ubv((GLubyte*)(colors + 0));
+                        glVertex2i(x, y);
                     }
                 }
                 else
                 {
-                    glColor4ub(colors[1].red, colors[1].green, colors[1].blue, colors[1].alpha);
-                    glVertex2f(sphere_x_to_opengl_x(x), sphere_y_to_opengl_y(y));
+                    glColor4ubv((GLubyte*)(colors + 1));
+                    glVertex2i(x, y);
                 }
             }
         }
     }
+
     glEnd();
 }
 
@@ -1118,21 +1142,21 @@ EXPORT(void) DrawGradientComplex(int r_x, int r_y, int r_w, int r_h, int circ_x,
 
     // make sure frac_size is in a valid range
     if (frac_size < 0 || frac_size >= PI)
-    {
         frac_size = 0;
-    }
 
     glBegin(GL_POINTS);
+
     for (y = r_y; y < r_y + r_h; y++)
     {
         for (x = r_x; x < r_x + r_w; x++)
         {
             // check if point is outside of the circle
             dist = abs(x-circ_x)*abs(x-circ_x) + abs(y-circ_y)*abs(y-circ_y);
+
             if (dist >= crr)
             {
-                glColor4ub(colors[0].red, colors[0].green, colors[0].blue, colors[0].alpha);
-                glVertex2f(sphere_x_to_opengl_x(x), sphere_y_to_opengl_y(y));
+                glColor4ubv((GLubyte*)(colors + 0));
+                glVertex2i(x, y);
             }
             else
             {
@@ -1140,15 +1164,15 @@ EXPORT(void) DrawGradientComplex(int r_x, int r_y, int r_w, int r_h, int circ_x,
                 {
                     // check if point is located in fraction
                     fang_p = atan2(float(y-circ_y), float(x-circ_x));
+
                     if (fang_p < 0)
-                    {
                         fang_p = PI + (PI + fang_p);
-                    }
+
                     fang_p = fabs(angle - fang_p);
+
                     if (fang_p >= PI)
-                    {
                         fang_p = 2*PI - fang_p;
-                    }
+
                     if (fang_p <= frac_size)
                     {
                         // it is, so draw the point with circle's color
@@ -1161,13 +1185,13 @@ EXPORT(void) DrawGradientComplex(int r_x, int r_y, int r_w, int r_h, int circ_x,
                         colors[1].alpha = (byte)(colors[2].alpha - fda * factor);
 
                         glColor4ub(colors[1].red, colors[1].green, colors[1].blue, colors[1].alpha);
-                        glVertex2f(sphere_x_to_opengl_x(x), sphere_y_to_opengl_y(y));
+                        glVertex2i(x, y);
                     }
                     else if (fill_empty)
                     {
                         // it is not, so draw the point with rectangle's color
                         glColor4ub(colors[0].red, colors[0].green, colors[0].blue, colors[0].alpha);
-                        glVertex2f(sphere_x_to_opengl_x(x), sphere_y_to_opengl_y(y));
+                        glVertex2i(x, y);
                     }
                 }
                 else
@@ -1181,11 +1205,12 @@ EXPORT(void) DrawGradientComplex(int r_x, int r_y, int r_w, int r_h, int circ_x,
                     colors[1].alpha = (byte)(colors[2].alpha - fda * factor);
 
                     glColor4ub(colors[1].red, colors[1].green, colors[1].blue, colors[1].alpha);
-                    glVertex2f(sphere_x_to_opengl_x(x), sphere_y_to_opengl_y(y));
+                    glVertex2i(x, y);
                 }
             }
         }
     }
+
     glEnd();
 }
 
@@ -1193,11 +1218,7 @@ EXPORT(void) DrawGradientComplex(int r_x, int r_y, int r_w, int r_h, int circ_x,
 EXPORT(void) DrawOutlinedEllipse(int xc, int yc, int rx, int ry, RGBA color)
 {
     if (color.alpha == 0)
-    {
         return;
-    }
-    glBegin(GL_POINTS);
-    glColor4ubv((GLubyte*)&color);
 
     int xcm1 = xc - 1;
     int ycm1 = yc - 1;
@@ -1213,18 +1234,23 @@ EXPORT(void) DrawOutlinedEllipse(int xc, int yc, int rx, int ry, RGBA color)
     int xstop = twory2 * rx;
     int ystop = 0;
 
+    glColor4ubv((GLubyte*)&color);
+
+    glBegin(GL_POINTS);
+
     // draw first set of points
     while (xstop >= ystop)
     {
-        glVertex2f(sphere_x_to_opengl_x(xc + x),   sphere_y_to_opengl_y(yc + y));
-        glVertex2f(sphere_x_to_opengl_x(xcm1 - x), sphere_y_to_opengl_y(yc + y));
-        glVertex2f(sphere_x_to_opengl_x(xcm1 - x), sphere_y_to_opengl_y(ycm1 - y));
-        glVertex2f(sphere_x_to_opengl_x(xc + x),   sphere_y_to_opengl_y(ycm1 - y));
+        glVertex2i(xc + x,   yc + y);
+        glVertex2i(xcm1 - x, yc + y);
+        glVertex2i(xcm1 - x, ycm1 - y);
+        glVertex2i(xc + x,   ycm1 - y);
 
         y++;
         ystop   += tworx2;
         error   += ychange;
         ychange += tworx2;
+
         if (2 * error + xchange > 0)
         {
             x--;
@@ -1245,15 +1271,16 @@ EXPORT(void) DrawOutlinedEllipse(int xc, int yc, int rx, int ry, RGBA color)
     // draw second set of points
     while (xstop <= ystop)
     {
-        glVertex2f(sphere_x_to_opengl_x(xc + x),   sphere_y_to_opengl_y(yc + y));
-        glVertex2f(sphere_x_to_opengl_x(xcm1 - x), sphere_y_to_opengl_y(yc + y));
-        glVertex2f(sphere_x_to_opengl_x(xcm1 - x), sphere_y_to_opengl_y(ycm1 - y));
-        glVertex2f(sphere_x_to_opengl_x(xc + x),   sphere_y_to_opengl_y(ycm1 - y));
+        glVertex2i(xc + x,   yc + y);
+        glVertex2i(xcm1 - x, yc + y);
+        glVertex2i(xcm1 - x, ycm1 - y);
+        glVertex2i(xc + x,   ycm1 - y);
 
         x++;
         xstop   += twory2;
         error   += xchange;
         xchange += twory2;
+
         if (2 * error + ychange > 0)
         {
             y--;
@@ -1269,11 +1296,7 @@ EXPORT(void) DrawOutlinedEllipse(int xc, int yc, int rx, int ry, RGBA color)
 EXPORT(void) DrawFilledEllipse(int xc, int yc, int rx, int ry, RGBA color)
 {
     if (color.alpha == 0)
-    {
         return;
-    }
-    glBegin(GL_LINES);
-    glColor4ubv((GLubyte*)&color);
 
     int xcm1 = xc - 1;
     int ycm1 = yc - 1;
@@ -1289,18 +1312,23 @@ EXPORT(void) DrawFilledEllipse(int xc, int yc, int rx, int ry, RGBA color)
     int xstop = twory2 * rx;
     int ystop = 0;
 
+    glColor4ubv((GLubyte*)&color);
+
+    glBegin(GL_LINES);
+
     // first set of points
     while (xstop >= ystop)
     {
-        glVertex2f(sphere_x_to_opengl_x(xcm1 - x), sphere_y_to_opengl_y(ycm1 - y));
-        glVertex2f(sphere_x_to_opengl_x(xc + x),   sphere_y_to_opengl_y(ycm1 - y));
-        glVertex2f(sphere_x_to_opengl_x(xcm1 - x), sphere_y_to_opengl_y(yc + y));
-        glVertex2f(sphere_x_to_opengl_x(xc + x),   sphere_y_to_opengl_y(yc + y));
+        glVertex2i(xcm1 - x, ycm1 - y);
+        glVertex2i(xc + x,   ycm1 - y);
+        glVertex2i(xcm1 - x, yc + y);
+        glVertex2i(xc + x,   yc + y);
 
         y++;
         ystop   += tworx2;
         error   += ychange;
         ychange += tworx2;
+
         if (2 * error + xchange > 0)
         {
             x--;
@@ -1325,12 +1353,13 @@ EXPORT(void) DrawFilledEllipse(int xc, int yc, int rx, int ry, RGBA color)
         xstop   += twory2;
         error   += xchange;
         xchange += twory2;
+
         if (2 * error + ychange > 0)
         {
-            glVertex2f(sphere_x_to_opengl_x(xcm1 - x), sphere_y_to_opengl_y(ycm1 - y));
-            glVertex2f(sphere_x_to_opengl_x(xc + x),   sphere_y_to_opengl_y(ycm1 - y));
-            glVertex2f(sphere_x_to_opengl_x(xcm1 - x), sphere_y_to_opengl_y(yc + y));
-            glVertex2f(sphere_x_to_opengl_x(xc + x),   sphere_y_to_opengl_y(yc + y));
+            glVertex2i(xcm1 - x, ycm1 - y);
+            glVertex2i(xc + x,   ycm1 - y);
+            glVertex2i(xcm1 - x, yc + y);
+            glVertex2i(xc + x,   yc + y);
 
             y--;
             ystop -= tworx2;
@@ -1338,6 +1367,7 @@ EXPORT(void) DrawFilledEllipse(int xc, int yc, int rx, int ry, RGBA color)
             ychange += tworx2;
         }
     }
+
     glEnd();
 }
 
@@ -1345,16 +1375,15 @@ EXPORT(void) DrawFilledEllipse(int xc, int yc, int rx, int ry, RGBA color)
 EXPORT(void) DrawOutlinedCircle(int x, int y, int r, RGBA color, int antialias)
 {
     if (color.alpha == 0)
-    {
         return;
-    }
 
     int ix = 1, iy = r, dist, n, rr = r*r, rr_m2 = (r-2)*(r-2), ca = color.alpha;
     float fr = (float)(r), fca = (float)(ca);
     const float PI_H = (float)(3.1415927 / 2.0);
 
-    glBegin(GL_POINTS);
     glColor4ubv((GLubyte*)&color);
+
+    glBegin(GL_POINTS);
 
     while (ix <= iy)
     {
@@ -1369,37 +1398,42 @@ EXPORT(void) DrawOutlinedCircle(int x, int y, int r, RGBA color, int antialias)
                 {
                     color.alpha = (byte)(fca * sin(sin((1.0 - fabs(sqrt((float)(dist)) - fr + 1.0)) * PI_H) * PI_H));
                     glColor4ubv((GLubyte*)&color);
-                    glVertex2f(sphere_x_to_opengl_x(x-1+ix), sphere_y_to_opengl_y(y-n));
-                    glVertex2f(sphere_x_to_opengl_x(x-ix),   sphere_y_to_opengl_y(y-n));
-                    glVertex2f(sphere_x_to_opengl_x(x-1+ix), sphere_y_to_opengl_y(y-1+n));
-                    glVertex2f(sphere_x_to_opengl_x(x-ix),   sphere_y_to_opengl_y(y-1+n));
+
+                    glVertex2i(x-1+ix, y-n);
+                    glVertex2i(x-ix,   y-n);
+                    glVertex2i(x-1+ix, y-1+n);
+                    glVertex2i(x-ix,   y-1+n);
+
                     if (ix != n)
                     {
-                        glVertex2f(sphere_x_to_opengl_x(x-1+n), sphere_y_to_opengl_y(y-ix));
-                        glVertex2f(sphere_x_to_opengl_x(x-n),   sphere_y_to_opengl_y(y-ix));
-                        glVertex2f(sphere_x_to_opengl_x(x-1+n), sphere_y_to_opengl_y(y-1+ix));
-                        glVertex2f(sphere_x_to_opengl_x(x-n),   sphere_y_to_opengl_y(y-1+ix));
+                        glVertex2i(x-1+n, y-ix);
+                        glVertex2i(x-n,   y-ix);
+                        glVertex2i(x-1+n, y-1+ix);
+                        glVertex2i(x-n,   y-1+ix);
                     }
                 }
             }
         }
         else
         {
-            glVertex2f(sphere_x_to_opengl_x(x-1+ix), sphere_y_to_opengl_y(y-iy));
-            glVertex2f(sphere_x_to_opengl_x(x-ix),   sphere_y_to_opengl_y(y-iy));
-            glVertex2f(sphere_x_to_opengl_x(x-1+ix), sphere_y_to_opengl_y(y-1+iy));
-            glVertex2f(sphere_x_to_opengl_x(x-ix),   sphere_y_to_opengl_y(y-1+iy));
+            glVertex2i(x-1+ix, y-iy);
+            glVertex2i(x-ix,   y-iy);
+            glVertex2i(x-1+ix, y-1+iy);
+            glVertex2i(x-ix,   y-1+iy);
+
             if (ix != iy)
             {
-                glVertex2f(sphere_x_to_opengl_x(x-1+iy), sphere_y_to_opengl_y(y-ix));
-                glVertex2f(sphere_x_to_opengl_x(x-iy),   sphere_y_to_opengl_y(y-ix));
-                glVertex2f(sphere_x_to_opengl_x(x-1+iy), sphere_y_to_opengl_y(y-1+ix));
-                glVertex2f(sphere_x_to_opengl_x(x-iy),   sphere_y_to_opengl_y(y-1+ix));
+                glVertex2i(x-1+iy, y-ix);
+                glVertex2i(x-iy,   y-ix);
+                glVertex2i(x-1+iy, y-1+ix);
+                glVertex2i(x-iy,   y-1+ix);
             }
         }
+
         ix++;
         if (abs(ix*ix + iy*iy - rr) > abs(ix*ix + (iy-1)*(iy-1) - rr)) iy--;
     }
+
     glEnd();
 }
 
@@ -1407,15 +1441,14 @@ EXPORT(void) DrawOutlinedCircle(int x, int y, int r, RGBA color, int antialias)
 EXPORT(void) DrawFilledCircle(int x, int y, int r, RGBA color, int antialias)
 {
     if (color.alpha == 0)
-    {
         return;
-    }
 
     int ix = 1, iy = r, dist, n, rr = r*r, rr_m1 = (r-1)*(r-1), ca = color.alpha;
     float fr = (float)(r), fca = (float)(ca);
 
-    glBegin(GL_POINTS);
     glColor4ub(color.red, color.green, color.blue, color.alpha);
+
+    glBegin(GL_POINTS);
 
     while (ix <= iy)
     {
@@ -1431,21 +1464,25 @@ EXPORT(void) DrawFilledCircle(int x, int y, int r, RGBA color, int antialias)
             }
             else {color.alpha = ca;};
             glColor4ub(color.red, color.green, color.blue, color.alpha);
-            glVertex2f(sphere_x_to_opengl_x(x-1+ix), sphere_y_to_opengl_y(y-n));
-            glVertex2f(sphere_x_to_opengl_x(x-ix),   sphere_y_to_opengl_y(y-n));
-            glVertex2f(sphere_x_to_opengl_x(x-1+ix), sphere_y_to_opengl_y(y-1+n));
-            glVertex2f(sphere_x_to_opengl_x(x-ix),   sphere_y_to_opengl_y(y-1+n));
+
+            glVertex2i(x-1+ix, y-n);
+            glVertex2i(x-ix,   y-n);
+            glVertex2i(x-1+ix, y-1+n);
+            glVertex2i(x-ix,   y-1+n);
+
             if (ix != n)
             {
-                glVertex2f(sphere_x_to_opengl_x(x-1+n), sphere_y_to_opengl_y(y-ix));
-                glVertex2f(sphere_x_to_opengl_x(x-n),   sphere_y_to_opengl_y(y-ix));
-                glVertex2f(sphere_x_to_opengl_x(x-1+n), sphere_y_to_opengl_y(y-1+ix));
-                glVertex2f(sphere_x_to_opengl_x(x-n),   sphere_y_to_opengl_y(y-1+ix));
+                glVertex2i(x-1+n, y-ix);
+                glVertex2i(x-n,   y-ix);
+                glVertex2i(x-1+n, y-1+ix);
+                glVertex2i(x-n,   y-1+ix);
             }
         }
+
         ix++;
         if (abs(ix*ix + iy*iy - rr) > abs(ix*ix + (iy-1)*(iy-1) - rr)) iy--;
     }
+
     glEnd();
 }
 
@@ -1453,9 +1490,7 @@ EXPORT(void) DrawFilledCircle(int x, int y, int r, RGBA color, int antialias)
 EXPORT(void) DrawGradientCircle(int x, int y, int r, RGBA colors[2], int antialias)
 {
     if (colors[0].alpha == 0 && colors[1].alpha == 0)
-    {
         return;
-    }
 
     int ix = 1, iy = r, n, rr = r*r;
     float fdr = (float)(colors[1].red - colors[0].red);
@@ -1481,28 +1516,28 @@ EXPORT(void) DrawGradientCircle(int x, int y, int r, RGBA colors[2], int antiali
             colors[0].alpha = (byte)(colors[1].alpha - fda * factor);
 
             if (antialias)
-            {
                 if (dist > r - 1)
-                {
                     colors[0].alpha = (byte)((float)(colors[0].alpha) * (fr - dist));
-                }
-            }
+
             glColor4ub(colors[0].red, colors[0].green, colors[0].blue, colors[0].alpha);
-            glVertex2f(sphere_x_to_opengl_x(x-1+ix), sphere_y_to_opengl_y(y-n));
-            glVertex2f(sphere_x_to_opengl_x(x-ix),   sphere_y_to_opengl_y(y-n));
-            glVertex2f(sphere_x_to_opengl_x(x-1+ix), sphere_y_to_opengl_y(y-1+n));
-            glVertex2f(sphere_x_to_opengl_x(x-ix),   sphere_y_to_opengl_y(y-1+n));
+            glVertex2i(x-1+ix, y-n);
+            glVertex2i(x-ix,   y-n);
+            glVertex2i(x-1+ix, y-1+n);
+            glVertex2i(x-ix,   y-1+n);
+
             if (ix != n)
             {
-                glVertex2f(sphere_x_to_opengl_x(x-1+n), sphere_y_to_opengl_y(y-ix));
-                glVertex2f(sphere_x_to_opengl_x(x-n),   sphere_y_to_opengl_y(y-ix));
-                glVertex2f(sphere_x_to_opengl_x(x-1+n), sphere_y_to_opengl_y(y-1+ix));
-                glVertex2f(sphere_x_to_opengl_x(x-n),   sphere_y_to_opengl_y(y-1+ix));
+                glVertex2i(x-1+n, y-ix);
+                glVertex2i(x-n,   y-ix);
+                glVertex2i(x-1+n, y-1+ix);
+                glVertex2i(x-n,   y-1+ix);
             }
         }
+
         ix++;
         if (abs(ix*ix + iy*iy - rr) > abs(ix*ix + (iy-1)*(iy-1) - rr)) iy--;
     }
+
     glEnd();
 }
 

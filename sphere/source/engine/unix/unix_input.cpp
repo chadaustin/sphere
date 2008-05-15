@@ -1,9 +1,10 @@
-#include "unix_input.h"
-#include "unix_video.h"
-#include "unix_internal.h"
 #include <SDL.h>
 #include <queue>
 #include <map>
+
+#include "unix_input.h"
+#include "unix_video.h"
+#include "unix_internal.h"
 
 // map container for virtual keys
 std::map<SDLKey, int> VirtualKeys;

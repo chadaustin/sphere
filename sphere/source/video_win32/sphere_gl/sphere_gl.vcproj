@@ -77,7 +77,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib winmm.lib glu32.lib"
+				AdditionalDependencies="opengl32.lib"
 				OutputFile="../../../sphere/system/video/$(ProjectName).dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"

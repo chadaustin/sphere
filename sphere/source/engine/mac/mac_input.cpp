@@ -4,7 +4,6 @@
 
 #include "mac_input.h"
 #include "mac_video.h"
-#include "mac_audio.h"
 #include "mac_internal.h"
 
 // map container for virtual keys
@@ -169,10 +168,6 @@ void UpdateSystem()
         switch (event.type)
         {
             case SDL_QUIT:
-                // the most important message if you *ever* want to quit ;)
-                SDL_Quit();
-                CloseVideo();
-                CloseAudio();
                 exit(0);
                 break;
 

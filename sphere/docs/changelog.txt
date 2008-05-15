@@ -1,5 +1,15 @@
 YYYY.MM.DD
 
+2008.05.15
+  - Fixed the bug in the editor which displaced entities
+    after copying & pasting them.
+  - Added backface culling and line and polygon smoothing
+    (if "biliner filtering" is on) to the OpenGL drivers and
+    removed the sphere_bla_to_opengl_bla() functions
+    replacing them effectively with a one-time call to 
+    glTranslate*() at the beginning.
+  - Added missing documentation for file_object.close() to api.txt
+
 2008.04.27
   - Added the Mac subsystem based on the Unix subsystem.
 

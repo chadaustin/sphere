@@ -79,21 +79,13 @@ struct DRIVER_CONFIG
 
 
 // function prototypes
-bool InitVideo(int w, int h);
-EXPORT(bool) InitVideo(int w, int h, DRIVER_CONFIG conf);
+static bool   InitVideo(int w, int h);
+EXPORT(bool)  InitVideo(int w, int h, DRIVER_CONFIG conf);
 
-EXPORT(void) SetClippingRectangle(int  x, int  y, int  w, int  h);
-EXPORT(void) GetClippingRectangle(int* x, int* y, int* w, int* h);
-
-static bool FillImagePixels(IMAGE image, const RGBA* data);
-static bool RefillImagePixels(IMAGE image);
-static void OptimizeBlitRoutine(IMAGE image);
-
-static void NullBlit(IMAGE image, int x, int y);
-static void TileBlit(IMAGE image, int x, int y);
-static void SpriteBlit(IMAGE image, int x, int y);
-static void NormalBlit(IMAGE image, int x, int y);
-
+static void   NullBlit(IMAGE image, int x, int y);
+static void   TileBlit(IMAGE image, int x, int y);
+static void   SpriteBlit(IMAGE image, int x, int y);
+static void   NormalBlit(IMAGE image, int x, int y);
 
 
 // globals
@@ -205,7 +197,7 @@ EXPORT(bool) InitVideo(int w, int h, DRIVER_CONFIG conf)
         // Note: SDL_INIT_EVENTTHREAD is currently not supported on Mac OS X
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) == -1)
         {
-            fprintf(stderr, "Could not initialize video:\n%s\n", SDL_GetError());
+            fprintf(stderr, "Could not initialize SDL:\n%s\n", SDL_GetError());
             return false;
         }
 
@@ -215,7 +207,6 @@ EXPORT(bool) InitVideo(int w, int h, DRIVER_CONFIG conf)
         fullscreen = Config.fullscreen;
         firstcall  = false;
 
-        atexit(SDL_Quit);
     }
     else
     {
@@ -270,6 +261,7 @@ EXPORT(void) CloseVideo()
     if (ScreenBuffer)
         delete [] ScreenBuffer;
 
+    SDL_Quit();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

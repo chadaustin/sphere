@@ -151,7 +151,7 @@ int main(int argc, const char* argv[])
     // initialize video subsystem
     if (InitVideo(&config) == false)
     {
-        printf("Fatal error: video subsystem could not be initialized...\n");
+        printf("Video subsystem could not be initialized...\n");
         return 0;
     }
 
@@ -164,7 +164,11 @@ int main(int argc, const char* argv[])
         printf("Sound could not be initialized...\n");
     }
 
+    atexit(CloseAudio);
+    atexit(CloseVideo);
+
     RunSphere(argc, argv);
+
     CloseVideo();
     CloseAudio();
 }

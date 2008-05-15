@@ -79,21 +79,13 @@ struct DRIVER_CONFIG
 
 
 // function prototypes
-bool InitVideo(int w, int h);
-EXPORT(bool) InitVideo(int w, int h, DRIVER_CONFIG conf);
+static bool   InitVideo(int w, int h);
+EXPORT(bool)  InitVideo(int w, int h, DRIVER_CONFIG conf);
 
-EXPORT(void) SetClippingRectangle(int  x, int  y, int  w, int  h);
-EXPORT(void) GetClippingRectangle(int* x, int* y, int* w, int* h);
-
-static bool FillImagePixels(IMAGE image, const RGBA* data);
-static bool RefillImagePixels(IMAGE image);
-static void OptimizeBlitRoutine(IMAGE image);
-
-static void NullBlit(IMAGE image, int x, int y);
-static void TileBlit(IMAGE image, int x, int y);
-static void SpriteBlit(IMAGE image, int x, int y);
-static void NormalBlit(IMAGE image, int x, int y);
-
+static void   NullBlit(IMAGE image, int x, int y);
+static void   TileBlit(IMAGE image, int x, int y);
+static void   SpriteBlit(IMAGE image, int x, int y);
+static void   NormalBlit(IMAGE image, int x, int y);
 
 
 // globals
@@ -175,7 +167,7 @@ EXPORT(bool) SetWindowTitle(const char* text)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool InitVideo(int w, int h)
+static bool InitVideo(int w, int h)
 {
     return InitVideo(w, h, Config);
 }
@@ -201,17 +193,33 @@ EXPORT(bool) InitVideo(int w, int h, DRIVER_CONFIG conf)
         if (!ScreenBuffer)
             return false;
 
-        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD | SDL_INIT_JOYSTICK) == -1)
+        // initialize SDL
+        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_EVENTTHREAD) == -1)
         {
-            fprintf(stderr, "Could not initialize video:\n%s\n", SDL_GetError());
+            fprintf(stderr, "Could not initialize SDL:\n%s\n", SDL_GetError());
             return false;
         }
 
+        SDL_ShowCursor(false);
+        SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+
         fullscreen = Config.fullscreen;
         firstcall  = false;
+
     }
     else
     {
+        // reinitialize the screen buffer, because the new resolution can differ
+        delete [] ScreenBuffer;
+        ScreenBuffer = new BGRA[ScreenWidth * ScreenHeight];
+
+        if (!ScreenBuffer)
+        {
+            SDL_Quit();
+            return false;
+        }
+
+        // reinitialize the SDL video subsystem
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
         if (SDL_InitSubSystem(SDL_INIT_VIDEO) == -1)
@@ -241,9 +249,6 @@ EXPORT(bool) InitVideo(int w, int h, DRIVER_CONFIG conf)
         return false;
     }
 
-    SDL_ShowCursor(false);
-    SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
-
     SetClippingRectangle(0, 0, SDLScreen->w, SDLScreen->h);
 
     return true;
@@ -256,6 +261,7 @@ EXPORT(void) CloseVideo()
         delete [] ScreenBuffer;
 
     SDL_Quit();
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////

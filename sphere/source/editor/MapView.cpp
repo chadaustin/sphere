@@ -1306,8 +1306,8 @@ CMapView::EntityPaste(CPoint point)
         person = GetMainWindow()->m_EntityClipboardPerson;
 
         // fill out the local info into the person
-        person.x     = tx * m_Map->GetTileset().GetTileWidth();
-        person.y     = ty * m_Map->GetTileset().GetTileHeight();
+        person.x     = tx * tile_width  + (tile_width  - 1) / 2;
+        person.y     = ty * tile_height + (tile_height - 1) / 2;
         person.layer = m_SelectedLayer;
 
 
@@ -1328,8 +1328,8 @@ CMapView::EntityPaste(CPoint point)
 
         trigger = GetMainWindow()->m_EntityClipboardTrigger;
 
-        trigger.x = tx * m_Map->GetTileset().GetTileWidth();
-        trigger.y = ty * m_Map->GetTileset().GetTileHeight();
+        trigger.x     = tx * tile_width  + (tile_width  / 2);
+        trigger.y     = ty * tile_height + (tile_height / 2);
         trigger.layer = m_SelectedLayer;
 
         // pop the darn thing into the map

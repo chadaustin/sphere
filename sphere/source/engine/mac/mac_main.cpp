@@ -151,9 +151,6 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    // close video on interrupt
-    atexit(CloseVideo);
-
     // initialize input
     InitInput();
 
@@ -163,7 +160,11 @@ int main(int argc, char* argv[])
         printf("Sound could not be initialized...\n");
     }
 
+    atexit(CloseAudio);
+    atexit(CloseVideo);
+
     RunSphere(argc, argv);
+
     CloseVideo();
     CloseAudio();
 }
@@ -172,9 +173,6 @@ int main(int argc, char* argv[])
 
 void QuitMessage (const char* message)
 {
-    CloseVideo();
-    CloseAudio();
-
     std::cerr << message << std::endl;
     exit(1);
 }

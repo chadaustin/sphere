@@ -111,20 +111,6 @@ log_object.endBlock()
   - closes the current log block.
 
 
-*** blend modes ***
-
-drawing onto surfaces
-  - REPLACE:    DestColor = SrcColor
-  - RGB_ONLY:   DestRGB   = SrcRGB
-  - ALPHA_ONLY: DestAlpha = SrcAlpha
-  - BLEND:      DestColor = (DestColor * (255 - SrcAlpha) + SrcColor * SrcAlpha) / 255
-  - ADD:        DestColor = DestColor + ((SrcColor * SrcAlpha) / 255)
-  - SUBTRACT:   DestColor = DestColor - ((SrcColor * SrcAlpha) / 255)
-  - MULTIPLY:   DestColor = DestColor * ((SrcColor * SrcAlpha) / 255) / 255
-  - AVERAGE:    DestColor = DestColor + ((SrcColor * SrcAlpha) / 255) / 2
-  - INVERT:     DestColor = DestColor * (255 - ((SrcColor * SrcAlpha) / 255)) / 255
-
-
 *** system interfaces ***
 
   *** video ***
@@ -1324,8 +1310,20 @@ drawing onto surfaces
   surface_object.createImage()
     - returns an image object from the surface object
   
+  Blend Modes
+    - BLEND (default for drawing)
+    - REPLACE
+    - RGB_ONLY
+    - ALPHA_ONLY
+    - ADD
+    - SUBTRACT
+    - MULTIPLY (default for masking)
+    - AVERAGE
+    - INVERT
+    
   surface_object.setBlendMode(mode)
-    - sets the blend mode for drawings onto surface_object
+    - sets the blend mode of the surface, which will affect any drawing operation on the surface.
+      'mode' must be one of the available blend modes for surfaces.
   
   surface_object.getPixel(x, y)
     - returns the color of the pixel at (x,y)
@@ -1553,6 +1551,9 @@ drawing onto surfaces
   file_object.flush()
     - writes the file to disk immediately...  this way you don't have
       to wait for it to save when the file object is garbage collected
+
+  file_object.close()
+    - closes the file object, after this, the file_object cannot be used anymore.
 
   
   *** raw files ***
