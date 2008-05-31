@@ -83,6 +83,9 @@ class Compiler:
         if self.name == 'linux':
             autocons.ParseConfig(env, 'sdl-config', ['--cflags', '--libs'])
         
+    def SetupWXWidgets(self, env):
+        if self.name == 'linux':
+            autocons.ParseConfig(env, 'wx-config', ['--cppflags', '--libs'])
 
     def SetupSphereCommon(self, env):
         env.Append(CPPPATH = ['#/source/common'],
@@ -121,7 +124,7 @@ if compile_mode != "":
 base_env = COMPILER.get_env()
 
 # common options
-# base_env.Append(CXXFLAGS = ['-DUSE_ALPHA_TABLE'])
+base_env.Append(CXXFLAGS = ['-DUNIX'])
 
 BUILD_DIR = base_env['BUILD_DIR']
 Default(BUILD_DIR)

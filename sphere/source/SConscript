@@ -1,6 +1,6 @@
 Import('COMPILER')
 
-SConscript(dirs = ['common', 'engine', 'util'])
+SConscript(dirs = ['common', 'engine', 'config', 'util'])
 
 if COMPILER.is_unix():
     SConscript(dirs = ['video_unix'])

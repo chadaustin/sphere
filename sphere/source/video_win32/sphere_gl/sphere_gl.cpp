@@ -116,146 +116,23 @@ void GetConfigFile(char configfile[MAX_PATH])
 void LoadDriverConfig()
 {
     char configfile[520];
-
-    GetConfigFile(configfile);
-    DriverConfig.bitdepth   =       GetPrivateProfileInt("sphere_gl", "BitDepth",  32, configfile);
-    DriverConfig.scale      = (0 != GetPrivateProfileInt("sphere_gl", "Scale",      0, configfile));
-    DriverConfig.bilinear   = (0 != GetPrivateProfileInt("sphere_gl", "Bilinear",   0, configfile));
-    DriverConfig.fullscreen = (0 != GetPrivateProfileInt("sphere_gl", "Fullscreen", 0, configfile));
-    DriverConfig.vsync      = (0 != GetPrivateProfileInt("sphere_gl", "VSync",      1, configfile));
-
-}
-////////////////////////////////////////////////////////////////////////////////
-void SaveDriverConfig()
-{
-    char configfile[MAX_PATH];
     GetConfigFile(configfile);
 
-    WritePrivateProfileInt("sphere_gl", "BitDepth",   DriverConfig.bitdepth,   configfile);
-    WritePrivateProfileInt("sphere_gl", "Scale",      DriverConfig.scale,      configfile);
-    WritePrivateProfileInt("sphere_gl", "Fullscreen", DriverConfig.fullscreen, configfile);
-    WritePrivateProfileInt("sphere_gl", "Bilinear",   DriverConfig.bilinear,   configfile);
-    WritePrivateProfileInt("sphere_gl", "VSync",      DriverConfig.vsync,      configfile);
+    DriverConfig.fullscreen = (0 != GetPrivateProfileInt("sphere_gl", "Fullscreen",      0, configfile));
+    DriverConfig.vsync      = (0 != GetPrivateProfileInt("sphere_gl", "VSync",           1, configfile));
+    DriverConfig.scale      = (0 != GetPrivateProfileInt("sphere_gl", "Scale",           0, configfile));
+    DriverConfig.bilinear   = (0 != GetPrivateProfileInt("sphere_gl", "BilinearFilter",  0, configfile));
+    DriverConfig.bitdepth   =       GetPrivateProfileInt("sphere_gl", "BitDepth",       32, configfile);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
 {
-    driverinfo->name        = "OpenGL";
+    driverinfo->name        = "Sphere GL";
     driverinfo->author      = "Jamie Gennis, Kisai, Chad Austin";
     driverinfo->date        = __DATE__;
-    driverinfo->version     = "v0.7";
-    driverinfo->description = "OpenGL Sphere Video Driver";
-}
-
-////////////////////////////////////////////////////////////////////////////////
-EXPORT(void) ConfigureDriver(HWND parent)
-{
-    LoadDriverConfig();
-
-    DialogBox(
-        DriverInstance,
-        MAKEINTRESOURCE(IDD_CONFIGURE),
-        parent,
-        ConfigureDriverDialogProc);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-BOOL CALLBACK ConfigureDriverDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
-{
-    switch (message)
-
-    {
-    case WM_INITDIALOG:
-
-    {
-        switch (DriverConfig.bitdepth)
-
-        {
-        case 24:
-            CheckDlgButton(window, IDC_BPP_24, BST_CHECKED);
-            break;
-
-        case 32:
-            CheckDlgButton(window, IDC_BPP_32, BST_CHECKED);
-            break;
-
-        default:
-            CheckDlgButton(window, IDC_BPP_16, BST_CHECKED);
-            break;
-        }
-
-        if (DriverConfig.scale)
-        {
-            CheckDlgButton(window, IDC_SCALE, BST_CHECKED);
-        }
-        if (DriverConfig.bilinear)
-        {
-            CheckDlgButton(window, IDC_BILINEAR, BST_CHECKED);
-        }
-        if (DriverConfig.fullscreen)
-        {
-            CheckDlgButton(window, IDC_FULLSCREEN, BST_CHECKED);
-        }
-        if (DriverConfig.vsync)
-        {
-            CheckDlgButton(window, IDC_VSYNC, BST_CHECKED);
-        }
-
-        UpdateButtonStates(window);
-        return TRUE;
-    }
-    case WM_COMMAND:
-    {
-        if (HIWORD(wparam) == BN_CLICKED)
-        {
-            UpdateButtonStates(window);
-        }
-
-        switch (LOWORD(wparam))
-        {
-        case IDOK:
-            if (IsDlgButtonChecked(window, IDC_BPP_24) == BST_CHECKED)
-            {
-                DriverConfig.bitdepth = 24;
-            }
-            else if (IsDlgButtonChecked(window, IDC_BPP_32) == BST_CHECKED)
-            {
-                DriverConfig.bitdepth = 32;
-            }
-            else
-            {
-                DriverConfig.bitdepth = 16;
-            }
-
-            DriverConfig.scale      = (IsDlgButtonChecked(window, IDC_SCALE)      == BST_CHECKED);
-            DriverConfig.bilinear   = (IsDlgButtonChecked(window, IDC_BILINEAR)   == BST_CHECKED);
-            DriverConfig.fullscreen = (IsDlgButtonChecked(window, IDC_FULLSCREEN) == BST_CHECKED);
-            DriverConfig.vsync      = (IsDlgButtonChecked(window, IDC_VSYNC)      == BST_CHECKED);
-
-            SaveDriverConfig();
-            EndDialog(window, 0);
-            return TRUE;
-            break;
-
-        case IDCANCEL:
-            EndDialog(window, 0);
-            return TRUE;
-            break;
-        }
-    }
-
-    default:
-        return FALSE;
-        break;
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void UpdateButtonStates(HWND dialog)
-{
-    EnableWindow(GetDlgItem(dialog, IDC_VSYNC),    IsDlgButtonChecked(dialog, IDC_FULLSCREEN) == BST_CHECKED);
-    EnableWindow(GetDlgItem(dialog, IDC_BILINEAR), IsDlgButtonChecked(dialog, IDC_SCALE)      == BST_CHECKED);
+    driverinfo->version     = "v1.0";
+    driverinfo->description = "Hardware Accelerated OpenGL Sphere Video Driver";
 }
 
 ////////////////////////////////////////////////////////////////////////////////

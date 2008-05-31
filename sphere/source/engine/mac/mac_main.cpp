@@ -160,13 +160,11 @@ int main(int argc, char* argv[])
         printf("Sound could not be initialized...\n");
     }
 
-    atexit(CloseAudio);
     atexit(CloseVideo);
+    atexit(CloseAudio);
 
     RunSphere(argc, argv);
 
-    CloseVideo();
-    CloseAudio();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

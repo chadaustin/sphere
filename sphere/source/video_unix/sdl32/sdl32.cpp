@@ -4,11 +4,11 @@
 
 #include "../../common/rgb.hpp"
 #include "../../common/primitives.hpp"
+#include "../../common/configfile.hpp"
 
 #include "scale.h"
 #include "hq2x.h"
 #include "2xSaI.h"
-
 
 #define EXPORT(ret) extern "C" ret __attribute__((stdcall))
 
@@ -31,6 +31,15 @@
   if (y + (int)height - 1 > ClippingRectangle.bottom)                \
     image_blit_height -= (y + height - ClippingRectangle.bottom - 1)
 
+
+struct DRIVERINFO
+{
+    const char* name;
+    const char* author;
+    const char* date;
+    const char* version;
+    const char* description;
+};
 
 typedef struct _IMAGE
 {
@@ -55,7 +64,7 @@ typedef struct _clipper
 
 } clipper;
 
-enum SCALE_ALGORITHM
+enum
 {
     I_DIRECT_SCALE = 0,
     I_SCALE2X,
@@ -66,21 +75,19 @@ enum SCALE_ALGORITHM
     I_SUPER_EAGLE,
 };
 
-struct DRIVER_CONFIG
+struct DRIVERCONFIG
 {
-    int bitdepth;
-
     bool fullscreen;
     bool vsync;
 
     bool scale;
-    int  algorithm;
+    int  filter;
 };
 
 
 // function prototypes
 static bool   InitVideo(int w, int h);
-EXPORT(bool)  InitVideo(int w, int h, DRIVER_CONFIG conf);
+EXPORT(bool)  InitVideo(int w, int h, std::string sphere_dir);
 
 static void   NullBlit(IMAGE image, int x, int y);
 static void   TileBlit(IMAGE image, int x, int y);
@@ -97,11 +104,34 @@ static int     ScreenHeight;
 
 std::string    WindowTitle;
 
-DRIVER_CONFIG  Config;
+DRIVERCONFIG   Config;
 
 static bool    fullscreen;
 static clipper ClippingRectangle;
 
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
+{
+    driverinfo->name        = "SDL32";
+    driverinfo->author      = "Chad Austin, Anatoli Steinmark";
+    driverinfo->date        = __DATE__;
+    driverinfo->version     = "v1.1";
+    driverinfo->description = "32-bit Software Sphere Video Driver";
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void LoadConfiguration(std::string sphere_dir)
+{
+    CConfigFile file;
+    file.Load((sphere_dir + "/system/video/sdl32.cfg").c_str());
+
+    Config.fullscreen = file.ReadBool("sdl32", "Fullscreen", true);
+    Config.vsync      = file.ReadBool("sdl32", "VSync",      true);
+    Config.scale      = file.ReadBool("sdl32", "Scale",      true);
+    Config.filter     = file.ReadInt ("sdl32", "Filter",        0);
+
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) SetClippingRectangle(int x, int y, int w, int h)
@@ -169,16 +199,15 @@ EXPORT(bool) SetWindowTitle(const char* text)
 ////////////////////////////////////////////////////////////////////////////////
 static bool InitVideo(int w, int h)
 {
-    return InitVideo(w, h, Config);
+    return InitVideo(w, h, "");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-EXPORT(bool) InitVideo(int w, int h, DRIVER_CONFIG conf)
+EXPORT(bool) InitVideo(int w, int h, std::string sphere_dir)
 {
 
     ScreenWidth  = w;
     ScreenHeight = h;
-    Config       = conf;
 
     static bool firstcall = true;
 
@@ -187,6 +216,7 @@ EXPORT(bool) InitVideo(int w, int h, DRIVER_CONFIG conf)
 
     if (firstcall)
     {
+        LoadConfiguration(sphere_dir);
 
         ScreenBuffer = new BGRA[ScreenWidth * ScreenHeight];
 
@@ -295,7 +325,7 @@ EXPORT(void) FlipScreen()
 
     if (Config.scale)
     {
-        switch (Config.algorithm)
+        switch (Config.filter)
         {
             case I_DIRECT_SCALE:
                 DirectScale((Uint32*)SDLScreen->pixels, pitch, (Uint32*)ScreenBuffer, ScreenWidth, ScreenHeight);

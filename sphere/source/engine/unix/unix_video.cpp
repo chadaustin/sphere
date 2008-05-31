@@ -7,26 +7,14 @@
 #include "unix_internal.h"
 #include "../sfont.hpp"
 
-struct DRIVER_CONFIG
-{
-    int  bitdepth;
 
-    bool fullscreen;
-    bool vsync;
+static int    ScreenWidth  = 0;
+static int    ScreenHeight = 0;
 
-    bool scale;
-    int  filter;
-};
+static SFONT* FPSFont;
+static bool   FPSDisplayed;
 
-static DRIVER_CONFIG DriverConfig;
-
-static int ScreenWidth  = 0;
-static int ScreenHeight = 0;
-
-SFONT* FPSFont;
-static bool FPSDisplayed;
-
-static void*        GraphicsDriver;
+static void*  GraphicsDriver;
 
 
 // this function should not be exposed
@@ -79,13 +67,6 @@ void assign(T& dest, U src)
 
 bool InitVideo(SPHERECONFIG* config)
 {
-
-    // load the video driver configuration
-    DriverConfig.bitdepth   = config->bitdepth;
-    DriverConfig.fullscreen = config->fullscreen;
-    DriverConfig.vsync      = config->vsync;
-    DriverConfig.scale      = config->scale;
-    DriverConfig.filter     = config->filter;
 
     // load the video driver
     std::string driver_path = GetSphereDirectory() + "/system/video/" + config->videodriver;
@@ -242,14 +223,14 @@ bool SwitchResolution (int w, int h)
     ScreenWidth  = w;
     ScreenHeight = h;
 
-    bool (STDCALL * init_video)(int w, int h, DRIVER_CONFIG conf);
+    bool (STDCALL * init_video)(int w, int h, std::string sphere_dir);
 
-    init_video = (bool (STDCALL *)(int, int, DRIVER_CONFIG))dlsym(GraphicsDriver, "InitVideo");
+    init_video = (bool (STDCALL *)(int, int, std::string))dlsym(GraphicsDriver, "InitVideo");
 
     if (init_video == NULL)
         return false;
 
-    return init_video(w, h, DriverConfig);
+    return init_video(w, h, GetSphereDirectory());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

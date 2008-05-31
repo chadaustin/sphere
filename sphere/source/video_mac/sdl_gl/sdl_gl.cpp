@@ -6,14 +6,24 @@
 
 #include "../../common/rgb.hpp"
 #include "../../common/ParticleStructs.hpp"
+#include "../../common/configfile.hpp"
 
 #define EXPORT(ret) extern "C" ret __attribute__((stdcall))
 
 #define GL_CLAMP_TO_EDGE 0x812F
 
 #define SCALE()  (Config.scale ? 2 : 1)
-#define FILTER() (SCALE() == 1 ? GL_NEAREST : (Config.filter != 0 ? GL_LINEAR : GL_NEAREST))
+#define FILTER() (SCALE() == 1 ? GL_NEAREST : (Config.bilinear_filter ? GL_LINEAR : GL_NEAREST))
 
+
+struct DRIVERINFO
+{
+    const char* name;
+    const char* author;
+    const char* date;
+    const char* version;
+    const char* description;
+};
 
 typedef struct tagIMAGE
 {
@@ -39,7 +49,7 @@ typedef struct tagIMAGE
 }
 * IMAGE;
 
-struct DRIVER_CONFIG
+struct DRIVERCONFIG
 {
     int bitdepth;
 
@@ -47,13 +57,13 @@ struct DRIVER_CONFIG
     bool vsync;
 
     bool scale;
-    int  filter;
+    bool bilinear_filter;
 };
 
 
 // function prototypes
 static bool   InitVideo(int w, int h);
-EXPORT(bool)  InitVideo(int w, int h, DRIVER_CONFIG conf);
+EXPORT(bool)  InitVideo(int w, int h, std::string sphere_dir);
 
 EXPORT(void)  DirectGrab(int x, int y, int w, int h, RGBA* pixels);
 
@@ -68,8 +78,32 @@ static int    toggle_counter; // needed to recreate textures after switching to/
 static GLint  MaxTexSize; // width or height
 
 std::string   WindowTitle;
-DRIVER_CONFIG Config;
+DRIVERCONFIG  Config;
 
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
+{
+    driverinfo->name        = "SDL GL";
+    driverinfo->author      = "Jamie Gennis, Kisai, Chad Austin";
+    driverinfo->date        = __DATE__;
+    driverinfo->version     = "v1.0";
+    driverinfo->description = "Hardware Accelerated OpenGL Sphere Video Driver";
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void LoadConfiguration(std::string sphere_dir)
+{
+    CConfigFile file;
+    file.Load((sphere_dir + "/system/video/sdl_gl.cfg").c_str());
+
+    Config.fullscreen       = file.ReadBool("sdl_gl", "Fullscreen",       true);
+    Config.vsync            = file.ReadBool("sdl_gl", "VSync",            true);
+    Config.scale            = file.ReadBool("sdl_gl", "Scale",            true);
+    Config.bilinear_filter  = file.ReadBool("sdl_gl", "BilinearFilter",   true);
+    Config.bitdepth         = file.ReadInt ("sdl_gl", "BitDepth",           32);
+
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) SetClippingRectangle(int x, int y, int w, int h)
@@ -102,23 +136,15 @@ EXPORT(bool) SetWindowTitle(const char* text)
 ////////////////////////////////////////////////////////////////////////////////
 static bool InitVideo(int w, int h)
 {
-    return InitVideo(w, h, Config);
+    return InitVideo(w, h, "");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-EXPORT(bool) InitVideo(int w, int h, DRIVER_CONFIG conf)
+EXPORT(bool) InitVideo(int w, int h, std::string sphere_dir)
 {
 
     ScreenWidth  = w;
     ScreenHeight = h;
-    Config       = conf;
-
-    if (Config.bitdepth != 16 &&
-        Config.bitdepth != 24 &&
-        Config.bitdepth != 32)
-    {
-        Config.bitdepth = 32;
-    }
 
     static bool firstcall = true;
 
@@ -127,6 +153,7 @@ EXPORT(bool) InitVideo(int w, int h, DRIVER_CONFIG conf)
 
     if (firstcall)
     {
+        LoadConfiguration(sphere_dir);
 
         // initialize SDL
         // Note: SDL_INIT_EVENTTHREAD is currently not supported on Mac OS X
@@ -376,8 +403,8 @@ static bool CreateTexture(IMAGE image)
     }
 
     // minor correction factor
-    float correction_x = (Config.scale && Config.filter != 0 ? 0.5f / (float)new_width  : 0.0f);
-    float correction_y = (Config.scale && Config.filter != 0 ? 0.5f / (float)new_height : 0.0f);
+    float correction_x = (Config.scale && Config.bilinear_filter ? 0.5f / (float)new_width  : 0.0f);
+    float correction_y = (Config.scale && Config.bilinear_filter ? 0.5f / (float)new_height : 0.0f);
     image->tex_width   = (GLfloat)image->width  / new_width  - correction_x;
     image->tex_height  = (GLfloat)image->height / new_height - correction_y;
 

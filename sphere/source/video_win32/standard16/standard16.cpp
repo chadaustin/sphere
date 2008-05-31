@@ -53,8 +53,6 @@ struct CONFIGURATION
 // FUNCTION PROTOTYPES //
 
 static void LoadConfiguration();
-static void SaveConfiguration();
-static BOOL CALLBACK ConfigureDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
 
 static bool InitFullscreen();
 static bool SetDisplayMode();
@@ -151,27 +149,16 @@ static bool s_fullscreen = false;
 static int  scale_factor = 1;
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
 {
-    driverinfo->name   = "Standard 16-bit Color";
-    driverinfo->author = "Chad Austin\nAnatoli Steinmark";
+    driverinfo->name   = "Standard16";
+    driverinfo->author = "Chad Austin, Anatoli Steinmark";
     driverinfo->date   = __DATE__;
     driverinfo->version = "v1.1";
-    driverinfo->description = "15/16-bit color output in both windowed and fullscreen modes";
+    driverinfo->description = "16-bit Software Sphere Video Driver";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-EXPORT(void) ConfigureDriver(HWND parent)
-{
-    LoadConfiguration();
-    DialogBox(DriverInstance, MAKEINTRESOURCE(IDD_CONFIGURE), parent, ConfigureDialogProc);
-    SaveConfiguration();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 void LoadConfiguration()
 {
     char config_file_name[MAX_PATH];
@@ -180,144 +167,11 @@ void LoadConfiguration()
     // load the fields from the file
     Configuration.fullscreen = GetPrivateProfileInt("standard16", "Fullscreen", 1, config_file_name) != 0;
     Configuration.vsync      = GetPrivateProfileInt("standard16", "VSync",      1, config_file_name) != 0;
-
     Configuration.scale      = GetPrivateProfileInt("standard16", "Scale",      1, config_file_name) != 0;
     Configuration.filter     = GetPrivateProfileInt("standard16", "Filter",     0, config_file_name);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-void SaveConfiguration()
-{
-    char config_file_name[MAX_PATH];
-    GetDriverConfigFile(config_file_name);
-
-    // save the fields to the file
-    WritePrivateProfileInt("standard16", "Fullscreen", Configuration.fullscreen, config_file_name);
-    WritePrivateProfileInt("standard16", "VSync",      Configuration.vsync,      config_file_name);
-
-    WritePrivateProfileInt("standard16", "Scale",      Configuration.scale,      config_file_name);
-    WritePrivateProfileInt("standard16", "Filter",     Configuration.filter,     config_file_name);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-BOOL CALLBACK ConfigureDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
-{
-    switch (message)
-    {
-    case WM_INITDIALOG:
-
-        // set the check boxes
-        CheckDlgButton(window, IDC_FULLSCREEN, Configuration.fullscreen ? BST_CHECKED : BST_UNCHECKED);
-        CheckDlgButton(window, IDC_VSYNC,      Configuration.vsync      ? BST_CHECKED : BST_UNCHECKED);
-        CheckDlgButton(window, IDC_SCALE,      Configuration.scale      ? BST_CHECKED : BST_UNCHECKED);
-
-        // set the filter
-        switch (Configuration.filter)
-        {
-            case I_DIRECT_SCALE:
-                CheckDlgButton(window, IDC_DIRECT_SCALE, BST_CHECKED);
-                break;
-
-            case I_SCALE2X:
-                CheckDlgButton(window, IDC_SCALE2X,      BST_CHECKED);
-                break;
-
-            case I_EAGLE:
-                CheckDlgButton(window, IDC_EAGLE,        BST_CHECKED);
-                break;
-
-            case I_HQ2X:
-                CheckDlgButton(window, IDC_HQ2X,         BST_CHECKED);
-                break;
-
-            case I_2XSAI:
-                CheckDlgButton(window, IDC_2XSAI,        BST_CHECKED);
-                break;
-
-            case I_SUPER_2XSAI:
-                CheckDlgButton(window, IDC_SUPER_2XSAI,  BST_CHECKED);
-                break;
-
-            case I_SUPER_EAGLE:
-                CheckDlgButton(window, IDC_SUPER_EAGLE,  BST_CHECKED);
-                break;
-
-        }
-
-        // update the check states
-        SendMessage(window, WM_COMMAND, MAKEWPARAM(IDC_FULLSCREEN, BN_PUSHED), 0);
-        SendMessage(window, WM_COMMAND, MAKEWPARAM(IDC_SCALE, BN_PUSHED), 0);
-        return TRUE;
-
-        ////////////////////////////////////////////////////////////////////////////
-
-    case WM_COMMAND:
-
-        switch (LOWORD(wparam))
-        {
-            case IDOK:
-
-                Configuration.fullscreen = (IsDlgButtonChecked(window, IDC_FULLSCREEN) != FALSE);
-                Configuration.vsync      = (IsDlgButtonChecked(window, IDC_VSYNC)      != FALSE);
-                Configuration.scale      = (IsDlgButtonChecked(window, IDC_SCALE)      != FALSE);
-
-                if (IsDlgButtonChecked(window, IDC_DIRECT_SCALE) == BST_CHECKED)
-                    Configuration.filter =       I_DIRECT_SCALE;
-
-                if (IsDlgButtonChecked(window, IDC_SCALE2X)      == BST_CHECKED)
-                    Configuration.filter =       I_SCALE2X;
-
-                if (IsDlgButtonChecked(window, IDC_EAGLE)        == BST_CHECKED)
-                    Configuration.filter =       I_EAGLE;
-
-                if (IsDlgButtonChecked(window, IDC_HQ2X)         == BST_CHECKED)
-                    Configuration.filter =       I_HQ2X;
-
-                if (IsDlgButtonChecked(window, IDC_2XSAI)        == BST_CHECKED)
-                    Configuration.filter =       I_2XSAI;
-
-                if (IsDlgButtonChecked(window, IDC_SUPER_2XSAI)  == BST_CHECKED)
-                    Configuration.filter =       I_SUPER_2XSAI;
-
-                if (IsDlgButtonChecked(window, IDC_SUPER_EAGLE)  == BST_CHECKED)
-                    Configuration.filter =       I_SUPER_EAGLE;
-
-                EndDialog(window, 1);
-                return TRUE;
-
-            case IDCANCEL:
-
-                EndDialog(window, 0);
-                return TRUE;
-
-            case IDC_SCALE:
-
-                EnableWindow(GetDlgItem(window, IDC_DIRECT_SCALE), IsDlgButtonChecked(window, IDC_SCALE));
-                EnableWindow(GetDlgItem(window, IDC_SCALE2X),      IsDlgButtonChecked(window, IDC_SCALE));
-                EnableWindow(GetDlgItem(window, IDC_EAGLE),        IsDlgButtonChecked(window, IDC_SCALE));
-                EnableWindow(GetDlgItem(window, IDC_HQ2X),         IsDlgButtonChecked(window, IDC_SCALE));
-                EnableWindow(GetDlgItem(window, IDC_2XSAI),        IsDlgButtonChecked(window, IDC_SCALE));
-                EnableWindow(GetDlgItem(window, IDC_SUPER_2XSAI),  IsDlgButtonChecked(window, IDC_SCALE));
-                EnableWindow(GetDlgItem(window, IDC_SUPER_EAGLE),  IsDlgButtonChecked(window, IDC_SCALE));
-
-            case IDC_FULLSCREEN:
-
-                EnableWindow(GetDlgItem(window, IDC_VSYNC), IsDlgButtonChecked(window, IDC_FULLSCREEN));
-                return TRUE;
-        }
-        return FALSE;
-
-        ////////////////////////////////////////////////////////////////////////////
-
-    default:
-        return FALSE;
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
 {
     SphereWindow = window;
@@ -345,7 +199,6 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 bool InitFullscreen()
 {
     HRESULT ddrval;
@@ -409,7 +262,6 @@ bool InitFullscreen()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(bool) ToggleFullScreen()
 {
     int x, y, w, h;
@@ -452,7 +304,6 @@ EXPORT(bool) ToggleFullScreen()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 bool SetDisplayMode()
 {
     HRESULT ddrval = dd->SetDisplayMode(ScreenWidth * scale_factor, ScreenHeight * scale_factor, 16);
@@ -464,7 +315,6 @@ bool SetDisplayMode()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 bool CreateSurfaces()
 {
     // define the surface
@@ -532,7 +382,6 @@ bool CreateSurfaces()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 bool InitWindowed()
 {
     // create the render DC
@@ -576,7 +425,6 @@ bool InitWindowed()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) CloseVideoDriver()
 {
     if (s_fullscreen)
@@ -586,7 +434,6 @@ EXPORT(void) CloseVideoDriver()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void CloseFullscreen()
 {
     SetWindowLong(SphereWindow, GWL_STYLE, OldWindowStyle);
@@ -599,7 +446,6 @@ void CloseFullscreen()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void CloseWindowed()
 {
     DeleteDC(RenderDC);
@@ -608,7 +454,6 @@ void CloseWindowed()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) FlipScreen()
 {
 
@@ -678,7 +523,6 @@ EXPORT(void) FlipScreen()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void Scale(word* dst, int dst_pitch)
 {
     if (PixelFormat == RGB565)
@@ -752,7 +596,6 @@ void Scale(word* dst, int dst_pitch)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 {
     IMAGE image = new _IMAGE;
@@ -771,7 +614,6 @@ EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void FillImagePixels(IMAGE image, RGBA* pixels)
 {
     int pixels_total = image->width * image->height;
@@ -832,7 +674,6 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void RefillImagePixels(IMAGE image)
 {
     int pixels_total = image->width * image->height;
@@ -887,7 +728,6 @@ void RefillImagePixels(IMAGE image)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void OptimizeBlitRoutine(IMAGE image)
 {
     int pixels_total = image->width * image->height;
@@ -948,7 +788,6 @@ void OptimizeBlitRoutine(IMAGE image)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
 {
     if (x          < 0           ||
@@ -1021,7 +860,6 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) DestroyImage(IMAGE image)
 {
     delete[] image->rgb;
@@ -1031,7 +869,6 @@ EXPORT(void) DestroyImage(IMAGE image)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) BlitImage(IMAGE image, int x, int y)
 {
     // if toggled from/to fullscreen, convert the image to the new pixel format first
@@ -1052,7 +889,6 @@ EXPORT(void) BlitImage(IMAGE image, int x, int y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 class render_pixel_mask_565
 {
 public:
@@ -1157,7 +993,6 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 inline void renderpixel565(word& d, const word& s, int a)
 {
     RGBA out = UnpackPixel565(d);
@@ -1210,7 +1045,6 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
 {
     // if toggled from/to fullscreen, convert the image to the new pixel format first
@@ -1231,12 +1065,11 @@ EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void NullBlit(IMAGE image, int x, int y)
-{}
+{
+}
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void TileBlit(IMAGE image, int x, int y)
 {
     calculate_clipping_metrics(image->width, image->height);
@@ -1256,7 +1089,6 @@ void TileBlit(IMAGE image, int x, int y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void SpriteBlit(IMAGE image, int x, int y)
 {
     calculate_clipping_metrics(image->width, image->height);
@@ -1290,7 +1122,6 @@ void SpriteBlit(IMAGE image, int x, int y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void NormalBlit(IMAGE image, int x, int y)
 {
     calculate_clipping_metrics(image->width, image->height);
@@ -1359,21 +1190,18 @@ void NormalBlit(IMAGE image, int x, int y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(int) GetImageWidth(IMAGE image)
 {
     return image->width;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(int) GetImageHeight(IMAGE image)
 {
     return image->height;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 /**
  * ClipByte clamps an integer value to the range 0-255 without
  * any branch operations.
@@ -1388,14 +1216,12 @@ inline int ClipByte(int value)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(RGBA*) LockImage(IMAGE image)
 {
     return image->original;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) UnlockImage(IMAGE image, bool pixels_changed)
 {
     if (pixels_changed)
@@ -1409,7 +1235,6 @@ EXPORT(void) UnlockImage(IMAGE image, bool pixels_changed)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels)
 {
     calculate_clipping_metrics(w, h);
@@ -1504,7 +1329,6 @@ EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 inline void blendRGBAto565(word& d, RGBA s, RGBA alpha)
 {
     int  a;
@@ -1574,7 +1398,6 @@ EXPORT(void) DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
 {
     if (x < 0 ||
@@ -1606,8 +1429,6 @@ EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-
 class constant_color
 {
 public:
@@ -1688,7 +1509,6 @@ EXPORT(void) DrawPoint(int x, int y, RGBA color)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) DrawPointSeries(VECTOR_INT** points, int length, RGBA color)
 {
     if (PixelFormat == RGB565)
@@ -1702,7 +1522,6 @@ EXPORT(void) DrawPointSeries(VECTOR_INT** points, int length, RGBA color)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) DrawLine(int x[2], int y[2], RGBA color)
 {
     if (PixelFormat == RGB565)
@@ -1716,7 +1535,6 @@ EXPORT(void) DrawLine(int x[2], int y[2], RGBA color)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) DrawGradientLine(int x[2], int y[2], RGBA colors[2])
 {
     if (PixelFormat == RGB565)
@@ -1730,7 +1548,6 @@ EXPORT(void) DrawGradientLine(int x[2], int y[2], RGBA colors[2])
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) DrawLineSeries(VECTOR_INT** points, int length, RGBA color, int type)
 {
     if (PixelFormat == RGB565)
@@ -1744,7 +1561,6 @@ EXPORT(void) DrawLineSeries(VECTOR_INT** points, int length, RGBA color, int typ
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) DrawBezierCurve(int x[4], int y[4], double step, RGBA color, int cubic)
 {
     if (PixelFormat == RGB565)
@@ -1758,7 +1574,6 @@ EXPORT(void) DrawBezierCurve(int x[4], int y[4], double step, RGBA color, int cu
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) DrawTriangle(int x[3], int y[3], RGBA color)
 {
     if (PixelFormat == RGB565)
@@ -1772,7 +1587,6 @@ EXPORT(void) DrawTriangle(int x[3], int y[3], RGBA color)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 inline RGBA interpolateRGBA(RGBA a, RGBA b, int i, int range)
 {
     if (range == 0)
@@ -1802,7 +1616,6 @@ EXPORT(void) DrawGradientTriangle(int x[3], int y[3], RGBA colors[3])
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) DrawPolygon(VECTOR_INT** points, int length, int invert, RGBA color)
 {
     if (PixelFormat == RGB565)
@@ -1816,7 +1629,6 @@ EXPORT(void) DrawPolygon(VECTOR_INT** points, int length, int invert, RGBA color
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) DrawOutlinedRectangle(int x, int y, int w, int h, int size, RGBA color)
 {
     if (color.alpha == 0)
@@ -1856,7 +1668,6 @@ EXPORT(void) DrawOutlinedRectangle(int x, int y, int w, int h, int size, RGBA co
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color)
 {
     if (color.alpha == 0)
@@ -1896,7 +1707,6 @@ EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
 {
     if (PixelFormat == RGB565)
@@ -1910,7 +1720,6 @@ EXPORT(void) DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) DrawOutlinedComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, RGBA color, int antialias)
 {
     if (color.alpha == 0)
@@ -1933,7 +1742,6 @@ EXPORT(void) DrawOutlinedComplex(int r_x, int r_y, int r_w, int r_h, int circ_x,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) DrawFilledComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, float angle, float frac_size, int fill_empty, RGBA colors[2])
 {
     if (colors[0].alpha == 0 && colors[1].alpha == 0)
@@ -1956,7 +1764,6 @@ EXPORT(void) DrawFilledComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, i
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) DrawGradientComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, float angle, float frac_size, int fill_empty, RGBA colors[3])
 {
     if (colors[0].alpha == 0 && colors[1].alpha == 0 && colors[2].alpha == 0)
@@ -1979,7 +1786,6 @@ EXPORT(void) DrawGradientComplex(int r_x, int r_y, int r_w, int r_h, int circ_x,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) DrawOutlinedEllipse(int x, int y, int rx, int ry, RGBA color)
 {
     if (color.alpha == 0)
@@ -2002,7 +1808,6 @@ EXPORT(void) DrawOutlinedEllipse(int x, int y, int rx, int ry, RGBA color)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) DrawFilledEllipse(int x, int y, int rx, int ry, RGBA color)
 {
     if (color.alpha == 0)
@@ -2025,7 +1830,6 @@ EXPORT(void) DrawFilledEllipse(int x, int y, int rx, int ry, RGBA color)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) DrawOutlinedCircle(int x, int y, int r, RGBA color, int antialias)
 {
     if (color.alpha == 0)
@@ -2048,7 +1852,6 @@ EXPORT(void) DrawOutlinedCircle(int x, int y, int r, RGBA color, int antialias)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) DrawFilledCircle(int x, int y, int r, RGBA color, int antialias)
 {
     if (color.alpha == 0)
@@ -2071,7 +1874,6 @@ EXPORT(void) DrawFilledCircle(int x, int y, int r, RGBA color, int antialias)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 EXPORT(void) DrawGradientCircle(int x, int y, int r, RGBA colors[2], int antialias)
 {
     if (colors[0].alpha == 0 && colors[1].alpha == 0)

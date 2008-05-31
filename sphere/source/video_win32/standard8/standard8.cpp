@@ -34,21 +34,22 @@ struct CONFIGURATION
 };
 
 static void LoadConfiguration();
-static void SaveConfiguration();
-static BOOL CALLBACK ConfigureDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
 static bool LoadPalette();
+
 static void FillLUTs();
 static bool InitFullscreen();
 static bool CreateSurfaces();
 static bool InitWindowed();
 static void CloseFullscreen();
 static void CloseWindowed();
+
 static void FillImagePixels(IMAGE image, RGBA* pixels);
 static void OptimizeBlitRoutine(IMAGE image);
 static void NullBlit(IMAGE image, int x, int y);
 static void TileBlit(IMAGE image, int x, int y);
 static void SpriteBlit(IMAGE image, int x, int y);
 static void NormalBlit(IMAGE image, int x, int y);
+
 static CONFIGURATION Configuration;
 static HWND  SphereWindow;
 static byte* ScreenBuffer;
@@ -103,86 +104,28 @@ inline RGBA Unpack(byte b)
     rgba.blue  = Palette[b].blue;
     return rgba;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
 {
-    driverinfo->name        = "Standard 8-bit Color";
+    driverinfo->name        = "Standard8";
     driverinfo->author      = "Chad Austin";
     driverinfo->date        = __DATE__;
     driverinfo->version     = "v1.1";
-    driverinfo->description = "8-bit palettized color in both windowed and fullscreen modes";
+    driverinfo->description = "8-bit Palletized Software Sphere Video Driver";
 }
-////////////////////////////////////////////////////////////////////////////////
-EXPORT(void) ConfigureDriver(HWND parent)
-{
-    LoadConfiguration();
-    DialogBox(DriverInstance, MAKEINTRESOURCE(IDD_CONFIGURE), parent, ConfigureDialogProc);
-    SaveConfiguration();
-}
+
 ////////////////////////////////////////////////////////////////////////////////
 void LoadConfiguration()
 {
     char config_file_name[MAX_PATH];
     GetDriverConfigFile(config_file_name);
-    Configuration.fullscreen = (GetPrivateProfileInt("standard8", "fullscreen", 1, config_file_name) != 0);
-    Configuration.vsync      = (GetPrivateProfileInt("standard8", "vsync",      1, config_file_name) != 0);
-    GetPrivateProfileString("standard8", "palette", "(default)", Configuration.palette_file, FILENAME_MAX, config_file_name);
+
+    Configuration.fullscreen = (GetPrivateProfileInt("standard8", "Fullscreen", 1, config_file_name) != 0);
+    Configuration.vsync      = (GetPrivateProfileInt("standard8", "VSync",      1, config_file_name) != 0);
+    GetPrivateProfileString("standard8", "Palette", "(default)", Configuration.palette_file, FILENAME_MAX, config_file_name);
 }
-////////////////////////////////////////////////////////////////////////////////
-void SaveConfiguration()
-{
-    char config_file_name[MAX_PATH];
-    GetDriverConfigFile(config_file_name);
-    WritePrivateProfileInt("standard8", "fullscreen", Configuration.fullscreen,   config_file_name);
-    WritePrivateProfileInt("standard8", "vsync",      Configuration.vsync,        config_file_name);
-    WritePrivateProfileString("standard8", "palette", Configuration.palette_file, config_file_name);
-}
-////////////////////////////////////////////////////////////////////////////////
-BOOL CALLBACK ConfigureDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
-{
-    switch (message)
-    {
-    case WM_INITDIALOG:
-        // add a default palette
-        SendDlgItemMessage(window, IDC_PALETTE, CB_ADDSTRING, 0, (LPARAM)"(default)");
-        char path[FILENAME_MAX];
-        GetModuleFileName(DriverInstance, path, FILENAME_MAX);
-        *strrchr(path, '\\') = 0;
-        strcat(path, "\\*.pal");
-        SendDlgItemMessage(window, IDC_PALETTE, CB_DIR, 0, (LPARAM)path);
-        // now select the current palette
-        SendDlgItemMessage(window, IDC_PALETTE, CB_SELECTSTRING, (WPARAM)-1, (LPARAM)Configuration.palette_file);
-        CheckDlgButton(window, IDC_FULLSCREEN,  Configuration.fullscreen ? BST_CHECKED : BST_UNCHECKED);
-        CheckDlgButton(window, IDC_VSYNC,       Configuration.vsync      ? BST_CHECKED : BST_UNCHECKED);
-        // update the check states
-        SendMessage(window, WM_COMMAND, MAKEWPARAM(IDC_FULLSCREEN, BN_PUSHED), 0);
-        return TRUE;
-        ////////////////////////////////////////////////////////////////////////////
-    case WM_COMMAND:
-        switch (LOWORD(wparam))
-        {
-        case IDOK:
-        {
-            Configuration.fullscreen = IsDlgButtonChecked(window, IDC_FULLSCREEN) != FALSE;
-            Configuration.vsync      = IsDlgButtonChecked(window, IDC_VSYNC)      != FALSE;
-            int sel = SendDlgItemMessage(window, IDC_PALETTE, CB_GETCURSEL, 0, 0);
-            SendDlgItemMessage(window, IDC_PALETTE, CB_GETLBTEXT, sel, (LPARAM)Configuration.palette_file);
-            EndDialog(window, 1);
-            return TRUE;
-        }
-        case IDCANCEL:
-            EndDialog(window, 0);
-            return TRUE;
-        case IDC_FULLSCREEN:
-            EnableWindow(GetDlgItem(window, IDC_VSYNC), IsDlgButtonChecked(window, IDC_FULLSCREEN));
-            return TRUE;
-        }
-        return FALSE;
-        ////////////////////////////////////////////////////////////////////////////
-    default:
-        return FALSE;
-    }
-}
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
 {
@@ -215,6 +158,7 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
         return InitWindowed();
 
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 bool LoadPalette()
 {
@@ -269,12 +213,14 @@ bool LoadPalette()
     fclose(file);
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 inline int sqr(int t)
 {
 
     return t * t;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 void FillLUTs()
 {
@@ -380,6 +326,7 @@ void FillLUTs()
         } // end if
     } // end for alpha levels
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 bool InitFullscreen()
 {
@@ -450,6 +397,7 @@ bool InitFullscreen()
     ShowCursor(FALSE);
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(bool) ToggleFullScreen()
 {
@@ -492,6 +440,7 @@ EXPORT(bool) ToggleFullScreen()
 
     return false;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 bool CreateSurfaces()
 {
@@ -527,6 +476,7 @@ bool CreateSurfaces()
     ScreenBuffer = new byte[ScreenWidth * ScreenHeight];
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 bool InitWindowed()
 {
@@ -586,6 +536,7 @@ bool InitWindowed()
         TRUE);
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) CloseVideoDriver()
 {
@@ -594,6 +545,7 @@ EXPORT(void) CloseVideoDriver()
     else
         CloseWindowed();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 void CloseFullscreen()
 {
@@ -603,12 +555,14 @@ void CloseFullscreen()
     delete[] ScreenBuffer;
     dd->Release();
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 void CloseWindowed()
 {
     DeleteDC(RenderDC);
     DeleteObject(RenderBitmap);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) FlipScreen()
 {
@@ -670,6 +624,7 @@ EXPORT(void) FlipScreen()
         ReleaseDC(SphereWindow, dc);
     }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 {
@@ -680,6 +635,7 @@ EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
     OptimizeBlitRoutine(image);
     return image;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 void FillImagePixels(IMAGE image, RGBA* pixels)
 {
@@ -691,6 +647,7 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
         image->alpha[i] = pixels[i].alpha;
     }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 void OptimizeBlitRoutine(IMAGE image)
 {
@@ -737,6 +694,7 @@ void OptimizeBlitRoutine(IMAGE image)
     // normal blit
     image->blit_routine = NormalBlit;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
 {
@@ -760,6 +718,7 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
     memset(image->alpha, 255, width * height);
     return image;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DestroyImage(IMAGE image)
 {
@@ -767,6 +726,7 @@ EXPORT(void) DestroyImage(IMAGE image)
     delete[] image->alpha;
     delete image;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) BlitImage(IMAGE image, int x, int y)
 {
@@ -778,6 +738,7 @@ EXPORT(void) BlitImage(IMAGE image, int x, int y)
         return;
     image->blit_routine(image, x, y);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 class render_pixel_mask
 {
@@ -803,6 +764,7 @@ public:
 private:
     RGBA m_mask;
 };
+
 EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
 {
     primitives::Blit(
@@ -818,6 +780,7 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
         render_pixel_mask(mask)
     );
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 inline void render_pixel(byte& d, byte s, byte a)
 {
@@ -838,6 +801,7 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
         render_pixel
     );
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
 {
@@ -854,6 +818,7 @@ EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
         render_pixel_mask(mask)
     );
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 void NullBlit(IMAGE image, int x, int y)
 {
@@ -868,6 +833,7 @@ void TileBlit(IMAGE image, int x, int y)
                image->pixels + iy * image->width + image_offset_x,
                image_blit_width);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 void SpriteBlit(IMAGE image, int x, int y)
 {
@@ -900,6 +866,7 @@ void SpriteBlit(IMAGE image, int x, int y)
         alpha += src_inc;
     }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 void NormalBlit(IMAGE image, int x, int y)
 {
@@ -931,16 +898,19 @@ void NormalBlit(IMAGE image, int x, int y)
         alpha += src_inc;
     }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(int) GetImageWidth(IMAGE image)
 {
     return image->width;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(int) GetImageHeight(IMAGE image)
 {
     return image->height;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(RGBA*) LockImage(IMAGE image)
 {
@@ -953,6 +923,7 @@ EXPORT(RGBA*) LockImage(IMAGE image)
         image->locked_pixels[i].alpha = image->alpha[i];
     return image->locked_pixels;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) UnlockImage(IMAGE image, bool pixels_changed)
 {
@@ -967,6 +938,7 @@ EXPORT(void) UnlockImage(IMAGE image, bool pixels_changed)
     delete[] image->locked_pixels;
     image->locked_pixels = NULL;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels)
 {
@@ -983,11 +955,13 @@ EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels)
                 *dest = blend(*dest, src, alpha);
         }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 void render_rgba(byte& d, RGBA s, RGBA a)
 {
     d = blend(d, Pack(s), a.alpha);
 }
+
 EXPORT(void) DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels)
 {
     primitives::TexturedQuad(
@@ -1003,6 +977,7 @@ EXPORT(void) DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels)
         render_rgba
     );
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
 {
@@ -1021,6 +996,7 @@ EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
         }
     }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 class constant_color
 {
@@ -1066,50 +1042,61 @@ private:
     RGBA m_color1;
     RGBA m_color2;
 };
+
 inline void copyByte(byte& dest, byte source)
 {
 
     dest = source;
 }
+
 inline void blendRGBA(byte& dest, RGBA source)
 {
 
     dest = blend(dest, Pack(source), source.alpha);
 }
+
+////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawPoint(int x, int y, RGBA color)
 {
     primitives::Point(ScreenBuffer, ScreenWidth, x, y, color, ClippingRectangle, blendRGBA);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawPointSeries(VECTOR_INT** points, int length, RGBA color)
 {
     primitives::PointSeries(ScreenBuffer, ScreenWidth, points, length, color, ClippingRectangle, blendRGBA);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawLine(int x[2], int y[2], RGBA color)
 {
     primitives::Line(ScreenBuffer, ScreenWidth, x[0], y[0], x[1], y[1], constant_color(color), ClippingRectangle, blendRGBA);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawGradientLine(int x[2], int y[2], RGBA colors[2])
 {
     primitives::Line(ScreenBuffer, ScreenWidth, x[0], y[0], x[1], y[1], gradient_color(colors[0], colors[1]), ClippingRectangle, blendRGBA);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawLineSeries(VECTOR_INT** points, int length, RGBA color, int type)
 {
     primitives::LineSeries(ScreenBuffer, ScreenWidth, points, length, color, type, ClippingRectangle, blendRGBA);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawBezierCurve(int x[4], int y[4], double step, RGBA color, int cubic)
 {
     primitives::BezierCurve(ScreenBuffer, ScreenWidth, x, y, step, color, cubic, ClippingRectangle, blendRGBA);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawTriangle(int x[3], int y[3], RGBA color)
 {
     primitives::Triangle(ScreenBuffer, ScreenWidth, x, y, color, ClippingRectangle, blendRGBA);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 inline RGBA interpolateRGBA(RGBA a, RGBA b, int i, int range)
 {
@@ -1126,15 +1113,18 @@ inline RGBA interpolateRGBA(RGBA a, RGBA b, int i, int range)
                   };
     return result;
 }
+
 EXPORT(void) DrawGradientTriangle(int x[3], int y[3], RGBA colors[3])
 {
     primitives::GradientTriangle(ScreenBuffer, ScreenWidth, x, y, colors, ClippingRectangle, blendRGBA, interpolateRGBA);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawPolygon(VECTOR_INT** points, int length, int invert, RGBA color)
 {
     primitives::Polygon(ScreenBuffer, ScreenWidth, points, length, invert, color, ClippingRectangle, blendRGBA);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawOutlinedRectangle(int x, int y, int w, int h, int size, RGBA color)
 {
@@ -1155,6 +1145,7 @@ EXPORT(void) DrawOutlinedRectangle(int x, int y, int w, int h, int size, RGBA co
         primitives::OutlinedRectangle(ScreenBuffer, ScreenWidth, x, y, w, h, size, color, ClippingRectangle, blendRGBA);
     }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color)
 {
@@ -1175,49 +1166,59 @@ EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color)
         primitives::Rectangle(ScreenBuffer, ScreenWidth, x, y, w, h, color, ClippingRectangle, blendRGBA);
     }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
 {
     primitives::GradientRectangle(ScreenBuffer, ScreenWidth, x, y, w, h, colors, ClippingRectangle, blendRGBA, interpolateRGBA);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawOutlinedComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, RGBA color, int antialias)
 {
     primitives::OutlinedComplex(ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, color, antialias, ClippingRectangle, blendRGBA);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawFilledComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, float angle, float frac_size, int fill_empty, RGBA colors[2])
 {
     primitives::FilledComplex(ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blendRGBA);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawGradientComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, int circ_y, int circ_r, float angle, float frac_size, int fill_empty, RGBA colors[3])
 {
     primitives::GradientComplex(ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blendRGBA);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawOutlinedEllipse(int x, int y, int rx, int ry, RGBA color)
 {
     primitives::OutlinedEllipse(ScreenBuffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blendRGBA);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawFilledEllipse(int x, int y, int rx, int ry, RGBA color)
 {
     primitives::FilledEllipse(ScreenBuffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blendRGBA);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawOutlinedCircle(int x, int y, int r, RGBA color, int antialias)
 {
     primitives::OutlinedCircle(ScreenBuffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blendRGBA);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawFilledCircle(int x, int y, int r, RGBA color, int antialias)
 {
     primitives::FilledCircle(ScreenBuffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blendRGBA);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawGradientCircle(int x, int y, int r, RGBA colors[2], int antialias)
 {
     primitives::GradientCircle(ScreenBuffer, ScreenWidth, x, y, r, colors, antialias, ClippingRectangle, blendRGBA);
 }
+
 ////////////////////////////////////////////////////////////////////////////////

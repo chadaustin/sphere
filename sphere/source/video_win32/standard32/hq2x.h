@@ -57,55 +57,6 @@ inline void Interp10(dword* pc, dword c1, dword c2, dword c3)
          (((c1 & 0xFF00FF)*14 + (c2 & 0xFF00FF) + (c3 & 0xFF00FF) ) & 0x0FF00FF0)) >> 4;
 }
 
-inline void Interp1(BGR* pc, BGR a, BGR b)
-{
-  pc->red   = (a.red   * 3 + b.red)   >> 2;
-  pc->green = (a.green * 3 + b.green) >> 2;
-  pc->blue  = (a.blue  * 3 + b.blue)  >> 2;
-}
-
-inline void Interp2(BGR* pc, BGR a, BGR b, BGR c)
-{
-  pc->red   = (a.red   * 2 + b.red   + c.red)   >> 2;
-  pc->green = (a.green * 2 + b.green + c.green) >> 2;
-  pc->blue  = (a.blue  * 2 + b.blue  + c.blue)  >> 2;
-}
-
-inline void Interp5(BGR* pc, BGR a, BGR b)
-{
-  pc->red   = (a.red   + b.red)   >> 1;
-  pc->green = (a.green + b.green) >> 1;
-  pc->blue  = (a.blue  + b.blue)  >> 1;
-}
-
-inline void Interp6(BGR* pc, BGR a, BGR b, BGR c)
-{
-  pc->red   = (a.red   * 5 + b.red   * 2 + c.red)   >> 3;
-  pc->green = (a.green * 5 + b.green * 2 + c.green) >> 3;
-  pc->blue  = (a.blue  * 5 + b.blue  * 2 + c.blue)  >> 3;
-}
-
-inline void Interp7(BGR* pc, BGR a, BGR b, BGR c)
-{
-  pc->red   = (a.red   * 6 + b.red   + c.red)   >> 3;
-  pc->green = (a.green * 6 + b.green + c.green) >> 3;
-  pc->blue  = (a.blue  * 6 + b.blue  + c.blue)  >> 3;
-}
-
-inline void Interp9(BGR* pc, BGR a, BGR b, BGR c)
-{
-  pc->red   = (a.red   * 2 + (b.red   + c.red)   * 3) >> 3;
-  pc->green = (a.green * 2 + (b.green + c.green) * 3) >> 3;
-  pc->blue  = (a.blue  * 2 + (b.blue  + c.blue)  * 3) >> 3;
-}
-
-inline void Interp10(BGR* pc, BGR a, BGR b, BGR c)
-{
-  pc->red   = (a.red   * 14 + b.red   + c.red)   >> 4;
-  pc->green = (a.green * 14 + b.green + c.green) >> 4;
-  pc->blue  = (a.blue  * 14 + b.blue  + c.blue)  >> 4;
-}
-
 #define PIXEL00_0     dst0[0] = src1[0];
 #define PIXEL00_10    Interp1( dst0, src1[0], src0[-1]);
 #define PIXEL00_11    Interp1( dst0, src1[0], src1[-1]);
@@ -160,17 +111,6 @@ inline bool Diff(dword a, dword b)
   int R = abs((a & 0xFF0000) - (b & 0xFF0000)) >> 16;
   int G = abs((a & 0x00FF00) - (b & 0x00FF00)) >> 8;
   int B = abs((a & 0x0000FF) - (b & 0x0000FF));
-
-  return ( ( (( R +   G + B) >> 2) > 0x30 ) ||
-           ( (( R -   B)     >> 2) > 0x07 ) ||
-           ( ((-R + 2*G - B) >> 3) > 0x06 ) );
-}
-
-inline bool Diff(BGR a, BGR b)
-{
-  int R = abs(a.red   - b.red);
-  int G = abs(a.green - b.green);
-  int B = abs(a.blue  - b.blue);
 
   return ( ( (( R +   G + B) >> 2) > 0x30 ) ||
            ( (( R -   B)     >> 2) > 0x07 ) ||

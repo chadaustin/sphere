@@ -31,11 +31,7 @@ typedef struct _IMAGE
     int width;
     int height;
 
-    union
-    {
-        BGRA* bgra;
-        BGR*  bgr;
-    };
+    BGRA* bgra;
 
     byte* alpha;
     RGBA* original;
@@ -51,13 +47,6 @@ typedef struct _IMAGE
 
 } *IMAGE;
 
-enum BIT_DEPTH
-{
-    BD_AUTODETECT,
-    BD_32,
-    BD_24,
-};
-
 enum SCALE_ALGORITHM
 {
     I_DIRECT_SCALE = 0,
@@ -71,8 +60,6 @@ enum SCALE_ALGORITHM
 
 struct CONFIGURATION
 {
-    BIT_DEPTH bitdepth;
-
     bool fullscreen;
     bool vsync;
 
@@ -81,8 +68,6 @@ struct CONFIGURATION
 };
 
 static void LoadConfiguration();
-static void SaveConfiguration();
-static BOOL CALLBACK ConfigureDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
 
 static bool InitFullscreen();
 static bool SetDisplayMode();
@@ -104,7 +89,6 @@ static void SpriteBlit(IMAGE image, int x, int y);
 static void NormalBlit(IMAGE image, int x, int y);
 
 static CONFIGURATION Configuration;
-static int           BitsPerPixel = 0;
 
 static HWND  SphereWindow = NULL;
 static byte* ScreenBuffer = NULL;
@@ -131,20 +115,12 @@ EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
 
     if (driverinfo == NULL)
         return;
-    driverinfo->name        = "Standard 32-bit Color";
-    driverinfo->author      = "Chad Austin\nAnatoli Steinmark";
+    driverinfo->name        = "Standard32";
+    driverinfo->author      = "Chad Austin, Anatoli Steinmark";
     driverinfo->date        = __DATE__;
     driverinfo->version     = "v1.1";
-    driverinfo->description = "24/32-bit color output in both windowed and fullscreen modes";
+    driverinfo->description = "32-bit Software Sphere Video Driver";
 
-}
-
-////////////////////////////////////////////////////////////////////////////////
-EXPORT(void) ConfigureDriver(HWND parent)
-{
-    LoadConfiguration();
-    DialogBox(DriverInstance, MAKEINTRESOURCE(IDD_CONFIGURE), parent, ConfigureDialogProc);
-    SaveConfiguration();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -154,168 +130,10 @@ void LoadConfiguration()
     GetDriverConfigFile(config_file_name);
 
     // load the fields from the file
-    int bitdepth             = GetPrivateProfileInt("standard32", "BitDepth", 0, config_file_name);
-    Configuration.bitdepth   = (bitdepth == 32 ? BD_32 : (bitdepth == 24 ? BD_24 : BD_AUTODETECT));
-
     Configuration.fullscreen = GetPrivateProfileInt("standard32", "Fullscreen", 1, config_file_name) != 0;
     Configuration.vsync      = GetPrivateProfileInt("standard32", "VSync",      1, config_file_name) != 0;
-
     Configuration.scale      = GetPrivateProfileInt("standard32", "Scale",      1, config_file_name) != 0;
     Configuration.filter     = GetPrivateProfileInt("standard32", "Filter",     0, config_file_name);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void SaveConfiguration()
-{
-    char config_file_name[MAX_PATH];
-    GetDriverConfigFile(config_file_name);
-
-    // save the fields to the file
-    int bitdepth = (Configuration.bitdepth == BD_32 ? 32 : (Configuration.bitdepth == BD_24 ? 24 : 0));
-    WritePrivateProfileInt("standard32", "BitDepth",   bitdepth,                 config_file_name);
-
-    WritePrivateProfileInt("standard32", "Fullscreen", Configuration.fullscreen, config_file_name);
-    WritePrivateProfileInt("standard32", "VSync",      Configuration.vsync,      config_file_name);
-
-    WritePrivateProfileInt("standard32", "Scale",      Configuration.scale,      config_file_name);
-    WritePrivateProfileInt("standard32", "Filter",     Configuration.filter,     config_file_name);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-BOOL CALLBACK ConfigureDialogProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
-{
-    switch (message)
-    {
-    case WM_INITDIALOG:
-
-        // set the bit depth radio buttons
-        if (Configuration.bitdepth == BD_AUTODETECT)
-            SendDlgItemMessage(window, IDC_BITDEPTH_AUTODETECT, BM_SETCHECK, BST_CHECKED, 0);
-        else if (Configuration.bitdepth == BD_32)
-            SendDlgItemMessage(window, IDC_BITDEPTH_32, BM_SETCHECK, BST_CHECKED, 0);
-        else if (Configuration.bitdepth == BD_24)
-            SendDlgItemMessage(window, IDC_BITDEPTH_24, BM_SETCHECK, BST_CHECKED, 0);
-
-        // set the check boxes
-        CheckDlgButton(window, IDC_FULLSCREEN, Configuration.fullscreen ? BST_CHECKED : BST_UNCHECKED);
-        CheckDlgButton(window, IDC_VSYNC,      Configuration.vsync      ? BST_CHECKED : BST_UNCHECKED);
-        CheckDlgButton(window, IDC_SCALE,      Configuration.scale      ? BST_CHECKED : BST_UNCHECKED);
-
-        // set the filter
-        switch (Configuration.filter)
-        {
-            case I_DIRECT_SCALE:
-                CheckDlgButton(window, IDC_DIRECT_SCALE, BST_CHECKED);
-                break;
-
-            case I_SCALE2X:
-                CheckDlgButton(window, IDC_SCALE2X,      BST_CHECKED);
-                break;
-
-            case I_EAGLE:
-                CheckDlgButton(window, IDC_EAGLE,        BST_CHECKED);
-                break;
-
-            case I_HQ2X:
-                CheckDlgButton(window, IDC_HQ2X,         BST_CHECKED);
-                break;
-
-            case I_2XSAI:
-                CheckDlgButton(window, IDC_2XSAI,        BST_CHECKED);
-                break;
-
-            case I_SUPER_2XSAI:
-                CheckDlgButton(window, IDC_SUPER_2XSAI,  BST_CHECKED);
-                break;
-
-            case I_SUPER_EAGLE:
-                CheckDlgButton(window, IDC_SUPER_EAGLE,  BST_CHECKED);
-                break;
-
-        }
-
-        // update the check states
-        SendMessage(window, WM_COMMAND, MAKEWPARAM(IDC_FULLSCREEN, BN_PUSHED), 0);
-        SendMessage(window, WM_COMMAND, MAKEWPARAM(IDC_SCALE, BN_PUSHED), 0);
-        return TRUE;
-
-        ////////////////////////////////////////////////////////////////////////////
-
-    case WM_COMMAND:
-
-        switch (LOWORD(wparam))
-        {
-            case IDOK:
-
-                if (IsDlgButtonChecked(window, IDC_BITDEPTH_32))
-                    Configuration.bitdepth = BD_32;
-                else if (IsDlgButtonChecked(window, IDC_BITDEPTH_24))
-                    Configuration.bitdepth = BD_24;
-                else
-                    Configuration.bitdepth = BD_AUTODETECT;
-
-                Configuration.fullscreen = (IsDlgButtonChecked(window, IDC_FULLSCREEN) != FALSE);
-                Configuration.vsync      = (IsDlgButtonChecked(window, IDC_VSYNC)      != FALSE);
-                Configuration.scale      = (IsDlgButtonChecked(window, IDC_SCALE)      != FALSE);
-
-                if (IsDlgButtonChecked(window, IDC_DIRECT_SCALE) == BST_CHECKED)
-                    Configuration.filter =       I_DIRECT_SCALE;
-
-                if (IsDlgButtonChecked(window, IDC_SCALE2X)      == BST_CHECKED)
-                    Configuration.filter =       I_SCALE2X;
-
-                if (IsDlgButtonChecked(window, IDC_EAGLE)        == BST_CHECKED)
-                    Configuration.filter =       I_EAGLE;
-
-                if (IsDlgButtonChecked(window, IDC_HQ2X)         == BST_CHECKED)
-                    Configuration.filter =       I_HQ2X;
-
-                if (IsDlgButtonChecked(window, IDC_2XSAI)        == BST_CHECKED)
-                    Configuration.filter =       I_2XSAI;
-
-                if (IsDlgButtonChecked(window, IDC_SUPER_2XSAI)  == BST_CHECKED)
-                    Configuration.filter =       I_SUPER_2XSAI;
-
-                if (IsDlgButtonChecked(window, IDC_SUPER_EAGLE)  == BST_CHECKED)
-                    Configuration.filter =       I_SUPER_EAGLE;
-
-                EndDialog(window, 1);
-                return TRUE;
-
-            case IDCANCEL:
-
-                EndDialog(window, 0);
-                return TRUE;
-
-            case IDC_SCALE:
-
-                EnableWindow(GetDlgItem(window, IDC_DIRECT_SCALE), IsDlgButtonChecked(window, IDC_SCALE));
-                EnableWindow(GetDlgItem(window, IDC_SCALE2X),      IsDlgButtonChecked(window, IDC_SCALE));
-                EnableWindow(GetDlgItem(window, IDC_EAGLE),        IsDlgButtonChecked(window, IDC_SCALE));
-                EnableWindow(GetDlgItem(window, IDC_HQ2X),         IsDlgButtonChecked(window, IDC_SCALE));
-                EnableWindow(GetDlgItem(window, IDC_2XSAI),        IsDlgButtonChecked(window, IDC_SCALE));
-                EnableWindow(GetDlgItem(window, IDC_SUPER_2XSAI),  IsDlgButtonChecked(window, IDC_SCALE));
-                EnableWindow(GetDlgItem(window, IDC_SUPER_EAGLE),  IsDlgButtonChecked(window, IDC_SCALE));
-
-            case IDC_FULLSCREEN:
-
-                EnableWindow(GetDlgItem(window, IDC_VSYNC), IsDlgButtonChecked(window, IDC_FULLSCREEN));
-                EnableWindow(GetDlgItem(window, IDC_BITDEPTH_AUTODETECT), IsDlgButtonChecked(window, IDC_FULLSCREEN));
-
-                if (IsDlgButtonChecked(window, IDC_BITDEPTH_AUTODETECT) && !IsDlgButtonChecked(window, IDC_FULLSCREEN))
-                {
-                    CheckDlgButton(window, IDC_BITDEPTH_AUTODETECT, BST_UNCHECKED);
-                    CheckDlgButton(window, IDC_BITDEPTH_32,         BST_CHECKED);
-                }
-                return TRUE;
-        }
-        return FALSE;
-
-        ////////////////////////////////////////////////////////////////////////////
-
-    default:
-        return FALSE;
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -392,7 +210,7 @@ bool InitFullscreen()
     }
 
     // allocate a blitting buffer
-    ScreenBuffer = new byte[ScreenWidth * ScreenHeight * (BitsPerPixel / 8)];
+    ScreenBuffer = new byte[ScreenWidth * ScreenHeight * 4];
 
     if (ScreenBuffer == NULL)
         return false;
@@ -458,58 +276,13 @@ bool SetDisplayMode()
 {
     HRESULT ddrval;
 
-    switch (Configuration.bitdepth)
-    {
+    ddrval = dd->SetDisplayMode(ScreenWidth * scale_factor, ScreenHeight * scale_factor, 32);
 
-        case BD_AUTODETECT:
-
-            if (BitsPerPixel == 0 || BitsPerPixel == 32)
-            {
-                ddrval = dd->SetDisplayMode(ScreenWidth * scale_factor, ScreenHeight * scale_factor, 32);
-                if (ddrval == DD_OK)
-                {
-                    BitsPerPixel = 32;
-                    return true;
-                }
-            }
-            if (BitsPerPixel == 0 || BitsPerPixel == 24)
-            {
-                ddrval = dd->SetDisplayMode(ScreenWidth * scale_factor, ScreenHeight * scale_factor, 24);
-                if (ddrval == DD_OK)
-                {
-                    BitsPerPixel = 24;
-                    return true;
-                }
-            }
-            return false;
-
-        case BD_32:
-
-            ddrval = dd->SetDisplayMode(ScreenWidth * scale_factor, ScreenHeight * scale_factor, 32);
-            if (ddrval == DD_OK)
-            {
-
-                BitsPerPixel = 32;
-                return true;
-            }
-            return false;
-
-        case BD_24:
-
-            ddrval = dd->SetDisplayMode(ScreenWidth * scale_factor, ScreenHeight * scale_factor, 24);
-
-            if (ddrval == DD_OK)
-            {
-                return true;
-
-            }
-            return false;
-
-        default:
-            return false;
-    }
+    if (ddrval == DD_OK)
+        return true;
 
     return false;
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -554,11 +327,6 @@ bool CreateSurfaces()
 ////////////////////////////////////////////////////////////////////////////////
 bool InitWindowed()
 {
-
-    // calculate bits per pixel
-    if (BitsPerPixel != 32 && BitsPerPixel != 24)
-        BitsPerPixel = 32;
-
     // create the render DC
     RenderDC = CreateCompatibleDC(NULL);
 
@@ -573,7 +341,7 @@ bool InitWindowed()
     bmih.biWidth       =  ScreenWidth  * scale_factor;
     bmih.biHeight      = -ScreenHeight * scale_factor;
     bmih.biPlanes      = 1;
-    bmih.biBitCount    = BitsPerPixel;
+    bmih.biBitCount    = 32;
     bmih.biCompression = BI_RGB;
     RenderBitmap = CreateDIBSection(RenderDC, &bmi, DIB_RGB_COLORS, (void**)&RenderBuffer, NULL, 0);
     if (RenderBitmap == NULL)
@@ -586,7 +354,7 @@ bool InitWindowed()
     CenterWindow(SphereWindow, ScreenWidth * scale_factor, ScreenHeight * scale_factor);
 
     // allocate a blitting buffer
-    ScreenBuffer = new byte[ScreenWidth * ScreenHeight * (BitsPerPixel / 8)];
+    ScreenBuffer = new byte[ScreenWidth * ScreenHeight * 4];
 
     if (ScreenBuffer == NULL)
         return false;
@@ -675,9 +443,9 @@ EXPORT(void) FlipScreen()
 
         if (Configuration.scale)
         {
-            Scale(ddsd.lpSurface, ddsd.lPitch / (BitsPerPixel / 8));
+            Scale(ddsd.lpSurface, ddsd.lPitch / 4);
         }
-        else if (BitsPerPixel == 32)
+        else
         {
             BGRA* dst = (BGRA*)ddsd.lpSurface;
             BGRA* src = (BGRA*)ScreenBuffer;
@@ -685,17 +453,6 @@ EXPORT(void) FlipScreen()
             {
                 memcpy(dst, src, ScreenWidth * 4);
                 dst += ddsd.lPitch / 4;
-                src += ScreenWidth;
-            }
-        }
-        else
-        {
-            BGR* dst = (BGR*)ddsd.lpSurface;
-            BGR* src = (BGR*)ScreenBuffer;
-            for (int i = 0; i < ScreenHeight; i++)
-            {
-                memcpy(dst, src, ScreenWidth * 3);
-                dst += ddsd.lPitch / 3;
                 src += ScreenWidth;
             }
         }
@@ -710,10 +467,8 @@ EXPORT(void) FlipScreen()
 
         if (Configuration.scale)
             Scale(RenderBuffer, ScreenWidth * 2);
-        else if (BitsPerPixel == 32)
-            memcpy((byte*)RenderBuffer, (byte*)ScreenBuffer, ScreenWidth * ScreenHeight * 4);
         else
-            memcpy((byte*)RenderBuffer, (byte*)ScreenBuffer, ScreenWidth * ScreenHeight * 3);
+            memcpy((byte*)RenderBuffer, (byte*)ScreenBuffer, ScreenWidth * ScreenHeight * 4);
 
         // blit the render buffer to the window
         HDC dc = GetDC(SphereWindow);
@@ -725,74 +480,38 @@ EXPORT(void) FlipScreen()
 ////////////////////////////////////////////////////////////////////////////////
 void Scale(void* dst, int dst_pitch)
 {
-    if (BitsPerPixel == 32)
+    switch (Configuration.filter)
     {
-        switch (Configuration.filter)
-        {
-            case I_DIRECT_SCALE:
-                DirectScale((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
-                break;
+        case I_DIRECT_SCALE:
+            DirectScale((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+            break;
 
-            case I_SCALE2X:
-                Scale2x((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
-                break;
+        case I_SCALE2X:
+            Scale2x((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+            break;
 
-            case I_EAGLE:
-                Eagle((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
-                break;
+        case I_EAGLE:
+            Eagle((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+            break;
 
-            case I_HQ2X:
-                hq2x((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
-                break;
+        case I_HQ2X:
+            hq2x((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+            break;
 
-            case I_2XSAI:
-                _2xSaI((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
-                break;
+        case I_2XSAI:
+            _2xSaI((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+            break;
 
-            case I_SUPER_2XSAI:
-                Super2xSaI((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
-                break;
+        case I_SUPER_2XSAI:
+            Super2xSaI((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+            break;
 
-            case I_SUPER_EAGLE:
-                SuperEagle((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
-                break;
+        case I_SUPER_EAGLE:
+            SuperEagle((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+            break;
 
-        }
     }
-    else if (BitsPerPixel == 24)
-    {
-        switch (Configuration.filter)
-        {
-            case I_DIRECT_SCALE:
-                DirectScale((BGR*)dst, dst_pitch, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
-                break;
 
-            case I_SCALE2X:
-                Scale2x((BGR*)dst, dst_pitch, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
-                break;
-
-            case I_EAGLE:
-                Eagle((BGR*)dst, dst_pitch, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
-                break;
-
-            case I_HQ2X:
-                hq2x((BGR*)dst, dst_pitch, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
-                break;
-
-            case I_2XSAI:
-                _2xSaI((BGR*)dst, dst_pitch, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
-                break;
-
-            case I_SUPER_2XSAI:
-                Super2xSaI((BGR*)dst, dst_pitch, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
-                break;
-
-            case I_SUPER_EAGLE:
-                SuperEagle((BGR*)dst, dst_pitch, (BGR*)ScreenBuffer, ScreenWidth, ScreenHeight);
-                break;
-
-        }
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -809,33 +528,16 @@ bool FillImagePixels(IMAGE image, RGBA* pixels)
     memcpy(image->original, pixels, pixels_total * sizeof(RGBA));
 
     // fill the image pixels
-    if (BitsPerPixel == 32)
+    image->bgra = new BGRA[pixels_total];
+
+    if (image->bgra == NULL)
+        return false;
+
+    for (int i = 0; i < pixels_total; ++i)
     {
-        image->bgra = new BGRA[pixels_total];
-
-        if (image->bgra == NULL)
-            return false;
-
-        for (int i = 0; i < pixels_total; ++i)
-        {
-            image->bgra[i].red   = (pixels[i].red   * pixels[i].alpha) >> 8;
-            image->bgra[i].green = (pixels[i].green * pixels[i].alpha) >> 8;
-            image->bgra[i].blue  = (pixels[i].blue  * pixels[i].alpha) >> 8;
-        }
-    }
-    else
-    {
-        image->bgr  = new BGR[pixels_total];
-
-        if (image->bgr == NULL)
-            return false;
-
-        for (int i = 0; i < pixels_total; ++i)
-        {
-            image->bgr[i].red   = (pixels[i].red   * pixels[i].alpha) >> 8;
-            image->bgr[i].green = (pixels[i].green * pixels[i].alpha) >> 8;
-            image->bgr[i].blue  = (pixels[i].blue  * pixels[i].alpha) >> 8;
-        }
+        image->bgra[i].red   = (pixels[i].red   * pixels[i].alpha) >> 8;
+        image->bgra[i].green = (pixels[i].green * pixels[i].alpha) >> 8;
+        image->bgra[i].blue  = (pixels[i].blue  * pixels[i].alpha) >> 8;
     }
 
     // fill the alpha array
@@ -858,33 +560,16 @@ bool RefillImagePixels(IMAGE image)
     RGBA* pixels = image->original;
 
     // fill the image pixels
-    if (BitsPerPixel == 32)
+    image->bgra = new BGRA[pixels_total];
+
+    if (image->bgra == NULL)
+        return false;
+
+    for (int i = 0; i < pixels_total; ++i)
     {
-        image->bgra = new BGRA[pixels_total];
-
-        if (image->bgra == NULL)
-            return false;
-
-        for (int i = 0; i < pixels_total; ++i)
-        {
-            image->bgra[i].red   = (pixels[i].red   * pixels[i].alpha) >> 8;
-            image->bgra[i].green = (pixels[i].green * pixels[i].alpha) >> 8;
-            image->bgra[i].blue  = (pixels[i].blue  * pixels[i].alpha) >> 8;
-        }
-    }
-    else
-    {
-        image->bgr  = new BGR[pixels_total];
-
-        if (image->bgr == NULL)
-            return false;
-
-        for (int i = 0; i < pixels_total; ++i)
-        {
-            image->bgr[i].red   = (pixels[i].red   * pixels[i].alpha) >> 8;
-            image->bgr[i].green = (pixels[i].green * pixels[i].alpha) >> 8;
-            image->bgr[i].blue  = (pixels[i].blue  * pixels[i].alpha) >> 8;
-        }
+        image->bgra[i].red   = (pixels[i].red   * pixels[i].alpha) >> 8;
+        image->bgra[i].green = (pixels[i].green * pixels[i].alpha) >> 8;
+        image->bgra[i].blue  = (pixels[i].blue  * pixels[i].alpha) >> 8;
     }
 
     // fill the alpha array
@@ -1073,21 +758,12 @@ void OptimizeBlitRoutine(IMAGE image)
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DestroyImage(IMAGE image)
 {
-    if (BitsPerPixel == 32)
-    {
-        delete[] image->bgra;
-        image->bgra = NULL;
-    }
-    else
-    {
-        delete[] image->bgr;
-        image->bgr = NULL;
-    }
-
+    delete[] image->bgra;
     delete[] image->alpha;
     delete[] image->original;
     delete image;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 {
@@ -1132,83 +808,38 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
     image->height       = height;
     image->blit_routine = TileBlit;
 
-    if (BitsPerPixel == 32)
+    BGRA* Screen = (BGRA*)ScreenBuffer;
+
+    image->bgra  = new BGRA[pixels_total];
+    if (image->bgra == NULL)
     {
-        BGRA* Screen = (BGRA*)ScreenBuffer;
-
-        image->bgra  = new BGRA[pixels_total];
-        if (image->bgra == NULL)
-        {
-            delete image;
-            return NULL;
-        }
-
-        image->original = new RGBA[pixels_total];
-        if (image->original == NULL)
-        {
-            delete [] image->bgra;
-            delete image;
-            return NULL;
-        }
-
-        for (int iy = 0; iy < height; iy++)
-            memcpy(image->bgra + iy * width, Screen + (y + iy) * ScreenWidth + x, width * 4);
-
-        for (int i = 0; i < pixels_total; ++i)
-        {
-            image->original[i].red   = image->bgra[i].red;
-            image->original[i].green = image->bgra[i].green;
-            image->original[i].blue  = image->bgra[i].blue;
-            image->original[i].alpha = 255;
-        }
-
+        delete image;
+        return NULL;
     }
-    else
+
+    image->original = new RGBA[pixels_total];
+    if (image->original == NULL)
     {
-        BGR* Screen = (BGR*)ScreenBuffer;
+        delete [] image->bgra;
+        delete image;
+        return NULL;
+    }
 
-        image->bgr = new BGR[width * height];
-        if (image->bgr == NULL)
-        {
-            delete image;
-            return NULL;
-        }
+    for (int iy = 0; iy < height; iy++)
+        memcpy(image->bgra + iy * width, Screen + (y + iy) * ScreenWidth + x, width * 4);
 
-        image->original = new RGBA[pixels_total];
-        if (image->original == NULL)
-        {
-            delete [] image->bgr;
-            delete image;
-            return NULL;
-        }
-
-        for (int iy = 0; iy < height; iy++)
-            memcpy(image->bgr + iy * width, Screen + (y + iy) * ScreenWidth + x, width * 3);
-
-        for (int i = 0; i < pixels_total; ++i)
-        {
-            image->original[i].red   = image->bgr[i].red;
-            image->original[i].green = image->bgr[i].green;
-            image->original[i].blue  = image->bgr[i].blue;
-            image->original[i].alpha = 255;
-        }
+    for (int i = 0; i < pixels_total; ++i)
+    {
+        image->original[i].red   = image->bgra[i].red;
+        image->original[i].green = image->bgra[i].green;
+        image->original[i].blue  = image->bgra[i].blue;
+        image->original[i].alpha = 255;
     }
 
     image->alpha = new byte[pixels_total];
     if (image->alpha == NULL)
     {
-        if (BitsPerPixel == 32)
-        {
-            delete[] image->bgra;
-            image->bgra = NULL;
-        }
-
-        if (BitsPerPixel == 24)
-        {
-            delete[] image->bgr;
-            image->bgr = NULL;
-        }
-
+        delete [] image->bgra;
         delete [] image->original;
         delete image;
 
@@ -1290,40 +921,20 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
             return;
         }
     }
-    if (BitsPerPixel == 32)
-    {
 
-        primitives::Blit(
-            (BGRA*)ScreenBuffer,
-            ScreenWidth,
-            x,
-            y,
-            image->bgra,
-            image->alpha,
-            image->width,
-            image->height,
-            ClippingRectangle,
-            render_pixel_mask<BGRA>(mask)
-        );
+    primitives::Blit(
+        (BGRA*)ScreenBuffer,
+        ScreenWidth,
+        x,
+        y,
+        image->bgra,
+        image->alpha,
+        image->width,
+        image->height,
+        ClippingRectangle,
+        render_pixel_mask<BGRA>(mask)
+    );
 
-    }
-    else
-    {
-
-        primitives::Blit(
-            (BGR*)ScreenBuffer,
-            ScreenWidth,
-            x,
-            y,
-            image->bgr,
-            image->alpha,
-            image->width,
-            image->height,
-            ClippingRectangle,
-            render_pixel_mask<BGR>(mask)
-        );
-
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1370,36 +981,19 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
         }
     }
 
-    if (BitsPerPixel == 32)
-    {
-        primitives::TexturedQuad(
-            (BGRA*)ScreenBuffer,
-            ScreenWidth,
-            x,
-            y,
-            image->bgra,
-            image->alpha,
-            image->width,
-            image->height,
-            ClippingRectangle,
-            aBlendBGRA
-        );
-    }
-    else
-    {
-        primitives::TexturedQuad(
-            (BGR*)ScreenBuffer,
-            ScreenWidth,
-            x,
-            y,
-            image->bgr,
-            image->alpha,
-            image->width,
-            image->height,
-            ClippingRectangle,
-            aBlendBGR
-        );
-    }
+    primitives::TexturedQuad(
+        (BGRA*)ScreenBuffer,
+        ScreenWidth,
+        x,
+        y,
+        image->bgra,
+        image->alpha,
+        image->width,
+        image->height,
+        ClippingRectangle,
+        aBlendBGRA
+    );
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1413,36 +1007,20 @@ EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
         TransformBlitImage(image, x, y);
         return;
     }
-    if (BitsPerPixel == 32)
-    {
-        primitives::TexturedQuad(
-            (BGRA*)ScreenBuffer,
-            ScreenWidth,
-            x,
-            y,
-            image->bgra,
-            image->alpha,
-            image->width,
-            image->height,
-            ClippingRectangle,
-            render_pixel_mask<BGRA>(mask)
-        );
-    }
-    else
-    {
-        primitives::TexturedQuad(
-            (BGR*)ScreenBuffer,
-            ScreenWidth,
-            x,
-            y,
-            image->bgr,
-            image->alpha,
-            image->width,
-            image->height,
-            ClippingRectangle,
-            render_pixel_mask<BGR>(mask)
-        );
-    }
+
+    primitives::TexturedQuad(
+        (BGRA*)ScreenBuffer,
+        ScreenWidth,
+        x,
+        y,
+        image->bgra,
+        image->alpha,
+        image->width,
+        image->height,
+        ClippingRectangle,
+        render_pixel_mask<BGRA>(mask)
+    );
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1455,38 +1033,18 @@ void TileBlit(IMAGE image, int x, int y)
 {
     calculate_clipping_metrics(image->width, image->height);
 
-    if (BitsPerPixel == 32)
+    BGRA* dest  = (BGRA*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
+    BGRA* src   = (BGRA*)image->bgra  +       image_offset_y * image->width + image_offset_x;
+
+    int iy = image_blit_height;
+
+    while (iy-- > 0)
     {
-
-        BGRA* dest  = (BGRA*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-        BGRA* src   = (BGRA*)image->bgra  +       image_offset_y * image->width + image_offset_x;
-
-        int iy = image_blit_height;
-        while (iy-- > 0)
-        {
-
-            memcpy(dest, src, image_blit_width * sizeof(BGRA));
-            dest += ScreenWidth;
-            src += image->width;
-
-        }
+        memcpy(dest, src, image_blit_width * sizeof(BGRA));
+        dest += ScreenWidth;
+        src += image->width;
     }
-    else
-    {
 
-        BGR* dest  = (BGR*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-        BGR* src   = (BGR*)image->bgra  +       image_offset_y * image->width + image_offset_x;
-
-        int iy = image_blit_height;
-        while (iy-- > 0)
-        {
-
-            memcpy(dest, src, image_blit_width * sizeof(BGR));
-            dest += ScreenWidth;
-            src += image->width;
-
-        }
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1498,65 +1056,33 @@ void SpriteBlit(IMAGE image, int x, int y)
 #else
     calculate_clipping_metrics(image->width, image->height);
 #endif
-    if (BitsPerPixel == 32)
+
+    BGRA* dst   = (BGRA*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
+    BGRA* src   = (BGRA*)image->bgra  +      image_offset_y  * image->width + image_offset_x;
+    byte* alpha = image->alpha        +      image_offset_y  * image->width + image_offset_x;
+
+    int dst_inc = ScreenWidth  - image_blit_width;
+    int src_inc = image->width - image_blit_width;
+
+    int iy = image_blit_height;
+    while (iy-- > 0)
     {
-
-        BGRA* dst   = (BGRA*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-        BGRA* src   = (BGRA*)image->bgra  +      image_offset_y  * image->width + image_offset_x;
-        byte* alpha = image->alpha        +      image_offset_y  * image->width + image_offset_x;
-
-        int dst_inc = ScreenWidth  - image_blit_width;
-        int src_inc = image->width - image_blit_width;
-
-        int iy = image_blit_height;
-        while (iy-- > 0)
+        int ix = image_blit_width;
+        while (ix-- > 0)
         {
-            int ix = image_blit_width;
-            while (ix-- > 0)
-            {
-                if (*alpha)
-                    *dst = *src;
+            if (*alpha)
+                *dst = *src;
 
-                ++dst;
-                ++src;
-                ++alpha;
-            }
-
-            dst   += dst_inc;
-            src   += src_inc;
-            alpha += src_inc;
+            ++dst;
+            ++src;
+            ++alpha;
         }
+
+        dst   += dst_inc;
+        src   += src_inc;
+        alpha += src_inc;
     }
-    else
-    {
 
-        BGR*  dst   = (BGR*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-        BGR*  src   = (BGR*)image->bgra  +       image_offset_y * image->width + image_offset_x;
-        byte* alpha = image->alpha       +       image_offset_y * image->width + image_offset_x;
-
-        int dst_inc = ScreenWidth  - image_blit_width;
-        int src_inc = image->width - image_blit_width;
-
-        int iy = image_blit_height;
-        while (iy-- > 0)
-        {
-            int ix = image_blit_width;
-            while (ix-- > 0)
-            {
-
-                if (*alpha)
-                    *dst = *src;
-
-                ++dst;
-                ++src;
-                ++alpha;
-            }
-
-            dst   += dst_inc;
-            src   += src_inc;
-            alpha += src_inc;
-        }
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1571,72 +1097,37 @@ void NormalBlit(IMAGE image, int x, int y)
 
     int a;
 
-    if (BitsPerPixel == 32)
+    BGRA* dst  = (BGRA*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
+    BGRA* src  = (BGRA*)image->bgra  +      image_offset_y  * image->width + image_offset_x;
+    byte* alpha = image->alpha       +      image_offset_y  * image->width + image_offset_x;
+
+    int dst_inc = ScreenWidth  - image_blit_width;
+    int src_inc = image->width - image_blit_width;
+
+    int iy = image_blit_height;
+    int ix;
+
+    while (iy-- > 0)
     {
-        BGRA* dst  = (BGRA*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-        BGRA* src  = (BGRA*)image->bgra  +      image_offset_y  * image->width + image_offset_x;
-        byte* alpha = image->alpha       +      image_offset_y  * image->width + image_offset_x;
-
-        int dst_inc = ScreenWidth  - image_blit_width;
-        int src_inc = image->width - image_blit_width;
-
-        int iy = image_blit_height;
-        int ix;
-
-        while (iy-- > 0)
+        ix = image_blit_width;
+        while (ix-- > 0)
         {
-            ix = image_blit_width;
-            while (ix-- > 0)
-            {
-                a = 256 - *alpha;
+            a = 256 - *alpha;
 
-                dst->red   = ((dst->red   * a) >> 8) + src->red;
-                dst->green = ((dst->green * a) >> 8) + src->green;
-                dst->blue  = ((dst->blue  * a) >> 8) + src->blue;
+            dst->red   = ((dst->red   * a) >> 8) + src->red;
+            dst->green = ((dst->green * a) >> 8) + src->green;
+            dst->blue  = ((dst->blue  * a) >> 8) + src->blue;
 
-                ++dst;
-                ++src;
-                ++alpha;
-            }
-
-            dst   += dst_inc;
-            src   += src_inc;
-            alpha += src_inc;
+            ++dst;
+            ++src;
+            ++alpha;
         }
+
+        dst   += dst_inc;
+        src   += src_inc;
+        alpha += src_inc;
     }
-    else
-    {
-        BGR*  dst   = (BGR*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-        BGR*  src   = (BGR*)image->bgr   +      image_offset_y  * image->width + image_offset_x;
-        byte* alpha = image->alpha       +      image_offset_y  * image->width + image_offset_x;
 
-        int dst_inc = ScreenWidth  - image_blit_width;
-        int src_inc = image->width - image_blit_width;
-
-        int iy = image_blit_height;
-        int ix;
-
-        while (iy-- > 0)
-        {
-            ix = image_blit_width;
-            while (ix-- > 0)
-            {
-                a = 256 - *alpha;
-
-                dst->red   = ((dst->red   * a) >> 8) + src->red;
-                dst->green = ((dst->green * a) >> 8) + src->green;
-                dst->blue  = ((dst->blue  * a) >> 8) + src->blue;
-
-                ++dst;
-                ++src;
-                ++alpha;
-            }
-
-            dst   += dst_inc;
-            src   += src_inc;
-            alpha += src_inc;
-        }
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1662,11 +1153,7 @@ EXPORT(void) UnlockImage(IMAGE image, bool pixels_changed)
 {
     if (pixels_changed)
     {
-        if (BitsPerPixel == 32)
-            delete[] image->bgra;
-        else
-            delete[] image->bgr;
-
+        delete[] image->bgra;
         delete[] image->alpha;
 
         RefillImagePixels(image);
@@ -1684,82 +1171,42 @@ EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels)
 
     int a;
 
-    if (BitsPerPixel == 32)
+    BGRA* dst = (BGRA*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
+    RGBA* src = pixels              +      image_offset_y  * w            + image_offset_x;
+
+    int iy = image_blit_height;
+    int ix;
+
+    while (iy-- > 0)
     {
-        BGRA* dst = (BGRA*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-        RGBA* src = pixels              +      image_offset_y  * w            + image_offset_x;
+        ix = image_blit_width;
 
-        int iy = image_blit_height;
-        int ix;
-
-        while (iy-- > 0)
+        while (ix-- > 0)
         {
-            ix = image_blit_width;
 
-            while (ix-- > 0)
+            if (src[0].alpha == 255)
             {
+                dst[0].red   = src[0].red;
+                dst[0].green = src[0].green;
+                dst[0].blue  = src[0].blue;
+            }
+            else if (src[0].alpha > 0)
+            {
+                a = 256 - src[0].alpha;
 
-                if (src[0].alpha == 255)
-                {
-                    dst[0].red   = src[0].red;
-                    dst[0].green = src[0].green;
-                    dst[0].blue  = src[0].blue;
-                }
-                else if (src[0].alpha > 0)
-                {
-                    a = 256 - src[0].alpha;
-
-                    dst[0].red   = (dst[0].red   * a + src[0].red   * src[0].alpha) >> 8;
-                    dst[0].green = (dst[0].green * a + src[0].green * src[0].alpha) >> 8;
-                    dst[0].blue  = (dst[0].blue  * a + src[0].blue  * src[0].alpha) >> 8;
-                }
-
-                ++dst;
-                ++src;
+                dst[0].red   = (dst[0].red   * a + src[0].red   * src[0].alpha) >> 8;
+                dst[0].green = (dst[0].green * a + src[0].green * src[0].alpha) >> 8;
+                dst[0].blue  = (dst[0].blue  * a + src[0].blue  * src[0].alpha) >> 8;
             }
 
-            dst   += dst_inc;
-            src   += src_inc;
+            ++dst;
+            ++src;
         }
+
+        dst   += dst_inc;
+        src   += src_inc;
     }
-    else
-    {
-        BGR*  dst = (BGR*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-        RGBA* src = pixels             +      image_offset_y  * w            + image_offset_x;
 
-        int iy = image_blit_height;
-        int ix;
-
-        while (iy-- > 0)
-        {
-            ix = image_blit_width;
-
-            while (ix-- > 0)
-            {
-
-                if (src[0].alpha == 255)
-                {
-                    dst[0].red   = src[0].red;
-                    dst[0].green = src[0].green;
-                    dst[0].blue  = src[0].blue;
-                }
-                else if (src[0].alpha > 0)
-                {
-                    a = 256 - src[0].alpha;
-
-                    dst[0].red   = (dst[0].red   * a + src[0].red   * src[0].alpha) >> 8;
-                    dst[0].green = (dst[0].green * a + src[0].green * src[0].alpha) >> 8;
-                    dst[0].blue  = (dst[0].blue  * a + src[0].blue  * src[0].alpha) >> 8;
-                }
-
-                ++dst;
-                ++src;
-            }
-
-            dst   += dst_inc;
-            src   += src_inc;
-        }
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1783,36 +1230,20 @@ inline void BlendRGBAtoBGR(BGR& dst, RGBA src, RGBA alpha)
 
 EXPORT(void) DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels)
 {
-    if (BitsPerPixel == 32)
-    {
-        primitives::TexturedQuad(
-            (BGRA*)ScreenBuffer,
-            ScreenWidth,
-            x,
-            y,
-            pixels,
-            pixels,
-            w,
-            h,
-            ClippingRectangle,
-            BlendRGBAtoBGRA
-        );
-    }
-    else
-    {
-        primitives::TexturedQuad(
-            (BGR*)ScreenBuffer,
-            ScreenWidth,
-            x,
-            y,
-            pixels,
-            pixels,
-            w,
-            h,
-            ClippingRectangle,
-            BlendRGBAtoBGR
-        );
-    }
+
+    primitives::TexturedQuad(
+        (BGRA*)ScreenBuffer,
+        ScreenWidth,
+        x,
+        y,
+        pixels,
+        pixels,
+        w,
+        h,
+        ClippingRectangle,
+        BlendRGBAtoBGRA
+    );
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1826,36 +1257,19 @@ EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
         return;
     }
 
-    if (BitsPerPixel == 32)
-    {
-        BGRA* Screen = (BGRA*)ScreenBuffer;
+    BGRA* Screen = (BGRA*)ScreenBuffer;
 
-        for (int iy = 0; iy < h; iy++)
+    for (int iy = 0; iy < h; iy++)
+    {
+        for (int ix = 0; ix < w; ix++)
         {
-            for (int ix = 0; ix < w; ix++)
-            {
-                pixels[iy * w + ix].red   = Screen[(y + iy) * ScreenWidth + x + ix].red;
-                pixels[iy * w + ix].green = Screen[(y + iy) * ScreenWidth + x + ix].green;
-                pixels[iy * w + ix].blue  = Screen[(y + iy) * ScreenWidth + x + ix].blue;
-                pixels[iy * w + ix].alpha = 255;
-            }
+            pixels[iy * w + ix].red   = Screen[(y + iy) * ScreenWidth + x + ix].red;
+            pixels[iy * w + ix].green = Screen[(y + iy) * ScreenWidth + x + ix].green;
+            pixels[iy * w + ix].blue  = Screen[(y + iy) * ScreenWidth + x + ix].blue;
+            pixels[iy * w + ix].alpha = 255;
         }
     }
-    else
-    {
-        BGR* Screen = (BGR*)ScreenBuffer;
 
-        for (int iy = 0; iy < h; iy++)
-        {
-            for (int ix = 0; ix < w; ix++)
-            {
-                pixels[iy * w + ix].red   = Screen[(y + iy) * ScreenWidth + x + ix].red;
-                pixels[iy * w + ix].green = Screen[(y + iy) * ScreenWidth + x + ix].green;
-                pixels[iy * w + ix].blue  = Screen[(y + iy) * ScreenWidth + x + ix].blue;
-                pixels[iy * w + ix].alpha = 255;
-            }
-        }
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1907,70 +1321,33 @@ inline void copyBGRA(BGRA& dest, BGRA source)
     dest = source;
 }
 
-inline void copyBGR(BGR& dest, BGR source)
-{
-    dest = source;
-}
-
 inline void blendBGRA(BGRA& dest, RGBA source)
 {
     Blend3(dest, source, source.alpha);
 }
 
-inline void blendBGR(BGR& dest, RGBA source)
-{
-    Blend3(dest, source, source.alpha);
-}
-
+////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawPoint(int x, int y, RGBA color)
 {
-    if (BitsPerPixel == 32)
-    {
-        primitives::Point((BGRA*)ScreenBuffer, ScreenWidth, x, y, color, ClippingRectangle, blendBGRA);
-    }
-    else
-    {
-        primitives::Point((BGR*)ScreenBuffer, ScreenWidth, x, y, color, ClippingRectangle, blendBGR);
-    }
+    primitives::Point((BGRA*)ScreenBuffer, ScreenWidth, x, y, color, ClippingRectangle, blendBGRA);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawPointSeries(VECTOR_INT** points, int length, RGBA color)
 {
-    if (BitsPerPixel == 32)
-    {
-        primitives::PointSeries((BGRA*)ScreenBuffer, ScreenWidth, points, length, color, ClippingRectangle, blendBGRA);
-    }
-    else
-    {
-        primitives::PointSeries((BGR*)ScreenBuffer, ScreenWidth, points, length, color, ClippingRectangle, blendBGR);
-    }
+    primitives::PointSeries((BGRA*)ScreenBuffer, ScreenWidth, points, length, color, ClippingRectangle, blendBGRA);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawLine(int x[2], int y[2], RGBA color)
 {
-    if (BitsPerPixel == 32)
-    {
-        primitives::Line((BGRA*)ScreenBuffer, ScreenWidth, x[0], y[0], x[1], y[1], constant_color(color), ClippingRectangle, blendBGRA);
-    }
-    else
-    {
-        primitives::Line((BGR*)ScreenBuffer, ScreenWidth, x[0], y[0], x[1], y[1], constant_color(color), ClippingRectangle, blendBGR);
-    }
+    primitives::Line((BGRA*)ScreenBuffer, ScreenWidth, x[0], y[0], x[1], y[1], constant_color(color), ClippingRectangle, blendBGRA);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawGradientLine(int x[2], int y[2], RGBA colors[2])
 {
-    if (BitsPerPixel == 32)
-    {
-        primitives::Line((BGRA*)ScreenBuffer, ScreenWidth, x[0], y[0], x[1], y[1], gradient_color(colors[0], colors[1]), ClippingRectangle, blendBGRA);
-    }
-    else
-    {
-        primitives::Line((BGR*)ScreenBuffer, ScreenWidth, x[0], y[0], x[1], y[1], gradient_color(colors[0], colors[1]), ClippingRectangle, blendBGR);
-    }
+    primitives::Line((BGRA*)ScreenBuffer, ScreenWidth, x[0], y[0], x[1], y[1], gradient_color(colors[0], colors[1]), ClippingRectangle, blendBGRA);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1978,63 +1355,32 @@ EXPORT(void) DrawLineSeries(VECTOR_INT** points, int length, RGBA color, int typ
 {
     if (color.alpha == 0)
     {          // no mask
-
         return;
     }
+
     else if (color.alpha == 255)
     { // full mask
 
-        if (BitsPerPixel == 32)
-        {
-            BGRA bgra = { color.blue, color.green, color.red };
-            primitives::LineSeries((BGRA*)ScreenBuffer, ScreenWidth, points, length, bgra, type, ClippingRectangle, copyBGRA);
-        }
-        else
-        {
-            BGR bgr = { color.blue, color.green, color.red };
-            primitives::LineSeries((BGR*)ScreenBuffer, ScreenWidth, points, length, bgr, type, ClippingRectangle, copyBGR);
-        }
+        BGRA bgra = { color.blue, color.green, color.red };
+        primitives::LineSeries((BGRA*)ScreenBuffer, ScreenWidth, points, length, bgra, type, ClippingRectangle, copyBGRA);
 
     }
     else
     {
-
-        if (BitsPerPixel == 32)
-        {
-            primitives::LineSeries((BGRA*)ScreenBuffer, ScreenWidth, points, length, color, type, ClippingRectangle, blendBGRA);
-        }
-        else
-        {
-            primitives::LineSeries((BGR*)ScreenBuffer, ScreenWidth, points, length, color, type, ClippingRectangle, blendBGR);
-        }
-
+        primitives::LineSeries((BGRA*)ScreenBuffer, ScreenWidth, points, length, color, type, ClippingRectangle, blendBGRA);
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawBezierCurve(int x[4], int y[4], double step, RGBA color, int cubic)
 {
-    if (BitsPerPixel == 32)
-    {
-        primitives::BezierCurve((BGRA*)ScreenBuffer, ScreenWidth, x, y, step, color, cubic, ClippingRectangle, blendBGRA);
-    }
-    else
-    {
-        primitives::BezierCurve((BGR*)ScreenBuffer, ScreenWidth, x, y, step, color, cubic, ClippingRectangle, blendBGR);
-    }
+    primitives::BezierCurve((BGRA*)ScreenBuffer, ScreenWidth, x, y, step, color, cubic, ClippingRectangle, blendBGRA);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawTriangle(int x[3], int y[3], RGBA color)
 {
-    if (BitsPerPixel == 32)
-    {
-        primitives::Triangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, color, ClippingRectangle, blendBGRA);
-    }
-    else
-    {
-        primitives::Triangle((BGR*)ScreenBuffer, ScreenWidth, x, y, color, ClippingRectangle, blendBGR);
-    }
+    primitives::Triangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, color, ClippingRectangle, blendBGRA);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2056,14 +1402,7 @@ inline RGBA interpolateRGBA(RGBA a, RGBA b, int i, int range)
 
 EXPORT(void) DrawGradientTriangle(int x[3], int y[3], RGBA colors[3])
 {
-    if (BitsPerPixel == 32)
-    {
-        primitives::GradientTriangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, colors, ClippingRectangle, blendBGRA, interpolateRGBA);
-    }
-    else
-    {
-        primitives::GradientTriangle((BGR*)ScreenBuffer, ScreenWidth, x, y, colors, ClippingRectangle, blendBGR, interpolateRGBA);
-    }
+    primitives::GradientTriangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, colors, ClippingRectangle, blendBGRA, interpolateRGBA);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2071,36 +1410,18 @@ EXPORT(void) DrawPolygon(VECTOR_INT** points, int length, int invert, RGBA color
 {
     if (color.alpha == 0)
     {          // no mask
-
         return;
     }
     else if (color.alpha == 255)
     { // full mask
 
-        if (BitsPerPixel == 32)
-        {
-            BGRA bgra = { color.blue, color.green, color.red };
-            primitives::Polygon((BGRA*)ScreenBuffer, ScreenWidth, points, length, invert, bgra, ClippingRectangle, copyBGRA);
-        }
-        else
-        {
-            BGR bgr = { color.blue, color.green, color.red };
-            primitives::Polygon((BGR*)ScreenBuffer, ScreenWidth, points, length, invert, bgr, ClippingRectangle, copyBGR);
-        }
+        BGRA bgra = { color.blue, color.green, color.red };
+        primitives::Polygon((BGRA*)ScreenBuffer, ScreenWidth, points, length, invert, bgra, ClippingRectangle, copyBGRA);
 
     }
     else
     {
-
-        if (BitsPerPixel == 32)
-        {
-            primitives::Polygon((BGRA*)ScreenBuffer, ScreenWidth, points, length, invert, color, ClippingRectangle, blendBGRA);
-        }
-        else
-        {
-            primitives::Polygon((BGR*)ScreenBuffer, ScreenWidth, points, length, invert, color, ClippingRectangle, blendBGR);
-        }
-
+        primitives::Polygon((BGRA*)ScreenBuffer, ScreenWidth, points, length, invert, color, ClippingRectangle, blendBGRA);
     }
 }
 
@@ -2109,36 +1430,18 @@ EXPORT(void) DrawOutlinedRectangle(int x, int y, int w, int h, int size, RGBA co
 {
     if (color.alpha == 0)
     {          // no mask
-
         return;
     }
     else if (color.alpha == 255)
     { // full mask
 
-        if (BitsPerPixel == 32)
-        {
-            BGRA bgra = { color.blue, color.green, color.red };
-            primitives::OutlinedRectangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, w, h, size, bgra, ClippingRectangle, copyBGRA);
-        }
-        else
-        {
-            BGR bgr = { color.blue, color.green, color.red };
-            primitives::OutlinedRectangle((BGR*)ScreenBuffer, ScreenWidth, x, y, w, h, size, bgr, ClippingRectangle, copyBGR);
-        }
+        BGRA bgra = { color.blue, color.green, color.red };
+        primitives::OutlinedRectangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, w, h, size, bgra, ClippingRectangle, copyBGRA);
 
     }
     else
     {
-
-        if (BitsPerPixel == 32)
-        {
-            primitives::OutlinedRectangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, w, h, size, color, ClippingRectangle, blendBGRA);
-        }
-        else
-        {
-            primitives::OutlinedRectangle((BGR*)ScreenBuffer, ScreenWidth, x, y, w, h, size, color, ClippingRectangle, blendBGR);
-        }
-
+        primitives::OutlinedRectangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, w, h, size, color, ClippingRectangle, blendBGRA);
     }
 }
 
@@ -2147,50 +1450,25 @@ EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color)
 {
     if (color.alpha == 0)
     {          // no mask
-
         return;
     }
     else if (color.alpha == 255)
     { // full mask
 
-        if (BitsPerPixel == 32)
-        {
-            BGRA bgra = { color.blue, color.green, color.red };
-            primitives::Rectangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, w, h, bgra, ClippingRectangle, copyBGRA);
-        }
-        else
-        {
-            BGR bgr = { color.blue, color.green, color.red };
-            primitives::Rectangle((BGR*)ScreenBuffer, ScreenWidth, x, y, w, h, bgr, ClippingRectangle, copyBGR);
-        }
+        BGRA bgra = { color.blue, color.green, color.red };
+        primitives::Rectangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, w, h, bgra, ClippingRectangle, copyBGRA);
 
     }
     else
     {
-
-        if (BitsPerPixel == 32)
-        {
-            primitives::Rectangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, w, h, color, ClippingRectangle, blendBGRA);
-        }
-        else
-        {
-            primitives::Rectangle((BGR*)ScreenBuffer, ScreenWidth, x, y, w, h, color, ClippingRectangle, blendBGR);
-        }
-
+        primitives::Rectangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, w, h, color, ClippingRectangle, blendBGRA);
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
 {
-    if (BitsPerPixel == 32)
-    {
-        primitives::GradientRectangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, w, h, colors, ClippingRectangle, blendBGRA, interpolateRGBA);
-    }
-    else
-    {
-        primitives::GradientRectangle((BGR*)ScreenBuffer, ScreenWidth, x, y, w, h, colors, ClippingRectangle, blendBGR, interpolateRGBA);
-    }
+    primitives::GradientRectangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, w, h, colors, ClippingRectangle, blendBGRA, interpolateRGBA);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2198,19 +1476,11 @@ EXPORT(void) DrawOutlinedComplex(int r_x, int r_y, int r_w, int r_h, int circ_x,
 {
     if (color.alpha == 0)
     {          // no mask
-
         return;
     }
     else
     {
-        if (BitsPerPixel == 32)
-        {
-            primitives::OutlinedComplex((BGRA*)ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, color, antialias, ClippingRectangle, blendBGRA);
-        }
-        else
-        {
-            primitives::OutlinedComplex((BGR*)ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, color, antialias, ClippingRectangle, blendBGR);
-        }
+        primitives::OutlinedComplex((BGRA*)ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, color, antialias, ClippingRectangle, blendBGRA);
     }
 }
 
@@ -2219,19 +1489,11 @@ EXPORT(void) DrawFilledComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, i
 {
     if (colors[0].alpha == 0 && colors[1].alpha == 0)
     {          // no mask
-
         return;
     }
     else
     {
-        if (BitsPerPixel == 32)
-        {
-            primitives::FilledComplex((BGRA*)ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blendBGRA);
-        }
-        else
-        {
-            primitives::FilledComplex((BGR*)ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r,  angle, frac_size, fill_empty, colors, ClippingRectangle, blendBGR);
-        }
+        primitives::FilledComplex((BGRA*)ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blendBGRA);
     }
 }
 
@@ -2240,19 +1502,11 @@ EXPORT(void) DrawGradientComplex(int r_x, int r_y, int r_w, int r_h, int circ_x,
 {
     if (colors[0].alpha == 0 && colors[1].alpha == 0 && colors[2].alpha == 0)
     {          // no mask
-
         return;
     }
     else
     {
-        if (BitsPerPixel == 32)
-        {
-            primitives::GradientComplex((BGRA*)ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blendBGRA);
-        }
-        else
-        {
-            primitives::GradientComplex((BGR*)ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r,  angle, frac_size, fill_empty, colors, ClippingRectangle, blendBGR);
-        }
+        primitives::GradientComplex((BGRA*)ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blendBGRA);
     }
 }
 
@@ -2261,19 +1515,11 @@ EXPORT(void) DrawOutlinedEllipse(int x, int y, int rx, int ry, RGBA color)
 {
     if (color.alpha == 0)
     {          // no mask
-
         return;
     }
     else
     {
-        if (BitsPerPixel == 32)
-        {
-            primitives::OutlinedEllipse((BGRA*)ScreenBuffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blendBGRA);
-        }
-        else
-        {
-            primitives::OutlinedEllipse((BGR*)ScreenBuffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blendBGR);
-        }
+        primitives::OutlinedEllipse((BGRA*)ScreenBuffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blendBGRA);
     }
 }
 
@@ -2282,19 +1528,11 @@ EXPORT(void) DrawFilledEllipse(int x, int y, int rx, int ry, RGBA color)
 {
     if (color.alpha == 0)
     {          // no mask
-
         return;
     }
     else
     {
-        if (BitsPerPixel == 32)
-        {
-            primitives::FilledEllipse((BGRA*)ScreenBuffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blendBGRA);
-        }
-        else
-        {
-            primitives::FilledEllipse((BGR*)ScreenBuffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blendBGR);
-        }
+        primitives::FilledEllipse((BGRA*)ScreenBuffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blendBGRA);
     }
 }
 
@@ -2303,19 +1541,11 @@ EXPORT(void) DrawOutlinedCircle(int x, int y, int r, RGBA color, int antialias)
 {
     if (color.alpha == 0)
     {          // no mask
-
         return;
     }
     else
     {
-        if (BitsPerPixel == 32)
-        {
-            primitives::OutlinedCircle((BGRA*)ScreenBuffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blendBGRA);
-        }
-        else
-        {
-            primitives::OutlinedCircle((BGR*)ScreenBuffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blendBGR);
-        }
+        primitives::OutlinedCircle((BGRA*)ScreenBuffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blendBGRA);
     }
 }
 
@@ -2324,19 +1554,11 @@ EXPORT(void) DrawFilledCircle(int x, int y, int r, RGBA color, int antialias)
 {
     if (color.alpha == 0)
     {          // no mask
-
         return;
     }
     else
     {
-        if (BitsPerPixel == 32)
-        {
-            primitives::FilledCircle((BGRA*)ScreenBuffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blendBGRA);
-        }
-        else
-        {
-            primitives::FilledCircle((BGR*)ScreenBuffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blendBGR);
-        }
+        primitives::FilledCircle((BGRA*)ScreenBuffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blendBGRA);
     }
 }
 
@@ -2345,19 +1567,11 @@ EXPORT(void) DrawGradientCircle(int x, int y, int r, RGBA colors[2], int antiali
 {
     if (colors[0].alpha == 0 && colors[1].alpha == 0)
     {          // no mask
-
         return;
     }
     else
     {
-        if (BitsPerPixel == 32)
-        {
-            primitives::GradientCircle((BGRA*)ScreenBuffer, ScreenWidth, x, y, r, colors, antialias, ClippingRectangle, blendBGRA);
-        }
-        else
-        {
-            primitives::GradientCircle((BGR*)ScreenBuffer, ScreenWidth, x, y, r, colors, antialias, ClippingRectangle, blendBGR);
-        }
+        primitives::GradientCircle((BGRA*)ScreenBuffer, ScreenWidth, x, y, r, colors, antialias, ClippingRectangle, blendBGRA);
     }
 }
 

@@ -2,15 +2,11 @@
 #include "../../common/configfile.hpp"
 
 
-const char* DEFAULT_VIDEODRIVER = "";
-const char* DEFAULT_RENDER      = "";
-
 ////////////////////////////////////////////////////////////////////////////////
-
-static
-void InitializePlayerConfig(PLAYERCONFIG* config, int player_index)
+static void InitializePlayerConfig(PLAYERCONFIG* config, int player_index)
 {
-    if (!config) return;
+    if (!config)
+        return;
 
     switch (player_index)
     {
@@ -53,24 +49,23 @@ void InitializePlayerConfig(PLAYERCONFIG* config, int player_index)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 bool LoadSphereConfig(SPHERECONFIG* config, const char* filename)
 {
     CConfigFile file;
     file.Load(filename);
 
-    config->videodriver      = file.ReadString("Video" ,  "Driver",       DEFAULT_VIDEODRIVER);
-    config->bitdepth         = file.ReadInt   ("Video",   "BitDepth",     32);
-    config->fullscreen       = file.ReadBool  ("Video",   "Fullscreen",   false);
-    config->vsync            = file.ReadBool  ("Video",   "VSync",        true);
-    config->scale            = file.ReadBool  ("Video",   "Scale",        false);
-    config->filter           = file.ReadInt   ("Video",   "Filter",       0);
+    // load video settings
+    config->videodriver      = file.ReadString("Video" ,  "Driver",          "");
 
-    config->sound            = file.ReadInt   ("Audio" ,  "Preference", SOUND_AUTODETECT);
-    config->allow_networking = file.ReadBool  ("Network", "Allowed",    true);
+    // load sound settings
+    config->sound            = file.ReadInt   ("Audio" ,  "Preference",      SOUND_AUTODETECT);
+    config->audiodriver      = file.ReadString("Audio",   "Driver",          "");
 
+    // load network settings
+    config->allow_networking = file.ReadBool  ("Network", "AllowNetworking", true);
+
+    // load input settings
     const char identify[] = "1234";
-
     for(int x = 0; x < 4; x++)
     {
         std::string current("Player");
@@ -84,56 +79,57 @@ bool LoadSphereConfig(SPHERECONFIG* config, const char* filename)
         // Set default configuration to be overridden.
         InitializePlayerConfig(&config->player_configurations[x], x);
 
-        if ((key_up_str = file.ReadString(current.c_str(), "KeyUp", "")) != "")
+        if ((key_up_str = file.ReadString(current.c_str(), "Up", "")) != "")
             config->player_configurations[x].key_up_str = key_up_str;
 
-        if ((key_down_str = file.ReadString(current.c_str(), "KeyDown", "")) != "")
+        if ((key_down_str = file.ReadString(current.c_str(), "Down", "")) != "")
             config->player_configurations[x].key_down_str = key_down_str;
 
-        if ((key_left_str = file.ReadString(current.c_str(), "KeyLeft", "")) != "")
+        if ((key_left_str = file.ReadString(current.c_str(), "Left", "")) != "")
             config->player_configurations[x].key_left_str = key_left_str;
 
-        if ((key_right_str = file.ReadString(current.c_str(), "KeyRight", "")) != "")
+        if ((key_right_str = file.ReadString(current.c_str(), "Right", "")) != "")
             config->player_configurations[x].key_right_str = key_right_str;
 
-        config->player_configurations[x].keyboard_input_allowed = file.ReadInt(current.c_str(), "KeyboardAllowed", 1);
-        config->player_configurations[x].joypad_input_allowed   = file.ReadInt(current.c_str(), "JoypadAllowed", 1);
+        config->player_configurations[x].keyboard_input_allowed = file.ReadBool(current.c_str(), "AllowKeyboardInput", true);
+        config->player_configurations[x].joypad_input_allowed   = file.ReadBool(current.c_str(), "AllowJoypadInput",   true);
     }
 
     return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 bool SaveSphereConfig(SPHERECONFIG* config, const char* filename)
 {
     CConfigFile file;
+
+    // save video settings
     file.WriteString("Video" ,  "Driver",      config->videodriver.c_str());
-    file.WriteInt   ("Video" ,  "BitDepth",    config->bitdepth);
-    file.WriteBool  ("Video",   "Fullscreen",  config->fullscreen);
-    file.WriteBool  ("Video",   "VSync",       config->vsync);
-    file.WriteBool  ("Video",   "Scale",       config->scale);
-    file.WriteInt   ("Video" ,  "Filter",      config->filter);
 
-    file.WriteInt   ("Audio" ,  "Preference", config->sound);
-    file.WriteBool  ("Network", "Allowed",    config->allow_networking);
+    // save sound settings
+    file.WriteInt   ("Audio" ,  "Preference",  config->sound);
+    file.WriteString("Audio",   "Driver",      config->audiodriver.c_str());
 
+    // save network settings
+    file.WriteBool  ("Network", "Allowed",     config->allow_networking);
+
+    // save input settings
     const char identify[] = "1234";
-
     for(int x = 0; x < 4; x++)
     {
         std::string current("Player");
         current += identify[x];
 
-        file.WriteString(current.c_str(), "KeyUp",           config->player_configurations[x].key_up_str.c_str());
-        file.WriteString(current.c_str(), "KeyLeft",         config->player_configurations[x].key_left_str.c_str());
-        file.WriteString(current.c_str(), "KeyRight",        config->player_configurations[x].key_right_str.c_str());
-        file.WriteString(current.c_str(), "KeyDown",         config->player_configurations[x].key_down_str.c_str());
-        file.WriteInt   (current.c_str(), "KeyboardAllowed", config->player_configurations[x].keyboard_input_allowed);
-        file.WriteInt   (current.c_str(), "JoypadAllowed",   config->player_configurations[x].joypad_input_allowed);
+        file.WriteString(current.c_str(), "Up",                 config->player_configurations[x].key_up_str.c_str());
+        file.WriteString(current.c_str(), "Left",               config->player_configurations[x].key_left_str.c_str());
+        file.WriteString(current.c_str(), "Right",              config->player_configurations[x].key_right_str.c_str());
+        file.WriteString(current.c_str(), "Down",               config->player_configurations[x].key_down_str.c_str());
+        file.WriteBool  (current.c_str(), "AllowKeyboardInput", config->player_configurations[x].keyboard_input_allowed);
+        file.WriteBool  (current.c_str(), "AllowJoypadInput",   config->player_configurations[x].joypad_input_allowed);
     }
 
     file.Save(filename);
+
     return true;
 }
 

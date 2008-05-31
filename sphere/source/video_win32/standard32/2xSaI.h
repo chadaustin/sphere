@@ -53,48 +53,21 @@ inline dword INTERPOLATE(dword A, dword B)
     else return A;
 }
 
-inline BGR INTERPOLATE(BGR A, BGR B)
-{
-    if (A !=B)
-    {
-        BGR temp;
-
-        temp.red   = (A.red   + B.red)   >> 1;
-        temp.green = (A.green + B.green) >> 1;
-        temp.blue  = (A.blue  + B.blue)  >> 1;
-
-        return temp;
-    }
-    else
-        return A;
-}
-
 inline dword Q_INTERPOLATE(dword A, dword B, dword C, dword D)
 {
         register dword x = ((A & QCOLORMASK) >> 2) +
-                           ((B & QCOLORMASK) >> 2) +
-                           ((C & QCOLORMASK) >> 2) +
-                           ((D & QCOLORMASK) >> 2);
+                            ((B & QCOLORMASK) >> 2) +
+                            ((C & QCOLORMASK) >> 2) +
+                            ((D & QCOLORMASK) >> 2);
 
         register dword y = (A & QLOWPIXELMASK) +
-                           (B & QLOWPIXELMASK) +
-                           (C & QLOWPIXELMASK) +
-                           (D & QLOWPIXELMASK);
+                            (B & QLOWPIXELMASK) +
+                            (C & QLOWPIXELMASK) +
+                            (D & QLOWPIXELMASK);
 
         y = (y >> 2) & QLOWPIXELMASK;
 
         return x + y;
-}
-
-inline BGR Q_INTERPOLATE(BGR A, BGR B, BGR C, BGR D)
-{
-    BGR temp;
-
-    temp.red   = (A.red   + B.red   + C.red   + D.red)   >> 2;
-    temp.green = (A.green + B.green + C.green + D.green) >> 2;
-    temp.blue  = (A.blue  + B.blue  + C.blue  + D.blue)  >> 2;
-
-    return temp;
 }
 
 

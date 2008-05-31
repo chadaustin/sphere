@@ -1,5 +1,9 @@
 YYYY.MM.DD
 
+2008.06.01
+  - Replaced the old and win-only Config tool with
+    a new one based on wxWidgets.
+
 2008.05.15
   - Fixed the bug in the editor which displaced entities
     after copying & pasting them.
