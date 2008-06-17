@@ -84,9 +84,6 @@ void SuperEagle(word* dst, int dst_pitch, word* src, int src_width, int src_heig
             qlowpixelMask = 0x0C630C63; // 0000110001100011 0000110001100011
     }
 
-
-    int src_pitch = src_width;
-
     dword product1a;
     dword product1b;
     dword product2a;
@@ -107,9 +104,9 @@ void SuperEagle(word* dst, int dst_pitch, word* src, int src_width, int src_heig
     dword colorS2;
 
     word*  src0 = src + 1;
-    word*  src1 = src + 1 + src_pitch;
-    word*  src2 = src + 1 + src_pitch * 2;
-    word*  src3 = src + 1 + src_pitch * 3;
+    word*  src1 = src + 1 + src_width;
+    word*  src2 = src + 1 + src_width * 2;
+    word*  src3 = src + 1 + src_width * 3;
 
     dword* dst0 = (dword*)(dst + 2 + dst_pitch * 2);
     dword* dst1 = (dword*)(dst + 2 + dst_pitch * 3);
@@ -120,6 +117,8 @@ void SuperEagle(word* dst, int dst_pitch, word* src, int src_width, int src_heig
     while (iy--)
     {
         ix = src_width - 2;
+        dword* dstA = dst0;
+        dword* dstB = dst1;
 
         while (ix--)
         {
@@ -248,15 +247,15 @@ void SuperEagle(word* dst, int dst_pitch, word* src, int src_width, int src_heig
             }
 
 
-            dst0[0] = product1a | (product1b << 16);
-            dst1[0] = product2a | (product2b << 16);
+            dstA[0] = product1a | (product1b << 16);
+            dstB[0] = product2a | (product2b << 16);
 
             ++src0;
             ++src1;
             ++src2;
             ++src3;
-            ++dst0;
-            ++dst1;
+            ++dstA;
+            ++dstB;
         }
 
         src0 += 2;
@@ -264,8 +263,8 @@ void SuperEagle(word* dst, int dst_pitch, word* src, int src_width, int src_heig
         src2 += 2;
         src3 += 2;
 
-        dst0 += src_width + 2;
-        dst1 += src_width + 2;
+        dst0 += dst_pitch;
+        dst1 += dst_pitch;
     }
 }
 
@@ -288,9 +287,6 @@ void Super2xSaI(word* dst, int dst_pitch, word* src, int src_width, int src_heig
             qcolorMask    = 0x739C739C; // 0111001110011100 0111001110011100
             qlowpixelMask = 0x0C630C63; // 0000110001100011 0000110001100011
     }
-
-
-    int src_pitch = src_width;
 
     dword product1a;
     dword product1b;
@@ -316,9 +312,9 @@ void Super2xSaI(word* dst, int dst_pitch, word* src, int src_width, int src_heig
     dword colorS2;
 
     word*  src0 = src + 1;
-    word*  src1 = src + 1 + src_pitch;
-    word*  src2 = src + 1 + src_pitch * 2;
-    word*  src3 = src + 1 + src_pitch * 3;
+    word*  src1 = src + 1 + src_width;
+    word*  src2 = src + 1 + src_width * 2;
+    word*  src3 = src + 1 + src_width * 3;
 
     dword* dst0 = (dword*)(dst + 2 + dst_pitch * 2);
     dword* dst1 = (dword*)(dst + 2 + dst_pitch * 3);
@@ -329,6 +325,8 @@ void Super2xSaI(word* dst, int dst_pitch, word* src, int src_width, int src_heig
     while (iy--)
     {
         ix = src_width - 2;
+        dword* dstA = dst0;
+        dword* dstB = dst1;
 
         while (ix--)
         {
@@ -442,15 +440,15 @@ void Super2xSaI(word* dst, int dst_pitch, word* src, int src_width, int src_heig
                product1a = color5;
 
 
-            dst0[0] = product1a | (product1b << 16);
-            dst1[0] = product2a | (product2b << 16);
+            dstA[0] = product1a | (product1b << 16);
+            dstB[0] = product2a | (product2b << 16);
 
             ++src0;
             ++src1;
             ++src2;
             ++src3;
-            ++dst0;
-            ++dst1;
+            ++dstA;
+            ++dstB;
         }
 
         src0 += 2;
@@ -458,8 +456,8 @@ void Super2xSaI(word* dst, int dst_pitch, word* src, int src_width, int src_heig
         src2 += 2;
         src3 += 2;
 
-        dst0 += src_width + 2;
-        dst1 += src_width + 2;
+        dst0 += dst_pitch;
+        dst1 += dst_pitch;
     }
 }
 
@@ -508,9 +506,6 @@ void _2xSaI(word* dst, int dst_pitch, word* src, int src_width, int src_height, 
             qlowpixelMask = 0x0C630C63; // 0000110001100011 0000110001100011
     }
 
-
-    int src_pitch = src_width;
-
     dword product0;
     dword product1;
     dword product2;
@@ -535,9 +530,9 @@ void _2xSaI(word* dst, int dst_pitch, word* src, int src_width, int src_height, 
     dword colorO;
 
     word*  src0 = src + 1;
-    word*  src1 = src + 1 + src_pitch;
-    word*  src2 = src + 1 + src_pitch * 2;
-    word*  src3 = src + 1 + src_pitch * 3;
+    word*  src1 = src + 1 + src_width;
+    word*  src2 = src + 1 + src_width * 2;
+    word*  src3 = src + 1 + src_width * 3;
 
     dword* dst0 = (dword*)(dst + 2 + dst_pitch * 2);
     dword* dst1 = (dword*)(dst + 2 + dst_pitch * 3);
@@ -548,6 +543,8 @@ void _2xSaI(word* dst, int dst_pitch, word* src, int src_width, int src_height, 
     while (iy--)
     {
         ix = src_width - 2;
+        dword* dstA = dst0;
+        dword* dstB = dst1;
 
         while (ix--)
         {
@@ -701,15 +698,15 @@ void _2xSaI(word* dst, int dst_pitch, word* src, int src_width, int src_height, 
                }
             }
 
-            dst0[0] = colorA   | (product0 << 16);
-            dst1[0] = product1 | (product2 << 16);
+            dstA[0] = colorA   | (product0 << 16);
+            dstB[0] = product1 | (product2 << 16);
 
             ++src0;
             ++src1;
             ++src2;
             ++src3;
-            ++dst0;
-            ++dst1;
+            ++dstA;
+            ++dstB;
         }
 
         src0 += 2;
@@ -717,8 +714,8 @@ void _2xSaI(word* dst, int dst_pitch, word* src, int src_width, int src_height, 
         src2 += 2;
         src3 += 2;
 
-        dst0 += src_width + 2;
-        dst1 += src_width + 2;
+        dst0 += dst_pitch;
+        dst1 += dst_pitch;
     }
 }
 

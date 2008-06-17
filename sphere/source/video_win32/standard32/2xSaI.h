@@ -75,7 +75,7 @@ template<typename T>
 void SuperEagle(T* dst, int dst_pitch, T* src, int src_width, int src_height)
 {
 
-    int src_pitch = src_width;
+    int dst_pitch2 = dst_pitch * 2;
 
     T product1a;
     T product1b;
@@ -97,9 +97,9 @@ void SuperEagle(T* dst, int dst_pitch, T* src, int src_width, int src_height)
     T colorS2;
 
     T* src0 = src + 1;
-    T* src1 = src + 1 + src_pitch;
-    T* src2 = src + 1 + src_pitch * 2;
-    T* src3 = src + 1 + src_pitch * 3;
+    T* src1 = src + 1 + src_width;
+    T* src2 = src + 1 + src_width * 2;
+    T* src3 = src + 1 + src_width * 3;
 
     T* dst0 = dst + 2 + dst_pitch * 2;
     T* dst1 = dst + 2 + dst_pitch * 3;
@@ -110,6 +110,8 @@ void SuperEagle(T* dst, int dst_pitch, T* src, int src_width, int src_height)
     while (iy--)
     {
         ix = src_width - 2;
+        T* dstA = dst0;
+        T* dstB = dst1;
 
         while (ix--)
         {
@@ -238,17 +240,17 @@ void SuperEagle(T* dst, int dst_pitch, T* src, int src_width, int src_height)
             }
 
 
-            dst0[0] = product1a;
-            dst0[1] = product1b;
-            dst1[0] = product2a;
-            dst1[1] = product2b;
+            dstA[0] = product1a;
+            dstA[1] = product1b;
+            dstB[0] = product2a;
+            dstB[1] = product2b;
 
             ++src0;
             ++src1;
             ++src2;
             ++src3;
-            dst0 += 2;
-            dst1 += 2;
+            dstA += 2;
+            dstB += 2;
         }
 
         src0 += 2;
@@ -256,8 +258,8 @@ void SuperEagle(T* dst, int dst_pitch, T* src, int src_width, int src_height)
         src2 += 2;
         src3 += 2;
 
-        dst0 += dst_pitch + 4;
-        dst1 += dst_pitch + 4;
+        dst0 += dst_pitch2;
+        dst1 += dst_pitch2;
     }
 }
 
@@ -265,7 +267,7 @@ template<typename T>
 void Super2xSaI(T* dst, int dst_pitch, T* src, int src_width, int src_height)
 {
 
-    int src_pitch = src_width;
+    int dst_pitch2 = dst_pitch * 2;
 
     T product1a;
     T product1b;
@@ -291,9 +293,9 @@ void Super2xSaI(T* dst, int dst_pitch, T* src, int src_width, int src_height)
     T colorS2;
 
     T* src0 = src + 1;
-    T* src1 = src + 1 + src_pitch;
-    T* src2 = src + 1 + src_pitch * 2;
-    T* src3 = src + 1 + src_pitch * 3;
+    T* src1 = src + 1 + src_width;
+    T* src2 = src + 1 + src_width * 2;
+    T* src3 = src + 1 + src_width * 3;
 
     T* dst0 = dst + 2 + dst_pitch * 2;
     T* dst1 = dst + 2 + dst_pitch * 3;
@@ -304,6 +306,8 @@ void Super2xSaI(T* dst, int dst_pitch, T* src, int src_width, int src_height)
     while (iy--)
     {
         ix = src_width - 2;
+        T* dstA = dst0;
+        T* dstB = dst1;
 
         while (ix--)
         {
@@ -417,17 +421,17 @@ void Super2xSaI(T* dst, int dst_pitch, T* src, int src_width, int src_height)
                product1a = color5;
 
 
-            dst0[0] = product1a;
-            dst0[1] = product1b;
-            dst1[0] = product2a;
-            dst1[1] = product2b;
+            dstA[0] = product1a;
+            dstA[1] = product1b;
+            dstB[0] = product2a;
+            dstB[1] = product2b;
 
             ++src0;
             ++src1;
             ++src2;
             ++src3;
-            dst0 += 2;
-            dst1 += 2;
+            dstA += 2;
+            dstB += 2;
         }
 
         src0 += 2;
@@ -435,8 +439,8 @@ void Super2xSaI(T* dst, int dst_pitch, T* src, int src_width, int src_height)
         src2 += 2;
         src3 += 2;
 
-        dst0 += dst_pitch + 4;
-        dst1 += dst_pitch + 4;
+        dst0 += dst_pitch2;
+        dst1 += dst_pitch2;
     }
 }
 
@@ -470,7 +474,7 @@ template<typename T>
 void _2xSaI(T* dst, int dst_pitch, T* src, int src_width, int src_height)
 {
 
-    int src_pitch = src_width;
+    int dst_pitch2 = dst_pitch * 2;
 
     T product0;
     T product1;
@@ -496,9 +500,9 @@ void _2xSaI(T* dst, int dst_pitch, T* src, int src_width, int src_height)
     T colorO;
 
     T* src0 = src + 1;
-    T* src1 = src + 1 + src_pitch;
-    T* src2 = src + 1 + src_pitch * 2;
-    T* src3 = src + 1 + src_pitch * 3;
+    T* src1 = src + 1 + src_width;
+    T* src2 = src + 1 + src_width * 2;
+    T* src3 = src + 1 + src_width * 3;
 
     T* dst0 = dst + 2 + dst_pitch * 2;
     T* dst1 = dst + 2 + dst_pitch * 3;
@@ -509,6 +513,8 @@ void _2xSaI(T* dst, int dst_pitch, T* src, int src_width, int src_height)
     while (iy--)
     {
         ix = src_width - 2;
+        T* dstA = dst0;
+        T* dstB = dst1;
 
         while (ix--)
         {
@@ -663,17 +669,17 @@ void _2xSaI(T* dst, int dst_pitch, T* src, int src_width, int src_height)
             }
 
 
-            dst0[0] = colorA;
-            dst0[1] = product0;
-            dst1[0] = product1;
-            dst1[1] = product2;
+            dstA[0] = colorA;
+            dstA[1] = product0;
+            dstB[0] = product1;
+            dstB[1] = product2;
 
             ++src0;
             ++src1;
             ++src2;
             ++src3;
-            dst0 += 2;
-            dst1 += 2;
+            dstA += 2;
+            dstB += 2;
         }
 
         src0 += 2;
@@ -681,8 +687,8 @@ void _2xSaI(T* dst, int dst_pitch, T* src, int src_width, int src_height)
         src2 += 2;
         src3 += 2;
 
-        dst0 += dst_pitch + 4;
-        dst1 += dst_pitch + 4;
+        dst0 += dst_pitch2;
+        dst1 += dst_pitch2;
     }
 }
 

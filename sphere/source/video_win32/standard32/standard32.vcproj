@@ -149,7 +149,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="../../../third-party-msvc/include"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;NDEBUG;WIN32;_WINDOWS;_USRDLL;STANDARD32_EXPORTS;USE_ALPHA_TABLE"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;NDEBUG;WIN32;_WINDOWS;_USRDLL;STANDARD32_EXPORTS;USE_CLIP_IMAGE"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				StructMemberAlignment="1"

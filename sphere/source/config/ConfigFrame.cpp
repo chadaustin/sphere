@@ -7,48 +7,156 @@
 /************************************************************************************/
 
 CConfigFrame::CConfigFrame(const wxString& title)
-            : wxFrame(NULL, wxID_ANY, title, wxDefaultPosition, wxSize(400, 350),
+            : wxFrame(NULL, wxID_ANY, title, wxDefaultPosition, wxSize(400, 380),
                       wxMINIMIZE_BOX | wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN)
 {
+    // create the menu bar
+    m_menu_bar       = new wxMenuBar;
+    m_config_menu    = new wxMenu;
+    m_language_menu  = new wxMenu;
 
-    wxPanel* panel      = new wxPanel(this,   wxID_ANY);
+    m_config_menu->Append(IDM_RESTORE_DEFAULTS, wxT("Restore Defaults"));
+
+    m_language_menu->AppendRadioItem(IDL_ENGLISH,     LanguageNames[IDL_ENGLISH]);
+    m_language_menu->AppendRadioItem(IDL_GERMAN,      LanguageNames[IDL_GERMAN]);
+    m_language_menu->AppendRadioItem(IDL_FRENCH,      LanguageNames[IDL_FRENCH]);
+    m_language_menu->AppendRadioItem(IDL_DUTCH,       LanguageNames[IDL_DUTCH]);
+    m_language_menu->AppendRadioItem(IDL_JAPANESE,    LanguageNames[IDL_JAPANESE]);
+    m_language_menu->AppendRadioItem(IDL_CHINESE,     LanguageNames[IDL_CHINESE]);
+    m_language_menu->AppendRadioItem(IDL_RUSSIAN,     LanguageNames[IDL_RUSSIAN]);
+    m_language_menu->AppendRadioItem(IDL_SPANISH,     LanguageNames[IDL_SPANISH]);
+    m_language_menu->AppendRadioItem(IDL_INDONESIAN,  LanguageNames[IDL_INDONESIAN]);
+
+    m_menu_bar->Append(m_config_menu,   wxT("Configuration"));
+    m_menu_bar->Append(m_language_menu, wxT("Language"));
+    SetMenuBar(m_menu_bar);
+
+    // create everything else
+    m_panel             = new wxPanel(this,   wxID_ANY);
 
     wxBoxSizer* vbox1   = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer* vbox2   = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer* hbox1   = new wxBoxSizer(wxHORIZONTAL);
 
-    m_restore_defaults  = new wxButton(panel, IDM_RESTORE_DEFAULTS, wxT("Restore Defaults"));
-    m_ok_button         = new wxButton(panel, wxID_OK,     wxT("OK"));
-    m_cancel_button     = new wxButton(panel, wxID_CANCEL, wxT("Cancel"));
+    m_ok_button         = new wxButton(m_panel, wxID_OK,     wxT("OK"));
+    m_cancel_button     = new wxButton(m_panel, wxID_CANCEL, wxT("Cancel"));
 
-    m_notebook          = new CConfigNotebook(this, panel, wxID_ANY);
+    m_notebook          = new CConfigNotebook(this, m_panel, wxID_ANY);
 
     vbox2->Add(m_notebook, 1, wxEXPAND);
 
-    hbox1->Add(m_restore_defaults);
-    hbox1->Add(50, -1);
     hbox1->Add(m_ok_button);
     hbox1->Add(5, -1);
     hbox1->Add(m_cancel_button);
 
     vbox2->Add(-1, 10);
-    vbox2->Add(hbox1, 0, wxALIGN_CENTER);
+    vbox2->Add(hbox1, 0, wxALIGN_RIGHT);
     vbox1->Add(vbox2, 1, wxEXPAND | wxALL, 10);
 
-    panel->SetSizer(vbox1);
+    m_panel->SetSizer(vbox1);
 
     Center();
 
-    SetIcon(config_icon_xpm);
+    Connect(IDM_RESTORE_DEFAULTS, wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectRestoreDefaults));
 
-    Connect(IDM_RESTORE_DEFAULTS, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(CConfigFrame::OnClickRestoreDefaults));
-    Connect(wxID_OK,     wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(CConfigFrame::OnClickOk));
-    Connect(wxID_CANCEL, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(CConfigFrame::OnClickCancel));
+    Connect(IDL_ENGLISH,          wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectEnglish));
+    Connect(IDL_GERMAN,           wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectGerman));
+    Connect(IDL_FRENCH,           wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectFrench));
+    Connect(IDL_DUTCH,            wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectDutch));
+    Connect(IDL_JAPANESE,         wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectJapanese));
+    Connect(IDL_CHINESE,          wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectChinese));
+    Connect(IDL_RUSSIAN,          wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectRussian));
+    Connect(IDL_SPANISH,          wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectSpanish));
+    Connect(IDL_INDONESIAN,       wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectIndonesian));
+
+    Connect(wxID_OK,              wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(CConfigFrame::OnClickOk));
+    Connect(wxID_CANCEL,          wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(CConfigFrame::OnClickCancel));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
 void
-CConfigFrame::OnClickRestoreDefaults(wxCommandEvent& event)
+CConfigFrame::OnSelectEnglish(wxCommandEvent& event)
+{
+    InitializeLanguage(IDL_ENGLISH);
+    Translate();
+    RefreshLayout();
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+void
+CConfigFrame::OnSelectGerman(wxCommandEvent& event)
+{
+    InitializeLanguage(IDL_GERMAN);
+    Translate();
+    RefreshLayout();
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+void
+CConfigFrame::OnSelectFrench(wxCommandEvent& event)
+{
+    InitializeLanguage(IDL_FRENCH);
+    Translate();
+    RefreshLayout();
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+void
+CConfigFrame::OnSelectDutch(wxCommandEvent& event)
+{
+    InitializeLanguage(IDL_DUTCH);
+    Translate();
+    RefreshLayout();
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+void
+CConfigFrame::OnSelectJapanese(wxCommandEvent& event)
+{
+    InitializeLanguage(IDL_JAPANESE);
+    Translate();
+    RefreshLayout();
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+void
+CConfigFrame::OnSelectChinese(wxCommandEvent& event)
+{
+    InitializeLanguage(IDL_CHINESE);
+    Translate();
+    RefreshLayout();
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+void
+CConfigFrame::OnSelectRussian(wxCommandEvent& event)
+{
+    InitializeLanguage(IDL_RUSSIAN);
+    Translate();
+    RefreshLayout();
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+void
+CConfigFrame::OnSelectSpanish(wxCommandEvent& event)
+{
+    InitializeLanguage(IDL_SPANISH);
+    Translate();
+    RefreshLayout();
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+void
+CConfigFrame::OnSelectIndonesian(wxCommandEvent& event)
+{
+    InitializeLanguage(IDL_INDONESIAN);
+    Translate();
+    RefreshLayout();
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+void
+CConfigFrame::OnSelectRestoreDefaults(wxCommandEvent& event)
 {
     LoadDefaultConfiguration();
 
@@ -64,9 +172,9 @@ CConfigFrame::OnClickOk(wxCommandEvent& event)
 {
     if (!m_notebook->GetVideoPage()->IsDriverSelected())
     {
-        wxString error(wxT("No video driver selected.\nPlease select one from the list."));
+        wxString error(_("No video driver selected.\nPlease select one from the list."));
 
-        wxMessageDialog dial(NULL, error, wxT("Sphere Configuration"), wxOK | wxICON_ERROR);
+        wxMessageDialog dial(NULL, error, _("Sphere Configuration"), wxOK | wxICON_ERROR);
         dial.ShowModal();
 
         return;
@@ -87,18 +195,45 @@ CConfigFrame::OnClickCancel(wxCommandEvent& event)
 bool
 CConfigFrame::Initialize(wxString &error)
 {
+    LoadConfiguration();
+
+    InitializeLanguage(GetConfig()->language);
 
     if (!m_notebook->GetVideoPage()->BuildDriverList(error))
         return false;
 
-    LoadConfiguration();
-
+    // apply the loaded configurations
     m_notebook->GetVideoPage()  ->LoadConfiguration();
     m_notebook->GetAudioPage()  ->LoadConfiguration();
     m_notebook->GetInputPage()  ->LoadConfiguration();
     m_notebook->GetNetworkPage()->LoadConfiguration();
 
+    Translate();
+    RefreshLayout();
+
     return true;
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+void
+CConfigFrame::InitializeLanguage(int lang_id)
+{
+    if (!m_locale.Init(LanguageIDs[lang_id], wxLOCALE_CONV_ENCODING))
+    {
+        wxMessageDialog dial(NULL, wxGetTranslation(LanguageNames[lang_id])
+                                   + wxString(wxT(" "))
+                                   + _("is not supported by the system."),
+                             _("Sphere Configuration"), wxOK | wxICON_ERROR);
+        dial.ShowModal();
+
+        return;
+    }
+
+    m_sphere_config.language = lang_id;
+
+    wxLocale::AddCatalogLookupPathPrefix(wxT("./locale/"));
+    m_locale.AddCatalog(wxT("config"));
 
 }
 
@@ -150,7 +285,6 @@ static void LoadDefaultPlayerConfiguration(PLAYERCONFIG &config, int player_inde
 void
 CConfigFrame::LoadDefaultConfiguration()
 {
-
     // load default audio configuration
     m_sphere_config.sound_preference = 0;
     m_sphere_config.audio_driver     = audio_drivers[0];
@@ -190,6 +324,16 @@ CConfigFrame::LoadConfiguration()
     long     lDummy;
     bool     bDummy;
 
+    // load main configuration
+    file.Read(wxT("Main/Language"), &lDummy, (long)0);
+
+    if (lDummy < 0 || lDummy >= MAX_LANGUAGES)
+        lDummy = 0;
+
+    m_sphere_config.language = (int)lDummy;
+    m_language_menu->Check((int)lDummy, true);
+
+
     // load video configuration
     file.Read(wxT("Video/Driver"), &sDummy, wxEmptyString);
     m_sphere_config.video_driver = sDummy;
@@ -206,22 +350,22 @@ CConfigFrame::LoadConfiguration()
     // load input configuration
     for (int i = 0; i < 4; ++i)
     {
-        file.Read(players[i] + wxT("/AllowKeyboardInput"), &bDummy, true);
+        file.Read(wxT("Player") + PlayerIDs[i] + wxT("/AllowKeyboardInput"), &bDummy, true);
         m_sphere_config.players[i].allow_keyboard_input = bDummy;
 
-        file.Read(players[i] + wxT("/AllowJoypadInput"), &bDummy, true);
+        file.Read(wxT("Player") + PlayerIDs[i] + wxT("/AllowJoypadInput"), &bDummy, true);
         m_sphere_config.players[i].allow_joypad_input = bDummy;
 
-        file.Read(players[i] + wxT("/Up"), &sDummy, wxEmptyString);
+        file.Read(wxT("Player") + PlayerIDs[i] + wxT("/Up"), &sDummy, wxEmptyString);
         m_sphere_config.players[i].up = sDummy;
 
-        file.Read(players[i] + wxT("/Down"), &sDummy, wxEmptyString);
+        file.Read(wxT("Player") + PlayerIDs[i] + wxT("/Down"), &sDummy, wxEmptyString);
         m_sphere_config.players[i].down = sDummy;
 
-        file.Read(players[i] + wxT("/Left"), &sDummy, wxEmptyString);
+        file.Read(wxT("Player") + PlayerIDs[i] + wxT("/Left"), &sDummy, wxEmptyString);
         m_sphere_config.players[i].left = sDummy;
 
-        file.Read(players[i] + wxT("/Right"), &sDummy, wxEmptyString);
+        file.Read(wxT("Player") + PlayerIDs[i] + wxT("/Right"), &sDummy, wxEmptyString);
         m_sphere_config.players[i].right = sDummy;
     }
 
@@ -239,6 +383,10 @@ CConfigFrame::SaveConfiguration()
 
     wxFileConfig file(wxEmptyString, wxEmptyString, wxGetCwd() + wxT("/engine.ini"), wxEmptyString, wxCONFIG_USE_LOCAL_FILE);
 
+    // save main configuration
+    file.Write(wxT("Main/Language"), m_sphere_config.language);
+
+
     // save video configuration
     file.Write(wxT("Video/Driver"), m_sphere_config.video_driver);
 
@@ -251,18 +399,68 @@ CConfigFrame::SaveConfiguration()
     // save input configuration
     for (int i = 0; i < 4; ++i)
     {
-        file.Write(players[i] + wxT("/AllowKeyboardInput"), m_sphere_config.players[i].allow_keyboard_input);
-        file.Write(players[i] + wxT("/AllowJoypadInput"),   m_sphere_config.players[i].allow_joypad_input);
-        file.Write(players[i] + wxT("/Up"),    m_sphere_config.players[i].up);
-        file.Write(players[i] + wxT("/Down"),  m_sphere_config.players[i].down);
-        file.Write(players[i] + wxT("/Left"),  m_sphere_config.players[i].left);
-        file.Write(players[i] + wxT("/Right"), m_sphere_config.players[i].right);
+        file.Write(wxT("Player") + PlayerIDs[i] + wxT("/AllowKeyboardInput"), m_sphere_config.players[i].allow_keyboard_input);
+        file.Write(wxT("Player") + PlayerIDs[i] + wxT("/AllowJoypadInput"),   m_sphere_config.players[i].allow_joypad_input);
+        file.Write(wxT("Player") + PlayerIDs[i] + wxT("/Up"),    m_sphere_config.players[i].up);
+        file.Write(wxT("Player") + PlayerIDs[i] + wxT("/Down"),  m_sphere_config.players[i].down);
+        file.Write(wxT("Player") + PlayerIDs[i] + wxT("/Left"),  m_sphere_config.players[i].left);
+        file.Write(wxT("Player") + PlayerIDs[i] + wxT("/Right"), m_sphere_config.players[i].right);
     }
 
 
     // save network configuration
     file.Write(wxT("Network/AllowNetworking"), m_sphere_config.allow_networking);
 
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+void
+CConfigFrame::Translate()
+{
+    SetTitle(_("Sphere Configuration"));
+
+    m_menu_bar->SetLabelTop(0, _("Configuration"));
+    m_menu_bar->SetLabelTop(1, _("Language"));
+
+    m_config_menu->SetLabel(IDM_RESTORE_DEFAULTS, _("Restore Defaults"));
+
+    m_language_menu->SetLabel(IDL_ENGLISH,      _("English"));
+    m_language_menu->SetLabel(IDL_GERMAN,       _("German"));
+    m_language_menu->SetLabel(IDL_FRENCH,       _("French"));
+    m_language_menu->SetLabel(IDL_DUTCH,        _("Dutch"));
+    m_language_menu->SetLabel(IDL_JAPANESE,     _("Japanese"));
+    m_language_menu->SetLabel(IDL_CHINESE,      _("Chinese"));
+    m_language_menu->SetLabel(IDL_RUSSIAN,      _("Russian"));
+    m_language_menu->SetLabel(IDL_SPANISH,      _("Spanish"));
+    m_language_menu->SetLabel(IDL_INDONESIAN,   _("Indonesian"));
+
+    m_ok_button->SetLabel(_("OK"));
+    m_cancel_button->SetLabel(_("Cancel"));
+
+    // translate the page labels
+    m_notebook->SetPageText(0, _("Video"));
+    m_notebook->SetPageText(1, _("Audio"));
+    m_notebook->SetPageText(2, _("Input"));
+    m_notebook->SetPageText(3, _("Network"));
+
+    // translate the page contents
+    m_notebook->GetVideoPage()  ->Translate();
+    m_notebook->GetAudioPage()  ->Translate();
+    m_notebook->GetInputPage()  ->Translate();
+    m_notebook->GetNetworkPage()->Translate();
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+void
+CConfigFrame::RefreshLayout()
+{
+    m_panel->Layout();
+
+    m_notebook->GetVideoPage()  ->Layout();
+    m_notebook->GetAudioPage()  ->Layout();
+    m_notebook->GetInputPage()  ->Layout();
+    m_notebook->GetNetworkPage()->Layout();
 }
 
 
@@ -311,7 +509,7 @@ CConfigVideoPage::CConfigVideoPage(CConfigFrame* frame, wxWindow* parent)
 {
     m_frame = frame;
 
-    wxStaticBox* box   = new wxStaticBox(this, wxID_ANY, wxT(" Video Settings"));
+    m_box              = new wxStaticBox(this, wxID_ANY, wxT("Video Settings"));
 
     m_driver_list      = new wxListBox(this,    IDV_DRIVER_LIST);
     m_config_button    = new wxButton(this,     IDV_CONFIG_BUTTON, wxT("Configure Driver"));
@@ -321,7 +519,7 @@ CConfigVideoPage::CConfigVideoPage(CConfigFrame* frame, wxWindow* parent)
     m_info_version     = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
     m_info_desc        = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
 
-    wxStaticBoxSizer* sbox = new wxStaticBoxSizer(box, wxVERTICAL);
+    wxStaticBoxSizer* sbox = new wxStaticBoxSizer(m_box, wxVERTICAL);
     wxBoxSizer* vbox       = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer* vbox1      = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer* hbox1      = new wxBoxSizer(wxHORIZONTAL);
@@ -363,9 +561,9 @@ CConfigVideoPage::OnClickConfigureDriver(wxCommandEvent& event)
 {
     if (!IsDriverSelected())
     {
-        wxString error(wxT("No video driver selected.\nPlease select one from the list."));
+        wxString error(_("No video driver selected.\nPlease select one from the list."));
 
-        wxMessageDialog dial(NULL, error, wxT("Sphere Configuration"), wxOK | wxICON_ERROR);
+        wxMessageDialog dial(NULL, error, _("Sphere Configuration"), wxOK | wxICON_ERROR);
         dial.ShowModal();
 
         return;
@@ -378,19 +576,19 @@ CConfigVideoPage::OnClickConfigureDriver(wxCommandEvent& event)
         drv_name == wxT("standard16") ||
         drv_name == wxT("sdl32"))
     {
-        CDialogSphere32 dial(this, wxT("Configure ") + drv_name, drv_name);
+        CDialogSphere32 dial(this, wxString::Format(_("Configure %s"), drv_name.c_str()), drv_name);
         dial.ShowModal();
 
     }
     else if (drv_name == wxT("standard8"))
     {
-        CDialogSphere8 dial(this, wxT("Configure ") + drv_name, drv_name);
+        CDialogSphere8 dial(this, wxString::Format(_("Configure %s"), drv_name.c_str()), drv_name);
         dial.ShowModal();
     }
     else if (drv_name == wxT("sphere_gl") ||
              drv_name == wxT("sdl_gl"))
     {
-        CDialogSphereGL dial(this, wxT("Configure ") + drv_name, drv_name);
+        CDialogSphereGL dial(this, wxString::Format(_("Configure %s"), drv_name.c_str()), drv_name);
         dial.ShowModal();
     }
 
@@ -435,6 +633,33 @@ CConfigVideoPage::LoadDriverInfo(wxString &drv_name)
 {
     DRIVERINFO drv_info;
 
+#ifdef MAC
+    void* lib = dlopen((wxGetCwd() + wxT("/system/video/") + drv_name).c_str(), RTLD_LAZY);
+
+    if (!lib)
+        return;
+
+    void (STDCALL * get_driver_info)(DRIVERINFO* drv_info);
+
+    get_driver_info = (void (STDCALL *)(DRIVERINFO*))dlsym(lib, "GetDriverInfo");
+
+    if (!get_driver_info)
+    {
+        dlclose(lib);
+        return;
+    }
+
+    get_driver_info(&drv_info);
+
+    m_info_name   ->SetLabel(wxString(drv_info.name,        wxConvUTF8));
+    m_info_author ->SetLabel(wxString(drv_info.author,      wxConvUTF8));
+    m_info_date   ->SetLabel(wxString(drv_info.date,        wxConvUTF8));
+    m_info_version->SetLabel(wxString(drv_info.version,     wxConvUTF8));
+    m_info_desc   ->SetLabel(wxString(drv_info.description, wxConvUTF8));
+
+    dlclose(lib);
+
+#else
     wxDynamicLibrary lib(wxGetCwd() + wxT("/system/video/") + drv_name, wxDL_LAZY);
 
     if (!lib.IsLoaded())
@@ -455,11 +680,32 @@ CConfigVideoPage::LoadDriverInfo(wxString &drv_name)
     m_info_version->SetLabel(wxString(drv_info.version,     wxConvUTF8));
     m_info_desc   ->SetLabel(wxString(drv_info.description, wxConvUTF8));
 
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
 static bool IsValidDriver(wxString filename)
 {
+#ifdef MAC
+    void* lib = dlopen((wxGetCwd() + wxT("/system/video/") + drv_name).c_str(), RTLD_LAZY);
+
+    if (!lib)
+        return false;
+
+    void (STDCALL * get_driver_info)(DRIVERINFO* drv_info);
+
+    get_driver_info = (void (STDCALL *)(DRIVERINFO*))dlsym(lib, "GetDriverInfo");
+
+    bool retval = false;
+
+    if (get_driver_info)
+        retval = true;
+
+    dlclose(lib);
+
+    return retval;
+
+#else
     wxDynamicLibrary lib(filename, wxDL_LAZY);
 
     if (!lib.IsLoaded())
@@ -473,6 +719,8 @@ static bool IsValidDriver(wxString filename)
 
     lib.Unload();
     return true;
+
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -484,9 +732,7 @@ CConfigVideoPage::BuildDriverList(wxString &error)
 
     if (!wxDir::Exists(video_dir))
     {
-        error = wxT("Could not enter <sphere>/system/video.\n"
-                    "This probably means Sphere was installed incorrectly.\n"
-                    "Sphere Configuration cannot continue.");
+        error = _("Could not enter <sphere>/system/video.\nThis probably means Sphere was installed incorrectly.\nSphere Configuration cannot continue.");
         return false;
     }
 
@@ -510,15 +756,22 @@ CConfigVideoPage::BuildDriverList(wxString &error)
 
     if (driver_list.IsEmpty())
     {
-        error = wxT("No video drivers found in <sphere>/system/video/.\n"
-                    "This probably means Sphere was installed incorrectly.\n"
-                    "Sphere Configuration cannot continue.");
+        error = _("No video drivers found in <sphere>/system/video/.\nThis probably means Sphere was installed incorrectly.\nSphere Configuration cannot continue.");
         return false;
     }
 
     m_driver_list->InsertItems(driver_list, 0);
 
     return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+void
+CConfigVideoPage::Translate()
+{
+    m_box->SetLabel(_("Video Settings"));
+
+    m_config_button->SetLabel(_("Configure Driver"));
 }
 
 
@@ -531,36 +784,34 @@ CConfigAudioPage::CConfigAudioPage(CConfigFrame* frame, wxWindow* parent)
 {
     m_frame = frame;
 
-    wxStaticBox* box1 = new wxStaticBox(this, wxID_ANY, wxT(" Audio Settings"));
-    wxStaticBox* box2 = new wxStaticBox(this, wxID_ANY, wxT("Driver"));
+    m_box             = new wxStaticBox(this, wxID_ANY, wxT("Audio Settings"));
+    m_driver_box      = new wxStaticBox(this, wxID_ANY, wxT("Driver"));
 
     m_sound_auto      = new wxRadioButton(this, IDA_SOUND_AUTO, wxT("Use sound if possible"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
     m_sound_on        = new wxRadioButton(this, IDA_SOUND_ON,   wxT("Always use sound"));
     m_sound_off       = new wxRadioButton(this, IDA_SOUND_OFF,  wxT("No sound"));
-    m_driver          = new wxChoice(this, IDA_DRIVER, wxDefaultPosition, wxSize(120, -1), MAX_AUDIO_DRIVERS, audio_drivers);
+    m_driver          = new wxChoice(this, IDA_DRIVER, wxDefaultPosition, wxDefaultSize, MAX_AUDIO_DRIVERS, audio_drivers);
 
-    wxStaticBoxSizer* sbox1 = new wxStaticBoxSizer(box1, wxHORIZONTAL);
-    wxStaticBoxSizer* sbox2 = new wxStaticBoxSizer(box2, wxVERTICAL);
+    wxStaticBoxSizer* sbox1 = new wxStaticBoxSizer(m_box, wxVERTICAL);
+    wxStaticBoxSizer* sbox2 = new wxStaticBoxSizer(m_driver_box, wxVERTICAL);
     wxBoxSizer* vbox        = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer* vbox1       = new wxBoxSizer(wxVERTICAL);
-    wxBoxSizer* vbox2       = new wxBoxSizer(wxVERTICAL);
-
-    vbox1->Add(m_sound_auto, 0, wxALIGN_LEFT | wxLEFT | wxUP, 10);
-    vbox1->Add(m_sound_on,   0, wxALIGN_LEFT | wxLEFT | wxUP, 10);
-    vbox1->Add(m_sound_off,  0, wxALIGN_LEFT | wxLEFT | wxUP, 10);
 
     sbox2->Add(m_driver);
 
-    vbox2->Add(sbox2, 0, wxALIGN_LEFT);
+    vbox1->Add(sbox2);
+    vbox1->Add(-1, 20);
+    vbox1->Add(m_sound_auto);
+    vbox1->Add(-1, 5);
+    vbox1->Add(m_sound_on);
+    vbox1->Add(-1, 5);
+    vbox1->Add(m_sound_off);
 
-    sbox1->Add(vbox1);
-    sbox1->Add(50, -1);
-    sbox1->Add(vbox2);
+    sbox1->Add(vbox1, 1, wxEXPAND | wxALL, 10);
 
     vbox->Add(sbox1, 1, wxEXPAND | wxALL, 10);
 
     SetSizer(vbox);
-
 
     Connect(IDA_SOUND_AUTO, wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler(CConfigAudioPage::OnSelectSoundAuto));
     Connect(IDA_SOUND_ON,   wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler(CConfigAudioPage::OnSelectSoundOn));
@@ -619,6 +870,19 @@ CConfigAudioPage::LoadConfiguration(bool reload)
     m_driver->SetStringSelection(m_frame->GetConfig()->audio_driver);
 }
 
+//////////////////////////////////////////////////////////////////////////////////////
+void
+CConfigAudioPage::Translate()
+{
+    m_box->SetLabel(_("Audio Settings"));
+
+    m_driver_box->SetLabel(_("Driver"));
+
+    m_sound_auto->SetLabel(_("Use sound if possible"));
+    m_sound_on  ->SetLabel(_("Always use sound"));
+    m_sound_off ->SetLabel(_("No sound"));
+}
+
 
 /************************************************************************************/
 // INPUT PAGE ////////////////////////////////////////////////////////////////////////
@@ -631,23 +895,24 @@ CConfigInputPage::CConfigInputPage(CConfigFrame* frame, wxWindow* parent)
 
     m_input_manager        = new CInputManager(this);
 
-    wxStaticBox* box       = new wxStaticBox(this, wxID_ANY, wxT(" Input Settings"));
+    m_box                  = new wxStaticBox(this, wxID_ANY, wxT("Input Settings"));
 
-    m_player_index         = new wxChoice(this,   IDI_PLAYER_INDEX, wxDefaultPosition, wxDefaultSize,  4, players);
+    m_player_str           = new wxStaticText(this, wxID_ANY, wxT("Player"));
+    m_player_index         = new wxChoice(this,   IDI_PLAYER_INDEX, wxDefaultPosition, wxDefaultSize,  4, PlayerIDs);
     m_allow_keyboard_input = new wxCheckBox(this, IDI_ALLOW_KEYBOARD_INPUT, wxT("Allow Keyboard Input"));
     m_allow_joypad_input   = new wxCheckBox(this, IDI_ALLOW_JOYPAD_INPUT,   wxT("Allow Joypad Input"));
 
-    m_up                   = new wxButton(this, IDI_UP,    wxT("Up"),    wxDefaultPosition, wxSize(50, 25));
-    m_down                 = new wxButton(this, IDI_DOWN,  wxT("Down"),  wxDefaultPosition, wxSize(50, 25));
-    m_left                 = new wxButton(this, IDI_LEFT,  wxT("Left"),  wxDefaultPosition, wxSize(50, 25));
-    m_right                = new wxButton(this, IDI_RIGHT, wxT("Right"), wxDefaultPosition, wxSize(50, 25));
+    m_up                   = new wxButton(this, IDI_UP,    wxT("Up"),    wxDefaultPosition, wxSize(60, 25));
+    m_down                 = new wxButton(this, IDI_DOWN,  wxT("Down"),  wxDefaultPosition, wxSize(60, 25));
+    m_left                 = new wxButton(this, IDI_LEFT,  wxT("Left"),  wxDefaultPosition, wxSize(60, 25));
+    m_right                = new wxButton(this, IDI_RIGHT, wxT("Right"), wxDefaultPosition, wxSize(60, 25));
 
     m_up_str               = new wxStaticText(this, wxID_ANY, wxEmptyString);
     m_down_str             = new wxStaticText(this, wxID_ANY, wxEmptyString);
     m_left_str             = new wxStaticText(this, wxID_ANY, wxEmptyString);
     m_right_str            = new wxStaticText(this, wxID_ANY, wxEmptyString);
 
-    wxStaticBoxSizer* sbox = new wxStaticBoxSizer(box, wxVERTICAL);
+    wxStaticBoxSizer* sbox = new wxStaticBoxSizer(m_box, wxVERTICAL);
     wxBoxSizer* vbox       = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer* hbox1      = new wxBoxSizer(wxHORIZONTAL);
     wxBoxSizer* hbox2      = new wxBoxSizer(wxHORIZONTAL);
@@ -655,6 +920,8 @@ CConfigInputPage::CConfigInputPage(CConfigFrame* frame, wxWindow* parent)
     wxBoxSizer* hbox4      = new wxBoxSizer(wxHORIZONTAL);
     wxBoxSizer* hbox5      = new wxBoxSizer(wxHORIZONTAL);
 
+    hbox1->Add(m_player_str, 0, wxALIGN_CENTER_VERTICAL);
+    hbox1->Add(10, -1);
     hbox1->Add(m_player_index);
 
     hbox2->Add(10, -1);
@@ -798,6 +1065,21 @@ CConfigInputPage::LoadConfiguration(bool reload)
 
 }
 
+//////////////////////////////////////////////////////////////////////////////////////
+void
+CConfigInputPage::Translate()
+{
+    m_box->SetLabel(_("Input Settings"));
+
+    m_player_str->SetLabel(_("Player"));
+    m_up   ->SetLabel(_("Up"));
+    m_down ->SetLabel(_("Down"));
+    m_left ->SetLabel(_("Left"));
+    m_right->SetLabel(_("Right"));
+    m_allow_keyboard_input->SetLabel(_("Allow Keyboard Input"));
+    m_allow_joypad_input  ->SetLabel(_("Allow Joypad Input"));
+}
+
 
 /************************************************************************************/
 // NETWORK PAGE //////////////////////////////////////////////////////////////////////
@@ -808,11 +1090,11 @@ CConfigNetworkPage::CConfigNetworkPage(CConfigFrame* frame, wxWindow* parent)
 {
     m_frame = frame;
 
-    wxStaticBox*  box      = new wxStaticBox(this, wxID_ANY, wxT(" Network Settings"));
+    m_box                  = new wxStaticBox(this, wxID_ANY, wxT("Network Settings"));
 
     m_allow_networking     = new wxCheckBox(this, IDN_ALLOW_NETWORKING, wxT("Allow Networking"));
 
-    wxStaticBoxSizer* sbox = new wxStaticBoxSizer(box, wxVERTICAL);
+    wxStaticBoxSizer* sbox = new wxStaticBoxSizer(m_box, wxVERTICAL);
     wxBoxSizer* vbox       = new wxBoxSizer(wxVERTICAL);
 
     sbox->Add(m_allow_networking, 0, wxALIGN_LEFT | wxLEFT | wxUP, 10);
@@ -838,6 +1120,15 @@ CConfigNetworkPage::LoadConfiguration(bool reload)
     m_allow_networking->SetValue(m_frame->GetConfig()->allow_networking);
 }
 
+//////////////////////////////////////////////////////////////////////////////////////
+void
+CConfigNetworkPage::Translate()
+{
+    m_box->SetLabel(_("Network Settings"));
+
+    m_allow_networking->SetLabel(_("Allow Networking"));
+}
+
 
 /************************************************************************************/
 // INPUT MANAGER /////////////////////////////////////////////////////////////////////
@@ -847,8 +1138,8 @@ CInputManager::CInputManager(CConfigInputPage* parent) : wxWindow(parent, wxID_A
                                                          m_timer(this, IDI_INPUT_MANAGER)
 {
     m_parent  = parent;
-    m_subject = 0;
-    m_output  = 0;
+    m_subject = NULL;
+    m_output  = NULL;
 
     Connect(                   wxEVT_KILL_FOCUS, wxFocusEventHandler(CInputManager::OnKillFocus));
     Connect(                   wxEVT_KEY_UP,     wxKeyEventHandler(CInputManager::OnKeyUp));
@@ -1015,7 +1306,7 @@ void
 CInputManager::UpdateOutput()
 {
     if (m_output)
-        m_output->SetLabel(wxString::Format(wxT("Waiting for keypress... (%dsec left)"), m_seconds));
+        m_output->SetLabel(wxString::Format(_("Waiting for keypress... (%dsec left)"), m_seconds));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////

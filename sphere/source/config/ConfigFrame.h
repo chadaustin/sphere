@@ -11,7 +11,6 @@
 #include <wx/filename.h>
 #include <wx/timer.h>
 
-#include "resources/config.xpm"
 #include "DialogSphereGL.h"
 #include "DialogSphere32.h"
 #include "DialogSphere8.h"
@@ -40,8 +39,10 @@
     };
 
 #elif defined(MAC)
+    #include <dlfcn.h>
+
     #define FILESPEC_DYNLIB "*.dylib"
-    #define STDCALL
+    #define STDCALL __attribute__((stdcall))
 
     #define MAX_AUDIO_DRIVERS 1
     const wxString audio_drivers[] =
@@ -78,6 +79,9 @@ struct PLAYERCONFIG
 
 struct SPHERECONFIG
 {
+    // main
+    int language;
+
     // video
     wxString video_driver;
 
@@ -94,18 +98,57 @@ struct SPHERECONFIG
 };
 
 
-const wxString players[] =
+#define MAX_LANGUAGES 9
+static const wxLanguage LanguageIDs[] =
 {
-    wxT("Player1"),
-    wxT("Player2"),
-    wxT("Player3"),
-    wxT("Player4"),
+    wxLANGUAGE_ENGLISH,
+    wxLANGUAGE_GERMAN,
+    wxLANGUAGE_FRENCH,
+    wxLANGUAGE_DUTCH,
+    wxLANGUAGE_JAPANESE,
+    wxLANGUAGE_CHINESE_SIMPLIFIED,
+    wxLANGUAGE_RUSSIAN,
+    wxLANGUAGE_SPANISH,
+    wxLANGUAGE_INDONESIAN,
+};
+
+
+static const wxString LanguageNames[] =
+{
+    wxT("English"),
+    wxT("German"),
+    wxT("French"),
+    wxT("Dutch"),
+    wxT("Japanese"),
+    wxT("Chinese"),
+    wxT("Russian"),
+    wxT("Spanish"),
+    wxT("Indonesian"),
+};
+
+
+static const wxString PlayerIDs[] =
+{
+    wxT("1"),
+    wxT("2"),
+    wxT("3"),
+    wxT("4"),
 };
 
 
 enum
 {
-    IDM_RESTORE_DEFAULTS = 0,
+    IDL_ENGLISH = 0,
+    IDL_GERMAN,
+    IDL_FRENCH,
+    IDL_DUTCH,
+    IDL_JAPANESE,
+    IDL_CHINESE,
+    IDL_RUSSIAN,
+    IDL_SPANISH,
+    IDL_INDONESIAN,
+
+    IDM_RESTORE_DEFAULTS = 20,
 
     IDV_CONFIG_BUTTON,
     IDV_DRIVER_LIST,
@@ -148,25 +191,47 @@ class CConfigFrame : public wxFrame
         CConfigFrame(const wxString& title);
 
         bool Initialize(wxString &error);
+        void InitializeLanguage(int lang_id);
 
-        void OnClickRestoreDefaults(wxCommandEvent& event);
+        void OnSelectEnglish(wxCommandEvent& event);
+        void OnSelectGerman(wxCommandEvent& event);
+        void OnSelectFrench(wxCommandEvent& event);
+        void OnSelectDutch(wxCommandEvent& event);
+        void OnSelectJapanese(wxCommandEvent& event);
+        void OnSelectChinese(wxCommandEvent& event);
+        void OnSelectRussian(wxCommandEvent& event);
+        void OnSelectSpanish(wxCommandEvent& event);
+        void OnSelectIndonesian(wxCommandEvent& event);
+
+        void OnSelectRestoreDefaults(wxCommandEvent& event);
         void OnClickOk(wxCommandEvent& event);
         void OnClickCancel(wxCommandEvent& event);
 
         void LoadDefaultConfiguration();
         void LoadConfiguration();
         void SaveConfiguration();
+        void Translate();
+        void RefreshLayout();
 
         SPHERECONFIG* GetConfig()
         {
             return &m_sphere_config;
         }
 
+    protected:
+
+        wxLocale            m_locale;
+
     private:
 
         SPHERECONFIG        m_sphere_config;
 
-        wxButton*           m_restore_defaults;
+        wxPanel*            m_panel;
+
+        wxMenuBar*          m_menu_bar;
+        wxMenu*             m_config_menu;
+        wxMenu*             m_language_menu;
+
         wxButton*           m_ok_button;
         wxButton*           m_cancel_button;
 
@@ -239,8 +304,11 @@ class CConfigVideoPage : public wxPanel
         void LoadConfiguration(bool reload = false);
         bool BuildDriverList(wxString &error);
         void LoadDriverInfo(wxString &drv_name);
+        void Translate();
 
         CConfigFrame*  m_frame;
+
+        wxStaticBox*   m_box;
 
         wxListBox*     m_driver_list;
         wxButton*      m_config_button;
@@ -270,9 +338,13 @@ class CConfigAudioPage : public wxPanel
         void OnSelectDriver(wxCommandEvent& event);
 
         void LoadConfiguration(bool reload = false);
+        void Translate();
 
         CConfigFrame*  m_frame;
 
+        wxStaticBox*   m_box;
+
+        wxStaticBox*   m_driver_box;
         wxRadioButton* m_sound_auto;
         wxRadioButton* m_sound_on;
         wxRadioButton* m_sound_off;
@@ -304,11 +376,15 @@ class CConfigInputPage : public wxPanel
         int  GetCurrentPlayer();
         void LoadPlayerConfiguration(int player_index);
         void LoadConfiguration(bool reload = false);
+        void Translate();
 
         CConfigFrame*  m_frame;
 
         CInputManager* m_input_manager;
 
+        wxStaticBox*   m_box;
+
+        wxStaticText*  m_player_str;
         wxChoice*      m_player_index;
         wxButton*      m_up;
         wxButton*      m_down;
@@ -338,8 +414,11 @@ class CConfigNetworkPage : public wxPanel
         void OnClickAllowNetworking(wxCommandEvent& event);
 
         void LoadConfiguration(bool reload = false);
+        void Translate();
 
         CConfigFrame*  m_frame;
+
+        wxStaticBox*   m_box;
 
         wxCheckBox*    m_allow_networking;
 

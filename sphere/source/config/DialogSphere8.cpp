@@ -1,4 +1,6 @@
 
+#include <wx/statline.h>
+
 #include "DialogSphere8.h"
 
 
@@ -11,53 +13,55 @@ enum
 
 
 CDialogSphere8::CDialogSphere8(wxWindow* parent, const wxString& title, const wxString &drv_name)
-              : wxDialog(parent, wxID_ANY, title, wxDefaultPosition, wxSize(260, 140),
+              : wxDialog(parent, wxID_ANY, title, wxDefaultPosition, wxDefaultSize,
                          wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX)
 {
     m_drv_name = drv_name;
 
-    wxPanel* panel   = new wxPanel(this, wxID_ANY);
+    wxStaticLine* sline = new wxStaticLine(this, wxID_ANY);
+    wxStaticBox* box    = new wxStaticBox(this, wxID_ANY, _("Palette"));
 
-    wxStaticBox* box = new wxStaticBox(this, wxID_ANY, wxT("Palette"));
-
-    m_ok_button      = new wxButton(this,   wxID_OK,         wxT("OK"));
-    m_cancel_button  = new wxButton(this,   wxID_CANCEL,     wxT("Cancel"));
-    m_fullscreen     = new wxCheckBox(this, ID_FULLSCREEN,   wxT("Fullscreen"));
-    m_vsync          = new wxCheckBox(this, ID_VSYNC,        wxT("VSync"));
+    m_ok_button      = new wxButton(this,   wxID_OK,         _("OK"));
+    m_cancel_button  = new wxButton(this,   wxID_CANCEL,     _("Cancel"));
+    m_fullscreen     = new wxCheckBox(this, ID_FULLSCREEN,   _("Fullscreen"));
+    m_vsync          = new wxCheckBox(this, ID_VSYNC,        _("VSync"));
 
     BuildPalettesList();
-    m_palettes             = new wxChoice(this, ID_PALETTES, wxDefaultPosition, wxSize(120, -1), m_palettes_list);
+    m_palettes             = new wxChoice(this, ID_PALETTES, wxDefaultPosition, wxDefaultSize, m_palettes_list);
 
     wxStaticBoxSizer* sbox = new wxStaticBoxSizer(box, wxVERTICAL);
     wxBoxSizer* vbox       = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer* vbox0      = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer* vbox1      = new wxBoxSizer(wxVERTICAL);
-    wxBoxSizer* vbox2      = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer* hbox1      = new wxBoxSizer(wxHORIZONTAL);
     wxBoxSizer* hbox2      = new wxBoxSizer(wxHORIZONTAL);
 
-    vbox2->Add(-1, 10);
-    vbox2->Add(m_fullscreen);
-    vbox2->Add(-1, 5);
-    vbox2->Add(m_vsync);
+    vbox1->Add(-1, 10);
+    vbox1->Add(m_fullscreen);
+    vbox1->Add(-1, 5);
+    vbox1->Add(m_vsync);
 
     sbox->Add(m_palettes);
 
     hbox1->Add(5, -1);
-    hbox1->Add(vbox2);
-    hbox1->Add(30, -1);
+    hbox1->Add(vbox1);
+    hbox1->Add(20, -1);
     hbox1->Add(sbox);
 
     hbox2->Add(m_ok_button);
     hbox2->Add(10, -1);
     hbox2->Add(m_cancel_button);
 
-    vbox1->Add(hbox1);
-    vbox1->Add(-1, 20);
-    vbox1->Add(hbox2, 0, wxALIGN_CENTER);
+    vbox0->Add(hbox1);
+    vbox0->Add(-1, 10);
+    vbox0->Add(sline, 1, wxEXPAND);
+    vbox0->Add(-1, 10);
+    vbox0->Add(hbox2, 0, wxALIGN_CENTER);
 
-    vbox->Add(vbox1, 1, wxEXPAND | wxALL, 10);
+    vbox->Add(vbox0, 1, wxEXPAND | wxALL, 10);
 
     SetSizer(vbox);
+    Fit();
 
     Center();
 

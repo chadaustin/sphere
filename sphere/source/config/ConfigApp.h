@@ -4,6 +4,8 @@
 
 #include <wx/wx.h>
 
+#include "resources/config.xpm"
+
 
 class ConfigApp : public wxApp
 {

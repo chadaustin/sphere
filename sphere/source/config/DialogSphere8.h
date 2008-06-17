@@ -1,5 +1,5 @@
-#ifndef DRIVER_SPHERE8_H
-#define DRIVER_SPHERE8_H
+#ifndef DIALOG_SPHERE8_H
+#define DIALOG_SPHERE8_H
 
 
 #include <wx/wx.h>

@@ -47,25 +47,57 @@ typedef struct _IMAGE
 
 } *IMAGE;
 
-enum SCALE_ALGORITHM
+enum SCALING_FILTER
 {
-    I_DIRECT_SCALE = 0,
-    I_SCALE2X      = 1,
-    I_EAGLE        = 2,
-    I_HQ2X         = 3,
-    I_2XSAI        = 4,
-    I_SUPER_2XSAI  = 5,
-    I_SUPER_EAGLE  = 6,
+    I_NONE = 0,
+    I_SCALE2X,
+    I_EAGLE,
+    I_HQ2X,
+    I_2XSAI,
+    I_SUPER_2XSAI,
+    I_SUPER_EAGLE,
 };
 
-struct CONFIGURATION
+typedef struct _screen_border
 {
-    bool fullscreen;
-    bool vsync;
+    int top;
+    int bottom;
+    int left;
+    int right;
 
-    bool scale;
-    int  filter;
+} screen_border;
+
+class VideoConfiguration
+{
+    public:
+
+        VideoConfiguration() {};
+
+        int GetExWidth(int width)
+        {
+            return width + border.left + border.right;
+        }
+
+        int GetExHeight(int height)
+        {
+            return height + border.top + border.bottom;
+        }
+
+        int GetOffset(int pitch)
+        {
+            return pitch * border.top + border.left;
+        }
+
+        bool fullscreen;
+        bool vsync;
+
+        bool scale;
+        int  filter;
+
+        screen_border border;
+
 };
+
 
 static void LoadConfiguration();
 
@@ -88,10 +120,16 @@ static void TileBlit(IMAGE image, int x, int y);
 static void SpriteBlit(IMAGE image, int x, int y);
 static void NormalBlit(IMAGE image, int x, int y);
 
-static CONFIGURATION Configuration;
+// video driver variables
+static VideoConfiguration Config;
 
-static HWND  SphereWindow = NULL;
-static byte* ScreenBuffer = NULL;
+static HWND  SphereWindow        = NULL;
+static BGRA* ScreenBuffer        = NULL;
+static BGRA* ScreenBufferSection = NULL;
+
+static int   ScreenBufferWidth  = 0;
+static int   ScreenBufferHeight = 0;
+static int   ScreenScaleFactor  = 1;
 
 static LONG OldWindowStyle   = 0;
 static LONG OldWindowStyleEx = 0;
@@ -106,8 +144,6 @@ static LPDIRECTDRAW dd = NULL;
 static LPDIRECTDRAWSURFACE ddPrimary   = NULL;
 static LPDIRECTDRAWSURFACE ddSecondary = NULL;
 
-static bool s_fullscreen = false;
-static int  scale_factor = 1;
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
@@ -130,18 +166,33 @@ void LoadConfiguration()
     GetDriverConfigFile(config_file_name);
 
     // load the fields from the file
-    Configuration.fullscreen = GetPrivateProfileInt("standard32", "Fullscreen", 1, config_file_name) != 0;
-    Configuration.vsync      = GetPrivateProfileInt("standard32", "VSync",      1, config_file_name) != 0;
-    Configuration.scale      = GetPrivateProfileInt("standard32", "Scale",      1, config_file_name) != 0;
-    Configuration.filter     = GetPrivateProfileInt("standard32", "Filter",     0, config_file_name);
+    Config.fullscreen = GetPrivateProfileInt("standard32", "Fullscreen", 1, config_file_name) != 0;
+    Config.vsync      = GetPrivateProfileInt("standard32", "VSync",      1, config_file_name) != 0;
+    Config.scale      = GetPrivateProfileInt("standard32", "Scale",      1, config_file_name) != 0;
+    Config.filter     = GetPrivateProfileInt("standard32", "Filter",     0, config_file_name);
+
+    int vexpand       = GetPrivateProfileInt("standard32", "VExpand",    0, config_file_name);
+    int hexpand       = GetPrivateProfileInt("standard32", "HExpand",    0, config_file_name);
+
+    if (vexpand < 0 || vexpand > 1024)
+        vexpand = 0;
+
+    if (hexpand < 0 || hexpand > 1024)
+        hexpand = 0;
+
+    Config.border.top    = (int)(hexpand / 2);
+    Config.border.bottom = (int)(hexpand / 2) + (hexpand % 2);
+    Config.border.left   = (int)(vexpand / 2);
+    Config.border.right  = (int)(vexpand / 2) + (vexpand % 2);
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
 {
-    SphereWindow = window;
-    ScreenWidth  = screen_width;
-    ScreenHeight = screen_height;
+    SphereWindow        = window;
+    ScreenWidth         = screen_width;
+    ScreenHeight        = screen_height;
 
     SetClippingRectangle(0, 0, screen_width, screen_height);
 
@@ -150,12 +201,11 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
     if (firstcall)
     {
         LoadConfiguration();
-        s_fullscreen = Configuration.fullscreen;
-        scale_factor = Configuration.scale ? 2 : 1;
-        firstcall = false;
+        ScreenScaleFactor  = Config.scale ? 2 : 1;
+        firstcall          = false;
     }
 
-    if (s_fullscreen)
+    if (Config.fullscreen)
         return InitFullscreen();
     else
         return InitWindowed();
@@ -164,11 +214,23 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
 ////////////////////////////////////////////////////////////////////////////////
 bool InitFullscreen()
 {
+    // initialize the screen buffer variables and allocate a blitting buffer
+    ScreenBufferWidth   = Config.GetExWidth(ScreenWidth);
+    ScreenBufferHeight  = Config.GetExHeight(ScreenHeight);
+    ScreenBuffer        = new BGRA[ScreenBufferWidth * ScreenBufferHeight];
+    ScreenBufferSection = ScreenBuffer + Config.GetOffset(ScreenBufferWidth);
+
+    if (ScreenBuffer == NULL)
+        return false;
+
+    memset((byte*)ScreenBuffer, 0, ScreenBufferWidth * ScreenBufferHeight * sizeof(BGRA));
+
+
     HRESULT ddrval;
     bool    retval;
 
     // store old window styles
-    OldWindowStyle = GetWindowLong(SphereWindow, GWL_STYLE);
+    OldWindowStyle   = GetWindowLong(SphereWindow, GWL_STYLE);
     OldWindowStyleEx = GetWindowLong(SphereWindow, GWL_EXSTYLE);
 
     SetWindowLong(SphereWindow, GWL_STYLE, WS_POPUP);
@@ -209,16 +271,11 @@ bool InitFullscreen()
         return false;
     }
 
-    // allocate a blitting buffer
-    ScreenBuffer = new byte[ScreenWidth * ScreenHeight * 4];
-
-    if (ScreenBuffer == NULL)
-        return false;
-
     ShowCursor(FALSE);
 
     SetWindowPos(SphereWindow, HWND_TOPMOST, 0, 0,
-                 ScreenWidth * scale_factor, ScreenHeight * scale_factor,
+                 ScreenBufferWidth  * ScreenScaleFactor,
+                 ScreenBufferHeight * ScreenScaleFactor,
                  SWP_SHOWWINDOW);
 
     return true;
@@ -239,7 +296,7 @@ EXPORT(bool) ToggleFullScreen()
     if (ScreenWidth != 0 || ScreenHeight != 0)
     {
 
-        if (s_fullscreen)
+        if (Config.fullscreen)
         {
             CloseFullscreen();
         }
@@ -249,7 +306,7 @@ EXPORT(bool) ToggleFullScreen()
         }
     }
 
-    s_fullscreen = !s_fullscreen;
+    Config.fullscreen = !Config.fullscreen;
 
     if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight) == true)
     {
@@ -260,7 +317,7 @@ EXPORT(bool) ToggleFullScreen()
     {
 
         // switching failed, try to revert to what it was
-        s_fullscreen = !s_fullscreen;
+        Config.fullscreen = !Config.fullscreen;
         if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight) == true)
         {
             SetClippingRectangle(x, y, w, h);
@@ -276,7 +333,9 @@ bool SetDisplayMode()
 {
     HRESULT ddrval;
 
-    ddrval = dd->SetDisplayMode(ScreenWidth * scale_factor, ScreenHeight * scale_factor, 32);
+    ddrval = dd->SetDisplayMode(ScreenBufferWidth  * ScreenScaleFactor,
+                                ScreenBufferHeight * ScreenScaleFactor,
+                                32);
 
     if (ddrval == DD_OK)
         return true;
@@ -292,7 +351,7 @@ bool CreateSurfaces()
     DDSURFACEDESC ddsd;
     ddsd.dwSize = sizeof(ddsd);
 
-    if (Configuration.vsync)
+    if (Config.vsync)
     {
         ddsd.dwFlags           = DDSD_CAPS | DDSD_BACKBUFFERCOUNT;
         ddsd.ddsCaps.dwCaps    = DDSCAPS_PRIMARYSURFACE | DDSCAPS_FLIP | DDSCAPS_COMPLEX;
@@ -310,7 +369,7 @@ bool CreateSurfaces()
     if (ddrval != DD_OK)
         return false;
 
-    if (Configuration.vsync)
+    if (Config.vsync)
     {
         ddsd.ddsCaps.dwCaps = DDSCAPS_BACKBUFFER;
         ddrval = ddPrimary->GetAttachedSurface(&ddsd.ddsCaps, &ddSecondary);
@@ -327,6 +386,18 @@ bool CreateSurfaces()
 ////////////////////////////////////////////////////////////////////////////////
 bool InitWindowed()
 {
+    // initialize the screen buffer variables and allocate a blitting buffer
+    ScreenBufferWidth   = ScreenWidth;
+    ScreenBufferHeight  = ScreenHeight;
+    ScreenBuffer        = new BGRA[ScreenBufferWidth * ScreenBufferHeight];
+    ScreenBufferSection = ScreenBuffer;
+
+    if (ScreenBuffer == NULL)
+        return false;
+
+    memset((byte*)ScreenBuffer, 0, ScreenBufferWidth * ScreenBufferHeight * sizeof(BGRA));
+
+
     // create the render DC
     RenderDC = CreateCompatibleDC(NULL);
 
@@ -338,12 +409,14 @@ bool InitWindowed()
     memset(&bmi, 0, sizeof(bmi));
     BITMAPINFOHEADER& bmih = bmi.bmiHeader;
     bmih.biSize        = sizeof(bmih);
-    bmih.biWidth       =  ScreenWidth  * scale_factor;
-    bmih.biHeight      = -ScreenHeight * scale_factor;
+    bmih.biWidth       =  ScreenBufferWidth  * ScreenScaleFactor;
+    bmih.biHeight      = -ScreenBufferHeight * ScreenScaleFactor;
     bmih.biPlanes      = 1;
     bmih.biBitCount    = 32;
     bmih.biCompression = BI_RGB;
+
     RenderBitmap = CreateDIBSection(RenderDC, &bmi, DIB_RGB_COLORS, (void**)&RenderBuffer, NULL, 0);
+
     if (RenderBitmap == NULL)
     {
         DeleteDC(RenderDC);
@@ -351,13 +424,10 @@ bool InitWindowed()
     }
 
     SelectObject(RenderDC, RenderBitmap);
-    CenterWindow(SphereWindow, ScreenWidth * scale_factor, ScreenHeight * scale_factor);
 
-    // allocate a blitting buffer
-    ScreenBuffer = new byte[ScreenWidth * ScreenHeight * 4];
-
-    if (ScreenBuffer == NULL)
-        return false;
+    CenterWindow(SphereWindow,
+                 ScreenWidth  * ScreenScaleFactor,
+                 ScreenHeight * ScreenScaleFactor);
 
     return true;
 }
@@ -365,7 +435,7 @@ bool InitWindowed()
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) CloseVideoDriver()
 {
-    if (s_fullscreen)
+    if (Config.fullscreen)
         CloseFullscreen();
     else
         CloseWindowed();
@@ -378,15 +448,16 @@ void CloseFullscreen()
     SetWindowLong(SphereWindow, GWL_EXSTYLE, OldWindowStyleEx);
 
     ShowCursor(TRUE);
+
     if (ScreenBuffer != NULL)
     {
-
         delete[] ScreenBuffer;
-        ScreenBuffer = NULL;
+        ScreenBuffer        = NULL;
+        ScreenBufferSection = NULL;
     }
+
     if (dd != NULL)
     {
-
         dd->Release();
         dd = NULL;
     }
@@ -397,14 +468,15 @@ void CloseWindowed()
 {
     DeleteDC(RenderDC);
     RenderDC = NULL;
+
     DeleteObject(RenderBitmap);
     RenderBitmap = NULL;
 
     if (ScreenBuffer != NULL)
     {
-
         delete[] ScreenBuffer;
-        ScreenBuffer = NULL;
+        ScreenBuffer        = NULL;
+        ScreenBufferSection = NULL;
     }
 }
 
@@ -412,10 +484,11 @@ void CloseWindowed()
 EXPORT(void) FlipScreen()
 {
 
-    if (s_fullscreen)
+    if (Config.fullscreen)
     {
         LPDIRECTDRAWSURFACE surface;
-        if (Configuration.vsync)
+
+        if (Config.vsync)
             surface = ddSecondary;
         else
             surface = ddPrimary;
@@ -441,38 +514,50 @@ EXPORT(void) FlipScreen()
             }
         }
 
-        if (Configuration.scale)
+        int dst_pitch = ddsd.lPitch / 4;
+
+        if (Config.scale)
         {
-            Scale(ddsd.lpSurface, ddsd.lPitch / 4);
+            Scale(ddsd.lpSurface, dst_pitch);
         }
         else
         {
             BGRA* dst = (BGRA*)ddsd.lpSurface;
-            BGRA* src = (BGRA*)ScreenBuffer;
-            for (int i = 0; i < ScreenHeight; i++)
+            BGRA* src = ScreenBuffer;
+
+            for (int i = 0; i < ScreenBufferHeight; i++)
             {
-                memcpy(dst, src, ScreenWidth * 4);
-                dst += ddsd.lPitch / 4;
-                src += ScreenWidth;
+                memcpy(dst, src, ScreenBufferWidth * 4);
+                dst += dst_pitch;
+                src += ScreenBufferWidth;
             }
         }
 
         // unlock the surface and do the flip!
         surface->Unlock(NULL);
-        if (Configuration.vsync)
+
+        if (Config.vsync)
             ddPrimary->Flip(NULL, DDFLIP_WAIT);
+
     }
     else
     {
 
-        if (Configuration.scale)
-            Scale(RenderBuffer, ScreenWidth * 2);
+        if (Config.scale)
+            Scale(RenderBuffer, ScreenBufferWidth * 2);
         else
-            memcpy((byte*)RenderBuffer, (byte*)ScreenBuffer, ScreenWidth * ScreenHeight * 4);
+            memcpy((byte*)RenderBuffer,
+                   (byte*)ScreenBuffer,
+                   ScreenBufferWidth * ScreenBufferHeight * 4);
 
         // blit the render buffer to the window
         HDC dc = GetDC(SphereWindow);
-        BitBlt(dc, 0, 0, ScreenWidth * scale_factor, ScreenHeight * scale_factor, RenderDC, 0, 0, SRCCOPY);
+
+        BitBlt(dc, 0, 0,
+               ScreenBufferWidth  * ScreenScaleFactor,
+               ScreenBufferHeight * ScreenScaleFactor,
+               RenderDC, 0, 0, SRCCOPY);
+
         ReleaseDC(SphereWindow, dc);
     }
 }
@@ -480,34 +565,36 @@ EXPORT(void) FlipScreen()
 ////////////////////////////////////////////////////////////////////////////////
 void Scale(void* dst, int dst_pitch)
 {
-    switch (Configuration.filter)
+
+    switch (Config.filter)
     {
-        case I_DIRECT_SCALE:
-            DirectScale((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+
+        case I_NONE:
+            DirectScale((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenBufferWidth, ScreenBufferHeight);
             break;
 
         case I_SCALE2X:
-            Scale2x((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+            Scale2x(    (dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenBufferWidth, ScreenBufferHeight);
             break;
 
         case I_EAGLE:
-            Eagle((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+            Eagle(      (dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenBufferWidth, ScreenBufferHeight);
             break;
 
         case I_HQ2X:
-            hq2x((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+            hq2x(       (dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenBufferWidth, ScreenBufferHeight);
             break;
 
         case I_2XSAI:
-            _2xSaI((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+            _2xSaI(     (dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenBufferWidth, ScreenBufferHeight);
             break;
 
         case I_SUPER_2XSAI:
-            Super2xSaI((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+            Super2xSaI( (dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenBufferWidth, ScreenBufferHeight);
             break;
 
         case I_SUPER_EAGLE:
-            SuperEagle((dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenWidth, ScreenHeight);
+            SuperEagle( (dword*)dst, dst_pitch, (dword*)ScreenBuffer, ScreenBufferWidth, ScreenBufferHeight);
             break;
 
     }
@@ -808,7 +895,7 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
     image->height       = height;
     image->blit_routine = TileBlit;
 
-    BGRA* Screen = (BGRA*)ScreenBuffer;
+    BGRA* Screen = ScreenBufferSection;
 
     image->bgra  = new BGRA[pixels_total];
     if (image->bgra == NULL)
@@ -826,7 +913,7 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
     }
 
     for (int iy = 0; iy < height; iy++)
-        memcpy(image->bgra + iy * width, Screen + (y + iy) * ScreenWidth + x, width * 4);
+        memcpy(image->bgra + iy * width, Screen + (y + iy) * ScreenBufferWidth + x, width * 4);
 
     for (int i = 0; i < pixels_total; ++i)
     {
@@ -923,8 +1010,8 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
     }
 
     primitives::Blit(
-        (BGRA*)ScreenBuffer,
-        ScreenWidth,
+        ScreenBufferSection,
+        ScreenBufferWidth,
         x,
         y,
         image->bgra,
@@ -982,8 +1069,8 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
     }
 
     primitives::TexturedQuad(
-        (BGRA*)ScreenBuffer,
-        ScreenWidth,
+        ScreenBufferSection,
+        ScreenBufferWidth,
         x,
         y,
         image->bgra,
@@ -1009,8 +1096,8 @@ EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
     }
 
     primitives::TexturedQuad(
-        (BGRA*)ScreenBuffer,
-        ScreenWidth,
+        ScreenBufferSection,
+        ScreenBufferWidth,
         x,
         y,
         image->bgra,
@@ -1033,16 +1120,16 @@ void TileBlit(IMAGE image, int x, int y)
 {
     calculate_clipping_metrics(image->width, image->height);
 
-    BGRA* dest  = (BGRA*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-    BGRA* src   = (BGRA*)image->bgra  +       image_offset_y * image->width + image_offset_x;
+    BGRA* dest  = ScreenBufferSection + (y + image_offset_y) * ScreenBufferWidth  + image_offset_x + x;
+    BGRA* src   = image->bgra         +       image_offset_y * image->width       + image_offset_x;
 
     int iy = image_blit_height;
 
     while (iy-- > 0)
     {
         memcpy(dest, src, image_blit_width * sizeof(BGRA));
-        dest += ScreenWidth;
-        src += image->width;
+        dest += ScreenBufferWidth;
+        src  += image->width;
     }
 
 }
@@ -1057,12 +1144,12 @@ void SpriteBlit(IMAGE image, int x, int y)
     calculate_clipping_metrics(image->width, image->height);
 #endif
 
-    BGRA* dst   = (BGRA*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-    BGRA* src   = (BGRA*)image->bgra  +      image_offset_y  * image->width + image_offset_x;
-    byte* alpha = image->alpha        +      image_offset_y  * image->width + image_offset_x;
+    BGRA* dst   = ScreenBufferSection + (y + image_offset_y) * ScreenBufferWidth  + image_offset_x + x;
+    BGRA* src   = image->bgra         +      image_offset_y  * image->width       + image_offset_x;
+    byte* alpha = image->alpha        +      image_offset_y  * image->width       + image_offset_x;
 
-    int dst_inc = ScreenWidth  - image_blit_width;
-    int src_inc = image->width - image_blit_width;
+    int dst_inc = ScreenBufferWidth - image_blit_width;
+    int src_inc = image->width      - image_blit_width;
 
     int iy = image_blit_height;
     while (iy-- > 0)
@@ -1097,12 +1184,12 @@ void NormalBlit(IMAGE image, int x, int y)
 
     int a;
 
-    BGRA* dst  = (BGRA*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-    BGRA* src  = (BGRA*)image->bgra  +      image_offset_y  * image->width + image_offset_x;
-    byte* alpha = image->alpha       +      image_offset_y  * image->width + image_offset_x;
+    BGRA* dst   = ScreenBufferSection + (y + image_offset_y) * ScreenBufferWidth  + image_offset_x + x;
+    BGRA* src   = image->bgra         +      image_offset_y  * image->width       + image_offset_x;
+    byte* alpha = image->alpha        +      image_offset_y  * image->width       + image_offset_x;
 
-    int dst_inc = ScreenWidth  - image_blit_width;
-    int src_inc = image->width - image_blit_width;
+    int dst_inc = ScreenBufferWidth - image_blit_width;
+    int src_inc = image->width      - image_blit_width;
 
     int iy = image_blit_height;
     int ix;
@@ -1166,13 +1253,13 @@ EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels)
 {
     calculate_clipping_metrics(w, h);
 
-    int dst_inc = ScreenWidth  - image_blit_width;
-    int src_inc = w            - image_blit_width;
-
     int a;
 
-    BGRA* dst = (BGRA*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-    RGBA* src = pixels              +      image_offset_y  * w            + image_offset_x;
+    BGRA* dst = ScreenBufferSection + (y + image_offset_y) * ScreenBufferWidth + image_offset_x + x;
+    RGBA* src = pixels              +      image_offset_y  * w                 + image_offset_x;
+
+    int dst_inc = ScreenBufferWidth - image_blit_width;
+    int src_inc = w                 - image_blit_width;
 
     int iy = image_blit_height;
     int ix;
@@ -1232,8 +1319,8 @@ EXPORT(void) DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels)
 {
 
     primitives::TexturedQuad(
-        (BGRA*)ScreenBuffer,
-        ScreenWidth,
+        ScreenBufferSection,
+        ScreenBufferWidth,
         x,
         y,
         pixels,
@@ -1257,19 +1344,32 @@ EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
         return;
     }
 
-    BGRA* Screen = (BGRA*)ScreenBuffer;
+    memset((byte*)pixels, 255, w * h * sizeof(RGBA));
 
-    for (int iy = 0; iy < h; iy++)
+    BGRA* Screen = ScreenBufferSection + y * ScreenBufferWidth + x;
+
+    int scr_inc = ScreenBufferWidth - w;
+
+    int iy = h;
+    int ix;
+
+    while (iy-- > 0)
     {
-        for (int ix = 0; ix < w; ix++)
-        {
-            pixels[iy * w + ix].red   = Screen[(y + iy) * ScreenWidth + x + ix].red;
-            pixels[iy * w + ix].green = Screen[(y + iy) * ScreenWidth + x + ix].green;
-            pixels[iy * w + ix].blue  = Screen[(y + iy) * ScreenWidth + x + ix].blue;
-            pixels[iy * w + ix].alpha = 255;
-        }
-    }
+        ix = w;
 
+        while (ix-- > 0)
+        {
+            pixels[0].red   = Screen[0].red;
+            pixels[0].green = Screen[0].green;
+            pixels[0].blue  = Screen[0].blue;
+
+            ++Screen;
+            ++pixels;
+
+        }
+
+        Screen += scr_inc;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1329,25 +1429,25 @@ inline void blendBGRA(BGRA& dest, RGBA source)
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawPoint(int x, int y, RGBA color)
 {
-    primitives::Point((BGRA*)ScreenBuffer, ScreenWidth, x, y, color, ClippingRectangle, blendBGRA);
+    primitives::Point(ScreenBufferSection, ScreenBufferWidth, x, y, color, ClippingRectangle, blendBGRA);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawPointSeries(VECTOR_INT** points, int length, RGBA color)
 {
-    primitives::PointSeries((BGRA*)ScreenBuffer, ScreenWidth, points, length, color, ClippingRectangle, blendBGRA);
+    primitives::PointSeries(ScreenBufferSection, ScreenBufferWidth, points, length, color, ClippingRectangle, blendBGRA);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawLine(int x[2], int y[2], RGBA color)
 {
-    primitives::Line((BGRA*)ScreenBuffer, ScreenWidth, x[0], y[0], x[1], y[1], constant_color(color), ClippingRectangle, blendBGRA);
+    primitives::Line(ScreenBufferSection, ScreenBufferWidth, x[0], y[0], x[1], y[1], constant_color(color), ClippingRectangle, blendBGRA);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawGradientLine(int x[2], int y[2], RGBA colors[2])
 {
-    primitives::Line((BGRA*)ScreenBuffer, ScreenWidth, x[0], y[0], x[1], y[1], gradient_color(colors[0], colors[1]), ClippingRectangle, blendBGRA);
+    primitives::Line(ScreenBufferSection, ScreenBufferWidth, x[0], y[0], x[1], y[1], gradient_color(colors[0], colors[1]), ClippingRectangle, blendBGRA);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1362,25 +1462,25 @@ EXPORT(void) DrawLineSeries(VECTOR_INT** points, int length, RGBA color, int typ
     { // full mask
 
         BGRA bgra = { color.blue, color.green, color.red };
-        primitives::LineSeries((BGRA*)ScreenBuffer, ScreenWidth, points, length, bgra, type, ClippingRectangle, copyBGRA);
+        primitives::LineSeries(ScreenBufferSection, ScreenBufferWidth, points, length, bgra, type, ClippingRectangle, copyBGRA);
 
     }
     else
     {
-        primitives::LineSeries((BGRA*)ScreenBuffer, ScreenWidth, points, length, color, type, ClippingRectangle, blendBGRA);
+        primitives::LineSeries(ScreenBufferSection, ScreenBufferWidth, points, length, color, type, ClippingRectangle, blendBGRA);
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawBezierCurve(int x[4], int y[4], double step, RGBA color, int cubic)
 {
-    primitives::BezierCurve((BGRA*)ScreenBuffer, ScreenWidth, x, y, step, color, cubic, ClippingRectangle, blendBGRA);
+    primitives::BezierCurve(ScreenBufferSection, ScreenBufferWidth, x, y, step, color, cubic, ClippingRectangle, blendBGRA);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawTriangle(int x[3], int y[3], RGBA color)
 {
-    primitives::Triangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, color, ClippingRectangle, blendBGRA);
+    primitives::Triangle(ScreenBufferSection, ScreenBufferWidth, x, y, color, ClippingRectangle, blendBGRA);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1402,7 +1502,7 @@ inline RGBA interpolateRGBA(RGBA a, RGBA b, int i, int range)
 
 EXPORT(void) DrawGradientTriangle(int x[3], int y[3], RGBA colors[3])
 {
-    primitives::GradientTriangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, colors, ClippingRectangle, blendBGRA, interpolateRGBA);
+    primitives::GradientTriangle(ScreenBufferSection, ScreenBufferWidth, x, y, colors, ClippingRectangle, blendBGRA, interpolateRGBA);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1416,12 +1516,12 @@ EXPORT(void) DrawPolygon(VECTOR_INT** points, int length, int invert, RGBA color
     { // full mask
 
         BGRA bgra = { color.blue, color.green, color.red };
-        primitives::Polygon((BGRA*)ScreenBuffer, ScreenWidth, points, length, invert, bgra, ClippingRectangle, copyBGRA);
+        primitives::Polygon(ScreenBufferSection, ScreenBufferWidth, points, length, invert, bgra, ClippingRectangle, copyBGRA);
 
     }
     else
     {
-        primitives::Polygon((BGRA*)ScreenBuffer, ScreenWidth, points, length, invert, color, ClippingRectangle, blendBGRA);
+        primitives::Polygon(ScreenBufferSection, ScreenBufferWidth, points, length, invert, color, ClippingRectangle, blendBGRA);
     }
 }
 
@@ -1436,12 +1536,12 @@ EXPORT(void) DrawOutlinedRectangle(int x, int y, int w, int h, int size, RGBA co
     { // full mask
 
         BGRA bgra = { color.blue, color.green, color.red };
-        primitives::OutlinedRectangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, w, h, size, bgra, ClippingRectangle, copyBGRA);
+        primitives::OutlinedRectangle(ScreenBufferSection, ScreenBufferWidth, x, y, w, h, size, bgra, ClippingRectangle, copyBGRA);
 
     }
     else
     {
-        primitives::OutlinedRectangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, w, h, size, color, ClippingRectangle, blendBGRA);
+        primitives::OutlinedRectangle(ScreenBufferSection, ScreenBufferWidth, x, y, w, h, size, color, ClippingRectangle, blendBGRA);
     }
 }
 
@@ -1456,19 +1556,19 @@ EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color)
     { // full mask
 
         BGRA bgra = { color.blue, color.green, color.red };
-        primitives::Rectangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, w, h, bgra, ClippingRectangle, copyBGRA);
+        primitives::Rectangle(ScreenBufferSection, ScreenBufferWidth, x, y, w, h, bgra, ClippingRectangle, copyBGRA);
 
     }
     else
     {
-        primitives::Rectangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, w, h, color, ClippingRectangle, blendBGRA);
+        primitives::Rectangle(ScreenBufferSection, ScreenBufferWidth, x, y, w, h, color, ClippingRectangle, blendBGRA);
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
 {
-    primitives::GradientRectangle((BGRA*)ScreenBuffer, ScreenWidth, x, y, w, h, colors, ClippingRectangle, blendBGRA, interpolateRGBA);
+    primitives::GradientRectangle(ScreenBufferSection, ScreenBufferWidth, x, y, w, h, colors, ClippingRectangle, blendBGRA, interpolateRGBA);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1480,7 +1580,7 @@ EXPORT(void) DrawOutlinedComplex(int r_x, int r_y, int r_w, int r_h, int circ_x,
     }
     else
     {
-        primitives::OutlinedComplex((BGRA*)ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, color, antialias, ClippingRectangle, blendBGRA);
+        primitives::OutlinedComplex(ScreenBufferSection, ScreenBufferWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, color, antialias, ClippingRectangle, blendBGRA);
     }
 }
 
@@ -1493,7 +1593,7 @@ EXPORT(void) DrawFilledComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, i
     }
     else
     {
-        primitives::FilledComplex((BGRA*)ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blendBGRA);
+        primitives::FilledComplex(ScreenBufferSection, ScreenBufferWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blendBGRA);
     }
 }
 
@@ -1506,7 +1606,7 @@ EXPORT(void) DrawGradientComplex(int r_x, int r_y, int r_w, int r_h, int circ_x,
     }
     else
     {
-        primitives::GradientComplex((BGRA*)ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blendBGRA);
+        primitives::GradientComplex(ScreenBufferSection, ScreenBufferWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blendBGRA);
     }
 }
 
@@ -1519,7 +1619,7 @@ EXPORT(void) DrawOutlinedEllipse(int x, int y, int rx, int ry, RGBA color)
     }
     else
     {
-        primitives::OutlinedEllipse((BGRA*)ScreenBuffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blendBGRA);
+        primitives::OutlinedEllipse(ScreenBufferSection, ScreenBufferWidth, x, y, rx, ry, color, ClippingRectangle, blendBGRA);
     }
 }
 
@@ -1532,7 +1632,7 @@ EXPORT(void) DrawFilledEllipse(int x, int y, int rx, int ry, RGBA color)
     }
     else
     {
-        primitives::FilledEllipse((BGRA*)ScreenBuffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blendBGRA);
+        primitives::FilledEllipse(ScreenBufferSection, ScreenBufferWidth, x, y, rx, ry, color, ClippingRectangle, blendBGRA);
     }
 }
 
@@ -1545,7 +1645,7 @@ EXPORT(void) DrawOutlinedCircle(int x, int y, int r, RGBA color, int antialias)
     }
     else
     {
-        primitives::OutlinedCircle((BGRA*)ScreenBuffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blendBGRA);
+        primitives::OutlinedCircle(ScreenBufferSection, ScreenBufferWidth, x, y, r, color, antialias, ClippingRectangle, blendBGRA);
     }
 }
 
@@ -1558,7 +1658,7 @@ EXPORT(void) DrawFilledCircle(int x, int y, int r, RGBA color, int antialias)
     }
     else
     {
-        primitives::FilledCircle((BGRA*)ScreenBuffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blendBGRA);
+        primitives::FilledCircle(ScreenBufferSection, ScreenBufferWidth, x, y, r, color, antialias, ClippingRectangle, blendBGRA);
     }
 }
 
@@ -1571,7 +1671,7 @@ EXPORT(void) DrawGradientCircle(int x, int y, int r, RGBA colors[2], int antiali
     }
     else
     {
-        primitives::GradientCircle((BGRA*)ScreenBuffer, ScreenWidth, x, y, r, colors, antialias, ClippingRectangle, blendBGRA);
+        primitives::GradientCircle(ScreenBufferSection, ScreenBufferWidth, x, y, r, colors, antialias, ClippingRectangle, blendBGRA);
     }
 }
 

@@ -1,5 +1,5 @@
-#ifndef DRIVER_SPHEREGL_H
-#define DRIVER_SPHEREGL_H
+#ifndef DIALOG_SPHEREGL_H
+#define DIALOG_SPHEREGL_H
 
 
 #include <wx/wx.h>
@@ -30,7 +30,7 @@ class CDialogSphereGL : public wxDialog
         wxButton*   m_cancel_button;
         wxRadioBox* m_bit_depths;
         wxCheckBox* m_bilinear_filter;
-        wxCheckBox* m_double_scale;
+        wxCheckBox* m_scale;
         wxCheckBox* m_fullscreen;
         wxCheckBox* m_vsync;
 

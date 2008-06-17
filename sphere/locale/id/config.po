@@ -1,0 +1,268 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Config\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-06-12 12:54+0100\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: Spherical\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-Language: Indonesian\n"
+"X-Poedit-Country: INDONESIA\n"
+"X-Poedit-SearchPath-0: ../../source/config\n"
+
+#: ../../source/config/ConfigApp.cpp:17
+#: ../../source/config/ConfigFrame.cpp:177
+#: ../../source/config/ConfigFrame.cpp:227
+#: ../../source/config/ConfigFrame.cpp:420
+#: ../../source/config/ConfigFrame.cpp:566
+msgid "Sphere Configuration"
+msgstr "Konfigurasi Sphere"
+
+#: ../../source/config/ConfigFrame.cpp:175
+#: ../../source/config/ConfigFrame.cpp:564
+msgid ""
+"No video driver selected.\n"
+"Please select one from the list."
+msgstr ""
+"Tidak ada driver video yang dipilih.\n"
+"Pilihlah satu dari daftar yang tersedia."
+
+#: ../../source/config/ConfigFrame.cpp:226
+msgid "is not supported by the system."
+msgstr "tidak didukung oleh sistem."
+
+#: ../../source/config/ConfigFrame.cpp:422
+msgid "Configuration"
+msgstr "Konfigurasi"
+
+#: ../../source/config/ConfigFrame.cpp:423
+msgid "Language"
+msgstr "Bahasa"
+
+#: ../../source/config/ConfigFrame.cpp:425
+msgid "Restore Defaults"
+msgstr "Kembali ke pengaturan semula"
+
+#: ../../source/config/ConfigFrame.cpp:427
+msgid "English"
+msgstr "English"
+
+#: ../../source/config/ConfigFrame.cpp:428
+msgid "German"
+msgstr "Deutsch"
+
+#: ../../source/config/ConfigFrame.cpp:429
+msgid "French"
+msgstr "Français"
+
+#: ../../source/config/ConfigFrame.cpp:430
+msgid "Dutch"
+msgstr "Nederlands"
+
+#: ../../source/config/ConfigFrame.cpp:431
+msgid "Japanese"
+msgstr "日本語"
+
+#: ../../source/config/ConfigFrame.cpp:432
+msgid "Chinese"
+msgstr "中文"
+
+#: ../../source/config/ConfigFrame.cpp:433
+msgid "Russian"
+msgstr "Русский"
+
+#: ../../source/config/ConfigFrame.cpp:434
+msgid "Spanish"
+msgstr "Español"
+
+#: ../../source/config/ConfigFrame.cpp:435
+msgid "Indonesian"
+msgstr "Bahasa Indonesia"
+
+#: ../../source/config/ConfigFrame.cpp:437
+#: ../../source/config/DialogSphere32.cpp:69
+#: ../../source/config/DialogSphere8.cpp:24
+#: ../../source/config/DialogSphereGL.cpp:39
+msgid "OK"
+msgstr "Ya"
+
+#: ../../source/config/ConfigFrame.cpp:438
+#: ../../source/config/DialogSphere32.cpp:70
+#: ../../source/config/DialogSphere8.cpp:25
+#: ../../source/config/DialogSphereGL.cpp:40
+msgid "Cancel"
+msgstr "Batal"
+
+#: ../../source/config/ConfigFrame.cpp:441
+msgid "Video"
+msgstr "Video"
+
+#: ../../source/config/ConfigFrame.cpp:442
+msgid "Audio"
+msgstr "Suara"
+
+#: ../../source/config/ConfigFrame.cpp:443
+msgid "Input"
+msgstr "Input"
+
+#: ../../source/config/ConfigFrame.cpp:444
+msgid "Network"
+msgstr "Jaringan"
+
+#: ../../source/config/ConfigFrame.cpp:579
+#: ../../source/config/ConfigFrame.cpp:585
+#: ../../source/config/ConfigFrame.cpp:591
+#, c-format
+msgid "Configure %s"
+msgstr "Konfigurasi %s"
+
+#: ../../source/config/ConfigFrame.cpp:685
+msgid ""
+"Could not enter <sphere>/system/video.\n"
+"This probably means Sphere was installed incorrectly.\n"
+"Sphere Configuration cannot continue."
+msgstr ""
+"Tidak bisa menemukan <sphere>/system/video.\n"
+"Ini kemungkinan berarti bahwa instalasi tidak sempurna.\n"
+"Konfigurasi Sphere tidak bisa dilanjutkan."
+
+#: ../../source/config/ConfigFrame.cpp:709
+msgid ""
+"No video drivers found in <sphere>/system/video/.\n"
+"This probably means Sphere was installed incorrectly.\n"
+"Sphere Configuration cannot continue."
+msgstr ""
+"Tidak ada driver video dalam <sphere>/system/video/.\n"
+"Ini kemungkinan berarti bahwa instalasi tidak sempurna.\n"
+"Konfigurasi Sphere tidak bisa dilanjutkan."
+
+#: ../../source/config/ConfigFrame.cpp:722
+msgid "Video Settings"
+msgstr "Pengaturan Video"
+
+#: ../../source/config/ConfigFrame.cpp:724
+msgid "Configure Driver"
+msgstr "Konfigurasi Driver"
+
+#: ../../source/config/ConfigFrame.cpp:827
+msgid "Audio Settings"
+msgstr "Pengaturan Suara"
+
+#: ../../source/config/ConfigFrame.cpp:829
+msgid "Driver"
+msgstr "Driver"
+
+#: ../../source/config/ConfigFrame.cpp:831
+msgid "Use sound if possible"
+msgstr "Gunakan suara jika memungkinkan"
+
+#: ../../source/config/ConfigFrame.cpp:832
+msgid "Always use sound"
+msgstr "Selalu gunakan suara"
+
+#: ../../source/config/ConfigFrame.cpp:833
+msgid "No sound"
+msgstr "Tanpa suara"
+
+#: ../../source/config/ConfigFrame.cpp:1022
+msgid "Input Settings"
+msgstr "Pengaturan input"
+
+#: ../../source/config/ConfigFrame.cpp:1024
+msgid "Player"
+msgstr "Pemain"
+
+#: ../../source/config/ConfigFrame.cpp:1025
+msgid "Up"
+msgstr "Atas"
+
+#: ../../source/config/ConfigFrame.cpp:1026
+msgid "Down"
+msgstr "Bawah"
+
+#: ../../source/config/ConfigFrame.cpp:1027
+msgid "Left"
+msgstr "Kiri"
+
+#: ../../source/config/ConfigFrame.cpp:1028
+msgid "Right"
+msgstr "Kanan"
+
+#: ../../source/config/ConfigFrame.cpp:1029
+msgid "Allow Keyboard Input"
+msgstr "Izinkan input keyboard"
+
+#: ../../source/config/ConfigFrame.cpp:1030
+msgid "Allow Joypad Input"
+msgstr "Izinkan input joypad"
+
+#: ../../source/config/ConfigFrame.cpp:1077
+msgid "Network Settings"
+msgstr "Pengaturan Jaringan"
+
+#: ../../source/config/ConfigFrame.cpp:1079
+msgid "Allow Networking"
+msgstr "Izinkan penggunaan jaringan"
+
+#: ../../source/config/ConfigFrame.cpp:1259
+#, c-format
+msgid "Waiting for keypress... (%dsec left)"
+msgstr "Menunggu penekanan tombol... (%dsec kali lagi)"
+
+#: ../../source/config/DialogSphere32.cpp:33
+msgid "No"
+msgstr "Tidak"
+
+#: ../../source/config/DialogSphere32.cpp:42
+msgid "None"
+msgstr "Tidak ada"
+
+#: ../../source/config/DialogSphere32.cpp:64
+msgid "Expand Resolution"
+msgstr "Perbesar resolusi"
+
+#: ../../source/config/DialogSphere32.cpp:66
+msgid "pixels vertically"
+msgstr "pixel vertikal"
+
+#: ../../source/config/DialogSphere32.cpp:67
+msgid "pixels horizontally"
+msgstr "pixel horizontal"
+
+#: ../../source/config/DialogSphere32.cpp:72
+#: ../../source/config/DialogSphere8.cpp:26
+#: ../../source/config/DialogSphereGL.cpp:44
+msgid "Fullscreen"
+msgstr "Seluruh layar (Fullscreen)"
+
+#: ../../source/config/DialogSphere32.cpp:73
+#: ../../source/config/DialogSphere8.cpp:27
+#: ../../source/config/DialogSphereGL.cpp:45
+msgid "VSync"
+msgstr "VSync"
+
+#: ../../source/config/DialogSphere32.cpp:80
+#: ../../source/config/DialogSphereGL.cpp:42
+msgid "Scale"
+msgstr "Scale"
+
+#: ../../source/config/DialogSphere32.cpp:81
+msgid "Filter"
+msgstr "Filter"
+
+#: ../../source/config/DialogSphere8.cpp:22
+msgid "Palette"
+msgstr "Palet"
+
+#: ../../source/config/DialogSphereGL.cpp:41
+msgid "Bit Depth"
+msgstr "Kedalaman Bit"
+
+#: ../../source/config/DialogSphereGL.cpp:43
+msgid "Bilinear Filter"
+msgstr "Bilinear Filter"
+

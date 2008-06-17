@@ -15,106 +15,106 @@
 #include "../../common/rgb.hpp"
 
 
-inline void Interp1(Uint32* pc, Uint32 c1, Uint32 c2)
+inline void Interp1(dword* pc, dword c1, dword c2)
 {
   *pc = ((((c1 & 0x00FF00)*3 + (c2 & 0x00FF00) ) & 0x0003FC00)  +
          (((c1 & 0xFF00FF)*3 + (c2 & 0xFF00FF) ) & 0x03FC03FC)) >> 2;
 }
 
-inline void Interp2(Uint32* pc, Uint32 c1, Uint32 c2, Uint32 c3)
+inline void Interp2(dword* pc, dword c1, dword c2, dword c3)
 {
   *pc = ((((c1 & 0x00FF00)*2 + (c2 & 0x00FF00) + (c3 & 0x00FF00) ) & 0x0003FC00)  +
          (((c1 & 0xFF00FF)*2 + (c2 & 0xFF00FF) + (c3 & 0xFF00FF) ) & 0x03FC03FC)) >> 2;
 }
 
-inline void Interp5(Uint32* pc, Uint32 c1, Uint32 c2)
+inline void Interp5(dword* pc, dword c1, dword c2)
 {
   *pc = ((((c1 & 0x00FF00) + (c2 & 0x00FF00) ) & 0x0001FE00)  +
          (((c1 & 0xFF00FF) + (c2 & 0xFF00FF) ) & 0x01FE01FE)) >> 1;
 }
 
-inline void Interp6(Uint32* pc, Uint32 c1, Uint32 c2, Uint32 c3)
+inline void Interp6(dword* pc, dword c1, dword c2, dword c3)
 {
   *pc = ((((c1 & 0x00FF00)*5 + (c2 & 0x00FF00)*2 + (c3 & 0x00FF00) ) & 0x0007F800) +
          (((c1 & 0xFF00FF)*5 + (c2 & 0xFF00FF)*2 + (c3 & 0xFF00FF) ) & 0x07F807F8)) >> 3;
 }
 
-inline void Interp7(Uint32* pc, Uint32 c1, Uint32 c2, Uint32 c3)
+inline void Interp7(dword* pc, dword c1, dword c2, dword c3)
 {
   *pc = ((((c1 & 0x00FF00)*6 + (c2 & 0x00FF00) + (c3 & 0x00FF00) ) & 0x0007F800) +
          (((c1 & 0xFF00FF)*6 + (c2 & 0xFF00FF) + (c3 & 0xFF00FF) ) & 0x07F807F8)) >> 3;
 }
 
-inline void Interp9(Uint32* pc, Uint32 c1, Uint32 c2, Uint32 c3)
+inline void Interp9(dword* pc, dword c1, dword c2, dword c3)
 {
   *pc = ((((c1 & 0x00FF00)*2 + ((c2 & 0x00FF00) + (c3 & 0x00FF00))*3 ) & 0x0007F800) +
          (((c1 & 0xFF00FF)*2 + ((c2 & 0xFF00FF) + (c3 & 0xFF00FF))*3 ) & 0x07F807F8)) >> 3;
 }
 
-inline void Interp10(Uint32* pc, Uint32 c1, Uint32 c2, Uint32 c3)
+inline void Interp10(dword* pc, dword c1, dword c2, dword c3)
 {
   *pc = ((((c1 & 0x00FF00)*14 + (c2 & 0x00FF00) + (c3 & 0x00FF00) ) & 0x000FF000) +
          (((c1 & 0xFF00FF)*14 + (c2 & 0xFF00FF) + (c3 & 0xFF00FF) ) & 0x0FF00FF0)) >> 4;
 }
 
-#define PIXEL00_0     dst0[0] = src1[0];
-#define PIXEL00_10    Interp1( dst0, src1[0], src0[-1]);
-#define PIXEL00_11    Interp1( dst0, src1[0], src1[-1]);
-#define PIXEL00_12    Interp1( dst0, src1[0], src0[0]);
-#define PIXEL00_20    Interp2( dst0, src1[0], src1[-1], src0[0]);
-#define PIXEL00_21    Interp2( dst0, src1[0], src0[-1], src0[0]);
-#define PIXEL00_22    Interp2( dst0, src1[0], src0[-1], src1[-1]);
-#define PIXEL00_60    Interp6( dst0, src1[0], src0[0],  src1[-1]);
-#define PIXEL00_61    Interp6( dst0, src1[0], src1[-1], src0[0]);
-#define PIXEL00_70    Interp7( dst0, src1[0], src1[-1], src0[0]);
-#define PIXEL00_90    Interp9( dst0, src1[0], src1[-1], src0[0]);
-#define PIXEL00_100   Interp10(dst0, src1[0], src1[-1], src0[0]);
-#define PIXEL01_0     dst0[1] = src1[0];
-#define PIXEL01_10    Interp1( dst0+1, src1[0], src0[1]);
-#define PIXEL01_11    Interp1( dst0+1, src1[0], src0[0]);
-#define PIXEL01_12    Interp1( dst0+1, src1[0], src1[1]);
-#define PIXEL01_20    Interp2( dst0+1, src1[0], src0[0], src1[1]);
-#define PIXEL01_21    Interp2( dst0+1, src1[0], src0[1], src1[1]);
-#define PIXEL01_22    Interp2( dst0+1, src1[0], src0[1], src0[0]);
-#define PIXEL01_60    Interp6( dst0+1, src1[0], src1[1], src0[0]);
-#define PIXEL01_61    Interp6( dst0+1, src1[0], src0[0], src1[1]);
-#define PIXEL01_70    Interp7( dst0+1, src1[0], src0[0], src1[1]);
-#define PIXEL01_90    Interp9( dst0+1, src1[0], src0[0], src1[1]);
-#define PIXEL01_100   Interp10(dst0+1, src1[0], src0[0], src1[1]);
-#define PIXEL10_0     dst1[0] = src1[0];
-#define PIXEL10_10    Interp1( dst1, src1[0], src2[-1]);
-#define PIXEL10_11    Interp1( dst1, src1[0], src2[0]);
-#define PIXEL10_12    Interp1( dst1, src1[0], src1[-1]);
-#define PIXEL10_20    Interp2( dst1, src1[0], src2[0],  src1[-1]);
-#define PIXEL10_21    Interp2( dst1, src1[0], src2[-1], src1[-1]);
-#define PIXEL10_22    Interp2( dst1, src1[0], src2[-1], src2[0]);
-#define PIXEL10_60    Interp6( dst1, src1[0], src1[-1], src2[0]);
-#define PIXEL10_61    Interp6( dst1, src1[0], src2[0],  src1[-1]);
-#define PIXEL10_70    Interp7( dst1, src1[0], src2[0],  src1[-1]);
-#define PIXEL10_90    Interp9( dst1, src1[0], src2[0],  src1[-1]);
-#define PIXEL10_100   Interp10(dst1, src1[0], src2[0],  src1[-1]);
-#define PIXEL11_0     dst1[1] = src1[0];
-#define PIXEL11_10    Interp1( dst1+1, src1[0], src2[1]);
-#define PIXEL11_11    Interp1( dst1+1, src1[0], src1[1]);
-#define PIXEL11_12    Interp1( dst1+1, src1[0], src2[0]);
-#define PIXEL11_20    Interp2( dst1+1, src1[0], src1[1], src2[0]);
-#define PIXEL11_21    Interp2( dst1+1, src1[0], src2[1], src2[0]);
-#define PIXEL11_22    Interp2( dst1+1, src1[0], src2[1], src1[1]);
-#define PIXEL11_60    Interp6( dst1+1, src1[0], src2[0], src1[1]);
-#define PIXEL11_61    Interp6( dst1+1, src1[0], src1[1], src2[0]);
-#define PIXEL11_70    Interp7( dst1+1, src1[0], src1[1], src2[0]);
-#define PIXEL11_90    Interp9( dst1+1, src1[0], src1[1], src2[0]);
-#define PIXEL11_100   Interp10(dst1+1, src1[0], src1[1], src2[0]);
+#define PIXEL00_0     dstA[0] = src1[0];
+#define PIXEL00_10    Interp1( dstA, src1[0], src0[-1]);
+#define PIXEL00_11    Interp1( dstA, src1[0], src1[-1]);
+#define PIXEL00_12    Interp1( dstA, src1[0], src0[0]);
+#define PIXEL00_20    Interp2( dstA, src1[0], src1[-1], src0[0]);
+#define PIXEL00_21    Interp2( dstA, src1[0], src0[-1], src0[0]);
+#define PIXEL00_22    Interp2( dstA, src1[0], src0[-1], src1[-1]);
+#define PIXEL00_60    Interp6( dstA, src1[0], src0[0],  src1[-1]);
+#define PIXEL00_61    Interp6( dstA, src1[0], src1[-1], src0[0]);
+#define PIXEL00_70    Interp7( dstA, src1[0], src1[-1], src0[0]);
+#define PIXEL00_90    Interp9( dstA, src1[0], src1[-1], src0[0]);
+#define PIXEL00_100   Interp10(dstA, src1[0], src1[-1], src0[0]);
+#define PIXEL01_0     dstA[1] = src1[0];
+#define PIXEL01_10    Interp1( dstA+1, src1[0], src0[1]);
+#define PIXEL01_11    Interp1( dstA+1, src1[0], src0[0]);
+#define PIXEL01_12    Interp1( dstA+1, src1[0], src1[1]);
+#define PIXEL01_20    Interp2( dstA+1, src1[0], src0[0], src1[1]);
+#define PIXEL01_21    Interp2( dstA+1, src1[0], src0[1], src1[1]);
+#define PIXEL01_22    Interp2( dstA+1, src1[0], src0[1], src0[0]);
+#define PIXEL01_60    Interp6( dstA+1, src1[0], src1[1], src0[0]);
+#define PIXEL01_61    Interp6( dstA+1, src1[0], src0[0], src1[1]);
+#define PIXEL01_70    Interp7( dstA+1, src1[0], src0[0], src1[1]);
+#define PIXEL01_90    Interp9( dstA+1, src1[0], src0[0], src1[1]);
+#define PIXEL01_100   Interp10(dstA+1, src1[0], src0[0], src1[1]);
+#define PIXEL10_0     dstB[0] = src1[0];
+#define PIXEL10_10    Interp1( dstB, src1[0], src2[-1]);
+#define PIXEL10_11    Interp1( dstB, src1[0], src2[0]);
+#define PIXEL10_12    Interp1( dstB, src1[0], src1[-1]);
+#define PIXEL10_20    Interp2( dstB, src1[0], src2[0],  src1[-1]);
+#define PIXEL10_21    Interp2( dstB, src1[0], src2[-1], src1[-1]);
+#define PIXEL10_22    Interp2( dstB, src1[0], src2[-1], src2[0]);
+#define PIXEL10_60    Interp6( dstB, src1[0], src1[-1], src2[0]);
+#define PIXEL10_61    Interp6( dstB, src1[0], src2[0],  src1[-1]);
+#define PIXEL10_70    Interp7( dstB, src1[0], src2[0],  src1[-1]);
+#define PIXEL10_90    Interp9( dstB, src1[0], src2[0],  src1[-1]);
+#define PIXEL10_100   Interp10(dstB, src1[0], src2[0],  src1[-1]);
+#define PIXEL11_0     dstB[1] = src1[0];
+#define PIXEL11_10    Interp1( dstB+1, src1[0], src2[1]);
+#define PIXEL11_11    Interp1( dstB+1, src1[0], src1[1]);
+#define PIXEL11_12    Interp1( dstB+1, src1[0], src2[0]);
+#define PIXEL11_20    Interp2( dstB+1, src1[0], src1[1], src2[0]);
+#define PIXEL11_21    Interp2( dstB+1, src1[0], src2[1], src2[0]);
+#define PIXEL11_22    Interp2( dstB+1, src1[0], src2[1], src1[1]);
+#define PIXEL11_60    Interp6( dstB+1, src1[0], src2[0], src1[1]);
+#define PIXEL11_61    Interp6( dstB+1, src1[0], src1[1], src2[0]);
+#define PIXEL11_70    Interp7( dstB+1, src1[0], src1[1], src2[0]);
+#define PIXEL11_90    Interp9( dstB+1, src1[0], src1[1], src2[0]);
+#define PIXEL11_100   Interp10(dstB+1, src1[0], src1[1], src2[0]);
 
-inline bool Diff(Uint32 a, Uint32 b)
+inline bool Diff(dword a, dword b)
 {
   int R = abs((a & 0xFF0000) - (b & 0xFF0000)) >> 16;
   int G = abs((a & 0x00FF00) - (b & 0x00FF00)) >> 8;
   int B = abs((a & 0x0000FF) - (b & 0x0000FF));
 
-  return ( ( (( R +   G + B) >> 2) > 0x30 ) ||
-           ( (( R -   B)     >> 2) > 0x07 ) ||
-           ( ((-R + 2*G - B) >> 3) > 0x06 ) );
+  return ( ( (( R +   G + B) >> 2) > 0x20 ) ||
+           ( (( R -   B)     >> 2) > 0x10 ) ||
+           ( ((-R + 2*G - B) >> 3) > 0x10 ) );
 }
 
 template<typename T>
@@ -133,11 +133,11 @@ void hq2x(T* dst, int dst_pitch, T* src, int src_width, int src_height)
     //   +----+----+----+
 
 
-    int src_pitch = src_width;
+    int dst_pitch2 = dst_pitch * 2;
 
     T* src0 = src + 1;
-    T* src1 = src + 1 + src_pitch;
-    T* src2 = src + 1 + src_pitch * 2;
+    T* src1 = src + 1 + src_width;
+    T* src2 = src + 1 + src_width * 2;
 
     T* dst0 = dst + 2 + dst_pitch * 2;
     T* dst1 = dst + 2 + dst_pitch * 3;
@@ -150,19 +150,21 @@ void hq2x(T* dst, int dst_pitch, T* src, int src_width, int src_height)
   while (iy--)
   {
     ix = src_width - 2;
+    T* dstA = dst0;
+    T* dstB = dst1;
 
     while (ix--)
     {
         pattern = 0;
 
-        if (src0[-1] != src1[0]) if (Diff(src0[-1], src1[0])) pattern |= 0x01;
-        if (src0[0]  != src1[0]) if (Diff(src0[0], src1[0]))  pattern |= 0x02;
-        if (src0[1]  != src1[0]) if (Diff(src0[1], src1[0]))  pattern |= 0x04;
-        if (src1[-1] != src1[0]) if (Diff(src1[-1], src1[0])) pattern |= 0x08;
-        if (src1[1]  != src1[0]) if (Diff(src1[1], src1[0]))  pattern |= 0x10;
-        if (src2[-1] != src1[0]) if (Diff(src2[-1], src1[0])) pattern |= 0x20;
-        if (src2[0]  != src1[0]) if (Diff(src2[0], src1[0]))  pattern |= 0x40;
-        if (src2[1]  != src1[0]) if (Diff(src2[1], src1[0]))  pattern |= 0x80;
+        if (src0[-1] != src1[0]) if (Diff(src0[-1], src1[0]))  pattern |= 0x01;
+        if (src0[0]  != src1[0]) if (Diff(src0[0],  src1[0]))  pattern |= 0x02;
+        if (src0[1]  != src1[0]) if (Diff(src0[1],  src1[0]))  pattern |= 0x04;
+        if (src1[-1] != src1[0]) if (Diff(src1[-1], src1[0]))  pattern |= 0x08;
+        if (src1[1]  != src1[0]) if (Diff(src1[1],  src1[0]))  pattern |= 0x10;
+        if (src2[-1] != src1[0]) if (Diff(src2[-1], src1[0]))  pattern |= 0x20;
+        if (src2[0]  != src1[0]) if (Diff(src2[0],  src1[0]))  pattern |= 0x40;
+        if (src2[1]  != src1[0]) if (Diff(src2[1],  src1[0]))  pattern |= 0x80;
 
       switch (pattern)
       {
@@ -2810,15 +2812,15 @@ void hq2x(T* dst, int dst_pitch, T* src, int src_width, int src_height)
       ++src0;
       ++src1;
       ++src2;
-      dst0 += 2;
-      dst1 += 2;
+      dstA += 2;
+      dstB += 2;
     }
 
     src0 += 2;
     src1 += 2;
     src2 += 2;
-    dst0 += dst_pitch + 4;
-    dst1 += dst_pitch + 4;
+    dst0 += dst_pitch2;
+    dst1 += dst_pitch2;
   }
 }
 

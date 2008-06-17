@@ -163,7 +163,6 @@ EXPORT(bool) InitVideo(int w, int h, std::string sphere_dir)
             return false;
         }
 
-        SDL_ShowCursor(false);
         SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 
         fullscreen = Config.fullscreen;
@@ -204,6 +203,9 @@ EXPORT(bool) InitVideo(int w, int h, std::string sphere_dir)
         fprintf(stderr, "Could not set video mode:\n%s\n", SDL_GetError());
         return false;
     }
+
+    SDL_ShowCursor(false);
+
 
     // view initialization
     glViewport(0, 0, ScreenWidth * SCALE(), ScreenHeight * SCALE());

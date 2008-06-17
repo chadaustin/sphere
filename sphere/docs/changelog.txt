@@ -1,5 +1,12 @@
 YYYY.MM.DD
 
+2008.06.17
+  - Added multilanguage support to the Config tool.
+  - Added resolution compatibility mode (fullscreen)
+    to the software based drivers.
+  - Fixed the scaling filters in the software based
+    drivers to work correctly on NVIDIA graphics cards.
+
 2008.06.01
   - Replaced the old and win-only Config tool with
     a new one based on wxWidgets.

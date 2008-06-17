@@ -30,24 +30,55 @@ typedef struct _IMAGE
 
 } *IMAGE;
 
-enum SCALE_ALGORITHM
+enum SCALING_FILTER
 {
-    I_DIRECT_SCALE = 0,
-    I_SCALE2X      = 1,
-    I_EAGLE        = 2,
-    I_HQ2X         = 3,
-    I_2XSAI        = 4,
-    I_SUPER_2XSAI  = 5,
-    I_SUPER_EAGLE  = 6,
+    I_NONE = 0,
+    I_SCALE2X,
+    I_EAGLE,
+    I_HQ2X,
+    I_2XSAI,
+    I_SUPER_2XSAI,
+    I_SUPER_EAGLE,
 };
 
-struct CONFIGURATION
+typedef struct _screen_border
 {
-    bool fullscreen;
-    bool vsync;
+    int top;
+    int bottom;
+    int left;
+    int right;
 
-    bool scale;
-    int  filter;
+} screen_border;
+
+class VideoConfiguration
+{
+    public:
+
+        VideoConfiguration() {};
+
+        int GetExWidth(int width)
+        {
+            return width + border.left + border.right;
+        }
+
+        int GetExHeight(int height)
+        {
+            return height + border.top + border.bottom;
+        }
+
+        int GetOffset(int pitch)
+        {
+            return pitch * border.top + border.left;
+        }
+
+        bool fullscreen;
+        bool vsync;
+
+        bool scale;
+        int  filter;
+
+        screen_border border;
+
 };
 
 // FUNCTION PROTOTYPES //
@@ -120,8 +151,6 @@ inline RGBA UnpackPixel555(word pixel)
 
 // GLOBAL VARIABLES
 
-static CONFIGURATION Configuration;
-
 static enum
 {
     RGB565,
@@ -129,8 +158,16 @@ static enum
 
 } PixelFormat;
 
-static HWND  SphereWindow;
-static word* ScreenBuffer;
+
+static VideoConfiguration Config;
+
+static HWND  SphereWindow        = NULL;
+static word* ScreenBuffer        = NULL;
+static word* ScreenBufferSection = NULL;
+
+static int   ScreenBufferWidth  = 0;
+static int   ScreenBufferHeight = 0;
+static int   ScreenScaleFactor  = 1;
 
 static LONG OldWindowStyle;
 static LONG OldWindowStyleEx;
@@ -145,8 +182,6 @@ static HDC     RenderDC;
 static HBITMAP RenderBitmap;
 static word*   RenderBuffer;
 
-static bool s_fullscreen = false;
-static int  scale_factor = 1;
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
@@ -165,10 +200,25 @@ void LoadConfiguration()
     GetDriverConfigFile(config_file_name);
 
     // load the fields from the file
-    Configuration.fullscreen = GetPrivateProfileInt("standard16", "Fullscreen", 1, config_file_name) != 0;
-    Configuration.vsync      = GetPrivateProfileInt("standard16", "VSync",      1, config_file_name) != 0;
-    Configuration.scale      = GetPrivateProfileInt("standard16", "Scale",      1, config_file_name) != 0;
-    Configuration.filter     = GetPrivateProfileInt("standard16", "Filter",     0, config_file_name);
+    Config.fullscreen = GetPrivateProfileInt("standard16", "Fullscreen", 1, config_file_name) != 0;
+    Config.vsync      = GetPrivateProfileInt("standard16", "VSync",      1, config_file_name) != 0;
+    Config.scale      = GetPrivateProfileInt("standard16", "Scale",      1, config_file_name) != 0;
+    Config.filter     = GetPrivateProfileInt("standard16", "Filter",     0, config_file_name);
+
+    int vexpand              = GetPrivateProfileInt("standard16", "VExpand",    0, config_file_name);
+    int hexpand              = GetPrivateProfileInt("standard16", "HExpand",    0, config_file_name);
+
+    if (vexpand < 0 || vexpand > 1024)
+        vexpand = 0;
+
+    if (hexpand < 0 || hexpand > 1024)
+        hexpand = 0;
+
+    Config.border.top    = (int)(hexpand / 2);
+    Config.border.bottom = (int)(hexpand / 2) + (hexpand % 2);
+    Config.border.left   = (int)(vexpand / 2);
+    Config.border.right  = (int)(vexpand / 2) + (vexpand % 2);
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -185,12 +235,11 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
     if (firstcall)
     {
         LoadConfiguration();
-        s_fullscreen = Configuration.fullscreen;
-        scale_factor = Configuration.scale ? 2 : 1;
+        ScreenScaleFactor  = Config.scale ? 2 : 1;
         firstcall = false;
     }
 
-    if (s_fullscreen)
+    if (Config.fullscreen)
         return InitFullscreen();
     else
         return InitWindowed();
@@ -201,6 +250,18 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
 ////////////////////////////////////////////////////////////////////////////////
 bool InitFullscreen()
 {
+    // initialize the screen buffer variables and allocate a blitting buffer
+    ScreenBufferWidth   = Config.GetExWidth(ScreenWidth);
+    ScreenBufferHeight  = Config.GetExHeight(ScreenHeight);
+    ScreenBuffer        = new word[ScreenBufferWidth * ScreenBufferHeight];
+    ScreenBufferSection = ScreenBuffer + Config.GetOffset(ScreenBufferWidth);
+
+    if (ScreenBuffer == NULL)
+        return false;
+
+    memset((byte*)ScreenBuffer, 0, ScreenBufferWidth * ScreenBufferHeight * 2);
+
+
     HRESULT ddrval;
     bool    retval;
 
@@ -246,16 +307,11 @@ bool InitFullscreen()
         return false;
     }
 
-    // allocate a blitting buffer
-    ScreenBuffer = new word[ScreenWidth * ScreenHeight];
-
-    if (ScreenBuffer == NULL)
-        return false;
-
     ShowCursor(FALSE);
 
     SetWindowPos(SphereWindow, HWND_TOPMOST, 0, 0,
-                 ScreenWidth * scale_factor, ScreenHeight * scale_factor,
+                 ScreenBufferWidth  * ScreenScaleFactor,
+                 ScreenBufferHeight * ScreenScaleFactor,
                  SWP_SHOWWINDOW);
 
     return true;
@@ -271,7 +327,7 @@ EXPORT(bool) ToggleFullScreen()
     if (ScreenWidth != 0 || ScreenHeight != 0)
     {
 
-        if (s_fullscreen)
+        if (Config.fullscreen)
         {
             CloseFullscreen();
         }
@@ -281,7 +337,7 @@ EXPORT(bool) ToggleFullScreen()
         }
     }
 
-    s_fullscreen = !s_fullscreen;
+    Config.fullscreen = !Config.fullscreen;
 
     if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight) == true)
     {
@@ -292,7 +348,7 @@ EXPORT(bool) ToggleFullScreen()
     {
 
         // switching failed, try to revert to what it was
-        s_fullscreen = !s_fullscreen;
+        Config.fullscreen = !Config.fullscreen;
         if (InitVideoDriver(SphereWindow, ScreenWidth, ScreenHeight) == true)
         {
             SetClippingRectangle(x, y, w, h);
@@ -306,7 +362,11 @@ EXPORT(bool) ToggleFullScreen()
 ////////////////////////////////////////////////////////////////////////////////
 bool SetDisplayMode()
 {
-    HRESULT ddrval = dd->SetDisplayMode(ScreenWidth * scale_factor, ScreenHeight * scale_factor, 16);
+    HRESULT ddrval;
+
+    ddrval = dd->SetDisplayMode(ScreenBufferWidth  * ScreenScaleFactor,
+                                ScreenBufferHeight * ScreenScaleFactor,
+                                16);
 
     if (ddrval != DD_OK)
         return false;
@@ -321,7 +381,7 @@ bool CreateSurfaces()
     DDSURFACEDESC ddsd;
     ddsd.dwSize = sizeof(ddsd);
 
-    if (Configuration.vsync)
+    if (Config.vsync)
     {
         ddsd.dwFlags           = DDSD_CAPS | DDSD_BACKBUFFERCOUNT;
         ddsd.ddsCaps.dwCaps    = DDSCAPS_PRIMARYSURFACE | DDSCAPS_FLIP | DDSCAPS_COMPLEX;
@@ -339,7 +399,7 @@ bool CreateSurfaces()
     if (ddrval != DD_OK)
         return false;
 
-    if (Configuration.vsync)
+    if (Config.vsync)
     {
         ddsd.ddsCaps.dwCaps = DDSCAPS_BACKBUFFER;
         ddrval = ddPrimary->GetAttachedSurface(&ddsd.ddsCaps, &ddSecondary);
@@ -384,6 +444,18 @@ bool CreateSurfaces()
 ////////////////////////////////////////////////////////////////////////////////
 bool InitWindowed()
 {
+    // initialize the screen buffer variables and allocate a blitting buffer
+    ScreenBufferWidth   = ScreenWidth;
+    ScreenBufferHeight  = ScreenHeight;
+    ScreenBuffer        = new word[ScreenBufferWidth * ScreenBufferHeight];
+    ScreenBufferSection = ScreenBuffer;
+
+    if (ScreenBuffer == NULL)
+        return false;
+
+    memset((byte*)ScreenBuffer, 0, ScreenBufferWidth * ScreenBufferHeight * 2);
+
+
     // create the render DC
     RenderDC = CreateCompatibleDC(NULL);
     if (RenderDC == NULL)
@@ -394,8 +466,8 @@ bool InitWindowed()
     memset(&bmi, 0, sizeof(bmi));
     BITMAPINFOHEADER& bmih = bmi.bmiHeader;
     bmih.biSize        = sizeof(bmih);
-    bmih.biWidth       =  ScreenWidth  * scale_factor;
-    bmih.biHeight      = -ScreenHeight * scale_factor;
+    bmih.biWidth       =  ScreenBufferWidth  * ScreenScaleFactor;
+    bmih.biHeight      = -ScreenBufferHeight * ScreenScaleFactor;
     bmih.biPlanes      = 1;
     bmih.biBitCount    = 16;
     bmih.biCompression = BI_RGB;
@@ -410,16 +482,12 @@ bool InitWindowed()
 
     SelectObject(RenderDC, RenderBitmap);
 
-    CenterWindow(SphereWindow, ScreenWidth * scale_factor, ScreenHeight * scale_factor);
+    CenterWindow(SphereWindow,
+                 ScreenWidth  * ScreenScaleFactor,
+                 ScreenHeight * ScreenScaleFactor);
 
     // we know that 16-bit color DIBs are always 5:5:5
     PixelFormat = RGB555;
-
-    // allocate a blitting buffer
-    ScreenBuffer = new word[ScreenWidth * ScreenHeight];
-
-    if (ScreenBuffer == NULL)
-        return false;
 
     return true;
 }
@@ -427,7 +495,7 @@ bool InitWindowed()
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) CloseVideoDriver()
 {
-    if (s_fullscreen)
+    if (Config.fullscreen)
         CloseFullscreen();
     else
         CloseWindowed();
@@ -440,27 +508,47 @@ void CloseFullscreen()
     SetWindowLong(SphereWindow, GWL_EXSTYLE, OldWindowStyleEx);
 
     ShowCursor(TRUE);
-    dd->Release();
-    delete[] ScreenBuffer;
 
+    if (ScreenBuffer != NULL)
+    {
+        delete[] ScreenBuffer;
+        ScreenBuffer        = NULL;
+        ScreenBufferSection = NULL;
+    }
+
+    if (dd != NULL)
+    {
+        dd->Release();
+        dd = NULL;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void CloseWindowed()
 {
     DeleteDC(RenderDC);
+    RenderDC = NULL;
+
     DeleteObject(RenderBitmap);
-    delete[] ScreenBuffer;
+    RenderBitmap = NULL;
+
+    if (ScreenBuffer != NULL)
+    {
+        delete[] ScreenBuffer;
+        ScreenBuffer        = NULL;
+        ScreenBufferSection = NULL;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) FlipScreen()
 {
 
-    if (s_fullscreen)
+    if (Config.fullscreen)
     {
         LPDIRECTDRAWSURFACE surface;
-        if (Configuration.vsync)
+
+        if (Config.vsync)
             surface = ddSecondary;
         else
             surface = ddPrimary;
@@ -486,38 +574,50 @@ EXPORT(void) FlipScreen()
             }
         }
 
-        if (Configuration.scale)
+        int dst_pitch = ddsd.lPitch / 2;
+
+        if (Config.scale)
         {
-            Scale((word*)ddsd.lpSurface, ddsd.lPitch / 2);
+            Scale((word*)ddsd.lpSurface, dst_pitch);
         }
         else
         {
             word* dst = (word*)ddsd.lpSurface;
             word* src = ScreenBuffer;
-            for (int i = 0; i < ScreenHeight; i++)
+
+            for (int i = 0; i < ScreenBufferHeight; i++)
             {
-                memcpy(dst, src, ScreenWidth * 2);
-                dst += ddsd.lPitch / 2;
-                src += ScreenWidth;
+                memcpy(dst, src, ScreenBufferWidth * 2);
+                dst += dst_pitch;
+                src += ScreenBufferWidth;
             }
         }
 
         // unlock the surface and do the flip!
         surface->Unlock(NULL);
-        if (Configuration.vsync)
+
+        if (Config.vsync)
             ddPrimary->Flip(NULL, DDFLIP_WAIT);
+
     }
     else
     {
 
-        if (Configuration.scale)
-            Scale(RenderBuffer, ScreenWidth * 2);
+        if (Config.scale)
+            Scale(RenderBuffer, ScreenBufferWidth * 2);
         else
-            memcpy((byte*)RenderBuffer, (byte*)ScreenBuffer, ScreenWidth * ScreenHeight * 2);
+            memcpy((byte*)RenderBuffer,
+                   (byte*)ScreenBuffer,
+                   ScreenBufferWidth * ScreenBufferHeight * 2);
 
         // blit the render buffer to the window
         HDC dc = GetDC(SphereWindow);
-        BitBlt(dc, 0, 0, ScreenWidth * scale_factor, ScreenHeight * scale_factor, RenderDC, 0, 0, SRCCOPY);
+
+        BitBlt(dc, 0, 0,
+               ScreenBufferWidth  * ScreenScaleFactor,
+               ScreenBufferHeight * ScreenScaleFactor,
+               RenderDC, 0, 0, SRCCOPY);
+
         ReleaseDC(SphereWindow, dc);
     }
 }
@@ -527,68 +627,71 @@ void Scale(word* dst, int dst_pitch)
 {
     if (PixelFormat == RGB565)
     {
-        switch (Configuration.filter)
+
+        switch (Config.filter)
         {
-            case I_DIRECT_SCALE:
-                DirectScale(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight);
+
+            case I_NONE:
+                DirectScale(dst, dst_pitch, ScreenBuffer, ScreenBufferWidth, ScreenBufferHeight);
                 break;
 
             case I_SCALE2X:
-                Scale2x(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight);
+                Scale2x(    dst, dst_pitch, ScreenBuffer, ScreenBufferWidth, ScreenBufferHeight);
                 break;
 
             case I_EAGLE:
-                Eagle(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight);
+                Eagle(      dst, dst_pitch, ScreenBuffer, ScreenBufferWidth, ScreenBufferHeight);
                 break;
 
             case I_HQ2X:
-                hq2x(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight, 16);
+                hq2x(       dst, dst_pitch, ScreenBuffer, ScreenBufferWidth, ScreenBufferHeight, 16);
                 break;
 
             case I_2XSAI:
-                _2xSaI(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight, 16);
+                _2xSaI(     dst, dst_pitch, ScreenBuffer, ScreenBufferWidth, ScreenBufferHeight, 16);
                 break;
 
             case I_SUPER_2XSAI:
-                Super2xSaI(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight, 16);
+                Super2xSaI( dst, dst_pitch, ScreenBuffer, ScreenBufferWidth, ScreenBufferHeight, 16);
                 break;
 
             case I_SUPER_EAGLE:
-                SuperEagle(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight, 16);
+                SuperEagle( dst, dst_pitch, ScreenBuffer, ScreenBufferWidth, ScreenBufferHeight, 16);
                 break;
 
         }
     }
     else
     {
-        switch (Configuration.filter)
+        switch (Config.filter)
         {
-            case I_DIRECT_SCALE:
-                DirectScale(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight);
+
+            case I_NONE:
+                DirectScale(dst, dst_pitch, ScreenBuffer, ScreenBufferWidth, ScreenBufferHeight);
                 break;
 
             case I_SCALE2X:
-                Scale2x(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight);
+                Scale2x(    dst, dst_pitch, ScreenBuffer, ScreenBufferWidth, ScreenBufferHeight);
                 break;
 
             case I_EAGLE:
-                Eagle(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight);
+                Eagle(      dst, dst_pitch, ScreenBuffer, ScreenBufferWidth, ScreenBufferHeight);
                 break;
 
             case I_HQ2X:
-                hq2x(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight, 15);
+                hq2x(       dst, dst_pitch, ScreenBuffer, ScreenBufferWidth, ScreenBufferHeight, 15);
                 break;
 
             case I_2XSAI:
-                _2xSaI(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight, 15);
+                _2xSaI(     dst, dst_pitch, ScreenBuffer, ScreenBufferWidth, ScreenBufferHeight, 15);
                 break;
 
             case I_SUPER_2XSAI:
-                Super2xSaI(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight, 15);
+                Super2xSaI( dst, dst_pitch, ScreenBuffer, ScreenBufferWidth, ScreenBufferHeight, 15);
                 break;
 
             case I_SUPER_EAGLE:
-                SuperEagle(dst, dst_pitch, ScreenBuffer, ScreenWidth, ScreenHeight, 15);
+                SuperEagle( dst, dst_pitch, ScreenBuffer, ScreenBufferWidth, ScreenBufferHeight, 15);
                 break;
 
         }
@@ -835,7 +938,7 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
     }
 
     for (int iy = 0; iy < height; iy++)
-        memcpy(image->rgb + iy * width, ScreenBuffer + (y + iy) * ScreenWidth + x, width * 2);
+        memcpy(image->rgb + iy * width, ScreenBufferSection + (y + iy) * ScreenBufferWidth + x, width * 2);
 
     memset(image->alpha, 255, pixels_total);
 
@@ -960,8 +1063,8 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
     {
 
         primitives::Blit(
-            ScreenBuffer,
-            ScreenWidth,
+            ScreenBufferSection,
+            ScreenBufferWidth,
             x,
             y,
             image->rgb,
@@ -977,8 +1080,8 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
     {
 
         primitives::Blit(
-            ScreenBuffer,
-            ScreenWidth,
+            ScreenBufferSection,
+            ScreenBufferWidth,
             x,
             y,
             image->rgb,
@@ -1036,11 +1139,11 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
 
     if (PixelFormat == RGB565)
     {
-        primitives::TexturedQuad(ScreenBuffer, ScreenWidth, x, y, image->rgb, image->alpha, image->width, image->height, ClippingRectangle, renderpixel565);
+        primitives::TexturedQuad(ScreenBufferSection, ScreenBufferWidth, x, y, image->rgb, image->alpha, image->width, image->height, ClippingRectangle, renderpixel565);
     }
     else
     {
-        primitives::TexturedQuad(ScreenBuffer, ScreenWidth, x, y, image->rgb, image->alpha, image->width, image->height, ClippingRectangle, renderpixel555);
+        primitives::TexturedQuad(ScreenBufferSection, ScreenBufferWidth, x, y, image->rgb, image->alpha, image->width, image->height, ClippingRectangle, renderpixel555);
     }
 }
 
@@ -1056,11 +1159,11 @@ EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
 
     if (PixelFormat == RGB565)
     {
-        primitives::TexturedQuad(ScreenBuffer, ScreenWidth, x, y, image->rgb, image->alpha, image->width, image->height, ClippingRectangle, render_pixel_mask_565(mask));
+        primitives::TexturedQuad(ScreenBufferSection, ScreenBufferWidth, x, y, image->rgb, image->alpha, image->width, image->height, ClippingRectangle, render_pixel_mask_565(mask));
     }
     else
     {
-        primitives::TexturedQuad(ScreenBuffer, ScreenWidth, x, y, image->rgb, image->alpha, image->width, image->height, ClippingRectangle, render_pixel_mask_555(mask));
+        primitives::TexturedQuad(ScreenBufferSection, ScreenBufferWidth, x, y, image->rgb, image->alpha, image->width, image->height, ClippingRectangle, render_pixel_mask_555(mask));
     }
 }
 
@@ -1074,16 +1177,16 @@ void TileBlit(IMAGE image, int x, int y)
 {
     calculate_clipping_metrics(image->width, image->height);
 
-    word* dest  = (word*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-    word* src   = (word*)image->rgb   +       image_offset_y * image->width + image_offset_x;
+    word* dest  = (word*)ScreenBufferSection + (y + image_offset_y) * ScreenBufferWidth  + image_offset_x + x;
+    word* src   = (word*)image->rgb          +       image_offset_y * image->width       + image_offset_x;
 
     int iy = image_blit_height;
     while (iy-- > 0)
     {
 
         memcpy(dest, src, image_blit_width * sizeof(word));
-        dest += ScreenWidth;
-        src += image->width;
+        dest += ScreenBufferWidth;
+        src  += image->width;
 
     }
 }
@@ -1093,12 +1196,12 @@ void SpriteBlit(IMAGE image, int x, int y)
 {
     calculate_clipping_metrics(image->width, image->height);
 
-    word* dst   = (word*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-    word* src   = (word*)image->rgb   +      image_offset_y  * image->width + image_offset_x;
-    byte* alpha = image->alpha        +      image_offset_y  * image->width + image_offset_x;
+    word* dst   = (word*)ScreenBufferSection + (y + image_offset_y) * ScreenBufferWidth  + image_offset_x + x;
+    word* src   = (word*)image->rgb          +      image_offset_y  * image->width       + image_offset_x;
+    byte* alpha = image->alpha               +      image_offset_y  * image->width       + image_offset_x;
 
-    int dst_inc = ScreenWidth  - image_blit_width;
-    int src_inc = image->width - image_blit_width;
+    int dst_inc = ScreenBufferWidth  - image_blit_width;
+    int src_inc = image->width       - image_blit_width;
 
     int iy = image_blit_height;
     int ix;
@@ -1129,12 +1232,12 @@ void NormalBlit(IMAGE image, int x, int y)
     int a;
     word result;
 
-    word* dst   = (word*)ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-    word* src   = (word*)image->rgb   +      image_offset_y  * image->width + image_offset_x;
-    byte* alpha = image->alpha        +      image_offset_y  * image->width + image_offset_x;
+    word* dst   = (word*)ScreenBufferSection + (y + image_offset_y) * ScreenBufferWidth + image_offset_x + x;
+    word* src   = (word*)image->rgb          +      image_offset_y  * image->width      + image_offset_x;
+    byte* alpha = image->alpha               +      image_offset_y  * image->width      + image_offset_x;
 
-    int dst_inc = ScreenWidth  - image_blit_width;
-    int src_inc = image->width - image_blit_width;
+    int dst_inc = ScreenBufferWidth - image_blit_width;
+    int src_inc = image->width      - image_blit_width;
 
     int iy = image_blit_height;
     int ix;
@@ -1239,11 +1342,11 @@ EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels)
 {
     calculate_clipping_metrics(w, h);
 
-    word* dst = ScreenBuffer + (y + image_offset_y) * ScreenWidth  + image_offset_x + x;
-    RGBA* src = pixels       +      image_offset_y  * w            + image_offset_x;
+    word* dst = ScreenBufferSection + (y + image_offset_y) * ScreenBufferWidth + image_offset_x + x;
+    RGBA* src = pixels              +      image_offset_y  * w                 + image_offset_x;
 
-    int dst_inc = ScreenWidth  - image_blit_width;
-    int src_inc = w            - image_blit_width;
+    int dst_inc = ScreenBufferWidth - image_blit_width;
+    int src_inc = w                 - image_blit_width;
 
     int a;
     RGBA temp;
@@ -1371,8 +1474,8 @@ EXPORT(void) DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels)
 {
     if (PixelFormat == RGB565)
     {
-        primitives::TexturedQuad(ScreenBuffer,
-                                 ScreenWidth,
+        primitives::TexturedQuad(ScreenBufferSection,
+                                 ScreenBufferWidth,
                                  x,
                                  y,
                                  pixels,
@@ -1384,8 +1487,8 @@ EXPORT(void) DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels)
     }
     else
     {
-        primitives::TexturedQuad(ScreenBuffer,
-                                 ScreenWidth,
+        primitives::TexturedQuad(ScreenBufferSection,
+                                 ScreenBufferWidth,
                                  x,
                                  y,
                                  pixels,
@@ -1400,31 +1503,62 @@ EXPORT(void) DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels)
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
 {
-    if (x < 0 ||
-            y < 0 ||
-            x + w > ScreenWidth ||
-            y + h > ScreenHeight)
+    if (x     < 0           ||
+        y     < 0           ||
+        x + w > ScreenWidth ||
+        y + h > ScreenHeight)
+    {
         return;
+    }
 
-    // 5:6:5
+    memset((byte*)pixels, 255, w * h * sizeof(RGBA));
+
+    word* Screen = ScreenBufferSection + y * ScreenBufferWidth + x;
+
+    int scr_inc = ScreenBufferWidth - w;
+
+    int iy = h;
+    int ix;
+
     if (PixelFormat == RGB565)
     {
-        for (int iy = 0; iy < h; iy++)
-            for (int ix = 0; ix < w; ix++)
+        while (iy-- > 0)
+        {
+            ix = w;
+
+            while (ix-- > 0)
             {
-                pixels[iy * w + ix]       = UnpackPixel565(ScreenBuffer[(y + iy) * ScreenWidth + x + ix]);
-                pixels[iy * w + ix].alpha = 255;
+                pixels->red   = ((Screen[0] & 0xF800) >> 11) << 3;
+                pixels->green = ((Screen[0] & 0x07E0) >>  5) << 2;
+                pixels->blue  = ((Screen[0] & 0x001F) >>  0) << 3;
+
+                ++Screen;
+                ++pixels;
+
             }
+
+            Screen += scr_inc;
+        }
     }
-    // 5:5:5
     else
     {
-        for (int iy = 0; iy < h; iy++)
-            for (int ix = 0; ix < w; ix++)
+        while (iy-- > 0)
+        {
+            ix = w;
+
+            while (ix-- > 0)
             {
-                pixels[iy * w + ix]       = UnpackPixel555(ScreenBuffer[(y + iy) * ScreenWidth + x + ix]);
-                pixels[iy * w + ix].alpha = 255;
+                pixels->red   = ((Screen[0] & 0x7C00) >> 10) << 3;
+                pixels->green = ((Screen[0] & 0x03E0) >>  5) << 3;
+                pixels->blue  = ((Screen[0] & 0x001F) >>  0) << 3;
+
+                ++Screen;
+                ++pixels;
+
             }
+
+            Screen += scr_inc;
+        }
     }
 }
 
@@ -1500,11 +1634,11 @@ EXPORT(void) DrawPoint(int x, int y, RGBA color)
 {
     if (PixelFormat == RGB565)
     {
-        primitives::Point(ScreenBuffer, ScreenWidth, x, y, color, ClippingRectangle, blend565);
+        primitives::Point(ScreenBufferSection, ScreenBufferWidth, x, y, color, ClippingRectangle, blend565);
     }
     else
     {
-        primitives::Point(ScreenBuffer, ScreenWidth, x, y, color, ClippingRectangle, blend555);
+        primitives::Point(ScreenBufferSection, ScreenBufferWidth, x, y, color, ClippingRectangle, blend555);
     }
 }
 
@@ -1513,11 +1647,11 @@ EXPORT(void) DrawPointSeries(VECTOR_INT** points, int length, RGBA color)
 {
     if (PixelFormat == RGB565)
     {
-        primitives::PointSeries(ScreenBuffer, ScreenWidth, points, length, color, ClippingRectangle, blend565);
+        primitives::PointSeries(ScreenBufferSection, ScreenBufferWidth, points, length, color, ClippingRectangle, blend565);
     }
     else
     {
-        primitives::PointSeries(ScreenBuffer, ScreenWidth, points, length, color, ClippingRectangle, blend555);
+        primitives::PointSeries(ScreenBufferSection, ScreenBufferWidth, points, length, color, ClippingRectangle, blend555);
     }
 }
 
@@ -1526,11 +1660,11 @@ EXPORT(void) DrawLine(int x[2], int y[2], RGBA color)
 {
     if (PixelFormat == RGB565)
     {
-        primitives::Line(ScreenBuffer, ScreenWidth, x[0], y[0], x[1], y[1], constant_color(color), ClippingRectangle, blend565);
+        primitives::Line(ScreenBufferSection, ScreenBufferWidth, x[0], y[0], x[1], y[1], constant_color(color), ClippingRectangle, blend565);
     }
     else
     {
-        primitives::Line(ScreenBuffer, ScreenWidth, x[0], y[0], x[1], y[1], constant_color(color), ClippingRectangle, blend555);
+        primitives::Line(ScreenBufferSection, ScreenBufferWidth, x[0], y[0], x[1], y[1], constant_color(color), ClippingRectangle, blend555);
     }
 }
 
@@ -1539,11 +1673,11 @@ EXPORT(void) DrawGradientLine(int x[2], int y[2], RGBA colors[2])
 {
     if (PixelFormat == RGB565)
     {
-        primitives::Line(ScreenBuffer, ScreenWidth, x[0], y[0], x[1], y[1], gradient_color(colors[0], colors[1]), ClippingRectangle, blend565);
+        primitives::Line(ScreenBufferSection, ScreenBufferWidth, x[0], y[0], x[1], y[1], gradient_color(colors[0], colors[1]), ClippingRectangle, blend565);
     }
     else
     {
-        primitives::Line(ScreenBuffer, ScreenWidth, x[0], y[0], x[1], y[1], gradient_color(colors[0], colors[1]), ClippingRectangle, blend555);
+        primitives::Line(ScreenBufferSection, ScreenBufferWidth, x[0], y[0], x[1], y[1], gradient_color(colors[0], colors[1]), ClippingRectangle, blend555);
     }
 }
 
@@ -1552,11 +1686,11 @@ EXPORT(void) DrawLineSeries(VECTOR_INT** points, int length, RGBA color, int typ
 {
     if (PixelFormat == RGB565)
     {
-        primitives::LineSeries(ScreenBuffer, ScreenWidth, points, length, color, type, ClippingRectangle, blend565);
+        primitives::LineSeries(ScreenBufferSection, ScreenBufferWidth, points, length, color, type, ClippingRectangle, blend565);
     }
     else
     {
-        primitives::LineSeries(ScreenBuffer, ScreenWidth, points, length, color, type, ClippingRectangle, blend555);
+        primitives::LineSeries(ScreenBufferSection, ScreenBufferWidth, points, length, color, type, ClippingRectangle, blend555);
     }
 }
 
@@ -1565,11 +1699,11 @@ EXPORT(void) DrawBezierCurve(int x[4], int y[4], double step, RGBA color, int cu
 {
     if (PixelFormat == RGB565)
     {
-        primitives::BezierCurve(ScreenBuffer, ScreenWidth, x, y, step, color, cubic, ClippingRectangle, blend565);
+        primitives::BezierCurve(ScreenBufferSection, ScreenBufferWidth, x, y, step, color, cubic, ClippingRectangle, blend565);
     }
     else
     {
-        primitives::BezierCurve(ScreenBuffer, ScreenWidth, x, y, step, color, cubic, ClippingRectangle, blend555);
+        primitives::BezierCurve(ScreenBufferSection, ScreenBufferWidth, x, y, step, color, cubic, ClippingRectangle, blend555);
     }
 }
 
@@ -1578,11 +1712,11 @@ EXPORT(void) DrawTriangle(int x[3], int y[3], RGBA color)
 {
     if (PixelFormat == RGB565)
     {
-        primitives::Triangle(ScreenBuffer, ScreenWidth, x, y, color, ClippingRectangle, blend565);
+        primitives::Triangle(ScreenBufferSection, ScreenBufferWidth, x, y, color, ClippingRectangle, blend565);
     }
     else
     {
-        primitives::Triangle(ScreenBuffer, ScreenWidth, x, y, color, ClippingRectangle, blend555);
+        primitives::Triangle(ScreenBufferSection, ScreenBufferWidth, x, y, color, ClippingRectangle, blend555);
     }
 }
 
@@ -1607,11 +1741,11 @@ EXPORT(void) DrawGradientTriangle(int x[3], int y[3], RGBA colors[3])
 {
     if (PixelFormat == RGB565)
     {
-        primitives::GradientTriangle(ScreenBuffer, ScreenWidth, x, y, colors, ClippingRectangle, blend565, interpolateRGBA);
+        primitives::GradientTriangle(ScreenBufferSection, ScreenBufferWidth, x, y, colors, ClippingRectangle, blend565, interpolateRGBA);
     }
     else
     {
-        primitives::GradientTriangle(ScreenBuffer, ScreenWidth, x, y, colors, ClippingRectangle, blend555, interpolateRGBA);
+        primitives::GradientTriangle(ScreenBufferSection, ScreenBufferWidth, x, y, colors, ClippingRectangle, blend555, interpolateRGBA);
     }
 }
 
@@ -1620,11 +1754,11 @@ EXPORT(void) DrawPolygon(VECTOR_INT** points, int length, int invert, RGBA color
 {
     if (PixelFormat == RGB565)
     {
-        primitives::Polygon(ScreenBuffer, ScreenWidth, points, length, invert, color, ClippingRectangle, blend565);
+        primitives::Polygon(ScreenBufferSection, ScreenBufferWidth, points, length, invert, color, ClippingRectangle, blend565);
     }
     else
     {
-        primitives::Polygon(ScreenBuffer, ScreenWidth, points, length, invert, color, ClippingRectangle, blend555);
+        primitives::Polygon(ScreenBufferSection, ScreenBufferWidth, points, length, invert, color, ClippingRectangle, blend555);
     }
 }
 
@@ -1643,12 +1777,12 @@ EXPORT(void) DrawOutlinedRectangle(int x, int y, int w, int h, int size, RGBA co
         if (PixelFormat == RGB565)
         {
             word c = PackPixel565(color);
-            primitives::OutlinedRectangle(ScreenBuffer, ScreenWidth, x, y, w, h, size, c, ClippingRectangle, copyWord);
+            primitives::OutlinedRectangle(ScreenBufferSection, ScreenBufferWidth, x, y, w, h, size, c, ClippingRectangle, copyWord);
         }
         else
         {
             word c = PackPixel555(color);
-            primitives::OutlinedRectangle(ScreenBuffer, ScreenWidth, x, y, w, h, size, c, ClippingRectangle, copyWord);
+            primitives::OutlinedRectangle(ScreenBufferSection, ScreenBufferWidth, x, y, w, h, size, c, ClippingRectangle, copyWord);
         }
 
     }
@@ -1657,11 +1791,11 @@ EXPORT(void) DrawOutlinedRectangle(int x, int y, int w, int h, int size, RGBA co
 
         if (PixelFormat == RGB565)
         {
-            primitives::OutlinedRectangle(ScreenBuffer, ScreenWidth, x, y, w, h, size, color, ClippingRectangle, blend565);
+            primitives::OutlinedRectangle(ScreenBufferSection, ScreenBufferWidth, x, y, w, h, size, color, ClippingRectangle, blend565);
         }
         else
         {
-            primitives::OutlinedRectangle(ScreenBuffer, ScreenWidth, x, y, w, h, size, color, ClippingRectangle, blend555);
+            primitives::OutlinedRectangle(ScreenBufferSection, ScreenBufferWidth, x, y, w, h, size, color, ClippingRectangle, blend555);
         }
 
     }
@@ -1682,12 +1816,12 @@ EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color)
         if (PixelFormat == RGB565)
         {
             word c = PackPixel565(color);
-            primitives::Rectangle(ScreenBuffer, ScreenWidth, x, y, w, h, c, ClippingRectangle, copyWord);
+            primitives::Rectangle(ScreenBufferSection, ScreenBufferWidth, x, y, w, h, c, ClippingRectangle, copyWord);
         }
         else
         {
             word c = PackPixel555(color);
-            primitives::Rectangle(ScreenBuffer, ScreenWidth, x, y, w, h, c, ClippingRectangle, copyWord);
+            primitives::Rectangle(ScreenBufferSection, ScreenBufferWidth, x, y, w, h, c, ClippingRectangle, copyWord);
         }
 
     }
@@ -1696,11 +1830,11 @@ EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color)
 
         if (PixelFormat == RGB565)
         {
-            primitives::Rectangle(ScreenBuffer, ScreenWidth, x, y, w, h, color, ClippingRectangle, blend565);
+            primitives::Rectangle(ScreenBufferSection, ScreenBufferWidth, x, y, w, h, color, ClippingRectangle, blend565);
         }
         else
         {
-            primitives::Rectangle(ScreenBuffer, ScreenWidth, x, y, w, h, color, ClippingRectangle, blend555);
+            primitives::Rectangle(ScreenBufferSection, ScreenBufferWidth, x, y, w, h, color, ClippingRectangle, blend555);
         }
 
     }
@@ -1711,11 +1845,11 @@ EXPORT(void) DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
 {
     if (PixelFormat == RGB565)
     {
-        primitives::GradientRectangle(ScreenBuffer, ScreenWidth, x, y, w, h, colors, ClippingRectangle, blend565, interpolateRGBA);
+        primitives::GradientRectangle(ScreenBufferSection, ScreenBufferWidth, x, y, w, h, colors, ClippingRectangle, blend565, interpolateRGBA);
     }
     else
     {
-        primitives::GradientRectangle(ScreenBuffer, ScreenWidth, x, y, w, h, colors, ClippingRectangle, blend555, interpolateRGBA);
+        primitives::GradientRectangle(ScreenBufferSection, ScreenBufferWidth, x, y, w, h, colors, ClippingRectangle, blend555, interpolateRGBA);
     }
 }
 
@@ -1732,11 +1866,11 @@ EXPORT(void) DrawOutlinedComplex(int r_x, int r_y, int r_w, int r_h, int circ_x,
     {
         if (PixelFormat == RGB565)
         {
-            primitives::OutlinedComplex(ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, color, antialias, ClippingRectangle, blend565);
+            primitives::OutlinedComplex(ScreenBufferSection, ScreenBufferWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, color, antialias, ClippingRectangle, blend565);
         }
         else
         {
-            primitives::OutlinedComplex(ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, color, antialias, ClippingRectangle, blend555);
+            primitives::OutlinedComplex(ScreenBufferSection, ScreenBufferWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, color, antialias, ClippingRectangle, blend555);
         }
     }
 }
@@ -1754,11 +1888,11 @@ EXPORT(void) DrawFilledComplex(int r_x, int r_y, int r_w, int r_h, int circ_x, i
     {
         if (PixelFormat == RGB565)
         {
-            primitives::FilledComplex(ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blend565);
+            primitives::FilledComplex(ScreenBufferSection, ScreenBufferWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blend565);
         }
         else
         {
-            primitives::FilledComplex(ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blend555);
+            primitives::FilledComplex(ScreenBufferSection, ScreenBufferWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blend555);
         }
     }
 }
@@ -1776,11 +1910,11 @@ EXPORT(void) DrawGradientComplex(int r_x, int r_y, int r_w, int r_h, int circ_x,
     {
         if (PixelFormat == RGB565)
         {
-            primitives::GradientComplex(ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blend565);
+            primitives::GradientComplex(ScreenBufferSection, ScreenBufferWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blend565);
         }
         else
         {
-            primitives::GradientComplex(ScreenBuffer, ScreenWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blend555);
+            primitives::GradientComplex(ScreenBufferSection, ScreenBufferWidth, r_x, r_y, r_w, r_h, circ_x, circ_y, circ_r, angle, frac_size, fill_empty, colors, ClippingRectangle, blend555);
         }
     }
 }
@@ -1798,11 +1932,11 @@ EXPORT(void) DrawOutlinedEllipse(int x, int y, int rx, int ry, RGBA color)
     {
         if (PixelFormat == RGB565)
         {
-            primitives::OutlinedEllipse(ScreenBuffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blend565);
+            primitives::OutlinedEllipse(ScreenBufferSection, ScreenBufferWidth, x, y, rx, ry, color, ClippingRectangle, blend565);
         }
         else
         {
-            primitives::OutlinedEllipse(ScreenBuffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blend555);
+            primitives::OutlinedEllipse(ScreenBufferSection, ScreenBufferWidth, x, y, rx, ry, color, ClippingRectangle, blend555);
         }
     }
 }
@@ -1820,11 +1954,11 @@ EXPORT(void) DrawFilledEllipse(int x, int y, int rx, int ry, RGBA color)
     {
         if (PixelFormat == RGB565)
         {
-            primitives::FilledEllipse(ScreenBuffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blend565);
+            primitives::FilledEllipse(ScreenBufferSection, ScreenBufferWidth, x, y, rx, ry, color, ClippingRectangle, blend565);
         }
         else
         {
-            primitives::FilledEllipse(ScreenBuffer, ScreenWidth, x, y, rx, ry, color, ClippingRectangle, blend555);
+            primitives::FilledEllipse(ScreenBufferSection, ScreenBufferWidth, x, y, rx, ry, color, ClippingRectangle, blend555);
         }
     }
 }
@@ -1842,11 +1976,11 @@ EXPORT(void) DrawOutlinedCircle(int x, int y, int r, RGBA color, int antialias)
     {
         if (PixelFormat == RGB565)
         {
-            primitives::OutlinedCircle(ScreenBuffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blend565);
+            primitives::OutlinedCircle(ScreenBufferSection, ScreenBufferWidth, x, y, r, color, antialias, ClippingRectangle, blend565);
         }
         else
         {
-            primitives::OutlinedCircle(ScreenBuffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blend555);
+            primitives::OutlinedCircle(ScreenBufferSection, ScreenBufferWidth, x, y, r, color, antialias, ClippingRectangle, blend555);
         }
     }
 }
@@ -1864,11 +1998,11 @@ EXPORT(void) DrawFilledCircle(int x, int y, int r, RGBA color, int antialias)
     {
         if (PixelFormat == RGB565)
         {
-            primitives::FilledCircle(ScreenBuffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blend565);
+            primitives::FilledCircle(ScreenBufferSection, ScreenBufferWidth, x, y, r, color, antialias, ClippingRectangle, blend565);
         }
         else
         {
-            primitives::FilledCircle(ScreenBuffer, ScreenWidth, x, y, r, color, antialias, ClippingRectangle, blend555);
+            primitives::FilledCircle(ScreenBufferSection, ScreenBufferWidth, x, y, r, color, antialias, ClippingRectangle, blend555);
         }
     }
 }
@@ -1886,11 +2020,11 @@ EXPORT(void) DrawGradientCircle(int x, int y, int r, RGBA colors[2], int antiali
     {
         if (PixelFormat == RGB565)
         {
-            primitives::GradientCircle(ScreenBuffer, ScreenWidth, x, y, r, colors, antialias, ClippingRectangle, blend565);
+            primitives::GradientCircle(ScreenBufferSection, ScreenBufferWidth, x, y, r, colors, antialias, ClippingRectangle, blend565);
         }
         else
         {
-            primitives::GradientCircle(ScreenBuffer, ScreenWidth, x, y, r, colors, antialias, ClippingRectangle, blend555);
+            primitives::GradientCircle(ScreenBufferSection, ScreenBufferWidth, x, y, r, colors, antialias, ClippingRectangle, blend555);
         }
     }
 }

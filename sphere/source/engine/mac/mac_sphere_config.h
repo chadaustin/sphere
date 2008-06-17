@@ -23,6 +23,9 @@ struct PLAYERCONFIG
 
 struct SPHERECONFIG
 {
+    // main
+    int language;
+
     // video
     std::string videodriver;
 

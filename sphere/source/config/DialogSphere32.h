@@ -1,5 +1,5 @@
-#ifndef DRIVER_SPHERE32_H
-#define DRIVER_SPHERE32_H
+#ifndef DIALOG_SPHERE32_H
+#define DIALOG_SPHERE32_H
 
 
 #include <wx/wx.h>
@@ -24,16 +24,20 @@ class CDialogSphere32 : public wxDialog
         void LoadConfiguration();
         void SaveConfiguration();
 
-        wxString    m_drv_name;
+        wxString      m_drv_name;
 
-        wxButton*   m_ok_button;
-        wxButton*   m_cancel_button;
-        wxRadioBox* m_filters;
-        wxCheckBox* m_double_scale;
-        wxCheckBox* m_fullscreen;
-        wxCheckBox* m_vsync;
+        wxButton*     m_ok_button;
+        wxButton*     m_cancel_button;
 
+        wxCheckBox*   m_scale;
+        wxRadioBox*   m_filter;
 
+        wxCheckBox*   m_fullscreen;
+        wxCheckBox*   m_vsync;
+        wxTextCtrl*   m_vexpand;
+        wxTextCtrl*   m_hexpand;
+        wxStaticText* m_vexpand_str;
+        wxStaticText* m_hexpand_str;
 
 };
 

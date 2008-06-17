@@ -1,0 +1,268 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Config\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-06-12 12:55+0100\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: Spherical\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-Language: Russian\n"
+"X-Poedit-Country: RUSSIAN FEDERATION\n"
+"X-Poedit-SearchPath-0: ../../source/config\n"
+
+#: ../../source/config/ConfigApp.cpp:17
+#: ../../source/config/ConfigFrame.cpp:177
+#: ../../source/config/ConfigFrame.cpp:227
+#: ../../source/config/ConfigFrame.cpp:420
+#: ../../source/config/ConfigFrame.cpp:566
+msgid "Sphere Configuration"
+msgstr "Сфер конфигурация"
+
+#: ../../source/config/ConfigFrame.cpp:175
+#: ../../source/config/ConfigFrame.cpp:564
+msgid ""
+"No video driver selected.\n"
+"Please select one from the list."
+msgstr ""
+"Видео драйвер не выбран.\n"
+"Выбери из листа."
+
+#: ../../source/config/ConfigFrame.cpp:226
+msgid "is not supported by the system."
+msgstr "не поддержается по системы."
+
+#: ../../source/config/ConfigFrame.cpp:422
+msgid "Configuration"
+msgstr "Конфигурация"
+
+#: ../../source/config/ConfigFrame.cpp:423
+msgid "Language"
+msgstr "Язык"
+
+#: ../../source/config/ConfigFrame.cpp:425
+msgid "Restore Defaults"
+msgstr "Восстановить стандарты"
+
+#: ../../source/config/ConfigFrame.cpp:427
+msgid "English"
+msgstr "English"
+
+#: ../../source/config/ConfigFrame.cpp:428
+msgid "German"
+msgstr "Deutsch"
+
+#: ../../source/config/ConfigFrame.cpp:429
+msgid "French"
+msgstr "Français"
+
+#: ../../source/config/ConfigFrame.cpp:430
+msgid "Dutch"
+msgstr "Nederlands"
+
+#: ../../source/config/ConfigFrame.cpp:431
+msgid "Japanese"
+msgstr "日本語"
+
+#: ../../source/config/ConfigFrame.cpp:432
+msgid "Chinese"
+msgstr "中文"
+
+#: ../../source/config/ConfigFrame.cpp:433
+msgid "Russian"
+msgstr "Русский"
+
+#: ../../source/config/ConfigFrame.cpp:434
+msgid "Spanish"
+msgstr "Español"
+
+#: ../../source/config/ConfigFrame.cpp:435
+msgid "Indonesian"
+msgstr "Bahasa Indonesia"
+
+#: ../../source/config/ConfigFrame.cpp:437
+#: ../../source/config/DialogSphere32.cpp:69
+#: ../../source/config/DialogSphere8.cpp:24
+#: ../../source/config/DialogSphereGL.cpp:39
+msgid "OK"
+msgstr "Принять"
+
+#: ../../source/config/ConfigFrame.cpp:438
+#: ../../source/config/DialogSphere32.cpp:70
+#: ../../source/config/DialogSphere8.cpp:25
+#: ../../source/config/DialogSphereGL.cpp:40
+msgid "Cancel"
+msgstr "Отменить"
+
+#: ../../source/config/ConfigFrame.cpp:441
+msgid "Video"
+msgstr "Видео"
+
+#: ../../source/config/ConfigFrame.cpp:442
+msgid "Audio"
+msgstr "Звук"
+
+#: ../../source/config/ConfigFrame.cpp:443
+msgid "Input"
+msgstr "Ввод"
+
+#: ../../source/config/ConfigFrame.cpp:444
+msgid "Network"
+msgstr "Сеть"
+
+#: ../../source/config/ConfigFrame.cpp:579
+#: ../../source/config/ConfigFrame.cpp:585
+#: ../../source/config/ConfigFrame.cpp:591
+#, c-format
+msgid "Configure %s"
+msgstr "Конфигурируй %s"
+
+#: ../../source/config/ConfigFrame.cpp:685
+msgid ""
+"Could not enter <sphere>/system/video.\n"
+"This probably means Sphere was installed incorrectly.\n"
+"Sphere Configuration cannot continue."
+msgstr ""
+"Невозможно войти в <sphere>/system/video.\n"
+"Это значит что Сфер неправильно установленно.\n"
+"Сфер конфигурация отменяеться."
+
+#: ../../source/config/ConfigFrame.cpp:709
+msgid ""
+"No video drivers found in <sphere>/system/video/.\n"
+"This probably means Sphere was installed incorrectly.\n"
+"Sphere Configuration cannot continue."
+msgstr ""
+"Нет видео драйверов в <sphere>/system/video/.\n"
+"Это значит что Сфер неправильно установленно.\n"
+"Сфер конфигурация отменяеться."
+
+#: ../../source/config/ConfigFrame.cpp:722
+msgid "Video Settings"
+msgstr "Видео параметры"
+
+#: ../../source/config/ConfigFrame.cpp:724
+msgid "Configure Driver"
+msgstr "Конфигурируй драйвер"
+
+#: ../../source/config/ConfigFrame.cpp:827
+msgid "Audio Settings"
+msgstr "Звуковые параметры"
+
+#: ../../source/config/ConfigFrame.cpp:829
+msgid "Driver"
+msgstr "Драйвер"
+
+#: ../../source/config/ConfigFrame.cpp:831
+msgid "Use sound if possible"
+msgstr "Пользоваться звуком если возможно"
+
+#: ../../source/config/ConfigFrame.cpp:832
+msgid "Always use sound"
+msgstr "Всегда пользоваться звуком"
+
+#: ../../source/config/ConfigFrame.cpp:833
+msgid "No sound"
+msgstr "Не пользоваться звуком"
+
+#: ../../source/config/ConfigFrame.cpp:1022
+msgid "Input Settings"
+msgstr "Вводные параметры"
+
+#: ../../source/config/ConfigFrame.cpp:1024
+msgid "Player"
+msgstr "Игрок"
+
+#: ../../source/config/ConfigFrame.cpp:1025
+msgid "Up"
+msgstr "Вверх"
+
+#: ../../source/config/ConfigFrame.cpp:1026
+msgid "Down"
+msgstr "Вниз"
+
+#: ../../source/config/ConfigFrame.cpp:1027
+msgid "Left"
+msgstr "Влево"
+
+#: ../../source/config/ConfigFrame.cpp:1028
+msgid "Right"
+msgstr "Вправо"
+
+#: ../../source/config/ConfigFrame.cpp:1029
+msgid "Allow Keyboard Input"
+msgstr "Позволить ввод через клавиатуру"
+
+#: ../../source/config/ConfigFrame.cpp:1030
+msgid "Allow Joypad Input"
+msgstr "Позволить ввод через контроллер"
+
+#: ../../source/config/ConfigFrame.cpp:1077
+msgid "Network Settings"
+msgstr "Сетевые параметры"
+
+#: ../../source/config/ConfigFrame.cpp:1079
+msgid "Allow Networking"
+msgstr "Позволить передачи по сети"
+
+#: ../../source/config/ConfigFrame.cpp:1259
+#, c-format
+msgid "Waiting for keypress... (%dsec left)"
+msgstr "Жду ввод... (ещё %d сек)"
+
+#: ../../source/config/DialogSphere32.cpp:33
+msgid "No"
+msgstr "Нет"
+
+#: ../../source/config/DialogSphere32.cpp:42
+msgid "None"
+msgstr "Никакой"
+
+#: ../../source/config/DialogSphere32.cpp:64
+msgid "Expand Resolution"
+msgstr "Увеличить разрешение"
+
+#: ../../source/config/DialogSphere32.cpp:66
+msgid "pixels vertically"
+msgstr "точ. по вертикалу"
+
+#: ../../source/config/DialogSphere32.cpp:67
+msgid "pixels horizontally"
+msgstr "точ. по горизонталу"
+
+#: ../../source/config/DialogSphere32.cpp:72
+#: ../../source/config/DialogSphere8.cpp:26
+#: ../../source/config/DialogSphereGL.cpp:44
+msgid "Fullscreen"
+msgstr "Полный экран"
+
+#: ../../source/config/DialogSphere32.cpp:73
+#: ../../source/config/DialogSphere8.cpp:27
+#: ../../source/config/DialogSphereGL.cpp:45
+msgid "VSync"
+msgstr "Верт. синхрон."
+
+#: ../../source/config/DialogSphere32.cpp:80
+#: ../../source/config/DialogSphereGL.cpp:42
+msgid "Scale"
+msgstr "Растянуть"
+
+#: ../../source/config/DialogSphere32.cpp:81
+msgid "Filter"
+msgstr "Фильтр"
+
+#: ../../source/config/DialogSphere8.cpp:22
+msgid "Palette"
+msgstr "Палитра"
+
+#: ../../source/config/DialogSphereGL.cpp:41
+msgid "Bit Depth"
+msgstr "Глубина цвета"
+
+#: ../../source/config/DialogSphereGL.cpp:43
+msgid "Bilinear Filter"
+msgstr "Билинеар. фильтр"
+

@@ -55,10 +55,14 @@ static void InitializePlayerConfig(PLAYERCONFIG* config, int player_index)
 ////////////////////////////////////////////////////////////////////////////////
 bool LoadSphereConfig(SPHERECONFIG* config, const char* filename)
 {
-    if (!config) return false;
+    if (!config)
+        return false;
 
     CConfigFile file;
     file.Load(filename);
+
+    // load main settings
+    config->language    = file.ReadInt   ("Main", "Language", 0);
 
     // load video settings
     config->videodriver = file.ReadString("Video", "Driver",     "");
@@ -124,9 +128,13 @@ bool LoadSphereConfig(SPHERECONFIG* config, const char* filename)
 ////////////////////////////////////////////////////////////////////////////////
 bool SaveSphereConfig(SPHERECONFIG* config, const char* filename)
 {
-    if (!config) return false;
+    if (!config)
+        return false;
 
     CConfigFile file;
+
+    // save main settings
+    file.WriteInt   ("Main", "Language",                config->language);
 
     // save video settings
     file.WriteString("Video", "Driver",                 config->videodriver.c_str());
