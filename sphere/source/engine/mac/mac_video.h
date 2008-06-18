@@ -7,7 +7,7 @@
 #include "mac_filesystem.h"
 
 
-#define STDCALL
+#define STDCALL __attribute__((stdcall))
 
 
 class SFONT; // for drawing FPS

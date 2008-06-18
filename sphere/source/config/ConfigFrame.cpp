@@ -633,8 +633,8 @@ CConfigVideoPage::LoadDriverInfo(wxString &drv_name)
 {
     DRIVERINFO drv_info;
 
-#ifdef MAC
-    void* lib = dlopen((wxGetCwd() + wxT("/system/video/") + drv_name).c_str(), RTLD_LAZY);
+#if defined(MAC)
+    void* lib = dlopen((wxGetCwd() + wxT("/system/video/") + drv_name).mb_str(), RTLD_LAZY);
 
     if (!lib)
         return;
@@ -686,8 +686,8 @@ CConfigVideoPage::LoadDriverInfo(wxString &drv_name)
 //////////////////////////////////////////////////////////////////////////////////////
 static bool IsValidDriver(wxString filename)
 {
-#ifdef MAC
-    void* lib = dlopen((wxGetCwd() + wxT("/system/video/") + drv_name).c_str(), RTLD_LAZY);
+#if defined(MAC)
+    void* lib = dlopen(filename.mb_str(), RTLD_LAZY);
 
     if (!lib)
         return false;
@@ -696,16 +696,12 @@ static bool IsValidDriver(wxString filename)
 
     get_driver_info = (void (STDCALL *)(DRIVERINFO*))dlsym(lib, "GetDriverInfo");
 
-    if (get_driver_info == NULL)
-    {
-        dlclose(lib);
+    dlclose(lib);
+
+    if (!get_driver_info)
         return false;
-    }
     else
-    {
-        dlclose(lib);
         return true;
-    }
 
 #else
     wxDynamicLibrary lib(filename, wxDL_LAZY);
