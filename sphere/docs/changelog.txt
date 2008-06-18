@@ -1,5 +1,18 @@
 YYYY.MM.DD
 
+2008.06.18
+  - Fixed sound.pause() to pause MIDIs instead of stopping them.
+  - Made the 'repeat' parameter in sound.play(repeat) to be optional.
+    This allows for resuming the playback of a paused sound from it's 
+    current position if sound.play() is called without any parameters.
+    If 'repeat' is defined, the sound is set to the beginning and then played.
+  - Added: sound.reset(), sound.getRepeat() and sound.setRepeat(repeat)
+  - Added the new object SoundEffect with the following methods:
+    sound_effect.play(), sound_effect.stop(), sound_effect.getVolume(),
+    sound_effect.setVolume(), sound_effect.getPan(), sound_effect.setPan(),
+    sound_effect.getPitch() and sound_effect.setPitch()
+  - Added notes to some methods of the Sound object, which have no effect on MIDIs.
+
 2008.06.17
   - Added multilanguage support to the Config tool.
   - Added resolution compatibility mode (fullscreen)

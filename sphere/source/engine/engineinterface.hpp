@@ -56,6 +56,7 @@ struct IEngine
     virtual void DestroyWindowStyle(SWINDOWSTYLE* windowstyle) = 0;
 
     virtual audiere::OutputStream* LoadSound(const char* filename, bool streaming) = 0;
+    virtual audiere::SoundEffect*  LoadSoundEffect(const char* filename, audiere::SoundEffectType type) = 0;
 #if defined(WIN32) && defined(USE_MIDI)
     virtual audiere::MIDIStream* LoadMIDI(const char* filename) = 0;
 #endif

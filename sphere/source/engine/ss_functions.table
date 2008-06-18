@@ -346,6 +346,18 @@ SS_FUNCTION(OpenLog, 1)
   //sound.getPosition()
   //sound.setPosition(pos)
   //sound.isSeekable()
+  
+  // sound effects
+  SS_FUNCTION(LoadSoundEffect, 1)
+  //sound_effect.play()
+  //sound_effect.stop()
+  //sound_effect.setVolume(volume)
+  //sound_effect.getVolume()
+  //sound_effect.setPan(pan)
+  //sound_effect.getPan()
+  //sound_effect.setPitch(pitch)
+  //sound_effect.getPitch()
+  
 
   // fonts
   SS_FUNCTION(GetSystemFont, 0)

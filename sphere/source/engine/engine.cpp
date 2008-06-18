@@ -824,6 +824,23 @@ CGameEngine::LoadSound(const char* filename, bool streaming)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+audiere::SoundEffect*
+CGameEngine::LoadSoundEffect(const char* filename, audiere::SoundEffectType type)
+{
+    std::string path = "sounds/";
+    path += filename;
+
+    IFile* file = m_FileSystem.Open(path.c_str(), IFileSystem::read);
+    if (!file)
+    {
+        return 0;
+    }
+
+    audiere::FilePtr adrfile(new AudiereFile(file));
+    return SA_OpenSoundEffect(adrfile.get(), type);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 #if defined(WIN32) && defined(USE_MIDI)
 audiere::MIDIStream*
 CGameEngine::LoadMIDI(const char* filename)

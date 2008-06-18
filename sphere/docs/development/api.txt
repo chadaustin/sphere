@@ -1051,31 +1051,47 @@ log_object.endBlock()
       argument 'streaming' is true or unspecified, the sound is streamed from the
       hard drive.  Otherwise, it's loaded into memory.
   
-  sound_object.play(repeat)
-    - plays the sound. repeat is a boolean (true/false), that indicates if 
+  sound_object.play([repeat])
+    - plays the sound. repeat is a boolean (true/false), that indicates if
       the sound should be looped
+    - call play() without the 'repeat' parameter to resume any previously paused sound.
   
   sound_object.pause()
-    - pauses playback. call play() again to resume playback.
+    - pauses playback. call play() to resume playback afterwards.
 
   sound_object.stop()
     - stops playback
   
+  sound_object.reset()
+    - resets playback
+      no effect on MIDIs
+
+  sound_object.setRepeat(repeat)
+    - sets if the sound should be repeated
+  
+  sound_object.getRepeat()
+    - returns true if sound is set to repeat, otherwise false
+  
   sound_object.setVolume(volume)
     - sets the volume for the sound (0-255)
+    - no effect on MIDIs.
   
   sound_object.getVolume()
     - returns the sound's volume (0-255)
+    - no effect on MIDIs.
 
   sound_object.setPan(pan)
     - pan can be from -255 to 255.  -255 = left, 255 = right
+    - no effect on MIDIs.
 
   sound_object.getPan()
     - returns the current pan of the sound
+    - no effect on MIDIs.
 
   sound_object.setPitch(pitch)
     - pitch ranges from 0.5 to 2.0.  0.5 is an octave down (and half as fast)
       while 2.0 is an octave up (and twice as fast).  pitch defaults to 1
+    - no effect on MIDIs.
 
   sound_object.getPitch()
     - returns the current pitch
@@ -1100,6 +1116,48 @@ log_object.endBlock()
     
   sound_object.clone()
     - returns a copy of the sound object
+
+
+  *** sound effects ***
+  LoadSoundEffect(filename [, type])
+    - returns a sound effect object from 'filename'. If Sphere is unable to open
+      the file, the engine will give an error message and exit.
+      There are two types of sound effects: SE_SINGLE and SE_MULTIPLE.
+      SE_SINGLE sound effects only allow the sound to be played once at a time.
+      SE_MULTIPLE sound effects always open a new stream to the audio device
+      for each time it is played (cleaning up or reusing old streams if possible).
+  
+  sound_effect_object.play()
+    - plays the sound effect.
+      If the sound effect is of type SE_SINGLE, this plays the sound
+      if it isn't playing yet, and starts it again if it is.
+      If the sound effect is of type SE_MULTIPLE, play() simply starts
+      playing the sound again.
+  
+  sound_effect_object.stop()
+    - stops playback
+      If the sound is of type SE_SINGLE, stop the sound.
+      If it is of type SE_MULTIPLE, stop all playing instances of the sound.
+    
+  sound_effect_object.setVolume(volume)
+    - sets the volume for the sound effect (0-255)
+  
+  sound_effect_object.getVolume()
+    - returns the sound effect's volume (0-255)
+
+  sound_effect_object.setPan(pan)
+    - pan can be from -255 to 255.  -255 = left, 255 = right. pan defaults to 0 (center).
+
+  sound_effect_object.getPan()
+    - returns the current pan of the sound effect
+
+  sound_effect_object.setPitch(pitch)
+    - pitch ranges from 0.5 to 2.0.  0.5 is an octave down (and half as fast)
+      while 2.0 is an octave up (and twice as fast).  pitch defaults to 1.0
+
+  sound_effect_object.getPitch()
+    - returns the current pitch
+
 
   *** fonts ***
   GetSystemFont()

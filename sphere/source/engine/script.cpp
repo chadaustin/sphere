@@ -37,6 +37,7 @@ const dword SS_LOG_MAGIC         = 0x435262c9;
 const dword SS_COLOR_MAGIC       = 0x449b0beb;
 const dword SS_SPRITESET_MAGIC   = 0x5f7ca182;
 const dword SS_SOUND_MAGIC       = 0x7a5e371a;
+const dword SS_SOUNDEFFECT_MAGIC = 0x3a2a396a;
 const dword SS_FONT_MAGIC        = 0x7f7d79ef;
 const dword SS_WINDOWSTYLE_MAGIC = 0x53f8d469;
 const dword SS_IMAGE_MAGIC       = 0x168875d3;
@@ -81,11 +82,15 @@ END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_SOUND)
 audiere::OutputStream* sound;
-
 #if defined(WIN32) && defined(USE_MIDI)
 audiere::MIDIStream* midi;
 #endif
 END_SS_OBJECT()
+
+BEGIN_SS_OBJECT(SS_SOUNDEFFECT)
+audiere::SoundEffect* sound;
+END_SS_OBJECT()
+
 BEGIN_SS_OBJECT(SS_FONT)
 bool destroy_me;
 SFONT* font;
@@ -521,8 +526,12 @@ CScript::InitializeSphereConstants()
 
                       // primitive constants
                       { "LINE_MULTIPLE", 0 },
-                      { "LINE_STRIP", 1 },
-                      { "LINE_LOOP", 2 },
+                      { "LINE_STRIP",    1 },
+                      { "LINE_LOOP",     2 },
+
+                      // sound effect constants
+                      { "SE_SINGLE",   audiere::SINGLE },
+                      { "SE_MULTIPLE", audiere::MULTIPLE },
 
                       // keyboard constants
 #define KEY_CONSTANT(name) { #name, name },
@@ -5720,6 +5729,49 @@ return_object(CreateSoundObject(cx, sound, midi));
 return_object(CreateSoundObject(cx, sound));
 #endif
 end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - returns a sound effect object from 'filename'. If Sphere is unable to open
+      the file, the engine will give an error message and exit.
+      There are two types of sound effects: SE_SINGLE and SE_MULTIPLE.
+      SE_SINGLE sound effects only allow the sound to be played once at a time.
+      SE_MULTIPLE sound effects always open a new stream to the audio device
+      for each time it is played (cleaning up or reusing old streams if possible).
+
+*/
+begin_func(LoadSoundEffect, 1)
+arg_str(filename);
+
+int type = audiere::SINGLE;
+if (argc > 1)
+{
+    type = argInt(cx, argv[1]);
+}
+
+if (IsValidPath(filename) == false)
+{
+    JS_ReportError(cx, "Invalid filename: '%s'", filename);
+    return JS_FALSE;
+}
+
+// load sound effect
+audiere::SoundEffect* sound = NULL;
+
+if (type == audiere::MULTIPLE)
+    sound = This->m_Engine->LoadSoundEffect(filename, audiere::MULTIPLE);
+else
+    sound = This->m_Engine->LoadSoundEffect(filename, audiere::SINGLE);
+
+if (!sound)
+{
+    JS_ReportError(cx, "Could not load sound effect '%s'", filename);
+    return JS_FALSE;
+}
+
+return_object(CreateSoundEffectObject(cx, sound));
+end_func()
+
 ////////////////////////////////////////////////////////////////////////////////
 /**
     - returns a font object of the font that the engine currently uses.
@@ -7152,6 +7204,7 @@ return_object(CreateSpritesetObject(cx, clone));
 JS_MaybeGC(cx);
 
 end_method()
+
 ////////////////////////////////////////
 // SOUND OBJECTS ///////////////////////
 ////////////////////////////////////////
@@ -7201,22 +7254,23 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
     // assign methods to the object
     static JSFunctionSpec fs[] =
         {
-            { "play",        ssSoundPlay,        1,
-            },
+            { "play",        ssSoundPlay,        0, },
             { "pause",       ssSoundPause,       0, },
             { "stop",        ssSoundStop,        0, },
+            { "reset",       ssSoundReset,       0, },
+            { "setRepeat",   ssSoundSetRepeat,   1, },
+            { "getRepeat",   ssSoundGetRepeat,   0, },
             { "setVolume",   ssSoundSetVolume,   1, },
             { "getVolume",   ssSoundGetVolume,   0, },
             { "setPan",      ssSoundSetPan,      1, },
             { "getPan",      ssSoundGetPan,      0, },
             { "setPitch",    ssSoundSetPitch,    1, },
             { "getPitch",    ssSoundGetPitch,    0, },
-            { "isPlaying",   ssSoundIsPlaying,   0, },
-            { "isSeekable",  ssSoundIsSeekable,  0, },
-
             { "getPosition", ssSoundGetPosition, 0, },
             { "setPosition", ssSoundSetPosition, 1, },
             { "getLength",   ssSoundGetLength,   0, },
+            { "isPlaying",   ssSoundIsPlaying,   0, },
+            { "isSeekable",  ssSoundIsSeekable,  0, },
             { "clone",       ssSoundClone,       0, },
             { 0, 0, 0, 0, 0 },
         };
@@ -7253,19 +7307,19 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
 
 ////////////////////////////////////////
 begin_finalizer(SS_SOUND, ssFinalizeSound)
+
 if (object->sound)
-{
-
     object->sound->unref();
-}
-object->sound = NULL;
-#if defined(WIN32) && defined(USE_MIDI)
-if (object->midi)
-{
 
+object->sound = NULL;
+
+#if defined(WIN32) && defined(USE_MIDI)
+
+if (object->midi)
     object->midi->unref();
-}
+
 object->midi = NULL;
+
 #endif
 end_finalizer()
 
@@ -7274,25 +7328,34 @@ end_finalizer()
     - plays the sound. repeat is a boolean (true/false), that indicates if
       the sound should be looped
 */
-begin_method(SS_SOUND, ssSoundPlay, 1)
-arg_bool(repeat);
+begin_method(SS_SOUND, ssSoundPlay, 0)
+
+if (argc >= 1)
+{
+    bool repeat = argBool(cx, argv[0]);
+
+    if (object->sound)
+        object->sound->setRepeat(repeat);
+
+#if defined(WIN32) && defined(USE_MIDI)
+
+    if (object->midi)
+        object->midi->setRepeat(repeat);
+
+#endif
+}
 
 if (object->sound)
-{
-
-    object->sound->setRepeat(repeat);
     object->sound->play();
 
-}
 #if defined(WIN32) && defined(USE_MIDI)
-if (object->midi)
-{
 
-    object->midi->setRepeat(repeat);
+if (object->midi)
     object->midi->play();
-}
+
 #endif
 end_method()
+
 ////////////////////////////////////////
 /**
     - pauses playback. call play() again to resume playback.
@@ -7307,155 +7370,206 @@ if (object->sound)
 
 if (object->midi)
 {
-    object->midi->stop();
+    object->midi->pause();
 }
 #endif
 end_method()
+
 ////////////////////////////////////////
 /**
     - stops playback
 */
 begin_method(SS_SOUND, ssSoundStop, 0)
+
 if (object->sound)
 {
-
     object->sound->stop();
     object->sound->reset();
-
 }
+
 #if defined(WIN32) && defined(USE_MIDI)
 
 if (object->midi)
-{
     object->midi->stop();
-}
+
 #endif
 end_method()
+
+////////////////////////////////////////
+/**
+    - resets playback
+    - no effect on MIDIs
+*/
+begin_method(SS_SOUND, ssSoundReset, 0)
+
+if (object->sound)
+    object->sound->reset();
+
+end_method()
+
+////////////////////////////////////////
+/**
+    - sets if the sound should be repeated
+*/
+begin_method(SS_SOUND, ssSoundSetRepeat, 1)
+arg_bool(repeat);
+
+if (object->sound)
+    object->sound->setRepeat(repeat);
+
+#if defined(WIN32) && defined(USE_MIDI)
+
+if (object->midi)
+    object->midi->setRepeat(repeat);
+
+#endif
+end_method()
+
+////////////////////////////////////////
+/**
+    - returns true if sound is set to repeat, otherwise false
+*/
+begin_method(SS_SOUND, ssSoundGetRepeat, 0)
+if (object->sound)
+    return_bool(object->sound->getRepeat());
+
+#if defined(WIN32) && defined(USE_MIDI)
+
+if (object->midi)
+    return_bool(object->midi->getRepeat());
+
+#endif
+end_method()
+
 ////////////////////////////////////////
 /**
     - sets the volume for the sound (0-255)
+    - no effect on MIDIs
 */
 begin_method(SS_SOUND, ssSoundSetVolume, 1)
 arg_int(volume);
+
 if (object->sound)
 {
-
     if (volume < 0)
         volume = 0;
     if (volume > 255)
         volume = 255;
+
     object->sound->setVolume(volume / 255.0f);
 }
+
 end_method()
 
 ////////////////////////////////////////
 /**
     - returns the sound's volume (0-255)
+    - no effect on MIDIs
 */
 begin_method(SS_SOUND, ssSoundGetVolume, 0)
-if (object->sound) return_int(object->sound->getVolume() * 255);
 
-else return_int(255);
+if (object->sound)
+    return_int(object->sound->getVolume() * 255);
+else
+    return_int(255);
+
 end_method()
 
 ////////////////////////////////////////
 /**
-    - pan can be from -255 to 255.  -255 = left, 255 = right
+    - pan can be from -255 to 255.  -255 = left, 255 = right. pan defaults to 0 (center).
+    - no effect on MIDIs
 */
 begin_method(SS_SOUND, ssSoundSetPan, 1)
 arg_int(pan);
-if (object->sound) object->sound->setPan(pan / 255.0f);
+
+if (object->sound)
+    object->sound->setPan(pan / 255.0f);
 
 end_method()
 ////////////////////////////////////////
 /**
     - returns the current pan of the sound
+    - no effect on MIDIs
 */
 begin_method(SS_SOUND, ssSoundGetPan, 0)
-if (object->sound) return_int(object->sound->getPan() * 255);
 
-else return_int(0);
+if (object->sound)
+    return_int(object->sound->getPan() * 255);
+else
+    return_int(0);
+
 end_method()
 
 ////////////////////////////////////////
 /**
     - pitch ranges from 0.5 to 2.0.  0.5 is an octave down (and half as fast)
-      while 2.0 is an octave up (and twice as fast).  pitch defaults to 1
+      while 2.0 is an octave up (and twice as fast).  pitch defaults to 1.0
+    - no effect on MIDIs
 */
 begin_method(SS_SOUND, ssSoundSetPitch, 1)
 arg_double(pitch);
-if (object->sound)
 
-{
+if (object->sound)
     object->sound->setPitchShift((float)pitch);
-}
+
 end_method()
 
 ////////////////////////////////////////
 /**
     - returns the current pitch
+    - no effect on MIDIs
 */
 begin_method(SS_SOUND, ssSoundGetPitch, 0)
+
 if (object->sound)
-
-{
     return_double(object->sound->getPitchShift());
-}
 else
-{
-
     return_double(1.0);
-}
 
 end_method()
+
 ////////////////////////////////////////
 /**
     - returns true if the sound is currently playing
 */
 begin_method(SS_SOUND, ssSoundIsPlaying, 0)
+
 if (object->sound)
-{
-
     return_bool(object->sound->isPlaying());
-}
+
 #if defined(WIN32) && defined(USE_MIDI)
-else
-    if (object->midi)
-    {
 
-        return_bool(object->midi->isPlaying());
-    }
+else if (object->midi)
+    return_bool(object->midi->isPlaying());
+
 #endif
-    else
-    {
 
-        return_bool(false);
-    }
+else
+    return_bool(false);
+
 end_method()
+
 ////////////////////////////////////////
 /**
     - returns true if the sound is seekable
       Not all sound types are seekable, Ogg is.
 */
 begin_method(SS_SOUND, ssSoundIsSeekable, 0)
+
 if (object->sound)
-{
-
     return_bool(object->sound->isSeekable());
-}
+
 #if defined(WIN32) && defined(USE_MIDI)
-else
-    if (object->midi)
-    {
 
-        return_bool(true);
-    }
+else if (object->midi)
+    return_bool(true);
+
 #endif
-    else
-    {
 
-        return_bool(false);
-    }
+else
+    return_bool(false);
+
 end_method()
 ////////////////////////////////////////
 /**
@@ -7463,25 +7577,22 @@ end_method()
       returns zero if the sound isn't seekable
 */
 begin_method(SS_SOUND, ssSoundGetPosition, 0)
+
 if (object->sound)
-{
-
     return_int(object->sound->getPosition());
-}
+
 #if defined(WIN32) && defined(USE_MIDI)
-else
-    if (object->midi)
-    {
 
-        return_int(object->midi->getPosition());
-    }
+else if (object->midi)
+    return_int(object->midi->getPosition());
+
 #endif
-    else
-    {
 
-        return_int(0);
-    }
+else
+    return_int(0);
+
 end_method()
+
 ////////////////////////////////////////
 /**
     - sets the position of the sound
@@ -7489,55 +7600,241 @@ end_method()
 */
 begin_method(SS_SOUND, ssSoundSetPosition, 1)
 arg_int(pos);
+
 if (object->sound)
-{
 
     object->sound->setPosition(pos);
-}
-#if defined(WIN32) && defined(USE_MIDI)
-if (object->midi)
-{
 
+#if defined(WIN32) && defined(USE_MIDI)
+
+if (object->midi)
     object->midi->setPosition(pos);
-}
+
 #endif
 end_method()
+
 ////////////////////////////////////////
 /**
     - gets the length of the sound
 */
 begin_method(SS_SOUND, ssSoundGetLength, 0)
+
 if (object->sound)
-{
-
     return_int(object->sound->getLength());
-}
+
 #if defined(WIN32) && defined(USE_MIDI)
-else
-    if (object->midi)
-    {
 
-        return_int(object->midi->getLength());
-    }
+else if (object->midi)
+    return_int(object->midi->getLength());
+
 #endif
-    else
-    {
 
-        return_int(0);
-    }
+else
+    return_int(0);
+
 end_method()
+
 ////////////////////////////////////////
 /**
     - creates a copy of the sound object (currently doesn't really work)
 */
 begin_method(SS_SOUND, ssSoundClone, 0)
 #if defined(WIN32) && defined(USE_MIDI)
-
 return_object(CreateSoundObject(cx, object->sound, object->midi));
 #else
 return_object(CreateSoundObject(cx, object->sound));
 #endif
 end_method()
+
+
+////////////////////////////////////////
+// SOUND EFFECT OBJECT /////////////////
+////////////////////////////////////////
+
+JSObject*
+CScript::CreateSoundEffectObject(JSContext* cx, audiere::SoundEffect* sound)
+{
+    if (sound)
+        sound->ref();
+
+    // define class
+    static JSClass clasp =
+        {
+            "sound effect", JSCLASS_HAS_PRIVATE,
+            JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+            JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizeSoundEffect,
+        };
+
+    // create object
+    JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
+
+    if (object == NULL)
+    {
+        if (sound)
+        {
+            sound->unref();
+            sound = NULL;
+        }
+
+        return NULL;
+    }
+
+    // assign methods to the object
+    static JSFunctionSpec fs[] =
+        {
+            { "play",        ssSoundEffectPlay,        0, },
+            { "stop",        ssSoundEffectStop,        0, },
+            { "setVolume",   ssSoundEffectSetVolume,   1, },
+            { "getVolume",   ssSoundEffectGetVolume,   0, },
+            { "setPan",      ssSoundEffectSetPan,      1, },
+            { "getPan",      ssSoundEffectGetPan,      0, },
+            { "setPitch",    ssSoundEffectSetPitch,    1, },
+            { "getPitch",    ssSoundEffectGetPitch,    0, },
+            { 0, 0, 0, 0, 0 },
+        };
+    JS_DefineFunctions(cx, object, fs);
+
+    // attach the sound to this object
+    SS_SOUNDEFFECT* sound_object = new SS_SOUNDEFFECT;
+
+    if (!sound_object)
+    {
+        if (sound)
+        {
+            sound->unref();
+            sound = NULL;
+        }
+
+        return NULL;
+    }
+
+    sound_object->sound = sound;
+
+    JS_SetPrivate(cx, object, sound_object);
+    return object;
+}
+
+////////////////////////////////////////
+begin_finalizer(SS_SOUNDEFFECT, ssFinalizeSoundEffect)
+
+if (object->sound)
+    object->sound->unref();
+
+object->sound = NULL;
+end_finalizer()
+
+////////////////////////////////////////
+/**
+    - plays the sound effect.
+      If the sound effect is of type SE_SINGLE, this plays the sound
+      if it isn't playing yet, and starts it again if it is.
+      If the sound effect is of type SE_MULTIPLE, play() simply starts
+      playing the sound again.
+*/
+begin_method(SS_SOUNDEFFECT, ssSoundEffectPlay, 0)
+
+if (object->sound)
+    object->sound->play();
+
+end_method()
+
+////////////////////////////////////////
+/**
+    - stops playback
+      If the sound is of type SE_SINGLE, stop the sound.
+      If it is of type SE_MULTIPLE, stop all playing instances of the sound.
+*/
+begin_method(SS_SOUNDEFFECT, ssSoundEffectStop, 0)
+
+if (object->sound)
+    object->sound->stop();
+
+end_method()
+
+////////////////////////////////////////
+/**
+    - sets the volume for the sound effect (0-255)
+*/
+begin_method(SS_SOUNDEFFECT, ssSoundEffectSetVolume, 1)
+arg_int(volume);
+
+if (object->sound)
+{
+    if (volume < 0)
+        volume = 0;
+    if (volume > 255)
+        volume = 255;
+
+    object->sound->setVolume(volume / 255.0f);
+}
+
+end_method()
+
+////////////////////////////////////////
+/**
+    - returns the sound effect's volume (0-255)
+*/
+begin_method(SS_SOUNDEFFECT, ssSoundEffectGetVolume, 0)
+
+if (object->sound)
+    return_int(object->sound->getVolume() * 255);
+else
+    return_int(255);
+
+end_method()
+
+////////////////////////////////////////
+/**
+    - pan can be from -255 to 255.  -255 = left, 255 = right. pan defaults to 0 (center).
+*/
+begin_method(SS_SOUNDEFFECT, ssSoundEffectSetPan, 1)
+arg_int(pan);
+
+if (object->sound)
+    object->sound->setPan(pan / 255.0f);
+
+end_method()
+
+////////////////////////////////////////
+/**
+    - returns the current pan of the sound effect
+*/
+begin_method(SS_SOUNDEFFECT, ssSoundEffectGetPan, 0)
+
+if (object->sound)
+    return_int(object->sound->getPan() * 255);
+else
+    return_int(0);
+
+end_method()
+
+////////////////////////////////////////
+/**
+    - pitch ranges from 0.5 to 2.0.  0.5 is an octave down (and half as fast)
+      while 2.0 is an octave up (and twice as fast).  pitch defaults to 1.0
+*/
+begin_method(SS_SOUNDEFFECT, ssSoundEffectSetPitch, 1)
+arg_double(pitch);
+
+if (object->sound)
+    object->sound->setPitchShift((float)pitch);
+
+end_method()
+
+////////////////////////////////////////
+/**
+    - returns the current pitch
+*/
+begin_method(SS_SOUNDEFFECT, ssSoundEffectGetPitch, 0)
+
+if (object->sound)
+    return_double(object->sound->getPitchShift());
+else
+    return_double(1.0);
+
+end_method()
+
+
 ////////////////////////////////////////
 ////////////////////////////////////////
 // FONT OBJECTS ////////////////////////

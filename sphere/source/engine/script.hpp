@@ -130,6 +130,9 @@ private:
   declare_method(ssSoundPlay);
   declare_method(ssSoundPause);
   declare_method(ssSoundStop);
+  declare_method(ssSoundReset);
+  declare_method(ssSoundSetRepeat);
+  declare_method(ssSoundGetRepeat);
   declare_method(ssSoundSetVolume);
   declare_method(ssSoundGetVolume);
   declare_method(ssSoundSetPan);
@@ -142,6 +145,18 @@ private:
   declare_method(ssSoundSetPosition);
   declare_method(ssSoundIsSeekable);
   declare_method(ssSoundGetLength);
+
+  // sound effects
+  declare_constructor1(CreateSoundEffectObject, audiere::SoundEffect* sound);
+  declare_finalizer(ssFinalizeSoundEffect);
+  declare_method(ssSoundEffectPlay);
+  declare_method(ssSoundEffectStop);
+  declare_method(ssSoundEffectSetVolume);
+  declare_method(ssSoundEffectGetVolume);
+  declare_method(ssSoundEffectSetPan);
+  declare_method(ssSoundEffectGetPan);
+  declare_method(ssSoundEffectSetPitch);
+  declare_method(ssSoundEffectGetPitch);
 
   // fonts
   declare_constructor2(CreateFontObject, SFONT* font, bool destroy);
