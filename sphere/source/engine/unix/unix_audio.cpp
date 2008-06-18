@@ -13,11 +13,11 @@ bool InitAudio(SPHERECONFIG* config)
     case SOUND_AUTODETECT: // this doesn't really autodetect at all
       s_AudioDevice = audiere::OpenDevice();
     break;
-  
+
     case SOUND_ON:
       s_AudioDevice = audiere::OpenDevice();
     break;
-  
+
     case SOUND_OFF:
       s_AudioDevice = audiere::OpenDevice("null");
     break;
@@ -50,6 +50,13 @@ audiere::AudioDevice* SA_GetAudioDevice()
 audiere::OutputStream* SA_OpenSound(audiere::File* file, bool streaming)
 {
   return audiere::OpenSound(s_AudioDevice.get(), file, streaming);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+audiere::SoundEffect* SA_OpenSoundEffect(audiere::File* file, audiere::SoundEffectType type)
+{
+    return audiere::OpenSoundEffect(s_AudioDevice.get(), file, type);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

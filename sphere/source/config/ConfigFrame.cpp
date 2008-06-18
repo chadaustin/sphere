@@ -696,14 +696,16 @@ static bool IsValidDriver(wxString filename)
 
     get_driver_info = (void (STDCALL *)(DRIVERINFO*))dlsym(lib, "GetDriverInfo");
 
-    bool retval = false;
-
-    if (get_driver_info)
-        retval = true;
-
-    dlclose(lib);
-
-    return retval;
+    if (get_driver_info == NULL)
+    {
+        dlclose(lib);
+        return false;
+    }
+    else
+    {
+        dlclose(lib);
+        return true;
+    }
 
 #else
     wxDynamicLibrary lib(filename, wxDL_LAZY);

@@ -45,3 +45,10 @@ audiere::OutputStream* SA_OpenSound(audiere::File* file, bool streaming)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+audiere::SoundEffect* SA_OpenSoundEffect(audiere::File* file, audiere::SoundEffectType type)
+{
+    return audiere::OpenSoundEffect(s_AudioDevice.get(), file, type);
+}
+
+////////////////////////////////////////////////////////////////////////////////
