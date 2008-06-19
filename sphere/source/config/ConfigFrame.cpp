@@ -17,7 +17,7 @@ CConfigFrame::CConfigFrame(const wxString& title)
 
     m_config_menu->Append(IDM_RESTORE_DEFAULTS, wxT("Restore Defaults"));
 
-    m_language_menu->AppendRadioItem(IDL_ENGLISH,     LanguageNames[IDL_ENGLISH]);
+    m_language_menu->AppendRadioItem(15,     LanguageNames[IDL_ENGLISH]);
     m_language_menu->AppendRadioItem(IDL_GERMAN,      LanguageNames[IDL_GERMAN]);
     m_language_menu->AppendRadioItem(IDL_FRENCH,      LanguageNames[IDL_FRENCH]);
     m_language_menu->AppendRadioItem(IDL_DUTCH,       LanguageNames[IDL_DUTCH]);
@@ -59,7 +59,7 @@ CConfigFrame::CConfigFrame(const wxString& title)
 
     Connect(IDM_RESTORE_DEFAULTS, wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectRestoreDefaults));
 
-    Connect(IDL_ENGLISH,          wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectEnglish));
+    Connect(15,          wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectEnglish));
     Connect(IDL_GERMAN,           wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectGerman));
     Connect(IDL_FRENCH,           wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectFrench));
     Connect(IDL_DUTCH,            wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectDutch));
@@ -77,7 +77,12 @@ CConfigFrame::CConfigFrame(const wxString& title)
 void
 CConfigFrame::OnSelectEnglish(wxCommandEvent& event)
 {
-    InitializeLanguage(IDL_ENGLISH);
+    if (!InitializeLanguage(IDL_ENGLISH))
+    {
+        m_language_menu->Check(m_sphere_config.language, true);
+        return;
+    }
+
     Translate();
     RefreshLayout();
 }
@@ -86,7 +91,12 @@ CConfigFrame::OnSelectEnglish(wxCommandEvent& event)
 void
 CConfigFrame::OnSelectGerman(wxCommandEvent& event)
 {
-    InitializeLanguage(IDL_GERMAN);
+    if (!InitializeLanguage(IDL_GERMAN))
+    {
+        m_language_menu->Check(m_sphere_config.language, true);
+        return;
+    }
+
     Translate();
     RefreshLayout();
 }
@@ -95,7 +105,12 @@ CConfigFrame::OnSelectGerman(wxCommandEvent& event)
 void
 CConfigFrame::OnSelectFrench(wxCommandEvent& event)
 {
-    InitializeLanguage(IDL_FRENCH);
+    if (!InitializeLanguage(IDL_FRENCH))
+    {
+        m_language_menu->Check(m_sphere_config.language, true);
+        return;
+    }
+
     Translate();
     RefreshLayout();
 }
@@ -104,7 +119,12 @@ CConfigFrame::OnSelectFrench(wxCommandEvent& event)
 void
 CConfigFrame::OnSelectDutch(wxCommandEvent& event)
 {
-    InitializeLanguage(IDL_DUTCH);
+    if (!InitializeLanguage(IDL_DUTCH))
+    {
+        m_language_menu->Check(m_sphere_config.language, true);
+        return;
+    }
+
     Translate();
     RefreshLayout();
 }
@@ -113,7 +133,12 @@ CConfigFrame::OnSelectDutch(wxCommandEvent& event)
 void
 CConfigFrame::OnSelectJapanese(wxCommandEvent& event)
 {
-    InitializeLanguage(IDL_JAPANESE);
+    if (!InitializeLanguage(IDL_JAPANESE))
+    {
+        m_language_menu->Check(m_sphere_config.language, true);
+        return;
+    }
+
     Translate();
     RefreshLayout();
 }
@@ -122,7 +147,12 @@ CConfigFrame::OnSelectJapanese(wxCommandEvent& event)
 void
 CConfigFrame::OnSelectChinese(wxCommandEvent& event)
 {
-    InitializeLanguage(IDL_CHINESE);
+    if (!InitializeLanguage(IDL_CHINESE))
+    {
+        m_language_menu->Check(m_sphere_config.language, true);
+        return;
+    }
+
     Translate();
     RefreshLayout();
 }
@@ -131,7 +161,12 @@ CConfigFrame::OnSelectChinese(wxCommandEvent& event)
 void
 CConfigFrame::OnSelectRussian(wxCommandEvent& event)
 {
-    InitializeLanguage(IDL_RUSSIAN);
+    if (!InitializeLanguage(IDL_RUSSIAN))
+    {
+        m_language_menu->Check(m_sphere_config.language, true);
+        return;
+    }
+
     Translate();
     RefreshLayout();
 }
@@ -140,7 +175,12 @@ CConfigFrame::OnSelectRussian(wxCommandEvent& event)
 void
 CConfigFrame::OnSelectSpanish(wxCommandEvent& event)
 {
-    InitializeLanguage(IDL_SPANISH);
+    if (!InitializeLanguage(IDL_SPANISH))
+    {
+        m_language_menu->Check(m_sphere_config.language, true);
+        return;
+    }
+
     Translate();
     RefreshLayout();
 }
@@ -149,7 +189,12 @@ CConfigFrame::OnSelectSpanish(wxCommandEvent& event)
 void
 CConfigFrame::OnSelectIndonesian(wxCommandEvent& event)
 {
-    InitializeLanguage(IDL_INDONESIAN);
+    if (!InitializeLanguage(IDL_INDONESIAN))
+    {
+        m_language_menu->Check(m_sphere_config.language, true);
+        return;
+    }
+
     Translate();
     RefreshLayout();
 }
@@ -197,7 +242,11 @@ CConfigFrame::Initialize(wxString &error)
 {
     LoadConfiguration();
 
-    InitializeLanguage(GetConfig()->language);
+    if (!InitializeLanguage(m_sphere_config.language))
+    {
+        InitializeLanguage(IDL_ENGLISH);
+        m_language_menu->Check(IDL_ENGLISH, true);
+    }
 
     if (!m_notebook->GetVideoPage()->BuildDriverList(error))
         return false;
@@ -216,7 +265,7 @@ CConfigFrame::Initialize(wxString &error)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
-void
+bool
 CConfigFrame::InitializeLanguage(int lang_id)
 {
     if (!m_locale.Init(LanguageIDs[lang_id], wxLOCALE_CONV_ENCODING))
@@ -227,7 +276,7 @@ CConfigFrame::InitializeLanguage(int lang_id)
                              _("Sphere Configuration"), wxOK | wxICON_ERROR);
         dial.ShowModal();
 
-        return;
+        return false;
     }
 
     m_sphere_config.language = lang_id;
@@ -235,6 +284,7 @@ CConfigFrame::InitializeLanguage(int lang_id)
     wxLocale::AddCatalogLookupPathPrefix(wxT("./locale/"));
     m_locale.AddCatalog(wxT("config"));
 
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -900,10 +950,10 @@ CConfigInputPage::CConfigInputPage(CConfigFrame* frame, wxWindow* parent)
     m_allow_keyboard_input = new wxCheckBox(this, IDI_ALLOW_KEYBOARD_INPUT, wxT("Allow Keyboard Input"));
     m_allow_joypad_input   = new wxCheckBox(this, IDI_ALLOW_JOYPAD_INPUT,   wxT("Allow Joypad Input"));
 
-    m_up                   = new wxButton(this, IDI_UP,    wxT("Up"),    wxDefaultPosition, wxSize(60, 25));
-    m_down                 = new wxButton(this, IDI_DOWN,  wxT("Down"),  wxDefaultPosition, wxSize(60, 25));
-    m_left                 = new wxButton(this, IDI_LEFT,  wxT("Left"),  wxDefaultPosition, wxSize(60, 25));
-    m_right                = new wxButton(this, IDI_RIGHT, wxT("Right"), wxDefaultPosition, wxSize(60, 25));
+    m_up                   = new wxButton(this, IDI_UP,    wxT("Up"),    wxDefaultPosition, wxSize(-1, 25));
+    m_down                 = new wxButton(this, IDI_DOWN,  wxT("Down"),  wxDefaultPosition, wxSize(-1, 25));
+    m_left                 = new wxButton(this, IDI_LEFT,  wxT("Left"),  wxDefaultPosition, wxSize(-1, 25));
+    m_right                = new wxButton(this, IDI_RIGHT, wxT("Right"), wxDefaultPosition, wxSize(-1, 25));
 
     m_up_str               = new wxStaticText(this, wxID_ANY, wxEmptyString);
     m_down_str             = new wxStaticText(this, wxID_ANY, wxEmptyString);
@@ -914,41 +964,28 @@ CConfigInputPage::CConfigInputPage(CConfigFrame* frame, wxWindow* parent)
     wxBoxSizer* vbox       = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer* hbox1      = new wxBoxSizer(wxHORIZONTAL);
     wxBoxSizer* hbox2      = new wxBoxSizer(wxHORIZONTAL);
-    wxBoxSizer* hbox3      = new wxBoxSizer(wxHORIZONTAL);
-    wxBoxSizer* hbox4      = new wxBoxSizer(wxHORIZONTAL);
-    wxBoxSizer* hbox5      = new wxBoxSizer(wxHORIZONTAL);
+    wxFlexGridSizer* flex1 = new wxFlexGridSizer(4, 2, 3, 10);
 
     hbox1->Add(m_player_str, 0, wxALIGN_CENTER_VERTICAL);
     hbox1->Add(10, -1);
     hbox1->Add(m_player_index);
 
+    flex1->Add(m_up,        1, wxEXPAND);
+    flex1->Add(m_up_str,    0, wxALIGN_CENTER_VERTICAL);
+    flex1->Add(m_down,      1, wxEXPAND);
+    flex1->Add(m_down_str,  0, wxALIGN_CENTER_VERTICAL);
+    flex1->Add(m_left,      1, wxEXPAND);
+    flex1->Add(m_left_str,  0, wxALIGN_CENTER_VERTICAL);
+    flex1->Add(m_right,     1, wxEXPAND);
+    flex1->Add(m_right_str, 0, wxALIGN_CENTER_VERTICAL);
+
     hbox2->Add(10, -1);
-    hbox2->Add(m_up, 1);
-    hbox2->Add(10, -1);
-    hbox2->Add(m_up_str, 0, wxALIGN_CENTER_VERTICAL);
-
-    hbox3->Add(10, -1);
-    hbox3->Add(m_down, 1);
-    hbox3->Add(10, -1);
-    hbox3->Add(m_down_str, 0, wxALIGN_CENTER_VERTICAL);
-
-    hbox4->Add(10, -1);
-    hbox4->Add(m_left, 1);
-    hbox4->Add(10, -1);
-    hbox4->Add(m_left_str, 0, wxALIGN_CENTER_VERTICAL);
-
-    hbox5->Add(10, -1);
-    hbox5->Add(m_right, 1);
-    hbox5->Add(10, -1);
-    hbox5->Add(m_right_str, 0, wxALIGN_CENTER_VERTICAL);
+    hbox2->Add(flex1);
 
     sbox->Add(-1, 5);
     sbox->Add(hbox1, 0, wxALIGN_CENTER_HORIZONTAL);
     sbox->Add(-1, 10);
     sbox->Add(hbox2);
-    sbox->Add(hbox3);
-    sbox->Add(hbox4);
-    sbox->Add(hbox5);
     sbox->Add(-1, 15);
     sbox->Add(m_allow_keyboard_input, 0, wxALIGN_LEFT | wxLEFT, 10);
     sbox->Add(-1, 5);

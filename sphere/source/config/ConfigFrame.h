@@ -191,7 +191,7 @@ class CConfigFrame : public wxFrame
         CConfigFrame(const wxString& title);
 
         bool Initialize(wxString &error);
-        void InitializeLanguage(int lang_id);
+        bool InitializeLanguage(int lang_id);
 
         void OnSelectEnglish(wxCommandEvent& event);
         void OnSelectGerman(wxCommandEvent& event);
