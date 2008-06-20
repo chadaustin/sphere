@@ -121,7 +121,7 @@ void LoadConfiguration()
     char config_file_name[MAX_PATH];
     GetDriverConfigFile(config_file_name);
 
-    Configuration.fullscreen = (GetPrivateProfileInt("standard8", "Fullscreen", 1, config_file_name) != 0);
+    Configuration.fullscreen = (GetPrivateProfileInt("standard8", "Fullscreen", 0, config_file_name) != 0);
     Configuration.vsync      = (GetPrivateProfileInt("standard8", "VSync",      1, config_file_name) != 0);
     GetPrivateProfileString("standard8", "Palette", "(default)", Configuration.palette_file, FILENAME_MAX, config_file_name);
 }

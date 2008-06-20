@@ -27,18 +27,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE DISCARDABLE
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE DISCARDABLE
 BEGIN
     "#include ""afxres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE DISCARDABLE
 BEGIN
     "\r\n"
     "\0"
@@ -59,9 +59,9 @@ FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,148,8,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,148,28,50,14
-    CONTROL         "Scale (2x)",IDC_SCALE,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Scale (2x)",IDC_SCALE,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,68,12,65,10
-    CONTROL         "Fullscreen",IDC_FULLSCREEN,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Fullscreen",IDC_FULLSCREEN,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,68,44,65,10
     CONTROL         "Bilinear Filtering",IDC_BILINEAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,68,28,65,10
@@ -80,7 +80,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO DISCARDABLE
 BEGIN
     IDD_CONFIGURE, DIALOG
     BEGIN
@@ -91,52 +91,6 @@ BEGIN
     END
 END
 #endif    // APSTUDIO_INVOKED
-
-
-#ifndef _MAC
-/////////////////////////////////////////////////////////////////////////////
-//
-// Version
-//
-
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,0,6,0
- PRODUCTVERSION 0,90,0,0
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x4L
- FILETYPE 0x2L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "000004b0"
-        BEGIN
-            VALUE "Comments", "\0"
-            VALUE "CompanyName", " \0"
-            VALUE "FileDescription", "Sphere OpenGL Driver\0"
-            VALUE "FileVersion", "0.6.0.0\0"
-            VALUE "InternalName", "Sphere OpenGL\0"
-            VALUE "LegalCopyright", "Copyright © 2000\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "sphere_gl.dll\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "Sphere\0"
-            VALUE "ProductVersion", "0.90\0"
-            VALUE "SpecialBuild", "\0"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x0, 1200
-    END
-END
-
-#endif    // !_MAC
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////

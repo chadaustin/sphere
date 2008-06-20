@@ -17,7 +17,7 @@ CConfigFrame::CConfigFrame(const wxString& title)
 
     m_config_menu->Append(IDM_RESTORE_DEFAULTS, wxT("Restore Defaults"));
 
-    m_language_menu->AppendRadioItem(15,     LanguageNames[IDL_ENGLISH]);
+    m_language_menu->AppendRadioItem(IDL_ENGLISH,     LanguageNames[IDL_ENGLISH]);
     m_language_menu->AppendRadioItem(IDL_GERMAN,      LanguageNames[IDL_GERMAN]);
     m_language_menu->AppendRadioItem(IDL_FRENCH,      LanguageNames[IDL_FRENCH]);
     m_language_menu->AppendRadioItem(IDL_DUTCH,       LanguageNames[IDL_DUTCH]);
@@ -59,7 +59,7 @@ CConfigFrame::CConfigFrame(const wxString& title)
 
     Connect(IDM_RESTORE_DEFAULTS, wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectRestoreDefaults));
 
-    Connect(15,          wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectEnglish));
+    Connect(IDL_ENGLISH,          wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectEnglish));
     Connect(IDL_GERMAN,           wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectGerman));
     Connect(IDL_FRENCH,           wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectFrench));
     Connect(IDL_DUTCH,            wxEVT_COMMAND_MENU_SELECTED,  wxCommandEventHandler(CConfigFrame::OnSelectDutch));
@@ -268,7 +268,7 @@ CConfigFrame::Initialize(wxString &error)
 bool
 CConfigFrame::InitializeLanguage(int lang_id)
 {
-    if (!m_locale.Init(LanguageIDs[lang_id], wxLOCALE_CONV_ENCODING))
+    if (!wxLocale::IsAvailable(LanguageIDs[lang_id]))
     {
         wxMessageDialog dial(NULL, wxGetTranslation(LanguageNames[lang_id])
                                    + wxString(wxT(" "))
@@ -278,6 +278,8 @@ CConfigFrame::InitializeLanguage(int lang_id)
 
         return false;
     }
+
+    m_locale.Init(LanguageIDs[lang_id], wxLOCALE_CONV_ENCODING);
 
     m_sphere_config.language = lang_id;
 
@@ -377,8 +379,8 @@ CConfigFrame::LoadConfiguration()
     // load main configuration
     file.Read(wxT("Main/Language"), &lDummy, (long)0);
 
-    if (lDummy < 0 || lDummy >= MAX_LANGUAGES)
-        lDummy = 0;
+    if (lDummy < MIN_LANGUAGE || lDummy > MAX_LANGUAGE)
+        lDummy = MIN_LANGUAGE;
 
     m_sphere_config.language = (int)lDummy;
     m_language_menu->Check((int)lDummy, true);

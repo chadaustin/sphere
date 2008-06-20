@@ -200,9 +200,9 @@ void LoadConfiguration()
     GetDriverConfigFile(config_file_name);
 
     // load the fields from the file
-    Config.fullscreen = GetPrivateProfileInt("standard16", "Fullscreen", 1, config_file_name) != 0;
+    Config.fullscreen = GetPrivateProfileInt("standard16", "Fullscreen", 0, config_file_name) != 0;
     Config.vsync      = GetPrivateProfileInt("standard16", "VSync",      1, config_file_name) != 0;
-    Config.scale      = GetPrivateProfileInt("standard16", "Scale",      1, config_file_name) != 0;
+    Config.scale      = GetPrivateProfileInt("standard16", "Scale",      0, config_file_name) != 0;
     Config.filter     = GetPrivateProfileInt("standard16", "Filter",     0, config_file_name);
 
     int vexpand              = GetPrivateProfileInt("standard16", "VExpand",    0, config_file_name);

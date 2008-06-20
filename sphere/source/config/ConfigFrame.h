@@ -98,9 +98,11 @@ struct SPHERECONFIG
 };
 
 
-#define MAX_LANGUAGES 9
+#define MIN_LANGUAGE 1
+#define MAX_LANGUAGE 9
 static const wxLanguage LanguageIDs[] =
 {
+    wxLANGUAGE_DEFAULT,
     wxLANGUAGE_ENGLISH,
     wxLANGUAGE_GERMAN,
     wxLANGUAGE_FRENCH,
@@ -115,6 +117,7 @@ static const wxLanguage LanguageIDs[] =
 
 static const wxString LanguageNames[] =
 {
+    wxT("Default"),
     wxT("English"),
     wxT("German"),
     wxT("French"),
@@ -138,7 +141,8 @@ static const wxString PlayerIDs[] =
 
 enum
 {
-    IDL_ENGLISH = 0,
+    IDL_DEFAULT = 0,
+    IDL_ENGLISH,
     IDL_GERMAN,
     IDL_FRENCH,
     IDL_DUTCH,
