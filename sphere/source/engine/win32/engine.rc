@@ -27,18 +27,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE DISCARDABLE
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE DISCARDABLE
 BEGIN
     "#include ""afxres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE DISCARDABLE
 BEGIN
     "\r\n"
     "\0"
@@ -61,7 +61,7 @@ IDI_MAIN                ICON    DISCARDABLE     "engine.ico"
 // Menu
 //
 
-IDR_FILE MENU DISCARDABLE 
+IDR_FILE MENU DISCARDABLE
 BEGIN
     POPUP "&File"
     BEGIN
@@ -78,8 +78,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,4,0,1
- PRODUCTVERSION 1,4,0,1
+ FILEVERSION 1,5,0,0
+ PRODUCTVERSION 1,5,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -97,14 +97,14 @@ BEGIN
             VALUE "Comments", "The Sphere RPG Engine.\0"
             VALUE "CompanyName", "The Sphere Group\0"
             VALUE "FileDescription", "Sphere Engine\0"
-            VALUE "FileVersion", "1, 4, 0, 1\0"
+            VALUE "FileVersion", "1, 5, 0, 0\0"
             VALUE "InternalName", "engine\0"
             VALUE "LegalCopyright", "\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "engine.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Sphere Engine\0"
-            VALUE "ProductVersion", "1, 4, 0, 1\0"
+            VALUE "ProductVersion", "1, 5, 0, 0\0"
             VALUE "SpecialBuild", "\0"
         END
     END
