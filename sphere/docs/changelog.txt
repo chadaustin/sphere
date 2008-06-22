@@ -1,5 +1,9 @@
 YYYY.MM.DD
 
+2008.06.22
+  - Engine no longer crashes when a layer renderer is
+    set within a "on leave map" script.
+
 2008.06.18
   - Fixed sound.pause() to pause MIDIs instead of stopping them.
   - Made the 'repeat' parameter in sound.play(repeat) to be optional.
