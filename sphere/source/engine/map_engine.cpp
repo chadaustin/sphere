@@ -1733,8 +1733,14 @@ CMapEngine::SetRenderScript(const char* script)
 bool
 CMapEngine::SetLayerRenderer(int layer, const char* script)
 {
-    if ( IsInvalidLayerError(layer, "SetLayerRenderer()") )
+    if (IsInvalidLayerError(layer, "SetLayerRenderer()"))
         return false;
+
+    if (m_LayerRenderers.empty())
+    {
+        m_ErrorMessage = "Layer renderers are not available";
+        return false;
+    }
 
     // destroy old layer renderer
     if (m_LayerRenderers[layer])
@@ -3717,13 +3723,13 @@ CMapEngine::CloseMap()
             m_Engine->DestroyScript(m_LayerRenderers[i]);
         }
     }
-    m_LayerRenderers.resize(0);
+    m_LayerRenderers.clear();
 
     // destroy edge scripts
     DestroyEdgeScripts();
     // execute exit script
-    if (!CallDefaultMapScript(SCRIPT_ON_LEAVE_MAP)
-            || !CallMapScript(SCRIPT_ON_LEAVE_MAP))
+    if (!CallDefaultMapScript(SCRIPT_ON_LEAVE_MAP) ||
+        !CallMapScript(SCRIPT_ON_LEAVE_MAP))
     {
         m_CurrentMap = "";
         return false;
