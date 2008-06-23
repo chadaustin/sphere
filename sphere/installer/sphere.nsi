@@ -169,12 +169,8 @@ Section "un.Uninstall Sphere"
 	DeleteRegKey HKCR "SphereGame"
 	DeleteRegKey HKCR "SpherePackage"
 
-	; Remove files and uninstaller
-	Delete "$INSTDIR\*.exe"
-	Delete "$INSTDIR\*.dll"
-	Delete "$INSTDIR\*.ini"
-	Delete "$INSTDIR\*.ico"
-	Delete "$INSTDIR\uninstall.exe"
+	; Remove all files
+	Delete "$INSTDIR\*.*"
 
 	; Remove shortcuts, if any
 	Delete "$SMPROGRAMS\${SphereStartMenuDir}\*.*"
