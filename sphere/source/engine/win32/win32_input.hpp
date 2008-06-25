@@ -112,6 +112,20 @@
 #define JOYSTICK_AXIS_Z     2
 #define JOYSTICK_AXIS_R     3
 
+#define PLAYER_1            0
+#define PLAYER_2            1
+#define PLAYER_3            2
+#define PLAYER_4            3
+#define PLAYER_KEY_MENU     4
+#define PLAYER_KEY_UP       5
+#define PLAYER_KEY_DOWN     6
+#define PLAYER_KEY_LEFT     7
+#define PLAYER_KEY_RIGHT    8
+#define PLAYER_KEY_A        9
+#define PLAYER_KEY_B        10
+#define PLAYER_KEY_X        11
+#define PLAYER_KEY_Y        12
+
 // general
 extern bool RefreshInput();
 extern bool ResetInput();

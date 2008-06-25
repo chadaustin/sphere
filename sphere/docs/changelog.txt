@@ -1,5 +1,18 @@
 YYYY.MM.DD
 
+2008.06.25
+  - Extended the player input configuration by adding
+    new configurable keys: Menu, A, B, X and Y.
+  - Player input configuration is now available for script
+    via GetPlayerKey(player, key)
+  - Fixed a bug in the color interpolation of gradient lines,
+    which caused flipped gradients on vertical and horizontal lines.
+  - Removed backface culling from sphere_gl, because it didn't
+    allow anymore for flipped images.
+    
+2008.06.23
+  - Added missing documentation for CreateSpriteset().
+
 2008.06.22
   - Engine no longer crashes when a layer renderer is
     set within a "on leave map" script.

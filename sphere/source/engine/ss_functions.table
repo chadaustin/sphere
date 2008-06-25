@@ -68,6 +68,7 @@ SS_FUNCTION(OpenLog, 1)
     SS_FUNCTION(IsKeyPressed, 1)
     SS_FUNCTION(IsAnyKeyPressed, 0)
     SS_FUNCTION(GetKeyString, 2)
+    SS_FUNCTION(GetPlayerKey, 2)
 
     // mouse
     SS_FUNCTION(SetMousePosition, 2)

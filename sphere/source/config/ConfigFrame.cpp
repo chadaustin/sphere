@@ -296,37 +296,57 @@ static void LoadDefaultPlayerConfiguration(PLAYERCONFIG &config, int player_inde
     switch (player_index)
     {
         case 0:
-            config.up    = wxT("KEY_UP");
-            config.down  = wxT("KEY_DOWN");
-            config.left  = wxT("KEY_LEFT");
-            config.right = wxT("KEY_RIGHT");
+            config.key_menu  = wxT("KEY_ESCAPE");
+            config.key_up    = wxT("KEY_UP");
+            config.key_down  = wxT("KEY_DOWN");
+            config.key_left  = wxT("KEY_LEFT");
+            config.key_right = wxT("KEY_RIGHT");
+            config.key_a     = wxT("KEY_DELETE");
+            config.key_b     = wxT("KEY_END");
+            config.key_x     = wxT("KEY_INSERT");
+            config.key_y     = wxT("KEY_HOME");
             config.allow_keyboard_input = true;
             config.allow_joypad_input   = true;
             break;
 
         case 1:
-            config.up    = wxT("KEY_W");
-            config.down  = wxT("KEY_S");
-            config.left  = wxT("KEY_A");
-            config.right = wxT("KEY_D");
+            config.key_menu  = wxT("KEY_ESCAPE");
+            config.key_up    = wxT("KEY_W");
+            config.key_down  = wxT("KEY_S");
+            config.key_left  = wxT("KEY_A");
+            config.key_right = wxT("KEY_D");
+            config.key_a     = wxT("KEY_F");
+            config.key_b     = wxT("KEY_E");
+            config.key_x     = wxT("KEY_Y");
+            config.key_y     = wxT("KEY_X");
             config.allow_keyboard_input = true;
             config.allow_joypad_input   = true;
             break;
 
         case 2:
-            config.up    = wxT("KEY_I");
-            config.down  = wxT("KEY_K");
-            config.left  = wxT("KEY_J");
-            config.right = wxT("KEY_L");
+            config.key_menu  = wxT("KEY_ESCAPE");
+            config.key_up    = wxT("KEY_I");
+            config.key_down  = wxT("KEY_K");
+            config.key_left  = wxT("KEY_J");
+            config.key_right = wxT("KEY_L");
+            config.key_a     = wxT("KEY_H");
+            config.key_b     = wxT("KEY_U");
+            config.key_x     = wxT("KEY_N");
+            config.key_y     = wxT("KEY_M");
             config.allow_keyboard_input = true;
             config.allow_joypad_input   = true;
             break;
 
         case 3:
-            config.up    = wxT("KEY_NUM_8");
-            config.down  = wxT("KEY_NUM_5");
-            config.left  = wxT("KEY_NUM_4");
-            config.right = wxT("KEY_NUM_6");
+            config.key_menu  = wxT("KEY_ESCAPE");
+            config.key_up    = wxT("KEY_NUM_8");
+            config.key_down  = wxT("KEY_NUM_5");
+            config.key_left  = wxT("KEY_NUM_4");
+            config.key_right = wxT("KEY_NUM_6");
+            config.key_a     = wxT("KEY_NUM_1");
+            config.key_b     = wxT("KEY_NUM_2");
+            config.key_x     = wxT("KEY_NUM_7");
+            config.key_y     = wxT("KEY_NUM_9");
             config.allow_keyboard_input = true;
             config.allow_joypad_input   = true;
             break;
@@ -359,6 +379,7 @@ CConfigFrame::LoadConfiguration()
     if (!wxFile::Exists(filename))
     {
         LoadDefaultConfiguration();
+        GetConfig()->language = IDL_ENGLISH;
         return;
     }
 
@@ -367,6 +388,7 @@ CConfigFrame::LoadConfiguration()
     if (!is.IsOk())
     {
         LoadDefaultConfiguration();
+        GetConfig()->language = IDL_ENGLISH;
         return;
     }
 
@@ -408,17 +430,33 @@ CConfigFrame::LoadConfiguration()
         file.Read(wxT("Player") + PlayerIDs[i] + wxT("/AllowJoypadInput"), &bDummy, true);
         m_sphere_config.players[i].allow_joypad_input = bDummy;
 
-        file.Read(wxT("Player") + PlayerIDs[i] + wxT("/Up"), &sDummy, wxEmptyString);
-        m_sphere_config.players[i].up = sDummy;
+        file.Read(wxT("Player") + PlayerIDs[i] + wxT("/KeyMenu"), &sDummy, wxEmptyString);
+        m_sphere_config.players[i].key_menu = sDummy;
 
-        file.Read(wxT("Player") + PlayerIDs[i] + wxT("/Down"), &sDummy, wxEmptyString);
-        m_sphere_config.players[i].down = sDummy;
+        file.Read(wxT("Player") + PlayerIDs[i] + wxT("/KeyUp"), &sDummy, wxEmptyString);
+        m_sphere_config.players[i].key_up = sDummy;
 
-        file.Read(wxT("Player") + PlayerIDs[i] + wxT("/Left"), &sDummy, wxEmptyString);
-        m_sphere_config.players[i].left = sDummy;
+        file.Read(wxT("Player") + PlayerIDs[i] + wxT("/KeyDown"), &sDummy, wxEmptyString);
+        m_sphere_config.players[i].key_down = sDummy;
 
-        file.Read(wxT("Player") + PlayerIDs[i] + wxT("/Right"), &sDummy, wxEmptyString);
-        m_sphere_config.players[i].right = sDummy;
+        file.Read(wxT("Player") + PlayerIDs[i] + wxT("/KeyLeft"), &sDummy, wxEmptyString);
+        m_sphere_config.players[i].key_left = sDummy;
+
+        file.Read(wxT("Player") + PlayerIDs[i] + wxT("/KeyRight"), &sDummy, wxEmptyString);
+        m_sphere_config.players[i].key_right = sDummy;
+
+        file.Read(wxT("Player") + PlayerIDs[i] + wxT("/KeyA"), &sDummy, wxEmptyString);
+        m_sphere_config.players[i].key_a = sDummy;
+
+        file.Read(wxT("Player") + PlayerIDs[i] + wxT("/KeyB"), &sDummy, wxEmptyString);
+        m_sphere_config.players[i].key_b = sDummy;
+
+        file.Read(wxT("Player") + PlayerIDs[i] + wxT("/KeyX"), &sDummy, wxEmptyString);
+        m_sphere_config.players[i].key_x = sDummy;
+
+        file.Read(wxT("Player") + PlayerIDs[i] + wxT("/KeyY"), &sDummy, wxEmptyString);
+        m_sphere_config.players[i].key_y = sDummy;
+
     }
 
 
@@ -453,10 +491,15 @@ CConfigFrame::SaveConfiguration()
     {
         file.Write(wxT("Player") + PlayerIDs[i] + wxT("/AllowKeyboardInput"), m_sphere_config.players[i].allow_keyboard_input);
         file.Write(wxT("Player") + PlayerIDs[i] + wxT("/AllowJoypadInput"),   m_sphere_config.players[i].allow_joypad_input);
-        file.Write(wxT("Player") + PlayerIDs[i] + wxT("/Up"),    m_sphere_config.players[i].up);
-        file.Write(wxT("Player") + PlayerIDs[i] + wxT("/Down"),  m_sphere_config.players[i].down);
-        file.Write(wxT("Player") + PlayerIDs[i] + wxT("/Left"),  m_sphere_config.players[i].left);
-        file.Write(wxT("Player") + PlayerIDs[i] + wxT("/Right"), m_sphere_config.players[i].right);
+        file.Write(wxT("Player") + PlayerIDs[i] + wxT("/KeyMenu"),  m_sphere_config.players[i].key_menu);
+        file.Write(wxT("Player") + PlayerIDs[i] + wxT("/KeyUp"),    m_sphere_config.players[i].key_up);
+        file.Write(wxT("Player") + PlayerIDs[i] + wxT("/KeyDown"),  m_sphere_config.players[i].key_down);
+        file.Write(wxT("Player") + PlayerIDs[i] + wxT("/KeyLeft"),  m_sphere_config.players[i].key_left);
+        file.Write(wxT("Player") + PlayerIDs[i] + wxT("/KeyRight"), m_sphere_config.players[i].key_right);
+        file.Write(wxT("Player") + PlayerIDs[i] + wxT("/KeyA"),     m_sphere_config.players[i].key_a);
+        file.Write(wxT("Player") + PlayerIDs[i] + wxT("/KeyB"),     m_sphere_config.players[i].key_b);
+        file.Write(wxT("Player") + PlayerIDs[i] + wxT("/KeyX"),     m_sphere_config.players[i].key_x);
+        file.Write(wxT("Player") + PlayerIDs[i] + wxT("/KeyY"),     m_sphere_config.players[i].key_y);
     }
 
 
@@ -946,24 +989,37 @@ CConfigInputPage::CConfigInputPage(CConfigFrame* frame, wxWindow* parent)
     m_input_manager        = new CInputManager(this);
 
     m_box                  = new wxStaticBox(this, wxID_ANY, wxT("Input Settings"));
+    wxScrolledWindow *sw   = new wxScrolledWindow(this);
 
     m_player_str           = new wxStaticText(this, wxID_ANY, wxT("Player"));
     m_player_index         = new wxChoice(this,   IDI_PLAYER_INDEX, wxDefaultPosition, wxDefaultSize,  4, PlayerIDs);
-    m_allow_keyboard_input = new wxCheckBox(this, IDI_ALLOW_KEYBOARD_INPUT, wxT("Allow Keyboard Input"));
-    m_allow_joypad_input   = new wxCheckBox(this, IDI_ALLOW_JOYPAD_INPUT,   wxT("Allow Joypad Input"));
 
-    m_up                   = new wxButton(this, IDI_UP,    wxT("Up"),    wxDefaultPosition, wxSize(-1, 25));
-    m_down                 = new wxButton(this, IDI_DOWN,  wxT("Down"),  wxDefaultPosition, wxSize(-1, 25));
-    m_left                 = new wxButton(this, IDI_LEFT,  wxT("Left"),  wxDefaultPosition, wxSize(-1, 25));
-    m_right                = new wxButton(this, IDI_RIGHT, wxT("Right"), wxDefaultPosition, wxSize(-1, 25));
+    m_allow_keyboard_input = new wxCheckBox(sw, IDI_ALLOW_KEYBOARD_INPUT, wxT("Allow Keyboard Input"));
+    m_allow_joypad_input   = new wxCheckBox(sw, IDI_ALLOW_JOYPAD_INPUT,   wxT("Allow Joypad Input"));
 
-    m_up_str               = new wxStaticText(this, wxID_ANY, wxEmptyString);
-    m_down_str             = new wxStaticText(this, wxID_ANY, wxEmptyString);
-    m_left_str             = new wxStaticText(this, wxID_ANY, wxEmptyString);
-    m_right_str            = new wxStaticText(this, wxID_ANY, wxEmptyString);
+    m_menu                 = new wxButton(sw, IDI_MENU,  wxT("Menu"));
+    m_up                   = new wxButton(sw, IDI_UP,    wxT("Up"));
+    m_down                 = new wxButton(sw, IDI_DOWN,  wxT("Down"));
+    m_left                 = new wxButton(sw, IDI_LEFT,  wxT("Left"));
+    m_right                = new wxButton(sw, IDI_RIGHT, wxT("Right"));
+    m_a                    = new wxButton(sw, IDI_A,     wxT("A"));
+    m_b                    = new wxButton(sw, IDI_B,     wxT("B"));
+    m_x                    = new wxButton(sw, IDI_X,     wxT("X"));
+    m_y                    = new wxButton(sw, IDI_Y,     wxT("Y"));
+
+    m_menu_str             = new wxStaticText(sw, wxID_ANY, wxEmptyString);
+    m_up_str               = new wxStaticText(sw, wxID_ANY, wxEmptyString);
+    m_down_str             = new wxStaticText(sw, wxID_ANY, wxEmptyString);
+    m_left_str             = new wxStaticText(sw, wxID_ANY, wxEmptyString);
+    m_right_str            = new wxStaticText(sw, wxID_ANY, wxEmptyString);
+    m_a_str                = new wxStaticText(sw, wxID_ANY, wxEmptyString);
+    m_b_str                = new wxStaticText(sw, wxID_ANY, wxEmptyString);
+    m_x_str                = new wxStaticText(sw, wxID_ANY, wxEmptyString);
+    m_y_str                = new wxStaticText(sw, wxID_ANY, wxEmptyString);
 
     wxStaticBoxSizer* sbox = new wxStaticBoxSizer(m_box, wxVERTICAL);
     wxBoxSizer* vbox       = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer* vbox1      = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer* hbox1      = new wxBoxSizer(wxHORIZONTAL);
     wxBoxSizer* hbox2      = new wxBoxSizer(wxHORIZONTAL);
     wxFlexGridSizer* flex1 = new wxFlexGridSizer(4, 2, 3, 10);
@@ -972,6 +1028,8 @@ CConfigInputPage::CConfigInputPage(CConfigFrame* frame, wxWindow* parent)
     hbox1->Add(10, -1);
     hbox1->Add(m_player_index);
 
+    flex1->Add(m_menu,      1, wxEXPAND);
+    flex1->Add(m_menu_str,  0, wxALIGN_CENTER_VERTICAL);
     flex1->Add(m_up,        1, wxEXPAND);
     flex1->Add(m_up_str,    0, wxALIGN_CENTER_VERTICAL);
     flex1->Add(m_down,      1, wxEXPAND);
@@ -980,28 +1038,47 @@ CConfigInputPage::CConfigInputPage(CConfigFrame* frame, wxWindow* parent)
     flex1->Add(m_left_str,  0, wxALIGN_CENTER_VERTICAL);
     flex1->Add(m_right,     1, wxEXPAND);
     flex1->Add(m_right_str, 0, wxALIGN_CENTER_VERTICAL);
+    flex1->Add(m_a,         1, wxEXPAND);
+    flex1->Add(m_a_str,     0, wxALIGN_CENTER_VERTICAL);
+    flex1->Add(m_b,         1, wxEXPAND);
+    flex1->Add(m_b_str,     0, wxALIGN_CENTER_VERTICAL);
+    flex1->Add(m_x,         1, wxEXPAND);
+    flex1->Add(m_x_str,     0, wxALIGN_CENTER_VERTICAL);
+    flex1->Add(m_y,         1, wxEXPAND);
+    flex1->Add(m_y_str,     0, wxALIGN_CENTER_VERTICAL);
+
+    vbox1->Add(flex1);
+    vbox1->Add(-1, 15);
+    vbox1->Add(m_allow_keyboard_input, 0, wxALIGN_LEFT);
+    vbox1->Add(-1, 5);
+    vbox1->Add(m_allow_joypad_input,   0, wxALIGN_LEFT);
 
     hbox2->Add(10, -1);
-    hbox2->Add(flex1);
+    hbox2->Add(vbox1);
+
+    sw->SetSizer(hbox2);
+    sw->SetScrollbars(10, 10, -1, -1);
+
 
     sbox->Add(-1, 5);
     sbox->Add(hbox1, 0, wxALIGN_CENTER_HORIZONTAL);
     sbox->Add(-1, 10);
-    sbox->Add(hbox2);
-    sbox->Add(-1, 15);
-    sbox->Add(m_allow_keyboard_input, 0, wxALIGN_LEFT | wxLEFT, 10);
-    sbox->Add(-1, 5);
-    sbox->Add(m_allow_joypad_input,   0, wxALIGN_LEFT | wxLEFT, 10);
+    sbox->Add(sw, 1, wxEXPAND);
 
     vbox->Add(sbox, 1, wxEXPAND | wxALL, 10);
 
     SetSizer(vbox);
 
     Connect(IDI_PLAYER_INDEX,  wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler(CConfigInputPage::OnSelectPlayer));
+    Connect(IDI_MENU,          wxEVT_COMMAND_BUTTON_CLICKED,  wxCommandEventHandler(CConfigInputPage::OnClickMenu));
     Connect(IDI_UP,            wxEVT_COMMAND_BUTTON_CLICKED,  wxCommandEventHandler(CConfigInputPage::OnClickUp));
     Connect(IDI_DOWN,          wxEVT_COMMAND_BUTTON_CLICKED,  wxCommandEventHandler(CConfigInputPage::OnClickDown));
     Connect(IDI_LEFT,          wxEVT_COMMAND_BUTTON_CLICKED,  wxCommandEventHandler(CConfigInputPage::OnClickLeft));
     Connect(IDI_RIGHT,         wxEVT_COMMAND_BUTTON_CLICKED,  wxCommandEventHandler(CConfigInputPage::OnClickRight));
+    Connect(IDI_A,             wxEVT_COMMAND_BUTTON_CLICKED,  wxCommandEventHandler(CConfigInputPage::OnClickA));
+    Connect(IDI_B,             wxEVT_COMMAND_BUTTON_CLICKED,  wxCommandEventHandler(CConfigInputPage::OnClickB));
+    Connect(IDI_X,             wxEVT_COMMAND_BUTTON_CLICKED,  wxCommandEventHandler(CConfigInputPage::OnClickX));
+    Connect(IDI_Y,             wxEVT_COMMAND_BUTTON_CLICKED,  wxCommandEventHandler(CConfigInputPage::OnClickY));
     Connect(IDI_ALLOW_KEYBOARD_INPUT, wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(CConfigInputPage::OnClickAllowKeyboardInput));
     Connect(IDI_ALLOW_JOYPAD_INPUT,   wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(CConfigInputPage::OnClickAllowJoypadInput));
 
@@ -1016,9 +1093,17 @@ CConfigInputPage::OnSelectPlayer(wxCommandEvent &event)
 
 //////////////////////////////////////////////////////////////////////////////////////
 void
+CConfigInputPage::OnClickMenu(wxCommandEvent& event)
+{
+    m_input_manager->Start(&m_frame->GetConfig()->players[GetCurrentPlayer()].key_menu, m_menu_str, 10);
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+void
 CConfigInputPage::OnClickUp(wxCommandEvent& event)
 {
-    m_input_manager->Start(&m_frame->GetConfig()->players[GetCurrentPlayer()].up, m_up_str, 10);
+    m_input_manager->Start(&m_frame->GetConfig()->players[GetCurrentPlayer()].key_up, m_up_str, 10);
 
 }
 
@@ -1026,7 +1111,7 @@ CConfigInputPage::OnClickUp(wxCommandEvent& event)
 void
 CConfigInputPage::OnClickDown(wxCommandEvent& event)
 {
-    m_input_manager->Start(&m_frame->GetConfig()->players[GetCurrentPlayer()].down, m_down_str, 10);
+    m_input_manager->Start(&m_frame->GetConfig()->players[GetCurrentPlayer()].key_down, m_down_str, 10);
 
 }
 
@@ -1034,7 +1119,7 @@ CConfigInputPage::OnClickDown(wxCommandEvent& event)
 void
 CConfigInputPage::OnClickLeft(wxCommandEvent& event)
 {
-    m_input_manager->Start(&m_frame->GetConfig()->players[GetCurrentPlayer()].left, m_left_str, 10);
+    m_input_manager->Start(&m_frame->GetConfig()->players[GetCurrentPlayer()].key_left, m_left_str, 10);
 
 }
 
@@ -1042,7 +1127,39 @@ CConfigInputPage::OnClickLeft(wxCommandEvent& event)
 void
 CConfigInputPage::OnClickRight(wxCommandEvent& event)
 {
-    m_input_manager->Start(&m_frame->GetConfig()->players[GetCurrentPlayer()].right, m_right_str, 10);
+    m_input_manager->Start(&m_frame->GetConfig()->players[GetCurrentPlayer()].key_right, m_right_str, 10);
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+void
+CConfigInputPage::OnClickA(wxCommandEvent& event)
+{
+    m_input_manager->Start(&m_frame->GetConfig()->players[GetCurrentPlayer()].key_a, m_a_str, 10);
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+void
+CConfigInputPage::OnClickB(wxCommandEvent& event)
+{
+    m_input_manager->Start(&m_frame->GetConfig()->players[GetCurrentPlayer()].key_b, m_b_str, 10);
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+void
+CConfigInputPage::OnClickX(wxCommandEvent& event)
+{
+    m_input_manager->Start(&m_frame->GetConfig()->players[GetCurrentPlayer()].key_x, m_x_str, 10);
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+void
+CConfigInputPage::OnClickY(wxCommandEvent& event)
+{
+    m_input_manager->Start(&m_frame->GetConfig()->players[GetCurrentPlayer()].key_y, m_y_str, 10);
 
 }
 
@@ -1078,10 +1195,15 @@ CConfigInputPage::GetCurrentPlayer()
 void
 CConfigInputPage::LoadPlayerConfiguration(int player_index)
 {
-    m_up_str   ->SetLabel(m_frame->GetConfig()->players[player_index].up);
-    m_down_str ->SetLabel(m_frame->GetConfig()->players[player_index].down);
-    m_left_str ->SetLabel(m_frame->GetConfig()->players[player_index].left);
-    m_right_str->SetLabel(m_frame->GetConfig()->players[player_index].right);
+    m_menu_str ->SetLabel(m_frame->GetConfig()->players[player_index].key_menu);
+    m_up_str   ->SetLabel(m_frame->GetConfig()->players[player_index].key_up);
+    m_down_str ->SetLabel(m_frame->GetConfig()->players[player_index].key_down);
+    m_left_str ->SetLabel(m_frame->GetConfig()->players[player_index].key_left);
+    m_right_str->SetLabel(m_frame->GetConfig()->players[player_index].key_right);
+    m_a_str    ->SetLabel(m_frame->GetConfig()->players[player_index].key_a);
+    m_b_str    ->SetLabel(m_frame->GetConfig()->players[player_index].key_b);
+    m_x_str    ->SetLabel(m_frame->GetConfig()->players[player_index].key_x);
+    m_y_str    ->SetLabel(m_frame->GetConfig()->players[player_index].key_y);
 
     m_allow_keyboard_input->SetValue(m_frame->GetConfig()->players[player_index].allow_keyboard_input);
     m_allow_joypad_input  ->SetValue(m_frame->GetConfig()->players[player_index].allow_joypad_input);
@@ -1109,10 +1231,15 @@ CConfigInputPage::Translate()
     m_box->SetLabel(_("Input Settings"));
 
     m_player_str->SetLabel(_("Player"));
+    m_menu ->SetLabel(_("Menu"));
     m_up   ->SetLabel(_("Up"));
     m_down ->SetLabel(_("Down"));
     m_left ->SetLabel(_("Left"));
     m_right->SetLabel(_("Right"));
+    m_a    ->SetLabel(_("A"));
+    m_b    ->SetLabel(_("B"));
+    m_x    ->SetLabel(_("X"));
+    m_y    ->SetLabel(_("Y"));
     m_allow_keyboard_input->SetLabel(_("Allow Keyboard Input"));
     m_allow_joypad_input  ->SetLabel(_("Allow Joypad Input"));
 }

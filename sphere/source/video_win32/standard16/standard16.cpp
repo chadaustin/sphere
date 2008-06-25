@@ -1565,45 +1565,55 @@ EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels)
 ////////////////////////////////////////////////////////////////////////////////
 class constant_color
 {
-public:
-    constant_color(RGBA color)
-            : m_color(color)
-    {}
+    public:
 
-    RGBA operator()(int i, int range)
-    {
-        return m_color;
-    }
+        constant_color(RGBA color) : m_color(color) {};
 
-private:
-    RGBA m_color;
+        RGBA operator()(int i, int range)
+        {
+            return m_color;
+        }
+
+    private:
+
+        RGBA m_color;
+
 };
 
 class gradient_color
 {
-public:
-    gradient_color(RGBA color1, RGBA color2)
-            : m_color1(color1)
-            , m_color2(color2)
-    {}
+    public:
 
-    RGBA operator()(int i, int range)
-    {
-        if (range == 0)
+        gradient_color(RGBA color1, RGBA color2)
+                : m_color1(color1)
+                , m_red_range(  color2.red   - color1.red)
+                , m_green_range(color2.green - color1.green)
+                , m_blue_range( color2.blue  - color1.blue)
+                , m_alpha_range(color2.alpha - color1.alpha) {};
+
+        RGBA operator()(int i, int range)
         {
-            return m_color1;
-        }
-        RGBA color;
-        color.red   = (i * m_color1.red   + (range - i) * m_color2.red)   / range;
-        color.green = (i * m_color1.green + (range - i) * m_color2.green) / range;
-        color.blue  = (i * m_color1.blue  + (range - i) * m_color2.blue)  / range;
-        color.alpha = (i * m_color1.alpha + (range - i) * m_color2.alpha) / range;
-        return color;
-    }
+            if (range == 0)
+                return m_color1;
 
-private:
-    RGBA m_color1;
-    RGBA m_color2;
+            RGBA color;
+
+            color.red   = m_color1.red   + (m_red_range   * i / range);
+            color.green = m_color1.green + (m_green_range * i / range);
+            color.blue  = m_color1.blue  + (m_blue_range  * i / range);
+            color.alpha = m_color1.alpha + (m_alpha_range * i / range);
+
+            return color;
+        }
+
+    private:
+
+        RGBA m_color1;
+        int  m_red_range;
+        int  m_green_range;
+        int  m_blue_range;
+        int  m_alpha_range;
+
 };
 
 inline void blend565(word& dest, RGBA source)

@@ -6,6 +6,7 @@
 #include <sstream>
 #include <memory>
 #include <math.h>
+
 #include "script.hpp"
 
 #include "audio.hpp"
@@ -18,6 +19,7 @@
 #include "system.hpp"
 #include "swindowstyle.hpp"
 #include "time.hpp"
+#include "PlayerConfig.hpp"
 
 #include "../common/sphere_version.h"
 #include "../common/configfile.hpp"
@@ -626,15 +628,33 @@ CScript::InitializeSphereConstants()
                       KEY_CONSTANT(KEY_NUM_7)
                       KEY_CONSTANT(KEY_NUM_8)
                       KEY_CONSTANT(KEY_NUM_9)
+
                       KEY_CONSTANT(MOUSE_LEFT)
                       KEY_CONSTANT(MOUSE_MIDDLE)
                       KEY_CONSTANT(MOUSE_RIGHT)
                       KEY_CONSTANT(MOUSE_WHEEL_UP)
                       KEY_CONSTANT(MOUSE_WHEEL_DOWN)
+
                       KEY_CONSTANT(JOYSTICK_AXIS_X)
                       KEY_CONSTANT(JOYSTICK_AXIS_Y)
                       KEY_CONSTANT(JOYSTICK_AXIS_Z)
                       KEY_CONSTANT(JOYSTICK_AXIS_R)
+
+                      KEY_CONSTANT(PLAYER_1)
+                      KEY_CONSTANT(PLAYER_2)
+                      KEY_CONSTANT(PLAYER_3)
+                      KEY_CONSTANT(PLAYER_4)
+
+                      KEY_CONSTANT(PLAYER_KEY_MENU)
+                      KEY_CONSTANT(PLAYER_KEY_UP)
+                      KEY_CONSTANT(PLAYER_KEY_DOWN)
+                      KEY_CONSTANT(PLAYER_KEY_LEFT)
+                      KEY_CONSTANT(PLAYER_KEY_RIGHT)
+                      KEY_CONSTANT(PLAYER_KEY_A)
+                      KEY_CONSTANT(PLAYER_KEY_B)
+                      KEY_CONSTANT(PLAYER_KEY_X)
+                      KEY_CONSTANT(PLAYER_KEY_Y)
+
 #undef KEY_CONSTANT
 
 #define MAP_ENGINE_CONSTANT(c) { #c, CMapEngine:: c },
@@ -2577,6 +2597,44 @@ begin_func(GetKeyString, 2)
 arg_int(key);
 arg_bool(shift);
 return_str(GetKeyString(key, shift));
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - checks if the given player key has been pressed.
+      Returns true if 'key' is pressed....
+*/
+begin_func(GetPlayerKey, 2)
+arg_int(player);
+arg_int(key);
+
+__PLAYERCONFIG__* pc = GetPlayerConfig(player);
+
+if (!pc)
+{
+    JS_ReportError(cx, "GetPlayerKey() failed: Invalid player");
+    return JS_FALSE;
+}
+
+switch (key)
+{
+    case PLAYER_KEY_MENU:  return_int(pc->key_menu);  break;
+    case PLAYER_KEY_UP:    return_int(pc->key_up);    break;
+    case PLAYER_KEY_DOWN:  return_int(pc->key_down);  break;
+    case PLAYER_KEY_LEFT:  return_int(pc->key_left);  break;
+    case PLAYER_KEY_RIGHT: return_int(pc->key_right); break;
+    case PLAYER_KEY_A:     return_int(pc->key_a);     break;
+    case PLAYER_KEY_B:     return_int(pc->key_b);     break;
+    case PLAYER_KEY_X:     return_int(pc->key_x);     break;
+    case PLAYER_KEY_Y:     return_int(pc->key_y);     break;
+
+    default:
+    {
+        JS_ReportError(cx, "GetPlayerKey() failed: Invalid key");
+        return JS_FALSE;
+    }
+}
+
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////

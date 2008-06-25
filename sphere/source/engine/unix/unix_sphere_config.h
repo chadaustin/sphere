@@ -12,10 +12,15 @@ enum
 
 struct PLAYERCONFIG
 {
+    std::string key_menu_str;
     std::string key_up_str;
     std::string key_down_str;
     std::string key_left_str;
     std::string key_right_str;
+    std::string key_a_str;
+    std::string key_b_str;
+    std::string key_x_str;
+    std::string key_y_str;
 
     bool keyboard_input_allowed;
     bool joypad_input_allowed;

@@ -68,10 +68,16 @@ struct DRIVERINFO
 
 struct PLAYERCONFIG
 {
-    wxString up;
-    wxString down;
-    wxString left;
-    wxString right;
+    wxString key_menu;
+    wxString key_up;
+    wxString key_down;
+    wxString key_left;
+    wxString key_right;
+    wxString key_a;
+    wxString key_b;
+    wxString key_x;
+    wxString key_y;
+
     bool     allow_keyboard_input;
     bool     allow_joypad_input;
 };
@@ -163,10 +169,15 @@ enum
     IDA_DRIVER,
 
     IDI_PLAYER_INDEX,
+    IDI_MENU,
     IDI_UP,
     IDI_DOWN,
     IDI_LEFT,
     IDI_RIGHT,
+    IDI_A,
+    IDI_B,
+    IDI_X,
+    IDI_Y,
     IDI_ALLOW_KEYBOARD_INPUT,
     IDI_ALLOW_JOYPAD_INPUT,
     IDI_INPUT_MANAGER,
@@ -369,10 +380,15 @@ class CConfigInputPage : public wxPanel
         CConfigInputPage(CConfigFrame* frame, wxWindow* parent);
 
         void OnSelectPlayer(wxCommandEvent& event);
+        void OnClickMenu(wxCommandEvent& event);
         void OnClickUp(wxCommandEvent& event);
         void OnClickDown(wxCommandEvent& event);
         void OnClickLeft(wxCommandEvent& event);
         void OnClickRight(wxCommandEvent& event);
+        void OnClickA(wxCommandEvent& event);
+        void OnClickB(wxCommandEvent& event);
+        void OnClickX(wxCommandEvent& event);
+        void OnClickY(wxCommandEvent& event);
         void OnClickAllowKeyboardInput(wxCommandEvent& event);
         void OnClickAllowJoypadInput(wxCommandEvent& event);
 
@@ -390,14 +406,24 @@ class CConfigInputPage : public wxPanel
 
         wxStaticText*  m_player_str;
         wxChoice*      m_player_index;
+        wxButton*      m_menu;
         wxButton*      m_up;
         wxButton*      m_down;
         wxButton*      m_left;
         wxButton*      m_right;
+        wxButton*      m_a;
+        wxButton*      m_b;
+        wxButton*      m_x;
+        wxButton*      m_y;
+        wxStaticText*  m_menu_str;
         wxStaticText*  m_up_str;
         wxStaticText*  m_down_str;
         wxStaticText*  m_left_str;
         wxStaticText*  m_right_str;
+        wxStaticText*  m_a_str;
+        wxStaticText*  m_b_str;
+        wxStaticText*  m_x_str;
+        wxStaticText*  m_y_str;
         wxCheckBox*    m_allow_keyboard_input;
         wxCheckBox*    m_allow_joypad_input;
 

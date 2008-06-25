@@ -174,7 +174,7 @@ namespace primitives
             {
                 for (int iy = y1; iy >= y2; iy--)
                 {
-                    renderer(surface[(iy * pitch) + x1], getcolor(iy - o_y2, o_y1 - o_y2));
+                    renderer(surface[(iy * pitch) + x1], getcolor(o_y1 - iy, o_y1 - o_y2));
                 }
             }
 
@@ -198,7 +198,7 @@ namespace primitives
             {
                 for (int ix = x1; ix >= x2; ix--)
                 {
-                    renderer(surface[(y1 * pitch) + ix], getcolor(ix - o_x2, o_x1 - o_x2));
+                    renderer(surface[(y1 * pitch) + ix], getcolor(o_x1 - ix, o_x1 - o_x2));
                 }
             }
 
@@ -241,7 +241,7 @@ namespace primitives
                     float cy = (float) y1;
                     for (int ix = x1; ix <= x2; ix++)
                     {
-                        renderer(surface[((int)(cy + 0.5) * pitch) + ix], getcolor(o_x2 - ix, o_x2 - o_x1));
+                        renderer(surface[((int)(cy + 0.5) * pitch) + ix], getcolor(ix - o_x1, o_x2 - o_x1));
                         cy += slope;
                     }
                 }
@@ -250,7 +250,7 @@ namespace primitives
                     float cy = (float) y1;
                     for (int ix = x1; ix >= x2; ix--)
                     {
-                        renderer(surface[((int)(cy + 0.5) * pitch) + ix], getcolor(ix - o_x2, o_x1 - o_x2));
+                        renderer(surface[((int)(cy + 0.5) * pitch) + ix], getcolor(o_x1 - ix, o_x1 - o_x2));
                         cy -= slope;
                     }
                 }
@@ -265,7 +265,7 @@ namespace primitives
                     float cx = (float) x1;
                     for (int iy = y1; iy <= y2; iy++)
                     {
-                        renderer(surface[(iy * pitch) + (int)(cx + 0.5)], getcolor(o_y1 - iy, o_y2 - o_y1));
+                        renderer(surface[(iy * pitch) + (int)(cx + 0.5)], getcolor(iy - o_y1, o_y2 - o_y1));
                         cx += slope_delta;
                     }
                 }
@@ -274,7 +274,7 @@ namespace primitives
                     float cx = (float) x1;
                     for (int iy = y1; iy >= y2; iy--)
                     {
-                        renderer(surface[(iy * pitch) + (int)(cx + 0.5)], getcolor(iy - o_y2, o_y1 - o_y2));
+                        renderer(surface[(iy * pitch) + (int)(cx + 0.5)], getcolor(o_y1 - iy, o_y1 - o_y2));
                         cx -= slope_delta;
                     }
                 }

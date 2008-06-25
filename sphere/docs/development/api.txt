@@ -268,6 +268,25 @@ log_object.endBlock()
   *** input ***
 
 
+    *** player input ***
+    GetPlayerKey(player, player_key_constant)
+      - returns the key constant associated with the configurable player key of 'player'.
+        Allowed player values are 0 - 3 or:
+          PLAYER_1
+          PLAYER_2
+          PLAYER_3
+          PLAYER_4
+        Allowed player_key_constant values are:
+          PLAYER_KEY_MENU
+          PLAYER_KEY_UP
+          PLAYER_KEY_DOWN
+          PLAYER_KEY_LEFT
+          PLAYER_KEY_RIGHT
+          PLAYER_KEY_A
+          PLAYER_KEY_B
+          PLAYER_KEY_X
+          PLAYER_KEY_Y
+
     *** keyboard ***
     AreKeysLeft()
       - returns true or false depending if the there are keys from the key 
@@ -1003,6 +1022,9 @@ log_object.endBlock()
   LoadSpriteset(filename)
     - returns a spriteset object from 'filename'. If Sphere is unable to open
       the file, the engine will give an error message and exit.
+
+  CreateSpriteset(frame_width, frame_height, num_images, num_directions, num_frames)
+    - returns a blank spriteset object with the given dimensions
 
    spriteset.filename
      - the filename that the spriteset was loaded with

@@ -19,11 +19,15 @@ enum
 
 struct PLAYERCONFIG
 {
-
+    char key_menu_str[25];
     char key_up_str[25];
     char key_down_str[25];
     char key_left_str[25];
     char key_right_str[25];
+    char key_a_str[25];
+    char key_b_str[25];
+    char key_x_str[25];
+    char key_y_str[25];
 
     bool keyboard_input_allowed;
     bool joypad_input_allowed;

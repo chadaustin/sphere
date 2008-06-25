@@ -288,10 +288,6 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
     // we don't need the depth buffer
     glDisable(GL_DEPTH_TEST);
 
-    // enable back face culling, since we never see the back faces
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-
     // set the clear color
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -691,14 +687,14 @@ EXPORT(void) BlitImage(IMAGE image, int x, int y)
     glTexCoord2f(0.0f, 0.0f);
     glVertex2i(x, y);
 
-    glTexCoord2f(0.0f, image->tex_height);
-    glVertex2i(x, y + image->height);
+    glTexCoord2f(image->tex_width, 0.0f);
+    glVertex2i(x + image->width, y);
 
     glTexCoord2f(image->tex_width, image->tex_height);
     glVertex2i(x + image->width, y + image->height);
 
-    glTexCoord2f(image->tex_width, 0.0f);
-    glVertex2i(x + image->width, y);
+    glTexCoord2f(0.0f, image->tex_height);
+    glVertex2i(x, y + image->height);
 
     glEnd();
 
@@ -724,14 +720,14 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
     glTexCoord2f(0.0f, 0.0f);
     glVertex2i(x, y);
 
-    glTexCoord2f(0.0f, image->tex_height);
-    glVertex2i(x, y + image->height);
+    glTexCoord2f(image->tex_width, 0.0f);
+    glVertex2i(x + image->width, y);
 
     glTexCoord2f(image->tex_width, image->tex_height);
     glVertex2i(x + image->width, y + image->height);
 
-    glTexCoord2f(image->tex_width, 0.0f);
-    glVertex2i(x + image->width, y);
+    glTexCoord2f(0.0f, image->tex_height);
+    glVertex2i(x, y + image->height);
 
     glEnd();
 
@@ -750,21 +746,32 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, image->texture);
+
+    int cx = (x[0] + x[1] + x[2] + x[3]) / 4;
+    int cy = (y[0] + y[1] + y[2] + y[3]) / 4;
+
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-    glBegin(GL_POLYGON);
+    glBegin(GL_TRIANGLE_FAN);
 
-    glTexCoord2f(0.0f, 0.0f);
+    // center
+    glTexCoord2f(image->tex_width / 2, image->tex_height / 2);
+    glVertex2i(cx, cy);
+
+    glTexCoord2f(0, 0);
     glVertex2i(x[0], y[0]);
 
-    glTexCoord2f(0.0f, image->tex_height);
-    glVertex2i(x[3], y[3] + 1);
+    glTexCoord2f(image->tex_width, 0);
+    glVertex2i(x[1], y[1]);
 
     glTexCoord2f(image->tex_width, image->tex_height);
-    glVertex2i(x[2] + 1, y[2] + 1);
+    glVertex2i(x[2], y[2]);
 
-    glTexCoord2f(image->tex_width, 0.0f);
-    glVertex2i(x[1] + 1, y[1]);
+    glTexCoord2f(0, image->tex_height);
+    glVertex2i(x[3], y[3]);
+
+    glTexCoord2f(0, 0);
+    glVertex2i(x[0], y[0]);
 
     glEnd();
 
@@ -783,21 +790,32 @@ EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, image->texture);
+
+    int cx = (x[0] + x[1] + x[2] + x[3]) / 4;
+    int cy = (y[0] + y[1] + y[2] + y[3]) / 4;
+
     glColor4ub(mask.red, mask.green, mask.blue, mask.alpha);
 
-    glBegin(GL_POLYGON);
+    glBegin(GL_TRIANGLE_FAN);
 
-    glTexCoord2f(0.0f, 0.0f);
+    // center
+    glTexCoord2f(image->tex_width / 2, image->tex_height / 2);
+    glVertex2i(cx, cy);
+
+    glTexCoord2f(0, 0);
     glVertex2i(x[0], y[0]);
 
-    glTexCoord2f(0.0f, image->tex_height);
-    glVertex2i(x[3], y[3] + 1);
+    glTexCoord2f(image->tex_width, 0);
+    glVertex2i(x[1], y[1]);
 
     glTexCoord2f(image->tex_width, image->tex_height);
-    glVertex2i(x[2] + 1, y[2] + 1);
+    glVertex2i(x[2], y[2]);
 
-    glTexCoord2f(image->tex_width, 0.0f);
-    glVertex2i(x[1] + 1, y[1]);
+    glTexCoord2f(0, image->tex_height);
+    glVertex2i(x[3], y[3]);
+
+    glTexCoord2f(0, 0);
+    glVertex2i(x[0], y[0]);
 
     glEnd();
 
@@ -1050,8 +1068,8 @@ EXPORT(void) DrawTriangle(int x[3], int y[3], RGBA color)
     glBegin(GL_TRIANGLES);
 
     glVertex2i(x[0], y[0]);
-    glVertex2i(x[2], y[2]);
     glVertex2i(x[1], y[1]);
+    glVertex2i(x[2], y[2]);
 
     glEnd();
 }
@@ -1064,11 +1082,11 @@ EXPORT(void) DrawGradientTriangle(int x[3], int y[3], RGBA colors[3])
     glColor4ubv((GLubyte*)(colors + 0));
     glVertex2i(x[0], y[0]);
 
-    glColor4ubv((GLubyte*)(colors + 2));
-    glVertex2i(x[2], y[2]);
-
     glColor4ubv((GLubyte*)(colors + 1));
     glVertex2i(x[1], y[1]);
+
+    glColor4ubv((GLubyte*)(colors + 2));
+    glVertex2i(x[2], y[2]);
 
     glEnd();
 }
@@ -1184,9 +1202,9 @@ EXPORT(void) DrawRectangle(int x, int y, int w, int h, RGBA color)
     glBegin(GL_QUADS);
 
     glVertex2i(x,     y);
-    glVertex2i(x,     y + h);
-    glVertex2i(x + w, y + h);
     glVertex2i(x + w, y);
+    glVertex2i(x + w, y + h);
+    glVertex2i(x,     y + h);
 
     glEnd();
 }
@@ -1199,14 +1217,14 @@ EXPORT(void) DrawGradientRectangle(int x, int y, int w, int h, RGBA colors[4])
     glColor4ubv((GLubyte*)(colors + 0));
     glVertex2i(x, y);
 
-    glColor4ubv((GLubyte*)(colors + 3));
-    glVertex2i(x, y + h);
+    glColor4ubv((GLubyte*)(colors + 1));
+    glVertex2i(x + w, y);
 
     glColor4ubv((GLubyte*)(colors + 2));
     glVertex2i(x + w, y + h);
 
-    glColor4ubv((GLubyte*)(colors + 1));
-    glVertex2i(x + w, y);
+    glColor4ubv((GLubyte*)(colors + 3));
+    glVertex2i(x, y + h);
 
     glEnd();
 }
