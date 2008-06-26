@@ -97,10 +97,10 @@ void LoadConfiguration(std::string sphere_dir)
     CConfigFile file;
     file.Load((sphere_dir + "/system/video/sdl_gl.cfg").c_str());
 
-    Config.fullscreen       = file.ReadBool("sdl_gl", "Fullscreen",       true);
-    Config.vsync            = file.ReadBool("sdl_gl", "VSync",            true);
-    Config.scale            = file.ReadBool("sdl_gl", "Scale",            true);
-    Config.bilinear_filter  = file.ReadBool("sdl_gl", "BilinearFilter",   true);
+    Config.fullscreen       = file.ReadBool("sdl_gl", "Fullscreen",       false);
+    Config.vsync            = file.ReadBool("sdl_gl", "VSync",            false);
+    Config.scale            = file.ReadBool("sdl_gl", "Scale",            false);
+    Config.bilinear_filter  = file.ReadBool("sdl_gl", "BilinearFilter",   false);
     Config.bitdepth         = file.ReadInt ("sdl_gl", "BitDepth",           32);
 
 }

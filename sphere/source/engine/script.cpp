@@ -6644,8 +6644,7 @@ CScript::CreateSocketObject(JSContext* cx, NSOCKET socket)
     // assign methods to the object
     static JSFunctionSpec fs[] =
         {
-            { "isConnected",        ssSocketIsConnected,        0, 0, 0
-            },
+            { "isConnected",        ssSocketIsConnected,        0, 0, 0 },
             { "getPendingReadSize", ssSocketGetPendingReadSize, 0, 0, 0 },
             { "read",               ssSocketRead,               1, 0, 0 },
             { "write",              ssSocketWrite,              1, 0, 0 },
@@ -6820,8 +6819,7 @@ CScript::CreateLogObject(JSContext* cx, CLog* log)
     // assign methods to the object
     static JSFunctionSpec fs[] =
         {
-            { "write",      ssLogWrite,      2, 0, 0
-            },
+            { "write",      ssLogWrite,      2, 0, 0 },
             { "beginBlock", ssLogBeginBlock, 1, 0, 0 },
             { "endBlock",   ssLogEndBlock,   0, 0, 0 },
             { 0, 0, 0, 0, 0 },
@@ -6906,8 +6904,7 @@ CScript::CreateColorObject(JSContext* cx, RGBA color)
     // assign properties
     static JSPropertySpec ps[] =
         {
-            { "red",   0, JSPROP_PERMANENT, ssColorGetProperty, ssColorSetProperty
-            },
+            { "red",   0, JSPROP_PERMANENT, ssColorGetProperty, ssColorSetProperty },
             { "green", 1, JSPROP_PERMANENT, ssColorGetProperty, ssColorSetProperty },
             { "blue",  2, JSPROP_PERMANENT, ssColorGetProperty, ssColorSetProperty },
             { "alpha", 3, JSPROP_PERMANENT, ssColorGetProperty, ssColorSetProperty },
@@ -7040,8 +7037,7 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
     // assign methods to the object
     static JSFunctionSpec fs[] =
         {
-            { "save",        ssSpritesetSave,    1,
-            },
+            { "save",        ssSpritesetSave,    1, },
             { "clone",       ssSpritesetClone,   0, },
             { 0, 0, 0, 0, 0 },
         };
@@ -7636,7 +7632,7 @@ end_method()
 */
 begin_method(SS_SOUND, ssSoundGetPosition, 0)
 
-if (object->sound)
+if (object->sound && object->sound->isSeekable())
     return_int(object->sound->getPosition());
 
 #if defined(WIN32) && defined(USE_MIDI)
@@ -8183,14 +8179,11 @@ CScript::CreateWindowStyleObject(JSContext* cx, SWINDOWSTYLE* ws, bool destroy)
     // assign methods to the object
     static JSFunctionSpec fs[] =
         {
-            { "drawWindow", ssWindowStyleDrawWindow, 4, 0, 0
-            },
-            { "setColorMask", ssWindowStyleSetColorMask, 1, 0, 0 },
-
-            { "getColorMask", ssWindowStyleGetColorMask, 0, 0, 0 },
-            { "clone", ssWindowStyleClone, 0, 0, 0 },
-
-            { "save", ssWindowStyleSave, 1, 0, 0 },
+            { "drawWindow",   ssWindowStyleDrawWindow,      4, 0, 0 },
+            { "setColorMask", ssWindowStyleSetColorMask,    1, 0, 0 },
+            { "getColorMask", ssWindowStyleGetColorMask,    0, 0, 0 },
+            { "clone",        ssWindowStyleClone,           0, 0, 0 },
+            { "save",         ssWindowStyleSave,            1, 0, 0 },
             { 0, 0, 0, 0, 0 },
         };
     JS_DefineFunctions(cx, object, fs);
@@ -8303,19 +8296,15 @@ CScript::CreateImageObject(JSContext* cx, IMAGE image, bool destroy)
     // assign methods to the object
     static JSFunctionSpec fs[] =
         {
-            { "blit",              ssImageBlit,              2, 0, 0
-            },
+            { "blit",              ssImageBlit,              2, 0, 0 },
             { "blitMask",          ssImageBlitMask,          3, 0, 0 },
             { "rotateBlit",        ssImageRotateBlit,        3, 0, 0 },
             { "rotateBlitMask",    ssImageRotateBlitMask,    4, 0, 0 },
-
             { "zoomBlit",          ssImageZoomBlit,          3, 0, 0 },
             { "zoomBlitMask",      ssImageZoomBlitMask,      4, 0, 0 },
-
             { "transformBlit",     ssImageTransformBlit,     8, 0, 0 },
             { "transformBlitMask", ssImageTransformBlitMask, 9, 0, 0 },
             { "createSurface",     ssImageCreateSurface,     0, 0, 0 },
-
             { "clone",             ssImageClone,             0, 0, 0 },
             { 0, 0, 0, 0, 0 },
         };
@@ -9984,8 +9973,7 @@ CScript::CreateAnimationObject(JSContext* cx, IAnimation* animation)
     // assign the methods to the object
     static JSFunctionSpec fs[] =
         {
-            { "getNumFrames",    ssAnimationGetNumFrames,    0, 0, 0
-            },
+            { "getNumFrames",    ssAnimationGetNumFrames,    0, 0, 0 },
             { "getDelay",        ssAnimationGetDelay,        0, 0, 0 },
             { "readNextFrame",   ssAnimationReadNextFrame,   0, 0, 0 },
             { "drawFrame",       ssAnimationDrawFrame,       2, 0, 0 },
@@ -10103,15 +10091,12 @@ CScript::CreateFileObject(JSContext* cx, CConfigFile* file)
     // assign the methods to the object
     static JSFunctionSpec fs[] =
         {
-            { "write", ssFileWrite, 2, 0, 0
-            },
-            { "read",  ssFileRead,  2, 0, 0 },
-            { "flush", ssFileFlush, 0, 0, 0 },
-            { "close", ssFileClose, 0, 0, 0 },
-
-            { "getNumKeys", ssFileGetNumKeys, 0, 0, 0 },
-            { "getKey", ssFileGetKey, 1, 0, 0 },
-
+            { "write",      ssFileWrite,        2, 0, 0 },
+            { "read",       ssFileRead,         2, 0, 0 },
+            { "flush",      ssFileFlush,        0, 0, 0 },
+            { "close",      ssFileClose,        0, 0, 0 },
+            { "getNumKeys", ssFileGetNumKeys,   0, 0, 0 },
+            { "getKey",     ssFileGetKey,       1, 0, 0 },
             { 0, 0, 0, 0, 0 },
         };
     JS_DefineFunctions(cx, object, fs);
@@ -10241,8 +10226,7 @@ CScript::CreateRawFileObject(JSContext* cx, IFile* file, bool writeable)
     // add the methods into the object
     static JSFunctionSpec fs[] =
         {
-            { "setPosition", ssRawFileSetPosition, 1, 0, 0
-            },
+            { "setPosition", ssRawFileSetPosition, 1, 0, 0 },
             { "getPosition", ssRawFileGetPosition, 0, 0, 0 },
             { "getSize",     ssRawFileGetSize,     0, 0, 0 },
             { "read",        ssRawFileRead,        1, 0, 0 },
@@ -10388,10 +10372,8 @@ CScript::CreateByteArrayObject(JSContext* cx, int size, const void* data)
     // add the methods into the object
     static JSFunctionSpec fs[] =
         {
-            { "concat",       ssByteArrayConcat,    1, 0, 0
-            },
+            { "concat",       ssByteArrayConcat,    1, 0, 0 },
             { "slice",        ssByteArraySlice,     1, 0, 0 },
-
             { 0, 0, 0, 0, 0 },
         };
     JS_DefineFunctions(cx, object, fs);
@@ -10583,10 +10565,8 @@ CScript::CreateTilesetObject(JSContext* cx, const sTileset& tileset)
     static JSFunctionSpec fs[] =
         {
 
-            { "appendTiles", ssTilesetAppendTiles, 1, 0, 0
-            },
-
-            { "save", ssTilesetSave, 1, 0, 0 },
+            { "appendTiles", ssTilesetAppendTiles,  1, 0, 0 },
+            { "save",        ssTilesetSave,         1, 0, 0 },
             { 0, 0, 0, 0, 0 },
         };
     JS_DefineFunctions(cx, object, fs);

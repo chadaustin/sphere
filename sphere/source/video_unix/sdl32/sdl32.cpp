@@ -161,9 +161,9 @@ void LoadConfiguration(std::string sphere_dir)
     CConfigFile file;
     file.Load((sphere_dir + "/system/video/sdl32.cfg").c_str());
 
-    Config.fullscreen = file.ReadBool("sdl32", "Fullscreen", true);
-    Config.vsync      = file.ReadBool("sdl32", "VSync",      true);
-    Config.scale      = file.ReadBool("sdl32", "Scale",      true);
+    Config.fullscreen = file.ReadBool("sdl32", "Fullscreen", false);
+    Config.vsync      = file.ReadBool("sdl32", "VSync",      false);
+    Config.scale      = file.ReadBool("sdl32", "Scale",      false);
     Config.filter     = file.ReadInt ("sdl32", "Filter",        0);
 
     int vexpand       = file.ReadInt ("sdl32", "VExpand",       0);

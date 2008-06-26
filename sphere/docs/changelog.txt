@@ -1,5 +1,10 @@
 YYYY.MM.DD
 
+2008.06.26
+  - Added Rhuan's network code to the Mac and Linux subsystems.
+  - sound.getPosition() will no longer lock up the engine if
+    the sound is not seekable.
+
 2008.06.25
   - Extended the player input configuration by adding
     new configurable keys: Menu, A, B, X and Y.

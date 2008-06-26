@@ -9,6 +9,9 @@
 #include <cstring>
 #include <cstdlib>
 #include <iostream>
+#include <sys/poll.h>
+
+#define POLLSTANDARD (POLLIN|POLLPRI|POLLOUT|POLLRDNORM|POLLRDBAND|POLLWRBAND|POLLERR|POLLHUP|POLLNVAL)
 
 const int MAX_LINE = 1024;
 
@@ -44,7 +47,6 @@ NSOCKET OpenAddress (const char* name, int port) {
   struct sockaddr_in server;
   NSOCKET sock = new NSOCKETimp;
   int err;
-
   if (sock == NULL) {
     return NULL;
   }
@@ -57,22 +59,22 @@ NSOCKET OpenAddress (const char* name, int port) {
     delete sock;
     return NULL;
   }
+
+  fcntl(sock->socket, F_SETFL, O_NONBLOCK);
+
   host = gethostbyname(name);
   server.sin_family = AF_INET;
   server.sin_port = htons(port);
   server.sin_addr = *(struct in_addr*)host->h_addr;
+
+
   err = connect(sock->socket, (struct sockaddr*)&server, sizeof(server));
-  if (err < 0) {
-    std::cerr << "failed to connect to " << name << ":" << port << std::endl;
-    delete sock;
-    return NULL;
-  }
-  /* fcntl(sock->socket, F_SETFL, fcntl(sock->socket, F_GETFL, 0) | O_NONBLOCK); */
-  sock->is_connected = true;
+
   return sock;
 }
 
-NSOCKET ListenOnPort (int port) {
+NSOCKET ListenOnPort (int port)
+{
   struct sockaddr_in address;
   NSOCKET sock = new NSOCKETimp;
 
@@ -83,7 +85,7 @@ NSOCKET ListenOnPort (int port) {
   std::cerr << "attempting to listen on port" << port << std::endl;
   sock->socket = socket(PF_INET, SOCK_STREAM, 0);
   if (sock->socket < 0) {
-	std::cerr << "failed to create a socket" << std::endl;
+    std::cerr << "failed to create a socket" << std::endl;
     delete sock;
     return NULL;
   }
@@ -94,55 +96,71 @@ NSOCKET ListenOnPort (int port) {
   address.sin_addr.s_addr = htonl(INADDR_ANY);
   std::cerr << "attempting to bind to port" << std::endl;
   if (bind(sock->socket, (struct sockaddr*)&address, sizeof(address)) < 0) {
-	 std::cerr << "failed to bind to socket" << std::endl;
+     std::cerr << "failed to bind to socket" << std::endl;
     delete sock;
     return NULL;
   }
+
+  fcntl(sock->socket, F_SETFL, O_NONBLOCK);
+
   std::cerr << "attempting to listen on socket" << std::endl;
   if (listen(sock->socket, 16) < 0) { /* not sure about an optimum backlog value */
-	 std::cerr << "failed to listen on socket" << std::endl;
+     std::cerr << "failed to listen on socket" << std::endl;
     delete sock;
     return NULL;
   }
+
   std::cerr << "socket is listening!" << std::endl;
   sock->is_listening = true;
   return sock;
 }
 
-void CloseSocket (NSOCKET socket) {
+void CloseSocket (NSOCKET socket)
+{
+  shutdown(socket->socket, SHUT_RDWR);
   close(socket->socket);
   delete socket;
 }
 
-bool IsConnected (NSOCKET socket) {
+bool IsConnected (NSOCKET socket)
+{
   struct sockaddr_in client;
+  struct pollfd      sock_evs = {socket->socket, POLLSTANDARD, 0};
   size_t size;
   int connection;
 
-  std::cerr << "testing for connection" << std::endl;
-  if (socket->is_connected)
-    return true;
-  if (socket->is_listening) {
-    connection = accept(socket->socket, (struct sockaddr*)&client, (socklen_t*)&size);
-	 std::cerr << "accepted a connection" << std::endl;
-    if (connection >= 0) {
-      close(socket->socket);
-      socket->socket = connection;
-      /* fcntl(socket->socket, F_SETFL, fcntl(sock->socket, F_GETFL, 0) | O_NONBLOCK); */
-      socket->is_connected = true;
-		std::cerr << "and...connected" << std::endl;
-      return true;
-    }
-    return false;
-  } else {
-    if (GetPendingReadSize(socket) < 0)
-      return false;
+  connection = poll (&sock_evs,1,0);
+
+  if (connection > 0)
+  {
+    socket->is_connected = true;
+  }
+
+  if (socket->is_connected && ((sock_evs.revents & (POLLERR | POLLHUP)) == 0) && (socket->is_listening == false))
+  {
     return true;
   }
+  else if (socket->is_listening)
+  {
+    connection = accept(socket->socket, (struct sockaddr*)&client, &size);
+
+    std::cerr << "accepted a connection" << std::endl;
+    if (connection >= 0)
+    {
+      close(socket->socket);
+      socket->socket = connection;
+      socket->is_connected = true;
+      socket->is_listening = false;
+      std::cerr << "and...connected" << std::endl;
+      return true;
+    }
+  }
+  socket->is_connected = false;
   return false;
 }
 
-int GetPendingReadSize (NSOCKET socket) {
+int GetPendingReadSize (NSOCKET socket)
+{
   char buffer[MAX_LINE];
   int num_bytes;
 
@@ -167,20 +185,21 @@ int SocketRead (NSOCKET socket, void* buffer, int size) {
   if (!IsConnected(socket))
     return -1;
   while (((num_read = read(socket->socket, read_ptr,
-	 size - total_read)) != 0) && (total_read < size)) {
+     size - total_read)) != 0) && (total_read < size)) {
     if (num_read == -1) {
-	   if (errno == EWOULDBLOCK)
-		  return 0;
-		else
-		  return -1;
-	 }
-	 total_read += num_read;
-	 read_ptr += num_read;
+       if (errno == EWOULDBLOCK)
+          return 0;
+        else
+          return -1;
+     }
+     total_read += num_read;
+     read_ptr += num_read;
   }
   return total_read;
 }
 
-void SocketWrite (NSOCKET socket, void* buffer, int size) {
+void SocketWrite (NSOCKET socket, void* buffer, int size)
+{
   int num_written;
 
   if (IsConnected(socket))
