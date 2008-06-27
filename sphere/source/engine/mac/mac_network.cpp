@@ -102,7 +102,7 @@ NSOCKET ListenOnPort (int port)
   sock->is_connected = false;
   sock->is_listening = false;
   address.sin_family = AF_INET;
-  address.sin_port = port;
+  address.sin_port = htons(port);
   address.sin_addr.s_addr = htonl(INADDR_ANY);
   std::cerr << "attempting to bind to port" << std::endl;
   if (bind(sock->socket, (struct sockaddr*)&address, sizeof(address)) < 0) {
