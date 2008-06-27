@@ -606,7 +606,7 @@ CConfigVideoPage::CConfigVideoPage(CConfigFrame* frame, wxWindow* parent)
 
     m_box              = new wxStaticBox(this, wxID_ANY, wxT("Video Settings"));
 
-    m_driver_list      = new wxListBox(this,    IDV_DRIVER_LIST);
+    m_driver_list      = new wxListBox(this,    IDV_DRIVER_LIST, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_SINGLE | wxLB_NEEDED_SB);
     m_config_button    = new wxButton(this,     IDV_CONFIG_BUTTON, wxT("Configure Driver"));
     m_info_name        = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
     m_info_author      = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
