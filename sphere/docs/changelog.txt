@@ -1,5 +1,9 @@
 YYYY.MM.DD
 
+2008.06.29
+  - Fixed Linux network code: sockets correctly detect connections,
+    sockets with disconnected peers mark themselves as not connected.
+
 2008.06.26
   - Added Rhuan's network code to the Mac and Linux subsystems.
   - sound.getPosition() will no longer lock up the engine if
