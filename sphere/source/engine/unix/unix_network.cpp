@@ -157,21 +157,6 @@ bool IsConnected (NSOCKET socket) {
   /* check if poll found anything interesting */
   if (connection > 0) {
 
-    /*
-    // VERY helpful debugging stuff: poll flags.
-#define DUMPFLAG(flag, letter) (sock_evs.revents & flag ? letter : '.')
-    static int dumpflagcount = 0;
-    std::cerr << DUMPFLAG(POLLIN, 'i') << DUMPFLAG(POLLPRI, 'p') <<
-      DUMPFLAG(POLLOUT, 'o') << DUMPFLAG(POLLERR, 'e') <<
-      DUMPFLAG(POLLHUP, 'h') << DUMPFLAG(POLLNVAL, 'n') <<
-      '\t' << std::flush;
-    if (++dumpflagcount >= 10) {
-      std::cerr << std::endl;
-      dumpflagcount = 0;
-    }
-#undef DUMPFLAG
-    */
-
     if (sock_evs.revents & POLLOUT && !socket->is_connected) {
       /* client signals ready with POLLOUT */
 
@@ -215,7 +200,7 @@ bool IsConnected (NSOCKET socket) {
 
       char dummy;
       int num_bytes = recv(socket->socket, &dummy, 1, MSG_PEEK);
-      if (num_bytes == 0 || (num_bytes == 1 && errno != EAGAIN)) {
+      if (num_bytes == 0 || (num_bytes == -1 && errno != EAGAIN)) {
         /* socket is now officially closed */
         close(socket->socket);
         socket->is_connected = false;
