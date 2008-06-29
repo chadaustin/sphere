@@ -45,9 +45,9 @@ CConfigFrame::CConfigFrame(const wxString& title)
 
     vbox2->Add(m_notebook, 1, wxEXPAND);
 
-    hbox1->Add(m_ok_button);
-    hbox1->Add(5, -1);
     hbox1->Add(m_cancel_button);
+    hbox1->Add(5, -1);
+    hbox1->Add(m_ok_button);
 
     vbox2->Add(-1, 10);
     vbox2->Add(hbox1, 0, wxALIGN_RIGHT);

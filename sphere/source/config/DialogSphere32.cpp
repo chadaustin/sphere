@@ -102,9 +102,9 @@ CDialogSphere32::CDialogSphere32(wxWindow* parent, const wxString& title, const 
     hbox1->Add(20, -1);
     hbox1->Add(sboxs);
 
-    hbox2->Add(m_ok_button);
-    hbox2->Add(10, -1);
     hbox2->Add(m_cancel_button);
+    hbox2->Add(10, -1);
+    hbox2->Add(m_ok_button);
 
     vbox0->Add(hbox1);
     vbox0->Add(-1, 10);
@@ -112,7 +112,7 @@ CDialogSphere32::CDialogSphere32(wxWindow* parent, const wxString& title, const 
     vbox0->Add(-1, 10);
     vbox0->Add(sline, 1, wxEXPAND);
     vbox0->Add(-1, 10);
-    vbox0->Add(hbox2, 0, wxALIGN_CENTER);
+    vbox0->Add(hbox2, 0, wxALIGN_RIGHT);
 
     vbox->Add(vbox0, 1, wxEXPAND | wxALL, 10);
 
