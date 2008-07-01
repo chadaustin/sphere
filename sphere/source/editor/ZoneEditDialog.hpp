@@ -7,6 +7,9 @@ class CZoneEditDialog : public CDialog
 public:
   CZoneEditDialog(sMap::sZone& zone, int zone_id, sMap* map);
 private:
+  afx_msg void OnSize(UINT type, int cx, int cy);
+  afx_msg void OnSizing(UINT side, LPRECT rect);
+private:
   BOOL OnInitDialog();
   void OnOK();
   afx_msg void OnCheckSyntax();

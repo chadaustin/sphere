@@ -5,6 +5,10 @@
 
 BEGIN_MESSAGE_MAP(CZoneEditDialog, CDialog)
   ON_BN_CLICKED(IDC_CHECK_SYNTAX, OnCheckSyntax)
+
+  ON_WM_SIZE()
+  ON_WM_SIZING()
+
 END_MESSAGE_MAP()
 ////////////////////////////////////////////////////////////////////////////////
 static inline std::string itos(int i)
@@ -21,6 +25,32 @@ CZoneEditDialog::CZoneEditDialog(sMap::sZone& zone, int zone_id, sMap* map)
 , m_ZoneIndex(zone_id)
 , m_Map(map)
 {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+afx_msg void
+CZoneEditDialog::OnSizing(UINT side, LPRECT rect)
+{
+  if (!rect)
+    return;
+
+  if (rect->right - rect->left < 500)
+    rect->right = rect->left + 500;
+  if (rect->bottom - rect->top < 400)
+    rect->bottom = rect->top + 400;
+
+  CDialog::OnSizing(side, rect);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+afx_msg void
+CZoneEditDialog::OnSize(UINT type, int cx, int cy)
+{
+
+  if (GetDlgItem(IDC_SCRIPT))
+    GetDlgItem(IDC_SCRIPT)->MoveWindow(20, 163, cx - 38, cy - 179, TRUE);
+
+  CDialog::OnSize(type, cx, cy);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -51,7 +81,7 @@ CZoneEditDialog::OnInitDialog()
 
   sprintf (string, "%d", m_Zone.y2 - m_Zone.y1);
   SetDlgItemText(IDC_ZONE_HEIGHT, string);
-  
+
   return TRUE;
 }
 
@@ -63,7 +93,7 @@ CZoneEditDialog::OnOK()
   GetDlgItemText(IDC_SCRIPT, script);
   m_Zone.reactivate_in_num_steps = GetDlgItemInt(IDC_STEPS, NULL, FALSE);
   m_Zone.script = script;
-  
+
   m_Zone.layer = SendDlgItemMessage(IDC_LAYER, CB_GETCURSEL);
 
   bool floating_point, percentage;

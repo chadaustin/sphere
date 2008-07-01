@@ -34,10 +34,10 @@ CEntityTriggerDialog::OnSizing(UINT side, LPRECT rect)
   if (!rect)
     return;
 
-  if (rect->right - rect->left < 400)
-    rect->right = rect->left + 400;
-  if (rect->bottom - rect->top < 250)
-    rect->bottom = rect->top + 250;
+  if (rect->right - rect->left < 520)
+    rect->right = rect->left + 520;
+  if (rect->bottom - rect->top < 280)
+    rect->bottom = rect->top + 280;
 
   CDialog::OnSizing(side, rect);
 }
@@ -48,7 +48,7 @@ CEntityTriggerDialog::OnSize(UINT type, int cx, int cy)
 {
 
   if (GetDlgItem(IDC_SCRIPT))
-    GetDlgItem(IDC_SCRIPT)->MoveWindow(11, 70, cx - 24, cy - 81, TRUE);
+    GetDlgItem(IDC_SCRIPT)->MoveWindow(16, 70, cx - 34, cy - 81, TRUE);
 
   CDialog::OnSize(type, cx, cy);
 }

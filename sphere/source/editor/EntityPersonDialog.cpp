@@ -41,8 +41,8 @@ CEntityPersonDialog::OnSizing(UINT side, LPRECT rect)
   if (!rect)
     return;
 
-  if (rect->right - rect->left < 430)
-    rect->right = rect->left + 430;
+  if (rect->right - rect->left < 560)
+    rect->right = rect->left + 560;
   if (rect->bottom - rect->top < 330)
     rect->bottom = rect->top + 330;
 

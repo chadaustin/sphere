@@ -40,8 +40,8 @@ CMapPropertiesDialog::OnSizing(UINT side, LPRECT rect)
   if (!rect)
     return;
 
-  if (rect->right - rect->left < 500)
-    rect->right = rect->left + 500;
+  if (rect->right - rect->left < 660)
+    rect->right = rect->left + 660;
   if (rect->bottom - rect->top < 350)
     rect->bottom = rect->top + 350;
 
