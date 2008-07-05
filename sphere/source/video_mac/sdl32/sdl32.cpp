@@ -175,10 +175,10 @@ void LoadConfiguration(std::string sphere_dir)
     if (hexpand < 0 || hexpand > 1024)
         hexpand = 0;
 
-    Config.border.top    = (int)(hexpand / 2);
-    Config.border.bottom = (int)(hexpand / 2) + (hexpand % 2);
-    Config.border.left   = (int)(vexpand / 2);
-    Config.border.right  = (int)(vexpand / 2) + (vexpand % 2);
+    Config.border.top    = (int)(vexpand / 2);
+    Config.border.bottom = (int)(vexpand / 2) + (vexpand % 2);
+    Config.border.left   = (int)(hexpand / 2);
+    Config.border.right  = (int)(hexpand / 2) + (hexpand % 2);
 
 }
 

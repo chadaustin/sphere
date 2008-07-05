@@ -3,6 +3,8 @@ YYYY.MM.DD
 2008.07.05
   - Fixed the bug, which didn't allow any calls to Sphere functions
     from within a default map exit script if Exit() was called.
+  - Fixed a bug in the resolution expansion configuration of the 
+    software based video drivers.
 
 2008.07.03
   - Fixed the *_gl video drivers to transform images correctly

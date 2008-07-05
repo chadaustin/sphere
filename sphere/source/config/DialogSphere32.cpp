@@ -94,9 +94,9 @@ CDialogSphere32::CDialogSphere32(wxWindow* parent, const wxString& title, const 
     hbox4->Add(5, -1);
     hbox4->Add(m_hexpand_str, 0, wxALIGN_CENTER_VERTICAL);
 
-    sboxs->Add(hbox3);
-    sboxs->Add(-1, 5);
     sboxs->Add(hbox4);
+    sboxs->Add(-1, 5);
+    sboxs->Add(hbox3);
 
     hbox1->Add(vbox1);
     hbox1->Add(20, -1);
