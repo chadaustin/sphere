@@ -15,7 +15,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static const int c_MaxSkipFrames = 10;
+static const int c_MaxSkipFrames = 20;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -326,16 +326,20 @@ CMapEngine::CallDefaultMapScript(int which)
         return false;
     }
 
-    if (m_DefaultMapScripts[which] == NULL
-            || m_DefaultMapScripts[which] == "")
+    if (m_DefaultMapScripts[which] == NULL ||
+        m_DefaultMapScripts[which] == "")
+    {
         return true;
+    }
 
     std::string list[NUM_MAP_SCRIPTS] = {"enter", "exit", "north", "east", "south", "west"};
+
     if (m_Engine->IsScriptBeingUsed(m_DefaultMapScripts[which]))
     {
         m_ErrorMessage = "Default " + list[which] + " map script already running!";
         return false;
     }
+
     if (!m_Engine->IsScriptBeingUsed(m_DefaultMapScripts[which]))
     {
         std::string error;
@@ -346,6 +350,7 @@ CMapEngine::CallDefaultMapScript(int which)
             return false;
         }
     }
+
     return true;
 }
 

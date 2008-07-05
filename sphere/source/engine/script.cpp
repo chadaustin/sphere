@@ -227,9 +227,19 @@ CScriptCode::Execute(bool& should_exit)
     // default error message if the error reporter isn't called
     script_object->m_Error = "Unspecified Error";
 
+    bool do_exit = false;
+    if (script_object->m_ShouldExit)
+    {
+        bool do_exit = true;
+        script_object->m_ShouldExit = false;
+    }
+
     jsval rval;
     JSBool result = JS_ExecuteScript(m_Context, m_Global, m_Script, &rval);
     bool succeeded = (result == JS_TRUE);
+
+    if (do_exit)
+        script_object->m_ShouldExit = true;
 
     // if there is no error message, we succeeded
     if (script_object->m_Error == "")
@@ -1645,12 +1655,13 @@ end_func()
     - Exits the Sphere engine unconditionally
 */
 begin_func(Exit, 0)
-This->m_ShouldExit = true;
-This->m_Error = "";  // don't report an error (there is none)
 
 // close the map engine
 if (This->m_Engine->GetMapEngine()->IsRunning())
     This->m_Engine->GetMapEngine()->Exit();
+
+This->m_ShouldExit = true;
+This->m_Error = "";  // don't report an error (there is none)
 
 return JS_FALSE;
 end_func()
@@ -1675,6 +1686,7 @@ if (This->m_Engine->GetMapEngine()->IsRunning())
 
 This->m_ShouldExit = true;
 JS_ReportError(cx, "%s", message);
+
 return JS_FALSE;
 end_func()
 
@@ -6990,10 +7002,10 @@ CScript::CreateSpritesetBaseObject(JSContext* cx, SSPRITESET* spriteset)
     int x1, y1, x2, y2;
     spriteset->GetSpriteset().GetBase(x1, y1, x2, y2);
 
-    JS_DefineProperty(cx, base_object, "x1", INT_TO_JSVAL(x1), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
-    JS_DefineProperty(cx, base_object, "y1", INT_TO_JSVAL(y1), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
-    JS_DefineProperty(cx, base_object, "x2", INT_TO_JSVAL(x2), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
-    JS_DefineProperty(cx, base_object, "y2", INT_TO_JSVAL(y2), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+    JS_DefineProperty(cx, base_object, "x1", INT_TO_JSVAL(x1), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+    JS_DefineProperty(cx, base_object, "y1", INT_TO_JSVAL(y1), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+    JS_DefineProperty(cx, base_object, "x2", INT_TO_JSVAL(x2), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+    JS_DefineProperty(cx, base_object, "y2", INT_TO_JSVAL(y2), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 
     return base_object;
 }
@@ -7137,8 +7149,8 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
             jsval frame_object_val = OBJECT_TO_JSVAL(frame_object);
             JS_SetElement(cx, frame_array, j, &frame_object_val);
 
-            JS_DefineProperty(cx, frame_object, "index", INT_TO_JSVAL(spriteset->GetSpriteset().GetFrameIndex(i, j)), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
-            JS_DefineProperty(cx, frame_object, "delay", INT_TO_JSVAL(spriteset->GetSpriteset().GetFrameDelay(i, j)), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+            JS_DefineProperty(cx, frame_object, "index", INT_TO_JSVAL(spriteset->GetSpriteset().GetFrameIndex(i, j)), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+            JS_DefineProperty(cx, frame_object, "delay", INT_TO_JSVAL(spriteset->GetSpriteset().GetFrameDelay(i, j)), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
         }
     }
 

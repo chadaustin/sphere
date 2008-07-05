@@ -1,5 +1,15 @@
 YYYY.MM.DD
 
+2008.07.05
+  - Fixed the bug, which didn't allow any calls to Sphere functions
+    from within a default map exit script if Exit() was called.
+
+2008.07.03
+  - Fixed the *_gl video drivers to transform images correctly
+    up to the given coordinates.
+  - It is now possible to change the base, as well as index
+    and delay of frames in spritesets from within scripts.
+
 2008.07.01
   - Changed text controls in the editor to use Courier as the font
     and changed the font size from 8 to 10.
