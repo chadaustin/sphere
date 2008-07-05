@@ -5,6 +5,10 @@ YYYY.MM.DD
     from within a default map exit script if Exit() was called.
   - Fixed a bug in the resolution expansion configuration of the 
     software based video drivers.
+  - Tile animations, which do not loop, will now stop at the last
+    tile in the animation row, instead of the first tile in the tileset.
+  - Font and windowstyle dialogs in the editor now have correct
+    startup colors selected in the palette.
 
 2008.07.03
   - Fixed the *_gl video drivers to transform images correctly

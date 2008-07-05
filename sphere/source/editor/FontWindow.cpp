@@ -23,7 +23,7 @@
 IMPLEMENT_DYNAMIC(CFontWindow, CMDIChildWnd)
 #endif
 BEGIN_MESSAGE_MAP(CFontWindow, CSaveableDocumentWindow)
-  ON_WM_CHAR()  
+  ON_WM_CHAR()
   ON_WM_KEYDOWN()
   ON_WM_SIZE()
   ON_WM_HSCROLL()
@@ -126,15 +126,15 @@ CFontWindow::Create()
   GetClientRect(&ClientRect);
   OnSize(0, ClientRect.right, ClientRect.bottom);
   SetImage();
-  RGB rgb_a = { m_CurrentColor.red, m_CurrentColor.green, m_CurrentColor.blue };
-  RGB rgb_b = { 0, 0, 0 };
   m_ColorView.SetNumColors(2);
-  m_ColorView.SetColor(0, rgb_a);
-  m_ColorView.SetColor(1, rgb_b);
-  m_AlphaView.SetAlpha(m_CurrentColor.alpha);
+  m_ColorView.SetColor(0, CreateRGB(255, 255, 255));
+  m_ColorView.SetColor(1, CreateRGB(0, 0, 0));
+  m_ImageView.SetColor(0, CreateRGBA(255, 255, 255, 255));
+  m_ImageView.SetColor(1, CreateRGBA(0, 0, 0, 255));
+  m_AlphaView.SetAlpha(255);
   m_FontPreviewPalette = new CFontPreviewPalette(this, &m_Font);
   UpdateWindowTitle();
-	
+
 #ifdef USE_SIZECBAR
 		LoadPaletteStates();
 #endif
@@ -266,7 +266,7 @@ CFontWindow::GetWhichCharacters() const
 }
 ////////////////////////////////////////////////////////////////////////////////
 void
-CFontWindow::GetFontMinMax(const std::vector<int> character_list, int& min_x, int& min_y, int& max_x, int& max_y) const 
+CFontWindow::GetFontMinMax(const std::vector<int> character_list, int& min_x, int& min_y, int& max_x, int& max_y) const
 {
   min_x = -1;
   min_y = -1;
@@ -289,7 +289,7 @@ CFontWindow::GetFontMinMax(const std::vector<int> character_list, int& min_x, in
       }
       if (min_y == -1 || c.GetHeight() < min_y) {
         min_y = c.GetHeight();
-      }   
+      }
     }
   }
 }
@@ -390,7 +390,7 @@ CFontWindow::OnFontSimplify()
   if (character_list.size() == 0)
     return;
   bool modified = false;
-  
+
   for (unsigned int i = 0; i < character_list.size(); i++)
   {
     int ch = character_list[i];
@@ -501,7 +501,7 @@ CFontWindow::OnFontExportToImage()
 
   image.Rectangle(0, 0, image.GetWidth(), image.GetHeight(), CreateRGBA(255, 0, 0, 255));
   image.SetBlendMode(CImage32::REPLACE);
-  
+
   i = 0;
   for (int fy = 0; fy < num_characters_per_col; fy++)
   {
