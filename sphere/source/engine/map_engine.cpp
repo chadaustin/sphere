@@ -191,6 +191,7 @@ CMapEngine::GetErrorMessage()
 bool
 CMapEngine::ChangeMap(const char* filename)
 {
+
     if (m_IsRunning)
     {
         // close previous map
@@ -5152,6 +5153,7 @@ CMapEngine::IsTriggerAt(int location_x, int location_y, int layer, bool& found)
 bool
 CMapEngine::ExecuteTriggerScript(int trigger_index)
 {
+
     if (trigger_index < 0 || trigger_index >= int(m_Triggers.size()))
     {
         m_ErrorMessage = "Invalid trigger index";
@@ -5161,19 +5163,28 @@ CMapEngine::ExecuteTriggerScript(int trigger_index)
     // execute the trigger code
     IEngine::script script = m_Triggers[trigger_index].script;
     std::string error;
+
+    // save trigger coordinates in case the map will change and an error will occur
+    int trigger_x = m_Triggers[trigger_index].x;
+    int trigger_y = m_Triggers[trigger_index].y;
+
     if (script && !ExecuteScript(script, error))
     {
+
         sTileset& tileset = m_Map.GetMap().GetTileset();
         const int tile_width  = tileset.GetTileWidth();
         const int tile_height = tileset.GetTileHeight();
 
         std::ostringstream os;
-        os << "Could not execute trigger ("
-        << m_Triggers[trigger_index].x / tile_width
-        << ", "
-        << m_Triggers[trigger_index].y / tile_height
-        << ")\n";
+
+        os << "Could not execute trigger (";
+        os << trigger_x / tile_width;
+        os << ", ";
+        os << trigger_y / tile_height;
+        os << ")\n";
+
         m_ErrorMessage = os.str() + error;
+
         return false;
     }
 

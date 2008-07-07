@@ -1,5 +1,9 @@
 YYYY.MM.DD
 
+2008.07.07
+  - Fixed a bug in the ExecuteTriggerScript() function, which caused
+    crashes with newer compilers than VC6.
+
 2008.07.05
   - Fixed the bug, which didn't allow any calls to Sphere functions
     from within a default map exit script if Exit() was called.
