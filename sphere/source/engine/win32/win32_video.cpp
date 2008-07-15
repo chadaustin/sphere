@@ -1,6 +1,7 @@
 
 #include <windows.h>
 #include <stdio.h>
+#include <sstream>
 
 #include "win32_video.hpp"
 #include "win32_time.hpp"
@@ -87,8 +88,10 @@ bool InitVideo(HWND window, SPHERECONFIG* config)
 
     if (GraphicsDriver == NULL)
     {
-        std::string error = "LoadLibrary() failed: '" + graphics_driver + "'";
-        puts(error.c_str());
+        printf("LoadLibrary failed to load %s\nWindows error code: %d",
+               graphics_driver.c_str(),
+               GetLastError());
+
         return false;
     }
 

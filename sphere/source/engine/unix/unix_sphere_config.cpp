@@ -167,7 +167,7 @@ bool SaveSphereConfig(SPHERECONFIG* config, const char* filename)
     file.WriteString("Audio",   "Driver",      config->audiodriver.c_str());
 
     // save network settings
-    file.WriteBool  ("Network", "Allowed",     config->allow_networking);
+    file.WriteBool  ("Network", "AllowNetworking", config->allow_networking);
 
     // save input settings
     const char identify[] = "1234";
