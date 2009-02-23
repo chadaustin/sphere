@@ -6,8 +6,7 @@ This is a list of keyboard shortcut keys for use in the engine/editor
 Engine: 
   ALT-F4 = force quit Sphere engine
   F1     = toggle framerate throttle in map engine
-  F10    = toggle between fullscreen and window (video driver dependant
-           - currently standard32 and unix/linux only)
+  F10    = toggle between fullscreen and window
   F11    = show FPS
   F12    = take screenshot
 
