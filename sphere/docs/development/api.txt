@@ -1256,8 +1256,260 @@ log_object.endBlock()
   windowstyle_object.getColorMask()
     - gets the color mask being used by the windowstyle object
 
+  *** particle engine ***
   
+  	*** particle system parent ***
+    
+    CreateParticleSystemParent()
+      - returns a new particle system parent object
+    
+      *** particle system parent properties ***
+      
+      ps_parent_object.id
+        - unsigned integer, read-only unique identifier
+      
+      ps_parent_object.group
+        - integer, arbitrary user-defined group identifier
+        
+      ps_parent_object.halted
+        - boolean, if true, system won't accept update requests
+      
+      ps_parent_object.hidden
+        - boolean, if true, system won't accept render requests
+      
+      ps_parent_object.cursed
+        - boolean, if true, system won't revive dead descendants
+      
+      ps_parent_object.body
+        - a particle system body object
+        
+      ps_parent_object.initializer
+        - a particle system initializer object
+      
+      ps_parent_object.updater
+        - a particle system updater object
+      
+      ps_parent_object.renderer
+        - a particle system renderer object
+            
+      ps_parent_object.callback
+        - a particle system callback object
+      
+      *** particle system parent methods ***
+      
+      ps_parent_object.update()
+        - ask particle system to update
+      
+      ps_parent_object.render()
+        - ask particle system to render
+        
+      ps_parent_object.size()
+        - returns the current size of the descendants list
+      
+      ps_parent_object.clear()
+        - clears the descendant list
+      
+      ps_parent_object.adopt(particle_system)
+        - adopt the particle_system
+      
+      ps_parent_object.host(particle_system)
+        - host the particle_system, hosted systems' bodies are neither initialized nor updated
+      
+      ps_parent_object.find(id)
+        - returns the particle system object with the id, if not found null is returned
+      
+      ps_parent_object.remove(id)
+        - removes the particle system with the id
+      
+      ps_parent_object.removeGroup(group)
+        - removes all particle systems with the group
+      
+      ps_parent_object.isDead()
+        - return true, if the system is dead
+      
+      ps_parent_object.kill()
+        - kills the system, this will trigger the on_death callback, if set
+      
+      ps_parent_object.revive()
+        - revives the system, this will trigger the on_birth callback, if set
+      
+  	*** particle system child ***
+    
+    CreateParticleSystemChild(size)
+      - returns a new particle system child object with the initial size
+    
+      *** particle system child properties ***
+      
+      ps_child_object.id
+        - unsigned integer, read-only unique identifier
+      
+      ps_child_object.group
+        - integer, arbitrary user-defined group identifier
+        
+      ps_child_object.halted
+        - boolean, if true, system won't accept update requests
+      
+      ps_child_object.hidden
+        - boolean, if true, system won't accept render requests
+      
+      ps_child_object.cursed
+        - boolean, if true, system won't revive dead descendants
+      
+      ps_child_object.body
+        - a particle system body object
+        
+      ps_child_object.initializer
+        - a particle system initializer object
+      
+      ps_child_object.updater
+        - a particle system updater object
+      
+      ps_child_object.renderer
+        - a particle system renderer object
+      
+      ps_child_object.swarm_renderer
+        - a particle system renderer object
+      
+      ps_child_object.callback
+        - a particle system callback object
+      
+      *** particle system parent methods ***
+      
+      ps_child_object.update()
+        - ask particle system to update
+      
+      ps_child_object.render()
+        - ask particle system to render
+        
+      ps_child_object.size()
+        - returns the current size of the descendants list
+      
+      ps_child_object.capacity()
+        - returns the current size limit
+      
+      ps_child_object.grow()
+        - increases size by 1, if size is smaller than capacity
+      
+      ps_child_object.shrink()
+        - decreases size by 1, if size is bigger than zero
+      
+      ps_child_object.resize(n)
+        - resizes by the integer n, can't resize to negative size or size bigger than capacity
+
+      ps_child_object.reserve(n)
+        - makes sure that it can hold at least n particles by allocating more space if needed
+      
+      ps_child_object.clear()
+        - clears the descendant list
+      
+      ps_child_object.clone()
+        - returns a new particle system child object which is the exact copy of ps_child_object
+            
+      ps_child_object.isDead()
+        - return true, if the system is dead
+      
+      ps_child_object.kill()
+        - kills the system, this will trigger the on_death callback, if set
+      
+      ps_child_object.revive()
+        - revives the system, this will trigger the on_birth callback, if set
+            
+    *** particle system body ***
+    
+    particle_system.body.x
+    particle_system.body.y
+      - floating point position coordinates
+      
+    particle_system.body.vel_x
+    particle_system.body.vel_y
+      - floating point velocity components
+    
+    particle_system.body.aging
+      - floating point aging factor which is subtracted from life each update
+    
+    particle_system.body.life
+      - floating point life amount
+    
+    *** particle system initializer ***
+    
+    particle_system.initializer.pos_mode
+      - defines the position initialization shape which can be one of the following:
+        - PE_NULL_SHAPE (default)
+        - PE_RECTANGULAR_SHAPE
+        - PE_ELLIPTICAL_SHAPE
+        
+    particle_system.initializer.vel_mode
+      - defines the initial velocity orientation which can be one of the following:
+        - PE_EXPLICIT_ORIENTATION (default)
+        - PE_IMPLICIT_ORIENTATION
+    
+    the following properties will accept and return ordinary JavaScript objects
+    with the given properties. if you don't want to set a property, it can be left out
+    
+    particle_system.initializer.aging
+      - returns/accepts the following object structure:
+        {min: , max: }
+    
+    particle_system.initializer.pos_rect
+      - returns/accepts the following object structure:
+        {x: {min: , max: },  y: {min: , max: }}
+    
+    particle_system.initializer.pos_ellipse
+      - returns/accepts the following object structure:
+        {angle: {min: , max: },  a: {min: , max: }, b: {min: , max: }}
+    
+    particle_system.initializer.vel_ellipse
+      - returns/accepts the following object structure:
+        {angle: {min: , max: },  a: {min: , max: }, b: {min: , max: }}
+    
+    *** particle system updater ***
+    
+    particle_system.updater.force_x
+    particle_system.updater.force_y
+      - floating point force components (note: particles are assumed to have a mass of 1)
+    
+    particle_system.updater.damping
+      - floating point damping constant
+    
+    *** particle system renderer ***
+    
+    particle_system.renderer.texture
+      - holds the image to be rendered, always returns or sets copies
+      
+    particle_system.renderer.blend_mode
+      - the blend mode to be used as the blendmode argument for rendering
+    
+    particle_system.renderer.offset_x
+    particle_system.renderer.offset_y
+      - integers to be added to the position coordinates x and y
+        use them to adjust textures or to convert coordinates
+    
+    *** particle system callback ***
+    
+    the following properties will accept ordinary JavaScript functions which
+    will be called on events in the context of the particle system object.
+    in order to disable a callback, set it to null.
+        
+    particle_system.callback.on_update
+      - called on update, no arguments
+      
+    particle_system.callback.on_render
+      - called on render, no arguments
+    
+    particle_system.callback.on_birth
+      - called on update, the first argument is either the parent particle system or null
+    
+    particle_system.callback.on_death
+      - called on update, the first argument is either the parent particle system or null
+    
   *** images ***
+  
+  Blend modes which can be used for image blitting:
+    - BLEND (default)
+    - ADD
+    - SUBTRACT
+    - MULTIPLY
+  
   GetSystemArrow()
     - returns an image object of the System Arrow that the engine currently uses.
   
@@ -1279,37 +1531,37 @@ log_object.endBlock()
       defined by the parameters
       (see GrabSurface)
   
-  image_object.blit(x, y)
+  image_object.blit(x, y [, blendmode = BLEND])
     - draws the image onto the video buffer at x,y
   
-  image_object.blitMask(x, y, mask)
+  image_object.blitMask(x, y, mask [, blendmode = BLEND])
     - draws the image into the video buffer, except that the color passed
       as 'mask' tints the image
   
-  image_object.rotateBlit(x, y, radians)
+  image_object.rotateBlit(x, y, radians [, blendmode = BLEND])
     - draws the image into the video buffer, except that the image is rotates 
       in  anti-clockwise in radians, which have a range of 0-2*pi. 
       (x,y) is the center of the blit.
 
-  image_object.rotateBlitMask(x, y, radians, color)
+  image_object.rotateBlitMask(x, y, radians, color [, blendmode = BLEND])
     - rotateBlit + mask
   
-  image_object.zoomBlit(x, y, factor)
+  image_object.zoomBlit(x, y, factor [, blendmode = BLEND])
     - draws the image into the video buffer with zooming, with the scaling 
       depending on factor. Normally a factor of 1 will blit a normal looking
       image. Between 0 and 1 will shrink the image. Any values greater than 1
       will stretch the size of the image.
 
-  image_object.zoomBlitMask(x, y, factor, color)
+  image_object.zoomBlitMask(x, y, factor, color [, blendmode = BLEND])
     - zoomBlit + mask
   
-  image_object.transformBlit(x1, y1, x2, y2, x3, y3, x4, y4)
+  image_object.transformBlit(x1, y1, x2, y2, x3, y3, x4, y4 [, blendmode = BLEND])
     - draws the image into the video buffer with "transformation", where 
       (x1, y1) is the upper left corner, (x2, y2) the upper right corner, 
       (x3, y3) is the lower right corner, and (x4, y4) is the lower left 
       corner.
 
-  image_object.transformBlitMask(x1, y1, x2, y2, x3, y3, x4, y4, mask)
+  image_object.transformBlitMask(x1, y1, x2, y2, x3, y3, x4, y4, mask [, blendmode = BLEND])
     - transformBlit + blitMask
 
   image_object.createSurface()
@@ -1390,7 +1642,7 @@ log_object.endBlock()
   surface_object.createImage()
     - returns an image object from the surface object
   
-  Blend Modes
+  Blend modes which can be used for drawing on surfaces:
     - BLEND (default for drawing)
     - REPLACE
     - RGB_ONLY
@@ -1680,47 +1932,3 @@ log_object.endBlock()
         files produce the same MD5 hash so it is an effective way to determine
         if a file has become corrupt or altered
 
-*** 3d Functions ***
-*** All 3d functions (currently) require sphere_gl to be used as the video driver ***
-SwitchProjectMode(integer)
-  - Sets the drawing mode to 2d if integer is 0, 3d if 1.  All 3d drawing
-    must be done while in 3d mode, and likewise for 2d.  When done drawing
-    in 3d, the mode must be set back to 2d.
-  
-PRenderMap()
-  - Renders the map as a 3d image.  
-
-image_object.transform3DBlit(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4)
-  - Blits the image to the coordinates given.  Point 1 is the upper left
-    corner of the image, 2 is the upper right, 3 is the lower right,
-    and 4 is the bottom left
-
-image_object.triangle3DBlit(sx1,sy1,x1,y1,z1,sx2,sy2,x2,y2,z2,sx3,sy3,x3,y3,z3)
-  - Blits the triangle (sx1, sy1) (sx2, sy2) (sx3, sy3) part of the image, given
-    in terms of the image size, to the 3 points (x1,y1,z1) (x2,y2,z2) (x3,y3,z3) 
-    respectively.
-
-Set3DCameraPosition(x,y,z)
-  - Sets the 3d camera to the point (x,y,z).
-
-Set3DCameraAngles(x_angle, y_angle, z_angle)
-  - Sets the 3d camera angles to x_angle, y_angle, and z_angle, with respect
-    to the corresponding x,y, and z axis.  Input is given in terms of degrees.
-
-Get3DCameraX()
-  - Returns the cameras current x position.
-
-Get3DCameraY()
-  - Returns the cameras current y position.
-
-Get3DCameraZ()
-  - Returns the cameras current z position.
-
-Get3DCameraAngleX()
-  - Returns the cameras current x angle.
-
-Get3DCameraAngleY()
-  - Returns the cameras current y angle.
-
-Get3DCameraAngleZ()
-  - Returns the cameras current z angle.

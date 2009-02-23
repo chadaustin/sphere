@@ -1,5 +1,9 @@
 YYYY.MM.DD
 
+2009.23.02
+  - Added the particle engine and additional image blitting
+    blend modes ADD, SUBTRACT and MULTIPLY
+
 2008.07.07
   - Fixed a bug in the ExecuteTriggerScript() function, which caused
     crashes with newer compilers than VC6.
