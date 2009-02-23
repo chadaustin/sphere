@@ -23,6 +23,11 @@
 #include "../common/Map.hpp"
 #include "../common/Layer.hpp"
 
+#include "../particle_engine/ParticleSystemParent.hpp"
+#include "../particle_engine/ParticleSystemChild.hpp"
+
+
+
 // EVIL EVIL export!
 struct SS_SPRITESET;
 
@@ -88,6 +93,97 @@ private:
   #define declare_finalizer(name) static void name(JSContext* cx, JSObject* obj)
   #define declare_method(name)    static JSBool name(JSContext* cx, JSObject* obj, uintN argc, jsval* argv, jsval* rval)
   #define declare_property(name)  static JSBool name(JSContext* cx, JSObject* obj, jsval id, jsval* vp)
+
+
+  // particle body
+  declare_constructor1(CreateParticleBodyObject, ParticleSystemBase* system);
+  declare_finalizer(ssFinalizeParticleBody);
+  declare_property(ssParticleBodyGetProperty);
+  declare_property(ssParticleBodySetProperty);
+
+  // particle initializer
+  declare_constructor1(CreateParticleInitializerObject, ParticleSystemBase* system);
+  declare_finalizer(ssFinalizeParticleInitializer);
+  declare_property(ssParticleInitializerGetProperty);
+  declare_property(ssParticleInitializerSetProperty);
+
+  // particle updater
+  declare_constructor1(CreateParticleUpdaterObject, ParticleSystemBase* system);
+  declare_finalizer(ssFinalizeParticleUpdater);
+  declare_property(ssParticleUpdaterGetProperty);
+  declare_property(ssParticleUpdaterSetProperty);
+
+  // particle renderer
+  declare_constructor1(CreateParticleRendererObject, ParticleSystemBase* system);
+  declare_finalizer(ssFinalizeParticleRenderer);
+  declare_property(ssParticleRendererGetProperty);
+  declare_property(ssParticleRendererSetProperty);
+
+  // particle callback
+  declare_constructor1(CreateParticleCallbackObject, ParticleSystemBase* system);
+  declare_finalizer(ssFinalizeParticleCallback);
+  declare_property(ssParticleCallbackGetProperty);
+  declare_property(ssParticleCallbackSetProperty);
+
+  // particle system parent
+  declare_constructor1(CreateParticleSystemParentObject, ParticleSystemParent* system);
+  declare_finalizer(ssFinalizeParticleSystemParent);
+  declare_property(ssParticleSystemParentGetProperty);
+  declare_property(ssParticleSystemParentSetProperty);
+  declare_method(ssParticleSystemParentUpdate);
+  declare_method(ssParticleSystemParentRender);
+  declare_method(ssParticleSystemParentSize);
+  declare_method(ssParticleSystemParentClear);
+  declare_method(ssParticleSystemParentAdopt);
+  declare_method(ssParticleSystemParentHost);
+  declare_method(ssParticleSystemParentFind);
+  declare_method(ssParticleSystemParentRemove);
+  declare_method(ssParticleSystemParentRemoveGroup);
+  declare_method(ssParticleSystemParentIsDead);
+  declare_method(ssParticleSystemParentKill);
+  declare_method(ssParticleSystemParentRevive);
+  declare_method(ssParticleSystemParentGetOnUpdate);
+  declare_method(ssParticleSystemParentSetOnUpdate);
+  declare_method(ssParticleSystemParentGetOnRender);
+  declare_method(ssParticleSystemParentSetOnRender);
+  declare_method(ssParticleSystemParentGetOnBirth);
+  declare_method(ssParticleSystemParentSetOnBirth);
+  declare_method(ssParticleSystemParentGetOnDeath);
+  declare_method(ssParticleSystemParentSetOnDeath);
+
+  // particle swarm renderer
+  declare_constructor1(CreateParticleSwarmRendererObject, ParticleSystemChild* system);
+  declare_finalizer(ssFinalizeParticleSwarmRenderer);
+  declare_property(ssParticleSwarmRendererGetProperty);
+  declare_property(ssParticleSwarmRendererSetProperty);
+
+  // particle system child
+  declare_constructor1(CreateParticleSystemChildObject, ParticleSystemChild* system);
+  declare_finalizer(ssFinalizeParticleSystemChild);
+  declare_property(ssParticleSystemChildGetProperty);
+  declare_property(ssParticleSystemChildSetProperty);
+  declare_method(ssParticleSystemChildUpdate);
+  declare_method(ssParticleSystemChildRender);
+  declare_method(ssParticleSystemChildSize);
+  declare_method(ssParticleSystemChildCapacity);
+  declare_method(ssParticleSystemChildGrow);
+  declare_method(ssParticleSystemChildShrink);
+  declare_method(ssParticleSystemChildResize);
+  declare_method(ssParticleSystemChildReserve);
+  declare_method(ssParticleSystemChildClear);
+  declare_method(ssParticleSystemChildClone);
+  declare_method(ssParticleSystemChildIsDead);
+  declare_method(ssParticleSystemChildKill);
+  declare_method(ssParticleSystemChildRevive);
+  declare_method(ssParticleSystemChildGetOnUpdate);
+  declare_method(ssParticleSystemChildSetOnUpdate);
+  declare_method(ssParticleSystemChildGetOnRender);
+  declare_method(ssParticleSystemChildSetOnRender);
+  declare_method(ssParticleSystemChildGetOnBirth);
+  declare_method(ssParticleSystemChildSetOnBirth);
+  declare_method(ssParticleSystemChildGetOnDeath);
+  declare_method(ssParticleSystemChildSetOnDeath);
+
 
   // sockets
   declare_constructor1(CreateSocketObject, NSOCKET socket);

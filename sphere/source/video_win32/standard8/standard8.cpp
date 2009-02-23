@@ -33,6 +33,12 @@ struct CONFIGURATION
     char palette_file[FILENAME_MAX];
 };
 
+
+// FUNCTION PROTOTYPES //
+
+EXPORT(RGBA*) LockImage(IMAGE image);
+EXPORT(void)  UnlockImage(IMAGE image, bool pixels_changed);
+
 static void LoadConfiguration();
 static bool LoadPalette();
 
@@ -634,6 +640,18 @@ EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
     FillImagePixels(image, pixels);
     OptimizeBlitRoutine(image);
     return image;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(IMAGE) CloneImage(IMAGE image)
+{
+    if (!image)
+        return NULL;
+
+    IMAGE clone = CreateImage(image->width, image->height, LockImage(image));
+    UnlockImage(image, false);
+
+    return clone;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

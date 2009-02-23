@@ -1,8 +1,9 @@
 #ifndef UNIX_VIDEO_H
 #define UNIX_VIDEO_H
 
+#include "../../common/Image32.hpp"
 #include "../../common/rgb.hpp"
-#include "../../common/ParticleStructs.hpp"
+#include "../../common/VectorStructs.hpp"
 #include "unix_sphere_config.h"
 #include "unix_filesystem.h"
 
@@ -25,12 +26,13 @@ extern void FlipScreen();
 extern void  (STDCALL * SetClippingRectangle)(int x, int y, int w, int h);
 extern void  (STDCALL * GetClippingRectangle)(int* x, int* y, int* w, int* h);
 extern IMAGE (STDCALL * CreateImage)(int width, int height, const RGBA* pixels);
+extern IMAGE (STDCALL * CloneImage)(IMAGE image);
 extern IMAGE (STDCALL * GrabImage)(int x, int y, int width, int height);
 extern void  (STDCALL * DestroyImage)(IMAGE image);
-extern void  (STDCALL * BlitImage)(IMAGE image, int x, int y);
-extern void  (STDCALL * BlitImageMask)(IMAGE image, int x, int y, RGBA mask);
-extern void  (STDCALL * TransformBlitImage)(IMAGE image, int x[4], int y[4]);
-extern void  (STDCALL * TransformBlitImageMask)(IMAGE image, int x[4], int y[4], RGBA mask);
+extern void  (STDCALL * BlitImage)(IMAGE image, int x, int y, CImage32::BlendMode blendmode);
+extern void  (STDCALL * BlitImageMask)(IMAGE image, int x, int y, CImage32::BlendMode blendmode, RGBA mask);
+extern void  (STDCALL * TransformBlitImage)(IMAGE image, int x[4], int y[4], CImage32::BlendMode blendmode);
+extern void  (STDCALL * TransformBlitImageMask)(IMAGE image, int x[4], int y[4], CImage32::BlendMode blendmode, RGBA mask);
 extern int   (STDCALL * GetImageWidth)(IMAGE image);
 extern int   (STDCALL * GetImageHeight)(IMAGE image);
 extern RGBA* (STDCALL * LockImage)(IMAGE image);

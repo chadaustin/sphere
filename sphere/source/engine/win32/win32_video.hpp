@@ -1,8 +1,9 @@
 #ifndef WIN32_VIDEO_H
 #define WIN32_VIDEO_H
 
+#include "../../common/Image32.hpp"
 #include "../../common/rgb.hpp"
-#include "../../common/ParticleStructs.hpp"
+#include "../../common/VectorStructs.hpp"
 
 class SFONT; // for drawing FPS
 typedef struct IMAGEimp* IMAGE;
@@ -17,12 +18,13 @@ extern void FlipScreen();
 extern void  (__stdcall * SetClippingRectangle)(int x, int y, int w, int h);
 extern void  (__stdcall * GetClippingRectangle)(int* x, int* y, int* w, int* h);
 extern IMAGE (__stdcall * CreateImage)(int width, int height, const RGBA* pixels);
+extern IMAGE (__stdcall * CloneImage)(IMAGE image);
 extern IMAGE (__stdcall * GrabImage)(int x, int y, int width, int height);
 extern void  (__stdcall * DestroyImage)(IMAGE image);
-extern void  (__stdcall * BlitImage)(IMAGE image, int x, int y);
-extern void  (__stdcall * BlitImageMask)(IMAGE image, int x, int y, RGBA mask);
-extern void  (__stdcall * TransformBlitImage)(IMAGE image, int x[4], int y[4]);
-extern void  (__stdcall * TransformBlitImageMask)(IMAGE image, int x[4], int y[4], RGBA mask);
+extern void  (__stdcall * BlitImage)(IMAGE image, int x, int y, CImage32::BlendMode blendmode);
+extern void  (__stdcall * BlitImageMask)(IMAGE image, int x, int y, CImage32::BlendMode blendmode, RGBA mask);
+extern void  (__stdcall * TransformBlitImage)(IMAGE image, int x[4], int y[4], CImage32::BlendMode blendmode);
+extern void  (__stdcall * TransformBlitImageMask)(IMAGE image, int x[4], int y[4], CImage32::BlendMode blendmode, RGBA mask);
 extern int   (__stdcall * GetImageWidth)(IMAGE image);
 extern int   (__stdcall * GetImageHeight)(IMAGE image);
 extern RGBA* (__stdcall * LockImage)(IMAGE image);

@@ -87,7 +87,7 @@ SWINDOWSTYLE::DrawBackground(int x, int y, int w, int h, int background_mode, co
             {
                 for (int iy = 0; iy < h / height + 1; iy++)
                 {
-                    BlitImage(image, x + ix * width, y + iy * height);
+                    BlitImage(image, x + ix * width, y + iy * height, CImage32::BLEND);
                 }
             }
         }
@@ -97,7 +97,7 @@ SWINDOWSTYLE::DrawBackground(int x, int y, int w, int h, int background_mode, co
             {
                 for (int iy = 0; iy < h / height + 1; iy++)
                 {
-                    BlitImageMask(image, x + ix * width, y + iy * height, mask);
+                    BlitImageMask(image, x + ix * width, y + iy * height, CImage32::BLEND, mask);
                 }
             }
         }
@@ -110,11 +110,11 @@ SWINDOWSTYLE::DrawBackground(int x, int y, int w, int h, int background_mode, co
         int ty[4] = { y, y, y + h, y + h };
         if ( !is_masked )
         {
-            TransformBlitImage(image, tx, ty);
+            TransformBlitImage(image, tx, ty, CImage32::BLEND);
         }
         else
         {
-            TransformBlitImageMask(image, tx, ty, mask);
+            TransformBlitImageMask(image, tx, ty, CImage32::BLEND, mask);
         }
     }
 
@@ -148,11 +148,11 @@ SWINDOWSTYLE::DrawCorner(int index, int x, int y, const RGBA& mask, bool is_mask
         return false;
     if ( !is_masked )
     {
-        BlitImage(m_Images[index], x, y);
+        BlitImage(m_Images[index], x, y, CImage32::BLEND);
     }
     else
     {
-        BlitImageMask(m_Images[index], x, y, mask);
+        BlitImageMask(m_Images[index], x, y, CImage32::BLEND, mask);
     }
     return true;
 }
@@ -200,12 +200,12 @@ SWINDOWSTYLE::DrawHorizontalEdge(int index, int x, int y, int w, int h, const RG
     if ( !is_masked )
     {
         for (int i = 0; i < h / height + 1; i++)
-            BlitImage(image, x, y + i * height);
+            BlitImage(image, x, y + i * height, CImage32::BLEND);
     }
     else
     {
         for (int i = 0; i < h / height + 1; i++)
-            BlitImageMask(image, x, y + i * height, mask);
+            BlitImageMask(image, x, y + i * height, CImage32::BLEND, mask);
     }
 
     SetClippingRectangle(ox, oy, ow, oh);
@@ -230,12 +230,12 @@ SWINDOWSTYLE::DrawVerticalEdge(int index, int x, int y, int w, int h, const RGBA
     if ( !is_masked )
     {
         for (int i = 0; i < w / width + 1; i++)
-            BlitImage(image, x + i * width, y);
+            BlitImage(image, x + i * width, y, CImage32::BLEND);
     }
     else
     {
         for (int i = 0; i < w / width + 1; i++)
-            BlitImageMask(image, x + i * width, y, mask);
+            BlitImageMask(image, x + i * width, y, CImage32::BLEND, mask);
     }
 
     SetClippingRectangle(ox, oy, ow, oh);

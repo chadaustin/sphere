@@ -23,12 +23,13 @@ static void (STDCALL * _FlipScreen)();
 void  (STDCALL * SetClippingRectangle)(int x, int y, int w, int h);
 void  (STDCALL * GetClippingRectangle)(int* x, int* y, int* w, int* h);
 IMAGE (STDCALL * CreateImage)(int width, int height, const RGBA* data);
+IMAGE (STDCALL * CloneImage)(IMAGE image);
 IMAGE (STDCALL * GrabImage)(int x, int y, int width, int height);
 void  (STDCALL * DestroyImage)(IMAGE image);
-void  (STDCALL * BlitImage)(IMAGE image, int x, int y);
-void  (STDCALL * BlitImageMask)(IMAGE image, int x, int y, RGBA mask);
-void  (STDCALL * TransformBlitImage)(IMAGE image, int x[4], int y[4]);
-void  (STDCALL * TransformBlitImageMask)(IMAGE image, int x[4], int y[4], RGBA mask);
+void  (STDCALL * BlitImage)(IMAGE image, int x, int y, CImage32::BlendMode blendmode);
+void  (STDCALL * BlitImageMask)(IMAGE image, int x, int y, CImage32::BlendMode blendmode, RGBA mask);
+void  (STDCALL * TransformBlitImage)(IMAGE image, int x[4], int y[4], CImage32::BlendMode blendmode);
+void  (STDCALL * TransformBlitImageMask)(IMAGE image, int x[4], int y[4], CImage32::BlendMode blendmode, RGBA mask);
 int   (STDCALL * GetImageWidth)(IMAGE image);
 int   (STDCALL * GetImageHeight)(IMAGE image);
 RGBA* (STDCALL * LockImage)(IMAGE image);
@@ -83,6 +84,7 @@ bool InitVideo(SPHERECONFIG* config)
     assign(SetClippingRectangle,   dlsym(GraphicsDriver, "SetClippingRectangle"));
     assign(GetClippingRectangle,   dlsym(GraphicsDriver, "GetClippingRectangle"));
     assign(CreateImage,            dlsym(GraphicsDriver, "CreateImage"));
+    assign(CloneImage,             dlsym(GraphicsDriver, "CloneImage"));
     assign(GrabImage,              dlsym(GraphicsDriver, "GrabImage"));
     assign(DestroyImage,           dlsym(GraphicsDriver, "DestroyImage"));
     assign(BlitImage,              dlsym(GraphicsDriver, "BlitImage"));
@@ -122,6 +124,7 @@ bool InitVideo(SPHERECONFIG* config)
         !SetClippingRectangle ||
         !GetClippingRectangle ||
         !CreateImage ||
+        !CloneImage ||
         !GrabImage ||
         !DestroyImage ||
         !BlitImage ||

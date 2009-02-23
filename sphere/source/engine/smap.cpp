@@ -299,11 +299,11 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
                         double h = ((double)y * cos(-angle)) - ((double)x * sin(-angle)) + (double)cy;
                         CalculateRotateBlitPoints(__tx__, __ty__, w, h, blit_width, blit_height, angle);
                     }
-                    TransformBlitImage(image, __tx__, __ty__);
+                    TransformBlitImage(image, __tx__, __ty__, CImage32::BLEND);
                 }
                 else
                 {
-                    BlitImage(image, ox, oy);
+                    BlitImage(image, ox, oy, CImage32::BLEND);
                 }
                 tx++;
                 ox += blit_width;
@@ -347,11 +347,11 @@ SMAP::RenderLayer(int i, bool solid, int camera_x, int camera_y, int& offset_x, 
                         double tempy = (y1 * cos(m_LayerInfo[i].angle)) - (x1 * sin(m_LayerInfo[i].angle)) + cy;
                         CalculateRotateBlitPoints(tx, ty, tempx, tempy, blit_width, blit_height, -m_LayerInfo[i].angle);
                     }
-                    TransformBlitImageMask(image, tx, ty, mask);
+                    TransformBlitImageMask(image, tx, ty, CImage32::BLEND, mask);
                 }
                 else
                 {
-                    BlitImageMask(image, ox, oy, mask);
+                    BlitImageMask(image, ox, oy, CImage32::BLEND, mask);
                 }
                 tx++;
                 ox += blit_width;

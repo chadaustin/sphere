@@ -13,7 +13,7 @@ void FadeToColor(unsigned msecs, RGBA color)
     while (GetTime() - time < msecs)
     {
         color.alpha = (byte)((GetTime() - time) * 255 / msecs);
-        BlitImage(image, 0, 0);
+        BlitImage(image, 0, 0, CImage32::BLEND);
         ApplyColorMask(color);
         FlipScreen();
     }
@@ -30,7 +30,7 @@ void FadeFromColor(unsigned msecs, RGBA color)
     while (GetTime() - time < msecs)
     {
         color.alpha = 255 - (byte)((GetTime() - time) * 255 / msecs);
-        BlitImage(image, 0, 0);
+        BlitImage(image, 0, 0, CImage32::BLEND);
         ApplyColorMask(color);
         FlipScreen();
     }

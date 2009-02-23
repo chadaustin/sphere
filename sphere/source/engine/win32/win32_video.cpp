@@ -17,12 +17,13 @@ static void (__stdcall * _FlipScreen)();
 void  (__stdcall * SetClippingRectangle)(int x, int y, int w, int h);
 void  (__stdcall * GetClippingRectangle)(int* x, int* y, int* w, int* h);
 IMAGE (__stdcall * CreateImage)(int width, int height, const RGBA* data);
+IMAGE (__stdcall * CloneImage)(IMAGE image);
 IMAGE (__stdcall * GrabImage)(int x, int y, int width, int height);
 void  (__stdcall * DestroyImage)(IMAGE image);
-void  (__stdcall * BlitImage)(IMAGE image, int x, int y);
-void  (__stdcall * BlitImageMask)(IMAGE image, int x, int y, RGBA mask);
-void  (__stdcall * TransformBlitImage)(IMAGE image, int x[4], int y[4]);
-void  (__stdcall * TransformBlitImageMask)(IMAGE image, int x[4], int y[4], RGBA mask);
+void  (__stdcall * BlitImage)(IMAGE image, int x, int y, CImage32::BlendMode blendmode);
+void  (__stdcall * BlitImageMask)(IMAGE image, int x, int y, CImage32::BlendMode blendmode, RGBA mask);
+void  (__stdcall * TransformBlitImage)(IMAGE image, int x[4], int y[4], CImage32::BlendMode blendmode);
+void  (__stdcall * TransformBlitImageMask)(IMAGE image, int x[4], int y[4], CImage32::BlendMode blendmode, RGBA mask);
 int   (__stdcall * GetImageWidth)(IMAGE image);
 int   (__stdcall * GetImageHeight)(IMAGE image);
 RGBA* (__stdcall * LockImage)(IMAGE image);
@@ -100,6 +101,7 @@ bool InitVideo(HWND window, SPHERECONFIG* config)
     assign(SetClippingRectangle,   GetProcAddress(GraphicsDriver, "SetClippingRectangle"));
     assign(GetClippingRectangle,   GetProcAddress(GraphicsDriver, "GetClippingRectangle"));
     assign(CreateImage,            GetProcAddress(GraphicsDriver, "CreateImage"));
+    assign(CloneImage,             GetProcAddress(GraphicsDriver, "CloneImage"));
     assign(GrabImage,              GetProcAddress(GraphicsDriver, "GrabImage"));
     assign(DestroyImage,           GetProcAddress(GraphicsDriver, "DestroyImage"));
     assign(BlitImage,              GetProcAddress(GraphicsDriver, "BlitImage"));
@@ -139,6 +141,7 @@ bool InitVideo(HWND window, SPHERECONFIG* config)
         !SetClippingRectangle ||
         !GetClippingRectangle ||
         !CreateImage ||
+        !CloneImage ||
         !GrabImage ||
         !DestroyImage ||
         !BlitImage ||

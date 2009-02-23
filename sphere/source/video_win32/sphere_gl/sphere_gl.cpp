@@ -4,8 +4,9 @@
 #include <GL/gl.h>
 #include <math.h>
 
+#include "../../common/Image32.hpp"
 #include "../../common/rgb.hpp"
-#include "../../common/ParticleStructs.hpp"
+#include "../../common/VectorStructs.hpp"
 #include "../common/win32x.hpp"
 #include "resource.h"
 
@@ -15,7 +16,12 @@
 #define CDS_FULLSCREEN 4
 #endif
 
-#define GL_CLAMP_TO_EDGE 0x812F
+
+#define GL_CLAMP_TO_EDGE              0x812F
+#define GL_FUNC_ADD_EXT               0x8006
+#define GL_FUNC_SUBTRACT_EXT          0x800A
+#define GL_FUNC_REVERSE_SUBTRACT_EXT  0x800B
+
 
 #define SCALE()  (DriverConfig.scale ? 2 : 1)
 #define FILTER() (SCALE() == 1 ? GL_NEAREST : (DriverConfig.bilinear != 0 ? GL_LINEAR : GL_NEAREST))
@@ -64,11 +70,16 @@ struct DRIVERCONFIG
 };
 
 
-// forward declaration of DirectGrab implementation
-EXPORT(void) DirectGrab(int x, int y, int w, int h, RGBA* pixels);
+// extension function pointers
+void (APIENTRY* glBlendEquationEXT)(GLenum);
+BOOL (APIENTRY* wglSwapIntervalEXT)(int interval);
+int  (APIENTRY* wglGetSwapIntervalEXT)();
 
-BOOL (APIENTRY *wglSwapIntervalEXT)(int interval);
-int (APIENTRY *wglGetSwapIntervalEXT)();
+
+// FUNCTION PROTOTYPES //
+EXPORT(RGBA*) LockImage(IMAGE image);
+EXPORT(void)  UnlockImage(IMAGE image, bool pixels_changed);
+EXPORT(void)  DirectGrab(int x, int y, int w, int h, RGBA* pixels);
 
 static BOOL CALLBACK ConfigureDriverDialogProc(HWND window, UINT msg, WPARAM wparam, LPARAM lparam);
 static void UpdateButtonStates(HWND dialog);
@@ -131,7 +142,7 @@ EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
     driverinfo->name        = "Sphere GL";
     driverinfo->author      = "Jamie Gennis, Kisai, Chad Austin";
     driverinfo->date        = __DATE__;
-    driverinfo->version     = "v1.0";
+    driverinfo->version     = "v1.1";
     driverinfo->description = "Hardware Accelerated OpenGL Sphere Video Driver";
 }
 
@@ -274,6 +285,24 @@ EXPORT(bool) InitVideoDriver(HWND window, int screen_width, int screen_height)
         {
             wglSwapIntervalEXT(0);
         }
+    }
+
+    // try to get glBlendEquationEXT
+    if (strstr((const char*)glGetString(GL_EXTENSIONS), "GL_EXT_blend_minmax"))
+    {
+        glBlendEquationEXT = (void (APIENTRY*)(GLenum))wglGetProcAddress("glBlendEquationEXT");
+    }
+    else
+    {
+        error_msg = "GL_EXT_blend_minmax extension not available";
+        goto error;
+    }
+
+    // make sure GL_EXT_blend_subtract is also available
+    if (!strstr((const char*)glGetString(GL_EXTENSIONS), "GL_EXT_blend_subtract"))
+    {
+        error_msg = "GL_EXT_blend_subtract extension not available";
+        goto error;
     }
 
     // view initialization
@@ -645,6 +674,18 @@ EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+EXPORT(IMAGE) CloneImage(IMAGE image)
+{
+    if (!image)
+        return NULL;
+
+    IMAGE clone = CreateImage(image->width, image->height, LockImage(image));
+    UnlockImage(image, false);
+
+    return clone;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
 {
     RGBA* pixels = new RGBA[width * height];
@@ -669,7 +710,40 @@ EXPORT(void) DestroyImage(IMAGE image)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-EXPORT(void) BlitImage(IMAGE image, int x, int y)
+static void
+set_blendmode(CImage32::BlendMode blendmode)
+{
+    switch (blendmode)
+    {
+        case CImage32::BLEND:
+            glBlendEquationEXT(GL_FUNC_ADD_EXT);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            break;
+
+        case CImage32::ADD:
+            glBlendEquationEXT(GL_FUNC_ADD_EXT);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            break;
+
+        case CImage32::SUBTRACT:
+            glBlendEquationEXT(GL_FUNC_REVERSE_SUBTRACT_EXT);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            break;
+
+        case CImage32::MULTIPLY:
+            glBlendEquationEXT(GL_FUNC_ADD_EXT);
+            glBlendFunc(GL_DST_COLOR, GL_ZERO);
+            break;
+
+        default:
+            glBlendEquationEXT(GL_FUNC_ADD_EXT);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            break;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) BlitImage(IMAGE image, int x, int y, CImage32::BlendMode blendmode)
 {
 
     if (image->toggle_counter != toggle_counter)
@@ -677,6 +751,8 @@ EXPORT(void) BlitImage(IMAGE image, int x, int y)
 
     if (image->special == tagIMAGE::EMPTY)
         return;
+
+    set_blendmode(blendmode);
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, image->texture);
@@ -702,7 +778,7 @@ EXPORT(void) BlitImage(IMAGE image, int x, int y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
+EXPORT(void) BlitImageMask(IMAGE image, int x, int y, CImage32::BlendMode blendmode, RGBA mask)
 {
 
     if (image->toggle_counter != toggle_counter)
@@ -710,6 +786,8 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
 
     if (image->special == tagIMAGE::EMPTY)
         return;
+
+    set_blendmode(blendmode);
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, image->texture);
@@ -735,7 +813,7 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
+EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4], CImage32::BlendMode blendmode)
 {
 
     if (image->toggle_counter != toggle_counter)
@@ -743,6 +821,8 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
 
     if (image->special == tagIMAGE::EMPTY)
         return;
+
+    set_blendmode(blendmode);
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, image->texture);
@@ -779,7 +859,7 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
+EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], CImage32::BlendMode blendmode, RGBA mask)
 {
 
     if (image->toggle_counter != toggle_counter)
@@ -787,6 +867,8 @@ EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
 
     if (image->special == tagIMAGE::EMPTY)
         return;
+
+    set_blendmode(blendmode);
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, image->texture);
@@ -861,7 +943,7 @@ EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels)
 
     if (i)
     {
-        BlitImage(i, x, y);
+        BlitImage(i, x, y, CImage32::BLEND);
         DestroyImage(i);
 
     }
@@ -874,7 +956,7 @@ EXPORT(void) DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels)
 
     if (i)
     {
-        TransformBlitImage(i, x, y);
+        TransformBlitImage(i, x, y, CImage32::BLEND);
         DestroyImage(i);
 
     }

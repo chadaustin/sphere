@@ -82,12 +82,12 @@ CRenderSort::DrawObjects()
             if (masked)
             {
 
-                BlitImage(o.image, tx[0], ty[0]);
+                BlitImage(o.image, tx[0], ty[0], CImage32::BLEND);
             }
             else
             {
 
-                BlitImageMask(o.image, tx[0], ty[0], o.mask);
+                BlitImageMask(o.image, tx[0], ty[0], CImage32::BLEND, o.mask);
             }
         }
         else
@@ -96,12 +96,12 @@ CRenderSort::DrawObjects()
             if (masked)
             {
 
-                TransformBlitImage(o.image, tx, ty);
+                TransformBlitImage(o.image, tx, ty, CImage32::BLEND);
             }
             else
             {
 
-                TransformBlitImageMask(o.image, tx, ty, o.mask);
+                TransformBlitImageMask(o.image, tx, ty, CImage32::BLEND, o.mask);
             }
         }
     }

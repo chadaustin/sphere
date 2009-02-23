@@ -178,7 +178,7 @@ int test_BlitImageEmpty()
     dword start = GetTime();
     while (start + TIME_PER_TEST > GetTime())
     {
-        BlitImage(image, 0, 0);
+        BlitImage(image, 0, 0, CImage32::BLEND);
         count++;
     }
 
@@ -198,7 +198,7 @@ int test_BlitImageFilled()
     dword start = GetTime();
     while (start + TIME_PER_TEST > GetTime())
     {
-        BlitImage(image, 0, 0);
+        BlitImage(image, 0, 0, CImage32::BLEND);
         count++;
     }
 
@@ -224,7 +224,7 @@ int test_BlitImageRandom()
     dword start = GetTime();
     while (start + TIME_PER_TEST > GetTime())
     {
-        BlitImage(image, 15, 15);
+        BlitImage(image, 15, 15, CImage32::BLEND);
         count++;
     }
 
@@ -251,7 +251,7 @@ int test_BlitImageMask()
     dword start = GetTime();
     while (start + TIME_PER_TEST > GetTime())
     {
-        BlitImageMask(image, 0, 0, mask);
+        BlitImageMask(image, 0, 0, CImage32::BLEND, mask);
         count++;
     }
 
@@ -280,7 +280,7 @@ int test_TransformBlit()
 //    int offset = count & 31;  // bottom four bits
         int x[4] = { count, count + 16, 24,  8 };
         int y[4] = { 0, 0, 16, 16 };
-        TransformBlitImage(image, x, y);
+        TransformBlitImage(image, x, y, CImage32::BLEND);
         count++;
     }
 
@@ -524,7 +524,7 @@ int test_BlitImageBlackScreen()
     while (start + TIME_PER_TEST > GetTime())
     {
 
-        BlitImage(image, 0, 0);
+        BlitImage(image, 0, 0, CImage32::BLEND);
         count++;
     }
     return count;

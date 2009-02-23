@@ -4,13 +4,24 @@
 #include <math.h>
 #include <string>
 
+#include "../../common/Image32.hpp"
 #include "../../common/rgb.hpp"
-#include "../../common/ParticleStructs.hpp"
+#include "../../common/VectorStructs.hpp"
 #include "../../common/configfile.hpp"
 
 #define EXPORT(ret) extern "C" ret __attribute__((stdcall))
 
-#define GL_CLAMP_TO_EDGE 0x812F
+
+#if !defined(APIENTRY)
+#   define APIENTRY
+#endif
+
+
+#define GL_CLAMP_TO_EDGE              0x812F
+#define GL_FUNC_ADD_EXT               0x8006
+#define GL_FUNC_SUBTRACT_EXT          0x800A
+#define GL_FUNC_REVERSE_SUBTRACT_EXT  0x800B
+
 
 #define SCALE()  (Config.scale ? 2 : 1)
 #define FILTER() (SCALE() == 1 ? GL_NEAREST : (Config.bilinear_filter ? GL_LINEAR : GL_NEAREST))
@@ -61,7 +72,15 @@ struct DRIVERCONFIG
 };
 
 
-// function prototypes
+// extension function pointers
+void (APIENTRY* glBlendEquationEXT)(GLenum);
+
+
+// FUNCTION PROTOTYPES //
+EXPORT(RGBA*) LockImage(IMAGE image);
+EXPORT(void)  UnlockImage(IMAGE image, bool pixels_changed);
+
+
 static bool   InitVideo(int w, int h);
 EXPORT(bool)  InitVideo(int w, int h, std::string sphere_dir);
 
@@ -87,7 +106,7 @@ EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
     driverinfo->name        = "SDL GL";
     driverinfo->author      = "Jamie Gennis, Kisai, Chad Austin";
     driverinfo->date        = __DATE__;
-    driverinfo->version     = "v1.0";
+    driverinfo->version     = "v1.1";
     driverinfo->description = "Hardware Accelerated OpenGL Sphere Video Driver";
 }
 
@@ -205,6 +224,25 @@ EXPORT(bool) InitVideo(int w, int h, std::string sphere_dir)
     }
 
     SDL_ShowCursor(false);
+
+
+    // try to get glBlendEquationEXT
+    if (strstr((const char*)glGetString(GL_EXTENSIONS), "GL_EXT_blend_minmax"))
+    {
+        glBlendEquationEXT = (void (APIENTRY*)(GLenum))SDL_GL_GetProcAddress("glBlendEquationEXT");
+    }
+    else
+    {
+        fprintf(stderr, "GL_EXT_blend_minmax extension not available\n");
+        return false;
+    }
+
+    // make sure GL_EXT_blend_subtract is also available
+    if (!strstr((const char*)glGetString(GL_EXTENSIONS), "GL_EXT_blend_subtract"))
+    {
+        fprintf(stderr, "GL_EXT_blend_subtract extension not available\n");
+        return false;
+    }
 
 
     // view initialization
@@ -498,6 +536,18 @@ EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+EXPORT(IMAGE) CloneImage(IMAGE image)
+{
+    if (!image)
+        return NULL;
+
+    IMAGE clone = CreateImage(image->width, image->height, LockImage(image));
+    UnlockImage(image, false);
+
+    return clone;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
 {
     RGBA* pixels = new RGBA[width * height];
@@ -522,7 +572,40 @@ EXPORT(void) DestroyImage(IMAGE image)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-EXPORT(void) BlitImage(IMAGE image, int x, int y)
+static void
+set_blendmode(CImage32::BlendMode blendmode)
+{
+    switch (blendmode)
+    {
+        case CImage32::BLEND:
+            glBlendEquationEXT(GL_FUNC_ADD_EXT);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            break;
+
+        case CImage32::ADD:
+            glBlendEquationEXT(GL_FUNC_ADD_EXT);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            break;
+
+        case CImage32::SUBTRACT:
+            glBlendEquationEXT(GL_FUNC_REVERSE_SUBTRACT_EXT);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            break;
+
+        case CImage32::MULTIPLY:
+            glBlendEquationEXT(GL_FUNC_ADD_EXT);
+            glBlendFunc(GL_DST_COLOR, GL_ZERO);
+            break;
+
+        default:
+            glBlendEquationEXT(GL_FUNC_ADD_EXT);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            break;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) BlitImage(IMAGE image, int x, int y, CImage32::BlendMode blendmode)
 {
 
     if (image->toggle_counter != toggle_counter)
@@ -530,6 +613,8 @@ EXPORT(void) BlitImage(IMAGE image, int x, int y)
 
     if (image->special == tagIMAGE::EMPTY)
         return;
+
+    set_blendmode(blendmode);
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, image->texture);
@@ -555,7 +640,7 @@ EXPORT(void) BlitImage(IMAGE image, int x, int y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
+EXPORT(void) BlitImageMask(IMAGE image, int x, int y, CImage32::BlendMode blendmode, RGBA mask)
 {
 
     if (image->toggle_counter != toggle_counter)
@@ -563,6 +648,8 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
 
     if (image->special == tagIMAGE::EMPTY)
         return;
+
+    set_blendmode(blendmode);
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, image->texture);
@@ -588,7 +675,7 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
+EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4], CImage32::BlendMode blendmode)
 {
 
     if (image->toggle_counter != toggle_counter)
@@ -596,6 +683,8 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
 
     if (image->special == tagIMAGE::EMPTY)
         return;
+
+    set_blendmode(blendmode);
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, image->texture);
@@ -632,7 +721,7 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
+EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], CImage32::BlendMode blendmode, RGBA mask)
 {
 
     if (image->toggle_counter != toggle_counter)
@@ -640,6 +729,8 @@ EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
 
     if (image->special == tagIMAGE::EMPTY)
         return;
+
+    set_blendmode(blendmode);
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, image->texture);

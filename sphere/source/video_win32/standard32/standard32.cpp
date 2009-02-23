@@ -6,24 +6,12 @@
 #include "hq2x.h"
 #include "scale.h"
 
+#include "../../common/Image32.hpp"
 #include "../../common/rgb.hpp"
 #include "../../common/primitives.hpp"
 #include "../common/video.hpp"
 #include "../common/win32x.hpp"
 #include "resource.h"
-
-/**
-   @todo maybe this should go to rgb.cpp or some such...  but then
-   every video driver depends on libcommon?
- */
-#ifdef USE_ALPHA_TABLE
-unsigned char alpha_new[256][256]={
-#include "../../common/alpha_new.table"
-                                  };
-unsigned char alpha_old[256][256]={
-#include "../../common/alpha_old.table"
-                                  };
-#endif
 
 /////////////////////////////////////////////////
 typedef struct _IMAGE
@@ -37,13 +25,6 @@ typedef struct _IMAGE
     RGBA* original;
 
     void (*blit_routine)(_IMAGE* image, int x, int y);
-
-#ifdef USE_CLIP_IMAGE
-    int clip_x;
-    int clip_y;
-    int clip_width;
-    int clip_height;
-#endif
 
 } *IMAGE;
 
@@ -99,6 +80,11 @@ class VideoConfiguration
 };
 
 
+// FUNCTION PROTOTYPES //
+
+EXPORT(RGBA*) LockImage(IMAGE image);
+EXPORT(void)  UnlockImage(IMAGE image, bool pixels_changed);
+
 static void LoadConfiguration();
 
 static bool InitFullscreen();
@@ -119,6 +105,9 @@ static void NullBlit(IMAGE image, int x, int y);
 static void TileBlit(IMAGE image, int x, int y);
 static void SpriteBlit(IMAGE image, int x, int y);
 static void NormalBlit(IMAGE image, int x, int y);
+static void AddBlit(IMAGE image, int x, int y);
+static void SubtractBlit(IMAGE image, int x, int y);
+static void MultiplyBlit(IMAGE image, int x, int y);
 
 // video driver variables
 static VideoConfiguration Config;
@@ -154,7 +143,7 @@ EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
     driverinfo->name        = "Standard32";
     driverinfo->author      = "Chad Austin, Anatoli Steinmark";
     driverinfo->date        = __DATE__;
-    driverinfo->version     = "v1.1";
+    driverinfo->version     = "v1.2";
     driverinfo->description = "32-bit Software Sphere Video Driver";
 
 }
@@ -622,9 +611,9 @@ bool FillImagePixels(IMAGE image, RGBA* pixels)
 
     for (int i = 0; i < pixels_total; ++i)
     {
-        image->bgra[i].red   = (pixels[i].red   * pixels[i].alpha) >> 8;
-        image->bgra[i].green = (pixels[i].green * pixels[i].alpha) >> 8;
-        image->bgra[i].blue  = (pixels[i].blue  * pixels[i].alpha) >> 8;
+        image->bgra[i].red   = (pixels[i].red   * (pixels[i].alpha + 1)) >> 8;
+        image->bgra[i].green = (pixels[i].green * (pixels[i].alpha + 1)) >> 8;
+        image->bgra[i].blue  = (pixels[i].blue  * (pixels[i].alpha + 1)) >> 8;
     }
 
     // fill the alpha array
@@ -654,9 +643,9 @@ bool RefillImagePixels(IMAGE image)
 
     for (int i = 0; i < pixels_total; ++i)
     {
-        image->bgra[i].red   = (pixels[i].red   * pixels[i].alpha) >> 8;
-        image->bgra[i].green = (pixels[i].green * pixels[i].alpha) >> 8;
-        image->bgra[i].blue  = (pixels[i].blue  * pixels[i].alpha) >> 8;
+        image->bgra[i].red   = (pixels[i].red   * (pixels[i].alpha + 1)) >> 8;
+        image->bgra[i].green = (pixels[i].green * (pixels[i].alpha + 1)) >> 8;
+        image->bgra[i].blue  = (pixels[i].blue  * (pixels[i].alpha + 1)) >> 8;
     }
 
     // fill the alpha array
@@ -671,117 +660,6 @@ bool RefillImagePixels(IMAGE image)
     return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-#if USE_CLIP_IMAGE
-/**
-  Images can often have big blocks of alpha around them (e.g. fonts, spritesets)
-  This works out what parts of the image itself can be clipped from the blit
-*/
-void
-ClipImage(IMAGE image, int& clip_x, int& clip_y, int& clip_width, int& clip_height)
-{
-    clip_x = 0;
-    clip_y = 0;
-    clip_width = image->width;
-    clip_height = image->height;
-    bool done = false;
-    for (int x = 0; x < image->width; x++)
-    {
-
-        for (int y = 0; y < image->height; y++)
-        {
-
-            if (image->alpha[y * image->width + x] != 0)
-            {
-
-                done = true;
-                break;
-            }
-        }
-        if (done)
-        {
-            break;
-        }
-        else
-        {
-            clip_x++;
-        }
-
-    }
-    done = false;
-    for (int y = 0; y < image->height; y++)
-    {
-
-        for (int x = 0; x < image->width; x++)
-        {
-
-            if (image->alpha[y * image->width + x] != 0)
-            {
-
-                done = true;
-                break;
-            }
-        }
-        if (done)
-        {
-            break;
-        }
-        else
-        {
-            clip_y++;
-        }
-
-    }
-    done = false;
-    for (int x = image->width - 1; x >= clip_x; x--)
-    {
-
-        for (int y = 0; y < image->height; y++)
-        {
-
-            if (image->alpha[y * image->width + x] != 0)
-            {
-
-                done = true;
-                break;
-            }
-        }
-        if (done)
-        {
-            break;
-        }
-        else
-        {
-            clip_width--;
-        }
-
-    }
-    done = false;
-    for (int y = image->height - 1; y >= clip_y; y--)
-    {
-
-        for (int x = 0; x < image->width; x++)
-        {
-
-            if (image->alpha[y * image->width + x] != 0)
-            {
-
-                done = true;
-                break;
-            }
-        }
-        if (done)
-        {
-            break;
-        }
-        else
-        {
-            clip_height--;
-        }
-
-    }
-}
-#endif
 ////////////////////////////////////////////////////////////////////////////////
 /**
   This works out the best way to draw the image.
@@ -820,9 +698,6 @@ void OptimizeBlitRoutine(IMAGE image)
         return;
     }
 
-#ifdef USE_CLIP_IMAGE
-    ClipImage(image, image->clip_x, image->clip_y, image->clip_width, image->clip_height);
-#endif
     // sprite blit
     bool is_sprite = true;
     for (int i = 0; i < image->width * image->height; i++)
@@ -873,6 +748,19 @@ EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 
     return image;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(IMAGE) CloneImage(IMAGE image)
+{
+    if (!image)
+        return NULL;
+
+    IMAGE clone = CreateImage(image->width, image->height, LockImage(image));
+    UnlockImage(image, false);
+
+    return clone;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
 {
@@ -939,123 +827,204 @@ EXPORT(IMAGE) GrabImage(int x, int y, int width, int height)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-EXPORT(void) BlitImage(IMAGE image, int x, int y)
+EXPORT(void) BlitImage(IMAGE image, int x, int y, CImage32::BlendMode blendmode)
 {
     // don't draw it if it's off the screen
     if (x + image->width  < ClippingRectangle.left  ||
         y + image->height < ClippingRectangle.top   ||
         x                 > ClippingRectangle.right ||
         y                 > ClippingRectangle.bottom)
+    {
         return;
+    }
 
-    image->blit_routine(image, x, y);
+    switch (blendmode)
+    {
+        case CImage32::BLEND:
+            image->blit_routine(image, x, y);
+            break;
+
+        case CImage32::ADD:
+            AddBlit(image, x, y);
+            break;
+
+        case CImage32::SUBTRACT:
+            SubtractBlit(image, x, y);
+            break;
+
+        case CImage32::MULTIPLY:
+            MultiplyBlit(image, x, y);
+            break;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-template<typename pixelT>
+template<typename pixelT, CImage32::BlendMode blendmode>
 class render_pixel_mask
 {
-public:
-    render_pixel_mask(RGBA mask) : m_mask(mask)
-    { }
-    void operator()(pixelT& dst, pixelT src, byte alpha)
-    {
-        // do the masking on the source pixel
-#ifdef USE_ALPHA_TABLE
-        alpha     = alpha_new[m_mask.alpha][alpha];
-        src.red   = alpha_new[m_mask.red][src.red];
-        src.green = alpha_new[m_mask.green][src.green];
-        src.blue  = alpha_new[m_mask.blue][src.blue];
-#else
-        alpha     = (int)alpha     * m_mask.alpha / 256;
-        src.red   = (int)src.red   * m_mask.red   / 256;
-        src.green = (int)src.green * m_mask.green / 256;
-        src.blue  = (int)src.blue  * m_mask.blue  / 256;
-#endif
+    private:
 
-        // blit to the dest pixel
-#ifdef USE_ALPHA_TABLE
-        dst.red   = alpha_old[alpha][dst.red]   + alpha_new[m_mask.alpha][src.red];
-        dst.green = alpha_old[alpha][dst.green] + alpha_new[m_mask.alpha][src.green];
-        dst.blue  = alpha_old[alpha][dst.blue]  + alpha_new[m_mask.alpha][src.blue];
-#else
-        dst.red   = (dst.red   * (256 - alpha) + src.red   * m_mask.alpha) / 256;
-        dst.green = (dst.green * (256 - alpha) + src.green * m_mask.alpha) / 256;
-        dst.blue  = (dst.blue  * (256 - alpha) + src.blue  * m_mask.alpha) / 256;
-#endif
-    }
+        RGBA m_mask;
 
-private:
-    RGBA m_mask;
+    public:
+
+        render_pixel_mask(RGBA mask) : m_mask(mask)
+        {
+        }
+
+        void operator()(pixelT& dst, pixelT src, int alpha)
+        {
+            // do the masking on the source pixel
+            alpha     = alpha     * (m_mask.alpha + 1) >> 8;
+            src.red   = src.red   * (m_mask.red   + 1) >> 8;
+            src.green = src.green * (m_mask.green + 1) >> 8;
+            src.blue  = src.blue  * (m_mask.blue  + 1) >> 8;
+
+            alpha = 256 - alpha;
+
+            // blit to the dst pixel
+            switch (blendmode)
+            {
+                case CImage32::BLEND:
+                    dst.red   = (dst.red   * alpha + src.red   * (m_mask.alpha + 1)) >> 8;
+                    dst.green = (dst.green * alpha + src.green * (m_mask.alpha + 1)) >> 8;
+                    dst.blue  = (dst.blue  * alpha + src.blue  * (m_mask.alpha + 1)) >> 8;
+                    break;
+
+                case CImage32::ADD:
+                    dst.red   = min(dst.red   + (src.red   * (m_mask.alpha + 1) >> 8), 255);
+                    dst.green = min(dst.green + (src.green * (m_mask.alpha + 1) >> 8), 255);
+                    dst.blue  = min(dst.blue  + (src.blue  * (m_mask.alpha + 1) >> 8), 255);
+                    break;
+
+                case CImage32::SUBTRACT:
+                    dst.red   = max(dst.red   - (src.red   * (m_mask.alpha + 1) >> 8), 0);
+                    dst.green = max(dst.green - (src.green * (m_mask.alpha + 1) >> 8), 0);
+                    dst.blue  = max(dst.blue  - (src.blue  * (m_mask.alpha + 1) >> 8), 0);
+                    break;
+
+                case CImage32::MULTIPLY:
+                    dst.red   = (dst.red   * ((src.red   * (m_mask.alpha + 1) >> 8) + 1)) >> 8;
+                    dst.green = (dst.green * ((src.green * (m_mask.alpha + 1) >> 8) + 1)) >> 8;
+                    dst.blue  = (dst.blue  * ((src.blue  * (m_mask.alpha + 1) >> 8) + 1)) >> 8;
+                    break;
+            }
+        }
 };
 
-EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) BlitImageMask(IMAGE image, int x, int y, CImage32::BlendMode blendmode, RGBA mask)
 {
-
     if (mask.alpha == 0)
-    {
-
         return;
-    }
+
     if (mask.alpha == 255)
     {
-
         // if the mask doesn't affect the imageblit, fallback onto BlitImage
         if (mask.red == 255 && mask.green == 255 && mask.blue == 255)
         {
-
-            BlitImage(image, x, y);
+            BlitImage(image, x, y, blendmode);
             return;
         }
     }
 
-    primitives::Blit(
-        ScreenBufferSection,
-        ScreenBufferWidth,
-        x,
-        y,
-        image->bgra,
-        image->alpha,
-        image->width,
-        image->height,
-        ClippingRectangle,
-        render_pixel_mask<BGRA>(mask)
-    );
+    switch (blendmode)
+    {
+        case CImage32::BLEND:
+            primitives::Blit(
+                ScreenBufferSection,
+                ScreenBufferWidth,
+                x,
+                y,
+                image->bgra,
+                image->alpha,
+                image->width,
+                image->height,
+                ClippingRectangle,
+                render_pixel_mask<BGRA, CImage32::BLEND>(mask)
+            );
+            break;
 
+        case CImage32::ADD:
+            primitives::Blit(
+                ScreenBufferSection,
+                ScreenBufferWidth,
+                x,
+                y,
+                image->bgra,
+                image->alpha,
+                image->width,
+                image->height,
+                ClippingRectangle,
+                render_pixel_mask<BGRA, CImage32::ADD>(mask)
+            );
+            break;
+
+        case CImage32::SUBTRACT:
+            primitives::Blit(
+                ScreenBufferSection,
+                ScreenBufferWidth,
+                x,
+                y,
+                image->bgra,
+                image->alpha,
+                image->width,
+                image->height,
+                ClippingRectangle,
+                render_pixel_mask<BGRA, CImage32::SUBTRACT>(mask)
+            );
+            break;
+
+        case CImage32::MULTIPLY:
+            primitives::Blit(
+                ScreenBufferSection,
+                ScreenBufferWidth,
+                x,
+                y,
+                image->bgra,
+                image->alpha,
+                image->width,
+                image->height,
+                ClippingRectangle,
+                render_pixel_mask<BGRA, CImage32::MULTIPLY>(mask)
+            );
+            break;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void aBlendBGR(struct BGR& d, struct BGR s, int a)
+void aBlendBGRA(BGRA& d, BGRA s, int a)
 {
-    // blit to the dest pixel
-#ifdef USE_ALPHA_TABLE
-    d.red   = alpha_old[a][d.red]   + s.red;
-    d.green = alpha_old[a][d.green] + s.green;
-    d.blue  = alpha_old[a][d.blue]  + s.blue;
-#else
-    d.red   = (d.red   * (256 - a)) / 256 + s.red;
-    d.green = (d.green * (256 - a)) / 256 + s.green;
-    d.blue  = (d.blue  * (256 - a)) / 256 + s.blue;
-#endif
+    a = 256 - a;
+    d.red   = ((d.red   * a) >> 8) + s.red;
+    d.green = ((d.green * a) >> 8) + s.green;
+    d.blue  = ((d.blue  * a) >> 8) + s.blue;
 }
 
-void aBlendBGRA(struct BGRA& d, struct BGRA s, int a)
+void aAddBGRA(BGRA& d, BGRA s, int a)
 {
-    // blit to the dest pixel
-#ifdef USE_ALPHA_TABLE
-    d.red   = alpha_old[a][d.red]   + s.red;
-    d.green = alpha_old[a][d.green] + s.green;
-    d.blue  = alpha_old[a][d.blue]  + s.blue;
-#else
-    d.red   = (d.red   * (256 - a)) / 256 + s.red;
-    d.green = (d.green * (256 - a)) / 256 + s.green;
-    d.blue  = (d.blue  * (256 - a)) / 256 + s.blue;
-#endif
+    d.red   = min(d.red   + s.red,   255);
+    d.green = min(d.green + s.green, 255);
+    d.blue  = min(d.blue  + s.blue,  255);
 }
 
-EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
+void aSubtractBGRA(BGRA& d, BGRA s, int a)
 {
+    d.red   = max(d.red   - s.red,   0);
+    d.green = max(d.green - s.green, 0);
+    d.blue  = max(d.blue  - s.blue,  0);
+}
 
+void aMultiplyBGRA(BGRA& d, BGRA s, int a)
+{
+    d.red   = (d.red   * (s.red   + 1)) >> 8;
+    d.green = (d.green * (s.green + 1)) >> 8;
+    d.blue  = (d.blue  * (s.blue  + 1)) >> 8;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4], CImage32::BlendMode blendmode)
+{
     // fallback onto BlitImage if possible
     if (x[0] == x[3] && x[1] == x[2] && y[0] == y[1] && y[2] == y[3])
     {
@@ -1063,51 +1032,147 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
         int dh = y[2] - y[0] + 1;
         if (dw == image->width && dh == image->height)
         {
-            BlitImage(image, x[0], y[0]);
+            BlitImage(image, x[0], y[0], blendmode);
             return;
         }
     }
 
-    primitives::TexturedQuad(
-        ScreenBufferSection,
-        ScreenBufferWidth,
-        x,
-        y,
-        image->bgra,
-        image->alpha,
-        image->width,
-        image->height,
-        ClippingRectangle,
-        aBlendBGRA
-    );
+    switch (blendmode)
+    {
+        case CImage32::BLEND:
+            primitives::TexturedQuad(
+                ScreenBufferSection,
+                ScreenBufferWidth,
+                x,
+                y,
+                image->bgra,
+                image->alpha,
+                image->width,
+                image->height,
+                ClippingRectangle,
+                aBlendBGRA
+            );
+            break;
 
+        case CImage32::ADD:
+            primitives::TexturedQuad(
+                ScreenBufferSection,
+                ScreenBufferWidth,
+                x,
+                y,
+                image->bgra,
+                image->alpha,
+                image->width,
+                image->height,
+                ClippingRectangle,
+                aAddBGRA
+            );
+            break;
+
+        case CImage32::SUBTRACT:
+            primitives::TexturedQuad(
+                ScreenBufferSection,
+                ScreenBufferWidth,
+                x,
+                y,
+                image->bgra,
+                image->alpha,
+                image->width,
+                image->height,
+                ClippingRectangle,
+                aSubtractBGRA
+            );
+            break;
+
+        case CImage32::MULTIPLY:
+            primitives::TexturedQuad(
+                ScreenBufferSection,
+                ScreenBufferWidth,
+                x,
+                y,
+                image->bgra,
+                image->alpha,
+                image->width,
+                image->height,
+                ClippingRectangle,
+                aMultiplyBGRA
+            );
+            break;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
+EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], CImage32::BlendMode blendmode, RGBA mask)
 {
-
     // if the mask doesn't affect the imageblit, fallback onto the non-mask blit
     if (mask.red == 255 && mask.green == 255 && mask.blue == 255 && mask.alpha == 255)
     {
-
-        TransformBlitImage(image, x, y);
+        TransformBlitImage(image, x, y, blendmode);
         return;
     }
 
-    primitives::TexturedQuad(
-        ScreenBufferSection,
-        ScreenBufferWidth,
-        x,
-        y,
-        image->bgra,
-        image->alpha,
-        image->width,
-        image->height,
-        ClippingRectangle,
-        render_pixel_mask<BGRA>(mask)
-    );
+    switch (blendmode)
+    {
+        case CImage32::BLEND:
+            primitives::TexturedQuad(
+                ScreenBufferSection,
+                ScreenBufferWidth,
+                x,
+                y,
+                image->bgra,
+                image->alpha,
+                image->width,
+                image->height,
+                ClippingRectangle,
+                render_pixel_mask<BGRA, CImage32::BLEND>(mask)
+            );
+            break;
 
+        case CImage32::ADD:
+            primitives::TexturedQuad(
+                ScreenBufferSection,
+                ScreenBufferWidth,
+                x,
+                y,
+                image->bgra,
+                image->alpha,
+                image->width,
+                image->height,
+                ClippingRectangle,
+                render_pixel_mask<BGRA, CImage32::ADD>(mask)
+            );
+            break;
+
+        case CImage32::SUBTRACT:
+            primitives::TexturedQuad(
+                ScreenBufferSection,
+                ScreenBufferWidth,
+                x,
+                y,
+                image->bgra,
+                image->alpha,
+                image->width,
+                image->height,
+                ClippingRectangle,
+                render_pixel_mask<BGRA, CImage32::SUBTRACT>(mask)
+            );
+            break;
+
+        case CImage32::MULTIPLY:
+            primitives::TexturedQuad(
+                ScreenBufferSection,
+                ScreenBufferWidth,
+                x,
+                y,
+                image->bgra,
+                image->alpha,
+                image->width,
+                image->height,
+                ClippingRectangle,
+                render_pixel_mask<BGRA, CImage32::MULTIPLY>(mask)
+            );
+            break;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1137,12 +1202,7 @@ void TileBlit(IMAGE image, int x, int y)
 ////////////////////////////////////////////////////////////////////////////////
 void SpriteBlit(IMAGE image, int x, int y)
 {
-
-#ifdef USE_CLIP_IMAGE
-    calculate_clipping_metrics(image->clip_width, image->clip_height);
-#else
     calculate_clipping_metrics(image->width, image->height);
-#endif
 
     BGRA* dst   = ScreenBufferSection + (y + image_offset_y) * ScreenBufferWidth  + image_offset_x + x;
     BGRA* src   = image->bgra         +      image_offset_y  * image->width       + image_offset_x;
@@ -1175,14 +1235,7 @@ void SpriteBlit(IMAGE image, int x, int y)
 ////////////////////////////////////////////////////////////////////////////////
 void NormalBlit(IMAGE image, int x, int y)
 {
-#ifdef USE_CLIP_IMAGE
-
-    calculate_clipping_metrics(image->clip_width, image->clip_height);
-#else
     calculate_clipping_metrics(image->width, image->height);
-#endif
-
-    int a;
 
     BGRA* dst   = ScreenBufferSection + (y + image_offset_y) * ScreenBufferWidth  + image_offset_x + x;
     BGRA* src   = image->bgra         +      image_offset_y  * image->width       + image_offset_x;
@@ -1192,14 +1245,12 @@ void NormalBlit(IMAGE image, int x, int y)
     int src_inc = image->width      - image_blit_width;
 
     int iy = image_blit_height;
-    int ix;
-
     while (iy-- > 0)
     {
-        ix = image_blit_width;
+        int ix = image_blit_width;
         while (ix-- > 0)
         {
-            a = 256 - *alpha;
+            int a = 256 - *alpha;
 
             dst->red   = ((dst->red   * a) >> 8) + src->red;
             dst->green = ((dst->green * a) >> 8) + src->green;
@@ -1215,6 +1266,93 @@ void NormalBlit(IMAGE image, int x, int y)
         alpha += src_inc;
     }
 
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void AddBlit(IMAGE image, int x, int y)
+{
+    calculate_clipping_metrics(image->width, image->height);
+
+    BGRA* dst   = ScreenBufferSection + (y + image_offset_y) * ScreenBufferWidth  + image_offset_x + x;
+    BGRA* src   = image->bgra         +      image_offset_y  * image->width       + image_offset_x;
+
+    int dst_inc = ScreenBufferWidth - image_blit_width;
+    int src_inc = image->width      - image_blit_width;
+
+    int iy = image_blit_height;
+    while (iy-- > 0)
+    {
+        int ix = image_blit_width;
+        while (ix-- > 0)
+        {
+            dst->red   = min(dst->red   + src->red,   255);
+            dst->green = min(dst->green + src->green, 255);
+            dst->blue  = min(dst->blue  + src->blue,  255);
+
+            ++dst;
+            ++src;
+        }
+        dst += dst_inc;
+        src += src_inc;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void SubtractBlit(IMAGE image, int x, int y)
+{
+    calculate_clipping_metrics(image->width, image->height);
+
+    BGRA* dst   = ScreenBufferSection + (y + image_offset_y) * ScreenBufferWidth  + image_offset_x + x;
+    BGRA* src   = image->bgra         +      image_offset_y  * image->width       + image_offset_x;
+
+    int dst_inc = ScreenBufferWidth - image_blit_width;
+    int src_inc = image->width      - image_blit_width;
+
+    int iy = image_blit_height;
+    while (iy-- > 0)
+    {
+        int ix = image_blit_width;
+        while (ix-- > 0)
+        {
+            dst->red   = max(dst->red   - src->red,   0);
+            dst->green = max(dst->green - src->green, 0);
+            dst->blue  = max(dst->blue  - src->blue,  0);
+
+            ++dst;
+            ++src;
+        }
+        dst += dst_inc;
+        src += src_inc;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void MultiplyBlit(IMAGE image, int x, int y)
+{
+    calculate_clipping_metrics(image->width, image->height);
+
+    BGRA* dst   = ScreenBufferSection + (y + image_offset_y) * ScreenBufferWidth  + image_offset_x + x;
+    BGRA* src   = image->bgra         +      image_offset_y  * image->width       + image_offset_x;
+
+    int dst_inc = ScreenBufferWidth - image_blit_width;
+    int src_inc = image->width      - image_blit_width;
+
+    int iy = image_blit_height;
+    while (iy-- > 0)
+    {
+        int ix = image_blit_width;
+        while (ix-- > 0)
+        {
+            dst->red   = (dst->red   * (src->red   + 1)) >> 8;
+            dst->green = (dst->green * (src->green + 1)) >> 8;
+            dst->blue  = (dst->blue  * (src->blue  + 1)) >> 8;
+
+            ++dst;
+            ++src;
+        }
+        dst += dst_inc;
+        src += src_inc;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

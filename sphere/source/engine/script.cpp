@@ -28,6 +28,8 @@
 #include "../common/md5global.h"
 #include "../common/md5.h"
 
+#include "../common/VectorStructs.hpp"
+
 // parameter grabbing
 #include "parameters.hpp"
 const int MAX_RECURSE_COUNT = 256;
@@ -51,6 +53,15 @@ const dword SS_RAWFILE_MAGIC     = 0x29bcd805;
 const dword SS_BYTEARRAY_MAGIC   = 0x2295027f;
 const dword SS_MAPENGINE_MAGIC   = 0x42424401;
 const dword SS_TILESET_MAGIC     = 0x43434402;
+const dword SS_PARTICLE_SYSTEM_PARENT_MAGIC  = 0x80000000;
+const dword SS_PARTICLE_SYSTEM_CHILD_MAGIC   = 0x80000001;
+const dword SS_PARTICLE_BODY_MAGIC           = 0x80000012;
+const dword SS_PARTICLE_INITIALIZER_MAGIC    = 0x80000123;
+const dword SS_PARTICLE_UPDATER_MAGIC        = 0x80001234;
+const dword SS_PARTICLE_RENDERER_MAGIC       = 0x80012345;
+const dword SS_PARTICLE_CALLBACK_MAGIC       = 0x80123456;
+const dword SS_PARTICLE_SWARM_RENDERER_MAGIC = 0x81234567;
+
 
 struct SS_OBJECT
 {
@@ -63,6 +74,38 @@ struct SS_OBJECT
 
 #define END_SS_OBJECT() \
   };
+
+BEGIN_SS_OBJECT(SS_PARTICLE_SYSTEM_PARENT)
+ParticleSystemParent* system;
+END_SS_OBJECT()
+
+BEGIN_SS_OBJECT(SS_PARTICLE_SYSTEM_CHILD)
+ParticleSystemChild* system;
+END_SS_OBJECT()
+
+BEGIN_SS_OBJECT(SS_PARTICLE_BODY)
+ParticleSystemBase* system;
+END_SS_OBJECT()
+
+BEGIN_SS_OBJECT(SS_PARTICLE_INITIALIZER)
+ParticleSystemBase* system;
+END_SS_OBJECT()
+
+BEGIN_SS_OBJECT(SS_PARTICLE_UPDATER)
+ParticleSystemBase* system;
+END_SS_OBJECT()
+
+BEGIN_SS_OBJECT(SS_PARTICLE_SWARM_RENDERER)
+ParticleSystemChild* system;
+END_SS_OBJECT()
+
+BEGIN_SS_OBJECT(SS_PARTICLE_RENDERER)
+ParticleSystemBase* system;
+END_SS_OBJECT()
+
+BEGIN_SS_OBJECT(SS_PARTICLE_CALLBACK)
+ParticleSystemBase* system;
+END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_SOCKET)
 NSOCKET socket;
@@ -545,6 +588,19 @@ CScript::InitializeSphereConstants()
                       { "SE_SINGLE",   audiere::SINGLE },
                       { "SE_MULTIPLE", audiere::MULTIPLE },
 
+                      // particle engine constants
+                      { "PE_NULL_SHAPE",           ParticleInitializer::NULL_SHAPE },
+                      { "PE_RECTANGULAR_SHAPE",    ParticleInitializer::RECTANGULAR_SHAPE },
+                      { "PE_ELLIPTICAL_SHAPE",     ParticleInitializer::ELLIPTICAL_SHAPE },
+
+                      { "PE_EXPLICIT_ORIENTATION", ParticleInitializer::EXPLICIT_ORIENTATION },
+                      { "PE_IMPLICIT_ORIENTATION", ParticleInitializer::IMPLICIT_ORIENTATION },
+
+
+
+
+
+
                       // keyboard constants
 #define KEY_CONSTANT(name) { #name, name },
                       KEY_CONSTANT(KEY_ESCAPE)
@@ -809,6 +865,49 @@ inline void USED(T /*t*/)
 #define end_func()  \
     return (This->m_ShouldExit ? JS_FALSE : JS_TRUE); \
   }
+
+///////////////////////////////////////////////////////////
+inline ParticleSystemBase* argParticleSystem(JSContext* cx, jsval arg)
+{
+    if (!JSVAL_IS_OBJECT(arg))
+    {
+        JS_ReportError(cx, "Invalid particle system object");
+        return NULL;
+    }
+
+    if (JS_IsArrayObject(cx, JSVAL_TO_OBJECT(arg)))
+    {
+        JS_ReportError(cx, "Invalid particle system object");
+        return NULL;
+    }
+
+    SS_OBJECT* unknown = (SS_OBJECT*)JS_GetPrivate(cx, JSVAL_TO_OBJECT(arg));
+
+    if (unknown == NULL)
+    {
+        JS_ReportError(cx, "Invalid particle system object");
+        return NULL;
+    }
+
+    if (unknown->magic == SS_PARTICLE_SYSTEM_PARENT_MAGIC)
+    {
+        SS_PARTICLE_SYSTEM_PARENT* system;
+        system = (SS_PARTICLE_SYSTEM_PARENT*)JS_GetPrivate(cx, JSVAL_TO_OBJECT(arg));
+        return system->system;
+    }
+    else if (unknown->magic == SS_PARTICLE_SYSTEM_CHILD_MAGIC)
+    {
+        SS_PARTICLE_SYSTEM_CHILD* system;
+        system = (SS_PARTICLE_SYSTEM_CHILD*)JS_GetPrivate(cx, JSVAL_TO_OBJECT(arg));
+        return system->system;
+    }
+    else
+    {
+        JS_ReportError(cx, "Invalid particle system object");
+        return NULL;
+    }
+
+}
 
 ///////////////////////////////////////////////////////////
 inline RGBA argColor(JSContext* cx, jsval arg)
@@ -1339,13 +1438,18 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 #define arg_font(name)       SS_FONT* name      = argFont(cx, argv[arg++]);        if (name == NULL) return JS_FALSE; __arg_error_check__("Font")
 #define arg_spriteset(name)  sSpriteset* name   = argSpriteset(cx, argv[arg++]);   if (name == NULL) return JS_FALSE; __arg_error_check__("Spriteset")
 
+#define arg_particle_system(name)  ParticleSystemBase* name = argParticleSystem(cx, argv[arg++]); if (name == NULL) return JS_FALSE; __arg_error_check__("ParticleSystem")
+
 // return values
+#define return_null()         *rval = JSVAL_NULL
+#define return_void()         *rval = JSVAL_VOID
 #define return_int(expr)      *rval = INT_TO_JSVAL(expr)
 #define return_bool(expr)     *rval = BOOLEAN_TO_JSVAL(expr)
 #define return_object(expr)   *rval = OBJECT_TO_JSVAL(expr)
 #define return_str(expr)      *rval = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, expr))
 #define return_str_n(expr, n) *rval = STRING_TO_JSVAL(JS_NewStringCopyN(cx, expr, n))
 #define return_double(expr)   *rval = DOUBLE_TO_JSVAL(JS_NewDouble(cx, expr))
+#define return_jsval(expr)    *rval = expr
 
 // Sphere function implementations
 ////////////////////////////////////////////////////////////////////////////////
@@ -2768,6 +2872,38 @@ end_func()
 */
 begin_func(GetTime, 0)
 return_int(GetTime());
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+// section: particle engine //
+/**
+    - returns a new particle system parent
+*/
+begin_func(CreateParticleSystemParent, 0)
+ParticleSystemParent* system = new ParticleSystemParent;
+if (!system)
+{
+    return JS_FALSE;
+}
+return_object(CreateParticleSystemParentObject(cx, system));
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - returns a new particle system child
+*/
+begin_func(CreateParticleSystemChild, 1)
+arg_int(size);
+if (size < 0)
+{
+    size = 0;
+}
+ParticleSystemChild* system = new ParticleSystemChild(size);
+if (!system)
+{
+    return JS_FALSE;
+}
+return_object(CreateParticleSystemChildObject(cx, system));
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -6632,6 +6768,1330 @@ end_func()
     return (This->m_ShouldExit ? JS_FALSE : JS_TRUE); \
   }
 
+
+////////////////////////////////////////
+// PARTICLE ENGINE OBJECTS /////////////
+////////////////////////////////////////
+
+////////////////////////////////////////
+// PARTICLE BODY OBJECT ////////////////
+////////////////////////////////////////
+
+JSObject*
+CScript::CreateParticleBodyObject(JSContext* cx, ParticleSystemBase* system)
+{
+    if (!system)
+        return NULL;
+
+    static JSClass clasp =
+    {
+        "particle body", JSCLASS_HAS_PRIVATE,
+        JS_PropertyStub,  JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+        JS_EnumerateStub, JS_ResolveStub,  JS_ConvertStub,  ssFinalizeParticleBody,
+    };
+
+    // create the object
+    JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
+
+    if (!object || !JS_AddRoot(cx, &object))
+        return NULL;
+
+    // assign properties to the object
+    static JSPropertySpec ps[] =
+    {
+        { "x",     0, JSPROP_PERMANENT, ssParticleBodyGetProperty, ssParticleBodySetProperty },
+        { "y",     1, JSPROP_PERMANENT, ssParticleBodyGetProperty, ssParticleBodySetProperty },
+        { "vel_x", 2, JSPROP_PERMANENT, ssParticleBodyGetProperty, ssParticleBodySetProperty },
+        { "vel_y", 3, JSPROP_PERMANENT, ssParticleBodyGetProperty, ssParticleBodySetProperty },
+        { "life",  4, JSPROP_PERMANENT, ssParticleBodyGetProperty, ssParticleBodySetProperty },
+        { "aging", 5, JSPROP_PERMANENT, ssParticleBodyGetProperty, ssParticleBodySetProperty },
+        { 0, 0, 0, 0, 0 },
+    };
+    JS_DefineProperties(cx, object, ps);
+
+    SS_PARTICLE_BODY* body_object = new SS_PARTICLE_BODY;
+
+    if (!body_object)
+    {
+        // balancing call to JS_RemoveRoot
+        JS_RemoveRoot(cx, &object);
+
+        return NULL;
+    }
+
+    body_object->system = system;
+    JS_SetPrivate(cx, object, body_object);
+
+    // balancing call to JS_RemoveRoot
+    JS_RemoveRoot(cx, &object);
+
+    return object;
+}
+
+////////////////////////////////////////
+begin_finalizer(SS_PARTICLE_BODY, ssFinalizeParticleBody)
+// the body object should not delete the superior particle system
+object->system = NULL;
+end_finalizer()
+
+////////////////////////////////////////
+begin_property(SS_PARTICLE_BODY, ssParticleBodyGetProperty)
+int prop_id = argInt(cx, id);
+switch (prop_id)
+{
+case 0:
+    *vp = DOUBLE_TO_JSVAL(JS_NewDouble(cx, (double)object->system->GetBody().Pos.X));
+    break;
+case 1:
+    *vp = DOUBLE_TO_JSVAL(JS_NewDouble(cx, (double)object->system->GetBody().Pos.Y));
+    break;
+case 2:
+    *vp = DOUBLE_TO_JSVAL(JS_NewDouble(cx, (double)object->system->GetBody().Vel.X));
+    break;
+case 3:
+    *vp = DOUBLE_TO_JSVAL(JS_NewDouble(cx, (double)object->system->GetBody().Vel.Y));
+    break;
+case 4:
+    *vp = DOUBLE_TO_JSVAL(JS_NewDouble(cx, (double)object->system->GetBody().Life));
+    break;
+case 5:
+    *vp = DOUBLE_TO_JSVAL(JS_NewDouble(cx, (double)object->system->GetBody().Aging));
+    break;
+default:
+    *vp = JSVAL_NULL;
+    break;
+}
+end_property()
+
+////////////////////////////////////////
+begin_property(SS_PARTICLE_BODY, ssParticleBodySetProperty)
+int prop_id = argInt(cx, id);
+switch (prop_id)
+{
+case 0:
+    object->system->GetBody().Pos.X = (float)argDouble(cx, *vp);
+    break;
+case 1:
+    object->system->GetBody().Pos.Y = (float)argDouble(cx, *vp);
+    break;
+case 2:
+    object->system->GetBody().Vel.X = (float)argDouble(cx, *vp);
+    break;
+case 3:
+    object->system->GetBody().Vel.Y = (float)argDouble(cx, *vp);
+    break;
+case 4:
+    object->system->GetBody().Life  = (float)argDouble(cx, *vp);
+    break;
+case 5:
+    object->system->GetBody().Aging = (float)argDouble(cx, *vp);
+    break;
+}
+end_property()
+
+////////////////////////////////////////
+// PARTICLE INITIALIZER OBJECT /////////
+////////////////////////////////////////
+
+JSObject*
+CScript::CreateParticleInitializerObject(JSContext* cx, ParticleSystemBase* system)
+{
+    if (!system)
+        return NULL;
+
+    static JSClass clasp =
+    {
+        "particle initializer", JSCLASS_HAS_PRIVATE,
+        JS_PropertyStub,  JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+        JS_EnumerateStub, JS_ResolveStub,  JS_ConvertStub,  ssFinalizeParticleInitializer,
+    };
+
+    // create the object
+    JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
+
+    if (!object || !JS_AddRoot(cx, &object))
+        return NULL;
+
+    // assign properties to the object
+    static JSPropertySpec ps[] =
+    {
+        { "pos_mode",      0, JSPROP_PERMANENT, ssParticleInitializerGetProperty, ssParticleInitializerSetProperty },
+        { "vel_mode",      1, JSPROP_PERMANENT, ssParticleInitializerGetProperty, ssParticleInitializerSetProperty },
+        { "aging",         2, JSPROP_PERMANENT, ssParticleInitializerGetProperty, ssParticleInitializerSetProperty },
+        { "pos_rect",      3, JSPROP_PERMANENT, ssParticleInitializerGetProperty, ssParticleInitializerSetProperty },
+        { "pos_ellipse",   4, JSPROP_PERMANENT, ssParticleInitializerGetProperty, ssParticleInitializerSetProperty },
+        { "vel_ellipse",   5, JSPROP_PERMANENT, ssParticleInitializerGetProperty, ssParticleInitializerSetProperty },
+        { 0, 0, 0, 0, 0 },
+    };
+    JS_DefineProperties(cx, object, ps);
+
+    SS_PARTICLE_INITIALIZER* initializer_object = new SS_PARTICLE_INITIALIZER;
+
+    if (!initializer_object)
+    {
+        // balancing call to JS_RemoveRoot
+        JS_RemoveRoot(cx, &object);
+
+        return NULL;
+    }
+
+    initializer_object->system = system;
+    JS_SetPrivate(cx, object, initializer_object);
+
+    // balancing call to JS_RemoveRoot
+    JS_RemoveRoot(cx, &object);
+
+    return object;
+}
+
+////////////////////////////////////////
+begin_finalizer(SS_PARTICLE_INITIALIZER, ssFinalizeParticleInitializer)
+// the initializer object should not delete the superior particle system
+object->system = NULL;
+end_finalizer()
+
+////////////////////////////////////////
+static JSObject*
+create_range_object(JSContext* cx, Range<float> range)
+{
+    JSObject* range_obj = JS_NewObject(cx, NULL, NULL, NULL);
+
+    if (!range_obj || !JS_AddRoot(cx, &range_obj))
+        return NULL;
+
+    JS_DefineProperty(cx, range_obj, "min", DOUBLE_TO_JSVAL(JS_NewDouble(cx, (double)range.Min)),
+                      JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
+
+    JS_DefineProperty(cx, range_obj, "max", DOUBLE_TO_JSVAL(JS_NewDouble(cx, (double)range.Max)),
+                      JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
+
+    // balancing call to JS_RemoveRoot
+    JS_RemoveRoot(cx, &range_obj);
+
+    return range_obj;
+}
+
+////////////////////////////////////////
+static JSObject*
+create_rectangular_range_object(JSContext* cx, RectangularRange<float> range)
+{
+    JSObject* range_obj = JS_NewObject(cx, NULL, NULL, NULL);
+
+    if (!range_obj || !JS_AddRoot(cx, &range_obj))
+        return NULL;
+
+    JS_DefineProperty(cx, range_obj, "x",
+                      OBJECT_TO_JSVAL(create_range_object(cx, range.X)),
+                      JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
+
+    JS_DefineProperty(cx, range_obj, "y",
+                      OBJECT_TO_JSVAL(create_range_object(cx, range.Y)),
+                      JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
+
+    // balancing call to JS_RemoveRoot
+    JS_RemoveRoot(cx, &range_obj);
+
+    return range_obj;
+}
+
+////////////////////////////////////////
+static JSObject*
+create_elliptical_range_object(JSContext* cx, EllipticalRange<float> range)
+{
+    JSObject* range_obj = JS_NewObject(cx, NULL, NULL, NULL);
+
+    if (!range_obj || !JS_AddRoot(cx, &range_obj))
+        return NULL;
+
+    JS_DefineProperty(cx, range_obj, "angle",
+                      OBJECT_TO_JSVAL(create_range_object(cx, range.Angle)),
+                      JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
+
+    JS_DefineProperty(cx, range_obj, "a",
+                      OBJECT_TO_JSVAL(create_range_object(cx, range.A)),
+                      JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
+
+    JS_DefineProperty(cx, range_obj, "b",
+                      OBJECT_TO_JSVAL(create_range_object(cx, range.B)),
+                      JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
+
+    // balancing call to JS_RemoveRoot
+    JS_RemoveRoot(cx, &range_obj);
+
+    return range_obj;
+}
+
+////////////////////////////////////////
+begin_property(SS_PARTICLE_INITIALIZER, ssParticleInitializerGetProperty)
+int prop_id = argInt(cx, id);
+switch (prop_id)
+{
+case 0:
+    *vp = INT_TO_JSVAL(object->system->GetInitializer().GetPositionMode());
+    break;
+case 1:
+    *vp = INT_TO_JSVAL(object->system->GetInitializer().GetVelocityMode());
+    break;
+case 2:
+    *vp = OBJECT_TO_JSVAL(create_range_object(cx, object->system->GetInitializer().GetAging()));
+    break;
+case 3:
+    *vp = OBJECT_TO_JSVAL(create_rectangular_range_object(cx, object->system->GetInitializer().GetPosRectangle()));
+    break;
+case 4:
+    *vp = OBJECT_TO_JSVAL(create_elliptical_range_object(cx, object->system->GetInitializer().GetPosEllipse()));
+    break;
+case 5:
+    *vp = OBJECT_TO_JSVAL(create_elliptical_range_object(cx, object->system->GetInitializer().GetVelEllipse()));
+    break;
+default:
+    *vp = JSVAL_NULL;
+    break;
+}
+end_property()
+
+////////////////////////////////////////
+static void
+fill_range_from_object(JSContext* cx, JSObject* obj, Range<float>& range)
+{
+    if (!obj || !JS_AddRoot(cx, &obj))
+        return;
+
+    jsval val;
+    jsdouble jsd;
+
+    if (JS_GetProperty(cx, obj, "min", &val) &&
+        JSVAL_IS_NUMBER(val) &&
+        JS_ValueToNumber(cx, val, &jsd))
+    {
+        range.Min = (float)jsd;
+    }
+
+    if (JS_GetProperty(cx, obj, "max", &val) &&
+        JSVAL_IS_NUMBER(val) &&
+        JS_ValueToNumber(cx, val, &jsd))
+    {
+        range.Max = (float)jsd;
+    }
+
+    // balancing call to JS_RemoveRoot
+    JS_RemoveRoot(cx, &obj);
+
+}
+
+////////////////////////////////////////
+static void
+fill_rectangular_range_from_object(JSContext* cx, JSObject* obj, RectangularRange<float>& range)
+{
+    if (!obj || !JS_AddRoot(cx, &obj))
+        return;
+
+    jsval val;
+
+    if (JS_GetProperty(cx, obj, "x", &val) &&
+        JSVAL_IS_OBJECT(val) &&
+        !JSVAL_IS_NULL(val))
+    {
+        fill_range_from_object(cx, JSVAL_TO_OBJECT(val), range.X);
+    }
+
+    if (JS_GetProperty(cx, obj, "y", &val) &&
+        JSVAL_IS_OBJECT(val) &&
+        !JSVAL_IS_NULL(val))
+    {
+        fill_range_from_object(cx, JSVAL_TO_OBJECT(val), range.Y);
+    }
+
+    // balancing call to JS_RemoveRoot
+    JS_RemoveRoot(cx, &obj);
+
+}
+
+////////////////////////////////////////
+static void
+fill_elliptical_range_from_object(JSContext* cx, JSObject* obj, EllipticalRange<float>& range)
+{
+    if (!obj || !JS_AddRoot(cx, &obj))
+        return;
+
+    jsval val;
+
+    if (JS_GetProperty(cx, obj, "angle", &val) &&
+        JSVAL_IS_OBJECT(val) &&
+        !JSVAL_IS_NULL(val))
+    {
+        fill_range_from_object(cx, JSVAL_TO_OBJECT(val), range.Angle);
+    }
+
+    if (JS_GetProperty(cx, obj, "a", &val) &&
+        JSVAL_IS_OBJECT(val) &&
+        !JSVAL_IS_NULL(val))
+    {
+        fill_range_from_object(cx, JSVAL_TO_OBJECT(val), range.A);
+    }
+
+    if (JS_GetProperty(cx, obj, "b", &val) &&
+        JSVAL_IS_OBJECT(val) &&
+        !JSVAL_IS_NULL(val))
+    {
+        fill_range_from_object(cx, JSVAL_TO_OBJECT(val), range.B);
+    }
+
+    // balancing call to JS_RemoveRoot
+    JS_RemoveRoot(cx, &obj);
+
+}
+
+////////////////////////////////////////
+begin_property(SS_PARTICLE_INITIALIZER, ssParticleInitializerSetProperty)
+int prop_id = argInt(cx, id);
+switch (prop_id)
+{
+case 0:
+    object->system->GetInitializer().SetPositionMode(argInt(cx, *vp));
+    break;
+case 1:
+    object->system->GetInitializer().SetVelocityMode(argInt(cx, *vp));
+    break;
+case 2:
+    fill_range_from_object(cx, argObject(cx, *vp), object->system->GetInitializer().GetAging());
+    break;
+case 3:
+    fill_rectangular_range_from_object(cx, argObject(cx, *vp), object->system->GetInitializer().GetPosRectangle());
+    break;
+case 4:
+    fill_elliptical_range_from_object(cx, argObject(cx, *vp), object->system->GetInitializer().GetPosEllipse());
+    break;
+case 5:
+    fill_elliptical_range_from_object(cx, argObject(cx, *vp), object->system->GetInitializer().GetVelEllipse());
+    break;
+}
+end_property()
+
+////////////////////////////////////////
+// PARTICLE UPDATER OBJECT /////////////
+////////////////////////////////////////
+
+JSObject*
+CScript::CreateParticleUpdaterObject(JSContext* cx, ParticleSystemBase* system)
+{
+    if (!system)
+        return NULL;
+
+    static JSClass clasp =
+    {
+        "particle updater", JSCLASS_HAS_PRIVATE,
+        JS_PropertyStub,  JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+        JS_EnumerateStub, JS_ResolveStub,  JS_ConvertStub,  ssFinalizeParticleUpdater,
+    };
+
+    // create the object
+    JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
+
+    if (!object || !JS_AddRoot(cx, &object))
+        return NULL;
+
+    // assign properties to the object
+    static JSPropertySpec ps[] =
+    {
+        { "force_x", 0, JSPROP_PERMANENT, ssParticleUpdaterGetProperty, ssParticleUpdaterSetProperty },
+        { "force_y", 1, JSPROP_PERMANENT, ssParticleUpdaterGetProperty, ssParticleUpdaterSetProperty },
+        { "damping", 2, JSPROP_PERMANENT, ssParticleUpdaterGetProperty, ssParticleUpdaterSetProperty },
+        { 0, 0, 0, 0, 0 },
+    };
+    JS_DefineProperties(cx, object, ps);
+
+    SS_PARTICLE_UPDATER* updater_object = new SS_PARTICLE_UPDATER;
+
+    if (!updater_object)
+    {
+        // balancing call to JS_RemoveRoot
+        JS_RemoveRoot(cx, &object);
+
+        return NULL;
+    }
+
+    updater_object->system = system;
+    JS_SetPrivate(cx, object, updater_object);
+
+    // balancing call to JS_RemoveRoot
+    JS_RemoveRoot(cx, &object);
+
+    return object;
+}
+
+////////////////////////////////////////
+begin_finalizer(SS_PARTICLE_UPDATER, ssFinalizeParticleUpdater)
+// the updater object should not delete the superior particle system
+object->system = NULL;
+end_finalizer()
+
+////////////////////////////////////////
+begin_property(SS_PARTICLE_UPDATER, ssParticleUpdaterGetProperty)
+int prop_id = argInt(cx, id);
+switch (prop_id)
+{
+case 0:
+    *vp = DOUBLE_TO_JSVAL(JS_NewDouble(cx, (double)object->system->GetUpdater().GetGlobalForce().X));
+    break;
+case 1:
+    *vp = DOUBLE_TO_JSVAL(JS_NewDouble(cx, (double)object->system->GetUpdater().GetGlobalForce().Y));
+    break;
+case 2:
+    *vp = DOUBLE_TO_JSVAL(JS_NewDouble(cx, (double)object->system->GetUpdater().GetDampingConstant()));
+    break;
+default:
+    *vp = JSVAL_NULL;
+    break;
+}
+end_property()
+
+////////////////////////////////////////
+begin_property(SS_PARTICLE_UPDATER, ssParticleUpdaterSetProperty)
+int prop_id = argInt(cx, id);
+switch (prop_id)
+{
+case 0:
+    object->system->GetUpdater().GetGlobalForce().X = (float)argDouble(cx, *vp);
+    break;
+case 1:
+    object->system->GetUpdater().GetGlobalForce().Y = (float)argDouble(cx, *vp);
+    break;
+case 2:
+    object->system->GetUpdater().SetDampingConstant((float)argDouble(cx, *vp));
+    break;
+}
+end_property()
+
+////////////////////////////////////////
+// PARTICLE RENDERER OBJECT ////////////
+////////////////////////////////////////
+
+JSObject*
+CScript::CreateParticleRendererObject(JSContext* cx, ParticleSystemBase* system)
+{
+    if (!system)
+        return NULL;
+
+    static JSClass clasp =
+    {
+        "particle renderer", JSCLASS_HAS_PRIVATE,
+        JS_PropertyStub,  JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+        JS_EnumerateStub, JS_ResolveStub,  JS_ConvertStub,  ssFinalizeParticleRenderer,
+    };
+
+    // create the object
+    JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
+
+    if (!object || !JS_AddRoot(cx, &object))
+        return NULL;
+
+    // assign properties to the object
+    static JSPropertySpec ps[] =
+    {
+        { "texture",    0, JSPROP_PERMANENT, ssParticleRendererGetProperty, ssParticleRendererSetProperty },
+        { "blend_mode", 1, JSPROP_PERMANENT, ssParticleRendererGetProperty, ssParticleRendererSetProperty },
+        { "offset_x",   2, JSPROP_PERMANENT, ssParticleRendererGetProperty, ssParticleRendererSetProperty },
+        { "offset_y",   3, JSPROP_PERMANENT, ssParticleRendererGetProperty, ssParticleRendererSetProperty },
+        { 0, 0, 0, 0, 0 },
+    };
+    JS_DefineProperties(cx, object, ps);
+
+    SS_PARTICLE_RENDERER* renderer_object = new SS_PARTICLE_RENDERER;
+
+    if (!renderer_object)
+    {
+        // balancing call to JS_RemoveRoot
+        JS_RemoveRoot(cx, &object);
+
+        return NULL;
+    }
+
+    renderer_object->system = system;
+    JS_SetPrivate(cx, object, renderer_object);
+
+    // balancing call to JS_RemoveRoot
+    JS_RemoveRoot(cx, &object);
+
+    return object;
+}
+
+////////////////////////////////////////
+begin_finalizer(SS_PARTICLE_RENDERER, ssFinalizeParticleRenderer)
+// the renderer object should not delete the superior particle system
+object->system = NULL;
+end_finalizer()
+
+////////////////////////////////////////
+begin_property(SS_PARTICLE_RENDERER, ssParticleRendererGetProperty)
+int prop_id = argInt(cx, id);
+switch (prop_id)
+{
+case 0:
+    *vp = OBJECT_TO_JSVAL(CreateImageObject(cx, CloneImage(object->system->GetRenderer().GetTexture()), true));
+    break;
+case 1:
+    *vp = INT_TO_JSVAL(object->system->GetRenderer().GetBlendMode());
+    break;
+case 2:
+    *vp = INT_TO_JSVAL(object->system->GetRenderer().GetOffsetX());
+    break;
+case 3:
+    *vp = INT_TO_JSVAL(object->system->GetRenderer().GetOffsetY());
+    break;
+default:
+    *vp = JSVAL_NULL;
+    break;
+}
+end_property()
+
+////////////////////////////////////////
+begin_property(SS_PARTICLE_RENDERER, ssParticleRendererSetProperty)
+int prop_id = argInt(cx, id);
+switch (prop_id)
+{
+case 0:
+    {
+        SS_IMAGE* image = argImage(cx, *vp);
+        if (!image)
+            return JS_FALSE;
+        object->system->GetRenderer().SetTexture(image->image);
+    }
+    break;
+case 1:
+    object->system->GetRenderer().SetBlendMode(argInt(cx, *vp));
+    break;
+case 2:
+    object->system->GetRenderer().SetOffsetX(argInt(cx, *vp));
+    break;
+case 3:
+    object->system->GetRenderer().SetOffsetY(argInt(cx, *vp));
+    break;
+}
+end_property()
+
+////////////////////////////////////////
+// PARTICLE SYSTEM CALLBACK OBJECT /////
+////////////////////////////////////////
+
+JSObject*
+CScript::CreateParticleCallbackObject(JSContext* cx, ParticleSystemBase* system)
+{
+    if (!system)
+        return NULL;
+
+    static JSClass clasp =
+    {
+        "particle callback", JSCLASS_HAS_PRIVATE,
+        JS_PropertyStub,  JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+        JS_EnumerateStub, JS_ResolveStub,  JS_ConvertStub,  ssFinalizeParticleCallback,
+    };
+
+    // create the object
+    JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
+
+    if (!object || !JS_AddRoot(cx, &object))
+        return NULL;
+
+    // assign properties to the object
+    static JSPropertySpec ps[] =
+    {
+        { "on_update", 0, JSPROP_PERMANENT, ssParticleCallbackGetProperty, ssParticleCallbackSetProperty },
+        { "on_render", 1, JSPROP_PERMANENT, ssParticleCallbackGetProperty, ssParticleCallbackSetProperty },
+        { "on_birth",  2, JSPROP_PERMANENT, ssParticleCallbackGetProperty, ssParticleCallbackSetProperty },
+        { "on_death",  3, JSPROP_PERMANENT, ssParticleCallbackGetProperty, ssParticleCallbackSetProperty },
+        { 0, 0, 0, 0, 0 },
+    };
+    JS_DefineProperties(cx, object, ps);
+
+    SS_PARTICLE_CALLBACK* callback_object = new SS_PARTICLE_CALLBACK;
+
+    if (!callback_object)
+    {
+        // balancing call to JS_RemoveRoot
+        JS_RemoveRoot(cx, &object);
+
+        return NULL;
+    }
+
+    callback_object->system = system;
+    JS_SetPrivate(cx, object, callback_object);
+
+    // balancing call to JS_RemoveRoot
+    JS_RemoveRoot(cx, &object);
+
+    return object;
+}
+
+////////////////////////////////////////
+begin_finalizer(SS_PARTICLE_CALLBACK, ssFinalizeParticleCallback)
+// the callback object should not delete the superior particle system
+object->system = NULL;
+end_finalizer()
+
+////////////////////////////////////////
+begin_property(SS_PARTICLE_CALLBACK, ssParticleCallbackGetProperty)
+int prop_id = argInt(cx, id);
+switch (prop_id)
+{
+    case 0: *vp = object->system->GetScriptInterface().GetOnUpdate(); break;
+    case 1: *vp = object->system->GetScriptInterface().GetOnRender(); break;
+    case 2: *vp = object->system->GetScriptInterface().GetOnBirth();  break;
+    case 3: *vp = object->system->GetScriptInterface().GetOnDeath();  break;
+    default:*vp = JSVAL_NULL;                                         break;
+}
+end_property()
+
+////////////////////////////////////////
+begin_property(SS_PARTICLE_CALLBACK, ssParticleCallbackSetProperty)
+int prop_id    = argInt(cx, id);
+jsval callback = JSVAL_NULL;
+JSObject* func = argObject(cx, *vp);
+
+if (!JSVAL_IS_NULL(OBJECT_TO_JSVAL(func)) && JS_ObjectIsFunction(cx, func) == JS_TRUE)
+    callback = OBJECT_TO_JSVAL(func);
+
+switch (prop_id)
+{
+    case 0: object->system->GetScriptInterface().SetOnUpdate(callback); break;
+    case 1: object->system->GetScriptInterface().SetOnRender(callback); break;
+    case 2: object->system->GetScriptInterface().SetOnBirth(callback);  break;
+    case 3: object->system->GetScriptInterface().SetOnDeath(callback);  break;
+}
+end_property()
+
+////////////////////////////////////////
+// PARTICLE SYSTEM PARENT OBJECT ///////
+////////////////////////////////////////
+
+JSObject*
+CScript::CreateParticleSystemParentObject(JSContext* cx, ParticleSystemParent* system)
+{
+    // this function is responsible for freeing memory used by the system
+
+    if (!system)
+        return NULL;
+
+    static JSClass clasp =
+    {
+        "particle system parent", JSCLASS_HAS_PRIVATE,
+        JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+        JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizeParticleSystemParent,
+    };
+
+    // create the object
+    JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
+
+    if (!object)
+    {
+        delete system;
+        return NULL;
+    }
+
+    // add a local root to prevent the JS_GC from premature gc-ing
+    jsval local_root = OBJECT_TO_JSVAL(object);
+
+    if (JS_AddRoot(cx, &local_root) == JS_FALSE)
+    {
+        delete system;
+        return NULL;
+    }
+
+    // assign the particle body object
+    JS_DefineProperty(
+        cx,
+        object,
+        "body",
+        OBJECT_TO_JSVAL(CreateParticleBodyObject(cx, system)),
+        JS_PropertyStub,
+        JS_PropertyStub,
+        JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+    // assign the particle initializer object
+    JS_DefineProperty(
+        cx,
+        object,
+        "initializer",
+        OBJECT_TO_JSVAL(CreateParticleInitializerObject(cx, system)),
+        JS_PropertyStub,
+        JS_PropertyStub,
+        JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+    // assign the particle updater object
+    JS_DefineProperty(
+        cx,
+        object,
+        "updater",
+        OBJECT_TO_JSVAL(CreateParticleUpdaterObject(cx, system)),
+        JS_PropertyStub,
+        JS_PropertyStub,
+        JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+    // assign the particle renderer object
+    JS_DefineProperty(
+        cx,
+        object,
+        "renderer",
+        OBJECT_TO_JSVAL(CreateParticleRendererObject(cx, system)),
+        JS_PropertyStub,
+        JS_PropertyStub,
+        JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+    // assign the callback object
+    JS_DefineProperty(
+        cx,
+        object,
+        "callback",
+        OBJECT_TO_JSVAL(CreateParticleCallbackObject(cx, system)),
+        JS_PropertyStub,
+        JS_PropertyStub,
+        JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+    // assign the id property
+    JS_DefineProperty(
+        cx,
+        object,
+        "id",
+        INT_TO_JSVAL(system->GetID()),
+        JS_PropertyStub,
+        JS_PropertyStub,
+        JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+    // assign properties to the object
+    static JSPropertySpec ps[] =
+    {
+        { "group",  0, JSPROP_PERMANENT, ssParticleSystemParentGetProperty, ssParticleSystemParentSetProperty },
+        { "halted", 1, JSPROP_PERMANENT, ssParticleSystemParentGetProperty, ssParticleSystemParentSetProperty },
+        { "hidden", 2, JSPROP_PERMANENT, ssParticleSystemParentGetProperty, ssParticleSystemParentSetProperty },
+        { "cursed", 3, JSPROP_PERMANENT, ssParticleSystemParentGetProperty, ssParticleSystemParentSetProperty },
+        { 0, 0, 0, 0, 0 },
+    };
+    JS_DefineProperties(cx, object, ps);
+
+    // assign methods to the object
+    static JSFunctionSpec fs[] =
+    {
+        { "update",        ssParticleSystemParentUpdate,         0, 0, 0 },
+        { "render",        ssParticleSystemParentRender,         0, 0, 0 },
+        { "size",          ssParticleSystemParentSize,           0, 0, 0 },
+        { "clear",         ssParticleSystemParentClear,          0, 0, 0 },
+        { "adopt",         ssParticleSystemParentAdopt,          1, 0, 0 },
+        { "host",          ssParticleSystemParentHost,           1, 0, 0 },
+        { "find",          ssParticleSystemParentFind,           1, 0, 0 },
+        { "remove",        ssParticleSystemParentRemove,         1, 0, 0 },
+        { "removeGroup",   ssParticleSystemParentRemoveGroup,    1, 0, 0 },
+        { "isDead",        ssParticleSystemParentIsDead,         0, 0, 0 },
+        { "kill",          ssParticleSystemParentKill,           0, 0, 0 },
+        { "revive",        ssParticleSystemParentRevive,         0, 0, 0 },
+        { 0, 0, 0, 0, 0 },
+    };
+    JS_DefineFunctions(cx, object, fs);
+
+    SS_PARTICLE_SYSTEM_PARENT* system_object = new SS_PARTICLE_SYSTEM_PARENT;
+
+    if (!system_object)
+    {
+        // balancing call to JS_RemoveRoot
+        JS_RemoveRoot(cx, &local_root);
+
+        delete system;
+        return NULL;
+    }
+
+    system_object->system = system;
+    JS_SetPrivate(cx, object, system_object);
+
+    // we need to pass the context and the object to the script interface
+    // for callbacks and object protection to work
+    system->GetScriptInterface().SetContext(cx);
+    system->GetScriptInterface().SetObject(object);
+
+    // balancing call to JS_RemoveRoot
+    JS_RemoveRoot(cx, &local_root);
+
+    return object;
+}
+
+////////////////////////////////////////
+begin_finalizer(SS_PARTICLE_SYSTEM_PARENT, ssFinalizeParticleSystemParent)
+// this finalizer is responsible for freeing up memory used by the system
+delete object->system;
+object->system = NULL;
+end_finalizer()
+
+////////////////////////////////////////
+begin_property(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentGetProperty)
+int prop_id = argInt(cx, id);
+switch (prop_id)
+{
+    case 0: *vp =     INT_TO_JSVAL(object->system->GetGroup()); break;
+    case 1: *vp = BOOLEAN_TO_JSVAL(object->system->IsHalted()); break;
+    case 2: *vp = BOOLEAN_TO_JSVAL(object->system->IsHidden()); break;
+    case 3: *vp = BOOLEAN_TO_JSVAL(object->system->IsCursed()); break;
+    default:*vp = JSVAL_NULL;                                   break;
+}
+end_property()
+
+////////////////////////////////////////
+begin_property(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentSetProperty)
+int prop_id = argInt(cx, id);
+switch (prop_id)
+{
+    case 0: object->system->SetGroup(argInt(cx, *vp)); break;
+    case 1: object->system->Halt(argBool(cx, *vp));    break;
+    case 2: object->system->Hide(argBool(cx, *vp));    break;
+    case 3: object->system->Curse(argBool(cx, *vp));   break;
+}
+end_property()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentUpdate, 0)
+object->system->Update();
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentRender, 0)
+object->system->Render();
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentSize, 0)
+return_int(object->system->Size());
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentClear, 0)
+object->system->Clear();
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentAdopt, 1)
+arg_particle_system(system);
+object->system->Adopt(system);
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentHost, 1)
+arg_particle_system(system);
+object->system->Host(system);
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentFind, 1)
+arg_int(id);
+if (id < 0)
+    return_null();
+ParticleSystemBase* found = object->system->Find(id);
+if (found)
+    return_object(found->GetScriptInterface().GetObject());
+else
+    return_null();
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentRemove, 1)
+arg_int(id);
+if (id >= 0)
+    object->system->Remove(id);
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentRemoveGroup, 1)
+arg_int(group);
+object->system->RemoveGroup(group);
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentIsDead, 0)
+return_bool(object->system->IsDead());
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentKill, 0)
+object->system->Kill();
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentRevive, 0)
+object->system->Revive();
+end_method()
+
+////////////////////////////////////////
+// PARTICLE SWARM RENDERER OBJECT //////
+////////////////////////////////////////
+
+JSObject*
+CScript::CreateParticleSwarmRendererObject(JSContext* cx, ParticleSystemChild* system)
+{
+    if (!system)
+        return NULL;
+
+    static JSClass clasp =
+    {
+        "particle swarm renderer", JSCLASS_HAS_PRIVATE,
+        JS_PropertyStub,  JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+        JS_EnumerateStub, JS_ResolveStub,  JS_ConvertStub,  ssFinalizeParticleSwarmRenderer,
+    };
+
+    // create the object
+    JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
+
+    if (!object || !JS_AddRoot(cx, &object))
+        return NULL;
+
+    // assign properties to the object
+    static JSPropertySpec ps[] =
+    {
+        { "texture",    0, JSPROP_PERMANENT, ssParticleSwarmRendererGetProperty, ssParticleSwarmRendererSetProperty },
+        { "blend_mode", 1, JSPROP_PERMANENT, ssParticleSwarmRendererGetProperty, ssParticleSwarmRendererSetProperty },
+        { "offset_x",   2, JSPROP_PERMANENT, ssParticleSwarmRendererGetProperty, ssParticleSwarmRendererSetProperty },
+        { "offset_y",   3, JSPROP_PERMANENT, ssParticleSwarmRendererGetProperty, ssParticleSwarmRendererSetProperty },
+        { 0, 0, 0, 0, 0 },
+    };
+    JS_DefineProperties(cx, object, ps);
+
+    SS_PARTICLE_SWARM_RENDERER* renderer_object = new SS_PARTICLE_SWARM_RENDERER;
+
+    if (!renderer_object)
+    {
+        // balancing call to JS_RemoveRoot
+        JS_RemoveRoot(cx, &object);
+
+        return NULL;
+    }
+
+    renderer_object->system = system;
+    JS_SetPrivate(cx, object, renderer_object);
+
+    // balancing call to JS_RemoveRoot
+    JS_RemoveRoot(cx, &object);
+
+    return object;
+}
+
+////////////////////////////////////////
+begin_finalizer(SS_PARTICLE_SWARM_RENDERER, ssFinalizeParticleSwarmRenderer)
+// the swarm renderer object should not delete the superior particle system
+object->system = NULL;
+end_finalizer()
+
+////////////////////////////////////////
+begin_property(SS_PARTICLE_SWARM_RENDERER, ssParticleSwarmRendererGetProperty)
+int prop_id = argInt(cx, id);
+switch (prop_id)
+{
+case 0:
+    *vp = OBJECT_TO_JSVAL(CreateImageObject(cx, CloneImage(object->system->GetSwarmRenderer().GetTexture()), true));
+    break;
+case 1:
+    *vp = INT_TO_JSVAL(object->system->GetSwarmRenderer().GetBlendMode());
+    break;
+case 2:
+    *vp = INT_TO_JSVAL(object->system->GetSwarmRenderer().GetOffsetX());
+    break;
+case 3:
+    *vp = INT_TO_JSVAL(object->system->GetSwarmRenderer().GetOffsetY());
+    break;
+default:
+    *vp = JSVAL_NULL;
+    break;
+}
+end_property()
+
+////////////////////////////////////////
+begin_property(SS_PARTICLE_SWARM_RENDERER, ssParticleSwarmRendererSetProperty)
+int prop_id = argInt(cx, id);
+switch (prop_id)
+{
+case 0:
+    {
+        SS_IMAGE* image = argImage(cx, *vp);
+        if (!image)
+            return JS_FALSE;
+        object->system->GetSwarmRenderer().SetTexture(image->image);
+    }
+    break;
+case 1:
+    object->system->GetSwarmRenderer().SetBlendMode(argInt(cx, *vp));
+    break;
+case 2:
+    object->system->GetSwarmRenderer().SetOffsetX(argInt(cx, *vp));
+    break;
+case 3:
+    object->system->GetSwarmRenderer().SetOffsetY(argInt(cx, *vp));
+    break;
+}
+end_property()
+
+////////////////////////////////////////
+// PARTICLE SYSTEM CHILD OBJECT ////////
+////////////////////////////////////////
+
+JSObject*
+CScript::CreateParticleSystemChildObject(JSContext* cx, ParticleSystemChild* system)
+{
+    // this function is responsible for freeing memory used by the system
+
+    if (!system)
+        return NULL;
+
+    static JSClass clasp =
+    {
+        "particle system child", JSCLASS_HAS_PRIVATE,
+        JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+        JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizeParticleSystemChild,
+    };
+
+    // create the object
+    JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
+
+    if (!object)
+    {
+        delete system;
+        return NULL;
+    }
+
+    // add a local root to prevent the JS_GC from premature gc-ing
+    jsval local_root = OBJECT_TO_JSVAL(object);
+
+    if (JS_AddRoot(cx, &local_root) == JS_FALSE)
+    {
+        delete system;
+        return NULL;
+    }
+
+    // assign the particle body object
+    JS_DefineProperty(
+        cx,
+        object,
+        "body",
+        OBJECT_TO_JSVAL(CreateParticleBodyObject(cx, system)),
+        JS_PropertyStub,
+        JS_PropertyStub,
+        JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+    // assign the particle initializer object
+    JS_DefineProperty(
+        cx,
+        object,
+        "initializer",
+        OBJECT_TO_JSVAL(CreateParticleInitializerObject(cx, system)),
+        JS_PropertyStub,
+        JS_PropertyStub,
+        JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+    // assign the particle updater object
+    JS_DefineProperty(
+        cx,
+        object,
+        "updater",
+        OBJECT_TO_JSVAL(CreateParticleUpdaterObject(cx, system)),
+        JS_PropertyStub,
+        JS_PropertyStub,
+        JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+    // assign the particle renderer object
+    JS_DefineProperty(
+        cx,
+        object,
+        "renderer",
+        OBJECT_TO_JSVAL(CreateParticleRendererObject(cx, system)),
+        JS_PropertyStub,
+        JS_PropertyStub,
+        JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+    // assign the particle swarm renderer object
+    JS_DefineProperty(
+        cx,
+        object,
+        "swarm_renderer",
+        OBJECT_TO_JSVAL(CreateParticleSwarmRendererObject(cx, system)),
+        JS_PropertyStub,
+        JS_PropertyStub,
+        JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+    // assign the callback object
+    JS_DefineProperty(
+        cx,
+        object,
+        "callback",
+        OBJECT_TO_JSVAL(CreateParticleCallbackObject(cx, system)),
+        JS_PropertyStub,
+        JS_PropertyStub,
+        JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+    // assign the id property
+    JS_DefineProperty(
+        cx,
+        object,
+        "id",
+        INT_TO_JSVAL(system->GetID()),
+        JS_PropertyStub,
+        JS_PropertyStub,
+        JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+    // assign properties to the object
+    static JSPropertySpec ps[] =
+    {
+        { "group",  0, JSPROP_PERMANENT, ssParticleSystemChildGetProperty, ssParticleSystemChildSetProperty },
+        { "halted", 1, JSPROP_PERMANENT, ssParticleSystemChildGetProperty, ssParticleSystemChildSetProperty },
+        { "hidden", 2, JSPROP_PERMANENT, ssParticleSystemChildGetProperty, ssParticleSystemChildSetProperty },
+        { "cursed", 3, JSPROP_PERMANENT, ssParticleSystemChildGetProperty, ssParticleSystemChildSetProperty },
+        { 0, 0, 0, 0, 0 },
+    };
+    JS_DefineProperties(cx, object, ps);
+
+    // assign methods to the object
+    static JSFunctionSpec fs[] =
+    {
+        { "update",        ssParticleSystemChildUpdate,         0, 0, 0 },
+        { "render",        ssParticleSystemChildRender,         0, 0, 0 },
+        { "size",          ssParticleSystemChildSize,           0, 0, 0 },
+        { "capacity",      ssParticleSystemChildCapacity,       0, 0, 0 },
+        { "grow",          ssParticleSystemChildGrow,           0, 0, 0 },
+        { "shrink",        ssParticleSystemChildShrink,         0, 0, 0 },
+        { "resize",        ssParticleSystemChildResize,         1, 0, 0 },
+        { "reserve",       ssParticleSystemChildReserve,        1, 0, 0 },
+        { "clear",         ssParticleSystemChildClear,          0, 0, 0 },
+        { "clone",         ssParticleSystemChildClone,          0, 0, 0 },
+        { "isDead",        ssParticleSystemChildIsDead,         0, 0, 0 },
+        { "kill",          ssParticleSystemChildKill,           0, 0, 0 },
+        { "revive",        ssParticleSystemChildRevive,         0, 0, 0 },
+        { 0, 0, 0, 0, 0 },
+    };
+    JS_DefineFunctions(cx, object, fs);
+
+    SS_PARTICLE_SYSTEM_CHILD* system_object = new SS_PARTICLE_SYSTEM_CHILD;
+
+    if (!system_object)
+    {
+        // balancing call to JS_RemoveRoot
+        JS_RemoveRoot(cx, &local_root);
+
+        delete system;
+        return NULL;
+    }
+
+    system_object->system = system;
+    JS_SetPrivate(cx, object, system_object);
+
+    // we need to pass the context and the object to the script interface
+    // for callbacks and object protection to work
+    system->GetScriptInterface().SetContext(cx);
+    system->GetScriptInterface().SetObject(object);
+
+    // balancing call to JS_RemoveRoot
+    JS_RemoveRoot(cx, &local_root);
+
+    return object;
+}
+
+////////////////////////////////////////
+begin_finalizer(SS_PARTICLE_SYSTEM_CHILD, ssFinalizeParticleSystemChild)
+// this finalizer is responsible for freeing up memory used by the system
+delete object->system;
+object->system = NULL;
+end_finalizer()
+
+////////////////////////////////////////
+begin_property(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildGetProperty)
+int prop_id = argInt(cx, id);
+switch (prop_id)
+{
+    case 0: *vp =     INT_TO_JSVAL(object->system->GetGroup()); break;
+    case 1: *vp = BOOLEAN_TO_JSVAL(object->system->IsHalted()); break;
+    case 2: *vp = BOOLEAN_TO_JSVAL(object->system->IsHidden()); break;
+    case 3: *vp = BOOLEAN_TO_JSVAL(object->system->IsCursed()); break;
+    default:*vp = JSVAL_NULL;                                   break;
+}
+end_property()
+
+////////////////////////////////////////
+begin_property(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildSetProperty)
+int prop_id = argInt(cx, id);
+switch (prop_id)
+{
+    case 0: object->system->SetGroup(argInt(cx, *vp)); break;
+    case 1: object->system->Halt(argBool(cx, *vp));    break;
+    case 2: object->system->Hide(argBool(cx, *vp));    break;
+    case 3: object->system->Curse(argBool(cx, *vp));   break;
+}
+end_property()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildUpdate, 0)
+object->system->Update();
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildRender, 0)
+object->system->Render();
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildSize, 0)
+return_int(object->system->Size());
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildCapacity, 0)
+return_int(object->system->Capacity());
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildGrow, 0)
+object->system->Grow();
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildShrink, 0)
+object->system->Shrink();
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildResize, 1)
+arg_int(new_size);
+if (new_size < 0) new_size = 0;
+object->system->Resize(new_size);
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildReserve, 1)
+arg_int(new_capacity);
+if (new_capacity > 0)
+    object->system->Reserve(new_capacity);
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildClear, 0)
+object->system->Clear();
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildClone, 0)
+ParticleSystemChild* clone = new ParticleSystemChild(*(object->system));
+return_object(CreateParticleSystemChildObject(cx, clone));
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildIsDead, 0)
+return_bool(object->system->IsDead());
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildKill, 0)
+object->system->Kill();
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildRevive, 0)
+object->system->Revive();
+end_method()
+
+////////////////////////////////////////
+// END PARTICLE ENGINE OBJECTS /////////
+////////////////////////////////////////
+
 ////////////////////////////////////////
 // SOCKET OBJECTS //////////////////////
 ////////////////////////////////////////
@@ -8289,6 +9749,9 @@ end_method()
 JSObject*
 CScript::CreateImageObject(JSContext* cx, IMAGE image, bool destroy)
 {
+    if (!image)
+        return NULL;
+
     // define image class
     static JSClass clasp =
         {
@@ -8348,6 +9811,21 @@ if (object->destroy_me)
 object->image = NULL;
 
 end_finalizer()
+
+///////////////////////////////////////
+static CImage32::BlendMode
+int_to_blendmode(int blendmode)
+{
+    switch (blendmode)
+    {
+        case CImage32::BLEND:    return CImage32::BLEND;
+        case CImage32::ADD:      return CImage32::ADD;
+        case CImage32::SUBTRACT: return CImage32::SUBTRACT;
+        case CImage32::MULTIPLY: return CImage32::MULTIPLY;
+        default:                 return CImage32::BLEND;
+    }
+}
+
 ///////////////////////////////////////
 /**
     - draws the image onto the video buffer at x,y
@@ -8357,7 +9835,14 @@ if (This->ShouldRender())
 {
     arg_int(x);
     arg_int(y);
-    BlitImage(object->image, x, y);
+
+    int blendmode = CImage32::BLEND;
+    if (argc >= 3)
+    {
+        blendmode = argInt(cx, argv[2]);
+    }
+
+    BlitImage(object->image, x, y, int_to_blendmode(blendmode));
 }
 end_method()
 
@@ -8372,7 +9857,14 @@ if (This->ShouldRender())
     arg_int(x);
     arg_int(y);
     arg_color(clr);
-    BlitImageMask(object->image, x, y, clr);
+
+    int blendmode = CImage32::BLEND;
+    if (argc >= 4)
+    {
+        blendmode = argInt(cx, argv[3]);
+    }
+
+    BlitImageMask(object->image, x, y, int_to_blendmode(blendmode), clr);
 }
 end_method()
 
@@ -8419,6 +9911,12 @@ if (This->ShouldRender())
     arg_int(y);
     arg_double(radians);
 
+    int blendmode = CImage32::BLEND;
+    if (argc >= 4)
+    {
+        blendmode = argInt(cx, argv[3]);
+    }
+
     int tx[4];
     int ty[4];
 
@@ -8426,7 +9924,7 @@ if (This->ShouldRender())
     int h = GetImageHeight(object->image);
 
     CalculateRotateBlitPoints(tx, ty, x, y, w, h, radians);
-    TransformBlitImage(object->image, tx, ty);
+    TransformBlitImage(object->image, tx, ty, int_to_blendmode(blendmode));
 }
 
 end_method()
@@ -8437,17 +9935,23 @@ end_method()
 begin_method(SS_IMAGE, ssImageRotateBlitMask, 4)
 if (This->ShouldRender())
 {
-
     arg_int(x);
     arg_int(y);
     arg_double(radians);
     arg_color(color);
+
+    int blendmode = CImage32::BLEND;
+    if (argc >= 5)
+    {
+        blendmode = argInt(cx, argv[4]);
+    }
+
     int tx[4];
     int ty[4];
     int w = GetImageWidth(object->image);
     int h = GetImageHeight(object->image);
     CalculateRotateBlitPoints(tx, ty, x, y, w, h, radians);
-    TransformBlitImageMask(object->image, tx, ty, color);
+    TransformBlitImageMask(object->image, tx, ty, int_to_blendmode(blendmode), color);
 }
 end_method()
 ///////////////////////////////////////
@@ -8464,13 +9968,19 @@ if (This->ShouldRender())
     arg_int(y);
     arg_double(factor);
 
+    int blendmode = CImage32::BLEND;
+    if (argc >= 4)
+    {
+        blendmode = argInt(cx, argv[3]);
+    }
+
     int w = GetImageWidth(object->image);
     int h = GetImageHeight(object->image);
 
     int tx[4] = { x, x + (int)(w * factor), x + (int)(w * factor), x };
     int ty[4] = { y, y, y + (int)(h * factor), y + (int)(h * factor) };
 
-    TransformBlitImage(object->image, tx, ty);
+    TransformBlitImage(object->image, tx, ty, int_to_blendmode(blendmode));
 }
 end_method()
 
@@ -8486,11 +9996,18 @@ if (This->ShouldRender())
     arg_int(y);
     arg_double(factor);
     arg_color(color);
+
+    int blendmode = CImage32::BLEND;
+    if (argc >= 5)
+    {
+        blendmode = argInt(cx, argv[4]);
+    }
+
     int w = GetImageWidth(object->image);
     int h = GetImageHeight(object->image);
     int tx[4] = { x, x + (int)(w * factor), x + (int)(w * factor), x };
     int ty[4] = { y, y, y + (int)(h * factor), y + (int)(h * factor) };
-    TransformBlitImageMask(object->image, tx, ty, color);
+    TransformBlitImageMask(object->image, tx, ty, int_to_blendmode(blendmode), color);
 }
 end_method()
 ///////////////////////////////////////
@@ -8512,9 +10029,15 @@ if (This->ShouldRender())
     arg_int(x4);
     arg_int(y4);
 
+    int blendmode = CImage32::BLEND;
+    if (argc >= 9)
+    {
+        blendmode = argInt(cx, argv[8]);
+    }
+
     int x[4] = { x1, x2, x3, x4 };
     int y[4] = { y1, y2, y3, y4 };
-    TransformBlitImage(object->image, x, y);
+    TransformBlitImage(object->image, x, y, int_to_blendmode(blendmode));
 }
 end_method()
 
@@ -8535,9 +10058,15 @@ if (This->ShouldRender())
     arg_int(y4);
     arg_color(mask);
 
+    int blendmode = CImage32::BLEND;
+    if (argc >= 10)
+    {
+        blendmode = argInt(cx, argv[9]);
+    }
+
     int x[4] = { x1, x2, x3, x4 };
     int y[4] = { y1, y2, y3, y4 };
-    TransformBlitImageMask(object->image, x, y, mask);
+    TransformBlitImageMask(object->image, x, y, int_to_blendmode(blendmode), mask);
 }
 end_method()
 
@@ -8754,9 +10283,10 @@ if (surface)
 end_method()
 
 ////////////////////////////////////////
-inline int getMaskBlendMode(int bmode)
+static CImage32::BlendMode
+int_to_mask_blendmode(int blendmode)
 {
-    switch (bmode)
+    switch (blendmode)
     {
         case CImage32::BLEND:      return CImage32::BLEND;      break;
         case CImage32::REPLACE:    return CImage32::REPLACE;    break;
@@ -8786,7 +10316,7 @@ arg_color(mask);
 int mask_bmode = CImage32::MULTIPLY;
 if (argc >= 5)
 {
-    mask_bmode = getMaskBlendMode(argInt(cx, argv[4]));
+    mask_bmode = int_to_mask_blendmode(argInt(cx, argv[4]));
 }
 
 if (surface)
@@ -8844,7 +10374,7 @@ arg_color(mask);
 int mask_bmode = CImage32::MULTIPLY;
 if (argc >= 6)
 {
-    mask_bmode = getMaskBlendMode(argInt(cx, argv[5]));
+    mask_bmode = int_to_mask_blendmode(argInt(cx, argv[5]));
 }
 
 if (surface)
@@ -8910,7 +10440,7 @@ arg_color(mask);
 int mask_bmode = CImage32::MULTIPLY;
 if (argc >= 6)
 {
-    mask_bmode = getMaskBlendMode(argInt(cx, argv[5]));
+    mask_bmode = int_to_mask_blendmode(argInt(cx, argv[5]));
 }
 
 if (surface)
@@ -8975,7 +10505,7 @@ arg_color(mask);
 int mask_bmode = CImage32::MULTIPLY;
 if (argc >= 11)
 {
-    mask_bmode = getMaskBlendMode(argInt(cx, argv[10]));
+    mask_bmode = int_to_mask_blendmode(argInt(cx, argv[10]));
 }
 
 int x[4] = { x1, x2, x3, x4 };

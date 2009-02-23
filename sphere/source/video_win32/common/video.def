@@ -11,6 +11,7 @@ EXPORTS
   GetClippingRectangle
 
   CreateImage
+  CloneImage
   GrabImage
   DestroyImage
   BlitImage

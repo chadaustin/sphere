@@ -4,7 +4,8 @@
 
 #include <algorithm>
 #include <math.h>
-#include "ParticleStructs.hpp"
+
+#include "VectorStructs.hpp"
 
 namespace primitives
 {

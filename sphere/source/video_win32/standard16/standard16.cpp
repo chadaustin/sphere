@@ -7,6 +7,7 @@
 #include "hq2x.h"
 #include "scale.h"
 
+#include "../../common/Image32.hpp"
 #include "../../common/rgb.hpp"
 #include "../../common/primitives.hpp"
 #include "../common/win32x.hpp"
@@ -83,6 +84,9 @@ class VideoConfiguration
 
 // FUNCTION PROTOTYPES //
 
+EXPORT(RGBA*) LockImage(IMAGE image);
+EXPORT(void)  UnlockImage(IMAGE image, bool pixels_changed);
+
 static void LoadConfiguration();
 
 static bool InitFullscreen();
@@ -103,7 +107,9 @@ static void NullBlit(IMAGE image, int x, int y);
 static void TileBlit(IMAGE image, int x, int y);
 static void SpriteBlit(IMAGE image, int x, int y);
 static void NormalBlit(IMAGE image, int x, int y);
-
+static void AddBlit(IMAGE image, int x, int y);
+static void SubtractBlit(IMAGE image, int x, int y);
+static void MultiplyBlit(IMAGE image, int x, int y);
 
 
 // INLINE FUNCTIONS //
@@ -189,7 +195,7 @@ EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
     driverinfo->name   = "Standard16";
     driverinfo->author = "Chad Austin, Anatoli Steinmark";
     driverinfo->date   = __DATE__;
-    driverinfo->version = "v1.1";
+    driverinfo->version = "v1.2";
     driverinfo->description = "16-bit Software Sphere Video Driver";
 }
 
@@ -717,6 +723,18 @@ EXPORT(IMAGE) CreateImage(int width, int height, RGBA* pixels)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+EXPORT(IMAGE) CloneImage(IMAGE image)
+{
+    if (!image)
+        return NULL;
+
+    IMAGE clone = CreateImage(image->width, image->height, LockImage(image));
+    UnlockImage(image, false);
+
+    return clone;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 void FillImagePixels(IMAGE image, RGBA* pixels)
 {
     int pixels_total = image->width * image->height;
@@ -743,9 +761,9 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
             pixel = pixels[i];
 
             // premultiply
-            pixel.red   = (pixel.red   * pixel.alpha) >> 8;
-            pixel.green = (pixel.green * pixel.alpha) >> 8;
-            pixel.blue  = (pixel.blue  * pixel.alpha) >> 8;
+            pixel.red   = (pixel.red   * (pixel.alpha + 1)) >> 8;
+            pixel.green = (pixel.green * (pixel.alpha + 1)) >> 8;
+            pixel.blue  = (pixel.blue  * (pixel.alpha + 1)) >> 8;
 
             image->rgb[i] = PackPixel565(pixel);
         }
@@ -757,9 +775,9 @@ void FillImagePixels(IMAGE image, RGBA* pixels)
             pixel = pixels[i];
 
             // premultiply
-            pixel.red   = (pixel.red   * pixel.alpha) >> 8;
-            pixel.green = (pixel.green * pixel.alpha) >> 8;
-            pixel.blue  = (pixel.blue  * pixel.alpha) >> 8;
+            pixel.red   = (pixel.red   * (pixel.alpha + 1)) >> 8;
+            pixel.green = (pixel.green * (pixel.alpha + 1)) >> 8;
+            pixel.blue  = (pixel.blue  * (pixel.alpha + 1)) >> 8;
 
             image->rgb[i] = PackPixel555(pixel);
         }
@@ -797,9 +815,9 @@ void RefillImagePixels(IMAGE image)
             pixel = pixels[i];
 
             // premultiply
-            pixel.red   = (pixel.red   * pixel.alpha) >> 8;
-            pixel.green = (pixel.green * pixel.alpha) >> 8;
-            pixel.blue  = (pixel.blue  * pixel.alpha) >> 8;
+            pixel.red   = (pixel.red   * (pixel.alpha + 1)) >> 8;
+            pixel.green = (pixel.green * (pixel.alpha + 1)) >> 8;
+            pixel.blue  = (pixel.blue  * (pixel.alpha + 1)) >> 8;
 
             image->rgb[i] = PackPixel565(pixel);
         }
@@ -811,9 +829,9 @@ void RefillImagePixels(IMAGE image)
             pixel = pixels[i];
 
             // premultiply
-            pixel.red   = (pixel.red   * pixel.alpha) >> 8;
-            pixel.green = (pixel.green * pixel.alpha) >> 8;
-            pixel.blue  = (pixel.blue  * pixel.alpha) >> 8;
+            pixel.red   = (pixel.red   * (pixel.alpha + 1)) >> 8;
+            pixel.green = (pixel.green * (pixel.alpha + 1)) >> 8;
+            pixel.blue  = (pixel.blue  * (pixel.alpha + 1)) >> 8;
 
             image->rgb[i] = PackPixel555(pixel);
         }
@@ -972,7 +990,7 @@ EXPORT(void) DestroyImage(IMAGE image)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-EXPORT(void) BlitImage(IMAGE image, int x, int y)
+EXPORT(void) BlitImage(IMAGE image, int x, int y, CImage32::BlendMode blendmode)
 {
     // if toggled from/to fullscreen, convert the image to the new pixel format first
     if (image->pixel_format != PixelFormat)
@@ -986,71 +1004,150 @@ EXPORT(void) BlitImage(IMAGE image, int x, int y)
         y + image->height < ClippingRectangle.top   ||
         x                 > ClippingRectangle.right ||
         y                 > ClippingRectangle.bottom)
+    {
         return;
+    }
 
-    image->blit_routine(image, x, y);
+    switch (blendmode)
+    {
+        case CImage32::BLEND:
+            image->blit_routine(image, x, y);
+            break;
+
+        case CImage32::ADD:
+            AddBlit(image, x, y);
+            break;
+
+        case CImage32::SUBTRACT:
+            SubtractBlit(image, x, y);
+            break;
+
+        case CImage32::MULTIPLY:
+            MultiplyBlit(image, x, y);
+            break;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+template<CImage32::BlendMode blendmode>
 class render_pixel_mask_565
 {
-public:
-    render_pixel_mask_565(RGBA mask) : m_mask(mask)
-    { }
-    void operator()(word& dst, word src, byte alpha)
-    {
-        RGBA d = UnpackPixel565(dst);
-        RGBA s = UnpackPixel565(src);
+    private:
 
-        alpha   = (alpha   * m_mask.alpha) / 255;
-        s.blue  = (s.blue  * m_mask.blue)  / 255;
-        s.green = (s.green * m_mask.green) / 255;
-        s.red   = (s.red   * m_mask.red)   / 255;
+        RGBA m_mask;
 
-        // blit to the dest pixel
-        byte b = InvertAlpha(alpha);
-        d.blue = ((s.blue * m_mask.alpha) + (d.blue * b)) / 255;
-        d.green = ((s.green * m_mask.alpha) + (d.green * b)) / 255;
-        d.red = ((s.red * m_mask.alpha) + (d.red * b)) / 255;
+    public:
 
-        dst = PackPixel565(d);
-    }
+        render_pixel_mask_565(RGBA mask) : m_mask(mask)
+        {
+        }
 
-private:
-    RGBA m_mask;
+        void operator()(word& dst, word src, int alpha)
+        {
+            RGBA d = UnpackPixel565(dst);
+            RGBA s = UnpackPixel565(src);
+
+            // do the masking on the source pixel
+            alpha   = alpha   * (m_mask.alpha + 1) >> 8;
+            s.red   = s.red   * (m_mask.red   + 1) >> 8;
+            s.green = s.green * (m_mask.green + 1) >> 8;
+            s.blue  = s.blue  * (m_mask.blue  + 1) >> 8;
+
+            alpha = 256 - alpha;
+
+            // blit to the dst pixel
+            switch (blendmode)
+            {
+                case CImage32::BLEND:
+                    d.red   = (d.red   * alpha + s.red   * (m_mask.alpha + 1)) >> 8;
+                    d.green = (d.green * alpha + s.green * (m_mask.alpha + 1)) >> 8;
+                    d.blue  = (d.blue  * alpha + s.blue  * (m_mask.alpha + 1)) >> 8;
+                    break;
+
+                case CImage32::ADD:
+                    d.red   = min(d.red   + (s.red   * (m_mask.alpha + 1) >> 8), 255);
+                    d.green = min(d.green + (s.green * (m_mask.alpha + 1) >> 8), 255);
+                    d.blue  = min(d.blue  + (s.blue  * (m_mask.alpha + 1) >> 8), 255);
+                    break;
+
+                case CImage32::SUBTRACT:
+                    d.red   = max(d.red   - (s.red   * (m_mask.alpha + 1) >> 8), 0);
+                    d.green = max(d.green - (s.green * (m_mask.alpha + 1) >> 8), 0);
+                    d.blue  = max(d.blue  - (s.blue  * (m_mask.alpha + 1) >> 8), 0);
+                    break;
+
+                case CImage32::MULTIPLY:
+                    d.red   = (d.red   * ((s.red   * (m_mask.alpha + 1) >> 8) + 1)) >> 8;
+                    d.green = (d.green * ((s.green * (m_mask.alpha + 1) >> 8) + 1)) >> 8;
+                    d.blue  = (d.blue  * ((s.blue  * (m_mask.alpha + 1) >> 8) + 1)) >> 8;
+                    break;
+            }
+
+            dst = PackPixel565(d);
+        }
 };
 
-
+////////////////////////////////////////////////////////////////////////////////
+template<CImage32::BlendMode blendmode>
 class render_pixel_mask_555
 {
-public:
-    render_pixel_mask_555(RGBA mask) : m_mask(mask)
-    { }
-    void operator()(word& dst, word src, byte alpha)
-    {
-        RGBA d = UnpackPixel555(dst);
-        RGBA s = UnpackPixel555(src);
+    private:
 
-        alpha   = (alpha   * m_mask.alpha) / 255;
-        s.blue  = (s.blue  * m_mask.blue)  / 255;
-        s.green = (s.green * m_mask.green) / 255;
-        s.red   = (s.red   * m_mask.red)   / 255;
+        RGBA m_mask;
 
-        // blit to the dest pixel
-        byte b = InvertAlpha(alpha);
-        d.blue = ((s.blue * m_mask.alpha) + (d.blue * b)) / 255;
-        d.green = ((s.green * m_mask.alpha) + (d.green * b)) / 255;
-        d.red = ((s.red * m_mask.alpha) + (d.red * b)) / 255;
+    public:
 
-        dst = PackPixel555(d);
-    }
+        render_pixel_mask_555(RGBA mask) : m_mask(mask)
+        {
+        }
 
-private:
-    RGBA m_mask;
+        void operator()(word& dst, word src, int alpha)
+        {
+            RGBA d = UnpackPixel555(dst);
+            RGBA s = UnpackPixel555(src);
+
+            // do the masking on the source pixel
+            alpha   = alpha   * (m_mask.alpha + 1) >> 8;
+            s.red   = s.red   * (m_mask.red   + 1) >> 8;
+            s.green = s.green * (m_mask.green + 1) >> 8;
+            s.blue  = s.blue  * (m_mask.blue  + 1) >> 8;
+
+            alpha = 256 - alpha;
+
+            // blit to the dst pixel
+            switch (blendmode)
+            {
+                case CImage32::BLEND:
+                    d.red   = (d.red   * alpha + s.red   * (m_mask.alpha + 1)) >> 8;
+                    d.green = (d.green * alpha + s.green * (m_mask.alpha + 1)) >> 8;
+                    d.blue  = (d.blue  * alpha + s.blue  * (m_mask.alpha + 1)) >> 8;
+                    break;
+
+                case CImage32::ADD:
+                    d.red   = min(d.red   + (s.red   * (m_mask.alpha + 1) >> 8), 255);
+                    d.green = min(d.green + (s.green * (m_mask.alpha + 1) >> 8), 255);
+                    d.blue  = min(d.blue  + (s.blue  * (m_mask.alpha + 1) >> 8), 255);
+                    break;
+
+                case CImage32::SUBTRACT:
+                    d.red   = max(d.red   - (s.red   * (m_mask.alpha + 1) >> 8), 0);
+                    d.green = max(d.green - (s.green * (m_mask.alpha + 1) >> 8), 0);
+                    d.blue  = max(d.blue  - (s.blue  * (m_mask.alpha + 1) >> 8), 0);
+                    break;
+
+                case CImage32::MULTIPLY:
+                    d.red   = (d.red   * ((s.red   * (m_mask.alpha + 1) >> 8) + 1)) >> 8;
+                    d.green = (d.green * ((s.green * (m_mask.alpha + 1) >> 8) + 1)) >> 8;
+                    d.blue  = (d.blue  * ((s.blue  * (m_mask.alpha + 1) >> 8) + 1)) >> 8;
+                    break;
+            }
+
+            dst = PackPixel555(d);
+        }
 };
 
-
-EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) BlitImageMask(IMAGE image, int x, int y, CImage32::BlendMode blendmode, RGBA mask)
 {
     // if toggled from/to fullscreen, convert the image to the new pixel format first
     if (image->pixel_format != PixelFormat)
@@ -1061,62 +1158,222 @@ EXPORT(void) BlitImageMask(IMAGE image, int x, int y, RGBA mask)
 
     if (PixelFormat == RGB565)
     {
+        switch (blendmode)
+        {
+            case CImage32::BLEND:
+                primitives::Blit(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    render_pixel_mask_565<CImage32::BLEND>(mask)
+                );
+                break;
 
-        primitives::Blit(
-            ScreenBufferSection,
-            ScreenBufferWidth,
-            x,
-            y,
-            image->rgb,
-            image->alpha,
-            image->width,
-            image->height,
-            ClippingRectangle,
-            render_pixel_mask_565(mask)
-        );
+            case CImage32::ADD:
+                primitives::Blit(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    render_pixel_mask_565<CImage32::ADD>(mask)
+                );
+                break;
 
+            case CImage32::SUBTRACT:
+                primitives::Blit(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    render_pixel_mask_565<CImage32::SUBTRACT>(mask)
+                );
+                break;
+
+            case CImage32::MULTIPLY:
+                primitives::Blit(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    render_pixel_mask_565<CImage32::MULTIPLY>(mask)
+                );
+                break;
+        }
     }
     else
     {
+        switch (blendmode)
+        {
+            case CImage32::BLEND:
+                primitives::Blit(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    render_pixel_mask_555<CImage32::BLEND>(mask)
+                );
+                break;
 
-        primitives::Blit(
-            ScreenBufferSection,
-            ScreenBufferWidth,
-            x,
-            y,
-            image->rgb,
-            image->alpha,
-            image->width,
-            image->height,
-            ClippingRectangle,
-            render_pixel_mask_555(mask)
-        );
+            case CImage32::ADD:
+                primitives::Blit(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    render_pixel_mask_555<CImage32::ADD>(mask)
+                );
+                break;
 
+            case CImage32::SUBTRACT:
+                primitives::Blit(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    render_pixel_mask_555<CImage32::SUBTRACT>(mask)
+                );
+                break;
+
+            case CImage32::MULTIPLY:
+                primitives::Blit(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    render_pixel_mask_555<CImage32::MULTIPLY>(mask)
+                );
+                break;
+        }
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-inline void renderpixel565(word& d, const word& s, int a)
+inline void renderBlend565(word& d, const word& s, int a)
 {
     RGBA out = UnpackPixel565(d);
     RGBA in  = UnpackPixel565(s);
-    out.red   = (in.red)   + ((out.red * (InvertAlpha(a))) / 255);
-    out.green = (in.green) + ((out.green * (InvertAlpha(a))) / 255);
-    out.blue  = (in.blue)  + ((out.blue  * (InvertAlpha(a))) / 255);
+    a = 256 - a;
+    out.red   = ((out.red   * a) >> 8) + in.red;
+    out.green = ((out.green * a) >> 8) + in.green;
+    out.blue  = ((out.blue  * a) >> 8) + in.blue;
     d = PackPixel565(out);
 }
 
-inline void renderpixel555(word& d, const word& s, int a)
+inline void renderAdd565(word& d, const word& s, int a)
+{
+    RGBA out = UnpackPixel565(d);
+    RGBA in  = UnpackPixel565(s);
+    out.red   = min(out.red   + in.red,   255);
+    out.green = min(out.green + in.green, 255);
+    out.blue  = min(out.blue  + in.blue,  255);
+    d = PackPixel565(out);
+}
+
+inline void renderSubtract565(word& d, const word& s, int a)
+{
+    RGBA out = UnpackPixel565(d);
+    RGBA in  = UnpackPixel565(s);
+    out.red   = max(out.red   - in.red,   0);
+    out.green = max(out.green - in.green, 0);
+    out.blue  = max(out.blue  - in.blue,  0);
+    d = PackPixel565(out);
+}
+
+inline void renderMultiply565(word& d, const word& s, int a)
+{
+    RGBA out = UnpackPixel565(d);
+    RGBA in  = UnpackPixel565(s);
+    out.red   = (out.red   * (in.red   + 1)) >> 8;
+    out.green = (out.green * (in.green + 1)) >> 8;
+    out.blue  = (out.blue  * (in.blue  + 1)) >> 8;
+    d = PackPixel565(out);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+inline void renderBlend555(word& d, const word& s, int a)
 {
     RGBA out = UnpackPixel555(d);
     RGBA in  = UnpackPixel555(s);
-    out.red   = (in.red)   + ((out.red * (InvertAlpha(a))) / 255);
-    out.green = (in.green) + ((out.green * (InvertAlpha(a))) / 255);
-    out.blue  = (in.blue)  + ((out.blue  * (InvertAlpha(a))) / 255);
+    a = 256 - a;
+    out.red   = ((out.red   * a) >> 8) + in.red;
+    out.green = ((out.green * a) >> 8) + in.green;
+    out.blue  = ((out.blue  * a) >> 8) + in.blue;
     d = PackPixel555(out);
 }
 
-EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
+inline void renderAdd555(word& d, const word& s, int a)
+{
+    RGBA out = UnpackPixel555(d);
+    RGBA in  = UnpackPixel555(s);
+    out.red   = min(out.red   + in.red,   255);
+    out.green = min(out.green + in.green, 255);
+    out.blue  = min(out.blue  + in.blue,  255);
+    d = PackPixel555(out);
+}
+
+inline void renderSubtract555(word& d, const word& s, int a)
+{
+    RGBA out = UnpackPixel555(d);
+    RGBA in  = UnpackPixel555(s);
+    out.red   = max(out.red   - in.red,   0);
+    out.green = max(out.green - in.green, 0);
+    out.blue  = max(out.blue  - in.blue,  0);
+    d = PackPixel555(out);
+}
+
+inline void renderMultiply555(word& d, const word& s, int a)
+{
+    RGBA out = UnpackPixel555(d);
+    RGBA in  = UnpackPixel555(s);
+    out.red   = (out.red   * (in.red   + 1)) >> 8;
+    out.green = (out.green * (in.green + 1)) >> 8;
+    out.blue  = (out.blue  * (in.blue  + 1)) >> 8;
+    d = PackPixel555(out);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4], CImage32::BlendMode blendmode)
 {
     // if toggled from/to fullscreen, convert the image to the new pixel format first
     if (image->pixel_format != PixelFormat)
@@ -1132,23 +1389,145 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4])
         int dh = y[2] - y[0] + 1;
         if (dw == image->width && dh == image->height)
         {
-            BlitImage(image, x[0], y[0]);
+            BlitImage(image, x[0], y[0], blendmode);
             return;
         }
     }
 
     if (PixelFormat == RGB565)
     {
-        primitives::TexturedQuad(ScreenBufferSection, ScreenBufferWidth, x, y, image->rgb, image->alpha, image->width, image->height, ClippingRectangle, renderpixel565);
+        switch (blendmode)
+        {
+            case CImage32::BLEND:
+                primitives::TexturedQuad(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    renderBlend565
+                );
+                break;
+
+            case CImage32::ADD:
+                primitives::TexturedQuad(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    renderAdd565
+                );
+                break;
+
+            case CImage32::SUBTRACT:
+                primitives::TexturedQuad(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    renderSubtract565
+                );
+                break;
+
+            case CImage32::MULTIPLY:
+                primitives::TexturedQuad(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    renderMultiply565
+                );
+                break;
+        }
     }
     else
     {
-        primitives::TexturedQuad(ScreenBufferSection, ScreenBufferWidth, x, y, image->rgb, image->alpha, image->width, image->height, ClippingRectangle, renderpixel555);
+        switch (blendmode)
+        {
+            case CImage32::BLEND:
+                primitives::TexturedQuad(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    renderBlend555
+                );
+                break;
+
+            case CImage32::ADD:
+                primitives::TexturedQuad(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    renderAdd555
+                );
+                break;
+
+            case CImage32::SUBTRACT:
+                primitives::TexturedQuad(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    renderSubtract555
+                );
+                break;
+
+            case CImage32::MULTIPLY:
+                primitives::TexturedQuad(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    renderMultiply555
+                );
+                break;
+        }
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
+EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], CImage32::BlendMode blendmode, RGBA mask)
 {
     // if toggled from/to fullscreen, convert the image to the new pixel format first
     if (image->pixel_format != PixelFormat)
@@ -1159,11 +1538,133 @@ EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
 
     if (PixelFormat == RGB565)
     {
-        primitives::TexturedQuad(ScreenBufferSection, ScreenBufferWidth, x, y, image->rgb, image->alpha, image->width, image->height, ClippingRectangle, render_pixel_mask_565(mask));
+        switch (blendmode)
+        {
+            case CImage32::BLEND:
+                primitives::TexturedQuad(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    render_pixel_mask_565<CImage32::BLEND>(mask)
+                );
+                break;
+
+            case CImage32::ADD:
+                primitives::TexturedQuad(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    render_pixel_mask_565<CImage32::ADD>(mask)
+                );
+                break;
+
+            case CImage32::SUBTRACT:
+                primitives::TexturedQuad(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    render_pixel_mask_565<CImage32::SUBTRACT>(mask)
+                );
+                break;
+
+            case CImage32::MULTIPLY:
+                primitives::TexturedQuad(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    render_pixel_mask_565<CImage32::MULTIPLY>(mask)
+                );
+                break;
+        }
     }
     else
     {
-        primitives::TexturedQuad(ScreenBufferSection, ScreenBufferWidth, x, y, image->rgb, image->alpha, image->width, image->height, ClippingRectangle, render_pixel_mask_555(mask));
+        switch (blendmode)
+        {
+            case CImage32::BLEND:
+                primitives::TexturedQuad(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    render_pixel_mask_555<CImage32::BLEND>(mask)
+                );
+                break;
+
+            case CImage32::ADD:
+                primitives::TexturedQuad(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    render_pixel_mask_555<CImage32::ADD>(mask)
+                );
+                break;
+
+            case CImage32::SUBTRACT:
+                primitives::TexturedQuad(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    render_pixel_mask_555<CImage32::SUBTRACT>(mask)
+                );
+                break;
+
+            case CImage32::MULTIPLY:
+                primitives::TexturedQuad(
+                    ScreenBufferSection,
+                    ScreenBufferWidth,
+                    x,
+                    y,
+                    image->rgb,
+                    image->alpha,
+                    image->width,
+                    image->height,
+                    ClippingRectangle,
+                    render_pixel_mask_555<CImage32::MULTIPLY>(mask)
+                );
+                break;
+        }
     }
 }
 
@@ -1288,6 +1789,180 @@ void NormalBlit(IMAGE image, int x, int y)
             dst   += dst_inc;
             src   += src_inc;
             alpha += src_inc;
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void AddBlit(IMAGE image, int x, int y)
+{
+    calculate_clipping_metrics(image->width, image->height);
+
+    word* dst = (word*)ScreenBufferSection + (y + image_offset_y) * ScreenBufferWidth + image_offset_x + x;
+    word* src = (word*)image->rgb          +      image_offset_y  * image->width      + image_offset_x;
+
+    int dst_inc = ScreenBufferWidth - image_blit_width;
+    int src_inc = image->width      - image_blit_width;
+
+    word result;
+
+    int iy = image_blit_height;
+    if (PixelFormat == RGB565)
+    {
+        while (iy-- > 0)
+        {
+            int ix = image_blit_width;
+            while (ix-- > 0)
+            {
+                result  = min( (*dst & 0x001F)        +  (*src & 0x001F),        31);
+                result |= min(((*dst & 0x07E0) >> 5)  + ((*src & 0x07E0) >> 5),  63) << 5;
+                result |= min(((*dst & 0xF800) >> 11) + ((*src & 0xF800) >> 11), 31) << 11;
+
+                *dst = result;
+
+                ++dst;
+                ++src;
+            }
+
+            dst += dst_inc;
+            src += src_inc;
+        }
+    }
+    else
+    {
+        while (iy-- > 0)
+        {
+            int ix = image_blit_width;
+            while (ix-- > 0)
+            {
+                result  = min( (*dst & 0x001F)        +  (*src & 0x001F),        31);
+                result |= min(((*dst & 0x03E0) >> 5)  + ((*src & 0x03E0) >> 5),  31) << 5;
+                result |= min(((*dst & 0x7C00) >> 10) + ((*src & 0x7C00) >> 10), 31) << 10;
+
+                *dst = result;
+
+                ++dst;
+                ++src;
+            }
+
+            dst += dst_inc;
+            src += src_inc;
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void SubtractBlit(IMAGE image, int x, int y)
+{
+    calculate_clipping_metrics(image->width, image->height);
+
+    word* dst = (word*)ScreenBufferSection + (y + image_offset_y) * ScreenBufferWidth + image_offset_x + x;
+    word* src = (word*)image->rgb          +      image_offset_y  * image->width      + image_offset_x;
+
+    int dst_inc = ScreenBufferWidth - image_blit_width;
+    int src_inc = image->width      - image_blit_width;
+
+    word result;
+
+    int iy = image_blit_height;
+    if (PixelFormat == RGB565)
+    {
+        while (iy-- > 0)
+        {
+            int ix = image_blit_width;
+            while (ix-- > 0)
+            {
+                result  = max( (*dst & 0x001F)        -  (*src & 0x001F),        0);
+                result |= max(((*dst & 0x07E0) >> 5)  - ((*src & 0x07E0) >> 5),  0) << 5;
+                result |= max(((*dst & 0xF800) >> 11) - ((*src & 0xF800) >> 11), 0) << 11;
+
+                *dst = result;
+
+                ++dst;
+                ++src;
+            }
+
+            dst += dst_inc;
+            src += src_inc;
+        }
+    }
+    else
+    {
+        while (iy-- > 0)
+        {
+            int ix = image_blit_width;
+            while (ix-- > 0)
+            {
+                result  = max( (*dst & 0x001F)        -  (*src & 0x001F),        0);
+                result |= max(((*dst & 0x03E0) >> 5)  - ((*src & 0x03E0) >> 5),  0) << 5;
+                result |= max(((*dst & 0x7C00) >> 10) - ((*src & 0x7C00) >> 10), 0) << 10;
+
+                *dst = result;
+
+                ++dst;
+                ++src;
+            }
+
+            dst += dst_inc;
+            src += src_inc;
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void MultiplyBlit(IMAGE image, int x, int y)
+{
+    calculate_clipping_metrics(image->width, image->height);
+
+    word* dst = (word*)ScreenBufferSection + (y + image_offset_y) * ScreenBufferWidth + image_offset_x + x;
+    word* src = (word*)image->rgb          +      image_offset_y  * image->width      + image_offset_x;
+
+    int dst_inc = ScreenBufferWidth - image_blit_width;
+    int src_inc = image->width      - image_blit_width;
+
+    word result;
+
+    int iy = image_blit_height;
+    if (PixelFormat == RGB565)
+    {
+        while (iy-- > 0)
+        {
+            int ix = image_blit_width;
+            while (ix-- > 0)
+            {
+                result  =   (*dst & 0x001F)        *  ((*src & 0x001F)        + 1) >> 5;
+                result |= (((*dst & 0x07E0) >> 5)  * (((*src & 0x07E0) >> 5)  + 1) >> 6) << 5;
+                result |= (((*dst & 0xF800) >> 11) * (((*src & 0xF800) >> 11) + 1) >> 5) << 11;
+
+                *dst = result;
+
+                ++dst;
+                ++src;
+            }
+
+            dst += dst_inc;
+            src += src_inc;
+        }
+    }
+    else
+    {
+        while (iy-- > 0)
+        {
+            int ix = image_blit_width;
+            while (ix-- > 0)
+            {
+                result  =   (*dst & 0x001F)        *  ((*src & 0x001F)        + 1) >> 5;
+                result |= (((*dst & 0x03E0) >> 5)  * (((*src & 0x03E0) >> 5)  + 1) >> 5) << 5;
+                result |= (((*dst & 0x7C00) >> 10) * (((*src & 0x7C00) >> 10) + 1) >> 5) << 10;
+
+                *dst = result;
+
+                ++dst;
+                ++src;
+            }
+
+            dst += dst_inc;
+            src += src_inc;
         }
     }
 }

@@ -101,6 +101,10 @@ SS_FUNCTION(OpenLog, 1)
 
 // sphere objects
 
+  // particle engine
+  SS_FUNCTION(CreateParticleSystemParent, 0)
+  SS_FUNCTION(CreateParticleSystemChild, 1)
+
   // byte arrays
   SS_FUNCTION(CreateByteArray, 1)
   SS_FUNCTION(CreateByteArrayFromString, 1)
