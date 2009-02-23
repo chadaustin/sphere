@@ -1373,7 +1373,7 @@ log_object.endBlock()
       ps_child_object.callback
         - a particle system callback object
       
-      *** particle system parent methods ***
+      *** particle system child methods ***
       
       ps_child_object.update()
         - ask particle system to update
