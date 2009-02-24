@@ -1335,8 +1335,8 @@ log_object.endBlock()
       
   	*** particle system child ***
     
-    CreateParticleSystemChild(size)
-      - returns a new particle system child object with the initial size
+    CreateParticleSystemChild(capacity)
+      - returns a new particle system child object with the initial capacity
     
       *** particle system child properties ***
       
@@ -1382,7 +1382,7 @@ log_object.endBlock()
         - ask particle system to render
         
       ps_child_object.size()
-        - returns the current size of the descendants list
+        - returns the current size of the particle swarm
       
       ps_child_object.capacity()
         - returns the current size limit
@@ -1400,7 +1400,7 @@ log_object.endBlock()
         - makes sure that it can hold at least n particles by allocating more space if needed
       
       ps_child_object.clear()
-        - clears the descendant list
+        - sets swarm to a zero size
       
       ps_child_object.clone()
         - returns a new particle system child object which is the exact copy of ps_child_object
@@ -1497,10 +1497,10 @@ log_object.endBlock()
       - called on render, no arguments
     
     particle_system.callback.on_birth
-      - called on update, the first argument is either the parent particle system or null
+      - called on birth, the first argument is either the parent particle system or null
     
     particle_system.callback.on_death
-      - called on update, the first argument is either the parent particle system or null
+      - called on death, the first argument is either the parent particle system or null
     
   *** images ***
   
