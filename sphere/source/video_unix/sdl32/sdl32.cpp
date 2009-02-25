@@ -1,6 +1,5 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_getenv.h>
-#include <algorithm>
 #include <string>
 
 #include "../../common/Image32.hpp"
@@ -12,6 +11,9 @@
 #include "scale.h"
 #include "hq2x.h"
 #include "2xSaI.h"
+
+#define min(x, y) (x < y ? x : y)
+#define max(x, y) (x > y ? x : y)
 
 #define EXPORT(ret) extern "C" ret __attribute__((stdcall))
 
@@ -784,15 +786,15 @@ class render_pixel_mask
                     break;
 
                 case CImage32::ADD:
-                    dst.red   = std::min(dst.red   + (src.red   * (m_mask.alpha + 1) >> 8), 255);
-                    dst.green = std::min(dst.green + (src.green * (m_mask.alpha + 1) >> 8), 255);
-                    dst.blue  = std::min(dst.blue  + (src.blue  * (m_mask.alpha + 1) >> 8), 255);
+                    dst.red   = min(dst.red   + (src.red   * (m_mask.alpha + 1) >> 8), 255);
+                    dst.green = min(dst.green + (src.green * (m_mask.alpha + 1) >> 8), 255);
+                    dst.blue  = min(dst.blue  + (src.blue  * (m_mask.alpha + 1) >> 8), 255);
                     break;
 
                 case CImage32::SUBTRACT:
-                    dst.red   = std::max(dst.red   - (src.red   * (m_mask.alpha + 1) >> 8), 0);
-                    dst.green = std::max(dst.green - (src.green * (m_mask.alpha + 1) >> 8), 0);
-                    dst.blue  = std::max(dst.blue  - (src.blue  * (m_mask.alpha + 1) >> 8), 0);
+                    dst.red   = max(dst.red   - (src.red   * (m_mask.alpha + 1) >> 8), 0);
+                    dst.green = max(dst.green - (src.green * (m_mask.alpha + 1) >> 8), 0);
+                    dst.blue  = max(dst.blue  - (src.blue  * (m_mask.alpha + 1) >> 8), 0);
                     break;
 
                 case CImage32::MULTIPLY:
@@ -895,16 +897,16 @@ void aBlendBGRA(BGRA& d, BGRA s, int a)
 
 void aAddBGRA(BGRA& d, BGRA s, int a)
 {
-    d.red   = std::min(d.red   + s.red,   255);
-    d.green = std::min(d.green + s.green, 255);
-    d.blue  = std::min(d.blue  + s.blue,  255);
+    d.red   = min(d.red   + s.red,   255);
+    d.green = min(d.green + s.green, 255);
+    d.blue  = min(d.blue  + s.blue,  255);
 }
 
 void aSubtractBGRA(BGRA& d, BGRA s, int a)
 {
-    d.red   = std::max(d.red   - s.red,   0);
-    d.green = std::max(d.green - s.green, 0);
-    d.blue  = std::max(d.blue  - s.blue,  0);
+    d.red   = max(d.red   - s.red,   0);
+    d.green = max(d.green - s.green, 0);
+    d.blue  = max(d.blue  - s.blue,  0);
 }
 
 void aMultiplyBGRA(BGRA& d, BGRA s, int a)
@@ -1177,9 +1179,9 @@ void AddBlit(IMAGE image, int x, int y)
         int ix = image_blit_width;
         while (ix-- > 0)
         {
-            dst->red   = std::min(dst->red   + src->red,   255);
-            dst->green = std::min(dst->green + src->green, 255);
-            dst->blue  = std::min(dst->blue  + src->blue,  255);
+            dst->red   = min(dst->red   + src->red,   255);
+            dst->green = min(dst->green + src->green, 255);
+            dst->blue  = min(dst->blue  + src->blue,  255);
 
             ++dst;
             ++src;
@@ -1206,9 +1208,9 @@ void SubtractBlit(IMAGE image, int x, int y)
         int ix = image_blit_width;
         while (ix-- > 0)
         {
-            dst->red   = std::max(dst->red   - src->red,   0);
-            dst->green = std::max(dst->green - src->green, 0);
-            dst->blue  = std::max(dst->blue  - src->blue,  0);
+            dst->red   = max(dst->red   - src->red,   0);
+            dst->green = max(dst->green - src->green, 0);
+            dst->blue  = max(dst->blue  - src->blue,  0);
 
             ++dst;
             ++src;
