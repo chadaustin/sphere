@@ -804,7 +804,7 @@ EXPORT(void) DirectBlit(int x, int y, int w, int h, RGBA* pixels)
 
     if (i)
     {
-        BlitImage(i, x, y);
+        BlitImage(i, x, y, CImage32::BLEND);
         DestroyImage(i);
 
     }
@@ -817,7 +817,7 @@ EXPORT(void) DirectTransformBlit(int x[4], int y[4], int w, int h, RGBA* pixels)
 
     if (i)
     {
-        TransformBlitImage(i, x, y);
+        TransformBlitImage(i, x, y, CImage32::BLEND);
         DestroyImage(i);
 
     }
