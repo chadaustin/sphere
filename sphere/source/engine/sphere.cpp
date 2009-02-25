@@ -98,6 +98,66 @@ void RunSphere(int argc, const char** argv)
             show_menu = false;
 
         }
+        else if (strcmp(argv[i], "-sgm") == 0 &&
+                 i < argc - 1)
+        {  // if last parameter is a command, it doesn't mean anything
+            // look for a parameters string
+
+			const char* parameters = "";
+            for (int j = 0; j < argc - 1; j++)
+            {
+                if (strcmp(argv[j], "-parameters") == 0)
+                {
+                    parameters = argv[j + 1];
+                    break;
+                }
+            }
+			
+		// run the sgm
+		if ( ! Local::extension_compare(argv[i+1], ".sgm")){
+			QuitMessage("file needs to be '.sgm'");
+			return;
+		}
+
+		int pos = strlen(argv[i + 1]) - 1;
+
+
+		//We're not interested in the sgm, we want the parent directory, lets find it:
+		while( (pos>0) && (argv[i + 1][pos] != '/' ) && (argv[i + 1][pos] != '\\' ) ){
+			--pos;
+		};
+		if(pos == 0){
+			pos = strlen(argv[i + 1]) - 1;
+		}
+
+		char path[256];
+		strncpy(path, argv[i+1],pos);
+		path[pos] = '\0';
+			
+		--pos;
+		while( (pos>0) && (argv[i + 1][pos] != '/' ) && (argv[i + 1][pos] != '\\' ) ){
+			--pos;
+		};
+		if(pos == 0){
+			pos = strlen(argv[i + 1]) - 1;
+		}
+		path[pos] = '\0';
+
+            if (EnterDirectory(path))
+            {
+                RunGame(path +pos+1, parameters);
+                LeaveDirectory();
+            }
+            else
+            {
+                QuitMessage("Could not enter 'games' directory");
+                return;
+            }
+            show_menu = false;
+
+//////////////////////////////
+
+        }
         else if (strcmp(argv[i], "-package") == 0 &&
                  i < argc - 1)
         {  // if last parameter is a command, it doesn't mean anything
@@ -118,6 +178,7 @@ void RunSphere(int argc, const char** argv)
             printf ("engine.exe -game \"game_folder\"\n");
             printf ("engine.exe -game \"game_folder\" -parameters=\"...\"\n");
             printf ("engine.exe -package \"game_package.spk\"\n");
+            printf ("engine.exe -sgm \"sgmfile_with_path\"\n");
             printf ("engine.exe -version\n");
             printf ("engine.exe -help\n");
             show_menu = false;
