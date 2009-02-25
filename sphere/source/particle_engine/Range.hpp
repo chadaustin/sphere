@@ -68,7 +68,7 @@ Range<T>::operator=(const Range<T>& rh)
 template<typename T> inline T
 Range<T>::Random() const
 {
-    return Min + ((Max - Min) * (rand() * (1.0f / (RAND_MAX + 1))));
+    return Min + ((Max - Min) * (rand() * (1.0f / RAND_MAX)));
 }
 
 
