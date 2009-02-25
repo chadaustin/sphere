@@ -6,13 +6,13 @@
 
 ;--------------------------------
 
-Name "Sphere 1.5"
-Caption "Sphere 1.5 Installation"
+Name "Sphere 1.6"
+Caption "Sphere 1.6 Installation"
 Icon          "install.ico"
 UninstallIcon "uninstall.ico"
-OutFile "InstallSphere1.5.exe"
+OutFile "InstallSphere1.6.exe"
 
-!define SphereStartMenuDir "Sphere 1.5"
+!define SphereStartMenuDir "Sphere 1.6"
 
 SetDateSave on
 SetDatablockOptimize on

@@ -171,6 +171,14 @@ IMAGE CreateImage(int width, int height, RGBA* pixels)
 
 ------------------------------------------------------------------------------
 
+IMAGE CloneImage(IMAGE image)
+
+  Creates a new image which is a copy of the argument image.
+
+  returns: handle to new image on success, NULL on failure
+
+------------------------------------------------------------------------------
+
 IMAGE GrabImage(int x, int y, int width, int height)
 
   Creates an image from data already rendered to the backbuffer.
@@ -191,37 +199,40 @@ void DestroyImage(IMAGE image)
 
 ------------------------------------------------------------------------------
 
-void BlitImage(IMAGE image, int x, int y)
+void BlitImage(IMAGE image, int x, int y, CImage32::BlendMode blendmode)
 
   Draws an image in the backbuffer.
 
   image - image handle
   x     - x-coordinate of upper-left corner of destination rectangle
   y     - y-coordinate of upper-left corner of destination rectangle
+  blendmode - constant identifying the requested blend mode
 
 ------------------------------------------------------------------------------
 
-void BlitImageMask(IMAGE image, int x, int y, RGBA mask)
+void BlitImageMask(IMAGE image, int x, int y, CImage32::BlendMode blendmode, RGBA mask)
 
   Draws a masked image to the backbuffer.
 
   image - handle
   x, y  - coordinates
+  blendmode - constant identifying the requested blend mode
   mask  - color/alpha mask
 
 ------------------------------------------------------------------------------
 
-void TransformBlitImage(IMAGE image, int x[4], int y[4])
+void TransformBlitImage(IMAGE image, int x[4], int y[4], CImage32::BlendMode blendmode)
 
   Draws a coordinate-translated image to the backbuffer.
 
   image - image handle
   x     - x coordinates (starts at upper left, clockwise)
   y     - y coordinates (starts at upper left, clockwise)
+  blendmode - constant identifying the requested blend mode
 
 ------------------------------------------------------------------------------
 
-void TransformBlitImageMask(IMAGE image, int x[4], int y[4], RGBA mask)
+void TransformBlitImageMask(IMAGE image, int x[4], int y[4], CImage32::BlendMode blendmode, RGBA mask)
 
   TransformBlitImage + BlitImageMask!
 
