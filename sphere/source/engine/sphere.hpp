@@ -5,6 +5,7 @@
 #include "sfont.hpp"
 #include "swindowstyle.hpp"
 #include <string>
+#include <cstdlib>
 
 #include "../common/strcmp_ci.hpp"
 struct Game

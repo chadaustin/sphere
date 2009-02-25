@@ -3,11 +3,11 @@ import types
 
 Import('base_env BUILD_DIR COMPILER')
 
-env = base_env.Copy()
+env = base_env.Clone()
 
 def VideoDriver(name, source, libs):
     global env
-    drv = env.Copy()
+    drv = env.Clone()
     drv.Append(LIBS = libs)
     driver = drv.SharedLibrary(name, source)
     drv.InstallAs(os.path.join(BUILD_DIR, 'system/video/' + name + '.so'), driver)

@@ -5,6 +5,7 @@
 #include <windows.h>
 #endif
 #include <vector>
+#include <cstring>
 #include <string>
 #include <list>
 #ifndef MAX_PATH

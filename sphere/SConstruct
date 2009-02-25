@@ -32,7 +32,7 @@ class Compiler:
             raise ValueError, "Invalid compiler specified"
 
         self.name = name
-        
+
         if name == 'linux':
             self.env = BuildLinuxEnv()
 
@@ -41,10 +41,10 @@ class Compiler:
 
     def is_unix(self):
         return self.name in ['linux']
-    
+
     def needs_sdl(self):
         return self.name in ['linux']
-        
+
     def get_env(self):
         return self.env
 
@@ -82,7 +82,7 @@ class Compiler:
     def SetupSDL(self, env):
         if self.name == 'linux':
             autocons.ParseConfig(env, 'sdl-config', ['--cflags', '--libs'])
-        
+
     def SetupWXWidgets(self, env):
         if self.name == 'linux':
             autocons.ParseConfig(env, 'wx-config', ['--cppflags', '--libs'])
@@ -91,6 +91,11 @@ class Compiler:
         env.Append(CPPPATH = ['#/source/common'],
                    LIBPATH = ['#/source/common'],
                    LIBS = ['common'])
+
+    def SetupParticleEngine(self, env):
+        env.Append(CPPPATH = ['#/source/particle_engine'],
+                   LIBPATH = ['#/source/particle_engine'],
+                   LIBS = ['particle_engine'])
 
 ###########################################################
 

@@ -8,6 +8,7 @@
 #include <stack>
 #include <cstring>
 #include <cstdio>
+#include <cstdlib>
 #include <string>
 #include <list>
 

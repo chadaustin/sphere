@@ -2,7 +2,8 @@
 #define PACKAGE_FILE_SYSTEM_HPP
 #include <vector>
 #include <string>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 #include "../common/IFileSystem.hpp"
 #include "../common/types.h"
 class CPackageFileSystem : public IFileSystem

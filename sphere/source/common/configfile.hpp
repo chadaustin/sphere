@@ -4,6 +4,8 @@
 #pragma warning(disable : 4786)
 #endif
 #include <map>
+#include <memory>
+#include <cstring>
 #include <string>
 #include "DefaultFileSystem.hpp"
 class CConfigFile

@@ -3,6 +3,8 @@
 
 #pragma warning(disable : 4786)
 ///////////////////////////////////////////////////////////
+#include "system.hpp"
+
 #ifdef WIN32
 #include <windows.h>
 #endif

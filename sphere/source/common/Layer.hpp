@@ -1,6 +1,7 @@
 #ifndef LAYER_HPP
 #define LAYER_HPP
 #include <string>
+#include <cstring>
 #include "types.h"
 #include "ObstructionMap.hpp"
 class sLayer

@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <map>
+#include <memory>
 #include <stdio.h>
 #include <string>
 #include "Image32.hpp"
