@@ -20,10 +20,14 @@ Edited and updated by Darklich and AegisKnight
 Now managed by the Spherical community (http://www.spheredev.org/)
 
 
+
 *** general functions ***
 GetVersion()
   - Returns the current version of Sphere as a floating point number
     (e.g. 1.0 or 1.1)
+
+GetVersionString()
+    - Returns the current Sphere version string
 
 *** script functions ***
 EvaluateScript(script)
@@ -53,13 +57,11 @@ GarbageCollect()
 CreateStringFromCode(code)
   - creates a single-character string based on the code passed in, i.e. 65 is "A"
 
+    Do not use this function, use String.fromCharCode(code) instead...
+    e.g. String.fromCharCode(65) == "A"
 
 
 *** engine functions ***
-
-GetVersionString()
-  - Returns the current Sphere version string
-
 GetGameList()
   - Returns array of game objects
     - game.name          Name of game
@@ -81,8 +83,7 @@ Exit()
   - Exits the Sphere engine unconditionally
 
 Abort(message)
-  - Exits the Sphere engine unconditionally, displays the 'message' to the 
-    user
+  - Exits the Sphere engine unconditionally, displays the 'message' to the user
     If you end the message with a newline it wont display the file/line
     where the Abort occured.
     e.g. Abort("Mistake here")
@@ -109,6 +110,30 @@ log_object.beginBlock(name)
 
 log_object.endBlock()
   - closes the current log block.
+
+
+*** blend modes ***
+
+blitting images to the backbuffer or drawing onto surfaces
+  - BLEND:      DestColor = (DestColor * (255 - SrcAlpha) + SrcColor * SrcAlpha) / 255
+  - ADD:        DestColor = DestColor + ((SrcColor * SrcAlpha) / 255)
+  - SUBTRACT:   DestColor = DestColor - ((SrcColor * SrcAlpha) / 255)
+  - MULTIPLY:   DestColor = DestColor * ((SrcColor * SrcAlpha) / 255) / 255
+  - AVERAGE:    DestColor = DestColor + ((SrcColor * SrcAlpha) / 255) / 2
+  - INVERT:     DestColor = DestColor * (255 - ((SrcColor * SrcAlpha) / 255)) / 255
+
+masking
+  - BLEND:      DestColor = (DestColor * (255 - MaskAlpha) + MaskColor * MaskAlpha) / 255
+  - ADD:        DestColor = DestColor + MaskColor
+  - SUBTRACT:   DestColor = DestColor - MaskColor
+  - MULTIPLY:   DestColor = DestColor * MaskColor / 255
+  - AVERAGE:    DestColor = (DestColor + MaskColor) / 2
+  - INVERT:     DestColor = DestColor * (255 - MaskColor) / 255
+
+drawing onto surfaces or masking
+  - REPLACE:    DestColor = SrcColor
+  - RGB_ONLY:   DestRGB   = SrcRGB
+  - ALPHA_ONLY: DestAlpha = SrcAlpha
 
 
 *** system interfaces ***
@@ -160,7 +185,6 @@ log_object.endBlock()
   
   GetScreenHeight()
     - returns the height of the engine screen
-
 
     *** graphic primitives ***
     NOTE: Make sure to use FlipScreen() when you're done drawing
@@ -378,6 +402,8 @@ log_object.endBlock()
   mapengine_object.save(filename)
     - saves the map to filename
 
+  mapengine_object.layerAppend(width, height, tile)
+    - Adds a new layer filled with tile index
 
   *** ByteArray object ***
   ByteArrays are pretty much only used for networking (see below for Network 
@@ -690,6 +716,77 @@ log_object.endBlock()
       - in 'num_frames' frames, runs 'script'
         ex: SetDelayScript(60, "ChangeMap('forest.rmp')");
         this tells the map engine to change to forest.rmp after 60 frames
+
+    *** map background music ***
+
+    nameBgm()
+      - Returns the name of the current map background music (could be a m3u list)
+
+    validBgm()
+      - Returns the type of the current map background music: 0: none 1: midi 2: wav/mp3/it/xm
+
+    playBgm() 
+      - Starts the current map background music. If it is already playing, or doesnt exist,
+        it does nothing.
+        Returns true if the music is playing
+
+    stopBgm()
+    - Stops the current map background music. If it is already stopped, or doesnt exist, 
+          it does nothing.
+	  Returns true if the music is stopped
+
+    isPlayingBgm()
+      - Tells us if the background music is playing
+
+    resetBgm()
+      - Rewind the background music. (Can be slow on streamed music)
+
+    setRepeatBgm(boolean onoff)
+      - Enable/Disable Loop the current background music (it is repeated by default)
+        Returns true if it succeeded setting the boolean value.
+
+    getRepeatBgm()
+      - Returns true if the current background music is looped. False if not.
+
+    setVolumeBgm(int volume)
+      - Sets the volume of the current background music. The volume can be 0 to 255.
+        no effect on MIDIs.
+
+    getVolumeBgm()
+      - Gets the volume of the current background music. The volume can be 0 to 255.
+        no effect on MIDIs.
+
+    setPanBgm(int pan)
+      - pan can be from -255 to 255.  -255 = left, 255 = right. pan defaults to 0 (center).
+        no effect on MIDIs.
+
+    getPanBgm()
+      - returns the current pan of the sound (-255 to 255)
+        no effect on MIDIs.
+
+    setPitchBgm(double pitch)
+      - pitch ranges from 0.5 to 2.0.  0.5 is an octave down (and half as fast)
+        while 2.0 is an octave up (and twice as fast).  pitch defaults to 1.0
+        no effect on MIDIs.
+
+    getPitchBgm()
+      - returns the current pitch
+        no effect on MIDIs.
+
+    isSeekableBgm()
+      - returns true if the background music is seekable
+
+    getLengthBgm()
+      - returns the length the background music. Music must be seekable.
+
+    setPositionBgm(int pos)
+      - sets the position of the sound
+       if the sound isn't seekable, this does nothing
+
+    getPositionBgm()
+      - gets the position of the sound
+        if the sound isn't seekable, this does nothing
+
 
    
     *** input ***
@@ -1072,9 +1169,12 @@ log_object.endBlock()
       the file, the engine will give an error message and exit.  If the optional
       argument 'streaming' is true or unspecified, the sound is streamed from the
       hard drive.  Otherwise, it's loaded into memory.
-  
-  sound_object.play([repeat])
-    - plays the sound. repeat is a boolean (true/false), that indicates if
+
+  CreateSound(byte_array [, streaming])
+    - returns a sound  from bytearray.
+
+  sound_object.play(repeat)
+    - plays the sound. repeat is a boolean (true/false), that indicates if 
       the sound should be looped
     - call play() without the 'repeat' parameter to resume any previously paused sound.
   
@@ -1148,6 +1248,9 @@ log_object.endBlock()
       SE_SINGLE sound effects only allow the sound to be played once at a time.
       SE_MULTIPLE sound effects always open a new stream to the audio device
       for each time it is played (cleaning up or reusing old streams if possible).
+
+  CreateSoundEffect(byte_array)
+    - returns a sound effect from a bytearray.
   
   sound_effect_object.play()
     - plays the sound effect.
@@ -1180,6 +1283,75 @@ log_object.endBlock()
   sound_effect_object.getPitch()
     - returns the current pitch
 
+  *** sfxr ***
+
+   CreateSfxr()
+    - returns an Sfxr object.
+
+  sfxr_object.ssSfxrSaveWav(string filename)
+    - saves the sfxr as a wav file
+
+  sfxr_object.ssSfxrReset()
+  sfxr_object.ssSfxrGetSoundEffect([type])
+  sfxr_object.ssSfxrCalcSampleSize()
+  sfxr_object.ssSfxrSetMasterVolume(volume)
+  sfxr_object.ssSfxrGetMasterVolume()
+  sfxr_object.ssSfxrGetSoundVolume()
+  sfxr_object.ssSfxrSetSoundVolume(v)
+  sfxr_object.ssSfxrGetBitrate()
+  sfxr_object.ssSfxrSetBitrate(v)
+  sfxr_object.ssSfxrGetSampleRate()
+  sfxr_object.ssSfxrSetSampleRate(v)
+  sfxr_object.ssSfxrGetWaveType()
+  sfxr_object.ssSfxrSetWaveType(wavetype)
+  sfxr_object.ssSfxrGetBaseFrequency()
+  sfxr_object.ssSfxrSetBaseFrequency( v)
+  sfxr_object.ssSfxrGetMinFrequency()
+  sfxr_object.ssSfxrSetMinFrequency(v)
+  sfxr_object.ssSfxrGetFrequencySlide()
+  sfxr_object.ssSfxrSetFrequencySlide(v)
+  sfxr_object.ssSfxrGetFrequencySlideDelta()
+  sfxr_object.ssSfxrSetFrequencySlideDelta(v)
+  sfxr_object.ssSfxrGetSquareDuty()
+  sfxr_object.ssSfxrSetSquareDuty(v)
+  sfxr_object.ssSfxrGetSquareDutySweep()
+  sfxr_object.ssSfxrSetSquareDutySweep(v)
+  sfxr_object.ssSfxrGetVibratoDepth()
+  sfxr_object.ssSfxrSetVibratoDepth(v)
+  sfxr_object.ssSfxrGetVibratoSpeed()
+  sfxr_object.ssSfxrSetVibratoSpeed(v)
+  sfxr_object.ssSfxrGetVibratoDelay()
+  sfxr_object.ssSfxrSetVibratoDelay(v)
+  sfxr_object.ssSfxrGetAttack()
+  sfxr_object.ssSfxrSetAttack(v)
+  sfxr_object.ssSfxrGetSustain()
+  sfxr_object.ssSfxrSetSustain(v)
+  sfxr_object.ssSfxrGetDecay()
+  sfxr_object.ssSfxrSetDecay(v)
+  sfxr_object.ssSfxrGetRelease()
+  sfxr_object.ssSfxrSetRelease(v)
+  sfxr_object.ssSfxrGetFilter()
+  sfxr_object.ssSfxrSetFilter(bool)
+  sfxr_object.ssSfxrGetLowPassFilterCutoff()
+  sfxr_object.ssSfxrSetLowPassFilterCutoff(v)
+  sfxr_object.ssSfxrGetLowPassFilterCutoffSweep()
+  sfxr_object.ssSfxrSetLowPassFilterCutoffSweep(v)
+  sfxr_object.ssSfxrGetFilterResonance()
+  sfxr_object.ssSfxrSetFilterResonance(v)
+  sfxr_object.ssSfxrGetHighPassFilterCutoff()
+  sfxr_object.ssSfxrSetHighPassFilterCutoff(v)
+  sfxr_object.ssSfxrGetHighPassFilterCutoffSweep()
+  sfxr_object.ssSfxrSetHighPassFilterCutoffSweep(v)
+  sfxr_object.ssSfxrGetPhaserOffset()
+  sfxr_object.ssSfxrSetPhaserOffset(v)
+  sfxr_object.ssSfxrGetPhaserOffsetSweep()
+  sfxr_object.ssSfxrSetPhaserOffsetSweep(v)
+  sfxr_object.ssSfxrGetRepeatSpeed()
+  sfxr_object.ssSfxrSetRepeatSpeed(v)
+  sfxr_object.ssSfxrGetArpeggio()
+  sfxr_object.ssSfxrSetArpeggio(v)
+  sfxr_object.ssSfxrGetArpeggioSpeed()
+  sfxr_object.ssSfxrSetArpeggioSpeed(v)
 
   *** fonts ***
   GetSystemFont()
@@ -1255,6 +1427,12 @@ log_object.endBlock()
 
   windowstyle_object.getColorMask()
     - gets the color mask being used by the windowstyle object
+
+  windowstyle_object.getBorder(border)
+    - get the border size (height or width) in pixels for the windowstyle object.
+      You can use EDGE_LEFT, EDGE_TOP, EDGE_RIGHT and EDGE_BOTTOM as parameters.
+      Note that the corner sizes are ignored.
+  
 
   *** particle engine ***
   
@@ -1543,25 +1721,25 @@ log_object.endBlock()
       in  anti-clockwise in radians, which have a range of 0-2*pi. 
       (x,y) is the center of the blit.
 
-  image_object.rotateBlitMask(x, y, radians, color [, blendmode = BLEND])
+  image_object.rotateBlitMask(x, y, radians, color, [blendmode])
     - rotateBlit + mask
   
-  image_object.zoomBlit(x, y, factor [, blendmode = BLEND])
+  image_object.zoomBlit(x, y, factor, [blendmode])
     - draws the image into the video buffer with zooming, with the scaling 
       depending on factor. Normally a factor of 1 will blit a normal looking
       image. Between 0 and 1 will shrink the image. Any values greater than 1
       will stretch the size of the image.
 
-  image_object.zoomBlitMask(x, y, factor, color [, blendmode = BLEND])
+  image_object.zoomBlitMask(x, y, factor, color, [blendmode])
     - zoomBlit + mask
   
-  image_object.transformBlit(x1, y1, x2, y2, x3, y3, x4, y4 [, blendmode = BLEND])
+  image_object.transformBlit(x1, y1, x2, y2, x3, y3, x4, y4, [blendmode])
     - draws the image into the video buffer with "transformation", where 
       (x1, y1) is the upper left corner, (x2, y2) the upper right corner, 
       (x3, y3) is the lower right corner, and (x4, y4) is the lower left 
       corner.
 
-  image_object.transformBlitMask(x1, y1, x2, y2, x3, y3, x4, y4, mask [, blendmode = BLEND])
+  image_object.transformBlitMask(x1, y1, x2, y2, x3, y3, x4, y4, mask, [blendmode])
     - transformBlit + blitMask
 
   image_object.createSurface()
@@ -1803,7 +1981,7 @@ log_object.endBlock()
   LoadAnimation(filename)
     - Returns an animation object with the filename. If Sphere is unable to 
       open the file, the engine will give an error message and exit. Sphere 
-      supports animation formats of .flic, .fli, .flc and .mng
+      supports animation formats of .flic, .fli, .flc, .mng and .jng
   
   animation_object.width
     - returns the width of the animation
@@ -1815,9 +1993,15 @@ log_object.endBlock()
     - returns the number of frames the animation contains.  If the
       animation is an MNG file, the number of frames is unknown, and
       this function returns 0.
+
+  animation_object.getTicks()
+    - returns the amount of ticks
   
   animation_object.getDelay()
     - returns the delay between frames, in milliseconds
+
+  animation_object.getPlaytime()
+    - returns the total playtime, if defo
   
   animation_object.readNextFrame()
     - readies the next frame for drawing
@@ -1848,15 +2032,18 @@ log_object.endBlock()
       resides in the 'directory' directory of the game.
 
   *** files ***
-  RemoveFile(filename)
-    - removes the file 'filename' and returns a boolean
-    
   GetFileList(directory)
 
     - directory = directory in which to enumerate files, "save" if not specified
 
     - returns an array of strings, which contains the filenames that resides
       in the 'directory' directory of the game.
+
+   RemoveFile(filename)
+    - remove the specified file
+
+   Rename(old_path, new_path)
+    - rename or move a file or directory
   
   OpenFile(filename)
     - returns a file object with the filename. The file is created/loaded 
@@ -1932,3 +2119,113 @@ log_object.endBlock()
         files produce the same MD5 hash so it is an effective way to determine
         if a file has become corrupt or altered
 
+*** particle engine ***
+  object CreateParticleSystemParent()
+    - returns a new particle system parent
+
+  object CreateParticleSystemChild(int size)
+    - returns a new particle system child
+
+
+SS_PARTICLE_SYSTEM_PARENT
+  void SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentUpdate()
+
+  void SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentRender()
+
+  int SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentSize()
+
+  void SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentClear()
+
+  void SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentAdopt()
+
+  void SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentHost()
+
+  object SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentFind(int id)
+
+  void SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentRemove(int id)
+
+  void SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentRemoveGroup(int group)
+
+  boolean SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentIsDead()
+
+  void SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentKill()
+
+  void SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentRevive()
+
+
+SS_PARTICLE_SYSTEM_CHILD
+  void SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildUpdate()
+
+  void SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildRender()
+
+  int SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildSize()
+
+  int SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildCapacity()
+
+  void SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildGrow()
+
+  void SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildShrink()
+
+  void SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildResize(int new_size)
+
+  void SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildReserve(int new_capacity)
+
+  void SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildClear()
+
+  object SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildClone()
+
+  boolean SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildIsDead()
+
+  void SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildKill()
+
+  void SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildRevive()
+
+
+
+
+
+
+*** 3d Functions ***
+*** All 3d functions (currently) require sphere_gl to be used as the video driver ***
+SwitchProjectMode(integer)
+  - Sets the drawing mode to 2d if integer is 0, 3d if 1.  All 3d drawing
+    must be done while in 3d mode, and likewise for 2d.  When done drawing
+    in 3d, the mode must be set back to 2d.
+  
+PRenderMap()
+  - Renders the map as a 3d image.  
+
+image_object.transform3DBlit(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4)
+  - Blits the image to the coordinates given.  Point 1 is the upper left
+    corner of the image, 2 is the upper right, 3 is the lower right,
+    and 4 is the bottom left
+
+image_object.triangle3DBlit(sx1,sy1,x1,y1,z1,sx2,sy2,x2,y2,z2,sx3,sy3,x3,y3,z3)
+  - Blits the triangle (sx1, sy1) (sx2, sy2) (sx3, sy3) part of the image, given
+    in terms of the image size, to the 3 points (x1,y1,z1) (x2,y2,z2) (x3,y3,z3) 
+    respectively.
+
+Set3DCameraPosition(x,y,z)
+  - Sets the 3d camera to the point (x,y,z).
+
+Set3DCameraAngles(x_angle, y_angle, z_angle)
+  - Sets the 3d camera angles to x_angle, y_angle, and z_angle, with respect
+    to the corresponding x,y, and z axis.  Input is given in terms of degrees.
+
+Get3DCameraX()
+  - Returns the cameras current x position.
+
+Get3DCameraY()
+  - Returns the cameras current y position.
+
+Get3DCameraZ()
+  - Returns the cameras current z position.
+
+Get3DCameraAngleX()
+  - Returns the cameras current x angle.
+
+Get3DCameraAngleY()
+  - Returns the cameras current y angle.
+
+Get3DCameraAngleZ()
+  - Returns the cameras current z angle.
