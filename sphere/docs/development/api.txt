@@ -1949,7 +1949,7 @@ drawing onto surfaces or masking
       part of image at (x,y) from the surface_object with the width w and 
       height h.
 
-   surface_object.drawText(font, x, y, text)
+  surface_object.drawText(font, x, y, text)
     - draws 'text' at x, y with the font onto the surface_object
 
   surface_object.drawZoomedText(font, x, y, scale, text)
@@ -2118,71 +2118,6 @@ drawing onto surfaces or masking
         representation of the resulting 128-bit MD5 fingerprint.  Identical
         files produce the same MD5 hash so it is an effective way to determine
         if a file has become corrupt or altered
-
-*** particle engine ***
-  object CreateParticleSystemParent()
-    - returns a new particle system parent
-
-  object CreateParticleSystemChild(int size)
-    - returns a new particle system child
-
-
-SS_PARTICLE_SYSTEM_PARENT
-  void SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentUpdate()
-
-  void SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentRender()
-
-  int SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentSize()
-
-  void SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentClear()
-
-  void SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentAdopt()
-
-  void SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentHost()
-
-  object SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentFind(int id)
-
-  void SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentRemove(int id)
-
-  void SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentRemoveGroup(int group)
-
-  boolean SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentIsDead()
-
-  void SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentKill()
-
-  void SS_PARTICLE_SYSTEM_PARENT.ssParticleSystemParentRevive()
-
-
-SS_PARTICLE_SYSTEM_CHILD
-  void SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildUpdate()
-
-  void SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildRender()
-
-  int SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildSize()
-
-  int SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildCapacity()
-
-  void SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildGrow()
-
-  void SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildShrink()
-
-  void SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildResize(int new_size)
-
-  void SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildReserve(int new_capacity)
-
-  void SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildClear()
-
-  object SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildClone()
-
-  boolean SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildIsDead()
-
-  void SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildKill()
-
-  void SS_PARTICLE_SYSTEM_CHILD.ssParticleSystemChildRevive()
-
-
-
-
 
 
 *** 3d Functions ***
