@@ -1,6 +1,15 @@
 YYYY.MM.DD
 
-2009.23.02
+2009.02.26
+  - Added sfxr
+  - Added person base functions
+  - Added WindowStyle border functions
+  - Added Map background music functions
+  - Added Audiere's SoundEffect object
+  - Updated libmng functions for animations
+  - New Zlib for Engine (not yet for Editor)
+
+2009.02.23
   - Added the particle engine and additional image blitting
     blend modes ADD, SUBTRACT and MULTIPLY
 
