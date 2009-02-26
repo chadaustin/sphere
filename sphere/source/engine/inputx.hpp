@@ -7,7 +7,7 @@ inline bool AnyKeyPressed()
 
     bool key_states[MAX_KEY];
     GetKeyStates(key_states);
-    for (int i = 0; i < MAX_KEY; i++)
+    for (int i = MAX_KEY-1; i>=0; --i)
     {
         if (key_states[i])
         {

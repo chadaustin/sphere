@@ -550,46 +550,54 @@ sMap::Load(const char* filename, IFileSystem& fs)
         {
             return false;
         }
+        m_LastTilesetFile = "";
     }
     else
     {
-        m_Tileset.Clear();
 
-        char tileset_path[/*MAX_PATH*/ 4096 + 4096] = {0};
-        bool okay = false;
-        strcpy(tileset_path, filename);
-        if (strlen(tileset_path) > 0 && strlen(tileset_path) + m_TilesetFile.size() < sizeof(tileset_path))
+        // NILTON: TODO: Only clear if m_TilesetFile != m_TilesetFile.last
+        if ( m_TilesetFile != m_LastTilesetFile)
         {
+            m_LastTilesetFile = m_TilesetFile;
+			
+            m_Tileset.Clear();
 
-            int i;
-            for (i = strlen(tileset_path) - 1; i >= 0; i--)
+            char tileset_path[/*MAX_PATH*/ 4096 + 4096] = {0};
+            bool okay = false;
+            strcpy(tileset_path, filename);
+            if (strlen(tileset_path) > 0 && strlen(tileset_path) + m_TilesetFile.size() < sizeof(tileset_path))
             {
 
-                if (tileset_path[i] == '\\'
-                        || tileset_path[i] == '/')
+                int i;
+                for (i = strlen(tileset_path) - 1; i >= 0; --i)
                 {
 
-                    strcpy(tileset_path + i + 1, m_TilesetFile.c_str());
-                    okay = true;
-                    break;
+                    if (tileset_path[i] == '\\'
+                       || tileset_path[i] == '/')
+                    {
+
+                        strcpy(tileset_path + i + 1, m_TilesetFile.c_str());
+                        okay = true;
+                        break;
+                    }
                 }
             }
-        }
-        if (!okay)
-        {
 
-            memset(tileset_path, 0, sizeof(tileset_path));
-            strcpy(tileset_path, m_TilesetFile.c_str());
-        }
-        // open the file
-        std::auto_ptr<IFile> tile_file(fs.Open(tileset_path, IFileSystem::read));
-        if (tile_file.get())
-        {
+            if (!okay)
+            {
+                memset(tileset_path, 0, sizeof(tileset_path));
+                strcpy(tileset_path, m_TilesetFile.c_str());
+            }
 
-            if (!m_Tileset.LoadFromFile(tile_file.get()))
+            // open the file
+            std::auto_ptr<IFile> tile_file(fs.Open(tileset_path, IFileSystem::read));
+            if (tile_file.get())
             {
 
-                return false;
+                if (!m_Tileset.LoadFromFile(tile_file.get()))
+                {
+                    return false;
+                }
             }
         }
     }

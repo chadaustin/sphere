@@ -86,8 +86,12 @@ CMapEngine::~CMapEngine()
 
     // Stop any background music
     m_Playlist.Clear();
+    if(m_Music) m_Music->stop();
     m_Music = 0;
+    m_LastMusicPath = "";
+
 #if defined(WIN32) && defined(USE_MIDI)
+    if (m_Midi) m_Midi->stop();
     m_Midi = 0;
 #endif
 
@@ -146,6 +150,7 @@ CMapEngine::Execute(const char* filename, int fps)
     m_OnTrigger = false;
     m_LastTrigger = -1;
     m_ErrorMessage = "";
+    m_LastMusicPath = "";
     m_Music = 0;
 #if defined(WIN32) && defined(USE_MIDI)
     m_Midi = 0;
@@ -175,6 +180,18 @@ CMapEngine::Execute(const char* filename, int fps)
         m_IsRunning = false;
         return false;
     }
+
+    if (m_Music)
+    {
+        m_Music->stop();
+    }
+
+#if defined(WIN32) && defined(USE_MIDI)
+    if (m_Midi)
+    {
+        m_Midi->stop();
+    }
+#endif
 
     m_IsRunning = false;
     return true;
@@ -1273,9 +1290,7 @@ bool
 CMapEngine::RenderMap()
 {
     if (m_IsRunning)
-    {
         return Render();
-    }
     else
     {
         m_ErrorMessage = "RenderMap() called while map engine was not running";
@@ -2344,6 +2359,8 @@ CMapEngine::SetPersonFrame(const char* name, int frame)
     }
 
     m_Persons[person].frame = frame;
+    m_Persons[person].stepping_frame_revert_count = 0;
+    m_Persons[person].next_frame_switch = p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.frame);
     return true;
 }
 
@@ -2726,34 +2743,34 @@ CMapEngine::SetPersonScaleFactor(const char* name, double scale_w, double scale_
     // convert to integer ;)
     double width = p.spriteset->GetSpriteset().GetFrameWidth();
     double height = p.spriteset->GetSpriteset().GetFrameHeight();
-    /*
-      int base_x1;
-      int base_y1;
-      int base_x2;
-      int base_y2;
-      p.spriteset->GetSpriteset().GetBase(base_x1, base_y1, base_x2, base_y2);
-    */
+
+    int base_x1;
+    int base_y1;
+    int base_x2;
+    int base_y2;
+    //p.spriteset->GetRealBase(base_x1, base_y1, base_x2, base_y2);
+	p.spriteset->GetSpriteset().GetRealBase(base_x1, base_y1, base_x2, base_y2);
 
     p.width =  (int)(scale_w * width);
     p.height = (int)(scale_h * height);
 
-    /*
+
       p.base_x1 = (int)(scale_w * (double)base_x1);
       p.base_y1 = (int)(scale_h * (double)base_y1);
       p.base_x2 = (int)(scale_w * (double)base_x2);
       p.base_y2 = (int)(scale_h * (double)base_y2);
-    */
 
     // oopsies on scaling problems? ;)
     if (p.width  < 1) p.width  = 1;
     if (p.height < 1) p.height = 1;
 
-    /*
       if (p.base_x1 < 0 && p.width > 1 && base_x1 != 0) p.base_x1 = 1;
       if (p.base_x2 < 0 && p.width > 1 && base_x2 != 0) p.base_x2 = 1;
       if (p.base_y1 < 0 && p.height > 1 && base_y1 != 0) p.base_y1 = 1;
       if (p.base_y2 < 0 && p.height > 1 && base_y2 != 0) p.base_y2 = 1;
-    */
+
+	  p.spriteset->SetBase(p.base_x1,p.base_y1,p.base_x2,p.base_y2);
+	 
 
     p.scale_x = scale_w;
     p.scale_y = scale_h;
@@ -2990,6 +3007,27 @@ CMapEngine::SetPersonValue(const char* name, const char* key, const std::string 
 
 ////////////////////////////////////////////////////////////////////////////////
 
+
+bool
+CMapEngine::SetPersonBase(const char* name, int x1, int y1, int x2, int y2)
+{
+    int person = -1;
+    if ( IsInvalidPersonError(name, person) )
+    {
+        return false;
+    }
+
+	m_Persons[person].base_x1 = x1;
+	m_Persons[person].base_y1 = y1;
+	m_Persons[person].base_x2 = x2;
+	m_Persons[person].base_y2 = y2;
+	m_Persons[person].spriteset->SetBase(x1, y1, x2, y2);
+	m_Persons[person].spriteset->Base2Real();
+
+    return true;
+}
+
+
 SSPRITESET*
 CMapEngine::GetPersonSpriteset(const char* name)
 {
@@ -3047,9 +3085,11 @@ CMapEngine::SetPersonSpriteset(const char* name, sSpriteset& spriteset)
     }
     m_Persons[person_index].width  = m_Persons[person_index].spriteset->GetSpriteset().GetFrameWidth();
     m_Persons[person_index].height = m_Persons[person_index].spriteset->GetSpriteset().GetFrameHeight();
-    spriteset.GetBase(m_Persons[person_index].base_x1, m_Persons[person_index].base_y1, m_Persons[person_index].base_x2, m_Persons[person_index].base_y2);
-    if (m_Persons[person_index].base_x1 > m_Persons[person_index].base_x2) std::swap(m_Persons[person_index].base_x1, m_Persons[person_index].base_x2);
-    if (m_Persons[person_index].base_y1 > m_Persons[person_index].base_y2) std::swap(m_Persons[person_index].base_y1, m_Persons[person_index].base_y2);
+
+    spriteset.GetRealBase(m_Persons[person_index].base_x1, m_Persons[person_index].base_y1, m_Persons[person_index].base_x2, m_Persons[person_index].base_y2);
+
+    SetPersonBase(name, m_Persons[person_index].base_x1, m_Persons[person_index].base_y1, m_Persons[person_index].base_x2, m_Persons[person_index].base_y2);
+    SetPersonScaleFactor(name,m_Persons[person_index].scale_x, m_Persons[person_index].scale_y);
 
     return true;
 }
@@ -3645,25 +3685,35 @@ CMapEngine::OpenMap(const char* filename)
     }
 
     // Prevent restarting of already-playing music.
+    // New music? Or do we have to stop the current one?
     if (music != m_LastMusicPath)
     {
-        m_LastMusicPath = music;
+        // Seems like we have a new music to play
+        if(music.length()){
 
-        // start background music
-        if (m_Music)
-        {
-            m_Music->setRepeat(true);
-            m_Music->play();
-        }
+            // start background music
+                if (m_Music)
+                {
+                    m_Music->setRepeat(true);
+                    m_Music->play();
+                }
 
 #if defined(WIN32) && defined(USE_MIDI)
-        if (m_Midi)
-        {
-            m_Midi->setRepeat(true);
-            m_Midi->play();
-        }
+		if (m_Midi)
+		{
+			m_Midi->setRepeat(true);
+			m_Midi->play();
+		}
 #endif
-    }
+		} else { // Empty music name, stop current playing music
+	        	if (m_Music)
+				m_Music->stop();
+			if (m_Midi)
+				m_Midi->stop();
+		}
+
+		m_LastMusicPath = music;
+	}
 
     // initialize camera
     m_Camera.x     = m_Map.GetMap().GetStartX();
@@ -3767,9 +3817,7 @@ CMapEngine::Run()
             {
                 frames_skipped = 0;
                 if (!Render())
-                {
                     return false;
-                }
                 FlipScreen();
 
                 // wait for a while (make sure we don't go faster than fps)
@@ -3780,7 +3828,7 @@ CMapEngine::Run()
             }
             else
             {
-                frames_skipped++;
+                ++frames_skipped;
             }
 
             // update ideal rendering time
@@ -3791,22 +3839,16 @@ CMapEngine::Run()
         {              // don't throttle
 
             if (!Render())
-            {
                 return false;
-            }
             FlipScreen();
 
         }
         // UPDATE STEP
         if (!UpdateWorld(true))
-        {
             return false;
-        }
 
         if (!ProcessInput())
-        {
             return false;
-        }
 
     } // end map engine loop
     m_ShouldExit = false;
@@ -3823,9 +3865,7 @@ CMapEngine::ExecuteScript(IEngine::script script, std::string& error)
     bool result = m_Engine->ExecuteScript(script, should_exit, error);
 
     if (should_exit)
-    {
         m_ShouldExit = true;
-    }
 
     return result;
 }
@@ -4386,7 +4426,9 @@ CMapEngine::Render()
         }
 
     } // end for all layers
-    if (!(m_CurrentColorMask.red == 255 && m_CurrentColorMask.green == 255 && m_CurrentColorMask.blue && m_CurrentColorMask.alpha == 255))
+	// QUESTION: Why does blue != 255?
+    //if (!(m_CurrentColorMask.red == 255 && m_CurrentColorMask.green == 255 && m_CurrentColorMask.blue == 255 && m_CurrentColorMask.alpha == 255))
+	if ( (m_CurrentColorMask.red-255)|(m_CurrentColorMask.green-255)|(m_CurrentColorMask.blue-255)|(m_CurrentColorMask.alpha-255) )
         ApplyColorMask(m_CurrentColorMask);
 
     // render script
@@ -4487,38 +4529,30 @@ CMapEngine::UpdateWorld(bool input_valid)
     m_Map.UpdateMap();
 
     if (!UpdatePersons())
-    {
         return false;
-    }
 
     if (input_valid)
     {
-        for (int i = 0; i < int(m_InputPersons.size()); i++)
+        //for (int i = 0; i < int(m_InputPersons.size()); i++)
+        for (int i = int(m_InputPersons.size())-1 ; i>=0 ; --i)
         {
             if (!UpdateTriggers(m_InputPersons[i]))
-            {
                 return false;
-            }
 
         }
     }
 
     if (!UpdateColorMasks())
-    {
+
         return false;
-    }
 
     if (!UpdateDelayScripts())
-    {
         return false;
-    }
 
     if (input_valid)
     {
         if (!UpdateEdgeScripts())
-        {
             return false;
-        }
     }
 
     // update the camera
@@ -4543,9 +4577,7 @@ CMapEngine::UpdateWorld(bool input_valid)
 
         // if we took more than a second to run the update script, reset the timer
         if (qword(GetTime()) * m_FrameRate > m_NextFrame)
-        {
             ResetNextFrame();
-        }
     }
 
     return true;
@@ -4560,19 +4592,17 @@ CMapEngine::UpdatePersons()
     bool anything_activated = false;
 
     // for each person...
-    for (int i = 0; i < int(m_Persons.size()); i++)
+    for (int i = int(m_Persons.size())-1 ; i>=0 ; --i)
     {
-        const int num_persons = int(m_Persons.size());
-        if (i >= num_persons)
-        {
-            break;
-        }
+        //const int num_persons = int(m_Persons.size());
+        //if (i >= num_persons)
+        //{
+        //    break;
+        //}
 
         bool activated;
         if (!UpdatePerson(i, activated))
-        {
             return false;
-        }
 
         anything_activated |= activated;
     }
@@ -4645,9 +4675,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
                 // the script may have destroyed the person, so check to see that the person still exists
                 if (FindPerson(person_name.c_str()) != person_index)
-                {
                     return true;
-                }
                 m_CurrentPerson = old_person;
                 // update the person pointer
                 p = &m_Persons[person_index];
@@ -4667,9 +4695,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
             }
             // if there are no commands, stop
             if (p->commands.empty())
-            {
                 break;
-            }
         } // end (if command queue is empty)
 
         // read the top command
@@ -4837,9 +4863,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 
     // if an activation function was called, activation should not be allowed
     if (person_index == m_InputPerson)
-    {
         m_TouchActivationAllowed = !activation_called;
-    }
 
     // if position has changed, update frame index and state of followers
     if (x != p->x || y != p->y || should_animate)
@@ -4894,44 +4918,6 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
             int talk_y = int(m_Persons[m_InputPerson].y);
 
             int obs_person = FindTalkingPerson(person_index, talk_x, talk_y);
-            /*
-            int tad = m_TalkActivationDistance;
-            // god this is slow...
-            if (m_Persons[m_InputPerson].direction == "north") {
-              talk_y -= tad;
-            } else if (m_Persons[m_InputPerson].direction == "northeast") {
-              talk_x += tad;
-              talk_y -= tad;
-
-            } else if (m_Persons[m_InputPerson].direction == "east") {
-              talk_x += tad;
-            } else if (m_Persons[m_InputPerson].direction == "southeast") {
-              talk_x += tad;
-              talk_y += tad;
-
-            } else if (m_Persons[m_InputPerson].direction == "south") {
-              talk_y += tad;
-            } else if (m_Persons[m_InputPerson].direction == "southwest") {
-              talk_x -= tad;
-              talk_y += tad;
-
-            } else if (m_Persons[m_InputPerson].direction == "west") {
-              talk_x -= tad;
-            } else if (m_Persons[m_InputPerson].direction == "northwest") {
-              talk_x -= tad;
-              talk_y -= tad;
-
-            }
-            */
-            /*
-            // if a person obstructs that spot, call his activation script
-
-            // if we found a person to talk to, call his activation script
-            int obs_person;
-            if (IsObstructed(person_index, talk_x, talk_y, obs_person))
-
-            */
-            {
                 if (obs_person != -1)
                 {
                     activated = true;
@@ -4966,12 +4952,12 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
                         }
                     }
                 }
-            }
 
         }
     }
 
-    for (int j = 0; j < int(m_InputPersons.size()); j++)
+    //for (int j = 0; j < int(m_InputPersons.size()); j++)
+    for (int j = int(m_InputPersons.size())-1;j>=0; --j)
     {
         if (m_InputPersons[j] == person_index)
         {
@@ -5255,11 +5241,11 @@ CMapEngine::IsPointWithinZone(int location_x, int location_y, int location_layer
         return false;
 
     Zone& z = m_Zones[zone_index];
-    return (location_x >= z.x1 &&
+    return (location_layer == z.layer &&
+            location_x >= z.x1 &&
             location_y >= z.y1 &&
             location_x < z.x2 &&
-            location_y < z.y2 &&
-            location_layer == z.layer);
+            location_y < z.y2 );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5400,7 +5386,7 @@ bool
 CMapEngine::UpdateDelayScripts()
 {
     // update delay scripts
-    for (unsigned int i = 0; i < m_DelayScripts.size(); i++)
+    for (unsigned int i = 0; i < m_DelayScripts.size(); ++i)
     {
         if (--m_DelayScripts[i].frames_left < 0)
         {
@@ -5502,7 +5488,7 @@ CMapEngine::ProcessInput()
     }
 
     // check to see if key state has changed
-    for (i = 0; i < MAX_KEY; i++)
+    for (i = MAX_KEY -1; i>=0; --i)
     {
         if (new_keys[i] != m_Keys[i])
         {
@@ -5512,9 +5498,7 @@ CMapEngine::ProcessInput()
                 {
                     // bound
                     if (!ProcessBoundKeyDown(i))
-                    {
                         return false;
-                    }
                 }
                 else
                 {
@@ -5523,14 +5507,12 @@ CMapEngine::ProcessInput()
                 }
             }
             else
-            {                          // event: key up
+            {       // event: key up
                 if (m_BoundKeys.count(i) > 0)
                 {
                     // bound
                     if (!ProcessBoundKeyUp(i))
-                    {
                         return false;
-                    }
                 }
                 else
                 {
@@ -5871,7 +5853,7 @@ CMapEngine::ResetNextFrame()
 int
 CMapEngine::FindPerson(const char* name)
 {
-    for (int i = 0; i < int(m_Persons.size()); i++)
+    for (int i = int(m_Persons.size())-1; i>=0; --i)
     {
         if (m_Persons[i].name == name)
         {
@@ -6007,43 +5989,18 @@ int
 CMapEngine::FindTalkingPerson(int person_index, int talk_x, int talk_y)
 {
     int tad = m_TalkActivationDistance;
-    // god this is slow...
-    if (strstr(m_Persons[person_index].direction.c_str(), "north"))
-    {
+	const char* direction =  m_Persons[person_index].direction.c_str();
+
+    // God this was slow...
+    if (strstr(direction, "north"))
         talk_y -= tad;
-    }
-    else if (strstr(m_Persons[person_index].direction.c_str(), "northeast"))
-    {
+	if (strstr(direction, "east"))
         talk_x += tad;
-        talk_y -= tad;
-    }
-    else if (strstr(m_Persons[person_index].direction.c_str(), "east"))
-    {
-        talk_x += tad;
-    }
-    else if (strstr(m_Persons[person_index].direction.c_str(), "southeast"))
-    {
-        talk_x += tad;
+	if (strstr(direction, "south"))
         talk_y += tad;
-    }
-    else if (strstr(m_Persons[person_index].direction.c_str(), "south"))
-    {
-        talk_y += tad;
-    }
-    else if (strstr(m_Persons[person_index].direction.c_str(), "southwest"))
-    {
-        talk_x -= tad;
-        talk_y += tad;
-    }
-    else if (strstr(m_Persons[person_index].direction.c_str(), "west"))
-    {
-        talk_x -= tad;
-    }
-    else if (strstr(m_Persons[person_index].direction.c_str(), "northwest"))
-    {
-        talk_x -= tad;
-        talk_y -= tad;
-    }
+    if (strstr(direction, "west"))
+		talk_x -= tad;
+
     // does a person obstructs that spot
     int obs_person;
     IsObstructed(person_index, talk_x, talk_y, obs_person);
@@ -6099,6 +6056,7 @@ CMapEngine::FindObstructingPerson(int person, int x, int y)
             j = m_Persons[j].leader;
         }
 
+		// if the someone else is ignoring me, dont check collission with that person
         for (j = 0; j < int(m_Persons[person].ignored_persons.size()); j++)
         {
             if (m_Persons[person].ignored_persons[j] == m_Persons[i].name)
@@ -6127,7 +6085,17 @@ dont_skip:
         int min_jy = (j_y1 < j_y2 ? j_y1 : j_y2);
         int max_jy = (j_y1 > j_y2 ? j_y1 : j_y2);
 
+		// from: http://www.cprogramming.com/snippets/show.php?tip=39&count=30&page=0
         if (
+			max_x < min_jx ||
+			min_x > max_jx ||
+			min_y > max_jy ||
+			max_y < min_jy
+			)
+	   		continue;
+
+		return i;
+/*
             // if a corner is within the rectangle
             (j_x1 >= min_x && j_x1 <= max_x && j_y1 >= min_y && j_y1 <= max_y) ||
             (j_x1 >= min_x && j_x1 <= max_x && j_y2 >= min_y && j_y2 <= max_y) ||
@@ -6135,15 +6103,18 @@ dont_skip:
             (j_x2 >= min_x && j_x2 <= max_x && j_y2 >= min_y && j_y2 <= max_y) ||
 
             // if the other rectangle has a corner in this one
-            (x1 >= min_jx && x1 <= max_jx && y1 >= min_jy && y1 <= max_jy) ||
-            (x1 >= min_jx && x1 <= max_jx && y2 >= min_jy && y2 <= max_jy) ||
-            (x2 >= min_jx && x2 <= max_jx && y1 >= min_jy && y1 <= max_jy) ||
-            (x2 >= min_jx && x2 <= max_jx && y2 >= min_jy && y2 <= max_jy)
-        )
-        {
-            return i;
-        }
-    }
+			// The only way this can happen is that one rectangle is contained in the other,
+			// http://www.gamedev.net/reference/articles/article735.asp
+			// in this case, just need to check for one corner:
+			(x1 >= min_jx && x1 <= max_jx && y1 >= min_jy && y1 <= max_jy)
+
+			// this is the original code:
+            //(x1 >= min_jx && x1 <= max_jx && y1 >= min_jy && y1 <= max_jy) ||
+            //(x1 >= min_jx && x1 <= max_jx && y2 >= min_jy && y2 <= max_jy) ||
+            //(x2 >= min_jx && x2 <= max_jx && y1 >= min_jy && y1 <= max_jy) ||
+            //(x2 >= min_jx && x2 <= max_jx && y2 >= min_jy && y2 <= max_jy)
+*/ 
+ }
     return -1;
 }
 
@@ -6200,3 +6171,214 @@ CMapEngine::SaveMap(const char* filename)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+/*
+	BGM functions
+*/
+
+bool
+CMapEngine::nameBgm(std::string& result)
+{
+	result = m_LastMusicPath;
+	return true;
+}
+
+int 
+CMapEngine::validBgm()
+{
+	if (m_Music) {
+		return 2;
+	}
+
+#if defined(WIN32) && defined(USE_MIDI)
+	if (m_Midi)	{
+		return 1;
+	}
+#endif
+	return 0;
+}
+
+void
+CMapEngine::playBgm()
+{
+	if (m_Music) {
+		m_Music->play();
+	}
+
+#if defined(WIN32) && defined(USE_MIDI)
+	if (m_Midi)	{
+		m_Midi->play();
+	}
+#endif
+}
+
+void
+CMapEngine::stopBgm()
+{
+	if (m_Music) {
+		m_Music->stop();
+	}
+
+#if defined(WIN32) && defined(USE_MIDI)
+	if (m_Midi)	{
+		m_Midi->stop();
+	}
+#endif
+}
+
+bool
+CMapEngine::isPlayingBgm()
+{
+	if (m_Music) {
+		return m_Music->isPlaying();
+	}
+
+#if defined(WIN32) && defined(USE_MIDI)
+	if (m_Midi)	{
+		return m_Midi->isPlaying();
+	}
+#endif
+	return false;
+}
+
+void
+CMapEngine::resetBgm()
+{
+	if (m_Music) {
+		m_Music->reset();
+	}
+}
+
+void
+CMapEngine::setRepeatBgm(bool repeat)
+{
+	if (m_Music) {
+		m_Music->setRepeat(repeat);
+	}
+
+#if defined(WIN32) && defined(USE_MIDI)
+	if (m_Midi)	{
+		m_Midi->setRepeat(repeat);
+	}
+#endif
+}
+
+bool
+CMapEngine::getRepeatBgm()
+{
+	if (m_Music) {
+		return m_Music->getRepeat();
+	}
+
+#if defined(WIN32) && defined(USE_MIDI)
+	if (m_Midi)	{
+		return m_Midi->getRepeat();
+	}
+#endif
+	return false;
+}
+
+void
+CMapEngine::setVolumeBgm(float volume)
+{
+	if (m_Music) {
+		return m_Music->setVolume(volume);
+	}
+}
+
+float
+CMapEngine::getVolumeBgm()
+{
+	if (m_Music) {
+		return m_Music->getVolume();
+	}
+	return -1;
+}
+
+void
+CMapEngine::setPanBgm(float pan)
+{
+	if (m_Music) {
+		return m_Music->setPan(pan);
+	}
+}
+
+float
+CMapEngine::getPanBgm()
+{
+	if (m_Music) {
+		return m_Music->getPan();
+	}
+	return 0;
+}
+
+void
+CMapEngine::setPitchShiftBgm(float shift)
+{
+	if (m_Music) {
+		return m_Music->setPitchShift(shift);
+	}
+}
+
+float
+CMapEngine::getPitchShiftBgm()
+{
+	if (m_Music) {
+		return m_Music->getPitchShift();
+	}
+	return 0;
+}
+
+bool
+CMapEngine::isSeekableBgm()
+{
+	if (m_Music) {
+		return m_Music->isSeekable();
+	}
+	return false;
+}
+
+int
+CMapEngine::getLengthBgm()
+{
+	if (m_Music) {
+		return m_Music->getLength();
+	}
+
+#if defined(WIN32) && defined(USE_MIDI)
+	if (m_Midi)	{
+		return m_Midi->getLength();
+	}
+#endif
+	return false;
+}
+
+
+void
+CMapEngine::setPositionBgm(int position)
+{
+	if (m_Music) {
+		return m_Music->setPosition(position);
+	}
+
+#if defined(WIN32) && defined(USE_MIDI)
+	if (m_Midi)	{
+		return m_Midi->setPosition(position);
+	}
+#endif
+}
+
+int
+CMapEngine::getPositionBgm()
+{
+	if (m_Music) {
+		return m_Music->getPosition();
+	}
+
+#if defined(WIN32) && defined(USE_MIDI)
+	if (m_Midi)	{
+		return m_Midi->getPosition();
+	}
+#endif
+	return 0;
+}

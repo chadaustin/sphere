@@ -68,15 +68,28 @@ private:
     virtual SFONT* LoadFont(const char* filename);
     virtual void DestroyFont(SFONT* font);
 
+    enum {
+        EDGE_LEFT   = 1,
+        EDGE_TOP    = 3,
+        EDGE_RIGHT  = 5,
+        EDGE_BOTTOM = 7
+    };
+
     virtual SWINDOWSTYLE* GetSystemWindowStyle();
     virtual SWINDOWSTYLE* LoadWindowStyle(const char* filename);
     virtual void DestroyWindowStyle(SWINDOWSTYLE* ws);
+
+	virtual audiere::OutputStream* CreateSound(audiere::File* memoryfile, bool streaming);
+	virtual audiere::SoundEffect*  CreateSoundEffect(audiere::File* memoryfile, audiere::SoundEffectType type);
+	virtual audiere::File* CreateMemoryFile(const void* buffer, int size);
 
     virtual audiere::OutputStream* LoadSound(const char* filename, bool streaming);
     virtual audiere::SoundEffect*  LoadSoundEffect(const char* filename, audiere::SoundEffectType type);
 #if defined(WIN32) && defined(USE_MIDI)
     virtual audiere::MIDIStream* LoadMIDI(const char* filename);
 #endif
+	virtual SSFXR* CreateSfxr();
+
     virtual IMAGE GetSystemArrow();
     virtual IMAGE GetSystemUpArrow();
     virtual IMAGE GetSystemDownArrow();

@@ -23,17 +23,20 @@ CMNGAnimation::Load(const char* filename, IFileSystem& fs)
     Destroy();
     // open the file
     m_file = fs.Open(filename, IFileSystem::read);
+    int errorcode;
     if (m_file == NULL)
     {
-
+        errorcode = -1;
         printf("Could not open animation file: %s\n", filename);
         return false;
     }
     m_end_of_animation = false;
     // initialize MNG playback
     m_stream = mng_initialize(this, CB_Allocate, CB_Free, NULL);
-    if (!m_stream)
+	if (!m_stream){
+		errorcode = -2;
         return false;
+	}
     // set all of the callbacks
     if ((MNG_NOERROR == mng_setcb_openstream(m_stream, CB_OpenStream)
             && MNG_NOERROR == mng_setcb_closestream(m_stream, CB_CloseStream)
@@ -43,19 +46,33 @@ CMNGAnimation::Load(const char* filename, IFileSystem& fs)
             && MNG_NOERROR == mng_setcb_getcanvasline(m_stream, CB_GetCanvasLine)
             && MNG_NOERROR == mng_setcb_refresh(m_stream, CB_Refresh)
             && MNG_NOERROR == mng_setcb_settimer(m_stream, CB_SetTimer)) == false)
+	{
+		errorcode = -3;
         return false;
+	}
+
 #if (MNG_VERSION_MAJOR > 1 || (MNG_VERSION_MAJOR == 1 && MNG_VERSION_RELEASE >= 6))
     m_processed_term = false;
     if (mng_setcb_processterm(m_stream, CB_ProcessTerm) != MNG_NOERROR)
+	{
+		errorcode = -4;
         return false;
+	}
 #endif
-    // do some reading
-    if (mng_read(m_stream) != MNG_NOERROR)
-    {
 
+    // do some reading
+	errorcode = mng_read(m_stream);
+    if (errorcode != MNG_NOERROR)
+    {
         return false;
     }
-    return true;
+
+	// Some of these values get undefined when we dont have the header read but an image instead
+	m_framecount = mng_get_framecount(m_stream);
+	m_playtime = mng_get_playtime(m_stream);
+	m_ticks = mng_get_ticks(m_stream);
+
+	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////
 bool
@@ -79,7 +96,20 @@ CMNGAnimation::GetHeight()
 int
 CMNGAnimation::GetNumFrames()
 {
-    return 0; // unknown
+	return m_framecount;
+}
+////////////////////////////////////////////////////////////////////////////////
+int
+CMNGAnimation::GetTicks()
+{
+	//return m_ticks;
+	return mng_get_ticks(m_stream);
+}
+////////////////////////////////////////////////////////////////////////////////
+int
+CMNGAnimation::GetPlaytime()
+{
+	return m_playtime;
 }
 ////////////////////////////////////////////////////////////////////////////////
 int
@@ -257,3 +287,10 @@ CMNGAnimation::CB_ProcessMend(mng_handle handle, mng_uint32 iIterationsdone, mng
 }
 #endif
 ////////////////////////////////////////////////////////////////////////////////
+
+
+mng_uint32 MNG_DECL
+CMNGAnimation::CB_GetFrameCount(mng_handle handle)
+{
+    return mng_get_framecount(handle);
+}

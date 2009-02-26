@@ -76,6 +76,9 @@ public:
     void SetColorAlpha(RGB color, int alpha);
     void SetColorAlpha(int x, int y, int w, int h, RGB color, int alpha);
     void ReplaceColor(RGBA oldColor, RGBA newColor);
+	bool FindColor(RGBA aColor);
+	void FloodFill(int x, int y, RGBA color);
+	void SeedFill_4(int x, int y, RGBA new_color, clipper clip);
 
     void PointSeries(VECTOR_INT** points, int length, RGBA color);
     void Line(int x1, int y1, int x2, int y2, RGBA color);

@@ -127,7 +127,7 @@ CImage32::CImage32(int width, int height, RGBA pixel)
 {
     if (m_Pixels)
     {
-        for (int i = 0; i < m_Width * m_Height; ++i)
+        for (int i = m_Width * m_Height -1; i >=0 ; --i)
         {
             m_Pixels[i] = pixel;
         }
@@ -205,7 +205,7 @@ CImage32::Create(int width, int height)
         return false;
     }
 
-    for (int i = 0; i < width * height; i++)
+    for (int i = width * height -1;i>=0; --i)
         m_Pixels[i] = CreateRGBA(0, 0, 0, 255);
 
     return true;
@@ -215,7 +215,7 @@ CImage32::Create(int width, int height)
 void
 CImage32::Clear()
 {
-    for (int i = 0; i < m_Width * m_Height; i++)
+    for (int i = m_Width * m_Height -1; i>=0; --i)
         m_Pixels[i] = CreateRGBA(0, 0, 0, 255);
 }
 
@@ -443,8 +443,8 @@ CImage32::Resize(int width, int height)
     if (new_pixels == NULL)
         return;
 
-    for (int ix = 0; ix < width; ix++)
-        for (int iy = 0; iy < height; iy++)
+    for (int ix = width -1 ; ix>=0; --ix)
+        for (int iy = height-1; iy>=0; --iy)
         {
             if (ix < m_Width && iy < m_Height)
                 new_pixels[iy * width + ix] = m_Pixels[iy * m_Width + ix];
@@ -477,9 +477,9 @@ CImage32::Rescale(int width, int height)
     VertAspectRatio = (double)height / (double)m_Height; // (dstHeight / srcHeight) * 100
 
     // floating point, should be faster than my crappy fixed-point...
-    for (y=0; y<height; y++)
+    for (y=height-1;y>=0; --y)
     {
-        for (x=0; x<width; x++)
+        for (x=width-1;x>=0; --x)
         {
             ix = x / HorzAspectRatio;
             iy = y / VertAspectRatio;
@@ -524,9 +524,9 @@ CImage32::AdjustBorders(int top, int right, int bottom, int left)
     if (new_pixels == NULL)
         return;
 
-    for (int iy = 0; iy < height; iy++)
+    for (int iy = height-1 ; iy>=0; --iy)
     {
-        for (int ix = 0; ix < width; ix++)
+        for (int ix = width-1; ix>=0;--ix)
         {
 
             int sx = ix - left;
@@ -637,8 +637,8 @@ CImage32::Rotate(double radians, bool autoSize)
     double sine = sin(radians);
     double cosi = cos(radians);
 
-    for (int y=0; y<height; y++)
-        for (int x=0; x<width; x++)
+    for (int y=height-1;y>=0; --y)
+        for (int x=width-1; x>=0; --x)
         {
             // realigns the rotating axis to 0,0 (of a graphical point of view)
             tx = x - (m_Width/2) - xOff;
@@ -812,7 +812,7 @@ CImage32::SetPixel(int x, int y, RGBA color)
 void
 CImage32::SetAlpha(int alpha)
 {
-    for (int i = 0; i < m_Width * m_Height; i++)
+    for (int i = m_Width * m_Height-1;i>=0; --i)
     {
         m_Pixels[i].alpha = alpha;
     }
@@ -839,7 +839,7 @@ CImage32::SetColorAlpha(int x, int y, int w, int h, RGB color, int alpha)
 void
 CImage32::SetColorAlpha(RGB color, int alpha)
 {
-    for (int i = 0; i < m_Width * m_Height; i++)
+    for (int i = m_Width * m_Height-1;i>=0; --i)
     {
         RGBA& p = m_Pixels[i];
         if (p.red == color.red &&
@@ -855,7 +855,7 @@ CImage32::SetColorAlpha(RGB color, int alpha)
 void
 CImage32::ReplaceColor(RGBA oldColor, RGBA newColor)
 {
-    for (int i = 0; i < m_Width * m_Height; ++i)
+    for (int i = m_Width * m_Height-1;i>=0; --i)
     {
         RGBA& p = m_Pixels[i];
         if (p == oldColor)
@@ -863,6 +863,94 @@ CImage32::ReplaceColor(RGBA oldColor, RGBA newColor)
             p = newColor;
         }
     }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool
+CImage32::FindColor(RGBA aColor)
+{
+    for (int i = m_Width * m_Height-1; i >= 0; --i)
+    {
+        RGBA& p = m_Pixels[i];
+        if (p == aColor)
+        {
+            return true;
+        }
+    }
+	return false;
+}
+
+// http://www.codeproject.com/KB/GDI/QuickFill.aspx
+// The following is a rewrite of the seed fill algorithm by Paul Heckbert.
+// The original was published in "Graphics Gems", Academic Press, 1990.
+
+typedef struct { int xl, xr, y, dy; } LINESEGMENT;
+
+#define MAXDEPTH 10000
+
+#define PUSH(XL, XR, Y, DY) \
+    if( sp < stack+MAXDEPTH && Y+(DY) >= clip.left && Y+(DY) <= clip.bottom ) \
+    { sp->xl = XL; sp->xr = XR; sp->y = Y; sp->dy = DY; ++sp; }
+
+#define POP(XL, XR, Y, DY) \
+    { --sp; XL = sp->xl; XR = sp->xr; Y = sp->y+(DY = sp->dy); }
+
+// Fill background with given color
+
+void CImage32::SeedFill_4(int x, int y, RGBA new_color, clipper clip)
+{
+    int left, x1, x2, dy;
+    RGBA old_color;
+    LINESEGMENT stack[MAXDEPTH], *sp = stack;
+
+    old_color = GetPixel(x, y);
+    if( old_color == new_color )
+        return;
+
+	// clipper
+	if( x < clip.left || x > clip.right || y < clip.top || y > clip.bottom)
+    //if( x < nMinX || x > nMaxX || y < nMinY || y > nMaxY )
+        return;
+
+    PUSH(x, x, y, 1);        /* needed in some cases */
+    PUSH(x, x, y+1, -1);    /* seed segment (popped 1st) */
+
+    while( sp > stack ) {
+        POP(x1, x2, y, dy);
+
+        for( x = x1; x >= clip.left && GetPixel(x, y) == old_color; --x )
+            SetPixel(x, y, new_color, clip);
+
+        if( x >= x1 )
+            goto SKIP;
+
+        left = x+1;
+        if( left < x1 )
+            PUSH(y, left, x1-1, -dy);    /* leak on left? */
+
+        x = x1+1;
+
+        do {
+            for( ; x<=clip.right && GetPixel(x, y) == old_color; ++x )
+                SetPixel(x, y, new_color, clip);
+
+            PUSH(left, x-1, y, dy);
+
+            if( x > x2+1 )
+                PUSH(x2+1, x-1, y, -dy);    /* leak on right? */
+
+SKIP:        for( ++x; x <= x2 && GetPixel(x, y) != old_color; ++x ) {;}
+
+            left = x;
+        } while( x<=x2 );
+    }
+}
+
+void
+CImage32::FloodFill(int x, int y, RGBA color)
+{
+	clipper clip = { 0, 0, m_Width - 1, m_Height - 1 };
+	SeedFill_4(x, y, color, clip);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -11,6 +11,7 @@
 #include "audio.hpp"
 #include "engineinterface.hpp"
 #include "sfont.hpp"
+#include "ssfxr.hpp"
 #include "sspriteset.hpp"
 #include "swindowstyle.hpp"
 #include "video.hpp"
@@ -90,6 +91,8 @@ private:
     static JSObject* name(JSContext* cx, param1);
   #define declare_constructor2(name, param1, param2)         \
     static JSObject* name(JSContext* cx, param1, param2);
+  #define declare_constructor3(name, param1, param2, param3)         \
+    static JSObject* name(JSContext* cx, param1, param2, param3);
   #define declare_finalizer(name) static void name(JSContext* cx, JSObject* obj)
   #define declare_method(name)    static JSBool name(JSContext* cx, JSObject* obj, uintN argc, jsval* argv, jsval* rval)
   #define declare_property(name)  static JSBool name(JSContext* cx, JSObject* obj, jsval id, jsval* vp)
@@ -214,13 +217,13 @@ private:
   declare_method(ssSpritesetClone);
 
   // spriteset base
-  declare_constructor1(CreateSpritesetBaseObject, SSPRITESET* spriteset);
+  declare_constructor2(CreateSpritesetBaseObject, SSPRITESET* spriteset, bool real);
 
   // sounds
 #if defined(WIN32) && defined(USE_MIDI)
-  declare_constructor2(CreateSoundObject, audiere::OutputStream* sound, audiere::MIDIStream* midi);
+  declare_constructor3(CreateSoundObject, audiere::OutputStream* sound, audiere::MIDIStream* midi, audiere::File* memoryfile);
 #else
-  declare_constructor1(CreateSoundObject, audiere::OutputStream* sound);
+  declare_constructor2(CreateSoundObject, audiere::OutputStream* sound, audiere::File* memoryfile);
 #endif
   declare_finalizer(ssFinalizeSound);
   declare_method(ssSoundPlay);
@@ -243,7 +246,7 @@ private:
   declare_method(ssSoundGetLength);
 
   // sound effects
-  declare_constructor1(CreateSoundEffectObject, audiere::SoundEffect* sound);
+  declare_constructor2(CreateSoundEffectObject, audiere::SoundEffect* sound, audiere::File* memoryfile);
   declare_finalizer(ssFinalizeSoundEffect);
   declare_method(ssSoundEffectPlay);
   declare_method(ssSoundEffectStop);
@@ -254,7 +257,73 @@ private:
   declare_method(ssSoundEffectSetPitch);
   declare_method(ssSoundEffectGetPitch);
 
-  // fonts
+  // sfxr objects
+  declare_constructor1(CreateSfxrObject, SSFXR* sfxr);
+  declare_finalizer(ssFinalizeSfxr);
+  declare_method(ssSfxrSetMasterVolume);
+  declare_method(ssSfxrGetMasterVolume);
+  declare_method(ssSfxrGetSoundVolume);
+  declare_method(ssSfxrSetSoundVolume);
+  declare_method(ssSfxrGetBitrate);
+  declare_method(ssSfxrSetBitrate);
+  declare_method(ssSfxrGetSampleRate);
+  declare_method(ssSfxrSetSampleRate);
+  declare_method(ssSfxrGetWaveType);
+  declare_method(ssSfxrSetWaveType);
+  declare_method(ssSfxrGetBaseFrequency);
+  declare_method(ssSfxrSetBaseFrequency);
+  declare_method(ssSfxrGetMinFrequency);
+  declare_method(ssSfxrSetMinFrequency);
+  declare_method(ssSfxrGetFrequencySlide);
+  declare_method(ssSfxrSetFrequencySlide);
+  declare_method(ssSfxrGetFrequencySlideDelta);
+  declare_method(ssSfxrSetFrequencySlideDelta);
+  declare_method(ssSfxrGetSquareDuty);
+  declare_method(ssSfxrSetSquareDuty);
+  declare_method(ssSfxrGetSquareDutySweep);
+  declare_method(ssSfxrSetSquareDutySweep);
+  declare_method(ssSfxrGetVibratoDepth);
+  declare_method(ssSfxrSetVibratoDepth);
+  declare_method(ssSfxrGetVibratoSpeed);
+  declare_method(ssSfxrSetVibratoSpeed);
+  declare_method(ssSfxrGetVibratoDelay);
+  declare_method(ssSfxrSetVibratoDelay);
+  declare_method(ssSfxrGetAttack);
+  declare_method(ssSfxrSetAttack);
+  declare_method(ssSfxrGetSustain);
+  declare_method(ssSfxrSetSustain);
+  declare_method(ssSfxrGetDecay);
+  declare_method(ssSfxrSetDecay);
+  declare_method(ssSfxrGetRelease);
+  declare_method(ssSfxrSetRelease);
+  declare_method(ssSfxrGetFilter);
+  declare_method(ssSfxrSetFilter);
+  declare_method(ssSfxrGetLowPassFilterCutoff);
+  declare_method(ssSfxrSetLowPassFilterCutoff);
+  declare_method(ssSfxrGetLowPassFilterCutoffSweep);
+  declare_method(ssSfxrSetLowPassFilterCutoffSweep);
+  declare_method(ssSfxrGetFilterResonance);
+  declare_method(ssSfxrSetFilterResonance);
+  declare_method(ssSfxrGetHighPassFilterCutoff);
+  declare_method(ssSfxrSetHighPassFilterCutoff);
+  declare_method(ssSfxrGetHighPassFilterCutoffSweep);
+  declare_method(ssSfxrSetHighPassFilterCutoffSweep);
+  declare_method(ssSfxrGetPhaserOffset);
+  declare_method(ssSfxrSetPhaserOffset);
+  declare_method(ssSfxrGetPhaserOffsetSweep);
+  declare_method(ssSfxrSetPhaserOffsetSweep);
+  declare_method(ssSfxrGetRepeatSpeed);
+  declare_method(ssSfxrSetRepeatSpeed);
+  declare_method(ssSfxrGetArpeggio);
+  declare_method(ssSfxrSetArpeggio);
+  declare_method(ssSfxrGetArpeggioSpeed);
+  declare_method(ssSfxrSetArpeggioSpeed);
+  declare_method(ssSfxrSaveWav);
+  declare_method(ssSfxrGetSoundEffect);
+  declare_method(ssSfxrReset);
+  declare_method(ssSfxrCalcSampleSize);
+
+ // fonts
   declare_constructor2(CreateFontObject, SFONT* font, bool destroy);
   declare_finalizer(ssFinalizeFont);
   declare_method(ssFontSetColorMask);
@@ -279,6 +348,7 @@ private:
   declare_method(ssWindowStyleGetColorMask);
   declare_method(ssWindowStyleSave);
   declare_method(ssWindowStyleClone);
+  declare_method(ssWindowStyleGetBorder);
 
   // images
   declare_constructor2(CreateImageObject, IMAGE image, bool destroy);
@@ -315,6 +385,8 @@ private:
   declare_method(ssSurfaceSetPixel);
   declare_method(ssSurfaceSetAlpha);
   declare_method(ssSurfaceReplaceColor);
+  declare_method(ssSurfaceFindColor);
+  declare_method(ssSurfaceFloodFill);
   declare_method(ssSurfacePointSeries);
   declare_method(ssSurfaceLine);
   declare_method(ssSurfaceGradientLine);
@@ -352,6 +424,8 @@ private:
   declare_constructor1(CreateAnimationObject, IAnimation* animation);
   declare_finalizer(ssFinalizeAnimation);
   declare_method(ssAnimationGetNumFrames);
+  declare_method(ssAnimationGetTicks);
+  declare_method(ssAnimationGetPlaytime);
   declare_method(ssAnimationGetDelay);
   declare_method(ssAnimationReadNextFrame);
   declare_method(ssAnimationDrawFrame);

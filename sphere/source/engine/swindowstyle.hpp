@@ -29,6 +29,8 @@ public:
     bool DrawLowerRightCorner(int x, int y, const RGBA& mask, bool is_masked) const;
 
     bool DrawWindow(int x, int y, int w, int h, const RGBA& mask, bool is_masked) const;
+
+	int GetBorder(int index) ;
 private:
     void Initialize();
 

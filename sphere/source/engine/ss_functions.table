@@ -283,6 +283,7 @@ SS_FUNCTION(OpenLog, 1)
       SS_FUNCTION(GetPersonSpriteset, 1)
       SS_FUNCTION(SetPersonSpriteset, 2)
       SS_FUNCTION(GetPersonBase, 1)
+      SS_FUNCTION(SetPersonBase, 5)
       SS_FUNCTION(SetPersonAngle, 2)
       SS_FUNCTION(GetPersonAngle, 1)
       SS_FUNCTION(SetPersonMask, 2)
@@ -324,6 +325,26 @@ SS_FUNCTION(OpenLog, 1)
       SS_FUNCTION(GetTalkActivationButton, 0)
       SS_FUNCTION(SetTalkActivationButton, 1)
 
+	// Background (Map) Music 
+	SS_FUNCTION(nameBgm, 0)
+	SS_FUNCTION(validBgm, 0)
+	SS_FUNCTION(playBgm, 0)
+	SS_FUNCTION(stopBgm, 0)
+	SS_FUNCTION(isPlayingBgm, 0)
+	SS_FUNCTION(resetBgm, 0)
+	SS_FUNCTION(setRepeatBgm, 1)
+	SS_FUNCTION(getRepeatBgm, 0)
+	SS_FUNCTION(setVolumeBgm, 1)
+	SS_FUNCTION(getVolumeBgm, 0)
+	SS_FUNCTION(setPanBgm, 1)
+	SS_FUNCTION(getPanBgm, 0)
+	SS_FUNCTION(setPitchBgm, 1)
+	SS_FUNCTION(getPitchBgm, 0)
+	SS_FUNCTION(isSeekableBgm, 0)
+	SS_FUNCTION(getLengthBgm, 0)
+	SS_FUNCTION(setPositionBgm, 1)
+	SS_FUNCTION(getPositionBgm, 0)
+
 
   // spritesets
   SS_FUNCTION(LoadSpriteset, 1)
@@ -338,6 +359,7 @@ SS_FUNCTION(OpenLog, 1)
   
   // sounds
   SS_FUNCTION(LoadSound, 1)
+  SS_FUNCTION(CreateSound, 1)
   //sound.play(repeat)
   //sound.pause()
   //sound.stop()
@@ -351,9 +373,10 @@ SS_FUNCTION(OpenLog, 1)
   //sound.getPosition()
   //sound.setPosition(pos)
   //sound.isSeekable()
-  
+ 
   // sound effects
   SS_FUNCTION(LoadSoundEffect, 1)
+  SS_FUNCTION(CreateSoundEffect, 1)
   //sound_effect.play()
   //sound_effect.stop()
   //sound_effect.setVolume(volume)
@@ -362,7 +385,11 @@ SS_FUNCTION(OpenLog, 1)
   //sound_effect.getPan()
   //sound_effect.setPitch(pitch)
   //sound_effect.getPitch()
-  
+
+
+  SS_FUNCTION(CreateSfxr, 0)
+  //sfxr.saveWav(wavename)
+  //sfxr. /* NILTON:WIP */
 
   // fonts
   SS_FUNCTION(GetSystemFont, 0)
@@ -384,6 +411,8 @@ SS_FUNCTION(OpenLog, 1)
   //windowstyle.setColorMask(color)
   //windowstyle.getColorMask()
   //windowstyle.clone()
+  //windowstyle.getImage(index)
+  //windowstyle.setImage(index, image)
 
   // images
   SS_FUNCTION(GetSystemArrow, 0)
@@ -458,6 +487,8 @@ SS_FUNCTION(OpenLog, 1)
   //animation.width
   //animation.height
   //animation.getNumFrames()
+  //animation.getTicks()
+  //animation.getPlaytime()
   //animation.getDelay()
   //animation.readNextFrame()
   //animation.drawFrame(x, y)

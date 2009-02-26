@@ -20,6 +20,7 @@
 #include "swindowstyle.hpp"
 #include "time.hpp"
 #include "PlayerConfig.hpp"
+#include "ssfxr.hpp"
 
 #include "../common/sphere_version.h"
 #include "../common/configfile.hpp"
@@ -53,6 +54,7 @@ const dword SS_RAWFILE_MAGIC     = 0x29bcd805;
 const dword SS_BYTEARRAY_MAGIC   = 0x2295027f;
 const dword SS_MAPENGINE_MAGIC   = 0x42424401;
 const dword SS_TILESET_MAGIC     = 0x43434402;
+const dword SS_SFXR_MAGIC        = 0x474245a3;
 const dword SS_PARTICLE_SYSTEM_PARENT_MAGIC  = 0x80000000;
 const dword SS_PARTICLE_SYSTEM_CHILD_MAGIC   = 0x80000001;
 const dword SS_PARTICLE_BODY_MAGIC           = 0x80000012;
@@ -130,10 +132,17 @@ audiere::OutputStream* sound;
 #if defined(WIN32) && defined(USE_MIDI)
 audiere::MIDIStream* midi;
 #endif
+audiere::File* memoryfile;
 END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_SOUNDEFFECT)
 audiere::SoundEffect* sound;
+audiere::File* memoryfile;
+END_SS_OBJECT()
+
+BEGIN_SS_OBJECT(SS_SFXR)
+bool destroy_me;
+SSFXR* sfxr;
 END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_FONT)
@@ -588,6 +597,12 @@ CScript::InitializeSphereConstants()
                       { "SE_SINGLE",   audiere::SINGLE },
                       { "SE_MULTIPLE", audiere::MULTIPLE },
 
+                      // windowstyle constants
+                      { "EDGE_LEFT", sWindowStyle::LEFT },
+                      { "EDGE_TOP", sWindowStyle::TOP },
+                      { "EDGE_RIGHT", sWindowStyle::RIGHT },
+                      { "EDGE_BOTTOM", sWindowStyle::BOTTOM },
+
                       // particle engine constants
                       { "PE_NULL_SHAPE",           ParticleInitializer::NULL_SHAPE },
                       { "PE_RECTANGULAR_SHAPE",    ParticleInitializer::RECTANGULAR_SHAPE },
@@ -595,9 +610,6 @@ CScript::InitializeSphereConstants()
 
                       { "PE_EXPLICIT_ORIENTATION", ParticleInitializer::EXPLICIT_ORIENTATION },
                       { "PE_IMPLICIT_ORIENTATION", ParticleInitializer::IMPLICIT_ORIENTATION },
-
-
-
 
 
 
@@ -1059,6 +1071,36 @@ inline SS_IMAGE* argImage(JSContext* cx, jsval arg)
 }
 
 ///////////////////////////////////////////////////////////
+inline SS_SFXR* argSfxr(JSContext* cx, jsval arg)
+{
+    if (!JSVAL_IS_OBJECT(arg))
+    {
+        JS_ReportError(cx, "Invalid sfxr object");
+        return NULL;
+    }
+
+    if (JS_IsArrayObject(cx, JSVAL_TO_OBJECT(arg)))
+    {
+        JS_ReportError(cx, "Invalid sfxr object");
+        return NULL;
+    }
+
+    SS_SFXR* sfxr = (SS_SFXR*)JS_GetPrivate(cx, JSVAL_TO_OBJECT(arg));
+    if (sfxr == NULL)
+    {
+        JS_ReportError(cx, "Invalid sfxr object");
+        return NULL;
+    }
+
+    if (sfxr->magic != SS_SFXR_MAGIC)
+    {
+        JS_ReportError(cx, "Invalid sfxr object magic");
+        return NULL;
+    }
+
+    return sfxr;
+}
+///////////////////////////////////////////////////////////
 inline SS_FONT* argFont(JSContext* cx, jsval arg)
 {
     if (!JSVAL_IS_OBJECT(arg))
@@ -1324,6 +1366,7 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     delete[] images;
 
     s->SetBase(x1, y1, x2, y2);
+    s->Base2Real();
     for (i = 0; i < num_directions; i++)
     {
 
@@ -1436,6 +1479,7 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 #define arg_byte_array(name) SS_BYTEARRAY* name = argByteArray(cx, argv[arg++]);   if (name == NULL) return JS_FALSE; __arg_error_check__("ByteArray")
 #define arg_image(name)      SS_IMAGE* name     = argImage(cx, argv[arg++]);       if (name == NULL) return JS_FALSE; __arg_error_check__("Image")
 #define arg_font(name)       SS_FONT* name      = argFont(cx, argv[arg++]);        if (name == NULL) return JS_FALSE; __arg_error_check__("Font")
+#define arg_sfxr(name)       SS_SFXR* name      = argSfxr(cx, argv[arg++]);        if (name == NULL) return JS_FALSE; __arg_error_check__("Sfxr")
 #define arg_spriteset(name)  sSpriteset* name   = argSpriteset(cx, argv[arg++]);   if (name == NULL) return JS_FALSE; __arg_error_check__("Spriteset")
 
 #define arg_particle_system(name)  ParticleSystemBase* name = argParticleSystem(cx, argv[arg++]); if (name == NULL) return JS_FALSE; __arg_error_check__("ParticleSystem")
@@ -1839,9 +1883,7 @@ else
         This->m_FramesSkipped = 0;
     }
     else
-    {
         This->m_FramesSkipped++;
-    }
 
     if (GetTime() * This->m_FrameRate < (dword)This->m_IdealTime)
     {
@@ -1853,9 +1895,7 @@ else
 
     }
     else
-    {
         This->m_ShouldRender = false;
-    }
 
     // update timing variables
     This->m_IdealTime += 1000;
@@ -2660,7 +2700,11 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-    - returns the toggle state of a toggle key
+    - checks if Caps Lock, Num Lock or Scroll Lock are active.
+      Allowed key values are:
+        KEY_CAPSLOCK
+        KEY_NUMLOCK
+        KEY_SCROLLOCK (note: only two Ls)
 */
 begin_func(GetToggleState, 1)
 arg_int(key);
@@ -5137,6 +5181,9 @@ arg_str(name);
 arg_double(scale_w);
 arg_double(scale_h);
 
+if(scale_w<0) scale_w=0;
+if(scale_h<0) scale_h=0;
+
 if (!This->m_Engine->GetMapEngine()->SetPersonScaleFactor(name, scale_w, scale_h))
 {
     This->ReportMapEngineError("SetPersonScaleFactor() failed");
@@ -5422,10 +5469,15 @@ JS_MaybeGC(cx);
 end_func()
 ////////////////////////////////////////////////////////////////////////////////
 /**
-    - returns the person's base obstruction object.
+    - returns the person's base obstruction object. Can be the one without resizing.
 */
 begin_func(GetPersonBase, 1)
 arg_str(name);
+bool real = false;
+if (argc >= 2)
+{
+    real = argBool(cx, argv[1]);
+}
 
 SSPRITESET* spriteset = This->m_Engine->GetMapEngine()->GetPersonSpriteset(name);
 if (spriteset == NULL)
@@ -5434,7 +5486,31 @@ if (spriteset == NULL)
     return JS_FALSE;
 }
 
-return_object(CreateSpritesetBaseObject(cx, spriteset));
+return_object(CreateSpritesetBaseObject(cx, spriteset, real));
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - Sets the person's base obstruction object. Note that the person could be zoomed, in that case, add an extra parameter
+*/
+begin_func(SetPersonBase, 5)
+arg_str(name);
+arg_int(x1);
+arg_int(y1);
+arg_int(x2);
+arg_int(y2);
+bool real = false;
+if (argc >= 6)
+{
+    real = argBool(cx, argv[5]);
+}
+
+
+if ( !This->m_Engine->GetMapEngine()->SetPersonBase(name, x1, y1, x2, y2) )
+{
+    JS_ReportError(cx, "Could not set the personbase for person '%s'", name);
+    return JS_FALSE;
+}
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5871,6 +5947,7 @@ if (!s.Create(frame_width, frame_height, num_images, num_directions, num_frames)
     return JS_FALSE;
 }
 s.SetBase(0, 0, frame_width, frame_height);
+s.Base2Real();
 SSPRITESET* spriteset = new SSPRITESET(s);
 if (!spriteset)
 {
@@ -5880,6 +5957,183 @@ if (!spriteset)
 spriteset->AddRef();
 return_object(CreateSpritesetObject(cx, spriteset));
 end_func()
+
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - Returns the name of the current map background music (could be a m3u list)
+*/
+begin_func(nameBgm, 0)
+	std::string result;
+	if (!This->m_Engine->GetMapEngine()->nameBgm(result))
+	{
+		This->ReportMapEngineError("nameBgm() failed");
+		return JS_FALSE;
+	}
+	if(This->m_Engine->GetMapEngine()->validBgm())
+		result = "";
+	
+	return_str(result.c_str());
+end_func()
+
+/**
+    - Returns the type of the current map background music: 0: none 1: midi 2: wav/mp3/it/xm
+*/
+begin_func(validBgm, 0)
+	return_int( This->m_Engine->GetMapEngine()->validBgm() );
+end_func()
+
+/**
+    - Starts the current map background music. If it is already playing, or doesnt exist, it does nothing.
+	  Returns true if the music is playing
+*/
+begin_func(playBgm, 0)
+	This->m_Engine->GetMapEngine()->playBgm();
+	return_bool(This->m_Engine->GetMapEngine()->isPlayingBgm() == true);
+end_func()
+
+/**
+    - Stops the current map background music. If it is already stopped, or doesnt exist, it does nothing.
+	  Returns true if the music is stopped
+*/
+begin_func(stopBgm, 0)
+	This->m_Engine->GetMapEngine()->stopBgm(); // Audiere stop is void... why?
+	return_bool(This->m_Engine->GetMapEngine()->isPlayingBgm() == false);
+end_func()
+
+/**
+    - Tells us if the background music is playing
+*/
+begin_func(isPlayingBgm, 0)
+	return_bool(This->m_Engine->GetMapEngine()->isPlayingBgm());
+end_func()
+
+/**
+    - Rewind the background music. (Can be slow on streamed music)
+*/
+begin_func(resetBgm, 0)
+	This->m_Engine->GetMapEngine()->resetBgm();
+	if(This->m_Engine->GetMapEngine()->validBgm())
+		return_bool(true);
+	else
+		return_bool(false);
+end_func()
+
+/**
+    - Enable/Disable Loop the current background music (it is repeated by default)
+	  Returns true if it succeeded setting the boolean value.
+*/
+begin_func(setRepeatBgm, 1)
+arg_bool(onoff);
+	This->m_Engine->GetMapEngine()->setRepeatBgm(onoff);
+	return_bool(This->m_Engine->GetMapEngine()->getRepeatBgm() == onoff);
+end_func()
+
+/**
+    - Returns true if the current background music is looped. False if not.
+*/
+begin_func(getRepeatBgm, 0)
+	return_bool(This->m_Engine->GetMapEngine()->getRepeatBgm());
+end_func()
+
+/**
+    - Sets the volume of the current background music. The volume can be 0 to 255.
+	- no effect on MIDIs
+*/
+begin_func(setVolumeBgm, 1)
+	arg_int(volume);
+	volume = volume<0 ? 0 : volume>255? 255 : volume;
+	This->m_Engine->GetMapEngine()->setVolumeBgm(volume / 255.0f);
+end_func()
+
+/**
+    - Gets the volume of the current background music. The volume can be 0 to 255.
+	- no effect on MIDIs
+*/
+begin_func(getVolumeBgm, 0)
+	float v = This->m_Engine->GetMapEngine()->getVolumeBgm();
+	if (v<0)
+		return_int(255);
+	else
+		return_int(v * 255);
+end_func()
+
+/**
+    - pan can be from -255 to 255.  -255 = left, 255 = right. pan defaults to 0 (center).
+    - no effect on MIDIs
+*/
+begin_func(setPanBgm, 1)
+	arg_int(pan);
+	if (This->m_Engine->GetMapEngine()->validBgm())
+		This->m_Engine->GetMapEngine()->setPanBgm(pan / 255.0f);
+end_func()
+
+/**
+    - returns the current pan of the sound (-255 to 255)
+    - no effect on MIDIs
+*/
+begin_func(getPanBgm, 0)
+	if (This->m_Engine->GetMapEngine()->validBgm())
+		return_int(This->m_Engine->GetMapEngine()->getPanBgm() * 255);
+	return_int(0);
+end_func()
+
+/**
+    - pitch ranges from 0.5 to 2.0.  0.5 is an octave down (and half as fast)
+      while 2.0 is an octave up (and twice as fast).  pitch defaults to 1.0
+    - no effect on MIDIs
+*/
+begin_func(setPitchBgm, 1)
+	arg_double(pitch);
+	if (This->m_Engine->GetMapEngine()->validBgm())
+		This->m_Engine->GetMapEngine()->setPitchShiftBgm((float)pitch);
+end_func()
+
+/**
+    - returns the current pitch
+    - no effect on MIDIs
+*/
+begin_func(getPitchBgm, 0)
+	if (This->m_Engine->GetMapEngine()->validBgm())
+		return_double(This->m_Engine->GetMapEngine()->getPitchShiftBgm());
+	else
+		return_double(1.0);
+end_func()
+
+/**
+    - returns true if the background music is seekable
+*/
+begin_func(isSeekableBgm, 0)
+	return_bool(This->m_Engine->GetMapEngine()->isSeekableBgm());
+end_func()
+
+/**
+    - returns the length the background music. Music must be seekable.
+*/
+begin_func(getLengthBgm, 0)
+	return_int(This->m_Engine->GetMapEngine()->getLengthBgm());
+end_func()
+
+/**
+    - sets the position of the sound
+      if the sound isn't seekable, this does nothing
+*/
+begin_func(setPositionBgm, 1)
+	arg_int(pos);
+	This->m_Engine->GetMapEngine()->setPositionBgm(pos);
+end_func()
+
+/**
+    - gets the position of the sound
+      if the sound isn't seekable, this does nothing
+*/
+begin_func(getPositionBgm, 0)
+	return_bool(This->m_Engine->GetMapEngine()->getPositionBgm());
+end_func()
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 /**
     - returns a sound object from 'filename'. If Sphere is unable to open
@@ -5929,10 +6183,10 @@ if (!sound && !IsMidi(filename))
 }
 
 #if defined(WIN32) && defined(USE_MIDI)
-return_object(CreateSoundObject(cx, sound, midi));
+return_object(CreateSoundObject(cx, sound, midi, NULL));
 #else
 
-return_object(CreateSoundObject(cx, sound));
+return_object(CreateSoundObject(cx, sound, NULL));
 #endif
 end_func()
 
@@ -5975,8 +6229,159 @@ if (!sound)
     return JS_FALSE;
 }
 
-return_object(CreateSoundEffectObject(cx, sound));
+return_object(CreateSoundEffectObject(cx, sound, NULL));
 end_func()
+
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - returns a sound  from bytearray.
+*/
+begin_func(CreateSound, 1)
+arg_byte_array(array);
+bool streaming = true;
+if (argc > 1)
+{
+    streaming = argBool(cx, argv[arg++]);
+}
+
+if (array->size <= 0)
+{
+    JS_ReportError(cx, "Invalid bytearray.");
+    return JS_FALSE;
+}
+
+audiere::File* memoryfile = audiere::CreateMemoryFile(array->array, array->size);
+
+if (!memoryfile)
+{
+    JS_ReportError(cx, "Could not convert bytearray to memoryfile.");
+    return JS_FALSE;
+}
+//audiere::FilePtr adrfile(memoryfile);
+
+audiere::OutputStream* sound = NULL;
+sound = This->m_Engine->CreateSound(memoryfile, streaming);
+if (!sound)
+{
+	if(memoryfile){
+		memoryfile->ref();
+		memoryfile->unref();
+		memoryfile=NULL;
+	}
+	
+    JS_ReportError(cx, "Could not create sound from bytearray");
+    return JS_FALSE;
+}
+
+#if defined(WIN32) && defined(USE_MIDI)
+audiere::MIDIStream* midi    = NULL;
+return_object(CreateSoundObject(cx, sound, midi, memoryfile));
+#else
+return_object(CreateSoundObject(cx, sound, memoryfile));
+#endif
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - returns a soundeffect from bytearray.
+*/
+begin_func(CreateSoundEffect, 1)
+arg_byte_array(ba);
+
+audiere::SoundEffectType type = audiere::SINGLE;
+if (argc > 1)
+{
+    type = audiere::SoundEffectType( argInt(cx, argv[1]) );
+}
+
+if (ba->size <= 0)
+{
+    JS_ReportError(cx, "Invalid bytearray.");
+    return JS_FALSE;
+}
+
+
+audiere::File* memoryfile = This->m_Engine->CreateMemoryFile(ba->array, ba->size);
+
+if (!memoryfile)
+{
+    JS_ReportError(cx, "Could not convert bytearray to memoryfile.");
+    return JS_FALSE;
+}
+memoryfile->ref();
+
+//audiere::FilePtr adrfile(memoryfile);
+//audiere::SoundEffect* sound = SA_OpenSoundEffect(memoryfile, type);
+audiere::SoundEffect* sound = This->m_Engine->CreateSoundEffect(memoryfile, type);
+
+// For some reason, this didnt work?
+//audiere::SoundEffect* sound = NULL;
+//sound = This->m_Engine->CreateSoundEffect(memoryfile, type);
+//audiere::OutputStream* sound = NULL;
+//audiere::SoundEffect* sound = This->m_Engine->CreateSoundEffect(memoryfile, type);
+
+if (!sound)
+{
+	if(memoryfile){
+		memoryfile->ref();
+		memoryfile->unref();
+	}
+    JS_ReportError(cx, "Could not create sound effect from bytearray");
+    return JS_FALSE;
+}
+//This->m_ShouldExit =false;
+return_object( CreateSoundEffectObject(cx, sound, memoryfile) );
+end_func()
+
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - - returns an Sfxr object.
+*/
+
+begin_func(CreateSfxr, 0)
+SSFXR* sound = NULL;
+sound = This->m_Engine->CreateSfxr();
+if (!sound)
+{
+    JS_ReportError(cx, "Could not create sound effect from sfxr");
+    return JS_FALSE;
+}
+unsigned int n = 1; // This way you can swap around the parameters without having to renumber
+if (argc >= n){	sound->setBitrate(int( argInt(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setSampleRate(int( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setSoundVolume(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setWaveType(int( argInt(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setBaseFrequency(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setMinFrequency(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setFrequencySlide(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setFrequencySlideDelta(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setSquareDuty(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setSquareDutySweep(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setVibratoDepth(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setVibratoSpeed(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setVibratoDelay(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setAttack(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setSustain(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setDecay(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setRelease(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setFilter(bool( argBool(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setLowPassFilterCutoff(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setLowPassFilterCutoffSweep(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setFilterResonance(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setHighPassFilterCutoff(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setHighPassFilterCutoffSweep(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setPhaserOffset(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setPhaserOffsetSweep(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setRepeatSpeed(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setArpeggio(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){	sound->setArpeggioSpeed(float( argDouble(cx, argv[n++ -1]) )); }
+//if (argc >= n){	sound->setMasterVolume(float( argDouble(cx, argv[n++ -1]) )); }
+
+return_object(CreateSfxrObject(cx, sound));
+end_func()
+
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
@@ -6297,7 +6702,7 @@ end_func()
 /**
     - Returns an animation object with the filename. If Sphere is unable to
       open the file, the engine will give an error message and exit. Sphere
-      supports animation formats of .flic, .fli, .flc and .mng
+      supports animation formats of .flic, .fli, .flc and .mng, .jng
 */
 begin_func(LoadAnimation, 1)
 arg_str(filename);
@@ -6815,7 +7220,6 @@ CScript::CreateParticleBodyObject(JSContext* cx, ParticleSystemBase* system)
     {
         // balancing call to JS_RemoveRoot
         JS_RemoveRoot(cx, &object);
-
         return NULL;
     }
 
@@ -8447,7 +8851,7 @@ end_property()
 ////////////////////////////////////////
 
 JSObject*
-CScript::CreateSpritesetBaseObject(JSContext* cx, SSPRITESET* spriteset)
+CScript::CreateSpritesetBaseObject(JSContext* cx, SSPRITESET* spriteset, bool real)
 {
     static JSClass base_clasp =
         {
@@ -8460,7 +8864,10 @@ CScript::CreateSpritesetBaseObject(JSContext* cx, SSPRITESET* spriteset)
     if (!base_object)
         return NULL;
     int x1, y1, x2, y2;
-    spriteset->GetSpriteset().GetBase(x1, y1, x2, y2);
+    if(real)
+        spriteset->GetSpriteset().GetRealBase(x1, y1, x2, y2);
+    else
+        spriteset->GetSpriteset().GetBase(x1, y1, x2, y2);
 
     JS_DefineProperty(cx, base_object, "x1", INT_TO_JSVAL(x1), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
     JS_DefineProperty(cx, base_object, "y1", INT_TO_JSVAL(y1), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
@@ -8615,7 +9022,7 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
     }
 
     // define the base object
-    JSObject* base_object = CreateSpritesetBaseObject(cx, spriteset);
+    JSObject* base_object = CreateSpritesetBaseObject(cx, spriteset, true);
     if (!base_object)
         return NULL;
     jsval base_val = OBJECT_TO_JSVAL(base_object);
@@ -8725,6 +9132,7 @@ delete s;
 s = NULL;
 if (!clone)
     return JS_FALSE;
+
 return_object(CreateSpritesetObject(cx, clone));
 // spritesets can take a lot of memory, so do a little GC
 JS_MaybeGC(cx);
@@ -8738,17 +9146,21 @@ end_method()
 JSObject*
 #if defined(WIN32) && defined(USE_MIDI)
 
-CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound, audiere::MIDIStream* midi)
+CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound, audiere::MIDIStream* midi, audiere::File* memoryfile)
 #else
-CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
+CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound, audiere::File* memoryfile)
 #endif
 {
-    if (sound) sound->ref();
+    if (sound)
+		sound->ref();
 #if defined(WIN32) && defined(USE_MIDI)
-
-    if (midi)  midi->ref();
+    if (midi)
+		midi->ref();
 #endif
-    // define class
+	if (memoryfile)
+		memoryfile->ref();
+
+	// define class
     static JSClass clasp =
         {
             "sound", JSCLASS_HAS_PRIVATE,
@@ -8774,6 +9186,11 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
         }
 
 #endif
+        if (memoryfile)
+        {
+            memoryfile->unref();
+            memoryfile = NULL;
+        }
         return NULL;
     }
 
@@ -8821,9 +9238,15 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
             midi = NULL;
         }
 #endif
+        if (memoryfile)
+        {
+            memoryfile->unref();
+            memoryfile = NULL;
+        }
         return NULL;
     }
     sound_object->sound = sound;
+    sound_object->memoryfile = memoryfile;
 #if defined(WIN32) && defined(USE_MIDI)
     sound_object->midi = midi;
 #endif
@@ -8834,10 +9257,23 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound)
 ////////////////////////////////////////
 begin_finalizer(SS_SOUND, ssFinalizeSound)
 
-if (object->sound)
+if (object->sound){
+	//object->sound->stop();
     object->sound->unref();
+}
 
 object->sound = NULL;
+
+if(object->memoryfile){
+	object->memoryfile->unref();
+}
+
+//if (object->memoryfile)
+//{
+//	JS_ReportError(cx, "DEBUG: Memoryfile still referenced!");
+//}
+
+object->memoryfile = NULL;
 
 #if defined(WIN32) && defined(USE_MIDI)
 
@@ -9166,9 +9602,9 @@ end_method()
 */
 begin_method(SS_SOUND, ssSoundClone, 0)
 #if defined(WIN32) && defined(USE_MIDI)
-return_object(CreateSoundObject(cx, object->sound, object->midi));
+return_object(CreateSoundObject(cx, object->sound, object->midi, object->memoryfile));
 #else
-return_object(CreateSoundObject(cx, object->sound));
+return_object(CreateSoundObject(cx, object->sound, object->memoryfile));
 #endif
 end_method()
 
@@ -9178,10 +9614,17 @@ end_method()
 ////////////////////////////////////////
 
 JSObject*
-CScript::CreateSoundEffectObject(JSContext* cx, audiere::SoundEffect* sound)
+CScript::CreateSoundEffectObject(JSContext* cx, audiere::SoundEffect* sound, audiere::File* memoryfile)
 {
     if (sound)
         sound->ref();
+	else{
+		if(memoryfile)
+			memoryfile->unref();
+		return NULL;
+	}
+	if (memoryfile)
+		memoryfile->ref();
 
     // define class
     static JSClass clasp =
@@ -9202,6 +9645,11 @@ CScript::CreateSoundEffectObject(JSContext* cx, audiere::SoundEffect* sound)
             sound = NULL;
         }
 
+        if (memoryfile)
+        {
+            memoryfile->unref();
+            memoryfile = NULL;
+        }
         return NULL;
     }
 
@@ -9231,11 +9679,17 @@ CScript::CreateSoundEffectObject(JSContext* cx, audiere::SoundEffect* sound)
             sound = NULL;
         }
 
+        if (memoryfile)
+        {
+            memoryfile->unref();
+            memoryfile = NULL;
+        }
+
         return NULL;
     }
 
     sound_object->sound = sound;
-
+    sound_object->memoryfile = memoryfile;
     JS_SetPrivate(cx, object, sound_object);
     return object;
 }
@@ -9244,9 +9698,22 @@ CScript::CreateSoundEffectObject(JSContext* cx, audiere::SoundEffect* sound)
 begin_finalizer(SS_SOUNDEFFECT, ssFinalizeSoundEffect)
 
 if (object->sound)
+{
+	//object->sound->stop();
     object->sound->unref();
-
+}
 object->sound = NULL;
+
+if(object->memoryfile)
+	object->memoryfile->unref();
+
+
+//if (object->memoryfile)
+//{
+//	JS_ReportError(cx, "DEBUG: Memoryfile still referenced!");
+//}
+
+object->memoryfile = NULL;
 end_finalizer()
 
 ////////////////////////////////////////
@@ -9359,6 +9826,447 @@ else
     return_double(1.0);
 
 end_method()
+
+
+////////////////////////////////////////
+////////////////////////////////////////
+// SFXR OBJECTS ////////////////////////
+////////////////////////////////////////
+
+JSObject*
+CScript::CreateSfxrObject(JSContext* cx, SSFXR* sfxr)
+{
+    // define class
+    static JSClass clasp =
+        {
+            "sfxr", JSCLASS_HAS_PRIVATE,
+            JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+            JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, ssFinalizeSfxr,
+        };
+
+    // create object
+    JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
+    if (object == NULL)
+    {
+        return NULL;
+    }
+
+    // assign methods to the object
+    static JSFunctionSpec fs[] =
+        {
+			{ "saveWav",			ssSfxrSaveWav,			1, 0, 0 },
+			{ "reset",				ssSfxrReset,			0, 0, 0 },
+			{ "getSampleSize",		ssSfxrCalcSampleSize,	0, 0, 0 },
+			{ "getSoundEffect",		ssSfxrGetSoundEffect,	1, 0, 0 },
+			{ "getMasterVolume",	ssSfxrGetMasterVolume,	0, 0, 0 },
+			{ "setMasterVolume",	ssSfxrSetMasterVolume,	1, 0, 0 },
+			{ "getSoundVolume",		ssSfxrGetSoundVolume,	0, 0, 0 },
+			{ "setSoundVolume",		ssSfxrSetSoundVolume,	1, 0, 0 },
+			{ "getBitrate",			ssSfxrGetBitrate,		0, 0, 0 },
+			{ "setBitrate",			ssSfxrSetBitrate,		1, 0, 0 },
+			{ "getSampleRate",		ssSfxrGetSampleRate,	0, 0, 0 },
+			{ "setSampleRate",		ssSfxrSetSampleRate,	1, 0, 0 },
+			{ "getWaveType",		ssSfxrGetWaveType,      0, 0, 0 },
+			{ "setWaveType",		ssSfxrSetWaveType,      1, 0, 0 },
+			{ "getBaseFrequency",	ssSfxrGetBaseFrequency,	0, 0, 0 },
+			{ "setBaseFrequency",	ssSfxrSetBaseFrequency,	1, 0, 0 },
+			{ "getMinFrequency",	ssSfxrGetMinFrequency,	0, 0, 0 },
+			{ "setMinFrequency",	ssSfxrSetMinFrequency,	1, 0, 0 },
+			{ "getFrequencySlide",	ssSfxrGetFrequencySlide,	0, 0, 0 },
+			{ "setFrequencySlide",	ssSfxrSetFrequencySlide,	1, 0, 0 },
+			{ "getFrequencySlideDelta",	ssSfxrGetFrequencySlideDelta,	0, 0, 0 },
+			{ "setFrequencySlideDelta",	ssSfxrSetFrequencySlideDelta,	1, 0, 0 },
+			{ "getSquareDuty",	ssSfxrGetSquareDuty,	0, 0, 0 },
+			{ "setSquareDuty",	ssSfxrSetSquareDuty,	1, 0, 0 },
+			{ "getSquareDutySweep",	ssSfxrGetSquareDutySweep,	0, 0, 0 },
+			{ "setSquareDutySweep",	ssSfxrSetSquareDutySweep,	1, 0, 0 },
+			{ "getVibratoDepth",	ssSfxrGetVibratoDepth,	0, 0, 0 },
+			{ "setVibratoDepth",	ssSfxrSetVibratoDepth,	1, 0, 0 },
+			{ "getVibratoSpeed",	ssSfxrGetVibratoSpeed,	0, 0, 0 },
+			{ "setVibratoSpeed",	ssSfxrSetVibratoSpeed,	1, 0, 0 },
+			{ "getVibratoDelay",	ssSfxrGetVibratoDelay,	0, 0, 0 },
+			{ "setVibratoDelay",	ssSfxrSetVibratoDelay,	1, 0, 0 },
+			{ "getAttack",	ssSfxrGetAttack,	0, 0, 0 },
+			{ "setAttack",	ssSfxrSetAttack,	1, 0, 0 },
+			{ "getSustain",	ssSfxrGetSustain,	0, 0, 0 },
+			{ "setSustain",	ssSfxrSetSustain,	1, 0, 0 },
+			{ "getDecay",		ssSfxrGetDecay,	0, 0, 0 },
+			{ "setDecay",		ssSfxrSetDecay,	1, 0, 0 },
+			{ "getRelease",	ssSfxrGetRelease,	0, 0, 0 },
+			{ "setRelease",	ssSfxrSetRelease,	1, 0, 0 },
+			{ "getFilter",	ssSfxrGetFilter,	0, 0, 0 },
+			{ "setFilter",	ssSfxrSetFilter,	1, 0, 0 },
+			{ "getLowPassFilterCutoff",	ssSfxrGetLowPassFilterCutoff,	0, 0, 0 },
+			{ "setLowPassFilterCutoff",	ssSfxrSetLowPassFilterCutoff,	1, 0, 0 },
+			{ "getLowPassFilterCutoffSweep",	ssSfxrGetLowPassFilterCutoffSweep,	0, 0, 0 },
+			{ "setLowPassFilterCutoffSweep",	ssSfxrSetLowPassFilterCutoffSweep,	1, 0, 0 },
+			{ "getFilterResonance",	ssSfxrGetFilterResonance,	0, 0, 0 },
+			{ "setFilterResonance",	ssSfxrSetFilterResonance,	1, 0, 0 },
+			{ "getHighPassFilterCutoff",	ssSfxrGetHighPassFilterCutoff,	0, 0, 0 },
+			{ "setHighPassFilterCutoff",	ssSfxrSetHighPassFilterCutoff,	1, 0, 0 },
+			{ "getHighPassFilterCutoffSweep",	ssSfxrGetHighPassFilterCutoffSweep,	0, 0, 0 },
+			{ "setHighPassFilterCutoffSweep",	ssSfxrSetHighPassFilterCutoffSweep,	1, 0, 0 },
+			{ "getPhaserOffset",	ssSfxrGetPhaserOffset,	0, 0, 0 },
+			{ "setPhaserOffset",	ssSfxrSetPhaserOffset,	1, 0, 0 },
+			{ "getPhaserOffsetSweep",	ssSfxrGetPhaserOffsetSweep,	0, 0, 0 },
+			{ "setPhaserOffsetSweep",	ssSfxrSetPhaserOffsetSweep,	1, 0, 0 },
+			{ "getRepeatSpeed",	ssSfxrGetRepeatSpeed,	0, 0, 0 },
+			{ "setRepeatSpeed",	ssSfxrSetRepeatSpeed,	1, 0, 0 },
+			{ "getArpeggio",	ssSfxrGetArpeggio,	0, 0, 0 },
+			{ "setArpeggio",	ssSfxrSetArpeggio,	1, 0, 0 },
+			{ "getArpeggioSpeed",	ssSfxrGetArpeggioSpeed,	0, 0, 0 },
+			{ "setArpeggioSpeed",	ssSfxrSetArpeggioSpeed,	1, 0, 0 },
+			{ 0, 0, 0, 0, 0 },
+        };
+    JS_DefineFunctions(cx, object, fs);
+
+    // attach the font to this object
+    SS_SFXR* sfxr_object = new SS_SFXR;
+
+    if (!sfxr_object)
+    {
+
+        return NULL;
+    }
+    sfxr_object->sfxr       = sfxr;
+    sfxr_object->destroy_me = true;//always destroy
+    JS_SetPrivate(cx, object, sfxr_object);
+
+    return object;
+}
+
+///////////////////////////////////////
+begin_finalizer(SS_SFXR, ssFinalizeSfxr)
+if (object->destroy_me)
+{
+    if (object->sfxr)
+    {
+        delete object->sfxr;
+
+    }
+}
+
+object->sfxr = NULL;
+end_finalizer()
+
+///////////////////////////////////////
+/**
+    - saves the sfxr as a wav file
+*/
+begin_method(SS_SFXR, ssSfxrSaveWav, 1)
+arg_str(filename);
+bool saved = false;
+if (IsValidPath(filename) == false)
+{
+
+    JS_ReportError(cx, "Invalid path: '%s'", filename);
+    return JS_FALSE;
+}
+std::string path = "sounds/";
+path += filename;
+saved = object->sfxr->Save(path.c_str());
+return_bool( saved );
+end_method()
+
+begin_method(SS_SFXR, ssSfxrReset, 0)
+return_bool(object->sfxr->Reset());
+end_method()
+
+
+begin_method(SS_SFXR, ssSfxrGetSoundEffect, 0)
+arg_int(type);
+audiere::SoundEffect* sound = NULL;
+audiere::File* memoryfile = NULL;
+if (type == audiere::MULTIPLE)
+    sound = object->sfxr->getSoundEffect(audiere::MULTIPLE, memoryfile);
+else
+    sound = object->sfxr->getSoundEffect(audiere::SINGLE, memoryfile);
+
+if (!sound)
+{
+	if(memoryfile)
+		memoryfile->unref();
+    JS_ReportError(cx, "Sfxr could not export sound effect. ");
+    return JS_FALSE;
+}
+
+return_object(CreateSoundEffectObject(cx, sound, memoryfile));
+end_method()
+
+
+begin_method(SS_SFXR, ssSfxrCalcSampleSize, 0)
+return_int(object->sfxr->GetSampleSize());
+end_method()
+
+
+
+begin_method(SS_SFXR, ssSfxrSetMasterVolume, 1)
+arg_double(volume);
+object->sfxr->setMasterVolume((float)volume);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetMasterVolume, 0)
+return_double(object->sfxr->getMasterVolume());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetSoundVolume, 0)
+return_double(object->sfxr->getSoundVolume());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetSoundVolume, 1)
+arg_double(v);
+object->sfxr->setSoundVolume((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetBitrate, 0)
+return_int(object->sfxr->getBitrate());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetBitrate, 1)
+arg_int(v);
+object->sfxr->setBitrate(v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetSampleRate, 0)
+return_int(object->sfxr->getSampleRate());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetSampleRate, 1)
+arg_int(v);
+object->sfxr->setSampleRate(v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetWaveType, 0)
+	return_int(object->sfxr->getWaveType());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetWaveType, 1)
+	arg_int(wavetype);
+	if ( wavetype >= object->sfxr->getMaxWaveTypes() || wavetype < 0 )
+	{
+		JS_ReportError(cx, "Invalid Wavetype: '%d'", wavetype);
+		return JS_FALSE;
+	}
+	object->sfxr->setWaveType(wavetype);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetBaseFrequency, 0)
+return_double(object->sfxr->getBaseFrequency());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetBaseFrequency, 1)
+arg_double(v);
+object->sfxr->setBaseFrequency((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetMinFrequency, 0)
+return_double(object->sfxr->getMinFrequency());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetMinFrequency, 1)
+arg_double(v);
+object->sfxr->setMinFrequency((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetFrequencySlide, 0)
+return_double(object->sfxr->getFrequencySlide());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetFrequencySlide, 1)
+arg_double(v);
+object->sfxr->setFrequencySlide((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetFrequencySlideDelta, 0)
+return_double(object->sfxr->getFrequencySlideDelta());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetFrequencySlideDelta, 1)
+arg_double(v);
+object->sfxr->setFrequencySlideDelta((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetSquareDuty, 0)
+return_double(object->sfxr->getSquareDuty());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetSquareDuty, 1)
+arg_double(v);
+object->sfxr->setSquareDuty((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetSquareDutySweep, 0)
+return_double(object->sfxr->getSquareDutySweep());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetSquareDutySweep, 1)
+arg_double(v);
+object->sfxr->setSquareDutySweep((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetVibratoDepth, 0)
+return_double(object->sfxr->getVibratoDepth());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetVibratoDepth, 1)
+arg_double(v);
+object->sfxr->setVibratoDepth((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetVibratoSpeed, 0)
+return_double(object->sfxr->getVibratoSpeed());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetVibratoSpeed, 1)
+arg_double(v);
+object->sfxr->setVibratoSpeed((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetVibratoDelay, 0)
+return_double(object->sfxr->getVibratoDelay());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetVibratoDelay, 1)
+arg_double(v);
+object->sfxr->setVibratoDelay((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetAttack, 0)
+return_double(object->sfxr->getAttack());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetAttack, 1)
+arg_double(v);
+object->sfxr->setAttack((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetSustain, 0)
+return_double(object->sfxr->getSustain());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetSustain, 1)
+arg_double(v);
+object->sfxr->setSustain((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetDecay, 0)
+return_double(object->sfxr->getDecay());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetDecay, 1)
+arg_double(v);
+object->sfxr->setDecay((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetRelease, 0)
+return_double(object->sfxr->getRelease());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetRelease, 1)
+arg_double(v);
+object->sfxr->setRelease((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetFilter, 0)
+return_bool(object->sfxr->getFilter());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetFilter, 1)
+arg_bool(isOn);
+object->sfxr->setFilter(isOn);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetLowPassFilterCutoff, 0)
+return_double(object->sfxr->getLowPassFilterCutoff());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetLowPassFilterCutoff, 1)
+arg_double(v);
+object->sfxr->setLowPassFilterCutoff((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetLowPassFilterCutoffSweep, 0)
+return_double(object->sfxr->getLowPassFilterCutoffSweep());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetLowPassFilterCutoffSweep, 1)
+arg_double(v);
+object->sfxr->setLowPassFilterCutoffSweep((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetFilterResonance, 0)
+return_double(object->sfxr->getFilterResonance());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetFilterResonance, 1)
+arg_double(v);
+object->sfxr->setFilterResonance((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetHighPassFilterCutoff, 0)
+return_double(object->sfxr->getHighPassFilterCutoff());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetHighPassFilterCutoff, 1)
+arg_double(v);
+object->sfxr->setHighPassFilterCutoff((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetHighPassFilterCutoffSweep, 0)
+return_double(object->sfxr->getHighPassFilterCutoffSweep());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetHighPassFilterCutoffSweep, 1)
+arg_double(v);
+object->sfxr->setHighPassFilterCutoffSweep((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetPhaserOffset, 0)
+return_double(object->sfxr->getPhaserOffset());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetPhaserOffset, 1)
+arg_double(v);
+object->sfxr->setPhaserOffset((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetPhaserOffsetSweep, 0)
+return_double(object->sfxr->getPhaserOffsetSweep());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetPhaserOffsetSweep, 1)
+arg_double(v);
+object->sfxr->setPhaserOffsetSweep((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetRepeatSpeed, 0)
+return_double(object->sfxr->getRepeatSpeed());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetRepeatSpeed, 1)
+arg_double(v);
+object->sfxr->setRepeatSpeed((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetArpeggio, 0)
+return_double(object->sfxr->getArpeggio());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetArpeggio, 1)
+arg_double(v);
+object->sfxr->setArpeggio((float)v);
+end_method()
+
+begin_method(SS_SFXR, ssSfxrGetArpeggioSpeed, 0)
+return_double(object->sfxr->getArpeggioSpeed());
+end_method()
+
+begin_method(SS_SFXR, ssSfxrSetArpeggioSpeed, 1)
+arg_double(v);
+object->sfxr->setArpeggioSpeed((float)v);
+end_method()
+
+
 
 
 ////////////////////////////////////////
@@ -9656,6 +10564,7 @@ CScript::CreateWindowStyleObject(JSContext* cx, SWINDOWSTYLE* ws, bool destroy)
             { "getColorMask", ssWindowStyleGetColorMask,    0, 0, 0 },
             { "clone",        ssWindowStyleClone,           0, 0, 0 },
             { "save",         ssWindowStyleSave,            1, 0, 0 },
+            { "getBorder",    ssWindowStyleGetBorder,       1, 0, 0 },
             { 0, 0, 0, 0, 0 },
         };
     JS_DefineFunctions(cx, object, fs);
@@ -9741,6 +10650,17 @@ end_method()
 begin_method(SS_WINDOWSTYLE, ssWindowStyleClone, 0)
 return_object(JSVAL_NULL);
 end_method()
+///////////////////////////////////////
+/**
+    - get the border size in pixels for the windowstyle object.
+      You can use EDGE_LEFT, EDGE_TOP, EDGE_RIGHT and EDGE_BOTTOM as parameters.
+      Note that the corner sizes are ignored.
+*/
+begin_method(SS_WINDOWSTYLE, ssWindowStyleGetBorder, 1)
+arg_int(index);
+return_int(object->windowstyle->GetBorder(index));
+end_method()
+
 ///////////////////////////////////////
 ///////////////////////////////////////
 // IMAGE OBJECTS //////////////////////
@@ -10151,6 +11071,8 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
             { "setPixel",         ssSurfaceSetPixel,         3, 0, 0 },
             { "setAlpha",         ssSurfaceSetAlpha,         1, 0, 0 },
             { "replaceColor",     ssSurfaceReplaceColor,     2, 0, 0 },
+			{ "findColor",        ssSurfaceFindColor,        1, 0, 0 },
+			{ "floodFill",        ssSurfaceFloodFill,        3, 0, 0 },
 
             { "pointSeries",       ssSurfacePointSeries,       2, 0, 0 },
             { "line",              ssSurfaceLine,              5, 0, 0 },
@@ -10686,6 +11608,26 @@ begin_method(SS_SURFACE, ssSurfaceReplaceColor, 2)
 arg_color(oldColor);
 arg_color(newColor);
 object->surface->ReplaceColor(oldColor, newColor);
+end_method()
+
+////////////////////////////////////////
+/**
+    - Boolean: Tells us if the color aColor is in the surface
+*/
+begin_method(SS_SURFACE, ssSurfaceFindColor, 1)
+arg_color(aColor);
+return_bool(object->surface->FindColor(aColor));
+end_method()
+
+////////////////////////////////////////
+/**
+    - Flood Fills the area with a color
+*/
+begin_method(SS_SURFACE, ssSurfaceFloodFill, 3)
+arg_int(x);
+arg_int(y);
+arg_color(aColor);
+object->surface->FloodFill(x, y, aColor);
 end_method()
 
 ////////////////////////////////////////
@@ -11517,6 +12459,8 @@ CScript::CreateAnimationObject(JSContext* cx, IAnimation* animation)
         {
             { "getNumFrames",    ssAnimationGetNumFrames,    0, 0, 0 },
             { "getDelay",        ssAnimationGetDelay,        0, 0, 0 },
+            { "getTicks",        ssAnimationGetTicks,        0, 0, 0 },
+            { "getPlaytime",     ssAnimationGetPlaytime,     0, 0, 0 },
             { "readNextFrame",   ssAnimationReadNextFrame,   0, 0, 0 },
             { "drawFrame",       ssAnimationDrawFrame,       2, 0, 0 },
             { "drawZoomedFrame", ssAnimationDrawZoomedFrame, 3, 0, 0 },
@@ -11567,6 +12511,16 @@ end_finalizer()
 ////////////////////////////////////////
 begin_method(SS_ANIMATION, ssAnimationGetNumFrames, 0)
 return_int(object->animation->GetNumFrames());
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_ANIMATION, ssAnimationGetTicks, 0)
+return_int(object->animation->GetTicks());
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_ANIMATION, ssAnimationGetPlaytime, 0)
+return_int(object->animation->GetPlaytime());
 end_method()
 
 ////////////////////////////////////////

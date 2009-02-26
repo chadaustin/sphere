@@ -3,6 +3,7 @@
 
 #include "audio.hpp"
 #include "sfont.hpp"
+#include "ssfxr.hpp"
 #include "sspriteset.hpp"
 #include "swindowstyle.hpp"
 #include "log.hpp"
@@ -57,9 +58,14 @@ struct IEngine
 
     virtual audiere::OutputStream* LoadSound(const char* filename, bool streaming) = 0;
     virtual audiere::SoundEffect*  LoadSoundEffect(const char* filename, audiere::SoundEffectType type) = 0;
+    virtual audiere::OutputStream* CreateSound(audiere::File* memoryfile, bool streaming) =0;
+    virtual audiere::SoundEffect*  CreateSoundEffect(audiere::File* memoryfile, audiere::SoundEffectType type) =0;
+	virtual audiere::File* CreateMemoryFile(const void* buffer, int size) =0;
+
 #if defined(WIN32) && defined(USE_MIDI)
     virtual audiere::MIDIStream* LoadMIDI(const char* filename) = 0;
 #endif
+    virtual SSFXR* CreateSfxr() = 0;
     virtual IMAGE GetSystemArrow() = 0;
     virtual IMAGE GetSystemUpArrow() = 0;
     virtual IMAGE GetSystemDownArrow() = 0;

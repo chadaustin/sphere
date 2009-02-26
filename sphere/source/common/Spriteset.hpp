@@ -70,7 +70,10 @@ public:
     int  GetDirectionNum(std::string direction) const;
 
     void GetBase(int& x1, int& y1, int& x2, int& y2) const;
+	void GetRealBase(int& x1, int& y1, int& x2, int& y2) const;
     void SetBase(int x1, int y1, int x2, int y2);
+	void Base2Real();
+	    
 
 public:
     enum
@@ -107,6 +110,12 @@ private:
     int m_BaseY1;
     int m_BaseX2;
     int m_BaseY2;
+
+    int org_BaseX1;
+    int org_BaseY1;
+    int org_BaseX2;
+    int org_BaseY2;
+
 };
 
 #endif

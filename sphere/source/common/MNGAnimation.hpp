@@ -13,6 +13,8 @@ public:
     int GetWidth();
     int GetHeight();
     int GetNumFrames();
+	int GetTicks();
+	int GetPlaytime();
     int GetDelay();
     bool ReadNextFrame(RGBA* FrameBuffer);
     bool ReadNextFrame(BGRA* FrameBuffer);
@@ -29,6 +31,7 @@ private:
     static mng_ptr    MNG_DECL CB_GetCanvasLine(mng_handle handle, mng_uint32 line_number);
     static mng_bool   MNG_DECL CB_Refresh(mng_handle handle, mng_uint32 x, mng_uint32 y, mng_uint32 width, mng_uint32 height);
     static mng_uint32 MNG_DECL CB_GetTickCount(mng_handle handle);
+	static mng_uint32 MNG_DECL CB_GetFrameCount(mng_handle handle);
     static mng_bool   MNG_DECL CB_SetTimer(mng_handle handle, mng_uint32 msecs);
 #if (MNG_VERSION_MAJOR > 1 || (MNG_VERSION_MAJOR == 1 && MNG_VERSION_RELEASE >= 6))
     static mng_bool   MNG_DECL CB_ProcessTerm(mng_handle handle, mng_uint8 iTermaction, mng_uint8 iIteraction, mng_uint32 iDelay, mng_uint32 iItermax);
@@ -41,6 +44,9 @@ private:
     int m_width;
     int m_height;
     int m_delay;
+	int m_framecount;
+	int m_playtime;
+	int m_ticks;
     RGBA* m_frame_buffer;
     bool m_first_display;
     bool m_end_of_animation;

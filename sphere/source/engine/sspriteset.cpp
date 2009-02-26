@@ -124,6 +124,25 @@ SSPRITESET::GetSpriteset() const
     return m_Spriteset;
 }
 
+void
+SSPRITESET::SetBase(int x1, int y1, int x2, int y2)
+{
+	m_Spriteset.SetBase(x1, y1, x2, y2);
+}
+
+void
+SSPRITESET::GetBase(int& x1, int& y1, int& x2, int& y2) const
+{
+	m_Spriteset.GetBase(x1, y1, x2, y2);
+}
+
+void
+SSPRITESET::GetRealBase(int& x1, int& y1, int& x2, int& y2) const
+{
+	m_Spriteset.GetRealBase(x1, y1, x2, y2);
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 std::string
 SSPRITESET::GetFilename() const

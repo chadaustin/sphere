@@ -23,6 +23,7 @@ CRenderSort::AddObject(int draw_x, int draw_y, int sort_y, int draw_w, int draw_
 
 ////////////////////////////////////////////////////////////////////////////////
 void CalculateRotateBlitPoints(int tx[4], int ty[4], double x, double y, double w, double h, double radians);
+
 void
 CRenderSort::DrawObjects()
 {
@@ -57,25 +58,28 @@ CRenderSort::DrawObjects()
         tx[3] = o.draw_x;
         ty[3] = o.draw_y + o.draw_h /* - 1*/;
 
+        // BlitImage is usually faster than TransformBlit, so use BlitImage if possible
+        bool normal_blit = true;
+		bool masked = (o.mask == CreateRGBA(255, 255, 255, 255));
+
         if (o.is_angled)
         {
-
+            normal_blit = false;
             CalculateRotateBlitPoints(tx, ty, o.draw_x, o.draw_y, o.draw_w, o.draw_h, o.angle);
         }
-        bool normal_blit = false;
-        bool masked = (o.mask == CreateRGBA(255, 255, 255, 255));
-        // BlitImage is usually faster than TransformBlit, so use BlitImage if possible
-        if (tx[0] == tx[3] && tx[1] == tx[2] && ty[0] == ty[1] && ty[2] == ty[3])
+        else
         {
 
-            int dw = tx[2] - tx[0] /*+ 1*/;
-            int dh = ty[2] - ty[0] /*+ 1*/;
-            if (dw == GetImageWidth(o.image) && dh == GetImageHeight(o.image))
+//            int dw = tx[2] - tx[0] /*+ 1*/;
+//            int dh = ty[2] - ty[0] /*+ 1*/;
+//            if (dw != GetImageWidth(o.image) || dh != GetImageHeight(o.image))
+			if (o.draw_w != GetImageWidth(o.image) || o.draw_h != GetImageHeight(o.image))
             {
 
-                normal_blit = true;
+                normal_blit = false;
             }
         }
+
         if (normal_blit)
         {
 

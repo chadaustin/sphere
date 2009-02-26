@@ -16,6 +16,10 @@ sSpriteset::sSpriteset()
         , m_BaseY1(0)
         , m_BaseX2(0)
         , m_BaseY2(0)
+        , org_BaseX1(0)
+        , org_BaseY1(0)
+        , org_BaseX2(0)
+        , org_BaseY2(0)
 {}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -180,6 +184,12 @@ sSpriteset::Load(const char* filename, IFileSystem& fs)
     bracket(m_BaseX2, 0, m_FrameWidth  - 1);
     bracket(m_BaseY1, 0, m_FrameHeight - 1);
     bracket(m_BaseY2, 0, m_FrameHeight - 1);
+
+	// store original base somewhere save
+	org_BaseX1 = m_BaseX1;
+	org_BaseY1 = m_BaseY1;
+	org_BaseX2 = m_BaseX2;
+	org_BaseY2 = m_BaseY2;
 
     static const char* direction_names[] =
         {
@@ -380,10 +390,10 @@ sSpriteset::Save(const char* filename, IFileSystem& fs) const
     header.frame_width    = mtol_w(m_FrameWidth);
     header.frame_height   = mtol_w(m_FrameHeight);
     header.num_directions = mtol_w(m_Directions.size());
-    header.base_x1        = mtol_w(m_BaseX1);
-    header.base_y1        = mtol_w(m_BaseY1);
-    header.base_x2        = mtol_w(m_BaseX2);
-    header.base_y2        = mtol_w(m_BaseY2);
+    header.base_x1        = mtol_w(org_BaseX1);
+    header.base_y1        = mtol_w(org_BaseY1);
+    header.base_x2        = mtol_w(org_BaseX2);
+    header.base_y2        = mtol_w(org_BaseY2);
 
     if (header.base_x1 > header.base_x2)
     {
@@ -1026,6 +1036,24 @@ sSpriteset::SetBase(int x1, int y1, int x2, int y2)
     m_BaseY1 = y1;
     m_BaseX2 = x2;
     m_BaseY2 = y2;
+}
+
+void
+sSpriteset::GetRealBase(int& x1, int& y1, int& x2, int& y2) const
+{
+    x1 = org_BaseX1;
+    y1 = org_BaseY1;
+    x2 = org_BaseX2;
+    y2 = org_BaseY2;
+}
+
+void
+sSpriteset::Base2Real()
+{
+    org_BaseX1 = m_BaseX1;
+    org_BaseY1 = m_BaseY1;
+    org_BaseX2 = m_BaseX2;
+    org_BaseY2 = m_BaseY2;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

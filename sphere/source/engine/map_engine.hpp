@@ -216,6 +216,7 @@ public:
     bool SetPersonAngle(const char* name, double angle);
     bool SetPersonMask(const char* name, RGBA mask);
     bool GetPersonMask(const char* name, RGBA& mask);
+    bool SetPersonBase(const char* name, int x1, int y1, int x2, int y2);
 
     bool IsPersonVisible(const char* person_name, bool& visible);
     bool SetPersonVisible(const char* person_name, bool visible);
@@ -273,6 +274,25 @@ public:
         return m_Map;
     }
     bool SaveMap(const char* filename);
+
+	bool nameBgm(std::string& result);
+	int validBgm();
+	void playBgm();
+	void stopBgm();
+	bool isPlayingBgm();
+	void resetBgm();
+	void setRepeatBgm(bool repeat);
+	bool getRepeatBgm();
+	void setVolumeBgm(float volume);
+	float getVolumeBgm();
+	void setPanBgm(float pan);
+	float getPanBgm();
+	void setPitchShiftBgm(float shift);
+	float getPitchShiftBgm();
+	bool isSeekableBgm();
+	int getLengthBgm();
+	void setPositionBgm(int position);
+	int getPositionBgm();
 
 private:
     struct DelayScript
@@ -412,7 +432,7 @@ private:
     int FindTrigger(int location_x, int location_y, int layer);
     bool UpdateTriggers(int person_index);
 
-    bool IsPointWithinZone(int location_x, int location_y, int location_layer, int zone_index);
+inline    bool IsPointWithinZone(int location_x, int location_y, int location_layer, int zone_index);
     bool IsPersonInsideZone(int person_index, int zone_index);
     bool UpdateZones(int person_index);
 

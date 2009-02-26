@@ -22,6 +22,12 @@ public:
     std::string GetFilename() const;
     const sSpriteset& GetSpriteset() const;
 
+    void GetBase(int& x1, int& y1, int& x2, int& y2) const;
+    void GetRealBase(int& x1, int& y1, int& x2, int& y2) const;
+    void SetBase(int x1, int y1, int x2, int y2);
+	void Base2Real() { m_Spriteset.Base2Real(); };
+
+
     int GetNumImages() const;
     IMAGE GetImage(int i) const;
     IMAGE GetFlipImage(int i) const;

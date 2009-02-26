@@ -12,6 +12,8 @@ public:
     int GetWidth();
     int GetHeight();
     int GetNumFrames();
+	int GetTicks();
+	int GetPlaytime();
     int GetDelay();
     bool IsEndOfAnimation();
     bool ReadNextFrame(RGBA* FrameBuffer);

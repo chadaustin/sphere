@@ -330,7 +330,7 @@ bool IsKeyPressed(int key)
 void GetKeyStates(bool keys[MAX_KEY])
 {
     UpdateSystem();
-    for (int i = 0; i < MAX_KEY; ++i)
+    for (int i = MAX_KEY -1 ; i>=0 ; --i)
     {
         keys[i] = (KeyBuffer[i] != 0);
     }

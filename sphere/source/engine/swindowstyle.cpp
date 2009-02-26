@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 SWINDOWSTYLE::SWINDOWSTYLE()
 {
-    for (int i = 0; i < 9; i++)
+    for (int i = 9 -1 ; i>=0 ;  --i)
         m_Images[i] = NULL;
 }
 
@@ -83,9 +83,11 @@ SWINDOWSTYLE::DrawBackground(int x, int y, int w, int h, int background_mode, co
 
         if ( !is_masked )
         {
-            for (int ix = 0; ix < w / width + 1; ix++)
+            //for (int ix = 0; ix < w / width + 1; ix++)
+			for (int ix = w / width ; ix>=0 ; --ix)
             {
-                for (int iy = 0; iy < h / height + 1; iy++)
+                //for (int iy = 0; iy < h / height + 1; iy++)
+				for (int iy = h / height ; iy>=0 ; --iy)
                 {
                     BlitImage(image, x + ix * width, y + iy * height, CImage32::BLEND);
                 }
@@ -93,9 +95,11 @@ SWINDOWSTYLE::DrawBackground(int x, int y, int w, int h, int background_mode, co
         }
         else
         {
-            for (int ix = 0; ix < w / width + 1; ix++)
+            //for (int ix = 0; ix < w / width + 1; ix++)
+			for (int ix = w / width; ix>=0; --ix)
             {
-                for (int iy = 0; iy < h / height + 1; iy++)
+                //for (int iy = 0; iy < h / height + 1; iy++)
+				for (int iy = h / height ; iy>=0 ; --iy)
                 {
                     BlitImageMask(image, x + ix * width, y + iy * height, CImage32::BLEND, mask);
                 }
@@ -199,12 +203,14 @@ SWINDOWSTYLE::DrawHorizontalEdge(int index, int x, int y, int w, int h, const RG
     SetClippingRectangle(x, y, width, h);
     if ( !is_masked )
     {
-        for (int i = 0; i < h / height + 1; i++)
+        //for (int i = 0; i < h / height + 1; i++)
+		for (int i = h / height; i>=0; --i)
             BlitImage(image, x, y + i * height, CImage32::BLEND);
     }
     else
     {
-        for (int i = 0; i < h / height + 1; i++)
+        //for (int i = 0; i < h / height + 1; i++)
+		for (int i = h / height; i>=0; --i)
             BlitImageMask(image, x, y + i * height, CImage32::BLEND, mask);
     }
 
@@ -229,12 +235,14 @@ SWINDOWSTYLE::DrawVerticalEdge(int index, int x, int y, int w, int h, const RGBA
     SetClippingRectangle(x, y, w, height);
     if ( !is_masked )
     {
-        for (int i = 0; i < w / width + 1; i++)
+        //for (int i = 0; i < w / width + 1; i++)
+		for (int i = w / width; i>=0; --i)
             BlitImage(image, x + i * width, y, CImage32::BLEND);
     }
     else
     {
-        for (int i = 0; i < w / width + 1; i++)
+        //for (int i = 0; i < w / width + 1; i++)
+		for (int i = w / width; i>=0; --i)
             BlitImageMask(image, x + i * width, y, CImage32::BLEND, mask);
     }
 
@@ -305,3 +313,28 @@ SWINDOWSTYLE::Initialize()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+int
+SWINDOWSTYLE::GetBorder(int index) 
+{
+	switch(index){
+		case sWindowStyle::EDGE_LEFT:
+			return GetImageWidth(m_Images[sWindowStyle::LEFT]);
+			break;
+		case sWindowStyle::EDGE_TOP:
+			return GetImageHeight(m_Images[sWindowStyle::TOP]);
+			break;
+		case sWindowStyle::EDGE_RIGHT:
+			return GetImageWidth(m_Images[sWindowStyle::RIGHT]);
+			break;
+		case sWindowStyle::EDGE_BOTTOM:
+			return GetImageHeight(m_Images[sWindowStyle::BOTTOM]);
+			break;
+		default:
+			return -1;
+			break;
+	};
+
+	//m_WindowStyle.GetEdgeOffset(sWindowStyle::EDGE_LEFT);
+}
+

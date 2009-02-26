@@ -12,7 +12,7 @@ inline bool has_extension(const char* filename, const char* ext)
 }
 IAnimation* LoadAnimation(const char* filename, IFileSystem& fs)
 {
-    if (has_extension(filename, ".mng"))
+    if (has_extension(filename, ".mng") || has_extension(filename, ".jng"))
     {
 
         // MNG

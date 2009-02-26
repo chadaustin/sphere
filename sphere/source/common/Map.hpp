@@ -119,6 +119,7 @@ private:
 
     bool m_Repeating;
     std::string m_MusicFile;
+    std::string m_LastTilesetFile;
     std::string m_TilesetFile;
 
     std::string m_EntryScript;

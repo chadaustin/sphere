@@ -805,7 +805,41 @@ public:
 private:
     IFile* m_file;
 };
+/*
+class AudiereMemoryFile : public audiere::RefImplementation<audiere::File>
+{
+public:
+	AudiereMemoryFile(audiere::File * file)
+    {
+        m_file = file;
+		m_file->ref();
+    }
 
+    ~AudiereMemoryFile()
+    {
+		m_file->unref();
+		m_file = NULL;
+    }
+
+    int ADR_CALL read(void* buffer, int size)
+    {
+        return m_file->read(buffer, size);
+    }
+
+    bool ADR_CALL seek(int position, SeekMode mode)
+    {
+		return m_file->seek(position, mode);
+    }
+
+    int ADR_CALL tell()
+    {
+        return m_file->tell();
+    }
+
+private:
+	audiere::File* m_file;
+};
+*/
 ////////////////////////////////////////////////////////////////////////////////
 audiere::OutputStream*
 CGameEngine::LoadSound(const char* filename, bool streaming)
@@ -865,6 +899,69 @@ CGameEngine::LoadMIDI(const char* filename)
     return SA_OpenMIDI(path.c_str());
 }
 #endif
+////////////////////////////////////////////////////////////////////////////////
+
+audiere::OutputStream*
+CGameEngine::CreateSound(audiere::File * memoryfile, bool streaming)
+{
+
+    //audiere::FilePtr adrfile(new AudiereMemoryFile(memoryfile));
+	//audiere::FilePtr adrfile(memoryfile);
+    //return SA_OpenSound(adrfile.get(), streaming);
+	return SA_OpenSound(memoryfile, streaming);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+audiere::SoundEffect*
+CGameEngine::CreateSoundEffect(audiere::File * memoryfile, audiere::SoundEffectType type)
+{
+    return SA_OpenSoundEffect(memoryfile, type);
+}
+
+audiere::File*
+CGameEngine::CreateMemoryFile(const void* buffer, int size)
+{
+    return audiere::CreateMemoryFile(buffer, size);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/*
+audiere::OutputStream*
+CGameEngine::SoundEngine(double frequency, int wave, bool streaming)
+{
+	// make sure sound type is valid
+    if (wave < 0 || wave >= NUM_SOUNDS)
+    {
+		ShowError("Invalid sound wave");
+        return false;
+    }
+
+	audiere::SampleSource* sound;
+	switch(wave){
+		case SOUND_TONE:
+			sound = audiere::CreateTone(frequency);
+			break;
+		case SOUND_SQUARE:
+			sound = audiere::CreateSquareWave(frequency);
+			break;
+		case SOUND_WHITE:
+			sound = audiere::CreateWhiteNoise();
+			break;
+		case SOUND_PINK:
+			sound = audiere::CreatePinkNoise();
+			break;
+	};
+	
+}
+*/
+SSFXR* 
+CGameEngine::CreateSfxr() 
+{
+	SSFXR* sfxr = new SSFXR;
+	return sfxr; 
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 IMAGE
 CGameEngine::GetSystemArrow()

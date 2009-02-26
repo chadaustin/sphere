@@ -1840,7 +1840,7 @@ namespace primitives
         int bottom = 0;
         int i;
 
-        for (i = 1; i < 4; i++)
+        for (i = 3; i>0; --i)
         {
             if (y[i] < y[top])
             {
@@ -1875,7 +1875,7 @@ namespace primitives
         // segment 2 = bottom
         // segment 3 = left
 
-        for (i = 0; i < 4; i++)
+        for (i = 3; i>=0 ; --i)
         {
             segment* s = segments + i;
 
@@ -1917,7 +1917,7 @@ namespace primitives
             int maxV = 0;
 
             // intersect iy in each line
-            for (int i = 0; i < 4; i++)
+            for (int i = 3;i>=0; --i)
             {
                 segment* s = segments + i;
 
