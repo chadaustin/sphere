@@ -1709,14 +1709,14 @@ drawing onto surfaces or masking
       defined by the parameters
       (see GrabSurface)
   
-  image_object.blit(x, y [, blendmode = BLEND])
+  image_object.blit(x, y [, blendmode])
     - draws the image onto the video buffer at x,y
   
-  image_object.blitMask(x, y, mask [, blendmode = BLEND])
+  image_object.blitMask(x, y, mask [, blendmode])
     - draws the image into the video buffer, except that the color passed
       as 'mask' tints the image
   
-  image_object.rotateBlit(x, y, radians [, blendmode = BLEND])
+  image_object.rotateBlit(x, y, radians [, blendmode])
     - draws the image into the video buffer, except that the image is rotates 
       in  anti-clockwise in radians, which have a range of 0-2*pi. 
       (x,y) is the center of the blit.
@@ -1724,22 +1724,22 @@ drawing onto surfaces or masking
   image_object.rotateBlitMask(x, y, radians, color, [blendmode])
     - rotateBlit + mask
   
-  image_object.zoomBlit(x, y, factor, [blendmode])
+  image_object.zoomBlit(x, y, factor [, blendmode])
     - draws the image into the video buffer with zooming, with the scaling 
       depending on factor. Normally a factor of 1 will blit a normal looking
       image. Between 0 and 1 will shrink the image. Any values greater than 1
       will stretch the size of the image.
 
-  image_object.zoomBlitMask(x, y, factor, color, [blendmode])
+  image_object.zoomBlitMask(x, y, factor, color [, blendmode])
     - zoomBlit + mask
   
-  image_object.transformBlit(x1, y1, x2, y2, x3, y3, x4, y4, [blendmode])
+  image_object.transformBlit(x1, y1, x2, y2, x3, y3, x4, y4 [, blendmode])
     - draws the image into the video buffer with "transformation", where 
       (x1, y1) is the upper left corner, (x2, y2) the upper right corner, 
       (x3, y3) is the lower right corner, and (x4, y4) is the lower left 
       corner.
 
-  image_object.transformBlitMask(x1, y1, x2, y2, x3, y3, x4, y4, mask, [blendmode])
+  image_object.transformBlitMask(x1, y1, x2, y2, x3, y3, x4, y4, mask [, blendmode])
     - transformBlit + blitMask
 
   image_object.createSurface()
@@ -1846,6 +1846,16 @@ drawing onto surfaces or masking
 
   surface_object.replaceColor(oldColor, newColor)
     - replace all pixels of the color oldColor in the surface with newColor
+
+  surface_object.findColor(aColor)
+
+    - Boolean: Tells us if the color aColor is in the surface
+
+
+  surface_object.floodFill(x, y, color)
+
+    - Flood Fills the area with a color
+
   
   surface_object.pointSeries(array, color)
     - plots a series of points colored with color onto the surface
