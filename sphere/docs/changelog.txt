@@ -5,7 +5,7 @@ YYYY.MM.DD
   - Added person base functions
   - Added WindowStyle border functions
   - Added Map background music functions
-  - Added Audiere's SoundEffect object
+  - Added CreateSoundEffect(byte_array)
   - Updated libmng functions for animations
   - New Zlib for Engine (not yet for Editor)
 
