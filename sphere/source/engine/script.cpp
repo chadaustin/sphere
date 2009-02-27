@@ -29,6 +29,8 @@
 #include "../common/md5global.h"
 #include "../common/md5.h"
 
+#include "../common/zlibengn.h"
+
 #include "../common/VectorStructs.hpp"
 
 // parameter grabbing
@@ -370,6 +372,25 @@ static bool IsValidPath(const char* path, bool no_double_dots = false)
         return false;
 
     return true;
+}
+
+// Very crude way to check if a file exists. W32 has nicer functions, but they are incompatible with the other interps...
+/*
+#include <sys/stat.h>
+
+int fexist( char *filename ) {
+struct stat buffer ;
+if ( stat( filename, &buffer ) ) return 1 ;
+return 0 ;
+}
+*/
+static bool DoesFileExist(const char* pathandfile)
+{
+	FILE *f = fopen(pathandfile, "r"); 
+	bool found = f ? true: false;
+	if(found) fclose(f);
+	delete f;
+	return found;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -7124,6 +7145,231 @@ retval[32]='\0';
 return_str(retval);
 end_func()
 
+
+/**
+    - Decompress a file to another file using deflate
+      The default base directory is other/, use ../ to reach other directories.
+      compressionlevel must be between 0 and 9, and is 6 by default
+      Returns zero on succes, nonzero if it failed.
+*/
+begin_func(DeflateFile, 2)
+arg_str(filename_source);
+arg_str(filename_dest);
+int compressionlevel = 6;
+if (argc > 2)
+{
+    compressionlevel = argInt(cx, argv[arg++]);
+	if ( compressionlevel < 0 )
+		compressionlevel = 0;
+	if ( compressionlevel > 9 )
+		compressionlevel = 9;
+}
+
+if (filename_source == filename_dest)
+{
+    JS_ReportError(cx, "Cannot copy file onto itself: '%s'", filename_source);
+    return JS_FALSE;
+}
+
+std::string source = "other/";
+source += filename_source; 
+filename_source = source.c_str();
+
+std::string dest = "other/";
+dest += filename_dest;
+filename_dest = dest.c_str();
+
+if (IsValidPath(filename_source) == false)
+{
+    JS_ReportError(cx, "Invalid source path: '%s'", filename_source);
+    return JS_FALSE;
+}
+
+if (!DoesFileExist(filename_source))
+{
+    JS_ReportError(cx, "Source file not found: '%s'", filename_source);
+    return JS_FALSE;
+}
+
+if (IsValidPath(filename_dest) == false)
+{
+    JS_ReportError(cx, "Invalid destination path: '%s'", filename_dest);
+    return JS_FALSE;
+}
+
+
+// open file, and create the 'other' directory if its not there
+std::string slash = "../";
+slash += filename_dest;
+IFile* file = This->m_Engine->OpenRawFile(slash.c_str(), true);
+if (file == NULL)
+{
+    JS_ReportError(cx, "Could not write to deflated file '%s'", slash.c_str());
+    return JS_FALSE;
+}
+delete file;
+
+ZlibEngine engine;
+return_int( engine.compress( filename_source, filename_dest, compressionlevel) );
+end_func()
+
+/**
+    - Decompress a file to another file using deflate
+      The default base directory is other/, use ../ to reach other directories.
+      Returns zero on succes, nonzero if it failed.
+*/
+begin_func(InflateFile, 1)
+arg_str(filename_source);
+arg_str(filename_dest);
+
+if (filename_source == filename_dest)
+{
+    JS_ReportError(cx, "Cannot copy file onto itself: '%s'", filename_source);
+    return JS_FALSE;
+}
+
+std::string source = "other/";
+source += filename_source; 
+filename_source = source.c_str();
+
+std::string dest = "other/";
+dest += filename_dest;
+filename_dest = dest.c_str();
+
+if (IsValidPath(filename_source) == false)
+{
+    JS_ReportError(cx, "Invalid source path: '%s'", filename_source);
+    return JS_FALSE;
+}
+
+if (!DoesFileExist(filename_source))
+{
+    JS_ReportError(cx, "File not found: '%s'", filename_source);
+    return JS_FALSE;
+}
+
+if (IsValidPath(filename_dest) == false)
+{
+    JS_ReportError(cx, "Invalid destination path: '%s'", filename_dest);
+    return JS_FALSE;
+}
+
+// open file, and create the 'other' directory if its not there
+std::string slash = "../";
+slash += filename_dest;
+IFile* file = This->m_Engine->OpenRawFile(slash.c_str(), true);
+if (file == NULL)
+{
+    JS_ReportError(cx, "Could not write to inflated file '%s'", slash.c_str());
+    return JS_FALSE;
+}
+delete file;
+
+ZlibEngine engine;
+return_int( engine.decompress( filename_source, filename_dest) );
+end_func()
+
+/**
+    - Compress a bytearray and return a deflated version.
+      compressionlevel must be between 0 and 9, and is 6 by default.
+      You can limit the maximum allowed size with maxsize.
+      Returns null on failure.
+      Note: for small strings, the compressed version could actually be bigger.
+*/
+begin_func(DeflateByteArray, 1)
+arg_byte_array(ba);
+
+int compressionlevel = 6;
+if (argc > 1)
+{
+    compressionlevel = argInt(cx, argv[arg++]);
+	if ( compressionlevel < 0 )
+		compressionlevel = 0;
+	if ( compressionlevel > 9 )
+		compressionlevel = 9;
+}
+
+ZlibEngine engine;
+
+unsigned int maxsize = engine.compressBound2(ba->size);
+if (argc > 2)
+{
+	maxsize = argInt(cx, argv[arg++]);
+	if (maxsize<=0)
+		maxsize = engine.compressBound2(ba->size);
+}
+
+if (maxsize < engine.compressBound2(ba->size) )
+{
+	return_null();
+} else {
+
+	unsigned char* buffer = new unsigned char[maxsize];
+	if (!buffer)
+	{
+		JS_ReportError(cx, "Buffer overflow in ByteArray deflation, new failed");
+	    return JS_FALSE;
+	}
+
+	int outputsize = engine.compressInMemory(ba->array, ba->size,(unsigned char *) buffer, maxsize, compressionlevel);
+	if (outputsize < 0)
+	{
+		free(buffer);
+		return_null();
+	}
+
+	JSObject* array_object = CreateByteArrayObject(cx, outputsize, (byte *) buffer);
+	free(buffer);
+
+	return_object(array_object);
+}
+end_func()
+
+/**
+    - Decompress a bytearray and return an inflated version.
+      You can limit the maximum allowed size with maxsize
+      Returns null on failure.
+*/
+begin_func(InflateByteArray, 1)
+arg_byte_array(ba);
+
+ZlibEngine engine;
+
+unsigned int maxsize = engine.compressBound2(ba->size);
+if (argc > 2)
+{
+	maxsize = argInt(cx, argv[arg++]);
+	if (maxsize<=0)
+		maxsize = engine.compressBound2(ba->size);
+}
+
+if (maxsize < engine.compressBound2(ba->size) )
+{
+	return_null();
+} else {
+
+	unsigned char* buffer = new unsigned char[maxsize];
+	if (!buffer)
+	{
+		JS_ReportError(cx, "Buffer overflow in ByteArray deflation, new failed");
+	    return JS_FALSE;
+	}
+
+	int outputsize = engine.decompressInMemory(ba->array, ba->size,(unsigned char *) buffer, maxsize);
+	if (outputsize < 0)
+	{
+		free(buffer);
+		return_null();
+	}
+
+	JSObject* array_object = CreateByteArrayObject(cx, outputsize, (byte *) buffer);
+	free(buffer);
+
+	return_object(array_object);
+}
+end_func()
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // OBJECTS
 #define begin_finalizer(Object, name)                   \
@@ -13168,3 +13414,16 @@ if ( !This->m_Engine->GetMapEngine()->IsRunning() )
 This->m_Engine->GetMapEngine()->GetMap().GetMap().GetTileset().Save(filename);
 end_method()
 ////////////////////////////////////////////////////////////////////////////////
+
+
+char *append_char ( const char *s, const char c )
+{
+  std::size_t len = std::strlen ( s );
+  char *ret = new char[len + 2];
+
+  std::strcpy ( ret, s );
+  ret[len] = c;
+  ret[len + 1] = '\0';
+
+  return ret;
+}

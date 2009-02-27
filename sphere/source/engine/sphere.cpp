@@ -178,7 +178,7 @@ void RunSphere(int argc, const char** argv)
             printf ("engine.exe -game \"game_folder\"\n");
             printf ("engine.exe -game \"game_folder\" -parameters=\"...\"\n");
             printf ("engine.exe -package \"game_package.spk\"\n");
-            printf ("engine.exe -sgm \"sgmfile_with_path\"\n");
+            printf ("engine.exe -sgm \"spheregame_with_path.sgm\"\n");
             printf ("engine.exe -version\n");
             printf ("engine.exe -help\n");
             show_menu = false;

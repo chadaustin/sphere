@@ -113,6 +113,10 @@ SS_FUNCTION(OpenLog, 1)
   SS_FUNCTION(HashByteArray, 1)
   // array.length
   // array[index]
+  SS_FUNCTION(DeflateByteArray, 1)
+  SS_FUNCTION(InflateByteArray, 2)
+  SS_FUNCTION(DeflateFile, 2)
+  SS_FUNCTION(InflateFile, 2)
 
   // colors
   SS_FUNCTION(CreateColor, 3)
