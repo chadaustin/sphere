@@ -7305,7 +7305,7 @@ if (maxsize < engine.compressBound2(ba->size) )
 } else {
 
 	unsigned char* buffer = new unsigned char[maxsize];
-	if (!buffer)
+	if (buffer == 0)
 	{
 		JS_ReportError(cx, "Buffer overflow in ByteArray deflation, new failed");
 	    return JS_FALSE;
@@ -7314,14 +7314,15 @@ if (maxsize < engine.compressBound2(ba->size) )
 	int outputsize = engine.compressInMemory(ba->array, ba->size,(unsigned char *) buffer, maxsize, compressionlevel);
 	if (outputsize < 0)
 	{
-		free(buffer);
+		delete buffer;
 		return_null();
+	}else{
+
+		JSObject* array_object = CreateByteArrayObject(cx, outputsize, (byte *) buffer);
+		delete buffer; // unsigned char* buffer = new unsigned char[maxsize];
+
+		return_object(array_object);
 	}
-
-	JSObject* array_object = CreateByteArrayObject(cx, outputsize, (byte *) buffer);
-	free(buffer);
-
-	return_object(array_object);
 }
 end_func()
 
@@ -7349,7 +7350,7 @@ if (maxsize < engine.compressBound2(ba->size) )
 } else {
 
 	unsigned char* buffer = new unsigned char[maxsize];
-	if (!buffer)
+	if (buffer == 0)
 	{
 		JS_ReportError(cx, "Buffer overflow in ByteArray deflation, new failed");
 	    return JS_FALSE;
@@ -7358,14 +7359,15 @@ if (maxsize < engine.compressBound2(ba->size) )
 	int outputsize = engine.decompressInMemory(ba->array, ba->size,(unsigned char *) buffer, maxsize);
 	if (outputsize < 0)
 	{
-		free(buffer);
+		delete buffer;
 		return_null();
+	}else{
+
+		JSObject* array_object = CreateByteArrayObject(cx, outputsize, (byte *) buffer);
+		delete buffer;
+
+		return_object(array_object);
 	}
-
-	JSObject* array_object = CreateByteArrayObject(cx, outputsize, (byte *) buffer);
-	free(buffer);
-
-	return_object(array_object);
 }
 end_func()
 
@@ -13415,15 +13417,3 @@ This->m_Engine->GetMapEngine()->GetMap().GetMap().GetTileset().Save(filename);
 end_method()
 ////////////////////////////////////////////////////////////////////////////////
 
-
-char *append_char ( const char *s, const char c )
-{
-  std::size_t len = std::strlen ( s );
-  char *ret = new char[len + 2];
-
-  std::strcpy ( ret, s );
-  ret[len] = c;
-  ret[len + 1] = '\0';
-
-  return ret;
-}
