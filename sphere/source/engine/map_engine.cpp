@@ -3706,8 +3706,10 @@ CMapEngine::OpenMap(const char* filename)
         } else { // Empty music name, stop current playing music
             if (m_Music)
                 m_Music->stop();
+#if defined(WIN32) && defined(USE_MIDI)
             if (m_Midi)
                 m_Midi->stop();
+#endif
         }
 
         m_LastMusicPath = music;
