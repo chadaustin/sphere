@@ -74,7 +74,8 @@ int ZlibEngine::filetofile( const char *input,
 
     fin  = fopen( input, "rb" );
     fout = fopen( output, "wb" );
-    length = filelength( fileno( fin ) );
+	
+	statResult = stat(input,&fileStatus); length = fileStatus.st_size;
 	if (deflation)
 		deflateInit( this, level);
 	else

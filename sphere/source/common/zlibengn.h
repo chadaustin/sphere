@@ -23,7 +23,8 @@ extern "C" {
 
 
 #include <stdio.h>
-#include <io.h>
+
+#include <sys/stat.h>
 
 class ZlibEngine : public z_stream {
     public :
@@ -61,6 +62,9 @@ class ZlibEngine : public z_stream {
         int percent();
         int load_input();
         int flush_output();
+
+		struct stat fileStatus;
+		int statResult;
 //
 // Derived classes can provide versions of this
 // virtual fns in order to customize their
