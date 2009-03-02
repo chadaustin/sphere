@@ -2749,28 +2749,26 @@ CMapEngine::SetPersonScaleFactor(const char* name, double scale_w, double scale_
     int base_x2;
     int base_y2;
     //p.spriteset->GetRealBase(base_x1, base_y1, base_x2, base_y2);
-	p.spriteset->GetSpriteset().GetRealBase(base_x1, base_y1, base_x2, base_y2);
+    p.spriteset->GetSpriteset().GetRealBase(base_x1, base_y1, base_x2, base_y2);
 
     p.width =  (int)(scale_w * width);
     p.height = (int)(scale_h * height);
 
-
-      p.base_x1 = (int)(scale_w * (double)base_x1);
-      p.base_y1 = (int)(scale_h * (double)base_y1);
-      p.base_x2 = (int)(scale_w * (double)base_x2);
-      p.base_y2 = (int)(scale_h * (double)base_y2);
+    p.base_x1 = (int)(scale_w * (double)base_x1);
+    p.base_y1 = (int)(scale_h * (double)base_y1);
+    p.base_x2 = (int)(scale_w * (double)base_x2);
+    p.base_y2 = (int)(scale_h * (double)base_y2);
 
     // oopsies on scaling problems? ;)
     if (p.width  < 1) p.width  = 1;
     if (p.height < 1) p.height = 1;
 
-      if (p.base_x1 < 0 && p.width > 1 && base_x1 != 0) p.base_x1 = 1;
-      if (p.base_x2 < 0 && p.width > 1 && base_x2 != 0) p.base_x2 = 1;
-      if (p.base_y1 < 0 && p.height > 1 && base_y1 != 0) p.base_y1 = 1;
-      if (p.base_y2 < 0 && p.height > 1 && base_y2 != 0) p.base_y2 = 1;
+    if (p.base_x1 < 0 && p.width > 1 && base_x1 != 0) p.base_x1 = 1;
+    if (p.base_x2 < 0 && p.width > 1 && base_x2 != 0) p.base_x2 = 1;
+    if (p.base_y1 < 0 && p.height > 1 && base_y1 != 0) p.base_y1 = 1;
+    if (p.base_y2 < 0 && p.height > 1 && base_y2 != 0) p.base_y2 = 1;
 
-	  p.spriteset->SetBase(p.base_x1,p.base_y1,p.base_x2,p.base_y2);
-	 
+    p.spriteset->SetBase(p.base_x1,p.base_y1,p.base_x2,p.base_y2);
 
     p.scale_x = scale_w;
     p.scale_y = scale_h;
@@ -3017,12 +3015,12 @@ CMapEngine::SetPersonBase(const char* name, int x1, int y1, int x2, int y2)
         return false;
     }
 
-	m_Persons[person].base_x1 = x1;
-	m_Persons[person].base_y1 = y1;
-	m_Persons[person].base_x2 = x2;
-	m_Persons[person].base_y2 = y2;
-	m_Persons[person].spriteset->SetBase(x1, y1, x2, y2);
-	m_Persons[person].spriteset->Base2Real();
+    m_Persons[person].base_x1 = x1;
+    m_Persons[person].base_y1 = y1;
+    m_Persons[person].base_x2 = x2;
+    m_Persons[person].base_y2 = y2;
+    m_Persons[person].spriteset->SetBase(x1, y1, x2, y2);
+    m_Persons[person].spriteset->Base2Real();
 
     return true;
 }
@@ -3689,31 +3687,31 @@ CMapEngine::OpenMap(const char* filename)
     if (music != m_LastMusicPath)
     {
         // Seems like we have a new music to play
-        if(music.length()){
-
+        if (music.length())
+        {
             // start background music
-                if (m_Music)
-                {
-                    m_Music->setRepeat(true);
-                    m_Music->play();
-                }
+            if (m_Music)
+            {
+                m_Music->setRepeat(true);
+                m_Music->play();
+            }
 
 #if defined(WIN32) && defined(USE_MIDI)
-		if (m_Midi)
-		{
-			m_Midi->setRepeat(true);
-			m_Midi->play();
-		}
+            if (m_Midi)
+            {
+                m_Midi->setRepeat(true);
+                m_Midi->play();
+            }
 #endif
-		} else { // Empty music name, stop current playing music
-	        	if (m_Music)
-				m_Music->stop();
-			if (m_Midi)
-				m_Midi->stop();
-		}
+        } else { // Empty music name, stop current playing music
+            if (m_Music)
+                m_Music->stop();
+            if (m_Midi)
+                m_Midi->stop();
+        }
 
-		m_LastMusicPath = music;
-	}
+        m_LastMusicPath = music;
+    }
 
     // initialize camera
     m_Camera.x     = m_Map.GetMap().GetStartX();
@@ -4426,9 +4424,9 @@ CMapEngine::Render()
         }
 
     } // end for all layers
-	// QUESTION: Why does blue != 255?
+    // QUESTION: Why does blue != 255?
     //if (!(m_CurrentColorMask.red == 255 && m_CurrentColorMask.green == 255 && m_CurrentColorMask.blue == 255 && m_CurrentColorMask.alpha == 255))
-	if ( (m_CurrentColorMask.red-255)|(m_CurrentColorMask.green-255)|(m_CurrentColorMask.blue-255)|(m_CurrentColorMask.alpha-255) )
+    if ( (m_CurrentColorMask.red-255)|(m_CurrentColorMask.green-255)|(m_CurrentColorMask.blue-255)|(m_CurrentColorMask.alpha-255) )
         ApplyColorMask(m_CurrentColorMask);
 
     // render script
@@ -4496,18 +4494,18 @@ CMapEngine::RenderEntities(int layer, bool flipped, int offset_x, int offset_y)
                 while (draw_x + ss.GetFrameWidth() > 0)
                     draw_x -= layer_pixel_width;
                 draw_x += layer_pixel_width;
-		int start_draw_x = draw_x;
+                int start_draw_x = draw_x;
 
-		while (draw_y + ss.GetFrameHeight() > 0)
-		    draw_y -= layer_pixel_height;
-		draw_y += layer_pixel_height;
+                while (draw_y + ss.GetFrameHeight() > 0)
+                    draw_y -= layer_pixel_height;
+                draw_y += layer_pixel_height;
 
-		for (; draw_y < GetScreenHeight() + ss.GetFrameHeight(); draw_y += layer_pixel_height)
-		{
-		    int sort_y = int(draw_y);
-		    for (draw_x = start_draw_x; draw_x < GetScreenWidth() + ss.GetFrameWidth(); draw_x += layer_pixel_width)
-			rs.AddObject(draw_x, draw_y, sort_y, p.width, p.height, p.is_angled, p.angle, image, p.mask);
-		}
+                for (; draw_y < GetScreenHeight() + ss.GetFrameHeight(); draw_y += layer_pixel_height)
+                {
+                    int sort_y = int(draw_y);
+                    for (draw_x = start_draw_x; draw_x < GetScreenWidth() + ss.GetFrameWidth(); draw_x += layer_pixel_width)
+                        rs.AddObject(draw_x, draw_y, sort_y, p.width, p.height, p.is_angled, p.angle, image, p.mask);
+                }
             }
             else
             {
@@ -5989,17 +5987,17 @@ int
 CMapEngine::FindTalkingPerson(int person_index, int talk_x, int talk_y)
 {
     int tad = m_TalkActivationDistance;
-	const char* direction =  m_Persons[person_index].direction.c_str();
+    const char* direction =  m_Persons[person_index].direction.c_str();
 
     // God this was slow...
     if (strstr(direction, "north"))
         talk_y -= tad;
-	if (strstr(direction, "east"))
+    if (strstr(direction, "east"))
         talk_x += tad;
-	if (strstr(direction, "south"))
+    if (strstr(direction, "south"))
         talk_y += tad;
     if (strstr(direction, "west"))
-		talk_x -= tad;
+        talk_x -= tad;
 
     // does a person obstructs that spot
     int obs_person;
@@ -6056,7 +6054,7 @@ CMapEngine::FindObstructingPerson(int person, int x, int y)
             j = m_Persons[j].leader;
         }
 
-		// if the someone else is ignoring me, dont check collission with that person
+        // if the someone else is ignoring me, dont check collission with that person
         for (j = 0; j < int(m_Persons[person].ignored_persons.size()); j++)
         {
             if (m_Persons[person].ignored_persons[j] == m_Persons[i].name)
@@ -6085,16 +6083,14 @@ dont_skip:
         int min_jy = (j_y1 < j_y2 ? j_y1 : j_y2);
         int max_jy = (j_y1 > j_y2 ? j_y1 : j_y2);
 
-		// from: http://www.cprogramming.com/snippets/show.php?tip=39&count=30&page=0
-        if (
-			max_x < min_jx ||
-			min_x > max_jx ||
-			min_y > max_jy ||
-			max_y < min_jy
-			)
-	   		continue;
+        // from: http://www.cprogramming.com/snippets/show.php?tip=39&count=30&page=0
+        if (max_x < min_jx ||
+            min_x > max_jx ||
+            min_y > max_jy ||
+            max_y < min_jy)
+            continue;
 
-		return i;
+        return i;
 /*
             // if a corner is within the rectangle
             (j_x1 >= min_x && j_x1 <= max_x && j_y1 >= min_y && j_y1 <= max_y) ||
@@ -6103,17 +6099,17 @@ dont_skip:
             (j_x2 >= min_x && j_x2 <= max_x && j_y2 >= min_y && j_y2 <= max_y) ||
 
             // if the other rectangle has a corner in this one
-			// The only way this can happen is that one rectangle is contained in the other,
-			// http://www.gamedev.net/reference/articles/article735.asp
-			// in this case, just need to check for one corner:
-			(x1 >= min_jx && x1 <= max_jx && y1 >= min_jy && y1 <= max_jy)
+            // The only way this can happen is that one rectangle is contained in the other,
+            // http://www.gamedev.net/reference/articles/article735.asp
+            // in this case, just need to check for one corner:
+            (x1 >= min_jx && x1 <= max_jx && y1 >= min_jy && y1 <= max_jy)
 
-			// this is the original code:
+            // this is the original code:
             //(x1 >= min_jx && x1 <= max_jx && y1 >= min_jy && y1 <= max_jy) ||
             //(x1 >= min_jx && x1 <= max_jx && y2 >= min_jy && y2 <= max_jy) ||
             //(x2 >= min_jx && x2 <= max_jx && y1 >= min_jy && y1 <= max_jy) ||
             //(x2 >= min_jx && x2 <= max_jx && y2 >= min_jy && y2 <= max_jy)
-*/ 
+*/
  }
     return -1;
 }
@@ -6173,212 +6169,238 @@ CMapEngine::SaveMap(const char* filename)
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
-	BGM functions
+    BGM functions
 */
 
 bool
 CMapEngine::nameBgm(std::string& result)
 {
-	result = m_LastMusicPath;
-	return true;
+    result = m_LastMusicPath;
+    return true;
 }
 
-int 
+int
 CMapEngine::validBgm()
 {
-	if (m_Music) {
-		return 2;
-	}
+    if (m_Music)
+    {
+        return 2;
+    }
 
 #if defined(WIN32) && defined(USE_MIDI)
-	if (m_Midi)	{
-		return 1;
-	}
+    if (m_Midi)
+    {
+        return 1;
+    }
 #endif
-	return 0;
+    return 0;
 }
 
 void
 CMapEngine::playBgm()
 {
-	if (m_Music) {
-		m_Music->play();
-	}
+    if (m_Music)
+    {
+        m_Music->play();
+    }
 
 #if defined(WIN32) && defined(USE_MIDI)
-	if (m_Midi)	{
-		m_Midi->play();
-	}
+    if (m_Midi)
+    {
+        m_Midi->play();
+    }
 #endif
 }
 
 void
 CMapEngine::stopBgm()
 {
-	if (m_Music) {
-		m_Music->stop();
-	}
+    if (m_Music)
+    {
+        m_Music->stop();
+    }
 
 #if defined(WIN32) && defined(USE_MIDI)
-	if (m_Midi)	{
-		m_Midi->stop();
-	}
+    if (m_Midi)
+    {
+        m_Midi->stop();
+    }
 #endif
 }
 
 bool
 CMapEngine::isPlayingBgm()
 {
-	if (m_Music) {
-		return m_Music->isPlaying();
-	}
+    if (m_Music)
+    {
+        return m_Music->isPlaying();
+    }
 
 #if defined(WIN32) && defined(USE_MIDI)
-	if (m_Midi)	{
-		return m_Midi->isPlaying();
-	}
+    if (m_Midi)
+    {
+        return m_Midi->isPlaying();
+    }
 #endif
-	return false;
+    return false;
 }
 
 void
 CMapEngine::resetBgm()
 {
-	if (m_Music) {
-		m_Music->reset();
-	}
+    if (m_Music)
+    {
+        m_Music->reset();
+    }
 }
 
 void
 CMapEngine::setRepeatBgm(bool repeat)
 {
-	if (m_Music) {
-		m_Music->setRepeat(repeat);
-	}
+    if (m_Music)
+    {
+        m_Music->setRepeat(repeat);
+    }
 
 #if defined(WIN32) && defined(USE_MIDI)
-	if (m_Midi)	{
-		m_Midi->setRepeat(repeat);
-	}
+    if (m_Midi)
+    {
+        m_Midi->setRepeat(repeat);
+    }
 #endif
 }
 
 bool
 CMapEngine::getRepeatBgm()
 {
-	if (m_Music) {
-		return m_Music->getRepeat();
-	}
+    if (m_Music)
+    {
+        return m_Music->getRepeat();
+    }
 
 #if defined(WIN32) && defined(USE_MIDI)
-	if (m_Midi)	{
-		return m_Midi->getRepeat();
-	}
+    if (m_Midi)
+    {
+        return m_Midi->getRepeat();
+    }
 #endif
-	return false;
+    return false;
 }
 
 void
 CMapEngine::setVolumeBgm(float volume)
 {
-	if (m_Music) {
-		return m_Music->setVolume(volume);
-	}
+    if (m_Music)
+    {
+        return m_Music->setVolume(volume);
+    }
 }
 
 float
 CMapEngine::getVolumeBgm()
 {
-	if (m_Music) {
-		return m_Music->getVolume();
-	}
-	return -1;
+    if (m_Music)
+    {
+        return m_Music->getVolume();
+    }
+    return -1;
 }
 
 void
 CMapEngine::setPanBgm(float pan)
 {
-	if (m_Music) {
-		return m_Music->setPan(pan);
-	}
+    if (m_Music)
+    {
+        return m_Music->setPan(pan);
+    }
 }
 
 float
 CMapEngine::getPanBgm()
 {
-	if (m_Music) {
-		return m_Music->getPan();
-	}
-	return 0;
+    if (m_Music)
+    {
+        return m_Music->getPan();
+    }
+    return 0;
 }
 
 void
 CMapEngine::setPitchShiftBgm(float shift)
 {
-	if (m_Music) {
-		return m_Music->setPitchShift(shift);
-	}
+    if (m_Music)
+    {
+        return m_Music->setPitchShift(shift);
+    }
 }
 
 float
 CMapEngine::getPitchShiftBgm()
 {
-	if (m_Music) {
-		return m_Music->getPitchShift();
-	}
-	return 0;
+    if (m_Music)
+    {
+        return m_Music->getPitchShift();
+    }
+    return 0;
 }
 
 bool
 CMapEngine::isSeekableBgm()
 {
-	if (m_Music) {
-		return m_Music->isSeekable();
-	}
-	return false;
+    if (m_Music)
+    {
+        return m_Music->isSeekable();
+    }
+    return false;
 }
 
 int
 CMapEngine::getLengthBgm()
 {
-	if (m_Music) {
-		return m_Music->getLength();
-	}
+    if (m_Music)
+    {
+        return m_Music->getLength();
+    }
 
 #if defined(WIN32) && defined(USE_MIDI)
-	if (m_Midi)	{
-		return m_Midi->getLength();
-	}
+    if (m_Midi)
+    {
+        return m_Midi->getLength();
+    }
 #endif
-	return false;
+    return false;
 }
 
 
 void
 CMapEngine::setPositionBgm(int position)
 {
-	if (m_Music) {
-		return m_Music->setPosition(position);
-	}
+    if (m_Music)
+    {
+        return m_Music->setPosition(position);
+    }
 
 #if defined(WIN32) && defined(USE_MIDI)
-	if (m_Midi)	{
-		return m_Midi->setPosition(position);
-	}
+    if (m_Midi)
+    {
+        return m_Midi->setPosition(position);
+    }
 #endif
 }
 
 int
 CMapEngine::getPositionBgm()
 {
-	if (m_Music) {
-		return m_Music->getPosition();
-	}
+    if (m_Music)
+    {
+        return m_Music->getPosition();
+    }
 
 #if defined(WIN32) && defined(USE_MIDI)
-	if (m_Midi)	{
-		return m_Midi->getPosition();
-	}
+    if (m_Midi)
+    {
+        return m_Midi->getPosition();
+    }
 #endif
-	return 0;
+    return 0;
 }
