@@ -66,6 +66,8 @@ const dword SS_PARTICLE_RENDERER_MAGIC       = 0x80012345;
 const dword SS_PARTICLE_CALLBACK_MAGIC       = 0x80123456;
 const dword SS_PARTICLE_SWARM_RENDERER_MAGIC = 0x81234567;
 
+// Addition to jsapi.h
+#define JSVAL_IS_OBJECTNOTNULL(v)      ( (JSVAL_TAG(v) == JSVAL_OBJECT) && ((v) != JSVAL_NULL) && ((v) != JSVAL_VOID))
 
 struct SS_OBJECT
 {
@@ -902,7 +904,7 @@ inline void USED(T /*t*/)
 ///////////////////////////////////////////////////////////
 inline ParticleSystemBase* argParticleSystem(JSContext* cx, jsval arg)
 {
-    if (!JSVAL_IS_OBJECT(arg))
+    if (!JSVAL_IS_OBJECTNOTNULL(arg))
     {
         JS_ReportError(cx, "Invalid particle system object");
         return NULL;
@@ -945,7 +947,7 @@ inline ParticleSystemBase* argParticleSystem(JSContext* cx, jsval arg)
 ///////////////////////////////////////////////////////////
 inline RGBA argColor(JSContext* cx, jsval arg)
 {
-    if (!JSVAL_IS_OBJECT(arg))
+    if (!JSVAL_IS_OBJECTNOTNULL(arg))
     {
         JS_ReportError(cx, "Invalid color object");
         return CreateRGBA(0, 0, 0, 0);
@@ -976,7 +978,7 @@ inline RGBA argColor(JSContext* cx, jsval arg)
 ///////////////////////////////////////////////////////////
 inline CImage32* argSurface(JSContext* cx, jsval arg)
 {
-    if (!JSVAL_IS_OBJECT(arg))
+    if (!JSVAL_IS_OBJECTNOTNULL(arg))
     {
         JS_ReportError(cx, "Invalid surface object");
         return NULL;
@@ -1007,7 +1009,7 @@ inline CImage32* argSurface(JSContext* cx, jsval arg)
 ///////////////////////////////////////////////////////////
 inline CColorMatrix* argColorMatrix(JSContext* cx, jsval arg)
 {
-    if (!JSVAL_IS_OBJECT(arg))
+    if (!JSVAL_IS_OBJECTNOTNULL(arg))
     {
         JS_ReportError(cx, "Invalid colormatrix object");
         return NULL;
@@ -1038,18 +1040,12 @@ inline CColorMatrix* argColorMatrix(JSContext* cx, jsval arg)
 ///////////////////////////////////////////////////////////
 inline SS_BYTEARRAY* argByteArray(JSContext* cx, jsval arg)
 {
-    if (!JSVAL_IS_OBJECT(arg))
+    if (!JSVAL_IS_OBJECTNOTNULL(arg))
     {
-        JS_ReportError(cx, "Invalid byte array object");
+		JS_ReportError(cx, "Invalid byte array object");
         return NULL;
     }
 
-    if (JS_IsArrayObject(cx, JSVAL_TO_OBJECT(arg)))
-    {
-
-        JS_ReportError(cx, "Invalid bytearray object");
-        return NULL;
-    }
     SS_BYTEARRAY* array = (SS_BYTEARRAY*)JS_GetPrivate(cx, JSVAL_TO_OBJECT(arg));
     if (array == NULL)
     {
@@ -1069,7 +1065,7 @@ inline SS_BYTEARRAY* argByteArray(JSContext* cx, jsval arg)
 ///////////////////////////////////////////////////////////
 inline SS_IMAGE* argImage(JSContext* cx, jsval arg)
 {
-    if (!JSVAL_IS_OBJECT(arg))
+    if (!JSVAL_IS_OBJECTNOTNULL(arg))
     {
         JS_ReportError(cx, "Invalid image object");
         return NULL;
@@ -1094,7 +1090,7 @@ inline SS_IMAGE* argImage(JSContext* cx, jsval arg)
 ///////////////////////////////////////////////////////////
 inline SS_SFXR* argSfxr(JSContext* cx, jsval arg)
 {
-    if (!JSVAL_IS_OBJECT(arg))
+    if (!JSVAL_IS_OBJECTNOTNULL(arg))
     {
         JS_ReportError(cx, "Invalid sfxr object");
         return NULL;
@@ -1124,7 +1120,7 @@ inline SS_SFXR* argSfxr(JSContext* cx, jsval arg)
 ///////////////////////////////////////////////////////////
 inline SS_FONT* argFont(JSContext* cx, jsval arg)
 {
-    if (!JSVAL_IS_OBJECT(arg))
+    if (!JSVAL_IS_OBJECTNOTNULL(arg))
     {
         JS_ReportError(cx, "Invalid font object");
         return NULL;
@@ -2086,7 +2082,7 @@ end_func()
 inline VECTOR_INT* getObjCoordinates(JSContext* cx, jsval arg)
 {
 
-    if (!JSVAL_IS_OBJECT(arg))
+    if (!JSVAL_IS_OBJECTNOTNULL(arg))
     {
         return NULL;
     }
@@ -7278,7 +7274,6 @@ end_func()
 */
 begin_func(DeflateByteArray, 1)
 arg_byte_array(ba);
-
 int compressionlevel = 6;
 if (argc > 1)
 {
@@ -7314,12 +7309,12 @@ if (maxsize < engine.compressBound2(ba->size) )
 	int outputsize = engine.compressInMemory(ba->array, ba->size,(unsigned char *) buffer, maxsize, compressionlevel);
 	if (outputsize < 0)
 	{
-		delete buffer;
+		delete[] buffer;
 		return_null();
 	}else{
 
 		JSObject* array_object = CreateByteArrayObject(cx, outputsize, (byte *) buffer);
-		delete buffer; // unsigned char* buffer = new unsigned char[maxsize];
+		delete[] buffer; // unsigned char* buffer = new unsigned char[maxsize];
 
 		return_object(array_object);
 	}
@@ -7359,12 +7354,12 @@ if (maxsize < engine.compressBound2(ba->size) )
 	int outputsize = engine.decompressInMemory(ba->array, ba->size,(unsigned char *) buffer, maxsize);
 	if (outputsize < 0)
 	{
-		delete buffer;
+		delete[] buffer;
 		return_null();
 	}else{
 
 		JSObject* array_object = CreateByteArrayObject(cx, outputsize, (byte *) buffer);
-		delete buffer;
+		delete[] buffer;
 
 		return_object(array_object);
 	}
@@ -9955,12 +9950,6 @@ object->sound = NULL;
 if(object->memoryfile)
 	object->memoryfile->unref();
 
-
-//if (object->memoryfile)
-//{
-//	JS_ReportError(cx, "DEBUG: Memoryfile still referenced!");
-//}
-
 object->memoryfile = NULL;
 end_finalizer()
 
@@ -10164,11 +10153,12 @@ CScript::CreateSfxrObject(JSContext* cx, SSFXR* sfxr)
 			{ "setArpeggio",	ssSfxrSetArpeggio,	1, 0, 0 },
 			{ "getArpeggioSpeed",	ssSfxrGetArpeggioSpeed,	0, 0, 0 },
 			{ "setArpeggioSpeed",	ssSfxrSetArpeggioSpeed,	1, 0, 0 },
+			{ "clone",	ssSfxrClone,	0, 0, 0 },
 			{ 0, 0, 0, 0, 0 },
         };
     JS_DefineFunctions(cx, object, fs);
 
-    // attach the font to this object
+    // attach the sfxr to this object
     SS_SFXR* sfxr_object = new SS_SFXR;
 
     if (!sfxr_object)
@@ -10514,7 +10504,13 @@ arg_double(v);
 object->sfxr->setArpeggioSpeed((float)v);
 end_method()
 
-
+////////////////////////////////////////
+/**
+    - creates a copy of the sfxr object
+*/
+begin_method(SS_SFXR, ssSfxrClone, 0)
+return_object(CreateSfxrObject(cx, object->sfxr->Clone()));
+end_method()
 
 
 ////////////////////////////////////////

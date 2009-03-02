@@ -322,6 +322,7 @@ private:
   declare_method(ssSfxrGetSoundEffect);
   declare_method(ssSfxrReset);
   declare_method(ssSfxrCalcSampleSize);
+  declare_method(ssSfxrClone);
 
  // fonts
   declare_constructor2(CreateFontObject, SFONT* font, bool destroy);
