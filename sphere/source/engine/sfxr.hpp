@@ -8,7 +8,7 @@
 
 #include <stack>
 #include <string>
-#include <stdio.h>
+#include <cstdio>
 #include <audiere.h>
 #include "audio.hpp"
 

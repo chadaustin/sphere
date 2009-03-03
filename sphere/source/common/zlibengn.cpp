@@ -112,11 +112,11 @@ int ZlibEngine::filetofile( const char *input,
 	else
 		inflateEnd( this );
     if ( m_AbortFlag )
-        status( "User Abort" );
+        status( (char *)"User Abort" );
     else if ( err != Z_OK && err != Z_STREAM_END )
-        status( "Zlib Error" );
+        status( (char *)"Zlib Error" );
     else {
-        status( "Success" );
+        status( (char *)"Success" );
         err = Z_OK;
     }
     if ( fin )

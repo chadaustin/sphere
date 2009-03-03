@@ -37,4 +37,5 @@ env.Library('common', Split("""
     resample.cpp
     md5.c
     write_mng.cpp
+    zlibengn.cpp
 """))

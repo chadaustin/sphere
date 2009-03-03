@@ -25,9 +25,11 @@ engine_sources = Split("""
     parameters.cpp
     script.cpp
     sfont.cpp
+    sfxr.cpp
     simage.cpp
     smap.cpp
     sphere.cpp
+    ssfxr.cpp
     sspriteset.cpp
     swindowstyle.cpp
     PlayerConfig.cpp

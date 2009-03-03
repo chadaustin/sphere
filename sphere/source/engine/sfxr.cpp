@@ -1,5 +1,6 @@
 #include "sfxr.hpp"
-#include <math.h>
+#include <cstdlib>
+#include <cmath>
 
 /*
 	Portions (huge portions, actually) of this SFXR library taken from 'sfxr', 

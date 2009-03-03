@@ -391,7 +391,6 @@ static bool DoesFileExist(const char* pathandfile)
 	FILE *f = fopen(pathandfile, "r"); 
 	bool found = f ? true: false;
 	if(found) fclose(f);
-	delete f;
 	return found;
 }
 
