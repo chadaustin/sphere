@@ -11037,7 +11037,7 @@ void CalculateRotateBlitPoints(int tx[4], int ty[4], double x, double y, double 
     double r = sqrt(w * w + h * h) / (double)2.0;
 
     // various useful angles
-    const double PI = 3.1415927;
+    const double PI = 3.14159265358979323846;
     const double angle = atan((double)w / (double)h);  // h shouldn't be zero...
     double upper_left_angle  = -angle;
     double upper_right_angle = angle;
@@ -12649,10 +12649,20 @@ CScript::CreateColorMatrixObject(JSContext* cx, CColorMatrix* colormatrix)
     JS_DefineFunctions(cx, object, fs);
 
     // define properties
-    //JS_DefineProperty(cx, object, "width",  INT_TO_JSVAL(surface->GetWidth()),  JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
-    //JS_DefineProperty(cx, object, "height", INT_TO_JSVAL(surface->GetHeight()), JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
+    JS_DefineProperty(cx, object, "rn", INT_TO_JSVAL(colormatrix->rn), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+    JS_DefineProperty(cx, object, "rr", INT_TO_JSVAL(colormatrix->rr), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+    JS_DefineProperty(cx, object, "rg", INT_TO_JSVAL(colormatrix->rg), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+    JS_DefineProperty(cx, object, "rb", INT_TO_JSVAL(colormatrix->rb), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+    JS_DefineProperty(cx, object, "gn", INT_TO_JSVAL(colormatrix->gn), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+    JS_DefineProperty(cx, object, "gr", INT_TO_JSVAL(colormatrix->gr), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+    JS_DefineProperty(cx, object, "gg", INT_TO_JSVAL(colormatrix->gg), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+    JS_DefineProperty(cx, object, "gb", INT_TO_JSVAL(colormatrix->gb), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+    JS_DefineProperty(cx, object, "bn", INT_TO_JSVAL(colormatrix->bn), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+    JS_DefineProperty(cx, object, "br", INT_TO_JSVAL(colormatrix->br), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+    JS_DefineProperty(cx, object, "bg", INT_TO_JSVAL(colormatrix->bg), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+    JS_DefineProperty(cx, object, "bb", INT_TO_JSVAL(colormatrix->bb), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 
-    // attach the surface to this object
+    // attach the colormatrix to this object
     SS_COLORMATRIX* colormatrix_object = new SS_COLORMATRIX;
 
     if (!colormatrix_object)
