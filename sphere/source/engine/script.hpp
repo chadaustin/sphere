@@ -209,6 +209,7 @@ private:
   declare_finalizer(ssFinalizeColor);
   declare_property(ssColorGetProperty);
   declare_property(ssColorSetProperty);
+  declare_method(ssColorToJSON);
 
   // spriteset
   declare_constructor1(CreateSpritesetObject, SSPRITESET* spriteset);
@@ -420,6 +421,9 @@ private:
   // color matrix
   declare_constructor1(CreateColorMatrixObject, CColorMatrix* colormatrix);
   declare_finalizer(ssFinalizeColorMatrix);
+  declare_method(ssColorMatrixToJSON);
+  declare_property(ssColorMatrixGetProperty);
+  declare_property(ssColorMatrixSetProperty);
 
   // animations
   declare_constructor1(CreateAnimationObject, IAnimation* animation);

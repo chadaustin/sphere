@@ -69,6 +69,15 @@ const dword SS_PARTICLE_SWARM_RENDERER_MAGIC = 0x81234567;
 // Addition to jsapi.h
 #define JSVAL_IS_OBJECTNOTNULL(v)      ( (JSVAL_TAG(v) == JSVAL_OBJECT) && ((v) != JSVAL_NULL) && ((v) != JSVAL_VOID))
 
+// inline to convert int's to strings (used in ToJSON functions)
+template <class T>
+inline std::string to_string (const T& t)
+{
+std::stringstream ss;
+ss << t;
+return ss.str();
+}
+
 struct SS_OBJECT
 {
     dword magic;  // for object verification
@@ -9030,6 +9039,14 @@ CScript::CreateColorObject(JSContext* cx, RGBA color)
         };
     JS_DefineProperties(cx, object, ps);
 
+    // assign methods to the object
+    static JSFunctionSpec fs[] =
+        {
+            { "toJSON",        ssColorToJSON,    0, },
+            { 0, 0, 0, 0, 0 },
+        };
+    JS_DefineFunctions(cx, object, fs);
+
     // attach the color to this object
     SS_COLOR* color_object = new SS_COLOR;
 
@@ -9086,6 +9103,18 @@ case 3:
     break;
 }
 end_property()
+
+/**
+    - exports the Color to a string, used internally by JSON
+*/
+begin_method(SS_COLOR, ssColorToJSON, 0)
+std::string json = "CreateColor("; 
+json.append( to_string((int)object->color.red) ); json.append( "," );
+json.append( to_string((int)object->color.green) ); json.append( "," );
+json.append( to_string((int)object->color.blue) ); json.append( "," );
+json.append( to_string((int)object->color.alpha) ); json.append( ")" );
+return_str( json.c_str() );
+end_method()
 
 ////////////////////////////////////////
 ////////////////////////////////////////
@@ -12644,23 +12673,29 @@ CScript::CreateColorMatrixObject(JSContext* cx, CColorMatrix* colormatrix)
     static JSFunctionSpec fs[] =
         {
             //{ "set",              ssColorMatrixSet,         12, 0, 0 },
+            { "toJSON",        ssColorMatrixToJSON,    0, },
             { 0, 0, 0, 0, 0 },
         };
     JS_DefineFunctions(cx, object, fs);
 
-    // define properties
-    JS_DefineProperty(cx, object, "rn", INT_TO_JSVAL(colormatrix->rn), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
-    JS_DefineProperty(cx, object, "rr", INT_TO_JSVAL(colormatrix->rr), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
-    JS_DefineProperty(cx, object, "rg", INT_TO_JSVAL(colormatrix->rg), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
-    JS_DefineProperty(cx, object, "rb", INT_TO_JSVAL(colormatrix->rb), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
-    JS_DefineProperty(cx, object, "gn", INT_TO_JSVAL(colormatrix->gn), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
-    JS_DefineProperty(cx, object, "gr", INT_TO_JSVAL(colormatrix->gr), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
-    JS_DefineProperty(cx, object, "gg", INT_TO_JSVAL(colormatrix->gg), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
-    JS_DefineProperty(cx, object, "gb", INT_TO_JSVAL(colormatrix->gb), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
-    JS_DefineProperty(cx, object, "bn", INT_TO_JSVAL(colormatrix->bn), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
-    JS_DefineProperty(cx, object, "br", INT_TO_JSVAL(colormatrix->br), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
-    JS_DefineProperty(cx, object, "bg", INT_TO_JSVAL(colormatrix->bg), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
-    JS_DefineProperty(cx, object, "bb", INT_TO_JSVAL(colormatrix->bb), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+    // assign properties
+    static JSPropertySpec ps[] =
+        {
+            { "rn",  0, JSPROP_PERMANENT, ssColorMatrixGetProperty, ssColorMatrixSetProperty },
+            { "rr",  1, JSPROP_PERMANENT, ssColorMatrixGetProperty, ssColorMatrixSetProperty },
+            { "rg",  2, JSPROP_PERMANENT, ssColorMatrixGetProperty, ssColorMatrixSetProperty },
+            { "rb",  3, JSPROP_PERMANENT, ssColorMatrixGetProperty, ssColorMatrixSetProperty },
+            { "gn",  4, JSPROP_PERMANENT, ssColorMatrixGetProperty, ssColorMatrixSetProperty },
+            { "gr",  5, JSPROP_PERMANENT, ssColorMatrixGetProperty, ssColorMatrixSetProperty },
+            { "gg",  6, JSPROP_PERMANENT, ssColorMatrixGetProperty, ssColorMatrixSetProperty },
+            { "gb",  7, JSPROP_PERMANENT, ssColorMatrixGetProperty, ssColorMatrixSetProperty },
+            { "bn",  8, JSPROP_PERMANENT, ssColorMatrixGetProperty, ssColorMatrixSetProperty },
+            { "br",  9, JSPROP_PERMANENT, ssColorMatrixGetProperty, ssColorMatrixSetProperty },
+            { "bg", 10, JSPROP_PERMANENT, ssColorMatrixGetProperty, ssColorMatrixSetProperty },
+            { "bb", 11, JSPROP_PERMANENT, ssColorMatrixGetProperty, ssColorMatrixSetProperty },
+            { 0, 0, 0, 0, 0 },
+        };
+    JS_DefineProperties(cx, object, ps);
 
     // attach the colormatrix to this object
     SS_COLORMATRIX* colormatrix_object = new SS_COLORMATRIX;
@@ -12672,6 +12707,70 @@ CScript::CreateColorMatrixObject(JSContext* cx, CColorMatrix* colormatrix)
 
     return object;
 }
+
+////////////////////////////////////////
+begin_property(SS_COLORMATRIX, ssColorMatrixGetProperty)
+int prop_id = argInt(cx, id);
+switch (prop_id)
+{
+case  0: *vp = INT_TO_JSVAL(object->colormatrix->rn); break;
+case  1: *vp = INT_TO_JSVAL(object->colormatrix->rr); break;
+case  2: *vp = INT_TO_JSVAL(object->colormatrix->rg); break;
+case  3: *vp = INT_TO_JSVAL(object->colormatrix->rb); break;
+case  4: *vp = INT_TO_JSVAL(object->colormatrix->gn); break;
+case  5: *vp = INT_TO_JSVAL(object->colormatrix->gr); break;
+case  6: *vp = INT_TO_JSVAL(object->colormatrix->gg); break;
+case  7: *vp = INT_TO_JSVAL(object->colormatrix->gb); break;
+case  8: *vp = INT_TO_JSVAL(object->colormatrix->bn); break;
+case  9: *vp = INT_TO_JSVAL(object->colormatrix->br); break;
+case 10: *vp = INT_TO_JSVAL(object->colormatrix->bg); break;
+case 11: *vp = INT_TO_JSVAL(object->colormatrix->bb); break;
+default:
+    *vp = JSVAL_NULL;
+    break;
+}
+end_property()
+
+////////////////////////////////////////
+begin_property(SS_COLORMATRIX, ssColorMatrixSetProperty)
+int prop_id = argInt(cx, id);
+switch (prop_id)
+{
+case  0: object->colormatrix->rn = argInt(cx, *vp); break;
+case  1: object->colormatrix->rr = argInt(cx, *vp); break;
+case  2: object->colormatrix->rg = argInt(cx, *vp); break;
+case  3: object->colormatrix->rb = argInt(cx, *vp); break;
+case  4: object->colormatrix->gn = argInt(cx, *vp); break;
+case  5: object->colormatrix->gr = argInt(cx, *vp); break;
+case  6: object->colormatrix->gg = argInt(cx, *vp); break;
+case  7: object->colormatrix->gb = argInt(cx, *vp); break;
+case  8: object->colormatrix->bn = argInt(cx, *vp); break;
+case  9: object->colormatrix->br = argInt(cx, *vp); break;
+case 10: object->colormatrix->bg = argInt(cx, *vp); break;
+case 11: object->colormatrix->bb = argInt(cx, *vp); break;
+}
+end_property()
+
+
+/**
+    - exports the ColorMatrix to a string, used internally by JSON
+*/
+begin_method(SS_COLORMATRIX, ssColorMatrixToJSON, 0)
+std::string json = "CreateColorMatrix(";
+json.append( to_string(object->colormatrix->rn) ); json.append( "," );
+json.append( to_string(object->colormatrix->rr) ); json.append( "," );
+json.append( to_string(object->colormatrix->rg) ); json.append( "," );
+json.append( to_string(object->colormatrix->rb) ); json.append( "," );
+json.append( to_string(object->colormatrix->gn) ); json.append( "," );
+json.append( to_string(object->colormatrix->gr) ); json.append( "," );
+json.append( to_string(object->colormatrix->gg) ); json.append( "," );
+json.append( to_string(object->colormatrix->gb) ); json.append( "," );
+json.append( to_string(object->colormatrix->bn) ); json.append( "," );
+json.append( to_string(object->colormatrix->br) ); json.append( "," );
+json.append( to_string(object->colormatrix->bg) ); json.append( "," );
+json.append( to_string(object->colormatrix->bb) ); json.append( ")" );
+return_str( json.c_str() );
+end_method()
 
 ////////////////////////////////////////
 begin_finalizer(SS_COLORMATRIX, ssFinalizeColorMatrix)
