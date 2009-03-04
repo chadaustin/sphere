@@ -71,7 +71,8 @@ files.extend(map(lambda n: 'online/' + n,
               'links.txt']))
 
 files.extend(map(lambda n: 'running/' + n,
-             ['index.txt',
+             ['command_line.txt',
+              'index.txt',
               'keyboard_shortcuts.txt',
               'linux_config.txt',
               'packages.txt',
