@@ -19,7 +19,7 @@
 			OutputDirectory=".\output/Debug"
 			IntermediateDirectory=".\output/Debug"
 			ConfigurationType="1"
-			InheritedPropertySheets=".\debug.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -81,7 +81,7 @@
 				OutputFile="../../sphere/$(ProjectName)d.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;C:\Documents and Settings\nilton\My Documents\nilton\RPG\source\sphere\third-party-msvc\include\smjs&quot;;&quot;C:\Documents and Settings\nilton\My Documents\nilton\RPG\source\sphere\third-party-msvc\include&quot;;&quot;C:\Program Files\PSDK\misc&quot;;&quot;C:\Program Files\PSDK\Include&quot;;&quot;C:\Program Files\PSDK\Lib&quot;;&quot;C:\Documents and Settings\nilton\My Documents\nilton\RPG\source\sphere\third-party-msvc\lib&quot;;&quot;C:\Documents and Settings\nilton\My Documents\nilton\RPG\source\sphere\third-party-msvc\dll&quot;;&quot;../../third-party-msvc/lib&quot;"
+				AdditionalLibraryDirectories="../../third-party-msvc/lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\output/Debug/engine.pdb"
 				SubSystem="2"
@@ -146,7 +146,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				FavorSizeOrSpeed="1"
+				FavorSizeOrSpeed="0"
 				AdditionalIncludeDirectories="&quot;../../third-party-msvc/include&quot;;&quot;../../third-party-msvc/include/smjs&quot;"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;NDEBUG;WIN32;_WINDOWS;WIN32_LEAN_AND_MEAN;STRICT;JSFILE;ZLIB_DLL;MNG_USE_DLL;MNG_SKIP_LCMS;MNG_SKIP_IJG6B;NOMINMAX;USE_MIDI;USE_SPRITESET_SERVER;XP_WIN"
 				StringPooling="true"
@@ -179,111 +179,9 @@
 				AdditionalDependencies="ws2_32.lib corona.lib audiere.lib winmm.lib js32.lib zlib.lib libmng.lib"
 				ShowProgress="0"
 				OutputFile="../../sphere/$(ProjectName).exe"
-				Version="1.6"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;../../third-party-msvc/lib&quot;;&quot;../../third-party-msvc/include&quot;;&quot;../../third-party-msvc/include/dll&quot;"
-				GenerateManifest="true"
-				SubSystem="2"
-				OptimizeForWindows98="0"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
-				TargetMachine="1"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="Release2|Win32"
-			OutputDirectory="$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;NDEBUG"
-				MkTypLibCompatible="true"
-				SuppressStartupBanner="true"
-				TargetEnvironment="1"
-				TypeLibraryName=".\output/release/engine.tlb"
-				HeaderFileName=""
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="2"
-				InlineFunctionExpansion="1"
-				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="&quot;../../third-party-msvc/include&quot;;&quot;../../third-party-msvc/include/smjs&quot;"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;NDEBUG;WIN32;_WINDOWS;WIN32_LEAN_AND_MEAN;STRICT;JSFILE;ZLIB_DLL;MNG_USE_DLL;MNG_SKIP_LCMS;MNG_SKIP_IJG6B;NOMINMAX;USE_MIDI;USE_SPRITESET_SERVER;XP_WIN"
-				StringPooling="true"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
-				PrecompiledHeaderFile=".\output/release/engine.pch"
-				AssemblerOutput="4"
-				AssemblerListingLocation=".\output/release/"
-				ObjectFile=".\output/release/"
-				ProgramDataBaseFileName=".\output/release/"
-				BrowseInformation="0"
-				WarningLevel="1"
-				SuppressStartupBanner="true"
-				CompileAs="0"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;NDEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-				LinkLibraryDependencies="false"
-				AdditionalDependencies="ws2_32.lib corona.lib audiere.lib winmm.lib js32.lib zlib.lib libmng.lib"
-				ShowProgress="0"
-				OutputFile="../../sphere/$(ProjectName).exe"
-				Version="1.6"
-				LinkIncremental="1"
-				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;../../third-party-msvc/lib&quot;;&quot;../../third-party-msvc/include&quot;;&quot;../../third-party-msvc/include/dll&quot;"
+				AdditionalLibraryDirectories="../../third-party-msvc/lib"
 				GenerateManifest="true"
 				SubSystem="2"
 				OptimizeForWindows98="0"
@@ -348,17 +246,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -404,17 +291,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -488,17 +364,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -544,17 +409,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -620,17 +474,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -676,17 +519,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -752,17 +584,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -808,17 +629,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -884,17 +694,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -950,17 +749,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -990,14 +778,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\sfxr.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\sfxr.hpp"
-				>
-			</File>
-			<File
 				RelativePath="smap.cpp"
 				>
 				<FileConfiguration
@@ -1014,17 +794,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1090,17 +859,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -1156,17 +914,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -1200,14 +947,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ssfxr.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ssfxr.hpp"
-				>
-			</File>
-			<File
 				RelativePath="sspriteset.cpp"
 				>
 				<FileConfiguration
@@ -1224,17 +963,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1290,17 +1018,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1373,15 +1090,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCResourceCompilerTool"
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						AdditionalIncludeDirectories="win32"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -1417,17 +1125,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1493,17 +1190,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -1549,17 +1235,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1629,17 +1304,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -1681,17 +1345,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1757,17 +1410,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -1809,17 +1451,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1885,17 +1516,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -1941,17 +1561,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2017,17 +1626,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -2073,17 +1671,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2149,17 +1736,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -2205,17 +1781,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2281,17 +1846,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -2337,17 +1891,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2413,17 +1956,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -2469,17 +2001,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2545,17 +2066,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -2601,17 +2111,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2689,17 +2188,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -2745,17 +2233,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2821,17 +2298,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -2887,17 +2353,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -2931,10 +2386,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\minmax.h"
-				>
-			</File>
-			<File
 				RelativePath="..\common\MNGAnimation.cpp"
 				>
 				<FileConfiguration
@@ -2951,17 +2402,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -3027,17 +2467,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -3093,17 +2522,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -3149,17 +2567,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -3229,17 +2636,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -3289,17 +2685,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -3377,17 +2762,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -3433,17 +2807,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -3509,17 +2872,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release2|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Profile|Win32"
 					>
 					<Tool
@@ -3565,17 +2917,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -3635,17 +2976,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release2|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
