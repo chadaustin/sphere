@@ -73,6 +73,7 @@ CSpriteBaseView::Drag(int x, int y)
   int x1, y1, x2, y2;
   m_Spriteset->GetBase(x1, y1, x2, y2);
   m_Spriteset->SetBase(x1, y1, x, y);
+  m_Spriteset->Base2Real();
   m_Handler->SBV_SpritesetModified();
   UpdateStatusBar();
   Invalidate();
