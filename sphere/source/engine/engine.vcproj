@@ -77,7 +77,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
-				AdditionalDependencies="ws2_32.lib corona.lib audiere.lib winmm.lib js32.lib zlib.lib libmng.lib"
+				AdditionalDependencies="ws2_32.lib corona.lib audiere.lib winmm.lib js32.lib zlib1.lib libmng.lib"
 				OutputFile="../../sphere/$(ProjectName)d.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -176,7 +176,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
-				AdditionalDependencies="ws2_32.lib corona.lib audiere.lib winmm.lib js32.lib zlib.lib libmng.lib"
+				AdditionalDependencies="ws2_32.lib corona.lib audiere.lib winmm.lib js32.lib zlib1.lib libmng.lib"
 				ShowProgress="0"
 				OutputFile="../../sphere/$(ProjectName).exe"
 				LinkIncremental="1"
@@ -778,6 +778,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\sfxr.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\sfxr.hpp"
+				>
+			</File>
+			<File
 				RelativePath="smap.cpp"
 				>
 				<FileConfiguration
@@ -944,6 +952,14 @@
 			</File>
 			<File
 				RelativePath="ss_functions.table"
+				>
+			</File>
+			<File
+				RelativePath=".\ssfxr.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ssfxr.hpp"
 				>
 			</File>
 			<File
@@ -3012,6 +3028,14 @@
 			</File>
 			<File
 				RelativePath="..\common\WindowStyle.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\common\zlibengn.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\common\zlibengn.h"
 				>
 			</File>
 		</Filter>
