@@ -3,6 +3,7 @@
 
 
 #include <list>
+#include <vector>
 
 #include "ParticleSystemBase.hpp"
 
@@ -59,15 +60,26 @@ class ParticleSystemParent : public ParticleSystemBase
         virtual void Update();
         virtual void Render();
 
-        dword Size() const;
-
         void Adopt(ParticleSystemBase*);
         void Host(ParticleSystemBase*);
 
-        ParticleSystemBase* Find(dword id);
+        dword Size() const;
+        void  Unique();
+        void  Apply(ScriptInterface::Applicator appl);
+        void  Sort(ScriptInterface::Comparator comp);
 
-        void  Remove(dword id);
-        void  RemoveGroup(int group);
+        bool ContainsDescendant(dword id);
+        bool ContainsDescendantGroup(int group);
+
+        ParticleSystemBase*              GetDescendant(dword id);
+        std::vector<ParticleSystemBase*> GetDescendantGroup(int group);
+
+        ParticleSystemBase*              ExtractDescendant(dword id);
+        std::vector<ParticleSystemBase*> ExtractDescendantGroup(int group);
+
+        void  RemoveDescendant(dword id);
+        void  RemoveDescendantGroup(int group);
+
         void  Clear();
 
 };
@@ -75,6 +87,7 @@ class ParticleSystemParent : public ParticleSystemBase
 ////////////////////////////////////////////////////////////////////////////////
 inline
 ParticleSystemParent::ParticleSystemParent()
+                     : ParticleSystemBase(ParticleSystemBase::PARENT)
 {
 }
 

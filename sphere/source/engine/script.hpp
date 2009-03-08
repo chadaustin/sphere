@@ -128,6 +128,23 @@ private:
   declare_property(ssParticleCallbackGetProperty);
   declare_property(ssParticleCallbackSetProperty);
 
+  // particle descendants
+  declare_constructor1(CreateParticleDescendantsObject, ParticleSystemParent* system);
+  declare_finalizer(ssFinalizeParticleDescendants);
+  declare_method(ssParticleDescendantsSize);
+  declare_method(ssParticleDescendantsUnique);
+  declare_method(ssParticleDescendantsApply);
+  declare_method(ssParticleDescendantsSort);
+  declare_method(ssParticleDescendantsContains);
+  declare_method(ssParticleDescendantsContainsGroup);
+  declare_method(ssParticleDescendantsGet);
+  declare_method(ssParticleDescendantsGetGroup);
+  declare_method(ssParticleDescendantsExtract);
+  declare_method(ssParticleDescendantsExtractGroup);
+  declare_method(ssParticleDescendantsRemove);
+  declare_method(ssParticleDescendantsRemoveGroup);
+  declare_method(ssParticleDescendantsClear);
+
   // particle system parent
   declare_constructor1(CreateParticleSystemParentObject, ParticleSystemParent* system);
   declare_finalizer(ssFinalizeParticleSystemParent);
@@ -135,24 +152,22 @@ private:
   declare_property(ssParticleSystemParentSetProperty);
   declare_method(ssParticleSystemParentUpdate);
   declare_method(ssParticleSystemParentRender);
-  declare_method(ssParticleSystemParentSize);
-  declare_method(ssParticleSystemParentClear);
   declare_method(ssParticleSystemParentAdopt);
   declare_method(ssParticleSystemParentHost);
-  declare_method(ssParticleSystemParentFind);
-  declare_method(ssParticleSystemParentRemove);
-  declare_method(ssParticleSystemParentRemoveGroup);
   declare_method(ssParticleSystemParentIsDead);
   declare_method(ssParticleSystemParentKill);
   declare_method(ssParticleSystemParentRevive);
-  declare_method(ssParticleSystemParentGetOnUpdate);
-  declare_method(ssParticleSystemParentSetOnUpdate);
-  declare_method(ssParticleSystemParentGetOnRender);
-  declare_method(ssParticleSystemParentSetOnRender);
-  declare_method(ssParticleSystemParentGetOnBirth);
-  declare_method(ssParticleSystemParentSetOnBirth);
-  declare_method(ssParticleSystemParentGetOnDeath);
-  declare_method(ssParticleSystemParentSetOnDeath);
+
+  // particle swarm
+  declare_constructor1(CreateParticleSwarmObject, ParticleSystemChild* system);
+  declare_finalizer(ssFinalizeParticleSwarm);
+  declare_method(ssParticleSwarmSize);
+  declare_method(ssParticleSwarmCapacity);
+  declare_method(ssParticleSwarmGrow);
+  declare_method(ssParticleSwarmShrink);
+  declare_method(ssParticleSwarmResize);
+  declare_method(ssParticleSwarmReserve);
+  declare_method(ssParticleSwarmClear);
 
   // particle swarm renderer
   declare_constructor1(CreateParticleSwarmRendererObject, ParticleSystemChild* system);
@@ -167,25 +182,10 @@ private:
   declare_property(ssParticleSystemChildSetProperty);
   declare_method(ssParticleSystemChildUpdate);
   declare_method(ssParticleSystemChildRender);
-  declare_method(ssParticleSystemChildSize);
-  declare_method(ssParticleSystemChildCapacity);
-  declare_method(ssParticleSystemChildGrow);
-  declare_method(ssParticleSystemChildShrink);
-  declare_method(ssParticleSystemChildResize);
-  declare_method(ssParticleSystemChildReserve);
-  declare_method(ssParticleSystemChildClear);
   declare_method(ssParticleSystemChildClone);
   declare_method(ssParticleSystemChildIsDead);
   declare_method(ssParticleSystemChildKill);
   declare_method(ssParticleSystemChildRevive);
-  declare_method(ssParticleSystemChildGetOnUpdate);
-  declare_method(ssParticleSystemChildSetOnUpdate);
-  declare_method(ssParticleSystemChildGetOnRender);
-  declare_method(ssParticleSystemChildSetOnRender);
-  declare_method(ssParticleSystemChildGetOnBirth);
-  declare_method(ssParticleSystemChildSetOnBirth);
-  declare_method(ssParticleSystemChildGetOnDeath);
-  declare_method(ssParticleSystemChildSetOnDeath);
 
 
   // sockets

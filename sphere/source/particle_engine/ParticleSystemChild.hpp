@@ -18,8 +18,8 @@ class ParticleSystemChild : public ParticleSystemBase
     public:
 
         ParticleSystemChild();
-        ParticleSystemChild(const ParticleSystemChild& system);
         ParticleSystemChild(dword size);
+        ParticleSystemChild(const ParticleSystemChild& system);
 
         virtual ~ParticleSystemChild();
 
@@ -45,13 +45,15 @@ class ParticleSystemChild : public ParticleSystemBase
 ////////////////////////////////////////////////////////////////////////////////
 inline
 ParticleSystemChild::ParticleSystemChild()
+                    : ParticleSystemBase(ParticleSystemBase::CHILD)
 {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 inline
 ParticleSystemChild::ParticleSystemChild(dword size)
-                    : m_Swarm(size)
+                    : ParticleSystemBase(ParticleSystemBase::CHILD)
+                    , m_Swarm(size)
 {
 }
 

@@ -59,12 +59,14 @@ const dword SS_TILESET_MAGIC     = 0x43434402;
 const dword SS_SFXR_MAGIC        = 0x474245a3;
 const dword SS_PARTICLE_SYSTEM_PARENT_MAGIC  = 0x80000000;
 const dword SS_PARTICLE_SYSTEM_CHILD_MAGIC   = 0x80000001;
-const dword SS_PARTICLE_BODY_MAGIC           = 0x80000012;
-const dword SS_PARTICLE_INITIALIZER_MAGIC    = 0x80000123;
-const dword SS_PARTICLE_UPDATER_MAGIC        = 0x80001234;
-const dword SS_PARTICLE_RENDERER_MAGIC       = 0x80012345;
-const dword SS_PARTICLE_CALLBACK_MAGIC       = 0x80123456;
-const dword SS_PARTICLE_SWARM_RENDERER_MAGIC = 0x81234567;
+const dword SS_PARTICLE_BODY_MAGIC           = 0x80000002;
+const dword SS_PARTICLE_INITIALIZER_MAGIC    = 0x80000003;
+const dword SS_PARTICLE_UPDATER_MAGIC        = 0x80000004;
+const dword SS_PARTICLE_RENDERER_MAGIC       = 0x80000005; // Kyuu: I'm not a random number generator,
+const dword SS_PARTICLE_CALLBACK_MAGIC       = 0x80000006; //       so this should do the trick.
+const dword SS_PARTICLE_SWARM_MAGIC          = 0x80000007;
+const dword SS_PARTICLE_SWARM_RENDERER_MAGIC = 0x80000008;
+const dword SS_PARTICLE_DESCENDANTS_MAGIC    = 0x80000009;
 
 // Addition to jsapi.h
 #define JSVAL_IS_OBJECTNOTNULL(v)      ( (JSVAL_TAG(v) == JSVAL_OBJECT) && ((v) != JSVAL_NULL) && ((v) != JSVAL_VOID))
@@ -110,16 +112,24 @@ BEGIN_SS_OBJECT(SS_PARTICLE_UPDATER)
 ParticleSystemBase* system;
 END_SS_OBJECT()
 
-BEGIN_SS_OBJECT(SS_PARTICLE_SWARM_RENDERER)
-ParticleSystemChild* system;
-END_SS_OBJECT()
-
 BEGIN_SS_OBJECT(SS_PARTICLE_RENDERER)
 ParticleSystemBase* system;
 END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_PARTICLE_CALLBACK)
 ParticleSystemBase* system;
+END_SS_OBJECT()
+
+BEGIN_SS_OBJECT(SS_PARTICLE_SWARM)
+ParticleSystemChild* system;
+END_SS_OBJECT()
+
+BEGIN_SS_OBJECT(SS_PARTICLE_SWARM_RENDERER)
+ParticleSystemChild* system;
+END_SS_OBJECT()
+
+BEGIN_SS_OBJECT(SS_PARTICLE_DESCENDANTS)
+ParticleSystemParent* system;
 END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_SOCKET)
@@ -397,7 +407,7 @@ return 0 ;
 */
 static bool DoesFileExist(const char* pathandfile)
 {
-	FILE *f = fopen(pathandfile, "r"); 
+	FILE *f = fopen(pathandfile, "r");
 	bool found = f ? true: false;
 	if(found) fclose(f);
 	return found;
@@ -634,14 +644,16 @@ CScript::InitializeSphereConstants()
                       { "EDGE_RIGHT", sWindowStyle::RIGHT },
                       { "EDGE_BOTTOM", sWindowStyle::BOTTOM },
 
-                      // particle engine constants
-                      { "PE_NULL_SHAPE",           ParticleInitializer::NULL_SHAPE },
-                      { "PE_RECTANGULAR_SHAPE",    ParticleInitializer::RECTANGULAR_SHAPE },
-                      { "PE_ELLIPTICAL_SHAPE",     ParticleInitializer::ELLIPTICAL_SHAPE },
+                      // particle system constants
+                      { "PS_PARENT", ParticleSystemBase::PARENT },
+                      { "PS_CHILD",  ParticleSystemBase::CHILD },
 
-                      { "PE_EXPLICIT_ORIENTATION", ParticleInitializer::EXPLICIT_ORIENTATION },
-                      { "PE_IMPLICIT_ORIENTATION", ParticleInitializer::IMPLICIT_ORIENTATION },
+                      { "PS_SHAPE_NULL",      ParticleInitializer::NULL_SHAPE },
+                      { "PS_SHAPE_RECTANGLE", ParticleInitializer::RECTANGULAR_SHAPE },
+                      { "PS_SHAPE_ELLIPSE",   ParticleInitializer::ELLIPTICAL_SHAPE },
 
+                      { "PS_ORIENTATION_EXPLICIT", ParticleInitializer::EXPLICIT_ORIENTATION },
+                      { "PS_ORIENTATION_IMPLICIT", ParticleInitializer::IMPLICIT_ORIENTATION },
 
 
                       // keyboard constants
@@ -1491,23 +1503,23 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     return JS_FALSE;                                                                                                           \
   }                                                                                                                            \
 
-#define arg_int(name)        int name           = argInt(cx, argv[arg++]);                                            __arg_error_check__("integer")
-#define arg_str(name)        const char* name   = argStr(cx, argv[arg++]);                                            __arg_error_check__("string")
+#define arg_int(name)             int name                  = argInt(cx, argv[arg++]);                                               __arg_error_check__("integer")
+#define arg_str(name)             const char* name          = argStr(cx, argv[arg++]);                                               __arg_error_check__("string")
 
-#define arg_bool(name)       bool name          = argBool(cx, argv[arg++]);                                           __arg_error_check__("boolean")
-#define arg_double(name)     double name        = argDouble(cx, argv[arg++]);                                         __arg_error_check__("double")
-#define arg_object(name)     JSObject* name     = argObject(cx, argv[arg++]);                                         __arg_error_check__("Object")
-#define arg_array(name)      JSObject* name     = argArray(cx, argv[arg++]);                                          __arg_error_check__("Array")
-#define arg_color(name)      RGBA name          = argColor(cx, argv[arg++]);                                          __arg_error_check__("Color")
-#define arg_surface(name)    CImage32* name     = argSurface(cx, argv[arg++]);     if (name == NULL) return JS_FALSE; __arg_error_check__("Surface")
-#define arg_colormatrix(name)CColorMatrix* name = argColorMatrix(cx, argv[arg++]); if (name == NULL) return JS_FALSE; __arg_error_check__("ColorMatrix")
-#define arg_byte_array(name) SS_BYTEARRAY* name = argByteArray(cx, argv[arg++]);   if (name == NULL) return JS_FALSE; __arg_error_check__("ByteArray")
-#define arg_image(name)      SS_IMAGE* name     = argImage(cx, argv[arg++]);       if (name == NULL) return JS_FALSE; __arg_error_check__("Image")
-#define arg_font(name)       SS_FONT* name      = argFont(cx, argv[arg++]);        if (name == NULL) return JS_FALSE; __arg_error_check__("Font")
-#define arg_sfxr(name)       SS_SFXR* name      = argSfxr(cx, argv[arg++]);        if (name == NULL) return JS_FALSE; __arg_error_check__("Sfxr")
-#define arg_spriteset(name)  sSpriteset* name   = argSpriteset(cx, argv[arg++]);   if (name == NULL) return JS_FALSE; __arg_error_check__("Spriteset")
-
-#define arg_particle_system(name)  ParticleSystemBase* name = argParticleSystem(cx, argv[arg++]); if (name == NULL) return JS_FALSE; __arg_error_check__("ParticleSystem")
+#define arg_bool(name)            bool name                 = argBool(cx, argv[arg++]);                                              __arg_error_check__("boolean")
+#define arg_double(name)          double name               = argDouble(cx, argv[arg++]);                                            __arg_error_check__("double")
+#define arg_object(name)          JSObject* name            = argObject(cx, argv[arg++]);                                            __arg_error_check__("Object")
+#define arg_array(name)           JSObject* name            = argArray(cx, argv[arg++]);                                             __arg_error_check__("Array")
+#define arg_color(name)           RGBA name                 = argColor(cx, argv[arg++]);                                             __arg_error_check__("Color")
+#define arg_function_object(name) JSObject* name            = argFunctionObject(cx, argv[arg++]); if (name == NULL) return JS_FALSE; __arg_error_check__("FunctionObject")
+#define arg_surface(name)         CImage32* name            = argSurface(cx, argv[arg++]);        if (name == NULL) return JS_FALSE; __arg_error_check__("Surface")
+#define arg_colormatrix(name)     CColorMatrix* name        = argColorMatrix(cx, argv[arg++]);    if (name == NULL) return JS_FALSE; __arg_error_check__("ColorMatrix")
+#define arg_byte_array(name)      SS_BYTEARRAY* name        = argByteArray(cx, argv[arg++]);      if (name == NULL) return JS_FALSE; __arg_error_check__("ByteArray")
+#define arg_image(name)           SS_IMAGE* name            = argImage(cx, argv[arg++]);          if (name == NULL) return JS_FALSE; __arg_error_check__("Image")
+#define arg_font(name)            SS_FONT* name             = argFont(cx, argv[arg++]);           if (name == NULL) return JS_FALSE; __arg_error_check__("Font")
+#define arg_sfxr(name)            SS_SFXR* name             = argSfxr(cx, argv[arg++]);           if (name == NULL) return JS_FALSE; __arg_error_check__("Sfxr")
+#define arg_spriteset(name)       sSpriteset* name          = argSpriteset(cx, argv[arg++]);      if (name == NULL) return JS_FALSE; __arg_error_check__("Spriteset")
+#define arg_particle_system(name) ParticleSystemBase* name  = argParticleSystem(cx, argv[arg++]); if (name == NULL) return JS_FALSE; __arg_error_check__("ParticleSystem")
 
 // return values
 #define return_null()         *rval = JSVAL_NULL
@@ -5997,7 +6009,7 @@ begin_func(nameBgm, 0)
 	}
 	if(This->m_Engine->GetMapEngine()->validBgm())
 		result = "";
-	
+
 	return_str(result.c_str());
 end_func()
 
@@ -6294,7 +6306,7 @@ if (!sound)
 		memoryfile->unref();
 		memoryfile=NULL;
 	}
-	
+
     JS_ReportError(cx, "Could not create sound from bytearray");
     return JS_FALSE;
 }
@@ -7176,7 +7188,7 @@ if (filename_source == filename_dest)
 }
 
 std::string source = "other/";
-source += filename_source; 
+source += filename_source;
 filename_source = source.c_str();
 
 std::string dest = "other/";
@@ -7233,7 +7245,7 @@ if (filename_source == filename_dest)
 }
 
 std::string source = "other/";
-source += filename_source; 
+source += filename_source;
 filename_source = source.c_str();
 
 std::string dest = "other/";
@@ -8116,6 +8128,200 @@ switch (prop_id)
 end_property()
 
 ////////////////////////////////////////
+// PARTICLE DESCENDANTS OBJECT /////////
+////////////////////////////////////////
+
+JSObject*
+CScript::CreateParticleDescendantsObject(JSContext* cx, ParticleSystemParent* system)
+{
+    if (!system)
+        return NULL;
+
+    static JSClass clasp =
+    {
+        "particle system parent descendants", JSCLASS_HAS_PRIVATE,
+        JS_PropertyStub,  JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+        JS_EnumerateStub, JS_ResolveStub,  JS_ConvertStub,  ssFinalizeParticleDescendants,
+    };
+
+    // create the object
+    JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
+
+    if (!object || !JS_AddRoot(cx, &object))
+        return NULL;
+
+    // assign methods to the object
+    static JSFunctionSpec fs[] =
+    {
+        { "size",          ssParticleDescendantsSize,           0, 0, 0 },
+        { "unique",        ssParticleDescendantsUnique,         0, 0, 0 },
+        { "apply",         ssParticleDescendantsApply,          1, 0, 0 },
+        { "sort",          ssParticleDescendantsSort,           1, 0, 0 },
+        { "contains",      ssParticleDescendantsContains,       1, 0, 0 },
+        { "containsGroup", ssParticleDescendantsContainsGroup,  1, 0, 0 },
+        { "get",           ssParticleDescendantsGet,            1, 0, 0 },
+        { "getGroup",      ssParticleDescendantsGetGroup,       1, 0, 0 },
+        { "extract",       ssParticleDescendantsExtract,        1, 0, 0 },
+        { "extractGroup",  ssParticleDescendantsExtractGroup,   1, 0, 0 },
+        { "remove",        ssParticleDescendantsRemove,         1, 0, 0 },
+        { "removeGroup",   ssParticleDescendantsRemoveGroup,    1, 0, 0 },
+        { "clear",         ssParticleDescendantsClear,          0, 0, 0 },
+        { 0, 0, 0, 0, 0 },
+    };
+    JS_DefineFunctions(cx, object, fs);
+
+    SS_PARTICLE_DESCENDANTS* descendants_object = new SS_PARTICLE_DESCENDANTS;
+
+    if (!descendants_object)
+    {
+        // balancing call to JS_RemoveRoot
+        JS_RemoveRoot(cx, &object);
+
+        return NULL;
+    }
+
+    descendants_object->system = system;
+    JS_SetPrivate(cx, object, descendants_object);
+
+    // balancing call to JS_RemoveRoot
+    JS_RemoveRoot(cx, &object);
+
+    return object;
+}
+
+////////////////////////////////////////
+begin_finalizer(SS_PARTICLE_DESCENDANTS, ssFinalizeParticleDescendants)
+// the swarm object should not delete the superior particle system
+object->system = NULL;
+end_finalizer()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsSize, 0)
+return_int(object->system->Size());
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsUnique, 0)
+object->system->Unique();
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsApply, 1)
+arg_function_object(func);
+object->system->Apply(ScriptInterface::Applicator(cx, OBJECT_TO_JSVAL(func)));
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsSort, 1)
+arg_function_object(func);
+object->system->Sort(ScriptInterface::Comparator(cx, This->m_Global, OBJECT_TO_JSVAL(func)));
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsContains, 1)
+arg_int(id);
+if (id < 0)
+    return_bool(JS_FALSE);
+return_bool(object->system->ContainsDescendant(id));
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsContainsGroup, 1)
+arg_int(group);
+return_bool(object->system->ContainsDescendantGroup(group));
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsGet, 1)
+arg_int(id);
+if (id < 0)
+    return_null();
+ParticleSystemBase* system = object->system->GetDescendant(id);
+if (system)
+    return_object(system->GetScriptInterface().GetObject());
+else
+    return_null();
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsGetGroup, 1)
+arg_int(group);
+JSObject* ret_array = JS_NewArrayObject(cx, 0, NULL);
+if (!ret_array || !JS_AddRoot(cx, &ret_array))
+{
+    JS_ReportError(cx, "Could not set up array, getGroup() failed.");
+    return JS_FALSE;
+}
+std::vector<ParticleSystemBase*> obj_array = object->system->GetDescendantGroup(group);
+for (dword i = 0; i < obj_array.size(); ++i)
+{
+    jsval element = OBJECT_TO_JSVAL(obj_array[i]->GetScriptInterface().GetObject());
+    if (!JS_SetElement(cx, ret_array, i, &element))
+    {
+        JS_RemoveRoot(cx, &ret_array);
+        JS_ReportError(cx, "Could not set element, getGroup() failed.");
+        return JS_FALSE;
+    }
+}
+JS_RemoveRoot(cx, &ret_array);
+return_object(ret_array);
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsExtract, 1)
+arg_int(id);
+if (id < 0)
+    return_null();
+ParticleSystemBase* system = object->system->ExtractDescendant(id);
+if (system)
+    return_object(system->GetScriptInterface().GetObject());
+else
+    return_null();
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsExtractGroup, 1)
+arg_int(group);
+JSObject* ret_array = JS_NewArrayObject(cx, 0, NULL);
+if (!ret_array || !JS_AddRoot(cx, &ret_array))
+{
+    JS_ReportError(cx, "Could not set up array, extractGroup() failed.");
+    return JS_FALSE;
+}
+std::vector<ParticleSystemBase*> obj_array = object->system->ExtractDescendantGroup(group);
+for (dword i = 0; i < obj_array.size(); ++i)
+{
+    jsval element = OBJECT_TO_JSVAL(obj_array[i]->GetScriptInterface().GetObject());
+    if (!JS_SetElement(cx, ret_array, i, &element))
+    {
+        JS_RemoveRoot(cx, &ret_array);
+        JS_ReportError(cx, "Could not set element, extractGroup() failed.");
+        return JS_FALSE;
+    }
+}
+JS_RemoveRoot(cx, &ret_array);
+return_object(ret_array);
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsRemove, 1)
+arg_int(id);
+if (id >= 0)
+    object->system->RemoveDescendant(id);
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsRemoveGroup, 1)
+arg_int(group);
+object->system->RemoveDescendantGroup(group);
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsClear, 0)
+object->system->Clear();
+end_method()
+
+////////////////////////////////////////
 // PARTICLE SYSTEM PARENT OBJECT ///////
 ////////////////////////////////////////
 
@@ -8202,6 +8408,26 @@ CScript::CreateParticleSystemParentObject(JSContext* cx, ParticleSystemParent* s
         JS_PropertyStub,
         JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
 
+    // assign the descendants object
+    JS_DefineProperty(
+        cx,
+        object,
+        "descendants",
+        OBJECT_TO_JSVAL(CreateParticleDescendantsObject(cx, system)),
+        JS_PropertyStub,
+        JS_PropertyStub,
+        JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+    // assign the type property
+    JS_DefineProperty(
+        cx,
+        object,
+        "type",
+        INT_TO_JSVAL(system->GetType()),
+        JS_PropertyStub,
+        JS_PropertyStub,
+        JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
     // assign the id property
     JS_DefineProperty(
         cx,
@@ -8228,13 +8454,8 @@ CScript::CreateParticleSystemParentObject(JSContext* cx, ParticleSystemParent* s
     {
         { "update",        ssParticleSystemParentUpdate,         0, 0, 0 },
         { "render",        ssParticleSystemParentRender,         0, 0, 0 },
-        { "size",          ssParticleSystemParentSize,           0, 0, 0 },
-        { "clear",         ssParticleSystemParentClear,          0, 0, 0 },
         { "adopt",         ssParticleSystemParentAdopt,          1, 0, 0 },
         { "host",          ssParticleSystemParentHost,           1, 0, 0 },
-        { "find",          ssParticleSystemParentFind,           1, 0, 0 },
-        { "remove",        ssParticleSystemParentRemove,         1, 0, 0 },
-        { "removeGroup",   ssParticleSystemParentRemoveGroup,    1, 0, 0 },
         { "isDead",        ssParticleSystemParentIsDead,         0, 0, 0 },
         { "kill",          ssParticleSystemParentKill,           0, 0, 0 },
         { "revive",        ssParticleSystemParentRevive,         0, 0, 0 },
@@ -8310,16 +8531,6 @@ object->system->Render();
 end_method()
 
 ////////////////////////////////////////
-begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentSize, 0)
-return_int(object->system->Size());
-end_method()
-
-////////////////////////////////////////
-begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentClear, 0)
-object->system->Clear();
-end_method()
-
-////////////////////////////////////////
 begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentAdopt, 1)
 arg_particle_system(system);
 object->system->Adopt(system);
@@ -8329,31 +8540,6 @@ end_method()
 begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentHost, 1)
 arg_particle_system(system);
 object->system->Host(system);
-end_method()
-
-////////////////////////////////////////
-begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentFind, 1)
-arg_int(id);
-if (id < 0)
-    return_null();
-ParticleSystemBase* found = object->system->Find(id);
-if (found)
-    return_object(found->GetScriptInterface().GetObject());
-else
-    return_null();
-end_method()
-
-////////////////////////////////////////
-begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentRemove, 1)
-arg_int(id);
-if (id >= 0)
-    object->system->Remove(id);
-end_method()
-
-////////////////////////////////////////
-begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentRemoveGroup, 1)
-arg_int(group);
-object->system->RemoveGroup(group);
 end_method()
 
 ////////////////////////////////////////
@@ -8479,6 +8665,117 @@ case 3:
 end_property()
 
 ////////////////////////////////////////
+// PARTICLE SWARM OBJECT ///////////////
+////////////////////////////////////////
+
+JSObject*
+CScript::CreateParticleSwarmObject(JSContext* cx, ParticleSystemChild* system)
+{
+    if (!system)
+        return NULL;
+
+    static JSClass clasp =
+    {
+        "particle system child swarm", JSCLASS_HAS_PRIVATE,
+        JS_PropertyStub,  JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+        JS_EnumerateStub, JS_ResolveStub,  JS_ConvertStub,  ssFinalizeParticleSwarm,
+    };
+
+    // create the object
+    JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
+
+    if (!object || !JS_AddRoot(cx, &object))
+        return NULL;
+
+    // assign the particle swarm renderer object
+    JS_DefineProperty(
+        cx,
+        object,
+        "renderer",
+        OBJECT_TO_JSVAL(CreateParticleSwarmRendererObject(cx, system)),
+        JS_PropertyStub,
+        JS_PropertyStub,
+        JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+    // assign methods to the object
+    static JSFunctionSpec fs[] =
+    {
+        { "size",          ssParticleSwarmSize,           0, 0, 0 },
+        { "capacity",      ssParticleSwarmCapacity,       0, 0, 0 },
+        { "grow",          ssParticleSwarmGrow,           0, 0, 0 },
+        { "shrink",        ssParticleSwarmShrink,         0, 0, 0 },
+        { "resize",        ssParticleSwarmResize,         1, 0, 0 },
+        { "reserve",       ssParticleSwarmReserve,        1, 0, 0 },
+        { "clear",         ssParticleSwarmClear,          0, 0, 0 },
+        { 0, 0, 0, 0, 0 },
+    };
+    JS_DefineFunctions(cx, object, fs);
+
+    SS_PARTICLE_SWARM* swarm_object = new SS_PARTICLE_SWARM;
+
+    if (!swarm_object)
+    {
+        // balancing call to JS_RemoveRoot
+        JS_RemoveRoot(cx, &object);
+
+        return NULL;
+    }
+
+    swarm_object->system = system;
+    JS_SetPrivate(cx, object, swarm_object);
+
+    // balancing call to JS_RemoveRoot
+    JS_RemoveRoot(cx, &object);
+
+    return object;
+}
+
+////////////////////////////////////////
+begin_finalizer(SS_PARTICLE_SWARM, ssFinalizeParticleSwarm)
+// the swarm object should not delete the superior particle system
+object->system = NULL;
+end_finalizer()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SWARM, ssParticleSwarmSize, 0)
+return_int(object->system->Size());
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SWARM, ssParticleSwarmCapacity, 0)
+return_int(object->system->Capacity());
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SWARM, ssParticleSwarmGrow, 0)
+object->system->Grow();
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SWARM, ssParticleSwarmShrink, 0)
+object->system->Shrink();
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SWARM, ssParticleSwarmResize, 1)
+arg_int(new_size);
+if (new_size < 0) new_size = 0;
+object->system->Resize(new_size);
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SWARM, ssParticleSwarmReserve, 1)
+arg_int(new_capacity);
+if (new_capacity > 0)
+    object->system->Reserve(new_capacity);
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_SWARM, ssParticleSwarmClear, 0)
+object->system->Clear();
+end_method()
+
+////////////////////////////////////////
 // PARTICLE SYSTEM CHILD OBJECT ////////
 ////////////////////////////////////////
 
@@ -8555,22 +8852,32 @@ CScript::CreateParticleSystemChildObject(JSContext* cx, ParticleSystemChild* sys
         JS_PropertyStub,
         JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
 
-    // assign the particle swarm renderer object
-    JS_DefineProperty(
-        cx,
-        object,
-        "swarm_renderer",
-        OBJECT_TO_JSVAL(CreateParticleSwarmRendererObject(cx, system)),
-        JS_PropertyStub,
-        JS_PropertyStub,
-        JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
-
     // assign the callback object
     JS_DefineProperty(
         cx,
         object,
         "callback",
         OBJECT_TO_JSVAL(CreateParticleCallbackObject(cx, system)),
+        JS_PropertyStub,
+        JS_PropertyStub,
+        JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+    // assign the swarm object
+    JS_DefineProperty(
+        cx,
+        object,
+        "swarm",
+        OBJECT_TO_JSVAL(CreateParticleSwarmObject(cx, system)),
+        JS_PropertyStub,
+        JS_PropertyStub,
+        JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+    // assign the type property
+    JS_DefineProperty(
+        cx,
+        object,
+        "type",
+        INT_TO_JSVAL(system->GetType()),
         JS_PropertyStub,
         JS_PropertyStub,
         JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
@@ -8601,13 +8908,6 @@ CScript::CreateParticleSystemChildObject(JSContext* cx, ParticleSystemChild* sys
     {
         { "update",        ssParticleSystemChildUpdate,         0, 0, 0 },
         { "render",        ssParticleSystemChildRender,         0, 0, 0 },
-        { "size",          ssParticleSystemChildSize,           0, 0, 0 },
-        { "capacity",      ssParticleSystemChildCapacity,       0, 0, 0 },
-        { "grow",          ssParticleSystemChildGrow,           0, 0, 0 },
-        { "shrink",        ssParticleSystemChildShrink,         0, 0, 0 },
-        { "resize",        ssParticleSystemChildResize,         1, 0, 0 },
-        { "reserve",       ssParticleSystemChildReserve,        1, 0, 0 },
-        { "clear",         ssParticleSystemChildClear,          0, 0, 0 },
         { "clone",         ssParticleSystemChildClone,          0, 0, 0 },
         { "isDead",        ssParticleSystemChildIsDead,         0, 0, 0 },
         { "kill",          ssParticleSystemChildKill,           0, 0, 0 },
@@ -8681,45 +8981,6 @@ end_method()
 ////////////////////////////////////////
 begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildRender, 0)
 object->system->Render();
-end_method()
-
-////////////////////////////////////////
-begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildSize, 0)
-return_int(object->system->Size());
-end_method()
-
-////////////////////////////////////////
-begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildCapacity, 0)
-return_int(object->system->Capacity());
-end_method()
-
-////////////////////////////////////////
-begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildGrow, 0)
-object->system->Grow();
-end_method()
-
-////////////////////////////////////////
-begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildShrink, 0)
-object->system->Shrink();
-end_method()
-
-////////////////////////////////////////
-begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildResize, 1)
-arg_int(new_size);
-if (new_size < 0) new_size = 0;
-object->system->Resize(new_size);
-end_method()
-
-////////////////////////////////////////
-begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildReserve, 1)
-arg_int(new_capacity);
-if (new_capacity > 0)
-    object->system->Reserve(new_capacity);
-end_method()
-
-////////////////////////////////////////
-begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildClear, 0)
-object->system->Clear();
 end_method()
 
 ////////////////////////////////////////
@@ -9108,7 +9369,7 @@ end_property()
     - exports the Color to a string, used internally by JSON
 */
 begin_method(SS_COLOR, ssColorToJSON, 0)
-std::string json = "CreateColor("; 
+std::string json = "CreateColor(";
 json.append( to_string((int)object->color.red) ); json.append( "," );
 json.append( to_string((int)object->color.green) ); json.append( "," );
 json.append( to_string((int)object->color.blue) ); json.append( "," );

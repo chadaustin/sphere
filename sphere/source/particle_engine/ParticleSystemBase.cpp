@@ -8,7 +8,8 @@ ParticleSystemBase::s_NextUniqueID = 0;
 
 ////////////////////////////////////////////////////////////////////////////////
 ParticleSystemBase::ParticleSystemBase(const ParticleSystemBase& system)
-                   : m_ID(s_NextUniqueID++)
+                   : m_Type(system.m_Type)
+                   , m_ID(s_NextUniqueID++)
                    , m_Group(system.m_Group)
                    , m_Halted(system.m_Halted)
                    , m_Hidden(system.m_Hidden)

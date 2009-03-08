@@ -3,6 +3,9 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Copy-constructor.
+ */
 ParticleSystemChild::ParticleSystemChild(const ParticleSystemChild& system)
                     : ParticleSystemBase(system)
                     , m_Swarm(system.m_Swarm)
@@ -11,6 +14,9 @@ ParticleSystemChild::ParticleSystemChild(const ParticleSystemChild& system)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Increases the swarm size by one (if possible).
+ */
 void
 ParticleSystemChild::Grow()
 {
@@ -19,6 +25,9 @@ ParticleSystemChild::Grow()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Decreases the swarm size by one (if possible).
+ */
 void
 ParticleSystemChild::Shrink()
 {
@@ -26,6 +35,9 @@ ParticleSystemChild::Shrink()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Calls the on_update callback and updates the swarm particles.
+ */
 void
 ParticleSystemChild::Update()
 {
@@ -65,6 +77,9 @@ ParticleSystemChild::Update()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Calls the on_render callback, renders the swarm particles and finally renders itself.
+ */
 void
 ParticleSystemChild::Render()
 {
@@ -86,6 +101,12 @@ ParticleSystemChild::Render()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Resizes the swarm by the integer n.
+ * - If n is negative, the new swarm size will be zero.
+ * - If n is bigger than the swarm capacity, the new swarm size will be equal
+ *   to the swarm capacity.
+ */
 void
 ParticleSystemChild::Resize(dword n)
 {

@@ -121,3 +121,30 @@ JSObject* argArray(JSContext* cx, jsval arg)
     }
     return array;
 }
+///////////////////////////////////////////////////////////
+JSObject* argFunctionObject(JSContext* cx, jsval arg)
+{
+    if (!JSVAL_IS_OBJECT(arg))
+    {
+        JS_ReportError(cx, "Invalid function (parameter is not an object)");
+        return NULL;
+    }
+
+    if (JSVAL_IS_NULL(arg))
+    {
+        JS_ReportError(cx, "Invalid function (parameter is null)");
+        return NULL;
+    }
+
+    JSObject* object = JSVAL_TO_OBJECT(arg);
+
+    if (!JS_ObjectIsFunction(cx, object))
+    {
+        JS_ReportError(cx, "Invalid function (parameter is not a function)");
+        return NULL;
+    }
+
+    return object;
+}
+
+

@@ -26,6 +26,114 @@ class ScriptInterface
 
     public:
 
+        class Comparator
+        {
+            private:
+
+                JSContext* m_Context;
+                JSObject*  m_Global;
+                jsval      m_CompareFunc;
+
+            public:
+
+                explicit Comparator(JSContext* context,
+                                    JSObject* object,
+                                    jsval comp_func) : m_Context(context)
+                                                     , m_Global(object)
+                                                     , m_CompareFunc(comp_func)
+                {
+                    JS_AddRoot(m_Context, &m_CompareFunc);
+                }
+
+                Comparator(const Comparator& comp) : m_Context(comp.m_Context)
+                                                   , m_Global(comp.m_Global)
+                                                   , m_CompareFunc(comp.m_CompareFunc)
+                {
+                    JS_AddRoot(m_Context, &m_CompareFunc);
+                }
+
+                ~Comparator()
+                {
+                    // balancing call to JS_RemoveRoot
+                    JS_RemoveRoot(m_Context, &m_CompareFunc);
+                }
+
+                Comparator& operator=(const Comparator& comp)
+                {
+                    m_Context     = comp.m_Context;
+                    m_Global      = comp.m_Global;
+                    m_CompareFunc = comp.m_CompareFunc;
+                    return *this;
+                }
+
+                bool operator()(JSObject* a, JSObject* b, bool& out_result)
+                {
+                    jsval succeeded, result;
+                    jsval arguments[2] = {OBJECT_TO_JSVAL(a), OBJECT_TO_JSVAL(b)};
+
+                    succeeded = JS_CallFunctionValue(m_Context,
+                                                     m_Global,
+                                                     m_CompareFunc,
+                                                     2, arguments,
+                                                     &result);
+
+                    if (JSVAL_IS_BOOLEAN(result))
+                        out_result = JSVAL_TO_BOOLEAN(result);
+                    else
+                        out_result = true;
+
+                    return succeeded == JS_TRUE;
+                }
+
+        };
+
+        class Applicator
+        {
+            private:
+
+                JSContext* m_Context;
+                jsval      m_ApplyFunc;
+
+            public:
+
+                explicit Applicator(JSContext* context,
+                                    jsval apply_func) : m_Context(context)
+                                                      , m_ApplyFunc(apply_func)
+                {
+                    JS_AddRoot(m_Context, &m_ApplyFunc);
+                }
+
+                Applicator(const Applicator& appl) : m_Context(appl.m_Context)
+                                                   , m_ApplyFunc(appl.m_ApplyFunc)
+                {
+                    JS_AddRoot(m_Context, &m_ApplyFunc);
+                }
+
+                ~Applicator()
+                {
+                    // balancing call to JS_RemoveRoot
+                    JS_RemoveRoot(m_Context, &m_ApplyFunc);
+                }
+
+                Applicator& operator=(const Applicator& appl)
+                {
+                    m_Context   = appl.m_Context;
+                    m_ApplyFunc = appl.m_ApplyFunc;
+                    return *this;
+                }
+
+                bool operator()(JSObject* object)
+                {
+                    jsval rval;
+                    return JS_CallFunctionValue(m_Context,
+                                                object,
+                                                m_ApplyFunc,
+                                                0, NULL,
+                                                &rval) == JS_TRUE;
+                }
+
+        };
+
         ScriptInterface();
         ScriptInterface(const ScriptInterface& interface);
 

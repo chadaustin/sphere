@@ -13,11 +13,21 @@
 
 class ParticleSystemBase : public RefCounted
 {
+    public:
+
+        enum SystemType
+        {
+            PARENT = 0,
+            CHILD
+        };
+
     private:
 
         static dword s_NextUniqueID; // defines the next unique id
 
     protected:
+
+        SystemType m_Type;
 
         dword m_ID;      // system-defined unique id
         int   m_Group;   // user-defined group id
@@ -37,7 +47,7 @@ class ParticleSystemBase : public RefCounted
 
     public:
 
-        ParticleSystemBase();
+        explicit ParticleSystemBase(SystemType type);
         ParticleSystemBase(const ParticleSystemBase& system);
 
         virtual ~ParticleSystemBase();
@@ -47,6 +57,8 @@ class ParticleSystemBase : public RefCounted
 
         bool Borrow();
         void Release();
+
+        SystemType GetType() const;
 
         dword GetID() const;
 
@@ -85,8 +97,9 @@ class ParticleSystemBase : public RefCounted
 
 ////////////////////////////////////////////////////////////////////////////////
 inline
-ParticleSystemBase::ParticleSystemBase()
-                   : m_ID(s_NextUniqueID++)
+ParticleSystemBase::ParticleSystemBase(SystemType type)
+                   : m_Type(type)
+                   , m_ID(s_NextUniqueID++)
                    , m_Group(0)
                    , m_Halted(false)
                    , m_Hidden(false)
@@ -100,6 +113,13 @@ ParticleSystemBase::ParticleSystemBase()
 inline
 ParticleSystemBase::~ParticleSystemBase()
 {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+inline ParticleSystemBase::SystemType
+ParticleSystemBase::GetType() const
+{
+    return m_Type;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

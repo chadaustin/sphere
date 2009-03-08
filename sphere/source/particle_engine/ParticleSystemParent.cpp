@@ -3,6 +3,9 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Calls the on_update callback and updates the descendants.
+ */
 void
 ParticleSystemParent::Update()
 {
@@ -20,9 +23,9 @@ ParticleSystemParent::Update()
         m_ScriptInterface.OnUpdate();
 
     // update descendants
-    std::list<Descendant>::iterator iter;
+    std::list<Descendant>::iterator iter = m_Descendants.begin();
 
-    for (iter = m_Descendants.begin(); iter != m_Descendants.end();)
+    while (iter != m_Descendants.end())
     {
         Descendant d = *iter;
 
@@ -58,6 +61,9 @@ ParticleSystemParent::Update()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Calls the on_render callback, renders the descendants and finally renders itself.
+ */
 void
 ParticleSystemParent::Render()
 {
@@ -81,6 +87,10 @@ ParticleSystemParent::Render()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Initializes and adds a new system to the descendants list as ADOPTED.
+ * - An adopted system's body will be always updated and initialized.
+ */
 void
 ParticleSystemParent::Adopt(ParticleSystemBase* system)
 {
@@ -95,6 +105,11 @@ ParticleSystemParent::Adopt(ParticleSystemBase* system)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Adds a new system to the descendants list as HOSTED.
+ * - A hosted system's body will be neither initialized nor updated.
+ * - Hosted systems are disposed of once they are dead.
+ */
 void
 ParticleSystemParent::Host(ParticleSystemBase* system)
 {
@@ -106,8 +121,213 @@ ParticleSystemParent::Host(ParticleSystemBase* system)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Goes through the descendants list and removes all duplicates.
+ */
+void
+ParticleSystemParent::Unique()
+{
+    if (m_Descendants.size() <= 1)
+        return;
+
+    std::list<Descendant>::iterator iter = m_Descendants.begin();
+
+    while (iter != m_Descendants.end())
+    {
+        std::list<Descendant>::iterator iter_temp = iter;
+        ++iter_temp;
+
+        while (iter_temp != m_Descendants.end())
+        {
+            if ((*iter).System->GetID() == (*iter_temp).System->GetID())
+            {
+                (*iter_temp).System->Release();
+                iter_temp = m_Descendants.erase(iter_temp);
+            }
+            else
+            {
+                ++iter_temp;
+            }
+        }
+
+        ++iter;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Applies a function on all objects in the descendants list.
+ */
+void
+ParticleSystemParent::Apply(ScriptInterface::Applicator appl)
+{
+    // we need to work on a copy, because the apply function can alter the descendents list
+    std::list<Descendant> copy = m_Descendants;
+
+    std::list<Descendant>::iterator iter = copy.begin();
+
+    while (iter != copy.end())
+    {
+        if (!appl((*iter).System->GetScriptInterface().GetObject()))
+            return;
+
+        if (iter != copy.end())
+            ++iter;
+    }
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+template<typename T> bool
+merge_sort(std::list<T>& in,
+           std::list<T>& out,
+           ScriptInterface::Comparator& comp)
+{
+    std::list<T> left, right;
+
+    if (in.size() <= 1)
+    {
+        out = in;
+        return true;
+    }
+
+    dword middle = in.size() / 2;
+
+    std::list<T>::iterator iter = in.begin();
+
+    for (dword i = 0; i < middle; ++i)
+    {
+        left.push_back(*iter);
+        ++iter;
+    }
+
+    for (dword i = middle; i < in.size(); ++i)
+    {
+        right.push_back(*iter);
+        ++iter;
+    }
+
+    std::list<T> result_left, result_right;
+
+    if (!merge_sort<T>(left, result_left, comp))
+        return false;
+
+    if (!merge_sort<T>(right, result_right, comp))
+        return false;
+
+    if (!merge<T>(result_left, result_right, out, comp))
+        return false;
+
+    return true;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+template<typename T> bool
+merge(std::list<T>& in_left,
+      std::list<T>& in_right,
+      std::list<T>& out,
+      ScriptInterface::Comparator& comp)
+{
+    while (!in_left.empty() && !in_right.empty())
+    {
+        bool left_goes_first;
+
+        if (!comp(in_left.front().System->GetScriptInterface().GetObject(),
+                  in_right.front().System->GetScriptInterface().GetObject(),
+                  left_goes_first))
+        {
+            // error occurred while executing the compare function
+            return false;
+        }
+
+        if (left_goes_first)
+        {
+            out.push_back(in_left.front());
+            in_left.erase(in_left.begin());
+        }
+        else
+        {
+            out.push_back(in_right.front());
+            in_right.erase(in_right.begin());
+        }
+    }
+
+    while (!in_left.empty())
+    {
+        out.push_back(in_left.front());
+        in_left.erase(in_left.begin());
+    }
+
+    while (!in_right.empty())
+    {
+        out.push_back(in_right.front());
+        in_right.erase(in_right.begin());
+    }
+
+    return true;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Sorts the descendants list using a compare function.
+ * - The sort is done using a custom implementation of merge sort.
+ */
+void
+ParticleSystemParent::Sort(ScriptInterface::Comparator comp)
+{
+    std::list<Descendant> sorted;
+
+    if (!merge_sort<Descendant>(m_Descendants, sorted, comp))
+        return;
+
+    m_Descendants = sorted;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Searches the descendants list for a system with the id and returns true
+ *   if found, else false is returned.
+ */
+bool
+ParticleSystemParent::ContainsDescendant(dword id)
+{
+    std::list<Descendant>::iterator iter;
+
+    for (iter = m_Descendants.begin(); iter != m_Descendants.end(); ++iter)
+        if ((*iter).System->GetID() == id)
+            return true;
+
+    return false;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Searches the descendants list for any system related to the group and returns
+ *   true if found, else false is returned.
+ */
+bool
+ParticleSystemParent::ContainsDescendantGroup(int group)
+{
+    std::list<Descendant>::iterator iter;
+
+    for (iter = m_Descendants.begin(); iter != m_Descendants.end(); ++iter)
+        if ((*iter).System->GetGroup() == group)
+            return true;
+
+    return false;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Searches the descendants list for a system with the id and returns it.
+ * - If no system with the id could be found, NULL is returned.
+ */
 ParticleSystemBase*
-ParticleSystemParent::Find(dword id)
+ParticleSystemParent::GetDescendant(dword id)
 {
     std::list<Descendant>::iterator iter;
 
@@ -120,40 +340,137 @@ ParticleSystemParent::Find(dword id)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void
-ParticleSystemParent::Remove(dword id)
+/*
+ * - Searches the descendants list for all systems related to the group
+ *   and returns them packed in an std::vector.
+ * - The returned vector will be empty, if no such systems could be found.
+ */
+std::vector<ParticleSystemBase*>
+ParticleSystemParent::GetDescendantGroup(int group)
 {
+    std::vector<ParticleSystemBase*> group_package;
     std::list<Descendant>::iterator iter;
 
     for (iter = m_Descendants.begin(); iter != m_Descendants.end(); ++iter)
+        if ((*iter).System->GetGroup() == group)
+            group_package.push_back((*iter).System);
+
+    return group_package;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Searches the descendants list for a system with the id, removes it
+ *   from the descendants list and returns it.
+ * - If no system with the id could be found, NULL is returned.
+ */
+ParticleSystemBase*
+ParticleSystemParent::ExtractDescendant(dword id)
+{
+    std::list<Descendant>::iterator iter = m_Descendants.begin();
+
+    while (iter != m_Descendants.end())
+    {
+        if ((*iter).System->GetID() == id)
+        {
+            ParticleSystemBase* system = (*iter).System;
+            (*iter).System->Release();
+            iter = m_Descendants.erase(iter);
+            return system;
+        }
+        else
+        {
+            ++iter;
+        }
+    }
+
+    return NULL;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Searches the descendants list for all systems related to the group,
+ *   removes them from the descendants list and returns them packed in an std::vector.
+ * - The returned vector will be empty, if no such systems could be found.
+ */
+std::vector<ParticleSystemBase*>
+ParticleSystemParent::ExtractDescendantGroup(int group)
+{
+    std::vector<ParticleSystemBase*> group_package;
+    std::list<Descendant>::iterator iter = m_Descendants.begin();
+
+    while (iter != m_Descendants.end())
+    {
+        if ((*iter).System->GetGroup() == group)
+        {
+            group_package.push_back((*iter).System);
+            (*iter).System->Release();
+            iter = m_Descendants.erase(iter);
+        }
+        else
+        {
+            ++iter;
+        }
+    }
+
+    return group_package;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Removes all systems from the descendants list, which have the id.
+ */
+void
+ParticleSystemParent::RemoveDescendant(dword id)
+{
+    std::list<Descendant>::iterator iter = m_Descendants.begin();
+
+    while (iter != m_Descendants.end())
     {
         if ((*iter).System->GetID() == id)
         {
             (*iter).System->Release();
             iter = m_Descendants.erase(iter);
         }
-    }
-
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void
-ParticleSystemParent::RemoveGroup(int group)
-{
-    std::list<Descendant>::iterator iter;
-
-    for (iter = m_Descendants.begin(); iter != m_Descendants.end(); ++iter)
-    {
-        if ((*iter).System->GetGroup() == group)
+        else
         {
-            (*iter).System->Release();
-            iter = m_Descendants.erase(iter);
+            ++iter;
         }
     }
 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Removes all systems from the descendants list, which are related to the group.
+ */
+void
+ParticleSystemParent::RemoveDescendantGroup(int group)
+{
+    std::list<Descendant>::iterator iter = m_Descendants.begin();
+
+    while (iter != m_Descendants.end())
+    {
+        if ((*iter).System->GetGroup() == group)
+        {
+            (*iter).System->Release();
+            iter = m_Descendants.erase(iter);
+        }
+        else
+        {
+            ++iter;
+        }
+    }
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Clears the descendants list, removing all systems.
+ */
 void
 ParticleSystemParent::Clear()
 {

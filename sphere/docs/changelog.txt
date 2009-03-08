@@ -1,4 +1,14 @@
 YYYY.MM.DD
+2009.03.08
+  - Particle system:
+      - Remapped descendants- and swarm-specific methods
+        to their appropriate names 'descendants' and 'swarm'.
+      - Added unique(), sort(), apply(), extract(), extractGroup(),
+        getGroup(), contains(), containsGroup() to 'descendants'
+        and renamed find() to get().
+      - Added the 'type' property, the constants PS_PARENT
+        and PS_CHILD and renamed the other particle system
+        constants appropriately.
 
 2009.02.26
   - Added sfxr

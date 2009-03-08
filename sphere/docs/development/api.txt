@@ -1419,6 +1419,9 @@ log_object.endBlock()
     
       *** particle system parent properties ***
       
+      ps_parent_object.type
+        - the constant PS_PARENT
+      
       ps_parent_object.id
         - unsigned integer, read-only unique identifier
       
@@ -1435,19 +1438,19 @@ log_object.endBlock()
         - boolean, if true, system won't revive dead descendants
       
       ps_parent_object.body
-        - a particle system body object
+        - a particle body object
         
       ps_parent_object.initializer
-        - a particle system initializer object
+        - a particle initializer object
       
       ps_parent_object.updater
-        - a particle system updater object
+        - a particle updater object
       
       ps_parent_object.renderer
-        - a particle system renderer object
+        - a particle renderer object
             
       ps_parent_object.callback
-        - a particle system callback object
+        - a particle callback object
       
       *** particle system parent methods ***
       
@@ -1456,13 +1459,7 @@ log_object.endBlock()
       
       ps_parent_object.render()
         - ask particle system to render
-        
-      ps_parent_object.size()
-        - returns the current size of the descendants list
-      
-      ps_parent_object.clear()
-        - clears the descendant list
-      
+            
       ps_parent_object.adopt(particle_system)
         - adopt the particle_system
       
@@ -1487,12 +1484,60 @@ log_object.endBlock()
       ps_parent_object.revive()
         - revives the system, this will trigger the on_birth callback, if set
       
+      *** particle system parent descendants ***
+      
+      ps_parent_object.descendants.size()
+        - returns the current size of the descendants list
+      
+      ps_parent_object.descendants.unique()
+        - removes all duplicates from the descendants list
+      
+      ps_parent_object.descendants.apply(function() {...})
+        - applies function to all systems in the descendants list by executing it
+          in the context of each system
+      
+      ps_parent_object.descendants.sort(function(system_a, system_b) {...})
+        - sorts the descendants list using a custom implementation of merge sort
+          and function as the compare function
+      
+      ps_parent_object.descendants.contains(id)
+        - returns true if a system with the id is found in the descendants list, else false
+      
+      ps_parent_object.descendants.containsGroup(group)
+        - returns true if any system related to the group is found in the descendants list,
+          else fals
+      
+      ps_parent_object.descendants.get(id)
+        - returns the system with the id in the descendants list
+      
+      ps_parent_object.descendants.getGroup(group)
+        - returns an array of all systems related to the group in the descendants list
+      
+      ps_parent_object.descendants.extract(id)
+        - extracts and returns the system with the id from the descendants list
+      
+      ps_parent_object.descendants.extractGroup(group)
+        - extracts and returns an array of all systems related to the group from the
+          descendants list
+      
+      ps_parent_object.descendants.remove(id)
+        - removes all occurrences of a system with the id from the descendants list
+      
+      ps_parent_object.descendants.removeGroup(group)
+        - removes all occurrences of a systems related to the group from the descendants list
+      
+      ps_parent_object.descendants.clear()
+        - clears the descendants list
+    
   	*** particle system child ***
     
     CreateParticleSystemChild(capacity)
       - returns a new particle system child object with the initial capacity
     
       *** particle system child properties ***
+      
+      ps_child_object.type
+        - the constant PS_CHILD
       
       ps_child_object.id
         - unsigned integer, read-only unique identifier
@@ -1510,22 +1555,19 @@ log_object.endBlock()
         - boolean, if true, system won't revive dead descendants
       
       ps_child_object.body
-        - a particle system body object
+        - a particle body object
         
       ps_child_object.initializer
-        - a particle system initializer object
+        - a particle initializer object
       
       ps_child_object.updater
-        - a particle system updater object
+        - a particle updater object
       
       ps_child_object.renderer
-        - a particle system renderer object
-      
-      ps_child_object.swarm_renderer
-        - a particle system renderer object
-      
+        - a particle renderer object
+            
       ps_child_object.callback
-        - a particle system callback object
+        - a particle callback object
       
       *** particle system child methods ***
       
@@ -1534,28 +1576,7 @@ log_object.endBlock()
       
       ps_child_object.render()
         - ask particle system to render
-        
-      ps_child_object.size()
-        - returns the current size of the particle swarm
-      
-      ps_child_object.capacity()
-        - returns the current size limit
-      
-      ps_child_object.grow()
-        - increases size by 1, if size is smaller than capacity
-      
-      ps_child_object.shrink()
-        - decreases size by 1, if size is bigger than zero
-      
-      ps_child_object.resize(n)
-        - resizes by the integer n, can't resize to negative size or size bigger than capacity
-
-      ps_child_object.reserve(n)
-        - makes sure that it can hold at least n particles by allocating more space if needed
-      
-      ps_child_object.clear()
-        - sets swarm to a zero size
-      
+            
       ps_child_object.clone()
         - returns a new particle system child object which is the exact copy of ps_child_object
             
@@ -1567,8 +1588,36 @@ log_object.endBlock()
       
       ps_child_object.revive()
         - revives the system, this will trigger the on_birth callback, if set
-            
-    *** particle system body ***
+    
+      *** particle system child swarm ***
+    
+      ps_child_object.swarm.renderer
+        - a particle renderer object
+    
+      ps_child_object.swarm.size()
+        - returns the current size of the particle swarm
+      
+      ps_child_object.swarm.capacity()
+        - returns the current swarm size limit
+      
+      ps_child_object.swarm.grow()
+        - increases the swarm size by 1, if possible
+      
+      ps_child_object.swarm.shrink()
+        - decreases size by 1, if possible
+      
+      ps_child_object.swarm.resize(n)
+        - resizes the swarm by the integer n, can't resize to negative size or size bigger
+          than capacity
+
+      ps_child_object.swarm.reserve(n)
+        - makes sure that the swarm can hold at least n particles by allocating more space
+          if needed
+      
+      ps_child_object.swarm.clear()
+        - sets swarm to a zero size
+    
+    *** particle body ***
     
     particle_system.body.x
     particle_system.body.y
@@ -1584,18 +1633,18 @@ log_object.endBlock()
     particle_system.body.life
       - floating point life amount
     
-    *** particle system initializer ***
+    *** particle initializer ***
     
     particle_system.initializer.pos_mode
       - defines the position initialization shape which can be one of the following:
-        - PE_NULL_SHAPE (default)
-        - PE_RECTANGULAR_SHAPE
-        - PE_ELLIPTICAL_SHAPE
+        - PE_SHAPE_NULL (default)
+        - PE_SHAPE_RECTANGLE
+        - PE_SHAPE_ELLIPSE
         
     particle_system.initializer.vel_mode
       - defines the initial velocity orientation which can be one of the following:
-        - PE_EXPLICIT_ORIENTATION (default)
-        - PE_IMPLICIT_ORIENTATION
+        - PE_ORIENTATION_EXPLICIT (default)
+        - PE_ORIENTATION_IMPLICIT
     
     the following properties will accept and return ordinary JavaScript objects
     with the given properties. if you don't want to set a property, it can be left out
@@ -1616,7 +1665,7 @@ log_object.endBlock()
       - returns/accepts the following object structure:
         {angle: {min: , max: },  a: {min: , max: }, b: {min: , max: }}
     
-    *** particle system updater ***
+    *** particle updater ***
     
     particle_system.updater.force_x
     particle_system.updater.force_y
@@ -1625,7 +1674,7 @@ log_object.endBlock()
     particle_system.updater.damping
       - floating point damping constant
     
-    *** particle system renderer ***
+    *** particle renderer ***
     
     particle_system.renderer.texture
       - holds the image to be rendered, always returns or sets copies
@@ -1638,7 +1687,7 @@ log_object.endBlock()
       - integers to be added to the position coordinates x and y
         use them to adjust textures or to convert coordinates
     
-    *** particle system callback ***
+    *** particle callback ***
     
     the following properties will accept ordinary JavaScript functions which
     will be called on events in the context of the particle system object.
