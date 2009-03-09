@@ -70,15 +70,15 @@ ParticleSystemParent::Render()
     if (IsExtinct() || IsHidden())
         return;
 
-    // callback
-    if (m_ScriptInterface.HasOnRender())
-        m_ScriptInterface.OnRender();
-
     // render descendants
     std::list<Descendant>::iterator iter;
 
     for (iter = m_Descendants.begin(); iter != m_Descendants.end(); ++iter)
         (*iter).System->Render();
+
+    // callback
+    if (m_ScriptInterface.HasOnRender())
+        m_ScriptInterface.OnRender();
 
     // render itself, if alive
     if (!IsDead())

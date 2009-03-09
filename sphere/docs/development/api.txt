@@ -1635,35 +1635,55 @@ log_object.endBlock()
     
     *** particle initializer ***
     
-    particle_system.initializer.pos_mode
-      - defines the position initialization shape which can be one of the following:
-        - PE_SHAPE_NULL (default)
-        - PE_SHAPE_RECTANGLE
-        - PE_SHAPE_ELLIPSE
+    particle_system.initializer.getAgingParams()
+      - returns an wrapper object filled with aging initialization parameters
+      - following signature is possible:
         
-    particle_system.initializer.vel_mode
-      - defines the initial velocity orientation which can be one of the following:
-        - PE_ORIENTATION_EXPLICIT (default)
-        - PE_ORIENTATION_IMPLICIT
-    
-    the following properties will accept and return ordinary JavaScript objects
-    with the given properties. if you don't want to set a property, it can be left out
-    
-    particle_system.initializer.aging
-      - returns/accepts the following object structure:
-        {min: , max: }
-    
-    particle_system.initializer.pos_rect
-      - returns/accepts the following object structure:
-        {x: {min: , max: },  y: {min: , max: }}
-    
-    particle_system.initializer.pos_ellipse
-      - returns/accepts the following object structure:
-        {angle: {min: , max: },  a: {min: , max: }, b: {min: , max: }}
-    
-    particle_system.initializer.vel_ellipse
-      - returns/accepts the following object structure:
-        {angle: {min: , max: },  a: {min: , max: }, b: {min: , max: }}
+        {min: -, max: -}
+      
+    particle_system.initializer.setAgingParams({params})
+      - accepts a wrapper object filled with aging initialization parameters to set
+      - the same parameters are accepted as returned by getAgingParams()
+      - parameters which should not be set, can be omitted
+      
+    particle_system.initializer.getPosParams([shape])
+      - returns a wrapper object filled with position initialization parameters
+      - if 'shape' is not specified, the parameters for the current shape are returned,
+        or if 'shape' is specified, the parameters belonging to the 'shape' are returned
+      - following signatures are possible:
+            
+            {shape: PS_SHAPE_NULL}
+            
+            {shape: PS_SHAPE_RECTANGLE,
+                 x: {min: -, max: -},
+                 y: {min: -, max: -}}
+            
+            {shape: PS_SHAPE_ELLIPSE,
+             angle: {min: -, max: -},
+                 a: {min: -, max: -},
+                 b: {min: -, max: -}}
+      
+    particle_system.initializer.setPosParams({params})
+      - accepts a wrapper object filled with position initialization parameters to set
+      - the same parameters are accepted as returned by getPosParams()
+      - parameters which should not be set, can be omitted
+      - if 'shape' is omitted, the parameters are assumed to belong to the current shape
+      
+    particle_system.initializer.getVelParams()
+      - returns a wrapper object filled with velocity initialization parameters
+      - following signature is possible:
+            
+            {mode: -,
+             angle: {min: -, max: -},
+                 a: {min: -, max: -},
+                 b: {min: -, max: -}}
+                 
+        mode can be either PS_ORIENTATION_EXPLICIT or PS_ORIENTATION_IMPLICIT
+      
+    particle_system.initializer.setPosParams({params})
+      - accepts a wrapper object filled with position initialization parameters to set
+      - the same parameters are accepted as returned by getVelParams()
+      - parameters which should not be set, can be omitted
     
     *** particle updater ***
     
@@ -1686,6 +1706,9 @@ log_object.endBlock()
     particle_system.renderer.offset_y
       - integers to be added to the position coordinates x and y
         use them to adjust textures or to convert coordinates
+        
+    particle_system.renderer.disabled
+      - boolean flag, if set to true, the standard renderer is disabled
     
     *** particle callback ***
     

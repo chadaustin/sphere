@@ -7,6 +7,7 @@ ParticleRenderer::ParticleRenderer(const ParticleRenderer& renderer)
                  , m_Texture(NULL)
                  , m_OffsetX(renderer.m_OffsetX)
                  , m_OffsetY(renderer.m_OffsetY)
+                 , m_Disabled(renderer.m_Disabled)
 {
     SetTexture(renderer.m_Texture);
 }
@@ -15,7 +16,7 @@ ParticleRenderer::ParticleRenderer(const ParticleRenderer& renderer)
 void
 ParticleRenderer::operator()(const Particle& p) const
 {
-    if (m_Texture)
+    if (!m_Disabled && m_Texture)
         BlitImage(m_Texture, (int)(p.Pos.X) + m_OffsetX, (int)(p.Pos.Y) + m_OffsetY, m_BlendMode);
 
 }

@@ -107,8 +107,12 @@ private:
   // particle initializer
   declare_constructor1(CreateParticleInitializerObject, ParticleSystemBase* system);
   declare_finalizer(ssFinalizeParticleInitializer);
-  declare_property(ssParticleInitializerGetProperty);
-  declare_property(ssParticleInitializerSetProperty);
+  declare_method(ssParticleInitializerGetAgingParams);
+  declare_method(ssParticleInitializerSetAgingParams);
+  declare_method(ssParticleInitializerGetPosParams);
+  declare_method(ssParticleInitializerSetPosParams);
+  declare_method(ssParticleInitializerGetVelParams);
+  declare_method(ssParticleInitializerSetVelParams);
 
   // particle updater
   declare_constructor1(CreateParticleUpdaterObject, ParticleSystemBase* system);

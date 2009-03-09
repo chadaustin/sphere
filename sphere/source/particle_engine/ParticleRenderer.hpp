@@ -17,6 +17,7 @@ class ParticleRenderer
         CImage32::BlendMode m_BlendMode;
         int                 m_OffsetX;
         int                 m_OffsetY;
+        bool                m_Disabled;
 
     public:
 
@@ -39,6 +40,9 @@ class ParticleRenderer
         int  GetOffsetY() const;
         void SetOffsetY(int off_y);
 
+        bool IsDisabled() const;
+        void Disable(bool disable);
+
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -48,6 +52,7 @@ ParticleRenderer::ParticleRenderer()
                  , m_BlendMode(CImage32::BLEND)
                  , m_OffsetX(0)
                  , m_OffsetY(0)
+                 , m_Disabled(false)
 {
 }
 
@@ -55,9 +60,8 @@ ParticleRenderer::ParticleRenderer()
 inline
 ParticleRenderer::~ParticleRenderer()
 {
-    if (m_Texture)
-        DestroyImage(m_Texture);
-
+    // texture is owned by a script object, which will destroy it automatically
+    m_Texture = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -102,6 +106,19 @@ ParticleRenderer::SetOffsetY(int off_y)
     m_OffsetY = off_y;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+inline bool
+ParticleRenderer::IsDisabled() const
+{
+    return m_Disabled;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+inline void
+ParticleRenderer::Disable(bool disable)
+{
+    m_Disabled = disable;
+}
 
 
 

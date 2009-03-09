@@ -86,13 +86,13 @@ ParticleSystemChild::Render()
     if (IsExtinct() || IsHidden())
         return;
 
-    // callback
-    if (m_ScriptInterface.HasOnRender())
-        m_ScriptInterface.OnRender();
-
     // render swarm
     for (dword i = 0; i < m_Swarm.size(); ++i)
         m_SwarmRenderer(m_Swarm[i]);
+
+    // callback
+    if (m_ScriptInterface.HasOnRender())
+        m_ScriptInterface.OnRender();
 
     // render itself, if alive
     if (!IsDead())

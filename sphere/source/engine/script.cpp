@@ -114,6 +114,7 @@ END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_PARTICLE_RENDERER)
 ParticleSystemBase* system;
+JSObject* texture_obj;
 END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_PARTICLE_CALLBACK)
@@ -126,6 +127,7 @@ END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_PARTICLE_SWARM_RENDERER)
 ParticleSystemChild* system;
+JSObject* texture_obj;
 END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_PARTICLE_DESCENDANTS)
@@ -7579,18 +7581,18 @@ CScript::CreateParticleInitializerObject(JSContext* cx, ParticleSystemBase* syst
     if (!object || !JS_AddRoot(cx, &object))
         return NULL;
 
-    // assign properties to the object
-    static JSPropertySpec ps[] =
+    // assign methods to the object
+    static JSFunctionSpec fs[] =
     {
-        { "pos_mode",      0, JSPROP_PERMANENT, ssParticleInitializerGetProperty, ssParticleInitializerSetProperty },
-        { "vel_mode",      1, JSPROP_PERMANENT, ssParticleInitializerGetProperty, ssParticleInitializerSetProperty },
-        { "aging",         2, JSPROP_PERMANENT, ssParticleInitializerGetProperty, ssParticleInitializerSetProperty },
-        { "pos_rect",      3, JSPROP_PERMANENT, ssParticleInitializerGetProperty, ssParticleInitializerSetProperty },
-        { "pos_ellipse",   4, JSPROP_PERMANENT, ssParticleInitializerGetProperty, ssParticleInitializerSetProperty },
-        { "vel_ellipse",   5, JSPROP_PERMANENT, ssParticleInitializerGetProperty, ssParticleInitializerSetProperty },
+        { "getAgingParams",   ssParticleInitializerGetAgingParams,   0, 0, 0 },
+        { "setAgingParams",   ssParticleInitializerSetAgingParams,   1, 0, 0 },
+        { "getPosParams",     ssParticleInitializerGetPosParams,     0, 0, 0 },
+        { "setPosParams",     ssParticleInitializerSetPosParams,     2, 0, 0 },
+        { "getVelParams",     ssParticleInitializerGetVelParams,     0, 0, 0 },
+        { "setVelParams",     ssParticleInitializerSetVelParams,     1, 0, 0 },
         { 0, 0, 0, 0, 0 },
     };
-    JS_DefineProperties(cx, object, ps);
+    JS_DefineFunctions(cx, object, fs);
 
     SS_PARTICLE_INITIALIZER* initializer_object = new SS_PARTICLE_INITIALIZER;
 
@@ -7618,222 +7620,313 @@ object->system = NULL;
 end_finalizer()
 
 ////////////////////////////////////////
-static JSObject*
-create_range_object(JSContext* cx, Range<float> range)
+/*
+ * HELPER FUNCTIONS
+ */
+ ////////////////////////////////////////
+static void
+fill_range_object(JSContext* cx, JSObject* rooted_out, Range<float> range)
 {
-    JSObject* range_obj = JS_NewObject(cx, NULL, NULL, NULL);
+    if (!rooted_out)
+        return;
 
-    if (!range_obj || !JS_AddRoot(cx, &range_obj))
-        return NULL;
-
-    JS_DefineProperty(cx, range_obj, "min", DOUBLE_TO_JSVAL(JS_NewDouble(cx, (double)range.Min)),
+    JS_DefineProperty(cx, rooted_out, "min", DOUBLE_TO_JSVAL(JS_NewDouble(cx, (double)range.Min)),
                       JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
 
-    JS_DefineProperty(cx, range_obj, "max", DOUBLE_TO_JSVAL(JS_NewDouble(cx, (double)range.Max)),
+    JS_DefineProperty(cx, rooted_out, "max", DOUBLE_TO_JSVAL(JS_NewDouble(cx, (double)range.Max)),
                       JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
 
-    // balancing call to JS_RemoveRoot
-    JS_RemoveRoot(cx, &range_obj);
-
-    return range_obj;
 }
-
-////////////////////////////////////////
-static JSObject*
-create_rectangular_range_object(JSContext* cx, RectangularRange<float> range)
-{
-    JSObject* range_obj = JS_NewObject(cx, NULL, NULL, NULL);
-
-    if (!range_obj || !JS_AddRoot(cx, &range_obj))
-        return NULL;
-
-    JS_DefineProperty(cx, range_obj, "x",
-                      OBJECT_TO_JSVAL(create_range_object(cx, range.X)),
-                      JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
-
-    JS_DefineProperty(cx, range_obj, "y",
-                      OBJECT_TO_JSVAL(create_range_object(cx, range.Y)),
-                      JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
-
-    // balancing call to JS_RemoveRoot
-    JS_RemoveRoot(cx, &range_obj);
-
-    return range_obj;
-}
-
-////////////////////////////////////////
-static JSObject*
-create_elliptical_range_object(JSContext* cx, EllipticalRange<float> range)
-{
-    JSObject* range_obj = JS_NewObject(cx, NULL, NULL, NULL);
-
-    if (!range_obj || !JS_AddRoot(cx, &range_obj))
-        return NULL;
-
-    JS_DefineProperty(cx, range_obj, "angle",
-                      OBJECT_TO_JSVAL(create_range_object(cx, range.Angle)),
-                      JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
-
-    JS_DefineProperty(cx, range_obj, "a",
-                      OBJECT_TO_JSVAL(create_range_object(cx, range.A)),
-                      JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
-
-    JS_DefineProperty(cx, range_obj, "b",
-                      OBJECT_TO_JSVAL(create_range_object(cx, range.B)),
-                      JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
-
-    // balancing call to JS_RemoveRoot
-    JS_RemoveRoot(cx, &range_obj);
-
-    return range_obj;
-}
-
-////////////////////////////////////////
-begin_property(SS_PARTICLE_INITIALIZER, ssParticleInitializerGetProperty)
-int prop_id = argInt(cx, id);
-switch (prop_id)
-{
-case 0:
-    *vp = INT_TO_JSVAL(object->system->GetInitializer().GetPositionMode());
-    break;
-case 1:
-    *vp = INT_TO_JSVAL(object->system->GetInitializer().GetVelocityMode());
-    break;
-case 2:
-    *vp = OBJECT_TO_JSVAL(create_range_object(cx, object->system->GetInitializer().GetAging()));
-    break;
-case 3:
-    *vp = OBJECT_TO_JSVAL(create_rectangular_range_object(cx, object->system->GetInitializer().GetPosRectangle()));
-    break;
-case 4:
-    *vp = OBJECT_TO_JSVAL(create_elliptical_range_object(cx, object->system->GetInitializer().GetPosEllipse()));
-    break;
-case 5:
-    *vp = OBJECT_TO_JSVAL(create_elliptical_range_object(cx, object->system->GetInitializer().GetVelEllipse()));
-    break;
-default:
-    *vp = JSVAL_NULL;
-    break;
-}
-end_property()
 
 ////////////////////////////////////////
 static void
-fill_range_from_object(JSContext* cx, JSObject* obj, Range<float>& range)
+fill_params_from_rectangular_range(JSContext* cx, JSObject* rooted_out, RectangularRange<float> range)
 {
-    if (!obj || !JS_AddRoot(cx, &obj))
+    if (!rooted_out)
+        return;
+
+    JSObject* x_obj = JS_NewObject(cx, NULL, NULL, NULL);
+    JS_DefineProperty(cx, rooted_out, "x", OBJECT_TO_JSVAL(x_obj),
+                      JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
+    fill_range_object(cx, x_obj, range.X);
+
+    JSObject* y_obj = JS_NewObject(cx, NULL, NULL, NULL);
+    JS_DefineProperty(cx, rooted_out, "y", OBJECT_TO_JSVAL(y_obj),
+                      JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
+    fill_range_object(cx, y_obj, range.Y);
+}
+
+////////////////////////////////////////
+static void
+fill_params_from_elliptical_range(JSContext* cx, JSObject* rooted_out, EllipticalRange<float> range)
+{
+    if (!rooted_out)
+        return;
+
+    JSObject* angle_obj = JS_NewObject(cx, NULL, NULL, NULL);
+    JS_DefineProperty(cx, rooted_out, "angle", OBJECT_TO_JSVAL(angle_obj),
+                      JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
+    fill_range_object(cx, angle_obj, range.Angle);
+
+    JSObject* a_obj = JS_NewObject(cx, NULL, NULL, NULL);
+    JS_DefineProperty(cx, rooted_out, "a", OBJECT_TO_JSVAL(a_obj),
+                      JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
+    fill_range_object(cx, a_obj, range.A);
+
+    JSObject* b_obj = JS_NewObject(cx, NULL, NULL, NULL);
+    JS_DefineProperty(cx, rooted_out, "b", OBJECT_TO_JSVAL(b_obj),
+                      JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
+    fill_range_object(cx, b_obj, range.B);
+
+}
+
+////////////////////////////////////////
+static void
+fill_range_from_params(JSContext* cx, JSObject* rooted_in, Range<float>& range)
+{
+    if (!rooted_in)
         return;
 
     jsval val;
     jsdouble jsd;
 
-    if (JS_GetProperty(cx, obj, "min", &val) &&
+    if (JS_GetProperty(cx, rooted_in, "min", &val) &&
         JSVAL_IS_NUMBER(val) &&
         JS_ValueToNumber(cx, val, &jsd))
     {
         range.Min = (float)jsd;
     }
 
-    if (JS_GetProperty(cx, obj, "max", &val) &&
+    if (JS_GetProperty(cx, rooted_in, "max", &val) &&
         JSVAL_IS_NUMBER(val) &&
         JS_ValueToNumber(cx, val, &jsd))
     {
         range.Max = (float)jsd;
     }
 
-    // balancing call to JS_RemoveRoot
-    JS_RemoveRoot(cx, &obj);
+}
+
+////////////////////////////////////////
+static void
+fill_rectangular_range_from_params(JSContext* cx, JSObject* rooted_in, RectangularRange<float>& range)
+{
+    if (!rooted_in)
+        return;
+
+    jsval val;
+
+    if (JS_GetProperty(cx, rooted_in, "x", &val) &&
+        JSVAL_IS_OBJECT(val) &&
+        !JSVAL_IS_NULL(val))
+    {
+        fill_range_from_params(cx, JSVAL_TO_OBJECT(val), range.X);
+    }
+
+    if (JS_GetProperty(cx, rooted_in, "y", &val) &&
+        JSVAL_IS_OBJECT(val) &&
+        !JSVAL_IS_NULL(val))
+    {
+        fill_range_from_params(cx, JSVAL_TO_OBJECT(val), range.Y);
+    }
 
 }
 
 ////////////////////////////////////////
 static void
-fill_rectangular_range_from_object(JSContext* cx, JSObject* obj, RectangularRange<float>& range)
+fill_elliptical_range_from_params(JSContext* cx, JSObject* rooted_in, EllipticalRange<float>& range)
 {
-    if (!obj || !JS_AddRoot(cx, &obj))
+    if (!rooted_in)
         return;
 
     jsval val;
 
-    if (JS_GetProperty(cx, obj, "x", &val) &&
+    if (JS_GetProperty(cx, rooted_in, "angle", &val) &&
         JSVAL_IS_OBJECT(val) &&
         !JSVAL_IS_NULL(val))
     {
-        fill_range_from_object(cx, JSVAL_TO_OBJECT(val), range.X);
+        fill_range_from_params(cx, JSVAL_TO_OBJECT(val), range.Angle);
     }
 
-    if (JS_GetProperty(cx, obj, "y", &val) &&
+    if (JS_GetProperty(cx, rooted_in, "a", &val) &&
         JSVAL_IS_OBJECT(val) &&
         !JSVAL_IS_NULL(val))
     {
-        fill_range_from_object(cx, JSVAL_TO_OBJECT(val), range.Y);
+        fill_range_from_params(cx, JSVAL_TO_OBJECT(val), range.A);
     }
 
-    // balancing call to JS_RemoveRoot
-    JS_RemoveRoot(cx, &obj);
+    if (JS_GetProperty(cx, rooted_in, "b", &val) &&
+        JSVAL_IS_OBJECT(val) &&
+        !JSVAL_IS_NULL(val))
+    {
+        fill_range_from_params(cx, JSVAL_TO_OBJECT(val), range.B);
+    }
 
 }
 
 ////////////////////////////////////////
-static void
-fill_elliptical_range_from_object(JSContext* cx, JSObject* obj, EllipticalRange<float>& range)
+/* README!
+ *
+ * Kyuu: I'm using here rval and argv[i] explicitly, so it's clear what I want to do:
+ *       rval, as well as argv[i], are always rooted, so I'm rooting the objects by
+ *       an immediate assignment, which is a safe strategy and very convenient.
+ *       Macro'ing rval and argv was a bad decision, IMO, as 'return_type()' and the
+ *       argument macros are misleading and hide rval's and argv's usability.
+ *       Not rooting the temporary values is the typical cause for mysterious crashes
+ *       which can be VERY hard to debug if you don't know it's source: The JS GC.
+ *       It will collect all unrooted JS values (using a already collected value will
+ *       unavoidably lead to a segfault!) and can be invoked by almost all calls into
+ *       the JSAPI, so you are most of the time only on the safe side if you root all
+ *       your values carefully.
+ *
+ *       Note: Rooting strategies like using rval or argv[i] are highly encouraged
+ *             by Mozilla's developers. argv can even be given more elements
+ *             in the JSFunctionSpec declarations, just so the additional
+ *             elements can be used to root values!
+ *
+ */
+////////////////////////////////////////
+begin_method(SS_PARTICLE_INITIALIZER, ssParticleInitializerGetAgingParams, 0)
+JSObject* params = JS_NewObject(cx, NULL, NULL, NULL);
+if (!params)
 {
-    if (!obj || !JS_AddRoot(cx, &obj))
-        return;
-
-    jsval val;
-
-    if (JS_GetProperty(cx, obj, "angle", &val) &&
-        JSVAL_IS_OBJECT(val) &&
-        !JSVAL_IS_NULL(val))
-    {
-        fill_range_from_object(cx, JSVAL_TO_OBJECT(val), range.Angle);
-    }
-
-    if (JS_GetProperty(cx, obj, "a", &val) &&
-        JSVAL_IS_OBJECT(val) &&
-        !JSVAL_IS_NULL(val))
-    {
-        fill_range_from_object(cx, JSVAL_TO_OBJECT(val), range.A);
-    }
-
-    if (JS_GetProperty(cx, obj, "b", &val) &&
-        JSVAL_IS_OBJECT(val) &&
-        !JSVAL_IS_NULL(val))
-    {
-        fill_range_from_object(cx, JSVAL_TO_OBJECT(val), range.B);
-    }
-
-    // balancing call to JS_RemoveRoot
-    JS_RemoveRoot(cx, &obj);
-
+    JS_ReportError(cx, "Could not create object.");
+    return JS_FALSE;
 }
+// params is now rooted
+*rval = OBJECT_TO_JSVAL(params);
+fill_range_object(cx, params, object->system->GetInitializer().GetAging());
+end_method()
 
 ////////////////////////////////////////
-begin_property(SS_PARTICLE_INITIALIZER, ssParticleInitializerSetProperty)
-int prop_id = argInt(cx, id);
-switch (prop_id)
+begin_method(SS_PARTICLE_INITIALIZER, ssParticleInitializerSetAgingParams, 1)
+// it is not guaranteed that this macro expansion won't create a new object
+arg_object(params);
+// params is now definitely rooted
+argv[0] = OBJECT_TO_JSVAL(params);
+fill_range_from_params(cx, params, object->system->GetInitializer().GetAging());
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_INITIALIZER, ssParticleInitializerGetPosParams, 0)
+int shape = object->system->GetInitializer().GetPositionMode();
+if (argc >= 1)
 {
-case 0:
-    object->system->GetInitializer().SetPositionMode(argInt(cx, *vp));
+    shape = argInt(cx, argv[0]);
+}
+JSObject* params = JS_NewObject(cx, NULL, NULL, NULL);
+if (!params)
+{
+    JS_ReportError(cx, "Could not create object!");
+    return JS_FALSE;
+}
+// params is now rooted
+*rval = OBJECT_TO_JSVAL(params);
+switch (shape)
+{
+    case ParticleInitializer::NULL_SHAPE:
+    {
+        JS_DefineProperty(cx, params, "shape",
+                          INT_TO_JSVAL(ParticleInitializer::NULL_SHAPE),
+                          JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
+    }
     break;
-case 1:
-    object->system->GetInitializer().SetVelocityMode(argInt(cx, *vp));
+
+    case ParticleInitializer::RECTANGULAR_SHAPE:
+    {
+        fill_params_from_rectangular_range(cx, params, object->system->GetInitializer().GetPosRectangle());
+        JS_DefineProperty(cx, params, "shape",
+                          INT_TO_JSVAL(ParticleInitializer::RECTANGULAR_SHAPE),
+                          JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
+    }
     break;
-case 2:
-    fill_range_from_object(cx, argObject(cx, *vp), object->system->GetInitializer().GetAging());
+
+    case ParticleInitializer::ELLIPTICAL_SHAPE:
+    {
+        fill_params_from_elliptical_range(cx, params, object->system->GetInitializer().GetPosEllipse());
+        JS_DefineProperty(cx, params, "shape",
+                          INT_TO_JSVAL(ParticleInitializer::ELLIPTICAL_SHAPE),
+                          JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
+    }
     break;
-case 3:
-    fill_rectangular_range_from_object(cx, argObject(cx, *vp), object->system->GetInitializer().GetPosRectangle());
-    break;
-case 4:
-    fill_elliptical_range_from_object(cx, argObject(cx, *vp), object->system->GetInitializer().GetPosEllipse());
-    break;
-case 5:
-    fill_elliptical_range_from_object(cx, argObject(cx, *vp), object->system->GetInitializer().GetVelEllipse());
+
+    default:
+    {
+        JS_ReportError(cx, "Invalid shape specified!");
+        return JS_FALSE;
+    }
     break;
 }
-end_property()
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_INITIALIZER, ssParticleInitializerSetPosParams, 1)
+// it is not guaranteed that this macro expansion won't create a new object
+arg_object(params);
+// params is now definitely rooted
+argv[0] = OBJECT_TO_JSVAL(params);
+jsval val;
+int shape = object->system->GetInitializer().GetPositionMode();
+if (JS_GetProperty(cx, params, "shape", &val) &&
+    JSVAL_IS_INT(val))
+{
+    shape = JSVAL_TO_INT(val);
+}
+switch (shape)
+{
+    case ParticleInitializer::NULL_SHAPE:
+        // nothing to set...
+        break;
+
+    case ParticleInitializer::RECTANGULAR_SHAPE:
+    {
+        fill_rectangular_range_from_params(cx, params, object->system->GetInitializer().GetPosRectangle());
+    }
+    break;
+
+    case ParticleInitializer::ELLIPTICAL_SHAPE:
+    {
+        fill_elliptical_range_from_params(cx, params, object->system->GetInitializer().GetPosEllipse());
+    }
+    break;
+
+    default:
+    {
+        JS_ReportError(cx, "Invalid shape specified!");
+        return JS_FALSE;
+    }
+    break;
+}
+object->system->GetInitializer().SetPositionMode(shape);
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_INITIALIZER, ssParticleInitializerGetVelParams, 0)
+JSObject* params = JS_NewObject(cx, NULL, NULL, NULL);
+if (!params)
+{
+    JS_ReportError(cx, "Could not create object!");
+    return JS_FALSE;
+}
+// params is now rooted
+*rval = OBJECT_TO_JSVAL(params);
+fill_params_from_elliptical_range(cx, params, object->system->GetInitializer().GetVelEllipse());
+JS_DefineProperty(cx, params, "mode", INT_TO_JSVAL(object->system->GetInitializer().GetVelocityMode()), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE);
+end_method()
+
+////////////////////////////////////////
+begin_method(SS_PARTICLE_INITIALIZER, ssParticleInitializerSetVelParams, 1)
+// it is not guaranteed that this macro expansion won't create a new object
+arg_object(params);
+// params is now definitely rooted
+argv[0] = OBJECT_TO_JSVAL(params);
+jsval val;
+if (JS_GetProperty(cx, params, "mode", &val) &&
+    JSVAL_IS_INT(val))
+{
+    object->system->GetInitializer().SetVelocityMode(JSVAL_TO_INT(val));
+}
+fill_elliptical_range_from_params(cx, params, object->system->GetInitializer().GetVelEllipse());
+end_method()
 
 ////////////////////////////////////////
 // PARTICLE UPDATER OBJECT /////////////
@@ -7960,6 +8053,7 @@ CScript::CreateParticleRendererObject(JSContext* cx, ParticleSystemBase* system)
         { "blend_mode", 1, JSPROP_PERMANENT, ssParticleRendererGetProperty, ssParticleRendererSetProperty },
         { "offset_x",   2, JSPROP_PERMANENT, ssParticleRendererGetProperty, ssParticleRendererSetProperty },
         { "offset_y",   3, JSPROP_PERMANENT, ssParticleRendererGetProperty, ssParticleRendererSetProperty },
+        { "disabled",   4, JSPROP_PERMANENT, ssParticleRendererGetProperty, ssParticleRendererSetProperty },
         { 0, 0, 0, 0, 0 },
     };
     JS_DefineProperties(cx, object, ps);
@@ -7975,6 +8069,17 @@ CScript::CreateParticleRendererObject(JSContext* cx, ParticleSystemBase* system)
     }
 
     renderer_object->system = system;
+    renderer_object->texture_obj = NULL; // always initialize before calling JS_AddRoot
+
+    // root texture_obj
+    if (!JS_AddRoot(cx, &(renderer_object->texture_obj)))
+    {
+        // failed to root texture_obj, so clean up
+        delete renderer_object;
+        JS_RemoveRoot(cx, &object);
+        return NULL;
+    }
+
     JS_SetPrivate(cx, object, renderer_object);
 
     // balancing call to JS_RemoveRoot
@@ -7985,6 +8090,11 @@ CScript::CreateParticleRendererObject(JSContext* cx, ParticleSystemBase* system)
 
 ////////////////////////////////////////
 begin_finalizer(SS_PARTICLE_RENDERER, ssFinalizeParticleRenderer)
+// unroot texture_obj and clean up
+JS_RemoveRoot(cx, &(object->texture_obj));
+object->texture_obj = NULL;
+object->system->GetRenderer().SetTexture(NULL);
+
 // the renderer object should not delete the superior particle system
 object->system = NULL;
 end_finalizer()
@@ -7995,7 +8105,7 @@ int prop_id = argInt(cx, id);
 switch (prop_id)
 {
 case 0:
-    *vp = OBJECT_TO_JSVAL(CreateImageObject(cx, CloneImage(object->system->GetRenderer().GetTexture()), true));
+    *vp = OBJECT_TO_JSVAL(object->texture_obj);
     break;
 case 1:
     *vp = INT_TO_JSVAL(object->system->GetRenderer().GetBlendMode());
@@ -8005,6 +8115,9 @@ case 2:
     break;
 case 3:
     *vp = INT_TO_JSVAL(object->system->GetRenderer().GetOffsetY());
+    break;
+case 4:
+    *vp = INT_TO_JSVAL(object->system->GetRenderer().IsDisabled());
     break;
 default:
     *vp = JSVAL_NULL;
@@ -8020,9 +8133,33 @@ switch (prop_id)
 case 0:
     {
         SS_IMAGE* image = argImage(cx, *vp);
-        if (!image)
-            return JS_FALSE;
-        object->system->GetRenderer().SetTexture(image->image);
+
+        if (image)
+        {
+            IMAGE clone_img = CloneImage(image->image);
+
+            if (!clone_img)
+            {
+                JS_ReportError(cx, "Could not set image.");
+                return JS_FALSE;
+            }
+
+            JSObject* clone_obj = CreateImageObject(cx, clone_img, true);
+
+            if (!clone_obj)
+            {
+                JS_ReportError(cx, "Could not set image.");
+                return JS_FALSE;
+            }
+
+            object->texture_obj = clone_obj;
+            object->system->GetRenderer().SetTexture(clone_img);
+        }
+        else
+        {
+            object->texture_obj = NULL;
+            object->system->GetRenderer().SetTexture(NULL);
+        }
     }
     break;
 case 1:
@@ -8033,6 +8170,9 @@ case 2:
     break;
 case 3:
     object->system->GetRenderer().SetOffsetY(argInt(cx, *vp));
+    break;
+case 4:
+    object->system->GetRenderer().Disable(argBool(cx, *vp));
     break;
 }
 end_property()
@@ -8587,6 +8727,7 @@ CScript::CreateParticleSwarmRendererObject(JSContext* cx, ParticleSystemChild* s
         { "blend_mode", 1, JSPROP_PERMANENT, ssParticleSwarmRendererGetProperty, ssParticleSwarmRendererSetProperty },
         { "offset_x",   2, JSPROP_PERMANENT, ssParticleSwarmRendererGetProperty, ssParticleSwarmRendererSetProperty },
         { "offset_y",   3, JSPROP_PERMANENT, ssParticleSwarmRendererGetProperty, ssParticleSwarmRendererSetProperty },
+        { "disabled",   4, JSPROP_PERMANENT, ssParticleSwarmRendererGetProperty, ssParticleSwarmRendererSetProperty },
         { 0, 0, 0, 0, 0 },
     };
     JS_DefineProperties(cx, object, ps);
@@ -8602,6 +8743,17 @@ CScript::CreateParticleSwarmRendererObject(JSContext* cx, ParticleSystemChild* s
     }
 
     renderer_object->system = system;
+    renderer_object->texture_obj = NULL; // always initialize before calling JS_AddRoot
+
+    // root texture_obj
+    if (!JS_AddRoot(cx, &(renderer_object->texture_obj)))
+    {
+        // failed to root texture_obj, so clean up
+        delete renderer_object;
+        JS_RemoveRoot(cx, &object);
+        return NULL;
+    }
+
     JS_SetPrivate(cx, object, renderer_object);
 
     // balancing call to JS_RemoveRoot
@@ -8612,6 +8764,11 @@ CScript::CreateParticleSwarmRendererObject(JSContext* cx, ParticleSystemChild* s
 
 ////////////////////////////////////////
 begin_finalizer(SS_PARTICLE_SWARM_RENDERER, ssFinalizeParticleSwarmRenderer)
+// unroot texture_obj and clean up
+JS_RemoveRoot(cx, &(object->texture_obj));
+object->texture_obj = NULL;
+object->system->GetRenderer().SetTexture(NULL);
+
 // the swarm renderer object should not delete the superior particle system
 object->system = NULL;
 end_finalizer()
@@ -8622,7 +8779,7 @@ int prop_id = argInt(cx, id);
 switch (prop_id)
 {
 case 0:
-    *vp = OBJECT_TO_JSVAL(CreateImageObject(cx, CloneImage(object->system->GetSwarmRenderer().GetTexture()), true));
+    *vp = OBJECT_TO_JSVAL(object->texture_obj);
     break;
 case 1:
     *vp = INT_TO_JSVAL(object->system->GetSwarmRenderer().GetBlendMode());
@@ -8632,6 +8789,9 @@ case 2:
     break;
 case 3:
     *vp = INT_TO_JSVAL(object->system->GetSwarmRenderer().GetOffsetY());
+    break;
+case 4:
+    *vp = INT_TO_JSVAL(object->system->GetSwarmRenderer().IsDisabled());
     break;
 default:
     *vp = JSVAL_NULL;
@@ -8647,9 +8807,33 @@ switch (prop_id)
 case 0:
     {
         SS_IMAGE* image = argImage(cx, *vp);
-        if (!image)
-            return JS_FALSE;
-        object->system->GetSwarmRenderer().SetTexture(image->image);
+
+        if (image)
+        {
+            IMAGE clone_img = CloneImage(image->image);
+
+            if (!clone_img)
+            {
+                JS_ReportError(cx, "Could not set image.");
+                return JS_FALSE;
+            }
+
+            JSObject* clone_obj = CreateImageObject(cx, clone_img, true);
+
+            if (!clone_obj)
+            {
+                JS_ReportError(cx, "Could not set image.");
+                return JS_FALSE;
+            }
+
+            object->texture_obj = clone_obj;
+            object->system->GetSwarmRenderer().SetTexture(clone_img);
+        }
+        else
+        {
+            object->texture_obj = NULL;
+            object->system->GetSwarmRenderer().SetTexture(NULL);
+        }
     }
     break;
 case 1:
@@ -8660,6 +8844,9 @@ case 2:
     break;
 case 3:
     object->system->GetSwarmRenderer().SetOffsetY(argInt(cx, *vp));
+    break;
+case 4:
+    object->system->GetSwarmRenderer().Disable(argBool(cx, *vp));
     break;
 }
 end_property()

@@ -1,6 +1,6 @@
 YYYY.MM.DD
 2009.03.08
-  - Particle system:
+  - Changes to the particle system:
       - Remapped descendants- and swarm-specific methods
         to their appropriate names 'descendants' and 'swarm'.
       - Added unique(), sort(), apply(), extract(), extractGroup(),
@@ -9,6 +9,18 @@ YYYY.MM.DD
       - Added the 'type' property, the constants PS_PARENT
         and PS_CHILD and renamed the other particle system
         constants appropriately.
+      - Particle systems are now initialized with full life, instead of
+        zero life, for convenience.
+      - Renderers now have the 'disabled' property, which is false by default
+        and can be set to true in order to disable the standard renderer,
+        e.g. to handle the rendering manually in an on_render callback.
+        Their setters also root now a previously set image object, so it
+        can be returned by the getter instead of always creating new image objects.
+        This also enables to access renderer.texture just like an ordinary image
+        object, as e.g. with 'renderer.texture.blit(x, y)'.
+      - Rewrote particle initializer's JSAPI implementation. It features now the
+        explicit setter and getter methods: getAgingParams(), setAgingParams(),
+        getPosParams(), setPosParams(), getVelParams() and setVelParams().        
 
 2009.02.26
   - Added sfxr
