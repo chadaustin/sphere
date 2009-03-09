@@ -156,28 +156,38 @@ ParticleSystemParent::Unique()
 
 ////////////////////////////////////////////////////////////////////////////////
 /*
- * - Applies a function on all objects in the descendants list.
+ * - Applies a function on all system objects in the descendants list.
  */
 void
 ParticleSystemParent::Apply(ScriptInterface::Applicator appl)
 {
-    // we need to work on a copy, because the apply function can alter the descendents list
+    // we need to work on a copy, because the apply function can alter the descendants list
     std::list<Descendant> copy = m_Descendants;
 
-    std::list<Descendant>::iterator iter = copy.begin();
+    // reference the copies, so things can't be screwed up
+    // we doesn't care here for the return value of Borrow(), because the objects
+    // are already protected, so the return value will be always 'true'
+    std::list<Descendant>::iterator iter;
+    for (iter = copy.begin(); iter != copy.end(); ++iter)
+        (*iter).System->Borrow();
 
-    while (iter != copy.end())
-    {
+    // now we are safe to apply the function
+    // we will stop, if an error occurred while executing it
+    for (iter = copy.begin(); iter != copy.end(); ++iter)
         if (!appl((*iter).System->GetScriptInterface().GetObject()))
-            return;
+            break;
 
-        if (iter != copy.end())
-            ++iter;
-    }
+    // dereference the copies
+    for (iter = copy.begin(); iter != copy.end(); ++iter)
+        (*iter).System->Release();
 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Functions implementing the Merge sort algorithm using a compare function.
+ * - If an error occurs during the sorting process, the sorting will be stopped immediately.
+ */
 template<typename T> bool
 merge_sort(std::list<T>& in,
            std::list<T>& out,
@@ -272,17 +282,31 @@ merge(std::list<T>& in_left,
 ////////////////////////////////////////////////////////////////////////////////
 /*
  * - Sorts the descendants list using a compare function.
- * - The sort is done using a custom implementation of merge sort.
+ * - The sort is done using a custom implementation of Merge sort (see above).
  */
 void
 ParticleSystemParent::Sort(ScriptInterface::Comparator comp)
 {
+    // we need to create copies and reference them, so changes to the descendants list
+    // during the sorting process from within the compare function can't screw things up
+    std::list<Descendant> copy = m_Descendants;
+
+    // reference the copies
+    // we doesn't care here for the return value of Borrow(), because the objects
+    // are already protected, so the return value will be always 'true'
+    std::list<Descendant>::iterator iter;
+    for (iter = copy.begin(); iter != copy.end(); ++iter)
+        (*iter).System->Borrow();
+
+    // now we are safe to sort the list
     std::list<Descendant> sorted;
+    if (merge_sort<Descendant>(m_Descendants, sorted, comp))
+        m_Descendants = sorted;
 
-    if (!merge_sort<Descendant>(m_Descendants, sorted, comp))
-        return;
+    // dereference the copies
+    for (iter = copy.begin(); iter != copy.end(); ++iter)
+        (*iter).System->Release();
 
-    m_Descendants = sorted;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
