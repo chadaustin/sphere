@@ -189,51 +189,6 @@ ParticleSystemParent::Apply(ScriptInterface::Applicator appl)
  * - If an error occurs during the sorting process, the sorting will be stopped immediately.
  */
 template<typename T> bool
-merge_sort(std::list<T>& in,
-           std::list<T>& out,
-           ScriptInterface::Comparator& comp)
-{
-    std::list<T> left, right;
-
-    if (in.size() <= 1)
-    {
-        out = in;
-        return true;
-    }
-
-    dword middle = in.size() / 2;
-
-    std::list<T>::iterator iter = in.begin();
-
-    for (dword i = 0; i < middle; ++i)
-    {
-        left.push_back(*iter);
-        ++iter;
-    }
-
-    for (dword i = middle; i < in.size(); ++i)
-    {
-        right.push_back(*iter);
-        ++iter;
-    }
-
-    std::list<T> result_left, result_right;
-
-    if (!merge_sort<T>(left, result_left, comp))
-        return false;
-
-    if (!merge_sort<T>(right, result_right, comp))
-        return false;
-
-    if (!merge<T>(result_left, result_right, out, comp))
-        return false;
-
-    return true;
-
-}
-
-////////////////////////////////////////////////////////////////////////////////
-template<typename T> bool
 merge(std::list<T>& in_left,
       std::list<T>& in_right,
       std::list<T>& out,
@@ -274,6 +229,51 @@ merge(std::list<T>& in_left,
         out.push_back(in_right.front());
         in_right.erase(in_right.begin());
     }
+
+    return true;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+template<typename T> bool
+merge_sort(std::list<T>& in,
+           std::list<T>& out,
+           ScriptInterface::Comparator& comp)
+{
+    std::list<T> left, right;
+
+    if (in.size() <= 1)
+    {
+        out = in;
+        return true;
+    }
+
+    dword middle = in.size() / 2;
+
+    typename std::list<T>::iterator iter = in.begin();
+
+    for (dword i = 0; i < middle; ++i)
+    {
+        left.push_back(*iter);
+        ++iter;
+    }
+
+    for (dword i = middle; i < in.size(); ++i)
+    {
+        right.push_back(*iter);
+        ++iter;
+    }
+
+    std::list<T> result_left, result_right;
+
+    if (!merge_sort<T>(left, result_left, comp))
+        return false;
+
+    if (!merge_sort<T>(right, result_right, comp))
+        return false;
+
+    if (!merge<T>(result_left, result_right, out, comp))
+        return false;
 
     return true;
 
