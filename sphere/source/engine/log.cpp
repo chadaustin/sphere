@@ -43,6 +43,7 @@ CLog::Close()
         SendNoNewLine("\n");
 
         fclose(m_file);
+        m_file = NULL;
         return true;
     }
     return false;
