@@ -24,6 +24,8 @@ class ScriptInterface
         jsval    m_OnBirthFunc;
         jsval    m_OnDeathFunc;
 
+        JSObject* m_TextureObject;
+
     public:
 
         class Comparator
@@ -166,6 +168,9 @@ class ScriptInterface
         void OnBirth(ParticleSystemBase* parent) const;
         void OnDeath(ParticleSystemBase* parent) const;
 
+        JSObject* GetTextureObject() const;
+        void      SetTextureObject(JSObject* tex_obj);
+
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -268,6 +273,20 @@ inline void
 ScriptInterface::SetOnDeath(jsval on_death)
 {
     m_OnDeathFunc = on_death;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+inline JSObject*
+ScriptInterface::GetTextureObject() const
+{
+    return m_TextureObject;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+inline void
+ScriptInterface::SetTextureObject(JSObject* tex_obj)
+{
+    m_TextureObject = tex_obj;
 }
 
 

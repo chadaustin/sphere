@@ -12,6 +12,7 @@ ScriptInterface::ScriptInterface()
                 , m_OnRenderFunc(JSVAL_NULL)
                 , m_OnBirthFunc(JSVAL_NULL)
                 , m_OnDeathFunc(JSVAL_NULL)
+                , m_TextureObject(NULL)
 {
 }
 
@@ -24,6 +25,7 @@ ScriptInterface::ScriptInterface(const ScriptInterface& interface)
                 , m_OnRenderFunc(interface.m_OnRenderFunc)
                 , m_OnBirthFunc(interface.m_OnBirthFunc)
                 , m_OnDeathFunc(interface.m_OnDeathFunc)
+                , m_TextureObject(interface.m_TextureObject)
 {
 }
 
@@ -36,6 +38,7 @@ ScriptInterface::~ScriptInterface()
         JS_RemoveRoot(m_Context, &m_OnRenderFunc);
         JS_RemoveRoot(m_Context, &m_OnBirthFunc);
         JS_RemoveRoot(m_Context, &m_OnDeathFunc);
+        JS_RemoveRoot(m_Context, &m_TextureObject);
     }
 }
 
@@ -51,19 +54,16 @@ ScriptInterface::Init(JSContext* context, JSObject* object)
         return false;
 
     m_Context = context;
-    m_Object  = object;
 
     if (!JS_AddRoot(m_Context, &m_OnUpdateFunc))
     {
         m_Context = NULL;
-        m_Object  = NULL;
         return false;
     }
 
     if (!JS_AddRoot(m_Context, &m_OnRenderFunc))
     {
         m_Context = NULL;
-        m_Object  = NULL;
         JS_RemoveRoot(m_Context, &m_OnUpdateFunc);
         return false;
     }
@@ -71,7 +71,6 @@ ScriptInterface::Init(JSContext* context, JSObject* object)
     if (!JS_AddRoot(m_Context, &m_OnBirthFunc))
     {
         m_Context = NULL;
-        m_Object  = NULL;
         JS_RemoveRoot(m_Context, &m_OnUpdateFunc);
         JS_RemoveRoot(m_Context, &m_OnRenderFunc);
         return false;
@@ -80,12 +79,23 @@ ScriptInterface::Init(JSContext* context, JSObject* object)
     if (!JS_AddRoot(m_Context, &m_OnDeathFunc))
     {
         m_Context = NULL;
-        m_Object  = NULL;
         JS_RemoveRoot(m_Context, &m_OnUpdateFunc);
         JS_RemoveRoot(m_Context, &m_OnRenderFunc);
         JS_RemoveRoot(m_Context, &m_OnBirthFunc);
         return false;
     }
+
+    if (!JS_AddRoot(m_Context, &m_TextureObject))
+    {
+        m_Context = NULL;
+        JS_RemoveRoot(m_Context, &m_OnUpdateFunc);
+        JS_RemoveRoot(m_Context, &m_OnRenderFunc);
+        JS_RemoveRoot(m_Context, &m_OnBirthFunc);
+        JS_RemoveRoot(m_Context, &m_OnDeathFunc);
+        return false;
+    }
+
+    m_Object  = object;
 
     return true;
 }

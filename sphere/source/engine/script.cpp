@@ -114,7 +114,6 @@ END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_PARTICLE_RENDERER)
 ParticleSystemBase* system;
-JSObject* texture_obj;
 END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_PARTICLE_CALLBACK)
@@ -127,7 +126,6 @@ END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_PARTICLE_SWARM_RENDERER)
 ParticleSystemChild* system;
-JSObject* texture_obj;
 END_SS_OBJECT()
 
 BEGIN_SS_OBJECT(SS_PARTICLE_DESCENDANTS)
@@ -8069,17 +8067,6 @@ CScript::CreateParticleRendererObject(JSContext* cx, ParticleSystemBase* system)
     }
 
     renderer_object->system = system;
-    renderer_object->texture_obj = NULL; // always initialize before calling JS_AddRoot
-
-    // root texture_obj
-    if (!JS_AddRoot(cx, &(renderer_object->texture_obj)))
-    {
-        // failed to root texture_obj, so clean up
-        delete renderer_object;
-        JS_RemoveRoot(cx, &object);
-        return NULL;
-    }
-
     JS_SetPrivate(cx, object, renderer_object);
 
     // balancing call to JS_RemoveRoot
@@ -8090,11 +8077,6 @@ CScript::CreateParticleRendererObject(JSContext* cx, ParticleSystemBase* system)
 
 ////////////////////////////////////////
 begin_finalizer(SS_PARTICLE_RENDERER, ssFinalizeParticleRenderer)
-// unroot texture_obj and clean up
-JS_RemoveRoot(cx, &(object->texture_obj));
-object->texture_obj = NULL;
-object->system->GetRenderer().SetTexture(NULL);
-
 // the renderer object should not delete the superior particle system
 object->system = NULL;
 end_finalizer()
@@ -8105,7 +8087,7 @@ int prop_id = argInt(cx, id);
 switch (prop_id)
 {
 case 0:
-    *vp = OBJECT_TO_JSVAL(object->texture_obj);
+    *vp = OBJECT_TO_JSVAL(object->system->GetScriptInterface().GetTextureObject());
     break;
 case 1:
     *vp = INT_TO_JSVAL(object->system->GetRenderer().GetBlendMode());
@@ -8136,28 +8118,12 @@ case 0:
 
         if (image)
         {
-            IMAGE clone_img = CloneImage(image->image);
-
-            if (!clone_img)
-            {
-                JS_ReportError(cx, "Could not set image.");
-                return JS_FALSE;
-            }
-
-            JSObject* clone_obj = CreateImageObject(cx, clone_img, true);
-
-            if (!clone_obj)
-            {
-                JS_ReportError(cx, "Could not set image.");
-                return JS_FALSE;
-            }
-
-            object->texture_obj = clone_obj;
-            object->system->GetRenderer().SetTexture(clone_img);
+            object->system->GetScriptInterface().SetTextureObject(JSVAL_TO_OBJECT(*vp));
+            object->system->GetRenderer().SetTexture(image->image);
         }
         else
         {
-            object->texture_obj = NULL;
+            object->system->GetScriptInterface().SetTextureObject(NULL);
             object->system->GetRenderer().SetTexture(NULL);
         }
     }
@@ -8744,17 +8710,6 @@ CScript::CreateParticleSwarmRendererObject(JSContext* cx, ParticleSystemChild* s
     }
 
     renderer_object->system = system;
-    renderer_object->texture_obj = NULL; // always initialize before calling JS_AddRoot
-
-    // root texture_obj
-    if (!JS_AddRoot(cx, &(renderer_object->texture_obj)))
-    {
-        // failed to root texture_obj, so clean up
-        delete renderer_object;
-        JS_RemoveRoot(cx, &object);
-        return NULL;
-    }
-
     JS_SetPrivate(cx, object, renderer_object);
 
     // balancing call to JS_RemoveRoot
@@ -8765,11 +8720,6 @@ CScript::CreateParticleSwarmRendererObject(JSContext* cx, ParticleSystemChild* s
 
 ////////////////////////////////////////
 begin_finalizer(SS_PARTICLE_SWARM_RENDERER, ssFinalizeParticleSwarmRenderer)
-// unroot texture_obj and clean up
-JS_RemoveRoot(cx, &(object->texture_obj));
-object->texture_obj = NULL;
-object->system->GetRenderer().SetTexture(NULL);
-
 // the swarm renderer object should not delete the superior particle system
 object->system = NULL;
 end_finalizer()
@@ -8780,7 +8730,7 @@ int prop_id = argInt(cx, id);
 switch (prop_id)
 {
 case 0:
-    *vp = OBJECT_TO_JSVAL(object->texture_obj);
+    *vp = OBJECT_TO_JSVAL(object->system->GetScriptInterface().GetTextureObject());
     break;
 case 1:
     *vp = INT_TO_JSVAL(object->system->GetSwarmRenderer().GetBlendMode());
@@ -8811,28 +8761,12 @@ case 0:
 
         if (image)
         {
-            IMAGE clone_img = CloneImage(image->image);
-
-            if (!clone_img)
-            {
-                JS_ReportError(cx, "Could not set image.");
-                return JS_FALSE;
-            }
-
-            JSObject* clone_obj = CreateImageObject(cx, clone_img, true);
-
-            if (!clone_obj)
-            {
-                JS_ReportError(cx, "Could not set image.");
-                return JS_FALSE;
-            }
-
-            object->texture_obj = clone_obj;
-            object->system->GetSwarmRenderer().SetTexture(clone_img);
+            object->system->GetScriptInterface().SetTextureObject(JSVAL_TO_OBJECT(*vp));
+            object->system->GetSwarmRenderer().SetTexture(image->image);
         }
         else
         {
-            object->texture_obj = NULL;
+            object->system->GetScriptInterface().SetTextureObject(NULL);
             object->system->GetSwarmRenderer().SetTexture(NULL);
         }
     }
