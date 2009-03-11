@@ -28,6 +28,69 @@ ScriptInterface::ScriptInterface(const ScriptInterface& interface)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+ScriptInterface::~ScriptInterface()
+{
+    if (m_Context)
+    {
+        JS_RemoveRoot(m_Context, &m_OnUpdateFunc);
+        JS_RemoveRoot(m_Context, &m_OnRenderFunc);
+        JS_RemoveRoot(m_Context, &m_OnBirthFunc);
+        JS_RemoveRoot(m_Context, &m_OnDeathFunc);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/*
+ * - Routine used to handle all important initialization.
+ * - If 'false' is returned, the interface must not be used.
+ */
+bool
+ScriptInterface::Init(JSContext* context, JSObject* object)
+{
+    if (!context || !object)
+        return false;
+
+    m_Context = context;
+    m_Object  = object;
+
+    if (!JS_AddRoot(m_Context, &m_OnUpdateFunc))
+    {
+        m_Context = NULL;
+        m_Object  = NULL;
+        return false;
+    }
+
+    if (!JS_AddRoot(m_Context, &m_OnRenderFunc))
+    {
+        m_Context = NULL;
+        m_Object  = NULL;
+        JS_RemoveRoot(m_Context, &m_OnUpdateFunc);
+        return false;
+    }
+
+    if (!JS_AddRoot(m_Context, &m_OnBirthFunc))
+    {
+        m_Context = NULL;
+        m_Object  = NULL;
+        JS_RemoveRoot(m_Context, &m_OnUpdateFunc);
+        JS_RemoveRoot(m_Context, &m_OnRenderFunc);
+        return false;
+    }
+
+    if (!JS_AddRoot(m_Context, &m_OnDeathFunc))
+    {
+        m_Context = NULL;
+        m_Object  = NULL;
+        JS_RemoveRoot(m_Context, &m_OnUpdateFunc);
+        JS_RemoveRoot(m_Context, &m_OnRenderFunc);
+        JS_RemoveRoot(m_Context, &m_OnBirthFunc);
+        return false;
+    }
+
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 bool
 ScriptInterface::StartProtection()
 {

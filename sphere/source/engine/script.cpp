@@ -8607,9 +8607,7 @@ CScript::CreateParticleSystemParentObject(JSContext* cx, ParticleSystemParent* s
 
     if (!system_object)
     {
-        // balancing call to JS_RemoveRoot
         JS_RemoveRoot(cx, &local_root);
-
         delete system;
         return NULL;
     }
@@ -8617,10 +8615,13 @@ CScript::CreateParticleSystemParentObject(JSContext* cx, ParticleSystemParent* s
     system_object->system = system;
     JS_SetPrivate(cx, object, system_object);
 
-    // we need to pass the context and the object to the script interface
-    // for callbacks and object protection to work
-    system->GetScriptInterface().SetContext(cx);
-    system->GetScriptInterface().SetObject(object);
+    // if initialization of the script interface fails, we can't use it and need to quit
+    if (!system->GetScriptInterface().Init(cx, object))
+    {
+        JS_RemoveRoot(cx, &local_root);
+        delete system;
+        return NULL;
+    }
 
     // balancing call to JS_RemoveRoot
     JS_RemoveRoot(cx, &local_root);
@@ -9117,10 +9118,13 @@ CScript::CreateParticleSystemChildObject(JSContext* cx, ParticleSystemChild* sys
     system_object->system = system;
     JS_SetPrivate(cx, object, system_object);
 
-    // we need to pass the context and the object to the script interface
-    // for callbacks and object protection to work
-    system->GetScriptInterface().SetContext(cx);
-    system->GetScriptInterface().SetObject(object);
+    // if initialization of the script interface fails, we can't use it and need to quit
+    if (!system->GetScriptInterface().Init(cx, object))
+    {
+        JS_RemoveRoot(cx, &local_root);
+        delete system;
+        return NULL;
+    }
 
     // balancing call to JS_RemoveRoot
     JS_RemoveRoot(cx, &local_root);

@@ -139,11 +139,8 @@ class ScriptInterface
 
         ~ScriptInterface();
 
-        void      SetContext(JSContext* cx);
-
+        bool Init(JSContext* context, JSObject* object);
         JSObject* GetObject() const;
-        void      SetObject(JSObject* obj);
-
         bool IsProtected() const;
         bool StartProtection();
         void EndProtection();
@@ -172,30 +169,10 @@ class ScriptInterface
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-inline
-ScriptInterface::~ScriptInterface()
-{
-}
-
-////////////////////////////////////////////////////////////////////////////////
-inline void
-ScriptInterface::SetContext(JSContext* cx)
-{
-    m_Context = cx;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 inline JSObject*
 ScriptInterface::GetObject() const
 {
     return m_Object;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-inline void
-ScriptInterface::SetObject(JSObject* obj)
-{
-    m_Object = obj;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
