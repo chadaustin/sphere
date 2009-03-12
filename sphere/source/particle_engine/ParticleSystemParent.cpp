@@ -76,13 +76,13 @@ ParticleSystemParent::Render()
     for (iter = m_Descendants.begin(); iter != m_Descendants.end(); ++iter)
         (*iter).System->Render();
 
-    // callback
-    if (m_ScriptInterface.HasOnRender())
-        m_ScriptInterface.OnRender();
-
     // render itself, if alive
     if (!IsDead())
         m_Renderer(m_Body);
+
+    // callback
+    if (m_ScriptInterface.HasOnRender())
+        m_ScriptInterface.OnRender();
 
 }
 

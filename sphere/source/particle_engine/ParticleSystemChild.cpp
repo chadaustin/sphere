@@ -90,13 +90,13 @@ ParticleSystemChild::Render()
     for (dword i = 0; i < m_Swarm.size(); ++i)
         m_SwarmRenderer(m_Swarm[i]);
 
-    // callback
-    if (m_ScriptInterface.HasOnRender())
-        m_ScriptInterface.OnRender();
-
     // render itself, if alive
     if (!IsDead())
         m_Renderer(m_Body);
+
+    // callback
+    if (m_ScriptInterface.HasOnRender())
+        m_ScriptInterface.OnRender();
 
 }
 
