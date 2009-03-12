@@ -1465,16 +1465,7 @@ log_object.endBlock()
       
       ps_parent_object.host(particle_system)
         - host the particle_system, hosted systems' bodies are neither initialized nor updated
-      
-      ps_parent_object.find(id)
-        - returns the particle system object with the id, if not found null is returned
-      
-      ps_parent_object.remove(id)
-        - removes the particle system with the id
-      
-      ps_parent_object.removeGroup(group)
-        - removes all particle systems with the group
-      
+            
       ps_parent_object.isDead()
         - return true, if the system is dead
       
@@ -1499,13 +1490,15 @@ log_object.endBlock()
       ps_parent_object.descendants.sort(function(system_a, system_b) {...})
         - sorts the descendants list using a custom implementation of merge sort
           and function as the compare function
+        - the compare function should return true if the left argument goes first,
+          otherwise it should return false
       
       ps_parent_object.descendants.contains(id)
         - returns true if a system with the id is found in the descendants list, else false
       
       ps_parent_object.descendants.containsGroup(group)
         - returns true if any system related to the group is found in the descendants list,
-          else fals
+          else false
       
       ps_parent_object.descendants.get(id)
         - returns the system with the id in the descendants list
