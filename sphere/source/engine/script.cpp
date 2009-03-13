@@ -2396,11 +2396,117 @@ if (This->ShouldRender())
     DrawGradientTriangle(x, y, c);
 }
 end_func()
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - Determines if two polygons are colliding
+*/
+begin_func(PolygonCollision, 2)
+    arg_array(arrA);
+    arg_array(arrB);
+    jsval  v;
+    jsval* vp = &v;
+    jsuint lengthA;
+    jsuint lengthB;
+
+    JS_GetArrayLength(cx, arrA, &lengthA);
+	JS_GetArrayLength(cx, arrB, &lengthB);
+
+    if (lengthA < 3)
+    {
+        JS_ReportError(cx, "PolygonCollision() failed: Not enough points in first array");
+        return JS_FALSE;
+    }
+    if (lengthB < 3)
+    {
+        JS_ReportError(cx, "PolygonCollision() failed: Not enough points in second array");
+        return JS_FALSE;
+    }
+
+    VECTOR_INT** pointsA = new VECTOR_INT*[lengthA];
+	VECTOR_INT** pointsB = new VECTOR_INT*[lengthB];
+
+    for (unsigned int i = 0; i < lengthA; i++)
+    {
+        JS_GetElement(cx, arrA, i, vp);
+        pointsA[i] = getObjCoordinates(cx, v);
+
+        if (pointsA[i] == NULL)
+        {
+            JS_ReportError(cx, "PolygonCollision() failed: Invalid object at first array index %d", lengthA-i-1);
+            delete [] pointsA;
+            delete [] pointsB;
+            return JS_FALSE;
+        }
+    }
+	for (unsigned int i = 0; i < lengthB; i++)
+    {
+        JS_GetElement(cx, arrB, i, vp);
+        pointsB[i] = getObjCoordinates(cx, v);
+
+        if (pointsB[i] == NULL)
+        {
+            JS_ReportError(cx, "PolygonCollision() failed: Invalid object at second array index %d", lengthB-i-1);
+            delete [] pointsA;
+            delete [] pointsB;
+            return JS_FALSE;
+        }
+    }
+
+	bool isinside = false;
+	int inside = 0;
+	int xold = 0;
+	int xnew = 0;
+	int yold = 0;
+	int ynew = 0;
+	int x1 = 0;
+	int y1 = 0;
+	int x2 = 0;
+	int y2 = 0;
+
+	//for (unsigned int iA = lengthA -1 ; iA>0; --iA){
+	for (unsigned int iA = 0; iA<lengthA; ++iA){
+		xold = pointsB[lengthB-1]->x;
+		yold = pointsB[lengthB-1]->y;
+		for (int i=0 ; i < lengthB ; i++) {
+			xnew = (int)pointsB[i]->x;
+			ynew = (int)pointsB[i]->y;
+			if (xnew > xold) {
+				x1 = xold;
+				x2 = xnew;
+				y1 = yold;
+				y2 = ynew;
+			} else {
+				x1 = xnew;
+				x2 = xold;
+				y1 = ynew;
+				y2 = yold;
+			}
+			if ((xnew < pointsA[iA]->x) == (pointsA[iA]->x <= xold)  // edge "open" at left end
+				&& ((long)pointsA[iA]->y-(long)y1)*(long)(x2-x1)
+				< ((long)y2-(long)y1)*(long)(pointsA[iA]->x-x1))
+			{
+				inside=!inside;
+			}
+			xold = xnew;
+			yold = ynew;
+		}
+
+		if (inside){
+			isinside = true;
+		}
+	}
+    delete [] pointsA;
+	delete [] pointsB;
+	return_bool(isinside);
+end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-    - Draws a filled polygon with the color
-    - if invert = 1, points outside of the polygon are drawn instead
+    - Draws a color-filled polygon using the array of objects 
+      (each object must have a 'x' and 'y' property).
+      If invert is true, all points in the bounding box of the polygon, but
+      not in the polygon will be colored.
+
 */
 begin_func(Polygon, 2)
 if (This->ShouldRender())
@@ -7811,6 +7917,11 @@ fill_elliptical_range_from_params(JSContext* cx, JSObject* rooted_in, Elliptical
  *
  */
 ////////////////////////////////////////
+/**
+    - returns an wrapper object filled with aging initialization parameters
+    - following signature is possible:
+      {min: -, max: -}
+*/
 begin_method(SS_PARTICLE_INITIALIZER, ssParticleInitializerGetAgingParams, 0)
 JSObject* params = JS_NewObject(cx, NULL, NULL, NULL);
 if (!params)
@@ -7824,6 +7935,11 @@ fill_range_object(cx, params, object->system->GetInitializer().GetAging());
 end_method()
 
 ////////////////////////////////////////
+/**
+    - accepts a wrapper object filled with aging initialization parameters to set
+    - the same parameters are accepted as returned by getAgingParams()
+    - parameters which should not be set, can be omitted
+*/
 begin_method(SS_PARTICLE_INITIALIZER, ssParticleInitializerSetAgingParams, 1)
 // it is not guaranteed that this macro expansion won't create a new object
 arg_object(params);
@@ -7833,6 +7949,23 @@ fill_range_from_params(cx, params, object->system->GetInitializer().GetAging());
 end_method()
 
 ////////////////////////////////////////
+/**
+    - returns a wrapper object filled with position initialization parameters
+    - if 'shape' is not specified, the parameters for the current shape are returned,
+      or if 'shape' is specified, the parameters belonging to the 'shape' are returned
+    - following signatures are possible:
+            
+        {shape: PS_SHAPE_NULL}
+            
+        {shape: PS_SHAPE_RECTANGLE,
+             x: {min: -, max: -},
+             y: {min: -, max: -}}
+
+        {shape: PS_SHAPE_ELLIPSE,
+         angle: {min: -, max: -},
+             a: {min: -, max: -},
+             b: {min: -, max: -}}
+*/
 begin_method(SS_PARTICLE_INITIALIZER, ssParticleInitializerGetPosParams, 0)
 int shape = object->system->GetInitializer().GetPositionMode();
 if (argc >= 1)
@@ -7885,6 +8018,12 @@ switch (shape)
 end_method()
 
 ////////////////////////////////////////
+/**
+    - accepts a wrapper object filled with position initialization parameters to set
+    - the same parameters are accepted as returned by getPosParams()
+    - parameters which should not be set, can be omitted
+    - if 'shape' is omitted, the parameters are assumed to belong to the current shape
+*/
 begin_method(SS_PARTICLE_INITIALIZER, ssParticleInitializerSetPosParams, 1)
 // it is not guaranteed that this macro expansion won't create a new object
 arg_object(params);
@@ -7926,6 +8065,17 @@ object->system->GetInitializer().SetPositionMode(shape);
 end_method()
 
 ////////////////////////////////////////
+/**
+    - returns a wrapper object filled with velocity initialization parameters
+    - following signature is possible:
+
+          {mode: -,
+           angle: {min: -, max: -},
+               a: {min: -, max: -},
+               b: {min: -, max: -}}
+                 
+      mode can be either PS_ORIENTATION_EXPLICIT or PS_ORIENTATION_IMPLICIT
+*/
 begin_method(SS_PARTICLE_INITIALIZER, ssParticleInitializerGetVelParams, 0)
 JSObject* params = JS_NewObject(cx, NULL, NULL, NULL);
 if (!params)
@@ -7940,6 +8090,11 @@ JS_DefineProperty(cx, params, "mode", INT_TO_JSVAL(object->system->GetInitialize
 end_method()
 
 ////////////////////////////////////////
+/**
+    - accepts a wrapper object filled with position initialization parameters to set
+    - the same parameters are accepted as returned by getVelParams()
+    - parameters which should not be set, can be omitted
+*/
 begin_method(SS_PARTICLE_INITIALIZER, ssParticleInitializerSetVelParams, 1)
 // it is not guaranteed that this macro expansion won't create a new object
 arg_object(params);
@@ -8013,6 +8168,9 @@ object->system = NULL;
 end_finalizer()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_property(SS_PARTICLE_UPDATER, ssParticleUpdaterGetProperty)
 int prop_id = argInt(cx, id);
 switch (prop_id)
@@ -8033,6 +8191,9 @@ default:
 end_property()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_property(SS_PARTICLE_UPDATER, ssParticleUpdaterSetProperty)
 int prop_id = argInt(cx, id);
 switch (prop_id)
@@ -8110,6 +8271,9 @@ object->system = NULL;
 end_finalizer()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_property(SS_PARTICLE_RENDERER, ssParticleRendererGetProperty)
 int prop_id = argInt(cx, id);
 switch (prop_id)
@@ -8330,28 +8494,43 @@ object->system = NULL;
 end_finalizer()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsSize, 0)
 return_int(object->system->Size());
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsUnique, 0)
 object->system->Unique();
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsApply, 1)
 arg_function_object(func);
 object->system->Apply(ScriptInterface::Applicator(cx, OBJECT_TO_JSVAL(func)));
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsSort, 1)
 arg_function_object(func);
 object->system->Sort(ScriptInterface::Comparator(cx, This->m_Global, OBJECT_TO_JSVAL(func)));
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsContains, 1)
 arg_int(id);
 if (id < 0)
@@ -8360,12 +8539,18 @@ return_bool(object->system->ContainsDescendant(id));
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsContainsGroup, 1)
 arg_int(group);
 return_bool(object->system->ContainsDescendantGroup(group));
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsGet, 1)
 arg_int(id);
 if (id < 0)
@@ -8378,6 +8563,9 @@ else
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsGetGroup, 1)
 arg_int(group);
 JSObject* ret_array = JS_NewArrayObject(cx, 0, NULL);
@@ -8402,6 +8590,9 @@ return_object(ret_array);
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsExtract, 1)
 arg_int(id);
 if (id < 0)
@@ -8438,6 +8629,9 @@ return_object(ret_array);
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsRemove, 1)
 arg_int(id);
 if (id >= 0)
@@ -8445,12 +8639,18 @@ if (id >= 0)
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsRemoveGroup, 1)
 arg_int(group);
 object->system->RemoveDescendantGroup(group);
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_DESCENDANTS, ssParticleDescendantsClear, 0)
 object->system->Clear();
 end_method()
@@ -8631,6 +8831,9 @@ object->system = NULL;
 end_finalizer()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_property(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentGetProperty)
 int prop_id = argInt(cx, id);
 switch (prop_id)
@@ -8644,6 +8847,9 @@ switch (prop_id)
 end_property()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_property(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentSetProperty)
 int prop_id = argInt(cx, id);
 switch (prop_id)
@@ -8656,38 +8862,59 @@ switch (prop_id)
 end_property()
 
 ////////////////////////////////////////
+/**
+    - ask particle system to update
+*/
 begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentUpdate, 0)
 object->system->Update();
 end_method()
 
 ////////////////////////////////////////
+/**
+    - ask particle system to render
+*/
 begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentRender, 0)
 object->system->Render();
 end_method()
 
 ////////////////////////////////////////
+/**
+    - adopt the particle_system
+*/
 begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentAdopt, 1)
 arg_particle_system(system);
 object->system->Adopt(system);
 end_method()
 
 ////////////////////////////////////////
+/**
+    - host the particle_system, hosted systems' bodies are neither initialized nor updated
+*/
 begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentHost, 1)
 arg_particle_system(system);
 object->system->Host(system);
 end_method()
 
 ////////////////////////////////////////
+/**
+    - return true, if the system is dead
+*/
 begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentIsDead, 0)
 return_bool(object->system->IsDead());
 end_method()
 
 ////////////////////////////////////////
+/**
+    - kills the system, this will trigger the on_death callback, if set
+*/
 begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentKill, 0)
 object->system->Kill();
 end_method()
 
 ////////////////////////////////////////
+/**
+    - revives the system, this will trigger the on_birth callback, if set
+*/
 begin_method(SS_PARTICLE_SYSTEM_PARENT, ssParticleSystemParentRevive, 0)
 object->system->Revive();
 end_method()
@@ -8753,6 +8980,9 @@ object->system = NULL;
 end_finalizer()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_property(SS_PARTICLE_SWARM_RENDERER, ssParticleSwarmRendererGetProperty)
 int prop_id = argInt(cx, id);
 switch (prop_id)
@@ -8779,6 +9009,9 @@ default:
 end_property()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_property(SS_PARTICLE_SWARM_RENDERER, ssParticleSwarmRendererSetProperty)
 int prop_id = argInt(cx, id);
 switch (prop_id)
@@ -8881,32 +9114,50 @@ CScript::CreateParticleSwarmObject(JSContext* cx, ParticleSystemChild* system)
 }
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_finalizer(SS_PARTICLE_SWARM, ssFinalizeParticleSwarm)
 // the swarm object should not delete the superior particle system
 object->system = NULL;
 end_finalizer()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_SWARM, ssParticleSwarmSize, 0)
 return_int(object->system->Size());
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_SWARM, ssParticleSwarmCapacity, 0)
 return_int(object->system->Capacity());
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_SWARM, ssParticleSwarmGrow, 0)
 object->system->Grow();
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_SWARM, ssParticleSwarmShrink, 0)
 object->system->Shrink();
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_SWARM, ssParticleSwarmResize, 1)
 arg_int(new_size);
 if (new_size < 0) new_size = 0;
@@ -8914,6 +9165,9 @@ object->system->Resize(new_size);
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_SWARM, ssParticleSwarmReserve, 1)
 arg_int(new_capacity);
 if (new_capacity > 0)
@@ -8921,6 +9175,9 @@ if (new_capacity > 0)
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_SWARM, ssParticleSwarmClear, 0)
 object->system->Clear();
 end_method()
@@ -9102,6 +9359,9 @@ object->system = NULL;
 end_finalizer()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_property(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildGetProperty)
 int prop_id = argInt(cx, id);
 switch (prop_id)
@@ -9115,6 +9375,9 @@ switch (prop_id)
 end_property()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_property(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildSetProperty)
 int prop_id = argInt(cx, id);
 switch (prop_id)
@@ -9127,32 +9390,50 @@ switch (prop_id)
 end_property()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildUpdate, 0)
 object->system->Update();
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildRender, 0)
 object->system->Render();
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildClone, 0)
 ParticleSystemChild* clone = new ParticleSystemChild(*(object->system));
 return_object(CreateParticleSystemChildObject(cx, clone));
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildIsDead, 0)
 return_bool(object->system->IsDead());
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildKill, 0)
 object->system->Kill();
 end_method()
 
 ////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_PARTICLE_SYSTEM_CHILD, ssParticleSystemChildRevive, 0)
 object->system->Revive();
 end_method()
@@ -10650,6 +10931,9 @@ saved = object->sfxr->Save(path.c_str());
 return_bool( saved );
 end_method()
 
+/**
+    - resets all the values of the sfxr object
+*/	
 begin_method(SS_SFXR, ssSfxrReset, 0)
 return_bool(object->sfxr->Reset());
 end_method()
