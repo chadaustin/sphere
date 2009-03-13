@@ -64,14 +64,14 @@ SSFXR::Clone()
 		sfxr_new->setHighPassFilterCutoff(this->getHighPassFilterCutoff());
 		sfxr_new->setLowPassFilterCutoff(this->getLowPassFilterCutoff());
 		sfxr_new->setLowPassFilterCutoffSweep(this->getLowPassFilterCutoffSweep());
-		sfxr_new->setMasterVolume(this->getMasterVolume());
+		sfxr_new->setMasterVolume((float)this->getMasterVolume());
 		sfxr_new->setMinFrequency(this->getMinFrequency());
 		sfxr_new->setPhaserOffset(this->getPhaserOffset());
 		sfxr_new->setPhaserOffsetSweep(this->getPhaserOffsetSweep());
 		sfxr_new->setRelease(this->getRelease());
 		sfxr_new->setRepeatSpeed(this->getRepeatSpeed());
 		sfxr_new->setSampleRate(this->getSampleRate());
-		sfxr_new->setSoundVolume(this->getSoundVolume());
+		sfxr_new->setSoundVolume((float)this->getSoundVolume());
 		sfxr_new->setSquareDuty(this->getSquareDuty());
 		sfxr_new->setSquareDutySweep(this->getSquareDutySweep());
 		sfxr_new->setSustain(this->getSustain());
