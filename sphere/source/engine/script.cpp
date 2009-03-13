@@ -638,6 +638,12 @@ CScript::InitializeSphereConstants()
                       { "SE_SINGLE",   audiere::SINGLE },
                       { "SE_MULTIPLE", audiere::MULTIPLE },
 
+					  // sfxr wave type constants
+					  { "SQUAREWAVE",  sSfxr::SQUAREWAVE },
+					  { "SAWTOOTH",    sSfxr::SAWTOOTH },
+					  { "SINEWAVE",    sSfxr::SINEWAVE },
+					  { "NOISE",       sSfxr::NOISE },
+
                       // windowstyle constants
                       { "EDGE_LEFT", sWindowStyle::LEFT },
                       { "EDGE_TOP", sWindowStyle::TOP },
@@ -1734,9 +1740,13 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 /**
     - invokes the JavaScript garbage collector
+      if given a parameter, then Sphere will decide if GC is required.
 */
 begin_func(GarbageCollect, 0)
-JS_GC(cx);
+if (argc >= 1)
+	JS_MaybeGC(cx);
+else
+	JS_GC(cx);
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3895,7 +3905,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 #if 0
 /**
-    - returns the x value of the trigger in map (per-pixel) coordinates
+    [DISABLED]- returns the x value of the trigger in map (per-pixel) coordinates
 */
 begin_func(GetTriggerX, 1)
 arg_int(trigger_index);
@@ -3910,7 +3920,7 @@ return_int(x);
 end_func()
 ////////////////////////////////////////////////////////////////////////////////
 /**
-    - returns the x value of the trigger in map (per-pixel) coordinates
+    [DISABLED]- returns the x value of the trigger in map (per-pixel) coordinates
 */
 begin_func(GetTriggerY, 1)
 arg_int(trigger_index);
@@ -3925,7 +3935,7 @@ return_int(y);
 end_func()
 ////////////////////////////////////////////////////////////////////////////////
 /**
-    - returns the amount of zones that there is
+    [DISABLED]- returns the amount of zones that there is
 */
 begin_func(GetNumTriggers, 0)
 int triggers = 0;
@@ -3939,7 +3949,7 @@ return_int(triggers);
 end_func()
 ////////////////////////////////////////////////////////////////////////////////
 /**
-    - best when called from inside a trigger script
+- [DISABLED]best when called from inside a trigger script
       it will return the index of the trigger for which the current script
       is running
 */
@@ -5507,6 +5517,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 /**
     - returns the person's base obstruction object. Can be the one without resizing.
+	The object contains the following properties: x1, x2, y1 and y2 (base coordinates)
 */
 begin_func(GetPersonBase, 1)
 arg_str(name);
@@ -5528,7 +5539,10 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-    - Sets the person's base obstruction object. Note that the person could be zoomed, in that case, add an extra parameter
+    - Sets the person's base obstruction object. 
+      Note: If the person is zoomed, you still need to define the base as if the person
+      was not scaled, and use SetPersonScaleFactor(person,GetPersonScaleFactor(person));
+      to update the base.
 */
 begin_func(SetPersonBase, 5)
 arg_str(name);
@@ -5536,12 +5550,6 @@ arg_int(x1);
 arg_int(y1);
 arg_int(x2);
 arg_int(y2);
-bool real = false;
-if (argc >= 6)
-{
-    real = argBool(cx, argv[5]);
-}
-
 
 if ( !This->m_Engine->GetMapEngine()->SetPersonBase(name, x1, y1, x2, y2) )
 {
@@ -5827,6 +5835,7 @@ end_func()
 /**
     - returns "" if name isn't obstructed by person at x, y,
     - returns the name of the person if name is obstructed at x, y
+      To check if more persons obstruct, move the first one away.
 */
 begin_func(GetObstructingPerson, 3)
 arg_str(name);
@@ -5997,6 +6006,7 @@ end_func()
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// section: Sound related functions //
 /**
     - Returns the name of the current map background music (could be a m3u list)
 */
@@ -6348,15 +6358,7 @@ if (!memoryfile)
 }
 memoryfile->ref();
 
-//audiere::FilePtr adrfile(memoryfile);
-//audiere::SoundEffect* sound = SA_OpenSoundEffect(memoryfile, type);
 audiere::SoundEffect* sound = This->m_Engine->CreateSoundEffect(memoryfile, type);
-
-// For some reason, this didnt work?
-//audiere::SoundEffect* sound = NULL;
-//sound = This->m_Engine->CreateSoundEffect(memoryfile, type);
-//audiere::OutputStream* sound = NULL;
-//audiere::SoundEffect* sound = This->m_Engine->CreateSoundEffect(memoryfile, type);
 
 if (!sound)
 {
@@ -6367,14 +6369,20 @@ if (!sound)
     JS_ReportError(cx, "Could not create sound effect from bytearray");
     return JS_FALSE;
 }
-//This->m_ShouldExit =false;
-return_object( CreateSoundEffectObject(cx, sound, memoryfile) );
+
+JS_MaybeGC(cx);
+return_object(CreateSoundEffectObject(cx, sound, memoryfile) );
 end_func()
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-    - - returns an Sfxr object.
+    - returns an Sfxr object. The parameters are optional and can be set later on.
+      bitrate, samplerate, soundvolume, wavetype, basefrequency, minfrequency, 
+      frequencyslide, frequencyslidedelta, squareduty, squaredutysweep, vibratodepth,
+      vibratospeed, attack, sustain, detay, release, filter, lowpassfiltercutoff,
+      lowpassfiltercutoffsweep, filterresonance, highpassfiltercutoff, highpassfiltercutoffsweep,
+      phaseroffset, phaseroffsetsweep, repeatspeed, arpeggio, arpeggiospeed
 */
 
 begin_func(CreateSfxr, 0)
@@ -6421,6 +6429,7 @@ end_func()
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// section: Font functions //
 /**
     - returns a font object of the font that the engine currently uses.
 */
@@ -6454,6 +6463,7 @@ return_object(CreateFontObject(cx, font, true));
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
+// section: windowstyle functions //
 /**
     - returns a windowstyle object of the windowstyle that the engine currently
       uses.
@@ -6515,6 +6525,7 @@ return_object(CreateImageObject(cx, This->m_Engine->GetSystemDownArrow(), false)
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
+// section: image functions //
 /**
     - returns an image object from 'filename'. If Sphere is unable to open or
       read the image, the engine will give an error message and exit. The
@@ -6736,6 +6747,7 @@ return_object(CreateColorMatrixObject(cx, colormatrix));
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
+// section: animation functions //
 /**
     - Returns an animation object with the filename. If Sphere is unable to
       open the file, the engine will give an error message and exit. Sphere
@@ -6762,6 +6774,7 @@ return_object(CreateAnimationObject(cx, animation));
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
+// section: File related functions //
 /**
     - rename or move a file or directory
 */
@@ -7167,6 +7180,16 @@ end_func()
       The default base directory is other/, use ../ to reach other directories.
       compressionlevel must be between 0 and 9, and is 6 by default
       Returns zero on succes, nonzero if it failed.
+	  The return numbers are (the constants are not defined in Sphere):
+      Z_OK            0
+      Z_STREAM_END    1
+      Z_NEED_DICT     2
+      Z_ERRNO        (-1)
+      Z_STREAM_ERROR (-2)
+      Z_DATA_ERROR   (-3)
+      Z_MEM_ERROR    (-4)
+      Z_BUF_ERROR    (-5)
+      Z_VERSION_ERROR (-6)
 */
 begin_func(DeflateFile, 2)
 arg_str(filename_source);
@@ -7227,12 +7250,13 @@ delete file;
 
 ZlibEngine engine;
 return_int( engine.compress( filename_source, filename_dest, compressionlevel) );
+JS_MaybeGC(cx);
 end_func()
 
 /**
     - Decompress a file to another file using deflate
       The default base directory is other/, use ../ to reach other directories.
-      Returns zero on succes, nonzero if it failed.
+      Returns zero on succes, nonzero if it failed. (same codes as DeflateFile)
 */
 begin_func(InflateFile, 1)
 arg_str(filename_source);
@@ -7283,6 +7307,7 @@ delete file;
 
 ZlibEngine engine;
 return_int( engine.decompress( filename_source, filename_dest) );
+JS_MaybeGC(cx);
 end_func()
 
 /**
@@ -7322,7 +7347,7 @@ if (maxsize < engine.compressBound2(ba->size) )
 	unsigned char* buffer = new unsigned char[maxsize];
 	if (buffer == 0)
 	{
-		JS_ReportError(cx, "Buffer overflow in ByteArray deflation, new failed");
+		JS_ReportError(cx, "Failed to allocate %i bytes for ByteArray deflation", maxsize);
 	    return JS_FALSE;
 	}
 
@@ -7331,8 +7356,8 @@ if (maxsize < engine.compressBound2(ba->size) )
 	{
 		delete[] buffer;
 		return_null();
-	}else{
-
+	} else 
+	{
 		JSObject* array_object = CreateByteArrayObject(cx, outputsize, (byte *) buffer);
 		delete[] buffer; // unsigned char* buffer = new unsigned char[maxsize];
 
@@ -7343,7 +7368,8 @@ end_func()
 
 /**
     - Decompress a bytearray and return an inflated version.
-      You can limit the maximum allowed size with maxsize
+      You can limit the maximum allowed size with maxsize, if you don't
+      it will set an estimation for you, which could be too low.
       Returns null on failure.
 */
 begin_func(InflateByteArray, 1)
@@ -7352,7 +7378,8 @@ arg_byte_array(ba);
 ZlibEngine engine;
 
 unsigned int maxsize = engine.compressBound2(ba->size);
-if (argc > 2)
+
+if (argc > 1)
 {
 	maxsize = argInt(cx, argv[arg++]);
 	if (maxsize<=0)
@@ -7362,12 +7389,13 @@ if (argc > 2)
 if (maxsize < engine.compressBound2(ba->size) )
 {
 	return_null();
-} else {
+} else 
+{
 
 	unsigned char* buffer = new unsigned char[maxsize];
 	if (buffer == 0)
 	{
-		JS_ReportError(cx, "Buffer overflow in ByteArray deflation, new failed");
+		JS_ReportError(cx, "Failed to allocate %i bytes for ByteArray inflation", maxsize);
 	    return JS_FALSE;
 	}
 
@@ -9492,6 +9520,7 @@ end_property()
 
 /**
     - exports the Color to a string, used internally by JSON
+      This string can be eval()'ed to recreate the color
 */
 begin_method(SS_COLOR, ssColorToJSON, 0)
 std::string json = "CreateColor(";
@@ -10604,7 +10633,8 @@ end_finalizer()
 ///////////////////////////////////////
 /**
     - saves the sfxr as a wav file
-*/
+      It will use the ./sounds/ directory by default
+*/	
 begin_method(SS_SFXR, ssSfxrSaveWav, 1)
 arg_str(filename);
 bool saved = false;
@@ -10624,7 +10654,9 @@ begin_method(SS_SFXR, ssSfxrReset, 0)
 return_bool(object->sfxr->Reset());
 end_method()
 
-
+/**
+    - Creates a soundeffect. The parameter can be SE_MULTIPLE or SE_SINGLE
+*/
 begin_method(SS_SFXR, ssSfxrGetSoundEffect, 0)
 arg_int(type);
 audiere::SoundEffect* sound = NULL;
@@ -10645,53 +10677,95 @@ if (!sound)
 return_object(CreateSoundEffectObject(cx, sound, memoryfile));
 end_method()
 
-
+/**
+    - Get the sample size
+*/
 begin_method(SS_SFXR, ssSfxrCalcSampleSize, 0)
 return_int(object->sfxr->GetSampleSize());
 end_method()
 
 
-
+/**
+    - Set the master volume of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrSetMasterVolume, 1)
 arg_double(volume);
 object->sfxr->setMasterVolume((float)volume);
 end_method()
 
+/**
+    - Get the master volume of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetMasterVolume, 0)
 return_double(object->sfxr->getMasterVolume());
 end_method()
 
+/**
+    - Get the volume of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetSoundVolume, 0)
 return_double(object->sfxr->getSoundVolume());
 end_method()
 
+/**
+    - Set the volume of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrSetSoundVolume, 1)
 arg_double(v);
 object->sfxr->setSoundVolume((float)v);
 end_method()
 
+/**
+    - Get the bitrate of the sfxr object
+      This value can be 8 or 16
+*/
 begin_method(SS_SFXR, ssSfxrGetBitrate, 0)
 return_int(object->sfxr->getBitrate());
 end_method()
 
+/**
+    - Set the bitrate of the sfxr object
+      This value can be 8 or 16
+*/
 begin_method(SS_SFXR, ssSfxrSetBitrate, 1)
 arg_int(v);
-object->sfxr->setBitrate(v);
+if ( (v != 8) && (v != 16))
+{
+    JS_ReportError(cx, "setBitrate: Bitrate must be 8 or 16, received '%i' instead", v);
+    return JS_FALSE;
+}else{
+	object->sfxr->setBitrate(v);
+}
 end_method()
 
+/**
+    - Get the samplerate of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetSampleRate, 0)
 return_int(object->sfxr->getSampleRate());
 end_method()
 
+/**
+    - Set the sample rate of the sfxr object
+      For example: 44100, 22500, 11000 or 8000.
+      Changing the samplerate effectively changes the pitch
+*/
 begin_method(SS_SFXR, ssSfxrSetSampleRate, 1)
 arg_int(v);
 object->sfxr->setSampleRate(v);
 end_method()
 
+/**
+    - Get the wave type of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetWaveType, 0)
 	return_int(object->sfxr->getWaveType());
 end_method()
 
+/**
+    - Set the wave type of the sfxr object
+      Valid values are: SQUAREWAVE, SAWTOOTH, SINEWAVE and NOISE
+*/
 begin_method(SS_SFXR, ssSfxrSetWaveType, 1)
 	arg_int(wavetype);
 	if ( wavetype >= object->sfxr->getMaxWaveTypes() || wavetype < 0 )
@@ -10702,217 +10776,386 @@ begin_method(SS_SFXR, ssSfxrSetWaveType, 1)
 	object->sfxr->setWaveType(wavetype);
 end_method()
 
+/**
+    - Get the base frequency of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetBaseFrequency, 0)
 return_double(object->sfxr->getBaseFrequency());
 end_method()
 
+/**
+    - Set the base frequency of the sfxr object
+      This is for sliding the sound in pitch
+      Value must be between 0 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetBaseFrequency, 1)
 arg_double(v);
 object->sfxr->setBaseFrequency((float)v);
 end_method()
 
+/**
+    - Get the minimal frequency of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetMinFrequency, 0)
 return_double(object->sfxr->getMinFrequency());
 end_method()
 
+/**
+    - Set the minimal frequency of the sfxr object
+      Value must be between 0 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetMinFrequency, 1)
 arg_double(v);
 object->sfxr->setMinFrequency((float)v);
 end_method()
 
+/**
+    - Get the frequency slide of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetFrequencySlide, 0)
 return_double(object->sfxr->getFrequencySlide());
 end_method()
 
+/**
+    - Set the frequency slide of the sfxr object
+      Value must be between -1 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetFrequencySlide, 1)
 arg_double(v);
 object->sfxr->setFrequencySlide((float)v);
 end_method()
 
+/**
+    - Get the frequency slide delta of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetFrequencySlideDelta, 0)
 return_double(object->sfxr->getFrequencySlideDelta());
 end_method()
 
+/**
+    - Set the frequency slide delta of the sfxr object
+      Value must be between -1 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetFrequencySlideDelta, 1)
 arg_double(v);
 object->sfxr->setFrequencySlideDelta((float)v);
 end_method()
 
+/**
+    - Get the square duty of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetSquareDuty, 0)
 return_double(object->sfxr->getSquareDuty());
 end_method()
 
+/**
+    - Set the square duty of the sfxr object
+      Value must be between 0 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetSquareDuty, 1)
 arg_double(v);
 object->sfxr->setSquareDuty((float)v);
 end_method()
 
+/**
+    - Get the square duty sweep of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetSquareDutySweep, 0)
 return_double(object->sfxr->getSquareDutySweep());
 end_method()
 
+/**
+    - Set the square duty sweep of the sfxr object
+      Value must be between 0 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetSquareDutySweep, 1)
 arg_double(v);
 object->sfxr->setSquareDutySweep((float)v);
 end_method()
 
+/**
+    - Get the vibrato depth of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetVibratoDepth, 0)
 return_double(object->sfxr->getVibratoDepth());
 end_method()
 
+/**
+    - Set the vibrato depth of the sfxr object
+      Value must be between 0 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetVibratoDepth, 1)
 arg_double(v);
 object->sfxr->setVibratoDepth((float)v);
 end_method()
 
+/**
+    - Get the vibrato speed of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetVibratoSpeed, 0)
 return_double(object->sfxr->getVibratoSpeed());
 end_method()
 
+/**
+    - Set the vibrato speed of the sfxr object
+      Value must be between 0 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetVibratoSpeed, 1)
 arg_double(v);
 object->sfxr->setVibratoSpeed((float)v);
 end_method()
 
+/**
+    - Get the vibrato delay of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetVibratoDelay, 0)
 return_double(object->sfxr->getVibratoDelay());
 end_method()
 
+/**
+    - Set the vibrato delay of the sfxr object
+      Value must be between 0 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetVibratoDelay, 1)
 arg_double(v);
 object->sfxr->setVibratoDelay((float)v);
 end_method()
 
+/**
+    - Get the attack envelope of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetAttack, 0)
 return_double(object->sfxr->getAttack());
 end_method()
 
+/**
+    - Set the attack envelope of the sfxr object
+      Value must be between 0 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetAttack, 1)
 arg_double(v);
 object->sfxr->setAttack((float)v);
 end_method()
 
+/**
+    - Get the sustain envelope of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetSustain, 0)
 return_double(object->sfxr->getSustain());
 end_method()
 
+/**
+    - Set the sustain envelope of the sfxr object
+      Value must be between 0 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetSustain, 1)
 arg_double(v);
 object->sfxr->setSustain((float)v);
 end_method()
 
+/**
+    - Get the decay envelope of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetDecay, 0)
 return_double(object->sfxr->getDecay());
 end_method()
 
+/**
+    - Set the decay envelope of the sfxr object
+      Value must be between 0 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetDecay, 1)
 arg_double(v);
 object->sfxr->setDecay((float)v);
 end_method()
 
+/**
+    - Get the release envelope of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetRelease, 0)
 return_double(object->sfxr->getRelease());
 end_method()
 
+/**
+    - Set the release envelope of the sfxr object
+      Value must be between 0 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetRelease, 1)
 arg_double(v);
 object->sfxr->setRelease((float)v);
 end_method()
 
+/**
+    - Get the filter of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetFilter, 0)
 return_bool(object->sfxr->getFilter());
 end_method()
 
+/**
+    - Set the filter of the sfxr object
+      Not sure what this does
+*/
 begin_method(SS_SFXR, ssSfxrSetFilter, 1)
 arg_bool(isOn);
 object->sfxr->setFilter(isOn);
 end_method()
 
+/**
+    - Get the low pass filter cutoff of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetLowPassFilterCutoff, 0)
 return_double(object->sfxr->getLowPassFilterCutoff());
 end_method()
 
+/**
+    - Set the low pass filter cutoff of the sfxr object
+      Value must be between 0 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetLowPassFilterCutoff, 1)
 arg_double(v);
 object->sfxr->setLowPassFilterCutoff((float)v);
 end_method()
 
+/**
+    - Get the low pass filter cutoff sweep of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetLowPassFilterCutoffSweep, 0)
 return_double(object->sfxr->getLowPassFilterCutoffSweep());
 end_method()
 
+/**
+    - Set the low pass filter cutoff sweep of the sfxr object
+      Value must be between -1 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetLowPassFilterCutoffSweep, 1)
 arg_double(v);
 object->sfxr->setLowPassFilterCutoffSweep((float)v);
 end_method()
 
+/**
+    - Get the filter resonance of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetFilterResonance, 0)
 return_double(object->sfxr->getFilterResonance());
 end_method()
 
+/**
+    - Set the filter resonance of the sfxr object
+      Value must be between 0 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetFilterResonance, 1)
 arg_double(v);
 object->sfxr->setFilterResonance((float)v);
 end_method()
 
+/**
+    - Get the high pass filter cutoff of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetHighPassFilterCutoff, 0)
 return_double(object->sfxr->getHighPassFilterCutoff());
 end_method()
 
+/**
+    - Set the high pass filter cutoff of the sfxr object
+      Value must be between 0 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetHighPassFilterCutoff, 1)
 arg_double(v);
 object->sfxr->setHighPassFilterCutoff((float)v);
 end_method()
 
+/**
+    - Get the high pass filter cutoff sweep of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetHighPassFilterCutoffSweep, 0)
 return_double(object->sfxr->getHighPassFilterCutoffSweep());
 end_method()
 
+/**
+    - Set the high pass filter cutoff sweep of the sfxr object
+      Value must be between -1 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetHighPassFilterCutoffSweep, 1)
 arg_double(v);
 object->sfxr->setHighPassFilterCutoffSweep((float)v);
 end_method()
 
+/**
+    - Get the phaser offset of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetPhaserOffset, 0)
 return_double(object->sfxr->getPhaserOffset());
 end_method()
 
+/**
+    - Set the phaser offset of the sfxr object
+      Value must be between -1 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetPhaserOffset, 1)
 arg_double(v);
 object->sfxr->setPhaserOffset((float)v);
 end_method()
 
+/**
+    - Get the phaser offset sweep of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetPhaserOffsetSweep, 0)
 return_double(object->sfxr->getPhaserOffsetSweep());
 end_method()
 
+/**
+    - Set the phaser offset sweep of the sfxr object
+      Value must be between -1 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetPhaserOffsetSweep, 1)
 arg_double(v);
 object->sfxr->setPhaserOffsetSweep((float)v);
 end_method()
 
+/**
+    - Get the repeat speed of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetRepeatSpeed, 0)
 return_double(object->sfxr->getRepeatSpeed());
 end_method()
 
+/**
+    - Set the repeat speed of the sfxr object
+      Value must be between 0 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetRepeatSpeed, 1)
 arg_double(v);
 object->sfxr->setRepeatSpeed((float)v);
 end_method()
 
+/**
+    - Get the arpeggio of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetArpeggio, 0)
 return_double(object->sfxr->getArpeggio());
 end_method()
 
+/**
+    - Set the arpeggio of the sfxr object
+      Value must be between 0 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetArpeggio, 1)
 arg_double(v);
 object->sfxr->setArpeggio((float)v);
 end_method()
 
+/**
+    - Get the arpeggio speed of the sfxr object
+*/
 begin_method(SS_SFXR, ssSfxrGetArpeggioSpeed, 0)
 return_double(object->sfxr->getArpeggioSpeed());
 end_method()
 
+/**
+    - Set the arpeggio speed of the sfxr object
+      Value must be between -1 and 1
+*/
 begin_method(SS_SFXR, ssSfxrSetArpeggioSpeed, 1)
 arg_double(v);
 object->sfxr->setArpeggioSpeed((float)v);
@@ -11438,9 +11681,7 @@ if (This->ShouldRender())
 
     int blendmode = CImage32::BLEND;
     if (argc >= 4)
-    {
         blendmode = argInt(cx, argv[3]);
-    }
 
     BlitImageMask(object->image, x, y, int_to_blendmode(blendmode), clr);
 }
@@ -12251,11 +12492,13 @@ end_method()
 ////////////////////////////////////////
 /**
     - sets the alpha of the surface
+	Set the second parameter to false to skip transparent pixels
 */
 begin_method(SS_SURFACE, ssSurfaceSetAlpha, 1)
 arg_int(alpha);
-
-object->surface->SetAlpha(alpha);
+bool all = true;
+if (argc >= 2) all = argBool(cx, argv[1]);
+object->surface->SetAlpha(alpha, all);
 end_method()
 
 ////////////////////////////////////////
@@ -12285,6 +12528,11 @@ begin_method(SS_SURFACE, ssSurfaceFloodFill, 3)
 arg_int(x);
 arg_int(y);
 arg_color(aColor);
+if( x < 0 || x > object->surface->GetWidth() || y < 0 || y > object->surface->GetHeight() )
+{
+	JS_ReportError(cx, "floodFill: point outside surface");
+    return JS_FALSE;
+}
 object->surface->FloodFill(x, y, aColor);
 end_method()
 
@@ -12714,6 +12962,7 @@ end_method()
     - rotates the surface anti-clockwise with the range 0 - 2*pi. The resize
       flag is a boolean to tell the engine to resize the surface if needed
       to accomodate the rotated image.
+      this function returns the rotated object with the new .width and .height.
 */
 begin_method(SS_SURFACE, ssSurfaceRotate, 2)
 arg_double(radians);
@@ -12733,6 +12982,7 @@ end_method()
 /**
     - resizes the surface images. This does not stretch or shrink the image
       inside the surface.
+      this function returns the resized object with the new .width and .height.
 */
 begin_method(SS_SURFACE, ssSurfaceResize, 2)
 arg_int(w);
@@ -12757,6 +13007,7 @@ end_method()
 ////////////////////////////////////////
 /**
     - stretches or shrinks the surface to the new width w and height h
+      this function returns the rescaled object with the new .width and .height.
 */
 begin_method(SS_SURFACE, ssSurfaceRescale, 2)
 arg_int(w);
@@ -13140,6 +13391,7 @@ end_property()
 
 /**
     - exports the ColorMatrix to a string, used internally by JSON
+      This string can be eval()'ed to recreate the colormatrix
 */
 begin_method(SS_COLORMATRIX, ssColorMatrixToJSON, 0)
 std::string json = "CreateColorMatrix(";
@@ -13209,7 +13461,7 @@ CScript::CreateAnimationObject(JSContext* cx, IAnimation* animation)
     // define width and height properties
     JS_DefineProperty(cx, object, "width",  INT_TO_JSVAL(animation->GetWidth()),  JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
     JS_DefineProperty(cx, object, "height", INT_TO_JSVAL(animation->GetHeight()), JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
-
+	JS_DefineProperty(cx, object, "done",   BOOLEAN_TO_JSVAL(animation->IsEndOfAnimation()), JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
     // attach the animation to this object
     SS_ANIMATION* animation_object = new SS_ANIMATION;
 
@@ -13581,7 +13833,7 @@ object->is_open = false;
 end_method()
 
 ///////////////////////////////////////
-// BYTE ARRAY OBJECTS /////////////////
+// BYTE_ARRAY OBJECTS /////////////////
 ///////////////////////////////////////
 
 JSObject*
