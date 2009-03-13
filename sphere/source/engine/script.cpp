@@ -2465,7 +2465,7 @@ begin_func(PolygonCollision, 2)
     int x2 = 0;
     int y2 = 0;
 
-    // For each point int pointsA, we will check point-in-poly
+    // For each point int pointsA, we will check point-in-poly in polygon pointsB
     for (unsigned int iA = 0; iA<lengthA; ++iA){
         xold = pointsB[lengthB-1]->x;
         yold = pointsB[lengthB-1]->y;
@@ -2496,7 +2496,46 @@ begin_func(PolygonCollision, 2)
         if (inside)
             isinside = true;
     }
-    delete [] pointsA;
+
+    // No need to check for the other one if we already know that we collided
+	if (!isinside) {
+	// For each point int pointsB, we will check point-in-poly in polygon pointsA
+    for (unsigned int iB = 0; iB<lengthB; ++iB){
+        xold = pointsA[lengthA-1]->x;
+        yold = pointsA[lengthA-1]->y;
+        for (int i=0 ; i < lengthA ; i++) {
+            xnew = (int)pointsA[i]->x;
+            ynew = (int)pointsA[i]->y;
+            if (xnew > xold) {
+                x1 = xold;
+                x2 = xnew;
+                y1 = yold;
+                y2 = ynew;
+            } else {
+                x1 = xnew;
+                x2 = xold;
+                y1 = ynew;
+                y2 = yold;
+            }
+            if ((xnew < pointsB[iB]->x) == (pointsB[iB]->x <= xold)  // edge "open" at left end
+                && ((long)pointsB[iB]->y-(long)y1)*(long)(x2-x1)
+                < ((long)y2-(long)y1)*(long)(pointsB[iB]->x-x1))
+            {
+                inside=!inside; // I nod and smile again...
+            }
+            xold = xnew;
+            yold = ynew;
+        }
+
+        if (inside)
+            isinside = true;
+	}
+    }
+    for (unsigned int i = 0; i < lengthA; i++)
+        delete pointsA[i];
+    for (unsigned int i = 0; i < lengthB; i++)
+        delete pointsB[i];
+	delete [] pointsA;
     delete [] pointsB;
     return_bool(isinside);
 end_func()
@@ -2554,6 +2593,8 @@ if (This->ShouldRender())
     }
 
     DrawPolygon(points, length, invert, c);
+    for (unsigned int i = 0; i < length; i++)
+        delete points[i];
     delete [] points;
 }
 end_func()
