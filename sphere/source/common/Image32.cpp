@@ -810,12 +810,22 @@ CImage32::SetPixel(int x, int y, RGBA color)
 
 ////////////////////////////////////////////////////////////////////////////////
 void
-CImage32::SetAlpha(int alpha)
+CImage32::SetAlpha(int alpha, bool all)
 {
-    for (int i = m_Width * m_Height-1;i>=0; --i)
-    {
-        m_Pixels[i].alpha = alpha;
-    }
+	if(all){
+		for (int i = m_Width * m_Height-1;i>=0; --i)
+		{
+			m_Pixels[i].alpha = alpha;
+		}
+	}
+	else
+	{
+		for (int i = m_Width * m_Height-1;i>=0; --i)
+		{
+			if(m_Pixels[i].alpha != 0)
+				m_Pixels[i].alpha = alpha;
+		}
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////

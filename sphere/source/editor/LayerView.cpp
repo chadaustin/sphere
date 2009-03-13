@@ -628,7 +628,7 @@ CLayerView::OnFlattenVisibleLayers()
       else {
         int tile_index = -1;
         // make the tile fully opaque
-        new_tile.SetAlpha(255);
+        new_tile.SetAlpha(255, true);
         // see if the new_tile already exists within the tileset
         for (int i = 0; i < tileset.GetNumTiles(); ++i) {
           if (tileset.GetTile(i) == new_tile) {

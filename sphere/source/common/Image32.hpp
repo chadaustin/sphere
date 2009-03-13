@@ -72,7 +72,7 @@ public:
 
     void SetPixel(int x, int y, RGBA color, clipper clip);
     void SetPixel(int x, int y, RGBA color);
-    void SetAlpha(int alpha);
+    void SetAlpha(int alpha, bool all);
     void SetColorAlpha(RGB color, int alpha);
     void SetColorAlpha(int x, int y, int w, int h, RGB color, int alpha);
     void ReplaceColor(RGBA oldColor, RGBA newColor);
