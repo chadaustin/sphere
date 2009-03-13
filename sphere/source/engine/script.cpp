@@ -2195,12 +2195,15 @@ if (This->ShouldRender())
         if (points[i] == NULL)
         {
             JS_ReportError(cx, "PointSeries() failed: Invalid object at array index %d", i);
+            for (unsigned int i = 0; i < length; i++) delete points[i];
             delete [] points;
             return JS_FALSE;
         }
     }
 
     DrawPointSeries(points, length, c);
+    for (unsigned int i = 0; i < length; i++)
+        delete points[i];
     delete [] points;
 }
 end_func()
@@ -2306,12 +2309,15 @@ if (This->ShouldRender())
         if (points[i] == NULL)
         {
             JS_ReportError(cx, "LineSeries() failed: Invalid object at array index %d", i);
+            for (unsigned int i = 0; i < length; i++) delete points[i];
             delete [] points;
             return JS_FALSE;
         }
     }
 
     DrawLineSeries(points, length, c, type);
+    for (unsigned int i = 0; i < length; i++)
+        delete points[i];
     delete [] points;
 }
 end_func()
@@ -2435,6 +2441,8 @@ begin_func(PolygonCollision, 2)
         if (pointsA[i] == NULL)
         {
             JS_ReportError(cx, "PolygonCollision() failed: Invalid object at first array index %d", i);
+            for (unsigned int i = 0; i < lengthA; i++) delete pointsA[i];
+            for (unsigned int i = 0; i < lengthB; i++) delete pointsB[i];
             delete [] pointsA;
             delete [] pointsB;
             return JS_FALSE;
@@ -2448,6 +2456,8 @@ begin_func(PolygonCollision, 2)
         if (pointsB[i] == NULL)
         {
             JS_ReportError(cx, "PolygonCollision() failed: Invalid object at second array index %d", i);
+            for (unsigned int i = 0; i < lengthA; i++) delete pointsA[i];
+            for (unsigned int i = 0; i < lengthB; i++) delete pointsB[i];
             delete [] pointsA;
             delete [] pointsB;
             return JS_FALSE;
@@ -2587,6 +2597,7 @@ if (This->ShouldRender())
         if (points[i] == NULL)
         {
             JS_ReportError(cx, "Polygon() failed: Invalid object at array index %d", i);
+            for (unsigned int i = 0; i < length; i++) delete points[i];
             delete [] points;
             return JS_FALSE;
         }
@@ -12895,12 +12906,15 @@ for (unsigned int i = 0; i < length; i++)
 	if (points[i] == NULL)
 	{
 		JS_ReportError(cx, "pointSeries() failed: Invalid object at array index %d", i);
+        for (unsigned int i = 0; i < length; i++) delete points[i];
 		delete [] points;
 		return JS_FALSE;
 	}
 }
 
 object->surface->PointSeries(points, length, c);
+for (unsigned int i = 0; i < length; i++)
+    delete points[i];
 delete [] points;
 
 end_method()
@@ -12993,12 +13007,15 @@ for (unsigned int i = 0; i < length; i++)
 	if (points[i] == NULL)
 	{
 		JS_ReportError(cx, "lineSeries() failed: Invalid object at array index %d", i);
+        for (unsigned int j = 0; j < length; j++) delete points[j];
 		delete [] points;
 		return JS_FALSE;
 	}
 }
 
 object->surface->LineSeries(points, length, c, type);
+for (unsigned int i = 0; i < length; i++)
+    delete points[i];
 delete [] points;
 
 end_method()
@@ -13179,12 +13196,15 @@ for (unsigned int i = 0; i < length; i++)
 	if (points[i] == NULL)
 	{
 		JS_ReportError(cx, "Polygon() failed: Invalid object at array index %d", i);
+        for (unsigned int i = 0; i < length; i++) delete points[i];
 		delete [] points;
 		return JS_FALSE;
 	}
 }
 
 object->surface->Polygon(points, length, invert, c);
+for (unsigned int i = 0; i < length; i++)
+    delete points[i];
 delete [] points;
 
 end_method()
