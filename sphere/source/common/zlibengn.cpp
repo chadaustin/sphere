@@ -224,13 +224,13 @@ int ZlibEngine::compressInMemory( const unsigned char *source,
 	uLong destination_size = maxbuffersize;
 	// And if it looks like we require more than the max given, we fail
 	if(maxbuffersize<compressBound(sourceSize))
-		return -2;
+		return -256;
 	// Compress everything from source to destination (const unsigned char *)
 	int result = compress2(destination, &destination_size, source, sourceSize, level);
 
 	// Check result for errors
 	if( result != Z_OK )
-		return -1;
+		return -result;
 
 	return destination_size;
 }
@@ -239,15 +239,17 @@ int ZlibEngine::decompressInMemory( const unsigned char *source, unsigned int so
 {
 	// We need to allocate a large enough amount of byte for the destination buffer
 	uLong destination_size = maxbuffersize;
+
 	// And if it looks like we require more than the max given, we fail
 	if(maxbuffersize<compressBound(sourceSize))
-		return -2;
+		return -256;
+
 	// Compress everything from source to destination (const unsigned char *)
 	int result = uncompress(destination, &destination_size, source, sourceSize);
 
 	// Check result for errors
 	if( result != Z_OK )
-		return -1;
+		return -result;
 
 	return destination_size;
 }
