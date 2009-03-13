@@ -2399,6 +2399,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 /**
     - Determines if two polygons are colliding
+      http://www.visibone.com/inpoly/inpoly.c.txt
 */
 begin_func(PolygonCollision, 2)
     arg_array(arrA);
@@ -2409,7 +2410,7 @@ begin_func(PolygonCollision, 2)
     jsuint lengthB;
 
     JS_GetArrayLength(cx, arrA, &lengthA);
-	JS_GetArrayLength(cx, arrB, &lengthB);
+    JS_GetArrayLength(cx, arrB, &lengthB);
 
     if (lengthA < 3)
     {
@@ -2422,8 +2423,9 @@ begin_func(PolygonCollision, 2)
         return JS_FALSE;
     }
 
+    // Copy our array-of-objects data over to vectors
     VECTOR_INT** pointsA = new VECTOR_INT*[lengthA];
-	VECTOR_INT** pointsB = new VECTOR_INT*[lengthB];
+    VECTOR_INT** pointsB = new VECTOR_INT*[lengthB];
 
     for (unsigned int i = 0; i < lengthA; i++)
     {
@@ -2432,72 +2434,71 @@ begin_func(PolygonCollision, 2)
 
         if (pointsA[i] == NULL)
         {
-            JS_ReportError(cx, "PolygonCollision() failed: Invalid object at first array index %d", lengthA-i-1);
+            JS_ReportError(cx, "PolygonCollision() failed: Invalid object at first array index %d", i);
             delete [] pointsA;
             delete [] pointsB;
             return JS_FALSE;
         }
     }
-	for (unsigned int i = 0; i < lengthB; i++)
+    for (unsigned int i = 0; i < lengthB; i++)
     {
         JS_GetElement(cx, arrB, i, vp);
         pointsB[i] = getObjCoordinates(cx, v);
 
         if (pointsB[i] == NULL)
         {
-            JS_ReportError(cx, "PolygonCollision() failed: Invalid object at second array index %d", lengthB-i-1);
+            JS_ReportError(cx, "PolygonCollision() failed: Invalid object at second array index %d", i);
             delete [] pointsA;
             delete [] pointsB;
             return JS_FALSE;
         }
     }
 
-	bool isinside = false;
-	int inside = 0;
-	int xold = 0;
-	int xnew = 0;
-	int yold = 0;
-	int ynew = 0;
-	int x1 = 0;
-	int y1 = 0;
-	int x2 = 0;
-	int y2 = 0;
+    bool isinside = false;
+    int inside = 0;
+    int xold = 0;
+    int xnew = 0;
+    int yold = 0;
+    int ynew = 0;
+    int x1 = 0;
+    int y1 = 0;
+    int x2 = 0;
+    int y2 = 0;
 
-	//for (unsigned int iA = lengthA -1 ; iA>0; --iA){
-	for (unsigned int iA = 0; iA<lengthA; ++iA){
-		xold = pointsB[lengthB-1]->x;
-		yold = pointsB[lengthB-1]->y;
-		for (int i=0 ; i < lengthB ; i++) {
-			xnew = (int)pointsB[i]->x;
-			ynew = (int)pointsB[i]->y;
-			if (xnew > xold) {
-				x1 = xold;
-				x2 = xnew;
-				y1 = yold;
-				y2 = ynew;
-			} else {
-				x1 = xnew;
-				x2 = xold;
-				y1 = ynew;
-				y2 = yold;
-			}
-			if ((xnew < pointsA[iA]->x) == (pointsA[iA]->x <= xold)  // edge "open" at left end
-				&& ((long)pointsA[iA]->y-(long)y1)*(long)(x2-x1)
-				< ((long)y2-(long)y1)*(long)(pointsA[iA]->x-x1))
-			{
-				inside=!inside;
-			}
-			xold = xnew;
-			yold = ynew;
-		}
+    // For each point int pointsA, we will check point-in-poly
+    for (unsigned int iA = 0; iA<lengthA; ++iA){
+        xold = pointsB[lengthB-1]->x;
+        yold = pointsB[lengthB-1]->y;
+        for (int i=0 ; i < lengthB ; i++) {
+            xnew = (int)pointsB[i]->x;
+            ynew = (int)pointsB[i]->y;
+            if (xnew > xold) {
+                x1 = xold;
+                x2 = xnew;
+                y1 = yold;
+                y2 = ynew;
+            } else {
+                x1 = xnew;
+                x2 = xold;
+                y1 = ynew;
+                y2 = yold;
+            }
+            if ((xnew < pointsA[iA]->x) == (pointsA[iA]->x <= xold)  // edge "open" at left end
+                && ((long)pointsA[iA]->y-(long)y1)*(long)(x2-x1)
+                < ((long)y2-(long)y1)*(long)(pointsA[iA]->x-x1))
+            {
+                inside=!inside; // I nod and smile...
+            }
+            xold = xnew;
+            yold = ynew;
+        }
 
-		if (inside){
-			isinside = true;
-		}
-	}
+        if (inside)
+            isinside = true;
+    }
     delete [] pointsA;
-	delete [] pointsB;
-	return_bool(isinside);
+    delete [] pointsB;
+    return_bool(isinside);
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
