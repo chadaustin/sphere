@@ -740,7 +740,7 @@ log_object.endBlock()
       - returns the current pan of the sound (-255 to 255)
         no effect on MIDIs.
 
-    setPitchBgm(double pitch)
+    setPitchBgm(pitch)
       - pitch ranges from 0.5 to 2.0.  0.5 is an octave down (and half as fast)
         while 2.0 is an octave up (and twice as fast).  pitch defaults to 1.0
         no effect on MIDIs.
@@ -1262,72 +1262,234 @@ log_object.endBlock()
   *** sfxr ***
 
    CreateSfxr()
-    - returns an Sfxr object.
+    - returns an Sfxr object. The parameters are optional and can be set later on.
+      bitrate, samplerate, soundvolume, wavetype, basefrequency, minfrequency, 
+      frequencyslide, frequencyslidedelta, squareduty, squaredutysweep, vibratodepth,
+      vibratospeed, attack, sustain, detay, release, filter, lowpassfiltercutoff,
+      lowpassfiltercutoffsweep, filterresonance, highpassfiltercutoff, highpassfiltercutoffsweep,
+      phaseroffset, phaseroffsetsweep, repeatspeed, arpeggio, arpeggiospeed
 
-  sfxr_object.ssSfxrSaveWav(string filename)
+
+  sfxr.saveWav(string filename)
     - saves the sfxr as a wav file
+      It will use the ./sounds/ directory by default
 
-  sfxr_object.ssSfxrReset()
-  sfxr_object.ssSfxrGetSoundEffect([type])
-  sfxr_object.ssSfxrCalcSampleSize()
-  sfxr_object.ssSfxrSetMasterVolume(volume)
-  sfxr_object.ssSfxrGetMasterVolume()
-  sfxr_object.ssSfxrGetSoundVolume()
-  sfxr_object.ssSfxrSetSoundVolume(v)
-  sfxr_object.ssSfxrGetBitrate()
-  sfxr_object.ssSfxrSetBitrate(v)
-  sfxr_object.ssSfxrGetSampleRate()
-  sfxr_object.ssSfxrSetSampleRate(v)
-  sfxr_object.ssSfxrGetWaveType()
-  sfxr_object.ssSfxrSetWaveType(wavetype)
-  sfxr_object.ssSfxrGetBaseFrequency()
-  sfxr_object.ssSfxrSetBaseFrequency( v)
-  sfxr_object.ssSfxrGetMinFrequency()
-  sfxr_object.ssSfxrSetMinFrequency(v)
-  sfxr_object.ssSfxrGetFrequencySlide()
-  sfxr_object.ssSfxrSetFrequencySlide(v)
-  sfxr_object.ssSfxrGetFrequencySlideDelta()
-  sfxr_object.ssSfxrSetFrequencySlideDelta(v)
-  sfxr_object.ssSfxrGetSquareDuty()
-  sfxr_object.ssSfxrSetSquareDuty(v)
-  sfxr_object.ssSfxrGetSquareDutySweep()
-  sfxr_object.ssSfxrSetSquareDutySweep(v)
-  sfxr_object.ssSfxrGetVibratoDepth()
-  sfxr_object.ssSfxrSetVibratoDepth(v)
-  sfxr_object.ssSfxrGetVibratoSpeed()
-  sfxr_object.ssSfxrSetVibratoSpeed(v)
-  sfxr_object.ssSfxrGetVibratoDelay()
-  sfxr_object.ssSfxrSetVibratoDelay(v)
-  sfxr_object.ssSfxrGetAttack()
-  sfxr_object.ssSfxrSetAttack(v)
-  sfxr_object.ssSfxrGetSustain()
-  sfxr_object.ssSfxrSetSustain(v)
-  sfxr_object.ssSfxrGetDecay()
-  sfxr_object.ssSfxrSetDecay(v)
-  sfxr_object.ssSfxrGetRelease()
-  sfxr_object.ssSfxrSetRelease(v)
-  sfxr_object.ssSfxrGetFilter()
-  sfxr_object.ssSfxrSetFilter(bool)
-  sfxr_object.ssSfxrGetLowPassFilterCutoff()
-  sfxr_object.ssSfxrSetLowPassFilterCutoff(v)
-  sfxr_object.ssSfxrGetLowPassFilterCutoffSweep()
-  sfxr_object.ssSfxrSetLowPassFilterCutoffSweep(v)
-  sfxr_object.ssSfxrGetFilterResonance()
-  sfxr_object.ssSfxrSetFilterResonance(v)
-  sfxr_object.ssSfxrGetHighPassFilterCutoff()
-  sfxr_object.ssSfxrSetHighPassFilterCutoff(v)
-  sfxr_object.ssSfxrGetHighPassFilterCutoffSweep()
-  sfxr_object.ssSfxrSetHighPassFilterCutoffSweep(v)
-  sfxr_object.ssSfxrGetPhaserOffset()
-  sfxr_object.ssSfxrSetPhaserOffset(v)
-  sfxr_object.ssSfxrGetPhaserOffsetSweep()
-  sfxr_object.ssSfxrSetPhaserOffsetSweep(v)
-  sfxr_object.ssSfxrGetRepeatSpeed()
-  sfxr_object.ssSfxrSetRepeatSpeed(v)
-  sfxr_object.ssSfxrGetArpeggio()
-  sfxr_object.ssSfxrSetArpeggio(v)
-  sfxr_object.ssSfxrGetArpeggioSpeed()
-  sfxr_object.ssSfxrSetArpeggioSpeed(v)
+  sfxr.reset()
+    - resets all the values of the sfxr object
+
+  sfxr.getSoundEffect([int type])
+    - Creates a soundeffect. The parameter can be SE_MULTIPLE or SE_SINGLE
+
+  sfxr.calcSampleSize()
+    - Get the sample size
+
+  sfxr.setMasterVolume(volume)
+    - Set the master volume of the sfxr object
+
+  sfxr.getMasterVolume()
+    - Get the master volume of the sfxr object
+
+  sfxr.getSoundVolume()
+    - Get the volume of the sfxr object
+
+  sfxr.setSoundVolume(v)
+    - Set the volume of the sfxr object
+
+  sfxr.getBitrate()
+    - Get the bitrate of the sfxr object
+      This value can be 8 or 16
+
+  sfxr.setBitrate(int v)
+    - Set the bitrate of the sfxr object
+      This value can be 8 or 16
+
+  sfxr.getSampleRate()
+    - Get the samplerate of the sfxr object
+
+  sfxr.setSampleRate(int v)
+    - Set the sample rate of the sfxr object
+      For example: 44100, 22500, 11000 or 8000.
+      Changing the samplerate effectively changes the pitch
+
+  sfxr.getWaveType()
+    - Get the wave type of the sfxr object
+
+  sfxr.setWaveType(int wavetype)
+    - Set the wave type of the sfxr object
+      Valid values are: SQUAREWAVE, SAWTOOTH, SINEWAVE and NOISE
+
+  sfxr.getBaseFrequency()
+    - Get the base frequency of the sfxr object
+
+  sfxr.setBaseFrequency(v)
+    - Set the base frequency of the sfxr object
+      This is for sliding the sound in pitch
+      Value must be between 0 and 1
+
+  sfxr.getMinFrequency()
+    - Get the minimal frequency of the sfxr object
+
+  sfxr.setMinFrequency(v)
+    - Set the minimal frequency of the sfxr object
+      Value must be between 0 and 1
+
+  sfxr.getFrequencySlide()
+    - Get the frequency slide of the sfxr object
+
+  sfxr.setFrequencySlide(v)
+    - Set the frequency slide of the sfxr object
+      Value must be between -1 and 1
+
+  sfxr.getFrequencySlideDelta()
+    - Get the frequency slide delta of the sfxr object
+
+  sfxr.setFrequencySlideDelta(v)
+    - Set the frequency slide delta of the sfxr object
+      Value must be between -1 and 1
+
+  sfxr.getSquareDuty()
+    - Get the square duty of the sfxr object
+
+  sfxr.setSquareDuty(v)
+    - Set the square duty of the sfxr object
+      Value must be between 0 and 1
+
+  sfxr.getSquareDutySweep()
+    - Get the square duty sweep of the sfxr object
+
+  sfxr.setSquareDutySweep(v)
+    - Set the square duty sweep of the sfxr object
+      Value must be between 0 and 1
+
+  sfxr.getVibratoDepth()
+    - Get the vibrato depth of the sfxr object
+
+  sfxr.setVibratoDepth(v)
+    - Set the vibrato depth of the sfxr object
+      Value must be between 0 and 1
+
+  sfxr.getVibratoSpeed()
+    - Get the vibrato speed of the sfxr object
+
+  sfxr.setVibratoSpeed(v)
+    - Set the vibrato speed of the sfxr object
+      Value must be between 0 and 1
+
+  sfxr.getVibratoDelay()
+    - Get the vibrato delay of the sfxr object
+
+  sfxr.setVibratoDelay(v)
+    - Set the vibrato delay of the sfxr object
+      Value must be between 0 and 1
+
+  sfxr.getAttack()
+    - Get the attack envelope of the sfxr object
+
+  sfxr.setAttack(v)
+    - Set the attack envelope of the sfxr object
+      Value must be between 0 and 1
+
+  sfxr.getSustain()
+    - Get the sustain envelope of the sfxr object
+
+  sfxr.setSustain(v)
+    - Set the sustain envelope of the sfxr object
+      Value must be between 0 and 1
+
+  sfxr.getDecay()
+    - Get the decay envelope of the sfxr object
+
+  sfxr.setDecay(v)
+    - Set the decay envelope of the sfxr object
+      Value must be between 0 and 1
+
+  sfxr.getRelease()
+    - Get the release envelope of the sfxr object
+
+  sfxr.setRelease(v)
+    - Set the release envelope of the sfxr object
+      Value must be between 0 and 1
+
+  sfxr.getFilter()
+    - Get the filter of the sfxr object
+
+  sfxr.setFilter(boolean isOn)
+    - Set the filter of the sfxr object
+      Not sure what this does
+
+  sfxr.getLowPassFilterCutoff()
+    - Get the low pass filter cutoff of the sfxr object
+
+  sfxr.setLowPassFilterCutoff(v)
+    - Set the low pass filter cutoff of the sfxr object
+      Value must be between 0 and 1
+
+  sfxr.getLowPassFilterCutoffSweep()
+    - Get the low pass filter cutoff sweep of the sfxr object
+
+  sfxr.setLowPassFilterCutoffSweep(v)
+    - Set the low pass filter cutoff sweep of the sfxr object
+      Value must be between -1 and 1
+
+  sfxr.getFilterResonance()
+    - Get the filter resonance of the sfxr object
+
+  sfxr.setFilterResonance(v)
+    - Set the filter resonance of the sfxr object
+      Value must be between 0 and 1
+
+  sfxr.getHighPassFilterCutoff()
+    - Get the high pass filter cutoff of the sfxr object
+
+  sfxr.setHighPassFilterCutoff(v)
+    - Set the high pass filter cutoff of the sfxr object
+      Value must be between 0 and 1
+
+  sfxr.getHighPassFilterCutoffSweep()
+    - Get the high pass filter cutoff sweep of the sfxr object
+
+  sfxr.setHighPassFilterCutoffSweep(v)
+    - Set the high pass filter cutoff sweep of the sfxr object
+      Value must be between -1 and 1
+
+  sfxr.getPhaserOffset()
+    - Get the phaser offset of the sfxr object
+
+  sfxr.setPhaserOffset(v)
+    - Set the phaser offset of the sfxr object
+      Value must be between -1 and 1
+
+  sfxr.getPhaserOffsetSweep()
+    - Get the phaser offset sweep of the sfxr object
+
+  sfxr.setPhaserOffsetSweep(v)
+    - Set the phaser offset sweep of the sfxr object
+      Value must be between -1 and 1
+
+  sfxr.getRepeatSpeed()
+    - Get the repeat speed of the sfxr object
+
+  sfxr.setRepeatSpeed(v)
+    - Set the repeat speed of the sfxr object
+      Value must be between 0 and 1
+
+  sfxr.getArpeggio()
+    - Get the arpeggio of the sfxr object
+
+  sfxr.setArpeggio(v)
+    - Set the arpeggio of the sfxr object
+      Value must be between 0 and 1
+
+  sfxr.getArpeggioSpeed()
+    - Get the arpeggio speed of the sfxr object
+
+  sfxr.setArpeggioSpeed(v)
+    - Set the arpeggio speed of the sfxr object
+      Value must be between -1 and 1
+
+  sfxr.clone()
+    - creates a copy of the sfxr object
+
 
   *** fonts ***
   GetSystemFont()
@@ -1673,7 +1835,7 @@ log_object.endBlock()
                  
         mode can be either PS_ORIENTATION_EXPLICIT or PS_ORIENTATION_IMPLICIT
       
-    particle_system.initializer.setPosParams({params})
+    particle_system.initializer.setVelParams({params})
       - accepts a wrapper object filled with position initialization parameters to set
       - the same parameters are accepted as returned by getVelParams()
       - parameters which should not be set, can be omitted
