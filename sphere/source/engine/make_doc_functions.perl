@@ -222,7 +222,7 @@ sub method_to_string {
 sub ssobject_name_to_jsobject_name {
   my ($method_object) = @_;
 
-  my @ss_names = ("SS_IMAGE", "SS_WINDOWSTYLE", "SS_SURFACE", "SS_COLOR", "SS_COLORMATRIX",
+  my @ss_names = ("SS_IMAGE", "SS_WINDOWSTYLE", "SS_SURFACE", "SS_COLORMATRIX", "SS_COLOR",
                   "SS_FONT", "SS_SOUNDEFFECT", "SS_SOUND", "SS_SFXR", "SS_SPRITESET",
                   "SS_FILE", "SS_LOG", "SS_SOCKET", "SS_ANIMATION",
                   "SS_RAWFILE", "SS_BYTEARRAY", "SS_MAPENGINE", "SS_TILESET",
@@ -231,7 +231,7 @@ sub ssobject_name_to_jsobject_name {
                   
   );
 
-  my @js_names = ("image", "windowstyle", "surface", "color", "colormatrix",
+  my @js_names = ("image", "windowstyle", "surface", "colormatrix", "color", 
                   "font", "soundeffect", "sound", "sfxr", "spriteset",
                   "file", "log", "socket", "animation",
                   "rawfile", "bytearray", "mapengine", "tileset",
@@ -255,7 +255,7 @@ sub ssobject_name_to_jsobject_name {
 sub ssobject_method_to_jsobject_method {
   my ($method_name) = @_;
   
-  my @list = qw(ssColor ssSocket ssLog ssSpriteset ssSoundEffect ssSound ssSfxr ssFont ssWindowStyle ssImage ssSurface ssAnimation ssFile ssByteArray ssRawFile ssMapEngine ssTileset ssParticleSystemParent ssParticleSystemChild);
+  my @list = qw(ssColorMatrix ssColor ssSocket ssLog ssSpriteset ssSoundEffect ssSound ssSfxr ssFont ssWindowStyle ssImage ssSurface ssAnimation ssFile ssByteArray ssRawFile ssMapEngine ssTileset ssParticleSystemParent ssParticleSystemChild);
 
   for (my $i = 0; $i <= $#list; $i++) {
     my $str = $list[$i];
@@ -441,7 +441,7 @@ sub make_docs {
       }
 
       # arg_color(name)
-      if ($line =~ m/arg_color\((.*?)\)/) {
+      elsif ($line =~ m/arg_color\((.*?)\)/) {
         push (@arg_types, "color_object");
         push (@args, "$1");
       }
