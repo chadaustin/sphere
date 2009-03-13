@@ -22,15 +22,20 @@ sub is_txt {
 ###########################################################
 
 sub start_of_line {
+  my($class,$name) = @_;
   if (is_html()) {
-    return "<div>";
+    return "<div>" if(!$class);
+    return "<div class=\"$class\"><a name =\"$name\">" if($class eq 'jsobject');
+    return "<div class=\"$class\">";
   }
   
   return "";
 }
 
 sub end_of_line {
+  my($class) = @_ || "";
   if (is_html()) {
+    return "</a></div>\n" if($class eq 'jsobject');
     return "</div>\n";
   }
   
@@ -65,7 +70,7 @@ sub fix_line_endings {
     my $k = 0;
     foreach my $current_line (@lines) {
       $current_line =~ s/^(\s+)(.*)//; # strip spaces
-
+      next if(!$1);
       my $num_spaces = length($1);
       my $line = $2;
        
@@ -114,7 +119,13 @@ sub function_to_string {
   }
   
   if (is_html()) {
-    $line .= "$prefix<span class='type_$return_type'>$return_type</span> ";
+    my $class = $return_type;
+    if($class=~s/_object.*//) {
+      $class = "\U$class"; $class=~s/_//g;
+      $line .= "$prefix<span class='type_$return_type'><a href=\"#$class\">$return_type</a></span> ";
+    } else {
+      $line .= "$prefix<span class='type_$return_type'>$return_type</span> ";
+    }
   } else {
     $line .= "$prefix$return_type ";  
   }
@@ -137,6 +148,8 @@ sub function_to_string {
         else {
           $line .= " [, ";
         }
+      } else {
+        $line .= ", ";
       }
       $open_bracket = 1;
       $no_comma = 1;
@@ -149,7 +162,15 @@ sub function_to_string {
     }
 
     if (is_html()) {
-      $line .= "<span class='type_$func_arg_types[$i]'>" . $func_arg_types[$i] . "</span> " . $func_args[$i];
+      if($func_arg_types[$i] =~/_object/){
+        my $class = $func_arg_types[$i];
+        $class =~ s/_object.*//;
+        $class="\U$class";
+        $class=~s/_//g;
+        $line .= "<span class='type_$func_arg_types[$i]'><a href=\"#$class\">" . $func_arg_types[$i] . "</a></span> " . $func_args[$i];
+      } else {
+        $line .= "<span class='type_$func_arg_types[$i]'>" . $func_arg_types[$i] . "</span> " . $func_args[$i];
+      }
     } else {
       $line .= $func_arg_types[$i] . " " . $func_args[$i];
     }
@@ -201,18 +222,22 @@ sub method_to_string {
 sub ssobject_name_to_jsobject_name {
   my ($method_object) = @_;
 
-  my @ss_names = ("SS_IMAGE", "SS_WINDOWSTYLE", "SS_SURFACE",
+  my @ss_names = ("SS_IMAGE", "SS_WINDOWSTYLE", "SS_SURFACE", "SS_COLOR", "SS_COLORMATRIX",
                   "SS_FONT", "SS_SOUNDEFFECT", "SS_SOUND", "SS_SFXR", "SS_SPRITESET",
                   "SS_FILE", "SS_LOG", "SS_SOCKET", "SS_ANIMATION",
                   "SS_RAWFILE", "SS_BYTEARRAY", "SS_MAPENGINE", "SS_TILESET",
-                  "SS_PARTICLE_SYSTEM_PARENT", "SS_PARTICLE_SYSTEM_CHILD"
+                  "SS_PARTICLE_SYSTEM_PARENT", "SS_PARTICLE_SYSTEM_CHILD",
+                  "SS_PARTICLE_INITIALIZER", "SS_PARTICLE_DESCENDANTS", "SS_PARTICLE_SWARM"
+                  
   );
 
-  my @js_names = ("image", "windowstyle", "surface",
+  my @js_names = ("image", "windowstyle", "surface", "color", "colormatrix",
                   "font", "soundeffect", "sound", "sfxr", "spriteset",
                   "file", "log", "socket", "animation",
                   "rawfile", "bytearray", "mapengine", "tileset",
-                  "ParticleSystemParent", "ParticleSystemChild"
+                  "ParticleSystemParent", "ParticleSystemChild",
+                  "ParticleInitializer", "ParticleDescendants", "ParticleSwarm"
+               
   );
 
   for (my $i = 0; ($i <= $#js_names && $i <= $#ss_names); $i++) {
@@ -230,7 +255,7 @@ sub ssobject_name_to_jsobject_name {
 sub ssobject_method_to_jsobject_method {
   my ($method_name) = @_;
   
-  my @list = qw(ssSocket ssLog ssSpriteset ssSoundEffect ssSound ssSfxr ssFont ssWindowStyle ssImage ssSurface ssAnimation ssFile ssByteArray ssRawFile ssMapEngine ssTileset ssParticleSystemParent ssParticleSystemChild);
+  my @list = qw(ssColor ssSocket ssLog ssSpriteset ssSoundEffect ssSound ssSfxr ssFont ssWindowStyle ssImage ssSurface ssAnimation ssFile ssByteArray ssRawFile ssMapEngine ssTileset ssParticleSystemParent ssParticleSystemChild);
 
   for (my $i = 0; $i <= $#list; $i++) {
     my $str = $list[$i];
@@ -307,7 +332,7 @@ sub make_docs {
     # // section: section_name //
     if ($line =~ m/\/\/ section: (.*?) \/\//) {
       print "\n";
-      print &start_of_line() . (&is_html() ? "<br />" : "") . "*** $1 ***" . &end_of_line();
+      print &start_of_line('section') . "*** $1 ***" . &end_of_line(). (&is_html() ? "</br>" : "") ;
     }
 
     if ($in_comment == 0 && $in_func == 0 && $in_method == 0) {
@@ -488,93 +513,120 @@ sub make_docs {
         $return_type = "object";
         
         # return_object(CreateSocketObject(cx, s));
-        if ($line =~ m/return_object\(CreateSocketObject\(cx, (.*?)\)/) {
+        if ($line =~ m/return_object\(\s*CreateSocketObject\(cx, (.*?)\)/) {
           $return_type = "socket_object";
         }
 
         # return_object(CreateLogObject(cx, s));
-        if ($line =~ m/return_object\(CreateLogObject\(cx, (.*?)\)/) {
+        elsif ($line =~ m/return_object\(\s*CreateLogObject\(cx, (.*?)\)/) {
           $return_type = "log_object";
         }
 
         # return_object(CreateByteArrayObject(cx, s));
-        if ($line =~ m/return_object\(CreateByteArrayObject\(cx, (.*?)\)/) {
+        elsif ($line =~ m/return_object\(\s*CreateByteArrayObject\(cx, (.*?)\)/) {
           $return_type = "byte_array_object";
         }
         
         # return_object(CreateColorObject(cx, s));
-        if ($line =~ m/return_object\(CreateColorObject\(cx, (.*?)\)/) {
+        elsif ($line =~ m/return_object\(\s*CreateColorObject\(cx, (.*?)\)/) {
           $return_type = "color_object";
+        }
+        # return_object(CreateColorMatrixObject(cx, s));
+        elsif ($line =~ m/return_object\(\s*CreateColorMatrixObject\(cx, (.*?)\)/) {
+          $return_type = "colormatrix_object";
         }
         
         # return_object(CreateImageObject(cx, s));
-        if ($line =~ m/return_object\(CreateImageObject\(cx, (.*?)\)/) {
+        elsif ($line =~ m/return_object\(\s*CreateImageObject\(cx, (.*?)\)/) {
           $return_type = "image_object";
         }
 
         # return_object(CreateSurfaceObject(cx, s));
-        if ($line =~ m/return_object\(CreateSurfaceObject\(cx, (.*?)\)/) {
+        elsif ($line =~ m/return_object\(\s*CreateSurfaceObject\(cx, (.*?)\)/) {
           $return_type = "surface_object";
         }
         
         # return_object(CreateSpritesetObject(cx, s));
-        if ($line =~ m/return_object\(CreateSpritesetObject\(cx, (.*?)\)/) {
+        elsif ($line =~ m/return_object\(\s*CreateSpritesetObject\(cx, (.*?)\)/) {
           $return_type = "spriteset_object";
         }
 
         # return_object(CreateSpritesetBaseObject(cx, s));
-        if ($line =~ m/return_object\(CreateSpritesetBaseObject\(cx, (.*?)\)/) {
+        elsif ($line =~ m/return_object\(\s*CreateSpritesetBaseObject\(cx, (.*?)\)/) {
           $return_type = "spriteset_base_object";
         }
 
         # return_object(CreateSoundObject(cx, s));
-        if ($line =~ m/return_object\(CreateSoundObject\(cx, (.*?)\)/) {
+        elsif ($line =~ m/return_object\(\s*CreateSoundObject\(cx, (.*?)\)/) {
           $return_type = "sound_object";
         }
         
         # return_object(CreateSoundEffectObject(cx, s));
-        if ($line =~ m/return_object\(CreateSoundEffectObject\(cx, (.*?)\)/) {
+        elsif ($line =~ m/return_object\(\s*CreateSoundEffectObject\(cx, (.*?)\)/) {
           $return_type = "soundeffect_object";
         }
         
         # return_object(CreateSfxrObject(cx, s));
-        if ($line =~ m/return_object\(CreateSfxrObject\(cx, (.*?)\)/) {
+        elsif ($line =~ m/return_object\(\s*CreateSfxrObject\(cx, (.*?)\)/) {
           $return_type = "sfxr_object";
         }
         
         # return_object(CreateFontObject(cx, s));
-        if ($line =~ m/return_object\(CreateFontObject\(cx, (.*?)\)/) {
+        elsif ($line =~ m/return_object\(\s*CreateFontObject\(cx, (.*?)\)/) {
           $return_type = "font_object";
         }
         
         # return_object(CreateWindowStyleObject(cx, s));
-        if ($line =~ m/return_object\(CreateWindowStyleObject\(cx, (.*?)\)/) {
+        elsif ($line =~ m/return_object\(\s*CreateWindowStyleObject\(cx, (.*?)\)/) {
           $return_type = "windowstyle_object";
         }
         
         # return_object(CreateAnimationObject(cx, s));
-        if ($line =~ m/return_object\(CreateAnimationObject\(cx, (.*?)\)/) {
+        elsif ($line =~ m/return_object\(\s*CreateAnimationObject\(cx, (.*?)\)/) {
           $return_type = "animation_object";
         }
         
         # return_object(CreateFileObject(cx, s));
-        if ($line =~ m/return_object\(CreateFileObject\(cx, (.*?)\)/) {
+        elsif ($line =~ m/return_object\(\s*CreateFileObject\(cx, (.*?)\)/) {
           $return_type = "file_object";
         }
         
         # return_object(CreateRawFileObject(cx, s));
-        if ($line =~ m/return_object\(CreateRawFileObject\(cx, (.*?)\)/) {
+        elsif ($line =~ m/return_object\(\s*CreateRawFileObject\(cx, (.*?)\)/) {
           $return_type = "rawfile_object";
         }
 
         # return_object(CreateParticleSystemParentObject(cx, s));
-        if ($line =~ m/return_object\(CreateParticleSystemParentObject\(cx, (.*?)\)/) {
+        elsif ($line =~ m/return_object\(\s*CreateParticleSystemParentObject\(cx, (.*?)\)/) {
           $return_type = "ParticleSystemParent_object";
         }
 
         # return_object(CreateParticleSystemChildObject(cx, s));
-        if ($line =~ m/return_object\(CreateParticleSystemChildObject\(cx, (.*?)\)/) {
+        elsif ($line =~ m/return_object\(\s*CreateParticleSystemChildObject\(cx, (.*?)\)/) {
           $return_type = "ParticleSystemChild_object";
+        }
+
+        # Now for some dirty fixes...
+
+        # return_object clone
+        elsif ($line =~ m/return_object\(/ && $method_name=~/clone$/i) {
+          $return_type = ssobject_name_to_jsobject_name($method_object);
+        }
+        # return_object(array_object; concated_byte_array
+        elsif ($line !~ /byte/i && $line =~ m/array/i && $method_name=~/string|font|list|/i) {
+          $return_type = "array";
+        }
+        # return_object(array_object; concated_byte_array
+        elsif ($line =~ m/return_object\(\s*(.*byte_array.*|array_object)\s*\)/) {
+          $return_type = "byte_array_object";
+        }
+        # return_object(array_object; concated_byte_array
+        elsif ($line =~ m/return_object\(obj\)/ && $method_name=~/surface/i) {
+          $return_type = ssobject_name_to_jsobject_name($method_object);
+        }
+
+        else {
+         #$return_type = "FIXMEEEEEEEEEEEEEEEEEEEEEEEEE";
         }
       }
 
@@ -609,7 +661,7 @@ sub make_docs {
 
           if ($prev_method_object ne $method_object) {
             print "\n";
-            print &start_of_line() . uc(&ssobject_name_to_jsobject_name($method_object)) . &end_of_line();
+            print &start_of_line('jsobject', uc(&ssobject_name_to_jsobject_name($method_object))) . uc(&ssobject_name_to_jsobject_name($method_object)) . &end_of_line('jsobject');
             
             if ($method_object eq "color") {
               print &start_of_line() . "$prefix$name.red" . &end_of_line();
@@ -622,7 +674,9 @@ sub make_docs {
               print &start_of_line() . "$prefix$name.width" . &end_of_line() . "\n";
               print &start_of_line() . "$prefix$name.height" . &end_of_line() . "\n";
             }
-
+            if ($method_object eq "SS_ANIMATION") {
+              print &start_of_line() . "$prefix$name.done" . &end_of_line() . "\n";
+            }
             if ($method_object eq "SS_BYTEARRAY") {
               print &start_of_line() . "$prefix$name" . "[index]" . &end_of_line() . "\n";
               print &start_of_line() . "$prefix$name.length" . &end_of_line() . "\n";
