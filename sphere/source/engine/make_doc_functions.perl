@@ -81,8 +81,8 @@ sub fix_line_endings {
         $current_line .= "&nbsp;";
       }
       
-      if ($line =~ /\@see/) {
-        $original_line .= &start_of_line() . $current_line . $line . (is_html() && $k + 1 == @lines ? "<br /><br />" : "") . &end_of_line();      
+      if ($line =~ /\@see/i) {
+        $original_line .= &start_of_line() . $current_line .             $line  . (is_html() && $k + 1 == @lines ? "<br /><br />" : "") . &end_of_line();      
       } else {
         $original_line .= &start_of_line() . $current_line . html_escape($line) . (is_html() && $k + 1 == @lines ? "<br /><br />" : "") . &end_of_line();
       }
@@ -101,6 +101,7 @@ sub function_to_string {
   my ($func_name, $func_minargs, $desc_text, $return_type, @func_arg_info) = @_;
   my @func_args = ();
   my @func_arg_types = ();
+  $desc_text = u2d($desc_text);
 
   my $prefix = is_html() ? "&nbsp;&nbsp;" : "  ";
 
@@ -201,6 +202,7 @@ sub function_to_string {
 sub method_to_string {
   my ($func_name, $func_minargs, $desc_text, $return_type, @func_args) = @_;
   my $line = function_to_string($func_name, $func_minargs, $desc_text, $return_type, @func_args);
+  $desc_text = u2d($desc_text);
 
   if (0 && is_html()) {
     my $end_line = &end_of_line();
@@ -366,13 +368,12 @@ sub make_docs {
       my $temp_line = $line;
 
         # @see name
-        if ($temp_line =~ m/\@see (.*)/) {
+        if ($temp_line =~ m/\@see (\S*)/) {
           my $r = $1;
           if (is_html()) {
             $temp_line =~ s/\@see $r/\@see <a href=\"#$r\">$r<\/a>/;
           }
         }
-
       $desc_text .= $temp_line;
     }
 
@@ -794,6 +795,14 @@ sub CheckPreviousObject(){
           }
 
 }
+
+#unix to dos carriage return
+sub u2d{
+	my($line) = @_;
+	$line =~s/[\010\013\r\n]+/\n/g;
+	return $line;
+}
+
 
 ###########################################################
 

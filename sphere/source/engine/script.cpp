@@ -2967,8 +2967,22 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-    - checks if the given player key has been pressed.
-      Returns true if 'key' is pressed....
+    - returns the key constant associated with the configurable player key of 'player'.
+      Allowed player values are 0 - 3 or:
+        PLAYER_1
+        PLAYER_2
+        PLAYER_3
+        PLAYER_4
+      Allowed player_key_constant values are:
+        PLAYER_KEY_MENU
+        PLAYER_KEY_UP
+        PLAYER_KEY_DOWN
+        PLAYER_KEY_LEFT
+        PLAYER_KEY_RIGHT
+        PLAYER_KEY_A
+        PLAYER_KEY_B
+        PLAYER_KEY_X
+        PLAYER_KEY_Y
 */
 begin_func(GetPlayerKey, 2)
 arg_int(player);
@@ -9833,6 +9847,10 @@ default:
 end_property()
 
 ////////////////////////////////////////
+/**
+    - Colors must be between 0 and 255.
+	And are automatically clamped.
+*/
 begin_property(SS_COLOR, ssColorSetProperty)
 int prop_id = argInt(cx, id);
 switch (prop_id)
@@ -13624,7 +13642,7 @@ if (strcmp(type, "png") == 0)
 {
     saved = object->surface->Save(path.c_str());
 }
-
+// delete type; // Does const char* need delete?
 return_bool( saved );
 end_method()
 
@@ -13845,31 +13863,50 @@ object->frame = NULL;
 end_finalizer()
 
 ////////////////////////////////////////
+/**
+    - returns the number of frames the animation contains.
+*/
 begin_method(SS_ANIMATION, ssAnimationGetNumFrames, 0)
 return_int(object->animation->GetNumFrames());
 end_method()
 
 ////////////////////////////////////////
+/**
+    - returns the amount of ticks
+*/
 begin_method(SS_ANIMATION, ssAnimationGetTicks, 0)
 return_int(object->animation->GetTicks());
 end_method()
 
 ////////////////////////////////////////
+/**
+    - returns the total playtime, if defined.
+      (FLC's dont have this property, MNG's do)
+*/
 begin_method(SS_ANIMATION, ssAnimationGetPlaytime, 0)
 return_int(object->animation->GetPlaytime());
 end_method()
 
 ////////////////////////////////////////
+/**
+    - returns the delay between frames, in milliseconds
+*/
 begin_method(SS_ANIMATION, ssAnimationGetDelay, 0)
 return_int(object->animation->GetDelay());
 end_method()
 
 ////////////////////////////////////////
+/**
+    - readies the next frame for drawing
+*/
 begin_method(SS_ANIMATION, ssAnimationReadNextFrame, 0)
 object->animation->ReadNextFrame(object->frame);
 end_method()
 
 ////////////////////////////////////////
+/**
+    - draws the current frame into the video buffer
+*/
 begin_method(SS_ANIMATION, ssAnimationDrawFrame, 2)
 arg_int(x);
 arg_int(y);
@@ -13880,6 +13917,10 @@ if (This->ShouldRender())
 end_method()
 
 ///////////////////////////////////////
+/**
+    - draws the current frame into the video buffer with a specified
+      zoom scale
+*/
 begin_method(SS_ANIMATION, ssAnimationDrawZoomedFrame, 3)
 arg_int(x);
 arg_int(y);
@@ -13952,6 +13993,9 @@ object->file = NULL;
 end_finalizer()
 
 ////////////////////////////////////////
+/**
+    - writes a value (string, number, boolean) to the file under the key name
+*/
 begin_method(SS_FILE, ssFileWrite, 2)
 arg_str(key);
 
@@ -13975,6 +14019,14 @@ else
 end_method()
 
 ////////////////////////////////////////
+/**
+    - reads a value from the key
+      the value type returned depends on the default value. 
+      + if the default is a number, read will return a number.
+      + if the default is a text or string, read will return a string.
+      + if the default is a boolean, read will return a boolean
+      + if the key is not present in the file, it will return the default value.
+*/
 begin_method(SS_FILE, ssFileRead, 2)
 arg_str(key);
 
@@ -14002,11 +14054,17 @@ else
 end_method()
 
 ////////////////////////////////////////
+/**
+    - returns the number of keys in the file
+*/
 begin_method(SS_FILE, ssFileGetNumKeys, 0)
 int i = object->file->GetNumKeys(-1);
 return_int(i);
 end_method()
 ////////////////////////////////////////
+/**
+    - returns a string of the key at 'index'
+*/
 begin_method(SS_FILE, ssFileGetKey, 1)
 arg_int(index);
 if (index < 0)
@@ -14019,11 +14077,18 @@ std::string str = object->file->GetKey(-1, index);
 return_str(str.c_str());
 end_method()
 ///////////////////////////////////////
+/**
+    - writes the file to disk immediately...  this way you don't have
+      to wait for it to save when the file object is garbage collected
+*/
 begin_method(SS_FILE, ssFileFlush, 0)
 This->m_Engine->FlushFile(object->file);
 end_method()
 
 ///////////////////////////////////////
+/**
+    - closes the file object, after this, the file_object cannot be used anymore.
+*/
 begin_method(SS_FILE, ssFileClose, 0)
 if (object->file)
 {
@@ -14093,6 +14158,9 @@ object->file = NULL;
 
 end_finalizer()
 ////////////////////////////////////////
+/**
+    - sets the position that the file will be read from
+*/
 begin_method(SS_RAWFILE, ssRawFileSetPosition, 1)
 if (!object->is_open)
 {
@@ -14104,6 +14172,9 @@ object->file->Seek(position);
 end_method()
 
 ////////////////////////////////////////
+/**
+    - returns the current position which the data is read from
+*/
 begin_method(SS_RAWFILE, ssRawFileGetPosition, 0)
 if (!object->is_open)
 {
@@ -14114,6 +14185,9 @@ return_int(object->file->Tell());
 end_method()
 
 ////////////////////////////////////////
+/**
+    - returns the number of bytes in the file
+*/
 begin_method(SS_RAWFILE, ssRawFileGetSize, 0)
 if (!object->is_open)
 {
@@ -14124,6 +14198,15 @@ return_int(object->file->Size());
 end_method()
 
 ////////////////////////////////////////
+/**
+    - reads the number of bytes that is specified by num_bytes. It will create
+      and return an array of data the rawfile object has read. The array of 
+      data are numbers representation of each byte (0-255). Note that if the 
+      number of bytes that will be read, exceeds the filesize from the current 
+      position, it will only return an array of data of that is
+      actually read.  The returned object is a ByteArray, so you can do
+      the same things with it as you can with any other ByteArray.
+*/
 begin_method(SS_RAWFILE, ssRawFileRead, 1)
 arg_int(size);
 
@@ -14146,6 +14229,10 @@ return_object(array_object);
 end_method()
 
 ///////////////////////////////////////
+/**
+    - writes the byte array to the file at the current position
+      The file must have been opened as writeable for this to work.
+*/
 begin_method(SS_RAWFILE, ssRawFileWrite, 1)
 arg_byte_array(data);
 
@@ -14170,6 +14257,9 @@ if (wrote < data->size)
 
 end_method()
 ///////////////////////////////////////
+/**
+    - closes the rawfile object, after this, the rawfile_object cannot be used anymore.
+*/
 begin_method(SS_RAWFILE, ssRawFileClose, 0)
 if (object->file && object->is_open)
 {
@@ -14431,6 +14521,10 @@ return_bool (  This->m_Engine->GetMapEngine()->SaveMap(path.c_str()) );
 end_method()
 
 ////////////////////////////////////////////////////////////////////////////////
+/**
+    - Adds a new layer filled with tile index
+      The mapengine must be running.
+*/
 begin_method(SS_MAPENGINE, ssMapEngineLayerAppend, 3)
 arg_int(layer_width);
 arg_int(layer_height);
@@ -14438,7 +14532,7 @@ arg_int(tile_index);
 if ( !This->m_Engine->GetMapEngine()->IsRunning() )
 {
 
-    This->ReportMapEngineError("map_engine.appendLayer() failed");
+	This->ReportMapEngineError("map_engine.appendLayer() failed: MapEngine not running");
     return JS_FALSE;
 }
 if ( !(layer_width >= 0 && layer_width < 4096
@@ -14475,6 +14569,9 @@ for (int y = 0; y < layer.GetHeight(); y++)
 This->m_Engine->GetMapEngine()->GetMap().GetMap().AppendLayer(layer);
 end_method()
 ////////////////////////////////////////////////////////////////////////////////
+/**
+    - [INTERNAL] appends num_tiles tiles to the tileset
+*/
 begin_method(SS_TILESET, ssTilesetAppendTiles, 1)
 arg_int(num_tiles);
 if ( !This->m_Engine->GetMapEngine()->IsRunning() )
@@ -14486,6 +14583,9 @@ if ( !This->m_Engine->GetMapEngine()->IsRunning() )
 This->m_Engine->GetMapEngine()->GetMap().GetMap().GetTileset().AppendTiles(num_tiles);
 end_method()
 ////////////////////////////////////////////////////////////////////////////////
+/**
+    - [INTERNAL] saves the tileset from the current map to ./maps/<filename>
+*/
 begin_method(SS_TILESET, ssTilesetSave, 1)
 arg_str(filename);
 std::string path = "maps/" + std::string(filename);
