@@ -25,6 +25,7 @@ sub start_of_line {
   my($class,$name) = @_;
   if (is_html()) {
     return "<div>" if(!$class);
+    warn "You need to add this class:'$name'\n" if(($class eq 'jsobject')&&($name=~/^SS_/));
     return "<div class=\"$class\"><a name =\"$name\">" if($class eq 'jsobject');
     return "<div class=\"$class\">";
   }
@@ -227,7 +228,10 @@ sub ssobject_name_to_jsobject_name {
                   "SS_FILE", "SS_LOG", "SS_SOCKET", "SS_ANIMATION",
                   "SS_RAWFILE", "SS_BYTEARRAY", "SS_MAPENGINE", "SS_TILESET",
                   "SS_PARTICLE_SYSTEM_PARENT", "SS_PARTICLE_SYSTEM_CHILD",
-                  "SS_PARTICLE_INITIALIZER", "SS_PARTICLE_DESCENDANTS", "SS_PARTICLE_SWARM"
+                  "SS_PARTICLE_INITIALIZER", "SS_PARTICLE_DESCENDANTS", 
+                  "SS_PARTICLE_BODY", "SS_PARTICLE_DESCENDANTS", "SS_PARTICLE_RENDERER", 
+                  "SS_PARTICLE_CALLBACK", "SS_PARTICLE_SWARM_RENDERER", "SS_PARTICLE_SWARM",
+                  "SS_PARTICLE_UPDATER"
                   
   );
 
@@ -236,7 +240,10 @@ sub ssobject_name_to_jsobject_name {
                   "file", "log", "socket", "animation",
                   "rawfile", "bytearray", "mapengine", "tileset",
                   "ParticleSystemParent", "ParticleSystemChild",
-                  "ParticleInitializer", "ParticleDescendants", "ParticleSwarm"
+                  "ParticleInitializer", "ParticleDescendants", 
+                  "ParticleBody", "ParticleDescendants", "ParticleRenderer", 
+                  "ParticleCallback", "ParticleSwarmRenderer", "ParticleSwarm",
+                  "ParticleUpdater"
                
   );
 
@@ -255,7 +262,8 @@ sub ssobject_name_to_jsobject_name {
 sub ssobject_method_to_jsobject_method {
   my ($method_name) = @_;
   
-  my @list = qw(ssColorMatrix ssColor ssSocket ssLog ssSpriteset ssSoundEffect ssSound ssSfxr ssFont ssWindowStyle ssImage ssSurface ssAnimation ssFile ssByteArray ssRawFile ssMapEngine ssTileset ssParticleSystemParent ssParticleSystemChild);
+  my @list = qw(ssColorMatrix ssColor ssSocket ssLog ssSpriteset ssSoundEffect ssSound ssSfxr ssFont ssWindowStyle ssImage ssSurface ssAnimation ssFile ssByteArray ssRawFile ssMapEngine ssTileset 
+ssParticleSystemParent ssParticleSystemChild ssParticleDescendants ssParticleSwarm ssParticleSwarmRenderer ssParticleBody ssParticleInitializer ssParticleRenderer ssParticleCallback ssParticleUpdater);
 
   for (my $i = 0; $i <= $#list; $i++) {
     my $str = $list[$i];
@@ -280,6 +288,7 @@ sub make_docs {
 
   my $in_func = 0;
   my $in_method = 0;
+  my $in_prop = 0;
   my @args = ();
   my @arg_types = ();
   my $return_type = "void";
@@ -289,6 +298,8 @@ sub make_docs {
 
   my $method_name = "";
   my $method_object = "";
+  my $property_object = "";
+  my $property_name = "";
   my $prev_method_object = "";
   my $method_minargs = 0;
 
@@ -335,7 +346,7 @@ sub make_docs {
       print &start_of_line('section') . "*** $1 ***" . &end_of_line(). (&is_html() ? "</br>" : "") ;
     }
 
-    if ($in_comment == 0 && $in_func == 0 && $in_method == 0) {
+    if ($in_comment == 0 && $in_func == 0 && $in_method == 0 && $in_prop == 0) {
       # /**
       if ($line =~ m/(\s*)\/\*\*/) {
         $in_comment = 1;
@@ -365,10 +376,23 @@ sub make_docs {
       $desc_text .= $temp_line;
     }
 
+
+
+    if ($in_prop == 0) {
+
+      # begin_property(object, property_name)
+      if ($line =~ m/^\s*begin_property\((.*?), (.*?)\)/) {
+        $in_prop = 1;
+        $property_object = $1;
+        $property_name = $2;
+      }
+
+    }
+
     if ($in_func == 0) {
 
       # begin_func(func_name, minargs)
-      if ($line =~ m/begin_func\((.*?), (.*?)\)/) {
+      if ($line =~ m/^\s*begin_func\((.*?), (.*?)\)/) {
         $in_func = 1;
         $func_name = $1;
         $func_minargs = $2;
@@ -379,7 +403,7 @@ sub make_docs {
     if ($in_method == 0) {
 
       # begin_method(Object, method_name, minargs)
-      if ($line =~ m/begin_method\((.*?), (.*?), (.*?)\)/) {
+      if ($line =~ m/^\s*begin_method\((.*?), (.*?), (.*?)\)/) {
         $in_method = 1;
         $method_object = $1;
         $method_name = $2;
@@ -388,7 +412,7 @@ sub make_docs {
 
     }
 
-    if ($in_func == 1 || $in_method == 1) {
+    if ($in_func == 1 || $in_method == 1 || $in_prop) {
 
       # arg_str(name)
       if ($line =~ m/arg_str\((.*?)\)/) {
@@ -513,7 +537,7 @@ sub make_docs {
         $return_type = "object";
         
         # return_object(CreateSocketObject(cx, s));
-        if ($line =~ m/return_object\(\s*CreateSocketObject\(cx, (.*?)\)/) {
+        if ($line =~ m/return_object\(\s*CreateSocketObject\(cx,\s*(.*?)\)/) {
           $return_type = "socket_object";
         }
 
@@ -616,6 +640,17 @@ sub make_docs {
         elsif ($line !~ /byte/i && $line =~ m/array/i && $method_name=~/string|font|list|/i) {
           $return_type = "array";
         }
+        #
+        elsif ($func_name eq "GetGameList") {
+          $return_type = "array";
+        }
+        elsif ($func_name =~/GetPersonData|GetMapEngine/ ) {
+          $return_type = "object";
+        }
+        # Clip Object {x: y: width: height: }
+        elsif ($line =~ /clip_obj/i) {
+          $return_type = "object"; 
+        }
         # return_object(array_object; concated_byte_array
         elsif ($line =~ m/return_object\(\s*(.*byte_array.*|array_object)\s*\)/) {
           $return_type = "byte_array_object";
@@ -624,15 +659,22 @@ sub make_docs {
         elsif ($line =~ m/return_object\(obj\)/ && $method_name=~/surface/i) {
           $return_type = ssobject_name_to_jsobject_name($method_object);
         }
+        elsif ($line =~ m/return_object\(\s*JSVAL_NULL/) {
+          $return_type = "null";
+        }
+        elsif ($method_name =~/ssParticleDescendants(Get|Extract)/i) {
+          $return_type = "ParticleDescendants";
+        }
 
         else {
          #$return_type = "FIXMEEEEEEEEEEEEEEEEEEEEEEEEE";
+         die "FIXME: $return_type $line ($func_name;$method_name;$property_name)\n";
         }
       }
 
 
       # end_func()
-      if ($in_func == 1 && $line =~ m/end_func\(\)/) {
+      if ($in_func == 1 && $line =~ m/^\s*end_func\(\)/) {
 
         unless ($func_name eq "name") {
           print function_to_string($func_name, $func_minargs, $desc_text, $return_type, @args, @arg_types) . "\n";
@@ -648,7 +690,7 @@ sub make_docs {
       }
 
       # end_method()
-      if ($in_method == 1 && $line =~ m/end_method\(\)/) {
+      if ($in_method == 1 && $line =~ m/^\s*end_method\(\)/) {
         
         unless ($method_object eq "Object")
         {
@@ -659,29 +701,7 @@ sub make_docs {
           my $name = &ssobject_name_to_jsobject_name($method_object);
           my $prefix = is_html() ? "&nbsp;&nbsp;" : "  ";
 
-          if ($prev_method_object ne $method_object) {
-            print "\n";
-            print &start_of_line('jsobject', uc(&ssobject_name_to_jsobject_name($method_object))) . uc(&ssobject_name_to_jsobject_name($method_object)) . &end_of_line('jsobject');
-            
-            if ($method_object eq "color") {
-              print &start_of_line() . "$prefix$name.red" . &end_of_line();
-              print &start_of_line() . "$prefix$name.green" . &end_of_line();
-              print &start_of_line() . "$prefix$name.blue" . &end_of_line();
-              print &start_of_line() . "$prefix$name.alpha" . &end_of_line();
-            }
-
-            if ($method_object eq "SS_IMAGE" || $method_object eq "SS_SURFACE" || $method_object eq "SS_ANIMATION") {
-              print &start_of_line() . "$prefix$name.width" . &end_of_line() . "\n";
-              print &start_of_line() . "$prefix$name.height" . &end_of_line() . "\n";
-            }
-            if ($method_object eq "SS_ANIMATION") {
-              print &start_of_line() . "$prefix$name.done" . &end_of_line() . "\n";
-            }
-            if ($method_object eq "SS_BYTEARRAY") {
-              print &start_of_line() . "$prefix$name" . "[index]" . &end_of_line() . "\n";
-              print &start_of_line() . "$prefix$name.length" . &end_of_line() . "\n";
-            }
-          }
+          CheckPreviousObject($method_object,$prev_method_object);
 
           if ($method_object eq "SS_FILE") {
             if ($method_name eq "ssFileWrite" || $method_name eq "ssFileRead") {
@@ -696,6 +716,7 @@ sub make_docs {
           print method_to_string(&ssobject_name_to_jsobject_name($method_object) . "." . &ssobject_method_to_jsobject_method($method_name), $method_minargs, $desc_text, $return_type, @args, @arg_types) . "\n";
         }
 
+
         $method_name = "";
         $prev_method_object = $method_object;
         $method_object = "";
@@ -708,11 +729,70 @@ sub make_docs {
       }
     }
 
+
+    # end_property()
+    if ($in_prop == 1 && $line =~ m/^\s*end_property\(\)/) {
+
+		CheckPreviousObject($property_object,$prev_method_object);
+
+		if(&ssobject_method_to_jsobject_method($property_name) eq "") {die "FIXME: $line;$property_object;($property_name)"};
+
+		if($property_name !~ /getProperty/i)
+		{
+      		#print method_to_string(&ssobject_name_to_jsobject_name($property_object) . "." . &ssobject_method_to_jsobject_method($property_name), 0, $desc_text, $return_type, @args, @arg_types) . "\n";
+
+			for my $arg (@args) 
+			{
+				next if($arg=~/prop_id/);
+				$arg=~s/.*object->//;
+				$arg=~s/->/./;
+				print &start_of_line('property') . "$arg" . &end_of_line('property');
+			}
+			print &start_of_line() . "$desc_text" . &end_of_line();
+		}
+
+		$property_name = "";
+		$prev_method_object = $property_object;
+		$property_object = "";
+		@args = ();
+		@arg_types = ();
+		$return_type = "void";
+		$in_prop = 0;
+		$desc_text = "";
+
+    }
+
+
   }
 
   if (is_html()) {
     print "\n</body>\n</html>\n";
   }
+}
+
+
+
+sub CheckPreviousObject(){
+		my ($method_object,$prev_method_object) = @_; 
+
+          if ($prev_method_object ne $method_object) {
+            print "\n";
+            print &start_of_line('jsobject', uc(&ssobject_name_to_jsobject_name($method_object))) . uc(&ssobject_name_to_jsobject_name($method_object)) . &end_of_line('jsobject');
+
+            if ($method_object eq "SS_BYTEARRAY") {
+              print &start_of_line('property') . &ssobject_name_to_jsobject_name($method_object).  "[index]" . &end_of_line('property') . "\n";
+              print &start_of_line('property') . &ssobject_name_to_jsobject_name($method_object).  ".length" . &end_of_line('property') . "\n";
+            }
+
+            if ($method_object eq "SS_IMAGE" || $method_object eq "SS_SURFACE" || $method_object eq "SS_ANIMATION") {
+              print &start_of_line('property') . &ssobject_name_to_jsobject_name($method_object).".width" . &end_of_line('property') . "\n";
+              print &start_of_line('property') . &ssobject_name_to_jsobject_name($method_object).".height" . &end_of_line('property') . "\n";
+            }
+            if ($method_object eq "SS_ANIMATION") {
+              print &start_of_line('property') . &ssobject_name_to_jsobject_name($method_object).".done" . &end_of_line('property') . "\n";
+            }
+          }
+
 }
 
 ###########################################################
