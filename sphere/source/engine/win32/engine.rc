@@ -78,8 +78,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,5,5,0
- PRODUCTVERSION 1,5,5,0
+ FILEVERSION 1,6,0,0
+ PRODUCTVERSION 1,6,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -97,15 +97,15 @@ BEGIN
             VALUE "Comments", "The Sphere RPG Engine.\0"
             VALUE "CompanyName", "The Sphere Group\0"
             VALUE "FileDescription", "Sphere Engine\0"
-            VALUE "FileVersion", "1, 5, 5, 0\0"
+            VALUE "FileVersion", "1, 6, 0, 0\0"
             VALUE "InternalName", "engine\0"
             VALUE "LegalCopyright", "\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "engine.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Sphere Engine\0"
-            VALUE "ProductVersion", "1, 5, 5, 0\0"
-            VALUE "SpecialBuild", "Alpha\0"
+            VALUE "ProductVersion", "1, 6, 0, 0\0"
+            VALUE "SpecialBuild", "Beta\0"
         END
     END
     BLOCK "VarFileInfo"
