@@ -17,6 +17,15 @@ struct __PLAYERCONFIG__
     bool joypad_input_allowed;
 };
 
+struct __GLOBALCONFIG__
+{
+	int language;
+	//std::string videodriver;
+	int sound;
+	//std::string audiodriver;
+	bool allow_networking;
+};
+
 void SetPlayerConfig(int player,
                      int key_menu,
                      int key_up,
@@ -30,7 +39,9 @@ void SetPlayerConfig(int player,
                      bool use_keyboard,
                      bool use_joypad);
 
-struct __PLAYERCONFIG__* GetPlayerConfig(int player);
+void SetGlobalConfig(int language, int sound, bool allow_networking);
 
+struct __PLAYERCONFIG__* GetPlayerConfig(int player);
+int GetGlobalConfig(int conf);
 
 #endif

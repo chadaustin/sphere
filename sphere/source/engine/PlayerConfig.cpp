@@ -1,6 +1,7 @@
 #include "PlayerConfig.hpp"
 
 static __PLAYERCONFIG__ player_configurations[4];
+static __GLOBALCONFIG__ global_configuration;
 
 void SetPlayerConfig(int player,
                      int key_menu,
@@ -37,4 +38,22 @@ struct __PLAYERCONFIG__* GetPlayerConfig(int player)
         return &player_configurations[player];
 
     return 0;
+}
+
+void SetGlobalConfig(int language, /*std::string videodriver,*/ int sound, /*std::string audiodriver,*/ bool allow_networking)
+{
+	global_configuration.language = language;
+	//configuration.videodriver = videodriver;
+	global_configuration.sound = sound;
+	//configuration.audiodriver = audiodriver;
+	global_configuration.allow_networking = allow_networking;
+}
+
+int GetGlobalConfig(int conf){
+	switch(conf){
+		case 0: return global_configuration.language;
+		case 1: return global_configuration.sound;
+		case 2: return global_configuration.allow_networking? 1:0;
+		default: return -1;
+	}
 }

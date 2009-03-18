@@ -890,7 +890,7 @@ CScript::BranchCallback(JSContext* cx, JSScript* script)
     if (This)
     {
         // handle garbage collection
-        if (This->m_GCEnabled && This->m_GCCount++ >= 1024)
+        if (This->m_GCEnabled && This->m_GCCount++ >= 60*60)
         {
             // handle system events
             UpdateSystem();
@@ -1044,7 +1044,7 @@ inline CColorMatrix* argColorMatrix(JSContext* cx, jsval arg)
     if (JS_IsArrayObject(cx, JSVAL_TO_OBJECT(arg)))
     {
 
-        JS_ReportError(cx, "Invalid image object");
+        JS_ReportError(cx, "Invalid colormatrix object");
         return NULL;
     }
     SS_COLORMATRIX* colormatrix = (SS_COLORMATRIX*)JS_GetPrivate(cx, JSVAL_TO_OBJECT(arg));
@@ -1068,20 +1068,20 @@ inline SS_BYTEARRAY* argByteArray(JSContext* cx, jsval arg)
 {
     if (!JSVAL_IS_OBJECTNOTNULL(arg))
     {
-		JS_ReportError(cx, "Invalid byte array object");
+		JS_ReportError(cx, "Invalid byte_array object");
         return NULL;
     }
 
     SS_BYTEARRAY* array = (SS_BYTEARRAY*)JS_GetPrivate(cx, JSVAL_TO_OBJECT(arg));
     if (array == NULL)
     {
-        JS_ReportError(cx, "Invalid byte array object");
+        JS_ReportError(cx, "Invalid byte_array object");
         return NULL;
     }
 
     if (array->magic != SS_BYTEARRAY_MAGIC)
     {
-        JS_ReportError(cx, "Invalid byte array object");
+        JS_ReportError(cx, "Invalid byte_array object");
         return NULL;
     }
 
@@ -1509,23 +1509,41 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     return JS_FALSE;                                                                                                           \
   }                                                                                                                            \
 
-#define arg_int(name)             int name                  = argInt(cx, argv[arg++]);                                               __arg_error_check__("integer")
-#define arg_str(name)             const char* name          = argStr(cx, argv[arg++]);                                               __arg_error_check__("string")
+#define arg_int(v) int v= argInt(cx, argv[arg]); argv[arg]=INT_TO_JSVAL(v); ++arg; __arg_error_check__("integer"); 
+#define arg_str2(v) const char* v= argStr(cx, argv[arg]); argv[arg]=STRING_TO_JSVAL(v); ++arg; __arg_error_check__("string"); 
+#define arg_bool(v) bool v= argBool(cx, argv[arg]); argv[arg]=BOOLEAN_TO_JSVAL(v); ++arg; __arg_error_check__("boolean"); 
+#define arg_double(v) double v= argDouble(cx, argv[arg]); argv[arg]=DOUBLE_TO_JSVAL(v); ++arg; __arg_error_check__("double"); 
+#define arg_object(v) JSObject* v= argObject(cx, argv[arg]); argv[arg]=OBJECT_TO_JSVAL(v); ++arg; __arg_error_check__("Object"); 
+#define arg_array(v) JSObject* v= argArray(cx, argv[arg]); argv[arg]=OBJECT_TO_JSVAL(v); ++arg; __arg_error_check__("Array"); 
+#define arg_surface(v) CImage32* v= argSurface(cx, argv[arg]); argv[arg]=PRIVATE_TO_JSVAL(v); ++arg; __arg_error_check__("Surface"); 
 
-#define arg_bool(name)            bool name                 = argBool(cx, argv[arg++]);                                              __arg_error_check__("boolean")
-#define arg_double(name)          double name               = argDouble(cx, argv[arg++]);                                            __arg_error_check__("double")
-#define arg_object(name)          JSObject* name            = argObject(cx, argv[arg++]);                                            __arg_error_check__("Object")
-#define arg_array(name)           JSObject* name            = argArray(cx, argv[arg++]);                                             __arg_error_check__("Array")
+#define arg_colormatrix(v) CColorMatrix* v= argColorMatrix(cx, argv[arg]); argv[arg]=PRIVATE_TO_JSVAL(v);if (v == NULL) return JS_FALSE; ++arg; __arg_error_check__("ColorMatrix"); 
+#define arg_byte_array(v) SS_BYTEARRAY* v= argByteArray(cx, argv[arg]); argv[arg]=PRIVATE_TO_JSVAL(v);if (v == NULL) return JS_FALSE; ++arg; __arg_error_check__("ByteArray"); 
+#define arg_image(v) SS_IMAGE* v= argImage(cx, argv[arg]); argv[arg]=PRIVATE_TO_JSVAL(v); ++arg;if (v == NULL) return JS_FALSE; __arg_error_check__("Image"); 
+#define arg_font(v) SS_FONT* v= argFont(cx, argv[arg]); argv[arg]=PRIVATE_TO_JSVAL(v); ++arg;if (v == NULL) return JS_FALSE; __arg_error_check__("Font"); 
+#define arg_sfxr(v) SS_SFXR* v= argSfxr(cx, argv[arg]); argv[arg]=PRIVATE_TO_JSVAL(v); ++arg;if (v == NULL) return JS_FALSE; __arg_error_check__("Sfxr"); 
+#define arg_spriteset(v) sSpriteset* v= argSpriteset(cx, argv[arg]); argv[arg]=PRIVATE_TO_JSVAL(v); ++arg;if (v == NULL) return JS_FALSE; __arg_error_check__("Spriteset"); 
+#define arg_particle_system(v) ParticleSystemBase* v= argParticleSystem(cx, argv[arg]); argv[arg]=PRIVATE_TO_JSVAL(v);if (v == NULL) return JS_FALSE; ++arg; __arg_error_check__("ParticleSystem"); 
+#define arg_function_object(v) JSObject* v= argFunctionObject(cx, argv[arg]); argv[arg]=OBJECT_TO_JSVAL(v);if (v == NULL) return JS_FALSE; ++arg; __arg_error_check__("FunctionObject"); 
+#define arg_str(v) const char* v= argStr(cx, argv[arg]); argv[arg]=PRIVATE_TO_JSVAL(v); ++arg; __arg_error_check__("string"); 
+
+
+#define arg_int_old(name)             int name                  = argInt(cx, argv[arg++]);                                               __arg_error_check__("integer")
+#define arg_str_old(name)             const char* name          = argStr(cx, argv[arg++]);                                               __arg_error_check__("string")
+#define arg_bool_old(name)            bool name                 = argBool(cx, argv[arg++]);                                              __arg_error_check__("boolean")
+#define arg_double_old(name)          double name               = argDouble(cx, argv[arg++]);                                            __arg_error_check__("double")
+#define arg_object_old(name)          JSObject* name            = argObject(cx, argv[arg++]);                                            __arg_error_check__("Object")
+#define arg_array_old(name)           JSObject* name            = argArray(cx, argv[arg++]);                                             __arg_error_check__("Array")
 #define arg_color(name)           RGBA name                 = argColor(cx, argv[arg++]);                                             __arg_error_check__("Color")
-#define arg_function_object(name) JSObject* name            = argFunctionObject(cx, argv[arg++]); if (name == NULL) return JS_FALSE; __arg_error_check__("FunctionObject")
-#define arg_surface(name)         CImage32* name            = argSurface(cx, argv[arg++]);        if (name == NULL) return JS_FALSE; __arg_error_check__("Surface")
-#define arg_colormatrix(name)     CColorMatrix* name        = argColorMatrix(cx, argv[arg++]);    if (name == NULL) return JS_FALSE; __arg_error_check__("ColorMatrix")
-#define arg_byte_array(name)      SS_BYTEARRAY* name        = argByteArray(cx, argv[arg++]);      if (name == NULL) return JS_FALSE; __arg_error_check__("ByteArray")
-#define arg_image(name)           SS_IMAGE* name            = argImage(cx, argv[arg++]);          if (name == NULL) return JS_FALSE; __arg_error_check__("Image")
-#define arg_font(name)            SS_FONT* name             = argFont(cx, argv[arg++]);           if (name == NULL) return JS_FALSE; __arg_error_check__("Font")
-#define arg_sfxr(name)            SS_SFXR* name             = argSfxr(cx, argv[arg++]);           if (name == NULL) return JS_FALSE; __arg_error_check__("Sfxr")
-#define arg_spriteset(name)       sSpriteset* name          = argSpriteset(cx, argv[arg++]);      if (name == NULL) return JS_FALSE; __arg_error_check__("Spriteset")
-#define arg_particle_system(name) ParticleSystemBase* name  = argParticleSystem(cx, argv[arg++]); if (name == NULL) return JS_FALSE; __arg_error_check__("ParticleSystem")
+#define arg_function_object_X(name) JSObject* name            = argFunctionObject(cx, argv[arg++]); if (name == NULL) return JS_FALSE; __arg_error_check__("FunctionObject")
+#define arg_surface_old(name)         CImage32* name            = argSurface(cx, argv[arg++]);        if (name == NULL) return JS_FALSE; __arg_error_check__("Surface")
+#define arg_colormatrix_old(name)     CColorMatrix* name        = argColorMatrix(cx, argv[arg++]);    if (name == NULL) return JS_FALSE; __arg_error_check__("ColorMatrix")
+#define arg_byte_array_old(name)      SS_BYTEARRAY* name        = argByteArray(cx, argv[arg++]);      if (name == NULL) return JS_FALSE; __arg_error_check__("ByteArray")
+#define arg_image_old(name)           SS_IMAGE* name            = argImage(cx, argv[arg++]);          if (name == NULL) return JS_FALSE; __arg_error_check__("Image")
+#define arg_font_old(name)            SS_FONT* name             = argFont(cx, argv[arg++]);           if (name == NULL) return JS_FALSE; __arg_error_check__("Font")
+#define arg_sfxr_old(name)            SS_SFXR* name             = argSfxr(cx, argv[arg++]);           if (name == NULL) return JS_FALSE; __arg_error_check__("Sfxr")
+#define arg_spriteset_old(name)       sSpriteset* name          = argSpriteset(cx, argv[arg++]);      if (name == NULL) return JS_FALSE; __arg_error_check__("Spriteset")
+#define arg_particle_system_old(name) ParticleSystemBase* name  = argParticleSystem(cx, argv[arg++]); if (name == NULL) return JS_FALSE; __arg_error_check__("ParticleSystem")
 
 // return values
 #define return_null()         *rval = JSVAL_NULL
@@ -3019,6 +3037,17 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
+    - Get some global configuration options.
+      0: language, 1: sound, 2: allow networking
+*/
+begin_func(GetGlobalConfiguration, 1)
+arg_int(key);
+return_int(GetGlobalConfig(key));
+end_func()
+
+
+////////////////////////////////////////////////////////////////////////////////
+/**
     - Sets the x and y of the mouse cursor
 */
 begin_func(SetMousePosition, 2)
@@ -3097,6 +3126,7 @@ end_func()
 /**
     - returns the current position of the 'axis' axis of the joystick 'joy'
       in normalized coordinates from -1 to 1
+      Axis values can be: JOYSTICK_AXIS_X, JOYSTICK_AXIS_Y, JOYSTICK_AXIS_Z, JOYSTICK_AXIS_R
 */
 begin_func(GetJoystickAxis, 2)
 arg_int(joy);
@@ -4108,7 +4138,7 @@ return_int(y);
 end_func()
 ////////////////////////////////////////////////////////////////////////////////
 /**
-    [DISABLED]- returns the amount of zones that there is
+    [DISABLED]- returns the amount of triggers that there is
 */
 begin_func(GetNumTriggers, 0)
 int triggers = 0;
@@ -4473,12 +4503,8 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 /**
     - makes the 'person_entity' respond to the input
-      Keys vary based on player_index
-      player zero  = (up = KEY_UP, down = KEY_DOWN, left = KEY_LEFT, right = KEY_RIGHT)
-      player one   = (up = KEY_UP, down = KEY_DOWN, left = KEY_LEFT, right = KEY_RIGHT)
-      player two   = (up = KEY_UP, down = KEY_DOWN, left = KEY_LEFT, right = KEY_RIGHT)
-      player three = (up = KEY_UP, down = KEY_DOWN, left = KEY_LEFT, right = KEY_RIGHT)
-    @see AttachPlayerInput
+      Keys vary based on player_index (0,1,2 or 3)
+      for now, only the up/down/left/right keys work. keyA, keyB, keyX and keyY are inoperative.
 */
 begin_func(AttachPlayerInput, 2)
 arg_str(name);
@@ -4814,6 +4840,20 @@ if (array == NULL)
 // delete our temporary jsval array and return the JS array
 delete[] valarray;
 return_object(array);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - Searches for person 'name' in the current person list and returns true if found.
+*/
+begin_func(DoesPersonExist, 1)
+arg_str(name);
+if (name == "")
+{
+	JS_ReportError(cx, "DoesPersonExist: empty person name given");
+    return JS_FALSE;
+}
+return_bool( This->m_Engine->GetMapEngine()->DoesPersonExist(name) );
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -7009,7 +7049,9 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-    - remove the specified file
+    - remove the specified file.
+      This start from your game directory, so if you want to delete a logfile:
+      RemoveFile('logs/mylog.log');
 */
 begin_func(RemoveFile, 1)
 
@@ -7039,6 +7081,8 @@ const char* directory = "~/";
 if (argc > 0)
 {
     directory = argStr(cx, argv[0]);
+	__arg_error_check__("string");
+	argv[0] = STRING_TO_JSVAL(directory); //ROOTED
 }
 
 if (IsValidPath(directory) == false)
@@ -7080,6 +7124,8 @@ const char* directory = "save";
 if (argc > 0)
 {
     directory = argStr(cx, argv[0]);
+	__arg_error_check__("string")
+	argv[0] = STRING_TO_JSVAL(directory); //ROOTED
 }
 
 if (IsValidPath(directory) == false)
@@ -7579,10 +7625,10 @@ if (maxsize < engine.compressBound2(ba->size) )
 		return_null();
 	}else{
 
-		JSObject* array_object = CreateByteArrayObject(cx, outputsize, (byte *) buffer);
+		JSObject* byte_array_object = CreateByteArrayObject(cx, outputsize, (byte *) buffer);
 		delete[] buffer;
 
-		return_object(array_object);
+		return_object(byte_array_object);
 	}
 }
 end_func()
@@ -8038,6 +8084,7 @@ int shape = object->system->GetInitializer().GetPositionMode();
 if (argc >= 1)
 {
     shape = argInt(cx, argv[0]);
+	argv[0] = INT_TO_JSVAL(shape); // root as you go
 }
 JSObject* params = JS_NewObject(cx, NULL, NULL, NULL);
 if (!params)
@@ -10138,6 +10185,7 @@ std::string path = "spritesets/";
 path += filename;
 
 sSpriteset* s = argSpriteset(cx, OBJECT_TO_JSVAL(obj));
+*rval = PRIVATE_TO_JSVAL(s); // ROOT
 if (s == NULL)
 {
     return JS_FALSE;
@@ -10160,6 +10208,7 @@ end_method()
 begin_method(SS_SPRITESET, ssSpritesetClone, 0)
 
 sSpriteset* s = argSpriteset(cx, OBJECT_TO_JSVAL(obj));
+*rval = PRIVATE_TO_JSVAL(s); // ROOT
 if (s == NULL)
 {
     return JS_FALSE;
@@ -10170,7 +10219,7 @@ delete s;
 s = NULL;
 if (!clone)
     return JS_FALSE;
-
+*rval = PRIVATE_TO_JSVAL(s); // ROOT
 return_object(CreateSpritesetObject(cx, clone));
 // spritesets can take a lot of memory, so do a little GC
 JS_MaybeGC(cx);
@@ -10333,6 +10382,7 @@ begin_method(SS_SOUND, ssSoundPlay, 0)
 if (argc >= 1)
 {
     bool repeat = argBool(cx, argv[0]);
+	argv[0] = BOOLEAN_TO_JSVAL(repeat); // ROOT as you go
 
     if (object->sound)
         object->sound->setRepeat(repeat);

@@ -225,6 +225,7 @@ SS_FUNCTION(OpenLog, 1)
     SS_FUNCTION(GetInputPerson, 0)
     SS_FUNCTION(AttachPlayerInput, 2)
     SS_FUNCTION(DetachPlayerInput, 1)
+    SS_FUNCTION(GetGlobalConfiguration, 1)
 
     // frame callback
     SS_FUNCTION(SetUpdateScript, 1)
@@ -255,6 +256,7 @@ SS_FUNCTION(OpenLog, 1)
     // entities
 
       SS_FUNCTION(GetPersonList, 0)
+      SS_FUNCTION(DoesPersonExist, 1)
 
       // persons
       SS_FUNCTION(CreatePerson,  3)

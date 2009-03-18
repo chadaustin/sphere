@@ -185,6 +185,7 @@ public:
     bool ScreenToMapY(int layer, int sx, int& my);
 
     bool GetPersonList(std::vector<std::string>& list);
+	bool DoesPersonExist(const char* name);
     bool CreatePerson(const char* name, const char* spriteset, bool destroy_with_map);
     bool DestroyPerson(const char* name);
 
@@ -302,6 +303,7 @@ private:
     };
 
     static struct __PLAYERCONFIG__ player_configurations[4];
+	static struct __GLOBALCONFIG__ global_configuration;
     struct Person
     {
         bool destroy_with_map;
@@ -374,6 +376,10 @@ private:
         int key_up;
         int key_left;
         int key_right;
+        int key_a;
+        int key_b;
+        int key_x;
+        int key_y;
         bool keyboard_input_allowed;
         bool joypad_input_allowed;
 

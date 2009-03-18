@@ -1659,6 +1659,10 @@ CMapEngine::AttachPlayerInput(const char* name, int player)
         p.key_down  = config->key_down;
         p.key_left  = config->key_left;
         p.key_right = config->key_right;
+        p.key_a     = config->key_a;
+        p.key_a     = config->key_a;
+        p.key_x     = config->key_x;
+        p.key_y     = config->key_y;
         p.keyboard_input_allowed = config->keyboard_input_allowed;
         p.joypad_input_allowed   = config->joypad_input_allowed;
     }
@@ -1984,6 +1988,12 @@ CMapEngine::GetPersonList(std::vector<std::string>& list)
 
     list.resize(j);
     return true;
+}
+
+bool
+CMapEngine::DoesPersonExist(const char* name)
+{
+	return FindPerson(name) > -1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
