@@ -33,7 +33,7 @@ bool InitAudio(HWND window, SPHERECONFIG* config)
 #if defined(WIN32) && defined(USE_MIDI)
             s_MidiDevice = audiere::OpenMIDIDevice("");
             if (!s_MidiDevice)
-                s_MidiDevice = audiere::OpenMIDIDevice("null");
+                s_MidiDevice = audiere::OpenMIDIDevice("null"); // BUG: Does not work
 
             return bool(s_AudioDevice.get() && s_MidiDevice.get());
 #else
@@ -52,7 +52,7 @@ bool InitAudio(HWND window, SPHERECONFIG* config)
         case SOUND_OFF:
             s_AudioDevice = audiere::OpenDevice("null");
 #if defined(WIN32) && defined(USE_MIDI)
-            s_MidiDevice  = audiere::OpenMIDIDevice("null");
+            s_MidiDevice  = audiere::OpenMIDIDevice("null"); // BUG: midi always opens.
             return bool(s_AudioDevice.get() && s_MidiDevice.get());
 #else
             return bool(s_AudioDevice.get());
@@ -94,7 +94,7 @@ audiere::SoundEffect* SA_OpenSoundEffect(audiere::File* file, audiere::SoundEffe
 #if defined(WIN32) && defined(USE_MIDI)
 audiere::MIDIStream* SA_OpenMIDI(const char* filename)
 {
-    if (!s_MidiDevice.get())
+	if (!s_MidiDevice.get() || s_MidiDevice->getName() == "null") // again BUG: name always MDI
         return NULL;
     return s_MidiDevice.get()->openStream(filename);
 }
