@@ -473,7 +473,21 @@ CScript::CScript(IEngine* engine)
 
     JS_InitStandardClasses(m_Context, m_Global);
     JS_SetErrorReporter(m_Context, ErrorReporter);
+#ifndef TRACEMOKEY
     JS_SetBranchCallback(m_Context, BranchCallback);
+#else
+	/*
+    extern JS_PUBLIC_API(JSOperationCallback)
+	JS_SetOperationCallback(JSContext *cx, JSOperationCallback callback);
+
+	extern JS_PUBLIC_API(JSOperationCallback)
+	JS_GetOperationCallback(JSContext *cx);
+
+	extern JS_PUBLIC_API(void)
+	JS_TriggerOperationCallback(JSContext *cx); 
+	*/
+#endif
+
 
     InitializeSphereFunctions();
     InitializeSphereConstants();
@@ -896,7 +910,7 @@ CScript::BranchCallback(JSContext* cx, JSScript* script)
             UpdateSystem();
 
             // garbage collect!
-            JS_GC(cx);
+            JS_MaybeGC(cx);
             This->m_GCCount = 0;
         }
     }
@@ -1191,6 +1205,8 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
         JS_ReportError(cx, "spriteset.images array property doesn't appear to exist.");
         return NULL;
     }
+	JS_AddNamedRoot(cx, &images_array, "images_array"); // Root variable to keep it save from CG
+
 
     jsval base_obstruction_val;
     if ( JS_GetProperty(cx, obj, "base", &base_obstruction_val) == JS_FALSE )
@@ -1198,6 +1214,7 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
         JS_ReportError(cx, "spriteset.base object property doesn't appear to exist.");
         return NULL;
     }
+	JS_AddNamedRoot(cx, &base_obstruction_val, "base_obstruction_val"); // Root variable to keep it save from CG
 
     jsval x1_val, y1_val, x2_val, y2_val;
     JSObject* base_obstruction_object = argObject(cx, base_obstruction_val);
@@ -1207,18 +1224,24 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
         JS_ReportError(cx, "spriteset.base object is not a valid object.");
         return NULL;
     }
+	JS_AddNamedRoot(cx, &base_obstruction_object, "base_obstruction_object"); // Root variable to keep it save from CG
+
     if ( JS_GetProperty(cx, base_obstruction_object, "x1", &x1_val) == JS_FALSE
             || JS_GetProperty(cx, base_obstruction_object, "y1", &y1_val) == JS_FALSE
             || JS_GetProperty(cx, base_obstruction_object, "x2", &x2_val) == JS_FALSE
             || JS_GetProperty(cx, base_obstruction_object, "y2", &y2_val) == JS_FALSE )
     {
-
         JS_ReportError(cx, "spriteset.base object is invalid.");
         return NULL;
     }
+	// Root variable to keep it save from CG
+	JS_AddRoot(cx, &x1_val); JS_AddRoot(cx, &x2_val); 
+	JS_AddRoot(cx, &y1_val); JS_AddRoot(cx, &y2_val); 
 
     jsuint num_images = 0;
     JSObject* images_object = argArray(cx, images_array);
+	JS_RemoveRoot(cx, &images_array); // unRoot Images Array
+
     if (images_object == NULL)
     {
         JS_ReportError(cx, "Invalid spriteset.images array.");
@@ -1429,7 +1452,7 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
             return NULL;
         }
 
-        s->SetDirectionName(i, jsval_to_str(cx, direction_name));
+        s->SetDirectionName(i, argStr(cx, direction_name));
         jsval frames_array_val;
         if ( JS_GetProperty(cx, direction_object, "frames", &frames_array_val) == JS_FALSE )
         {
@@ -1505,45 +1528,27 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 ///////////////////////////////////////////////////////////
 #define __arg_error_check__(arg_type)                                                                                          \
   if (This->m_ShouldExit) {                                                                                                    \
-    JS_ReportError(cx, "%s - Argument %d, invalid %s...\n\"%s\"", script_name, arg - 1, arg_type, jsval_to_str(cx, argv[arg - 1])); \
+    JS_ReportError(cx, "%s - Argument %d, invalid %s...\n\"%s\"", script_name, arg - 1, arg_type, argStr(cx, argv[arg - 1])); \
     return JS_FALSE;                                                                                                           \
   }                                                                                                                            \
 
-#define arg_int(v) int v= argInt(cx, argv[arg]); argv[arg]=INT_TO_JSVAL(v); ++arg; __arg_error_check__("integer"); 
-#define arg_str2(v) const char* v= argStr(cx, argv[arg]); argv[arg]=STRING_TO_JSVAL(v); ++arg; __arg_error_check__("string"); 
-#define arg_bool(v) bool v= argBool(cx, argv[arg]); argv[arg]=BOOLEAN_TO_JSVAL(v); ++arg; __arg_error_check__("boolean"); 
-#define arg_double(v) double v= argDouble(cx, argv[arg]); argv[arg]=DOUBLE_TO_JSVAL(v); ++arg; __arg_error_check__("double"); 
-#define arg_object(v) JSObject* v= argObject(cx, argv[arg]); argv[arg]=OBJECT_TO_JSVAL(v); ++arg; __arg_error_check__("Object"); 
-#define arg_array(v) JSObject* v= argArray(cx, argv[arg]); argv[arg]=OBJECT_TO_JSVAL(v); ++arg; __arg_error_check__("Array"); 
-#define arg_surface(v) CImage32* v= argSurface(cx, argv[arg]); argv[arg]=PRIVATE_TO_JSVAL(v); ++arg; __arg_error_check__("Surface"); 
 
-#define arg_colormatrix(v) CColorMatrix* v= argColorMatrix(cx, argv[arg]); argv[arg]=PRIVATE_TO_JSVAL(v);if (v == NULL) return JS_FALSE; ++arg; __arg_error_check__("ColorMatrix"); 
-#define arg_byte_array(v) SS_BYTEARRAY* v= argByteArray(cx, argv[arg]); argv[arg]=PRIVATE_TO_JSVAL(v);if (v == NULL) return JS_FALSE; ++arg; __arg_error_check__("ByteArray"); 
-#define arg_image(v) SS_IMAGE* v= argImage(cx, argv[arg]); argv[arg]=PRIVATE_TO_JSVAL(v); ++arg;if (v == NULL) return JS_FALSE; __arg_error_check__("Image"); 
-#define arg_font(v) SS_FONT* v= argFont(cx, argv[arg]); argv[arg]=PRIVATE_TO_JSVAL(v); ++arg;if (v == NULL) return JS_FALSE; __arg_error_check__("Font"); 
-#define arg_sfxr(v) SS_SFXR* v= argSfxr(cx, argv[arg]); argv[arg]=PRIVATE_TO_JSVAL(v); ++arg;if (v == NULL) return JS_FALSE; __arg_error_check__("Sfxr"); 
-#define arg_spriteset(v) sSpriteset* v= argSpriteset(cx, argv[arg]); argv[arg]=PRIVATE_TO_JSVAL(v); ++arg;if (v == NULL) return JS_FALSE; __arg_error_check__("Spriteset"); 
-#define arg_particle_system(v) ParticleSystemBase* v= argParticleSystem(cx, argv[arg]); argv[arg]=PRIVATE_TO_JSVAL(v);if (v == NULL) return JS_FALSE; ++arg; __arg_error_check__("ParticleSystem"); 
-#define arg_function_object(v) JSObject* v= argFunctionObject(cx, argv[arg]); argv[arg]=OBJECT_TO_JSVAL(v);if (v == NULL) return JS_FALSE; ++arg; __arg_error_check__("FunctionObject"); 
-#define arg_str(v) const char* v= argStr(cx, argv[arg]); argv[arg]=PRIVATE_TO_JSVAL(v); ++arg; __arg_error_check__("string"); 
-
-
-#define arg_int_old(name)             int name                  = argInt(cx, argv[arg++]);                                               __arg_error_check__("integer")
-#define arg_str_old(name)             const char* name          = argStr(cx, argv[arg++]);                                               __arg_error_check__("string")
-#define arg_bool_old(name)            bool name                 = argBool(cx, argv[arg++]);                                              __arg_error_check__("boolean")
-#define arg_double_old(name)          double name               = argDouble(cx, argv[arg++]);                                            __arg_error_check__("double")
-#define arg_object_old(name)          JSObject* name            = argObject(cx, argv[arg++]);                                            __arg_error_check__("Object")
-#define arg_array_old(name)           JSObject* name            = argArray(cx, argv[arg++]);                                             __arg_error_check__("Array")
+#define arg_int(name)             int name                  = argInt(cx, argv[arg++]);                                               __arg_error_check__("integer")
+#define arg_str(name)             const char* name          = argStr(cx, argv[arg++]);                                               __arg_error_check__("string")
+#define arg_bool(name)            bool name                 = argBool(cx, argv[arg++]);                                              __arg_error_check__("boolean")
+#define arg_double(name)          double name               = argDouble(cx, argv[arg++]);                                            __arg_error_check__("double")
+#define arg_object(name)          JSObject* name            = argObject(cx, argv[arg++]);                                            __arg_error_check__("Object")
+#define arg_array(name)           JSObject* name            = argArray(cx, argv[arg++]);                                             __arg_error_check__("Array")
 #define arg_color(name)           RGBA name                 = argColor(cx, argv[arg++]);                                             __arg_error_check__("Color")
-#define arg_function_object_X(name) JSObject* name            = argFunctionObject(cx, argv[arg++]); if (name == NULL) return JS_FALSE; __arg_error_check__("FunctionObject")
-#define arg_surface_old(name)         CImage32* name            = argSurface(cx, argv[arg++]);        if (name == NULL) return JS_FALSE; __arg_error_check__("Surface")
-#define arg_colormatrix_old(name)     CColorMatrix* name        = argColorMatrix(cx, argv[arg++]);    if (name == NULL) return JS_FALSE; __arg_error_check__("ColorMatrix")
-#define arg_byte_array_old(name)      SS_BYTEARRAY* name        = argByteArray(cx, argv[arg++]);      if (name == NULL) return JS_FALSE; __arg_error_check__("ByteArray")
-#define arg_image_old(name)           SS_IMAGE* name            = argImage(cx, argv[arg++]);          if (name == NULL) return JS_FALSE; __arg_error_check__("Image")
-#define arg_font_old(name)            SS_FONT* name             = argFont(cx, argv[arg++]);           if (name == NULL) return JS_FALSE; __arg_error_check__("Font")
-#define arg_sfxr_old(name)            SS_SFXR* name             = argSfxr(cx, argv[arg++]);           if (name == NULL) return JS_FALSE; __arg_error_check__("Sfxr")
-#define arg_spriteset_old(name)       sSpriteset* name          = argSpriteset(cx, argv[arg++]);      if (name == NULL) return JS_FALSE; __arg_error_check__("Spriteset")
-#define arg_particle_system_old(name) ParticleSystemBase* name  = argParticleSystem(cx, argv[arg++]); if (name == NULL) return JS_FALSE; __arg_error_check__("ParticleSystem")
+#define arg_function_object(name) JSObject* name            = argFunctionObject(cx, argv[arg++]); if (name == NULL) return JS_FALSE; __arg_error_check__("FunctionObject")
+#define arg_surface(name)         CImage32* name            = argSurface(cx, argv[arg++]);        if (name == NULL) return JS_FALSE; __arg_error_check__("Surface")
+#define arg_colormatrix(name)     CColorMatrix* name        = argColorMatrix(cx, argv[arg++]);    if (name == NULL) return JS_FALSE; __arg_error_check__("ColorMatrix")
+#define arg_byte_array(name)      SS_BYTEARRAY* name        = argByteArray(cx, argv[arg++]);      if (name == NULL) return JS_FALSE; __arg_error_check__("ByteArray")
+#define arg_image(name)           SS_IMAGE* name            = argImage(cx, argv[arg++]);          if (name == NULL) return JS_FALSE; __arg_error_check__("Image")
+#define arg_font(name)            SS_FONT* name             = argFont(cx, argv[arg++]);           if (name == NULL) return JS_FALSE; __arg_error_check__("Font")
+#define arg_sfxr(name)            SS_SFXR* name             = argSfxr(cx, argv[arg++]);           if (name == NULL) return JS_FALSE; __arg_error_check__("Sfxr")
+#define arg_spriteset(name)       sSpriteset* name          = argSpriteset(cx, argv[arg++]);      if (name == NULL) return JS_FALSE; __arg_error_check__("Spriteset")
+#define arg_particle_system(name) ParticleSystemBase* name  = argParticleSystem(cx, argv[arg++]); if (name == NULL) return JS_FALSE; __arg_error_check__("ParticleSystem")
 
 // return values
 #define return_null()         *rval = JSVAL_NULL
@@ -2141,6 +2146,7 @@ inline VECTOR_INT* getObjCoordinates(JSContext* cx, jsval arg)
     {
         return NULL;
     }
+	// TODO: ROOT THE OBJECT, then JS_RemoveRoot(cx, &object);
 
     VECTOR_INT* point = new VECTOR_INT;
 
@@ -5235,7 +5241,7 @@ for (unsigned int i = 0; i < length; i++)
         if (JSVAL_IS_STRING(val))
         {
 
-            ignore_list[i] = jsval_to_str(cx, val);
+            ignore_list[i] = argStr(cx, val);
         }
     }
 }
@@ -5565,7 +5571,7 @@ ParsePersonData(JSContext* cx, jsval val, std::string& string_value, double& dou
         else
         { // anything else is a string
 
-            string_value = jsval_to_str(cx, val);
+            string_value = argStr(cx, val);
             type = 0;
         }
 }
@@ -5592,7 +5598,7 @@ for (jsint i = 0; i < ids->length; i++)
     {
 
         struct PersonData data;
-        data.name = jsval_to_str(cx, val);
+        data.name = argStr(cx, val);
         if ( JS_GetProperty(cx, data_object, data.name.c_str(), &val) == JS_TRUE )
         {
             ParsePersonData(cx, val, data.string_value, data.double_value, data.type);
@@ -7082,7 +7088,6 @@ if (argc > 0)
 {
     directory = argStr(cx, argv[0]);
 	__arg_error_check__("string");
-	argv[0] = STRING_TO_JSVAL(directory); //ROOTED
 }
 
 if (IsValidPath(directory) == false)
@@ -7125,7 +7130,6 @@ if (argc > 0)
 {
     directory = argStr(cx, argv[0]);
 	__arg_error_check__("string")
-	argv[0] = STRING_TO_JSVAL(directory); //ROOTED
 }
 
 if (IsValidPath(directory) == false)
@@ -14064,7 +14068,7 @@ else if (JSVAL_IS_DOUBLE(argv[1]))
 }
 else
 { // anything else is a string
-    object->file->WriteString("", key, jsval_to_str(cx, argv[1]));
+    object->file->WriteString("", key, argStr(cx, argv[1]));
 }
 end_method()
 
@@ -14098,7 +14102,7 @@ else if (JSVAL_IS_DOUBLE(argv[1]))
 }
 else
 { // anything else is a string
-    std::string str = object->file->ReadString("", key, jsval_to_str(cx, argv[1]));
+    std::string str = object->file->ReadString("", key, argStr(cx, argv[1]));
     return_str(str.c_str());
 }
 end_method()
@@ -14486,7 +14490,7 @@ if (JSVAL_IS_INT(id))
 }
 else
 {
-    const char* prop_id = jsval_to_str(cx, id);
+    const char* prop_id = argStr(cx, id);
 
     if (strcmp(prop_id, "concat") == 0)
     {
@@ -14653,5 +14657,5 @@ if ( !This->m_Engine->GetMapEngine()->IsRunning() )
 }
 This->m_Engine->GetMapEngine()->GetMap().GetMap().GetTileset().Save(filename);
 end_method()
-////////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////////
