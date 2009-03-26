@@ -3136,25 +3136,28 @@ CAboutDialog::OnInitDialog()
 afx_msg void
 CMainWindow::OnHelpAbout()
 {
-  char message[1024];
+  char message[1024+512];
   sprintf(message,
-    "Sphere Development Environment\r\n"
+    "Sphere Development Environment "
     SPHERE_VERSION "\r\n"
     "\r\n"
     "Chad Austin (c) 1999-2003\r\n"
-    "Additional code by:\r\n"
-    "Jacky Chong (Darklich)\r\n"
-    "Brian Robb (Flik)\r\n"
-    "Tung Nguyen (Tunginobi)\r\n"
-    "Anatoli Steinmark (Kyuu)\r\n"
-    "Icons by DRosen and Khadgar\r\n"
-    "Special thanks to Alex Rosario (NeoLogiX)\r\n"
     "\r\n"
-    "Build Date: " __DATE__ "\r\n"
-    "Build Time: " __TIME__ "\r\n"
+	"Additional code by:\r\n"
+    "Jacky Chong (Darklich)\r\n"
+	"Brian Robb (Flik)\r\n"
+    "Tung Nguyen (Tunginobi)\r\n"
+	"Anatoli Steinmark (Kyuu)\r\n"
+	"Nilton Castillo (FBnil)\r\n"
+	"\r\n"
+    "Icons by DRosen and Khadgar\r\n"
+	"\r\n"
+    "Special thanks to Alex Rosario (NeoLogiX)\r\n"
+	"and many beta testers (you know who you are)\r\n"
+    "Build Date: " __DATE__   "   Build Time: " __TIME__ "\r\n"
     "\r\n");
 #ifdef I_SUCK
-  sprintf (message + strlen(message), "Audiere: %s\r\n", audiere::GetVersion());
+  sprintf (message + strlen(message), "Audiere: %s   ", audiere::GetVersion());
   sprintf (message + strlen(message), "Corona: %s\r\n", corona::GetVersion());
 #ifdef USE_SIZECBAR
   sprintf (message + strlen(message), "CSizingControlBar: %s\r\n", SIZECBAR_VERSION);
@@ -3166,9 +3169,10 @@ CMainWindow::OnHelpAbout()
 #ifdef I_SUCK
   sprintf (message + strlen(message), "zlib: %s\r\n", zlibVersion());
 #endif
-  //MessageBox(message, "About");
-  CAboutDialog dialog(message);
-  dialog.DoModal();
+  MessageBox(message, "About"); // At least all the text is being displayed.
+  //CAboutDialog dialog(message);
+  //dialog.EnableScrollBar(255);
+  //dialog.DoModal();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
