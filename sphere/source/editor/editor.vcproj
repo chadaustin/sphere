@@ -96,6 +96,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
+				EmbedManifest="true"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -1645,6 +1646,10 @@
 			</File>
 			<File
 				RelativePath="SaveableDocumentWindow.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\scintillasphere.api"
 				>
 			</File>
 			<File
