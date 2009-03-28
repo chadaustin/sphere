@@ -219,6 +219,7 @@ int __cdecl main(int argc, const char** argv)
                 Config.player_configurations[i].keyboard_input_allowed,
                 Config.player_configurations[i].joypad_input_allowed);
     }
+	SetGlobalConfig(Config.language, Config.sound, Config.allow_networking);
 
     // register the window class
     WNDCLASS wc;
@@ -489,7 +490,7 @@ void UpdateSystem()
 {
     MSG msg;
     int count = 0;
-    while (count++ < 4 && PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+    while (count++ < 8 && PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
     {
         DispatchMessage(&msg);
         if (msg.message == WM_QUIT)

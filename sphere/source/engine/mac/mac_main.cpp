@@ -172,6 +172,7 @@ int main(int argc, char* argv[])
                 config.player_configurations[i].joypad_input_allowed);
     }
 
+	SetGlobalConfig(config.language, config.sound, config.allow_networking);
     SaveSphereConfig(&config, (GetSphereDirectory() + "/engine.ini").c_str());
 
     // initialize screenshot directory
