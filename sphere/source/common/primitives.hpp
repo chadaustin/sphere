@@ -62,18 +62,7 @@ namespace primitives
     template<typename T>
     T bracket(T t, T min, T max)
     {
-        if (t < min)
-        {
-            return min;
-        }
-        else if (t > max)
-        {
-            return max;
-        }
-        else
-        {
-            return t;
-        }
+		return t<min? min: t>max? max: t;
     }
 
     template<typename T>
@@ -327,7 +316,7 @@ namespace primitives
             if (dx < 0)
             {
                 inc_x = -1;
-                dx = -dx;
+                dx *= -1;
             }
             else
             {
@@ -337,7 +326,7 @@ namespace primitives
             if (dy < 0)
             {
                 inc_y = -1;
-                dy = -dy;
+                dy *= -1;
             }
             else
             {
