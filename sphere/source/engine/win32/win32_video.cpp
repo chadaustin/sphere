@@ -307,7 +307,7 @@ void FlipScreen()
     }
 
     // display FPS
-    if (FPSFont && FPSDisplayed)
+    if (FPSDisplayed && FPSFont)
     {
 
         // update FPS
@@ -318,7 +318,7 @@ void FlipScreen()
             CurrentFrames = 0;
             LastUpdate = GetTime();
         }
-        char fps[80];
+        char fps[32];
         sprintf(fps, "FPS: %d", FPS);
         FPSFont->DrawString(0, 0, fps, CreateRGBA(255, 255, 255, 255));
     }
