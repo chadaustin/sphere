@@ -1,4 +1,8 @@
 YYYY.MM.DD
+
+2009.04.04
+  - Added mask blendmodes for image blitting.
+
 2009.03.12
   - Parent and child particle systems now first call the standard renderer
     and then the 'on_render' callback function, if one has been previously set.

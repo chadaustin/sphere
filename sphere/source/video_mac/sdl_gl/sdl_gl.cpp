@@ -9,20 +9,30 @@
 #include "../../common/VectorStructs.hpp"
 #include "../../common/configfile.hpp"
 
-#define EXPORT(ret) extern "C" ret __attribute__((stdcall))
-
 
 #if !defined(APIENTRY)
 #   define APIENTRY
 #endif
 
 
-#define GL_CLAMP_TO_EDGE              0x812F
-#define GL_FUNC_ADD_EXT               0x8006
-#define GL_FUNC_SUBTRACT_EXT          0x800A
-#define GL_FUNC_REVERSE_SUBTRACT_EXT  0x800B
+#ifndef GL_CLAMP_TO_EDGE
+#define GL_CLAMP_TO_EDGE 0x812F
+#endif
+
+#ifndef GL_FUNC_ADD_EXT
+#define GL_FUNC_ADD_EXT 0x8006
+#endif
+
+#ifndef GL_FUNC_SUBTRACT_EXT
+#define GL_FUNC_SUBTRACT_EXT 0x800A
+#endif
+
+#ifndef GL_FUNC_REVERSE_SUBTRACT_EXT
+#define GL_FUNC_REVERSE_SUBTRACT_EXT 0x800B
+#endif
 
 
+#define EXPORT(ret) extern "C" ret __attribute__((stdcall))
 #define SCALE()  (Config.scale ? 2 : 1)
 #define FILTER() (SCALE() == 1 ? GL_NEAREST : (Config.bilinear_filter ? GL_LINEAR : GL_NEAREST))
 
@@ -57,8 +67,8 @@ typedef struct tagIMAGE
     int     special;  // optimization flags
 
     int toggle_counter;
-}
-* IMAGE;
+
+} * IMAGE;
 
 struct DRIVERCONFIG
 {
@@ -105,7 +115,7 @@ EXPORT(void) GetDriverInfo(DRIVERINFO* driverinfo)
     driverinfo->name        = "SDL GL";
     driverinfo->author      = "Jamie Gennis, Kisai, Chad Austin";
     driverinfo->date        = __DATE__;
-    driverinfo->version     = "v1.1";
+    driverinfo->version     = "v1.3";
     driverinfo->description = "Hardware Accelerated OpenGL Sphere Video Driver";
 }
 
@@ -583,12 +593,12 @@ set_blendmode(CImage32::BlendMode blendmode)
 
         case CImage32::ADD:
             glBlendEquationEXT(GL_FUNC_ADD_EXT);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            glBlendFunc(GL_ONE, GL_ONE);
             break;
 
         case CImage32::SUBTRACT:
             glBlendEquationEXT(GL_FUNC_REVERSE_SUBTRACT_EXT);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            glBlendFunc(GL_ONE, GL_ONE);
             break;
 
         case CImage32::MULTIPLY:
@@ -604,79 +614,148 @@ set_blendmode(CImage32::BlendMode blendmode)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-EXPORT(void) BlitImage(IMAGE image, int x, int y, CImage32::BlendMode blendmode)
+static void
+blit_image(IMAGE image, int x[4], int y[4], RGBA color)
 {
-
-    if (image->toggle_counter != toggle_counter)
-        CreateTexture(image);
-
-    if (image->special == tagIMAGE::EMPTY)
-        return;
-
-    set_blendmode(blendmode);
-
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, image->texture);
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+    glColor4ub(color.red, color.green, color.blue, color.alpha);
 
     glBegin(GL_QUADS);
-
     glTexCoord2f(0.0f, 0.0f);
-    glVertex2i(x, y);
-
+    glVertex2i(x[0], y[0]);
     glTexCoord2f(image->tex_width, 0.0f);
-    glVertex2i(x + image->width, y);
-
+    glVertex2i(x[1], y[1]);
     glTexCoord2f(image->tex_width, image->tex_height);
-    glVertex2i(x + image->width, y + image->height);
-
+    glVertex2i(x[2], y[2]);
     glTexCoord2f(0.0f, image->tex_height);
-    glVertex2i(x, y + image->height);
-
+    glVertex2i(x[3], y[3]);
     glEnd();
 
     glDisable(GL_TEXTURE_2D);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-EXPORT(void) BlitImageMask(IMAGE image, int x, int y, CImage32::BlendMode blendmode, RGBA mask)
+static void
+blit_image(IMAGE image, int x[4], int y[4])
 {
+    RGBA color = {255, 255, 255, 255};
+    blit_image(image, x, y, color);
+}
 
+////////////////////////////////////////////////////////////////////////////////
+static IMAGE
+create_masked_image_add(IMAGE image, RGBA mask)
+{
+    const int num_pixels = image->width * image->height;
+    RGBA* pixels = new RGBA[num_pixels];
+
+    if (!pixels)
+        return NULL;
+
+    for (int i = 0; i < num_pixels; ++i)
+    {
+        pixels[i].red   = std::min(image->pixels[i].red   + mask.red,   255);
+        pixels[i].green = std::min(image->pixels[i].green + mask.green, 255);
+        pixels[i].blue  = std::min(image->pixels[i].blue  + mask.blue,  255);
+        pixels[i].alpha = std::min(image->pixels[i].alpha + mask.alpha, 255);
+    }
+
+    IMAGE masked_image = CreateImage(image->width, image->height, pixels);
+    delete[] pixels;
+    return masked_image;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+static IMAGE
+create_masked_image_subtract(IMAGE image, RGBA mask)
+{
+    const int num_pixels = image->width * image->height;
+    RGBA* pixels = new RGBA[num_pixels];
+
+    if (!pixels)
+        return NULL;
+
+    for (int i = 0; i < num_pixels; ++i)
+    {
+        pixels[i].red   = std::max(image->pixels[i].red   - mask.red,   0);
+        pixels[i].green = std::max(image->pixels[i].green - mask.green, 0);
+        pixels[i].blue  = std::max(image->pixels[i].blue  - mask.blue,  0);
+        pixels[i].alpha = std::max(image->pixels[i].alpha - mask.alpha, 0);
+    }
+
+    IMAGE masked_image = CreateImage(image->width, image->height, pixels);
+    delete[] pixels;
+    return masked_image;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) BlitImage(IMAGE image, int x, int y, CImage32::BlendMode blendmode)
+{
     if (image->toggle_counter != toggle_counter)
         CreateTexture(image);
 
     if (image->special == tagIMAGE::EMPTY)
         return;
 
+    int tx[4] = {x, x + image->width, x + image->width, x};
+    int ty[4] = {y, y, y + image->height, y + image->height};
+
+    set_blendmode(blendmode);
+    blit_image(image, tx, ty);
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+EXPORT(void) BlitImageMask(IMAGE image, int x, int y, CImage32::BlendMode blendmode,
+                           RGBA mask, CImage32::BlendMode mask_blendmode)
+{
+    if (image->toggle_counter != toggle_counter)
+        CreateTexture(image);
+
+    if (image->special == tagIMAGE::EMPTY)
+        return;
+
+    int tx[4] = {x, x + image->width, x + image->width, x};
+    int ty[4] = {y, y, y + image->height, y + image->height};
+
     set_blendmode(blendmode);
 
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, image->texture);
-    glColor4ub(mask.red, mask.green, mask.blue, mask.alpha);
+    switch (mask_blendmode)
+    {
+        case CImage32::ADD:
+        {
+            IMAGE masked_image = create_masked_image_add(image, mask);
+            if (masked_image)
+            {
+                blit_image(masked_image, tx, ty);
+                DestroyImage(masked_image);
+            }
+        }
+        break;
 
-    glBegin(GL_QUADS);
+        case CImage32::SUBTRACT:
+        {
+            IMAGE masked_image = create_masked_image_subtract(image, mask);
+            if (masked_image)
+            {
+                blit_image(masked_image, tx, ty);
+                DestroyImage(masked_image);
+            }
+        }
+        break;
 
-    glTexCoord2f(0.0f, 0.0f);
-    glVertex2i(x, y);
-
-    glTexCoord2f(image->tex_width, 0.0f);
-    glVertex2i(x + image->width, y);
-
-    glTexCoord2f(image->tex_width, image->tex_height);
-    glVertex2i(x + image->width, y + image->height);
-
-    glTexCoord2f(0.0f, image->tex_height);
-    glVertex2i(x, y + image->height);
-
-    glEnd();
-
-    glDisable(GL_TEXTURE_2D);
+        case CImage32::MULTIPLY:
+        {
+            blit_image(image, tx, ty, mask);
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4], CImage32::BlendMode blendmode)
 {
-
     if (image->toggle_counter != toggle_counter)
         CreateTexture(image);
 
@@ -684,45 +763,13 @@ EXPORT(void) TransformBlitImage(IMAGE image, int x[4], int y[4], CImage32::Blend
         return;
 
     set_blendmode(blendmode);
-
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, image->texture);
-
-    int cx = (x[0] + x[1] + x[2] + x[3]) / 4;
-    int cy = (y[0] + y[1] + y[2] + y[3]) / 4;
-
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-    glBegin(GL_TRIANGLE_FAN);
-
-    // center
-    glTexCoord2f(image->tex_width / 2, image->tex_height / 2);
-    glVertex2i(cx, cy);
-
-    glTexCoord2f(0, 0);
-    glVertex2i(x[0], y[0]);
-
-    glTexCoord2f(image->tex_width, 0);
-    glVertex2i(x[1] + 1, y[1]);
-
-    glTexCoord2f(image->tex_width, image->tex_height);
-    glVertex2i(x[2] + 1, y[2] + 1);
-
-    glTexCoord2f(0, image->tex_height);
-    glVertex2i(x[3], y[3] + 1);
-
-    glTexCoord2f(0, 0);
-    glVertex2i(x[0], y[0]);
-
-    glEnd();
-
-    glDisable(GL_TEXTURE_2D);
+    blit_image(image, x, y);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], CImage32::BlendMode blendmode, RGBA mask)
+EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], CImage32::BlendMode blendmode,
+                                    RGBA mask, CImage32::BlendMode mask_blendmode)
 {
-
     if (image->toggle_counter != toggle_counter)
         CreateTexture(image);
 
@@ -731,38 +778,35 @@ EXPORT(void) TransformBlitImageMask(IMAGE image, int x[4], int y[4], CImage32::B
 
     set_blendmode(blendmode);
 
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, image->texture);
+    switch (mask_blendmode)
+    {
+        case CImage32::ADD:
+        {
+            IMAGE masked_image = create_masked_image_add(image, mask);
+            if (masked_image)
+            {
+                blit_image(masked_image, x, y);
+                DestroyImage(masked_image);
+            }
+        }
+        break;
 
-    int cx = (x[0] + x[1] + x[2] + x[3]) / 4;
-    int cy = (y[0] + y[1] + y[2] + y[3]) / 4;
+        case CImage32::SUBTRACT:
+        {
+            IMAGE masked_image = create_masked_image_subtract(image, mask);
+            if (masked_image)
+            {
+                blit_image(masked_image, x, y);
+                DestroyImage(masked_image);
+            }
+        }
+        break;
 
-    glColor4ub(mask.red, mask.green, mask.blue, mask.alpha);
-
-    glBegin(GL_TRIANGLE_FAN);
-
-    // center
-    glTexCoord2f(image->tex_width / 2, image->tex_height / 2);
-    glVertex2i(cx, cy);
-
-    glTexCoord2f(0, 0);
-    glVertex2i(x[0], y[0]);
-
-    glTexCoord2f(image->tex_width, 0);
-    glVertex2i(x[1] + 1, y[1]);
-
-    glTexCoord2f(image->tex_width, image->tex_height);
-    glVertex2i(x[2] + 1, y[2] + 1);
-
-    glTexCoord2f(0, image->tex_height);
-    glVertex2i(x[3], y[3] + 1);
-
-    glTexCoord2f(0, 0);
-    glVertex2i(x[0], y[0]);
-
-    glEnd();
-
-    glDisable(GL_TEXTURE_2D);
+        case CImage32::MULTIPLY:
+        {
+            blit_image(image, x, y, mask);
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -199,12 +199,12 @@ SFONT::DrawString(int x, int y, const char* text, RGBA mask, CImage32* surface) 
         const sFontCharacter& character = m_Font.GetCharacter(ch);
         if (surface == NULL)
         {
-            BlitImageMask(m_Images[ch], x, y, CImage32::BLEND, mask);
+            BlitImageMask(m_Images[ch], x, y, CImage32::BLEND, mask, CImage32::MULTIPLY);
         }
         else
         {
             CImage32 tmp(character);
-            surface->BlitImageMask(tmp, x, y, mask);
+            surface->BlitImageMask(tmp, x, y, mask, CImage32::MULTIPLY);
         }
 
         x += character.GetWidth();
@@ -229,12 +229,12 @@ SFONT::DrawZoomedString(int x, int y, double scale, const char* text, RGBA mask,
             int ay[4] = { y, y, y + (int)(scale * h), y + (int)(scale * h) };
             if (lsurface == NULL)
             {
-                TransformBlitImageMask(i, ax, ay, CImage32::BLEND, mask);
+                TransformBlitImageMask(i, ax, ay, CImage32::BLEND, mask, CImage32::MULTIPLY);
             }
             else
             {
                 CImage32 tmp(character);
-                lsurface->TransformBlitImageMask(tmp, ax, ay, mask);
+                lsurface->TransformBlitImageMask(tmp, ax, ay, mask, CImage32::MULTIPLY);
             }
         }
     };

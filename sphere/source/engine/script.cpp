@@ -484,7 +484,7 @@ CScript::CScript(IEngine* engine)
 	JS_GetOperationCallback(JSContext *cx);
 
 	extern JS_PUBLIC_API(void)
-	JS_TriggerOperationCallback(JSContext *cx); 
+	JS_TriggerOperationCallback(JSContext *cx);
 	*/
 #endif
 
@@ -1235,8 +1235,8 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
         return NULL;
     }
 	// Root variable to keep it save from CG
-	JS_AddRoot(cx, &x1_val); JS_AddRoot(cx, &x2_val); 
-	JS_AddRoot(cx, &y1_val); JS_AddRoot(cx, &y2_val); 
+	JS_AddRoot(cx, &x1_val); JS_AddRoot(cx, &x2_val);
+	JS_AddRoot(cx, &y1_val); JS_AddRoot(cx, &y2_val);
 
     jsuint num_images = 0;
     JSObject* images_object = argArray(cx, images_array);
@@ -2576,7 +2576,7 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-    - Draws a color-filled polygon using the array of objects 
+    - Draws a color-filled polygon using the array of objects
       (each object must have a 'x' and 'y' property).
       If invert is true, all points in the bounding box of the polygon, but
       not in the polygon will be colored.
@@ -5758,7 +5758,7 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-    - Sets the person's base obstruction object. 
+    - Sets the person's base obstruction object.
       Note: If the person is zoomed, you still need to define the base as if the person
       was not scaled, and use SetPersonScaleFactor(person,GetPersonScaleFactor(person));
       to update the base.
@@ -6597,7 +6597,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 /**
     - returns an Sfxr object. The parameters are optional and can be set later on.
-      bitrate, samplerate, soundvolume, wavetype, basefrequency, minfrequency, 
+      bitrate, samplerate, soundvolume, wavetype, basefrequency, minfrequency,
       frequencyslide, frequencyslidedelta, squareduty, squaredutysweep, vibratodepth,
       vibratospeed, attack, sustain, detay, release, filter, lowpassfiltercutoff,
       lowpassfiltercutoffsweep, filterresonance, highpassfiltercutoff, highpassfiltercutoffsweep,
@@ -7579,7 +7579,7 @@ if (maxsize < engine.compressBound2(ba->size) )
 	{
 		delete[] buffer;
 		return_null();
-	} else 
+	} else
 	{
 		JSObject* array_object = CreateByteArrayObject(cx, outputsize, (byte *) buffer);
 		delete[] buffer; // unsigned char* buffer = new unsigned char[maxsize];
@@ -7612,7 +7612,7 @@ if (argc > 1)
 if (maxsize < engine.compressBound2(ba->size) )
 {
 	return_null();
-} else 
+} else
 {
 
 	unsigned char* buffer = new unsigned char[maxsize];
@@ -8071,9 +8071,9 @@ end_method()
     - if 'shape' is not specified, the parameters for the current shape are returned,
       or if 'shape' is specified, the parameters belonging to the 'shape' are returned
     - following signatures are possible:
-            
+
         {shape: PS_SHAPE_NULL}
-            
+
         {shape: PS_SHAPE_RECTANGLE,
              x: {min: -, max: -},
              y: {min: -, max: -}}
@@ -8191,7 +8191,7 @@ end_method()
            angle: {min: -, max: -},
                a: {min: -, max: -},
                b: {min: -, max: -}}
-                 
+
       mode can be either PS_ORIENTATION_EXPLICIT or PS_ORIENTATION_IMPLICIT
 */
 begin_method(SS_PARTICLE_INITIALIZER, ssParticleInitializerGetVelParams, 0)
@@ -11040,7 +11040,7 @@ end_finalizer()
 /**
     - saves the sfxr as a wav file
       It will use the ./sounds/ directory by default
-*/	
+*/
 begin_method(SS_SFXR, ssSfxrSaveWav, 1)
 arg_str(filename);
 bool saved = false;
@@ -11058,7 +11058,7 @@ end_method()
 
 /**
     - resets all the values of the sfxr object
-*/	
+*/
 begin_method(SS_SFXR, ssSfxrReset, 0)
 return_bool(object->sfxr->Reset());
 end_method()
@@ -12044,7 +12044,7 @@ end_finalizer()
 
 ///////////////////////////////////////
 static CImage32::BlendMode
-int_to_blendmode(int blendmode)
+int_to_image_blendmode(int blendmode)
 {
     switch (blendmode)
     {
@@ -12053,6 +12053,19 @@ int_to_blendmode(int blendmode)
         case CImage32::SUBTRACT: return CImage32::SUBTRACT;
         case CImage32::MULTIPLY: return CImage32::MULTIPLY;
         default:                 return CImage32::BLEND;
+    }
+}
+
+///////////////////////////////////////
+static CImage32::BlendMode
+int_to_image_mask_blendmode(int blendmode)
+{
+    switch (blendmode)
+    {
+        case CImage32::ADD:      return CImage32::ADD;
+        case CImage32::SUBTRACT: return CImage32::SUBTRACT;
+        case CImage32::MULTIPLY: return CImage32::MULTIPLY;
+        default:                 return CImage32::MULTIPLY;
     }
 }
 
@@ -12072,7 +12085,7 @@ if (This->ShouldRender())
         blendmode = argInt(cx, argv[2]);
     }
 
-    BlitImage(object->image, x, y, int_to_blendmode(blendmode));
+    BlitImage(object->image, x, y, int_to_image_blendmode(blendmode));
 }
 end_method()
 
@@ -12086,13 +12099,18 @@ if (This->ShouldRender())
 {
     arg_int(x);
     arg_int(y);
-    arg_color(clr);
+    arg_color(col);
 
     int blendmode = CImage32::BLEND;
     if (argc >= 4)
         blendmode = argInt(cx, argv[3]);
 
-    BlitImageMask(object->image, x, y, int_to_blendmode(blendmode), clr);
+    int mask_blendmode = CImage32::MULTIPLY;
+    if (argc >= 5)
+        mask_blendmode = argInt(cx, argv[4]);
+
+    BlitImageMask(object->image, x, y, int_to_image_blendmode(blendmode),
+                  col, int_to_image_mask_blendmode(mask_blendmode));
 }
 end_method()
 
@@ -12152,7 +12170,7 @@ if (This->ShouldRender())
     int h = GetImageHeight(object->image);
 
     CalculateRotateBlitPoints(tx, ty, x, y, w, h, radians);
-    TransformBlitImage(object->image, tx, ty, int_to_blendmode(blendmode));
+    TransformBlitImage(object->image, tx, ty, int_to_image_blendmode(blendmode));
 }
 
 end_method()
@@ -12174,12 +12192,17 @@ if (This->ShouldRender())
         blendmode = argInt(cx, argv[4]);
     }
 
+    int mask_blendmode = CImage32::MULTIPLY;
+    if (argc >= 6)
+        mask_blendmode = argInt(cx, argv[5]);
+
     int tx[4];
     int ty[4];
     int w = GetImageWidth(object->image);
     int h = GetImageHeight(object->image);
     CalculateRotateBlitPoints(tx, ty, x, y, w, h, radians);
-    TransformBlitImageMask(object->image, tx, ty, int_to_blendmode(blendmode), color);
+    TransformBlitImageMask(object->image, tx, ty, int_to_image_blendmode(blendmode),
+                           color, int_to_image_mask_blendmode(mask_blendmode));
 }
 end_method()
 ///////////////////////////////////////
@@ -12208,7 +12231,7 @@ if (This->ShouldRender())
     int tx[4] = { x, x + (int)(w * factor), x + (int)(w * factor), x };
     int ty[4] = { y, y, y + (int)(h * factor), y + (int)(h * factor) };
 
-    TransformBlitImage(object->image, tx, ty, int_to_blendmode(blendmode));
+    TransformBlitImage(object->image, tx, ty, int_to_image_blendmode(blendmode));
 }
 end_method()
 
@@ -12231,11 +12254,17 @@ if (This->ShouldRender())
         blendmode = argInt(cx, argv[4]);
     }
 
+    int mask_blendmode = CImage32::MULTIPLY;
+    if (argc >= 6)
+        mask_blendmode = argInt(cx, argv[5]);
+
     int w = GetImageWidth(object->image);
     int h = GetImageHeight(object->image);
     int tx[4] = { x, x + (int)(w * factor), x + (int)(w * factor), x };
     int ty[4] = { y, y, y + (int)(h * factor), y + (int)(h * factor) };
-    TransformBlitImageMask(object->image, tx, ty, int_to_blendmode(blendmode), color);
+
+    TransformBlitImageMask(object->image, tx, ty, int_to_image_blendmode(blendmode),
+                           color, int_to_image_mask_blendmode(mask_blendmode));
 }
 end_method()
 ///////////////////////////////////////
@@ -12265,7 +12294,7 @@ if (This->ShouldRender())
 
     int x[4] = { x1, x2, x3, x4 };
     int y[4] = { y1, y2, y3, y4 };
-    TransformBlitImage(object->image, x, y, int_to_blendmode(blendmode));
+    TransformBlitImage(object->image, x, y, int_to_image_blendmode(blendmode));
 }
 end_method()
 
@@ -12292,9 +12321,14 @@ if (This->ShouldRender())
         blendmode = argInt(cx, argv[9]);
     }
 
+    int mask_blendmode = CImage32::MULTIPLY;
+    if (argc >= 11)
+        mask_blendmode = argInt(cx, argv[10]);
+
     int x[4] = { x1, x2, x3, x4 };
     int y[4] = { y1, y2, y3, y4 };
-    TransformBlitImageMask(object->image, x, y, int_to_blendmode(blendmode), mask);
+    TransformBlitImageMask(object->image, x, y, int_to_image_blendmode(blendmode),
+    mask, int_to_image_mask_blendmode(mask_blendmode));
 }
 end_method()
 
@@ -12514,7 +12548,7 @@ end_method()
 
 ////////////////////////////////////////
 static CImage32::BlendMode
-int_to_mask_blendmode(int blendmode)
+int_to_surface_mask_blendmode(int blendmode)
 {
     switch (blendmode)
     {
@@ -12546,7 +12580,7 @@ arg_color(mask);
 int mask_bmode = CImage32::MULTIPLY;
 if (argc >= 5)
 {
-    mask_bmode = int_to_mask_blendmode(argInt(cx, argv[4]));
+    mask_bmode = int_to_surface_mask_blendmode(argInt(cx, argv[4]));
 }
 
 if (surface)
@@ -12604,7 +12638,7 @@ arg_color(mask);
 int mask_bmode = CImage32::MULTIPLY;
 if (argc >= 6)
 {
-    mask_bmode = int_to_mask_blendmode(argInt(cx, argv[5]));
+    mask_bmode = int_to_surface_mask_blendmode(argInt(cx, argv[5]));
 }
 
 if (surface)
@@ -12670,7 +12704,7 @@ arg_color(mask);
 int mask_bmode = CImage32::MULTIPLY;
 if (argc >= 6)
 {
-    mask_bmode = int_to_mask_blendmode(argInt(cx, argv[5]));
+    mask_bmode = int_to_surface_mask_blendmode(argInt(cx, argv[5]));
 }
 
 if (surface)
@@ -12735,7 +12769,7 @@ arg_color(mask);
 int mask_bmode = CImage32::MULTIPLY;
 if (argc >= 11)
 {
-    mask_bmode = int_to_mask_blendmode(argInt(cx, argv[10]));
+    mask_bmode = int_to_surface_mask_blendmode(argInt(cx, argv[10]));
 }
 
 int x[4] = { x1, x2, x3, x4 };
@@ -14075,7 +14109,7 @@ end_method()
 ////////////////////////////////////////
 /**
     - reads a value from the key
-      the value type returned depends on the default value. 
+      the value type returned depends on the default value.
       + if the default is a number, read will return a number.
       + if the default is a text or string, read will return a string.
       + if the default is a boolean, read will return a boolean
@@ -14254,9 +14288,9 @@ end_method()
 ////////////////////////////////////////
 /**
     - reads the number of bytes that is specified by num_bytes. It will create
-      and return an array of data the rawfile object has read. The array of 
-      data are numbers representation of each byte (0-255). Note that if the 
-      number of bytes that will be read, exceeds the filesize from the current 
+      and return an array of data the rawfile object has read. The array of
+      data are numbers representation of each byte (0-255). Note that if the
+      number of bytes that will be read, exceeds the filesize from the current
       position, it will only return an array of data of that is
       actually read.  The returned object is a ByteArray, so you can do
       the same things with it as you can with any other ByteArray.

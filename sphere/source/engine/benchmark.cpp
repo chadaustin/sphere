@@ -251,7 +251,7 @@ int test_BlitImageMask()
     dword start = GetTime();
     while (start + TIME_PER_TEST > GetTime())
     {
-        BlitImageMask(image, 0, 0, CImage32::BLEND, mask);
+        BlitImageMask(image, 0, 0, CImage32::BLEND, mask, CImage32::MULTIPLY);
         count++;
     }
 

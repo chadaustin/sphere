@@ -101,7 +101,7 @@ SWINDOWSTYLE::DrawBackground(int x, int y, int w, int h, int background_mode, co
                 //for (int iy = 0; iy < h / height + 1; iy++)
 				for (int iy = h / height ; iy>=0 ; --iy)
                 {
-                    BlitImageMask(image, x + ix * width, y + iy * height, CImage32::BLEND, mask);
+                    BlitImageMask(image, x + ix * width, y + iy * height, CImage32::BLEND, mask, CImage32::MULTIPLY);
                 }
             }
         }
@@ -118,7 +118,7 @@ SWINDOWSTYLE::DrawBackground(int x, int y, int w, int h, int background_mode, co
         }
         else
         {
-            TransformBlitImageMask(image, tx, ty, CImage32::BLEND, mask);
+            TransformBlitImageMask(image, tx, ty, CImage32::BLEND, mask, CImage32::MULTIPLY);
         }
     }
 
@@ -156,7 +156,7 @@ SWINDOWSTYLE::DrawCorner(int index, int x, int y, const RGBA& mask, bool is_mask
     }
     else
     {
-        BlitImageMask(m_Images[index], x, y, CImage32::BLEND, mask);
+        BlitImageMask(m_Images[index], x, y, CImage32::BLEND, mask, CImage32::MULTIPLY);
     }
     return true;
 }
@@ -211,7 +211,7 @@ SWINDOWSTYLE::DrawHorizontalEdge(int index, int x, int y, int w, int h, const RG
     {
         //for (int i = 0; i < h / height + 1; i++)
 		for (int i = h / height; i>=0; --i)
-            BlitImageMask(image, x, y + i * height, CImage32::BLEND, mask);
+            BlitImageMask(image, x, y + i * height, CImage32::BLEND, mask, CImage32::MULTIPLY);
     }
 
     SetClippingRectangle(ox, oy, ow, oh);
@@ -243,7 +243,7 @@ SWINDOWSTYLE::DrawVerticalEdge(int index, int x, int y, int w, int h, const RGBA
     {
         //for (int i = 0; i < w / width + 1; i++)
 		for (int i = w / width; i>=0; --i)
-            BlitImageMask(image, x + i * width, y, CImage32::BLEND, mask);
+            BlitImageMask(image, x + i * width, y, CImage32::BLEND, mask, CImage32::MULTIPLY);
     }
 
     SetClippingRectangle(ox, oy, ow, oh);
@@ -315,7 +315,7 @@ SWINDOWSTYLE::Initialize()
 ////////////////////////////////////////////////////////////////////////////////
 
 int
-SWINDOWSTYLE::GetBorder(int index) 
+SWINDOWSTYLE::GetBorder(int index)
 {
 	switch(index){
 		case sWindowStyle::EDGE_LEFT:

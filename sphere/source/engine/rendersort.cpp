@@ -91,7 +91,7 @@ CRenderSort::DrawObjects()
             else
             {
 
-                BlitImageMask(o.image, tx[0], ty[0], CImage32::BLEND, o.mask);
+                BlitImageMask(o.image, tx[0], ty[0], CImage32::BLEND, o.mask, CImage32::MULTIPLY);
             }
         }
         else
@@ -105,7 +105,7 @@ CRenderSort::DrawObjects()
             else
             {
 
-                TransformBlitImageMask(o.image, tx, ty, CImage32::BLEND, o.mask);
+                TransformBlitImageMask(o.image, tx, ty, CImage32::BLEND, o.mask, CImage32::MULTIPLY);
             }
         }
     }

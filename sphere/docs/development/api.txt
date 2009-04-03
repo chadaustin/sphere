@@ -1891,6 +1891,11 @@ log_object.endBlock()
     - SUBTRACT
     - MULTIPLY
   
+  Blend modes which can be used for image masking:
+    - ADD
+    - SUBTRACT
+    - MULTIPLY (default)
+  
   GetSystemArrow()
     - returns an image object of the System Arrow that the engine currently uses.
   
@@ -1915,7 +1920,7 @@ log_object.endBlock()
   image_object.blit(x, y [, blendmode])
     - draws the image onto the video buffer at x,y
   
-  image_object.blitMask(x, y, mask [, blendmode])
+  image_object.blitMask(x, y, mask [, blendmode [, mask_blendmode]])
     - draws the image into the video buffer, except that the color passed
       as 'mask' tints the image
   
@@ -1924,7 +1929,7 @@ log_object.endBlock()
       in  anti-clockwise in radians, which have a range of 0-2*pi. 
       (x,y) is the center of the blit.
 
-  image_object.rotateBlitMask(x, y, radians, color, [blendmode])
+  image_object.rotateBlitMask(x, y, radians, color, [blendmode [, mask_blendmode]])
     - rotateBlit + mask
   
   image_object.zoomBlit(x, y, factor [, blendmode])
@@ -1933,7 +1938,7 @@ log_object.endBlock()
       image. Between 0 and 1 will shrink the image. Any values greater than 1
       will stretch the size of the image.
 
-  image_object.zoomBlitMask(x, y, factor, color [, blendmode])
+  image_object.zoomBlitMask(x, y, factor, color [, blendmode [, mask_blendmode]])
     - zoomBlit + mask
   
   image_object.transformBlit(x1, y1, x2, y2, x3, y3, x4, y4 [, blendmode])
@@ -1942,7 +1947,7 @@ log_object.endBlock()
       (x3, y3) is the lower right corner, and (x4, y4) is the lower left 
       corner.
 
-  image_object.transformBlitMask(x1, y1, x2, y2, x3, y3, x4, y4, mask [, blendmode])
+  image_object.transformBlitMask(x1, y1, x2, y2, x3, y3, x4, y4, mask [, blendmode [, mask_blendmode]])
     - transformBlit + blitMask
 
   image_object.createSurface()
