@@ -279,6 +279,8 @@ SS_FUNCTION(OpenLog, 1)
       SS_FUNCTION(GetPersonLayer,     1)
       SS_FUNCTION(GetPersonDirection, 1)
       SS_FUNCTION(GetPersonFrame,     1)
+      SS_FUNCTION(GetPersonFrameNext, 1)
+      SS_FUNCTION(SetPersonFrameNext, 2)
       SS_FUNCTION(SetPersonFrameRevert, 2)
       SS_FUNCTION(GetPersonFrameRevert, 1)
       SS_FUNCTION(SetPersonSpeed,     2)
@@ -356,9 +358,9 @@ SS_FUNCTION(OpenLog, 1)
   // spritesets
   SS_FUNCTION(LoadSpriteset, 1)
   SS_FUNCTION(CreateSpriteset, 5)
-  //spriteset.save
-  //spriteset.images
-  //spriteset.directions
+  //spriteset.save(filename)
+  //spriteset.images[]
+  //spriteset.directions[]
   //spriteset.base.x1
   //spriteset.base.y1
   //spriteset.base.x2

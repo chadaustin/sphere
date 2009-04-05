@@ -5306,16 +5306,27 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 /**
     - sets which frame to show
+      It will retain the frame delay count of the previous frame, unless
+      the third optional parameter is false
 */
 begin_func(SetPersonFrame, 2)
 arg_str(name);
 arg_int(frame);
-
+bool resetFrameDelay = true;
+if (argc >= 3)
+{
+    resetFrameDelay = argBool(cx, argv[2]);
+}
+int delay;
+if(!resetFrameDelay)
+    This->m_Engine->GetMapEngine()->GetPersonFrameNext(name, delay);
 if (!This->m_Engine->GetMapEngine()->SetPersonFrame(name, frame))
 {
     This->ReportMapEngineError("SetPersonFrame() failed");
     return JS_FALSE;
 }
+if(!resetFrameDelay)
+    This->m_Engine->GetMapEngine()->SetPersonFrameNext(name, delay);
 
 end_func()
 ////////////////////////////////////////////////////////////////////////////////
@@ -5329,6 +5340,39 @@ int frame;
 if (!This->m_Engine->GetMapEngine()->GetPersonFrame(name, frame))
 {
     This->ReportMapEngineError("GetPersonFrame() failed");
+    return JS_FALSE;
+}
+
+return_int(frame);
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - sets the remaining frame delay for the current frame
+*/
+begin_func(SetPersonFrameNext, 2)
+arg_str(name);
+arg_int(frame);
+
+if (!This->m_Engine->GetMapEngine()->SetPersonFrameNext(name, frame))
+{
+    This->ReportMapEngineError("SetPersonFrameNext() failed");
+    return JS_FALSE;
+}
+
+end_func()
+////////////////////////////////////////////////////////////////////////////////
+/**
+    - gets the remaining frame delay for the current frame
+    @see GetPersonSpriteset
+*/
+begin_func(GetPersonFrameNext, 1)
+arg_str(name);
+
+int frame;
+if (!This->m_Engine->GetMapEngine()->GetPersonFrameNext(name, frame))
+{
+    This->ReportMapEngineError("GetPersonFrameNext() failed");
     return JS_FALSE;
 }
 

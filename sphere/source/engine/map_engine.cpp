@@ -2029,6 +2029,7 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
     p.angle = 0;
     p.ignorePersonObstructions = false;
     p.ignoreTileObstructions = false;
+	p.obs_person = -1;
     p.mask = CreateRGBA(255, 255, 255, 255);
     p.frame = 0;
     p.spriteset = m_Engine->LoadSpriteset(spriteset_filename);
@@ -2376,6 +2377,46 @@ CMapEngine::SetPersonFrame(const char* name, int frame)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+bool
+CMapEngine::GetPersonFrameNext(const char* name, int& frameDelay)
+{
+    int person = -1;
+    if ( IsInvalidPersonError(name, person) )
+    {
+        return false;
+    }
+
+    frameDelay = int(m_Persons[person].next_frame_switch);
+    return true;
+}
+
+bool
+CMapEngine::SetPersonFrameNext(const char* name, int frameDelay)
+{
+    // find person
+    int person = -1;
+    if ( IsInvalidPersonError(name, person) )
+    {
+        return false;
+    }
+
+    //Person& p = m_Persons[person];
+    // if person has a leader, ignore the command (actually, lets see what happens...)
+    //if (p.leader != -1)
+    //{
+    //    return true;
+    //}
+
+    if (frameDelay < 0)
+    {
+        frameDelay = 0;
+    }
+    m_Persons[person].stepping_frame_revert_count = 0;
+    m_Persons[person].next_frame_switch = frameDelay; //p.spriteset->GetSpriteset().GetFrameDelay(p.direction, p.frame);
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 bool
 CMapEngine::GetPersonX(const char* name, int& x)
 {
@@ -2935,7 +2976,7 @@ CMapEngine::GetPersonData(const char* name, std::vector<struct PersonData>& pers
     PersonDataUtil::SetDataInt(person_data, "height", p.height);
     PersonDataUtil::SetDataString(person_data, "leader", p.leader == -1 ? "" : m_Persons[p.leader].name.c_str());
     PersonDataUtil::SetDataBool(person_data, "destroy_with_map", p.destroy_with_map);
-
+	PersonDataUtil::SetDataInt(person_data, "obs_person", p.obs_person);
     return true;
 }
 
@@ -4604,12 +4645,6 @@ CMapEngine::UpdatePersons()
     // for each person...
     for (int i = int(m_Persons.size())-1 ; i>=0 ; --i)
     {
-        //const int num_persons = int(m_Persons.size());
-        //if (i >= num_persons)
-        //{
-        //    break;
-        //}
-
         bool activated;
         if (!UpdatePerson(i, activated))
             return false;
@@ -4627,13 +4662,9 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
 {
     Person* p = &m_Persons[person_index];
     activated = false;
-    /*
-    char debug_str[10000] = {0};
-    for (int l = 0; l < m_Persons.size(); l++) {
-      sprintf (debug_str + strlen(debug_str), "(%d:%s) ", l, m_Persons[l].name.c_str());
-    }
-    */
-    // if this person has a leader, skip it
+	p->obs_person = -1;
+
+	// if this person has a leader, skip it
     if (p->leader != -1)
     {
         // revert back to the first frame if reversion has been set and enough updates have passed
@@ -4651,7 +4682,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
         return true;
     }
 
-    // store current position
+    // store current position (before command_generator moves us)
     double x = p->x;
     double y = p->y;
 
@@ -4750,16 +4781,16 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
             p->direction = "northwest";
             break;
         case COMMAND_MOVE_NORTH:
-            p->y-=p->speed_y;
+            p->y -= p->speed_y;
             break;
         case COMMAND_MOVE_EAST:
-            p->x+=p->speed_x;
+            p->x += p->speed_x;
             break;
         case COMMAND_MOVE_SOUTH:
-            p->y+=p->speed_y;
+            p->y += p->speed_y;
             break;
         case COMMAND_MOVE_WEST:
-            p->x-=p->speed_x;
+            p->x -= p->speed_x;
             break;
         case COMMAND_DO_SCRIPT:
             {
@@ -4817,12 +4848,14 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
         else
             p->frame = 0;
         // check for obstructions
-        int obs_person;
-        if (IsObstructed(person_index, int(p->x), int(p->y), obs_person))
+        int obs_person = -1;
+		if (IsObstructed(person_index, int(p->x), int(p->y), obs_person))
         {
             p->x = old_x;
             p->y = old_y;
-        }
+            p->obs_person = obs_person ; // obs_person is reused for talkactivation, so it needs to be temporal
+		}
+	
         // CHECK FOR ENTITY ACTIVATION
         // if we're processing the input target
         if (person_index == m_InputPerson)
@@ -4966,7 +4999,7 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
         }
     }
 
-    //for (int j = 0; j < int(m_InputPersons.size()); j++)
+	// Update the zones if any of the 4 input persons are walking over it
     for (int j = int(m_InputPersons.size())-1;j>=0; --j)
     {
         if (m_InputPersons[j] == person_index)
@@ -5546,102 +5579,79 @@ CMapEngine::ProcessInput()
         {
             int dx = 0;
             int dy = 0;
+            Person* p = &m_Persons[person];
 
             bool moved = false;
-            bool is_left_bound  = IsKeyBound(m_Persons[person].key_left);
-            bool is_right_bound = IsKeyBound(m_Persons[person].key_right);
-            bool is_up_bound    = IsKeyBound(m_Persons[person].key_up);
-            bool is_down_bound  = IsKeyBound(m_Persons[person].key_down);
+			bool is_left_bound  = IsKeyBound(p->key_left);
+            bool is_right_bound = IsKeyBound(p->key_right);
+            bool is_up_bound    = IsKeyBound(p->key_up);
+            bool is_down_bound  = IsKeyBound(p->key_down);
 
             if (m_Persons[person].keyboard_input_allowed)
             {
-                if (!is_up_bound    && new_keys[m_Persons[person].key_up])    dy--;
-                if (!is_right_bound && new_keys[m_Persons[person].key_right]) dx++;
-                if (!is_down_bound  && new_keys[m_Persons[person].key_down])  dy++;
-                if (!is_left_bound  && new_keys[m_Persons[person].key_left])  dx--;
+                if (!is_up_bound    && new_keys[p->key_up])    dy--;
+                if (!is_right_bound && new_keys[p->key_right]) dx++;
+                if (!is_down_bound  && new_keys[p->key_down])  dy++;
+                if (!is_left_bound  && new_keys[p->key_left])  dx--;
 
             }
-            if (m_Persons[person].joypad_input_allowed)
+            if (p->joypad_input_allowed)
             {
-                if (m_Persons[person].player_index >= 0 && m_Persons[person].player_index < GetNumJoysticks())
+                if (p->player_index >= 0 && p->player_index < GetNumJoysticks())
                 {
                     if (!is_left_bound && !is_right_bound)
-                        dx += __round__(GetJoystickAxis(m_Persons[person].player_index, JOYSTICK_AXIS_X));
+                        dx += __round__(GetJoystickAxis(p->player_index, JOYSTICK_AXIS_X));
 
                     if (!is_up_bound && !is_down_bound)
-                        dy += __round__(GetJoystickAxis(m_Persons[person].player_index, JOYSTICK_AXIS_Y));
+                        dy += __round__(GetJoystickAxis(p->player_index, JOYSTICK_AXIS_Y));
                 }
 
             }
-            if (dy < 0)
-            {
-                moved = true;
-                m_Persons[person].commands.push_back(Person::Command(COMMAND_MOVE_NORTH, true));
-            }
-            if (dx > 0)
-            {
-                moved = true;
-                m_Persons[person].commands.push_back(Person::Command(COMMAND_MOVE_EAST,  true));
-            }
-            if (dy > 0)
-            {
-                moved = true;
-                m_Persons[person].commands.push_back(Person::Command(COMMAND_MOVE_SOUTH, true));
-            }
-            if (dx < 0)
-            {
-                moved = true;
-                m_Persons[person].commands.push_back(Person::Command(COMMAND_MOVE_WEST,  true));
-            }
 
-            // set the direction
-            if (moved)
-            {
-                int command = -1;
-                if (dx < 0)
-                {
-                    if (dy < 0)
-                    {
-                        command = COMMAND_FACE_NORTHWEST;
-                    }
-                    else if (dy > 0)
-                    {
-                        command = COMMAND_FACE_SOUTHWEST;
-                    }
-                    else
-                    {
-                        command = COMMAND_FACE_WEST;
-                    }
-                }
-                else if (dx > 0)
-                {
-                    if (dy < 0)
-                    {
-                        command = COMMAND_FACE_NORTHEAST;
-                    }
-                    else if (dy > 0)
-                    {
-                        command = COMMAND_FACE_SOUTHEAST;
-                    }
-                    else
-                    {
-                        command = COMMAND_FACE_EAST;
-                    }
-                }
-                else
-                {
-                    if (dy < 0)
-                    {
-                        command = COMMAND_FACE_NORTH;
-                    }
-                    else if (dy > 0)
-                    {
-                        command = COMMAND_FACE_SOUTH;
-                    }
-                }
+			// Unitarian directional vectors
+			dx = dx < 0? -1 : dx>0? 1 : 0;
+			dy = dy < 0? -1 : dy>0? 1 : 0;
 
-                m_Persons[person].commands.push_back(Person::Command(command, false));
-            }
+			int command = -1;
+			switch(dx + dy*3){
+				case -4: // north west
+					p->commands.push_back(Person::Command(COMMAND_MOVE_NORTH, true));
+					p->commands.push_back(Person::Command(COMMAND_MOVE_WEST, true));
+					p->commands.push_back(Person::Command(COMMAND_FACE_NORTHWEST, false));
+					break;
+				case -1: //west
+					p->commands.push_back(Person::Command(COMMAND_MOVE_WEST, true));
+					p->commands.push_back(Person::Command(COMMAND_FACE_WEST, false));
+					break;
+				case 2: // south west
+					p->commands.push_back(Person::Command(COMMAND_MOVE_SOUTH, true));
+					p->commands.push_back(Person::Command(COMMAND_MOVE_WEST, true));
+					p->commands.push_back(Person::Command(COMMAND_FACE_SOUTHWEST, false));
+					break;
+				case -3: // north
+					p->commands.push_back(Person::Command(COMMAND_MOVE_NORTH, true));
+					p->commands.push_back(Person::Command(COMMAND_FACE_NORTH, false));
+					break;
+				case 3: // south
+					p->commands.push_back(Person::Command(COMMAND_MOVE_SOUTH, true));
+					p->commands.push_back(Person::Command(COMMAND_FACE_SOUTH, false));
+					break;
+				case -2: // north east
+					p->commands.push_back(Person::Command(COMMAND_MOVE_NORTH, true));
+					p->commands.push_back(Person::Command(COMMAND_MOVE_EAST, true));
+					p->commands.push_back(Person::Command(COMMAND_FACE_NORTHEAST, false));
+					break;
+				case 1: // east
+					p->commands.push_back(Person::Command(COMMAND_MOVE_EAST, true));
+					p->commands.push_back(Person::Command(COMMAND_FACE_EAST, false));
+					break;
+				case 4: // south east
+					p->commands.push_back(Person::Command(COMMAND_MOVE_SOUTH, true));
+					p->commands.push_back(Person::Command(COMMAND_MOVE_EAST, true));
+					p->commands.push_back(Person::Command(COMMAND_FACE_SOUTHEAST, false));
+					break;
+			}
+			
         }
     }
 
@@ -6085,10 +6095,10 @@ dont_skip:
         int j_bx = (q.base_x1 + q.base_x2) / 2;
         int j_by = (q.base_y1 + q.base_y2) / 2;
 
-        int j_x1 = int(m_Persons[i].x - j_bx + q.base_x1);
-        int j_y1 = int(m_Persons[i].y - j_by + q.base_y1);
-        int j_x2 = int(m_Persons[i].x - j_bx + q.base_x2);
-        int j_y2 = int(m_Persons[i].y - j_by + q.base_y2);
+        int j_x1 = int(q.x - j_bx + q.base_x1);
+        int j_y1 = int(q.y - j_by + q.base_y1);
+        int j_x2 = int(q.x - j_bx + q.base_x2);
+        int j_y2 = int(q.y - j_by + q.base_y2);
 
         int min_jx = (j_x1 < j_x2 ? j_x1 : j_x2);
         int max_jx = (j_x1 > j_x2 ? j_x1 : j_x2);
@@ -6152,14 +6162,14 @@ CMapEngine::IsObstructed(int person, int x, int y, int& obs_person)
     }
 
     // don't check other entity obstructions if this spriteset ignores them
-    if (!m_Persons[person].ignorePersonObstructions)
+    if (!p.ignorePersonObstructions)
     {
         obs_person = FindObstructingPerson(person, x, y);
         if (obs_person != -1)
             return true;
     }
 
-    if (!m_Persons[person].ignoreTileObstructions)
+    if (!p.ignoreTileObstructions)
     {
         if (FindObstructingTile(person, x, y) != -1)
         {

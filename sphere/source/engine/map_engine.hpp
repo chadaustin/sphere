@@ -197,6 +197,8 @@ public:
     bool SetPersonLayer(const char* name, int layer);
     bool SetPersonDirection(const char* name, const char* direction);
     bool SetPersonFrame(const char* name, int frame);
+    bool GetPersonFrameNext(const char* name, int& frameDelay);
+    bool SetPersonFrameNext(const char* name, int frameDelay);
     bool GetPersonX(const char* name, int& x);
     bool GetPersonY(const char* name, int& y);
     bool GetPersonOffsetX(const char* name, int& x);
@@ -342,6 +344,8 @@ private:
         int next_frame_switch;
         int stepping_frame_revert;
         int stepping_frame_revert_count;
+
+		int obs_person; // -1 by default or a number of the obstructed person
 
         IEngine::script person_scripts[NUM_PERSON_SCRIPTS];
         struct Command
