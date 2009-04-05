@@ -12960,7 +12960,29 @@ end_method()
 */
 begin_method(SS_SURFACE, ssSurfaceFindColor, 1)
 arg_color(aColor);
-return_bool(object->surface->FindColor(aColor));
+int x, y;
+
+if (object->surface->FindColor(aColor,x,y))
+{
+    static JSClass a_clasp =
+    {
+        "point", 0,
+        JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+        JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
+    };
+
+    JSObject* a_obj = JS_NewObject(cx, &a_clasp, NULL, NULL);
+
+    JS_DefineProperty(cx, a_obj, "x",      INT_TO_JSVAL(x), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+    JS_DefineProperty(cx, a_obj, "y",      INT_TO_JSVAL(y), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+
+    return_object(a_obj);
+} 
+else 
+{
+	return_null();
+}
+
 end_method()
 
 ////////////////////////////////////////
