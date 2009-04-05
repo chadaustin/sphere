@@ -1,8 +1,6 @@
 #ifndef COLORMATRIX_HPP
 #define COLORMATRIX_HPP
-#include <stdio.h>
-#include "../common/rgb.hpp"
-#include "DefaultFileSystem.hpp"
+
 class CColorMatrix
 {
 public:
