@@ -76,7 +76,7 @@ public:
     void SetColorAlpha(RGB color, int alpha);
     void SetColorAlpha(int x, int y, int w, int h, RGB color, int alpha);
     void ReplaceColor(RGBA oldColor, RGBA newColor);
-	bool FindColor(RGBA aColor);
+	bool FindColor(RGBA aColor, int &x, int &y);
 	void FloodFill(int x, int y, RGBA color);
 	void SeedFill_4(int x, int y, RGBA new_color, clipper clip);
 

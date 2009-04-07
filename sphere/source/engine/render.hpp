@@ -14,7 +14,7 @@ inline void ApplyColorMask(RGBA mask)
 
 inline void ClearScreen()
 {
-    ApplyColorMask(CreateRGBA(0, 0, 0, 255));
+	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), CreateRGBA(0, 0, 0, 255));
 }
 
 inline void FadeIn(unsigned milliseconds)

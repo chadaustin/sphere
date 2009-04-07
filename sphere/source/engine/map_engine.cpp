@@ -1271,6 +1271,71 @@ CMapEngine::SetZoneLayer(int zone, int layer)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
+CMapEngine::SetZoneDimensions(int zone, int x1, int y1, int x2, int y2)
+{
+    if (!m_IsRunning)
+    {
+        m_ErrorMessage = "SetZoneDimensions() called while map engine was not running";
+        return false;
+    }
+    if (zone < 0 || zone > m_Map.GetMap().GetNumZones())
+    {
+        m_ErrorMessage = "Invalid zone index: " + itos(zone);
+        return false;
+    }
+	m_Map.GetMap().UpdateZone(zone, x1, y1, x2, y2); 
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/*
+bool
+CMapEngine::AddZone(int x1, int y1, int x2, int y2, int layer, const char* script)
+{
+    if (!m_IsRunning)
+    {
+        m_ErrorMessage = "AddZone() called while map engine was not running";
+        return false;
+    }
+
+	sMap::sZone zone; <- needs to be Zone struct, but how convert it?
+	zone.x1 = x1;
+	zone.y1 = y1;
+	zone.x2 = x2;
+	zone.y2 = y2;
+	if ( IsInvalidLayerError(layer, "AddZone()") )
+		return false;
+	zone.layer = layer;
+
+    if (zone.x1 > zone.x2)
+    {
+        std::swap(zone.x1, zone.x2);
+    }
+    if (zone.y1 > zone.y2)
+    {
+        std::swap(zone.y1, zone.y2);
+    }
+	std::string error;
+	zone.script = CompileScript(script, &error);
+	if (zone.script == NULL)
+    {
+        m_ErrorMessage = "AddZone() Could not compile script\n" + error;
+        return false;
+    }
+    m_Map.GetMap().m_Zones.push_back(zone);
+	m_Map.GetMap().AddZone(zone);
+	    // zones
+	::m_Zones;
+
+    return true;
+}
+
+*/
+// TODO: SetZone(zone, x, y, width, heigth, layer); AddZone DeleteZone
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
 CMapEngine::GetNumObstructionSegments(int layer, int& num_segments)
 {
     if (!m_IsRunning)
@@ -2060,6 +2125,7 @@ CMapEngine::CreateDefaultPerson(Person& p, const char* name, const char* sprites
     p.height = p.spriteset->GetSpriteset().GetFrameHeight();
 
     p.direction = p.spriteset->GetSpriteset().GetDirectionName(0);
+	p.dx = p.dy = p.hx = p.hy = 0;
     /*
     char debug_str2[1000] = {0};
     sprintf (debug_str2, "%s", p.direction.c_str());
@@ -2751,6 +2817,27 @@ CMapEngine::GetPersonSpeedY(const char* name, double& y)
     }
 
     y = m_Persons[person].speed_y;
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+CMapEngine::GetPersonVectorXY(const char* name, bool historical, int& x, int& y)
+{
+    int person = -1;
+    if ( IsInvalidPersonError(name, person) )
+    {
+        return false;
+    }
+
+	if(historical){
+        x = m_Persons[person].hx;
+        y = m_Persons[person].hy;
+    }else{
+        x = m_Persons[person].dx;
+        y = m_Persons[person].dy;
+    }
     return true;
 }
 
@@ -4664,6 +4751,10 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
     activated = false;
 	p->obs_person = -1;
 
+    // Reset Lithonite directional vectors
+	p->dx = 0;
+    p->dy = 0;
+
 	// if this person has a leader, skip it
     if (p->leader != -1)
     {
@@ -4782,15 +4873,19 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
             break;
         case COMMAND_MOVE_NORTH:
             p->y -= p->speed_y;
+            p->dy = -1;
             break;
         case COMMAND_MOVE_EAST:
             p->x += p->speed_x;
+            p->dx = 1;
             break;
         case COMMAND_MOVE_SOUTH:
             p->y += p->speed_y;
+            p->dy = 1;
             break;
         case COMMAND_MOVE_WEST:
             p->x -= p->speed_x;
+            p->dx = -1;
             break;
         case COMMAND_DO_SCRIPT:
             {
@@ -4817,6 +4912,11 @@ CMapEngine::UpdatePerson(int person_index, bool& activated)
                 break;
             }
         }
+
+		if(p->dx || p->dy){
+			p->hx = p->dx; 
+			p->hy = p->dy;
+		}
 
         // todo: this sucks, fix me
         // confine the input person within the map if the map is repeating
@@ -5299,12 +5399,8 @@ CMapEngine::IsPersonInsideZone(int person_index, int zone_index)
     if (person_index < 0 || person_index >= int(m_Persons.size()))
         return false;
 
-    // convenience
-    int location_x = int(m_Persons[person_index].x);
-    int location_y = int(m_Persons[person_index].y);
-    int location_l = m_Persons[person_index].layer;
-
-    return IsPointWithinZone(location_x, location_y, location_l, zone_index);
+    Person& p = m_Persons[person_index];
+	return IsPointWithinZone(p.x, p.y, p.layer, zone_index);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6008,18 +6104,17 @@ CMapEngine::GetTalkingPerson(const char* person_name, int talk_x, int talk_y, st
 int
 CMapEngine::FindTalkingPerson(int person_index, int talk_x, int talk_y)
 {
-    int tad = m_TalkActivationDistance;
     const char* direction =  m_Persons[person_index].direction.c_str();
 
-    // God this was slow...
+    // God this was slow... (successfully gets 'northwest' )
     if (strstr(direction, "north"))
-        talk_y -= tad;
+        talk_y -= m_TalkActivationDistance;
     if (strstr(direction, "east"))
-        talk_x += tad;
+        talk_x += m_TalkActivationDistance;
     if (strstr(direction, "south"))
-        talk_y += tad;
+        talk_y += m_TalkActivationDistance;
     if (strstr(direction, "west"))
-        talk_x -= tad;
+        talk_x -= m_TalkActivationDistance;
 
     // does a person obstructs that spot
     int obs_person;
@@ -6195,14 +6290,14 @@ CMapEngine::SaveMap(const char* filename)
 */
 
 bool
-CMapEngine::nameBgm(std::string& result)
+CMapEngine::BgmName(std::string& result)
 {
     result = m_LastMusicPath;
     return true;
 }
 
 int
-CMapEngine::validBgm()
+CMapEngine::BgmValid()
 {
     if (m_Music)
     {
@@ -6219,7 +6314,7 @@ CMapEngine::validBgm()
 }
 
 void
-CMapEngine::playBgm()
+CMapEngine::BgmPlay()
 {
     if (m_Music)
     {
@@ -6235,7 +6330,7 @@ CMapEngine::playBgm()
 }
 
 void
-CMapEngine::stopBgm()
+CMapEngine::BgmStop()
 {
     if (m_Music)
     {
@@ -6251,7 +6346,7 @@ CMapEngine::stopBgm()
 }
 
 bool
-CMapEngine::isPlayingBgm()
+CMapEngine::BgmIsPlaying()
 {
     if (m_Music)
     {
@@ -6268,7 +6363,7 @@ CMapEngine::isPlayingBgm()
 }
 
 void
-CMapEngine::resetBgm()
+CMapEngine::BgmReset()
 {
     if (m_Music)
     {
@@ -6277,7 +6372,7 @@ CMapEngine::resetBgm()
 }
 
 void
-CMapEngine::setRepeatBgm(bool repeat)
+CMapEngine::BgmSetRepeat(bool repeat)
 {
     if (m_Music)
     {
@@ -6293,7 +6388,7 @@ CMapEngine::setRepeatBgm(bool repeat)
 }
 
 bool
-CMapEngine::getRepeatBgm()
+CMapEngine::BgmGetRepeat()
 {
     if (m_Music)
     {
@@ -6310,7 +6405,7 @@ CMapEngine::getRepeatBgm()
 }
 
 void
-CMapEngine::setVolumeBgm(float volume)
+CMapEngine::BgmSetVolume(float volume)
 {
     if (m_Music)
     {
@@ -6319,7 +6414,7 @@ CMapEngine::setVolumeBgm(float volume)
 }
 
 float
-CMapEngine::getVolumeBgm()
+CMapEngine::BgmGetVolume()
 {
     if (m_Music)
     {
@@ -6329,7 +6424,7 @@ CMapEngine::getVolumeBgm()
 }
 
 void
-CMapEngine::setPanBgm(float pan)
+CMapEngine::BgmSetPan(float pan)
 {
     if (m_Music)
     {
@@ -6338,7 +6433,7 @@ CMapEngine::setPanBgm(float pan)
 }
 
 float
-CMapEngine::getPanBgm()
+CMapEngine::BgmGetPan()
 {
     if (m_Music)
     {
@@ -6348,7 +6443,7 @@ CMapEngine::getPanBgm()
 }
 
 void
-CMapEngine::setPitchShiftBgm(float shift)
+CMapEngine::BgmSetPitchShift(float shift)
 {
     if (m_Music)
     {
@@ -6357,7 +6452,7 @@ CMapEngine::setPitchShiftBgm(float shift)
 }
 
 float
-CMapEngine::getPitchShiftBgm()
+CMapEngine::BgmGetPitchShift()
 {
     if (m_Music)
     {
@@ -6367,7 +6462,7 @@ CMapEngine::getPitchShiftBgm()
 }
 
 bool
-CMapEngine::isSeekableBgm()
+CMapEngine::BgmIsSeekable()
 {
     if (m_Music)
     {
@@ -6377,7 +6472,7 @@ CMapEngine::isSeekableBgm()
 }
 
 int
-CMapEngine::getLengthBgm()
+CMapEngine::BgmGetLength()
 {
     if (m_Music)
     {
@@ -6395,7 +6490,7 @@ CMapEngine::getLengthBgm()
 
 
 void
-CMapEngine::setPositionBgm(int position)
+CMapEngine::BgmSetPosition(int position)
 {
     if (m_Music)
     {
@@ -6411,7 +6506,7 @@ CMapEngine::setPositionBgm(int position)
 }
 
 int
-CMapEngine::getPositionBgm()
+CMapEngine::BgmGetPosition()
 {
     if (m_Music)
     {

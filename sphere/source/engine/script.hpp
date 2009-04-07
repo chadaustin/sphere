@@ -27,6 +27,8 @@
 #include "../particle_engine/ParticleSystemParent.hpp"
 #include "../particle_engine/ParticleSystemChild.hpp"
 
+//#include "../pmask/pmask.h"
+//#include "../pmask/collist.h"
 
 
 // EVIL EVIL export!
@@ -328,6 +330,7 @@ private:
   declare_method(ssSfxrReset);
   declare_method(ssSfxrCalcSampleSize);
   declare_method(ssSfxrClone);
+  declare_method(ssSfxrToJSON);
 
  // fonts
   declare_constructor2(CreateFontObject, SFONT* font, bool destroy);

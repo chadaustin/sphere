@@ -652,11 +652,11 @@ CScript::InitializeSphereConstants()
                       { "SE_SINGLE",   audiere::SINGLE },
                       { "SE_MULTIPLE", audiere::MULTIPLE },
 
-    				  // sfxr wave type constants
-    				  { "SQUAREWAVE",  sSfxr::SQUAREWAVE },
-    				  { "SAWTOOTH",    sSfxr::SAWTOOTH },
-    				  { "SINEWAVE",    sSfxr::SINEWAVE },
-    				  { "NOISE",       sSfxr::NOISE },
+                      // sfxr wave type constants
+                      { "SQUAREWAVE",  sSfxr::SQUAREWAVE },
+                      { "SAWTOOTH",    sSfxr::SAWTOOTH },
+                      { "SINEWAVE",    sSfxr::SINEWAVE },
+                      { "NOISE",       sSfxr::NOISE },
 
                       // windowstyle constants
                       { "EDGE_LEFT", sWindowStyle::LEFT },
@@ -1082,7 +1082,7 @@ inline SS_BYTEARRAY* argByteArray(JSContext* cx, jsval arg)
 {
     if (!JSVAL_IS_OBJECTNOTNULL(arg))
     {
-    	JS_ReportError(cx, "Invalid byte_array object");
+        JS_ReportError(cx, "Invalid byte_array object");
         return NULL;
     }
 
@@ -1192,8 +1192,13 @@ inline SS_FONT* argFont(JSContext* cx, jsval arg)
 sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 {
 
-    JSObject* obj = JSVAL_TO_OBJECT(arg);
     if ( !argObject(cx, arg) )
+    {
+        JS_ReportError(cx, "Invalid object.");
+        return NULL;
+    }
+    JSObject* obj = JSVAL_TO_OBJECT(arg);
+    if (!obj || !JS_AddRoot(cx, &obj))
     {
         JS_ReportError(cx, "Invalid object.");
         return NULL;
@@ -1202,6 +1207,7 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     jsval images_array;
     if ( JS_GetProperty(cx, obj, "images", &images_array) == JS_FALSE )
     {
+        JS_RemoveRoot(cx, &obj);
         JS_ReportError(cx, "spriteset.images array property doesn't appear to exist.");
         return NULL;
     }
@@ -1211,6 +1217,8 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     jsval base_obstruction_val;
     if ( JS_GetProperty(cx, obj, "base", &base_obstruction_val) == JS_FALSE )
     {
+        JS_RemoveRoot(cx, &obj);
+        JS_RemoveRoot(cx, &images_array);
         JS_ReportError(cx, "spriteset.base object property doesn't appear to exist.");
         return NULL;
     }
@@ -1220,7 +1228,9 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     JSObject* base_obstruction_object = argObject(cx, base_obstruction_val);
     if (base_obstruction_object == NULL)
     {
-
+        JS_RemoveRoot(cx, &obj);
+        JS_RemoveRoot(cx, &images_array);
+        JS_RemoveRoot(cx, &base_obstruction_val);
         JS_ReportError(cx, "spriteset.base object is not a valid object.");
         return NULL;
     }
@@ -1244,18 +1254,30 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 
     if (images_object == NULL)
     {
+        JS_RemoveRoot(cx, &obj);
+        JS_RemoveRoot(cx, &images_array);
+        JS_RemoveRoot(cx, &base_obstruction_val);
+        JS_RemoveRoot(cx, &base_obstruction_object);
         JS_ReportError(cx, "Invalid spriteset.images array.");
         return NULL;
     }
 
     if ( JS_GetArrayLength(cx, images_object, &num_images) == JS_FALSE )
     {
+        JS_RemoveRoot(cx, &obj);
+        JS_RemoveRoot(cx, &images_array);
+        JS_RemoveRoot(cx, &base_obstruction_val);
+        JS_RemoveRoot(cx, &base_obstruction_object);
         JS_ReportError(cx, "Invalid spriteset.images array length.");
         return NULL;
     }
 
     if (num_images <= 0)
     {
+        JS_RemoveRoot(cx, &obj);
+        JS_RemoveRoot(cx, &images_array);
+        JS_RemoveRoot(cx, &base_obstruction_val);
+        JS_RemoveRoot(cx, &base_obstruction_object);
         JS_ReportError(cx, "Invalid spriteset.images length");
         return NULL;
     }
@@ -1263,17 +1285,27 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     CImage32* images = new CImage32[num_images];
     if (images == NULL)
     {
+        JS_RemoveRoot(cx, &obj);
+        JS_RemoveRoot(cx, &images_array);
+        JS_RemoveRoot(cx, &base_obstruction_val);
+        JS_RemoveRoot(cx, &base_obstruction_object);
         JS_ReportError(cx, "Cannot allocate space for spriteset.images (%d)", num_images);
         return NULL;
     }
 
     unsigned int i;
+    int frame_width = 0;
+    int frame_height = 0;
 
     for (i = 0; i < num_images; i++)
     {
         jsval image;
         if ( JS_GetElement(cx, images_object, i, &image) == JS_FALSE )
         {
+            JS_RemoveRoot(cx, &obj);
+            JS_RemoveRoot(cx, &images_array);
+            JS_RemoveRoot(cx, &base_obstruction_val);
+            JS_RemoveRoot(cx, &base_obstruction_object);
             JS_ReportError(cx, "Invalid image %d", i);
             return NULL;
         }
@@ -1282,6 +1314,10 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
             SS_IMAGE* ss_image = argImage(cx, image);
             if (ss_image == NULL)
             {
+                JS_RemoveRoot(cx, &obj);
+                JS_RemoveRoot(cx, &images_array);
+                JS_RemoveRoot(cx, &base_obstruction_val);
+                JS_RemoveRoot(cx, &base_obstruction_object);
                 JS_ReportError(cx, "Invalid image: spriteset.images[%d]", i);
                 delete[] images;
                 return NULL;
@@ -1292,14 +1328,22 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 
             if (width <= 0)
             {
-                JS_ReportError(cx, "Invalid image width %d %d", width, i);
+                JS_RemoveRoot(cx, &obj);
+                JS_RemoveRoot(cx, &images_array);
+                JS_RemoveRoot(cx, &base_obstruction_val);
+                JS_RemoveRoot(cx, &base_obstruction_object);
+                JS_ReportError(cx, "Invalid image width %d at index:%d", width, i);
                 delete[] images;
                 return NULL;
             }
 
             if (height <= 0)
             {
-                JS_ReportError(cx, "Invalid image height %d %d", height, i);
+                JS_RemoveRoot(cx, &obj);
+                JS_RemoveRoot(cx, &images_array);
+                JS_RemoveRoot(cx, &base_obstruction_val);
+                JS_RemoveRoot(cx, &base_obstruction_object);
+                JS_ReportError(cx, "Invalid image height %d at index:%d", height, i);
                 delete[] images;
                 return NULL;
             }
@@ -1308,6 +1352,10 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
             if (!pixels)
             {
 
+                JS_RemoveRoot(cx, &obj);
+                JS_RemoveRoot(cx, &images_array);
+                JS_RemoveRoot(cx, &base_obstruction_val);
+                JS_RemoveRoot(cx, &base_obstruction_object);
                 JS_ReportError(cx, "LockImage failed");
                 delete[] images;
                 return NULL;
@@ -1316,65 +1364,82 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
             UnlockImage(ss_image->image, false);
             if (images[i].GetWidth() != width || images[i].GetHeight() != height)
             {
-
+                JS_RemoveRoot(cx, &obj);
+                JS_RemoveRoot(cx, &images_array);
+                JS_RemoveRoot(cx, &base_obstruction_val);
+                JS_RemoveRoot(cx, &base_obstruction_object);
                 JS_ReportError(cx, "Temporary image allocation failed");
                 delete[] images;
                 return NULL;
             }
-        }
-    }
 
-    int frame_width = 0;
-    int frame_height = 0;
+            if (i == 0)
+            {
+                frame_width  = images[i].GetWidth();
+                frame_height = images[i].GetHeight();
+            }
 
-    for (i = 0; i < num_images; i++)
-    {
+            if (frame_width != images[i].GetWidth() || frame_width <= 0)
+            {
+                JS_RemoveRoot(cx, &obj);
+                JS_RemoveRoot(cx, &images_array);
+                JS_RemoveRoot(cx, &base_obstruction_val);
+                JS_RemoveRoot(cx, &base_obstruction_object);
+                JS_ReportError(cx, "Invalid frame width %d %d %d", i, frame_width, images[i].GetWidth());
+                delete[] images;
+                return NULL;
+            }
 
-        if (i == 0)
-        {
-            frame_width  = images[i].GetWidth();
-            frame_height = images[i].GetHeight();
-        }
+            if (frame_height != images[i].GetHeight() || frame_height <= 0)
+            {
+                JS_RemoveRoot(cx, &obj);
+                JS_RemoveRoot(cx, &images_array);
+                JS_RemoveRoot(cx, &base_obstruction_val);
+                JS_RemoveRoot(cx, &base_obstruction_object);
+                JS_ReportError(cx, "Invalid frame height %d %d %d", i, frame_height, images[i].GetHeight());
+                delete[] images;
+                return NULL;
+            }
 
-        if (frame_width != images[i].GetWidth() || frame_width <= 0)
-        {
-            JS_ReportError(cx, "Invalid frame width %d %d %d", i, frame_width, images[i].GetWidth());
-            delete[] images;
-            return NULL;
-        }
-
-        if (frame_height != images[i].GetHeight() || frame_height <= 0)
-        {
-            JS_ReportError(cx, "Invalid frame height %d %d %d", i, frame_height, images[i].GetHeight());
-            delete[] images;
-            return NULL;
         }
     }
 
     if (!JSVAL_IS_INT(x1_val))
     {
-
+        JS_RemoveRoot(cx, &obj);
+        JS_RemoveRoot(cx, &images_array);
+        JS_RemoveRoot(cx, &base_obstruction_val);
+        JS_RemoveRoot(cx, &base_obstruction_object);
         JS_ReportError(cx, "spriteset.base.x1 is invalid");
         delete[] images;
         return NULL;
     }
     if (!JSVAL_IS_INT(y1_val))
     {
-
+        JS_RemoveRoot(cx, &obj);
+        JS_RemoveRoot(cx, &images_array);
+        JS_RemoveRoot(cx, &base_obstruction_val);
+        JS_RemoveRoot(cx, &base_obstruction_object);
         JS_ReportError(cx, "spriteset.base.y1 is invalid");
         delete[] images;
         return NULL;
     }
     if (!JSVAL_IS_INT(x2_val))
     {
-
+        JS_RemoveRoot(cx, &obj);
+        JS_RemoveRoot(cx, &images_array);
+        JS_RemoveRoot(cx, &base_obstruction_val);
+        JS_RemoveRoot(cx, &base_obstruction_object);
         JS_ReportError(cx, "spriteset.base.x2 is invalid");
         delete[] images;
         return NULL;
     }
     if (!JSVAL_IS_INT(y2_val))
     {
-
+        JS_RemoveRoot(cx, &obj);
+        JS_RemoveRoot(cx, &images_array);
+        JS_RemoveRoot(cx, &base_obstruction_val);
+        JS_RemoveRoot(cx, &base_obstruction_object);
         JS_ReportError(cx, "spriteset.base.y2 is invalid");
         delete[] images;
         return NULL;
@@ -1387,23 +1452,36 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     jsval directions_array;
     if ( !JS_GetProperty(cx, obj, "directions", &directions_array) )
     {
+        JS_RemoveRoot(cx, &obj);
+        JS_RemoveRoot(cx, &images_array);
+        JS_RemoveRoot(cx, &base_obstruction_val);
+        JS_RemoveRoot(cx, &base_obstruction_object);
         JS_ReportError(cx, "spriteset.directions array property doesn't appear to exist.");
         delete[] images;
         return NULL;
     }
 
-    jsuint num_directions = 0;
+    
     JSObject* directions_object = argArray(cx, directions_array);
-
-    if (directions_object == NULL)
+    if (!directions_object || !JS_AddRoot(cx, &directions_object))
     {
-
+        JS_RemoveRoot(cx, &obj);
+        JS_RemoveRoot(cx, &images_array);
+        JS_RemoveRoot(cx, &base_obstruction_val);
+        JS_RemoveRoot(cx, &base_obstruction_object);
         JS_ReportError(cx, "Invalid spriteset.directions array.");
         delete[] images;
         return NULL;
     }
+
+    jsuint num_directions = 0;
     if ( JS_GetArrayLength(cx, directions_object, &num_directions) == JS_FALSE )
     {
+        JS_RemoveRoot(cx, &obj);
+        JS_RemoveRoot(cx, &images_array);
+        JS_RemoveRoot(cx, &base_obstruction_val);
+        JS_RemoveRoot(cx, &base_obstruction_object);
+        JS_RemoveRoot(cx, &directions_object);
         JS_ReportError(cx, "Invalid spriteset.directions array length.");
         delete[] images;
         return NULL;
@@ -1411,6 +1489,11 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 
     if (num_directions <= 0)
     {
+        JS_RemoveRoot(cx, &obj);
+        JS_RemoveRoot(cx, &images_array);
+        JS_RemoveRoot(cx, &base_obstruction_val);
+        JS_RemoveRoot(cx, &base_obstruction_object);
+        JS_RemoveRoot(cx, &directions_object);
         JS_ReportError(cx, "Invalid spriteset.directions length");
         delete[] images;
         return NULL;
@@ -1419,6 +1502,11 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     sSpriteset* s = new sSpriteset();
     if (s == NULL)
     {
+        JS_RemoveRoot(cx, &obj);
+        JS_RemoveRoot(cx, &images_array);
+        JS_RemoveRoot(cx, &base_obstruction_val);
+        JS_RemoveRoot(cx, &base_obstruction_object);
+        JS_RemoveRoot(cx, &directions_object);
         JS_ReportError(cx, "Unable to allocate memory for spriteset");
         delete[] images;
         return NULL;
@@ -1579,6 +1667,57 @@ end_func()
 begin_func(GetVersionString, 0)
 return_str(SPHERE_VERSION);
 end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+// section: configuration //
+/**
+    - Get some global configuration options.
+      Parameter 'select' can be one of these: 0: language, 1: sound, 2: networking, 3: platform
+      return values for language:
+        0: default
+        1: English
+        2: German
+        3: French
+        4: Dutch
+        5: Japanese
+        6: Chinese_simplified
+        7: Russian
+        8: Spanish
+        9: Indonesian
+
+      return values for sound:
+        0: Sound Auto
+        1: Sound On
+        2: Sound Off
+
+      return values for networking:
+        0: No networking allowed
+        1: Networking is allowed
+
+      return values for platform:
+        0: Mac
+        1: Win32
+        2: Linux
+    @see GetPlayerKey for keyboard player configuration
+*/
+begin_func(GetGlobalConfiguration, 1)
+arg_int(item);
+if (item>=3)
+{
+#if defined(MAC)
+return_int(0);
+#elif defined(WIN32)
+return_int(1);
+#elif defined(unix)
+return_int(2);
+#else
+return_int(-1);
+#endif
+}
+else
+return_int(GetGlobalConfig(item));
+end_func()
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // section: script functions //
@@ -1811,35 +1950,36 @@ static JSClass clasp =
 
 int array_size = games.size();
 jsval* array = new jsval[array_size];
+*rval = *array; // temporally root it to the return value...
+
 for (int i = 0; i < array_size; i++)
 {
     JSObject* element = JS_NewObject(cx, &clasp, NULL, NULL);
-    array[i] = OBJECT_TO_JSVAL(element);
-
-    jsval name_val = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, games[i].name.c_str()));
-    jsval dir_val  = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, games[i].directory.c_str()));
-    jsval auth_val = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, games[i].author.c_str()));
-    jsval desc_val = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, games[i].description.c_str()));
+    array[i] = OBJECT_TO_JSVAL(element); // adding the object as property to a rooted jsval
 
     // define the 'name' property
+    jsval name_val = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, games[i].name.c_str()));
     JS_DefineProperty(
         cx, element, "name", name_val,
         JS_PropertyStub, JS_PropertyStub,
         JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
 
     // define the 'directory' property
+    jsval dir_val  = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, games[i].directory.c_str()));
     JS_DefineProperty(
         cx, element, "directory", dir_val,
         JS_PropertyStub, JS_PropertyStub,
         JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
 
     // define the 'author' property
+    jsval auth_val = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, games[i].author.c_str()));
     JS_DefineProperty(
         cx, element, "author", auth_val,
         JS_PropertyStub, JS_PropertyStub,
         JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
 
     // define the 'description' property
+    jsval desc_val = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, games[i].description.c_str()));
     JS_DefineProperty(
         cx, element, "description", desc_val,
         JS_PropertyStub, JS_PropertyStub,
@@ -1848,8 +1988,8 @@ for (int i = 0; i < array_size; i++)
 
 // create the array
 JSObject* object = JS_NewArrayObject(cx, array_size, array);
-delete[] array;
 return_object(object);
+delete[] array;
 
 end_func()
 ////////////////////////////////////////////////////////////////////////////////
@@ -1934,6 +2074,7 @@ end_func()
 */
 begin_func(FlipScreen, 0)
 
+// Framerate disabled, FlipScreen as fast as possible
 if (This->m_FrameRate == 0)
 {
 
@@ -2006,6 +2147,8 @@ static JSClass base_clasp =
     };
 
 JSObject* clip_obj = JS_NewObject(cx, &base_clasp, NULL, NULL);
+*rval = OBJECT_TO_JSVAL(clip_obj); // if (!clip_obj || !JS_AddRoot(cx, &clip_obj)) return NULL;
+
 int x, y, w, h;
 GetClippingRectangle(&x, &y, &w, &h);
 
@@ -2080,7 +2223,7 @@ if (argc >= 1)
     calculate = argBool(cx, argv[0]);
     if (calculate)
     {
-
+        // TODO
     }
 }
 return_int(frame_rate);
@@ -2142,11 +2285,8 @@ inline VECTOR_INT* getObjCoordinates(JSContext* cx, jsval arg)
 
     JSObject* object;
 
-    if (JS_ValueToObject(cx, arg, &object) == JS_FALSE)
-    {
+    if (!JS_ValueToObject(cx, arg, &object) || !object || !JS_AddRoot(cx, &object))
         return NULL;
-    }
-    // TODO: ROOT THE OBJECT, then JS_RemoveRoot(cx, &object);
 
     VECTOR_INT* point = new VECTOR_INT;
 
@@ -2167,7 +2307,7 @@ inline VECTOR_INT* getObjCoordinates(JSContext* cx, jsval arg)
         return NULL;
     }
     point->y = argInt(cx, arg);
-
+    JS_RemoveRoot(cx, &object);
     return point;
 }
 
@@ -2212,7 +2352,7 @@ if (This->ShouldRender())
 
     for (unsigned int i = 0; i < length; i++)
     {
-        JS_GetElement(cx, arr, i, vp);
+        JS_GetElement(cx, arr, i, vp); // not sure if we need rooting, getObjCoordinates at least roots argv
 
         points[i] = getObjCoordinates(cx, v);
 
@@ -2429,11 +2569,19 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 /**
     - Determines if two polygons are colliding
-      http://www.visibone.com/inpoly/inpoly.c.txt
 */
 begin_func(PolygonCollision, 2)
     arg_array(arrA);
     arg_array(arrB);
+	int offsetAx = 0;
+	int offsetAy = 0;
+	int offsetBx = 0;
+	int offsetBy = 0;
+    if (argc > 2) offsetAx = argInt(cx, argv[2]);
+	if (argc > 3) offsetAy = argInt(cx, argv[3]);
+	if (argc > 4) offsetBx = argInt(cx, argv[4]);
+	if (argc > 5) offsetBy = argInt(cx, argv[5]);
+
     jsval  v;
     jsval* vp = &v;
     jsuint lengthA;
@@ -2461,6 +2609,8 @@ begin_func(PolygonCollision, 2)
     {
         JS_GetElement(cx, arrA, i, vp);
         pointsA[i] = getObjCoordinates(cx, v);
+        pointsA[i]->x += offsetAx;
+        pointsA[i]->y += offsetAy;
 
         if (pointsA[i] == NULL)
         {
@@ -2476,6 +2626,8 @@ begin_func(PolygonCollision, 2)
     {
         JS_GetElement(cx, arrB, i, vp);
         pointsB[i] = getObjCoordinates(cx, v);
+        pointsB[i]->x += offsetBx;
+        pointsB[i]->y += offsetBy;
 
         if (pointsB[i] == NULL)
         {
@@ -2488,6 +2640,7 @@ begin_func(PolygonCollision, 2)
         }
     }
 
+    // Code from: http://www.visibone.com/inpoly/inpoly.c.txt
     bool isinside = false;
     int inside = 0;
     int xold = 0;
@@ -2503,7 +2656,7 @@ begin_func(PolygonCollision, 2)
     for (unsigned int iA = 0; iA<lengthA; ++iA){
         xold = pointsB[lengthB-1]->x;
         yold = pointsB[lengthB-1]->y;
-        for (int i=0 ; i < lengthB ; i++) {
+        for (unsigned int i=0 ; i < lengthB ; i++) {
             xnew = (int)pointsB[i]->x;
             ynew = (int)pointsB[i]->y;
             if (xnew > xold) {
@@ -2537,7 +2690,7 @@ begin_func(PolygonCollision, 2)
     for (unsigned int iB = 0; iB<lengthB; ++iB){
         xold = pointsA[lengthA-1]->x;
         yold = pointsA[lengthA-1]->y;
-        for (int i=0 ; i < lengthA ; i++) {
+        for (unsigned int i=0 ; i < lengthA ; i++) {
             xnew = (int)pointsA[i]->x;
             ynew = (int)pointsA[i]->y;
             if (xnew > xold) {
@@ -3041,16 +3194,6 @@ switch (key)
 
 end_func()
 
-////////////////////////////////////////////////////////////////////////////////
-/**
-    - Get some global configuration options.
-      0: language, 1: sound, 2: allow networking
-*/
-begin_func(GetGlobalConfiguration, 1)
-arg_int(key);
-return_int(GetGlobalConfig(key));
-end_func()
-
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
@@ -3177,7 +3320,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 // section: particle engine //
 /**
-    - returns a new particle system parent
+    - returns a new particle system parent object
 */
 begin_func(CreateParticleSystemParent, 0)
 ParticleSystemParent* system = new ParticleSystemParent;
@@ -3190,7 +3333,7 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-    - returns a new particle system child
+    - returns a new particle system child object
 */
 begin_func(CreateParticleSystemChild, 1)
 arg_int(size);
@@ -4353,6 +4496,22 @@ if ( !This->m_Engine->GetMapEngine()->SetZoneLayer(zone, layer) )
     return JS_FALSE;
 }
 end_func()
+///////////////////////////////////////////////////////////////////////////////
+/**
+    - sets the dimensions of zone 'zone'
+*/
+begin_func(SetZoneDimensions, 5)
+arg_int(zone);
+arg_int(x);
+arg_int(y);
+arg_int(width);
+arg_int(height);
+if ( !This->m_Engine->GetMapEngine()->SetZoneDimensions(zone, x, y, x+width, y+height) )
+{
+    This->ReportMapEngineError("SetZoneDimensions() failed");
+    return JS_FALSE;
+}
+end_func()
 ////////////////////////////////////////////////////////////////////////////////
 // section: obstruction segments functions //
 /**
@@ -4829,6 +4988,8 @@ if (!This->m_Engine->GetMapEngine()->GetPersonList(names))
 
 // create an array of JS strings with which to initialize the array
 jsval* valarray = new jsval[names.size()];
+*rval = *valarray; // root this js array, as it can be garbagecollected...
+
 for (unsigned int i = 0; i < names.size(); i++)
 {
     valarray[i] = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, names[i].c_str()));
@@ -4844,8 +5005,8 @@ if (array == NULL)
 }
 
 // delete our temporary jsval array and return the JS array
+return_object(array); // valarray now automatically unrooted.
 delete[] valarray;
-return_object(array);
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5200,6 +5361,7 @@ if (!This->m_Engine->GetMapEngine()->GetPersonIgnoreList(name, ignore_list))
 }
 // create an array of JS strings with which to initialize the array
 jsval* valarray = new jsval[ignore_list.size()];
+*rval = *valarray;
 for (unsigned int i = 0; i < ignore_list.size(); i++)
 {
 
@@ -5215,8 +5377,8 @@ if (array == NULL)
     return JS_FALSE;
 }
 // delete our temporary jsval array and return the JS array
-delete[] valarray;
 return_object(array);
+delete[] valarray;
 end_func()
 ////////////////////////////////////////////////////////////////////////////////
 /**
@@ -5237,7 +5399,7 @@ for (unsigned int i = 0; i < length; i++)
     jsval val;
     if (JS_LookupElement(cx, array, i, &val))
     {
-
+// not sure if we need to protect val from GB?
         if (JSVAL_IS_STRING(val))
         {
 
@@ -5480,6 +5642,43 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
+    - gets the unitarian directional vector as a single number: x+(y<<2)
+      The directional vector is 0 when the person is not moving, use 
+      historical to retrieve the previous value
+      Convert Vector to direction:
+      function V2D(v){
+        switch(v){
+            case -5: return 'northwest'; break;
+            case -4: return 'north'; break;
+            case -3: return 'northeast'; break;
+            case -1: return 'west'; break;
+            case 1: return 'east'; break;
+            case 3: return 'southwest'; break;
+            case 4: return 'south'; break;
+            case 5: return 'southeast'; break;
+            default: return '';
+        }
+      }      
+      Convert Vector to coordinates:    
+      function V2C(v){var y=(1+v>>2)&-1;return {x:v-(y<<2),y:y};}
+*/
+begin_func(GetPersonVector, 2)
+arg_str(name);
+arg_bool(historical)
+
+int x;
+int y;
+if (!This->m_Engine->GetMapEngine()->GetPersonVectorXY(name,historical, x, y))
+{
+    This->ReportMapEngineError("GetPersonVectorXY() failed");
+    return JS_FALSE;
+}
+
+return_int(x+(y<<2));
+end_func()
+
+////////////////////////////////////////////////////////////////////////////////
+/**
     - rescales the sprite to a certain scale specified by scale_w and scale_h.
       Scaling is determined by floating point numbers like, 1.5 would scale
       the person to 1.5 times its normal size based on his original sprite
@@ -5526,9 +5725,12 @@ end_func()
       width - the width of the spriteset's current frame
       height - the height of the spriteset's current frame
       leader - the person that this person is following, or "" if no-one...
+      destroy_with_map - if the person is destroyed with the map or not
+      obs_person - obstructed person index (-1 if not obstructed) 
       Any other properties are free for you to fill with values
       e.g. var data = GetPersonData("Jimmy");
       var num_frames = data["num_frames"];
+      note: Objects can not be stored, only numbers, booleans and strings.
 */
 begin_func(GetPersonData, 1)
 arg_str(name);
@@ -5549,9 +5751,8 @@ static JSClass clasp =
     };
 // create object
 JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
-if (object == NULL)
+if (!object || !JS_AddRoot(cx, &object))
 {
-
     return_object(JSVAL_NULL);
 }
 for (int i = 0; i < int(data.size()); i++)
@@ -5582,6 +5783,7 @@ for (int i = 0; i < int(data.size()); i++)
     }
 }
 return_object(object);
+JS_RemoveRoot(cx, &object);
 end_func()
 ////////////////////////////////////////////////////////////////////////////////
 static void
@@ -5621,20 +5823,23 @@ ParsePersonData(JSContext* cx, jsval val, std::string& string_value, double& dou
 }
 ////////////////////////////////////////////////////////////////////////////////
 /**
-    - sets the 'data' object assiocated with the person 'name'
+    - sets the 'data' object associated with the person 'name'
       e.g.
       var data = GetPersonData("Jimmy");
       data["talked_to_jimmy"] = true;
       SetPersonData("Jimmy", data);
+      note: Objects can not be stored, only numbers, booleans and strings.
 */
 begin_func(SetPersonData, 2)
 arg_str(name);
 arg_object(data_object);
 std::vector<struct PersonData> person_data;
 JSIdArray* ids = JS_Enumerate(cx, data_object);
-if (!ids)
+
+if (!ids || !JS_AddRoot(cx, &ids))
     return JS_FALSE;
-for (jsint i = 0; i < ids->length; i++)
+
+for (jsint i = ids->length -1; i>=0; --i)
 {
 
     jsval val;
@@ -5650,31 +5855,9 @@ for (jsint i = 0; i < ids->length; i++)
         person_data.push_back(data);
     }
 }
+JS_RemoveRoot(cx, &ids);
 JS_DestroyIdArray(cx, ids);
-if (0)
-{
 
-    std::string str = "";
-    for (int i = 0; i < int(person_data.size()); i++)
-    {
-
-        str += person_data[i].name;
-        str += "='";
-        if (person_data[i].type == 1)
-        {
-
-            str += "<number>"; // itos(person_data[i].double_value);
-        }
-        else
-        {
-
-            str += person_data[i].string_value;
-        }
-        str += "'\n";
-    }
-    This->ReportMapEngineError(str.c_str());
-    return JS_FALSE;
-}
 if (!This->m_Engine->GetMapEngine()->SetPersonData(name, person_data))
 {
 
@@ -5684,17 +5867,17 @@ if (!This->m_Engine->GetMapEngine()->SetPersonData(name, person_data))
 end_func()
 ////////////////////////////////////////////////////////////////////////////////
 /**
-    - get a person value...
+    - get a single person value. Example: GetPersonValue("Jimmy", "num_frames");
+    @see  GetPersonData
 */
 begin_func(GetPersonValue, 2)
 arg_str(name);
 arg_str(key);
 std::string string_value;
-jsdouble double_value;
+double double_value;
 int type = -1;
 if (!This->m_Engine->GetMapEngine()->GetPersonValue(name, key, string_value, double_value, type))
 {
-
     This->ReportMapEngineError("GetPersonValue() failed");
     return JS_FALSE;
 }
@@ -5716,18 +5899,18 @@ default:
 end_func()
 ////////////////////////////////////////////////////////////////////////////////
 /**
-    - set a person value...
+    - set a person value. You can set boolean, numeric and string values
+      SetPersonValue("Jimmy", "talked_to_jimmy", true);
 */
 begin_func(SetPersonValue, 3)
 arg_str(name);
 arg_str(key);
 std::string string_value;
-jsdouble double_value;
+double double_value;
 int type = -1;
 ParsePersonData(cx, argv[2], string_value, double_value, type);
 if (!This->m_Engine->GetMapEngine()->SetPersonValue(name, key, string_value, double_value, type))
 {
-
     This->ReportMapEngineError("SetPersonValue() failed");
     return JS_FALSE;
 }
@@ -5735,6 +5918,14 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 /**
     - returns the person's spriteset.
+      Although you can't add/delete directions, or add/delete frames you can change
+      all properties. You can create a new spriteset using @see CreateSpriteset
+      ss.images[] - An array of images
+      ss.base.x1, ss.base.y1, ss.base.x2, ss.base.y2 - The _real_ obstruction base
+      ss.directions[0].name - the name of direction 0
+      ss.directions[0].frames[0].index  - the index to images for the first frame
+      ss.directions[0].frames[0].delay - the delay showing that frame
+    @see CreateSpriteset
 */
 begin_func(GetPersonSpriteset, 1)
 arg_str(name);
@@ -5761,8 +5952,7 @@ arg_spriteset(spriteset);
 
 if (spriteset->GetFrameHeight() == 0)
 {
-
-    JS_ReportError(cx, "Could not find person '%s'", name);
+    JS_ReportError(cx, "Invalid spriteset for person '%s'", name);
     return JS_FALSE;
 }
 if (!This->m_Engine->GetMapEngine()->SetPersonSpriteset(name, *spriteset))
@@ -5779,8 +5969,11 @@ JS_MaybeGC(cx);
 end_func()
 ////////////////////////////////////////////////////////////////////////////////
 /**
-    - returns the person's base obstruction object. Can be the one without resizing.
-    The object contains the following properties: x1, x2, y1 and y2 (base coordinates)
+    - returns the person's base obstruction object. The values are sensitive to scaling,
+      unless you set 'real' to true.
+      The object contains the following properties: x1, x2, y1 and y2 (base coordinates)
+      You also can use GetPersonSpriteset and fetch the .base properties of it.
+    @see GetPersonSpriteset
 */
 begin_func(GetPersonBase, 1)
 arg_str(name);
@@ -6270,180 +6463,6 @@ end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
 // section: Sound related functions //
-/**
-    - Returns the name of the current map background music (could be a m3u list)
-*/
-begin_func(nameBgm, 0)
-    std::string result;
-    if (!This->m_Engine->GetMapEngine()->nameBgm(result))
-    {
-    	This->ReportMapEngineError("nameBgm() failed");
-    	return JS_FALSE;
-    }
-    if(This->m_Engine->GetMapEngine()->validBgm())
-    	result = "";
-
-    return_str(result.c_str());
-end_func()
-
-/**
-    - Returns the type of the current map background music: 0: none 1: midi 2: wav/mp3/it/xm
-*/
-begin_func(validBgm, 0)
-    return_int( This->m_Engine->GetMapEngine()->validBgm() );
-end_func()
-
-/**
-    - Starts the current map background music. If it is already playing, or doesnt exist, it does nothing.
-      Returns true if the music is playing
-*/
-begin_func(playBgm, 0)
-    This->m_Engine->GetMapEngine()->playBgm();
-    return_bool(This->m_Engine->GetMapEngine()->isPlayingBgm() == true);
-end_func()
-
-/**
-    - Stops the current map background music. If it is already stopped, or doesnt exist, it does nothing.
-      Returns true if the music is stopped
-*/
-begin_func(stopBgm, 0)
-    This->m_Engine->GetMapEngine()->stopBgm(); // Audiere stop is void... why?
-    return_bool(This->m_Engine->GetMapEngine()->isPlayingBgm() == false);
-end_func()
-
-/**
-    - Tells us if the background music is playing
-*/
-begin_func(isPlayingBgm, 0)
-    return_bool(This->m_Engine->GetMapEngine()->isPlayingBgm());
-end_func()
-
-/**
-    - Rewind the background music. (Can be slow on streamed music)
-*/
-begin_func(resetBgm, 0)
-    This->m_Engine->GetMapEngine()->resetBgm();
-    if(This->m_Engine->GetMapEngine()->validBgm())
-    	return_bool(true);
-    else
-    	return_bool(false);
-end_func()
-
-/**
-    - Enable/Disable Loop the current background music (it is repeated by default)
-      Returns true if it succeeded setting the boolean value.
-*/
-begin_func(setRepeatBgm, 1)
-arg_bool(onoff);
-    This->m_Engine->GetMapEngine()->setRepeatBgm(onoff);
-    return_bool(This->m_Engine->GetMapEngine()->getRepeatBgm() == onoff);
-end_func()
-
-/**
-    - Returns true if the current background music is looped. False if not.
-*/
-begin_func(getRepeatBgm, 0)
-    return_bool(This->m_Engine->GetMapEngine()->getRepeatBgm());
-end_func()
-
-/**
-    - Sets the volume of the current background music. The volume can be 0 to 255.
-    - no effect on MIDIs
-*/
-begin_func(setVolumeBgm, 1)
-    arg_int(volume);
-    volume = volume<0 ? 0 : volume>255? 255 : volume;
-    This->m_Engine->GetMapEngine()->setVolumeBgm(volume / 255.0f);
-end_func()
-
-/**
-    - Gets the volume of the current background music. The volume can be 0 to 255.
-    - no effect on MIDIs
-*/
-begin_func(getVolumeBgm, 0)
-    float v = This->m_Engine->GetMapEngine()->getVolumeBgm();
-    if (v<0)
-    	return_int(255);
-    else
-    	return_int(v * 255);
-end_func()
-
-/**
-    - pan can be from -255 to 255.  -255 = left, 255 = right. pan defaults to 0 (center).
-    - no effect on MIDIs
-*/
-begin_func(setPanBgm, 1)
-    arg_int(pan);
-    if (This->m_Engine->GetMapEngine()->validBgm())
-    	This->m_Engine->GetMapEngine()->setPanBgm(pan / 255.0f);
-end_func()
-
-/**
-    - returns the current pan of the sound (-255 to 255)
-    - no effect on MIDIs
-*/
-begin_func(getPanBgm, 0)
-    if (This->m_Engine->GetMapEngine()->validBgm())
-    	return_int(This->m_Engine->GetMapEngine()->getPanBgm() * 255);
-    return_int(0);
-end_func()
-
-/**
-    - pitch ranges from 0.5 to 2.0.  0.5 is an octave down (and half as fast)
-      while 2.0 is an octave up (and twice as fast).  pitch defaults to 1.0
-    - no effect on MIDIs
-*/
-begin_func(setPitchBgm, 1)
-    arg_double(pitch);
-    if (This->m_Engine->GetMapEngine()->validBgm())
-    	This->m_Engine->GetMapEngine()->setPitchShiftBgm((float)pitch);
-end_func()
-
-/**
-    - returns the current pitch
-    - no effect on MIDIs
-*/
-begin_func(getPitchBgm, 0)
-    if (This->m_Engine->GetMapEngine()->validBgm())
-    	return_double(This->m_Engine->GetMapEngine()->getPitchShiftBgm());
-    else
-    	return_double(1.0);
-end_func()
-
-/**
-    - returns true if the background music is seekable
-*/
-begin_func(isSeekableBgm, 0)
-    return_bool(This->m_Engine->GetMapEngine()->isSeekableBgm());
-end_func()
-
-/**
-    - returns the length the background music. Music must be seekable.
-*/
-begin_func(getLengthBgm, 0)
-    return_int(This->m_Engine->GetMapEngine()->getLengthBgm());
-end_func()
-
-/**
-    - sets the position of the sound
-      if the sound isn't seekable, this does nothing
-*/
-begin_func(setPositionBgm, 1)
-    arg_int(pos);
-    This->m_Engine->GetMapEngine()->setPositionBgm(pos);
-end_func()
-
-/**
-    - gets the position of the sound
-      if the sound isn't seekable, this does nothing
-*/
-begin_func(getPositionBgm, 0)
-    return_bool(This->m_Engine->GetMapEngine()->getPositionBgm());
-end_func()
-
-
-
-
 ////////////////////////////////////////////////////////////////////////////////
 /**
     - returns a sound object from 'filename'. If Sphere is unable to open
@@ -6575,9 +6594,9 @@ sound = This->m_Engine->CreateSound(memoryfile, streaming);
 if (!sound)
 {
     if(memoryfile){
-    	memoryfile->ref();
-    	memoryfile->unref();
-    	memoryfile=NULL;
+        //memoryfile->ref();
+        memoryfile->unref();
+        memoryfile=NULL;
     }
 
     JS_ReportError(cx, "Could not create sound from bytearray");
@@ -6626,8 +6645,8 @@ audiere::SoundEffect* sound = This->m_Engine->CreateSoundEffect(memoryfile, type
 if (!sound)
 {
     if(memoryfile){
-    	memoryfile->ref();
-    	memoryfile->unref();
+        //memoryfile->ref();
+        memoryfile->unref();
     }
     JS_ReportError(cx, "Could not create sound effect from bytearray");
     return JS_FALSE;
@@ -6641,7 +6660,7 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 /**
     - returns an Sfxr object. The parameters are optional and can be set later on.
-      bitrate, samplerate, soundvolume, wavetype, basefrequency, minfrequency,
+      bitrate, samplerate, soundvolume, wavetype, basefrequency, minfrequency, 
       frequencyslide, frequencyslidedelta, squareduty, squaredutysweep, vibratodepth,
       vibratospeed, attack, sustain, detay, release, filter, lowpassfiltercutoff,
       lowpassfiltercutoffsweep, filterresonance, highpassfiltercutoff, highpassfiltercutoffsweep,
@@ -6657,37 +6676,208 @@ if (!sound)
     return JS_FALSE;
 }
 unsigned int n = 1; // This way you can swap around the parameters without having to renumber
-if (argc >= n){	sound->setBitrate(int( argInt(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setSampleRate(int( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setSoundVolume(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setWaveType(int( argInt(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setBaseFrequency(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setMinFrequency(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setFrequencySlide(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setFrequencySlideDelta(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setSquareDuty(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setSquareDutySweep(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setVibratoDepth(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setVibratoSpeed(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setVibratoDelay(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setAttack(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setSustain(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setDecay(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setRelease(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setFilter(bool( argBool(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setLowPassFilterCutoff(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setLowPassFilterCutoffSweep(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setFilterResonance(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setHighPassFilterCutoff(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setHighPassFilterCutoffSweep(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setPhaserOffset(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setPhaserOffsetSweep(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setRepeatSpeed(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setArpeggio(float( argDouble(cx, argv[n++ -1]) )); }
-if (argc >= n){	sound->setArpeggioSpeed(float( argDouble(cx, argv[n++ -1]) )); }
-//if (argc >= n){	sound->setMasterVolume(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setBitrate(int( argInt(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setSampleRate(int( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setSoundVolume(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setWaveType(int( argInt(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setBaseFrequency(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setMinFrequency(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setFrequencySlide(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setFrequencySlideDelta(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setSquareDuty(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setSquareDutySweep(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setVibratoDepth(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setVibratoSpeed(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setVibratoDelay(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setAttack(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setSustain(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setDecay(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setRelease(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setFilter(bool( argBool(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setLowPassFilterCutoff(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setLowPassFilterCutoffSweep(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setFilterResonance(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setHighPassFilterCutoff(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setHighPassFilterCutoffSweep(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setPhaserOffset(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setPhaserOffsetSweep(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setRepeatSpeed(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setArpeggio(float( argDouble(cx, argv[n++ -1]) )); }
+if (argc >= n){    sound->setArpeggioSpeed(float( argDouble(cx, argv[n++ -1]) )); }
+//if (argc >= n){    sound->setMasterVolume(float( argDouble(cx, argv[n++ -1]) )); }
 
 return_object(CreateSfxrObject(cx, sound));
+end_func()
+
+/**
+    - Returns the name of the current map background music (could be a m3u list)
+*/
+begin_func(BgmName, 0)
+    std::string result;
+    if (!This->m_Engine->GetMapEngine()->BgmName(result))
+    {
+        This->ReportMapEngineError("BgmName() failed");
+        return JS_FALSE;
+    }
+    if(This->m_Engine->GetMapEngine()->BgmValid())
+        result = "";
+
+    return_str(result.c_str());
+end_func()
+
+/**
+    - Returns the type of the current map background music: 0: none 1: midi 2: wav/mp3/it/xm
+*/
+begin_func(BgmValid, 0)
+    return_int( This->m_Engine->GetMapEngine()->BgmValid() );
+end_func()
+
+/**
+    - Starts the current map background music. If it is already playing, or doesnt exist, it does nothing.
+      Returns true if the music is playing
+*/
+begin_func(BgmPlay, 0)
+    This->m_Engine->GetMapEngine()->BgmPlay();
+    return_bool(This->m_Engine->GetMapEngine()->BgmIsPlaying() == true);
+end_func()
+
+/**
+    - Stops the current map background music. If it is already stopped, or doesnt exist, it does nothing.
+      Returns true if the music is stopped
+*/
+begin_func(BgmStop, 0)
+    This->m_Engine->GetMapEngine()->BgmStop(); // Audiere stop is void... why?
+    return_bool(This->m_Engine->GetMapEngine()->BgmIsPlaying() == false);
+end_func()
+
+/**
+    - Tells us if the background music is playing
+*/
+begin_func(BgmIsPlaying, 0)
+    return_bool(This->m_Engine->GetMapEngine()->BgmIsPlaying());
+end_func()
+
+/**
+    - Rewind the background music. (Can be slow on streamed music)
+*/
+begin_func(BgmReset, 0)
+    This->m_Engine->GetMapEngine()->BgmReset();
+    if(This->m_Engine->GetMapEngine()->BgmValid())
+        return_bool(true);
+    else
+        return_bool(false);
+end_func()
+
+/**
+    - Enable/Disable Loop the current background music (it is repeated by default)
+      Returns true if it succeeded setting the boolean value.
+*/
+begin_func(BgmSetRepeat, 1)
+arg_bool(onoff);
+    This->m_Engine->GetMapEngine()->BgmSetRepeat(onoff);
+    return_bool(This->m_Engine->GetMapEngine()->BgmGetRepeat() == onoff);
+end_func()
+
+/**
+    - Returns true if the current background music is looped. False if not.
+*/
+begin_func(BgmGetRepeat, 0)
+    return_bool(This->m_Engine->GetMapEngine()->BgmGetRepeat());
+end_func()
+
+/**
+    - Sets the volume of the current background music. The volume can be 0 to 255.
+    - no effect on MIDIs
+*/
+begin_func(BgmSetVolume, 1)
+    arg_int(volume);
+    volume = volume<0 ? 0 : volume>255? 255 : volume;
+    This->m_Engine->GetMapEngine()->BgmSetVolume(volume / 255.0f);
+end_func()
+
+/**
+    - Gets the volume of the current background music. The volume can be 0 to 255.
+    - no effect on MIDIs
+*/
+begin_func(BgmGetVolume, 0)
+    float v = This->m_Engine->GetMapEngine()->BgmGetVolume();
+    if (v<0)
+        return_int(255);
+    else
+        return_int(v * 255);
+end_func()
+
+/**
+    - pan can be from -255 to 255.  -255 = left, 255 = right. pan defaults to 0 (center).
+    - no effect on MIDIs
+*/
+begin_func(BgmSetPan, 1)
+    arg_int(pan);
+    if (This->m_Engine->GetMapEngine()->BgmValid())
+        This->m_Engine->GetMapEngine()->BgmSetPan(pan / 255.0f);
+end_func()
+
+/**
+    - returns the current pan of the sound (-255 to 255)
+    - no effect on MIDIs
+*/
+begin_func(BgmGetPan, 0)
+    if (This->m_Engine->GetMapEngine()->BgmValid())
+        return_int(This->m_Engine->GetMapEngine()->BgmGetPan() * 255);
+    return_int(0);
+end_func()
+
+/**
+    - pitch ranges from 0.5 to 2.0.  0.5 is an octave down (and half as fast)
+      while 2.0 is an octave up (and twice as fast).  pitch defaults to 1.0
+    - no effect on MIDIs
+*/
+begin_func(BgmSetPitch, 1)
+    arg_double(pitch);
+    if (This->m_Engine->GetMapEngine()->BgmValid())
+        This->m_Engine->GetMapEngine()->BgmSetPitchShift((float)pitch);
+end_func()
+
+/**
+    - returns the current pitch
+    - no effect on MIDIs
+*/
+begin_func(BgmGetPitch, 0)
+    if (This->m_Engine->GetMapEngine()->BgmValid())
+        return_double(This->m_Engine->GetMapEngine()->BgmGetPitchShift());
+    else
+        return_double(1.0);
+end_func()
+
+/**
+    - returns true if the background music is seekable
+*/
+begin_func(BgmIsSeekable, 0)
+    return_bool(This->m_Engine->GetMapEngine()->BgmIsSeekable());
+end_func()
+
+/**
+    - returns the length the background music. Music must be seekable.
+*/
+begin_func(BgmGetLength, 0)
+    return_int(This->m_Engine->GetMapEngine()->BgmGetLength());
+end_func()
+
+/**
+    - sets the position of the sound
+      if the sound isn't seekable, this does nothing
+*/
+begin_func(BgmSetPosition, 1)
+    arg_int(pos);
+    This->m_Engine->GetMapEngine()->BgmSetPosition(pos);
+end_func()
+
+/**
+    - gets the position of the sound
+      if the sound isn't seekable, this does nothing
+*/
+begin_func(BgmGetPosition, 0)
+    return_bool(This->m_Engine->GetMapEngine()->BgmGetPosition());
 end_func()
 
 
@@ -7150,6 +7340,7 @@ if (!js_vs)
 {
     return JS_FALSE;
 }
+*rval = *js_vs;
 for (unsigned int i = 0; i < directories.size(); i++)
 {
     js_vs[i] = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, directories[i].c_str()));
@@ -7191,9 +7382,10 @@ This->m_Engine->GetFileList(directory, vs);
 jsval* js_vs = new jsval[vs.size()];
 if (!js_vs)
 {
-
     return JS_FALSE;
 }
+*rval = *js_vs;
+
 for (unsigned int i = 0; i < vs.size(); i++)
 {
     js_vs[i] = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, vs[i].c_str()));
@@ -7310,11 +7502,9 @@ static JSClass clasp =
     };
 // create the object
 JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
-if (object == NULL)
-{
+if (!object || !JS_AddRoot(cx, &object))
+    return NULL;
 
-    return JS_FALSE;
-}
 // assign methods to the object
 static JSFunctionSpec fs[] =
     {
@@ -7329,6 +7519,7 @@ JS_DefineFunctions(cx, object, fs);
 SS_MAPENGINE* mapengine_object = new SS_MAPENGINE;
 if (!mapengine_object)
 {
+    JS_RemoveRoot(cx, &object);
     return_object(JSVAL_NULL);
 }
 mapengine_object->__value__ = 1;
@@ -7337,6 +7528,7 @@ JS_DefineProperty(cx, object, "tileset",
                   OBJECT_TO_JSVAL(CreateTilesetObject(cx, This->m_Engine->GetMapEngine()->GetMap().GetMap().GetTileset())),
                   JS_PropertyStub, JS_PropertyStub, JSPROP_READONLY | JSPROP_PERMANENT);
 return_object(object);
+JS_RemoveRoot(cx, &object);
 end_func()
 ////////////////////////////////////////////////////////////////////////////////
 /**
@@ -7466,9 +7658,9 @@ if (argc > 2)
 {
     compressionlevel = argInt(cx, argv[arg++]);
     if ( compressionlevel < 0 )
-    	compressionlevel = 0;
+        compressionlevel = 0;
     if ( compressionlevel > 9 )
-    	compressionlevel = 9;
+        compressionlevel = 9;
 }
 
 if (filename_source == filename_dest)
@@ -7591,9 +7783,9 @@ if (argc > 1)
 {
     compressionlevel = argInt(cx, argv[arg++]);
     if ( compressionlevel < 0 )
-    	compressionlevel = 0;
+        compressionlevel = 0;
     if ( compressionlevel > 9 )
-    	compressionlevel = 9;
+        compressionlevel = 9;
 }
 
 ZlibEngine engine;
@@ -7603,7 +7795,7 @@ if (argc > 2)
 {
     maxsize = argInt(cx, argv[arg++]);
     if (maxsize<=0)
-    	maxsize = engine.compressBound2(ba->size);
+        maxsize = engine.compressBound2(ba->size);
 }
 
 if (maxsize < engine.compressBound2(ba->size) )
@@ -7614,21 +7806,21 @@ if (maxsize < engine.compressBound2(ba->size) )
     unsigned char* buffer = new unsigned char[maxsize];
     if (buffer == 0)
     {
-    	JS_ReportError(cx, "Failed to allocate %i bytes for ByteArray deflation", maxsize);
+        JS_ReportError(cx, "Failed to allocate %i bytes for ByteArray deflation", maxsize);
         return JS_FALSE;
     }
 
     int outputsize = engine.compressInMemory(ba->array, ba->size,(unsigned char *) buffer, maxsize, compressionlevel);
     if (outputsize < 0)
     {
-    	delete[] buffer;
-    	return_null();
-    } else
+        delete[] buffer;
+        return_null();
+    } else 
     {
-    	JSObject* array_object = CreateByteArrayObject(cx, outputsize, (byte *) buffer);
-    	delete[] buffer; // unsigned char* buffer = new unsigned char[maxsize];
+        JSObject* array_object = CreateByteArrayObject(cx, outputsize, (byte *) buffer);
+        delete[] buffer; // unsigned char* buffer = new unsigned char[maxsize];
 
-    	return_object(array_object);
+        return_object(array_object);
     }
 }
 end_func()
@@ -7650,33 +7842,33 @@ if (argc > 1)
 {
     maxsize = argInt(cx, argv[arg++]);
     if (maxsize<=0)
-    	maxsize = engine.compressBound2(ba->size);
+        maxsize = engine.compressBound2(ba->size);
 }
 
 if (maxsize < engine.compressBound2(ba->size) )
 {
     return_null();
-} else
+} else 
 {
 
     unsigned char* buffer = new unsigned char[maxsize];
     if (buffer == 0)
     {
-    	JS_ReportError(cx, "Failed to allocate %i bytes for ByteArray inflation", maxsize);
+        JS_ReportError(cx, "Failed to allocate %i bytes for ByteArray inflation", maxsize);
         return JS_FALSE;
     }
 
     int outputsize = engine.decompressInMemory(ba->array, ba->size,(unsigned char *) buffer, maxsize);
     if (outputsize < 0)
     {
-    	delete[] buffer;
-    	return_null();
+        delete[] buffer;
+        return_null();
     }else{
 
-    	JSObject* byte_array_object = CreateByteArrayObject(cx, outputsize, (byte *) buffer);
-    	delete[] buffer;
+        JSObject* byte_array_object = CreateByteArrayObject(cx, outputsize, (byte *) buffer);
+        delete[] buffer;
 
-    	return_object(byte_array_object);
+        return_object(byte_array_object);
     }
 }
 end_func()
@@ -8747,8 +8939,8 @@ for (dword i = 0; i < obj_array.size(); ++i)
         return JS_FALSE;
     }
 }
-JS_RemoveRoot(cx, &ret_array);
 return_object(ret_array);
+JS_RemoveRoot(cx, &ret_array);
 end_method()
 
 ////////////////////////////////////////
@@ -8786,8 +8978,8 @@ for (dword i = 0; i < obj_array.size(); ++i)
         return JS_FALSE;
     }
 }
-JS_RemoveRoot(cx, &ret_array);
 return_object(ret_array);
+JS_RemoveRoot(cx, &ret_array);
 end_method()
 
 ////////////////////////////////////////
@@ -9620,10 +9812,8 @@ CScript::CreateSocketObject(JSContext* cx, NSOCKET socket)
 
     // create the object
     JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
-    if (object == NULL)
-    {
-        return 0;
-    }
+    if (!object || !JS_AddRoot(cx, &object))
+        return NULL;
 
     // assign methods to the object
     static JSFunctionSpec fs[] =
@@ -9637,15 +9827,18 @@ CScript::CreateSocketObject(JSContext* cx, NSOCKET socket)
         };
     JS_DefineFunctions(cx, object, fs);
 
-    // attach the log to this object
+    // attach the socket to this object
     SS_SOCKET* socket_object = new SS_SOCKET;
 
     if (!socket_object)
+    {
+        JS_RemoveRoot(cx, &object);
         return NULL;
+    }
     socket_object->socket = socket;
     socket_object->is_open = true;
     JS_SetPrivate(cx, object, socket_object);
-
+    JS_RemoveRoot(cx, &object);
     return object;
 }
 
@@ -9795,10 +9988,8 @@ CScript::CreateLogObject(JSContext* cx, CLog* log)
 
     // create the object
     JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
-    if (object == NULL)
-    {
+    if (!object || !JS_AddRoot(cx, &object))
         return NULL;
-    }
 
     // assign methods to the object
     static JSFunctionSpec fs[] =
@@ -9815,12 +10006,12 @@ CScript::CreateLogObject(JSContext* cx, CLog* log)
 
     if (!log_object)
     {
-
+        JS_RemoveRoot(cx, &object);
         return NULL;
     }
     log_object->log = log;
     JS_SetPrivate(cx, object, log_object);
-
+    JS_RemoveRoot(cx, &object);
     return object;
 }
 
@@ -9880,10 +10071,8 @@ CScript::CreateColorObject(JSContext* cx, RGBA color)
 
     // create the object
     JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
-    if (object == NULL)
-    {
+    if (!object || !JS_AddRoot(cx, &object))
         return NULL;
-    }
 
     // assign properties
     static JSPropertySpec ps[] =
@@ -9908,10 +10097,13 @@ CScript::CreateColorObject(JSContext* cx, RGBA color)
     SS_COLOR* color_object = new SS_COLOR;
 
     if (!color_object)
+    {
+        JS_RemoveRoot(cx, &object);
         return NULL;
+    }
     color_object->color = color;
     JS_SetPrivate(cx, object, color_object);
-
+    JS_RemoveRoot(cx, &object);
     return object;
 }
 
@@ -9970,12 +10162,24 @@ end_property()
       This string can be eval()'ed to recreate the color
 */
 begin_method(SS_COLOR, ssColorToJSON, 0)
-std::string json = "CreateColor(";
-json.append( to_string((int)object->color.red) ); json.append( "," );
-json.append( to_string((int)object->color.green) ); json.append( "," );
-json.append( to_string((int)object->color.blue) ); json.append( "," );
-json.append( to_string((int)object->color.alpha) ); json.append( ")" );
-return_str( json.c_str() );
+char json2[64];
+sprintf(json2,
+    // If the alpha is 255, then dont print it
+    object->color.alpha == 255 ? "CreateColor(%d,%d,%d)" : "CreateColor(%d,%d,%d,%d)",
+    object->color.red,
+    object->color.green,
+    object->color.blue,
+    object->color.alpha
+);
+
+return_str(json2);
+// This works too (), especially if sprintf cannot handle your type conversion. It is also handles its own buffer
+//std::string json = "CreateColor(";
+//json.append( to_string((int)object->color.red) ); json.append( "," );
+//json.append( to_string((int)object->color.green) ); json.append( "," );
+//json.append( to_string((int)object->color.blue) ); json.append( "," );
+//json.append( to_string((int)object->color.alpha) ); json.append( ")" );
+//return_str( json.c_str() );
 end_method()
 
 ////////////////////////////////////////
@@ -9994,8 +10198,9 @@ CScript::CreateSpritesetBaseObject(JSContext* cx, SSPRITESET* spriteset, bool re
         };
 
     JSObject* base_object = JS_NewObject(cx, &base_clasp, NULL, NULL);
-    if (!base_object)
+    if (!base_object || !JS_AddRoot(cx, &base_object))
         return NULL;
+
     int x1, y1, x2, y2;
     if(real)
         spriteset->GetSpriteset().GetRealBase(x1, y1, x2, y2);
@@ -10006,7 +10211,7 @@ CScript::CreateSpritesetBaseObject(JSContext* cx, SSPRITESET* spriteset, bool re
     JS_DefineProperty(cx, base_object, "y1", INT_TO_JSVAL(y1), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
     JS_DefineProperty(cx, base_object, "x2", INT_TO_JSVAL(x2), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
     JS_DefineProperty(cx, base_object, "y2", INT_TO_JSVAL(y2), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_PERMANENT);
-
+    JS_RemoveRoot(cx, &base_object);
     return base_object;
 }
 
@@ -10036,9 +10241,9 @@ CScript::CreateSpritesetObject(JSContext* cx, SSPRITESET* spriteset)
         };
 
     JSObject* local_roots = JS_NewArrayObject(cx, 0, 0);
-    if (!local_roots)
+    if (!local_roots || !JS_AddRoot(cx, &local_roots))
         return NULL;
-    JS_AddRoot(cx, &local_roots);
+    
     // CREATE SPRITESET OBJECT
     JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
     if (!object)
@@ -10233,11 +10438,11 @@ std::string path = "spritesets/";
 path += filename;
 
 sSpriteset* s = argSpriteset(cx, OBJECT_TO_JSVAL(obj));
-*rval = PRIVATE_TO_JSVAL(s); // ROOT
 if (s == NULL)
 {
     return JS_FALSE;
 }
+*rval = PRIVATE_TO_JSVAL(s); // ROOT
 
 bool saved = s->Save(path.c_str());
 delete s;
@@ -10256,18 +10461,18 @@ end_method()
 begin_method(SS_SPRITESET, ssSpritesetClone, 0)
 
 sSpriteset* s = argSpriteset(cx, OBJECT_TO_JSVAL(obj));
-*rval = PRIVATE_TO_JSVAL(s); // ROOT
 if (s == NULL)
 {
     return JS_FALSE;
 }
+*rval = PRIVATE_TO_JSVAL(s); // ROOT
 
 SSPRITESET* clone = new SSPRITESET(*s);
 delete s;
 s = NULL;
 if (!clone)
     return JS_FALSE;
-*rval = PRIVATE_TO_JSVAL(s); // ROOT
+
 return_object(CreateSpritesetObject(cx, clone));
 // spritesets can take a lot of memory, so do a little GC
 JS_MaybeGC(cx);
@@ -10287,13 +10492,13 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound, audiere:
 #endif
 {
     if (sound)
-    	sound->ref();
+        sound->ref();
 #if defined(WIN32) && defined(USE_MIDI)
     if (midi)
-    	midi->ref();
+        midi->ref();
 #endif
     if (memoryfile)
-    	memoryfile->ref();
+        memoryfile->ref();
 
     // define class
     static JSClass clasp =
@@ -10328,6 +10533,8 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound, audiere:
         }
         return NULL;
     }
+    if (!JS_AddRoot(cx, &object))
+        return NULL;
 
     // assign methods to the object
     static JSFunctionSpec fs[] =
@@ -10378,6 +10585,7 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound, audiere:
             memoryfile->unref();
             memoryfile = NULL;
         }
+        JS_RemoveRoot(cx, &object);
         return NULL;
     }
     sound_object->sound = sound;
@@ -10386,6 +10594,7 @@ CScript::CreateSoundObject(JSContext* cx, audiere::OutputStream* sound, audiere:
     sound_object->midi = midi;
 #endif
     JS_SetPrivate(cx, object, sound_object);
+    JS_RemoveRoot(cx, &object);
     return object;
 }
 
@@ -10403,10 +10612,7 @@ if(object->memoryfile){
     object->memoryfile->unref();
 }
 
-//if (object->memoryfile)
-//{
-//	JS_ReportError(cx, "DEBUG: Memoryfile still referenced!");
-//}
+
 
 object->memoryfile = NULL;
 
@@ -10755,12 +10961,12 @@ CScript::CreateSoundEffectObject(JSContext* cx, audiere::SoundEffect* sound, aud
     if (sound)
         sound->ref();
     else{
-    	if(memoryfile)
-    		memoryfile->unref();
-    	return NULL;
+        if(memoryfile)
+            memoryfile->unref();
+        return NULL;
     }
     if (memoryfile)
-    	memoryfile->ref();
+        memoryfile->ref();
 
     // define class
     static JSClass clasp =
@@ -10788,6 +10994,8 @@ CScript::CreateSoundEffectObject(JSContext* cx, audiere::SoundEffect* sound, aud
         }
         return NULL;
     }
+    if (!JS_AddRoot(cx, &object))
+        return NULL;
 
     // assign methods to the object
     static JSFunctionSpec fs[] =
@@ -10820,13 +11028,14 @@ CScript::CreateSoundEffectObject(JSContext* cx, audiere::SoundEffect* sound, aud
             memoryfile->unref();
             memoryfile = NULL;
         }
-
+        JS_RemoveRoot(cx, &object);
         return NULL;
     }
 
     sound_object->sound = sound;
     sound_object->memoryfile = memoryfile;
     JS_SetPrivate(cx, object, sound_object);
+    JS_RemoveRoot(cx, &object);
     return object;
 }
 
@@ -10976,78 +11185,77 @@ CScript::CreateSfxrObject(JSContext* cx, SSFXR* sfxr)
 
     // create object
     JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
-    if (object == NULL)
-    {
+    if (!object || !JS_AddRoot(cx, &object))
         return NULL;
-    }
 
     // assign methods to the object
     static JSFunctionSpec fs[] =
         {
-    		{ "saveWav",			ssSfxrSaveWav,			1, 0, 0 },
-    		{ "reset",				ssSfxrReset,			0, 0, 0 },
-    		{ "getSampleSize",		ssSfxrCalcSampleSize,	0, 0, 0 },
-    		{ "getSoundEffect",		ssSfxrGetSoundEffect,	1, 0, 0 },
-    		{ "getMasterVolume",	ssSfxrGetMasterVolume,	0, 0, 0 },
-    		{ "setMasterVolume",	ssSfxrSetMasterVolume,	1, 0, 0 },
-    		{ "getSoundVolume",		ssSfxrGetSoundVolume,	0, 0, 0 },
-    		{ "setSoundVolume",		ssSfxrSetSoundVolume,	1, 0, 0 },
-    		{ "getBitrate",			ssSfxrGetBitrate,		0, 0, 0 },
-    		{ "setBitrate",			ssSfxrSetBitrate,		1, 0, 0 },
-    		{ "getSampleRate",		ssSfxrGetSampleRate,	0, 0, 0 },
-    		{ "setSampleRate",		ssSfxrSetSampleRate,	1, 0, 0 },
-    		{ "getWaveType",		ssSfxrGetWaveType,      0, 0, 0 },
-    		{ "setWaveType",		ssSfxrSetWaveType,      1, 0, 0 },
-    		{ "getBaseFrequency",	ssSfxrGetBaseFrequency,	0, 0, 0 },
-    		{ "setBaseFrequency",	ssSfxrSetBaseFrequency,	1, 0, 0 },
-    		{ "getMinFrequency",	ssSfxrGetMinFrequency,	0, 0, 0 },
-    		{ "setMinFrequency",	ssSfxrSetMinFrequency,	1, 0, 0 },
-    		{ "getFrequencySlide",	ssSfxrGetFrequencySlide,	0, 0, 0 },
-    		{ "setFrequencySlide",	ssSfxrSetFrequencySlide,	1, 0, 0 },
-    		{ "getFrequencySlideDelta",	ssSfxrGetFrequencySlideDelta,	0, 0, 0 },
-    		{ "setFrequencySlideDelta",	ssSfxrSetFrequencySlideDelta,	1, 0, 0 },
-    		{ "getSquareDuty",	ssSfxrGetSquareDuty,	0, 0, 0 },
-    		{ "setSquareDuty",	ssSfxrSetSquareDuty,	1, 0, 0 },
-    		{ "getSquareDutySweep",	ssSfxrGetSquareDutySweep,	0, 0, 0 },
-    		{ "setSquareDutySweep",	ssSfxrSetSquareDutySweep,	1, 0, 0 },
-    		{ "getVibratoDepth",	ssSfxrGetVibratoDepth,	0, 0, 0 },
-    		{ "setVibratoDepth",	ssSfxrSetVibratoDepth,	1, 0, 0 },
-    		{ "getVibratoSpeed",	ssSfxrGetVibratoSpeed,	0, 0, 0 },
-    		{ "setVibratoSpeed",	ssSfxrSetVibratoSpeed,	1, 0, 0 },
-    		{ "getVibratoDelay",	ssSfxrGetVibratoDelay,	0, 0, 0 },
-    		{ "setVibratoDelay",	ssSfxrSetVibratoDelay,	1, 0, 0 },
-    		{ "getAttack",	ssSfxrGetAttack,	0, 0, 0 },
-    		{ "setAttack",	ssSfxrSetAttack,	1, 0, 0 },
-    		{ "getSustain",	ssSfxrGetSustain,	0, 0, 0 },
-    		{ "setSustain",	ssSfxrSetSustain,	1, 0, 0 },
-    		{ "getDecay",		ssSfxrGetDecay,	0, 0, 0 },
-    		{ "setDecay",		ssSfxrSetDecay,	1, 0, 0 },
-    		{ "getRelease",	ssSfxrGetRelease,	0, 0, 0 },
-    		{ "setRelease",	ssSfxrSetRelease,	1, 0, 0 },
-    		{ "getFilter",	ssSfxrGetFilter,	0, 0, 0 },
-    		{ "setFilter",	ssSfxrSetFilter,	1, 0, 0 },
-    		{ "getLowPassFilterCutoff",	ssSfxrGetLowPassFilterCutoff,	0, 0, 0 },
-    		{ "setLowPassFilterCutoff",	ssSfxrSetLowPassFilterCutoff,	1, 0, 0 },
-    		{ "getLowPassFilterCutoffSweep",	ssSfxrGetLowPassFilterCutoffSweep,	0, 0, 0 },
-    		{ "setLowPassFilterCutoffSweep",	ssSfxrSetLowPassFilterCutoffSweep,	1, 0, 0 },
-    		{ "getFilterResonance",	ssSfxrGetFilterResonance,	0, 0, 0 },
-    		{ "setFilterResonance",	ssSfxrSetFilterResonance,	1, 0, 0 },
-    		{ "getHighPassFilterCutoff",	ssSfxrGetHighPassFilterCutoff,	0, 0, 0 },
-    		{ "setHighPassFilterCutoff",	ssSfxrSetHighPassFilterCutoff,	1, 0, 0 },
-    		{ "getHighPassFilterCutoffSweep",	ssSfxrGetHighPassFilterCutoffSweep,	0, 0, 0 },
-    		{ "setHighPassFilterCutoffSweep",	ssSfxrSetHighPassFilterCutoffSweep,	1, 0, 0 },
-    		{ "getPhaserOffset",	ssSfxrGetPhaserOffset,	0, 0, 0 },
-    		{ "setPhaserOffset",	ssSfxrSetPhaserOffset,	1, 0, 0 },
-    		{ "getPhaserOffsetSweep",	ssSfxrGetPhaserOffsetSweep,	0, 0, 0 },
-    		{ "setPhaserOffsetSweep",	ssSfxrSetPhaserOffsetSweep,	1, 0, 0 },
-    		{ "getRepeatSpeed",	ssSfxrGetRepeatSpeed,	0, 0, 0 },
-    		{ "setRepeatSpeed",	ssSfxrSetRepeatSpeed,	1, 0, 0 },
-    		{ "getArpeggio",	ssSfxrGetArpeggio,	0, 0, 0 },
-    		{ "setArpeggio",	ssSfxrSetArpeggio,	1, 0, 0 },
-    		{ "getArpeggioSpeed",	ssSfxrGetArpeggioSpeed,	0, 0, 0 },
-    		{ "setArpeggioSpeed",	ssSfxrSetArpeggioSpeed,	1, 0, 0 },
-    		{ "clone",	ssSfxrClone,	0, 0, 0 },
-    		{ 0, 0, 0, 0, 0 },
+        { "saveWav",			ssSfxrSaveWav,			1, 0, 0 },
+        { "reset",				ssSfxrReset,			0, 0, 0 },
+        { "getSampleSize",		ssSfxrCalcSampleSize,	0, 0, 0 },
+        { "getSoundEffect",		ssSfxrGetSoundEffect,	1, 0, 0 },
+        { "getMasterVolume",	ssSfxrGetMasterVolume,	0, 0, 0 },
+        { "setMasterVolume",	ssSfxrSetMasterVolume,	1, 0, 0 },
+        { "getSoundVolume",		ssSfxrGetSoundVolume,	0, 0, 0 },
+        { "setSoundVolume",		ssSfxrSetSoundVolume,	1, 0, 0 },
+        { "getBitrate",			ssSfxrGetBitrate,		0, 0, 0 },
+        { "setBitrate",			ssSfxrSetBitrate,		1, 0, 0 },
+        { "getSampleRate",		ssSfxrGetSampleRate,	0, 0, 0 },
+        { "setSampleRate",		ssSfxrSetSampleRate,	1, 0, 0 },
+        { "getWaveType",		ssSfxrGetWaveType,      0, 0, 0 },
+        { "setWaveType",		ssSfxrSetWaveType,      1, 0, 0 },
+        { "getBaseFrequency",	ssSfxrGetBaseFrequency,	0, 0, 0 },
+        { "setBaseFrequency",	ssSfxrSetBaseFrequency,	1, 0, 0 },
+        { "getMinFrequency",	ssSfxrGetMinFrequency,	0, 0, 0 },
+        { "setMinFrequency",	ssSfxrSetMinFrequency,	1, 0, 0 },
+        { "getFrequencySlide",	ssSfxrGetFrequencySlide,	0, 0, 0 },
+        { "setFrequencySlide",	ssSfxrSetFrequencySlide,	1, 0, 0 },
+        { "getFrequencySlideDelta",	ssSfxrGetFrequencySlideDelta,	0, 0, 0 },
+        { "setFrequencySlideDelta",	ssSfxrSetFrequencySlideDelta,	1, 0, 0 },
+        { "getSquareDuty",	ssSfxrGetSquareDuty,	0, 0, 0 },
+        { "setSquareDuty",	ssSfxrSetSquareDuty,	1, 0, 0 },
+        { "getSquareDutySweep",	ssSfxrGetSquareDutySweep,	0, 0, 0 },
+        { "setSquareDutySweep",	ssSfxrSetSquareDutySweep,	1, 0, 0 },
+        { "getVibratoDepth",	ssSfxrGetVibratoDepth,	0, 0, 0 },
+        { "setVibratoDepth",	ssSfxrSetVibratoDepth,	1, 0, 0 },
+        { "getVibratoSpeed",	ssSfxrGetVibratoSpeed,	0, 0, 0 },
+        { "setVibratoSpeed",	ssSfxrSetVibratoSpeed,	1, 0, 0 },
+        { "getVibratoDelay",	ssSfxrGetVibratoDelay,	0, 0, 0 },
+        { "setVibratoDelay",	ssSfxrSetVibratoDelay,	1, 0, 0 },
+        { "getAttack",	ssSfxrGetAttack,	0, 0, 0 },
+        { "setAttack",	ssSfxrSetAttack,	1, 0, 0 },
+        { "getSustain",	ssSfxrGetSustain,	0, 0, 0 },
+        { "setSustain",	ssSfxrSetSustain,	1, 0, 0 },
+        { "getDecay",		ssSfxrGetDecay,	0, 0, 0 },
+        { "setDecay",		ssSfxrSetDecay,	1, 0, 0 },
+        { "getRelease",	ssSfxrGetRelease,	0, 0, 0 },
+        { "setRelease",	ssSfxrSetRelease,	1, 0, 0 },
+        { "getFilter",	ssSfxrGetFilter,	0, 0, 0 },
+        { "setFilter",	ssSfxrSetFilter,	1, 0, 0 },
+        { "getLowPassFilterCutoff",	ssSfxrGetLowPassFilterCutoff,	0, 0, 0 },
+        { "setLowPassFilterCutoff",	ssSfxrSetLowPassFilterCutoff,	1, 0, 0 },
+        { "getLowPassFilterCutoffSweep",	ssSfxrGetLowPassFilterCutoffSweep,	0, 0, 0 },
+        { "setLowPassFilterCutoffSweep",	ssSfxrSetLowPassFilterCutoffSweep,	1, 0, 0 },
+        { "getFilterResonance",	ssSfxrGetFilterResonance,	0, 0, 0 },
+        { "setFilterResonance",	ssSfxrSetFilterResonance,	1, 0, 0 },
+        { "getHighPassFilterCutoff",	ssSfxrGetHighPassFilterCutoff,	0, 0, 0 },
+        { "setHighPassFilterCutoff",	ssSfxrSetHighPassFilterCutoff,	1, 0, 0 },
+        { "getHighPassFilterCutoffSweep",	ssSfxrGetHighPassFilterCutoffSweep,	0, 0, 0 },
+        { "setHighPassFilterCutoffSweep",	ssSfxrSetHighPassFilterCutoffSweep,	1, 0, 0 },
+        { "getPhaserOffset",	ssSfxrGetPhaserOffset,	0, 0, 0 },
+        { "setPhaserOffset",	ssSfxrSetPhaserOffset,	1, 0, 0 },
+        { "getPhaserOffsetSweep",	ssSfxrGetPhaserOffsetSweep,	0, 0, 0 },
+        { "setPhaserOffsetSweep",	ssSfxrSetPhaserOffsetSweep,	1, 0, 0 },
+        { "getRepeatSpeed",	ssSfxrGetRepeatSpeed,	0, 0, 0 },
+        { "setRepeatSpeed",	ssSfxrSetRepeatSpeed,	1, 0, 0 },
+        { "getArpeggio",	ssSfxrGetArpeggio,	0, 0, 0 },
+        { "setArpeggio",	ssSfxrSetArpeggio,	1, 0, 0 },
+        { "getArpeggioSpeed",	ssSfxrGetArpeggioSpeed,	0, 0, 0 },
+        { "setArpeggioSpeed",	ssSfxrSetArpeggioSpeed,	1, 0, 0 },
+        { "clone",	ssSfxrClone,	0, 0, 0 },
+        { "toJSON",	ssSfxrToJSON,	0, 0, 0 },
+        { 0, 0, 0, 0, 0 },
         };
     JS_DefineFunctions(cx, object, fs);
 
@@ -11056,13 +11264,13 @@ CScript::CreateSfxrObject(JSContext* cx, SSFXR* sfxr)
 
     if (!sfxr_object)
     {
-
+        JS_RemoveRoot(cx, &object);
         return NULL;
     }
     sfxr_object->sfxr       = sfxr;
     sfxr_object->destroy_me = true;//always destroy
     JS_SetPrivate(cx, object, sfxr_object);
-
+    JS_RemoveRoot(cx, &object);
     return object;
 }
 
@@ -11122,7 +11330,7 @@ else
 if (!sound)
 {
     if(memoryfile)
-    	memoryfile->unref();
+        memoryfile->unref();
     JS_ReportError(cx, "Sfxr could not export sound effect. ");
     return JS_FALSE;
 }
@@ -11223,8 +11431,8 @@ begin_method(SS_SFXR, ssSfxrSetWaveType, 1)
     arg_int(wavetype);
     if ( wavetype >= object->sfxr->getMaxWaveTypes() || wavetype < 0 )
     {
-    	JS_ReportError(cx, "Invalid Wavetype: '%d'", wavetype);
-    	return JS_FALSE;
+        JS_ReportError(cx, "Invalid Wavetype: '%d'", wavetype);
+        return JS_FALSE;
     }
     object->sfxr->setWaveType(wavetype);
 end_method()
@@ -11622,6 +11830,48 @@ begin_method(SS_SFXR, ssSfxrClone, 0)
 return_object(CreateSfxrObject(cx, object->sfxr->Clone()));
 end_method()
 
+/**
+    - exports the Sfxr to a string, used internally by JSON
+      This string can be eval()'ed to recreate the sfxr.
+      note the float roundup: For .setBaseFrequency(0.123456789) the functions
+      .getBaseFrequency() returns 0.123456789104328156 and toJSON returns 0.123457
+*/
+begin_method(SS_SFXR, ssSfxrToJSON, 0)
+char json2[512];
+// Although getFilter() should be bool, it will work just fine.
+sprintf(json2,"CreateSfxr(%d,%d,%g,%d,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%d,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g)",
+    object->sfxr->getBitrate(),
+    object->sfxr->getSampleRate(),
+    object->sfxr->getSoundVolume(),
+    object->sfxr->getWaveType(),
+    object->sfxr->getBaseFrequency(),
+    object->sfxr->getMinFrequency(),
+    object->sfxr->getFrequencySlide(),
+    object->sfxr->getFrequencySlideDelta(),
+    object->sfxr->getSquareDuty(),
+    object->sfxr->getSquareDutySweep(),
+    object->sfxr->getVibratoDepth(),
+    object->sfxr->getVibratoSpeed(),
+    object->sfxr->getVibratoDelay(),
+    object->sfxr->getAttack(),
+    object->sfxr->getSustain(),
+    object->sfxr->getDecay(),
+    object->sfxr->getRelease(),
+    object->sfxr->getFilter(),
+    object->sfxr->getLowPassFilterCutoff(),
+    object->sfxr->getLowPassFilterCutoffSweep(),
+    object->sfxr->getFilterResonance(),
+    object->sfxr->getHighPassFilterCutoff(),
+    object->sfxr->getHighPassFilterCutoffSweep(),
+    object->sfxr->getPhaserOffset(),
+    object->sfxr->getPhaserOffsetSweep(),
+    object->sfxr->getRepeatSpeed(),
+    object->sfxr->getArpeggio(),
+    object->sfxr->getArpeggioSpeed()
+);
+return_str(json2);
+end_method()
+
 
 ////////////////////////////////////////
 ////////////////////////////////////////
@@ -11642,10 +11892,8 @@ CScript::CreateFontObject(JSContext* cx, SFONT* font, bool destroy)
 
     // create object
     JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
-    if (object == NULL)
-    {
+    if (!object || !JS_AddRoot(cx, &object))
         return NULL;
-    }
 
     // assign methods to the object
     static JSFunctionSpec fs[] =
@@ -11672,14 +11920,14 @@ CScript::CreateFontObject(JSContext* cx, SFONT* font, bool destroy)
 
     if (!font_object)
     {
-
+        JS_RemoveRoot(cx, &object);
         return NULL;
     }
     font_object->font       = font;
     font_object->destroy_me = destroy;
     font_object->mask       = CreateRGBA(255, 255, 255, 255);
     JS_SetPrivate(cx, object, font_object);
-
+    JS_RemoveRoot(cx, &object);
     return object;
 }
 
@@ -11905,10 +12153,8 @@ CScript::CreateWindowStyleObject(JSContext* cx, SWINDOWSTYLE* ws, bool destroy)
 
     // create object
     JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
-    if (object == NULL)
-    {
+    if (!object || !JS_AddRoot(cx, &object))
         return NULL;
-    }
 
     // assign methods to the object
     static JSFunctionSpec fs[] =
@@ -11928,14 +12174,14 @@ CScript::CreateWindowStyleObject(JSContext* cx, SWINDOWSTYLE* ws, bool destroy)
 
     if (!ws_object)
     {
-
+        JS_RemoveRoot(cx, &object);
         return NULL;
     }
     ws_object->windowstyle = ws;
     ws_object->destroy_me  = destroy;
     ws_object->mask = CreateRGBA(255, 255, 255, 255);
     JS_SetPrivate(cx, object, ws_object);
-
+    JS_RemoveRoot(cx, &object);
     return object;
 }
 
@@ -11991,7 +12237,7 @@ end_method()
 
 ///////////////////////////////////////
 /**
-    - save the windowstyle object (this just returns false...)
+    - [DISABLED] save the windowstyle object (this just returns false...)
 */
 begin_method(SS_WINDOWSTYLE, ssWindowStyleSave, 1)
 arg_str(filename);
@@ -11999,10 +12245,10 @@ return_bool(false);
 end_method()
 ///////////////////////////////////////
 /**
-    - save the windowstyle object (this just returns false...)
+    - [DISABLED] clone the windowstyle object
 */
 begin_method(SS_WINDOWSTYLE, ssWindowStyleClone, 0)
-return_object(JSVAL_NULL);
+return_object(object);
 end_method()
 ///////////////////////////////////////
 /**
@@ -12037,10 +12283,8 @@ CScript::CreateImageObject(JSContext* cx, IMAGE image, bool destroy)
 
     // create the object
     JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
-    if (object == NULL)
-    {
+    if (!object || !JS_AddRoot(cx, &object))
         return NULL;
-    }
 
     // assign methods to the object
     static JSFunctionSpec fs[] =
@@ -12067,11 +12311,14 @@ CScript::CreateImageObject(JSContext* cx, IMAGE image, bool destroy)
     SS_IMAGE* image_object = new SS_IMAGE;
 
     if (!image_object)
+    {
+        JS_RemoveRoot(cx, &object);
         return NULL;
+    }
     image_object->image       = image;
     image_object->destroy_me  = destroy;
     JS_SetPrivate(cx, object, image_object);
-
+    JS_RemoveRoot(cx, &object);
     return object;
 }
 
@@ -12123,13 +12370,12 @@ if (This->ShouldRender())
     arg_int(x);
     arg_int(y);
 
-    int blendmode = CImage32::BLEND;
     if (argc >= 3)
     {
-        blendmode = argInt(cx, argv[2]);
-    }
-
-    BlitImage(object->image, x, y, int_to_image_blendmode(blendmode));
+		int blendmode = argInt(cx, argv[2]);
+        BlitImage(object->image, x, y, int_to_image_blendmode(blendmode));
+	}else
+        BlitImage(object->image, x, y, CImage32::BLEND);
 }
 end_method()
 
@@ -12429,10 +12675,9 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
 
     // create the object
     JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
-    if (object == NULL)
-    {
+    if (!object || !JS_AddRoot(cx, &object))
         return NULL;
-    }
+
 
     // assign the methods to the object
     static JSFunctionSpec fs[] =
@@ -12457,8 +12702,8 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
             { "setPixel",         ssSurfaceSetPixel,         3, 0, 0 },
             { "setAlpha",         ssSurfaceSetAlpha,         1, 0, 0 },
             { "replaceColor",     ssSurfaceReplaceColor,     2, 0, 0 },
-    		{ "findColor",        ssSurfaceFindColor,        1, 0, 0 },
-    		{ "floodFill",        ssSurfaceFloodFill,        3, 0, 0 },
+            { "findColor",        ssSurfaceFindColor,        1, 0, 0 },
+            { "floodFill",        ssSurfaceFloodFill,        3, 0, 0 },
 
             { "pointSeries",       ssSurfacePointSeries,       2, 0, 0 },
             { "line",              ssSurfaceLine,              5, 0, 0 },
@@ -12502,10 +12747,13 @@ CScript::CreateSurfaceObject(JSContext* cx, CImage32* surface)
     SS_SURFACE* surface_object = new SS_SURFACE;
 
     if (!surface_object)
+    {
+        JS_RemoveRoot(cx, &object);
         return NULL;
+    }
     surface_object->surface = surface;
     JS_SetPrivate(cx, object, surface_object);
-
+    JS_RemoveRoot(cx, &object);
     return object;
 }
 
@@ -13016,15 +13264,18 @@ if (object->surface->FindColor(aColor,x,y))
     };
 
     JSObject* a_obj = JS_NewObject(cx, &a_clasp, NULL, NULL);
+    if (!a_obj || !JS_AddRoot(cx, &a_obj))
+        return NULL;
 
     JS_DefineProperty(cx, a_obj, "x",      INT_TO_JSVAL(x), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
     JS_DefineProperty(cx, a_obj, "y",      INT_TO_JSVAL(y), JS_PropertyStub, JS_PropertyStub, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
 
     return_object(a_obj);
+	JS_RemoveRoot(cx, &a_obj);
 } 
 else 
 {
-    return_null();
+	return_null();
 }
 
 end_method()
@@ -13077,10 +13328,10 @@ for (unsigned int i = 0; i < length; i++)
 
     if (points[i] == NULL)
     {
-    	JS_ReportError(cx, "pointSeries() failed: Invalid object at array index %d", i);
+        JS_ReportError(cx, "pointSeries() failed: Invalid object at array index %d", i);
         for (unsigned int i = 0; i < length; i++) delete points[i];
-    	delete [] points;
-    	return JS_FALSE;
+        delete [] points;
+        return JS_FALSE;
     }
 }
 
@@ -13178,10 +13429,10 @@ for (unsigned int i = 0; i < length; i++)
 
     if (points[i] == NULL)
     {
-    	JS_ReportError(cx, "lineSeries() failed: Invalid object at array index %d", i);
+        JS_ReportError(cx, "lineSeries() failed: Invalid object at array index %d", i);
         for (unsigned int j = 0; j < length; j++) delete points[j];
-    	delete [] points;
-    	return JS_FALSE;
+        delete [] points;
+        return JS_FALSE;
     }
 }
 
@@ -13341,7 +13592,7 @@ if (argc >= 3)
     invert = argInt(cx, argv[2]);
     if (invert != 0 && invert != 1)
     {
-    	invert = 0;
+        invert = 0;
     }
 }
 
@@ -13367,10 +13618,10 @@ for (unsigned int i = 0; i < length; i++)
 
     if (points[i] == NULL)
     {
-    	JS_ReportError(cx, "Polygon() failed: Invalid object at array index %d", i);
+        JS_ReportError(cx, "Polygon() failed: Invalid object at array index %d", i);
         for (unsigned int i = 0; i < length; i++) delete points[i];
-    	delete [] points;
-    	return JS_FALSE;
+        delete [] points;
+        return JS_FALSE;
     }
 }
 
@@ -13819,10 +14070,8 @@ CScript::CreateColorMatrixObject(JSContext* cx, CColorMatrix* colormatrix)
 
     // create the object
     JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
-    if (object == NULL)
-    {
+    if (!object || !JS_AddRoot(cx, &object))
         return NULL;
-    }
 
     // assign the methods to the object
     static JSFunctionSpec fs[] =
@@ -13856,10 +14105,13 @@ CScript::CreateColorMatrixObject(JSContext* cx, CColorMatrix* colormatrix)
     SS_COLORMATRIX* colormatrix_object = new SS_COLORMATRIX;
 
     if (!colormatrix_object)
+    {
+        JS_RemoveRoot(cx, &object);
         return NULL;
+    }
     colormatrix_object->colormatrix = colormatrix;
     JS_SetPrivate(cx, object, colormatrix_object);
-
+    JS_RemoveRoot(cx, &object);
     return object;
 }
 
@@ -13912,20 +14164,23 @@ end_property()
       This string can be eval()'ed to recreate the colormatrix
 */
 begin_method(SS_COLORMATRIX, ssColorMatrixToJSON, 0)
-std::string json = "CreateColorMatrix(";
-json.append( to_string(object->colormatrix->rn) ); json.append( "," );
-json.append( to_string(object->colormatrix->rr) ); json.append( "," );
-json.append( to_string(object->colormatrix->rg) ); json.append( "," );
-json.append( to_string(object->colormatrix->rb) ); json.append( "," );
-json.append( to_string(object->colormatrix->gn) ); json.append( "," );
-json.append( to_string(object->colormatrix->gr) ); json.append( "," );
-json.append( to_string(object->colormatrix->gg) ); json.append( "," );
-json.append( to_string(object->colormatrix->gb) ); json.append( "," );
-json.append( to_string(object->colormatrix->bn) ); json.append( "," );
-json.append( to_string(object->colormatrix->br) ); json.append( "," );
-json.append( to_string(object->colormatrix->bg) ); json.append( "," );
-json.append( to_string(object->colormatrix->bb) ); json.append( ")" );
-return_str( json.c_str() );
+char json2[512];
+sprintf(json2,
+    "CreateColorMatrix(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d)",
+    object->colormatrix->rn,
+	object->colormatrix->rr,
+	object->colormatrix->rg,
+	object->colormatrix->rb,
+	object->colormatrix->gn,
+	object->colormatrix->gr,
+	object->colormatrix->gg,
+	object->colormatrix->gb,
+	object->colormatrix->bn,
+	object->colormatrix->br,
+	object->colormatrix->bg,
+	object->colormatrix->bb
+);
+return_str(json2);
 end_method()
 
 ////////////////////////////////////////
@@ -14632,11 +14887,9 @@ CScript::CreateTilesetObject(JSContext* cx, const sTileset& tileset)
         };
     // create the object
     JSObject* object = JS_NewObject(cx, &clasp, NULL, NULL);
-    if (object == NULL)
-    {
-
+    if (!object || !JS_AddRoot(cx, &object))
         return NULL;
-    }
+
     // add the methods into the object
     static JSFunctionSpec fs[] =
         {
@@ -14649,12 +14902,19 @@ CScript::CreateTilesetObject(JSContext* cx, const sTileset& tileset)
     // attach the file to this object
     SS_TILESET* tileset_object = new SS_TILESET;
     if (!tileset_object)
+    {
+        JS_RemoveRoot(cx, &object);
         return NULL;
+    }
     tileset_object->__value__ = 0;
     JS_SetPrivate(cx, object, tileset_object);
+    JS_RemoveRoot(cx, &object);
     return object;
 }
-////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////
+/**
+    -
+*/
 begin_method(SS_MAPENGINE, ssMapEngineSave, 1)
 arg_str(filename);
 std::string path = "maps/" + std::string(filename);
@@ -14759,3 +15019,4 @@ This->m_Engine->GetMapEngine()->GetMap().GetMap().GetTileset().Save(filename);
 end_method()
 
 ////////////////////////////////////////////////////////////////////////////////
+

@@ -877,15 +877,16 @@ CImage32::ReplaceColor(RGBA oldColor, RGBA newColor)
 
 ////////////////////////////////////////////////////////////////////////////////
 bool
-CImage32::FindColor(RGBA aColor)
+CImage32::FindColor(RGBA aColor, int &x, int &y)
 {
-    for (int i = m_Width * m_Height-1; i >= 0; --i)
+    for (int i = m_Width * m_Height -1; i >= 0; --i)
     {
         RGBA& p = m_Pixels[i];
-        if (p == aColor)
-        {
+		if (p == aColor){
+			x = i % m_Width;
+			y = i / m_Width;
             return true;
-        }
+		}
     }
 	return false;
 }
@@ -2001,6 +2002,8 @@ inline void replaceMasker(RGBA& src, byte& alpha, RGBA mask)
 
 inline void blendMasker(RGBA& src, byte& alpha, RGBA mask)
 {
+	// TODO: *dst = (   (RedMask & ((idst & RedMask) +      ((int)(((int)(isrc & RedMask) -  (int)(idst & RedMask)) * alpha) >>8)))
+
     alpha     = (src.alpha * (255 - mask.alpha) + mask.alpha * mask.alpha) / 255;
     src.red   = (src.red   * (255 - mask.alpha) + mask.red   * mask.alpha) / 255;
     src.green = (src.green * (255 - mask.alpha) + mask.green * mask.alpha) / 255;

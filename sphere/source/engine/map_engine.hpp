@@ -134,7 +134,8 @@ public:
     bool GetZoneHeight(int zone, int& height);
     bool GetZoneLayer(int zone, int& layer);
     bool SetZoneLayer(int zone, int layer);
-
+    bool SetZoneDimensions(int zone, int x1, int y1, int x2, int y2);
+    //bool AddZone(int x1, int y1, int x2, int y2, int layer, const char* script);
     bool GetNumObstructionSegments(int layer, int& num_segments);
     bool RenderMap();
 
@@ -213,6 +214,7 @@ public:
     bool SetPersonSpeedXY(const char* name, double x, double y);
     bool GetPersonSpeedX(const char* name, double& x);
     bool GetPersonSpeedY(const char* name, double& y);
+    bool GetPersonVectorXY(const char* name, bool historical, int& x, int& y);
     bool SetPersonScaleAbsolute(const char* name, int width, int height);
     bool SetPersonScaleFactor(const char* name, double scale_x, double scale_y);
     bool GetPersonAngle(const char* name, double& angle);
@@ -278,24 +280,24 @@ public:
     }
     bool SaveMap(const char* filename);
 
-	bool nameBgm(std::string& result);
-	int validBgm();
-	void playBgm();
-	void stopBgm();
-	bool isPlayingBgm();
-	void resetBgm();
-	void setRepeatBgm(bool repeat);
-	bool getRepeatBgm();
-	void setVolumeBgm(float volume);
-	float getVolumeBgm();
-	void setPanBgm(float pan);
-	float getPanBgm();
-	void setPitchShiftBgm(float shift);
-	float getPitchShiftBgm();
-	bool isSeekableBgm();
-	int getLengthBgm();
-	void setPositionBgm(int position);
-	int getPositionBgm();
+	bool BgmName(std::string& result);
+	int BgmValid();
+	void BgmPlay();
+	void BgmStop();
+	bool BgmIsPlaying();
+	void BgmReset();
+	void BgmSetRepeat(bool repeat);
+	bool BgmGetRepeat();
+	void BgmSetVolume(float volume);
+	float BgmGetVolume();
+	void BgmSetPan(float pan);
+	float BgmGetPan();
+	void BgmSetPitchShift(float shift);
+	float BgmGetPitchShift();
+	bool BgmIsSeekable();
+	int BgmGetLength();
+	void BgmSetPosition(int position);
+	int BgmGetPosition();
 
 private:
     struct DelayScript
@@ -332,6 +334,8 @@ private:
         int base_x2;
         int base_y2;
 
+        int dx, hx;
+        int dy, hy;
         double speed_x;
         double speed_y;
 
