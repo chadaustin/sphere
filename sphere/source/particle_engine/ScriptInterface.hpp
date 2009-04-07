@@ -80,7 +80,7 @@ class ScriptInterface
                                                      &result);
 
                     if (JSVAL_IS_BOOLEAN(result))
-                        out_result = JSVAL_TO_BOOLEAN(result);
+                        out_result = (JSVAL_TRUE == result);
                     else
                         out_result = true;
 
