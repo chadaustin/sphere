@@ -676,7 +676,7 @@ CScript::InitializeSphereConstants()
                       { "PS_ORIENTATION_IMPLICIT", ParticleInitializer::IMPLICIT_ORIENTATION },
 
 
-                      // keyboard constants
+                      /* keyboard constants */
 #define KEY_CONSTANT(name) { #name, name },
                       KEY_CONSTANT(KEY_ESCAPE)
                       KEY_CONSTANT(KEY_F1)
@@ -904,7 +904,7 @@ CScript::BranchCallback(JSContext* cx, JSScript* script)
     if (This)
     {
         // handle garbage collection
-        if (This->m_GCEnabled && This->m_GCCount++ >= 60*60)
+        if (This->m_GCEnabled && This->m_GCCount++ >= 60*60*8)
         {
             // handle system events
             UpdateSystem();
@@ -1205,90 +1205,121 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     }
 
     jsval images_array;
-    if ( JS_GetProperty(cx, obj, "images", &images_array) == JS_FALSE )
+    if ( JS_GetProperty(cx, obj, "images", &images_array) == JS_FALSE || !JS_AddNamedRoot(cx, &images_array, "images_array"))
     {
         JS_RemoveRoot(cx, &obj);
         JS_ReportError(cx, "spriteset.images array property doesn't appear to exist.");
         return NULL;
     }
-    JS_AddNamedRoot(cx, &images_array, "images_array"); // Root variable to keep it save from CG
-
 
     jsval base_obstruction_val;
-    if ( JS_GetProperty(cx, obj, "base", &base_obstruction_val) == JS_FALSE )
+    if ( JS_GetProperty(cx, obj, "base", &base_obstruction_val) == JS_FALSE || !JS_AddNamedRoot(cx, &base_obstruction_val, "base_obstruction_val"))
     {
-        JS_RemoveRoot(cx, &obj);
         JS_RemoveRoot(cx, &images_array);
+		JS_RemoveRoot(cx, &obj);
         JS_ReportError(cx, "spriteset.base object property doesn't appear to exist.");
         return NULL;
     }
-    JS_AddNamedRoot(cx, &base_obstruction_val, "base_obstruction_val"); // Root variable to keep it save from CG
 
-    jsval x1_val, y1_val, x2_val, y2_val;
     JSObject* base_obstruction_object = argObject(cx, base_obstruction_val);
-    if (base_obstruction_object == NULL)
+    if (base_obstruction_object == NULL || !JS_AddNamedRoot(cx, &base_obstruction_object, "base_obstruction_object"))
     {
-        JS_RemoveRoot(cx, &obj);
-        JS_RemoveRoot(cx, &images_array);
         JS_RemoveRoot(cx, &base_obstruction_val);
-        JS_ReportError(cx, "spriteset.base object is not a valid object.");
+        JS_RemoveRoot(cx, &images_array);
+		JS_RemoveRoot(cx, &obj);
+		JS_ReportError(cx, "spriteset.base object is not a valid object.");
         return NULL;
     }
-    JS_AddNamedRoot(cx, &base_obstruction_object, "base_obstruction_object"); // Root variable to keep it save from CG
 
-    if ( JS_GetProperty(cx, base_obstruction_object, "x1", &x1_val) == JS_FALSE
-            || JS_GetProperty(cx, base_obstruction_object, "y1", &y1_val) == JS_FALSE
-            || JS_GetProperty(cx, base_obstruction_object, "x2", &x2_val) == JS_FALSE
-            || JS_GetProperty(cx, base_obstruction_object, "y2", &y2_val) == JS_FALSE )
+	// Obtain and Root variable to keep it save from CG
+    jsval x1_val, y1_val, x2_val, y2_val;
+    if (
+		JS_GetProperty(cx, base_obstruction_object, "x1", &x1_val) == JS_FALSE || !JS_AddRoot(cx, &x1_val)
+            || JS_GetProperty(cx, base_obstruction_object, "y1", &y1_val) == JS_FALSE || !JS_AddRoot(cx, &y1_val)
+            || JS_GetProperty(cx, base_obstruction_object, "x2", &x2_val) == JS_FALSE || !JS_AddRoot(cx, &x2_val)
+            || JS_GetProperty(cx, base_obstruction_object, "y2", &y2_val) == JS_FALSE || !JS_AddRoot(cx, &y2_val)
+		)
     {
+        JS_RemoveRoot(cx, &base_obstruction_object);
+        JS_RemoveRoot(cx, &base_obstruction_val);
+        JS_RemoveRoot(cx, &images_array);
+		JS_RemoveRoot(cx, &obj);
         JS_ReportError(cx, "spriteset.base object is invalid.");
         return NULL;
     }
-    // Root variable to keep it save from CG
-    JS_AddRoot(cx, &x1_val); JS_AddRoot(cx, &x2_val);
-    JS_AddRoot(cx, &y1_val); JS_AddRoot(cx, &y2_val);
+
+	if (!JSVAL_IS_INT(x1_val) || !JSVAL_IS_INT(y1_val) || !JSVAL_IS_INT(x2_val) || !JSVAL_IS_INT(y2_val))
+    {
+        JS_RemoveRoot(cx, &x1_val);
+        JS_RemoveRoot(cx, &y1_val);
+        JS_RemoveRoot(cx, &x2_val);
+        JS_RemoveRoot(cx, &y2_val);
+        JS_RemoveRoot(cx, &base_obstruction_object);
+        JS_RemoveRoot(cx, &base_obstruction_val);
+        JS_RemoveRoot(cx, &images_array);
+		JS_RemoveRoot(cx, &obj);
+		if (!JSVAL_IS_INT(x1_val))
+			JS_ReportError(cx, "spriteset.base.x1 is invalid");
+		else if (!JSVAL_IS_INT(y1_val))
+			JS_ReportError(cx, "spriteset.base.y1 is invalid");
+		else if (!JSVAL_IS_INT(x2_val))
+			JS_ReportError(cx, "spriteset.base.x2 is invalid");
+		else if (!JSVAL_IS_INT(y2_val))
+			JS_ReportError(cx, "spriteset.base.y2 is invalid");
+        return NULL;
+    }
+    int x1 = argInt(cx, x1_val);
+    int y1 = argInt(cx, y1_val);
+    int x2 = argInt(cx, x2_val);
+    int y2 = argInt(cx, y2_val);
+
 
     jsuint num_images = 0;
     JSObject* images_object = argArray(cx, images_array);
-    JS_RemoveRoot(cx, &images_array); // unRoot Images Array
-
-    if (images_object == NULL)
+    if (images_object == NULL || !JS_AddNamedRoot(cx, &images_object, "images_object") )
     {
-        JS_RemoveRoot(cx, &obj);
-        JS_RemoveRoot(cx, &images_array);
-        JS_RemoveRoot(cx, &base_obstruction_val);
+        JS_RemoveRoot(cx, &x1_val);
+        JS_RemoveRoot(cx, &y1_val);
+        JS_RemoveRoot(cx, &x2_val);
+        JS_RemoveRoot(cx, &y2_val);
         JS_RemoveRoot(cx, &base_obstruction_object);
+        JS_RemoveRoot(cx, &base_obstruction_val);
+        JS_RemoveRoot(cx, &images_array);
+		JS_RemoveRoot(cx, &obj);
         JS_ReportError(cx, "Invalid spriteset.images array.");
         return NULL;
     }
 
-    if ( JS_GetArrayLength(cx, images_object, &num_images) == JS_FALSE )
+    if ( JS_GetArrayLength(cx, images_object, &num_images) == JS_FALSE || (num_images <= 0) )
     {
-        JS_RemoveRoot(cx, &obj);
-        JS_RemoveRoot(cx, &images_array);
-        JS_RemoveRoot(cx, &base_obstruction_val);
+		JS_RemoveRoot(cx, &images_object);
+        JS_RemoveRoot(cx, &x1_val);
+        JS_RemoveRoot(cx, &y1_val);
+        JS_RemoveRoot(cx, &x2_val);
+        JS_RemoveRoot(cx, &y2_val);
         JS_RemoveRoot(cx, &base_obstruction_object);
-        JS_ReportError(cx, "Invalid spriteset.images array length.");
-        return NULL;
-    }
-
-    if (num_images <= 0)
-    {
-        JS_RemoveRoot(cx, &obj);
-        JS_RemoveRoot(cx, &images_array);
         JS_RemoveRoot(cx, &base_obstruction_val);
-        JS_RemoveRoot(cx, &base_obstruction_object);
-        JS_ReportError(cx, "Invalid spriteset.images length");
+        JS_RemoveRoot(cx, &images_array);
+		JS_RemoveRoot(cx, &obj);
+		if (num_images <= 0)
+			JS_ReportError(cx, "Invalid spriteset.images length");
+		else
+			JS_ReportError(cx, "Invalid spriteset.images array length.");
         return NULL;
     }
 
     CImage32* images = new CImage32[num_images];
     if (images == NULL)
     {
-        JS_RemoveRoot(cx, &obj);
-        JS_RemoveRoot(cx, &images_array);
-        JS_RemoveRoot(cx, &base_obstruction_val);
+		JS_RemoveRoot(cx, &images_object);
+        JS_RemoveRoot(cx, &x1_val);
+        JS_RemoveRoot(cx, &y1_val);
+        JS_RemoveRoot(cx, &x2_val);
+        JS_RemoveRoot(cx, &y2_val);
         JS_RemoveRoot(cx, &base_obstruction_object);
+        JS_RemoveRoot(cx, &base_obstruction_val);
+        JS_RemoveRoot(cx, &images_array);
+		JS_RemoveRoot(cx, &obj);
         JS_ReportError(cx, "Cannot allocate space for spriteset.images (%d)", num_images);
         return NULL;
     }
@@ -1302,10 +1333,15 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
         jsval image;
         if ( JS_GetElement(cx, images_object, i, &image) == JS_FALSE )
         {
-            JS_RemoveRoot(cx, &obj);
-            JS_RemoveRoot(cx, &images_array);
-            JS_RemoveRoot(cx, &base_obstruction_val);
-            JS_RemoveRoot(cx, &base_obstruction_object);
+			JS_RemoveRoot(cx, &images_object);
+	        JS_RemoveRoot(cx, &x1_val);
+			JS_RemoveRoot(cx, &y1_val);
+			JS_RemoveRoot(cx, &x2_val);
+		    JS_RemoveRoot(cx, &y2_val);
+	        JS_RemoveRoot(cx, &base_obstruction_object);
+			JS_RemoveRoot(cx, &base_obstruction_val);
+		    JS_RemoveRoot(cx, &images_array);
+			JS_RemoveRoot(cx, &obj);
             JS_ReportError(cx, "Invalid image %d", i);
             return NULL;
         }
@@ -1314,10 +1350,15 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
             SS_IMAGE* ss_image = argImage(cx, image);
             if (ss_image == NULL)
             {
-                JS_RemoveRoot(cx, &obj);
-                JS_RemoveRoot(cx, &images_array);
-                JS_RemoveRoot(cx, &base_obstruction_val);
-                JS_RemoveRoot(cx, &base_obstruction_object);
+				JS_RemoveRoot(cx, &images_object);
+			    JS_RemoveRoot(cx, &x1_val);
+				JS_RemoveRoot(cx, &y1_val);
+				JS_RemoveRoot(cx, &x2_val);
+			    JS_RemoveRoot(cx, &y2_val);
+				JS_RemoveRoot(cx, &base_obstruction_object);
+			    JS_RemoveRoot(cx, &base_obstruction_val);
+				JS_RemoveRoot(cx, &images_array);
+				JS_RemoveRoot(cx, &obj);
                 JS_ReportError(cx, "Invalid image: spriteset.images[%d]", i);
                 delete[] images;
                 return NULL;
@@ -1326,24 +1367,18 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
             int width  = GetImageWidth(ss_image->image);
             int height = GetImageHeight(ss_image->image);
 
-            if (width <= 0)
+            if ( (width <= 0) || (height <= 0))
             {
-                JS_RemoveRoot(cx, &obj);
-                JS_RemoveRoot(cx, &images_array);
-                JS_RemoveRoot(cx, &base_obstruction_val);
-                JS_RemoveRoot(cx, &base_obstruction_object);
-                JS_ReportError(cx, "Invalid image width %d at index:%d", width, i);
-                delete[] images;
-                return NULL;
-            }
-
-            if (height <= 0)
-            {
-                JS_RemoveRoot(cx, &obj);
-                JS_RemoveRoot(cx, &images_array);
-                JS_RemoveRoot(cx, &base_obstruction_val);
-                JS_RemoveRoot(cx, &base_obstruction_object);
-                JS_ReportError(cx, "Invalid image height %d at index:%d", height, i);
+				JS_RemoveRoot(cx, &images_object);
+			    JS_RemoveRoot(cx, &x1_val);
+				JS_RemoveRoot(cx, &y1_val);
+				JS_RemoveRoot(cx, &x2_val);
+			    JS_RemoveRoot(cx, &y2_val);
+				JS_RemoveRoot(cx, &base_obstruction_object);
+			    JS_RemoveRoot(cx, &base_obstruction_val);
+				JS_RemoveRoot(cx, &images_array);
+				JS_RemoveRoot(cx, &obj);
+				JS_ReportError(cx, "Invalid image dimensions: height=%d width=%d at index:%d", height,width, i);
                 delete[] images;
                 return NULL;
             }
@@ -1351,11 +1386,15 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
             RGBA* pixels = LockImage(ss_image->image);
             if (!pixels)
             {
-
-                JS_RemoveRoot(cx, &obj);
-                JS_RemoveRoot(cx, &images_array);
-                JS_RemoveRoot(cx, &base_obstruction_val);
-                JS_RemoveRoot(cx, &base_obstruction_object);
+				JS_RemoveRoot(cx, &images_object);
+			    JS_RemoveRoot(cx, &x1_val);
+				JS_RemoveRoot(cx, &y1_val);
+				JS_RemoveRoot(cx, &x2_val);
+			    JS_RemoveRoot(cx, &y2_val);
+				JS_RemoveRoot(cx, &base_obstruction_object);
+			    JS_RemoveRoot(cx, &base_obstruction_val);
+				JS_RemoveRoot(cx, &images_array);
+				JS_RemoveRoot(cx, &obj);
                 JS_ReportError(cx, "LockImage failed");
                 delete[] images;
                 return NULL;
@@ -1364,15 +1403,21 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
             UnlockImage(ss_image->image, false);
             if (images[i].GetWidth() != width || images[i].GetHeight() != height)
             {
-                JS_RemoveRoot(cx, &obj);
-                JS_RemoveRoot(cx, &images_array);
-                JS_RemoveRoot(cx, &base_obstruction_val);
-                JS_RemoveRoot(cx, &base_obstruction_object);
+				JS_RemoveRoot(cx, &images_object);
+			    JS_RemoveRoot(cx, &x1_val);
+				JS_RemoveRoot(cx, &y1_val);
+				JS_RemoveRoot(cx, &x2_val);
+			    JS_RemoveRoot(cx, &y2_val);
+				JS_RemoveRoot(cx, &base_obstruction_object);
+			    JS_RemoveRoot(cx, &base_obstruction_val);
+				JS_RemoveRoot(cx, &images_array);
+				JS_RemoveRoot(cx, &obj);
                 JS_ReportError(cx, "Temporary image allocation failed");
                 delete[] images;
                 return NULL;
             }
 
+			// All the other frames should have the same dimensions, so we use the first
             if (i == 0)
             {
                 frame_width  = images[i].GetWidth();
@@ -1381,10 +1426,15 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 
             if (frame_width != images[i].GetWidth() || frame_width <= 0)
             {
-                JS_RemoveRoot(cx, &obj);
-                JS_RemoveRoot(cx, &images_array);
-                JS_RemoveRoot(cx, &base_obstruction_val);
-                JS_RemoveRoot(cx, &base_obstruction_object);
+				JS_RemoveRoot(cx, &images_object);
+			    JS_RemoveRoot(cx, &x1_val);
+				JS_RemoveRoot(cx, &y1_val);
+				JS_RemoveRoot(cx, &x2_val);
+			    JS_RemoveRoot(cx, &y2_val);
+				JS_RemoveRoot(cx, &base_obstruction_object);
+			    JS_RemoveRoot(cx, &base_obstruction_val);
+				JS_RemoveRoot(cx, &images_array);
+				JS_RemoveRoot(cx, &obj);
                 JS_ReportError(cx, "Invalid frame width %d %d %d", i, frame_width, images[i].GetWidth());
                 delete[] images;
                 return NULL;
@@ -1392,10 +1442,15 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 
             if (frame_height != images[i].GetHeight() || frame_height <= 0)
             {
-                JS_RemoveRoot(cx, &obj);
-                JS_RemoveRoot(cx, &images_array);
-                JS_RemoveRoot(cx, &base_obstruction_val);
-                JS_RemoveRoot(cx, &base_obstruction_object);
+				JS_RemoveRoot(cx, &images_object);
+			    JS_RemoveRoot(cx, &x1_val);
+				JS_RemoveRoot(cx, &y1_val);
+				JS_RemoveRoot(cx, &x2_val);
+			    JS_RemoveRoot(cx, &y2_val);
+				JS_RemoveRoot(cx, &base_obstruction_object);
+			    JS_RemoveRoot(cx, &base_obstruction_val);
+				JS_RemoveRoot(cx, &images_array);
+				JS_RemoveRoot(cx, &obj);
                 JS_ReportError(cx, "Invalid frame height %d %d %d", i, frame_height, images[i].GetHeight());
                 delete[] images;
                 return NULL;
@@ -1404,58 +1459,19 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
         }
     }
 
-    if (!JSVAL_IS_INT(x1_val))
-    {
-        JS_RemoveRoot(cx, &obj);
-        JS_RemoveRoot(cx, &images_array);
-        JS_RemoveRoot(cx, &base_obstruction_val);
-        JS_RemoveRoot(cx, &base_obstruction_object);
-        JS_ReportError(cx, "spriteset.base.x1 is invalid");
-        delete[] images;
-        return NULL;
-    }
-    if (!JSVAL_IS_INT(y1_val))
-    {
-        JS_RemoveRoot(cx, &obj);
-        JS_RemoveRoot(cx, &images_array);
-        JS_RemoveRoot(cx, &base_obstruction_val);
-        JS_RemoveRoot(cx, &base_obstruction_object);
-        JS_ReportError(cx, "spriteset.base.y1 is invalid");
-        delete[] images;
-        return NULL;
-    }
-    if (!JSVAL_IS_INT(x2_val))
-    {
-        JS_RemoveRoot(cx, &obj);
-        JS_RemoveRoot(cx, &images_array);
-        JS_RemoveRoot(cx, &base_obstruction_val);
-        JS_RemoveRoot(cx, &base_obstruction_object);
-        JS_ReportError(cx, "spriteset.base.x2 is invalid");
-        delete[] images;
-        return NULL;
-    }
-    if (!JSVAL_IS_INT(y2_val))
-    {
-        JS_RemoveRoot(cx, &obj);
-        JS_RemoveRoot(cx, &images_array);
-        JS_RemoveRoot(cx, &base_obstruction_val);
-        JS_RemoveRoot(cx, &base_obstruction_object);
-        JS_ReportError(cx, "spriteset.base.y2 is invalid");
-        delete[] images;
-        return NULL;
-    }
-    int x1 = argInt(cx, x1_val);
-    int y1 = argInt(cx, y1_val);
-    int x2 = argInt(cx, x2_val);
-    int y2 = argInt(cx, y2_val);
 
     jsval directions_array;
-    if ( !JS_GetProperty(cx, obj, "directions", &directions_array) )
+    if ( !JS_GetProperty(cx, obj, "directions", &directions_array) || !JS_AddNamedRoot(cx, &directions_array, "directions_array"))
     {
-        JS_RemoveRoot(cx, &obj);
-        JS_RemoveRoot(cx, &images_array);
-        JS_RemoveRoot(cx, &base_obstruction_val);
-        JS_RemoveRoot(cx, &base_obstruction_object);
+		JS_RemoveRoot(cx, &images_object);
+	    JS_RemoveRoot(cx, &x1_val);
+		JS_RemoveRoot(cx, &y1_val);
+		JS_RemoveRoot(cx, &x2_val);
+	    JS_RemoveRoot(cx, &y2_val);
+		JS_RemoveRoot(cx, &base_obstruction_object);
+	    JS_RemoveRoot(cx, &base_obstruction_val);
+		JS_RemoveRoot(cx, &images_array);
+		JS_RemoveRoot(cx, &obj);
         JS_ReportError(cx, "spriteset.directions array property doesn't appear to exist.");
         delete[] images;
         return NULL;
@@ -1465,36 +1481,39 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     JSObject* directions_object = argArray(cx, directions_array);
     if (!directions_object || !JS_AddRoot(cx, &directions_object))
     {
-        JS_RemoveRoot(cx, &obj);
-        JS_RemoveRoot(cx, &images_array);
-        JS_RemoveRoot(cx, &base_obstruction_val);
-        JS_RemoveRoot(cx, &base_obstruction_object);
+		JS_RemoveRoot(cx, &directions_array);
+		JS_RemoveRoot(cx, &images_object);
+	    JS_RemoveRoot(cx, &x1_val);
+		JS_RemoveRoot(cx, &y1_val);
+		JS_RemoveRoot(cx, &x2_val);
+	    JS_RemoveRoot(cx, &y2_val);
+		JS_RemoveRoot(cx, &base_obstruction_object);
+	    JS_RemoveRoot(cx, &base_obstruction_val);
+		JS_RemoveRoot(cx, &images_array);
+		JS_RemoveRoot(cx, &obj);
         JS_ReportError(cx, "Invalid spriteset.directions array.");
         delete[] images;
         return NULL;
     }
 
     jsuint num_directions = 0;
-    if ( JS_GetArrayLength(cx, directions_object, &num_directions) == JS_FALSE )
+    if ( JS_GetArrayLength(cx, directions_object, &num_directions) == JS_FALSE || (num_directions <= 0))
     {
-        JS_RemoveRoot(cx, &obj);
-        JS_RemoveRoot(cx, &images_array);
-        JS_RemoveRoot(cx, &base_obstruction_val);
-        JS_RemoveRoot(cx, &base_obstruction_object);
-        JS_RemoveRoot(cx, &directions_object);
-        JS_ReportError(cx, "Invalid spriteset.directions array length.");
-        delete[] images;
-        return NULL;
-    }
-
-    if (num_directions <= 0)
-    {
-        JS_RemoveRoot(cx, &obj);
-        JS_RemoveRoot(cx, &images_array);
-        JS_RemoveRoot(cx, &base_obstruction_val);
-        JS_RemoveRoot(cx, &base_obstruction_object);
-        JS_RemoveRoot(cx, &directions_object);
-        JS_ReportError(cx, "Invalid spriteset.directions length");
+		JS_RemoveRoot(cx, &directions_object);
+		JS_RemoveRoot(cx, &directions_array);
+		JS_RemoveRoot(cx, &images_object);
+	    JS_RemoveRoot(cx, &x1_val);
+		JS_RemoveRoot(cx, &y1_val);
+		JS_RemoveRoot(cx, &x2_val);
+	    JS_RemoveRoot(cx, &y2_val);
+		JS_RemoveRoot(cx, &base_obstruction_object);
+	    JS_RemoveRoot(cx, &base_obstruction_val);
+		JS_RemoveRoot(cx, &images_array);
+		JS_RemoveRoot(cx, &obj);
+		if(num_directions <= 0)
+			JS_ReportError(cx, "Invalid spriteset.directions length");
+		else
+	        JS_ReportError(cx, "Invalid spriteset.directions array length.");
         delete[] images;
         return NULL;
     }
@@ -1502,11 +1521,17 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     sSpriteset* s = new sSpriteset();
     if (s == NULL)
     {
-        JS_RemoveRoot(cx, &obj);
-        JS_RemoveRoot(cx, &images_array);
-        JS_RemoveRoot(cx, &base_obstruction_val);
-        JS_RemoveRoot(cx, &base_obstruction_object);
-        JS_RemoveRoot(cx, &directions_object);
+		JS_RemoveRoot(cx, &directions_object);
+		JS_RemoveRoot(cx, &directions_array);
+		JS_RemoveRoot(cx, &images_object);
+	    JS_RemoveRoot(cx, &x1_val);
+		JS_RemoveRoot(cx, &y1_val);
+		JS_RemoveRoot(cx, &x2_val);
+	    JS_RemoveRoot(cx, &y2_val);
+		JS_RemoveRoot(cx, &base_obstruction_object);
+	    JS_RemoveRoot(cx, &base_obstruction_val);
+		JS_RemoveRoot(cx, &images_array);
+		JS_RemoveRoot(cx, &obj);
         JS_ReportError(cx, "Unable to allocate memory for spriteset");
         delete[] images;
         return NULL;
@@ -1524,15 +1549,15 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
     for (i = 0; i < num_directions; i++)
     {
 
-        jsval direction_object_val;
+        jsval direction_object_val; // This is a pointer to a rooted directions_object, and so contains protected information (no need for root)
         if ( !JS_GetElement(cx, directions_object, i, &direction_object_val) )
         {
             JS_ReportError(cx, "Invalid spriteset.directions[%d] object", i);
             return NULL;
         }
 
-        JSObject* direction_object = JSVAL_TO_OBJECT(direction_object_val);
         jsval direction_name;
+        JSObject* direction_object = JSVAL_TO_OBJECT(direction_object_val);
 
         if ( JS_GetProperty(cx, direction_object, "name", &direction_name) == JS_FALSE )
         {
@@ -1609,6 +1634,19 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
             s->SetFrameIndex(i, j, frame_index);
         }
     }
+
+		JS_RemoveRoot(cx, &directions_object);
+		JS_RemoveRoot(cx, &directions_array);
+		JS_RemoveRoot(cx, &images_object);
+	    JS_RemoveRoot(cx, &x1_val);
+		JS_RemoveRoot(cx, &y1_val);
+		JS_RemoveRoot(cx, &x2_val);
+	    JS_RemoveRoot(cx, &y2_val);
+		JS_RemoveRoot(cx, &base_obstruction_object);
+	    JS_RemoveRoot(cx, &base_obstruction_val);
+		JS_RemoveRoot(cx, &images_array);
+		JS_RemoveRoot(cx, &obj);
+
 
     return s;
 }
@@ -2569,6 +2607,10 @@ end_func()
 ////////////////////////////////////////////////////////////////////////////////
 /**
     - Determines if two polygons are colliding
+      It returns 0 when there is no collision, a positive number if a vertex of A 
+      collides with B and a negative number is a vertex of B collides with A.
+      1 and -1 is the first point in the array, and so on. Because the first element
+      in an array is zero, you need to substract or add 1 to get the element number.
 */
 begin_func(PolygonCollision, 2)
     arg_array(arrA);
@@ -2641,7 +2683,7 @@ begin_func(PolygonCollision, 2)
     }
 
     // Code from: http://www.visibone.com/inpoly/inpoly.c.txt
-    bool isinside = false;
+    int isinside = 0;
     int inside = 0;
     int xold = 0;
     int xnew = 0;
@@ -2680,12 +2722,14 @@ begin_func(PolygonCollision, 2)
             yold = ynew;
         }
 
-        if (inside)
-            isinside = true;
+        if (inside){
+            isinside = iA+1;
+            break;
+        }
     }
 
     // No need to check for the other one if we already know that we collided
-    if (!isinside) {
+    if (isinside == 0) {
     // For each point int pointsB, we will check point-in-poly in polygon pointsA
     for (unsigned int iB = 0; iB<lengthB; ++iB){
         xold = pointsA[lengthA-1]->x;
@@ -2714,8 +2758,10 @@ begin_func(PolygonCollision, 2)
             yold = ynew;
         }
 
-        if (inside)
-            isinside = true;
+        if (inside){
+            isinside = -iB-1;
+            break;
+        }
     }
     }
     for (unsigned int i = 0; i < lengthA; i++)
@@ -2724,7 +2770,7 @@ begin_func(PolygonCollision, 2)
         delete pointsB[i];
     delete [] pointsA;
     delete [] pointsB;
-    return_bool(isinside);
+    return_int(isinside);
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -13076,9 +13122,9 @@ end_method()
 
 ////////////////////////////////////////
 #if 0
-///**
-- draws 'image' onto the surface_object at (x, y)
-//*/
+/**
+    - [DISABLED] draws 'image' onto the surface_object at (x, y)
+*/
 begin_method(SS_SURFACE, ssSurfaceBlitImage, 3)
 arg_image(image_object);
 arg_int(x);
@@ -13248,7 +13294,8 @@ end_method()
 
 ////////////////////////////////////////
 /**
-    - Boolean: Tells us if the color aColor is in the surface
+    - Tells us if the color aColor is in the surface.
+      Returns an object containing x and y elements.
 */
 begin_method(SS_SURFACE, ssSurfaceFindColor, 1)
 arg_color(aColor);
