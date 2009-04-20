@@ -2764,7 +2764,8 @@ begin_func(PolygonCollision, 2)
         }
     }
     }
-    for (unsigned int i = 0; i < lengthA; i++)
+
+	for (unsigned int i = 0; i < lengthA; i++)
         delete pointsA[i];
     for (unsigned int i = 0; i < lengthB; i++)
         delete pointsB[i];
@@ -2779,7 +2780,6 @@ end_func()
       (each object must have a 'x' and 'y' property).
       If invert is true, all points in the bounding box of the polygon, but
       not in the polygon will be colored.
-
 */
 begin_func(Polygon, 2)
 if (This->ShouldRender())
@@ -2788,7 +2788,7 @@ if (This->ShouldRender())
     arg_color(c);
 
     int invert = 0;
-    if (argc >= 3)
+    if (argc > 2)
     {
         invert = argInt(cx, argv[2]);
         if (invert != 0 && invert != 1)
@@ -2796,6 +2796,16 @@ if (This->ShouldRender())
             invert = 0;
         }
     }
+	int offsetX = 0;
+	int offsetY = 0;
+    if (argc > 3)
+    {
+        offsetX = argInt(cx, argv[3]);
+	}
+    if (argc > 4)
+    {
+        offsetY = argInt(cx, argv[4]);
+	}
 
     jsval  v;
     jsval* vp = &v;
@@ -2824,6 +2834,14 @@ if (This->ShouldRender())
             delete [] points;
             return JS_FALSE;
         }
+    }
+
+    if(offsetX !=0 || offsetY !=0){
+        for (unsigned int i = 0; i < length; i++)
+        {
+            points[i]->x += offsetX;
+            points[i]->y += offsetY;
+		}
     }
 
     DrawPolygon(points, length, invert, c);
@@ -5885,11 +5903,26 @@ JSIdArray* ids = JS_Enumerate(cx, data_object);
 if (!ids || !JS_AddRoot(cx, &ids))
     return JS_FALSE;
 
+jsval id, val;
+int i = ids->length;
+while (i--) {
+  JS_IdToValue(cx, ids->vector[i], &id);
+  if (JSVAL_IS_STRING(id)) {
+	struct PersonData data;
+    data.name = JS_GetStringBytes(JSVAL_TO_STRING(id));
+    if (JS_LookupProperty(cx, data_object, data.name.c_str(), &val)) {
+		ParsePersonData(cx, val, data.string_value, data.double_value, data.type);
+    }
+	person_data.push_back(data);
+  }
+}
+/*
+// This code sometimes data.name = argStr() was empty, and JS_GetProperty failed.
 for (jsint i = ids->length -1; i>=0; --i)
 {
 
     jsval val;
-    if (JS_IdToValue(cx, ids[0].vector[i], &val) == JS_TRUE)
+    if (JS_IdToValue(cx, ids->vector[i], &val) == JS_TRUE)
     {
 
         struct PersonData data;
@@ -5901,6 +5934,7 @@ for (jsint i = ids->length -1; i>=0; --i)
         person_data.push_back(data);
     }
 }
+*/
 JS_RemoveRoot(cx, &ids);
 JS_DestroyIdArray(cx, ids);
 
