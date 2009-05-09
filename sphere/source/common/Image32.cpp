@@ -908,7 +908,7 @@ typedef struct { int xl, xr, y, dy; } LINESEGMENT;
 
 // Fill background with given color
 
-void CImage32::SeedFill_4(int x, int y, RGBA new_color, clipper clip)
+inline void CImage32::SeedFill_4(int x, int y, RGBA new_color, clipper clip)
 {
     int left, x1, x2, dy;
     RGBA old_color;

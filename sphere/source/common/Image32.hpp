@@ -28,6 +28,7 @@ public:
         MULTIPLY,
         AVERAGE,
         INVERT,
+		NUM_BLENDS
     };
 
 public:

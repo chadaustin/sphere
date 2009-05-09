@@ -24,6 +24,7 @@ BEGIN_MESSAGE_MAP(CSwatchPalette, CPaletteWindow)
   ON_COMMAND(ID_SWATCHPALETTE_DEFAULT_PLASMA, OnDefaultPlasma)
   ON_COMMAND(ID_SWATCHPALETTE_DEFAULT_RGB332, OnDefaultRGB332)
   ON_COMMAND(ID_SWATCHPALETTE_DEFAULT_VISIBONE2, OnDefaultVisibone2)
+  ON_COMMAND(ID_SWATCHPALETTE_DEFAULT_HSL256, OnDefaultHsl256)
 
   ON_COMMAND(ID_SWATCHPALETTE_INSERTBEFORE, OnInsertColorBefore)
   ON_COMMAND(ID_SWATCHPALETTE_INSERTAFTER,  OnInsertColorAfter)
@@ -490,6 +491,29 @@ CSwatchPalette::OnDefaultVisibone2()
       visibone2_palette[i].red,
       visibone2_palette[i].green,
       visibone2_palette[i].blue,
+      255
+    };
+    swatch->SetColor(i, color);
+  }
+
+  UpdateScrollBar();
+  Invalidate();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+afx_msg void
+CSwatchPalette::OnDefaultHsl256()
+{
+  CSwatchServer* swatch = CSwatchServer::Instance();
+  if (!swatch) return;
+
+  swatch->Clear();
+  for (int i = 0; i < 256; i++)
+  {
+    RGBA color = {
+      hsl256_palette[i].red,
+      hsl256_palette[i].green,
+      hsl256_palette[i].blue,
       255
     };
     swatch->SetColor(i, color);

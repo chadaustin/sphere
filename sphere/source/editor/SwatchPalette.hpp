@@ -29,6 +29,7 @@ private:
   afx_msg void OnDefaultPlasma();
   afx_msg void OnDefaultRGB332();
   afx_msg void OnDefaultVisibone2();
+  afx_msg void OnDefaultHsl256();
   afx_msg void OnInsertColorBefore();
   afx_msg void OnInsertColorAfter();
   afx_msg void OnReplaceColor();
