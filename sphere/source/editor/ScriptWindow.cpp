@@ -1326,19 +1326,22 @@ CScriptWindow::OnCharAdded(NMHDR* nmhdr, LRESULT* result) {
     {
       //SendEditor(SCI_SETWORDCHARS, 0, (LPARAM)"_.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
       
-      int cur_pos  = SendEditor(SCI_GETCURRENTPOS);
-      int word_pos = SendEditor(SCI_WORDSTARTPOSITION, cur_pos);
-      int len = cur_pos - word_pos;
+      LPARAM cur_pos  = SendEditor(SCI_GETCURRENTPOS);
+      LPARAM word_pos = SendEditor(SCI_WORDSTARTPOSITION, cur_pos);
+      long len = cur_pos - word_pos;
+	  if(len<0) len=0;
       if (word_pos >= 0 && len > 0) {
         // 
-        char  linebuf[1024];
-        int  current = SendEditor(SCI_GETCURLINE,  sizeof(linebuf),	reinterpret_cast<LPARAM>(static_cast<char  *>(linebuf)));
+        char  linebuf[1024*8];
+        LRESULT  current = SendEditor(SCI_GETCURLINE,  sizeof(linebuf),	reinterpret_cast<LPARAM>(static_cast<char  *>(linebuf)));
+		if(current>=sizeof(linebuf)) current = 0;
+		if(current<0) current = 0;
         linebuf[current]  =  '\0';
-        char*  word  =  linebuf + word_pos;
+        char*  word  =  linebuf + (current-len);
 
         // Ok, now we have 'word' we need to check ourselves if it matches, because if it doesnt, it still will make SCintilla flikker.
         // THIS CAUSES THE FLICKERING, we need to make sure first IF we need to show the box with syntax. SCI-team ignored this error.
-        if (strstr(sFunctionDefinitions,word)) // horribly inefficient find-string-in-string function (but it works)
+        if ((len >0) && strstr(sFunctionDefinitions,word)) // horribly inefficient find-string-in-string function (but it works)
           SendEditor(SCI_AUTOCSHOW, cur_pos - word_pos, (LPARAM)sFunctionDefinitions);
       }
       //SendEditor(SCI_SETCHARSDEFAULT);
