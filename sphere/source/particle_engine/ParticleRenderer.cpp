@@ -24,28 +24,24 @@ ParticleRenderer::operator()(const Particle& p) const
 void
 ParticleRenderer::SetBlendMode(CImage32::BlendMode blendmode)
 {
-    switch (blendmode)
-    {
-        case CImage32::BLEND:    m_BlendMode = CImage32::BLEND;    break;
-        case CImage32::ADD:      m_BlendMode = CImage32::ADD;      break;
-        case CImage32::SUBTRACT: m_BlendMode = CImage32::SUBTRACT; break;
-        case CImage32::MULTIPLY: m_BlendMode = CImage32::MULTIPLY; break;
-    }
-
+	m_BlendMode = blendmode;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void
 ParticleRenderer::SetBlendMode(int blendmode)
 {
-    switch (blendmode)
+	if(blendmode >=0 && blendmode < CImage32::NUM_BLENDS)
+	m_BlendMode = (CImage32::BlendMode)blendmode;
+/*
+	switch (blendmode)
     {
         case CImage32::BLEND:    m_BlendMode = CImage32::BLEND;    break;
         case CImage32::ADD:      m_BlendMode = CImage32::ADD;      break;
         case CImage32::SUBTRACT: m_BlendMode = CImage32::SUBTRACT; break;
         case CImage32::MULTIPLY: m_BlendMode = CImage32::MULTIPLY; break;
     }
-
+*/
 }
 
 
