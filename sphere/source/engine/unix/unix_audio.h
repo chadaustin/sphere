@@ -9,7 +9,7 @@
 bool InitAudio(SPHERECONFIG* config);
 void CloseAudio();
 
-audiere::OutputStream* SA_OpenSound(audiere::File* file, bool streaming);
-audiere::SoundEffect*  SA_OpenSoundEffect(audiere::File* file, audiere::SoundEffectType type);
+audiere::OutputStream* SA_OpenSound(audiere::File* file, const char* filename, bool streaming);
+audiere::SoundEffect*  SA_OpenSoundEffect(audiere::File* file, const char* filename, audiere::SoundEffectType type);
 
 #endif

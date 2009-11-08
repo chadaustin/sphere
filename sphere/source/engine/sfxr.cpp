@@ -539,7 +539,7 @@ audiere::SoundEffect* sSfxr::getSoundEffect(audiere::SoundEffectType type, audie
 	// audiere::File* memoryfile = audiere::CreateMemoryFile(buffer, bytearraylength);
 	memoryfile = audiere::CreateMemoryFile(buffer, bytearraylength);
 	//audiere::SoundEffect* sound = SA_OpenSoundEffect(adrfile.get(), type, memoryfile);
-	audiere::SoundEffect* sound = SA_OpenSoundEffect(memoryfile, type);
+	audiere::SoundEffect* sound = SA_OpenSoundEffect(memoryfile, NULL, type);
 
 	//DEBUG
 /*

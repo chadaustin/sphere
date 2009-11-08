@@ -854,7 +854,7 @@ CGameEngine::LoadSound(const char* filename, bool streaming)
     }
 
     audiere::FilePtr adrfile(new AudiereFile(file));
-    return SA_OpenSound(adrfile.get(), streaming);
+    return SA_OpenSound(adrfile.get(),filename, streaming);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -871,7 +871,7 @@ CGameEngine::LoadSoundEffect(const char* filename, audiere::SoundEffectType type
     }
 
     audiere::FilePtr adrfile(new AudiereFile(file));
-    return SA_OpenSoundEffect(adrfile.get(), type);
+    return SA_OpenSoundEffect(adrfile.get(), filename, type);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -908,14 +908,14 @@ CGameEngine::CreateSound(audiere::File * memoryfile, bool streaming)
     //audiere::FilePtr adrfile(new AudiereMemoryFile(memoryfile));
 	//audiere::FilePtr adrfile(memoryfile);
     //return SA_OpenSound(adrfile.get(), streaming);
-	return SA_OpenSound(memoryfile, streaming);
+	return SA_OpenSound(memoryfile, NULL, streaming);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 audiere::SoundEffect*
 CGameEngine::CreateSoundEffect(audiere::File * memoryfile, audiere::SoundEffectType type)
 {
-    return SA_OpenSoundEffect(memoryfile, type);
+    return SA_OpenSoundEffect(memoryfile, NULL, type);
 }
 
 audiere::File*

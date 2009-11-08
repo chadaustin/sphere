@@ -105,7 +105,7 @@ BEGIN
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Sphere Engine\0"
             VALUE "ProductVersion", "1, 6, 0, 0\0"
-            VALUE "SpecialBuild", "Beta\0"
+            VALUE "SpecialBuild", "Beta 4\0"
         END
     END
     BLOCK "VarFileInfo"

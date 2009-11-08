@@ -88,9 +88,70 @@ CConfigFile::GetKey(const int section, const int index) const
     return "";
 }
 ////////////////////////////////////////////////////////////////////////////////
+bool
+CConfigFile::RemoveKey(const int section, const int index) const
+{
+    if (section == -1)
+    {
+        int num_keys = 0;
+        std::map<std::string, Section>::const_iterator i;
+        for (i = m_sections.begin(); i != m_sections.end(); i++)
+        {
+
+            const Section& s = i->second;
+            std::map<std::string, std::string>::const_iterator j;
+			std::string keyname;
+            for (j = s.entries.begin(); j != s.entries.end(); j++)
+            {
+
+                if (num_keys == index)
+                {
+					//s.entries.get_allocator()
+					//j.erase(i);
+					std::map<std::string, std::string> SS = s.entries;
+					std::map<std::string, std::string>::iterator it;
+					it=SS.find(j->first);
+					SS.erase(it);
+					return true;
+
+					m_sections.find(i->first);
+
+					SS.empty();
+					SS.clear();
+						
+					//SS.erase(SS.begin());
+					//SS.erase(SS.end());
+					return true;
+					SS.erase(j->first);
+					return "";
+					keyname = j->first;
+					std::map<std::string, std::string>::const_iterator ii;
+					ii= s.entries.find(keyname);
+					if( ii != s.entries.end() )
+					{
+						 //s.entries.erase (s.entries.find(keyname));
+						//s.entries.erase( ii ++,ii );
+					}
+
+					//s.entries.
+					//	s.entries.erase(j);
+					//m_sections.erase(i->first, j->first);
+
+				// return j->first.c_str();
+                }
+                num_keys += 1;
+            }
+        }
+        return "";
+    }
+    return "";
+}
+////////////////////////////////////////////////////////////////////////////////
 std::string
 CConfigFile::GetValue(const int section, const int index) const
 {
+	//if(m_sections.find(section) != m_sections.end())
+	//	return m_sections[section];
     return "";
 }
 ////////////////////////////////////////////////////////////////////////////////

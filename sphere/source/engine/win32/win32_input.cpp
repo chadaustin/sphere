@@ -136,10 +136,14 @@ struct Joystick
     UINT maxZ;
     UINT minR;
     UINT maxR;
+    UINT minU;
+    UINT maxU;
+    UINT minV;
+    UINT maxV;
     UINT numAxes;
     UINT numButtons;
 
-    float axes[4];
+    float axes[JOYSTICK_MAX_AXIS+1];
     UINT buttons;
 };
 std::vector<Joystick> Joysticks;
@@ -153,7 +157,7 @@ void TryJoystick(UINT id)
 
     JOYINFOEX jinfo_ex;
     jinfo_ex.dwSize  = sizeof(jinfo_ex);
-    jinfo_ex.dwFlags = JOY_RETURNBUTTONS | JOY_RETURNX | JOY_RETURNY | JOY_RETURNZ | JOY_RETURNR;
+    jinfo_ex.dwFlags = JOY_RETURNBUTTONS | JOY_RETURNX | JOY_RETURNY | JOY_RETURNZ | JOY_RETURNR | JOY_RETURNU | JOY_RETURNV;
     
     if (joyGetPosEx(id, &jinfo_ex) != JOYERR_NOERROR)
     {
@@ -177,10 +181,16 @@ void TryJoystick(UINT id)
     j.maxZ       = jcaps.wZmax;
     j.minR       = jcaps.wRmin;
     j.maxR       = jcaps.wRmax;
+    j.minU       = jcaps.wUmin;
+    j.maxU       = jcaps.wUmax;
+    j.minV       = jcaps.wVmin;
+    j.maxV       = jcaps.wVmax;
     j.axes[0]    = 0;
     j.axes[1]    = 0;
     j.axes[2]    = 0;
     j.axes[3]    = 0;
+    j.axes[4]    = 0;
+    j.axes[5]    = 0;
     j.buttons    = 0;
     j.numButtons = jcaps.wNumButtons;
     j.numAxes    = jcaps.wNumAxes;
@@ -297,7 +307,7 @@ bool RefreshInput()
         Joystick &j = Joysticks[i];
         JOYINFOEX jinfo_ex;
         jinfo_ex.dwSize  = sizeof(jinfo_ex);
-        jinfo_ex.dwFlags = JOY_RETURNBUTTONS | JOY_RETURNX | JOY_RETURNY | JOY_RETURNZ | JOY_RETURNR;
+        jinfo_ex.dwFlags = JOY_RETURNBUTTONS | JOY_RETURNX | JOY_RETURNY | JOY_RETURNZ | JOY_RETURNR |JOY_RETURNU | JOY_RETURNV;
         
         if (joyGetPosEx(j.id, &jinfo_ex) == JOYERR_NOERROR)
         {
@@ -305,6 +315,8 @@ bool RefreshInput()
             j.axes[JOYSTICK_AXIS_Y] = float(jinfo_ex.dwYpos - j.minY) / (j.maxY - j.minY) * 2 - 1;
             j.axes[JOYSTICK_AXIS_Z] = float(jinfo_ex.dwZpos - j.minZ) / (j.maxZ - j.minZ) * 2 - 1;
             j.axes[JOYSTICK_AXIS_R] = float(jinfo_ex.dwRpos - j.minR) / (j.maxR - j.minR) * 2 - 1;
+            j.axes[JOYSTICK_AXIS_U] = float(jinfo_ex.dwUpos - j.minU) / (j.maxU - j.minU) * 2 - 1;
+            j.axes[JOYSTICK_AXIS_V] = float(jinfo_ex.dwVpos - j.minV) / (j.maxV - j.minV) * 2 - 1;
             j.buttons = jinfo_ex.dwButtons;
         }
     }
@@ -420,14 +432,9 @@ int GetNumJoysticks()
 ////////////////////////////////////////////////////////////////////////////////
 float GetJoystickAxis(int joy, int axis)
 {
-    if (joy >= 0 && joy < GetNumJoysticks() && axis >= 0 && axis < 4)
-    {
-        return Joysticks[joy].axes[axis];
-    }
-    else
-    {
+    if (joy < 0 || joy >= GetNumJoysticks() || axis < 0 || axis > JOYSTICK_MAX_AXIS)
         return 0;
-    }
+    return Joysticks[joy].axes[axis];
 }
 
 ////////////////////////////////////////////////////////////////////////////////

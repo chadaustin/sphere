@@ -490,7 +490,7 @@ void UpdateSystem()
 {
     MSG msg;
     int count = 0;
-    while (count++ < 8 && PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+    while (count++ < 4 && PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
     {
         DispatchMessage(&msg);
         if (msg.message == WM_QUIT)

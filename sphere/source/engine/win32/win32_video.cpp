@@ -12,7 +12,7 @@ static bool InitVDriver(int x, int y);
 static void CloseVDriver();
 
 // this function should not be exposed
-static void (__stdcall * _FlipScreen)();
+static void (__fastcall * _FlipScreen)();
 
 void  (__stdcall * SetClippingRectangle)(int x, int y, int w, int h);
 void  (__stdcall * GetClippingRectangle)(int* x, int* y, int* w, int* h);
@@ -278,19 +278,19 @@ bool SwitchResolution(int x, int y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-int GetScreenWidth()
+inline int GetScreenWidth()
 {
     return ScreenWidth;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-int GetScreenHeight()
+inline int GetScreenHeight()
 {
     return ScreenHeight;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void FlipScreen()
+inline void FlipScreen()
 {
     static bool FirstCall    = true;
     static int LastUpdate    = 0;

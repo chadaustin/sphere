@@ -185,7 +185,7 @@ public:
     bool ScreenToMapX(int layer, int sx, int& mx);
     bool ScreenToMapY(int layer, int sx, int& my);
 
-    bool GetPersonList(std::vector<std::string>& list);
+    bool GetPersonList(std::vector<std::string>& list, int& size);
 	bool DoesPersonExist(const char* name);
     bool CreatePerson(const char* name, const char* spriteset, bool destroy_with_map);
     bool DestroyPerson(const char* name);
@@ -280,24 +280,10 @@ public:
     }
     bool SaveMap(const char* filename);
 
-	bool BgmName(std::string& result);
-	int BgmValid();
-	void BgmPlay();
-	void BgmStop();
-	bool BgmIsPlaying();
-	void BgmReset();
-	void BgmSetRepeat(bool repeat);
-	bool BgmGetRepeat();
-	void BgmSetVolume(float volume);
-	float BgmGetVolume();
-	void BgmSetPan(float pan);
-	float BgmGetPan();
-	void BgmSetPitchShift(float shift);
-	float BgmGetPitchShift();
-	bool BgmIsSeekable();
-	int BgmGetLength();
-	void BgmSetPosition(int position);
-	int BgmGetPosition();
+	bool GetMapMusicName(std::string& result);
+	int GetMapMusicType();
+	audiere::OutputStreamPtr getMusic(){return m_Music;};
+	audiere::MIDIStreamPtr getMidi(){return m_Midi;};
 
 private:
     struct DelayScript

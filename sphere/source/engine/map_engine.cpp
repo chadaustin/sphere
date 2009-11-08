@@ -1725,7 +1725,7 @@ CMapEngine::AttachPlayerInput(const char* name, int player)
         p.key_left  = config->key_left;
         p.key_right = config->key_right;
         p.key_a     = config->key_a;
-        p.key_a     = config->key_a;
+        p.key_b     = config->key_b; // key_b?
         p.key_x     = config->key_x;
         p.key_y     = config->key_y;
         p.keyboard_input_allowed = config->keyboard_input_allowed;
@@ -2037,21 +2037,24 @@ CMapEngine::ScreenToMapY(int layer, int sy, int& my)
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
-CMapEngine::GetPersonList(std::vector<std::string>& list)
+CMapEngine::GetPersonList(std::vector<std::string>& list, int& size)
 {
     list.resize(m_Persons.size());
+	if (list.size() !=m_Persons.size())
+		return false; //whoops! couldnt resize
+	size = list.size();
 
     unsigned int j = 0;
     for (unsigned int i = 0; (i < m_Persons.size() && i < list.size()); i++)
     {
         if ( !m_Persons[i].name.empty() )
         {
-            list[j] = m_Persons[i].name;
-            j++;
+			list[j] = m_Persons[i].name;
+			j++;
         }
     }
 
-    list.resize(j);
+    if( j < m_Persons.size() ) list.resize(j);
     return true;
 }
 
@@ -4564,7 +4567,7 @@ CMapEngine::Render()
         }
 
     } // end for all layers
-    // QUESTION: Why does blue != 255?
+
     //if (!(m_CurrentColorMask.red == 255 && m_CurrentColorMask.green == 255 && m_CurrentColorMask.blue == 255 && m_CurrentColorMask.alpha == 255))
     if ( (m_CurrentColorMask.red-255)|(m_CurrentColorMask.green-255)|(m_CurrentColorMask.blue-255)|(m_CurrentColorMask.alpha-255) )
         ApplyColorMask(m_CurrentColorMask);
@@ -4730,7 +4733,8 @@ CMapEngine::UpdatePersons()
     bool anything_activated = false;
 
     // for each person...
-    for (int i = int(m_Persons.size())-1 ; i>=0 ; --i)
+    // for (int i = int(m_Persons.size())-1 ; i>=0 ; --i) // Sometimes, it starts at i=12, then suddenly .size()==2 and its out of range!
+    for (int i = 0; i < int(m_Persons.size()) ; ++i)
     {
         bool activated;
         if (!UpdatePerson(i, activated))
@@ -5400,7 +5404,7 @@ CMapEngine::IsPersonInsideZone(int person_index, int zone_index)
         return false;
 
     Person& p = m_Persons[person_index];
-	return IsPointWithinZone(p.x, p.y, p.layer, zone_index);
+	return IsPointWithinZone((int)p.x, (int)p.y, p.layer, zone_index);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5524,6 +5528,8 @@ CMapEngine::UpdateColorMasks()
 bool
 CMapEngine::UpdateDelayScripts()
 {
+	if(m_DelayScripts.size() == 0)
+		return true;
     // update delay scripts
     for (unsigned int i = 0; i < m_DelayScripts.size(); ++i)
     {
@@ -6290,14 +6296,14 @@ CMapEngine::SaveMap(const char* filename)
 */
 
 bool
-CMapEngine::BgmName(std::string& result)
+CMapEngine::GetMapMusicName(std::string& result)
 {
     result = m_LastMusicPath;
     return true;
 }
 
 int
-CMapEngine::BgmValid()
+CMapEngine::GetMapMusicType()
 {
     if (m_Music)
     {
@@ -6313,211 +6319,3 @@ CMapEngine::BgmValid()
     return 0;
 }
 
-void
-CMapEngine::BgmPlay()
-{
-    if (m_Music)
-    {
-        m_Music->play();
-    }
-
-#if defined(WIN32) && defined(USE_MIDI)
-    if (m_Midi)
-    {
-        m_Midi->play();
-    }
-#endif
-}
-
-void
-CMapEngine::BgmStop()
-{
-    if (m_Music)
-    {
-        m_Music->stop();
-    }
-
-#if defined(WIN32) && defined(USE_MIDI)
-    if (m_Midi)
-    {
-        m_Midi->stop();
-    }
-#endif
-}
-
-bool
-CMapEngine::BgmIsPlaying()
-{
-    if (m_Music)
-    {
-        return m_Music->isPlaying();
-    }
-
-#if defined(WIN32) && defined(USE_MIDI)
-    if (m_Midi)
-    {
-        return m_Midi->isPlaying();
-    }
-#endif
-    return false;
-}
-
-void
-CMapEngine::BgmReset()
-{
-    if (m_Music)
-    {
-        m_Music->reset();
-    }
-}
-
-void
-CMapEngine::BgmSetRepeat(bool repeat)
-{
-    if (m_Music)
-    {
-        m_Music->setRepeat(repeat);
-    }
-
-#if defined(WIN32) && defined(USE_MIDI)
-    if (m_Midi)
-    {
-        m_Midi->setRepeat(repeat);
-    }
-#endif
-}
-
-bool
-CMapEngine::BgmGetRepeat()
-{
-    if (m_Music)
-    {
-        return m_Music->getRepeat();
-    }
-
-#if defined(WIN32) && defined(USE_MIDI)
-    if (m_Midi)
-    {
-        return m_Midi->getRepeat();
-    }
-#endif
-    return false;
-}
-
-void
-CMapEngine::BgmSetVolume(float volume)
-{
-    if (m_Music)
-    {
-        return m_Music->setVolume(volume);
-    }
-}
-
-float
-CMapEngine::BgmGetVolume()
-{
-    if (m_Music)
-    {
-        return m_Music->getVolume();
-    }
-    return -1;
-}
-
-void
-CMapEngine::BgmSetPan(float pan)
-{
-    if (m_Music)
-    {
-        return m_Music->setPan(pan);
-    }
-}
-
-float
-CMapEngine::BgmGetPan()
-{
-    if (m_Music)
-    {
-        return m_Music->getPan();
-    }
-    return 0;
-}
-
-void
-CMapEngine::BgmSetPitchShift(float shift)
-{
-    if (m_Music)
-    {
-        return m_Music->setPitchShift(shift);
-    }
-}
-
-float
-CMapEngine::BgmGetPitchShift()
-{
-    if (m_Music)
-    {
-        return m_Music->getPitchShift();
-    }
-    return 0;
-}
-
-bool
-CMapEngine::BgmIsSeekable()
-{
-    if (m_Music)
-    {
-        return m_Music->isSeekable();
-    }
-    return false;
-}
-
-int
-CMapEngine::BgmGetLength()
-{
-    if (m_Music)
-    {
-        return m_Music->getLength();
-    }
-
-#if defined(WIN32) && defined(USE_MIDI)
-    if (m_Midi)
-    {
-        return m_Midi->getLength();
-    }
-#endif
-    return false;
-}
-
-
-void
-CMapEngine::BgmSetPosition(int position)
-{
-    if (m_Music)
-    {
-        return m_Music->setPosition(position);
-    }
-
-#if defined(WIN32) && defined(USE_MIDI)
-    if (m_Midi)
-    {
-        return m_Midi->setPosition(position);
-    }
-#endif
-}
-
-int
-CMapEngine::BgmGetPosition()
-{
-    if (m_Music)
-    {
-        return m_Music->getPosition();
-    }
-
-#if defined(WIN32) && defined(USE_MIDI)
-    if (m_Midi)
-    {
-        return m_Midi->getPosition();
-    }
-#endif
-    return 0;
-}

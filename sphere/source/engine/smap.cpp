@@ -139,15 +139,18 @@ SMAP::Load(const char* filename, IFileSystem& fs)
 void
 SMAP::UpdateMap()
 {
-    unsigned int i;
+    int i;
 
     // update layer times for autoscrolling
-    for (i = 0; i < m_LayerInfo.size(); i++)
-        m_LayerInfo[i].time++;
+    for (i = m_LayerInfo.size() -1; i >= 0; --i)
+		m_LayerInfo[i].time++;
+
+
 
     // update animations
     sTileset& tileset = m_Map.GetTileset();
-    for (i = 0; i < (unsigned int)tileset.GetNumTiles(); i++)
+    for (i = tileset.GetNumTiles() -1; i>=0; --i)
+    //for (i = 0; i < (unsigned int)tileset.GetNumTiles(); i++)
     {
         sTile& tile = tileset.GetTile(i);
         if (tile.IsAnimated() && tileset.GetTile(m_AnimationMap[i].current).IsAnimated())

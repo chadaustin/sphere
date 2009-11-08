@@ -4,7 +4,6 @@
 #pragma warning(disable : 4786)
 #endif
 #include "../common/DefaultFileSystem.hpp"
-#include <memory>
 #include <string>
 #include <vector>
 class CPlaylist

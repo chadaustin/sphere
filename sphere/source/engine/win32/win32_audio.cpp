@@ -9,6 +9,8 @@
 #include "win32_audio.hpp"
 #include "win32_internal.hpp"
 #include "win32_sphere_config.hpp"
+#include <audiere.h>
+
 
 static audiere::AudioDevicePtr s_AudioDevice = NULL;
 
@@ -73,21 +75,23 @@ void CloseAudio()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+
 audiere::AudioDevice* SA_GetAudioDevice()
 {
     return s_AudioDevice.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-audiere::OutputStream* SA_OpenSound(audiere::File* file, bool streaming)
+audiere::OutputStream* SA_OpenSound(audiere::File* file, const char* filename, bool streaming)
 {
-    return audiere::OpenSound(s_AudioDevice.get(), file, streaming);
+    return audiere::OpenSound(s_AudioDevice.get(), file, streaming, audiere::GuessFormat(filename));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-audiere::SoundEffect* SA_OpenSoundEffect(audiere::File* file, audiere::SoundEffectType type)
+audiere::SoundEffect* SA_OpenSoundEffect(audiere::File* file, const char* filename, audiere::SoundEffectType type)
 {
-    return audiere::OpenSoundEffect(s_AudioDevice.get(), file, type);
+	return audiere::OpenSoundEffect(s_AudioDevice.get(), file, type, audiere::GuessFormat(filename));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -101,3 +105,4 @@ audiere::MIDIStream* SA_OpenMIDI(const char* filename)
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
+

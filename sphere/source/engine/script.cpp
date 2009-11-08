@@ -435,7 +435,7 @@ CScript::CScript(IEngine* engine)
         , m_IdealTime(0)
 {
     // create runtime
-    m_Runtime = JS_NewRuntime(1024 * 1024);
+    m_Runtime = JS_NewRuntime(5 *1024 * 1024);
     if (m_Runtime == NULL)
     {
         return;
@@ -473,7 +473,7 @@ CScript::CScript(IEngine* engine)
 
     JS_InitStandardClasses(m_Context, m_Global);
     JS_SetErrorReporter(m_Context, ErrorReporter);
-#ifndef TRACEMOKEY
+#ifndef TRACEMONKEY
     JS_SetBranchCallback(m_Context, BranchCallback);
 #else
     /*
@@ -780,6 +780,9 @@ CScript::InitializeSphereConstants()
                       KEY_CONSTANT(JOYSTICK_AXIS_Y)
                       KEY_CONSTANT(JOYSTICK_AXIS_Z)
                       KEY_CONSTANT(JOYSTICK_AXIS_R)
+					  KEY_CONSTANT(JOYSTICK_AXIS_U)
+					  KEY_CONSTANT(JOYSTICK_AXIS_V)
+					  KEY_CONSTANT(JOYSTICK_MAX_AXIS)
 
                       KEY_CONSTANT(PLAYER_1)
                       KEY_CONSTANT(PLAYER_2)
@@ -904,7 +907,7 @@ CScript::BranchCallback(JSContext* cx, JSScript* script)
     if (This)
     {
         // handle garbage collection
-        if (This->m_GCEnabled && This->m_GCCount++ >= 60*60*8)
+        if (This->m_GCCount++ >= 60*60*16 && This->m_GCEnabled)
         {
             // handle system events
             UpdateSystem();
@@ -1686,6 +1689,7 @@ sSpriteset* argSpriteset(JSContext* cx, jsval arg)
 #define return_str_n(expr, n) *rval = STRING_TO_JSVAL(JS_NewStringCopyN(cx, expr, n))
 #define return_double(expr)   *rval = DOUBLE_TO_JSVAL(JS_NewDouble(cx, expr))
 #define return_jsval(expr)    *rval = expr
+#define return_intOrDouble(expr)      *rval = INT_FITS_IN_JSVAL(expr)? INT_TO_JSVAL(expr) : DOUBLE_TO_JSVAL(JS_NewDouble(cx, expr))
 
 // Sphere function implementations
 ////////////////////////////////////////////////////////////////////////////////
@@ -1988,6 +1992,10 @@ static JSClass clasp =
 
 int array_size = games.size();
 jsval* array = new jsval[array_size];
+if (!array)
+{
+    return JS_FALSE;
+}
 *rval = *array; // temporally root it to the return value...
 
 for (int i = 0; i < array_size; i++)
@@ -2619,10 +2627,22 @@ begin_func(PolygonCollision, 2)
 	int offsetAy = 0;
 	int offsetBx = 0;
 	int offsetBy = 0;
-    if (argc > 2) offsetAx = argInt(cx, argv[2]);
-	if (argc > 3) offsetAy = argInt(cx, argv[3]);
-	if (argc > 4) offsetBx = argInt(cx, argv[4]);
-	if (argc > 5) offsetBy = argInt(cx, argv[5]);
+	if (argc > 2) 
+	{
+		offsetAx = argInt(cx, argv[2]);
+	}
+	if (argc > 3)
+	{
+		offsetAy = argInt(cx, argv[3]);
+	}
+	if (argc > 4)
+	{
+		offsetBx = argInt(cx, argv[4]);
+	}
+	if (argc > 5)
+	{
+		offsetBy = argInt(cx, argv[5]);
+	}
 
     jsval  v;
     jsval* vp = &v;
@@ -2683,7 +2703,7 @@ begin_func(PolygonCollision, 2)
     }
 
     // Code from: http://www.visibone.com/inpoly/inpoly.c.txt
-    int isinside = 0;
+    signed int isinside = 0;
     int inside = 0;
     int xold = 0;
     int xnew = 0;
@@ -2759,7 +2779,7 @@ begin_func(PolygonCollision, 2)
         }
 
         if (inside){
-            isinside = -iB-1;
+            isinside = -1 - iB;
             break;
         }
     }
@@ -3378,7 +3398,8 @@ end_func()
        while (GetTime() < start + 1000) {}
 */
 begin_func(GetTime, 0)
-return_int(GetTime());
+//return_int(GetTime()); // TODO: TEST intOrDouble
+return_intOrDouble(GetTime());
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5044,33 +5065,41 @@ begin_func(GetPersonList, 0)
 
 // ask the map engine for the list of names
 std::vector<std::string> names;
-if (!This->m_Engine->GetMapEngine()->GetPersonList(names))
+int size;
+if (!This->m_Engine->GetMapEngine()->GetPersonList(names,size))
 {
     This->ReportMapEngineError("GetPersonList() failed");
     return JS_FALSE;
 }
+//JS_GC(cx);
 
-// create an array of JS strings with which to initialize the array
-jsval* valarray = new jsval[names.size()];
-*rval = *valarray; // root this js array, as it can be garbagecollected...
-
-for (unsigned int i = 0; i < names.size(); i++)
+JSObject *arg_array = JS_NewArrayObject(cx, names.size(), NULL);
+if (arg_array == NULL || !JS_AddRoot(cx, &arg_array))
 {
-    valarray[i] = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, names[i].c_str()));
-}
-
-// create the array object
-JSObject* array = JS_NewArrayObject(cx, names.size(), valarray);
-if (array == NULL)
-{
-    JS_ReportError(cx, "Fatal Error!  JS_NewArrayObject() failed!");
-    delete[] valarray;
+    JS_ReportError(cx, "GetPersonList() failed object");
     return JS_FALSE;
 }
 
-// delete our temporary jsval array and return the JS array
-return_object(array); // valarray now automatically unrooted.
-delete[] valarray;
+for(unsigned int i=0; i<names.size(); i++) {
+	JSString *jStr = JS_NewStringCopyZ(cx, names[i].c_str());
+	*rval = STRING_TO_JSVAL(jStr);
+	//JS_GC(cx);
+	jsval aname = STRING_TO_JSVAL(jStr);
+	*rval = aname;
+	//JS_GC(cx);
+	JS_SetElement(cx, arg_array, (jsint)i, &aname);
+	//JS_GC(cx);
+/*
+	jsval j = STRING_TO_JSVAL(JS_NewStringCopyZ( cx, names[i].c_str() ));
+	*rval = j;
+	JS_GC(cx);
+	JS_SetElement(cx, result, (jsint)i, &j  );
+	JS_GC(cx);
+*/
+}
+
+return_object(arg_array); //*rval = OBJECT_TO_JSVAL(result); 
+JS_RemoveRoot(cx, &arg_array);
 end_func()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5425,6 +5454,10 @@ if (!This->m_Engine->GetMapEngine()->GetPersonIgnoreList(name, ignore_list))
 }
 // create an array of JS strings with which to initialize the array
 jsval* valarray = new jsval[ignore_list.size()];
+if (!valarray)
+{
+    return JS_FALSE;
+}
 *rval = *valarray;
 for (unsigned int i = 0; i < ignore_list.size(); i++)
 {
@@ -6789,17 +6822,40 @@ if (argc >= n){    sound->setArpeggioSpeed(float( argDouble(cx, argv[n++ -1]) ))
 return_object(CreateSfxrObject(cx, sound));
 end_func()
 
+
+/**
+    - Returns a soundobject of the current map background music
+*/
+begin_func(GetMapMusic,0)
+
+#if defined(WIN32) && defined(USE_MIDI)
+if(This->m_Engine->GetMapEngine()->getMidi())
+return_object(CreateSoundObject(cx, NULL, This->m_Engine->GetMapEngine()->getMidi().get(), NULL));
+else if(This->m_Engine->GetMapEngine()->getMusic())
+return_object(CreateSoundObject(cx, This->m_Engine->GetMapEngine()->getMusic().get(), NULL, NULL));
+else
+	return_null();
+#else
+if(This->m_Engine->GetMapEngine()->getMusic())
+	return_object(CreateSoundObject(cx, This->m_Engine->GetMapEngine()->getMusic().get(), NULL));
+else
+	return_null();
+#endif
+
+end_func()
+
+
 /**
     - Returns the name of the current map background music (could be a m3u list)
 */
-begin_func(BgmName, 0)
+begin_func(GetMapMusicName, 0)
     std::string result;
-    if (!This->m_Engine->GetMapEngine()->BgmName(result))
+    if (!This->m_Engine->GetMapEngine()->GetMapMusicName(result))
     {
-        This->ReportMapEngineError("BgmName() failed");
+        This->ReportMapEngineError("GetMapMusicName() failed");
         return JS_FALSE;
     }
-    if(This->m_Engine->GetMapEngine()->BgmValid())
+    if(This->m_Engine->GetMapEngine()->GetMapMusicType())
         result = "";
 
     return_str(result.c_str());
@@ -6808,158 +6864,9 @@ end_func()
 /**
     - Returns the type of the current map background music: 0: none 1: midi 2: wav/mp3/it/xm
 */
-begin_func(BgmValid, 0)
-    return_int( This->m_Engine->GetMapEngine()->BgmValid() );
+begin_func(GetMapMusicType, 0)
+    return_int( This->m_Engine->GetMapEngine()->GetMapMusicType() );
 end_func()
-
-/**
-    - Starts the current map background music. If it is already playing, or doesnt exist, it does nothing.
-      Returns true if the music is playing
-*/
-begin_func(BgmPlay, 0)
-    This->m_Engine->GetMapEngine()->BgmPlay();
-    return_bool(This->m_Engine->GetMapEngine()->BgmIsPlaying() == true);
-end_func()
-
-/**
-    - Stops the current map background music. If it is already stopped, or doesnt exist, it does nothing.
-      Returns true if the music is stopped
-*/
-begin_func(BgmStop, 0)
-    This->m_Engine->GetMapEngine()->BgmStop(); // Audiere stop is void... why?
-    return_bool(This->m_Engine->GetMapEngine()->BgmIsPlaying() == false);
-end_func()
-
-/**
-    - Tells us if the background music is playing
-*/
-begin_func(BgmIsPlaying, 0)
-    return_bool(This->m_Engine->GetMapEngine()->BgmIsPlaying());
-end_func()
-
-/**
-    - Rewind the background music. (Can be slow on streamed music)
-*/
-begin_func(BgmReset, 0)
-    This->m_Engine->GetMapEngine()->BgmReset();
-    if(This->m_Engine->GetMapEngine()->BgmValid())
-        return_bool(true);
-    else
-        return_bool(false);
-end_func()
-
-/**
-    - Enable/Disable Loop the current background music (it is repeated by default)
-      Returns true if it succeeded setting the boolean value.
-*/
-begin_func(BgmSetRepeat, 1)
-arg_bool(onoff);
-    This->m_Engine->GetMapEngine()->BgmSetRepeat(onoff);
-    return_bool(This->m_Engine->GetMapEngine()->BgmGetRepeat() == onoff);
-end_func()
-
-/**
-    - Returns true if the current background music is looped. False if not.
-*/
-begin_func(BgmGetRepeat, 0)
-    return_bool(This->m_Engine->GetMapEngine()->BgmGetRepeat());
-end_func()
-
-/**
-    - Sets the volume of the current background music. The volume can be 0 to 255.
-    - no effect on MIDIs
-*/
-begin_func(BgmSetVolume, 1)
-    arg_int(volume);
-    volume = volume<0 ? 0 : volume>255? 255 : volume;
-    This->m_Engine->GetMapEngine()->BgmSetVolume(volume / 255.0f);
-end_func()
-
-/**
-    - Gets the volume of the current background music. The volume can be 0 to 255.
-    - no effect on MIDIs
-*/
-begin_func(BgmGetVolume, 0)
-    float v = This->m_Engine->GetMapEngine()->BgmGetVolume();
-    if (v<0)
-        return_int(255);
-    else
-        return_int(v * 255);
-end_func()
-
-/**
-    - pan can be from -255 to 255.  -255 = left, 255 = right. pan defaults to 0 (center).
-    - no effect on MIDIs
-*/
-begin_func(BgmSetPan, 1)
-    arg_int(pan);
-    if (This->m_Engine->GetMapEngine()->BgmValid())
-        This->m_Engine->GetMapEngine()->BgmSetPan(pan / 255.0f);
-end_func()
-
-/**
-    - returns the current pan of the sound (-255 to 255)
-    - no effect on MIDIs
-*/
-begin_func(BgmGetPan, 0)
-    if (This->m_Engine->GetMapEngine()->BgmValid())
-        return_int(This->m_Engine->GetMapEngine()->BgmGetPan() * 255);
-    return_int(0);
-end_func()
-
-/**
-    - pitch ranges from 0.5 to 2.0.  0.5 is an octave down (and half as fast)
-      while 2.0 is an octave up (and twice as fast).  pitch defaults to 1.0
-    - no effect on MIDIs
-*/
-begin_func(BgmSetPitch, 1)
-    arg_double(pitch);
-    if (This->m_Engine->GetMapEngine()->BgmValid())
-        This->m_Engine->GetMapEngine()->BgmSetPitchShift((float)pitch);
-end_func()
-
-/**
-    - returns the current pitch
-    - no effect on MIDIs
-*/
-begin_func(BgmGetPitch, 0)
-    if (This->m_Engine->GetMapEngine()->BgmValid())
-        return_double(This->m_Engine->GetMapEngine()->BgmGetPitchShift());
-    else
-        return_double(1.0);
-end_func()
-
-/**
-    - returns true if the background music is seekable
-*/
-begin_func(BgmIsSeekable, 0)
-    return_bool(This->m_Engine->GetMapEngine()->BgmIsSeekable());
-end_func()
-
-/**
-    - returns the length the background music. Music must be seekable.
-*/
-begin_func(BgmGetLength, 0)
-    return_int(This->m_Engine->GetMapEngine()->BgmGetLength());
-end_func()
-
-/**
-    - sets the position of the sound
-      if the sound isn't seekable, this does nothing
-*/
-begin_func(BgmSetPosition, 1)
-    arg_int(pos);
-    This->m_Engine->GetMapEngine()->BgmSetPosition(pos);
-end_func()
-
-/**
-    - gets the position of the sound
-      if the sound isn't seekable, this does nothing
-*/
-begin_func(BgmGetPosition, 0)
-    return_bool(This->m_Engine->GetMapEngine()->BgmGetPosition());
-end_func()
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // section: Font functions //
@@ -12045,7 +11952,9 @@ end_method()
 
 ///////////////////////////////////////
 /**
-    - draws 'text' at x, y with the font
+    - draws 'text' at x, y with the font.
+      You can use octal notation to write characters that can not be written.
+      for example: \222 for right single quotation mark. Sphere Font is CP1252. 
 */
 begin_method(SS_FONT, ssFontDrawText, 3)
 if (This->ShouldRender())
@@ -12114,6 +12023,11 @@ std::vector<std::string> lines = object->font->WordWrapString(string, width);
 // Build array of strings.
 int array_size = lines.size();
 jsval* array = new jsval[array_size];
+if (!array)
+{
+    return JS_FALSE;
+}
+*rval = *array;
 for (int i = 0; i < array_size; ++i)
 {
     array[i] = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, lines[i].c_str()));
@@ -14460,6 +14374,7 @@ CScript::CreateFileObject(JSContext* cx, CConfigFile* file)
             { "close",      ssFileClose,        0, 0, 0 },
             { "getNumKeys", ssFileGetNumKeys,   0, 0, 0 },
             { "getKey",     ssFileGetKey,       1, 0, 0 },
+			{ "removeKey",  ssFileRemoveKey,    1, 0, 0 },
             { 0, 0, 0, 0, 0 },
         };
     JS_DefineFunctions(cx, object, fs);
@@ -14565,6 +14480,20 @@ if (index < 0)
 }
 std::string str = object->file->GetKey(-1, index);
 return_str(str.c_str());
+end_method()
+///////////////////////////////////////
+/**
+    - Removes the key at 'index' (returns false if failed)
+*/
+begin_method(SS_FILE, ssFileRemoveKey, 1)
+arg_int(index);
+if (index < 0)
+{
+    JS_ReportError(cx, "Index must be greater than zero... %d", index);
+    return JS_FALSE;
+}
+bool b = object->file->RemoveKey(-1,index);
+return_bool(b);
 end_method()
 ///////////////////////////////////////
 /**

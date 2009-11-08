@@ -4,8 +4,6 @@
 #pragma warning(disable : 4786)
 #endif
 #include <map>
-#include <memory>
-#include <cstring>
 #include <string>
 #include "DefaultFileSystem.hpp"
 class CConfigFile
@@ -26,6 +24,7 @@ public:
     const char* GetSectionName(const int index) const;
     int GetNumKeys(const int section) const;
     std::string GetKey(const int section, const int index) const;
+	bool RemoveKey(const int section, const int index) const;
     std::string GetValue(const int section, const int index) const;
 private:
     struct Section

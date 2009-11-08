@@ -9,33 +9,20 @@
  * This is why we do not need to root some of the values here.
  */
 
-///////////////////////////////////////////////////////////
-/*
- * real numbers will be converted (rounded) automatically to the nearest integer, and so are strings
- * and objects. Objects need the method .valueOf() to be converted to number.
- */
-int argInt(JSContext* cx, jsval arg)
-{
-    int32 i;
-    if (JS_ValueToECMAInt32(cx, arg, &i)) //used to be JS_ValueToInt32, which rounded differently.
-		return i;
-
-    JS_ReportError(cx, "Invalid integer.");
-    return 0; // invalid integer
-}
 
 ///////////////////////////////////////////////////////////
 /*
- * This will fail unless its an integer, 1.2 is not accepted as valid input
+ * This will fail unless its an integer, 1.2 is not accepted as valid input\
+ * You probably want to use argInt() instead
  */
 int argStrictInt(JSContext* cx, jsval arg)
 {
-    int32 i;
     if (!JSVAL_IS_INT(arg))
     {
         JS_ReportError(cx, "Invalid integer");
         return false;
     }
+    int32 i;
     if (JS_ValueToECMAInt32(cx, arg, &i))
 		return i;
 
@@ -45,6 +32,12 @@ int argStrictInt(JSContext* cx, jsval arg)
 ///////////////////////////////////////////////////////////
 const char* argStr(JSContext* cx, jsval arg)
 {
+	/*
+	// This may speed up things, but I've not tested it for stability
+	const char* s = JS_GetStringBytes(JSVAL_TO_STRING(arg));
+	return (s ? s : "");
+	*/
+
     JSString* str = JS_ValueToString(cx, arg);
 
     if (str)
@@ -63,7 +56,12 @@ const char* argStr(JSContext* cx, jsval arg)
  */
 bool argBool(JSContext* cx, jsval arg)
 {
-    JSBool b;
+    // Quickly return the boolean value
+    if (JSVAL_IS_BOOLEAN(arg))
+        return JSVAL_TO_BOOLEAN(arg) == JS_TRUE;
+
+    // Not a boolean, convert it to boolean
+	JSBool b;
     if (JSVAL_IS_OBJECT(arg))
     {
         JS_ReportError(cx, "Invalid boolean (parameter is an object)");

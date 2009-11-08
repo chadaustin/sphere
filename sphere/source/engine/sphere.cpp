@@ -61,6 +61,7 @@ void RunSphere(int argc, const char** argv)
 
     bool show_menu = true;
     int package_name_index = -1;
+    int game_name_index = -1;
     // check for manual game selection
     for (int i = 1; i < argc; i++)
     {
@@ -101,59 +102,14 @@ void RunSphere(int argc, const char** argv)
         else if (strcmp(argv[i], "-sgm") == 0 &&
                  i < argc - 1)
         {  // if last parameter is a command, it doesn't mean anything
-            // look for a parameters string
-
-			const char* parameters = "";
-            for (int j = 0; j < argc - 1; j++)
-            {
-                if (strcmp(argv[j], "-parameters") == 0)
-                {
-                    parameters = argv[j + 1];
-                    break;
-                }
-            }
 			
-		// run the sgm
-		if ( ! Local::extension_compare(argv[i+1], ".sgm")){
-			QuitMessage("file needs to be '.sgm'");
-			return;
-		}
+			// run the sgm
+			if ( ! Local::extension_compare(argv[i+1], ".sgm")){
+				QuitMessage("file needs to be '.sgm'");
+				return;
+			}
 
-		int pos = strlen(argv[i + 1]) - 1;
-
-
-		//We're not interested in the sgm, we want the parent directory, lets find it:
-		while( (pos>0) && (argv[i + 1][pos] != '/' ) && (argv[i + 1][pos] != '\\' ) ){
-			--pos;
-		};
-		if(pos == 0){
-			pos = strlen(argv[i + 1]) - 1;
-		}
-
-		char path[256];
-		strncpy(path, argv[i+1],pos);
-		path[pos] = '\0';
-			
-		--pos;
-		while( (pos>0) && (argv[i + 1][pos] != '/' ) && (argv[i + 1][pos] != '\\' ) ){
-			--pos;
-		};
-		if(pos == 0){
-			pos = strlen(argv[i + 1]) - 1;
-		}
-		path[pos] = '\0';
-
-            if (EnterDirectory(path))
-            {
-                RunGame(path +pos+1, parameters);
-                LeaveDirectory();
-            }
-            else
-            {
-                QuitMessage("Could not enter 'games' directory");
-                return;
-            }
-            show_menu = false;
+			game_name_index = i + 1;
 
 //////////////////////////////
 
@@ -188,6 +144,8 @@ void RunSphere(int argc, const char** argv)
         {
             if (i == 1 && Local::extension_compare(argv[i], ".spk"))
                 package_name_index = i;
+            if (i == 1 && Local::extension_compare(argv[i], ".sgm"))
+                game_name_index = i;
         }
     }
     
@@ -222,6 +180,56 @@ void RunSphere(int argc, const char** argv)
         show_menu = false;
         LeaveDirectory();
         LeaveDirectory();
+    }
+
+    if (game_name_index != -1)
+
+	{
+		int pos = strlen(argv[game_name_index]) - 1;
+
+		//We're not interested in the sgm, we want the parent directory, lets find it:
+		while( (pos>0) && (argv[game_name_index][pos] != '/' ) && (argv[game_name_index][pos] != '\\' ) ){
+			--pos;
+		};
+		if(pos == 0){
+			pos = strlen(argv[game_name_index]) - 1;
+		}
+
+		char path[256];
+		strncpy(path, argv[game_name_index],pos);
+		path[pos] = '\0';
+			
+		--pos;
+		while( (pos>0) && (argv[game_name_index][pos] != '/' ) && (argv[game_name_index][pos] != '\\' ) ){
+			--pos;
+		};
+		if(pos == 0){
+			pos = strlen(argv[game_name_index]) - 1;
+		}
+		path[pos] = '\0';
+
+			// look for a parameters string
+			const char* parameters = "";
+            for (int j = 0; j < argc - 1; j++)
+            {
+                if (strcmp(argv[j], "-parameters") == 0)
+                {
+                    parameters = argv[j + 1];
+                    break;
+                }
+            }
+
+            if (EnterDirectory(path))
+            {
+                RunGame(path +pos+1, parameters);
+                LeaveDirectory();
+            }
+            else
+            {
+                QuitMessage("Could not enter 'games' directory");
+                return;
+            }
+            show_menu = false;
     }
     
     // start the game specified on the command line

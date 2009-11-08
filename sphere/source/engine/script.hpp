@@ -452,6 +452,7 @@ private:
   declare_method(ssFileClose);
   declare_method(ssFileGetNumKeys);
   declare_method(ssFileGetKey);
+  declare_method(ssFileRemoveKey);
 
   // raw files
   declare_constructor2(CreateRawFileObject, IFile* file, bool writeable);
